@@ -261,6 +261,16 @@ class StatusContractTests(unittest.TestCase):
         validate_status(manifest)
         self.assertIsNone(manifest["state"]["releases"]["current"])
 
+    def test_versioned_dot_project_id_matches_its_directory(self) -> None:
+        manifest = planned_manifest("ribbits-26.2", "Ribbits 26.2 Port")
+        validate_status(manifest)
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            write_project(root, manifest)
+            statuses = load_repository_statuses(root)
+            loaded = next(iter(statuses.values()))[1]
+            self.assertEqual("ribbits-26.2", loaded["identity"]["project_id"])
+
     def test_schema_shape_and_enums_fail_closed(self) -> None:
         manifest = planned_manifest()
         manifest["unexpected"] = True

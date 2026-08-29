@@ -32,7 +32,7 @@
   },
   "$defs": {
     "uuid": { "type": "string", "format": "uuid" },
-    "projectId": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+    "projectId": { "type": "string", "pattern": "^[a-z0-9]+(?:[.-][a-z0-9]+)*$" },
     "commit": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
     "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
     "nonblank": { "type": "string", "minLength": 1, "pattern": "^\\S(?:.*\\S)?$" },
