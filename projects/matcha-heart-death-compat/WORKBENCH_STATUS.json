@@ -1,0 +1,135 @@
+{
+  "$schema": "../../schemas/workbench-status.schema.json",
+  "schema_version": 1,
+  "identity": {
+    "uuid": "937d7ccc-44c9-55cb-8d33-0dc0bff5fe45",
+    "name": "Matcha Heart / Death Compatibility",
+    "project_id": "matcha-heart-death-compat",
+    "aliases": [
+      "Matcha Heart / Death Compatibility Layer",
+      "Matcha Death Rebalance"
+    ],
+    "legacy_names": [
+      "Matcha Heart / Death Compatibility Layer",
+      "Matcha Death Rebalance"
+    ],
+    "legacy_ids": [
+      "matcha-heart-death-compat"
+    ]
+  },
+  "definition": {
+    "lifecycle": "TESTING",
+    "goals": [
+      "Preserve Matcha Crystal Heart progression as explicit semantic main-hand use instead of automatic inventory-entry consumption.",
+      "Preserve project-owned persistent maximum-health state and one-heart-per-death debt from Matcha's 30-heart cap down to the five-heart floor, with Reinforced repair only below the normal ten-heart baseline.",
+      "Own the narrow Heart, death, recipe, loot, and Echo Shard discovery boundary consolidated in Canary 7 without forking Matcha or changing unrelated Matcha behavior."
+    ],
+    "scope": [
+      "Recognize a Matcha Crystal Heart only as minecraft:poisonous_potato with minecraft:item_model=minecraft:heart_container; ordinary poisonous potatoes fail closed, inventory movement never applies a Heart, and use remains main-hand right-click only.",
+      "Persist sanitized even maximum-health values from 10 through 60 health points; preserve a valid adopted value, fall back to 20 for malformed, odd, or out-of-range state, add two points for a Crystal Heart only from 20 through 58, subtract two points on every death to a floor of 10, and add two points for a Reinforced Heart only below 20 with a cap of 20.",
+      "Preserve the Crystal Heart recipe as eight Diamonds around one Echo Shard and the Reinforced recipe as EEE/EHE/ E : six Echo Shards around one component-qualified Crystal Heart, with the exact accepted item identity, sprite, and optional JEI exposure.",
+      "Own exactly three authoritative recipes, two authoritative advancements, four Echo-scarcity loot tables, and the two conflicting Matcha Heart functions through the consolidated fail-closed reload seams retained by Canary 7.",
+      "Preserve Ancient City loot as the remaining unchanged Echo Shard source, Silk-Touch-only Sculk Sensor, Calibrated Sculk Sensor, and Sculk Shrieker item drops, and the existing Music Disc 5 and Swift Sneak/Soul Speed sinks."
+    ],
+    "boundaries": {
+      "owned_paths": [
+        "projects/matcha-heart-death-compat"
+      ],
+      "exclusions": [
+        "Forking or modifying Matcha itself, copying Matcha's Crystal Heart art, or taking ownership of unrelated Matcha datapack, resource-pack, worldgen, loot, visual, or gameplay systems.",
+        "Changing keepInventory, adding item-loss punishment, or letting Crystal Hearts repair below-baseline health or Reinforced Hearts grant bonus health.",
+        "Broad recipe, advancement, loot, or function interception beyond the exact frozen identifiers.",
+        "Co-installing the retired matcha_echo_shard_scarcity mod, Canary 6, or another Heart artifact with Canary 7.",
+        "The separate Reach Crafting and Effortless Crafting grid-delay issue.",
+        "Dedicated-server or exhaustive runtime claims not present in the frozen evidence.",
+        "Runtime deployment, promotion, Test Slot changes, accepted physical Workbench changes, or protected gameplay-instance access during this migration."
+      ]
+    },
+    "dependencies": [
+      {
+        "type": "TOOL",
+        "identifier": "java",
+        "requirement": "25",
+        "reason": "Minecraft 26.2 and the retained C7 Fabric build target Java 25."
+      },
+      {
+        "type": "MOD",
+        "identifier": "minecraft",
+        "requirement": ">=26.2 <26.3",
+        "reason": "Target game range declared by the exact retained Fabric metadata."
+      },
+      {
+        "type": "MOD",
+        "identifier": "fabricloader",
+        "requirement": ">=0.19.3",
+        "reason": "Fabric runtime loader floor declared by Canary 7."
+      },
+      {
+        "type": "MOD",
+        "identifier": "fabric-api",
+        "requirement": ">=0.156.0+26.2",
+        "reason": "Fabric APIs provide persistent attachments, use/respawn hooks, and loot-table replacement."
+      },
+      {
+        "type": "MOD",
+        "identifier": "jei",
+        "requirement": "30.18.0.144 (optional)",
+        "reason": "The optional client plugin exposes only the exact Reinforced recipe output and does not make JEI a common or server dependency."
+      },
+      {
+        "type": "DATA_PACK",
+        "identifier": "Matcha_Flavoured_1_12.zip",
+        "requirement": "SHA-256 6209783021C358044ABEDABACEE471FAFF5BD4080437D4E3B5E51963F1804248",
+        "reason": "Frozen upstream contract reference for the semantic Crystal Heart, recipe, advancement, function, loot, and Echo Shard overlay behavior."
+      }
+    ]
+  },
+  "state": {
+    "milestone": "Exact C7 remains in TESTING after a partial runtime pass: Sensor/Shrieker Echo Shard drops and the Reinforced recipe passed; Crystal Heart, Sensor, and Shrieker recipes failed because Matcha precedence still wins. C7 is unchanged in the verified Heart + Mossy profile, accepted C5 is its disabled rollback, and no C8 was produced.",
+    "releases": {
+      "current": {
+        "version": "0.1.6-canary7",
+        "artifact": {
+          "filename": "matcha-heart-death-compat-0.1.6-canary7.jar",
+          "sha256": "3b1f608c6f4b3b92f764a3781a9652dc11f089590a9173444c067975d01ca2dd"
+        },
+        "source_commit": "3dbd78201104686a061df7a94d3be5162072c877"
+      },
+      "accepted": {
+        "version": "0.1.4-canary5",
+        "artifact": {
+          "filename": "matcha-heart-death-compat-0.1.4-canary5.jar",
+          "sha256": "21e24d37b1a3b575b738f7ca38b0614c9d0285c4f0723defe4db85297b171c04"
+        },
+        "source_commit": "5477ca770e58a8b4bed8f1bf737b04765a9d12a7"
+      },
+      "rollback": {
+        "version": "0.1.4-canary5",
+        "artifact": {
+          "filename": "matcha-heart-death-compat-0.1.4-canary5.jar",
+          "sha256": "21e24d37b1a3b575b738f7ca38b0614c9d0285c4f0723defe4db85297b171c04"
+        },
+        "source_commit": "5477ca770e58a8b4bed8f1bf737b04765a9d12a7"
+      },
+      "accepted_current": "CURRENT_DIFFERS_FROM_ACCEPTED",
+      "accepted_rollback": "ACCEPTED_IS_ROLLBACK"
+    },
+    "validation": {
+      "build": "STATIC_PASS",
+      "deployment": "READY_TO_TEST_VERIFIED",
+      "runtime": "PARTIAL_RUNTIME_PASS"
+    },
+    "blocker": null
+  },
+  "synchronization": {
+    "revision": 1,
+    "activity_at": "2026-08-29T06:17:22Z",
+    "updated_at": "2026-08-29T21:03:27Z",
+    "last_codex_at": "2026-08-29T21:03:27Z",
+    "source_commit": "c3081fbd1a5b042e40b2ba4060f8299e471e0005",
+    "google_sheet": {
+      "participates": true,
+      "exclusion_reason": null
+    }
+  }
+}
