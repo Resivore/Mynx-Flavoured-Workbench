@@ -9,3 +9,13 @@
 - Artifact: Current C1 `frozenlib-shutdown-compat-0.1.0-canary1.jar` SHA-256 `85dda807ca525a559dc1123e986da50348e2f18c63a43eec6bb5c3684cc51476`; accepted and rollback releases remain null because the frozen project classified acceptance as not applicable and retained C1 as permanent infrastructure outside project rollback ownership.
 - Result: TESTING — exact C1 remains DEPLOYED with a PARTIAL_RUNTIME_PASS from frozen Minecraft evidence; the build is STATIC_PASS, no formal V2 blocker is active, and visible known-cape rendering remains outstanding.
 - Next state: Observe known-cape rendering only when a suitable exact C1 runtime case is available, and repeat both shutdown paths after any future target-version or implementation change.
+
+## 2026-08-29T21:20:18Z — Accept FrozenLib Shutdown Compatibility Canary 1
+- Revision: 2
+- Source checkpoint: `113eb4a2a24122f64cb1c79a29e99daa762c3b77`
+- Changes: User explicitly removed visible known-cape rendering from the acceptance criteria. Promoted the exact retained C1 from TESTING to ACCEPTED, recorded the current C1 as the accepted release, and narrowed `TESTING.md` to the useful future shutdown-regression procedure. No implementation, dependency, artifact, deployment, runtime-slot, or Test Instance Manager changes were made.
+- Build/static: No new build was required for this status-only acceptance decision. The retained C1 remains STATIC_PASS with its prior focused test and exact-artifact verification evidence unchanged.
+- Runtime: No new Minecraft run was performed. Acceptance is based on the preserved 2026-08-15 ordinary Quit Game pass, Windows title-bar close pass, and cape-path log regression pass. Visible known-cape rendering remains unobserved and is explicitly non-gating; the existing runtime evidence is sufficient for the project's shutdown-compatibility scope, so runtime state is now `RUNTIME_PASS`.
+- Artifact: Accepted/current C1 remains `frozenlib-shutdown-compat-0.1.0-canary1.jar` SHA-256 `85dda807ca525a559dc1123e986da50348e2f18c63a43eec6bb5c3684cc51476`, source commit `45fed67116ebcb6d7993d4c2619abe0be02bd9ce`; no rollback artifact is defined.
+- Result: ACCEPTED — C1 is the accepted permanent-infrastructure release for exact FrozenLib `2.5.3-mc26.2`.
+- Next state: Keep C1 accepted. Repeat the shutdown regression procedure only after a FrozenLib target-version change, compatibility implementation change, or observed shutdown regression.
