@@ -1,0 +1,13 @@
+{
+  "required": true,
+  "package": "dev.resivore.matchabeacon.mixin",
+  "compatibilityLevel": "JAVA_25",
+  "mixins": [
+    "FunctionCommandMixin",
+    "ServerFunctionManagerMixin",
+    "SpawnEggItemMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
