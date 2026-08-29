@@ -1,0 +1,14 @@
+{
+  "required": true,
+  "package": "dev.resivore.xaerodiscovery.mixin",
+  "compatibilityLevel": "JAVA_25",
+  "client": [
+    "LeafRegionTextureMixin",
+    "MinimapWriterMixin",
+    "WorldDataReaderMixin",
+    "WorldMapWriterMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
