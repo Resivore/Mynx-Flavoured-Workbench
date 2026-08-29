@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "dragonbound_waystone",
+  "version": "${version}",
+  "name": "Dragonbound Waystone",
+  "description": "Canary implementation of one world-bound return anchor and its earned return items.",
+  "authors": ["Resivore compatibility workbench"],
+  "license": ["MIT", "CC-BY-NC-SA-4.0"],
+  "environment": "*",
+  "entrypoints": {
+    "main": ["dev.resivore.dragonbound.DragonboundWaystone"]
+  },
+  "mixins": ["dragonbound_waystone.mixins.json"],
+  "depends": {
+    "fabricloader": ">=0.19.3",
+    "fabric-api": ">=0.156.0+26.2",
+    "minecraft": ">=26.2 <26.3"
+  }
+}
