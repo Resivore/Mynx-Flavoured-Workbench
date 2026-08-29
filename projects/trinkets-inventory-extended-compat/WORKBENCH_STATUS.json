@@ -1,0 +1,139 @@
+{
+  "$schema": "../../schemas/workbench-status.schema.json",
+  "schema_version": 1,
+  "identity": {
+    "uuid": "19c2de9e-c363-54c7-98ee-96f3fccc439b",
+    "name": "Trinkets × Inventory Extended",
+    "project_id": "trinkets-inventory-extended-compat",
+    "aliases": [
+      "Trinkets × Inventory Extended compatibility",
+      "Inventory Extended x Trinkets"
+    ],
+    "legacy_names": [],
+    "legacy_ids": [
+      "trinkets-inventory-extended"
+    ]
+  },
+  "definition": {
+    "lifecycle": "ACCEPTED",
+    "goals": [
+      "Preserve the accepted Minecraft Java 26.2 compatibility contract between Inventory Extended 1.1.2 and Trinkets Updated 4.1.0-beta.3+26.2 without adding new behavior to either upstream mod.",
+      "Retain the exact three-artifact Canary 5 set that reconciles startup validation, expanded creative mapping, quick-move boundaries, and the proven Trinkets charm-icon mismatch."
+    ],
+    "scope": [
+      "Remove only Inventory Extended's competing FixCreativeSlotRangeCheck mixin declaration while retaining its 1.1.2 identity and all other archive entries.",
+      "Patch Trinkets' Creative-to-Survival wrapper bound to the live Trinkets slot start and derive both ordinary-player quick-move ends from the live non-equipment inventory size.",
+      "Retain the companion's exclusive live-menu creative packet guard and its narrow trinkets:gui/slots/charm to trinkets:container/slots/charm icon translation.",
+      "Preserve the accepted C5 runtime evidence for all six Inventory Extended rows, physical hotbar and offhand boundaries, Trinkets equip and unequip, creative wrappers, persistence, and the configured keepInventory path."
+    ],
+    "boundaries": {
+      "owned_paths": [
+        "projects/trinkets-inventory-extended-compat"
+      ],
+      "exclusions": [
+        "New Inventory Extended or Trinkets features, ports, redesigns, upstream replacements, or compatibility behavior beyond the frozen C5 contract.",
+        "Matcha × Trinkets Visual Compatibility, Matcha inventory artwork and composition, Inventory 3×3 Crafting, Offhand Shift-Click, Carried Container Auto-Routing, Quick Stack, and every other inventory compatibility layer remain separately owned.",
+        "The completed temporary visual diagnostic, its JAR and trace tooling, the aborted non-representative localhost server harness, obsolete canaries, legacy audits, status narratives, historical matrices, and global project databases.",
+        "Hosted-server join, relog, and dimension validation and keepInventory-disabled death drops remain untested and are not inferred from the accepted client evidence.",
+        "Minecraft deployment, Test Slot changes, accepted-stack mutation, promotion, Test Instance Manager changes, Minecraft launch, and access to either physical gameplay profile during this migration."
+      ]
+    },
+    "dependencies": [
+      {
+        "type": "OTHER",
+        "identifier": "minecraft",
+        "requirement": "=26.2",
+        "reason": "Exact game version targeted by the accepted menu, packet, and GUI compatibility hooks."
+      },
+      {
+        "type": "MOD",
+        "identifier": "fabricloader",
+        "requirement": ">=0.19.3",
+        "reason": "Fabric runtime loader declared by the accepted companion."
+      },
+      {
+        "type": "MOD",
+        "identifier": "fabric-api",
+        "requirement": "=0.157.0+26.2",
+        "reason": "Fabric API version used by the frozen C5 build and runtime evidence."
+      },
+      {
+        "type": "MOD",
+        "identifier": "inventoryextended",
+        "requirement": "=1.1.2; inventoryextended-1.1.2-mc26.2-trinkets-compat-canary4.jar; SHA-256 a0ced554cb687f7119aa19ac3466c0de3ffb0a888e994514223152335b043636",
+        "reason": "Exact accepted patched Inventory Extended member of the three-file C5 set; the Canary 4 filename is intentional and must not be renamed."
+      },
+      {
+        "type": "MOD",
+        "identifier": "trinkets_updated",
+        "requirement": "=4.1.0-beta.3+26.2; trinkets-4.1.0-beta.3+26.2-inventory-compat-canary5.jar; SHA-256 4c1fa6ac36c0457483fd0d395b99bbd94c9334aad6defece7633bbf0552d1724",
+        "reason": "Exact accepted patched Trinkets member of the three-file C5 set."
+      },
+      {
+        "type": "TOOL",
+        "identifier": "java",
+        "requirement": "=25",
+        "reason": "Compilation and runtime release required by Minecraft 26.2 and the retained source."
+      },
+      {
+        "type": "TOOL",
+        "identifier": "gradle",
+        "requirement": "=9.5.1",
+        "reason": "Build tool recorded by the accepted companion manifest and used for migration verification."
+      },
+      {
+        "type": "TOOL",
+        "identifier": "fabric-loom",
+        "requirement": "=1.17.19",
+        "reason": "Exact Loom version recorded in the accepted companion and required for byte-identical reproduction."
+      },
+      {
+        "type": "TOOL",
+        "identifier": "org.ow2.asm",
+        "requirement": "=9.9",
+        "reason": "ASM and ASM Tree libraries used only by the hash-guarded Trinkets patcher."
+      }
+    ]
+  },
+  "state": {
+    "milestone": "C5 passed its intended functional and Creative-to-Survival visual runtime scope and is accepted; hosted-server join, relog, and dimension coverage remains deferred.",
+    "releases": {
+      "current": {
+        "version": "0.5.0-canary5",
+        "artifact": {
+          "filename": "trinkets-inventory-extended-compat-0.5.0-canary5.jar",
+          "sha256": "76c8c735219ceebfc7ec9a7b103e4cd4f027e43b2489cbc71f8b025b103efa6c"
+        },
+        "source_commit": "e79bd083b671dd6dbd8c1c73d50971b599365cd3"
+      },
+      "accepted": {
+        "version": "0.5.0-canary5",
+        "artifact": {
+          "filename": "trinkets-inventory-extended-compat-0.5.0-canary5.jar",
+          "sha256": "76c8c735219ceebfc7ec9a7b103e4cd4f027e43b2489cbc71f8b025b103efa6c"
+        },
+        "source_commit": "e79bd083b671dd6dbd8c1c73d50971b599365cd3"
+      },
+      "rollback": null,
+      "accepted_current": "CURRENT_IS_ACCEPTED",
+      "accepted_rollback": "NO_ROLLBACK"
+    },
+    "validation": {
+      "build": "STATIC_PASS",
+      "deployment": "READY_TO_TEST_VERIFIED",
+      "runtime": "RUNTIME_PASS"
+    },
+    "blocker": null
+  },
+  "synchronization": {
+    "revision": 1,
+    "activity_at": "2026-08-14T12:42:50Z",
+    "updated_at": "2026-08-29T21:34:09Z",
+    "last_codex_at": "2026-08-29T21:34:09Z",
+    "source_commit": "36b9cfed036ea6d59fdacdd345dc28d6d8b12e22",
+    "google_sheet": {
+      "participates": true,
+      "exclusion_reason": null
+    }
+  }
+}

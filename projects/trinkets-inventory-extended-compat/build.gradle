@@ -1,0 +1,78 @@
+plugins {
+    id 'net.fabricmc.fabric-loom' version '1.17.19'
+}
+
+version = project.mod_version
+group = project.maven_group
+
+base {
+    archivesName = project.archives_base_name
+}
+
+repositories {
+    maven { url = 'https://maven.fabricmc.net/' }
+}
+
+def workbenchRoot = providers.gradleProperty('workbench_root')
+        .orElse(rootProject.projectDir.parentFile.parentFile.absolutePath)
+        .get()
+def deploymentOutputRoot = providers.gradleProperty('deployment_output_root')
+        .orElse(new File(workbenchRoot, 'test-builds').absolutePath)
+        .get()
+
+sourceSets {
+    patcher {
+        java.srcDir 'src/patcher/java'
+    }
+}
+
+dependencies {
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    implementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+    compileOnly files(new File(workbenchRoot, 'originals/mods/trinkets-4.1.0-beta.3+26.2.jar.disabled'))
+    patcherImplementation 'org.ow2.asm:asm:9.9'
+    patcherImplementation 'org.ow2.asm:asm-tree:9.9'
+}
+
+processResources {
+    inputs.property 'version', project.version
+    filesMatching('fabric.mod.json') {
+        expand 'version': project.version
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.release = 25
+}
+
+java {
+    withSourcesJar()
+}
+
+tasks.register('patchTrinkets', JavaExec) {
+    dependsOn patcherClasses
+    classpath = sourceSets.patcher.runtimeClasspath
+    mainClass = 'dev.resivore.tools.TrinketsCompatPatcher'
+    args new File(workbenchRoot, 'originals/mods/trinkets-4.1.0-beta.3+26.2.jar.disabled').absolutePath,
+            new File(deploymentOutputRoot, 'trinkets-4.1.0-beta.3+26.2-inventory-compat-canary5.jar').absolutePath
+}
+
+tasks.register('patchInventoryExtended', Exec) {
+    commandLine 'powershell.exe', '-NoProfile', '-ExecutionPolicy', 'Bypass', '-File',
+            file('tools/patch-inventory-extended.ps1').absolutePath,
+            '-InputJar', new File(workbenchRoot, 'originals/mods/inventoryextended-1.1.2-mc26.2.jar').absolutePath,
+            '-OutputJar', new File(deploymentOutputRoot, 'inventoryextended-1.1.2-mc26.2-trinkets-compat-canary4.jar').absolutePath
+}
+
+tasks.register('stageCompanion', Copy) {
+    doNotTrackState('Stages one Canary companion JAR into the shared Workbench test-builds directory.')
+    dependsOn jar
+    from layout.buildDirectory.file("libs/${archives_base_name}-${version}.jar")
+    into file(deploymentOutputRoot)
+}
+
+tasks.register('buildDeployment') {
+    dependsOn build, patchTrinkets, patchInventoryExtended, stageCompanion
+    description = 'Builds the exact three-artifact Canary 5 deployment set.'
+}
