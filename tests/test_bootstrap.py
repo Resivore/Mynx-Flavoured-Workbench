@@ -534,7 +534,9 @@ class SheetPublisherTests(unittest.TestCase):
         self.assertEqual(["Notes"], HUMAN_FIELDS)
         self.assertEqual(HUMAN_FIELDS, self.config["sheet_preserves"])
         record = flatten_manifest(planned_manifest(), "c" * 40)
-        self.assertTrue(all(field.casefold() not in {key.casefold() for key in record} for field in HUMAN_FIELDS))
+        record_keys = {key.casefold() for key in record}
+        self.assertTrue(all(field.casefold() not in record_keys for field in HUMAN_FIELDS))
+        self.assertNotIn("priority", record_keys)
         path = "projects/mossy-stone/WORKBENCH_STATUS.json"
         events = build_events(
             {},

@@ -5,7 +5,7 @@
 - This repository targets Minecraft Java 26.2 on Fabric.
 - `main` is the sole durable authority. Project branches and worktrees are temporary task surfaces, never alternate project authorities.
 - Start ordinary work from reasonably current `main`, reconcile with newer `main` when necessary, and integrate coherent checkpoints frequently.
-- A project task is complete only after its checkpoint is integrated into `main`, its `WORKBENCH_STATUS.json` revision and `CODEX_LOG.md` entry are updated, and the main-only Sheet publisher has handled the new revision. While Sheet cutover is deliberately gated, the revision and publication event must still be produced for later reconciliation.
+- A project task is complete only after its checkpoint is integrated into `main`, its `WORKBENCH_STATUS.json` revision and `CODEX_LOG.md` entry are updated, and the main-only Sheet publisher has handled the new revision. While Sheet cutover is deliberately gated, the revision and publication event must still be produced for delivery after authorization.
 - Commit and push durable progress. Current `main` must be reconstructable without conversation history, stale task branches, or local-only state.
 
 ## Project contract
@@ -51,7 +51,7 @@ The protected gameplay instance is permanently off-limits. A runtime task must e
 
 ## Sheet synchronization
 
-The Google Sheet is a human-facing mirror keyed by project UUID; `main` remains authoritative. `Notes` is the sole human-owned Sheet field and must be preserved. Feature branches may validate or preview but may not publish authoritative updates. Live publication remains disabled until identities and secrets are reconciled, the user authorizes cutover, and the legacy writer is stopped. After cutover, a normal completed project task must publish its distinct revision from `main`, even when only hidden synchronization metadata changed.
+Mynx uses a separate, initially empty Google Sheet as a human-facing mirror keyed by project UUID; `main` remains authoritative. No legacy-row reconciliation or manual revision seeding is required: an unknown UUID is inserted with its full canonical record at any positive authoritative repository revision, while an existing UUID accepts only an idempotent replay or the exact next revision and rejects conflicts, stale revisions, and gaps. `Notes` is the sole human-owned Sheet field and must be preserved; `Priority` is not part of the contract. Feature branches may validate or preview but may not publish authoritative updates. Live publication remains disabled until the Mynx Sheet and secrets are configured and the user authorizes cutover. The separate legacy writer may continue targeting its different legacy Sheet. After cutover, a normal completed project task must publish its distinct revision from `main`, even when only hidden synchronization metadata changed.
 
 ## Safety and licensing
 

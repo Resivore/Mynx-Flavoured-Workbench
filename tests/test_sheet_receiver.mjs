@@ -44,18 +44,78 @@ function headers() {
   return [...Object.values(core.columnMap()), ...Object.values(core.eventColumnMap()), ...core.humanFields()];
 }
 
-test("receiver accepts the Notes-only human field contract", () => {
-  assert.deepEqual(Array.from(core.humanFields()), ["Notes"]);
-  const result = core.applyToRows(headers(), [], envelope());
+function assertUnknownInsert(revision, eventId) {
+  const incoming = envelope(revision, eventId);
+  const sheetHeaders = headers();
+  const result = core.applyToRows(sheetHeaders, [], incoming);
   assert.equal(result.changed, true);
   assert.equal(result.rows.length, 1);
-  assert.equal(result.rows[0][headers().indexOf("Notes")], "");
+  assert.equal(result.rows[0][sheetHeaders.indexOf("Project UUID")], incoming.record.project_uuid);
+  assert.equal(result.rows[0][sheetHeaders.indexOf("Project")], incoming.record.project_name);
+  assert.equal(result.rows[0][sheetHeaders.indexOf("Revision")], revision);
+  assert.equal(result.rows[0][sheetHeaders.indexOf("Event ID")], eventId);
+  assert.equal(result.rows[0][sheetHeaders.indexOf("Manifest Path")], incoming.source.manifest_path);
+  Object.values(core.columnMap()).forEach((header) => {
+    assert.equal(result.rows[0][sheetHeaders.indexOf(header)], result.values[header]);
+  });
+  assert.equal(result.rows[0][sheetHeaders.indexOf("Notes")], "");
+}
+
+test("unknown UUID at R1 inserts the full canonical record at R1", () => {
+  assertUnknownInsert(1, "a".repeat(64));
 });
 
-test("metadata-only next revision preserves Notes", () => {
-  const first = core.applyToRows(headers(), [], envelope());
+test("unknown UUID at R5 inserts the full canonical record at R5", () => {
+  assertUnknownInsert(5, "b".repeat(64));
+});
+
+test("unknown UUID at a higher positive revision inserts at that revision", () => {
+  assertUnknownInsert(12, "c".repeat(64));
+});
+
+test("existing R5 to R6 updates", () => {
+  const first = core.applyToRows(headers(), [], envelope(5, "d".repeat(64)));
+  const next = envelope(6, "e".repeat(64));
+  const result = core.applyToRows(headers(), first.rows, next);
+  assert.equal(result.changed, true);
+  assert.equal(result.rows[0][headers().indexOf("Revision")], 6);
+  assert.equal(result.rows[0][headers().indexOf("Event ID")], next.event_id);
+});
+
+test("existing R5 to R7 rejects a skipped revision", () => {
+  const first = core.applyToRows(headers(), [], envelope(5, "f".repeat(64)));
+  assert.throws(
+    () => core.applyToRows(headers(), first.rows, envelope(7, "1".repeat(64))),
+    /stale or skipped Sheet revision/,
+  );
+});
+
+test("existing R5 to R4 rejects a stale revision", () => {
+  const first = core.applyToRows(headers(), [], envelope(5, "2".repeat(64)));
+  assert.throws(
+    () => core.applyToRows(headers(), first.rows, envelope(4, "3".repeat(64))),
+    /stale or skipped Sheet revision/,
+  );
+});
+
+test("same revision and same Event ID is an idempotent no-op", () => {
+  const firstEnvelope = envelope(5, "4".repeat(64));
+  const first = core.applyToRows(headers(), [], firstEnvelope);
+  assert.equal(core.applyToRows(headers(), first.rows, firstEnvelope).changed, false);
+});
+
+test("same revision and a different Event ID rejects", () => {
+  const first = core.applyToRows(headers(), [], envelope(5, "5".repeat(64)));
+  assert.throws(
+    () => core.applyToRows(headers(), first.rows, envelope(5, "6".repeat(64))),
+    /same-revision Sheet conflict/,
+  );
+});
+
+test("existing updates preserve Notes", () => {
+  const first = core.applyToRows(headers(), [], envelope(5, "7".repeat(64)));
   first.rows[0][headers().indexOf("Notes")] = "Human text";
-  const next = envelope(2, "d".repeat(64));
+  const next = envelope(6, "8".repeat(64));
   next.record.last_codex_at = "2026-08-29T12:01:00Z";
   next.record.updated_at = "2026-08-29T12:01:00Z";
   const result = core.applyToRows(headers(), first.rows, next);
@@ -63,11 +123,12 @@ test("metadata-only next revision preserves Notes", () => {
   assert.equal(result.rows[0][headers().indexOf("Notes")], "Human text");
 });
 
-test("idempotent replay is unchanged and same-revision conflict fails", () => {
-  const firstEnvelope = envelope();
-  const first = core.applyToRows(headers(), [], firstEnvelope);
-  assert.equal(core.applyToRows(headers(), first.rows, firstEnvelope).changed, false);
-  assert.throws(() => core.applyToRows(headers(), first.rows, envelope(1, "e".repeat(64))), /same-revision/);
+test("Priority remains absent from the contract", () => {
+  assert.deepEqual(Array.from(core.humanFields()), ["Notes"]);
+  assert.equal(headers().includes("Priority"), false);
+  const bad = envelope();
+  bad.record.priority = "High";
+  assert.throws(() => core.validateEnvelope(bad), /record has unknown or missing keys/);
 });
 
 test("same-revision partial row with no event marker is reconciled", () => {

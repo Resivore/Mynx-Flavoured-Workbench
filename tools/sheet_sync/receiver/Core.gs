@@ -183,7 +183,6 @@ var MynxSheetSync = (function () {
     }
     var rowIndex;
     if (matches.length === 0) {
-      if (envelope.record.revision !== 1) throw new Error("new Sheet row must begin at revision 1");
       rowIndex = rows.length;
       rows.push(new Array(headers.length).fill(""));
     } else {
