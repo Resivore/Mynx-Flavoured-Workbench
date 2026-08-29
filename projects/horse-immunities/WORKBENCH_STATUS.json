@@ -1,0 +1,101 @@
+{
+  "$schema": "../../schemas/workbench-status.schema.json",
+  "schema_version": 1,
+  "identity": {
+    "uuid": "2dc7b47a-f3b4-5fbe-a1fa-53e4f0aaa446",
+    "name": "Horse Immunities",
+    "project_id": "horse-immunities",
+    "aliases": [
+      "Sweet Berry Horse Immunity"
+    ],
+    "legacy_names": [
+      "Sweet Berry Horse Immunity"
+    ],
+    "legacy_ids": [
+      "sweet-berry-horse-immunity"
+    ]
+  },
+  "definition": {
+    "lifecycle": "ACTIVE",
+    "goals": [
+      "Preserve accepted sweet-berry-bush protection for exact ordinary Horses and their current direct Player riders.",
+      "Add guarded powdered-snow walkability, solid-from-above collision, and freezing immunity for the same exact ordinary-Horse scope."
+    ],
+    "scope": [
+      "Phase 1 ordinary-Horse and direct mounted-Player sweet-berry-bush damage and slowdown protection retained from accepted C2.",
+      "Phase 2 exact ordinary-Horse and current direct Player-rider powdered-snow walkability, collision, and freezing protection implemented by C3."
+    ],
+    "boundaries": {
+      "owned_paths": [
+        "projects/horse-immunities"
+      ],
+      "exclusions": [
+        "General Player immunity, unrelated entities, and all AbstractHorse subclasses beyond the exact ordinary Horse policy.",
+        "Global powdered-snow replacement and global damage or movement hooks.",
+        "Runtime deployment, Minecraft instance changes, accepted-baseline changes, and Test Instance Manager changes during this migration."
+      ]
+    },
+    "dependencies": [
+      {
+        "type": "MOD",
+        "identifier": "minecraft",
+        "requirement": "=26.2",
+        "reason": "Target game version for the preserved vanilla contracts and narrow mixin seams."
+      },
+      {
+        "type": "MOD",
+        "identifier": "fabricloader",
+        "requirement": ">=0.19.3",
+        "reason": "Fabric runtime loader declared by the retained C3 implementation."
+      }
+    ]
+  },
+  "state": {
+    "milestone": "Phase 1 sweet-berry immunity C2 remains accepted; Phase 2 powdered-snow immunity C3 is generated and static-tested, but remains unaccepted, not deployed, and runtime untested.",
+    "releases": {
+      "current": {
+        "version": "C3",
+        "artifact": {
+          "filename": "sweet-berry-horse-immunity-0.1.0-canary3.jar",
+          "sha256": "ab947253c5a6bc1910f05367ca9cc5ed7b5388f1d343b4889605d7b15a10060b"
+        },
+        "source_commit": "f0b8b66cc657bfd6303475fab75f385f06748782"
+      },
+      "accepted": {
+        "version": "C2",
+        "artifact": {
+          "filename": "sweet-berry-horse-immunity-0.1.0-canary2.jar",
+          "sha256": "caddc47f9db0d374d44da4beb21605ad5bcb28ecf162136b774733e9dfe37697"
+        },
+        "source_commit": "5a5a4b239772023345e15ed22b4a6f0ed0b2237b"
+      },
+      "rollback": {
+        "version": "C2",
+        "artifact": {
+          "filename": "sweet-berry-horse-immunity-0.1.0-canary2.jar",
+          "sha256": "caddc47f9db0d374d44da4beb21605ad5bcb28ecf162136b774733e9dfe37697"
+        },
+        "source_commit": "5a5a4b239772023345e15ed22b4a6f0ed0b2237b"
+      },
+      "accepted_current": "CURRENT_DIFFERS_FROM_ACCEPTED",
+      "accepted_rollback": "ACCEPTED_IS_ROLLBACK"
+    },
+    "validation": {
+      "build": "STATIC_PASS",
+      "deployment": "NOT_DEPLOYED",
+      "runtime": "RUNTIME_UNTESTED"
+    },
+    "blocker": null
+  },
+  "synchronization": {
+    "revision": 6,
+    "activity_at": "2026-08-29T05:51:26Z",
+    "updated_at": "2026-08-29T17:57:56Z",
+    "last_codex_at": "2026-08-29T17:57:56Z",
+    "source_commit": "f0b8b66cc657bfd6303475fab75f385f06748782",
+    "google_sheet": {
+      "participates": true,
+      "exclusion_reason": null
+    }
+  }
+}
