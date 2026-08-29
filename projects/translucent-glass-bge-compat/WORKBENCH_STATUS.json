@@ -1,0 +1,91 @@
+{
+  "$schema": "../../schemas/workbench-status.schema.json",
+  "schema_version": 1,
+  "identity": {
+    "uuid": "9a8ccdea-f984-51af-a14f-6b26b4824e01",
+    "name": "Translucent Glass × BGE Compatibility",
+    "project_id": "translucent-glass-bge-compat",
+    "aliases": [
+      "Translucent Glass × CNM × Nibaru Compatibility"
+    ],
+    "legacy_names": [
+      "Translucent Glass × CNM × Nibaru Compatibility"
+    ],
+    "legacy_ids": [
+      "translucent-glass-cnm-nibaru-compat"
+    ]
+  },
+  "definition": {
+    "lifecycle": "PLANNED",
+    "goals": [
+      "Provide visual and render compatibility for Translucent Glass treatment across glass families used through BGE-owned geometry and BGE-mediated material behavior.",
+      "Consume Block Geometry Extensions as the canonical Workbench integration layer without recreating or separately coupling to the retired CNM × Nibaru project identity."
+    ],
+    "scope": [
+      "Preserve Translucent Glass translucency and visual treatment on applicable BGE-owned glass-family geometry while retaining the canonical material relationship supplied through BGE.",
+      "Cover clear and stained full-block baselines plus slab, stair, wall, vertical-slab, and step variants only where the current BGE architecture actually exposes them.",
+      "Preserve Translucent Glass-specific placed and item rendering, same-family adjacency, mixed full-block and derived-geometry seams, translucent depth ordering, and Complementary shader presentation without taking ownership of general BGE connected-texture behavior.",
+      "Choose the narrowest implementation only after auditing the exact current stack: automatic inheritance first, a focused resource-pack layer if required, and focused client/render code only when resource behavior cannot satisfy the approved scope."
+    ],
+    "boundaries": {
+      "owned_paths": [
+        "projects/translucent-glass-bge-compat"
+      ],
+      "exclusions": [
+        "Implementation source, build files, generated assets, artifacts, Canary versions, and speculative scaffolding while the project remains PLANNED.",
+        "Changes to Block Geometry Extensions, its material-family or geometry ownership, or any separate Workbench dependency on the legacy CNM × Nibaru project identity.",
+        "General source-to-BGE and BGE-to-BGE connected-texture architecture, which is separately owned by BGE × CTM project UUID 5747a309-1bd5-4280-b25c-98669e149928; this project checks only Translucent Glass-specific composition with that behavior.",
+        "A competing material registry, registry-name parsing, copied family mappings, collapsed glass or stained-glass variants, or gameplay-semantic changes.",
+        "Compatibility for unrelated transparent materials or geometry and variants not actually exposed through BGE.",
+        "Runtime deployment, Minecraft validation claims, originals, and unrelated project or Workbench state during this administrative migration."
+      ]
+    },
+    "dependencies": [
+      {
+        "type": "PROJECT",
+        "identifier": "4b2342fc-7bdf-5ba6-9f37-d551109d214c",
+        "requirement": null,
+        "reason": "Block Geometry Extensions is the canonical Workbench dependency and integration layer for the geometry and material behavior this project must consume."
+      },
+      {
+        "type": "MOD",
+        "identifier": "translucent-glass",
+        "requirement": null,
+        "reason": "Provides the target translucent-glass visual treatment; the exact current artifact, built-in resources, and version must be established before implementation."
+      },
+      {
+        "type": "MOD",
+        "identifier": "continuity",
+        "requirement": null,
+        "reason": "Provides the runtime connected-texture behavior against which Translucent Glass-specific composition must be checked; general BGE CTM ownership remains with the separate BGE × CTM project."
+      }
+    ]
+  },
+  "state": {
+    "milestone": "The post-launch visual and render compatibility scope is approved; implementation has not started.",
+    "releases": {
+      "current": null,
+      "accepted": null,
+      "rollback": null,
+      "accepted_current": "NO_ACCEPTED",
+      "accepted_rollback": "NO_ROLLBACK"
+    },
+    "validation": {
+      "build": "NOT_RUN",
+      "deployment": "NOT_DEPLOYED",
+      "runtime": "RUNTIME_UNTESTED"
+    },
+    "blocker": null
+  },
+  "synchronization": {
+    "revision": 1,
+    "activity_at": "2026-08-29T00:01:52Z",
+    "updated_at": "2026-08-29T22:34:00Z",
+    "last_codex_at": "2026-08-29T22:34:00Z",
+    "source_commit": "1d70f8d2a78b4d447cf88622eedc79f61abde2db",
+    "google_sheet": {
+      "participates": true,
+      "exclusion_reason": null
+    }
+  }
+}

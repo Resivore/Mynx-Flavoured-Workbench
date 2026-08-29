@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "id": "radial_slot_cycler",
+  "version": "${version}",
+  "name": "Radial Slot Cycler",
+  "description": "Private visual Canary 2 of the server-authoritative same-column radial selector.",
+  "authors": ["Resivore"],
+  "license": ["MIT", "All Rights Reserved"],
+  "environment": "*",
+  "entrypoints": {
+    "main": ["dev.resivore.radialslotcycler.RadialSlotCycler"],
+    "client": ["dev.resivore.radialslotcycler.client.RadialSlotCyclerClient"]
+  },
+  "depends": {
+    "fabricloader": ">=0.19.3",
+    "minecraft": "=26.2",
+    "java": ">=25",
+    "fabric-api": ">=0.157.0+26.2"
+  },
+  "custom": {
+    "workbench:classification": "GENERATED / STATICALLY VALIDATED / RUNTIME UNTESTED / PRIVATE / NOT REDISTRIBUTABLE",
+    "workbench:deployment": "NOT DEPLOYED",
+    "workbench:private-resource-required": "assets/radial_slot_cycler/textures/gui/belt_overlay.png",
+    "workbench:private-resource-origin-sha256": "C73B3634EE3FE16FC7DC00CED67EF833DE11E8B650BEEF3095B2F5900DC81910"
+  }
+}

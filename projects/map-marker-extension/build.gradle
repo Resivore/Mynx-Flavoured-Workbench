@@ -1,0 +1,85 @@
+plugins {
+    id 'net.fabricmc.fabric-loom' version '1.17.19'
+}
+
+version = project.mod_version
+group = project.maven_group
+
+base {
+    archivesName = project.archives_base_name
+}
+
+repositories {
+    maven { url = 'https://maven.fabricmc.net/' }
+    mavenCentral()
+}
+
+def originalsRoot = project.hasProperty('originals_dir')
+    ? file(project.property('originals_dir'))
+    : file('../../originals')
+def xaeroMinimapJar = new File(originalsRoot, 'mods/xaerominimap-fabric-26.2-26.4.2.jar')
+def xaeroWorldMapJar = new File(originalsRoot, 'mods/xaeroworldmap-fabric-26.2-1.44.2.jar')
+
+dependencies {
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    implementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+
+    implementation files(xaeroMinimapJar)
+    implementation files(xaeroWorldMapJar)
+    implementation files(layout.buildDirectory.file('compile-deps/xaerolib.jar'))
+
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.12.2'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.12.2'
+}
+
+tasks.register('extractXaeroLib', Copy) {
+    from(zipTree(xaeroMinimapJar)) {
+        include 'META-INF/jars/xaerolib-fabric-26.2-1.7.1.jar'
+        eachFile { details -> details.path = 'xaerolib.jar' }
+        includeEmptyDirs = false
+    }
+    into(layout.buildDirectory.dir('compile-deps'))
+}
+
+compileJava.dependsOn extractXaeroLib
+
+processResources {
+    inputs.property 'version', project.version
+    filesMatching('fabric.mod.json') {
+        expand 'version': project.version
+    }
+}
+
+def resourcePackSource = file('resourcepack')
+
+tasks.register('buildMapMarkerExtensionResourcePack', Zip) {
+    from(resourcePackSource) {
+        include 'pack.mcmeta'
+        include 'assets/**'
+        includeEmptyDirs = false
+    }
+    destinationDirectory = layout.buildDirectory.dir('resourcepacks')
+    archiveFileName = "map-marker-extension-icons-${project.version}.zip"
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
+}
+
+tasks.named('build') {
+    dependsOn tasks.named('buildMapMarkerExtensionResourcePack')
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.release = 25
+}
+
+test {
+    useJUnitPlatform()
+    systemProperty 'projectRoot', projectDir.absolutePath
+    systemProperty 'originalsRoot', originalsRoot.absolutePath
+    systemProperty 'resourcePackRoot', resourcePackSource.absolutePath
+}
+
+java {
+    withSourcesJar()
+}
