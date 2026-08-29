@@ -55,8 +55,11 @@ Mynx uses a separate, initially empty Google Sheet as a human-facing mirror keye
 
 ## Safety and licensing
 
-- Never modify `originals/`; treat any present contents as intentional pristine/reference inputs.
-- Do not import or redistribute closed-source or ARR code/assets without permission. Retain only lawful, necessary artifacts and provenance.
+- `originals/` is an optional local, Git-ignored reference library. It may contain any useful pristine/reference material, not only dependencies currently required by a project, and the user may populate it manually as needed.
+- Once a reference file is placed in `originals/`, treat it as immutable. Never edit or overwrite it in place; if another upstream or version is needed, add it as a distinct file.
+- Never commit or otherwise track any `originals/` content merely because it exists locally.
+- Do not import or redistribute private, closed-source, or ARR code/assets without permission. Such materials remain subject to redistribution restrictions; retain only lawful, necessary artifacts and provenance outside this local library.
+- Projects may inspect these local references for porting, compatibility, provenance, or verification.
 - Do not import legacy Git history, deployment history, snapshots, or stale task state.
 - Do not infer source/material equivalence: preserve meaningful variants and exact ownership mappings.
 - Never discard, overwrite, rebase away, or force-push unrelated user or concurrent work.
