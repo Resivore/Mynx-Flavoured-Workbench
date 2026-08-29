@@ -529,10 +529,22 @@ class SheetPublisherTests(unittest.TestCase):
         )
         self.assertEqual([], events)
 
-    def test_payload_excludes_human_fields_and_live_publication_is_gated(self) -> None:
+    def test_payload_protects_notes_and_live_publication_is_gated(self) -> None:
         self.assertFalse(self.config["enabled"])
+        self.assertEqual(["Notes"], HUMAN_FIELDS)
+        self.assertEqual(HUMAN_FIELDS, self.config["sheet_preserves"])
         record = flatten_manifest(planned_manifest(), "c" * 40)
         self.assertTrue(all(field.casefold() not in {key.casefold() for key in record} for field in HUMAN_FIELDS))
+        path = "projects/mossy-stone/WORKBENCH_STATUS.json"
+        events = build_events(
+            {},
+            {path: planned_manifest()},
+            repository=self.config["repository"],
+            ref=self.config["authoritative_ref"],
+            publication_commit="c" * 40,
+            config=self.config,
+        )
+        self.assertEqual({"sheet_preserves": ["Notes"]}, events[0]["ownership"])
         plan = {
             "contract_version": 1,
             "source": {"repository": self.config["repository"], "ref": self.config["authoritative_ref"], "before": "0" * 40, "after": "c" * 40},

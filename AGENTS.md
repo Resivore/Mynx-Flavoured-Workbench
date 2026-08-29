@@ -51,7 +51,7 @@ The protected gameplay instance is permanently off-limits. A runtime task must e
 
 ## Sheet synchronization
 
-The Google Sheet is a human-facing mirror keyed by project UUID; `main` remains authoritative. Preserve Sheet-owned `Priority` and `Notes`. Feature branches may validate or preview but may not publish authoritative updates. Live publication remains disabled until identities and secrets are reconciled, the user authorizes cutover, and the legacy writer is stopped. After cutover, a normal completed project task must publish its distinct revision from `main`, even when only hidden synchronization metadata changed.
+The Google Sheet is a human-facing mirror keyed by project UUID; `main` remains authoritative. `Notes` is the sole human-owned Sheet field and must be preserved. Feature branches may validate or preview but may not publish authoritative updates. Live publication remains disabled until identities and secrets are reconciled, the user authorizes cutover, and the legacy writer is stopped. After cutover, a normal completed project task must publish its distinct revision from `main`, even when only hidden synchronization metadata changed.
 
 ## Safety and licensing
 

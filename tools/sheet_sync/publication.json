@@ -8,5 +8,5 @@
   "cutover_required_value": "authorized",
   "receiver_url_environment_variable": "MYNX_SHEET_RECEIVER_URL",
   "hmac_environment_variable": "MYNX_SHEET_HMAC_SECRET",
-  "sheet_preserves": ["Priority", "Notes"]
+  "sheet_preserves": ["Notes"]
 }

@@ -3,7 +3,7 @@ var MynxSheetSync = (function () {
 
   var EXPECTED_REPOSITORY = "Resivore/Mynx-Flavoured-Workbench";
   var EXPECTED_REF = "refs/heads/main";
-  var HUMAN_FIELDS = ["Priority", "Notes"];
+  var HUMAN_FIELDS = ["Notes"];
   var RECORD_KEYS = [
     "project_uuid", "project_name", "project_id", "aliases", "legacy_names", "legacy_ids",
     "lifecycle", "goals", "scope", "boundaries", "dependencies", "milestone",
@@ -94,13 +94,13 @@ var MynxSheetSync = (function () {
     if (JSON.stringify(envelope.ownership.sheet_preserves) !== JSON.stringify(HUMAN_FIELDS)) {
       throw new Error("human-owned field preservation contract is invalid");
     }
-    requireExactKeys(envelope.record, RECORD_KEYS, "record");
     ownKeys(envelope.record).forEach(function (key) {
       var lowered = key.toLowerCase();
-      if (lowered === "priority" || lowered === "notes") {
+      if (HUMAN_FIELDS.some(function (field) { return lowered === field.toLowerCase(); })) {
         throw new Error("record contains a human-owned field");
       }
     });
+    requireExactKeys(envelope.record, RECORD_KEYS, "record");
     if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(envelope.record.project_uuid)) {
       throw new Error("project UUID is invalid");
     }

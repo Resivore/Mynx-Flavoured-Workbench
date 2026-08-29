@@ -529,8 +529,8 @@ def _validate_publication_config(path: Path) -> None:
         raise ValidationError(f"{path}: repository guard is incorrect")
     if config["authoritative_ref"] != "refs/heads/main":
         raise ValidationError(f"{path}: authoritative ref must be refs/heads/main")
-    if config["sheet_preserves"] != ["Priority", "Notes"]:
-        raise ValidationError(f"{path}: human-owned field contract must preserve Priority and Notes")
+    if config["sheet_preserves"] != ["Notes"]:
+        raise ValidationError(f"{path}: Notes must be the sole human-owned Sheet field")
     for field in keys - {"config_version", "contract_version", "enabled", "sheet_preserves"}:
         _nonblank(config[field], f"{path}.{field}")
 

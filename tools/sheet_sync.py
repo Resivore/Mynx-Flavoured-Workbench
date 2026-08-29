@@ -24,7 +24,7 @@ except ImportError:  # Direct execution from tools/.
 
 
 ZERO_COMMIT = "0" * 40
-HUMAN_FIELDS = ["Priority", "Notes"]
+HUMAN_FIELDS = ["Notes"]
 FREEZE_UUID_RE = re.compile(r"^`([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})`$")
 RECORD_KEYS = {
     "project_uuid",

@@ -36,7 +36,7 @@ function envelope(revision = 1, eventId = "a".repeat(64)) {
       last_codex_at: "2026-08-29T12:00:00Z", source_commit: "c".repeat(40), sheet_participates: true,
       sheet_exclusion_reason: null, publication_commit: "b".repeat(40),
     },
-    ownership: { sheet_preserves: ["Priority", "Notes"] },
+    ownership: { sheet_preserves: ["Notes"] },
   };
 }
 
@@ -44,24 +44,22 @@ function headers() {
   return [...Object.values(core.columnMap()), ...Object.values(core.eventColumnMap()), ...core.humanFields()];
 }
 
-test("receiver inserts by UUID and leaves human-owned fields blank", () => {
+test("receiver accepts the Notes-only human field contract", () => {
+  assert.deepEqual(Array.from(core.humanFields()), ["Notes"]);
   const result = core.applyToRows(headers(), [], envelope());
   assert.equal(result.changed, true);
   assert.equal(result.rows.length, 1);
-  assert.equal(result.rows[0][headers().indexOf("Priority")], "");
   assert.equal(result.rows[0][headers().indexOf("Notes")], "");
 });
 
-test("metadata-only next revision preserves Priority and Notes", () => {
+test("metadata-only next revision preserves Notes", () => {
   const first = core.applyToRows(headers(), [], envelope());
-  first.rows[0][headers().indexOf("Priority")] = "High";
   first.rows[0][headers().indexOf("Notes")] = "Human text";
   const next = envelope(2, "d".repeat(64));
   next.record.last_codex_at = "2026-08-29T12:01:00Z";
   next.record.updated_at = "2026-08-29T12:01:00Z";
   const result = core.applyToRows(headers(), first.rows, next);
   assert.equal(result.changed, true);
-  assert.equal(result.rows[0][headers().indexOf("Priority")], "High");
   assert.equal(result.rows[0][headers().indexOf("Notes")], "Human text");
 });
 
@@ -91,10 +89,25 @@ test("duplicate UUID rows and feature refs fail closed", () => {
   assert.throws(() => core.validateEnvelope(feature), /not authoritative main/);
 });
 
-test("unexpected human-owned values are rejected", () => {
+test("repository events cannot overwrite Notes", () => {
   const bad = envelope();
   bad.record.Notes = "must not cross the contract";
-  assert.throws(() => core.validateEnvelope(bad), /unknown or missing keys/);
+  assert.throws(() => core.validateEnvelope(bad), /record contains a human-owned field/);
+});
+
+test("duplicate and missing required headers fail normally", () => {
+  assert.throws(
+    () => core.applyToRows([...headers(), "Project UUID"], [], envelope()),
+    /duplicate Sheet header: Project UUID/,
+  );
+  assert.throws(
+    () => core.applyToRows(headers().filter((header) => header !== "Milestone"), [], envelope()),
+    /missing automation Sheet column: Milestone/,
+  );
+  assert.throws(
+    () => core.applyToRows(headers().filter((header) => header !== "Notes"), [], envelope()),
+    /missing human-owned Sheet column: Notes/,
+  );
 });
 
 test("formula-leading repository text is written as a literal", () => {
