@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "id": "xaero_emf_entity_icon_compat",
+  "version": "${version}",
+  "name": "Xaero Minimap x EMF Entity Icon Compatibility",
+  "description": "Bridges EMF model-part detection and repairs Xaero's empty canonical-head selection for relocated Fresh Animations geometry without changing entity rendering.",
+  "authors": ["Resivore compatibility workbench"],
+  "license": "MIT",
+  "environment": "client",
+  "mixins": [
+    "xaero_emf_entity_icon_compat.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.19.3",
+    "minecraft": "=26.2",
+    "java": ">=25"
+  },
+  "suggests": {
+    "xaerominimap": "=26.4.2",
+    "entity_model_features": "=3.2.6"
+  },
+  "custom": {
+    "workbench:classification": "GENERATED / CONTROLLED STATIC PASS / RUNTIME UNTESTED",
+    "workbench:deployment": "NOT DEPLOYED"
+  }
+}

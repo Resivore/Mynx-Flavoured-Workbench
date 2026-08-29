@@ -1,0 +1,15 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "dev.resivore.xaeroemfcompat.mixin",
+  "compatibilityLevel": "JAVA_25",
+  "plugin": "dev.resivore.xaeroemfcompat.mixin.XaeroEmfCompatMixinPlugin",
+  "client": [
+    "EMFModelPartMixin",
+    "RadarIconModelPrerendererMixin",
+    "RadarIconModelPartPrerendererMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
