@@ -74,10 +74,10 @@
         "reason": "Optional frozen accepted inventory-layout participant, using the canonical current-main mod identity, whose slot groups must not overlap the configured Trash placement."
       },
       {
-        "type": "OTHER",
-        "identifier": "Trinkets × Inventory Extended coordinate/layout contract",
-        "requirement": "trinkets-inventory-extended-compat-0.5.0-canary5.jar SHA-256 76c8c735219ceebfc7ec9a7b103e4cd4f027e43b2489cbc71f8b025b103efa6; source e79bd083b671dd6dbd8c1c73d50971b599365cd3",
-        "reason": "Canonical frozen accepted coordinate boundary consumed when Trinkets is present; this project must not replace it with another slot-layout model."
+        "type": "PROJECT",
+        "identifier": "19c2de9e-c363-54c7-98ee-96f3fccc439b",
+        "requirement": "ACCEPTED 0.5.0-canary5; trinkets-inventory-extended-compat-0.5.0-canary5.jar SHA-256 76c8c735219ceebfc7ec9a7b103e4cd4f027e43b2489cbc71f8b025b103efa6; source e79bd083b671dd6dbd8c1c73d50971b599365cd3",
+        "reason": "Current-main authority for the accepted Trinkets × Inventory Extended coordinate boundary consumed when Trinkets is present; this project must not replace it with another slot-layout model."
       },
       {
         "type": "RESOURCE_PACK",
@@ -106,8 +106,8 @@
   "synchronization": {
     "revision": 1,
     "activity_at": "2026-08-24T15:01:43Z",
-    "updated_at": "2026-08-29T21:35:04Z",
-    "last_codex_at": "2026-08-29T21:35:04Z",
+    "updated_at": "2026-08-29T21:40:03Z",
+    "last_codex_at": "2026-08-29T21:40:03Z",
     "source_commit": "dbdbf867210f34231715bae3e4a2d72612f6d9f3",
     "google_sheet": {
       "participates": true,
