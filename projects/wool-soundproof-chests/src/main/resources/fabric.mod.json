@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "id": "wool_soundproof_chests",
+  "version": "${version}",
+  "name": "Wool Soundproof Chests",
+  "description": "Makes sufficiently enclosed ordinary chests silent to sculk vibrations.",
+  "authors": ["Resivore"],
+  "license": "MIT",
+  "environment": "*",
+  "mixins": [
+    "wool_soundproof_chests.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.19.3",
+    "minecraft": "26.2",
+    "java": ">=25"
+  }
+}
