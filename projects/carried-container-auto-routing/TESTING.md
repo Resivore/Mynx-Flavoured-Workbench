@@ -8,7 +8,7 @@ This migration does not deploy either artifact, alter a Test Slot or accepted ph
 
 ## Preserved historical runtime evidence
 
-- The user reported that the exact deployed C11 / `0.3.6` binary passed the intended focused external `QUICK_MOVE` storage-partial-priority scope in aggregate. This is an aggregate focused runtime pass; it does not assert that each representative case below was separately reported. The same bytes were promoted without rebuild, and the legacy accepted-stack verifier returned exactly `READY_TO_TEST_VERIFIED` with 23 accepted artifacts and zero overlays.
+- The user reported that the exact deployed C11 / `0.3.6` binary passed the intended focused external `QUICK_MOVE` storage-partial-priority scope in aggregate while paired with unchanged accepted Offhand Shift-Click QoL `0.3.3-acquisition-priority-fix-canary`, SHA-256 `d0c2ebe7cd2d1a6dcbe2654dbee42dd9f5dce4fd710ea3748f3d15dad6f2b04a`. This is an aggregate focused runtime pass; it does not assert that each representative case below was separately reported. The same Carried bytes were promoted without rebuild, and the legacy accepted-stack verifier returned exactly `READY_TO_TEST_VERIFIED` with 23 accepted artifacts and zero overlays.
 - The user reported that exact rollback `0.3.5` passed its focused passive-pickup storage-partial-priority runtime scope in aggregate. It was promoted unchanged, and the legacy accepted-stack verifier returned exactly `READY_TO_TEST_VERIFIED`. It remains the known passing rollback and was not invalidated by C11.
 - Exact `0.3.4-menu-sync-priority-fix-canary`, paired with exact Offhand Shift-Click QoL `0.3.3`, previously passed the focused Survival/Creative inventory, repeated bundle/shulker mutation, persistence, acquisition, player-origin routing, lock, ordering, component-identity, and exact-remainder scope with no observed crash or loss. That artifact is a superseded historical predecessor and is not migrated.
 - Exact `0.3.3-inventory-open-safety-fix-canary` was unsafe: repeated shulker interaction crashed with carrier loss after reload, bundle interaction lagged one action, and empty hotbar slots incorrectly preceded matching carriers/offhand for ground and external acquisition. Its successor fixed the demonstrated snapshot synchronization and priority defects. The failed artifact is not migrated.
@@ -17,7 +17,7 @@ No standalone or exhaustive runtime validation is inferred from those historical
 
 ## Representative future recheck
 
-Use only the exact retained C11 artifact, with the established compatible Offhand Shift-Click QoL `0.3.3` identity when paired composition is under test. Reconcile source, destination, remainder, and total counts after every mutation.
+Use only the exact retained C11 artifact, with exact Offhand Shift-Click QoL `0.3.3-acquisition-priority-fix-canary` when paired composition is under test. Reconcile source, destination, remainder, and total counts after every mutation.
 
 1. In chest `QUICK_MOVE`, place a compatible partial stack at Inventory Extended backing indices `9`, `36`, and `62` in separate repetitions while an empty hotbar slot exists. Each occupied storage partial must fill before a new hotbar stack opens.
 2. Give a storage partial room for `10`, transfer an incoming stack of `20`, and confirm the exact `10` remainder may then use the empty hotbar. Repeat with multiple compatible storage partials and confirm stable inventory order and exhaustion before hotbar placement.
