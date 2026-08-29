@@ -1,0 +1,104 @@
+{
+  "$schema": "../../schemas/workbench-status.schema.json",
+  "schema_version": 1,
+  "identity": {
+    "uuid": "876e05ea-8938-5888-8073-f053db950ded",
+    "name": "CNM × Stack to Nearby Chests Compatibility",
+    "project_id": "cnm-stack-to-nearby-chests-compat",
+    "aliases": [
+      "Clutter No More × Stack to Nearby Chests Compatibility"
+    ],
+    "legacy_names": [
+      "Clutter No More × Stack to Nearby Chests Compatibility"
+    ],
+    "legacy_ids": [
+      "cnm-stack-to-nearby-chests-compat"
+    ]
+  },
+  "definition": {
+    "lifecycle": "PARKED",
+    "goals": [
+      "Preserve the historical standalone design contract for treating Clutter No More geometry variants with the same exact canonical source material as one Stack to Nearby Chests destination family.",
+      "Preserve the frozen retirement decision and exact accepted successor direction without reviving, redesigning, or claiming the separate Quick Stack Nearby compatibility integration.",
+      "Keep the parked identity distinct from Block Geometry Extensions, Matcha × Stack to Nearby Chests, and Quick Stack Nearby compatibility."
+    ],
+    "scope": [
+      "The unimplemented standalone C1 design used symmetric destination-family admission: any full block or recognized slab, stair, wall, vertical slab, or step could establish a destination when Clutter No More resolved both items to the same exact source material; actual Stack to Nearby Chests insertion would otherwise remain unchanged and different geometry would remain separate stacks.",
+      "The frozen accepted successor is separately owned Quick Stack Nearby compatibility: exact Clutter No More ShapeMap admission feeds Quick Stack Nearby's normal component-aware merge path, so the existing destination geometry wins. This parked UUID owns no successor code, artifact, or acceptance result.",
+      "Exact source variants remain distinct, including log and wood, stripped and unstripped, waxed and unwaxed, oxidation states, coral states, terracotta treatments, and colors.",
+      "Canonical family identity comes from the selected Clutter No More/provider architecture and never from registry-name suffixes or a second project-owned material database."
+    ],
+    "boundaries": {
+      "owned_paths": [
+        "projects/cnm-stack-to-nearby-chests-compat"
+      ],
+      "exclusions": [
+        "Reactivating, redesigning, or implementing the retired standalone adapter during this migration.",
+        "Claiming Block Geometry Extensions, Nibaru, Clutter No More, Stack to Nearby Chests, Matcha × Stack to Nearby Chests, or Quick Stack Nearby compatibility identity, source, artifacts, or runtime evidence as this project.",
+        "Registry-name parsing, fuzzy material equivalence, source-variant collapse, item conversion, general dump-all behavior, reserved-slot behavior, or nested-container routing.",
+        "Importing legacy status READMEs, BUILD_PROVENANCE files, historical matrices, global databases, deployment history, snapshots, or other superseded administration.",
+        "Runtime deployment, Minecraft launch, Test Slot A/B changes, accepted-baseline changes, dedicated Workbench access, or protected gameplay-instance access during this migration.",
+        "Any modification to originals or to paths outside projects/cnm-stack-to-nearby-chests-compat."
+      ]
+    },
+    "dependencies": [
+      {
+        "type": "MOD",
+        "identifier": "minecraft",
+        "requirement": "26.2",
+        "reason": "Frozen target game version for the historical Fabric compatibility design."
+      },
+      {
+        "type": "MOD",
+        "identifier": "clutternomore",
+        "requirement": "=2.0.7+26.2",
+        "reason": "Exact canonical ShapeMap family authority named by the frozen design; the read-only legacy reference clutternomore-2.0.7+26.2-fabric.jar is 759,419 bytes with SHA-256 41A925E70D5E6E8C098BEA7DC88C44486AED46724E35CB2FA4B1622B2A4DBCCE."
+      },
+      {
+        "type": "MOD",
+        "identifier": "stack-to-nearby-chests",
+        "requirement": "=0.5.18",
+        "reason": "Exact retired client-side destination and transfer engine named by the frozen design; stack-to-nearby-chests-mc26.2-0.5.18.jar is 585,333 bytes with SHA-256 4B35C54B501DD831DEDF82B9AA79F2AC52E87FE856E1C66B98AB79C74C5351B3."
+      },
+      {
+        "type": "PROJECT",
+        "identifier": "4b2342fc-7bdf-5ba6-9f37-d551109d214c",
+        "requirement": "Canonical provider-family authority if the parked design is ever reactivated",
+        "reason": "Block Geometry Extensions is a separate project whose accepted Clutter No More/provider mapping must be consumed rather than duplicated or confused with this compatibility identity."
+      },
+      {
+        "type": "OTHER",
+        "identifier": "Quick Stack Nearby Compatibility",
+        "requirement": "Frozen accepted C6 quick-stack-nearby-compat-0.1.0-canary6.jar SHA-256 C2F4AE3B02A5517AD184998C784C356D90132AEAEE91546C91D03A878BE6CE98 with quick-stack-nearby-0.4.0.jar SHA-256 43F1130527F782A291231C682791B4FD3766A20916C691CBDB98F91FDCC47E53",
+        "reason": "Distinct legacy UUID ffa96cc6-2989-5465-b158-1659a484366b owns the accepted successor behavior; this parked migration records the disposition but does not import or adopt that project's identity, source, artifacts, or runtime classification."
+      }
+    ]
+  },
+  "state": {
+    "milestone": "C1 is preserved as historical design evidence; the adapter is retired in favor of accepted Quick Stack Nearby compatibility.",
+    "releases": {
+      "current": null,
+      "accepted": null,
+      "rollback": null,
+      "accepted_current": "NO_ACCEPTED",
+      "accepted_rollback": "NO_ROLLBACK"
+    },
+    "validation": {
+      "build": "NOT_RUN",
+      "deployment": "NOT_DEPLOYED",
+      "runtime": "RUNTIME_UNTESTED"
+    },
+    "blocker": null
+  },
+  "synchronization": {
+    "revision": 1,
+    "activity_at": "2026-08-23T03:42:22Z",
+    "updated_at": "2026-08-29T21:26:25Z",
+    "last_codex_at": "2026-08-29T21:26:25Z",
+    "source_commit": "477d03324b63005331ffe3b11b9a238a813f2a74",
+    "google_sheet": {
+      "participates": true,
+      "exclusion_reason": null
+    }
+  }
+}

@@ -1,0 +1,128 @@
+{
+  "$schema": "../../schemas/workbench-status.schema.json",
+  "schema_version": 1,
+  "identity": {
+    "uuid": "fcb7d036-c756-5114-abe1-01c4331e7ea8",
+    "name": "Carried Container Auto-Routing",
+    "project_id": "carried-container-auto-routing",
+    "aliases": [
+      "Carried Container Auto-Routing (CCAR)"
+    ],
+    "legacy_names": [],
+    "legacy_ids": [
+      "carried-container-auto-routing"
+    ]
+  },
+  "definition": {
+    "lifecycle": "ACCEPTED",
+    "goals": [
+      "Route newly acquired matching items into deterministic occupied destinations, including supported unlocked carried shulker boxes and bundles, without changing exact item or component identity.",
+      "Preserve established passive-pickup, external QUICK_MOVE, and player-origin QUICK_MOVE behavior across vanilla and Inventory Extended storage while composing safely with Offhand Shift-Click QoL.",
+      "Provide a server-authoritative lock control that excludes selected carriers from automatic routing without altering their other contents or components."
+    ],
+    "scope": [
+      "Canonical C11 source for Minecraft Java 26.2 Fabric, historically versioned 0.3.6-external-quick-move-priority-fix-canary, reconstructed from frozen legacy source checkpoint 64d63d9bcca268297601af5c9a7537e8d8946812.",
+      "Passive ground pickup and external-container QUICK_MOVE priority through component-identical occupied main hand, qualifying carried containers, occupied hotbar, occupied offhand, compatible ordinary-storage partials, empty hotbar, and empty ordinary storage.",
+      "Player-origin QUICK_MOVE routing to a component-identical occupied offhand and qualifying carried containers before returning exact remainder ownership to the active menu's normal algorithm.",
+      "Creative and Survival inventory snapshot alignment, source cleanup and menu callbacks, exact remainder accounting, stable carrier order, and persistent per-carrier auto-routing lock state."
+    ],
+    "boundaries": {
+      "owned_paths": [
+        "projects/carried-container-auto-routing"
+      ],
+      "exclusions": [
+        "Equipment, Trinkets, trash, and foreign menu slots are never routing destinations.",
+        "Locked, empty, unrelated, full, or component-distinct carried containers cannot claim a new item type.",
+        "Inventory Extended and Offhand Shift-Click QoL remain separate optional owners; their code and artifacts are not bundled or migrated here.",
+        "Earlier C7-C9 failed or superseded canary binaries and legacy status READMEs, BUILD_PROVENANCE, accumulated test matrices, global status records, manager state, snapshots, and notes remain only in the frozen historical repository.",
+        "This migration does not deploy to Minecraft, alter either Test Slot or the accepted physical baseline, launch Minecraft, or access the protected gameplay instance."
+      ]
+    },
+    "dependencies": [
+      {
+        "type": "MOD",
+        "identifier": "minecraft",
+        "requirement": "=26.2",
+        "reason": "Exact game version targeted by the maintained source and retained artifacts."
+      },
+      {
+        "type": "MOD",
+        "identifier": "fabricloader",
+        "requirement": ">=0.19.3",
+        "reason": "Required Fabric runtime loader declared by the retained mod metadata."
+      },
+      {
+        "type": "MOD",
+        "identifier": "fabric-api",
+        "requirement": "=0.157.0+26.2",
+        "reason": "Fabric APIs used by networking, client input, and the routing implementation at the accepted build checkpoint."
+      },
+      {
+        "type": "TOOL",
+        "identifier": "java",
+        "requirement": ">=25",
+        "reason": "Compilation and runtime baseline declared by the accepted implementation."
+      },
+      {
+        "type": "MOD",
+        "identifier": "inventory_extended",
+        "requirement": null,
+        "reason": "Optional target environment whose complete live ordinary-storage range is supported through vanilla Inventory sizing rather than a bundled dependency."
+      },
+      {
+        "type": "MOD",
+        "identifier": "offhand_shift_click_qol",
+        "requirement": "=0.3.3-acquisition-priority-fix-canary",
+        "reason": "Exact optional paired identity used by the preserved focused runtime evidence and composable QUICK_MOVE ownership contract."
+      }
+    ]
+  },
+  "state": {
+    "milestone": "C11 passed the reported aggregate focused runtime scope and is accepted; the exact prior runtime-passed rollback remains retained.",
+    "releases": {
+      "current": {
+        "version": "C11 (legacy 0.3.6-external-quick-move-priority-fix-canary)",
+        "artifact": {
+          "filename": "carried-container-auto-routing-0.3.6-external-quick-move-priority-fix-canary.jar",
+          "sha256": "01913b0455d961d20174c601b0544c178ed47868113e6f1173e132290fe4ca02"
+        },
+        "source_commit": "64d63d9bcca268297601af5c9a7537e8d8946812"
+      },
+      "accepted": {
+        "version": "C11 (legacy 0.3.6-external-quick-move-priority-fix-canary)",
+        "artifact": {
+          "filename": "carried-container-auto-routing-0.3.6-external-quick-move-priority-fix-canary.jar",
+          "sha256": "01913b0455d961d20174c601b0544c178ed47868113e6f1173e132290fe4ca02"
+        },
+        "source_commit": "64d63d9bcca268297601af5c9a7537e8d8946812"
+      },
+      "rollback": {
+        "version": "C10 (legacy 0.3.5-storage-partial-priority-fix-canary)",
+        "artifact": {
+          "filename": "carried-container-auto-routing-0.3.5-storage-partial-priority-fix-canary.jar",
+          "sha256": "610f6c65c36468c9b98ce8aa7892f8a57003c59a28cb989fe3c80742bec4eaa2"
+        },
+        "source_commit": "c8ec833d81f89ac5bca3040e83dbde26d6d0e906"
+      },
+      "accepted_current": "CURRENT_IS_ACCEPTED",
+      "accepted_rollback": "ROLLBACK_DIFFERS_FROM_ACCEPTED"
+    },
+    "validation": {
+      "build": "STATIC_PASS",
+      "deployment": "READY_TO_TEST_VERIFIED",
+      "runtime": "RUNTIME_PASS"
+    },
+    "blocker": null
+  },
+  "synchronization": {
+    "revision": 1,
+    "activity_at": "2026-08-26T04:30:31Z",
+    "updated_at": "2026-08-29T21:29:38Z",
+    "last_codex_at": "2026-08-29T21:29:38Z",
+    "source_commit": "a27c174a8b4a330af8f44edf9003c762cd751739",
+    "google_sheet": {
+      "participates": true,
+      "exclusion_reason": null
+    }
+  }
+}

@@ -1,0 +1,11 @@
+# Codex Log
+
+## 2026-08-29T21:03:10Z — Migrate frozen Inventory 3x3 Crafting into Mynx Flavoured Workbench
+- Revision: 1
+- Source checkpoint: `fffc670b17cba190dfaba780ae444668aa9c1f78`
+- Changes: Imported the maintainable Canary 4 source, build, assets, focused tests, and current artifact set from frozen legacy checkpoint `f0101f38c446dddaa4226450386402c63597ba7c`; preserved UUID, identity, accepted lifecycle, milestone, definition, legacy revision 4 provenance, and Sheet participation while initializing the new Mynx UUID at required revision 1. Build-only normalization pins recorded Loom 1.17.19, accepts an explicit read-only reference Workbench, keeps Gradle project cache disposable, and retains exact LF mixin-resource bytes.
+- Build/static: Temurin Java 25.0.4+7 and Gradle 9.5.1 `clean test build --no-daemon` passed 36/36 tests in eight suites with zero failures, errors, or skips; exact audited dependency hashes passed; retained C3/C4 verifiers passed; and the fresh C4 JAR reproduced the retained SHA-256 exactly without replacing it.
+- Runtime: No deployment or Minecraft runtime check was performed and neither Test Slot, accepted stack, Test Instance Manager state, originals, nor either gameplay profile was touched. Preserved evidence is the user-reported C2 focused functional pass, tested C3 GUI predecessor, and exact C4 final visual pass/accepted client+singleplayer result; dedicated-server validation remains unperformed.
+- Artifact: Current/accepted `0.1.0-canary4` `inherent-3x3-inventory-crafting-0.1.0-canary4.jar` SHA-256 `6e797291dd6c68f5afe65f91177ad2653f7c4a99e10bd20e078fafd7aaf6cb33`, legacy source `34e8de533e804ab4993b7502d7c5afbec6ebc8ca`; rollback `0.1.0-canary3` `inherent-3x3-inventory-crafting-0.1.0-canary3.jar` SHA-256 `776918c5e5a76a8f81e5f67a481d819a5586ce1ca45ccdc0effaf04622aaef08`, legacy source `157827574d0cd6e9487444fff044c69fe50879ac`.
+- Result: ACCEPTED — C4 remains current and accepted with no blocker; static validation passes, prior exact deployment evidence is preserved, client/singleplayer runtime evidence remains a partial overall pass because dedicated-server coverage was not performed.
+- Next state: Remain ACCEPTED with no migration deployment pending; if dedicated-server assurance is desired, run the controlled exact-C4 server matrix and record only the observed result in a new revision.
