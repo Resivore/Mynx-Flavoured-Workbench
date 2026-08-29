@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "id": "doublebarrels",
+  "version": "${version}",
+  "name": "Double Barrels",
+  "description": "Minecraft 26.2 compatibility port of mozkomor's Double Barrel 1.0.1.",
+  "authors": ["mozko"],
+  "license": "MIT",
+  "environment": "*",
+  "entrypoints": {
+    "main": ["com.mozko.doublebarrels.DoubleBarrelsMod"]
+  },
+  "mixins": ["doublebarrels.mixins.json"],
+  "depends": {
+    "fabricloader": ">=0.19.3",
+    "minecraft": "~26.2",
+    "java": ">=25",
+    "fabric-api": "*"
+  }
+}
