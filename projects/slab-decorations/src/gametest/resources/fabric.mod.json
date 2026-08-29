@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "id": "slab-decorations-fixtures",
+  "version": "1.0.0",
+  "name": "Slab Decorations Canary 2 Fixtures",
+  "environment": "*",
+  "entrypoints": {
+    "fabric-gametest": [
+      "dev.resivore.slabdecorations.gametest.FoliageSurfaceGameTests"
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=0.19.3",
+    "fabric-api": "*",
+    "minecraft": "26.2",
+    "slab_decorations": "=0.1.0-canary2",
+    "more_slabs_stairs_and_walls": "=4.2.0+26.2-port-canary41-pale-recipe-fix",
+    "clutternomore": "=2.0.7+26.2",
+    "cnm_terrain_slabs_compat": "=0.5.46-nibaru-cnm-canary1.36-pale-coverage"
+  }
+}

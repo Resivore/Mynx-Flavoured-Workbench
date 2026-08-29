@@ -1,0 +1,12 @@
+{
+  "required": true,
+  "package": "dev.resivore.slabdecorations.mixin.client",
+  "compatibilityLevel": "JAVA_25",
+  "client": [
+    "EntityPickMixin",
+    "LevelRendererDestroyOverlayMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
