@@ -1,0 +1,129 @@
+{
+  "$schema": "../../schemas/workbench-status.schema.json",
+  "schema_version": 1,
+  "identity": {
+    "uuid": "e28154da-0649-5da7-b6d5-3bff2891719e",
+    "name": "Shulker Trowel",
+    "project_id": "shulker-trowel",
+    "aliases": [],
+    "legacy_names": [],
+    "legacy_ids": [
+      "shulker-trowel"
+    ]
+  },
+  "definition": {
+    "lifecycle": "ACCEPTED",
+    "goals": [
+      "Provide a server-authoritative trowel that draws eligible building materials by quantity from the actual offhand shulker and delegates placement through the resolved BlockItem's normal placement path.",
+      "Reuse accepted CNM and Nibaru geometry and input ownership for six persisted modes while preserving exact material identity, consumption, sound, state, and failure semantics."
+    ],
+    "scope": [
+      "Canonical C5 source for Minecraft 26.2 Fabric, retaining Full Block, Slab, Stair, Wall, Vertical Slab, and Step modes from frozen legacy checkpoint f0101f38c446dddaa4226450386402c63597ba7c.",
+      "The narrow CNM 2.0.7 overlay and input seam plus accepted Nibaru C45 and Block Geometry Extensions C52 typed geometry resolution.",
+      "The private runnable-asset boundary in which only the separately authorized Jake's Build Tools sprite is added to externally retained, non-redistributable private artifacts."
+    ],
+    "boundaries": {
+      "owned_paths": [
+        "projects/shulker-trowel"
+      ],
+      "exclusions": [
+        "Protected Jake's Build Tools bytes, the authorized sprite, and the exact private C5 and C2 runnable JARs are not tracked or redistributed.",
+        "CNM, Nibaru, and Block Geometry Extensions remain separate dependency owners; this project does not bundle them or replace their canonical material and geometry systems.",
+        "Registry-name parsing, parallel family tables, variant collapsing, and unrelated block mutation behavior.",
+        "Minecraft deployment, Test Slot mutation, accepted physical-stack changes, and protected gameplay-profile access during this migration."
+      ]
+    },
+    "dependencies": [
+      {
+        "type": "OTHER",
+        "identifier": "minecraft",
+        "requirement": "26.2",
+        "reason": "Target game version for the accepted implementation."
+      },
+      {
+        "type": "MOD",
+        "identifier": "fabricloader",
+        "requirement": ">=0.19.3",
+        "reason": "Fabric runtime loader declared by canonical C5."
+      },
+      {
+        "type": "MOD",
+        "identifier": "fabric-api",
+        "requirement": ">=0.156.0+26.2",
+        "reason": "Fabric APIs used by the item, networking, and focused GameTest source."
+      },
+      {
+        "type": "MOD",
+        "identifier": "clutternomore",
+        "requirement": "=2.0.7+26.2",
+        "reason": "Owns the established shape input, overlay, and canonical delegated placement behavior reused by the trowel."
+      },
+      {
+        "type": "PROJECT",
+        "identifier": "680476b9-5336-5422-a575-779f2efd1eff",
+        "requirement": "C45 (legacy Canary 43)",
+        "reason": "The accepted Shulker artifact consumes Nibaru's exact material profiles and typed geometry roles."
+      },
+      {
+        "type": "PROJECT",
+        "identifier": "4b2342fc-7bdf-5ba6-9f37-d551109d214c",
+        "requirement": "C52 (legacy Integration 1.39)",
+        "reason": "The accepted Shulker artifact resolves provider-owned Vertical Slab and Step geometry through this accepted integration."
+      },
+      {
+        "type": "OTHER",
+        "identifier": "jakes-build-tools-v5.0.6.jar",
+        "requirement": "SHA-256 7d9c309adc2955c4c79a4ca43eb958ce41a283b4a629386b3bd55125782302da",
+        "reason": "Private, read-only origin of the one separately authorized 346-byte trowel sprite; no JBT code or tracked asset is imported."
+      }
+    ]
+  },
+  "state": {
+    "milestone": "Canonical C5 (legacy Private Canary 4; embedded 0.1.0-canary4) is the exact private, non-redistributable current and accepted release after the user's aggregate focused runtime PASS; no individual checklist row is inferred. Final manager reconciliation verified C5 as accepted-stack membership with Jake's Build Tools disabled, while exact Private C2 remains the passing rollback.",
+    "releases": {
+      "current": {
+        "version": "C5 (legacy Private Canary 4; embedded 0.1.0-canary4)",
+        "artifact": {
+          "filename": "shulker-trowel-0.1.0-canary4-private.jar",
+          "sha256": "73c012c08ca5567e795711cf11c8eaac625528e7350309114467129394f0afba"
+        },
+        "source_commit": "069bc055356c5a46218acfb846c97acc0c0c4789"
+      },
+      "accepted": {
+        "version": "C5 (legacy Private Canary 4; embedded 0.1.0-canary4)",
+        "artifact": {
+          "filename": "shulker-trowel-0.1.0-canary4-private.jar",
+          "sha256": "73c012c08ca5567e795711cf11c8eaac625528e7350309114467129394f0afba"
+        },
+        "source_commit": "069bc055356c5a46218acfb846c97acc0c0c4789"
+      },
+      "rollback": {
+        "version": "C2 (Private Canary 2; embedded 0.1.0-canary2-private)",
+        "artifact": {
+          "filename": "shulker-trowel-0.1.0-canary2-private.jar",
+          "sha256": "efc530f4d49ad6d16a5fe253b6d79bf768b5b092b66813065364100f0582b0b7"
+        },
+        "source_commit": "3a69f853da21b6acf46905d69764691633fb4fab"
+      },
+      "accepted_current": "CURRENT_IS_ACCEPTED",
+      "accepted_rollback": "ROLLBACK_DIFFERS_FROM_ACCEPTED"
+    },
+    "validation": {
+      "build": "CONTROLLED_VALIDATION_PASS",
+      "deployment": "READY_TO_TEST_VERIFIED",
+      "runtime": "RUNTIME_PASS"
+    },
+    "blocker": null
+  },
+  "synchronization": {
+    "revision": 1,
+    "activity_at": "2026-08-29T06:17:22Z",
+    "updated_at": "2026-08-29T21:06:11Z",
+    "last_codex_at": "2026-08-29T21:06:11Z",
+    "source_commit": "02a88d39a00822d67ecd3545f4950f22a8ec3be4",
+    "google_sheet": {
+      "participates": true,
+      "exclusion_reason": null
+    }
+  }
+}
