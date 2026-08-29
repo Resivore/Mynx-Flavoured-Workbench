@@ -1,0 +1,129 @@
+{
+  "$schema": "../../schemas/workbench-status.schema.json",
+  "schema_version": 1,
+  "identity": {
+    "uuid": "9f1c5aa4-09c1-4de3-9921-4b045e8abcd2",
+    "name": "Mossy Stone",
+    "project_id": "mossy-stone",
+    "aliases": [],
+    "legacy_names": [],
+    "legacy_ids": [
+      "mossy-stone"
+    ]
+  },
+  "definition": {
+    "lifecycle": "TESTING",
+    "goals": [
+      "Provide a standalone Stone-like mossy_stone:mossy_stone family for Minecraft Java 26.2 without a Regions Unexplored compile or runtime dependency.",
+      "Own the full block, slab, stairs, and wall while leaving derived Vertical Slab and Step geometry and recipe ownership exclusively with Block Geometry Extensions.",
+      "Preserve the approved Mossy Stone texture, full-block degradation loot, owned-shape self-drops, and exact acquisition, crafting, and stonecutting behavior from Canary 2."
+    ],
+    "scope": [
+      "Maintain exact Canary 2 source, build, resources, and focused tests from legacy implementation commit 2008a418d868139e88bc066672d10f8463d84e0f and frozen checkpoint f0101f38c446dddaa4226450386402c63597ba7c.",
+      "Maintain the standalone canonical parent plus directly owned slab, stairs, and wall with vanilla Stone property baselines, the own-namespace ShapeMap contribution, four loot tables, and eleven recipes with their matching unlock advancements.",
+      "Retain exact Canary 2 as the current runtime-untested candidate and exact Canary 1 as its never-deployed historical predecessor without representing either release as accepted or rollback."
+    ],
+    "boundaries": {
+      "owned_paths": [
+        "projects/mossy-stone"
+      ],
+      "exclusions": [
+        "No implementation, version, recipe, loot, registration, asset, geometry, or gameplay change beyond the exact frozen Canary 2 migration.",
+        "No direct Vertical Slab or Step registration or recipe ownership and no duplicate or competing Block Geometry Extensions material-family system.",
+        "No Regions Unexplored code, registry, model, data, world generation, compile dependency, or runtime dependency; only the approved texture and its unchanged MIT provenance notice are retained.",
+        "No changes to Block Geometry Extensions, Nibaru, Interchangeable Block Families, another project, shared infrastructure, or Test Instance Manager state.",
+        "No deployment, Test Slot mutation, Minecraft instance access, runtime testing, acceptance, or runtime inference during this migration."
+      ]
+    },
+    "dependencies": [
+      {
+        "type": "MOD",
+        "identifier": "minecraft",
+        "requirement": "=26.2",
+        "reason": "Exact game version targeted by the retained Canary 2 source and resources."
+      },
+      {
+        "type": "MOD",
+        "identifier": "fabricloader",
+        "requirement": ">=0.19.3",
+        "reason": "Fabric runtime loader declared by exact Canary 2."
+      },
+      {
+        "type": "MOD",
+        "identifier": "fabric-api",
+        "requirement": ">=0.157.0 (build baseline 0.157.0+26.2)",
+        "reason": "Fabric API runtime declaration and exact retained build baseline."
+      },
+      {
+        "type": "MOD",
+        "identifier": "clutternomore",
+        "requirement": "=2.0.7+26.2",
+        "reason": "Provides the unchanged canonical ShapeMap discovery and switching contract consumed by Canary 2."
+      },
+      {
+        "type": "PROJECT",
+        "identifier": "4b2342fc-7bdf-5ba6-9f37-d551109d214c",
+        "requirement": "accepted C52 (legacy Integration 1.39)",
+        "reason": "Block Geometry Extensions is the canonical Workbench owner of the derived Vertical Slab and Step; Mossy Stone contributes only its full block, slab, stairs, and wall family and imports no BGE implementation API."
+      },
+      {
+        "type": "OTHER",
+        "identifier": "regions-unexplored-0.6.2-fabric-21.1.jar",
+        "requirement": "SHA-256 c0c2f1a83cbdc1f252255823e33230ace9db6f5fd6da010a739f46f7a6d3a6a7",
+        "reason": "MIT-licensed read-only provenance source for the sole approved 2,541-byte texture entry, SHA-256 984508a44a92f02cce254cd58d45905cae8e625c647d4a5b32f9ab6ae82ee2e8; it is not a compile or runtime dependency."
+      },
+      {
+        "type": "TOOL",
+        "identifier": "java",
+        "requirement": "25",
+        "reason": "Compilation release and runtime level required by Minecraft 26.2 and exact Canary 2."
+      },
+      {
+        "type": "TOOL",
+        "identifier": "gradle",
+        "requirement": "9.5.1",
+        "reason": "Exact build-tool version used for Canary 2 and migration verification."
+      },
+      {
+        "type": "TOOL",
+        "identifier": "fabric-loom",
+        "requirement": "1.17.19",
+        "reason": "Pinned Fabric build plugin retained by the unchanged Canary 2 build."
+      }
+    ]
+  },
+  "state": {
+    "milestone": "Exact C2 remains the current unaccepted candidate after a byte-identical Java 25 migration build and 9/9 focused tests. Frozen legacy evidence preserves READY_TO_TEST_VERIFIED, but runtime remains untested. Exact C1 is retained only as the never-deployed historical predecessor and is not an accepted or rollback release.",
+    "releases": {
+      "current": {
+        "version": "0.2.0-canary2",
+        "artifact": {
+          "filename": "mossy-stone-0.2.0-canary2.jar",
+          "sha256": "0a337771301dfb1165aded256908677b93b48f756e1c5a8eacfde5d057178b59"
+        },
+        "source_commit": "2008a418d868139e88bc066672d10f8463d84e0f"
+      },
+      "accepted": null,
+      "rollback": null,
+      "accepted_current": "NO_ACCEPTED",
+      "accepted_rollback": "NO_ROLLBACK"
+    },
+    "validation": {
+      "build": "STATIC_PASS",
+      "deployment": "READY_TO_TEST_VERIFIED",
+      "runtime": "RUNTIME_UNTESTED"
+    },
+    "blocker": null
+  },
+  "synchronization": {
+    "revision": 1,
+    "activity_at": "2026-08-29T06:17:22Z",
+    "updated_at": "2026-08-29T23:03:38Z",
+    "last_codex_at": "2026-08-29T23:03:38Z",
+    "source_commit": "5989b567423d9b86d9864304c5a927a053f646b3",
+    "google_sheet": {
+      "participates": true,
+      "exclusion_reason": null
+    }
+  }
+}
