@@ -1,0 +1,11 @@
+{
+  "required": true,
+  "package": "dev.resivore.quickstacknearbycompat.mixin",
+  "compatibilityLevel": "JAVA_25",
+  "mixins": [
+    "QuickStackServiceMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
