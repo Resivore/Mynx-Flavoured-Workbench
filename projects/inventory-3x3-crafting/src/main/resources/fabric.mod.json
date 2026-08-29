@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "id": "inherent_3x3_inventory_crafting",
+  "version": "${version}",
+  "name": "Inherent 3x3 Inventory Crafting",
+  "description": "Canary 4: replaces the inventory artwork and moves only the crafting output two pixels right.",
+  "authors": ["Resivore"],
+  "license": "All-Rights-Reserved",
+  "environment": "*",
+  "entrypoints": {
+    "main": ["dev.resivore.inventorycrafting.Inventory3x3Crafting"],
+    "jei_mod_plugin": ["dev.resivore.inventorycrafting.client.jei.Inventory3x3JeiPlugin"]
+  },
+  "mixins": ["inherent_3x3_inventory_crafting.mixins.json"],
+  "depends": {
+    "fabricloader": ">=0.19.3",
+    "fabric-api": ">=0.157.0+26.2",
+    "minecraft": "26.2",
+    "java": ">=25",
+    "inventoryextended": "=1.1.2",
+    "simple_trash_slot": ">=1.0.4"
+  },
+  "recommends": {
+    "trinkets_updated": "4.1.0-beta.3+26.2",
+    "jei": "30.18.0.144"
+  },
+  "custom": {
+    "workbench:classification": "GENERATED / UNTESTED",
+    "workbench:deployment": "NOT DEPLOYED"
+  }
+}
