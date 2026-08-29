@@ -1,0 +1,11 @@
+{
+  "required": true,
+  "package": "dev.resivore.sweetberryhorseimmunity.mixin",
+  "compatibilityLevel": "JAVA_25",
+  "mixins": [
+    "LivingEntityMixin",
+    "PowderSnowBlockMixin",
+    "SweetBerryBushBlockMixin"
+  ],
+  "injectors": { "defaultRequire": 1 }
+}

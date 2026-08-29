@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "id": "sweet_berry_horse_immunity",
+  "version": "${version}",
+  "name": "Horse Immunities",
+  "description": "Exempts ordinary horses and their current player riders from sweet berry bush and powdered snow hazards.",
+  "authors": ["Resivore"],
+  "environment": "*",
+  "mixins": ["sweet_berry_horse_immunity.mixins.json"],
+  "depends": {
+    "fabricloader": ">=0.19.3",
+    "minecraft": "=26.2",
+    "java": ">=25"
+  }
+}
