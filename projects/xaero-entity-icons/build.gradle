@@ -1,0 +1,113 @@
+plugins {
+    id 'net.fabricmc.fabric-loom' version '1.17.19'
+}
+
+version = project.mod_version
+group = project.maven_group
+
+base {
+    archivesName = project.archives_base_name
+}
+
+repositories {
+    maven { url = 'https://maven.fabricmc.net/' }
+    mavenCentral()
+}
+
+def requiredFileProperty = { String propertyName, String description ->
+    def suppliedPath = providers.gradleProperty(propertyName).orNull
+    if (suppliedPath == null || suppliedPath.isBlank()) {
+        throw new GradleException("Pass -P${propertyName}=<path to ${description}>")
+    }
+    def resolved = file(suppliedPath)
+    if (!resolved.isFile()) {
+        throw new GradleException("${description} was not found at ${resolved}")
+    }
+    resolved
+}
+
+def xaeroJar = file('../../originals/mods/xaerominimap-fabric-26.2-26.4.2.jar')
+def worldMapJar = file('../../originals/mods/xaeroworldmap-fabric-26.2-1.44.2.jar')
+def emfJar = requiredFileProperty('emf_jar', 'entity_model_features-3.2.6-26.2-fabric.jar')
+def etfJar = requiredFileProperty('etf_jar', 'entity_texture_features-7.1.1-26.2-fabric.jar')
+def freshAnimationsPack = requiredFileProperty('fresh_animations_pack', 'FreshAnimations_v1.10.5.zip')
+def xaeroLibJar = layout.buildDirectory.file('compile-deps/xaerolib.jar')
+
+dependencies {
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    implementation "net.fabricmc:fabric-loader:${project.loader_version}"
+
+    compileOnly files(xaeroJar, emfJar, etfJar, xaeroLibJar)
+
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.12.2'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.12.2'
+    testImplementation 'org.ow2.asm:asm:9.10.1'
+    testImplementation 'org.ow2.asm:asm-tree:9.10.1'
+    testImplementation files(xaeroJar, emfJar, etfJar, xaeroLibJar)
+}
+
+tasks.register('extractXaeroLib', Copy) {
+    from(zipTree(xaeroJar)) {
+        include 'META-INF/jars/xaerolib-fabric-26.2-1.7.1.jar'
+        eachFile { details -> details.path = 'xaerolib.jar' }
+        includeEmptyDirs = false
+    }
+    into(layout.buildDirectory.dir('compile-deps'))
+}
+
+compileJava.dependsOn tasks.named('extractXaeroLib')
+compileTestJava.dependsOn tasks.named('extractXaeroLib')
+
+processResources {
+    inputs.property 'version', project.version
+    filesMatching('fabric.mod.json') {
+        expand 'version': project.version
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.release = 25
+}
+
+test {
+    useJUnitPlatform()
+    systemProperty 'projectRoot', projectDir.absolutePath
+    systemProperty 'xaeroJar', xaeroJar.absolutePath
+    systemProperty 'worldMapJar', worldMapJar.absolutePath
+    systemProperty 'emfJar', emfJar.absolutePath
+    systemProperty 'etfJar', etfJar.absolutePath
+    systemProperty 'freshAnimationsPack', freshAnimationsPack.absolutePath
+}
+
+tasks.register('verifyClientOnlyArtifact') {
+    dependsOn tasks.named('jar')
+    doLast {
+        def artifact = tasks.named('jar').get().archiveFile.get().asFile
+        def forbiddenPrefixes = [
+                'net/minecraft/', 'xaero/', 'traben/', 'META-INF/jars/', 'assets/', 'data/'
+        ]
+        def invalidEntries = []
+        zipTree(artifact).visit { details ->
+            if (!details.directory) {
+                def path = details.relativePath.pathString.replace('\\', '/')
+                if (forbiddenPrefixes.any { path.startsWith(it) }) {
+                    invalidEntries.add(path)
+                }
+                if (path.endsWith('.class') && !path.startsWith('dev/resivore/xaeroemfcompat/')) {
+                    invalidEntries.add(path)
+                }
+            }
+        }
+        if (!invalidEntries.isEmpty()) {
+            throw new GradleException("Client compatibility artifact contains forbidden entries: ${invalidEntries.unique().sort()}")
+        }
+    }
+}
+
+tasks.named('check') {
+    dependsOn tasks.named('verifyClientOnlyArtifact')
+}
+
+java {
+    withSourcesJar()
+}
