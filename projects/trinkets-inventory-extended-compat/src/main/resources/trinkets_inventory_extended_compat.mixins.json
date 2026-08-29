@@ -1,0 +1,14 @@
+{
+  "required": true,
+  "package": "dev.resivore.trinketsinventoryextendedcompat.mixin",
+  "compatibilityLevel": "JAVA_25",
+  "mixins": [
+    "CreativeSlotValidationMixin"
+  ],
+  "client": [
+    "SurvivalTrinketSlotIconMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
