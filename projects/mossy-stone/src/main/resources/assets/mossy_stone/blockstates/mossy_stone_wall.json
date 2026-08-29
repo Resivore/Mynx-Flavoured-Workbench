@@ -1,0 +1,40 @@
+{
+  "multipart": [
+    {
+      "apply": { "model": "mossy_stone:block/mossy_stone_wall_post", "uvlock": true },
+      "when": { "up": "true" }
+    },
+    {
+      "apply": { "model": "mossy_stone:block/mossy_stone_wall_side", "uvlock": true },
+      "when": { "north": "low" }
+    },
+    {
+      "apply": { "model": "mossy_stone:block/mossy_stone_wall_side_tall", "uvlock": true },
+      "when": { "north": "tall" }
+    },
+    {
+      "apply": { "model": "mossy_stone:block/mossy_stone_wall_side", "uvlock": true, "y": 90 },
+      "when": { "east": "low" }
+    },
+    {
+      "apply": { "model": "mossy_stone:block/mossy_stone_wall_side_tall", "uvlock": true, "y": 90 },
+      "when": { "east": "tall" }
+    },
+    {
+      "apply": { "model": "mossy_stone:block/mossy_stone_wall_side", "uvlock": true, "y": 180 },
+      "when": { "south": "low" }
+    },
+    {
+      "apply": { "model": "mossy_stone:block/mossy_stone_wall_side_tall", "uvlock": true, "y": 180 },
+      "when": { "south": "tall" }
+    },
+    {
+      "apply": { "model": "mossy_stone:block/mossy_stone_wall_side", "uvlock": true, "y": 270 },
+      "when": { "west": "low" }
+    },
+    {
+      "apply": { "model": "mossy_stone:block/mossy_stone_wall_side_tall", "uvlock": true, "y": 270 },
+      "when": { "west": "tall" }
+    }
+  ]
+}

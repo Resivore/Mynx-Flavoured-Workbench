@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": { "#": "mossy_stone:mossy_stone" },
+  "pattern": ["#  ", "## ", "###"],
+  "result": { "count": 4, "id": "mossy_stone:mossy_stone_stairs" }
+}

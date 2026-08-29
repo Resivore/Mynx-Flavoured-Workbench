@@ -1,0 +1,5 @@
+{
+  "type": "minecraft:stonecutting",
+  "ingredient": "mossy_stone:mossy_stone",
+  "result": { "id": "mossy_stone:mossy_stone_stairs" }
+}

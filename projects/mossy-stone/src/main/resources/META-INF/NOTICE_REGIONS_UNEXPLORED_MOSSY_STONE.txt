@@ -1,0 +1,40 @@
+Regions Unexplored Mossy Stone texture notice
+=============================================
+
+This mod redistributes exactly one unmodified texture from Regions Unexplored:
+
+Source artifact: regions-unexplored-0.6.2-fabric-21.1.jar
+Source artifact SHA-256: C0C2F1A83CBDC1F252255823E33230ACE9DB6F5FD6DA010A739F46F7A6D3A6A7
+Source entry: assets/regions_unexplored/textures/block/mossy_stone.png
+Source entry size: 2,541 bytes
+Source entry SHA-256: 984508A44A92F02CCE254CD58D45905CAE8E625C647D4A5B32F9AB6AE82EE2E8
+Redistributed entry: assets/mossy_stone/textures/block/mossy_stone.png
+
+The source artifact's fabric.mod.json identifies Regions Unexplored 0.6.2 as
+MIT licensed. The corresponding 21.1 source license is:
+https://github.com/Apollounknowndev/RegionsUnexplored/blob/21.1/LICENSE
+
+No other Regions Unexplored asset, model, code, data, registry, worldgen, or
+binary is included in this mod.
+
+MIT License
+
+Copyright (c) 2026 Apollo
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.

@@ -1,0 +1,11 @@
+{
+  "priority": 700,
+  "add": {
+    "mossy_stone:mossy_stone": [
+      "mossy_stone:mossy_stone_slab",
+      "mossy_stone:mossy_stone_stairs",
+      "mossy_stone:mossy_stone_wall"
+    ]
+  },
+  "remove": {}
+}

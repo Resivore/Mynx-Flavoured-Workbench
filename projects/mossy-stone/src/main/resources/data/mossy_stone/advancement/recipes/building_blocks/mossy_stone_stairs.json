@@ -1,0 +1,9 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_mossy_stone": { "conditions": { "items": [{ "items": "mossy_stone:mossy_stone" }] }, "trigger": "minecraft:inventory_changed" },
+    "has_the_recipe": { "conditions": { "recipe": "mossy_stone:mossy_stone_stairs" }, "trigger": "minecraft:recipe_unlocked" }
+  },
+  "requirements": [["has_the_recipe", "has_mossy_stone"]],
+  "rewards": { "recipes": ["mossy_stone:mossy_stone_stairs"] }
+}

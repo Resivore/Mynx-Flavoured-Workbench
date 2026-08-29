@@ -1,0 +1,6 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "key": { "#": "mossy_stone:mossy_stone" },
+  "pattern": ["###", "###"],
+  "result": { "count": 6, "id": "mossy_stone:mossy_stone_wall" }
+}
