@@ -9,3 +9,13 @@
 - Artifact: Current and accepted primary release is `0.5.0-canary5`, `trinkets-inventory-extended-compat-0.5.0-canary5.jar`, 4,305 bytes, SHA-256 `76c8c735219ceebfc7ec9a7b103e4cd4f027e43b2489cbc71f8b025b103efa6c`, with exact required set members `inventoryextended-1.1.2-mc26.2-trinkets-compat-canary4.jar`, 80,604 bytes, SHA-256 `a0ced554cb687f7119aa19ac3466c0de3ffb0a888e994514223152335b043636`, and `trinkets-4.1.0-beta.3+26.2-inventory-compat-canary5.jar`, 560,208 bytes, SHA-256 `4c1fa6ac36c0457483fd0d395b99bbd94c9334aad6defece7633bbf0552d1724`; the exact release-set source commit is `e79bd083b671dd6dbd8c1c73d50971b599365cd3` and no separate rollback is designated.
 - Result: ACCEPTED — `STATIC_PASS`; preserved `READY_TO_TEST_VERIFIED` and `RUNTIME_PASS`; no implementation blocker. Mynx synchronization begins independently at revision 1 for UUID `19c2de9e-c363-54c7-98ee-96f3fccc439b`.
 - Next state: Remain on the exact accepted C5 set with no production change planned; perform the concise hosted-server procedure only under separately authorized runtime ownership, and route Matcha visuals and other inventory behavior to their distinct project owners.
+
+## 2026-08-29T22:02:12Z — Replace retired visual-project boundary with its underlying resource ownership
+- Revision: 2
+- Source checkpoint: `950666593764be195a56099c401d99d0dbd99c08`
+- Changes: Replaced the exclusion that named a retired preservation-only visual project with the actual independently owned Matcha Flavoured resource-pack artwork and inventory-composition boundary. No compatibility implementation, dependency, release, or testing contract changed.
+- Build/static: No project build was required for this administrative wording update; repository and Sheet-sync validation cover the surviving manifest revision.
+- Runtime: Not performed or required. No Minecraft instance, runtime slot, accepted baseline, or Test Instance Manager state was accessed or changed.
+- Artifact: The exact current and accepted C5 three-artifact set and all recorded hashes remain unchanged.
+- Result: ACCEPTED — the project remains at its existing accepted C5 state with its ownership boundary no longer referring to the retired preservation-only project record.
+- Next state: Keep the exact accepted C5 set unchanged and route Matcha visuals directly to the Matcha Flavoured resource-pack ownership boundary.
