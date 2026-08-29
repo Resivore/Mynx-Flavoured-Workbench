@@ -1,0 +1,17 @@
+{
+  "required": true,
+  "package": "dev.resivore.carriedrouting.mixin",
+  "compatibilityLevel": "JAVA_25",
+  "mixins": [
+    "AbstractContainerMenuMixin",
+    "AbstractContainerMenuSnapshotAccessor",
+    "ItemEntityMixin"
+  ],
+  "client": [
+    "AbstractContainerScreenAccessor",
+    "CreativeModeItemPickerMenuMixin",
+    "CreativeModeInventoryScreenMixin",
+    "KeyboardHandlerMixin"
+  ],
+  "injectors": { "defaultRequire": 1 }
+}
