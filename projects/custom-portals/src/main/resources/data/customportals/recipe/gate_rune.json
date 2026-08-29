@@ -1,0 +1,17 @@
+{
+    "type": "minecraft:crafting_shaped",
+    "pattern": [
+        "##T",
+        "#A#",
+        "T##"
+    ],
+    "key": {
+        "#": "minecraft:weeping_vines",
+        "T": "minecraft:twisting_vines",
+        "A": "minecraft:amethyst_shard"
+    },
+    "result": {
+        "id": "customportals:gate_rune",
+        "count": 1
+    }
+}

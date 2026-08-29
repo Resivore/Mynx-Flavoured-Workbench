@@ -1,0 +1,7 @@
+{
+  "criteria": {
+    "compatibility_layer_owns_use": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}
