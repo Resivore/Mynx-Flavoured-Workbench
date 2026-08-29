@@ -1,0 +1,121 @@
+{
+  "$schema": "../../schemas/workbench-status.schema.json",
+  "schema_version": 1,
+  "identity": {
+    "uuid": "6b8b6166-fd59-4e4e-ab1d-d1140cdbfab8",
+    "name": "Rooted Dirt QoL",
+    "project_id": "rooted-dirt-qol",
+    "aliases": [],
+    "legacy_names": [],
+    "legacy_ids": []
+  },
+  "definition": {
+    "lifecycle": "ACTIVE",
+    "goals": [
+      "Provide exactly one shapeless Dirt plus Hanging Roots recipe producing one Rooted Dirt without an advancement or advancement tab.",
+      "Make placed Hanging Roots duplicate one Hanging Roots item through vanilla bonemeal handling while leaving the source block intact and preserving vanilla Rooted Dirt behavior.",
+      "Supersede the accepted Craftable Rooted Dirt predecessor only through a future mutually exclusive runtime transition."
+    ],
+    "scope": [
+      "Maintain the Minecraft Java 26.2 Fabric recipe and sole structural HangingRootsBlock mixin from Canary 1.",
+      "Retain ordinary hand and dispenser bonemeal support through the unchanged vanilla BoneMealItem growCrop path."
+    ],
+    "boundaries": {
+      "owned_paths": [
+        "projects/rooted-dirt-qol"
+      ],
+      "exclusions": [
+        "Items, blocks, entrypoints, access wideners, commands, keybinds, configuration, GUI, advancements, advancement tabs, assets, and mechanics beyond the one recipe and Hanging Roots bonemeal contract.",
+        "Bonemeal-item or dispenser interception, RootedDirtBlock changes, Matcha-specific behavior, unrelated blocks, registries, and mutation of the placed Hanging Roots block.",
+        "Concurrent activation with craft-rooted-dirt-107.1.jar (mr_craft_rooteddirt); the accepted predecessor must be disabled before Canary 1 is deployed.",
+        "Runtime deployment, Test Slot changes, Test Instance Manager changes, Workbench profile changes, and protected gameplay profile access during this migration."
+      ]
+    },
+    "dependencies": [
+      {
+        "type": "MOD",
+        "identifier": "minecraft",
+        "requirement": "=26.2",
+        "reason": "Target game version for the retained recipe and vanilla bonemeal contracts."
+      },
+      {
+        "type": "MOD",
+        "identifier": "fabricloader",
+        "requirement": ">=0.19.3",
+        "reason": "Fabric runtime loader declared by Canary 1."
+      },
+      {
+        "type": "TOOL",
+        "identifier": "java",
+        "requirement": "25",
+        "reason": "Compilation release and runtime level required by the retained build."
+      },
+      {
+        "type": "TOOL",
+        "identifier": "gradle",
+        "requirement": "9.5.1",
+        "reason": "Build version recorded for the exact retained Canary 1."
+      },
+      {
+        "type": "TOOL",
+        "identifier": "fabric-loom",
+        "requirement": "1.17.19",
+        "reason": "Fabric build plugin pinned by the maintained build."
+      },
+      {
+        "type": "OTHER",
+        "identifier": "junit-jupiter",
+        "requirement": "5.13.4",
+        "reason": "Focused static and contract test baseline retained by the project."
+      }
+    ]
+  },
+  "state": {
+    "milestone": "C1 is retained after 7 focused tests; it is runtime untested and not deployed, while the accepted predecessor remains live.",
+    "releases": {
+      "current": {
+        "version": "0.1.0-canary1",
+        "artifact": {
+          "filename": "rooted-dirt-qol-0.1.0-canary1.jar",
+          "sha256": "3642f55e0cef611f2dd56478b8aaf2491fd81d370023a04ca71e6852b37307ee"
+        },
+        "source_commit": "46e66c9c9bb5701153edc017a969b24e1176dffc"
+      },
+      "accepted": {
+        "version": "107.1",
+        "artifact": {
+          "filename": "craft-rooted-dirt-107.1.jar",
+          "sha256": "a5fc656fc345b416fc01281146d568de664c587e2c168e6bfd69f3ded7e42845"
+        },
+        "source_commit": "b71932fb4c917edfa2c162600b01a4c1f2983dfe"
+      },
+      "rollback": {
+        "version": "107.1",
+        "artifact": {
+          "filename": "craft-rooted-dirt-107.1.jar",
+          "sha256": "a5fc656fc345b416fc01281146d568de664c587e2c168e6bfd69f3ded7e42845"
+        },
+        "source_commit": "b71932fb4c917edfa2c162600b01a4c1f2983dfe"
+      },
+      "accepted_current": "CURRENT_DIFFERS_FROM_ACCEPTED",
+      "accepted_rollback": "ACCEPTED_IS_ROLLBACK"
+    },
+    "validation": {
+      "build": "STATIC_PASS",
+      "deployment": "NOT_DEPLOYED",
+      "runtime": "RUNTIME_UNTESTED"
+    },
+    "blocker": null
+  },
+  "synchronization": {
+    "revision": 1,
+    "activity_at": "2026-08-28T16:20:44Z",
+    "updated_at": "2026-08-29T21:01:24Z",
+    "last_codex_at": "2026-08-29T21:01:24Z",
+    "source_commit": "46e66c9c9bb5701153edc017a969b24e1176dffc",
+    "google_sheet": {
+      "participates": true,
+      "exclusion_reason": null
+    }
+  }
+}
