@@ -1,0 +1,17 @@
+{
+  "replace": false,
+  "values": [
+    {"id": "dramaticdoors:tall_terminite_door", "required": false},
+    {"id": "dramaticdoors:tall_thallasium_door", "required": false},
+    {"id": "dramaticdoors:tall_dragon_tree_door", "required": false},
+    {"id": "dramaticdoors:tall_end_lotus_door", "required": false},
+    {"id": "dramaticdoors:tall_helix_tree_door", "required": false},
+    {"id": "dramaticdoors:tall_jellyshroom_door", "required": false},
+    {"id": "dramaticdoors:tall_lacugrove_door", "required": false},
+    {"id": "dramaticdoors:tall_lucernia_door", "required": false},
+    {"id": "dramaticdoors:tall_mossy_glowshroom_door", "required": false},
+    {"id": "dramaticdoors:tall_pythadendron_door", "required": false},
+    {"id": "dramaticdoors:tall_tenanea_door", "required": false},
+    {"id": "dramaticdoors:tall_umbrella_tree_door", "required": false}
+  ]
+}

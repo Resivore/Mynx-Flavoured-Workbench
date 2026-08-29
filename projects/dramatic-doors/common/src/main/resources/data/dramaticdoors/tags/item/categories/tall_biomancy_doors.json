@@ -1,0 +1,8 @@
+{
+  "replace": false,
+  "values": [
+    {"id": "dramaticdoors:tall_flesh_door", "required": false},
+    {"id": "dramaticdoors:tall_full_flesh_door", "required": false},
+    {"id": "dramaticdoors:tall_fleshkin_door", "required": false}
+  ]
+}

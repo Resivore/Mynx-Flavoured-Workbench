@@ -1,0 +1,6 @@
+{
+  "parent": "dramaticdoors:block/door_short_right",
+  "textures": {
+    "texture": "atum:block/limestone_brick_large"
+  }
+}

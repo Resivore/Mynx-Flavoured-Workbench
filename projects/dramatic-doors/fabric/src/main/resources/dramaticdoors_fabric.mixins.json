@@ -1,0 +1,18 @@
+{
+  "required": true,
+  "minVersion": "0.8.5",
+  "package": "com.fizzware.dramaticdoors.fabric.mixin",
+  "compatibilityLevel": "JAVA_25",
+  "plugin": "com.fizzware.dramaticdoors.fabric.mixin.DDMixinConfigFabric",
+  "mixins": [],
+  "client": [
+    "CPIMMixin"
+  ],
+  "server": [
+    "SPIMMixin"  
+  ],
+  "injectors": {
+    "defaultRequire": 1,
+    "maxShiftBy": 2
+  }
+}

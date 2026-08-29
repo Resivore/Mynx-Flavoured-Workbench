@@ -1,0 +1,11 @@
+{
+  "replace": false,
+  "values": [
+    {"id": "dramaticdoors:short_blightwillow_door", "required": false},
+    {"id": "dramaticdoors:short_cloudcap_door", "required": false},
+    {"id": "dramaticdoors:short_crystal_door", "required": false},
+    {"id": "dramaticdoors:short_glacia_door", "required": false},
+    {"id": "dramaticdoors:short_prismatic_door", "required": false},
+    {"id": "dramaticdoors:short_springshroom_door", "required": false}
+  ]
+}

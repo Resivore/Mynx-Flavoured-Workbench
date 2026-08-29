@@ -1,0 +1,11 @@
+{
+  "replace": false,
+  "values": [
+    {"id": "dramaticdoors:tall_deorum_door", "required": false},
+    {"id": "dramaticdoors:tall_arcane_edelwood_door", "required": false},
+    {"id": "dramaticdoors:tall_cherrywood_door", "required": false},
+    {"id": "dramaticdoors:tall_edelwood_door", "required": false},
+    {"id": "dramaticdoors:tall_fungyss_door", "required": false},
+    {"id": "dramaticdoors:tall_aurum_door", "required": false}
+  ]
+}

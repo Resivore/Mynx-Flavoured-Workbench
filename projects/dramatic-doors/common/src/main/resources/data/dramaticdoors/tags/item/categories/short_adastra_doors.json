@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    {"id": "dramaticdoors:short_aa_steel_door", "required": false},
+    {"id": "dramaticdoors:short_aeronos_door", "required": false},
+    {"id": "dramaticdoors:short_glacian_door", "required": false},
+    {"id": "dramaticdoors:short_strophar_door", "required": false}
+  ]
+}

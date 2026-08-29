@@ -1,0 +1,11 @@
+{
+    "parent": "dramaticdoors:block/macaw/bark_glass_door_middle",
+    "ambientocclusion": false,
+    "textures": {
+		"3": "minecraft:block/glass",
+		"particle": "minecraft:block/jungle_log",
+		"top": "minecraft:block/jungle_log"
+    }
+}
+
+

@@ -1,0 +1,13 @@
+{
+  "replace": false,
+  "values": [
+    {"id": "dramaticdoors:tall_cardboard_door", "required": false},
+    {"id": "dramaticdoors:tall_chain_door", "required": false},
+    {"id": "dramaticdoors:tall_industrial_iron_door", "required": false},
+    {"id": "dramaticdoors:tall_iron_bar_door", "required": false},
+    {"id": "dramaticdoors:tall_padded_door", "required": false},
+    {"id": "dramaticdoors:tall_rusty_iron_door", "required": false},
+    {"id": "dramaticdoors:tall_rusty_sheet_metal_door", "required": false},
+    {"id": "dramaticdoors:tall_sheet_metal_door", "required": false}
+  ]
+}

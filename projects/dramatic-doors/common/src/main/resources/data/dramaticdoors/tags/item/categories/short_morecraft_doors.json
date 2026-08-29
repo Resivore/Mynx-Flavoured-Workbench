@@ -1,0 +1,11 @@
+{
+  "replace": false,
+  "values": [
+    {"id": "dramaticdoors:short_morecraft_bone_door", "required": false},
+    {"id": "dramaticdoors:short_morecraft_glass_door", "required": false},
+    {"id": "dramaticdoors:short_morecraft_soul_glass_door", "required": false},
+    {"id": "dramaticdoors:short_morecraft_netherbrick_door", "required": false},
+    {"id": "dramaticdoors:short_morecraft_netherite_door", "required": false},
+    {"id": "dramaticdoors:short_morecraft_netherwood_door", "required": false}
+  ]
+}

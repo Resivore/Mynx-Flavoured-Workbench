@@ -1,0 +1,13 @@
+{
+  "replace": false,
+  "values": [
+    {"id": "dramaticdoors:short_cardboard_door", "required": false},
+    {"id": "dramaticdoors:short_chain_door", "required": false},
+    {"id": "dramaticdoors:short_industrial_iron_door", "required": false},
+    {"id": "dramaticdoors:short_iron_bar_door", "required": false},
+    {"id": "dramaticdoors:short_padded_door", "required": false},
+    {"id": "dramaticdoors:short_rusty_iron_door", "required": false},
+    {"id": "dramaticdoors:short_rusty_sheet_metal_door", "required": false},
+    {"id": "dramaticdoors:short_sheet_metal_door", "required": false}
+  ]
+}

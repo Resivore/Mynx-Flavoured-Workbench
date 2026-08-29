@@ -1,0 +1,14 @@
+{
+  "replace": false,
+  "remove": [
+    "#minecraft:non_flammable_wood"
+  ],
+  "values": {
+    "#dramaticdoors:short_wooden_doors": {
+      "burn_time": 100
+    },
+    "#dramaticdoors:tall_wooden_doors": {
+      "burn_time": 300
+    }
+  }
+}

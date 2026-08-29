@@ -1,0 +1,8 @@
+{
+  "parent": "dramaticdoors:block/door_middle_right_open",
+  "textures": {
+    "bottom": "dramaticdoors:block/tall_tc_palm_door_bottom",
+    "middle": "dramaticdoors:block/tall_tc_palm_door_middle",
+    "top": "dramaticdoors:block/tall_tc_palm_door_top"
+  }
+}

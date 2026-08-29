@@ -1,0 +1,8 @@
+{
+  "replace": false,
+  "values": [
+    {"id": "dramaticdoors:short_andesite_casing_door", "required": false},
+    {"id": "dramaticdoors:short_brass_casing_door", "required": false},
+    {"id": "dramaticdoors:short_copper_casing_door", "required": false}
+  ]
+}

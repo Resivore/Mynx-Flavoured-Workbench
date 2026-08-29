@@ -1,0 +1,8 @@
+{
+  "replace": false,
+  "values": [
+    {"id": "dramaticdoors:short_promenade_cherry_oak_door", "required": false},
+    {"id": "dramaticdoors:short_promenade_dark_amaranth_door", "required": false},
+    {"id": "dramaticdoors:short_promenade_palm_door", "required": false}
+  ]
+}

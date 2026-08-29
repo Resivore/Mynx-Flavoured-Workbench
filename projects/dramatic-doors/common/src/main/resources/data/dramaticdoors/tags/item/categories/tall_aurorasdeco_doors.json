@@ -1,0 +1,7 @@
+{
+  "replace": false,
+  "values": [
+    {"id": "dramaticdoors:tall_ad_azalea_door", "required": false},
+    {"id": "dramaticdoors:tall_ad_jacaranda_door", "required": false}
+  ]
+}

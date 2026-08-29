@@ -1,0 +1,8 @@
+{
+  "type": "minecraft:stonecutting",
+  "ingredient": "minecraft:copper_door",
+  "result": {
+    "id": "dramaticdoors:short_copper_door",
+    "count": 2
+  }
+}

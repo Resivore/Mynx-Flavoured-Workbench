@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "dramaticdoors:item/manyideas/tall_copper_factory_door"
+  }
+}

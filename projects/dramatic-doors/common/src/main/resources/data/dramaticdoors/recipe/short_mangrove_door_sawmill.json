@@ -1,0 +1,18 @@
+{
+  "type": "woodworks:sawmill",
+  "ingredient": "minecraft:mangrove_door",
+  "result": "dramaticdoors:short_mangrove_door",
+  "count": 2,
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "woodworks"
+    }
+  ],
+  "fabric:load_conditions": {
+    "condition": "fabric:all_mods_loaded",
+    "values": [
+      "woodworks"
+    ]
+  }
+}

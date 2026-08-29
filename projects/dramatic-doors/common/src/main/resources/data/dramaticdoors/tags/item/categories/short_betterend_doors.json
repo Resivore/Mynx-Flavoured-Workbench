@@ -1,0 +1,17 @@
+{
+  "replace": false,
+  "values": [
+    {"id": "dramaticdoors:short_terminite_door", "required": false},
+    {"id": "dramaticdoors:short_thallasium_door", "required": false},
+    {"id": "dramaticdoors:short_dragon_tree_door", "required": false},
+    {"id": "dramaticdoors:short_end_lotus_door", "required": false},
+    {"id": "dramaticdoors:short_helix_tree_door", "required": false},
+    {"id": "dramaticdoors:short_jellyshroom_door", "required": false},
+    {"id": "dramaticdoors:short_lacugrove_door", "required": false},
+    {"id": "dramaticdoors:short_lucernia_door", "required": false},
+    {"id": "dramaticdoors:short_mossy_glowshroom_door", "required": false},
+    {"id": "dramaticdoors:short_pythadendron_door", "required": false},
+    {"id": "dramaticdoors:short_tenanea_door", "required": false},
+    {"id": "dramaticdoors:short_umbrella_tree_door", "required": false}
+  ]
+}

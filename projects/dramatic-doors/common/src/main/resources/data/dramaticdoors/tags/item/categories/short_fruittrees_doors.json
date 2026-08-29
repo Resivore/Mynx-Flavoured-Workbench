@@ -1,0 +1,7 @@
+{
+  "replace": false,
+  "values": [
+    {"id": "dramaticdoors:short_ft_cherry_door", "required": false},
+    {"id": "dramaticdoors:short_ft_citrus_door", "required": false}
+  ]
+}

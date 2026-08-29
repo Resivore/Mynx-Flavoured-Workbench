@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    {"id": "dramaticdoors:tall_mushroom_door", "required": false},
+    {"id": "dramaticdoors:tall_poisonous_mushroom_door", "required": false},
+    {"id": "dramaticdoors:tall_glowshroom_door", "required": false},
+    {"id": "dramaticdoors:tall_honey_fungus_door", "required": false}
+  ]
+}

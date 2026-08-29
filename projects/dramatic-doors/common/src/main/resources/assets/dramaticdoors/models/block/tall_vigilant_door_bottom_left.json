@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/door_bottom_left",
+  "textures": {
+    "bottom": "theabyss:block/planks_vigilant",
+    "top": "theabyss:block/planks_vigilant"
+  }
+}

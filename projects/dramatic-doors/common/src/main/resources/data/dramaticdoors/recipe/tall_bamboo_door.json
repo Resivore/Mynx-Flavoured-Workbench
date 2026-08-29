@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "group": "tall_wooden_door",
+  "pattern": [
+    "#",
+    "#",
+    "#"
+  ],
+  "key": {
+    "#": "minecraft:bamboo_door"
+  },
+  "result": {
+    "id": "dramaticdoors:tall_bamboo_door",
+    "count": 2
+  }
+}

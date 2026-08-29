@@ -1,0 +1,26 @@
+{
+  "type": "minecraft:stonecutting",
+  "ingredient": "minecraft:birch_door",
+  "result": {
+    "id": "dramaticdoors:short_birch_door",
+    "count": 2
+  },
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:not",
+      "value": {
+        "type": "neoforge:mod_loaded",
+        "modid": "woodworks"
+      }
+    }
+  ],
+  "fabric:load_conditions": {
+    "condition": "fabric:not",
+    "value": {
+      "condition": "fabric:all_mods_loaded",
+      "values": [
+        "woodworks"
+      ]
+    }
+  }
+}

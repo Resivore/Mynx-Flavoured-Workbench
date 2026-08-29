@@ -1,0 +1,19 @@
+{
+  "replace": false,
+  "values": [
+    {"id": "dramaticdoors:short_tq_light_cloud_door", "required": false},
+    {"id": "dramaticdoors:short_tq_dense_cloud_door", "required": false},
+    {"id": "dramaticdoors:short_tq_storm_cloud_door", "required": false},
+    {"id": "dramaticdoors:short_tq_apple_door", "required": false},
+    {"id": "dramaticdoors:short_tq_banana_door", "required": false},
+    {"id": "dramaticdoors:short_tq_cherry_door", "required": false},
+    {"id": "dramaticdoors:short_tq_coconut_door", "required": false},
+    {"id": "dramaticdoors:short_tq_lemon_door", "required": false},
+    {"id": "dramaticdoors:short_tq_mango_door", "required": false},
+    {"id": "dramaticdoors:short_tq_mulberry_door", "required": false},
+    {"id": "dramaticdoors:short_tq_orange_door", "required": false},
+    {"id": "dramaticdoors:short_tq_peach_door", "required": false},
+    {"id": "dramaticdoors:short_tq_pear_door", "required": false},
+    {"id": "dramaticdoors:short_tq_plum_door", "required": false}
+  ]
+}

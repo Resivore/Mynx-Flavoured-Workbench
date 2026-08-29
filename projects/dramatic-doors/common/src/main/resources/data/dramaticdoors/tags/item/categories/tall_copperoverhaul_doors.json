@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    {"id": "dramaticdoors:tall_co_copper_door", "required": false},
+    {"id": "dramaticdoors:tall_co_exposed_copper_door", "required": false},
+    {"id": "dramaticdoors:tall_co_weathered_copper_door", "required": false},
+    {"id": "dramaticdoors:tall_co_oxidized_copper_door", "required": false}
+  ]
+}

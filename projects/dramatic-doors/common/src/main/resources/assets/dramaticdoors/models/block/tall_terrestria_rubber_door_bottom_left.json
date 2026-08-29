@@ -1,0 +1,8 @@
+{
+    "parent": "block/door_bottom_left",
+    "textures": {
+        "bottom": "dramaticdoors:block/tall_terrestria_rubber_door_bottom",
+        "middle": "dramaticdoors:block/tall_terrestria_rubber_door_middle",
+        "top": "dramaticdoors:block/tall_terrestria_rubber_door_top"
+    }
+}

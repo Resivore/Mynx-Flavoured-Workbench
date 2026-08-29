@@ -1,0 +1,13 @@
+{
+  "replace": false,
+  "values": [
+    {"id": "dramaticdoors:short_andesite_door", "required": false},
+    {"id": "dramaticdoors:short_brass_door", "required": false},
+    {"id": "dramaticdoors:short_copper_door", "required": false},
+    {"id": "dramaticdoors:short_zinc_door", "required": false},
+    {"id": "dramaticdoors:short_locked_andesite_door", "required": false},
+    {"id": "dramaticdoors:short_locked_brass_door", "required": false},
+    {"id": "dramaticdoors:short_locked_copper_door", "required": false},
+    {"id": "dramaticdoors:short_locked_zinc_door", "required": false}
+  ]
+}

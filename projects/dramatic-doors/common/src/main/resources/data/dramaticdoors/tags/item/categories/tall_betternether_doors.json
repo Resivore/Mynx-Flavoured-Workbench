@@ -1,0 +1,16 @@
+{
+  "replace": false,
+  "values": [
+    {"id": "dramaticdoors:tall_anchor_tree_door", "required": false},
+    {"id": "dramaticdoors:tall_bone_cin_door", "required": false},
+    {"id": "dramaticdoors:tall_bone_reed_door", "required": false},
+    {"id": "dramaticdoors:tall_mushroom_fir_door", "required": false},
+    {"id": "dramaticdoors:tall_nether_mushroom_door", "required": false},
+    {"id": "dramaticdoors:tall_nether_reed_door", "required": false},
+    {"id": "dramaticdoors:tall_nether_sakura_door", "required": false},
+    {"id": "dramaticdoors:tall_rubeus_door", "required": false},
+    {"id": "dramaticdoors:tall_stalagnate_door", "required": false},
+    {"id": "dramaticdoors:tall_wart_door", "required": false},
+    {"id": "dramaticdoors:tall_bn_willow_door", "required": false}
+  ]
+}

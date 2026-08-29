@@ -1,0 +1,11 @@
+{
+  "replace": false,
+  "values": [
+    {"id": "dramaticdoors:tall_blightwillow_door", "required": false},
+    {"id": "dramaticdoors:tall_cloudcap_door", "required": false},
+    {"id": "dramaticdoors:tall_crystal_door", "required": false},
+    {"id": "dramaticdoors:tall_glacia_door", "required": false},
+    {"id": "dramaticdoors:tall_prismatic_door", "required": false},
+    {"id": "dramaticdoors:tall_springshroom_door", "required": false}
+  ]
+}

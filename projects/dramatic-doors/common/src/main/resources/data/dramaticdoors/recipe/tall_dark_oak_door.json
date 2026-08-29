@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "group": "tall_wooden_door",
+  "pattern": [
+    "#",
+    "#",
+    "#"
+  ],
+  "key": {
+    "#": "minecraft:dark_oak_door"
+  },
+  "result": {
+    "id": "dramaticdoors:tall_dark_oak_door",
+    "count": 2
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "replace": false,
+  "values": [
+    {"id": "dramaticdoors:tall_bloodshroom_door", "required": false},
+    {"id": "dramaticdoors:tall_greenheart_door", "required": false},
+    {"id": "dramaticdoors:tall_skyroot_door", "required": false}
+  ]
+}

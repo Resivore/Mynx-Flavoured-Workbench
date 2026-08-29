@@ -1,0 +1,14 @@
+{
+  "replace": false,
+  "values": [
+    {"id": "dramaticdoors:short_deadwood_door", "required": false},
+    {"id": "dramaticdoors:short_palm_door", "required": false},
+    {"id": "dramaticdoors:short_limestone_door", "required": false},
+    {"id": "dramaticdoors:short_limestone_cracked_door", "required": false},
+    {"id": "dramaticdoors:short_limestone_brick_small_door", "required": false},
+    {"id": "dramaticdoors:short_limestone_brick_large_door", "required": false},
+    {"id": "dramaticdoors:short_limestone_brick_cracked_brick_door", "required": false},
+    {"id": "dramaticdoors:short_limestone_brick_small_door", "required": false},
+    {"id": "dramaticdoors:short_limestone_brick_small_door", "required": false}
+  ]
+}

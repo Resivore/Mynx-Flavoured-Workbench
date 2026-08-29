@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    {"id": "dramaticdoors:tall_gold_door", "required": false},
+    {"id": "dramaticdoors:tall_netherite_door", "required": false},
+    {"id": "dramaticdoors:tall_silver_door", "required": false},
+    {"id": "dramaticdoors:tall_lead_door", "required": false}
+  ]
+}

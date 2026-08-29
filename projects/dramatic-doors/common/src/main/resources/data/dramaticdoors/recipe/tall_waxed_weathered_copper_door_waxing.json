@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "building",
+  "group": "tall_copper_door_waxing",
+  "ingredients": [
+    "dramaticdoors:tall_weathered_copper_door",
+    "minecraft:honeycomb"
+  ],
+  "result": {
+    "id": "dramaticdoors:tall_waxed_weathered_copper_door"
+  }
+}

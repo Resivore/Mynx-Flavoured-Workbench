@@ -1,0 +1,12 @@
+{
+  "replace": false,
+  "values": [
+    {"id": "dramaticdoors:short_azule_azalea_door", "required": false},
+    {"id": "dramaticdoors:short_bright_azalea_door", "required": false},
+    {"id": "dramaticdoors:short_fiss_azalea_door", "required": false},
+    {"id": "dramaticdoors:short_roze_azalea_door", "required": false},
+    {"id": "dramaticdoors:short_tecal_azalea_door", "required": false},
+    {"id": "dramaticdoors:short_titanium_azalea_door", "required": false},
+    {"id": "dramaticdoors:short_walnut_azalea_door", "required": false}
+  ]
+}

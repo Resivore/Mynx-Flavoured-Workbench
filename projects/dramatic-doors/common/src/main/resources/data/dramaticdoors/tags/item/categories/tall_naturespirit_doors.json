@@ -1,0 +1,23 @@
+{
+  "replace": false,
+  "values": [
+    {"id": "dramaticdoors:tall_ns_aspen_door", "required": false},
+    {"id": "dramaticdoors:tall_ns_cedar_door", "required": false},
+    {"id": "dramaticdoors:tall_ns_coconut_door", "required": false},
+    {"id": "dramaticdoors:tall_ns_cypress_door", "required": false},
+    {"id": "dramaticdoors:tall_ns_fir_door", "required": false},
+    {"id": "dramaticdoors:tall_ns_ghaf_door", "required": false},
+    {"id": "dramaticdoors:tall_ns_joshua_door", "required": false},
+    {"id": "dramaticdoors:tall_ns_larch_door", "required": false},
+    {"id": "dramaticdoors:tall_ns_mahogany_door", "required": false},
+    {"id": "dramaticdoors:tall_ns_maple_door", "required": false},
+    {"id": "dramaticdoors:tall_ns_olive_door", "required": false},
+    {"id": "dramaticdoors:tall_ns_paper_door", "required": false},
+    {"id": "dramaticdoors:tall_ns_palo_verde_door", "required": false},
+    {"id": "dramaticdoors:tall_ns_redwood_door", "required": false},
+    {"id": "dramaticdoors:tall_ns_saxaul_door", "required": false},
+    {"id": "dramaticdoors:tall_ns_sugi_door", "required": false},
+    {"id": "dramaticdoors:tall_ns_willow_door", "required": false},
+    {"id": "dramaticdoors:tall_ns_wisteria_door", "required": false}
+  ]
+}

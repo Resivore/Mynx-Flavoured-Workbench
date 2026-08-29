@@ -1,0 +1,11 @@
+{
+  "blocks": ["#dramaticdoors:tall_doors"],
+  "blockstates": {
+    "third": ["lower"]
+  },
+  "directions": ["up"],
+  "connecting_blocks": ["#dramaticdoors:tall_doors"],
+  "connecting_blockstates": {
+    "third": ["middle"]
+  }
+}

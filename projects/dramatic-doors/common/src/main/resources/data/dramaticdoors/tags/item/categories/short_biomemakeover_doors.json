@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    {"id": "dramaticdoors:short_bm_ancient_oak_door", "required": false},
+    {"id": "dramaticdoors:short_bm_blighted_balsa_door", "required": false},
+    {"id": "dramaticdoors:short_bm_swamp_cypress_door", "required": false},
+    {"id": "dramaticdoors:short_bm_willow_door", "required": false}
+  ]
+}

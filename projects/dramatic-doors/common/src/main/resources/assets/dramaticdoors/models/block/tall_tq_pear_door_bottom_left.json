@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/door_bottom_left",
+  "textures": {
+    "bottom": "dramaticdoors:block/tall_tq_pear_door_bottom",
+    "middle": "dramaticdoors:block/tall_tq_pear_door_middle",
+    "top": "dramaticdoors:block/tall_tq_pear_door_top"
+  }
+}

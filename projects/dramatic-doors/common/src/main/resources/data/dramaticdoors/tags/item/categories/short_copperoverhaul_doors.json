@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    {"id": "dramaticdoors:short_co_copper_door", "required": false},
+    {"id": "dramaticdoors:short_co_exposed_copper_door", "required": false},
+    {"id": "dramaticdoors:short_co_weathered_copper_door", "required": false},
+    {"id": "dramaticdoors:short_co_oxidized_copper_door", "required": false}
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/door_top_right",
+  "textures": {
+    "bottom": "dramaticdoors:block/chipped/tall_windowed_dark_oak_door_bottom",
+    "middle": "dramaticdoors:block/chipped/tall_windowed_dark_oak_door_middle",
+    "top": "dramaticdoors:block/chipped/tall_windowed_dark_oak_door_top"
+  }
+}

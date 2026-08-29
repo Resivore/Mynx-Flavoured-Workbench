@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    {"id": "dramaticdoors:short_mushroom_door", "required": false},
+    {"id": "dramaticdoors:short_poisonous_mushroom_door", "required": false},
+    {"id": "dramaticdoors:short_glowshroom_door", "required": false},
+    {"id": "dramaticdoors:short_honey_fungus_door", "required": false}
+  ]
+}

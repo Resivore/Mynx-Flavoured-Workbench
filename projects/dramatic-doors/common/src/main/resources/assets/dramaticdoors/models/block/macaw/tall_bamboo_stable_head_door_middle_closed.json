@@ -1,0 +1,8 @@
+{
+    "parent": "dramaticdoors:block/macaw/stable_middle_closed",
+    "textures": {
+        "particle": "dramaticdoors:block/macaw/tall_bamboo_barn_door_lower",
+		"1": "dramaticdoors:block/macaw/tall_bamboo_barn_door_lower",
+		"bottom": "dramaticdoors:block/macaw/tall_bamboo_stable_head_door_middle"
+    }
+}

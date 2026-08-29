@@ -1,0 +1,8 @@
+{
+  "replace": false,
+  "values": [
+    {"id": "dramaticdoors:short_hexerei_mahogany_door", "required": false},
+    {"id": "dramaticdoors:short_hexerei_willow_door", "required": false},
+    {"id": "dramaticdoors:short_hexerei_witch_hazel_door", "required": false}
+  ]
+}
