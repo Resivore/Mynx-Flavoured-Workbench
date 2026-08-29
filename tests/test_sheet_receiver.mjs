@@ -73,6 +73,13 @@ test("unknown UUID at a higher positive revision inserts at that revision", () =
   assertUnknownInsert(12, "c".repeat(64));
 });
 
+test("unknown UUID rejects revision zero", () => {
+  assert.throws(
+    () => core.applyToRows(headers(), [], envelope(0, "0".repeat(64))),
+    /revision must be a positive integer/,
+  );
+});
+
 test("existing R5 to R6 updates", () => {
   const first = core.applyToRows(headers(), [], envelope(5, "d".repeat(64)));
   const next = envelope(6, "e".repeat(64));
@@ -142,12 +149,15 @@ test("same-revision partial row with no event marker is reconciled", () => {
   assert.equal(repaired.rows[0][headers().indexOf("Event ID")], firstEnvelope.event_id);
 });
 
-test("duplicate UUID rows and feature refs fail closed", () => {
+test("duplicate UUID rows and non-authoritative sources fail closed", () => {
   const first = core.applyToRows(headers(), [], envelope());
   assert.throws(() => core.applyToRows(headers(), [first.rows[0], first.rows[0]], envelope(2, "f".repeat(64))), /duplicate Sheet rows/);
   const feature = envelope();
   feature.source.ref = "refs/heads/codex/feature";
   assert.throws(() => core.validateEnvelope(feature), /not authoritative main/);
+  const fork = envelope();
+  fork.source.repository = "Elsewhere/Mynx-Flavoured-Workbench";
+  assert.throws(() => core.validateEnvelope(fork), /not authoritative main/);
 });
 
 test("repository events cannot overwrite Notes", () => {

@@ -1,6 +1,6 @@
 {
   "config_version": 1,
-  "enabled": false,
+  "enabled": true,
   "repository": "Resivore/Mynx-Flavoured-Workbench",
   "authoritative_ref": "refs/heads/main",
   "contract_version": 1,

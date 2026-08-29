@@ -15,7 +15,7 @@ import sys
 import time
 import urllib.request
 from pathlib import Path, PurePosixPath
-from typing import Any
+from typing import Any, Callable
 
 try:
     from .workbench import ValidationError, load_json, load_json_text, validate_codex_log, validate_log_append, validate_repository, validate_status, validate_status_transition
@@ -24,6 +24,8 @@ except ImportError:  # Direct execution from tools/.
 
 
 ZERO_COMMIT = "0" * 40
+PLAN_KIND_INCREMENTAL = "incremental"
+PLAN_KIND_CURRENT_STATE_BOOTSTRAP = "current_state_bootstrap"
 HUMAN_FIELDS = ["Notes"]
 FREEZE_UUID_RE = re.compile(r"^`([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})`$")
 RECORD_KEYS = {
@@ -238,6 +240,52 @@ def flatten_manifest(manifest: dict[str, Any], publication_commit: str) -> dict[
     return record
 
 
+def _validate_authoritative_source(repository: str, ref: str, config: dict[str, Any]) -> None:
+    if repository != config["repository"]:
+        raise ValidationError(f"authoritative publication repository must be {config['repository']}")
+    if ref != config["authoritative_ref"]:
+        raise ValidationError(f"authoritative publication ref must be {config['authoritative_ref']}")
+
+
+def _validate_exact_commit(commit: str, label: str) -> None:
+    if (
+        not isinstance(commit, str)
+        or len(commit) != 40
+        or any(character not in "0123456789abcdef" for character in commit)
+    ):
+        raise ValidationError(f"{label} must be an exact lowercase 40-hex commit")
+
+
+def _event_for_manifest(
+    path: str,
+    manifest: dict[str, Any],
+    *,
+    repository: str,
+    ref: str,
+    publication_commit: str,
+    config: dict[str, Any],
+) -> dict[str, Any]:
+    """Build the ordinary receiver envelope used by every publication mode."""
+
+    project_uuid = manifest["identity"]["uuid"]
+    revision = manifest["synchronization"]["revision"]
+    identity = f"{repository}\n{ref}\n{publication_commit}\n{project_uuid}\n{revision}".encode("utf-8")
+    event_id = hashlib.sha256(identity).hexdigest()
+    return {
+        "contract_version": config["contract_version"],
+        "event_id": event_id,
+        "operation": "project_status_upsert",
+        "source": {
+            "repository": repository,
+            "ref": ref,
+            "publication_commit": publication_commit,
+            "manifest_path": path,
+        },
+        "record": flatten_manifest(manifest, publication_commit),
+        "ownership": {"sheet_preserves": list(config["sheet_preserves"])},
+    }
+
+
 def build_events(
     previous: dict[str, dict[str, Any]],
     current: dict[str, dict[str, Any]],
@@ -248,10 +296,7 @@ def build_events(
     config: dict[str, Any],
     migration_adoption_uuids: frozenset[str] = frozenset(),
 ) -> list[dict[str, Any]]:
-    if repository != config["repository"]:
-        raise ValidationError(f"authoritative publication repository must be {config['repository']}")
-    if ref != config["authoritative_ref"]:
-        raise ValidationError(f"authoritative publication ref must be {config['authoritative_ref']}")
+    _validate_authoritative_source(repository, ref, config)
     if set(previous) - set(current):
         raise ValidationError("project manifest deletion cannot be published as a normal status update")
     events: list[dict[str, Any]] = []
@@ -274,23 +319,50 @@ def build_events(
         previously_participated = before is not None and before["synchronization"]["google_sheet"]["participates"]
         if not participates and not previously_participated:
             continue
-        revision = manifest["synchronization"]["revision"]
-        identity = f"{repository}\n{ref}\n{publication_commit}\n{project_uuid}\n{revision}".encode("utf-8")
-        event_id = hashlib.sha256(identity).hexdigest()
         events.append(
-            {
-                "contract_version": config["contract_version"],
-                "event_id": event_id,
-                "operation": "project_status_upsert",
-                "source": {
-                    "repository": repository,
-                    "ref": ref,
-                    "publication_commit": publication_commit,
-                    "manifest_path": path,
-                },
-                "record": flatten_manifest(manifest, publication_commit),
-                "ownership": {"sheet_preserves": list(config["sheet_preserves"])},
-            }
+            _event_for_manifest(
+                path,
+                manifest,
+                repository=repository,
+                ref=ref,
+                publication_commit=publication_commit,
+                config=config,
+            )
+        )
+    return events
+
+
+def build_current_state_events(
+    current: dict[str, dict[str, Any]],
+    *,
+    repository: str,
+    ref: str,
+    publication_commit: str,
+    config: dict[str, Any],
+) -> list[dict[str, Any]]:
+    """Build ordinary upserts for every participating manifest at one commit."""
+
+    _validate_authoritative_source(repository, ref, config)
+    events: list[dict[str, Any]] = []
+    current_uuids: dict[str, str] = {}
+    for path in sorted(current):
+        manifest = current[path]
+        validate_status(manifest)
+        project_uuid = manifest["identity"]["uuid"]
+        if project_uuid in current_uuids:
+            raise ValidationError(f"duplicate project UUID in publication set: {current_uuids[project_uuid]} and {path}")
+        current_uuids[project_uuid] = path
+        if not manifest["synchronization"]["google_sheet"]["participates"]:
+            continue
+        events.append(
+            _event_for_manifest(
+                path,
+                manifest,
+                repository=repository,
+                ref=ref,
+                publication_commit=publication_commit,
+                config=config,
+            )
         )
     return events
 
@@ -340,12 +412,10 @@ def validate_project_push_contract(root: Path, before: str, after: str) -> None:
 
 
 def make_plan(root: Path, before: str, after: str, repository: str, ref: str, config: dict[str, Any]) -> dict[str, Any]:
-    if len(after) != 40 or any(character not in "0123456789abcdef" for character in after):
-        raise ValidationError("after must be an exact lowercase 40-hex commit")
-    if before != ZERO_COMMIT and (len(before) != 40 or any(character not in "0123456789abcdef" for character in before)):
-        raise ValidationError("before must be an exact lowercase 40-hex commit or all-zero initial value")
-    if repository != config["repository"] or ref != config["authoritative_ref"]:
-        raise ValidationError("only the configured main ref may prepare an authoritative publication plan")
+    _validate_exact_commit(after, "after")
+    if before != ZERO_COMMIT:
+        _validate_exact_commit(before, "before")
+    _validate_authoritative_source(repository, ref, config)
     validate_repository(root)
     validate_project_push_contract(root, before, after)
     adoption_uuids = _migration_adoption_uuids_at(root, before, after)
@@ -362,21 +432,73 @@ def make_plan(root: Path, before: str, after: str, repository: str, ref: str, co
     )
     return {
         "contract_version": config["contract_version"],
+        "plan_kind": PLAN_KIND_INCREMENTAL,
         "source": {"repository": repository, "ref": ref, "before": before, "after": after},
         "events": events,
     }
 
 
+def make_current_state_plan(
+    root: Path,
+    commit: str,
+    repository: str,
+    ref: str,
+    config: dict[str, Any],
+) -> dict[str, Any]:
+    """Prepare a fresh-Sheet bootstrap from the exact checked-out main commit."""
+
+    _validate_exact_commit(commit, "commit")
+    _validate_authoritative_source(repository, ref, config)
+    head_commit = _git(root, "rev-parse", "--verify", "HEAD^{commit}").strip()
+    if head_commit != commit:
+        raise ValidationError("current-state bootstrap commit must exactly match checked-out HEAD")
+    ref_commit = _git(root, "rev-parse", "--verify", f"{ref}^{{commit}}").strip()
+    if ref_commit != commit:
+        raise ValidationError("current-state bootstrap commit must exactly match the configured authoritative ref")
+    validate_repository(root)
+    current = _manifests_at(root, commit)
+    events = build_current_state_events(
+        current,
+        repository=repository,
+        ref=ref,
+        publication_commit=commit,
+        config=config,
+    )
+    return {
+        "contract_version": config["contract_version"],
+        "plan_kind": PLAN_KIND_CURRENT_STATE_BOOTSTRAP,
+        "source": {"repository": repository, "ref": ref, "commit": commit},
+        "events": events,
+    }
+
+
 def _validate_plan(plan: dict[str, Any], config: dict[str, Any]) -> None:
-    if set(plan) != {"contract_version", "source", "events"}:
+    if set(plan) != {"contract_version", "plan_kind", "source", "events"}:
         raise ValidationError("publication plan has unknown or missing keys")
     if plan["contract_version"] != config["contract_version"]:
         raise ValidationError("publication plan contract version mismatch")
+    plan_kind = plan["plan_kind"]
+    if not isinstance(plan_kind, str) or plan_kind not in {
+        PLAN_KIND_INCREMENTAL,
+        PLAN_KIND_CURRENT_STATE_BOOTSTRAP,
+    }:
+        raise ValidationError("publication plan kind is invalid")
     source = plan["source"]
-    if not isinstance(source, dict) or set(source) != {"repository", "ref", "before", "after"}:
+    expected_source_keys = (
+        {"repository", "ref", "before", "after"}
+        if plan_kind == PLAN_KIND_INCREMENTAL
+        else {"repository", "ref", "commit"}
+    )
+    if not isinstance(source, dict) or set(source) != expected_source_keys:
         raise ValidationError("publication plan source contract is invalid")
     if source["repository"] != config["repository"] or source["ref"] != config["authoritative_ref"]:
         raise ValidationError("publication plan is not from authoritative main")
+    if plan_kind == PLAN_KIND_INCREMENTAL:
+        if source["before"] != ZERO_COMMIT:
+            _validate_exact_commit(source["before"], "publication plan before")
+        _validate_exact_commit(source["after"], "publication plan after")
+    else:
+        _validate_exact_commit(source["commit"], "publication plan commit")
     if not isinstance(plan["events"], list):
         raise ValidationError("publication plan events must be an array")
 
@@ -394,7 +516,12 @@ def signed_wrapper(event: dict[str, Any], secret: str) -> bytes:
     ).encode("utf-8")
 
 
-def publish_plan(plan: dict[str, Any], config: dict[str, Any], environment: dict[str, str] | None = None) -> int:
+def publish_plan(
+    plan: dict[str, Any],
+    config: dict[str, Any],
+    environment: dict[str, str] | None = None,
+    acknowledgement_logger: Callable[[dict[str, Any]], None] | None = None,
+) -> int:
     """Publish individual signed envelopes. All gates fail before transport."""
 
     _validate_plan(plan, config)
@@ -421,7 +548,25 @@ def publish_plan(plan: dict[str, Any], config: dict[str, Any], environment: dict
                 result = json.loads(response_text)
             except json.JSONDecodeError as exc:
                 raise ValidationError("Sheet receiver returned invalid JSON") from exc
-            if isinstance(result, dict) and result.get("ok") is True and result.get("event_id") == event["event_id"]:
+            acknowledged = (
+                isinstance(result, dict)
+                and result.get("ok") is True
+                and result.get("event_id") == event["event_id"]
+                and isinstance(result.get("changed"), bool)
+            )
+            if acknowledged:
+                if acknowledgement_logger is not None:
+                    acknowledgement = {
+                        "event_id": result["event_id"],
+                        "changed": result["changed"],
+                    }
+                    record = event.get("record")
+                    if isinstance(record, dict):
+                        if "project_uuid" in record:
+                            acknowledgement["project_uuid"] = record["project_uuid"]
+                        if "revision" in record:
+                            acknowledgement["revision"] = record["revision"]
+                    acknowledgement_logger(acknowledgement)
                 break
             retryable = isinstance(result, dict) and result.get("code") in {"revision_gap", "busy"}
             if retryable and attempt < len(retry_delays):
@@ -443,6 +588,15 @@ def _build_parser() -> argparse.ArgumentParser:
     plan.add_argument("--repository", required=True)
     plan.add_argument("--ref", required=True)
     plan.add_argument("--output", type=Path, required=True)
+    current_state_plan = subparsers.add_parser(
+        "current-state-plan",
+        help="prepare an explicit fresh-Sheet bootstrap plan from exact checked-out main",
+    )
+    current_state_plan.add_argument("--root", type=Path, default=Path("."))
+    current_state_plan.add_argument("--commit", required=True)
+    current_state_plan.add_argument("--repository", required=True)
+    current_state_plan.add_argument("--ref", required=True)
+    current_state_plan.add_argument("--output", type=Path, required=True)
     publish = subparsers.add_parser("publish", help="publish a prepared plan after every cutover gate passes")
     publish.add_argument("--root", type=Path, default=Path("."))
     publish.add_argument("--plan", type=Path, required=True)
@@ -463,10 +617,25 @@ def main(argv: list[str] | None = None) -> int:
             plan = make_plan(root, args.before, args.after, args.repository, args.ref, config)
             args.output.parent.mkdir(parents=True, exist_ok=True)
             args.output.write_text(json.dumps(plan, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
-            print(f"Prepared {len(plan['events'])} publication event(s); live publication remains separately gated.")
+            print(f"Prepared {len(plan['events'])} incremental publication event(s); live publication remains separately gated.")
+        elif args.command == "current-state-plan":
+            plan = make_current_state_plan(root, args.commit, args.repository, args.ref, config)
+            args.output.parent.mkdir(parents=True, exist_ok=True)
+            args.output.write_text(json.dumps(plan, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+            print(
+                f"Prepared {len(plan['events'])} current-state bootstrap event(s) from exact commit {args.commit}; "
+                "live publication remains separately gated."
+            )
         elif args.command == "publish":
             plan = load_json(args.plan)
-            count = publish_plan(plan, config)
+            count = publish_plan(
+                plan,
+                config,
+                acknowledgement_logger=lambda acknowledgement: print(
+                    "Receiver acknowledgement: "
+                    + json.dumps(acknowledgement, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+                ),
+            )
             print(f"Published {count} project status event(s).")
         elif args.command == "validate-change":
             validate_project_push_contract(root, args.before, args.after)

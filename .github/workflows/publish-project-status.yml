@@ -8,12 +8,21 @@ on:
       - "resourcepacks/**"
       - "tools/sheet_sync/publication.json"
       - ".github/workflows/publish-project-status.yml"
+  workflow_dispatch:
+    inputs:
+      operation:
+        description: "Explicit recovery operation to run against authoritative main"
+        required: true
+        type: choice
+        options:
+          - bootstrap-current-state
 
 permissions:
   contents: read
 
 jobs:
   prepare:
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -45,7 +54,7 @@ jobs:
 
   publish:
     needs: prepare
-    if: vars.MYNX_SHEET_CUTOVER == 'authorized'
+    if: github.event_name == 'push' && vars.MYNX_SHEET_CUTOVER == 'authorized'
     runs-on: ubuntu-latest
     environment: sheet-production
     steps:
@@ -62,3 +71,72 @@ jobs:
           MYNX_SHEET_RECEIVER_URL: ${{ secrets.MYNX_SHEET_RECEIVER_URL }}
           MYNX_SHEET_HMAC_SECRET: ${{ secrets.MYNX_SHEET_HMAC_SECRET }}
         run: python tools/sheet_sync.py publish --root . --plan status-publication-plan.json
+
+  bootstrap-prepare:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require explicit authoritative-main bootstrap
+        env:
+          REQUESTED_OPERATION: ${{ inputs.operation }}
+        run: |
+          test "$GITHUB_REPOSITORY" = "Resivore/Mynx-Flavoured-Workbench"
+          test "$GITHUB_REF" = "refs/heads/main"
+          test "$REQUESTED_OPERATION" = "bootstrap-current-state"
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.sha }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Revalidate exact main checkpoint
+        run: |
+          python tools/workbench.py validate-repository --root .
+          python -m unittest discover -s tests -v
+          node --test tests/test_sheet_receiver.mjs
+      - name: Prepare explicit current-state bootstrap plan
+        run: |
+          git fetch --no-tags origin refs/heads/main:refs/heads/main
+          python tools/sheet_sync.py current-state-plan \
+            --root . \
+            --commit "${{ github.sha }}" \
+            --repository "${{ github.repository }}" \
+            --ref "${{ github.ref }}" \
+            --output status-current-state-bootstrap-plan.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: status-current-state-bootstrap-plan-${{ github.sha }}
+          path: status-current-state-bootstrap-plan.json
+          if-no-files-found: error
+          retention-days: 30
+
+  bootstrap-publish:
+    needs: bootstrap-prepare
+    if: >-
+      github.event_name == 'workflow_dispatch' &&
+      github.repository == 'Resivore/Mynx-Flavoured-Workbench' &&
+      github.ref == 'refs/heads/main' &&
+      inputs.operation == 'bootstrap-current-state' &&
+      vars.MYNX_SHEET_CUTOVER == 'authorized'
+    runs-on: ubuntu-latest
+    environment: sheet-production
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/download-artifact@v4
+        with:
+          name: status-current-state-bootstrap-plan-${{ github.sha }}
+      - name: Publish authoritative current-state bootstrap
+        env:
+          MYNX_SHEET_CUTOVER: ${{ vars.MYNX_SHEET_CUTOVER }}
+          MYNX_SHEET_RECEIVER_URL: ${{ secrets.MYNX_SHEET_RECEIVER_URL }}
+          MYNX_SHEET_HMAC_SECRET: ${{ secrets.MYNX_SHEET_HMAC_SECRET }}
+        run: >-
+          python tools/sheet_sync.py publish
+          --root .
+          --plan status-current-state-bootstrap-plan.json

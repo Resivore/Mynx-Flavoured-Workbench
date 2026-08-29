@@ -1,11 +1,46 @@
-# Sheet synchronization foundation
+# Sheet synchronization
 
-The repository is authoritative and Mynx uses its own separate, initially empty Google Sheet as a UUID-keyed human mirror. `sheet_sync.py plan` prepares deterministic, secretless events only for `Resivore/Mynx-Flavoured-Workbench` on `refs/heads/main`. Every changed manifest revision produces an event even when its visible status is unchanged.
+The repository is authoritative and Mynx uses its own separate Google Sheet as a UUID-keyed human mirror. Tracked publication is enabled, but `sheet_sync.py` still fails closed unless every source, cutover, environment, secret, signature, and receiver gate passes.
 
-Live sending fails closed behind all of these gates: tracked `publication.json` is enabled, `MYNX_SHEET_CUTOVER=authorized`, the `sheet-production` GitHub environment permits the main branch, and receiver URL/HMAC secrets exist. The Apps Script receiver adds its own default-off `MYNX_STATUS_ACCEPT_WRITES` Script Property and exact source checks.
+## Incremental publication
+
+`sheet_sync.py plan` prepares deterministic, secretless incremental events only for `Resivore/Mynx-Flavoured-Workbench` on `refs/heads/main`. It validates the normal push transition between exact `--before` and `--after` commits. Every changed participating manifest revision produces an event even when its visible status is unchanged. A manifest that stops participating receives its final ordinary update; a project task cannot bypass the revision and log protocol.
+
+The normal main-push workflow uses this mode. It remains strict and is not a current-state scan.
+
+## Current-state bootstrap
+
+`sheet_sync.py current-state-plan` is the explicit recovery path for a fresh or recreated Sheet. It:
+
+1. accepts only the configured repository and `refs/heads/main`;
+2. requires the supplied `--commit` to be a lowercase full commit that exactly matches both checked-out `HEAD` and the configured main ref;
+3. validates the repository before preparing publication;
+4. reads every canonical `projects/*/WORKBENCH_STATUS.json` and `resourcepacks/*/WORKBENCH_STATUS.json` directly from that commit's Git tree;
+5. includes only manifests whose canonical Sheet participation flag is true;
+6. preserves each manifest's exact current revision and state; and
+7. emits the same deterministic `project_status_upsert` receiver envelopes as normal publication without writing any manifest or log.
+
+Example plan preparation on an exact main checkout:
+
+```powershell
+python tools/sheet_sync.py current-state-plan `
+  --root . `
+  --commit $env:GITHUB_SHA `
+  --repository Resivore/Mynx-Flavoured-Workbench `
+  --ref refs/heads/main `
+  --output status-publication-plan.json
+```
+
+Plans carry `plan_kind`: `incremental` for normal pushes and `current_state_bootstrap` for a current-state scan. That distinction exists only in the local plan wrapper; bootstrap events do not change the receiver envelope contract. Publishing either kind uses the same `publish` command, signing, retry behavior, and gates.
+
+A current-state bootstrap is intentionally not a reset mechanism. Use it only for a fresh/recreated Sheet, or replay the same plan from the same exact commit for an idempotency check. On an existing Sheet, the receiver rejects stale revisions, gaps, and same-revision event conflicts. It accepts an exact event replay as a no-op, so a safe repeat cannot create duplicate rows.
+
+## Gates, ownership, and acknowledgements
+
+Live sending requires tracked `publication.json` to be enabled, `MYNX_SHEET_CUTOVER=authorized`, the `sheet-production` GitHub environment to permit the main branch, and receiver URL/HMAC secrets to exist. The Apps Script receiver adds its own default-off `MYNX_STATUS_ACCEPT_WRITES` Script Property and exact source checks. Feature branches cannot prepare an authoritative plan.
 
 Events contain only repository-owned fields. `Notes` is the sole human-owned Sheet field, the receiver never writes it, and `Priority` is absent from the contract. The receiver looks up rows by UUID and writes only its automation-column allowlist. Live publication remains gated until the Mynx Sheet and secrets are configured and the user authorizes cutover. The legacy repository may continue writing to its different legacy Sheet.
 
 No legacy-row reconciliation or manual revision seeding is required. An event for an unknown UUID creates the full row at its current positive authoritative repository `Revision`, whether that is R1, R5, R12, or higher. For an existing UUID, the same revision and Event ID is an idempotent no-op, a different Event ID at the same revision is rejected, only the exact next revision is accepted, and stale or skipped revisions are rejected.
 
-The receiver serializes writes, flushes canonical fields first, writes `Event ID`, and commits `Revision` last. Publishers retry temporary lock contention and revision gaps; a failed run remains safely replayable with the same deterministic event IDs.
+The receiver serializes writes, flushes canonical fields first, writes `Event ID`, and commits `Revision` last. Publishers retry temporary lock contention and revision gaps with the same signed event; a failed run remains safely replayable with the same deterministic event IDs. CLI publication logs emit one structured receiver acknowledgement per accepted event, including acknowledged `event_id`, project UUID, revision, and the receiver's boolean `changed` state. This makes the initial delivery and an exact-commit no-op replay auditable without exposing secrets; a success response that omits a boolean `changed` value is rejected.

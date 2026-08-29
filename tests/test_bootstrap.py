@@ -4,9 +4,11 @@ import copy
 import base64
 import hashlib
 import hmac
+import io
 import json
 import tempfile
 import unittest
+from contextlib import redirect_stdout
 from pathlib import Path
 from unittest.mock import patch
 from uuid import NAMESPACE_URL, uuid5
@@ -18,6 +20,8 @@ from tools.sheet_sync import (
     _migration_adoption_uuids_at,
     build_events,
     flatten_manifest,
+    main as sheet_sync_main,
+    make_current_state_plan,
     migration_adoption_uuids,
     publish_plan,
     signed_wrapper,
@@ -101,6 +105,74 @@ def advance_manifest(manifest: dict) -> dict:
         source_commit="b" * 40,
     )
     return result
+
+
+def sheet_manifest(
+    project_id: str,
+    name: str,
+    *,
+    revision: int,
+    participates: bool = True,
+    collection: str = "projects",
+) -> dict:
+    manifest = planned_manifest(project_id, name)
+    manifest["definition"]["boundaries"]["owned_paths"] = [f"{collection}/{project_id}"]
+    manifest["synchronization"]["revision"] = revision
+    manifest["synchronization"]["google_sheet"] = {
+        "participates": participates,
+        "exclusion_reason": None if participates else "No human tracking value.",
+    }
+    return manifest
+
+
+def incremental_plan(config: dict, events: list[dict] | None = None) -> dict:
+    return {
+        "contract_version": config["contract_version"],
+        "plan_kind": "incremental",
+        "source": {
+            "repository": config["repository"],
+            "ref": config["authoritative_ref"],
+            "before": ZERO_COMMIT,
+            "after": "c" * 40,
+        },
+        "events": [] if events is None else events,
+    }
+
+
+def publication_environment(config: dict) -> dict[str, str]:
+    return {
+        config["cutover_environment_variable"]: config["cutover_required_value"],
+        config["receiver_url_environment_variable"]: "https://receiver.invalid/",
+        config["hmac_environment_variable"]: "s" * 32,
+    }
+
+
+def ordinary_publication_event(config: dict) -> dict:
+    path = "projects/mossy-stone/WORKBENCH_STATUS.json"
+    return build_events(
+        {},
+        {path: planned_manifest()},
+        repository=config["repository"],
+        ref=config["authoritative_ref"],
+        publication_commit="c" * 40,
+        config=config,
+    )[0]
+
+
+class JsonResponse:
+    status = 200
+
+    def __init__(self, body: dict):
+        self.body = json.dumps(body).encode()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *_args):
+        return False
+
+    def read(self):
+        return self.body
 
 
 def codex_entry(manifest: dict, summary: str = "Initialize project") -> str:
@@ -415,6 +487,190 @@ class RuntimeContractTests(unittest.TestCase):
         self.assertEqual("GATED", tracked["activation"])
 
 
+class CurrentStateBootstrapTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.config = load_json(ROOT / "tools" / "sheet_sync" / "publication.json")
+
+    def prepare_plan(
+        self,
+        manifests: dict[str, dict],
+        commit: str = "d" * 40,
+        root: Path = ROOT,
+    ) -> dict:
+        with (
+            patch("tools.sheet_sync._git", return_value=commit),
+            patch("tools.sheet_sync.validate_repository"),
+            patch("tools.sheet_sync._manifests_at", return_value=manifests),
+        ):
+            return make_current_state_plan(
+                root,
+                commit,
+                self.config["repository"],
+                self.config["authoritative_ref"],
+                self.config,
+            )
+
+    def test_bootstrap_includes_all_participating_manifests_in_both_collections(self) -> None:
+        manifests = {
+            "resourcepacks/amber-ui/WORKBENCH_STATUS.json": sheet_manifest(
+                "amber-ui", "Amber UI", revision=12, collection="resourcepacks"
+            ),
+            "projects/alpha/WORKBENCH_STATUS.json": sheet_manifest("alpha", "Alpha", revision=5),
+        }
+        plan = self.prepare_plan(manifests)
+        self.assertEqual("current_state_bootstrap", plan["plan_kind"])
+        self.assertEqual(
+            {
+                "repository": self.config["repository"],
+                "ref": self.config["authoritative_ref"],
+                "commit": "d" * 40,
+            },
+            plan["source"],
+        )
+        self.assertEqual(sorted(manifests), [event["source"]["manifest_path"] for event in plan["events"]])
+
+    def test_bootstrap_excludes_nonparticipating_manifests(self) -> None:
+        participating_path = "projects/alpha/WORKBENCH_STATUS.json"
+        excluded_path = "resourcepacks/private-notes/WORKBENCH_STATUS.json"
+        manifests = {
+            participating_path: sheet_manifest("alpha", "Alpha", revision=5),
+            excluded_path: sheet_manifest(
+                "private-notes",
+                "Private Notes",
+                revision=9,
+                participates=False,
+                collection="resourcepacks",
+            ),
+        }
+        plan = self.prepare_plan(manifests)
+        self.assertEqual([participating_path], [event["source"]["manifest_path"] for event in plan["events"]])
+
+    def test_bootstrap_preserves_exact_current_revisions(self) -> None:
+        manifests = {
+            "projects/alpha/WORKBENCH_STATUS.json": sheet_manifest("alpha", "Alpha", revision=5),
+            "projects/beta/WORKBENCH_STATUS.json": sheet_manifest("beta", "Beta", revision=6),
+            "resourcepacks/amber-ui/WORKBENCH_STATUS.json": sheet_manifest(
+                "amber-ui", "Amber UI", revision=12, collection="resourcepacks"
+            ),
+        }
+        plan = self.prepare_plan(manifests)
+        revisions = {
+            event["source"]["manifest_path"]: event["record"]["revision"]
+            for event in plan["events"]
+        }
+        self.assertEqual({path: manifest["synchronization"]["revision"] for path, manifest in manifests.items()}, revisions)
+        self.assertTrue(all(event["record"]["publication_commit"] == "d" * 40 for event in plan["events"]))
+
+    def test_bootstrap_does_not_mutate_project_manifests(self) -> None:
+        manifests = {
+            "projects/alpha/WORKBENCH_STATUS.json": sheet_manifest("alpha", "Alpha", revision=5),
+            "resourcepacks/amber-ui/WORKBENCH_STATUS.json": sheet_manifest(
+                "amber-ui", "Amber UI", revision=12, collection="resourcepacks"
+            ),
+        }
+        before_objects = copy.deepcopy(manifests)
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            manifest_bytes: dict[Path, bytes] = {}
+            for relative, manifest in manifests.items():
+                path = root / relative
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+                manifest_bytes[path] = path.read_bytes()
+            self.prepare_plan(manifests, root=root)
+            self.assertEqual(manifest_bytes, {path: path.read_bytes() for path in manifest_bytes})
+        self.assertEqual(before_objects, manifests)
+
+    def test_bootstrap_refuses_non_authoritative_repository_and_ref(self) -> None:
+        arguments = (
+            ("Elsewhere/Mynx-Flavoured-Workbench", self.config["authoritative_ref"]),
+            (self.config["repository"], "refs/heads/codex/feature"),
+        )
+        for repository, ref in arguments:
+            with self.subTest(repository=repository, ref=ref):
+                with self.assertRaisesRegex(ValidationError, "configured|authoritative|main|repository|ref"):
+                    make_current_state_plan(ROOT, "d" * 40, repository, ref, self.config)
+
+    def test_bootstrap_refuses_a_commit_other_than_checked_out_main(self) -> None:
+        with patch("tools.sheet_sync._git", return_value="e" * 40):
+            with self.assertRaisesRegex(ValidationError, "HEAD|main|commit"):
+                make_current_state_plan(
+                    ROOT,
+                    "d" * 40,
+                    self.config["repository"],
+                    self.config["authoritative_ref"],
+                    self.config,
+                )
+
+    def test_bootstrap_refuses_head_when_authoritative_main_has_advanced(self) -> None:
+        with patch("tools.sheet_sync._git", side_effect=["d" * 40, "e" * 40]):
+            with self.assertRaisesRegex(ValidationError, "authoritative ref"):
+                make_current_state_plan(
+                    ROOT,
+                    "d" * 40,
+                    self.config["repository"],
+                    self.config["authoritative_ref"],
+                    self.config,
+                )
+
+    def test_bootstrap_validates_repository_before_manifest_enumeration(self) -> None:
+        order: list[str] = []
+
+        def validate(*_args) -> None:
+            order.append("validate")
+
+        def enumerate_manifests(*_args) -> dict:
+            order.append("enumerate")
+            return {}
+
+        with (
+            patch("tools.sheet_sync._git", return_value="d" * 40),
+            patch("tools.sheet_sync.validate_repository", side_effect=validate),
+            patch("tools.sheet_sync._manifests_at", side_effect=enumerate_manifests),
+        ):
+            make_current_state_plan(
+                ROOT,
+                "d" * 40,
+                self.config["repository"],
+                self.config["authoritative_ref"],
+                self.config,
+            )
+        self.assertEqual(["validate", "enumerate"], order)
+
+    def test_bootstrap_uses_ordinary_signed_envelopes_and_replays_deterministically(self) -> None:
+        manifests = {
+            "projects/alpha/WORKBENCH_STATUS.json": sheet_manifest("alpha", "Alpha", revision=5),
+            "resourcepacks/amber-ui/WORKBENCH_STATUS.json": sheet_manifest(
+                "amber-ui", "Amber UI", revision=12, collection="resourcepacks"
+            ),
+        }
+        first = self.prepare_plan(manifests)
+        second = self.prepare_plan(copy.deepcopy(manifests))
+        self.assertEqual(first, second)
+        self.assertEqual(
+            [event["event_id"] for event in first["events"]],
+            [event["event_id"] for event in second["events"]],
+        )
+        for event in first["events"]:
+            with self.subTest(path=event["source"]["manifest_path"]):
+                self.assertEqual("project_status_upsert", event["operation"])
+                self.assertEqual(
+                    {"contract_version", "event_id", "operation", "source", "record", "ownership"},
+                    set(event),
+                )
+                self.assertEqual({"sheet_preserves": ["Notes"]}, event["ownership"])
+                record_keys = {key.casefold() for key in event["record"]}
+                self.assertNotIn("notes", record_keys)
+                self.assertNotIn("priority", record_keys)
+                secret = "s" * 32
+                wrapper = json.loads(signed_wrapper(event, secret))
+                padded = wrapper["payload"] + "=" * (-len(wrapper["payload"]) % 4)
+                self.assertEqual(event, json.loads(base64.urlsafe_b64decode(padded).decode("utf-8")))
+                expected = hmac.new(secret.encode(), wrapper["payload"].encode("ascii"), hashlib.sha256).hexdigest()
+                self.assertEqual("sha256=" + expected, wrapper["signature"])
+
+
 class SheetPublisherTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
@@ -529,8 +785,8 @@ class SheetPublisherTests(unittest.TestCase):
         )
         self.assertEqual([], events)
 
-    def test_payload_protects_notes_and_live_publication_is_gated(self) -> None:
-        self.assertFalse(self.config["enabled"])
+    def test_tracked_activation_preserves_notes_and_omits_priority(self) -> None:
+        self.assertTrue(self.config["enabled"])
         self.assertEqual(["Notes"], HUMAN_FIELDS)
         self.assertEqual(HUMAN_FIELDS, self.config["sheet_preserves"])
         record = flatten_manifest(planned_manifest(), "c" * 40)
@@ -547,42 +803,47 @@ class SheetPublisherTests(unittest.TestCase):
             config=self.config,
         )
         self.assertEqual({"sheet_preserves": ["Notes"]}, events[0]["ownership"])
-        plan = {
-            "contract_version": 1,
-            "source": {"repository": self.config["repository"], "ref": self.config["authoritative_ref"], "before": "0" * 40, "after": "c" * 40},
-            "events": [],
-        }
-        with self.assertRaisesRegex(ValidationError, "tracked-disabled"):
-            publish_plan(plan, self.config, {})
+
+    def test_all_publication_gates_fail_before_transport(self) -> None:
+        event = ordinary_publication_event(self.config)
+        plan = incremental_plan(self.config, [event])
+        enabled = copy.deepcopy(self.config)
+        enabled["enabled"] = True
+        disabled = copy.deepcopy(enabled)
+        disabled["enabled"] = False
+        valid_environment = publication_environment(enabled)
+        missing_cutover = dict(valid_environment)
+        missing_cutover.pop(enabled["cutover_environment_variable"])
+        wrong_cutover = dict(valid_environment)
+        wrong_cutover[enabled["cutover_environment_variable"]] = "not-authorized"
+        missing_receiver = dict(valid_environment)
+        missing_receiver.pop(enabled["receiver_url_environment_variable"])
+        missing_secret = dict(valid_environment)
+        missing_secret.pop(enabled["hmac_environment_variable"])
+        short_secret = dict(valid_environment)
+        short_secret[enabled["hmac_environment_variable"]] = "too-short"
+        cases = (
+            ("tracked disabled", disabled, valid_environment, "tracked-disabled"),
+            ("cutover absent", enabled, missing_cutover, "cutover variable"),
+            ("cutover wrong", enabled, wrong_cutover, "cutover variable"),
+            ("receiver absent", enabled, missing_receiver, "receiver URL and HMAC secret"),
+            ("secret absent", enabled, missing_secret, "receiver URL and HMAC secret"),
+            ("secret too short", enabled, short_secret, "at least 32"),
+        )
+        for label, config, environment, error in cases:
+            with self.subTest(gate=label), patch("urllib.request.urlopen") as transport:
+                with self.assertRaisesRegex(ValidationError, error):
+                    publish_plan(plan, config, environment)
+                transport.assert_not_called()
 
     def test_http_200_receiver_rejection_is_not_counted_as_published(self) -> None:
         config = copy.deepcopy(self.config)
         config["enabled"] = True
-        event = {"event_id": "e" * 64}
-        plan = {
-            "contract_version": 1,
-            "source": {"repository": config["repository"], "ref": config["authoritative_ref"], "before": "0" * 40, "after": "c" * 40},
-            "events": [event],
-        }
-        environment = {
-            config["cutover_environment_variable"]: config["cutover_required_value"],
-            config["receiver_url_environment_variable"]: "https://receiver.invalid/",
-            config["hmac_environment_variable"]: "s" * 32,
-        }
-
-        class Response:
-            status = 200
-
-            def __enter__(self):
-                return self
-
-            def __exit__(self, *_args):
-                return False
-
-            def read(self):
-                return b'{"ok":false,"error":"write gate disabled"}'
-
-        with patch("urllib.request.urlopen", return_value=Response()):
+        event = ordinary_publication_event(config)
+        plan = incremental_plan(config, [event])
+        environment = publication_environment(config)
+        response = JsonResponse({"ok": False, "error": "write gate disabled"})
+        with patch("urllib.request.urlopen", return_value=response):
             with self.assertRaisesRegex(ValidationError, "rejected event"):
                 publish_plan(plan, config, environment)
 
@@ -595,44 +856,145 @@ class SheetPublisherTests(unittest.TestCase):
         expected = hmac.new(secret.encode(), wrapper["payload"].encode("ascii"), hashlib.sha256).hexdigest()
         self.assertEqual("sha256=" + expected, wrapper["signature"])
 
+    def test_publish_surfaces_first_write_and_idempotent_repeat_acknowledgements(self) -> None:
+        config = copy.deepcopy(self.config)
+        config["enabled"] = True
+        event = ordinary_publication_event(config)
+        plan = incremental_plan(config, [event])
+        environment = publication_environment(config)
+        responses = [
+            JsonResponse({"ok": True, "changed": True, "event_id": event["event_id"]}),
+            JsonResponse({"ok": True, "changed": False, "event_id": event["event_id"]}),
+        ]
+        output = io.StringIO()
+        with tempfile.TemporaryDirectory() as temporary:
+            plan_path = Path(temporary) / "publication-plan.json"
+            plan_path.write_text(json.dumps(plan), encoding="utf-8")
+            arguments = ["publish", "--root", str(ROOT), "--plan", str(plan_path)]
+            with (
+                patch("urllib.request.urlopen", side_effect=responses),
+                patch.dict("tools.sheet_sync.os.environ", environment, clear=True),
+                redirect_stdout(output),
+            ):
+                self.assertEqual(0, sheet_sync_main(arguments))
+                self.assertEqual(0, sheet_sync_main(arguments))
+        expected_base = {
+            "event_id": event["event_id"],
+            "project_uuid": event["record"]["project_uuid"],
+            "revision": event["record"]["revision"],
+        }
+        for changed in (True, False):
+            acknowledgement = {"changed": changed, **expected_base}
+            line = "Receiver acknowledgement: " + json.dumps(acknowledgement, sort_keys=True, separators=(",", ":"))
+            self.assertIn(line, output.getvalue())
+
+    def test_success_acknowledgement_requires_boolean_changed(self) -> None:
+        config = copy.deepcopy(self.config)
+        config["enabled"] = True
+        event = ordinary_publication_event(config)
+        plan = incremental_plan(config, [event])
+        environment = publication_environment(config)
+        invalid_results = (
+            {"ok": True, "event_id": event["event_id"]},
+            {"ok": True, "changed": "false", "event_id": event["event_id"]},
+        )
+        for result in invalid_results:
+            with self.subTest(result=result), patch("urllib.request.urlopen", return_value=JsonResponse(result)):
+                with self.assertRaisesRegex(ValidationError, "acknowledgement|rejected event"):
+                    publish_plan(plan, config, environment)
+
     def test_revision_gap_is_retried_with_same_event(self) -> None:
         config = copy.deepcopy(self.config)
         config["enabled"] = True
-        event = {"event_id": "e" * 64}
-        plan = {
-            "contract_version": 1,
-            "source": {"repository": config["repository"], "ref": config["authoritative_ref"], "before": "0" * 40, "after": "c" * 40},
-            "events": [event],
-        }
-        environment = {
-            config["cutover_environment_variable"]: config["cutover_required_value"],
-            config["receiver_url_environment_variable"]: "https://receiver.invalid/",
-            config["hmac_environment_variable"]: "s" * 32,
-        }
-
-        class Response:
-            status = 200
-
-            def __init__(self, body: dict):
-                self.body = json.dumps(body).encode()
-
-            def __enter__(self):
-                return self
-
-            def __exit__(self, *_args):
-                return False
-
-            def read(self):
-                return self.body
-
+        event = ordinary_publication_event(config)
+        plan = incremental_plan(config, [event])
+        environment = publication_environment(config)
         responses = [
-            Response({"ok": False, "code": "revision_gap", "error": "stale or skipped Sheet revision"}),
-            Response({"ok": True, "changed": True, "event_id": event["event_id"]}),
+            JsonResponse({"ok": False, "code": "revision_gap", "error": "stale or skipped Sheet revision"}),
+            JsonResponse({"ok": True, "changed": True, "event_id": event["event_id"]}),
         ]
         with patch("urllib.request.urlopen", side_effect=responses) as request, patch("tools.sheet_sync.time.sleep") as sleep:
             self.assertEqual(1, publish_plan(plan, config, environment))
             self.assertEqual(2, request.call_count)
+            self.assertIs(request.call_args_list[0].args[0], request.call_args_list[1].args[0])
             sleep.assert_called_once_with(2)
+
+
+class SheetWorkflowAuthorityTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.workflow = (ROOT / ".github" / "workflows" / "publish-project-status.yml").read_text(encoding="utf-8")
+
+    def test_normal_push_remains_main_only_and_uses_incremental_plan(self) -> None:
+        prepare = self.workflow.split("  prepare:", 1)[1].split("\n  publish:", 1)[0]
+        publish = self.workflow.split("\n  publish:", 1)[1].split("\n  bootstrap-prepare:", 1)[0]
+        fragments = (
+            "push:\n    branches: [main]",
+            "if: github.event_name == 'push'",
+            "python tools/sheet_sync.py plan",
+            '--before "${{ github.event.before }}"',
+            '--after "${{ github.sha }}"',
+            '--repository "${{ github.repository }}"',
+            '--ref "${{ github.ref }}"',
+        )
+        for fragment in fragments:
+            with self.subTest(fragment=fragment):
+                self.assertIn(fragment, self.workflow if fragment.startswith("push:") else prepare)
+        self.assertIn("github.event_name == 'push'", publish)
+        self.assertIn("vars.MYNX_SHEET_CUTOVER == 'authorized'", publish)
+
+    def test_dispatch_exposes_only_the_explicit_bootstrap_operation(self) -> None:
+        dispatch = self.workflow.split("  workflow_dispatch:", 1)[1].split("\n\npermissions:", 1)[0]
+        self.assertIn("inputs:", dispatch)
+        self.assertIn("operation:", dispatch)
+        self.assertIn("required: true", dispatch)
+        self.assertIn("type: choice", dispatch)
+        self.assertIn("- bootstrap-current-state", dispatch)
+        for forbidden in ("repository:", "ref:", "commit:"):
+            with self.subTest(forbidden=forbidden):
+                self.assertNotIn(forbidden, dispatch)
+
+    def test_bootstrap_dispatch_uses_exact_github_main_snapshot_and_validates_first(self) -> None:
+        prepare = self.workflow.split("  bootstrap-prepare:", 1)[1].split("\n  bootstrap-publish:", 1)[0]
+        fragments = (
+            'test "$GITHUB_REPOSITORY" = "Resivore/Mynx-Flavoured-Workbench"',
+            'test "$GITHUB_REF" = "refs/heads/main"',
+            'test "$REQUESTED_OPERATION" = "bootstrap-current-state"',
+            "ref: ${{ github.sha }}",
+            "python tools/workbench.py validate-repository --root .",
+            "python -m unittest discover -s tests -v",
+            "node --test tests/test_sheet_receiver.mjs",
+            "git fetch --no-tags origin refs/heads/main:refs/heads/main",
+            "python tools/sheet_sync.py current-state-plan",
+            '--commit "${{ github.sha }}"',
+            '--repository "${{ github.repository }}"',
+            '--ref "${{ github.ref }}"',
+        )
+        for fragment in fragments:
+            with self.subTest(fragment=fragment):
+                self.assertIn(fragment, prepare)
+        self.assertLess(prepare.index("validate-repository"), prepare.index("current-state-plan"))
+
+    def test_bootstrap_publish_remains_exact_authority_and_production_secret_gated(self) -> None:
+        publish = self.workflow.split("  bootstrap-publish:", 1)[1]
+        fragments = (
+            "github.event_name == 'workflow_dispatch'",
+            "github.repository == 'Resivore/Mynx-Flavoured-Workbench'",
+            "github.ref == 'refs/heads/main'",
+            "inputs.operation == 'bootstrap-current-state'",
+            "vars.MYNX_SHEET_CUTOVER == 'authorized'",
+            "environment: sheet-production",
+            "MYNX_SHEET_CUTOVER: ${{ vars.MYNX_SHEET_CUTOVER }}",
+            "MYNX_SHEET_RECEIVER_URL: ${{ secrets.MYNX_SHEET_RECEIVER_URL }}",
+            "MYNX_SHEET_HMAC_SECRET: ${{ secrets.MYNX_SHEET_HMAC_SECRET }}",
+            "python tools/sheet_sync.py publish",
+        )
+        for fragment in fragments:
+            with self.subTest(fragment=fragment):
+                self.assertIn(fragment, publish)
+        self.assertEqual(2, self.workflow.count("environment: sheet-production"))
+        self.assertEqual(2, self.workflow.count("MYNX_SHEET_RECEIVER_URL: ${{ secrets.MYNX_SHEET_RECEIVER_URL }}"))
+        self.assertEqual(2, self.workflow.count("MYNX_SHEET_HMAC_SECRET: ${{ secrets.MYNX_SHEET_HMAC_SECRET }}"))
 
 
 if __name__ == "__main__":
