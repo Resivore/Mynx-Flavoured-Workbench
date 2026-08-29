@@ -36,7 +36,7 @@ DEPENDENCY_TYPES = {"PROJECT", "MOD", "RESOURCE_PACK", "DATA_PACK", "TOOL", "SER
 ACCEPTED_CURRENT_STATES = {"NO_ACCEPTED", "CURRENT_IS_ACCEPTED", "CURRENT_DIFFERS_FROM_ACCEPTED"}
 ACCEPTED_ROLLBACK_STATES = {"NO_ROLLBACK", "ACCEPTED_IS_ROLLBACK", "ROLLBACK_DIFFERS_FROM_ACCEPTED"}
 
-PROJECT_ID_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
+PROJECT_ID_RE = re.compile(r"^[a-z0-9]+(?:[.-][a-z0-9]+)*$")
 COMMIT_RE = re.compile(r"^[0-9a-f]{40}$")
 SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
 RFC3339_UTC_RE = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,6})?Z$")
@@ -130,7 +130,7 @@ def _uuid(value: Any, path: str) -> str:
 def _project_id(value: Any, path: str) -> str:
     value = _nonblank(value, path)
     if not PROJECT_ID_RE.fullmatch(value):
-        _fail(path, "must be lowercase kebab-case")
+        _fail(path, "must use lowercase alphanumeric segments separated by hyphens or dots")
     return value
 
 

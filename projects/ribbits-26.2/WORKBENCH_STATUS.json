@@ -1,0 +1,150 @@
+{
+  "$schema": "../../schemas/workbench-status.schema.json",
+  "schema_version": 1,
+  "identity": {
+    "uuid": "2a650718-ec62-568f-8dff-71258a4d6f3f",
+    "name": "Ribbits 26.2 Port",
+    "project_id": "ribbits-26.2",
+    "aliases": [],
+    "legacy_names": [],
+    "legacy_ids": [
+      "ribbits-26-2"
+    ]
+  },
+  "definition": {
+    "lifecycle": "ACTIVE",
+    "goals": [
+      "Maintain the faithful private Fabric port of Ribbits 4.1.6 for Minecraft Java 26.2.",
+      "Preserve source and behavioral parity plus the hash-guarded private-resource assembly contract without publishing protected Ribbits assets."
+    ],
+    "scope": [
+      "Retain the legally trackable source, build, and test implementation from exact Canary source checkpoint 0105a1114edcf5eb0306bb60a48ad48d963d187d.",
+      "Preserve the private resource assembler, exact input and output identities, and authorized temporary shared green spawn-egg derivation contract.",
+      "Preserve the 31-test behavioral-parity checkpoint while distinguishing source/static evidence from Minecraft runtime validation."
+    ],
+    "boundaries": {
+      "owned_paths": [
+        "projects/ribbits-26.2"
+      ],
+      "exclusions": [
+        "Protected Ribbits assets, data, icons, logos, pristine binaries, private manifests and reports, and the private Canary JAR are external, ignored, and nonredistributable.",
+        "Public source-only build output is resource-incomplete and must not be represented as a runnable Canary.",
+        "No substitute private resources, resource-pack work, STNC/QSN work, YUNG's API project changes, deployment, Test Instance Manager mutation, or gameplay-profile access."
+      ]
+    },
+    "dependencies": [
+      {
+        "type": "MOD",
+        "identifier": "minecraft",
+        "requirement": "=26.2",
+        "reason": "Exact game target for the port and private resource transformations."
+      },
+      {
+        "type": "MOD",
+        "identifier": "fabricloader",
+        "requirement": "=0.19.3",
+        "reason": "Validated Fabric loader baseline."
+      },
+      {
+        "type": "MOD",
+        "identifier": "fabric-api",
+        "requirement": "=0.157.0+26.2",
+        "reason": "Validated Fabric API compile and runtime surface."
+      },
+      {
+        "type": "MOD",
+        "identifier": "geckolib",
+        "requirement": "=5.5.1",
+        "reason": "Validated animation and model API."
+      },
+      {
+        "type": "MOD",
+        "identifier": "cloth-config2",
+        "requirement": "=26.2.155",
+        "reason": "Validated configuration API."
+      },
+      {
+        "type": "MOD",
+        "identifier": "modmenu",
+        "requirement": "=20.0.1",
+        "reason": "Validated optional configuration-screen integration."
+      },
+      {
+        "type": "MOD",
+        "identifier": "yungsapi",
+        "requirement": "YungsApi-26.2-Fabric-6.1.1-compat.1.jar; SHA-256 527850c4f061fa9ab327ae0b32a3d26ebc77b51fb86234f5f6b1e3418ca084ca",
+        "reason": "Exact external compatibility dependency from legacy revision 57a89b593ce9410db98b75a350916ae36caf9522; it is not copied or bundled."
+      },
+      {
+        "type": "TOOL",
+        "identifier": "java",
+        "requirement": "25",
+        "reason": "Required Minecraft and compilation toolchain."
+      },
+      {
+        "type": "TOOL",
+        "identifier": "gradle",
+        "requirement": "9.5.1",
+        "reason": "Exact tracked wrapper version used for Canary 1."
+      },
+      {
+        "type": "TOOL",
+        "identifier": "fabric-loom",
+        "requirement": "1.15.5",
+        "reason": "Exact build plugin used for Canary 1."
+      },
+      {
+        "type": "TOOL",
+        "identifier": "python",
+        "requirement": "3.14.3",
+        "reason": "Validated private assembler and static-validator runtime."
+      },
+      {
+        "type": "OTHER",
+        "identifier": "Ribbits-1.21.1-Fabric-4.1.6.jar",
+        "requirement": "SHA-256 4cf86564aed393410fb1dbca3a9ce2425382307655e92bb6b43f3ddcee5bf731",
+        "reason": "External read-only source for protected private resources; never tracked."
+      },
+      {
+        "type": "OTHER",
+        "identifier": "minecraft-merged-7b44b2d1a4-26.2.jar",
+        "requirement": "37,396,380 bytes; SHA-256 200d673e028d27ddb22bd2d365fbcb98b55be4b2043ee52681a8f30812c12cfe",
+        "reason": "External read-only source for the authorized vanilla frog spawn-egg derivation."
+      }
+    ]
+  },
+  "state": {
+    "milestone": "Exact private Canary 1 (3,135,359 bytes) is retained locally after 31 source tests plus private tree and JAR static validation; it is nonredistributable, not deployed, and runtime untested.",
+    "releases": {
+      "current": {
+        "version": "4.1.6+26.2-port-canary1",
+        "artifact": {
+          "filename": "ribbits-4.1.6+26.2-port-canary1.jar",
+          "sha256": "886f2586ca8d5ab80bdfc58cd18e10dc6ba4ff180371ab71461681db5ba00b6d"
+        },
+        "source_commit": "0105a1114edcf5eb0306bb60a48ad48d963d187d"
+      },
+      "accepted": null,
+      "rollback": null,
+      "accepted_current": "NO_ACCEPTED",
+      "accepted_rollback": "NO_ROLLBACK"
+    },
+    "validation": {
+      "build": "STATIC_PASS",
+      "deployment": "NOT_DEPLOYED",
+      "runtime": "RUNTIME_UNTESTED"
+    },
+    "blocker": null
+  },
+  "synchronization": {
+    "revision": 1,
+    "activity_at": "2026-08-28T22:52:51Z",
+    "updated_at": "2026-08-29T22:43:19Z",
+    "last_codex_at": "2026-08-29T22:43:19Z",
+    "source_commit": "f2716e68c8cbf48ce04db233251a9f8f5738309c",
+    "google_sheet": {
+      "participates": true,
+      "exclusion_reason": null
+    }
+  }
+}

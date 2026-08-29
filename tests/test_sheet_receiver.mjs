@@ -73,6 +73,14 @@ test("unknown UUID at a higher positive revision inserts at that revision", () =
   assertUnknownInsert(12, "c".repeat(64));
 });
 
+test("versioned dotted project IDs and manifest paths are accepted", () => {
+  const dotted = envelope();
+  dotted.source.manifest_path = "projects/ribbits-26.2/WORKBENCH_STATUS.json";
+  dotted.record.project_id = "ribbits-26.2";
+  dotted.record.boundaries.owned_paths = ["projects/ribbits-26.2"];
+  assert.doesNotThrow(() => core.validateEnvelope(dotted));
+});
+
 test("unknown UUID rejects revision zero", () => {
   assert.throws(
     () => core.applyToRows(headers(), [], envelope(0, "0".repeat(64))),

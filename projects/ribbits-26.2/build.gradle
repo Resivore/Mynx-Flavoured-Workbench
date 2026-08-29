@@ -1,0 +1,255 @@
+plugins {
+    id 'net.fabricmc.fabric-loom' version '1.15.5'
+}
+
+version = project.mod_version
+group = project.maven_group
+
+def privateResourcesPath = System.getenv('RIBBITS_PRIVATE_RESOURCES_DIR')
+def privateResourcesDir = privateResourcesPath ? file(privateResourcesPath) : null
+def privateManifestPath = System.getenv('RIBBITS_PRIVATE_MANIFEST')
+def privateManifestFile = privateManifestPath ? file(privateManifestPath) : null
+
+base {
+    archivesName = privateResourcesDir != null ? "${project.archives_name}-private-reconstruction" : "${project.archives_name}-source-only"
+}
+
+repositories {
+    maven { url 'https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/' }
+    maven { url 'https://maven.shedaniel.me/' }
+    maven { url 'https://maven.terraformersmc.com/releases/' }
+    mavenCentral()
+}
+
+if (privateResourcesDir != null && !privateResourcesDir.isDirectory()) {
+    throw new GradleException("RIBBITS_PRIVATE_RESOURCES_DIR is not a directory: ${privateResourcesDir}")
+}
+if (privateResourcesDir != null && (privateManifestFile == null || !privateManifestFile.isFile())) {
+    throw new GradleException('Set RIBBITS_PRIVATE_MANIFEST to the assembler manifest when using private resources')
+}
+
+def prohibitedDefaultResourcePaths = [
+    'common/src/main/resources/assets',
+    'common/src/main/resources/data',
+    'common/src/main/resources/icon.png',
+    'common/src/main/resources/logo.png',
+    'fabric/src/main/resources/assets',
+    'fabric/src/main/resources/data',
+    'fabric/src/main/resources/icon.png',
+    'fabric/src/main/resources/logo.png',
+].findAll { file(it).exists() }
+if (!prohibitedDefaultResourcePaths.isEmpty()) {
+    throw new GradleException(
+        "Protected/private resources must not exist in default source roots: ${prohibitedDefaultResourcePaths}"
+    )
+}
+
+def verifyPrivateResources = null
+if (privateResourcesDir != null) {
+    verifyPrivateResources = tasks.register('verifyPrivateResourceManifest') {
+        inputs.dir privateResourcesDir
+        inputs.file privateManifestFile
+
+        doLast {
+            def privatePath = privateResourcesDir.canonicalPath.replace('\\', '/')
+            if (!privatePath.contains('/test-builds/private/')) {
+                throw new GradleException("Private resources must stay under test-builds/private: ${privateResourcesDir}")
+            }
+
+            def manifest = new groovy.json.JsonSlurper().parse(privateManifestFile)
+            def expectedPristineSha256 = '4cf86564aed393410fb1dbca3a9ce2425382307655e92bb6b43f3ddcee5bf731'
+            if (!expectedPristineSha256.equalsIgnoreCase(manifest.pristine.sha256.toString())) {
+                throw new GradleException('Private manifest does not identify the authorized pristine Ribbits JAR')
+            }
+            if (manifest.classification.toString() != 'PRIVATE ASSEMBLY STAGED / AUTHORIZED SUBSTITUTION') {
+                throw new GradleException("Private manifest classification is not eligible for private packaging: ${manifest.classification}")
+            }
+            if ((manifest.blockers as List)) {
+                throw new GradleException("Private manifest still contains blockers: ${manifest.blockers}")
+            }
+
+            def spawnEgg = manifest.authorized_spawn_egg_substitution
+            def expectedSourceHash = '23962914851db6e2f7f346e80bf412d8f6e1435e6cd54b73dd5ccbec1a50eccf'
+            def expectedOutputHash = '53eb7f9d59457b2cd38a5bf65c10c78ac0721da2123f37ce2f48c4d3e1dc1ed1'
+            def expectedMinecraftClientSize = 37396380
+            def expectedMinecraftClientHash = '200d673e028d27ddb22bd2d365fbcb98b55be4b2043ee52681a8f30812c12cfe'
+            def expectedConsumers = [
+                'ribbit_nitwit_spawn_egg',
+                'ribbit_fisherman_spawn_egg',
+                'ribbit_gardener_spawn_egg',
+                'ribbit_merchant_spawn_egg',
+                'ribbit_sorcerer_spawn_egg',
+            ]
+            if (spawnEgg == null ||
+                spawnEgg.temporary != true ||
+                spawnEgg.exact_ribbits_4_1_6_visual_parity != false ||
+                spawnEgg.behavior_changed != false ||
+                spawnEgg.source.minecraft_version.toString() != '26.2' ||
+                (spawnEgg.source.client_jar_size as long) != expectedMinecraftClientSize ||
+                !expectedMinecraftClientHash.equalsIgnoreCase(spawnEgg.source.client_jar_sha256.toString()) ||
+                spawnEgg.source.entry.toString() != 'assets/minecraft/textures/item/frog_spawn_egg.png' ||
+                !expectedSourceHash.equalsIgnoreCase(spawnEgg.source.sha256.toString()) ||
+                (spawnEgg.source.dimensions as List) != [16, 16] ||
+                spawnEgg.transformation.kind.toString() != 'palette-only recolor' ||
+                spawnEgg.transformation.pixel_indices_and_alpha.toString() != 'byte-identical to the vanilla source' ||
+                spawnEgg.output.entry.toString() != 'assets/ribbits/textures/item/ribbit_spawn_egg.png' ||
+                !expectedOutputHash.equalsIgnoreCase(spawnEgg.output.sha256.toString()) ||
+                (spawnEgg.output.dimensions as List) != [16, 16] ||
+                (spawnEgg.consumers as List) != expectedConsumers ||
+                spawnEgg.model.parent.toString() != 'minecraft:item/generated' ||
+                spawnEgg.model.textures.layer0.toString() != 'ribbits:item/ribbit_spawn_egg') {
+                throw new GradleException('Private manifest lacks the exact authorized temporary spawn-egg substitution contract')
+            }
+            if (file(manifest.output.path).canonicalFile != privateResourcesDir.canonicalFile) {
+                throw new GradleException('Private manifest output path does not match RIBBITS_PRIVATE_RESOURCES_DIR')
+            }
+
+            def expectedFiles = manifest.output.files as Map
+            if ((manifest.pristine.selected_file_count as int) != 287 ||
+                (manifest.output.file_count as int) != 308 ||
+                expectedFiles.size() != 308) {
+                throw new GradleException('Private manifest does not preserve the exact 287-input / 308-output contract')
+            }
+            if (!expectedOutputHash.equalsIgnoreCase(
+                expectedFiles['assets/ribbits/textures/item/ribbit_spawn_egg.png'].toString()
+            )) {
+                throw new GradleException('Private manifest does not hash-pin the authorized shared spawn-egg texture')
+            }
+            def actualFiles = [:]
+            fileTree(privateResourcesDir).visit { details ->
+                if (!details.directory) {
+                    actualFiles[details.relativePath.pathString] = details.file
+                }
+            }
+            if (actualFiles.keySet() != expectedFiles.keySet()) {
+                def missing = (expectedFiles.keySet() - actualFiles.keySet()).sort()
+                def unexpected = (actualFiles.keySet() - expectedFiles.keySet()).sort()
+                throw new GradleException("Private resource manifest mismatch; missing=${missing}, unexpected=${unexpected}")
+            }
+            if (actualFiles.keySet().any { name ->
+                !(name == 'icon.png' || name == 'logo.png' || name.startsWith('assets/') || name.startsWith('data/'))
+            }) {
+                throw new GradleException('Private resource tree contains a disallowed top-level path')
+            }
+
+            expectedFiles.each { name, expectedHash ->
+                def digest = java.security.MessageDigest.getInstance('SHA-256')
+                actualFiles[name].withInputStream { input ->
+                    byte[] buffer = new byte[8192]
+                    int count
+                    while ((count = input.read(buffer)) != -1) {
+                        digest.update(buffer, 0, count)
+                    }
+                }
+                def actualHash = digest.digest().encodeHex().toString()
+                if (!actualHash.equalsIgnoreCase(expectedHash.toString())) {
+                    throw new GradleException("Private resource hash mismatch: ${name}")
+                }
+            }
+        }
+    }
+}
+
+sourceSets {
+    main {
+        java.srcDirs = ['common/src/main/java', 'fabric/src/main/java']
+        resources.srcDirs = ['common/src/main/resources', 'fabric/src/main/resources']
+        if (privateResourcesDir != null) {
+            resources.srcDir(privateResourcesDir)
+        }
+    }
+}
+
+def yungsApiJar = System.getenv('YUNGS_API_26_2_JAR')
+if (!yungsApiJar) {
+    throw new GradleException('Set YUNGS_API_26_2_JAR to the validated YUNG\'s API 26.2 Fabric artifact')
+}
+def yungsApiFile = file(yungsApiJar)
+if (!yungsApiFile.isFile()) {
+    throw new GradleException("YUNGS_API_26_2_JAR is not a file: ${yungsApiFile}")
+}
+def yungsApiDigest = java.security.MessageDigest.getInstance('SHA-256')
+yungsApiFile.withInputStream { input ->
+    byte[] buffer = new byte[8192]
+    int count
+    while ((count = input.read(buffer)) != -1) {
+        yungsApiDigest.update(buffer, 0, count)
+    }
+}
+def expectedYungsApiSha256 = '527850c4f061fa9ab327ae0b32a3d26ebc77b51fb86234f5f6b1e3418ca084ca'
+def actualYungsApiSha256 = yungsApiDigest.digest().encodeHex().toString()
+if (actualYungsApiSha256 != expectedYungsApiSha256) {
+    throw new GradleException("YUNGS_API_26_2_JAR SHA-256 mismatch: expected ${expectedYungsApiSha256}, got ${actualYungsApiSha256}")
+}
+
+dependencies {
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    implementation "net.fabricmc:fabric-loader:${project.fabric_loader_version}"
+    implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+    implementation files(yungsApiFile)
+    implementation "com.geckolib:geckolib-fabric-26.2:${project.geckolib_version}"
+    implementation("me.shedaniel.cloth:cloth-config-fabric:${project.cloth_version}") {
+        exclude group: 'net.fabricmc'
+        exclude group: 'net.fabricmc.fabric-api'
+    }
+    implementation("com.terraformersmc:modmenu:${project.modmenu_version}") {
+        transitive = false
+    }
+    implementation include('org.reflections:reflections:0.10.2')
+    implementation include('org.javassist:javassist:3.29.2-GA')
+
+    testImplementation platform('org.junit:junit-bom:5.13.4')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+loom {
+    runs {
+        client {
+            client()
+            runDir 'runs/client'
+        }
+        server {
+            server()
+            runDir 'runs/server'
+        }
+    }
+}
+
+processResources {
+    inputs.property 'version', project.version
+    if (privateResourcesDir != null) {
+        inputs.dir privateResourcesDir
+        inputs.file privateManifestFile
+        dependsOn verifyPrivateResources
+    }
+    filesMatching('fabric.mod.json') {
+        expand version: project.version
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.release = 25
+}
+
+test {
+    useJUnitPlatform()
+    systemProperty 'projectRoot', projectDir.absolutePath
+}
+
+java {
+    toolchain.languageVersion = JavaLanguageVersion.of(25)
+    withSourcesJar()
+}
+
+if (verifyPrivateResources != null) {
+    tasks.named('sourcesJar') {
+        dependsOn verifyPrivateResources
+    }
+}
+
+jar {
+    from('LICENSE.txt') {
+        rename { 'LICENSE_Ribbits' }
+    }
+}
