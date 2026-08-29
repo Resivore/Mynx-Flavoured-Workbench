@@ -1,0 +1,215 @@
+import java.security.MessageDigest
+import groovy.json.JsonOutput
+
+plugins {
+    id 'net.fabricmc.fabric-loom' version '1.17-SNAPSHOT'
+}
+
+version = project.mod_version
+group = project.maven_group
+
+base {
+    archivesName = project.archives_base_name
+}
+
+repositories {
+    maven { url = 'https://maven.fabricmc.net/' }
+    maven { url = 'https://api.modrinth.com/maven' }
+    maven { url = 'https://maven.gegy.dev/releases/' }
+    mavenCentral()
+}
+
+def defaultOriginalJar = layout.projectDirectory.file("../../originals/mods/${upstream_original_filename}").asFile
+def originalJar = providers.gradleProperty('naturalistOriginalJar')
+        .map { file(it) }
+        .orElse(defaultOriginalJar)
+def stagedOriginalResources = layout.buildDirectory.dir('generated/original-resources')
+def generatedItemModelResources = layout.buildDirectory.dir('generated/item-model-compat')
+def dynamicClientItemModelIds = [
+        'catfish_bucket', 'bass_bucket', 'duck_bucket', 'crab', 'caterpillar', 'butterfly',
+        'ant', 'rat', 'scorpion', 'hedgehog', 'snail', 'starfish_bucket',
+        'giant_isopod_bucket', 'anglerfish_bucket', 'jellyfish_bucket', 'ray_bucket',
+        'blobfish_bucket', 'piranha_bucket', 'snail_shell', 'knapsack'
+]
+
+dependencies {
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    implementation "net.fabricmc:fabric-loader:${project.fabric_loader_version}"
+    implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+
+    compileOnly "dev.lambdaurora.lambdynamiclights:lambdynamiclights-api:${project.lambdynamiclights_version}"
+    compileOnly "maven.modrinth:field-guide:${project.field_guide_fabric_version}"
+
+    compileOnly 'org.jetbrains:annotations:24.1.0'
+    compileOnly 'org.jspecify:jspecify:1.0.0'
+}
+
+sourceSets {
+    main {
+        java {
+            srcDirs = ['common/src/main/java', 'fabric/src/main/java']
+        }
+        resources {
+            srcDirs = ['src/main/resources', stagedOriginalResources, generatedItemModelResources]
+        }
+    }
+    persistenceTest {
+        java {
+            srcDirs = ['common/src/main/java', 'src/persistenceTest/java']
+            include 'com/crispytwig/naturalist/server/entity/persistence/NaturalistEntityPersistence.java'
+            include 'com/crispytwig/naturalist/persistence/**'
+        }
+        compileClasspath += sourceSets.main.compileClasspath
+        runtimeClasspath += output + compileClasspath
+    }
+    itemModelTest {
+        java {
+            srcDirs = ['common/src/main/java', 'src/itemModelTest/java']
+            include 'com/crispytwig/naturalist/client/model/item/ItemModelOverrides.java'
+            include 'com/crispytwig/naturalist/client/model/item/LegacyItemModelResources.java'
+            include 'com/crispytwig/naturalist/client/model/item/NaturalistItemModelProperties.java'
+            include 'com/crispytwig/naturalist/itemmodel/**'
+        }
+        compileClasspath += sourceSets.main.compileClasspath
+        runtimeClasspath += output + compileClasspath
+    }
+}
+
+configurations {
+    persistenceTestImplementation.extendsFrom implementation
+    persistenceTestRuntimeOnly.extendsFrom runtimeOnly
+    itemModelTestImplementation.extendsFrom implementation
+    itemModelTestRuntimeOnly.extendsFrom runtimeOnly
+}
+
+dependencies {
+    persistenceTestImplementation platform('org.junit:junit-bom:5.11.4')
+    persistenceTestImplementation 'org.junit.jupiter:junit-jupiter'
+    persistenceTestImplementation "net.fabricmc:fabric-loader-junit:${project.fabric_loader_version}"
+    persistenceTestRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    itemModelTestImplementation platform('org.junit:junit-bom:5.11.4')
+    itemModelTestImplementation 'org.junit.jupiter:junit-jupiter'
+    itemModelTestImplementation "net.fabricmc:fabric-loader-junit:${project.fabric_loader_version}"
+    itemModelTestRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+tasks.register('verifyOriginalJar') {
+    group = 'naturalist port'
+    description = 'Verifies the immutable Naturalist 2.0.3 input before protected resources are read.'
+    inputs.file(originalJar)
+    doLast {
+        File input = originalJar.get()
+        if (!input.isFile()) {
+            throw new GradleException("Missing Naturalist original: ${input}. Set -PnaturalistOriginalJar=<absolute path> when building from an isolated worktree.")
+        }
+
+        MessageDigest digest = MessageDigest.getInstance('SHA-256')
+        input.withInputStream { stream ->
+            byte[] buffer = new byte[1024 * 1024]
+            for (int read = stream.read(buffer); read != -1; read = stream.read(buffer)) {
+                digest.update(buffer, 0, read)
+            }
+        }
+        String actual = digest.digest().collect { String.format('%02x', it) }.join()
+        if (!actual.equalsIgnoreCase(project.upstream_original_sha256)) {
+            throw new GradleException("Naturalist original SHA-256 mismatch: expected ${project.upstream_original_sha256}, got ${actual}")
+        }
+    }
+}
+
+tasks.register('stageOriginalResources', Sync) {
+    group = 'naturalist port'
+    description = 'Stages protected upstream resources from the verified original into ignored build output.'
+    dependsOn tasks.named('verifyOriginalJar')
+    from({ zipTree(originalJar.get()) }) {
+        exclude '**/*.class'
+        exclude 'META-INF/MANIFEST.MF'
+        exclude 'fabric.mod.json'
+        exclude 'architectury_inject_*/**'
+    }
+    into stagedOriginalResources
+}
+
+tasks.register('generateItemModelCompatibilityResources') {
+    group = 'naturalist port'
+    description = 'Generates Minecraft 26.2 client-item roots for the protected legacy dynamic item models.'
+    inputs.property 'dynamicClientItemModelIds', dynamicClientItemModelIds
+    outputs.dir generatedItemModelResources
+
+    doLast {
+        File outputRoot = generatedItemModelResources.get().asFile
+        delete outputRoot
+        dynamicClientItemModelIds.each { itemId ->
+            File output = new File(outputRoot, "assets/naturalist/items/${itemId}.json")
+            output.parentFile.mkdirs()
+            output.setText(JsonOutput.prettyPrint(JsonOutput.toJson([
+                    model: [
+                            type : 'minecraft:model',
+                            model: "naturalist:item/${itemId}"
+                    ]
+            ])) + System.lineSeparator(), 'UTF-8')
+        }
+    }
+}
+
+tasks.named('processResources') {
+    dependsOn tasks.named('stageOriginalResources'), tasks.named('generateItemModelCompatibilityResources')
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    inputs.property 'version', project.version
+    filesMatching('fabric.mod.json') {
+        expand([
+                version: project.version,
+                minecraft_version: project.minecraft_version,
+                fabric_loader_version: project.fabric_loader_version,
+                fabric_api_version: project.fabric_api_version
+        ])
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    options.release = 25
+    options.compilerArgs += ['-Xmaxerrs', '5000']
+}
+
+tasks.register('persistenceTest', Test) {
+    group = 'verification'
+    description = 'Runs focused persistence tests without compiling the incomplete Naturalist port.'
+    dependsOn tasks.named('persistenceTestClasses')
+    testClassesDirs = sourceSets.persistenceTest.output.classesDirs
+    classpath = sourceSets.persistenceTest.runtimeClasspath
+    useJUnitPlatform()
+}
+
+tasks.register('itemModelTest', Test) {
+    group = 'verification'
+    description = 'Runs focused legacy item-model override parsing and selection tests.'
+    dependsOn tasks.named('itemModelTestClasses')
+    testClassesDirs = sourceSets.itemModelTest.output.classesDirs
+    classpath = sourceSets.itemModelTest.runtimeClasspath
+    useJUnitPlatform()
+}
+
+java {
+    toolchain.languageVersion = JavaLanguageVersion.of(25)
+    withSourcesJar()
+}
+
+tasks.withType(Jar).configureEach {
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    from('UPSTREAM_LICENSE.txt') {
+        rename { 'UPSTREAM_NATURALIST_LICENSE.txt' }
+    }
+    manifest {
+        attributes([
+                'Specification-Title': project.mod_name,
+                'Specification-Version': project.upstream_version,
+                'Implementation-Title': project.archives_base_name,
+                'Implementation-Version': project.version,
+                'Naturalist-Upstream-Commit': project.upstream_source_commit,
+                'Naturalist-Original-SHA256': project.upstream_original_sha256
+        ])
+    }
+}

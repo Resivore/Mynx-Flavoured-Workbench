@@ -1,0 +1,11 @@
+/.gradle/
+/build/
+/run/
+/.idea/
+/*.iml
+
+# Protected Naturalist resources may exist only in generated/ignored build output.
+/generated/
+/extracted-resources/
+/common/src/main/resources/
+/fabric/src/main/resources/

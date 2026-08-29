@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "id": "naturalist",
+  "version": "${version}",
+  "name": "Naturalist",
+  "description": "Minecraft 26.2 Fabric preservation port of Naturalist 2.0.3.",
+  "authors": [
+    "crispytwig",
+    "Starfish Studios"
+  ],
+  "contact": {
+    "homepage": "https://starfish-studios.com/mods/naturalist",
+    "sources": "https://github.com/crispytwig/Naturalist",
+    "issues": "https://github.com/crispytwig/Naturalist/issues"
+  },
+  "license": "MIT (code); protected upstream resources staged from the user's original JAR",
+  "icon": "naturalist.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "com.crispytwig.naturalist.fabric.NaturalistFabric"
+    ],
+    "client": [
+      "com.crispytwig.naturalist.fabric.client.NaturalistFabricClient"
+    ],
+    "lambdynlights:initializer": [
+      "com.crispytwig.naturalist.client.compat.LambDynamicLightsCompat"
+    ]
+  },
+  "mixins": [
+    "naturalist.mixins.json",
+    "naturalist.fieldguide.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=${fabric_loader_version}",
+    "fabric-api": ">=${fabric_api_version}",
+    "minecraft": "~${minecraft_version}",
+    "java": ">=25"
+  },
+  "suggests": {
+    "lambdynlights": "*"
+  }
+}
