@@ -1,0 +1,18 @@
+{
+    "type": "minecraft:crafting_shaped",
+    "group": "portal_catalyst",
+    "pattern": [
+        "#E#",
+        "EBE",
+        "#E#"
+    ],
+    "key": {
+        "#": "minecraft:ender_pearl",
+        "E": "minecraft:ender_eye",
+        "B": "minecraft:gray_dye"
+    },
+    "result": {
+        "id": "customportals:gray_portal_catalyst",
+        "count": 2
+    }
+}
