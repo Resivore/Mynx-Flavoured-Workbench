@@ -1,0 +1,126 @@
+{
+  "$schema": "../../schemas/workbench-status.schema.json",
+  "schema_version": 1,
+  "identity": {
+    "uuid": "8ff207a2-9049-4519-ad3f-3100a80abcc2",
+    "name": "Xaero Discovery Radius",
+    "project_id": "xaero-discovery-radius",
+    "aliases": [
+      "Xaero Discovery Distance"
+    ],
+    "legacy_names": [],
+    "legacy_ids": []
+  },
+  "definition": {
+    "lifecycle": "ACTIVE",
+    "goals": [
+      "Decouple Xaero Minimap and World Map terrain discovery and map-writing radius from Minecraft render distance so a 16-chunk render distance can coexist with an approximately 4-chunk discovery radius.",
+      "Preserve Xaero behavior otherwise, including existing map visibility and data, normal nearby discovery, Minimap and World Map sharing, waypoints, radar, navigation, and unrelated UI behavior.",
+      "Fail open when durable singleplayer eligibility cannot be trusted so the companion never hides already discovered terrain."
+    ],
+    "scope": [
+      "Maintain the exact C1 client-side Fabric companion reconstructed from legacy source checkpoint b025ffc38bb2810c7a472ba73970dd8a7277bac2 and coherent retained checkpoint cc33d33816d92bb6c3205227aec368712c1c9d5a.",
+      "Apply an inclusive square or Chebyshev discovery radius, default 4 chunks and configurable from 0 through 32 at client startup, without reading or changing Minecraft render distance and without widening a tighter native Xaero distance.",
+      "Preserve the four narrow descriptor-pinned boundaries for World Map live writing, Minimap-owned terrain fetching, singleplayer direct-save reconstruction, and pre-policy Xaero leaf-cache import.",
+      "Maintain world-local and dimension-separated discovery history with forced pending transaction and persistent fail-open handling for interrupted, corrupt, unavailable, or mismatched state.",
+      "Seed pre-install discovery only from exact frozen hashes of existing .xwmc or .xwmc.outdated cache files and Xaero's native undiscovered sentinel while leaving existing cache textures and map data intact."
+    ],
+    "boundaries": {
+      "owned_paths": [
+        "projects/xaero-discovery-radius"
+      ],
+      "exclusions": [
+        "New implementation, redesign, a successor Canary, or dependency-version expansion during this migration.",
+        "Modification, patching, or redistribution of Xaero Minimap, Xaero World Map, XaeroLib, their classes, or their assets; the exact All Rights Reserved binaries remain external references only.",
+        "Deleting, rewriting, or concealing existing Xaero map data, grandfathering every pre-generated Anvil chunk, or fabricating missing historical discovery when no durable Xaero cache evidence remains.",
+        "Changing Minecraft render distance, waypoint or radar reach, map navigation, zoom, cache rendering, or unrelated Xaero behavior.",
+        "Minecraft launch, deployment, Test Slot changes, accepted-baseline changes, Test Instance Manager changes, runtime-profile access, or protected gameplay-instance access during this migration.",
+        "Runtime claims about Mixin application, freecam or camera-mod centering, first-start cache-manifest cost, or any other behavior not actually observed with C1."
+      ]
+    },
+    "dependencies": [
+      {
+        "type": "OTHER",
+        "identifier": "minecraft",
+        "requirement": ">=26.2 <26.3",
+        "reason": "Target client range declared by the retained C1 artifact."
+      },
+      {
+        "type": "MOD",
+        "identifier": "fabricloader",
+        "requirement": ">=0.19.3",
+        "reason": "Fabric runtime loader declared by C1."
+      },
+      {
+        "type": "MOD",
+        "identifier": "fabric-api",
+        "requirement": "0.157.0+26.2 (metadata minimum >=0.157.0)",
+        "reason": "Exact compile and static-validation baseline retained from C1."
+      },
+      {
+        "type": "MOD",
+        "identifier": "xaerominimap",
+        "requirement": "=26.4.2; SHA-256 69284892d2eb853c9aefa85a4c9b74232c322da00207994c67ab8aeed8a64048",
+        "reason": "Exact All Rights Reserved Minimap binary whose private method contracts are pinned by C1; it is not redistributed."
+      },
+      {
+        "type": "MOD",
+        "identifier": "xaeroworldmap",
+        "requirement": "=1.44.2; SHA-256 d55ef45c559ae0adcf66d894c022f61d9d921629b0c885d04aa00424546a2389",
+        "reason": "Exact All Rights Reserved World Map binary whose private writer and cache contracts are pinned by C1; it is not redistributed."
+      },
+      {
+        "type": "MOD",
+        "identifier": "xaerolib",
+        "requirement": "=1.7.1 embedded reference; SHA-256 7f4a78dd7e046fea0500fef83b1481d85317c8348d47e947035d7a07efe51065",
+        "reason": "Exact All Rights Reserved compile-only library embedded in the Minimap reference; C1 does not package it."
+      },
+      {
+        "type": "TOOL",
+        "identifier": "java",
+        "requirement": "25",
+        "reason": "Compilation release and runtime level recorded for C1."
+      },
+      {
+        "type": "TOOL",
+        "identifier": "fabric-loom",
+        "requirement": "1.17.19",
+        "reason": "Exact Fabric build plugin pinned by the retained build configuration."
+      }
+    ]
+  },
+  "state": {
+    "milestone": "C1 is retained after 23 focused tests; it is runtime untested and not deployed.",
+    "releases": {
+      "current": {
+        "version": "0.1.0-canary1",
+        "artifact": {
+          "filename": "xaero-discovery-radius-0.1.0-canary1.jar",
+          "sha256": "fe4c9164a744c2684067346c8a3daaa2b935f5802b2bdb1f357d5b9e854137ce"
+        },
+        "source_commit": "89e1f3a1ff28d2f3613897da516db5a3bb867efa"
+      },
+      "accepted": null,
+      "rollback": null,
+      "accepted_current": "NO_ACCEPTED",
+      "accepted_rollback": "NO_ROLLBACK"
+    },
+    "validation": {
+      "build": "STATIC_PASS",
+      "deployment": "NOT_DEPLOYED",
+      "runtime": "RUNTIME_UNTESTED"
+    },
+    "blocker": null
+  },
+  "synchronization": {
+    "revision": 1,
+    "activity_at": "2026-08-28T16:54:36Z",
+    "updated_at": "2026-08-29T21:26:27Z",
+    "last_codex_at": "2026-08-29T21:26:27Z",
+    "source_commit": "89e1f3a1ff28d2f3613897da516db5a3bb867efa",
+    "google_sheet": {
+      "participates": true,
+      "exclusion_reason": null
+    }
+  }
+}

@@ -1,0 +1,137 @@
+{
+  "$schema": "../../schemas/workbench-status.schema.json",
+  "schema_version": 1,
+  "identity": {
+    "uuid": "357cd94a-4ab2-54c9-ac6c-4049fea08bb9",
+    "name": "Inherent 3×3 Inventory Crafting",
+    "project_id": "inventory-3x3-crafting",
+    "aliases": [
+      "Inherent 3x3 Inventory Crafting"
+    ],
+    "legacy_names": [],
+    "legacy_ids": [
+      "inventory-3x3-crafting"
+    ]
+  },
+  "definition": {
+    "lifecycle": "ACCEPTED",
+    "goals": [
+      "Replace the ordinary survival inventory's built-in 2×2 crafting matrix with permanent 3×3 crafting through Minecraft's existing recipe, result, remainder, recipe-book, and server-authoritative menu systems.",
+      "Preserve crafting tables and the validated Inventory Extended, Simple Trash Slot, Trinkets, JEI, equipment, hotbar, routing, and lifecycle boundaries."
+    ],
+    "scope": [
+      "Modify only InventoryMenu with one nine-cell TransientCraftingContainer and the index-preserving row-major public menu order [1, 2, 74, 3, 4, 75, 76, 77, 78].",
+      "Retain the appended-input quick-move path, recipe-book placement, JEI InventoryMenu transfer adapter, Creative mutation guards, nine player.crafting entity ranges, and client/server slot parity.",
+      "Retain the self-contained Canary 4 inventory artwork and final coordinates: inputs at x 77,95,113 and y 8,26,44; result at 152,27; recipe-book button at 100,62."
+    ],
+    "boundaries": {
+      "owned_paths": [
+        "projects/inventory-3x3-crafting"
+      ],
+      "exclusions": [
+        "CraftingMenu, crafting-table placement and behavior, and Simple Portable Crafting remain unchanged.",
+        "Ordinary quick move, pickup, external-container routing, offhand routing, carried-container routing, and Trinkets operations must never use crafting cells as destinations.",
+        "Simple Trash Slot screen positioning remains owned by its existing configuration; this project owns only its preserved logical/menu compatibility.",
+        "Companion resource packs, pack-order changes, runtime deployment, accepted-stack mutation, Test Instance Manager mutation, and unrelated project work are outside this migration."
+      ]
+    },
+    "dependencies": [
+      {
+        "type": "MOD",
+        "identifier": "minecraft",
+        "requirement": "=26.2",
+        "reason": "Target game version for the accepted InventoryMenu implementation and frozen vanilla contracts."
+      },
+      {
+        "type": "TOOL",
+        "identifier": "java",
+        "requirement": ">=25",
+        "reason": "Required Java level for Minecraft 26.2 and the retained build."
+      },
+      {
+        "type": "MOD",
+        "identifier": "fabricloader",
+        "requirement": ">=0.19.3",
+        "reason": "Required Fabric runtime loader."
+      },
+      {
+        "type": "MOD",
+        "identifier": "fabric-api",
+        "requirement": ">=0.157.0+26.2",
+        "reason": "Required Fabric API baseline declared by Canary 4."
+      },
+      {
+        "type": "MOD",
+        "identifier": "inventoryextended",
+        "requirement": "=1.1.2",
+        "reason": "Defines the accepted six-row inventory, hotbar, offhand, and appended-slot compatibility foundation."
+      },
+      {
+        "type": "MOD",
+        "identifier": "simple_trash_slot",
+        "requirement": ">=1.0.4",
+        "reason": "Owns menu slot 73 and the configured upper-panel Trash position before the five appended crafting views."
+      },
+      {
+        "type": "MOD",
+        "identifier": "trinkets_updated",
+        "requirement": "4.1.0-beta.3+26.2 (recommended)",
+        "reason": "The accepted layout preserves the dynamic Trinkets suffix after the 79-slot pre-Trinkets prefix."
+      },
+      {
+        "type": "MOD",
+        "identifier": "jei",
+        "requirement": "30.18.0.144 (recommended)",
+        "reason": "Provides the exact player crafting transfer contract adapted by the retained JEI plugin."
+      }
+    ]
+  },
+  "state": {
+    "milestone": "C4 passed the final visual correction, preserves the focused functional runtime result, and is accepted client-side and in singleplayer.",
+    "releases": {
+      "current": {
+        "version": "0.1.0-canary4",
+        "artifact": {
+          "filename": "inherent-3x3-inventory-crafting-0.1.0-canary4.jar",
+          "sha256": "6e797291dd6c68f5afe65f91177ad2653f7c4a99e10bd20e078fafd7aaf6cb33"
+        },
+        "source_commit": "34e8de533e804ab4993b7502d7c5afbec6ebc8ca"
+      },
+      "accepted": {
+        "version": "0.1.0-canary4",
+        "artifact": {
+          "filename": "inherent-3x3-inventory-crafting-0.1.0-canary4.jar",
+          "sha256": "6e797291dd6c68f5afe65f91177ad2653f7c4a99e10bd20e078fafd7aaf6cb33"
+        },
+        "source_commit": "34e8de533e804ab4993b7502d7c5afbec6ebc8ca"
+      },
+      "rollback": {
+        "version": "0.1.0-canary3",
+        "artifact": {
+          "filename": "inherent-3x3-inventory-crafting-0.1.0-canary3.jar",
+          "sha256": "776918c5e5a76a8f81e5f67a481d819a5586ce1ca45ccdc0effaf04622aaef08"
+        },
+        "source_commit": "157827574d0cd6e9487444fff044c69fe50879ac"
+      },
+      "accepted_current": "CURRENT_IS_ACCEPTED",
+      "accepted_rollback": "ROLLBACK_DIFFERS_FROM_ACCEPTED"
+    },
+    "validation": {
+      "build": "STATIC_PASS",
+      "deployment": "DEPLOYED",
+      "runtime": "PARTIAL_RUNTIME_PASS"
+    },
+    "blocker": null
+  },
+  "synchronization": {
+    "revision": 1,
+    "activity_at": "2026-08-22T04:10:59Z",
+    "updated_at": "2026-08-29T21:03:10Z",
+    "last_codex_at": "2026-08-29T21:03:10Z",
+    "source_commit": "fffc670b17cba190dfaba780ae444668aa9c1f78",
+    "google_sheet": {
+      "participates": true,
+      "exclusion_reason": null
+    }
+  }
+}

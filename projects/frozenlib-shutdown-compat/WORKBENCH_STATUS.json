@@ -16,7 +16,7 @@
     ]
   },
   "definition": {
-    "lifecycle": "TESTING",
+    "lifecycle": "ACCEPTED",
     "goals": [
       "Prevent FrozenLib's cape-registration cached executor from delaying or watchdog-failing client shutdown while preserving the executor's ordinary asynchronous behavior."
     ],
@@ -32,7 +32,7 @@
         "Global executor interception, FastQuit integration, lifecycle waits, request interruption, and shutdown changes outside the exact FrozenLib cape-registration call site.",
         "FrozenLib's separate resource-pack download executor, whose file-writing task could be abandoned if daemonized at process exit.",
         "FrozenLib classes or assets, upstream redistribution, and compatibility with FrozenLib versions other than exact 2.5.3-mc26.2.",
-        "A successor canary, new shutdown investigation, Minecraft deployment, Test Slot ownership, accepted-stack changes, or Test Instance Manager changes during this migration."
+        "A successor canary, new shutdown investigation, Minecraft deployment, Test Slot ownership, or Test Instance Manager changes without a separate task."
       ]
     },
     "dependencies": [
@@ -63,7 +63,7 @@
     ]
   },
   "state": {
-    "milestone": "C1 passed quit, window-close, and cape-path log checks and is permanent infrastructure; visible known-cape rendering remains outstanding.",
+    "milestone": "C1 passed the required quit, window-close, and cape-path log checks and is accepted as permanent infrastructure; visible known-cape rendering is non-gating and remains unobserved.",
     "releases": {
       "current": {
         "version": "0.1.0-canary1",
@@ -73,24 +73,31 @@
         },
         "source_commit": "45fed67116ebcb6d7993d4c2619abe0be02bd9ce"
       },
-      "accepted": null,
+      "accepted": {
+        "version": "0.1.0-canary1",
+        "artifact": {
+          "filename": "frozenlib-shutdown-compat-0.1.0-canary1.jar",
+          "sha256": "85dda807ca525a559dc1123e986da50348e2f18c63a43eec6bb5c3684cc51476"
+        },
+        "source_commit": "45fed67116ebcb6d7993d4c2619abe0be02bd9ce"
+      },
       "rollback": null,
-      "accepted_current": "NO_ACCEPTED",
+      "accepted_current": "CURRENT_IS_ACCEPTED",
       "accepted_rollback": "NO_ROLLBACK"
     },
     "validation": {
       "build": "STATIC_PASS",
       "deployment": "DEPLOYED",
-      "runtime": "PARTIAL_RUNTIME_PASS"
+      "runtime": "RUNTIME_PASS"
     },
     "blocker": null
   },
   "synchronization": {
-    "revision": 1,
-    "activity_at": "2026-08-29T00:01:52Z",
-    "updated_at": "2026-08-29T20:58:13Z",
-    "last_codex_at": "2026-08-29T20:58:13Z",
-    "source_commit": "c4a2db96387c5c9dca97769874134bd77e709b04",
+    "revision": 2,
+    "activity_at": "2026-08-29T21:20:18Z",
+    "updated_at": "2026-08-29T21:20:18Z",
+    "last_codex_at": "2026-08-29T21:20:18Z",
+    "source_commit": "113eb4a2a24122f64cb1c79a29e99daa762c3b77",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
