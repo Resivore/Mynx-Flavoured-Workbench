@@ -1,0 +1,12 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "dev.resivore.stacksarestackscontainerfixes.mixin",
+  "compatibilityLevel": "JAVA_25",
+  "client": [
+    "StacksAreStacksModInvoker"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "minecraft:ender_pearl",
+    "minecraft:dragon_breath"
+  ],
+  "result": {
+    "id": "dragonbound_waystone:imbued_void_pearl",
+    "count": 1
+  }
+}
