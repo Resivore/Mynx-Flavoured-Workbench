@@ -1,0 +1,139 @@
+{
+  "$schema": "../../schemas/workbench-status.schema.json",
+  "schema_version": 1,
+  "identity": {
+    "uuid": "b41da80e-9928-568b-b8ef-ee2175ed2285",
+    "name": "Radial Slot Cycler",
+    "project_id": "radial-slot-cycler",
+    "aliases": [
+      "Radial Slot Cycler (RSC)"
+    ],
+    "legacy_names": [],
+    "legacy_ids": [
+      "radial-slot-cycler"
+    ]
+  },
+  "definition": {
+    "lifecycle": "ACCEPTED",
+    "goals": [
+      "Preserve the accepted server-authoritative same-column radial selector for physical hotbar and ordinary inventory slots, including exact whole-stack swaps and selectable empty storage cells.",
+      "Keep HOLD as the accepted interaction mode, leave the artifact key unbound by default, preserve M as external Workbench configuration, and retain upstream Slot Cycler as replaced and disabled.",
+      "Maintain the exact private Traveler Tool Belt visual relationship without importing Traveler gameplay, storage, networking, code, or protected resource bytes into the public repository."
+    ],
+    "scope": [
+      "Maintain the resource-clean Private Canary 2 source, Canary 1 behavior-parity fixtures, dynamic nine-wide ordinary-inventory mapping, three-integer server request, live menu and snapshot validation, and project-owned fallback wheel.",
+      "Retain the legally safe private assembler and verifier that require the exact user-owned Traveler input and allow only its one hash-pinned radial PNG to be injected into an ignored local artifact.",
+      "Retain exact clean Canary 1 as the distributable focused-runtime-pass rollback while recording the absent Private Canary 2 as current and accepted metadata only."
+    ],
+    "boundaries": {
+      "owned_paths": [
+        "projects/radial-slot-cycler"
+      ],
+      "exclusions": [
+        "The protected Traveler Tool Belt radial texture and radial-slot-cycler-0.1.0-canary2-private.jar are private, non-redistributable, ignored local inputs or outputs and are not tracked in this repository.",
+        "Traveler Tool Belt, Inventory Extended, and Slot Cycler source and artifacts remain separate owners and are not modified, bundled, routed through, or replaced by copied code.",
+        "Inventory routing, passive acquisition, quick move, merging, consolidation, Quick Stack Nearby, Stack to Nearby Chests, resource packs, and unrelated project behavior are outside scope.",
+        "Runtime deployment, Test Slot or accepted-baseline mutation, Test Instance Manager state, either gameplay profile, originals, and the protected gameplay instance are outside this migration.",
+        "Individual legacy checklist results, upstream Slot Cycler coexistence, optional toggle-mode acceptance, and dedicated-server validation are not inferred from the aggregate runtime evidence."
+      ]
+    },
+    "dependencies": [
+      {
+        "type": "MOD",
+        "identifier": "minecraft",
+        "requirement": "=26.2",
+        "reason": "Target game version for the accepted server-authoritative selector."
+      },
+      {
+        "type": "MOD",
+        "identifier": "fabricloader",
+        "requirement": ">=0.19.3",
+        "reason": "Fabric loader floor declared by both retained canaries."
+      },
+      {
+        "type": "MOD",
+        "identifier": "fabric-api",
+        "requirement": ">=0.157.0+26.2",
+        "reason": "Provides the networking, client input, and HUD APIs used by the implementation."
+      },
+      {
+        "type": "MOD",
+        "identifier": "inventoryextended",
+        "requirement": "=1.1.2",
+        "reason": "The accepted Workbench configuration exposes six ordinary storage rows and seven radial entries without coupling to Inventory Extended source."
+      },
+      {
+        "type": "MOD",
+        "identifier": "travelertoolbelt",
+        "requirement": "=1.0.2+26.2-trinkets-canary1; private input SHA-256 43d3370135f42ef74129b904325006f91ba32074ab8dbd81a649170d1366fcd6",
+        "reason": "Exact separate accepted mod and user-owned origin of the one private 4,580-byte radial PNG; no Traveler code or tracked asset is imported."
+      },
+      {
+        "type": "MOD",
+        "identifier": "slotcycler",
+        "requirement": "disabled; SHA-256 81948c10500e6eaa7a3ff64d35b75cb629250dc11fff59f2b2c4924215061693",
+        "reason": "Radial Slot Cycler is the accepted replacement; coexistence is not an acceptance requirement."
+      },
+      {
+        "type": "TOOL",
+        "identifier": "java",
+        "requirement": "25",
+        "reason": "Minecraft 26.2 and the retained source compile and test against Java 25."
+      },
+      {
+        "type": "TOOL",
+        "identifier": "gradle",
+        "requirement": "9.5.1 with Fabric Loom 1.17.19",
+        "reason": "Exact build toolchain used for the controlled migration verification and historical private assembly base."
+      }
+    ]
+  },
+  "state": {
+    "milestone": "Private Canary 2 is the current and accepted private Workbench release after the user's aggregate focused runtime PASS; clean distributable Canary 1 remains the focused-runtime-pass rollback, and no individual checklist row is inferred.",
+    "releases": {
+      "current": {
+        "version": "0.1.0-canary2-private",
+        "artifact": {
+          "filename": "radial-slot-cycler-0.1.0-canary2-private.jar",
+          "sha256": "3fe7e539eaafda97ab5a5a301544b25563f896fee354b729607074f404bdbc21"
+        },
+        "source_commit": "afd63c35df9d24756ddd53fbfaa7f05cc72a987f"
+      },
+      "accepted": {
+        "version": "0.1.0-canary2-private",
+        "artifact": {
+          "filename": "radial-slot-cycler-0.1.0-canary2-private.jar",
+          "sha256": "3fe7e539eaafda97ab5a5a301544b25563f896fee354b729607074f404bdbc21"
+        },
+        "source_commit": "afd63c35df9d24756ddd53fbfaa7f05cc72a987f"
+      },
+      "rollback": {
+        "version": "0.1.0-canary1",
+        "artifact": {
+          "filename": "radial-slot-cycler-0.1.0-canary1.jar",
+          "sha256": "7393321a6ac7ff1d16b918075c47a26bbc90005b3a784f4d2b661f93cca4f2e4"
+        },
+        "source_commit": "ab1812a24ca9a6f40151aea935488c2767d51a4a"
+      },
+      "accepted_current": "CURRENT_IS_ACCEPTED",
+      "accepted_rollback": "ROLLBACK_DIFFERS_FROM_ACCEPTED"
+    },
+    "validation": {
+      "build": "CONTROLLED_VALIDATION_PASS",
+      "deployment": "READY_TO_TEST_VERIFIED",
+      "runtime": "RUNTIME_PASS"
+    },
+    "blocker": null
+  },
+  "synchronization": {
+    "revision": 1,
+    "activity_at": "2026-08-25T07:43:26Z",
+    "updated_at": "2026-08-29T22:31:11Z",
+    "last_codex_at": "2026-08-29T22:31:11Z",
+    "source_commit": "2b93f7de3cb5ab059d1744d36870e86bae081ca5",
+    "google_sheet": {
+      "participates": true,
+      "exclusion_reason": null
+    }
+  }
+}

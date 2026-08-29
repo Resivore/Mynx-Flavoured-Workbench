@@ -1,0 +1,121 @@
+{
+  "$schema": "../../schemas/workbench-status.schema.json",
+  "schema_version": 1,
+  "identity": {
+    "uuid": "3ab36584-8732-554f-840e-28a75c422660",
+    "name": "Container Slot Reservations",
+    "project_id": "container-slot-reservations",
+    "aliases": [
+      "Container Slot Reservations (CSR)"
+    ],
+    "legacy_names": [],
+    "legacy_ids": [
+      "container-slot-reservations"
+    ]
+  },
+  "definition": {
+    "lifecycle": "ACTIVE",
+    "goals": [
+      "Preserve a player's component-exact organization intent after a physical stack leaves an eligible vanilla storage slot.",
+      "Apply the same reservation admission rule to manual placement, vanilla QUICK_MOVE, and vanilla hopper insertion without changing extraction, destination order, or routing policy.",
+      "Keep reservation persistence, synchronization, user actions, and display server-authoritative while exposing classification and reservation queries without becoming an item-routing engine."
+    ],
+    "scope": [
+      "Maintain the exact Minecraft Java 26.2 Fabric Canary 1 implementation reconstructed from legacy source commit 254b8e9e8074380c66ec5d9d5cd17ea009f16097 and retained project head 483e64a8a13ba30343076c1a737c40e3a6d15777.",
+      "Store sparse format-1 reservations as immutable count-one ItemStackTemplate values in a persistent, network-synchronized project component; item identity remains exactly component-aware while count is excluded.",
+      "Support exact vanilla chest, trapped-chest, barrel, undyed shulker, and all 16 dyed shulker owners, with double-chest logical slots resolved to the owning physical half and local slot 0 through 26.",
+      "Preserve occupied, cursor-derived, replacement, clear, removal-retains-intent, shulker item round-trip, ghost display, and server-side request-validation behavior from Canary 1.",
+      "Maintain the public defensive query and classification API for supported placed containers and vanilla shulker item stacks."
+    ],
+    "boundaries": {
+      "owned_paths": [
+        "projects/container-slot-reservations"
+      ],
+      "exclusions": [
+        "Copper chests, arbitrary modded containers, player inventory, equipment, crafting and result slots, trinket slots, trash slots, fake slots, and foreign menu slots.",
+        "Automatic sorting, item routing, destination selection, routing priority, dump-all behavior, restock quantities, cross-container templates, category or tag matching, and multiple identities per slot.",
+        "Changes to vanilla extraction, ordinary chest or barrel drop metadata, unsupported container ownership, or vanilla QUICK_MOVE and hopper ordering beyond reservation admission.",
+        "A redesign, dependency expansion, successor Canary, or changes to any other Workbench project or resource pack during this migration.",
+        "Minecraft launch, deployment, Test Slot changes, Test Instance Manager mutation, dedicated Workbench profile access, or protected gameplay profile access during this migration."
+      ]
+    },
+    "dependencies": [
+      {
+        "type": "MOD",
+        "identifier": "minecraft",
+        "requirement": "=26.2",
+        "reason": "Exact game version targeted by the retained Canary 1 source and artifact."
+      },
+      {
+        "type": "MOD",
+        "identifier": "fabricloader",
+        "requirement": ">=0.19.3",
+        "reason": "Fabric loader floor declared by Canary 1."
+      },
+      {
+        "type": "MOD",
+        "identifier": "fabric-api",
+        "requirement": "0.157.0+26.2 (metadata minimum >=0.157.0)",
+        "reason": "Exact compile, GameTest, networking, and event baseline retained by Canary 1."
+      },
+      {
+        "type": "TOOL",
+        "identifier": "java",
+        "requirement": "25",
+        "reason": "Compilation release and runtime level required by Minecraft 26.2 and the retained build."
+      },
+      {
+        "type": "TOOL",
+        "identifier": "gradle",
+        "requirement": "9.5.1",
+        "reason": "Exact build-tool version used for legacy and migration verification."
+      },
+      {
+        "type": "TOOL",
+        "identifier": "fabric-loom",
+        "requirement": "1.17.19",
+        "reason": "Exact Fabric build plugin pinned by the maintained project."
+      },
+      {
+        "type": "OTHER",
+        "identifier": "junit-jupiter",
+        "requirement": "5.13.4",
+        "reason": "Focused source, API, wiring, and insertion-seam test baseline."
+      }
+    ]
+  },
+  "state": {
+    "milestone": "C1 is retained after 28/28 JUnit tests and 10/10 required Fabric GameTests; it is runtime untested and not deployed.",
+    "releases": {
+      "current": {
+        "version": "0.1.0-canary1",
+        "artifact": {
+          "filename": "container-slot-reservations-0.1.0-canary1.jar",
+          "sha256": "4e7f0a470a387be76189d0a5e1ae8c614d17ec8b24a6774b400838cc234c4532"
+        },
+        "source_commit": "e0adc6b9302392440f2e5654c1e4031916b0c996"
+      },
+      "accepted": null,
+      "rollback": null,
+      "accepted_current": "NO_ACCEPTED",
+      "accepted_rollback": "NO_ROLLBACK"
+    },
+    "validation": {
+      "build": "STATIC_PASS",
+      "deployment": "NOT_DEPLOYED",
+      "runtime": "RUNTIME_UNTESTED"
+    },
+    "blocker": null
+  },
+  "synchronization": {
+    "revision": 1,
+    "activity_at": "2026-08-28T22:52:51Z",
+    "updated_at": "2026-08-29T22:26:18Z",
+    "last_codex_at": "2026-08-29T22:26:18Z",
+    "source_commit": "e0adc6b9302392440f2e5654c1e4031916b0c996",
+    "google_sheet": {
+      "participates": true,
+      "exclusion_reason": null
+    }
+  }
+}

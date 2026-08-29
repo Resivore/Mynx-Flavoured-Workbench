@@ -1,0 +1,69 @@
+plugins {
+    id 'net.fabricmc.fabric-loom' version '1.17.19'
+}
+
+version = project.mod_version
+group = project.maven_group
+
+base {
+    archivesName = project.archives_base_name
+}
+
+repositories {
+    maven { url = 'https://maven.fabricmc.net/' }
+    mavenCentral()
+}
+
+dependencies {
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    implementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.12.2'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.12.2'
+}
+
+processResources {
+    inputs.property 'version', project.version
+    filesMatching('fabric.mod.json') {
+        expand 'version': project.version
+    }
+
+    doLast {
+        // Reproduce the exact resource bytes used by the accepted private C2 assembly base.
+        def languageFile = new File(
+                destinationDir,
+                'assets/radial_slot_cycler/lang/en_us.json')
+        def normalized = languageFile.getText('UTF-8')
+                .replace('\r\n', '\n')
+                .replace('\r', '\n')
+        def lines = normalized.split('\n', -1)
+        def historicalBytes = new StringBuilder()
+        lines.eachWithIndex { line, index ->
+            historicalBytes.append(line)
+            if (index < lines.length - 1) {
+                historicalBytes.append(index < 5 ? '\r\n' : '\n')
+            }
+        }
+        languageFile.setText(historicalBytes.toString(), 'UTF-8')
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.release = 25
+}
+
+test {
+    useJUnitPlatform()
+    systemProperty 'projectRoot', projectDir.absolutePath
+}
+
+java {
+    withSourcesJar()
+}
+
+tasks.withType(Jar).configureEach {
+    from('LICENSE') {
+        rename { "${it}_${project.base.archivesName.get()}" }
+    }
+}
