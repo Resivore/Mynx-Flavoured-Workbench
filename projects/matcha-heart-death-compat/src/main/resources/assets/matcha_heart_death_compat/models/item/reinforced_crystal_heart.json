@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "matcha_heart_death_compat:item/reinforced_crystal_heart"
+  }
+}

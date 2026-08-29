@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "key": {
+    "b": "minecraft:bone",
+    "v": "minecraft:sculk_vein",
+    "s": "minecraft:sculk"
+  },
+  "pattern": [
+    "b b",
+    "v v",
+    "sss"
+  ],
+  "result": {
+    "id": "minecraft:sculk_shrieker"
+  }
+}

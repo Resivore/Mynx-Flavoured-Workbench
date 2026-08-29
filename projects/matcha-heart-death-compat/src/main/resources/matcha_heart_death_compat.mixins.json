@@ -1,0 +1,13 @@
+{
+  "required": true,
+  "package": "dev.resivore.matchaheart.mixin",
+  "compatibilityLevel": "JAVA_25",
+  "mixins": [
+    "RecipeManagerMixin",
+    "ServerAdvancementManagerMixin",
+    "ServerFunctionManagerMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

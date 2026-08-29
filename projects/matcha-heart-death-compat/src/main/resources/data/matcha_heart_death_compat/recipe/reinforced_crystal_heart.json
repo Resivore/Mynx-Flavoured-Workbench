@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "E": "minecraft:echo_shard",
+    "H": {
+      "fabric:type": "fabric:components",
+      "base": "minecraft:poisonous_potato",
+      "components": {"minecraft:item_model": "minecraft:heart_container"}
+    }
+  },
+  "pattern": ["EEE", "EHE", " E "],
+  "result": {
+    "id": "minecraft:poisonous_potato",
+    "count": 1,
+    "components": {
+      "minecraft:item_model": "matcha_heart_death_compat:reinforced_crystal_heart",
+      "minecraft:item_name": {"translate": "item.matcha_heart_death_compat.reinforced_crystal_heart"},
+      "minecraft:rarity": "epic",
+      "minecraft:enchantment_glint_override": true,
+      "!minecraft:consumable": {}
+    }
+  }
+}
