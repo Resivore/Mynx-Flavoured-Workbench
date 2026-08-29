@@ -1,0 +1,18 @@
+{
+  "required": true,
+  "package": "dev.resivore.inventorycrafting.mixin",
+  "compatibilityLevel": "JAVA_25",
+  "mixins": [
+    "AbstractContainerMenuSnapshotAccessor",
+    "InventoryMenuMixin",
+    "PlayerMixin",
+    "SlotRangesMixin"
+  ],
+  "client": [
+    "client.CreativeModeInventoryScreenMixin",
+    "client.InventoryScreenMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
