@@ -297,9 +297,17 @@ def build_events(
     migration_adoption_uuids: frozenset[str] = frozenset(),
 ) -> list[dict[str, Any]]:
     _validate_authoritative_source(repository, ref, config)
-    if set(previous) - set(current):
-        raise ValidationError("project manifest deletion cannot be published as a normal status update")
     events: list[dict[str, Any]] = []
+    previous_uuid_paths: dict[str, str] = {}
+    for path in sorted(previous):
+        manifest = previous[path]
+        validate_status(manifest)
+        project_uuid = manifest["identity"]["uuid"]
+        if project_uuid in previous_uuid_paths:
+            raise ValidationError(
+                f"duplicate project UUID in previous publication set: {previous_uuid_paths[project_uuid]} and {path}"
+            )
+        previous_uuid_paths[project_uuid] = path
     current_uuids: dict[str, str] = {}
     for path in sorted(current):
         manifest = current[path]
@@ -308,6 +316,9 @@ def build_events(
         if project_uuid in current_uuids:
             raise ValidationError(f"duplicate project UUID in publication set: {current_uuids[project_uuid]} and {path}")
         current_uuids[project_uuid] = path
+        previous_path = previous_uuid_paths.get(project_uuid)
+        if previous_path is not None and previous_path != path:
+            raise ValidationError(f"project UUID cannot move from {previous_path} to {path}")
         before = previous.get(path)
         if before == manifest:
             continue
@@ -373,6 +384,12 @@ def _changed_paths(root: Path, before: str, after: str) -> list[str]:
     return _git(root, "diff", "--name-only", before, after).splitlines()
 
 
+def _tracked_paths_under(root: Path, commit: str, path: str) -> list[str]:
+    if commit == ZERO_COMMIT:
+        return []
+    return _git(root, "ls-tree", "-r", "--name-only", commit, "--", path).splitlines()
+
+
 def validate_project_push_contract(root: Path, before: str, after: str) -> None:
     changed = set(_changed_paths(root, before, after))
     if before != ZERO_COMMIT and "MIGRATION_FREEZE.md" in changed:
@@ -392,14 +409,23 @@ def validate_project_push_contract(root: Path, before: str, after: str) -> None:
         current_status_text = _git_text(root, after, status_path)
         current_log = _git_text(root, after, log_path)
         current_testing = _git_text(root, after, testing_path)
+        previous_status_text = _git_text(root, before, status_path)
+        previous_log = _git_text(root, before, log_path)
+        previous_testing = _git_text(root, before, testing_path)
+        current_controls = (current_status_text, current_log, current_testing)
+        previous_controls = (previous_status_text, previous_log, previous_testing)
+        if all(control is None for control in current_controls):
+            if not all(control is not None for control in previous_controls):
+                raise ValidationError(f"{project_root}: complete deletion requires all three prior project control files")
+            if _tracked_paths_under(root, after, project_root):
+                raise ValidationError(f"{project_root}: project deletion must remove the entire project directory")
+            continue
         if current_status_text is None or current_log is None or current_testing is None:
             raise ValidationError(f"{project_root}: all three project control files are required")
         if status_path not in changed or log_path not in changed:
             raise ValidationError(f"{project_root}: every project task must change WORKBENCH_STATUS.json and append CODEX_LOG.md")
         current_status = load_json_text(current_status_text, f"{after}:{status_path}")
         validate_status(current_status)
-        previous_status_text = _git_text(root, before, status_path)
-        previous_log = _git_text(root, before, log_path)
         if previous_status_text is None:
             _validate_initial_revision(current_status, project_root, adoption_uuids)
             if not current_log.strip():

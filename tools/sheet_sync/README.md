@@ -6,6 +6,8 @@ The repository is authoritative and Mynx uses its own separate Google Sheet as a
 
 `sheet_sync.py plan` prepares deterministic, secretless incremental events only for `Resivore/Mynx-Flavoured-Workbench` on `refs/heads/main`. It validates the normal push transition between exact `--before` and `--after` commits. Every changed participating manifest revision produces an event even when its visible status is unchanged. A manifest that stops participating receives its final ordinary update; a project task cannot bypass the revision and log protocol.
 
+An intentional removal is valid only when the complete previously controlled project or resource-pack directory disappears. Incremental planning emits no event for that removed manifest because the production receiver remains upsert-only; any existing Sheet row must be removed manually or by rebuilding the Sheet. A later current-state bootstrap cannot recreate the row because it enumerates only manifests that still exist.
+
 The normal main-push workflow uses this mode. It remains strict and is not a current-state scan.
 
 ## Current-state bootstrap
