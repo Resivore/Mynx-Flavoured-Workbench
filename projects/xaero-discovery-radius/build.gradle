@@ -1,0 +1,130 @@
+plugins {
+    id 'net.fabricmc.fabric-loom' version '1.17.19'
+}
+
+version = project.mod_version
+group = project.maven_group
+
+base {
+    archivesName = project.archives_base_name
+}
+
+repositories {
+    maven { url = 'https://maven.fabricmc.net/' }
+    mavenCentral()
+}
+
+dependencies {
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    implementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+
+    def xaeroMinimapJar = file('../../originals/mods/xaerominimap-fabric-26.2-26.4.2.jar')
+    def xaeroWorldMapJar = file('../../originals/mods/xaeroworldmap-fabric-26.2-1.44.2.jar')
+    def xaeroLibJar = layout.buildDirectory.file('compile-deps/xaerolib.jar')
+
+    compileOnly files(xaeroMinimapJar, xaeroWorldMapJar, xaeroLibJar)
+    testImplementation files(xaeroMinimapJar, xaeroWorldMapJar, xaeroLibJar)
+
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.12.2'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.12.2'
+    testImplementation 'org.ow2.asm:asm:9.9.1'
+    testImplementation 'org.ow2.asm:asm-tree:9.9.1'
+}
+
+tasks.register('extractXaeroLib', Copy) {
+    from(zipTree(file('../../originals/mods/xaerominimap-fabric-26.2-26.4.2.jar'))) {
+        include 'META-INF/jars/xaerolib-fabric-26.2-1.7.1.jar'
+        eachFile { details -> details.path = 'xaerolib.jar' }
+        includeEmptyDirs = false
+    }
+    into(layout.buildDirectory.dir('compile-deps'))
+}
+
+compileJava.dependsOn extractXaeroLib
+compileTestJava.dependsOn extractXaeroLib
+
+processResources {
+    inputs.property 'version', project.version
+    filesMatching('fabric.mod.json') {
+        expand 'version': project.version
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.release = 25
+}
+
+test {
+    useJUnitPlatform()
+    systemProperty 'projectRoot', projectDir.absolutePath
+    systemProperty 'xaeroMinimapJar', file('../../originals/mods/xaerominimap-fabric-26.2-26.4.2.jar').absolutePath
+    systemProperty 'xaeroWorldMapJar', file('../../originals/mods/xaeroworldmap-fabric-26.2-1.44.2.jar').absolutePath
+}
+
+tasks.register('verifyClientOnlyArtifact') {
+    dependsOn tasks.named('jar')
+    doLast {
+        def artifact = tasks.named('jar').get().archiveFile.get().asFile
+        def invalidEntries = []
+        zipTree(artifact).visit { details ->
+            if (!details.directory) {
+                def path = details.relativePath.pathString.replace('\\', '/')
+                if (path.startsWith('xaero/') || path.startsWith('net/minecraft/') || path.startsWith('META-INF/jars/')) {
+                    invalidEntries.add(path)
+                }
+                if (path.endsWith('.class') && !path.startsWith('dev/resivore/xaerodiscovery/')) {
+                    invalidEntries.add(path)
+                }
+            }
+        }
+        if (!invalidEntries.isEmpty()) {
+            throw new GradleException("Client companion artifact contains forbidden entries: ${invalidEntries.unique().sort()}")
+        }
+
+        def zip = new java.util.zip.ZipFile(artifact)
+        try {
+            def readJson = { String path ->
+                def entry = zip.getEntry(path)
+                if (entry == null) {
+                    throw new GradleException("Client companion artifact is missing ${path}")
+                }
+                return new groovy.json.JsonSlurper().parseText(zip.getInputStream(entry).getText('UTF-8'))
+            }
+            def metadata = readJson('fabric.mod.json')
+            if (metadata.id != 'xaero_discovery_radius'
+                    || metadata.version != project.version.toString()
+                    || metadata.environment != 'client'
+                    || metadata.depends.xaerominimap != '26.4.2'
+                    || metadata.depends.xaeroworldmap != '1.44.2') {
+                throw new GradleException("Client companion metadata does not match the pinned Canary 1 contract")
+            }
+            def mixins = readJson('xaero_discovery_radius.mixins.json')
+            def expectedMixins = [
+                    'LeafRegionTextureMixin',
+                    'MinimapWriterMixin',
+                    'WorldDataReaderMixin',
+                    'WorldMapWriterMixin'
+            ] as Set
+            if (mixins.required != true || (mixins.client as Set) != expectedMixins) {
+                throw new GradleException("Client companion mixin list does not match the pinned Canary 1 contract")
+            }
+            expectedMixins.each { mixin ->
+                def classPath = "dev/resivore/xaerodiscovery/mixin/${mixin}.class"
+                if (zip.getEntry(classPath) == null) {
+                    throw new GradleException("Client companion artifact is missing ${classPath}")
+                }
+            }
+        } finally {
+            zip.close()
+        }
+    }
+}
+
+tasks.named('check') {
+    dependsOn tasks.named('verifyClientOnlyArtifact')
+}
+
+java {
+    withSourcesJar()
+}
