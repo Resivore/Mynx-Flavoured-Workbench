@@ -1,0 +1,125 @@
+{
+  "$schema": "../../schemas/workbench-status.schema.json",
+  "schema_version": 1,
+  "identity": {
+    "uuid": "2371b6eb-a4fb-4f1e-8203-580b82ce846b",
+    "name": "Coal Consolidation",
+    "project_id": "coal-consolidation",
+    "aliases": [],
+    "legacy_names": [],
+    "legacy_ids": []
+  },
+  "definition": {
+    "lifecycle": "ACTIVE",
+    "goals": [
+      "Consolidate ordinary intended Matcha charcoal production into coal while preserving the overridden cooking recipe identities, burnable-log inputs, experience, and timing.",
+      "Replace only the seven previously audited recipes' explicit charcoal alternatives with coal while leaving #minecraft:coals consumers unchanged.",
+      "Keep vanilla charcoal registered for old-save and legacy-item safety, provide one-way 1:1 cleanup conversion, and suppress charcoal clutter in Creative and supported recipe viewers."
+    ],
+    "scope": [
+      "Maintain the exact Canary 1 data overrides: minecraft:charcoal and smoking:charcoal output one coal; four vanilla and three Matcha explicit consumers use coal only; coal_consolidation:charcoal_to_coal remains a shapeless 1:1 conversion.",
+      "Maintain the client-only Fabric CreativeModeTabEvents removal of Items.CHARCOAL from Ingredients display and search output plus the additive c:hidden_from_recipe_viewers tag."
+    ],
+    "boundaries": {
+      "owned_paths": [
+        "projects/coal-consolidation"
+      ],
+      "exclusions": [
+        "Removing or replacing the minecraft:charcoal registry entry, changing its fuel/datafix/model safety, or adding a reverse coal-to-charcoal path.",
+        "Overriding #minecraft:coals or furnace_minecart_fuel, broad recipe-family rewrites, or changing campfire, alternate coal-block, or other tag-backed behavior.",
+        "Adding registry mutation, mixins, a common initializer, hard JEI integration, or recipe changes beyond the previously audited explicit consumers.",
+        "Resource-pack work, Stack to Nearby Chests, Quick Stack Nearby, unrelated project changes, Minecraft deployment, Test Instance Manager mutation, and access to either gameplay profile during this migration."
+      ]
+    },
+    "dependencies": [
+      {
+        "type": "MOD",
+        "identifier": "minecraft",
+        "requirement": "=26.2",
+        "reason": "Target game version for the retained recipe codecs, registry contract, and client presentation hook."
+      },
+      {
+        "type": "MOD",
+        "identifier": "fabricloader",
+        "requirement": ">=0.19.3",
+        "reason": "Fabric runtime loader declared by Canary 1 and used by the focused test harness."
+      },
+      {
+        "type": "MOD",
+        "identifier": "fabric-api",
+        "requirement": ">=0.157.0+26.2",
+        "reason": "Provides the supported client Creative output mutation used to hide charcoal clutter."
+      },
+      {
+        "type": "DATA_PACK",
+        "identifier": "matcha-flavoured",
+        "requirement": "=1.12; SHA-256 6209783021c358044abedabacee471faff5bd4080437d4e3b5e51963f1804248",
+        "reason": "Exact external recipe and campfire-loot baseline audited for the retained Matcha overrides; it is not redistributed here."
+      },
+      {
+        "type": "MOD",
+        "identifier": "jei",
+        "requirement": "=30.18.0.144 (recommended)",
+        "reason": "Audited recipe viewer honoring the additive c:hidden_from_recipe_viewers tag; Coal Consolidation has no hard JEI code dependency."
+      },
+      {
+        "type": "TOOL",
+        "identifier": "java",
+        "requirement": "25",
+        "reason": "Compilation release and Minecraft 26.2 runtime level used by the retained build."
+      },
+      {
+        "type": "TOOL",
+        "identifier": "gradle",
+        "requirement": "9.5.1",
+        "reason": "Build version used for both the retained artifact evidence and migration verification."
+      },
+      {
+        "type": "TOOL",
+        "identifier": "fabric-loom",
+        "requirement": "1.17-SNAPSHOT (resolved 1.17.20)",
+        "reason": "Maintained build selector and exact plugin version resolved by the legacy and migration builds."
+      },
+      {
+        "type": "OTHER",
+        "identifier": "junit-jupiter",
+        "requirement": "5.13.4",
+        "reason": "Focused static and production-codec test baseline retained by the project."
+      }
+    ]
+  },
+  "state": {
+    "milestone": "C1 is retained after separate legacy and migration 16/16 focused test passes and reproduced byte-for-byte; it remains generated, statically validated, runtime untested, and not deployed.",
+    "releases": {
+      "current": {
+        "version": "0.1.0-canary1",
+        "artifact": {
+          "filename": "coal-consolidation-0.1.0-canary1.jar",
+          "sha256": "d7598f640184613f03f0ea2fb558cd4d94099ec54cabc189ef978dbb7f5d4f9d"
+        },
+        "source_commit": "ff8ea31e3c5959fdb4a2886b1113071bfda5770f"
+      },
+      "accepted": null,
+      "rollback": null,
+      "accepted_current": "NO_ACCEPTED",
+      "accepted_rollback": "NO_ROLLBACK"
+    },
+    "validation": {
+      "build": "STATIC_PASS",
+      "deployment": "NOT_DEPLOYED",
+      "runtime": "RUNTIME_UNTESTED"
+    },
+    "blocker": null
+  },
+  "synchronization": {
+    "revision": 1,
+    "activity_at": "2026-08-28T22:52:51Z",
+    "updated_at": "2026-08-29T22:15:17Z",
+    "last_codex_at": "2026-08-29T22:15:17Z",
+    "source_commit": "ff8ea31e3c5959fdb4a2886b1113071bfda5770f",
+    "google_sheet": {
+      "participates": true,
+      "exclusion_reason": null
+    }
+  }
+}
