@@ -1,0 +1,11 @@
+{
+  "required": true,
+  "package": "dev.resivore.blockfamilies.gametest.mixin",
+  "compatibilityLevel": "JAVA_25",
+  "mixins": [
+    "DramaticDoorsProductionModeMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

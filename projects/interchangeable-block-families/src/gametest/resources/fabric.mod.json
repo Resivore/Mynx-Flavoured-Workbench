@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "id": "interchangeable-block-families-runtime-tests",
+  "version": "1.0.0",
+  "name": "Interchangeable Block Families Runtime Tests",
+  "environment": "*",
+  "entrypoints": {
+    "fabric-gametest": [
+      "dev.resivore.blockfamilies.gametest.AuditedShapeMapGameTests"
+    ]
+  },
+  "mixins": [
+    "interchangeable_block_families.gametest.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.19.3",
+    "fabric-api": "*",
+    "minecraft": "26.2",
+    "interchangeable_block_families": "=0.1.0-canary4",
+    "clutternomore": "=2.0.7+26.2",
+    "mcwdoors": "=1.1.5",
+    "mcwpaths": "=1.1.1",
+    "mcwtrpdoors": "=1.1.5",
+    "mcwwindows": "=2.4.2",
+    "dramaticdoors": "=1.20.1-3.3.3+26.2-workbench-canary6",
+    "quick_stack_nearby_compat": "=0.1.0-canary6",
+    "cnm_terrain_slabs_compat": "=0.5.49-nibaru-cnm-canary1.39-native-directional-material-axis",
+    "more_slabs_stairs_and_walls": "=4.2.0+26.2-port-canary43-native-directional-material-axis"
+  }
+}

@@ -1,0 +1,5 @@
+# case\texact-tag\texpanded-input-order\texpected-canonical-order
+wooden_doors_dedupe	minecraft:wooden_doors	minecraft:oak_door|mcwdoors:oak_barn_door|mcwdoors:oak_glass_door|minecraft:spruce_door|mcwdoors:spruce_japanese_door	minecraft:oak_door|minecraft:spruce_door
+doors_include_iron	minecraft:doors	minecraft:oak_door|mcwdoors:oak_barn_door|minecraft:iron_door|mcwdoors:metal_door|mcwdoors:store_door	minecraft:oak_door|minecraft:iron_door
+wooden_trapdoors_dedupe	minecraft:wooden_trapdoors	minecraft:oak_trapdoor|mcwtrpdoors:oak_barn_trapdoor|mcwtrpdoors:oak_glass_trapdoor|minecraft:spruce_trapdoor|mcwtrpdoors:spruce_barn_trapdoor	minecraft:oak_trapdoor|minecraft:spruce_trapdoor
+trapdoors_include_iron	minecraft:trapdoors	minecraft:oak_trapdoor|mcwtrpdoors:oak_barn_trapdoor|minecraft:iron_trapdoor|mcwtrpdoors:metal_trapdoor|mcwtrpdoors:metal_warning_trapdoor	minecraft:oak_trapdoor|minecraft:iron_trapdoor

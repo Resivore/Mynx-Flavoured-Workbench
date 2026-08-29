@@ -1,0 +1,4 @@
+# case\tfamily\tsource\ttarget-position\texpected-target\tcount\tcomponent-patch
+oak_first	door_2h_oak	mcwdoors:oak_barn_door	first	minecraft:oak_door	37	custom_name=Workshop_Door|lore=North_Wing
+oak_middle	door_2h_oak	mcwdoors:oak_barn_door	middle	mcwdoors:oak_modern_door	37	custom_name=Workshop_Door|lore=North_Wing
+oak_last	door_2h_oak	mcwdoors:oak_barn_door	last	mcwdoors:oak_whispering_door	37	custom_name=Workshop_Door|lore=North_Wing
