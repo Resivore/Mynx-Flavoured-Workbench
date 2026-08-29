@@ -1,0 +1,14 @@
+# case\tsource\ttarget\texpected-same-shape-family
+oak_door_design	minecraft:oak_door	mcwdoors:oak_whispering_door	true
+cross_wood_door	mcwdoors:oak_barn_door	mcwdoors:spruce_barn_door	false
+height_boundary	minecraft:oak_door	dramaticdoors:tall_oak_door	false
+oak_tall_design	dramaticdoors:tall_oak_door	dramaticdoors:tall_macaw_oak_waffle_door	true
+trapdoor_to_shutter	minecraft:oak_trapdoor	mcwwindows:oak_louvered_shutter	true
+cross_material_shutter	minecraft:oak_trapdoor	mcwwindows:spruce_shutter	false
+iron_trapdoor_to_shutter	mcwtrpdoors:metal_full_trapdoor	mcwwindows:iron_shutter	true
+window_design	mcwwindows:oak_window	mcwwindows:oak_pane_window	true
+log_plank_window_boundary	mcwwindows:oak_window	mcwwindows:oak_plank_window	false
+cross_material_window	mcwwindows:oak_window2	mcwwindows:spruce_window2	false
+fence_gate	minecraft:oak_fence	minecraft:oak_fence_gate	true
+cross_material_fence	minecraft:oak_fence_gate	minecraft:spruce_fence_gate	false
+cross_category	minecraft:oak_door	minecraft:oak_trapdoor	false

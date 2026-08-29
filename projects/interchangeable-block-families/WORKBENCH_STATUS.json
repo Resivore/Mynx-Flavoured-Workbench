@@ -1,0 +1,179 @@
+{
+  "$schema": "../../schemas/workbench-status.schema.json",
+  "schema_version": 1,
+  "identity": {
+    "uuid": "ee8a20f8-d0a8-515c-9a74-3b19f238227d",
+    "name": "Interchangeable Block Families",
+    "project_id": "interchangeable-block-families",
+    "aliases": [
+      "IBF",
+      "Block Variant Selection",
+      "Interchangeable Block Families (IBF)"
+    ],
+    "legacy_names": [],
+    "legacy_ids": [
+      "interchangeable-block-families"
+    ]
+  },
+  "definition": {
+    "lifecycle": "ACTIVE",
+    "goals": [
+      "Contribute the exact audited literal block and accessory families to Clutter No More ShapeMap so approved material forms can share one interchangeable storage family.",
+      "Preserve Clutter No More as the sole switching, transmutation, recipe-cleanup, and equivalence authority while keeping component patches and source variants exact.",
+      "Keep exact accepted C3 live as the rollback baseline until current C4 receives separately reported runtime validation and acceptance."
+    ],
+    "scope": [
+      "Maintain exact C4 source and artifact identity from legacy implementation checkpoint 9f5a72fff4e8370cdf031006f6658399550f609f: 133 mutually disjoint families, 1,120 unique item IDs, and a 22-member maximum.",
+      "Preserve the accepted 96-family and 944-member C3 catalog byte-for-byte while adding C4's nine exact bar-chain families and 28 literal building-accessory families without suffix, tag, or provider-name inference.",
+      "Preserve pre/post ShapeMap collision validation, equal-component-patch equivalence, fail-closed transfer validation, audited alternate-door loot narrowing, recipe cleanup contracts, Quick Stack Nearby affinity, and large-family viewport handling.",
+      "Retain exact current C4 and exact accepted/effective-rollback C3 artifacts; C4 remains generated, controlled-validation-passed, not deployed, and runtime untested, while C3 remains accepted and live."
+    ],
+    "boundaries": {
+      "owned_paths": [
+        "projects/interchangeable-block-families"
+      ],
+      "exclusions": [
+        "Clutter No More owns ShapeMap, selection controls, 1:1 transmuteCopy switching, recipe equivalence and cleanup, and the graph consumed by Quick Stack Nearby; IBF does not add a second registry, switcher, keybind, networking protocol, recipe engine, or storage-equivalence system.",
+        "Minecraft, Macaw, and Dramatic Doors providers own native blocks, placement, collision, redstone, recipes and costs, drops, copper weathering, waxing, scraping, and lightning behavior; IBF does not normalize or replace those semantics.",
+        "Nibaru and Block Geometry Extensions own geometry and material behavior, while Quick Stack Nearby and its compatibility layer only consume Clutter No More affinity; IBF does not modify, duplicate, or bundle those projects.",
+        "Partial provider materialization, dynamic discovery, registry-name or tag inference, cross-material or cross-finish collapsing, Macaw paving/full/slab/stair forms, and Building But Better integration are outside the audited C4 contract.",
+        "This migration does not deploy C4, mutate a Test Slot or accepted physical baseline, access either Minecraft profile, or create new in-game runtime evidence.",
+        "Legacy status READMEs, provenance and audit narratives, historical C1/C2 matrices and binaries, manager records, snapshots, branches, worktrees, and Git history are not imported."
+      ]
+    },
+    "dependencies": [
+      {
+        "type": "MOD",
+        "identifier": "minecraft",
+        "requirement": "=26.2",
+        "reason": "Exact game version targeted by C4; the mapped audit JAR identity is SHA-256 7232f2b67e94ca0017e54af8fa253d46758099a573b4be8ee31c252964e2981b."
+      },
+      {
+        "type": "MOD",
+        "identifier": "fabricloader",
+        "requirement": ">=0.19.3",
+        "reason": "Required Fabric runtime loader declared by C4."
+      },
+      {
+        "type": "MOD",
+        "identifier": "fabric-api",
+        "requirement": ">=0.157.0; controlled build 0.157.0+26.2 SHA-256 acb7dc90a0430519c49548074d3fbf6fd81d13063f08f0af344b2a6b08a42620",
+        "reason": "Required Fabric APIs and exact controlled-validation dependency identity."
+      },
+      {
+        "type": "MOD",
+        "identifier": "clutternomore",
+        "requirement": "=2.0.7+26.2; clutternomore-2.0.7+26.2-fabric.jar SHA-256 41a925e70d5e6e8c098bea7dc88c44486aed46724e35cb2fa4b1622b2a4dbcce",
+        "reason": "Owns ShapeMap, switching, transmutation, recipe cleanup, and equivalence behavior extended by IBF's literal family contribution."
+      },
+      {
+        "type": "MOD",
+        "identifier": "mcwdoors",
+        "requirement": "=1.1.5; mcw-doors-1.1.5-mc26.2fabric.jar SHA-256 00e431d662489fe4a145f0e471837e1cd2bc9bcce5abe3f9f9941230765b2ded",
+        "reason": "Required provider for the audited ordinary-door families."
+      },
+      {
+        "type": "MOD",
+        "identifier": "mcwpaths",
+        "requirement": "=1.1.1; Modrinth VRLhWB91:LLYA3vec; mcw-paths-1.1.1-mc26.2fabric.jar SHA-256 39128a12cb64fd61286b631714da742d7b6ea0fa8d4573c103081d01e4993bc2",
+        "reason": "Required C4 provider for exactly 77 audited thin path forms; pavings and other path-family forms remain excluded."
+      },
+      {
+        "type": "MOD",
+        "identifier": "mcwtrpdoors",
+        "requirement": "=1.1.5; Modrinth n2fvCDlM:guJEg4jK; mcw-trapdoors-1.1.5-mc26.2fabric.jar SHA-256 6411cb0ff6c6cc4312deed48c3ca69cdcbbae72e80ff4ed0269f2d0a78acd32d",
+        "reason": "Required provider for audited trapdoor families."
+      },
+      {
+        "type": "MOD",
+        "identifier": "mcwwindows",
+        "requirement": "=2.4.2; Modrinth C7I0BCni:sNXCQQn1; mcw-windows-2.4.2-mc26.2fabric.jar SHA-256 40ba9c55f191f8bd4758293683ed2bcf6d0c76c8f54f9fc8a0dccabdbcfd36ad",
+        "reason": "Required provider for audited window, shutter, parapet, blind, and curtain-rod forms."
+      },
+      {
+        "type": "PROJECT",
+        "identifier": "41c327e0-b896-5a02-a30c-62f98b8123ae",
+        "requirement": "Accepted C7 (legacy Canary 6), dramaticdoors-1.20.1-3.3.3+26.2-workbench-canary6.jar SHA-256 1d6b8286c3cc4e657f5326a2e5807081e35f66d13a41e77b3931b647fcdda4f6",
+        "reason": "Exact required Dramatic Doors provider for the audited three-high families."
+      },
+      {
+        "type": "PROJECT",
+        "identifier": "680476b9-5336-5422-a575-779f2efd1eff",
+        "requirement": "Accepted C45 (legacy C43), more-slabs-stairs-and-walls-4.2.0+26.2-port-canary43-native-directional-material-axis.jar SHA-256 0a979a75101076e987a35807f8eb293631fe5e664b252e5db0aa263d4eedf07f",
+        "reason": "Exact accepted Nibaru identity used only as C4 collision and regression context; Nibaru remains the material owner."
+      },
+      {
+        "type": "PROJECT",
+        "identifier": "4b2342fc-7bdf-5ba6-9f37-d551109d214c",
+        "requirement": "Accepted C52 (legacy Integration 1.39), cnm-nibaru-integration-0.5.49-nibaru-cnm-canary1.39-native-directional-material-axis.jar SHA-256 0e84fb7b8c69e31c3c22a592d0667db66c2918c8fd9f461bd2c216d377722e69",
+        "reason": "Exact accepted geometry integration identity used only for C4 isolation and regression validation."
+      },
+      {
+        "type": "OTHER",
+        "identifier": "Quick Stack Nearby validation pair",
+        "requirement": "quick-stack-nearby 0.4.0 SHA-256 43f1130527f782a291231c682791b4fd3766a20916c691cbdb98f91fdcc47e53; compatibility C6 0.1.0-canary6 SHA-256 c2f4ae3b02a5517ad184998c784c356d90132aeee91546c91d03a878be6ce98",
+        "reason": "Exact accepted pair used to prove that component-equal IBF families compose through Clutter No More affinity without transferring ownership to IBF."
+      },
+      {
+        "type": "TOOL",
+        "identifier": "java",
+        "requirement": "=25",
+        "reason": "Required Java release for Minecraft 26.2 and the controlled C4 build."
+      },
+      {
+        "type": "TOOL",
+        "identifier": "gradle",
+        "requirement": "=9.5.1 with Fabric Loom 1.17.19",
+        "reason": "Exact build-tool baseline used for the preserved C4 source and migration verification."
+      }
+    ]
+  },
+  "state": {
+    "milestone": "C4 adds the accessory-family slice and passes controlled validation; it is runtime untested and not deployed, while accepted C3 remains live.",
+    "releases": {
+      "current": {
+        "version": "C4 (0.1.0-canary4)",
+        "artifact": {
+          "filename": "interchangeable-block-families-0.1.0-canary4.jar",
+          "sha256": "8f805d0cc6cf65599c8fab190be2aa023006a9bd990bcdd2bf0c45f62f1a2968"
+        },
+        "source_commit": "9f5a72fff4e8370cdf031006f6658399550f609f"
+      },
+      "accepted": {
+        "version": "C3 (0.1.0-canary3)",
+        "artifact": {
+          "filename": "interchangeable-block-families-0.1.0-canary3.jar",
+          "sha256": "d0150aea777dd7837d0c9b4f5cf41ce45f510c60ef416fb7001d06a36a6b0e87"
+        },
+        "source_commit": "34796a9af6b2da235c3ff9d0e3338f8e6af0e137"
+      },
+      "rollback": {
+        "version": "C3 (0.1.0-canary3)",
+        "artifact": {
+          "filename": "interchangeable-block-families-0.1.0-canary3.jar",
+          "sha256": "d0150aea777dd7837d0c9b4f5cf41ce45f510c60ef416fb7001d06a36a6b0e87"
+        },
+        "source_commit": "34796a9af6b2da235c3ff9d0e3338f8e6af0e137"
+      },
+      "accepted_current": "CURRENT_DIFFERS_FROM_ACCEPTED",
+      "accepted_rollback": "ACCEPTED_IS_ROLLBACK"
+    },
+    "validation": {
+      "build": "CONTROLLED_VALIDATION_PASS",
+      "deployment": "NOT_DEPLOYED",
+      "runtime": "RUNTIME_UNTESTED"
+    },
+    "blocker": null
+  },
+  "synchronization": {
+    "revision": 1,
+    "activity_at": "2026-08-28T18:30:51Z",
+    "updated_at": "2026-08-29T22:42:11Z",
+    "last_codex_at": "2026-08-29T22:42:11Z",
+    "source_commit": "5597f2a8f9a65950b55c501ee2b004b30e8443ae",
+    "google_sheet": {
+      "participates": true,
+      "exclusion_reason": null
+    }
+  }
+}

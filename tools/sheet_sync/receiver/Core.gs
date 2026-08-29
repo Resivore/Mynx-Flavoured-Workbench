@@ -87,7 +87,7 @@ var MynxSheetSync = (function () {
     if (!/^[0-9a-f]{40}$/.test(envelope.source.publication_commit)) {
       throw new Error("publication commit is invalid");
     }
-    if (!/^(projects|resourcepacks)\/[a-z0-9]+(?:-[a-z0-9]+)*\/WORKBENCH_STATUS\.json$/.test(envelope.source.manifest_path)) {
+    if (!/^(projects|resourcepacks)\/[a-z0-9]+(?:[.-][a-z0-9]+)*\/WORKBENCH_STATUS\.json$/.test(envelope.source.manifest_path)) {
       throw new Error("manifest path is invalid");
     }
     requireExactKeys(envelope.ownership, ["sheet_preserves"], "ownership");

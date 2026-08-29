@@ -1,0 +1,109 @@
+plugins {
+    id 'net.fabricmc.fabric-loom' version '1.17.19'
+}
+
+version = project.mod_version
+group = project.maven_group
+
+base {
+    archivesName = project.archives_base_name
+}
+
+repositories {
+    maven { url = 'https://maven.fabricmc.net/' }
+    mavenCentral()
+}
+
+configurations {
+    nibaruReference {
+        canBeConsumed = false
+        canBeResolved = true
+        transitive = false
+    }
+    cnmIntegrationReference {
+        canBeConsumed = false
+        canBeResolved = true
+        transitive = false
+    }
+    cnmUpstreamReference {
+        canBeConsumed = false
+        canBeResolved = true
+        transitive = false
+    }
+    terrainSlabsReference {
+        canBeConsumed = false
+        canBeResolved = true
+        transitive = false
+    }
+}
+
+def workbenchRoot = providers.gradleProperty('workbench_root')
+        .orElse(rootProject.projectDir.parentFile.parentFile.absolutePath)
+        .get()
+def nibaruReferenceJar = new File(workbenchRoot, 'artifacts/canaries/nibaru-26.2/canary41-pale-recipe-fix/more-slabs-stairs-and-walls-4.2.0+26.2-port-canary41-pale-recipe-fix.jar')
+def cnmIntegrationReferenceJar = new File(workbenchRoot, 'projects/test-instance-manager/accepted-artifacts/cnm-nibaru-integration-0.5.46-nibaru-cnm-canary1.36-pale-coverage.jar')
+def cnmUpstreamReferenceJar = new File(workbenchRoot, 'originals/mods/clutternomore-2.0.7+26.2-fabric.jar')
+def terrainSlabsReferenceJar = new File(workbenchRoot, 'originals/mods/Terrain Slabs v3.3.2-26.2.jar')
+
+dependencies {
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    implementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+
+    compileOnly files(nibaruReferenceJar)
+    runtimeOnly files(nibaruReferenceJar)
+
+    // These are isolated-fixture runtime inputs only. Main code consumes no CNM implementation API.
+    runtimeOnly files(cnmIntegrationReferenceJar)
+    runtimeOnly files(cnmUpstreamReferenceJar)
+
+    nibaruReference files(nibaruReferenceJar)
+    cnmIntegrationReference files(cnmIntegrationReferenceJar)
+    cnmUpstreamReference files(cnmUpstreamReferenceJar)
+    terrainSlabsReference files(terrainSlabsReferenceJar)
+
+    testImplementation platform('org.junit:junit-bom:5.13.4')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+fabricApi {
+    configureTests {
+        createSourceSet = true
+        modId = 'slab-decorations-fixtures'
+        enableGameTests = true
+        enableClientGameTests = false
+        eula = true
+    }
+}
+
+processResources {
+    inputs.property 'version', project.version
+    filesMatching('fabric.mod.json') {
+        expand 'version': project.version
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.release = 25
+}
+
+test {
+    useJUnitPlatform()
+    inputs.files(
+            configurations.nibaruReference,
+            configurations.cnmIntegrationReference,
+            configurations.cnmUpstreamReference,
+            configurations.terrainSlabsReference
+    )
+    doFirst {
+        systemProperty 'nibaruReferenceJar', configurations.nibaruReference.singleFile.absolutePath
+        systemProperty 'cnmIntegrationReferenceJar', configurations.cnmIntegrationReference.singleFile.absolutePath
+        systemProperty 'cnmUpstreamReferenceJar', configurations.cnmUpstreamReference.singleFile.absolutePath
+        systemProperty 'terrainSlabsReferenceJar', configurations.terrainSlabsReference.singleFile.absolutePath
+    }
+}
+
+java {
+    withSourcesJar()
+}

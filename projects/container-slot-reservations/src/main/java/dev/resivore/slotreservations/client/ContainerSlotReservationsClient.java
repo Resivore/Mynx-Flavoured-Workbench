@@ -1,0 +1,88 @@
+package dev.resivore.slotreservations.client;
+
+import com.mojang.blaze3d.platform.InputConstants;
+import dev.resivore.slotreservations.ContainerSlotReservations;
+import dev.resivore.slotreservations.network.ReservationActionPayload;
+import dev.resivore.slotreservations.network.ReservationSnapshotPayload;
+import dev.resivore.slotreservations.network.ReservationSnapshotRequestPayload;
+import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.minecraft.client.KeyMapping;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.inventory.Slot;
+import org.lwjgl.glfw.GLFW;
+
+public final class ContainerSlotReservationsClient implements ClientModInitializer {
+    private static KeyMapping reservationKey;
+    private static AbstractContainerScreen<?> requestedScreen;
+
+    @Override
+    public void onInitializeClient() {
+        KeyMapping.Category category = KeyMapping.Category.register(Identifier.fromNamespaceAndPath(
+                ContainerSlotReservations.MOD_ID, "controls"));
+        reservationKey = KeyMappingHelper.registerKeyMapping(new KeyMapping(
+                "key.container_slot_reservations.toggle",
+                InputConstants.Type.KEYSYM,
+                GLFW.GLFW_KEY_UNKNOWN,
+                category));
+
+        ClientPlayNetworking.registerGlobalReceiver(ReservationSnapshotPayload.TYPE, (payload, context) ->
+                context.client().execute(() -> acceptSnapshot(context.client(), payload)));
+
+        ClientTickEvents.END_CLIENT_TICK.register(ContainerSlotReservationsClient::requestSnapshotForNewScreen);
+    }
+
+    public static boolean handleContainerKey(Minecraft client, KeyEvent event) {
+        if (reservationKey == null
+                || !reservationKey.matches(event)
+                || client.player == null
+                || !(client.gui.screen() instanceof AbstractContainerScreen<?> screen)
+                || !ClientPlayNetworking.canSend(ReservationActionPayload.TYPE)) {
+            return false;
+        }
+
+        Slot slot = ((ReservationScreenAccess) screen).containerSlotReservations$getHoveredSlot();
+        if (slot == null || !ClientReservationState.isEligible(screen.getMenu(), slot)) return false;
+        int menuSlotIndex = screen.getMenu().slots.indexOf(slot);
+        if (menuSlotIndex < 0) return false;
+
+        ReservationActionPayload.Source source;
+        if (!slot.getItem().isEmpty()) {
+            source = ReservationActionPayload.Source.SLOT_STACK;
+        } else if (!screen.getMenu().getCarried().isEmpty()) {
+            source = ReservationActionPayload.Source.CARRIED_STACK;
+        } else {
+            source = ReservationActionPayload.Source.CLEAR_EMPTY;
+        }
+
+        ClientPlayNetworking.send(new ReservationActionPayload(
+                screen.getMenu().containerId, menuSlotIndex, source));
+        return true;
+    }
+
+    private static void requestSnapshotForNewScreen(Minecraft client) {
+        if (client.gui.screen() instanceof AbstractContainerScreen<?> screen) {
+            if (requestedScreen == screen) return;
+            requestedScreen = screen;
+            ClientReservationState.clear();
+            if (client.player != null && ClientPlayNetworking.canSend(ReservationSnapshotRequestPayload.TYPE)) {
+                ClientPlayNetworking.send(new ReservationSnapshotRequestPayload(screen.getMenu().containerId));
+            }
+        } else {
+            requestedScreen = null;
+            ClientReservationState.clear();
+        }
+    }
+
+    private static void acceptSnapshot(Minecraft client, ReservationSnapshotPayload snapshot) {
+        if (client.gui.screen() instanceof AbstractContainerScreen<?> screen
+                && screen.getMenu().containerId == snapshot.menuId()) {
+            ClientReservationState.accept(screen.getMenu(), snapshot);
+        }
+    }
+}

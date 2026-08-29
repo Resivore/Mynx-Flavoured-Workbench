@@ -1,0 +1,8 @@
+# case\tsource\ttarget\tsource-patch\tdestination-patch\texpected-merge
+default_same_family	minecraft:oak_door	mcwdoors:oak_barn_door	-	-	true
+equal_custom_patch	mcwdoors:oak_barn_door	mcwdoors:oak_glass_door	custom_name=Workshop_Door|lore=North_Wing	custom_name=Workshop_Door|lore=North_Wing	true
+different_custom_name	mcwdoors:oak_barn_door	mcwdoors:oak_glass_door	custom_name=Workshop_Door	custom_name=Cellar_Door	false
+custom_source_default_destination	minecraft:oak_trapdoor	mcwwindows:oak_shutter	custom_name=Named_Trapdoor	-	false
+same_shape_different_lore	mcwwindows:oak_window	mcwwindows:oak_window2	lore=North_Wing	lore=South_Wing	false
+same_nonparent_item_different_patch	mcwdoors:oak_barn_door	mcwdoors:oak_barn_door	custom_name=One	custom_name=Two	false
+cross_material_equal_patch	mcwdoors:oak_barn_door	mcwdoors:spruce_barn_door	custom_name=Shared	custom_name=Shared	false

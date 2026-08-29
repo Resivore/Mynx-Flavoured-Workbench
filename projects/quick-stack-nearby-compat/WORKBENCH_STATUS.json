@@ -38,7 +38,6 @@
       ],
       "exclusions": [
         "Carried Container Auto-Routing, Matcha × Stack to Nearby Chests Compatibility, Inventory Search, Block Geometry Extensions, Nibaru, Clutter No More, Quick Stack Nearby, and every other nearby-routing or inventory project retain their own identities, source, artifacts, and behavior ownership.",
-        "The retired CNM × Stack to Nearby Chests Compatibility path and UUID 876e05ea-8938-5888-8073-f053db950ded remain absent; this project does not depend on, revive, or adopt them.",
         "No Stack to Nearby Chests implementation, Matcha-specific QSN adapter, general Inventory Search patch, carried-container routing, nested-container routing, reserved-slot redesign, registry-name parsing, fuzzy material equivalence, item conversion, or custom stack merge is owned here.",
         "Official QSN, Inventory Search/Core, Inventory Extended, Clutter No More, BGE, Nibaru, Minecraft, and Fabric classes or JARs are not bundled or redistributed by this project.",
         "The C6 aggregate runtime pass does not establish individual checklist rows, dedicated-server coverage, later Nibaru/CNM-integration pair coverage, or compatibility with an unrecorded dependency identity.",
