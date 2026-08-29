@@ -1,0 +1,9 @@
+{
+  "key.categories.container_slot_reservations.controls": "Container Slot Reservations",
+  "key.container_slot_reservations.toggle": "Toggle Slot Reservation",
+  "tooltip.container_slot_reservations.reserved": "Reserved: %s",
+  "tooltip.container_slot_reservations.empty": "No physical item is present",
+  "text.container_slot_reservations.reserved": "Reserved for %s",
+  "text.container_slot_reservations.cleared": "Reservation cleared",
+  "text.container_slot_reservations.rejected": "Reservation request rejected"
+}

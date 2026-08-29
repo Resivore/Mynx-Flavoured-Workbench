@@ -1,0 +1,15 @@
+{
+  "required": true,
+  "package": "dev.resivore.slotreservations.mixin",
+  "compatibilityLevel": "JAVA_25",
+  "mixins": [
+    "ChestMenuMixin",
+    "ShulkerBoxMenuMixin",
+    "ShulkerBoxBlockMixin",
+    "RandomizableContainerBlockEntityMixin",
+    "CompoundContainerAccessor"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

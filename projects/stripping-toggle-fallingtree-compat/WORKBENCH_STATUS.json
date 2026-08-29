@@ -1,0 +1,133 @@
+{
+  "$schema": "../../schemas/workbench-status.schema.json",
+  "schema_version": 1,
+  "identity": {
+    "uuid": "9b4cd3fb-8ae6-58c7-8b88-9b0878c6333e",
+    "name": "StrippingToggle × FallingTree Compatibility",
+    "project_id": "stripping-toggle-fallingtree-compat",
+    "aliases": [
+      "Stripping Toggle x FallingTree"
+    ],
+    "legacy_names": [],
+    "legacy_ids": [
+      "stripping-toggle-fallingtree-compat"
+    ]
+  },
+  "definition": {
+    "lifecycle": "ACCEPTED",
+    "goals": [
+      "Keep StrippingToggle's existing client state as the sole supported master activation control for FallingTree while preserving FallingTree's native eligibility and tree-breaking behavior.",
+      "Preserve the accepted Canary 2 state-synchronization contract without adding a second toggle, hot-path compatibility lookup, or replacement tree system."
+    ],
+    "scope": [
+      "Maintain the exact Canary 2 implementation represented by frozen legacy checkpoint f0101f38c446dddaa4226450386402c63597ba7c and implementation source checkpoint 8abd994b09a50879d0ae871d763f8c47248cc0f8.",
+      "Mirror StrippingToggle OFF into FallingTree's native fallingtree-disabled player tag and ON by removing that tag at join, local-player replacement, and state changes; clear the mirrored state on clean leave and server shutdown.",
+      "Keep FallingTree's former toggle command as a required exact status-only seam and keep all compatibility-owned work out of FallingTree eligibility, discovery, traversal, and breaking paths.",
+      "Retain exact C2 as the current and accepted client/singleplayer baseline and exact C1 only as the functional-pass/performance-fail comparison artifact, not as an accepted rollback release."
+    ],
+    "boundaries": {
+      "owned_paths": [
+        "projects/stripping-toggle-fallingtree-compat"
+      ],
+      "exclusions": [
+        "Changes to StrippingToggle, FallingTree, their upstream binaries, or FallingTree's creative, required-tag, tree-detection, tool, enchantment, durability, drop, leaf, permission, and other non-activation behavior.",
+        "A second keybind, HUD, command, configuration, scoreboard, compatibility tag, UUID state map, periodic repair loop, tree traversal, or replacement FallingTree eligibility system.",
+        "Direct operator tag mutation and later FallingTree configuration drift; the accepted behavior contract requires sneakMode IGNORE.",
+        "Dedicated-server validation, which remains unperformed and is not inferred from the accepted client and singleplayer evidence.",
+        "Minecraft deployment, runtime-slot mutation, accepted-stack mutation, Test Instance Manager changes, Minecraft launch, and access to either gameplay profile during this migration.",
+        "Other projects, resource packs, runtime state, and originals content."
+      ]
+    },
+    "dependencies": [
+      {
+        "type": "MOD",
+        "identifier": "minecraft",
+        "requirement": "=26.2",
+        "reason": "Exact game version targeted by the retained player-tag, payload, and command seams."
+      },
+      {
+        "type": "MOD",
+        "identifier": "fabricloader",
+        "requirement": ">=0.19.3",
+        "reason": "Fabric runtime loader declared by the accepted companion."
+      },
+      {
+        "type": "MOD",
+        "identifier": "fabric-api",
+        "requirement": "=0.157.0+26.2",
+        "reason": "Fabric networking, lifecycle, and client event APIs used by the accepted implementation."
+      },
+      {
+        "type": "MOD",
+        "identifier": "strippingtoggle",
+        "requirement": "=1.2.6+26.2; SHA-256 0a44db1bb183b3296461ad10c4fb8179c7a345f5cce54b30e291f5355282857d",
+        "reason": "Exact client-only authority source; the companion suggests it in universal metadata and enforces the exact version only from its client entrypoint."
+      },
+      {
+        "type": "MOD",
+        "identifier": "fallingtree",
+        "requirement": "=25 from FallingTree-26.2-25.jar; SHA-256 abe61a2708f9ba00b063d918be63292e69c62b7743e2fe64fc63ce8877f1c5f2",
+        "reason": "Exact universal dependency that owns the native fallingtree-disabled tag, translated status messages, eligibility policy, and tree-breaking path."
+      },
+      {
+        "type": "TOOL",
+        "identifier": "java",
+        "requirement": "=25",
+        "reason": "Compilation and runtime release used by Minecraft 26.2 and the retained artifact."
+      },
+      {
+        "type": "TOOL",
+        "identifier": "gradle",
+        "requirement": "=9.5.1",
+        "reason": "Build tool used by the frozen and migration verification builds."
+      },
+      {
+        "type": "TOOL",
+        "identifier": "fabric-loom",
+        "requirement": "=1.17.19",
+        "reason": "Exact Fabric build plugin that reproduces the retained C2 artifact."
+      }
+    ]
+  },
+  "state": {
+    "milestone": "Exact C2 passed the focused client and singleplayer scope and remains the current and accepted baseline; dedicated-server coverage remains unperformed. Exact C1 remains retained only as a functional-pass/performance-fail comparison and is not a rollback release.",
+    "releases": {
+      "current": {
+        "version": "0.1.1-canary2",
+        "artifact": {
+          "filename": "strippingtoggle-fallingtree-compat-0.1.1-canary2.jar",
+          "sha256": "d948c23db8b6c73e764f96422d8359afb85ba39689352e512fd7b4aa91644846"
+        },
+        "source_commit": "8abd994b09a50879d0ae871d763f8c47248cc0f8"
+      },
+      "accepted": {
+        "version": "0.1.1-canary2",
+        "artifact": {
+          "filename": "strippingtoggle-fallingtree-compat-0.1.1-canary2.jar",
+          "sha256": "d948c23db8b6c73e764f96422d8359afb85ba39689352e512fd7b4aa91644846"
+        },
+        "source_commit": "8abd994b09a50879d0ae871d763f8c47248cc0f8"
+      },
+      "rollback": null,
+      "accepted_current": "CURRENT_IS_ACCEPTED",
+      "accepted_rollback": "NO_ROLLBACK"
+    },
+    "validation": {
+      "build": "STATIC_PASS",
+      "deployment": "READY_TO_TEST_VERIFIED",
+      "runtime": "PARTIAL_RUNTIME_PASS"
+    },
+    "blocker": null
+  },
+  "synchronization": {
+    "revision": 1,
+    "activity_at": "2026-08-22T06:23:53Z",
+    "updated_at": "2026-08-29T22:38:34Z",
+    "last_codex_at": "2026-08-29T22:38:34Z",
+    "source_commit": "ff63d39329bbb92a86223655adf2bff5de0589d7",
+    "google_sheet": {
+      "participates": true,
+      "exclusion_reason": null
+    }
+  }
+}

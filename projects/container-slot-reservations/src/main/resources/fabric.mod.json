@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "id": "container_slot_reservations",
+  "version": "${version}",
+  "name": "Container Slot Reservations",
+  "description": "Keeps component-aware organization intent in empty storage-container slots.",
+  "authors": ["Resivore compatibility workbench"],
+  "license": "MIT",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "dev.resivore.slotreservations.ContainerSlotReservations"
+    ],
+    "client": [
+      "dev.resivore.slotreservations.client.ContainerSlotReservationsClient"
+    ]
+  },
+  "mixins": [
+    "container_slot_reservations.mixins.json",
+    "container_slot_reservations.client.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.19.3",
+    "fabric-api": ">=0.157.0",
+    "minecraft": "=26.2",
+    "java": ">=25"
+  }
+}

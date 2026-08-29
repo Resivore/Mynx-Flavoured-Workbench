@@ -1,0 +1,95 @@
+{
+  "$schema": "../../schemas/workbench-status.schema.json",
+  "schema_version": 1,
+  "identity": {
+    "uuid": "5747a309-1bd5-4280-b25c-98669e149928",
+    "name": "BGE × CTM",
+    "project_id": "bge-ctm",
+    "aliases": [
+      "BGE × Connected Textures",
+      "Block Geometry Extensions × CTM",
+      "Block Geometry Extensions × Connected Textures"
+    ],
+    "legacy_names": [],
+    "legacy_ids": []
+  },
+  "definition": {
+    "lifecycle": "PLANNED",
+    "goals": [
+      "Make Block Geometry Extensions geometries participate in Continuity connected-texture behavior when their canonical source or material-family semantics call for connection.",
+      "Preserve source-material identity and support applicable BGE-owned geometries consistently without duplicating BGE's canonical geometry ownership, material-family registry, or source-block mappings."
+    ],
+    "scope": [
+      "Identify how Continuity discovers and groups connectable blocks in the Minecraft Java 26.2 Fabric environment.",
+      "Determine a clean architecture for BGE-generated or BGE-owned geometries to inherit or participate in appropriate CTM relationships through canonical material identity.",
+      "Support applicable BGE geometries consistently, including representative vertical slabs, steps, layers, and other BGE-owned shapes, rather than introducing one-off fixes per shape.",
+      "Preserve semantically appropriate source-block-to-BGE and BGE-to-BGE adjacency while honoring orientation, state, and intentional CTM-exclusion distinctions.",
+      "Preserve vanilla and non-BGE Continuity behavior while evaluating a future Fabric compatibility layer, generated CTM metadata or assets, runtime integration, or an evidence-supported combination."
+    ],
+    "boundaries": {
+      "owned_paths": [
+        "projects/bge-ctm"
+      ],
+      "exclusions": [
+        "Continuity remains the target CTM implementation; this project does not replace Continuity or implement a general CTM engine.",
+        "BGE retains ownership of geometry registration, geometry ownership, material-family relationships, and source-block mappings; this project must consume those canonical relationships rather than duplicate them or infer them from registry names.",
+        "Nibaru retains ownership of its material definitions and semantics.",
+        "This project does not modify BGE, Matcha, or unrelated resource-pack artwork during initialization.",
+        "Translucent Glass × BGE Compatibility remains a separate project responsible for translucent-glass and rendering compatibility issues that are not general CTM connectivity; this project does not absorb that scope."
+      ]
+    },
+    "dependencies": [
+      {
+        "type": "PROJECT",
+        "identifier": "4b2342fc-7bdf-5ba6-9f37-d551109d214c",
+        "requirement": null,
+        "reason": "Block Geometry Extensions is the canonical owner of the geometries and material relationships that this compatibility project will consume."
+      },
+      {
+        "type": "MOD",
+        "identifier": "continuity",
+        "requirement": null,
+        "reason": "Continuity is the target connected-texture runtime and implementation for the current Workbench stack."
+      },
+      {
+        "type": "MOD",
+        "identifier": "minecraft",
+        "requirement": "=26.2",
+        "reason": "Target game version for the planned Fabric compatibility work."
+      },
+      {
+        "type": "MOD",
+        "identifier": "fabricloader",
+        "requirement": null,
+        "reason": "Target runtime loader for the planned compatibility layer; no implementation-specific loader constraint has been selected."
+      }
+    ]
+  },
+  "state": {
+    "milestone": "Official BGE × CTM project initialized; architecture and implementation have not started.",
+    "releases": {
+      "current": null,
+      "accepted": null,
+      "rollback": null,
+      "accepted_current": "NO_ACCEPTED",
+      "accepted_rollback": "NO_ROLLBACK"
+    },
+    "validation": {
+      "build": "NOT_RUN",
+      "deployment": "NOT_DEPLOYED",
+      "runtime": "RUNTIME_UNTESTED"
+    },
+    "blocker": null
+  },
+  "synchronization": {
+    "revision": 1,
+    "activity_at": "2026-08-29T22:36:32Z",
+    "updated_at": "2026-08-29T22:36:32Z",
+    "last_codex_at": "2026-08-29T22:36:32Z",
+    "source_commit": "8c0243ebee7a9daad9b72eb66fe92c4bfc8434da",
+    "google_sheet": {
+      "participates": true,
+      "exclusion_reason": null
+    }
+  }
+}
