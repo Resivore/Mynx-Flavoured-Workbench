@@ -19,9 +19,11 @@ or validation from this administrative migration.
 3. Check placed and inventory/item rendering, same-family adjacency, and mixed
    full-block/derived-geometry seams for correct translucency, textures,
    internal faces, and depth ordering.
-4. With Continuity enabled, verify intended connected textures on applicable
-   derived geometry and confirm that different materials or colors do not
-   connect incorrectly.
+4. With Continuity enabled, establish the expected general connectivity from
+   the separately owned BGE × CTM baseline, then confirm that applying the
+   Translucent Glass treatment preserves those outcomes and does not introduce
+   cross-material or cross-color connections. Classify a general connectivity
+   defect under BGE × CTM unless evidence ties it to this compatibility layer.
 5. Repeat representative cases with Complementary shaders enabled, then perform
    a resource reload, save/reload the world, and complete a full client restart.
 
