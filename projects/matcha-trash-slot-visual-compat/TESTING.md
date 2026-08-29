@@ -11,6 +11,13 @@ approved visual/resource-pack scope was complete. It does not contain a
 project-local artifact or a separately reported result for every check below.
 This migration performed no Minecraft launch, deployment, or runtime check.
 
+Current `main` records the accepted layout authority as Inherent 3×3 Inventory
+Crafting UUID `357cd94a-4ab2-54c9-ac6c-4049fea08bb9`, exact Canary 4 SHA-256
+`6e797291dd6c68f5afe65f91177ad2653f7c4a99e10bd20e078fafd7aaf6cb33`.
+Its canonical legacy source commit is
+`34e8de533e804ab4993b7502d7c5afbec6ebc8ca`. That artifact remains owned by
+its own project and is not copied here.
+
 ## Focused visual regression procedure
 
 Use the exact external Simple Trash Slot reference
