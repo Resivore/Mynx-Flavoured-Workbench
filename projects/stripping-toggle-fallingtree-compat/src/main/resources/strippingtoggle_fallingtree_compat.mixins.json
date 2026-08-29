@@ -1,0 +1,9 @@
+{
+  "required": true,
+  "package": "dev.resivore.strippingtogglefallingtreecompat.mixin",
+  "compatibilityLevel": "JAVA_25",
+  "mixins": [
+    "ToggleCommandMixin"
+  ],
+  "injectors": { "defaultRequire": 1 }
+}
