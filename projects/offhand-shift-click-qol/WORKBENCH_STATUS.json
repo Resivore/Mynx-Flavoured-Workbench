@@ -1,0 +1,138 @@
+{
+  "$schema": "../../schemas/workbench-status.schema.json",
+  "schema_version": 1,
+  "identity": {
+    "uuid": "9009daaf-90e8-5827-9f03-90566460f908",
+    "name": "Offhand Shift-Click QoL",
+    "project_id": "offhand-shift-click-qol",
+    "aliases": [
+      "Offhand Shift-Click"
+    ],
+    "legacy_names": [],
+    "legacy_ids": [
+      "offhand-shift-click-qol"
+    ]
+  },
+  "definition": {
+    "lifecycle": "ACCEPTED",
+    "goals": [
+      "Preserve the accepted C7 shift-click and incoming-item routing behavior for Minecraft Java 26.2 without changing priorities or adding features.",
+      "Retain composable coexistence with Carried Container Auto-Routing and the accepted safeguards for exact remainders, live source stacks, Inventory Extended sizing, and foreign-slot exclusion."
+    ],
+    "scope": [
+      "Without Carried Container Auto-Routing, preserve the standalone ground-pickup and external QUICK_MOVE order: matching selected main hand, matching occupied physical hotbar, matching occupied offhand, empty physical hotbar, then remaining ordinary inventory.",
+      "When Carried is loaded, preserve Offhand's single-delegation compatibility seam: yield ground pickup to Carried and delegate external/player-origin QUICK_MOVE through Carried's public API, while the counterpart owns its full carrier and ordinary-inventory hierarchy and the menu receives the exact player-origin remainder.",
+      "Keep standalone ordinary routing limited to the player's real non-equipment Inventory slots, require component-identical merges, exclude the clicked source, and retain menu-owned cleanup and callbacks."
+    ],
+    "boundaries": {
+      "owned_paths": [
+        "projects/offhand-shift-click-qol"
+      ],
+      "exclusions": [
+        "Shift-click priority changes, new routing tiers, features, configuration, commands, keybinds, GUI, assets, or unrelated inventory behavior.",
+        "Source, controls, artifacts, or behavior owned by Carried Container Auto-Routing, Inventory Extended, Trinkets, or any other inventory project.",
+        "Routing into equipment, Trinkets, trash, or foreign slots, and replacement of menu-owned cleanup, callbacks, or ordinary destination behavior.",
+        "Standalone or exhaustive runtime claims beyond the preserved focused paired C7 plus Carried 0.3.4 evidence.",
+        "Runtime deployment, Minecraft launch, accepted-baseline changes, Test Slot changes, Test Instance Manager changes, and access to either physical gameplay profile during this migration."
+      ]
+    },
+    "dependencies": [
+      {
+        "type": "MOD",
+        "identifier": "minecraft",
+        "requirement": "=26.2",
+        "reason": "Exact game version targeted by the accepted menu, inventory, and item-entity mixins."
+      },
+      {
+        "type": "MOD",
+        "identifier": "fabricloader",
+        "requirement": ">=0.19.3",
+        "reason": "Loader version declared by the accepted standalone artifact and used for optional-mod discovery."
+      },
+      {
+        "type": "MOD",
+        "identifier": "fabric-api",
+        "requirement": "0.157.0+26.2",
+        "reason": "Maintained build dependency for the frozen C7 source."
+      },
+      {
+        "type": "PROJECT",
+        "identifier": "fcb7d036-c756-5114-abe1-01c4331e7ea8",
+        "requirement": "optional; focused acceptance used 0.3.4-menu-sync-priority-fix-canary at SHA-256 2143cf5f90c181b363cfa7d8d20a5e565f2b26800065e52907b4b24f64d8ad7d",
+        "reason": "Carried Container Auto-Routing is the optional counterpart providing the carrier tier in the exact paired runtime evidence; Offhand retains its standalone path when absent."
+      },
+      {
+        "type": "TOOL",
+        "identifier": "java",
+        "requirement": "25",
+        "reason": "Compilation release and Minecraft 26.2 runtime level used by the retained implementation."
+      },
+      {
+        "type": "TOOL",
+        "identifier": "gradle",
+        "requirement": "9.5.1",
+        "reason": "Build version recorded for the accepted C7 and reused for migration verification."
+      },
+      {
+        "type": "TOOL",
+        "identifier": "fabric-loom",
+        "requirement": "1.17-SNAPSHOT",
+        "reason": "Maintained plugin selector; the accepted build resolved 1.17.19 and migration verification resolved 1.17.20."
+      },
+      {
+        "type": "OTHER",
+        "identifier": "junit-jupiter",
+        "requirement": "5.12.2",
+        "reason": "Focused fixture-test baseline retained by the project."
+      }
+    ]
+  },
+  "state": {
+    "milestone": "C7 passed the focused paired runtime scope with Carried Container Auto-Routing 0.3.4 and remains the accepted release; standalone and exhaustive validation are not claimed.",
+    "releases": {
+      "current": {
+        "version": "0.3.3-acquisition-priority-fix-canary",
+        "artifact": {
+          "filename": "offhand-shift-click-qol-0.3.3-acquisition-priority-fix-canary.jar",
+          "sha256": "d0c2ebe7cd2d1a6dcbe2654dbee42dd9f5dce4fd710ea3748f3d15dad6f2b04a"
+        },
+        "source_commit": "3274dc915f49f6aecda6130added09d6742837bd"
+      },
+      "accepted": {
+        "version": "0.3.3-acquisition-priority-fix-canary",
+        "artifact": {
+          "filename": "offhand-shift-click-qol-0.3.3-acquisition-priority-fix-canary.jar",
+          "sha256": "d0c2ebe7cd2d1a6dcbe2654dbee42dd9f5dce4fd710ea3748f3d15dad6f2b04a"
+        },
+        "source_commit": "3274dc915f49f6aecda6130added09d6742837bd"
+      },
+      "rollback": {
+        "version": "0.3.3-acquisition-priority-fix-canary",
+        "artifact": {
+          "filename": "offhand-shift-click-qol-0.3.3-acquisition-priority-fix-canary.jar",
+          "sha256": "d0c2ebe7cd2d1a6dcbe2654dbee42dd9f5dce4fd710ea3748f3d15dad6f2b04a"
+        },
+        "source_commit": "3274dc915f49f6aecda6130added09d6742837bd"
+      },
+      "accepted_current": "CURRENT_IS_ACCEPTED",
+      "accepted_rollback": "ACCEPTED_IS_ROLLBACK"
+    },
+    "validation": {
+      "build": "STATIC_PASS",
+      "deployment": "READY_TO_TEST_VERIFIED",
+      "runtime": "RUNTIME_PASS"
+    },
+    "blocker": null
+  },
+  "synchronization": {
+    "revision": 1,
+    "activity_at": "2026-08-20T15:16:00Z",
+    "updated_at": "2026-08-29T21:38:23Z",
+    "last_codex_at": "2026-08-29T21:38:23Z",
+    "source_commit": "d75e4f00421c52a5abec3d4286e83fc18875ebc5",
+    "google_sheet": {
+      "participates": true,
+      "exclusion_reason": null
+    }
+  }
+}
