@@ -1,0 +1,131 @@
+{
+  "$schema": "../../schemas/workbench-status.schema.json",
+  "schema_version": 1,
+  "identity": {
+    "uuid": "28c84ead-5e0a-57b5-942c-1ee58b02cadb",
+    "name": "Dragonbound Waystone",
+    "project_id": "dragonbound-waystone",
+    "aliases": [],
+    "legacy_names": [],
+    "legacy_ids": [
+      "dragonbound-waystone"
+    ]
+  },
+  "definition": {
+    "lifecycle": "ACCEPTED",
+    "goals": [
+      "Maintain the progression-gated one-way return system for Minecraft Java 26.2 Fabric using one shared placed Dragonbound Waystone, an Imbued Void Pearl, and a cooldown-based Dragonbound Staff.",
+      "Preserve the accepted server-owned channel, exact-destination safety, persistent anchor, loss protection, recipes, configuration migration, discovery behavior, geometry, and art without expanding into a general waypoint or teleport system."
+    ],
+    "scope": [
+      "Maintain the exact Canary 5 implementation, build, resources, and tests represented by frozen legacy checkpoint f0101f38c446dddaa4226450386402c63597ba7c and project source checkpoint 690066c7c7159771a244ecd72f201473d95fcb19.",
+      "Preserve the 40-tick default channel, 1,200-tick Staff cooldown, exact current recipes, one-click and mouse-release-independent channel lifecycle, exact arrival at blockY + 3/16, recipe-book and JEI discovery seam, and success-only consumption and cooldown behavior.",
+      "Retain exact accepted Canary 5 and focused-runtime-passed Canary 4 rollback artifacts together with the Dragonbound-owned Staff art and the separately licensed Matcha Stable Void snapshot and notice."
+    ],
+    "boundaries": {
+      "owned_paths": [
+        "projects/dragonbound-waystone"
+      ],
+      "exclusions": [
+        "Multiple destinations, waypoint lists, portals, home commands, arbitrary coordinates, nearby-position fallback, XP costs, durability, charges, pet or group teleport, and other feature or balance changes.",
+        "Recipe, dependency, configuration, timing, geometry, art, item identity, behavior, or scope changes during this migration.",
+        "Mod Menu polish and dedicated-server validation remain deferred; the accepted evidence is the recorded client and singleplayer scope only.",
+        "Other projects and their source, status, artifacts, dependencies, and ownership records remain outside this project.",
+        "Minecraft deployment, either experimental Test Slot, accepted physical-baseline changes, Test Instance Manager mutation, Minecraft launch, and protected gameplay-instance access during this migration.",
+        "Redistribution of the embedded Matcha/Klei bitmap without independently satisfying its CC BY-NC-SA 4.0 attribution, non-commercial, and share-alike terms."
+      ]
+    },
+    "dependencies": [
+      {
+        "type": "OTHER",
+        "identifier": "minecraft",
+        "requirement": ">=26.2 <26.3",
+        "reason": "Target game range declared by the accepted artifact."
+      },
+      {
+        "type": "MOD",
+        "identifier": "fabricloader",
+        "requirement": ">=0.19.3",
+        "reason": "Fabric runtime loader declared by the accepted artifact."
+      },
+      {
+        "type": "MOD",
+        "identifier": "fabric-api",
+        "requirement": ">=0.156.0+26.2",
+        "reason": "Fabric APIs used by the accepted implementation and declared as a runtime dependency."
+      },
+      {
+        "type": "TOOL",
+        "identifier": "java",
+        "requirement": "25",
+        "reason": "Java release and runtime used by Minecraft 26.2 and the retained build."
+      },
+      {
+        "type": "TOOL",
+        "identifier": "gradle",
+        "requirement": "9.5.1",
+        "reason": "Build tool version recorded for the accepted Canary 5 artifact."
+      },
+      {
+        "type": "TOOL",
+        "identifier": "fabric-loom",
+        "requirement": "1.17-SNAPSHOT",
+        "reason": "Unchanged Fabric build-plugin declaration; the exact accepted artifact resolved Loom 1.17.19."
+      },
+      {
+        "type": "OTHER",
+        "identifier": "Matcha_Flavoured_1_12.zip",
+        "requirement": "SHA-256 6209783021c358044abedabacee471faff5bd4080437d4e3b5e51963f1804248",
+        "reason": "Immutable provenance identity for the embedded 16 x 16 Matcha/Klei Stable Void texture, which remains CC BY-NC-SA 4.0 material and is not a live build or runtime dependency."
+      }
+    ]
+  },
+  "state": {
+    "milestone": "Exact Canary 5 remains the current and accepted client and singleplayer baseline after the user's focused confirmation; dedicated-server validation remains unperformed, no Canary 5 log is claimed, and exact focused-runtime-passed Canary 4 remains the rollback.",
+    "releases": {
+      "current": {
+        "version": "0.1.0-canary5",
+        "artifact": {
+          "filename": "dragonbound-waystone-0.1.0-canary5.jar",
+          "sha256": "ff29582cc50f391a3ebb79b5ab1dff2f8fb7abb92363bca46fb8a9608a481ad3"
+        },
+        "source_commit": "690066c7c7159771a244ecd72f201473d95fcb19"
+      },
+      "accepted": {
+        "version": "0.1.0-canary5",
+        "artifact": {
+          "filename": "dragonbound-waystone-0.1.0-canary5.jar",
+          "sha256": "ff29582cc50f391a3ebb79b5ab1dff2f8fb7abb92363bca46fb8a9608a481ad3"
+        },
+        "source_commit": "690066c7c7159771a244ecd72f201473d95fcb19"
+      },
+      "rollback": {
+        "version": "0.1.0-canary4",
+        "artifact": {
+          "filename": "dragonbound-waystone-0.1.0-canary4.jar",
+          "sha256": "2ea97d762ee646f97954abc6c919ecea2f337b91096894adfc13e5af34982634"
+        },
+        "source_commit": "bf3c1f128bf394994e13c66624fbf5129d0fe4b4"
+      },
+      "accepted_current": "CURRENT_IS_ACCEPTED",
+      "accepted_rollback": "ROLLBACK_DIFFERS_FROM_ACCEPTED"
+    },
+    "validation": {
+      "build": "CONTROLLED_VALIDATION_PASS",
+      "deployment": "READY_TO_TEST_VERIFIED",
+      "runtime": "RUNTIME_PASS"
+    },
+    "blocker": null
+  },
+  "synchronization": {
+    "revision": 1,
+    "activity_at": "2026-08-22T04:10:59Z",
+    "updated_at": "2026-08-29T21:33:19Z",
+    "last_codex_at": "2026-08-29T21:33:19Z",
+    "source_commit": "f18f7756e0f54da392c12083d160beb28cea2b64",
+    "google_sheet": {
+      "participates": true,
+      "exclusion_reason": null
+    }
+  }
+}

@@ -1,0 +1,129 @@
+{
+  "$schema": "../../schemas/workbench-status.schema.json",
+  "schema_version": 1,
+  "identity": {
+    "uuid": "58086966-05a1-4237-9f4f-ffca6c05da87",
+    "name": "Stacks Are Stacks — Container Fixes",
+    "project_id": "stacks-are-stacks-container-fixes",
+    "aliases": [
+      "Stacks Are Stacks Container Fixes",
+      "Stacks Are Stacks Patch"
+    ],
+    "legacy_names": [],
+    "legacy_ids": []
+  },
+  "definition": {
+    "lifecycle": "ACTIVE",
+    "goals": [
+      "Keep eligible normally non-stackable item counts intact across Minecraft 26.2 client container and strict item-template reconstruction paths.",
+      "Align the client with Stacks Are Stacks' own effective holder maximums while preserving its configuration, eligibility, exclusions, damageable-item handling, and server authority.",
+      "Restore visible counts in ordinary containers and visible entries in the Easy Shulker Boxes preview without changing vanilla-stackable controls."
+    ],
+    "scope": [
+      "Maintain the client-only Fabric initializer and string-targeted Mixin invoker from Canary 1, exact-pinned to Stacks Are Stacks 2.1.2-1.26.2.",
+      "Retain the focused upstream-bytecode, vanilla-rendering-path, and stale-versus-aligned-client contract tests for the two demonstrated failures.",
+      "Retain the exact unaccepted Canary 1 binary and its implementation and retention provenance."
+    ],
+    "boundaries": {
+      "owned_paths": [
+        "projects/stacks-are-stacks-container-fixes"
+      ],
+      "exclusions": [
+        "Replacing or redistributing Stacks Are Stacks, copying its implementation, or changing its stack eligibility, configured maximums, exclusions, ConsumableFix behavior, or server authority.",
+        "Mixing into ItemStack, SimpleContainer, menus, slots, container screens, item-count renderers, Easy Shulker Boxes, or Item Interactions, and any unrelated inventory or container behavior.",
+        "Treating Easy Shulker Boxes 26.2.3 or its embedded Item Interactions 26.2.2 consumer path as a declared runtime dependency of this add-on.",
+        "Runtime deployment, either Test Slot, accepted-baseline changes, Test Instance Manager changes, the dedicated Workbench profile, and protected gameplay profile access during this migration."
+      ]
+    },
+    "dependencies": [
+      {
+        "type": "MOD",
+        "identifier": "minecraft",
+        "requirement": "=26.2",
+        "reason": "Target game version for the retained client container and item-template contracts."
+      },
+      {
+        "type": "MOD",
+        "identifier": "fabricloader",
+        "requirement": ">=0.19.3",
+        "reason": "Fabric runtime loader declared by Canary 1."
+      },
+      {
+        "type": "MOD",
+        "identifier": "fabric-api",
+        "requirement": "0.157.0+26.2",
+        "reason": "Provides the client lifecycle callback used by the retained initializer and is pinned by the maintained build."
+      },
+      {
+        "type": "MOD",
+        "identifier": "stacksarestacks",
+        "requirement": "=2.1.2-1.26.2",
+        "reason": "Exact compatibility owner and runtime dependency; audited build input Pg1TxNQ1/vHeAb2gZ is 358,573 bytes with SHA-256 8e318394ea52a6db343a00987dd1b122c69bf48e42deb7813cc5ef293e655917 and is not redistributed."
+      },
+      {
+        "type": "TOOL",
+        "identifier": "java",
+        "requirement": "25",
+        "reason": "Compilation release and runtime level required by the retained build."
+      },
+      {
+        "type": "TOOL",
+        "identifier": "gradle",
+        "requirement": "9.5.1",
+        "reason": "Build version recorded for Canary 1 and used for migration verification."
+      },
+      {
+        "type": "TOOL",
+        "identifier": "fabric-loom",
+        "requirement": "1.17.19",
+        "reason": "Fabric build plugin pinned by the maintained build."
+      },
+      {
+        "type": "OTHER",
+        "identifier": "junit-jupiter",
+        "requirement": "5.13.4",
+        "reason": "Focused static and compatibility contract test baseline retained by the project."
+      },
+      {
+        "type": "OTHER",
+        "identifier": "asm",
+        "requirement": "9.10.1",
+        "reason": "Reads the exact upstream bytecode contract in focused static tests."
+      }
+    ]
+  },
+  "state": {
+    "milestone": "C1 is retained after 9 focused tests and static reproductions of both client rendering failures; it remains runtime untested and not deployed.",
+    "releases": {
+      "current": {
+        "version": "0.1.0-canary1",
+        "artifact": {
+          "filename": "stacks-are-stacks-container-fixes-0.1.0-canary1.jar",
+          "sha256": "ab3634c31c2f3b231908cf392ed5ada074e624e3dfba45b5707d8b38958e1eed"
+        },
+        "source_commit": "625143806c44d6e5dc6725282edbfea0fafd8f53"
+      },
+      "accepted": null,
+      "rollback": null,
+      "accepted_current": "NO_ACCEPTED",
+      "accepted_rollback": "NO_ROLLBACK"
+    },
+    "validation": {
+      "build": "STATIC_PASS",
+      "deployment": "NOT_DEPLOYED",
+      "runtime": "RUNTIME_UNTESTED"
+    },
+    "blocker": null
+  },
+  "synchronization": {
+    "revision": 1,
+    "activity_at": "2026-08-28T18:39:27Z",
+    "updated_at": "2026-08-29T21:31:10Z",
+    "last_codex_at": "2026-08-29T21:31:10Z",
+    "source_commit": "625143806c44d6e5dc6725282edbfea0fafd8f53",
+    "google_sheet": {
+      "participates": true,
+      "exclusion_reason": null
+    }
+  }
+}

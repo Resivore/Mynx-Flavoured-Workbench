@@ -1,0 +1,12 @@
+{
+  "required": true,
+  "package": "dev.resivore.dragonbound.mixin",
+  "compatibilityLevel": "JAVA_25",
+  "mixins": [
+    "ProtectedWaystoneItemEntityMixin",
+    "ServerPlayerChannelMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

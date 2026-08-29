@@ -1,0 +1,33 @@
+Matcha Stable Void texture snapshot
+==================================
+
+Only this file is covered by the Matcha notice below:
+
+  textures/item/imbued_void_pearl.png
+
+It is an exact private-compatibility snapshot of Klei's current Matcha Flavoured
+Stable Void / Ender Pearl artwork. The copied bitmap remains Klei's work and is
+not covered by Dragonbound Waystone's MIT license.
+
+Upstream project: https://modrinth.com/datapack/matcha-flavoured
+Upstream license: CC BY-NC-SA 4.0
+Upstream author/attribution: Klei (klei_wright)
+
+Current live source archive at audit time:
+  Matcha_Flavoured_1_10.zip
+  SHA-256 B36FAA3C0247C3B96DEDCB1131C77989C231C828A8B332F1BBAA16CCF8EF776D
+
+Immutable Workbench source archive:
+  originals/resourcepacks/Matcha_Flavoured_1_12.zip
+  SHA-256 6209783021C358044ABEDABACEE471FAFF5BD4080437D4E3B5E51963F1804248
+
+Source path in both archives:
+  assets/minecraft/textures/item/ender_pearl.png
+
+Both archive versions contain the identical 16 x 16 indexed PNG:
+  SHA-256 999560B23FEC9BE33DFECC93FE4B3BFD083E7349D5FE963C162D28A6926FE62F
+
+This snapshot is retained only for the private Dragonbound compatibility build.
+Do not publish or redistribute it without independently satisfying the original
+attribution, non-commercial, and share-alike license terms. No other Matcha
+bitmap is copied into Dragonbound Waystone by this art integration.
