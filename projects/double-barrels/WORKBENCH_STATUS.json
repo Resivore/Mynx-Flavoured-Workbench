@@ -1,0 +1,133 @@
+{
+  "$schema": "../../schemas/workbench-status.schema.json",
+  "schema_version": 1,
+  "identity": {
+    "uuid": "d2fdf877-314a-539c-a5df-bd26ba8b6e6c",
+    "name": "Double Barrels 26.2",
+    "project_id": "double-barrels",
+    "aliases": [
+      "Double Barrels 26.2 compatibility port",
+      "Double Barrels 26.2 Port"
+    ],
+    "legacy_names": [],
+    "legacy_ids": [
+      "double-barrels"
+    ]
+  },
+  "definition": {
+    "lifecycle": "ACCEPTED",
+    "goals": [
+      "Preserve mozkomor's Double Barrel 1.0.1 behavior in the Fabric port for Minecraft Java 26.2.",
+      "Retain vanilla barrel identity while providing the upstream paired-barrel storage, placement, persistence, rendering, automation, comparator, and removal behavior without intentional gameplay changes."
+    ],
+    "scope": [
+      "Maintain the vanilla minecraft:barrel extension, serialized double_barrel connection states, absolute partner position, and main-half ownership semantics.",
+      "Maintain supported and forbidden pairing orientations, one shared 54-slot view over two 27-slot barrel inventories, the vanilla six-row menu, hopper and comparator exposure, save/reload behavior, and removed-half-only drops.",
+      "Maintain the connected barrel models, textures, blockstate override, and Canary 2 Minecraft 26.2 BlockEntity removal-hook correction."
+    ],
+    "boundaries": {
+      "owned_paths": [
+        "projects/double-barrels"
+      ],
+      "exclusions": [
+        "New porting work, redesign, feature additions, configuration, or intentional gameplay changes.",
+        "Custom blocks, items, block entities, menus, screens, networking, recipes, loot tables, or tags beyond the preserved upstream architecture.",
+        "Matcha-specific resource-pack work, speculative compatibility patches, and the separate Stack to Nearby Chests shutdown defect.",
+        "Unreported full-matrix, dedicated-server, or multiplayer validation.",
+        "Runtime deployment, either Test Slot, the physical Workbench, and the protected gameplay instance during this migration."
+      ]
+    },
+    "dependencies": [
+      {
+        "type": "OTHER",
+        "identifier": "minecraft",
+        "requirement": "26.2",
+        "reason": "Target game version for the frozen behavior-preserving port."
+      },
+      {
+        "type": "MOD",
+        "identifier": "fabricloader",
+        "requirement": ">=0.19.3",
+        "reason": "Fabric runtime loader declared by the accepted Canary 2."
+      },
+      {
+        "type": "MOD",
+        "identifier": "fabric-api",
+        "requirement": "0.156.0+26.2",
+        "reason": "Fabric API baseline used by the accepted Canary 2 source and build."
+      },
+      {
+        "type": "TOOL",
+        "identifier": "java",
+        "requirement": "25",
+        "reason": "Java release and runtime required by Minecraft 26.2 and the retained build."
+      },
+      {
+        "type": "TOOL",
+        "identifier": "gradle",
+        "requirement": "9.5.1",
+        "reason": "Build tool version recorded for the accepted Canary 2."
+      },
+      {
+        "type": "TOOL",
+        "identifier": "fabric-loom",
+        "requirement": "1.17-SNAPSHOT",
+        "reason": "Fabric build plugin declaration retained from the frozen source; the accepted build resolved Loom 1.17.19."
+      },
+      {
+        "type": "OTHER",
+        "identifier": "doublebarrels-1.0.1-fabric.jar",
+        "requirement": "SHA-256 30bcf6672c548af8f29097f36d7382455e6b9d8955c8b37c99940f7734988da8",
+        "reason": "External MIT-licensed Minecraft 1.21.1 provenance artifact from which the preserved source and resources were reconstructed; it is not imported or required at build or runtime."
+      }
+    ]
+  },
+  "state": {
+    "milestone": "C2 completed the recorded initial runtime scope and is retained as the accepted Workbench baseline.",
+    "releases": {
+      "current": {
+        "version": "1.0.1+26.2-canary2",
+        "artifact": {
+          "filename": "doublebarrels-fabric-26.2-1.0.1+26.2-canary2.jar",
+          "sha256": "b2119e05c508880c7977551091515f0076dd3cdc2733e51340ac813925b553c0"
+        },
+        "source_commit": "3f4d9b53c0c38f20717f1b6b1bd83ac543bd6864"
+      },
+      "accepted": {
+        "version": "1.0.1+26.2-canary2",
+        "artifact": {
+          "filename": "doublebarrels-fabric-26.2-1.0.1+26.2-canary2.jar",
+          "sha256": "b2119e05c508880c7977551091515f0076dd3cdc2733e51340ac813925b553c0"
+        },
+        "source_commit": "3f4d9b53c0c38f20717f1b6b1bd83ac543bd6864"
+      },
+      "rollback": {
+        "version": "1.0.1+26.2-canary2",
+        "artifact": {
+          "filename": "doublebarrels-fabric-26.2-1.0.1+26.2-canary2.jar",
+          "sha256": "b2119e05c508880c7977551091515f0076dd3cdc2733e51340ac813925b553c0"
+        },
+        "source_commit": "3f4d9b53c0c38f20717f1b6b1bd83ac543bd6864"
+      },
+      "accepted_current": "CURRENT_IS_ACCEPTED",
+      "accepted_rollback": "ACCEPTED_IS_ROLLBACK"
+    },
+    "validation": {
+      "build": "STATIC_PASS",
+      "deployment": "READY_TO_TEST_VERIFIED",
+      "runtime": "PARTIAL_RUNTIME_PASS"
+    },
+    "blocker": null
+  },
+  "synchronization": {
+    "revision": 1,
+    "activity_at": "2026-08-22T18:54:34Z",
+    "updated_at": "2026-08-29T20:59:56Z",
+    "last_codex_at": "2026-08-29T20:59:56Z",
+    "source_commit": "d86d4983ce93b37bb10b3fcf6ccfb6d83c0460f0",
+    "google_sheet": {
+      "participates": true,
+      "exclusion_reason": null
+    }
+  }
+}

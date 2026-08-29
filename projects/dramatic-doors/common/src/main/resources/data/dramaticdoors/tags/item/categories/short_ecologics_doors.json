@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    {"id": "dramaticdoors:short_eco_azalea_door", "required": false},
+    {"id": "dramaticdoors:short_eco_flowering_azalea_door", "required": false},
+    {"id": "dramaticdoors:short_eco_coconut_door", "required": false},
+    {"id": "dramaticdoors:short_eco_walnut_door", "required": false}
+  ]
+}

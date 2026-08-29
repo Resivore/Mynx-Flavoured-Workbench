@@ -1,0 +1,25 @@
+{
+  "replace": false,
+  "values": [
+    "dramaticdoors:short_iron_door",
+    "dramaticdoors:short_copper_door",
+    "dramaticdoors:short_exposed_copper_door",
+    "dramaticdoors:short_weathered_copper_door",
+    "dramaticdoors:short_oxidized_copper_door",
+    "dramaticdoors:short_waxed_copper_door",
+    "dramaticdoors:short_waxed_exposed_copper_door",
+    "dramaticdoors:short_waxed_weathered_copper_door",
+    "dramaticdoors:short_waxed_oxidized_copper_door",
+    "dramaticdoors:short_oak_door",
+    "dramaticdoors:short_spruce_door",
+    "dramaticdoors:short_birch_door",
+    "dramaticdoors:short_jungle_door",
+    "dramaticdoors:short_acacia_door",
+    "dramaticdoors:short_dark_oak_door",
+    "dramaticdoors:short_mangrove_door",
+    "dramaticdoors:short_bamboo_door",
+    "dramaticdoors:short_cherry_door",
+    "dramaticdoors:short_crimson_door",
+    "dramaticdoors:short_warped_door"
+  ]
+}

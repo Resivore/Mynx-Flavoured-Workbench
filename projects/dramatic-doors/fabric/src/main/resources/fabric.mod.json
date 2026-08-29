@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 1,
+  "id": "dramaticdoors",
+  "version": "${mod_version}",
+
+  "name": "Dramatic Doors (26.2 Workbench Canary)",
+  "description": "${description}",
+  "authors": [
+    "Fizzware (Original creator)", "Kitteh6660 (Fabric port)"
+  ],
+  "contact": {
+    "homepage": "https://www.curseforge.com/minecraft/mc-mods/dramatic-doors",
+    "sources": "https://github.com/Kitteh6660/DramaticDoors"
+  },
+
+  "license": "MIT",
+  "icon": "icon_square.png",
+
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "com.fizzware.dramaticdoors.fabric.DramaticDoorsFabric"
+    ],
+    "client": [
+      "com.fizzware.dramaticdoors.fabric.client.RenderHandler"
+    ]
+  },
+  "mixins": [
+    "dramaticdoors.mixins.json",
+    "dramaticdoors_fabric.mixins.json"
+  ],
+  "accessWidener": "dramaticdoors.accesswidener",
+
+  "depends": {
+    "fabricloader": ">=0.19.3",
+    "fabric-api": ">=0.157.0",
+    "minecraft": ">=26.2 <26.3",
+    "java": ">=25"
+  },
+  "suggests": {
+    "doubledoors": "*",
+    "ad_astra": "*",
+    "bewitchment": "*",
+    "biomemakeover": "*",
+    "byg": "*",
+    "ceilands": "*",
+    "charm": "*",
+    "ecologics": "*",
+    "glassdoor": "*",
+    "mcwdoors": ">=1.1.0",
+    "promenade": "*",
+    "snowyspirit": "*",
+    "supplementaries": "*",
+    "tconstruct": "*",
+    "techreborn": "*",
+    "traverse": "*",
+    "twigs": "*",
+    "twilightforest": "*"
+  }
+}

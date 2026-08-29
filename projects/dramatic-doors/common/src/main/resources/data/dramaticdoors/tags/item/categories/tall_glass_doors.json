@@ -1,0 +1,17 @@
+{
+  "replace": false,
+  "values": [
+    {"id": "dramaticdoors:tall_iron_glass_door", "required": false},
+    {"id": "dramaticdoors:tall_oak_glass_door", "required": false},
+    {"id": "dramaticdoors:tall_spruce_glass_door", "required": false},
+    {"id": "dramaticdoors:tall_birch_glass_door", "required": false},
+    {"id": "dramaticdoors:tall_jungle_glass_door", "required": false},
+    {"id": "dramaticdoors:tall_acacia_glass_door", "required": false},
+    {"id": "dramaticdoors:tall_dark_oak_glass_door", "required": false},
+    {"id": "dramaticdoors:tall_mangrove_glass_door", "required": false},
+    {"id": "dramaticdoors:tall_cherry_glass_door", "required": false},
+    {"id": "dramaticdoors:tall_bamboo_glass_door", "required": false},
+    {"id": "dramaticdoors:tall_crimson_glass_door", "required": false},
+    {"id": "dramaticdoors:tall_warped_glass_door", "required": false}
+  ]
+}

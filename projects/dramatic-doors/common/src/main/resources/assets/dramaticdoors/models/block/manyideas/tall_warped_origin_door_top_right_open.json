@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/door_top_right_open",
+  "textures": {
+    "bottom": "dramaticdoors:block/manyideas/tall_warped_origin_door_bottom",
+    "middle": "dramaticdoors:block/manyideas/tall_warped_origin_door_middle",
+    "top": "dramaticdoors:block/manyideas/tall_warped_origin_door_top"
+  }
+}

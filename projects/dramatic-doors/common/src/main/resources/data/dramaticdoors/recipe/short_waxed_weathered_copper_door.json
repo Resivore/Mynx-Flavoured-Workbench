@@ -1,0 +1,8 @@
+{
+  "type": "minecraft:stonecutting",
+  "ingredient": "minecraft:waxed_weathered_copper_door",
+  "result": {
+    "id": "dramaticdoors:short_waxed_weathered_copper_door",
+    "count": 2
+  }
+}

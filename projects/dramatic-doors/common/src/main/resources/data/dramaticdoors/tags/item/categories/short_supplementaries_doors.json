@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    {"id": "dramaticdoors:short_gold_door", "required": false},
+    {"id": "dramaticdoors:short_netherite_door", "required": false},
+    {"id": "dramaticdoors:short_silver_door", "required": false},
+    {"id": "dramaticdoors:short_lead_door", "required": false}
+  ]
+}

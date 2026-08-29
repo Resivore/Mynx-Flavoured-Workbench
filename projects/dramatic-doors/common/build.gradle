@@ -1,0 +1,34 @@
+plugins {
+    id 'idea'
+    id 'java'
+    id 'maven-publish'
+}
+
+base {
+    archivesName = "common"
+}
+
+dependencies {
+    compileOnly group:'org.spongepowered', name:'mixin', version:'0.8.6'
+    implementation group: 'com.google.code.findbugs', name: 'jsr305', version: '3.0.1'
+}
+
+publishing {
+    publications {
+        mavenCommon(MavenPublication) {
+            artifactId = project.archives_base_name
+            from components.java
+        }
+    }
+
+    // See https://docs.gradle.org/current/userguide/publishing_maven.html for information on how to set up publishing.
+    repositories {
+        // Add repositories to publish to here.
+    }
+}
+
+// The Fabric module compiles this source set against Loom's mapped Minecraft
+// classpath. "common" is a source container, not a standalone distributable.
+tasks.configureEach {
+    enabled = false
+}

@@ -1,0 +1,8 @@
+{
+  "replace": false,
+  "values": [
+    {"id": "dramaticdoors:tall_ft_cherry_door", "required": false},
+    {"id": "dramaticdoors:tall_ft_cherry_sliding_door", "required": false},
+    {"id": "dramaticdoors:tall_ft_citrus_door", "required": false}
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "replace": false,
+  "values": [
+    {"id": "dramaticdoors:short_bloodshroom_door", "required": false},
+    {"id": "dramaticdoors:short_greenheart_door", "required": false},
+    {"id": "dramaticdoors:short_skyroot_door", "required": false}
+  ]
+}

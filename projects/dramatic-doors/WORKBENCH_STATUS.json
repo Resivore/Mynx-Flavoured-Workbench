@@ -1,0 +1,122 @@
+{
+  "$schema": "../../schemas/workbench-status.schema.json",
+  "schema_version": 1,
+  "identity": {
+    "uuid": "41c327e0-b896-5a02-a30c-62f98b8123ae",
+    "name": "Dramatic Doors 26.2",
+    "project_id": "dramatic-doors",
+    "aliases": [
+      "Dramatic Doors — Minecraft 26.2 Workbench port",
+      "Dramatic Doors 26.2 Port"
+    ],
+    "legacy_names": [
+      "Dramatic Doors — Minecraft 26.2 Workbench port",
+      "Dramatic Doors 26.2 Port"
+    ],
+    "legacy_ids": [
+      "dramatic-doors"
+    ]
+  },
+  "definition": {
+    "lifecycle": "ACCEPTED",
+    "goals": [
+      "Maintain the faithful unofficial Minecraft Java 26.2 Fabric port of Dramatic Doors while preserving its upstream namespace, IDs, resources, and behavior.",
+      "Preserve tall and short door semantics, including true three-block tall doors, optional integrations, and established material-specific behavior."
+    ],
+    "scope": [
+      "Maintain the exact accepted C7 source reconstructed from frozen legacy checkpoint f0101f38c446dddaa4226450386402c63597ba7c and legacy implementation checkpoint 47774864918b4c1b1088ba0bca21565304d4c131.",
+      "Preserve facing, hinge, open and powered synchronization, placement, breaking, drops, collision, pathfinding, waterlogging, copper weathering and waxing, recipes, resources, configuration, and compatible AI and mixin behavior.",
+      "Preserve the accepted Minecraft 26.2 recipe encoding and load conditions plus the Macaw initialization, property-optional waterlogging, weathering-registration, and mixin-selector compatibility fixes without extending optional integration scope."
+    ],
+    "boundaries": {
+      "owned_paths": [
+        "projects/dramatic-doors"
+      ],
+      "exclusions": [
+        "Feature additions, behavior redesign, identity changes, and any claim that this unofficial Workbench port is an upstream release.",
+        "The NeoForge module and the currently excluded Fabric datagen, Create adapter, and direct Japanese-door mixin production surfaces unless a later explicit compatibility task restores them against matching dependencies.",
+        "Minecraft deployment, runtime-slot changes, accepted physical Workbench stack changes, protected gameplay-instance access, and Test Instance Manager changes during this migration.",
+        "Legacy administrative narratives, branches, tags, snapshots, global status databases, deployment records, and failed historical binaries."
+      ]
+    },
+    "dependencies": [
+      {
+        "type": "TOOL",
+        "identifier": "java",
+        "requirement": ">=25",
+        "reason": "Required to build and run the Minecraft 26.2 port."
+      },
+      {
+        "type": "OTHER",
+        "identifier": "minecraft",
+        "requirement": ">=26.2 <26.3",
+        "reason": "Target game range declared by the accepted Fabric artifact."
+      },
+      {
+        "type": "MOD",
+        "identifier": "fabricloader",
+        "requirement": ">=0.19.3",
+        "reason": "Fabric runtime loader declared by the accepted artifact."
+      },
+      {
+        "type": "MOD",
+        "identifier": "fabric-api",
+        "requirement": ">=0.157.0",
+        "reason": "Required Fabric API surface declared by the accepted artifact; the retained build uses 0.157.0+26.2."
+      },
+      {
+        "type": "MOD",
+        "identifier": "mcwdoors",
+        "requirement": ">=1.1.0 (optional)",
+        "reason": "Optional Macaw's Doors compatibility surface preserved by the accepted port and its runtime-tested initialization fixes."
+      },
+      {
+        "type": "OTHER",
+        "identifier": "Kitteh6660/DramaticDoors",
+        "requirement": "forward-port base 74e5de837466179cc39397d16bea11f6a45772dc; closest 3.3.3 source f2aaa3e7440393fa854b2df574f6ebe1fd9b298f",
+        "reason": "MIT-licensed upstream source lineage preserved by the unofficial Workbench port."
+      }
+    ]
+  },
+  "state": {
+    "milestone": "C7 is the exact accepted and promoted runtime baseline.",
+    "releases": {
+      "current": {
+        "version": "C7 (legacy Canary 6)",
+        "artifact": {
+          "filename": "dramaticdoors-1.20.1-3.3.3+26.2-workbench-canary6.jar",
+          "sha256": "1d6b8286c3cc4e657f5326a2e5807081e35f66d13a41e77b3931b647fcdda4f6"
+        },
+        "source_commit": "47774864918b4c1b1088ba0bca21565304d4c131"
+      },
+      "accepted": {
+        "version": "C7 (legacy Canary 6)",
+        "artifact": {
+          "filename": "dramaticdoors-1.20.1-3.3.3+26.2-workbench-canary6.jar",
+          "sha256": "1d6b8286c3cc4e657f5326a2e5807081e35f66d13a41e77b3931b647fcdda4f6"
+        },
+        "source_commit": "47774864918b4c1b1088ba0bca21565304d4c131"
+      },
+      "rollback": null,
+      "accepted_current": "CURRENT_IS_ACCEPTED",
+      "accepted_rollback": "NO_ROLLBACK"
+    },
+    "validation": {
+      "build": "STATIC_PASS",
+      "deployment": "READY_TO_TEST_VERIFIED",
+      "runtime": "RUNTIME_PASS"
+    },
+    "blocker": null
+  },
+  "synchronization": {
+    "revision": 1,
+    "activity_at": "2026-08-22T23:54:24Z",
+    "updated_at": "2026-08-29T21:06:49Z",
+    "last_codex_at": "2026-08-29T21:06:49Z",
+    "source_commit": "7452a3f7193fc0b9d8cae1e89d1f9f046ce876c9",
+    "google_sheet": {
+      "participates": true,
+      "exclusion_reason": null
+    }
+  }
+}

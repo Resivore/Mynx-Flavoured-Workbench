@@ -1,0 +1,7 @@
+{
+  "replace": false,
+  "values": [
+    {"id": "dramaticdoors:tall_pyrowood_door", "required": false},
+    {"id": "dramaticdoors:tall_rotten_planks_door", "required": false}
+  ]
+}

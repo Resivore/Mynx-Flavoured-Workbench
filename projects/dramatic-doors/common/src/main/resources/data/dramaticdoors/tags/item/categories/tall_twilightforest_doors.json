@@ -1,0 +1,15 @@
+{
+  "replace": false,
+  "values": [
+    {"id": "dramaticdoors:tall_canopy_door", "required": false},
+    {"id": "dramaticdoors:tall_darkwood_door", "required": false},
+    {"id": "dramaticdoors:tall_twilight_mangrove_door", "required": false},
+    {"id": "dramaticdoors:tall_minewood_door", "required": false},
+    {"id": "dramaticdoors:tall_sortingwood_door", "required": false},
+    {"id": "dramaticdoors:tall_timewood_door", "required": false},
+    {"id": "dramaticdoors:tall_transwood_door", "required": false},
+    {"id": "dramaticdoors:tall_twilight_oak_door", "required": false},
+    {"id": "dramaticdoors:tall_thorn_door", "required": false},
+    {"id": "dramaticdoors:tall_towerwood_door", "required": false}
+  ]
+}

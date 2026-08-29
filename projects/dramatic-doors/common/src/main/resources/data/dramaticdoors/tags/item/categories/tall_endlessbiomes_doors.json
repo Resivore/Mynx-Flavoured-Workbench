@@ -1,0 +1,7 @@
+{
+  "replace": false,
+  "values": [
+    {"id": "dramaticdoors:tall_eb_penumbra_door", "required": false},
+    {"id": "dramaticdoors:tall_eb_twisted_door", "required": false}
+  ]
+}

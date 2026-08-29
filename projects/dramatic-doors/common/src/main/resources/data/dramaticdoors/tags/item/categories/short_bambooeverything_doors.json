@@ -1,0 +1,7 @@
+{
+  "replace": false,
+  "values": [
+    {"id": "dramaticdoors:short_be_bamboo_door", "required": false},
+    {"id": "dramaticdoors:short_be_dry_bamboo_door", "required": false}
+  ]
+}

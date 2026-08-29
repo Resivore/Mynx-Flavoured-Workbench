@@ -1,0 +1,23 @@
+{
+  "replace": false,
+  "values": {
+    "dramaticdoors:short_copper_door": {
+      "next_oxidation_stage": "dramaticdoors:short_exposed_copper_door"
+    },
+    "dramaticdoors:short_exposed_copper_door": {
+      "next_oxidation_stage": "dramaticdoors:short_weathered_copper_door"
+    },
+    "dramaticdoors:short_weathered_copper_door": {
+      "next_oxidation_stage": "dramaticdoors:short_oxidized_copper_door"
+    },
+    "dramaticdoors:tall_copper_door": {
+      "next_oxidation_stage": "dramaticdoors:tall_exposed_copper_door"
+    },
+    "dramaticdoors:tall_exposed_copper_door": {
+      "next_oxidation_stage": "dramaticdoors:tall_weathered_copper_door"
+    },
+    "dramaticdoors:tall_weathered_copper_door": {
+      "next_oxidation_stage": "dramaticdoors:tall_oxidized_copper_door"
+    }
+  }
+}

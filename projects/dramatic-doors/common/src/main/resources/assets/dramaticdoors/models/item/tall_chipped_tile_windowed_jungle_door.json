@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "dramaticdoors:item/chipped/tall_tile_windowed_jungle_door"
+  }
+}

@@ -1,0 +1,90 @@
+plugins {
+    id 'net.fabricmc.fabric-loom' version '1.17-SNAPSHOT' apply(false)
+    id("org.spongepowered.mixin") version "0.7-SNAPSHOT" apply(false)
+}
+
+subprojects {
+    apply plugin: 'java'
+
+    java.toolchain.languageVersion = JavaLanguageVersion.of(25)
+    java.withSourcesJar()
+    java.withJavadocJar()
+        
+    jar {
+        preserveFileTimestamps = false
+        reproducibleFileOrder = true
+
+        from(rootProject.file("LICENSE")) {
+            rename { "${it}_${mod_name}" }
+        }
+        manifest {
+            attributes([
+                'Specification-Title'     : mod_name,
+                'Specification-Vendor'    : mod_authors,
+                'Specification-Version'   : project.jar.archiveVersion,
+                'Implementation-Title'    : archives_base_name,
+                'Implementation-Version'  : project.jar.archiveVersion,
+                'Implementation-Vendor'   : mod_authors,
+                'Implementation-Timestamp': '1970-01-01T00:00:00+0000',
+                'Timestamp'               : '0',
+                'Built-On-Java'           : "${System.getProperty('java.vm.version')} (${System.getProperty('java.vm.vendor')})",
+                'Built-On-Minecraft'      : project.minecraft_version
+            ])
+        }
+    }
+
+    sourcesJar {
+        from(rootProject.file("LICENSE")) {
+            rename { "${it}_${mod_name}" }
+        }
+    }
+
+    repositories {
+        mavenCentral()
+        maven {
+            name = 'Sponge / Mixin'
+            url = 'https://repo.spongepowered.org/repository/maven-public/'
+        }
+        maven {
+            name = 'BlameJared Maven (JEI / CraftTweaker / Bookshelf)'
+            url = 'https://maven.blamejared.com'
+        }
+		maven { url "https://maven.parchmentmc.org" }
+    }
+
+    tasks.withType(JavaCompile).configureEach {
+        it.options.encoding = 'UTF-8'
+        it.options.getRelease().set(25)
+        it.options.compilerArgs.addAll(['-Xmaxerrs', '5000'])
+    }
+
+    processResources {
+        def expandProps = [
+			"mod_version": mod_version,
+			"group": project.group, //Else we target the task's group.
+			"minecraft_version": rootProject.minecraft_version,
+			"minecraft_version_range": minecraft_version_range,
+			"fabric_version": fabric_api_version,
+			"fabric_loader_version": fabric_loader_version,
+			"mod_name": mod_name,
+			"mod_author":mod_authors,
+			"mod_id": mod_id,
+			"license": mod_license,
+			"description": mod_description
+        ]
+
+        filesMatching(['pack.mcmeta', 'fabric.mod.json', 'META-INF/neoforge.mods.toml', '*.mixins.json']) {
+            expand(expandProps) {
+			    setEscapeBackslash(true)
+			}
+        }
+		
+        inputs.properties(expandProps)
+    }
+
+    // Disables Gradle's custom module metadata from being published to maven. 
+	// The metadata includes mapped dependencies which are not reasonably consumable by other mod developers.
+    tasks.withType(GenerateModuleMetadata).configureEach {
+        enabled = false
+    }
+}

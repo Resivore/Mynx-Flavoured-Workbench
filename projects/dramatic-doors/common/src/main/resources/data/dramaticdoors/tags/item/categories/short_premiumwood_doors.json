@@ -1,0 +1,11 @@
+{
+  "replace": false,
+  "values": [
+    {"id": "dramaticdoors:short_pw_magic_door", "required": false},
+    {"id": "dramaticdoors:short_pw_maple_door", "required": false},
+    {"id": "dramaticdoors:short_pw_purple_heart_door", "required": false},
+    {"id": "dramaticdoors:short_pw_silverbell_door", "required": false},
+    {"id": "dramaticdoors:short_pw_tiger_door", "required": false},
+    {"id": "dramaticdoors:short_pw_willow_door", "required": false}
+  ]
+}

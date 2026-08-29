@@ -1,0 +1,63 @@
+{
+    "variants": {
+        "facing=east,third=lower,hinge=left,open=false":  { "model": "dramaticdoors:block/macaw/tall_crimson_stable_door_bottom_closed" },
+        "facing=south,third=lower,hinge=left,open=false": { "model": "dramaticdoors:block/macaw/tall_crimson_stable_door_bottom_closed", "y": 90 },
+        "facing=west,third=lower,hinge=left,open=false":  { "model": "dramaticdoors:block/macaw/tall_crimson_stable_door_bottom_closed", "y": 180 },
+        "facing=north,third=lower,hinge=left,open=false": { "model": "dramaticdoors:block/macaw/tall_crimson_stable_door_bottom_closed", "y": 270 },
+		
+        "facing=east,third=lower,hinge=right,open=false":  { "model": "dramaticdoors:block/macaw/tall_crimson_stable_door_bottom_closed_rh" },
+        "facing=south,third=lower,hinge=right,open=false": { "model": "dramaticdoors:block/macaw/tall_crimson_stable_door_bottom_closed_rh", "y": 90 },
+        "facing=west,third=lower,hinge=right,open=false":  { "model": "dramaticdoors:block/macaw/tall_crimson_stable_door_bottom_closed_rh", "y": 180 },
+        "facing=north,third=lower,hinge=right,open=false": { "model": "dramaticdoors:block/macaw/tall_crimson_stable_door_bottom_closed_rh", "y": 270 },
+		
+        "facing=east,third=lower,hinge=left,open=true":  { "model": "dramaticdoors:block/macaw/tall_crimson_stable_door_bottom_open_rh", "y": 90 },
+        "facing=south,third=lower,hinge=left,open=true": { "model": "dramaticdoors:block/macaw/tall_crimson_stable_door_bottom_open_rh", "y": 180 },
+        "facing=west,third=lower,hinge=left,open=true":  { "model": "dramaticdoors:block/macaw/tall_crimson_stable_door_bottom_open_rh", "y": 270 },
+        "facing=north,third=lower,hinge=left,open=true": { "model": "dramaticdoors:block/macaw/tall_crimson_stable_door_bottom_open_rh" },
+		
+        "facing=east,third=lower,hinge=right,open=true":  { "model": "dramaticdoors:block/macaw/tall_crimson_stable_door_bottom_open", "y": 270 },
+        "facing=south,third=lower,hinge=right,open=true": { "model": "dramaticdoors:block/macaw/tall_crimson_stable_door_bottom_open" },
+        "facing=west,third=lower,hinge=right,open=true":  { "model": "dramaticdoors:block/macaw/tall_crimson_stable_door_bottom_open", "y": 90 },
+        "facing=north,third=lower,hinge=right,open=true": { "model": "dramaticdoors:block/macaw/tall_crimson_stable_door_bottom_open", "y": 180 },
+		
+	    "facing=east,third=middle,hinge=left,open=false":  { "model": "dramaticdoors:block/macaw/tall_crimson_stable_head_door_middle_closed" },
+        "facing=south,third=middle,hinge=left,open=false": { "model": "dramaticdoors:block/macaw/tall_crimson_stable_head_door_middle_closed", "y": 90 },
+        "facing=west,third=middle,hinge=left,open=false":  { "model": "dramaticdoors:block/macaw/tall_crimson_stable_head_door_middle_closed", "y": 180 },
+        "facing=north,third=middle,hinge=left,open=false": { "model": "dramaticdoors:block/macaw/tall_crimson_stable_head_door_middle_closed", "y": 270 },
+		
+        "facing=east,third=middle,hinge=right,open=false":  { "model": "dramaticdoors:block/macaw/tall_crimson_stable_head_door_middle_closed_rh" },
+        "facing=south,third=middle,hinge=right,open=false": { "model": "dramaticdoors:block/macaw/tall_crimson_stable_head_door_middle_closed_rh", "y": 90 },
+        "facing=west,third=middle,hinge=right,open=false":  { "model": "dramaticdoors:block/macaw/tall_crimson_stable_head_door_middle_closed_rh", "y": 180 },
+        "facing=north,third=middle,hinge=right,open=false": { "model": "dramaticdoors:block/macaw/tall_crimson_stable_head_door_middle_closed_rh", "y": 270 },
+		
+        "facing=east,third=middle,hinge=left,open=true":  { "model": "dramaticdoors:block/macaw/tall_crimson_stable_head_door_middle_open_rh", "y": 90 },
+        "facing=south,third=middle,hinge=left,open=true": { "model": "dramaticdoors:block/macaw/tall_crimson_stable_head_door_middle_open_rh", "y": 180 },
+        "facing=west,third=middle,hinge=left,open=true":  { "model": "dramaticdoors:block/macaw/tall_crimson_stable_head_door_middle_open_rh", "y": 270 },
+        "facing=north,third=middle,hinge=left,open=true": { "model": "dramaticdoors:block/macaw/tall_crimson_stable_head_door_middle_open_rh" },
+		
+        "facing=east,third=middle,hinge=right,open=true":  { "model": "dramaticdoors:block/macaw/tall_crimson_stable_head_door_middle_open", "y": 270 },
+        "facing=south,third=middle,hinge=right,open=true": { "model": "dramaticdoors:block/macaw/tall_crimson_stable_head_door_middle_open" },
+        "facing=west,third=middle,hinge=right,open=true":  { "model": "dramaticdoors:block/macaw/tall_crimson_stable_head_door_middle_open", "y": 90 },
+        "facing=north,third=middle,hinge=right,open=true": { "model": "dramaticdoors:block/macaw/tall_crimson_stable_head_door_middle_open", "y": 180 },
+		
+        "facing=east,third=upper,hinge=left,open=false":  { "model": "dramaticdoors:block/macaw/tall_crimson_stable_door_top_closed" },
+        "facing=south,third=upper,hinge=left,open=false": { "model": "dramaticdoors:block/macaw/tall_crimson_stable_door_top_closed", "y": 90 },
+        "facing=west,third=upper,hinge=left,open=false":  { "model": "dramaticdoors:block/macaw/tall_crimson_stable_door_top_closed", "y": 180 },
+        "facing=north,third=upper,hinge=left,open=false": { "model": "dramaticdoors:block/macaw/tall_crimson_stable_door_top_closed", "y": 270 },
+		
+        "facing=east,third=upper,hinge=right,open=false":  { "model": "dramaticdoors:block/macaw/tall_crimson_stable_door_top_closed_rh" },
+        "facing=south,third=upper,hinge=right,open=false": { "model": "dramaticdoors:block/macaw/tall_crimson_stable_door_top_closed_rh", "y": 90 },
+        "facing=west,third=upper,hinge=right,open=false":  { "model": "dramaticdoors:block/macaw/tall_crimson_stable_door_top_closed_rh", "y": 180 },
+        "facing=north,third=upper,hinge=right,open=false": { "model": "dramaticdoors:block/macaw/tall_crimson_stable_door_top_closed_rh", "y": 270 },
+		
+        "facing=east,third=upper,hinge=left,open=true":  { "model": "dramaticdoors:block/macaw/tall_crimson_stable_door_top_open_rh", "y": 90 },
+        "facing=south,third=upper,hinge=left,open=true": { "model": "dramaticdoors:block/macaw/tall_crimson_stable_door_top_open_rh", "y": 180 },
+        "facing=west,third=upper,hinge=left,open=true":  { "model": "dramaticdoors:block/macaw/tall_crimson_stable_door_top_open_rh", "y": 270 },
+        "facing=north,third=upper,hinge=left,open=true": { "model": "dramaticdoors:block/macaw/tall_crimson_stable_door_top_open_rh" },
+		
+        "facing=east,third=upper,hinge=right,open=true":  { "model": "dramaticdoors:block/macaw/tall_crimson_stable_door_top_open", "y": 270 },
+        "facing=south,third=upper,hinge=right,open=true": { "model": "dramaticdoors:block/macaw/tall_crimson_stable_door_top_open" },
+        "facing=west,third=upper,hinge=right,open=true":  { "model": "dramaticdoors:block/macaw/tall_crimson_stable_door_top_open", "y": 90 },
+        "facing=north,third=upper,hinge=right,open=true": { "model": "dramaticdoors:block/macaw/tall_crimson_stable_door_top_open", "y": 180 }
+    }
+}

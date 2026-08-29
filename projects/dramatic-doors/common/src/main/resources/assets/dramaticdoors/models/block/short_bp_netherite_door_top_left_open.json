@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/door_top_left_open",
+  "textures": {
+    "bottom": "dramaticdoors:block/short_bp_netherite_door_bottom",
+    "top": "dramaticdoors:block/short_bp_netherite_door_top"
+  }
+}

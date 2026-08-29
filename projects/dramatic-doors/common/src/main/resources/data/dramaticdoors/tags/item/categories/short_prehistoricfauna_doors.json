@@ -1,0 +1,19 @@
+{
+  "replace": false,
+  "values": [
+    {"id": "dramaticdoors:short_agathoxylon_door", "required": false},
+    {"id": "dramaticdoors:short_araucaria_door", "required": false},
+    {"id": "dramaticdoors:short_brachyphyllum_door", "required": false},
+    {"id": "dramaticdoors:short_ginkgo_door", "required": false},
+    {"id": "dramaticdoors:short_heidiphyllum_door", "required": false},
+    {"id": "dramaticdoors:short_liriodendrites_door", "required": false},
+    {"id": "dramaticdoors:short_metasequoia_door", "required": false},
+    {"id": "dramaticdoors:short_neocalamites_door", "required": false},
+    {"id": "dramaticdoors:short_protojuniperoxylon_door", "required": false},
+    {"id": "dramaticdoors:short_protopiceoxylon_door", "required": false},
+    {"id": "dramaticdoors:short_schilderia_door", "required": false},
+    {"id": "dramaticdoors:short_trochodendroides_door", "required": false},
+    {"id": "dramaticdoors:short_woodworthia_door", "required": false},
+    {"id": "dramaticdoors:short_zamites_door", "required": false}
+  ]
+}

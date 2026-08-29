@@ -1,0 +1,12 @@
+{
+  "replace": false,
+  "values": [
+    {"id": "dramaticdoors:tall_azule_azalea_door", "required": false},
+    {"id": "dramaticdoors:tall_bright_azalea_door", "required": false},
+    {"id": "dramaticdoors:tall_fiss_azalea_door", "required": false},
+    {"id": "dramaticdoors:tall_roze_azalea_door", "required": false},
+    {"id": "dramaticdoors:tall_tecal_azalea_door", "required": false},
+    {"id": "dramaticdoors:tall_titanium_azalea_door", "required": false},
+    {"id": "dramaticdoors:tall_walnut_azalea_door", "required": false}
+  ]
+}

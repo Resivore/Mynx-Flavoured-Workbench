@@ -1,0 +1,10 @@
+{
+  "replace": false,
+  "values": [
+    {"id": "dramaticdoors:tall_create_andesite_door", "required": false},
+    {"id": "dramaticdoors:tall_create_brass_door", "required": false},
+    {"id": "dramaticdoors:tall_create_copper_door", "required": false},
+    {"id": "dramaticdoors:tall_create_framed_glass_door", "required": false},
+    {"id": "dramaticdoors:tall_create_train_door", "required": false}
+  ]
+}

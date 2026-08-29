@@ -1,0 +1,16 @@
+{
+  "required": true,
+  "package": "dev.aero.shulkertrowel.mixin",
+  "compatibilityLevel": "JAVA_25",
+  "mixins": [
+    "BlockItemPlacementSoundMixin"
+  ],
+  "client": [
+    "client.ClutterNoMoreClientInputMixin",
+    "client.ShapeSwitcherOverlayAccessor",
+    "client.ShapeSwitcherOverlayRenderMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

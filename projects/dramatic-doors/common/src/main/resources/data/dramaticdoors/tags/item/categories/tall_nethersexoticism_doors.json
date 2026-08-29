@@ -1,0 +1,7 @@
+{
+  "replace": false,
+  "values": [
+    {"id": "dramaticdoors:tall_jaboticaba_door", "required": false},
+    {"id": "dramaticdoors:tall_ramboutan_door", "required": false}
+  ]
+}

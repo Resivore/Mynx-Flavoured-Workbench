@@ -1,0 +1,413 @@
+{
+  "variants": {
+    "third=upper,open=false,orientation=x_positive,hinge=left": {
+      "model": "dramaticdoors:block/tall_full_flesh_door_top_right",
+      "y": 90
+    },
+    "third=middle,open=false,orientation=x_positive,hinge=left": {
+      "model": "dramaticdoors:block/tall_full_flesh_door_middle_right",
+      "y": 90
+    },
+    "third=lower,open=false,orientation=x_positive,hinge=left": {
+      "model": "dramaticdoors:block/tall_full_flesh_door_bottom_right",
+      "y": 90
+    },
+    "third=upper,open=true,orientation=x_positive,hinge=left": {
+      "model": "dramaticdoors:block/tall_full_flesh_door_top_left_open",
+      "y": 90
+    },
+    "third=middle,open=true,orientation=x_positive,hinge=left": {
+      "model": "dramaticdoors:block/tall_full_flesh_door_middle_left_open",
+      "y": 90
+    },
+    "third=lower,open=true,orientation=x_positive,hinge=left": {
+      "model": "dramaticdoors:block/tall_full_flesh_door_bottom_left_open",
+      "y": 90
+    },
+    "third=upper,open=false,orientation=x_middle,hinge=left": {
+      "model": "dramaticdoors:block/tall_full_flesh_door_top_middle_left",
+      "y": 90
+    },
+    "third=middle,open=false,orientation=x_middle,hinge=left": {
+      "model": "dramaticdoors:block/tall_full_flesh_door_middle_middle_left",
+      "y": 90
+    },
+    "third=lower,open=false,orientation=x_middle,hinge=left": {
+      "model": "dramaticdoors:block/tall_full_flesh_door_bottom_middle_left",
+      "y": 90
+    },
+    "third=upper,open=true,orientation=x_middle,hinge=left": {
+      "model": "dramaticdoors:block/tall_full_flesh_door_top_middle_left_open",
+      "y": 90
+    },
+    "third=middle,open=true,orientation=x_middle,hinge=left": {
+      "model": "dramaticdoors:block/tall_full_flesh_door_middle_middle_left_open",
+      "y": 90
+    },
+    "third=lower,open=true,orientation=x_middle,hinge=left": {
+      "model": "dramaticdoors:block/tall_full_flesh_door_bottom_middle_left_open",
+      "y": 90
+    },
+    "third=upper,open=false,orientation=x_negative,hinge=left": {
+      "model": "dramaticdoors:block/tall_full_flesh_door_top_left",
+      "y": 270
+    },
+    "third=middle,open=false,orientation=x_negative,hinge=left": {
+      "model": "dramaticdoors:block/tall_full_flesh_door_middle_left",
+      "y": 270
+    },
+    "third=lower,open=false,orientation=x_negative,hinge=left": {
+      "model": "dramaticdoors:block/tall_full_flesh_door_bottom_left",
+      "y": 270
+    },
+    "third=upper,open=true,orientation=x_negative,hinge=left": {
+      "model": "dramaticdoors:block/tall_full_flesh_door_top_right_open",
+      "y": 270
+    },
+    "third=middle,open=true,orientation=x_negative,hinge=left": {
+      "model": "dramaticdoors:block/tall_full_flesh_door_middle_right_open",
+      "y": 270
+    },
+    "third=lower,open=true,orientation=x_negative,hinge=left": {
+      "model": "dramaticdoors:block/tall_full_flesh_door_bottom_right_open",
+      "y": 270
+    },
+    "third=upper,open=false,orientation=z_positive,hinge=left": {
+      "model": "dramaticdoors:block/tall_full_flesh_door_top_left",
+      "y": 180
+    },
+    "third=middle,open=false,orientation=z_positive,hinge=left": {
+      "model": "dramaticdoors:block/tall_full_flesh_door_middle_left",
+      "y": 180
+    },
+    "third=lower,open=false,orientation=z_positive,hinge=left": {
+      "model": "dramaticdoors:block/tall_full_flesh_door_bottom_left",
+      "y": 180
+    },
+    "third=upper,open=true,orientation=z_positive,hinge=left": {
+      "model": "dramaticdoors:block/tall_full_flesh_door_top_right_open",
+      "y": 180
+    },
+    "third=middle,open=true,orientation=z_positive,hinge=left": {
+      "model": "dramaticdoors:block/tall_full_flesh_door_middle_right_open",
+      "y": 180
+    },
+    "third=lower,open=true,orientation=z_positive,hinge=left": {
+      "model": "dramaticdoors:block/tall_full_flesh_door_bottom_right_open",
+      "y": 180
+    },
+    "third=upper,open=false,orientation=z_middle,hinge=left": {
+      "model": "dramaticdoors:block/tall_full_flesh_door_top_middle_left"
+    },
+    "third=middle,open=false,orientation=z_middle,hinge=left": {
+      "model": "dramaticdoors:block/tall_full_flesh_door_middle_middle_left"
+    },
+    "third=lower,open=false,orientation=z_middle,hinge=left": {
+      "model": "dramaticdoors:block/tall_full_flesh_door_bottom_middle_left"
+    },
+    "third=upper,open=true,orientation=z_middle,hinge=left": {
+      "model": "dramaticdoors:block/tall_full_flesh_door_top_middle_left_open"
+    },
+    "third=middle,open=true,orientation=z_middle,hinge=left": {
+      "model": "dramaticdoors:block/tall_full_flesh_door_middle_middle_left_open"
+    },
+    "third=lower,open=true,orientation=z_middle,hinge=left": {
+      "model": "dramaticdoors:block/tall_full_flesh_door_bottom_middle_left_open"
+    },
+    "third=upper,open=false,orientation=z_negative,hinge=left": {
+      "model": "dramaticdoors:block/tall_full_flesh_door_top_right"
+    },
+    "third=middle,open=false,orientation=z_negative,hinge=left": {
+      "model": "dramaticdoors:block/tall_full_flesh_door_middle_right"
+    },
+    "third=lower,open=false,orientation=z_negative,hinge=left": {
+      "model": "dramaticdoors:block/tall_full_flesh_door_bottom_right"
+    },
+    "third=upper,open=true,orientation=z_negative,hinge=left": {
+      "model": "dramaticdoors:block/tall_full_flesh_door_top_left_open"
+    },
+    "third=middle,open=true,orientation=z_negative,hinge=left": {
+      "model": "dramaticdoors:block/tall_full_flesh_door_middle_left_open"
+    },
+    "third=lower,open=true,orientation=z_negative,hinge=left": {
+      "model": "dramaticdoors:block/tall_full_flesh_door_bottom_left_open"
+    },
+    "third=upper,open=false,orientation=y_positive,hinge=left": {
+      "model": "dramaticdoors:block/tall_full_flesh_door_top_left",
+      "x": 90
+    },
+    "third=middle,open=false,orientation=y_positive,hinge=left": {
+      "model": "dramaticdoors:block/tall_full_flesh_door_middle_left",
+      "x": 90
+    },
+    "third=lower,open=false,orientation=y_positive,hinge=left": {
+      "model": "dramaticdoors:block/tall_full_flesh_door_bottom_left",
+      "x": 90
+    },
+    "third=upper,open=true,orientation=y_positive,hinge=left": {
+      "model": "dramaticdoors:block/tall_full_flesh_door_top_left_open",
+      "x": 90
+    },
+    "third=middle,open=true,orientation=y_positive,hinge=left": {
+      "model": "dramaticdoors:block/tall_full_flesh_door_middle_left_open",
+      "x": 90
+    },
+    "third=lower,open=true,orientation=y_positive,hinge=left": {
+      "model": "dramaticdoors:block/tall_full_flesh_door_bottom_left_open",
+      "x": 90
+    },
+    "third=upper,open=false,orientation=y_middle,hinge=left": {
+      "model": "dramaticdoors:block/tall_full_flesh_door_top_middle_left",
+      "x": 90
+    },
+    "third=middle,open=false,orientation=y_middle,hinge=left": {
+      "model": "dramaticdoors:block/tall_full_flesh_door_middle_middle_left",
+      "x": 90
+    },
+    "third=lower,open=false,orientation=y_middle,hinge=left": {
+      "model": "dramaticdoors:block/tall_full_flesh_door_bottom_middle_left",
+      "x": 90
+    },
+    "third=upper,open=true,orientation=y_middle,hinge=left": {
+      "model": "dramaticdoors:block/tall_full_flesh_door_top_middle_left_open",
+      "x": 90
+    },
+    "third=middle,open=true,orientation=y_middle,hinge=left": {
+      "model": "dramaticdoors:block/tall_full_flesh_door_middle_middle_left_open",
+      "x": 90
+    },
+    "third=lower,open=true,orientation=y_middle,hinge=left": {
+      "model": "dramaticdoors:block/tall_full_flesh_door_bottom_middle_left_open",
+      "x": 90
+    },
+    "third=upper,open=false,orientation=y_negative,hinge=left": {
+      "model": "dramaticdoors:block/tall_full_flesh_door_top_left",
+      "x": 270
+    },
+    "third=middle,open=false,orientation=y_negative,hinge=left": {
+      "model": "dramaticdoors:block/tall_full_flesh_door_middle_left",
+      "x": 270
+    },
+    "third=lower,open=false,orientation=y_negative,hinge=left": {
+      "model": "dramaticdoors:block/tall_full_flesh_door_bottom_left",
+      "x": 270
+    },
+    "third=upper,open=true,orientation=y_negative,hinge=left": {
+      "model": "dramaticdoors:block/tall_full_flesh_door_top_left_open",
+      "x": 270
+    },
+    "third=middle,open=true,orientation=y_negative,hinge=left": {
+      "model": "dramaticdoors:block/tall_full_flesh_door_middle_left_open",
+      "x": 270
+    },
+    "third=lower,open=true,orientation=y_negative,hinge=left": {
+      "model": "dramaticdoors:block/tall_full_flesh_door_bottom_left_open",
+      "x": 270
+    },
+    
+    "third=upper,open=false,orientation=x_positive,hinge=right": {
+      "model": "dramaticdoors:block/tall_full_flesh_door_top_left",
+      "y": 90
+    },
+    "third=middle,open=false,orientation=x_positive,hinge=right": {
+      "model": "dramaticdoors:block/tall_full_flesh_door_middle_left",
+      "y": 90
+    },
+    "third=lower,open=false,orientation=x_positive,hinge=right": {
+      "model": "dramaticdoors:block/tall_full_flesh_door_bottom_left",
+      "y": 90
+    },
+    "third=upper,open=true,orientation=x_positive,hinge=right": {
+      "model": "dramaticdoors:block/tall_full_flesh_door_top_right_open",
+      "y": 90
+    },
+    "third=middle,open=true,orientation=x_positive,hinge=right": {
+      "model": "dramaticdoors:block/tall_full_flesh_door_middle_right_open",
+      "y": 90
+    },
+    "third=lower,open=true,orientation=x_positive,hinge=right": {
+      "model": "dramaticdoors:block/tall_full_flesh_door_bottom_right_open",
+      "y": 90
+    },
+    "third=upper,open=false,orientation=x_middle,hinge=right": {
+      "model": "dramaticdoors:block/tall_full_flesh_door_top_middle_right",
+      "y": 90
+    },
+    "third=middle,open=false,orientation=x_middle,hinge=right": {
+      "model": "dramaticdoors:block/tall_full_flesh_door_middle_middle_right",
+      "y": 90
+    },
+    "third=lower,open=false,orientation=x_middle,hinge=right": {
+      "model": "dramaticdoors:block/tall_full_flesh_door_bottom_middle_right",
+      "y": 90
+    },
+    "third=upper,open=true,orientation=x_middle,hinge=right": {
+      "model": "dramaticdoors:block/tall_full_flesh_door_top_middle_right_open",
+      "y": 90
+    },
+    "third=middle,open=true,orientation=x_middle,hinge=right": {
+      "model": "dramaticdoors:block/tall_full_flesh_door_middle_middle_right_open",
+      "y": 90
+    },
+    "third=lower,open=true,orientation=x_middle,hinge=right": {
+      "model": "dramaticdoors:block/tall_full_flesh_door_bottom_middle_right_open",
+      "y": 90
+    },
+    "third=upper,open=false,orientation=x_negative,hinge=right": {
+      "model": "dramaticdoors:block/tall_full_flesh_door_top_right",
+      "y": 270
+    },
+    "third=middle,open=false,orientation=x_negative,hinge=right": {
+      "model": "dramaticdoors:block/tall_full_flesh_door_middle_right",
+      "y": 270
+    },
+    "third=lower,open=false,orientation=x_negative,hinge=right": {
+      "model": "dramaticdoors:block/tall_full_flesh_door_bottom_right",
+      "y": 270
+    },
+    "third=upper,open=true,orientation=x_negative,hinge=right": {
+      "model": "dramaticdoors:block/tall_full_flesh_door_top_left_open",
+      "y": 270
+    },
+    "third=middle,open=true,orientation=x_negative,hinge=right": {
+      "model": "dramaticdoors:block/tall_full_flesh_door_middle_left_open",
+      "y": 270
+    },
+    "third=lower,open=true,orientation=x_negative,hinge=right": {
+      "model": "dramaticdoors:block/tall_full_flesh_door_bottom_left_open",
+      "y": 270
+    },
+    "third=upper,open=false,orientation=z_positive,hinge=right": {
+      "model": "dramaticdoors:block/tall_full_flesh_door_top_right",
+      "y": 180
+    },
+    "third=middle,open=false,orientation=z_positive,hinge=right": {
+      "model": "dramaticdoors:block/tall_full_flesh_door_middle_right",
+      "y": 180
+    },
+    "third=lower,open=false,orientation=z_positive,hinge=right": {
+      "model": "dramaticdoors:block/tall_full_flesh_door_bottom_right",
+      "y": 180
+    },
+    "third=upper,open=true,orientation=z_positive,hinge=right": {
+      "model": "dramaticdoors:block/tall_full_flesh_door_top_left_open",
+      "y": 180
+    },
+    "third=middle,open=true,orientation=z_positive,hinge=right": {
+      "model": "dramaticdoors:block/tall_full_flesh_door_middle_left_open",
+      "y": 180
+    },
+    "third=lower,open=true,orientation=z_positive,hinge=right": {
+      "model": "dramaticdoors:block/tall_full_flesh_door_bottom_left_open",
+      "y": 180
+    },
+    "third=upper,open=false,orientation=z_middle,hinge=right": {
+      "model": "dramaticdoors:block/tall_full_flesh_door_top_middle_right"
+    },
+    "third=middle,open=false,orientation=z_middle,hinge=right": {
+      "model": "dramaticdoors:block/tall_full_flesh_door_middle_middle_right"
+    },
+    "third=lower,open=false,orientation=z_middle,hinge=right": {
+      "model": "dramaticdoors:block/tall_full_flesh_door_bottom_middle_right"
+    },
+    "third=upper,open=true,orientation=z_middle,hinge=right": {
+      "model": "dramaticdoors:block/tall_full_flesh_door_top_middle_right_open"
+    },
+    "third=middle,open=true,orientation=z_middle,hinge=right": {
+      "model": "dramaticdoors:block/tall_full_flesh_door_middle_middle_right_open"
+    },
+    "third=lower,open=true,orientation=z_middle,hinge=right": {
+      "model": "dramaticdoors:block/tall_full_flesh_door_bottom_middle_right_open"
+    },
+    "third=upper,open=false,orientation=z_negative,hinge=right": {
+      "model": "dramaticdoors:block/tall_full_flesh_door_top_left"
+    },
+    "third=middle,open=false,orientation=z_negative,hinge=right": {
+      "model": "dramaticdoors:block/tall_full_flesh_door_middle_left"
+    },
+    "third=lower,open=false,orientation=z_negative,hinge=right": {
+      "model": "dramaticdoors:block/tall_full_flesh_door_bottom_left"
+    },
+    "third=upper,open=true,orientation=z_negative,hinge=right": {
+      "model": "dramaticdoors:block/tall_full_flesh_door_top_right_open"
+    },
+    "third=middle,open=true,orientation=z_negative,hinge=right": {
+      "model": "dramaticdoors:block/tall_full_flesh_door_middle_right_open"
+    },
+    "third=lower,open=true,orientation=z_negative,hinge=right": {
+      "model": "dramaticdoors:block/tall_full_flesh_door_bottom_right_open"
+    },
+    "third=upper,open=false,orientation=y_positive,hinge=right": {
+      "model": "dramaticdoors:block/tall_full_flesh_door_top_right",
+      "x": 90
+    },
+    "third=middle,open=false,orientation=y_positive,hinge=right": {
+      "model": "dramaticdoors:block/tall_full_flesh_door_middle_right",
+      "x": 90
+    },
+    "third=lower,open=false,orientation=y_positive,hinge=right": {
+      "model": "dramaticdoors:block/tall_full_flesh_door_bottom_right",
+      "x": 90
+    },
+    "third=upper,open=true,orientation=y_positive,hinge=right": {
+      "model": "dramaticdoors:block/tall_full_flesh_door_top_right_open",
+      "x": 90
+    },
+    "third=middle,open=true,orientation=y_positive,hinge=right": {
+      "model": "dramaticdoors:block/tall_full_flesh_door_middle_right_open",
+      "x": 90
+    },
+    "third=lower,open=true,orientation=y_positive,hinge=right": {
+      "model": "dramaticdoors:block/tall_full_flesh_door_bottom_right_open",
+      "x": 90
+    },
+    "third=upper,open=false,orientation=y_middle,hinge=right": {
+      "model": "dramaticdoors:block/tall_full_flesh_door_top_middle_right",
+      "x": 90
+    },
+    "third=middle,open=false,orientation=y_middle,hinge=right": {
+      "model": "dramaticdoors:block/tall_full_flesh_door_middle_middle_right",
+      "x": 90
+    },
+    "third=lower,open=false,orientation=y_middle,hinge=right": {
+      "model": "dramaticdoors:block/tall_full_flesh_door_bottom_middle_right",
+      "x": 90
+    },
+    "third=upper,open=true,orientation=y_middle,hinge=right": {
+      "model": "dramaticdoors:block/tall_full_flesh_door_top_middle_right_open",
+      "x": 90
+    },
+    "third=middle,open=true,orientation=y_middle,hinge=right": {
+      "model": "dramaticdoors:block/tall_full_flesh_door_middle_middle_right_open",
+      "x": 90
+    },
+    "third=lower,open=true,orientation=y_middle,hinge=right": {
+      "model": "dramaticdoors:block/tall_full_flesh_door_bottom_middle_right_open",
+      "x": 90
+    },
+    "third=upper,open=false,orientation=y_negative,hinge=right": {
+      "model": "dramaticdoors:block/tall_full_flesh_door_top_right",
+      "x": 270
+    },
+    "third=middle,open=false,orientation=y_negative,hinge=right": {
+      "model": "dramaticdoors:block/tall_full_flesh_door_bottom_right",
+      "x": 270
+    },
+    "third=lower,open=false,orientation=y_negative,hinge=right": {
+      "model": "dramaticdoors:block/tall_full_flesh_door_middle_right",
+      "x": 270
+    },
+    "third=upper,open=true,orientation=y_negative,hinge=right": {
+      "model": "dramaticdoors:block/tall_full_flesh_door_top_right_open",
+      "x": 270
+    },
+    "third=middle,open=true,orientation=y_negative,hinge=right": {
+      "model": "dramaticdoors:block/tall_full_flesh_door_middle_right_open",
+      "x": 270
+    },
+    "third=lower,open=true,orientation=y_negative,hinge=right": {
+      "model": "dramaticdoors:block/tall_full_flesh_door_bottom_right_open",
+      "x": 270
+    }
+  }
+}

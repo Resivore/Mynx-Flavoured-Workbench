@@ -1,0 +1,13 @@
+{
+  "replace": false,
+  "values": [
+    {"id": "dramaticdoors:short_bs_bluebright_door", "required": false},
+    {"id": "dramaticdoors:short_bs_cherry_door", "required": false},
+    {"id": "dramaticdoors:short_bs_crystallized_door", "required": false},
+    {"id": "dramaticdoors:short_bs_dusk_door", "required": false},
+    {"id": "dramaticdoors:short_bs_frostbright_door", "required": false},
+    {"id": "dramaticdoors:short_bs_lunar_door", "required": false},
+    {"id": "dramaticdoors:short_bs_maple_door", "required": false},
+    {"id": "dramaticdoors:short_bs_starlit_door", "required": false}
+  ]
+}

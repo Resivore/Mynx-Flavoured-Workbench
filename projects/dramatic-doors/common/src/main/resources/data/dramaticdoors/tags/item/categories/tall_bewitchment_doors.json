@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    {"id": "dramaticdoors:tall_cypress_door", "required": false},
+    {"id": "dramaticdoors:tall_dragons_blood_door", "required": false},
+    {"id": "dramaticdoors:tall_elder_door", "required": false},
+    {"id": "dramaticdoors:tall_juniper_door", "required": false}
+  ]
+}

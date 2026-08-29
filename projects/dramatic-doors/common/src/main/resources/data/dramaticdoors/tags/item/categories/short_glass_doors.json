@@ -1,0 +1,17 @@
+{
+  "replace": false,
+  "values": [
+    {"id": "dramaticdoors:short_iron_glass_door", "required": false},
+    {"id": "dramaticdoors:short_oak_glass_door", "required": false},
+    {"id": "dramaticdoors:short_spruce_glass_door", "required": false},
+    {"id": "dramaticdoors:short_birch_glass_door", "required": false},
+    {"id": "dramaticdoors:short_jungle_glass_door", "required": false},
+    {"id": "dramaticdoors:short_acacia_glass_door", "required": false},
+    {"id": "dramaticdoors:short_dark_oak_glass_door", "required": false},
+    {"id": "dramaticdoors:short_mangrove_glass_door", "required": false},
+    {"id": "dramaticdoors:short_cherry_glass_door", "required": false},
+    {"id": "dramaticdoors:short_bamboo_glass_door", "required": false},
+    {"id": "dramaticdoors:short_crimson_glass_door", "required": false},
+    {"id": "dramaticdoors:short_warped_glass_door", "required": false}
+  ]
+}

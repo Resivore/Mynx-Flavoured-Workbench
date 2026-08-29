@@ -1,0 +1,7 @@
+{
+  "replace": false,
+  "values": [
+    {"id": "dramaticdoors:tall_celestial_door", "required": false},
+    {"id": "dramaticdoors:tall_murushroom_door", "required": false}
+  ]
+}

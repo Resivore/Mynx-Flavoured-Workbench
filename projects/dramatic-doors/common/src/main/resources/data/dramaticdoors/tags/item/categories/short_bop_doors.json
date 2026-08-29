@@ -1,0 +1,16 @@
+{
+  "replace": false,
+  "values": [
+    {"id": "dramaticdoors:short_bop_cherry_door", "required": false},
+    {"id": "dramaticdoors:short_bop_dead_door", "required": false},
+    {"id": "dramaticdoors:short_bop_fir_door", "required": false},
+    {"id": "dramaticdoors:short_bop_hellbark_door", "required": false},
+    {"id": "dramaticdoors:short_bop_jacaranda_door", "required": false},
+    {"id": "dramaticdoors:short_bop_magic_door", "required": false},
+    {"id": "dramaticdoors:short_bop_mahogany_door", "required": false},
+    {"id": "dramaticdoors:short_bop_palm_door", "required": false},
+    {"id": "dramaticdoors:short_bop_redwood_door", "required": false},
+    {"id": "dramaticdoors:short_bop_umbran_door", "required": false},
+    {"id": "dramaticdoors:short_bop_willow_door", "required": false}
+  ]
+}

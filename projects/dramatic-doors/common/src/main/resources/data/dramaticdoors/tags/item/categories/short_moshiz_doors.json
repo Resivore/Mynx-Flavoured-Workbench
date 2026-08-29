@@ -1,0 +1,33 @@
+{
+  "replace": false,
+  "values": [
+    {"id": "dramaticdoors:short_ms_iron_bar_door", "required": false},
+    {"id": "dramaticdoors:short_ms_bamboo_door", "required": false},
+    {"id": "dramaticdoors:short_ms_cherry_door", "required": false},
+    {"id": "dramaticdoors:short_ms_glowood_door", "required": false},
+    {"id": "dramaticdoors:short_ms_hellwood_door", "required": false},
+    {"id": "dramaticdoors:short_ms_maple_door", "required": false},
+    {"id": "dramaticdoors:short_ms_silverbell_door", "required": false},
+    {"id": "dramaticdoors:short_ms_tigerwood_door", "required": false},
+    {"id": "dramaticdoors:short_ms_willow_door", "required": false},
+    {"id": "dramaticdoors:short_ms_glass_door", "required": false},
+    {"id": "dramaticdoors:short_ms_soul_glass_door", "required": false},
+    {"id": "dramaticdoors:short_ms_tinted_glass_door", "required": false},
+    {"id": "dramaticdoors:short_ms_black_glass_door", "required": false},
+    {"id": "dramaticdoors:short_ms_grey_glass_door", "required": false},
+    {"id": "dramaticdoors:short_ms_light_grey_glass_door", "required": false},
+    {"id": "dramaticdoors:short_ms_white_glass_door", "required": false},
+    {"id": "dramaticdoors:short_ms_red_glass_door", "required": false},
+    {"id": "dramaticdoors:short_ms_orange_glass_door", "required": false},
+    {"id": "dramaticdoors:short_ms_yellow_glass_door", "required": false},
+    {"id": "dramaticdoors:short_ms_lime_glass_door", "required": false},
+    {"id": "dramaticdoors:short_ms_green_glass_door", "required": false},
+    {"id": "dramaticdoors:short_ms_cyan_glass_door", "required": false},
+    {"id": "dramaticdoors:short_ms_blue_glass_door", "required": false},
+    {"id": "dramaticdoors:short_ms_purple_glass_door", "required": false},
+    {"id": "dramaticdoors:short_ms_magenta_glass_door", "required": false},
+    {"id": "dramaticdoors:short_ms_pink_glass_door", "required": false},
+    {"id": "dramaticdoors:short_ms_light_blue_glass_door", "required": false},
+    {"id": "dramaticdoors:short_ms_brown_glass_door", "required": false}
+  ]
+}

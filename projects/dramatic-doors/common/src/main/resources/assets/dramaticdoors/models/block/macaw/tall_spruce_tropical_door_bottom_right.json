@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/door_bottom_right",
+  "textures": {
+    "bottom": "dramaticdoors:block/macaw/tall_spruce_tropical_door_lower",
+    "middle": "dramaticdoors:block/macaw/tall_spruce_tropical_door_middle",
+    "top": "dramaticdoors:block/macaw/tall_spruce_tropical_door_upper"
+  }
+}

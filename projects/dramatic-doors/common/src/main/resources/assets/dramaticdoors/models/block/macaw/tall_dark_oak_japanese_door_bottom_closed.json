@@ -1,0 +1,7 @@
+{
+    "parent": "dramaticdoors:block/macaw/japanese_bottom_closed",
+    "textures": {
+		"0": "dramaticdoors:block/macaw/tall_dark_oak_japanese_door_lower",
+		"particle": "dramaticdoors:block/macaw/tall_dark_oak_japanese_door_lower"
+    }
+}

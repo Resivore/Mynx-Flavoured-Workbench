@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    {"id": "dramaticdoors:short_bamboo_door", "required": false},
+    {"id": "dramaticdoors:short_quark_ancient_door", "required": false},
+    {"id": "dramaticdoors:short_quark_azalea_door", "required": false},
+    {"id": "dramaticdoors:short_quark_blossom_door", "required": false}
+  ]
+}

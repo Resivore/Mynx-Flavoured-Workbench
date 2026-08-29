@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/door_top_right_open",
+  "textures": {
+    "bottom": "dramaticdoors:block/macaw/tall_birch_swamp_door_lower",
+    "middle": "dramaticdoors:block/macaw/tall_birch_swamp_door_middle",
+    "top": "dramaticdoors:block/macaw/tall_birch_swamp_door_upper"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "replace": false,
+  "values": [
+    {"id": "dramaticdoors:short_jacaranda_door", "required": false},
+    {"id": "dramaticdoors:short_redbud_door", "required": false},
+    {"id": "dramaticdoors:short_cypress_door", "required": false},
+    {"id": "dramaticdoors:short_brown_mushroom_door", "required": false},
+    {"id": "dramaticdoors:short_red_mushroom_door", "required": false}
+  ]
+}

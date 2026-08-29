@@ -1,0 +1,13 @@
+{
+  "replace": false,
+  "values": [
+    {"id": "dramaticdoors:tall_andesite_door", "required": false},
+    {"id": "dramaticdoors:tall_brass_door", "required": false},
+    {"id": "dramaticdoors:tall_copper_door", "required": false},
+    {"id": "dramaticdoors:tall_zinc_door", "required": false},
+    {"id": "dramaticdoors:tall_locked_andesite_door", "required": false},
+    {"id": "dramaticdoors:tall_locked_brass_door", "required": false},
+    {"id": "dramaticdoors:tall_locked_copper_door", "required": false},
+    {"id": "dramaticdoors:tall_locked_zinc_door", "required": false}
+  ]
+}

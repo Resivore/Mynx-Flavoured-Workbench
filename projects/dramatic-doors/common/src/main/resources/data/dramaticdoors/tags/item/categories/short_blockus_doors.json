@@ -1,0 +1,12 @@
+{
+  "replace": false,
+  "values": [
+    {"id": "dramaticdoors:short_blockus_blackstone_door", "required": false},
+    {"id": "dramaticdoors:short_blockus_charred_door", "required": false},
+    {"id": "dramaticdoors:short_blockus_obsidian_reinforced_door", "required": false},
+    {"id": "dramaticdoors:short_blockus_paper_door", "required": false},
+    {"id": "dramaticdoors:short_blockus_raw_bamboo_door", "required": false},
+    {"id": "dramaticdoors:short_blockus_stone_door", "required": false},
+    {"id": "dramaticdoors:short_blockus_white_oak_door", "required": false}
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "replace": false,
+  "values": [
+    {"id": "dramaticdoors:short_terrestria_cypress_door", "required": false},
+    {"id": "dramaticdoors:short_terrestria_hemlock_door", "required": false},
+    {"id": "dramaticdoors:short_terrestria_japanese_maple_door", "required": false},
+    {"id": "dramaticdoors:short_terrestria_rainbow_eucalyptus_door", "required": false},
+    {"id": "dramaticdoors:short_terrestria_redwood_door", "required": false},
+    {"id": "dramaticdoors:short_terrestria_rubber_door", "required": false},
+    {"id": "dramaticdoors:short_terrestria_sakura_door", "required": false},
+    {"id": "dramaticdoors:short_terrestria_willow_door", "required": false},
+    {"id": "dramaticdoors:short_terrestria_yucca_palm_door", "required": false}
+  ]
+}

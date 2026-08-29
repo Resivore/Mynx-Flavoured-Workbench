@@ -1,0 +1,8 @@
+{
+  "replace": false,
+  "values": [
+    {"id": "dramaticdoors:short_grongle_door", "required": false},
+    {"id": "dramaticdoors:short_smogstem_door", "required": false},
+    {"id": "dramaticdoors:short_wigglewood_door", "required": false}
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "replace": false,
+  "values": [
+    {"id": "dramaticdoors:short_rue_baobab_door", "required": false},
+    {"id": "dramaticdoors:short_rue_blackwood_door", "required": false},
+    {"id": "dramaticdoors:short_rue_brimwood_door", "required": false},
+    {"id": "dramaticdoors:short_rue_cherry_door", "required": false},
+    {"id": "dramaticdoors:short_rue_cypress_door", "required": false},
+    {"id": "dramaticdoors:short_rue_dead_door", "required": false},
+    {"id": "dramaticdoors:short_rue_eucalyptus_door", "required": false},
+    {"id": "dramaticdoors:short_rue_joshua_door", "required": false},
+    {"id": "dramaticdoors:short_rue_larch_door", "required": false},
+    {"id": "dramaticdoors:short_rue_maple_door", "required": false},
+    {"id": "dramaticdoors:short_rue_mauve_door", "required": false},
+    {"id": "dramaticdoors:short_rue_palm_door", "required": false},
+    {"id": "dramaticdoors:short_rue_pine_door", "required": false},
+    {"id": "dramaticdoors:short_rue_redwood_door", "required": false},
+    {"id": "dramaticdoors:short_rue_willow_door", "required": false}
+  ]
+}

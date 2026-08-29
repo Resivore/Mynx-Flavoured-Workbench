@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    {"id": "dramaticdoors:tall_aa_steel_door", "required": false},
+    {"id": "dramaticdoors:tall_aeronos_door", "required": false},
+    {"id": "dramaticdoors:tall_glacian_door", "required": false},
+    {"id": "dramaticdoors:tall_strophar_door", "required": false}
+  ]
+}

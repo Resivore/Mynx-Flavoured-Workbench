@@ -1,0 +1,13 @@
+{
+  "replace": false,
+  "values": [
+    {"id": "dramaticdoors:short_ec_copper_door", "required": false},
+    {"id": "dramaticdoors:short_ec_exposed_copper_door", "required": false},
+    {"id": "dramaticdoors:short_ec_weathered_copper_door", "required": false},
+    {"id": "dramaticdoors:short_ec_oxidized_copper_door", "required": false},
+    {"id": "dramaticdoors:short_ec_waxed_copper_door", "required": false},
+    {"id": "dramaticdoors:short_ec_waxed_exposed_copper_door", "required": false},
+    {"id": "dramaticdoors:short_ec_waxed_weathered_copper_door", "required": false},
+    {"id": "dramaticdoors:short_ec_waxed_oxidized_copper_door", "required": false}
+  ]
+}

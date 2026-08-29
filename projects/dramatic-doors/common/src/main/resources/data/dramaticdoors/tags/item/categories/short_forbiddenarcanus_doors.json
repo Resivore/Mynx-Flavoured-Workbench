@@ -1,0 +1,11 @@
+{
+  "replace": false,
+  "values": [
+    {"id": "dramaticdoors:short_deorum_door", "required": false},
+    {"id": "dramaticdoors:short_arcane_edelwood_door", "required": false},
+    {"id": "dramaticdoors:short_cherrywood_door", "required": false},
+    {"id": "dramaticdoors:short_edelwood_door", "required": false},
+    {"id": "dramaticdoors:short_fungyss_door", "required": false},
+    {"id": "dramaticdoors:short_aurum_door", "required": false}
+  ]
+}

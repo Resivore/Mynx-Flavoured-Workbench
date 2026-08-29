@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/door_bottom_right",
+  "textures": {
+    "bottom": "dramaticdoors:block/manyideas/tall_iron_dwarf_door_bottom_on",
+    "middle": "dramaticdoors:block/manyideas/tall_iron_dwarf_door_middle_on",
+    "top": "dramaticdoors:block/manyideas/tall_iron_dwarf_door_top_on"
+  }
+}

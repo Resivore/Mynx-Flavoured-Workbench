@@ -1,0 +1,7 @@
+{
+  "replace": false,
+  "values": [
+    {"id": "dramaticdoors:short_runewood_door", "required": false},
+    {"id": "dramaticdoors:short_soulwood_door", "required": false}
+  ]
+}

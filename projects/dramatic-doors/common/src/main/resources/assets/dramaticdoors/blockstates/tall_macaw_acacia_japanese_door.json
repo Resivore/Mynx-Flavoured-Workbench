@@ -1,0 +1,63 @@
+{
+    "variants": {
+        "facing=east,third=lower,hinge=right,open=false":  { "model": "dramaticdoors:block/macaw/tall_acacia_japanese_door_bottom_closed", "y":180 },
+        "facing=west,third=lower,hinge=right,open=false":  { "model": "dramaticdoors:block/macaw/tall_acacia_japanese_door_bottom_closed", "y":0 },
+        "facing=north,third=lower,hinge=right,open=false": { "model": "dramaticdoors:block/macaw/tall_acacia_japanese_door_bottom_closed", "y":90},
+        "facing=south,third=lower,hinge=right,open=false": { "model": "dramaticdoors:block/macaw/tall_acacia_japanese_door_bottom_closed", "y":270 },
+
+        "facing=east,third=middle,hinge=right,open=false":  { "model": "dramaticdoors:block/macaw/tall_acacia_japanese_door_middle_closed", "y":180 },
+        "facing=west,third=middle,hinge=right,open=false":  { "model": "dramaticdoors:block/macaw/tall_acacia_japanese_door_middle_closed", "y":0 },
+        "facing=north,third=middle,hinge=right,open=false": { "model": "dramaticdoors:block/macaw/tall_acacia_japanese_door_middle_closed", "y":90},
+        "facing=south,third=middle,hinge=right,open=false": { "model": "dramaticdoors:block/macaw/tall_acacia_japanese_door_middle_closed", "y":270 },
+
+        "facing=east,third=upper,hinge=right,open=false":  { "model": "dramaticdoors:block/macaw/tall_acacia_japanese_door_top_closed", "y":180 },
+        "facing=west,third=upper,hinge=right,open=false":  { "model": "dramaticdoors:block/macaw/tall_acacia_japanese_door_top_closed", "y":0 },
+        "facing=north,third=upper,hinge=right,open=false": { "model": "dramaticdoors:block/macaw/tall_acacia_japanese_door_top_closed", "y":90},
+        "facing=south,third=upper,hinge=right,open=false": { "model": "dramaticdoors:block/macaw/tall_acacia_japanese_door_top_closed", "y":270 },
+        
+        "facing=east,third=lower,hinge=right,open=true":  { "model": "dramaticdoors:block/macaw/tall_acacia_japanese_door_bottom_right", "y":180 },
+        "facing=west,third=lower,hinge=right,open=true":  { "model": "dramaticdoors:block/macaw/tall_acacia_japanese_door_bottom_right", "y":0 },
+        "facing=north,third=lower,hinge=right,open=true": { "model": "dramaticdoors:block/macaw/tall_acacia_japanese_door_bottom_right", "y":90},
+        "facing=south,third=lower,hinge=right,open=true": { "model": "dramaticdoors:block/macaw/tall_acacia_japanese_door_bottom_right", "y":270 },
+        
+        "facing=east,third=middle,hinge=right,open=true":  { "model": "dramaticdoors:block/macaw/tall_acacia_japanese_door_middle_right", "y":180 },
+        "facing=west,third=middle,hinge=right,open=true":  { "model": "dramaticdoors:block/macaw/tall_acacia_japanese_door_middle_right", "y":0 },
+        "facing=north,third=middle,hinge=right,open=true": { "model": "dramaticdoors:block/macaw/tall_acacia_japanese_door_middle_right", "y":90},
+        "facing=south,third=middle,hinge=right,open=true": { "model": "dramaticdoors:block/macaw/tall_acacia_japanese_door_middle_right", "y":270 },
+
+        "facing=east,third=upper,hinge=right,open=true":  { "model": "dramaticdoors:block/macaw/tall_acacia_japanese_door_top_right", "y":180 },
+        "facing=west,third=upper,hinge=right,open=true":  { "model": "dramaticdoors:block/macaw/tall_acacia_japanese_door_top_right", "y":0 },
+        "facing=north,third=upper,hinge=right,open=true": { "model": "dramaticdoors:block/macaw/tall_acacia_japanese_door_top_right", "y":90},
+        "facing=south,third=upper,hinge=right,open=true": { "model": "dramaticdoors:block/macaw/tall_acacia_japanese_door_top_right", "y":270 },
+        
+        "facing=east,third=lower,hinge=left,open=false":  { "model": "dramaticdoors:block/macaw/tall_acacia_japanese_door_bottom_closed", "y":180 },
+        "facing=west,third=lower,hinge=left,open=false":  { "model": "dramaticdoors:block/macaw/tall_acacia_japanese_door_bottom_closed", "y":0 },
+        "facing=north,third=lower,hinge=left,open=false": { "model": "dramaticdoors:block/macaw/tall_acacia_japanese_door_bottom_closed", "y":90},
+        "facing=south,third=lower,hinge=left,open=false": { "model": "dramaticdoors:block/macaw/tall_acacia_japanese_door_bottom_closed", "y":270 },
+
+        "facing=east,third=middle,hinge=left,open=false":  { "model": "dramaticdoors:block/macaw/tall_acacia_japanese_door_middle_closed", "y":180 },
+        "facing=west,third=middle,hinge=left,open=false":  { "model": "dramaticdoors:block/macaw/tall_acacia_japanese_door_middle_closed", "y":0 },
+        "facing=north,third=middle,hinge=left,open=false": { "model": "dramaticdoors:block/macaw/tall_acacia_japanese_door_middle_closed", "y":90},
+        "facing=south,third=middle,hinge=left,open=false": { "model": "dramaticdoors:block/macaw/tall_acacia_japanese_door_middle_closed", "y":270 },
+
+        "facing=east,third=upper,hinge=left,open=false":  { "model": "dramaticdoors:block/macaw/tall_acacia_japanese_door_top_closed", "y":180 },
+        "facing=west,third=upper,hinge=left,open=false":  { "model": "dramaticdoors:block/macaw/tall_acacia_japanese_door_top_closed", "y":0 },
+        "facing=north,third=upper,hinge=left,open=false": { "model": "dramaticdoors:block/macaw/tall_acacia_japanese_door_top_closed", "y":90},
+        "facing=south,third=upper,hinge=left,open=false": { "model": "dramaticdoors:block/macaw/tall_acacia_japanese_door_top_closed", "y":270 },
+        
+        "facing=east,third=lower,hinge=left,open=true":  { "model": "dramaticdoors:block/macaw/tall_acacia_japanese_door_bottom_left", "y":180 },
+        "facing=west,third=lower,hinge=left,open=true":  { "model": "dramaticdoors:block/macaw/tall_acacia_japanese_door_bottom_left", "y":0 },
+        "facing=north,third=lower,hinge=left,open=true": { "model": "dramaticdoors:block/macaw/tall_acacia_japanese_door_bottom_left", "y":90},
+        "facing=south,third=lower,hinge=left,open=true": { "model": "dramaticdoors:block/macaw/tall_acacia_japanese_door_bottom_left", "y":270 },
+
+        "facing=east,third=middle,hinge=left,open=true":  { "model": "dramaticdoors:block/macaw/tall_acacia_japanese_door_middle_left", "y":180 },
+        "facing=west,third=middle,hinge=left,open=true":  { "model": "dramaticdoors:block/macaw/tall_acacia_japanese_door_middle_left", "y":0 },
+        "facing=north,third=middle,hinge=left,open=true": { "model": "dramaticdoors:block/macaw/tall_acacia_japanese_door_middle_left", "y":90},
+        "facing=south,third=middle,hinge=left,open=true": { "model": "dramaticdoors:block/macaw/tall_acacia_japanese_door_middle_left", "y":270 },  
+
+        "facing=east,third=upper,hinge=left,open=true":  { "model": "dramaticdoors:block/macaw/tall_acacia_japanese_door_top_left", "y":180 },
+        "facing=west,third=upper,hinge=left,open=true":  { "model": "dramaticdoors:block/macaw/tall_acacia_japanese_door_top_left", "y":0 },
+        "facing=north,third=upper,hinge=left,open=true": { "model": "dramaticdoors:block/macaw/tall_acacia_japanese_door_top_left", "y":90},
+        "facing=south,third=upper,hinge=left,open=true": { "model": "dramaticdoors:block/macaw/tall_acacia_japanese_door_top_left", "y":270 }    
+    }
+}

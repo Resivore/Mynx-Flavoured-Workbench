@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "id": "shulker-trowel-runtime-tests",
+  "version": "1.0.0",
+  "name": "Shulker Trowel Runtime Tests",
+  "environment": "*",
+  "entrypoints": {
+    "fabric-gametest": [
+      "dev.aero.shulkertrowel.gametest.ShulkerTrowelGameTests",
+      "dev.aero.shulkertrowel.client.TrowelClientModeCacheGameTests"
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=0.19.3",
+    "fabric-api": "*",
+    "minecraft": "26.2",
+    "shulker_trowel": "=0.1.0-canary3.1",
+    "clutternomore": "=2.0.7+26.2",
+    "cnm_terrain_slabs_compat": "=0.5.49-nibaru-cnm-canary1.39-native-directional-material-axis",
+    "more_slabs_stairs_and_walls": "=4.2.0+26.2-port-canary43-native-directional-material-axis"
+  }
+}

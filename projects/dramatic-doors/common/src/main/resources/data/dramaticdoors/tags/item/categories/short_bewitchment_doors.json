@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    {"id": "dramaticdoors:short_cypress_door", "required": false},
+    {"id": "dramaticdoors:short_dragons_blood_door", "required": false},
+    {"id": "dramaticdoors:short_elder_door", "required": false},
+    {"id": "dramaticdoors:short_juniper_door", "required": false}
+  ]
+}
