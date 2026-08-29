@@ -698,6 +698,134 @@ class SheetPublisherTests(unittest.TestCase):
                 config=self.config,
             )
 
+    def test_complete_project_directory_deletion_satisfies_push_contract(self) -> None:
+        before = "b" * 40
+        after = "c" * 40
+        project_root = "projects/retired"
+        status_path = f"{project_root}/WORKBENCH_STATUS.json"
+        log_path = f"{project_root}/CODEX_LOG.md"
+        testing_path = f"{project_root}/TESTING.md"
+        manifest = planned_manifest("retired", "Retired")
+        previous = {
+            status_path: json.dumps(manifest),
+            log_path: codex_log(manifest),
+            testing_path: "# Testing\n",
+        }
+
+        def git_text(_root: Path, commit: str, path: str) -> str | None:
+            return previous.get(path) if commit == before else None
+
+        with (
+            patch("tools.sheet_sync._changed_paths", return_value=list(previous)),
+            patch("tools.sheet_sync._migration_adoption_uuids_at", return_value=frozenset()),
+            patch("tools.sheet_sync._git_text", side_effect=git_text),
+            patch("tools.sheet_sync._tracked_paths_under", return_value=[]),
+        ):
+            validate_project_push_contract(ROOT, before, after)
+
+    def test_project_deletion_rejects_partial_controls_or_tracked_remnants(self) -> None:
+        before = "b" * 40
+        after = "c" * 40
+        project_root = "projects/retired"
+        status_path = f"{project_root}/WORKBENCH_STATUS.json"
+        log_path = f"{project_root}/CODEX_LOG.md"
+        testing_path = f"{project_root}/TESTING.md"
+        manifest = planned_manifest("retired", "Retired")
+        previous = {
+            status_path: json.dumps(manifest),
+            log_path: codex_log(manifest),
+            testing_path: "# Testing\n",
+        }
+
+        def partial_git_text(_root: Path, commit: str, path: str) -> str | None:
+            if commit == before:
+                return previous.get(path)
+            return None if path == status_path else previous.get(path)
+
+        common_patches = (
+            patch("tools.sheet_sync._changed_paths", return_value=[status_path]),
+            patch("tools.sheet_sync._migration_adoption_uuids_at", return_value=frozenset()),
+        )
+        with common_patches[0], common_patches[1], patch("tools.sheet_sync._git_text", side_effect=partial_git_text):
+            with self.assertRaisesRegex(ValidationError, "all three project control files"):
+                validate_project_push_contract(ROOT, before, after)
+
+        def deleted_git_text(_root: Path, commit: str, path: str) -> str | None:
+            return previous.get(path) if commit == before else None
+
+        with (
+            patch("tools.sheet_sync._changed_paths", return_value=list(previous)),
+            patch("tools.sheet_sync._migration_adoption_uuids_at", return_value=frozenset()),
+            patch("tools.sheet_sync._git_text", side_effect=deleted_git_text),
+            patch("tools.sheet_sync._tracked_paths_under", return_value=[f"{project_root}/src/Remaining.java"]),
+        ):
+            with self.assertRaisesRegex(ValidationError, "entire project directory"):
+                validate_project_push_contract(ROOT, before, after)
+
+    def test_deleted_manifest_emits_no_event_while_survivor_publishes(self) -> None:
+        retired_path = "projects/retired/WORKBENCH_STATUS.json"
+        survivor_path = "projects/survivor/WORKBENCH_STATUS.json"
+        retired = planned_manifest("retired", "Retired")
+        survivor = planned_manifest("survivor", "Survivor")
+        advanced_survivor = advance_manifest(survivor)
+        events = build_events(
+            {retired_path: retired, survivor_path: survivor},
+            {survivor_path: advanced_survivor},
+            repository=self.config["repository"],
+            ref=self.config["authoritative_ref"],
+            publication_commit="c" * 40,
+            config=self.config,
+        )
+        self.assertEqual([survivor_path], [event["source"]["manifest_path"] for event in events])
+        self.assertEqual([2], [event["record"]["revision"] for event in events])
+        self.assertEqual(
+            [],
+            build_events(
+                {retired_path: retired},
+                {},
+                repository=self.config["repository"],
+                ref=self.config["authoritative_ref"],
+                publication_commit="c" * 40,
+                config=self.config,
+            ),
+        )
+
+    def test_deleted_manifest_does_not_bypass_survivor_revision_gap(self) -> None:
+        retired_path = "projects/retired/WORKBENCH_STATUS.json"
+        survivor_path = "projects/survivor/WORKBENCH_STATUS.json"
+        retired = planned_manifest("retired", "Retired")
+        survivor = planned_manifest("survivor", "Survivor")
+        skipped_survivor = advance_manifest(survivor)
+        skipped_survivor["synchronization"]["revision"] = 3
+        with self.assertRaisesRegex(ValidationError, "must advance exactly once"):
+            build_events(
+                {retired_path: retired, survivor_path: survivor},
+                {survivor_path: skipped_survivor},
+                repository=self.config["repository"],
+                ref=self.config["authoritative_ref"],
+                publication_commit="c" * 40,
+                config=self.config,
+            )
+
+    def test_deleted_manifest_uuid_cannot_reappear_at_a_new_path(self) -> None:
+        retired_path = "projects/retired/WORKBENCH_STATUS.json"
+        replacement_path = "projects/replacement/WORKBENCH_STATUS.json"
+        retired = planned_manifest("retired", "Retired")
+        replacement = planned_manifest(
+            "replacement",
+            "Replacement",
+            uuid_value=retired["identity"]["uuid"],
+        )
+        with self.assertRaisesRegex(ValidationError, "project UUID cannot move"):
+            build_events(
+                {retired_path: retired},
+                {replacement_path: replacement},
+                repository=self.config["repository"],
+                ref=self.config["authoritative_ref"],
+                publication_commit="c" * 40,
+                config=self.config,
+            )
+
     def test_metadata_only_revision_still_produces_distinct_event(self) -> None:
         path = "projects/mossy-stone/WORKBENCH_STATUS.json"
         first = planned_manifest()
