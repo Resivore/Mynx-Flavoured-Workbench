@@ -1,0 +1,131 @@
+{
+  "$schema": "../../schemas/workbench-status.schema.json",
+  "schema_version": 1,
+  "identity": {
+    "uuid": "4b2342fc-7bdf-5ba6-9f37-d551109d214c",
+    "name": "Block Geometry Extensions (BGE)",
+    "project_id": "block-geometry-extensions",
+    "aliases": [
+      "Nibaru × Clutter No More Integration",
+      "Clutter No More × Nibaru Integration",
+      "Nibaru × CNM Integration"
+    ],
+    "legacy_names": [
+      "clutter-no-more-compat"
+    ],
+    "legacy_ids": [
+      "nibaru-clutter-no-more"
+    ]
+  },
+  "definition": {
+    "lifecycle": "ACTIVE",
+    "goals": [
+      "Extend CNM ShapeMap families with BGE-owned geometry while preserving Nibaru-owned material identity and semantics.",
+      "Provide six-direction Layer geometry for every canonical family without changing accepted Step or Vertical behavior."
+    ],
+    "scope": [
+      "Maintain BGE-owned placement, state, rendering, collision, drops, and specialized behavior for generated geometry.",
+      "Generate exactly one Layer after Step for each of 311 canonical ShapeMap families, preserving deterministic 933/933 Vertical, Step, and Layer population and guarding generated Layers from recursive Nibaru material discovery.",
+      "Preserve six-direction facing, one-through-four 4-pixel thickness, waterlogging, same-item exposed-face stacking, material pattern and axis behavior, typed DROP_BASE transitions, and profile-driven specialized semantics."
+    ],
+    "boundaries": {
+      "owned_paths": [
+        "projects/block-geometry-extensions"
+      ],
+      "exclusions": [
+        "Nibaru owns canonical material identity, visual roles, capabilities, transitions, copied settings, and material, pattern, and axis semantics.",
+        "CNM ShapeMap remains the canonical material-family and switching mechanism; BGE must not create a competing material registry or selector.",
+        "Corner geometry is frozen out of scope.",
+        "Quarter Column geometry is frozen out of scope.",
+        "BBB is reference-only; its source and assets are excluded, and BGE has no BBB dependency.",
+        "Accepted Step and Vertical behavior and Glazed production behavior remain unchanged except for migration-only path normalization."
+      ]
+    },
+    "dependencies": [
+      {
+        "type": "PROJECT",
+        "identifier": "680476b9-5336-5422-a575-779f2efd1eff",
+        "requirement": "C46",
+        "reason": "BGE C53 consumes Nibaru C46 canonical-parent Layer and typed DROP_BASE contracts."
+      },
+      {
+        "type": "MOD",
+        "identifier": "minecraft",
+        "requirement": "~26.2",
+        "reason": "BGE C53 targets Minecraft Java 26.2."
+      },
+      {
+        "type": "MOD",
+        "identifier": "fabricloader",
+        "requirement": ">=0.19.3",
+        "reason": "Required Fabric mod loader."
+      },
+      {
+        "type": "MOD",
+        "identifier": "fabric-api",
+        "requirement": "0.156.0+26.2",
+        "reason": "Fabric API used by the current C53 build and runtime implementation."
+      },
+      {
+        "type": "MOD",
+        "identifier": "clutternomore",
+        "requirement": ">=2.0.7",
+        "reason": "Provides the canonical ShapeMap family and geometry-switching mechanism extended by BGE."
+      },
+      {
+        "type": "MOD",
+        "identifier": "more_slabs_stairs_and_walls",
+        "requirement": "=4.2.0+26.2-port-canary46-bge-layer-contract",
+        "reason": "Provides the exact Nibaru C46 material-profile and Layer contract implementation paired with C53."
+      }
+    ]
+  },
+  "state": {
+    "milestone": "C53 establishes BGE-owned Layer geometry for all 311 canonical families; its Java 25 clean build, 52 focused checks, and 66/66 required GameTests passed, while deployment and Minecraft runtime validation remain outstanding.",
+    "releases": {
+      "current": {
+        "version": "C53",
+        "artifact": {
+          "filename": "cnm-nibaru-integration-0.6.0-bge-canary53-layer.jar",
+          "sha256": "57a4599adb3f4c58ae7b99a0148a38760fdb3da59847ca3ec046379db323b7c8"
+        },
+        "source_commit": "6e9b04ec3947f2514f90775bfeefb599242a4596"
+      },
+      "accepted": {
+        "version": "C52 (legacy Integration 1.39)",
+        "artifact": {
+          "filename": "cnm-nibaru-integration-0.5.49-nibaru-cnm-canary1.39-native-directional-material-axis.jar",
+          "sha256": "0e84fb7b8c69e31c3c22a592d0667db66c2918c8fd9f461bd2c216d377722e69"
+        },
+        "source_commit": "2e58d752af44f4b84e10bc5e53a41aea00a177ee"
+      },
+      "rollback": {
+        "version": "C52 (legacy Integration 1.39)",
+        "artifact": {
+          "filename": "cnm-nibaru-integration-0.5.49-nibaru-cnm-canary1.39-native-directional-material-axis.jar",
+          "sha256": "0e84fb7b8c69e31c3c22a592d0667db66c2918c8fd9f461bd2c216d377722e69"
+        },
+        "source_commit": "2e58d752af44f4b84e10bc5e53a41aea00a177ee"
+      },
+      "accepted_current": "CURRENT_DIFFERS_FROM_ACCEPTED",
+      "accepted_rollback": "ACCEPTED_IS_ROLLBACK"
+    },
+    "validation": {
+      "build": "CONTROLLED_VALIDATION_PASS",
+      "deployment": "NOT_DEPLOYED",
+      "runtime": "RUNTIME_UNTESTED"
+    },
+    "blocker": null
+  },
+  "synchronization": {
+    "revision": 6,
+    "activity_at": "2026-08-29T06:54:03Z",
+    "updated_at": "2026-08-29T17:14:33Z",
+    "last_codex_at": "2026-08-29T17:14:33Z",
+    "source_commit": "6e9b04ec3947f2514f90775bfeefb599242a4596",
+    "google_sheet": {
+      "participates": true,
+      "exclusion_reason": null
+    }
+  }
+}

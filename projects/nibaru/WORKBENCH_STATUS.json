@@ -1,0 +1,101 @@
+{
+  "$schema": "../../schemas/workbench-status.schema.json",
+  "schema_version": 1,
+  "identity": {
+    "uuid": "680476b9-5336-5422-a575-779f2efd1eff",
+    "name": "Nibaru 26.2 Port",
+    "project_id": "nibaru",
+    "aliases": [],
+    "legacy_names": [
+      "Nibaru 26.2",
+      "More Slabs Stairs & Walls",
+      "More Slabs Stairs & Walls 4.2.0 — Minecraft 26.2 port"
+    ],
+    "legacy_ids": [
+      "nibaru"
+    ]
+  },
+  "definition": {
+    "lifecycle": "ACTIVE",
+    "goals": [
+      "Maintain the Minecraft 26.2 Fabric port of More Slabs Stairs & Walls.",
+      "Own canonical material identity and semantics for Nibaru blocks and optional geometry consumers."
+    ],
+    "scope": [
+      "Standalone slab, stair, wall, material-profile, and resource behavior retained from C46.",
+      "Canonical-parent Layer and typed DROP_BASE contracts consumed optionally by BGE C53."
+    ],
+    "boundaries": {
+      "owned_paths": [
+        "projects/nibaru"
+      ],
+      "exclusions": [
+        "BGE geometry implementation and ownership.",
+        "Corner and Quarter Column geometry.",
+        "New behavior or feature work beyond the frozen C46 migration."
+      ]
+    },
+    "dependencies": [
+      {
+        "type": "OTHER",
+        "identifier": "minecraft",
+        "requirement": "26.2",
+        "reason": "Target game version for the retained port."
+      },
+      {
+        "type": "MOD",
+        "identifier": "fabricloader",
+        "requirement": ">=0.19.3",
+        "reason": "Fabric runtime loader declared by C46."
+      }
+    ]
+  },
+  "state": {
+    "milestone": "C46 publishes the canonical-parent Layer and typed DROP_BASE contracts required by BGE C53; its clean Java 25 build and the paired 66/66 GameTests passed, but it is not deployed or runtime tested.",
+    "releases": {
+      "current": {
+        "version": "C46",
+        "artifact": {
+          "filename": "more-slabs-stairs-and-walls-4.2.0+26.2-port-canary46-bge-layer-contract.jar",
+          "sha256": "3281d110f062db62e721d838a35ce915ca73dd41af098a013b52952561ceae7d"
+        },
+        "source_commit": "6e9b04ec3947f2514f90775bfeefb599242a4596"
+      },
+      "accepted": {
+        "version": "C45 (legacy Canary 43)",
+        "artifact": {
+          "filename": "more-slabs-stairs-and-walls-4.2.0+26.2-port-canary43-native-directional-material-axis.jar",
+          "sha256": "0a979a75101076e987a35807f8eb293631fe5e664b252e5db0aa263d4eedf07f"
+        },
+        "source_commit": "2e58d752af44f4b84e10bc5e53a41aea00a177ee"
+      },
+      "rollback": {
+        "version": "C45 (legacy Canary 43)",
+        "artifact": {
+          "filename": "more-slabs-stairs-and-walls-4.2.0+26.2-port-canary43-native-directional-material-axis.jar",
+          "sha256": "0a979a75101076e987a35807f8eb293631fe5e664b252e5db0aa263d4eedf07f"
+        },
+        "source_commit": "2e58d752af44f4b84e10bc5e53a41aea00a177ee"
+      },
+      "accepted_current": "CURRENT_DIFFERS_FROM_ACCEPTED",
+      "accepted_rollback": "ACCEPTED_IS_ROLLBACK"
+    },
+    "validation": {
+      "build": "CONTROLLED_VALIDATION_PASS",
+      "deployment": "NOT_DEPLOYED",
+      "runtime": "RUNTIME_UNTESTED"
+    },
+    "blocker": null
+  },
+  "synchronization": {
+    "revision": 5,
+    "activity_at": "2026-08-29T06:54:03Z",
+    "updated_at": "2026-08-29T17:14:33Z",
+    "last_codex_at": "2026-08-29T17:14:33Z",
+    "source_commit": "6e9b04ec3947f2514f90775bfeefb599242a4596",
+    "google_sheet": {
+      "participates": true,
+      "exclusion_reason": null
+    }
+  }
+}
