@@ -1,0 +1,13 @@
+{
+  "key.categories.radial_slot_cycler.controls": "Radial Slot Cycler",
+  "key.radial_slot_cycler.open": "Open Radial Slot Cycler",
+  "hud.radial_slot_cycler.center": "center",
+  "hud.radial_slot_cycler.cancel": "Center: cancel",
+  "hud.radial_slot_cycler.hotbar_anchor": "Current hotbar slot: no change",
+  "hud.radial_slot_cycler.storage": "Storage row %s: release to swap",
+  "hud.radial_slot_cycler.storage_empty": "Storage row %s is empty: release to swap",
+  "hud.radial_slot_cycler.current_short": "Current",
+  "hud.radial_slot_cycler.swap_short": "Swap",
+  "hud.radial_slot_cycler.hotbar_empty": "Current hotbar slot (empty)",
+  "hud.radial_slot_cycler.storage_empty_name": "Storage row %s (empty)"
+}
