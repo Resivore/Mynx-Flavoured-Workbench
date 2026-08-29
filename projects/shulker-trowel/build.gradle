@@ -1,0 +1,95 @@
+plugins {
+    id 'net.fabricmc.fabric-loom' version '1.17-SNAPSHOT'
+    id 'maven-publish'
+}
+
+version = project.mod_version
+group = project.maven_group
+
+base {
+    archivesName = project.archives_base_name
+}
+
+repositories {
+    maven { url = 'https://maven.fabricmc.net/' }
+    mavenCentral()
+}
+
+def cnmJarPath = project.findProperty('cnmJar') ?: '../../originals/mods/clutternomore-2.0.7+26.2-fabric.jar'
+
+dependencies {
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    implementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+
+    // Runtime ownership remains in the accepted mods. Nothing from these JARs is bundled.
+    compileOnly files(cnmJarPath)
+    runtimeOnly files(cnmJarPath)
+    compileOnly files('../nibaru/artifacts/more-slabs-stairs-and-walls-4.2.0+26.2-port-canary43-native-directional-material-axis.jar')
+    runtimeOnly files('../nibaru/artifacts/more-slabs-stairs-and-walls-4.2.0+26.2-port-canary43-native-directional-material-axis.jar')
+    compileOnly files('../block-geometry-extensions/artifacts/cnm-nibaru-integration-0.5.49-nibaru-cnm-canary1.39-native-directional-material-axis.jar')
+    runtimeOnly files('../block-geometry-extensions/artifacts/cnm-nibaru-integration-0.5.49-nibaru-cnm-canary1.39-native-directional-material-axis.jar')
+
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.12.2'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.12.2'
+    testImplementation 'org.ow2.asm:asm:9.10.1'
+    testImplementation 'org.ow2.asm:asm-tree:9.10.1'
+}
+
+fabricApi {
+    configureTests {
+        createSourceSet = true
+        modId = 'shulker-trowel-runtime-tests'
+        enableGameTests = true
+        enableClientGameTests = false
+        eula = true
+    }
+}
+
+processResources {
+    inputs.property 'version', project.version
+    filesMatching('fabric.mod.json') {
+        expand 'version': project.version
+    }
+    doLast {
+        // Windows checkout normalization must not alter the established packaged mixin metadata.
+        // Reuse the exact Canary 3 payload because no mixin declaration changes in Canary 4.
+        def predecessor = file('artifacts/shulker-trowel-0.1.0-canary3.jar')
+        def expectedHash = '5C18755B2F71F44B1F8D6D622DFE0FC892C8165E448CC8E451B72FEE91F752EC'
+        def digest = java.security.MessageDigest.getInstance('SHA-256')
+        def actualHash = digest.digest(predecessor.bytes).encodeHex().toString().toUpperCase()
+        if (actualHash != expectedHash) {
+            throw new GradleException("Retained Canary 3 identity mismatch: ${actualHash}")
+        }
+        def archive = new java.util.zip.ZipFile(predecessor)
+        try {
+            def entry = archive.getEntry('shulker_trowel.mixins.json')
+            if (entry == null) {
+                throw new GradleException('Retained Canary 3 mixin metadata is missing.')
+            }
+            def output = new File(destinationDir, 'shulker_trowel.mixins.json')
+            output.bytes = archive.getInputStream(entry).withCloseable { it.bytes }
+        }
+        finally {
+            archive.close()
+        }
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    it.options.release = 25
+}
+
+test {
+    useJUnitPlatform()
+    systemProperty 'projectRoot', projectDir.absolutePath
+    systemProperty 'cnmJar', file(cnmJarPath).absolutePath
+}
+
+java {
+    withSourcesJar()
+}
+
+jar {
+    from('LICENSE')
+}
