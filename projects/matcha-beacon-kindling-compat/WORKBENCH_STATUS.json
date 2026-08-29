@@ -1,0 +1,118 @@
+{
+  "$schema": "../../schemas/workbench-status.schema.json",
+  "schema_version": 1,
+  "identity": {
+    "uuid": "34763a2a-1cee-59c3-89ae-28a7294ea2cb",
+    "name": "Matcha Beacon Kindling Compatibility",
+    "project_id": "matcha-beacon-kindling-compat",
+    "aliases": [
+      "Matcha Beacon Kindling"
+    ],
+    "legacy_names": [],
+    "legacy_ids": [
+      "matcha-beacon-kindling-compat"
+    ]
+  },
+  "definition": {
+    "lifecycle": "ACTIVE",
+    "goals": [
+      "Coordinate Matcha Flavoured 1.12's Beacon Kindling Wandering Trader lifecycle with persistent exact-player, exact-marker, and exact-trader identity while preserving Matcha-owned content and visible behavior.",
+      "Replace only the unsafe scheduled, global, and nearest-selector lifecycle coordination at the seven audited Matcha function seams with active-time pause, resume, and exact-owner cleanup.",
+      "Remain a narrow standalone Minecraft 26.2 Fabric companion without datapack or resource-pack overrides."
+    ],
+    "scope": [
+      "Intercept only the exact Matcha Beacon Kindling marker-spawn seam and the seven audited wandering-trader lifecycle function identifiers.",
+      "Persist one summon record per player with exact marker, dimension, beacon position, phase, remaining active ticks, and exact trader identity; pause while the owner or recorded location cannot be processed.",
+      "Suppress legacy scheduled duplicates and global or nearest cleanup while permitting Matcha's original trader-construction function once under the exact persisted marker guard.",
+      "Coordinate the pinned Matcha-defined placement effects, messages, advancement revocation, compatibility mirrors, departure, and cleanup outputs through exact identities without changing their intended player-facing behavior."
+    ],
+    "boundaries": {
+      "owned_paths": [
+        "projects/matcha-beacon-kindling-compat"
+      ],
+      "exclusions": [
+        "Modifying or redistributing Matcha, or taking ownership of its underlying item, recipe, assets, advancement, messages, placement effects, trader construction, or trades.",
+        "Adding data/main overrides, resource-pack content, Stack to Nearby Chests or Quick Stack Nearby work, unrelated Wandering Trader changes, or broad function interception.",
+        "Runtime deployment, Test Slot or Test Instance Manager changes, dedicated Workbench mutation, and any access to the protected gameplay instance during this migration."
+      ]
+    },
+    "dependencies": [
+      {
+        "type": "MOD",
+        "identifier": "minecraft",
+        "requirement": "=26.2",
+        "reason": "Exact target game version for the retained implementation and Mixin mappings."
+      },
+      {
+        "type": "MOD",
+        "identifier": "fabricloader",
+        "requirement": ">=0.19.3",
+        "reason": "Loader minimum declared by the exact retained Canary 1 metadata."
+      },
+      {
+        "type": "MOD",
+        "identifier": "fabric-api",
+        "requirement": ">=0.157.0+26.2",
+        "reason": "Provides the server tick, connection, and entity-load lifecycle hooks used by the companion."
+      },
+      {
+        "type": "DATA_PACK",
+        "identifier": "Matcha_Flavoured_1_12.zip",
+        "requirement": "SHA-256 6209783021C358044ABEDABACEE471FAFF5BD4080437D4E3B5E51963F1804248",
+        "reason": "Exact audited Matcha Beacon Kindling item, advancement, function, message, effect, trader, and trade contract."
+      },
+      {
+        "type": "TOOL",
+        "identifier": "java",
+        "requirement": "25",
+        "reason": "Compilation release and runtime level required by Minecraft 26.2 and Canary 1."
+      },
+      {
+        "type": "TOOL",
+        "identifier": "gradle",
+        "requirement": "9.5.1",
+        "reason": "Exact build-tool version used for the retained and migration verification builds."
+      },
+      {
+        "type": "TOOL",
+        "identifier": "fabric-loom",
+        "requirement": "1.17.19",
+        "reason": "Pinned Fabric build plugin retained by the maintained build."
+      }
+    ]
+  },
+  "state": {
+    "milestone": "Exact Canary 1 is retained after a Java 25 clean build with 26/26 focused tests and byte-identical artifact reproduction; it remains GENERATED / STATIC-AUTOMATED PASS / RUNTIME UNTESTED / NOT DEPLOYED.",
+    "releases": {
+      "current": {
+        "version": "0.1.0-canary1",
+        "artifact": {
+          "filename": "matcha-beacon-kindling-compat-0.1.0-canary1.jar",
+          "sha256": "b343dd5f000913731a9e256126f18adf085c7e364645ce9f9940692d693e1e0e"
+        },
+        "source_commit": "7375e0d10a4cba7e0dfc2204ba8628cedbe0cbf4"
+      },
+      "accepted": null,
+      "rollback": null,
+      "accepted_current": "NO_ACCEPTED",
+      "accepted_rollback": "NO_ROLLBACK"
+    },
+    "validation": {
+      "build": "STATIC_PASS",
+      "deployment": "NOT_DEPLOYED",
+      "runtime": "RUNTIME_UNTESTED"
+    },
+    "blocker": null
+  },
+  "synchronization": {
+    "revision": 1,
+    "activity_at": "2026-08-28T22:52:51Z",
+    "updated_at": "2026-08-29T22:17:38Z",
+    "last_codex_at": "2026-08-29T22:17:38Z",
+    "source_commit": "7375e0d10a4cba7e0dfc2204ba8628cedbe0cbf4",
+    "google_sheet": {
+      "participates": true,
+      "exclusion_reason": null
+    }
+  }
+}
