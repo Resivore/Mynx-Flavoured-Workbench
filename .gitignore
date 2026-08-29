@@ -3,6 +3,7 @@ __pycache__/
 .pytest_cache/
 .venv/
 /originals/
+**/test-builds/private/
 build/
 dist/
 runtime-state.local.json
