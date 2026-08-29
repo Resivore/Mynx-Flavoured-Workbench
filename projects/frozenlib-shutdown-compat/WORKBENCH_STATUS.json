@@ -1,0 +1,99 @@
+{
+  "$schema": "../../schemas/workbench-status.schema.json",
+  "schema_version": 1,
+  "identity": {
+    "uuid": "dc0952a8-6feb-59df-91b1-fee795ddd64d",
+    "name": "FrozenLib Shutdown Compatibility",
+    "project_id": "frozenlib-shutdown-compat",
+    "aliases": [
+      "FrozenLib Shutdown Compat"
+    ],
+    "legacy_names": [
+      "FrozenLib Shutdown Compat"
+    ],
+    "legacy_ids": [
+      "frozenlib-shutdown-compat"
+    ]
+  },
+  "definition": {
+    "lifecycle": "TESTING",
+    "goals": [
+      "Prevent FrozenLib's cape-registration cached executor from delaying or watchdog-failing client shutdown while preserving the executor's ordinary asynchronous behavior."
+    ],
+    "scope": [
+      "For exact FrozenLib 2.5.3-mc26.2 on Minecraft Java 26.2, redirect only the no-argument Executors.newCachedThreadPool() invocation in CapeUtil.registerCapesFromURL(String) to a cached pool whose default-style workers are daemon threads.",
+      "Preserve Java's default worker naming, priority, thread group, and FrozenLib's asynchronous cape-registration behavior, with a required exact target and invocation that fail closed on drift."
+    ],
+    "boundaries": {
+      "owned_paths": [
+        "projects/frozenlib-shutdown-compat"
+      ],
+      "exclusions": [
+        "Global executor interception, FastQuit integration, lifecycle waits, request interruption, and shutdown changes outside the exact FrozenLib cape-registration call site.",
+        "FrozenLib's separate resource-pack download executor, whose file-writing task could be abandoned if daemonized at process exit.",
+        "FrozenLib classes or assets, upstream redistribution, and compatibility with FrozenLib versions other than exact 2.5.3-mc26.2.",
+        "A successor canary, new shutdown investigation, Minecraft deployment, Test Slot ownership, accepted-stack changes, or Test Instance Manager changes during this migration."
+      ]
+    },
+    "dependencies": [
+      {
+        "type": "MOD",
+        "identifier": "minecraft",
+        "requirement": "=26.2",
+        "reason": "Target client version for the retained exact mixin seam."
+      },
+      {
+        "type": "MOD",
+        "identifier": "fabricloader",
+        "requirement": ">=0.19.3",
+        "reason": "Fabric runtime loader declared by the retained C1 implementation."
+      },
+      {
+        "type": "MOD",
+        "identifier": "frozenlib",
+        "requirement": "=2.5.3-mc26.2",
+        "reason": "Exact target dependency, Modrinth version Ak4sHFuc; frozen target JAR SHA-256 510bce30b1d7fdc869eccab3cd2ffd49609ec81c29b40f30da5d9d984f73338e."
+      },
+      {
+        "type": "TOOL",
+        "identifier": "java",
+        "requirement": ">=25",
+        "reason": "Compilation and runtime level declared by the retained implementation."
+      }
+    ]
+  },
+  "state": {
+    "milestone": "C1 passed quit, window-close, and cape-path log checks and is permanent infrastructure; visible known-cape rendering remains outstanding.",
+    "releases": {
+      "current": {
+        "version": "0.1.0-canary1",
+        "artifact": {
+          "filename": "frozenlib-shutdown-compat-0.1.0-canary1.jar",
+          "sha256": "85dda807ca525a559dc1123e986da50348e2f18c63a43eec6bb5c3684cc51476"
+        },
+        "source_commit": "45fed67116ebcb6d7993d4c2619abe0be02bd9ce"
+      },
+      "accepted": null,
+      "rollback": null,
+      "accepted_current": "NO_ACCEPTED",
+      "accepted_rollback": "NO_ROLLBACK"
+    },
+    "validation": {
+      "build": "STATIC_PASS",
+      "deployment": "DEPLOYED",
+      "runtime": "PARTIAL_RUNTIME_PASS"
+    },
+    "blocker": null
+  },
+  "synchronization": {
+    "revision": 1,
+    "activity_at": "2026-08-29T00:01:52Z",
+    "updated_at": "2026-08-29T20:58:13Z",
+    "last_codex_at": "2026-08-29T20:58:13Z",
+    "source_commit": "c4a2db96387c5c9dca97769874134bd77e709b04",
+    "google_sheet": {
+      "participates": true,
+      "exclusion_reason": null
+    }
+  }
+}
