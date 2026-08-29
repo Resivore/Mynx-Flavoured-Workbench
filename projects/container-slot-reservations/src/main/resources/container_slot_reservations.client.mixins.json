@@ -1,0 +1,12 @@
+{
+  "required": true,
+  "package": "dev.resivore.slotreservations.mixin.client",
+  "compatibilityLevel": "JAVA_25",
+  "client": [
+    "AbstractContainerScreenMixin",
+    "KeyboardHandlerMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
