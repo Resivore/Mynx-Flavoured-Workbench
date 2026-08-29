@@ -1,0 +1,14 @@
+{
+  "required": true,
+  "package": "dev.resivore.quickstacknearbycompat.mixin.client",
+  "compatibilityLevel": "JAVA_25",
+  "client": [
+    "QuickStackRuleStoreMixin",
+    "QuickStackRulesScreenMixin",
+    "QuickStackButtonSlotBridgeMixin",
+    "InventoryScreenButtonSlotsMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
