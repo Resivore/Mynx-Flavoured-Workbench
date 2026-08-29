@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:block",
+  "pools": [{
+    "rolls": 1,
+    "entries": [{
+      "type": "minecraft:item",
+      "name": "cnm_terrain_slabs_compat:dirt_vertical_slab",
+      "functions": [{
+        "function": "minecraft:set_count", "count": 2,
+        "conditions": [{
+          "condition": "minecraft:block_state_property",
+          "block": "cnm_terrain_slabs_compat:dirt_vertical_slab",
+          "properties": {"double": "true"}
+        }]
+      }]
+    }],
+    "conditions": [{"condition": "minecraft:survives_explosion"}]
+  }]
+}

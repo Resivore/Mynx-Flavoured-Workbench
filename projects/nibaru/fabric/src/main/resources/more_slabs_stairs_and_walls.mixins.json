@@ -1,0 +1,15 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "games.twinhead.moreslabsstairsandwalls.fabric.mixin",
+  "compatibilityLevel": "JAVA_25",
+  "mixins": [
+    "FuelValuesBuilderMixin",
+    "PistonHandlerMixin"
+  ],
+  "client": [
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

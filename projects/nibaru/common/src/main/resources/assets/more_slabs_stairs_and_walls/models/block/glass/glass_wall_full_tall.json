@@ -1,0 +1,6 @@
+{
+  "parent": "more_slabs_stairs_and_walls:block/template_glass_wall_full_tall",
+  "textures": {
+    "all": "minecraft:block/glass"
+  }
+}

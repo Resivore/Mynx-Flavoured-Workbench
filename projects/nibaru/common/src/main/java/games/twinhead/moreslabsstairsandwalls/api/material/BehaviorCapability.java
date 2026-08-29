@@ -1,0 +1,23 @@
+package games.twinhead.moreslabsstairsandwalls.api.material;
+
+public enum BehaviorCapability {
+    LEAF_LIFECYCLE,
+    SPREADABLE,
+    STRIPPABLE,
+    OXIDIZABLE,
+    WAXABLE,
+    SCRAPEABLE,
+    CORAL_DEATH,
+    FALLING,
+    CONCRETE_HARDENING,
+    TRANSLUCENT_ADJACENCY,
+    ICE_MELTING,
+    REDSTONE_POWER,
+    HONEY_INTERACTION,
+    SLIME_INTERACTION,
+    MAGMA_DAMAGE,
+    SOUL_SAND_INTERACTION,
+    GLAZED_ORIENTATION,
+    FLATTENABLE_TO_PATH,
+    PATH_CONVERSION
+}

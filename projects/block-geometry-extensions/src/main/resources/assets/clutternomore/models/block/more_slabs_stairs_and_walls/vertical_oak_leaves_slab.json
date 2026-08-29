@@ -1,0 +1,5 @@
+{
+  "parent": "clutternomore:block/templates/vertical_slab_tinted",
+  "render_type": "cutout_mipped",
+  "textures": { "bottom": "minecraft:block/oak_leaves", "side": "minecraft:block/oak_leaves", "top": "minecraft:block/oak_leaves" }
+}

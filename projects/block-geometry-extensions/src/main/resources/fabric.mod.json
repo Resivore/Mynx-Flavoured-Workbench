@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "id": "cnm_terrain_slabs_compat",
+  "version": "${version}",
+  "name": "Block Geometry Extensions Canary 53",
+  "description": "GENERATED / RUNTIME UNTESTED BGE Layer geometry composed from canonical Nibaru material profiles and CNM ShapeMap families.",
+  "environment": "*",
+  "entrypoints": {
+    "main": ["dev.aero.cnmterraincompat.CnmTerrainCompat"],
+    "client": ["dev.aero.cnmterraincompat.CnmTerrainCompatClient"]
+  },
+  "mixins": ["cnm_terrain_slabs_compat.mixins.json"],
+  "depends": {
+    "fabricloader": ">=0.19.3",
+    "minecraft": "~26.2",
+    "fabric-api": "*",
+    "clutternomore": ">=2.0.7",
+    "more_slabs_stairs_and_walls": "=4.2.0+26.2-port-canary46-bge-layer-contract"
+  }
+}

@@ -1,0 +1,481 @@
+package dev.aero.cnmterraincompat;
+
+import dev.tazer.clutternomore.common.blocks.StepBlock;
+import dev.tazer.clutternomore.common.blocks.VerticalSlabBlock;
+import dev.tazer.clutternomore.common.shape_map.ShapeMap;
+import games.twinhead.moreslabsstairsandwalls.api.material.BehaviorCapability;
+import games.twinhead.moreslabsstairsandwalls.api.material.DerivedGeometrySupport;
+import games.twinhead.moreslabsstairsandwalls.api.material.DerivedMaterialTraits;
+import games.twinhead.moreslabsstairsandwalls.api.material.MaterialTransition;
+import games.twinhead.moreslabsstairsandwalls.api.material.NibaruMaterialProfile;
+import games.twinhead.moreslabsstairsandwalls.api.material.NibaruMaterialProfiles;
+import games.twinhead.moreslabsstairsandwalls.api.material.TintProfile;
+import games.twinhead.moreslabsstairsandwalls.api.material.VisualProfile;
+import games.twinhead.moreslabsstairsandwalls.block.ModBlocks;
+import games.twinhead.moreslabsstairsandwalls.block.spreadable.SpreadableSemantics;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.SlabBlock;
+import net.minecraft.world.level.block.StairBlock;
+import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.WeatheringCopper;
+import games.twinhead.moreslabsstairsandwalls.block.dirt.PathSemantics;
+import games.twinhead.moreslabsstairsandwalls.block.strippable.StrippingSemantics;
+import games.twinhead.moreslabsstairsandwalls.block.oxidizable.CopperSemantics;
+import games.twinhead.moreslabsstairsandwalls.block.translucent.TranslucentSemantics;
+import net.minecraft.world.item.AxeItem;
+import net.minecraft.world.item.ShovelItem;
+import net.fabricmc.fabric.api.registry.FlammableBlockRegistry;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.EnumMap;
+import java.util.EnumSet;
+import java.util.IdentityHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.BiConsumer;
+
+/** Composes Nibaru material profiles with companion-owned derived geometry. */
+public final class NibaruProviderAdapter {
+    public static final Set<BehaviorCapability> ADAPTED_CAPABILITIES = Collections.unmodifiableSet(
+            EnumSet.of(BehaviorCapability.LEAF_LIFECYCLE, BehaviorCapability.SPREADABLE,
+                    BehaviorCapability.FLATTENABLE_TO_PATH, BehaviorCapability.PATH_CONVERSION,
+                    BehaviorCapability.STRIPPABLE, BehaviorCapability.OXIDIZABLE,
+                    BehaviorCapability.WAXABLE, BehaviorCapability.SCRAPEABLE,
+                    BehaviorCapability.CORAL_DEATH, BehaviorCapability.FALLING,
+                    BehaviorCapability.CONCRETE_HARDENING, BehaviorCapability.REDSTONE_POWER,
+                    BehaviorCapability.TRANSLUCENT_ADJACENCY, BehaviorCapability.ICE_MELTING,
+                    BehaviorCapability.MAGMA_DAMAGE, BehaviorCapability.SOUL_SAND_INTERACTION,
+                    BehaviorCapability.GLAZED_ORIENTATION, BehaviorCapability.HONEY_INTERACTION,
+                    BehaviorCapability.SLIME_INTERACTION));
+    public static final Set<VisualProfile> ADAPTED_VISUALS = Collections.unmodifiableSet(EnumSet.of(
+            VisualProfile.UNIFORM, VisualProfile.TOP_SIDE_BOTTOM, VisualProfile.PILLAR,
+            VisualProfile.GRASS_OVERLAY, VisualProfile.LEAVES_CUTOUT_TINTED, VisualProfile.CUTOUT_UNIFORM,
+            VisualProfile.PATH, VisualProfile.TRANSLUCENT_UNIFORM, VisualProfile.ROOTS,
+            VisualProfile.GLASS_EDGE, VisualProfile.GLAZED_ORIENTED, VisualProfile.HONEY_INSET,
+            VisualProfile.SLIME_INSET));
+    private static final Identifier SHAPE_MAP_SOURCE = Identifier.fromNamespaceAndPath(
+            CnmTerrainCompat.MOD_ID, "provider_profiles");
+    private static final Map<NibaruMaterialProfile, EnumMap<DerivedGeometrySupport.Geometry, Block>> DERIVED =
+            new IdentityHashMap<>();
+    private static final Map<Block, RuntimeBinding> RUNTIME_BINDINGS = new IdentityHashMap<>();
+    private static final Map<TintProfile, Set<Block>> TINT_TARGETS = new EnumMap<>(TintProfile.class);
+    private static BiConsumer<TintProfile, Block> tintRegistrar;
+
+    private NibaruProviderAdapter() {}
+
+    public static Optional<NibaruMaterialProfile> profile(Block source) {
+        return NibaruMaterialProfiles.fromBlock(source);
+    }
+
+    public static boolean cullsTranslucent(Block source, BlockState sourceState, BlockState neighborState) {
+        if (!TranslucentSemantics.sameMaterial(source, neighborState.getBlock())) return false;
+        NibaruMaterialProfile profile = profile(source).orElseThrow();
+        return neighborState.getBlock() == profile.canonicalParent()
+                || (neighborState.getBlock() == source && sourceState.equals(neighborState));
+    }
+
+    public static boolean cullsBoundTranslucent(Block source, BlockState sourceState, BlockState neighborState) {
+        RuntimeBinding binding = RUNTIME_BINDINGS.get(source);
+        if (binding == null) return false;
+        NibaruMaterialProfile neighbor = profile(neighborState.getBlock())
+                .orElseGet(() -> Optional.ofNullable(RUNTIME_BINDINGS.get(neighborState.getBlock()))
+                        .map(RuntimeBinding::profile).orElse(null));
+        if (neighbor == null || neighbor.canonicalParent() != binding.profile().canonicalParent()) return false;
+        return neighborState.getBlock() == binding.profile().canonicalParent()
+                || (neighborState.getBlock() == source && sourceState.equals(neighborState));
+    }
+
+    public static DerivedGeometrySupport support(Block source, DerivedGeometrySupport.Geometry target) {
+        return profile(source).map(p -> p.supportFor(target, ADAPTED_CAPABILITIES, ADAPTED_VISUALS))
+                .orElseGet(() -> new DerivedGeometrySupport(DerivedGeometrySupport.Status.UNSUPPORTED_SOURCE, Set.of()));
+    }
+
+    public static int admissionSize(BlockState state) {
+        Optional<NibaruMaterialProfile> profile = profile(state.getBlock());
+        if (profile.isEmpty()) return state.getProperties().size();
+        DerivedGeometrySupport.Geometry target = state.getBlock() instanceof SlabBlock
+                ? DerivedGeometrySupport.Geometry.VERTICAL_SLAB
+                : DerivedGeometrySupport.Geometry.STEP;
+        if (ExistingDerivedGeometryBindings.contains(profile.get().canonicalParentId(), target)) return -1;
+        return !profile.get().supportFor(target, ADAPTED_CAPABILITIES, ADAPTED_VISUALS).supported() ? -1
+                : target == DerivedGeometrySupport.Geometry.VERTICAL_SLAB ? 2 : 4;
+    }
+
+    public static VerticalSlabBlock createVertical(BlockBehaviour.Properties properties, SlabBlock source) {
+        NibaruMaterialProfile profile = profile(source).orElse(null);
+        if (profile == null) return new VerticalSlabBlock(properties);
+        VerticalSlabBlock result;
+        if (profile.capabilities().contains(BehaviorCapability.LEAF_LIFECYCLE)) {
+            result = new NibaruLeavesVerticalSlabBlock(properties);
+        } else if (profile.capabilities().contains(BehaviorCapability.PATH_CONVERSION)) {
+            result = new PathVerticalSlabBlock(properties, () -> transitionGeometry(profile,
+                    MaterialTransition.Type.PATH_REVERSION, DerivedGeometrySupport.Geometry.VERTICAL_SLAB));
+        } else if (isSpreadableSurface(profile)) {
+            result = new GrassVerticalSlab(properties);
+        } else if (profile.capabilities().contains(BehaviorCapability.SPREADABLE)) {
+            result = new DirtVerticalSlab(properties);
+        } else if (profile.capabilities().contains(BehaviorCapability.FLATTENABLE_TO_PATH)) {
+            result = new DirtVerticalSlab(properties);
+        } else if (profile.capabilities().contains(BehaviorCapability.OXIDIZABLE)) {
+            result = new CopperVerticalSlabBlock(properties);
+        } else if (profile.capabilities().contains(BehaviorCapability.CORAL_DEATH)) {
+            result = new CoralVerticalSlabBlock(properties);
+        } else if (profile.capabilities().contains(BehaviorCapability.CONCRETE_HARDENING)) {
+            result = new ConcretePowderVerticalSlabBlock(properties);
+        } else if (profile.capabilities().contains(BehaviorCapability.REDSTONE_POWER)) {
+            result = new RedstoneVerticalSlabBlock(properties);
+        } else if (profile.capabilities().contains(BehaviorCapability.ICE_MELTING)) {
+            result = new IceVerticalSlabBlock(properties);
+        } else if (profile.capabilities().contains(BehaviorCapability.MAGMA_DAMAGE)) {
+            result = new MagmaVerticalSlabBlock(properties);
+        } else if (profile.capabilities().contains(BehaviorCapability.SOUL_SAND_INTERACTION)) {
+            result = new SoulSandVerticalSlabBlock(properties);
+        } else if (profile.capabilities().contains(BehaviorCapability.GLAZED_ORIENTATION)) {
+            result = new GlazedVerticalSlabBlock(properties);
+        } else if (profile.capabilities().contains(BehaviorCapability.HONEY_INTERACTION)) {
+            result = new HoneyVerticalSlabBlock(properties);
+        } else if (profile.capabilities().contains(BehaviorCapability.SLIME_INTERACTION)) {
+            result = new SlimeVerticalSlabBlock(properties);
+        } else if (profile.capabilities().contains(BehaviorCapability.FALLING)) {
+            result = new FallingVerticalSlabBlock(properties);
+        } else if (MaterialAxisState.applies(profile)) {
+            result = new AxisVerticalSlabBlock(properties);
+        } else if (profile.capabilities().contains(BehaviorCapability.STRIPPABLE)
+                || profile.capabilities().contains(BehaviorCapability.WAXABLE)) {
+            result = new ProviderVerticalSlabBlock(properties);
+        } else {
+            result = new VerticalSlabBlock(properties);
+        }
+        registerTint(profile, result);
+        capture(profile, DerivedGeometrySupport.Geometry.VERTICAL_SLAB, result);
+        return result;
+    }
+
+    public static StepBlock createStep(BlockBehaviour.Properties properties, StairBlock source) {
+        NibaruMaterialProfile profile = profile(source).orElse(null);
+        if (profile == null) return new StepBlock(properties);
+        StepBlock result;
+        if (profile.capabilities().contains(BehaviorCapability.LEAF_LIFECYCLE)) {
+            result = new NibaruLeavesStepBlock(properties);
+        } else if (profile.capabilities().contains(BehaviorCapability.PATH_CONVERSION)) {
+            result = new PathStepBlock(properties, () -> transitionGeometry(profile,
+                    MaterialTransition.Type.PATH_REVERSION, DerivedGeometrySupport.Geometry.STEP));
+        } else if (isSpreadableSurface(profile)) {
+            result = new GrassStepBlock(properties);
+        } else if (profile.capabilities().contains(BehaviorCapability.FLATTENABLE_TO_PATH)) {
+            result = new DirtStepBlock(properties);
+        } else if (profile.capabilities().contains(BehaviorCapability.OXIDIZABLE)) {
+            result = new CopperStepBlock(properties);
+        } else if (profile.capabilities().contains(BehaviorCapability.CORAL_DEATH)) {
+            result = new CoralStepBlock(properties);
+        } else if (profile.capabilities().contains(BehaviorCapability.CONCRETE_HARDENING)) {
+            result = new ConcretePowderStepBlock(properties);
+        } else if (profile.capabilities().contains(BehaviorCapability.REDSTONE_POWER)) {
+            result = new RedstoneStepBlock(properties);
+        } else if (profile.capabilities().contains(BehaviorCapability.ICE_MELTING)) {
+            result = new IceStepBlock(properties);
+        } else if (profile.capabilities().contains(BehaviorCapability.MAGMA_DAMAGE)) {
+            result = new MagmaStepBlock(properties);
+        } else if (profile.capabilities().contains(BehaviorCapability.SOUL_SAND_INTERACTION)) {
+            result = new SoulSandStepBlock(properties);
+        } else if (profile.capabilities().contains(BehaviorCapability.GLAZED_ORIENTATION)) {
+            result = new GlazedStepBlock(properties);
+        } else if (profile.capabilities().contains(BehaviorCapability.HONEY_INTERACTION)) {
+            result = new HoneyStepBlock(properties);
+        } else if (profile.capabilities().contains(BehaviorCapability.SLIME_INTERACTION)) {
+            result = new SlimeStepBlock(properties);
+        } else if (profile.capabilities().contains(BehaviorCapability.FALLING)) {
+            result = new FallingStepBlock(properties);
+        } else if (MaterialAxisState.applies(profile)) {
+            result = new AxisStepBlock(properties);
+        } else if (profile.capabilities().contains(BehaviorCapability.STRIPPABLE)
+                || profile.capabilities().contains(BehaviorCapability.WAXABLE)) {
+            result = new ProviderStepBlock(properties);
+        } else {
+            result = new StepBlock(properties);
+        }
+        registerTint(profile, result);
+        capture(profile, DerivedGeometrySupport.Geometry.STEP, result);
+        return result;
+    }
+
+    /** Creates and binds the BGE-owned Layer for one exact canonical material profile. */
+    public static BgeLayerBlock createLayer(NibaruMaterialProfile profile,
+            BlockBehaviour.Properties properties) {
+        DerivedGeometrySupport support = profile.supportFor(DerivedGeometrySupport.Geometry.LAYER,
+                ADAPTED_CAPABILITIES, ADAPTED_VISUALS);
+        if (!support.supported()) {
+            throw new IllegalStateException("Unsupported BGE Layer material " + profile.canonicalParentId()
+                    + ": " + support.status() + " " + support.missingCapabilities());
+        }
+        BgeLayerBlock result = BgeLayerSpecializedBlocks.create(profile, properties);
+        bindExisting(profile, DerivedGeometrySupport.Geometry.LAYER, result);
+        return result;
+    }
+
+    public static void bindExisting(NibaruMaterialProfile profile, DerivedGeometrySupport.Geometry geometry, Block block) {
+        capture(profile, geometry, block);
+        registerTint(profile, block);
+    }
+
+    /** Captures a CNM-owned specialized block whose exact source belongs to a provider profile. */
+    public static Block bindGenerated(Block source, DerivedGeometrySupport.Geometry geometry, Block generated) {
+        NibaruMaterialProfile profile = profile(source).orElse(null);
+        if (profile != null && profile.supportFor(geometry, ADAPTED_CAPABILITIES, ADAPTED_VISUALS).supported()) {
+            bindExisting(profile, geometry, generated);
+        }
+        return generated;
+    }
+
+    public static Optional<Block> derived(NibaruMaterialProfile profile, DerivedGeometrySupport.Geometry geometry) {
+        EnumMap<DerivedGeometrySupport.Geometry, Block> geometries = DERIVED.get(profile);
+        Block derived = geometries == null ? null : geometries.get(geometry);
+        if (derived != null) return Optional.of(derived);
+        Optional<Block> binding = ExistingDerivedGeometryBindings.resolve(profile.canonicalParentId(), geometry);
+        if (binding.isEmpty()) return Optional.empty();
+        Block existing = binding.get();
+        bindExisting(profile, geometry, existing);
+        return Optional.of(existing);
+    }
+
+    /** Runtime material semantics for both newly generated and save-compatible existing owners. */
+    public static Optional<RuntimeBinding> runtimeBinding(Block block) {
+        return Optional.ofNullable(RUNTIME_BINDINGS.get(block));
+    }
+
+    public static Optional<InteractionResult> useComposedCapabilities(Block block, ItemStack stack,
+            BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand) {
+        RuntimeBinding binding = RUNTIME_BINDINGS.get(block);
+        if (binding == null) return Optional.empty();
+        if (binding.profile().oxidationStage().isPresent()) {
+            InteractionResult result = CopperSemantics.interact(state, binding.profile(), stack, level, pos,
+                    player, hand, target -> derived(target, binding.geometry()));
+            if (result != InteractionResult.TRY_WITH_EMPTY_HAND) return Optional.of(result);
+        }
+        if (stack.getItem() instanceof ShovelItem
+                && binding.profile().capabilities().contains(BehaviorCapability.FLATTENABLE_TO_PATH)) {
+            Block target = transitionGeometry(binding.profile(), MaterialTransition.Type.PATH_TARGET, binding.geometry());
+            BlockState targetState = target.defaultBlockState();
+            if (binding.geometry() == DerivedGeometrySupport.Geometry.LAYER) {
+                targetState = PathSemantics.copySharedProperties(state, targetState);
+            }
+            return Optional.of(PathSemantics.flatten(stack, state, targetState, level, pos, player, hand));
+        }
+        if (stack.getItem() instanceof AxeItem
+                && binding.profile().capabilities().contains(BehaviorCapability.STRIPPABLE)) {
+            Block target = transitionGeometry(binding.profile(), MaterialTransition.Type.STRIPPED, binding.geometry());
+            return Optional.of(StrippingSemantics.strip(stack, state, target.defaultBlockState(),
+                    level, pos, player, hand));
+        }
+        return Optional.empty();
+    }
+
+    public static WeatheringCopper.WeatherState copperAge(Block block) {
+        RuntimeBinding binding = RUNTIME_BINDINGS.get(block);
+        if (binding == null) throw new IllegalStateException("Missing copper runtime binding");
+        return binding.profile().oxidationStage().orElseThrow();
+    }
+
+    public static Optional<BlockState> nextOxidation(Block block, BlockState state) {
+        RuntimeBinding binding = RUNTIME_BINDINGS.get(block);
+        if (binding == null) return Optional.empty();
+        return CopperSemantics.transition(state, binding.profile(), MaterialTransition.Type.NEXT_OXIDATION,
+                target -> derived(target, binding.geometry()));
+    }
+
+    public static Block coralDeath(Block block) {
+        RuntimeBinding binding = RUNTIME_BINDINGS.get(block);
+        if (binding == null) throw new IllegalStateException("Missing coral runtime binding");
+        return derived(NibaruMaterialProfiles.fromFamily(binding.profile().transition(MaterialTransition.Type.CORAL_DEATH)
+                .orElseThrow().target()).orElseThrow(), binding.geometry()).orElseThrow();
+    }
+
+    public static Block concreteHardening(Block block) {
+        RuntimeBinding binding = RUNTIME_BINDINGS.get(block);
+        if (binding == null) throw new IllegalStateException("Missing concrete-powder runtime binding");
+        NibaruMaterialProfile target = NibaruMaterialProfiles.fromFamily(binding.profile()
+                .transition(MaterialTransition.Type.CONCRETE_HARDENING).orElseThrow().target()).orElseThrow();
+        return derived(target, binding.geometry()).orElseThrow();
+    }
+
+    public static void addExactShapeMapEdges(List<ShapeMap.Mapping> mappings) {
+        for (NibaruMaterialProfile profile : NibaruMaterialProfiles.all()) {
+            Item parent = profile.canonicalParent().asItem();
+            add(mappings, parent, profile.effectiveSlabSource().map(Block::asItem));
+            add(mappings, parent, profile.effectiveStairSource().map(Block::asItem));
+            add(mappings, parent, profile.nativeWall().map(Block::asItem));
+            add(mappings, parent, derived(profile, DerivedGeometrySupport.Geometry.VERTICAL_SLAB).map(Block::asItem));
+            add(mappings, parent, derived(profile, DerivedGeometrySupport.Geometry.STEP).map(Block::asItem));
+            add(mappings, parent, derived(profile, DerivedGeometrySupport.Geometry.LAYER).map(Block::asItem));
+        }
+    }
+
+    /** Reorders presentation only; ShapeMap graph membership and inverse ownership remain untouched. */
+    public static void applyProviderParentSegmentOrder() {
+        Set<List<Item>> visited = Collections.newSetFromMap(new IdentityHashMap<>());
+        for (List<Item> component : ShapeMap.shapesView().values()) {
+            if (!visited.add(component)) continue;
+            List<Item> before = List.copyOf(component);
+            List<NibaruMaterialProfile> profiles = new ArrayList<>();
+            Set<NibaruMaterialProfile> seenProfiles = Collections.newSetFromMap(new IdentityHashMap<>());
+            for (Item item : before) providerProfile(item).filter(seenProfiles::add).ifPresent(profiles::add);
+
+            List<Item> providerOrder = new ArrayList<>();
+            for (NibaruMaterialProfile profile : profiles) {
+                addIfPresent(providerOrder, before, profile.canonicalParent().asItem());
+                profile.effectiveSlabSource().map(Block::asItem)
+                        .ifPresent(item -> addIfPresent(providerOrder, before, item));
+                profile.effectiveStairSource().map(Block::asItem)
+                        .ifPresent(item -> addIfPresent(providerOrder, before, item));
+                profile.nativeWall().map(Block::asItem).ifPresent(item -> addIfPresent(providerOrder, before, item));
+                derived(profile, DerivedGeometrySupport.Geometry.VERTICAL_SLAB).map(Block::asItem)
+                        .ifPresent(item -> addIfPresent(providerOrder, before, item));
+                derived(profile, DerivedGeometrySupport.Geometry.STEP).map(Block::asItem)
+                        .ifPresent(item -> addIfPresent(providerOrder, before, item));
+                derived(profile, DerivedGeometrySupport.Geometry.LAYER).map(Block::asItem)
+                        .ifPresent(item -> addIfPresent(providerOrder, before, item));
+            }
+            if (providerOrder.isEmpty()) continue;
+
+            int next = 0;
+            for (int index = 0; index < component.size(); index++) {
+                if (providerProfile(before.get(index)).isPresent()) component.set(index, providerOrder.get(next++));
+            }
+            if (next != providerOrder.size() || component.size() != before.size()
+                    || !new LinkedHashSet<>(component).equals(new LinkedHashSet<>(before))) {
+                throw new IllegalStateException("Provider ShapeMap presentation reorder changed component membership");
+            }
+        }
+    }
+
+    private static Optional<NibaruMaterialProfile> providerProfile(Item item) {
+        Block block = Block.byItem(item);
+        Optional<NibaruMaterialProfile> nativeProfile = NibaruMaterialProfiles.fromBlock(block);
+        return nativeProfile.isPresent() ? nativeProfile : runtimeBinding(block).map(RuntimeBinding::profile);
+    }
+
+    private static void addIfPresent(List<Item> ordered, List<Item> component, Item item) {
+        if (component.contains(item) && !ordered.contains(item)) ordered.add(item);
+    }
+
+    public static List<UnsupportedEntry> unsupportedMatrix() {
+        List<UnsupportedEntry> result = new ArrayList<>();
+        for (NibaruMaterialProfile profile : NibaruMaterialProfiles.all()) {
+            for (DerivedGeometrySupport.Geometry geometry : DerivedGeometrySupport.Geometry.values()) {
+                DerivedGeometrySupport support = profile.supportFor(geometry, ADAPTED_CAPABILITIES, ADAPTED_VISUALS);
+                if (!support.supported()) {
+                    Optional<Block> source = switch (geometry) {
+                        case VERTICAL_SLAB -> profile.effectiveSlabSource();
+                        case STEP -> profile.effectiveStairSource();
+                        case LAYER -> Optional.of(profile.canonicalParent());
+                    };
+                    source.map(BuiltInRegistries.BLOCK::getKey).ifPresent(id -> result.add(new UnsupportedEntry(profile.canonicalParentId(), id,
+                            geometry, support.status(), support.missingCapabilities())));
+                }
+            }
+        }
+        return List.copyOf(result);
+    }
+
+    public static void configureTintRegistrar(BiConsumer<TintProfile, Block> registrar) {
+        tintRegistrar = registrar;
+        TINT_TARGETS.forEach((tint, blocks) -> blocks.forEach(block -> registrar.accept(tint, block)));
+    }
+
+    private static void capture(NibaruMaterialProfile profile, DerivedGeometrySupport.Geometry geometry, Block block) {
+        EnumMap<DerivedGeometrySupport.Geometry, Block> geometries = DERIVED.computeIfAbsent(profile,
+                ignored -> new EnumMap<>(DerivedGeometrySupport.Geometry.class));
+        Block previous = geometries.putIfAbsent(geometry, block);
+        if (previous != null && previous != block) throw new IllegalStateException(
+                "Duplicate derived Nibaru geometry owner for " + profile.canonicalParentId() + " " + geometry);
+        RuntimeBinding binding = new RuntimeBinding(profile, geometry);
+        RuntimeBinding priorBinding = RUNTIME_BINDINGS.putIfAbsent(block, binding);
+        if (priorBinding != null && !priorBinding.equals(binding)) throw new IllegalStateException(
+                "Derived block is bound to multiple Nibaru profiles: " + BuiltInRegistries.BLOCK.getKey(block));
+        CanonicalGeometryRegistry.register(block);
+        DerivedMaterialTraits.register(block, profile.canonicalParent(), geometry, fuelDivisor(geometry));
+        if (profile.canonicalParent().defaultBlockState().ignitedByLava()) {
+            FlammableBlockRegistry.getDefaultInstance().add(block,
+                    games.twinhead.moreslabsstairsandwalls.registry.ModRegistry.getBurnChance(profile.family()),
+                    games.twinhead.moreslabsstairsandwalls.registry.ModRegistry.getSpreadChance(profile.family()));
+        }
+        registerSpreadablePairIfReady(profile, geometry, block);
+    }
+
+    private static void registerSpreadablePairIfReady(NibaruMaterialProfile profile,
+            DerivedGeometrySupport.Geometry geometry, Block block) {
+        if (!profile.capabilities().contains(BehaviorCapability.SPREADABLE)) return;
+        if (!isSpreadableSurface(profile)) {
+            for (NibaruMaterialProfile candidate : NibaruMaterialProfiles.all()) {
+                if (isSpreadableSurface(candidate)) derived(candidate, geometry)
+                        .ifPresent(surface -> SpreadableSemantics.registerPair(block, surface, candidate.canonicalParent()));
+            }
+            return;
+        }
+        baseProfile(profile).flatMap(base -> derived(base, geometry))
+                .ifPresent(base -> SpreadableSemantics.registerPair(base, block, profile.canonicalParent()));
+    }
+
+    private static int fuelDivisor(DerivedGeometrySupport.Geometry geometry) {
+        return switch (geometry) {
+            case VERTICAL_SLAB -> 2;
+            case STEP -> 1;
+            case LAYER -> 4;
+        };
+    }
+
+    private static boolean isSpreadableSurface(NibaruMaterialProfile profile) {
+        return profile.transitions().stream().anyMatch(t -> t.type() == MaterialTransition.Type.SPREADABLE_BASE);
+    }
+
+    private static Optional<NibaruMaterialProfile> baseProfile(NibaruMaterialProfile profile) {
+        return profile.transitions().stream()
+                .filter(t -> t.type() == MaterialTransition.Type.SPREADABLE_BASE)
+                .findFirst().flatMap(t -> NibaruMaterialProfiles.fromFamily(t.target()));
+    }
+
+    private static Block transitionGeometry(NibaruMaterialProfile profile, MaterialTransition.Type type,
+            DerivedGeometrySupport.Geometry geometry) {
+        NibaruMaterialProfile target = profile.transitions().stream().filter(t -> t.type() == type).findFirst()
+                .flatMap(t -> NibaruMaterialProfiles.fromFamily(t.target()))
+                .orElseThrow(() -> new IllegalStateException("Missing " + type + " target for "
+                        + profile.canonicalParentId()));
+        return derived(target, geometry).orElseThrow(() -> new IllegalStateException(
+                "Missing canonical transition geometry " + geometry + " for " + profile.canonicalParentId()));
+    }
+
+    private static void add(List<ShapeMap.Mapping> mappings, Item parent, Optional<Item> shape) {
+        shape.filter(item -> item != parent).ifPresent(item -> mappings.add(
+                new ShapeMap.Mapping(parent, item, 900, SHAPE_MAP_SOURCE)));
+    }
+
+    private static void registerTint(NibaruMaterialProfile profile, Block block) {
+        if (profile.tintProfile() == TintProfile.NONE) return;
+        TINT_TARGETS.computeIfAbsent(profile.tintProfile(), ignored ->
+                Collections.newSetFromMap(new IdentityHashMap<>())).add(block);
+        if (tintRegistrar != null) tintRegistrar.accept(profile.tintProfile(), block);
+    }
+
+    public record UnsupportedEntry(Identifier family, Identifier source,
+            DerivedGeometrySupport.Geometry targetGeometry, DerivedGeometrySupport.Status status,
+            Set<BehaviorCapability> missingCapabilities) {
+        public UnsupportedEntry { missingCapabilities = Set.copyOf(missingCapabilities); }
+    }
+
+    public record RuntimeBinding(NibaruMaterialProfile profile, DerivedGeometrySupport.Geometry geometry) {}
+
+}

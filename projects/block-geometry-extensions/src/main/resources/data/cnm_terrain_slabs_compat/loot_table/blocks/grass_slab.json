@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:block",
+  "pools": [{
+    "rolls": 1,
+    "entries": [{
+      "type": "minecraft:alternatives",
+      "children": [
+        {
+          "type": "minecraft:item", "name": "cnm_terrain_slabs_compat:grass_slab",
+          "conditions": [{"condition":"minecraft:match_tool","predicate":{"predicates":{"minecraft:enchantments":[{"enchantments":"minecraft:silk_touch","levels":{"min":1}}]}}}],
+          "functions": [{"function":"minecraft:set_count","count":2,"conditions":[{"condition":"minecraft:block_state_property","block":"cnm_terrain_slabs_compat:grass_slab","properties":{"type":"double"}}]}]
+        },
+        {
+          "type": "minecraft:item", "name": "cnm_terrain_slabs_compat:dirt_slab",
+          "functions": [{"function":"minecraft:set_count","count":2,"conditions":[{"condition":"minecraft:block_state_property","block":"cnm_terrain_slabs_compat:grass_slab","properties":{"type":"double"}}]}]
+        }
+      ]
+    }],
+    "conditions": [{"condition":"minecraft:survives_explosion"}]
+  }]
+}

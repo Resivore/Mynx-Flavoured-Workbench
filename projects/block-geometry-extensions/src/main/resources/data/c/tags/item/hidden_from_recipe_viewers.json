@@ -1,0 +1,8 @@
+{
+  "replace": false,
+  "values": [
+    "cnm_terrain_slabs_compat:dirt_slab",
+    "cnm_terrain_slabs_compat:dirt_vertical_slab",
+    "cnm_terrain_slabs_compat:grass_slab"
+  ]
+}

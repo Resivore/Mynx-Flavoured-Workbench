@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "type=bottom": { "model": "cnm_terrain_slabs_compat:block/grass_slab" },
+    "type=top": { "model": "cnm_terrain_slabs_compat:block/grass_slab_top" },
+    "type=double": { "model": "cnm_terrain_slabs_compat:block/grass_vertical_slab_double" }
+  }
+}

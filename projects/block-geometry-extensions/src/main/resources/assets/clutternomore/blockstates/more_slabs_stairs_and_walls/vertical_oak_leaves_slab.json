@@ -1,0 +1,12 @@
+{
+  "variants": {
+    "facing=north,double=true": { "model": "clutternomore:block/more_slabs_stairs_and_walls/vertical_oak_leaves_slab_double", "uvlock": true },
+    "facing=north,double=false": { "model": "clutternomore:block/more_slabs_stairs_and_walls/vertical_oak_leaves_slab", "uvlock": true },
+    "facing=south,double=true": { "model": "clutternomore:block/more_slabs_stairs_and_walls/vertical_oak_leaves_slab_double", "uvlock": true },
+    "facing=south,double=false": { "model": "clutternomore:block/more_slabs_stairs_and_walls/vertical_oak_leaves_slab", "y": 180, "uvlock": true },
+    "facing=west,double=true": { "model": "clutternomore:block/more_slabs_stairs_and_walls/vertical_oak_leaves_slab_double", "uvlock": true },
+    "facing=west,double=false": { "model": "clutternomore:block/more_slabs_stairs_and_walls/vertical_oak_leaves_slab", "y": 270, "uvlock": true },
+    "facing=east,double=true": { "model": "clutternomore:block/more_slabs_stairs_and_walls/vertical_oak_leaves_slab_double", "uvlock": true },
+    "facing=east,double=false": { "model": "clutternomore:block/more_slabs_stairs_and_walls/vertical_oak_leaves_slab", "y": 90, "uvlock": true }
+  }
+}

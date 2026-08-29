@@ -1,0 +1,83 @@
+plugins {
+    id 'net.fabricmc.fabric-loom' version '1.17-SNAPSHOT'
+    id 'maven-publish'
+}
+
+version = project.mod_version
+group = project.maven_group
+
+base {
+    archivesName = 'more-slabs-stairs-and-walls'
+}
+
+repositories {
+    maven { url = 'https://maven.fabricmc.net/' }
+}
+
+dependencies {
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    implementation "net.fabricmc:fabric-loader:${project.fabric_loader_version}"
+    implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+}
+
+sourceSets {
+    main {
+        java {
+            srcDirs = ['common/src/main/java', 'fabric/src/main/java']
+        }
+        resources {
+            srcDirs = ['common/src/main/resources', 'common/src/main/generated', 'fabric/src/main/resources']
+        }
+    }
+}
+
+tasks.register('generateNativeAxisResources', JavaExec) {
+    // Keep the writer independent of processResources to avoid a task cycle:
+    // processResources -> this task -> compileJava.
+    dependsOn compileJava
+    classpath = files(sourceSets.main.output.classesDirs) + configurations.runtimeClasspath
+    mainClass = 'games.twinhead.moreslabsstairsandwalls.tools.NativeAxisResourceGenerator'
+    args layout.projectDirectory.dir('common/src/main/generated').asFile.absolutePath
+    outputs.upToDateWhen { false }
+}
+
+processResources {
+    dependsOn generateNativeAxisResources
+    // Authored compatibility corrections in common/src/main/resources intentionally override
+    // migrated upstream outputs with the same path (currently the Copper Grate models).
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    inputs.property 'version', project.version
+    filesMatching('fabric.mod.json') {
+        expand([
+                mod_id: mod_id,
+                mod_name: mod_name,
+                mod_description: mod_description,
+                mod_authors: mod_authors,
+                mod_license: mod_license,
+                mod_version: project.version,
+                minecraft_version: minecraft_version,
+                fabric_loader_version: fabric_loader_version,
+                homepage: homepage,
+                sources: sources,
+                issues: issues
+        ])
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    options.release = 25
+    options.compilerArgs += ['-Xmaxerrs', '1000']
+}
+
+java {
+    withSourcesJar()
+}
+
+jar {
+    from('LICENSE')
+}
+
+tasks.withType(Jar).configureEach {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}

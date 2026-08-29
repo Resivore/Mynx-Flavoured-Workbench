@@ -1,0 +1,27 @@
+{
+  "required": true,
+  "package": "dev.aero.cnmterraincompat.mixin",
+  "compatibilityLevel": "JAVA_25",
+  "mixins": [
+    "ClutterNoMoreVariantScanMixin",
+    "ProviderPistonStickyMixin",
+    "ProviderWeatheringCopperMixin",
+    "SpreadingSnowyBlockMixin",
+    "ShapeMapOrderMixin"
+    ,"ProviderMovementMaterialMixin",
+    "ProviderPointedDripstoneMixin"
+  ],
+  "client": [
+    "AssetGeneratorMixin",
+    "ProviderAssetRefreshMixin",
+    "ProviderStepModelMixin",
+    "ProviderVerticalModelMixin",
+    "GlazedStepAssetMixin",
+    "GlazedVerticalAssetMixin",
+    "PathVerticalTemplateMixin",
+    "StructuredStepTemplateMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

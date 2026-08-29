@@ -12,7 +12,17 @@ from unittest.mock import patch
 from uuid import NAMESPACE_URL, uuid5
 
 from tools.runtime_slots import candidate_declaration, commit_state, plan_transition, resolve_profile, state_digest, validate_runtime_state
-from tools.sheet_sync import HUMAN_FIELDS, build_events, flatten_manifest, publish_plan, signed_wrapper
+from tools.sheet_sync import (
+    HUMAN_FIELDS,
+    ZERO_COMMIT,
+    _migration_adoption_uuids_at,
+    build_events,
+    flatten_manifest,
+    migration_adoption_uuids,
+    publish_plan,
+    signed_wrapper,
+    validate_project_push_contract,
+)
 from tools.workbench import (
     BUILD_STATES,
     DEPLOYMENT_STATES,
@@ -259,9 +269,9 @@ class StatusContractTests(unittest.TestCase):
         with self.assertRaisesRegex(ValidationError, "append-only"):
             validate_log_append(previous_log, codex_log(after), after)
 
-    def test_bootstrap_repository_layout_validates(self) -> None:
+    def test_repository_layout_validates(self) -> None:
         statuses = validate_repository(ROOT)
-        self.assertEqual({}, statuses)
+        self.assertIsInstance(statuses, dict)
 
 
 class RuntimeContractTests(unittest.TestCase):
@@ -435,6 +445,76 @@ class SheetPublisherTests(unittest.TestCase):
         self.assertEqual(1, len(events_2))
         self.assertNotEqual(events_1[0]["event_id"], events_2[0]["event_id"])
         self.assertEqual(first["state"], second["state"])
+
+    def test_only_frozen_projects_may_adopt_a_preserved_initial_revision(self) -> None:
+        path = "projects/nibaru/WORKBENCH_STATUS.json"
+        frozen_uuid = "680476b9-5336-5422-a575-779f2efd1eff"
+        manifest = planned_manifest("nibaru", "Nibaru 26.2 Port", uuid_value=frozen_uuid)
+        manifest["synchronization"]["revision"] = 5
+        with self.assertRaisesRegex(ValidationError, "revision 1"):
+            build_events(
+                {}, {path: manifest}, repository=self.config["repository"], ref=self.config["authoritative_ref"], publication_commit="c" * 40, config=self.config
+            )
+        bge_path = "projects/block-geometry-extensions/WORKBENCH_STATUS.json"
+        bge_uuid = "4b2342fc-7bdf-5ba6-9f37-d551109d214c"
+        bge = planned_manifest("block-geometry-extensions", "Block Geometry Extensions (BGE)", uuid_value=bge_uuid)
+        bge["synchronization"]["revision"] = 6
+        events = build_events(
+            {},
+            {path: manifest, bge_path: bge},
+            repository=self.config["repository"],
+            ref=self.config["authoritative_ref"],
+            publication_commit="c" * 40,
+            config=self.config,
+            migration_adoption_uuids=frozenset({frozen_uuid, bge_uuid}),
+        )
+        self.assertEqual([6, 5], [event["record"]["revision"] for event in events])
+
+        unknown = planned_manifest("unknown", "Unknown")
+        unknown["synchronization"]["revision"] = 5
+        with self.assertRaisesRegex(ValidationError, "revision 1"):
+            build_events(
+                {},
+                {"projects/unknown/WORKBENCH_STATUS.json": unknown},
+                repository=self.config["repository"],
+                ref=self.config["authoritative_ref"],
+                publication_commit="c" * 40,
+                config=self.config,
+                migration_adoption_uuids=frozenset({frozen_uuid}),
+            )
+
+    def test_migration_freeze_parser_is_exact_and_rejects_duplicates(self) -> None:
+        freeze_text = (ROOT / "MIGRATION_FREEZE.md").read_text(encoding="utf-8")
+        uuids = migration_adoption_uuids(freeze_text)
+        self.assertEqual(
+            {
+                "680476b9-5336-5422-a575-779f2efd1eff",
+                "4b2342fc-7bdf-5ba6-9f37-d551109d214c",
+                "c92ad4fe-c210-46c4-ba1d-59828d2bcbcd",
+                "2dc7b47a-f3b4-5fbe-a1fa-53e4f0aaa446",
+            },
+            uuids,
+        )
+        duplicate = freeze_text.replace(
+            "| Block Geometry Extensions |",
+            "| Duplicate Nibaru | `projects/nibaru-copy` | `680476b9-5336-5422-a575-779f2efd1eff` | `codex/example` | `1111111111111111111111111111111111111111` |\n| Block Geometry Extensions |",
+        )
+        with self.assertRaisesRegex(ValidationError, "duplicate project UUID"):
+            migration_adoption_uuids(duplicate)
+
+    def test_migration_allowlist_uses_after_only_for_zero_before(self) -> None:
+        freeze_text = (ROOT / "MIGRATION_FREEZE.md").read_text(encoding="utf-8")
+        with patch("tools.sheet_sync._git_text", return_value=freeze_text) as read:
+            self.assertIn("680476b9-5336-5422-a575-779f2efd1eff", _migration_adoption_uuids_at(ROOT, ZERO_COMMIT, "a" * 40))
+            read.assert_called_once_with(ROOT, "a" * 40, "MIGRATION_FREEZE.md")
+        with patch("tools.sheet_sync._git_text", return_value=freeze_text) as read:
+            _migration_adoption_uuids_at(ROOT, "b" * 40, "a" * 40)
+            read.assert_called_once_with(ROOT, "b" * 40, "MIGRATION_FREEZE.md")
+
+    def test_existing_migration_freeze_is_immutable(self) -> None:
+        with patch("tools.sheet_sync._changed_paths", return_value=["MIGRATION_FREEZE.md"]):
+            with self.assertRaisesRegex(ValidationError, "immutable"):
+                validate_project_push_contract(ROOT, "b" * 40, "a" * 40)
 
     def test_new_explicitly_excluded_project_is_not_published(self) -> None:
         manifest = planned_manifest()

@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "type=bottom": { "model": "cnm_terrain_slabs_compat:block/dirt_slab" },
+    "type=top": { "model": "cnm_terrain_slabs_compat:block/dirt_slab_top" },
+    "type=double": { "model": "cnm_terrain_slabs_compat:block/dirt_slab_double" }
+  }
+}

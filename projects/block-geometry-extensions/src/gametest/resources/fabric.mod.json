@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "id": "cnm-nibaru-runtime-tests",
+  "version": "1.0.0",
+  "name": "CNM Nibaru Runtime Tests",
+  "environment": "*",
+  "entrypoints": {
+    "fabric-gametest": [
+      "dev.aero.cnmterraincompat.gametest.LeafSemanticsGameTests",
+      "dev.aero.cnmterraincompat.gametest.NativeAxisGameTests",
+      "dev.aero.cnmterraincompat.gametest.BgeLayerBlockGameTests",
+      "dev.aero.cnmterraincompat.BgeLayerIntegrationGameTests",
+      "dev.aero.cnmterraincompat.LayerResourceGameTests"
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=0.19.3",
+    "fabric-api": "*",
+    "minecraft": "26.2",
+    "cnm_terrain_slabs_compat": "0.6.0-bge-canary53-layer",
+    "more_slabs_stairs_and_walls": "4.2.0+26.2-port-canary46-bge-layer-contract"
+  }
+}

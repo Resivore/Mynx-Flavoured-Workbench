@@ -9,6 +9,7 @@ import hashlib
 import hmac
 import json
 import os
+import re
 import subprocess
 import sys
 import time
@@ -24,6 +25,7 @@ except ImportError:  # Direct execution from tools/.
 
 ZERO_COMMIT = "0" * 40
 HUMAN_FIELDS = ["Priority", "Notes"]
+FREEZE_UUID_RE = re.compile(r"^`([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})`$")
 RECORD_KEYS = {
     "project_uuid",
     "project_name",
@@ -64,6 +66,55 @@ RECORD_KEYS = {
     "sheet_exclusion_reason",
     "publication_commit",
 }
+
+
+def migration_adoption_uuids(freeze_text: str) -> frozenset[str]:
+    """Read the immutable project UUID allowlist from the migration-freeze table."""
+
+    in_overrides = False
+    in_table = False
+    result: set[str] = set()
+    for raw_line in freeze_text.splitlines():
+        line = raw_line.strip()
+        if line == "## Project-scoped overrides":
+            in_overrides = True
+            continue
+        if not in_overrides:
+            continue
+        if line.startswith("## "):
+            break
+        if not line.startswith("|"):
+            if in_table and line:
+                break
+            continue
+        cells = [cell.strip() for cell in line.strip("|").split("|")]
+        if len(cells) != 5:
+            raise ValidationError("MIGRATION_FREEZE.md project override table must have exactly five columns")
+        in_table = True
+        uuid_cell = cells[2]
+        if uuid_cell == "UUID" or set(uuid_cell) <= {"-", ":"}:
+            continue
+        match = FREEZE_UUID_RE.fullmatch(uuid_cell)
+        if not match:
+            raise ValidationError("MIGRATION_FREEZE.md project override UUID must be canonical lowercase and backtick-delimited")
+        project_uuid = match.group(1)
+        if project_uuid in result:
+            raise ValidationError(f"MIGRATION_FREEZE.md contains duplicate project UUID {project_uuid}")
+        result.add(project_uuid)
+    return frozenset(result)
+
+
+def _validate_initial_revision(manifest: dict[str, Any], path: str, adoption_uuids: frozenset[str]) -> None:
+    revision = manifest["synchronization"]["revision"]
+    if revision == 1 or manifest["identity"]["uuid"] in adoption_uuids:
+        return
+    raise ValidationError(f"{path}: a new project must begin at revision 1 unless its UUID was frozen for migration adoption")
+
+
+def _migration_adoption_uuids_at(root: Path, before: str, after: str) -> frozenset[str]:
+    freeze_commit = after if before == ZERO_COMMIT else before
+    freeze_text = _git_text(root, freeze_commit, "MIGRATION_FREEZE.md") or ""
+    return migration_adoption_uuids(freeze_text)
 
 
 def _git(root: Path, *arguments: str, check: bool = True) -> str:
@@ -195,6 +246,7 @@ def build_events(
     ref: str,
     publication_commit: str,
     config: dict[str, Any],
+    migration_adoption_uuids: frozenset[str] = frozenset(),
 ) -> list[dict[str, Any]]:
     if repository != config["repository"]:
         raise ValidationError(f"authoritative publication repository must be {config['repository']}")
@@ -215,8 +267,7 @@ def build_events(
         if before == manifest:
             continue
         if before is None:
-            if manifest["synchronization"]["revision"] != 1:
-                raise ValidationError(f"{path}: a new project must begin at revision 1")
+            _validate_initial_revision(manifest, path, migration_adoption_uuids)
         else:
             validate_status_transition(before, manifest)
         participates = manifest["synchronization"]["google_sheet"]["participates"]
@@ -252,6 +303,9 @@ def _changed_paths(root: Path, before: str, after: str) -> list[str]:
 
 def validate_project_push_contract(root: Path, before: str, after: str) -> None:
     changed = set(_changed_paths(root, before, after))
+    if before != ZERO_COMMIT and "MIGRATION_FREEZE.md" in changed:
+        raise ValidationError("MIGRATION_FREEZE.md is immutable")
+    adoption_uuids = _migration_adoption_uuids_at(root, before, after)
     project_roots: set[str] = set()
     for path in changed:
         parts = PurePosixPath(path).parts
@@ -275,8 +329,7 @@ def validate_project_push_contract(root: Path, before: str, after: str) -> None:
         previous_status_text = _git_text(root, before, status_path)
         previous_log = _git_text(root, before, log_path)
         if previous_status_text is None:
-            if current_status["synchronization"]["revision"] != 1:
-                raise ValidationError(f"{project_root}: new project must begin at revision 1")
+            _validate_initial_revision(current_status, project_root, adoption_uuids)
             if not current_log.strip():
                 raise ValidationError(f"{log_path}: new project requires an initial log entry")
             validate_codex_log(current_log, current_status)
@@ -295,6 +348,7 @@ def make_plan(root: Path, before: str, after: str, repository: str, ref: str, co
         raise ValidationError("only the configured main ref may prepare an authoritative publication plan")
     validate_repository(root)
     validate_project_push_contract(root, before, after)
+    adoption_uuids = _migration_adoption_uuids_at(root, before, after)
     previous = _manifests_at(root, before)
     current = _manifests_at(root, after)
     events = build_events(
@@ -304,6 +358,7 @@ def make_plan(root: Path, before: str, after: str, repository: str, ref: str, co
         ref=ref,
         publication_commit=after,
         config=config,
+        migration_adoption_uuids=adoption_uuids,
     )
     return {
         "contract_version": config["contract_version"],

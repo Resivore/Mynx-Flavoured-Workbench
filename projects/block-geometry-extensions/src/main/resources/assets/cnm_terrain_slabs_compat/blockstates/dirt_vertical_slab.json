@@ -1,0 +1,20 @@
+{
+  "variants": {
+    "facing=north,double=false,waterlogged=false": { "model": "cnm_terrain_slabs_compat:block/dirt_vertical_slab", "uvlock": true },
+    "facing=north,double=false,waterlogged=true": { "model": "cnm_terrain_slabs_compat:block/dirt_vertical_slab", "uvlock": true },
+    "facing=east,double=false,waterlogged=false": { "model": "cnm_terrain_slabs_compat:block/dirt_vertical_slab", "y": 90, "uvlock": true },
+    "facing=east,double=false,waterlogged=true": { "model": "cnm_terrain_slabs_compat:block/dirt_vertical_slab", "y": 90, "uvlock": true },
+    "facing=south,double=false,waterlogged=false": { "model": "cnm_terrain_slabs_compat:block/dirt_vertical_slab", "y": 180, "uvlock": true },
+    "facing=south,double=false,waterlogged=true": { "model": "cnm_terrain_slabs_compat:block/dirt_vertical_slab", "y": 180, "uvlock": true },
+    "facing=west,double=false,waterlogged=false": { "model": "cnm_terrain_slabs_compat:block/dirt_vertical_slab", "y": 270, "uvlock": true },
+    "facing=west,double=false,waterlogged=true": { "model": "cnm_terrain_slabs_compat:block/dirt_vertical_slab", "y": 270, "uvlock": true },
+    "facing=north,double=true,waterlogged=false": { "model": "cnm_terrain_slabs_compat:block/dirt_vertical_slab_double", "uvlock": true },
+    "facing=north,double=true,waterlogged=true": { "model": "cnm_terrain_slabs_compat:block/dirt_vertical_slab_double", "uvlock": true },
+    "facing=east,double=true,waterlogged=false": { "model": "cnm_terrain_slabs_compat:block/dirt_vertical_slab_double", "uvlock": true },
+    "facing=east,double=true,waterlogged=true": { "model": "cnm_terrain_slabs_compat:block/dirt_vertical_slab_double", "uvlock": true },
+    "facing=south,double=true,waterlogged=false": { "model": "cnm_terrain_slabs_compat:block/dirt_vertical_slab_double", "uvlock": true },
+    "facing=south,double=true,waterlogged=true": { "model": "cnm_terrain_slabs_compat:block/dirt_vertical_slab_double", "uvlock": true },
+    "facing=west,double=true,waterlogged=false": { "model": "cnm_terrain_slabs_compat:block/dirt_vertical_slab_double", "uvlock": true },
+    "facing=west,double=true,waterlogged=true": { "model": "cnm_terrain_slabs_compat:block/dirt_vertical_slab_double", "uvlock": true }
+  }
+}

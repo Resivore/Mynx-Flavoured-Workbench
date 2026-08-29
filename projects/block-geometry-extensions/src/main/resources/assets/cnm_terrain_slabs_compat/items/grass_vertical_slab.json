@@ -1,0 +1,7 @@
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "cnm_terrain_slabs_compat:block/grass_vertical_slab",
+    "tints": [{ "type": "minecraft:grass", "temperature": 0.5, "downfall": 1.0 }]
+  }
+}

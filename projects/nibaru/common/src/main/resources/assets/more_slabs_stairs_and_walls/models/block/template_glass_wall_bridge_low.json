@@ -1,0 +1,20 @@
+{
+  "parent": "minecraft:block/block",
+  "credit": "Mechanically derived from authored wall side UV grammar for WallBlock up=false",
+  "render_type": "translucent",
+  "textures": { "particle": "#all" },
+  "elements": [
+    {
+      "from": [5, 0, 4],
+      "to": [11, 14, 12],
+      "faces": {
+        "north": { "uv": [5, 2, 11, 16], "texture": "#all" },
+        "east": { "uv": [4, 2, 12, 16], "texture": "#all" },
+        "south": { "uv": [5, 2, 11, 16], "texture": "#all" },
+        "west": { "uv": [4, 2, 12, 16], "texture": "#all" },
+        "up": { "uv": [5, 4, 11, 12], "texture": "#all" },
+        "down": { "uv": [5, 4, 11, 12], "texture": "#all" }
+      }
+    }
+  ]
+}

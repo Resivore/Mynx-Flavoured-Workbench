@@ -1,0 +1,6 @@
+{
+  "parent": "more_slabs_stairs_and_walls:item/template_glass_stairs",
+  "textures": {
+    "all": "minecraft:block/glass"
+  }
+}

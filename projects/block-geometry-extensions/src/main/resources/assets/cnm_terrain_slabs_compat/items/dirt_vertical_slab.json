@@ -1,0 +1,6 @@
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "cnm_terrain_slabs_compat:block/dirt_vertical_slab"
+  }
+}

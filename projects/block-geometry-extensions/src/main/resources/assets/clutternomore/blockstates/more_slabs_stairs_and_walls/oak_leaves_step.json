@@ -1,0 +1,16 @@
+{
+  "variants": {
+    "facing=north,type=top": { "model": "clutternomore:block/more_slabs_stairs_and_walls/oak_leaves_step_top", "uvlock": true },
+    "facing=north,type=bottom": { "model": "clutternomore:block/more_slabs_stairs_and_walls/oak_leaves_step", "uvlock": true },
+    "facing=north,type=double": { "model": "clutternomore:block/more_slabs_stairs_and_walls/oak_leaves_step_double", "uvlock": true },
+    "facing=south,type=top": { "model": "clutternomore:block/more_slabs_stairs_and_walls/oak_leaves_step_top", "y": 180, "uvlock": true },
+    "facing=south,type=bottom": { "model": "clutternomore:block/more_slabs_stairs_and_walls/oak_leaves_step", "y": 180, "uvlock": true },
+    "facing=south,type=double": { "model": "clutternomore:block/more_slabs_stairs_and_walls/oak_leaves_step_double", "y": 180, "uvlock": true },
+    "facing=west,type=top": { "model": "clutternomore:block/more_slabs_stairs_and_walls/oak_leaves_step_top", "y": 270, "uvlock": true },
+    "facing=west,type=bottom": { "model": "clutternomore:block/more_slabs_stairs_and_walls/oak_leaves_step", "y": 270, "uvlock": true },
+    "facing=west,type=double": { "model": "clutternomore:block/more_slabs_stairs_and_walls/oak_leaves_step_double", "y": 270, "uvlock": true },
+    "facing=east,type=top": { "model": "clutternomore:block/more_slabs_stairs_and_walls/oak_leaves_step_top", "y": 90, "uvlock": true },
+    "facing=east,type=bottom": { "model": "clutternomore:block/more_slabs_stairs_and_walls/oak_leaves_step", "y": 90, "uvlock": true },
+    "facing=east,type=double": { "model": "clutternomore:block/more_slabs_stairs_and_walls/oak_leaves_step_double", "y": 90, "uvlock": true }
+  }
+}

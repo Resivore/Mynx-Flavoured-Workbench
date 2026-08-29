@@ -1,0 +1,28 @@
+{
+  "priority": 700,
+  "add": {
+    "minecraft:dirt": [
+      "more_slabs_stairs_and_walls:dirt_slab",
+      "clutternomore:more_slabs_stairs_and_walls/vertical_dirt_slab"
+    ],
+    "minecraft:grass_block": [
+      "more_slabs_stairs_and_walls:grass_block_slab",
+      "cnm_terrain_slabs_compat:grass_vertical_slab",
+      "more_slabs_stairs_and_walls:grass_block_stairs",
+      "more_slabs_stairs_and_walls:grass_block_wall",
+      "clutternomore:more_slabs_stairs_and_walls/grass_block_step"
+    ]
+  },
+  "remove": {
+    "minecraft:dirt": [
+      "cnm_terrain_slabs_compat:dirt_slab",
+      "cnm_terrain_slabs_compat:dirt_vertical_slab"
+    ],
+    "minecraft:grass_block": [
+      "cnm_terrain_slabs_compat:grass_slab"
+    ],
+    "cnm_terrain_slabs_compat:grass_slab": [
+      "cnm_terrain_slabs_compat:grass_vertical_slab"
+    ]
+  }
+}
