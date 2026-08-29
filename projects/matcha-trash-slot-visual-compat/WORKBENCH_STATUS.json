@@ -1,0 +1,117 @@
+{
+  "$schema": "../../schemas/workbench-status.schema.json",
+  "schema_version": 1,
+  "identity": {
+    "uuid": "a7eeb932-18ed-5fdb-b165-3fce540b1f0a",
+    "name": "Matcha × Simple Trash Slot Visual Compatibility",
+    "project_id": "matcha-trash-slot-visual-compat",
+    "aliases": [
+      "Matcha × Trash Slot Visual Compatibility"
+    ],
+    "legacy_names": [],
+    "legacy_ids": [
+      "matcha-trash-slot-visual-compat"
+    ]
+  },
+  "definition": {
+    "lifecycle": "ACTIVE",
+    "goals": [
+      "Keep Simple Trash Slot visually native to the Matcha Flavoured inventory while preserving its existing trash behavior.",
+      "Preserve the accepted inventory-layout boundary by using Simple Trash Slot's built-in placement instead of introducing a second rendering or logical-slot implementation."
+    ],
+    "scope": [
+      "Retain the frozen H2 visual contract: frame origin (151,61), click/slot origin (152,62), and normal upstream rendering and interaction.",
+      "Retain the user's completion declaration for the approved visual/resource-pack scope without inferring unreported per-case runtime results.",
+      "Keep the project artifact-free unless a newly demonstrated visual defect proves that the upstream configuration is insufficient."
+    ],
+    "boundaries": {
+      "owned_paths": [
+        "projects/matcha-trash-slot-visual-compat"
+      ],
+      "exclusions": [
+        "Coordinate mixins, duplicate visual-positioning layers, broad GUI replacements, or new compatibility implementation during this migration.",
+        "Changes to the trash slot's menu or backing index, deletion semantics, Inventory Extended size, Trinkets boundaries, quick-move destinations, offhand boundaries, or other inventory behavior.",
+        "Modification or redistribution of Matcha Flavoured, Simple Trash Slot, Inventory Extended, Trinkets, their pristine binaries, or anything under originals/.",
+        "Minecraft launch, deployment, Test Slot mutation, accepted-baseline changes, promotion, Test Instance Manager changes, and protected gameplay-instance access.",
+        "Legacy README status/planning systems, global status databases, historical test matrices, snapshots, deployment history, and unrelated project artifacts."
+      ]
+    },
+    "dependencies": [
+      {
+        "type": "OTHER",
+        "identifier": "minecraft",
+        "requirement": "=26.2",
+        "reason": "Target game version of the frozen inventory-layout and visual contract."
+      },
+      {
+        "type": "PROJECT",
+        "identifier": "357cd94a-4ab2-54c9-ac6c-4049fea08bb9",
+        "requirement": "ACCEPTED 0.1.0-canary4; inherent-3x3-inventory-crafting-0.1.0-canary4.jar SHA-256 6e797291dd6c68f5afe65f91177ad2653f7c4a99e10bd20e078fafd7aaf6cb33; source 34e8de533e804ab4993b7502d7c5afbec6ebc8ca",
+        "reason": "Current-main authority for the accepted inventory layout and final GUI coordinates; it preserves Simple Trash Slot's logical compatibility while leaving screen placement to the upstream configuration."
+      },
+      {
+        "type": "RESOURCE_PACK",
+        "identifier": "Matcha_Flavoured_1_10.zip",
+        "requirement": "SHA-256 b36faa3c0247c3b96dedcb1131c77989c231c828a8b332f1bbaa16ccf8ef776d",
+        "reason": "Exact active Matcha base-pack identity recorded by the frozen visual evidence; newer Matcha identities are not silently substituted by this migration."
+      },
+      {
+        "type": "MOD",
+        "identifier": "simple_trash_slot",
+        "requirement": "1.0.4; external simple_trash_slot-1.0.4+26.1.2-fabric.jar SHA-256 81790940da606f732a565adca2b4ec9fa0e8e0015cb1cdc1c4e009506244739b",
+        "reason": "Owns the built-in H2 placement, visible Trash rendering, click target, and deletion behavior preserved by this project."
+      },
+      {
+        "type": "MOD",
+        "identifier": "inventoryextended",
+        "requirement": "1.1.2; layout artifact inventoryextended-1.1.2-mc26.2-trinkets-compat-canary4.jar SHA-256 a0ced554cb687f7119aa19ac3466c0de3ffb0a888e994514223152335b043636",
+        "reason": "Exact frozen accepted six-row inventory/layout dependency whose rows, mapping, and logical storage boundary must remain unchanged."
+      },
+      {
+        "type": "MOD",
+        "identifier": "trinkets_updated",
+        "requirement": "4.1.0-beta.3+26.2 when present; layout artifact trinkets-4.1.0-beta.3+26.2-inventory-compat-canary5.jar SHA-256 4c1fa6ac36c0457483fd0d395b99bbd94c9334aad6defece7633bbf0552d1724",
+        "reason": "Optional frozen accepted inventory-layout participant, using the canonical current-main mod identity, whose slot groups must not overlap the configured Trash placement."
+      },
+      {
+        "type": "PROJECT",
+        "identifier": "19c2de9e-c363-54c7-98ee-96f3fccc439b",
+        "requirement": "ACCEPTED 0.5.0-canary5; trinkets-inventory-extended-compat-0.5.0-canary5.jar SHA-256 76c8c735219ceebfc7ec9a7b103e4cd4f027e43b2489cbc71f8b025b103efa6; source e79bd083b671dd6dbd8c1c73d50971b599365cd3",
+        "reason": "Current-main authority for the accepted Trinkets × Inventory Extended coordinate boundary consumed when Trinkets is present; this project must not replace it with another slot-layout model."
+      },
+      {
+        "type": "RESOURCE_PACK",
+        "identifier": "Matcha_x_InventoryExtended_26.2_Compat_v3.zip",
+        "requirement": "SHA-256 14280650ac06519f5feafc6e33563cf9ea2fa7ac7aa3f09a4ba517c11d073765",
+        "reason": "Exact adjacent Matcha inventory artwork identity recorded for the accepted layout; it remains external and is not a project artifact."
+      }
+    ]
+  },
+  "state": {
+    "milestone": "The user-confirmed visual/resource-pack scope remains complete through Simple Trash Slot's built-in H2 placement at frame (151,61) and click/slot (152,62); no project artifact or additional runtime result exists.",
+    "releases": {
+      "current": null,
+      "accepted": null,
+      "rollback": null,
+      "accepted_current": "NO_ACCEPTED",
+      "accepted_rollback": "NO_ROLLBACK"
+    },
+    "validation": {
+      "build": "NOT_RUN",
+      "deployment": "NOT_DEPLOYED",
+      "runtime": "RUNTIME_UNTESTED"
+    },
+    "blocker": null
+  },
+  "synchronization": {
+    "revision": 1,
+    "activity_at": "2026-08-24T15:01:43Z",
+    "updated_at": "2026-08-29T21:40:03Z",
+    "last_codex_at": "2026-08-29T21:40:03Z",
+    "source_commit": "dbdbf867210f34231715bae3e4a2d72612f6d9f3",
+    "google_sheet": {
+      "participates": true,
+      "exclusion_reason": null
+    }
+  }
+}
