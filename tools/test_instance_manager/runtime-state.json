@@ -1,0 +1,15 @@
+{
+  "$schema": "../../schemas/runtime-state.schema.json",
+  "schema_version": 1,
+  "activation": "GATED",
+  "revision": 0,
+  "updated_at": "2026-08-29T00:00:00Z",
+  "accepted_baseline": {
+    "revision": 0,
+    "members": []
+  },
+  "slots": {
+    "A": null,
+    "B": null
+  }
+}

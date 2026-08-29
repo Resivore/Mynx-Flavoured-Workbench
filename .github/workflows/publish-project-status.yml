@@ -1,0 +1,64 @@
+name: Publish Project Status
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "projects/**"
+      - "resourcepacks/**"
+      - "tools/sheet_sync/publication.json"
+      - ".github/workflows/publish-project-status.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Revalidate exact main checkpoint
+        run: |
+          python tools/workbench.py validate-repository --root .
+          python -m unittest discover -s tests -v
+          node --test tests/test_sheet_receiver.mjs
+      - name: Validate and prepare secretless publication plan
+        run: >-
+          python tools/sheet_sync.py plan
+          --root .
+          --before "${{ github.event.before }}"
+          --after "${{ github.sha }}"
+          --repository "${{ github.repository }}"
+          --ref "${{ github.ref }}"
+          --output status-publication-plan.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: status-publication-plan-${{ github.sha }}
+          path: status-publication-plan.json
+          if-no-files-found: error
+          retention-days: 30
+
+  publish:
+    needs: prepare
+    if: vars.MYNX_SHEET_CUTOVER == 'authorized'
+    runs-on: ubuntu-latest
+    environment: sheet-production
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/download-artifact@v4
+        with:
+          name: status-publication-plan-${{ github.sha }}
+      - name: Publish authoritative main events
+        env:
+          MYNX_SHEET_CUTOVER: ${{ vars.MYNX_SHEET_CUTOVER }}
+          MYNX_SHEET_RECEIVER_URL: ${{ secrets.MYNX_SHEET_RECEIVER_URL }}
+          MYNX_SHEET_HMAC_SECRET: ${{ secrets.MYNX_SHEET_HMAC_SECRET }}
+        run: python tools/sheet_sync.py publish --root . --plan status-publication-plan.json

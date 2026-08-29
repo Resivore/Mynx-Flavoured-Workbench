@@ -1,0 +1,39 @@
+name: Validate Workbench
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Validate repository and Python contracts
+        run: |
+          python tools/workbench.py validate-repository --root .
+          python -m unittest discover -s tests -v
+      - name: Validate project revision protocol for pull request
+        if: github.event_name == 'pull_request'
+        run: >-
+          python tools/sheet_sync.py validate-change
+          --root .
+          --before "${{ github.event.pull_request.base.sha }}"
+          --after "${{ github.event.pull_request.head.sha }}"
+      - name: Validate project revision protocol for main push
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: >-
+          python tools/sheet_sync.py validate-change
+          --root .
+          --before "${{ github.event.before }}"
+          --after "${{ github.sha }}"
+      - name: Validate Sheet receiver contract
+        run: node --test tests/test_sheet_receiver.mjs

@@ -1,0 +1,187 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Resivore/Mynx-Flavoured-Workbench/schemas/workbench-status.schema.json",
+  "title": "Mynx Flavoured Workbench project status",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["$schema", "schema_version", "identity", "definition", "state", "synchronization"],
+  "properties": {
+    "$schema": { "const": "../../schemas/workbench-status.schema.json" },
+    "schema_version": { "const": 1 },
+    "identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["uuid", "name", "project_id", "aliases", "legacy_names", "legacy_ids"],
+      "properties": {
+        "uuid": { "type": "string", "format": "uuid" },
+        "name": { "$ref": "#/$defs/nonblank" },
+        "project_id": { "$ref": "#/$defs/projectId" },
+        "aliases": { "$ref": "#/$defs/uniqueTextList" },
+        "legacy_names": { "$ref": "#/$defs/uniqueTextList" },
+        "legacy_ids": { "type": "array", "items": { "$ref": "#/$defs/projectId" }, "uniqueItems": true }
+      }
+    },
+    "definition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["lifecycle", "goals", "scope", "boundaries", "dependencies"],
+      "properties": {
+        "lifecycle": { "enum": ["PLANNED", "ACTIVE", "BLOCKED", "TESTING", "ACCEPTED", "PARKED"] },
+        "goals": { "$ref": "#/$defs/nonemptyTextList" },
+        "scope": { "$ref": "#/$defs/nonemptyTextList" },
+        "boundaries": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["owned_paths", "exclusions"],
+          "properties": {
+            "owned_paths": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/repositoryPath" }, "uniqueItems": true },
+            "exclusions": { "$ref": "#/$defs/uniqueTextList" }
+          }
+        },
+        "dependencies": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/dependency" }
+        }
+      }
+    },
+    "state": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["milestone", "releases", "validation", "blocker"],
+      "properties": {
+        "milestone": { "$ref": "#/$defs/nonblank" },
+        "releases": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["current", "accepted", "rollback", "accepted_current", "accepted_rollback"],
+          "properties": {
+            "current": { "$ref": "#/$defs/nullableRelease" },
+            "accepted": { "$ref": "#/$defs/nullableRelease" },
+            "rollback": { "$ref": "#/$defs/nullableRelease" },
+            "accepted_current": { "enum": ["NO_ACCEPTED", "CURRENT_IS_ACCEPTED", "CURRENT_DIFFERS_FROM_ACCEPTED"] },
+            "accepted_rollback": { "enum": ["NO_ROLLBACK", "ACCEPTED_IS_ROLLBACK", "ROLLBACK_DIFFERS_FROM_ACCEPTED"] }
+          }
+        },
+        "validation": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["build", "deployment", "runtime"],
+          "properties": {
+            "build": { "enum": ["NOT_RUN", "GENERATED", "STATIC_PASS", "STATIC_FAIL", "CONTROLLED_VALIDATION_PASS", "CONTROLLED_VALIDATION_FAIL", "INCONCLUSIVE"] },
+            "deployment": { "enum": ["NOT_DEPLOYED", "DEPLOYED", "READY_TO_TEST_VERIFIED", "DEPLOYMENT_FAILED"] },
+            "runtime": { "enum": ["RUNTIME_UNTESTED", "PARTIAL_RUNTIME_PASS", "RUNTIME_PASS", "RUNTIME_FAIL", "INCONCLUSIVE"] }
+          }
+        },
+        "blocker": {
+          "anyOf": [
+            { "type": "null" },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["summary", "since", "next_action"],
+              "properties": {
+                "summary": { "$ref": "#/$defs/nonblank" },
+                "since": { "type": "string", "format": "date-time" },
+                "next_action": { "$ref": "#/$defs/nonblank" }
+              }
+            }
+          ]
+        }
+      }
+    },
+    "synchronization": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["revision", "activity_at", "updated_at", "last_codex_at", "source_commit", "google_sheet"],
+      "properties": {
+        "revision": { "type": "integer", "minimum": 1 },
+        "activity_at": { "type": "string", "format": "date-time" },
+        "updated_at": { "type": "string", "format": "date-time" },
+        "last_codex_at": { "type": "string", "format": "date-time" },
+        "source_commit": { "$ref": "#/$defs/commit" },
+        "google_sheet": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["participates", "exclusion_reason"],
+          "properties": {
+            "participates": { "type": "boolean" },
+            "exclusion_reason": { "anyOf": [{ "type": "null" }, { "$ref": "#/$defs/nonblank" }] }
+          }
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "definition": { "properties": { "lifecycle": { "const": "BLOCKED" } } } } },
+      "then": { "properties": { "state": { "properties": { "blocker": { "type": "object" } } } } },
+      "else": { "properties": { "state": { "properties": { "blocker": { "type": "null" } } } } }
+    },
+    {
+      "if": { "properties": { "definition": { "properties": { "lifecycle": { "const": "ACCEPTED" } } } } },
+      "then": { "properties": { "state": { "properties": { "releases": { "properties": { "accepted_current": { "const": "CURRENT_IS_ACCEPTED" } } } } } } }
+    },
+    {
+      "if": { "properties": { "state": { "properties": { "releases": { "properties": { "accepted_current": { "const": "NO_ACCEPTED" } } } } } } },
+      "then": { "properties": { "state": { "properties": { "releases": { "properties": { "accepted": { "type": "null" } } } } } } },
+      "else": { "properties": { "state": { "properties": { "releases": { "properties": { "current": { "type": "object" }, "accepted": { "type": "object" } } } } } } }
+    },
+    {
+      "if": { "properties": { "state": { "properties": { "releases": { "properties": { "accepted_rollback": { "const": "NO_ROLLBACK" } } } } } } },
+      "then": { "properties": { "state": { "properties": { "releases": { "properties": { "rollback": { "type": "null" } } } } } } },
+      "else": { "properties": { "state": { "properties": { "releases": { "properties": { "accepted": { "type": "object" }, "rollback": { "type": "object" } } } } } } }
+    },
+    {
+      "if": { "properties": { "synchronization": { "properties": { "google_sheet": { "properties": { "participates": { "const": true } } } } } } },
+      "then": { "properties": { "synchronization": { "properties": { "google_sheet": { "properties": { "exclusion_reason": { "type": "null" } } } } } } },
+      "else": { "properties": { "synchronization": { "properties": { "google_sheet": { "properties": { "exclusion_reason": { "type": "string", "minLength": 1 } } } } } } }
+    }
+  ],
+  "$defs": {
+    "nonblank": { "type": "string", "minLength": 1, "pattern": "^\\S(?:.*\\S)?$" },
+    "projectId": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+    "commit": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "repositoryPath": { "type": "string", "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.?/)[^\\\\*?]+$" },
+    "uniqueTextList": { "type": "array", "items": { "$ref": "#/$defs/nonblank" }, "uniqueItems": true },
+    "nonemptyTextList": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/nonblank" }, "uniqueItems": true },
+    "artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["filename", "sha256"],
+      "properties": {
+        "filename": {
+          "type": "string",
+          "allOf": [
+            { "pattern": "^[^<>:\"/\\\\|?*\\u0000-\\u001f]+$" },
+            { "pattern": "[^. ]$" },
+            { "not": { "pattern": "^(?:[Cc][Oo][Nn]|[Pp][Rr][Nn]|[Aa][Uu][Xx]|[Nn][Uu][Ll]|[Cc][Oo][Mm][1-9]|[Ll][Pp][Tt][1-9])(?:\\.|$)" } }
+          ]
+        },
+        "sha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "release": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["version", "artifact", "source_commit"],
+      "properties": {
+        "version": { "$ref": "#/$defs/nonblank" },
+        "artifact": { "anyOf": [{ "type": "null" }, { "$ref": "#/$defs/artifact" }] },
+        "source_commit": { "$ref": "#/$defs/commit" }
+      }
+    },
+    "nullableRelease": { "anyOf": [{ "type": "null" }, { "$ref": "#/$defs/release" }] },
+    "dependency": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "identifier", "requirement", "reason"],
+      "properties": {
+        "type": { "enum": ["PROJECT", "MOD", "RESOURCE_PACK", "DATA_PACK", "TOOL", "SERVICE", "OTHER"] },
+        "identifier": { "$ref": "#/$defs/nonblank" },
+        "requirement": { "anyOf": [{ "type": "null" }, { "$ref": "#/$defs/nonblank" }] },
+        "reason": { "$ref": "#/$defs/nonblank" }
+      }
+    }
+  }
+}
