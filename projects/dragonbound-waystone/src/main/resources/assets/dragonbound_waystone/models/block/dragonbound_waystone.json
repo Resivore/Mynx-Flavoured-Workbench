@@ -1,0 +1,58 @@
+{
+  "parent": "minecraft:block/block",
+  "ambientocclusion": true,
+  "textures": {
+    "particle": "minecraft:block/end_stone_bricks",
+    "end_stone_bricks": "minecraft:block/end_stone_bricks"
+  },
+  "elements": [
+    {
+      "from": [0, 0, 0],
+      "to": [16, 2, 16],
+      "faces": {
+        "north": { "uv": [0, 14, 16, 16], "texture": "#end_stone_bricks" },
+        "east": { "uv": [0, 14, 16, 16], "texture": "#end_stone_bricks" },
+        "south": { "uv": [0, 14, 16, 16], "texture": "#end_stone_bricks" },
+        "west": { "uv": [0, 14, 16, 16], "texture": "#end_stone_bricks" },
+        "up": { "uv": [0, 0, 16, 16], "texture": "#end_stone_bricks" },
+        "down": { "uv": [0, 0, 16, 16], "texture": "#end_stone_bricks" }
+      }
+    },
+    {
+      "from": [2, 2, 3],
+      "to": [14, 3, 13],
+      "faces": {
+        "north": { "uv": [2, 13, 14, 14], "texture": "#end_stone_bricks" },
+        "east": { "uv": [3, 2, 13, 3], "texture": "#end_stone_bricks" },
+        "south": { "uv": [2, 12, 14, 13], "texture": "#end_stone_bricks" },
+        "west": { "uv": [3, 3, 13, 4], "texture": "#end_stone_bricks" },
+        "up": { "uv": [2, 3, 14, 13], "texture": "#end_stone_bricks" },
+        "down": { "uv": [2, 3, 14, 13], "texture": "#end_stone_bricks" }
+      }
+    },
+    {
+      "from": [3, 2, 13],
+      "to": [13, 3, 14],
+      "faces": {
+        "north": { "uv": [3, 13, 13, 14], "texture": "#end_stone_bricks" },
+        "east": { "uv": [13, 13, 14, 14], "texture": "#end_stone_bricks" },
+        "south": { "uv": [3, 13, 13, 14], "texture": "#end_stone_bricks" },
+        "west": { "uv": [2, 13, 3, 14], "texture": "#end_stone_bricks" },
+        "up": { "uv": [3, 13, 13, 14], "texture": "#end_stone_bricks" },
+        "down": { "uv": [3, 13, 13, 14], "texture": "#end_stone_bricks" }
+      }
+    },
+    {
+      "from": [3, 2, 2],
+      "to": [13, 3, 3],
+      "faces": {
+        "north": { "uv": [3, 13, 13, 14], "texture": "#end_stone_bricks" },
+        "east": { "uv": [13, 13, 14, 14], "texture": "#end_stone_bricks" },
+        "south": { "uv": [3, 13, 13, 14], "texture": "#end_stone_bricks" },
+        "west": { "uv": [2, 13, 3, 14], "texture": "#end_stone_bricks" },
+        "up": { "uv": [3, 13, 13, 14], "texture": "#end_stone_bricks" },
+        "down": { "uv": [3, 13, 13, 14], "texture": "#end_stone_bricks" }
+      }
+    }
+  ]
+}
