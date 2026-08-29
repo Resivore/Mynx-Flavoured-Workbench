@@ -1,0 +1,11 @@
+# Codex Log
+
+## 2026-08-29T21:01:24Z — Migrate frozen Rooted Dirt QoL into Mynx Flavoured Workbench
+- Revision: 1
+- Source checkpoint: `46e66c9c9bb5701153edc017a969b24e1176dffc`
+- Changes: Reconstructed the frozen revision-3 project from legacy authority `f0101f38c446dddaa4226450386402c63597ba7c`, importing byte-identical maintainable source/build/test files from implementation checkpoint `eb0a3958744ec78db897d28abf5da73421839ec3` and the exact retained Canary 1 from retention checkpoint `c3e73990c41ec9b2d276f096f8346e4a77c93e74`; distilled current status and testing controls without legacy narratives, snapshots, history, or feature changes.
+- Build/static: Temurin Java 25.0.4.1+1 and Gradle 9.5.1 `clean test build --no-daemon` succeeded with 7/7 focused tests in three suites and zero failures, errors, or skips; all ten imported source/build/test blobs matched the legacy project tree, the retained artifact matched legacy blob `d97d865b2c4395d90817a8fc5af5b8d75cb54f0b`, and the fresh verification build reproduced its size and SHA-256 without replacing it.
+- Runtime: No Minecraft deployment or runtime check was performed; neither Test Slot, the Workbench runtime profile, the Test Instance Manager, nor the protected gameplay profile was accessed or changed. The statement that the predecessor remains live is preserved frozen repository evidence, not a new runtime observation.
+- Artifact: Current/unaccepted `rooted-dirt-qol-0.1.0-canary1.jar`, version `0.1.0-canary1`, mod ID `rooted_dirt_qol`, 3,299 bytes, SHA-256 `3642f55e0cef611f2dd56478b8aaf2491fd81d370023a04ca71e6852b37307ee`; accepted/rollback predecessor `craft-rooted-dirt-107.1.jar`, version `107.1`, mod ID `mr_craft_rooteddirt`, 72,444 bytes, frozen-record SHA-256 `a5fc656fc345b416fc01281146d568de664c587e2c168e6bfd69f3ded7e42845`, not copied or independently rehashed because its binary is outside the scoped project tree.
+- Result: ACTIVE — Canary 1 remains GENERATED / STATIC_PASS, NOT_DEPLOYED, RUNTIME_UNTESTED, and not accepted; the predecessor remains the accepted/rollback release and no blocker is asserted.
+- Next state: Allocate a controlled Test Slot, disable the accepted predecessor, deploy the exact retained Canary 1 mutually exclusively, and complete the focused runtime matrix before any promotion.

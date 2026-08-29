@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "id": "rooted_dirt_qol",
+  "version": "${version}",
+  "name": "Rooted Dirt QoL",
+  "description": "Adds a rooted dirt recipe and vanilla-path bonemeal duplication for hanging roots.",
+  "authors": ["Resivore"],
+  "environment": "*",
+  "mixins": ["rooted_dirt_qol.mixins.json"],
+  "depends": {
+    "fabricloader": ">=0.19.3",
+    "minecraft": "=26.2",
+    "java": ">=25"
+  }
+}
