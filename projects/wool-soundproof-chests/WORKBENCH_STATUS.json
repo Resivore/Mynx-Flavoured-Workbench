@@ -1,0 +1,106 @@
+{
+  "$schema": "../../schemas/workbench-status.schema.json",
+  "schema_version": 1,
+  "identity": {
+    "uuid": "7ad81f01-e236-5b65-836f-f4440a869a5a",
+    "name": "Wool Soundproof Chests",
+    "project_id": "wool-soundproof-chests",
+    "aliases": [],
+    "legacy_names": [],
+    "legacy_ids": [
+      "wool-soundproof-chests"
+    ]
+  },
+  "definition": {
+    "lifecycle": "ACCEPTED",
+    "goals": [
+      "Provide a deterministic, learnable sculk-vibration outcome when players intentionally prepare ordinary chests with a mostly sealed, wool-lined enclosure.",
+      "Remain a standalone Fabric utility without Matcha coupling for Ancient City use and other worlds."
+    ],
+    "scope": [
+      "Target only minecraft:chest container open and close game events at the actual emitting chest position.",
+      "Evaluate exactly north, south, east, west, and down; suppress the event only when at least four faces are sealed by full collision blocks and at least two of those full blocks are in minecraft:wool.",
+      "Evaluate double-chest component emissions independently, so complete silence requires both halves to satisfy the same rule."
+    ],
+    "boundaries": {
+      "owned_paths": [
+        "projects/wool-soundproof-chests"
+      ],
+      "exclusions": [
+        "The top face is intentionally never evaluated.",
+        "Trapped chests, barrels, ender chests, shulker boxes, and every unrelated container remain outside block coverage.",
+        "Global wool occlusion, general vibration propagation, and any new sculk behavior remain unchanged.",
+        "Chest sound, lid animation, opener counts, inventory behavior, and unrelated walking, placement, breaking, projectile, eating, and mob vibrations remain vanilla.",
+        "This migration does not deploy to Minecraft, mutate either test slot or the accepted physical Workbench, or change Test Instance Manager state."
+      ]
+    },
+    "dependencies": [
+      {
+        "type": "MOD",
+        "identifier": "minecraft",
+        "requirement": "=26.2",
+        "reason": "Exact game version whose ContainerOpenersCounter call sites and chest behavior are targeted."
+      },
+      {
+        "type": "MOD",
+        "identifier": "fabricloader",
+        "requirement": ">=0.19.3",
+        "reason": "Required loader declared by the retained standalone artifact; Fabric API is not required."
+      },
+      {
+        "type": "TOOL",
+        "identifier": "java",
+        "requirement": ">=25",
+        "reason": "Compilation and runtime baseline declared by the retained implementation."
+      }
+    ]
+  },
+  "state": {
+    "milestone": "C1 passed the focused runtime scope and is accepted for the intended vanilla Ancient City behavior.",
+    "releases": {
+      "current": {
+        "version": "C1 (legacy Alpha 1; 0.1.0-alpha1)",
+        "artifact": {
+          "filename": "wool-soundproof-chests-0.1.0-alpha1.jar",
+          "sha256": "e8f0d10dff823e97a4f4ab39029bf7a71b13501f2294544c55e38f7e1ca9d020"
+        },
+        "source_commit": "29484e4d67629ff4480f6ae7d5248a9a736ac4a4"
+      },
+      "accepted": {
+        "version": "C1 (legacy Alpha 1; 0.1.0-alpha1)",
+        "artifact": {
+          "filename": "wool-soundproof-chests-0.1.0-alpha1.jar",
+          "sha256": "e8f0d10dff823e97a4f4ab39029bf7a71b13501f2294544c55e38f7e1ca9d020"
+        },
+        "source_commit": "29484e4d67629ff4480f6ae7d5248a9a736ac4a4"
+      },
+      "rollback": {
+        "version": "C1 (legacy Alpha 1; 0.1.0-alpha1)",
+        "artifact": {
+          "filename": "wool-soundproof-chests-0.1.0-alpha1.jar",
+          "sha256": "e8f0d10dff823e97a4f4ab39029bf7a71b13501f2294544c55e38f7e1ca9d020"
+        },
+        "source_commit": "29484e4d67629ff4480f6ae7d5248a9a736ac4a4"
+      },
+      "accepted_current": "CURRENT_IS_ACCEPTED",
+      "accepted_rollback": "ACCEPTED_IS_ROLLBACK"
+    },
+    "validation": {
+      "build": "STATIC_PASS",
+      "deployment": "READY_TO_TEST_VERIFIED",
+      "runtime": "RUNTIME_PASS"
+    },
+    "blocker": null
+  },
+  "synchronization": {
+    "revision": 1,
+    "activity_at": "2026-08-20T01:29:04Z",
+    "updated_at": "2026-08-29T21:03:18Z",
+    "last_codex_at": "2026-08-29T21:03:18Z",
+    "source_commit": "1a113058af6a6e8ba3250528967830b293c2f1a1",
+    "google_sheet": {
+      "participates": true,
+      "exclusion_reason": null
+    }
+  }
+}
