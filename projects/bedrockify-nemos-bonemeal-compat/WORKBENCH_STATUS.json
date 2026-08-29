@@ -1,0 +1,117 @@
+{
+  "$schema": "../../schemas/workbench-status.schema.json",
+  "schema_version": 1,
+  "identity": {
+    "uuid": "4ad00b52-881c-5d50-92b2-1191f74c7ef4",
+    "name": "BedrockIfy × Nemo's Bonemeal Compatibility",
+    "project_id": "bedrockify-nemos-bonemeal-compat",
+    "aliases": [
+      "Bedrockify x Nemo's Blooming Blossom"
+    ],
+    "legacy_names": [],
+    "legacy_ids": [
+      "bedrockify-nemos-bonemeal-compat"
+    ]
+  },
+  "definition": {
+    "lifecycle": "ACTIVE",
+    "goals": [
+      "Make Nemo's intended single-flower bonemeal behavior deterministic when BedrockIfy and Nemo's Blooming Blossom both contribute the same FlowerBlock methods.",
+      "Preserve BedrockIfy's fertilizable-block configuration and separate sugar-cane behavior while leaving Nemo's independent wither-rose and grass behavior intact."
+    ],
+    "scope": [
+      "Own exactly one common FlowerBlock mixin at priority 1100 and exactly the three audited BonemealableBlock methods: isValidBonemealTarget, isBonemealSuccess, and performBonemeal.",
+      "Retain Nemo's exact FlowerBlock method policy: target validity and success are unconditional, and the server pops one item matching the clicked flower without nearby propagation.",
+      "Require BedrockIfy 1.11.8+mc26.2 and Nemo's Blooming Blossom 26.2-1.3 through Fabric metadata without bundling either upstream mod."
+    ],
+    "boundaries": {
+      "owned_paths": [
+        "projects/bedrockify-nemos-bonemeal-compat"
+      ],
+      "exclusions": [
+        "Any general BedrockIfy/Nemo integration layer, additional target, method, injector, reward algorithm, registry ownership, or upstream patch.",
+        "Disabling BedrockIfy's common.features.fertilizableBlocks setting or changing its separate SugarCaneBlockMixin behavior.",
+        "Changing Nemo's separate WitherRoseBlockMixin, either mod's GrassBlock behavior, tall flowers, or any vegetation outside FlowerBlock inheritance.",
+        "Third-party binary redistribution, originals changes, resource-pack work, STNC/QSN work, deployment, Test Slot or Test Instance Manager mutation, and access to either gameplay profile during this migration."
+      ]
+    },
+    "dependencies": [
+      {
+        "type": "MOD",
+        "identifier": "minecraft",
+        "requirement": "=26.2",
+        "reason": "Exact target game version for the audited FlowerBlock and BonemealableBlock contracts."
+      },
+      {
+        "type": "MOD",
+        "identifier": "fabricloader",
+        "requirement": ">=0.19.3",
+        "reason": "Fabric runtime loader and Mixin host declared by Canary 1."
+      },
+      {
+        "type": "MOD",
+        "identifier": "bedrockify",
+        "requirement": "=1.11.8+mc26.2",
+        "reason": "Pinned runtime dependency whose audited binary SHA-256 is 613A08FE513C26A26DBDB7F9CCAB9A7CB3288E13F9476AD68A0F773C8BA926D6; its binary is not copied into this project."
+      },
+      {
+        "type": "MOD",
+        "identifier": "nemos-blooming-blossom",
+        "requirement": "=26.2-1.3",
+        "reason": "Pinned runtime dependency and intended FlowerBlock policy owner whose audited binary SHA-256 is 1450A4628CB00324E06A684D6A515A428189D8975BFFCF1BA2DA530F9230C3F0; its binary is not copied into this project."
+      },
+      {
+        "type": "TOOL",
+        "identifier": "java",
+        "requirement": "25",
+        "reason": "Compilation release and runtime level used by the retained Canary 1."
+      },
+      {
+        "type": "TOOL",
+        "identifier": "gradle",
+        "requirement": "9.5.1",
+        "reason": "Exact build-tool version that reproduced the retained Canary 1."
+      },
+      {
+        "type": "TOOL",
+        "identifier": "fabric-loom",
+        "requirement": "1.17.19",
+        "reason": "Exact Fabric build plugin pinned by the migrated build."
+      }
+    ]
+  },
+  "state": {
+    "milestone": "Canary 1 is retained after an exact reproduction build and focused bytecode inspection; it remains generated, runtime untested, and not deployed.",
+    "releases": {
+      "current": {
+        "version": "0.1.0-canary1",
+        "artifact": {
+          "filename": "bedrockify-nemos-bonemeal-compat-0.1.0-canary1.jar",
+          "sha256": "2720dafff71ef2779f08905899bc9d55bcb7db80811020492de47f977c669273"
+        },
+        "source_commit": "8275d36b2eb1af451103e9722862346c6fb02e29"
+      },
+      "accepted": null,
+      "rollback": null,
+      "accepted_current": "NO_ACCEPTED",
+      "accepted_rollback": "NO_ROLLBACK"
+    },
+    "validation": {
+      "build": "STATIC_PASS",
+      "deployment": "NOT_DEPLOYED",
+      "runtime": "RUNTIME_UNTESTED"
+    },
+    "blocker": null
+  },
+  "synchronization": {
+    "revision": 1,
+    "activity_at": "2026-08-28T22:52:51Z",
+    "updated_at": "2026-08-29T22:19:26Z",
+    "last_codex_at": "2026-08-29T22:19:26Z",
+    "source_commit": "f8cfc380e75b8fa45034a61049916b90db78748f",
+    "google_sheet": {
+      "participates": true,
+      "exclusion_reason": null
+    }
+  }
+}
