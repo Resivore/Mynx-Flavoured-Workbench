@@ -1,0 +1,140 @@
+{
+  "$schema": "../../schemas/workbench-status.schema.json",
+  "schema_version": 1,
+  "identity": {
+    "uuid": "26065ff3-182f-5314-a5f6-976d6ffd394a",
+    "name": "Custom Portals 26.2",
+    "project_id": "custom-portals",
+    "aliases": [
+      "Custom Portals 26.2 compatibility port",
+      "Custom Portals 26.2 Port"
+    ],
+    "legacy_names": [
+      "Custom Portals 26.2 compatibility port",
+      "Custom Portals 26.2 Port"
+    ],
+    "legacy_ids": [
+      "custom-portals"
+    ]
+  },
+  "definition": {
+    "lifecycle": "ACCEPTED",
+    "goals": [
+      "Maintain the faithful Minecraft Java 26.2 Fabric port of Custom Portals 4.0.0 with arbitrary-frame, arbitrary-size and shape, colored intra- and inter-dimensional portals.",
+      "Preserve the accepted unrestricted-range and cross-dimensional Workbench configuration without removing or changing the enhancer, infinity, gate, or haste rune systems."
+    ],
+    "scope": [
+      "Maintain the exact Canary 2 source reconstructed from frozen legacy checkpoint f0101f38c446dddaa4226450386402c63597ba7c, including the narrow Minecraft 26.2 Hud mixin compatibility correction.",
+      "Preserve portal mechanics, all 37 recipes and costs, registry and networking identifiers, the Cardinal Components key, serialized portal fields, rune content, and resource and data identities.",
+      "Retain exact accepted Canary 2 and canonical customportals.json behavior with unlimitedRange and alwaysInterdim enabled while all other established defaults remain unchanged."
+    ],
+    "boundaries": {
+      "owned_paths": [
+        "projects/custom-portals"
+      ],
+      "exclusions": [
+        "Feature additions, gameplay redesign, recipe or cost changes, serialized-format changes, and any claim that this Workbench port is an upstream release.",
+        "Minecraft deployment, runtime-slot changes, accepted physical Workbench stack changes, protected gameplay-instance access, and Test Instance Manager changes during this migration.",
+        "Dedicated-server validation and numbered runtime observations that were not actually reported.",
+        "Legacy administrative narratives, branch history, snapshots, global databases, deployment helpers, and the failed Canary 1 binary."
+      ]
+    },
+    "dependencies": [
+      {
+        "type": "OTHER",
+        "identifier": "minecraft",
+        "requirement": "~26.2",
+        "reason": "Target game version declared by the accepted port."
+      },
+      {
+        "type": "MOD",
+        "identifier": "fabricloader",
+        "requirement": ">=0.19.3",
+        "reason": "Fabric loader baseline declared by the accepted port."
+      },
+      {
+        "type": "MOD",
+        "identifier": "fabric-api",
+        "requirement": "0.156.0+26.2 compile; 0.157.0+26.2 accepted runtime",
+        "reason": "Required Fabric APIs; the accepted runtime JAR was readiness-pinned at SHA-256 acb7dc90a0430519c49548074d3fbf6fd81d13063f08f0af344b2a6b08a42620."
+      },
+      {
+        "type": "MOD",
+        "identifier": "yet_another_config_lib_v3",
+        "requirement": "3.9.2+26.1 compile; 3.9.6+26.2-fabric accepted runtime",
+        "reason": "Required configuration API; the accepted runtime JAR was readiness-pinned at SHA-256 829396c3b3e7d1801ae0e9e2921d0454c5a3078afdb6c6dda6b3d1819dfa0e3f."
+      },
+      {
+        "type": "MOD",
+        "identifier": "modmenu",
+        "requirement": ">=16.0.0-rc.1 optional; 18.0.0-alpha.8 compile",
+        "reason": "Optional configuration-screen integration retained from upstream."
+      },
+      {
+        "type": "MOD",
+        "identifier": "cardinal-components-api",
+        "requirement": "8.0.0 base and level modules nested",
+        "reason": "Owns the preserved per-level Custom Portals component state."
+      },
+      {
+        "type": "TOOL",
+        "identifier": "java",
+        "requirement": ">=25",
+        "reason": "Required to build and run the Minecraft 26.2 port."
+      },
+      {
+        "type": "OTHER",
+        "identifier": "Palyon-dev/CustomPortals",
+        "requirement": "ef83ebb5bb09c605c76d907f86f52c0dbac71b94",
+        "reason": "Selected MIT-licensed upstream source baseline corresponding to the 4.0.0 Minecraft 26.1.2 artifact."
+      },
+      {
+        "type": "OTHER",
+        "identifier": "CustomPortals-4.0.0+26.1.2.jar",
+        "requirement": "SHA-256 270e74e32da93a77975d49c61904124c55d93218c6a133a2bbfeb2e36dcb2346",
+        "reason": "Pristine upstream reference identity used for the port audit; the original is not imported into this project."
+      }
+    ]
+  },
+  "state": {
+    "milestone": "C2 passed its intended runtime scope and is accepted in the cumulative Workbench stack.",
+    "releases": {
+      "current": {
+        "version": "4.0.0+26.2-port-canary2",
+        "artifact": {
+          "filename": "custom-portals-26.2-4.0.0+26.2-port-canary2.jar",
+          "sha256": "13fd0e76748fcc3ef963bcc2f4a820d5fc2d473a90ad5d5988cbe0129c2be148"
+        },
+        "source_commit": "604720aa69f96e4628535722a015a5bf1726e0ea"
+      },
+      "accepted": {
+        "version": "4.0.0+26.2-port-canary2",
+        "artifact": {
+          "filename": "custom-portals-26.2-4.0.0+26.2-port-canary2.jar",
+          "sha256": "13fd0e76748fcc3ef963bcc2f4a820d5fc2d473a90ad5d5988cbe0129c2be148"
+        },
+        "source_commit": "604720aa69f96e4628535722a015a5bf1726e0ea"
+      },
+      "rollback": null,
+      "accepted_current": "CURRENT_IS_ACCEPTED",
+      "accepted_rollback": "NO_ROLLBACK"
+    },
+    "validation": {
+      "build": "STATIC_PASS",
+      "deployment": "READY_TO_TEST_VERIFIED",
+      "runtime": "RUNTIME_PASS"
+    },
+    "blocker": null
+  },
+  "synchronization": {
+    "revision": 1,
+    "activity_at": "2026-08-22T20:19:06Z",
+    "updated_at": "2026-08-29T20:58:36Z",
+    "last_codex_at": "2026-08-29T20:58:36Z",
+    "source_commit": "60e9898c425921778202048ec35b1a843e3ccff0",
+    "google_sheet": {
+      "participates": true,
+      "exclusion_reason": null
+    }
+  }
+}

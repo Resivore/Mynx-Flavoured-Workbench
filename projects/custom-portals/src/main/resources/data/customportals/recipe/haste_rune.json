@@ -1,0 +1,17 @@
+{
+    "type": "minecraft:crafting_shaped",
+    "pattern": [
+        "#  ",
+        "#R#",
+        " A#"
+    ],
+    "key": {
+        "#": "minecraft:feather",
+        "R": "minecraft:rabbit_foot",
+        "A": "minecraft:amethyst_shard"
+    },
+    "result": {
+        "id": "customportals:haste_rune",
+        "count": 1
+    }
+}

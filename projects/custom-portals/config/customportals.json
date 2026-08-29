@@ -1,0 +1,14 @@
+{
+  "unlimitedRange": true,
+  "alwaysInterdim": true,
+  "alwaysHaste": "CREATIVE",
+  "privatePortals": false,
+  "redstone": "OFF",
+  "muteAmbientSounds": false,
+  "muteTeleportSounds": false,
+  "defaultRange": 100,
+  "rangeWithEnhancer": 1000,
+  "rangeWithStrongEnhancer": 10000,
+  "isWhitelist": false,
+  "filteredBlocks": []
+}
