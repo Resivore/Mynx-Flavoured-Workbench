@@ -1,0 +1,106 @@
+{
+  "$schema": "../../schemas/workbench-status.schema.json",
+  "schema_version": 1,
+  "identity": {
+    "uuid": "0b54727d-db44-57dd-aa66-424ce93bb0c3",
+    "name": "Matcha Noxious Redstone",
+    "project_id": "matcha-noxious-redstone",
+    "aliases": [],
+    "legacy_names": [],
+    "legacy_ids": [
+      "matcha-noxious-redstone"
+    ]
+  },
+  "definition": {
+    "lifecycle": "ACCEPTED",
+    "goals": [
+      "Preserve exact Matcha Noxious Redstone 0.2.1 identity and its user-approved permanent Workbench-stack membership without reconstructing or changing the absent source.",
+      "Keep accepted membership, exact artifact verification, physical deployment, and gameplay/runtime validation as independent facts."
+    ],
+    "scope": [
+      "Preserve the exact client-only matcha_noxious_redstone 0.2.1 artifact identity from legacy accepted-artifact checkpoint 7b98587352e318cfa07801ad708bf164ac432903.",
+      "Preserve the statically inspected behavior contract: vanilla dust particles and Particle Interactions continuous redstone dust are replaced by native noxious gas at one emission per 16 attempts, while Particle Interactions redstone interaction bursts use one emission per six attempts.",
+      "Retain metadata only, with the immutable private acquisition locator Resivore/Minecraft-26.2-Workbench@7b98587352e318cfa07801ad708bf164ac432903:projects/test-instance-manager/accepted-artifacts/matcha-noxious-redstone-0.2.1+mc26.2.jar."
+    ],
+    "boundaries": {
+      "owned_paths": [
+        "projects/matcha-noxious-redstone"
+      ],
+      "exclusions": [
+        "New implementation, reconstructed or decompiled source, rebuilds, behavior changes, density changes, or feature expansion during this preservation migration.",
+        "The exact JAR bytes are not tracked because the retained legacy project provides no source, license field, redistribution notice, or build provenance sufficient for public-repository redistribution.",
+        "Shared Test Instance Manager state, global accepted-stack files, deployment profiles, ledgers, snapshots, and physical accepted-baseline changes.",
+        "Stack to Nearby Chests, its Matcha companion, Quick Stack Nearby, their compatibility projects, and all associated acceptance, retirement, or replacement state.",
+        "Any modification under originals or resourcepacks, or to unrelated accepted projects.",
+        "Minecraft deployment, Test Slot mutation, dedicated Workbench access, Minecraft launch, and protected gameplay-instance access during this migration."
+      ]
+    },
+    "dependencies": [
+      {
+        "type": "OTHER",
+        "identifier": "minecraft",
+        "requirement": ">=26.2 <26.3",
+        "reason": "Exact supported game range declared by the accepted artifact."
+      },
+      {
+        "type": "MOD",
+        "identifier": "fabricloader",
+        "requirement": ">=0.19.3",
+        "reason": "Fabric runtime loader range declared by the accepted artifact."
+      },
+      {
+        "type": "TOOL",
+        "identifier": "java",
+        "requirement": ">=25",
+        "reason": "Java runtime range declared by the accepted artifact."
+      },
+      {
+        "type": "MOD",
+        "identifier": "eg_particle_interactions",
+        "requirement": "optional",
+        "reason": "Optional suggested integration whose redstone_dust and redstone_interaction effects are included in the preserved behavior contract."
+      }
+    ]
+  },
+  "state": {
+    "milestone": "Exact 0.2.1 has user-approved permanent accepted-stack membership and verified artifact identity; the release is preserved metadata-only, was not deployed by this migration, and has no reported gameplay/runtime validation.",
+    "releases": {
+      "current": {
+        "version": "0.2.1",
+        "artifact": {
+          "filename": "matcha-noxious-redstone-0.2.1+mc26.2.jar",
+          "sha256": "31e6f1fae99bfc787ed91fabc33e8b7cf258f1deda4dbe0f000e693eae3d7c3d"
+        },
+        "source_commit": "7b98587352e318cfa07801ad708bf164ac432903"
+      },
+      "accepted": {
+        "version": "0.2.1",
+        "artifact": {
+          "filename": "matcha-noxious-redstone-0.2.1+mc26.2.jar",
+          "sha256": "31e6f1fae99bfc787ed91fabc33e8b7cf258f1deda4dbe0f000e693eae3d7c3d"
+        },
+        "source_commit": "7b98587352e318cfa07801ad708bf164ac432903"
+      },
+      "rollback": null,
+      "accepted_current": "CURRENT_IS_ACCEPTED",
+      "accepted_rollback": "NO_ROLLBACK"
+    },
+    "validation": {
+      "build": "STATIC_PASS",
+      "deployment": "NOT_DEPLOYED",
+      "runtime": "RUNTIME_UNTESTED"
+    },
+    "blocker": null
+  },
+  "synchronization": {
+    "revision": 1,
+    "activity_at": "2026-08-24T15:22:25Z",
+    "updated_at": "2026-08-29T22:15:16Z",
+    "last_codex_at": "2026-08-29T22:15:16Z",
+    "source_commit": "8eb27d34ef8f8a8a77358c235a43a5f193ea3e88",
+    "google_sheet": {
+      "participates": true,
+      "exclusion_reason": null
+    }
+  }
+}

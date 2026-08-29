@@ -1,0 +1,94 @@
+{
+  "$schema": "../../schemas/workbench-status.schema.json",
+  "schema_version": 1,
+  "identity": {
+    "uuid": "dda2c3b4-5099-4842-a755-29e964cd2192",
+    "name": "Matcha Vanilla Village Restoration",
+    "project_id": "matcha-vanilla-village-restoration",
+    "aliases": [
+      "Matcha Village Restoration"
+    ],
+    "legacy_names": [
+      "Matcha Village Restoration"
+    ],
+    "legacy_ids": []
+  },
+  "definition": {
+    "lifecycle": "ACTIVE",
+    "goals": [
+      "Restore Minecraft 26.2's normal biome-specific vanilla village composition while preserving Matcha's village eligibility and sparse placement layer.",
+      "Keep Matcha as the sole owner of the minecraft:villages structure-set placement contract.",
+      "Provide the restoration as a higher-priority data pack without modifying or redistributing Matcha."
+    ],
+    "scope": [
+      "Own exactly pack.mcmeta and five complete minecraft:village_* structure overrides for plains, desert, savanna, snowy, and taiga villages.",
+      "Preserve Matcha's exact biome arrays while restoring each pristine vanilla 26.2 style-specific start pool and all other vanilla jigsaw fields.",
+      "Retain Matcha's spacing 80, separation 50, salt 10387312 candidate lattice without claiming identical realized starts at eligible-biome boundaries, where the changed start-template anchor can affect the jigsaw biome check."
+    ],
+    "boundaries": {
+      "owned_paths": [
+        "projects/matcha-vanilla-village-restoration"
+      ],
+      "exclusions": [
+        "Any minecraft:villages structure-set override, additional structure ID, biome tag, template pool, processor, NBT template, loot table, trade, function, or Java implementation.",
+        "Modification of Matcha itself, resource-pack work, Stack to Nearby Chests work, or Quick Stack Nearby work.",
+        "Conversion claims for existing generated villages or guarantees of seed-identical realized starts at eligible-biome boundaries.",
+        "Runtime deployment, Test Slot or Test Instance Manager changes, dedicated Workbench profile access, and protected gameplay-instance access during this migration."
+      ]
+    },
+    "dependencies": [
+      {
+        "type": "MOD",
+        "identifier": "minecraft",
+        "requirement": "=26.2",
+        "reason": "Target version whose pristine style-specific village structure fields and built-in pool graphs are restored."
+      },
+      {
+        "type": "DATA_PACK",
+        "identifier": "Matcha_Flavoured_1_12.zip",
+        "requirement": "SHA-256 6209783021C358044ABEDABACEE471FAFF5BD4080437D4E3B5E51963F1804248",
+        "reason": "Upstream data pack whose exact biome arrays and 80/50/10387312 village placement contract remain authoritative below this restoration pack."
+      },
+      {
+        "type": "OTHER",
+        "identifier": "minecraft-26.2-client",
+        "requirement": "SHA-256 40896EE9F1E2BEC3C934DAAC7E93D41E9E3D9C2F8AE0CA366D52FFBFD1AFA290",
+        "reason": "Pinned pristine vanilla reference used by the static verifier for all non-biome structure fields."
+      }
+    ]
+  },
+  "state": {
+    "milestone": "Retained Canary 1 is byte-identical, deterministically reproduced, and statically verified; it remains runtime untested and not deployed.",
+    "releases": {
+      "current": {
+        "version": "0.1.0-canary1",
+        "artifact": {
+          "filename": "matcha-vanilla-village-restoration-0.1.0-canary1.zip",
+          "sha256": "2b0d29ee6389c457b801091aa7469e6c53468944db3ede83760dc7d8fb49b8e4"
+        },
+        "source_commit": "0068077d72a16a78f9dbbf215000f0a2b947eed6"
+      },
+      "accepted": null,
+      "rollback": null,
+      "accepted_current": "NO_ACCEPTED",
+      "accepted_rollback": "NO_ROLLBACK"
+    },
+    "validation": {
+      "build": "STATIC_PASS",
+      "deployment": "NOT_DEPLOYED",
+      "runtime": "RUNTIME_UNTESTED"
+    },
+    "blocker": null
+  },
+  "synchronization": {
+    "revision": 1,
+    "activity_at": "2026-08-28T17:25:26Z",
+    "updated_at": "2026-08-29T22:17:05Z",
+    "last_codex_at": "2026-08-29T22:17:05Z",
+    "source_commit": "e34881783056f641e14048610756e2fa7dcb17c5",
+    "google_sheet": {
+      "participates": true,
+      "exclusion_reason": null
+    }
+  }
+}

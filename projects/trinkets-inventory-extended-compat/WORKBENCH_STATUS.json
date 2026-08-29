@@ -32,7 +32,7 @@
       ],
       "exclusions": [
         "New Inventory Extended or Trinkets features, ports, redesigns, upstream replacements, or compatibility behavior beyond the frozen C5 contract.",
-        "Matcha × Trinkets Visual Compatibility, Matcha inventory artwork and composition, Inventory 3×3 Crafting, Offhand Shift-Click, Carried Container Auto-Routing, Quick Stack, and every other inventory compatibility layer remain separately owned.",
+        "Matcha Flavoured resource-pack artwork and inventory composition, Inventory 3×3 Crafting, Offhand Shift-Click, Carried Container Auto-Routing, Quick Stack, and every other inventory compatibility layer remain independently owned.",
         "The completed temporary visual diagnostic, its JAR and trace tooling, the aborted non-representative localhost server harness, obsolete canaries, legacy audits, status narratives, historical matrices, and global project databases.",
         "Hosted-server join, relog, and dimension validation and keepInventory-disabled death drops remain untested and are not inferred from the accepted client evidence.",
         "Minecraft deployment, Test Slot changes, accepted-stack mutation, promotion, Test Instance Manager changes, Minecraft launch, and access to either physical gameplay profile during this migration."
@@ -126,11 +126,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 1,
-    "activity_at": "2026-08-14T12:42:50Z",
-    "updated_at": "2026-08-29T21:34:09Z",
-    "last_codex_at": "2026-08-29T21:34:09Z",
-    "source_commit": "36b9cfed036ea6d59fdacdd345dc28d6d8b12e22",
+    "revision": 2,
+    "activity_at": "2026-08-29T22:02:12Z",
+    "updated_at": "2026-08-29T22:02:12Z",
+    "last_codex_at": "2026-08-29T22:02:12Z",
+    "source_commit": "950666593764be195a56099c401d99d0dbd99c08",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
