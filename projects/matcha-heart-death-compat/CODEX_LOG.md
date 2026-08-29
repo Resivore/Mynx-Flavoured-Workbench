@@ -1,0 +1,11 @@
+# Codex Log
+
+## 2026-08-29T21:03:27Z — Migrate frozen Matcha Heart / Death Compatibility into Mynx Flavoured Workbench
+- Revision: 1
+- Source checkpoint: `c3081fbd1a5b042e40b2ba4060f8299e471e0005`
+- Changes: Imported 35 maintainable build, source, resource, asset, and focused-test blobs byte-for-byte from frozen legacy checkpoint `f0101f38c446dddaa4226450386402c63597ba7c`; retained exact current C7 and accepted/rollback C5 artifacts, added project-local build-output ignore rules, and replaced legacy status narratives with current controls. The unchanged C7 implementation originates at legacy source `3dbd78201104686a061df7a94d3be5162072c877`.
+- Build/static: Temurin Java 25.0.4.1+1 and Gradle 9.5.1 `clean test build --no-daemon --offline` passed 31/31 tests in six suites with zero failures, errors, or skips against the exact frozen Matcha/JEI references; all 35 imported blobs, both retained artifact hashes, and the 390-byte sprite hash were independently verified. The fresh 30,430-byte build was not substituted for retained C7.
+- Runtime: No deployment, Minecraft runtime check, promotion, Test Slot change, accepted physical Workbench change, or protected gameplay-instance access was performed. Preserved evidence records exact C5's accepted focused client/singleplayer pass and exact C7's partial pass with three recipe-precedence failures; dedicated-server validation remains unperformed.
+- Artifact: Current/unaccepted C7 `matcha-heart-death-compat-0.1.6-canary7.jar` SHA-256 `3B1F608C6F4B3B92F764A3781A9652DC11F089590A9173444C067975D01CA2DD` from `3dbd78201104686a061df7a94d3be5162072c877`; accepted/rollback C5 `matcha-heart-death-compat-0.1.4-canary5.jar` SHA-256 `21E24D37B1A3B575B738F7CA38B0614C9D0285C4F0723DEFE4DB85297B171C04` from `5477ca770e58a8b4bed8f1bf737b04765a9d12a7`.
+- Result: TESTING — C7 remains unchanged, unpromoted, `READY_TO_TEST_VERIFIED`, and `PARTIAL_RUNTIME_PASS`; Matcha still wins the Crystal Heart, Sculk Sensor, and Sculk Shrieker recipes, while C5 remains the accepted disabled rollback and no C8 was produced.
+- Next state: Under a separate implementation task, resolve only the three demonstrated recipe-precedence failures, produce a successor candidate, and run the current focused matrix before any promotion; do not redeploy or promote unchanged C7.
