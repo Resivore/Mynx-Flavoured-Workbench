@@ -31,7 +31,6 @@ final class ConsolidatedReloadOwnershipTest {
 
         String recipeMixin = source("src/main/java/dev/resivore/matchaheart/mixin/RecipeManagerMixin.java");
         assertEquals(1, occurrences(recipeMixin, "@ModifyVariable("));
-        assertTrue(recipeMixin.contains("HeartDataContract.RECIPE_RESOURCES"));
         assertTrue(recipeMixin.contains(
                 "method = \"apply(Lnet/minecraft/world/item/crafting/RecipeMap;"
                         + "Lnet/minecraft/server/packs/resources/ResourceManager;"
@@ -40,13 +39,20 @@ final class ConsolidatedReloadOwnershipTest {
         assertTrue(recipeMixin.contains("argsOnly = true"));
         assertTrue(recipeMixin.contains("ordinal = 0"));
         assertTrue(recipeMixin.contains("require = 1"));
-        assertTrue(recipeMixin.contains("REINFORCED_TARGET"));
-        assertTrue(recipeMixin.contains("Required Reinforced Crystal Heart recipe did not decode"));
+        assertTrue(recipeMixin.contains("RecipeMapEnforcer.enforce(resolved, this.registries)"));
         assertFalse(recipeMixin.contains("method = \"prepare"));
         assertFalse(recipeMixin.contains("CallbackInfoReturnable"));
         assertFalse(recipeMixin.contains("cancellable"));
         assertFalse(recipeMixin.contains("setReturnValue"));
-        assertFalse(recipeMixin.contains("AUTHORITATIVE_RECIPE"));
+
+        String recipeEnforcer = source(
+                "src/main/java/dev/resivore/matchaheart/RecipeMapEnforcer.java");
+        assertTrue(recipeEnforcer.contains("HeartDataContract.RECIPE_RESOURCES"));
+        assertTrue(recipeEnforcer.contains("REINFORCED_TARGET"));
+        assertTrue(recipeEnforcer.contains("Required Reinforced Crystal Heart recipe did not decode"));
+        assertTrue(recipeEnforcer.contains("RecipeMap.create(recipes)"));
+        assertTrue(recipeEnforcer.contains("Unsafe Matcha recipe contracts"));
+        assertFalse(recipeEnforcer.contains("AUTHORITATIVE_RECIPE"));
 
         String advancementMixin = source(
                 "src/main/java/dev/resivore/matchaheart/mixin/ServerAdvancementManagerMixin.java");

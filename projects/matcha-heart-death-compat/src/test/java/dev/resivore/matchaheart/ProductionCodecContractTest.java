@@ -2,11 +2,16 @@ package dev.resivore.matchaheart;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.mojang.serialization.Lifecycle;
+import java.lang.reflect.Proxy;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.stream.Stream;
 import net.minecraft.SharedConstants;
@@ -24,6 +29,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.item.crafting.RecipeMap;
 import net.minecraft.world.level.storage.loot.LootTable;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -63,6 +70,55 @@ final class ProductionCodecContractTest {
                 .forEach(path -> AuthoritativeData.decodeAdvancement(path, registries));
         HeartDataContract.LOOT_TABLE_RESOURCES.values()
                 .forEach(path -> AuthoritativeData.decodeLootTable(path, registries));
+    }
+
+    @Test
+    void recipeMapEnforcementReplacesOnlyTheThreeOwnedIdsAndPreservesEverySentinel() {
+        Recipe<?> upstreamCrystal = craftingRecipe("crafting:sculk_sensor");
+        Recipe<?> upstreamSensor = craftingRecipe("crafting:sculk_shrieker");
+        Recipe<?> upstreamShrieker = craftingRecipe("crafting:crystal_heart");
+        Recipe<?> unrelated = craftingRecipe("crafting:sculk_sensor");
+        Recipe<?> dramaticDoors = craftingRecipe("crafting:sculk_sensor");
+        Recipe<?> reinforced = craftingRecipe("crafting:sculk_sensor");
+        RecipeMap resolved = RecipeMap.create(List.of(
+                holder("crafting:crystal_heart", upstreamCrystal),
+                holder("crafting:sculk_sensor", upstreamSensor),
+                holder("crafting:sculk_shrieker", upstreamShrieker),
+                holder("other:untouched", unrelated),
+                holder("dramaticdoors:tall_oak_door", dramaticDoors),
+                holder(HeartDataContract.REINFORCED_RECIPE_ID, reinforced)));
+
+        RecipeMap enforced = RecipeMapEnforcer.enforce(resolved, registries);
+
+        assertEquals(6, enforced.values().size());
+        assertNotSame(upstreamCrystal, recipe(enforced, "crafting:crystal_heart"));
+        assertNotSame(upstreamSensor, recipe(enforced, "crafting:sculk_sensor"));
+        assertNotSame(upstreamShrieker, recipe(enforced, "crafting:sculk_shrieker"));
+        assertSame(unrelated, recipe(enforced, "other:untouched"));
+        assertSame(dramaticDoors, recipe(enforced, "dramaticdoors:tall_oak_door"));
+        assertSame(reinforced, recipe(enforced, HeartDataContract.REINFORCED_RECIPE_ID));
+    }
+
+    @Test
+    void recipeMapEnforcementPropagatesDecodeAndRebuildFailuresFailClosed() {
+        Recipe<?> reinforced = craftingRecipe("crafting:sculk_sensor");
+        RecipeMap resolved = RecipeMap.create(List.of(
+                holder(HeartDataContract.REINFORCED_RECIPE_ID, reinforced)));
+
+        IllegalStateException decodeFailure = assertThrows(IllegalStateException.class,
+                () -> RecipeMapEnforcer.enforce(resolved, () -> {
+                    throw new IllegalArgumentException("canonical decode failed");
+                }));
+        assertEquals("Unsafe Matcha recipe contracts", decodeFailure.getMessage());
+        assertEquals("canonical decode failed", decodeFailure.getCause().getMessage());
+
+        LinkedHashMap<Identifier, Recipe<?>> brokenReplacements = new LinkedHashMap<>();
+        brokenReplacements.put(Identifier.parse("crafting:crystal_heart"),
+                recipeThatFailsMapRebuild());
+        IllegalStateException rebuildFailure = assertThrows(IllegalStateException.class,
+                () -> RecipeMapEnforcer.enforce(resolved, () -> brokenReplacements));
+        assertEquals("Unsafe Matcha recipe contracts", rebuildFailure.getMessage());
+        assertEquals("recipe map rebuild failed", rebuildFailure.getCause().getMessage());
     }
 
     @Test
@@ -139,6 +195,27 @@ final class ProductionCodecContractTest {
     private static Recipe<CraftingInput> craftingRecipe(String id) {
         return (Recipe<CraftingInput>) AuthoritativeData.decodeRecipe(
                 HeartDataContract.RECIPE_RESOURCES.get(id), registries);
+    }
+
+    private static RecipeHolder<?> holder(String id, Recipe<?> recipe) {
+        ResourceKey<Recipe<?>> key = ResourceKey.create(Registries.RECIPE, Identifier.parse(id));
+        return new RecipeHolder<>(key, recipe);
+    }
+
+    private static Recipe<?> recipe(RecipeMap recipes, String id) {
+        return recipes.byKey(ResourceKey.create(Registries.RECIPE, Identifier.parse(id))).value();
+    }
+
+    private static Recipe<?> recipeThatFailsMapRebuild() {
+        return (Recipe<?>) Proxy.newProxyInstance(
+                Recipe.class.getClassLoader(),
+                new Class<?>[] {Recipe.class},
+                (proxy, method, arguments) -> {
+                    if (method.getName().equals("getType")) {
+                        throw new IllegalStateException("recipe map rebuild failed");
+                    }
+                    throw new AssertionError("Unexpected broken-recipe method: " + method.getName());
+                });
     }
 
     private static void assertSilkOnly(String id, String blockItem) {
