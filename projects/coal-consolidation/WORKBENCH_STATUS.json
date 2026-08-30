@@ -17,7 +17,8 @@
       "Keep vanilla charcoal registered for old-save and legacy-item safety, provide one-way 1:1 cleanup conversion, and suppress charcoal clutter in Creative and supported recipe viewers."
     ],
     "scope": [
-      "Maintain the exact Canary 1 data overrides: minecraft:charcoal and smoking:charcoal output one coal; four vanilla and three Matcha explicit consumers use coal only; coal_consolidation:charcoal_to_coal remains a shapeless 1:1 conversion.",
+      "Maintain the audited data overrides: minecraft:charcoal and smoking:charcoal output one coal; four vanilla and three Matcha explicit consumers use coal only; coal_consolidation:charcoal_to_coal remains a shapeless 1:1 conversion.",
+      "After resource-pack resolution, enforce only the effective minecraft:charcoal smelting holder so its identity, burnable-log input, experience, and normal furnace timing are preserved while its result is exactly one coal.",
       "Maintain the client-only Fabric CreativeModeTabEvents removal of Items.CHARCOAL from Ingredients display and search output plus the additive c:hidden_from_recipe_viewers tag."
     ],
     "boundaries": {
@@ -27,8 +28,8 @@
       "exclusions": [
         "Removing or replacing the minecraft:charcoal registry entry, changing its fuel/datafix/model safety, or adding a reverse coal-to-charcoal path.",
         "Overriding #minecraft:coals or furnace_minecart_fuel, broad recipe-family rewrites, or changing campfire, alternate coal-block, or other tag-backed behavior.",
-        "Adding registry mutation, mixins, a common initializer, hard JEI integration, or recipe changes beyond the previously audited explicit consumers.",
-        "Resource-pack work, Stack to Nearby Chests, Quick Stack Nearby, unrelated project changes, Minecraft deployment, Test Instance Manager mutation, and access to either gameplay profile during this migration."
+        "Adding registry mutation, broad recipe-manager rewrites, a common initializer, hard JEI integration, or recipe changes beyond the exact minecraft:charcoal reload enforcement and previously audited explicit consumers.",
+        "Resource-pack work, Stack to Nearby Chests, Quick Stack Nearby, unrelated project changes, Minecraft deployment, Test Instance Manager mutation, and gameplay-profile mutation during this successor task."
       ]
     },
     "dependencies": [
@@ -42,7 +43,7 @@
         "type": "MOD",
         "identifier": "fabricloader",
         "requirement": ">=0.19.3",
-        "reason": "Fabric runtime loader declared by Canary 1 and used by the focused test harness."
+        "reason": "Fabric runtime loader declared by Canary 2 and used by the focused test harness and required recipe-reload mixin."
       },
       {
         "type": "MOD",
@@ -84,20 +85,20 @@
         "type": "OTHER",
         "identifier": "junit-jupiter",
         "requirement": "5.13.4",
-        "reason": "Focused static and production-codec test baseline retained by the project."
+        "reason": "Focused static, production-codec, and effective recipe-reload regression baseline retained by the project."
       }
     ]
   },
   "state": {
-    "milestone": "Exact retained C1 recorded a runtime FAIL because smelting logs through the vanilla furnace minecraft:charcoal route still produced minecraft:charcoal instead of coal. The separate Matcha smoking:charcoal route was not reported as tested, and no other runtime row is inferred. C1 is removed from the test slots, remains unaccepted, and has a fixable implementation defect rather than an external blocker; no newer main-scoped project change supersedes its release source.",
+    "milestone": "Canary 2 is a statically verified, retained successor to failed C1. Investigation confirmed C1's packaged minecraft:charcoal JSON already returned coal and found no competing Matcha 1.12 or loaded-mod recipe at that ID; C1's defect was relying only on passive resource precedence without enforcing or testing the effective post-reload RecipeManager entry. C2 narrowly enforces that resolved holder after reload and adds a competing-pack regression that proves the effective furnace recipe returns one coal while preserving the audited input, experience, and timing. C2 is unaccepted, runtime untested, not deployed, and occupies no test slot.",
     "releases": {
       "current": {
-        "version": "0.1.0-canary1",
+        "version": "0.1.1-canary2",
         "artifact": {
-          "filename": "coal-consolidation-0.1.0-canary1.jar",
-          "sha256": "d7598f640184613f03f0ea2fb558cd4d94099ec54cabc189ef978dbb7f5d4f9d"
+          "filename": "coal-consolidation-0.1.1-canary2.jar",
+          "sha256": "713b4f0f0cbf68a712a1ba8c75addf120899b8963afb01c88a14f2e6fceecc29"
         },
-        "source_commit": "ff8ea31e3c5959fdb4a2886b1113071bfda5770f"
+        "source_commit": "03f70b54c774f766ea9edc3487622153a253afe2"
       },
       "accepted": null,
       "rollback": null,
@@ -107,16 +108,16 @@
     "validation": {
       "build": "STATIC_PASS",
       "deployment": "NOT_DEPLOYED",
-      "runtime": "RUNTIME_FAIL"
+      "runtime": "RUNTIME_UNTESTED"
     },
     "blocker": null
   },
   "synchronization": {
-    "revision": 4,
-    "activity_at": "2026-08-30T08:11:38Z",
-    "updated_at": "2026-08-30T08:11:38Z",
-    "last_codex_at": "2026-08-30T08:11:38Z",
-    "source_commit": "5e1007888a847f00012a413214d51c810efa1b31",
+    "revision": 5,
+    "activity_at": "2026-08-30T22:43:30Z",
+    "updated_at": "2026-08-30T22:43:30Z",
+    "last_codex_at": "2026-08-30T22:43:30Z",
+    "source_commit": "03f70b54c774f766ea9edc3487622153a253afe2",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
