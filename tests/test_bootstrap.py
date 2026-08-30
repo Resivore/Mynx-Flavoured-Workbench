@@ -709,7 +709,7 @@ class CurrentStateBootstrapTests(unittest.TestCase):
         self.assertEqual({path: manifest["synchronization"]["revision"] for path, manifest in manifests.items()}, revisions)
         self.assertTrue(all(event["record"]["publication_commit"] == "d" * 40 for event in plan["events"]))
 
-    def test_current_heart_and_mossy_r3_authority_produces_exact_reconciliation_events(self) -> None:
+    def test_current_heart_and_mossy_r4_authority_produces_exact_reconciliation_events(self) -> None:
         paths = (
             "projects/matcha-heart-death-compat/WORKBENCH_STATUS.json",
             "projects/mossy-stone/WORKBENCH_STATUS.json",
@@ -723,12 +723,12 @@ class CurrentStateBootstrapTests(unittest.TestCase):
         events = {event["record"]["project_uuid"]: event for event in plan["events"]}
         expected = {
             "937d7ccc-44c9-55cb-8d33-0dc0bff5fe45": {
-                "revision": 3,
+                "revision": 4,
                 "filename": "matcha-heart-death-compat-0.1.7-canary8.jar",
                 "sha256": "cb36d6917dc61b17f2d8b5cea0d09cb4c1455e04aaca2c186ecaebe5e9960aa2",
             },
             "9f1c5aa4-09c1-4de3-9921-4b045e8abcd2": {
-                "revision": 3,
+                "revision": 4,
                 "filename": "mossy-stone-0.3.0-canary3.jar",
                 "sha256": "b24d8e411f4b83ac02d73db7564f8f58bf4f2d67207621394feca0be0d9c4995",
             },
