@@ -589,6 +589,59 @@ class RuntimeContractTests(unittest.TestCase):
         self.assertEqual(prior_b, updated["slots"]["B"])
         self.assertEqual({"alpha", "beta"}, {unit["project_id"] for unit in resolve_profile(updated, project_index("alpha", "beta"))})
 
+    def test_slot_dependency_override_is_temporary_and_requires_full_ownership_coverage(self) -> None:
+        alpha_v1 = deployment_unit("alpha", version="Canary 1")
+        alpha_v2 = deployment_unit("alpha", version="Canary 2")
+        dependency_v1 = deployment_unit("dependency", version="Canary 1")
+        dependency_v2 = deployment_unit("dependency", version="Canary 2")
+        alpha_v2["artifacts"].append(copy.deepcopy(dependency_v2["artifacts"][0]))
+        accepted = [
+            {"unit": alpha_v1, "accepted_at": TIME_1},
+            {"unit": dependency_v1, "accepted_at": TIME_1},
+        ]
+        assigned = plan_transition(
+            runtime_state(accepted),
+            3,
+            {
+                "type": "ASSIGN_SLOT",
+                "candidate": candidate_declaration(
+                    alpha_v2,
+                    alpha_v1["deployment_id"],
+                    [dependency_v1["deployment_id"]],
+                ),
+            },
+            TIME_2,
+            project_index("alpha", "dependency"),
+        )
+        self.assertEqual([dependency_v1["deployment_id"]], assigned["slots"]["A"]["dependency_overrides"])
+        effective = resolve_profile(assigned, project_index("alpha", "dependency"))
+        self.assertEqual(["alpha"], [unit["project_id"] for unit in effective])
+        self.assertEqual(
+            {"mod:alpha", "mod:dependency"},
+            {key for artifact in effective[0]["artifacts"] for key in artifact["ownership_keys"]},
+        )
+        restored = plan_transition(
+            assigned,
+            assigned["revision"],
+            {"type": "REMOVE_SLOT", "slot": "A"},
+            TIME_3,
+            project_index("alpha", "dependency"),
+        )
+        self.assertEqual(
+            {"alpha", "dependency"},
+            {unit["project_id"] for unit in resolve_profile(restored, project_index("alpha", "dependency"))},
+        )
+
+        incomplete = candidate(alpha_v2)
+        incomplete["replaces_accepted_deployment_id"] = alpha_v1["deployment_id"]
+        incomplete["dependency_overrides"] = [dependency_v1["deployment_id"]]
+        incomplete["unit"]["artifacts"].pop()
+        with self.assertRaisesRegex(ValidationError, "every ownership key"):
+            validate_runtime_state(
+                runtime_state(accepted, incomplete),
+                project_index("alpha", "dependency"),
+            )
+
     def test_promotion_requires_pass_and_upgrade_replaces_baseline(self) -> None:
         alpha_v1 = deployment_unit("alpha", version="Canary 1")
         alpha_v2 = deployment_unit("alpha", version="Canary 2")
@@ -603,6 +656,56 @@ class RuntimeContractTests(unittest.TestCase):
         untested = runtime_state(slot_a=candidate(deployment_unit("beta")))
         with self.assertRaisesRegex(ValidationError, "requires an explicit"):
             plan_transition(untested, untested["revision"], {"type": "PROMOTE_SLOT", "slot": "A"}, TIME_2, project_index("beta"))
+
+    def test_user_approved_untested_successor_promotion_replaces_baseline_and_clears_only_untested_slot(self) -> None:
+        alpha_v1 = deployment_unit("alpha", version="Canary 1")
+        alpha_v2 = deployment_unit("alpha", version="Canary 2")
+        alpha_v3 = deployment_unit("alpha", version="Canary 3")
+        accepted = [{"unit": alpha_v1, "accepted_at": TIME_1}]
+        old_slot = candidate(alpha_v2)
+        old_slot["replaces_accepted_deployment_id"] = alpha_v1["deployment_id"]
+        state = runtime_state(accepted, old_slot)
+        operation = {
+            "type": "PROMOTE_UNTESTED_CANDIDATE",
+            "authorization": "USER_APPROVED_UNTESTED_PROMOTION",
+            "candidate": candidate_declaration(alpha_v3, alpha_v1["deployment_id"]),
+        }
+        promoted = plan_transition(
+            state,
+            state["revision"],
+            operation,
+            TIME_2,
+            project_index("alpha"),
+        )
+        self.assertIsNone(promoted["slots"]["A"])
+        self.assertEqual("Canary 3", promoted["accepted_baseline"]["members"][0]["unit"]["version"])
+        self.assertEqual(
+            state["accepted_baseline"]["revision"] + 1,
+            promoted["accepted_baseline"]["revision"],
+        )
+        self.assertEqual(state["revision"] + 1, promoted["revision"])
+
+        unauthorized = copy.deepcopy(operation)
+        unauthorized["authorization"] = ""
+        with self.assertRaisesRegex(ValidationError, "explicit USER_APPROVED"):
+            plan_transition(
+                state,
+                state["revision"],
+                unauthorized,
+                TIME_2,
+                project_index("alpha"),
+            )
+
+        passed_slot = candidate(alpha_v2, "PASS")
+        passed_slot["replaces_accepted_deployment_id"] = alpha_v1["deployment_id"]
+        with self.assertRaisesRegex(ValidationError, "cannot discard a recorded slot result"):
+            plan_transition(
+                runtime_state(accepted, passed_slot),
+                3,
+                operation,
+                TIME_2,
+                project_index("alpha"),
+            )
 
     def test_repo_only_commit_path_is_always_disabled(self) -> None:
         alpha = deployment_unit("alpha")

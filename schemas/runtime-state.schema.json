@@ -180,6 +180,11 @@
         "replaces_accepted_deployment_id": {
           "anyOf": [{ "type": "null" }, { "$ref": "#/$defs/uuid" }]
         },
+        "dependency_overrides": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/uuid" }
+        },
         "deployment": {
           "type": "object",
           "additionalProperties": false,
