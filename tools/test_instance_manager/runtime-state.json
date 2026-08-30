@@ -1,15 +1,760 @@
 {
   "$schema": "../../schemas/runtime-state.schema.json",
   "schema_version": 1,
-  "activation": "GATED",
-  "revision": 0,
-  "updated_at": "2026-08-29T00:00:00Z",
+  "activation": "ACTIVE",
+  "revision": 2,
+  "updated_at": "2026-08-30T00:57:47.228403Z",
   "accepted_baseline": {
-    "revision": 0,
-    "members": []
+    "revision": 1,
+    "provenance": {
+      "source_repository": "Resivore/Minecraft-26.2-Workbench",
+      "source_commit": "f0101f38c446dddaa4226450386402c63597ba7c",
+      "source_profile": "matcha-heart-death-mossy-stone",
+      "legacy_ledger_sha256": "5f0a26f3d136effeb54e86e3a1ba9d6a98a7252f5adde1c789129461f64c43de",
+      "accepted_artifact_count": 26,
+      "overlay_order": [
+        "937d7ccc-44c9-55cb-8d33-0dc0bff5fe45",
+        "9f1c5aa4-09c1-4de3-9921-4b045e8abcd2"
+      ],
+      "readiness": "READY_TO_TEST_VERIFIED",
+      "diagnostics": 0,
+      "physical_disposition": "ADOPTED"
+    },
+    "members": [
+      {
+        "unit": {
+          "deployment_id": "770e9e25-a82a-41d2-8acf-698882134354",
+          "project_uuid": "19c2de9e-c363-54c7-98ee-96f3fccc439b",
+          "project_id": "trinkets-inventory-extended-compat",
+          "project_identity_source": "CURRENT_MANIFEST",
+          "version": "0.5.0-canary5",
+          "source_commit": "e79bd083b671dd6dbd8c1c73d50971b599365cd3",
+          "artifacts": [
+            {
+              "artifact_id": "6d54e4cb-d40c-4a7d-b1b2-f4dc74bc24c2",
+              "kind": "MOD",
+              "filename": "inventoryextended-1.1.2-mc26.2-trinkets-compat-canary4.jar",
+              "sha256": "a0ced554cb687f7119aa19ac3466c0de3ffb0a888e994514223152335b043636",
+              "ownership_keys": [
+                "mod:inventoryextended"
+              ],
+              "source": {
+                "type": "REPOSITORY",
+                "path": "projects/trinkets-inventory-extended-compat/artifacts/inventoryextended-1.1.2-mc26.2-trinkets-compat-canary4.jar"
+              }
+            },
+            {
+              "artifact_id": "7bff5c6e-d4f6-41c9-b31b-6181b4e40f53",
+              "kind": "MOD",
+              "filename": "trinkets-4.1.0-beta.3+26.2-inventory-compat-canary5.jar",
+              "sha256": "4c1fa6ac36c0457483fd0d395b99bbd94c9334aad6defece7633bbf0552d1724",
+              "ownership_keys": [
+                "mod:trinkets_updated"
+              ],
+              "source": {
+                "type": "REPOSITORY",
+                "path": "projects/trinkets-inventory-extended-compat/artifacts/trinkets-4.1.0-beta.3+26.2-inventory-compat-canary5.jar"
+              }
+            },
+            {
+              "artifact_id": "1b0b0d3e-2d10-4335-a8f4-2db7127bedb7",
+              "kind": "MOD",
+              "filename": "trinkets-inventory-extended-compat-0.5.0-canary5.jar",
+              "sha256": "76c8c735219ceebfc7ec9a7b103e4cd4f027e43b2489cbc71f8b025b103efa6c",
+              "ownership_keys": [
+                "mod:trinkets_inventory_extended_compat"
+              ],
+              "source": {
+                "type": "REPOSITORY",
+                "path": "projects/trinkets-inventory-extended-compat/artifacts/trinkets-inventory-extended-compat-0.5.0-canary5.jar"
+              }
+            }
+          ]
+        },
+        "accepted_at": null
+      },
+      {
+        "unit": {
+          "deployment_id": "3a3f0f77-d114-4b58-a039-302d625ec449",
+          "project_uuid": "4b2342fc-7bdf-5ba6-9f37-d551109d214c",
+          "project_id": "block-geometry-extensions",
+          "project_identity_source": "CURRENT_MANIFEST",
+          "version": "0.5.49-nibaru-cnm-canary1.39-native-directional-material-axis",
+          "source_commit": "2e58d752af44f4b84e10bc5e53a41aea00a177ee",
+          "artifacts": [
+            {
+              "artifact_id": "3d3f10bd-8481-417c-adc7-fe154e2766c7",
+              "kind": "MOD",
+              "filename": "cnm-nibaru-integration-0.5.49-nibaru-cnm-canary1.39-native-directional-material-axis.jar",
+              "sha256": "0e84fb7b8c69e31c3c22a592d0667db66c2918c8fd9f461bd2c216d377722e69",
+              "ownership_keys": [
+                "mod:cnm_terrain_slabs_compat"
+              ],
+              "source": {
+                "type": "REPOSITORY",
+                "path": "projects/block-geometry-extensions/artifacts/cnm-nibaru-integration-0.5.49-nibaru-cnm-canary1.39-native-directional-material-axis.jar"
+              }
+            }
+          ]
+        },
+        "accepted_at": null
+      },
+      {
+        "unit": {
+          "deployment_id": "e5eb4fcb-6c49-4ab2-86f9-1605ccd192ab",
+          "project_uuid": "680476b9-5336-5422-a575-779f2efd1eff",
+          "project_id": "nibaru",
+          "project_identity_source": "CURRENT_MANIFEST",
+          "version": "4.2.0+26.2-port-canary43-native-directional-material-axis",
+          "source_commit": "2e58d752af44f4b84e10bc5e53a41aea00a177ee",
+          "artifacts": [
+            {
+              "artifact_id": "b337b39a-f331-4e03-bbdc-e3c3c6925536",
+              "kind": "MOD",
+              "filename": "more-slabs-stairs-and-walls-4.2.0+26.2-port-canary43-native-directional-material-axis.jar",
+              "sha256": "0a979a75101076e987a35807f8eb293631fe5e664b252e5db0aa263d4eedf07f",
+              "ownership_keys": [
+                "mod:more_slabs_stairs_and_walls"
+              ],
+              "source": {
+                "type": "REPOSITORY",
+                "path": "projects/nibaru/artifacts/more-slabs-stairs-and-walls-4.2.0+26.2-port-canary43-native-directional-material-axis.jar"
+              }
+            }
+          ]
+        },
+        "accepted_at": null
+      },
+      {
+        "unit": {
+          "deployment_id": "315c6175-c982-4409-81ef-acbe4796de2c",
+          "project_uuid": "7ad81f01-e236-5b65-836f-f4440a869a5a",
+          "project_id": "wool-soundproof-chests",
+          "project_identity_source": "CURRENT_MANIFEST",
+          "version": "0.1.0-alpha1",
+          "source_commit": "29484e4d67629ff4480f6ae7d5248a9a736ac4a4",
+          "artifacts": [
+            {
+              "artifact_id": "1148f67b-f778-429a-aa9e-50b0a10942cf",
+              "kind": "MOD",
+              "filename": "wool-soundproof-chests-0.1.0-alpha1.jar",
+              "sha256": "e8f0d10dff823e97a4f4ab39029bf7a71b13501f2294544c55e38f7e1ca9d020",
+              "ownership_keys": [
+                "mod:wool_soundproof_chests"
+              ],
+              "source": {
+                "type": "REPOSITORY",
+                "path": "projects/wool-soundproof-chests/artifacts/wool-soundproof-chests-0.1.0-alpha1.jar"
+              }
+            }
+          ]
+        },
+        "accepted_at": null
+      },
+      {
+        "unit": {
+          "deployment_id": "862b9559-6322-472d-8724-e224776c23f4",
+          "project_uuid": "9009daaf-90e8-5827-9f03-90566460f908",
+          "project_id": "offhand-shift-click-qol",
+          "project_identity_source": "CURRENT_MANIFEST",
+          "version": "0.3.3-acquisition-priority-fix-canary",
+          "source_commit": "3274dc915f49f6aecda6130added09d6742837bd",
+          "artifacts": [
+            {
+              "artifact_id": "ee91de25-9b05-474d-88c4-21d8aad61e84",
+              "kind": "MOD",
+              "filename": "offhand-shift-click-qol-0.3.3-acquisition-priority-fix-canary.jar",
+              "sha256": "d0c2ebe7cd2d1a6dcbe2654dbee42dd9f5dce4fd710ea3748f3d15dad6f2b04a",
+              "ownership_keys": [
+                "mod:offhand_shift_click_qol"
+              ],
+              "source": {
+                "type": "REPOSITORY",
+                "path": "projects/offhand-shift-click-qol/artifacts/offhand-shift-click-qol-0.3.3-acquisition-priority-fix-canary.jar"
+              }
+            }
+          ]
+        },
+        "accepted_at": null
+      },
+      {
+        "unit": {
+          "deployment_id": "1b6d00e9-7fc4-45e3-83a5-f632636e2f26",
+          "project_uuid": "fcb7d036-c756-5114-abe1-01c4331e7ea8",
+          "project_id": "carried-container-auto-routing",
+          "project_identity_source": "CURRENT_MANIFEST",
+          "version": "0.3.6-external-quick-move-priority-fix-canary",
+          "source_commit": "64d63d9bcca268297601af5c9a7537e8d8946812",
+          "artifacts": [
+            {
+              "artifact_id": "4f8db88c-5b1b-479b-9167-46f2783d1e93",
+              "kind": "MOD",
+              "filename": "carried-container-auto-routing-0.3.6-external-quick-move-priority-fix-canary.jar",
+              "sha256": "01913b0455d961d20174c601b0544c178ed47868113e6f1173e132290fe4ca02",
+              "ownership_keys": [
+                "mod:carried_container_auto_routing"
+              ],
+              "source": {
+                "type": "REPOSITORY",
+                "path": "projects/carried-container-auto-routing/artifacts/carried-container-auto-routing-0.3.6-external-quick-move-priority-fix-canary.jar"
+              }
+            }
+          ]
+        },
+        "accepted_at": null
+      },
+      {
+        "unit": {
+          "deployment_id": "eeb84e4e-ae74-47b4-bece-10425a5dd7dc",
+          "project_uuid": "4d983099-3bfc-5df1-9788-32683ddfc6db",
+          "project_id": "matcha-jei-integration",
+          "project_identity_source": "CURRENT_MANIFEST",
+          "version": "0.1.1-subtype-registration-fix-canary",
+          "source_commit": "b26c1b62d2f33bbea9c0d99e07d6d373baa1dd48",
+          "artifacts": [
+            {
+              "artifact_id": "4f470261-70ea-41ae-99de-d6b8f7f44c5f",
+              "kind": "MOD",
+              "filename": "matcha-jei-integration-0.1.1-subtype-registration-fix-canary.jar",
+              "sha256": "4ef3ddde44ec06e2ee852dd64f5f5d1cf25c1f4f908282f854e9f49b2d5fb60d",
+              "ownership_keys": [
+                "mod:matcha_jei_integration"
+              ],
+              "source": {
+                "type": "REPOSITORY",
+                "path": "projects/matcha-jei-integration/artifacts/matcha-jei-integration-0.1.1-subtype-registration-fix-canary.jar"
+              }
+            }
+          ]
+        },
+        "accepted_at": null
+      },
+      {
+        "unit": {
+          "deployment_id": "c00c0018-fa67-41b4-a981-62b6d3986def",
+          "project_uuid": "937d7ccc-44c9-55cb-8d33-0dc0bff5fe45",
+          "project_id": "matcha-heart-death-compat",
+          "project_identity_source": "CURRENT_MANIFEST",
+          "version": "0.1.4-canary5",
+          "source_commit": "5477ca770e58a8b4bed8f1bf737b04765a9d12a7",
+          "artifacts": [
+            {
+              "artifact_id": "75db28b1-ed5e-41bb-b23f-67b3b9080fd9",
+              "kind": "MOD",
+              "filename": "matcha-heart-death-compat-0.1.4-canary5.jar",
+              "sha256": "21e24d37b1a3b575b738f7ca38b0614c9d0285c4f0723defe4db85297b171c04",
+              "ownership_keys": [
+                "mod:matcha_heart_death_compat"
+              ],
+              "source": {
+                "type": "REPOSITORY",
+                "path": "projects/matcha-heart-death-compat/artifacts/matcha-heart-death-compat-0.1.4-canary5.jar"
+              }
+            }
+          ]
+        },
+        "accepted_at": null
+      },
+      {
+        "unit": {
+          "deployment_id": "dd9c5bb0-194a-4a30-80f0-aff7712d1270",
+          "project_uuid": "28c84ead-5e0a-57b5-942c-1ee58b02cadb",
+          "project_id": "dragonbound-waystone",
+          "project_identity_source": "CURRENT_MANIFEST",
+          "version": "0.1.0-canary5",
+          "source_commit": "690066c7c7159771a244ecd72f201473d95fcb19",
+          "artifacts": [
+            {
+              "artifact_id": "1c699902-2fbd-4e0e-bf2c-401dddbf7fdb",
+              "kind": "MOD",
+              "filename": "dragonbound-waystone-0.1.0-canary5.jar",
+              "sha256": "ff29582cc50f391a3ebb79b5ab1dff2f8fb7abb92363bca46fb8a9608a481ad3",
+              "ownership_keys": [
+                "mod:dragonbound_waystone"
+              ],
+              "source": {
+                "type": "REPOSITORY",
+                "path": "projects/dragonbound-waystone/artifacts/dragonbound-waystone-0.1.0-canary5.jar"
+              }
+            }
+          ]
+        },
+        "accepted_at": null
+      },
+      {
+        "unit": {
+          "deployment_id": "c64f7af1-b853-44e1-9503-36e78e6380f0",
+          "project_uuid": "357cd94a-4ab2-54c9-ac6c-4049fea08bb9",
+          "project_id": "inventory-3x3-crafting",
+          "project_identity_source": "CURRENT_MANIFEST",
+          "version": "0.1.0-canary4",
+          "source_commit": "34e8de533e804ab4993b7502d7c5afbec6ebc8ca",
+          "artifacts": [
+            {
+              "artifact_id": "cbab5733-290f-4df4-8f16-5ecbb8eda113",
+              "kind": "MOD",
+              "filename": "inherent-3x3-inventory-crafting-0.1.0-canary4.jar",
+              "sha256": "6e797291dd6c68f5afe65f91177ad2653f7c4a99e10bd20e078fafd7aaf6cb33",
+              "ownership_keys": [
+                "mod:inherent_3x3_inventory_crafting"
+              ],
+              "source": {
+                "type": "REPOSITORY",
+                "path": "projects/inventory-3x3-crafting/artifacts/inherent-3x3-inventory-crafting-0.1.0-canary4.jar"
+              }
+            }
+          ]
+        },
+        "accepted_at": null
+      },
+      {
+        "unit": {
+          "deployment_id": "fef8fa8e-ee0c-4899-b9a1-64ea09d062af",
+          "project_uuid": "9b4cd3fb-8ae6-58c7-8b88-9b0878c6333e",
+          "project_id": "stripping-toggle-fallingtree-compat",
+          "project_identity_source": "CURRENT_MANIFEST",
+          "version": "0.1.1-canary2",
+          "source_commit": "8abd994b09a50879d0ae871d763f8c47248cc0f8",
+          "artifacts": [
+            {
+              "artifact_id": "03177b08-5d32-4b8d-a241-a2f1e65b4833",
+              "kind": "MOD",
+              "filename": "strippingtoggle-fallingtree-compat-0.1.1-canary2.jar",
+              "sha256": "d948c23db8b6c73e764f96422d8359afb85ba39689352e512fd7b4aa91644846",
+              "ownership_keys": [
+                "mod:strippingtoggle_fallingtree_compat"
+              ],
+              "source": {
+                "type": "REPOSITORY",
+                "path": "projects/stripping-toggle-fallingtree-compat/artifacts/strippingtoggle-fallingtree-compat-0.1.1-canary2.jar"
+              }
+            }
+          ]
+        },
+        "accepted_at": null
+      },
+      {
+        "unit": {
+          "deployment_id": "ed355cf7-f049-4059-8cbe-db4fc9889e5a",
+          "project_uuid": "64662c53-9f5f-5a1b-85ca-4c48019cf3a4",
+          "project_id": "traveler-toolbelt",
+          "project_identity_source": "FROZEN_LEGACY",
+          "version": "1.0.2+26.2-trinkets-canary1",
+          "source_commit": "b39e8166de6eef3f5aebcbaaa4751a68b9d02c27",
+          "artifacts": [
+            {
+              "artifact_id": "f85b146f-f91b-450d-ba69-067a4009dd16",
+              "kind": "MOD",
+              "filename": "travelertoolbelt-fabric-26.2-1.0.2-TRINKETS-CANARY1.jar",
+              "sha256": "43d3370135f42ef74129b904325006f91ba32074ab8dbd81a649170d1366fcd6",
+              "ownership_keys": [
+                "mod:travelertoolbelt"
+              ],
+              "source": {
+                "type": "ADOPTED_TARGET",
+                "path": "mods/travelertoolbelt-fabric-26.2-1.0.2-TRINKETS-CANARY1.jar"
+              }
+            }
+          ]
+        },
+        "accepted_at": null
+      },
+      {
+        "unit": {
+          "deployment_id": "6fb3d3fa-7d61-4b30-a9c7-1897298f4ffa",
+          "project_uuid": "d2fdf877-314a-539c-a5df-bd26ba8b6e6c",
+          "project_id": "double-barrels",
+          "project_identity_source": "CURRENT_MANIFEST",
+          "version": "1.0.1+26.2-canary2",
+          "source_commit": "3f4d9b53c0c38f20717f1b6b1bd83ac543bd6864",
+          "artifacts": [
+            {
+              "artifact_id": "e8f64ddb-bd9f-456e-8c8a-dd68d841aa7a",
+              "kind": "MOD",
+              "filename": "doublebarrels-fabric-26.2-1.0.1+26.2-canary2.jar",
+              "sha256": "b2119e05c508880c7977551091515f0076dd3cdc2733e51340ac813925b553c0",
+              "ownership_keys": [
+                "mod:doublebarrels"
+              ],
+              "source": {
+                "type": "REPOSITORY",
+                "path": "projects/double-barrels/artifacts/doublebarrels-fabric-26.2-1.0.1+26.2-canary2.jar"
+              }
+            }
+          ]
+        },
+        "accepted_at": null
+      },
+      {
+        "unit": {
+          "deployment_id": "2a27927f-af51-4c0e-a391-58fe4d845989",
+          "project_uuid": "26065ff3-182f-5314-a5f6-976d6ffd394a",
+          "project_id": "custom-portals",
+          "project_identity_source": "CURRENT_MANIFEST",
+          "version": "4.0.0+26.2-port-canary2",
+          "source_commit": "604720aa69f96e4628535722a015a5bf1726e0ea",
+          "artifacts": [
+            {
+              "artifact_id": "9e9375ac-d0dd-43aa-938c-8ab6df2fcf89",
+              "kind": "MOD",
+              "filename": "custom-portals-26.2-4.0.0+26.2-port-canary2.jar",
+              "sha256": "13fd0e76748fcc3ef963bcc2f4a820d5fc2d473a90ad5d5988cbe0129c2be148",
+              "ownership_keys": [
+                "mod:customportals"
+              ],
+              "source": {
+                "type": "REPOSITORY",
+                "path": "projects/custom-portals/artifacts/custom-portals-26.2-4.0.0+26.2-port-canary2.jar"
+              }
+            }
+          ]
+        },
+        "accepted_at": null
+      },
+      {
+        "unit": {
+          "deployment_id": "22b87e8b-549c-4399-80fb-b6652bccf695",
+          "project_uuid": "41c327e0-b896-5a02-a30c-62f98b8123ae",
+          "project_id": "dramatic-doors",
+          "project_identity_source": "CURRENT_MANIFEST",
+          "version": "1.20.1-3.3.3+26.2-workbench-canary6",
+          "source_commit": "47774864918b4c1b1088ba0bca21565304d4c131",
+          "artifacts": [
+            {
+              "artifact_id": "b4f9532c-d8da-4de7-8fb4-2c4bc32ecf83",
+              "kind": "MOD",
+              "filename": "dramaticdoors-1.20.1-3.3.3+26.2-workbench-canary6.jar",
+              "sha256": "1d6b8286c3cc4e657f5326a2e5807081e35f66d13a41e77b3931b647fcdda4f6",
+              "ownership_keys": [
+                "mod:dramaticdoors"
+              ],
+              "source": {
+                "type": "REPOSITORY",
+                "path": "projects/dramatic-doors/artifacts/dramaticdoors-1.20.1-3.3.3+26.2-workbench-canary6.jar"
+              }
+            }
+          ]
+        },
+        "accepted_at": null
+      },
+      {
+        "unit": {
+          "deployment_id": "66b8b293-d9ae-41c4-a969-d43baf79c2ff",
+          "project_uuid": "ffa96cc6-2989-5465-b158-1659a484366b",
+          "project_id": "quick-stack-nearby-compat",
+          "project_identity_source": "CURRENT_MANIFEST",
+          "version": "0.1.0-canary6",
+          "source_commit": "3c8cc5917da9fd016e57a969955fa7c6e3b08661",
+          "artifacts": [
+            {
+              "artifact_id": "cb31d144-b6c4-41fb-ba44-35d896b228f6",
+              "kind": "MOD",
+              "filename": "quick-stack-nearby-0.4.0.jar",
+              "sha256": "43f1130527f782a291231c682791b4fd3766a20916c691cbdb98f91fdcc47e53",
+              "ownership_keys": [
+                "mod:quick-stack-nearby"
+              ],
+              "source": {
+                "type": "ADOPTED_TARGET",
+                "path": "mods/quick-stack-nearby-0.4.0.jar"
+              }
+            },
+            {
+              "artifact_id": "dd71ea5d-30c2-4ae6-a062-7bf9901812b2",
+              "kind": "MOD",
+              "filename": "quick-stack-nearby-compat-0.1.0-canary6.jar",
+              "sha256": "c2f4ae3b02a5517ad184998c784c356d90132aeaee91546c91d03a878be6ce98",
+              "ownership_keys": [
+                "mod:quick_stack_nearby_compat"
+              ],
+              "source": {
+                "type": "REPOSITORY",
+                "path": "projects/quick-stack-nearby-compat/artifacts/quick-stack-nearby-compat-0.1.0-canary6.jar"
+              }
+            }
+          ]
+        },
+        "accepted_at": null
+      },
+      {
+        "unit": {
+          "deployment_id": "86ad25fb-5879-49f4-b957-d44ee4c73a07",
+          "project_uuid": "0b54727d-db44-57dd-aa66-424ce93bb0c3",
+          "project_id": "matcha-noxious-redstone",
+          "project_identity_source": "CURRENT_MANIFEST",
+          "version": "0.2.1",
+          "source_commit": "7b98587352e318cfa07801ad708bf164ac432903",
+          "artifacts": [
+            {
+              "artifact_id": "069f5605-52ea-40e6-b66f-325708b039ac",
+              "kind": "MOD",
+              "filename": "matcha-noxious-redstone-0.2.1+mc26.2.jar",
+              "sha256": "31e6f1fae99bfc787ed91fabc33e8b7cf258f1deda4dbe0f000e693eae3d7c3d",
+              "ownership_keys": [
+                "mod:matcha_noxious_redstone"
+              ],
+              "source": {
+                "type": "ADOPTED_TARGET",
+                "path": "mods/matcha-noxious-redstone-0.2.1+mc26.2.jar"
+              }
+            }
+          ]
+        },
+        "accepted_at": null
+      },
+      {
+        "unit": {
+          "deployment_id": "cd52fa76-27d9-4e6e-9687-7e286f699a7b",
+          "project_uuid": "cada1b33-d1d8-5ef1-845b-9c6224ff114a",
+          "project_id": "map-marker-extension",
+          "project_identity_source": "CURRENT_MANIFEST",
+          "version": "0.2.0-canary4",
+          "source_commit": "3aac5ff7259a8bbb4bcac2a6147749589ee94bff",
+          "artifacts": [
+            {
+              "artifact_id": "ee85ce05-027f-45ae-8301-09f1268ceb7a",
+              "kind": "MOD",
+              "filename": "treasure-x-xaero-0.2.0-canary4.jar",
+              "sha256": "9d5e5c22873417346247ead34d87795e3f4aa84eaf0674345d4ca477ef3ae6e7",
+              "ownership_keys": [
+                "mod:treasure_x_xaero"
+              ],
+              "source": {
+                "type": "REPOSITORY",
+                "path": "projects/map-marker-extension/artifacts/treasure-x-xaero-0.2.0-canary4.jar"
+              }
+            }
+          ]
+        },
+        "accepted_at": null
+      },
+      {
+        "unit": {
+          "deployment_id": "614984a0-df4f-4627-8000-fe3297f2f88f",
+          "project_uuid": "b41da80e-9928-568b-b8ef-ee2175ed2285",
+          "project_id": "radial-slot-cycler",
+          "project_identity_source": "CURRENT_MANIFEST",
+          "version": "0.1.0-canary2-private",
+          "source_commit": "afd63c35df9d24756ddd53fbfaa7f05cc72a987f",
+          "artifacts": [
+            {
+              "artifact_id": "745df0aa-3f0b-4fdc-b5f7-1e2298eea8f3",
+              "kind": "MOD",
+              "filename": "radial-slot-cycler-0.1.0-canary2-private.jar",
+              "sha256": "3fe7e539eaafda97ab5a5a301544b25563f896fee354b729607074f404bdbc21",
+              "ownership_keys": [
+                "mod:radial_slot_cycler"
+              ],
+              "source": {
+                "type": "ADOPTED_TARGET",
+                "path": "mods/radial-slot-cycler-0.1.0-canary2-private.jar"
+              }
+            }
+          ]
+        },
+        "accepted_at": null
+      },
+      {
+        "unit": {
+          "deployment_id": "3babd864-6fe1-4774-869a-b79e86839488",
+          "project_uuid": "2dc7b47a-f3b4-5fbe-a1fa-53e4f0aaa446",
+          "project_id": "horse-immunities",
+          "project_identity_source": "CURRENT_MANIFEST",
+          "version": "0.1.0-canary2",
+          "source_commit": "5a5a4b239772023345e15ed22b4a6f0ed0b2237b",
+          "artifacts": [
+            {
+              "artifact_id": "95a27150-9337-4c91-a5d1-016e166bbe23",
+              "kind": "MOD",
+              "filename": "sweet-berry-horse-immunity-0.1.0-canary2.jar",
+              "sha256": "caddc47f9db0d374d44da4beb21605ad5bcb28ecf162136b774733e9dfe37697",
+              "ownership_keys": [
+                "mod:sweet_berry_horse_immunity"
+              ],
+              "source": {
+                "type": "REPOSITORY",
+                "path": "projects/horse-immunities/artifacts/sweet-berry-horse-immunity-0.1.0-canary2.jar"
+              }
+            }
+          ]
+        },
+        "accepted_at": null
+      },
+      {
+        "unit": {
+          "deployment_id": "f45b0fc6-d776-4666-8e67-5fe71a9ece2b",
+          "project_uuid": "3f28bc98-058b-57a2-967b-81ad8e35f957",
+          "project_id": "xaero-entity-icons",
+          "project_identity_source": "CURRENT_MANIFEST",
+          "version": "0.1.0-canary3",
+          "source_commit": "2478f021982c5f26e51ff0579fa2f5dad85ed200",
+          "artifacts": [
+            {
+              "artifact_id": "1f3e851f-2789-4108-bbec-7fd8fe21bf56",
+              "kind": "MOD",
+              "filename": "xaero-emf-entity-icon-compat-0.1.0-canary3.jar",
+              "sha256": "4f34d743f5fffd8e938c8f5157c630fd85f3b263ac1ae9f96c432cfe51668df2",
+              "ownership_keys": [
+                "mod:xaero_emf_entity_icon_compat"
+              ],
+              "source": {
+                "type": "REPOSITORY",
+                "path": "projects/xaero-entity-icons/artifacts/xaero-emf-entity-icon-compat-0.1.0-canary3.jar"
+              }
+            }
+          ]
+        },
+        "accepted_at": null
+      },
+      {
+        "unit": {
+          "deployment_id": "fa37956f-2aa4-41d7-8f93-8439f92e89d7",
+          "project_uuid": "ee8a20f8-d0a8-515c-9a74-3b19f238227d",
+          "project_id": "interchangeable-block-families",
+          "project_identity_source": "CURRENT_MANIFEST",
+          "version": "0.1.0-canary3",
+          "source_commit": "34796a9af6b2da235c3ff9d0e3338f8e6af0e137",
+          "artifacts": [
+            {
+              "artifact_id": "920be86e-c162-434e-90c4-6d04c2c8c579",
+              "kind": "MOD",
+              "filename": "interchangeable-block-families-0.1.0-canary3.jar",
+              "sha256": "d0150aea777dd7837d0c9b4f5cf41ce45f510c60ef416fb7001d06a36a6b0e87",
+              "ownership_keys": [
+                "mod:interchangeable_block_families"
+              ],
+              "source": {
+                "type": "REPOSITORY",
+                "path": "projects/interchangeable-block-families/artifacts/interchangeable-block-families-0.1.0-canary3.jar"
+              }
+            }
+          ]
+        },
+        "accepted_at": null
+      },
+      {
+        "unit": {
+          "deployment_id": "6c8c4d94-bce9-479a-916c-66b94eecc852",
+          "project_uuid": "e28154da-0649-5da7-b6d5-3bff2891719e",
+          "project_id": "shulker-trowel",
+          "project_identity_source": "CURRENT_MANIFEST",
+          "version": "0.1.0-canary4",
+          "source_commit": "069bc055356c5a46218acfb846c97acc0c0c4789",
+          "artifacts": [
+            {
+              "artifact_id": "80331cb2-02aa-446b-845e-001b24c27415",
+              "kind": "MOD",
+              "filename": "shulker-trowel-0.1.0-canary4-private.jar",
+              "sha256": "73c012c08ca5567e795711cf11c8eaac625528e7350309114467129394f0afba",
+              "ownership_keys": [
+                "mod:shulker_trowel"
+              ],
+              "source": {
+                "type": "ADOPTED_TARGET",
+                "path": "mods/shulker-trowel-0.1.0-canary4-private.jar"
+              }
+            }
+          ]
+        },
+        "accepted_at": null
+      }
+    ]
   },
   "slots": {
-    "A": null,
-    "B": null
+    "A": {
+      "unit": {
+        "deployment_id": "80b6d196-7104-4003-8d5b-9a281fbbb206",
+        "project_uuid": "937d7ccc-44c9-55cb-8d33-0dc0bff5fe45",
+        "project_id": "matcha-heart-death-compat",
+        "project_identity_source": "CURRENT_MANIFEST",
+        "version": "0.1.6-canary7",
+        "source_commit": "3dbd78201104686a061df7a94d3be5162072c877",
+        "artifacts": [
+          {
+            "artifact_id": "e6ad339a-8820-4c69-9443-14198ace2afe",
+            "kind": "MOD",
+            "filename": "matcha-heart-death-compat-0.1.6-canary7.jar",
+            "sha256": "3b1f608c6f4b3b92f764a3781a9652dc11f089590a9173444c067975d01ca2dd",
+            "ownership_keys": [
+              "mod:matcha_heart_death_compat"
+            ],
+            "source": {
+              "type": "REPOSITORY",
+              "path": "projects/matcha-heart-death-compat/artifacts/matcha-heart-death-compat-0.1.6-canary7.jar"
+            }
+          }
+        ]
+      },
+      "replaces_accepted_deployment_id": "c00c0018-fa67-41b4-a981-62b6d3986def",
+      "deployment": {
+        "state": "READY_TO_TEST_VERIFIED",
+        "deployed_at": "2026-08-29T06:15:21.5987385Z",
+        "ready_verified_at": "2026-08-29T06:15:21.5987385Z"
+      },
+      "runtime_result": {
+        "classification": "FAIL",
+        "recorded_at": "2026-08-30T00:45:29Z",
+        "evidence": {
+          "passed": [
+            "Sculk Sensor Echo Shard drop removal passed.",
+            "Sculk Shrieker Echo Shard drop removal passed.",
+            "Reinforced Crystal Heart recipe passed."
+          ],
+          "failed": [
+            "Crystal Heart recipe failed because Matcha's recipe still won.",
+            "Sculk Sensor recipe failed because Matcha's recipe still won.",
+            "Sculk Shrieker recipe failed because Matcha's recipe still won."
+          ]
+        }
+      }
+    },
+    "B": {
+      "unit": {
+        "deployment_id": "c6935721-83b4-4f12-989a-bfec9807f39c",
+        "project_uuid": "9f1c5aa4-09c1-4de3-9921-4b045e8abcd2",
+        "project_id": "mossy-stone",
+        "project_identity_source": "CURRENT_MANIFEST",
+        "version": "0.2.0-canary2",
+        "source_commit": "2008a418d868139e88bc066672d10f8463d84e0f",
+        "artifacts": [
+          {
+            "artifact_id": "108940a1-538a-47fb-bf29-ad95f1cf0990",
+            "kind": "MOD",
+            "filename": "mossy-stone-0.2.0-canary2.jar",
+            "sha256": "0a337771301dfb1165aded256908677b93b48f756e1c5a8eacfde5d057178b59",
+            "ownership_keys": [
+              "mod:mossy_stone"
+            ],
+            "source": {
+              "type": "REPOSITORY",
+              "path": "projects/mossy-stone/artifacts/mossy-stone-0.2.0-canary2.jar"
+            }
+          }
+        ]
+      },
+      "replaces_accepted_deployment_id": null,
+      "deployment": {
+        "state": "READY_TO_TEST_VERIFIED",
+        "deployed_at": "2026-08-29T06:15:21.5987385Z",
+        "ready_verified_at": "2026-08-29T06:15:21.5987385Z"
+      },
+      "runtime_result": {
+        "classification": "FAIL",
+        "recorded_at": "2026-08-30T00:45:29Z",
+        "evidence": {
+          "passed": [
+            "Implementation loads and functions.",
+            "Visuals are correct.",
+            "Stone-like behavior is correct.",
+            "Tested Mossy Stone family behavior is correct.",
+            "No issue was reported with the tested geometry or gameplay functionality."
+          ],
+          "failed": [
+            "Mossy Stone is absent from the appropriate Creative inventory exposure.",
+            "Mossy Stone is absent from JEI."
+          ]
+        }
+      }
+    }
   }
 }

@@ -1,0 +1,10 @@
+{
+  "schema_version": 2,
+  "repository_root": "../..",
+  "runtime_state": "tools/test_instance_manager/runtime-state.json",
+  "dedicated_profile": "C:\\Users\\resiv\\AppData\\Roaming\\ModrinthApp\\profiles\\Matcha Flavoured 26.2 Workbench",
+  "protected_profile": "C:\\Users\\resiv\\AppData\\Roaming\\ModrinthApp\\profiles\\Matcha Flavoured 26.1.2",
+  "mods_directory": "mods",
+  "ledger_file": ".mynx-runtime-v2-ledger.json",
+  "lock_file": ".mynx-runtime-v2.lock"
+}

@@ -206,19 +206,25 @@ def write_project(root: Path, manifest: dict, log: str | None = None) -> Path:
 
 def deployment_unit(project_id: str, *, version: str = "Canary 1", filename: str | None = None, ownership: str | None = None) -> dict:
     seed = project_id + ":" + version
+    artifact_filename = filename or f"{project_id}-{version.lower().replace(' ', '-')}.jar"
     return {
         "deployment_id": stable_uuid("deployment:" + seed),
         "project_uuid": stable_uuid("project:" + project_id),
         "project_id": project_id,
+        "project_identity_source": "CURRENT_MANIFEST",
         "version": version,
         "source_commit": ("c" if version == "Canary 1" else "d") * 40,
         "artifacts": [
             {
                 "artifact_id": stable_uuid("artifact:" + seed),
                 "kind": "MOD",
-                "filename": filename or f"{project_id}-{version.lower().replace(' ', '-')}.jar",
+                "filename": artifact_filename,
                 "sha256": ("1" if version == "Canary 1" else "2") * 64,
                 "ownership_keys": [ownership or f"mod:{project_id}"],
+                "source": {
+                    "type": "REPOSITORY",
+                    "path": f"projects/{project_id}/artifacts/{artifact_filename}",
+                },
             }
         ],
     }
@@ -234,7 +240,14 @@ def candidate(unit: dict, result: str = "UNTESTED") -> dict:
             "deployed_at": TIME_1 if ready else None,
             "ready_verified_at": TIME_1 if ready else None,
         },
-        "runtime_result": {"classification": result, "recorded_at": TIME_1 if ready else None},
+        "runtime_result": {
+            "classification": result,
+            "recorded_at": TIME_1 if ready else None,
+            "evidence": {
+                "passed": ["observed pass"] if ready else [],
+                "failed": ["observed failure"] if result == "FAIL" else [],
+            },
+        },
     }
 
 
@@ -246,7 +259,21 @@ def runtime_state(accepted: list[dict] | None = None, slot_a: dict | None = None
         "activation": "GATED",
         "revision": 3 if (accepted or slot_a or slot_b) else 0,
         "updated_at": TIME_1,
-        "accepted_baseline": {"revision": 1 if accepted else 0, "members": copy.deepcopy(accepted)},
+        "accepted_baseline": {
+            "revision": 1 if accepted else 0,
+            "provenance": {
+                "source_repository": "Resivore/Minecraft-26.2-Workbench",
+                "source_commit": "f" * 40,
+                "source_profile": "fixture",
+                "legacy_ledger_sha256": "a" * 64,
+                "accepted_artifact_count": sum(len(member["unit"]["artifacts"]) for member in accepted),
+                "overlay_order": [],
+                "readiness": "READY_TO_TEST_VERIFIED",
+                "diagnostics": 0,
+                "physical_disposition": "PENDING",
+            },
+            "members": copy.deepcopy(accepted),
+        },
         "slots": {"A": copy.deepcopy(slot_a), "B": copy.deepcopy(slot_b)},
     }
 
@@ -368,11 +395,12 @@ class RuntimeContractTests(unittest.TestCase):
         self.assertEqual("PASS", two["slots"]["A"]["runtime_result"]["classification"])
         self.assertEqual("FAIL", two["slots"]["B"]["runtime_result"]["classification"])
 
-    def test_b_only_and_more_than_two_are_rejected(self) -> None:
+    def test_b_only_is_valid_and_more_than_two_are_rejected(self) -> None:
         alpha = deployment_unit("alpha")
         state = runtime_state(slot_b=candidate(alpha))
-        with self.assertRaisesRegex(ValidationError, "left-packed"):
-            validate_runtime_state(state, project_index("alpha"))
+        validate_runtime_state(state, project_index("alpha"))
+        self.assertIsNone(state["slots"]["A"])
+        self.assertEqual("alpha", state["slots"]["B"]["unit"]["project_id"])
         with self.assertRaisesRegex(ValidationError, "more than two"):
             plan_transition(runtime_state(), 0, {"type": "SET_PROFILE", "candidates": [candidate_declaration(alpha)] * 3}, TIME_2)
         state = runtime_state()
@@ -404,6 +432,30 @@ class RuntimeContractTests(unittest.TestCase):
         self.assertEqual("NOT_DEPLOYED", assigned["slots"]["A"]["deployment"]["state"])
         self.assertEqual("UNTESTED", assigned["slots"]["A"]["runtime_result"]["classification"])
 
+        empty_pass = runtime_state(slot_a=candidate(alpha, "PASS"))
+        empty_pass["slots"]["A"]["runtime_result"]["evidence"]["passed"] = []
+        with self.assertRaisesRegex(ValidationError, "PASS requires"):
+            validate_runtime_state(empty_pass, project_index("alpha"))
+
+    def test_activation_identity_and_source_gates_fail_closed(self) -> None:
+        state = runtime_state()
+        state["activation"] = "ACTIVE"
+        with self.assertRaisesRegex(ValidationError, "adopted physical state"):
+            validate_runtime_state(state)
+        state["accepted_baseline"]["provenance"]["physical_disposition"] = "ADOPTED"
+        state["accepted_baseline"]["provenance"]["diagnostics"] = 1
+        with self.assertRaisesRegex(ValidationError, "zero diagnostics"):
+            validate_runtime_state(state)
+
+        alpha = deployment_unit("alpha")
+        alpha["project_identity_source"] = "FROZEN_LEGACY"
+        with self.assertRaisesRegex(ValidationError, "runtime slots require CURRENT_MANIFEST"):
+            validate_runtime_state(runtime_state(slot_a=candidate(alpha)), project_index("alpha"))
+        alpha = deployment_unit("alpha")
+        alpha["source_commit"] = None
+        with self.assertRaisesRegex(ValidationError, "exact source commit"):
+            validate_runtime_state(runtime_state(slot_a=candidate(alpha)), project_index("alpha"))
+
     def test_accepted_baseline_collision_cannot_be_hidden_by_upgrade(self) -> None:
         alpha = deployment_unit("alpha", filename="shared.jar")
         beta = deployment_unit("beta", filename="SHARED.jar")
@@ -418,6 +470,18 @@ class RuntimeContractTests(unittest.TestCase):
         alpha = deployment_unit("alpha", filename="alpha.jar:stream")
         with self.assertRaisesRegex(ValidationError, "Windows-safe"):
             validate_runtime_state(runtime_state(slot_a=candidate(alpha)), project_index("alpha"))
+        alpha = deployment_unit("alpha")
+        alpha["artifacts"][0]["source"]["path"] = "C:/alpha-canary-1.jar"
+        with self.assertRaisesRegex(ValidationError, "normalized relative POSIX"):
+            validate_runtime_state(runtime_state(slot_a=candidate(alpha)), project_index("alpha"))
+        alpha = deployment_unit("alpha")
+        alpha["artifacts"][0]["source"]["path"] = "originals/alpha-canary-1.jar"
+        with self.assertRaisesRegex(ValidationError, "originals"):
+            validate_runtime_state(runtime_state(slot_a=candidate(alpha)), project_index("alpha"))
+        alpha = deployment_unit("alpha")
+        alpha["artifacts"][0]["kind"] = "RESOURCE_PACK"
+        with self.assertRaisesRegex(ValidationError, "must be one of: MOD"):
+            validate_runtime_state(runtime_state(slot_a=candidate(alpha)), project_index("alpha"))
         state = runtime_state()
         with self.assertRaisesRegex(ValidationError, "cannot precede"):
             plan_transition(
@@ -428,7 +492,7 @@ class RuntimeContractTests(unittest.TestCase):
                 project_index("beta"),
             )
 
-    def test_promote_a_preserves_and_left_packs_b(self) -> None:
+    def test_promote_a_preserves_b_in_its_independent_slot(self) -> None:
         base = deployment_unit("base")
         alpha = deployment_unit("alpha")
         beta = deployment_unit("beta")
@@ -438,11 +502,60 @@ class RuntimeContractTests(unittest.TestCase):
         state = runtime_state(accepted, slot_a, slot_b)
         prior_b = copy.deepcopy(state["slots"]["B"])
         next_state = plan_transition(state, state["revision"], {"type": "PROMOTE_SLOT", "slot": "A"}, TIME_2, project_index("base", "alpha", "beta"))
-        self.assertEqual(prior_b, next_state["slots"]["A"])
-        self.assertIsNone(next_state["slots"]["B"])
+        self.assertIsNone(next_state["slots"]["A"])
+        self.assertEqual(prior_b, next_state["slots"]["B"])
         self.assertEqual(state["revision"] + 1, next_state["revision"])
         self.assertEqual(state["accepted_baseline"]["revision"] + 1, next_state["accepted_baseline"]["revision"])
         self.assertEqual({"base", "alpha", "beta"}, {unit["project_id"] for unit in resolve_profile(next_state, project_index("base", "alpha", "beta"))})
+
+    def test_update_and_clear_one_slot_preserve_the_other(self) -> None:
+        alpha = deployment_unit("alpha")
+        alpha_v2 = deployment_unit("alpha", version="Canary 2")
+        beta = deployment_unit("beta")
+        state = runtime_state(slot_a=candidate(alpha, "FAIL"), slot_b=candidate(beta, "PASS"))
+        prior_b = copy.deepcopy(state["slots"]["B"])
+        updated = plan_transition(
+            state,
+            state["revision"],
+            {"type": "UPDATE_SLOT", "slot": "A", "candidate": candidate_declaration(alpha_v2)},
+            TIME_2,
+            project_index("alpha", "beta"),
+        )
+        self.assertEqual("UNTESTED", updated["slots"]["A"]["runtime_result"]["classification"])
+        self.assertEqual(prior_b, updated["slots"]["B"])
+        cleared = plan_transition(
+            updated,
+            updated["revision"],
+            {"type": "REMOVE_SLOT", "slot": "A"},
+            TIME_3,
+            project_index("alpha", "beta"),
+        )
+        self.assertIsNone(cleared["slots"]["A"])
+        self.assertEqual(prior_b, cleared["slots"]["B"])
+
+    def test_successor_update_preserves_accepted_replacement_suppression(self) -> None:
+        alpha_v1 = deployment_unit("alpha", version="Canary 1")
+        alpha_v2 = deployment_unit("alpha", version="Canary 2")
+        alpha_v3 = deployment_unit("alpha", version="Canary 3")
+        beta = deployment_unit("beta")
+        slot_a = candidate(alpha_v2, "FAIL")
+        slot_a["replaces_accepted_deployment_id"] = alpha_v1["deployment_id"]
+        state = runtime_state(
+            accepted=[{"unit": alpha_v1, "accepted_at": TIME_1}],
+            slot_a=slot_a,
+            slot_b=candidate(beta, "PASS"),
+        )
+        prior_b = copy.deepcopy(state["slots"]["B"])
+        updated = plan_transition(
+            state,
+            state["revision"],
+            {"type": "UPDATE_SLOT", "slot": "A", "candidate": candidate_declaration(alpha_v3)},
+            TIME_2,
+            project_index("alpha", "beta"),
+        )
+        self.assertEqual(alpha_v1["deployment_id"], updated["slots"]["A"]["replaces_accepted_deployment_id"])
+        self.assertEqual(prior_b, updated["slots"]["B"])
+        self.assertEqual({"alpha", "beta"}, {unit["project_id"] for unit in resolve_profile(updated, project_index("alpha", "beta"))})
 
     def test_promotion_requires_pass_and_upgrade_replaces_baseline(self) -> None:
         alpha_v1 = deployment_unit("alpha", version="Canary 1")
@@ -459,42 +572,27 @@ class RuntimeContractTests(unittest.TestCase):
         with self.assertRaisesRegex(ValidationError, "requires an explicit"):
             plan_transition(untested, untested["revision"], {"type": "PROMOTE_SLOT", "slot": "A"}, TIME_2, project_index("beta"))
 
-    def test_atomic_cas_is_gated_and_preserves_foreign_lock(self) -> None:
+    def test_repo_only_commit_path_is_always_disabled(self) -> None:
         alpha = deployment_unit("alpha")
-        with tempfile.TemporaryDirectory() as temporary:
-            path = Path(temporary) / "runtime-state.json"
-            state = runtime_state()
-            path.write_text(json.dumps(state), encoding="utf-8")
-            with self.assertRaisesRegex(ValidationError, "disabled"):
-                commit_state(
-                    path,
-                    0,
-                    state_digest(state),
-                    {"type": "ASSIGN_SLOT", "candidate": candidate_declaration(alpha)},
-                    TIME_2,
-                    project_index("alpha"),
-                )
-            self.assertEqual(state_digest(state), state_digest(load_json(path)))
-            state["activation"] = "ACTIVE"
-            path.write_text(json.dumps(state), encoding="utf-8")
-            next_state = commit_state(
-                path,
+        state = runtime_state()
+        state["activation"] = "ACTIVE"
+        state["accepted_baseline"]["provenance"]["physical_disposition"] = "ADOPTED"
+        with self.assertRaisesRegex(ValidationError, "V2 physical manager"):
+            commit_state(
+                Path("runtime-state.json"),
                 0,
                 state_digest(state),
                 {"type": "ASSIGN_SLOT", "candidate": candidate_declaration(alpha)},
                 TIME_2,
                 project_index("alpha"),
             )
-            self.assertEqual(1, next_state["revision"])
-            lock_path = path.with_name(path.name + ".lock")
-            lock_path.write_text("foreign", encoding="utf-8")
-            with self.assertRaises(FileExistsError):
-                commit_state(path, 1, state_digest(next_state), {"type": "REMOVE_SLOT", "slot": "A"}, TIME_3, project_index("alpha"))
-            self.assertEqual("foreign", lock_path.read_text(encoding="utf-8"))
 
-    def test_tracked_runtime_state_remains_gated(self) -> None:
+    def test_tracked_runtime_state_is_physically_adopted_and_active(self) -> None:
         tracked = load_json(ROOT / "tools" / "test_instance_manager" / "runtime-state.json")
-        self.assertEqual("GATED", tracked["activation"])
+        self.assertEqual("ACTIVE", tracked["activation"])
+        self.assertEqual("ADOPTED", tracked["accepted_baseline"]["provenance"]["physical_disposition"])
+        self.assertEqual("FAIL", tracked["slots"]["A"]["runtime_result"]["classification"])
+        self.assertEqual("FAIL", tracked["slots"]["B"]["runtime_result"]["classification"])
 
 
 class CurrentStateBootstrapTests(unittest.TestCase):

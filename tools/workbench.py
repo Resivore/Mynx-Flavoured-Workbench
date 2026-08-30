@@ -39,7 +39,7 @@ ACCEPTED_ROLLBACK_STATES = {"NO_ROLLBACK", "ACCEPTED_IS_ROLLBACK", "ROLLBACK_DIF
 PROJECT_ID_RE = re.compile(r"^[a-z0-9]+(?:[.-][a-z0-9]+)*$")
 COMMIT_RE = re.compile(r"^[0-9a-f]{40}$")
 SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
-RFC3339_UTC_RE = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,6})?Z$")
+RFC3339_UTC_RE = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,9})?Z$")
 WINDOWS_RESERVED_RE = re.compile(r"^(?:con|prn|aux|nul|com[1-9]|lpt[1-9])(?:\.|$)", re.IGNORECASE)
 LOG_HEADING_RE = re.compile(r"^## (?P<timestamp>\S+) — (?P<summary>\S(?:.*\S)?)$", re.MULTILINE)
 LOG_BULLET_RE = re.compile(r"^- (?P<label>[^:\n]+): (?P<value>\S(?:.*\S)?)$", re.MULTILINE)
@@ -535,6 +535,36 @@ def _validate_publication_config(path: Path) -> None:
         _nonblank(config[field], f"{path}.{field}")
 
 
+def _validate_test_instance_manager_config(path: Path) -> None:
+    config = load_json(path)
+    keys = {
+        "schema_version",
+        "repository_root",
+        "runtime_state",
+        "dedicated_profile",
+        "protected_profile",
+        "mods_directory",
+        "ledger_file",
+        "lock_file",
+    }
+    _object(config, str(path), keys)
+    if config["schema_version"] != 2:
+        raise ValidationError(f"{path}: schema_version must be 2")
+    expected = {
+        "repository_root": "../..",
+        "runtime_state": "tools/test_instance_manager/runtime-state.json",
+        "dedicated_profile": r"C:\Users\resiv\AppData\Roaming\ModrinthApp\profiles\Matcha Flavoured 26.2 Workbench",
+        "protected_profile": r"C:\Users\resiv\AppData\Roaming\ModrinthApp\profiles\Matcha Flavoured 26.1.2",
+        "mods_directory": "mods",
+        "ledger_file": ".mynx-runtime-v2-ledger.json",
+        "lock_file": ".mynx-runtime-v2.lock",
+    }
+    for field, expected_value in expected.items():
+        actual = _nonblank(config[field], f"{path}.{field}")
+        if actual != expected_value:
+            raise ValidationError(f"{path}.{field}: must be {expected_value!r}")
+
+
 def validate_repository(root: Path) -> dict[str, tuple[Path, dict[str, Any]]]:
     root = root.resolve()
     required = [
@@ -550,6 +580,8 @@ def validate_repository(root: Path) -> dict[str, tuple[Path, dict[str, Any]]]:
         "tools/sheet_sync/publication.json",
         "tools/sheet_sync/receiver/Core.gs",
         "tools/sheet_sync/receiver/Code.gs",
+        "tools/test_instance_manager/config.json",
+        "tools/test_instance_manager/manager.py",
         "tools/test_instance_manager/runtime-state.json",
         ".github/workflows/validate.yml",
         ".github/workflows/publish-project-status.yml",
@@ -564,6 +596,7 @@ def validate_repository(root: Path) -> dict[str, tuple[Path, dict[str, Any]]]:
         if schema.get("additionalProperties") is not False:
             raise ValidationError(f"schemas/{schema_name}: root must reject additional properties")
     _validate_publication_config(root / "tools" / "sheet_sync" / "publication.json")
+    _validate_test_instance_manager_config(root / "tools" / "test_instance_manager" / "config.json")
     statuses = load_repository_statuses(root)
     try:
         from .runtime_slots import validate_runtime_state
