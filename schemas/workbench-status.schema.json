@@ -26,7 +26,10 @@
       "additionalProperties": false,
       "required": ["lifecycle", "goals", "scope", "boundaries", "dependencies"],
       "properties": {
-        "lifecycle": { "enum": ["PLANNED", "ACTIVE", "BLOCKED", "TESTING", "ACCEPTED", "PARKED"] },
+        "lifecycle": {
+          "description": "Project lifecycle. TESTING means, and only means, that this project's immutable UUID currently occupies Test Slot A or Test Slot B in the canonical runtime state; build, artifact, procedure, readiness, runtime result, and accepted-release metadata do not independently imply or prevent TESTING.",
+          "enum": ["PLANNED", "ACTIVE", "BLOCKED", "TESTING", "ACCEPTED", "PARKED"]
+        },
         "goals": { "$ref": "#/$defs/nonemptyTextList" },
         "scope": { "$ref": "#/$defs/nonemptyTextList" },
         "boundaries": {

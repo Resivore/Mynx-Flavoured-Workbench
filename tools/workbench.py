@@ -506,6 +506,30 @@ def load_repository_statuses(root: Path) -> dict[str, tuple[Path, dict[str, Any]
     return statuses
 
 
+def validate_testing_slot_lifecycles(
+    statuses: dict[str, tuple[Path, dict[str, Any]]],
+    runtime_state: dict[str, Any],
+) -> None:
+    """Enforce the repository-only TESTING lifecycle/runtime-slot invariant by UUID."""
+    occupied_slots = {
+        slot["unit"]["project_uuid"]: slot_name
+        for slot_name in ("A", "B")
+        if (slot := runtime_state["slots"][slot_name]) is not None
+    }
+    for project_uuid, (path, manifest) in statuses.items():
+        lifecycle = manifest["definition"]["lifecycle"]
+        slot_name = occupied_slots.get(project_uuid)
+        if lifecycle == "TESTING" and slot_name is None:
+            raise ValidationError(
+                f"{path}: lifecycle TESTING requires project UUID {project_uuid} to occupy Test Slot A or B"
+            )
+        if slot_name is not None and lifecycle != "TESTING":
+            raise ValidationError(
+                f"{path}: project UUID {project_uuid} occupies Test Slot {slot_name} "
+                f"but lifecycle is {lifecycle}; it must be TESTING"
+            )
+
+
 def _validate_publication_config(path: Path) -> None:
     config = load_json(path)
     keys = {
@@ -628,6 +652,7 @@ def validate_repository(root: Path) -> dict[str, tuple[Path, dict[str, Any]]]:
         for project_uuid, (_, manifest) in statuses.items()
     }
     validate_runtime_state(runtime_state, project_index=project_index)
+    validate_testing_slot_lifecycles(statuses, runtime_state)
     return statuses
 
 

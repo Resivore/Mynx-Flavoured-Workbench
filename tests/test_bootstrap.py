@@ -41,6 +41,7 @@ from tools.workbench import (
     validate_repository,
     validate_status,
     validate_status_transition,
+    validate_testing_slot_lifecycles,
 )
 
 
@@ -314,6 +315,16 @@ def project_index(*project_ids: str) -> dict[str, str]:
     return {stable_uuid("project:" + project_id): project_id for project_id in project_ids}
 
 
+def status_catalog(*manifests: dict) -> dict[str, tuple[Path, dict]]:
+    return {
+        manifest["identity"]["uuid"]: (
+            Path("projects") / manifest["identity"]["project_id"] / "WORKBENCH_STATUS.json",
+            manifest,
+        )
+        for manifest in manifests
+    }
+
+
 class StatusContractTests(unittest.TestCase):
     def test_minimal_planned_project_needs_no_source_or_artifact(self) -> None:
         manifest = planned_manifest()
@@ -409,6 +420,78 @@ class StatusContractTests(unittest.TestCase):
         validate_log_append(previous_log, current_log, after)
         with self.assertRaisesRegex(ValidationError, "append-only"):
             validate_log_append(previous_log, codex_log(after), after)
+
+    def test_testing_lifecycle_requires_actual_slot_occupancy(self) -> None:
+        manifest = planned_manifest("alpha", "Alpha")
+        manifest["definition"]["lifecycle"] = "TESTING"
+        validate_status(manifest)
+        state = runtime_state()
+        validate_runtime_state(state, project_index={})
+        with self.assertRaisesRegex(ValidationError, "lifecycle TESTING.*Test Slot A or B"):
+            validate_testing_slot_lifecycles(status_catalog(manifest), state)
+
+    def test_occupied_slot_requires_testing_lifecycle(self) -> None:
+        unit = deployment_unit("alpha")
+        manifest = planned_manifest("alpha", "Alpha", uuid_value=unit["project_uuid"])
+        manifest["definition"]["lifecycle"] = "ACTIVE"
+        state = runtime_state(slot_a=candidate(unit))
+        validate_runtime_state(state, project_index("alpha"))
+        with self.assertRaisesRegex(ValidationError, "occupies Test Slot A.*must be TESTING"):
+            validate_testing_slot_lifecycles(status_catalog(manifest), state)
+
+    def test_active_ready_candidate_outside_slots_is_valid(self) -> None:
+        manifest = planned_manifest("alpha", "Alpha")
+        manifest["definition"]["lifecycle"] = "ACTIVE"
+        manifest["state"]["milestone"] = "Implementation is statically verified and ready for runtime testing."
+        manifest["state"]["validation"]["build"] = "STATIC_PASS"
+        validate_status(manifest)
+        state = runtime_state()
+        validate_runtime_state(state, project_index={})
+        validate_testing_slot_lifecycles(status_catalog(manifest), state)
+
+    def test_slot_runtime_result_does_not_change_testing_lifecycle(self) -> None:
+        unit = deployment_unit("alpha")
+        manifest = planned_manifest("alpha", "Alpha", uuid_value=unit["project_uuid"])
+        manifest["definition"]["lifecycle"] = "TESTING"
+        for result in ("UNTESTED", "PASS"):
+            with self.subTest(result=result):
+                state = runtime_state(slot_a=candidate(unit, result))
+                validate_runtime_state(state, project_index("alpha"))
+                validate_testing_slot_lifecycles(status_catalog(manifest), state)
+
+    def test_accepted_release_can_coexist_with_testing_successor(self) -> None:
+        accepted_unit = deployment_unit("alpha", version="Canary 1")
+        current_unit = deployment_unit("alpha", version="Canary 2")
+        manifest = planned_manifest("alpha", "Alpha", uuid_value=current_unit["project_uuid"])
+        manifest["definition"]["lifecycle"] = "TESTING"
+        manifest["state"]["releases"].update(
+            current={
+                "version": current_unit["version"],
+                "artifact": {
+                    "filename": current_unit["artifacts"][0]["filename"],
+                    "sha256": current_unit["artifacts"][0]["sha256"],
+                },
+                "source_commit": current_unit["source_commit"],
+            },
+            accepted={
+                "version": accepted_unit["version"],
+                "artifact": {
+                    "filename": accepted_unit["artifacts"][0]["filename"],
+                    "sha256": accepted_unit["artifacts"][0]["sha256"],
+                },
+                "source_commit": accepted_unit["source_commit"],
+            },
+            accepted_current="CURRENT_DIFFERS_FROM_ACCEPTED",
+        )
+        validate_status(manifest)
+        successor = candidate(current_unit)
+        successor["replaces_accepted_deployment_id"] = accepted_unit["deployment_id"]
+        state = runtime_state(
+            accepted=[{"unit": accepted_unit, "accepted_at": TIME_1}],
+            slot_a=successor,
+        )
+        validate_runtime_state(state, project_index("alpha"))
+        validate_testing_slot_lifecycles(status_catalog(manifest), state)
 
     def test_repository_layout_validates(self) -> None:
         statuses = validate_repository(ROOT)

@@ -42,6 +42,14 @@ Every project task advances the manifest revision exactly once, updates synchron
 
 The physical runtime profile is an accepted baseline plus exactly two independent experimental slots, A and B. Each occupied slot has its own project UUID, version, artifact identity, source checkpoint, deployment state, and independent `UNTESTED`, `PASS`, `FAIL`, or `INCONCLUSIVE` result. Never collapse two slot results into one aggregate result.
 
+### `TESTING` lifecycle invariant
+
+- `TESTING` means one thing only: the project's immutable UUID currently occupies Test Slot A or Test Slot B in canonical `tools/test_instance_manager/runtime-state.json` after a verified serialized Test Instance Manager deployment transition.
+- A build or static pass, retained Canary, useful `TESTING.md`, readiness for runtime testing, queued next step, or wait for a free slot never implies `TESTING`. A ready candidate outside both slots normally remains `ACTIVE` unless another lifecycle is independently appropriate.
+- Slot runtime result is independent of lifecycle. An occupied project remains `TESTING` while its result is `UNTESTED`, `PASS`, `FAIL`, or `INCONCLUSIVE`.
+- Assigning a project UUID to either slot must set its lifecycle to `TESTING`. Removing it from its last occupied slot must set the appropriate resulting lifecycle, normally `ACTIVE` for an unaccepted development candidate; promotion/removal must derive lifecycle from the remaining current state.
+- Accepted-release provenance is independent of current candidate occupancy. A project may have an accepted release and lifecycle `TESTING` when a newer/current candidate for the same UUID occupies a test slot.
+
 Only one Test Instance Manager operation may mutate the dedicated Workbench at a time. Transitions must be serialized and atomic; promoting/removing one slot must preserve the other. Concurrent development, builds, and static validation remain allowed.
 
 - Dedicated test instance: `C:\Users\resiv\AppData\Roaming\ModrinthApp\profiles\Matcha Flavoured 26.2 Workbench`

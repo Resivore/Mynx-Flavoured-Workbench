@@ -10,7 +10,7 @@
     "legacy_ids": []
   },
   "definition": {
-    "lifecycle": "TESTING",
+    "lifecycle": "ACTIVE",
     "goals": [
       "Make Frost Protection I or higher on any single equipped armor slot grant the player leather-boots-equivalent immunity to powdered-snow traversal effects.",
       "Change the Blessing of Demeter crafted book, without changing its existing recipe, to contain only Frost Protection III by removing the existing Frost Walker II and Frost Protection II enchantments.",
@@ -70,7 +70,7 @@
     ]
   },
   "state": {
-    "milestone": "Canary 1 is retained after a clean Java 25 build and 13/13 focused tests; it is ready for controlled slot allocation but remains not deployed and Minecraft runtime untested.",
+    "milestone": "Canary 1 implementation is complete, statically verified, retained, and ready for controlled runtime testing, but its project UUID occupies neither test slot, so it remains ACTIVE, not deployed, and Minecraft runtime untested.",
     "releases": {
       "current": {
         "version": "0.1.0-canary1",
@@ -93,11 +93,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 2,
-    "activity_at": "2026-08-30T06:27:10Z",
-    "updated_at": "2026-08-30T06:27:10Z",
-    "last_codex_at": "2026-08-30T06:27:10Z",
-    "source_commit": "92e7787d27ed9231d9a6f46cc29cddff38378cdd",
+    "revision": 3,
+    "activity_at": "2026-08-30T07:14:16Z",
+    "updated_at": "2026-08-30T07:14:16Z",
+    "last_codex_at": "2026-08-30T07:14:16Z",
+    "source_commit": "714d20eb4f9bdfd6696780f0d926f0240241e7be",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
