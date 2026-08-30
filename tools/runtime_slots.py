@@ -57,9 +57,11 @@ TRANSITIONS = {
     "RECORD_RESULT",
     "REMOVE_SLOT",
     "PROMOTE_SLOT",
+    "REMOVE_ACCEPTED",
 }
 OWNERSHIP_KEY_RE = re.compile(r"^mod:[a-z0-9_.-]+$")
 WINDOWS_RESERVED_RE = re.compile(r"^(?:con|prn|aux|nul|com[1-9]|lpt[1-9])(?:\.|$)", re.IGNORECASE)
+CANARY_VERSION_RE = re.compile(r"(?:^|[^a-z0-9])canary[\s._-]*(\d+)(?:$|[^0-9])", re.IGNORECASE)
 
 
 def _artifact(value: Any, path: str) -> dict[str, Any]:
@@ -439,6 +441,74 @@ def state_digest(state: dict[str, Any]) -> str:
     return hashlib.sha256(encoded).hexdigest()
 
 
+def render_title_state(
+    state: dict[str, Any],
+    project_display_names: dict[str, str],
+    project_index: dict[str, str] | None = None,
+) -> dict[str, Any]:
+    """Render the title-screen identity solely from canonical V2 state.
+
+    ``accepted_baseline.revision`` is the durable Stack version. Project names
+    come from the repository manifest catalog supplied by the manager, and the
+    Canary number comes from the slot unit's canonical version field. Legacy
+    marker metadata is deliberately not an input.
+    """
+
+    validate_runtime_state(state, project_index)
+    if not isinstance(project_display_names, dict):
+        raise ValidationError("project display-name catalog must be an object")
+
+    stack_version = state["accepted_baseline"]["revision"]
+    if stack_version < 1:
+        raise ValidationError("canonical title display requires initialized Stack v1 or newer")
+    baseline_label = f"Stack v{stack_version}"
+    lines = [f"Baseline: {baseline_label}"]
+    slots: dict[str, dict[str, Any]] = {}
+    for label in ("A", "B"):
+        slot = state["slots"][label]
+        if slot is None:
+            line = f"Slot {label}: Empty"
+            slots[label] = {"occupied": False, "line": line}
+            lines.append(line)
+            continue
+
+        unit = slot["unit"]
+        project_uuid = unit["project_uuid"]
+        display_name = project_display_names.get(project_uuid)
+        if display_name is None:
+            raise ValidationError(
+                f"cannot render slot {label}: project {project_uuid} has no canonical display name"
+            )
+        display_name = _nonblank(display_name, f"project_display_names[{project_uuid!r}]")
+        if "\r" in display_name or "\n" in display_name:
+            raise ValidationError(f"cannot render slot {label}: canonical display name must occupy one line")
+        match = CANARY_VERSION_RE.search(unit["version"])
+        if match is None:
+            raise ValidationError(
+                f"cannot render slot {label}: canonical version {unit['version']!r} has no Canary number"
+            )
+        canary = int(match.group(1))
+        line = f"Slot {label}: {display_name} - Canary {canary}"
+        slots[label] = {
+            "occupied": True,
+            "project_uuid": project_uuid,
+            "project_display_name": display_name,
+            "canary": canary,
+            "line": line,
+        }
+        lines.append(line)
+
+    return {
+        "baseline": {
+            "stack_version": stack_version,
+            "stack_label": baseline_label,
+            "line": lines[0],
+        },
+        "slots": slots,
+        "lines": lines,
+    }
+
+
 def candidate_declaration(unit: dict[str, Any], replaces_accepted_deployment_id: str | None = None) -> dict[str, Any]:
     """Build immutable candidate input; deployment evidence is intentionally absent."""
 
@@ -468,6 +538,21 @@ def _materialize_candidate(declaration: Any, existing_slots: dict[str, Any]) -> 
             "evidence": {"passed": [], "failed": []},
         },
     }
+
+
+def _byte_composition(unit: dict[str, Any]) -> tuple[tuple[Any, ...], ...]:
+    """Return project-owned artifact bytes/ownership, excluding rebuilt metadata."""
+
+    return tuple(
+        sorted(
+            (
+                artifact["kind"],
+                artifact["sha256"].casefold(),
+                tuple(sorted(key.casefold() for key in artifact["ownership_keys"])),
+            )
+            for artifact in unit["artifacts"]
+        )
+    )
 
 
 def plan_transition(
@@ -523,6 +608,25 @@ def plan_transition(
             raise ValidationError("runtime profile cannot contain more than two candidates")
         slots["A"] = _materialize_candidate(operation["candidates"][0], state["slots"]) if operation["candidates"] else None
         slots["B"] = _materialize_candidate(operation["candidates"][1], state["slots"]) if len(operation["candidates"]) == 2 else None
+    elif operation_type == "REMOVE_ACCEPTED":
+        if set(operation) != {"type", "project_uuid"}:
+            raise ValidationError("REMOVE_ACCEPTED requires exactly type and project_uuid")
+        project_uuid = _uuid(operation["project_uuid"], "operation.project_uuid")
+        members = next_state["accepted_baseline"]["members"]
+        indexes = [
+            index
+            for index, member in enumerate(members)
+            if member["unit"]["project_uuid"] == project_uuid
+        ]
+        if len(indexes) != 1:
+            raise ValidationError("REMOVE_ACCEPTED requires exactly one accepted project match")
+        del members[indexes[0]]
+        next_state["accepted_baseline"]["provenance"]["accepted_artifact_count"] = sum(
+            len(existing["unit"]["artifacts"]) for existing in members
+        )
+        if next_state["activation"] == "ACTIVE":
+            next_state["accepted_baseline"]["provenance"]["physical_disposition"] = "TRANSITIONED"
+        next_state["accepted_baseline"]["revision"] += 1
     else:
         required_keys = {"type", "slot"}
         if operation_type == "RECORD_RESULT":
@@ -563,17 +667,24 @@ def plan_transition(
             replacement_id = slot["replaces_accepted_deployment_id"]
             member = {"unit": copy.deepcopy(slot["unit"]), "accepted_at": at}
             members = next_state["accepted_baseline"]["members"]
+            byte_identical_reconciliation = False
             if replacement_id is None:
                 members.append(member)
             else:
                 indexes = [index for index, existing in enumerate(members) if existing["unit"]["deployment_id"] == replacement_id]
                 if len(indexes) != 1:
                     raise ValidationError("accepted replacement target is not unique")
-                members[indexes[0]] = member
-            next_state["accepted_baseline"]["provenance"]["accepted_artifact_count"] = sum(
-                len(existing["unit"]["artifacts"]) for existing in members
-            )
-            next_state["accepted_baseline"]["revision"] += 1
+                accepted = members[indexes[0]]["unit"]
+                byte_identical_reconciliation = _byte_composition(accepted) == _byte_composition(slot["unit"])
+                if not byte_identical_reconciliation:
+                    members[indexes[0]] = member
+            if not byte_identical_reconciliation:
+                next_state["accepted_baseline"]["provenance"]["accepted_artifact_count"] = sum(
+                    len(existing["unit"]["artifacts"]) for existing in members
+                )
+                if next_state["activation"] == "ACTIVE":
+                    next_state["accepted_baseline"]["provenance"]["physical_disposition"] = "TRANSITIONED"
+                next_state["accepted_baseline"]["revision"] += 1
             slots[label] = None
 
     next_state["revision"] += 1

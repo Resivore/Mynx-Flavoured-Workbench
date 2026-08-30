@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.function.Supplier;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.Registries;
@@ -15,8 +16,9 @@ import net.minecraft.world.item.crafting.RecipeMap;
 
 /** Rebuilds the resolved recipe map with this project's exact authoritative recipes. */
 public final class RecipeMapEnforcer {
-    private static final Identifier REINFORCED_TARGET =
-            Identifier.parse(HeartDataContract.REINFORCED_RECIPE_ID);
+    private static final Set<Identifier> REQUIRED_OWN_RECIPES = Set.of(
+            Identifier.parse(HeartDataContract.REINFORCED_RECIPE_ID),
+            Identifier.parse(HeartDataContract.RESONANT_FAVOUR_RECIPE_ID));
 
     private RecipeMapEnforcer() {}
 
@@ -36,9 +38,14 @@ public final class RecipeMapEnforcer {
             LinkedHashMap<Identifier, Recipe<?>> replacements = new LinkedHashMap<>(
                     Objects.requireNonNull(replacementsLoader.get(), "Authoritative recipe map was null"));
             ArrayList<RecipeHolder<?>> recipes = new ArrayList<>(resolved.values());
-            if (recipes.stream().noneMatch(holder -> holder.id().identifier().equals(REINFORCED_TARGET))) {
-                throw new IllegalStateException("Required Reinforced Crystal Heart recipe did not decode: "
-                        + REINFORCED_TARGET);
+            Set<Identifier> resolvedIds = recipes.stream()
+                    .map(holder -> holder.id().identifier())
+                    .collect(java.util.stream.Collectors.toSet());
+            if (!resolvedIds.containsAll(REQUIRED_OWN_RECIPES)) {
+                throw new IllegalStateException("Required owned recipes did not decode: "
+                        + REQUIRED_OWN_RECIPES.stream()
+                                .filter(id -> !resolvedIds.contains(id))
+                                .toList());
             }
             recipes.removeIf(holder -> replacements.containsKey(holder.id().identifier()));
             replacements.forEach((id, recipe) -> {
@@ -48,7 +55,7 @@ public final class RecipeMapEnforcer {
             RecipeMap enforced = RecipeMap.create(recipes);
             MatchaHeartDeathCompat.LOGGER.info(
                     "Enforced authoritative recipe contracts for {} and verified {} after recipe preparation",
-                    replacements.keySet(), REINFORCED_TARGET);
+                    replacements.keySet(), REQUIRED_OWN_RECIPES);
             return enforced;
         } catch (RuntimeException exception) {
             MatchaHeartDeathCompat.LOGGER.error(

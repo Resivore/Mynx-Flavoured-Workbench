@@ -48,8 +48,10 @@ final class ConsolidatedReloadOwnershipTest {
         String recipeEnforcer = source(
                 "src/main/java/dev/resivore/matchaheart/RecipeMapEnforcer.java");
         assertTrue(recipeEnforcer.contains("HeartDataContract.RECIPE_RESOURCES"));
-        assertTrue(recipeEnforcer.contains("REINFORCED_TARGET"));
-        assertTrue(recipeEnforcer.contains("Required Reinforced Crystal Heart recipe did not decode"));
+        assertTrue(recipeEnforcer.contains("REQUIRED_OWN_RECIPES"));
+        assertTrue(recipeEnforcer.contains("HeartDataContract.REINFORCED_RECIPE_ID"));
+        assertTrue(recipeEnforcer.contains("HeartDataContract.RESONANT_FAVOUR_RECIPE_ID"));
+        assertTrue(recipeEnforcer.contains("Required owned recipes did not decode"));
         assertTrue(recipeEnforcer.contains("RecipeMap.create(recipes)"));
         assertTrue(recipeEnforcer.contains("Unsafe Matcha recipe contracts"));
         assertFalse(recipeEnforcer.contains("AUTHORITATIVE_RECIPE"));

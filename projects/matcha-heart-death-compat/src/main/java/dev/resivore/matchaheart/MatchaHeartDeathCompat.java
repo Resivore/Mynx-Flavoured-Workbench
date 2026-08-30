@@ -32,6 +32,7 @@ public final class MatchaHeartDeathCompat implements ModInitializer {
 
     @Override
     public void onInitialize() {
+        HeartItems.register();
         LootTableEvents.REPLACE.register((key, original, source, registries) -> {
             String resourcePath = HeartDataContract.LOOT_TABLE_RESOURCES.get(key.identifier().toString());
             if (resourcePath == null) {

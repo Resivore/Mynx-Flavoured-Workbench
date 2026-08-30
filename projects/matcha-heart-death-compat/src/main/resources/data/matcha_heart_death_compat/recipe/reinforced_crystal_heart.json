@@ -2,14 +2,10 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "E": "minecraft:echo_shard",
-    "H": {
-      "fabric:type": "fabric:components",
-      "base": "minecraft:poisonous_potato",
-      "components": {"minecraft:item_model": "minecraft:heart_container"}
-    }
+    "e": "minecraft:echo_shard",
+    "r": "matcha_heart_death_compat:resonant_favour"
   },
-  "pattern": ["EEE", "EHE", " E "],
+  "pattern": ["e e", "ere", " e "],
   "result": {
     "id": "minecraft:poisonous_potato",
     "count": 1,

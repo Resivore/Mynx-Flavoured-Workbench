@@ -14,6 +14,7 @@ import copy
 import hashlib
 import json
 import os
+import re
 import shutil
 import stat
 import tempfile
@@ -25,18 +26,32 @@ from pathlib import Path, PurePosixPath, PureWindowsPath
 from typing import Any, Callable, Iterable
 
 try:
-    from ..runtime_slots import plan_transition, resolve_profile, state_digest, validate_runtime_state
+    from ..runtime_slots import (
+        plan_transition,
+        render_title_state,
+        resolve_profile,
+        state_digest,
+        validate_runtime_state,
+    )
     from ..workbench import ValidationError, load_repository_statuses
 except ImportError:  # Direct execution from tools/test_instance_manager/.
     import sys
 
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-    from runtime_slots import plan_transition, resolve_profile, state_digest, validate_runtime_state  # type: ignore
+    from runtime_slots import (  # type: ignore
+        plan_transition,
+        render_title_state,
+        resolve_profile,
+        state_digest,
+        validate_runtime_state,
+    )
     from workbench import ValidationError, load_repository_statuses  # type: ignore
 
 
 DEFAULT_CONFIG = Path(__file__).with_name("config.json")
-LEDGER_SCHEMA = "mynx-test-instance-manager-ledger-v2"
+LEDGER_SCHEMA_V2 = "mynx-test-instance-manager-ledger-v2"
+LEDGER_SCHEMA = "mynx-test-instance-manager-ledger-v3"
+TITLE_PROJECTION_SCHEMA = "mynx-runtime-title-state-v1"
 LEGACY_MARKER_NAME = ".workbench-instance-manager.json"
 RETIRED_LEGACY_MARKER_NAME = ".workbench-instance-manager.v1-retired.json"
 FailureInjector = Callable[[str], None]
@@ -44,6 +59,67 @@ FailureInjector = Callable[[str], None]
 
 class ManagerError(RuntimeError):
     """A physical preflight, ownership, serialization, or recovery failure."""
+
+
+@dataclass(frozen=True)
+class MarkerArtifactConfig:
+    filename: str
+    sha256: str
+    mod_id: str
+    source: str | None = None
+
+    @classmethod
+    def load(cls, value: Any, label: str, *, source_required: bool) -> "MarkerArtifactConfig":
+        required = {"filename", "sha256", "mod_id"}
+        if source_required:
+            required.add("source")
+        if not isinstance(value, dict) or set(value) != required:
+            raise ManagerError(f"{label} must contain exactly {sorted(required)}")
+        filename = _safe_basename(value["filename"], f"{label}.filename")
+        if not filename.casefold().endswith(".jar"):
+            raise ManagerError(f"{label}.filename must end in .jar")
+        sha256 = value["sha256"]
+        if not isinstance(sha256, str) or not re.fullmatch(r"[0-9a-fA-F]{64}", sha256):
+            raise ManagerError(f"{label}.sha256 must be a SHA-256 hex digest")
+        mod_id = value["mod_id"]
+        if not isinstance(mod_id, str) or not re.fullmatch(r"[a-z][a-z0-9_.-]*", mod_id):
+            raise ManagerError(f"{label}.mod_id must be a lowercase Fabric mod id")
+        source = None
+        if source_required:
+            source = _safe_relative(value["source"], f"{label}.source", allow_nested=True)
+            source_parts = PurePosixPath(source.replace("\\", "/")).parts
+            if source_parts[0].casefold() == "originals" or source_parts[-1].casefold() != filename.casefold():
+                raise ManagerError(f"{label}.source must be a repository path ending in {filename}")
+        return cls(filename=filename, sha256=sha256.lower(), mod_id=mod_id, source=source)
+
+
+@dataclass(frozen=True)
+class TitleDisplayConfig:
+    projection_file: str
+    marker: MarkerArtifactConfig
+    predecessors: tuple[MarkerArtifactConfig, ...]
+
+    @classmethod
+    def load(cls, value: Any) -> "TitleDisplayConfig":
+        if not isinstance(value, dict) or set(value) != {"projection_file", "marker", "predecessors"}:
+            raise ManagerError("title_display must contain exactly marker, predecessors, and projection_file")
+        projection_file = _safe_basename(value["projection_file"], "title_display.projection_file")
+        if projection_file in {LEGACY_MARKER_NAME, RETIRED_LEGACY_MARKER_NAME}:
+            raise ManagerError("title display projection cannot reuse a legacy V1 marker filename")
+        marker = MarkerArtifactConfig.load(value["marker"], "title_display.marker", source_required=True)
+        raw_predecessors = value["predecessors"]
+        if not isinstance(raw_predecessors, list):
+            raise ManagerError("title_display.predecessors must be an array")
+        predecessors = tuple(
+            MarkerArtifactConfig.load(item, f"title_display.predecessors[{index}]", source_required=False)
+            for index, item in enumerate(raw_predecessors)
+        )
+        names = [marker.filename.casefold(), *(item.filename.casefold() for item in predecessors)]
+        if len(names) != len(set(names)):
+            raise ManagerError("title marker and predecessor filenames must be unique")
+        if any(item.mod_id != marker.mod_id for item in predecessors):
+            raise ManagerError("all title marker predecessors must preserve the current marker mod id")
+        return cls(projection_file=projection_file, marker=marker, predecessors=predecessors)
 
 
 @dataclass(frozen=True)
@@ -55,6 +131,7 @@ class ManagerConfig:
     mods_directory: str
     ledger_file: str
     lock_file: str
+    title_display: TitleDisplayConfig
 
     @classmethod
     def load(cls, path: Path) -> "ManagerConfig":
@@ -72,11 +149,12 @@ class ManagerConfig:
             "mods_directory",
             "ledger_file",
             "lock_file",
+            "title_display",
         }
         if not isinstance(raw, dict) or set(raw) != required:
             raise ManagerError(f"manager config must contain exactly {sorted(required)}")
-        if raw["schema_version"] != 2:
-            raise ManagerError("manager config schema_version must equal 2")
+        if raw["schema_version"] != 3:
+            raise ManagerError("manager config schema_version must equal 3")
 
         repository_root = _configured_path(path.parent, raw["repository_root"], "repository_root")
         runtime_state = _contained_configured_path(repository_root, raw["runtime_state"], "runtime_state")
@@ -90,8 +168,11 @@ class ManagerConfig:
         mods_directory = _safe_relative(raw["mods_directory"], "mods_directory", allow_nested=False)
         ledger_file = _safe_basename(raw["ledger_file"], "ledger_file")
         lock_file = _safe_basename(raw["lock_file"], "lock_file")
+        title_display = TitleDisplayConfig.load(raw["title_display"])
         if ledger_file.casefold() == lock_file.casefold():
             raise ManagerError("ledger_file and lock_file must be distinct")
+        if title_display.projection_file.casefold() in {ledger_file.casefold(), lock_file.casefold()}:
+            raise ManagerError("title display projection, ledger, and lock filenames must be distinct")
         if _is_within(runtime_state, repository_root / "originals"):
             raise ManagerError("runtime_state cannot be under originals/")
         if _paths_equal(runtime_state, protected_profile) or _is_within(runtime_state, protected_profile):
@@ -104,6 +185,7 @@ class ManagerConfig:
             mods_directory=mods_directory,
             ledger_file=ledger_file,
             lock_file=lock_file,
+            title_display=title_display,
         )
 
 
@@ -149,6 +231,7 @@ class PhysicalPlan:
     writes: tuple[FileAction, ...]
     removals: tuple[Path, ...]
     unchanged: tuple[str, ...]
+    title_projection: dict[str, Any]
 
     def summary(self, *, dry_run: bool) -> dict[str, Any]:
         return {
@@ -168,6 +251,7 @@ class PhysicalPlan:
             "removals": [path.name for path in self.removals],
             "unchanged": list(self.unchanged),
             "managed_files": [artifact.ledger_record() for artifact in self.desired_artifacts],
+            "title_projection": copy.deepcopy(self.title_projection),
         }
 
 
@@ -210,6 +294,7 @@ class PhysicalManager:
         config: ManagerConfig,
         target: Path | None = None,
         project_index: dict[str, str] | None = None,
+        project_display_names: dict[str, str] | None = None,
     ):
         self.config = config
         requested = config.dedicated_profile if target is None else Path(target)
@@ -222,34 +307,50 @@ class PhysicalManager:
         raw_lock = self.target / config.lock_file
         raw_legacy_marker = self.target / LEGACY_MARKER_NAME
         raw_retired_legacy_marker = self.target / RETIRED_LEGACY_MARKER_NAME
+        raw_title_projection = self.target / config.title_display.projection_file
         _assert_no_reparse_components(raw_mods, "mods directory", root=self.target)
         _assert_no_reparse_components(raw_ledger, "target-local ledger", root=self.target)
         _assert_no_reparse_components(raw_lock, "target-local lock", root=self.target)
         _assert_no_reparse_components(raw_legacy_marker, "legacy V1 marker", root=self.target)
         _assert_no_reparse_components(raw_retired_legacy_marker, "retired legacy V1 marker", root=self.target)
+        _assert_no_reparse_components(raw_title_projection, "V2 title display projection", root=self.target)
         self.mods = raw_mods.resolve(strict=False)
         self.ledger_path = raw_ledger.resolve(strict=False)
         self.lock_path = raw_lock.resolve(strict=False)
         self.legacy_marker_path = raw_legacy_marker.resolve(strict=False)
         self.retired_legacy_marker_path = raw_retired_legacy_marker.resolve(strict=False)
+        self.title_projection_path = raw_title_projection.resolve(strict=False)
         for path, label in (
             (self.mods, "mods directory"),
             (self.ledger_path, "ledger"),
             (self.lock_path, "lock"),
             (self.legacy_marker_path, "legacy V1 marker"),
             (self.retired_legacy_marker_path, "retired legacy V1 marker"),
+            (self.title_projection_path, "V2 title display projection"),
         ):
             self._assert_target_containment(path, label)
-        if project_index is None:
+        statuses: dict[str, tuple[Path, dict[str, Any]]] | None = None
+        if project_index is None or project_display_names is None:
             try:
                 statuses = load_repository_statuses(self.config.repository_root)
             except ValidationError as exc:
-                raise ManagerError(f"cannot load repository project identities: {exc}") from exc
+                if project_index is None:
+                    raise ManagerError(f"cannot load repository project identities: {exc}") from exc
+        if project_index is None:
             project_index = {
                 project_uuid: manifest["identity"]["project_id"]
-                for project_uuid, (_, manifest) in statuses.items()
+                for project_uuid, (_, manifest) in (statuses or {}).items()
             }
+        if project_display_names is None:
+            if statuses is not None:
+                project_display_names = {
+                    project_uuid: manifest["identity"]["name"]
+                    for project_uuid, (_, manifest) in statuses.items()
+                }
+            else:
+                project_display_names = copy.deepcopy(project_index)
         self.project_index = copy.deepcopy(project_index)
+        self.project_display_names = copy.deepcopy(project_display_names)
 
     @classmethod
     def from_config(
@@ -257,8 +358,14 @@ class PhysicalManager:
         config_path: Path = DEFAULT_CONFIG,
         target: Path | None = None,
         project_index: dict[str, str] | None = None,
+        project_display_names: dict[str, str] | None = None,
     ) -> "PhysicalManager":
-        return cls(ManagerConfig.load(Path(config_path)), target=target, project_index=project_index)
+        return cls(
+            ManagerConfig.load(Path(config_path)),
+            target=target,
+            project_index=project_index,
+            project_display_names=project_display_names,
+        )
 
     def _assert_safe_target(self) -> None:
         protected = self.config.protected_profile.resolve(strict=False)
@@ -314,7 +421,7 @@ class PhysicalManager:
             )
 
     def derive_inventory(self, state: dict[str, Any]) -> tuple[ManagedArtifact, ...]:
-        """Resolve active mods and canonical disabled replacements."""
+        """Resolve runtime-state mods and canonical disabled replacements."""
 
         try:
             validate_runtime_state(state, self.project_index)
@@ -336,6 +443,90 @@ class PhysicalManager:
                 artifacts.extend(self._unit_artifacts(slot["unit"], True, seen_paths))
 
         return tuple(artifacts)
+
+    def _marker_artifact(self, marker: MarkerArtifactConfig) -> ManagedArtifact:
+        identity = f"{marker.filename}:{marker.sha256}"
+        source = (
+            {"type": "REPOSITORY", "path": marker.source}
+            if marker.source is not None
+            else {"type": "ADOPTED_TARGET", "path": f"{self.config.mods_directory}/{marker.filename}"}
+        )
+        return ManagedArtifact(
+            deployment_id=str(uuid.uuid5(uuid.NAMESPACE_URL, "mynx-title-marker-deployment:" + identity)),
+            artifact_id=str(uuid.uuid5(uuid.NAMESPACE_URL, "mynx-title-marker-artifact:" + identity)),
+            project_id="workbench-test-marker",
+            filename=marker.filename,
+            sha256=marker.sha256,
+            mod_id=marker.mod_id,
+            relative_path=PurePosixPath(self.config.mods_directory, marker.filename).as_posix(),
+            active=True,
+            source=source,
+        )
+
+    def _desired_managed_inventory(self, state: dict[str, Any]) -> tuple[ManagedArtifact, ...]:
+        return (*self.derive_inventory(state), self._marker_artifact(self.config.title_display.marker))
+
+    def _legacy_managed_inventory(self, state: dict[str, Any]) -> tuple[ManagedArtifact, ...]:
+        candidates = (
+            self.config.title_display.marker,
+            *self.config.title_display.predecessors,
+        )
+        present: list[ManagedArtifact] = []
+        for candidate in candidates:
+            artifact = self._marker_artifact(candidate)
+            if self._destination(artifact).exists():
+                self._verify_artifact_file(self._destination(artifact), artifact)
+                present.append(artifact)
+        if len(present) != 1:
+            names = ", ".join(item.filename for item in present) or "none"
+            raise ManagerError(
+                "legacy V2 ledger requires exactly one configured title marker artifact; found " + names
+            )
+        return (*self.derive_inventory(state), present[0])
+
+    def _managed_inventory_for_ledger(
+        self,
+        state: dict[str, Any],
+        ledger: dict[str, Any],
+    ) -> tuple[ManagedArtifact, ...]:
+        if ledger["schema_version"] == 3:
+            return self._desired_managed_inventory(state)
+        return self._legacy_managed_inventory(state)
+
+    def _render_title(self, state: dict[str, Any]) -> dict[str, Any]:
+        try:
+            return render_title_state(state, self.project_display_names, self.project_index)
+        except ValidationError as exc:
+            raise ManagerError(f"cannot render canonical title state: {exc}") from exc
+
+    def _title_projection(self, state: dict[str, Any]) -> dict[str, Any]:
+        title = self._render_title(state)
+        return {
+            "$schema": TITLE_PROJECTION_SCHEMA,
+            "schema_version": 1,
+            "state_revision": state["revision"],
+            "state_digest": state_digest(state),
+            "baseline": copy.deepcopy(title["baseline"]),
+            "slots": copy.deepcopy(title["slots"]),
+            "lines": copy.deepcopy(title["lines"]),
+        }
+
+    def _verify_title_projection(self, state: dict[str, Any]) -> dict[str, Any]:
+        try:
+            projection = json.loads(self.title_projection_path.read_text(encoding="utf-8"))
+        except FileNotFoundError as exc:
+            raise ManagerError(f"V2 title display projection is missing: {self.title_projection_path}") from exc
+        except (OSError, json.JSONDecodeError) as exc:
+            raise ManagerError(f"cannot load V2 title display projection {self.title_projection_path}: {exc}") from exc
+        expected = self._title_projection(state)
+        if projection != expected:
+            raise ManagerError("V2 title display projection does not match canonical runtime state")
+        return {
+            "path": self.title_projection_path.name,
+            "sha256": _sha256(self.title_projection_path),
+            "state_revision": projection["state_revision"],
+            "lines": copy.deepcopy(projection["lines"]),
+        }
 
     def _unit_artifacts(self, unit: dict[str, Any], active: bool, seen_paths: set[str]) -> list[ManagedArtifact]:
         result: list[ManagedArtifact] = []
@@ -521,7 +712,7 @@ class PhysicalManager:
             raise ManagerError(f"target-local V2 ledger is missing: {self.ledger_path}") from exc
         except (OSError, json.JSONDecodeError) as exc:
             raise ManagerError(f"cannot load target-local V2 ledger {self.ledger_path}: {exc}") from exc
-        required = {
+        v2_required = {
             "$schema",
             "schema_version",
             "target",
@@ -530,10 +721,16 @@ class PhysicalManager:
             "managed_files",
             "runtime_state",
         }
-        if not isinstance(ledger, dict) or set(ledger) != required:
+        if not isinstance(ledger, dict):
             raise ManagerError("target-local V2 ledger has an invalid shape")
-        if ledger["$schema"] != LEDGER_SCHEMA or ledger["schema_version"] != 2:
-            raise ManagerError("target-local ledger is not V2")
+        if ledger.get("$schema") == LEDGER_SCHEMA_V2 and ledger.get("schema_version") == 2:
+            required = v2_required
+        elif ledger.get("$schema") == LEDGER_SCHEMA and ledger.get("schema_version") == 3:
+            required = {*v2_required, "title_projection"}
+        else:
+            raise ManagerError("target-local ledger is not a supported V2/V3 ledger")
+        if set(ledger) != required:
+            raise ManagerError("target-local manager ledger has an invalid shape")
         if not isinstance(ledger["target"], str) or not _paths_equal(Path(ledger["target"]), self.target):
             raise ManagerError("target-local ledger names a different profile")
         try:
@@ -544,20 +741,28 @@ class PhysicalManager:
             raise ManagerError("target-local ledger runtime-state digest mismatch")
         if ledger["state_revision"] != ledger["runtime_state"]["revision"]:
             raise ManagerError("target-local ledger runtime-state revision mismatch")
-        expected_records = [item.ledger_record() for item in self.derive_inventory(ledger["runtime_state"])]
+        expected_inventory = (
+            self.derive_inventory(ledger["runtime_state"])
+            if ledger["schema_version"] == 2
+            else self._desired_managed_inventory(ledger["runtime_state"])
+        )
+        expected_records = [item.ledger_record() for item in expected_inventory]
         if ledger["managed_files"] != expected_records:
             raise ManagerError("target-local ledger managed-file inventory does not match its runtime state")
+        if ledger["schema_version"] == 3 and ledger["title_projection"] != self._title_projection(ledger["runtime_state"]):
+            raise ManagerError("target-local ledger title projection does not match its runtime state")
         return ledger
 
     def _ledger(self, state: dict[str, Any], artifacts: Iterable[ManagedArtifact]) -> dict[str, Any]:
         return {
             "$schema": LEDGER_SCHEMA,
-            "schema_version": 2,
+            "schema_version": 3,
             "target": str(self.target),
             "state_revision": state["revision"],
             "state_digest": state_digest(state),
             "managed_files": [artifact.ledger_record() for artifact in artifacts],
             "runtime_state": copy.deepcopy(state),
+            "title_projection": self._title_projection(state),
         }
 
     def _assert_ledger_matches_repository(self, ledger: dict[str, Any], state: dict[str, Any]) -> None:
@@ -570,6 +775,7 @@ class PhysicalManager:
         self,
         state: dict[str, Any],
         artifacts: tuple[ManagedArtifact, ...],
+        title_projection_evidence: dict[str, Any] | None,
     ) -> dict[str, Any]:
         records: list[dict[str, Any]] = []
         for artifact in artifacts:
@@ -605,6 +811,7 @@ class PhysicalManager:
             member["unit"]["deployment_id"] for member in state["accepted_baseline"]["members"]
         }
         accepted_records = [record for record in records if record["deployment_id"] in accepted_deployments]
+        title = self._render_title(state)
         slot_evidence: dict[str, dict[str, Any] | None] = {}
         for label in ("A", "B"):
             slot = state["slots"][label]
@@ -616,7 +823,9 @@ class PhysicalManager:
                 "deployment_id": unit["deployment_id"],
                 "project_uuid": unit["project_uuid"],
                 "project_id": unit["project_id"],
+                "project_display_name": title["slots"][label]["project_display_name"],
                 "version": unit["version"],
+                "canary": title["slots"][label]["canary"],
                 "deployment_state": slot["deployment"]["state"],
                 "runtime_result": slot["runtime_result"]["classification"],
                 "artifacts": copy.deepcopy(records_by_deployment.get(unit["deployment_id"], [])),
@@ -631,6 +840,8 @@ class PhysicalManager:
             "physical_inventory_digest": inventory_digest(records),
             "accepted_baseline": {
                 "revision": state["accepted_baseline"]["revision"],
+                "stack_version": state["accepted_baseline"]["revision"],
+                "stack_label": title["baseline"]["stack_label"],
                 "member_count": len(state["accepted_baseline"]["members"]),
                 "artifact_count": len(accepted_records),
                 "active_artifact_count": sum(record["disposition"] == "ACTIVE" for record in accepted_records),
@@ -638,6 +849,16 @@ class PhysicalManager:
                 "inventory_digest": inventory_digest(accepted_records),
             },
             "slots": slot_evidence,
+            "title_display": {
+                "status": "SYNCHRONIZED" if title_projection_evidence is not None else "LEGACY_MIGRATION_REQUIRED",
+                "projection": copy.deepcopy(title_projection_evidence),
+                "lines": copy.deepcopy(title["lines"]),
+            },
+            "infrastructure": {
+                "title_marker": copy.deepcopy(
+                    next(record for record in records if record["project_id"] == "workbench-test-marker")
+                )
+            },
         }
 
     def _verify_current_physical_state(self, *, allow_legacy_marker: bool = False) -> dict[str, Any]:
@@ -647,8 +868,10 @@ class PhysicalManager:
         state = self.load_repository_state()
         ledger = self._read_ledger()
         self._assert_ledger_matches_repository(ledger, state)
-        artifacts = self._verify_inventory(state, prior_ledger=ledger)
-        return self._physical_verification_report(state, artifacts)
+        artifacts = self._managed_inventory_for_ledger(state, ledger)
+        artifacts = self._verify_inventory(state, artifacts, prior_ledger=ledger)
+        projection = self._verify_title_projection(state) if ledger["schema_version"] == 3 else None
+        return self._physical_verification_report(state, artifacts, projection)
 
     def adoption_plan(self, state: dict[str, Any] | None = None) -> PhysicalPlan:
         self._assert_no_transaction_residue()
@@ -663,29 +886,32 @@ class PhysicalManager:
             raise ManagerError("initial adoption requires a populated accepted baseline and both test slots")
         if self.ledger_path.exists():
             raise ManagerError(f"initial adoption refuses an existing target-local ledger: {self.ledger_path}")
-        artifacts = self.derive_inventory(state)
-        for artifact in artifacts:
+        current_artifacts = self._legacy_managed_inventory(state)
+        for artifact in current_artifacts:
             source = self._source_path(artifact)
             if source.exists():
                 self._verify_artifact_file(source, artifact)
             elif artifact.source["type"] == "REPOSITORY":
                 raise ManagerError(f"initial adoption requires repository source {source}")
-        self._verify_inventory(state, artifacts)
+        self._verify_inventory(state, current_artifacts)
         active = copy.deepcopy(state)
         active["activation"] = "ACTIVE"
         active["revision"] += 1
         active["updated_at"] = _utc_now()
         active["accepted_baseline"]["provenance"]["physical_disposition"] = "ADOPTED"
         validate_runtime_state(active, self.project_index)
+        desired_artifacts = self._desired_managed_inventory(active)
+        writes, removals, unchanged = self._plan_delta(current_artifacts, desired_artifacts)
         return PhysicalPlan(
             mode="ADOPT",
             current_state=state,
             desired_state=active,
-            current_artifacts=artifacts,
-            desired_artifacts=self.derive_inventory(active),
-            writes=(),
-            removals=(),
-            unchanged=tuple(item.relative_path for item in artifacts),
+            current_artifacts=current_artifacts,
+            desired_artifacts=desired_artifacts,
+            writes=writes,
+            removals=removals,
+            unchanged=unchanged,
+            title_projection=self._title_projection(active),
         )
 
     def adopt(self, *, dry_run: bool = True, failure_injector: FailureInjector | None = None) -> dict[str, Any]:
@@ -713,7 +939,7 @@ class PhysicalManager:
         current = self.load_repository_state()
         ledger = self._read_ledger()
         self._assert_ledger_matches_repository(ledger, current)
-        current_artifacts = self.derive_inventory(current)
+        current_artifacts = self._managed_inventory_for_ledger(current, ledger)
 
         if operation is not None:
             if expected_revision is None or at is None:
@@ -734,7 +960,7 @@ class PhysicalManager:
                 raise ManagerError("desired runtime state must be a prevalidated single next revision")
             self._assert_desired_is_pure_transition(current, desired)
 
-        desired_artifacts = self.derive_inventory(desired)
+        desired_artifacts = self._desired_managed_inventory(desired)
         union_mod_ids = {item.mod_id for item in current_artifacts}
         for artifact in desired_artifacts:
             if not artifact.active:
@@ -764,6 +990,7 @@ class PhysicalManager:
             writes=writes,
             removals=removals,
             unchanged=unchanged,
+            title_projection=self._title_projection(desired),
         )
 
     def _assert_desired_is_pure_transition(self, current: dict[str, Any], desired: dict[str, Any]) -> None:
@@ -801,6 +1028,13 @@ class PhysicalManager:
             if desired["slots"]["B"] is not None:
                 candidates.append(declaration(desired["slots"]["B"]))
             operations.append({"type": "SET_PROFILE", "candidates": candidates})
+        operations.extend(
+            {
+                "type": "REMOVE_ACCEPTED",
+                "project_uuid": member["unit"]["project_uuid"],
+            }
+            for member in current["accepted_baseline"]["members"]
+        )
 
         for operation in operations:
             try:
@@ -955,7 +1189,7 @@ class PhysicalManager:
         _assert_no_reparse_components(transaction, "transaction backup", root=self.target)
         self._assert_target_containment(transaction.resolve(strict=False), "transaction backup")
         touched = sorted(
-            {action.destination for action in plan.writes}.union(plan.removals),
+            {action.destination for action in plan.writes}.union(plan.removals).union({self.title_projection_path}),
             key=lambda item: str(item).casefold(),
         )
         snapshots: dict[Path, Path | None] = {}
@@ -1004,6 +1238,8 @@ class PhysicalManager:
                 action.destination.parent.mkdir(parents=False, exist_ok=True)
                 _atomic_copy(staged[action.destination], action.destination)
                 injector(f"after_write_{index + 1}")
+            _atomic_write_json(self.title_projection_path, plan.title_projection)
+            injector("after_title_projection_write")
             injector("after_physical_apply")
 
             self._verify_inventory(
@@ -1011,6 +1247,7 @@ class PhysicalManager:
                 plan.desired_artifacts,
                 conflict_mod_ids={item.mod_id for item in plan.desired_artifacts},
             )
+            self._verify_title_projection(plan.desired_state)
             injector("after_physical_verify")
 
             # Recheck the compare-and-swap source immediately before committing
@@ -1030,6 +1267,7 @@ class PhysicalManager:
             final_ledger = self._read_ledger()
             self._assert_ledger_matches_repository(final_ledger, final_state)
             self._verify_inventory(final_state, plan.desired_artifacts, prior_ledger=final_ledger)
+            self._verify_title_projection(final_state)
             injector("after_post_verify")
             committed = True
         except Exception as exc:

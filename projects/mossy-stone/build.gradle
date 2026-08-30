@@ -20,11 +20,6 @@ configurations {
         canBeResolved = true
         transitive = false
     }
-    jeiReference {
-        canBeConsumed = false
-        canBeResolved = true
-        transitive = false
-    }
 }
 
 dependencies {
@@ -33,8 +28,6 @@ dependencies {
     implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
 
     cnmReference files('../../originals/mods/clutternomore-2.0.7+26.2-fabric.jar')
-    jeiReference files('../../originals/mods/jei-26.2-fabric-30.18.0.144.jar')
-    compileOnly files('../../originals/mods/jei-26.2-fabric-30.18.0.144.jar')
 
     testImplementation platform('org.junit:junit-bom:5.13.4')
     testImplementation 'org.junit.jupiter:junit-jupiter'
@@ -54,11 +47,10 @@ tasks.withType(JavaCompile).configureEach {
 
 test {
     useJUnitPlatform()
-    inputs.files(configurations.cnmReference, configurations.jeiReference)
+    inputs.files(configurations.cnmReference)
     systemProperty 'projectRoot', projectDir.absolutePath
     doFirst {
         systemProperty 'cnmReferenceJar', configurations.cnmReference.singleFile.absolutePath
-        systemProperty 'jeiReferenceJar', configurations.jeiReference.singleFile.absolutePath
     }
 }
 

@@ -80,30 +80,35 @@ final class ProductionCodecContractTest {
         Recipe<?> unrelated = craftingRecipe("crafting:sculk_sensor");
         Recipe<?> dramaticDoors = craftingRecipe("crafting:sculk_sensor");
         Recipe<?> reinforced = craftingRecipe("crafting:sculk_sensor");
+        Recipe<?> resonantFavour = craftingRecipe("crafting:sculk_sensor");
         RecipeMap resolved = RecipeMap.create(List.of(
                 holder("crafting:crystal_heart", upstreamCrystal),
                 holder("crafting:sculk_sensor", upstreamSensor),
                 holder("crafting:sculk_shrieker", upstreamShrieker),
                 holder("other:untouched", unrelated),
                 holder("dramaticdoors:tall_oak_door", dramaticDoors),
-                holder(HeartDataContract.REINFORCED_RECIPE_ID, reinforced)));
+                holder(HeartDataContract.REINFORCED_RECIPE_ID, reinforced),
+                holder(HeartDataContract.RESONANT_FAVOUR_RECIPE_ID, resonantFavour)));
 
         RecipeMap enforced = RecipeMapEnforcer.enforce(resolved, registries);
 
-        assertEquals(6, enforced.values().size());
+        assertEquals(7, enforced.values().size());
         assertNotSame(upstreamCrystal, recipe(enforced, "crafting:crystal_heart"));
         assertNotSame(upstreamSensor, recipe(enforced, "crafting:sculk_sensor"));
         assertNotSame(upstreamShrieker, recipe(enforced, "crafting:sculk_shrieker"));
         assertSame(unrelated, recipe(enforced, "other:untouched"));
         assertSame(dramaticDoors, recipe(enforced, "dramaticdoors:tall_oak_door"));
         assertSame(reinforced, recipe(enforced, HeartDataContract.REINFORCED_RECIPE_ID));
+        assertSame(resonantFavour, recipe(enforced, HeartDataContract.RESONANT_FAVOUR_RECIPE_ID));
     }
 
     @Test
     void recipeMapEnforcementPropagatesDecodeAndRebuildFailuresFailClosed() {
         Recipe<?> reinforced = craftingRecipe("crafting:sculk_sensor");
+        Recipe<?> resonantFavour = craftingRecipe("crafting:sculk_sensor");
         RecipeMap resolved = RecipeMap.create(List.of(
-                holder(HeartDataContract.REINFORCED_RECIPE_ID, reinforced)));
+                holder(HeartDataContract.REINFORCED_RECIPE_ID, reinforced),
+                holder(HeartDataContract.RESONANT_FAVOUR_RECIPE_ID, resonantFavour)));
 
         IllegalStateException decodeFailure = assertThrows(IllegalStateException.class,
                 () -> RecipeMapEnforcer.enforce(resolved, () -> {
@@ -119,6 +124,20 @@ final class ProductionCodecContractTest {
                 () -> RecipeMapEnforcer.enforce(resolved, () -> brokenReplacements));
         assertEquals("Unsafe Matcha recipe contracts", rebuildFailure.getMessage());
         assertEquals("recipe map rebuild failed", rebuildFailure.getCause().getMessage());
+    }
+
+    @Test
+    void recipeMapEnforcementFailsClosedWhenEitherOwnedCanary9RecipeDidNotDecode() {
+        Recipe<?> reinforced = craftingRecipe("crafting:sculk_sensor");
+        RecipeMap missingResonant = RecipeMap.create(List.of(
+                holder(HeartDataContract.REINFORCED_RECIPE_ID, reinforced)));
+
+        IllegalStateException failure = assertThrows(IllegalStateException.class,
+                () -> RecipeMapEnforcer.enforce(missingResonant, LinkedHashMap::new));
+
+        assertEquals("Unsafe Matcha recipe contracts", failure.getMessage());
+        assertTrue(failure.getCause().getMessage().contains(
+                HeartDataContract.RESONANT_FAVOUR_RECIPE_ID));
     }
 
     @Test

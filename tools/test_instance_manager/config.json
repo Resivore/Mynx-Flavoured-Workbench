@@ -1,10 +1,26 @@
 {
-  "schema_version": 2,
+  "schema_version": 3,
   "repository_root": "../..",
   "runtime_state": "tools/test_instance_manager/runtime-state.json",
   "dedicated_profile": "C:\\Users\\resiv\\AppData\\Roaming\\ModrinthApp\\profiles\\Matcha Flavoured 26.2 Workbench",
   "protected_profile": "C:\\Users\\resiv\\AppData\\Roaming\\ModrinthApp\\profiles\\Matcha Flavoured 26.1.2",
   "mods_directory": "mods",
   "ledger_file": ".mynx-runtime-v2-ledger.json",
-  "lock_file": ".mynx-runtime-v2.lock"
+  "lock_file": ".mynx-runtime-v2.lock",
+  "title_display": {
+    "projection_file": ".mynx-runtime-v2-title.json",
+    "marker": {
+      "filename": "workbench-test-marker-0.2.0.jar",
+      "sha256": "9147664302721976461dbbc1064260fc4309575182a8b050458d0446eafec6a6",
+      "mod_id": "workbench_test_marker",
+      "source": "projects/workbench-test-marker/artifacts/workbench-test-marker-0.2.0.jar"
+    },
+    "predecessors": [
+      {
+        "filename": "workbench-test-marker-0.1.1.jar",
+        "sha256": "b53ed459b89f4fe7ce053ff9142d145b33164149d468745b4836bc69a842426b",
+        "mod_id": "workbench_test_marker"
+      }
+    ]
+  }
 }

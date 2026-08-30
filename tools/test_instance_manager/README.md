@@ -8,11 +8,18 @@ permanently rejected before access.
 
 The tracked runtime contract contains the exact frozen accepted baseline (23
 project units / 26 artifacts), fixed independent Slots A and B, and exact
-per-slot deployment/runtime evidence. Current repository state declares Heart
-C8 in Slot A and Mossy C3 in Slot B, each `READY_TO_TEST_VERIFIED` and
-`UNTESTED`; accepted Heart C5 remains the disabled rollback. Those JSON values
-are expected-state metadata, not physical evidence and not Minecraft runtime
-validation.
+per-slot deployment/runtime evidence. The current accepted composition is
+human-readable **Stack v1**: `accepted_baseline.revision` is the sole canonical
+Stack number, so no parallel stack list or hand-maintained title value exists.
+Those JSON values are expected-state metadata, not physical evidence and not
+Minecraft runtime validation.
+
+A genuine `PROMOTE_SLOT` addition or artifact replacement and an intentional
+`REMOVE_ACCEPTED` each increment the Stack number exactly once. A promotion of
+a byte-identical rebuild is a reconciliation: it clears the test slot while
+preserving the exact accepted member/artifact identity and Stack number.
+Assignments, candidate replacements, slot clearing, readiness/result recording,
+verification, and display refreshes never increment the Stack number.
 
 ## Migration closure
 
@@ -31,6 +38,29 @@ SHA-256, Fabric ownership, and absence of superseded enabled artifacts. Its
 receipt names the exact slot projects, versions, physical artifact paths,
 hashes and dispositions, plus accepted-baseline counts and deterministic
 managed-inventory digests.
+
+## Canonical title projection
+
+The existing client-only Workbench Test Marker is manager-owned infrastructure,
+not an accepted-baseline member. Version `0.2.0` reads only
+`.mynx-runtime-v2-title.json`. Every applied manager transition atomically
+regenerates that projection from the same V2 runtime state and canonical
+manifest names, installs/verifies the pinned marker JAR, and records both in the
+target-local V3 manager ledger. The projection contains exactly these visible
+identity lines:
+
+```text
+Baseline: Stack vN
+Slot A: <canonical project name> - Canary <number>  (or Slot A: Empty)
+Slot B: <canonical project name> - Canary <number>  (or Slot B: Empty)
+```
+
+Canary numbers derive from each slot unit's canonical `version`, never an
+artifact filename. Empty slots never render `UNKNOWN`. A legacy V2 ledger plus
+the exact pinned `workbench-test-marker-0.1.1.jar` is accepted only as the
+one-step migration preimage; the next successful manager transition replaces
+it with the pinned `0.2.0` JAR, writes the projection, and advances the
+target-local ledger to V3 without changing accepted membership or Stack number.
 
 Google Sheet mirroring is not an activation or physical-verification authority.
 Its pending R2 publication failure is recorded separately in the Sheet
@@ -56,7 +86,8 @@ result, commits the target ledger and repository state together, and restores
 the preimage if any step fails.
 
 The V1 `.workbench-instance-manager.json` file is legacy display metadata, not
-V2 state authority. Normal verification and transitions fail closed while that
+V2 state authority. The 0.2.0 title marker never reads either its active or
+retired filename. Normal verification and transitions fail closed while that
 active filename exists. `retire-legacy-marker` is dry-run by default: under the
 same target lock it first verifies the current repository, V2 ledger, and
 physical managed inventory, then reports the exact marker hash. `--apply`

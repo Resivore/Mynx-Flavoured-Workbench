@@ -10,6 +10,10 @@ import org.junit.jupiter.api.Test;
 
 final class HeartDataContractTest {
     @Test void authoritativeDataMapsOwnTheExactConsolidatedReloadSurface() {
+        assertEquals("matcha_heart_death_compat:reinforced_crystal_heart",
+                HeartDataContract.REINFORCED_RECIPE_ID);
+        assertEquals("matcha_heart_death_compat:resonant_favour",
+                HeartDataContract.RESONANT_FAVOUR_RECIPE_ID);
         assertEquals(Map.of(
                 "minecraft:gameplay/fishing/deep_dark",
                 "data/minecraft/loot_table/gameplay/fishing/deep_dark.json",

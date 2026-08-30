@@ -546,10 +546,11 @@ def _validate_test_instance_manager_config(path: Path) -> None:
         "mods_directory",
         "ledger_file",
         "lock_file",
+        "title_display",
     }
     _object(config, str(path), keys)
-    if config["schema_version"] != 2:
-        raise ValidationError(f"{path}: schema_version must be 2")
+    if config["schema_version"] != 3:
+        raise ValidationError(f"{path}: schema_version must be 3")
     expected = {
         "repository_root": "../..",
         "runtime_state": "tools/test_instance_manager/runtime-state.json",
@@ -563,6 +564,24 @@ def _validate_test_instance_manager_config(path: Path) -> None:
         actual = _nonblank(config[field], f"{path}.{field}")
         if actual != expected_value:
             raise ValidationError(f"{path}.{field}: must be {expected_value!r}")
+    expected_title_display = {
+        "projection_file": ".mynx-runtime-v2-title.json",
+        "marker": {
+            "filename": "workbench-test-marker-0.2.0.jar",
+            "sha256": "9147664302721976461dbbc1064260fc4309575182a8b050458d0446eafec6a6",
+            "mod_id": "workbench_test_marker",
+            "source": "projects/workbench-test-marker/artifacts/workbench-test-marker-0.2.0.jar",
+        },
+        "predecessors": [
+            {
+                "filename": "workbench-test-marker-0.1.1.jar",
+                "sha256": "b53ed459b89f4fe7ce053ff9142d145b33164149d468745b4836bc69a842426b",
+                "mod_id": "workbench_test_marker",
+            }
+        ],
+    }
+    if config["title_display"] != expected_title_display:
+        raise ValidationError(f"{path}.title_display: must preserve the exact manager-owned title infrastructure")
 
 
 def validate_repository(root: Path) -> dict[str, tuple[Path, dict[str, Any]]]:

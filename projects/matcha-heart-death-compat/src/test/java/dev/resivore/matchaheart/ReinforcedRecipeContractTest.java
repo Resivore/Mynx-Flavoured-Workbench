@@ -12,7 +12,6 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import net.fabricmc.fabric.impl.recipe.ingredient.CustomIngredientInit;
 import net.minecraft.SharedConstants;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.RegistryAccess;
@@ -26,7 +25,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.Rarity;
 import net.minecraft.world.item.crafting.CraftingInput;
-import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -38,10 +36,12 @@ final class ReinforcedRecipeContractTest {
     private static Recipe<CraftingInput> reinforcedRecipe;
 
     @BeforeAll
-    static void bootstrapProductionIngredientCodec() throws Exception {
+    static void bootstrapProductionRecipeCodec() throws Exception {
         SharedConstants.tryDetectVersion();
         Bootstrap.bootStrap();
-        new CustomIngredientInit().onInitialize();
+        if (!BuiltInRegistries.ITEM.containsKey(HeartItems.RESONANT_FAVOUR_ID)) {
+            HeartItems.register();
+        }
 
         var builtIns = RegistryAccess.fromRegistryOfRegistries(BuiltInRegistries.REGISTRY);
         var vanillaData = VanillaRegistries.createLookup();
@@ -70,61 +70,50 @@ final class ReinforcedRecipeContractTest {
     }
 
     @Test
-    void packagedShapedRecipeAndHeartIngredientDecodeThroughProductionMinecraftFabricCodecs() {
+    void packagedShapedRecipeAndRegisteredIngredientDecodeThroughProductionMinecraftCodecs() {
         assertTrue(reinforcedRecipe != null,
                 "Full Recipe.CODEC must decode the packaged shaped recipe");
-
-        JsonObject heart = recipe.getAsJsonObject("key").getAsJsonObject("H");
-        var decoded = Ingredient.CODEC.parse(
-                registries.createSerializationContext(JsonOps.INSTANCE), heart);
-
-        assertTrue(decoded.result().isPresent(),
-                () -> "Production Ingredient.CODEC rejected the packaged heart ingredient: "
-                        + decoded.error().map(Object::toString).orElse("unknown error"));
+        assertEquals(HeartItems.RESONANT_FAVOUR,
+                BuiltInRegistries.ITEM.getValue(HeartItems.RESONANT_FAVOUR_ID));
     }
 
     @Test
-    void exactSixShardGridMatchesOnlyTheSemanticMatchaHeart() {
-        assertTrue(reinforcedRecipe.matches(reinforcedInput(actualMatchaHeart()), null));
+    void exactFiveShardGridMatchesOnlyResonantFavour() {
+        assertTrue(reinforcedRecipe.matches(reinforcedInput(
+                new ItemStack(HeartItems.RESONANT_FAVOUR)), null));
         assertFalse(reinforcedRecipe.matches(
                 reinforcedInput(new ItemStack(Items.POISONOUS_POTATO)), null));
-
-        ItemStack otherComponentPotato = new ItemStack(Items.POISONOUS_POTATO);
-        otherComponentPotato.set(DataComponents.ITEM_MODEL, Identifier.withDefaultNamespace("potato"));
-        assertFalse(reinforcedRecipe.matches(reinforcedInput(otherComponentPotato), null));
+        assertFalse(reinforcedRecipe.matches(
+                reinforcedInput(new ItemStack(Items.NETHER_STAR)), null));
 
         assertFalse(reinforcedRecipe.matches(CraftingInput.of(3, 3, java.util.List.of(
-                echoShard(), echoShard(), echoShard(),
-                echoShard(), actualMatchaHeart(), echoShard(),
+                echoShard(), ItemStack.EMPTY, echoShard(),
+                echoShard(), new ItemStack(HeartItems.RESONANT_FAVOUR), echoShard(),
                 ItemStack.EMPTY, ItemStack.EMPTY, ItemStack.EMPTY)), null),
                 "The bottom-center Echo Shard is required");
         assertFalse(reinforcedRecipe.matches(CraftingInput.of(3, 3, java.util.List.of(
                 echoShard(), echoShard(), echoShard(),
-                echoShard(), actualMatchaHeart(), echoShard(),
-                echoShard(), echoShard(), ItemStack.EMPTY)), null),
-                "An Echo Shard in an intentionally empty corner must reject the recipe");
+                echoShard(), new ItemStack(HeartItems.RESONANT_FAVOUR), echoShard(),
+                ItemStack.EMPTY, echoShard(), ItemStack.EMPTY)), null),
+                "An Echo Shard in an intentionally empty top-center slot must reject the recipe");
     }
 
     @Test
-    void packagedRecipePinsTheExactSixShardLayoutAndFabricComponentIngredient() {
+    void packagedRecipePinsTheExactFiveShardAndResonantLayout() {
         assertEquals("minecraft:crafting_shaped", recipe.get("type").getAsString());
         var pattern = recipe.getAsJsonArray("pattern");
         assertEquals(3, pattern.size());
-        assertEquals("EEE", pattern.get(0).getAsString());
-        assertEquals("EHE", pattern.get(1).getAsString());
-        assertEquals(" E ", pattern.get(2).getAsString());
+        assertEquals("e e", pattern.get(0).getAsString());
+        assertEquals("ere", pattern.get(1).getAsString());
+        assertEquals(" e ", pattern.get(2).getAsString());
         String layout = pattern.get(0).getAsString()
                 + pattern.get(1).getAsString()
                 + pattern.get(2).getAsString();
-        assertEquals(6L, layout.chars().filter(character -> character == 'E').count());
+        assertEquals(5L, layout.chars().filter(character -> character == 'e').count());
         assertEquals("minecraft:echo_shard",
-                recipe.getAsJsonObject("key").get("E").getAsString());
-
-        JsonObject heart = recipe.getAsJsonObject("key").getAsJsonObject("H");
-        assertEquals("fabric:components", heart.get("fabric:type").getAsString());
-        assertEquals("minecraft:poisonous_potato", heart.get("base").getAsString());
-        assertEquals("minecraft:heart_container",
-                heart.getAsJsonObject("components").get("minecraft:item_model").getAsString());
+                recipe.getAsJsonObject("key").get("e").getAsString());
+        assertEquals(HeartDataContract.RESONANT_FAVOUR_RECIPE_ID,
+                recipe.getAsJsonObject("key").get("r").getAsString());
     }
 
     @Test
@@ -145,7 +134,8 @@ final class ReinforcedRecipeContractTest {
         assertEquals("minecraft:heart_container", HeartDataContract.MATCHA_ITEM_MODEL);
         assertEquals("item.kleispack.crystal_heart", HeartDataContract.MATCHA_ITEM_NAME);
 
-        ItemStack assembled = reinforcedRecipe.assemble(reinforcedInput(actualMatchaHeart()));
+        ItemStack assembled = reinforcedRecipe.assemble(reinforcedInput(
+                new ItemStack(HeartItems.RESONANT_FAVOUR)));
         assertTrue(assembled.is(Items.POISONOUS_POTATO));
         assertEquals(Identifier.fromNamespaceAndPath(
                         MatchaHeartDeathCompat.MOD_ID, "reinforced_crystal_heart"),
@@ -168,24 +158,14 @@ final class ReinforcedRecipeContractTest {
                 metadata.getAsJsonObject("entrypoints").getAsJsonArray("main").get(0).getAsString());
     }
 
-    private static ItemStack actualMatchaHeart() {
-        ItemStack stack = new ItemStack(Items.POISONOUS_POTATO);
-        stack.set(DataComponents.ITEM_MODEL, Identifier.withDefaultNamespace("heart_container"));
-        stack.set(DataComponents.ITEM_NAME, Component.translatable("item.kleispack.crystal_heart"));
-        stack.set(DataComponents.RARITY, Rarity.RARE);
-        stack.set(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true);
-        stack.remove(DataComponents.CONSUMABLE);
-        return stack;
-    }
-
     private static ItemStack echoShard() {
         return new ItemStack(Items.ECHO_SHARD);
     }
 
-    private static CraftingInput reinforcedInput(ItemStack heart) {
+    private static CraftingInput reinforcedInput(ItemStack resonantFavour) {
         return CraftingInput.of(3, 3, java.util.List.of(
-                echoShard(), echoShard(), echoShard(),
-                echoShard(), heart, echoShard(),
+                echoShard(), ItemStack.EMPTY, echoShard(),
+                echoShard(), resonantFavour, echoShard(),
                 ItemStack.EMPTY, echoShard(), ItemStack.EMPTY));
     }
 }

@@ -12,7 +12,13 @@ from types import SimpleNamespace
 from unittest.mock import patch
 from uuid import NAMESPACE_URL, uuid5
 
-from tools.runtime_slots import candidate_declaration, plan_transition, validate_runtime_state
+from tools.runtime_slots import (
+    candidate_declaration,
+    plan_transition,
+    render_title_state,
+    state_digest,
+    validate_runtime_state,
+)
 import tools.test_instance_manager.manager as manager_module
 from tools.test_instance_manager.manager import ManagerError, PhysicalManager, _assert_no_reparse_components
 
@@ -112,10 +118,20 @@ class ManagerFixture:
         c5_hash = write_mod(self.mods / (c5_name + ".disabled"), "matcha_heart_death_compat", "c5")
         c7_hash = write_mod(self.mods / c7_name, "matcha_heart_death_compat", "c7")
         mossy_hash = write_mod(self.mods / mossy_name, "mossy_stone", "c2")
+        old_marker_name = "workbench-test-marker-0.1.1.jar"
+        new_marker_name = "workbench-test-marker-0.2.0.jar"
+        old_marker_hash = write_mod(self.mods / old_marker_name, "workbench_test_marker", "0.1.1")
+        new_marker_path = self.repository / "infrastructure" / new_marker_name
+        new_marker_hash = write_mod(new_marker_path, "workbench_test_marker", "0.2.0")
         self.base_bytes = (self.mods / base_name).read_bytes()
         self.c5_bytes = (self.mods / (c5_name + ".disabled")).read_bytes()
         self.c7_bytes = (self.mods / c7_name).read_bytes()
         self.c2_bytes = (self.mods / mossy_name).read_bytes()
+        self.old_marker_name = old_marker_name
+        self.new_marker_name = new_marker_name
+        self.old_marker_hash = old_marker_hash
+        self.new_marker_hash = new_marker_hash
+        self.new_marker_bytes = new_marker_path.read_bytes()
 
         self.heart_uuid = stable_uuid("project:matcha-heart-death-compat")
         self.mossy_uuid = stable_uuid("project:mossy-stone")
@@ -172,7 +188,7 @@ class ManagerFixture:
         self.state_path.write_text(json.dumps(self.state, indent=2) + "\n", encoding="utf-8")
         self.config_path = self.repository / "manager-config.json"
         config = {
-            "schema_version": 2,
+            "schema_version": 3,
             "repository_root": ".",
             "runtime_state": "runtime-state.json",
             "dedicated_profile": str(self.target),
@@ -180,6 +196,22 @@ class ManagerFixture:
             "mods_directory": "mods",
             "ledger_file": ".mynx-runtime-v2-ledger.json",
             "lock_file": ".mynx-runtime-v2.lock",
+            "title_display": {
+                "projection_file": ".mynx-runtime-v2-title.json",
+                "marker": {
+                    "filename": new_marker_name,
+                    "sha256": new_marker_hash,
+                    "mod_id": "workbench_test_marker",
+                    "source": "infrastructure/" + new_marker_name,
+                },
+                "predecessors": [
+                    {
+                        "filename": old_marker_name,
+                        "sha256": old_marker_hash,
+                        "mod_id": "workbench_test_marker",
+                    }
+                ],
+            },
         }
         self.config_path.write_text(json.dumps(config, indent=2) + "\n", encoding="utf-8")
         self.project_index = {
@@ -187,7 +219,16 @@ class ManagerFixture:
             self.heart_uuid: "matcha-heart-death-compat",
             self.mossy_uuid: "mossy-stone",
         }
-        self.manager = PhysicalManager.from_config(self.config_path, project_index=self.project_index)
+        self.project_display_names = {
+            self.base["project_uuid"]: "Accepted Base",
+            self.heart_uuid: "Matcha Death Rebalance",
+            self.mossy_uuid: "Mossy Stone",
+        }
+        self.manager = PhysicalManager.from_config(
+            self.config_path,
+            project_index=self.project_index,
+            project_display_names=self.project_display_names,
+        )
         self.operation_index = 0
 
     def repository_state(self) -> dict:
@@ -366,8 +407,62 @@ class PhysicalManagerTests(unittest.TestCase):
         self.assertTrue((self.fixture.mods / (c5 + ".disabled")).is_file())
         self.assertTrue((self.fixture.mods / c7).is_file())
         self.assertTrue((self.fixture.mods / mossy).is_file(), "Mossy Stone must overlay the baseline")
+        self.assertFalse((self.fixture.mods / self.fixture.old_marker_name).exists())
+        self.assertEqual(
+            self.fixture.new_marker_bytes,
+            (self.fixture.mods / self.fixture.new_marker_name).read_bytes(),
+        )
+        projection = json.loads((self.fixture.target / ".mynx-runtime-v2-title.json").read_text(encoding="utf-8"))
+        self.assertEqual("Baseline: Stack v4", projection["lines"][0])
+        self.assertEqual("Slot A: Matcha Death Rebalance - Canary 7", projection["lines"][1])
+        self.assertEqual("Slot B: Mossy Stone - Canary 2", projection["lines"][2])
         self.assertEqual("preserve me", (self.fixture.mods / "unrelated.txt").read_text(encoding="utf-8"))
         self.assertEqual("PHYSICAL_STATE_VERIFIED", self.fixture.manager.verify()["status"])
+
+    def test_legacy_v2_ledger_migrates_marker_and_projection_on_next_transition(self) -> None:
+        active = self.fixture.repository_state()
+        active["activation"] = "ACTIVE"
+        active["revision"] += 1
+        active["updated_at"] = "2026-08-29T12:04:00Z"
+        active["accepted_baseline"]["provenance"]["physical_disposition"] = "ADOPTED"
+        validate_runtime_state(active, self.fixture.project_index)
+        self.fixture.state_path.write_text(json.dumps(active, indent=2) + "\n", encoding="utf-8")
+        legacy_ledger = {
+            "$schema": "mynx-test-instance-manager-ledger-v2",
+            "schema_version": 2,
+            "target": str(self.fixture.target),
+            "state_revision": active["revision"],
+            "state_digest": state_digest(active),
+            "managed_files": [item.ledger_record() for item in self.fixture.manager.derive_inventory(active)],
+            "runtime_state": copy.deepcopy(active),
+        }
+        (self.fixture.target / ".mynx-runtime-v2-ledger.json").write_text(
+            json.dumps(legacy_ledger, indent=2) + "\n",
+            encoding="utf-8",
+        )
+        self.assertFalse((self.fixture.target / ".mynx-runtime-v2-title.json").exists())
+        c8, _ = self.fixture.add_repository_candidate()
+
+        self.fixture.apply_operation(
+            {
+                "type": "UPDATE_SLOT",
+                "slot": "A",
+                "candidate": candidate_declaration(c8, self.fixture.c5["deployment_id"]),
+            }
+        )
+
+        ledger = json.loads((self.fixture.target / ".mynx-runtime-v2-ledger.json").read_text(encoding="utf-8"))
+        projection = json.loads((self.fixture.target / ".mynx-runtime-v2-title.json").read_text(encoding="utf-8"))
+        self.assertEqual("mynx-test-instance-manager-ledger-v3", ledger["$schema"])
+        self.assertEqual(3, ledger["schema_version"])
+        self.assertFalse((self.fixture.mods / self.fixture.old_marker_name).exists())
+        self.assertEqual(
+            self.fixture.new_marker_bytes,
+            (self.fixture.mods / self.fixture.new_marker_name).read_bytes(),
+        )
+        self.assertEqual("Baseline: Stack v4", projection["lines"][0])
+        self.assertEqual("Slot A: Matcha Death Rebalance - Canary 8", projection["lines"][1])
+        self.assertEqual("SYNCHRONIZED", self.fixture.manager.verify()["title_display"]["status"])
 
     def test_unmanaged_conflicting_candidate_is_refused(self) -> None:
         extra = self.fixture.mods / "unknown-heart-version.jar"
@@ -419,7 +514,7 @@ class PhysicalManagerTests(unittest.TestCase):
         result = self.fixture.manager.verify()
 
         self.assertEqual("PHYSICAL_STATE_VERIFIED", result["status"])
-        self.assertEqual(4, result["managed_file_count"])
+        self.assertEqual(5, result["managed_file_count"])
         self.assertRegex(result["physical_inventory_digest"], r"^[0-9a-f]{64}$")
         self.assertEqual(2, result["accepted_baseline"]["member_count"])
         self.assertEqual(2, result["accepted_baseline"]["artifact_count"])
@@ -445,6 +540,162 @@ class PhysicalManagerTests(unittest.TestCase):
         self.assertEqual(self.fixture.base_bytes, (self.fixture.mods / base_name).read_bytes())
         self.assertEqual(self.fixture.c5_bytes, (self.fixture.mods / c5_name).read_bytes())
         self.assertEqual("preserve me", (self.fixture.mods / "unrelated.txt").read_text(encoding="utf-8"))
+
+    def test_stack_v1_and_empty_slots_render_without_unknown(self) -> None:
+        state = copy.deepcopy(self.fixture.state)
+        state["accepted_baseline"]["revision"] = 1
+        state["slots"] = {"A": None, "B": None}
+
+        rendered = render_title_state(
+            state,
+            self.fixture.project_display_names,
+            self.fixture.project_index,
+        )
+
+        self.assertEqual(
+            ["Baseline: Stack v1", "Slot A: Empty", "Slot B: Empty"],
+            rendered["lines"],
+        )
+        self.assertNotIn("UNKNOWN", "\n".join(rendered["lines"]))
+
+    def test_slot_replacement_refreshes_canonical_title_without_bumping_stack(self) -> None:
+        self.fixture.manager.adopt(dry_run=False)
+        before = self.fixture.repository_state()
+        stack_version = before["accepted_baseline"]["revision"]
+        c8, _ = self.fixture.add_repository_candidate()
+
+        self.fixture.apply_operation(
+            {
+                "type": "UPDATE_SLOT",
+                "slot": "A",
+                "candidate": candidate_declaration(c8, self.fixture.c5["deployment_id"]),
+            }
+        )
+
+        updated = self.fixture.repository_state()
+        projection = json.loads((self.fixture.target / ".mynx-runtime-v2-title.json").read_text(encoding="utf-8"))
+        self.assertEqual(stack_version, updated["accepted_baseline"]["revision"])
+        self.assertEqual("Baseline: Stack v4", projection["lines"][0])
+        self.assertEqual("Slot A: Matcha Death Rebalance - Canary 8", projection["lines"][1])
+        self.assertEqual("Slot B: Mossy Stone - Canary 2", projection["lines"][2])
+
+        self.fixture.apply_operation({"type": "MARK_DEPLOYED", "slot": "A"})
+        self.fixture.apply_operation({"type": "MARK_READY", "slot": "A"})
+        self.fixture.apply_operation(
+            {
+                "type": "RECORD_RESULT",
+                "slot": "A",
+                "classification": "FAIL",
+                "evidence": {"passed": [], "failed": ["focused runtime defect"]},
+            }
+        )
+        recorded = self.fixture.repository_state()
+        self.assertEqual(stack_version, recorded["accepted_baseline"]["revision"])
+
+        self.fixture.apply_operation({"type": "REMOVE_SLOT", "slot": "A"})
+        cleared = self.fixture.repository_state()
+        projection = json.loads((self.fixture.target / ".mynx-runtime-v2-title.json").read_text(encoding="utf-8"))
+        self.assertEqual(stack_version, cleared["accepted_baseline"]["revision"])
+        self.assertEqual("Slot A: Empty", projection["lines"][1])
+
+    def test_genuine_promotion_increments_stack_and_projection_exactly_once(self) -> None:
+        self.fixture.deploy_successor_pair()
+        self.fixture.apply_operation(
+            {
+                "type": "RECORD_RESULT",
+                "slot": "A",
+                "classification": "PASS",
+                "evidence": {"passed": ["focused runtime behavior passed"], "failed": []},
+            }
+        )
+        before = self.fixture.repository_state()
+
+        self.fixture.apply_operation({"type": "PROMOTE_SLOT", "slot": "A"})
+
+        promoted = self.fixture.repository_state()
+        projection = json.loads((self.fixture.target / ".mynx-runtime-v2-title.json").read_text(encoding="utf-8"))
+        self.assertEqual(
+            before["accepted_baseline"]["revision"] + 1,
+            promoted["accepted_baseline"]["revision"],
+        )
+        self.assertEqual("TRANSITIONED", promoted["accepted_baseline"]["provenance"]["physical_disposition"])
+        self.assertEqual("Baseline: Stack v5", projection["lines"][0])
+        self.assertEqual("Slot A: Empty", projection["lines"][1])
+        self.assertEqual("Slot B: Mossy Stone - Canary 3", projection["lines"][2])
+
+    def test_byte_identical_promotion_preserves_accepted_identity_and_stack(self) -> None:
+        self.fixture.manager.adopt(dry_run=False)
+        filename = "matcha-heart-death-compat-byte-identical-canary8.jar"
+        source = self.fixture.repository / "artifacts" / filename
+        source.parent.mkdir(parents=True, exist_ok=True)
+        source.write_bytes(self.fixture.c5_bytes)
+        same_bytes = artifact(
+            filename,
+            "matcha_heart_death_compat",
+            self.fixture.c5["artifacts"][0]["sha256"],
+            source_type="REPOSITORY",
+            source_path="artifacts/" + filename,
+        )
+        same_bytes["artifact_id"] = stable_uuid("artifact:byte-identical-heart-rebuild")
+        candidate = unit(
+            "matcha-heart-death-compat",
+            "0.1.8-canary8",
+            same_bytes,
+            project_uuid=self.fixture.heart_uuid,
+        )
+        self.fixture.apply_operation(
+            {
+                "type": "UPDATE_SLOT",
+                "slot": "A",
+                "candidate": candidate_declaration(candidate, self.fixture.c5["deployment_id"]),
+            }
+        )
+        self.fixture.apply_operation({"type": "MARK_DEPLOYED", "slot": "A"})
+        self.fixture.apply_operation({"type": "MARK_READY", "slot": "A"})
+        self.fixture.apply_operation(
+            {
+                "type": "RECORD_RESULT",
+                "slot": "A",
+                "classification": "PASS",
+                "evidence": {"passed": ["byte-identical reconciliation confirmed"], "failed": []},
+            }
+        )
+        before = self.fixture.repository_state()
+        accepted_before = copy.deepcopy(before["accepted_baseline"])
+
+        self.fixture.apply_operation({"type": "PROMOTE_SLOT", "slot": "A"})
+
+        reconciled = self.fixture.repository_state()
+        projection = json.loads((self.fixture.target / ".mynx-runtime-v2-title.json").read_text(encoding="utf-8"))
+        self.assertEqual(accepted_before, reconciled["accepted_baseline"])
+        self.assertIsNone(reconciled["slots"]["A"])
+        self.assertEqual("Baseline: Stack v4", projection["lines"][0])
+        self.assertEqual("Slot A: Empty", projection["lines"][1])
+        self.assertEqual(
+            self.fixture.c5_bytes,
+            (self.fixture.mods / self.fixture.c5["artifacts"][0]["filename"]).read_bytes(),
+        )
+        self.assertFalse((self.fixture.mods / filename).exists())
+
+    def test_intentional_accepted_removal_increments_stack_once(self) -> None:
+        self.fixture.manager.adopt(dry_run=False)
+        before = self.fixture.repository_state()
+
+        self.fixture.apply_operation(
+            {"type": "REMOVE_ACCEPTED", "project_uuid": self.fixture.base["project_uuid"]}
+        )
+
+        removed = self.fixture.repository_state()
+        projection = json.loads((self.fixture.target / ".mynx-runtime-v2-title.json").read_text(encoding="utf-8"))
+        self.assertEqual(
+            before["accepted_baseline"]["revision"] + 1,
+            removed["accepted_baseline"]["revision"],
+        )
+        self.assertNotIn(
+            self.fixture.base["project_uuid"],
+            {member["unit"]["project_uuid"] for member in removed["accepted_baseline"]["members"]},
+        )
+        self.assertEqual("Baseline: Stack v5", projection["lines"][0])
 
     def test_one_stale_slot_fails_physical_verification(self) -> None:
         _, c3 = self.fixture.deploy_successor_pair()
@@ -502,7 +753,11 @@ class PhysicalManagerTests(unittest.TestCase):
         self.assertEqual(before_mods, tree_snapshot(self.fixture.mods))
         self.assertEqual(before_state, self.fixture.state_path.read_bytes())
         self.assertEqual(before_ledger, (self.fixture.target / ".mynx-runtime-v2-ledger.json").read_bytes())
-        self.assertEqual("PHYSICAL_STATE_VERIFIED", self.fixture.manager.verify()["status"])
+        verified = self.fixture.manager.verify()
+        self.assertEqual("PHYSICAL_STATE_VERIFIED", verified["status"])
+        self.assertEqual("SYNCHRONIZED", verified["title_display"]["status"])
+        self.assertEqual("Baseline: Stack v4", verified["title_display"]["lines"][0])
+        self.assertEqual("Slot A: Matcha Death Rebalance - Canary 7", verified["title_display"]["lines"][1])
 
     def test_legacy_marker_retirement_requires_matching_physical_inventory(self) -> None:
         c8, c3 = self.fixture.deploy_successor_pair(mark_ready=False)

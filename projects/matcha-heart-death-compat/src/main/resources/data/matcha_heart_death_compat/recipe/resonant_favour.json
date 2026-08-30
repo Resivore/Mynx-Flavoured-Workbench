@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "d": "minecraft:nether_star",
+    "e": "minecraft:echo_shard"
+  },
+  "pattern": [" e ", "ede", " e "],
+  "result": {
+    "id": "matcha_heart_death_compat:resonant_favour",
+    "count": 1
+  }
+}

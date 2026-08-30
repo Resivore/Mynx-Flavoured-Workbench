@@ -58,10 +58,10 @@ final class EffectiveOverlayContractTest {
 
         assertEquals(Set.of(
                 "data/blessings/recipe/swift_sneak_soul_speed.json",
-                "data/crafting/recipe/crystal_heart.json",
                 "data/crafting/recipe/music_disc_5.json",
                 "data/main/advancement/recipe_unlocks/echo_shard.json",
                 "data/matcha_heart_death_compat/recipe/reinforced_crystal_heart.json",
+                "data/matcha_heart_death_compat/recipe/resonant_favour.json",
                 "data/minecraft/loot_table/chests/ancient_city.json"), references);
         assertEquals(Set.of("data/minecraft/loot_table/chests/ancient_city.json"), lootSources);
     }
@@ -76,11 +76,11 @@ final class EffectiveOverlayContractTest {
         });
         assertEquals(Set.of(
                 "data/blessings/recipe/swift_sneak_soul_speed.json",
-                "data/crafting/recipe/crystal_heart.json",
                 "data/crafting/recipe/music_disc_5.json",
                 "data/main/advancement/recipe_unlocks/echo_shard.json",
                 "data/main/function/setup/revoke_all_recipe_unlock_advancements.mcfunction",
                 "data/matcha_heart_death_compat/recipe/reinforced_crystal_heart.json",
+                "data/matcha_heart_death_compat/recipe/resonant_favour.json",
                 "data/minecraft/loot_table/chests/ancient_city.json"), references);
     }
 
@@ -107,13 +107,15 @@ final class EffectiveOverlayContractTest {
 
         JsonObject crystal = JsonParser.parseString(
                 effective.get("data/crafting/recipe/crystal_heart.json")).getAsJsonObject();
-        assertEquals(List.of("ddd", "ded", "ddd"),
+        assertEquals(List.of("f f", "fdf", " f "),
                 crystal.getAsJsonArray("pattern").asList().stream()
                         .map(JsonElement::getAsString).toList());
-        assertEquals("minecraft:echo_shard", crystal.getAsJsonObject("key").get("e").getAsString());
-        assertEquals(1, countSymbol(crystal, 'e'));
-        assertEquals("minecraft:diamond", crystal.getAsJsonObject("key").get("d").getAsString());
-        assertEquals(8, countSymbol(crystal, 'd'));
+        assertEquals("minecraft:turtle_scute", crystal.getAsJsonObject("key").get("f").getAsString());
+        assertEquals(5, countSymbol(crystal, 'f'));
+        assertEquals("minecraft:nether_star", crystal.getAsJsonObject("key").get("d").getAsString());
+        assertEquals(1, countSymbol(crystal, 'd'));
+        assertFalse(crystal.toString().contains("minecraft:diamond"));
+        assertFalse(crystal.toString().contains("minecraft:echo_shard"));
         JsonObject crystalResult = crystal.getAsJsonObject("result");
         JsonObject crystalComponents = crystalResult.getAsJsonObject("components");
         assertEquals("minecraft:poisonous_potato", crystalResult.get("id").getAsString());
@@ -128,10 +130,25 @@ final class EffectiveOverlayContractTest {
 
         JsonObject reinforced = JsonParser.parseString(effective.get(
                 "data/matcha_heart_death_compat/recipe/reinforced_crystal_heart.json")).getAsJsonObject();
-        assertEquals("minecraft:echo_shard", reinforced.getAsJsonObject("key").get("E").getAsString());
-        assertEquals(6, countSymbol(reinforced, 'E'));
-        assertEquals("fabric:components", reinforced.getAsJsonObject("key")
-                .getAsJsonObject("H").get("fabric:type").getAsString());
+        assertEquals(List.of("e e", "ere", " e "),
+                reinforced.getAsJsonArray("pattern").asList().stream()
+                        .map(JsonElement::getAsString).toList());
+        assertEquals("minecraft:echo_shard", reinforced.getAsJsonObject("key").get("e").getAsString());
+        assertEquals(5, countSymbol(reinforced, 'e'));
+        assertEquals("matcha_heart_death_compat:resonant_favour",
+                reinforced.getAsJsonObject("key").get("r").getAsString());
+        assertFalse(reinforced.toString().contains("fabric:components"));
+
+        JsonObject resonant = JsonParser.parseString(effective.get(
+                "data/matcha_heart_death_compat/recipe/resonant_favour.json")).getAsJsonObject();
+        assertEquals(List.of(" e ", "ede", " e "),
+                resonant.getAsJsonArray("pattern").asList().stream()
+                        .map(JsonElement::getAsString).toList());
+        assertEquals("minecraft:echo_shard", resonant.getAsJsonObject("key").get("e").getAsString());
+        assertEquals(4, countSymbol(resonant, 'e'));
+        assertEquals("minecraft:nether_star", resonant.getAsJsonObject("key").get("d").getAsString());
+        assertEquals("matcha_heart_death_compat:resonant_favour",
+                resonant.getAsJsonObject("result").get("id").getAsString());
     }
 
     @Test

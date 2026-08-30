@@ -36,8 +36,6 @@ final class MossyStoneContractTest {
             "984508A44A92F02CCE254CD58D45905CAE8E625C647D4A5B32F9AB6AE82EE2E8";
     private static final String CNM_SHA256 =
             "41A925E70D5E6E8C098BEA7DC88C44486AED46724E35CB2FA4B1622B2A4DBCCE";
-    private static final String JEI_SHA256 =
-            "20BC7F0EBE5F36F84C8C4D571469968BE54A6E1989B4E85A736136DC41EA8FE2";
 
     @Test
     void productionOwnsTheStandaloneStoneBasedParentAndThreeOrdinaryShapes() throws IOException {
@@ -89,7 +87,7 @@ final class MossyStoneContractTest {
     }
 
     @Test
-    void compiledCreativeAndOptionalJeiPathsExposeOnlyMissingOwnedItems() throws IOException {
+    void compiledCreativePathStillExposesOnlyMissingOwnedItems() throws IOException {
         List<String> commonCalls = invocations(classBytes(
                 "dev/resivore/mossystone/MossyStoneMod.class"));
         assertTrue(commonCalls.contains(
@@ -104,32 +102,10 @@ final class MossyStoneContractTest {
         assertFalse(commonClass.contains("mezz/jei"));
         assertFalse(commonClass.contains("vertical_mossy_stone_slab"));
         assertFalse(commonClass.contains("mossy_stone_step"));
-
-        List<String> pluginCalls = invocations(classBytes(
-                "dev/resivore/mossystone/MossyStoneJeiPlugin.class"));
-        assertTrue(pluginCalls.contains("mezz/jei/api/runtime/IJeiRuntime.getIngredientManager"));
-        assertTrue(pluginCalls.contains("mezz/jei/api/runtime/IIngredientManager.getAllItemStacks"));
-        assertTrue(pluginCalls.contains("dev/resivore/mossystone/MossyStoneExposure.missing"));
-        assertTrue(pluginCalls.contains("mezz/jei/api/runtime/IIngredientManager.addIngredientsAtRuntime"));
-        String pluginClass = classConstants(classBytes(
-                "dev/resivore/mossystone/MossyStoneJeiPlugin.class"));
-        assertFalse(pluginClass.contains("clutternomore"));
-        assertFalse(pluginClass.contains("vertical_mossy_stone_slab"));
-        assertFalse(pluginClass.contains("mossy_stone_step"));
-
-        JsonObject metadata = json("fabric.mod.json");
-        assertEquals(List.of("dev.resivore.mossystone.MossyStoneJeiPlugin"),
-                strings(metadata.getAsJsonObject("entrypoints").getAsJsonArray("jei_mod_plugin")));
-        assertFalse(metadata.getAsJsonObject("depends").has("jei"));
-        String build = Files.readString(PROJECT_ROOT.resolve("build.gradle"));
-        assertTrue(build.contains(
-                "compileOnly files('../../originals/mods/jei-26.2-fabric-30.18.0.144.jar')"));
-        assertFalse(build.contains(
-                "implementation files('../../originals/mods/jei-26.2-fabric-30.18.0.144.jar')"));
     }
 
     @Test
-    void exactPinnedCnmFilterRunsBeforeTheSupportedJeiRuntimeRestoreSeam() throws Exception {
+    void exactPinnedCnmOwnsJeiShapeFilteringWithoutAMossyRestoreOverride() throws Exception {
         Path cnm = reference("cnmReferenceJar");
         assertEquals(759_419L, Files.size(cnm));
         assertEquals(CNM_SHA256, sha256(cnm));
@@ -153,26 +129,13 @@ final class MossyStoneContractTest {
                     "mezz/jei/api/runtime/IIngredientManager.removeIngredientsAtRuntime"));
         }
 
-        Path jei = reference("jeiReferenceJar");
-        assertEquals(1_693_550L, Files.size(jei));
-        assertEquals(JEI_SHA256, sha256(jei));
-        try (ZipFile zip = new ZipFile(jei.toFile())) {
-            String ingredientManager = classConstants(bytes(zip,
-                    "mezz/jei/api/runtime/IIngredientManager.class"));
-            assertTrue(ingredientManager.contains("getAllItemStacks"));
-            assertTrue(ingredientManager.contains("addIngredientsAtRuntime"));
-
-            byte[] starterClass = bytes(zip, "mezz/jei/library/startup/JeiStarter.class");
-            List<String> startCalls = invocations(starterClass, "start");
-            int recipeManager = startCalls.indexOf(
-                    "mezz/jei/library/load/PluginLoader.createRecipeManager");
-            int runtimeCallbacks = startCalls.lastIndexOf(
-                    "mezz/jei/library/load/PluginCaller.callOnPlugins");
-            assertTrue(recipeManager >= 0);
-            assertTrue(runtimeCallbacks > recipeManager);
-            assertTrue(invocations(starterClass).contains(
-                    "mezz/jei/api/IModPlugin.onRuntimeAvailable"));
-        }
+        JsonObject metadata = json("fabric.mod.json");
+        assertFalse(metadata.getAsJsonObject("entrypoints").has("jei_mod_plugin"));
+        assertFalse(metadata.getAsJsonObject("depends").has("jei"));
+        assertFalse(Files.exists(PROJECT_ROOT.resolve(
+                "src/main/java/dev/resivore/mossystone/MossyStoneJeiPlugin.java")));
+        String build = Files.readString(PROJECT_ROOT.resolve("build.gradle"));
+        assertFalse(build.toLowerCase(java.util.Locale.ROOT).contains("jei"));
     }
 
     @Test

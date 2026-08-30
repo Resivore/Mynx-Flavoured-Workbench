@@ -13,6 +13,8 @@ public final class HeartDataContract {
             "6209783021C358044ABEDABACEE471FAFF5BD4080437D4E3B5E51963F1804248";
     public static final String RECIPE_ID = "crafting:crystal_heart";
     public static final String REINFORCED_RECIPE_ID = "matcha_heart_death_compat:reinforced_crystal_heart";
+    public static final String RESONANT_FAVOUR_RECIPE_ID =
+            "matcha_heart_death_compat:resonant_favour";
     public static final String MATCHA_BASE_ITEM = "minecraft:poisonous_potato";
     public static final String MATCHA_ITEM_MODEL = "minecraft:heart_container";
     public static final String MATCHA_ITEM_NAME = "item.kleispack.crystal_heart";
