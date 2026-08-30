@@ -16,7 +16,7 @@
     ]
   },
   "definition": {
-    "lifecycle": "BLOCKED",
+    "lifecycle": "ACTIVE",
     "goals": [
       "Complete a faithful Fabric preservation port of Naturalist 2.0.3 to Minecraft Java 26.2.",
       "Retain the upstream entity roster, variants, behavior, data, rendering, geometry, items, and interactions unless a later explicit Workbench decision changes policy."
@@ -24,7 +24,7 @@
     "scope": [
       "Maintain the persistence, entity render/model, entity behavior/API, egg/hatching, and dynamic item-model migrations present at frozen legacy checkpoint 63a8b46ac939d6bd48e21d4840c480361ad852ef.",
       "Preserve 51 entity types, 48 synced variant registries with 99 definitions, legacy variant decoding, authored geometry, and exact upstream acquisition and drop ownership.",
-      "Continue the remaining Minecraft 26.2 API migration from the v2 source checkpoint without feature trimming or inert stubs."
+      "Maintain the completed Minecraft 26.2 API migration and its private, hash-verified resource-staging path without feature trimming, inert stubs, or protected-resource redistribution."
     ],
     "boundaries": {
       "owned_paths": [
@@ -33,7 +33,7 @@
       "exclusions": [
         "Tracked upstream All Rights Reserved resource directories, the pristine upstream JAR, and redistribution claims beyond the preserved license.",
         "Legacy status/history narratives, generated output, caches, diagnostics, and unretained artifacts.",
-        "Gameplay runtime testing, deployment, and Test Instance Manager changes until the source builds and a real Canary exists.",
+        "Gameplay runtime validation, deployment, and Test Instance Manager changes during this static port-completion milestone.",
         "Matcha-specific spawn tuning or other new gameplay policy during the preservation port."
       ]
     },
@@ -79,16 +79,25 @@
         "identifier": "naturalist-2.0.3-fabric-1.21.1.jar",
         "requirement": "SHA-256 3d16c975326e0df24486d44d8010d9e614fc9efdf891864de7b5a0efedfc12f9",
         "reason": "External private input used only to hash-verify and stage protected upstream resources into ignored build output; it is never tracked."
+      },
+      {
+        "type": "OTHER",
+        "identifier": "minecraft-client.jar",
+        "requirement": "Minecraft 1.21.1; 26,836,906 bytes; SHA-256 499f6897d1837516680f3114072d8106e11c9adcd933fe5cf051b551089b0c99",
+        "reason": "External read-only input used only to hash-verify and stage the legacy spawn-egg model template and two texture layers required to preserve all 47 upstream color tuples under the Minecraft 26.2 client-item pipeline; it is never tracked."
       }
     ]
   },
   "state": {
-    "milestone": "The frozen preservation-port source, including persistence, entity rendering/model, behavior/API, eggs/hatching, and dynamic item models, is migrated into v2 exactly; Java 25 compilation remains blocked by 190 API errors, with focused tests and verifiers passing and no runtime candidate.",
+    "milestone": "Naturalist 2.0.3 now compiles cleanly for Minecraft 26.2 on Java 25 and exact private Canary 1 is retained at 11,368,203 bytes; all 190 baseline diagnostics are eliminated, 14 focused tests, all six static verifiers, and the full build pass, while deployment and runtime validation remain unperformed.",
     "releases": {
       "current": {
-        "version": "2.0.3+26.2-port-dev",
-        "artifact": null,
-        "source_commit": "a766495bcf36318301935b2bc922b9f605d6f1e9"
+        "version": "2.0.3+26.2-port-canary1",
+        "artifact": {
+          "filename": "naturalist-2.0.3+26.2-port-canary1.jar",
+          "sha256": "b5f136f042f28617b9fb130d8d298e70f8538824c5c03dcdbf53fec266d5c7ac"
+        },
+        "source_commit": "2d239bcbbec10b4a15716924549bf3147c440465"
       },
       "accepted": null,
       "rollback": null,
@@ -96,22 +105,18 @@
       "accepted_rollback": "NO_ROLLBACK"
     },
     "validation": {
-      "build": "STATIC_FAIL",
+      "build": "STATIC_PASS",
       "deployment": "NOT_DEPLOYED",
       "runtime": "RUNTIME_UNTESTED"
     },
-    "blocker": {
-      "summary": "Naturalist still has 190 Minecraft 26.2 compile/API migration errors.",
-      "since": "2026-08-29T07:15:34Z",
-      "next_action": "Resume the preservation port from the exact v2 source checkpoint by migrating the remaining item/recipe, block/block-entity, compatibility/mixin, particle, registry/spawn/platform, snail-shell renderer, advancement/effect, and GUI APIs without trimming features."
-    }
+    "blocker": null
   },
   "synchronization": {
-    "revision": 4,
-    "activity_at": "2026-08-29T07:15:34Z",
-    "updated_at": "2026-08-29T18:03:48Z",
-    "last_codex_at": "2026-08-29T18:03:48Z",
-    "source_commit": "a766495bcf36318301935b2bc922b9f605d6f1e9",
+    "revision": 5,
+    "activity_at": "2026-08-30T01:38:14Z",
+    "updated_at": "2026-08-30T01:38:14Z",
+    "last_codex_at": "2026-08-30T01:38:14Z",
+    "source_commit": "2d239bcbbec10b4a15716924549bf3147c440465",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
