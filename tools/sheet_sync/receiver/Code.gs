@@ -1,5 +1,6 @@
 function doPost(e) {
   var lock = null;
+  var lockAcquired = false;
   try {
     var properties = PropertiesService.getScriptProperties();
     if (properties.getProperty("MYNX_STATUS_ACCEPT_WRITES") !== "true") {
@@ -27,7 +28,8 @@ function doPost(e) {
     MynxSheetSync.validateEnvelope(envelope);
 
     lock = LockService.getScriptLock();
-    if (!lock.tryLock(30000)) throw new Error("receiver mutation lock is busy");
+    lockAcquired = lock.tryLock(30000);
+    if (!lockAcquired) throw new Error("receiver mutation lock is busy");
     var sheet = SpreadsheetApp.openById(spreadsheetId).getSheetByName(sheetName);
     if (!sheet) throw new Error("configured project sheet does not exist");
     var lastColumn = sheet.getLastColumn();
@@ -54,11 +56,12 @@ function doPost(e) {
     return jsonResponse_({ ok: true, changed: result.changed, event_id: envelope.event_id });
   } catch (error) {
     var message = String(error && error.message ? error.message : error);
-    var code = message.indexOf("stale or skipped Sheet revision") >= 0 ? "revision_gap" :
+    var code = message.indexOf("stale Sheet revision") >= 0 ? "stale" :
+      message.indexOf("same-revision Sheet conflict") >= 0 ? "conflict" :
       message.indexOf("mutation lock is busy") >= 0 ? "busy" : "rejected";
     return jsonResponse_({ ok: false, code: code, error: message });
   } finally {
-    if (lock) lock.releaseLock();
+    if (lockAcquired) lock.releaseLock();
   }
 }
 

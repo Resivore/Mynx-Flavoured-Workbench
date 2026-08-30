@@ -4,11 +4,12 @@ import copy
 import base64
 import hashlib
 import hmac
+import http.client
 import io
 import json
 import tempfile
 import unittest
-from contextlib import redirect_stdout
+from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
 from unittest.mock import patch
 from uuid import NAMESPACE_URL, uuid5
@@ -159,6 +160,21 @@ def ordinary_publication_event(config: dict) -> dict:
     )[0]
 
 
+def ordinary_publication_events(config: dict) -> list[dict]:
+    manifests = {
+        "projects/alpha/WORKBENCH_STATUS.json": planned_manifest("alpha", "Alpha"),
+        "projects/beta/WORKBENCH_STATUS.json": planned_manifest("beta", "Beta"),
+    }
+    return build_events(
+        {},
+        manifests,
+        repository=config["repository"],
+        ref=config["authoritative_ref"],
+        publication_commit="c" * 40,
+        config=config,
+    )
+
+
 class JsonResponse:
     status = 200
 
@@ -173,6 +189,22 @@ class JsonResponse:
 
     def read(self):
         return self.body
+
+
+class RawResponse(JsonResponse):
+    def __init__(self, body: bytes):
+        self.body = body
+
+
+class ReadFailureResponse(JsonResponse):
+    def read(self):
+        raise http.client.IncompleteRead(b"partial", 10)
+
+
+def request_event(request) -> dict:
+    wrapper = json.loads(request.data)
+    padded = wrapper["payload"] + "=" * (-len(wrapper["payload"]) % 4)
+    return json.loads(base64.urlsafe_b64decode(padded).decode("utf-8"))
 
 
 def codex_entry(manifest: dict, summary: str = "Initialize project") -> str:
@@ -674,6 +706,39 @@ class CurrentStateBootstrapTests(unittest.TestCase):
         self.assertEqual({path: manifest["synchronization"]["revision"] for path, manifest in manifests.items()}, revisions)
         self.assertTrue(all(event["record"]["publication_commit"] == "d" * 40 for event in plan["events"]))
 
+    def test_current_heart_and_mossy_r3_authority_produces_exact_reconciliation_events(self) -> None:
+        paths = (
+            "projects/matcha-heart-death-compat/WORKBENCH_STATUS.json",
+            "projects/mossy-stone/WORKBENCH_STATUS.json",
+        )
+        manifest_paths = [ROOT / path for path in paths]
+        before = {path: path.read_bytes() for path in manifest_paths}
+        manifests = {relative: load_json(path) for relative, path in zip(paths, manifest_paths, strict=True)}
+
+        plan = self.prepare_plan(manifests)
+
+        events = {event["record"]["project_uuid"]: event for event in plan["events"]}
+        expected = {
+            "937d7ccc-44c9-55cb-8d33-0dc0bff5fe45": {
+                "revision": 3,
+                "filename": "matcha-heart-death-compat-0.1.7-canary8.jar",
+                "sha256": "cb36d6917dc61b17f2d8b5cea0d09cb4c1455e04aaca2c186ecaebe5e9960aa2",
+            },
+            "9f1c5aa4-09c1-4de3-9921-4b045e8abcd2": {
+                "revision": 3,
+                "filename": "mossy-stone-0.3.0-canary3.jar",
+                "sha256": "b24d8e411f4b83ac02d73db7564f8f58bf4f2d67207621394feca0be0d9c4995",
+            },
+        }
+        self.assertEqual(set(expected), set(events))
+        for project_uuid, authority in expected.items():
+            with self.subTest(project_uuid=project_uuid):
+                record = events[project_uuid]["record"]
+                self.assertEqual(authority["revision"], record["revision"])
+                self.assertEqual(authority["filename"], record["current_artifact_filename"])
+                self.assertEqual(authority["sha256"], record["current_artifact_sha256"])
+        self.assertEqual(before, {path: path.read_bytes() for path in manifest_paths})
+
     def test_bootstrap_does_not_mutate_project_manifests(self) -> None:
         manifests = {
             "projects/alpha/WORKBENCH_STATUS.json": sheet_manifest("alpha", "Alpha", revision=5),
@@ -1083,9 +1148,132 @@ class SheetPublisherTests(unittest.TestCase):
         plan = incremental_plan(config, [event])
         environment = publication_environment(config)
         response = JsonResponse({"ok": False, "error": "write gate disabled"})
+        failures = []
         with patch("urllib.request.urlopen", return_value=response):
-            with self.assertRaisesRegex(ValidationError, "rejected event"):
-                publish_plan(plan, config, environment)
+            with self.assertRaisesRegex(ValidationError, "write gate disabled"):
+                publish_plan(plan, config, environment, failure_logger=failures.append)
+        self.assertEqual(
+            [{
+                "event_id": event["event_id"],
+                "project_uuid": event["record"]["project_uuid"],
+                "revision": event["record"]["revision"],
+                "code": "rejected",
+                "error": "write gate disabled",
+            }],
+            failures,
+        )
+
+    def test_first_failure_does_not_block_second_event_and_cli_fails_overall(self) -> None:
+        config = copy.deepcopy(self.config)
+        config["enabled"] = True
+        events = ordinary_publication_events(config)
+        plan = incremental_plan(config, events)
+        environment = publication_environment(config)
+        responses = [
+            JsonResponse({"ok": False, "code": "conflict", "error": "same-revision conflict"}),
+            JsonResponse({"ok": True, "changed": True, "event_id": events[1]["event_id"]}),
+        ]
+        output = io.StringIO()
+        errors = io.StringIO()
+        with tempfile.TemporaryDirectory() as temporary:
+            plan_path = Path(temporary) / "publication-plan.json"
+            plan_path.write_text(json.dumps(plan), encoding="utf-8")
+            arguments = ["publish", "--root", str(ROOT), "--plan", str(plan_path)]
+            with (
+                patch("urllib.request.urlopen", side_effect=responses) as transport,
+                patch.dict("tools.sheet_sync.os.environ", environment, clear=True),
+                redirect_stdout(output),
+                redirect_stderr(errors),
+            ):
+                self.assertEqual(1, sheet_sync_main(arguments))
+
+        self.assertEqual(2, transport.call_count)
+        self.assertEqual(events, [request_event(call.args[0]) for call in transport.call_args_list])
+        failure = {
+            "event_id": events[0]["event_id"],
+            "project_uuid": events[0]["record"]["project_uuid"],
+            "revision": events[0]["record"]["revision"],
+            "code": "conflict",
+            "error": "same-revision conflict",
+        }
+        acknowledgement = {
+            "event_id": events[1]["event_id"],
+            "project_uuid": events[1]["record"]["project_uuid"],
+            "revision": events[1]["record"]["revision"],
+            "changed": True,
+        }
+        self.assertEqual(
+            [
+                "Receiver failure: " + json.dumps(failure, sort_keys=True, separators=(",", ":")),
+                "Receiver acknowledgement: " + json.dumps(acknowledgement, sort_keys=True, separators=(",", ":")),
+            ],
+            output.getvalue().splitlines(),
+        )
+        self.assertIn("Sheet publication failed for 1 of 2 event(s)", errors.getvalue())
+        self.assertNotIn("Published 2 project status event(s).", output.getvalue())
+
+    def test_transport_invalid_json_and_invalid_acknowledgement_failures_are_independent(self) -> None:
+        config = copy.deepcopy(self.config)
+        config["enabled"] = True
+        events = ordinary_publication_events(config)
+        plan = incremental_plan(config, events)
+        environment = publication_environment(config)
+        cases = (
+            ("transport", OSError("network unavailable"), "transport_error"),
+            ("truncated HTTP response", ReadFailureResponse({}), "transport_error"),
+            ("invalid JSON", RawResponse(b"not-json"), "invalid_response"),
+            (
+                "invalid acknowledgement",
+                JsonResponse({"ok": True, "changed": "yes", "event_id": events[0]["event_id"]}),
+                "invalid_acknowledgement",
+            ),
+        )
+        for label, first_result, expected_code in cases:
+            with self.subTest(failure=label):
+                acknowledgements = []
+                failures = []
+                responses = [
+                    first_result,
+                    JsonResponse({"ok": True, "changed": True, "event_id": events[1]["event_id"]}),
+                ]
+                with patch("urllib.request.urlopen", side_effect=responses) as transport:
+                    with self.assertRaisesRegex(ValidationError, "1 of 2 event"):
+                        publish_plan(
+                            plan,
+                            config,
+                            environment,
+                            acknowledgement_logger=acknowledgements.append,
+                            failure_logger=failures.append,
+                        )
+                self.assertEqual(2, transport.call_count)
+                self.assertEqual(events, [request_event(call.args[0]) for call in transport.call_args_list])
+                self.assertEqual(events[0]["event_id"], failures[0]["event_id"])
+                self.assertEqual(expected_code, failures[0]["code"])
+                self.assertEqual(events[1]["event_id"], acknowledgements[0]["event_id"])
+
+    def test_all_successes_return_count_and_log_in_plan_order(self) -> None:
+        config = copy.deepcopy(self.config)
+        config["enabled"] = True
+        events = ordinary_publication_events(config)
+        plan = incremental_plan(config, events)
+        environment = publication_environment(config)
+        responses = [
+            JsonResponse({"ok": True, "changed": True, "event_id": events[0]["event_id"]}),
+            JsonResponse({"ok": True, "changed": False, "event_id": events[1]["event_id"]}),
+        ]
+        outcomes = []
+        with patch("urllib.request.urlopen", side_effect=responses):
+            count = publish_plan(
+                plan,
+                config,
+                environment,
+                acknowledgement_logger=lambda value: outcomes.append(("success", value)),
+                failure_logger=lambda value: outcomes.append(("failure", value)),
+            )
+        self.assertEqual(2, count)
+        self.assertEqual(["success", "success"], [kind for kind, _value in outcomes])
+        self.assertEqual([event["event_id"] for event in events], [value["event_id"] for _kind, value in outcomes])
+        self.assertEqual([True, False], [value["changed"] for _kind, value in outcomes])
 
     def test_signed_payload_is_exact_and_unicode_safe(self) -> None:
         event = {"event_id": "e" * 64, "message": "Mynx ünicode"}
@@ -1143,14 +1331,14 @@ class SheetPublisherTests(unittest.TestCase):
                 with self.assertRaisesRegex(ValidationError, "acknowledgement|rejected event"):
                     publish_plan(plan, config, environment)
 
-    def test_revision_gap_is_retried_with_same_event(self) -> None:
+    def test_busy_is_retried_with_same_event(self) -> None:
         config = copy.deepcopy(self.config)
         config["enabled"] = True
         event = ordinary_publication_event(config)
         plan = incremental_plan(config, [event])
         environment = publication_environment(config)
         responses = [
-            JsonResponse({"ok": False, "code": "revision_gap", "error": "stale or skipped Sheet revision"}),
+            JsonResponse({"ok": False, "code": "busy", "error": "receiver mutation lock is busy"}),
             JsonResponse({"ok": True, "changed": True, "event_id": event["event_id"]}),
         ]
         with patch("urllib.request.urlopen", side_effect=responses) as request, patch("tools.sheet_sync.time.sleep") as sleep:
@@ -1158,6 +1346,24 @@ class SheetPublisherTests(unittest.TestCase):
             self.assertEqual(2, request.call_count)
             self.assertIs(request.call_args_list[0].args[0], request.call_args_list[1].args[0])
             sleep.assert_called_once_with(2)
+
+    def test_revision_rejections_are_permanent_and_not_retried(self) -> None:
+        config = copy.deepcopy(self.config)
+        config["enabled"] = True
+        event = ordinary_publication_event(config)
+        plan = incremental_plan(config, [event])
+        environment = publication_environment(config)
+        for code in ("stale", "conflict", "revision_gap"):
+            response = JsonResponse({"ok": False, "code": code, "error": "permanent revision rejection"})
+            with (
+                self.subTest(code=code),
+                patch("urllib.request.urlopen", return_value=response) as request,
+                patch("tools.sheet_sync.time.sleep") as sleep,
+            ):
+                with self.assertRaisesRegex(ValidationError, code):
+                    publish_plan(plan, config, environment)
+                self.assertEqual(1, request.call_count)
+                sleep.assert_not_called()
 
 
 class SheetWorkflowAuthorityTests(unittest.TestCase):
@@ -1182,6 +1388,8 @@ class SheetWorkflowAuthorityTests(unittest.TestCase):
                 self.assertIn(fragment, self.workflow if fragment.startswith("push:") else prepare)
         self.assertIn("github.event_name == 'push'", publish)
         self.assertIn("vars.MYNX_SHEET_CUTOVER == 'authorized'", publish)
+        self.assertIn('- "tools/sheet_sync.py"', self.workflow)
+        self.assertIn('- "tools/sheet_sync/**"', self.workflow)
 
     def test_dispatch_exposes_only_the_explicit_bootstrap_operation(self) -> None:
         dispatch = self.workflow.split("  workflow_dispatch:", 1)[1].split("\n\npermissions:", 1)[0]
@@ -1205,6 +1413,7 @@ class SheetWorkflowAuthorityTests(unittest.TestCase):
             "python -m unittest discover -s tests -v",
             "node --test tests/test_sheet_receiver.mjs",
             "git fetch --no-tags origin refs/heads/main:refs/heads/main",
+            "Prepare explicit current-state reconciliation plan",
             "python tools/sheet_sync.py current-state-plan",
             '--commit "${{ github.sha }}"',
             '--repository "${{ github.repository }}"',
@@ -1227,6 +1436,7 @@ class SheetWorkflowAuthorityTests(unittest.TestCase):
             "MYNX_SHEET_CUTOVER: ${{ vars.MYNX_SHEET_CUTOVER }}",
             "MYNX_SHEET_RECEIVER_URL: ${{ secrets.MYNX_SHEET_RECEIVER_URL }}",
             "MYNX_SHEET_HMAC_SECRET: ${{ secrets.MYNX_SHEET_HMAC_SECRET }}",
+            "Publish authoritative current-state reconciliation",
             "python tools/sheet_sync.py publish",
         )
         for fragment in fragments:
