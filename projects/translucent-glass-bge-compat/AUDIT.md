@@ -1,6 +1,7 @@
 # Translucent Glass × BGE architecture audit
 
 **Checkpoint:** `main` at `777d9ece7f38bc6c323f57d12ff83d7cd31ebc59`  
+**Reconciled dependency:** BGE × CTM audit on `main` at `8e8e40a3773ea954e94fe22c1af174d7fe633229`
 **Result:** static audit complete; compatibility implementation not started  
 **Runtime evidence:** none for this project; BGE C54 is runtime untested
 
@@ -19,12 +20,14 @@ Three different contracts currently stop short of that seam:
 2. Translucent face suppression is incomplete and asymmetric across canonical,
    native Nibaru, Step, Vertical, and Layer shapes; some generated model faces
    are not marked `cullface`, so block-side culling alone cannot hide them.
-3. Continuity and Complementary classify blocks by explicit registry identity.
-   They cannot infer BGE's in-memory canonical-material binding.
+3. Continuity and Complementary start from registry-based material rules. BGE
+   does not currently expose its in-memory canonical binding through the
+   appearance API Continuity consumes, while Complementary has no corresponding
+   BGE classification in the selected shader pack.
 
-The first two are primarily BGE/Nibaru architecture. The third needs a thin
-compatibility/resource bridge and an upstream or otherwise authorized shader
-integration path.
+The first two are primarily BGE/Nibaru architecture. Continuity's half of the
+third belongs to BGE × CTM's shared appearance bridge; shader classification
+needs an upstream or otherwise authorized integration path.
 
 ## Current architecture
 
@@ -140,19 +143,27 @@ claim that every adjacency visibly fails in Minecraft.
 
 ### Continuity and resource matching
 
-Translucent Glass's clear CTM rule explicitly matches only canonical
-`minecraft:glass`. Continuity 3.0.1's inspected `matchBlocks` parser resolves
-explicit registry IDs/state predicates, not BGE's runtime material profiles or
-data tags. BGE geometry therefore inherits the base sprite but not that CTM
-rule.
+Translucent Glass's clear CTM rule explicitly matches canonical
+`minecraft:glass`. Continuity 3.0.1's `matchBlocks` parser resolves explicit
+registry IDs/state predicates, not BGE runtime profiles or data tags. However,
+Continuity evaluates the current and neighboring states through Fabric's block
+appearance API before applying those predicates and `connect=block` /
+`connect=state` comparisons.
 
-General source ↔ BGE and BGE ↔ BGE connectivity belongs to the separate BGE ×
-CTM project. If this project later needs Translucent Glass-specific rules, they
-should be uniquely named, generated from the canonical bindings, and contain
-explicit `matchBlocks` inventories. A fixed hand-written inventory is already
-stale: current BGE adds Layer to the historical slab/stair/wall/Vertical/Step
-set. `connect=block` also cannot make different IDs connect, so the intended
-cross-geometry policy must be decided with BGE × CTM rather than assumed here.
+BGE currently returns the derived state as its appearance, so the active clear
+rule does not select BGE glass and different geometry IDs do not connect. The
+separate BGE × CTM audit now establishes the scalable fix: BGE should project an
+eligible derived state to a deliberately mapped canonical appearance state via
+`getAppearance`, backed by `RuntimeBinding` / `DerivedMaterialTraits`. Then the
+unchanged Translucent Glass rule can see `minecraft:glass` for selection and
+connection without a generated ID inventory.
+
+State projection and partial-shape eligibility remain important: geometry-only
+properties must not leak into canonical state, and block-neighbor adjacency
+does not prove that two partial rendered planes touch. Those policies belong to
+BGE × CTM, with a narrow Continuity-specific contact filter only if runtime
+evidence shows that the renderer-neutral appearance bridge is too permissive.
+No Translucent-Glass-specific CTM assets are currently justified here.
 
 ### Complementary and Iris
 
@@ -193,12 +204,13 @@ current evidence of an item-only failure.
 2. **Nibaru:** material-profile/API owner and, only where necessary, the narrow
    canonical/native-side bridge. It should not learn BGE registry-name lists or
    shader-pack policy.
-3. **BGE × CTM:** owner of general cross-ID Continuity connection semantics and
-   any shared generated family inventory.
+3. **BGE × CTM:** owner of the canonical appearance-state bridge, explicit
+   state projection, partial-geometry eligibility/contact policy, and any
+   evidence-supported Continuity-specific fallback.
 4. **Translucent Glass × BGE:** thin composition owner for the exact upstream
-   pack, resolved-resource checks, optional Translucent-Glass-specific generated
-   rules, shader coordination, and acceptance testing. No copied textures or
-   competing material registry are justified.
+   pack, resolved-resource checks, shader coordination, and acceptance testing.
+   No copied textures, per-geometry CTM rules, or competing material registry
+   are currently justified.
 5. **Complementary upstream or a supported Iris extension:** owner of shader
    material classification. This repository should not modify/distribute the
    current shader ZIP without authorization.
@@ -219,9 +231,12 @@ Primary BGE/Nibaru work is likely to touch:
 - BGE data/resource generation to expose stable per-canonical-family
   membership, plus focused static/GameTest coverage.
 
-This compatibility project may later add generated Continuity metadata and its
-own small verifier/tests. Complementary's mapping is an external upstream
-component, not a repository file to patch under the current license.
+The separate BGE × CTM implementation is expected to add a canonical
+appearance resolver in `NibaruProviderAdapter`, a `BgeLayerBlock` delegation,
+and a common CNM Step/Vertical appearance mixin. This project should consume and
+test that shared behavior rather than duplicate it. Complementary's mapping is
+an external upstream component, not a repository file to patch under the
+current license.
 
 ## Version and API constraints
 
@@ -253,10 +268,13 @@ fixtures, GameTests, and screenshots cannot establish their runtime behavior.
 3. Add `cullface` only to quads on true unit boundaries; keep partial exposed
    faces visible. Cover same-shape, cross-shape, and canonical/derived decisions
    in focused tests.
-4. Expose generated canonical-family membership from the same binding. Let BGE
-   × CTM consume it for general connectivity; generate any necessary
-   Translucent Glass rules rather than hand-authoring geometry IDs.
-5. Seek upstream Complementary tag support or confirm a licensed Iris extension
+4. Integrate with BGE × CTM's canonical `getAppearance` bridge, explicit state
+   projection, and conservative geometry eligibility. Keep the active
+   Translucent Glass rule unchanged and add no ID inventory unless focused
+   evidence disproves the shared bridge.
+5. Expose a stable per-canonical-family data tag only if useful for shader
+   classification or debugging; Continuity does not consume that tag. Seek
+   upstream Complementary tag support or confirm a licensed Iris extension
    mechanism. Treat full shader parity as unresolved until that path exists.
 6. Build a candidate only after these ownership contracts are settled, then run
    the focused runtime procedure in `TESTING.md` under explicit slot ownership.
@@ -265,8 +283,9 @@ fixtures, GameTests, and screenshots cannot establish their runtime behavior.
 
 - The topology-safe face-coverage rules for every mixed partial-shape pair need
   implementation design and runtime confirmation.
-- The desired Continuity connection policy across canonical and different BGE
-  IDs belongs to BGE × CTM and is not yet established.
+- BGE × CTM has selected the canonical appearance bridge, but its safe state
+  projection and partial-geometry eligibility/contact rules still need
+  implementation and runtime evidence.
 - Full Complementary parity is blocked on upstream support, written permission,
   or a documented licensed external mapping mechanism.
 - Native Nibaru slab/stair/wall model outputs use the same top-level

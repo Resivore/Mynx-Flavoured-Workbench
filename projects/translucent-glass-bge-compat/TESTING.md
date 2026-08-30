@@ -26,9 +26,10 @@ matrix and one stained color only as a negative-family control.
 4. Place Layer or Step against canonical full glass in one full-contact and one
    partial-contact orientation. Check both render directions for missing or
    extra faces.
-5. With Continuity enabled, run the one corresponding BGE × CTM connection
-   expectation and put a different stained color beside it as a negative
-   connection case. Classify a general connectivity defect under BGE × CTM
+5. With Continuity enabled, run one confirmed BGE × CTM canonical-appearance
+   case and put a different stained color beside it as a negative connection
+   case. Also retain one physically misaligned partial pair as a no-connection
+   control. Classify a general connectivity/contact defect under BGE × CTM
    unless evidence ties it to this compatibility layer.
 6. Only after an authorized/supported shader-classification path exists, repeat
    the isolated and canonical/BGE adjacency comparison with Complementary Fancy
