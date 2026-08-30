@@ -10,57 +10,102 @@
     "legacy_ids": []
   },
   "definition": {
-    "lifecycle": "PLANNED",
+    "lifecycle": "ACTIVE",
     "goals": [
-      "Create an in-game accessible personal notebook for Minecraft Java 26.2 Fabric where players can write, edit, organize, and revisit notes without an external text editor.",
-      "Keep the eventual experience lightweight, predictable, Minecraft-native, and vanilla-plus rather than turning it into a complex document editor."
+      "Provide a lightweight, polished, Minecraft-native personal notebook for Minecraft Java 26.2 Fabric without requiring an item or server component.",
+      "Keep canonical user-authored notes pleasant to inspect and edit outside Minecraft as ordinary UTF-8 Markdown files with real authored line breaks.",
+      "Support stable multi-note organization, explicit user-controlled ordering, and a deliberately small reading/presentation layer without becoming a general document editor."
     ],
     "scope": [
-      "Choose an appropriate in-game interaction or keybind for opening and closing the notebook after inspecting the current Minecraft and Fabric APIs.",
-      "Persist player-authored text across save/reload and normal game or server restarts.",
-      "Provide multiple notes, pages, or another deliberately simple organizational model.",
-      "Support creating, renaming, editing, and deleting notes.",
-      "Define predictable notebook ownership and persistence behavior across dimension changes and player death.",
-      "Provide a clean Minecraft-native user interface suitable for a lightweight vanilla-plus utility.",
-      "Handle formatting input, long notes, unusual and Unicode characters, and empty notes safely.",
-      "Decide detailed user experience and storage architecture only when implementation begins and current Minecraft Java 26.2 and Fabric APIs have been inspected."
+      "Provide a configurable client key mapping, defaulting to N from gameplay, plus one compact collision-aware utility button on survival and creative player inventory screens using current Fabric Screen API lifecycle events and live container bounds.",
+      "Present a responsive two-page journal whose left page is a scrollable selectable index with persistent drag-and-drop ordering and whose right page is a vertically scrollable selected note with distinct reading and ordinary-text editing states.",
+      "Support create, rename, edit, delete with confirmation, select, scroll, reload, and explicit manual reordering for independently named notes whose stable UUID identity is separate from display title and portable file name.",
+      "Render a leading # heading and plain-text checklist markers [ ], [x], and [X] in reading mode; clicking a rendered checkbox changes only the underlying marker while edit mode remains ordinary multiline text.",
+      "Store one UTF-8 Markdown file per note under config/notebook/notes, with note-free machine metadata in config/notebook/notebook.json for UUIDs, file associations, selected note, and exact order.",
+      "Reconcile files on each Notebook screen open and explicit in-screen reload: retain known identities for known files, reload external body edits, append external valid Markdown files, remove deleted references, treat external renames conservatively as delete-plus-create, and rebuild malformed or stale metadata without guessing content identity.",
+      "Use same-directory temporary writes with atomic replacement where supported and retain three rotating prior-content Markdown backups per stable note UUID before body replacement or deletion.",
+      "Keep stable identity and machine-owned metadata extensible for later note-tab shortcuts and one HUD-pinned note without implementing either feature in Canary 1."
     ],
     "boundaries": {
       "owned_paths": [
         "projects/notebook"
       ],
       "exclusions": [
-        "Implementation source, placeholder Java, build files, speculative scaffolding, generated assets, Canary versions, artifacts, deployment, and runtime testing during project initialization.",
-        "A fixed opening interaction, keybind, page model, text-formatting model, client/server responsibility split, or persistence architecture before current Minecraft and Fabric APIs are inspected.",
-        "Complex document-editor features beyond the approved lightweight vanilla-plus notebook goal unless separately prioritized later.",
-        "Changes to another project, originals, shared runtime state, either Minecraft instance, or unrelated Workbench infrastructure.",
-        "Dependencies on other Workbench projects or third-party systems unless implementation evidence later establishes a real need."
+        "Physical notebook items, server components, networking, world-save or player-NBT storage, multiplayer collaborative documents, reminders, calendars, quests, folders, databases, images, attachments, or document management.",
+        "A broad Markdown implementation, rich-text or WYSIWYG editing, filesystem line breaks derived from GUI wrapping, encoded note bodies, or note content stored inside JSON, NBT, or another machine-oriented container.",
+        "Visual note tabs, tab naming/reordering/assignment, HUD pinning, HUD position or scale configuration, direct HUD editing, and animation polish in Canary 1; these remain approved follow-up directions after core runtime evidence.",
+        "Dependencies on Quick Stack Nearby, Inventory Search, Inventory Extended, another Workbench project, or an external service; those are cumulative compatibility targets only and are not required for standalone Notebook operation.",
+        "Changes to another project, originals, shared runtime state, either Minecraft instance, deployment, Test Slot occupancy, or any Minecraft runtime-validation claim during Canary 1 implementation."
       ]
     },
-    "dependencies": []
+    "dependencies": [
+      {
+        "type": "OTHER",
+        "identifier": "minecraft",
+        "requirement": "=26.2",
+        "reason": "Exact target game and client GUI/input API version."
+      },
+      {
+        "type": "MOD",
+        "identifier": "fabricloader",
+        "requirement": ">=0.19.3",
+        "reason": "Current Minecraft 26.2 Fabric client-loader baseline."
+      },
+      {
+        "type": "MOD",
+        "identifier": "fabric-api",
+        "requirement": "=0.157.0+26.2",
+        "reason": "Current key-mapping, client-tick, and screen-lifecycle APIs used by Notebook."
+      },
+      {
+        "type": "TOOL",
+        "identifier": "java",
+        "requirement": "25",
+        "reason": "Required Java release used for the retained Canary 1 build and tests."
+      },
+      {
+        "type": "TOOL",
+        "identifier": "gradle",
+        "requirement": "9.6.1",
+        "reason": "Exact build-tool version used for the retained Canary 1 artifact."
+      },
+      {
+        "type": "TOOL",
+        "identifier": "fabric-loom",
+        "requirement": "1.17.19",
+        "reason": "Exact Fabric build plugin used to compile and package the Minecraft 26.2 client mod."
+      }
+    ]
   },
   "state": {
-    "milestone": "Official Notebook project initialized; architecture, implementation, artifacts, and runtime work have not started.",
+    "milestone": "Canary 1 is implemented, clean-built, statically verified, and retained as a useful profile-local notebook checkpoint awaiting later explicit Test Slot allocation; the project is ACTIVE, not deployed, and Minecraft runtime untested.",
     "releases": {
-      "current": null,
+      "current": {
+        "version": "0.1.0-canary1",
+        "artifact": {
+          "filename": "notebook-0.1.0-canary1.jar",
+          "sha256": "54a601d9693501bbaca8fcf25b07f1aa65671631278d5a3cd9863fcfdf3c82c0"
+        },
+        "source_commit": "e25729bf2fc2761269746e20c6ecbad1105e5c80"
+      },
       "accepted": null,
       "rollback": null,
       "accepted_current": "NO_ACCEPTED",
       "accepted_rollback": "NO_ROLLBACK"
     },
     "validation": {
-      "build": "NOT_RUN",
+      "build": "STATIC_PASS",
       "deployment": "NOT_DEPLOYED",
       "runtime": "RUNTIME_UNTESTED"
     },
     "blocker": null
   },
   "synchronization": {
-    "revision": 1,
-    "activity_at": "2026-08-29T22:54:50Z",
-    "updated_at": "2026-08-29T22:54:50Z",
-    "last_codex_at": "2026-08-29T22:54:50Z",
-    "source_commit": "43e9eb3c7b177427bd4ddb197c3b9798807529dc",
+    "revision": 2,
+    "activity_at": "2026-08-30T22:48:09Z",
+    "updated_at": "2026-08-30T22:48:09Z",
+    "last_codex_at": "2026-08-30T22:48:09Z",
+    "source_commit": "e25729bf2fc2761269746e20c6ecbad1105e5c80",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
