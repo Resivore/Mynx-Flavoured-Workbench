@@ -2,23 +2,23 @@
   "$schema": "../../schemas/runtime-state.schema.json",
   "schema_version": 1,
   "activation": "ACTIVE",
-  "revision": 15,
-  "updated_at": "2026-08-30T05:47:00Z",
+  "revision": 23,
+  "updated_at": "2026-08-30T06:42:37Z",
   "accepted_baseline": {
-    "revision": 1,
+    "revision": 3,
     "provenance": {
       "source_repository": "Resivore/Minecraft-26.2-Workbench",
       "source_commit": "f0101f38c446dddaa4226450386402c63597ba7c",
       "source_profile": "matcha-heart-death-mossy-stone",
       "legacy_ledger_sha256": "5f0a26f3d136effeb54e86e3a1ba9d6a98a7252f5adde1c789129461f64c43de",
-      "accepted_artifact_count": 26,
+      "accepted_artifact_count": 27,
       "overlay_order": [
         "937d7ccc-44c9-55cb-8d33-0dc0bff5fe45",
         "9f1c5aa4-09c1-4de3-9921-4b045e8abcd2"
       ],
       "readiness": "READY_TO_TEST_VERIFIED",
       "diagnostics": 0,
-      "physical_disposition": "ADOPTED"
+      "physical_disposition": "TRANSITIONED"
     },
     "members": [
       {
@@ -231,29 +231,29 @@
       },
       {
         "unit": {
-          "deployment_id": "c00c0018-fa67-41b4-a981-62b6d3986def",
+          "deployment_id": "1360e5d3-f254-4ab9-9a6e-094ce2a3b4ec",
           "project_uuid": "937d7ccc-44c9-55cb-8d33-0dc0bff5fe45",
           "project_id": "matcha-heart-death-compat",
           "project_identity_source": "CURRENT_MANIFEST",
-          "version": "0.1.4-canary5",
-          "source_commit": "5477ca770e58a8b4bed8f1bf737b04765a9d12a7",
+          "version": "0.1.9-canary10",
+          "source_commit": "f9c877d14956616bc3f46f3239ac3b512e1ee9c4",
           "artifacts": [
             {
-              "artifact_id": "75db28b1-ed5e-41bb-b23f-67b3b9080fd9",
+              "artifact_id": "c3bf4cbb-1d7c-42b3-98c4-5c63880af14b",
               "kind": "MOD",
-              "filename": "matcha-heart-death-compat-0.1.4-canary5.jar",
-              "sha256": "21e24d37b1a3b575b738f7ca38b0614c9d0285c4f0723defe4db85297b171c04",
+              "filename": "matcha-heart-death-compat-0.1.9-canary10.jar",
+              "sha256": "f86442ec69ed8afb86d52c97db2e899223c25a659ef7c19f245e51ac642bbc90",
               "ownership_keys": [
                 "mod:matcha_heart_death_compat"
               ],
               "source": {
                 "type": "REPOSITORY",
-                "path": "projects/matcha-heart-death-compat/artifacts/matcha-heart-death-compat-0.1.4-canary5.jar"
+                "path": "projects/matcha-heart-death-compat/artifacts/matcha-heart-death-compat-0.1.9-canary10.jar"
               }
             }
           ]
         },
-        "accepted_at": null
+        "accepted_at": "2026-08-30T06:42:32Z"
       },
       {
         "unit": {
@@ -657,39 +657,78 @@
           ]
         },
         "accepted_at": null
+      },
+      {
+        "unit": {
+          "deployment_id": "b0093f8e-4e39-400a-94f3-68f8f87598c9",
+          "project_uuid": "9f1c5aa4-09c1-4de3-9921-4b045e8abcd2",
+          "project_id": "mossy-stone",
+          "project_identity_source": "CURRENT_MANIFEST",
+          "version": "0.4.0-canary4",
+          "source_commit": "f789b290f72c508a563797b0c543125bc9c468c1",
+          "artifacts": [
+            {
+              "artifact_id": "219b132e-8422-4630-a3e9-12654ddee870",
+              "kind": "MOD",
+              "filename": "mossy-stone-0.4.0-canary4.jar",
+              "sha256": "b0e7be5651d622789b848ba1a48073af8078ba4d834e34c1255ec9ce72042f14",
+              "ownership_keys": [
+                "mod:mossy_stone"
+              ],
+              "source": {
+                "type": "REPOSITORY",
+                "path": "projects/mossy-stone/artifacts/mossy-stone-0.4.0-canary4.jar"
+              }
+            }
+          ]
+        },
+        "accepted_at": "2026-08-30T06:42:31Z"
       }
     ]
   },
   "slots": {
     "A": {
       "unit": {
-        "deployment_id": "2ff30d2e-1310-4421-b4d6-02616d35e7ed",
-        "project_uuid": "937d7ccc-44c9-55cb-8d33-0dc0bff5fe45",
-        "project_id": "matcha-heart-death-compat",
+        "deployment_id": "c4b59618-f9dc-4bd1-987b-8fd8c9e1e7df",
+        "project_uuid": "4b2342fc-7bdf-5ba6-9f37-d551109d214c",
+        "project_id": "block-geometry-extensions",
         "project_identity_source": "CURRENT_MANIFEST",
-        "version": "0.1.8-canary9",
-        "source_commit": "f789b290f72c508a563797b0c543125bc9c468c1",
+        "version": "0.6.0-bge-canary53-layer",
+        "source_commit": "6e9b04ec3947f2514f90775bfeefb599242a4596",
         "artifacts": [
           {
-            "artifact_id": "b8dd7ada-4c05-4a6d-9894-22971284d4ce",
+            "artifact_id": "60bdb5b7-620e-4578-9e3d-b3178a05717d",
             "kind": "MOD",
-            "filename": "matcha-heart-death-compat-0.1.8-canary9.jar",
-            "sha256": "099e7e1d0f8eb5b5a060d029ba89d7328a9cb9d0af50487b2352bcbca45a49e8",
+            "filename": "cnm-nibaru-integration-0.6.0-bge-canary53-layer.jar",
+            "sha256": "57a4599adb3f4c58ae7b99a0148a38760fdb3da59847ca3ec046379db323b7c8",
             "ownership_keys": [
-              "mod:matcha_heart_death_compat"
+              "mod:cnm_terrain_slabs_compat"
             ],
             "source": {
               "type": "REPOSITORY",
-              "path": "projects/matcha-heart-death-compat/artifacts/matcha-heart-death-compat-0.1.8-canary9.jar"
+              "path": "projects/block-geometry-extensions/artifacts/cnm-nibaru-integration-0.6.0-bge-canary53-layer.jar"
+            }
+          },
+          {
+            "artifact_id": "c2ec5b56-afa0-47e2-a7c3-509f909988ad",
+            "kind": "MOD",
+            "filename": "more-slabs-stairs-and-walls-4.2.0+26.2-port-canary46-bge-layer-contract.jar",
+            "sha256": "3281d110f062db62e721d838a35ce915ca73dd41af098a013b52952561ceae7d",
+            "ownership_keys": [
+              "mod:more_slabs_stairs_and_walls"
+            ],
+            "source": {
+              "type": "REPOSITORY",
+              "path": "projects/nibaru/artifacts/more-slabs-stairs-and-walls-4.2.0+26.2-port-canary46-bge-layer-contract.jar"
             }
           }
         ]
       },
-      "replaces_accepted_deployment_id": "c00c0018-fa67-41b4-a981-62b6d3986def",
+      "replaces_accepted_deployment_id": "3a3f0f77-d114-4b58-a039-302d625ec449",
       "deployment": {
         "state": "READY_TO_TEST_VERIFIED",
-        "deployed_at": "2026-08-30T05:44:00Z",
-        "ready_verified_at": "2026-08-30T05:46:00Z"
+        "deployed_at": "2026-08-30T06:42:34Z",
+        "ready_verified_at": "2026-08-30T06:42:35Z"
       },
       "runtime_result": {
         "classification": "UNTESTED",
@@ -698,28 +737,31 @@
           "passed": [],
           "failed": []
         }
-      }
+      },
+      "dependency_overrides": [
+        "e5eb4fcb-6c49-4ab2-86f9-1605ccd192ab"
+      ]
     },
     "B": {
       "unit": {
-        "deployment_id": "b0093f8e-4e39-400a-94f3-68f8f87598c9",
-        "project_uuid": "9f1c5aa4-09c1-4de3-9921-4b045e8abcd2",
-        "project_id": "mossy-stone",
+        "deployment_id": "9e9098ad-ae0c-42ff-a640-f12ee68eed85",
+        "project_uuid": "2371b6eb-a4fb-4f1e-8203-580b82ce846b",
+        "project_id": "coal-consolidation",
         "project_identity_source": "CURRENT_MANIFEST",
-        "version": "0.4.0-canary4",
-        "source_commit": "f789b290f72c508a563797b0c543125bc9c468c1",
+        "version": "0.1.0-canary1",
+        "source_commit": "ff8ea31e3c5959fdb4a2886b1113071bfda5770f",
         "artifacts": [
           {
-            "artifact_id": "219b132e-8422-4630-a3e9-12654ddee870",
+            "artifact_id": "1cee4d50-6163-48fc-8dce-283454638614",
             "kind": "MOD",
-            "filename": "mossy-stone-0.4.0-canary4.jar",
-            "sha256": "b0e7be5651d622789b848ba1a48073af8078ba4d834e34c1255ec9ce72042f14",
+            "filename": "coal-consolidation-0.1.0-canary1.jar",
+            "sha256": "d7598f640184613f03f0ea2fb558cd4d94099ec54cabc189ef978dbb7f5d4f9d",
             "ownership_keys": [
-              "mod:mossy_stone"
+              "mod:coal_consolidation"
             ],
             "source": {
               "type": "REPOSITORY",
-              "path": "projects/mossy-stone/artifacts/mossy-stone-0.4.0-canary4.jar"
+              "path": "projects/coal-consolidation/artifacts/coal-consolidation-0.1.0-canary1.jar"
             }
           }
         ]
@@ -727,8 +769,8 @@
       "replaces_accepted_deployment_id": null,
       "deployment": {
         "state": "READY_TO_TEST_VERIFIED",
-        "deployed_at": "2026-08-30T05:45:00Z",
-        "ready_verified_at": "2026-08-30T05:47:00Z"
+        "deployed_at": "2026-08-30T06:42:36Z",
+        "ready_verified_at": "2026-08-30T06:42:37Z"
       },
       "runtime_result": {
         "classification": "UNTESTED",

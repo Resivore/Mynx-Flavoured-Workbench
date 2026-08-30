@@ -2,6 +2,7 @@ package dev.resivore.matchaheart;
 
 import net.fabricmc.fabric.api.creativetab.v1.CreativeModeTabEvents;
 import net.minecraft.core.Registry;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
@@ -16,7 +17,9 @@ public final class HeartItems {
     public static final ResourceKey<Item> RESONANT_FAVOUR_KEY =
             ResourceKey.create(Registries.ITEM, RESONANT_FAVOUR_ID);
     public static final Item RESONANT_FAVOUR =
-            new Item(new Item.Properties().setId(RESONANT_FAVOUR_KEY));
+            new Item(new Item.Properties()
+                    .setId(RESONANT_FAVOUR_KEY)
+                    .component(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true));
 
     private HeartItems() {}
 

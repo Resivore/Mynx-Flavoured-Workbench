@@ -22,6 +22,7 @@ import javax.imageio.ImageIO;
 import net.minecraft.SharedConstants;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.registries.VanillaRegistries;
 import net.minecraft.server.Bootstrap;
@@ -76,6 +77,12 @@ final class Canary9ContentContractTest {
                 HeartItems.RESONANT_FAVOUR_ID.toString());
         assertEquals(HeartItems.RESONANT_FAVOUR,
                 BuiltInRegistries.ITEM.getValue(HeartItems.RESONANT_FAVOUR_ID));
+
+        ItemStack defaultStack = HeartItems.RESONANT_FAVOUR.getDefaultInstance();
+        assertEquals(Boolean.TRUE,
+                defaultStack.get(DataComponents.ENCHANTMENT_GLINT_OVERRIDE));
+        assertTrue(defaultStack.hasFoil());
+        assertFalse(defaultStack.isEnchanted());
 
         JsonObject itemDefinition = json(
                 "assets/matcha_heart_death_compat/items/resonant_favour.json");
@@ -133,6 +140,10 @@ final class Canary9ContentContractTest {
         ItemStack assembled = resonantRecipe.assemble(exact);
         assertTrue(assembled.is(HeartItems.RESONANT_FAVOUR));
         assertEquals(1, assembled.getCount());
+        assertEquals(Boolean.TRUE,
+                assembled.get(DataComponents.ENCHANTMENT_GLINT_OVERRIDE));
+        assertTrue(assembled.hasFoil());
+        assertFalse(assembled.isEnchanted());
     }
 
     @Test

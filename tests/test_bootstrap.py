@@ -589,6 +589,77 @@ class RuntimeContractTests(unittest.TestCase):
         self.assertEqual(prior_b, updated["slots"]["B"])
         self.assertEqual({"alpha", "beta"}, {unit["project_id"] for unit in resolve_profile(updated, project_index("alpha", "beta"))})
 
+    def test_slot_dependency_override_is_temporary_and_requires_full_ownership_coverage(self) -> None:
+        alpha_v1 = deployment_unit("alpha", version="Canary 1")
+        alpha_v2 = deployment_unit("alpha", version="Canary 2")
+        dependency_v1 = deployment_unit("dependency", version="Canary 1")
+        dependency_v2 = deployment_unit("dependency", version="Canary 2")
+        alpha_v2["artifacts"].append(copy.deepcopy(dependency_v2["artifacts"][0]))
+        accepted = [
+            {"unit": alpha_v1, "accepted_at": TIME_1},
+            {"unit": dependency_v1, "accepted_at": TIME_1},
+        ]
+        assigned = plan_transition(
+            runtime_state(accepted),
+            3,
+            {
+                "type": "ASSIGN_SLOT",
+                "candidate": candidate_declaration(
+                    alpha_v2,
+                    alpha_v1["deployment_id"],
+                    [dependency_v1["deployment_id"]],
+                ),
+            },
+            TIME_2,
+            project_index("alpha", "dependency"),
+        )
+        self.assertEqual([dependency_v1["deployment_id"]], assigned["slots"]["A"]["dependency_overrides"])
+        effective = resolve_profile(assigned, project_index("alpha", "dependency"))
+        self.assertEqual(["alpha"], [unit["project_id"] for unit in effective])
+        self.assertEqual(
+            {"mod:alpha", "mod:dependency"},
+            {key for artifact in effective[0]["artifacts"] for key in artifact["ownership_keys"]},
+        )
+        restored = plan_transition(
+            assigned,
+            assigned["revision"],
+            {"type": "REMOVE_SLOT", "slot": "A"},
+            TIME_3,
+            project_index("alpha", "dependency"),
+        )
+        self.assertEqual(
+            {"alpha", "dependency"},
+            {unit["project_id"] for unit in resolve_profile(restored, project_index("alpha", "dependency"))},
+        )
+
+        alpha_v3 = deployment_unit("alpha", version="Canary 3")
+        cleared_override = plan_transition(
+            assigned,
+            assigned["revision"],
+            {
+                "type": "UPDATE_SLOT",
+                "slot": "A",
+                "candidate": candidate_declaration(alpha_v3, dependency_overrides=[]),
+            },
+            TIME_3,
+            project_index("alpha", "dependency"),
+        )
+        self.assertNotIn("dependency_overrides", cleared_override["slots"]["A"])
+        self.assertEqual(
+            {"alpha", "dependency"},
+            {unit["project_id"] for unit in resolve_profile(cleared_override, project_index("alpha", "dependency"))},
+        )
+
+        incomplete = candidate(alpha_v2)
+        incomplete["replaces_accepted_deployment_id"] = alpha_v1["deployment_id"]
+        incomplete["dependency_overrides"] = [dependency_v1["deployment_id"]]
+        incomplete["unit"]["artifacts"].pop()
+        with self.assertRaisesRegex(ValidationError, "every ownership key"):
+            validate_runtime_state(
+                runtime_state(accepted, incomplete),
+                project_index("alpha", "dependency"),
+            )
+
     def test_promotion_requires_pass_and_upgrade_replaces_baseline(self) -> None:
         alpha_v1 = deployment_unit("alpha", version="Canary 1")
         alpha_v2 = deployment_unit("alpha", version="Canary 2")
@@ -603,6 +674,68 @@ class RuntimeContractTests(unittest.TestCase):
         untested = runtime_state(slot_a=candidate(deployment_unit("beta")))
         with self.assertRaisesRegex(ValidationError, "requires an explicit"):
             plan_transition(untested, untested["revision"], {"type": "PROMOTE_SLOT", "slot": "A"}, TIME_2, project_index("beta"))
+
+    def test_user_approved_untested_successor_promotion_replaces_baseline_and_clears_only_untested_slot(self) -> None:
+        alpha_v1 = deployment_unit("alpha", version="Canary 1")
+        alpha_v2 = deployment_unit("alpha", version="Canary 2")
+        alpha_v3 = deployment_unit("alpha", version="Canary 3")
+        accepted = [{"unit": alpha_v1, "accepted_at": TIME_1}]
+        old_slot = candidate(alpha_v2)
+        old_slot["replaces_accepted_deployment_id"] = alpha_v1["deployment_id"]
+        state = runtime_state(accepted, old_slot)
+        operation = {
+            "type": "PROMOTE_UNTESTED_CANDIDATE",
+            "authorization": "USER_APPROVED_UNTESTED_PROMOTION",
+            "candidate": candidate_declaration(alpha_v3, alpha_v1["deployment_id"]),
+        }
+        promoted = plan_transition(
+            state,
+            state["revision"],
+            operation,
+            TIME_2,
+            project_index("alpha"),
+        )
+        self.assertIsNone(promoted["slots"]["A"])
+        self.assertEqual("Canary 3", promoted["accepted_baseline"]["members"][0]["unit"]["version"])
+        self.assertEqual(
+            state["accepted_baseline"]["revision"] + 1,
+            promoted["accepted_baseline"]["revision"],
+        )
+        self.assertEqual(state["revision"] + 1, promoted["revision"])
+
+        unauthorized = copy.deepcopy(operation)
+        unauthorized["authorization"] = ""
+        with self.assertRaisesRegex(ValidationError, "explicit USER_APPROVED"):
+            plan_transition(
+                state,
+                state["revision"],
+                unauthorized,
+                TIME_2,
+                project_index("alpha"),
+            )
+
+        passed_slot = candidate(alpha_v2, "PASS")
+        passed_slot["replaces_accepted_deployment_id"] = alpha_v1["deployment_id"]
+        with self.assertRaisesRegex(ValidationError, "cannot discard a recorded slot result"):
+            plan_transition(
+                runtime_state(accepted, passed_slot),
+                3,
+                operation,
+                TIME_2,
+                project_index("alpha"),
+            )
+
+        legacy_candidate = copy.deepcopy(operation)
+        legacy_candidate["candidate"]["unit"]["project_identity_source"] = "FROZEN_LEGACY"
+        legacy_candidate["candidate"]["unit"]["source_commit"] = None
+        with self.assertRaisesRegex(ValidationError, "requires CURRENT_MANIFEST identity"):
+            plan_transition(
+                state,
+                state["revision"],
+                legacy_candidate,
+                TIME_2,
+                project_index("alpha"),
+            )
 
     def test_repo_only_commit_path_is_always_disabled(self) -> None:
         alpha = deployment_unit("alpha")
@@ -625,13 +758,18 @@ class RuntimeContractTests(unittest.TestCase):
         # inferred by this bootstrap test.
         tracked = load_json(ROOT / "tools" / "test_instance_manager" / "runtime-state.json")
         self.assertEqual("ACTIVE", tracked["activation"])
-        self.assertEqual(15, tracked["revision"])
-        self.assertEqual(1, tracked["accepted_baseline"]["revision"])
-        self.assertEqual("ADOPTED", tracked["accepted_baseline"]["provenance"]["physical_disposition"])
-        self.assertEqual("0.1.8-canary9", tracked["slots"]["A"]["unit"]["version"])
+        self.assertEqual(23, tracked["revision"])
+        self.assertEqual(3, tracked["accepted_baseline"]["revision"])
+        self.assertEqual(27, tracked["accepted_baseline"]["provenance"]["accepted_artifact_count"])
+        self.assertEqual("TRANSITIONED", tracked["accepted_baseline"]["provenance"]["physical_disposition"])
+        self.assertEqual("0.6.0-bge-canary53-layer", tracked["slots"]["A"]["unit"]["version"])
         self.assertEqual("READY_TO_TEST_VERIFIED", tracked["slots"]["A"]["deployment"]["state"])
         self.assertEqual("UNTESTED", tracked["slots"]["A"]["runtime_result"]["classification"])
-        self.assertEqual("0.4.0-canary4", tracked["slots"]["B"]["unit"]["version"])
+        self.assertEqual(
+            ["e5eb4fcb-6c49-4ab2-86f9-1605ccd192ab"],
+            tracked["slots"]["A"]["dependency_overrides"],
+        )
+        self.assertEqual("0.1.0-canary1", tracked["slots"]["B"]["unit"]["version"])
         self.assertEqual("READY_TO_TEST_VERIFIED", tracked["slots"]["B"]["deployment"]["state"])
         self.assertEqual("UNTESTED", tracked["slots"]["B"]["runtime_result"]["classification"])
 
@@ -711,7 +849,7 @@ class CurrentStateBootstrapTests(unittest.TestCase):
         self.assertEqual({path: manifest["synchronization"]["revision"] for path, manifest in manifests.items()}, revisions)
         self.assertTrue(all(event["record"]["publication_commit"] == "d" * 40 for event in plan["events"]))
 
-    def test_current_heart_and_mossy_r5_authority_produces_exact_reconciliation_events(self) -> None:
+    def test_current_heart_and_mossy_r6_authority_produces_exact_reconciliation_events(self) -> None:
         paths = (
             "projects/matcha-heart-death-compat/WORKBENCH_STATUS.json",
             "projects/mossy-stone/WORKBENCH_STATUS.json",
@@ -725,12 +863,12 @@ class CurrentStateBootstrapTests(unittest.TestCase):
         events = {event["record"]["project_uuid"]: event for event in plan["events"]}
         expected = {
             "937d7ccc-44c9-55cb-8d33-0dc0bff5fe45": {
-                "revision": 5,
-                "filename": "matcha-heart-death-compat-0.1.8-canary9.jar",
-                "sha256": "099e7e1d0f8eb5b5a060d029ba89d7328a9cb9d0af50487b2352bcbca45a49e8",
+                "revision": 6,
+                "filename": "matcha-heart-death-compat-0.1.9-canary10.jar",
+                "sha256": "f86442ec69ed8afb86d52c97db2e899223c25a659ef7c19f245e51ac642bbc90",
             },
             "9f1c5aa4-09c1-4de3-9921-4b045e8abcd2": {
-                "revision": 5,
+                "revision": 6,
                 "filename": "mossy-stone-0.4.0-canary4.jar",
                 "sha256": "b0e7be5651d622789b848ba1a48073af8078ba4d834e34c1255ec9ce72042f14",
             },

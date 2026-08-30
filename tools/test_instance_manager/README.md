@@ -21,6 +21,18 @@ preserving the exact accepted member/artifact identity and Stack number.
 Assignments, candidate replacements, slot clearing, readiness/result recording,
 verification, and display refreshes never increment the Stack number.
 
+`PROMOTE_UNTESTED_CANDIDATE` is the narrow exception for an explicitly
+user-approved successor that must enter the accepted baseline without claiming
+runtime evidence or occupying a test slot. It requires the exact authorization
+token `USER_APPROVED_UNTESTED_PROMOTION`, can only replace the same already
+accepted project, clears an existing same-project slot only while its result is
+still `UNTESTED`, and increments the Stack number for changed bytes. The
+project's status and append-only log remain responsible for preserving the
+user authorization and the distinction from a runtime pass.
+Because that authorization is not derivable from a desired-state document,
+this exception must use the operation-based `transition --operation` path;
+prevalidated `desired_state` callers cannot synthesize the authorization.
+
 ## Migration closure
 
 The initial physical V2 migration completed at checkpoint
@@ -106,6 +118,11 @@ already exists.
 - Artifacts use exact filenames, SHA-256 values, Fabric `mod:<id>` ownership,
   and repository or explicitly adopted-target sources.
 - Accepted artifacts replaced by a slot remain present as `.jar.disabled`.
+- A slot may declare `dependency_overrides` for exact accepted dependency
+  deployments that it temporarily supersedes. The slot artifact set must cover
+  every ownership key of each overridden dependency; removing the slot restores
+  those accepted bytes, and a normal slot promotion cannot absorb the temporary
+  dependency override into the accepted project.
 - Slots are independent: updating, clearing, or promoting one cannot move or
   rewrite the other.
 - Unmanaged enabled JARs that provide managed Fabric IDs are rejected;

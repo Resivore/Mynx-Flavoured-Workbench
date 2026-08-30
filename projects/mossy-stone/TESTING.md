@@ -1,8 +1,9 @@
 # Testing
 
-## Canary 4 combined-session gate
+## Accepted Canary 4 regression baseline
 
-Test only exact Canary 4:
+The physically verified Stack v3 baseline contains only this exact Mossy Stone
+release:
 
 - version `0.4.0-canary4`
 - file `mossy-stone-0.4.0-canary4.jar`
@@ -13,12 +14,12 @@ Exact Canary 3 is a closed failed candidate: its intended visuals and block and
 generated-geometry behavior passed, but its late JEI callback re-added Mossy
 ShapeMap slab, stairs, and wall children that CNM intentionally represents only
 through the parent. C4 removes only that direct JEI re-addition and preserves
-C3 Creative exposure and gameplay behavior. No Mossy release is accepted.
+C3 Creative exposure and gameplay behavior.
 
-Exact C4 is installed in Slot B alongside exact Matcha Death Rebalance Canary 9
-in Slot A, and final manager physical/title re-verification passed. If managed
-state changes before launch, require the normal live verifier to pass again.
-Build, static tests, deployment, and readiness are not Minecraft runtime results.
+The user reported exact C4 as an aggregate PASS, and the manager promoted that
+same artifact to the accepted Stack v3 baseline before final physical
+verification. No individual matrix row is inferred from the aggregate result,
+and no separate Mossy rollback is designated.
 
 ## Focused Canary 4 matrix
 
@@ -40,6 +41,7 @@ Build, static tests, deployment, and readiness are not Minecraft runtime results
    stonecutting, unlock, ShapeMap, BGE/Nibaru, and Interchangeable Block
    Families behavior for a Mossy-attributable regression.
 
-Record Slot B independently as `PASS`, `FAIL`, or `INCONCLUSIVE`, even if Matcha
-Canary 9 has a different result during the same launch. Do not promote C4
-without its explicit runtime result.
+Retain this matrix for future accepted-baseline regression sessions. Any new
+runtime result must be recorded against exact C4 without inferring individual
+rows from the historical aggregate PASS or from another project tested in the
+same launch.

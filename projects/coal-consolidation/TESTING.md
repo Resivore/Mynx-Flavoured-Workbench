@@ -1,6 +1,8 @@
 # Testing
 
-Canary 1 is the current unaccepted candidate and remains `NOT_DEPLOYED` and `RUNTIME_UNTESTED`. Legacy checkpoint `8efd7ff3c00c7bb82356e06f3aaa19d3079be3f8` records a Java 25, Gradle 9.5.1, Loom 1.17.20 clean build with 16/16 focused tests passing. This migration separately ran the same focused build and again passed 16/16 with no failures, errors, or skips. Its fresh 7,488-byte JAR reproduced SHA-256 `D7598F640184613F03F0EA2FB558CD4D94099EC54CABC189EF978DBB7F5D4F9D` byte-for-byte; the retained artifact was not replaced. Both results are static evidence only.
+Canary 1 is the current unaccepted candidate. The manager installed exact `artifacts/coal-consolidation-0.1.0-canary1.jar`, 7,488 bytes, SHA-256 `D7598F640184613F03F0EA2FB558CD4D94099EC54CABC189EF978DBB7F5D4F9D`, in Slot B and returned `READY_TO_TEST_VERIFIED`; no newer `main`-scoped Coal Consolidation change supersedes release source `ff8ea31e3c5959fdb4a2886b1113071bfda5770f`. The accepted stack satisfies the recorded Minecraft 26.2, Fabric Loader, Fabric API, Matcha 1.12, and JEI dependency identities. Minecraft has not been launched, so Slot B remains `RUNTIME_UNTESTED`.
+
+Legacy checkpoint `8efd7ff3c00c7bb82356e06f3aaa19d3079be3f8` records a Java 25, Gradle 9.5.1, Loom 1.17.20 clean build with 16/16 focused tests passing. Migration separately ran the same focused build and again passed 16/16 with no failures, errors, or skips. Its fresh JAR reproduced the retained artifact byte-for-byte without replacing it. Both results are static evidence only.
 
 ## Automated contracts
 
@@ -14,7 +16,7 @@ The four suites contain 16 tests covering all ten packaged recipes through Minec
 
 ## Runtime prerequisites
 
-An explicit runtime owner must deploy only `artifacts/coal-consolidation-0.1.0-canary1.jar` from this project, verify its exact 7,488-byte size and SHA-256 above, and use the normal controlled Workbench readiness path. Do not rebuild or substitute a same-version JAR. Test with the intended Matcha 1.12 stack and include JEI 30.18.0.144 for viewer coverage; separately confirm the optional no-JEI boundary when applicable.
+Under explicit runtime ownership, use the already deployed exact Slot B artifact; do not rebuild or substitute a same-version JAR. Reconfirm the manager identity/readiness before launch. Test with the intended Matcha 1.12 stack and JEI 30.18.0.144 for viewer coverage; separately confirm the optional no-JEI boundary when applicable.
 
 ## Runtime matrix
 

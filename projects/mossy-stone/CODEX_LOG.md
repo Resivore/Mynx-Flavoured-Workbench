@@ -49,3 +49,13 @@
 - Artifact: Current/unaccepted C4 `mossy-stone-0.4.0-canary4.jar`, 29,638 bytes, SHA-256 `B0E7BE5651D622789B848BA1A48073AF8078BA4D834E34C1255EC9CE72042F14`, source `f789b290f72c508a563797b0c543125bc9c468c1`; no Mossy release is accepted or designated as rollback.
 - Result: TESTING — C4 is `STATIC_PASS / READY_TO_TEST_VERIFIED / RUNTIME_UNTESTED`, remains unpromoted, and exact C3 FAIL evidence is preserved.
 - Next state: Run the focused parent-only JEI and regression matrix alongside Matcha C9 and record Slot B independently before any promotion.
+
+## 2026-08-30T06:51:06Z — Record Canary 4 aggregate pass and accept exact artifact
+- Revision: 6
+- Source checkpoint: `8fdfaaf4eddfb4b379ce5d50266f2c40a5294480`
+- Changes: Recorded the user's exact C4 aggregate PASS and promoted that same artifact from Slot B to the accepted Stack v3 baseline. C4 remains the narrow C3 successor that removes only the conflicting Mossy-specific JEI child re-addition while preserving Creative exposure and every C3 registration, asset, ShapeMap, Stone-like, loot, crafting, stonecutting, and geometry behavior; no separate Mossy rollback was designated.
+- Build/static: No project artifact was rebuilt. Exact C4 retains its prior Java 25 / Gradle 9.5.1 offline clean test/build pass of 12/12 focused tests, and the manager's final physical verification matched the exact accepted Stack v3 baseline.
+- Runtime: The user's report is preserved only as an aggregate C4 PASS; no individual matrix rows are inferred. C3 remains a closed FAIL only for its JEI parent-presentation defect while its reported visual and block/generated-geometry behavior remains passed. Promotion and final baseline verification launched no new Minecraft process.
+- Artifact: Accepted/current C4 `projects/mossy-stone/artifacts/mossy-stone-0.4.0-canary4.jar`, version `0.4.0-canary4`, 29,638 bytes, SHA-256 `B0E7BE5651D622789B848BA1A48073AF8078BA4D834E34C1255EC9CE72042F14`, source `f789b290f72c508a563797b0c543125bc9c468c1`; no Mossy rollback is designated.
+- Result: ACCEPTED — exact C4 is `STATIC_PASS / READY_TO_TEST_VERIFIED / RUNTIME_PASS`, is current and accepted in Stack v3, and exact C3's JEI-only failure remains preserved historically.
+- Next state: Keep exact C4 in the accepted baseline; use the retained matrix only for future regression checks and record any new C4 runtime evidence without inferring individual rows from the historical aggregate PASS.

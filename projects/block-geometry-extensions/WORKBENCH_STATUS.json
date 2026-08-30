@@ -81,7 +81,7 @@
     ]
   },
   "state": {
-    "milestone": "C53 establishes BGE-owned Layer geometry for all 311 canonical families; its Java 25 clean build, 52 focused checks, and 66/66 required GameTests passed, while deployment and Minecraft runtime validation remain outstanding.",
+    "milestone": "Exact BGE C53 and its required exact Nibaru C46 contract artifact are deployed together in Slot A with manager readiness verified. C53 remains runtime untested; accepted BGE C52 and Nibaru C45 remain disabled as the rollback baseline under the slot-scoped dependency override.",
     "releases": {
       "current": {
         "version": "C53",
@@ -112,17 +112,17 @@
     },
     "validation": {
       "build": "CONTROLLED_VALIDATION_PASS",
-      "deployment": "NOT_DEPLOYED",
+      "deployment": "READY_TO_TEST_VERIFIED",
       "runtime": "RUNTIME_UNTESTED"
     },
     "blocker": null
   },
   "synchronization": {
-    "revision": 6,
-    "activity_at": "2026-08-29T06:54:03Z",
-    "updated_at": "2026-08-29T17:14:33Z",
-    "last_codex_at": "2026-08-29T17:14:33Z",
-    "source_commit": "6e9b04ec3947f2514f90775bfeefb599242a4596",
+    "revision": 7,
+    "activity_at": "2026-08-30T06:51:09Z",
+    "updated_at": "2026-08-30T06:51:09Z",
+    "last_codex_at": "2026-08-30T06:51:09Z",
+    "source_commit": "8fdfaaf4eddfb4b379ce5d50266f2c40a5294480",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
