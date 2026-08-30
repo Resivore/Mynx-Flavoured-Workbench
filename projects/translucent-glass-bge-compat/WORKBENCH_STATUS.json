@@ -57,7 +57,7 @@
         "type": "MOD",
         "identifier": "continuity",
         "requirement": "3.0.1+26.2",
-        "reason": "Provides the audited explicit-ID CTM behavior against which Translucent Glass-specific composition must be checked; general BGE CTM ownership remains with the separate BGE × CTM project."
+        "reason": "Provides the audited explicit-ID CTM behavior and consumes Fabric appearance states; the canonical appearance bridge and general BGE CTM ownership remain with the separate BGE × CTM project."
       },
       {
         "type": "MOD",
@@ -74,7 +74,7 @@
     ]
   },
   "state": {
-    "milestone": "Static architecture audit complete: BGE/Nibaru should inherit Minecraft 26.2 model-material and geometry-aware translucent adjacency from one canonical binding; CTM remains coordinated with BGE × CTM, and full shader parity awaits an authorized integration path. Implementation and project-specific runtime testing have not started.",
+    "milestone": "Static architecture audit complete: BGE/Nibaru should inherit Minecraft 26.2 model-material and geometry-aware translucent adjacency from one canonical binding; CTM should compose through BGE × CTM's canonical appearance-state bridge, and full shader parity awaits an authorized integration path. Implementation and project-specific runtime testing have not started.",
     "releases": {
       "current": null,
       "accepted": null,
@@ -91,10 +91,10 @@
   },
   "synchronization": {
     "revision": 2,
-    "activity_at": "2026-08-30T22:40:46Z",
-    "updated_at": "2026-08-30T22:40:46Z",
-    "last_codex_at": "2026-08-30T22:40:46Z",
-    "source_commit": "8aa61f9e76d0ee1dd13a4d76f7cbbab87f41a7cb",
+    "activity_at": "2026-08-30T22:45:24Z",
+    "updated_at": "2026-08-30T22:45:24Z",
+    "last_codex_at": "2026-08-30T22:45:24Z",
+    "source_commit": "f4f0f8d018a7a11b141f091f46e50290b776deb2",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null

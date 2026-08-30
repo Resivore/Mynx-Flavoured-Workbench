@@ -1,8 +1,8 @@
 # Translucent Glass × BGE architecture audit
 
-**Checkpoint:** `main` at `777d9ece7f38bc6c323f57d12ff83d7cd31ebc59`  
+**Checkpoint:** `main` at `777d9ece7f38bc6c323f57d12ff83d7cd31ebc59`
 **Reconciled dependency:** BGE × CTM audit on `main` at `8e8e40a3773ea954e94fe22c1af174d7fe633229`
-**Result:** static audit complete; compatibility implementation not started  
+**Result:** static audit complete; compatibility implementation not started
 **Runtime evidence:** none for this project; BGE C54 is runtime untested
 
 ## Finding
