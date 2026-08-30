@@ -21,7 +21,7 @@
     "scope": [
       "Maintain exact Canary 2 source, build, resources, and focused tests from legacy implementation commit 2008a418d868139e88bc066672d10f8463d84e0f and frozen checkpoint f0101f38c446dddaa4226450386402c63597ba7c.",
       "Maintain the standalone canonical parent plus directly owned slab, stairs, and wall with vanilla Stone property baselines, the own-namespace ShapeMap contribution, four loot tables, and eleven recipes with their matching unlock advancements.",
-      "Retain exact Canary 2 as the current runtime-untested candidate and exact Canary 1 as its never-deployed historical predecessor without representing either release as accepted or rollback."
+      "Retain exact Canary 2 as the current failed candidate with its documented partial runtime pass, and exact Canary 1 as its never-deployed historical predecessor without representing either release as accepted or rollback."
     ],
     "boundaries": {
       "owned_paths": [
@@ -31,8 +31,8 @@
         "No implementation, version, recipe, loot, registration, asset, geometry, or gameplay change beyond the exact frozen Canary 2 migration.",
         "No direct Vertical Slab or Step registration or recipe ownership and no duplicate or competing Block Geometry Extensions material-family system.",
         "No Regions Unexplored code, registry, model, data, world generation, compile dependency, or runtime dependency; only the approved texture and its unchanged MIT provenance notice are retained.",
-        "No changes to Block Geometry Extensions, Nibaru, Interchangeable Block Families, another project, shared infrastructure, or Test Instance Manager state.",
-        "No deployment, Test Slot mutation, Minecraft instance access, runtime testing, acceptance, or runtime inference during this migration."
+        "No changes to Block Geometry Extensions, Nibaru, Interchangeable Block Families, or another project implementation.",
+        "No promotion or reclassification of unchanged Canary 2, and no successor implementation without a separately authorized narrow Creative/JEI exposure fix."
       ]
     },
     "dependencies": [
@@ -93,7 +93,7 @@
     ]
   },
   "state": {
-    "milestone": "Exact C2 remains the current unaccepted candidate after a byte-identical Java 25 migration build and 9/9 focused tests. Frozen legacy evidence preserves READY_TO_TEST_VERIFIED, but runtime remains untested. Exact C1 is retained only as the never-deployed historical predecessor and is not an accepted or rollback release.",
+    "milestone": "Exact C2 is recorded as Slot B FAIL after a partial runtime pass: implementation, visuals, Stone-like behavior, and tested family gameplay passed, while appropriate Creative inventory exposure and JEI exposure failed. V2 adopted C2 byte-identically over the exact frozen baseline; no Mossy release or rollback is accepted, and no C3 was produced.",
     "releases": {
       "current": {
         "version": "0.2.0-canary2",
@@ -111,16 +111,16 @@
     "validation": {
       "build": "STATIC_PASS",
       "deployment": "READY_TO_TEST_VERIFIED",
-      "runtime": "RUNTIME_UNTESTED"
+      "runtime": "PARTIAL_RUNTIME_PASS"
     },
     "blocker": null
   },
   "synchronization": {
-    "revision": 1,
-    "activity_at": "2026-08-29T06:17:22Z",
-    "updated_at": "2026-08-29T23:03:38Z",
-    "last_codex_at": "2026-08-29T23:03:38Z",
-    "source_commit": "5989b567423d9b86d9864304c5a927a053f646b3",
+    "revision": 2,
+    "activity_at": "2026-08-30T00:57:47.228403Z",
+    "updated_at": "2026-08-30T01:19:52Z",
+    "last_codex_at": "2026-08-30T01:19:52Z",
+    "source_commit": "b96f82003de8cd4e2c8e8187d0fb7dde76fe3595",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
