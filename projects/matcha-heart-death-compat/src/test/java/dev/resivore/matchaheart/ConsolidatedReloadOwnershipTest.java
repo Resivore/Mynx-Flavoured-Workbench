@@ -16,8 +16,8 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 
 final class ConsolidatedReloadOwnershipTest {
-    private static final Path PROJECT = Path.of(System.getProperty("workbenchRoot"))
-            .resolve("projects/matcha-heart-death-compat");
+    private static final Path WORKBENCH = Path.of(System.getProperty("workbenchRoot"));
+    private static final Path PROJECT = WORKBENCH.resolve("projects/matcha-heart-death-compat");
 
     @Test
     void exactlyOneHeartHookOwnsEachReloadBoundary() throws Exception {
@@ -30,11 +30,22 @@ final class ConsolidatedReloadOwnershipTest {
                 "ServerFunctionManagerMixin"), strings(mixins.getAsJsonArray("mixins")));
 
         String recipeMixin = source("src/main/java/dev/resivore/matchaheart/mixin/RecipeManagerMixin.java");
-        assertEquals(1, occurrences(recipeMixin, "@Inject("));
+        assertEquals(1, occurrences(recipeMixin, "@ModifyVariable("));
         assertTrue(recipeMixin.contains("HeartDataContract.RECIPE_RESOURCES"));
-        assertTrue(recipeMixin.contains("@At(\"RETURN\")"));
+        assertTrue(recipeMixin.contains(
+                "method = \"apply(Lnet/minecraft/world/item/crafting/RecipeMap;"
+                        + "Lnet/minecraft/server/packs/resources/ResourceManager;"
+                        + "Lnet/minecraft/util/profiling/ProfilerFiller;)V\""));
+        assertTrue(recipeMixin.contains("at = @At(\"HEAD\")"));
+        assertTrue(recipeMixin.contains("argsOnly = true"));
+        assertTrue(recipeMixin.contains("ordinal = 0"));
+        assertTrue(recipeMixin.contains("require = 1"));
         assertTrue(recipeMixin.contains("REINFORCED_TARGET"));
         assertTrue(recipeMixin.contains("Required Reinforced Crystal Heart recipe did not decode"));
+        assertFalse(recipeMixin.contains("method = \"prepare"));
+        assertFalse(recipeMixin.contains("CallbackInfoReturnable"));
+        assertFalse(recipeMixin.contains("cancellable"));
+        assertFalse(recipeMixin.contains("setReturnValue"));
         assertFalse(recipeMixin.contains("AUTHORITATIVE_RECIPE"));
 
         String advancementMixin = source(
@@ -53,6 +64,25 @@ final class ConsolidatedReloadOwnershipTest {
                 "src/main/java/dev/resivore/matchaheart/AuthoritativeData.java");
         assertTrue(authoritativeData.contains("getModContainer(MatchaHeartDeathCompat.MOD_ID)"));
         assertFalse(authoritativeData.contains("getResourceAsStream"));
+    }
+
+    @Test
+    void recipeOwnershipRunsAfterTheAcceptedDramaticDoorsPrepareReturnHook() throws Exception {
+        String heartMixin = source(
+                "src/main/java/dev/resivore/matchaheart/mixin/RecipeManagerMixin.java");
+        String dramaticDoorsMixin = Files.readString(WORKBENCH.resolve(
+                "projects/dramatic-doors/common/src/main/java/com/fizzware/dramaticdoors/mixin/RecipeManagerMixin.java"),
+                StandardCharsets.UTF_8);
+
+        assertTrue(dramaticDoorsMixin.contains("method = \"prepare("));
+        assertTrue(dramaticDoorsMixin.contains("at = @At(\"RETURN\")"));
+        assertTrue(dramaticDoorsMixin.contains("cancellable = true"));
+        assertTrue(dramaticDoorsMixin.contains("cir.setReturnValue("));
+
+        assertTrue(heartMixin.contains("method = \"apply("));
+        assertTrue(heartMixin.contains("at = @At(\"HEAD\")"));
+        assertFalse(heartMixin.contains("method = \"prepare("));
+        assertFalse(heartMixin.contains("setReturnValue("));
     }
 
     @Test

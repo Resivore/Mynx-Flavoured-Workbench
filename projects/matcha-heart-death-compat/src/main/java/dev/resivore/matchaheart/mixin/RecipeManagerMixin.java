@@ -9,8 +9,6 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.server.packs.resources.ResourceManager;
-import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeManager;
@@ -19,8 +17,7 @@ import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import org.spongepowered.asm.mixin.injection.ModifyVariable;
 
 @Mixin(RecipeManager.class)
 abstract class RecipeManagerMixin {
@@ -28,15 +25,16 @@ abstract class RecipeManagerMixin {
 
     @Shadow @Final private HolderLookup.Provider registries;
 
-    @Inject(method = "prepare", at = @At("RETURN"), cancellable = true, require = 1)
-    private void matchaHeart$enforceRecipes(ResourceManager manager, ProfilerFiller profiler,
-                                            CallbackInfoReturnable<RecipeMap> cir) {
+    @ModifyVariable(
+            method = "apply(Lnet/minecraft/world/item/crafting/RecipeMap;Lnet/minecraft/server/packs/resources/ResourceManager;Lnet/minecraft/util/profiling/ProfilerFiller;)V",
+            at = @At("HEAD"), argsOnly = true, ordinal = 0, require = 1)
+    private RecipeMap matchaHeart$enforceRecipes(RecipeMap resolved) {
         try {
             LinkedHashMap<Identifier, Recipe<?>> replacements = new LinkedHashMap<>();
             HeartDataContract.RECIPE_RESOURCES.forEach((id, path) -> replacements.put(
                     Identifier.parse(id), AuthoritativeData.decodeRecipe(path, this.registries)));
 
-            ArrayList<RecipeHolder<?>> recipes = new ArrayList<>(cir.getReturnValue().values());
+            ArrayList<RecipeHolder<?>> recipes = new ArrayList<>(resolved.values());
             if (recipes.stream().noneMatch(holder -> holder.id().identifier().equals(REINFORCED_TARGET))) {
                 throw new IllegalStateException("Required Reinforced Crystal Heart recipe did not decode: "
                         + REINFORCED_TARGET);
@@ -46,10 +44,10 @@ abstract class RecipeManagerMixin {
                 ResourceKey<Recipe<?>> key = ResourceKey.create(Registries.RECIPE, id);
                 recipes.add(new RecipeHolder<>(key, recipe));
             });
-            cir.setReturnValue(RecipeMap.create(recipes));
             MatchaHeartDeathCompat.LOGGER.info(
-                    "Enforced authoritative recipe contracts for {} and verified {} during data reload",
+                    "Enforced authoritative recipe contracts for {} and verified {} after recipe preparation",
                     replacements.keySet(), REINFORCED_TARGET);
+            return RecipeMap.create(recipes);
         } catch (RuntimeException exception) {
             MatchaHeartDeathCompat.LOGGER.error(
                     "FATAL: could not enforce authoritative recipe contracts; aborting data reload", exception);
