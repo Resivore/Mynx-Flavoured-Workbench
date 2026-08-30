@@ -2,35 +2,19 @@
 
 ## Candidate and evidence boundary
 
-Canonical C6 is the exact private Slot B candidate built from source `5e1007888a847f00012a413214d51c810efa1b31`:
+Canonical C7 is the exact private Slot B candidate built from source `f7f61a0c50aa0fb96a8fd4d2cb79ce7ef1a7e62e`:
 
-- deployed private `shulker-trowel-0.1.0-canary5-private.jar`, 40,314 bytes, embedded version `0.1.0-canary5`, SHA-256 `4AB4BB8068F0660E0BBC6ED0CB059666B7112CC0E29744906972E396FC653664`, deployment `d66d7f25-918a-4452-9be6-81c72b28a40e`, artifact `fb86de68-38f3-4822-9127-c670396393d1`;
-- retained clean `artifacts/shulker-trowel-0.1.0-canary5.jar`, 39,811 bytes, SHA-256 `48A8F9B842EB0309D2635ABFBDD4548E506B1B919399099D76D4DA3D558A808E`.
+- deployed private `shulker-trowel-0.1.0-canary6-private.jar`, 42,753 bytes, embedded version `0.1.0-canary6`, SHA-256 `2AA0E986202A9FF92D8B3E9FE496D8EE54F48F34CFF945F4DF28BDC87239DCE3`, deployment `03441945-4b07-48e6-b8ff-993b1f18eeb0`, artifact `dfba959d-aac0-4ad7-bdb6-7efdf00218de`;
+- tracked clean `artifacts/shulker-trowel-0.1.0-canary6.jar`, 42,215 bytes, SHA-256 `3FB9228F67B6A0FFDD3F2D75CCD95B77B596D39264D800F8820FC30CFEA5F21F`.
 
-The clean artifact is build/provenance evidence and omits the separately authorized protected sprite; never substitute it for the exact private runtime candidate. Exact private C5 `shulker-trowel-0.1.0-canary4-private.jar`, SHA-256 `73C012C08CA5567E795711CF11C8EAAC625528E7350309114467129394F0AFBA`, remains unchanged as both accepted and rollback identity.
+The clean artifact is provenance-only and must not replace the private runtime artifact. Archive comparison found no removed or changed common entry; the private artifact adds only `assets/shulker_trowel/textures/item/trowel.png`, 346 bytes, SHA-256 `D754DBAB87A0FE923016268F0CDDC4A785B022A1184837F9C3CA2BE6732F7789`, from the separately authorized read-only JBT source. The sprite and private JAR remain untracked and non-redistributable.
 
-The Java 25 clean build passed 24/24 focused JUnit tests and 11/11 controlled GameTests against exact BGE C53 plus Nibaru C46. Manager revision 29 deployed C6 alongside that exact pair and returned `READY_TO_TEST_VERIFIED`; Slot B remains `UNTESTED`. Compilation, JUnit, GameTests, artifact assembly, dependency resolution, and manager readiness are not a Minecraft runtime pass. Accepted C5's historical pass and BGE C53's independent Slot A failure do not classify C6.
+The Java 25 clean build passed 27/27 focused JUnit tests and 13/13 controlled GameTests against exact BGE C54 and Nibaru C46. Manager revision 37 returned `READY_TO_TEST_VERIFIED / UNTESTED`; Minecraft was not launched for C7. Predecessor C6 booted and co-loaded with BGE C53/C46, but Layer was absent from its selector, so that predecessor result is conservatively `INCONCLUSIVE`; no further pass is inferred. Exact private C5 remains unchanged as accepted and rollback identity, and C7 is not promoted.
 
-## Preconditions
+## C7 / Private Canary 6 runtime matrix
 
-1. Confirm Slot B contains the exact deployed private C6 identity above with runtime result `UNTESTED`; do not rebuild or substitute a same-version JAR.
-2. Confirm exact Slot A BGE C53 `cnm-nibaru-integration-0.6.0-bge-canary53-layer.jar`, SHA-256 `57A4599ADB3F4C58AE7B99A0148A38760FDB3DA59847CA3EC046379DB323B7C8`, and exact Nibaru C46 `more-slabs-stairs-and-walls-4.2.0+26.2-port-canary46-bge-layer-contract.jar`, SHA-256 `3281D110F062DB62E721D838A35CE915CA73DD41AF098A013B52952561CEAE7D`, remain loaded with CNM 2.0.7.
-3. Confirm C6 declares BGE `>=0.5.46-nibaru-cnm-canary1.36-pale-coverage` with no finite maximum and Nibaru `>=4.2.0 <4.3.0-`. A Loader dependency rejection is a failure, not compatibility evidence.
-4. Keep Jake's Build Tools disabled; its separately authorized sprite is already present only in the exact private candidate.
-5. Record only behavior actually observed for C6. Do not infer unreported rows from static checks, startup, C5, or either dependency's result.
-
-## Focused C6 runtime procedure
-
-1. Reach the title screen, enter a disposable test world, and confirm there is no Loader dependency rejection, startup crash, or relevant initialization error with exact C53 and C46 present.
-2. Put exactly two Oak Planks in the offhand shulker, select Step mode, and place two fitting Step geometries into one block space. Confirm the combined geometry forms, consumes one source block total, and leaves one plank.
-3. Repeat the fitting same-block economy check for Horizontal Slab and Vertical Slab where their geometry permits combination. Each combined geometry must consume one source block total; the compatible same-block addition must not consume another full source item.
-4. Place representative Full Block, Slab, Stair, Wall, Vertical Slab, and Step geometry into separate empty spaces. Confirm every successful ordinary placement consumes one source item, any compatible same-block combination consumes no additional full source item, and every failed or incompatible placement consumes nothing.
-5. Exercise all six existing modes through CNM's configured shape input. Move the trowel between inventory slots and save/reload; confirm the selected mode remains server-authoritative and persists, and CNM's familiar overlay does not replace or mutate the trowel.
-6. Mix Oak Log, Oak Wood, Stripped Oak Log, and distinct oxidation and wax-state Copper sources. Confirm exact variants remain separate and only candidates eligible for the selected shaped mode participate in quantity weighting.
-7. Use a shaped-mode palette with no eligible source. Confirm there is no placement, sound, or consumption.
-8. Place representative ordinary and shaped blocks against multiple faces and into water. Confirm orientation, waterlogging, resolved BGE geometry, and delegated normal `BlockItem` placement remain canonical, with one normal placement sound for the actor and nearby players.
-9. Exercise the actual offhand shulker source with multiple eligible quantities and, where available, a second player observing. Confirm selection, consumption, placement, mode state, and synchronization remain server-authoritative without duplication or client-only mutation.
-10. Smoke-check Full mode, the `S  ` / ` II` / `   ` recipe, the authorized trowel icon, and ordinary CNM switching with a non-trowel item.
-11. Inspect `latest.log` for Loader dependency rejection, mixin, registry, CNM overlay, placement, payload, synchronization, or resource errors.
-
-Stop and record `FAIL` or `INCONCLUSIVE` if a fitting combination consumes the second full source block, an ordinary success has wrong consumption, a failed placement consumes anything, exact variants collapse, an ineligible source participates, any of the six modes fails, orientation/waterlogging/delegated placement diverges, mode authority or persistence changes, ordinary CNM behavior regresses, the game crashes, or a relevant Loader, mixin, registry, placement, or synchronization error appears. Do not promote C6 without an explicit reported runtime pass.
+1. Confirm Slot B contains the exact private C7 identity above and Slot A contains exact BGE C54 `7CD96C8153B2DDCA863A96BCF0BBB04680CA6CE92A63A2086A7155441EC9812A` plus exact Nibaru C46 `3281D110F062DB62E721D838A35CE915CA73DD41AF098A013B52952561CEAE7D`. Keep the clean Canary 6 JAR as provenance-only. Stop on a Loader rejection, startup crash, or relevant initialization error.
+2. Exercise the selector and confirm exactly seven modes in order: Full Block, Slab, Stair, Wall, Vertical Slab, Step, Layer. Confirm the original six selections remain stable, Layer follows Step, each icon is the actual resolver-produced representative Oak Planks geometry item, the overlay count/scrolling is dynamic, and selection remains server-authoritative across slot moves and save/reload. Old IDs 0 through 5 must decode unchanged; invalid data must fall back safely.
+3. Mandatory economy regression: in survival, hold the actual trowel in the main hand with exactly two Oak Planks in the offhand shulker and select Layer. Confirm the first Oak Layer consumes one plank; compatible same-block growth from thickness 1 through 4 consumes none; a fifth, wrong-face, and incompatible attempt each consume none; and normal survival breaking returns exactly one Oak Planks. Block adjacent valid placement while testing failures.
+4. Resolve representative ordinary, pillar/axis, and Glazed Layers, then smoke-check Full Block, Slab, Stair, Wall, Vertical Slab, and Step. Confirm exact log/wood, stripped/unstripped, copper oxidation, and wax variants remain distinct; orientation, waterlogging, normal delegated placement, quantity weighting, no-eligible-source failure, persistence, sounds, and multiplayer/client synchronization remain canonical.
+5. Inspect `latest.log` for Loader, catalog, resolver, selector/overlay, placement, payload, synchronization, mixin, registry, or resource errors. Stop and leave C7 unaccepted on any missing/reordered mode, wrong icon/count, mode-authority regression, economy error, adjacent-placement false result, variant collapse, incorrect geometry/state, consumption on failure, crash, or relevant log error. Record only behavior actually observed in Minecraft.

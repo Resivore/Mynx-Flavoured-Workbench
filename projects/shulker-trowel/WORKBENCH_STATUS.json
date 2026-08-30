@@ -15,11 +15,11 @@
     "lifecycle": "TESTING",
     "goals": [
       "Provide a server-authoritative trowel that draws eligible building materials by quantity from the actual offhand shulker and delegates placement through the resolved BlockItem's normal placement path.",
-      "Reuse accepted CNM and Nibaru geometry and input ownership for six persisted modes while preserving exact material identity, consumption, sound, state, and failure semantics."
+      "Reuse accepted CNM, Nibaru, and BGE geometry and input ownership for seven persisted modes while preserving the original six network IDs/order, appending Layer after Step, and preserving exact material identity, consumption, sound, state, and failure semantics."
     ],
     "scope": [
-      "Canonical C6 source for Minecraft 26.2 Fabric, retaining accepted C5 behavior for Full Block, Slab, Stair, Wall, Vertical Slab, and Step modes.",
-      "The narrow CNM 2.0.7 overlay and input seam plus exact Nibaru C46 and Block Geometry Extensions C53 typed geometry resolution, with compatible later BGE releases admitted above the genuine minimum instead of rejected by an unnecessary finite maximum.",
+      "Canonical C7 source for Minecraft 26.2 Fabric, retaining accepted C5 behavior and stable IDs 0 through 5 for Full Block, Slab, Stair, Wall, Vertical Slab, and Step, then adding Layer as ID 6 after Step.",
+      "The narrow CNM 2.0.7 overlay and input seam plus exact Nibaru C46 and Block Geometry Extensions C54 typed geometry resolution, with actual resolved geometry icons, dynamic selector count, and compatible later BGE releases admitted above the genuine minimum instead of rejected by an unnecessary finite maximum.",
       "The private runnable-asset boundary in which only the separately authorized Jake's Build Tools sprite is added to externally retained, non-redistributable private artifacts."
     ],
     "boundaries": {
@@ -27,10 +27,10 @@
         "projects/shulker-trowel"
       ],
       "exclusions": [
-        "Protected Jake's Build Tools bytes, the authorized sprite, the exact private C6 candidate, and the exact accepted/rollback private C5 runnable JAR are not tracked or redistributed.",
+        "Protected Jake's Build Tools bytes, the authorized sprite, the exact private C7/Private Canary 6 candidate, and the exact accepted/rollback private C5 runnable JAR are not tracked or redistributed.",
         "CNM, Nibaru, and Block Geometry Extensions remain separate dependency owners; this project does not bundle them or replace their canonical material and geometry systems.",
         "Registry-name parsing, parallel family tables, variant collapsing, and unrelated block mutation behavior.",
-        "Promotion of runtime-untested C6, mutation of accepted C5 provenance, unrelated runtime-slot changes, and protected gameplay-profile access."
+        "Promotion of runtime-untested C7, mutation of accepted C5 provenance, unrelated runtime-slot changes, and protected gameplay-profile access."
       ]
     },
     "dependencies": [
@@ -38,13 +38,13 @@
         "type": "OTHER",
         "identifier": "minecraft",
         "requirement": "26.2",
-        "reason": "Target game version for the current C6 implementation."
+        "reason": "Target game version for the current C7 implementation."
       },
       {
         "type": "MOD",
         "identifier": "fabricloader",
         "requirement": ">=0.19.3",
-        "reason": "Fabric runtime loader declared by canonical C6."
+        "reason": "Fabric runtime loader declared by canonical C7."
       },
       {
         "type": "MOD",
@@ -67,8 +67,8 @@
       {
         "type": "PROJECT",
         "identifier": "4b2342fc-7bdf-5ba6-9f37-d551109d214c",
-        "requirement": ">=0.5.46-nibaru-cnm-canary1.36-pale-coverage",
-        "reason": "The current candidate resolves provider-owned Vertical Slab and Step geometry through BGE's compatible typed API; focused validation and deployment use exact C53, and no finite maximum is imposed."
+        "requirement": ">=0.6.1-bge-canary54-layer-economy",
+        "reason": "The current candidate resolves provider-owned Vertical Slab, Step, and Layer geometry through BGE's compatible typed API; focused validation and deployment use exact C54, and no finite maximum is imposed."
       },
       {
         "type": "OTHER",
@@ -79,15 +79,15 @@
     ]
   },
   "state": {
-    "milestone": "Canonical C6 (Private Canary 5; embedded 0.1.0-canary5) is deployed as the exact private Slot B candidate alongside exact BGE C53 and Nibaru C46 with manager revision 29 readiness verified and runtime UNTESTED. Its only compatibility changes are dependency/build pins and Canary 5 initialization-banner strings; accepted C5 remains unchanged as both the accepted and rollback identity.",
+    "milestone": "Canonical C7 (Private Canary 6; embedded 0.1.0-canary6) is deployed as the exact private Slot B candidate alongside exact BGE C54 and Nibaru C46 with manager revision 37 readiness verified and runtime UNTESTED. It preserves original mode IDs 0 through 5, appends Layer as ID 6 after Step through BGE's typed seam, uses actual geometry icons and a dynamic selector count, and delegates economy to normal BlockItem placement. Predecessor C6 booted and co-loaded but exposed no Layer mode, so its result is INCONCLUSIVE; accepted C5 remains unchanged as both accepted and rollback identity.",
     "releases": {
       "current": {
-        "version": "C6 (Private Canary 5; embedded 0.1.0-canary5)",
+        "version": "C7 (Private Canary 6; embedded 0.1.0-canary6)",
         "artifact": {
-          "filename": "shulker-trowel-0.1.0-canary5-private.jar",
-          "sha256": "4ab4bb8068f0660e0bbc6ed0cb059666b7112cc0e29744906972e396fc653664"
+          "filename": "shulker-trowel-0.1.0-canary6-private.jar",
+          "sha256": "2aa0e986202a9ff92d8b3e9fe496d8ee54f48f34cff945f4df28bdc87239dce3"
         },
-        "source_commit": "5e1007888a847f00012a413214d51c810efa1b31"
+        "source_commit": "f7f61a0c50aa0fb96a8fd4d2cb79ce7ef1a7e62e"
       },
       "accepted": {
         "version": "C5 (legacy Private Canary 4; embedded 0.1.0-canary4)",
@@ -116,11 +116,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 2,
-    "activity_at": "2026-08-30T08:11:41Z",
-    "updated_at": "2026-08-30T08:11:41Z",
-    "last_codex_at": "2026-08-30T08:11:41Z",
-    "source_commit": "5e1007888a847f00012a413214d51c810efa1b31",
+    "revision": 3,
+    "activity_at": "2026-08-30T14:48:29Z",
+    "updated_at": "2026-08-30T14:48:29Z",
+    "last_codex_at": "2026-08-30T14:48:29Z",
+    "source_commit": "f7f61a0c50aa0fb96a8fd4d2cb79ce7ef1a7e62e",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null

@@ -21,12 +21,12 @@
     "lifecycle": "TESTING",
     "goals": [
       "Extend CNM ShapeMap families with BGE-owned geometry while preserving Nibaru-owned material identity and semantics.",
-      "Provide six-direction Layer geometry for every canonical family without changing accepted Step or Vertical behavior."
+      "Provide six-direction Layer geometry for every canonical family with CNM's one-source combined-placement economy, without changing accepted Step or Vertical behavior."
     ],
     "scope": [
       "Maintain BGE-owned placement, state, rendering, collision, drops, and specialized behavior for generated geometry.",
       "Generate exactly one Layer after Step for each of 311 canonical ShapeMap families, preserving deterministic 933/933 Vertical, Step, and Layer population and guarding generated Layers from recursive Nibaru material discovery.",
-      "Preserve six-direction facing, one-through-four 4-pixel thickness, waterlogging, same-item exposed-face stacking, material pattern and axis behavior, typed DROP_BASE transitions, and profile-driven specialized semantics."
+      "Preserve six-direction facing, one-through-four 4-pixel thickness, waterlogging, free same-item exposed-face growth after the first funded placement, one-full-source break return, material pattern and axis behavior, typed DROP_BASE transitions, profile-driven specialized semantics, and a shared centered Layer item projection."
     ],
     "boundaries": {
       "owned_paths": [
@@ -46,13 +46,13 @@
         "type": "PROJECT",
         "identifier": "680476b9-5336-5422-a575-779f2efd1eff",
         "requirement": "C46",
-        "reason": "BGE C53 consumes Nibaru C46 canonical-parent Layer and typed DROP_BASE contracts."
+        "reason": "BGE C54 consumes Nibaru C46 canonical-parent Layer and typed DROP_BASE contracts."
       },
       {
         "type": "MOD",
         "identifier": "minecraft",
         "requirement": "~26.2",
-        "reason": "BGE C53 targets Minecraft Java 26.2."
+        "reason": "BGE C54 targets Minecraft Java 26.2."
       },
       {
         "type": "MOD",
@@ -64,7 +64,7 @@
         "type": "MOD",
         "identifier": "fabric-api",
         "requirement": "0.156.0+26.2",
-        "reason": "Fabric API used by the current C53 build and runtime implementation."
+        "reason": "Fabric API used by the current C54 build and runtime implementation."
       },
       {
         "type": "MOD",
@@ -76,20 +76,20 @@
         "type": "MOD",
         "identifier": "more_slabs_stairs_and_walls",
         "requirement": "=4.2.0+26.2-port-canary46-bge-layer-contract",
-        "reason": "Provides the exact Nibaru C46 material-profile and Layer contract implementation paired with C53."
+        "reason": "Provides the exact Nibaru C46 material-profile and Layer contract implementation paired with C54."
       }
     ]
   },
   "state": {
-    "milestone": "Exact BGE C53 and its required exact Nibaru C46 contract artifact remain deployed together in Slot A with manager readiness verified. The user's runtime test recorded C53 as FAIL because compatible Layer growth in an already occupied block consumed additional source/layer items; falling-material behavior, grass lifecycle, glass/translucency, the remaining observed Layer geometry behavior, and the one-full-source-block break return were reported correct. Accepted BGE C52 and Nibaru C45 remain disabled as the rollback baseline under the slot-scoped dependency override.",
+    "milestone": "Exact BGE C54 and its required exact Nibaru C46 contract artifact are deployed together in Slot A with manager revision 37 readiness verified and runtime UNTESTED. C54 repairs predecessor C53's demonstrated same-block Layer consumption failure and off-center item presentation while preserving the reported correct one-full-source return, falling-material behavior, grass lifecycle, and glass/translucency. Accepted BGE C52 and Nibaru C45 remain disabled as the unchanged rollback baseline under the slot-scoped dependency override.",
     "releases": {
       "current": {
-        "version": "C53",
+        "version": "C54",
         "artifact": {
-          "filename": "cnm-nibaru-integration-0.6.0-bge-canary53-layer.jar",
-          "sha256": "57a4599adb3f4c58ae7b99a0148a38760fdb3da59847ca3ec046379db323b7c8"
+          "filename": "cnm-nibaru-integration-0.6.1-bge-canary54-layer-economy.jar",
+          "sha256": "7cd96c8153b2ddca863a96bcf0bbb04680ca6ce92a63a2086a7155441ec9812a"
         },
-        "source_commit": "6e9b04ec3947f2514f90775bfeefb599242a4596"
+        "source_commit": "f7f61a0c50aa0fb96a8fd4d2cb79ce7ef1a7e62e"
       },
       "accepted": {
         "version": "C52 (legacy Integration 1.39)",
@@ -113,16 +113,16 @@
     "validation": {
       "build": "CONTROLLED_VALIDATION_PASS",
       "deployment": "READY_TO_TEST_VERIFIED",
-      "runtime": "RUNTIME_FAIL"
+      "runtime": "RUNTIME_UNTESTED"
     },
     "blocker": null
   },
   "synchronization": {
-    "revision": 9,
-    "activity_at": "2026-08-30T08:11:36Z",
-    "updated_at": "2026-08-30T08:11:36Z",
-    "last_codex_at": "2026-08-30T08:11:36Z",
-    "source_commit": "5e1007888a847f00012a413214d51c810efa1b31",
+    "revision": 10,
+    "activity_at": "2026-08-30T14:48:29Z",
+    "updated_at": "2026-08-30T14:48:29Z",
+    "last_codex_at": "2026-08-30T14:48:29Z",
+    "source_commit": "f7f61a0c50aa0fb96a8fd4d2cb79ce7ef1a7e62e",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
