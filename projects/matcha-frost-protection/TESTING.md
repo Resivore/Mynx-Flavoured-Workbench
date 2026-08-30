@@ -2,51 +2,58 @@
 
 ## Current gate
 
-**PLANNED — NO RUNTIME CANDIDATE**
+**CANARY 1 RETAINED — READY FOR CONTROLLED DEPLOYMENT; NOT DEPLOYED / RUNTIME UNTESTED**
 
-Implementation has not started. No source, build, artifact, Canary, deployment,
-or Minecraft runtime evidence exists for this project. Every case below is a
-future runtime check and is not passed.
+Use exact `matcha-frost-protection-0.1.0-canary1.jar`, SHA-256
+`ba7384dc0a325338b9a5922d868de7c4e9242947f3d8372c6cf9684328d92bf6`.
+The clean Java 25 / Gradle 9.5.1 build passed all 13 focused tests against
+Minecraft 26.2 and exact Matcha Flavoured 1.12. This is static evidence only.
+The candidate has not been deployed, launched, or gameplay-tested.
 
-## Future runtime acceptance procedure
+## Runtime acceptance procedure
 
-1. Establish the exact current Matcha Flavoured 26.2 Frost Protection and
-   Blessing of Demeter baselines, including Frost Protection behavior outside
-   powdered-snow traversal, the recipe's ingredients and crafting method, and
-   the existing Frost Walker II and Frost Protection II result enchantments.
-2. Establish ordinary powdered-snow traversal with no Frost Protection
-   equipped, plus the corresponding leather-boots traversal baseline.
-3. Equip Frost Protection I on only the helmet and verify that it is sufficient
-   to prevent the targeted powdered-snow traversal behavior as though the
-   player were wearing leather boots.
-4. Repeat the same Frost Protection I check with only the chestplate, only the
-   leggings, and only the boots enchanted; every individual armor slot must be
-   sufficient.
-5. Repeat representative individual-slot checks with Frost Protection II and
-   Frost Protection III and verify behavior remains consistent with level I.
-6. Remove the only Frost Protection-enchanted armor piece while testing and
-   verify that normal powdered-snow traversal behavior is restored immediately.
-7. Reconfirm that a player with no equipped Frost Protection retains normal
-   powdered-snow behavior and that established Frost Protection behavior
-   outside this project's targeted traversal change remains unchanged.
-8. Craft Blessing of Demeter through its existing recipe and verify that the
-   ingredients, arrangement or input contract, and crafting method are
-   unchanged and still produce the book successfully.
-9. Inspect the resulting book and verify that its complete enchantment list
-   contains exactly Frost Protection III.
-10. Explicitly verify that the existing Frost Walker II and Frost Protection II
-    result enchantments are absent and that no unintended enchantments remain.
-11. Verify that ordinary Frost Walker behavior and unrelated Matcha Flavoured
-    enchantments, recipes, items, and mechanics remain unchanged.
-12. Save and reload the world, then repeat representative armor-slot and crafted
-    book checks to verify that the enchantments and behavior persist correctly.
-13. If the eventual implementation has server-authoritative or multiplayer
-    behavior, repeat representative positive and negative checks on the actual
-    server host in a disposable playtest world with two players as appropriate.
+1. Under explicit Test Slot ownership, deploy the exact retained JAR through
+   the Test Instance Manager and complete its normal readiness verification.
+   Stop if the deployed hash differs or the other slot cannot be preserved.
+2. Launch the exact Minecraft 26.2 Matcha stack, run `/reload`, and confirm no
+   relevant registry, recipe, Mixin, or resource-reload error appears.
+3. Establish the local baselines: ordinary armor with no Frost Protection must
+   sink into powdered snow, while leather boots must provide the normal solid
+   surface when walking without descending.
+4. Prepare one armor item for each of helmet, chestplate, leggings, and boots
+   with `main:freezing_protection` directly present at levels I, II, and III.
+   Matcha intentionally supports normal acquisition only on chest armor, so
+   provision off-slot test items through direct item-component commands or an
+   equivalent controlled method; do not alter Matcha's supported-items tag.
+5. Test all twelve single-piece slot/level combinations. Each must provide the
+   same solid powdered-snow walking surface as leather boots. Deliberately
+   descending must still work like leather boots; this Canary does not add a
+   broader `entityInside` or freezing bypass.
+6. For every slot, remove the only qualifying piece and walk onto adjacent
+   fresh powdered snow. Ordinary traversal must return immediately. Reconfirm
+   the all-zero case with no Frost Protection equipped.
+7. Equip ordinary Frost Walker without Frost Protection. Powdered-snow
+   traversal must remain ordinary, and Frost Walker's normal water behavior
+   must remain unchanged.
+8. Recheck Matcha's existing Frost Protection behavior: freezing damage
+   protection remains level-scaled, and the separate chest-slot Frost
+   Protection III frozen-water exemption remains unchanged.
+9. Craft `blessings:frost_walker_frost_protection` with the existing shaped
+   pattern and inputs. The method, ingredients, arrangement, item name, lore,
+   model, count, and enchanted-book identity must remain unchanged.
+10. Inspect the complete crafted enchantment set. It must be exactly Frost
+    Protection III: `main:freezing_protection` level 3, with Frost Walker absent,
+    Frost Protection II absent, and no additional enchantment.
+11. Save and reload, then repeat representative traversal, removal, ordinary
+    Frost Walker, and crafted-book checks. Confirm unrelated Matcha recipes and
+    content still load normally.
+12. If server-authoritative validation is required, repeat representative
+    positive and negative cases on the actual server host in a disposable
+    playtest world with two players.
 
-Pass only after every applicable case has been observed against the exact
-candidate and stack. Stop and record the exact setup as failed or inconclusive
-if armor-slot coverage differs, normal behavior is not restored, the crafted
-book or recipe contract is wrong, unrelated enchantments regress, or client and
-server observations disagree. Do not infer runtime results from static checks,
-builds, generated assets, or artifacts.
+Pass only after every applicable case is observed against this exact artifact
+and stack. Stop and record the exact setup as failed or inconclusive if slot or
+level behavior differs, ordinary behavior is not restored, deliberate descent
+is blocked, the recipe contract/result is wrong, unrelated behavior regresses,
+or client and server observations disagree. Do not infer runtime results from
+the static suite, build, or retained artifact.
