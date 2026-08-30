@@ -53,6 +53,15 @@ function doPost(e) {
       sheet.getRange(sheetRow, headers.indexOf("Revision") + 1).setValue(result.values["Revision"]);
       SpreadsheetApp.flush();
     }
+    // Sorting is presentation-only and happens after any authoritative row mutation is fully committed.
+    try {
+      sortProjects_(sheet);
+      SpreadsheetApp.flush();
+    } catch (sortError) {
+      if (typeof console !== "undefined" && console.error) {
+        console.error("Project sorting failed: " + String(sortError));
+      }
+    }
     return jsonResponse_({ ok: true, changed: result.changed, event_id: envelope.event_id });
   } catch (error) {
     var message = String(error && error.message ? error.message : error);
@@ -62,6 +71,82 @@ function doPost(e) {
     return jsonResponse_({ ok: false, code: code, error: message });
   } finally {
     if (lockAcquired) lock.releaseLock();
+  }
+}
+
+function sortProjectsNow() {
+  var lock = LockService.getScriptLock();
+  var lockAcquired = lock.tryLock(30000);
+  if (!lockAcquired) throw new Error("receiver mutation lock is busy");
+  try {
+    var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Projects");
+    if (!sheet) throw new Error('Sheet "Projects" was not found.');
+    sortProjects_(sheet);
+    SpreadsheetApp.flush();
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+function sortProjects_(sheet) {
+  var lastRow = sheet.getLastRow();
+  if (lastRow <= 2) return;
+  var lastColumn = sheet.getLastColumn();
+  var headers = sheet.getRange(1, 1, 1, lastColumn).getValues()[0].map(function (value) {
+    return String(value).trim();
+  });
+  var lifecycleColumn = headers.indexOf("Lifecycle") + 1;
+  var activityColumn = headers.indexOf("Activity At") + 1;
+  if (!lifecycleColumn) throw new Error("Lifecycle column not found");
+  if (!activityColumn) throw new Error("Activity At column not found");
+
+  // Hidden helper column used only for sorting.
+  var sortHeader = "__Sort Key";
+  var sortColumn = headers.indexOf(sortHeader) + 1;
+  if (!sortColumn) {
+    sortColumn = lastColumn + 1;
+    sheet.getRange(1, sortColumn).setValue(sortHeader);
+    lastColumn = sortColumn;
+  }
+  var rowCount = lastRow - 1;
+  var lifecycles = sheet.getRange(2, lifecycleColumn, rowCount, 1).getValues();
+  var activityDates = sheet.getRange(2, activityColumn, rowCount, 1).getValues();
+  var lifecycleOrder = {
+    TESTING: 1,
+    ACTIVE: 2,
+    PLANNED: 3,
+    BLOCKED: 4,
+    ACCEPTED: 5,
+    PARKED: 6
+  };
+  var maxTimestamp = 9999999999999;
+  var sortKeys = lifecycles.map(function (row, index) {
+    var lifecycle = String(row[0] || "").trim().toUpperCase();
+    var lifecycleRank = Object.prototype.hasOwnProperty.call(lifecycleOrder, lifecycle) ?
+      lifecycleOrder[lifecycle] : 99;
+    var rawDate = activityDates[index][0];
+    var timestamp = null;
+    if (rawDate instanceof Date) {
+      var dateTime = rawDate.getTime();
+      if (!isNaN(dateTime)) timestamp = dateTime;
+    } else if (rawDate !== "" && rawDate !== null && typeof rawDate !== "undefined") {
+      var parsed = new Date(rawDate).getTime();
+      if (!isNaN(parsed)) timestamp = parsed;
+    }
+    var missingRank = timestamp === null ? 0 : 1;
+    var reverseTimestamp = timestamp === null ? 0 : maxTimestamp - timestamp;
+    var key = String(lifecycleRank).padStart(2, "0") + "|" + String(missingRank) + "|" +
+      String(reverseTimestamp).padStart(13, "0");
+    return [key];
+  });
+  sheet.getRange(2, sortColumn, rowCount, 1).setValues(sortKeys);
+
+  // Sort the entire table width so fields such as Notes cannot detach from their project row.
+  sheet.getRange(2, 1, rowCount, lastColumn).sort({ column: sortColumn, ascending: true });
+  try {
+    sheet.hideColumns(sortColumn);
+  } catch (error) {
+    // Hiding the helper column is cosmetic only.
   }
 }
 

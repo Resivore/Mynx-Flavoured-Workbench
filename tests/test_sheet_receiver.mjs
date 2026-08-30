@@ -52,12 +52,19 @@ function signedRequest(value, secret = "s".repeat(32)) {
   return { postData: { contents: JSON.stringify({ payload, signature: `sha256=${signature}` }) } };
 }
 
-function createReceiverHarness({ inputRows = [], lockSucceeds = true, acceptWrites = true } = {}) {
+function createReceiverHarness({
+  inputRows = [],
+  lockSucceeds = true,
+  acceptWrites = true,
+  sortThrows = false,
+} = {}) {
   const secret = "s".repeat(32);
   const sheetHeaders = headers();
   const data = [sheetHeaders.slice(), ...inputRows.map((row) => row.slice())];
   const state = {
+    hiddenColumns: [],
     lockTimeouts: [],
+    operations: [],
     releaseCount: 0,
     openCount: 0,
     flushCount: 0,
@@ -69,10 +76,22 @@ function createReceiverHarness({ inputRows = [], lockSucceeds = true, acceptWrit
   }
 
   const sheet = {
-    getLastColumn: () => sheetHeaders.length,
+    getLastColumn() {
+      return data.reduce((lastColumn, row) => {
+        for (let column = row.length - 1; column >= 0; column -= 1) {
+          if (row[column] !== "") return Math.max(lastColumn, column + 1);
+        }
+        return lastColumn;
+      }, 0);
+    },
     getLastRow: () => data.length,
     insertRowAfter(afterRow) {
+      state.operations.push({ type: "insertRowAfter", afterRow });
       data.splice(afterRow, 0, new Array(sheetHeaders.length).fill(""));
+    },
+    hideColumns(column) {
+      state.operations.push({ type: "hideColumns", column });
+      state.hiddenColumns.push(column);
     },
     getRange(row, column, rowCount = 1, columnCount = 1) {
       return {
@@ -87,6 +106,43 @@ function createReceiverHarness({ inputRows = [], lockSucceeds = true, acceptWrit
         setValue(value) {
           ensureRow(row - 1);
           data[row - 1][column - 1] = value;
+          state.operations.push({ type: "setValue", row, column, value });
+          return this;
+        },
+        setValues(values) {
+          assert.equal(values.length, rowCount);
+          values.forEach((valuesRow, rowOffset) => {
+            assert.equal(valuesRow.length, columnCount);
+            ensureRow(row - 1 + rowOffset);
+            valuesRow.forEach((value, columnOffset) => {
+              data[row - 1 + rowOffset][column - 1 + columnOffset] = value;
+            });
+          });
+          state.operations.push({ type: "setValues", row, column, rowCount, columnCount });
+          return this;
+        },
+        sort(specification) {
+          const specifications = Array.isArray(specification) ? specification : [specification];
+          const sortedRows = data.slice(row - 1, row - 1 + rowCount).map((dataRow) => (
+            dataRow.slice(column - 1, column - 1 + columnCount)
+          ));
+          sortedRows.sort((left, right) => {
+            for (const item of specifications) {
+              const sortColumn = typeof item === "number" ? item : item.column;
+              const ascending = typeof item === "number" || item.ascending !== false;
+              const leftValue = left[sortColumn - column];
+              const rightValue = right[sortColumn - column];
+              if (leftValue < rightValue) return ascending ? -1 : 1;
+              if (leftValue > rightValue) return ascending ? 1 : -1;
+            }
+            return 0;
+          });
+          sortedRows.forEach((sortedRow, rowOffset) => {
+            sortedRow.forEach((value, columnOffset) => {
+              data[row - 1 + rowOffset][column - 1 + columnOffset] = value;
+            });
+          });
+          state.operations.push({ type: "sort", row, column, rowCount, columnCount, specification });
           return this;
         },
       };
@@ -127,6 +183,7 @@ function createReceiverHarness({ inputRows = [], lockSucceeds = true, acceptWrit
         },
         releaseLock() {
           state.releaseCount += 1;
+          state.operations.push({ type: "releaseLock" });
         },
       }),
     },
@@ -137,6 +194,7 @@ function createReceiverHarness({ inputRows = [], lockSucceeds = true, acceptWrit
       },
       flush() {
         state.flushCount += 1;
+        state.operations.push({ type: "flush" });
       },
     },
     ContentService: {
@@ -152,11 +210,19 @@ function createReceiverHarness({ inputRows = [], lockSucceeds = true, acceptWrit
   vm.createContext(receiverContext);
   vm.runInContext(source, receiverContext);
   vm.runInContext(receiverSource, receiverContext);
+  const sortProjects = receiverContext.sortProjects_;
+  receiverContext.sortProjects_ = (targetSheet) => {
+    state.operations.push({ type: "sortProjects" });
+    if (sortThrows) throw new Error("injected sorting failure");
+    return sortProjects(targetSheet);
+  };
   return {
     data,
     secret,
+    sheet,
     state,
     post: (request) => JSON.parse(receiverContext.doPost(request).text),
+    sortProjects: () => sortProjects(sheet),
   };
 }
 
@@ -175,6 +241,16 @@ function assertUnknownInsert(revision, eventId) {
     assert.equal(result.rows[0][sheetHeaders.indexOf(header)], result.values[header]);
   });
   assert.equal(result.rows[0][sheetHeaders.indexOf("Notes")], "");
+}
+
+function sortableRow(project, lifecycle, activityAt) {
+  const sheetHeaders = headers();
+  const row = sheetHeaders.map((header) => `${project}:${header}`);
+  row[sheetHeaders.indexOf("Project")] = project;
+  row[sheetHeaders.indexOf("Lifecycle")] = lifecycle;
+  row[sheetHeaders.indexOf("Activity At")] = activityAt;
+  row[sheetHeaders.indexOf("Notes")] = `${project}:human note`;
+  return row;
 }
 
 test("unknown UUID at R1 inserts the full canonical record at R1", () => {
@@ -361,6 +437,60 @@ test("formula-leading repository text is written as a literal", () => {
   assert.equal(result.rows[0][headers().indexOf("Milestone")], "'=IMPORTDATA(\"https://example.invalid\")");
 });
 
+test("project sorter preserves the exact lifecycle and Activity At order with complete rows", () => {
+  const sheetHeaders = headers();
+  const inputRows = [
+    sortableRow("unknown", "SOMEDAY", "2026-08-30T00:00:00Z"),
+    sortableRow("testing-old", "TESTING", "2026-08-01T00:00:00Z"),
+    sortableRow("parked", "PARKED", "2026-08-29T00:00:00Z"),
+    sortableRow("testing-missing", "TESTING", ""),
+    sortableRow("accepted", "ACCEPTED", "2026-08-29T00:00:00Z"),
+    sortableRow("testing-new", "TESTING", "2026-08-29T00:00:00Z"),
+    sortableRow("blocked", "BLOCKED", "2026-08-29T00:00:00Z"),
+    sortableRow("planned", "PLANNED", "2026-08-29T00:00:00Z"),
+    sortableRow("active", "ACTIVE", "2026-08-29T00:00:00Z"),
+  ];
+  const originalRows = new Map(inputRows.map((row) => [
+    row[sheetHeaders.indexOf("Project")],
+    row.slice(),
+  ]));
+  const receiver = createReceiverHarness({ inputRows });
+
+  receiver.sortProjects();
+
+  assert.deepEqual(receiver.data[0], [...sheetHeaders, "__Sort Key"]);
+  assert.deepEqual(receiver.state.hiddenColumns, [sheetHeaders.length + 1]);
+  const expectedProjects = [
+    "testing-missing",
+    "testing-new",
+    "testing-old",
+    "active",
+    "planned",
+    "blocked",
+    "accepted",
+    "parked",
+    "unknown",
+  ];
+  assert.deepEqual(
+    receiver.data.slice(1).map((row) => row[sheetHeaders.indexOf("Project")]),
+    expectedProjects,
+  );
+  receiver.data.slice(1).forEach((row) => {
+    const project = row[sheetHeaders.indexOf("Project")];
+    assert.deepEqual(row.slice(0, sheetHeaders.length), originalRows.get(project));
+  });
+  const sortOperation = receiver.state.operations.find((operation) => operation.type === "sort");
+  assert.deepEqual(
+    {
+      row: sortOperation.row,
+      column: sortOperation.column,
+      rowCount: sortOperation.rowCount,
+      columnCount: sortOperation.columnCount,
+    },
+    { row: 2, column: 1, rowCount: inputRows.length, columnCount: sheetHeaders.length + 1 },
+  );
+});
+
 test("doPost authenticates, locks, converges a forward gap, and preserves Notes", () => {
   const first = core.applyToRows(headers(), [], envelope(1, "b".repeat(64)));
   first.rows[0][headers().indexOf("Notes")] = "Human-owned note";
@@ -379,6 +509,37 @@ test("doPost authenticates, locks, converges a forward gap, and preserves Notes"
   assert.equal(receiver.data[1][headers().indexOf("Revision")], 3);
   assert.equal(receiver.data[1][headers().indexOf("Milestone")], "Current authoritative main");
   assert.equal(receiver.data[1][headers().indexOf("Notes")], "Human-owned note");
+  const revisionWriteIndex = receiver.state.operations.findLastIndex((operation) => (
+    operation.type === "setValue" && operation.column === headers().indexOf("Revision") + 1
+  ));
+  const sortProjectsIndex = receiver.state.operations.findIndex((operation) => operation.type === "sortProjects");
+  assert.equal(receiver.state.operations[revisionWriteIndex + 1].type, "flush");
+  assert.ok(sortProjectsIndex > revisionWriteIndex + 1);
+  assert.equal(receiver.state.operations.at(-1).type, "releaseLock");
+});
+
+test("doPost reports a committed change when presentation-only sorting fails", () => {
+  const first = core.applyToRows(headers(), [], envelope(1, "1".repeat(64)));
+  first.rows[0][headers().indexOf("Notes")] = "Still human-owned";
+  const incoming = envelope(4, "2".repeat(64));
+  incoming.record.milestone = "Committed before sorting";
+  const receiver = createReceiverHarness({ inputRows: first.rows, sortThrows: true });
+
+  assert.deepEqual(receiver.post(signedRequest(incoming, receiver.secret)), {
+    ok: true,
+    changed: true,
+    event_id: incoming.event_id,
+  });
+  assert.equal(receiver.data[1][headers().indexOf("Revision")], 4);
+  assert.equal(receiver.data[1][headers().indexOf("Milestone")], "Committed before sorting");
+  assert.equal(receiver.data[1][headers().indexOf("Notes")], "Still human-owned");
+  const revisionWriteIndex = receiver.state.operations.findLastIndex((operation) => (
+    operation.type === "setValue" && operation.column === headers().indexOf("Revision") + 1
+  ));
+  const sortProjectsIndex = receiver.state.operations.findIndex((operation) => operation.type === "sortProjects");
+  assert.equal(receiver.state.operations[revisionWriteIndex + 1].type, "flush");
+  assert.equal(sortProjectsIndex, revisionWriteIndex + 2);
+  assert.equal(receiver.state.operations.at(-1).type, "releaseLock");
 });
 
 test("doPost rejects an invalid HMAC before acquiring the mutation lock", () => {
