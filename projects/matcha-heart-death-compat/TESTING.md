@@ -1,32 +1,44 @@
 # Testing
 
-## Canary 9 combined-session gate
+## Accepted Canary 10 regression baseline
 
-Test only exact Canary 9:
+The physically verified Stack v3 baseline contains only this exact Matcha Death
+Rebalance release:
 
-- version `0.1.8-canary9`
-- file `matcha-heart-death-compat-0.1.8-canary9.jar`
-- SHA-256 `099E7E1D0F8EB5B5A060D029BA89D7328A9CB9D0AF50487B2352BCBCA45A49E8`
-- source `f789b290f72c508a563797b0c543125bc9c468c1`
+- version `0.1.9-canary10`
+- file `matcha-heart-death-compat-0.1.9-canary10.jar`
+- size `34,751` bytes
+- SHA-256 `F86442EC69ED8AFB86D52C97DB2E899223C25A659EF7C19F245E51AC642BBC90`
+- release source `f9c877d14956616bc3f46f3239ac3b512e1ee9c4`
 
-Exact Canary 8 passed all intended Matcha Death Rebalance runtime behavior and
-is preserved as historical evidence; it was not promoted. Exact Canary 5
-remains the disabled accepted rollback in Stack v1. C9 changes only the new
-Resonant Favour component and requested Crystal/Reinforced recipe progression.
+The user explicitly authorized `USER_APPROVED_UNTESTED_PROMOTION` after the
+focused Java 25 / Gradle 9.5.1 offline clean test/build passed 5/5. The broader
+suite compiled and passed 32 tests, but its eight overlay-reference tests could
+not run because the untracked Matcha ZIP was absent; this is not a 40/40 pass.
+Exact C10 remains `RUNTIME_UNTESTED`. Baseline acceptance and physical
+verification are not Minecraft runtime evidence.
 
-Exact C9 is installed in Slot A alongside exact Mossy Stone Canary 4 in Slot B,
-and final manager physical/title re-verification passed. If managed state
-changes before launch, require the normal live verifier to pass again. Build,
-static tests, deployment, and readiness are not Minecraft runtime results.
+Exact Canary 8 (`0.1.7-canary8`, 31,176 bytes, SHA-256
+`CB36D6917DC61B17F2D8B5CEA0D09CB4C1455E04AACA2C186ECAEBE5E9960AA2`,
+source `4707b35150cc4169b2eee68b8683f9dfb27c158e`) retains the user's
+aggregate PASS for all intended behavior and is the closest exact runtime-passed
+rollback. That historical PASS must never be inherited by C10.
 
-## Focused Canary 9 matrix
+C10 changes C9 only by setting
+`DataComponents.ENCHANTMENT_GLINT_OVERRIDE=true` on Resonant Favour's default
+`Item.Properties`. It adds no enchantment and changes no recipe, model, texture,
+Heart, death/recovery, scarcity, loot, advancement, function, or compatibility
+behavior.
+
+## Focused Canary 10 regression matrix
 
 1. Launch Minecraft Java 26.2 with the final combined state and run `/reload`.
    Confirm there is no relevant recipe, codec, Mixin, loot, or compatibility
    error and accepted Dramatic Doors recipes remain available.
 2. In Creative Ingredients/search, confirm one ordinary item named Resonant
    Favour with the supplied cyan sprite and ID
-   `matcha_heart_death_compat:resonant_favour`.
+   `matcha_heart_death_compat:resonant_favour`. Confirm both the default stack
+   and a crafted stack show the enchantment glint while remaining unenchanted.
 3. Craft Resonant Favour as ` e /ede/ e ` using four Echo Shards around Divine
    Favour (`minecraft:nether_star`). Then craft Reinforced Crystal Heart as
    `e e/ere/ e ` using five Echo Shards and the center Resonant Favour.
@@ -49,6 +61,6 @@ static tests, deployment, and readiness are not Minecraft runtime results.
    confirm persistence, Matcha keepInventory, Ancient City Echo Shard
    availability, and unrelated Matcha behavior remain unchanged.
 
-Record Slot A independently as `PASS`, `FAIL`, or `INCONCLUSIVE`, even if Mossy
-Stone Canary 4 has a different result during the same launch. Do not promote C9
-without its explicit runtime result.
+Use this matrix for the next C10 regression session. Record C10 independently as
+`PASS`, `FAIL`, or `INCONCLUSIVE`; do not infer its result from C8, Stack v3
+acceptance, static checks, or another project tested in the same launch.

@@ -2,7 +2,12 @@
 
 ## Candidate and runtime gate
 
-Test BGE C53 only with its paired Nibaru C46 contract artifact in the dedicated Workbench under explicit runtime ownership. C53 is currently not deployed, runtime untested, and not accepted; the clean Java 25 builds, focused checks, and controlled GameTests are not Minecraft runtime evidence. Promotion requires a reported pass of the matrix below with no unresolved material, geometry, or switching regression.
+Exact BGE C53 is installed and readiness-verified in Slot A together with its required exact Nibaru C46 contract artifact:
+
+- `artifacts/cnm-nibaru-integration-0.6.0-bge-canary53-layer.jar`, 258,709 bytes, SHA-256 `57A4599ADB3F4C58AE7B99A0148A38760FDB3DA59847CA3EC046379DB323B7C8`;
+- `../nibaru/artifacts/more-slabs-stairs-and-walls-4.2.0+26.2-port-canary46-bge-layer-contract.jar`, 5,652,769 bytes, SHA-256 `3281D110F062DB62E721D838A35CE915CA73DD41AF098A013B52952561CEAE7D`.
+
+Both artifacts come from release source `6e9b04ec3947f2514f90775bfeefb599242a4596`; no newer `main`-scoped BGE change supersedes them. The manager disabled accepted BGE C52 and Nibaru C45 under the Slot A dependency override and returned `READY_TO_TEST_VERIFIED`. Minecraft has not been launched, Slot A remains `RUNTIME_UNTESTED`, and neither candidate is accepted. The preserved Java 25 build, focused checks, and controlled GameTests are not Minecraft runtime evidence. Promotion requires a reported pass of the matrix below with no unresolved material, geometry, or switching regression.
 
 ## C53 Layer in-game matrix
 

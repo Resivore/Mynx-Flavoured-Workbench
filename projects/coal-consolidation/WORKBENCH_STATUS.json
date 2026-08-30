@@ -89,7 +89,7 @@
     ]
   },
   "state": {
-    "milestone": "C1 is retained after separate legacy and migration 16/16 focused test passes and reproduced byte-for-byte; it remains generated, statically validated, runtime untested, and not deployed.",
+    "milestone": "Exact retained C1 is deployed in Slot B with manager readiness verified against the accepted Minecraft 26.2, Fabric, Fabric API, Matcha, and JEI stack. C1 remains unaccepted and runtime untested; no newer main-scoped project change supersedes its release source.",
     "releases": {
       "current": {
         "version": "0.1.0-canary1",
@@ -106,17 +106,17 @@
     },
     "validation": {
       "build": "STATIC_PASS",
-      "deployment": "NOT_DEPLOYED",
+      "deployment": "READY_TO_TEST_VERIFIED",
       "runtime": "RUNTIME_UNTESTED"
     },
     "blocker": null
   },
   "synchronization": {
-    "revision": 1,
-    "activity_at": "2026-08-28T22:52:51Z",
-    "updated_at": "2026-08-29T22:15:17Z",
-    "last_codex_at": "2026-08-29T22:15:17Z",
-    "source_commit": "ff8ea31e3c5959fdb4a2886b1113071bfda5770f",
+    "revision": 2,
+    "activity_at": "2026-08-30T06:51:09Z",
+    "updated_at": "2026-08-30T06:51:09Z",
+    "last_codex_at": "2026-08-30T06:51:09Z",
+    "source_commit": "8fdfaaf4eddfb4b379ce5d50266f2c40a5294480",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
