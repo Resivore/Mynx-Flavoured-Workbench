@@ -82,7 +82,7 @@ public class FieldGuideEntryScreenMixin {
             return;
         }
 
-        var registry = this.renderedEntity.level().registryAccess().registry(animal.getVariantRegistryKey());
+        var registry = this.renderedEntity.level().registryAccess().lookup(animal.getVariantRegistryKey());
         if (registry.isEmpty()) return;
 
         Set<Identifier> claimed = new HashSet<>();
@@ -97,7 +97,7 @@ public class FieldGuideEntryScreenMixin {
         return biomes.stream()
                 .map(Holder::unwrapKey)
                 .filter(Optional::isPresent)
-                .map(key -> key.get().location())
+                .map(key -> key.get().identifier())
                 .distinct()
                 .toList();
     }

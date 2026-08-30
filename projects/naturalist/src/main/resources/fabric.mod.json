@@ -31,6 +31,7 @@
     "naturalist.mixins.json",
     "naturalist.fieldguide.mixins.json"
   ],
+  "accessWidener": "naturalist.accesswidener",
   "depends": {
     "fabricloader": ">=${fabric_loader_version}",
     "fabric-api": ">=${fabric_api_version}",

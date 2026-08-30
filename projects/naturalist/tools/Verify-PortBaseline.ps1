@@ -91,6 +91,7 @@ Assert-Equal $metadata.depends.minecraft '~${minecraft_version}' 'Fabric metadat
 Assert-Equal $metadata.depends.java '>=25' 'Fabric metadata Java constraint'
 Assert-SetEqual @($metadata.depends.PSObject.Properties.Name) @('fabricloader', 'fabric-api', 'minecraft', 'java') 'Fabric required dependency ids'
 Assert-SetEqual @($metadata.suggests.PSObject.Properties.Name) @('lambdynlights') 'Fabric suggested dependency ids'
+Assert-Equal $metadata.accessWidener 'naturalist.accesswidener' 'Fabric access widener declaration'
 
 $expectedEntities = @(
     'alligator', 'anglerfish', 'ant', 'bass', 'bear', 'bird', 'black_bear', 'blobfish',
@@ -154,7 +155,20 @@ $authoredResourceFiles = @(
 Assert-SetEqual $authoredResourceFiles @(
     'data/minecraft/tags/entity_type/can_equip_saddle.json'
     'fabric.mod.json'
+    'naturalist.accesswidener'
 ) 'authored resource files'
+
+$accessWidenerPath = Join-Path $authoredResourceRoot 'naturalist.accesswidener'
+$accessWidenerEntries = @(
+    Get-Content -LiteralPath $accessWidenerPath |
+        ForEach-Object { $_.Trim() } |
+        Where-Object { $_ -ne '' -and -not $_.StartsWith('#') } |
+        ForEach-Object { $_ -replace '\s+', ' ' }
+)
+Assert-SetEqual $accessWidenerEntries @(
+    'accessWidener v2 official'
+    'accessible field net/minecraft/world/entity/Entity wasTouchingWater Z'
+) 'authored Minecraft 26.2 access widener entries'
 
 $localProtectedFiles = @()
 foreach ($relativePath in @('common\src\main\resources', 'fabric\src\main\resources')) {
@@ -185,8 +199,7 @@ $trackedProtectedFiles = @($trackedProjectFiles | Where-Object {
     $_ -match '/(?:common|fabric)/src/main/resources/' -or
     $_ -match '/build/generated/original-resources/' -or
     $_ -match '/(?:assets|data)/naturalist/' -or
-    $_ -match '/naturalist(?:\.fieldguide)?\.mixins\.json$' -or
-    $_ -match '/naturalist\.accesswidener$'
+    $_ -match '/naturalist(?:\.fieldguide)?\.mixins\.json$'
 })
 Assert-Empty $trackedProtectedFiles 'tracked protected upstream resource corpus'
 

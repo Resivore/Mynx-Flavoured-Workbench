@@ -13,10 +13,12 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EntitySpawnReason;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomData;
@@ -40,8 +42,8 @@ public class HedgehogItem extends CaughtMobWithVariantsItem {
             "enchantment.minecraft.unbreaking", "enchantment.minecraft.thorns", "enchantment.minecraft.punch",
             "enchantment.minecraft.flame", "enchantment.minecraft.looting", "enchantment.minecraft.loyalty");
 
-    public HedgehogItem(Supplier<? extends EntityType<?>> entitySupplier, Supplier<? extends Fluid> fluidSupplier, Supplier<? extends SoundEvent> soundSupplier, String tooltipPrefix, String[] variantNames, Properties properties) {
-        super(entitySupplier, fluidSupplier, soundSupplier, tooltipPrefix, variantNames, properties);
+    public HedgehogItem(Supplier<? extends EntityType<? extends Mob>> entitySupplier, Supplier<? extends Fluid> fluidSupplier, Supplier<? extends SoundEvent> soundSupplier, String tooltipPrefix, String[] variantNames, Properties properties) {
+        super(entitySupplier, fluidSupplier, soundSupplier, tooltipPrefix, variantNames, properties.enchantable(1));
     }
 
     public static boolean isThrowEnchantment(Enchantment enchantment) {
@@ -51,7 +53,7 @@ public class HedgehogItem extends CaughtMobWithVariantsItem {
 
     private static float getStoredHealth(ItemStack stack) {
         CompoundTag tag = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
-        return tag.contains("Health", 99) ? tag.getFloat("Health") : MAX_HEALTH;
+        return tag.getFloatOr("Health", MAX_HEALTH);
     }
 
     @Override
@@ -70,17 +72,7 @@ public class HedgehogItem extends CaughtMobWithVariantsItem {
     }
 
     @Override
-    public int getEnchantmentValue() {
-        return 1;
-    }
-
-    @Override
-    public boolean isEnchantable(@NotNull ItemStack stack) {
-        return stack.getMaxStackSize() == 1;
-    }
-
-    @Override
-    public void checkExtraContent(@Nullable Player player, @NotNull Level level, @NotNull ItemStack containerStack, @NotNull BlockPos pos) {
+    public void checkExtraContent(@Nullable LivingEntity user, @NotNull Level level, @NotNull ItemStack containerStack, @NotNull BlockPos pos) {
         if (level instanceof ServerLevel serverLevel) {
             Entity entity = NaturalistEntityTypes.HEDGEHOG.get().spawn(serverLevel, containerStack, null, pos, EntitySpawnReason.BUCKET, true, false);
             if (entity instanceof Hedgehog hedgehog) {
@@ -89,23 +81,23 @@ public class HedgehogItem extends CaughtMobWithVariantsItem {
                 hedgehog.setFromHand(true);
                 hedgehog.setThrowEnchantments(containerStack.getOrDefault(DataComponents.ENCHANTMENTS, ItemEnchantments.EMPTY));
             }
-            level.gameEvent(player, GameEvent.ENTITY_PLACE, pos);
+            level.gameEvent(user, GameEvent.ENTITY_PLACE, pos);
         }
     }
 
     @Override
-    public @NotNull InteractionResultHolder<ItemStack> use(@NotNull Level level, @NotNull Player player, @NotNull InteractionHand hand) {
+    public @NotNull InteractionResult use(@NotNull Level level, @NotNull Player player, @NotNull InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
         if (getPlayerPOVHitResult(level, player, ClipContext.Fluid.NONE).getType() != HitResult.Type.MISS) {
             return super.use(level, player, hand);
         }
         if (level instanceof ServerLevel serverLevel) {
-            Hedgehog hedgehog = NaturalistEntityTypes.HEDGEHOG.get().create(serverLevel);
+            Hedgehog hedgehog = NaturalistEntityTypes.HEDGEHOG.get().create(serverLevel, EntitySpawnReason.SPAWN_ITEM_USE);
             if (hedgehog == null) {
-                return InteractionResultHolder.pass(stack);
+                return InteractionResult.PASS;
             }
             Vec3 look = player.getLookAngle();
-            hedgehog.moveTo(player.getX() + look.x * 0.6, player.getEyeY() - 0.3 + look.y * 0.6, player.getZ() + look.z * 0.6, player.getYRot(), 0.0F);
+            hedgehog.snapTo(player.getX() + look.x * 0.6, player.getEyeY() - 0.3 + look.y * 0.6, player.getZ() + look.z * 0.6, player.getYRot(), 0.0F);
             hedgehog.loadFromHandTag(stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag());
             if (stack.has(DataComponents.CUSTOM_NAME)) {
                 hedgehog.setCustomName(stack.getHoverName());
@@ -120,10 +112,10 @@ public class HedgehogItem extends CaughtMobWithVariantsItem {
         }
         level.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.ARROW_SHOOT, SoundSource.NEUTRAL, 0.5F, 0.9F);
         player.awardStat(Stats.ITEM_USED.get(this));
-        player.getCooldowns().addCooldown(this, 20);
+        player.getCooldowns().addCooldown(stack, 20);
         if (!player.getAbilities().instabuild) {
             stack.shrink(1);
         }
-        return InteractionResultHolder.sidedSuccess(stack, level.isClientSide());
+        return level.isClientSide() ? InteractionResult.SUCCESS : InteractionResult.CONSUME;
     }
 }

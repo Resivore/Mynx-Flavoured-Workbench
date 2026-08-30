@@ -11,7 +11,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.Containers;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityReference;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
@@ -61,7 +61,7 @@ public class AntHillBlock extends Block implements EntityBlock {
     @Override
     @SuppressWarnings("unchecked")
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(@NotNull Level level, @NotNull BlockState state, @NotNull BlockEntityType<T> type) {
-        if (level.isClientSide || !state.getValue(OPEN) || type != NaturalistBlockEntities.ANT_HILL.get()) {
+        if (level.isClientSide() || !state.getValue(OPEN) || type != NaturalistBlockEntities.ANT_HILL.get()) {
             return null;
         }
         return (BlockEntityTicker<T>) (BlockEntityTicker<AntHillBlockEntity>) AntHillBlockEntity::serverTick;
@@ -106,14 +106,6 @@ public class AntHillBlock extends Block implements EntityBlock {
             }
         }
         return super.playerWillDestroy(level, pos, state, player);
-    }
-
-    @Override
-    protected void onRemove(@NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos, @NotNull BlockState newState, boolean movedByPiston) {
-        if (!state.is(newState.getBlock()) && level.getBlockEntity(pos) instanceof AntHillBlockEntity hill) {
-            Containers.dropContents(level, pos, hill.getStorage());
-        }
-        super.onRemove(state, level, pos, newState, movedByPiston);
     }
 
     public static boolean canAntEnter(LevelReader level, BlockPos pos, @Nullable UUID antOwner) {
@@ -174,11 +166,11 @@ public class AntHillBlock extends Block implements EntityBlock {
 
     @Nullable
     public static Ant releaseAnt(ServerLevel level, BlockPos pos, RandomSource random, @Nullable UUID owner) {
-        Ant ant = NaturalistEntityTypes.ANT.get().create(level);
+        Ant ant = NaturalistEntityTypes.ANT.get().create(level, EntitySpawnReason.TRIGGERED);
         if (ant == null) {
             return null;
         }
-        ant.moveTo(pos.getX() + 0.25D + random.nextDouble() * 0.5D, pos.getY(), pos.getZ() + 0.25D + random.nextDouble() * 0.5D, random.nextFloat() * 360.0F, 0.0F);
+        ant.snapTo(pos.getX() + 0.25D + random.nextDouble() * 0.5D, pos.getY(), pos.getZ() + 0.25D + random.nextDouble() * 0.5D, random.nextFloat() * 360.0F, 0.0F);
         ant.startHillCooldown();
         if (owner != null) {
             ant.setTame(true, false);

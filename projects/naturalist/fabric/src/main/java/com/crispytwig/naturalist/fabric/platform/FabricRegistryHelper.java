@@ -15,7 +15,7 @@ import java.util.function.Supplier;
 public class FabricRegistryHelper implements IRegistryHelper {
     @Override
     public SpawnEggItem createSpawnEgg(Supplier<? extends EntityType<? extends Mob>> type, int primaryColor, int secondaryColor, Item.Properties properties) {
-        return new SpawnEggItem(type.get(), primaryColor, secondaryColor, properties);
+        return new SpawnEggItem(properties.spawnEgg(type.get()));
     }
 
     @Override

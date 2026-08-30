@@ -7,11 +7,10 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.level.block.state.properties.RotationSegment;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.ItemInteractionResult;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.DyeColor;
@@ -86,19 +85,17 @@ public class SnailShellBlock extends Block implements EntityBlock {
         CustomData data = context.getItemInHand().get(DataComponents.CUSTOM_DATA);
         if (data != null) {
             CompoundTag tag = data.copyTag();
-            if (tag.contains("Color", Tag.TAG_ANY_NUMERIC)) {
-                color = DyeColor.byId(tag.getInt("Color"));
-            }
+            color = tag.getInt("Color").map(DyeColor::byId).orElse(DyeColor.BROWN);
         }
         return this.defaultBlockState().setValue(COLOR, color).setValue(ROTATION, RotationSegment.convertToSegment(context.getRotation()));
     }
 
     @Override
-    protected @NotNull ItemInteractionResult useItemOn(@NotNull ItemStack stack, @NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos, @NotNull Player player, @NotNull InteractionHand hand, @NotNull BlockHitResult hitResult) {
+    protected @NotNull InteractionResult useItemOn(@NotNull ItemStack stack, @NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos, @NotNull Player player, @NotNull InteractionHand hand, @NotNull BlockHitResult hitResult) {
         if (!(level.getBlockEntity(pos) instanceof SnailShellBlockEntity shell) || getPottedBlock(stack) == null || !shell.getFlower().isEmpty()) {
-            return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+            return InteractionResult.TRY_WITH_EMPTY_HAND;
         }
-        if (!level.isClientSide) {
+        if (!level.isClientSide()) {
             shell.setFlower(stack.copyWithCount(1));
             if (!player.getAbilities().instabuild) {
                 stack.shrink(1);
@@ -107,7 +104,7 @@ public class SnailShellBlock extends Block implements EntityBlock {
             level.playSound(null, pos, soundType.getPlaceSound(), SoundSource.BLOCKS, (soundType.getVolume() + 1.0F) / 2.0F, soundType.getPitch() * 0.8F);
             level.gameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Context.of(player, state));
         }
-        return ItemInteractionResult.sidedSuccess(level.isClientSide);
+        return InteractionResult.SUCCESS;
     }
 
     @Override

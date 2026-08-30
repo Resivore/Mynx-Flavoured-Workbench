@@ -30,7 +30,7 @@ public abstract class FoxMixin extends Animal {
     @Inject(method = "finalizeSpawn", at = @At("RETURN"))
     @SuppressWarnings("unused")
     private void naturalist$carryWildOnes(ServerLevelAccessor level, DifficultyInstance difficulty, EntitySpawnReason spawnType, @Nullable SpawnGroupData spawnGroupData, CallbackInfoReturnable<SpawnGroupData> cir) {
-        if (spawnType != EntitySpawnReason.NATURAL && spawnType != EntitySpawnReason.CHUNK_GENERATION && spawnType != EntitySpawnReason.SPAWN_EGG) {
+        if (spawnType != EntitySpawnReason.NATURAL && spawnType != EntitySpawnReason.CHUNK_GENERATION && spawnType != EntitySpawnReason.SPAWN_ITEM_USE) {
             return;
         }
         if (this.isBaby() || this.random.nextFloat() >= naturalist$WILD_ONES_CHANCE) {

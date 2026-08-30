@@ -48,7 +48,7 @@ public class GlowGoopBlock extends Block implements SimpleWaterloggedBlock {
     }
 
     private void decreaseGoop(Level level, BlockPos pos, BlockState state) {
-        level.playSound(null, pos, SoundEvents.HONEY_BLOCK_BREAK, SoundSource.BLOCKS, 0.7F, 0.9F + level.random.nextFloat() * 0.2F);
+        level.playSound(null, pos, SoundEvents.HONEY_BLOCK_BREAK, SoundSource.BLOCKS, 0.7F, 0.9F + level.getRandom().nextFloat() * 0.2F);
         int i = state.getValue(GOOP);
         if (i <= 1) {
             level.destroyBlock(pos, false);
@@ -64,8 +64,8 @@ public class GlowGoopBlock extends Block implements SimpleWaterloggedBlock {
     }
 
     @Override
-    public @NotNull ItemStack getCloneItemStack(@NotNull LevelReader level, @NotNull BlockPos pos, @NotNull BlockState state) {
-        return NaturalistRegistry.GLOW_GOOP.get().asItem().getDefaultInstance();
+    public @NotNull ItemStack getCloneItemStack(@NotNull LevelReader level, @NotNull BlockPos pos, @NotNull BlockState state, boolean includeData) {
+        return NaturalistRegistry.GLOW_GOOP.get().getDefaultInstance();
     }
 
     @Override

@@ -4,8 +4,10 @@
 /.idea/
 /*.iml
 
-# Protected Naturalist resources may exist only in generated/ignored build output.
+# Protected Naturalist resources and retained private Canaries may exist only
+# in generated/ignored project output.
 /generated/
 /extracted-resources/
+/test-builds/private/
 /common/src/main/resources/
 /fabric/src/main/resources/

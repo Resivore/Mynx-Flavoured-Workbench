@@ -127,4 +127,25 @@ Assert-Matches $whale 'WhaleSurfaceGoal' 'whale surfacing goal remains registere
 Assert-Matches $whale 'WhaleDiveGoal' 'whale diving goal remains registered'
 Assert-Matches $whale 'WhaleSeekDeeperWaterGoal' 'whale deep-water recovery goal remains registered'
 
+$starfish = Get-Content -LiteralPath (Join-Path $projectRoot `
+    'common\src\main\java\com\crispytwig\naturalist\server\block\StarfishBlock.java') -Raw
+Assert-Matches $starfish 'class\s+StarfishBlock\s+extends\s+MultifaceBlock' `
+    'starfish retains multiface attachment behavior'
+if ($starfish -match '\b(?:WATERLOGGED|createBlockStateDefinition|getStateForPlacement|getFluidState|updateShape)\b') {
+    throw 'Starfish must inherit Minecraft 26.2 MultifaceBlock waterlogging without duplicate properties or callbacks.'
+}
+Write-Host 'PASS  starfish inherits 26.2 multiface waterlogging without duplicate state registration'
+
+$bugNet = Get-Content -LiteralPath (Join-Path $projectRoot `
+    'common\src\main\java\com\crispytwig\naturalist\server\item\BugNetItem.java') -Raw
+Assert-Matches $bugNet '(?s)recipe\.isPresent\s*\(\s*\).*interactionTarget\.discard\s*\(\s*\)\s*;\s*return\s+InteractionResult\.SUCCESS_SERVER\s*;' `
+    'server-authoritative bug-net capture preserves arm-swing broadcast'
+
+$bucketItem = Get-Content -LiteralPath (Join-Path $projectRoot `
+    'common\src\main\java\com\crispytwig\naturalist\server\item\NaturalistBucketItem.java') -Raw
+Assert-Matches $bucketItem '(?s)useOn\s*\(.*ItemStack\s+replacement\s*=\s*release\s*\(.*player\.setItemInHand\s*\(\s*context\.getHand\s*\(\s*\)\s*,\s*replacement\s*\)' `
+    'bucket use-on path explicitly installs the empty replacement stack'
+Assert-Matches $bucketItem '(?s)allowMidWater.*InteractionResult\.SUCCESS\.heldItemTransformedTo\s*\(\s*release\s*\(' `
+    'mid-water bucket release retains held-item transformation'
+
 Write-Host 'Entity behavior migration static verification passed.'

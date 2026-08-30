@@ -1,7 +1,10 @@
 [CmdletBinding()]
 param(
     [Parameter()]
-    [string]$OriginalJar
+    [string]$OriginalJar,
+
+    [Parameter()]
+    [string]$LegacyMinecraftJar
 )
 
 $ErrorActionPreference = 'Stop'
@@ -9,6 +12,14 @@ $ErrorActionPreference = 'Stop'
 $projectRoot = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
 $expectedJarName = 'naturalist-2.0.3-fabric-1.21.1.jar'
 $expectedJarSha256 = '3d16c975326e0df24486d44d8010d9e614fc9efdf891864de7b5a0efedfc12f9'
+$legacySpawnEggResourceHashes = [ordered]@{
+    'assets/minecraft/models/item/template_spawn_egg.json' =
+        '2aa28f3dfc96c06980df9a6242eca2a375b18e9c5f4fa68771de3c88dcbe4e1f'
+    'assets/minecraft/textures/item/spawn_egg.png' =
+        'f6b985a0094408770f4b0ba919c2cb6365c6e8b65080334b33617518be2089c1'
+    'assets/minecraft/textures/item/spawn_egg_overlay.png' =
+        'df0075d5081a1f49f0f4de1e1f004764446ecb3233416f7cd027c58823190747'
+}
 
 function Assert-Equal {
     param($Actual, $Expected, [string]$Label)
@@ -46,6 +57,15 @@ function Assert-NoMatch {
     Write-Host "PASS  $Label"
 }
 
+function Assert-Empty {
+    param([object[]]$Values, [string]$Label)
+    $actual = @($Values | Where-Object { $null -ne $_ -and "$_" -ne '' })
+    if ($actual.Count -ne 0) {
+        throw "$Label must be empty, but found: $($actual -join ', ')"
+    }
+    Write-Host "PASS  $Label is empty"
+}
+
 function Read-ZipJson {
     param([IO.Compression.ZipArchive]$Zip, [string]$Path)
     $entry = $Zip.GetEntry($Path)
@@ -58,6 +78,23 @@ function Read-ZipJson {
     }
     finally {
         $reader.Dispose()
+    }
+}
+
+function Get-ZipEntrySha256 {
+    param([IO.Compression.ZipArchive]$Zip, [string]$Path)
+    $entry = $Zip.GetEntry($Path)
+    if ($null -eq $entry) {
+        throw "Missing legacy Minecraft entry: $Path"
+    }
+    $sha256 = [Security.Cryptography.SHA256]::Create()
+    $stream = $entry.Open()
+    try {
+        return [Convert]::ToHexString($sha256.ComputeHash($stream)).ToLowerInvariant()
+    }
+    finally {
+        $stream.Dispose()
+        $sha256.Dispose()
     }
 }
 
@@ -77,6 +114,54 @@ if ([string]::IsNullOrWhiteSpace($OriginalJar) -or -not (Test-Path -LiteralPath 
 $OriginalJar = (Resolve-Path -LiteralPath $OriginalJar).Path
 Assert-Equal (Get-FileHash -LiteralPath $OriginalJar -Algorithm SHA256).Hash.ToLowerInvariant() `
     $expectedJarSha256 'original JAR SHA-256'
+
+if ([string]::IsNullOrWhiteSpace($LegacyMinecraftJar) -or
+        -not (Test-Path -LiteralPath $LegacyMinecraftJar -PathType Leaf)) {
+    throw 'Minecraft 1.21.1 client JAR not found. Pass -LegacyMinecraftJar with its absolute path.'
+}
+$LegacyMinecraftJar = (Resolve-Path -LiteralPath $LegacyMinecraftJar).Path
+
+$registrySource = Get-Content -LiteralPath (Join-Path $projectRoot `
+    'common\src\main\java\com\crispytwig\naturalist\registry\NaturalistRegistry.java') -Raw
+$spawnEggPattern = 'registerItem\("(?<id>[a-z0-9_]+_spawn_egg)",\s*properties\s*->\s*' +
+    'Services\.REGISTRY\.createSpawnEgg\([^,]+,\s*(?<primary>\d+),\s*' +
+    '(?<secondary>\d+),\s*properties\)\)'
+$spawnEggMatches = [regex]::Matches($registrySource, $spawnEggPattern,
+    [Text.RegularExpressions.RegexOptions]::Singleline)
+Assert-Equal $spawnEggMatches.Count 47 'spawn-egg color registration count'
+$spawnEggColors = [ordered]@{}
+foreach ($match in $spawnEggMatches) {
+    $itemId = $match.Groups['id'].Value
+    if ($spawnEggColors.Contains($itemId)) {
+        throw "Duplicate spawn-egg color registration: $itemId"
+    }
+    $primaryRgb = [int]$match.Groups['primary'].Value
+    $secondaryRgb = [int]$match.Groups['secondary'].Value
+    foreach ($color in @($primaryRgb, $secondaryRgb)) {
+        if ($color -lt 0 -or $color -gt 0xFFFFFF) {
+            throw "Spawn-egg RGB value is outside 24-bit range for ${itemId}: $color"
+        }
+    }
+    $spawnEggColors[$itemId] = [pscustomobject]@{
+        PrimaryRgb = $primaryRgb
+        SecondaryRgb = $secondaryRgb
+        PrimaryArgb = $primaryRgb - 0x1000000
+        SecondaryArgb = $secondaryRgb - 0x1000000
+    }
+}
+$spawnEggIds = @($spawnEggColors.Keys)
+
+Add-Type -AssemblyName System.IO.Compression.FileSystem -ErrorAction SilentlyContinue
+$legacyZip = [IO.Compression.ZipFile]::OpenRead($LegacyMinecraftJar)
+try {
+    foreach ($resourcePath in $legacySpawnEggResourceHashes.Keys) {
+        Assert-Equal (Get-ZipEntrySha256 $legacyZip $resourcePath) `
+            $legacySpawnEggResourceHashes[$resourcePath] "$resourcePath SHA-256"
+    }
+}
+finally {
+    $legacyZip.Dispose()
+}
 
 $wrappedItemIds = @(
     'catfish_bucket', 'bass_bucket', 'duck_bucket', 'crab', 'caterpillar', 'butterfly',
@@ -104,6 +189,21 @@ $dyeNames = @(
 Add-Type -AssemblyName System.IO.Compression.FileSystem -ErrorAction SilentlyContinue
 $zip = [IO.Compression.ZipFile]::OpenRead($OriginalJar)
 try {
+    $spawnEggModels = @($zip.Entries | Where-Object {
+        $_.FullName -match '^assets/naturalist/models/item/([a-z0-9_]+_spawn_egg)\.json$'
+    })
+    Assert-Equal $spawnEggModels.Count 47 'protected spawn-egg model count'
+    $protectedSpawnEggIds = @($spawnEggModels | ForEach-Object {
+        [regex]::Match($_.FullName,
+            '^assets/naturalist/models/item/([a-z0-9_]+_spawn_egg)\.json$').Groups[1].Value
+    })
+    Assert-SetEqual $protectedSpawnEggIds $spawnEggIds 'protected spawn-egg model ids'
+    foreach ($itemId in $spawnEggIds) {
+        $spawnEggModel = Read-ZipJson $zip "assets/naturalist/models/item/$itemId.json"
+        Assert-Equal ([string]$spawnEggModel.parent) 'minecraft:item/template_spawn_egg' `
+            "$itemId legacy template parent"
+    }
+
     $variantModels = @($zip.Entries | Where-Object {
         $_.FullName -match '^assets/naturalist/models/item/variant/.+\.json$'
     })
@@ -185,12 +285,15 @@ finally {
     $zip.Dispose()
 }
 
-$registrySource = Get-Content -LiteralPath (Join-Path $projectRoot `
-    'common\src\main\java\com\crispytwig\naturalist\registry\NaturalistRegistry.java') -Raw
 foreach ($itemId in $wrappedItemIds) {
-    Assert-Match $registrySource ('ITEMS\.register\("' + [regex]::Escape($itemId) + '"') `
+    Assert-Match $registrySource ('registerItem\("' + [regex]::Escape($itemId) + '"') `
         "wrapped item registration $itemId"
 }
+$fabricRegistryHelperSource = Get-Content -LiteralPath (Join-Path $projectRoot `
+    'fabric\src\main\java\com\crispytwig\naturalist\fabric\platform\FabricRegistryHelper.java') -Raw
+Assert-Match $fabricRegistryHelperSource `
+    'new\s+SpawnEggItem\(properties\.spawnEgg\(type\.get\(\)\)\)' `
+    '26.2 spawn-egg entity binding'
 
 $variantSource = Get-Content -LiteralPath (Join-Path $projectRoot `
     'common\src\main\java\com\crispytwig\naturalist\client\model\item\VariantItemModels.java') -Raw
@@ -281,27 +384,93 @@ if (-not $listMatch.Success) {
 }
 $generatedIds = @([regex]::Matches($listMatch.Groups['items'].Value, "'([a-z0-9_]+)'") |
     ForEach-Object { $_.Groups[1].Value })
-Assert-SetEqual $generatedIds $compatibilityItemIds 'generated 26.2 client-item root ids'
+Assert-SetEqual $generatedIds $compatibilityItemIds 'generated dynamic client-item root ids'
 Assert-Match $buildSource "assets/naturalist/items/\$\{itemId\}\.json" `
     'generated client-item definition path'
 Assert-Match $buildSource 'model:\s*"naturalist:item/\$\{itemId\}"' `
     'generated client-item legacy cuboid reference'
+Assert-Match $buildSource "providers\.gradleProperty\('naturalistLegacyMinecraftJar'\)" `
+    'explicit legacy Minecraft input property'
+foreach ($resourceHash in $legacySpawnEggResourceHashes.Values) {
+    Assert-Match $buildSource ([regex]::Escape($resourceHash)) `
+        "legacy spawn-egg resource hash $resourceHash"
+}
+Assert-Match $buildSource 'stageLegacySpawnEggResources' `
+    'verified legacy spawn-egg staging task'
+Assert-Match $buildSource 'spawnEggColors\.size\(\)\s*!=\s*47' `
+    '47-entry spawn-egg source parser guard'
+Assert-Match $buildSource 'value:\s*primaryArgb[\s\S]+value:\s*secondaryArgb' `
+    'primary-before-secondary tint generation'
 Assert-Match $buildSource 'processResources[\s\S]+generateItemModelCompatibilityResources' `
     'client-item generator processResources wiring'
+Assert-Match $buildSource 'processResources[\s\S]+stageLegacySpawnEggResources' `
+    'legacy spawn-egg processResources wiring'
+Assert-Match $buildSource 'sourcesJar[\s\S]+stageLegacySpawnEggResources' `
+    'legacy spawn-egg sourcesJar wiring'
 
 $generatedRoot = Join-Path $projectRoot 'build\generated\item-model-compat\assets\naturalist\items'
 if (-not (Test-Path -LiteralPath $generatedRoot -PathType Container)) {
     throw 'Generated client-item roots are absent. Run the Gradle generateItemModelCompatibilityResources task first.'
 }
 $generatedFiles = @(Get-ChildItem -LiteralPath $generatedRoot -File -Filter '*.json')
-Assert-SetEqual @($generatedFiles.BaseName) $compatibilityItemIds 'generated client-item files'
-foreach ($file in $generatedFiles) {
+Assert-SetEqual @($generatedFiles.BaseName) @($compatibilityItemIds + $spawnEggIds) `
+    'generated client-item files'
+foreach ($itemId in $compatibilityItemIds) {
+    $file = Get-Item -LiteralPath (Join-Path $generatedRoot "$itemId.json")
     $json = Get-Content -LiteralPath $file.FullName -Raw | ConvertFrom-Json
-    Assert-Equal ([string]$json.model.type) 'minecraft:model' "$($file.BaseName) root model type"
-    Assert-Equal ([string]$json.model.model) "naturalist:item/$($file.BaseName)" `
-        "$($file.BaseName) root cuboid model"
+    Assert-Equal ([string]$json.model.type) 'minecraft:model' "$itemId root model type"
+    Assert-Equal ([string]$json.model.model) "naturalist:item/$itemId" `
+        "$itemId root cuboid model"
+    $tintCount = if ($null -eq $json.model.tints) { 0 } else { @($json.model.tints).Count }
+    Assert-Equal $tintCount 0 "$itemId root tint count"
 }
+foreach ($itemId in $spawnEggIds) {
+    $file = Get-Item -LiteralPath (Join-Path $generatedRoot "$itemId.json")
+    $json = Get-Content -LiteralPath $file.FullName -Raw | ConvertFrom-Json
+    Assert-Equal ([string]$json.model.type) 'minecraft:model' "$itemId root model type"
+    Assert-Equal ([string]$json.model.model) "naturalist:item/$itemId" `
+        "$itemId root protected model"
+    $tints = @($json.model.tints)
+    Assert-Equal $tints.Count 2 "$itemId tint count"
+    Assert-Equal ([string]$tints[0].type) 'minecraft:constant' "$itemId primary tint type"
+    Assert-Equal ([int]$tints[0].value) $spawnEggColors[$itemId].PrimaryArgb `
+        "$itemId primary signed-ARGB tint"
+    Assert-Equal ([string]$tints[1].type) 'minecraft:constant' "$itemId secondary tint type"
+    Assert-Equal ([int]$tints[1].value) $spawnEggColors[$itemId].SecondaryArgb `
+        "$itemId secondary signed-ARGB tint"
+}
+
+$stagedLegacyRoot = Join-Path $projectRoot 'build\generated\legacy-spawn-egg-resources'
+if (-not (Test-Path -LiteralPath $stagedLegacyRoot -PathType Container)) {
+    throw 'Staged legacy spawn-egg resources are absent. Run the Gradle stageLegacySpawnEggResources task first.'
+}
+$stagedLegacyFiles = @(Get-ChildItem -LiteralPath $stagedLegacyRoot -File -Recurse)
+$stagedLegacyPaths = @($stagedLegacyFiles | ForEach-Object {
+    $_.FullName.Substring($stagedLegacyRoot.Length + 1).Replace('\', '/')
+})
+Assert-SetEqual $stagedLegacyPaths @($legacySpawnEggResourceHashes.Keys) `
+    'staged legacy spawn-egg resources'
+foreach ($resourcePath in $legacySpawnEggResourceHashes.Keys) {
+    $stagedPath = Join-Path $stagedLegacyRoot $resourcePath.Replace('/', '\')
+    Assert-Equal (Get-FileHash -LiteralPath $stagedPath -Algorithm SHA256).Hash.ToLowerInvariant() `
+        $legacySpawnEggResourceHashes[$resourcePath] "staged $resourcePath SHA-256"
+}
+
+$repoRootOutput = @(& git -C $projectRoot rev-parse --show-toplevel 2>&1)
+if ($LASTEXITCODE -ne 0) {
+    throw "Unable to locate Git worktree: $($repoRootOutput -join [Environment]::NewLine)"
+}
+$repoRoot = [IO.Path]::GetFullPath($repoRootOutput[-1])
+$projectPrefix = (& git -C $projectRoot rev-parse --show-prefix).TrimEnd('/')
+$trackedProjectFiles = @(& git -C $repoRoot ls-files -- $projectPrefix)
+$trackedSpawnEggCompatibilityResources = @($trackedProjectFiles | Where-Object {
+    $_ -match '/assets/minecraft/(?:models/item/template_spawn_egg\.json|' +
+        'textures/item/spawn_egg(?:_overlay)?\.png)$' -or
+    $_ -match '/assets/naturalist/items/[a-z0-9_]+_spawn_egg\.json$'
+})
+Assert-Empty $trackedSpawnEggCompatibilityResources `
+    'tracked protected/generated spawn-egg compatibility resources'
 
 Write-Host ''
 Write-Host 'Naturalist 26.2 dynamic item-model/property migration verified.'
-Write-Host 'Contracts: 18 wrapped items; 34 variant models; 26 links; 16+16 colors; 1 filled override; 20 generated roots.'
+Write-Host 'Contracts: 18 wrapped items; 34 variant models; 26 links; 16+16 colors; 1 filled override; 47 two-tint spawn eggs; 67 generated roots.'

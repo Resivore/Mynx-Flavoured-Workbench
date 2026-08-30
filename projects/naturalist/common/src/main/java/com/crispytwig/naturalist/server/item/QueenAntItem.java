@@ -12,7 +12,6 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
-import org.joml.Vector3f;
 
 import java.util.List;
 
@@ -31,7 +30,7 @@ public class QueenAntItem extends Item {
         if (!blockingBlocks.isEmpty()) {
             if (level instanceof ServerLevel serverLevel) {
                 for (BlockPos pos : blockingBlocks) {
-                    serverLevel.sendParticles(new DustParticleOptions(new Vector3f(1.0F, 0.2F, 0.2F), 1.0F), pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D, 4, 0.25D, 0.25D, 0.25D, 0.0D);
+                    serverLevel.sendParticles(new DustParticleOptions(0xFF3333, 1.0F), pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D, 4, 0.25D, 0.25D, 0.25D, 0.0D);
                 }
             }
             return InteractionResult.FAIL;

@@ -10,10 +10,12 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EntitySpawnReason;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -30,17 +32,17 @@ import org.jetbrains.annotations.Nullable;
 import java.util.function.Supplier;
 
 public class CaughtMobItem extends NaturalistBucketItem {
-    private final Supplier<? extends EntityType<?>> typeSup;
+    private final Supplier<? extends EntityType<? extends Mob>> typeSup;
 
-    private EntityType<?> type() {
+    private EntityType<? extends Mob> type() {
         return this.typeSup.get();
     }
 
-    public CaughtMobItem(Supplier<? extends EntityType<?>> entitySupplier, Supplier<? extends Fluid> fluidSupplier, Supplier<? extends SoundEvent> soundSupplier, Properties properties) {
+    public CaughtMobItem(Supplier<? extends EntityType<? extends Mob>> entitySupplier, Supplier<? extends Fluid> fluidSupplier, Supplier<? extends SoundEvent> soundSupplier, Properties properties) {
         this(entitySupplier, fluidSupplier, soundSupplier, null, null, properties);
     }
 
-    public CaughtMobItem(Supplier<? extends EntityType<?>> entitySupplier, Supplier<? extends Fluid> fluidSupplier, Supplier<? extends SoundEvent> soundSupplier, @Nullable String tooltipPrefix, @Nullable String[] variantNames, Properties properties) {
+    public CaughtMobItem(Supplier<? extends EntityType<? extends Mob>> entitySupplier, Supplier<? extends Fluid> fluidSupplier, Supplier<? extends SoundEvent> soundSupplier, @Nullable String tooltipPrefix, @Nullable String[] variantNames, Properties properties) {
         super(entitySupplier.get(), fluidSupplier.get(), soundSupplier.get(), properties, true, tooltipPrefix, variantNames);
         this.typeSup = entitySupplier;
     }
@@ -59,22 +61,22 @@ public class CaughtMobItem extends NaturalistBucketItem {
     }
 
     @Override
-    public void checkExtraContent(@Nullable Player player, @NotNull Level level, @NotNull ItemStack containerStack, @NotNull BlockPos pos) {
+    public void checkExtraContent(@Nullable LivingEntity user, @NotNull Level level, @NotNull ItemStack containerStack, @NotNull BlockPos pos) {
         if (level instanceof ServerLevel) {
             this.spawn((ServerLevel)level, containerStack, pos);
-            level.gameEvent(player, GameEvent.ENTITY_PLACE, pos);
+            level.gameEvent(user, GameEvent.ENTITY_PLACE, pos);
         }
 
     }
 
     @Override
-    public @NotNull InteractionResultHolder<ItemStack> use(@NotNull Level level, @NotNull Player player, @NotNull InteractionHand hand) {
+    public @NotNull InteractionResult use(@NotNull Level level, @NotNull Player player, @NotNull InteractionHand hand) {
         ItemStack itemstack = player.getItemInHand(hand);
         BlockHitResult blockhitresult = getPlayerPOVHitResult(level, player, ClipContext.Fluid.NONE);
         if (blockhitresult.getType() == HitResult.Type.MISS) {
-            return InteractionResultHolder.pass(itemstack);
+            return InteractionResult.PASS;
         } else if (blockhitresult.getType() != HitResult.Type.BLOCK) {
-            return InteractionResultHolder.pass(itemstack);
+            return InteractionResult.PASS;
         } else {
             BlockPos pos = blockhitresult.getBlockPos();
             Direction direction = blockhitresult.getDirection();
@@ -82,9 +84,9 @@ public class CaughtMobItem extends NaturalistBucketItem {
                 this.checkExtraContent(player, level, itemstack, pos);
                 this.playEmptySound(player, level, pos);
                 player.awardStat(Stats.ITEM_USED.get(this));
-                return InteractionResultHolder.sidedSuccess(getEmptySuccessItem(itemstack, player), level.isClientSide());
+                return InteractionResult.SUCCESS.heldItemTransformedTo(getEmptySuccessItem(itemstack, player));
             } else {
-                return InteractionResultHolder.fail(itemstack);
+                return InteractionResult.FAIL;
             }
         }
     }

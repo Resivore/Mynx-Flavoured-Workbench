@@ -5,17 +5,18 @@ import com.crispytwig.naturalist.server.block.AntHillBlock;
 import com.crispytwig.naturalist.server.entity.base.PetTargeting;
 import com.crispytwig.naturalist.server.entity.mob.Ant;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
+import net.minecraft.core.UUIDUtil;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.SimpleContainer;
+import net.minecraft.world.Containers;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -55,19 +56,27 @@ public class AntHillBlockEntity extends BlockEntity {
     }
 
     @Override
-    protected void saveAdditional(@NotNull CompoundTag tag, HolderLookup.@NotNull Provider registries) {
-        super.saveAdditional(tag, registries);
+    protected void saveAdditional(@NotNull ValueOutput output) {
+        super.saveAdditional(output);
         if (this.owner != null) {
-            tag.putUUID("Owner", this.owner);
+            output.store("Owner", UUIDUtil.CODEC, this.owner);
         }
-        tag.put("Storage", this.storage.createTag(registries));
+        this.storage.storeAsItemList(output.list("Storage", ItemStack.CODEC));
     }
 
     @Override
-    protected void loadAdditional(@NotNull CompoundTag tag, HolderLookup.@NotNull Provider registries) {
-        super.loadAdditional(tag, registries);
-        this.owner = tag.hasUUID("Owner") ? tag.getUUID("Owner") : null;
-        this.storage.fromTag(tag.getList("Storage", Tag.TAG_COMPOUND), registries);
+    protected void loadAdditional(@NotNull ValueInput input) {
+        super.loadAdditional(input);
+        this.owner = input.read("Owner", UUIDUtil.CODEC).orElse(null);
+        this.storage.fromItemList(input.listOrEmpty("Storage", ItemStack.CODEC));
+    }
+
+    @Override
+    public void preRemoveSideEffects(@NotNull BlockPos pos, @NotNull BlockState state) {
+        if (this.level != null) {
+            Containers.dropContents(this.level, pos, this.storage);
+        }
+        super.preRemoveSideEffects(pos, state);
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, AntHillBlockEntity hill) {

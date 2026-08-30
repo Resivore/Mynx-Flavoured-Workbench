@@ -1,0 +1,5 @@
+accessWidener	v2	official
+
+# Field Guide must place aquatic preview entities into vanilla's exact in-water
+# state. Minecraft 26.2 provides no public setter for this protected field.
+accessible field net/minecraft/world/entity/Entity wasTouchingWater Z

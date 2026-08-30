@@ -12,6 +12,12 @@ base {
     archivesName = project.archives_base_name
 }
 
+loom {
+    // Field Guide's aquatic preview needs the exact in-water state used by
+    // vanilla entity rendering; Minecraft 26.2 exposes no public setter.
+    accessWidenerPath.set(file('src/main/resources/naturalist.accesswidener'))
+}
+
 repositories {
     maven { url = 'https://maven.fabricmc.net/' }
     maven { url = 'https://api.modrinth.com/maven' }
@@ -23,8 +29,17 @@ def defaultOriginalJar = layout.projectDirectory.file("../../originals/mods/${up
 def originalJar = providers.gradleProperty('naturalistOriginalJar')
         .map { file(it) }
         .orElse(defaultOriginalJar)
+def legacyMinecraftJarPath = providers.gradleProperty('naturalistLegacyMinecraftJar')
 def stagedOriginalResources = layout.buildDirectory.dir('generated/original-resources')
+def stagedLegacySpawnEggResources = layout.buildDirectory.dir('generated/legacy-spawn-egg-resources')
 def generatedItemModelResources = layout.buildDirectory.dir('generated/item-model-compat')
+def legacySpawnEggResourceHashes = [
+        'assets/minecraft/models/item/template_spawn_egg.json'        : '2aa28f3dfc96c06980df9a6242eca2a375b18e9c5f4fa68771de3c88dcbe4e1f',
+        'assets/minecraft/textures/item/spawn_egg.png'                 : 'f6b985a0094408770f4b0ba919c2cb6365c6e8b65080334b33617518be2089c1',
+        'assets/minecraft/textures/item/spawn_egg_overlay.png'         : 'df0075d5081a1f49f0f4de1e1f004764446ecb3233416f7cd027c58823190747'
+]
+def naturalistRegistrySource = layout.projectDirectory.file(
+        'common/src/main/java/com/crispytwig/naturalist/registry/NaturalistRegistry.java')
 def dynamicClientItemModelIds = [
         'catfish_bucket', 'bass_bucket', 'duck_bucket', 'crab', 'caterpillar', 'butterfly',
         'ant', 'rat', 'scorpion', 'hedgehog', 'snail', 'starfish_bucket',
@@ -50,7 +65,10 @@ sourceSets {
             srcDirs = ['common/src/main/java', 'fabric/src/main/java']
         }
         resources {
-            srcDirs = ['src/main/resources', stagedOriginalResources, generatedItemModelResources]
+            srcDirs = [
+                    'src/main/resources', stagedOriginalResources,
+                    stagedLegacySpawnEggResources, generatedItemModelResources
+            ]
         }
     }
     persistenceTest {
@@ -130,10 +148,68 @@ tasks.register('stageOriginalResources', Sync) {
     into stagedOriginalResources
 }
 
+tasks.register('verifyLegacySpawnEggResources') {
+    group = 'naturalist port'
+    description = 'Verifies the exact Minecraft 1.21.1 spawn-egg template resources used by the preserved color tuples.'
+    inputs.property 'naturalistLegacyMinecraftJar', legacyMinecraftJarPath.orElse('')
+
+    doLast {
+        if (!legacyMinecraftJarPath.isPresent()) {
+            throw new GradleException('Missing Minecraft 1.21.1 client input. Set -PnaturalistLegacyMinecraftJar=<absolute path>.')
+        }
+
+        File input = file(legacyMinecraftJarPath.get())
+        if (!input.isFile()) {
+            throw new GradleException("Missing Minecraft 1.21.1 client input: ${input}")
+        }
+
+        java.util.zip.ZipFile zip = new java.util.zip.ZipFile(input)
+        try {
+            legacySpawnEggResourceHashes.each { resourcePath, expectedHash ->
+                java.util.zip.ZipEntry entry = zip.getEntry(resourcePath)
+                if (entry == null) {
+                    throw new GradleException("Minecraft 1.21.1 client input is missing ${resourcePath}")
+                }
+
+                MessageDigest digest = MessageDigest.getInstance('SHA-256')
+                zip.getInputStream(entry).withCloseable { stream ->
+                    byte[] buffer = new byte[1024 * 1024]
+                    for (int read = stream.read(buffer); read != -1; read = stream.read(buffer)) {
+                        digest.update(buffer, 0, read)
+                    }
+                }
+                String actualHash = digest.digest().collect { String.format('%02x', it) }.join()
+                if (!actualHash.equalsIgnoreCase(expectedHash)) {
+                    throw new GradleException("Legacy spawn-egg resource SHA-256 mismatch for ${resourcePath}: expected ${expectedHash}, got ${actualHash}")
+                }
+            }
+        }
+        finally {
+            zip.close()
+        }
+    }
+}
+
+tasks.register('stageLegacySpawnEggResources', Sync) {
+    group = 'naturalist port'
+    description = 'Stages only the verified Minecraft 1.21.1 spawn-egg template into ignored build output.'
+    dependsOn tasks.named('verifyLegacySpawnEggResources')
+    from({
+        if (!legacyMinecraftJarPath.isPresent()) {
+            throw new GradleException('Missing Minecraft 1.21.1 client input. Set -PnaturalistLegacyMinecraftJar=<absolute path>.')
+        }
+        zipTree(file(legacyMinecraftJarPath.get()))
+    }) {
+        legacySpawnEggResourceHashes.keySet().each { include it }
+    }
+    into stagedLegacySpawnEggResources
+}
+
 tasks.register('generateItemModelCompatibilityResources') {
     group = 'naturalist port'
-    description = 'Generates Minecraft 26.2 client-item roots for the protected legacy dynamic item models.'
+    description = 'Generates Minecraft 26.2 client-item roots for protected legacy dynamic and spawn-egg models.'
     inputs.property 'dynamicClientItemModelIds', dynamicClientItemModelIds
+    inputs.file naturalistRegistrySource
     outputs.dir generatedItemModelResources
 
     doLast {
@@ -149,11 +225,50 @@ tasks.register('generateItemModelCompatibilityResources') {
                     ]
             ])) + System.lineSeparator(), 'UTF-8')
         }
+
+        String registrySource = naturalistRegistrySource.asFile.getText('UTF-8')
+        def spawnEggPattern = ~/(?s)registerItem\("([a-z0-9_]+_spawn_egg)",\s*properties\s*->\s*Services\.REGISTRY\.createSpawnEgg\([^,]+,\s*(\d+),\s*(\d+),\s*properties\)\)/
+        def spawnEggMatches = registrySource =~ spawnEggPattern
+        Map<String, List<Integer>> spawnEggColors = new LinkedHashMap<>()
+        spawnEggMatches.each { match ->
+            String itemId = match[1]
+            int primaryRgb = Integer.parseInt(match[2])
+            int secondaryRgb = Integer.parseInt(match[3])
+            if (spawnEggColors.put(itemId, [primaryRgb, secondaryRgb]) != null) {
+                throw new GradleException("Duplicate Naturalist spawn-egg color registration: ${itemId}")
+            }
+        }
+        if (spawnEggColors.size() != 47) {
+            throw new GradleException("Expected 47 Naturalist spawn-egg color registrations, found ${spawnEggColors.size()}")
+        }
+
+        spawnEggColors.each { itemId, colors ->
+            colors.each { color ->
+                if (color < 0 || color > 0xFFFFFF) {
+                    throw new GradleException("Naturalist spawn-egg RGB value is outside 24-bit range for ${itemId}: ${color}")
+                }
+            }
+            int primaryArgb = colors[0] - 0x1000000
+            int secondaryArgb = colors[1] - 0x1000000
+            File output = new File(outputRoot, "assets/naturalist/items/${itemId}.json")
+            output.parentFile.mkdirs()
+            output.setText(JsonOutput.prettyPrint(JsonOutput.toJson([
+                    model: [
+                            type : 'minecraft:model',
+                            model: "naturalist:item/${itemId}",
+                            tints: [
+                                    [type: 'minecraft:constant', value: primaryArgb],
+                                    [type: 'minecraft:constant', value: secondaryArgb]
+                            ]
+                    ]
+            ])) + System.lineSeparator(), 'UTF-8')
+        }
     }
 }
 
 tasks.named('processResources') {
-    dependsOn tasks.named('stageOriginalResources'), tasks.named('generateItemModelCompatibilityResources')
+    dependsOn tasks.named('stageOriginalResources'), tasks.named('stageLegacySpawnEggResources'),
+            tasks.named('generateItemModelCompatibilityResources')
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     inputs.property 'version', project.version
     filesMatching('fabric.mod.json') {
@@ -163,6 +278,13 @@ tasks.named('processResources') {
                 fabric_loader_version: project.fabric_loader_version,
                 fabric_api_version: project.fabric_api_version
         ])
+    }
+}
+
+tasks.configureEach {
+    if (name == 'sourcesJar') {
+        dependsOn tasks.named('stageOriginalResources'), tasks.named('stageLegacySpawnEggResources'),
+                tasks.named('generateItemModelCompatibilityResources')
     }
 }
 

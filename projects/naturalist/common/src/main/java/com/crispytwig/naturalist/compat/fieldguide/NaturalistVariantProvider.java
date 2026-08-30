@@ -19,7 +19,7 @@ public class NaturalistVariantProvider<T extends Mob & DataDrivenVariantAnimal> 
     @Override
     public List<VariantDef> getVariants(T entity) {
         List<VariantDef> variants = new ArrayList<>();
-        Optional<Registry<MobVariant>> registry = entity.level().registryAccess().registry(entity.getVariantRegistryKey());
+        Optional<Registry<MobVariant>> registry = entity.level().registryAccess().lookup(entity.getVariantRegistryKey());
         if (registry.isEmpty() || registry.get().size() <= 1) return variants;
 
         Identifier defaultVariant = entity.getDefaultVariant().identifier();

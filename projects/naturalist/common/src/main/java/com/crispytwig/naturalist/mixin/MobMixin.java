@@ -5,10 +5,12 @@ import com.crispytwig.naturalist.NaturalistConfig;
 import com.crispytwig.naturalist.server.entity.mob.Firefly;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.attributes.*;
@@ -63,7 +65,7 @@ public abstract class MobMixin extends LivingEntity {
 
     @Inject(method = "aiStep", at = @At("TAIL"))
     private void naturalist$updateBabyHealth(CallbackInfo ci) {
-        if (this.level().isClientSide || !this.naturalist$isNaturalistMob()) {
+        if (this.level().isClientSide() || !this.naturalist$isNaturalistMob()) {
             return;
         }
 
@@ -109,8 +111,8 @@ public abstract class MobMixin extends LivingEntity {
 
     @Inject(method = "doHurtTarget", at = @At("HEAD"))
     @SuppressWarnings("unused")
-    private void naturalist$onDoHurtTarget(Entity target, CallbackInfoReturnable<Boolean> cir) {
-        if (BuiltInRegistries.ENTITY_TYPE.getKey(this.getType()).equals(BuiltInRegistries.ENTITY_TYPE.getKey(EntityType.FROG))
+    private void naturalist$onDoHurtTarget(ServerLevel level, Entity target, CallbackInfoReturnable<Boolean> cir) {
+        if (this.getType() == EntityTypes.FROG
                 && target instanceof Firefly) {
             this.addEffect(new MobEffectInstance(MobEffects.GLOWING, 60));
         }
