@@ -10,7 +10,7 @@
     "legacy_ids": []
   },
   "definition": {
-    "lifecycle": "PLANNED",
+    "lifecycle": "ACTIVE",
     "goals": [
       "Provide clean standalone wearable-lantern functionality for Minecraft Java 26.2 Fabric.",
       "Add a dedicated amount-one Trinkets lantern slot independent of legs/belt and position it immediately left of the vanilla leggings slot while preserving the belt independently on the right.",
@@ -21,8 +21,8 @@
     "scope": [
       "Implement a native legs/lantern Trinkets slot assigned to players, with amount one, a dedicated modern GUI sprite, normal Trinkets persistence, synchronization, equip, quick-move, and death/drop behavior, plus a minimal public Trinkets predicate that accepts only membership in the exact trinkets:legs/lantern tag, initially containing minecraft:lantern and minecraft:soul_lantern.",
       "Give the lantern slot an order immediately after the built-in legs/belt order so normal Trinkets layout produces lantern-left, leggings-center, and belt-right whenever both additional slots are assigned.",
-      "If standalone operation must keep the lantern left when legs/belt is absent, add only the narrow client layout intervention needed to pin legs/lantern to the attachment's negative-X lane and legs/belt to the positive-X lane, then derive hover, quick-move, and group-background extents from the actual offsets while retaining Trinkets' native slots, indices, contents, and creative wrappers.",
-      "Prefer Trinkets Updated 4.1 data-driven client trinket rendering targeted by the supported-lantern tag and gated to legs/lantern, using the actual ItemStack item-model pipeline attached to a stable player body/hip part.",
+      "Use Trinkets' native alternating layout, hover/reveal, quick-move, and group-background behavior for Canary 1; with belt order -1024 and lantern order -1023 both assigned, native positioning yields lantern-left, leggings-center, and belt-right, while belt-absent positioning is recorded for a possible successor rather than changed by a custom layout mixin.",
+      "Use Trinkets Updated 4.1 data-driven client trinket rendering targeted by the supported-lantern tag and gated to legs/lantern, using the actual ItemStack item-model pipeline attached to the canonical body model part with a simple initial hip transform.",
       "Rely first on LambDynamicLights' current native Trinkets scan and item/block-derived luminance; add an exact-slot optional API bridge only if runtime evidence shows the built-in integration does not observe legs/lantern.",
       "Validate survival and creative behavior against Inventory Extended and the accepted Trinkets x Inventory Extended C5 dynamic menu-boundary contract without changing that accepted project."
     ],
@@ -34,10 +34,10 @@
         "Any modification, normalization, repackaging, redistribution, or tracked copy of originals content; the obsolete reference remains immutable and external to this project.",
         "A source-level port of Simple Belt Lanterns, copied vanilla lantern textures or models, broad legacy compatibility lists, or reliance on its obsolete Radiant Gear dependency.",
         "Replacement or redesign of Trinkets, consumption of legs/belt for lanterns, custom menu-slot insertion, fixed inventory indices, or changes to the accepted Trinkets x Inventory Extended C5 baseline without a demonstrated dependency.",
-        "A broad GUI replacement; any client positioning intervention must remain scoped to the legs/lantern coordinate and preserve native Trinkets hover/group behavior.",
+        "Any Canary 1 custom inventory GUI/layout mixin or belt-absent positioning override; a narrow successor intervention is allowed only if runtime evidence demonstrates that native positioning is inadequate.",
         "Hard coupling to Matcha Flavoured where the normal item-model and resource-pack pipeline provides generic compatibility.",
         "Fake placed blocks, server-side environmental light mutation, or making an optional client dynamic-light provider a hard architectural dependency.",
-        "Implementation source, build scaffolding, Canary artifacts, deployment, Minecraft launch, instance access, or any runtime-validation claim during this audit and project-establishment task."
+        "Deployment, Minecraft launch, Test Slot occupancy, accepted-baseline changes, instance access, or any runtime-validation claim during Canary 1 implementation."
       ]
     },
     "dependencies": [
@@ -82,31 +82,50 @@
         "identifier": "lambdynlights",
         "requirement": "=4.12.2+26.2 (optional integration target)",
         "reason": "Current Workbench client dynamic-light provider; its native Trinkets and item-luminance integration should supply carried light without a hard dependency or world mutation."
+      },
+      {
+        "type": "TOOL",
+        "identifier": "java",
+        "requirement": "25",
+        "reason": "Required Java release used for the retained Canary 1 build and focused tests."
+      },
+      {
+        "type": "TOOL",
+        "identifier": "gradle",
+        "requirement": "9.5.1",
+        "reason": "Exact build-tool version used for the retained Canary 1 artifact."
       }
     ]
   },
   "state": {
-    "milestone": "Reference audit complete; standalone architecture approved; official PLANNED project is ready for implementation, with all build and runtime validation still pending.",
+    "milestone": "Canary 1 is implemented, clean-built, statically verified, and retained as an exact artifact awaiting later explicit Test Slot allocation; the project remains ACTIVE, not deployed, and Minecraft runtime untested.",
     "releases": {
-      "current": null,
+      "current": {
+        "version": "0.1.0-canary1",
+        "artifact": {
+          "filename": "wearable-lanterns-0.1.0-canary1.jar",
+          "sha256": "97e8f96dfac338462e4473033b4171cfc47bad16e0f7a4a963bbd523b8a5a9b5"
+        },
+        "source_commit": "db5b4639782ca1e7ad0adbb2c623db8c4c2f62e6"
+      },
       "accepted": null,
       "rollback": null,
       "accepted_current": "NO_ACCEPTED",
       "accepted_rollback": "NO_ROLLBACK"
     },
     "validation": {
-      "build": "NOT_RUN",
+      "build": "STATIC_PASS",
       "deployment": "NOT_DEPLOYED",
       "runtime": "RUNTIME_UNTESTED"
     },
     "blocker": null
   },
   "synchronization": {
-    "revision": 1,
-    "activity_at": "2026-08-30T06:50:38Z",
-    "updated_at": "2026-08-30T06:50:38Z",
-    "last_codex_at": "2026-08-30T06:50:38Z",
-    "source_commit": "28704e6505063223f68a5fae09dd4c0f97dea1bf",
+    "revision": 2,
+    "activity_at": "2026-08-30T08:14:46Z",
+    "updated_at": "2026-08-30T08:14:46Z",
+    "last_codex_at": "2026-08-30T08:14:46Z",
+    "source_commit": "db5b4639782ca1e7ad0adbb2c623db8c4c2f62e6",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
