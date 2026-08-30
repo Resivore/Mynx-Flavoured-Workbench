@@ -1,12 +1,15 @@
 package dev.resivore.mossystone;
 
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.creativetab.v1.CreativeModeTabEvents;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -35,6 +38,13 @@ public final class MossyStoneMod implements ModInitializer {
         register(SLAB_ID, MOSSY_STONE_SLAB);
         register(STAIRS_ID, MOSSY_STONE_STAIRS);
         register(WALL_ID, MOSSY_STONE_WALL);
+
+        CreativeModeTabEvents.modifyOutputEvent(CreativeModeTabs.BUILDING_BLOCKS).register(output -> {
+            output.accept(MOSSY_STONE, CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS);
+            output.accept(MOSSY_STONE_SLAB, CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS);
+            output.accept(MOSSY_STONE_STAIRS, CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS);
+            output.accept(MOSSY_STONE_WALL, CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS);
+        });
     }
 
     private static BlockBehaviour.Properties properties(Identifier id) {

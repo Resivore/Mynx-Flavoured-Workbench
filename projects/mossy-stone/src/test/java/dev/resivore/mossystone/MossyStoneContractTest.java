@@ -64,6 +64,28 @@ final class MossyStoneContractTest {
     }
 
     @Test
+    void creativeAndJeiExposureIsLimitedToTheFourOwnedItems() throws IOException {
+        String source = Files.readString(PROJECT_ROOT.resolve(
+                "src/main/java/dev/resivore/mossystone/MossyStoneMod.java"));
+        assertTrue(source.contains(
+                "CreativeModeTabEvents.modifyOutputEvent(CreativeModeTabs.BUILDING_BLOCKS)"));
+        assertEquals(4, source.lines().filter(line -> line.contains("output.accept(")).count());
+        for (String item : List.of(
+                "MOSSY_STONE",
+                "MOSSY_STONE_SLAB",
+                "MOSSY_STONE_STAIRS",
+                "MOSSY_STONE_WALL")) {
+            assertTrue(source.contains("output.accept(" + item
+                    + ", CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS)"));
+        }
+        assertFalse(source.contains("vertical_mossy_stone_slab"));
+        assertFalse(source.contains("mossy_stone_step"));
+        assertFalse(source.contains("mezz.jei"));
+        assertFalse(Files.readString(RESOURCES.resolve("fabric.mod.json")).contains("\"jei\""));
+        assertFalse(Files.readString(PROJECT_ROOT.resolve("build.gradle")).contains("mezz.jei"));
+    }
+
+    @Test
     void productionHasNoRuRuntimeReferenceOutsideThePackagedProvenanceNotice() throws IOException {
         Path notice = RESOURCES.resolve("META-INF/NOTICE_REGIONS_UNEXPLORED_MOSSY_STONE.txt");
         assertTrue(Files.isRegularFile(notice));
