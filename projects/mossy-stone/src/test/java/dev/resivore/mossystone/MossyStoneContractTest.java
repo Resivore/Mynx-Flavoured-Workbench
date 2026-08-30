@@ -11,6 +11,8 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.classfile.ClassFile;
+import java.lang.classfile.instruction.InvokeInstruction;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
@@ -34,6 +36,8 @@ final class MossyStoneContractTest {
             "984508A44A92F02CCE254CD58D45905CAE8E625C647D4A5B32F9AB6AE82EE2E8";
     private static final String CNM_SHA256 =
             "41A925E70D5E6E8C098BEA7DC88C44486AED46724E35CB2FA4B1622B2A4DBCCE";
+    private static final String JEI_SHA256 =
+            "20BC7F0EBE5F36F84C8C4D571469968BE54A6E1989B4E85A736136DC41EA8FE2";
 
     @Test
     void productionOwnsTheStandaloneStoneBasedParentAndThreeOrdinaryShapes() throws IOException {
@@ -61,6 +65,114 @@ final class MossyStoneContractTest {
         String build = Files.readString(PROJECT_ROOT.resolve("build.gradle"));
         assertFalse(build.contains("ruReference"));
         assertFalse(build.contains("ru_reference_jar"));
+    }
+
+    @Test
+    void exposureDeduplicationReturnsOnlyMissingOwnedItemsInOwnedOrder() {
+        List<String> owned = List.of(
+                "mossy_stone:mossy_stone",
+                "mossy_stone:mossy_stone_slab",
+                "mossy_stone:mossy_stone_stairs",
+                "mossy_stone:mossy_stone_wall",
+                "mossy_stone:mossy_stone_wall");
+        Set<String> existing = Set.of(
+                "mossy_stone:mossy_stone",
+                "clutternomore:mossy_stone/vertical_mossy_stone_slab",
+                "clutternomore:mossy_stone/mossy_stone_step");
+
+        assertEquals(List.of(
+                        "mossy_stone:mossy_stone_slab",
+                        "mossy_stone:mossy_stone_stairs",
+                        "mossy_stone:mossy_stone_wall"),
+                MossyStoneExposure.missing(owned, existing));
+        assertTrue(MossyStoneExposure.missing(owned, Set.copyOf(owned)).isEmpty());
+    }
+
+    @Test
+    void compiledCreativeAndOptionalJeiPathsExposeOnlyMissingOwnedItems() throws IOException {
+        List<String> commonCalls = invocations(classBytes(
+                "dev/resivore/mossystone/MossyStoneMod.class"));
+        assertTrue(commonCalls.contains(
+                "net/fabricmc/fabric/api/creativetab/v1/FabricCreativeModeTabOutput.getDisplayStacks"));
+        assertTrue(commonCalls.contains(
+                "net/fabricmc/fabric/api/creativetab/v1/FabricCreativeModeTabOutput.getSearchTabStacks"));
+        assertTrue(commonCalls.contains(
+                "dev/resivore/mossystone/MossyStoneExposure.missing"));
+        assertFalse(commonCalls.stream().anyMatch(call -> call.endsWith(".accept")));
+        String commonClass = classConstants(classBytes(
+                "dev/resivore/mossystone/MossyStoneMod.class"));
+        assertFalse(commonClass.contains("mezz/jei"));
+        assertFalse(commonClass.contains("vertical_mossy_stone_slab"));
+        assertFalse(commonClass.contains("mossy_stone_step"));
+
+        List<String> pluginCalls = invocations(classBytes(
+                "dev/resivore/mossystone/MossyStoneJeiPlugin.class"));
+        assertTrue(pluginCalls.contains("mezz/jei/api/runtime/IJeiRuntime.getIngredientManager"));
+        assertTrue(pluginCalls.contains("mezz/jei/api/runtime/IIngredientManager.getAllItemStacks"));
+        assertTrue(pluginCalls.contains("dev/resivore/mossystone/MossyStoneExposure.missing"));
+        assertTrue(pluginCalls.contains("mezz/jei/api/runtime/IIngredientManager.addIngredientsAtRuntime"));
+        String pluginClass = classConstants(classBytes(
+                "dev/resivore/mossystone/MossyStoneJeiPlugin.class"));
+        assertFalse(pluginClass.contains("clutternomore"));
+        assertFalse(pluginClass.contains("vertical_mossy_stone_slab"));
+        assertFalse(pluginClass.contains("mossy_stone_step"));
+
+        JsonObject metadata = json("fabric.mod.json");
+        assertEquals(List.of("dev.resivore.mossystone.MossyStoneJeiPlugin"),
+                strings(metadata.getAsJsonObject("entrypoints").getAsJsonArray("jei_mod_plugin")));
+        assertFalse(metadata.getAsJsonObject("depends").has("jei"));
+        String build = Files.readString(PROJECT_ROOT.resolve("build.gradle"));
+        assertTrue(build.contains(
+                "compileOnly files('../../originals/mods/jei-26.2-fabric-30.18.0.144.jar')"));
+        assertFalse(build.contains(
+                "implementation files('../../originals/mods/jei-26.2-fabric-30.18.0.144.jar')"));
+    }
+
+    @Test
+    void exactPinnedCnmFilterRunsBeforeTheSupportedJeiRuntimeRestoreSeam() throws Exception {
+        Path cnm = reference("cnmReferenceJar");
+        assertEquals(759_419L, Files.size(cnm));
+        assertEquals(CNM_SHA256, sha256(cnm));
+        try (ZipFile zip = new ZipFile(cnm.toFile())) {
+            List<String> creativeCalls = invocations(bytes(zip,
+                    "dev/tazer/clutternomore/common/mixin/creative/FabricItemGroupEntriesMixin.class"),
+                    "cnm$accept");
+            assertEquals(List.of(
+                    "net/minecraft/world/item/ItemStack.getItem",
+                    "dev/tazer/clutternomore/common/CHooks.denyItem",
+                    "org/spongepowered/asm/mixin/injection/callback/CallbackInfo.cancel"),
+                    creativeCalls);
+            assertEquals(List.of("dev/tazer/clutternomore/common/shape_map/ShapeMap.isShape"),
+                    invocations(bytes(zip, "dev/tazer/clutternomore/common/CHooks.class"),
+                            "denyItem"));
+            List<String> cnmJeiCalls = invocations(bytes(zip,
+                    "dev/tazer/clutternomore/common/compat/JEICompat.class"));
+            assertTrue(cnmJeiCalls.contains(
+                    "dev/tazer/clutternomore/common/shape_map/ShapeMap.isShape"));
+            assertTrue(cnmJeiCalls.contains(
+                    "mezz/jei/api/runtime/IIngredientManager.removeIngredientsAtRuntime"));
+        }
+
+        Path jei = reference("jeiReferenceJar");
+        assertEquals(1_693_550L, Files.size(jei));
+        assertEquals(JEI_SHA256, sha256(jei));
+        try (ZipFile zip = new ZipFile(jei.toFile())) {
+            String ingredientManager = classConstants(bytes(zip,
+                    "mezz/jei/api/runtime/IIngredientManager.class"));
+            assertTrue(ingredientManager.contains("getAllItemStacks"));
+            assertTrue(ingredientManager.contains("addIngredientsAtRuntime"));
+
+            byte[] starterClass = bytes(zip, "mezz/jei/library/startup/JeiStarter.class");
+            List<String> startCalls = invocations(starterClass, "start");
+            int recipeManager = startCalls.indexOf(
+                    "mezz/jei/library/load/PluginLoader.createRecipeManager");
+            int runtimeCallbacks = startCalls.lastIndexOf(
+                    "mezz/jei/library/load/PluginCaller.callOnPlugins");
+            assertTrue(recipeManager >= 0);
+            assertTrue(runtimeCallbacks > recipeManager);
+            assertTrue(invocations(starterClass).contains(
+                    "mezz/jei/api/IModPlugin.onRuntimeAvailable"));
+        }
     }
 
     @Test
@@ -346,6 +458,49 @@ final class MossyStoneContractTest {
         try (InputStream input = zip.getInputStream(exact)) {
             return new String(input.readAllBytes(), java.nio.charset.StandardCharsets.UTF_8);
         }
+    }
+
+    private static byte[] bytes(ZipFile zip, String entry) throws IOException {
+        ZipEntry exact = zip.getEntry(entry);
+        assertNotNull(exact, entry);
+        try (InputStream input = zip.getInputStream(exact)) {
+            return input.readAllBytes();
+        }
+    }
+
+    private static byte[] classBytes(String resource) throws IOException {
+        try (InputStream input = MossyStoneContractTest.class.getClassLoader()
+                .getResourceAsStream(resource)) {
+            assertNotNull(input, resource);
+            return input.readAllBytes();
+        }
+    }
+
+    private static String classConstants(byte[] classBytes) {
+        return new String(classBytes, java.nio.charset.StandardCharsets.ISO_8859_1);
+    }
+
+    private static List<String> invocations(byte[] classBytes) {
+        return ClassFile.of().parse(classBytes).methods().stream()
+                .flatMap(method -> method.code().stream())
+                .flatMap(code -> code.elementStream())
+                .filter(InvokeInstruction.class::isInstance)
+                .map(InvokeInstruction.class::cast)
+                .map(instruction -> instruction.owner().asInternalName() + "."
+                        + instruction.name().stringValue())
+                .toList();
+    }
+
+    private static List<String> invocations(byte[] classBytes, String methodName) {
+        return ClassFile.of().parse(classBytes).methods().stream()
+                .filter(method -> method.methodName().equalsString(methodName))
+                .flatMap(method -> method.code().stream())
+                .flatMap(code -> code.elementStream())
+                .filter(InvokeInstruction.class::isInstance)
+                .map(InvokeInstruction.class::cast)
+                .map(instruction -> instruction.owner().asInternalName() + "."
+                        + instruction.name().stringValue())
+                .toList();
     }
 
     private static List<String> strings(JsonArray array) {
