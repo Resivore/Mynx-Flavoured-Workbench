@@ -591,8 +591,12 @@ class RuntimeContractTests(unittest.TestCase):
         tracked = load_json(ROOT / "tools" / "test_instance_manager" / "runtime-state.json")
         self.assertEqual("ACTIVE", tracked["activation"])
         self.assertEqual("ADOPTED", tracked["accepted_baseline"]["provenance"]["physical_disposition"])
-        self.assertEqual("FAIL", tracked["slots"]["A"]["runtime_result"]["classification"])
-        self.assertEqual("FAIL", tracked["slots"]["B"]["runtime_result"]["classification"])
+        self.assertEqual("0.1.7-canary8", tracked["slots"]["A"]["unit"]["version"])
+        self.assertEqual("READY_TO_TEST_VERIFIED", tracked["slots"]["A"]["deployment"]["state"])
+        self.assertEqual("UNTESTED", tracked["slots"]["A"]["runtime_result"]["classification"])
+        self.assertEqual("0.3.0-canary3", tracked["slots"]["B"]["unit"]["version"])
+        self.assertEqual("READY_TO_TEST_VERIFIED", tracked["slots"]["B"]["deployment"]["state"])
+        self.assertEqual("UNTESTED", tracked["slots"]["B"]["runtime_result"]["classification"])
 
 
 class CurrentStateBootstrapTests(unittest.TestCase):
