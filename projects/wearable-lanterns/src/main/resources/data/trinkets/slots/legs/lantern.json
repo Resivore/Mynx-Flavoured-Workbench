@@ -1,0 +1,10 @@
+{
+  "amount": 1,
+  "max_stack_size": 1,
+  "order": -1023,
+  "icon": "wearable_lanterns:container/slots/lantern",
+  "validator_predicates": [
+    "wearable_lanterns:lantern_only"
+  ],
+  "validator_predicates:merge_type": "replace"
+}
