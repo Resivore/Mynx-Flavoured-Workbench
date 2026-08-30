@@ -2,8 +2,8 @@
   "$schema": "../../schemas/runtime-state.schema.json",
   "schema_version": 1,
   "activation": "ACTIVE",
-  "revision": 8,
-  "updated_at": "2026-08-30T03:35:29Z",
+  "revision": 10,
+  "updated_at": "2026-08-30T05:37:00Z",
   "accepted_baseline": {
     "revision": 1,
     "provenance": {
@@ -692,10 +692,12 @@
         "ready_verified_at": "2026-08-30T03:35:26Z"
       },
       "runtime_result": {
-        "classification": "UNTESTED",
-        "recorded_at": null,
+        "classification": "PASS",
+        "recorded_at": "2026-08-30T05:36:00Z",
         "evidence": {
-          "passed": [],
+          "passed": [
+            "All intended Matcha Death Rebalance Canary 8 runtime behavior passed."
+          ],
           "failed": []
         }
       }
@@ -731,11 +733,16 @@
         "ready_verified_at": "2026-08-30T03:35:29Z"
       },
       "runtime_result": {
-        "classification": "UNTESTED",
-        "recorded_at": null,
+        "classification": "FAIL",
+        "recorded_at": "2026-08-30T05:37:00Z",
         "evidence": {
-          "passed": [],
-          "failed": []
+          "passed": [
+            "Mossy Stone Canary 3 intended visuals passed.",
+            "Mossy Stone Canary 3 intended block and generated-geometry behavior passed."
+          ],
+          "failed": [
+            "Mossy Stone's BGE-derived horizontal slab, stairs, and wall appeared as separate JEI entries instead of being represented only by the parent block like equivalent BGE-eligible blocks."
+          ]
         }
       }
     }
