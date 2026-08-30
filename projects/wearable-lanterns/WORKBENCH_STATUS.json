@@ -1,0 +1,115 @@
+{
+  "$schema": "../../schemas/workbench-status.schema.json",
+  "schema_version": 1,
+  "identity": {
+    "uuid": "d364e2bb-536a-4987-8044-6c0daae16470",
+    "name": "Wearable Lanterns",
+    "project_id": "wearable-lanterns",
+    "aliases": [],
+    "legacy_names": [],
+    "legacy_ids": []
+  },
+  "definition": {
+    "lifecycle": "PLANNED",
+    "goals": [
+      "Provide clean standalone wearable-lantern functionality for Minecraft Java 26.2 Fabric.",
+      "Add a dedicated amount-one Trinkets lantern slot independent of legs/belt and position it immediately left of the vanilla leggings slot while preserving the belt independently on the right.",
+      "Render the equipped lantern on the player from the actual resource-aware ItemStack model so generic resource-pack changes propagate without copied vanilla textures.",
+      "Support optional dynamic lighting through the current lighting stack without mutating world or server block light.",
+      "Allow supported lantern items to be extended through a narrow dedicated item tag without permitting arbitrary items."
+    ],
+    "scope": [
+      "Implement a native legs/lantern Trinkets slot assigned to players, with amount one, a dedicated modern GUI sprite, normal Trinkets persistence, synchronization, equip, quick-move, and death/drop behavior, plus a minimal public Trinkets predicate that accepts only membership in the exact trinkets:legs/lantern tag, initially containing minecraft:lantern and minecraft:soul_lantern.",
+      "Give the lantern slot an order immediately after the built-in legs/belt order so normal Trinkets layout produces lantern-left, leggings-center, and belt-right whenever both additional slots are assigned.",
+      "If standalone operation must keep the lantern left when legs/belt is absent, add only the narrow client layout intervention needed to pin legs/lantern to the attachment's negative-X lane and legs/belt to the positive-X lane, then derive hover, quick-move, and group-background extents from the actual offsets while retaining Trinkets' native slots, indices, contents, and creative wrappers.",
+      "Prefer Trinkets Updated 4.1 data-driven client trinket rendering targeted by the supported-lantern tag and gated to legs/lantern, using the actual ItemStack item-model pipeline attached to a stable player body/hip part.",
+      "Rely first on LambDynamicLights' current native Trinkets scan and item/block-derived luminance; add an exact-slot optional API bridge only if runtime evidence shows the built-in integration does not observe legs/lantern.",
+      "Validate survival and creative behavior against Inventory Extended and the accepted Trinkets x Inventory Extended C5 dynamic menu-boundary contract without changing that accepted project."
+    ],
+    "boundaries": {
+      "owned_paths": [
+        "projects/wearable-lanterns"
+      ],
+      "exclusions": [
+        "Any modification, normalization, repackaging, redistribution, or tracked copy of originals content; the obsolete reference remains immutable and external to this project.",
+        "A source-level port of Simple Belt Lanterns, copied vanilla lantern textures or models, broad legacy compatibility lists, or reliance on its obsolete Radiant Gear dependency.",
+        "Replacement or redesign of Trinkets, consumption of legs/belt for lanterns, custom menu-slot insertion, fixed inventory indices, or changes to the accepted Trinkets x Inventory Extended C5 baseline without a demonstrated dependency.",
+        "A broad GUI replacement; any client positioning intervention must remain scoped to the legs/lantern coordinate and preserve native Trinkets hover/group behavior.",
+        "Hard coupling to Matcha Flavoured where the normal item-model and resource-pack pipeline provides generic compatibility.",
+        "Fake placed blocks, server-side environmental light mutation, or making an optional client dynamic-light provider a hard architectural dependency.",
+        "Implementation source, build scaffolding, Canary artifacts, deployment, Minecraft launch, instance access, or any runtime-validation claim during this audit and project-establishment task."
+      ]
+    },
+    "dependencies": [
+      {
+        "type": "OTHER",
+        "identifier": "minecraft",
+        "requirement": "=26.2",
+        "reason": "Exact target game version for the standalone Fabric implementation and rendering/menu APIs."
+      },
+      {
+        "type": "MOD",
+        "identifier": "fabricloader",
+        "requirement": ">=0.19.3",
+        "reason": "Current Minecraft 26.2 Fabric loader baseline."
+      },
+      {
+        "type": "MOD",
+        "identifier": "fabric-api",
+        "requirement": "=0.157.0+26.2",
+        "reason": "Current Workbench Fabric API baseline for the eventual clean 26.2 mod."
+      },
+      {
+        "type": "MOD",
+        "identifier": "trinkets_updated",
+        "requirement": "=4.1.0-beta.3+26.2",
+        "reason": "Required native slot, persistence, synchronization, menu, quick-move, drop, and client-render architecture."
+      },
+      {
+        "type": "MOD",
+        "identifier": "inventoryextended",
+        "requirement": "=1.1.2 (optional Workbench compatibility target)",
+        "reason": "The eventual candidate must coexist with the current six-row inventory but must remain usable without Inventory Extended."
+      },
+      {
+        "type": "PROJECT",
+        "identifier": "19c2de9e-c363-54c7-98ee-96f3fccc439b",
+        "requirement": "accepted 0.5.0-canary5 compatibility target; not a standalone runtime dependency",
+        "reason": "The accepted Trinkets x Inventory Extended project's live dynamic boundaries are the Workbench integration contract that the new native slot must preserve."
+      },
+      {
+        "type": "MOD",
+        "identifier": "lambdynlights",
+        "requirement": "=4.12.2+26.2 (optional integration target)",
+        "reason": "Current Workbench client dynamic-light provider; its native Trinkets and item-luminance integration should supply carried light without a hard dependency or world mutation."
+      }
+    ]
+  },
+  "state": {
+    "milestone": "Reference audit complete; standalone architecture approved; official PLANNED project is ready for implementation, with all build and runtime validation still pending.",
+    "releases": {
+      "current": null,
+      "accepted": null,
+      "rollback": null,
+      "accepted_current": "NO_ACCEPTED",
+      "accepted_rollback": "NO_ROLLBACK"
+    },
+    "validation": {
+      "build": "NOT_RUN",
+      "deployment": "NOT_DEPLOYED",
+      "runtime": "RUNTIME_UNTESTED"
+    },
+    "blocker": null
+  },
+  "synchronization": {
+    "revision": 1,
+    "activity_at": "2026-08-30T06:50:38Z",
+    "updated_at": "2026-08-30T06:50:38Z",
+    "last_codex_at": "2026-08-30T06:50:38Z",
+    "source_commit": "28704e6505063223f68a5fae09dd4c0f97dea1bf",
+    "google_sheet": {
+      "participates": true,
+      "exclusion_reason": null
+    }
+  }
+}
