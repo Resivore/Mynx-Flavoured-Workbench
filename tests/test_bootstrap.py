@@ -758,13 +758,18 @@ class RuntimeContractTests(unittest.TestCase):
         # inferred by this bootstrap test.
         tracked = load_json(ROOT / "tools" / "test_instance_manager" / "runtime-state.json")
         self.assertEqual("ACTIVE", tracked["activation"])
-        self.assertEqual(15, tracked["revision"])
-        self.assertEqual(1, tracked["accepted_baseline"]["revision"])
-        self.assertEqual("ADOPTED", tracked["accepted_baseline"]["provenance"]["physical_disposition"])
-        self.assertEqual("0.1.8-canary9", tracked["slots"]["A"]["unit"]["version"])
+        self.assertEqual(23, tracked["revision"])
+        self.assertEqual(3, tracked["accepted_baseline"]["revision"])
+        self.assertEqual(27, tracked["accepted_baseline"]["provenance"]["accepted_artifact_count"])
+        self.assertEqual("TRANSITIONED", tracked["accepted_baseline"]["provenance"]["physical_disposition"])
+        self.assertEqual("0.6.0-bge-canary53-layer", tracked["slots"]["A"]["unit"]["version"])
         self.assertEqual("READY_TO_TEST_VERIFIED", tracked["slots"]["A"]["deployment"]["state"])
         self.assertEqual("UNTESTED", tracked["slots"]["A"]["runtime_result"]["classification"])
-        self.assertEqual("0.4.0-canary4", tracked["slots"]["B"]["unit"]["version"])
+        self.assertEqual(
+            ["e5eb4fcb-6c49-4ab2-86f9-1605ccd192ab"],
+            tracked["slots"]["A"]["dependency_overrides"],
+        )
+        self.assertEqual("0.1.0-canary1", tracked["slots"]["B"]["unit"]["version"])
         self.assertEqual("READY_TO_TEST_VERIFIED", tracked["slots"]["B"]["deployment"]["state"])
         self.assertEqual("UNTESTED", tracked["slots"]["B"]["runtime_result"]["classification"])
 
