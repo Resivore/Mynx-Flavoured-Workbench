@@ -9,26 +9,42 @@ import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.registries.VanillaRegistries;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.Bootstrap;
+import net.minecraft.server.packs.PackLocationInfo;
+import net.minecraft.server.packs.PackType;
+import net.minecraft.server.packs.PathPackResources;
+import net.minecraft.server.packs.repository.PackSource;
+import net.minecraft.server.packs.resources.MultiPackResourceManager;
+import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.tags.TagKey;
+import net.minecraft.util.profiling.InactiveProfiler;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.AbstractCookingRecipe;
 import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeManager;
+import net.minecraft.world.item.crafting.RecipeMap;
 import net.minecraft.world.item.crafting.SingleRecipeInput;
 import net.minecraft.world.item.crafting.SmeltingRecipe;
 import net.minecraft.world.item.crafting.SmokingRecipe;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -133,21 +149,104 @@ final class ProductionRecipeCodecTest {
         assertEquals(4, torch.assemble(coal).getCount());
     }
 
+    @Test
+    void effectiveReloadOverridesALaterVanillaCharcoalResource(@TempDir Path tempDir)
+            throws IOException {
+        Path competingPack = tempDir.resolve("later-vanilla");
+        writeRecipe(competingPack, "minecraft", "charcoal", """
+                {
+                  "type": "minecraft:smelting",
+                  "experience": 0.15,
+                  "ingredient": "#minecraft:logs_that_burn",
+                  "result": { "id": "minecraft:charcoal" }
+                }
+                """);
+        Path productionPack = Path.of("src", "main", "resources").toAbsolutePath().normalize();
+        try (var resources = new MultiPackResourceManager(PackType.SERVER_DATA, List.of(
+                new PathPackResources(packLocation("coal-consolidation-lower"), productionPack),
+                new PathPackResources(packLocation("later-vanilla"), competingPack)))) {
+            assertEquals("later-vanilla",
+                    resources.getResource(Identifier.parse("minecraft:recipe/charcoal.json"))
+                            .orElseThrow().sourcePackId());
+
+            TestRecipeManager manager = new TestRecipeManager(registries);
+            RecipeMap prepared = manager.prepareForTest(resources);
+            assertCookingRoute(cooking(prepared, "minecraft:charcoal", SmeltingRecipe.class),
+                    200, Items.CHARCOAL);
+
+            manager.applyForTest(prepared, resources);
+
+            SmeltingRecipe effectiveSmelting = assertInstanceOf(SmeltingRecipe.class,
+                    manager.byKey(recipeKey("minecraft:charcoal")).orElseThrow().value());
+            assertCookingRoute(effectiveSmelting, 200, Items.COAL);
+        }
+    }
+
     @SuppressWarnings("unchecked")
     private static Recipe<CraftingInput> crafting(String id) {
         return (Recipe<CraftingInput>) RECIPES.get(id);
     }
 
     private static void assertCookingRoute(AbstractCookingRecipe recipe, int expectedTime) {
+        assertCookingRoute(recipe, expectedTime, Items.COAL);
+    }
+
+    private static void assertCookingRoute(
+            AbstractCookingRecipe recipe,
+            int expectedTime,
+            Item expectedResult) {
         for (var item : List.of(Items.OAK_LOG, Items.SPRUCE_LOG, Items.OAK_WOOD)) {
             SingleRecipeInput input = new SingleRecipeInput(new ItemStack(item));
             assertTrue(recipe.matches(input, null));
             ItemStack result = recipe.assemble(input);
-            assertTrue(result.is(Items.COAL));
+            assertTrue(result.is(expectedResult));
             assertEquals(1, result.getCount());
         }
         assertFalse(recipe.matches(new SingleRecipeInput(new ItemStack(Items.CRIMSON_STEM)), null));
         assertEquals(0.15F, recipe.experience());
         assertEquals(expectedTime, recipe.cookingTime());
+    }
+
+    private static void writeRecipe(
+            Path root,
+            String namespace,
+            String id,
+            String json) throws IOException {
+        Path recipe = root.resolve("data").resolve(namespace).resolve("recipe").resolve(id + ".json");
+        Files.createDirectories(recipe.getParent());
+        Files.writeString(recipe, json, StandardCharsets.UTF_8);
+    }
+
+    private static PackLocationInfo packLocation(String id) {
+        return new PackLocationInfo(
+                id,
+                Component.literal(id),
+                PackSource.BUILT_IN,
+                Optional.empty());
+    }
+
+    private static ResourceKey<Recipe<?>> recipeKey(String id) {
+        return ResourceKey.create(Registries.RECIPE, Identifier.parse(id));
+    }
+
+    private static <T extends AbstractCookingRecipe> T cooking(
+            RecipeMap map,
+            String id,
+            Class<T> type) {
+        return assertInstanceOf(type, map.byKey(recipeKey(id)).value());
+    }
+
+    private static final class TestRecipeManager extends RecipeManager {
+        private TestRecipeManager(HolderLookup.Provider registries) {
+            super(registries);
+        }
+
+        private RecipeMap prepareForTest(ResourceManager resources) {
+            return super.prepare(resources, InactiveProfiler.INSTANCE);
+        }
+
+        private void applyForTest(RecipeMap recipes, ResourceManager resources) {
+            super.apply(recipes, resources, InactiveProfiler.INSTANCE);
+        }
     }
 }

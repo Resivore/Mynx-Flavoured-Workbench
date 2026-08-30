@@ -24,6 +24,9 @@ final class ClientBoundaryContractTest {
 
         assertFalse(entrypoints.has("main"));
         assertTrue(entrypoints.has("client"));
+        assertEquals(1, metadata.getAsJsonArray("mixins").size());
+        assertEquals("coal_consolidation.mixins.json",
+                metadata.getAsJsonArray("mixins").get(0).getAsString());
         assertFalse(entrypoints.has("jei_mod_plugin"));
         assertFalse(depends.has("jei"));
         assertTrue(metadata.getAsJsonObject("recommends").has("jei"));
