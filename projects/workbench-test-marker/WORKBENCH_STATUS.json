@@ -12,7 +12,7 @@
     ]
   },
   "definition": {
-    "lifecycle": "TESTING",
+    "lifecycle": "ACTIVE",
     "goals": [
       "Show the canonical accepted Stack version and both independent test-slot identities on the dedicated Workbench title screen before a world is entered."
     ],
@@ -81,11 +81,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 1,
-    "activity_at": "2026-08-30T05:48:00Z",
-    "updated_at": "2026-08-30T05:48:00Z",
-    "last_codex_at": "2026-08-30T05:48:00Z",
-    "source_commit": "f789b290f72c508a563797b0c543125bc9c468c1",
+    "revision": 2,
+    "activity_at": "2026-08-30T07:24:50Z",
+    "updated_at": "2026-08-30T07:24:50Z",
+    "last_codex_at": "2026-08-30T07:24:50Z",
+    "source_commit": "714d20eb4f9bdfd6696780f0d926f0240241e7be",
     "google_sheet": {
       "participates": false,
       "exclusion_reason": "Dedicated Workbench-only internal title infrastructure has no independent human project-status row; canonical display state is manager-owned."

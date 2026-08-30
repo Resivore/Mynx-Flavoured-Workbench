@@ -18,7 +18,7 @@
     ]
   },
   "definition": {
-    "lifecycle": "ACTIVE",
+    "lifecycle": "TESTING",
     "goals": [
       "Extend CNM ShapeMap families with BGE-owned geometry while preserving Nibaru-owned material identity and semantics.",
       "Provide six-direction Layer geometry for every canonical family without changing accepted Step or Vertical behavior."
@@ -118,11 +118,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 7,
-    "activity_at": "2026-08-30T06:51:09Z",
-    "updated_at": "2026-08-30T06:51:09Z",
-    "last_codex_at": "2026-08-30T06:51:09Z",
-    "source_commit": "8fdfaaf4eddfb4b379ce5d50266f2c40a5294480",
+    "revision": 8,
+    "activity_at": "2026-08-30T07:24:50Z",
+    "updated_at": "2026-08-30T07:24:50Z",
+    "last_codex_at": "2026-08-30T07:24:50Z",
+    "source_commit": "714d20eb4f9bdfd6696780f0d926f0240241e7be",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null

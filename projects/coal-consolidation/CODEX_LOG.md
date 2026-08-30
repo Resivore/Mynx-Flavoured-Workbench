@@ -19,3 +19,13 @@
 - Artifact: Slot B contains `coal-consolidation-0.1.0-canary1.jar`, 7,488 bytes, SHA-256 `d7598f640184613f03f0ea2fb558cd4d94099ec54cabc189ef978dbb7f5d4f9d`, from release source `ff8ea31e3c5959fdb4a2886b1113071bfda5770f`.
 - Result: `ACTIVE`; exact C1 is `STATIC_PASS / READY_TO_TEST_VERIFIED / RUNTIME_UNTESTED` in Slot B, remains unaccepted, and has no accepted or rollback release.
 - Next state: Launch the dedicated Workbench only under explicit runtime ownership, execute the focused C1 matrix, and record Slot B as `PASS`, `FAIL`, or `INCONCLUSIVE` before any acceptance decision.
+
+## 2026-08-30T07:24:50Z — Reconcile lifecycle with Slot B occupancy
+- Revision: 3
+- Source checkpoint: `714d20eb4f9bdfd6696780f0d926f0240241e7be`
+- Changes: Corrected only lifecycle from `ACTIVE` to `TESTING` because immutable project UUID `2371b6eb-a4fb-4f1e-8203-580b82ce846b` currently occupies canonical Test Slot B. No implementation, procedure, runtime state, slot ownership, accepted-baseline state, release identity, or evidence changed.
+- Build/static: No rebuild or new static validation was performed; the recorded Java 25, Gradle 9.5.1, Loom 1.17.20, 16/16 focused-test, and byte-for-byte reproduction evidence remains current.
+- Runtime: No physical Workbench mutation, Minecraft launch, or gameplay test occurred; Slot B remains `READY_TO_TEST_VERIFIED / UNTESTED`, represented by project validation `READY_TO_TEST_VERIFIED / RUNTIME_UNTESTED`.
+- Artifact: Unchanged current and unaccepted `coal-consolidation-0.1.0-canary1.jar`, 7,488 bytes, SHA-256 `d7598f640184613f03f0ea2fb558cd4d94099ec54cabc189ef978dbb7f5d4f9d`, release source `ff8ea31e3c5959fdb4a2886b1113071bfda5770f`; no accepted or rollback release was created.
+- Result: `TESTING` — current Coal Consolidation C1 occupies Test Slot B and remains runtime untested and unaccepted.
+- Next state: Keep lifecycle `TESTING` while this UUID occupies either test slot; record the actual Slot B runtime result before acceptance, promotion, or removal derives the next lifecycle from remaining state.

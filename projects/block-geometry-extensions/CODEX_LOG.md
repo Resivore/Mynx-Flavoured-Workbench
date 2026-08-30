@@ -19,3 +19,13 @@
 - Artifact: Slot A contains `cnm-nibaru-integration-0.6.0-bge-canary53-layer.jar`, 258,709 bytes, SHA-256 `57a4599adb3f4c58ae7b99a0148a38760fdb3da59847ca3ec046379db323b7c8`, and required `more-slabs-stairs-and-walls-4.2.0+26.2-port-canary46-bge-layer-contract.jar`, 5,652,769 bytes, SHA-256 `3281d110f062db62e721d838a35ce915ca73dd41af098a013b52952561ceae7d`; both release sources are `6e9b04ec3947f2514f90775bfeefb599242a4596`.
 - Result: `ACTIVE / TESTING`; exact C53 plus exact C46 is `READY_TO_TEST_VERIFIED / RUNTIME_UNTESTED` in Slot A, while accepted BGE C52 remains the BGE rollback and accepted Nibaru C45 remains disabled only for the slot-scoped dependency override.
 - Next state: Launch the dedicated Workbench only under explicit runtime ownership, execute the focused C53 Layer matrix, and record Slot A as `PASS`, `FAIL`, or `INCONCLUSIVE` before any promotion.
+
+## 2026-08-30T07:24:50Z — Reconcile lifecycle with Slot A occupancy
+- Revision: 8
+- Source checkpoint: `714d20eb4f9bdfd6696780f0d926f0240241e7be`
+- Changes: Corrected only lifecycle from `ACTIVE` to `TESTING` because immutable project UUID `4b2342fc-7bdf-5ba6-9f37-d551109d214c` currently occupies canonical Test Slot A. No implementation, procedure, runtime state, slot ownership, accepted-baseline membership, release identity, dependency override, or evidence changed.
+- Build/static: No rebuild or new static validation was performed; the recorded Java 25 clean build, 52 focused checks, and 66/66 controlled GameTests remain the current static evidence.
+- Runtime: No physical Workbench mutation, Minecraft launch, or gameplay test occurred; Slot A remains `READY_TO_TEST_VERIFIED / UNTESTED`, represented by project validation `READY_TO_TEST_VERIFIED / RUNTIME_UNTESTED`.
+- Artifact: Unchanged current BGE C53 `cnm-nibaru-integration-0.6.0-bge-canary53-layer.jar`, SHA-256 `57a4599adb3f4c58ae7b99a0148a38760fdb3da59847ca3ec046379db323b7c8`, release source `6e9b04ec3947f2514f90775bfeefb599242a4596`; accepted/rollback BGE C52 and exact Slot A Nibaru C46 dependency identities are unchanged.
+- Result: `TESTING` — current BGE C53 occupies Test Slot A and remains runtime untested while distinct accepted BGE C52 provenance remains intact.
+- Next state: Keep lifecycle `TESTING` while this UUID occupies either test slot; record the actual Slot A runtime result before promotion or removal derives the next lifecycle from remaining state.
