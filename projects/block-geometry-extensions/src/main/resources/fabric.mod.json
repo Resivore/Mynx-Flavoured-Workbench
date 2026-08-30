@@ -2,8 +2,8 @@
   "schemaVersion": 1,
   "id": "cnm_terrain_slabs_compat",
   "version": "${version}",
-  "name": "Block Geometry Extensions Canary 53",
-  "description": "GENERATED / RUNTIME UNTESTED BGE Layer geometry composed from canonical Nibaru material profiles and CNM ShapeMap families.",
+  "name": "Block Geometry Extensions Canary 54",
+  "description": "GENERATED / STATICALLY VALIDATED / RUNTIME UNTESTED BGE Layer geometry with combined-placement economy and centered item projection.",
   "environment": "*",
   "entrypoints": {
     "main": ["dev.aero.cnmterraincompat.CnmTerrainCompat"],

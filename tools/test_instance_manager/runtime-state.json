@@ -2,8 +2,8 @@
   "$schema": "../../schemas/runtime-state.schema.json",
   "schema_version": 1,
   "activation": "ACTIVE",
-  "revision": 29,
-  "updated_at": "2026-08-30T08:11:41Z",
+  "revision": 31,
+  "updated_at": "2026-08-30T14:16:00Z",
   "accepted_baseline": {
     "revision": 3,
     "provenance": {
@@ -732,7 +732,7 @@
       },
       "runtime_result": {
         "classification": "FAIL",
-        "recorded_at": "2026-08-30T08:11:36Z",
+        "recorded_at": "2026-08-30T14:16:00Z",
         "evidence": {
           "passed": [
             "Gravity and falling-material behavior looked correct.",
@@ -742,7 +742,8 @@
             "Breaking the combined layered geometry returned one full source block."
           ],
           "failed": [
-            "Placing additional compatible Layer geometry into an already occupied compatible Layer block consumed additional source/layer items."
+            "Placing additional compatible Layer geometry into an already occupied compatible Layer block consumed additional source/layer items.",
+            "The Layer item and sprite were visibly off-center in the hotbar slot."
           ]
         }
       },
@@ -781,11 +782,15 @@
         "ready_verified_at": "2026-08-30T08:11:41Z"
       },
       "runtime_result": {
-        "classification": "UNTESTED",
-        "recorded_at": null,
+        "classification": "INCONCLUSIVE",
+        "recorded_at": "2026-08-30T14:14:47Z",
         "evidence": {
-          "passed": [],
-          "failed": []
+          "passed": [
+            "Shulker Trowel C6 booted successfully alongside exact BGE C53 and Nibaru C46."
+          ],
+          "failed": [
+            "Layer geometry was not available in the Shulker Trowel selector."
+          ]
         }
       }
     }
