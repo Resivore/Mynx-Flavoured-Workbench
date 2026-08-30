@@ -25,10 +25,10 @@ dependencies {
     // Runtime ownership remains in the accepted mods. Nothing from these JARs is bundled.
     compileOnly files(cnmJarPath)
     runtimeOnly files(cnmJarPath)
-    compileOnly files('../nibaru/artifacts/more-slabs-stairs-and-walls-4.2.0+26.2-port-canary43-native-directional-material-axis.jar')
-    runtimeOnly files('../nibaru/artifacts/more-slabs-stairs-and-walls-4.2.0+26.2-port-canary43-native-directional-material-axis.jar')
-    compileOnly files('../block-geometry-extensions/artifacts/cnm-nibaru-integration-0.5.49-nibaru-cnm-canary1.39-native-directional-material-axis.jar')
-    runtimeOnly files('../block-geometry-extensions/artifacts/cnm-nibaru-integration-0.5.49-nibaru-cnm-canary1.39-native-directional-material-axis.jar')
+    compileOnly files('../nibaru/artifacts/more-slabs-stairs-and-walls-4.2.0+26.2-port-canary46-bge-layer-contract.jar')
+    runtimeOnly files('../nibaru/artifacts/more-slabs-stairs-and-walls-4.2.0+26.2-port-canary46-bge-layer-contract.jar')
+    compileOnly files('../block-geometry-extensions/artifacts/cnm-nibaru-integration-0.6.0-bge-canary53-layer.jar')
+    runtimeOnly files('../block-geometry-extensions/artifacts/cnm-nibaru-integration-0.6.0-bge-canary53-layer.jar')
 
     testImplementation 'org.junit.jupiter:junit-jupiter:5.12.2'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.12.2'
@@ -53,7 +53,7 @@ processResources {
     }
     doLast {
         // Windows checkout normalization must not alter the established packaged mixin metadata.
-        // Reuse the exact Canary 3 payload because no mixin declaration changes in Canary 4.
+        // Reuse the exact Canary 3 payload because no mixin declaration changes in Canary 5.
         def predecessor = file('artifacts/shulker-trowel-0.1.0-canary3.jar')
         def expectedHash = '5C18755B2F71F44B1F8D6D622DFE0FC892C8165E448CC8E451B72FEE91F752EC'
         def digest = java.security.MessageDigest.getInstance('SHA-256')
