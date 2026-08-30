@@ -29,6 +29,9 @@ accepted project, clears an existing same-project slot only while its result is
 still `UNTESTED`, and increments the Stack number for changed bytes. The
 project's status and append-only log remain responsible for preserving the
 user authorization and the distinction from a runtime pass.
+Because that authorization is not derivable from a desired-state document,
+this exception must use the operation-based `transition --operation` path;
+prevalidated `desired_state` callers cannot synthesize the authorization.
 
 ## Migration closure
 

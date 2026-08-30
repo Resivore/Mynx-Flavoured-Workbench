@@ -1038,26 +1038,6 @@ class PhysicalManager:
             }
             for member in current["accepted_baseline"]["members"]
         )
-        current_accepted_by_project = {
-            member["unit"]["project_uuid"]: member["unit"]
-            for member in current["accepted_baseline"]["members"]
-        }
-        for member in desired["accepted_baseline"]["members"]:
-            desired_unit = member["unit"]
-            current_unit = current_accepted_by_project.get(desired_unit["project_uuid"])
-            if current_unit is None or current_unit == desired_unit:
-                continue
-            operations.append(
-                {
-                    "type": "PROMOTE_UNTESTED_CANDIDATE",
-                    "authorization": "USER_APPROVED_UNTESTED_PROMOTION",
-                    "candidate": {
-                        "unit": copy.deepcopy(desired_unit),
-                        "replaces_accepted_deployment_id": current_unit["deployment_id"],
-                    },
-                }
-            )
-
         for operation in operations:
             try:
                 planned = plan_transition(

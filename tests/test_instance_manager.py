@@ -887,7 +887,7 @@ class PhysicalManagerTests(unittest.TestCase):
         with self.assertRaisesRegex(ManagerError, "exact output"):
             self.fixture.manager.transition(desired_state=tampered, dry_run=True)
 
-    def test_prevalidated_desired_state_supports_explicit_untested_promotion(self) -> None:
+    def test_prevalidated_desired_state_cannot_fabricate_untested_promotion_authorization(self) -> None:
         self.fixture.manager.adopt(dry_run=False)
         c8, _ = self.fixture.add_repository_candidate()
         self.fixture.apply_operation(
@@ -911,13 +911,8 @@ class PhysicalManagerTests(unittest.TestCase):
             "2099-01-01T00:00:02Z",
             self.fixture.project_index,
         )
-        result = self.fixture.manager.transition(desired_state=desired, dry_run=True)
-        self.assertTrue(result["dry_run"])
-        self.assertEqual(current["revision"] + 1, result["target_state_revision"])
-        self.assertEqual(
-            "0.1.9-canary10",
-            desired["accepted_baseline"]["members"][1]["unit"]["version"],
-        )
+        with self.assertRaisesRegex(ManagerError, "exact output"):
+            self.fixture.manager.transition(desired_state=desired, dry_run=True)
         self.assertEqual(current, self.fixture.repository_state())
 
     def test_prevalidated_desired_state_preserves_slot_dependency_overrides(self) -> None:
