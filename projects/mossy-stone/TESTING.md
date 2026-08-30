@@ -14,11 +14,11 @@ Stone-like behavior, tested family gameplay, and tested geometry behavior
 passed, but Creative inventory and JEI exposure failed. Do not redeploy,
 promote, or reclassify C2.
 
-Use the V2 physical manager to place exact C3 in Slot B and require final
-combined readiness verification before launching Minecraft. The intended
-session also has exact Heart Canary 8 in Slot A; preserve the accepted baseline
-and keep Regions Unexplored absent. Build, static tests, deployment, and
-readiness are not Minecraft runtime results.
+Exact C3 is installed in Slot B alongside exact Heart Canary 8 in Slot A, and
+final V2 manager re-verification passed. If managed state changes before launch,
+run a live physical reverify and require it to pass again. Preserve the accepted
+baseline and keep Regions Unexplored absent. Build, static tests, deployment,
+and readiness are not Minecraft runtime results.
 
 ## Focused Canary 3 matrix
 

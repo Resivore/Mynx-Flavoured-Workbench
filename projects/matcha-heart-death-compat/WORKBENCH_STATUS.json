@@ -85,7 +85,7 @@
     ]
   },
   "state": {
-    "milestone": "Exact C8 is generated and statically verified as the narrow successor to failed C7. Its exact three recipe replacements now modify the typed RecipeMap argument at RecipeManager.apply HEAD, after pack resolution and every prepare-return modifier, avoiding the accepted Dramatic Doors cancellation collision while preserving every successful C7 Heart, death, loot, advancement, function, Reinforced recipe, and Echo-scarcity behavior. C8 remains unpromoted and runtime untested; accepted C5 remains the rollback.",
+    "milestone": "Exact C8 is generated and statically verified as the narrow successor to failed C7. Its exact three recipe replacements now modify the typed RecipeMap argument at RecipeManager.apply HEAD, after pack resolution and every prepare-return modifier, avoiding the accepted Dramatic Doors cancellation collision while preserving every successful C7 Heart, death, loot, advancement, function, Reinforced recipe, and Echo-scarcity behavior. Exact C8 is physically installed and readiness-verified in Slot A alongside exact Mossy Stone C3 in Slot B; it remains unpromoted and runtime untested, and accepted C5 remains the disabled rollback.",
     "releases": {
       "current": {
         "version": "0.1.7-canary8",
@@ -116,17 +116,17 @@
     },
     "validation": {
       "build": "STATIC_PASS",
-      "deployment": "NOT_DEPLOYED",
+      "deployment": "READY_TO_TEST_VERIFIED",
       "runtime": "RUNTIME_UNTESTED"
     },
     "blocker": null
   },
   "synchronization": {
-    "revision": 3,
-    "activity_at": "2026-08-30T03:23:03Z",
-    "updated_at": "2026-08-30T03:23:03Z",
-    "last_codex_at": "2026-08-30T03:23:03Z",
-    "source_commit": "4707b35150cc4169b2eee68b8683f9dfb27c158e",
+    "revision": 4,
+    "activity_at": "2026-08-30T04:21:16Z",
+    "updated_at": "2026-08-30T04:21:16Z",
+    "last_codex_at": "2026-08-30T04:21:16Z",
+    "source_commit": "cfefbe96567f4ffef33b8cf4b7e1e612dc755cb0",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null

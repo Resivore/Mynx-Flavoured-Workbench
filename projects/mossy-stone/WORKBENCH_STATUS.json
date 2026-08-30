@@ -99,7 +99,7 @@
     ]
   },
   "state": {
-    "milestone": "Exact C3 is generated and statically verified as the narrow successor to failed C2. It directly and deduplicatedly inserts exactly the four Mossy-owned items into the Building Blocks display/search lists after CNM's accept filter, and its optional JEI plugin restores only missing owned stacks after CNM removes ShapeMap children. All C2 registration, artwork, ShapeMap, Stone-like, loot, crafting, stonecutting, derived-geometry ownership, and no-Regions-Unexplored behavior remains unchanged. C3 remains unpromoted and runtime untested.",
+    "milestone": "Exact C3 is generated and statically verified as the narrow successor to failed C2. It directly and deduplicatedly inserts exactly the four Mossy-owned items into the Building Blocks display/search lists after CNM's accept filter, and its optional JEI plugin restores only missing owned stacks after CNM removes ShapeMap children. All C2 registration, artwork, ShapeMap, Stone-like, loot, crafting, stonecutting, derived-geometry ownership, and no-Regions-Unexplored behavior remains unchanged. Exact C3 is physically installed and readiness-verified in Slot B alongside exact Heart C8 in Slot A; it remains unpromoted and runtime untested, with no Mossy release accepted.",
     "releases": {
       "current": {
         "version": "0.3.0-canary3",
@@ -116,17 +116,17 @@
     },
     "validation": {
       "build": "STATIC_PASS",
-      "deployment": "NOT_DEPLOYED",
+      "deployment": "READY_TO_TEST_VERIFIED",
       "runtime": "RUNTIME_UNTESTED"
     },
     "blocker": null
   },
   "synchronization": {
-    "revision": 3,
-    "activity_at": "2026-08-30T03:28:41Z",
-    "updated_at": "2026-08-30T03:28:41Z",
-    "last_codex_at": "2026-08-30T03:28:41Z",
-    "source_commit": "373fb600a71b25b204fd73cb5b4c17999969a442",
+    "revision": 4,
+    "activity_at": "2026-08-30T04:21:16Z",
+    "updated_at": "2026-08-30T04:21:16Z",
+    "last_codex_at": "2026-08-30T04:21:16Z",
+    "source_commit": "cfefbe96567f4ffef33b8cf4b7e1e612dc755cb0",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null

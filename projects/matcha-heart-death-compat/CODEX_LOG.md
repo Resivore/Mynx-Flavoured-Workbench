@@ -29,3 +29,13 @@
 - Artifact: `matcha-heart-death-compat-0.1.7-canary8.jar`, 31,176 bytes, SHA-256 `CB36D6917DC61B17F2D8B5CEA0D09CB4C1455E04AACA2C186ECAEBE5E9960AA2`, source `4707b35150cc4169b2eee68b8683f9dfb27c158e`.
 - Result: TESTING — C8 is `STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED`; failed C7 remains unpromoted and accepted C5 remains the rollback.
 - Next state: Deploy exact C8 to Slot A alongside exact Mossy C3, require final combined manager readiness, and record Slot A's runtime result independently from Slot B.
+
+## 2026-08-30T04:21:16Z — Reconcile exact Heart C8 physical readiness
+- Revision: 4
+- Source checkpoint: `cfefbe96567f4ffef33b8cf4b7e1e612dc755cb0`
+- Changes: Reconciled the project record with the independently verified V2 physical state: exact Heart C8 is active in Slot A alongside exact Mossy C3 in Slot B, failed C7 and C2 are absent, accepted Heart C5 remains disabled, and the stale V1 marker was retired. No release identity changed and neither candidate was promoted.
+- Build/static: No project artifact was rebuilt. The full Python suite passed 79/79, and the final manager returned `PHYSICAL_STATE_VERIFIED` for tracked revision 8 with state digest `e82155862d95f94c9615602ff5e9c472d1d8775f14f011a31dd7dd3fe0c26698` and managed physical digest `68dffc8300c199df4cb8a41f321429fbf15e1d75c9a5ef47268fb205ced533fd`.
+- Runtime: No Minecraft launch or gameplay runtime evidence occurred. The accepted baseline remained unchanged at 23 members / 26 artifacts with digest `78ab50c944b0e751acc333f114a8baf7af01d9942d22567247e2af6c049da92f`; Slot A and Slot B remain independently `UNTESTED`.
+- Artifact: Active Heart C8 `matcha-heart-death-compat-0.1.7-canary8.jar` remains SHA-256 `CB36D6917DC61B17F2D8B5CEA0D09CB4C1455E04AACA2C186ECAEBE5E9960AA2`; active Mossy C3 `mossy-stone-0.3.0-canary3.jar` remains SHA-256 `B24D8E411F4B83AC02D73DB7564F8F58BF4F2D67207621394FECA0BE0D9C4995`; disabled accepted Heart C5 remains SHA-256 `21E24D37B1A3B575B738F7CA38B0614C9D0285C4F0723DEFE4DB85297B171C04`. Failed C7 and C2 are absent, and the retired stale V1 marker had exact SHA-256 `5F0A26F3D136EFFEB54E86E3A1BA9D6A98A7252F5ADDE1C789129461F64C43DE`.
+- Result: TESTING — exact C8 is `STATIC_PASS / READY_TO_TEST_VERIFIED / RUNTIME_UNTESTED` in Slot A, remains unpromoted, and accepted C5 remains its disabled rollback.
+- Next state: Run the combined manual Heart C8 and Mossy C3 runtime matrix, then record Slot A and Slot B results independently.

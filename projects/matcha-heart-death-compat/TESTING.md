@@ -15,12 +15,12 @@ but Matcha still won the Crystal Heart, Sculk Sensor, and Sculk Shrieker
 recipes. Do not redeploy, promote, or reclassify C7. Exact Canary 5 remains the
 disabled accepted rollback.
 
-Use the V2 physical manager to place exact C8 in Slot A and require final
-combined readiness verification before launching Minecraft. The intended
-session also has exact Mossy Stone Canary 3 in Slot B; preserve the accepted
-baseline and do not enable a second Heart or retired Echo-scarcity artifact.
-Build, static tests, deployment, and readiness are not Minecraft runtime
-results.
+Exact C8 is installed in Slot A alongside exact Mossy Stone Canary 3 in Slot B,
+and final V2 manager re-verification passed. If managed state changes before
+launch, run a live physical reverify and require it to pass again. Preserve the
+accepted baseline and do not enable a second Heart or retired Echo-scarcity
+artifact. Build, static tests, deployment, and readiness are not Minecraft
+runtime results.
 
 ## Focused Canary 8 matrix
 
