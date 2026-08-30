@@ -66,7 +66,7 @@
     ]
   },
   "state": {
-    "milestone": "Official BGE × CTM project initialized; architecture and implementation have not started.",
+    "milestone": "Architecture audit complete at main checkpoint 777d9ece: Continuity consumes Fabric block appearance for rule selection and connections, while BGE's typed derived-to-canonical material mapping is not exposed through that API. The preferred next step is a centralized canonical appearance-state bridge with explicit state projection and conservative partial-geometry eligibility; no implementation artifact or runtime evidence exists yet.",
     "releases": {
       "current": null,
       "accepted": null,
@@ -82,11 +82,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 1,
-    "activity_at": "2026-08-29T22:36:32Z",
-    "updated_at": "2026-08-29T22:36:32Z",
-    "last_codex_at": "2026-08-29T22:36:32Z",
-    "source_commit": "8c0243ebee7a9daad9b72eb66fe92c4bfc8434da",
+    "revision": 2,
+    "activity_at": "2026-08-30T20:50:07Z",
+    "updated_at": "2026-08-30T20:50:07Z",
+    "last_codex_at": "2026-08-30T20:50:07Z",
+    "source_commit": "777d9ece7f38bc6c323f57d12ff83d7cd31ebc59",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
