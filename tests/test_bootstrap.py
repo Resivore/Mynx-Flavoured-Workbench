@@ -632,6 +632,24 @@ class RuntimeContractTests(unittest.TestCase):
             {unit["project_id"] for unit in resolve_profile(restored, project_index("alpha", "dependency"))},
         )
 
+        alpha_v3 = deployment_unit("alpha", version="Canary 3")
+        cleared_override = plan_transition(
+            assigned,
+            assigned["revision"],
+            {
+                "type": "UPDATE_SLOT",
+                "slot": "A",
+                "candidate": candidate_declaration(alpha_v3, dependency_overrides=[]),
+            },
+            TIME_3,
+            project_index("alpha", "dependency"),
+        )
+        self.assertNotIn("dependency_overrides", cleared_override["slots"]["A"])
+        self.assertEqual(
+            {"alpha", "dependency"},
+            {unit["project_id"] for unit in resolve_profile(cleared_override, project_index("alpha", "dependency"))},
+        )
+
         incomplete = candidate(alpha_v2)
         incomplete["replaces_accepted_deployment_id"] = alpha_v1["deployment_id"]
         incomplete["dependency_overrides"] = [dependency_v1["deployment_id"]]
@@ -703,6 +721,18 @@ class RuntimeContractTests(unittest.TestCase):
                 runtime_state(accepted, passed_slot),
                 3,
                 operation,
+                TIME_2,
+                project_index("alpha"),
+            )
+
+        legacy_candidate = copy.deepcopy(operation)
+        legacy_candidate["candidate"]["unit"]["project_identity_source"] = "FROZEN_LEGACY"
+        legacy_candidate["candidate"]["unit"]["source_commit"] = None
+        with self.assertRaisesRegex(ValidationError, "requires CURRENT_MANIFEST identity"):
+            plan_transition(
+                state,
+                state["revision"],
+                legacy_candidate,
                 TIME_2,
                 project_index("alpha"),
             )

@@ -565,7 +565,7 @@ def candidate_declaration(
         "unit": copy.deepcopy(unit),
         "replaces_accepted_deployment_id": replaces_accepted_deployment_id,
     }
-    if dependency_overrides:
+    if dependency_overrides is not None:
         declaration["dependency_overrides"] = copy.deepcopy(dependency_overrides)
     return declaration
 
@@ -724,6 +724,8 @@ def plan_transition(
             raise ValidationError("an untested direct promotion cannot include temporary dependency overrides")
         unit = copy.deepcopy(declaration["unit"])
         _unit(unit, "candidate.unit", project_index)
+        if unit["project_identity_source"] != "CURRENT_MANIFEST":
+            raise ValidationError("an untested direct promotion requires CURRENT_MANIFEST identity")
         replacement_id = declaration["replaces_accepted_deployment_id"]
         if replacement_id is None:
             raise ValidationError("an untested direct promotion must replace an existing accepted release")
