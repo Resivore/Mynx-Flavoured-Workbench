@@ -8,15 +8,19 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.SlabBlock;
 import net.minecraft.world.level.block.StairBlock;
 import net.minecraft.world.level.block.WallBlock;
 import net.minecraft.world.level.block.state.BlockBehaviour;
+
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public final class MossyStoneMod implements ModInitializer {
     public static final String MOD_ID = "mossy_stone";
@@ -40,11 +44,27 @@ public final class MossyStoneMod implements ModInitializer {
         register(WALL_ID, MOSSY_STONE_WALL);
 
         CreativeModeTabEvents.modifyOutputEvent(CreativeModeTabs.BUILDING_BLOCKS).register(output -> {
-            output.accept(MOSSY_STONE, CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS);
-            output.accept(MOSSY_STONE_SLAB, CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS);
-            output.accept(MOSSY_STONE_STAIRS, CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS);
-            output.accept(MOSSY_STONE_WALL, CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS);
+            addMissingOwnedItems(output.getDisplayStacks());
+            addMissingOwnedItems(output.getSearchTabStacks());
         });
+    }
+
+    static List<Item> ownedItems() {
+        return List.of(
+                MOSSY_STONE.asItem(),
+                MOSSY_STONE_SLAB.asItem(),
+                MOSSY_STONE_STAIRS.asItem(),
+                MOSSY_STONE_WALL.asItem()
+        );
+    }
+
+    private static void addMissingOwnedItems(List<ItemStack> entries) {
+        Set<Item> existingItems = entries.stream()
+                .map(ItemStack::getItem)
+                .collect(Collectors.toSet());
+        MossyStoneExposure.missing(ownedItems(), existingItems).stream()
+                .map(Item::getDefaultInstance)
+                .forEach(entries::add);
     }
 
     private static BlockBehaviour.Properties properties(Identifier id) {
