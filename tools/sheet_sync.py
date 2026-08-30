@@ -7,12 +7,14 @@ import argparse
 import base64
 import hashlib
 import hmac
+import http.client
 import json
 import os
 import re
 import subprocess
 import sys
 import time
+import urllib.error
 import urllib.request
 from pathlib import Path, PurePosixPath
 from typing import Any, Callable
@@ -530,8 +532,7 @@ def _validate_plan(plan: dict[str, Any], config: dict[str, Any]) -> None:
 
 
 def signed_wrapper(event: dict[str, Any], secret: str) -> bytes:
-    if len(secret.encode("utf-8")) < 32:
-        raise ValidationError("Sheet HMAC secret must be at least 32 UTF-8 bytes")
+    _validate_hmac_secret(secret)
     event_bytes = json.dumps(event, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
     payload = base64.urlsafe_b64encode(event_bytes).decode("ascii").rstrip("=")
     signature = hmac.new(secret.encode("utf-8"), payload.encode("ascii"), hashlib.sha256).hexdigest()
@@ -542,11 +543,96 @@ def signed_wrapper(event: dict[str, Any], secret: str) -> bytes:
     ).encode("utf-8")
 
 
+def _validate_hmac_secret(secret: str) -> None:
+    if len(secret.encode("utf-8")) < 32:
+        raise ValidationError("Sheet HMAC secret must be at least 32 UTF-8 bytes")
+
+
+def _publication_identity(event: dict[str, Any]) -> dict[str, Any]:
+    record = event.get("record")
+    return {
+        "event_id": event.get("event_id"),
+        "project_uuid": record.get("project_uuid") if isinstance(record, dict) else None,
+        "revision": record.get("revision") if isinstance(record, dict) else None,
+    }
+
+
+def _publication_failure(event: dict[str, Any], code: str, error: str) -> dict[str, Any]:
+    return {**_publication_identity(event), "ok": False, "code": code, "error": error}
+
+
+def _publish_event(event: dict[str, Any], receiver_url: str, hmac_secret: str) -> dict[str, Any]:
+    identity = _publication_identity(event)
+    wrapper = signed_wrapper(event, hmac_secret)
+    try:
+        request = urllib.request.Request(
+            receiver_url,
+            data=wrapper,
+            method="POST",
+            headers={"Content-Type": "application/json"},
+        )
+    except ValueError:
+        return _publication_failure(event, "transport_error", "Sheet receiver transport configuration is invalid")
+
+    retry_delays = [2, 4, 8, 16]
+    for attempt in range(len(retry_delays) + 1):
+        try:
+            with urllib.request.urlopen(request, timeout=30) as response:  # noqa: S310 - gated configured endpoint.
+                if response.status < 200 or response.status >= 300:
+                    return _publication_failure(event, "http_error", f"Sheet receiver returned HTTP {response.status}")
+                response_bytes = response.read()
+        except urllib.error.HTTPError as exc:
+            return _publication_failure(event, "http_error", f"Sheet receiver returned HTTP {exc.code}")
+        except urllib.error.URLError:
+            return _publication_failure(event, "transport_error", "Sheet receiver transport failed (URLError)")
+        except http.client.HTTPException as exc:
+            return _publication_failure(
+                event,
+                "transport_error",
+                f"Sheet receiver transport failed ({type(exc).__name__})",
+            )
+        except ValueError:
+            return _publication_failure(event, "transport_error", "Sheet receiver transport configuration is invalid")
+        except OSError as exc:
+            return _publication_failure(
+                event,
+                "transport_error",
+                f"Sheet receiver transport failed ({type(exc).__name__})",
+            )
+
+        try:
+            result = json.loads(response_bytes.decode("utf-8"))
+        except (UnicodeDecodeError, json.JSONDecodeError):
+            return _publication_failure(event, "invalid_response", "Sheet receiver returned invalid JSON")
+
+        acknowledged = (
+            isinstance(result, dict)
+            and result.get("ok") is True
+            and result.get("event_id") == event["event_id"]
+            and isinstance(result.get("changed"), bool)
+        )
+        if acknowledged:
+            return {**identity, "ok": True, "changed": result["changed"]}
+
+        rejected = isinstance(result, dict) and result.get("ok") is False
+        code = result.get("code") if rejected and isinstance(result.get("code"), str) else None
+        detail = result.get("error") if rejected and isinstance(result.get("error"), str) else None
+        if code == "busy" and attempt < len(retry_delays):
+            time.sleep(retry_delays[attempt])
+            continue
+        if rejected:
+            return _publication_failure(event, code or "rejected", detail or "Sheet receiver rejected event")
+        return _publication_failure(event, "invalid_acknowledgement", "Sheet receiver returned invalid acknowledgement")
+
+    raise AssertionError("publication retry loop completed without a result")  # pragma: no cover
+
+
 def publish_plan(
     plan: dict[str, Any],
     config: dict[str, Any],
     environment: dict[str, str] | None = None,
     acknowledgement_logger: Callable[[dict[str, Any]], None] | None = None,
+    failure_logger: Callable[[dict[str, Any]], None] | None = None,
 ) -> int:
     """Publish individual signed envelopes. All gates fail before transport."""
 
@@ -560,48 +646,30 @@ def publish_plan(
     hmac_secret = environment.get(config["hmac_environment_variable"])
     if not receiver_url or not hmac_secret:
         raise ValidationError("Sheet receiver URL and HMAC secret are required after cutover")
-    published = 0
+    _validate_hmac_secret(hmac_secret)
+
+    outcomes: list[dict[str, Any]] = []
     for event in plan["events"]:
-        wrapper = signed_wrapper(event, hmac_secret)
-        request = urllib.request.Request(receiver_url, data=wrapper, method="POST", headers={"Content-Type": "application/json"})
-        retry_delays = [2, 4, 8, 16]
-        for attempt in range(len(retry_delays) + 1):
-            with urllib.request.urlopen(request, timeout=30) as response:  # noqa: S310 - gated configured endpoint.
-                if response.status < 200 or response.status >= 300:
-                    raise ValidationError(f"Sheet receiver returned HTTP {response.status}")
-                response_text = response.read().decode("utf-8")
-            try:
-                result = json.loads(response_text)
-            except json.JSONDecodeError as exc:
-                raise ValidationError("Sheet receiver returned invalid JSON") from exc
-            acknowledged = (
-                isinstance(result, dict)
-                and result.get("ok") is True
-                and result.get("event_id") == event["event_id"]
-                and isinstance(result.get("changed"), bool)
-            )
-            if acknowledged:
-                if acknowledgement_logger is not None:
-                    acknowledgement = {
-                        "event_id": result["event_id"],
-                        "changed": result["changed"],
-                    }
-                    record = event.get("record")
-                    if isinstance(record, dict):
-                        if "project_uuid" in record:
-                            acknowledgement["project_uuid"] = record["project_uuid"]
-                        if "revision" in record:
-                            acknowledgement["revision"] = record["revision"]
-                    acknowledgement_logger(acknowledgement)
-                break
-            retryable = isinstance(result, dict) and result.get("code") in {"revision_gap", "busy"}
-            if retryable and attempt < len(retry_delays):
-                time.sleep(retry_delays[attempt])
-                continue
-            detail = result.get("error") if isinstance(result, dict) else None
-            raise ValidationError(f"Sheet receiver rejected event {event['event_id']}: {detail or 'invalid acknowledgement'}")
-        published += 1
-    return published
+        outcomes.append(_publish_event(event, receiver_url, hmac_secret))
+
+    for outcome in outcomes:
+        if outcome["ok"] is True:
+            if acknowledgement_logger is not None:
+                acknowledgement_logger({key: value for key, value in outcome.items() if key != "ok"})
+        elif failure_logger is not None:
+            failure_logger({key: value for key, value in outcome.items() if key != "ok"})
+
+    failures = [outcome for outcome in outcomes if outcome["ok"] is False]
+    if failures:
+        details = "; ".join(
+            f"{outcome['event_id']} ({outcome['project_uuid']} R{outcome['revision']}) "
+            f"[{outcome['code']}]: {outcome['error']}"
+            for outcome in failures
+        )
+        raise ValidationError(
+            f"Sheet publication failed for {len(failures)} of {len(outcomes)} event(s): {details}"
+        )
+    return len(outcomes)
 
 
 def _build_parser() -> argparse.ArgumentParser:
@@ -660,6 +728,10 @@ def main(argv: list[str] | None = None) -> int:
                 acknowledgement_logger=lambda acknowledgement: print(
                     "Receiver acknowledgement: "
                     + json.dumps(acknowledgement, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+                ),
+                failure_logger=lambda failure: print(
+                    "Receiver failure: "
+                    + json.dumps(failure, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
                 ),
             )
             print(f"Published {count} project status event(s).")

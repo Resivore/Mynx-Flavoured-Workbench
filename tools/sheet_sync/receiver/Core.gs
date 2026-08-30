@@ -163,6 +163,15 @@ var MynxSheetSync = (function () {
     return values;
   }
 
+  function sameAuthoritativeValues(row, indexes, values) {
+    return Object.keys(values).every(function (header) {
+      if (header === EVENT_COLUMN_MAP.event_id || header === COLUMN_MAP.publication_commit) {
+        return true;
+      }
+      return String(row[indexes[header]]) === String(values[header]);
+    });
+  }
+
   function applyToRows(headers, inputRows, envelope) {
     var indexes = headerIndex(headers);
     var values = rowValues(envelope);
@@ -189,14 +198,18 @@ var MynxSheetSync = (function () {
       rowIndex = matches[0];
       var existingRevision = Number(rows[rowIndex][revisionColumn]);
       var existingEvent = String(rows[rowIndex][eventColumn]);
+      if (!Number.isInteger(existingRevision) || existingRevision < 0) {
+        throw new Error("stored Sheet revision is invalid");
+      }
       if (existingRevision === envelope.record.revision) {
-        if (existingEvent === envelope.event_id) {
+        var sameValues = sameAuthoritativeValues(rows[rowIndex], indexes, values);
+        if (existingEvent && sameValues) {
           return { rows: rows, row_index: rowIndex, changed: false, values: values };
         }
-        if (existingEvent) throw new Error("same-revision Sheet conflict");
-        // Empty Event ID means a prior write was interrupted before its commit marker.
-      } else if (envelope.record.revision !== existingRevision + 1) {
-        throw new Error("stale or skipped Sheet revision");
+        if (!sameValues) throw new Error("same-revision Sheet conflict");
+        // Matching content with an empty Event ID is an uncommitted marker and is completed below.
+      } else if (envelope.record.revision < existingRevision) {
+        throw new Error("stale Sheet revision");
       }
     }
     Object.keys(values).forEach(function (header) {

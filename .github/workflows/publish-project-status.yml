@@ -6,7 +6,8 @@ on:
     paths:
       - "projects/**"
       - "resourcepacks/**"
-      - "tools/sheet_sync/publication.json"
+      - "tools/sheet_sync.py"
+      - "tools/sheet_sync/**"
       - ".github/workflows/publish-project-status.yml"
   workflow_dispatch:
     inputs:
@@ -95,7 +96,7 @@ jobs:
           python tools/workbench.py validate-repository --root .
           python -m unittest discover -s tests -v
           node --test tests/test_sheet_receiver.mjs
-      - name: Prepare explicit current-state bootstrap plan
+      - name: Prepare explicit current-state reconciliation plan
         run: |
           git fetch --no-tags origin refs/heads/main:refs/heads/main
           python tools/sheet_sync.py current-state-plan \
@@ -131,7 +132,7 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: status-current-state-bootstrap-plan-${{ github.sha }}
-      - name: Publish authoritative current-state bootstrap
+      - name: Publish authoritative current-state reconciliation
         env:
           MYNX_SHEET_CUTOVER: ${{ vars.MYNX_SHEET_CUTOVER }}
           MYNX_SHEET_RECEIVER_URL: ${{ secrets.MYNX_SHEET_RECEIVER_URL }}
