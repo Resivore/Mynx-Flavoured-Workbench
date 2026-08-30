@@ -1,0 +1,94 @@
+{
+  "$schema": "../../schemas/workbench-status.schema.json",
+  "schema_version": 1,
+  "identity": {
+    "uuid": "6cb36c64-0780-5343-9fef-66cbb686cfc2",
+    "name": "Workbench Test Marker",
+    "project_id": "workbench-test-marker",
+    "aliases": [],
+    "legacy_names": [],
+    "legacy_ids": [
+      "workbench-test-marker"
+    ]
+  },
+  "definition": {
+    "lifecycle": "TESTING",
+    "goals": [
+      "Show the canonical accepted Stack version and both independent test-slot identities on the dedicated Workbench title screen before a world is entered."
+    ],
+    "scope": [
+      "Render only the three manager-owned lines from .mynx-runtime-v2-title.json: Baseline Stack version plus Slot A and Slot B canonical project display names and Canary numbers or Empty.",
+      "Fail visibly on a missing or invalid projection and never consult retired V1 marker metadata as title state."
+    ],
+    "boundaries": {
+      "owned_paths": [
+        "projects/workbench-test-marker"
+      ],
+      "exclusions": [
+        "No independent accepted-baseline, slot, result, artifact, or project-name database.",
+        "No gameplay behavior, world access, automatic Minecraft launch, or runtime-validation inference.",
+        "No deployment outside the dedicated Minecraft 26.2 Workbench profile or outside the Test Instance Manager transaction."
+      ]
+    },
+    "dependencies": [
+      {
+        "type": "MOD",
+        "identifier": "minecraft",
+        "requirement": "=26.2",
+        "reason": "Exact title-screen API target."
+      },
+      {
+        "type": "MOD",
+        "identifier": "fabricloader",
+        "requirement": ">=0.19.3",
+        "reason": "Loads the client-only title marker."
+      },
+      {
+        "type": "TOOL",
+        "identifier": "test-instance-manager",
+        "requirement": "schema 3",
+        "reason": "Canonical owner and atomic publisher of the validated title projection and marker artifact."
+      },
+      {
+        "type": "TOOL",
+        "identifier": "java",
+        "requirement": "25",
+        "reason": "Minecraft 26.2 build and runtime level."
+      }
+    ]
+  },
+  "state": {
+    "milestone": "Marker 0.2.0 is generated, statically verified, and physically readiness-verified in the dedicated Workbench. The manager atomically replaced exact marker 0.1.1, installed 0.2.0, and synchronized the projection to canonical state revision 15 with Stack v1, Matcha Death Rebalance Canary 9, and Mossy Stone Canary 4. The title screen itself remains runtime untested because Minecraft was not launched.",
+    "releases": {
+      "current": {
+        "version": "0.2.0",
+        "artifact": {
+          "filename": "workbench-test-marker-0.2.0.jar",
+          "sha256": "9147664302721976461dbbc1064260fc4309575182a8b050458d0446eafec6a6"
+        },
+        "source_commit": "f789b290f72c508a563797b0c543125bc9c468c1"
+      },
+      "accepted": null,
+      "rollback": null,
+      "accepted_current": "NO_ACCEPTED",
+      "accepted_rollback": "NO_ROLLBACK"
+    },
+    "validation": {
+      "build": "STATIC_PASS",
+      "deployment": "READY_TO_TEST_VERIFIED",
+      "runtime": "RUNTIME_UNTESTED"
+    },
+    "blocker": null
+  },
+  "synchronization": {
+    "revision": 1,
+    "activity_at": "2026-08-30T05:48:00Z",
+    "updated_at": "2026-08-30T05:48:00Z",
+    "last_codex_at": "2026-08-30T05:48:00Z",
+    "source_commit": "f789b290f72c508a563797b0c543125bc9c468c1",
+    "google_sheet": {
+      "participates": false,
+      "exclusion_reason": "Dedicated Workbench-only internal title infrastructure has no independent human project-status row; canonical display state is manager-owned."
+    }
+  }
+}

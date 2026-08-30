@@ -2,8 +2,8 @@
   "$schema": "../../schemas/runtime-state.schema.json",
   "schema_version": 1,
   "activation": "ACTIVE",
-  "revision": 10,
-  "updated_at": "2026-08-30T05:37:00Z",
+  "revision": 15,
+  "updated_at": "2026-08-30T05:47:00Z",
   "accepted_baseline": {
     "revision": 1,
     "provenance": {
@@ -663,24 +663,24 @@
   "slots": {
     "A": {
       "unit": {
-        "deployment_id": "54ca278e-23c8-46a9-aad1-05e5761a320e",
+        "deployment_id": "2ff30d2e-1310-4421-b4d6-02616d35e7ed",
         "project_uuid": "937d7ccc-44c9-55cb-8d33-0dc0bff5fe45",
         "project_id": "matcha-heart-death-compat",
         "project_identity_source": "CURRENT_MANIFEST",
-        "version": "0.1.7-canary8",
-        "source_commit": "4707b35150cc4169b2eee68b8683f9dfb27c158e",
+        "version": "0.1.8-canary9",
+        "source_commit": "f789b290f72c508a563797b0c543125bc9c468c1",
         "artifacts": [
           {
-            "artifact_id": "d21d09da-f3d2-4ea6-ab07-2d0e999b1fd4",
+            "artifact_id": "b8dd7ada-4c05-4a6d-9894-22971284d4ce",
             "kind": "MOD",
-            "filename": "matcha-heart-death-compat-0.1.7-canary8.jar",
-            "sha256": "cb36d6917dc61b17f2d8b5cea0d09cb4c1455e04aaca2c186ecaebe5e9960aa2",
+            "filename": "matcha-heart-death-compat-0.1.8-canary9.jar",
+            "sha256": "099e7e1d0f8eb5b5a060d029ba89d7328a9cb9d0af50487b2352bcbca45a49e8",
             "ownership_keys": [
               "mod:matcha_heart_death_compat"
             ],
             "source": {
               "type": "REPOSITORY",
-              "path": "projects/matcha-heart-death-compat/artifacts/matcha-heart-death-compat-0.1.7-canary8.jar"
+              "path": "projects/matcha-heart-death-compat/artifacts/matcha-heart-death-compat-0.1.8-canary9.jar"
             }
           }
         ]
@@ -688,40 +688,38 @@
       "replaces_accepted_deployment_id": "c00c0018-fa67-41b4-a981-62b6d3986def",
       "deployment": {
         "state": "READY_TO_TEST_VERIFIED",
-        "deployed_at": "2026-08-30T03:35:25Z",
-        "ready_verified_at": "2026-08-30T03:35:26Z"
+        "deployed_at": "2026-08-30T05:44:00Z",
+        "ready_verified_at": "2026-08-30T05:46:00Z"
       },
       "runtime_result": {
-        "classification": "PASS",
-        "recorded_at": "2026-08-30T05:36:00Z",
+        "classification": "UNTESTED",
+        "recorded_at": null,
         "evidence": {
-          "passed": [
-            "All intended Matcha Death Rebalance Canary 8 runtime behavior passed."
-          ],
+          "passed": [],
           "failed": []
         }
       }
     },
     "B": {
       "unit": {
-        "deployment_id": "b19b51a1-f554-4567-ac63-3f83abf55dff",
+        "deployment_id": "b0093f8e-4e39-400a-94f3-68f8f87598c9",
         "project_uuid": "9f1c5aa4-09c1-4de3-9921-4b045e8abcd2",
         "project_id": "mossy-stone",
         "project_identity_source": "CURRENT_MANIFEST",
-        "version": "0.3.0-canary3",
-        "source_commit": "373fb600a71b25b204fd73cb5b4c17999969a442",
+        "version": "0.4.0-canary4",
+        "source_commit": "f789b290f72c508a563797b0c543125bc9c468c1",
         "artifacts": [
           {
-            "artifact_id": "991abf9a-a039-4c28-b8b9-6432739a95e1",
+            "artifact_id": "219b132e-8422-4630-a3e9-12654ddee870",
             "kind": "MOD",
-            "filename": "mossy-stone-0.3.0-canary3.jar",
-            "sha256": "b24d8e411f4b83ac02d73db7564f8f58bf4f2d67207621394feca0be0d9c4995",
+            "filename": "mossy-stone-0.4.0-canary4.jar",
+            "sha256": "b0e7be5651d622789b848ba1a48073af8078ba4d834e34c1255ec9ce72042f14",
             "ownership_keys": [
               "mod:mossy_stone"
             ],
             "source": {
               "type": "REPOSITORY",
-              "path": "projects/mossy-stone/artifacts/mossy-stone-0.3.0-canary3.jar"
+              "path": "projects/mossy-stone/artifacts/mossy-stone-0.4.0-canary4.jar"
             }
           }
         ]
@@ -729,20 +727,15 @@
       "replaces_accepted_deployment_id": null,
       "deployment": {
         "state": "READY_TO_TEST_VERIFIED",
-        "deployed_at": "2026-08-30T03:35:28Z",
-        "ready_verified_at": "2026-08-30T03:35:29Z"
+        "deployed_at": "2026-08-30T05:45:00Z",
+        "ready_verified_at": "2026-08-30T05:47:00Z"
       },
       "runtime_result": {
-        "classification": "FAIL",
-        "recorded_at": "2026-08-30T05:37:00Z",
+        "classification": "UNTESTED",
+        "recorded_at": null,
         "evidence": {
-          "passed": [
-            "Mossy Stone Canary 3 intended visuals passed.",
-            "Mossy Stone Canary 3 intended block and generated-geometry behavior passed."
-          ],
-          "failed": [
-            "Mossy Stone's BGE-derived horizontal slab, stairs, and wall appeared as separate JEI entries instead of being represented only by the parent block like equivalent BGE-eligible blocks."
-          ]
+          "passed": [],
+          "failed": []
         }
       }
     }

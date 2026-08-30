@@ -3,15 +3,15 @@
   "schema_version": 1,
   "identity": {
     "uuid": "937d7ccc-44c9-55cb-8d33-0dc0bff5fe45",
-    "name": "Matcha Heart / Death Compatibility",
+    "name": "Matcha Death Rebalance",
     "project_id": "matcha-heart-death-compat",
     "aliases": [
-      "Matcha Heart / Death Compatibility Layer",
-      "Matcha Death Rebalance"
+      "Matcha Heart / Death Compatibility",
+      "Matcha Heart / Death Compatibility Layer"
     ],
     "legacy_names": [
-      "Matcha Heart / Death Compatibility Layer",
-      "Matcha Death Rebalance"
+      "Matcha Heart / Death Compatibility",
+      "Matcha Heart / Death Compatibility Layer"
     ],
     "legacy_ids": [
       "matcha-heart-death-compat"
@@ -22,13 +22,13 @@
     "goals": [
       "Preserve Matcha Crystal Heart progression as explicit semantic main-hand use instead of automatic inventory-entry consumption.",
       "Preserve project-owned persistent maximum-health state and one-heart-per-death debt from Matcha's 30-heart cap down to the five-heart floor, with Reinforced repair only below the normal ten-heart baseline.",
-      "Own the narrow Heart, death, recipe, loot, and Echo Shard discovery boundary consolidated in Canary 8 without forking Matcha or changing unrelated Matcha behavior."
+      "Own the narrow Heart, death, recipe, loot, Echo Shard discovery, and Resonant Favour crafting boundary consolidated in Canary 9 without forking Matcha or changing unrelated Matcha behavior."
     ],
     "scope": [
       "Recognize a Matcha Crystal Heart only as minecraft:poisonous_potato with minecraft:item_model=minecraft:heart_container; ordinary poisonous potatoes fail closed, inventory movement never applies a Heart, and use remains main-hand right-click only.",
       "Persist sanitized even maximum-health values from 10 through 60 health points; preserve a valid adopted value, fall back to 20 for malformed, odd, or out-of-range state, add two points for a Crystal Heart only from 20 through 58, subtract two points on every death to a floor of 10, and add two points for a Reinforced Heart only below 20 with a cap of 20.",
-      "Preserve the Crystal Heart recipe as eight Diamonds around one Echo Shard and the Reinforced recipe as EEE/EHE/ E : six Echo Shards around one component-qualified Crystal Heart, with the exact accepted item identity, sprite, and optional JEI exposure.",
-      "Own exactly three authoritative recipes after all recipe preparation, plus two authoritative advancements, four Echo-scarcity loot tables, and the two conflicting Matcha Heart functions through the consolidated fail-closed reload seams retained by Canary 8.",
+      "Provide the ordinary component item matcha_heart_death_compat:resonant_favour with the supplied exact sprite; craft it as four Echo Shards around Divine Favour, use it in the e e/ere/ e  Reinforced Heart recipe, and use Divine Fragment plus Divine Favour in the f f/fdf/ f  Crystal Heart recipe.",
+      "Own exactly the three established authoritative post-prepare recipe replacements, plus the packaged Resonant Favour and Reinforced recipes, two authoritative advancements, four Echo-scarcity loot tables, and the two conflicting Matcha Heart functions through the fail-closed reload seams retained from Canary 8.",
       "Preserve Ancient City loot as the remaining unchanged Echo Shard source, Silk-Touch-only Sculk Sensor, Calibrated Sculk Sensor, and Sculk Shrieker item drops, and the existing Music Disc 5 and Swift Sneak/Soul Speed sinks."
     ],
     "boundaries": {
@@ -39,10 +39,10 @@
         "Forking or modifying Matcha itself, copying Matcha's Crystal Heart art, or taking ownership of unrelated Matcha datapack, resource-pack, worldgen, loot, visual, or gameplay systems.",
         "Changing keepInventory, adding item-loss punishment, or letting Crystal Hearts repair below-baseline health or Reinforced Hearts grant bonus health.",
         "Broad recipe, advancement, loot, or function interception beyond the exact frozen identifiers.",
-        "Co-installing the retired matcha_echo_shard_scarcity mod, failed Canary 7, or another Heart artifact with Canary 8.",
+        "Co-installing the retired matcha_echo_shard_scarcity mod, failed Canary 7, or another Heart artifact with Canary 9.",
         "The separate Reach Crafting and Effortless Crafting grid-delay issue.",
         "Dedicated-server or exhaustive runtime claims not present in the recorded evidence.",
-        "Redeploying, promoting, or reclassifying failed Canary 7, or promoting untested Canary 8 without its independent runtime result."
+        "Redeploying, promoting, or reclassifying failed Canary 7, or promoting untested Canary 9 without its independent runtime result."
       ]
     },
     "dependencies": [
@@ -50,7 +50,7 @@
         "type": "TOOL",
         "identifier": "java",
         "requirement": "25",
-        "reason": "Minecraft 26.2 and the Canary 8 Fabric build target Java 25."
+        "reason": "Minecraft 26.2 and the Canary 9 Fabric build target Java 25."
       },
       {
         "type": "MOD",
@@ -62,7 +62,7 @@
         "type": "MOD",
         "identifier": "fabricloader",
         "requirement": ">=0.19.3",
-        "reason": "Fabric runtime loader floor declared by Canary 8."
+        "reason": "Fabric runtime loader floor declared by Canary 9."
       },
       {
         "type": "MOD",
@@ -85,15 +85,15 @@
     ]
   },
   "state": {
-    "milestone": "Exact C8 is generated and statically verified as the narrow successor to failed C7. Its exact three recipe replacements now modify the typed RecipeMap argument at RecipeManager.apply HEAD, after pack resolution and every prepare-return modifier, avoiding the accepted Dramatic Doors cancellation collision while preserving every successful C7 Heart, death, loot, advancement, function, Reinforced recipe, and Echo-scarcity behavior. Exact C8 is physically installed and readiness-verified in Slot A alongside exact Mossy Stone C3 in Slot B; it remains unpromoted and runtime untested, and accepted C5 remains the disabled rollback.",
+    "milestone": "The user's exact combined runtime result is preserved: Canary 8 passed all intended Matcha Death Rebalance behavior and remains unpromoted historical evidence. Exact C9 narrowly adds Resonant Favour with the supplied sprite and the three requested Favour/Fragment recipe patterns while preserving C8 Heart, death/recovery, Echo-scarcity, loot, advancement, function, and compatibility behavior. Exact C9 is physically installed and readiness-verified in Slot A alongside Mossy Stone C4 in Slot B, remains runtime untested and unpromoted, and accepted C5 remains the disabled Stack v1 rollback.",
     "releases": {
       "current": {
-        "version": "0.1.7-canary8",
+        "version": "0.1.8-canary9",
         "artifact": {
-          "filename": "matcha-heart-death-compat-0.1.7-canary8.jar",
-          "sha256": "cb36d6917dc61b17f2d8b5cea0d09cb4c1455e04aaca2c186ecaebe5e9960aa2"
+          "filename": "matcha-heart-death-compat-0.1.8-canary9.jar",
+          "sha256": "099e7e1d0f8eb5b5a060d029ba89d7328a9cb9d0af50487b2352bcbca45a49e8"
         },
-        "source_commit": "4707b35150cc4169b2eee68b8683f9dfb27c158e"
+        "source_commit": "f789b290f72c508a563797b0c543125bc9c468c1"
       },
       "accepted": {
         "version": "0.1.4-canary5",
@@ -122,11 +122,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 4,
-    "activity_at": "2026-08-30T04:21:16Z",
-    "updated_at": "2026-08-30T04:21:16Z",
-    "last_codex_at": "2026-08-30T04:21:16Z",
-    "source_commit": "cfefbe96567f4ffef33b8cf4b7e1e612dc755cb0",
+    "revision": 5,
+    "activity_at": "2026-08-30T05:48:00Z",
+    "updated_at": "2026-08-30T05:48:00Z",
+    "last_codex_at": "2026-08-30T05:48:00Z",
+    "source_commit": "f789b290f72c508a563797b0c543125bc9c468c1",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null

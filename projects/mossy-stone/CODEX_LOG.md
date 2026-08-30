@@ -39,3 +39,13 @@
 - Artifact: Active Mossy C3 `mossy-stone-0.3.0-canary3.jar` remains SHA-256 `B24D8E411F4B83AC02D73DB7564F8F58BF4F2D67207621394FECA0BE0D9C4995`; active Heart C8 `matcha-heart-death-compat-0.1.7-canary8.jar` remains SHA-256 `CB36D6917DC61B17F2D8B5CEA0D09CB4C1455E04AACA2C186ECAEBE5E9960AA2`; disabled accepted Heart C5 remains SHA-256 `21E24D37B1A3B575B738F7CA38B0614C9D0285C4F0723DEFE4DB85297B171C04`. Failed C2 and C7 are absent, and the retired stale V1 marker had exact SHA-256 `5F0A26F3D136EFFEB54E86E3A1BA9D6A98A7252F5ADDE1C789129461F64C43DE`.
 - Result: TESTING — exact C3 is `STATIC_PASS / READY_TO_TEST_VERIFIED / RUNTIME_UNTESTED` in Slot B, remains unpromoted, and no Mossy release is accepted or designated as rollback.
 - Next state: Run the combined manual Heart C8 and Mossy C3 runtime matrix, then record Slot B and Slot A results independently.
+
+## 2026-08-30T05:48:00Z — Record Canary 3 JEI failure and prepare Canary 4
+- Revision: 5
+- Source checkpoint: `f789b290f72c508a563797b0c543125bc9c468c1`
+- Changes: Recorded C3 as FAIL while preserving that intended visuals and block/generated-geometry behavior passed. Investigation proved CNM removes every ShapeMap child from JEI so eligible families are represented by their parent, but C3's later `onRuntimeAvailable` plugin re-added missing Mossy full/slab/stairs/wall stacks. C4 removes that direct JEI plugin/entrypoint and delegates visibility to CNM without changing Creative insertion, registration, assets, geometry, loot, recipes, or gameplay.
+- Build/static: Java 25 and Gradle 9.5.1 offline clean test/build passed 12/12 focused tests. Semantic C3/C4 artifact comparison showed only the expected JEI plugin class and entrypoint removal; retained Creative code, assets, data, recipes, loot, and models remained byte-identical. These are static results, not C4 runtime evidence.
+- Runtime: C3 is durably recorded as FAIL for the JEI-only child-entry defect, with its other tested visual and behavior checks retained as passed. The manager atomically replaced C3 with exact C4 in Slot B, marked C4 `READY_TO_TEST_VERIFIED / UNTESTED`, and launched no Minecraft process.
+- Artifact: Current/unaccepted C4 `mossy-stone-0.4.0-canary4.jar`, 29,638 bytes, SHA-256 `B0E7BE5651D622789B848BA1A48073AF8078BA4D834E34C1255EC9CE72042F14`, source `f789b290f72c508a563797b0c543125bc9c468c1`; no Mossy release is accepted or designated as rollback.
+- Result: TESTING — C4 is `STATIC_PASS / READY_TO_TEST_VERIFIED / RUNTIME_UNTESTED`, remains unpromoted, and exact C3 FAIL evidence is preserved.
+- Next state: Run the focused parent-only JEI and regression matrix alongside Matcha C9 and record Slot B independently before any promotion.

@@ -1,50 +1,45 @@
 # Testing
 
-## Canary 3 combined-session gate
+## Canary 4 combined-session gate
 
-Test only exact Canary 3:
+Test only exact Canary 4:
 
-- version `0.3.0-canary3`
-- file `mossy-stone-0.3.0-canary3.jar`
-- SHA-256 `B24D8E411F4B83AC02D73DB7564F8F58BF4F2D67207621394FECA0BE0D9C4995`
-- source `373fb600a71b25b204fd73cb5b4c17999969a442`
+- version `0.4.0-canary4`
+- file `mossy-stone-0.4.0-canary4.jar`
+- SHA-256 `B0E7BE5651D622789B848BA1A48073AF8078BA4D834E34C1255EC9CE72042F14`
+- source `f789b290f72c508a563797b0c543125bc9c468c1`
 
-Canary 2 is a closed failed candidate. Its implementation, visuals,
-Stone-like behavior, tested family gameplay, and tested geometry behavior
-passed, but Creative inventory and JEI exposure failed. Do not redeploy,
-promote, or reclassify C2.
+Exact Canary 3 is a closed failed candidate: its intended visuals and block and
+generated-geometry behavior passed, but its late JEI callback re-added Mossy
+ShapeMap slab, stairs, and wall children that CNM intentionally represents only
+through the parent. C4 removes only that direct JEI re-addition and preserves
+C3 Creative exposure and gameplay behavior. No Mossy release is accepted.
 
-Exact C3 is installed in Slot B alongside exact Heart Canary 8 in Slot A, and
-final V2 manager re-verification passed. If managed state changes before launch,
-run a live physical reverify and require it to pass again. Preserve the accepted
-baseline and keep Regions Unexplored absent. Build, static tests, deployment,
-and readiness are not Minecraft runtime results.
+Exact C4 is installed in Slot B alongside exact Matcha Death Rebalance Canary 9
+in Slot A, and final manager physical/title re-verification passed. If managed
+state changes before launch, require the normal live verifier to pass again.
+Build, static tests, deployment, and readiness are not Minecraft runtime results.
 
-## Focused Canary 3 matrix
+## Focused Canary 4 matrix
 
-1. In the Building Blocks Creative tab, confirm Mossy Stone, Mossy Stone Slab,
-   Mossy Stone Stairs, and Mossy Stone Wall appear once each. Confirm all four
-   are also present once each in Creative search, with no unrelated or
-   BGE-derived entries added by Mossy Stone.
-2. In JEI, search for Mossy Stone and confirm the same four Mossy-owned items
-   are discoverable once each. Confirm BGE remains the sole owner of the
-   Vertical Slab and Step and that neither shape is duplicated.
-3. Confirm the full block, slab, stairs, wall, BGE Vertical Slab, and BGE Step
-   retain the approved artwork and correct Stone-like mining, sound, tool,
-   resistance, placement, shape, state, and waterlogging behavior.
-4. Break the full block without Silk Touch and confirm exactly Mossy
+1. In JEI, search for Mossy Stone. Confirm the parent Mossy Stone represents
+   the ShapeMap family and Mossy's horizontal slab, stairs, and wall do not
+   reappear as separate entries. Compare with another eligible BGE/CNM family.
+2. Confirm unrelated legitimate JEI entries remain present and BGE remains the
+   sole owner of derived Vertical Slab and Step geometry.
+3. In Building Blocks and Creative search, confirm Mossy Stone, Mossy Stone
+   Slab, Mossy Stone Stairs, and Mossy Stone Wall still appear exactly once;
+   the JEI fix must not change this Creative behavior.
+4. Confirm full block, slab, stairs, wall, BGE Vertical Slab, and BGE Step retain
+   the approved artwork and Stone-like mining, sound, tool, resistance,
+   placement, shape, state, and waterlogging behavior.
+5. Break the full block without Silk Touch and confirm exactly Mossy
    Cobblestone drops; with Silk Touch confirm the full block drops itself.
    Confirm every other geometry drops its own corresponding shape.
-5. Verify Stone plus Moss Block, Stone plus Vine, smelting and blasting Mossy
-   Cobblestone, and 2x2 Mossy Stone producing four vanilla Mossy Stone Bricks.
-6. Verify ordinary and stonecutting slab, stair, and wall outputs plus matching
-   recipe discovery and unlock behavior. Smoke-check the ShapeMap family and
-   representative BGE/Nibaru and Interchangeable Block Families behavior for a
-   Mossy-attributable regression.
+6. Smoke-check the established acquisition, crafting, smelting/blasting,
+   stonecutting, unlock, ShapeMap, BGE/Nibaru, and Interchangeable Block
+   Families behavior for a Mossy-attributable regression.
 
-Record Slot B independently as `PASS`, `FAIL`, or `INCONCLUSIVE`, even if Heart
-Canary 8 in Slot A has a different result during the same launch. Stop and
-record `FAIL` or `INCONCLUSIVE` for missing or duplicate Creative/JEI entries,
-load failure, wrong artwork or Stone behavior, wrong loot or recipe output,
-derived-geometry ownership conflict, state/waterlogging defect, crash, or a
-relevant log error.
+Record Slot B independently as `PASS`, `FAIL`, or `INCONCLUSIVE`, even if Matcha
+Canary 9 has a different result during the same launch. Do not promote C4
+without its explicit runtime result.

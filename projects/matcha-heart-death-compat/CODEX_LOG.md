@@ -39,3 +39,13 @@
 - Artifact: Active Heart C8 `matcha-heart-death-compat-0.1.7-canary8.jar` remains SHA-256 `CB36D6917DC61B17F2D8B5CEA0D09CB4C1455E04AACA2C186ECAEBE5E9960AA2`; active Mossy C3 `mossy-stone-0.3.0-canary3.jar` remains SHA-256 `B24D8E411F4B83AC02D73DB7564F8F58BF4F2D67207621394FECA0BE0D9C4995`; disabled accepted Heart C5 remains SHA-256 `21E24D37B1A3B575B738F7CA38B0614C9D0285C4F0723DEFE4DB85297B171C04`. Failed C7 and C2 are absent, and the retired stale V1 marker had exact SHA-256 `5F0A26F3D136EFFEB54E86E3A1BA9D6A98A7252F5ADDE1C789129461F64C43DE`.
 - Result: TESTING — exact C8 is `STATIC_PASS / READY_TO_TEST_VERIFIED / RUNTIME_UNTESTED` in Slot A, remains unpromoted, and accepted C5 remains its disabled rollback.
 - Next state: Run the combined manual Heart C8 and Mossy C3 runtime matrix, then record Slot A and Slot B results independently.
+
+## 2026-08-30T05:48:00Z — Record Canary 8 pass and prepare Resonant Favour Canary 9
+- Revision: 5
+- Source checkpoint: `f789b290f72c508a563797b0c543125bc9c468c1`
+- Changes: Recorded the user's exact Canary 8 runtime PASS before replacement, retained accepted Canary 5 unchanged in Stack v1, and produced Canary 9 as a narrow content successor. C9 registers `matcha_heart_death_compat:resonant_favour` with the supplied exact sprite; adds ` e /ede/ e `; changes Reinforced to `e e/ere/ e `; changes Crystal to `f f/fdf/ f `; and preserves C8 Heart, death/recovery, scarcity, loot, advancement, function, and compatibility behavior.
+- Build/static: Java 25 and Gradle 9.5.1 offline clean test/build passed 40/40 tests in seven suites. Source, packaged, and supplied Resonant Favour sprites are byte-identical at 371 bytes with SHA-256 `32CFC7D3247E2E81E6B13FD5D81E5EE32419F88CD47DE397AC40D087A28E3859`; retained/build C9 artifacts are byte-identical. These are static results, not C9 runtime evidence.
+- Runtime: C8 is durably recorded as PASS with all intended behavior confirmed. The manager atomically replaced C8 with exact C9 in Slot A, retained accepted C5 disabled, marked C9 `READY_TO_TEST_VERIFIED / UNTESTED`, and launched no Minecraft process.
+- Artifact: Current/unaccepted C9 `matcha-heart-death-compat-0.1.8-canary9.jar`, 34,612 bytes, SHA-256 `099E7E1D0F8EB5B5A060D029BA89D7328A9CB9D0AF50487B2352BCBCA45A49E8`, source `f789b290f72c508a563797b0c543125bc9c468c1`; accepted/rollback C5 remains SHA-256 `21E24D37B1A3B575B738F7CA38B0614C9D0285C4F0723DEFE4DB85297B171C04`.
+- Result: TESTING — C9 is `STATIC_PASS / READY_TO_TEST_VERIFIED / RUNTIME_UNTESTED`, remains unpromoted, C8 PASS is preserved historically, and accepted C5 remains the Stack v1 rollback.
+- Next state: Run the focused C9 matrix alongside Mossy C4 and record Slot A independently before any promotion.

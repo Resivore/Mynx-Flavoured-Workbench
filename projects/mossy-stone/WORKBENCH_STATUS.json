@@ -16,23 +16,23 @@
     "goals": [
       "Provide a standalone Stone-like mossy_stone:mossy_stone family for Minecraft Java 26.2 without a Regions Unexplored compile or runtime dependency.",
       "Own the full block, slab, stairs, and wall while leaving derived Vertical Slab and Step geometry and recipe ownership exclusively with Block Geometry Extensions.",
-      "Preserve the approved Mossy Stone texture, full-block degradation loot, owned-shape self-drops, and exact acquisition, crafting, and stonecutting behavior from Canary 2 while exposing the four owned items through CNM-compatible Creative and optional JEI discovery paths."
+      "Preserve the approved Mossy Stone texture, full-block degradation loot, owned-shape self-drops, and exact acquisition, crafting, stonecutting, and Creative behavior while delegating JEI child-shape visibility to CNM's canonical ShapeMap convention."
     ],
     "scope": [
-      "Maintain Canary 3 as the narrow successor to legacy Canary 2 source commit 2008a418d868139e88bc066672d10f8463d84e0f, changing only deduplicated Building Blocks display/search insertion, optional missing-only JEI restoration after CNM filtering, and their focused regression contracts.",
+      "Maintain Canary 4 as the narrow successor to Canary 3, removing only the late Mossy-specific JEI re-addition that contradicted CNM's parent-only ShapeMap presentation while preserving C3's deduplicated Building Blocks display/search insertion.",
       "Maintain the standalone canonical parent plus directly owned slab, stairs, and wall with vanilla Stone property baselines, the own-namespace ShapeMap contribution, four loot tables, and eleven recipes with their matching unlock advancements.",
-      "Retain exact Canary 3 as the current untested successor, exact failed Canary 2 with its documented partial runtime pass, and exact Canary 1 as its never-deployed historical predecessor without representing any Mossy release as accepted or rollback."
+      "Retain exact Canary 3 as a failed historical runtime result whose visuals and block/generated-geometry behavior passed but whose JEI child visibility failed; represent neither C3 nor current untested C4 as accepted or rollback."
     ],
     "boundaries": {
       "owned_paths": [
         "projects/mossy-stone"
       ],
       "exclusions": [
-        "No implementation, recipe, loot, registration, asset, geometry, or gameplay change beyond exposing exactly the full block, slab, stairs, and wall in the Building Blocks parent and search tabs.",
+        "No implementation, recipe, loot, registration, asset, geometry, gameplay, or Creative change beyond removing the Mossy-specific JEI child re-addition.",
         "No direct Vertical Slab or Step registration or recipe ownership and no duplicate or competing Block Geometry Extensions material-family system.",
         "No Regions Unexplored code, registry, model, data, world generation, compile dependency, or runtime dependency; only the approved texture and its unchanged MIT provenance notice are retained.",
         "No changes to Block Geometry Extensions, Nibaru, Interchangeable Block Families, or another project implementation.",
-        "No promotion or reclassification of failed Canary 2 or untested Canary 3, no hard/common/server JEI dependency, and no duplicate BGE-derived Creative/JEI entries."
+        "No promotion or reclassification of failed Canary 2 or Canary 3, no hard/common/server JEI dependency, and no duplicate BGE-derived Creative/JEI entries."
       ]
     },
     "dependencies": [
@@ -57,14 +57,14 @@
       {
         "type": "MOD",
         "identifier": "jei",
-        "requirement": "30.18.0.144 (optional)",
-        "reason": "The optional client plugin restores only missing Mossy-owned stacks after CNM's ingredient-removal phase; common and server initialization do not reference JEI."
+        "requirement": "30.18.0.144 (integration environment only)",
+        "reason": "Canary 4 provides no direct JEI plugin; CNM's canonical ShapeMap filter represents generated Mossy child shapes through the parent like equivalent eligible families."
       },
       {
         "type": "MOD",
         "identifier": "clutternomore",
         "requirement": "=2.0.7+26.2",
-        "reason": "Provides the unchanged canonical ShapeMap discovery and switching contract consumed by Canary 3, including the accepted Creative and JEI child-shape filtering behavior that C3 narrowly compensates for its four owned items."
+        "reason": "Provides the canonical ShapeMap discovery/switching contract and the parent-only JEI child-shape filtering behavior that Canary 4 now follows without a late project-specific re-addition."
       },
       {
         "type": "PROJECT",
@@ -99,15 +99,15 @@
     ]
   },
   "state": {
-    "milestone": "Exact C3 is generated and statically verified as the narrow successor to failed C2. It directly and deduplicatedly inserts exactly the four Mossy-owned items into the Building Blocks display/search lists after CNM's accept filter, and its optional JEI plugin restores only missing owned stacks after CNM removes ShapeMap children. All C2 registration, artwork, ShapeMap, Stone-like, loot, crafting, stonecutting, derived-geometry ownership, and no-Regions-Unexplored behavior remains unchanged. Exact C3 is physically installed and readiness-verified in Slot B alongside exact Heart C8 in Slot A; it remains unpromoted and runtime untested, with no Mossy release accepted.",
+    "milestone": "The user's exact Canary 3 result is preserved as FAIL: intended visuals and block/generated-geometry behavior passed, but its late JEI callback re-added Mossy ShapeMap child slab, stairs, and wall entries after CNM intentionally hid comparable children. Exact C4 removes that conflicting JEI plugin and delegates visibility to CNM while preserving Creative exposure and every C3 registration, asset, ShapeMap, Stone-like, loot, crafting, stonecutting, and geometry behavior. Exact C4 is physically installed and readiness-verified in Slot B alongside Matcha Death Rebalance C9 in Slot A, remains runtime untested and unpromoted, and no Mossy release is accepted.",
     "releases": {
       "current": {
-        "version": "0.3.0-canary3",
+        "version": "0.4.0-canary4",
         "artifact": {
-          "filename": "mossy-stone-0.3.0-canary3.jar",
-          "sha256": "b24d8e411f4b83ac02d73db7564f8f58bf4f2d67207621394feca0be0d9c4995"
+          "filename": "mossy-stone-0.4.0-canary4.jar",
+          "sha256": "b0e7be5651d622789b848ba1a48073af8078ba4d834e34c1255ec9ce72042f14"
         },
-        "source_commit": "373fb600a71b25b204fd73cb5b4c17999969a442"
+        "source_commit": "f789b290f72c508a563797b0c543125bc9c468c1"
       },
       "accepted": null,
       "rollback": null,
@@ -122,11 +122,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 4,
-    "activity_at": "2026-08-30T04:21:16Z",
-    "updated_at": "2026-08-30T04:21:16Z",
-    "last_codex_at": "2026-08-30T04:21:16Z",
-    "source_commit": "cfefbe96567f4ffef33b8cf4b7e1e612dc755cb0",
+    "revision": 5,
+    "activity_at": "2026-08-30T05:48:00Z",
+    "updated_at": "2026-08-30T05:48:00Z",
+    "last_codex_at": "2026-08-30T05:48:00Z",
+    "source_commit": "f789b290f72c508a563797b0c543125bc9c468c1",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
