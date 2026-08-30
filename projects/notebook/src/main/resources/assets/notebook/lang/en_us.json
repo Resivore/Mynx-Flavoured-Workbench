@@ -1,0 +1,23 @@
+{
+  "key.category.notebook.controls": "Notebook",
+  "key.notebook.open": "Open Notebook",
+  "button.notebook.open": "Open Notebook",
+  "screen.notebook.title": "Notebook",
+  "screen.notebook.index": "Index",
+  "screen.notebook.empty": "No notes yet",
+  "screen.notebook.empty_hint": "Use + to create your first note.",
+  "screen.notebook.new_note": "Untitled Note",
+  "screen.notebook.add": "Create note",
+  "screen.notebook.delete": "Delete selected note",
+  "screen.notebook.delete_confirm": "Click again to confirm deletion",
+  "screen.notebook.reload": "Reload externally edited notes",
+  "screen.notebook.edit": "Edit",
+  "screen.notebook.save": "Save",
+  "screen.notebook.done": "Done",
+  "screen.notebook.note_title": "Note title",
+  "screen.notebook.note_body": "Write your note here…",
+  "screen.notebook.reordered": "Note order saved",
+  "screen.notebook.load_error": "Notebook could not be loaded: %s",
+  "screen.notebook.save_error": "Notebook could not be saved: %s",
+  "screen.notebook.external_reload": "Notes reloaded from disk"
+}

@@ -1,0 +1,11 @@
+{
+  "required": true,
+  "package": "dev.resivore.notebook.client",
+  "compatibilityLevel": "JAVA_25",
+  "client": [
+    "ContainerScreenAccess"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
