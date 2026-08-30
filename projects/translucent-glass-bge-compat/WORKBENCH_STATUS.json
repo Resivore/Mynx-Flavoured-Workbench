@@ -23,7 +23,7 @@
     ],
     "scope": [
       "Preserve Translucent Glass translucency and visual treatment on applicable BGE-owned glass-family geometry while retaining the canonical material relationship supplied through BGE.",
-      "Cover clear and stained full-block baselines plus slab, stair, wall, vertical-slab, and step variants only where the current BGE architecture actually exposes them.",
+      "Cover clear and stained full-block baselines plus slab, stair, wall, vertical-slab, step, and Layer variants only where the current BGE architecture actually exposes them.",
       "Preserve Translucent Glass-specific placed and item rendering, same-family adjacency, mixed full-block and derived-geometry seams, translucent depth ordering, and Complementary shader presentation without taking ownership of general BGE connected-texture behavior.",
       "Choose the narrowest implementation only after auditing the exact current stack: automatic inheritance first, a focused resource-pack layer if required, and focused client/render code only when resource behavior cannot satisfy the approved scope."
     ],
@@ -44,25 +44,37 @@
       {
         "type": "PROJECT",
         "identifier": "4b2342fc-7bdf-5ba6-9f37-d551109d214c",
-        "requirement": null,
-        "reason": "Block Geometry Extensions is the canonical Workbench dependency and integration layer for the geometry and material behavior this project must consume."
+        "requirement": "Audited at C54 with exact Nibaru C46; implementation must reconcile against the then-current typed material contract.",
+        "reason": "Block Geometry Extensions is the canonical Workbench dependency and integration layer for inherited model-material behavior, geometry-aware culling, and derived-to-source bindings."
       },
       {
         "type": "MOD",
         "identifier": "translucent-glass",
-        "requirement": null,
-        "reason": "Provides the target translucent-glass visual treatment; the exact current artifact, built-in resources, and version must be established before implementation."
+        "requirement": "0.3.0",
+        "reason": "Provides the audited default-enabled clear-glass resource treatment; exact artifact SHA-256 27590CC73ACC1285CD6EAC837CB2AB27A0DF69E50EC5EEDD5AD6D5E7166CAD77."
       },
       {
         "type": "MOD",
         "identifier": "continuity",
-        "requirement": null,
-        "reason": "Provides the runtime connected-texture behavior against which Translucent Glass-specific composition must be checked; general BGE CTM ownership remains with the separate BGE × CTM project."
+        "requirement": "3.0.1+26.2",
+        "reason": "Provides the audited explicit-ID CTM behavior and consumes Fabric appearance states; the canonical appearance bridge and general BGE CTM ownership remain with the separate BGE × CTM project."
+      },
+      {
+        "type": "MOD",
+        "identifier": "iris",
+        "requirement": "1.11.2+mc26.2 audited stack",
+        "reason": "Consumes the selected shader pack's block-material mapping; any external compatibility path must be supported and licensed rather than assumed."
+      },
+      {
+        "type": "RESOURCE_PACK",
+        "identifier": "ComplementaryUnbound_r5.8.1.zip",
+        "requirement": "r5.8.1 audited stack; upstream support or permission required for mapping changes",
+        "reason": "Fancy Glass classifies canonical glass by registry identity and does not currently classify BGE-derived geometry; the Workbench must not redistribute an unauthorized modified shader pack."
       }
     ]
   },
   "state": {
-    "milestone": "The post-launch visual and render compatibility scope is approved; implementation has not started.",
+    "milestone": "Static architecture audit complete: BGE/Nibaru should inherit Minecraft 26.2 model-material and geometry-aware translucent adjacency from one canonical binding; CTM should compose through BGE × CTM's canonical appearance-state bridge, and full shader parity awaits an authorized integration path. Implementation and project-specific runtime testing have not started.",
     "releases": {
       "current": null,
       "accepted": null,
@@ -78,11 +90,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 1,
-    "activity_at": "2026-08-29T00:01:52Z",
-    "updated_at": "2026-08-29T22:34:00Z",
-    "last_codex_at": "2026-08-29T22:34:00Z",
-    "source_commit": "1d70f8d2a78b4d447cf88622eedc79f61abde2db",
+    "revision": 2,
+    "activity_at": "2026-08-30T22:45:24Z",
+    "updated_at": "2026-08-30T22:45:24Z",
+    "last_codex_at": "2026-08-30T22:45:24Z",
+    "source_commit": "f4f0f8d018a7a11b141f091f46e50290b776deb2",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
