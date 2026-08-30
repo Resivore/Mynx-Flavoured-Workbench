@@ -93,14 +93,14 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 2,
-    "activity_at": "2026-08-29T21:20:18Z",
-    "updated_at": "2026-08-29T21:20:18Z",
-    "last_codex_at": "2026-08-29T21:20:18Z",
-    "source_commit": "113eb4a2a24122f64cb1c79a29e99daa762c3b77",
+    "revision": 3,
+    "activity_at": "2026-08-30T00:36:19Z",
+    "updated_at": "2026-08-30T00:36:19Z",
+    "last_codex_at": "2026-08-30T00:36:19Z",
+    "source_commit": "6f05b227e2925aab550b96e27f07ed297c0e6536",
     "google_sheet": {
-      "participates": true,
-      "exclusion_reason": null
+      "participates": false,
+      "exclusion_reason": "Final offboarding revision before this permanent runtime shim is retired from official project tracking."
     }
   }
 }

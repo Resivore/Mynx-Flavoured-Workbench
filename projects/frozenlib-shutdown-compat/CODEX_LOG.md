@@ -19,3 +19,13 @@
 - Artifact: Accepted/current C1 remains `frozenlib-shutdown-compat-0.1.0-canary1.jar` SHA-256 `85dda807ca525a559dc1123e986da50348e2f18c63a43eec6bb5c3684cc51476`, source commit `45fed67116ebcb6d7993d4c2619abe0be02bd9ce`; no rollback artifact is defined.
 - Result: ACCEPTED — C1 is the accepted permanent-infrastructure release for exact FrozenLib `2.5.3-mc26.2`.
 - Next state: Keep C1 accepted. Repeat the shutdown regression procedure only after a FrozenLib target-version change, compatibility implementation change, or observed shutdown regression.
+
+## 2026-08-30T00:36:19Z — Offboard FrozenLib Shutdown Compatibility from project tracking
+- Revision: 3
+- Source checkpoint: `6f05b227e2925aab550b96e27f07ed297c0e6536`
+- Changes: Recorded the final main-only Sheet offboarding revision before complete project-directory retirement. The project now stops participating in project Sheet publication; no implementation, dependency, release, artifact, testing contract, accepted baseline, runtime slot, or physical deployment changed.
+- Build/static: No project rebuild was required for this administrative checkpoint. Repository validation, the full Python contract suite, the Sheet receiver suite, and the exact R2-to-R3 publication plan provide the relevant static verification.
+- Runtime: No Minecraft run was performed and no new runtime validation is inferred. The preserved 2026-08-15 Quit Game, Windows title-bar close, and cape-path log checks remain the sole `RUNTIME_PASS` evidence for the exact project-recorded C1.
+- Artifact: Current and accepted C1 remains `frozenlib-shutdown-compat-0.1.0-canary1.jar` SHA-256 `85dda807ca525a559dc1123e986da50348e2f18c63a43eec6bb5c3684cc51476`, source commit `45fed67116ebcb6d7993d4c2619abe0be02bd9ce`; it was not rebuilt, replaced, renamed, re-hashed, or deployed.
+- Result: ACCEPTED at this final offboarding checkpoint — release and validation state are unchanged, Sheet participation is disabled, and no blocker is recorded.
+- Next state: After authoritative main publication acknowledges revision 3, remove the complete `projects/frozenlib-shutdown-compat` directory. Git history and the frozen legacy authority retain project provenance; the physical permanent-infrastructure shim remains outside this administrative retirement.
