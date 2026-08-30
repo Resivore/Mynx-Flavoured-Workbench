@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "id": "matcha_frost_protection",
+  "version": "${version}",
+  "name": "Matcha Frost Protection",
+  "description": "Adds leather-boots-equivalent powdered-snow traversal for equipped Frost Protection and narrows Blessing of Demeter to Frost Protection III.",
+  "authors": ["Resivore"],
+  "environment": "*",
+  "entrypoints": {
+    "main": ["dev.resivore.matchafrost.MatchaFrostProtection"]
+  },
+  "mixins": ["matcha_frost_protection.mixins.json"],
+  "depends": {
+    "fabricloader": ">=0.19.3",
+    "minecraft": "=26.2",
+    "java": ">=25"
+  }
+}

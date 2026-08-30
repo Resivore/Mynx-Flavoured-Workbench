@@ -1,0 +1,35 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "SbS",
+    "FBF",
+    "SFS"
+  ],
+  "key": {
+    "S": "minecraft:golden_apple",
+    "B": "minecraft:enchanted_book",
+    "F": "minecraft:blue_ice",
+    "b": "minecraft:golden_hoe"
+  },
+  "result": {
+    "components": {
+      "minecraft:stored_enchantments": {
+        "main:freezing_protection": 3
+      },
+      "minecraft:item_name": {
+        "translate": "item.kleispack.blessing"
+      },
+      "minecraft:lore": [
+        {
+          "translate": "item.kleispack.blessing.demeter",
+          "color": "dark_gray",
+          "italic": false
+        }
+      ],
+      "minecraft:item_model": "minecraft:blessing_demeter"
+    },
+    "count": 1,
+    "id": "minecraft:enchanted_book"
+  }
+}
