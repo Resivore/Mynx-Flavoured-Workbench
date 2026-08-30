@@ -10,7 +10,7 @@
     "legacy_ids": []
   },
   "definition": {
-    "lifecycle": "TESTING",
+    "lifecycle": "ACTIVE",
     "goals": [
       "Consolidate ordinary intended Matcha charcoal production into coal while preserving the overridden cooking recipe identities, burnable-log inputs, experience, and timing.",
       "Replace only the seven previously audited recipes' explicit charcoal alternatives with coal while leaving #minecraft:coals consumers unchanged.",
@@ -89,7 +89,7 @@
     ]
   },
   "state": {
-    "milestone": "Exact retained C1 is deployed in Slot B with manager readiness verified against the accepted Minecraft 26.2, Fabric, Fabric API, Matcha, and JEI stack. C1 remains unaccepted and runtime untested; no newer main-scoped project change supersedes its release source.",
+    "milestone": "Exact retained C1 recorded a runtime FAIL because smelting logs through the vanilla furnace minecraft:charcoal route still produced minecraft:charcoal instead of coal. The separate Matcha smoking:charcoal route was not reported as tested, and no other runtime row is inferred. C1 is removed from the test slots, remains unaccepted, and has a fixable implementation defect rather than an external blocker; no newer main-scoped project change supersedes its release source.",
     "releases": {
       "current": {
         "version": "0.1.0-canary1",
@@ -106,17 +106,17 @@
     },
     "validation": {
       "build": "STATIC_PASS",
-      "deployment": "READY_TO_TEST_VERIFIED",
-      "runtime": "RUNTIME_UNTESTED"
+      "deployment": "NOT_DEPLOYED",
+      "runtime": "RUNTIME_FAIL"
     },
     "blocker": null
   },
   "synchronization": {
-    "revision": 3,
-    "activity_at": "2026-08-30T07:24:50Z",
-    "updated_at": "2026-08-30T07:24:50Z",
-    "last_codex_at": "2026-08-30T07:24:50Z",
-    "source_commit": "714d20eb4f9bdfd6696780f0d926f0240241e7be",
+    "revision": 4,
+    "activity_at": "2026-08-30T08:11:38Z",
+    "updated_at": "2026-08-30T08:11:38Z",
+    "last_codex_at": "2026-08-30T08:11:38Z",
+    "source_commit": "5e1007888a847f00012a413214d51c810efa1b31",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null

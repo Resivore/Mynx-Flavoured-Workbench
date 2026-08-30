@@ -841,20 +841,48 @@ class RuntimeContractTests(unittest.TestCase):
         # inferred by this bootstrap test.
         tracked = load_json(ROOT / "tools" / "test_instance_manager" / "runtime-state.json")
         self.assertEqual("ACTIVE", tracked["activation"])
-        self.assertEqual(23, tracked["revision"])
+        self.assertEqual(29, tracked["revision"])
         self.assertEqual(3, tracked["accepted_baseline"]["revision"])
         self.assertEqual(27, tracked["accepted_baseline"]["provenance"]["accepted_artifact_count"])
         self.assertEqual("TRANSITIONED", tracked["accepted_baseline"]["provenance"]["physical_disposition"])
-        self.assertEqual("0.6.0-bge-canary53-layer", tracked["slots"]["A"]["unit"]["version"])
-        self.assertEqual("READY_TO_TEST_VERIFIED", tracked["slots"]["A"]["deployment"]["state"])
-        self.assertEqual("UNTESTED", tracked["slots"]["A"]["runtime_result"]["classification"])
+
+        slot_a = tracked["slots"]["A"]
+        self.assertEqual("4b2342fc-7bdf-5ba6-9f37-d551109d214c", slot_a["unit"]["project_uuid"])
+        self.assertEqual("0.6.0-bge-canary53-layer", slot_a["unit"]["version"])
+        self.assertEqual(
+            [
+                (
+                    "cnm-nibaru-integration-0.6.0-bge-canary53-layer.jar",
+                    "57a4599adb3f4c58ae7b99a0148a38760fdb3da59847ca3ec046379db323b7c8",
+                ),
+                (
+                    "more-slabs-stairs-and-walls-4.2.0+26.2-port-canary46-bge-layer-contract.jar",
+                    "3281d110f062db62e721d838a35ce915ca73dd41af098a013b52952561ceae7d",
+                ),
+            ],
+            [(artifact["filename"], artifact["sha256"]) for artifact in slot_a["unit"]["artifacts"]],
+        )
+        self.assertEqual("READY_TO_TEST_VERIFIED", slot_a["deployment"]["state"])
+        self.assertEqual("FAIL", slot_a["runtime_result"]["classification"])
         self.assertEqual(
             ["e5eb4fcb-6c49-4ab2-86f9-1605ccd192ab"],
-            tracked["slots"]["A"]["dependency_overrides"],
+            slot_a["dependency_overrides"],
         )
-        self.assertEqual("0.1.0-canary1", tracked["slots"]["B"]["unit"]["version"])
-        self.assertEqual("READY_TO_TEST_VERIFIED", tracked["slots"]["B"]["deployment"]["state"])
-        self.assertEqual("UNTESTED", tracked["slots"]["B"]["runtime_result"]["classification"])
+
+        slot_b = tracked["slots"]["B"]
+        self.assertEqual("e28154da-0649-5da7-b6d5-3bff2891719e", slot_b["unit"]["project_uuid"])
+        self.assertEqual("0.1.0-canary5", slot_b["unit"]["version"])
+        self.assertEqual(
+            [
+                (
+                    "shulker-trowel-0.1.0-canary5-private.jar",
+                    "4ab4bb8068f0660e0bbc6ed0cb059666b7112cc0e29744906972e396fc653664",
+                )
+            ],
+            [(artifact["filename"], artifact["sha256"]) for artifact in slot_b["unit"]["artifacts"]],
+        )
+        self.assertEqual("READY_TO_TEST_VERIFIED", slot_b["deployment"]["state"])
+        self.assertEqual("UNTESTED", slot_b["runtime_result"]["classification"])
 
 
 class CurrentStateBootstrapTests(unittest.TestCase):

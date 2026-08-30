@@ -29,3 +29,13 @@
 - Artifact: Unchanged current and unaccepted `coal-consolidation-0.1.0-canary1.jar`, 7,488 bytes, SHA-256 `d7598f640184613f03f0ea2fb558cd4d94099ec54cabc189ef978dbb7f5d4f9d`, release source `ff8ea31e3c5959fdb4a2886b1113071bfda5770f`; no accepted or rollback release was created.
 - Result: `TESTING` — current Coal Consolidation C1 occupies Test Slot B and remains runtime untested and unaccepted.
 - Next state: Keep lifecycle `TESTING` while this UUID occupies either test slot; record the actual Slot B runtime result before acceptance, promotion, or removal derives the next lifecycle from remaining state.
+
+## 2026-08-30T08:11:38Z — Record Coal C1 runtime failure and remove it from Slot B
+- Revision: 4
+- Source checkpoint: `5e1007888a847f00012a413214d51c810efa1b31`
+- Changes: Recorded the user's exact C1 runtime result, removed Coal Consolidation from its last occupied test slot, changed lifecycle from `TESTING` to `ACTIVE`, and updated the retained runtime procedure for a future successor. No Coal implementation debugging or fix, rebuild, successor, promotion, accepted release, or rollback release was created.
+- Build/static: No rebuild or new static validation was performed; the preserved Java 25, Gradle 9.5.1, Loom 1.17.20, 16/16 focused-test, and byte-for-byte reproduction evidence remains unchanged static evidence.
+- Runtime: C1 is `RUNTIME_FAIL` because the user observed logs smelted through the vanilla furnace `minecraft:charcoal` route still produce `minecraft:charcoal` instead of coal. That result satisfies the runtime stopping condition. The separate Matcha `smoking:charcoal` route was not reported as tested, and no result is inferred for it or any other matrix row.
+- Artifact: Current and unaccepted C1 remains exact retained `coal-consolidation-0.1.0-canary1.jar`, 7,488 bytes, SHA-256 `d7598f640184613f03f0ea2fb558cd4d94099ec54cabc189ef978dbb7f5d4f9d`, release source `ff8ea31e3c5959fdb4a2886b1113071bfda5770f`; it is no longer deployed, and no accepted or rollback release exists.
+- Result: `ACTIVE` — exact C1 remains `STATIC_PASS / NOT_DEPLOYED / RUNTIME_FAIL`. This is a fixable implementation defect in an unaccepted development candidate, not an external blocker, and the project UUID occupies neither canonical test slot.
+- Next state: In a separately authorized implementation task, diagnose only the demonstrated furnace override failure, create and statically verify a successor, then allocate that exact successor through the canonical manager before rerunning the full current matrix; do not redeploy or promote unchanged C1.

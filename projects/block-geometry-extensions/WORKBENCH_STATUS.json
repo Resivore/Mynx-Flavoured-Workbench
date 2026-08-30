@@ -81,7 +81,7 @@
     ]
   },
   "state": {
-    "milestone": "Exact BGE C53 and its required exact Nibaru C46 contract artifact are deployed together in Slot A with manager readiness verified. C53 remains runtime untested; accepted BGE C52 and Nibaru C45 remain disabled as the rollback baseline under the slot-scoped dependency override.",
+    "milestone": "Exact BGE C53 and its required exact Nibaru C46 contract artifact remain deployed together in Slot A with manager readiness verified. The user's runtime test recorded C53 as FAIL because compatible Layer growth in an already occupied block consumed additional source/layer items; falling-material behavior, grass lifecycle, glass/translucency, the remaining observed Layer geometry behavior, and the one-full-source-block break return were reported correct. Accepted BGE C52 and Nibaru C45 remain disabled as the rollback baseline under the slot-scoped dependency override.",
     "releases": {
       "current": {
         "version": "C53",
@@ -113,16 +113,16 @@
     "validation": {
       "build": "CONTROLLED_VALIDATION_PASS",
       "deployment": "READY_TO_TEST_VERIFIED",
-      "runtime": "RUNTIME_UNTESTED"
+      "runtime": "RUNTIME_FAIL"
     },
     "blocker": null
   },
   "synchronization": {
-    "revision": 8,
-    "activity_at": "2026-08-30T07:24:50Z",
-    "updated_at": "2026-08-30T07:24:50Z",
-    "last_codex_at": "2026-08-30T07:24:50Z",
-    "source_commit": "714d20eb4f9bdfd6696780f0d926f0240241e7be",
+    "revision": 9,
+    "activity_at": "2026-08-30T08:11:36Z",
+    "updated_at": "2026-08-30T08:11:36Z",
+    "last_codex_at": "2026-08-30T08:11:36Z",
+    "source_commit": "5e1007888a847f00012a413214d51c810efa1b31",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null

@@ -2,8 +2,8 @@
   "$schema": "../../schemas/runtime-state.schema.json",
   "schema_version": 1,
   "activation": "ACTIVE",
-  "revision": 23,
-  "updated_at": "2026-08-30T06:42:37Z",
+  "revision": 29,
+  "updated_at": "2026-08-30T08:11:41Z",
   "accepted_baseline": {
     "revision": 3,
     "provenance": {
@@ -731,11 +731,19 @@
         "ready_verified_at": "2026-08-30T06:42:35Z"
       },
       "runtime_result": {
-        "classification": "UNTESTED",
-        "recorded_at": null,
+        "classification": "FAIL",
+        "recorded_at": "2026-08-30T08:11:36Z",
         "evidence": {
-          "passed": [],
-          "failed": []
+          "passed": [
+            "Gravity and falling-material behavior looked correct.",
+            "Grass lifecycle behavior looked correct.",
+            "Glass and translucency behavior looked correct.",
+            "Layer geometry otherwise behaved correctly.",
+            "Breaking the combined layered geometry returned one full source block."
+          ],
+          "failed": [
+            "Placing additional compatible Layer geometry into an already occupied compatible Layer block consumed additional source/layer items."
+          ]
         }
       },
       "dependency_overrides": [
@@ -744,33 +752,33 @@
     },
     "B": {
       "unit": {
-        "deployment_id": "9e9098ad-ae0c-42ff-a640-f12ee68eed85",
-        "project_uuid": "2371b6eb-a4fb-4f1e-8203-580b82ce846b",
-        "project_id": "coal-consolidation",
+        "deployment_id": "d66d7f25-918a-4452-9be6-81c72b28a40e",
+        "project_uuid": "e28154da-0649-5da7-b6d5-3bff2891719e",
+        "project_id": "shulker-trowel",
         "project_identity_source": "CURRENT_MANIFEST",
-        "version": "0.1.0-canary1",
-        "source_commit": "ff8ea31e3c5959fdb4a2886b1113071bfda5770f",
+        "version": "0.1.0-canary5",
+        "source_commit": "5e1007888a847f00012a413214d51c810efa1b31",
         "artifacts": [
           {
-            "artifact_id": "1cee4d50-6163-48fc-8dce-283454638614",
+            "artifact_id": "fb86de68-38f3-4822-9127-c670396393d1",
             "kind": "MOD",
-            "filename": "coal-consolidation-0.1.0-canary1.jar",
-            "sha256": "d7598f640184613f03f0ea2fb558cd4d94099ec54cabc189ef978dbb7f5d4f9d",
+            "filename": "shulker-trowel-0.1.0-canary5-private.jar",
+            "sha256": "4ab4bb8068f0660e0bbc6ed0cb059666b7112cc0e29744906972e396fc653664",
             "ownership_keys": [
-              "mod:coal_consolidation"
+              "mod:shulker_trowel"
             ],
             "source": {
               "type": "REPOSITORY",
-              "path": "projects/coal-consolidation/artifacts/coal-consolidation-0.1.0-canary1.jar"
+              "path": "test-builds/private/shulker-trowel/canary5/shulker-trowel-0.1.0-canary5-private.jar"
             }
           }
         ]
       },
-      "replaces_accepted_deployment_id": null,
+      "replaces_accepted_deployment_id": "6c8c4d94-bce9-479a-916c-66b94eecc852",
       "deployment": {
         "state": "READY_TO_TEST_VERIFIED",
-        "deployed_at": "2026-08-30T06:42:36Z",
-        "ready_verified_at": "2026-08-30T06:42:37Z"
+        "deployed_at": "2026-08-30T08:11:40Z",
+        "ready_verified_at": "2026-08-30T08:11:41Z"
       },
       "runtime_result": {
         "classification": "UNTESTED",

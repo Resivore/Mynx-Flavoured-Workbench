@@ -1,6 +1,8 @@
 # Testing
 
-Canary 1 is the current unaccepted candidate. The manager installed exact `artifacts/coal-consolidation-0.1.0-canary1.jar`, 7,488 bytes, SHA-256 `D7598F640184613F03F0EA2FB558CD4D94099EC54CABC189EF978DBB7F5D4F9D`, in Slot B and returned `READY_TO_TEST_VERIFIED`; no newer `main`-scoped Coal Consolidation change supersedes release source `ff8ea31e3c5959fdb4a2886b1113071bfda5770f`. The accepted stack satisfies the recorded Minecraft 26.2, Fabric Loader, Fabric API, Matcha 1.12, and JEI dependency identities. Minecraft has not been launched, so Slot B remains `RUNTIME_UNTESTED`.
+Canary 1 is the current unaccepted failed candidate. Exact retained `artifacts/coal-consolidation-0.1.0-canary1.jar`, 7,488 bytes, SHA-256 `D7598F640184613F03F0EA2FB558CD4D94099EC54CABC189EF978DBB7F5D4F9D`, from release source `ff8ea31e3c5959fdb4a2886b1113071bfda5770f` recorded `RUNTIME_FAIL`: the user observed that smelting logs through the vanilla furnace `minecraft:charcoal` route still produced `minecraft:charcoal` instead of coal. That observation satisfies the runtime stopping condition. The separate Matcha `smoking:charcoal` route was not reported as tested, and no result is inferred for it or any other matrix row. These two cooking recipes remain the audited ordinary production routes; Matcha kindling/campfire is a regression control and does not provide ordinary charcoal acquisition in this baseline.
+
+C1 has been removed from Slot B and occupies neither test slot, so the project is `ACTIVE / NOT_DEPLOYED` while the fixable implementation defect awaits separate work. No successor exists, and unchanged C1 must not be treated as ready for another acceptance run.
 
 Legacy checkpoint `8efd7ff3c00c7bb82356e06f3aaa19d3079be3f8` records a Java 25, Gradle 9.5.1, Loom 1.17.20 clean build with 16/16 focused tests passing. Migration separately ran the same focused build and again passed 16/16 with no failures, errors, or skips. Its fresh JAR reproduced the retained artifact byte-for-byte without replacing it. Both results are static evidence only.
 
@@ -14,11 +16,11 @@ gradle -p projects/coal-consolidation clean test build --no-daemon
 
 The four suites contain 16 tests covering all ten packaged recipes through Minecraft 26.2's production `Recipe.CODEC`, representative furnace/smoker inputs and retained timing/experience, the seven explicit consumers, one-way legacy conversion, unchanged tag-backed behavior, Creative and recipe-viewer suppression boundaries, and continued charcoal registry identity.
 
-## Runtime prerequisites
+## Successor runtime prerequisites
 
-Under explicit runtime ownership, use the already deployed exact Slot B artifact; do not rebuild or substitute a same-version JAR. Reconfirm the manager identity/readiness before launch. Test with the intended Matcha 1.12 stack and JEI 30.18.0.144 for viewer coverage; separately confirm the optional no-JEI boundary when applicable.
+After a separately authorized fix produces a successor, deploy its exact retained artifact through the canonical manager rather than redeploying unchanged C1. Reconfirm the manager identity/readiness before launch. Test with the intended Matcha 1.12 stack and JEI 30.18.0.144 for viewer coverage; separately confirm the optional no-JEI boundary when applicable.
 
-## Runtime matrix
+## Successor runtime matrix
 
 1. Confirm the exact artifact and dependency identities, reach the title screen, enter a disposable test world, and check the log for Coal Consolidation resource or initializer errors.
 2. In a furnace, process an oak log, spruce log, and oak wood. Confirm each produces exactly one coal, never charcoal, while the `minecraft:charcoal` recipe retains ordinary furnace timing and `0.15` experience.
