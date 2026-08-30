@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "id": "wearable_lanterns",
+  "version": "${version}",
+  "name": "Wearable Lanterns",
+  "description": "Adds a dedicated native Trinkets lantern slot and resource-aware worn lantern rendering.",
+  "authors": ["Resivore"],
+  "license": "All-Rights-Reserved",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "dev.resivore.wearablelanterns.WearableLanterns"
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=0.19.3",
+    "fabric-api": "0.157.0+26.2",
+    "minecraft": "26.2",
+    "java": ">=25",
+    "trinkets_updated": "4.1.0-beta.3+26.2"
+  },
+  "suggests": {
+    "lambdynlights": "4.12.2+26.2"
+  },
+  "custom": {
+    "workbench:classification": "GENERATED / UNTESTED",
+    "workbench:deployment": "NOT DEPLOYED"
+  }
+}
