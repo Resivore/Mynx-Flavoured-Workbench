@@ -10,13 +10,29 @@
     "schema_version": { "const": 1 },
     "activation": { "enum": ["GATED", "ACTIVE"] },
     "revision": { "type": "integer", "minimum": 0 },
-    "updated_at": { "type": "string", "format": "date-time" },
+    "updated_at": { "$ref": "#/$defs/timestamp" },
     "accepted_baseline": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["revision", "members"],
+      "required": ["revision", "provenance", "members"],
       "properties": {
         "revision": { "type": "integer", "minimum": 0 },
+        "provenance": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["source_repository", "source_commit", "source_profile", "legacy_ledger_sha256", "accepted_artifact_count", "overlay_order", "readiness", "diagnostics", "physical_disposition"],
+          "properties": {
+            "source_repository": { "$ref": "#/$defs/nonblank" },
+            "source_commit": { "$ref": "#/$defs/commit" },
+            "source_profile": { "$ref": "#/$defs/nonblank" },
+            "legacy_ledger_sha256": { "$ref": "#/$defs/sha256" },
+            "accepted_artifact_count": { "type": "integer", "minimum": 0 },
+            "overlay_order": { "type": "array", "maxItems": 2, "uniqueItems": true, "items": { "$ref": "#/$defs/uuid" } },
+            "readiness": { "const": "READY_TO_TEST_VERIFIED" },
+            "diagnostics": { "type": "integer", "minimum": 0 },
+            "physical_disposition": { "enum": ["PENDING", "ADOPTED", "TRANSITIONED"] }
+          }
+        },
         "members": { "type": "array", "items": { "$ref": "#/$defs/acceptedMember" } }
       }
     },
@@ -30,19 +46,51 @@
       }
     }
   },
+  "allOf": [
+    {
+      "if": { "properties": { "activation": { "const": "GATED" } } },
+      "then": {
+        "properties": {
+          "accepted_baseline": {
+            "properties": {
+              "provenance": { "properties": { "physical_disposition": { "const": "PENDING" } } }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "activation": { "const": "ACTIVE" } } },
+      "then": {
+        "properties": {
+          "accepted_baseline": {
+            "properties": {
+              "provenance": {
+                "properties": {
+                  "physical_disposition": { "enum": ["ADOPTED", "TRANSITIONED"] },
+                  "diagnostics": { "const": 0 }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
   "$defs": {
-    "uuid": { "type": "string", "format": "uuid" },
+    "uuid": { "type": "string", "format": "uuid", "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$" },
     "projectId": { "type": "string", "pattern": "^[a-z0-9]+(?:[.-][a-z0-9]+)*$" },
     "commit": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
     "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "timestamp": { "type": "string", "format": "date-time", "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,9})?Z$" },
     "nonblank": { "type": "string", "minLength": 1, "pattern": "^\\S(?:.*\\S)?$" },
     "artifact": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["artifact_id", "kind", "filename", "sha256", "ownership_keys"],
+      "required": ["artifact_id", "kind", "filename", "sha256", "ownership_keys", "source"],
       "properties": {
         "artifact_id": { "$ref": "#/$defs/uuid" },
-        "kind": { "enum": ["MOD", "RESOURCE_PACK"] },
+        "kind": { "const": "MOD" },
         "filename": {
           "type": "string",
           "allOf": [
@@ -55,23 +103,54 @@
         "ownership_keys": {
           "type": "array",
           "minItems": 1,
+          "maxItems": 1,
           "uniqueItems": true,
-          "items": { "type": "string", "pattern": "^[a-z0-9_.-]+:[a-z0-9_./-]+$" }
+          "items": { "type": "string", "pattern": "^mod:[a-z0-9_.-]+$" }
+        },
+        "source": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type", "path"],
+          "properties": {
+            "type": { "enum": ["REPOSITORY", "ADOPTED_TARGET"] },
+            "path": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "^(?!/)(?!.*//)(?!.*\\/$)(?!\\.{1,2}(?:/|$))(?!.*\\/\\.{1,2}(?:/|$))(?!.*[\\\\:*?\"<>|\\u0000-\\u001f]).+$"
+            }
+          },
+          "allOf": [
+            {
+              "if": { "properties": { "type": { "const": "ADOPTED_TARGET" } } },
+              "then": { "properties": { "path": { "pattern": "^mods/[^/]+$" } } }
+            },
+            {
+              "if": { "properties": { "type": { "const": "REPOSITORY" } } },
+              "then": { "properties": { "path": { "not": { "pattern": "^[Oo][Rr][Ii][Gg][Ii][Nn][Aa][Ll][Ss]/" } } } }
+            }
+          ]
         }
       }
     },
     "unit": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["deployment_id", "project_uuid", "project_id", "version", "source_commit", "artifacts"],
+      "required": ["deployment_id", "project_uuid", "project_id", "project_identity_source", "version", "source_commit", "artifacts"],
       "properties": {
         "deployment_id": { "$ref": "#/$defs/uuid" },
         "project_uuid": { "$ref": "#/$defs/uuid" },
         "project_id": { "$ref": "#/$defs/projectId" },
+        "project_identity_source": { "enum": ["CURRENT_MANIFEST", "FROZEN_LEGACY"] },
         "version": { "$ref": "#/$defs/nonblank" },
-        "source_commit": { "$ref": "#/$defs/commit" },
+        "source_commit": { "anyOf": [{ "type": "null" }, { "$ref": "#/$defs/commit" }] },
         "artifacts": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/artifact" } }
-      }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "project_identity_source": { "const": "CURRENT_MANIFEST" } } },
+          "then": { "properties": { "source_commit": { "$ref": "#/$defs/commit" } } }
+        }
+      ]
     },
     "acceptedMember": {
       "type": "object",
@@ -79,7 +158,7 @@
       "required": ["unit", "accepted_at"],
       "properties": {
         "unit": { "$ref": "#/$defs/unit" },
-        "accepted_at": { "type": "string", "format": "date-time" }
+        "accepted_at": { "anyOf": [{ "type": "null" }, { "$ref": "#/$defs/timestamp" }] }
       }
     },
     "slot": {
@@ -87,7 +166,17 @@
       "additionalProperties": false,
       "required": ["unit", "replaces_accepted_deployment_id", "deployment", "runtime_result"],
       "properties": {
-        "unit": { "$ref": "#/$defs/unit" },
+        "unit": {
+          "allOf": [
+            { "$ref": "#/$defs/unit" },
+            {
+              "properties": {
+                "project_identity_source": { "const": "CURRENT_MANIFEST" },
+                "source_commit": { "$ref": "#/$defs/commit" }
+              }
+            }
+          ]
+        },
         "replaces_accepted_deployment_id": {
           "anyOf": [{ "type": "null" }, { "$ref": "#/$defs/uuid" }]
         },
@@ -97,17 +186,26 @@
           "required": ["state", "deployed_at", "ready_verified_at"],
           "properties": {
             "state": { "enum": ["NOT_DEPLOYED", "DEPLOYED", "READY_TO_TEST_VERIFIED"] },
-            "deployed_at": { "anyOf": [{ "type": "null" }, { "type": "string", "format": "date-time" }] },
-            "ready_verified_at": { "anyOf": [{ "type": "null" }, { "type": "string", "format": "date-time" }] }
+            "deployed_at": { "anyOf": [{ "type": "null" }, { "$ref": "#/$defs/timestamp" }] },
+            "ready_verified_at": { "anyOf": [{ "type": "null" }, { "$ref": "#/$defs/timestamp" }] }
           }
         },
         "runtime_result": {
           "type": "object",
           "additionalProperties": false,
-          "required": ["classification", "recorded_at"],
+          "required": ["classification", "recorded_at", "evidence"],
           "properties": {
             "classification": { "enum": ["UNTESTED", "PASS", "FAIL", "INCONCLUSIVE"] },
-            "recorded_at": { "anyOf": [{ "type": "null" }, { "type": "string", "format": "date-time" }] }
+            "recorded_at": { "anyOf": [{ "type": "null" }, { "$ref": "#/$defs/timestamp" }] },
+            "evidence": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["passed", "failed"],
+              "properties": {
+                "passed": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/nonblank" } },
+                "failed": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/nonblank" } }
+              }
+            }
           }
         }
       }

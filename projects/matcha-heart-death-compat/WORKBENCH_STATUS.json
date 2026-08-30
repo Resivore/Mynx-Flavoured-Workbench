@@ -42,7 +42,7 @@
         "Co-installing the retired matcha_echo_shard_scarcity mod, Canary 6, or another Heart artifact with Canary 7.",
         "The separate Reach Crafting and Effortless Crafting grid-delay issue.",
         "Dedicated-server or exhaustive runtime claims not present in the frozen evidence.",
-        "Runtime deployment, promotion, Test Slot changes, accepted physical Workbench changes, or protected gameplay-instance access during this migration."
+        "Redeploying, promoting, or reclassifying unchanged Canary 7, or creating a successor without a separately authorized narrow recipe-precedence fix."
       ]
     },
     "dependencies": [
@@ -85,7 +85,7 @@
     ]
   },
   "state": {
-    "milestone": "Exact C7 remains in TESTING after a partial runtime pass: Sensor/Shrieker Echo Shard drops and the Reinforced recipe passed; Crystal Heart, Sensor, and Shrieker recipes failed because Matcha precedence still wins. C7 is unchanged in the verified Heart + Mossy profile, accepted C5 is its disabled rollback, and no C8 was produced.",
+    "milestone": "Exact C7 is recorded as Slot A FAIL after three passes and three recipe-precedence failures: Sensor/Shrieker Echo Shard drop removal and the Reinforced recipe passed, while Matcha still won the Crystal Heart, Sensor, and Shrieker recipes. V2 adopted the exact frozen baseline with accepted C5 disabled, C7 remained byte-identical and unpromoted, and no C8 was produced.",
     "releases": {
       "current": {
         "version": "0.1.6-canary7",
@@ -117,16 +117,16 @@
     "validation": {
       "build": "STATIC_PASS",
       "deployment": "READY_TO_TEST_VERIFIED",
-      "runtime": "PARTIAL_RUNTIME_PASS"
+      "runtime": "RUNTIME_FAIL"
     },
     "blocker": null
   },
   "synchronization": {
-    "revision": 1,
-    "activity_at": "2026-08-29T06:17:22Z",
-    "updated_at": "2026-08-29T21:03:27Z",
-    "last_codex_at": "2026-08-29T21:03:27Z",
-    "source_commit": "c3081fbd1a5b042e40b2ba4060f8299e471e0005",
+    "revision": 2,
+    "activity_at": "2026-08-30T00:57:47.228403Z",
+    "updated_at": "2026-08-30T01:19:52Z",
+    "last_codex_at": "2026-08-30T01:19:52Z",
+    "source_commit": "b96f82003de8cd4e2c8e8187d0fb7dde76fe3595",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null

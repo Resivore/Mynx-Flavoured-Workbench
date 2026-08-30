@@ -6,11 +6,8 @@ from __future__ import annotations
 import copy
 import hashlib
 import json
-import os
 import re
-import secrets
-import tempfile
-from pathlib import Path, PurePosixPath
+from pathlib import Path, PurePosixPath, PureWindowsPath
 from typing import Any
 
 try:
@@ -26,7 +23,6 @@ try:
         _sha256,
         _timestamp,
         _uuid,
-        load_json,
     )
 except ImportError:  # Direct execution/import from tools/.
     from workbench import (  # type: ignore
@@ -41,22 +37,33 @@ except ImportError:  # Direct execution/import from tools/.
         _sha256,
         _timestamp,
         _uuid,
-        load_json,
     )
 
 
 RUNTIME_SCHEMA_REF = "../../schemas/runtime-state.schema.json"
 ACTIVATION_STATES = {"GATED", "ACTIVE"}
-ARTIFACT_KINDS = {"MOD", "RESOURCE_PACK"}
+ARTIFACT_KINDS = {"MOD"}
 SLOT_DEPLOYMENT_STATES = {"NOT_DEPLOYED", "DEPLOYED", "READY_TO_TEST_VERIFIED"}
 SLOT_RESULTS = {"UNTESTED", "PASS", "FAIL", "INCONCLUSIVE"}
-TRANSITIONS = {"ASSIGN_SLOT", "SET_PROFILE", "MARK_DEPLOYED", "MARK_READY", "RECORD_RESULT", "REMOVE_SLOT", "PROMOTE_SLOT"}
-OWNERSHIP_KEY_RE = re.compile(r"^[a-z0-9_.-]+:[a-z0-9_./-]+$")
+ARTIFACT_SOURCE_TYPES = {"REPOSITORY", "ADOPTED_TARGET"}
+BASELINE_DISPOSITIONS = {"PENDING", "ADOPTED", "TRANSITIONED"}
+PROJECT_IDENTITY_SOURCES = {"CURRENT_MANIFEST", "FROZEN_LEGACY"}
+TRANSITIONS = {
+    "ASSIGN_SLOT",
+    "UPDATE_SLOT",
+    "SET_PROFILE",
+    "MARK_DEPLOYED",
+    "MARK_READY",
+    "RECORD_RESULT",
+    "REMOVE_SLOT",
+    "PROMOTE_SLOT",
+}
+OWNERSHIP_KEY_RE = re.compile(r"^mod:[a-z0-9_.-]+$")
 WINDOWS_RESERVED_RE = re.compile(r"^(?:con|prn|aux|nul|com[1-9]|lpt[1-9])(?:\.|$)", re.IGNORECASE)
 
 
 def _artifact(value: Any, path: str) -> dict[str, Any]:
-    artifact = _object(value, path, {"artifact_id", "kind", "filename", "sha256", "ownership_keys"})
+    artifact = _object(value, path, {"artifact_id", "kind", "filename", "sha256", "ownership_keys", "source"})
     _uuid(artifact["artifact_id"], f"{path}.artifact_id")
     _enum(artifact["kind"], f"{path}.kind", ARTIFACT_KINDS)
     filename = _nonblank(artifact["filename"], f"{path}.filename")
@@ -71,8 +78,8 @@ def _artifact(value: Any, path: str) -> dict[str, Any]:
         _fail(f"{path}.filename", "must be a Windows-safe basename")
     _sha256(artifact["sha256"], f"{path}.sha256")
     ownership_keys = artifact["ownership_keys"]
-    if not isinstance(ownership_keys, list) or not ownership_keys:
-        _fail(f"{path}.ownership_keys", "must be a nonempty array")
+    if not isinstance(ownership_keys, list) or len(ownership_keys) != 1:
+        _fail(f"{path}.ownership_keys", "MOD artifacts require exactly one mod:<fabric_id> key")
     seen: set[str] = set()
     for index, ownership_key in enumerate(ownership_keys):
         ownership_key = _nonblank(ownership_key, f"{path}.ownership_keys[{index}]")
@@ -82,16 +89,57 @@ def _artifact(value: Any, path: str) -> dict[str, Any]:
         if normalized in seen:
             _fail(f"{path}.ownership_keys", f"duplicate ownership key: {ownership_key}")
         seen.add(normalized)
+
+    source = _object(artifact["source"], f"{path}.source", {"type", "path"})
+    source_type = _enum(source["type"], f"{path}.source.type", ARTIFACT_SOURCE_TYPES)
+    source_path = _nonblank(source["path"], f"{path}.source.path")
+    pure_path = PurePosixPath(source_path)
+    if (
+        pure_path.is_absolute()
+        or bool(PureWindowsPath(source_path).drive)
+        or source_path != pure_path.as_posix()
+        or any(part in {"", ".", ".."} for part in pure_path.parts)
+        or "\\" in source_path
+        or ":" in source_path
+    ):
+        _fail(f"{path}.source.path", "must be a normalized relative POSIX path")
+    if source_type == "REPOSITORY":
+        if pure_path.parts[0].casefold() == "originals":
+            _fail(f"{path}.source.path", "repository sources cannot be under originals/")
+        if pure_path.name != filename:
+            _fail(f"{path}.source.path", "repository source basename must match artifact filename")
+    elif pure_path.parts != ("mods", filename):
+        _fail(f"{path}.source.path", "adopted target sources must be mods/<artifact filename>")
     return artifact
 
 
 def _unit(value: Any, path: str, project_index: dict[str, str] | None) -> dict[str, Any]:
-    unit = _object(value, path, {"deployment_id", "project_uuid", "project_id", "version", "source_commit", "artifacts"})
+    unit = _object(
+        value,
+        path,
+        {
+            "deployment_id",
+            "project_uuid",
+            "project_id",
+            "project_identity_source",
+            "version",
+            "source_commit",
+            "artifacts",
+        },
+    )
     _uuid(unit["deployment_id"], f"{path}.deployment_id")
     project_uuid = _uuid(unit["project_uuid"], f"{path}.project_uuid")
     project_id = _project_id(unit["project_id"], f"{path}.project_id")
+    identity_source = _enum(
+        unit["project_identity_source"],
+        f"{path}.project_identity_source",
+        PROJECT_IDENTITY_SOURCES,
+    )
     _nonblank(unit["version"], f"{path}.version")
-    _commit(unit["source_commit"], f"{path}.source_commit")
+    if unit["source_commit"] is not None:
+        _commit(unit["source_commit"], f"{path}.source_commit")
+    elif identity_source == "CURRENT_MANIFEST":
+        _fail(f"{path}.source_commit", "CURRENT_MANIFEST deployments require an exact source commit")
     artifacts = unit["artifacts"]
     if not isinstance(artifacts, list) or not artifacts:
         _fail(f"{path}.artifacts", "must be a nonempty array")
@@ -99,9 +147,9 @@ def _unit(value: Any, path: str, project_index: dict[str, str] | None) -> dict[s
         _artifact(artifact, f"{path}.artifacts[{index}]")
     if project_index is not None:
         expected_id = project_index.get(project_uuid)
-        if expected_id is None:
+        if expected_id is None and identity_source != "FROZEN_LEGACY":
             _fail(f"{path}.project_uuid", "does not resolve to a repository project manifest")
-        if expected_id != project_id:
+        if expected_id is not None and expected_id != project_id:
             _fail(f"{path}.project_id", f"does not match manifest project_id {expected_id}")
     return unit
 
@@ -109,13 +157,16 @@ def _unit(value: Any, path: str, project_index: dict[str, str] | None) -> dict[s
 def _accepted_member(value: Any, path: str, project_index: dict[str, str] | None) -> dict[str, Any]:
     member = _object(value, path, {"unit", "accepted_at"})
     _unit(member["unit"], f"{path}.unit", project_index)
-    _timestamp(member["accepted_at"], f"{path}.accepted_at")
+    if member["accepted_at"] is not None:
+        _timestamp(member["accepted_at"], f"{path}.accepted_at")
     return member
 
 
 def _slot(value: Any, path: str, project_index: dict[str, str] | None) -> dict[str, Any]:
     slot = _object(value, path, {"unit", "replaces_accepted_deployment_id", "deployment", "runtime_result"})
-    _unit(slot["unit"], f"{path}.unit", project_index)
+    unit = _unit(slot["unit"], f"{path}.unit", project_index)
+    if unit["project_identity_source"] != "CURRENT_MANIFEST":
+        _fail(f"{path}.unit.project_identity_source", "runtime slots require CURRENT_MANIFEST identity")
     if slot["replaces_accepted_deployment_id"] is not None:
         _uuid(slot["replaces_accepted_deployment_id"], f"{path}.replaces_accepted_deployment_id")
 
@@ -132,7 +183,11 @@ def _slot(value: Any, path: str, project_index: dict[str, str] | None) -> dict[s
     if deployed_at is not None and ready_at is not None and ready_at < deployed_at:
         _fail(f"{path}.deployment", "ready verification cannot precede deployment")
 
-    runtime_result = _object(slot["runtime_result"], f"{path}.runtime_result", {"classification", "recorded_at"})
+    runtime_result = _object(
+        slot["runtime_result"],
+        f"{path}.runtime_result",
+        {"classification", "recorded_at", "evidence"},
+    )
     classification = _enum(runtime_result["classification"], f"{path}.runtime_result.classification", SLOT_RESULTS)
     recorded_at = None if runtime_result["recorded_at"] is None else _timestamp(runtime_result["recorded_at"], f"{path}.runtime_result.recorded_at")
     if classification == "UNTESTED" and recorded_at is not None:
@@ -143,6 +198,33 @@ def _slot(value: Any, path: str, project_index: dict[str, str] | None) -> dict[s
         _fail(f"{path}.runtime_result", "runtime results require READY_TO_TEST_VERIFIED deployment")
     if ready_at is not None and recorded_at is not None and recorded_at < ready_at:
         _fail(f"{path}.runtime_result.recorded_at", "cannot precede ready verification")
+    evidence = _object(runtime_result["evidence"], f"{path}.runtime_result.evidence", {"passed", "failed"})
+    evidence_sets: dict[str, set[str]] = {}
+    for label in ("passed", "failed"):
+        values = evidence[label]
+        if not isinstance(values, list):
+            _fail(f"{path}.runtime_result.evidence.{label}", "must be an array")
+        normalized: set[str] = set()
+        for index, item in enumerate(values):
+            item = _nonblank(item, f"{path}.runtime_result.evidence.{label}[{index}]")
+            key = item.casefold()
+            if key in normalized:
+                _fail(f"{path}.runtime_result.evidence.{label}", f"duplicate evidence: {item}")
+            normalized.add(key)
+        evidence_sets[label] = normalized
+    overlap = evidence_sets["passed"].intersection(evidence_sets["failed"])
+    if overlap:
+        _fail(f"{path}.runtime_result.evidence", "the same check cannot be both passed and failed")
+    if classification == "UNTESTED" and (evidence["passed"] or evidence["failed"]):
+        _fail(f"{path}.runtime_result.evidence", "UNTESTED requires empty evidence")
+    if classification == "PASS" and not evidence["passed"]:
+        _fail(f"{path}.runtime_result.evidence.passed", "PASS requires at least one passed check")
+    if classification == "PASS" and evidence["failed"]:
+        _fail(f"{path}.runtime_result.evidence.failed", "PASS cannot retain failed evidence")
+    if classification == "FAIL" and not evidence["failed"]:
+        _fail(f"{path}.runtime_result.evidence.failed", "FAIL requires at least one failed check")
+    if classification == "INCONCLUSIVE" and not (evidence["passed"] or evidence["failed"]):
+        _fail(f"{path}.runtime_result.evidence", "INCONCLUSIVE requires observed evidence")
     return slot
 
 
@@ -197,24 +279,79 @@ def validate_runtime_state(state: dict[str, Any], project_index: dict[str, str] 
         _fail("$.$schema", f"must equal {RUNTIME_SCHEMA_REF}")
     if state["schema_version"] != 1:
         _fail("$.schema_version", "must equal 1")
-    _enum(state["activation"], "$.activation", ACTIVATION_STATES)
+    activation = _enum(state["activation"], "$.activation", ACTIVATION_STATES)
     state_revision = _integer(state["revision"], "$.revision", 0)
     updated_at = _timestamp(state["updated_at"], "$.updated_at")
 
-    baseline = _object(state["accepted_baseline"], "$.accepted_baseline", {"revision", "members"})
+    baseline = _object(state["accepted_baseline"], "$.accepted_baseline", {"revision", "provenance", "members"})
     baseline_revision = _integer(baseline["revision"], "$.accepted_baseline.revision", 0)
     if baseline_revision > state_revision:
         _fail("$.accepted_baseline.revision", "cannot exceed state revision")
+    provenance = _object(
+        baseline["provenance"],
+        "$.accepted_baseline.provenance",
+        {
+            "source_repository",
+            "source_commit",
+            "source_profile",
+            "legacy_ledger_sha256",
+            "accepted_artifact_count",
+            "overlay_order",
+            "readiness",
+            "diagnostics",
+            "physical_disposition",
+        },
+    )
+    _nonblank(provenance["source_repository"], "$.accepted_baseline.provenance.source_repository")
+    _commit(provenance["source_commit"], "$.accepted_baseline.provenance.source_commit")
+    _nonblank(provenance["source_profile"], "$.accepted_baseline.provenance.source_profile")
+    _sha256(provenance["legacy_ledger_sha256"], "$.accepted_baseline.provenance.legacy_ledger_sha256")
+    accepted_artifact_count = _integer(
+        provenance["accepted_artifact_count"],
+        "$.accepted_baseline.provenance.accepted_artifact_count",
+        0,
+    )
+    overlay_order = provenance["overlay_order"]
+    if not isinstance(overlay_order, list) or len(overlay_order) > 2:
+        _fail("$.accepted_baseline.provenance.overlay_order", "must be an array of at most two project UUIDs")
+    seen_overlay_projects: set[str] = set()
+    for index, project_uuid in enumerate(overlay_order):
+        project_uuid = _uuid(project_uuid, f"$.accepted_baseline.provenance.overlay_order[{index}]")
+        if project_uuid in seen_overlay_projects:
+            _fail("$.accepted_baseline.provenance.overlay_order", f"duplicate project UUID: {project_uuid}")
+        seen_overlay_projects.add(project_uuid)
+    if provenance["readiness"] != "READY_TO_TEST_VERIFIED":
+        _fail("$.accepted_baseline.provenance.readiness", "must preserve READY_TO_TEST_VERIFIED")
+    diagnostics = _integer(provenance["diagnostics"], "$.accepted_baseline.provenance.diagnostics", 0)
+    physical_disposition = _enum(
+        provenance["physical_disposition"],
+        "$.accepted_baseline.provenance.physical_disposition",
+        BASELINE_DISPOSITIONS,
+    )
+    if activation == "GATED" and physical_disposition != "PENDING":
+        _fail("$.accepted_baseline.provenance.physical_disposition", "GATED state requires PENDING disposition")
+    if activation == "ACTIVE":
+        if physical_disposition == "PENDING":
+            _fail("$.accepted_baseline.provenance.physical_disposition", "ACTIVE state requires adopted physical state")
+        if diagnostics != 0:
+            _fail("$.accepted_baseline.provenance.diagnostics", "ACTIVE state requires zero diagnostics")
     if not isinstance(baseline["members"], list):
         _fail("$.accepted_baseline.members", "must be an array")
+    actual_artifact_count = 0
     for index, member in enumerate(baseline["members"]):
         _accepted_member(member, f"$.accepted_baseline.members[{index}]", project_index)
-        if _timestamp(member["accepted_at"], f"$.accepted_baseline.members[{index}].accepted_at") > updated_at:
+        actual_artifact_count += len(member["unit"]["artifacts"])
+        if member["accepted_at"] is not None and _timestamp(
+            member["accepted_at"], f"$.accepted_baseline.members[{index}].accepted_at"
+        ) > updated_at:
             _fail(f"$.accepted_baseline.members[{index}].accepted_at", "cannot be later than state updated_at")
+    if actual_artifact_count != accepted_artifact_count:
+        _fail(
+            "$.accepted_baseline.provenance.accepted_artifact_count",
+            f"declares {accepted_artifact_count}, but members contain {actual_artifact_count} artifacts",
+        )
 
     slots = _object(state["slots"], "$.slots", {"A", "B"})
-    if slots["A"] is None and slots["B"] is not None:
-        _fail("$.slots", "slots must be left-packed; B cannot be occupied while A is empty")
     for label in ("A", "B"):
         if slots[label] is not None:
             _slot(slots[label], f"$.slots.{label}", project_index)
@@ -302,12 +439,6 @@ def state_digest(state: dict[str, Any]) -> str:
     return hashlib.sha256(encoded).hexdigest()
 
 
-def _pack_slots(slots: dict[str, Any]) -> None:
-    if slots["A"] is None and slots["B"] is not None:
-        slots["A"] = slots["B"]
-        slots["B"] = None
-
-
 def candidate_declaration(unit: dict[str, Any], replaces_accepted_deployment_id: str | None = None) -> dict[str, Any]:
     """Build immutable candidate input; deployment evidence is intentionally absent."""
 
@@ -331,7 +462,11 @@ def _materialize_candidate(declaration: Any, existing_slots: dict[str, Any]) -> 
         "unit": copy.deepcopy(declaration["unit"]),
         "replaces_accepted_deployment_id": declaration["replaces_accepted_deployment_id"],
         "deployment": {"state": "NOT_DEPLOYED", "deployed_at": None, "ready_verified_at": None},
-        "runtime_result": {"classification": "UNTESTED", "recorded_at": None},
+        "runtime_result": {
+            "classification": "UNTESTED",
+            "recorded_at": None,
+            "evidence": {"passed": [], "failed": []},
+        },
     }
 
 
@@ -363,6 +498,24 @@ def plan_transition(
         if target is None:
             raise ValidationError("both runtime test slots are occupied")
         slots[target] = _materialize_candidate(operation["candidate"], state["slots"])
+    elif operation_type == "UPDATE_SLOT":
+        if set(operation) != {"type", "slot", "candidate"}:
+            raise ValidationError("UPDATE_SLOT requires exactly type, slot, and candidate")
+        label = operation["slot"]
+        if label not in {"A", "B"}:
+            raise ValidationError("operation.slot must be A or B")
+        if slots[label] is None:
+            raise ValidationError(f"slot {label} is empty")
+        declaration = copy.deepcopy(operation["candidate"])
+        declaration = _object(declaration, "candidate", {"unit", "replaces_accepted_deployment_id"})
+        prior = slots[label]
+        if (
+            declaration["replaces_accepted_deployment_id"] is None
+            and isinstance(declaration["unit"], dict)
+            and declaration["unit"].get("project_uuid") == prior["unit"]["project_uuid"]
+        ):
+            declaration["replaces_accepted_deployment_id"] = prior["replaces_accepted_deployment_id"]
+        slots[label] = _materialize_candidate(declaration, state["slots"])
     elif operation_type == "SET_PROFILE":
         if set(operation) != {"type", "candidates"} or not isinstance(operation["candidates"], list):
             raise ValidationError("SET_PROFILE requires a candidates array")
@@ -373,7 +526,7 @@ def plan_transition(
     else:
         required_keys = {"type", "slot"}
         if operation_type == "RECORD_RESULT":
-            required_keys.add("classification")
+            required_keys.update({"classification", "evidence"})
         if set(operation) != required_keys:
             raise ValidationError(f"{operation_type} has invalid operation fields")
         label = operation["slot"]
@@ -398,10 +551,10 @@ def plan_transition(
             slot["runtime_result"] = {
                 "classification": classification,
                 "recorded_at": None if classification == "UNTESTED" else at,
+                "evidence": copy.deepcopy(operation["evidence"]),
             }
         elif operation_type == "REMOVE_SLOT":
             slots[label] = None
-            _pack_slots(slots)
         elif operation_type == "PROMOTE_SLOT":
             if slot["deployment"]["state"] != "READY_TO_TEST_VERIFIED" or slot["runtime_result"]["classification"] != "PASS":
                 raise ValidationError("PROMOTE_SLOT requires an explicit READY_TO_TEST_VERIFIED PASS")
@@ -417,9 +570,11 @@ def plan_transition(
                 if len(indexes) != 1:
                     raise ValidationError("accepted replacement target is not unique")
                 members[indexes[0]] = member
+            next_state["accepted_baseline"]["provenance"]["accepted_artifact_count"] = sum(
+                len(existing["unit"]["artifacts"]) for existing in members
+            )
             next_state["accepted_baseline"]["revision"] += 1
             slots[label] = None
-            _pack_slots(slots)
 
     next_state["revision"] += 1
     next_state["updated_at"] = at
@@ -435,47 +590,10 @@ def commit_state(
     at: str,
     project_index: dict[str, str],
 ) -> dict[str, Any]:
-    """Atomically commit a planned transition; live use fails closed while gated."""
+    """Refuse the obsolete repo-only mutation path.
 
-    path = path.resolve()
-    lock_path = path.with_name(path.name + ".lock")
-    temporary_path: Path | None = None
-    lock_acquired = False
-    lock_token = secrets.token_hex(32)
-    try:
-        with lock_path.open("x", encoding="utf-8") as lock:
-            lock.write(f"{os.getpid()}:{lock_token}")
-        lock_acquired = True
-        current = load_json(path)
-        validate_runtime_state(current, project_index)
-        if current["activation"] == "GATED":
-            raise ValidationError("live runtime-state commit is disabled while activation is GATED")
-        if state_digest(current) != expected_digest:
-            raise ValidationError("stale runtime-state digest")
-        next_state = plan_transition(current, expected_revision, operation, at, project_index)
-        with tempfile.NamedTemporaryFile(
-            mode="w",
-            encoding="utf-8",
-            newline="\n",
-            prefix=path.name + ".",
-            suffix=".tmp",
-            dir=path.parent,
-            delete=False,
-        ) as temporary:
-            json.dump(next_state, temporary, indent=2, ensure_ascii=False)
-            temporary.write("\n")
-            temporary.flush()
-            os.fsync(temporary.fileno())
-            temporary_path = Path(temporary.name)
-        os.replace(temporary_path, path)
-        temporary_path = None
-        return next_state
-    finally:
-        if temporary_path is not None and temporary_path.exists():
-            temporary_path.unlink()
-        if lock_acquired and lock_path.exists():
-            try:
-                if lock_path.read_text(encoding="utf-8") == f"{os.getpid()}:{lock_token}":
-                    lock_path.unlink()
-            except OSError:
-                pass
+    All physical/runtime transitions must use the target-local lock, ledger,
+    verification, and rollback transaction in the V2 physical manager.
+    """
+
+    raise ValidationError("direct runtime-state commits are disabled; use the V2 physical manager")
