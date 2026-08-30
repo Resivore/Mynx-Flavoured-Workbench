@@ -12,6 +12,20 @@ deployment/runtime evidence. Accepted Heart C5 remains managed but disabled;
 Heart C7 and Mossy C2 remain enabled failed candidates. Deployment verification
 does not imply Minecraft runtime validation.
 
+## Migration closure
+
+The physical V2 migration completed at checkpoint
+`d0479458c9ac3c49db825be7a25746f554976922` and was reverified on authoritative
+`main` at `a5b29a421c503c959d820ecb05d92126c7ddad13`. Runtime state is `ACTIVE` at
+revision 2, accepted-baseline revision 1 is `ADOPTED`, and adoption required no
+artifact writes or removals. The exact Heart C7 and Mossy C2 slots remain
+independent `FAIL` candidates; neither was promoted and no C8 or C3 was created.
+
+Google Sheet mirroring is not an activation or physical-verification authority.
+Its pending R2 publication failure is recorded separately in the Sheet
+synchronization infrastructure record and does not change this migration's
+successful lifecycle or physical state.
+
 ## Normal commands
 
 Run from the repository root:

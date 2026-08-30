@@ -2,6 +2,33 @@
 
 The repository is authoritative and Mynx uses its own separate Google Sheet as a UUID-keyed human mirror. Tracked publication is enabled, but `sheet_sync.py` still fails closed unless every source, cutover, environment, secret, signature, and receiver gate passes.
 
+## Pending infrastructure repair
+
+The Workbench V2 migration is complete and `ACTIVE`; its physical and runtime
+authority is unaffected by this mirror-only blocker. From authoritative main
+checkpoint `d0479458c9ac3c49db825be7a25746f554976922`, `Publish Project Status`
+[run 33285532021](https://github.com/Resivore/Mynx-Flavoured-Workbench/actions/runs/33285532021)
+successfully prepared the two ordered incremental R2 events, but its publish job
+failed at `2026-08-30T01:23:45Z` with:
+
+```text
+Sheet receiver rejected event 594da0f70b90c1d7d7d95a92587710b76f33020ee0066e00e431f6a025398330: stale or skipped Sheet revision
+```
+
+That unacknowledged event is Matcha Heart / Death Compatibility UUID
+`937d7ccc-44c9-55cb-8d33-0dc0bff5fe45`, revision 2. Because publication is
+ordered and stopped at that rejection, Mossy Stone UUID
+`9f1c5aa4-09c1-4de3-9921-4b045e8abcd2`, revision 2, event
+`96f7689c6251cda8f14dc4cd7e7567e8783ee08f938d045332b70df440b4d23e`
+was not attempted or acknowledged.
+
+This remains a separate Sheet publisher/receiver infrastructure repair. Do not
+work around it by changing either project revision, fabricating an
+acknowledgement, skipping revisions, editing Sheet rows manually, overwriting
+`Notes`, promoting either candidate, or creating C8/C3. A bounded follow-up must
+repair the publication path and obtain real acknowledgements for the exact
+pending main-authored events while preserving `Notes`.
+
 ## Incremental publication
 
 `sheet_sync.py plan` prepares deterministic, secretless incremental events only for `Resivore/Mynx-Flavoured-Workbench` on `refs/heads/main`. It validates the normal push transition between exact `--before` and `--after` commits. Every changed participating manifest revision produces an event even when its visible status is unchanged. A manifest that stops participating receives its final ordinary update; a project task cannot bypass the revision and log protocol.
