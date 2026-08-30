@@ -587,7 +587,10 @@ class RuntimeContractTests(unittest.TestCase):
                 project_index("alpha"),
             )
 
-    def test_tracked_runtime_state_is_physically_adopted_and_active(self) -> None:
+    def test_tracked_runtime_state_declares_current_active_slot_contract(self) -> None:
+        # Repository metadata is the expected-state contract only. Physical
+        # proof requires the live Test Instance Manager verifier and cannot be
+        # inferred by this bootstrap test.
         tracked = load_json(ROOT / "tools" / "test_instance_manager" / "runtime-state.json")
         self.assertEqual("ACTIVE", tracked["activation"])
         self.assertEqual("ADOPTED", tracked["accepted_baseline"]["provenance"]["physical_disposition"])

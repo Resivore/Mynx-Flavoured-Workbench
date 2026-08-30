@@ -37,6 +37,8 @@ except ImportError:  # Direct execution from tools/test_instance_manager/.
 
 DEFAULT_CONFIG = Path(__file__).with_name("config.json")
 LEDGER_SCHEMA = "mynx-test-instance-manager-ledger-v2"
+LEGACY_MARKER_NAME = ".workbench-instance-manager.json"
+RETIRED_LEGACY_MARKER_NAME = ".workbench-instance-manager.v1-retired.json"
 FailureInjector = Callable[[str], None]
 
 
@@ -218,13 +220,25 @@ class PhysicalManager:
         raw_mods = self.target / config.mods_directory
         raw_ledger = self.target / config.ledger_file
         raw_lock = self.target / config.lock_file
+        raw_legacy_marker = self.target / LEGACY_MARKER_NAME
+        raw_retired_legacy_marker = self.target / RETIRED_LEGACY_MARKER_NAME
         _assert_no_reparse_components(raw_mods, "mods directory", root=self.target)
         _assert_no_reparse_components(raw_ledger, "target-local ledger", root=self.target)
         _assert_no_reparse_components(raw_lock, "target-local lock", root=self.target)
+        _assert_no_reparse_components(raw_legacy_marker, "legacy V1 marker", root=self.target)
+        _assert_no_reparse_components(raw_retired_legacy_marker, "retired legacy V1 marker", root=self.target)
         self.mods = raw_mods.resolve(strict=False)
         self.ledger_path = raw_ledger.resolve(strict=False)
         self.lock_path = raw_lock.resolve(strict=False)
-        for path, label in ((self.mods, "mods directory"), (self.ledger_path, "ledger"), (self.lock_path, "lock")):
+        self.legacy_marker_path = raw_legacy_marker.resolve(strict=False)
+        self.retired_legacy_marker_path = raw_retired_legacy_marker.resolve(strict=False)
+        for path, label in (
+            (self.mods, "mods directory"),
+            (self.ledger_path, "ledger"),
+            (self.lock_path, "lock"),
+            (self.legacy_marker_path, "legacy V1 marker"),
+            (self.retired_legacy_marker_path, "retired legacy V1 marker"),
+        ):
             self._assert_target_containment(path, label)
         if project_index is None:
             try:
@@ -290,6 +304,13 @@ class PhysicalManager:
             names = ", ".join(path.name for path in residues)
             raise ManagerError(
                 "unfinished V2 transaction residue requires explicit inspected recovery before any operation: " + names
+            )
+
+    def _assert_no_legacy_marker(self) -> None:
+        _assert_no_reparse_components(self.legacy_marker_path, "legacy V1 marker", root=self.target)
+        if self.legacy_marker_path.exists():
+            raise ManagerError(
+                f"legacy V1 display marker must be retired before verification or transition: {self.legacy_marker_path}"
             )
 
     def derive_inventory(self, state: dict[str, Any]) -> tuple[ManagedArtifact, ...]:
@@ -545,6 +566,90 @@ class PhysicalManager:
         if ledger["state_digest"] != state_digest(state) or ledger["runtime_state"] != state:
             raise ManagerError("repository runtime state and target-local V2 ledger have diverged")
 
+    def _physical_verification_report(
+        self,
+        state: dict[str, Any],
+        artifacts: tuple[ManagedArtifact, ...],
+    ) -> dict[str, Any]:
+        records: list[dict[str, Any]] = []
+        for artifact in artifacts:
+            path = self._destination(artifact)
+            actual_sha256 = _sha256(path)
+            if actual_sha256 != artifact.sha256:
+                raise ManagerError(
+                    f"SHA-256 changed while producing physical evidence for {path}: "
+                    f"expected {artifact.sha256}, found {actual_sha256}"
+                )
+            records.append(
+                {
+                    "deployment_id": artifact.deployment_id,
+                    "artifact_id": artifact.artifact_id,
+                    "project_id": artifact.project_id,
+                    "filename": artifact.filename,
+                    "path": artifact.relative_path,
+                    "sha256": actual_sha256,
+                    "disposition": "ACTIVE" if artifact.active else "DISABLED",
+                }
+            )
+        records.sort(key=lambda item: item["path"].casefold())
+
+        def inventory_digest(items: list[dict[str, Any]]) -> str:
+            payload = json.dumps(items, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
+            return hashlib.sha256(payload).hexdigest()
+
+        records_by_deployment: dict[str, list[dict[str, Any]]] = {}
+        for record in records:
+            records_by_deployment.setdefault(record["deployment_id"], []).append(record)
+
+        accepted_deployments = {
+            member["unit"]["deployment_id"] for member in state["accepted_baseline"]["members"]
+        }
+        accepted_records = [record for record in records if record["deployment_id"] in accepted_deployments]
+        slot_evidence: dict[str, dict[str, Any] | None] = {}
+        for label in ("A", "B"):
+            slot = state["slots"][label]
+            if slot is None:
+                slot_evidence[label] = None
+                continue
+            unit = slot["unit"]
+            slot_evidence[label] = {
+                "deployment_id": unit["deployment_id"],
+                "project_uuid": unit["project_uuid"],
+                "project_id": unit["project_id"],
+                "version": unit["version"],
+                "deployment_state": slot["deployment"]["state"],
+                "runtime_result": slot["runtime_result"]["classification"],
+                "artifacts": copy.deepcopy(records_by_deployment.get(unit["deployment_id"], [])),
+            }
+
+        return {
+            "status": "PHYSICAL_STATE_VERIFIED",
+            "target": str(self.target),
+            "state_revision": state["revision"],
+            "state_digest": state_digest(state),
+            "managed_file_count": len(records),
+            "physical_inventory_digest": inventory_digest(records),
+            "accepted_baseline": {
+                "revision": state["accepted_baseline"]["revision"],
+                "member_count": len(state["accepted_baseline"]["members"]),
+                "artifact_count": len(accepted_records),
+                "active_artifact_count": sum(record["disposition"] == "ACTIVE" for record in accepted_records),
+                "disabled_artifact_count": sum(record["disposition"] == "DISABLED" for record in accepted_records),
+                "inventory_digest": inventory_digest(accepted_records),
+            },
+            "slots": slot_evidence,
+        }
+
+    def _verify_current_physical_state(self, *, allow_legacy_marker: bool = False) -> dict[str, Any]:
+        self._assert_no_transaction_residue()
+        if not allow_legacy_marker:
+            self._assert_no_legacy_marker()
+        state = self.load_repository_state()
+        ledger = self._read_ledger()
+        self._assert_ledger_matches_repository(ledger, state)
+        artifacts = self._verify_inventory(state, prior_ledger=ledger)
+        return self._physical_verification_report(state, artifacts)
+
     def adoption_plan(self, state: dict[str, Any] | None = None) -> PhysicalPlan:
         self._assert_no_transaction_residue()
         state = self.load_repository_state() if state is None else copy.deepcopy(state)
@@ -602,6 +707,7 @@ class PhysicalManager:
         at: str | None = None,
     ) -> PhysicalPlan:
         self._assert_no_transaction_residue()
+        self._assert_no_legacy_marker()
         if (operation is None) == (desired_state is None):
             raise ManagerError("provide exactly one of operation or desired_state")
         current = self.load_repository_state()
@@ -782,18 +888,66 @@ class PhysicalManager:
             return plan.summary(dry_run=False)
 
     def verify(self) -> dict[str, Any]:
-        self._assert_no_transaction_residue()
-        state = self.load_repository_state()
-        ledger = self._read_ledger()
-        self._assert_ledger_matches_repository(ledger, state)
-        artifacts = self._verify_inventory(state, prior_ledger=ledger)
-        return {
-            "status": "PHYSICAL_STATE_VERIFIED",
-            "target": str(self.target),
-            "state_revision": state["revision"],
-            "state_digest": state_digest(state),
-            "managed_file_count": len(artifacts),
-        }
+        with _ExclusiveTargetLock(self.lock_path):
+            return self._verify_current_physical_state()
+
+    def _read_marker_bytes(self, path: Path, label: str) -> bytes:
+        _assert_no_reparse_components(path, label, root=self.target)
+        if not path.exists() or not path.is_file():
+            raise ManagerError(f"{label} is missing or is not a regular file: {path}")
+        if path.is_symlink():
+            raise ManagerError(f"{label} cannot be a symbolic link: {path}")
+        self._assert_target_containment(path.resolve(strict=True), label)
+        try:
+            return path.read_bytes()
+        except OSError as exc:
+            raise ManagerError(f"cannot read {label} {path}: {exc}") from exc
+
+    def retire_legacy_marker(self, *, dry_run: bool = True) -> dict[str, Any]:
+        """Retire exact V1 display metadata only after a live V2 physical verification."""
+
+        with _ExclusiveTargetLock(self.lock_path):
+            verification = self._verify_current_physical_state(allow_legacy_marker=True)
+            marker = self._read_marker_bytes(self.legacy_marker_path, "legacy V1 marker")
+            marker_sha256 = hashlib.sha256(marker).hexdigest()
+            _assert_no_reparse_components(
+                self.retired_legacy_marker_path,
+                "retired legacy V1 marker",
+                root=self.target,
+            )
+            retired_exists = self.retired_legacy_marker_path.exists()
+            if retired_exists:
+                retired = self._read_marker_bytes(self.retired_legacy_marker_path, "retired legacy V1 marker")
+                if retired != marker:
+                    raise ManagerError("retired legacy V1 marker exists with differing bytes; refusing overwrite")
+
+            result = {
+                "mode": "RETIRE_LEGACY_MARKER",
+                "dry_run": dry_run,
+                "status": "LEGACY_MARKER_RETIREMENT_READY" if dry_run else "LEGACY_MARKER_RETIRED",
+                "source": LEGACY_MARKER_NAME,
+                "retired": RETIRED_LEGACY_MARKER_NAME,
+                "sha256": marker_sha256,
+                "byte_count": len(marker),
+                "already_preserved": retired_exists,
+                "physical_verification": verification,
+            }
+            if dry_run:
+                return result
+
+            try:
+                if retired_exists:
+                    self.legacy_marker_path.unlink()
+                else:
+                    os.replace(self.legacy_marker_path, self.retired_legacy_marker_path)
+            except OSError as exc:
+                raise ManagerError(f"cannot retire legacy V1 marker: {exc}") from exc
+
+            retired = self._read_marker_bytes(self.retired_legacy_marker_path, "retired legacy V1 marker")
+            if retired != marker or self.legacy_marker_path.exists():
+                raise ManagerError("legacy V1 marker retirement did not preserve the exact bytes and remove the active marker")
+            result["physical_verification"] = self._verify_current_physical_state()
+            return result
 
     def _commit_plan(self, plan: PhysicalPlan, *, failure_injector: FailureInjector | None) -> None:
         injector = failure_injector or (lambda _stage: None)
@@ -1084,6 +1238,11 @@ def main(argv: list[str] | None = None) -> int:
     adopt_parser = subparsers.add_parser("adopt", help="verify/adopt the exact populated GATED physical state")
     adopt_parser.add_argument("--apply", action="store_true", help="commit after preflight; default is dry-run")
     subparsers.add_parser("verify", help="verify ACTIVE repository, target ledger, and managed inventory")
+    retire_parser = subparsers.add_parser(
+        "retire-legacy-marker",
+        help="verify V2 physical state and retire stale V1 display metadata",
+    )
+    retire_parser.add_argument("--apply", action="store_true", help="commit marker retirement; default is dry-run")
     transition_parser = subparsers.add_parser("transition", help="plan or apply one pure runtime-state transition")
     transition_parser.add_argument("--operation", required=True, help="path to operation JSON")
     transition_parser.add_argument("--expected-revision", type=int, required=True)
@@ -1097,6 +1256,8 @@ def main(argv: list[str] | None = None) -> int:
             result = manager.adopt(dry_run=not args.apply)
         elif args.command == "verify":
             result = manager.verify()
+        elif args.command == "retire-legacy-marker":
+            result = manager.retire_legacy_marker(dry_run=not args.apply)
         else:
             result = manager.transition(
                 operation=_load_json_argument(args.operation),

@@ -6,20 +6,31 @@ target-local V2 lock/ledger, and the repository state commit paired with a
 verified physical transition. The protected Minecraft 26.1.2 profile is
 permanently rejected before access.
 
-The adopted state contains the exact frozen accepted baseline (23 project
-units / 26 artifacts), fixed independent Slots A and B, and exact per-slot
-deployment/runtime evidence. Accepted Heart C5 remains managed but disabled;
-Heart C7 and Mossy C2 remain enabled failed candidates. Deployment verification
-does not imply Minecraft runtime validation.
+The tracked runtime contract contains the exact frozen accepted baseline (23
+project units / 26 artifacts), fixed independent Slots A and B, and exact
+per-slot deployment/runtime evidence. Current repository state declares Heart
+C8 in Slot A and Mossy C3 in Slot B, each `READY_TO_TEST_VERIFIED` and
+`UNTESTED`; accepted Heart C5 remains the disabled rollback. Those JSON values
+are expected-state metadata, not physical evidence and not Minecraft runtime
+validation.
 
 ## Migration closure
 
-The physical V2 migration completed at checkpoint
+The initial physical V2 migration completed at checkpoint
 `d0479458c9ac3c49db825be7a25746f554976922` and was reverified on authoritative
-`main` at `a5b29a421c503c959d820ecb05d92126c7ddad13`. Runtime state is `ACTIVE` at
-revision 2, accepted-baseline revision 1 is `ADOPTED`, and adoption required no
-artifact writes or removals. The exact Heart C7 and Mossy C2 slots remain
-independent `FAIL` candidates; neither was promoted and no C8 or C3 was created.
+`main` at `a5b29a421c503c959d820ecb05d92126c7ddad13`. That historical adoption is not
+proof of a later slot revision. A tracked `runtime-state.json`, its target-local
+ledger, a manager plan, a receipt from another revision, or a bootstrap test may
+describe intended state but may not be reported as current physical proof.
+
+Only a successful live manager scan against the configured dedicated Workbench
+may emit `PHYSICAL_STATE_VERIFIED`: the normal `verify` command, or the same
+mandatory scan embedded before and after legacy-marker retirement. It
+independently checks every managed physical path, active/disabled disposition,
+SHA-256, Fabric ownership, and absence of superseded enabled artifacts. Its
+receipt names the exact slot projects, versions, physical artifact paths,
+hashes and dispositions, plus accepted-baseline counts and deterministic
+managed-inventory digests.
 
 Google Sheet mirroring is not an activation or physical-verification authority.
 Its pending R2 publication failure is recorded separately in the Sheet
@@ -32,6 +43,8 @@ Run from the repository root:
 
 ```powershell
 python -B tools/test_instance_manager/manager.py verify
+python -B tools/test_instance_manager/manager.py retire-legacy-marker
+python -B tools/test_instance_manager/manager.py retire-legacy-marker --apply
 python -B tools/test_instance_manager/manager.py transition --operation <operation.json> --expected-revision <revision> --at <RFC3339-UTC>
 python -B tools/test_instance_manager/manager.py transition --operation <operation.json> --expected-revision <revision> --at <RFC3339-UTC> --apply
 ```
@@ -41,6 +54,16 @@ write/removal plan first. An apply recomputes the plan while holding the
 target-local exclusive lock, stages and hashes every addition, verifies the
 result, commits the target ledger and repository state together, and restores
 the preimage if any step fails.
+
+The V1 `.workbench-instance-manager.json` file is legacy display metadata, not
+V2 state authority. Normal verification and transitions fail closed while that
+active filename exists. `retire-legacy-marker` is dry-run by default: under the
+same target lock it first verifies the current repository, V2 ledger, and
+physical managed inventory, then reports the exact marker hash. `--apply`
+atomically renames it to `.workbench-instance-manager.v1-retired.json`, or
+removes the active duplicate only when an existing retired copy is byte-exact.
+Differing retired bytes are never overwritten. Marker retirement does not
+change `mods`, `runtime-state.json`, or the V2 ledger.
 
 `adopt` was the one-time migration path from populated `GATED` state. It
 required a zero-operation physical plan and exact verification before writing
@@ -62,5 +85,7 @@ already exists.
 - Any crash residue named `.mynx-runtime-v2-transaction-*` blocks verification
   and mutation until its backups are explicitly inspected and recovered; the
   manager never guesses that a partial transaction is safe to discard.
+- A live V1 display marker blocks normal V2 verification and transition until
+  its exact bytes are retired through the serialized retirement command.
 - Private/non-redistributable adopted artifacts remain target-local; the
   repository stores only their exact identity and path descriptors.

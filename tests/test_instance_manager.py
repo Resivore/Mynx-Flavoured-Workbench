@@ -112,6 +112,10 @@ class ManagerFixture:
         c5_hash = write_mod(self.mods / (c5_name + ".disabled"), "matcha_heart_death_compat", "c5")
         c7_hash = write_mod(self.mods / c7_name, "matcha_heart_death_compat", "c7")
         mossy_hash = write_mod(self.mods / mossy_name, "mossy_stone", "c2")
+        self.base_bytes = (self.mods / base_name).read_bytes()
+        self.c5_bytes = (self.mods / (c5_name + ".disabled")).read_bytes()
+        self.c7_bytes = (self.mods / c7_name).read_bytes()
+        self.c2_bytes = (self.mods / mossy_name).read_bytes()
 
         self.heart_uuid = stable_uuid("project:matcha-heart-death-compat")
         self.mossy_uuid = stable_uuid("project:mossy-stone")
@@ -184,6 +188,7 @@ class ManagerFixture:
             self.mossy_uuid: "mossy-stone",
         }
         self.manager = PhysicalManager.from_config(self.config_path, project_index=self.project_index)
+        self.operation_index = 0
 
     def repository_state(self) -> dict:
         return json.loads(self.state_path.read_text(encoding="utf-8"))
@@ -200,6 +205,55 @@ class ManagerFixture:
             source_path="artifacts/" + filename,
         )
         return unit("matcha-heart-death-compat", version, item, project_uuid=self.heart_uuid), path
+
+    def add_mossy_repository_candidate(self, version: str = "0.3.0-canary3") -> tuple[dict, Path]:
+        filename = f"mossy-stone-{version}.jar"
+        path = self.repository / "artifacts" / filename
+        sha256 = write_mod(path, "mossy_stone", version)
+        item = artifact(
+            filename,
+            "mossy_stone",
+            sha256,
+            source_type="REPOSITORY",
+            source_path="artifacts/" + filename,
+        )
+        return unit("mossy-stone", version, item, project_uuid=self.mossy_uuid), path
+
+    def apply_operation(self, operation: dict) -> dict:
+        self.operation_index += 1
+        state = self.repository_state()
+        at = f"2099-01-01T00:00:{self.operation_index:02d}Z"
+        return self.manager.transition(
+            operation=operation,
+            expected_revision=state["revision"],
+            at=at,
+            dry_run=False,
+        )
+
+    def deploy_successor_pair(self, *, mark_ready: bool = True) -> tuple[dict, dict]:
+        self.manager.adopt(dry_run=False)
+        c8, _ = self.add_repository_candidate()
+        c3, _ = self.add_mossy_repository_candidate()
+        self.apply_operation(
+            {
+                "type": "UPDATE_SLOT",
+                "slot": "A",
+                "candidate": candidate_declaration(c8, self.c5["deployment_id"]),
+            }
+        )
+        self.apply_operation(
+            {
+                "type": "UPDATE_SLOT",
+                "slot": "B",
+                "candidate": candidate_declaration(c3),
+            }
+        )
+        self.apply_operation({"type": "MARK_DEPLOYED", "slot": "A"})
+        self.apply_operation({"type": "MARK_DEPLOYED", "slot": "B"})
+        if mark_ready:
+            self.apply_operation({"type": "MARK_READY", "slot": "A"})
+            self.apply_operation({"type": "MARK_READY", "slot": "B"})
+        return c8, c3
 
 
 def tree_snapshot(root: Path) -> dict[str, bytes]:
@@ -342,6 +396,154 @@ class PhysicalManagerTests(unittest.TestCase):
         self.fixture.manager.adopt(dry_run=False)
         self.assertTrue(fallback.is_file())
         self.assertEqual(sha256, hashlib.sha256(fallback.read_bytes()).hexdigest())
+
+    def test_tracked_successors_with_old_physical_pair_fail_verification_and_readiness(self) -> None:
+        c8, c3 = self.fixture.deploy_successor_pair(mark_ready=False)
+        (self.fixture.mods / c8["artifacts"][0]["filename"]).unlink()
+        (self.fixture.mods / c3["artifacts"][0]["filename"]).unlink()
+        (self.fixture.mods / self.fixture.c7["artifacts"][0]["filename"]).write_bytes(self.fixture.c7_bytes)
+        (self.fixture.mods / self.fixture.mossy["artifacts"][0]["filename"]).write_bytes(self.fixture.c2_bytes)
+
+        with self.assertRaisesRegex(ManagerError, "missing artifact"):
+            self.fixture.manager.verify()
+        before = self.fixture.repository_state()
+        with self.assertRaisesRegex(ManagerError, "missing artifact"):
+            self.fixture.apply_operation({"type": "MARK_READY", "slot": "A"})
+        after = self.fixture.repository_state()
+        self.assertEqual(before, after)
+        self.assertEqual("DEPLOYED", after["slots"]["A"]["deployment"]["state"])
+        self.assertEqual("DEPLOYED", after["slots"]["B"]["deployment"]["state"])
+
+    def test_exact_successor_pair_passes_with_physical_evidence_and_untouched_baseline(self) -> None:
+        c8, c3 = self.fixture.deploy_successor_pair()
+        result = self.fixture.manager.verify()
+
+        self.assertEqual("PHYSICAL_STATE_VERIFIED", result["status"])
+        self.assertEqual(4, result["managed_file_count"])
+        self.assertRegex(result["physical_inventory_digest"], r"^[0-9a-f]{64}$")
+        self.assertEqual(2, result["accepted_baseline"]["member_count"])
+        self.assertEqual(2, result["accepted_baseline"]["artifact_count"])
+        self.assertEqual(1, result["accepted_baseline"]["active_artifact_count"])
+        self.assertEqual(1, result["accepted_baseline"]["disabled_artifact_count"])
+        self.assertRegex(result["accepted_baseline"]["inventory_digest"], r"^[0-9a-f]{64}$")
+
+        for label, expected in (("A", c8), ("B", c3)):
+            evidence = result["slots"][label]
+            self.assertEqual(expected["project_id"], evidence["project_id"])
+            self.assertEqual(expected["version"], evidence["version"])
+            self.assertEqual("READY_TO_TEST_VERIFIED", evidence["deployment_state"])
+            self.assertEqual("UNTESTED", evidence["runtime_result"])
+            self.assertEqual(1, len(evidence["artifacts"]))
+            physical = evidence["artifacts"][0]
+            self.assertEqual(expected["artifacts"][0]["filename"], physical["filename"])
+            self.assertEqual(expected["artifacts"][0]["sha256"], physical["sha256"])
+            self.assertEqual("mods/" + expected["artifacts"][0]["filename"], physical["path"])
+            self.assertEqual("ACTIVE", physical["disposition"])
+
+        base_name = self.fixture.base["artifacts"][0]["filename"]
+        c5_name = self.fixture.c5["artifacts"][0]["filename"] + ".disabled"
+        self.assertEqual(self.fixture.base_bytes, (self.fixture.mods / base_name).read_bytes())
+        self.assertEqual(self.fixture.c5_bytes, (self.fixture.mods / c5_name).read_bytes())
+        self.assertEqual("preserve me", (self.fixture.mods / "unrelated.txt").read_text(encoding="utf-8"))
+
+    def test_one_stale_slot_fails_physical_verification(self) -> None:
+        _, c3 = self.fixture.deploy_successor_pair()
+        (self.fixture.mods / c3["artifacts"][0]["filename"]).unlink()
+        (self.fixture.mods / self.fixture.mossy["artifacts"][0]["filename"]).write_bytes(self.fixture.c2_bytes)
+        with self.assertRaisesRegex(ManagerError, "missing artifact"):
+            self.fixture.manager.verify()
+
+    def test_superseded_old_artifact_remaining_active_fails(self) -> None:
+        self.fixture.deploy_successor_pair()
+        old = self.fixture.mods / self.fixture.c7["artifacts"][0]["filename"]
+        old.write_bytes(self.fixture.c7_bytes)
+        with self.assertRaisesRegex(ManagerError, "unmanaged conflicting mod artifact"):
+            self.fixture.manager.verify()
+
+    def test_correct_successor_filename_with_wrong_hash_fails(self) -> None:
+        c8, _ = self.fixture.deploy_successor_pair()
+        active = self.fixture.mods / c8["artifacts"][0]["filename"]
+        write_mod(active, "matcha_heart_death_compat", "tampered-c8")
+        with self.assertRaisesRegex(ManagerError, "SHA-256 mismatch"):
+            self.fixture.manager.verify()
+
+    def test_legacy_marker_blocks_normal_operations_and_retires_exactly(self) -> None:
+        self.fixture.manager.adopt(dry_run=False)
+        marker = self.fixture.target / ".workbench-instance-manager.json"
+        retired = self.fixture.target / ".workbench-instance-manager.v1-retired.json"
+        marker_bytes = b'{"test_set":"Heart C7 + Mossy C2"}\n'
+        marker.write_bytes(marker_bytes)
+        before_tree = tree_snapshot(self.fixture.root)
+        before_mods = tree_snapshot(self.fixture.mods)
+        before_state = self.fixture.state_path.read_bytes()
+        before_ledger = (self.fixture.target / ".mynx-runtime-v2-ledger.json").read_bytes()
+
+        with self.assertRaisesRegex(ManagerError, "legacy V1 display marker"):
+            self.fixture.manager.verify()
+        state = self.fixture.repository_state()
+        with self.assertRaisesRegex(ManagerError, "legacy V1 display marker"):
+            self.fixture.manager.transition(
+                operation={"type": "REMOVE_SLOT", "slot": "A"},
+                expected_revision=state["revision"],
+                at="2099-01-01T00:00:59Z",
+                dry_run=True,
+            )
+
+        dry_run = self.fixture.manager.retire_legacy_marker(dry_run=True)
+        self.assertEqual("LEGACY_MARKER_RETIREMENT_READY", dry_run["status"])
+        self.assertEqual(hashlib.sha256(marker_bytes).hexdigest(), dry_run["sha256"])
+        self.assertEqual("PHYSICAL_STATE_VERIFIED", dry_run["physical_verification"]["status"])
+        self.assertEqual(before_tree, tree_snapshot(self.fixture.root))
+
+        applied = self.fixture.manager.retire_legacy_marker(dry_run=False)
+        self.assertEqual("LEGACY_MARKER_RETIRED", applied["status"])
+        self.assertFalse(marker.exists())
+        self.assertEqual(marker_bytes, retired.read_bytes())
+        self.assertEqual(before_mods, tree_snapshot(self.fixture.mods))
+        self.assertEqual(before_state, self.fixture.state_path.read_bytes())
+        self.assertEqual(before_ledger, (self.fixture.target / ".mynx-runtime-v2-ledger.json").read_bytes())
+        self.assertEqual("PHYSICAL_STATE_VERIFIED", self.fixture.manager.verify()["status"])
+
+    def test_legacy_marker_retirement_requires_matching_physical_inventory(self) -> None:
+        c8, c3 = self.fixture.deploy_successor_pair(mark_ready=False)
+        (self.fixture.mods / c8["artifacts"][0]["filename"]).unlink()
+        (self.fixture.mods / c3["artifacts"][0]["filename"]).unlink()
+        (self.fixture.mods / self.fixture.c7["artifacts"][0]["filename"]).write_bytes(self.fixture.c7_bytes)
+        (self.fixture.mods / self.fixture.mossy["artifacts"][0]["filename"]).write_bytes(self.fixture.c2_bytes)
+        marker = self.fixture.target / ".workbench-instance-manager.json"
+        marker.write_bytes(b"stale display marker\n")
+        before = tree_snapshot(self.fixture.root)
+
+        with self.assertRaisesRegex(ManagerError, "missing artifact"):
+            self.fixture.manager.retire_legacy_marker(dry_run=False)
+        self.assertEqual(before, tree_snapshot(self.fixture.root))
+        self.assertTrue(marker.is_file())
+        self.assertFalse((self.fixture.target / ".workbench-instance-manager.v1-retired.json").exists())
+
+    def test_legacy_marker_retirement_refuses_differing_preserved_bytes(self) -> None:
+        self.fixture.manager.adopt(dry_run=False)
+        marker = self.fixture.target / ".workbench-instance-manager.json"
+        retired = self.fixture.target / ".workbench-instance-manager.v1-retired.json"
+        marker.write_bytes(b"old active marker\n")
+        retired.write_bytes(b"different retired marker\n")
+        before = tree_snapshot(self.fixture.root)
+        with self.assertRaisesRegex(ManagerError, "differing bytes"):
+            self.fixture.manager.retire_legacy_marker(dry_run=False)
+        self.assertEqual(before, tree_snapshot(self.fixture.root))
+
+    def test_legacy_marker_retirement_reuses_identical_preserved_bytes(self) -> None:
+        self.fixture.manager.adopt(dry_run=False)
+        marker = self.fixture.target / ".workbench-instance-manager.json"
+        retired = self.fixture.target / ".workbench-instance-manager.v1-retired.json"
+        marker_bytes = b"already preserved marker\n"
+        marker.write_bytes(marker_bytes)
+        retired.write_bytes(marker_bytes)
+
+        result = self.fixture.manager.retire_legacy_marker(dry_run=False)
+        self.assertTrue(result["already_preserved"])
+        self.assertFalse(marker.exists())
+        self.assertEqual(marker_bytes, retired.read_bytes())
+        self.assertEqual("PHYSICAL_STATE_VERIFIED", self.fixture.manager.verify()["status"])
 
     def test_single_slot_update_and_clear_preserve_slot_b_and_baseline(self) -> None:
         self.fixture.manager.adopt(dry_run=False)
