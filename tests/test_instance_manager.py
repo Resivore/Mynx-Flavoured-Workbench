@@ -887,6 +887,82 @@ class PhysicalManagerTests(unittest.TestCase):
         with self.assertRaisesRegex(ManagerError, "exact output"):
             self.fixture.manager.transition(desired_state=tampered, dry_run=True)
 
+    def test_prevalidated_desired_state_supports_explicit_untested_promotion(self) -> None:
+        self.fixture.manager.adopt(dry_run=False)
+        c8, _ = self.fixture.add_repository_candidate()
+        self.fixture.apply_operation(
+            {
+                "type": "UPDATE_SLOT",
+                "slot": "A",
+                "candidate": candidate_declaration(c8, self.fixture.c5["deployment_id"]),
+            }
+        )
+        c10, _ = self.fixture.add_repository_candidate("0.1.9-canary10")
+        current = self.fixture.repository_state()
+        operation = {
+            "type": "PROMOTE_UNTESTED_CANDIDATE",
+            "authorization": "USER_APPROVED_UNTESTED_PROMOTION",
+            "candidate": candidate_declaration(c10, self.fixture.c5["deployment_id"]),
+        }
+        desired = plan_transition(
+            current,
+            current["revision"],
+            operation,
+            "2099-01-01T00:00:02Z",
+            self.fixture.project_index,
+        )
+        result = self.fixture.manager.transition(desired_state=desired, dry_run=True)
+        self.assertTrue(result["dry_run"])
+        self.assertEqual(current["revision"] + 1, result["target_state_revision"])
+        self.assertEqual(
+            "0.1.9-canary10",
+            desired["accepted_baseline"]["members"][1]["unit"]["version"],
+        )
+        self.assertEqual(current, self.fixture.repository_state())
+
+    def test_prevalidated_desired_state_preserves_slot_dependency_overrides(self) -> None:
+        current = self.fixture.repository_state()
+        bge_uuid = stable_uuid("project:block-geometry-extensions")
+        bge = unit(
+            "block-geometry-extensions",
+            "0.6.0-bge-canary53-layer",
+            artifact(
+                "bge-canary53.jar",
+                "bge",
+                "a" * 64,
+                source_type="REPOSITORY",
+                source_path="artifacts/bge-canary53.jar",
+            ),
+            project_uuid=bge_uuid,
+        )
+        bge["artifacts"].append(
+            artifact(
+                "heart-dependency-successor.jar",
+                "matcha_heart_death_compat",
+                "b" * 64,
+                source_type="REPOSITORY",
+                source_path="artifacts/heart-dependency-successor.jar",
+            )
+        )
+        project_index = {**self.fixture.project_index, bge_uuid: "block-geometry-extensions"}
+        desired = plan_transition(
+            current,
+            current["revision"],
+            {
+                "type": "SET_PROFILE",
+                "candidates": [
+                    candidate_declaration(
+                        bge,
+                        dependency_overrides=[self.fixture.c5["deployment_id"]],
+                    )
+                ],
+            },
+            "2099-01-01T00:00:00Z",
+            project_index,
+        )
+        self.fixture.manager.project_index = project_index
+        self.fixture.manager._assert_desired_is_pure_transition(current, desired)
+
     def test_injected_partial_failure_rolls_back_files_ledgers_and_state(self) -> None:
         self.fixture.manager.adopt(dry_run=False)
         c8, _ = self.fixture.add_repository_candidate()
