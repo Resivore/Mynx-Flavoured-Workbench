@@ -199,7 +199,9 @@ var MynxSheetSync = (function () {
       var existingRevision = Number(rows[rowIndex][revisionColumn]);
       var existingEvent = String(rows[rowIndex][eventColumn]);
       if (!Number.isInteger(existingRevision) || existingRevision < 0) {
-        throw new Error("stored Sheet revision is invalid");
+        // Revision is machine-owned commit metadata. A malformed marker means
+        // the mirror row is not safely committed and authoritative main heals it.
+        existingRevision = 0;
       }
       if (existingRevision === envelope.record.revision) {
         var sameValues = sameAuthoritativeValues(rows[rowIndex], indexes, values);
