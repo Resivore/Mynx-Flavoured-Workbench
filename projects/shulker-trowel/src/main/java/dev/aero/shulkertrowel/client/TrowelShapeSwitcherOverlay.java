@@ -37,7 +37,7 @@ public final class TrowelShapeSwitcherOverlay extends ShapeSwitcherOverlay {
         ((ShapeSwitcherOverlayAccessor) (Object) this)
                 .shulkerTrowel$setShapes(TrowelGeometryIcons.items());
         this.count = trowel.getCount();
-        this.selectedIndex = initialMode.networkId();
+        this.selectedIndex = initialMode.selectorIndex();
         this.currentIndex = this.selectedIndex;
         if (minecraft.player != null) this.lastYaw = minecraft.player.getYRot();
     }
@@ -56,12 +56,14 @@ public final class TrowelShapeSwitcherOverlay extends ShapeSwitcherOverlay {
         if (selectedIndex == previousIndex) return;
 
         Player player = Objects.requireNonNull(minecraft.player);
+        TargetGeometry selectedMode = TargetGeometry.fromSelectorIndex(selectedIndex)
+                .orElse(TargetGeometry.FULL);
         player.playSound(SoundEvents.UI_BUTTON_CLICK.value(), 0.3F, 1.5F);
-        ClientPlayNetworking.send(new ChangeTrowelGeometryPayload(selectedIndex));
+        ClientPlayNetworking.send(new ChangeTrowelGeometryPayload(selectedMode.networkId()));
         TrowelClientModeCache.record(
                 player.getItemInHand(InteractionHand.MAIN_HAND),
                 selected,
-                TargetGeometry.byNetworkId(selectedIndex)
+                selectedMode
         );
     }
 
@@ -74,8 +76,8 @@ public final class TrowelShapeSwitcherOverlay extends ShapeSwitcherOverlay {
                 && ClutterNoMoreClient.selectedSlot(minecraft.player) == selected;
     }
 
-    public ItemStack iconStack(int geometryId) {
-        return TrowelGeometryIcons.stack(geometryId);
+    public ItemStack iconStack(int selectorIndex) {
+        return TrowelGeometryIcons.stack(selectorIndex);
     }
 
     private static int selectedSlot(Minecraft minecraft) {

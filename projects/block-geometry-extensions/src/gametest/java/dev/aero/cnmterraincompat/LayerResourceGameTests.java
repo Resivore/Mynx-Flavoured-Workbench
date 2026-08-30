@@ -49,19 +49,22 @@ public final class LayerResourceGameTests implements CustomTestMethodInvoker {
         JsonObject ordinaryVariants = ordinary.blockState().getAsJsonObject("variants");
         helper.assertTrue(ordinaryVariants.size() == 24 && ordinary.models().size() == 18,
                 "Ordinary Layer must have 24 selectors and eighteen 4/8/12px models");
-        helper.assertTrue(ordinaryVariants.keySet().stream().noneMatch(key -> key.contains("waterlogged")),
-                "Waterlogged leaked into model selection");
+        helper.assertTrue(ordinaryVariants.keySet().stream().noneMatch(key ->
+                        key.contains("waterlogged") || key.contains("double")),
+                "Nonvisual Layer state leaked into model selection");
         helper.assertTrue(ordinaryVariants.getAsJsonObject("facing=west,layers=4")
                         .get("model").getAsString().equals("minecraft:block/stone"),
                 "Faithfully reusable Layer 4 did not select the canonical full model");
         helper.assertTrue(ordinary.itemModel().endsWith("_layer_1_up"),
                 "Layer item did not select the one-layer model");
+        assertCenteredQuarterLayerItem(helper, ordinary, "ordinary");
 
         NibaruMaterialProfile log = profile("minecraft:oak_log");
         LayerModelProjection.Projection axis = LayerModelProjection.project(log, SHAPE, false);
         helper.assertTrue(axis.blockState().getAsJsonObject("variants").size() == 72
                         && axis.models().size() == 57,
                 "Pillar Layer did not cover facing x layers x material-axis");
+        assertCenteredQuarterLayerItem(helper, axis, "axis");
         JsonObject axisFaces = selected(axis, "facing=east,layers=3,axis=x")
                 .getAsJsonArray("elements").get(0).getAsJsonObject().getAsJsonObject("faces");
         helper.assertTrue(axisFaces.getAsJsonObject("east").get("texture").getAsString().equals("#top")
@@ -74,6 +77,7 @@ public final class LayerResourceGameTests implements CustomTestMethodInvoker {
         helper.assertTrue(oriented.blockState().getAsJsonObject("variants").size() == 96
                         && oriented.models().size() == 19,
                 "Glazed Layer did not cover independent pattern facing");
+        assertCenteredQuarterLayerItem(helper, oriented, "glazed");
         JsonObject northPattern = oriented.blockState().getAsJsonObject("variants")
                 .getAsJsonObject("facing=east,layers=2,pattern_facing=north");
         helper.assertTrue(northPattern.get("y").getAsInt() == 270
@@ -268,6 +272,31 @@ public final class LayerResourceGameTests implements CustomTestMethodInvoker {
         JsonObject result = projection.models().get(model);
         if (result == null) throw new IllegalStateException("Selector did not resolve: " + key + " -> " + model);
         return result;
+    }
+
+    private static void assertCenteredQuarterLayerItem(GameTestHelper helper,
+            LayerModelProjection.Projection projection, String description) {
+        JsonObject itemModel = projection.models().get(projection.itemModel());
+        helper.assertTrue(itemModel != null && itemModel.has("display"),
+                "Missing shared " + description + " Layer item display");
+        JsonObject gui = itemModel.getAsJsonObject("display").getAsJsonObject("gui");
+        JsonArray translation = gui.getAsJsonArray("translation");
+        JsonArray rotation = gui.getAsJsonArray("rotation");
+        JsonArray scale = gui.getAsJsonArray("scale");
+        helper.assertTrue(translation.size() == 3
+                        && translation.get(0).getAsDouble() == -1.325
+                        && translation.get(1).getAsDouble() == 3.25
+                        && translation.get(2).getAsDouble() == 0.0
+                        && rotation.get(0).getAsInt() == 30
+                        && rotation.get(1).getAsInt() == -135
+                        && rotation.get(2).getAsInt() == 0
+                        && scale.get(0).getAsDouble() == 0.625
+                        && scale.get(1).getAsDouble() == 0.625
+                        && scale.get(2).getAsDouble() == 0.625,
+                "Shared " + description + " Layer GUI transform is not centered: " + gui);
+        helper.assertTrue(projection.blockState().getAsJsonObject("variants").keySet().stream()
+                        .noneMatch(key -> key.contains("double")),
+                "CNM economy marker leaked into " + description + " Layer model selectors");
     }
 
     private static JsonObject firstFaces(JsonObject model) {

@@ -1,7 +1,6 @@
 package dev.aero.shulkertrowel.geometry;
 
 import dev.aero.cnmterraincompat.NibaruProviderAdapter;
-import games.twinhead.moreslabsstairsandwalls.api.material.DerivedGeometrySupport;
 import games.twinhead.moreslabsstairsandwalls.api.material.NibaruMaterialProfile;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
@@ -16,7 +15,7 @@ import java.util.Optional;
 public final class CnmNibaruGeometryResolver implements GeometryResolver {
     @Override
     public Optional<BlockItem> resolveGeometry(Block sourceBlock, TargetGeometry targetGeometry) {
-        if (targetGeometry == TargetGeometry.FULL) {
+        if (targetGeometry.nativeRole().orElse(null) == TargetGeometry.NativeRole.FULL) {
             return exactBlockItem(sourceBlock);
         }
 
@@ -25,16 +24,15 @@ public final class CnmNibaruGeometryResolver implements GeometryResolver {
                         .map(NibaruProviderAdapter.RuntimeBinding::profile));
         if (profile.isEmpty()) return Optional.empty();
 
-        Optional<Block> target = switch (targetGeometry) {
-            case FULL -> Optional.of(sourceBlock);
-            case SLAB -> profile.get().effectiveSlabSource();
-            case STAIR -> profile.get().effectiveStairSource();
-            case WALL -> profile.get().nativeWall();
-            case VERTICAL_SLAB -> NibaruProviderAdapter.derived(
-                    profile.get(), DerivedGeometrySupport.Geometry.VERTICAL_SLAB);
-            case STEP -> NibaruProviderAdapter.derived(
-                    profile.get(), DerivedGeometrySupport.Geometry.STEP);
-        };
+        Optional<Block> target = targetGeometry.nativeRole()
+                .flatMap(role -> switch (role) {
+                    case FULL -> Optional.of(sourceBlock);
+                    case SLAB -> profile.get().effectiveSlabSource();
+                    case STAIR -> profile.get().effectiveStairSource();
+                    case WALL -> profile.get().nativeWall();
+                })
+                .or(() -> targetGeometry.derivedGeometry()
+                        .flatMap(geometry -> NibaruProviderAdapter.derived(profile.get(), geometry)));
         return target.flatMap(CnmNibaruGeometryResolver::exactBlockItem);
     }
 

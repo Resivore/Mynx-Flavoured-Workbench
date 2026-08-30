@@ -1,5 +1,6 @@
 package dev.aero.cnmterraincompat;
 
+import dev.tazer.clutternomore.common.blocks.VerticalSlabBlock;
 import games.twinhead.moreslabsstairsandwalls.api.material.BehaviorCapability;
 import games.twinhead.moreslabsstairsandwalls.api.material.DerivedGeometrySupport;
 import games.twinhead.moreslabsstairsandwalls.api.material.DerivedMaterialTraits;
@@ -17,10 +18,13 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.resources.Identifier;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.ChangeOverTimeBlock;
@@ -77,16 +81,99 @@ public final class BgeLayerIntegrationGameTests implements CustomTestMethodInvok
         BlockState second = BgeLayerBlock.stackedState(east);
         helper.assertTrue(second.getValue(BgeLayerBlock.LAYERS) == 2
                         && second.getValue(BgeLayerBlock.FACING) == Direction.EAST
+                        && second.getValue(BgeLayerBlock.DOUBLE)
                         && second.getValue(BgeLayerBlock.WATERLOGGED),
                 "Stacking changed orientation/water before the full state");
         BlockState fourth = BgeLayerBlock.stackedState(east.setValue(BgeLayerBlock.LAYERS, 3));
         helper.assertTrue(fourth.getValue(BgeLayerBlock.LAYERS) == 4
                         && fourth.getValue(BgeLayerBlock.FACING) == Direction.EAST
+                        && fourth.getValue(BgeLayerBlock.DOUBLE)
                         && !fourth.getValue(BgeLayerBlock.WATERLOGGED)
                         && fourth.getBlock() == stone,
                 "Fourth placement did not remain a dry Layer state");
         helper.assertTrue(!BgeLayerBlock.canStack(fourth, Direction.EAST, matching),
                 "Four-layer state remained stackable in-place");
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void normalBlockItemPlacementFundsCompatibleLayerGrowthOnlyOnce(GameTestHelper helper) {
+        BgeLayerBlock oak = layer("minecraft:oak_planks");
+        BgeLayerBlock dirt = layer("minecraft:dirt");
+        helper.assertTrue(oak.asItem() instanceof BlockItem,
+                "Generated Oak Planks Layer does not use normal BlockItem placement");
+
+        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        player.setGameMode(GameType.SURVIVAL);
+
+        BlockPos support = new BlockPos(1, 1, 1);
+        BlockPos target = support.above();
+        helper.setBlock(support, Blocks.STONE);
+        helper.setBlock(target, Blocks.AIR);
+        ItemStack placementStack = new ItemStack(oak, 2);
+        player.setItemInHand(InteractionHand.MAIN_HAND, placementStack);
+
+        helper.placeAt(player, placementStack, support, Direction.UP);
+        BlockState placed = helper.getBlockState(target);
+        helper.assertTrue(placed.is(oak)
+                        && placed.getValue(BgeLayerBlock.LAYERS) == 1
+                        && !placed.getValue(BgeLayerBlock.DOUBLE)
+                        && placementStack.getCount() == 1,
+                "First Layer placement did not consume exactly one funding source item");
+
+        for (int expectedLayers = 2; expectedLayers <= 4; expectedLayers++) {
+            helper.placeAt(player, placementStack, support, Direction.UP);
+            BlockState grown = helper.getBlockState(target);
+            helper.assertTrue(grown.is(oak)
+                            && grown.getValue(BgeLayerBlock.LAYERS) == expectedLayers
+                            && grown.getValue(BgeLayerBlock.DOUBLE)
+                            && placementStack.getCount() == 1,
+                    "Compatible Layer growth to " + expectedLayers
+                            + " did not preserve the already-funded source stack");
+        }
+
+        BlockState full = helper.getBlockState(target);
+        helper.setBlock(target.above(), Blocks.STONE);
+        helper.placeAt(player, placementStack, support, Direction.UP);
+        helper.assertTrue(helper.getBlockState(target).equals(full) && placementStack.getCount() == 1,
+                "Failed fifth Layer growth changed state or consumed an item");
+
+        BlockPos wrongFaceTarget = new BlockPos(4, 2, 1);
+        BlockState partial = oak.defaultBlockState()
+                .setValue(BgeLayerBlock.FACING, Direction.UP)
+                .setValue(BgeLayerBlock.LAYERS, 1);
+        helper.setBlock(wrongFaceTarget, partial);
+        for (Direction direction : Direction.values()) {
+            helper.setBlock(wrongFaceTarget.relative(direction), Blocks.STONE);
+        }
+        ItemStack wrongFaceStack = new ItemStack(oak);
+        player.setItemInHand(InteractionHand.MAIN_HAND, wrongFaceStack);
+        helper.placeAt(player, wrongFaceStack,
+                wrongFaceTarget.relative(Direction.NORTH), Direction.SOUTH);
+        helper.assertTrue(helper.getBlockState(wrongFaceTarget).equals(partial)
+                        && wrongFaceStack.getCount() == 1,
+                "Wrong-face Layer growth changed state or consumed an item: state="
+                        + helper.getBlockState(wrongFaceTarget) + ", expected=" + partial
+                        + ", count=" + wrongFaceStack.getCount());
+
+        BlockPos incompatibleTarget = new BlockPos(7, 2, 1);
+        helper.setBlock(incompatibleTarget, partial);
+        for (Direction direction : Direction.values()) {
+            helper.setBlock(incompatibleTarget.relative(direction), Blocks.STONE);
+        }
+        ItemStack incompatibleStack = new ItemStack(dirt);
+        player.setItemInHand(InteractionHand.MAIN_HAND, incompatibleStack);
+        helper.placeAt(player, incompatibleStack, incompatibleTarget.below(), Direction.UP);
+        helper.assertTrue(helper.getBlockState(incompatibleTarget).equals(partial)
+                        && incompatibleStack.getCount() == 1,
+                "Incompatible Layer growth changed state or consumed an item");
+
+        var drops = Block.getDrops(helper.getBlockState(target), helper.getLevel(),
+                helper.absolutePos(target), null, player, ItemStack.EMPTY);
+        helper.assertTrue(drops.size() == 1
+                        && drops.getFirst().is(Blocks.OAK_PLANKS.asItem())
+                        && drops.getFirst().getCount() == 1,
+                "Loaded CNM drop path did not return one full Oak Planks source block: " + drops);
         helper.succeed();
     }
 
@@ -139,8 +226,10 @@ public final class BgeLayerIntegrationGameTests implements CustomTestMethodInvok
     @GameTest(maxTicks = 40)
     public void representativeMaterialContractsRemainTyped(GameTestHelper helper) {
         BgeLayerBlock stone = layer("minecraft:stone");
-        helper.assertTrue(stone.getStateDefinition().getProperties().size() == 3,
-                "Ordinary cube Layer gained non-geometry state");
+        helper.assertTrue(stone.getStateDefinition().getProperties().size() == 4
+                        && BgeLayerBlock.DOUBLE == VerticalSlabBlock.DOUBLE
+                        && stone.defaultBlockState().hasProperty(VerticalSlabBlock.DOUBLE),
+                "Ordinary cube Layer lost the exact CNM combined-geometry economy marker");
 
         NibaruMaterialProfile grassProfile = profile("minecraft:grass_block");
         BgeLayerBlock grass = layer(grassProfile);

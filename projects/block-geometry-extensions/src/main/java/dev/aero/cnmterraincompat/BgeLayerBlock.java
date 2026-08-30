@@ -1,5 +1,6 @@
 package dev.aero.cnmterraincompat;
 
+import dev.tazer.clutternomore.common.blocks.VerticalSlabBlock;
 import games.twinhead.moreslabsstairsandwalls.api.material.BehaviorCapability;
 import games.twinhead.moreslabsstairsandwalls.api.material.NibaruMaterialProfile;
 import net.minecraft.core.BlockPos;
@@ -47,6 +48,8 @@ import java.util.Objects;
 public class BgeLayerBlock extends Block implements SimpleWaterloggedBlock {
     public static final EnumProperty<Direction> FACING = BlockStateProperties.FACING;
     public static final IntegerProperty LAYERS = IntegerProperty.create("layers", 1, 4);
+    /** Exact CNM combined-geometry marker consumed by its normal BlockItem placement hook. */
+    public static final BooleanProperty DOUBLE = VerticalSlabBlock.DOUBLE;
     public static final BooleanProperty WATERLOGGED = BlockStateProperties.WATERLOGGED;
 
     private static final int LAYER_DEPTH = 4;
@@ -95,6 +98,7 @@ public class BgeLayerBlock extends Block implements SimpleWaterloggedBlock {
         registerDefaultState(stateDefinition.any()
                 .setValue(FACING, Direction.UP)
                 .setValue(LAYERS, 1)
+                .setValue(DOUBLE, false)
                 .setValue(WATERLOGGED, false));
     }
 
@@ -166,7 +170,9 @@ public class BgeLayerBlock extends Block implements SimpleWaterloggedBlock {
     }
 
     static BlockState stackedState(BlockState state) {
-        BlockState stacked = state.setValue(LAYERS, Math.min(4, state.getValue(LAYERS) + 1));
+        BlockState stacked = state
+                .setValue(LAYERS, Math.min(4, state.getValue(LAYERS) + 1))
+                .setValue(DOUBLE, true);
         return withoutWaterWhenFull(stacked);
     }
 
@@ -240,7 +246,7 @@ public class BgeLayerBlock extends Block implements SimpleWaterloggedBlock {
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(FACING, LAYERS, WATERLOGGED);
+        builder.add(FACING, LAYERS, DOUBLE, WATERLOGGED);
     }
 
     private static VoxelShape[][] createShapes() {

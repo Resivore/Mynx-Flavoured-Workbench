@@ -35,6 +35,9 @@ class Canary4CnmConsumptionContractTest {
                 < source.indexOf("placementStack.isEmpty()"));
         assertFalse(source.contains("SlabType.DOUBLE"));
         assertFalse(source.contains("VerticalSlabBlock.DOUBLE"));
+        assertFalse(source.contains("BgeLayerBlock"));
+        assertFalse(source.contains("TargetGeometry.LAYER"));
+        assertFalse(source.contains("LAYERS"));
     }
 
     @Test

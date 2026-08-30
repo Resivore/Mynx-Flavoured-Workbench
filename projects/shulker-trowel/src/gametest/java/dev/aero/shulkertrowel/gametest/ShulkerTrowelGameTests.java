@@ -1,5 +1,7 @@
 package dev.aero.shulkertrowel.gametest;
 
+import dev.aero.cnmterraincompat.BgeLayerBlock;
+import dev.aero.cnmterraincompat.NibaruProviderAdapter;
 import dev.aero.shulkertrowel.geometry.CnmNibaruGeometryResolver;
 import dev.aero.shulkertrowel.geometry.TargetGeometry;
 import dev.aero.shulkertrowel.geometry.TrowelGeometryState;
@@ -9,6 +11,7 @@ import dev.aero.shulkertrowel.palette.PaletteCandidate;
 import dev.aero.shulkertrowel.palette.PaletteCandidateCollector;
 import dev.aero.shulkertrowel.palette.ShulkerPaletteContents;
 import dev.tazer.clutternomore.common.blocks.VerticalSlabBlock;
+import games.twinhead.moreslabsstairsandwalls.api.material.DerivedGeometrySupport;
 import net.fabricmc.fabric.api.gametest.v1.CustomTestMethodInvoker;
 import net.fabricmc.fabric.api.gametest.v1.GameTest;
 import net.minecraft.core.BlockPos;
@@ -17,12 +20,15 @@ import net.minecraft.core.NonNullList;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.EntityTypes;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.WeatheringCopper;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.SlabType;
 
@@ -55,7 +61,7 @@ public final class ShulkerTrowelGameTests implements CustomTestMethodInvoker {
                         Blocks.COPPER_BLOCK.waxed().pick(WeatheringCopper.WeatherState.WEATHERED)
                 );
 
-        for (TargetGeometry geometry : TargetGeometry.values()) {
+        for (TargetGeometry geometry : TargetGeometry.ordered()) {
             helper.assertTrue(oakLog.get(geometry) != oakWood.get(geometry),
                     "Oak Log collapsed into Oak Wood for " + geometry);
             helper.assertTrue(oakLog.get(geometry) != strippedLog.get(geometry),
@@ -78,8 +84,15 @@ public final class ShulkerTrowelGameTests implements CustomTestMethodInvoker {
                 "Sparse Oak Planks profile did not use its effective vanilla stair");
         helper.assertTrue(RESOLVER.resolveGeometry(Blocks.OAK_PLANKS, TargetGeometry.WALL).isPresent()
                         && RESOLVER.resolveGeometry(Blocks.OAK_PLANKS, TargetGeometry.VERTICAL_SLAB).isPresent()
-                        && RESOLVER.resolveGeometry(Blocks.OAK_PLANKS, TargetGeometry.STEP).isPresent(),
+                        && RESOLVER.resolveGeometry(Blocks.OAK_PLANKS, TargetGeometry.STEP).isPresent()
+                        && RESOLVER.resolveGeometry(Blocks.OAK_PLANKS, TargetGeometry.LAYER).isPresent(),
                 "Accepted typed Oak Planks roles were incomplete");
+        Block typedLayer = NibaruProviderAdapter.derived(
+                NibaruProviderAdapter.profile(Blocks.OAK_PLANKS).orElseThrow(),
+                DerivedGeometrySupport.Geometry.LAYER
+        ).orElseThrow();
+        helper.assertTrue(resolve(Blocks.OAK_PLANKS, TargetGeometry.LAYER).getBlock() == typedLayer,
+                "Layer mode did not resolve the provider-owned typed Layer target");
 
         for (Block nongeometry : List.of(
                 Blocks.OAK_DOOR,
@@ -188,6 +201,93 @@ public final class ShulkerTrowelGameTests implements CustomTestMethodInvoker {
     }
 
     @GameTest(maxTicks = 40)
+    public void layerModeDelegatesCanonicalGrowthEconomyFailuresAndDrop(GameTestHelper helper) {
+        ServerPlayer player = survivalPlayer(helper);
+        equip(player, shulker(new ItemStack(Blocks.OAK_PLANKS, 2)), TargetGeometry.LAYER);
+
+        BlockPos support = new BlockPos(2, 1, 2);
+        BlockPos target = support.above();
+        BgeLayerBlock oakLayer = (BgeLayerBlock) resolve(
+                Blocks.OAK_PLANKS,
+                TargetGeometry.LAYER
+        ).getBlock();
+        helper.setBlock(support, Blocks.STONE);
+        helper.setBlock(target, Blocks.AIR);
+
+        helper.placeAt(player, player.getMainHandItem(), support, Direction.UP);
+        BlockState placed = helper.getBlockState(target);
+        helper.assertTrue(placed.is(oakLayer)
+                        && placed.getValue(BgeLayerBlock.LAYERS) == 1
+                        && ShulkerPaletteContents.read(player.getOffhandItem()).get(0).getCount() == 1,
+                "Actual trowel Layer placement did not spend exactly one Oak Planks source");
+
+        for (int expectedLayers = 2; expectedLayers <= 4; expectedLayers++) {
+            helper.placeAt(player, player.getMainHandItem(), support, Direction.UP);
+            BlockState grown = helper.getBlockState(target);
+            helper.assertTrue(grown.is(oakLayer)
+                            && grown.getValue(BgeLayerBlock.LAYERS) == expectedLayers
+                            && ShulkerPaletteContents.read(player.getOffhandItem()).get(0).getCount() == 1,
+                    "Delegated Layer growth to " + expectedLayers
+                            + " debited the already-funded Oak Planks source");
+        }
+
+        BlockState full = helper.getBlockState(target);
+        helper.setBlock(target.above(), Blocks.STONE);
+        helper.placeAt(player, player.getMainHandItem(), support, Direction.UP);
+        helper.assertTrue(helper.getBlockState(target).equals(full)
+                        && ShulkerPaletteContents.read(player.getOffhandItem()).get(0).getCount() == 1,
+                "Failed fifth trowel Layer placement changed state or source count");
+
+        BlockPos wrongFaceTarget = new BlockPos(5, 2, 2);
+        BlockState partial = oakLayer.defaultBlockState()
+                .setValue(BgeLayerBlock.FACING, Direction.UP)
+                .setValue(BgeLayerBlock.LAYERS, 1);
+        helper.setBlock(wrongFaceTarget, partial);
+        for (Direction direction : Direction.values()) {
+            helper.setBlock(wrongFaceTarget.relative(direction), Blocks.STONE);
+        }
+        helper.placeAt(
+                player,
+                player.getMainHandItem(),
+                wrongFaceTarget.relative(Direction.NORTH),
+                Direction.SOUTH
+        );
+        helper.assertTrue(helper.getBlockState(wrongFaceTarget).equals(partial)
+                        && ShulkerPaletteContents.read(player.getOffhandItem()).get(0).getCount() == 1,
+                "Wrong-face trowel Layer placement changed state or source count");
+
+        BlockPos incompatibleSupport = new BlockPos(8, 1, 2);
+        BlockPos incompatibleTarget = incompatibleSupport.above();
+        BgeLayerBlock spruceLayer = (BgeLayerBlock) resolve(
+                Blocks.SPRUCE_PLANKS,
+                TargetGeometry.LAYER
+        ).getBlock();
+        BlockState incompatible = spruceLayer.defaultBlockState()
+                .setValue(BgeLayerBlock.FACING, Direction.UP)
+                .setValue(BgeLayerBlock.LAYERS, 1);
+        helper.setBlock(incompatibleSupport, Blocks.STONE);
+        helper.setBlock(incompatibleTarget, incompatible);
+        for (Direction direction : Direction.values()) {
+            helper.setBlock(incompatibleTarget.relative(direction), Blocks.STONE);
+        }
+        helper.placeAt(player, player.getMainHandItem(), incompatibleSupport, Direction.UP);
+        helper.assertTrue(helper.getBlockState(incompatibleTarget).equals(incompatible)
+                        && ShulkerPaletteContents.read(player.getOffhandItem()).get(0).getCount() == 1,
+                "Incompatible trowel Layer placement changed state or source count");
+
+        helper.killAllEntitiesOfClass(ItemEntity.class);
+        boolean destroyed = player.gameMode.destroyBlock(helper.absolutePos(target));
+        List<ItemEntity> drops = helper.getEntities(EntityTypes.ITEM, target, 2.0);
+        helper.assertTrue(destroyed && helper.getBlockState(target).isAir(),
+                "Survival break did not remove the four-part Oak Planks Layer");
+        helper.assertTrue(drops.size() == 1
+                        && drops.getFirst().getItem().is(Blocks.OAK_PLANKS.asItem())
+                        && drops.getFirst().getItem().getCount() == 1,
+                "Normal loaded-stack break did not drop one full Oak Planks source item: " + drops);
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
     public void noEligibleCandidateProducesNoPlacementOrConsumption(GameTestHelper helper) {
         ServerPlayer player = survivalPlayer(helper);
         equip(player, shulker(new ItemStack(Blocks.CRAFTING_TABLE, 3)), TargetGeometry.SLAB);
@@ -212,24 +312,24 @@ public final class ShulkerTrowelGameTests implements CustomTestMethodInvoker {
 
         helper.assertTrue(TrowelGeometryState.get(trowel) == TargetGeometry.FULL,
                 "Fresh trowel did not default to Full");
-        helper.assertTrue(TrowelGeometryAuthority.apply(player, TargetGeometry.STEP.networkId())
-                        && TrowelGeometryState.get(trowel) == TargetGeometry.STEP
-                        && TrowelGeometryState.get(trowel.copy()) == TargetGeometry.STEP,
+        helper.assertTrue(TrowelGeometryAuthority.apply(player, TargetGeometry.LAYER.networkId())
+                        && TrowelGeometryState.get(trowel) == TargetGeometry.LAYER
+                        && TrowelGeometryState.get(trowel.copy()) == TargetGeometry.LAYER,
                 "Valid server request did not persist and synchronize stack state");
         helper.assertTrue(!TrowelGeometryAuthority.apply(player, 999)
-                        && TrowelGeometryState.get(trowel) == TargetGeometry.STEP,
+                        && TrowelGeometryState.get(trowel) == TargetGeometry.LAYER,
                 "Invalid mode ID changed server state");
 
         player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Blocks.STONE));
         helper.assertTrue(!TrowelGeometryAuthority.apply(player, TargetGeometry.SLAB.networkId())
-                        && TrowelGeometryState.get(trowel) == TargetGeometry.STEP,
+                        && TrowelGeometryState.get(trowel) == TargetGeometry.LAYER,
                 "A request without a main-hand trowel changed state");
         helper.succeed();
     }
 
     private static Map<TargetGeometry, BlockItem> allModes(GameTestHelper helper, Block source) {
         Map<TargetGeometry, BlockItem> resolved = new EnumMap<>(TargetGeometry.class);
-        for (TargetGeometry geometry : TargetGeometry.values()) {
+        for (TargetGeometry geometry : TargetGeometry.ordered()) {
             BlockItem item = RESOLVER.resolveGeometry(source, geometry).orElse(null);
             helper.assertTrue(item != null, source + " did not resolve " + geometry);
             resolved.put(geometry, item);

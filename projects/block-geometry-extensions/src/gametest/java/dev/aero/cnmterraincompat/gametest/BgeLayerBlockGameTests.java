@@ -32,11 +32,13 @@ public final class BgeLayerBlockGameTests implements CustomTestMethodInvoker {
         BlockState defaultState = layer.defaultBlockState();
         helper.assertTrue(defaultState.getValue(BgeLayerBlock.FACING) == Direction.UP
                         && defaultState.getValue(BgeLayerBlock.LAYERS) == 1
+                        && !defaultState.getValue(BgeLayerBlock.DOUBLE)
                         && !defaultState.getValue(BgeLayerBlock.WATERLOGGED),
-                "Layer default state is not facing=up,layers=1,waterlogged=false: " + defaultState);
-        helper.assertTrue(layer.getStateDefinition().getProperties().size() == 3
-                        && layer.getStateDefinition().getPossibleStates().size() == 48,
-                "Ordinary Layer state space must be exactly 6 facings * 4 layers * 2 water states");
+                "Layer default state is not facing=up,layers=1,double=false,waterlogged=false: "
+                        + defaultState);
+        helper.assertTrue(layer.getStateDefinition().getProperties().size() == 4
+                        && layer.getStateDefinition().getPossibleStates().size() == 96,
+                "Ordinary Layer state space must include the exact CNM combined-geometry marker");
 
         BlockPos absolute = helper.absolutePos(TEST_POS);
         CollisionContext context = CollisionContext.empty();
@@ -45,7 +47,8 @@ public final class BgeLayerBlockGameTests implements CustomTestMethodInvoker {
             for (int layers = 1; layers <= 4; layers++) {
                 BlockState state = defaultState
                         .setValue(BgeLayerBlock.FACING, facing)
-                        .setValue(BgeLayerBlock.LAYERS, layers);
+                        .setValue(BgeLayerBlock.LAYERS, layers)
+                        .setValue(BgeLayerBlock.DOUBLE, layers > 1);
                 AABB expected = expectedBounds(facing, layers);
                 assertBounds(helper, expected,
                         state.getShape(helper.getLevel(), absolute, context).bounds(),
@@ -67,16 +70,19 @@ public final class BgeLayerBlockGameTests implements CustomTestMethodInvoker {
         BlockState partial = layer.defaultBlockState()
                 .setValue(BgeLayerBlock.FACING, Direction.NORTH)
                 .setValue(BgeLayerBlock.LAYERS, 3)
+                .setValue(BgeLayerBlock.DOUBLE, true)
                 .setValue(BgeLayerBlock.WATERLOGGED, true);
 
         BlockState rotated = layer.rotate(partial, Rotation.CLOCKWISE_90);
         helper.assertTrue(rotated.getValue(BgeLayerBlock.FACING) == Direction.EAST
                         && rotated.getValue(BgeLayerBlock.LAYERS) == 3
+                        && rotated.getValue(BgeLayerBlock.DOUBLE)
                         && rotated.getValue(BgeLayerBlock.WATERLOGGED),
                 "Layer rotation changed non-facing state: " + rotated);
         BlockState mirrored = rotated.mirror(Mirror.FRONT_BACK);
         helper.assertTrue(mirrored.getValue(BgeLayerBlock.FACING) == Direction.WEST
                         && mirrored.getValue(BgeLayerBlock.LAYERS) == 3
+                        && mirrored.getValue(BgeLayerBlock.DOUBLE)
                         && mirrored.getValue(BgeLayerBlock.WATERLOGGED),
                 "Layer mirror changed non-facing state: " + mirrored);
         helper.assertTrue(partial.getFluidState().getType() == Fluids.WATER,
@@ -100,6 +106,7 @@ public final class BgeLayerBlockGameTests implements CustomTestMethodInvoker {
         BlockState full = layer.defaultBlockState()
                 .setValue(BgeLayerBlock.FACING, Direction.WEST)
                 .setValue(BgeLayerBlock.LAYERS, 4)
+                .setValue(BgeLayerBlock.DOUBLE, true)
                 .setValue(BgeLayerBlock.WATERLOGGED, false);
         helper.setBlock(fullPos, full);
         helper.assertTrue(!layer.canPlaceLiquid(null, helper.getLevel(), fullAbsolute, full, Fluids.WATER)

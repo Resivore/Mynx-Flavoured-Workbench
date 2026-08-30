@@ -2,8 +2,8 @@
   "$schema": "../../schemas/runtime-state.schema.json",
   "schema_version": 1,
   "activation": "ACTIVE",
-  "revision": 29,
-  "updated_at": "2026-08-30T08:11:41Z",
+  "revision": 37,
+  "updated_at": "2026-08-30T14:47:12Z",
   "accepted_baseline": {
     "revision": 3,
     "provenance": {
@@ -689,24 +689,24 @@
   "slots": {
     "A": {
       "unit": {
-        "deployment_id": "c4b59618-f9dc-4bd1-987b-8fd8c9e1e7df",
+        "deployment_id": "a54ba300-7c47-45e3-922d-59d01b5b4775",
         "project_uuid": "4b2342fc-7bdf-5ba6-9f37-d551109d214c",
         "project_id": "block-geometry-extensions",
         "project_identity_source": "CURRENT_MANIFEST",
-        "version": "0.6.0-bge-canary53-layer",
-        "source_commit": "6e9b04ec3947f2514f90775bfeefb599242a4596",
+        "version": "0.6.1-bge-canary54-layer-economy",
+        "source_commit": "f7f61a0c50aa0fb96a8fd4d2cb79ce7ef1a7e62e",
         "artifacts": [
           {
-            "artifact_id": "60bdb5b7-620e-4578-9e3d-b3178a05717d",
+            "artifact_id": "c536f135-30d7-432f-ac49-00ce88174671",
             "kind": "MOD",
-            "filename": "cnm-nibaru-integration-0.6.0-bge-canary53-layer.jar",
-            "sha256": "57a4599adb3f4c58ae7b99a0148a38760fdb3da59847ca3ec046379db323b7c8",
+            "filename": "cnm-nibaru-integration-0.6.1-bge-canary54-layer-economy.jar",
+            "sha256": "7cd96c8153b2ddca863a96bcf0bbb04680ca6ce92a63a2086a7155441ec9812a",
             "ownership_keys": [
               "mod:cnm_terrain_slabs_compat"
             ],
             "source": {
               "type": "REPOSITORY",
-              "path": "projects/block-geometry-extensions/artifacts/cnm-nibaru-integration-0.6.0-bge-canary53-layer.jar"
+              "path": "projects/block-geometry-extensions/artifacts/cnm-nibaru-integration-0.6.1-bge-canary54-layer-economy.jar"
             }
           },
           {
@@ -727,23 +727,15 @@
       "replaces_accepted_deployment_id": "3a3f0f77-d114-4b58-a039-302d625ec449",
       "deployment": {
         "state": "READY_TO_TEST_VERIFIED",
-        "deployed_at": "2026-08-30T06:42:34Z",
-        "ready_verified_at": "2026-08-30T06:42:35Z"
+        "deployed_at": "2026-08-30T14:44:36Z",
+        "ready_verified_at": "2026-08-30T14:46:44Z"
       },
       "runtime_result": {
-        "classification": "FAIL",
-        "recorded_at": "2026-08-30T08:11:36Z",
+        "classification": "UNTESTED",
+        "recorded_at": null,
         "evidence": {
-          "passed": [
-            "Gravity and falling-material behavior looked correct.",
-            "Grass lifecycle behavior looked correct.",
-            "Glass and translucency behavior looked correct.",
-            "Layer geometry otherwise behaved correctly.",
-            "Breaking the combined layered geometry returned one full source block."
-          ],
-          "failed": [
-            "Placing additional compatible Layer geometry into an already occupied compatible Layer block consumed additional source/layer items."
-          ]
+          "passed": [],
+          "failed": []
         }
       },
       "dependency_overrides": [
@@ -752,24 +744,24 @@
     },
     "B": {
       "unit": {
-        "deployment_id": "d66d7f25-918a-4452-9be6-81c72b28a40e",
+        "deployment_id": "03441945-4b07-48e6-b8ff-993b1f18eeb0",
         "project_uuid": "e28154da-0649-5da7-b6d5-3bff2891719e",
         "project_id": "shulker-trowel",
         "project_identity_source": "CURRENT_MANIFEST",
-        "version": "0.1.0-canary5",
-        "source_commit": "5e1007888a847f00012a413214d51c810efa1b31",
+        "version": "0.1.0-canary6",
+        "source_commit": "f7f61a0c50aa0fb96a8fd4d2cb79ce7ef1a7e62e",
         "artifacts": [
           {
-            "artifact_id": "fb86de68-38f3-4822-9127-c670396393d1",
+            "artifact_id": "dfba959d-aac0-4ad7-bdb6-7efdf00218de",
             "kind": "MOD",
-            "filename": "shulker-trowel-0.1.0-canary5-private.jar",
-            "sha256": "4ab4bb8068f0660e0bbc6ed0cb059666b7112cc0e29744906972e396fc653664",
+            "filename": "shulker-trowel-0.1.0-canary6-private.jar",
+            "sha256": "2aa0e986202a9ff92d8b3e9fe496d8ee54f48f34cff945f4df28bdc87239dce3",
             "ownership_keys": [
               "mod:shulker_trowel"
             ],
             "source": {
               "type": "REPOSITORY",
-              "path": "test-builds/private/shulker-trowel/canary5/shulker-trowel-0.1.0-canary5-private.jar"
+              "path": "projects/shulker-trowel/test-builds/private/shulker-trowel/canary6/shulker-trowel-0.1.0-canary6-private.jar"
             }
           }
         ]
@@ -777,8 +769,8 @@
       "replaces_accepted_deployment_id": "6c8c4d94-bce9-479a-916c-66b94eecc852",
       "deployment": {
         "state": "READY_TO_TEST_VERIFIED",
-        "deployed_at": "2026-08-30T08:11:40Z",
-        "ready_verified_at": "2026-08-30T08:11:41Z"
+        "deployed_at": "2026-08-30T14:46:21Z",
+        "ready_verified_at": "2026-08-30T14:47:12Z"
       },
       "runtime_result": {
         "classification": "UNTESTED",

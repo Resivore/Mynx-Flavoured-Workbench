@@ -54,7 +54,7 @@ class Canary1GameplayFreezeTest {
 
         assertTrue(selector.contains("candidate.weight()"));
         assertTrue(selector.contains("random.nextInt(totalWeight)"));
-        assertTrue(resolver.contains("targetGeometry == TargetGeometry.FULL"));
+        assertTrue(resolver.contains("TargetGeometry.NativeRole.FULL"));
         assertTrue(resolver.contains("blockItem.getBlock() == block"));
         assertTrue(collector.contains("sourceStack.getCount()"));
         assertTrue(collector.indexOf("resolveGeometry") < collector.indexOf("candidates.add"));

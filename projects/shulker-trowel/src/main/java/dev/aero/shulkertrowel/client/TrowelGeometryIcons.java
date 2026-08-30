@@ -6,10 +6,9 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Blocks;
 
-import java.util.Arrays;
 import java.util.List;
 
-/** Stable representative items rendered inside CNM's existing six-slot overlay. */
+/** Actual representative geometry items in the trowel catalog's stable selector order. */
 final class TrowelGeometryIcons {
     private static final CnmNibaruGeometryResolver RESOLVER = new CnmNibaruGeometryResolver();
     private static volatile List<Item> items;
@@ -20,7 +19,7 @@ final class TrowelGeometryIcons {
         List<Item> current = items;
         if (current != null) return current;
 
-        current = Arrays.stream(TargetGeometry.values())
+        current = TargetGeometry.ordered().stream()
                 .map(geometry -> RESOLVER.resolveGeometry(Blocks.OAK_PLANKS, geometry)
                         .orElseThrow(() -> new IllegalStateException(
                                 "Accepted Nibaru stack did not expose oak-planks " + geometry))
@@ -31,10 +30,10 @@ final class TrowelGeometryIcons {
     }
 
     static ItemStack stack(TargetGeometry geometry) {
-        return new ItemStack(items().get(geometry.networkId()));
+        return new ItemStack(items().get(geometry.selectorIndex()));
     }
 
-    static ItemStack stack(int geometryId) {
-        return stack(TargetGeometry.byNetworkId(geometryId));
+    static ItemStack stack(int selectorIndex) {
+        return stack(TargetGeometry.fromSelectorIndex(selectorIndex).orElse(TargetGeometry.FULL));
     }
 }
