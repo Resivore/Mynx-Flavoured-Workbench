@@ -1,6 +1,6 @@
 # Testing
 
-Ribbits private Canary 1 is `NOT_DEPLOYED / RUNTIME_UNTESTED`. Use this procedure only during a future explicitly authorized runtime task with the exact private, Git-ignored local artifact `projects/ribbits-26.2/artifacts/ribbits-4.1.6+26.2-port-canary1.jar`, 3,135,359 bytes, SHA-256 `886F2586CA8D5AB80BDFC58CD18E10DC6BA4FF180371AB71461681DB5BA00B6D`. The public `ribbits-source-only-4.1.6+26.2-port-canary1.jar` is resource-incomplete and disposable; never deploy or classify it as Canary 1.
+Ribbits private Canary 1 is `NOT_DEPLOYED / RUNTIME_UNTESTED`. Use this procedure only during a future explicitly authorized runtime task with both the exact private, Git-ignored local artifact `projects/ribbits-26.2/artifacts/ribbits-4.1.6+26.2-port-canary1.jar`, 3,135,359 bytes, SHA-256 `886F2586CA8D5AB80BDFC58CD18E10DC6BA4FF180371AB71461681DB5BA00B6D`, and the exact Git-ignored dependency `projects/ribbits-26.2/artifacts/YungsApi-26.2-Fabric-6.1.1-compat.1.jar`, 1,266,121 bytes, SHA-256 `527850C4F061FA9AB327AE0B32A3D26EBC77B51FB86234F5F6B1E3418CA084CA`. The public `ribbits-source-only-4.1.6+26.2-port-canary1.jar` is resource-incomplete and disposable; never deploy or classify it as Canary 1.
 
 ## Focused runtime matrix
 

@@ -73,7 +73,7 @@
         "type": "MOD",
         "identifier": "yungsapi",
         "requirement": "YungsApi-26.2-Fabric-6.1.1-compat.1.jar; SHA-256 527850c4f061fa9ab327ae0b32a3d26ebc77b51fb86234f5f6b1e3418ca084ca",
-        "reason": "Exact external compatibility dependency from legacy revision 57a89b593ce9410db98b75a350916ae36caf9522; it is not copied or bundled."
+        "reason": "Exact Git-ignored local dependency retained at projects/ribbits-26.2/artifacts/YungsApi-26.2-Fabric-6.1.1-compat.1.jar from legacy source commit 57a89b593ce9410db98b75a350916ae36caf9522; SHA-256 527850C4F061FA9AB327AE0B32A3D26EBC77B51FB86234F5F6B1E3418CA084CA; untracked and not bundled."
       },
       {
         "type": "TOOL",
@@ -114,7 +114,7 @@
     ]
   },
   "state": {
-    "milestone": "Exact private Canary 1 (3,135,359 bytes) is retained locally at projects/ribbits-26.2/artifacts/ribbits-4.1.6+26.2-port-canary1.jar after 31 source tests plus private tree and JAR static validation; it is Git-ignored, nonredistributable, not deployed, and runtime untested.",
+    "milestone": "Exact private Canary 1 (3,135,359 bytes) and its exact YUNG's API compatibility dependency (1,266,121 bytes) are retained locally at projects/ribbits-26.2/artifacts/ribbits-4.1.6+26.2-port-canary1.jar and projects/ribbits-26.2/artifacts/YungsApi-26.2-Fabric-6.1.1-compat.1.jar; both are Git-ignored and untracked, the Canary remains nonredistributable, and nothing is deployed or runtime tested.",
     "releases": {
       "current": {
         "version": "4.1.6+26.2-port-canary1",
@@ -137,11 +137,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 2,
-    "activity_at": "2026-08-31T03:59:31Z",
-    "updated_at": "2026-08-31T03:59:31Z",
-    "last_codex_at": "2026-08-31T03:59:31Z",
-    "source_commit": "8883b58cee38b2dcc7d6adb726303bf8ca9721ae",
+    "revision": 3,
+    "activity_at": "2026-08-31T05:08:26Z",
+    "updated_at": "2026-08-31T05:08:26Z",
+    "last_codex_at": "2026-08-31T05:08:26Z",
+    "source_commit": "69a099744001106cac008aabaf7e7c568d8071a3",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
