@@ -15,11 +15,13 @@
     "lifecycle": "TESTING",
     "goals": [
       "Provide a server-authoritative trowel that draws eligible building materials by quantity from the actual offhand shulker and delegates placement through the resolved BlockItem's normal placement path.",
-      "Reuse accepted CNM, Nibaru, and BGE geometry and input ownership for seven persisted modes while preserving the original six network IDs/order, appending Layer after Step, and preserving exact material identity, consumption, sound, state, and failure semantics."
+      "Keep Full Block, Slab, Stair, and Wall Trowel-owned while discovering BGE-derived modes from BGE's stable ordered catalog without duplicating BGE role names.",
+      "Preserve saved/network identities 0 through 6 while separating selector order from persistence, using exact resolved geometry items, and preserving material identity, consumption, sound, state, and fail-closed semantics."
     ],
     "scope": [
-      "Canonical C7 source for Minecraft 26.2 Fabric, retaining accepted C5 behavior and stable IDs 0 through 5 for Full Block, Slab, Stair, Wall, Vertical Slab, and Step, then adding Layer as ID 6 after Step.",
-      "The narrow CNM 2.0.7 overlay and input seam plus exact Nibaru C46 and Block Geometry Extensions C54 typed geometry resolution, with actual resolved geometry icons, dynamic selector count, and compatible later BGE releases admitted above the genuine minimum instead of rejected by an unnecessary finite maximum.",
+      "Canonical C8 source for Minecraft 26.2 Fabric, retaining accepted C5 behavior and stable IDs 0 through 6 for Full Block, Slab, Stair, Wall, Vertical Slab, Step, and Layer, then assigning Corner ID 7 and Quarter Column ID 8.",
+      "The narrow CNM 2.0.7 overlay and input seam plus exact Nibaru C46 and Block Geometry Extensions C56 catalog resolution, with selector order Full Block, Slab, Stair, Wall, Vertical Slab, Step, Corner, Quarter Column, Layer independent from saved/network identity.",
+      "Use each descriptor's actual resolved geometry item for display and normal BlockItem placement, retain selected identity when a material geometry is unavailable, and admit future BGE catalog descriptors without a new hard-coded Trowel geometry name.",
       "The private runnable-asset boundary in which only the separately authorized Jake's Build Tools sprite is added to externally retained, non-redistributable private artifacts."
     ],
     "boundaries": {
@@ -27,10 +29,10 @@
         "projects/shulker-trowel"
       ],
       "exclusions": [
-        "Protected Jake's Build Tools bytes, the authorized sprite, the exact private C7/Private Canary 6 candidate, and the exact accepted/rollback private C5 runnable JAR are not tracked or redistributed.",
+        "Protected Jake's Build Tools bytes, the authorized sprite, the exact private C8/Private Canary 7 candidate, and the exact accepted/rollback private C5 runnable JAR are not tracked or redistributed.",
         "CNM, Nibaru, and Block Geometry Extensions remain separate dependency owners; this project does not bundle them or replace their canonical material and geometry systems.",
         "Registry-name parsing, parallel family tables, variant collapsing, and unrelated block mutation behavior.",
-        "Promotion of runtime-untested C7, mutation of accepted C5 provenance, unrelated runtime-slot changes, and protected gameplay-profile access."
+        "Promotion of runtime-untested C8, mutation of accepted C5 provenance, unrelated runtime-slot changes, and protected gameplay-profile access."
       ]
     },
     "dependencies": [
@@ -38,13 +40,13 @@
         "type": "OTHER",
         "identifier": "minecraft",
         "requirement": "26.2",
-        "reason": "Target game version for the current C7 implementation."
+        "reason": "Target game version for the current C8 implementation."
       },
       {
         "type": "MOD",
         "identifier": "fabricloader",
         "requirement": ">=0.19.3",
-        "reason": "Fabric runtime loader declared by canonical C7."
+        "reason": "Fabric runtime loader declared by canonical C8."
       },
       {
         "type": "MOD",
@@ -67,8 +69,8 @@
       {
         "type": "PROJECT",
         "identifier": "4b2342fc-7bdf-5ba6-9f37-d551109d214c",
-        "requirement": ">=0.6.1-bge-canary54-layer-economy",
-        "reason": "The current candidate resolves provider-owned Vertical Slab, Step, and Layer geometry through BGE's compatible typed API; focused validation and deployment use exact C54, and no finite maximum is imposed."
+        "requirement": ">=0.8.0-bge-canary56-vertical-stairs-catalog",
+        "reason": "The current candidate discovers provider-owned Vertical Slab, Step, Corner, Quarter Column, and Layer geometry through BGE's stable ordered descriptor catalog; focused validation and deployment use exact C56, and no finite maximum is imposed."
       },
       {
         "type": "OTHER",
@@ -79,15 +81,15 @@
     ]
   },
   "state": {
-    "milestone": "Canonical C7 (Private Canary 6; embedded 0.1.0-canary6) is deployed as the exact private Slot B candidate alongside exact BGE C54 and Nibaru C46 with manager revision 37 readiness verified and runtime UNTESTED. It preserves original mode IDs 0 through 5, appends Layer as ID 6 after Step through BGE's typed seam, uses actual geometry icons and a dynamic selector count, and delegates economy to normal BlockItem placement. Predecessor C6 booted and co-loaded but exposed no Layer mode, so its result is INCONCLUSIVE; accepted C5 remains unchanged as both accepted and rollback identity.",
+    "milestone": "Canonical C8 (Private Canary 7; embedded 0.1.0-canary7) is readiness-verified in Slot B at manager revision 49 with runtime UNTESTED, paired with exact BGE C56 and Nibaru C46 in Slot A. C8 dynamically projects BGE's ordered catalog after Trowel-owned Full Block, Slab, Stair, and Wall, yielding Full Block, Slab, Stair, Wall, Vertical Slab, Step, Corner, Quarter Column, Layer while preserving IDs 0 through 6 and assigning Corner ID 7 and Quarter Column ID 8. It uses actual resolved icons, fails closed without identity collapse, and delegates placement and economy through each exact BlockItem. Predecessor C7/Private Canary 6 is RUNTIME_FAIL only for the reported absence of Corner and Quarter Column under BGE C55; no other runtime result is inferred. Accepted/rollback private C5 remains unchanged, and no promotion occurred.",
     "releases": {
       "current": {
-        "version": "C7 (Private Canary 6; embedded 0.1.0-canary6)",
+        "version": "C8 (Private Canary 7; embedded 0.1.0-canary7)",
         "artifact": {
-          "filename": "shulker-trowel-0.1.0-canary6-private.jar",
-          "sha256": "2aa0e986202a9ff92d8b3e9fe496d8ee54f48f34cff945f4df28bdc87239dce3"
+          "filename": "shulker-trowel-0.1.0-canary7-private.jar",
+          "sha256": "d807b7a7ac17e5299a625cb2950c5935a97c61da85fbb19f20ecf195610cf2c6"
         },
-        "source_commit": "f7f61a0c50aa0fb96a8fd4d2cb79ce7ef1a7e62e"
+        "source_commit": "e364d280947726689df0ab8a173f7166cb34624f"
       },
       "accepted": {
         "version": "C5 (legacy Private Canary 4; embedded 0.1.0-canary4)",
@@ -116,11 +118,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 3,
-    "activity_at": "2026-08-30T14:48:29Z",
-    "updated_at": "2026-08-30T14:48:29Z",
-    "last_codex_at": "2026-08-30T14:48:29Z",
-    "source_commit": "f7f61a0c50aa0fb96a8fd4d2cb79ce7ef1a7e62e",
+    "revision": 4,
+    "activity_at": "2026-08-31T03:19:33Z",
+    "updated_at": "2026-08-31T03:19:33Z",
+    "last_codex_at": "2026-08-31T03:19:33Z",
+    "source_commit": "e364d280947726689df0ab8a173f7166cb34624f",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null

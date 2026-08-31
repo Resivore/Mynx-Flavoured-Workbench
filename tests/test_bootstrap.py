@@ -841,23 +841,23 @@ class RuntimeContractTests(unittest.TestCase):
         # inferred by this bootstrap test.
         tracked = load_json(ROOT / "tools" / "test_instance_manager" / "runtime-state.json")
         self.assertEqual("ACTIVE", tracked["activation"])
-        self.assertEqual(41, tracked["revision"])
+        self.assertEqual(49, tracked["revision"])
         self.assertEqual(3, tracked["accepted_baseline"]["revision"])
         self.assertEqual(27, tracked["accepted_baseline"]["provenance"]["accepted_artifact_count"])
         self.assertEqual("TRANSITIONED", tracked["accepted_baseline"]["provenance"]["physical_disposition"])
 
         slot_a = tracked["slots"]["A"]
         self.assertEqual("4b2342fc-7bdf-5ba6-9f37-d551109d214c", slot_a["unit"]["project_uuid"])
-        self.assertEqual("0.7.0-bge-canary55-corner-column", slot_a["unit"]["version"])
+        self.assertEqual("0.8.0-bge-canary56-vertical-stairs-catalog", slot_a["unit"]["version"])
         self.assertEqual(
-            "09b2bc10763363adb8cd0693a4ae821c67f36f26",
+            "e364d280947726689df0ab8a173f7166cb34624f",
             slot_a["unit"]["source_commit"],
         )
         self.assertEqual(
             [
                 (
-                    "cnm-nibaru-integration-0.7.0-bge-canary55-corner-column.jar",
-                    "1fc39a43ad9db36dba6f26145a080b7f0d13fba3b0663d521e1619496f3767be",
+                    "cnm-nibaru-integration-0.8.0-bge-canary56-vertical-stairs-catalog.jar",
+                    "26c76fbd82d0d72632d151d3674ca731817f1dadaff503e46fbfb4372d880f55",
                 ),
                 (
                     "more-slabs-stairs-and-walls-4.2.0+26.2-port-canary46-bge-layer-contract.jar",
@@ -875,12 +875,12 @@ class RuntimeContractTests(unittest.TestCase):
 
         slot_b = tracked["slots"]["B"]
         self.assertEqual("e28154da-0649-5da7-b6d5-3bff2891719e", slot_b["unit"]["project_uuid"])
-        self.assertEqual("0.1.0-canary6", slot_b["unit"]["version"])
+        self.assertEqual("0.1.0-canary7", slot_b["unit"]["version"])
         self.assertEqual(
             [
                 (
-                    "shulker-trowel-0.1.0-canary6-private.jar",
-                    "2aa0e986202a9ff92d8b3e9fe496d8ee54f48f34cff945f4df28bdc87239dce3",
+                    "shulker-trowel-0.1.0-canary7-private.jar",
+                    "d807b7a7ac17e5299a625cb2950c5935a97c61da85fbb19f20ecf195610cf2c6",
                 )
             ],
             [(artifact["filename"], artifact["sha256"]) for artifact in slot_b["unit"]["artifacts"]],
