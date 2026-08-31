@@ -2,8 +2,8 @@
   "$schema": "../../schemas/runtime-state.schema.json",
   "schema_version": 1,
   "activation": "ACTIVE",
-  "revision": 41,
-  "updated_at": "2026-08-31T01:10:33Z",
+  "revision": 43,
+  "updated_at": "2026-08-31T02:03:47Z",
   "accepted_baseline": {
     "revision": 3,
     "provenance": {
@@ -731,11 +731,17 @@
         "ready_verified_at": "2026-08-31T01:10:33Z"
       },
       "runtime_result": {
-        "classification": "UNTESTED",
-        "recorded_at": null,
+        "classification": "FAIL",
+        "recorded_at": "2026-08-31T02:03:46Z",
         "evidence": {
-          "passed": [],
-          "failed": []
+          "passed": [
+            "Quarter Column geometry looked correct in the explicitly observed runtime presentation; no unreported Quarter Column behavior is inferred as passed."
+          ],
+          "failed": [
+            "Layer GUI/menu presentation remained incorrectly positioned; the C55 raw display translation did not produce the intended 3-screen-pixel-right and 6-screen-pixel-down correction.",
+            "Corner geometry was fundamentally wrong and did not represent Vertical Stairs as a full cube with one 8x16x8 quarter-column removed.",
+            "The new Corner and Quarter Column exposure-driven material transitions require correction: waterlogging alone must not stand in for actual coverage or submersion of the relevant canonical top surface."
+          ]
         }
       },
       "dependency_overrides": [
@@ -773,11 +779,13 @@
         "ready_verified_at": "2026-08-30T14:47:12Z"
       },
       "runtime_result": {
-        "classification": "UNTESTED",
-        "recorded_at": null,
+        "classification": "FAIL",
+        "recorded_at": "2026-08-31T02:03:47Z",
         "evidence": {
           "passed": [],
-          "failed": []
+          "failed": [
+            "With the current BGE C55 integration, neither Corner nor Quarter Column appeared as a Shulker Trowel geometry option."
+          ]
         }
       }
     }
