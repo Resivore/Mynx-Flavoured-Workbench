@@ -29,6 +29,7 @@ ZERO_COMMIT = "0" * 40
 PLAN_KIND_INCREMENTAL = "incremental"
 PLAN_KIND_CURRENT_STATE_BOOTSTRAP = "current_state_bootstrap"
 HUMAN_FIELDS = ["Notes"]
+RECEIVER_RESPONSE_TIMEOUT_SECONDS = 60
 FREEZE_UUID_RE = re.compile(r"^`([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})`$")
 RECORD_KEYS = {
     "project_uuid",
@@ -577,7 +578,10 @@ def _publish_event(event: dict[str, Any], receiver_url: str, hmac_secret: str) -
     retry_delays = [2, 4, 8, 16]
     for attempt in range(len(retry_delays) + 1):
         try:
-            with urllib.request.urlopen(request, timeout=30) as response:  # noqa: S310 - gated configured endpoint.
+            with urllib.request.urlopen(
+                request,
+                timeout=RECEIVER_RESPONSE_TIMEOUT_SECONDS,
+            ) as response:  # noqa: S310 - gated configured endpoint.
                 if response.status < 200 or response.status >= 300:
                     return _publication_failure(event, "http_error", f"Sheet receiver returned HTTP {response.status}")
                 response_bytes = response.read()

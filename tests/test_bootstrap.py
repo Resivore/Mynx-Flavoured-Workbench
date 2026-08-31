@@ -7,6 +7,7 @@ import hmac
 import http.client
 import io
 import json
+import re
 import tempfile
 import unittest
 from contextlib import redirect_stderr, redirect_stdout
@@ -17,6 +18,7 @@ from uuid import NAMESPACE_URL, uuid5
 from tools.runtime_slots import candidate_declaration, commit_state, plan_transition, resolve_profile, state_digest, validate_runtime_state
 from tools.sheet_sync import (
     HUMAN_FIELDS,
+    RECEIVER_RESPONSE_TIMEOUT_SECONDS,
     ZERO_COMMIT,
     _migration_adoption_uuids_at,
     build_events,
@@ -1684,6 +1686,17 @@ class SheetPublisherTests(unittest.TestCase):
         )
         self.assertEqual({"sheet_preserves": ["Notes"]}, events[0]["ownership"])
 
+    def test_receiver_lock_wait_budget_has_material_transport_headroom(self) -> None:
+        receiver_source = (ROOT / "tools" / "sheet_sync" / "receiver" / "Code.gs").read_text(encoding="utf-8")
+        match = re.search(r"var RECEIVER_LOCK_WAIT_MILLISECONDS = (\d+);", receiver_source)
+        self.assertIsNotNone(match)
+        lock_wait_milliseconds = int(match.group(1))
+        transport_timeout_milliseconds = RECEIVER_RESPONSE_TIMEOUT_SECONDS * 1000
+        self.assertLess(lock_wait_milliseconds, transport_timeout_milliseconds)
+        self.assertGreaterEqual(transport_timeout_milliseconds - lock_wait_milliseconds, 30000)
+        self.assertEqual(2, receiver_source.count("tryLock(RECEIVER_LOCK_WAIT_MILLISECONDS)"))
+        self.assertNotIn("tryLock(30000)", receiver_source)
+
     def test_all_publication_gates_fail_before_transport(self) -> None:
         event = ordinary_publication_event(self.config)
         plan = incremental_plan(self.config, [event])
@@ -1826,6 +1839,40 @@ class SheetPublisherTests(unittest.TestCase):
                 self.assertEqual(expected_code, failures[0]["code"])
                 self.assertEqual(events[1]["event_id"], acknowledgements[0]["event_id"])
 
+    def test_transport_timeout_is_ambiguous_not_retried_and_later_events_continue(self) -> None:
+        config = copy.deepcopy(self.config)
+        config["enabled"] = True
+        events = ordinary_publication_events(config)
+        plan = incremental_plan(config, events)
+        environment = publication_environment(config)
+        acknowledgements = []
+        failures = []
+        responses = [
+            TimeoutError("receiver response deadline elapsed"),
+            JsonResponse({"ok": True, "changed": True, "event_id": events[1]["event_id"]}),
+        ]
+        with (
+            patch("urllib.request.urlopen", side_effect=responses) as transport,
+            patch("tools.sheet_sync.time.sleep") as sleep,
+        ):
+            with self.assertRaisesRegex(ValidationError, "1 of 2 event"):
+                publish_plan(
+                    plan,
+                    config,
+                    environment,
+                    acknowledgement_logger=acknowledgements.append,
+                    failure_logger=failures.append,
+                )
+        self.assertEqual(2, transport.call_count)
+        self.assertEqual(events, [request_event(call.args[0]) for call in transport.call_args_list])
+        self.assertTrue(
+            all(call.kwargs["timeout"] == RECEIVER_RESPONSE_TIMEOUT_SECONDS for call in transport.call_args_list)
+        )
+        self.assertEqual("transport_error", failures[0]["code"])
+        self.assertEqual("Sheet receiver transport failed (TimeoutError)", failures[0]["error"])
+        self.assertEqual(events[1]["event_id"], acknowledgements[0]["event_id"])
+        sleep.assert_not_called()
+
     def test_all_successes_return_count_and_log_in_plan_order(self) -> None:
         config = copy.deepcopy(self.config)
         config["enabled"] = True
@@ -1920,6 +1967,9 @@ class SheetPublisherTests(unittest.TestCase):
             self.assertEqual(1, publish_plan(plan, config, environment))
             self.assertEqual(2, request.call_count)
             self.assertIs(request.call_args_list[0].args[0], request.call_args_list[1].args[0])
+            self.assertTrue(
+                all(call.kwargs["timeout"] == RECEIVER_RESPONSE_TIMEOUT_SECONDS for call in request.call_args_list)
+            )
             sleep.assert_called_once_with(2)
 
     def test_revision_rejections_are_permanent_and_not_retried(self) -> None:

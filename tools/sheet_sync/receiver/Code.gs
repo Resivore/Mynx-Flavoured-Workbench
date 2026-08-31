@@ -1,3 +1,5 @@
+var RECEIVER_LOCK_WAIT_MILLISECONDS = 5000;
+
 function doPost(e) {
   var lock = null;
   var lockAcquired = false;
@@ -28,7 +30,7 @@ function doPost(e) {
     MynxSheetSync.validateEnvelope(envelope);
 
     lock = LockService.getScriptLock();
-    lockAcquired = lock.tryLock(30000);
+    lockAcquired = lock.tryLock(RECEIVER_LOCK_WAIT_MILLISECONDS);
     if (!lockAcquired) throw new Error("receiver mutation lock is busy");
     var sheet = SpreadsheetApp.openById(spreadsheetId).getSheetByName(sheetName);
     if (!sheet) throw new Error("configured project sheet does not exist");
@@ -53,15 +55,8 @@ function doPost(e) {
       sheet.getRange(sheetRow, headers.indexOf("Revision") + 1).setValue(result.values["Revision"]);
       SpreadsheetApp.flush();
     }
-    // Sorting is presentation-only and happens after any authoritative row mutation is fully committed.
-    try {
-      sortProjects_(sheet);
-      SpreadsheetApp.flush();
-    } catch (sortError) {
-      if (typeof console !== "undefined" && console.error) {
-        console.error("Project sorting failed: " + String(sortError));
-      }
-    }
+    // Presentation-only sorting is intentionally outside the per-event acknowledgement path.
+    // Run sortProjectsNow after a reconciliation when visual ordering needs to be refreshed.
     return jsonResponse_({ ok: true, changed: result.changed, event_id: envelope.event_id });
   } catch (error) {
     var message = String(error && error.message ? error.message : error);
@@ -76,7 +71,7 @@ function doPost(e) {
 
 function sortProjectsNow() {
   var lock = LockService.getScriptLock();
-  var lockAcquired = lock.tryLock(30000);
+  var lockAcquired = lock.tryLock(RECEIVER_LOCK_WAIT_MILLISECONDS);
   if (!lockAcquired) throw new Error("receiver mutation lock is busy");
   try {
     var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Projects");

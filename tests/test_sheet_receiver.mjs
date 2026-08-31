@@ -192,6 +192,9 @@ function createReceiverHarness({
         state.openCount += 1;
         return { getSheetByName: () => sheet };
       },
+      getActiveSpreadsheet() {
+        return { getSheetByName: () => sheet };
+      },
       flush() {
         state.flushCount += 1;
         state.operations.push({ type: "flush" });
@@ -223,6 +226,7 @@ function createReceiverHarness({
     state,
     post: (request) => JSON.parse(receiverContext.doPost(request).text),
     sortProjects: () => sortProjects(sheet),
+    sortNow: () => receiverContext.sortProjectsNow(),
   };
 }
 
@@ -437,7 +441,7 @@ test("formula-leading repository text is written as a literal", () => {
   assert.equal(result.rows[0][headers().indexOf("Milestone")], "'=IMPORTDATA(\"https://example.invalid\")");
 });
 
-test("project sorter preserves the exact lifecycle and Activity At order with complete rows", () => {
+test("manual project sorter preserves the exact lifecycle and Activity At order with complete rows", () => {
   const sheetHeaders = headers();
   const inputRows = [
     sortableRow("unknown", "SOMEDAY", "2026-08-30T00:00:00Z"),
@@ -456,7 +460,7 @@ test("project sorter preserves the exact lifecycle and Activity At order with co
   ]));
   const receiver = createReceiverHarness({ inputRows });
 
-  receiver.sortProjects();
+  receiver.sortNow();
 
   assert.deepEqual(receiver.data[0], [...sheetHeaders, "__Sort Key"]);
   assert.deepEqual(receiver.state.hiddenColumns, [sheetHeaders.length + 1]);
@@ -489,6 +493,8 @@ test("project sorter preserves the exact lifecycle and Activity At order with co
     },
     { row: 2, column: 1, rowCount: inputRows.length, columnCount: sheetHeaders.length + 1 },
   );
+  assert.deepEqual(receiver.state.lockTimeouts, [5000]);
+  assert.equal(receiver.state.releaseCount, 1);
 });
 
 test("doPost authenticates, locks, converges a forward gap, and preserves Notes", () => {
@@ -503,7 +509,7 @@ test("doPost authenticates, locks, converges a forward gap, and preserves Notes"
     changed: true,
     event_id: incoming.event_id,
   });
-  assert.deepEqual(receiver.state.lockTimeouts, [30000]);
+  assert.deepEqual(receiver.state.lockTimeouts, [5000]);
   assert.equal(receiver.state.releaseCount, 1);
   assert.equal(receiver.state.openCount, 1);
   assert.equal(receiver.data[1][headers().indexOf("Revision")], 3);
@@ -514,11 +520,11 @@ test("doPost authenticates, locks, converges a forward gap, and preserves Notes"
   ));
   const sortProjectsIndex = receiver.state.operations.findIndex((operation) => operation.type === "sortProjects");
   assert.equal(receiver.state.operations[revisionWriteIndex + 1].type, "flush");
-  assert.ok(sortProjectsIndex > revisionWriteIndex + 1);
+  assert.equal(sortProjectsIndex, -1);
   assert.equal(receiver.state.operations.at(-1).type, "releaseLock");
 });
 
-test("doPost reports a committed change when presentation-only sorting fails", () => {
+test("a committed doPost write survives a later presentation-only sorting failure", () => {
   const first = core.applyToRows(headers(), [], envelope(1, "1".repeat(64)));
   first.rows[0][headers().indexOf("Notes")] = "Still human-owned";
   const incoming = envelope(4, "2".repeat(64));
@@ -536,10 +542,33 @@ test("doPost reports a committed change when presentation-only sorting fails", (
   const revisionWriteIndex = receiver.state.operations.findLastIndex((operation) => (
     operation.type === "setValue" && operation.column === headers().indexOf("Revision") + 1
   ));
-  const sortProjectsIndex = receiver.state.operations.findIndex((operation) => operation.type === "sortProjects");
   assert.equal(receiver.state.operations[revisionWriteIndex + 1].type, "flush");
-  assert.equal(sortProjectsIndex, revisionWriteIndex + 2);
+  assert.equal(receiver.state.operations.findIndex((operation) => operation.type === "sortProjects"), -1);
+  assert.throws(() => receiver.sortNow(), /injected sorting failure/);
+  assert.equal(receiver.data[1][headers().indexOf("Revision")], 4);
+  assert.equal(receiver.data[1][headers().indexOf("Notes")], "Still human-owned");
+  assert.equal(receiver.state.releaseCount, 2);
   assert.equal(receiver.state.operations.at(-1).type, "releaseLock");
+});
+
+test("doPost exact event and revision replay is idempotent", () => {
+  const receiver = createReceiverHarness();
+  const incoming = envelope(2, "3".repeat(64));
+  const request = signedRequest(incoming, receiver.secret);
+
+  assert.deepEqual(receiver.post(request), {
+    ok: true,
+    changed: true,
+    event_id: incoming.event_id,
+  });
+  assert.deepEqual(receiver.post(request), {
+    ok: true,
+    changed: false,
+    event_id: incoming.event_id,
+  });
+  assert.equal(receiver.data.length, 2);
+  assert.equal(receiver.data[1][headers().indexOf("Revision")], 2);
+  assert.deepEqual(receiver.state.lockTimeouts, [5000, 5000]);
 });
 
 test("doPost rejects an invalid HMAC before acquiring the mutation lock", () => {
@@ -578,7 +607,7 @@ test("doPost reports busy and never releases a lock it did not acquire", () => {
     code: "busy",
     error: "receiver mutation lock is busy",
   });
-  assert.deepEqual(receiver.state.lockTimeouts, [30000]);
+  assert.deepEqual(receiver.state.lockTimeouts, [5000]);
   assert.equal(receiver.state.releaseCount, 0);
   assert.equal(receiver.state.openCount, 0);
 });
