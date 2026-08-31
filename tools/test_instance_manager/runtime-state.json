@@ -2,8 +2,8 @@
   "$schema": "../../schemas/runtime-state.schema.json",
   "schema_version": 1,
   "activation": "ACTIVE",
-  "revision": 37,
-  "updated_at": "2026-08-30T14:47:12Z",
+  "revision": 41,
+  "updated_at": "2026-08-31T01:10:33Z",
   "accepted_baseline": {
     "revision": 3,
     "provenance": {
@@ -689,24 +689,24 @@
   "slots": {
     "A": {
       "unit": {
-        "deployment_id": "a54ba300-7c47-45e3-922d-59d01b5b4775",
+        "deployment_id": "0647df14-e84c-41d6-9380-781b2e6dad89",
         "project_uuid": "4b2342fc-7bdf-5ba6-9f37-d551109d214c",
         "project_id": "block-geometry-extensions",
         "project_identity_source": "CURRENT_MANIFEST",
-        "version": "0.6.1-bge-canary54-layer-economy",
-        "source_commit": "f7f61a0c50aa0fb96a8fd4d2cb79ce7ef1a7e62e",
+        "version": "0.7.0-bge-canary55-corner-column",
+        "source_commit": "09b2bc10763363adb8cd0693a4ae821c67f36f26",
         "artifacts": [
           {
-            "artifact_id": "c536f135-30d7-432f-ac49-00ce88174671",
+            "artifact_id": "f512fab1-c7d8-491f-a673-5e14d12ac771",
             "kind": "MOD",
-            "filename": "cnm-nibaru-integration-0.6.1-bge-canary54-layer-economy.jar",
-            "sha256": "7cd96c8153b2ddca863a96bcf0bbb04680ca6ce92a63a2086a7155441ec9812a",
+            "filename": "cnm-nibaru-integration-0.7.0-bge-canary55-corner-column.jar",
+            "sha256": "1fc39a43ad9db36dba6f26145a080b7f0d13fba3b0663d521e1619496f3767be",
             "ownership_keys": [
               "mod:cnm_terrain_slabs_compat"
             ],
             "source": {
               "type": "REPOSITORY",
-              "path": "projects/block-geometry-extensions/artifacts/cnm-nibaru-integration-0.6.1-bge-canary54-layer-economy.jar"
+              "path": "projects/block-geometry-extensions/artifacts/cnm-nibaru-integration-0.7.0-bge-canary55-corner-column.jar"
             }
           },
           {
@@ -727,8 +727,8 @@
       "replaces_accepted_deployment_id": "3a3f0f77-d114-4b58-a039-302d625ec449",
       "deployment": {
         "state": "READY_TO_TEST_VERIFIED",
-        "deployed_at": "2026-08-30T14:44:36Z",
-        "ready_verified_at": "2026-08-30T14:46:44Z"
+        "deployed_at": "2026-08-31T01:10:32Z",
+        "ready_verified_at": "2026-08-31T01:10:33Z"
       },
       "runtime_result": {
         "classification": "UNTESTED",

@@ -21,12 +21,15 @@
     "lifecycle": "TESTING",
     "goals": [
       "Extend CNM ShapeMap families with BGE-owned geometry while preserving Nibaru-owned material identity and semantics.",
-      "Provide six-direction Layer geometry for every canonical family with CNM's one-source combined-placement economy, without changing accepted Step or Vertical behavior."
+      "Provide Layer, Corner, and Quarter Column geometry for every canonical family without changing accepted Step or Vertical behavior.",
+      "Enforce one-source-per-blockspace as a shared BGE compound-geometry contract while keeping geometry orientation independent from canonical material and UV orientation."
     ],
     "scope": [
       "Maintain BGE-owned placement, state, rendering, collision, drops, and specialized behavior for generated geometry.",
-      "Generate exactly one Layer after Step for each of 311 canonical ShapeMap families, preserving deterministic 933/933 Vertical, Step, and Layer population and guarding generated Layers from recursive Nibaru material discovery.",
-      "Preserve six-direction facing, one-through-four 4-pixel thickness, waterlogging, free same-item exposed-face growth after the first funded placement, one-full-source break return, material pattern and axis behavior, typed DROP_BASE transitions, profile-driven specialized semantics, and a shared centered Layer item projection."
+      "Generate exactly one Layer, one Corner, and one Quarter Column after Step for each of 311 canonical ShapeMap families, preserving deterministic family ordering and guarding every generated BGE role from recursive Nibaru material discovery.",
+      "Preserve Layer's six-direction facing, one-through-four 4-pixel thickness, waterlogging, established world geometry, and corrected item projection; provide oriented 16-by-8-by-8 Corners and composing 8-by-16-by-8 Quarter Columns with two terminal diagonal states.",
+      "Fund only new blockspace occupancy for every compound BGE geometry; compatible in-place expansion is free, failures are free, and normal breaking returns one canonical source block.",
+      "Derive Column occupancy by spatially rotating Step while retaining world-space canonical TOP, SIDE, BOTTOM, axis, pattern, overlay, translucent, and other profile-driven material semantics."
     ],
     "boundaries": {
       "owned_paths": [
@@ -35,8 +38,6 @@
       "exclusions": [
         "Nibaru owns canonical material identity, visual roles, capabilities, transitions, copied settings, and material, pattern, and axis semantics.",
         "CNM ShapeMap remains the canonical material-family and switching mechanism; BGE must not create a competing material registry or selector.",
-        "Corner geometry is frozen out of scope.",
-        "Quarter Column geometry is frozen out of scope.",
         "BBB is reference-only; its source and assets are excluded, and BGE has no BBB dependency.",
         "Accepted Step and Vertical behavior and Glazed production behavior remain unchanged except for migration-only path normalization."
       ]
@@ -46,13 +47,13 @@
         "type": "PROJECT",
         "identifier": "680476b9-5336-5422-a575-779f2efd1eff",
         "requirement": "C46",
-        "reason": "BGE C54 consumes Nibaru C46 canonical-parent Layer and typed DROP_BASE contracts."
+        "reason": "BGE C55 consumes Nibaru C46 canonical-parent material profiles, visual semantics, and typed DROP_BASE contracts."
       },
       {
         "type": "MOD",
         "identifier": "minecraft",
         "requirement": "~26.2",
-        "reason": "BGE C54 targets Minecraft Java 26.2."
+        "reason": "BGE C55 targets Minecraft Java 26.2."
       },
       {
         "type": "MOD",
@@ -64,7 +65,7 @@
         "type": "MOD",
         "identifier": "fabric-api",
         "requirement": "0.156.0+26.2",
-        "reason": "Fabric API used by the current C54 build and runtime implementation."
+        "reason": "Fabric API used by the current C55 build and runtime implementation."
       },
       {
         "type": "MOD",
@@ -76,20 +77,20 @@
         "type": "MOD",
         "identifier": "more_slabs_stairs_and_walls",
         "requirement": "=4.2.0+26.2-port-canary46-bge-layer-contract",
-        "reason": "Provides the exact Nibaru C46 material-profile and Layer contract implementation paired with C54."
+        "reason": "Provides the exact Nibaru C46 material-profile and Layer contract implementation paired with C55."
       }
     ]
   },
   "state": {
-    "milestone": "Exact BGE C54 and its required exact Nibaru C46 contract artifact are deployed together in Slot A with manager revision 37 readiness verified and runtime UNTESTED. C54 repairs predecessor C53's demonstrated same-block Layer consumption failure and off-center item presentation while preserving the reported correct one-full-source return, falling-material behavior, grass lifecycle, and glass/translucency. Accepted BGE C52 and Nibaru C45 remain disabled as the unchanged rollback baseline under the slot-scoped dependency override.",
+    "milestone": "C54 was recorded FAIL only for its reported off-center Layer item presentation; the user said C54 with the current Shulker Trowel integration otherwise looked good, without implying results for unreported matrix rows. Exact BGE C55 and unchanged exact Nibaru C46 are now readiness-verified in Slot A at manager revision 41 with runtime UNTESTED. C55 corrects the Layer item by exactly +3 pixels right and +6 pixels down, generalizes one-source-per-blockspace economy across Layer and Quarter Column, and adds Corner and Quarter Column while separating spatial geometry rotation from canonical material orientation. Accepted BGE C52 and Nibaru C45 remain disabled as the unchanged rollback baseline, and Slot B remains unchanged.",
     "releases": {
       "current": {
-        "version": "C54",
+        "version": "C55",
         "artifact": {
-          "filename": "cnm-nibaru-integration-0.6.1-bge-canary54-layer-economy.jar",
-          "sha256": "7cd96c8153b2ddca863a96bcf0bbb04680ca6ce92a63a2086a7155441ec9812a"
+          "filename": "cnm-nibaru-integration-0.7.0-bge-canary55-corner-column.jar",
+          "sha256": "1fc39a43ad9db36dba6f26145a080b7f0d13fba3b0663d521e1619496f3767be"
         },
-        "source_commit": "f7f61a0c50aa0fb96a8fd4d2cb79ce7ef1a7e62e"
+        "source_commit": "09b2bc10763363adb8cd0693a4ae821c67f36f26"
       },
       "accepted": {
         "version": "C52 (legacy Integration 1.39)",
@@ -118,11 +119,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 10,
-    "activity_at": "2026-08-30T14:48:29Z",
-    "updated_at": "2026-08-30T14:48:29Z",
-    "last_codex_at": "2026-08-30T14:48:29Z",
-    "source_commit": "f7f61a0c50aa0fb96a8fd4d2cb79ce7ef1a7e62e",
+    "revision": 11,
+    "activity_at": "2026-08-31T01:13:44Z",
+    "updated_at": "2026-08-31T01:13:44Z",
+    "last_codex_at": "2026-08-31T01:13:44Z",
+    "source_commit": "09b2bc10763363adb8cd0693a4ae821c67f36f26",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null

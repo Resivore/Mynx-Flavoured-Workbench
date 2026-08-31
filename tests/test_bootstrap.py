@@ -841,19 +841,23 @@ class RuntimeContractTests(unittest.TestCase):
         # inferred by this bootstrap test.
         tracked = load_json(ROOT / "tools" / "test_instance_manager" / "runtime-state.json")
         self.assertEqual("ACTIVE", tracked["activation"])
-        self.assertEqual(37, tracked["revision"])
+        self.assertEqual(41, tracked["revision"])
         self.assertEqual(3, tracked["accepted_baseline"]["revision"])
         self.assertEqual(27, tracked["accepted_baseline"]["provenance"]["accepted_artifact_count"])
         self.assertEqual("TRANSITIONED", tracked["accepted_baseline"]["provenance"]["physical_disposition"])
 
         slot_a = tracked["slots"]["A"]
         self.assertEqual("4b2342fc-7bdf-5ba6-9f37-d551109d214c", slot_a["unit"]["project_uuid"])
-        self.assertEqual("0.6.1-bge-canary54-layer-economy", slot_a["unit"]["version"])
+        self.assertEqual("0.7.0-bge-canary55-corner-column", slot_a["unit"]["version"])
+        self.assertEqual(
+            "09b2bc10763363adb8cd0693a4ae821c67f36f26",
+            slot_a["unit"]["source_commit"],
+        )
         self.assertEqual(
             [
                 (
-                    "cnm-nibaru-integration-0.6.1-bge-canary54-layer-economy.jar",
-                    "7cd96c8153b2ddca863a96bcf0bbb04680ca6ce92a63a2086a7155441ec9812a",
+                    "cnm-nibaru-integration-0.7.0-bge-canary55-corner-column.jar",
+                    "1fc39a43ad9db36dba6f26145a080b7f0d13fba3b0663d521e1619496f3767be",
                 ),
                 (
                     "more-slabs-stairs-and-walls-4.2.0+26.2-port-canary46-bge-layer-contract.jar",
