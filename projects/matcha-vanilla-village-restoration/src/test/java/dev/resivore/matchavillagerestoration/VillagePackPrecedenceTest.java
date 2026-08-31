@@ -12,17 +12,25 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import net.minecraft.SharedConstants;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
+import net.minecraft.server.Bootstrap;
 import net.minecraft.server.packs.PackLocationInfo;
 import net.minecraft.server.packs.PackResources;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.PathPackResources;
 import net.minecraft.server.packs.repository.PackSource;
+import net.minecraft.server.packs.repository.Pack;
 import net.minecraft.server.packs.resources.MultiPackResourceManager;
+import net.fabricmc.fabric.impl.resource.ResourceLoaderImpl;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.io.TempDir;
 
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 final class VillagePackPrecedenceTest {
     private static final List<String> VILLAGE_IDS = List.of(
             "village_plains",
@@ -32,6 +40,7 @@ final class VillagePackPrecedenceTest {
             "village_taiga");
 
     @Test
+    @Order(1)
     void exactBuiltInPackWinsOverALaterConflictingMatchaLikePack(@TempDir Path tempDir)
             throws IOException {
         Path conflictingRoot = conflictingPack(tempDir.resolve("matcha-like"));
@@ -75,6 +84,7 @@ final class VillagePackPrecedenceTest {
     }
 
     @Test
+    @Order(2)
     void promotionPreservesEveryOtherPacksRelativeOrder(@TempDir Path tempDir) throws IOException {
         Path empty = Files.createDirectories(tempDir.resolve("empty"));
         PackResources first = pack("vanilla", empty);
@@ -98,6 +108,7 @@ final class VillagePackPrecedenceTest {
     }
 
     @Test
+    @Order(3)
     void alreadyHighestOrAbsentPackNeedsNoMutation(@TempDir Path tempDir) throws IOException {
         Path empty = Files.createDirectories(tempDir.resolve("empty"));
         List<PackResources> absent = List.of(pack("vanilla", empty), pack("user", empty));
@@ -110,10 +121,55 @@ final class VillagePackPrecedenceTest {
     }
 
     @Test
+    @Order(4)
     void duplicateRestorationPackIdsFailClosed() {
         assertThrows(IllegalStateException.class, () -> VillagePackPrecedence.prioritize(List.of(
                 pack(MatchaVanillaVillageRestoration.BUILTIN_PACK_RESOURCE_ID, builtInRoot()),
                 pack(MatchaVanillaVillageRestoration.BUILTIN_PACK_RESOURCE_ID, builtInRoot()))));
+    }
+
+    @Test
+    @Order(5)
+    void fabricRegistrationIsDiscoverableRequiredAndEffective(@TempDir Path tempDir)
+            throws IOException {
+        SharedConstants.tryDetectVersion();
+        Bootstrap.bootStrap();
+        new MatchaVanillaVillageRestoration().onInitialize();
+
+        List<Pack> discovered = new ArrayList<>();
+        ResourceLoaderImpl.registerBuiltinResourcePacks(PackType.SERVER_DATA, discovered::add);
+        List<Pack> matches = discovered.stream()
+                .filter(pack -> MatchaVanillaVillageRestoration.BUILTIN_PACK_RESOURCE_ID
+                        .toString().equals(pack.getId()))
+                .toList();
+        assertEquals(1, matches.size(), "Fabric must discover the registered built-in pack exactly once");
+        Pack profile = matches.getFirst();
+        assertEquals(net.minecraft.server.packs.repository.Pack.Position.TOP,
+                profile.getDefaultPosition());
+        assertEquals(true, profile.isRequired(), "ALWAYS_ENABLED must create a required pack");
+        assertEquals(true, profile.getPackSource().shouldAddAutomatically(),
+                "Fabric's built-in mod pack source must add the pack automatically");
+
+        Path conflictingRoot = conflictingPack(tempDir.resolve("matcha-like"));
+        try (var effective = manager(
+                profile.open(),
+                pack("file/Matcha_Flavoured_1_12.zip", conflictingRoot))) {
+            assertEquals(
+                    MatchaVanillaVillageRestoration.BUILTIN_PACK_RESOURCE_ID,
+                    effective.listPacks().toList().getLast().packId());
+            for (String villageId : VILLAGE_IDS) {
+                var resource = effective.getResource(resourceId(villageId)).orElseThrow();
+                assertEquals(
+                        MatchaVanillaVillageRestoration.BUILTIN_PACK_RESOURCE_ID,
+                        resource.sourcePackId());
+                assertEquals(
+                        Files.readString(
+                                builtInRoot().resolve("data/minecraft/worldgen/structure/"
+                                        + villageId + ".json"),
+                                UTF_8),
+                        readResource(resource));
+            }
+        }
     }
 
     private static MultiPackResourceManager manager(PackResources... packs) {

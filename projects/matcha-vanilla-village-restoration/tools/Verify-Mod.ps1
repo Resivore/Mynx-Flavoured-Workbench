@@ -1,7 +1,8 @@
 [CmdletBinding()]
 param(
     [string] $Artifact,
-    [string] $VanillaJar
+    [string] $VanillaJar,
+    [string] $MatchaArchive
 )
 
 Set-StrictMode -Version Latest
@@ -17,6 +18,12 @@ if ([string]::IsNullOrWhiteSpace($Artifact)) {
 }
 if ([string]::IsNullOrWhiteSpace($VanillaJar)) {
     $VanillaJar = Join-Path $env:USERPROFILE '.gradle\caches\fabric-loom\26.2\minecraft-client.jar'
+}
+if ([string]::IsNullOrWhiteSpace($MatchaArchive)) {
+    $defaultMatchaArchive = Join-Path $repoRoot 'originals\datapacks\Matcha_Flavoured_1_12.zip'
+    if (Test-Path -LiteralPath $defaultMatchaArchive -PathType Leaf) {
+        $MatchaArchive = $defaultMatchaArchive
+    }
 }
 
 $c1Path = Join-Path $projectRoot 'artifacts\matcha-vanilla-village-restoration-0.1.0-canary1.zip'
@@ -126,6 +133,13 @@ Assert-True ((Get-FileHash -LiteralPath $resolvedC1Path -Algorithm SHA256).Hash 
 Assert-True ((Get-FileHash -LiteralPath $vanillaPath -Algorithm SHA256).Hash -ceq $expectedVanillaHash) `
     'vanilla Minecraft 26.2 reference identity changed'
 
+$matchaPath = $null
+if (-not [string]::IsNullOrWhiteSpace($MatchaArchive)) {
+    $matchaPath = (Resolve-Path -LiteralPath $MatchaArchive).Path
+    Assert-True ((Get-FileHash -LiteralPath $matchaPath -Algorithm SHA256).Hash -ceq $expectedMatchaHash) `
+        'Matcha archive SHA-256 does not match the pinned 1.12 input'
+}
+
 $expectedBuiltInPayload = @($builtInPrefix + 'pack.mcmeta') + @(
     $styleContracts.Keys | ForEach-Object {
         $builtInPrefix + 'data/minecraft/worldgen/structure/' + $_
@@ -146,6 +160,11 @@ $expectedArtifactFiles = @($expectedArtifactFiles | Sort-Object)
 $artifactZip = [System.IO.Compression.ZipFile]::OpenRead($artifactPath)
 $c1Zip = [System.IO.Compression.ZipFile]::OpenRead($resolvedC1Path)
 $vanillaZip = [System.IO.Compression.ZipFile]::OpenRead($vanillaPath)
+$matchaZip = if ($null -ne $matchaPath) {
+    [System.IO.Compression.ZipFile]::OpenRead($matchaPath)
+} else {
+    $null
+}
 try {
     $artifactFiles = @(
         $artifactZip.Entries |
@@ -192,6 +211,36 @@ try {
             Assert-True ((ConvertTo-SemanticJson $c2.$property) -ceq (ConvertTo-SemanticJson $vanilla.$property)) `
                 "$fileName field '$property' differs from pristine vanilla 26.2"
         }
+
+        if ($null -ne $matchaZip) {
+            $matcha = Get-ZipText $matchaZip $c1Entry | ConvertFrom-Json
+            Assert-SequenceEqual @($matcha.biomes) @($contract.Biomes) `
+                "$fileName pinned Matcha biome contract changed"
+            Assert-SequenceEqual @($c2.biomes) @($matcha.biomes) `
+                "$fileName does not preserve the pinned Matcha biome array"
+        }
+    }
+
+    if ($null -ne $matchaZip) {
+        $structureSet = Get-ZipText $matchaZip `
+            'data/minecraft/worldgen/structure_set/villages.json' | ConvertFrom-Json
+        Assert-True ([string] $structureSet.placement.type -ceq 'minecraft:random_spread') `
+            'Matcha village placement type is not random_spread'
+        Assert-True ([int] $structureSet.placement.spacing -eq 80) `
+            'Matcha village spacing is not 80'
+        Assert-True ([int] $structureSet.placement.separation -eq 50) `
+            'Matcha village separation is not 50'
+        Assert-True ([int] $structureSet.placement.salt -eq 10387312) `
+            'Matcha village salt is not 10387312'
+        Assert-SequenceEqual @($structureSet.structures.structure) @(
+            'minecraft:village_plains',
+            'minecraft:village_desert',
+            'minecraft:village_savanna',
+            'minecraft:village_snowy',
+            'minecraft:village_taiga'
+        ) 'Matcha village structure-set membership or order changed'
+        Assert-True (@($structureSet.structures | Where-Object { [int] $_.weight -ne 1 }).Count -eq 0) `
+            'Matcha village structure weights must all remain 1'
     }
 
     [byte[]] $c1Meta = Get-ZipBytes $c1Zip 'pack.mcmeta'
@@ -216,6 +265,9 @@ try {
         'precedence injection must fail closed'
 }
 finally {
+    if ($null -ne $matchaZip) {
+        $matchaZip.Dispose()
+    }
     $vanillaZip.Dispose()
     $c1Zip.Dispose()
     $artifactZip.Dispose()
@@ -227,6 +279,12 @@ Write-Host "Artifact: $($artifactInfo.Name)"
 Write-Host "Artifact size: $($artifactInfo.Length) bytes"
 Write-Host "Artifact SHA-256: $artifactHash"
 Write-Host "Pinned external Matcha 1.12 SHA-256: $expectedMatchaHash"
+if ($null -ne $matchaPath) {
+    Write-Host 'PASS: the supplied pinned Matcha archive owns the exact five-member 80/50/10387312 village structure set.'
+} else {
+    Write-Host 'INFO: the pinned ARR Matcha archive is absent; direct revalidation is available through -MatchaArchive.'
+    Write-Host 'INFO: current Matcha-array evidence is transitive through the exact runtime-passed and previously verified C1 bytes.'
+}
 Write-Host 'PASS: C2 packages exactly five village definitions in one ALWAYS_ENABLED built-in pack.'
 Write-Host 'PASS: every C2 village definition is byte-identical to runtime-passed C1.'
 Write-Host 'PASS: all non-biome fields still match pristine Minecraft 26.2.'
