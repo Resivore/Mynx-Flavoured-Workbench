@@ -1,0 +1,57 @@
+{
+  "upstream_block_count": 247,
+  "upstream_item_count": 243,
+  "expected_retained_block_count": 160,
+  "expected_retained_item_count": 161,
+  "wood_materials": [
+    "oak",
+    "spruce",
+    "birch",
+    "jungle",
+    "acacia",
+    "dark_oak",
+    "crimson",
+    "warped",
+    "mangrove",
+    "bamboo",
+    "cherry"
+  ],
+  "wood_forms": [
+    "balustrade",
+    "lattice",
+    "wall",
+    "beam",
+    "beam_stairs",
+    "beam_slab",
+    "support",
+    "pallet",
+    "frame",
+    "lantern",
+    "trim"
+  ],
+  "stone_materials": [
+    "stone",
+    "blackstone",
+    "deepslate",
+    "nether_brick",
+    "sandstone",
+    "red_sandstone",
+    "quartz"
+  ],
+  "stone_forms": [
+    "column",
+    "urn",
+    "moulding",
+    "fence",
+    "frame"
+  ],
+  "standalone_blocks": [
+    "brazier",
+    "soul_brazier",
+    "rope",
+    "iron_fence"
+  ],
+  "standalone_items": [
+    "hammer"
+  ]
+}

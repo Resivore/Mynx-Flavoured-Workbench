@@ -1,0 +1,132 @@
+{
+  "$schema": "../../schemas/workbench-status.schema.json",
+  "schema_version": 1,
+  "identity": {
+    "uuid": "5d42f47f-b006-4125-840d-dec0d2728afa",
+    "name": "Building But Better 26.2",
+    "project_id": "building-but-better",
+    "aliases": [
+      "Building But Better 26.2 Port",
+      "Building But Better 26.2 Port (BBB)"
+    ],
+    "legacy_names": [
+      "Building But Better 26.2 Port",
+      "Building But Better 26.2 Port (BBB)",
+      "Building But Better 28.2 Port (BBB)"
+    ],
+    "legacy_ids": [
+      "building-but-better-26.2"
+    ]
+  },
+  "definition": {
+    "lifecycle": "ACTIVE",
+    "goals": [
+      "Maintain the curated Fabric-only port of Building But Better 2.0pre4 for Minecraft Java 26.2 without redistributing upstream All Rights Reserved resources.",
+      "Preserve the retained building families and their original stateful behavior through an explicit, testable registry and resource-closure contract."
+    ],
+    "scope": [
+      "Maintain exactly 160 retained blocks and 161 retained items: eleven wood families, seven stone families, braziers, rope, iron fence, and the Hammer.",
+      "Preserve the retained rotation, waterlogging, connectivity, collision, lighting, Hammer, lattice-plant, urn, model, texture, tag, language, recipe, advancement, loot, and drop contracts implemented by legacy source 4ddbd2a7b39cb33653f9ddacf9bca0a419cc500d and finalized at legacy branch head 08cba03bc6b19d43a484e7500ca8b366a254e671.",
+      "Stage only the exact audited dependency closure from the hash-verified pristine BBB 2.0pre4 input into ignored generated build output."
+    ],
+    "boundaries": {
+      "owned_paths": [
+        "projects/building-but-better"
+      ],
+      "exclusions": [
+        "BBB layers, BBB ladders, the small-stone-block system, Chisel and related removed tools, Pale Oak, and any silently restored registry content.",
+        "Rope enhancements, Inventory Bridge Framework changes, Clutter No More changes, or unrelated compatibility implementation.",
+        "Upstream models, textures, recipes, data, translations, loot tables, tags, or other All Rights Reserved resources in tracked source, retained artifacts, or redistributed combined development JARs.",
+        "Architectury and MidnightLib dependencies removed by the direct Fabric port.",
+        "Runtime deployment, Test Slot or Test Instance Manager changes, accepted-stack mutation, dedicated Workbench access, and protected gameplay-profile access during this migration."
+      ]
+    },
+    "dependencies": [
+      {
+        "type": "MOD",
+        "identifier": "minecraft",
+        "requirement": "=26.2",
+        "reason": "Exact game version targeted by the curated Fabric port and its generated resource formats."
+      },
+      {
+        "type": "MOD",
+        "identifier": "fabricloader",
+        "requirement": "build =0.19.3; runtime >=0.19.3",
+        "reason": "Exact build dependency and minimum runtime loader declared by the imported project."
+      },
+      {
+        "type": "MOD",
+        "identifier": "fabric-api",
+        "requirement": "build =0.156.0+26.2; runtime >=0.156.0+26.2",
+        "reason": "Exact Fabric API build input and minimum runtime API declared by the imported project."
+      },
+      {
+        "type": "TOOL",
+        "identifier": "java",
+        "requirement": "25",
+        "reason": "Compilation release and runtime level required by Minecraft 26.2 and retained by the imported build."
+      },
+      {
+        "type": "TOOL",
+        "identifier": "gradle",
+        "requirement": "9.5.1",
+        "reason": "Exact imported project-wrapper distribution."
+      },
+      {
+        "type": "TOOL",
+        "identifier": "fabric-loom",
+        "requirement": "1.17-SNAPSHOT",
+        "reason": "Retained Fabric Loom selector from the imported build; the 2026-08-31 verification resolved and reported Fabric Loom 1.17.20."
+      },
+      {
+        "type": "OTHER",
+        "identifier": "org.junit:junit-bom",
+        "requirement": "5.11.4",
+        "reason": "Exact imported focused-test platform for the 17 curated registry, implementation, and resource-staging tests."
+      },
+      {
+        "type": "OTHER",
+        "identifier": "bbb-fabric-2.0pre4.jar",
+        "requirement": "1,701,505 bytes; SHA-256 1e7ae114aaec53475133e11c607fc65dce493bba5897eaf0044d53959b508fc0",
+        "reason": "Exact pristine read-only BBB 2.0pre4 input; its curated ARR resource closure may be staged only into ignored generated build output."
+      },
+      {
+        "type": "OTHER",
+        "identifier": "starfish-studios/Building-But-Better",
+        "requirement": "arch/1.20.1 baseline ae8d95d60280bbc8216bd1ff76e5c1d3d204e74f; pre-upload c88bac24b16a9efa3acb77e09df771aec9b5f405; packaged-code e190881507ce4e67943640f42ff4bfd9a6d6cdad; version-bump 33770e8cee9bb9d3e156709d2cd744ac8831dbba; equivalent packaged inputs through 5af2ade3b9ab967694067a73e9250f968e65144f",
+        "reason": "Recorded upstream MIT-code and ARR-resource lineage for the official BBB 2.0pre4 artifact, whose original Minecraft target was 1.20.1."
+      }
+    ]
+  },
+  "state": {
+    "milestone": "The exact curated Fabric-only source is migrated and Java 25 build/static verification passes; the candidate remains undeployed, runtime untested, unaccepted, and intentionally has no retained ARR-bearing artifact.",
+    "releases": {
+      "current": {
+        "version": "2.0pre4+26.2-port-dev",
+        "artifact": null,
+        "source_commit": "4ddbd2a7b39cb33653f9ddacf9bca0a419cc500d"
+      },
+      "accepted": null,
+      "rollback": null,
+      "accepted_current": "NO_ACCEPTED",
+      "accepted_rollback": "NO_ROLLBACK"
+    },
+    "validation": {
+      "build": "STATIC_PASS",
+      "deployment": "NOT_DEPLOYED",
+      "runtime": "RUNTIME_UNTESTED"
+    },
+    "blocker": null
+  },
+  "synchronization": {
+    "revision": 1,
+    "activity_at": "2026-08-28T20:06:39Z",
+    "updated_at": "2026-08-31T05:28:48Z",
+    "last_codex_at": "2026-08-31T05:28:48Z",
+    "source_commit": "2bf39181383426423bff4b421e5fbdf95869f932",
+    "google_sheet": {
+      "participates": true,
+      "exclusion_reason": null
+    }
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "id": "bbb",
+  "version": "${version}",
+  "name": "Building But Better",
+  "description": "Curated Fabric 26.2 preservation port of Building But Better 2.0pre4.",
+  "authors": ["Starfish Studios", "Workbench port contributors"],
+  "contact": {
+    "homepage": "https://www.curseforge.com/minecraft/mc-mods/building-but-better",
+    "sources": "https://github.com/Resivore/Mynx-Flavoured-Workbench"
+  },
+  "license": "MIT for port code; staged upstream resources remain All Rights Reserved",
+  "icon": "assets/bbb/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": ["com.starfish_studios.bbb.BuildingButBetter"],
+    "client": ["com.starfish_studios.bbb.client.BuildingButBetterClient"]
+  },
+  "mixins": ["bbb.mixins.json"],
+  "depends": {
+    "fabricloader": ">=0.19.3",
+    "minecraft": "~26.2",
+    "java": ">=25",
+    "fabric-api": ">=0.156.0+26.2"
+  }
+}

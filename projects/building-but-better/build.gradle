@@ -1,0 +1,624 @@
+import groovy.json.JsonOutput
+import groovy.json.JsonSlurper
+import java.nio.charset.StandardCharsets
+import java.nio.file.Files
+import java.security.MessageDigest
+import java.util.zip.ZipFile
+import javax.imageio.ImageIO
+
+plugins {
+    id 'net.fabricmc.fabric-loom' version "${loom_version}"
+    id 'maven-publish'
+}
+
+version = project.mod_version
+group = project.maven_group
+
+base {
+    archivesName = project.archives_base_name
+}
+
+repositories {
+    maven { url = 'https://maven.fabricmc.net/' }
+}
+
+dependencies {
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    implementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+
+    testImplementation platform('org.junit:junit-bom:5.11.4')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+def expectedOriginalName = 'bbb-fabric-2.0pre4.jar'
+def expectedOriginalSize = 1_701_505L
+def expectedOriginalSha256 = '1E7AE114AAEC53475133E11C607FC65DCE493BBA5897EAF0044D53959B508FC0'
+def curatedRegistryFile = layout.projectDirectory.file('src/porting/curated-registry.json')
+def stagedResourcesDir = layout.buildDirectory.dir('generated/bbb-resources')
+
+def locateOriginalJar = {
+    def configured = providers.gradleProperty('bbbOriginalJar').orElse(providers.environmentVariable('BBB_ORIGINAL_JAR')).orNull
+    if (configured) {
+        return file(configured)
+    }
+
+    File cursor = projectDir
+    while (cursor != null) {
+        File candidate = new File(cursor, "originals/mods/${expectedOriginalName}")
+        if (candidate.isFile()) {
+            return candidate
+        }
+        cursor = cursor.parentFile
+    }
+    return new File(projectDir, "../../originals/mods/${expectedOriginalName}")
+}
+
+def sha256 = { File input ->
+    MessageDigest digest = MessageDigest.getInstance('SHA-256')
+    input.withInputStream { stream ->
+        byte[] buffer = new byte[64 * 1024]
+        int read
+        while ((read = stream.read(buffer)) >= 0) {
+            if (read > 0) digest.update(buffer, 0, read)
+        }
+    }
+    digest.digest().collect { String.format('%02X', it) }.join()
+}
+
+def requireExactOriginalJar = {
+    File originalJar = locateOriginalJar()
+    if (!originalJar.isFile()) {
+        throw new GradleException("Missing ${expectedOriginalName}. Set -PbbbOriginalJar=<path> or BBB_ORIGINAL_JAR.")
+    }
+    if (originalJar.name != expectedOriginalName) {
+        throw new GradleException("BBB original filename mismatch: expected ${expectedOriginalName}, found ${originalJar.name} at ${originalJar}")
+    }
+    if (originalJar.length() != expectedOriginalSize) {
+        throw new GradleException("BBB original size mismatch: expected ${expectedOriginalSize}, found ${originalJar.length()} at ${originalJar}")
+    }
+    String actualHash = sha256(originalJar)
+    if (actualHash != expectedOriginalSha256) {
+        throw new GradleException("BBB original SHA-256 mismatch: expected ${expectedOriginalSha256}, found ${actualHash} at ${originalJar}")
+    }
+    return originalJar
+}
+
+def collectStrings
+collectStrings = { Object value, Set<String> output ->
+    if (value instanceof Map) {
+        value.each { key, nested ->
+            collectStrings(key, output)
+            collectStrings(nested, output)
+        }
+    } else if (value instanceof Collection) {
+        value.each { collectStrings(it, output) }
+    } else if (value instanceof String) {
+        output.add(value)
+    }
+}
+
+def migrateRecipe
+migrateRecipe = { Object value ->
+    if (value instanceof Map) {
+        Map migrated = new LinkedHashMap()
+        value.each { key, nested -> migrated[key] = migrateRecipe(nested) }
+        if (migrated.keySet() == ['item'] as Set && migrated.item instanceof String) {
+            return migrated.item
+        }
+        if (migrated.keySet() == ['tag'] as Set && migrated.tag instanceof String) {
+            return "#${migrated.tag}"
+        }
+        if (migrated.containsKey('result')) {
+            if (migrated.result instanceof String) {
+                Map result = [id: migrated.result]
+                if (migrated.containsKey('count')) {
+                    result.count = migrated.remove('count')
+                }
+                migrated.result = result
+            } else if (migrated.result instanceof Map
+                    && migrated.result.containsKey('item') && !migrated.result.containsKey('id')) {
+                migrated.result.id = migrated.result.remove('item')
+            }
+        }
+        return migrated
+    }
+    if (value instanceof Collection) {
+        return value.collect { migrateRecipe(it) }
+    }
+    return value
+}
+
+def migrateAdvancement
+migrateAdvancement = { Object value ->
+    if (value instanceof Map) {
+        Map migrated = new LinkedHashMap()
+        value.each { key, nested -> migrated[key] = migrateAdvancement(nested) }
+        if (migrated.containsKey('tag') && migrated.tag instanceof String && !migrated.containsKey('items')) {
+            migrated.items = "#${migrated.remove('tag')}"
+        }
+        if (migrated.items instanceof Collection) {
+            Collection itemIds = migrated.items as Collection
+            if (itemIds.size() == 1 && itemIds.iterator().next() instanceof String) {
+                migrated.items = itemIds.iterator().next()
+            }
+        }
+        return migrated
+    }
+    if (value instanceof Collection) {
+        return value.collect { migrateAdvancement(it) }
+    }
+    return value
+}
+
+def migrateLootTable
+migrateLootTable = { Object value ->
+    if (value instanceof Map) {
+        Map migrated = new LinkedHashMap()
+        value.each { key, nested -> migrated[key] = migrateLootTable(nested) }
+        if (migrated.function == 'minecraft:set_count' && migrated.add instanceof String) {
+            if (!(migrated.add in ['true', 'false'])) {
+                throw new GradleException("Invalid string value for minecraft:set_count add: ${migrated.add}")
+            }
+            migrated.add = Boolean.valueOf(migrated.add as String)
+        }
+        return migrated
+    }
+    if (value instanceof Collection) {
+        return value.collect { migrateLootTable(it) }
+    }
+    return value
+}
+
+tasks.register('stageBbbResources') {
+    group = 'bbb porting'
+    description = 'Hash-verifies the pristine BBB JAR and stages only curated ARR resources into build/.'
+    inputs.file(curatedRegistryFile)
+    inputs.file(providers.provider { locateOriginalJar() })
+            .withPropertyName('exactBbbOriginalJar')
+            .withPathSensitivity(PathSensitivity.NONE)
+    inputs.property('expectedOriginalName', expectedOriginalName)
+    inputs.property('expectedOriginalSize', expectedOriginalSize)
+    inputs.property('expectedOriginalSha256', expectedOriginalSha256)
+    outputs.dir(stagedResourcesDir)
+
+    doLast {
+        File originalJar = requireExactOriginalJar()
+        String actualHash = expectedOriginalSha256
+
+        Map manifest = new JsonSlurper().parse(curatedRegistryFile.asFile) as Map
+        Set<String> retainedBlocks = new LinkedHashSet<>()
+        manifest.wood_materials.each { material ->
+            manifest.wood_forms.each { form -> retainedBlocks.add("${material}_${form}" as String) }
+        }
+        manifest.stone_materials.each { material ->
+            manifest.stone_forms.each { form -> retainedBlocks.add("${material}_${form}" as String) }
+        }
+        retainedBlocks.addAll(manifest.standalone_blocks as Collection<String>)
+        Set<String> retainedItems = new LinkedHashSet<>(retainedBlocks)
+        retainedItems.addAll(manifest.standalone_items as Collection<String>)
+
+        if (retainedBlocks.size() != manifest.expected_retained_block_count) {
+            throw new GradleException("Curated block count drift: expected ${manifest.expected_retained_block_count}, found ${retainedBlocks.size()}")
+        }
+        if (retainedItems.size() != manifest.expected_retained_item_count) {
+            throw new GradleException("Curated item count drift: expected ${manifest.expected_retained_item_count}, found ${retainedItems.size()}")
+        }
+
+        File outputRoot = stagedResourcesDir.get().asFile
+        project.delete(outputRoot)
+        outputRoot.mkdirs()
+
+        ZipFile zip = new ZipFile(originalJar)
+        try {
+            Map<String, java.util.zip.ZipEntry> entries = zip.entries().findAll { !it.directory }.collectEntries { [(it.name): it] }
+
+            def readBytes = { String name ->
+                def entry = entries[name]
+                if (entry == null) return null
+                zip.getInputStream(entry).withCloseable { it.readAllBytes() }
+            }
+            def writeBytes = { String name, byte[] bytes ->
+                File destination = new File(outputRoot, name)
+                destination.parentFile.mkdirs()
+                Files.write(destination.toPath(), bytes)
+            }
+            def writeJson = { String name, Object json ->
+                writeBytes(name, (JsonOutput.prettyPrint(JsonOutput.toJson(json)) + System.lineSeparator()).getBytes(StandardCharsets.UTF_8))
+            }
+            def requireEntry = { String name ->
+                byte[] bytes = readBytes(name)
+                if (bytes == null) throw new GradleException("Exact BBB input is missing required curated resource ${name}")
+                bytes
+            }
+
+            LinkedHashSet<String> queue = new LinkedHashSet<>()
+            retainedBlocks.each { queue.add("assets/bbb/blockstates/${it}.json".toString()) }
+            retainedItems.each { queue.add("assets/bbb/models/item/${it}.json".toString()) }
+
+            def enqueueModel = { String reference ->
+                if (reference.startsWith('bbb:')) {
+                    String path = reference.substring('bbb:'.length())
+                    String candidate = "assets/bbb/models/${path}.json"
+                    if (entries.containsKey(candidate)) queue.add(candidate)
+                }
+            }
+            def enqueueTexture = { String reference ->
+                if (reference.startsWith('bbb:')) {
+                    String path = reference.substring('bbb:'.length())
+                    [
+                            "assets/bbb/textures/${path}.png",
+                            "assets/bbb/textures/${path}.png.mcmeta"
+                    ].findAll { entries.containsKey(it.toString()) }.each { queue.add(it.toString()) }
+                }
+            }
+            def collectAssetReferences
+            collectAssetReferences = { Object value ->
+                if (value instanceof Map) {
+                    value.each { key, nested ->
+                        if ((key == 'model' || key == 'parent') && nested instanceof String) {
+                            enqueueModel(nested)
+                        } else if (key == 'textures' && nested instanceof Map) {
+                            nested.values().findAll { it instanceof String && !it.startsWith('#') }
+                                    .each { enqueueTexture(it as String) }
+                        } else {
+                            collectAssetReferences(nested)
+                        }
+                    }
+                } else if (value instanceof Collection) {
+                    value.each { collectAssetReferences(it) }
+                }
+            }
+
+            Set<String> visited = new LinkedHashSet<>()
+            while (!queue.isEmpty()) {
+                String name = queue.iterator().next()
+                queue.remove(name)
+                if (!visited.add(name)) continue
+                byte[] bytes = requireEntry(name)
+                if (name.endsWith('.json')) {
+                    String jsonText = new String(bytes, StandardCharsets.UTF_8)
+                    if (name == 'assets/bbb/blockstates/dark_oak_lattice.json') {
+                        // The published 2.0pre4 blockstate accidentally points at Oak lattice
+                        // geometry. Preserve the Dark Oak variant by correcting only those
+                        // three authored model references in generated build output.
+                        jsonText = jsonText.replace('bbb:block/lattice/oak_', 'bbb:block/lattice/dark_oak_')
+                    }
+                    Object json = new JsonSlurper().parseText(jsonText)
+                    if (name == 'assets/bbb/blockstates/dark_oak_lattice.json') {
+                        writeJson(name, json)
+                    } else {
+                        writeBytes(name, bytes)
+                    }
+                    collectAssetReferences(json)
+                } else {
+                    writeBytes(name, bytes)
+                }
+            }
+
+            retainedItems.each { id ->
+                writeJson("assets/bbb/items/${id}.json", [
+                        model: [type: 'minecraft:model', model: "bbb:item/${id}"]
+                ])
+            }
+
+            writeBytes('assets/bbb/icon.png', requireEntry('assets/bbb/icon.png'))
+
+            entries.keySet().findAll { it ==~ /assets\/bbb\/lang\/[^\/]+\.json/ }.sort().each { name ->
+                Map language = new JsonSlurper().parse(readBytes(name)) as Map
+                Set<String> retainedBlockTypes = new LinkedHashSet<>(manifest.wood_forms as Collection<String>)
+                retainedBlockTypes.addAll(manifest.stone_forms as Collection<String>)
+                Map filtered = language.findAll { key, ignored ->
+                    key == 'itemGroup.bbb.tab'
+                            || (key.startsWith('block.bbb.') && retainedBlocks.contains(key.substring('block.bbb.'.length())))
+                            || (key.startsWith('item.bbb.') && retainedItems.contains(key.substring('item.bbb.'.length())))
+                            || (key.startsWith('block_type.bbb.')
+                            && retainedBlockTypes.contains(key.substring('block_type.bbb.'.length())))
+                            || key == 'description.bbb.pencil'
+                            || key in ['description.bbb.frameConfig1', 'description.bbb.frameConfig2']
+                            || key ==~ /description\.bbb\.(balustrade[1-5]|urn[1-4]|lattice[1-4]|moulding[1-2]|stone_fence[1-4]|frame[1-3]|pallet[1-5]|column[1-2]|support[1-2]|lantern[1-2])/
+                }
+                writeJson(name, filtered)
+            }
+
+            Set<String> retainedNamespacedIds = retainedItems.collect { "bbb:${it}".toString() } as Set<String>
+            Set<String> allowedBbbTags = [
+                    'balustrades', 'beams', 'braziers', 'columns', 'frames', 'hammers', 'lanterns',
+                    'lattices', 'metal_fences', 'mouldings', 'pallets', 'stone_blocks', 'stone_columns',
+                    'stone_fences', 'stone_frames', 'supports', 'trims', 'urns', 'wooden_blocks',
+                    'wooden_frames', 'wooden_lanterns', 'wooden_walls'
+            ] as Set<String>
+            entries.keySet().findAll { it ==~ /data\/[^\/]+\/tags\/(blocks|items)\/.+\.json/ }.sort().each { name ->
+                def tagMatcher = (name =~ /data\/([^\/]+)\/tags\/(blocks|items)\/(.+)\.json/)
+                String namespace = tagMatcher.matches() ? tagMatcher.group(1) : ''
+                String tagPath = tagMatcher.matches() ? tagMatcher.group(3) : ''
+                if (namespace == 'bbb' && !allowedBbbTags.contains(tagPath)) return
+
+                Map tag = new JsonSlurper().parse(readBytes(name)) as Map
+                List values = (tag.values ?: []) as List
+                List filteredValues = values.findAll { value ->
+                    String id = value instanceof Map ? value.id : value
+                    if (!(id instanceof String)) return true
+                    if (id.startsWith('#bbb:')) return allowedBbbTags.contains(id.substring('#bbb:'.length()))
+                    if (id.startsWith('bbb:')) return retainedNamespacedIds.contains(id)
+                    return true
+                }
+                boolean relevant = filteredValues.any { value ->
+                    String id = value instanceof Map ? value.id : value
+                    id instanceof String && (id.startsWith('bbb:') || id.startsWith('#bbb:'))
+                }
+                if (relevant) {
+                    tag.values = filteredValues
+                    String migratedName = name.replace('/tags/blocks/', '/tags/block/').replace('/tags/items/', '/tags/item/')
+                    writeJson(migratedName, tag)
+                }
+            }
+
+            def writeVanillaTag = { String registryKind, String tagName, Collection<String> ids ->
+                writeJson("data/minecraft/tags/${registryKind}/${tagName}.json", [replace: false, values: ids.collect { "bbb:${it}".toString() }])
+            }
+            List<String> beamSlabs = manifest.wood_materials.collect { "${it}_beam_slab".toString() }
+            List<String> beamStairs = manifest.wood_materials.collect { "${it}_beam_stairs".toString() }
+            List<String> beamWalls = manifest.wood_materials.collect { "${it}_wall".toString() }
+            writeVanillaTag('block', 'slabs', beamSlabs)
+            writeVanillaTag('block', 'stairs', beamStairs)
+            writeVanillaTag('block', 'walls', beamWalls + manifest.stone_materials.collect { "${it}_fence".toString() })
+            writeVanillaTag('item', 'slabs', beamSlabs)
+            writeVanillaTag('item', 'stairs', beamStairs)
+            writeVanillaTag('item', 'walls', beamWalls + manifest.stone_materials.collect { "${it}_fence".toString() })
+
+            int recipeCount = 0
+            Set<String> retainedRecipeIds = new LinkedHashSet<>()
+            entries.keySet().findAll { it ==~ /data\/bbb\/recipes\/[^\/]+\.json/ }.sort().each { name ->
+                Object recipe = new JsonSlurper().parse(readBytes(name))
+                Set<String> strings = new LinkedHashSet<>()
+                collectStrings(recipe, strings)
+                Set<String> directBbbIds = strings.findAll { it.startsWith('bbb:') && !it.startsWith('bbb:#') } as Set<String>
+                boolean referencesRetained = directBbbIds.any { retainedNamespacedIds.contains(it) }
+                boolean referencesRemoved = directBbbIds.any { !retainedNamespacedIds.contains(it) }
+                if (referencesRetained && !referencesRemoved) {
+                    String migratedName = name.replace('/recipes/', '/recipe/')
+                    writeJson(migratedName, migrateRecipe(recipe))
+                    retainedRecipeIds.add("bbb:${new File(name).name.replaceFirst(/\.json$/, '')}".toString())
+                    recipeCount++
+                }
+            }
+
+            int advancementCount = 0
+            entries.keySet().findAll { it ==~ /data\/bbb\/advancements\/recipes\/[^\/]+\.json/ }.sort().each { name ->
+                Object advancement = new JsonSlurper().parse(readBytes(name))
+                List<String> rewardedRecipes = advancement.rewards?.recipes instanceof Collection
+                        ? advancement.rewards.recipes as List<String> : []
+                Set<String> strings = new LinkedHashSet<>()
+                collectStrings(advancement, strings)
+                Set<String> directBbbIds = strings.findAll { it.startsWith('bbb:') && !it.startsWith('bbb:#') } as Set<String>
+                boolean unlocksOnlyRetained = !rewardedRecipes.isEmpty()
+                        && rewardedRecipes.every { retainedRecipeIds.contains(it) }
+                boolean referencesRemoved = directBbbIds.any {
+                    !retainedNamespacedIds.contains(it) && !retainedRecipeIds.contains(it)
+                }
+                if (unlocksOnlyRetained && !referencesRemoved) {
+                    String migratedName = name.replace('/advancements/', '/advancement/')
+                    writeJson(migratedName, migrateAdvancement(advancement))
+                    advancementCount++
+                }
+            }
+
+            retainedBlocks.each { id ->
+                String oldName = "data/bbb/loot_tables/blocks/${id}.json"
+                byte[] bytes = requireEntry(oldName)
+                Object lootTable = new JsonSlurper().parse(bytes)
+                writeJson("data/bbb/loot_table/blocks/${id}.json", migrateLootTable(lootTable))
+            }
+
+            writeJson('bbb-resource-staging.json', [
+                    original_file : originalJar.name,
+                    original_size : originalJar.length(),
+                    original_sha256: actualHash,
+                    retained_blocks: retainedBlocks.size(),
+                    retained_items : retainedItems.size(),
+                    retained_recipes: recipeCount,
+                    retained_recipe_advancements: advancementCount,
+                    exact_asset_closure_entries: visited.size(),
+                    staged_entries : outputRoot.toPath().with { root -> Files.walk(root).withCloseable { stream -> stream.filter { Files.isRegularFile(it) }.count() } }
+            ])
+        } finally {
+            zip.close()
+        }
+    }
+}
+
+sourceSets {
+    main.resources.srcDir(stagedResourcesDir)
+}
+
+processResources {
+    dependsOn tasks.named('stageBbbResources')
+    duplicatesStrategy = DuplicatesStrategy.FAIL
+    inputs.property 'version', project.version
+    filesMatching('fabric.mod.json') {
+        expand 'version': project.version
+    }
+    from(layout.projectDirectory.file('LICENSE.md')) {
+        into 'META-INF'
+        rename { 'LICENSE_bbb-port.md' }
+    }
+}
+
+tasks.register('verifyCuratedResources') {
+    group = 'verification'
+    dependsOn tasks.named('stageBbbResources')
+    doLast {
+        requireExactOriginalJar()
+        File root = stagedResourcesDir.get().asFile
+        Map manifest = new JsonSlurper().parse(curatedRegistryFile.asFile) as Map
+        Set<String> retainedBlocks = new LinkedHashSet<>()
+        manifest.wood_materials.each { material -> manifest.wood_forms.each { form -> retainedBlocks.add("${material}_${form}" as String) } }
+        manifest.stone_materials.each { material -> manifest.stone_forms.each { form -> retainedBlocks.add("${material}_${form}" as String) } }
+        retainedBlocks.addAll(manifest.standalone_blocks as Collection<String>)
+        Set<String> retainedItems = new LinkedHashSet<>(retainedBlocks)
+        retainedItems.addAll(manifest.standalone_items as Collection<String>)
+
+        int blockstates = fileTree(new File(root, 'assets/bbb/blockstates')).matching { include '*.json' }.files.size()
+        int models = fileTree(new File(root, 'assets/bbb/models')).matching { include '**/*.json' }.files.size()
+        int textures = fileTree(new File(root, 'assets/bbb/textures')).files.size()
+        int itemDefinitions = fileTree(new File(root, 'assets/bbb/items')).matching { include '*.json' }.files.size()
+        int recipes = fileTree(new File(root, 'data/bbb/recipe')).matching { include '*.json' }.files.size()
+        int advancements = fileTree(new File(root, 'data/bbb/advancement/recipes')).matching { include '*.json' }.files.size()
+        int lootTables = fileTree(new File(root, 'data/bbb/loot_table/blocks')).matching { include '*.json' }.files.size()
+        int tags = fileTree(new File(root, 'data')).matching { include '**/tags/**/*.json' }.files.size()
+        if (blockstates != retainedBlocks.size()) throw new GradleException("Expected ${retainedBlocks.size()} blockstates, found ${blockstates}")
+        if (models != 1_073) throw new GradleException("Expected exact 1,073-model dependency closure, found ${models}")
+        if (textures != 234) throw new GradleException("Expected exact 234-texture dependency closure, found ${textures}")
+        if (blockstates + models + textures != 1_467) throw new GradleException("Expected exact 1,467-file ARR asset closure")
+        if (itemDefinitions != retainedItems.size()) throw new GradleException("Expected ${retainedItems.size()} item definitions, found ${itemDefinitions}")
+        if (recipes != 211) throw new GradleException("Expected 211 curated recipes, found ${recipes}")
+        if (advancements != 131) throw new GradleException("Expected 131 curated recipe advancements, found ${advancements}")
+        if (lootTables != retainedBlocks.size()) throw new GradleException("Expected ${retainedBlocks.size()} loot tables, found ${lootTables}")
+        if (tags != 44) throw new GradleException("Expected 44 filtered/generated curated tag files, found ${tags}")
+        if (!new File(root, 'assets/bbb/icon.png').isFile()) throw new GradleException('Missing staged BBB icon')
+
+        int pngTextures = 0
+        int pngsWithTransparency = 0
+        fileTree(new File(root, 'assets/bbb/textures')).matching { include '**/*.png' }.files.each { textureFile ->
+            def image = ImageIO.read(textureFile)
+            if (image == null) throw new GradleException("Unable to decode staged PNG ${textureFile}")
+            pngTextures++
+            boolean hasTransparency = false
+            for (int x = 0; x < image.width; x++) {
+                for (int y = 0; y < image.height; y++) {
+                    int alpha = (image.getRGB(x, y) >>> 24) & 0xFF
+                    if (alpha == 0) {
+                        hasTransparency = true
+                    } else if (alpha != 255) {
+                        throw new GradleException("Staged texture ${textureFile} contains partial alpha ${alpha}; 26.2 transparency classification requires review")
+                    }
+                }
+            }
+            if (hasTransparency) pngsWithTransparency++
+        }
+        if (pngTextures != 230 || pngsWithTransparency != 106) {
+            throw new GradleException("Expected 230 binary-alpha PNGs with 106 transparent sprites; found ${pngTextures}/${pngsWithTransparency}")
+        }
+        fileTree(new File(root, 'assets/bbb/models')).matching { include '**/*.json' }.files.each { modelFile ->
+            Map model = new JsonSlurper().parse(modelFile) as Map
+            if (model.containsKey('render_type')) {
+                throw new GradleException("Generated model ${modelFile} contains unsupported/inert 26.2 render_type metadata")
+            }
+        }
+
+        fileTree(new File(root, 'assets/bbb/lang')).matching { include '*.json' }.files.each { languageFile ->
+            Map language = new JsonSlurper().parse(languageFile) as Map
+            language.keySet().findAll { it ==~ /(?:block|item)\.bbb\.[a-z0-9_\-.]+/ }.each { key ->
+                String id = key.substring(key.lastIndexOf('.') + 1)
+                if (!retainedItems.contains(id)) {
+                    throw new GradleException("Generated language file ${languageFile} retains removed BBB ID key ${key}")
+                }
+            }
+            if (language.containsKey('block_type.bbb.ladder') || language.containsKey('block_type.bbb.layer')) {
+                throw new GradleException("Generated language file ${languageFile} retains removed family text")
+            }
+            ['description.bbb.frameConfig3', 'description.bbb.frameConfig4',
+             'description.bbb.frameConfig5'].each { removedConfigKey ->
+                if (language.containsKey(removedConfigKey)) {
+                    throw new GradleException("Generated language file ${languageFile} retains unused removed-config text ${removedConfigKey}")
+                }
+            }
+        }
+
+        fileTree(new File(root, 'data/bbb/recipe')).matching { include '*.json' }.files.each { recipeFile ->
+            Map recipe = new JsonSlurper().parse(recipeFile) as Map
+            if (!(recipe.result instanceof Map) || !(recipe.result.id instanceof String)) {
+                throw new GradleException("Generated recipe ${recipeFile} does not use the Minecraft 26.2 result object schema")
+            }
+            if (recipe.containsKey('count')) {
+                throw new GradleException("Generated recipe ${recipeFile} retains obsolete top-level result count")
+            }
+        }
+
+        Set<String> stagedRecipeIds = fileTree(new File(root, 'data/bbb/recipe')).matching { include '*.json' }.files.collect {
+            "bbb:${it.name.replaceFirst(/\.json$/, '')}".toString()
+        } as Set<String>
+        def validateAdvancementValue
+        validateAdvancementValue = { Object value, File advancementFile ->
+            if (value instanceof Map) {
+                if (value.containsKey('tag')) {
+                    throw new GradleException("Generated advancement ${advancementFile} retains a legacy item-predicate tag key")
+                }
+                if (value.items instanceof Collection
+                        && (value.items as Collection).any { it instanceof String }) {
+                    throw new GradleException("Generated advancement ${advancementFile} retains a list-valued item predicate")
+                }
+                value.values().each { validateAdvancementValue(it, advancementFile) }
+            } else if (value instanceof Collection) {
+                value.each { validateAdvancementValue(it, advancementFile) }
+            }
+        }
+        fileTree(new File(root, 'data/bbb/advancement/recipes')).matching { include '*.json' }.files.each { advancementFile ->
+            Map advancement = new JsonSlurper().parse(advancementFile) as Map
+            if (advancement.parent != 'minecraft:recipes/root') {
+                throw new GradleException("Generated advancement ${advancementFile} has unexpected parent ${advancement.parent}")
+            }
+            List rewards = advancement.rewards?.recipes instanceof Collection
+                    ? advancement.rewards.recipes as List : []
+            if (rewards.isEmpty() || rewards.any { !(it instanceof String) || !stagedRecipeIds.contains(it) }) {
+                throw new GradleException("Generated advancement ${advancementFile} rewards a recipe outside the curated staging set")
+            }
+            validateAdvancementValue(advancement, advancementFile)
+        }
+
+        def validateLootValue
+        validateLootValue = { Object value, File lootFile ->
+            if (value instanceof Map) {
+                if (value.function == 'minecraft:set_count'
+                        && value.containsKey('add') && !(value.add instanceof Boolean)) {
+                    throw new GradleException("Generated loot table ${lootFile} has non-boolean minecraft:set_count add")
+                }
+                value.values().each { validateLootValue(it, lootFile) }
+            } else if (value instanceof Collection) {
+                value.each { validateLootValue(it, lootFile) }
+            }
+        }
+        fileTree(new File(root, 'data/bbb/loot_table')).matching { include '**/*.json' }.files.each { lootFile ->
+            validateLootValue(new JsonSlurper().parse(lootFile), lootFile)
+        }
+
+        Set<String> allowedTagIds = [
+                'balustrades', 'beams', 'braziers', 'columns', 'frames', 'hammers', 'lanterns',
+                'lattices', 'metal_fences', 'mouldings', 'pallets', 'stone_blocks', 'stone_columns',
+                'stone_fences', 'stone_frames', 'supports', 'trims', 'urns', 'wooden_blocks',
+                'wooden_frames', 'wooden_lanterns', 'wooden_walls'
+        ] as Set<String>
+        fileTree(root).matching { include '**/*.json' }.files.each { jsonFile ->
+            Object json = new JsonSlurper().parse(jsonFile)
+            Set<String> strings = new LinkedHashSet<>()
+            collectStrings(json, strings)
+            strings.findAll { it ==~ /#?bbb:[a-z0-9_\-.]+/ }.each { reference ->
+                String id = reference.substring(reference.indexOf(':') + 1)
+                if (!retainedItems.contains(id) && !allowedTagIds.contains(id)) {
+                    throw new GradleException("Generated resource ${jsonFile} references removed or unknown BBB ID ${reference}")
+                }
+            }
+        }
+        println "BBB_CURATED_RESOURCES blocks=${blockstates} items=${itemDefinitions} models=${models} textures=${textures} pngs=${pngTextures} transparentPngs=${pngsWithTransparency} recipes=${recipes} advancements=${advancements} loot=${lootTables} tags=${tags} sha256=${expectedOriginalSha256}"
+    }
+}
+
+tasks.named('check') {
+    dependsOn tasks.named('verifyCuratedResources')
+}
+
+tasks.withType(Test).configureEach {
+    useJUnitPlatform()
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    options.release = 25
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_25
+    targetCompatibility = JavaVersion.VERSION_25
+}
