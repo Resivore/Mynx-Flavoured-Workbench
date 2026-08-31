@@ -20,7 +20,7 @@
     "scope": [
       "Retain the legally trackable source, build, and test implementation from exact Canary source checkpoint 0105a1114edcf5eb0306bb60a48ad48d963d187d.",
       "Preserve the private resource assembler, exact input and output identities, and authorized temporary shared green spawn-egg derivation contract.",
-      "Preserve the 31-test behavioral-parity checkpoint while distinguishing source/static evidence from Minecraft runtime validation."
+      "Preserve the 32-test JUnit behavioral/static checkpoint and 10-test source-safe private-migration checkpoint while distinguishing source/static evidence from Minecraft runtime validation."
     ],
     "boundaries": {
       "owned_paths": [
@@ -85,13 +85,13 @@
         "type": "TOOL",
         "identifier": "gradle",
         "requirement": "9.5.1",
-        "reason": "Exact tracked wrapper version used for Canary 1."
+        "reason": "Exact tracked wrapper version used for Canary 2."
       },
       {
         "type": "TOOL",
         "identifier": "fabric-loom",
         "requirement": "1.15.5",
-        "reason": "Exact build plugin used for Canary 1."
+        "reason": "Exact build plugin used for Canary 2."
       },
       {
         "type": "TOOL",
@@ -114,15 +114,15 @@
     ]
   },
   "state": {
-    "milestone": "Exact private Canary 1 (3,135,359 bytes) and its exact YUNG's API compatibility dependency (1,266,121 bytes) are retained locally at projects/ribbits-26.2/artifacts/ribbits-4.1.6+26.2-port-canary1.jar and projects/ribbits-26.2/artifacts/YungsApi-26.2-Fabric-6.1.1-compat.1.jar; both are Git-ignored and untracked, the Canary remains nonredistributable, and nothing is deployed or runtime tested.",
+    "milestone": "Private Canary 2 fixes the five Minecraft 26.2 configured-feature registry failures, is reproducibly generated at 3,124,301 bytes, and is retained locally with the exact YUNG's API dependency under projects/ribbits-26.2/artifacts; both are Git-ignored and untracked, historical Canary 1 remains immutable and broken for world creation, and Canary 2 remains not deployed and runtime untested.",
     "releases": {
       "current": {
-        "version": "4.1.6+26.2-port-canary1",
+        "version": "4.1.6+26.2-port-canary2",
         "artifact": {
-          "filename": "ribbits-4.1.6+26.2-port-canary1.jar",
-          "sha256": "886f2586ca8d5ab80bdfc58cd18e10dc6ba4ff180371ab71461681db5ba00b6d"
+          "filename": "ribbits-private-reconstruction-4.1.6+26.2-port-canary2.jar",
+          "sha256": "0ad73b7b61c6ee792ec1745056563641767afe6811c0fdf2d3c99123c3f289dc"
         },
-        "source_commit": "0105a1114edcf5eb0306bb60a48ad48d963d187d"
+        "source_commit": "efe1970d2447aea4913e67f55c0c6b83cc36c5bb"
       },
       "accepted": null,
       "rollback": null,
@@ -137,11 +137,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 3,
-    "activity_at": "2026-08-31T05:08:26Z",
-    "updated_at": "2026-08-31T05:08:26Z",
-    "last_codex_at": "2026-08-31T05:08:26Z",
-    "source_commit": "69a099744001106cac008aabaf7e7c568d8071a3",
+    "revision": 4,
+    "activity_at": "2026-08-31T06:33:21Z",
+    "updated_at": "2026-08-31T06:33:21Z",
+    "last_codex_at": "2026-08-31T06:33:21Z",
+    "source_commit": "efe1970d2447aea4913e67f55c0c6b83cc36c5bb",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
