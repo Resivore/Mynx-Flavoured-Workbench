@@ -11,7 +11,9 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.security.MessageDigest;
 import java.util.ArrayList;
+import java.util.HexFormat;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,7 +23,7 @@ import java.util.stream.Stream;
 import javax.imageio.ImageIO;
 import org.junit.jupiter.api.Test;
 
-class Canary2ContractTest {
+class Canary3ContractTest {
     private static final Path PROJECT_ROOT =
             Path.of(System.getProperty("projectRoot")).toAbsolutePath().normalize();
     private static final Path RESOURCES = PROJECT_ROOT.resolve("src/main/resources");
@@ -29,50 +31,53 @@ class Canary2ContractTest {
             "assets/wearable_lanterns/textures/gui/sprites/container/slots/lantern.png");
 
     private static final int TRANSPARENT = 0x00000000;
-    private static final int HIGHLIGHT = 0xff7f664d;
-    private static final int BODY = 0xff604d3a;
-    private static final int SHADOW = 0xff291f18;
-    private static final int INTERIOR = 0xff000000;
+    private static final int GLYPH = 0xff1b1511;
+    private static final String USER_SPRITE_SHA256 =
+            "dc606d99651a3e46fe87fc3110a80529ee2a945f57317d1235e12c6035a89d10";
 
     private static final List<String> EXPECTED_SPRITE = List.of(
             "................",
-            "................",
-            "......HHBS......",
-            ".....H....S.....",
-            "......HBBS......",
-            ".....H....S.....",
-            "....H......S....",
-            "....H..KK..S....",
-            "....B..KK..S....",
-            "....B..KK..S....",
-            "....B......S....",
-            ".....HBBBSS.....",
-            "......B..S......",
-            "................",
+            "........G.......",
+            "........G.......",
+            ".......G........",
+            ".......G........",
+            "......GGGG......",
+            "......G..G......",
+            ".....G.GG.G.....",
+            ".....G....G.....",
+            ".....G....G.....",
+            ".....G....G.....",
+            ".....G....G.....",
+            ".....G....G.....",
+            ".....GGGGGG.....",
             "................",
             "................");
 
     @Test
-    void successorVersionIsCanaryTwo() throws IOException {
+    void successorVersionIsCanaryThree() throws IOException {
         Properties properties = new Properties();
         try (var input = Files.newInputStream(PROJECT_ROOT.resolve("gradle.properties"))) {
             properties.load(input);
         }
-        assertEquals("0.1.0-canary2", properties.getProperty("mod_version"));
+        assertEquals("0.1.0-canary3", properties.getProperty("mod_version"));
     }
 
     @Test
-    void lanternSpriteKeepsGeometryAndUsesTheMatchaGuiPalette() throws IOException {
+    void lanternSpriteIsTheExactUserSuppliedPng() throws Exception {
+        assertEquals(1_749L, Files.size(LANTERN_SPRITE));
+        assertEquals(
+                USER_SPRITE_SHA256,
+                HexFormat.of().formatHex(
+                        MessageDigest.getInstance("SHA-256").digest(Files.readAllBytes(LANTERN_SPRITE))),
+                "The supplied PNG must remain byte-for-byte unchanged");
+
         BufferedImage image = ImageIO.read(LANTERN_SPRITE.toFile());
         assertEquals(16, image.getWidth());
         assertEquals(16, image.getHeight());
 
         Map<Integer, Character> symbols = Map.of(
                 TRANSPARENT, '.',
-                HIGHLIGHT, 'H',
-                BODY, 'B',
-                SHADOW, 'S',
-                INTERIOR, 'K');
+                GLYPH, 'G');
         Map<Integer, Integer> counts = new LinkedHashMap<>();
         List<String> actualSprite = new ArrayList<>();
 
@@ -90,11 +95,9 @@ class Canary2ContractTest {
         }
 
         assertEquals(EXPECTED_SPRITE, actualSprite,
-                "Canary 2 is a recolor and must preserve the exact Canary 1 pixel mask");
-        assertEquals(
-                Map.of(TRANSPARENT, 220, HIGHLIGHT, 8, BODY, 10, SHADOW, 12, INTERIOR, 6),
-                counts);
-        assertEquals(Set.of(TRANSPARENT, HIGHLIGHT, BODY, SHADOW, INTERIOR), counts.keySet());
+                "Canary 3 must preserve the exact user-supplied pixel map");
+        assertEquals(Map.of(TRANSPARENT, 226, GLYPH, 30), counts);
+        assertEquals(Set.of(TRANSPARENT, GLYPH), counts.keySet());
     }
 
     @Test
@@ -105,7 +108,7 @@ class Canary2ContractTest {
             javaFiles = paths.filter(path -> path.toString().endsWith(".java")).toList();
         }
         assertEquals(1, javaFiles.size(),
-                "Canary 2 must retain the single universal Trinkets predicate initializer");
+                "Canary 3 must retain the single universal Trinkets predicate initializer");
 
         String production = Files.readString(javaFiles.get(0), StandardCharsets.UTF_8);
         assertFalse(production.contains("dev.lambdaurora"));
