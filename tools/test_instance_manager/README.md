@@ -43,13 +43,19 @@ source checkpoint to that project's current manifest release. Candidate bytes
 must come from the canonical tracked `projects/<project>/artifacts/<filename>`
 (or equivalent canonical project directory) path. If a batch member carries a
 retained rollback, it must match that manifest's rollback release exactly; a
-project with no manifest rollback cannot declare one.
+project with no manifest rollback cannot declare one. A manifest rollback does
+not by itself require target-local retention; `retained_rollbacks` remains
+optional for ordinary repository-backed rollback history. The manager reloads
+the affected current manifests immediately before committing the ledger and
+runtime state, and aborts with physical rollback if any bound release identity
+has drifted since planning.
 
 A retained rollback is target-local history, not an active baseline artifact.
 Its unit uses the same project UUID/ID, a `FROZEN_LEGACY` identity, and an exact
 `ADOPTED_TARGET mods/<filename>` source. The manager stages and verifies those
-enabled predecessor bytes, includes their removal in the same locked rollback
-transaction, and writes the exact bytes to `mods/<filename>.disabled`. All
+enabled predecessor bytes, snapshots both paths for failure recovery, and uses
+a same-filesystem atomic rename to `mods/<filename>.disabled` inside the locked
+transaction. All
 later verification requires that disabled file and rejects any reappearance of
 its enabled sibling. Verification receipts expose retained rollback paths,
 hashes, disabled dispositions, inventory digest, and the enabled-sibling

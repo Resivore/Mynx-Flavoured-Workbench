@@ -1052,6 +1052,8 @@ class PhysicalManagerTests(unittest.TestCase):
         before_slots = copy.deepcopy(before["slots"])
         before_tree = tree_snapshot(self.fixture.root)
         predecessor_name = rollback["artifacts"][0]["filename"]
+        predecessor_path = self.fixture.mods / predecessor_name
+        disabled_path = self.fixture.mods / (predecessor_name + ".disabled")
 
         dry_run = self.fixture.manager.transition(
             operation=operation,
@@ -1064,18 +1066,36 @@ class PhysicalManagerTests(unittest.TestCase):
         self.assertEqual(before_tree, tree_snapshot(self.fixture.root))
         self.assertEqual(1, len(dry_run["retained_rollbacks"]))
         self.assertEqual("mods/" + predecessor_name, dry_run["retained_rollbacks"][0]["enabled_sibling"])
-        self.assertIn(predecessor_name, dry_run["removals"])
+        self.assertNotIn(predecessor_name, dry_run["removals"])
+        self.assertEqual(
+            [
+                {
+                    "source": str(predecessor_path),
+                    "path": "mods/" + predecessor_name + ".disabled",
+                    "sha256": rollback["artifacts"][0]["sha256"],
+                }
+            ],
+            dry_run["retained_predecessor_moves"],
+        )
         self.assertIn(
             "mods/" + predecessor_name + ".disabled",
             {item["path"] for item in dry_run["managed_files"]},
         )
 
-        applied = self.fixture.manager.transition(
-            operation=operation,
-            expected_revision=before["revision"],
-            at="2099-01-01T00:01:00Z",
-            dry_run=False,
-        )
+        original_replace = manager_module.os.replace
+        with patch.object(manager_module.os, "replace", wraps=original_replace) as replace_spy:
+            applied = self.fixture.manager.transition(
+                operation=operation,
+                expected_revision=before["revision"],
+                at="2099-01-01T00:01:00Z",
+                dry_run=False,
+            )
+        move_calls = [
+            (Path(call.args[0]), Path(call.args[1]))
+            for call in replace_spy.call_args_list
+            if len(call.args) >= 2
+        ]
+        self.assertIn((predecessor_path, disabled_path), move_calls)
 
         after = self.fixture.repository_state()
         self.assertFalse(applied["dry_run"])
@@ -1092,8 +1112,8 @@ class PhysicalManagerTests(unittest.TestCase):
         self.assertEqual(before_slots, after["slots"])
         self.assertTrue((self.fixture.mods / first["artifacts"][0]["filename"]).is_file())
         self.assertTrue((self.fixture.mods / rooted["artifacts"][0]["filename"]).is_file())
-        self.assertFalse((self.fixture.mods / predecessor_name).exists())
-        self.assertEqual(predecessor_bytes, (self.fixture.mods / (predecessor_name + ".disabled")).read_bytes())
+        self.assertFalse(predecessor_path.exists())
+        self.assertEqual(predecessor_bytes, disabled_path.read_bytes())
         projection = json.loads((self.fixture.target / ".mynx-runtime-v2-title.json").read_text(encoding="utf-8"))
         self.assertEqual("Baseline: Stack v6", projection["lines"][0])
         verification = self.fixture.manager.verify()
@@ -1182,13 +1202,110 @@ class PhysicalManagerTests(unittest.TestCase):
 
         missing_retained_rollback = copy.deepcopy(exact_operation)
         missing_retained_rollback["members"][0].pop("retained_rollbacks")
-        with self.assertRaisesRegex(ManagerError, "declares a rollback release"):
-            self.fixture.manager._validate_batch_manifest_identities(missing_retained_rollback)
+        self.fixture.manager._validate_batch_manifest_identities(missing_retained_rollback)
 
         wrong_candidate = copy.deepcopy(exact_operation)
         wrong_candidate["members"][0]["unit"]["version"] = "0.1.1-canary2"
         with self.assertRaisesRegex(ManagerError, "does not exactly match manifest release identity"):
             self.fixture.manager._validate_batch_manifest_identities(wrong_candidate)
+
+    def test_user_passed_batch_manifest_drift_before_commit_aborts_and_rolls_back(self) -> None:
+        self.fixture.manager.adopt(dry_run=False)
+        operation, first, rooted, rollback, _ = self.fixture.add_user_passed_batch()
+        manifest_path = self.fixture.repository / "WORKBENCH_STATUS.json"
+
+        def manifest_for(current: dict, rollback_unit: dict | None = None) -> dict:
+            current_artifact = current["artifacts"][0]
+            rollback_release = None
+            if rollback_unit is not None:
+                rollback_artifact = rollback_unit["artifacts"][0]
+                rollback_release = {
+                    "version": rollback_unit["version"],
+                    "source_commit": rollback_unit["source_commit"],
+                    "artifact": {
+                        "filename": rollback_artifact["filename"],
+                        "sha256": rollback_artifact["sha256"],
+                    },
+                }
+            return {
+                "identity": {
+                    "uuid": current["project_uuid"],
+                    "project_id": current["project_id"],
+                },
+                "state": {
+                    "releases": {
+                        "current": {
+                            "version": current["version"],
+                            "source_commit": current["source_commit"],
+                            "artifact": {
+                                "filename": current_artifact["filename"],
+                                "sha256": current_artifact["sha256"],
+                            },
+                        },
+                        "rollback": rollback_release,
+                    }
+                },
+            }
+
+        initial_catalog = {
+            first["project_uuid"]: (manifest_path, manifest_for(first)),
+            rooted["project_uuid"]: (manifest_path, manifest_for(rooted, rollback)),
+        }
+        drifted_catalog = copy.deepcopy(initial_catalog)
+        drifted_catalog[first["project_uuid"]][1]["state"]["releases"]["current"]["version"] = (
+            "0.1.1-concurrent"
+        )
+        self.fixture.manager.repository_statuses = copy.deepcopy(initial_catalog)
+        state = self.fixture.repository_state()
+        before = tree_snapshot(self.fixture.root)
+
+        with patch(
+            "tools.test_instance_manager.manager.load_repository_statuses",
+            side_effect=[copy.deepcopy(initial_catalog), drifted_catalog],
+        ) as reload_statuses:
+            with self.assertRaisesRegex(ManagerError, "does not exactly match manifest release identity"):
+                self.fixture.manager.transition(
+                    operation=operation,
+                    expected_revision=state["revision"],
+                    at="2099-01-01T00:01:00Z",
+                    dry_run=False,
+                )
+
+        self.assertEqual(2, reload_statuses.call_count)
+        self.assertEqual(before, tree_snapshot(self.fixture.root))
+        self.assertEqual("PHYSICAL_STATE_VERIFIED", self.fixture.manager.verify()["status"])
+
+    def test_runtime_state_cas_drift_is_not_overwritten_during_batch_rollback(self) -> None:
+        self.fixture.manager.adopt(dry_run=False)
+        operation, _, _, _, _ = self.fixture.add_user_passed_batch()
+        state = self.fixture.repository_state()
+        concurrent = plan_transition(
+            state,
+            state["revision"],
+            {"type": "REMOVE_SLOT", "slot": "B"},
+            "2099-01-01T00:00:59Z",
+            self.fixture.project_index,
+        )
+        before_target = tree_snapshot(self.fixture.target)
+
+        def inject_concurrent_runtime_state(stage: str) -> None:
+            if stage == "after_physical_verify":
+                self.fixture.state_path.write_text(
+                    json.dumps(concurrent, indent=2) + "\n",
+                    encoding="utf-8",
+                )
+
+        with self.assertRaisesRegex(ManagerError, "repository runtime state changed"):
+            self.fixture.manager.transition(
+                operation=operation,
+                expected_revision=state["revision"],
+                at="2099-01-01T00:01:00Z",
+                dry_run=False,
+                failure_injector=inject_concurrent_runtime_state,
+            )
+
+        self.assertEqual(concurrent, self.fixture.repository_state())
+        self.assertEqual(before_target, tree_snapshot(self.fixture.target))
 
     def test_retained_rollback_active_reappearance_fails_verification(self) -> None:
         self.fixture.manager.adopt(dry_run=False)
@@ -1207,14 +1324,14 @@ class PhysicalManagerTests(unittest.TestCase):
         with self.assertRaisesRegex(ManagerError, "enabled sibling must be absent"):
             self.fixture.manager.verify()
 
-    def test_user_passed_batch_injected_failure_restores_full_preimage(self) -> None:
+    def test_user_passed_batch_failure_after_atomic_move_restores_full_preimage(self) -> None:
         self.fixture.manager.adopt(dry_run=False)
         operation, _, _, _, _ = self.fixture.add_user_passed_batch()
         state = self.fixture.repository_state()
         before = tree_snapshot(self.fixture.root)
 
-        def fail_after_predecessor_removal(stage: str) -> None:
-            if stage == "after_remove_1":
+        def fail_after_predecessor_move(stage: str) -> None:
+            if stage == "after_move_1":
                 raise RuntimeError("injected batch failure")
 
         with self.assertRaisesRegex(ManagerError, "rolled back"):
@@ -1223,7 +1340,7 @@ class PhysicalManagerTests(unittest.TestCase):
                 expected_revision=state["revision"],
                 at="2099-01-01T00:01:00Z",
                 dry_run=False,
-                failure_injector=fail_after_predecessor_removal,
+                failure_injector=fail_after_predecessor_move,
             )
         self.assertEqual(before, tree_snapshot(self.fixture.root))
         self.assertEqual("PHYSICAL_STATE_VERIFIED", self.fixture.manager.verify()["status"])

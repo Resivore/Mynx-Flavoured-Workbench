@@ -1043,10 +1043,52 @@ class RuntimeContractTests(unittest.TestCase):
         # inferred by this bootstrap test.
         tracked = load_json(ROOT / "tools" / "test_instance_manager" / "runtime-state.json")
         self.assertEqual("ACTIVE", tracked["activation"])
-        self.assertEqual(49, tracked["revision"])
-        self.assertEqual(3, tracked["accepted_baseline"]["revision"])
-        self.assertEqual(27, tracked["accepted_baseline"]["provenance"]["accepted_artifact_count"])
+        self.assertEqual(50, tracked["revision"])
+        self.assertEqual(6, tracked["accepted_baseline"]["revision"])
+        self.assertEqual(30, tracked["accepted_baseline"]["provenance"]["accepted_artifact_count"])
         self.assertEqual("TRANSITIONED", tracked["accepted_baseline"]["provenance"]["physical_disposition"])
+
+        accepted_by_uuid = {
+            member["unit"]["project_uuid"]: member
+            for member in tracked["accepted_baseline"]["members"]
+        }
+        expected_user_passed = {
+            "8ff207a2-9049-4519-ad3f-3100a80abcc2": (
+                "0.1.1-canary2",
+                "xaero-discovery-radius-0.1.1-canary2.jar",
+                "a7d0125dbe13bbcd5418aac39e0e51a32ea79d508d9dc47f2ebd86526a794c99",
+            ),
+            "2371b6eb-a4fb-4f1e-8203-580b82ce846b": (
+                "0.1.2-canary3",
+                "coal-consolidation-0.1.2-canary3.jar",
+                "f1d36dfad276927d527cc911d92f47ee979ef7600479f950c76ed25dd18eb871",
+            ),
+            "6b8b6166-fd59-4e4e-ab1d-d1140cdbfab8": (
+                "0.1.0-canary1",
+                "rooted-dirt-qol-0.1.0-canary1.jar",
+                "3642f55e0cef611f2dd56478b8aaf2491fd81d370023a04ca71e6852b37307ee",
+            ),
+        }
+        for project_uuid, (version, filename, sha256) in expected_user_passed.items():
+            member = accepted_by_uuid[project_uuid]
+            self.assertEqual(version, member["unit"]["version"])
+            self.assertEqual([(filename, sha256)], [
+                (artifact["filename"], artifact["sha256"])
+                for artifact in member["unit"]["artifacts"]
+            ])
+
+        rooted = accepted_by_uuid["6b8b6166-fd59-4e4e-ab1d-d1140cdbfab8"]
+        self.assertEqual(1, len(rooted["retained_rollbacks"]))
+        rooted_rollback = rooted["retained_rollbacks"][0]["unit"]
+        self.assertEqual("FROZEN_LEGACY", rooted_rollback["project_identity_source"])
+        self.assertEqual("107.1", rooted_rollback["version"])
+        self.assertEqual(
+            [("craft-rooted-dirt-107.1.jar", "a5fc656fc345b416fc01281146d568de664c587e2c168e6bfd69f3ded7e42845")],
+            [
+                (artifact["filename"], artifact["sha256"])
+                for artifact in rooted_rollback["artifacts"]
+            ],
+        )
 
         slot_a = tracked["slots"]["A"]
         self.assertEqual("4b2342fc-7bdf-5ba6-9f37-d551109d214c", slot_a["unit"]["project_uuid"])

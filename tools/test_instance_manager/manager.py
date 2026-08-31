@@ -223,6 +223,14 @@ class FileAction:
 
 
 @dataclass(frozen=True)
+class RetainedPredecessorMove:
+    source: Path
+    destination: Path
+    relative_path: str
+    artifact: ManagedArtifact
+
+
+@dataclass(frozen=True)
 class PhysicalPlan:
     mode: str
     current_state: dict[str, Any] | None
@@ -230,9 +238,11 @@ class PhysicalPlan:
     current_artifacts: tuple[ManagedArtifact, ...]
     desired_artifacts: tuple[ManagedArtifact, ...]
     writes: tuple[FileAction, ...]
+    retained_predecessor_moves: tuple[RetainedPredecessorMove, ...]
     removals: tuple[Path, ...]
     unchanged: tuple[str, ...]
     title_projection: dict[str, Any]
+    batch_operation: dict[str, Any] | None
 
     def summary(self, *, dry_run: bool) -> dict[str, Any]:
         return {
@@ -248,6 +258,14 @@ class PhysicalPlan:
                     "source": str(action.source),
                 }
                 for action in self.writes
+            ],
+            "retained_predecessor_moves": [
+                {
+                    "source": str(move.source),
+                    "path": move.relative_path,
+                    "sha256": move.artifact.sha256,
+                }
+                for move in self.retained_predecessor_moves
             ],
             "removals": [path.name for path in self.removals],
             "unchanged": list(self.unchanged),
@@ -937,7 +955,22 @@ class PhysicalManager:
         projection = self._verify_title_projection(state) if ledger["schema_version"] == 3 else None
         return self._physical_verification_report(state, artifacts, projection)
 
-    def _validate_batch_manifest_identities(self, operation: dict[str, Any]) -> None:
+    def _current_repository_statuses(self) -> dict[str, tuple[Path, dict[str, Any]]] | None:
+        """Reload the authoritative manifest catalog when production binding is enabled."""
+
+        if self.repository_statuses is None:
+            return None
+        try:
+            return load_repository_statuses(self.config.repository_root)
+        except ValidationError as exc:
+            raise ManagerError(f"cannot reload repository project identities: {exc}") from exc
+
+    def _validate_batch_manifest_identities(
+        self,
+        operation: dict[str, Any],
+        *,
+        refresh: bool = False,
+    ) -> None:
         """Bind production direct-pass promotions to current project manifests.
 
         Isolated unit tests may construct a manager with both identity catalogs
@@ -945,7 +978,10 @@ class PhysicalManager:
         normal CLI construction never takes that bypass.
         """
 
-        if operation.get("type") != "PROMOTE_USER_PASSED_BATCH" or self.repository_statuses is None:
+        if operation.get("type") != "PROMOTE_USER_PASSED_BATCH":
+            return
+        statuses = self._current_repository_statuses() if refresh else self.repository_statuses
+        if statuses is None:
             return
         members = operation.get("members")
         if not isinstance(members, list) or not members:
@@ -956,7 +992,7 @@ class PhysicalManager:
                 raise ManagerError(f"{label} requires a unit")
             unit = member["unit"]
             project_uuid = unit.get("project_uuid")
-            status_entry = self.repository_statuses.get(project_uuid)
+            status_entry = statuses.get(project_uuid)
             if status_entry is None:
                 raise ManagerError(f"{label} project UUID does not resolve to a current manifest: {project_uuid}")
             manifest_path, manifest = status_entry
@@ -985,10 +1021,6 @@ class PhysicalManager:
             if retained_rollbacks and rollback_release is None:
                 raise ManagerError(
                     f"{label} supplies a retained rollback, but the current manifest has no rollback release"
-                )
-            if rollback_release is not None and not retained_rollbacks:
-                raise ManagerError(
-                    f"{label} current manifest declares a rollback release which the batch must retain"
                 )
             if not retained_rollbacks:
                 continue
@@ -1093,7 +1125,7 @@ class PhysicalManager:
         active["accepted_baseline"]["provenance"]["physical_disposition"] = "ADOPTED"
         validate_runtime_state(active, self.project_index)
         desired_artifacts = self._desired_managed_inventory(active)
-        writes, removals, unchanged = self._plan_delta(current_artifacts, desired_artifacts)
+        writes, retained_moves, removals, unchanged = self._plan_delta(current_artifacts, desired_artifacts)
         return PhysicalPlan(
             mode="ADOPT",
             current_state=state,
@@ -1101,9 +1133,11 @@ class PhysicalManager:
             current_artifacts=current_artifacts,
             desired_artifacts=desired_artifacts,
             writes=writes,
+            retained_predecessor_moves=retained_moves,
             removals=removals,
             unchanged=unchanged,
             title_projection=self._title_projection(active),
+            batch_operation=None,
         )
 
     def adopt(self, *, dry_run: bool = True, failure_injector: FailureInjector | None = None) -> dict[str, Any]:
@@ -1136,7 +1170,7 @@ class PhysicalManager:
         if operation is not None:
             if expected_revision is None or at is None:
                 raise ManagerError("operation transitions require expected_revision and at")
-            self._validate_batch_manifest_identities(operation)
+            self._validate_batch_manifest_identities(operation, refresh=True)
             try:
                 desired = plan_transition(current, expected_revision, operation, at, self.project_index)
             except ValidationError as exc:
@@ -1173,7 +1207,7 @@ class PhysicalManager:
             conflict_mod_ids=union_mod_ids,
             prior_ledger=ledger,
         )
-        writes, removals, unchanged = self._plan_delta(current_artifacts, desired_artifacts)
+        writes, retained_moves, removals, unchanged = self._plan_delta(current_artifacts, desired_artifacts)
         return PhysicalPlan(
             mode="TRANSITION",
             current_state=current,
@@ -1181,9 +1215,15 @@ class PhysicalManager:
             current_artifacts=current_artifacts,
             desired_artifacts=desired_artifacts,
             writes=writes,
+            retained_predecessor_moves=retained_moves,
             removals=removals,
             unchanged=unchanged,
             title_projection=self._title_projection(desired),
+            batch_operation=(
+                copy.deepcopy(operation)
+                if operation is not None and operation.get("type") == "PROMOTE_USER_PASSED_BATCH"
+                else None
+            ),
         )
 
     def _assert_desired_is_pure_transition(self, current: dict[str, Any], desired: dict[str, Any]) -> None:
@@ -1250,15 +1290,22 @@ class PhysicalManager:
         self,
         current: tuple[ManagedArtifact, ...],
         desired: tuple[ManagedArtifact, ...],
-    ) -> tuple[tuple[FileAction, ...], tuple[Path, ...], tuple[str, ...]]:
+    ) -> tuple[
+        tuple[FileAction, ...],
+        tuple[RetainedPredecessorMove, ...],
+        tuple[Path, ...],
+        tuple[str, ...],
+    ]:
         current_by_path = {item.relative_path.casefold(): item for item in current}
         current_by_artifact = {item.artifact_id: item for item in current}
         desired_by_path = {item.relative_path.casefold(): item for item in desired}
         writes: list[FileAction] = []
+        retained_moves: list[RetainedPredecessorMove] = []
         unchanged: list[str] = []
         for artifact in desired:
             destination = self._destination(artifact)
-            existing = current_by_path.get(artifact.relative_path.casefold())
+            relative_key = artifact.relative_path.casefold()
+            existing = current_by_path.get(relative_key)
             if existing is None and destination.exists():
                 raise ManagerError(f"desired managed path is occupied by an unmanaged file: {artifact.relative_path}")
             if existing is not None and existing.sha256 == artifact.sha256 and destination.exists():
@@ -1279,6 +1326,43 @@ class PhysicalManager:
                     raise ManagerError(f"missing artifact source for {artifact.project_id}/{artifact.filename}: {candidate}")
                 self._verify_artifact_file(candidate, artifact)
                 source = candidate
+
+            new_retained_predecessor = (
+                artifact.retained_rollback
+                and artifact.source["type"] == "ADOPTED_TARGET"
+                and artifact.artifact_id not in current_by_artifact
+                and relative_key not in current_by_path
+            )
+            if new_retained_predecessor:
+                expected_source = self.mods / artifact.filename
+                if not _paths_equal(source, expected_source):
+                    raise ManagerError(
+                        f"new retained rollback source must be mods/{artifact.filename}: {source}"
+                    )
+                if _paths_equal(source, destination):
+                    raise ManagerError("new retained rollback source must be its exact enabled predecessor")
+                enabled_relative = PurePosixPath(
+                    self.config.mods_directory,
+                    artifact.filename,
+                ).as_posix()
+                if enabled_relative.casefold() in current_by_path:
+                    raise ManagerError(
+                        "new retained rollback predecessor must be unmanaged: " + enabled_relative
+                    )
+                if enabled_relative.casefold() in desired_by_path:
+                    raise ManagerError(
+                        "retained rollback enabled predecessor cannot also be a desired managed path: "
+                        + enabled_relative
+                    )
+                retained_moves.append(
+                    RetainedPredecessorMove(
+                        source=source,
+                        destination=destination,
+                        relative_path=artifact.relative_path,
+                        artifact=artifact,
+                    )
+                )
+                continue
             writes.append(FileAction(destination, artifact.relative_path, artifact, source))
 
         removal_candidates = [
@@ -1287,32 +1371,11 @@ class PhysicalManager:
             if artifact.relative_path.casefold() not in desired_by_path
             or desired_by_path[artifact.relative_path.casefold()].sha256 != artifact.sha256
         ]
-        current_artifact_ids = {artifact.artifact_id for artifact in current}
-        current_paths = {artifact.relative_path.casefold() for artifact in current}
-        for action in writes:
-            artifact = action.artifact
-            if (
-                not artifact.retained_rollback
-                or artifact.source["type"] != "ADOPTED_TARGET"
-                or artifact.artifact_id in current_artifact_ids
-                or artifact.relative_path.casefold() in current_paths
-            ):
-                continue
-            adopted_source = self._source_path(artifact)
-            if _paths_equal(adopted_source, action.destination):
-                raise ManagerError("new retained rollback source must be its exact enabled predecessor")
-            expected_source = self.mods / artifact.filename
-            if not _paths_equal(adopted_source, expected_source):
-                raise ManagerError(
-                    f"new retained rollback source must be mods/{artifact.filename}: {adopted_source}"
-                )
-            removal_candidates.append(adopted_source)
-
         removals_by_path: dict[str, Path] = {}
         for path in removal_candidates:
             removals_by_path.setdefault(os.path.normcase(str(path)).casefold(), path)
         removals = tuple(removals_by_path.values())
-        return tuple(writes), removals, tuple(unchanged)
+        return tuple(writes), tuple(retained_moves), removals, tuple(unchanged)
 
     def transition(
         self,
@@ -1409,13 +1472,21 @@ class PhysicalManager:
         _assert_no_reparse_components(transaction, "transaction backup", root=self.target)
         self._assert_target_containment(transaction.resolve(strict=False), "transaction backup")
         touched = sorted(
-            {action.destination for action in plan.writes}.union(plan.removals).union({self.title_projection_path}),
+            {action.destination for action in plan.writes}
+            .union(plan.removals)
+            .union(
+                path
+                for move in plan.retained_predecessor_moves
+                for path in (move.source, move.destination)
+            )
+            .union({self.title_projection_path}),
             key=lambda item: str(item).casefold(),
         )
         snapshots: dict[Path, Path | None] = {}
         repo_snapshot: Path | None = None
         ledger_snapshot: Path | None = None
         ledger_written = False
+        state_written = False
         committed = False
         preserve_transaction = False
         try:
@@ -1448,12 +1519,25 @@ class PhysicalManager:
                 shutil.copy2(action.source, stage)
                 self._verify_artifact_file(stage, action.artifact)
                 staged[action.destination] = stage
+            for index, move in enumerate(plan.retained_predecessor_moves):
+                stage = source_backup / f"move-{index:04d}-{move.artifact.filename}"
+                shutil.copy2(move.source, stage)
+                self._verify_artifact_file(stage, move.artifact)
             injector("after_backup")
 
             for index, path in enumerate(plan.removals):
                 if path.exists():
                     path.unlink()
                 injector(f"after_remove_{index + 1}")
+            for index, move in enumerate(plan.retained_predecessor_moves):
+                if move.destination.exists():
+                    raise ManagerError(
+                        "retained rollback destination became occupied before atomic move: "
+                        + str(move.destination)
+                    )
+                self._verify_artifact_file(move.source, move.artifact)
+                os.replace(move.source, move.destination)
+                injector(f"after_move_{index + 1}")
             for index, action in enumerate(plan.writes):
                 action.destination.parent.mkdir(parents=False, exist_ok=True)
                 _atomic_copy(staged[action.destination], action.destination)
@@ -1470,8 +1554,11 @@ class PhysicalManager:
             self._verify_title_projection(plan.desired_state)
             injector("after_physical_verify")
 
-            # Recheck the compare-and-swap source immediately before committing
-            # either ledger.  The target lock serializes all manager writers.
+            # Re-read batch-bound manifest releases and recheck the runtime-state
+            # compare-and-swap source immediately before committing either
+            # ledger. The target lock serializes all manager writers.
+            if plan.batch_operation is not None:
+                self._validate_batch_manifest_identities(plan.batch_operation, refresh=True)
             live = self.load_repository_state()
             if live != plan.current_state:
                 raise ManagerError("repository runtime state changed during physical transition")
@@ -1481,6 +1568,7 @@ class PhysicalManager:
             ledger_written = True
             injector("after_ledger_write")
             _atomic_write_json(self.config.runtime_state, plan.desired_state)
+            state_written = True
             injector("after_state_write")
 
             final_state = self.load_repository_state()
@@ -1503,7 +1591,7 @@ class PhysicalManager:
                     _atomic_copy(ledger_snapshot, self.ledger_path)
                 elif ledger_written and self.ledger_path.exists():
                     self.ledger_path.unlink()
-                if repo_snapshot is not None:
+                if state_written and repo_snapshot is not None:
                     _atomic_copy(repo_snapshot, self.config.runtime_state)
             except Exception as rollback_exc:  # pragma: no cover - catastrophic I/O path
                 recovery_error = rollback_exc
