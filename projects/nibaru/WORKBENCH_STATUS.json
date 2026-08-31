@@ -16,23 +16,23 @@
     ]
   },
   "definition": {
-    "lifecycle": "ACTIVE",
+    "lifecycle": "PARKED",
     "goals": [
-      "Maintain the Minecraft 26.2 Fabric port of More Slabs Stairs & Walls.",
-      "Own canonical material identity and semantics for Nibaru blocks and optional geometry consumers."
+      "Preserve the immutable Nibaru project identity, LGPL provenance, and exact C45/C46 historical artifacts after active maintenance moves into unified BGE.",
+      "Keep enough canonical evidence to reproduce and audit the separated C56/C46 migration baseline without creating an independent successor or release cadence."
     ],
     "scope": [
-      "Standalone slab, stair, wall, material-profile, and resource behavior retained from C46.",
-      "Canonical-parent Layer and typed DROP_BASE contracts consumed optionally by BGE C53."
+      "Canonical control records, exact accepted/rollback C45 and migration-baseline C46 artifacts, LGPL license, and immutable provenance.",
+      "Historical record of the native slab, stair, wall, material-profile, resource, canonical-parent, and typed-transition implementation absorbed from exact C46 into BGE C57."
     ],
     "boundaries": {
       "owned_paths": [
         "projects/nibaru"
       ],
       "exclusions": [
-        "BGE geometry implementation and ownership.",
-        "Corner and Quarter Column geometry.",
-        "New behavior or feature work beyond the frozen C46 migration."
+        "No active Nibaru source/build tree, independent successor, standalone deployment, promotion, or future testing plan remains in this parked project.",
+        "Future native-material and extended-geometry implementation, validation, and release ownership belongs to unified Block Geometry Extensions.",
+        "The deferred glass-Corner visual issue belongs to BGE and was not diagnosed or changed during parking."
       ]
     },
     "dependencies": [
@@ -40,18 +40,18 @@
         "type": "OTHER",
         "identifier": "minecraft",
         "requirement": "26.2",
-        "reason": "Target game version for the retained port."
+        "reason": "Target game version of retained C45/C46 historical artifacts."
       },
       {
         "type": "MOD",
         "identifier": "fabricloader",
         "requirement": ">=0.19.3",
-        "reason": "Fabric runtime loader declared by C46."
+        "reason": "Fabric runtime loader declared by retained C46 provenance."
       }
     ]
   },
   "state": {
-    "milestone": "C46 publishes the canonical-parent Layer and typed DROP_BASE contracts required by BGE C53; its clean Java 25 build and the paired 66/66 GameTests passed, but it is not deployed or runtime tested.",
+    "milestone": "Exact C46 source checkpoint 6e9b04ec3947f2514f90775bfeefb599242a4596 supplied the native catalog, material profiles, resources, canonical-parent identity, and typed transitions absorbed into unified BGE C57 at implementation checkpoint f907bdab139fd2ec68f8741f5a449b9ee0c973f4. Exact C45 accepted/rollback and C46 migration-baseline artifacts remain retained with LGPL provenance. C46 was behaviorally exercised only as part of the exact C56/C46 pair; this task does not claim an independent Nibaru runtime pass, promotion, deletion, or successor. Proposed PARKED state, branch merge, and Sheet publication remain pending integration.",
     "releases": {
       "current": {
         "version": "C46",
@@ -88,11 +88,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 5,
-    "activity_at": "2026-08-29T06:54:03Z",
-    "updated_at": "2026-08-29T17:14:33Z",
-    "last_codex_at": "2026-08-29T17:14:33Z",
-    "source_commit": "6e9b04ec3947f2514f90775bfeefb599242a4596",
+    "revision": 6,
+    "activity_at": "2026-08-31T16:42:32Z",
+    "updated_at": "2026-08-31T16:42:32Z",
+    "last_codex_at": "2026-08-31T16:42:32Z",
+    "source_commit": "f907bdab139fd2ec68f8741f5a449b9ee0c973f4",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null

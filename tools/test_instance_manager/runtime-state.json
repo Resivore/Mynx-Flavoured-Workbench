@@ -2,8 +2,8 @@
   "$schema": "../../schemas/runtime-state.schema.json",
   "schema_version": 1,
   "activation": "ACTIVE",
-  "revision": 52,
-  "updated_at": "2026-08-31T15:11:00Z",
+  "revision": 58,
+  "updated_at": "2026-08-31T16:37:05Z",
   "accepted_baseline": {
     "revision": 6,
     "provenance": {
@@ -795,37 +795,25 @@
   "slots": {
     "A": {
       "unit": {
-        "deployment_id": "88fd87cb-bf5d-4ea6-93bf-5f96b92bfd16",
+        "deployment_id": "3d111123-9043-4e31-8d73-61d3a735c0b6",
         "project_uuid": "4b2342fc-7bdf-5ba6-9f37-d551109d214c",
         "project_id": "block-geometry-extensions",
         "project_identity_source": "CURRENT_MANIFEST",
-        "version": "0.8.0-bge-canary56-vertical-stairs-catalog",
-        "source_commit": "e364d280947726689df0ab8a173f7166cb34624f",
+        "version": "4.2.1-bge.canary57.unified+26.2",
+        "source_commit": "f907bdab139fd2ec68f8741f5a449b9ee0c973f4",
         "artifacts": [
           {
-            "artifact_id": "c071251e-fada-4383-8f69-08a99772bb33",
+            "artifact_id": "57a7d2f8-a9df-4c7b-843a-c759281978e0",
             "kind": "MOD",
-            "filename": "cnm-nibaru-integration-0.8.0-bge-canary56-vertical-stairs-catalog.jar",
-            "sha256": "26c76fbd82d0d72632d151d3674ca731817f1dadaff503e46fbfb4372d880f55",
+            "filename": "cnm-nibaru-integration-4.2.1-bge.canary57.unified+26.2.jar",
+            "sha256": "7cd01479531ec26975326b882e0a18406c17de26695b1f4fae29b72edb76cbc2",
             "ownership_keys": [
-              "mod:cnm_terrain_slabs_compat"
-            ],
-            "source": {
-              "type": "REPOSITORY",
-              "path": "projects/block-geometry-extensions/artifacts/cnm-nibaru-integration-0.8.0-bge-canary56-vertical-stairs-catalog.jar"
-            }
-          },
-          {
-            "artifact_id": "c2ec5b56-afa0-47e2-a7c3-509f909988ad",
-            "kind": "MOD",
-            "filename": "more-slabs-stairs-and-walls-4.2.0+26.2-port-canary46-bge-layer-contract.jar",
-            "sha256": "3281d110f062db62e721d838a35ce915ca73dd41af098a013b52952561ceae7d",
-            "ownership_keys": [
+              "mod:cnm_terrain_slabs_compat",
               "mod:more_slabs_stairs_and_walls"
             ],
             "source": {
               "type": "REPOSITORY",
-              "path": "projects/nibaru/artifacts/more-slabs-stairs-and-walls-4.2.0+26.2-port-canary46-bge-layer-contract.jar"
+              "path": "projects/block-geometry-extensions/artifacts/cnm-nibaru-integration-4.2.1-bge.canary57.unified+26.2.jar"
             }
           }
         ]
@@ -833,19 +821,15 @@
       "replaces_accepted_deployment_id": "3a3f0f77-d114-4b58-a039-302d625ec449",
       "deployment": {
         "state": "READY_TO_TEST_VERIFIED",
-        "deployed_at": "2026-08-31T03:12:31Z",
-        "ready_verified_at": "2026-08-31T03:12:34Z"
+        "deployed_at": "2026-08-31T16:37:01Z",
+        "ready_verified_at": "2026-08-31T16:37:02Z"
       },
       "runtime_result": {
-        "classification": "FAIL",
-        "recorded_at": "2026-08-31T15:10:30Z",
+        "classification": "UNTESTED",
+        "recorded_at": null,
         "evidence": {
-          "passed": [
-            "For exact BGE C56 with exact Nibaru C46, every behavior actually exercised by the user passed; the report did not enumerate matrix rows, so no unmentioned row is inferred."
-          ],
-          "failed": [
-            "The user reported one small visual issue on glass Corners. It is deferred, outside this task, and is not diagnosed or described more specifically here."
-          ]
+          "passed": [],
+          "failed": []
         }
       },
       "dependency_overrides": [
@@ -854,24 +838,24 @@
     },
     "B": {
       "unit": {
-        "deployment_id": "24a531ed-87b3-4c8c-b00c-ee502c2f3f9b",
+        "deployment_id": "3ec63f11-ff42-443a-afe3-5482d8081d4a",
         "project_uuid": "e28154da-0649-5da7-b6d5-3bff2891719e",
         "project_id": "shulker-trowel",
         "project_identity_source": "CURRENT_MANIFEST",
-        "version": "0.1.0-canary7",
-        "source_commit": "e364d280947726689df0ab8a173f7166cb34624f",
+        "version": "0.1.0-canary8",
+        "source_commit": "f907bdab139fd2ec68f8741f5a449b9ee0c973f4",
         "artifacts": [
           {
-            "artifact_id": "6a534354-84e0-480f-a318-8f943abed2f5",
+            "artifact_id": "4c70ce61-bc45-4355-88c5-47e7396d2851",
             "kind": "MOD",
-            "filename": "shulker-trowel-0.1.0-canary7-private.jar",
-            "sha256": "d807b7a7ac17e5299a625cb2950c5935a97c61da85fbb19f20ecf195610cf2c6",
+            "filename": "shulker-trowel-0.1.0-canary8-private.jar",
+            "sha256": "2e74d902c46cb3072ab33cdc56ac6ae55e2fd5ec0f4e5ee297cfebec338513ab",
             "ownership_keys": [
               "mod:shulker_trowel"
             ],
             "source": {
               "type": "REPOSITORY",
-              "path": "projects/shulker-trowel/test-builds/private/shulker-trowel/canary7/shulker-trowel-0.1.0-canary7-private.jar"
+              "path": "projects/shulker-trowel/test-builds/private/shulker-trowel/canary8/shulker-trowel-0.1.0-canary8-private.jar"
             }
           }
         ]
@@ -879,16 +863,14 @@
       "replaces_accepted_deployment_id": "6c8c4d94-bce9-479a-916c-66b94eecc852",
       "deployment": {
         "state": "READY_TO_TEST_VERIFIED",
-        "deployed_at": "2026-08-31T03:12:33Z",
-        "ready_verified_at": "2026-08-31T03:12:35Z"
+        "deployed_at": "2026-08-31T16:37:04Z",
+        "ready_verified_at": "2026-08-31T16:37:05Z"
       },
       "runtime_result": {
-        "classification": "PASS",
-        "recorded_at": "2026-08-31T15:11:00Z",
+        "classification": "UNTESTED",
+        "recorded_at": null,
         "evidence": {
-          "passed": [
-            "Exact Shulker Trowel C8 remained good with exact BGE C56 and exact Nibaru C46; no unrelated behavior is inferred."
-          ],
+          "passed": [],
           "failed": []
         }
       }

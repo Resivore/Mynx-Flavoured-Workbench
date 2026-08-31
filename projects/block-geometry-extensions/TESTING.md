@@ -1,24 +1,29 @@
-# Testing
+# Unified BGE C57 runtime procedure
 
-## Candidate and evidence boundary
+Candidate: `cnm-nibaru-integration-4.2.1-bge.canary57.unified+26.2.jar`, 6,025,701 bytes, SHA-256 `7cd01479531ec26975326b882e0a18406c17de26695b1f4fae29b72edb76cbc2`.
 
-Exact BGE C56 is installed and readiness-verified in Slot A together with the unchanged exact Nibaru C46 contract artifact:
+Use only the dedicated Minecraft 26.2 Workbench. Slot A must show BGE Canary 57 as `READY_TO_TEST_VERIFIED`; keep Clutter No More external and install no standalone Nibaru JAR. Static checks, controlled GameTests, exact artifact identity, and manager readiness are not a gameplay pass.
 
-- `artifacts/cnm-nibaru-integration-0.8.0-bge-canary56-vertical-stairs-catalog.jar`, 378,306 bytes, SHA-256 `26C76FBD82D0D72632D151D3674CA731817F1DADAFF503E46FBFB4372D880F55`;
-- `../nibaru/artifacts/more-slabs-stairs-and-walls-4.2.0+26.2-port-canary46-bge-layer-contract.jar`, 5,652,769 bytes, SHA-256 `3281D110F062DB62E721D838A35CE915CA73DD41AF098A013B52952561CEAE7D`.
+## Known-issue boundary
 
-BGE C56 was built from source `e364d280947726689df0ab8a173f7166cb34624f`. The Java 25 clean build, all 65 architecture/resource checks, and all 84 controlled GameTests passed. The compatible Shulker Trowel build against these exact dependencies passed 29/29 focused tests and 14/14 controlled GameTests. Manager revision 49 returned `READY_TO_TEST_VERIFIED / UNTESTED` for both slots; Minecraft was not launched for either successor. Static checks, controlled GameTests, exact artifact identity, and manager readiness are not a gameplay pass.
+BGE C56 had a user-reported small glass-Corner visual issue. This consolidation intentionally preserves that appearance and does not diagnose or fix it. Record an unchanged reproduction as the known deferred issue, not as a new consolidation regression or a fix. Stop for any new or worsened glass-Corner difference.
 
-Predecessor C55 is `FAIL`: Layer GUI/menu presentation remained incorrectly positioned, Corner geometry was fundamentally wrong, and the new geometry's spreadable/conversion exposure behavior required correction. `PASS` is limited solely to the explicit observation that Quarter Column geometry looked correct; no other C55 behavior is inferred as tested or passed. Neither C55 nor C56 is promoted, and accepted/rollback BGE C52 remains unchanged.
+## Matrix
 
-## C56 focused runtime matrix
+1. Startup and ownership: start with CNM plus the single unified BGE JAR and no standalone Nibaru JAR. Confirm one effective mod container supplies both `cnm_terrain_slabs_compat` and alias `more_slabs_stairs_and_walls` without duplicate registry, entrypoint, mixin, or resource errors.
+2. Legacy native identity: resolve representative and edge-case `more_slabs_stairs_and_walls:*` blocks, items, tags, loot, models, textures, and language keys. Confirm exact old IDs pick, place, save, reload, and break without missing or remapped content.
+3. Native slabs, stairs, and walls: exercise crafting and stonecutting, placement, orientation, pick-block, breaking, drops, and item economy across ordinary and specialized families.
+4. CNM selector order: confirm exactly `Full Block`, `Slab`, `Stair`, `Wall`, `Vertical Slab`, `Step`, `Corner`, `Quarter Column`, `Layer`, with no duplicate or missing role.
+5. Vertical Slab and Step: recheck placement faces, rotation, waterlogging where supported, collision, switching, drops, and established economy.
+6. Layer: check all six orientations, thickness states, waterlogging, same-block free growth, first-occupancy debit, failed-attempt economy, item presentation, collision, pick-block, and one-source drop.
+7. Corner: check all four orientations, full-height L footprint, placement, waterlogging, collision, first-occupancy debit, failed-attempt economy, pick-block, and one-source drop.
+8. Quarter Column: check four singleton quadrants, terminal diagonals, compatible free growth, failed-attempt economy, collision, waterlogging, pick-block, and one-source drop.
+9. Canonical material frame: sample TOP/SIDE/BOTTOM roles, pillar axes, glazed patterns, overlays/tints, translucency, honey/slime insets, copied settings, and geometry rotation independent from material/UV orientation.
+10. Specialized behavior: exercise grass and analogous spreading, path conversion, leaves, falling/concrete, copper oxidation/waxing/scraping, coral, redstone, magma, soul sand, ice, stripping, and typed transitions including `DROP_BASE`.
+11. Separated-world compatibility: load a disposable world created with exact BGE C56 plus Nibaru C46; confirm no missing blocks, remaps, duplicate registration, lost states, or changed family identity.
+12. Shulker Trowel integration: when Slot B contains C9, confirm all nine modes resolve the exact unified catalog, icons, placement targets, economy, and fail-closed behavior without a standalone Nibaru JAR.
+13. Logs: inspect loader, registry, mixin, resource, ShapeMap, transition, and catalog logs for missing or duplicate IDs, failed mixins, unresolved resources, recursive generated-material discovery, or dependency errors.
 
-1. Confirm manager revision 49 reports Slot A `READY_TO_TEST_VERIFIED / UNTESTED` with the exact C56 and C46 identities above and Slot B with exact private Shulker Trowel C8 / embedded Canary 7. Launch only the dedicated Minecraft 26.2 Workbench under explicit runtime ownership; never use the protected 26.1.2 profile. Stop on a Loader rejection, startup crash, registry/mixin error, ShapeMap/catalog error, missing resource, or other relevant log error.
-2. Compare representative ordinary, pillar/axis, and Glazed Layer items against the C54 presentation baseline in the CNM and Trowel selectors, inventory, and hotbar. Confirm the intended C54-relative correction is 3 physical screen pixels right and 6 down at GUI scale 2, is consistently centered, and causes no placed-world Layer geometry, material, pattern, or UV regression.
-3. Confirm the integrated selector order is exactly Full Block, Slab, Stair, Wall, Vertical Slab, Step, Corner, Quarter Column, Layer. Confirm actual resolved BGE items supply the BGE-mode icons and placement targets and that no catalog role is missing or duplicated.
-4. Exercise all four Corner orientations. Each regular Corner must be a full-height L shape equal to a full cube minus exactly one 8×16×8 quarter, with volume 3072; outline, collision, click placement, rotation, mirror, and waterlogging must follow the absent quadrant. Confirm there is no old 16×8×8 or HALF-dependent behavior, no in-place composition, one funded source on placement, one canonical source on normal break, and full-parent fuel behavior.
-5. Recheck the preserved Quarter Column singleton quadrants `NW`, `NE`, `SW`, and `SE`, each exactly 8×16×8. Confirm only the established horizontal growth pairs produce terminal `NW_SE` or `NE_SW` doubles; compatible in-place growth is free, failed/full/wrong-side/incompatible attempts are free, collision and waterlogging remain correct, and normal breaking returns one canonical source.
-6. Exercise representative Grass and analogous spreadable Corner and Quarter Column states. Dry plus relevant top exposed must survive; self-waterlogging limited to unused partial volume plus relevant top exposed must survive; water actually covering the relevant top surface must convert; solid coverage of the relevant top footprint must convert; non-overlapping partial coverage must remain exposed; and an eligible exposed typed base geometry must spread back to its canonical surface form.
-7. Confirm geometry rotation does not rotate the canonical material frame: TOP on upward horizontal surfaces, BOTTOM downward, SIDE vertical with upright UVs. Sample Crimson Stem, Oak Log, and Bamboo Block axis policies, Glazed/pattern orientation, overlay/tint, translucent glass rims without false internal Corner seams, and honey/slime insets.
-8. Recheck the one-source-per-blockspace economy for Layer and Quarter Column and smoke-check accepted Step, Vertical Slab, and Layer behavior. Include representative path, leaves/cutout, falling/concrete, copper/weathering, coral, redstone, magma, soul sand, ice/water, stripping, typed transitions, and canonical drops without inferring unsampled families.
-9. Stop and leave C56 unaccepted on any incorrect identity, loading, projection, geometry, placement, economy, exposure, collision, water state, material/UV semantics, catalog or ShapeMap order, duplicate/recursion, accepted Step/Vertical/Layer regression, specialized behavior, or relevant log error. Record each actual runtime observation as `PASS`, `FAIL`, or `INCONCLUSIVE`; do not infer untested rows.
+## Result and stopping conditions
+
+Record only behavior actually observed. Stop and record `FAIL` for startup/registry errors, missing or remapped legacy content, duplicate registration, changed selector identity/order, economy or geometry regressions, new glass-Corner output, or material-profile collapse. Do not promote C57 in this procedure.

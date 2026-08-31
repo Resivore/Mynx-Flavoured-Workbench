@@ -1,24 +1,25 @@
-# Testing
+# Shulker Trowel C9 runtime procedure
 
-## Candidate and evidence boundary
+Candidate: private `shulker-trowel-0.1.0-canary8-private.jar`, 44,748 bytes, SHA-256 `2e74d902c46cb3072ab33cdc56ac6ae55e2fd5ec0f4e5ee297cfebec338513ab`.
 
-Canonical C8 is the exact private Slot B candidate built from source `e364d280947726689df0ab8a173f7166cb34624f`:
+Use only the dedicated Minecraft 26.2 Workbench. Slot B must show Trowel Canary 8 as `READY_TO_TEST_VERIFIED`; Slot A must contain exact unified BGE C57. Keep CNM external and install no standalone Nibaru JAR.
 
-- deployed private `shulker-trowel-0.1.0-canary7-private.jar`, 44,740 bytes, embedded version `0.1.0-canary7`, SHA-256 `D807B7A7AC17E5299A625CB2950C5935A97C61DA85FBB19F20ECF195610CF2C6`, deployment `24a531ed-87b3-4c8c-b00c-ee502c2f3f9b`, artifact `6a534354-84e0-480f-a318-8f943abed2f5`;
-- tracked clean `artifacts/shulker-trowel-0.1.0-canary7.jar`, 44,242 bytes, SHA-256 `3ED940A79D6E62D258F0F2EB8A83AC080ED40A651FC73EA88CDF08468905FA51`.
+## Matrix
 
-The clean artifact is provenance-only and must not replace the private runtime artifact. Archive comparison found no removed or changed common entry; the private artifact adds only `assets/shulker_trowel/textures/item/trowel.png`, 346 bytes, SHA-256 `D754DBAB87A0FE923016268F0CDDC4A785B022A1184837F9C3CA2BE6732F7789`, carried byte-for-byte from the exact prior private candidate. The sprite and private JAR remain ignored, untracked, and non-redistributable.
+1. Confirm selector order is unchanged: `Full Block`, `Slab`, `Stair`, `Wall`, `Vertical Slab`, `Step`, `Corner`, `Quarter Column`, `Layer`.
+2. Confirm saved/network mode IDs remain 0–6 for the established modes, Corner remains 7, Quarter Column remains 8, and selector order does not rewrite identity.
+3. For ordinary and specialized materials, verify every available mode shows the exact resolved unified-BGE item icon and targets that exact BlockItem.
+4. Exercise normal delegated placement, orientation, state, sound, waterlogging, variants, collision, first-occupancy debit, compatible free growth, failed-attempt economy, and normal drops.
+5. Confirm unavailable material/geometry combinations retain selected identity and fail closed without consuming, refunding, collapsing, or substituting a mode.
+6. Confirm server authority, client/server synchronization, scrolling, overlay count, saved selection, invalid-data handling, and reconnect behavior remain unchanged.
+7. Confirm the actual offhand shulker inventory is the quantity source and the trowel remains in the required hand through placement.
+8. Confirm no standalone Nibaru dependency, JAR, loader error, or old-project path is required.
+9. Inspect Trowel, CNM, BGE catalog, placement, and synchronization logs for missing descriptors, duplicate modes, wrong resolved items, or rejected dependencies.
 
-The Java 25 clean build passed 29/29 focused tests and 14/14 controlled GameTests against exact BGE C56 `cnm-nibaru-integration-0.8.0-bge-canary56-vertical-stairs-catalog.jar`, 378,306 bytes, SHA-256 `26C76FBD82D0D72632D151D3674CA731817F1DADAFF503E46FBFB4372D880F55`; exact Nibaru C46 `more-slabs-stairs-and-walls-4.2.0+26.2-port-canary46-bge-layer-contract.jar`, 5,652,769 bytes, SHA-256 `3281D110F062DB62E721D838A35CE915CA73DD41AF098A013B52952561CEAE7D`; and dedicated-profile CNM, 759,419 bytes, SHA-256 `41A925E70D5E6E8C098BEA7DC88C44486AED46724E35CB2FA4B1622B2A4DBCCE`. The fresh clean output was byte-identical to the retained artifact. Manager revision 49 returned `READY_TO_TEST_VERIFIED / UNTESTED`; Minecraft was not launched for C8. Controlled validation and manager readiness are not a gameplay pass.
+## Private-resource and known-issue boundaries
 
-Predecessor C7 / Private Canary 6 is `FAIL` only for the reported current BGE integration result: neither Corner nor Quarter Column appeared as a geometry option under BGE C55. No other C7 runtime behavior is inferred as tested, passed, or failed. Exact private C5 remains unchanged as accepted and rollback identity, and neither C7 nor C8 is promoted.
+The runnable candidate contains the separately authorized 346-byte private sprite; it must remain untracked and non-redistributable. Do not extract, publish, or replace it.
 
-## C8 / Private Canary 7 runtime matrix
+Unified BGE intentionally retains the known small glass-Corner visual issue. If Trowel displays and places the exact resolved BGE glass-Corner item unchanged, that appearance alone is not a Trowel regression or a fix; report any new Trowel-specific mismatch separately.
 
-1. Confirm manager revision 49 reports Slot B `READY_TO_TEST_VERIFIED / UNTESTED` with the exact private C8 identity above and Slot A with exact BGE C56 and Nibaru C46 identities above. Launch only the dedicated Minecraft 26.2 Workbench under explicit runtime ownership; never use the protected 26.1.2 profile. Stop on a Loader rejection, startup crash, registry/mixin error, catalog/resolver error, missing resource, or other relevant log error.
-2. Exercise the selector and confirm exactly nine modes in this order: Full Block, Slab, Stair, Wall, Vertical Slab, Step, Corner, Quarter Column, Layer. Confirm Corner and Quarter Column are present, each icon is the actual resolver-produced geometry item, the overlay count/scrolling is dynamic, and there is no duplicate or collapsed identity.
-3. Verify saved/network compatibility independently from selector order: IDs 0 through 6 still decode to their existing Full Block, Slab, Stair, Wall, Vertical Slab, Step, and Layer identities; an existing ID-6 Layer selection remains Layer despite its new selector position; Corner is ID 7; Quarter Column is ID 8; these persist across reconnect and save/reload; invalid data falls back safely to Full Block.
-4. With the actual trowel in the main hand and an offhand shulker, place representative Oak Planks modes and confirm every target is the exact canonical material geometry rather than a fallback. An empty, ineligible, or unavailable palette must neither place nor consume anything and must not change the selected identity.
-5. Recheck economy through each resolved BlockItem's normal placement path: Corner's first placement debits one and normal breaking returns one; Quarter Column's first placement debits one and compatible same-block composition is free; Layer's first placement debits one and compatible growth through thickness four is free. Block adjacent valid placement while testing failed, full, wrong-face, and incompatible attempts, which must consume nothing.
-6. Smoke-check Full Block, Slab, Stair, Wall, Vertical Slab, and Step plus representative ordinary, axis/pillar, Glazed/pattern, waterlogged, and exact-variant Corner, Quarter Column, and Layer modes. Confirm server authority, quantity weighting, selection synchronization, sound, state, and exact variants remain canonical.
-7. Inspect `latest.log` for Loader, catalog, resolver, selector/overlay, placement, payload, synchronization, mixin, registry, or resource errors. Stop and leave C8 unaccepted on any missing/reordered mode, wrong icon/count, persistence-ID regression, identity collapse, economy error, adjacent-placement false result, wrong geometry/state, authority/synchronization regression, crash, or relevant log error. Record only behavior actually observed in Minecraft.
+Record only actual runtime observations. Build, focused tests, GameTests, and readiness verification are not runtime evidence. Stop for identity/order drift, wrong icons or targets, consumption/refund changes, delegated-placement changes, authority/synchronization failures, dependency errors, or private-resource leakage. Do not promote C9 in this procedure.

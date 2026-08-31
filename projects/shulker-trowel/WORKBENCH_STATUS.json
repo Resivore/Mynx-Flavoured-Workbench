@@ -15,12 +15,12 @@
     "lifecycle": "TESTING",
     "goals": [
       "Provide a server-authoritative trowel that draws eligible building materials by quantity from the actual offhand shulker and delegates placement through the resolved BlockItem's normal placement path.",
-      "Keep Full Block, Slab, Stair, and Wall Trowel-owned while discovering BGE-derived modes from BGE's stable ordered catalog without duplicating BGE role names.",
+      "Keep Full Block, Slab, Stair, and Wall Trowel-owned while discovering extended modes from the unified BGE catalog without a separate Nibaru artifact or dependency.",
       "Preserve saved/network identities 0 through 6 while separating selector order from persistence, using exact resolved geometry items, and preserving material identity, consumption, sound, state, and fail-closed semantics."
     ],
     "scope": [
-      "Canonical C8 source for Minecraft 26.2 Fabric, retaining accepted C5 behavior and stable IDs 0 through 6 for Full Block, Slab, Stair, Wall, Vertical Slab, Step, and Layer, then assigning Corner ID 7 and Quarter Column ID 8.",
-      "The narrow CNM 2.0.7 overlay and input seam plus exact Nibaru C46 and Block Geometry Extensions C56 catalog resolution, with selector order Full Block, Slab, Stair, Wall, Vertical Slab, Step, Corner, Quarter Column, Layer independent from saved/network identity.",
+      "Canonical C9 dependency-aligned source for Minecraft 26.2 Fabric, retaining accepted behavior and stable IDs 0 through 6 for Full Block, Slab, Stair, Wall, Vertical Slab, Step, and Layer, with Corner ID 7 and Quarter Column ID 8.",
+      "The narrow CNM 2.0.7 overlay and input seam plus exact unified BGE C57 catalog resolution, with selector order Full Block, Slab, Stair, Wall, Vertical Slab, Step, Corner, Quarter Column, Layer independent from saved/network identity.",
       "Use each descriptor's actual resolved geometry item for display and normal BlockItem placement, retain selected identity when a material geometry is unavailable, and admit future BGE catalog descriptors without a new hard-coded Trowel geometry name.",
       "The private runnable-asset boundary in which only the separately authorized Jake's Build Tools sprite is added to externally retained, non-redistributable private artifacts."
     ],
@@ -29,10 +29,10 @@
         "projects/shulker-trowel"
       ],
       "exclusions": [
-        "Protected Jake's Build Tools bytes, the authorized sprite, the exact private C8/Private Canary 7 candidate, and the exact accepted/rollback private C5 runnable JAR are not tracked or redistributed.",
-        "CNM, Nibaru, and Block Geometry Extensions remain separate dependency owners; this project does not bundle them or replace their canonical material and geometry systems.",
+        "Protected Jake's Build Tools bytes, the authorized sprite, exact private C9/Private Canary 8 and predecessor C8 candidates, and accepted/rollback private C5 runnable JAR are not tracked or redistributed.",
+        "CNM and unified BGE remain external dependency owners; this project does not bundle them or replace their canonical material and geometry systems.",
         "Registry-name parsing, parallel family tables, variant collapsing, and unrelated block mutation behavior.",
-        "Promotion of runtime-untested C8, mutation of accepted C5 provenance, unrelated runtime-slot changes, and protected gameplay-profile access."
+        "Promotion of runtime-untested C9, mutation of accepted C5 provenance, unrelated runtime-slot changes, and protected gameplay-profile access."
       ]
     },
     "dependencies": [
@@ -40,13 +40,13 @@
         "type": "OTHER",
         "identifier": "minecraft",
         "requirement": "26.2",
-        "reason": "Target game version for the current C8 implementation."
+        "reason": "Target game version for the current C9 implementation."
       },
       {
         "type": "MOD",
         "identifier": "fabricloader",
         "requirement": ">=0.19.3",
-        "reason": "Fabric runtime loader declared by canonical C8."
+        "reason": "Fabric runtime loader declared by canonical C9."
       },
       {
         "type": "MOD",
@@ -62,15 +62,9 @@
       },
       {
         "type": "PROJECT",
-        "identifier": "680476b9-5336-5422-a575-779f2efd1eff",
-        "requirement": ">=4.2.0 <4.3.0-",
-        "reason": "The current candidate consumes Nibaru's material profiles and typed geometry roles; focused validation and deployment use exact C46."
-      },
-      {
-        "type": "PROJECT",
         "identifier": "4b2342fc-7bdf-5ba6-9f37-d551109d214c",
-        "requirement": ">=0.8.0-bge-canary56-vertical-stairs-catalog",
-        "reason": "The current candidate discovers provider-owned Vertical Slab, Step, Corner, Quarter Column, and Layer geometry through BGE's stable ordered descriptor catalog; focused validation and deployment use exact C56, and no finite maximum is imposed."
+        "requirement": "=4.2.1-bge.canary57.unified+26.2",
+        "reason": "The current candidate resolves retained native material APIs and Vertical Slab, Step, Corner, Quarter Column, and Layer descriptors from the one exact unified BGE C57 artifact."
       },
       {
         "type": "OTHER",
@@ -81,15 +75,15 @@
     ]
   },
   "state": {
-    "milestone": "Canonical C8 (Private Canary 7; embedded 0.1.0-canary7) is readiness-verified in Slot B at manager revision 49 with runtime UNTESTED, paired with exact BGE C56 and Nibaru C46 in Slot A. C8 dynamically projects BGE's ordered catalog after Trowel-owned Full Block, Slab, Stair, and Wall, yielding Full Block, Slab, Stair, Wall, Vertical Slab, Step, Corner, Quarter Column, Layer while preserving IDs 0 through 6 and assigning Corner ID 7 and Quarter Column ID 8. It uses actual resolved icons, fails closed without identity collapse, and delegates placement and economy through each exact BlockItem. Predecessor C7/Private Canary 6 is RUNTIME_FAIL only for the reported absence of Corner and Quarter Column under BGE C55; no other runtime result is inferred. Accepted/rollback private C5 remains unchanged, and no promotion occurred.",
+    "milestone": "Exact C8/Private Canary 7 remained good with exact BGE C56 and Nibaru C46 and was recorded runtime PASS at manager revision 52; no unrelated behavior is inferred beyond the user's tested integration. C9/Private Canary 8 changes only dependency and packaging alignment: standalone Nibaru wiring is removed and the same modes, selector order, IDs, icons, delegated placement, economy, sound, synchronization, and fail-closed behavior resolve from unified BGE C57. Manager revision 58 provisionally verifies exact private C9 in Slot B with exact unified C57 in Slot A as READY_TO_TEST_VERIFIED / RUNTIME_UNTESTED. Accepted/rollback private C5 remains unchanged, no promotion occurred, and branch merge plus Sheet publication remain pending.",
     "releases": {
       "current": {
-        "version": "C8 (Private Canary 7; embedded 0.1.0-canary7)",
+        "version": "C9 (Private Canary 8; embedded 0.1.0-canary8)",
         "artifact": {
-          "filename": "shulker-trowel-0.1.0-canary7-private.jar",
-          "sha256": "d807b7a7ac17e5299a625cb2950c5935a97c61da85fbb19f20ecf195610cf2c6"
+          "filename": "shulker-trowel-0.1.0-canary8-private.jar",
+          "sha256": "2e74d902c46cb3072ab33cdc56ac6ae55e2fd5ec0f4e5ee297cfebec338513ab"
         },
-        "source_commit": "e364d280947726689df0ab8a173f7166cb34624f"
+        "source_commit": "f907bdab139fd2ec68f8741f5a449b9ee0c973f4"
       },
       "accepted": {
         "version": "C5 (legacy Private Canary 4; embedded 0.1.0-canary4)",
@@ -118,11 +112,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 4,
-    "activity_at": "2026-08-31T03:19:33Z",
-    "updated_at": "2026-08-31T03:19:33Z",
-    "last_codex_at": "2026-08-31T03:19:33Z",
-    "source_commit": "e364d280947726689df0ab8a173f7166cb34624f",
+    "revision": 5,
+    "activity_at": "2026-08-31T16:42:32Z",
+    "updated_at": "2026-08-31T16:42:32Z",
+    "last_codex_at": "2026-08-31T16:42:32Z",
+    "source_commit": "f907bdab139fd2ec68f8741f5a449b9ee0c973f4",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null

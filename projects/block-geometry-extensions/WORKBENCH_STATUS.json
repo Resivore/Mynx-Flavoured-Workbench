@@ -20,42 +20,34 @@
   "definition": {
     "lifecycle": "TESTING",
     "goals": [
-      "Extend CNM ShapeMap families with BGE-owned geometry while preserving Nibaru-owned material identity and semantics.",
-      "Provide Layer, full-height Vertical Stairs Corner, and Quarter Column geometry for every canonical family without changing accepted Step or Vertical behavior.",
-      "Enforce one-source-per-blockspace for compound BGE geometry while keeping geometry orientation independent from canonical material and UV orientation.",
-      "Expose one stable ordered BGE geometry catalog for consumers and use reusable footprint-aware surface exposure for canonical spreadable transitions."
+      "Maintain one Fabric mod, source tree, build, version, and deployable JAR for the absorbed Nibaru native material catalog and all BGE geometry.",
+      "Preserve every former Nibaru and BGE registry/resource identity, specialized material behavior, and saved-world reference while CNM remains an unchanged external dependency.",
+      "Expose one deterministic ordered geometry catalog for Vertical Slab, Step, Corner, Quarter Column, and Layer without changing established placement, economy, or material-frame semantics."
     ],
     "scope": [
-      "Maintain BGE-owned placement, state, rendering, collision, drops, and specialized behavior for generated geometry.",
-      "Generate exactly one Layer, one Corner, and one Quarter Column after Step for each of 311 canonical ShapeMap families, preserving deterministic family ordering and guarding every generated BGE role from recursive Nibaru material discovery.",
-      "Preserve Layer's six-direction facing, one-through-four 4-pixel thickness, waterlogging, established world geometry, and projection-derived item correction; provide four oriented full-height Corners, each a full cube minus one 8-by-16-by-8 quarter, and composing 8-by-16-by-8 Quarter Columns with two terminal diagonal states.",
-      "Fund only new blockspace occupancy for every compound BGE geometry; compatible in-place expansion is free, failures are free, and normal breaking returns one canonical source block.",
-      "Rotate geometry independently while retaining world-space canonical TOP, SIDE, BOTTOM, axis, pattern, overlay, translucent, and other profile-driven material semantics.",
-      "Expose deterministic BGE catalog order Vertical Slab, Step, Corner, Quarter Column, Layer and evaluate spreadable transitions from actual relevant top-footprint coverage while preserving accepted Step and Layer water-above guards."
+      "Compile the retained `games.twinhead.moreslabsstairsandwalls` source and `more_slabs_stairs_and_walls` resources directly inside BGE with a clear LGPL-covered source and attribution boundary.",
+      "Register native slabs, stairs, walls, material profiles, transitions, and client bindings before deriving CNM/BGE geometry through one guarded bootstrap and one root Fabric descriptor.",
+      "Preserve all native material profiles, canonical parents, copied settings, TOP/SIDE/BOTTOM roles, axes, patterns, tint, translucency, transitions, drops, and specialized behaviors.",
+      "Generate one Layer, Corner, and Quarter Column per supported canonical family while preserving Vertical Slab and Step, deterministic selector order, one-source economy, orientation, waterlogging, collision, and drops.",
+      "Provide primary Fabric ID `cnm_terrain_slabs_compat` and verified legacy alias `more_slabs_stairs_and_walls` from the same mod container and shared version `4.2.1-bge.canary57.unified+26.2`."
     ],
     "boundaries": {
       "owned_paths": [
         "projects/block-geometry-extensions"
       ],
       "exclusions": [
-        "Nibaru owns canonical material identity, visual roles, capabilities, transitions, copied settings, and material, pattern, and axis semantics.",
-        "CNM ShapeMap remains the canonical material-family and switching mechanism; BGE must not create a competing material registry or selector.",
-        "BBB is reference-only; its source and assets are excluded, and BGE has no BBB dependency.",
-        "Accepted Step and Vertical behavior and Glazed production behavior remain unchanged except for migration-only path normalization."
+        "Clutter No More source and artifacts remain external and unchanged; its ShapeMap remains the canonical family and switching mechanism.",
+        "The reported small glass-Corner visual issue is intentionally unchanged, undiagnosed, and deferred to a later BGE visual task.",
+        "`projects/bge-ctm`, shaders, resource-pack classification, BBB source/assets, and unrelated consumer projects are outside this consolidation.",
+        "Accepted BGE C52 and its historical accepted Nibaru C45 companion are preserved as rollback provenance and are not promoted or rewritten."
       ]
     },
     "dependencies": [
       {
-        "type": "PROJECT",
-        "identifier": "680476b9-5336-5422-a575-779f2efd1eff",
-        "requirement": "C46",
-        "reason": "BGE C56 consumes Nibaru C46 canonical-parent material profiles, visual semantics, and typed DROP_BASE contracts."
-      },
-      {
         "type": "MOD",
         "identifier": "minecraft",
         "requirement": "~26.2",
-        "reason": "BGE C56 targets Minecraft Java 26.2."
+        "reason": "Unified BGE C57 targets Minecraft Java 26.2."
       },
       {
         "type": "MOD",
@@ -67,32 +59,26 @@
         "type": "MOD",
         "identifier": "fabric-api",
         "requirement": "0.156.0+26.2",
-        "reason": "Fabric API used by the current C56 build and runtime implementation."
+        "reason": "Fabric API used by the unified native and extended geometry implementation."
       },
       {
         "type": "MOD",
         "identifier": "clutternomore",
         "requirement": ">=2.0.7",
-        "reason": "Provides the canonical ShapeMap family and geometry-switching mechanism extended by BGE."
-      },
-      {
-        "type": "MOD",
-        "identifier": "more_slabs_stairs_and_walls",
-        "requirement": "=4.2.0+26.2-port-canary46-bge-layer-contract",
-        "reason": "Provides the exact Nibaru C46 material-profile and Layer contract implementation paired with C56."
+        "reason": "Unchanged external provider of the canonical ShapeMap family and geometry-switching mechanism extended by unified BGE."
       }
     ]
   },
   "state": {
-    "milestone": "C55 was recorded FAIL at manager revision 42 because Layer GUI/menu presentation remained incorrectly positioned, Corner geometry was fundamentally wrong, and the new geometry's spreadable/conversion exposure behavior required correction; PASS is limited solely to the explicit observation that Quarter Column geometry looked correct, with no other C55 behavior inferred. C56 replaces Corner with four-orientation full-height Vertical Stairs, derives Layer's intended 3-physical-pixel-right and 6-physical-pixel-down correction through the GUI projection, preserves Quarter Column, adds geometry-aware exposure and a stable ordered consumer catalog, and preserves accepted Step and Layer guards. Manager revision 49 verifies exact C56 plus unchanged Nibaru C46 in Slot A as READY_TO_TEST_VERIFIED / UNTESTED alongside compatible Shulker Trowel C8 in Slot B. Accepted and rollback BGE C52 remain unchanged; no promotion occurred.",
+    "milestone": "Exact C56 with exact Nibaru C46 is the behaviorally verified migration baseline: every behavior actually covered by the user's report passed, but C56 is overall runtime FAIL solely because a small glass-Corner visual issue remains; no unmentioned matrix row is inferred, and the issue was neither diagnosed nor changed. Unified C57 absorbs the C46 source, native catalog, profiles, resources, licensing, and legacy mod identity into one BGE JAR with unchanged glass-generation inputs and output. Manager revision 58 provisionally verifies C57 in Slot A as READY_TO_TEST_VERIFIED / RUNTIME_UNTESTED. Accepted/rollback BGE C52 remains unchanged, with accepted Nibaru C45 retained as historical companion provenance; no promotion occurred, and branch merge plus Sheet publication remain pending.",
     "releases": {
       "current": {
-        "version": "C56",
+        "version": "C57 (Unified Nibaru; embedded 4.2.1-bge.canary57.unified+26.2)",
         "artifact": {
-          "filename": "cnm-nibaru-integration-0.8.0-bge-canary56-vertical-stairs-catalog.jar",
-          "sha256": "26c76fbd82d0d72632d151d3674ca731817f1dadaff503e46fbfb4372d880f55"
+          "filename": "cnm-nibaru-integration-4.2.1-bge.canary57.unified+26.2.jar",
+          "sha256": "7cd01479531ec26975326b882e0a18406c17de26695b1f4fae29b72edb76cbc2"
         },
-        "source_commit": "e364d280947726689df0ab8a173f7166cb34624f"
+        "source_commit": "f907bdab139fd2ec68f8741f5a449b9ee0c973f4"
       },
       "accepted": {
         "version": "C52 (legacy Integration 1.39)",
@@ -121,11 +107,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 12,
-    "activity_at": "2026-08-31T03:18:47Z",
-    "updated_at": "2026-08-31T03:18:47Z",
-    "last_codex_at": "2026-08-31T03:18:47Z",
-    "source_commit": "e364d280947726689df0ab8a173f7166cb34624f",
+    "revision": 13,
+    "activity_at": "2026-08-31T16:42:32Z",
+    "updated_at": "2026-08-31T16:42:32Z",
+    "last_codex_at": "2026-08-31T16:42:32Z",
+    "source_commit": "f907bdab139fd2ec68f8741f5a449b9ee0c973f4",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
