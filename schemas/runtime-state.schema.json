@@ -158,7 +158,40 @@
       "required": ["unit", "accepted_at"],
       "properties": {
         "unit": { "$ref": "#/$defs/unit" },
-        "accepted_at": { "anyOf": [{ "type": "null" }, { "$ref": "#/$defs/timestamp" }] }
+        "accepted_at": { "anyOf": [{ "type": "null" }, { "$ref": "#/$defs/timestamp" }] },
+        "retained_rollbacks": {
+          "type": "array",
+          "maxItems": 1,
+          "items": { "$ref": "#/$defs/retainedRollback" }
+        }
+      }
+    },
+    "retainedRollback": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["unit", "retained_at"],
+      "properties": {
+        "unit": {
+          "allOf": [
+            { "$ref": "#/$defs/unit" },
+            {
+              "properties": {
+                "project_identity_source": { "const": "FROZEN_LEGACY" },
+                "artifacts": {
+                  "items": {
+                    "properties": {
+                      "kind": { "const": "MOD" },
+                      "source": {
+                        "properties": { "type": { "const": "ADOPTED_TARGET" } }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        },
+        "retained_at": { "$ref": "#/$defs/timestamp" }
       }
     },
     "slot": {

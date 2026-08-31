@@ -260,6 +260,93 @@ class ManagerFixture:
         )
         return unit("mossy-stone", version, item, project_uuid=self.mossy_uuid), path
 
+    def add_user_passed_batch(
+        self,
+        *,
+        predecessor: str = "exact",
+    ) -> tuple[dict, dict, dict, dict, bytes]:
+        first_uuid = stable_uuid("project:user-passed-first")
+        rooted_uuid = stable_uuid("project:user-passed-rooted")
+        self.project_index.update(
+            {
+                first_uuid: "user-passed-first",
+                rooted_uuid: "user-passed-rooted",
+            }
+        )
+        self.project_display_names.update(
+            {
+                first_uuid: "User Passed First",
+                rooted_uuid: "User Passed Rooted",
+            }
+        )
+        self.manager.project_index = copy.deepcopy(self.project_index)
+        self.manager.project_display_names = copy.deepcopy(self.project_display_names)
+
+        first_name = "user-passed-first-0.1.0-canary1.jar"
+        first_source = self.repository / "artifacts" / first_name
+        first_hash = write_mod(first_source, "user_passed_first", "first-c1")
+        first = unit(
+            "user-passed-first",
+            "0.1.0-canary1",
+            artifact(
+                first_name,
+                "user_passed_first",
+                first_hash,
+                source_type="REPOSITORY",
+                source_path="artifacts/" + first_name,
+            ),
+            project_uuid=first_uuid,
+        )
+
+        rooted_name = "user-passed-rooted-0.1.0-canary1.jar"
+        rooted_source = self.repository / "artifacts" / rooted_name
+        rooted_hash = write_mod(rooted_source, "user_passed_rooted", "rooted-c1")
+        rooted = unit(
+            "user-passed-rooted",
+            "0.1.0-canary1",
+            artifact(
+                rooted_name,
+                "user_passed_rooted",
+                rooted_hash,
+                source_type="REPOSITORY",
+                source_path="artifacts/" + rooted_name,
+            ),
+            project_uuid=rooted_uuid,
+        )
+
+        predecessor_name = "craft-rooted-dirt-107.1.jar"
+        predecessor_path = self.mods / predecessor_name
+        if predecessor == "exact":
+            predecessor_hash = write_mod(predecessor_path, "mr_craft_rooteddirt", "107.1")
+        else:
+            exact_copy = self.root / "exact-predecessor.jar"
+            predecessor_hash = write_mod(exact_copy, "mr_craft_rooteddirt", "107.1")
+            if predecessor == "wrong":
+                write_mod(predecessor_path, "mr_craft_rooteddirt", "wrong-predecessor")
+            elif predecessor != "missing":
+                raise AssertionError(f"unknown predecessor fixture mode: {predecessor}")
+        rollback = unit(
+            "user-passed-rooted",
+            "107.1",
+            artifact(predecessor_name, "mr_craft_rooteddirt", predecessor_hash),
+            project_uuid=rooted_uuid,
+        )
+        rollback["project_identity_source"] = "FROZEN_LEGACY"
+        predecessor_bytes = (
+            predecessor_path.read_bytes()
+            if predecessor == "exact"
+            else (self.root / "exact-predecessor.jar").read_bytes()
+        )
+        operation = {
+            "type": "PROMOTE_USER_PASSED_BATCH",
+            "authorization": "USER_REPORTED_EXACT_RUNTIME_PASS",
+            "members": [
+                {"unit": first},
+                {"unit": rooted, "retained_rollbacks": [rollback]},
+            ],
+        }
+        return operation, first, rooted, rollback, predecessor_bytes
+
     def apply_operation(self, operation: dict) -> dict:
         self.operation_index += 1
         state = self.repository_state()
@@ -957,6 +1044,189 @@ class PhysicalManagerTests(unittest.TestCase):
         )
         self.fixture.manager.project_index = project_index
         self.fixture.manager._assert_desired_is_pure_transition(current, desired)
+
+    def test_user_passed_batch_dry_run_and_apply_preserve_slots_and_retain_rollback(self) -> None:
+        self.fixture.manager.adopt(dry_run=False)
+        operation, first, rooted, rollback, predecessor_bytes = self.fixture.add_user_passed_batch()
+        before = self.fixture.repository_state()
+        before_slots = copy.deepcopy(before["slots"])
+        before_tree = tree_snapshot(self.fixture.root)
+        predecessor_name = rollback["artifacts"][0]["filename"]
+
+        dry_run = self.fixture.manager.transition(
+            operation=operation,
+            expected_revision=before["revision"],
+            at="2099-01-01T00:01:00Z",
+            dry_run=True,
+        )
+
+        self.assertTrue(dry_run["dry_run"])
+        self.assertEqual(before_tree, tree_snapshot(self.fixture.root))
+        self.assertEqual(1, len(dry_run["retained_rollbacks"]))
+        self.assertEqual("mods/" + predecessor_name, dry_run["retained_rollbacks"][0]["enabled_sibling"])
+        self.assertIn(predecessor_name, dry_run["removals"])
+        self.assertIn(
+            "mods/" + predecessor_name + ".disabled",
+            {item["path"] for item in dry_run["managed_files"]},
+        )
+
+        applied = self.fixture.manager.transition(
+            operation=operation,
+            expected_revision=before["revision"],
+            at="2099-01-01T00:01:00Z",
+            dry_run=False,
+        )
+
+        after = self.fixture.repository_state()
+        self.assertFalse(applied["dry_run"])
+        self.assertEqual(before["revision"] + 1, after["revision"])
+        self.assertEqual(before["accepted_baseline"]["revision"] + 2, after["accepted_baseline"]["revision"])
+        self.assertEqual(
+            len(before["accepted_baseline"]["members"]) + 2,
+            len(after["accepted_baseline"]["members"]),
+        )
+        self.assertEqual(
+            before["accepted_baseline"]["provenance"]["accepted_artifact_count"] + 2,
+            after["accepted_baseline"]["provenance"]["accepted_artifact_count"],
+        )
+        self.assertEqual(before_slots, after["slots"])
+        self.assertTrue((self.fixture.mods / first["artifacts"][0]["filename"]).is_file())
+        self.assertTrue((self.fixture.mods / rooted["artifacts"][0]["filename"]).is_file())
+        self.assertFalse((self.fixture.mods / predecessor_name).exists())
+        self.assertEqual(predecessor_bytes, (self.fixture.mods / (predecessor_name + ".disabled")).read_bytes())
+        projection = json.loads((self.fixture.target / ".mynx-runtime-v2-title.json").read_text(encoding="utf-8"))
+        self.assertEqual("Baseline: Stack v6", projection["lines"][0])
+        verification = self.fixture.manager.verify()
+        retained = verification["accepted_baseline"]["retained_rollbacks"]
+        self.assertEqual(1, retained["artifact_count"])
+        self.assertTrue(retained["enabled_siblings_absent"])
+        self.assertEqual("DISABLED", retained["artifacts"][0]["disposition"])
+
+    def test_user_passed_batch_refuses_wrong_predecessor_bytes(self) -> None:
+        self.fixture.manager.adopt(dry_run=False)
+        operation, _, _, _, _ = self.fixture.add_user_passed_batch(predecessor="wrong")
+        state = self.fixture.repository_state()
+        with self.assertRaisesRegex(ManagerError, "SHA-256 mismatch"):
+            self.fixture.manager.transition(
+                operation=operation,
+                expected_revision=state["revision"],
+                at="2099-01-01T00:01:00Z",
+                dry_run=True,
+            )
+
+    def test_user_passed_batch_refuses_missing_predecessor(self) -> None:
+        self.fixture.manager.adopt(dry_run=False)
+        operation, _, _, _, _ = self.fixture.add_user_passed_batch(predecessor="missing")
+        state = self.fixture.repository_state()
+        with self.assertRaisesRegex(ManagerError, "missing artifact source"):
+            self.fixture.manager.transition(
+                operation=operation,
+                expected_revision=state["revision"],
+                at="2099-01-01T00:01:00Z",
+                dry_run=True,
+            )
+
+    def test_user_passed_batch_production_identity_is_bound_to_manifest_releases(self) -> None:
+        operation, _, rooted, rollback, _ = self.fixture.add_user_passed_batch()
+        member = copy.deepcopy(operation["members"][1])
+        project_uuid = rooted["project_uuid"]
+        project_directory = self.fixture.repository / "projects" / rooted["project_id"]
+        manifest_path = project_directory / "WORKBENCH_STATUS.json"
+        canonical_source = (
+            "projects/" + rooted["project_id"] + "/artifacts/" + rooted["artifacts"][0]["filename"]
+        )
+        member["unit"]["artifacts"][0]["source"] = {
+            "type": "REPOSITORY",
+            "path": canonical_source,
+        }
+        manifest = {
+            "identity": {
+                "uuid": project_uuid,
+                "project_id": rooted["project_id"],
+            },
+            "state": {
+                "releases": {
+                    "current": {
+                        "version": rooted["version"],
+                        "source_commit": rooted["source_commit"],
+                        "artifact": {
+                            "filename": rooted["artifacts"][0]["filename"],
+                            "sha256": rooted["artifacts"][0]["sha256"],
+                        },
+                    },
+                    "rollback": {
+                        "version": rollback["version"],
+                        "source_commit": rollback["source_commit"],
+                        "artifact": {
+                            "filename": rollback["artifacts"][0]["filename"],
+                            "sha256": rollback["artifacts"][0]["sha256"],
+                        },
+                    },
+                }
+            },
+        }
+        self.fixture.manager.repository_statuses = {project_uuid: (manifest_path, manifest)}
+        exact_operation = {
+            "type": "PROMOTE_USER_PASSED_BATCH",
+            "authorization": "USER_REPORTED_EXACT_RUNTIME_PASS",
+            "members": [member],
+        }
+        self.fixture.manager._validate_batch_manifest_identities(exact_operation)
+
+        no_manifest_rollback = copy.deepcopy(manifest)
+        no_manifest_rollback["state"]["releases"]["rollback"] = None
+        self.fixture.manager.repository_statuses = {project_uuid: (manifest_path, no_manifest_rollback)}
+        with self.assertRaisesRegex(ManagerError, "manifest has no rollback release"):
+            self.fixture.manager._validate_batch_manifest_identities(exact_operation)
+        self.fixture.manager.repository_statuses = {project_uuid: (manifest_path, manifest)}
+
+        missing_retained_rollback = copy.deepcopy(exact_operation)
+        missing_retained_rollback["members"][0].pop("retained_rollbacks")
+        with self.assertRaisesRegex(ManagerError, "declares a rollback release"):
+            self.fixture.manager._validate_batch_manifest_identities(missing_retained_rollback)
+
+        wrong_candidate = copy.deepcopy(exact_operation)
+        wrong_candidate["members"][0]["unit"]["version"] = "0.1.1-canary2"
+        with self.assertRaisesRegex(ManagerError, "does not exactly match manifest release identity"):
+            self.fixture.manager._validate_batch_manifest_identities(wrong_candidate)
+
+    def test_retained_rollback_active_reappearance_fails_verification(self) -> None:
+        self.fixture.manager.adopt(dry_run=False)
+        operation, _, _, rollback, _ = self.fixture.add_user_passed_batch()
+        state = self.fixture.repository_state()
+        self.fixture.manager.transition(
+            operation=operation,
+            expected_revision=state["revision"],
+            at="2099-01-01T00:01:00Z",
+            dry_run=False,
+        )
+        predecessor_name = rollback["artifacts"][0]["filename"]
+        (self.fixture.mods / predecessor_name).write_bytes(
+            (self.fixture.mods / (predecessor_name + ".disabled")).read_bytes()
+        )
+        with self.assertRaisesRegex(ManagerError, "enabled sibling must be absent"):
+            self.fixture.manager.verify()
+
+    def test_user_passed_batch_injected_failure_restores_full_preimage(self) -> None:
+        self.fixture.manager.adopt(dry_run=False)
+        operation, _, _, _, _ = self.fixture.add_user_passed_batch()
+        state = self.fixture.repository_state()
+        before = tree_snapshot(self.fixture.root)
+
+        def fail_after_predecessor_removal(stage: str) -> None:
+            if stage == "after_remove_1":
+                raise RuntimeError("injected batch failure")
+
+        with self.assertRaisesRegex(ManagerError, "rolled back"):
+            self.fixture.manager.transition(
+                operation=operation,
+                expected_revision=state["revision"],
+                at="2099-01-01T00:01:00Z",
+                dry_run=False,
+                failure_injector=fail_after_predecessor_removal,
+            )
+        self.assertEqual(before, tree_snapshot(self.fixture.root))
+        self.assertEqual("PHYSICAL_STATE_VERIFIED", self.fixture.manager.verify()["status"])
 
     def test_injected_partial_failure_rolls_back_files_ledgers_and_state(self) -> None:
         self.fixture.manager.adopt(dry_run=False)

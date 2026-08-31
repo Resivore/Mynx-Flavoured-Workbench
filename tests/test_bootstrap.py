@@ -263,6 +263,18 @@ def deployment_unit(project_id: str, *, version: str = "Canary 1", filename: str
     }
 
 
+def adopted_rollback_unit(project_id: str, *, version: str = "Legacy rollback") -> dict:
+    unit = deployment_unit(project_id, version=version)
+    unit["project_identity_source"] = "FROZEN_LEGACY"
+    unit["source_commit"] = None
+    for artifact in unit["artifacts"]:
+        artifact["source"] = {
+            "type": "ADOPTED_TARGET",
+            "path": f"mods/{artifact['filename']}",
+        }
+    return unit
+
+
 def candidate(unit: dict, result: str = "UNTESTED") -> dict:
     ready = result != "UNTESTED"
     return {
@@ -622,6 +634,196 @@ class RuntimeContractTests(unittest.TestCase):
         self.assertEqual(state["revision"] + 1, next_state["revision"])
         self.assertEqual(state["accepted_baseline"]["revision"] + 1, next_state["accepted_baseline"]["revision"])
         self.assertEqual({"base", "alpha", "beta"}, {unit["project_id"] for unit in resolve_profile(next_state, project_index("base", "alpha", "beta"))})
+
+    def test_user_passed_batch_promotes_three_members_once_and_preserves_both_slots(self) -> None:
+        base = deployment_unit("base")
+        slot_a = candidate(deployment_unit("slot-alpha"), "PASS")
+        slot_b = candidate(deployment_unit("slot-beta"), "FAIL")
+        state = runtime_state(
+            accepted=[{"unit": base, "accepted_at": TIME_1}],
+            slot_a=slot_a,
+            slot_b=slot_b,
+        )
+        prior_slots = json.dumps(state["slots"], separators=(",", ":"))
+        alpha = deployment_unit("alpha")
+        beta = deployment_unit("beta")
+        gamma = deployment_unit("gamma")
+        gamma_rollback = adopted_rollback_unit("gamma")
+        promoted = plan_transition(
+            state,
+            state["revision"],
+            {
+                "type": "PROMOTE_USER_PASSED_BATCH",
+                "authorization": "USER_REPORTED_EXACT_RUNTIME_PASS",
+                "members": [
+                    {"unit": alpha},
+                    {"unit": beta},
+                    {"unit": gamma, "retained_rollbacks": [gamma_rollback]},
+                ],
+            },
+            TIME_2,
+            project_index("base", "slot-alpha", "slot-beta", "alpha", "beta", "gamma"),
+        )
+
+        self.assertEqual(prior_slots, json.dumps(promoted["slots"], separators=(",", ":")))
+        self.assertEqual(state["revision"] + 1, promoted["revision"])
+        self.assertEqual(
+            state["accepted_baseline"]["revision"] + 3,
+            promoted["accepted_baseline"]["revision"],
+        )
+        self.assertEqual(4, promoted["accepted_baseline"]["provenance"]["accepted_artifact_count"])
+        self.assertEqual(
+            [TIME_2, TIME_2, TIME_2],
+            [member["accepted_at"] for member in promoted["accepted_baseline"]["members"][-3:]],
+        )
+        retained = promoted["accepted_baseline"]["members"][-1]["retained_rollbacks"]
+        self.assertEqual([{"unit": gamma_rollback, "retained_at": TIME_2}], retained)
+        self.assertEqual(
+            {"base", "alpha", "beta", "gamma", "slot-alpha", "slot-beta"},
+            {
+                unit["project_id"]
+                for unit in resolve_profile(
+                    promoted,
+                    project_index("base", "slot-alpha", "slot-beta", "alpha", "beta", "gamma"),
+                )
+            },
+        )
+
+    def test_user_passed_batch_requires_exact_authorization_and_current_manifest_members(self) -> None:
+        state = runtime_state()
+        alpha = deployment_unit("alpha")
+        operation = {
+            "type": "PROMOTE_USER_PASSED_BATCH",
+            "authorization": "USER_REPORTED_RUNTIME_PASS",
+            "members": [{"unit": alpha}],
+        }
+        with self.assertRaisesRegex(ValidationError, "USER_REPORTED_EXACT_RUNTIME_PASS"):
+            plan_transition(state, 0, operation, TIME_2, project_index("alpha"))
+
+        operation["authorization"] = "USER_REPORTED_EXACT_RUNTIME_PASS"
+        operation["members"][0]["unit"]["project_identity_source"] = "FROZEN_LEGACY"
+        operation["members"][0]["unit"]["source_commit"] = None
+        with self.assertRaisesRegex(ValidationError, "requires CURRENT_MANIFEST identity"):
+            plan_transition(state, 0, operation, TIME_2, project_index("alpha"))
+
+    def test_user_passed_batch_rejects_duplicate_occupied_and_accepted_projects(self) -> None:
+        alpha = deployment_unit("alpha")
+        base_operation = {
+            "type": "PROMOTE_USER_PASSED_BATCH",
+            "authorization": "USER_REPORTED_EXACT_RUNTIME_PASS",
+            "members": [{"unit": alpha}],
+        }
+
+        duplicate_operation = copy.deepcopy(base_operation)
+        duplicate_operation["members"].append({"unit": copy.deepcopy(alpha)})
+        with self.assertRaisesRegex(ValidationError, "duplicates a project"):
+            plan_transition(
+                runtime_state(),
+                0,
+                duplicate_operation,
+                TIME_2,
+                project_index("alpha"),
+            )
+
+        occupied = runtime_state(slot_b=candidate(alpha))
+        with self.assertRaisesRegex(ValidationError, "absent from the accepted baseline and both slots"):
+            plan_transition(
+                occupied,
+                occupied["revision"],
+                base_operation,
+                TIME_2,
+                project_index("alpha"),
+            )
+
+        accepted = runtime_state(accepted=[{"unit": alpha, "accepted_at": TIME_1}])
+        with self.assertRaisesRegex(ValidationError, "absent from the accepted baseline and both slots"):
+            plan_transition(
+                accepted,
+                accepted["revision"],
+                base_operation,
+                TIME_2,
+                project_index("alpha"),
+            )
+
+    def test_user_passed_batch_validates_retained_rollback_identity_source_and_ids(self) -> None:
+        state = runtime_state()
+        alpha = deployment_unit("alpha")
+        rollback = adopted_rollback_unit("alpha")
+
+        def operation_with(*retained: dict) -> dict:
+            return {
+                "type": "PROMOTE_USER_PASSED_BATCH",
+                "authorization": "USER_REPORTED_EXACT_RUNTIME_PASS",
+                "members": [{"unit": copy.deepcopy(alpha), "retained_rollbacks": list(retained)}],
+            }
+
+        with self.assertRaisesRegex(ValidationError, "at most one retained rollback"):
+            plan_transition(
+                state,
+                0,
+                operation_with(rollback, copy.deepcopy(rollback)),
+                TIME_2,
+                project_index("alpha"),
+            )
+
+        other_project = adopted_rollback_unit("beta")
+        with self.assertRaisesRegex(ValidationError, "promoted project UUID and project ID"):
+            plan_transition(
+                state,
+                0,
+                operation_with(other_project),
+                TIME_2,
+                project_index("alpha", "beta"),
+            )
+
+        repository_rollback = copy.deepcopy(rollback)
+        repository_filename = repository_rollback["artifacts"][0]["filename"]
+        repository_rollback["artifacts"][0]["source"] = {
+            "type": "REPOSITORY",
+            "path": f"projects/alpha/artifacts/{repository_filename}",
+        }
+        with self.assertRaisesRegex(ValidationError, "ADOPTED_TARGET"):
+            plan_transition(
+                state,
+                0,
+                operation_with(repository_rollback),
+                TIME_2,
+                project_index("alpha"),
+            )
+
+        current_manifest_rollback = copy.deepcopy(rollback)
+        current_manifest_rollback["project_identity_source"] = "CURRENT_MANIFEST"
+        current_manifest_rollback["source_commit"] = "3" * 40
+        with self.assertRaisesRegex(ValidationError, "FROZEN_LEGACY"):
+            plan_transition(
+                state,
+                0,
+                operation_with(current_manifest_rollback),
+                TIME_2,
+                project_index("alpha"),
+            )
+
+        duplicate_deployment = copy.deepcopy(rollback)
+        duplicate_deployment["deployment_id"] = alpha["deployment_id"]
+        with self.assertRaisesRegex(ValidationError, "distinct from the promoted deployment UUID"):
+            plan_transition(
+                state,
+                0,
+                operation_with(duplicate_deployment),
+                TIME_2,
+                project_index("alpha"),
+            )
+
+        duplicate_artifact = copy.deepcopy(rollback)
+        duplicate_artifact["artifacts"][0]["artifact_id"] = alpha["artifacts"][0]["artifact_id"]
+        with self.assertRaisesRegex(ValidationError, "artifact UUIDs distinct"):
+            plan_transition(
+                state,
+                0,
+                operation_with(duplicate_artifact),
+                TIME_2,
+                project_index("alpha"),
+            )
 
     def test_update_and_clear_one_slot_preserve_the_other(self) -> None:
         alpha = deployment_unit("alpha")

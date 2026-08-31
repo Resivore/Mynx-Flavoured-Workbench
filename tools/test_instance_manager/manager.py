@@ -200,6 +200,7 @@ class ManagedArtifact:
     relative_path: str
     active: bool
     source: dict[str, str]
+    retained_rollback: bool = False
 
     def ledger_record(self) -> dict[str, Any]:
         return {
@@ -251,6 +252,18 @@ class PhysicalPlan:
             "removals": [path.name for path in self.removals],
             "unchanged": list(self.unchanged),
             "managed_files": [artifact.ledger_record() for artifact in self.desired_artifacts],
+            "retained_rollbacks": [
+                {
+                    **artifact.ledger_record(),
+                    "source": copy.deepcopy(artifact.source),
+                    "enabled_sibling": PurePosixPath(
+                        PurePosixPath(artifact.relative_path).parent,
+                        artifact.filename,
+                    ).as_posix(),
+                }
+                for artifact in self.desired_artifacts
+                if artifact.retained_rollback
+            ],
             "title_projection": copy.deepcopy(self.title_projection),
         }
 
@@ -351,6 +364,10 @@ class PhysicalManager:
                 project_display_names = copy.deepcopy(project_index)
         self.project_index = copy.deepcopy(project_index)
         self.project_display_names = copy.deepcopy(project_display_names)
+        # Supplying both catalogs explicitly is the narrow test-only escape
+        # hatch for isolated fixtures which have no project manifests. Normal
+        # CLI construction always retains the authoritative manifest catalog.
+        self.repository_statuses = copy.deepcopy(statuses)
 
     @classmethod
     def from_config(
@@ -437,6 +454,15 @@ class PhysicalManager:
             unit = member["unit"]
             active = unit["deployment_id"] in active_deployments
             artifacts.extend(self._unit_artifacts(unit, active, seen_paths))
+            for retained in member.get("retained_rollbacks", []):
+                artifacts.extend(
+                    self._unit_artifacts(
+                        retained["unit"],
+                        False,
+                        seen_paths,
+                        retained_rollback=True,
+                    )
+                )
         for label in ("A", "B"):
             slot = state["slots"][label]
             if slot is not None:
@@ -528,7 +554,14 @@ class PhysicalManager:
             "lines": copy.deepcopy(projection["lines"]),
         }
 
-    def _unit_artifacts(self, unit: dict[str, Any], active: bool, seen_paths: set[str]) -> list[ManagedArtifact]:
+    def _unit_artifacts(
+        self,
+        unit: dict[str, Any],
+        active: bool,
+        seen_paths: set[str],
+        *,
+        retained_rollback: bool = False,
+    ) -> list[ManagedArtifact]:
         result: list[ManagedArtifact] = []
         for raw in unit["artifacts"]:
             if raw["kind"] != "MOD":
@@ -565,6 +598,7 @@ class PhysicalManager:
                     relative_path=relative_path,
                     active=active,
                     source={"type": source["type"], "path": source["path"]},
+                    retained_rollback=retained_rollback,
                 )
             )
         return result
@@ -653,6 +687,22 @@ class PhysicalManager:
         for artifact in expected:
             path = self._destination(artifact)
             ids = self._verify_artifact_file(path, artifact)
+            if artifact.retained_rollback:
+                enabled_sibling = self.mods / artifact.filename
+                _assert_no_reparse_components(
+                    enabled_sibling,
+                    f"retained rollback enabled sibling {artifact.filename}",
+                    root=self.target,
+                )
+                self._assert_target_containment(
+                    enabled_sibling.resolve(strict=False),
+                    f"retained rollback enabled sibling {artifact.filename}",
+                )
+                if enabled_sibling.exists():
+                    raise ManagerError(
+                        "retained rollback must remain disabled and its enabled sibling must be absent: "
+                        + str(enabled_sibling)
+                    )
             if artifact.active:
                 for mod_id in ids:
                     previous = manifest_ids_by_active_path.get(mod_id)
@@ -811,6 +861,12 @@ class PhysicalManager:
             member["unit"]["deployment_id"] for member in state["accepted_baseline"]["members"]
         }
         accepted_records = [record for record in records if record["deployment_id"] in accepted_deployments]
+        retained_deployments = {
+            retained["unit"]["deployment_id"]
+            for member in state["accepted_baseline"]["members"]
+            for retained in member.get("retained_rollbacks", [])
+        }
+        retained_records = [record for record in records if record["deployment_id"] in retained_deployments]
         title = self._render_title(state)
         slot_evidence: dict[str, dict[str, Any] | None] = {}
         for label in ("A", "B"):
@@ -847,6 +903,14 @@ class PhysicalManager:
                 "active_artifact_count": sum(record["disposition"] == "ACTIVE" for record in accepted_records),
                 "disabled_artifact_count": sum(record["disposition"] == "DISABLED" for record in accepted_records),
                 "inventory_digest": inventory_digest(accepted_records),
+                "retained_rollbacks": {
+                    "artifact_count": len(retained_records),
+                    "inventory_digest": inventory_digest(retained_records),
+                    "artifacts": copy.deepcopy(retained_records),
+                    "enabled_siblings_absent": all(
+                        not (self.mods / record["filename"]).exists() for record in retained_records
+                    ),
+                },
             },
             "slots": slot_evidence,
             "title_display": {
@@ -872,6 +936,134 @@ class PhysicalManager:
         artifacts = self._verify_inventory(state, artifacts, prior_ledger=ledger)
         projection = self._verify_title_projection(state) if ledger["schema_version"] == 3 else None
         return self._physical_verification_report(state, artifacts, projection)
+
+    def _validate_batch_manifest_identities(self, operation: dict[str, Any]) -> None:
+        """Bind production direct-pass promotions to current project manifests.
+
+        Isolated unit tests may construct a manager with both identity catalogs
+        supplied explicitly. Such fixtures intentionally have no manifests;
+        normal CLI construction never takes that bypass.
+        """
+
+        if operation.get("type") != "PROMOTE_USER_PASSED_BATCH" or self.repository_statuses is None:
+            return
+        members = operation.get("members")
+        if not isinstance(members, list) or not members:
+            raise ManagerError("user-passed batch requires a nonempty members array")
+        for index, member in enumerate(members):
+            label = f"batch member {index}"
+            if not isinstance(member, dict) or not isinstance(member.get("unit"), dict):
+                raise ManagerError(f"{label} requires a unit")
+            unit = member["unit"]
+            project_uuid = unit.get("project_uuid")
+            status_entry = self.repository_statuses.get(project_uuid)
+            if status_entry is None:
+                raise ManagerError(f"{label} project UUID does not resolve to a current manifest: {project_uuid}")
+            manifest_path, manifest = status_entry
+            identity = manifest["identity"]
+            if unit.get("project_id") != identity["project_id"]:
+                raise ManagerError(
+                    f"{label} project_id does not match current manifest: "
+                    f"expected {identity['project_id']}, found {unit.get('project_id')}"
+                )
+            if unit.get("project_identity_source") != "CURRENT_MANIFEST":
+                raise ManagerError(f"{label} candidate must use CURRENT_MANIFEST identity")
+            self._assert_unit_matches_manifest_release(
+                unit,
+                manifest["state"]["releases"]["current"],
+                manifest_path,
+                label=f"{label} candidate",
+                repository_source=True,
+            )
+
+            retained_rollbacks = member.get("retained_rollbacks", [])
+            if not isinstance(retained_rollbacks, list):
+                raise ManagerError(f"{label}.retained_rollbacks must be an array")
+            rollback_release = manifest["state"]["releases"]["rollback"]
+            if len(retained_rollbacks) > 1:
+                raise ManagerError(f"{label} may supply at most one retained rollback unit")
+            if retained_rollbacks and rollback_release is None:
+                raise ManagerError(
+                    f"{label} supplies a retained rollback, but the current manifest has no rollback release"
+                )
+            if rollback_release is not None and not retained_rollbacks:
+                raise ManagerError(
+                    f"{label} current manifest declares a rollback release which the batch must retain"
+                )
+            if not retained_rollbacks:
+                continue
+            rollback_unit = retained_rollbacks[0]
+            if not isinstance(rollback_unit, dict):
+                raise ManagerError(f"{label} retained rollback must be a unit object")
+            if (
+                rollback_unit.get("project_uuid") != project_uuid
+                or rollback_unit.get("project_id") != identity["project_id"]
+            ):
+                raise ManagerError(f"{label} retained rollback must use the candidate project identity")
+            if rollback_unit.get("project_identity_source") != "FROZEN_LEGACY":
+                raise ManagerError(f"{label} retained rollback must use FROZEN_LEGACY identity")
+            self._assert_unit_matches_manifest_release(
+                rollback_unit,
+                rollback_release,
+                manifest_path,
+                label=f"{label} retained rollback",
+                repository_source=False,
+            )
+
+    def _assert_unit_matches_manifest_release(
+        self,
+        unit: dict[str, Any],
+        release: dict[str, Any],
+        manifest_path: Path,
+        *,
+        label: str,
+        repository_source: bool,
+    ) -> None:
+        artifact = release["artifact"]
+        expected_identity = {
+            "version": release["version"],
+            "source_commit": release["source_commit"],
+            "filename": artifact["filename"],
+            "sha256": artifact["sha256"].lower(),
+        }
+        raw_artifacts = unit.get("artifacts")
+        actual_artifact = raw_artifacts[0] if isinstance(raw_artifacts, list) and len(raw_artifacts) == 1 else None
+        actual_identity = {
+            "version": unit.get("version"),
+            "source_commit": unit.get("source_commit"),
+            "filename": actual_artifact.get("filename") if isinstance(actual_artifact, dict) else None,
+            "sha256": (
+                actual_artifact.get("sha256", "").lower()
+                if isinstance(actual_artifact, dict) and isinstance(actual_artifact.get("sha256"), str)
+                else None
+            ),
+        }
+        if actual_identity != expected_identity:
+            raise ManagerError(
+                f"{label} does not exactly match manifest release identity: "
+                f"expected {expected_identity}, found {actual_identity}"
+            )
+        assert isinstance(actual_artifact, dict)
+        expected_source = (
+            {
+                "type": "REPOSITORY",
+                "path": PurePosixPath(
+                    manifest_path.parent.relative_to(self.config.repository_root),
+                    "artifacts",
+                    artifact["filename"],
+                ).as_posix(),
+            }
+            if repository_source
+            else {
+                "type": "ADOPTED_TARGET",
+                "path": PurePosixPath(self.config.mods_directory, artifact["filename"]).as_posix(),
+            }
+        )
+        if actual_artifact.get("source") != expected_source:
+            raise ManagerError(
+                f"{label} source is not canonical: expected {expected_source}, "
+                f"found {actual_artifact.get('source')}"
+            )
 
     def adoption_plan(self, state: dict[str, Any] | None = None) -> PhysicalPlan:
         self._assert_no_transaction_residue()
@@ -944,6 +1136,7 @@ class PhysicalManager:
         if operation is not None:
             if expected_revision is None or at is None:
                 raise ManagerError("operation transitions require expected_revision and at")
+            self._validate_batch_manifest_identities(operation)
             try:
                 desired = plan_transition(current, expected_revision, operation, at, self.project_index)
             except ValidationError as exc:
@@ -1088,12 +1281,37 @@ class PhysicalManager:
                 source = candidate
             writes.append(FileAction(destination, artifact.relative_path, artifact, source))
 
-        removals = tuple(
+        removal_candidates = [
             self._destination(artifact)
             for artifact in current
             if artifact.relative_path.casefold() not in desired_by_path
             or desired_by_path[artifact.relative_path.casefold()].sha256 != artifact.sha256
-        )
+        ]
+        current_artifact_ids = {artifact.artifact_id for artifact in current}
+        current_paths = {artifact.relative_path.casefold() for artifact in current}
+        for action in writes:
+            artifact = action.artifact
+            if (
+                not artifact.retained_rollback
+                or artifact.source["type"] != "ADOPTED_TARGET"
+                or artifact.artifact_id in current_artifact_ids
+                or artifact.relative_path.casefold() in current_paths
+            ):
+                continue
+            adopted_source = self._source_path(artifact)
+            if _paths_equal(adopted_source, action.destination):
+                raise ManagerError("new retained rollback source must be its exact enabled predecessor")
+            expected_source = self.mods / artifact.filename
+            if not _paths_equal(adopted_source, expected_source):
+                raise ManagerError(
+                    f"new retained rollback source must be mods/{artifact.filename}: {adopted_source}"
+                )
+            removal_candidates.append(adopted_source)
+
+        removals_by_path: dict[str, Path] = {}
+        for path in removal_candidates:
+            removals_by_path.setdefault(os.path.normcase(str(path)).casefold(), path)
+        removals = tuple(removals_by_path.values())
         return tuple(writes), removals, tuple(unchanged)
 
     def transition(

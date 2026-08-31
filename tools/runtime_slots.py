@@ -58,9 +58,11 @@ TRANSITIONS = {
     "REMOVE_SLOT",
     "PROMOTE_SLOT",
     "PROMOTE_UNTESTED_CANDIDATE",
+    "PROMOTE_USER_PASSED_BATCH",
     "REMOVE_ACCEPTED",
 }
 UNTESTED_PROMOTION_AUTHORIZATION = "USER_APPROVED_UNTESTED_PROMOTION"
+USER_PASSED_BATCH_AUTHORIZATION = "USER_REPORTED_EXACT_RUNTIME_PASS"
 OWNERSHIP_KEY_RE = re.compile(r"^mod:[a-z0-9_.-]+$")
 WINDOWS_RESERVED_RE = re.compile(r"^(?:con|prn|aux|nul|com[1-9]|lpt[1-9])(?:\.|$)", re.IGNORECASE)
 CANARY_VERSION_RE = re.compile(r"(?:^|[^a-z0-9])canary[\s._-]*(\d+)(?:$|[^0-9])", re.IGNORECASE)
@@ -159,10 +161,46 @@ def _unit(value: Any, path: str, project_index: dict[str, str] | None) -> dict[s
 
 
 def _accepted_member(value: Any, path: str, project_index: dict[str, str] | None) -> dict[str, Any]:
-    member = _object(value, path, {"unit", "accepted_at"})
-    _unit(member["unit"], f"{path}.unit", project_index)
+    required = {"unit", "accepted_at"}
+    allowed = required | {"retained_rollbacks"}
+    if not isinstance(value, dict):
+        _fail(path, "must be an object")
+    missing = required - set(value)
+    unknown = set(value) - allowed
+    if missing:
+        _fail(path, f"missing required fields: {', '.join(sorted(missing))}")
+    if unknown:
+        _fail(path, f"unknown fields: {', '.join(sorted(unknown))}")
+    member = value
+    unit = _unit(member["unit"], f"{path}.unit", project_index)
     if member["accepted_at"] is not None:
         _timestamp(member["accepted_at"], f"{path}.accepted_at")
+    retained_rollbacks = member.get("retained_rollbacks", [])
+    if not isinstance(retained_rollbacks, list):
+        _fail(f"{path}.retained_rollbacks", "must be an array")
+    if len(retained_rollbacks) > 1:
+        _fail(f"{path}.retained_rollbacks", "may contain at most one retained rollback")
+    for index, retained in enumerate(retained_rollbacks):
+        retained_path = f"{path}.retained_rollbacks[{index}]"
+        retained = _object(retained, retained_path, {"unit", "retained_at"})
+        rollback_unit = _unit(retained["unit"], f"{retained_path}.unit", project_index)
+        _timestamp(retained["retained_at"], f"{retained_path}.retained_at")
+        if rollback_unit["project_identity_source"] != "FROZEN_LEGACY":
+            _fail(
+                f"{retained_path}.unit.project_identity_source",
+                "retained rollbacks require FROZEN_LEGACY identity",
+            )
+        if (
+            rollback_unit["project_uuid"] != unit["project_uuid"]
+            or rollback_unit["project_id"] != unit["project_id"]
+        ):
+            _fail(retained_path, "must retain the same accepted project UUID and project ID")
+        for artifact_index, artifact in enumerate(rollback_unit["artifacts"]):
+            if artifact["kind"] != "MOD" or artifact["source"]["type"] != "ADOPTED_TARGET":
+                _fail(
+                    f"{retained_path}.unit.artifacts[{artifact_index}]",
+                    "retained rollbacks require MOD artifacts from ADOPTED_TARGET sources",
+                )
     return member
 
 
@@ -252,10 +290,16 @@ def _slot(value: Any, path: str, project_index: dict[str, str] | None) -> dict[s
 
 
 def _all_units(state: dict[str, Any]) -> list[tuple[str, dict[str, Any]]]:
-    units: list[tuple[str, dict[str, Any]]] = [
-        (f"accepted[{index}]", member["unit"])
-        for index, member in enumerate(state["accepted_baseline"]["members"])
-    ]
+    units: list[tuple[str, dict[str, Any]]] = []
+    for index, member in enumerate(state["accepted_baseline"]["members"]):
+        units.append((f"accepted[{index}]", member["unit"]))
+        for rollback_index, retained in enumerate(member.get("retained_rollbacks", [])):
+            units.append(
+                (
+                    f"accepted[{index}].retained_rollbacks[{rollback_index}]",
+                    retained["unit"],
+                )
+            )
     for label in ("A", "B"):
         if state["slots"][label] is not None:
             units.append((f"slot {label}", state["slots"][label]["unit"]))
@@ -370,6 +414,15 @@ def validate_runtime_state(state: dict[str, Any], project_index: dict[str, str] 
             member["accepted_at"], f"$.accepted_baseline.members[{index}].accepted_at"
         ) > updated_at:
             _fail(f"$.accepted_baseline.members[{index}].accepted_at", "cannot be later than state updated_at")
+        for rollback_index, retained in enumerate(member.get("retained_rollbacks", [])):
+            if _timestamp(
+                retained["retained_at"],
+                f"$.accepted_baseline.members[{index}].retained_rollbacks[{rollback_index}].retained_at",
+            ) > updated_at:
+                _fail(
+                    f"$.accepted_baseline.members[{index}].retained_rollbacks[{rollback_index}].retained_at",
+                    "cannot be later than state updated_at",
+                )
     if actual_artifact_count != accepted_artifact_count:
         _fail(
             "$.accepted_baseline.provenance.accepted_artifact_count",
@@ -691,6 +744,131 @@ def plan_transition(
             raise ValidationError("runtime profile cannot contain more than two candidates")
         slots["A"] = _materialize_candidate(operation["candidates"][0], state["slots"]) if operation["candidates"] else None
         slots["B"] = _materialize_candidate(operation["candidates"][1], state["slots"]) if len(operation["candidates"]) == 2 else None
+    elif operation_type == "PROMOTE_USER_PASSED_BATCH":
+        if set(operation) != {"type", "authorization", "members"}:
+            raise ValidationError(
+                "PROMOTE_USER_PASSED_BATCH requires exactly type, authorization, and members"
+            )
+        if operation["authorization"] != USER_PASSED_BATCH_AUTHORIZATION:
+            raise ValidationError(
+                "PROMOTE_USER_PASSED_BATCH requires exact "
+                "USER_REPORTED_EXACT_RUNTIME_PASS authorization"
+            )
+        declarations = operation["members"]
+        if not isinstance(declarations, list) or not declarations:
+            raise ValidationError("PROMOTE_USER_PASSED_BATCH members must be a nonempty array")
+
+        existing_units = [
+            member["unit"] for member in state["accepted_baseline"]["members"]
+        ]
+        existing_units.extend(
+            state["slots"][label]["unit"]
+            for label in ("A", "B")
+            if state["slots"][label] is not None
+        )
+        unavailable_project_uuids = {unit["project_uuid"] for unit in existing_units}
+        unavailable_project_ids = {unit["project_id"].casefold() for unit in existing_units}
+        batch_project_uuids: set[str] = set()
+        batch_project_ids: set[str] = set()
+        promoted_members: list[dict[str, Any]] = []
+
+        for index, declaration in enumerate(declarations):
+            member_path = f"operation.members[{index}]"
+            required = {"unit"}
+            allowed = required | {"retained_rollbacks"}
+            if not isinstance(declaration, dict):
+                raise ValidationError(f"{member_path} must be an object")
+            missing = required - set(declaration)
+            unknown = set(declaration) - allowed
+            if missing:
+                raise ValidationError(
+                    f"{member_path} missing required fields: {', '.join(sorted(missing))}"
+                )
+            if unknown:
+                raise ValidationError(
+                    f"{member_path} unknown fields: {', '.join(sorted(unknown))}"
+                )
+
+            unit = copy.deepcopy(declaration["unit"])
+            _unit(unit, f"{member_path}.unit", project_index)
+            if unit["project_identity_source"] != "CURRENT_MANIFEST":
+                raise ValidationError(
+                    f"{member_path}.unit requires CURRENT_MANIFEST identity"
+                )
+            project_uuid = unit["project_uuid"]
+            project_id_key = unit["project_id"].casefold()
+            if (
+                project_uuid in unavailable_project_uuids
+                or project_id_key in unavailable_project_ids
+            ):
+                raise ValidationError(
+                    f"{member_path}.unit project must be absent from the accepted baseline and both slots"
+                )
+            if project_uuid in batch_project_uuids or project_id_key in batch_project_ids:
+                raise ValidationError(
+                    f"{member_path}.unit duplicates a project in this promotion batch"
+                )
+            batch_project_uuids.add(project_uuid)
+            batch_project_ids.add(project_id_key)
+
+            retained_units = declaration.get("retained_rollbacks", [])
+            if not isinstance(retained_units, list):
+                raise ValidationError(f"{member_path}.retained_rollbacks must be an array")
+            if len(retained_units) > 1:
+                raise ValidationError(
+                    f"{member_path}.retained_rollbacks may contain at most one retained rollback"
+                )
+            retained_rollbacks: list[dict[str, Any]] = []
+            for rollback_index, rollback_value in enumerate(retained_units):
+                rollback_path = f"{member_path}.retained_rollbacks[{rollback_index}]"
+                rollback_unit = copy.deepcopy(rollback_value)
+                _unit(rollback_unit, rollback_path, project_index)
+                if rollback_unit["project_identity_source"] != "FROZEN_LEGACY":
+                    raise ValidationError(
+                        f"{rollback_path}.project_identity_source requires FROZEN_LEGACY identity"
+                    )
+                if (
+                    rollback_unit["project_uuid"] != project_uuid
+                    or rollback_unit["project_id"] != unit["project_id"]
+                ):
+                    raise ValidationError(
+                        f"{rollback_path} must have the promoted project UUID and project ID"
+                    )
+                for artifact_index, artifact in enumerate(rollback_unit["artifacts"]):
+                    if artifact["kind"] != "MOD" or artifact["source"]["type"] != "ADOPTED_TARGET":
+                        raise ValidationError(
+                            f"{rollback_path}.artifacts[{artifact_index}] requires a MOD artifact "
+                            "from an ADOPTED_TARGET source"
+                        )
+                if rollback_unit["deployment_id"] == unit["deployment_id"]:
+                    raise ValidationError(
+                        f"{rollback_path}.deployment_id must be distinct from the promoted deployment UUID"
+                    )
+                promoted_artifact_ids = {
+                    artifact["artifact_id"] for artifact in unit["artifacts"]
+                }
+                rollback_artifact_ids = {
+                    artifact["artifact_id"] for artifact in rollback_unit["artifacts"]
+                }
+                if promoted_artifact_ids.intersection(rollback_artifact_ids):
+                    raise ValidationError(
+                        f"{rollback_path}.artifacts must use artifact UUIDs distinct from the promoted unit"
+                    )
+                retained_rollbacks.append({"unit": rollback_unit, "retained_at": at})
+
+            member = {"unit": unit, "accepted_at": at}
+            if retained_rollbacks:
+                member["retained_rollbacks"] = retained_rollbacks
+            promoted_members.append(member)
+
+        members = next_state["accepted_baseline"]["members"]
+        members.extend(promoted_members)
+        next_state["accepted_baseline"]["revision"] += len(promoted_members)
+        next_state["accepted_baseline"]["provenance"]["accepted_artifact_count"] = sum(
+            len(existing["unit"]["artifacts"]) for existing in members
+        )
+        if next_state["activation"] == "ACTIVE":
+            next_state["accepted_baseline"]["provenance"]["physical_disposition"] = "TRANSITIONED"
     elif operation_type == "REMOVE_ACCEPTED":
         if set(operation) != {"type", "project_uuid"}:
             raise ValidationError("REMOVE_ACCEPTED requires exactly type and project_uuid")

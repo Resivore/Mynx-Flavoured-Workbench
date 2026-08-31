@@ -33,6 +33,28 @@ Because that authorization is not derivable from a desired-state document,
 this exception must use the operation-based `transition --operation` path;
 prevalidated `desired_state` callers cannot synthesize the authorization.
 
+`PROMOTE_USER_PASSED_BATCH` is the serialized path for one or more exact
+candidates whose runtime pass was reported directly by the user. It requires
+the exact `USER_REPORTED_EXACT_RUNTIME_PASS` authorization, preserves both test
+slots byte-for-byte, adds every member in one runtime-state revision, and
+increments the Stack number once per newly accepted project. The production
+CLI binds every candidate's project UUID/ID, version, filename, SHA-256, and
+source checkpoint to that project's current manifest release. Candidate bytes
+must come from the canonical tracked `projects/<project>/artifacts/<filename>`
+(or equivalent canonical project directory) path. If a batch member carries a
+retained rollback, it must match that manifest's rollback release exactly; a
+project with no manifest rollback cannot declare one.
+
+A retained rollback is target-local history, not an active baseline artifact.
+Its unit uses the same project UUID/ID, a `FROZEN_LEGACY` identity, and an exact
+`ADOPTED_TARGET mods/<filename>` source. The manager stages and verifies those
+enabled predecessor bytes, includes their removal in the same locked rollback
+transaction, and writes the exact bytes to `mods/<filename>.disabled`. All
+later verification requires that disabled file and rejects any reappearance of
+its enabled sibling. Verification receipts expose retained rollback paths,
+hashes, disabled dispositions, inventory digest, and the enabled-sibling
+absence result.
+
 ## Migration closure
 
 The initial physical V2 migration completed at checkpoint
@@ -118,6 +140,9 @@ already exists.
 - Artifacts use exact filenames, SHA-256 values, Fabric `mod:<id>` ownership,
   and repository or explicitly adopted-target sources.
 - Accepted artifacts replaced by a slot remain present as `.jar.disabled`.
+- User-passed batch promotion preserves both slots and atomically converts each
+  declared adopted predecessor into an exact manager-owned `.jar.disabled`
+  retained rollback; a wrong or missing predecessor fails before mutation.
 - A slot may declare `dependency_overrides` for exact accepted dependency
   deployments that it temporarily supersedes. The slot artifact set must cover
   every ownership key of each overridden dependency; removing the slot restores
