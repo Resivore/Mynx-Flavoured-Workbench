@@ -8,6 +8,7 @@ under an ignored private/test-build directory and never commit or distribute it.
 from __future__ import annotations
 
 import argparse
+import copy
 import gzip
 import hashlib
 import json
@@ -35,6 +36,30 @@ SOURCE_EXTENSION_COUNTS = {
     ".nbt": 29,
     ".ogg": 18,
     ".png": 39,
+}
+
+CONFIGURED_FEATURE_MIGRATION_PATHS = (
+    "data/ribbits/worldgen/configured_feature/giant_lilypad_patch.json",
+    "data/ribbits/worldgen/configured_feature/swamp_daisy_patch.json",
+    "data/ribbits/worldgen/configured_feature/toadstool_patch.json",
+    "data/ribbits/worldgen/configured_feature/umbrella_leaf_patch.json",
+    "data/ribbits/worldgen/configured_feature/veg_patch.json",
+)
+CONFIGURED_FEATURE_MIGRATION_IDS = tuple(
+    f"ribbits:{PurePosixPath(path).stem}" for path in CONFIGURED_FEATURE_MIGRATION_PATHS
+)
+LEGACY_RANDOM_PATCH_FEATURE_TYPE = "minecraft:random_patch"
+MIGRATED_RANDOM_PATCH_FEATURE_TYPE = "minecraft:sequence"
+RIBBITS_VEGETATION_FEATURE_TYPE = "ribbits:vegetation_block_feature"
+RIBBITS_VEGETATION_CONFIG_FIELDS = frozenset(
+    {"on_solid_state_provider", "on_liquid_state_provider", "cannot_place_on"}
+)
+LEGACY_RANDOM_PATCH_PLACEMENT = {
+    "type": "minecraft:block_predicate_filter",
+    "predicate": {
+        "type": "minecraft:matching_blocks",
+        "blocks": "minecraft:air",
+    },
 }
 
 OLD_CONFIG_PREFIX = "text.autoconfig.ribbits-fabric-1_21_1"
@@ -155,7 +180,7 @@ SPAWN_EGG_MODEL = {
     "textures": {"layer0": "ribbits:item/ribbit_spawn_egg"},
 }
 SPAWN_EGG_SUBSTITUTION_NOTICE = (
-    "Private Canary 1 uses one temporary palette-only green recolor of Minecraft "
+    "Private Canary 2 uses one temporary palette-only green recolor of Minecraft "
     "26.2's vanilla frog spawn-egg artwork for all five Ribbits profession eggs. "
     "This is explicitly authorized for the private Workbench and is not exact "
     "Ribbits 4.1.6 spawn-egg visual parity."
@@ -343,6 +368,280 @@ def load_json(path: Path) -> Any:
 
 def relative_files(root: Path) -> list[str]:
     return sorted(path.relative_to(root).as_posix() for path in root.rglob("*") if path.is_file())
+
+
+def configured_feature_migration_record() -> dict[str, Any]:
+    return {
+        "count": len(CONFIGURED_FEATURE_MIGRATION_PATHS),
+        "from_feature_type": LEGACY_RANDOM_PATCH_FEATURE_TYPE,
+        "to_feature_type": MIGRATED_RANDOM_PATCH_FEATURE_TYPE,
+        "targets": list(CONFIGURED_FEATURE_MIGRATION_IDS),
+    }
+
+
+def require_exact_configured_feature_paths(paths: list[str], context: str) -> None:
+    if not all(isinstance(path, str) for path in paths):
+        raise ValidationError(f"{context} configured-feature paths must all be strings")
+
+    folded_counts = Counter(path.casefold() for path in paths)
+    duplicates = sorted(path for path, count in folded_counts.items() if count > 1)
+    if duplicates:
+        raise ValidationError(
+            f"{context} contains duplicate configured-feature targets: {duplicates}"
+        )
+
+    expected = set(CONFIGURED_FEATURE_MIGRATION_PATHS)
+    actual = set(paths)
+    missing = sorted(expected - actual)
+    unexpected = sorted(actual - expected)
+    if missing or unexpected:
+        raise ValidationError(
+            f"{context} configured-feature target set differs: "
+            f"missing={missing}, unexpected={unexpected}"
+        )
+
+
+def require_exact_keys(value: Any, expected: set[str], context: str) -> dict[str, Any]:
+    if not isinstance(value, dict):
+        raise ValidationError(f"{context} must be a JSON object")
+    actual = set(value)
+    if actual != expected:
+        raise ValidationError(
+            f"{context} fields differ: missing={sorted(expected - actual)}, "
+            f"unexpected={sorted(actual - expected)}"
+        )
+    return value
+
+
+def require_bounded_int(value: Any, minimum: int, maximum: int, context: str) -> int:
+    if isinstance(value, bool) or not isinstance(value, int):
+        raise ValidationError(f"{context} must be an integer")
+    if not minimum <= value <= maximum:
+        raise ValidationError(
+            f"{context} must be between {minimum} and {maximum}, got {value}"
+        )
+    return value
+
+
+def require_ribbits_vegetation_feature(value: Any, context: str) -> dict[str, Any]:
+    feature = require_exact_keys(value, {"type", "config"}, context)
+    if feature["type"] != RIBBITS_VEGETATION_FEATURE_TYPE:
+        raise ValidationError(
+            f"{context} must use {RIBBITS_VEGETATION_FEATURE_TYPE}, "
+            f"got {feature['type']!r}"
+        )
+    config = feature["config"]
+    if not isinstance(config, dict):
+        raise ValidationError(f"{context}.config must be a JSON object")
+    config_fields = set(config)
+    if not config_fields or not config_fields <= RIBBITS_VEGETATION_CONFIG_FIELDS:
+        raise ValidationError(
+            f"{context}.config fields are not the understood Ribbits vegetation schema: "
+            f"{sorted(config_fields)}"
+        )
+    for provider_field in ("on_solid_state_provider", "on_liquid_state_provider"):
+        if provider_field not in config:
+            continue
+        provider = config[provider_field]
+        if not isinstance(provider, dict) or not isinstance(provider.get("type"), str):
+            raise ValidationError(
+                f"{context}.config.{provider_field} must be a typed state-provider object"
+            )
+    if "cannot_place_on" in config:
+        block_states = config["cannot_place_on"]
+        if not isinstance(block_states, list) or not all(
+            isinstance(state, dict) and isinstance(state.get("Name"), str)
+            for state in block_states
+        ):
+            raise ValidationError(
+                f"{context}.config.cannot_place_on must be an array of named block states"
+            )
+    return feature
+
+
+def migrate_legacy_random_patch_document(path: str, value: Any) -> dict[str, Any]:
+    document = require_exact_keys(value, {"type", "config"}, path)
+    if document["type"] != LEGACY_RANDOM_PATCH_FEATURE_TYPE:
+        raise ValidationError(
+            f"{path} must use pristine feature type {LEGACY_RANDOM_PATCH_FEATURE_TYPE}, "
+            f"got {document['type']!r}"
+        )
+
+    config = require_exact_keys(
+        document["config"], {"feature", "tries", "xz_spread", "y_spread"}, f"{path}.config"
+    )
+    tries = require_bounded_int(config["tries"], 1, 4096, f"{path}.config.tries")
+    xz_spread = require_bounded_int(config["xz_spread"], 0, 16, f"{path}.config.xz_spread")
+    y_spread = require_bounded_int(config["y_spread"], 0, 16, f"{path}.config.y_spread")
+
+    legacy_placed_feature = require_exact_keys(
+        config["feature"], {"feature", "placement"}, f"{path}.config.feature"
+    )
+    require_ribbits_vegetation_feature(
+        legacy_placed_feature["feature"], f"{path}.config.feature.feature"
+    )
+    legacy_placements = legacy_placed_feature["placement"]
+    if legacy_placements != [LEGACY_RANDOM_PATCH_PLACEMENT]:
+        raise ValidationError(
+            f"{path}.config.feature.placement must contain the one understood legacy air filter"
+        )
+
+    return {
+        "type": MIGRATED_RANDOM_PATCH_FEATURE_TYPE,
+        "config": {
+            "features": [
+                {
+                    "feature": copy.deepcopy(legacy_placed_feature["feature"]),
+                    "placement": [
+                        {"type": "minecraft:count", "count": tries},
+                        {
+                            "type": "minecraft:random_offset",
+                            "xz_spread": {
+                                "type": "minecraft:trapezoid",
+                                "min": -xz_spread,
+                                "max": xz_spread,
+                                "plateau": 0,
+                            },
+                            "y_spread": {
+                                "type": "minecraft:trapezoid",
+                                "min": -y_spread,
+                                "max": y_spread,
+                                "plateau": 0,
+                            },
+                        },
+                        *copy.deepcopy(legacy_placements),
+                    ],
+                }
+            ]
+        },
+    }
+
+
+def json_contains_value(value: Any, expected: str) -> bool:
+    if isinstance(value, dict):
+        return any(json_contains_value(item, expected) for item in value.values())
+    if isinstance(value, list):
+        return any(json_contains_value(item, expected) for item in value)
+    return value == expected
+
+
+def require_triangle_provider(value: Any, context: str) -> None:
+    provider = require_exact_keys(value, {"type", "min", "max", "plateau"}, context)
+    if provider["type"] != "minecraft:trapezoid":
+        raise ValidationError(f"{context} must use minecraft:trapezoid")
+    minimum = require_bounded_int(provider["min"], -16, 0, f"{context}.min")
+    maximum = require_bounded_int(provider["max"], 0, 16, f"{context}.max")
+    plateau = require_bounded_int(provider["plateau"], 0, 0, f"{context}.plateau")
+    if minimum != -maximum or plateau != 0:
+        raise ValidationError(f"{context} must be a symmetric zero-plateau triangle")
+
+
+def require_migrated_random_patch_document(path: str, value: Any) -> None:
+    document = require_exact_keys(value, {"type", "config"}, path)
+    if document["type"] != MIGRATED_RANDOM_PATCH_FEATURE_TYPE:
+        raise ValidationError(
+            f"{path} must use migrated feature type {MIGRATED_RANDOM_PATCH_FEATURE_TYPE}, "
+            f"got {document['type']!r}"
+        )
+    if json_contains_value(document, LEGACY_RANDOM_PATCH_FEATURE_TYPE):
+        raise ValidationError(f"{path} still contains {LEGACY_RANDOM_PATCH_FEATURE_TYPE}")
+
+    config = require_exact_keys(document["config"], {"features"}, f"{path}.config")
+    features = config["features"]
+    if not isinstance(features, list) or len(features) != 1:
+        raise ValidationError(f"{path}.config.features must contain exactly one placed feature")
+    placed_feature = require_exact_keys(
+        features[0], {"feature", "placement"}, f"{path}.config.features[0]"
+    )
+    require_ribbits_vegetation_feature(
+        placed_feature["feature"], f"{path}.config.features[0].feature"
+    )
+    placements = placed_feature["placement"]
+    if not isinstance(placements, list) or len(placements) != 3:
+        raise ValidationError(
+            f"{path}.config.features[0].placement must contain count, random_offset, and air filter"
+        )
+
+    count = require_exact_keys(
+        placements[0], {"type", "count"}, f"{path}.config.features[0].placement[0]"
+    )
+    if count["type"] != "minecraft:count":
+        raise ValidationError(f"{path} migrated placement must begin with minecraft:count")
+    require_bounded_int(count["count"], 1, 4096, f"{path}.config.features[0].placement[0].count")
+
+    offset = require_exact_keys(
+        placements[1],
+        {"type", "xz_spread", "y_spread"},
+        f"{path}.config.features[0].placement[1]",
+    )
+    if offset["type"] != "minecraft:random_offset":
+        raise ValidationError(f"{path} second migrated placement must be minecraft:random_offset")
+    require_triangle_provider(
+        offset["xz_spread"], f"{path}.config.features[0].placement[1].xz_spread"
+    )
+    require_triangle_provider(
+        offset["y_spread"], f"{path}.config.features[0].placement[1].y_spread"
+    )
+    if placements[2] != LEGACY_RANDOM_PATCH_PLACEMENT:
+        raise ValidationError(f"{path} migrated placement must retain the pristine air filter last")
+
+
+def migrate_configured_feature_documents(
+    documents: list[tuple[str, Any]],
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    paths = [path for path, _ in documents]
+    require_exact_configured_feature_paths(paths, "Configured-feature migration input")
+    by_path = {path: value for path, value in documents}
+
+    # Build and validate every output in memory before rewriting any protected file.
+    migrated = {
+        path: migrate_legacy_random_patch_document(path, by_path[path])
+        for path in CONFIGURED_FEATURE_MIGRATION_PATHS
+    }
+    validate_migrated_configured_feature_documents(list(migrated.items()))
+    return migrated, configured_feature_migration_record()
+
+
+def validate_migrated_configured_feature_documents(
+    documents: list[tuple[str, Any]],
+) -> None:
+    paths = [path for path, _ in documents]
+    require_exact_configured_feature_paths(paths, "Migrated configured-feature output")
+    by_path = {path: value for path, value in documents}
+    for path in CONFIGURED_FEATURE_MIGRATION_PATHS:
+        require_migrated_random_patch_document(path, by_path[path])
+
+
+def load_configured_feature_documents(root: Path) -> list[tuple[str, Any]]:
+    relative_root = PurePosixPath(CONFIGURED_FEATURE_MIGRATION_PATHS[0]).parent
+    configured_root = root.joinpath(*relative_root.parts)
+    paths = (
+        sorted(
+            path.relative_to(root).as_posix()
+            for path in configured_root.rglob("*")
+            if path.is_file()
+        )
+        if configured_root.is_dir()
+        else []
+    )
+    require_exact_configured_feature_paths(paths, "Private resource tree")
+    return [(path, load_json(root.joinpath(*PurePosixPath(path).parts))) for path in paths]
+
+
+def migrate_configured_features(root: Path) -> dict[str, Any]:
+    documents = load_configured_feature_documents(root)
+    migrated, record = migrate_configured_feature_documents(documents)
+    for path in CONFIGURED_FEATURE_MIGRATION_PATHS:
+        write_json(root.joinpath(*PurePosixPath(path).parts), migrated[path])
+    return record
+
+
+def validate_configured_features(root: Path, errors: list[str]) -> None:
+    try:
+        documents = load_configured_feature_documents(root)
+        validate_migrated_configured_feature_documents(documents)
+    except (OSError, KeyError, ValueError, ValidationError) as exc:
+        errors.append(f"Configured-feature migration is invalid: {exc}")
 
 
 def repair_pristine_zh_json(path: Path) -> None:
@@ -546,7 +845,7 @@ def migrate_spawn_egg_models(root: Path, minecraft_client: Path) -> dict[str, An
 
     return {
         "authorization": (
-            "Explicitly authorized by the Workbench owner for private Ribbits Canary 1"
+            "Explicitly authorized by the Workbench owner for private Ribbits Canary 2"
         ),
         "temporary": True,
         "exact_ribbits_4_1_6_visual_parity": False,
@@ -583,6 +882,7 @@ def build_manifest(
     output: Path,
     source_hashes: dict[str, str],
     spawn_egg_substitution: dict[str, Any],
+    configured_feature_migration: dict[str, Any],
 ) -> dict[str, Any]:
     output_hashes = {
         name: sha256_file(output / PurePosixPath(name)) for name in relative_files(output)
@@ -619,6 +919,7 @@ def build_manifest(
             "zh_cn_syntax_repairs": 1,
             "spawn_egg_models_migrated": len(SPAWN_EGG_IDS),
             "spawn_egg_textures_added": 1,
+            "configured_feature_random_patch_to_sequence": configured_feature_migration,
         },
         "authorized_spawn_egg_substitution": spawn_egg_substitution,
         "blockers": [],
@@ -653,6 +954,16 @@ def _assemble_impl(
                 for entry in archive.infolist()
                 if not entry.is_dir() and is_private_source_entry(entry.filename)
             ]
+            selected_paths = [safe_zip_name(entry.filename).as_posix() for entry in selected]
+            configured_prefix = (
+                PurePosixPath(CONFIGURED_FEATURE_MIGRATION_PATHS[0]).parent.as_posix() + "/"
+            )
+            configured_source_paths = [
+                path for path in selected_paths if path.startswith(configured_prefix)
+            ]
+            require_exact_configured_feature_paths(
+                configured_source_paths, "Pristine Ribbits JAR"
+            )
             if len(selected) != SOURCE_FILE_COUNT:
                 raise ValidationError(
                     f"Expected {SOURCE_FILE_COUNT} protected source files, found {len(selected)}"
@@ -682,6 +993,7 @@ def _assemble_impl(
         migrate_recipes(output)
         migrate_recipe_advancements(output)
         migrate_sorcerer_loot(output)
+        configured_feature_migration = migrate_configured_features(output)
         write_item_definitions(output)
         spawn_egg_substitution = migrate_spawn_egg_models(output, minecraft_client)
 
@@ -691,7 +1003,13 @@ def _assemble_impl(
                 f"Expected {OUTPUT_FILE_COUNT} assembled files, found {output_file_count}"
             )
 
-        manifest = build_manifest(pristine, output, source_hashes, spawn_egg_substitution)
+        manifest = build_manifest(
+            pristine,
+            output,
+            source_hashes,
+            spawn_egg_substitution,
+            configured_feature_migration,
+        )
         manifest_path.parent.mkdir(parents=True, exist_ok=True)
         write_json(manifest_path, manifest)
     except Exception:
@@ -792,6 +1110,8 @@ def validate_pristine_provenance(
 
 
 def validate_transforms(root: Path, errors: list[str]) -> None:
+    validate_configured_features(root, errors)
+
     if (root / "assets/ribbits/geo").exists() or (root / "assets/ribbits/animations").exists():
         errors.append("Legacy GeckoLib resource roots remain")
     model_root = root / "assets/ribbits/geckolib/models"
@@ -1022,10 +1342,24 @@ def validate_jar(
                 errors.append(f"Invalid or missing packaged JSON {name}: {exc}")
                 return {}
 
+        configured_prefix = (
+            PurePosixPath(CONFIGURED_FEATURE_MIGRATION_PATHS[0]).parent.as_posix() + "/"
+        )
+        packaged_configured_paths = [name for name in names if name.startswith(configured_prefix)]
+        try:
+            require_exact_configured_feature_paths(
+                packaged_configured_paths, "Packaged private JAR"
+            )
+            validate_migrated_configured_feature_documents(
+                [(name, archive_json(name)) for name in packaged_configured_paths]
+            )
+        except (KeyError, ValueError, ValidationError) as exc:
+            errors.append(f"Packaged configured-feature migration is invalid: {exc}")
+
         metadata = archive_json("fabric.mod.json")
         if metadata.get("id") != "ribbits":
             errors.append(f"Unexpected mod ID: {metadata.get('id')!r}")
-        if metadata.get("version") != "4.1.6+26.2-port-canary1":
+        if metadata.get("version") != "4.1.6+26.2-port-canary2":
             errors.append(f"Unexpected packaged version: {metadata.get('version')!r}")
         if metadata.get("environment") != "*":
             errors.append(f"Unexpected Fabric environment: {metadata.get('environment')!r}")

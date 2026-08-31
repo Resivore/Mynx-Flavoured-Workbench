@@ -9,6 +9,7 @@ def privateResourcesPath = System.getenv('RIBBITS_PRIVATE_RESOURCES_DIR')
 def privateResourcesDir = privateResourcesPath ? file(privateResourcesPath) : null
 def privateManifestPath = System.getenv('RIBBITS_PRIVATE_MANIFEST')
 def privateManifestFile = privateManifestPath ? file(privateManifestPath) : null
+def pythonExecutable = System.getenv('PYTHON') ?: 'python'
 
 base {
     archivesName = privateResourcesDir != null ? "${project.archives_name}-private-reconstruction" : "${project.archives_name}-source-only"
@@ -68,6 +69,26 @@ if (privateResourcesDir != null) {
                 throw new GradleException("Private manifest still contains blockers: ${manifest.blockers}")
             }
 
+            def configuredFeatureMigration =
+                manifest.migrations?.configured_feature_random_patch_to_sequence
+            def expectedConfiguredFeatureTargets = [
+                'ribbits:giant_lilypad_patch',
+                'ribbits:swamp_daisy_patch',
+                'ribbits:toadstool_patch',
+                'ribbits:umbrella_leaf_patch',
+                'ribbits:veg_patch',
+            ]
+            if (configuredFeatureMigration == null ||
+                !(configuredFeatureMigration.count instanceof Integer) ||
+                configuredFeatureMigration.count != expectedConfiguredFeatureTargets.size() ||
+                configuredFeatureMigration.from_feature_type.toString() != 'minecraft:random_patch' ||
+                configuredFeatureMigration.to_feature_type.toString() != 'minecraft:sequence' ||
+                (configuredFeatureMigration.targets as List) != expectedConfiguredFeatureTargets) {
+                throw new GradleException(
+                    'Private manifest lacks the exact five-target random-patch-to-sequence migration contract'
+                )
+            }
+
             def spawnEgg = manifest.authorized_spawn_egg_substitution
             def expectedSourceHash = '23962914851db6e2f7f346e80bf412d8f6e1435e6cd54b73dd5ccbec1a50eccf'
             def expectedOutputHash = '53eb7f9d59457b2cd38a5bf65c10c78ac0721da2123f37ce2f48c4d3e1dc1ed1'
@@ -105,10 +126,18 @@ if (privateResourcesDir != null) {
             }
 
             def expectedFiles = manifest.output.files as Map
+            def expectedConfiguredFeaturePaths = expectedConfiguredFeatureTargets.collect { target ->
+                "data/ribbits/worldgen/configured_feature/${target.substring('ribbits:'.length())}.json".toString()
+            }
             if ((manifest.pristine.selected_file_count as int) != 287 ||
                 (manifest.output.file_count as int) != 308 ||
                 expectedFiles.size() != 308) {
                 throw new GradleException('Private manifest does not preserve the exact 287-input / 308-output contract')
+            }
+            if (!expectedFiles.keySet().containsAll(expectedConfiguredFeaturePaths)) {
+                throw new GradleException(
+                    'Private manifest omits one or more canonical migrated configured-feature files'
+                )
             }
             if (!expectedOutputHash.equalsIgnoreCase(
                 expectedFiles['assets/ribbits/textures/item/ribbit_spawn_egg.png'].toString()
@@ -232,9 +261,23 @@ tasks.withType(JavaCompile).configureEach {
     options.release = 25
 }
 
+tasks.withType(org.gradle.api.tasks.bundling.AbstractArchiveTask).configureEach {
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
+}
+
 test {
     useJUnitPlatform()
     systemProperty 'projectRoot', projectDir.absolutePath
+    dependsOn 'testPrivateResourceTools'
+}
+
+tasks.register('testPrivateResourceTools', Exec) {
+    group = 'verification'
+    description = 'Runs source-safe regression tests for the private resource migration tool.'
+    workingDir projectDir
+    commandLine pythonExecutable, '-B', '-m', 'unittest', 'discover',
+        '-s', 'tools', '-p', 'test_private_resource_tools.py', '-v'
 }
 
 java {
@@ -251,5 +294,11 @@ if (verifyPrivateResources != null) {
 jar {
     from('LICENSE.txt') {
         rename { 'LICENSE_Ribbits' }
+    }
+    doLast {
+        // Loom nests included JARs after Gradle's archive normalization.
+        net.fabricmc.loom.util.ZipReprocessorUtil.reprocessZip(
+            archiveFile.get().asFile.toPath(), true, false
+        )
     }
 }
