@@ -114,7 +114,7 @@
     ]
   },
   "state": {
-    "milestone": "Exact private Canary 1 (3,135,359 bytes) is retained locally after 31 source tests plus private tree and JAR static validation; it is nonredistributable, not deployed, and runtime untested.",
+    "milestone": "Exact private Canary 1 (3,135,359 bytes) is retained locally at projects/ribbits-26.2/artifacts/ribbits-4.1.6+26.2-port-canary1.jar after 31 source tests plus private tree and JAR static validation; it is Git-ignored, nonredistributable, not deployed, and runtime untested.",
     "releases": {
       "current": {
         "version": "4.1.6+26.2-port-canary1",
@@ -137,11 +137,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 1,
-    "activity_at": "2026-08-28T22:52:51Z",
-    "updated_at": "2026-08-29T22:43:19Z",
-    "last_codex_at": "2026-08-29T22:43:19Z",
-    "source_commit": "f2716e68c8cbf48ce04db233251a9f8f5738309c",
+    "revision": 2,
+    "activity_at": "2026-08-31T03:59:31Z",
+    "updated_at": "2026-08-31T03:59:31Z",
+    "last_codex_at": "2026-08-31T03:59:31Z",
+    "source_commit": "8883b58cee38b2dcc7d6adb726303bf8ca9721ae",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
