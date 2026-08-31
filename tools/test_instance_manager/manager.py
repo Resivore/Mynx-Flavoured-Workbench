@@ -197,6 +197,7 @@ class ManagedArtifact:
     filename: str
     sha256: str
     mod_id: str
+    ownership_mod_ids: tuple[str, ...]
     relative_path: str
     active: bool
     source: dict[str, str]
@@ -502,6 +503,7 @@ class PhysicalManager:
             filename=marker.filename,
             sha256=marker.sha256,
             mod_id=marker.mod_id,
+            ownership_mod_ids=(marker.mod_id,),
             relative_path=PurePosixPath(self.config.mods_directory, marker.filename).as_posix(),
             active=True,
             source=source,
@@ -590,11 +592,19 @@ class PhysicalManager:
             if not filename.casefold().endswith(".jar"):
                 raise ManagerError(f"managed MOD filename must end in .jar: {filename}")
             ownership = raw["ownership_keys"]
-            if len(ownership) != 1 or not isinstance(ownership[0], str) or not ownership[0].startswith("mod:"):
-                raise ManagerError(f"managed MOD {filename} must have exactly one mod:<fabric_mod_id> ownership key")
-            mod_id = ownership[0][4:]
-            if not mod_id:
-                raise ManagerError(f"managed MOD {filename} has an empty Fabric mod id")
+            if not isinstance(ownership, list) or not ownership:
+                raise ManagerError(f"managed MOD {filename} must have at least one mod:<fabric_mod_id> ownership key")
+            ownership_mod_ids: list[str] = []
+            for ownership_key in ownership:
+                if not isinstance(ownership_key, str) or not ownership_key.startswith("mod:"):
+                    raise ManagerError(f"managed MOD {filename} has an invalid mod:<fabric_mod_id> ownership key")
+                ownership_mod_id = ownership_key[4:]
+                if not ownership_mod_id:
+                    raise ManagerError(f"managed MOD {filename} has an empty Fabric mod id")
+                ownership_mod_ids.append(ownership_mod_id)
+            # Preserve the V3 ledger contract: the first key is the primary
+            # Fabric ID and any later keys are exact `provides` aliases.
+            mod_id = ownership_mod_ids[0]
             source = raw.get("source")
             if not isinstance(source, dict) or set(source) != {"type", "path"}:
                 raise ManagerError(f"managed MOD {filename} requires exactly source.type and source.path")
@@ -613,6 +623,7 @@ class PhysicalManager:
                     filename=filename,
                     sha256=raw["sha256"].lower(),
                     mod_id=mod_id,
+                    ownership_mod_ids=tuple(ownership_mod_ids),
                     relative_path=relative_path,
                     active=active,
                     source={"type": source["type"], "path": source["path"]},
@@ -673,7 +684,8 @@ class PhysicalManager:
         actual_hash = _sha256(path)
         if actual_hash != artifact.sha256:
             raise ManagerError(f"SHA-256 mismatch for {path}: expected {artifact.sha256}, found {actual_hash}")
-        ids = _fabric_mod_ids(path)
+        declared_ids = frozenset(artifact.ownership_mod_ids)
+        ids = _fabric_mod_ids(path, strict_provides=len(declared_ids) > 1)
         if artifact.mod_id not in ids:
             raise ManagerError(
                 f"Fabric mod ownership mismatch for {path}: expected primary id {artifact.mod_id}, found {sorted(ids)}"
@@ -688,6 +700,15 @@ class PhysicalManager:
         if primary != artifact.mod_id:
             raise ManagerError(
                 f"Fabric primary mod id mismatch for {path}: expected {artifact.mod_id}, found {primary}"
+            )
+        if primary not in declared_ids:
+            raise ManagerError(f"Fabric primary mod id {primary} is absent from declared ownership for {path}")
+        if len(declared_ids) > 1 and ids != declared_ids:
+            missing = sorted(declared_ids - ids)
+            undeclared = sorted(ids - declared_ids)
+            raise ManagerError(
+                f"Fabric ownership declaration mismatch for {path}: "
+                f"missing provided aliases {missing}, undeclared manifest ids {undeclared}"
             )
         return ids
 
@@ -1188,7 +1209,11 @@ class PhysicalManager:
             self._assert_desired_is_pure_transition(current, desired)
 
         desired_artifacts = self._desired_managed_inventory(desired)
-        union_mod_ids = {item.mod_id for item in current_artifacts}
+        union_mod_ids = {
+            mod_id
+            for item in current_artifacts
+            for mod_id in item.ownership_mod_ids
+        }
         for artifact in desired_artifacts:
             if not artifact.active:
                 continue
@@ -1200,7 +1225,7 @@ class PhysicalManager:
             if destination.exists():
                 union_mod_ids.update(self._verify_artifact_file(destination, artifact))
                 continue
-            union_mod_ids.add(artifact.mod_id)
+            union_mod_ids.update(artifact.ownership_mod_ids)
         self._verify_inventory(
             current,
             current_artifacts,
@@ -1549,7 +1574,11 @@ class PhysicalManager:
             self._verify_inventory(
                 plan.desired_state,
                 plan.desired_artifacts,
-                conflict_mod_ids={item.mod_id for item in plan.desired_artifacts},
+                conflict_mod_ids={
+                    mod_id
+                    for item in plan.desired_artifacts
+                    for mod_id in item.ownership_mod_ids
+                },
             )
             self._verify_title_projection(plan.desired_state)
             injector("after_physical_verify")
@@ -1709,7 +1738,7 @@ def _utc_now() -> str:
     return datetime.now(timezone.utc).isoformat(timespec="microseconds").replace("+00:00", "Z")
 
 
-def _fabric_mod_ids(path: Path) -> frozenset[str]:
+def _fabric_mod_ids(path: Path, *, strict_provides: bool = False) -> frozenset[str]:
     try:
         with zipfile.ZipFile(path) as archive:
             matches = [item for item in archive.infolist() if item.filename == "fabric.mod.json"]
@@ -1726,6 +1755,26 @@ def _fabric_mod_ids(path: Path) -> frozenset[str]:
         raise ManagerError(f"fabric.mod.json in {path} has no valid id")
     identifiers = {manifest["id"]}
     provides = manifest.get("provides", [])
+    if strict_provides:
+        if not isinstance(provides, list):
+            raise ManagerError(f"fabric.mod.json provides in {path} must be an array")
+        seen_provides: set[str] = set()
+        for index, item in enumerate(provides):
+            if not isinstance(item, str) or not item:
+                raise ManagerError(
+                    f"fabric.mod.json provides[{index}] in {path} must be a non-empty string"
+                )
+            if item == manifest["id"]:
+                raise ManagerError(
+                    f"fabric.mod.json provides in {path} must not repeat primary id {item}"
+                )
+            if item in seen_provides:
+                raise ManagerError(
+                    f"fabric.mod.json provides in {path} contains duplicate alias {item}"
+                )
+            seen_provides.add(item)
+        identifiers.update(seen_provides)
+        return frozenset(identifiers)
     if isinstance(provides, list):
         identifiers.update(item for item in provides if isinstance(item, str) and item)
     return frozenset(identifiers)

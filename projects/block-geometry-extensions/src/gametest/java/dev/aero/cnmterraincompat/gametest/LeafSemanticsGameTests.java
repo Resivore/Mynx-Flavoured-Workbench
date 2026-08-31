@@ -45,6 +45,8 @@ import dev.tazer.clutternomore.common.blocks.StepBlock;
 import dev.tazer.clutternomore.common.blocks.WeatheringStepBlock;
 import dev.tazer.clutternomore.common.blocks.WeatheringVerticalSlabBlock;
 import dev.tazer.clutternomore.common.shape_map.ShapeMap;
+import net.fabricmc.loader.api.FabricLoader;
+import net.fabricmc.loader.api.metadata.version.VersionPredicate;
 import net.fabricmc.fabric.api.gametest.v1.CustomTestMethodInvoker;
 import net.fabricmc.fabric.api.gametest.v1.GameTest;
 import net.minecraft.core.BlockPos;
@@ -81,6 +83,36 @@ public final class LeafSemanticsGameTests implements CustomTestMethodInvoker {
     private static final Identifier NIBARU_GRASS_STAIRS = id("more_slabs_stairs_and_walls:grass_block_stairs");
     private static final Identifier CNM_PATH_VERTICAL = id("clutternomore:more_slabs_stairs_and_walls/vertical_dirt_path_slab");
     private static final Identifier CNM_PATH_STEP = id("clutternomore:more_slabs_stairs_and_walls/dirt_path_step");
+
+    @GameTest(maxTicks = 40)
+    public void unifiedContainerOwnsBothLoaderIdentitiesAndVersionContracts(GameTestHelper helper) {
+        var loader = FabricLoader.getInstance();
+        var primary = loader.getModContainer("cnm_terrain_slabs_compat").orElseThrow();
+        var legacy = loader.getModContainer("more_slabs_stairs_and_walls").orElseThrow();
+        var version = primary.getMetadata().getVersion();
+
+        helper.assertTrue(primary == legacy,
+                "Fabric Loader did not resolve the legacy Nibaru alias to the unified BGE container");
+        helper.assertTrue(primary.getMetadata().getId().equals("cnm_terrain_slabs_compat"),
+                "Unified container primary identity changed");
+        helper.assertTrue(version.getFriendlyString().equals("4.2.1-bge.canary57.unified+26.2"),
+                "Unified container version changed: " + version.getFriendlyString());
+        try {
+            helper.assertTrue(VersionPredicate.parse(">=4.2.0 <4.3.0-").test(version),
+                    "Legacy Nibaru dependency range rejected the unified version");
+            helper.assertTrue(VersionPredicate.parse(">=0.8.0-bge-canary56-vertical-stairs-catalog").test(version),
+                    "Forward BGE dependency range rejected the unified version");
+            helper.assertTrue(VersionPredicate.parse("=4.2.1-bge.canary57.unified+26.2").test(version),
+                    "Exact unified dependency rejected the unified version");
+            helper.assertTrue(!VersionPredicate.parse("=4.2.0+26.2-port-canary46-bge-layer-contract").test(version),
+                    "Exact predecessor Nibaru dependency falsely accepted the unified version");
+            helper.assertTrue(!VersionPredicate.parse("=0.8.0-bge-canary56-vertical-stairs-catalog").test(version),
+                    "Exact predecessor BGE dependency falsely accepted the unified version");
+        } catch (net.fabricmc.loader.api.VersionParsingException e) {
+            throw new IllegalStateException("Static unified version predicates did not parse", e);
+        }
+        helper.succeed();
+    }
 
     @GameTest(maxTicks = 40)
     public void generatedProviderGeometriesHaveEffectiveEnglishNames(GameTestHelper helper) {

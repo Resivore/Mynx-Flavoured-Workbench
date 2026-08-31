@@ -113,55 +113,45 @@ class Canary3GeometryArchitectureTest {
     }
 
     @Test
-    void metadataRetainsTheProvenMinimumWithoutRejectingLaterCompatibleBgeReleases() throws Exception {
+    void metadataRequiresTheExactUnifiedBgeWithoutStandaloneNibaru() throws Exception {
         JsonObject metadata = JsonParser.parseString(Files.readString(
                 PROJECT_ROOT.resolve("src/main/resources/fabric.mod.json")
         )).getAsJsonObject();
         JsonObject depends = metadata.getAsJsonObject("depends");
 
         assertEquals("=2.0.7+26.2", depends.get("clutternomore").getAsString());
-        String nibaruRange = depends.get("more_slabs_stairs_and_walls").getAsString();
-        assertEquals(">=4.2.0 <4.3.0-", nibaruRange);
+        assertFalse(depends.has("more_slabs_stairs_and_walls"));
         String bgeRange = depends.get("cnm_terrain_slabs_compat").getAsString();
-        assertEquals(">=0.8.0-bge-canary56-vertical-stairs-catalog", bgeRange);
-
-        VersionPredicate nibaruPredicate = VersionPredicate.parse(nibaruRange);
-        assertTrue(nibaruPredicate.test(Version.parse(
-                "4.2.0+26.2-port-canary46-bge-layer-contract"
-        )));
+        assertEquals("=4.2.1-bge.canary57.unified+26.2", bgeRange);
 
         VersionPredicate bgePredicate = VersionPredicate.parse(bgeRange);
         assertTrue(bgePredicate.test(Version.parse(
+                "4.2.1-bge.canary57.unified+26.2")));
+        assertFalse(bgePredicate.test(Version.parse(
                 "0.8.0-bge-canary56-vertical-stairs-catalog")));
-        assertTrue(bgePredicate.test(Version.parse("0.8.0")));
-        assertFalse(bgePredicate.test(Version.parse("0.7.0-bge-canary55-corner-column")));
-        assertTrue(bgePredicate.getInterval().getMax() == null);
+        assertFalse(bgePredicate.test(Version.parse("4.2.0")));
     }
 
     @Test
-    void candidateBuildAndGameTestsUseExactCurrentC56AndC46Fixtures() throws IOException {
+    void candidateBuildAndGameTestsUseOnlyTheExactUnifiedBgeFixture() throws IOException {
         String build = Files.readString(PROJECT_ROOT.resolve("build.gradle"));
         JsonObject runtimeDepends = JsonParser.parseString(Files.readString(
                 PROJECT_ROOT.resolve("src/gametest/resources/fabric.mod.json")
         )).getAsJsonObject().getAsJsonObject("depends");
 
         assertTrue(build.contains(
-                "more-slabs-stairs-and-walls-4.2.0+26.2-port-canary46-bge-layer-contract.jar"
+                "cnm-nibaru-integration-4.2.1-bge.canary57.unified+26.2.jar"
         ));
-        assertTrue(build.contains(
-                "cnm-nibaru-integration-0.8.0-bge-canary56-vertical-stairs-catalog.jar"
-        ));
+        assertFalse(build.contains("../nibaru/"));
+        assertFalse(build.contains("more-slabs-stairs-and-walls-"));
         assertFalse(build.contains("canary43-native-directional-material-axis.jar"));
         assertFalse(build.contains("0.5.49-nibaru-cnm-canary1.39-native-directional-material-axis.jar"));
-        assertEquals("=0.1.0-canary7", runtimeDepends.get("shulker_trowel").getAsString());
+        assertEquals("=0.1.0-canary8", runtimeDepends.get("shulker_trowel").getAsString());
         assertEquals(
-                "=0.8.0-bge-canary56-vertical-stairs-catalog",
+                "=4.2.1-bge.canary57.unified+26.2",
                 runtimeDepends.get("cnm_terrain_slabs_compat").getAsString()
         );
-        assertEquals(
-                "=4.2.0+26.2-port-canary46-bge-layer-contract",
-                runtimeDepends.get("more_slabs_stairs_and_walls").getAsString()
-        );
+        assertFalse(runtimeDepends.has("more_slabs_stairs_and_walls"));
     }
 
     @Test

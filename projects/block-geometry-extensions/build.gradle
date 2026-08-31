@@ -24,8 +24,58 @@ dependencies {
     implementation "net.fabricmc:fabric-loader:${project.loader_version}"
     implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
     implementation('maven.modrinth:ewyjbmG4:VpbPsokl') { transitive = false }
-    compileOnly files('../nibaru/artifacts/more-slabs-stairs-and-walls-4.2.0+26.2-port-canary46-bge-layer-contract.jar')
-    runtimeOnly files('../nibaru/artifacts/more-slabs-stairs-and-walls-4.2.0+26.2-port-canary46-bge-layer-contract.jar')
+}
+
+def generatedNibaruResources = layout.buildDirectory.dir('generated/nibaru-resources')
+def pristineNibaruJar = layout.projectDirectory.file('build-inputs/nibaru/moreslabsstairsandwalls-4.2.0.jar')
+def nibaruLicenseSource = layout.projectDirectory.file('LICENSES/more-slabs-stairs-and-walls-LGPL-3.0-or-later.txt')
+def generatedNibaruLicense = layout.buildDirectory.file('generated/licenses/more-slabs-stairs-and-walls-LGPL-3.0-or-later.txt')
+
+sourceSets {
+    main {
+        java.srcDir 'src/nibaru/java'
+        resources.srcDir 'src/nibaru/resources'
+        resources.srcDir generatedNibaruResources
+    }
+}
+
+tasks.register('generateNibaruBaseResources', Exec) {
+    def generator = layout.projectDirectory.file('tools/nibaru/Generate-CurrentResources.ps1')
+    inputs.file pristineNibaruJar
+    inputs.file generator
+    inputs.dir layout.projectDirectory.dir('src/nibaru/resources')
+    inputs.dir layout.projectDirectory.dir('src/main/resources')
+    outputs.dir generatedNibaruResources
+    doFirst {
+        def systemRoot = System.getenv('SystemRoot') ?: 'C:\\Windows'
+        commandLine new File(systemRoot, 'System32/WindowsPowerShell/v1.0/powershell.exe'),
+                '-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', generator.asFile,
+                '-PristineJar', pristineNibaruJar.asFile,
+                '-ProjectRoot', layout.projectDirectory.asFile,
+                '-OutputRoot', generatedNibaruResources.get().asFile
+    }
+}
+
+tasks.register('generateNativeAxisResources', JavaExec) {
+    dependsOn compileJava, tasks.named('generateNibaruBaseResources')
+    classpath = files(sourceSets.main.output.classesDirs) + configurations.runtimeClasspath
+    mainClass = 'games.twinhead.moreslabsstairsandwalls.tools.NativeAxisResourceGenerator'
+    args generatedNibaruResources.get().asFile.absolutePath
+    outputs.upToDateWhen { false }
+}
+
+tasks.register('prepareNibaruLicense') {
+    inputs.file nibaruLicenseSource
+    outputs.file generatedNibaruLicense
+    doLast {
+        def output = generatedNibaruLicense.get().asFile
+        output.parentFile.mkdirs()
+        def exactC46Text = nibaruLicenseSource.asFile.getText('UTF-8')
+                .replace('\r\n', '\n')
+                .replace('\r', '\n')
+                .replace('\n', '\r\n')
+        output.setText(exactC46Text, 'UTF-8')
+    }
 }
 
 fabricApi {
@@ -39,9 +89,69 @@ fabricApi {
 }
 
 processResources {
+    dependsOn tasks.named('generateNativeAxisResources')
     inputs.property 'version', project.version
+    inputs.file pristineNibaruJar
     filesMatching('fabric.mod.json') {
         expand 'version': project.version
+    }
+    doLast {
+        def staticRoot = file('src/nibaru/resources').canonicalFile
+        fileTree(staticRoot).matching { include '**/*.json' }.files.each { source ->
+            def relative = staticRoot.toPath().relativize(source.canonicalFile.toPath()).toString()
+            def target = new File(destinationDir, relative)
+            if (!target.isFile()) return
+            def canonical = target.getText('UTF-8')
+                    .replace('\r\n', '\n')
+                    .replace('\r', '\n')
+                    .replace('\n', '\r\n')
+            target.setText(canonical, 'UTF-8')
+        }
+
+        // Nine Minecraft block tags are authored by both predecessor artifacts.
+        // Preserve their exact set union instead of allowing either source tree
+        // to mask the other during the one-JAR packaging merge.
+        def archive = new java.util.zip.ZipFile(pristineNibaruJar.asFile)
+        try {
+            def authoredTags = file('src/main/resources/data/minecraft/tags/block')
+            fileTree(authoredTags).matching { include '**/*.json' }.files.each { source ->
+                def relative = authoredTags.canonicalFile.toPath()
+                        .relativize(source.canonicalFile.toPath()).toString().replace('\\', '/')
+                def entry = archive.getEntry("data/minecraft/tags/block/${relative}")
+                if (entry == null) return
+
+                def target = new File(destinationDir, "data/minecraft/tags/block/${relative}")
+                def predecessor = archive.getInputStream(entry).withCloseable { stream ->
+                    new groovy.json.JsonSlurper().parse(stream, 'UTF-8')
+                }
+                def current = new groovy.json.JsonSlurper().parse(target)
+                def values = new LinkedHashSet()
+                values.addAll(predecessor.values ?: [])
+                values.addAll(current.values ?: [])
+                def paleMappings = [
+                        stripped_dark_oak_log: 'stripped_pale_oak_log',
+                        stripped_dark_oak_wood: 'stripped_pale_oak_wood',
+                        dark_oak_log: 'pale_oak_log',
+                        dark_oak_wood: 'pale_oak_wood',
+                        dark_oak_leaves: 'pale_oak_leaves',
+                        dark_oak_planks: 'pale_oak_planks',
+                        moss_block: 'pale_moss_block'
+                ]
+                values.toList().each { value ->
+                    if (!(value instanceof String)) return
+                    paleMappings.each { sourceName, targetName ->
+                        if (value.contains(sourceName)) values.add(value.replace(sourceName, targetName))
+                    }
+                }
+                def merged = groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson([
+                        replace: false,
+                        values: values as List
+                ])).replace('\r\n', '\n').replace('\r', '\n').replace('\n', '\r\n')
+                target.setText(merged, 'UTF-8')
+            }
+        } finally {
+            archive.close()
+        }
     }
 }
 
@@ -53,6 +163,23 @@ java {
     withSourcesJar()
 }
 
+tasks.named('sourcesJar') {
+    dependsOn tasks.named('generateNativeAxisResources')
+}
+
 jar {
+    dependsOn tasks.named('prepareNibaruLicense')
     from('LICENSE')
+    from(generatedNibaruLicense) {
+        into 'META-INF/licenses'
+    }
+    from('NOTICE') {
+        into 'META-INF'
+    }
+}
+
+tasks.withType(Jar).configureEach {
+    duplicatesStrategy = DuplicatesStrategy.FAIL
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
 }

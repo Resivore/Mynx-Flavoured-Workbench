@@ -1,8 +1,11 @@
 package dev.aero.cnmterraincompat;
 
 import dev.tazer.clutternomore.common.blocks.VerticalSlabBlock;
+import games.twinhead.moreslabsstairsandwalls.MoreSlabsStairsAndWalls;
 import games.twinhead.moreslabsstairsandwalls.api.material.NibaruMaterialProfile;
 import games.twinhead.moreslabsstairsandwalls.api.material.NibaruMaterialProfiles;
+import games.twinhead.moreslabsstairsandwalls.block.spreadable.SpreadableSemantics;
+import games.twinhead.moreslabsstairsandwalls.registry.fabric.ModRegistry;
 import net.fabricmc.api.ModInitializer;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -30,10 +33,33 @@ public final class CnmTerrainCompat implements ModInitializer {
             properties(DIRT_SLAB_ID, Blocks.DIRT));
     public static final GrassHorizontalSlab GRASS_SLAB = new GrassHorizontalSlab(
             properties(GRASS_SLAB_ID, Blocks.GRASS_BLOCK));
+    private static boolean nativeCatalogRegistered;
+    private static boolean bgeBaseRegistered;
     private static boolean bgeGeometryRegistered;
 
     @Override
     public void onInitialize() {
+        initializeNativeCatalog();
+        registerBgeBase();
+    }
+
+    /**
+     * Phase 1/2 of the unified bootstrap. CNM can begin its own entrypoint
+     * before Fabric invokes BGE's entrypoint, so the CNM scan mixin calls this
+     * same guarded method at scan HEAD. There is one registration path and it
+     * is safe for the later BGE entrypoint to revisit it.
+     */
+    public static synchronized void initializeNativeCatalog() {
+        if (nativeCatalogRegistered) return;
+        MoreSlabsStairsAndWalls.init();
+        ModRegistry.registerBlocks();
+        NibaruMaterialProfiles.refresh();
+        SpreadableSemantics.registerNativePairs();
+        nativeCatalogRegistered = true;
+    }
+
+    private static synchronized void registerBgeBase() {
+        if (bgeBaseRegistered) return;
         register(DIRT_VERTICAL_SLAB_ID, DIRT_VERTICAL_SLAB);
         register(GRASS_VERTICAL_SLAB_ID, GRASS_VERTICAL_SLAB);
         register(DIRT_SLAB_ID, DIRT_SLAB);
@@ -44,10 +70,12 @@ public final class CnmTerrainCompat implements ModInitializer {
                 DIRT_SLAB,
                 GRASS_SLAB);
         GrassFamilyBehavior.registerDefaults();
+        bgeBaseRegistered = true;
     }
 
     /** Called from CNM's registry-bootstrap tail before the built-in registries freeze. */
     public static synchronized void registerLayers() {
+        initializeNativeCatalog();
         if (bgeGeometryRegistered) return;
         for (NibaruMaterialProfile profile : NibaruMaterialProfiles.all()) {
             Identifier layerId = layerId(profile);

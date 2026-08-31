@@ -102,8 +102,8 @@
         "sha256": { "$ref": "#/$defs/sha256" },
         "ownership_keys": {
           "type": "array",
+          "description": "Ordered Fabric ownership IDs: the first key is the primary fabric.mod.json id and every later key is an exact fabric.mod.json provides alias.",
           "minItems": 1,
-          "maxItems": 1,
           "uniqueItems": true,
           "items": { "type": "string", "pattern": "^mod:[a-z0-9_.-]+$" }
         },

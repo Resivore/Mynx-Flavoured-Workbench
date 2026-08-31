@@ -17,18 +17,16 @@ repositories {
 
 def cnmJarPath = project.findProperty('cnmJar') ?: '../../originals/mods/clutternomore-2.0.7+26.2-fabric.jar'
 def bgeJarPath = project.findProperty('bgeJar') ?:
-        '../block-geometry-extensions/artifacts/cnm-nibaru-integration-0.8.0-bge-canary56-vertical-stairs-catalog.jar'
+        '../block-geometry-extensions/artifacts/cnm-nibaru-integration-4.2.1-bge.canary57.unified+26.2.jar'
 
 dependencies {
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
     implementation "net.fabricmc:fabric-loader:${project.loader_version}"
     implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
 
-    // Runtime ownership remains in the accepted mods. Nothing from these JARs is bundled.
+    // CNM and unified BGE remain external runtime owners. Nothing from these JARs is bundled.
     compileOnly files(cnmJarPath)
     runtimeOnly files(cnmJarPath)
-    compileOnly files('../nibaru/artifacts/more-slabs-stairs-and-walls-4.2.0+26.2-port-canary46-bge-layer-contract.jar')
-    runtimeOnly files('../nibaru/artifacts/more-slabs-stairs-and-walls-4.2.0+26.2-port-canary46-bge-layer-contract.jar')
     compileOnly files(bgeJarPath)
     runtimeOnly files(bgeJarPath)
 
@@ -36,7 +34,6 @@ dependencies {
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.12.2'
     testImplementation 'org.ow2.asm:asm:9.10.1'
     testImplementation 'org.ow2.asm:asm-tree:9.10.1'
-    testImplementation files('../nibaru/artifacts/more-slabs-stairs-and-walls-4.2.0+26.2-port-canary46-bge-layer-contract.jar')
     testImplementation files(bgeJarPath)
 }
 
@@ -57,7 +54,7 @@ processResources {
     }
     doLast {
         // Windows checkout normalization must not alter the established packaged mixin metadata.
-        // Reuse the exact Canary 3 payload because no mixin declaration changes in Canary 7.
+        // Reuse the exact Canary 3 payload because no mixin declaration changes in Canary 8.
         def predecessor = file('artifacts/shulker-trowel-0.1.0-canary3.jar')
         def expectedHash = '5C18755B2F71F44B1F8D6D622DFE0FC892C8165E448CC8E451B72FEE91F752EC'
         def digest = java.security.MessageDigest.getInstance('SHA-256')

@@ -237,7 +237,14 @@ def write_project(root: Path, manifest: dict, log: str | None = None) -> Path:
     return directory
 
 
-def deployment_unit(project_id: str, *, version: str = "Canary 1", filename: str | None = None, ownership: str | None = None) -> dict:
+def deployment_unit(
+    project_id: str,
+    *,
+    version: str = "Canary 1",
+    filename: str | None = None,
+    ownership: str | None = None,
+    ownership_keys: list[str] | None = None,
+) -> dict:
     seed = project_id + ":" + version
     artifact_filename = filename or f"{project_id}-{version.lower().replace(' ', '-')}.jar"
     return {
@@ -253,7 +260,7 @@ def deployment_unit(project_id: str, *, version: str = "Canary 1", filename: str
                 "kind": "MOD",
                 "filename": artifact_filename,
                 "sha256": ("1" if version == "Canary 1" else "2") * 64,
-                "ownership_keys": [ownership or f"mod:{project_id}"],
+                "ownership_keys": ownership_keys or [ownership or f"mod:{project_id}"],
                 "source": {
                     "type": "REPOSITORY",
                     "path": f"projects/{project_id}/artifacts/{artifact_filename}",
@@ -943,6 +950,67 @@ class RuntimeContractTests(unittest.TestCase):
             validate_runtime_state(
                 runtime_state(accepted, incomplete),
                 project_index("alpha", "dependency"),
+            )
+
+    def test_one_unified_bge_artifact_covers_nibaru_override_and_collides_by_alias(self) -> None:
+        bge_v1 = deployment_unit(
+            "block-geometry-extensions",
+            version="Canary 56",
+            ownership="mod:cnm_terrain_slabs_compat",
+        )
+        nibaru_v1 = deployment_unit(
+            "nibaru",
+            version="Canary 46",
+            ownership="mod:more_slabs_stairs_and_walls",
+        )
+        unified = deployment_unit(
+            "block-geometry-extensions",
+            version="Canary 57",
+            ownership_keys=[
+                "mod:cnm_terrain_slabs_compat",
+                "mod:more_slabs_stairs_and_walls",
+            ],
+        )
+        unified_slot = candidate(unified)
+        unified_slot["replaces_accepted_deployment_id"] = bge_v1["deployment_id"]
+        unified_slot["dependency_overrides"] = [nibaru_v1["deployment_id"]]
+        accepted = [
+            {"unit": bge_v1, "accepted_at": TIME_1},
+            {"unit": nibaru_v1, "accepted_at": TIME_1},
+        ]
+        state = runtime_state(accepted, unified_slot)
+
+        validate_runtime_state(
+            state,
+            project_index("block-geometry-extensions", "nibaru"),
+        )
+        effective = resolve_profile(
+            state,
+            project_index("block-geometry-extensions", "nibaru"),
+        )
+        self.assertEqual(["block-geometry-extensions"], [unit["project_id"] for unit in effective])
+        self.assertEqual(1, len(effective[0]["artifacts"]))
+        self.assertEqual(
+            {
+                "mod:cnm_terrain_slabs_compat",
+                "mod:more_slabs_stairs_and_walls",
+            },
+            set(effective[0]["artifacts"][0]["ownership_keys"]),
+        )
+
+        conflicting = deployment_unit(
+            "legacy-nibaru-owner",
+            ownership="mod:more_slabs_stairs_and_walls",
+        )
+        state["slots"]["B"] = candidate(conflicting)
+        with self.assertRaisesRegex(ValidationError, "ownership collision.*more_slabs_stairs_and_walls"):
+            validate_runtime_state(
+                state,
+                project_index(
+                    "block-geometry-extensions",
+                    "nibaru",
+                    "legacy-nibaru-owner",
+                ),
             )
 
     def test_promotion_requires_pass_and_upgrade_replaces_baseline(self) -> None:

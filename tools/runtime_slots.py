@@ -84,8 +84,8 @@ def _artifact(value: Any, path: str) -> dict[str, Any]:
         _fail(f"{path}.filename", "must be a Windows-safe basename")
     _sha256(artifact["sha256"], f"{path}.sha256")
     ownership_keys = artifact["ownership_keys"]
-    if not isinstance(ownership_keys, list) or len(ownership_keys) != 1:
-        _fail(f"{path}.ownership_keys", "MOD artifacts require exactly one mod:<fabric_id> key")
+    if not isinstance(ownership_keys, list) or not ownership_keys:
+        _fail(f"{path}.ownership_keys", "MOD artifacts require at least one mod:<fabric_id> key")
     seen: set[str] = set()
     for index, ownership_key in enumerate(ownership_keys):
         ownership_key = _nonblank(ownership_key, f"{path}.ownership_keys[{index}]")

@@ -33,7 +33,7 @@ def stable_uuid(value: str) -> str:
     return str(uuid5(NAMESPACE_URL, "physical-manager-test:" + value))
 
 
-def write_mod(path: Path, mod_id: str, marker: str, *, provides: list[str] | None = None) -> str:
+def write_mod(path: Path, mod_id: str, marker: str, *, provides: list[object] | None = None) -> str:
     path.parent.mkdir(parents=True, exist_ok=True)
     with zipfile.ZipFile(path, "w", compression=zipfile.ZIP_DEFLATED) as archive:
         archive.writestr(
@@ -57,6 +57,7 @@ def artifact(
     mod_id: str,
     sha256: str,
     *,
+    ownership_mod_ids: list[str] | None = None,
     source_type: str = "ADOPTED_TARGET",
     source_path: str | None = None,
 ) -> dict:
@@ -65,7 +66,7 @@ def artifact(
         "kind": "MOD",
         "filename": name,
         "sha256": sha256,
-        "ownership_keys": ["mod:" + mod_id],
+        "ownership_keys": ["mod:" + item for item in (ownership_mod_ids or [mod_id])],
         "source": {
             "type": source_type,
             "path": source_path or "mods/" + name,
@@ -397,6 +398,278 @@ class PhysicalManagerTests(unittest.TestCase):
         self.temporary = tempfile.TemporaryDirectory()
         self.addCleanup(self.temporary.cleanup)
         self.fixture = ManagerFixture(Path(self.temporary.name))
+
+    def configure_unified_bge_override(self, provided_aliases: list[object]) -> dict:
+        primary_id = "cnm_terrain_slabs_compat"
+        legacy_id = "more_slabs_stairs_and_walls"
+
+        accepted_artifact = self.fixture.base["artifacts"][0]
+        accepted_path = self.fixture.mods / accepted_artifact["filename"]
+        accepted_artifact["sha256"] = write_mod(
+            accepted_path,
+            legacy_id,
+            "accepted-nibaru",
+        )
+        accepted_artifact["ownership_keys"] = ["mod:" + legacy_id]
+        validate_runtime_state(self.fixture.state, self.fixture.project_index)
+        self.fixture.state_path.write_text(
+            json.dumps(self.fixture.state, indent=2) + "\n",
+            encoding="utf-8",
+        )
+        self.fixture.manager.adopt(dry_run=False)
+
+        filename = "unified-bge-0.8.1-bge-canary57.jar"
+        unified_path = self.fixture.repository / "artifacts" / filename
+        unified_sha256 = write_mod(
+            unified_path,
+            primary_id,
+            "unified-bge",
+            provides=provided_aliases,
+        )
+        unified_artifact = artifact(
+            filename,
+            primary_id,
+            unified_sha256,
+            ownership_mod_ids=[primary_id, legacy_id],
+            source_type="REPOSITORY",
+            source_path="artifacts/" + filename,
+        )
+        return unit(
+            "matcha-heart-death-compat",
+            "0.8.1-bge-canary57",
+            unified_artifact,
+            project_uuid=self.fixture.heart_uuid,
+        )
+
+    def update_slot_with_unified_bge(self, candidate: dict, *, dry_run: bool) -> dict:
+        state = self.fixture.repository_state()
+        return self.fixture.manager.transition(
+            operation={
+                "type": "UPDATE_SLOT",
+                "slot": "A",
+                "candidate": candidate_declaration(
+                    candidate,
+                    self.fixture.c5["deployment_id"],
+                    [self.fixture.base["deployment_id"]],
+                ),
+            },
+            expected_revision=state["revision"],
+            at="2099-01-01T00:00:00Z",
+            dry_run=dry_run,
+        )
+
+    def test_one_unified_jar_owns_bge_primary_and_nibaru_provided_alias(self) -> None:
+        candidate = self.configure_unified_bge_override(["more_slabs_stairs_and_walls"])
+
+        self.update_slot_with_unified_bge(candidate, dry_run=False)
+        verified = self.fixture.manager.verify()
+        state = self.fixture.repository_state()
+        slot_artifact = state["slots"]["A"]["unit"]["artifacts"][0]
+        managed = next(
+            item
+            for item in self.fixture.manager.derive_inventory(state)
+            if item.artifact_id == slot_artifact["artifact_id"]
+        )
+
+        self.assertEqual(
+            (
+                "cnm_terrain_slabs_compat",
+                "more_slabs_stairs_and_walls",
+            ),
+            managed.ownership_mod_ids,
+        )
+        self.assertTrue((self.fixture.mods / slot_artifact["filename"]).is_file())
+        accepted_filename = self.fixture.base["artifacts"][0]["filename"]
+        self.assertFalse((self.fixture.mods / accepted_filename).exists())
+        self.assertTrue((self.fixture.mods / (accepted_filename + ".disabled")).is_file())
+        ledger = json.loads(
+            (self.fixture.target / ".mynx-runtime-v2-ledger.json").read_text(encoding="utf-8")
+        )
+        managed_record = next(
+            item
+            for item in ledger["managed_files"]
+            if item["artifact_id"] == slot_artifact["artifact_id"]
+        )
+        self.assertEqual("cnm_terrain_slabs_compat", managed_record["mod_id"])
+        self.assertEqual("PHYSICAL_STATE_VERIFIED", verified["status"])
+
+    def test_unified_ownership_refuses_a_missing_nibaru_provided_alias(self) -> None:
+        candidate = self.configure_unified_bge_override([])
+
+        with self.assertRaisesRegex(ManagerError, "missing provided aliases.*more_slabs_stairs_and_walls"):
+            self.update_slot_with_unified_bge(candidate, dry_run=True)
+
+    def test_unified_ownership_refuses_an_undeclared_provided_alias(self) -> None:
+        candidate = self.configure_unified_bge_override(
+            ["more_slabs_stairs_and_walls", "undeclared_compat_alias"]
+        )
+
+        with self.assertRaisesRegex(ManagerError, "undeclared manifest ids.*undeclared_compat_alias"):
+            self.update_slot_with_unified_bge(candidate, dry_run=True)
+
+    def test_unified_ownership_requires_primary_id_as_first_key(self) -> None:
+        candidate = self.configure_unified_bge_override(["more_slabs_stairs_and_walls"])
+        candidate["artifacts"][0]["ownership_keys"].reverse()
+
+        with self.assertRaisesRegex(
+            ManagerError,
+            "primary mod id mismatch.*expected more_slabs_stairs_and_walls.*found cnm_terrain_slabs_compat",
+        ):
+            self.update_slot_with_unified_bge(candidate, dry_run=True)
+
+    def test_unified_ownership_refuses_malformed_raw_provides_entry(self) -> None:
+        candidate = self.configure_unified_bge_override(
+            ["more_slabs_stairs_and_walls", 7]
+        )
+
+        with self.assertRaisesRegex(ManagerError, r"provides\[1\].*must be a non-empty string"):
+            self.update_slot_with_unified_bge(candidate, dry_run=True)
+
+    def test_single_key_artifact_preserves_lenient_provides_parsing(self) -> None:
+        self.fixture.manager.adopt(dry_run=False)
+        candidate, source = self.fixture.add_repository_candidate()
+        candidate["artifacts"][0]["sha256"] = write_mod(
+            source,
+            "matcha_heart_death_compat",
+            "single-key-malformed-provides",
+            provides=[7, ""],
+        )
+        state = self.fixture.repository_state()
+
+        result = self.fixture.manager.transition(
+            operation={
+                "type": "UPDATE_SLOT",
+                "slot": "A",
+                "candidate": candidate_declaration(
+                    candidate,
+                    self.fixture.c5["deployment_id"],
+                ),
+            },
+            expected_revision=state["revision"],
+            at="2099-01-01T00:00:00Z",
+            dry_run=True,
+        )
+
+        self.assertTrue(result["dry_run"])
+
+    def test_update_slot_replaces_two_active_predecessors_with_one_unified_jar(self) -> None:
+        primary_id = "cnm_terrain_slabs_compat"
+        legacy_id = "more_slabs_stairs_and_walls"
+
+        accepted_nibaru_artifact = self.fixture.base["artifacts"][0]
+        accepted_nibaru_active = self.fixture.mods / accepted_nibaru_artifact["filename"]
+        accepted_nibaru_artifact["sha256"] = write_mod(
+            accepted_nibaru_active,
+            legacy_id,
+            "accepted-nibaru",
+        )
+        accepted_nibaru_artifact["ownership_keys"] = ["mod:" + legacy_id]
+        accepted_nibaru_disabled = accepted_nibaru_active.with_name(
+            accepted_nibaru_active.name + ".disabled"
+        )
+        accepted_nibaru_active.replace(accepted_nibaru_disabled)
+
+        accepted_bge_artifact = self.fixture.c5["artifacts"][0]
+        accepted_bge_disabled = self.fixture.mods / (
+            accepted_bge_artifact["filename"] + ".disabled"
+        )
+        accepted_bge_artifact["sha256"] = write_mod(
+            accepted_bge_disabled,
+            primary_id,
+            "accepted-bge",
+        )
+        accepted_bge_artifact["ownership_keys"] = ["mod:" + primary_id]
+
+        current_bge_artifact = self.fixture.c7["artifacts"][0]
+        current_bge_active = self.fixture.mods / current_bge_artifact["filename"]
+        current_bge_artifact["sha256"] = write_mod(
+            current_bge_active,
+            primary_id,
+            "current-bge-c56",
+        )
+        current_bge_artifact["ownership_keys"] = ["mod:" + primary_id]
+
+        current_nibaru_name = "nibaru-0.6.5+1.21.11-canary46.jar"
+        current_nibaru_active = self.fixture.mods / current_nibaru_name
+        current_nibaru_sha256 = write_mod(
+            current_nibaru_active,
+            legacy_id,
+            "current-nibaru-c46",
+        )
+        current_nibaru_artifact = artifact(
+            current_nibaru_name,
+            legacy_id,
+            current_nibaru_sha256,
+        )
+        self.fixture.c7["artifacts"].append(current_nibaru_artifact)
+        self.fixture.state["slots"]["A"]["dependency_overrides"] = [
+            self.fixture.base["deployment_id"]
+        ]
+
+        validate_runtime_state(self.fixture.state, self.fixture.project_index)
+        self.fixture.state_path.write_text(
+            json.dumps(self.fixture.state, indent=2) + "\n",
+            encoding="utf-8",
+        )
+        slot_b_before = copy.deepcopy(self.fixture.state["slots"]["B"])
+        slot_b_artifact = slot_b_before["unit"]["artifacts"][0]
+        slot_b_path = self.fixture.mods / slot_b_artifact["filename"]
+        slot_b_bytes = slot_b_path.read_bytes()
+        accepted_bge_bytes = accepted_bge_disabled.read_bytes()
+        accepted_nibaru_bytes = accepted_nibaru_disabled.read_bytes()
+        self.fixture.manager.adopt(dry_run=False)
+
+        unified_name = "block-geometry-extensions-0.8.1-bge-canary57.jar"
+        unified_source = self.fixture.repository / "artifacts" / unified_name
+        unified_sha256 = write_mod(
+            unified_source,
+            primary_id,
+            "unified-bge-c57",
+            provides=[legacy_id],
+        )
+        unified = unit(
+            "matcha-heart-death-compat",
+            "0.8.1-bge-canary57",
+            artifact(
+                unified_name,
+                primary_id,
+                unified_sha256,
+                ownership_mod_ids=[primary_id, legacy_id],
+                source_type="REPOSITORY",
+                source_path="artifacts/" + unified_name,
+            ),
+            project_uuid=self.fixture.heart_uuid,
+        )
+        state = self.fixture.repository_state()
+        result = self.fixture.manager.transition(
+            operation={
+                "type": "UPDATE_SLOT",
+                "slot": "A",
+                "candidate": candidate_declaration(
+                    unified,
+                    self.fixture.c5["deployment_id"],
+                    [self.fixture.base["deployment_id"]],
+                ),
+            },
+            expected_revision=state["revision"],
+            at="2099-01-01T00:00:00Z",
+            dry_run=False,
+        )
+
+        deployed = self.fixture.repository_state()
+        self.assertFalse(result["dry_run"])
+        self.assertEqual(slot_b_before, deployed["slots"]["B"])
+        self.assertEqual(slot_b_bytes, slot_b_path.read_bytes())
+        for predecessor in (current_bge_active, current_nibaru_active):
+            self.assertFalse(predecessor.exists())
+            self.assertFalse(predecessor.with_name(predecessor.name + ".disabled").exists())
+        self.assertFalse(accepted_bge_disabled.with_name(accepted_bge_artifact["filename"]).exists())
+        self.assertFalse(accepted_nibaru_active.exists())
+        self.assertEqual(accepted_bge_bytes, accepted_bge_disabled.read_bytes())
+        self.assertEqual(accepted_nibaru_bytes, accepted_nibaru_disabled.read_bytes())
+        self.assertTrue((self.fixture.mods / unified_name).is_file())
+        self.assertFalse((self.fixture.mods / (unified_name + ".disabled")).exists())
+        self.assertEqual("PHYSICAL_STATE_VERIFIED", self.fixture.manager.verify()["status"])
 
     def test_protected_profile_is_refused_before_any_access(self) -> None:
         before = tree_snapshot(self.fixture.root)

@@ -23,6 +23,6 @@ public final class ShulkerTrowel implements ModInitializer {
         ServerPlayNetworking.registerGlobalReceiver(ChangeTrowelGeometryPayload.TYPE, (payload, context) ->
                 context.server().execute(() ->
                         TrowelGeometryAuthority.apply(context.player(), payload.geometryId())));
-        LOGGER.info("Shulker Trowel Canary 7 initialized");
+        LOGGER.info("Shulker Trowel Canary 8 initialized");
     }
 }

@@ -1,6 +1,9 @@
 {
   "replace": false,
   "values": [
+    "more_slabs_stairs_and_walls:soul_sand_slab",
+    "more_slabs_stairs_and_walls:soul_sand_stairs",
+    "more_slabs_stairs_and_walls:soul_sand_wall",
     "clutternomore:more_slabs_stairs_and_walls/vertical_soul_sand_slab",
     "clutternomore:more_slabs_stairs_and_walls/soul_sand_step"
   ]

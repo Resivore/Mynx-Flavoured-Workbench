@@ -3,7 +3,7 @@
   "id": "shulker_trowel",
   "version": "${version}",
   "name": "Shulker Trowel",
-  "description": "Private Canary 7 of server-authoritative randomized CNM × Nibaru geometry placement from an offhand shulker palette.",
+  "description": "Private Canary 8 of server-authoritative randomized CNM × unified BGE geometry placement from an offhand shulker palette.",
   "authors": ["aero"],
   "license": ["MIT", "All Rights Reserved"],
   "environment": "*",
@@ -18,8 +18,7 @@
     "fabricloader": ">=0.19.3",
     "fabric-api": ">=0.156.0",
     "clutternomore": "=2.0.7+26.2",
-    "more_slabs_stairs_and_walls": ">=4.2.0 <4.3.0-",
-    "cnm_terrain_slabs_compat": ">=0.8.0-bge-canary56-vertical-stairs-catalog"
+    "cnm_terrain_slabs_compat": "=4.2.1-bge.canary57.unified+26.2"
   },
   "custom": {
     "workbench:classification": "GENERATED / STATICALLY VALIDATED / RUNTIME UNTESTED / PRIVATE / NOT REDISTRIBUTABLE",

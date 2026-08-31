@@ -1,0 +1,8 @@
+Block Geometry Extensions includes the Minecraft 26.2 port of More Slabs,
+Stairs & Walls by Nibaru. That retained component remains licensed under
+LGPL-3.0-or-later; its source stays in src/nibaru and its exact license text is
+packaged at META-INF/licenses/more-slabs-stairs-and-walls-LGPL-3.0-or-later.txt.
+
+The separate Block Geometry Extensions compatibility code retains the private
+project notice in the root LICENSE file. These notices describe distinct
+components and do not relicense either component.
