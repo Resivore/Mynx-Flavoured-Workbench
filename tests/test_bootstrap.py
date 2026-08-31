@@ -841,7 +841,7 @@ class RuntimeContractTests(unittest.TestCase):
         # inferred by this bootstrap test.
         tracked = load_json(ROOT / "tools" / "test_instance_manager" / "runtime-state.json")
         self.assertEqual("ACTIVE", tracked["activation"])
-        self.assertEqual(41, tracked["revision"])
+        self.assertEqual(43, tracked["revision"])
         self.assertEqual(3, tracked["accepted_baseline"]["revision"])
         self.assertEqual(27, tracked["accepted_baseline"]["provenance"]["accepted_artifact_count"])
         self.assertEqual("TRANSITIONED", tracked["accepted_baseline"]["provenance"]["physical_disposition"])
@@ -867,7 +867,7 @@ class RuntimeContractTests(unittest.TestCase):
             [(artifact["filename"], artifact["sha256"]) for artifact in slot_a["unit"]["artifacts"]],
         )
         self.assertEqual("READY_TO_TEST_VERIFIED", slot_a["deployment"]["state"])
-        self.assertEqual("UNTESTED", slot_a["runtime_result"]["classification"])
+        self.assertEqual("FAIL", slot_a["runtime_result"]["classification"])
         self.assertEqual(
             ["e5eb4fcb-6c49-4ab2-86f9-1605ccd192ab"],
             slot_a["dependency_overrides"],
@@ -886,7 +886,7 @@ class RuntimeContractTests(unittest.TestCase):
             [(artifact["filename"], artifact["sha256"]) for artifact in slot_b["unit"]["artifacts"]],
         )
         self.assertEqual("READY_TO_TEST_VERIFIED", slot_b["deployment"]["state"])
-        self.assertEqual("UNTESTED", slot_b["runtime_result"]["classification"])
+        self.assertEqual("FAIL", slot_b["runtime_result"]["classification"])
 
 
 class CurrentStateBootstrapTests(unittest.TestCase):
