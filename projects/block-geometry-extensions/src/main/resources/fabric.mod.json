@@ -2,8 +2,8 @@
   "schemaVersion": 1,
   "id": "cnm_terrain_slabs_compat",
   "version": "${version}",
-  "name": "Block Geometry Extensions Canary 54",
-  "description": "GENERATED / STATICALLY VALIDATED / RUNTIME UNTESTED BGE Layer geometry with combined-placement economy and centered item projection.",
+  "name": "Block Geometry Extensions Canary 55",
+  "description": "GENERATED / STATICALLY VALIDATED / RUNTIME UNTESTED BGE Corner and Quarter Column geometry with shared blockspace-funded compound economy and corrected Layer item projection.",
   "environment": "*",
   "entrypoints": {
     "main": ["dev.aero.cnmterraincompat.CnmTerrainCompat"],

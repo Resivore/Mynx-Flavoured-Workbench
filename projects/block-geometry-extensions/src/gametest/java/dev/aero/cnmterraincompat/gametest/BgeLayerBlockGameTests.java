@@ -38,7 +38,7 @@ public final class BgeLayerBlockGameTests implements CustomTestMethodInvoker {
                         + defaultState);
         helper.assertTrue(layer.getStateDefinition().getProperties().size() == 4
                         && layer.getStateDefinition().getPossibleStates().size() == 96,
-                "Ordinary Layer state space must include the exact CNM combined-geometry marker");
+                "Ordinary Layer state space must retain the inert C54 DOUBLE compatibility carrier");
 
         BlockPos absolute = helper.absolutePos(TEST_POS);
         CollisionContext context = CollisionContext.empty();

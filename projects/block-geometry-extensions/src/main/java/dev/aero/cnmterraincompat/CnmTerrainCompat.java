@@ -30,7 +30,7 @@ public final class CnmTerrainCompat implements ModInitializer {
             properties(DIRT_SLAB_ID, Blocks.DIRT));
     public static final GrassHorizontalSlab GRASS_SLAB = new GrassHorizontalSlab(
             properties(GRASS_SLAB_ID, Blocks.GRASS_BLOCK));
-    private static boolean layersRegistered;
+    private static boolean bgeGeometryRegistered;
 
     @Override
     public void onInitialize() {
@@ -48,24 +48,45 @@ public final class CnmTerrainCompat implements ModInitializer {
 
     /** Called from CNM's registry-bootstrap tail before the built-in registries freeze. */
     public static synchronized void registerLayers() {
-        if (layersRegistered) return;
+        if (bgeGeometryRegistered) return;
         for (NibaruMaterialProfile profile : NibaruMaterialProfiles.all()) {
-            Identifier id = layerId(profile);
-            Block layer = NibaruProviderAdapter.createLayer(profile, layerProperties(id, profile));
-            register(id, layer);
+            Identifier layerId = layerId(profile);
+            register(layerId, NibaruProviderAdapter.createLayer(
+                    profile, geometryProperties(layerId, profile)));
+
+            Identifier cornerId = cornerId(profile);
+            register(cornerId, NibaruProviderAdapter.createCorner(
+                    profile, geometryProperties(cornerId, profile)));
+
+            Identifier columnId = quarterColumnId(profile);
+            register(columnId, NibaruProviderAdapter.createQuarterColumn(
+                    profile, geometryProperties(columnId, profile)));
         }
         LayerGeneratedData.generate();
-        layersRegistered = true;
+        QuarterGeometryGeneratedData.generate();
+        bgeGeometryRegistered = true;
     }
 
     /** Collision-safe registry identity derived from the typed canonical profile. */
     public static Identifier layerId(NibaruMaterialProfile profile) {
-        Identifier parent = profile.canonicalParentId();
-        return Identifier.fromNamespaceAndPath(MOD_ID,
-                parent.getNamespace() + "/" + parent.getPath() + "_layer");
+        return geometryId(profile, "layer");
     }
 
-    private static BlockBehaviour.Properties layerProperties(Identifier ownId,
+    public static Identifier cornerId(NibaruMaterialProfile profile) {
+        return geometryId(profile, "corner");
+    }
+
+    public static Identifier quarterColumnId(NibaruMaterialProfile profile) {
+        return geometryId(profile, "quarter_column");
+    }
+
+    private static Identifier geometryId(NibaruMaterialProfile profile, String suffix) {
+        Identifier parent = profile.canonicalParentId();
+        return Identifier.fromNamespaceAndPath(MOD_ID,
+                parent.getNamespace() + "/" + parent.getPath() + "_" + suffix);
+    }
+
+    private static BlockBehaviour.Properties geometryProperties(Identifier ownId,
             NibaruMaterialProfile profile) {
         return BlockBehaviour.Properties.ofFullCopy(profile.canonicalParent())
                 .setId(ResourceKey.create(Registries.BLOCK, ownId));
@@ -82,7 +103,10 @@ public final class CnmTerrainCompat implements ModInitializer {
         Item.Properties properties = new Item.Properties()
                 .setId(ResourceKey.create(Registries.ITEM, id))
                 .useBlockDescriptionPrefix();
-        Registry.register(BuiltInRegistries.ITEM, ResourceKey.create(Registries.ITEM, id), new BlockItem(block, properties));
+        BlockItem item = block instanceof BlockspaceFundedGeometry
+                ? new BgeBlockItem(block, properties)
+                : new BlockItem(block, properties);
+        Registry.register(BuiltInRegistries.ITEM, ResourceKey.create(Registries.ITEM, id), item);
     }
 
     private static Identifier id(String path) {

@@ -3,7 +3,7 @@ package dev.aero.cnmterraincompat.mixin;
 import com.google.gson.JsonObject;
 import dev.aero.cnmterraincompat.CnmGeneratedLanguage;
 import dev.aero.cnmterraincompat.MaterialAxisState;
-import dev.aero.cnmterraincompat.client.LayerGeneratedResources;
+import dev.aero.cnmterraincompat.client.BgeGeneratedResources;
 import dev.tazer.clutternomore.client.assets.AssetGenerator;
 import games.twinhead.moreslabsstairsandwalls.api.material.NibaruMaterialProfile;
 import games.twinhead.moreslabsstairsandwalls.api.material.NibaruMaterialProfiles;
@@ -21,8 +21,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(value = AssetGenerator.class, remap = false)
 abstract class AssetGeneratorMixin {
     @Inject(method = "generate", at = @At("TAIL"), require = 1)
-    private static void cnmTerrainCompat$generateLayers(ResourceManager manager, CallbackInfo ci) {
-        LayerGeneratedResources.generate(manager);
+    private static void cnmTerrainCompat$generateBgeGeometry(ResourceManager manager, CallbackInfo ci) {
+        BgeGeneratedResources.generate(manager);
     }
 
     /**

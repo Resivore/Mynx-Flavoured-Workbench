@@ -21,7 +21,6 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
@@ -81,13 +80,13 @@ public final class BgeLayerIntegrationGameTests implements CustomTestMethodInvok
         BlockState second = BgeLayerBlock.stackedState(east);
         helper.assertTrue(second.getValue(BgeLayerBlock.LAYERS) == 2
                         && second.getValue(BgeLayerBlock.FACING) == Direction.EAST
-                        && second.getValue(BgeLayerBlock.DOUBLE)
+                        && !second.getValue(BgeLayerBlock.DOUBLE)
                         && second.getValue(BgeLayerBlock.WATERLOGGED),
                 "Stacking changed orientation/water before the full state");
         BlockState fourth = BgeLayerBlock.stackedState(east.setValue(BgeLayerBlock.LAYERS, 3));
         helper.assertTrue(fourth.getValue(BgeLayerBlock.LAYERS) == 4
                         && fourth.getValue(BgeLayerBlock.FACING) == Direction.EAST
-                        && fourth.getValue(BgeLayerBlock.DOUBLE)
+                        && !fourth.getValue(BgeLayerBlock.DOUBLE)
                         && !fourth.getValue(BgeLayerBlock.WATERLOGGED)
                         && fourth.getBlock() == stone,
                 "Fourth placement did not remain a dry Layer state");
@@ -100,8 +99,9 @@ public final class BgeLayerIntegrationGameTests implements CustomTestMethodInvok
     public void normalBlockItemPlacementFundsCompatibleLayerGrowthOnlyOnce(GameTestHelper helper) {
         BgeLayerBlock oak = layer("minecraft:oak_planks");
         BgeLayerBlock dirt = layer("minecraft:dirt");
-        helper.assertTrue(oak.asItem() instanceof BlockItem,
-                "Generated Oak Planks Layer does not use normal BlockItem placement");
+        helper.assertTrue(oak instanceof BlockspaceFundedGeometry
+                        && oak.asItem() instanceof BgeBlockItem,
+                "Generated Oak Planks Layer does not use the shared blockspace-funded item contract");
 
         ServerPlayer player = helper.makeMockServerPlayerInLevel();
         player.setGameMode(GameType.SURVIVAL);
@@ -126,7 +126,7 @@ public final class BgeLayerIntegrationGameTests implements CustomTestMethodInvok
             BlockState grown = helper.getBlockState(target);
             helper.assertTrue(grown.is(oak)
                             && grown.getValue(BgeLayerBlock.LAYERS) == expectedLayers
-                            && grown.getValue(BgeLayerBlock.DOUBLE)
+                            && !grown.getValue(BgeLayerBlock.DOUBLE)
                             && placementStack.getCount() == 1,
                     "Compatible Layer growth to " + expectedLayers
                             + " did not preserve the already-funded source stack");
@@ -228,8 +228,9 @@ public final class BgeLayerIntegrationGameTests implements CustomTestMethodInvok
         BgeLayerBlock stone = layer("minecraft:stone");
         helper.assertTrue(stone.getStateDefinition().getProperties().size() == 4
                         && BgeLayerBlock.DOUBLE == VerticalSlabBlock.DOUBLE
-                        && stone.defaultBlockState().hasProperty(VerticalSlabBlock.DOUBLE),
-                "Ordinary cube Layer lost the exact CNM combined-geometry economy marker");
+                        && stone.defaultBlockState().hasProperty(VerticalSlabBlock.DOUBLE)
+                        && !stone.defaultBlockState().getValue(BgeLayerBlock.DOUBLE),
+                "Layer lost its inert C54 DOUBLE compatibility carrier");
 
         NibaruMaterialProfile grassProfile = profile("minecraft:grass_block");
         BgeLayerBlock grass = layer(grassProfile);
