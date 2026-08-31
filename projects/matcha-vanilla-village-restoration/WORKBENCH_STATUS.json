@@ -18,11 +18,12 @@
     "goals": [
       "Restore Minecraft 26.2's normal biome-specific vanilla village composition while preserving Matcha's village eligibility and sparse placement layer.",
       "Keep Matcha as the sole owner of the minecraft:villages structure-set placement contract.",
-      "Provide the restoration as a higher-priority data pack without modifying or redistributing Matcha."
+      "Provide the restoration as a Fabric mod whose required built-in server-data pack deterministically outranks Matcha without modifying or redistributing Matcha."
     ],
     "scope": [
-      "Own exactly pack.mcmeta and five complete minecraft:village_* structure overrides for plains, desert, savanna, snowy, and taiga villages.",
+      "Package exactly one built-in server-data pack containing pack.mcmeta and five complete minecraft:village_* structure overrides for plains, desert, savanna, snowy, and taiga villages.",
       "Preserve Matcha's exact biome arrays while restoring each pristine vanilla 26.2 style-specific start pool and all other vanilla jigsaw fields.",
+      "Register that exact nested pack as ALWAYS_ENABLED and move only its exact pack ID to Minecraft's final, highest-priority resource position while preserving every other pack's relative order.",
       "Retain Matcha's spacing 80, separation 50, salt 10387312 candidate lattice without claiming identical realized starts at eligible-biome boundaries, where the changed start-template anchor can affect the jigsaw biome check."
     ],
     "boundaries": {
@@ -30,7 +31,8 @@
         "projects/matcha-vanilla-village-restoration"
       ],
       "exclusions": [
-        "Any minecraft:villages structure-set override, additional structure ID, biome tag, template pool, processor, NBT template, loot table, trade, function, or Java implementation.",
+        "Any minecraft:villages structure-set override, additional structure ID, biome tag, template pool, processor, NBT template, loot table, trade, function, or Java recreation of the five village definitions.",
+        "Global reordering of arbitrary packs or resource-level enforcement beyond promoting the single exact Matcha Vanilla Village Restoration built-in pack ID.",
         "Modification of Matcha itself, resource-pack work, Stack to Nearby Chests work, or Quick Stack Nearby work.",
         "Conversion claims for existing generated villages or guarantees of seed-identical realized starts at eligible-biome boundaries.",
         "Runtime deployment, Test Slot or Test Instance Manager changes, dedicated Workbench profile access, and protected gameplay-instance access during this migration."
@@ -42,6 +44,18 @@
         "identifier": "minecraft",
         "requirement": "=26.2",
         "reason": "Target version whose pristine style-specific village structure fields and built-in pool graphs are restored."
+      },
+      {
+        "type": "MOD",
+        "identifier": "fabricloader",
+        "requirement": ">=0.19.3",
+        "reason": "Fabric runtime loader minimum declared by Canary 2."
+      },
+      {
+        "type": "MOD",
+        "identifier": "fabric-api",
+        "requirement": ">=0.157.0+26.2",
+        "reason": "Provides the current ResourceLoader built-in-pack API used for required Canary 2 activation."
       },
       {
         "type": "DATA_PACK",
@@ -58,15 +72,15 @@
     ]
   },
   "state": {
-    "milestone": "The user reported an aggregate runtime PASS for the exact retained Canary 1, but accepted promotion remains pending a managed global data-pack authority that can prove activation and precedence over Matcha.",
+    "milestone": "Canary 2 is retained as a narrow Fabric mod with executable static proof of required built-in-pack activation and exact-ID precedence over a later Matcha-like pack; Canary 1's aggregate runtime pass remains historical predecessor evidence only, and Canary 2 is ACTIVE, not deployed, and runtime untested because its UUID occupies neither currently occupied test slot.",
     "releases": {
       "current": {
-        "version": "0.1.0-canary1",
+        "version": "0.2.0-canary2",
         "artifact": {
-          "filename": "matcha-vanilla-village-restoration-0.1.0-canary1.zip",
-          "sha256": "2b0d29ee6389c457b801091aa7469e6c53468944db3ede83760dc7d8fb49b8e4"
+          "filename": "matcha-vanilla-village-restoration-0.2.0-canary2.jar",
+          "sha256": "5d5164a89881239400cd2b6776b9b54177b699e2a16a1c97b761cde06e7d8bcd"
         },
-        "source_commit": "0068077d72a16a78f9dbbf215000f0a2b947eed6"
+        "source_commit": "ee6070995b036128e6a7d281a6c67ae3f74b9284"
       },
       "accepted": null,
       "rollback": null,
@@ -75,17 +89,17 @@
     },
     "validation": {
       "build": "STATIC_PASS",
-      "deployment": "DEPLOYED",
-      "runtime": "RUNTIME_PASS"
+      "deployment": "NOT_DEPLOYED",
+      "runtime": "RUNTIME_UNTESTED"
     },
     "blocker": null
   },
   "synchronization": {
-    "revision": 2,
-    "activity_at": "2026-08-31T04:36:25Z",
-    "updated_at": "2026-08-31T04:36:25Z",
-    "last_codex_at": "2026-08-31T04:36:25Z",
-    "source_commit": "12d96636943b4ba405c0d96916bbdc74e1434629",
+    "revision": 3,
+    "activity_at": "2026-08-31T05:32:23Z",
+    "updated_at": "2026-08-31T05:32:23Z",
+    "last_codex_at": "2026-08-31T05:32:23Z",
+    "source_commit": "ee6070995b036128e6a7d281a6c67ae3f74b9284",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null

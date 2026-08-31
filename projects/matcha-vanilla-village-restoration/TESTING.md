@@ -1,14 +1,22 @@
 # Testing
 
-The retained current candidate is `matcha-vanilla-village-restoration-0.1.0-canary1.zip`, SHA-256 `2b0d29ee6389c457b801091aa7469e6c53468944db3ede83760dc7d8fb49b8e4`. It remains `ACTIVE`, `STATIC_PASS`, `DEPLOYED`, and `RUNTIME_PASS` after the user reported an aggregate pass for that exact candidate. No individual runtime cases were supplied, so none are inferred.
+## Current gate
 
-For a future regression:
+**CANARY 2 RETAINED — READY FOR FUTURE CONTROLLED SLOT ALLOCATION; NOT DEPLOYED / RUNTIME UNTESTED**
 
-1. Reverify the exact candidate hash and the pinned Matcha 1.12 hash before launch.
-2. In a disposable fresh world or wholly untouched terrain, load the restoration with demonstrable priority above Matcha and generate new village starts.
-3. Confirm new starts use the matching normal vanilla style-specific composition without data-reload, jigsaw, or worldgen errors. Do not use existing generated village blocks as evidence.
-4. Stop and record `RUNTIME_FAIL` or `INCONCLUSIVE` if the restoration does not win above Matcha, a new start uses the beta or wrong style, or relevant errors occur.
+Use exact `matcha-vanilla-village-restoration-0.2.0-canary2.jar`, 10,544 bytes, SHA-256 `5d5164a89881239400cd2b6776b9b54177b699e2a16a1c97b761cde06e7d8bcd`.
 
-The retained Matcha 80/50 candidate lattice does not guarantee identical realized village starts at eligible-biome boundaries because the vanilla town-center anchor can change the jigsaw biome check.
+Required identities are Minecraft `26.2`, Fabric Loader `0.19.3` or newer, Fabric API `0.157.0+26.2` or newer, mod ID `matcha_vanilla_village_restoration`, and external `Matcha_Flavoured_1_12.zip` SHA-256 `6209783021c358044abedabacee471faff5bd4080437d4e3b5e51963f1804248`. The retained C1 ZIP and its aggregate runtime pass are historical predecessor evidence only; they are not C2 runtime evidence.
 
-Accepted-stack promotion remains pending a managed global data-pack authority that can prove both activation and precedence over Matcha. The current accepted-stack manager is MOD-only, so the reported pass does not establish a live accepted-stack deployment.
+## Future managed runtime test
+
+1. When a canonical Test Slot is available, deploy this exact JAR through a verified serialized Test Instance Manager transition while preserving the other slot. Stop on any artifact, dependency, ownership, or slot mismatch.
+2. Launch the Minecraft 26.2 Matcha stack and confirm the mod registers `matcha_vanilla_village_restoration:vanilla_villages` as `ALWAYS_ENABLED`, promotes that exact pack above lower packs when necessary, and produces no Fabric, Mixin, resource-reload, registry, or worldgen errors.
+3. In a fresh world or wholly untouched terrain, generate new villages across representative plains, desert, savanna, snowy-plains, and taiga-family biomes. Do not use already-generated village blocks as evidence.
+4. Confirm each new village uses its normal vanilla 26.2 biome-specific composition rather than Matcha's replacement composition, while the exact Matcha biome eligibility arrays remain effective.
+5. Confirm Matcha remains the only owner of `minecraft:villages` and its sparse random-spread placement contract (spacing 80, separation 50, salt 10387312) remains effective; C2 must not supply a structure-set override.
+6. Recheck representative cases after save/reload and, if acceptance requires it, on both client and dedicated-server authority paths.
+
+Pass only when C2's precedence over Matcha and all five representative compositions are directly demonstrated against the exact identities above. Record `RUNTIME_FAIL` or `INCONCLUSIVE` for any inability to prove precedence, wrong or replacement composition, missing style, relevant load/worldgen error, placement-ownership drift, or client/server disagreement.
+
+The retained 80/50/10387312 candidate lattice does not guarantee seed-identical realized starts at eligible-biome boundaries because the restored vanilla town-center anchor can affect the jigsaw biome check.
