@@ -24,6 +24,7 @@ atlassian-ide-plugin.xml
 
 # Package Files #
 /artifacts/ribbits-4.1.6+26.2-port-canary1.jar
+/artifacts/YungsApi-26.2-Fabric-6.1.1-compat.1.jar
 *.war
 *.nar
 *.ear
