@@ -18,7 +18,7 @@
     ],
     "scope": [
       "Maintain the audited data overrides: minecraft:charcoal and smoking:charcoal output one coal; four vanilla and three Matcha explicit consumers use coal only; coal_consolidation:charcoal_to_coal remains a shapeless 1:1 conversion.",
-      "After resource-pack resolution, enforce only the effective minecraft:charcoal smelting holder so its identity, burnable-log input, experience, and normal furnace timing are preserved while its result is exactly one coal.",
+      "After resource-pack resolution, enforce only the effective minecraft:charcoal SmeltingRecipe and smoking:charcoal SmokingRecipe holders so their identities, burnable-log inputs, category/group/show-notification semantics, experience, and 200/100-tick cooking times are preserved while each result is exactly one coal.",
       "Maintain the client-only Fabric CreativeModeTabEvents removal of Items.CHARCOAL from Ingredients display and search output plus the additive c:hidden_from_recipe_viewers tag."
     ],
     "boundaries": {
@@ -28,7 +28,7 @@
       "exclusions": [
         "Removing or replacing the minecraft:charcoal registry entry, changing its fuel/datafix/model safety, or adding a reverse coal-to-charcoal path.",
         "Overriding #minecraft:coals or furnace_minecart_fuel, broad recipe-family rewrites, or changing campfire, alternate coal-block, or other tag-backed behavior.",
-        "Adding registry mutation, broad recipe-manager rewrites, a common initializer, hard JEI integration, or recipe changes beyond the exact minecraft:charcoal reload enforcement and previously audited explicit consumers.",
+        "Adding registry mutation, broad recipe-manager rewrites, a common initializer, hard JEI integration, or recipe changes beyond the exact minecraft:charcoal and smoking:charcoal reload enforcement and previously audited explicit consumers.",
         "Resource-pack work, Stack to Nearby Chests, Quick Stack Nearby, unrelated project changes, Minecraft deployment, Test Instance Manager mutation, and gameplay-profile mutation during this successor task."
       ]
     },
@@ -43,7 +43,7 @@
         "type": "MOD",
         "identifier": "fabricloader",
         "requirement": ">=0.19.3",
-        "reason": "Fabric runtime loader declared by Canary 2 and used by the focused test harness and required recipe-reload mixin."
+        "reason": "Fabric runtime loader declared by Canary 3 and used by the focused test harness and required recipe-reload mixin."
       },
       {
         "type": "MOD",
@@ -90,15 +90,15 @@
     ]
   },
   "state": {
-    "milestone": "Canary 2 is a statically verified, retained successor to failed C1. Investigation confirmed C1's packaged minecraft:charcoal JSON already returned coal and found no competing Matcha 1.12 or loaded-mod recipe at that ID; C1's defect was relying only on passive resource precedence without enforcing or testing the effective post-reload RecipeManager entry. C2 narrowly enforces that resolved holder after reload and adds a competing-pack regression that proves the effective furnace recipe returns one coal while preserving the audited input, experience, and timing. C2 is unaccepted, runtime untested, not deployed, and occupies no test slot.",
+    "milestone": "Canary 3 is a statically verified, retained successor to C2. An outside-Workbench observation reported that a log produced coal in the furnace as intended but charcoal in the smoker; because exact artifact and runtime identity are unproven, this is defect evidence rather than a canonical Workbench runtime pass/fail. C2 enforced only the effective post-resolution minecraft:charcoal furnace holder, leaving a later smoking:charcoal resource able to remain charcoal-producing. C3 extends the same narrow fail-closed enforcement to the exact SmokingRecipe holder, preserves both cooking recipes' identities and metadata, and adds an effective-reload regression proving a later competing smoker resource wins normal preparation before the final manager state is corrected. C3 is unaccepted, runtime untested, not deployed, and occupies no test slot.",
     "releases": {
       "current": {
-        "version": "0.1.1-canary2",
+        "version": "0.1.2-canary3",
         "artifact": {
-          "filename": "coal-consolidation-0.1.1-canary2.jar",
-          "sha256": "713b4f0f0cbf68a712a1ba8c75addf120899b8963afb01c88a14f2e6fceecc29"
+          "filename": "coal-consolidation-0.1.2-canary3.jar",
+          "sha256": "f1d36dfad276927d527cc911d92f47ee979ef7600479f950c76ed25dd18eb871"
         },
-        "source_commit": "03f70b54c774f766ea9edc3487622153a253afe2"
+        "source_commit": "d2ad841f6a8edfbc765ec681d803b193e5d1f7ad"
       },
       "accepted": null,
       "rollback": null,
@@ -113,11 +113,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 5,
-    "activity_at": "2026-08-30T22:43:30Z",
-    "updated_at": "2026-08-30T22:43:30Z",
-    "last_codex_at": "2026-08-30T22:43:30Z",
-    "source_commit": "03f70b54c774f766ea9edc3487622153a253afe2",
+    "revision": 6,
+    "activity_at": "2026-08-31T01:00:05Z",
+    "updated_at": "2026-08-31T01:00:05Z",
+    "last_codex_at": "2026-08-31T01:00:05Z",
+    "source_commit": "d2ad841f6a8edfbc765ec681d803b193e5d1f7ad",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
