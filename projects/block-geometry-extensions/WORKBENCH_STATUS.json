@@ -70,7 +70,7 @@
     ]
   },
   "state": {
-    "milestone": "Exact C56 with exact Nibaru C46 is the behaviorally verified migration baseline: every behavior actually covered by the user's report passed, but C56 is overall runtime FAIL solely because a small glass-Corner visual issue remains; no unmentioned matrix row is inferred, and the issue was neither diagnosed nor changed. Unified C57 absorbs the C46 source, native catalog, profiles, resources, licensing, and legacy mod identity into one BGE JAR with unchanged glass-generation inputs and output. Manager revision 58 provisionally verifies C57 in Slot A as READY_TO_TEST_VERIFIED / RUNTIME_UNTESTED. Accepted/rollback BGE C52 remains unchanged, with accepted Nibaru C45 retained as historical companion provenance; no promotion occurred, and branch merge plus Sheet publication remain pending.",
+    "milestone": "Exact C56 with exact Nibaru C46 is the behaviorally verified migration baseline: every behavior actually covered by the user's report passed, but C56 is overall runtime FAIL solely because a small glass-Corner visual issue remains; no unmentioned matrix row is inferred, and the issue was neither diagnosed nor changed. Unified C57 absorbs the C46 source, native catalog, profiles, resources, licensing, and legacy mod identity into one BGE JAR with unchanged glass-generation inputs and output. Manager revision 58 verifies C57 in Slot A as READY_TO_TEST_VERIFIED / RUNTIME_UNTESTED. Accepted/rollback BGE C52 remains unchanged, with accepted Nibaru C45 retained as historical companion provenance; no promotion occurred.",
     "releases": {
       "current": {
         "version": "C57 (Unified Nibaru; embedded 4.2.1-bge.canary57.unified+26.2)",

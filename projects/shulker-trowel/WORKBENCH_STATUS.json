@@ -75,7 +75,7 @@
     ]
   },
   "state": {
-    "milestone": "Exact C8/Private Canary 7 remained good with exact BGE C56 and Nibaru C46 and was recorded runtime PASS at manager revision 52; no unrelated behavior is inferred beyond the user's tested integration. C9/Private Canary 8 changes only dependency and packaging alignment: standalone Nibaru wiring is removed and the same modes, selector order, IDs, icons, delegated placement, economy, sound, synchronization, and fail-closed behavior resolve from unified BGE C57. Manager revision 58 provisionally verifies exact private C9 in Slot B with exact unified C57 in Slot A as READY_TO_TEST_VERIFIED / RUNTIME_UNTESTED. Accepted/rollback private C5 remains unchanged, no promotion occurred, and branch merge plus Sheet publication remain pending.",
+    "milestone": "Exact C8/Private Canary 7 remained good with exact BGE C56 and Nibaru C46 and was recorded runtime PASS at manager revision 52; no unrelated behavior is inferred beyond the user's tested integration. C9/Private Canary 8 changes only dependency and packaging alignment: standalone Nibaru wiring is removed and the same modes, selector order, IDs, icons, delegated placement, economy, sound, synchronization, and fail-closed behavior resolve from unified BGE C57. Manager revision 58 verifies exact private C9 in Slot B with exact unified C57 in Slot A as READY_TO_TEST_VERIFIED / RUNTIME_UNTESTED. Accepted/rollback private C5 remains unchanged, and no promotion occurred.",
     "releases": {
       "current": {
         "version": "C9 (Private Canary 8; embedded 0.1.0-canary8)",

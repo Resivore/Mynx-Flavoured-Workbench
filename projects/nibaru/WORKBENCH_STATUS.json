@@ -51,7 +51,7 @@
     ]
   },
   "state": {
-    "milestone": "Exact C46 source checkpoint 6e9b04ec3947f2514f90775bfeefb599242a4596 supplied the native catalog, material profiles, resources, canonical-parent identity, and typed transitions absorbed into unified BGE C57 at implementation checkpoint f907bdab139fd2ec68f8741f5a449b9ee0c973f4. Exact C45 accepted/rollback and C46 migration-baseline artifacts remain retained with LGPL provenance. C46 was behaviorally exercised only as part of the exact C56/C46 pair; this task does not claim an independent Nibaru runtime pass, promotion, deletion, or successor. Proposed PARKED state, branch merge, and Sheet publication remain pending integration.",
+    "milestone": "Exact C46 source checkpoint 6e9b04ec3947f2514f90775bfeefb599242a4596 supplied the native catalog, material profiles, resources, canonical-parent identity, and typed transitions absorbed into unified BGE C57 at implementation checkpoint f907bdab139fd2ec68f8741f5a449b9ee0c973f4. Exact C45 accepted/rollback and C46 migration-baseline artifacts remain retained with LGPL provenance. C46 was behaviorally exercised only as part of the exact C56/C46 pair; this task does not claim an independent Nibaru runtime pass, promotion, deletion, or successor. The project is PARKED with no independent testing plan.",
     "releases": {
       "current": {
         "version": "C46",
