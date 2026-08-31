@@ -4,12 +4,13 @@ import java.nio.file.Path;
 import java.util.function.IntBinaryOperator;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.level.storage.LevelResource;
+import net.minecraft.world.entity.Entity;
 import org.slf4j.Logger;
 
 public final class DiscoveryService {
@@ -30,7 +31,7 @@ public final class DiscoveryService {
                 logger
         );
         logger.info(
-                "Xaero Discovery Radius initialized with an inclusive square radius of {} chunks",
+                "Xaero Discovery Radius initialized with a chunk-quantized circular radius of {} chunks",
                 config.discoveryRadiusChunks()
         );
     }
@@ -41,35 +42,79 @@ public final class DiscoveryService {
 
     public static boolean mayReadLiveChunk(ClientLevel world, int chunkX, int chunkZ) {
         Minecraft client = Minecraft.getInstance();
-        LocalPlayer player = client.player;
-        if (player == null || player.level() == null) {
+        Entity camera = client.getCameraEntity();
+        if (camera == null || camera.level() == null) {
             return false;
         }
-        if (!player.level().dimension().equals(world.dimension())) {
+        if (!camera.level().dimension().equals(world.dimension())) {
             return false;
         }
-        ChunkPos playerChunk = player.chunkPosition();
+        ChunkPos cameraChunk = camera.chunkPosition();
         return ChunkRadius.contains(
-                playerChunk.x(),
-                playerChunk.z(),
+                cameraChunk.x(),
+                cameraChunk.z(),
                 chunkX,
                 chunkZ,
                 config.discoveryRadiusChunks()
         );
     }
 
-    public static boolean mayReadSingleplayerSaveChunk(ServerLevel world, int chunkX, int chunkZ) {
+    public static boolean mayWriteWorldMapChunk(
+            int centerChunkX,
+            int centerChunkZ,
+            int chunkX,
+            int chunkZ
+    ) {
+        return ChunkRadius.contains(
+                centerChunkX,
+                centerChunkZ,
+                chunkX,
+                chunkZ,
+                config.discoveryRadiusChunks()
+        );
+    }
+
+    public static void recordWorldMapLayer(
+            Level world,
+            int centerChunkX,
+            int centerChunkZ,
+            int xaeroLayer
+    ) {
+        DiscoveryHistoryStore store = historyStore;
+        Session current = session;
+        MinecraftServer server = Minecraft.getInstance().getSingleplayerServer();
+        if (store != null && current != null && server != null && current.server == server) {
+            ServerLevel serverLevel = server.getLevel(world.dimension());
+            if (serverLevel != null) {
+                store.recordCircle(
+                        key(serverLevel),
+                        centerChunkX,
+                        centerChunkZ,
+                        config.discoveryRadiusChunks(),
+                        xaeroLayer
+                );
+            }
+        }
+    }
+
+    public static boolean mayReadSingleplayerSaveChunk(
+            ServerLevel world,
+            int chunkX,
+            int chunkZ,
+            int xaeroLayer
+    ) {
         DiscoveryHistoryStore store = historyStore;
         Session current = session;
         if (store == null || current == null || current.server != world.getServer()) {
             return true;
         }
-        return store.allows(key(world), chunkX, chunkZ);
+        return store.allows(key(world), chunkX, chunkZ, xaeroLayer);
     }
 
     public static void importXaeroCache(
             ServerLevel world,
             Path cacheFile,
+            int xaeroLayer,
             int tileChunkX,
             int tileChunkZ,
             IntBinaryOperator heightAtPixel
@@ -82,7 +127,11 @@ public final class DiscoveryService {
                 && current != null
                 && current.server == world.getServer()
                 && manifest.permits(cacheFile)) {
-            store.recordPacked(key(world), CachedChunkDiscovery.find(tileChunkX, tileChunkZ, heightAtPixel));
+            store.recordPacked(
+                    key(world),
+                    CachedChunkDiscovery.find(tileChunkX, tileChunkZ, heightAtPixel),
+                    xaeroLayer
+            );
         }
     }
 
@@ -116,27 +165,6 @@ public final class DiscoveryService {
         }
     }
 
-    static void onEndClientTick(Minecraft client) {
-        DiscoveryHistoryStore store = historyStore;
-        MinecraftServer server = client.getSingleplayerServer();
-        LocalPlayer player = client.player;
-        Session current = session;
-        if (store == null || server == null || player == null || current == null || current.server != server) {
-            return;
-        }
-
-        ServerLevel currentLevel = server.getLevel(player.level().dimension());
-        if (currentLevel == null) {
-            return;
-        }
-        ChunkPos playerChunk = player.chunkPosition();
-        WorldDimensionKey key = key(currentLevel);
-        int radius = config.discoveryRadiusChunks();
-        if (current.shouldRecord(key, playerChunk.x(), playerChunk.z(), radius)) {
-            store.recordSquare(key, playerChunk.x(), playerChunk.z(), radius);
-        }
-    }
-
     static int configuredRadius() {
         return config.discoveryRadiusChunks();
     }
@@ -149,30 +177,9 @@ public final class DiscoveryService {
 
     private static final class Session {
         private final MinecraftServer server;
-        private WorldDimensionKey lastKey;
-        private int lastChunkX;
-        private int lastChunkZ;
-        private int lastRadius;
-        private boolean hasLastCenter;
 
         private Session(MinecraftServer server) {
             this.server = server;
-        }
-
-        private boolean shouldRecord(WorldDimensionKey key, int chunkX, int chunkZ, int radius) {
-            if (hasLastCenter
-                    && key.equals(lastKey)
-                    && chunkX == lastChunkX
-                    && chunkZ == lastChunkZ
-                    && radius == lastRadius) {
-                return false;
-            }
-            lastKey = key;
-            lastChunkX = chunkX;
-            lastChunkZ = chunkZ;
-            lastRadius = radius;
-            hasLastCenter = true;
-            return true;
         }
     }
 }

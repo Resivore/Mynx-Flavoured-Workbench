@@ -97,7 +97,7 @@ tasks.register('verifyClientOnlyArtifact') {
                     || metadata.environment != 'client'
                     || metadata.depends.xaerominimap != '26.4.2'
                     || metadata.depends.xaeroworldmap != '1.44.2') {
-                throw new GradleException("Client companion metadata does not match the pinned Canary 1 contract")
+                throw new GradleException("Client companion metadata does not match the pinned Canary 2 contract")
             }
             def mixins = readJson('xaero_discovery_radius.mixins.json')
             def expectedMixins = [
@@ -107,7 +107,7 @@ tasks.register('verifyClientOnlyArtifact') {
                     'WorldMapWriterMixin'
             ] as Set
             if (mixins.required != true || (mixins.client as Set) != expectedMixins) {
-                throw new GradleException("Client companion mixin list does not match the pinned Canary 1 contract")
+                throw new GradleException("Client companion mixin list does not match the pinned Canary 2 contract")
             }
             expectedMixins.each { mixin ->
                 def classPath = "dev/resivore/xaerodiscovery/mixin/${mixin}.class"

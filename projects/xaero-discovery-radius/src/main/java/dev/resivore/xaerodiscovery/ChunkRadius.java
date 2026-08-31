@@ -10,7 +10,11 @@ public final class ChunkRadius {
         }
         long deltaX = Math.abs((long) targetChunkX - centerChunkX);
         long deltaZ = Math.abs((long) targetChunkZ - centerChunkZ);
-        return Math.max(deltaX, deltaZ) <= radius;
+        if (deltaX > radius || deltaZ > radius) {
+            return false;
+        }
+        long squaredRadius = (long) radius * radius;
+        return deltaX * deltaX + deltaZ * deltaZ <= squaredRadius;
     }
 
     public static long pack(int chunkX, int chunkZ) {

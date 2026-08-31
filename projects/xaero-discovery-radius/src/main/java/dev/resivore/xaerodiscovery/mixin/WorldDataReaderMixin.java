@@ -51,7 +51,8 @@ abstract class WorldDataReaderMixin {
             int worldTopY,
             CallbackInfoReturnable<Boolean> cir
     ) {
-        if (!DiscoveryService.mayReadSingleplayerSaveChunk(serverWorld, chunkX, chunkZ)) {
+        int xaeroLayer = tileChunk.getInRegion().getCaveLayer();
+        if (!DiscoveryService.mayReadSingleplayerSaveChunk(serverWorld, chunkX, chunkZ, xaeroLayer)) {
             cir.setReturnValue(false);
         }
     }

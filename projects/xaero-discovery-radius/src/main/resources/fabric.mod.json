@@ -3,7 +3,7 @@
   "id": "xaero_discovery_radius",
   "version": "${version}",
   "name": "Xaero Discovery Radius",
-  "description": "Keeps new Xaero terrain discovery within a client-configurable chunk radius without changing Minecraft render distance.",
+  "description": "Keeps new Xaero terrain discovery within a circular client-configurable chunk radius and preserves Xaero cave layers independently.",
   "authors": ["Resivore compatibility workbench"],
   "license": "MIT",
   "environment": "client",

@@ -41,7 +41,7 @@ class DiscoveryConfigTest {
         Path config = temporaryDirectory.resolve("config").resolve("xaero-discovery-radius.json");
         DiscoveryConfig first = DiscoveryConfig.load(config, LoggerFactory.getLogger(getClass()));
         assertEquals(DiscoveryConfig.DEFAULT_RADIUS, first.discoveryRadiusChunks());
-        assertTrue(Files.readString(config, StandardCharsets.UTF_8).contains("\"discoveryRadiusChunks\": 4"));
+        assertTrue(Files.readString(config, StandardCharsets.UTF_8).contains("\"discoveryRadiusChunks\": 2"));
 
         Files.writeString(config, "not json", StandardCharsets.UTF_8);
         DiscoveryConfig fallback = DiscoveryConfig.load(config, LoggerFactory.getLogger(getClass()));

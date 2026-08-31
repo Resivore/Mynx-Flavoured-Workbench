@@ -1,7 +1,6 @@
 package dev.resivore.xaerodiscovery;
 
 import net.fabricmc.api.ClientModInitializer;
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLevelEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.loader.api.FabricLoader;
@@ -22,6 +21,5 @@ public final class XaeroDiscoveryRadiusClient implements ClientModInitializer {
         ServerLifecycleEvents.SERVER_STARTING.register(DiscoveryService::onServerStarting);
         ServerLevelEvents.LOAD.register(DiscoveryService::onServerLevelLoad);
         ServerLifecycleEvents.SERVER_STOPPED.register(DiscoveryService::onServerStopped);
-        ClientTickEvents.END_CLIENT_TICK.register(DiscoveryService::onEndClientTick);
     }
 }

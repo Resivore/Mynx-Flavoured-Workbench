@@ -16,13 +16,17 @@ import java.util.Base64;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import org.slf4j.Logger;
 
 final class DiscoveryHistoryStore {
-    private static final String MAGIC = "xaero-discovery-radius-history-v1";
-    private static final String CACHE_IMPORT = "legacyCacheImport=frozen-manifest-v1";
+    private static final String LEGACY_MAGIC = "xaero-discovery-radius-history-v1";
+    private static final String LEGACY_CACHE_IMPORT = "legacyCacheImport=frozen-manifest-v1";
+    private static final String LAYER_MAGIC = "xaero-discovery-radius-layer-history-v2";
+    private static final String LAYER_CACHE_IMPORT = "legacyCacheImport=frozen-manifest-v1-layer-aware-v2";
+    private static final String LAYER_RECORD = "LAYER";
     private static final String FAIL_OPEN_SUFFIX = ".fail-open";
     private static final String PENDING_SUFFIX = ".pending";
 
@@ -43,42 +47,58 @@ final class DiscoveryHistoryStore {
             return;
         }
         entry.failOpen = true;
-        Path marker = failOpenPath(entry.path);
+        Path marker = failOpenPath(entry.layerPath);
         try {
             writeForced(marker, reason + System.lineSeparator(), false);
         } catch (IOException exception) {
             logger.error("Could not persist fail-open marker {}", marker, exception);
         }
-        logger.error("Xaero discovery history {} entered fail-open mode: {}", entry.path, reason);
+        logger.error("Xaero discovery history {} entered fail-open mode: {}", entry.layerPath, reason);
     }
 
-    synchronized boolean allows(WorldDimensionKey key, int chunkX, int chunkZ) {
+    synchronized boolean allows(WorldDimensionKey key, int chunkX, int chunkZ, int layer) {
         Entry entry = entries.get(key);
         if (entry == null) {
             return true;
         }
-        return entry.failOpen || entry.allowedChunks.contains(ChunkRadius.pack(chunkX, chunkZ));
+        long chunk = ChunkRadius.pack(chunkX, chunkZ);
+        return entry.failOpen
+                || entry.legacyWildcardChunks.contains(chunk)
+                || entry.layerChunks.contains(new LayerChunk(layer, chunk));
     }
 
-    synchronized void recordPacked(WorldDimensionKey key, List<Long> chunks) {
+    synchronized void recordPacked(WorldDimensionKey key, List<Long> chunks, int layer) {
         Entry entry = entries.get(key);
         if (entry != null) {
-            appendNew(entry, chunks);
+            List<LayerChunk> additions = new ArrayList<>(chunks.size());
+            for (long chunk : chunks) {
+                additions.add(new LayerChunk(layer, chunk));
+            }
+            appendNew(entry, additions);
         }
     }
 
-    synchronized void recordSquare(WorldDimensionKey key, int centerChunkX, int centerChunkZ, int radius) {
+    synchronized void recordCircle(
+            WorldDimensionKey key,
+            int centerChunkX,
+            int centerChunkZ,
+            int radius,
+            int layer
+    ) {
         Entry entry = entries.get(key);
-        if (entry == null) {
+        if (entry == null || entry.failOpen || radius < 0) {
             return;
         }
-        if (entry.failOpen) {
-            return;
-        }
-        List<Long> additions = new ArrayList<>();
+        long radiusSquared = (long) radius * radius;
+        List<LayerChunk> additions = new ArrayList<>();
         for (int deltaX = -radius; deltaX <= radius; deltaX++) {
             for (int deltaZ = -radius; deltaZ <= radius; deltaZ++) {
-                additions.add(ChunkRadius.pack(centerChunkX + deltaX, centerChunkZ + deltaZ));
+                if ((long) deltaX * deltaX + (long) deltaZ * deltaZ <= radiusSquared) {
+                    additions.add(new LayerChunk(
+                            layer,
+                            ChunkRadius.pack(centerChunkX + deltaX, centerChunkZ + deltaZ)
+                    ));
+                }
             }
         }
         appendNew(entry, additions);
@@ -97,88 +117,158 @@ final class DiscoveryHistoryStore {
         return key.dimensionDirectory().resolve("data").resolve("xaero-discovery-radius.history");
     }
 
+    Path layerHistoryPath(WorldDimensionKey key) {
+        return key.dimensionDirectory().resolve("data").resolve("xaero-discovery-radius.layers-v2.history");
+    }
+
     private Entry loadOrCreate(WorldDimensionKey key) {
-        Path historyPath = historyPath(key);
+        Path legacyPath = historyPath(key);
+        Path layerPath = layerHistoryPath(key);
         try {
-            Files.createDirectories(historyPath.getParent());
-            if (Files.exists(historyPath)) {
-                return load(key, historyPath);
+            Files.createDirectories(layerPath.getParent());
+            Set<Long> legacyWildcardChunks = pathExists(legacyPath)
+                    ? loadLegacy(key, legacyPath)
+                    : new HashSet<>();
+            Set<LayerChunk> layerChunks;
+            if (pathExists(layerPath)) {
+                layerChunks = loadLayers(key, layerPath);
+            } else {
+                writeInitialLayers(key, layerPath);
+                layerChunks = new HashSet<>();
+                logger.info(
+                        "Initialized layer-aware Xaero discovery history for {}; existing v1 chunks remain read-only wildcard eligibility",
+                        key.dimensionId()
+                );
             }
-            writeInitial(key, historyPath);
-            logger.info("Initialized Xaero discovery history for {}; persisted Xaero cache data will be imported as it loads", key.dimensionId());
-            return new Entry(historyPath, new HashSet<>(), hasFailureMarker(historyPath));
+            boolean failOpen = hasFailureMarker(legacyPath) || hasFailureMarker(layerPath);
+            return new Entry(layerPath, legacyWildcardChunks, layerChunks, failOpen);
         } catch (Exception exception) {
-            logger.error("Could not initialize Xaero discovery history for {}. Singleplayer disk reads will remain ungated to preserve existing map visibility.", key.dimensionId(), exception);
-            return new Entry(historyPath, new HashSet<>(), true);
+            Path marker = failOpenPath(layerPath);
+            try {
+                Files.createDirectories(marker.getParent());
+                writeForced(marker, "layer history initialization failed" + System.lineSeparator(), false);
+            } catch (Exception markerException) {
+                exception.addSuppressed(markerException);
+            }
+            logger.error(
+                    "Could not initialize layer-aware Xaero discovery history for {}. Singleplayer disk reads will remain ungated to preserve existing map visibility.",
+                    key.dimensionId(),
+                    exception
+            );
+            return new Entry(layerPath, new HashSet<>(), new HashSet<>(), true);
         }
     }
 
-    private Entry load(WorldDimensionKey key, Path historyPath) throws IOException {
+    private Set<Long> loadLegacy(WorldDimensionKey key, Path legacyPath) throws IOException {
         Set<Long> chunks = new HashSet<>();
-        try (BufferedReader reader = Files.newBufferedReader(historyPath, StandardCharsets.UTF_8)) {
-            requireLine(MAGIC, reader.readLine(), historyPath);
-            requireLine("dimension=" + encode(key.dimensionId()), reader.readLine(), historyPath);
-            requireLine(CACHE_IMPORT, reader.readLine(), historyPath);
+        try (BufferedReader reader = Files.newBufferedReader(legacyPath, StandardCharsets.UTF_8)) {
+            requireLine(LEGACY_MAGIC, reader.readLine(), legacyPath);
+            requireLine("dimension=" + encode(key.dimensionId()), reader.readLine(), legacyPath);
+            requireLine(LEGACY_CACHE_IMPORT, reader.readLine(), legacyPath);
             String line;
             while ((line = reader.readLine()) != null) {
                 if (!line.isBlank()) {
-                    if (line.length() != 16 || !line.matches("[0-9A-F]{16}")) {
-                        throw new IOException("Malformed chunk record in " + historyPath);
-                    }
-                    chunks.add(Long.parseUnsignedLong(line, 16));
+                    chunks.add(parseChunk(line, legacyPath));
                 }
             }
         } catch (RuntimeException exception) {
-            throw new IOException("Malformed discovery history " + historyPath, exception);
+            throw new IOException("Malformed legacy discovery history " + legacyPath, exception);
         }
-        return new Entry(historyPath, chunks, hasFailureMarker(historyPath));
+        return chunks;
     }
 
-    private void writeInitial(WorldDimensionKey key, Path historyPath) throws IOException {
-        Path temporary = historyPath.resolveSibling(historyPath.getFileName() + ".tmp");
+    private Set<LayerChunk> loadLayers(WorldDimensionKey key, Path layerPath) throws IOException {
+        Set<LayerChunk> chunks = new HashSet<>();
+        try (BufferedReader reader = Files.newBufferedReader(layerPath, StandardCharsets.UTF_8)) {
+            requireLine(LAYER_MAGIC, reader.readLine(), layerPath);
+            requireLine("dimension=" + encode(key.dimensionId()), reader.readLine(), layerPath);
+            requireLine(LAYER_CACHE_IMPORT, reader.readLine(), layerPath);
+            String line;
+            while ((line = reader.readLine()) != null) {
+                if (!line.isBlank()) {
+                    chunks.add(parseLayerChunk(line, layerPath));
+                }
+            }
+        } catch (RuntimeException exception) {
+            throw new IOException("Malformed layer-aware discovery history " + layerPath, exception);
+        }
+        return chunks;
+    }
+
+    private void writeInitialLayers(WorldDimensionKey key, Path layerPath) throws IOException {
+        Path temporary = layerPath.resolveSibling(layerPath.getFileName() + ".tmp");
         try (BufferedWriter writer = Files.newBufferedWriter(temporary, StandardCharsets.UTF_8)) {
-            writer.write(MAGIC);
+            writer.write(LAYER_MAGIC);
             writer.newLine();
             writer.write("dimension=" + encode(key.dimensionId()));
             writer.newLine();
-            writer.write(CACHE_IMPORT);
+            writer.write(LAYER_CACHE_IMPORT);
             writer.newLine();
         }
         try {
-            Files.move(temporary, historyPath, StandardCopyOption.ATOMIC_MOVE);
+            Files.move(temporary, layerPath, StandardCopyOption.ATOMIC_MOVE);
         } catch (AtomicMoveNotSupportedException exception) {
-            Files.move(temporary, historyPath);
+            Files.move(temporary, layerPath);
         }
     }
 
-    private void appendNew(Entry entry, List<Long> candidates) {
+    private void appendNew(Entry entry, List<LayerChunk> candidates) {
         if (entry.failOpen) {
             return;
         }
         StringBuilder appended = new StringBuilder();
-        for (long chunk : candidates) {
-            if (entry.allowedChunks.add(chunk)) {
-                appended.append(String.format("%016X", chunk)).append('\n');
+        for (LayerChunk candidate : candidates) {
+            if (entry.layerChunks.add(candidate)) {
+                appended.append(String.format(
+                        Locale.ROOT,
+                        "%s %d %016X%n",
+                        LAYER_RECORD,
+                        candidate.layer(),
+                        candidate.chunk()
+                ));
             }
         }
         if (appended.isEmpty()) {
             return;
         }
-        Path pending = pendingPath(entry.path);
+        Path pending = pendingPath(entry.layerPath);
         try {
-            writeForced(pending, "history append pending" + System.lineSeparator(), false);
-            writeForced(entry.path, appended.toString(), true);
+            writeForced(pending, "layer history append pending" + System.lineSeparator(), false);
+            writeForced(entry.layerPath, appended.toString(), true);
             Files.delete(pending);
         } catch (IOException exception) {
             entry.failOpen = true;
-            Path marker = failOpenPath(entry.path);
+            Path marker = failOpenPath(entry.layerPath);
             try {
-                writeForced(marker, "history append failed" + System.lineSeparator(), false);
+                writeForced(marker, "layer history append failed" + System.lineSeparator(), false);
             } catch (IOException markerException) {
                 exception.addSuppressed(markerException);
             }
-            logger.error("Could not persist Xaero discovery history {}. Singleplayer disk reads will remain ungated for this session.", entry.path, exception);
+            logger.error(
+                    "Could not persist layer-aware Xaero discovery history {}. Singleplayer disk reads will remain ungated for this session.",
+                    entry.layerPath,
+                    exception
+            );
         }
+    }
+
+    private static LayerChunk parseLayerChunk(String line, Path path) throws IOException {
+        String[] fields = line.split(" ", -1);
+        if (fields.length != 3 || !LAYER_RECORD.equals(fields[0])) {
+            throw new IOException("Malformed layer record in " + path);
+        }
+        try {
+            return new LayerChunk(Integer.parseInt(fields[1]), parseChunk(fields[2], path));
+        } catch (NumberFormatException exception) {
+            throw new IOException("Malformed layer record in " + path, exception);
+        }
+    }
+
+    private static long parseChunk(String value, Path path) throws IOException {
+        if (value.length() != 16 || !value.matches("[0-9A-Fa-f]{16}")) {
+            throw new IOException("Malformed chunk record in " + path);
+        }
+        return Long.parseUnsignedLong(value, 16);
     }
 
     private static Path failOpenPath(Path historyPath) {
@@ -190,7 +280,21 @@ final class DiscoveryHistoryStore {
     }
 
     private static boolean hasFailureMarker(Path historyPath) {
-        return Files.exists(failOpenPath(historyPath)) || Files.exists(pendingPath(historyPath));
+        return presentOrUnavailable(failOpenPath(historyPath)) || presentOrUnavailable(pendingPath(historyPath));
+    }
+
+    private static boolean presentOrUnavailable(Path path) {
+        return Files.exists(path) || !Files.notExists(path);
+    }
+
+    private static boolean pathExists(Path path) throws IOException {
+        if (Files.exists(path)) {
+            return true;
+        }
+        if (Files.notExists(path)) {
+            return false;
+        }
+        throw new IOException("Could not determine whether discovery history exists: " + path);
     }
 
     private static void writeForced(Path path, String value, boolean append) throws IOException {
@@ -220,14 +324,24 @@ final class DiscoveryHistoryStore {
         return Base64.getUrlEncoder().withoutPadding().encodeToString(value.getBytes(StandardCharsets.UTF_8));
     }
 
+    private record LayerChunk(int layer, long chunk) {
+    }
+
     private static final class Entry {
-        private final Path path;
-        private final Set<Long> allowedChunks;
+        private final Path layerPath;
+        private final Set<Long> legacyWildcardChunks;
+        private final Set<LayerChunk> layerChunks;
         private boolean failOpen;
 
-        private Entry(Path path, Set<Long> allowedChunks, boolean failOpen) {
-            this.path = path;
-            this.allowedChunks = allowedChunks;
+        private Entry(
+                Path layerPath,
+                Set<Long> legacyWildcardChunks,
+                Set<LayerChunk> layerChunks,
+                boolean failOpen
+        ) {
+            this.layerPath = layerPath;
+            this.legacyWildcardChunks = legacyWildcardChunks;
+            this.layerChunks = layerChunks;
             this.failOpen = failOpen;
         }
     }

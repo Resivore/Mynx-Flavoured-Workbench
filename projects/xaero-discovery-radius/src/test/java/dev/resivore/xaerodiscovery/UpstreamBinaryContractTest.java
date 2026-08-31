@@ -22,7 +22,10 @@ import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.tree.FieldInsnNode;
+import org.objectweb.asm.tree.FieldNode;
 import org.objectweb.asm.tree.IntInsnNode;
+import org.objectweb.asm.tree.LdcInsnNode;
 import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
 
@@ -39,6 +42,8 @@ class UpstreamBinaryContractTest {
                     + "Lxaero/common/minimap/region/MinimapChunk;Lxaero/common/minimap/region/MinimapChunk;"
                     + "Lxaero/common/minimap/region/MinimapChunk;Lxaero/common/minimap/region/MinimapChunk;"
                     + "Lxaero/common/minimap/region/MinimapChunk;IIIIZZ)Z";
+    private static final String MINIMAP_WRITE_CHUNK =
+            "(Lxaero/common/minimap/MinimapProcessor;DDDLnet/minecraft/client/multiplayer/ClientLevel;IZ)Z";
     private static final String LIVE_CHUNK_GET =
             "(IILnet/minecraft/world/level/chunk/status/ChunkStatus;Z)"
                     + "Lnet/minecraft/world/level/chunk/ChunkAccess;";
@@ -46,6 +51,16 @@ class UpstreamBinaryContractTest {
             "(Lnet/minecraft/nbt/CompoundTag;Lxaero/map/region/MapTile;Lxaero/map/region/MapTileChunk;"
                     + "IIIIIIZZLnet/minecraft/server/level/ServerLevel;Lnet/minecraft/core/HolderLookup;"
                     + "Lnet/minecraft/core/Registry;Lnet/minecraft/core/Registry;Lnet/minecraft/core/Registry;ZII)Z";
+    private static final String WORLD_MAP_WRITE_MAP =
+            "(Lnet/minecraft/world/level/Level;Lnet/minecraft/core/Registry;DDD"
+                    + "Lnet/minecraft/core/Registry;Lxaero/map/biome/BiomeColorCalculator;"
+                    + "Lxaero/map/region/OverlayManager;ZZZZZLnet/minecraft/core/BlockPos$MutableBlockPos;"
+                    + "Lxaero/map/biome/BlockTintProvider;ILxaero/map/region/MapUpdateFastConfig;)Z";
+    private static final String WORLD_MAP_WRITE_CHUNK =
+            "(Lnet/minecraft/world/level/Level;Lnet/minecraft/core/Registry;IZ"
+                    + "Lnet/minecraft/core/Registry;Lxaero/map/region/OverlayManager;ZZZZZ"
+                    + "Lnet/minecraft/core/BlockPos$MutableBlockPos;Lxaero/map/biome/BlockTintProvider;"
+                    + "IIIIIIIIILxaero/map/region/MapUpdateFastConfig;)Z";
     private static final String LEAF_CACHE_READ =
             "(IILjava/io/DataInputStream;[B[BLxaero/map/region/LeveledRegion;"
                     + "Lxaero/map/MapProcessor;IIZ)V";
@@ -70,6 +85,28 @@ class UpstreamBinaryContractTest {
     void minimapTerrainFetchContractIsUniqueAndNullCompatible() throws Exception {
         ClassNode writer = readClass(Path.of(System.getProperty("xaeroMinimapJar")),
                 "xaero/common/minimap/write/MinimapWriter");
+        MethodNode onRender = exactMethod(writer, "onRender", "()V");
+        assertEquals(1, invocationCount(onRender, invocation ->
+                invocation.owner.equals("net/minecraft/client/Minecraft")
+                        && invocation.name.equals("getCameraEntity")
+                        && invocation.desc.equals("()Lnet/minecraft/world/entity/Entity;")));
+        for (String coordinate : List.of("getX", "getY", "getZ")) {
+            assertEquals(1, invocationCount(onRender, invocation ->
+                    invocation.owner.equals("net/minecraft/world/entity/Entity")
+                            && invocation.name.equals(coordinate)
+                            && invocation.desc.equals("()D")));
+        }
+        assertEquals(1, invocationCount(onRender, invocation ->
+                invocation.owner.equals(writer.name)
+                        && invocation.name.equals("writeChunk")
+                        && invocation.desc.equals(MINIMAP_WRITE_CHUNK)));
+
+        MethodNode writeChunk = exactMethod(writer, "writeChunk", MINIMAP_WRITE_CHUNK);
+        assertEquals(1, invocationCount(writeChunk, invocation ->
+                invocation.owner.equals(writer.name)
+                        && invocation.name.equals("writeTile")
+                        && invocation.desc.equals(MINIMAP_WRITE_TILE)));
+
         MethodNode writeTile = exactMethod(writer, "writeTile", MINIMAP_WRITE_TILE);
         assertEquals(1, invocationCount(writeTile, invocation ->
                 invocation.owner.equals("net/minecraft/client/multiplayer/ClientLevel")
@@ -114,6 +151,87 @@ class UpstreamBinaryContractTest {
         MethodNode buildTile = exactMethod(reader, "buildTile", WORLD_SAVE_BUILD_TILE);
         assertTrue((buildTile.access & Opcodes.ACC_PRIVATE) != 0);
         assertTrue(opcodeCount(buildTile, Opcodes.IRETURN) > 0);
+    }
+
+    @Test
+    void worldMapLiveChunkGateUsesTheCameraCenteredXaeroLayer() throws Exception {
+        Path worldMapJar = Path.of(System.getProperty("xaeroWorldMapJar"));
+        ClassNode mapWriter = readClass(worldMapJar, "xaero/map/MapWriter");
+        assertPrivateIntField(mapWriter, "playerChunkX");
+        assertPrivateIntField(mapWriter, "playerChunkZ");
+        assertPrivateIntField(mapWriter, "writingLayer");
+
+        MethodNode writeChunk = exactMethod(mapWriter, "writeChunk", WORLD_MAP_WRITE_CHUNK);
+        assertEquals(1, invocationCount(writeChunk, invocation ->
+                invocation.owner.equals("net/minecraft/world/level/Level")
+                        && invocation.name.equals("getChunk")
+                        && invocation.desc.equals(LIVE_CHUNK_GET)));
+        assertTrue(opcodeCount(writeChunk, Opcodes.IFNULL) > 0);
+
+        MethodNode writeMap = exactMethod(mapWriter, "writeMap", WORLD_MAP_WRITE_MAP);
+        assertEquals(1, invocationCount(writeMap, invocation ->
+                invocation.owner.equals("xaero/map/MapProcessor")
+                        && invocation.name.equals("getCurrentCaveLayer")
+                        && invocation.desc.equals("()I")));
+        assertTrue(fieldAccessCount(writeMap, Opcodes.PUTFIELD, mapWriter.name, "playerChunkX", "I") > 0);
+        assertTrue(fieldAccessCount(writeMap, Opcodes.PUTFIELD, mapWriter.name, "playerChunkZ", "I") > 0);
+        assertTrue(fieldAccessCount(writeMap, Opcodes.PUTFIELD, mapWriter.name, "writingLayer", "I") > 0);
+
+        ClassNode processor = readClass(worldMapJar, "xaero/map/MapProcessor");
+        MethodNode setMainValues = exactMethod(processor, "setMainValues", "()V");
+        assertEquals(1, invocationCount(setMainValues, invocation ->
+                invocation.owner.equals("net/minecraft/client/Minecraft")
+                        && invocation.name.equals("getCameraEntity")
+                        && invocation.desc.equals("()Lnet/minecraft/world/entity/Entity;")));
+    }
+
+    @Test
+    void worldMapVerticalLayerIdentityAndWorldSaveBoundaryArePinned() throws Exception {
+        Path worldMapJar = Path.of(System.getProperty("xaeroWorldMapJar"));
+        ClassNode processor = readClass(worldMapJar, "xaero/map/MapProcessor");
+        MethodNode getCaveLayer = exactMethod(processor, "getCaveLayer", "(I)I");
+        assertTrue((getCaveLayer.access & Opcodes.ACC_PRIVATE) != 0);
+        assertEquals(1, opcodeCount(getCaveLayer, Opcodes.ISHR));
+        assertEquals(1, opcodeCount(getCaveLayer, Opcodes.ICONST_4));
+        assertTrue(containsLdcInt(getCaveLayer, Integer.MAX_VALUE));
+        assertTrue(containsLdcInt(getCaveLayer, Integer.MIN_VALUE));
+        exactMethod(processor, "getCurrentCaveLayer", "()I");
+
+        MethodNode updateCaveStart = exactMethod(processor, "updateCaveStart", "()V");
+        assertEquals(1, invocationCount(updateCaveStart, invocation ->
+                invocation.owner.equals("xaero/map/MapProcessor")
+                        && invocation.name.equals("getCaveLayer")
+                        && invocation.desc.equals("(I)I")));
+        assertEquals(1, invocationCount(updateCaveStart, invocation ->
+                invocation.owner.equals("xaero/map/region/MapLayer")
+                        && invocation.name.equals("setCaveStart")
+                        && invocation.desc.equals("(I)V")));
+
+        ClassNode tileChunk = readClass(worldMapJar, "xaero/map/region/MapTileChunk");
+        exactMethod(tileChunk, "getInRegion", "()Lxaero/map/region/MapRegion;");
+        ClassNode leveledRegion = readClass(worldMapJar, "xaero/map/region/LeveledRegion");
+        exactMethod(leveledRegion, "getCaveLayer", "()I");
+
+        ClassNode reader = readClass(worldMapJar, "xaero/map/file/worldsave/WorldDataReader");
+        MethodNode buildRegion = exactMethod(
+                reader,
+                "buildRegion",
+                "(Lxaero/map/region/MapRegion;Lnet/minecraft/server/level/ServerLevel;"
+                        + "Lnet/minecraft/core/HolderLookup;Lnet/minecraft/core/Registry;"
+                        + "Lnet/minecraft/core/Registry;Z[ILxaero/map/executor/Executor;)Z"
+        );
+        assertEquals(1, invocationCount(buildRegion, invocation ->
+                invocation.owner.equals("xaero/map/region/MapRegion")
+                        && invocation.name.equals("getCaveLayer")
+                        && invocation.desc.equals("()I")));
+        assertEquals(1, invocationCount(buildRegion, invocation ->
+                invocation.owner.equals("xaero/map/region/MapRegion")
+                        && invocation.name.equals("getCaveStart")
+                        && invocation.desc.equals("()I")));
+        assertEquals(1, invocationCount(buildRegion, invocation ->
+                invocation.owner.equals("xaero/map/region/MapRegion")
+                        && invocation.name.equals("getCaveDepth")
+                        && invocation.desc.equals("()I")));
     }
 
     @Test
@@ -184,6 +302,19 @@ class UpstreamBinaryContractTest {
         return matches.getFirst();
     }
 
+    private static FieldNode exactField(ClassNode owner, String name, String descriptor) {
+        List<FieldNode> matches = owner.fields.stream()
+                .filter(field -> field.name.equals(name) && field.desc.equals(descriptor))
+                .toList();
+        assertEquals(1, matches.size(), owner.name + "." + name + ":" + descriptor);
+        return matches.getFirst();
+    }
+
+    private static void assertPrivateIntField(ClassNode owner, String name) {
+        FieldNode field = exactField(owner, name, "I");
+        assertTrue((field.access & Opcodes.ACC_PRIVATE) != 0);
+    }
+
     private static long invocationCount(MethodNode method, Predicate<MethodInsnNode> predicate) {
         long count = 0;
         for (AbstractInsnNode instruction : method.instructions) {
@@ -202,6 +333,35 @@ class UpstreamBinaryContractTest {
             }
         }
         return count;
+    }
+
+    private static long fieldAccessCount(
+            MethodNode method,
+            int opcode,
+            String owner,
+            String name,
+            String descriptor
+    ) {
+        long count = 0;
+        for (AbstractInsnNode instruction : method.instructions) {
+            if (instruction instanceof FieldInsnNode field
+                    && field.getOpcode() == opcode
+                    && field.owner.equals(owner)
+                    && field.name.equals(name)
+                    && field.desc.equals(descriptor)) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    private static boolean containsLdcInt(MethodNode method, int value) {
+        for (AbstractInsnNode instruction : method.instructions) {
+            if (instruction instanceof LdcInsnNode ldc && Integer.valueOf(value).equals(ldc.cst)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static boolean containsSipush(MethodNode method, int operand) {

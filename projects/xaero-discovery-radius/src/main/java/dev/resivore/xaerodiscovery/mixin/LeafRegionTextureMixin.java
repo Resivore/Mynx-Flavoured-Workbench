@@ -48,6 +48,7 @@ abstract class LeafRegionTextureMixin {
             DiscoveryService.importXaeroCache(
                     serverWorld,
                     cacheFile.toPath(),
+                    inRegion.getCaveLayer(),
                     tileChunk.getX(),
                     tileChunk.getZ(),
                     texture::getHeight

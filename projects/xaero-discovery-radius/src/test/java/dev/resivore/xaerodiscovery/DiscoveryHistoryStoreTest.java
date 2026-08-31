@@ -15,6 +15,8 @@ import org.junit.jupiter.api.io.TempDir;
 import org.slf4j.LoggerFactory;
 
 class DiscoveryHistoryStoreTest {
+    private static final int SURFACE_LAYER = Integer.MAX_VALUE;
+
     @TempDir
     Path temporaryDirectory;
 
@@ -22,27 +24,27 @@ class DiscoveryHistoryStoreTest {
     void unpreparedDimensionsFailOpenWithoutCreatingState() {
         DiscoveryHistoryStore store = store();
         WorldDimensionKey key = key("world-a", "minecraft:overworld");
-        assertTrue(store.allows(key, 500, -500));
+        assertTrue(store.allows(key, 500, -500, SURFACE_LAYER));
         assertFalse(Files.exists(store.historyPath(key)));
     }
 
     @Test
-    void squareEligibilityPersistsWithInclusiveBoundaryAndNegativeCoordinates() {
+    void circleEligibilityPersistsWithInclusiveBoundaryAndNegativeCoordinates() {
         WorldDimensionKey key = key("world-a", "minecraft:overworld");
         DiscoveryHistoryStore first = store();
         first.prepare(key);
-        assertFalse(first.allows(key, -10, 12));
-        first.recordSquare(key, -10, 12, 1);
+        assertFalse(first.allows(key, -10, 12, SURFACE_LAYER));
+        first.recordCircle(key, -10, 12, 1, SURFACE_LAYER);
 
-        assertTrue(first.allows(key, -11, 11));
-        assertTrue(first.allows(key, -9, 13));
-        assertFalse(first.allows(key, -12, 12));
+        assertTrue(first.allows(key, -11, 12, SURFACE_LAYER));
+        assertTrue(first.allows(key, -10, 13, SURFACE_LAYER));
+        assertFalse(first.allows(key, -11, 11, SURFACE_LAYER));
 
         DiscoveryHistoryStore reloaded = store();
         reloaded.prepare(key);
-        assertTrue(reloaded.allows(key, -11, 11));
-        assertTrue(reloaded.allows(key, -9, 13));
-        assertFalse(reloaded.allows(key, -12, 12));
+        assertTrue(reloaded.allows(key, -11, 12, SURFACE_LAYER));
+        assertTrue(reloaded.allows(key, -10, 13, SURFACE_LAYER));
+        assertFalse(reloaded.allows(key, -11, 11, SURFACE_LAYER));
     }
 
     @Test
@@ -54,11 +56,11 @@ class DiscoveryHistoryStoreTest {
         store.prepare(overworld);
         store.prepare(nether);
         store.prepare(otherWorld);
-        store.recordPacked(overworld, List.of(ChunkRadius.pack(7, -9)));
+        store.recordPacked(overworld, List.of(ChunkRadius.pack(7, -9)), SURFACE_LAYER);
 
-        assertTrue(store.allows(overworld, 7, -9));
-        assertFalse(store.allows(nether, 7, -9));
-        assertFalse(store.allows(otherWorld, 7, -9));
+        assertTrue(store.allows(overworld, 7, -9, SURFACE_LAYER));
+        assertFalse(store.allows(nether, 7, -9, SURFACE_LAYER));
+        assertFalse(store.allows(otherWorld, 7, -9, SURFACE_LAYER));
     }
 
     @Test
@@ -66,12 +68,17 @@ class DiscoveryHistoryStoreTest {
         WorldDimensionKey malformedKey = key("world-malformed", "minecraft:overworld");
         DiscoveryHistoryStore first = store();
         first.prepare(malformedKey);
-        Files.writeString(first.historyPath(malformedKey), "0000000000000", StandardCharsets.UTF_8, java.nio.file.StandardOpenOption.APPEND);
+        Files.writeString(
+                first.layerHistoryPath(malformedKey),
+                "LAYER cave 0000000000000000\n",
+                StandardCharsets.UTF_8,
+                java.nio.file.StandardOpenOption.APPEND
+        );
 
         DiscoveryHistoryStore malformed = store();
         malformed.prepare(malformedKey);
         assertTrue(malformed.isFailOpen(malformedKey));
-        assertTrue(malformed.allows(malformedKey, 12345, 54321));
+        assertTrue(malformed.allows(malformedKey, 12345, 54321, -50));
     }
 
     @Test
@@ -80,12 +87,12 @@ class DiscoveryHistoryStoreTest {
         DiscoveryHistoryStore first = store();
         first.prepare(key);
         first.markFailOpen(key, "test failure");
-        assertTrue(first.allows(key, 999, 999));
+        assertTrue(first.allows(key, 999, 999, SURFACE_LAYER));
 
         DiscoveryHistoryStore reloaded = store();
         reloaded.prepare(key);
         assertTrue(reloaded.isFailOpen(key));
-        assertTrue(reloaded.allows(key, 999, 999));
+        assertTrue(reloaded.allows(key, 999, 999, -10));
     }
 
     @Test
@@ -93,15 +100,15 @@ class DiscoveryHistoryStoreTest {
         WorldDimensionKey key = key("world-interrupted", "minecraft:overworld");
         DiscoveryHistoryStore first = store();
         first.prepare(key);
-        first.recordSquare(key, 0, 0, 0);
-        Path history = first.historyPath(key);
+        first.recordCircle(key, 0, 0, 0, SURFACE_LAYER);
+        Path history = first.layerHistoryPath(key);
         Path pending = history.resolveSibling(history.getFileName() + ".pending");
         Files.writeString(pending, "simulated interrupted append", StandardCharsets.UTF_8);
 
         DiscoveryHistoryStore reloaded = store();
         reloaded.prepare(key);
         assertTrue(reloaded.isFailOpen(key));
-        assertTrue(reloaded.allows(key, 100_000, -100_000));
+        assertTrue(reloaded.allows(key, 100_000, -100_000, -20));
     }
 
     @Test
@@ -109,8 +116,8 @@ class DiscoveryHistoryStoreTest {
         WorldDimensionKey key = key("world-committed", "minecraft:overworld");
         DiscoveryHistoryStore store = store();
         store.prepare(key);
-        store.recordSquare(key, 4, 4, 1);
-        Path history = store.historyPath(key);
+        store.recordCircle(key, 4, 4, 1, SURFACE_LAYER);
+        Path history = store.layerHistoryPath(key);
         assertFalse(Files.exists(history.resolveSibling(history.getFileName() + ".pending")));
     }
 
@@ -122,15 +129,15 @@ class DiscoveryHistoryStoreTest {
         ExecutorService executor = Executors.newFixedThreadPool(4);
         for (int i = 0; i < 40; i++) {
             int chunk = i;
-            executor.submit(() -> store.recordSquare(key, chunk, -chunk, 1));
-            executor.submit(() -> store.recordPacked(key, List.of(ChunkRadius.pack(-chunk, chunk))));
-            executor.submit(() -> store.allows(key, chunk, -chunk));
+            executor.submit(() -> store.recordCircle(key, chunk, -chunk, 1, SURFACE_LAYER));
+            executor.submit(() -> store.recordPacked(key, List.of(ChunkRadius.pack(-chunk, chunk)), -10));
+            executor.submit(() -> store.allows(key, chunk, -chunk, SURFACE_LAYER));
         }
         executor.shutdown();
         assertTrue(executor.awaitTermination(10, TimeUnit.SECONDS));
         for (int i = 0; i < 40; i++) {
-            assertTrue(store.allows(key, i, -i));
-            assertTrue(store.allows(key, -i, i));
+            assertTrue(store.allows(key, i, -i, SURFACE_LAYER));
+            assertTrue(store.allows(key, -i, i, -10));
         }
     }
 

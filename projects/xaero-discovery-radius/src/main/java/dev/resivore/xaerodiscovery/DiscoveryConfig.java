@@ -10,7 +10,7 @@ import java.nio.file.Path;
 import org.slf4j.Logger;
 
 public record DiscoveryConfig(int discoveryRadiusChunks) {
-    public static final int DEFAULT_RADIUS = 4;
+    public static final int DEFAULT_RADIUS = 2;
     public static final int MAX_RADIUS = 32;
 
     public static DiscoveryConfig load(Path path, Logger logger) {

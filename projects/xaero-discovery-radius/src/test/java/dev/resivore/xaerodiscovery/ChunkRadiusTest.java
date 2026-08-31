@@ -1,25 +1,58 @@
 package dev.resivore.xaerodiscovery;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.HashSet;
+import java.util.Set;
 import org.junit.jupiter.api.Test;
 
 class ChunkRadiusTest {
     @Test
-    void usesAnInclusiveChebyshevSquare() {
-        assertTrue(ChunkRadius.contains(10, -10, 14, -6, 4));
-        assertTrue(ChunkRadius.contains(10, -10, 6, -14, 4));
-        assertFalse(ChunkRadius.contains(10, -10, 15, -10, 4));
-        assertFalse(ChunkRadius.contains(10, -10, 10, -15, 4));
+    void radiusTwoIsAnExactThirteenChunkCircle() {
+        Set<Long> included = new HashSet<>();
+        for (int deltaX = -2; deltaX <= 2; deltaX++) {
+            for (int deltaZ = -2; deltaZ <= 2; deltaZ++) {
+                if (ChunkRadius.contains(0, 0, deltaX, deltaZ, 2)) {
+                    included.add(ChunkRadius.pack(deltaX, deltaZ));
+                }
+            }
+        }
+
+        assertEquals(13, included.size());
+        assertTrue(included.contains(ChunkRadius.pack(-2, 0)));
+        assertTrue(included.contains(ChunkRadius.pack(2, 0)));
+        assertTrue(included.contains(ChunkRadius.pack(0, -2)));
+        assertTrue(included.contains(ChunkRadius.pack(0, 2)));
+        assertTrue(included.contains(ChunkRadius.pack(-1, -1)));
+        assertTrue(included.contains(ChunkRadius.pack(1, 1)));
+        assertFalse(included.contains(ChunkRadius.pack(2, 1)));
+        assertFalse(included.contains(ChunkRadius.pack(1, 2)));
+        assertFalse(included.contains(ChunkRadius.pack(2, 2)));
     }
 
     @Test
     void handlesNegativeCoordinatesAndRejectsNegativeRadius() {
-        assertTrue(ChunkRadius.contains(-8, -8, -12, -4, 4));
-        assertFalse(ChunkRadius.contains(-8, -8, -13, -4, 4));
+        assertTrue(ChunkRadius.contains(-8, -8, -10, -8, 2));
+        assertTrue(ChunkRadius.contains(-8, -8, -9, -9, 2));
+        assertFalse(ChunkRadius.contains(-8, -8, -10, -9, 2));
+        assertTrue(ChunkRadius.contains(-1, -1, 1, -1, 2));
+        assertFalse(ChunkRadius.contains(-1, -1, 1, 0, 2));
+        assertTrue(ChunkRadius.contains(0, 0, 0, 0, 0));
         assertFalse(ChunkRadius.contains(0, 0, 0, 0, -1));
+    }
+
+    @Test
+    void rejectsExtremeCoordinateDifferencesWithoutOverflow() {
+        assertFalse(ChunkRadius.contains(
+                Integer.MIN_VALUE,
+                Integer.MIN_VALUE,
+                Integer.MAX_VALUE,
+                Integer.MAX_VALUE,
+                Integer.MAX_VALUE
+        ));
+        assertTrue(ChunkRadius.contains(0, 0, Integer.MAX_VALUE, 0, Integer.MAX_VALUE));
     }
 
     @Test
