@@ -2,16 +2,16 @@
   "$schema": "../../schemas/runtime-state.schema.json",
   "schema_version": 1,
   "activation": "ACTIVE",
-  "revision": 49,
-  "updated_at": "2026-08-31T03:12:35Z",
+  "revision": 50,
+  "updated_at": "2026-08-31T04:36:25Z",
   "accepted_baseline": {
-    "revision": 3,
+    "revision": 6,
     "provenance": {
       "source_repository": "Resivore/Minecraft-26.2-Workbench",
       "source_commit": "f0101f38c446dddaa4226450386402c63597ba7c",
       "source_profile": "matcha-heart-death-mossy-stone",
       "legacy_ledger_sha256": "5f0a26f3d136effeb54e86e3a1ba9d6a98a7252f5adde1c789129461f64c43de",
-      "accepted_artifact_count": 27,
+      "accepted_artifact_count": 30,
       "overlay_order": [
         "937d7ccc-44c9-55cb-8d33-0dc0bff5fe45",
         "9f1c5aa4-09c1-4de3-9921-4b045e8abcd2"
@@ -683,6 +683,112 @@
           ]
         },
         "accepted_at": "2026-08-30T06:42:31Z"
+      },
+      {
+        "unit": {
+          "deployment_id": "391d02e5-2095-5a4a-ac3d-88b79b159883",
+          "project_uuid": "8ff207a2-9049-4519-ad3f-3100a80abcc2",
+          "project_id": "xaero-discovery-radius",
+          "project_identity_source": "CURRENT_MANIFEST",
+          "version": "0.1.1-canary2",
+          "source_commit": "a8c042c8d5c075c3f3fc9ca019a0b6efe815eaff",
+          "artifacts": [
+            {
+              "artifact_id": "41e16862-31c4-5e20-b7ca-9c105cce813e",
+              "kind": "MOD",
+              "filename": "xaero-discovery-radius-0.1.1-canary2.jar",
+              "sha256": "a7d0125dbe13bbcd5418aac39e0e51a32ea79d508d9dc47f2ebd86526a794c99",
+              "ownership_keys": [
+                "mod:xaero_discovery_radius"
+              ],
+              "source": {
+                "type": "REPOSITORY",
+                "path": "projects/xaero-discovery-radius/artifacts/xaero-discovery-radius-0.1.1-canary2.jar"
+              }
+            }
+          ]
+        },
+        "accepted_at": "2026-08-31T04:36:25Z"
+      },
+      {
+        "unit": {
+          "deployment_id": "58f0e77b-95c4-57b1-ae0e-783f1aa2597c",
+          "project_uuid": "2371b6eb-a4fb-4f1e-8203-580b82ce846b",
+          "project_id": "coal-consolidation",
+          "project_identity_source": "CURRENT_MANIFEST",
+          "version": "0.1.2-canary3",
+          "source_commit": "d2ad841f6a8edfbc765ec681d803b193e5d1f7ad",
+          "artifacts": [
+            {
+              "artifact_id": "d4cf6b23-03f2-5283-b4bf-13e63de73efa",
+              "kind": "MOD",
+              "filename": "coal-consolidation-0.1.2-canary3.jar",
+              "sha256": "f1d36dfad276927d527cc911d92f47ee979ef7600479f950c76ed25dd18eb871",
+              "ownership_keys": [
+                "mod:coal_consolidation"
+              ],
+              "source": {
+                "type": "REPOSITORY",
+                "path": "projects/coal-consolidation/artifacts/coal-consolidation-0.1.2-canary3.jar"
+              }
+            }
+          ]
+        },
+        "accepted_at": "2026-08-31T04:36:25Z"
+      },
+      {
+        "unit": {
+          "deployment_id": "7ed529d5-054b-5c13-9213-56cdfafbd1c1",
+          "project_uuid": "6b8b6166-fd59-4e4e-ab1d-d1140cdbfab8",
+          "project_id": "rooted-dirt-qol",
+          "project_identity_source": "CURRENT_MANIFEST",
+          "version": "0.1.0-canary1",
+          "source_commit": "46e66c9c9bb5701153edc017a969b24e1176dffc",
+          "artifacts": [
+            {
+              "artifact_id": "66a0bfa3-eb87-5293-a3ca-6391f631fc66",
+              "kind": "MOD",
+              "filename": "rooted-dirt-qol-0.1.0-canary1.jar",
+              "sha256": "3642f55e0cef611f2dd56478b8aaf2491fd81d370023a04ca71e6852b37307ee",
+              "ownership_keys": [
+                "mod:rooted_dirt_qol"
+              ],
+              "source": {
+                "type": "REPOSITORY",
+                "path": "projects/rooted-dirt-qol/artifacts/rooted-dirt-qol-0.1.0-canary1.jar"
+              }
+            }
+          ]
+        },
+        "accepted_at": "2026-08-31T04:36:25Z",
+        "retained_rollbacks": [
+          {
+            "unit": {
+              "deployment_id": "8250f00d-6fff-55a3-ab76-88a93c3da299",
+              "project_uuid": "6b8b6166-fd59-4e4e-ab1d-d1140cdbfab8",
+              "project_id": "rooted-dirt-qol",
+              "project_identity_source": "FROZEN_LEGACY",
+              "version": "107.1",
+              "source_commit": "b71932fb4c917edfa2c162600b01a4c1f2983dfe",
+              "artifacts": [
+                {
+                  "artifact_id": "dec8f98a-b6db-51c5-a276-8072c5266430",
+                  "kind": "MOD",
+                  "filename": "craft-rooted-dirt-107.1.jar",
+                  "sha256": "a5fc656fc345b416fc01281146d568de664c587e2c168e6bfd69f3ded7e42845",
+                  "ownership_keys": [
+                    "mod:mr_craft_rooteddirt"
+                  ],
+                  "source": {
+                    "type": "ADOPTED_TARGET",
+                    "path": "mods/craft-rooted-dirt-107.1.jar"
+                  }
+                }
+              ]
+            },
+            "retained_at": "2026-08-31T04:36:25Z"
+          }
+        ]
       }
     ]
   },
