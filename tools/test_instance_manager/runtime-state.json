@@ -2,8 +2,8 @@
   "$schema": "../../schemas/runtime-state.schema.json",
   "schema_version": 1,
   "activation": "ACTIVE",
-  "revision": 50,
-  "updated_at": "2026-08-31T04:36:25Z",
+  "revision": 52,
+  "updated_at": "2026-08-31T15:11:00Z",
   "accepted_baseline": {
     "revision": 6,
     "provenance": {
@@ -837,11 +837,15 @@
         "ready_verified_at": "2026-08-31T03:12:34Z"
       },
       "runtime_result": {
-        "classification": "UNTESTED",
-        "recorded_at": null,
+        "classification": "FAIL",
+        "recorded_at": "2026-08-31T15:10:30Z",
         "evidence": {
-          "passed": [],
-          "failed": []
+          "passed": [
+            "For exact BGE C56 with exact Nibaru C46, every behavior actually exercised by the user passed; the report did not enumerate matrix rows, so no unmentioned row is inferred."
+          ],
+          "failed": [
+            "The user reported one small visual issue on glass Corners. It is deferred, outside this task, and is not diagnosed or described more specifically here."
+          ]
         }
       },
       "dependency_overrides": [
@@ -879,10 +883,12 @@
         "ready_verified_at": "2026-08-31T03:12:35Z"
       },
       "runtime_result": {
-        "classification": "UNTESTED",
-        "recorded_at": null,
+        "classification": "PASS",
+        "recorded_at": "2026-08-31T15:11:00Z",
         "evidence": {
-          "passed": [],
+          "passed": [
+            "Exact Shulker Trowel C8 remained good with exact BGE C56 and exact Nibaru C46; no unrelated behavior is inferred."
+          ],
           "failed": []
         }
       }
