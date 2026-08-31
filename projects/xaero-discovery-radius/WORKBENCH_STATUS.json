@@ -14,28 +14,30 @@
   "definition": {
     "lifecycle": "ACTIVE",
     "goals": [
-      "Decouple Xaero Minimap and World Map terrain discovery and map-writing radius from Minecraft render distance so a 16-chunk render distance can coexist with an approximately 4-chunk discovery radius.",
-      "Preserve Xaero behavior otherwise, including existing map visibility and data, normal nearby discovery, Minimap and World Map sharing, waypoints, radar, navigation, and unrelated UI behavior.",
-      "Fail open when durable singleplayer eligibility cannot be trusted so the companion never hides already discovered terrain."
+      "Limit new Xaero Minimap and World Map terrain discovery to a configurable chunk-quantized Euclidean circle, defaulting to radius 2, independently of Minecraft render distance.",
+      "Preserve all previously mapped terrain and otherwise preserve Xaero behavior, including normal nearby discovery, Minimap and World Map sharing, waypoints, radar, navigation, map presentation, and unrelated UI behavior.",
+      "Apply durable singleplayer eligibility independently to Xaero World Map's exact persistent vertical-layer identity while failing open whenever history integrity cannot be trusted."
     ],
     "scope": [
-      "Maintain the exact C1 client-side Fabric companion reconstructed from legacy source checkpoint b025ffc38bb2810c7a472ba73970dd8a7277bac2 and coherent retained checkpoint cc33d33816d92bb6c3205227aec368712c1c9d5a.",
-      "Apply an inclusive square or Chebyshev discovery radius, default 4 chunks and configurable from 0 through 32 at client startup, without reading or changing Minecraft render distance and without widening a tighter native Xaero distance.",
-      "Preserve the four narrow descriptor-pinned boundaries for World Map live writing, Minimap-owned terrain fetching, singleplayer direct-save reconstruction, and pre-policy Xaero leaf-cache import.",
-      "Maintain world-local and dimension-separated discovery history with forced pending transaction and persistent fail-open handling for interrupted, corrupt, unavailable, or mismatched state.",
-      "Seed pre-install discovery only from exact frozen hashes of existing .xwmc or .xwmc.outdated cache files and Xaero's native undiscovered sentinel while leaving existing cache textures and map data intact."
+      "Maintain the client-side Fabric companion for Minecraft 26.2 against exact Xaero Minimap 26.4.2, Xaero World Map 1.44.2, and embedded XaeroLib 1.7.1 references.",
+      "Apply the inclusive chunk-circle predicate dx squared plus dz squared less than or equal to radius squared, configurable from 0 through 32 and defaulting to 2 for a fresh or invalid configuration, across Minimap live terrain reads and World Map live writing without reading or changing Minecraft render distance or widening a tighter native Xaero distance.",
+      "Center both live gates on Xaero's current camera semantics: Minimap uses Minecraft's current camera entity and World Map uses its camera-derived playerChunkX and playerChunkZ fields.",
+      "Persist singleplayer eligibility by Xaero World Map caveLayer: Integer.MAX_VALUE for surface, Integer.MIN_VALUE for full or single-depth mode, and signed caveStart shifted right by 4 for ordinary cave layers; gate direct-save reconstruction with the destination tile region's exact caveLayer.",
+      "Preserve every valid C1 history entry as read-only wildcard eligibility across all vertical layers, append all new eligibility to a separate dimension-local layer-aware v2 journal, and never rewrite or delete the v1 journal.",
+      "Seed pre-policy discovery only from exact frozen hashes of existing .xwmc or .xwmc.outdated cache files, recording each imported chunk under its exact Xaero layer while leaving existing cache textures and map data intact.",
+      "Maintain forced pending transactions and durable fail-open behavior for interrupted, corrupt, unavailable, mismatched, or otherwise untrustworthy history and cache-manifest state."
     ],
     "boundaries": {
       "owned_paths": [
         "projects/xaero-discovery-radius"
       ],
       "exclusions": [
-        "New implementation, redesign, a successor Canary, or dependency-version expansion during this migration.",
+        "A successor beyond Canary 2, dependency-version expansion, server-side behavior, or broad redesign of Xaero discovery and map storage.",
         "Modification, patching, or redistribution of Xaero Minimap, Xaero World Map, XaeroLib, their classes, or their assets; the exact All Rights Reserved binaries remain external references only.",
-        "Deleting, rewriting, or concealing existing Xaero map data, grandfathering every pre-generated Anvil chunk, or fabricating missing historical discovery when no durable Xaero cache evidence remains.",
+        "Deleting, rewriting, or concealing existing Xaero map data, rewriting the C1 v1 history, grandfathering every pre-generated Anvil chunk, or fabricating missing historical discovery without durable Xaero cache evidence.",
         "Changing Minecraft render distance, waypoint or radar reach, map navigation, zoom, cache rendering, or unrelated Xaero behavior.",
-        "Minecraft launch, deployment, Test Slot changes, accepted-baseline changes, Test Instance Manager changes, runtime-profile access, or protected gameplay-instance access during this migration.",
-        "Runtime claims about Mixin application, freecam or camera-mod centering, first-start cache-manifest cost, or any other behavior not actually observed with C1."
+        "Minecraft launch, deployment, Test Slot changes, accepted-baseline changes, Test Instance Manager changes, runtime-profile access, or protected gameplay-instance access during this task.",
+        "Runtime claims about Mixin application, freecam or camera-mod behavior, vertical-layer transitions, direct-save timing, migration cost, or any behavior not actually observed with Canary 2."
       ]
     },
     "dependencies": [
@@ -43,62 +45,68 @@
         "type": "OTHER",
         "identifier": "minecraft",
         "requirement": ">=26.2 <26.3",
-        "reason": "Target client range declared by the retained C1 artifact."
+        "reason": "Target client range declared by Canary 2."
       },
       {
         "type": "MOD",
         "identifier": "fabricloader",
         "requirement": ">=0.19.3",
-        "reason": "Fabric runtime loader declared by C1."
+        "reason": "Fabric runtime loader floor declared by Canary 2."
       },
       {
         "type": "MOD",
         "identifier": "fabric-api",
         "requirement": "0.157.0+26.2 (metadata minimum >=0.157.0)",
-        "reason": "Exact compile and static-validation baseline retained from C1."
+        "reason": "Exact compile and static-validation baseline used for Canary 2."
       },
       {
         "type": "MOD",
         "identifier": "xaerominimap",
         "requirement": "=26.4.2; SHA-256 69284892d2eb853c9aefa85a4c9b74232c322da00207994c67ab8aeed8a64048",
-        "reason": "Exact All Rights Reserved Minimap binary whose private method contracts are pinned by C1; it is not redistributed."
+        "reason": "Exact All Rights Reserved Minimap binary whose private terrain-fetch and camera contracts are pinned by Canary 2; it is not redistributed."
       },
       {
         "type": "MOD",
         "identifier": "xaeroworldmap",
         "requirement": "=1.44.2; SHA-256 d55ef45c559ae0adcf66d894c022f61d9d921629b0c885d04aa00424546a2389",
-        "reason": "Exact All Rights Reserved World Map binary whose private writer and cache contracts are pinned by C1; it is not redistributed."
+        "reason": "Exact All Rights Reserved World Map binary whose writer, vertical-layer, direct-save, and cache contracts are pinned by Canary 2; it is not redistributed."
       },
       {
         "type": "MOD",
         "identifier": "xaerolib",
         "requirement": "=1.7.1 embedded reference; SHA-256 7f4a78dd7e046fea0500fef83b1481d85317c8348d47e947035d7a07efe51065",
-        "reason": "Exact All Rights Reserved compile-only library embedded in the Minimap reference; C1 does not package it."
+        "reason": "Exact All Rights Reserved compile-only library embedded in the Minimap reference; Canary 2 does not package it."
       },
       {
         "type": "TOOL",
         "identifier": "java",
         "requirement": "25",
-        "reason": "Compilation release and runtime level recorded for C1."
+        "reason": "Compilation release used for Canary 2."
+      },
+      {
+        "type": "TOOL",
+        "identifier": "gradle",
+        "requirement": "9.5.1",
+        "reason": "Exact Gradle runtime used for the verified Canary 2 build."
       },
       {
         "type": "TOOL",
         "identifier": "fabric-loom",
         "requirement": "1.17.19",
-        "reason": "Exact Fabric build plugin pinned by the retained build configuration."
+        "reason": "Exact Fabric build plugin pinned by the Canary 2 build configuration."
       }
     ]
   },
   "state": {
-    "milestone": "C1 is retained after 23 focused tests; it is runtime untested and not deployed.",
+    "milestone": "Canary 2 implements a default two-chunk Euclidean discovery circle and exact Xaero World Map layer-aware singleplayer history; 32 focused tests pass, and it remains runtime untested and not deployed.",
     "releases": {
       "current": {
-        "version": "0.1.0-canary1",
+        "version": "0.1.1-canary2",
         "artifact": {
-          "filename": "xaero-discovery-radius-0.1.0-canary1.jar",
-          "sha256": "fe4c9164a744c2684067346c8a3daaa2b935f5802b2bdb1f357d5b9e854137ce"
+          "filename": "xaero-discovery-radius-0.1.1-canary2.jar",
+          "sha256": "a7d0125dbe13bbcd5418aac39e0e51a32ea79d508d9dc47f2ebd86526a794c99"
         },
-        "source_commit": "89e1f3a1ff28d2f3613897da516db5a3bb867efa"
+        "source_commit": "a8c042c8d5c075c3f3fc9ca019a0b6efe815eaff"
       },
       "accepted": null,
       "rollback": null,
@@ -113,11 +121,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 1,
-    "activity_at": "2026-08-28T16:54:36Z",
-    "updated_at": "2026-08-29T21:26:27Z",
-    "last_codex_at": "2026-08-29T21:26:27Z",
-    "source_commit": "89e1f3a1ff28d2f3613897da516db5a3bb867efa",
+    "revision": 2,
+    "activity_at": "2026-08-31T01:19:14Z",
+    "updated_at": "2026-08-31T01:19:14Z",
+    "last_codex_at": "2026-08-31T01:19:14Z",
+    "source_commit": "a8c042c8d5c075c3f3fc9ca019a0b6efe815eaff",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
