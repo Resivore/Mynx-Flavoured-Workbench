@@ -27,6 +27,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.AbstractCookingRecipe;
 import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.item.crafting.RecipeMap;
 import net.minecraft.world.item.crafting.SingleRecipeInput;
@@ -50,6 +51,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 final class ProductionRecipeCodecTest {
@@ -182,6 +185,74 @@ final class ProductionRecipeCodecTest {
         }
     }
 
+    @Test
+    void effectiveReloadOverridesALaterSmokingCharcoalResourceAndPreservesMetadata(
+            @TempDir Path tempDir) throws IOException {
+        Path competingPack = tempDir.resolve("later-smoking");
+        writeRecipe(competingPack, "smoking", "charcoal", """
+                {
+                  "type": "minecraft:smoking",
+                  "category": "food",
+                  "group": "later-smoking-charcoal",
+                  "show_notification": false,
+                  "experience": 0.15,
+                  "cookingtime": 100,
+                  "ingredient": "#minecraft:logs_that_burn",
+                  "result": { "id": "minecraft:charcoal" }
+                }
+                """);
+        Path productionPack = Path.of("src", "main", "resources").toAbsolutePath().normalize();
+        try (var resources = new MultiPackResourceManager(PackType.SERVER_DATA, List.of(
+                new PathPackResources(packLocation("coal-consolidation-lower"), productionPack),
+                new PathPackResources(packLocation("later-smoking"), competingPack)))) {
+            assertEquals("later-smoking",
+                    resources.getResource(Identifier.parse("smoking:recipe/charcoal.json"))
+                            .orElseThrow().sourcePackId());
+
+            TestRecipeManager manager = new TestRecipeManager(registries);
+            RecipeMap prepared = manager.prepareForTest(resources);
+            RecipeHolder<?> preparedHolder = prepared.byKey(recipeKey("smoking:charcoal"));
+            assertEquals(recipeKey("smoking:charcoal"), preparedHolder.id());
+            SmokingRecipe preparedSmoking = assertInstanceOf(
+                    SmokingRecipe.class, preparedHolder.value());
+            assertCookingRoute(preparedSmoking, 100, Items.CHARCOAL);
+            assertEquals("later-smoking-charcoal", preparedSmoking.group());
+            assertFalse(preparedSmoking.showNotification());
+
+            manager.applyForTest(prepared, resources);
+
+            RecipeHolder<?> effectiveHolder = manager.byKey(recipeKey("smoking:charcoal"))
+                    .orElseThrow();
+            assertEquals(preparedHolder.id(), effectiveHolder.id());
+            SmokingRecipe effectiveSmoking = assertInstanceOf(
+                    SmokingRecipe.class, effectiveHolder.value());
+            assertSame(preparedSmoking.input(), effectiveSmoking.input());
+            assertEquals(preparedSmoking.category(), effectiveSmoking.category());
+            assertEquals(preparedSmoking.group(), effectiveSmoking.group());
+            assertEquals(preparedSmoking.showNotification(), effectiveSmoking.showNotification());
+            assertCookingRoute(effectiveSmoking, 100, Items.COAL);
+        }
+    }
+
+    @Test
+    void enforcementFailsClosedWhenEitherOwnedTargetIsMissingOrHasTheWrongType() {
+        RecipeHolder<?> furnace = holder("minecraft:charcoal", RECIPES.get("minecraft/charcoal"));
+        RecipeHolder<?> smoker = holder("smoking:charcoal", RECIPES.get("smoking/charcoal"));
+
+        assertThrows(IllegalStateException.class,
+                () -> CharcoalRecipeEnforcer.enforce(RecipeMap.create(List.of(smoker))));
+        assertThrows(IllegalStateException.class,
+                () -> CharcoalRecipeEnforcer.enforce(RecipeMap.create(List.of(furnace))));
+        assertThrows(IllegalStateException.class, () -> CharcoalRecipeEnforcer.enforce(
+                RecipeMap.create(List.of(
+                        holder("minecraft:charcoal", RECIPES.get("smoking/charcoal")),
+                        smoker))));
+        assertThrows(IllegalStateException.class, () -> CharcoalRecipeEnforcer.enforce(
+                RecipeMap.create(List.of(
+                        furnace,
+                        holder("smoking:charcoal", RECIPES.get("minecraft/charcoal"))))));
+    }
+
     @SuppressWarnings("unchecked")
     private static Recipe<CraftingInput> crafting(String id) {
         return (Recipe<CraftingInput>) RECIPES.get(id);
@@ -227,6 +298,10 @@ final class ProductionRecipeCodecTest {
 
     private static ResourceKey<Recipe<?>> recipeKey(String id) {
         return ResourceKey.create(Registries.RECIPE, Identifier.parse(id));
+    }
+
+    private static RecipeHolder<?> holder(String id, Recipe<?> recipe) {
+        return new RecipeHolder<>(recipeKey(id), recipe);
     }
 
     private static <T extends AbstractCookingRecipe> T cooking(

@@ -11,58 +11,88 @@ import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeMap;
 import net.minecraft.world.item.crafting.SmeltingRecipe;
+import net.minecraft.world.item.crafting.SmokingRecipe;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** Enforces only the effective vanilla furnace charcoal route after pack resolution. */
+/** Enforces only the effective furnace and Matcha smoker charcoal routes after pack resolution. */
 public final class CharcoalRecipeEnforcer {
     private static final Logger LOGGER = LoggerFactory.getLogger("Coal Consolidation");
-    private static final ResourceKey<Recipe<?>> CHARCOAL_RECIPE = ResourceKey.create(
+    private static final ResourceKey<Recipe<?>> FURNACE_CHARCOAL_RECIPE = ResourceKey.create(
             Registries.RECIPE,
             Identifier.parse("minecraft:charcoal"));
+    private static final ResourceKey<Recipe<?>> SMOKER_CHARCOAL_RECIPE = ResourceKey.create(
+            Registries.RECIPE,
+            Identifier.parse("smoking:charcoal"));
 
     private CharcoalRecipeEnforcer() {}
 
     public static RecipeMap enforce(RecipeMap resolved) {
         try {
             ArrayList<RecipeHolder<?>> recipes = new ArrayList<>(resolved.values());
-            int targetIndex = -1;
+            int furnaceIndex = findUnique(recipes, FURNACE_CHARCOAL_RECIPE, "minecraft:charcoal");
+            int smokerIndex = findUnique(recipes, SMOKER_CHARCOAL_RECIPE, "smoking:charcoal");
 
-            for (int index = 0; index < recipes.size(); index++) {
-                if (recipes.get(index).id().equals(CHARCOAL_RECIPE)) {
-                    if (targetIndex != -1) {
-                        throw new IllegalStateException("Duplicate resolved minecraft:charcoal recipe");
-                    }
-                    targetIndex = index;
-                }
-            }
-
-            if (targetIndex == -1) {
-                throw new IllegalStateException("Missing resolved minecraft:charcoal recipe");
-            }
-
-            RecipeHolder<?> originalHolder = recipes.get(targetIndex);
-            if (!(originalHolder.value() instanceof SmeltingRecipe original)) {
+            RecipeHolder<?> furnaceHolder = recipes.get(furnaceIndex);
+            if (furnaceHolder.value().getClass() != SmeltingRecipe.class) {
                 throw new IllegalStateException(
                         "Resolved minecraft:charcoal is not a smelting recipe: "
-                                + originalHolder.value().getClass().getName());
+                                + furnaceHolder.value().getClass().getName());
             }
+            SmeltingRecipe furnaceRecipe = (SmeltingRecipe) furnaceHolder.value();
 
-            SmeltingRecipe replacement = new SmeltingRecipe(
-                    new Recipe.CommonInfo(original.showNotification()),
-                    new AbstractCookingRecipe.CookingBookInfo(original.category(), original.group()),
-                    original.input(),
+            RecipeHolder<?> smokerHolder = recipes.get(smokerIndex);
+            if (smokerHolder.value().getClass() != SmokingRecipe.class) {
+                throw new IllegalStateException(
+                        "Resolved smoking:charcoal is not a smoking recipe: "
+                                + smokerHolder.value().getClass().getName());
+            }
+            SmokingRecipe smokerRecipe = (SmokingRecipe) smokerHolder.value();
+
+            SmeltingRecipe furnaceReplacement = new SmeltingRecipe(
+                    new Recipe.CommonInfo(furnaceRecipe.showNotification()),
+                    new AbstractCookingRecipe.CookingBookInfo(furnaceRecipe.category(), furnaceRecipe.group()),
+                    furnaceRecipe.input(),
                     new ItemStackTemplate(Items.COAL),
-                    original.experience(),
-                    original.cookingTime());
-            recipes.set(targetIndex, new RecipeHolder<>(originalHolder.id(), replacement));
+                    furnaceRecipe.experience(),
+                    furnaceRecipe.cookingTime());
+            SmokingRecipe smokerReplacement = new SmokingRecipe(
+                    new Recipe.CommonInfo(smokerRecipe.showNotification()),
+                    new AbstractCookingRecipe.CookingBookInfo(smokerRecipe.category(), smokerRecipe.group()),
+                    smokerRecipe.input(),
+                    new ItemStackTemplate(Items.COAL),
+                    smokerRecipe.experience(),
+                    smokerRecipe.cookingTime());
+            recipes.set(furnaceIndex, new RecipeHolder<>(furnaceHolder.id(), furnaceReplacement));
+            recipes.set(smokerIndex, new RecipeHolder<>(smokerHolder.id(), smokerReplacement));
 
             RecipeMap enforced = RecipeMap.create(recipes);
-            LOGGER.info("Enforced minecraft:charcoal furnace output as one minecraft:coal after recipe reload");
+            LOGGER.info(
+                    "Enforced minecraft:charcoal furnace and smoking:charcoal smoker outputs "
+                            + "as one minecraft:coal after recipe reload");
             return enforced;
         } catch (RuntimeException exception) {
-            LOGGER.error("FATAL: could not enforce minecraft:charcoal furnace output", exception);
-            throw new IllegalStateException("Unsafe minecraft:charcoal recipe contract", exception);
+            LOGGER.error("FATAL: could not enforce owned charcoal cooking outputs", exception);
+            throw new IllegalStateException("Unsafe charcoal cooking recipe contracts", exception);
         }
+    }
+
+    private static int findUnique(
+            ArrayList<RecipeHolder<?>> recipes,
+            ResourceKey<Recipe<?>> target,
+            String id) {
+        int targetIndex = -1;
+        for (int index = 0; index < recipes.size(); index++) {
+            if (recipes.get(index).id().equals(target)) {
+                if (targetIndex != -1) {
+                    throw new IllegalStateException("Duplicate resolved " + id + " recipe");
+                }
+                targetIndex = index;
+            }
+        }
+        if (targetIndex == -1) {
+            throw new IllegalStateException("Missing resolved " + id + " recipe");
+        }
+        return targetIndex;
     }
 }
