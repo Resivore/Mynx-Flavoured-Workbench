@@ -45,10 +45,13 @@ import java.util.Objects;
  * <p>The stored {@link #FACING} is the exposed face: each additional item grows the
  * layer four pixels toward that face while the opposite face remains anchored.</p>
  */
-public class BgeLayerBlock extends Block implements SimpleWaterloggedBlock {
+public class BgeLayerBlock extends Block implements SimpleWaterloggedBlock, BlockspaceFundedGeometry {
     public static final EnumProperty<Direction> FACING = BlockStateProperties.FACING;
     public static final IntegerProperty LAYERS = IntegerProperty.create("layers", 1, 4);
-    /** Exact CNM combined-geometry marker consumed by its normal BlockItem placement hook. */
+    /**
+     * Retained as an inert compatibility carrier for C54 blockstates and generated resources.
+     * C55 economy is owned by {@link BlockspaceFundedGeometry}, not CNM's DOUBLE seam.
+     */
     public static final BooleanProperty DOUBLE = VerticalSlabBlock.DOUBLE;
     public static final BooleanProperty WATERLOGGED = BlockStateProperties.WATERLOGGED;
 
@@ -119,7 +122,7 @@ public class BgeLayerBlock extends Block implements SimpleWaterloggedBlock {
     @Override
     protected boolean canBeReplaced(BlockState state, BlockPlaceContext context) {
         if (context.getClickedFace() != state.getValue(FACING)) return false;
-        return canStack(state, context.getClickedFace(), context.getItemInHand())
+        return expandedState(state, context) != null
                 || super.canBeReplaced(state, context);
     }
 
@@ -135,7 +138,7 @@ public class BgeLayerBlock extends Block implements SimpleWaterloggedBlock {
         BlockPos pos = context.getClickedPos();
         BlockState existing = context.getLevel().getBlockState(pos);
         if (existing.is(this)) {
-            return stackedState(existing);
+            return expandedState(existing, context);
         }
 
         Direction facing = placementFacing(context, pos);
@@ -143,6 +146,14 @@ public class BgeLayerBlock extends Block implements SimpleWaterloggedBlock {
         return defaultBlockState()
                 .setValue(FACING, facing)
                 .setValue(WATERLOGGED, waterlogged);
+    }
+
+    @Override
+    @Nullable
+    public BlockState expandedState(BlockState existing, BlockPlaceContext context) {
+        return canStack(existing, context.getClickedFace(), context.getItemInHand())
+                ? stackedState(existing)
+                : null;
     }
 
     private static Direction placementFacing(BlockPlaceContext context, BlockPos pos) {
@@ -172,7 +183,7 @@ public class BgeLayerBlock extends Block implements SimpleWaterloggedBlock {
     static BlockState stackedState(BlockState state) {
         BlockState stacked = state
                 .setValue(LAYERS, Math.min(4, state.getValue(LAYERS) + 1))
-                .setValue(DOUBLE, true);
+                .setValue(DOUBLE, false);
         return withoutWaterWhenFull(stacked);
     }
 

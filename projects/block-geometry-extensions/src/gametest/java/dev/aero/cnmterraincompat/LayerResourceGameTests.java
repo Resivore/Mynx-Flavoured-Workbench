@@ -229,29 +229,24 @@ public final class LayerResourceGameTests implements CustomTestMethodInvoker {
         JsonObject loot = LayerGeneratedData.lootTable(stoneBinding);
         JsonArray functions = loot.getAsJsonArray("pools").get(0).getAsJsonObject()
                 .getAsJsonArray("entries").get(0).getAsJsonObject().getAsJsonArray("functions");
-        helper.assertTrue(functions.size() == 5
-                        && functions.get(0).getAsJsonObject().get("count").getAsInt() == 1
-                        && functions.get(3).getAsJsonObject().get("count").getAsInt() == 4
-                        && functions.get(3).getAsJsonObject().getAsJsonArray("conditions").get(0)
-                                .getAsJsonObject().getAsJsonObject("properties")
-                                .get("layers").getAsString().equals("4")
-                        && functions.get(4).getAsJsonObject().get("function").getAsString()
+        helper.assertTrue(functions.size() == 1
+                        && functions.get(0).getAsJsonObject().get("function").getAsString()
                                 .equals("minecraft:explosion_decay"),
-                "Layer loot does not copy the layers state into self-drop count");
+                "Layer fallback loot is not one canonical source block for every state");
 
-        Identifier dirtLayer = CnmTerrainCompat.layerId(profile("minecraft:dirt"));
+        Identifier dirtSource = Identifier.parse("minecraft:dirt");
         for (String surface : List.of("minecraft:grass_block", "minecraft:mycelium",
                 "minecraft:podzol", "minecraft:dirt_path")) {
             LayerGeneratedData.Binding binding = binding(surface);
             JsonObject surfaceLoot = LayerGeneratedData.lootTable(binding);
             String dropped = surfaceLoot.getAsJsonArray("pools").get(0).getAsJsonObject()
                     .getAsJsonArray("entries").get(0).getAsJsonObject().get("name").getAsString();
-            helper.assertTrue(LayerGeneratedData.dropItem(binding).equals(dirtLayer)
-                            && dropped.equals(dirtLayer.toString()),
-                    "Typed dirt-surface Layer did not drop the matching Dirt Layer: " + surface);
+            helper.assertTrue(LayerGeneratedData.dropItem(binding).equals(dirtSource)
+                            && dropped.equals(dirtSource.toString()),
+                    "Typed dirt-surface Layer did not drop the matching Dirt source: " + surface);
         }
-        helper.assertTrue(LayerGeneratedData.dropItem(stoneBinding).equals(stoneLayer),
-                "Ordinary Layer stopped dropping itself");
+        helper.assertTrue(LayerGeneratedData.dropItem(stoneBinding).equals(Identifier.parse("minecraft:stone")),
+                "Ordinary Layer did not return one canonical source block");
 
         JsonObject layerTag = generatedServerJson(Identifier.parse(
                 "cnm_terrain_slabs_compat:tags/block/layers.json"));
@@ -284,8 +279,8 @@ public final class LayerResourceGameTests implements CustomTestMethodInvoker {
         JsonArray rotation = gui.getAsJsonArray("rotation");
         JsonArray scale = gui.getAsJsonArray("scale");
         helper.assertTrue(translation.size() == 3
-                        && translation.get(0).getAsDouble() == -1.325
-                        && translation.get(1).getAsDouble() == 3.25
+                        && translation.get(0).getAsDouble() == 1.675
+                        && translation.get(1).getAsDouble() == -2.75
                         && translation.get(2).getAsDouble() == 0.0
                         && rotation.get(0).getAsInt() == 30
                         && rotation.get(1).getAsInt() == -135

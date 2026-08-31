@@ -535,8 +535,8 @@ public final class LayerModelProjection {
         JsonObject firstPerson = transform(new int[]{0, -45, 0}, null, new double[]{0.4, 0.4, 0.4});
         display.add("firstperson_righthand", firstPerson);
         display.add("firstperson_lefthand", firstPerson.deepCopy());
-        // Center the bottom-anchored 4px item cuboid after the shared 30-degree GUI pitch/scale.
-        display.add("gui", transform(new int[]{30, -135, 0}, new double[]{-1.325, 3.25, 0},
+        // C55 applies the exact observed C54 inventory correction: +3px right and +6px down.
+        display.add("gui", transform(new int[]{30, -135, 0}, new double[]{1.675, -2.75, 0},
                 new double[]{0.625, 0.625, 0.625}));
         display.add("fixed", transform(new int[]{0, 90, 0}, null, new double[]{0.5, 0.5, 0.5}));
         return display;

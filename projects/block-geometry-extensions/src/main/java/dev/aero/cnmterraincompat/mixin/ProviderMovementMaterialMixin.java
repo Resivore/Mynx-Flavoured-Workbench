@@ -1,11 +1,13 @@
 package dev.aero.cnmterraincompat.mixin;
 
 import dev.aero.cnmterraincompat.NibaruProviderAdapter;
-import games.twinhead.moreslabsstairsandwalls.api.material.DerivedGeometrySupport;
+import dev.aero.cnmterraincompat.BgeCornerBlock;
+import dev.aero.cnmterraincompat.BgeGeometryRole;
 import net.minecraft.core.BlockPos;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.state.properties.SlabType;
+import net.minecraft.world.level.block.state.properties.Half;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -22,9 +24,13 @@ public abstract class ProviderMovementMaterialMixin {
         var state = self.level().getBlockState(current);
         var binding = NibaruProviderAdapter.runtimeBinding(state.getBlock()).orElse(null);
         if (binding == null || !binding.profile().derivedBlockTags().contains(BlockTags.SOUL_SPEED_BLOCKS)) return;
-        if (binding.geometry() == DerivedGeometrySupport.Geometry.VERTICAL_SLAB
-                || binding.geometry() == DerivedGeometrySupport.Geometry.LAYER
-                || binding.geometry() == DerivedGeometrySupport.Geometry.STEP
+        if (binding.role() == BgeGeometryRole.VERTICAL_SLAB
+                || binding.role() == BgeGeometryRole.LAYER
+                || binding.role() == BgeGeometryRole.QUARTER_COLUMN
+                || binding.role() == BgeGeometryRole.CORNER
+                && state.hasProperty(BgeCornerBlock.HALF)
+                && state.getValue(BgeCornerBlock.HALF) == Half.BOTTOM
+                || binding.role() == BgeGeometryRole.STEP
                 && state.hasProperty(BlockStateProperties.SLAB_TYPE)
                 && state.getValue(BlockStateProperties.SLAB_TYPE) == SlabType.BOTTOM) {
             cir.setReturnValue(current);

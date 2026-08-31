@@ -4,11 +4,13 @@
   "compatibilityLevel": "JAVA_25",
   "mixins": [
     "ClutterNoMoreVariantScanMixin",
+    "BgeFuelValuesBuilderMixin",
+    "BgePodzolGeometryConversionMixin",
     "ProviderPistonStickyMixin",
     "ProviderWeatheringCopperMixin",
     "SpreadingSnowyBlockMixin",
-    "ShapeMapOrderMixin"
-    ,"ProviderMovementMaterialMixin",
+    "ShapeMapOrderMixin",
+    "ProviderMovementMaterialMixin",
     "ProviderPointedDripstoneMixin"
   ],
   "client": [

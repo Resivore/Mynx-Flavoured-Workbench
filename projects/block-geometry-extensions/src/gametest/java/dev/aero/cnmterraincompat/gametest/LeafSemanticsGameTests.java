@@ -22,6 +22,7 @@ import dev.aero.cnmterraincompat.AxisModelContract;
 import dev.aero.cnmterraincompat.AxisModelContract.AxisUvPolicy;
 import dev.aero.cnmterraincompat.AxisStepBlock;
 import dev.aero.cnmterraincompat.AxisVerticalSlabBlock;
+import dev.aero.cnmterraincompat.BgeGeometryRole;
 import dev.aero.cnmterraincompat.BgeLayerBlock;
 import dev.aero.cnmterraincompat.CnmGeneratedLanguage;
 import dev.aero.cnmterraincompat.CnmTerrainCompat;
@@ -630,11 +631,13 @@ public final class LeafSemanticsGameTests implements CustomTestMethodInvoker {
         var rootsSegment = rootsComponent.stream().filter(item -> providerProfile(item).orElse(null) == roots).toList();
         var expected = new java.util.ArrayList<Item>();
         appendExpectedSegment(expected, rootsComponent, roots);
-        helper.assertTrue(rootsSegment.equals(expected) && rootsSegment.size() == 7
+        helper.assertTrue(rootsSegment.equals(expected) && rootsSegment.size() == 9
                         && rootsSegment.getFirst() == Blocks.MANGROVE_ROOTS.asItem()
                         && BuiltInRegistries.ITEM.getKey(rootsSegment.get(5)).getPath().endsWith("mangrove_roots_step")
-                        && rootsSegment.getLast() == layerItem(roots),
-                "Mangrove Roots seven-role segment/order mismatch: " + ids(rootsComponent));
+                        && rootsSegment.get(6) == layerItem(roots)
+                        && rootsSegment.get(7) == cornerItem(roots)
+                        && rootsSegment.getLast() == columnItem(roots),
+                "Mangrove Roots nine-role segment/order mismatch: " + ids(rootsComponent));
         helper.assertTrue(ShapeMap.getShapes(Blocks.MUDDY_MANGROVE_ROOTS.asItem()) != rootsComponent,
                 "Muddy Mangrove Roots component merged into Mangrove Roots");
         System.out.println("ROOTS_VISUAL|profiles=1|newVisualTargets=3|newFullyReadyTargets=3|segment="
@@ -709,10 +712,12 @@ public final class LeafSemanticsGameTests implements CustomTestMethodInvoker {
         var segment = component.stream().filter(item -> providerProfile(item).orElse(null) == magma).toList();
         var expected = new java.util.ArrayList<Item>();
         appendExpectedSegment(expected, component, magma);
-        helper.assertTrue(segment.equals(expected) && segment.size() == 7
+        helper.assertTrue(segment.equals(expected) && segment.size() == 9
                         && BuiltInRegistries.ITEM.getKey(segment.get(5)).getPath().endsWith("magma_block_step")
-                        && segment.getLast() == layer.asItem(),
-                "Magma seven-role order mismatch: " + ids(component));
+                        && segment.get(6) == layer.asItem()
+                        && segment.get(7) == cornerItem(magma)
+                        && segment.getLast() == columnItem(magma),
+                "Magma nine-role order mismatch: " + ids(component));
         System.out.println("MAGMA_SEMANTICS|profiles=1|targets=3|tagged=6|segment=" + ids(segment));
         helper.succeed();
     }
@@ -805,9 +810,11 @@ public final class LeafSemanticsGameTests implements CustomTestMethodInvoker {
         }
         var segment = ShapeMap.getShapes(Blocks.SOUL_SAND.asItem()).stream()
                 .filter(item -> providerProfile(item).orElse(null) == soul).toList();
-        helper.assertTrue(segment.size() == 7 && segment.get(5).equals(step.asItem())
-                        && segment.getLast().equals(layer.asItem()),
-                "Soul Sand seven-role ShapeMap order changed: " + ids(segment));
+        helper.assertTrue(segment.size() == 9 && segment.get(5).equals(step.asItem())
+                        && segment.get(6).equals(layer.asItem())
+                        && segment.get(7).equals(cornerItem(soul))
+                        && segment.getLast().equals(columnItem(soul)),
+                "Soul Sand nine-role ShapeMap order changed: " + ids(segment));
         System.out.println("SOUL_SAND_SEMANTICS|profiles=1|targets=3|verticalOrientations=4|stepForms=3|segment="
                 + ids(segment));
         helper.succeed();
@@ -980,11 +987,15 @@ public final class LeafSemanticsGameTests implements CustomTestMethodInvoker {
         var oak = ShapeMap.getShapes(Items.OAK_LOG);
         NibaruMaterialProfile oakLog = NibaruMaterialProfiles.fromFamily(ModBlocks.OAK_LOG).orElseThrow();
         NibaruMaterialProfile oakWood = NibaruMaterialProfiles.fromFamily(ModBlocks.OAK_WOOD).orElseThrow();
-        helper.assertTrue(oak.indexOf(Items.OAK_LOG) == 0 && oak.indexOf(Items.OAK_WOOD) == 7
+        helper.assertTrue(oak.indexOf(Items.OAK_LOG) == 0 && oak.indexOf(Items.OAK_WOOD) == 9
                         && BuiltInRegistries.ITEM.getKey(oak.get(5)).getPath().endsWith("oak_log_step")
                         && oak.get(6) == layerItem(oakLog)
-                        && BuiltInRegistries.ITEM.getKey(oak.get(12)).getPath().endsWith("oak_wood_step")
-                        && oak.getLast() == layerItem(oakWood),
+                        && oak.get(7) == cornerItem(oakLog)
+                        && oak.get(8) == columnItem(oakLog)
+                        && BuiltInRegistries.ITEM.getKey(oak.get(14)).getPath().endsWith("oak_wood_step")
+                        && oak.get(15) == layerItem(oakWood)
+                        && oak.get(16) == cornerItem(oakWood)
+                        && oak.getLast() == columnItem(oakWood),
                 "Oak log/wood parent segments are not canonical: " + ids(oak));
         System.out.println("PARENT_SEGMENT_ORDER|multiParentComponents=" + multiParentComponents
                 + "|oak=" + ids(oak));
@@ -1096,18 +1107,22 @@ public final class LeafSemanticsGameTests implements CustomTestMethodInvoker {
                                 .orElseThrow().asItem(),
                         NibaruProviderAdapter.derived(planks, DerivedGeometrySupport.Geometry.STEP)
                                 .orElseThrow().asItem(),
-                        layerItem(planks))),
+                        layerItem(planks), cornerItem(planks), columnItem(planks))),
                 "Pale Oak Planks ShapeMap order/uniqueness changed: " + ids(plankShapes));
 
         var paleLogShapes = ShapeMap.getShapes(Blocks.PALE_OAK_LOG.asItem());
         NibaruMaterialProfile paleLog = NibaruMaterialProfiles.fromFamily(ModBlocks.PALE_OAK_LOG).orElseThrow();
         NibaruMaterialProfile paleWood = NibaruMaterialProfiles.fromFamily(ModBlocks.PALE_OAK_WOOD).orElseThrow();
-        helper.assertTrue(paleLogShapes.size() == 14 && paleLogShapes.getFirst() == Blocks.PALE_OAK_LOG.asItem()
-                        && paleLogShapes.get(7) == Blocks.PALE_OAK_WOOD.asItem()
+        helper.assertTrue(paleLogShapes.size() == 18 && paleLogShapes.getFirst() == Blocks.PALE_OAK_LOG.asItem()
+                        && paleLogShapes.get(9) == Blocks.PALE_OAK_WOOD.asItem()
                         && BuiltInRegistries.ITEM.getKey(paleLogShapes.get(5)).getPath().endsWith("pale_oak_log_step")
                         && paleLogShapes.get(6) == layerItem(paleLog)
-                        && BuiltInRegistries.ITEM.getKey(paleLogShapes.get(12)).getPath().endsWith("pale_oak_wood_step")
-                        && paleLogShapes.getLast() == layerItem(paleWood),
+                        && paleLogShapes.get(7) == cornerItem(paleLog)
+                        && paleLogShapes.get(8) == columnItem(paleLog)
+                        && BuiltInRegistries.ITEM.getKey(paleLogShapes.get(14)).getPath().endsWith("pale_oak_wood_step")
+                        && paleLogShapes.get(15) == layerItem(paleWood)
+                        && paleLogShapes.get(16) == cornerItem(paleWood)
+                        && paleLogShapes.getLast() == columnItem(paleWood),
                 "Pale Oak log/wood parent segments changed: " + ids(paleLogShapes));
         System.out.println("PALE_COVERAGE|profiles=7|nativeBlocks=19|companionTargets=21|matrix=933");
         helper.succeed();
@@ -1926,6 +1941,9 @@ public final class LeafSemanticsGameTests implements CustomTestMethodInvoker {
         assertShapePresent(helper, dirtShapes, "clutternomore:more_slabs_stairs_and_walls/dirt_step");
         assertShapePresent(helper, dirtShapes, CnmTerrainCompat.layerId(
                 NibaruMaterialProfiles.fromFamily(ModBlocks.DIRT).orElseThrow()).toString());
+        NibaruMaterialProfile dirt = NibaruMaterialProfiles.fromFamily(ModBlocks.DIRT).orElseThrow();
+        assertShapePresent(helper, dirtShapes, CnmTerrainCompat.cornerId(dirt).toString());
+        assertShapePresent(helper, dirtShapes, CnmTerrainCompat.quarterColumnId(dirt).toString());
         assertShapeAbsent(helper, dirtShapes, "cnm_terrain_slabs_compat:dirt_slab");
         assertShapeAbsent(helper, dirtShapes, "cnm_terrain_slabs_compat:dirt_vertical_slab");
 
@@ -1945,15 +1963,19 @@ public final class LeafSemanticsGameTests implements CustomTestMethodInvoker {
         assertShapePresent(helper, grassShapes, "clutternomore:more_slabs_stairs_and_walls/grass_block_step");
         NibaruMaterialProfile grass = NibaruMaterialProfiles.fromFamily(ModBlocks.GRASS_BLOCK).orElseThrow();
         assertShapePresent(helper, grassShapes, CnmTerrainCompat.layerId(grass).toString());
+        assertShapePresent(helper, grassShapes, CnmTerrainCompat.cornerId(grass).toString());
+        assertShapePresent(helper, grassShapes, CnmTerrainCompat.quarterColumnId(grass).toString());
         assertShapeAbsent(helper, grassShapes, "cnm_terrain_slabs_compat:grass_slab");
         long horizontal = grassShapes.stream().filter(item -> Block.byItem(item) instanceof SlabBlock).count();
         long vertical = grassShapes.stream().filter(item -> Block.byItem(item) instanceof VerticalSlabBlock).count();
         helper.assertTrue(horizontal == 1, "Grass ShapeMap exposes " + horizontal + " horizontal slabs: " + ids(grassShapes));
         helper.assertTrue(vertical == 1, "Grass ShapeMap exposes " + vertical + " vertical slabs: " + ids(grassShapes));
-        helper.assertTrue(grassShapes.get(grassShapes.size() - 2)
+        helper.assertTrue(grassShapes.get(grassShapes.size() - 4)
                         .equals(BuiltInRegistries.ITEM.getValue(CNM_GRASS_STEP))
-                        && grassShapes.getLast() == layerItem(grass),
-                "Grass Step/Layer tail order changed: " + ids(grassShapes));
+                        && grassShapes.get(grassShapes.size() - 3) == layerItem(grass)
+                        && grassShapes.get(grassShapes.size() - 2) == cornerItem(grass)
+                        && grassShapes.getLast() == columnItem(grass),
+                "Grass Step/Layer/Corner/Column tail order changed: " + ids(grassShapes));
         helper.succeed();
     }
 
@@ -2946,10 +2968,22 @@ public final class LeafSemanticsGameTests implements CustomTestMethodInvoker {
                 .ifPresent(item -> appendIfPresent(result, component, item));
         NibaruProviderAdapter.derived(profile, DerivedGeometrySupport.Geometry.LAYER).map(Block::asItem)
                 .ifPresent(item -> appendIfPresent(result, component, item));
+        NibaruProviderAdapter.derived(profile, BgeGeometryRole.CORNER).map(Block::asItem)
+                .ifPresent(item -> appendIfPresent(result, component, item));
+        NibaruProviderAdapter.derived(profile, BgeGeometryRole.QUARTER_COLUMN).map(Block::asItem)
+                .ifPresent(item -> appendIfPresent(result, component, item));
     }
 
     private static Item layerItem(NibaruMaterialProfile profile) {
         return BuiltInRegistries.ITEM.getValue(CnmTerrainCompat.layerId(profile));
+    }
+
+    private static Item cornerItem(NibaruMaterialProfile profile) {
+        return BuiltInRegistries.ITEM.getValue(CnmTerrainCompat.cornerId(profile));
+    }
+
+    private static Item columnItem(NibaruMaterialProfile profile) {
+        return BuiltInRegistries.ITEM.getValue(CnmTerrainCompat.quarterColumnId(profile));
     }
 
     private static void appendIfPresent(java.util.List<Item> result, java.util.List<Item> component, Item item) {

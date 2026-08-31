@@ -69,7 +69,7 @@ public final class NibaruProviderAdapter {
             VisualProfile.SLIME_INSET));
     private static final Identifier SHAPE_MAP_SOURCE = Identifier.fromNamespaceAndPath(
             CnmTerrainCompat.MOD_ID, "provider_profiles");
-    private static final Map<NibaruMaterialProfile, EnumMap<DerivedGeometrySupport.Geometry, Block>> DERIVED =
+    private static final Map<NibaruMaterialProfile, EnumMap<BgeGeometryRole, Block>> DERIVED =
             new IdentityHashMap<>();
     private static final Map<Block, RuntimeBinding> RUNTIME_BINDINGS = new IdentityHashMap<>();
     private static final Map<TintProfile, Set<Block>> TINT_TARGETS = new EnumMap<>(TintProfile.class);
@@ -123,7 +123,7 @@ public final class NibaruProviderAdapter {
             result = new NibaruLeavesVerticalSlabBlock(properties);
         } else if (profile.capabilities().contains(BehaviorCapability.PATH_CONVERSION)) {
             result = new PathVerticalSlabBlock(properties, () -> transitionGeometry(profile,
-                    MaterialTransition.Type.PATH_REVERSION, DerivedGeometrySupport.Geometry.VERTICAL_SLAB));
+                    MaterialTransition.Type.PATH_REVERSION, BgeGeometryRole.VERTICAL_SLAB));
         } else if (isSpreadableSurface(profile)) {
             result = new GrassVerticalSlab(properties);
         } else if (profile.capabilities().contains(BehaviorCapability.SPREADABLE)) {
@@ -161,7 +161,7 @@ public final class NibaruProviderAdapter {
             result = new VerticalSlabBlock(properties);
         }
         registerTint(profile, result);
-        capture(profile, DerivedGeometrySupport.Geometry.VERTICAL_SLAB, result);
+        capture(profile, BgeGeometryRole.VERTICAL_SLAB, result);
         return result;
     }
 
@@ -173,7 +173,7 @@ public final class NibaruProviderAdapter {
             result = new NibaruLeavesStepBlock(properties);
         } else if (profile.capabilities().contains(BehaviorCapability.PATH_CONVERSION)) {
             result = new PathStepBlock(properties, () -> transitionGeometry(profile,
-                    MaterialTransition.Type.PATH_REVERSION, DerivedGeometrySupport.Geometry.STEP));
+                    MaterialTransition.Type.PATH_REVERSION, BgeGeometryRole.STEP));
         } else if (isSpreadableSurface(profile)) {
             result = new GrassStepBlock(properties);
         } else if (profile.capabilities().contains(BehaviorCapability.FLATTENABLE_TO_PATH)) {
@@ -209,7 +209,7 @@ public final class NibaruProviderAdapter {
             result = new StepBlock(properties);
         }
         registerTint(profile, result);
-        capture(profile, DerivedGeometrySupport.Geometry.STEP, result);
+        capture(profile, BgeGeometryRole.STEP, result);
         return result;
     }
 
@@ -223,11 +223,43 @@ public final class NibaruProviderAdapter {
                     + ": " + support.status() + " " + support.missingCapabilities());
         }
         BgeLayerBlock result = BgeLayerSpecializedBlocks.create(profile, properties);
-        bindExisting(profile, DerivedGeometrySupport.Geometry.LAYER, result);
+        bindExisting(profile, BgeGeometryRole.LAYER, result);
         return result;
     }
 
+    /** Creates and binds the BGE-owned non-composing Corner. */
+    public static BgeCornerBlock createCorner(NibaruMaterialProfile profile,
+            BlockBehaviour.Properties properties) {
+        requireLocalSupport(profile, BgeGeometryRole.CORNER);
+        BgeCornerBlock result = BgeCornerBlock.create(profile, properties);
+        bindExisting(profile, BgeGeometryRole.CORNER, result);
+        return result;
+    }
+
+    /** Creates and binds the BGE-owned compound Quarter Column. */
+    public static BgeColumnBlock createQuarterColumn(NibaruMaterialProfile profile,
+            BlockBehaviour.Properties properties) {
+        requireLocalSupport(profile, BgeGeometryRole.QUARTER_COLUMN);
+        BgeColumnBlock result = BgeColumnBlock.create(profile, properties);
+        bindExisting(profile, BgeGeometryRole.QUARTER_COLUMN, result);
+        return result;
+    }
+
+    private static void requireLocalSupport(NibaruMaterialProfile profile, BgeGeometryRole role) {
+        DerivedGeometrySupport support = profile.supportFor(DerivedGeometrySupport.Geometry.LAYER,
+                ADAPTED_CAPABILITIES, ADAPTED_VISUALS);
+        if (!support.supported()) {
+            throw new IllegalStateException("Unsupported BGE " + role + " material "
+                    + profile.canonicalParentId() + ": " + support.status() + " "
+                    + support.missingCapabilities());
+        }
+    }
+
     public static void bindExisting(NibaruMaterialProfile profile, DerivedGeometrySupport.Geometry geometry, Block block) {
+        bindExisting(profile, BgeGeometryRole.fromLegacy(geometry), block);
+    }
+
+    public static void bindExisting(NibaruMaterialProfile profile, BgeGeometryRole geometry, Block block) {
         capture(profile, geometry, block);
         registerTint(profile, block);
     }
@@ -242,10 +274,17 @@ public final class NibaruProviderAdapter {
     }
 
     public static Optional<Block> derived(NibaruMaterialProfile profile, DerivedGeometrySupport.Geometry geometry) {
-        EnumMap<DerivedGeometrySupport.Geometry, Block> geometries = DERIVED.get(profile);
+        return derived(profile, BgeGeometryRole.fromLegacy(geometry));
+    }
+
+    public static Optional<Block> derived(NibaruMaterialProfile profile, BgeGeometryRole geometry) {
+        EnumMap<BgeGeometryRole, Block> geometries = DERIVED.get(profile);
         Block derived = geometries == null ? null : geometries.get(geometry);
         if (derived != null) return Optional.of(derived);
-        Optional<Block> binding = ExistingDerivedGeometryBindings.resolve(profile.canonicalParentId(), geometry);
+        Optional<DerivedGeometrySupport.Geometry> legacy = geometry.legacyGeometry();
+        if (legacy.isEmpty()) return Optional.empty();
+        Optional<Block> binding = ExistingDerivedGeometryBindings.resolve(
+                profile.canonicalParentId(), legacy.get());
         if (binding.isEmpty()) return Optional.empty();
         Block existing = binding.get();
         bindExisting(profile, geometry, existing);
@@ -257,28 +296,44 @@ public final class NibaruProviderAdapter {
         return Optional.ofNullable(RUNTIME_BINDINGS.get(block));
     }
 
+    /** Local roles omitted from exact Nibaru C46's DerivedMaterialTraits vocabulary. */
+    public static List<LocalMaterialTrait> localMaterialTraits() {
+        List<LocalMaterialTrait> result = new ArrayList<>();
+        RUNTIME_BINDINGS.forEach((block, binding) -> {
+            if (binding.role().legacyGeometry().isEmpty()) {
+                result.add(new LocalMaterialTrait(block, binding.profile().canonicalParent(),
+                        binding.role(), binding.role().fuelDivisor()));
+            }
+        });
+        return List.copyOf(result);
+    }
+
     public static Optional<InteractionResult> useComposedCapabilities(Block block, ItemStack stack,
             BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand) {
         RuntimeBinding binding = RUNTIME_BINDINGS.get(block);
         if (binding == null) return Optional.empty();
         if (binding.profile().oxidationStage().isPresent()) {
             InteractionResult result = CopperSemantics.interact(state, binding.profile(), stack, level, pos,
-                    player, hand, target -> derived(target, binding.geometry()));
+                    player, hand, target -> derived(target, binding.role()));
             if (result != InteractionResult.TRY_WITH_EMPTY_HAND) return Optional.of(result);
         }
         if (stack.getItem() instanceof ShovelItem
                 && binding.profile().capabilities().contains(BehaviorCapability.FLATTENABLE_TO_PATH)) {
-            Block target = transitionGeometry(binding.profile(), MaterialTransition.Type.PATH_TARGET, binding.geometry());
+            Block target = transitionGeometry(binding.profile(), MaterialTransition.Type.PATH_TARGET, binding.role());
             BlockState targetState = target.defaultBlockState();
-            if (binding.geometry() == DerivedGeometrySupport.Geometry.LAYER) {
+            if (binding.role().isBgeOwned()) {
                 targetState = PathSemantics.copySharedProperties(state, targetState);
             }
             return Optional.of(PathSemantics.flatten(stack, state, targetState, level, pos, player, hand));
         }
         if (stack.getItem() instanceof AxeItem
                 && binding.profile().capabilities().contains(BehaviorCapability.STRIPPABLE)) {
-            Block target = transitionGeometry(binding.profile(), MaterialTransition.Type.STRIPPED, binding.geometry());
-            return Optional.of(StrippingSemantics.strip(stack, state, target.defaultBlockState(),
+            Block target = transitionGeometry(binding.profile(), MaterialTransition.Type.STRIPPED, binding.role());
+            BlockState targetState = target.defaultBlockState();
+            if (binding.role().isBgeOwned()) {
+                targetState = PathSemantics.copySharedProperties(state, targetState);
+            }
+            return Optional.of(StrippingSemantics.strip(stack, state, targetState,
                     level, pos, player, hand));
         }
         return Optional.empty();
@@ -294,14 +349,14 @@ public final class NibaruProviderAdapter {
         RuntimeBinding binding = RUNTIME_BINDINGS.get(block);
         if (binding == null) return Optional.empty();
         return CopperSemantics.transition(state, binding.profile(), MaterialTransition.Type.NEXT_OXIDATION,
-                target -> derived(target, binding.geometry()));
+                target -> derived(target, binding.role()));
     }
 
     public static Block coralDeath(Block block) {
         RuntimeBinding binding = RUNTIME_BINDINGS.get(block);
         if (binding == null) throw new IllegalStateException("Missing coral runtime binding");
         return derived(NibaruMaterialProfiles.fromFamily(binding.profile().transition(MaterialTransition.Type.CORAL_DEATH)
-                .orElseThrow().target()).orElseThrow(), binding.geometry()).orElseThrow();
+                .orElseThrow().target()).orElseThrow(), binding.role()).orElseThrow();
     }
 
     public static Block concreteHardening(Block block) {
@@ -309,7 +364,7 @@ public final class NibaruProviderAdapter {
         if (binding == null) throw new IllegalStateException("Missing concrete-powder runtime binding");
         NibaruMaterialProfile target = NibaruMaterialProfiles.fromFamily(binding.profile()
                 .transition(MaterialTransition.Type.CONCRETE_HARDENING).orElseThrow().target()).orElseThrow();
-        return derived(target, binding.geometry()).orElseThrow();
+        return derived(target, binding.role()).orElseThrow();
     }
 
     public static void addExactShapeMapEdges(List<ShapeMap.Mapping> mappings) {
@@ -321,6 +376,8 @@ public final class NibaruProviderAdapter {
             add(mappings, parent, derived(profile, DerivedGeometrySupport.Geometry.VERTICAL_SLAB).map(Block::asItem));
             add(mappings, parent, derived(profile, DerivedGeometrySupport.Geometry.STEP).map(Block::asItem));
             add(mappings, parent, derived(profile, DerivedGeometrySupport.Geometry.LAYER).map(Block::asItem));
+            add(mappings, parent, derived(profile, BgeGeometryRole.CORNER).map(Block::asItem));
+            add(mappings, parent, derived(profile, BgeGeometryRole.QUARTER_COLUMN).map(Block::asItem));
         }
     }
 
@@ -347,6 +404,10 @@ public final class NibaruProviderAdapter {
                 derived(profile, DerivedGeometrySupport.Geometry.STEP).map(Block::asItem)
                         .ifPresent(item -> addIfPresent(providerOrder, before, item));
                 derived(profile, DerivedGeometrySupport.Geometry.LAYER).map(Block::asItem)
+                        .ifPresent(item -> addIfPresent(providerOrder, before, item));
+                derived(profile, BgeGeometryRole.CORNER).map(Block::asItem)
+                        .ifPresent(item -> addIfPresent(providerOrder, before, item));
+                derived(profile, BgeGeometryRole.QUARTER_COLUMN).map(Block::asItem)
                         .ifPresent(item -> addIfPresent(providerOrder, before, item));
             }
             if (providerOrder.isEmpty()) continue;
@@ -396,9 +457,9 @@ public final class NibaruProviderAdapter {
         TINT_TARGETS.forEach((tint, blocks) -> blocks.forEach(block -> registrar.accept(tint, block)));
     }
 
-    private static void capture(NibaruMaterialProfile profile, DerivedGeometrySupport.Geometry geometry, Block block) {
-        EnumMap<DerivedGeometrySupport.Geometry, Block> geometries = DERIVED.computeIfAbsent(profile,
-                ignored -> new EnumMap<>(DerivedGeometrySupport.Geometry.class));
+    private static void capture(NibaruMaterialProfile profile, BgeGeometryRole geometry, Block block) {
+        EnumMap<BgeGeometryRole, Block> geometries = DERIVED.computeIfAbsent(profile,
+                ignored -> new EnumMap<>(BgeGeometryRole.class));
         Block previous = geometries.putIfAbsent(geometry, block);
         if (previous != null && previous != block) throw new IllegalStateException(
                 "Duplicate derived Nibaru geometry owner for " + profile.canonicalParentId() + " " + geometry);
@@ -407,7 +468,8 @@ public final class NibaruProviderAdapter {
         if (priorBinding != null && !priorBinding.equals(binding)) throw new IllegalStateException(
                 "Derived block is bound to multiple Nibaru profiles: " + BuiltInRegistries.BLOCK.getKey(block));
         CanonicalGeometryRegistry.register(block);
-        DerivedMaterialTraits.register(block, profile.canonicalParent(), geometry, fuelDivisor(geometry));
+        geometry.legacyGeometry().ifPresent(legacy -> DerivedMaterialTraits.register(
+                block, profile.canonicalParent(), legacy, geometry.fuelDivisor()));
         if (profile.canonicalParent().defaultBlockState().ignitedByLava()) {
             FlammableBlockRegistry.getDefaultInstance().add(block,
                     games.twinhead.moreslabsstairsandwalls.registry.ModRegistry.getBurnChance(profile.family()),
@@ -417,7 +479,7 @@ public final class NibaruProviderAdapter {
     }
 
     private static void registerSpreadablePairIfReady(NibaruMaterialProfile profile,
-            DerivedGeometrySupport.Geometry geometry, Block block) {
+            BgeGeometryRole geometry, Block block) {
         if (!profile.capabilities().contains(BehaviorCapability.SPREADABLE)) return;
         if (!isSpreadableSurface(profile)) {
             for (NibaruMaterialProfile candidate : NibaruMaterialProfiles.all()) {
@@ -428,14 +490,6 @@ public final class NibaruProviderAdapter {
         }
         baseProfile(profile).flatMap(base -> derived(base, geometry))
                 .ifPresent(base -> SpreadableSemantics.registerPair(base, block, profile.canonicalParent()));
-    }
-
-    private static int fuelDivisor(DerivedGeometrySupport.Geometry geometry) {
-        return switch (geometry) {
-            case VERTICAL_SLAB -> 2;
-            case STEP -> 1;
-            case LAYER -> 4;
-        };
     }
 
     private static boolean isSpreadableSurface(NibaruMaterialProfile profile) {
@@ -449,7 +503,7 @@ public final class NibaruProviderAdapter {
     }
 
     private static Block transitionGeometry(NibaruMaterialProfile profile, MaterialTransition.Type type,
-            DerivedGeometrySupport.Geometry geometry) {
+            BgeGeometryRole geometry) {
         NibaruMaterialProfile target = profile.transitions().stream().filter(t -> t.type() == type).findFirst()
                 .flatMap(t -> NibaruMaterialProfiles.fromFamily(t.target()))
                 .orElseThrow(() -> new IllegalStateException("Missing " + type + " target for "
@@ -476,6 +530,14 @@ public final class NibaruProviderAdapter {
         public UnsupportedEntry { missingCapabilities = Set.copyOf(missingCapabilities); }
     }
 
-    public record RuntimeBinding(NibaruMaterialProfile profile, DerivedGeometrySupport.Geometry geometry) {}
+    public record LocalMaterialTrait(Block derived, Block canonicalParent,
+            BgeGeometryRole role, int fuelDivisor) {}
+
+    public record RuntimeBinding(NibaruMaterialProfile profile, BgeGeometryRole role) {
+        /** Compatibility view for existing C46 consumers; local C55 roles have no legacy value. */
+        public DerivedGeometrySupport.Geometry geometry() {
+            return role.legacyGeometry().orElse(null);
+        }
+    }
 
 }
