@@ -10,7 +10,7 @@
     "legacy_ids": []
   },
   "definition": {
-    "lifecycle": "ACTIVE",
+    "lifecycle": "ACCEPTED",
     "goals": [
       "Consolidate ordinary intended Matcha charcoal production into coal while preserving the overridden cooking recipe identities, burnable-log inputs, experience, and timing.",
       "Replace only the seven previously audited recipes' explicit charcoal alternatives with coal while leaving #minecraft:coals consumers unchanged.",
@@ -90,7 +90,7 @@
     ]
   },
   "state": {
-    "milestone": "Canary 3 is a statically verified, retained successor to C2. An outside-Workbench observation reported that a log produced coal in the furnace as intended but charcoal in the smoker; because exact artifact and runtime identity are unproven, this is defect evidence rather than a canonical Workbench runtime pass/fail. C2 enforced only the effective post-resolution minecraft:charcoal furnace holder, leaving a later smoking:charcoal resource able to remain charcoal-producing. C3 extends the same narrow fail-closed enforcement to the exact SmokingRecipe holder, preserves both cooking recipes' identities and metadata, and adds an effective-reload regression proving a later competing smoker resource wins normal preparation before the final manager state is corrected. C3 is unaccepted, runtime untested, not deployed, and occupies no test slot.",
+    "milestone": "The user reported an aggregate runtime PASS for exact Canary 3 without attributing results to individual checklist rows. Exact C3 is current and accepted in the physically verified Stack v6 baseline, and no separate rollback is designated.",
     "releases": {
       "current": {
         "version": "0.1.2-canary3",
@@ -100,24 +100,31 @@
         },
         "source_commit": "d2ad841f6a8edfbc765ec681d803b193e5d1f7ad"
       },
-      "accepted": null,
+      "accepted": {
+        "version": "0.1.2-canary3",
+        "artifact": {
+          "filename": "coal-consolidation-0.1.2-canary3.jar",
+          "sha256": "f1d36dfad276927d527cc911d92f47ee979ef7600479f950c76ed25dd18eb871"
+        },
+        "source_commit": "d2ad841f6a8edfbc765ec681d803b193e5d1f7ad"
+      },
       "rollback": null,
-      "accepted_current": "NO_ACCEPTED",
+      "accepted_current": "CURRENT_IS_ACCEPTED",
       "accepted_rollback": "NO_ROLLBACK"
     },
     "validation": {
       "build": "STATIC_PASS",
-      "deployment": "NOT_DEPLOYED",
-      "runtime": "RUNTIME_UNTESTED"
+      "deployment": "READY_TO_TEST_VERIFIED",
+      "runtime": "RUNTIME_PASS"
     },
     "blocker": null
   },
   "synchronization": {
-    "revision": 6,
-    "activity_at": "2026-08-31T01:00:05Z",
-    "updated_at": "2026-08-31T01:00:05Z",
-    "last_codex_at": "2026-08-31T01:00:05Z",
-    "source_commit": "d2ad841f6a8edfbc765ec681d803b193e5d1f7ad",
+    "revision": 7,
+    "activity_at": "2026-08-31T04:36:25Z",
+    "updated_at": "2026-08-31T04:36:25Z",
+    "last_codex_at": "2026-08-31T04:36:25Z",
+    "source_commit": "12d96636943b4ba405c0d96916bbdc74e1434629",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null

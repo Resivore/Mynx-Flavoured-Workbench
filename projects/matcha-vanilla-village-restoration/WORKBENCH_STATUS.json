@@ -58,7 +58,7 @@
     ]
   },
   "state": {
-    "milestone": "Retained Canary 1 is byte-identical, deterministically reproduced, and statically verified; it remains runtime untested and not deployed.",
+    "milestone": "The user reported an aggregate runtime PASS for the exact retained Canary 1, but accepted promotion remains pending a managed global data-pack authority that can prove activation and precedence over Matcha.",
     "releases": {
       "current": {
         "version": "0.1.0-canary1",
@@ -75,17 +75,17 @@
     },
     "validation": {
       "build": "STATIC_PASS",
-      "deployment": "NOT_DEPLOYED",
-      "runtime": "RUNTIME_UNTESTED"
+      "deployment": "DEPLOYED",
+      "runtime": "RUNTIME_PASS"
     },
     "blocker": null
   },
   "synchronization": {
-    "revision": 1,
-    "activity_at": "2026-08-28T17:25:26Z",
-    "updated_at": "2026-08-29T22:17:05Z",
-    "last_codex_at": "2026-08-29T22:17:05Z",
-    "source_commit": "e34881783056f641e14048610756e2fa7dcb17c5",
+    "revision": 2,
+    "activity_at": "2026-08-31T04:36:25Z",
+    "updated_at": "2026-08-31T04:36:25Z",
+    "last_codex_at": "2026-08-31T04:36:25Z",
+    "source_commit": "12d96636943b4ba405c0d96916bbdc74e1434629",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null

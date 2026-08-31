@@ -10,11 +10,11 @@
     "legacy_ids": []
   },
   "definition": {
-    "lifecycle": "ACTIVE",
+    "lifecycle": "ACCEPTED",
     "goals": [
       "Provide exactly one shapeless Dirt plus Hanging Roots recipe producing one Rooted Dirt without an advancement or advancement tab.",
       "Make placed Hanging Roots duplicate one Hanging Roots item through vanilla bonemeal handling while leaving the source block intact and preserving vanilla Rooted Dirt behavior.",
-      "Supersede the accepted Craftable Rooted Dirt predecessor only through a future mutually exclusive runtime transition."
+      "Keep accepted Rooted Dirt QoL mutually exclusive with the exact disabled Craftable Rooted Dirt rollback."
     ],
     "scope": [
       "Maintain the Minecraft Java 26.2 Fabric recipe and sole structural HangingRootsBlock mixin from Canary 1.",
@@ -27,7 +27,7 @@
       "exclusions": [
         "Items, blocks, entrypoints, access wideners, commands, keybinds, configuration, GUI, advancements, advancement tabs, assets, and mechanics beyond the one recipe and Hanging Roots bonemeal contract.",
         "Bonemeal-item or dispenser interception, RootedDirtBlock changes, Matcha-specific behavior, unrelated blocks, registries, and mutation of the placed Hanging Roots block.",
-        "Concurrent activation with craft-rooted-dirt-107.1.jar (mr_craft_rooteddirt); the accepted predecessor must be disabled before Canary 1 is deployed.",
+        "Concurrent activation with craft-rooted-dirt-107.1.jar (mr_craft_rooteddirt); the retained predecessor must remain disabled whenever accepted Canary 1 is active.",
         "Runtime deployment, Test Slot changes, Test Instance Manager changes, Workbench profile changes, and protected gameplay profile access during this migration."
       ]
     },
@@ -71,7 +71,7 @@
     ]
   },
   "state": {
-    "milestone": "C1 is retained after 7 focused tests; it is runtime untested and not deployed, while the accepted predecessor remains live.",
+    "milestone": "The user reported an aggregate runtime PASS for exact Canary 1 without attributing results to individual checklist rows. Exact C1 is current and accepted in the physically verified Stack v6 baseline; exact Craftable Rooted Dirt 107.1 is disabled and retained as the distinct rollback, with no active coexistence.",
     "releases": {
       "current": {
         "version": "0.1.0-canary1",
@@ -82,12 +82,12 @@
         "source_commit": "46e66c9c9bb5701153edc017a969b24e1176dffc"
       },
       "accepted": {
-        "version": "107.1",
+        "version": "0.1.0-canary1",
         "artifact": {
-          "filename": "craft-rooted-dirt-107.1.jar",
-          "sha256": "a5fc656fc345b416fc01281146d568de664c587e2c168e6bfd69f3ded7e42845"
+          "filename": "rooted-dirt-qol-0.1.0-canary1.jar",
+          "sha256": "3642f55e0cef611f2dd56478b8aaf2491fd81d370023a04ca71e6852b37307ee"
         },
-        "source_commit": "b71932fb4c917edfa2c162600b01a4c1f2983dfe"
+        "source_commit": "46e66c9c9bb5701153edc017a969b24e1176dffc"
       },
       "rollback": {
         "version": "107.1",
@@ -97,22 +97,22 @@
         },
         "source_commit": "b71932fb4c917edfa2c162600b01a4c1f2983dfe"
       },
-      "accepted_current": "CURRENT_DIFFERS_FROM_ACCEPTED",
-      "accepted_rollback": "ACCEPTED_IS_ROLLBACK"
+      "accepted_current": "CURRENT_IS_ACCEPTED",
+      "accepted_rollback": "ROLLBACK_DIFFERS_FROM_ACCEPTED"
     },
     "validation": {
       "build": "STATIC_PASS",
-      "deployment": "NOT_DEPLOYED",
-      "runtime": "RUNTIME_UNTESTED"
+      "deployment": "READY_TO_TEST_VERIFIED",
+      "runtime": "RUNTIME_PASS"
     },
     "blocker": null
   },
   "synchronization": {
-    "revision": 1,
-    "activity_at": "2026-08-28T16:20:44Z",
-    "updated_at": "2026-08-29T21:01:24Z",
-    "last_codex_at": "2026-08-29T21:01:24Z",
-    "source_commit": "46e66c9c9bb5701153edc017a969b24e1176dffc",
+    "revision": 2,
+    "activity_at": "2026-08-31T04:36:25Z",
+    "updated_at": "2026-08-31T04:36:25Z",
+    "last_codex_at": "2026-08-31T04:36:25Z",
+    "source_commit": "12d96636943b4ba405c0d96916bbdc74e1434629",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null

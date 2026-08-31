@@ -12,7 +12,7 @@
     "legacy_ids": []
   },
   "definition": {
-    "lifecycle": "ACTIVE",
+    "lifecycle": "ACCEPTED",
     "goals": [
       "Limit new Xaero Minimap and World Map terrain discovery to a configurable chunk-quantized Euclidean circle, defaulting to radius 2, independently of Minecraft render distance.",
       "Preserve all previously mapped terrain and otherwise preserve Xaero behavior, including normal nearby discovery, Minimap and World Map sharing, waypoints, radar, navigation, map presentation, and unrelated UI behavior.",
@@ -98,7 +98,7 @@
     ]
   },
   "state": {
-    "milestone": "Canary 2 implements a default two-chunk Euclidean discovery circle and exact Xaero World Map layer-aware singleplayer history; 32 focused tests pass, and it remains runtime untested and not deployed.",
+    "milestone": "Exact Canary 2 passed user-reported aggregate runtime testing and was atomically promoted into physically verified Stack v6 as the accepted release.",
     "releases": {
       "current": {
         "version": "0.1.1-canary2",
@@ -108,24 +108,31 @@
         },
         "source_commit": "a8c042c8d5c075c3f3fc9ca019a0b6efe815eaff"
       },
-      "accepted": null,
+      "accepted": {
+        "version": "0.1.1-canary2",
+        "artifact": {
+          "filename": "xaero-discovery-radius-0.1.1-canary2.jar",
+          "sha256": "a7d0125dbe13bbcd5418aac39e0e51a32ea79d508d9dc47f2ebd86526a794c99"
+        },
+        "source_commit": "a8c042c8d5c075c3f3fc9ca019a0b6efe815eaff"
+      },
       "rollback": null,
-      "accepted_current": "NO_ACCEPTED",
+      "accepted_current": "CURRENT_IS_ACCEPTED",
       "accepted_rollback": "NO_ROLLBACK"
     },
     "validation": {
       "build": "STATIC_PASS",
-      "deployment": "NOT_DEPLOYED",
-      "runtime": "RUNTIME_UNTESTED"
+      "deployment": "READY_TO_TEST_VERIFIED",
+      "runtime": "RUNTIME_PASS"
     },
     "blocker": null
   },
   "synchronization": {
-    "revision": 2,
-    "activity_at": "2026-08-31T01:19:14Z",
-    "updated_at": "2026-08-31T01:19:14Z",
-    "last_codex_at": "2026-08-31T01:19:14Z",
-    "source_commit": "a8c042c8d5c075c3f3fc9ca019a0b6efe815eaff",
+    "revision": 3,
+    "activity_at": "2026-08-31T04:36:25Z",
+    "updated_at": "2026-08-31T04:36:25Z",
+    "last_codex_at": "2026-08-31T04:36:25Z",
+    "source_commit": "12d96636943b4ba405c0d96916bbdc74e1434629",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
