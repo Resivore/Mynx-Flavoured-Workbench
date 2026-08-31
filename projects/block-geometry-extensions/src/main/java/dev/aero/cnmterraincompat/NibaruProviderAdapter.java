@@ -373,11 +373,9 @@ public final class NibaruProviderAdapter {
             add(mappings, parent, profile.effectiveSlabSource().map(Block::asItem));
             add(mappings, parent, profile.effectiveStairSource().map(Block::asItem));
             add(mappings, parent, profile.nativeWall().map(Block::asItem));
-            add(mappings, parent, derived(profile, DerivedGeometrySupport.Geometry.VERTICAL_SLAB).map(Block::asItem));
-            add(mappings, parent, derived(profile, DerivedGeometrySupport.Geometry.STEP).map(Block::asItem));
-            add(mappings, parent, derived(profile, DerivedGeometrySupport.Geometry.LAYER).map(Block::asItem));
-            add(mappings, parent, derived(profile, BgeGeometryRole.CORNER).map(Block::asItem));
-            add(mappings, parent, derived(profile, BgeGeometryRole.QUARTER_COLUMN).map(Block::asItem));
+            for (BgeGeometryCatalog.Descriptor geometry : BgeGeometryCatalog.ordered()) {
+                add(mappings, parent, geometry.resolveItem(profile));
+            }
         }
     }
 
@@ -399,16 +397,10 @@ public final class NibaruProviderAdapter {
                 profile.effectiveStairSource().map(Block::asItem)
                         .ifPresent(item -> addIfPresent(providerOrder, before, item));
                 profile.nativeWall().map(Block::asItem).ifPresent(item -> addIfPresent(providerOrder, before, item));
-                derived(profile, DerivedGeometrySupport.Geometry.VERTICAL_SLAB).map(Block::asItem)
-                        .ifPresent(item -> addIfPresent(providerOrder, before, item));
-                derived(profile, DerivedGeometrySupport.Geometry.STEP).map(Block::asItem)
-                        .ifPresent(item -> addIfPresent(providerOrder, before, item));
-                derived(profile, DerivedGeometrySupport.Geometry.LAYER).map(Block::asItem)
-                        .ifPresent(item -> addIfPresent(providerOrder, before, item));
-                derived(profile, BgeGeometryRole.CORNER).map(Block::asItem)
-                        .ifPresent(item -> addIfPresent(providerOrder, before, item));
-                derived(profile, BgeGeometryRole.QUARTER_COLUMN).map(Block::asItem)
-                        .ifPresent(item -> addIfPresent(providerOrder, before, item));
+                for (BgeGeometryCatalog.Descriptor geometry : BgeGeometryCatalog.ordered()) {
+                    geometry.resolveItem(profile)
+                            .ifPresent(item -> addIfPresent(providerOrder, before, item));
+                }
             }
             if (providerOrder.isEmpty()) continue;
 

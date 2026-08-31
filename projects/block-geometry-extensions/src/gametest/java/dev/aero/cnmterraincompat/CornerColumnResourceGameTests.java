@@ -3,6 +3,7 @@ package dev.aero.cnmterraincompat;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import dev.aero.cnmterraincompat.AxisModelContract.AxisUvPolicy;
+import dev.aero.cnmterraincompat.BgeCornerBlock.Orientation;
 import dev.aero.cnmterraincompat.client.CornerColumnModelProjection;
 import dev.aero.cnmterraincompat.client.CornerColumnModelProjection.ColumnOccupancy;
 import dev.aero.cnmterraincompat.client.CuboidListModelProjection;
@@ -14,7 +15,6 @@ import net.fabricmc.fabric.api.gametest.v1.GameTest;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.resources.Identifier;
-import net.minecraft.world.level.block.state.properties.Half;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -22,7 +22,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
-/** Focused C55 ordinary-JSON coverage for Corner/Column material projection. */
+/** Focused C56 ordinary-JSON coverage for Vertical Stairs/Column material projection. */
 public final class CornerColumnResourceGameTests implements CustomTestMethodInvoker {
     private static final Identifier CORNER = Identifier.parse(
             "cnm_terrain_slabs_compat:minecraft/test_corner");
@@ -30,7 +30,6 @@ public final class CornerColumnResourceGameTests implements CustomTestMethodInvo
             "cnm_terrain_slabs_compat:minecraft/test_quarter_column");
     private static final List<Direction> HORIZONTAL = List.of(
             Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST);
-    private static final List<Half> HALVES = List.of(Half.BOTTOM, Half.TOP);
     private static final List<Direction.Axis> AXES = List.of(
             Direction.Axis.X, Direction.Axis.Y, Direction.Axis.Z);
     private static final List<String> OCCUPANCIES = List.of(
@@ -46,17 +45,15 @@ public final class CornerColumnResourceGameTests implements CustomTestMethodInvo
                 CornerColumnModelProjection.projectCorner(stone, CORNER);
         List<String> cornerSelectors = new ArrayList<>();
         List<String> cornerModels = new ArrayList<>();
-        for (Direction facing : HORIZONTAL) for (Half half : HALVES) {
-            cornerSelectors.add("facing=" + facing.getSerializedName()
-                    + ",half=" + half.getSerializedName());
-            cornerModels.add(modelId(CORNER, "_" + facing.getSerializedName()
-                    + "_" + half.getSerializedName()));
+        for (Orientation orientation : Orientation.values()) {
+            cornerSelectors.add("facing=" + orientation.stateFacing().getSerializedName());
+            cornerModels.add(modelId(CORNER, "_" + orientation.getSerializedName()));
         }
         cornerModels.add(modelId(CORNER, "_item"));
         assertExactProjection(helper, corner, cornerRepeat, cornerSelectors, cornerModels,
                 "ordinary Corner");
-        helper.assertTrue(CornerColumnModelProjection.cornerSelectorCount(stone) == 8,
-                "Ordinary Corner selector-count contract changed");
+        helper.assertTrue(CornerColumnModelProjection.cornerSelectorCount(stone) == 4,
+                "Ordinary Vertical Stairs selector-count contract changed");
 
         CornerColumnModelProjection.Projection column =
                 CornerColumnModelProjection.projectColumn(stone, COLUMN);
@@ -79,24 +76,31 @@ public final class CornerColumnResourceGameTests implements CustomTestMethodInvo
         NibaruMaterialProfile stone = profile("minecraft:stone");
         CornerColumnModelProjection.Projection corner =
                 CornerColumnModelProjection.projectCorner(stone, CORNER);
-        List<CuboidListModelProjection.Bounds> expectedCorners = List.of(
-                bounds(0, 0, 0, 16, 8, 8),
-                bounds(0, 8, 0, 16, 16, 8),
-                bounds(8, 0, 0, 16, 8, 16),
-                bounds(8, 8, 0, 16, 16, 16),
-                bounds(0, 0, 8, 16, 8, 16),
-                bounds(0, 8, 8, 16, 16, 16),
-                bounds(0, 0, 0, 8, 8, 16),
-                bounds(0, 8, 0, 8, 16, 16));
+        List<List<CuboidListModelProjection.Bounds>> expectedCorners = List.of(
+                List.of(bounds(0, 0, 0, 8, 16, 8),
+                        bounds(0, 0, 8, 8, 16, 16),
+                        bounds(8, 0, 8, 16, 16, 16)),
+                List.of(bounds(0, 0, 0, 8, 16, 8),
+                        bounds(8, 0, 0, 16, 16, 8),
+                        bounds(0, 0, 8, 8, 16, 16)),
+                List.of(bounds(0, 0, 0, 8, 16, 8),
+                        bounds(8, 0, 0, 16, 16, 8),
+                        bounds(8, 0, 8, 16, 16, 16)),
+                List.of(bounds(8, 0, 0, 16, 16, 8),
+                        bounds(0, 0, 8, 8, 16, 16),
+                        bounds(8, 0, 8, 16, 16, 16)));
         int cornerIndex = 0;
-        for (Direction facing : HORIZONTAL) for (Half half : HALVES) {
-            String key = "facing=" + facing.getSerializedName() + ",half=" + half.getSerializedName();
+        for (Orientation orientation : Orientation.values()) {
+            String key = "facing=" + orientation.stateFacing().getSerializedName();
             JsonObject model = selected(corner, key);
-            assertElements(helper, model, List.of(expectedCorners.get(cornerIndex)),
-                    "Corner " + key);
-            helper.assertTrue(CornerColumnModelProjection.cornerBounds(facing, half)
+            assertElements(helper, model, expectedCorners.get(cornerIndex),
+                    "Vertical Stairs " + key);
+            helper.assertTrue(CornerColumnModelProjection.cornerBounds(orientation)
                             .equals(expectedCorners.get(cornerIndex)),
-                    "Public Corner bounds disagreed with its model for " + key);
+                    "Public Vertical Stairs bounds disagreed with its model for " + key);
+            helper.assertTrue(faceCount(model) == 14,
+                    "Vertical Stairs retained an internal quarter face or lost an exposed face for "
+                            + key + ": " + model);
             cornerIndex++;
         }
 
@@ -120,8 +124,8 @@ public final class CornerColumnResourceGameTests implements CustomTestMethodInvo
 
         JsonObject cornerItem = corner.models().get(corner.itemModel());
         JsonObject columnItem = column.models().get(column.itemModel());
-        assertElements(helper, cornerItem, List.of(bounds(0, 4, 4, 16, 12, 12)),
-                "centered Corner item");
+        assertElements(helper, cornerItem, expectedCorners.getFirst(),
+                "centered Vertical Stairs item");
         assertElements(helper, columnItem, List.of(bounds(4, 0, 4, 12, 16, 12)),
                 "centered Quarter Column item");
         helper.assertTrue(cornerItem.has("display") && columnItem.has("display"),
@@ -133,12 +137,13 @@ public final class CornerColumnResourceGameTests implements CustomTestMethodInvo
         JsonObject cornerItemFaces = firstFaces(cornerItem);
         JsonObject columnItemFaces = firstFaces(columnItem);
         assertNumbers(helper, cornerItemFaces.getAsJsonObject("up").getAsJsonArray("uv"),
-                0, 8, 16, 16);
+                0, 0, 8, 8);
         assertNumbers(helper, columnItemFaces.getAsJsonObject("north").getAsJsonArray("uv"),
                 0, 0, 8, 16);
-        helper.assertTrue(!cornerItemFaces.getAsJsonObject("up").has("cullface")
+        helper.assertTrue(faceCount(cornerItem) == 14
+                        && !cornerItemFaces.getAsJsonObject("up").has("cullface")
                         && !columnItemFaces.getAsJsonObject("north").has("cullface"),
-                "Item-only cuboids retained world-boundary culling");
+                "Vertical Stairs item retained internal faces or world-boundary culling");
         helper.succeed();
     }
 
@@ -194,19 +199,23 @@ public final class CornerColumnResourceGameTests implements CustomTestMethodInvo
                 CornerColumnModelProjection.projectCorner(
                         log, CORNER, AxisUvPolicy.HORIZONTAL_ROTATED);
         List<String> axisCornerSelectors = new ArrayList<>();
-        for (Direction facing : HORIZONTAL) for (Half half : HALVES) {
+        for (Orientation orientation : Orientation.values()) {
             for (Direction.Axis axis : AXES) {
-                axisCornerSelectors.add("facing=" + facing.getSerializedName()
-                        + ",half=" + half.getSerializedName() + ",axis=" + axisName(axis));
+                axisCornerSelectors.add("facing=" + orientation.stateFacing().getSerializedName()
+                        + ",axis=" + axisName(axis));
             }
         }
         assertKeys(helper, axisCorner.blockState().getAsJsonObject("variants"),
                 axisCornerSelectors, "axis Corner selectors");
-        assertClosure(helper, axisCorner, 24, 25, "axis Corner");
-        assertAxisState(helper, axisCorner, "facing=north,half=top,axis=z",
+        assertClosure(helper, axisCorner, 12, 13, "axis Vertical Stairs");
+        helper.assertTrue(CornerColumnModelProjection.cornerSelectorCount(log) == 12,
+                "Axis Vertical Stairs selector-count contract changed");
+        assertAxisState(helper, axisCorner, "facing=north,axis=z",
                 AxisUvPolicy.HORIZONTAL_ROTATED, Direction.Axis.Z,
-                List.of(bounds(0, 8, 0, 16, 16, 8)),
-                "oak-log Z-axis north/top Corner");
+                List.of(bounds(0, 0, 0, 8, 16, 8),
+                        bounds(8, 0, 0, 16, 16, 8),
+                        bounds(0, 0, 8, 8, 16, 16)),
+                "oak-log Z-axis north Vertical Stairs");
 
         NibaruMaterialProfile glazed = profile("minecraft:white_glazed_terracotta");
         CornerColumnModelProjection.Projection glazedColumn =
@@ -236,23 +245,25 @@ public final class CornerColumnResourceGameTests implements CustomTestMethodInvo
         CornerColumnModelProjection.Projection glazedCorner =
                 CornerColumnModelProjection.projectCorner(glazed, CORNER);
         List<String> glazedCornerSelectors = new ArrayList<>();
-        for (Direction facing : HORIZONTAL) for (Half half : HALVES) {
+        for (Orientation orientation : Orientation.values()) {
             for (Direction pattern : HORIZONTAL) {
-                glazedCornerSelectors.add("facing=" + facing.getSerializedName()
-                        + ",half=" + half.getSerializedName() + ",pattern_facing="
+                glazedCornerSelectors.add("facing=" + orientation.stateFacing().getSerializedName()
+                        + ",pattern_facing="
                         + pattern.getSerializedName());
             }
         }
         assertKeys(helper, glazedCorner.blockState().getAsJsonObject("variants"),
                 glazedCornerSelectors, "glazed Corner selectors");
-        assertClosure(helper, glazedCorner, 32, 9, "glazed Corner");
+        assertClosure(helper, glazedCorner, 16, 5, "glazed Vertical Stairs");
+        helper.assertTrue(CornerColumnModelProjection.cornerSelectorCount(glazed) == 16,
+                "Glazed Vertical Stairs selector-count contract changed");
         JsonObject glazedCornerVariant = glazedCorner.blockState().getAsJsonObject("variants")
-                .getAsJsonObject("facing=north,half=bottom,pattern_facing=south");
+                .getAsJsonObject("facing=north,pattern_facing=south");
         helper.assertTrue(glazedCornerVariant.get("model").getAsString()
-                                .endsWith("_relative_west_bottom_glazed")
+                                .endsWith("_relative_south_west_glazed")
                         && glazedCornerVariant.get("y").getAsInt() == 90
                         && !glazedCornerVariant.get("uvlock").getAsBoolean(),
-                "Glazed Corner coupled its physical facing to its pattern frame");
+                "Glazed Vertical Stairs coupled its physical orientation to its pattern frame");
         helper.succeed();
     }
 
@@ -272,7 +283,7 @@ public final class CornerColumnResourceGameTests implements CustomTestMethodInvo
     public void tintGlassOverlayAndPathProfilesRetainTypedProjection(GameTestHelper helper) {
         CornerColumnModelProjection.Projection leaves = CornerColumnModelProjection.projectCorner(
                 profile("minecraft:oak_leaves"), CORNER);
-        JsonObject leafModel = selected(leaves, "facing=south,half=bottom");
+        JsonObject leafModel = selected(leaves, "facing=south");
         helper.assertTrue(leafModel.get("render_type").getAsString().equals("cutout_mipped")
                         && firstFaces(leafModel).entrySet().stream().allMatch(entry ->
                                 entry.getValue().getAsJsonObject().get("tintindex").getAsInt() == 0),
@@ -302,28 +313,89 @@ public final class CornerColumnResourceGameTests implements CustomTestMethodInvo
 
         CornerColumnModelProjection.Projection pathCorner = CornerColumnModelProjection.projectCorner(
                 profile("minecraft:dirt_path"), CORNER);
-        assertElements(helper, selected(pathCorner, "facing=north,half=bottom"),
-                List.of(bounds(0, 0, 0, 16, 7, 8)), "bottom Dirt Path Corner");
-        assertElements(helper, selected(pathCorner, "facing=north,half=top"),
-                List.of(bounds(0, 7, 0, 16, 15, 8)), "top Dirt Path Corner");
+        assertElements(helper, selected(pathCorner, "facing=north"),
+                List.of(bounds(0, 0, 0, 8, 15, 8),
+                        bounds(8, 0, 0, 16, 15, 8),
+                        bounds(0, 0, 8, 8, 15, 16)),
+                "Dirt Path Vertical Stairs");
         CornerColumnModelProjection.Projection pathColumn = CornerColumnModelProjection.projectColumn(
                 profile("minecraft:dirt_path"), COLUMN);
         assertElements(helper, selected(pathColumn, "occupancy=south_east"),
                 List.of(bounds(8, 0, 8, 16, 15, 16)), "Dirt Path Quarter Column");
 
         JsonObject grassCorner = selected(CornerColumnModelProjection.projectCorner(
-                profile("minecraft:grass_block"), CORNER), "facing=east,half=bottom");
-        JsonObject grassOverlay = grassCorner.getAsJsonArray("elements").get(1).getAsJsonObject();
-        helper.assertTrue(grassCorner.getAsJsonArray("elements").size() == 2
-                        && grassOverlay.getAsJsonObject("faces").size() == 4
-                        && grassOverlay.getAsJsonObject("faces").entrySet().stream().allMatch(entry -> {
-                            JsonObject face = entry.getValue().getAsJsonObject();
-                            JsonArray uv = face.getAsJsonArray("uv");
-                            return face.get("texture").getAsString().equals("#overlay")
-                                    && face.get("tintindex").getAsInt() == 0
-                                    && uv.get(1).getAsInt() == 0 && uv.get(3).getAsInt() == 8;
-                        }),
-                "Grass Corner lost its tinted canonical top-band side overlay");
+                profile("minecraft:grass_block"), CORNER), "facing=east");
+        JsonArray grassElements = grassCorner.getAsJsonArray("elements");
+        int overlayFaces = 0;
+        boolean exactOverlay = true;
+        for (int index : List.of(1, 3, 5)) {
+            JsonObject faces = grassElements.get(index).getAsJsonObject()
+                    .getAsJsonObject("faces");
+            overlayFaces += faces.size();
+            exactOverlay &= faces.entrySet().stream().allMatch(entry -> {
+                JsonObject face = entry.getValue().getAsJsonObject();
+                JsonArray uv = face.getAsJsonArray("uv");
+                return face.get("texture").getAsString().equals("#overlay")
+                        && face.get("tintindex").getAsInt() == 0
+                        && uv.get(1).getAsInt() == 0 && uv.get(3).getAsInt() == 16;
+            });
+        }
+        helper.assertTrue(grassElements.size() == 6 && overlayFaces == 8 && exactOverlay,
+                "Grass Vertical Stairs lost its three-cuboid exterior side overlay");
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void compoundCornerMaterialsUseOneExteriorLTopology(GameTestHelper helper) {
+        JsonObject honey = selected(CornerColumnModelProjection.projectCorner(
+                profile("minecraft:honey_block"), CORNER), "facing=west");
+        List<CuboidListModelProjection.Bounds> honeyExpected = List.of(
+                bounds(0, 0, 0, 8, 16, 8),
+                bounds(0, 0, 8, 8, 16, 16),
+                bounds(8, 0, 8, 16, 16, 16),
+                bounds(1, 1, 1, 7, 15, 9),
+                bounds(1, 1, 9, 7, 15, 15),
+                bounds(7, 1, 9, 15, 15, 15));
+        assertElements(helper, honey, honeyExpected, "Honey compound Vertical Stairs");
+        helper.assertTrue(faceCount(honey) == 28,
+                "Honey compound Vertical Stairs retained internal shell/inner seams: " + honey);
+
+        JsonObject slime = selected(CornerColumnModelProjection.projectCorner(
+                profile("minecraft:slime_block"), CORNER), "facing=west");
+        List<CuboidListModelProjection.Bounds> slimeExpected = List.of(
+                bounds(0, 0, 0, 8, 16, 8),
+                bounds(0, 0, 8, 8, 16, 16),
+                bounds(8, 0, 8, 16, 16, 16),
+                bounds(2, 3, 2, 6, 13, 10),
+                bounds(2, 3, 10, 6, 13, 14),
+                bounds(6, 3, 10, 14, 13, 14));
+        assertElements(helper, slime, slimeExpected, "Slime compound Vertical Stairs");
+        helper.assertTrue(faceCount(slime) == 28,
+                "Slime compound Vertical Stairs retained internal shell/inner seams: " + slime);
+
+        JsonObject glass = selected(CornerColumnModelProjection.projectCorner(
+                profile("minecraft:glass"), CORNER), "facing=west");
+        List<CuboidListModelProjection.Bounds> glassExpected = List.of(
+                bounds(0, 0, 0, 7, 16, 8),
+                bounds(7, 0, 0, 8, 16, 8),
+                bounds(0, 0, 8, 8, 16, 16),
+                bounds(8, 0, 8, 16, 16, 9),
+                bounds(8, 0, 9, 16, 16, 16));
+        assertElements(helper, glass, glassExpected, "Glass compound Vertical Stairs");
+        JsonObject joinedSouthWest = glass.getAsJsonArray("elements").get(2).getAsJsonObject();
+        JsonArray joinedTopUv = joinedSouthWest.getAsJsonObject("faces")
+                .getAsJsonObject("up").getAsJsonArray("uv");
+        helper.assertTrue(faceCount(glass) == 20
+                        && joinedSouthWest.getAsJsonArray("from").get(0).getAsInt() == 0
+                        && joinedSouthWest.getAsJsonArray("from").get(2).getAsInt() == 8
+                        && joinedSouthWest.getAsJsonArray("to").get(0).getAsInt() == 8
+                        && joinedSouthWest.getAsJsonArray("to").get(2).getAsInt() == 16
+                        && joinedTopUv.get(0).getAsInt() == 0
+                        && joinedTopUv.get(1).getAsInt() == 8
+                        && joinedTopUv.get(2).getAsInt() == 8
+                        && joinedTopUv.get(3).getAsInt() == 16,
+                "Glass compound Vertical Stairs rendered a false rim at an internal quarter seam: "
+                        + glass);
         helper.succeed();
     }
 
@@ -340,14 +412,25 @@ public final class CornerColumnResourceGameTests implements CustomTestMethodInvo
                 "one-up Layer item target");
         JsonArray translation = item.getAsJsonObject("display").getAsJsonObject("gui")
                 .getAsJsonArray("translation");
-        double c54X = -1.325;
-        double c54Y = 3.25;
-        helper.assertTrue(translation.get(0).getAsDouble() == 1.675
-                        && translation.get(1).getAsDouble() == -2.75
-                        && translation.get(2).getAsDouble() == 0.0
-                        && translation.get(0).getAsDouble() - c54X == 3.0
-                        && translation.get(1).getAsDouble() - c54Y == -6.0,
-                "Layer GUI did not apply exactly +3px right/+6px down from C54: " + translation);
+        LayerModelProjection.GuiTranslation centered = LayerModelProjection.guiTranslation(
+                LayerModelProjection.WORKBENCH_GUI_SCALE, 0, 0);
+        LayerModelProjection.GuiTranslation intended = LayerModelProjection.guiTranslation(
+                LayerModelProjection.WORKBENCH_GUI_SCALE,
+                LayerModelProjection.TARGET_SCREEN_RIGHT_PIXELS,
+                LayerModelProjection.TARGET_SCREEN_DOWN_PIXELS);
+        LayerModelProjection.GuiTranslation encoded = new LayerModelProjection.GuiTranslation(
+                translation.get(0).getAsDouble(), translation.get(1).getAsDouble(),
+                translation.get(2).getAsDouble());
+        LayerModelProjection.ScreenDelta pixels = LayerModelProjection.physicalPixelDelta(
+                LayerModelProjection.WORKBENCH_GUI_SCALE, centered, encoded);
+        helper.assertTrue(close(encoded.x(), intended.x())
+                        && close(encoded.y(), intended.y())
+                        && close(encoded.z(), intended.z())
+                        && close(pixels.rightPixels(), 3.0)
+                        && close(pixels.downPixels(), 6.0),
+                "Layer GUI projection did not produce +3 physical px right/+6 down at Workbench "
+                        + "GUI scale from a freshly derived center: translation=" + translation
+                        + ", centered=" + centered + ", pixels=" + pixels);
 
         helper.assertTrue(LayerModelProjection.bounds(Direction.UP, 1).equals(
                                 new LayerModelProjection.Bounds(0, 0, 0, 16, 4, 16))
@@ -361,10 +444,10 @@ public final class CornerColumnResourceGameTests implements CustomTestMethodInvo
                                 new LayerModelProjection.Bounds(0, 0, 0, 4, 16, 16))
                         && LayerModelProjection.bounds(Direction.WEST, 1).equals(
                                 new LayerModelProjection.Bounds(12, 0, 0, 16, 16, 16)),
-                "C55 Layer inventory correction changed a one-layer placed-world bound");
+                "C56 Layer projection correction changed a one-layer placed-world bound");
         for (Direction facing : Direction.values()) {
             helper.assertTrue(LayerModelProjection.bounds(facing, 4).isFullCube(),
-                    "C55 Layer inventory correction changed the full state for " + facing);
+                    "C56 Layer projection correction changed the full state for " + facing);
         }
         helper.succeed();
     }
@@ -421,6 +504,7 @@ public final class CornerColumnResourceGameTests implements CustomTestMethodInvo
             AxisUvPolicy modelPolicy, String description) {
         for (Direction face : Direction.values()) {
             JsonObject encoded = faces.getAsJsonObject(face.getSerializedName());
+            if (encoded == null) continue; // Compound L models deliberately suppress internal faces.
             String expectedTexture;
             if (face.getAxis() != modelAxis) {
                 expectedTexture = "#side";
@@ -624,6 +708,18 @@ public final class CornerColumnResourceGameTests implements CustomTestMethodInvo
 
     private static JsonObject firstFaces(JsonObject model) {
         return model.getAsJsonArray("elements").get(0).getAsJsonObject().getAsJsonObject("faces");
+    }
+
+    private static int faceCount(JsonObject model) {
+        int result = 0;
+        for (var element : model.getAsJsonArray("elements")) {
+            result += element.getAsJsonObject().getAsJsonObject("faces").size();
+        }
+        return result;
+    }
+
+    private static boolean close(double left, double right) {
+        return Math.abs(left - right) < 1.0E-9;
     }
 
     private static void assertElements(GameTestHelper helper, JsonObject model,

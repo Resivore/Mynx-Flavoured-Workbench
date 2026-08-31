@@ -25,7 +25,7 @@ class Canary3GeometryArchitectureTest {
     private static final Path PROJECT_ROOT = Path.of(System.getProperty("projectRoot"));
 
     @Test
-    void resolverUsesOnlyExactAcceptedOwnershipAndTypedRoles() throws IOException {
+    void resolverUsesOnlyExactAcceptedOwnershipAndTheBgeCatalog() throws IOException {
         String resolver = source("geometry/CnmNibaruGeometryResolver.java");
         String catalog = source("geometry/TargetGeometry.java");
         String placement = source("item/ShulkerTrowelItem.java");
@@ -36,12 +36,16 @@ class Canary3GeometryArchitectureTest {
         assertTrue(resolver.contains("effectiveSlabSource()"));
         assertTrue(resolver.contains("effectiveStairSource()"));
         assertTrue(resolver.contains("nativeWall()"));
-        assertTrue(catalog.contains("Geometry.VERTICAL_SLAB"));
-        assertTrue(catalog.contains("Geometry.STEP"));
-        assertTrue(catalog.contains("Geometry.LAYER"));
-        assertTrue(resolver.contains("targetGeometry.derivedGeometry()"));
-        assertTrue(catalog.contains(
-                "LAYER(6, DerivedGeometrySupport.Geometry.LAYER)"));
+        assertTrue(catalog.contains("BgeGeometryCatalog.ordered()"));
+        assertTrue(catalog.contains("descriptor.persistenceId()"));
+        assertTrue(catalog.contains("descriptor.selectorOrder()"));
+        assertTrue(catalog.contains("descriptor.displayName()"));
+        assertTrue(resolver.contains("targetGeometry.bgeDescriptor()"));
+        assertTrue(resolver.contains("descriptor.isAvailable(profile)"));
+        assertTrue(resolver.contains("descriptor.resolveBlock(profile)"));
+        assertTrue(resolver.contains("descriptor.resolveItem(profile)"));
+        assertFalse(catalog.contains("BgeGeometryRole."));
+        assertFalse(catalog.contains("DerivedGeometrySupport.Geometry."));
         assertTrue(resolver.contains("blockItem.getBlock() == block"));
         assertFalse(resolver.contains("ShapeMap."));
         assertFalse(resolver.contains("import dev.tazer.clutternomore.common.shape_map.ShapeMap"));
@@ -119,7 +123,7 @@ class Canary3GeometryArchitectureTest {
         String nibaruRange = depends.get("more_slabs_stairs_and_walls").getAsString();
         assertEquals(">=4.2.0 <4.3.0-", nibaruRange);
         String bgeRange = depends.get("cnm_terrain_slabs_compat").getAsString();
-        assertEquals(">=0.6.1-bge-canary54-layer-economy", bgeRange);
+        assertEquals(">=0.8.0-bge-canary56-vertical-stairs-catalog", bgeRange);
 
         VersionPredicate nibaruPredicate = VersionPredicate.parse(nibaruRange);
         assertTrue(nibaruPredicate.test(Version.parse(
@@ -127,14 +131,15 @@ class Canary3GeometryArchitectureTest {
         )));
 
         VersionPredicate bgePredicate = VersionPredicate.parse(bgeRange);
-        assertTrue(bgePredicate.test(Version.parse("0.6.1-bge-canary54-layer-economy")));
-        assertTrue(bgePredicate.test(Version.parse("0.7.0")));
-        assertFalse(bgePredicate.test(Version.parse("0.6.0-bge-canary53-layer")));
+        assertTrue(bgePredicate.test(Version.parse(
+                "0.8.0-bge-canary56-vertical-stairs-catalog")));
+        assertTrue(bgePredicate.test(Version.parse("0.8.0")));
+        assertFalse(bgePredicate.test(Version.parse("0.7.0-bge-canary55-corner-column")));
         assertTrue(bgePredicate.getInterval().getMax() == null);
     }
 
     @Test
-    void candidateBuildAndGameTestsUseExactCurrentC54AndC46Fixtures() throws IOException {
+    void candidateBuildAndGameTestsUseExactCurrentC56AndC46Fixtures() throws IOException {
         String build = Files.readString(PROJECT_ROOT.resolve("build.gradle"));
         JsonObject runtimeDepends = JsonParser.parseString(Files.readString(
                 PROJECT_ROOT.resolve("src/gametest/resources/fabric.mod.json")
@@ -144,13 +149,13 @@ class Canary3GeometryArchitectureTest {
                 "more-slabs-stairs-and-walls-4.2.0+26.2-port-canary46-bge-layer-contract.jar"
         ));
         assertTrue(build.contains(
-                "cnm-nibaru-integration-0.6.1-bge-canary54-layer-economy.jar"
+                "cnm-nibaru-integration-0.8.0-bge-canary56-vertical-stairs-catalog.jar"
         ));
         assertFalse(build.contains("canary43-native-directional-material-axis.jar"));
         assertFalse(build.contains("0.5.49-nibaru-cnm-canary1.39-native-directional-material-axis.jar"));
-        assertEquals("=0.1.0-canary6", runtimeDepends.get("shulker_trowel").getAsString());
+        assertEquals("=0.1.0-canary7", runtimeDepends.get("shulker_trowel").getAsString());
         assertEquals(
-                "=0.6.1-bge-canary54-layer-economy",
+                "=0.8.0-bge-canary56-vertical-stairs-catalog",
                 runtimeDepends.get("cnm_terrain_slabs_compat").getAsString()
         );
         assertEquals(

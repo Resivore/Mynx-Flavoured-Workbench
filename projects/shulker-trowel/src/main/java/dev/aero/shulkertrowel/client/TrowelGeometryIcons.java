@@ -2,6 +2,7 @@ package dev.aero.shulkertrowel.client;
 
 import dev.aero.shulkertrowel.geometry.CnmNibaruGeometryResolver;
 import dev.aero.shulkertrowel.geometry.TargetGeometry;
+import games.twinhead.moreslabsstairsandwalls.api.material.NibaruMaterialProfiles;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Blocks;
@@ -19,14 +20,22 @@ final class TrowelGeometryIcons {
         List<Item> current = items;
         if (current != null) return current;
 
-        current = TargetGeometry.ordered().stream()
-                .map(geometry -> RESOLVER.resolveGeometry(Blocks.OAK_PLANKS, geometry)
-                        .orElseThrow(() -> new IllegalStateException(
-                                "Accepted Nibaru stack did not expose oak-planks " + geometry))
-                        .asItem())
-                .toList();
+        current = TargetGeometry.ordered().stream().map(TrowelGeometryIcons::representativeItem).toList();
         items = current;
         return current;
+    }
+
+    private static Item representativeItem(TargetGeometry geometry) {
+        return RESOLVER.resolveGeometry(Blocks.OAK_PLANKS, geometry)
+                .or(() -> geometry.bgeDescriptor().flatMap(ignored ->
+                        NibaruMaterialProfiles.all().stream()
+                                .map(profile -> RESOLVER.resolveGeometry(
+                                        profile.canonicalParent(), geometry))
+                                .flatMap(java.util.Optional::stream)
+                                .findFirst()))
+                .orElseThrow(() -> new IllegalStateException(
+                        "No exact material exposes catalog geometry " + geometry.key()))
+                .asItem();
     }
 
     static ItemStack stack(TargetGeometry geometry) {

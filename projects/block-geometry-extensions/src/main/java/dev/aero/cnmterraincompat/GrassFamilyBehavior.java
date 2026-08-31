@@ -60,11 +60,12 @@ public final class GrassFamilyBehavior {
 
     public static void spreadFrom(BlockState sourceState, ServerLevel level, BlockPos sourcePos,
                                   RandomSource random, boolean includeVanillaDirt) {
-        SpreadableSemantics.spreadFrom(sourceState, level, sourcePos, random, includeVanillaDirt);
+        GeometrySpreadableBehavior.spreadFrom(
+                sourceState, level, sourcePos, random, includeVanillaDirt);
     }
 
     public static boolean tryConvertDirtAt(ServerLevel level, BlockPos targetPos) {
-        return SpreadableSemantics.trySpread(level, Blocks.GRASS_BLOCK, targetPos);
+        return GeometrySpreadableBehavior.trySpread(level, Blocks.GRASS_BLOCK, targetPos);
     }
 
 }

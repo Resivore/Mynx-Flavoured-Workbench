@@ -7,6 +7,7 @@ import dev.aero.shulkertrowel.item.ModItems;
 import net.fabricmc.fabric.api.gametest.v1.CustomTestMethodInvoker;
 import net.fabricmc.fabric.api.gametest.v1.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Blocks;
@@ -15,6 +16,8 @@ import java.lang.reflect.Method;
 import java.util.List;
 
 public final class TrowelClientModeCacheGameTests implements CustomTestMethodInvoker {
+    private static final TargetGeometry STEP = bge("step");
+
     @GameTest(maxTicks = 40)
     public void pendingModeBridgesRapidInputWithoutMutatingStack(GameTestHelper helper) {
         ItemStack stack = new ItemStack(ModItems.TROWEL);
@@ -42,7 +45,7 @@ public final class TrowelClientModeCacheGameTests implements CustomTestMethodInv
         ItemStack first = new ItemStack(ModItems.TROWEL);
         ItemStack second = new ItemStack(ModItems.TROWEL);
 
-        TrowelClientModeCache.record(first, 2, TargetGeometry.STEP);
+        TrowelClientModeCache.record(first, 2, STEP);
         helper.assertTrue(TrowelClientModeCache.displayed(second, 2) == TargetGeometry.FULL,
                 "Pending mode crossed stack identity");
 
@@ -53,16 +56,19 @@ public final class TrowelClientModeCacheGameTests implements CustomTestMethodInv
     }
 
     @GameTest(maxTicks = 40)
-    public void selectorCatalogAppendsActualLayerIconAfterStep(GameTestHelper helper) {
+    public void selectorConsumesCompleteBgeCatalogWithActualResolvedIcons(GameTestHelper helper) {
         List<TargetGeometry> modes = TargetGeometry.ordered();
         List<Item> icons = TrowelGeometryIcons.items();
         CnmNibaruGeometryResolver resolver = new CnmNibaruGeometryResolver();
 
-        helper.assertTrue(modes.size() == 7
-                        && modes.get(5) == TargetGeometry.STEP
-                        && modes.get(6) == TargetGeometry.LAYER
+        helper.assertTrue(modes.size() == 9
+                        && modes.stream().map(TargetGeometry::displayName).toList().equals(List.of(
+                                "Full Block", "Slab", "Stair", "Wall", "Vertical Slab",
+                                "Step", "Corner", "Quarter Column", "Layer"))
+                        && modes.stream().map(TargetGeometry::networkId).toList().equals(List.of(
+                                0, 1, 2, 3, 4, 5, 7, 8, 6))
                         && icons.size() == modes.size(),
-                "Selector catalog did not append Layer after the six stable modes");
+                "Selector did not project the complete ordered BGE catalog with stable IDs");
         for (int index = 0; index < modes.size(); index++) {
             var expected = resolver.resolveGeometry(Blocks.OAK_PLANKS, modes.get(index))
                     .orElseThrow()
@@ -81,5 +87,10 @@ public final class TrowelClientModeCacheGameTests implements CustomTestMethodInv
     @Override
     public void invokeTestMethod(GameTestHelper helper, Method method) throws ReflectiveOperationException {
         method.invoke(this, helper);
+    }
+
+    private static TargetGeometry bge(String path) {
+        return TargetGeometry.byKey(Identifier.fromNamespaceAndPath(
+                "cnm_terrain_slabs_compat", path)).orElseThrow();
     }
 }

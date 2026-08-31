@@ -1,5 +1,6 @@
 package dev.aero.shulkertrowel.gametest;
 
+import dev.aero.cnmterraincompat.BgeColumnBlock;
 import dev.aero.cnmterraincompat.BgeLayerBlock;
 import dev.aero.cnmterraincompat.NibaruProviderAdapter;
 import dev.aero.shulkertrowel.geometry.CnmNibaruGeometryResolver;
@@ -11,13 +12,13 @@ import dev.aero.shulkertrowel.palette.PaletteCandidate;
 import dev.aero.shulkertrowel.palette.PaletteCandidateCollector;
 import dev.aero.shulkertrowel.palette.ShulkerPaletteContents;
 import dev.tazer.clutternomore.common.blocks.VerticalSlabBlock;
-import games.twinhead.moreslabsstairsandwalls.api.material.DerivedGeometrySupport;
 import net.fabricmc.fabric.api.gametest.v1.CustomTestMethodInvoker;
 import net.fabricmc.fabric.api.gametest.v1.GameTest;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EntityTypes;
@@ -33,7 +34,7 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.SlabType;
 
 import java.lang.reflect.Method;
-import java.util.EnumMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -41,6 +42,11 @@ import java.util.Optional;
 public final class ShulkerTrowelGameTests implements CustomTestMethodInvoker {
     private static final CnmNibaruGeometryResolver RESOLVER = new CnmNibaruGeometryResolver();
     private static final PaletteCandidateCollector COLLECTOR = new PaletteCandidateCollector(RESOLVER);
+    private static final TargetGeometry VERTICAL_SLAB = bge("vertical_slab");
+    private static final TargetGeometry STEP = bge("step");
+    private static final TargetGeometry CORNER = bge("corner");
+    private static final TargetGeometry QUARTER_COLUMN = bge("quarter_column");
+    private static final TargetGeometry LAYER = bge("layer");
 
     @GameTest(maxTicks = 40)
     public void exactProfilesPreserveMaterialVariantsAcrossEveryMode(GameTestHelper helper) {
@@ -83,16 +89,23 @@ public final class ShulkerTrowelGameTests implements CustomTestMethodInvoker {
         helper.assertTrue(resolve(Blocks.OAK_PLANKS, TargetGeometry.STAIR).getBlock() == Blocks.OAK_STAIRS,
                 "Sparse Oak Planks profile did not use its effective vanilla stair");
         helper.assertTrue(RESOLVER.resolveGeometry(Blocks.OAK_PLANKS, TargetGeometry.WALL).isPresent()
-                        && RESOLVER.resolveGeometry(Blocks.OAK_PLANKS, TargetGeometry.VERTICAL_SLAB).isPresent()
-                        && RESOLVER.resolveGeometry(Blocks.OAK_PLANKS, TargetGeometry.STEP).isPresent()
-                        && RESOLVER.resolveGeometry(Blocks.OAK_PLANKS, TargetGeometry.LAYER).isPresent(),
+                        && RESOLVER.resolveGeometry(Blocks.OAK_PLANKS, VERTICAL_SLAB).isPresent()
+                        && RESOLVER.resolveGeometry(Blocks.OAK_PLANKS, STEP).isPresent()
+                        && RESOLVER.resolveGeometry(Blocks.OAK_PLANKS, CORNER).isPresent()
+                        && RESOLVER.resolveGeometry(Blocks.OAK_PLANKS, QUARTER_COLUMN).isPresent()
+                        && RESOLVER.resolveGeometry(Blocks.OAK_PLANKS, LAYER).isPresent(),
                 "Accepted typed Oak Planks roles were incomplete");
-        Block typedLayer = NibaruProviderAdapter.derived(
-                NibaruProviderAdapter.profile(Blocks.OAK_PLANKS).orElseThrow(),
-                DerivedGeometrySupport.Geometry.LAYER
-        ).orElseThrow();
-        helper.assertTrue(resolve(Blocks.OAK_PLANKS, TargetGeometry.LAYER).getBlock() == typedLayer,
-                "Layer mode did not resolve the provider-owned typed Layer target");
+        var oakProfile = NibaruProviderAdapter.profile(Blocks.OAK_PLANKS).orElseThrow();
+        for (TargetGeometry geometry : TargetGeometry.ordered().stream()
+                .filter(mode -> mode.bgeDescriptor().isPresent()).toList()) {
+            Block catalogBlock = geometry.bgeDescriptor().orElseThrow()
+                    .resolveBlock(oakProfile).orElseThrow();
+            BlockItem resolved = resolve(Blocks.OAK_PLANKS, geometry);
+            helper.assertTrue(resolved.getBlock() == catalogBlock
+                            && geometry.bgeDescriptor().orElseThrow().resolveItem(oakProfile)
+                                    .orElseThrow() == resolved,
+                    geometry + " did not resolve the catalog-owned exact block/item");
+        }
 
         for (Block nongeometry : List.of(
                 Blocks.OAK_DOOR,
@@ -139,12 +152,14 @@ public final class ShulkerTrowelGameTests implements CustomTestMethodInvoker {
                         new ItemStack(Blocks.OAK_PLANKS, 64),
                         new ItemStack(Blocks.SPRUCE_PLANKS, 3)
                 ),
-                TargetGeometry.SLAB
+                CORNER
         );
         helper.assertTrue(sparseCandidates.size() == 1
                         && sparseCandidates.getFirst().sourceItem() == Blocks.SPRUCE_PLANKS.asItem()
+                        && sparseCandidates.getFirst().placementItem()
+                                == resolve(Blocks.SPRUCE_PLANKS, CORNER)
                         && sparseCandidates.getFirst().weight() == 3,
-                "Controlled sparse missing-role source contributed quantity weight");
+                "Unavailable BGE material collapsed identity or contributed quantity weight");
         helper.succeed();
     }
 
@@ -195,21 +210,21 @@ public final class ShulkerTrowelGameTests implements CustomTestMethodInvoker {
         ServerPlayer player = survivalPlayer(helper);
 
         assertFittingMerge(helper, player, TargetGeometry.SLAB, new BlockPos(2, 1, 2));
-        assertFittingMerge(helper, player, TargetGeometry.VERTICAL_SLAB, new BlockPos(4, 1, 2));
-        assertFittingMerge(helper, player, TargetGeometry.STEP, new BlockPos(6, 1, 2));
+        assertFittingMerge(helper, player, VERTICAL_SLAB, new BlockPos(4, 1, 2));
+        assertFittingMerge(helper, player, STEP, new BlockPos(6, 1, 2));
         helper.succeed();
     }
 
     @GameTest(maxTicks = 40)
     public void layerModeDelegatesCanonicalGrowthEconomyFailuresAndDrop(GameTestHelper helper) {
         ServerPlayer player = survivalPlayer(helper);
-        equip(player, shulker(new ItemStack(Blocks.OAK_PLANKS, 2)), TargetGeometry.LAYER);
+        equip(player, shulker(new ItemStack(Blocks.OAK_PLANKS, 2)), LAYER);
 
         BlockPos support = new BlockPos(2, 1, 2);
         BlockPos target = support.above();
         BgeLayerBlock oakLayer = (BgeLayerBlock) resolve(
                 Blocks.OAK_PLANKS,
-                TargetGeometry.LAYER
+                LAYER
         ).getBlock();
         helper.setBlock(support, Blocks.STONE);
         helper.setBlock(target, Blocks.AIR);
@@ -260,7 +275,7 @@ public final class ShulkerTrowelGameTests implements CustomTestMethodInvoker {
         BlockPos incompatibleTarget = incompatibleSupport.above();
         BgeLayerBlock spruceLayer = (BgeLayerBlock) resolve(
                 Blocks.SPRUCE_PLANKS,
-                TargetGeometry.LAYER
+                LAYER
         ).getBlock();
         BlockState incompatible = spruceLayer.defaultBlockState()
                 .setValue(BgeLayerBlock.FACING, Direction.UP)
@@ -288,9 +303,47 @@ public final class ShulkerTrowelGameTests implements CustomTestMethodInvoker {
     }
 
     @GameTest(maxTicks = 40)
+    public void cornerAndQuarterColumnUseCatalogBlockItemsAndBgeEconomy(GameTestHelper helper) {
+        ServerPlayer player = survivalPlayer(helper);
+
+        BlockPos cornerTarget = new BlockPos(2, 2, 6);
+        blockAdjacentPositions(helper, cornerTarget);
+        helper.setBlock(cornerTarget, Blocks.AIR);
+        Block corner = resolve(Blocks.OAK_PLANKS, CORNER).getBlock();
+        equip(player, shulker(new ItemStack(Blocks.OAK_PLANKS)), CORNER);
+        placeInto(helper, player, cornerTarget, Direction.UP);
+        helper.assertTrue(helper.getBlockState(cornerTarget).is(corner)
+                        && ShulkerPaletteContents.read(player.getOffhandItem()).get(0).isEmpty(),
+                "Catalog Corner did not place through its exact BlockItem and consume one source");
+
+        BlockPos columnTarget = new BlockPos(6, 2, 6);
+        blockAdjacentPositions(helper, columnTarget);
+        helper.setBlock(columnTarget, Blocks.AIR);
+        BgeColumnBlock column = (BgeColumnBlock) resolve(
+                Blocks.OAK_PLANKS, QUARTER_COLUMN).getBlock();
+        equip(player, shulker(new ItemStack(Blocks.OAK_PLANKS, 2)), QUARTER_COLUMN);
+        placeInto(helper, player, columnTarget, Direction.UP);
+        BlockState singleton = helper.getBlockState(columnTarget);
+        helper.assertTrue(singleton.is(column)
+                        && singleton.getValue(BgeColumnBlock.OCCUPANCY)
+                                == BgeColumnBlock.Occupancy.SE
+                        && ShulkerPaletteContents.read(player.getOffhandItem()).get(0).getCount() == 1,
+                "Catalog Quarter Column did not fund its first blockspace with one source");
+
+        placeInto(helper, player, columnTarget, Direction.NORTH);
+        BlockState expanded = helper.getBlockState(columnTarget);
+        helper.assertTrue(expanded.is(column)
+                        && expanded.getValue(BgeColumnBlock.OCCUPANCY)
+                                == BgeColumnBlock.Occupancy.NW_SE
+                        && ShulkerPaletteContents.read(player.getOffhandItem()).get(0).getCount() == 1,
+                "Normal BGE Quarter Column expansion was not free through the Trowel path");
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
     public void noEligibleCandidateProducesNoPlacementOrConsumption(GameTestHelper helper) {
         ServerPlayer player = survivalPlayer(helper);
-        equip(player, shulker(new ItemStack(Blocks.CRAFTING_TABLE, 3)), TargetGeometry.SLAB);
+        equip(player, shulker(new ItemStack(Blocks.CRAFTING_TABLE, 3)), CORNER);
 
         BlockPos support = new BlockPos(2, 1, 2);
         helper.setBlock(support, Blocks.STONE);
@@ -301,6 +354,8 @@ public final class ShulkerTrowelGameTests implements CustomTestMethodInvoker {
                 "No-role palette unexpectedly placed a block");
         helper.assertTrue(ShulkerPaletteContents.read(player.getOffhandItem()).get(0).getCount() == 3,
                 "No-role palette unexpectedly consumed an item");
+        helper.assertTrue(TrowelGeometryState.get(player.getMainHandItem()) == CORNER,
+                "Unavailable material handling collapsed the selected BGE mode identity");
         helper.succeed();
     }
 
@@ -312,23 +367,33 @@ public final class ShulkerTrowelGameTests implements CustomTestMethodInvoker {
 
         helper.assertTrue(TrowelGeometryState.get(trowel) == TargetGeometry.FULL,
                 "Fresh trowel did not default to Full");
-        helper.assertTrue(TrowelGeometryAuthority.apply(player, TargetGeometry.LAYER.networkId())
-                        && TrowelGeometryState.get(trowel) == TargetGeometry.LAYER
-                        && TrowelGeometryState.get(trowel.copy()) == TargetGeometry.LAYER,
-                "Valid server request did not persist and synchronize stack state");
+        helper.assertTrue(TrowelGeometryAuthority.apply(player, CORNER.networkId())
+                        && CORNER.networkId() == 7
+                        && TrowelGeometryState.get(trowel) == CORNER
+                        && TrowelGeometryState.get(trowel.copy()) == CORNER,
+                "Stable Corner request did not persist and synchronize stack state");
+        helper.assertTrue(TrowelGeometryAuthority.apply(player, QUARTER_COLUMN.networkId())
+                        && QUARTER_COLUMN.networkId() == 8
+                        && TrowelGeometryState.get(trowel) == QUARTER_COLUMN,
+                "Stable Quarter Column request did not persist and synchronize stack state");
+        helper.assertTrue(TrowelGeometryAuthority.apply(player, LAYER.networkId())
+                        && LAYER.networkId() == 6
+                        && TrowelGeometryState.get(trowel) == LAYER
+                        && TrowelGeometryState.get(trowel.copy()) == LAYER,
+                "Legacy Layer ID changed while its selector position moved");
         helper.assertTrue(!TrowelGeometryAuthority.apply(player, 999)
-                        && TrowelGeometryState.get(trowel) == TargetGeometry.LAYER,
+                        && TrowelGeometryState.get(trowel) == LAYER,
                 "Invalid mode ID changed server state");
 
         player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Blocks.STONE));
         helper.assertTrue(!TrowelGeometryAuthority.apply(player, TargetGeometry.SLAB.networkId())
-                        && TrowelGeometryState.get(trowel) == TargetGeometry.LAYER,
+                        && TrowelGeometryState.get(trowel) == LAYER,
                 "A request without a main-hand trowel changed state");
         helper.succeed();
     }
 
     private static Map<TargetGeometry, BlockItem> allModes(GameTestHelper helper, Block source) {
-        Map<TargetGeometry, BlockItem> resolved = new EnumMap<>(TargetGeometry.class);
+        Map<TargetGeometry, BlockItem> resolved = new LinkedHashMap<>();
         for (TargetGeometry geometry : TargetGeometry.ordered()) {
             BlockItem item = RESOLVER.resolveGeometry(source, geometry).orElse(null);
             helper.assertTrue(item != null, source + " did not resolve " + geometry);
@@ -363,7 +428,7 @@ public final class ShulkerTrowelGameTests implements CustomTestMethodInvoker {
         helper.assertTrue(merged.is(target), geometry + " fitting placement changed block identity");
         helper.assertTrue(ShulkerPaletteContents.read(player.getOffhandItem()).get(0).getCount() == 1,
                 geometry + " fitting merge consumed a second source block");
-        if (geometry == TargetGeometry.VERTICAL_SLAB) {
+        if (geometry == VERTICAL_SLAB) {
             helper.assertTrue(merged.getValue(VerticalSlabBlock.DOUBLE),
                     "Vertical slab fitting placement did not create the canonical double state");
         }
@@ -390,6 +455,22 @@ public final class ShulkerTrowelGameTests implements CustomTestMethodInvoker {
         ItemStack shulker = new ItemStack(Blocks.SHULKER_BOX);
         ShulkerPaletteContents.write(shulker, palette(stacks));
         return shulker;
+    }
+
+    private static TargetGeometry bge(String path) {
+        return TargetGeometry.byKey(Identifier.fromNamespaceAndPath(
+                "cnm_terrain_slabs_compat", path)).orElseThrow();
+    }
+
+    private static void blockAdjacentPositions(GameTestHelper helper, BlockPos target) {
+        for (Direction direction : Direction.values()) {
+            helper.setBlock(target.relative(direction), Blocks.STONE);
+        }
+    }
+
+    private static void placeInto(GameTestHelper helper, ServerPlayer player,
+            BlockPos target, Direction face) {
+        helper.placeAt(player, player.getMainHandItem(), target.relative(face.getOpposite()), face);
     }
 
     private static NonNullList<ItemStack> palette(ItemStack... stacks) {

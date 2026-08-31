@@ -1,5 +1,9 @@
 package dev.aero.cnmterraincompat;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.mojang.serialization.JsonOps;
+import dev.tazer.clutternomore.common.blocks.VerticalSlabBlock;
 import dev.tazer.clutternomore.common.shape_map.ShapeMap;
 import games.twinhead.moreslabsstairsandwalls.api.material.DerivedGeometrySupport;
 import games.twinhead.moreslabsstairsandwalls.api.material.NibaruMaterialProfile;
@@ -16,6 +20,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
@@ -28,11 +33,14 @@ import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.minecraft.world.level.block.state.properties.Half;
+import net.minecraft.world.level.block.state.properties.SlabType;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.shapes.BooleanOp;
 import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.phys.shapes.VoxelShape;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -41,7 +49,7 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Set;
 
-/** Focused catalog, physical, economy, and material-contract coverage for C55 quarter geometry. */
+/** Focused catalog, physical, economy, and material-contract coverage for C56 quarter geometry. */
 public final class BgeQuarterGeometryGameTests implements CustomTestMethodInvoker {
     private static final BlockPos SHAPE_POS = new BlockPos(1, 1, 1);
 
@@ -50,6 +58,21 @@ public final class BgeQuarterGeometryGameTests implements CustomTestMethodInvoke
         List<NibaruMaterialProfile> profiles = NibaruMaterialProfiles.all();
         helper.assertTrue(profiles.size() == 311,
                 "Expected 311 canonical material profiles, found " + profiles.size());
+
+        List<BgeGeometryCatalog.Descriptor> catalog = BgeGeometryCatalog.ordered();
+        helper.assertTrue(catalog.stream().map(entry -> entry.key().getPath()).toList().equals(
+                            List.of("vertical_slab", "step", "corner", "quarter_column", "layer"))
+                        && catalog.stream().map(BgeGeometryCatalog.Descriptor::persistenceId).toList()
+                                .equals(List.of(4, 5, 7, 8, 6))
+                        && catalog.stream().map(BgeGeometryCatalog.Descriptor::selectorOrder).toList()
+                                .equals(List.of(4, 5, 6, 7, 8))
+                        && BgeGeometryCatalog.byPersistenceId(6).orElseThrow().role()
+                                == BgeGeometryRole.LAYER
+                        && BgeGeometryCatalog.byPersistenceId(7).orElseThrow().role()
+                                == BgeGeometryRole.CORNER
+                        && BgeGeometryCatalog.byKey(Identifier.fromNamespaceAndPath(
+                                CnmTerrainCompat.MOD_ID, "quarter_column")).orElseThrow().persistenceId() == 8,
+                "Stable BGE consumer catalog identity/order changed: " + catalog);
 
         Set<Block> corners = Collections.newSetFromMap(new IdentityHashMap<>());
         Set<Block> columns = Collections.newSetFromMap(new IdentityHashMap<>());
@@ -98,14 +121,20 @@ public final class BgeQuarterGeometryGameTests implements CustomTestMethodInvoke
                     .filter(item -> providerProfile(item).orElse(null) == profile).toList();
             List<Item> expectedSegment = expectedShapeMapSegment(profile);
             helper.assertTrue(actualSegment.equals(expectedSegment),
-                    "Provider ShapeMap segment is not parent/native/Vertical/Step/Layer/Corner/Column for "
+                    "Provider ShapeMap segment is not parent/native/Vertical/Step/Corner/Column/Layer for "
                             + profile.canonicalParentId() + ": expected=" + ids(expectedSegment)
                             + ", actual=" + ids(actualSegment));
+            helper.assertTrue(catalog.stream().allMatch(entry -> entry.isAvailable(profile)
+                            && entry.resolve(profile).orElseThrow() == entry.resolveBlock(profile).orElseThrow()
+                            && entry.resolveItem(profile).orElseThrow()
+                                    == entry.resolveBlock(profile).orElseThrow().asItem()),
+                    "Stable BGE catalog did not resolve exact block/item identities for "
+                            + profile.canonicalParentId());
         }
 
         long cornerTraits = NibaruProviderAdapter.localMaterialTraits().stream()
                 .filter(trait -> trait.role() == BgeGeometryRole.CORNER
-                        && trait.fuelDivisor() == 4 && corners.contains(trait.derived())).count();
+                        && trait.fuelDivisor() == 1 && corners.contains(trait.derived())).count();
         long columnTraits = NibaruProviderAdapter.localMaterialTraits().stream()
                 .filter(trait -> trait.role() == BgeGeometryRole.QUARTER_COLUMN
                         && trait.fuelDivisor() == 4 && columns.contains(trait.derived())).count();
@@ -119,42 +148,73 @@ public final class BgeQuarterGeometryGameTests implements CustomTestMethodInvoke
     }
 
     @GameTest(maxTicks = 40)
-    public void cornerHasExactlyEightPhysicalStatesAndExactTransforms(GameTestHelper helper) {
+    public void localFuelEconomyMatchesReferenceCompleteness(GameTestHelper helper) {
+        BgeCornerBlock corner = corner("minecraft:oak_planks");
+        BgeColumnBlock column = column("minecraft:oak_planks");
+        int parentDuration = helper.getLevel().fuelValues()
+                .burnDuration(new ItemStack(Blocks.OAK_PLANKS));
+        int cornerDuration = helper.getLevel().fuelValues()
+                .burnDuration(new ItemStack(corner));
+        int columnDuration = helper.getLevel().fuelValues()
+                .burnDuration(new ItemStack(column));
+
+        helper.assertTrue(parentDuration > 0
+                        && cornerDuration == parentDuration
+                        && columnDuration == parentDuration / 4,
+                "Local fuel inheritance does not match Vertical Stairs/Quarter Column contracts: parent="
+                        + parentDuration + ", corner=" + cornerDuration
+                        + ", column=" + columnDuration);
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void cornerHasFourFullHeightOrientationsAndLoadsLegacyCardinalStates(GameTestHelper helper) {
         BgeCornerBlock corner = corner("minecraft:stone");
-        helper.assertTrue(corner.getStateDefinition().getProperties().size() == 3
-                        && corner.getStateDefinition().getPossibleStates().size() == 16,
-                "Ordinary Corner state space is not facing x half x waterlogged");
+        helper.assertTrue(corner.getStateDefinition().getProperties().size() == 2
+                        && corner.getStateDefinition().getPossibleStates().size() == 8
+                        && corner.getStateDefinition().getProperty("half") == null,
+                "Vertical Stairs state space is not four cardinal carriers x waterlogged without HALF");
 
         BlockPos absolute = helper.absolutePos(SHAPE_POS);
         int checked = 0;
-        for (Direction facing : Direction.Plane.HORIZONTAL) {
-            for (Half half : Half.values()) {
-                BlockState state = corner.defaultBlockState()
-                        .setValue(BgeCornerBlock.FACING, facing)
-                        .setValue(BgeCornerBlock.HALF, half)
-                        .setValue(BgeCornerBlock.WATERLOGGED, true);
-                assertShape(helper, state, absolute, List.of(expectedCorner(facing, half)),
-                        "Corner " + facing + "/" + half);
-                for (Rotation rotation : Rotation.values()) {
-                    BlockState transformed = corner.rotate(state, rotation);
-                    helper.assertTrue(transformed.getValue(BgeCornerBlock.FACING) == rotation.rotate(facing)
-                                    && transformed.getValue(BgeCornerBlock.HALF) == half
-                                    && transformed.getValue(BgeCornerBlock.WATERLOGGED),
-                            "Corner rotation changed independent state for " + facing + "/" + half
-                                    + "/" + rotation + ": " + transformed);
-                }
-                for (Mirror mirror : Mirror.values()) {
-                    BlockState transformed = corner.mirror(state, mirror);
-                    helper.assertTrue(transformed.getValue(BgeCornerBlock.FACING) == mirror.mirror(facing)
-                                    && transformed.getValue(BgeCornerBlock.HALF) == half
-                                    && transformed.getValue(BgeCornerBlock.WATERLOGGED),
-                            "Corner mirror changed independent state for " + facing + "/" + half
-                                    + "/" + mirror + ": " + transformed);
-                }
-                checked++;
+        for (BgeCornerBlock.Orientation orientation : BgeCornerBlock.Orientation.values()) {
+            BlockState state = corner.defaultBlockState()
+                    .setValue(BgeCornerBlock.FACING, orientation.stateFacing())
+                    .setValue(BgeCornerBlock.WATERLOGGED, true);
+            List<AABB> expected = expectedCorner(orientation, 1.0);
+            assertShape(helper, state, absolute, expected, "Vertical Stairs " + orientation);
+            helper.assertTrue(shapeVolume(state.getShape(helper.getLevel(), absolute,
+                                    CollisionContext.empty()).toAabbs()) == 0.75,
+                    "Vertical Stairs is not exactly full cube minus one quarter for " + orientation);
+            for (Rotation rotation : Rotation.values()) {
+                BlockState transformed = corner.rotate(state, rotation);
+                helper.assertTrue(BgeCornerBlock.orientation(transformed) == orientation.rotate(rotation)
+                                && transformed.getValue(BgeCornerBlock.WATERLOGGED),
+                        "Vertical Stairs rotation changed geometry/water for " + orientation
+                                + "/" + rotation + ": " + transformed);
             }
+            for (Mirror mirror : Mirror.values()) {
+                BlockState transformed = corner.mirror(state, mirror);
+                helper.assertTrue(BgeCornerBlock.orientation(transformed) == orientation.mirror(mirror)
+                                && transformed.getValue(BgeCornerBlock.WATERLOGGED),
+                        "Vertical Stairs mirror changed geometry/water for " + orientation
+                                + "/" + mirror + ": " + transformed);
+            }
+            assertLegacyCornerDecode(helper, state, "top");
+            assertLegacyCornerDecode(helper, state.setValue(BgeCornerBlock.WATERLOGGED, false), "bottom");
+            checked++;
         }
-        helper.assertTrue(checked == 8, "Expected exactly eight Corner physical states, checked " + checked);
+        helper.assertTrue(BgeCornerBlock.Orientation.fromHit(0.25, 0.25)
+                                == BgeCornerBlock.Orientation.NORTH_WEST
+                        && BgeCornerBlock.Orientation.fromHit(0.75, 0.25)
+                                == BgeCornerBlock.Orientation.NORTH_EAST
+                        && BgeCornerBlock.Orientation.fromHit(0.25, 0.75)
+                                == BgeCornerBlock.Orientation.SOUTH_WEST
+                        && BgeCornerBlock.Orientation.fromHit(0.75, 0.75)
+                                == BgeCornerBlock.Orientation.SOUTH_EAST,
+                "Vertical Stairs placement does not map the four horizontal hit quadrants exactly");
+        helper.assertTrue(checked == 4,
+                "Expected exactly four Vertical Stairs physical orientations, checked " + checked);
         helper.succeed();
     }
 
@@ -269,7 +329,6 @@ public final class BgeQuarterGeometryGameTests implements CustomTestMethodInvoke
         BgeCornerBlock stoneCorner = corner("minecraft:stone");
         BlockState wetCorner = stoneCorner.defaultBlockState()
                 .setValue(BgeCornerBlock.FACING, Direction.WEST)
-                .setValue(BgeCornerBlock.HALF, Half.TOP)
                 .setValue(BgeCornerBlock.WATERLOGGED, true);
         BlockState wetColumn = oak.defaultBlockState()
                 .setValue(BgeColumnBlock.OCCUPANCY, BgeColumnBlock.Occupancy.NE_SW)
@@ -328,7 +387,6 @@ public final class BgeQuarterGeometryGameTests implements CustomTestMethodInvoke
                 "Pillar quarter geometry omitted the independent material axis");
         BlockState cornerAxis = logCorner.defaultBlockState()
                 .setValue(BgeCornerBlock.FACING, Direction.NORTH)
-                .setValue(BgeCornerBlock.HALF, Half.TOP)
                 .setValue(MaterialAxisState.AXIS, Direction.Axis.X)
                 .setValue(BgeCornerBlock.WATERLOGGED, true);
         BlockState columnAxis = logColumn.defaultBlockState()
@@ -338,7 +396,6 @@ public final class BgeQuarterGeometryGameTests implements CustomTestMethodInvoke
         BlockState rotatedCornerAxis = logCorner.rotate(cornerAxis, Rotation.CLOCKWISE_90);
         BlockState rotatedColumnAxis = logColumn.rotate(columnAxis, Rotation.CLOCKWISE_90);
         helper.assertTrue(rotatedCornerAxis.getValue(BgeCornerBlock.FACING) == Direction.EAST
-                        && rotatedCornerAxis.getValue(BgeCornerBlock.HALF) == Half.TOP
                         && rotatedCornerAxis.getValue(MaterialAxisState.AXIS) == Direction.Axis.Z
                         && rotatedCornerAxis.getValue(BgeCornerBlock.WATERLOGGED)
                         && rotatedColumnAxis.getValue(BgeColumnBlock.OCCUPANCY)
@@ -354,7 +411,6 @@ public final class BgeQuarterGeometryGameTests implements CustomTestMethodInvoke
                 "Glazed quarter geometry omitted the independent pattern direction");
         BlockState cornerPattern = glazedCorner.defaultBlockState()
                 .setValue(BgeCornerBlock.FACING, Direction.EAST)
-                .setValue(BgeCornerBlock.HALF, Half.BOTTOM)
                 .setValue(GlazedPatternState.PATTERN_FACING, Direction.SOUTH);
         BlockState columnPattern = glazedColumn.defaultBlockState()
                 .setValue(BgeColumnBlock.OCCUPANCY, BgeColumnBlock.Occupancy.NW_SE)
@@ -391,7 +447,6 @@ public final class BgeQuarterGeometryGameTests implements CustomTestMethodInvoke
                                     && specializedColumn instanceof PathGeometry,
                             "Path quarter geometry omitted survival contracts");
                     double cornerTop = specializedCorner.defaultBlockState()
-                            .setValue(BgeCornerBlock.HALF, Half.TOP)
                             .getShape(helper.getLevel(), helper.absolutePos(new BlockPos(2, 1, 2)),
                                     CollisionContext.empty()).bounds().maxY;
                     double columnTop = specializedColumn.defaultBlockState()
@@ -422,6 +477,174 @@ public final class BgeQuarterGeometryGameTests implements CustomTestMethodInvoke
         helper.succeed();
     }
 
+    @GameTest(maxTicks = 40)
+    public void cornerMaterialCollisionErodesEveryHoneyBoundary(GameTestHelper helper) {
+        BgeCornerBlock ordinary = corner("minecraft:stone");
+        BgeCornerBlock soul = corner("minecraft:soul_sand");
+        BgeCornerBlock honey = corner("minecraft:honey_block");
+        BlockPos absolute = helper.absolutePos(SHAPE_POS);
+        for (BgeCornerBlock.Orientation orientation : BgeCornerBlock.Orientation.values()) {
+            BlockState ordinaryState = ordinary.defaultBlockState()
+                    .setValue(BgeCornerBlock.FACING, orientation.stateFacing());
+            BlockState soulState = soul.defaultBlockState()
+                    .setValue(BgeCornerBlock.FACING, orientation.stateFacing());
+            BlockState honeyState = honey.defaultBlockState()
+                    .setValue(BgeCornerBlock.FACING, orientation.stateFacing());
+            assertCollisionShape(helper, ordinaryState, absolute, expectedCorner(orientation, 1.0),
+                    "ordinary Vertical Stairs " + orientation);
+            assertCollisionShape(helper, soulState, absolute, expectedCorner(orientation, 14.0 / 16.0),
+                    "Soul Sand Vertical Stairs " + orientation);
+            assertCollisionShape(helper, honeyState, absolute, expectedHoneyCorner(orientation),
+                    "Honey Vertical Stairs " + orientation);
+        }
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void geometryAwareSpreadableExposureUsesOnlyOwnedTopFootprints(GameTestHelper helper) {
+        BgeCornerBlock grassCorner = corner("minecraft:grass_block");
+        BgeCornerBlock dirtCorner = corner("minecraft:dirt");
+        BgeColumnBlock grassColumn = column("minecraft:grass_block");
+        BgeColumnBlock dirtColumn = column("minecraft:dirt");
+        Block grassVertical = NibaruProviderAdapter.derived(profile("minecraft:grass_block"),
+                DerivedGeometrySupport.Geometry.VERTICAL_SLAB).orElseThrow();
+        Block dirtVertical = NibaruProviderAdapter.derived(profile("minecraft:dirt"),
+                DerivedGeometrySupport.Geometry.VERTICAL_SLAB).orElseThrow();
+        helper.assertTrue(grassCorner instanceof SpreadableGeometry
+                        && grassColumn instanceof SpreadableGeometry
+                        && grassVertical instanceof SpreadableGeometry,
+                "Grass Corner/Column/Vertical Slab do not share the geometry exposure contract");
+
+        BlockPos cornerPos = new BlockPos(1, 2, 1);
+        BlockState drySouthWest = grassCorner.defaultBlockState()
+                .setValue(BgeCornerBlock.FACING,
+                        BgeCornerBlock.Orientation.SOUTH_WEST.stateFacing())
+                .setValue(BgeCornerBlock.WATERLOGGED, false);
+        BlockState wetSouthWest = grassCorner.defaultBlockState()
+                .setValue(BgeCornerBlock.FACING,
+                        BgeCornerBlock.Orientation.SOUTH_WEST.stateFacing())
+                .setValue(BgeCornerBlock.WATERLOGGED, true);
+        helper.setBlock(cornerPos, drySouthWest);
+        helper.setBlock(cornerPos.above(), Blocks.AIR);
+        GeometrySpreadableBehavior.randomTick(drySouthWest, helper.getLevel(),
+                helper.absolutePos(cornerPos), RandomSource.create(0x43524E445259L));
+        helper.assertTrue(helper.getBlockState(cornerPos).equals(drySouthWest),
+                "Dry top-exposed Vertical Stairs did not survive its actual random-tick lifecycle");
+
+        helper.setBlock(cornerPos, wetSouthWest);
+        helper.setBlock(cornerPos.above(), Blocks.AIR);
+        assertExposure(helper, wetSouthWest, cornerPos, SpreadableGeometry.Exposure.EXPOSED,
+                "self-waterlogged Vertical Stairs with air above");
+        helper.setBlock(cornerPos.above(), Blocks.WATER);
+        assertExposure(helper, wetSouthWest, cornerPos, SpreadableGeometry.Exposure.BLOCKED,
+                "Vertical Stairs under actual water");
+        GeometrySpreadableBehavior.randomTick(wetSouthWest, helper.getLevel(),
+                helper.absolutePos(cornerPos), RandomSource.create(0x43524E574154L));
+        BlockState revertedCorner = helper.getBlockState(cornerPos);
+        helper.assertTrue(revertedCorner.is(dirtCorner)
+                        && revertedCorner.getValue(BgeCornerBlock.FACING)
+                                == wetSouthWest.getValue(BgeCornerBlock.FACING)
+                        && revertedCorner.getValue(BgeCornerBlock.WATERLOGGED),
+                "Water-covered Vertical Stairs did not actually revert to typed Dirt with state intact");
+        helper.setBlock(cornerPos, wetSouthWest);
+        helper.setBlock(cornerPos.above(), Blocks.STONE);
+        assertExposure(helper, wetSouthWest, cornerPos, SpreadableGeometry.Exposure.BLOCKED,
+                "Vertical Stairs under a solid full block");
+        helper.setBlock(cornerPos.above(), Blocks.SNOW.defaultBlockState());
+        assertExposure(helper, wetSouthWest, cornerPos, SpreadableGeometry.Exposure.EXPOSED,
+                "Vertical Stairs under vanilla one-layer snow");
+
+        BlockPos columnPos = new BlockPos(4, 2, 1);
+        BlockState grassNorthWest = grassColumn.defaultBlockState()
+                .setValue(BgeColumnBlock.OCCUPANCY, BgeColumnBlock.Occupancy.NW)
+                .setValue(BgeColumnBlock.WATERLOGGED, true);
+        helper.setBlock(columnPos, grassNorthWest);
+        helper.setBlock(columnPos.above(), dirtColumn.defaultBlockState()
+                .setValue(BgeColumnBlock.OCCUPANCY, BgeColumnBlock.Occupancy.SE));
+        assertExposure(helper, grassNorthWest, columnPos, SpreadableGeometry.Exposure.EXPOSED,
+                "Quarter Column below non-overlapping partial coverage");
+        helper.setBlock(columnPos.above(), dirtColumn.defaultBlockState()
+                .setValue(BgeColumnBlock.OCCUPANCY, BgeColumnBlock.Occupancy.NW));
+        assertExposure(helper, grassNorthWest, columnPos, SpreadableGeometry.Exposure.BLOCKED,
+                "Quarter Column below exact partial coverage");
+        GeometrySpreadableBehavior.randomTick(grassNorthWest, helper.getLevel(),
+                helper.absolutePos(columnPos), RandomSource.create(0x434F4C534F4CL));
+        BlockState revertedColumn = helper.getBlockState(columnPos);
+        helper.assertTrue(revertedColumn.is(dirtColumn)
+                        && revertedColumn.getValue(BgeColumnBlock.OCCUPANCY)
+                                == BgeColumnBlock.Occupancy.NW
+                        && revertedColumn.getValue(BgeColumnBlock.WATERLOGGED),
+                "Solid-covered Quarter Column did not actually revert to typed Dirt with state intact");
+
+        BlockPos verticalPos = new BlockPos(7, 2, 1);
+        BlockState wetNorthVertical = grassVertical.defaultBlockState()
+                .setValue(VerticalSlabBlock.FACING, Direction.NORTH)
+                .setValue(VerticalSlabBlock.DOUBLE, false)
+                .setValue(VerticalSlabBlock.WATERLOGGED, true);
+        helper.setBlock(verticalPos, wetNorthVertical);
+        helper.setBlock(verticalPos.above(), Blocks.AIR);
+        assertExposure(helper, wetNorthVertical, verticalPos, SpreadableGeometry.Exposure.EXPOSED,
+                "accepted Vertical Slab self-waterlogged oracle");
+        helper.setBlock(verticalPos.above(), dirtVertical.defaultBlockState()
+                .setValue(VerticalSlabBlock.FACING, Direction.SOUTH)
+                .setValue(VerticalSlabBlock.DOUBLE, false));
+        assertExposure(helper, wetNorthVertical, verticalPos, SpreadableGeometry.Exposure.EXPOSED,
+                "Vertical Slab below non-overlapping partial coverage");
+        helper.setBlock(verticalPos.above(), dirtVertical.defaultBlockState()
+                .setValue(VerticalSlabBlock.FACING, Direction.NORTH)
+                .setValue(VerticalSlabBlock.DOUBLE, false));
+        assertExposure(helper, wetNorthVertical, verticalPos, SpreadableGeometry.Exposure.BLOCKED,
+                "Vertical Slab below exact partial coverage");
+
+        BlockPos spreadTarget = new BlockPos(10, 2, 1);
+        BlockState wetDirt = dirtCorner.defaultBlockState()
+                .setValue(BgeCornerBlock.FACING, Direction.EAST)
+                .setValue(BgeCornerBlock.WATERLOGGED, true);
+        helper.setBlock(spreadTarget, wetDirt);
+        helper.setBlock(spreadTarget.above(), Blocks.AIR);
+        helper.assertTrue(GeometrySpreadableBehavior.trySpread(helper.getLevel(),
+                                Blocks.GRASS_BLOCK, helper.absolutePos(spreadTarget))
+                        && helper.getBlockState(spreadTarget).is(grassCorner)
+                        && helper.getBlockState(spreadTarget).getValue(BgeCornerBlock.FACING)
+                                == Direction.EAST
+                        && helper.getBlockState(spreadTarget).getValue(BgeCornerBlock.WATERLOGGED),
+                "Geometry-aware spread did not preserve Vertical Stairs orientation/waterlogging");
+
+        BgeColumnBlock myceliumColumn = column("minecraft:mycelium");
+        BlockPos analogousTarget = new BlockPos(10, 2, 4);
+        BlockState diagonalDirt = dirtColumn.defaultBlockState()
+                .setValue(BgeColumnBlock.OCCUPANCY, BgeColumnBlock.Occupancy.NE_SW)
+                .setValue(BgeColumnBlock.WATERLOGGED, true);
+        helper.setBlock(analogousTarget, diagonalDirt);
+        helper.setBlock(analogousTarget.above(), Blocks.AIR);
+        helper.assertTrue(myceliumColumn instanceof SpreadableGeometry
+                        && GeometrySpreadableBehavior.trySpread(helper.getLevel(), Blocks.MYCELIUM,
+                                helper.absolutePos(analogousTarget))
+                        && helper.getBlockState(analogousTarget).is(myceliumColumn)
+                        && helper.getBlockState(analogousTarget).getValue(BgeColumnBlock.OCCUPANCY)
+                                == BgeColumnBlock.Occupancy.NE_SW
+                        && helper.getBlockState(analogousTarget).getValue(BgeColumnBlock.WATERLOGGED),
+                "Analogous Mycelium typed spread did not share geometry-aware survival/state transfer");
+
+        Block dirtStep = NibaruProviderAdapter.derived(profile("minecraft:dirt"),
+                DerivedGeometrySupport.Geometry.STEP).orElseThrow();
+        Block grassStep = NibaruProviderAdapter.derived(profile("minecraft:grass_block"),
+                DerivedGeometrySupport.Geometry.STEP).orElseThrow();
+        BlockPos legacyStepTarget = new BlockPos(13, 2, 4);
+        BlockState dryBottomStep = dirtStep.defaultBlockState()
+                .setValue(BlockStateProperties.SLAB_TYPE, SlabType.BOTTOM)
+                .setValue(BlockStateProperties.WATERLOGGED, false);
+        helper.setBlock(legacyStepTarget, dryBottomStep);
+        helper.setBlock(legacyStepTarget.above(), Blocks.WATER);
+        helper.assertTrue(grassVertical instanceof GeometryAwareSpreadable
+                        && !(grassStep instanceof GeometryAwareSpreadable)
+                        && !GeometrySpreadableBehavior.trySpread(helper.getLevel(), Blocks.GRASS_BLOCK,
+                                helper.absolutePos(legacyStepTarget))
+                        && helper.getBlockState(legacyStepTarget).equals(dryBottomStep),
+                "Exact-footprint exemption leaked into accepted Step water-above spreading");
+        helper.succeed();
+    }
+
     private static List<Item> expectedShapeMapSegment(NibaruMaterialProfile profile) {
         ArrayList<Item> expected = new ArrayList<>();
         addUnique(expected, profile.canonicalParent().asItem());
@@ -432,11 +655,11 @@ public final class BgeQuarterGeometryGameTests implements CustomTestMethodInvoke
                 .orElseThrow().asItem());
         addUnique(expected, NibaruProviderAdapter.derived(profile, DerivedGeometrySupport.Geometry.STEP)
                 .orElseThrow().asItem());
-        addUnique(expected, NibaruProviderAdapter.derived(profile, DerivedGeometrySupport.Geometry.LAYER)
-                .orElseThrow().asItem());
         addUnique(expected, NibaruProviderAdapter.derived(profile, BgeGeometryRole.CORNER)
                 .orElseThrow().asItem());
         addUnique(expected, NibaruProviderAdapter.derived(profile, BgeGeometryRole.QUARTER_COLUMN)
+                .orElseThrow().asItem());
+        addUnique(expected, NibaruProviderAdapter.derived(profile, DerivedGeometrySupport.Geometry.LAYER)
                 .orElseThrow().asItem());
         return List.copyOf(expected);
     }
@@ -456,15 +679,41 @@ public final class BgeQuarterGeometryGameTests implements CustomTestMethodInvoke
         return items.stream().map(BuiltInRegistries.ITEM::getKey).toList();
     }
 
-    private static AABB expectedCorner(Direction facing, Half half) {
-        double minY = half == Half.TOP ? 0.5 : 0.0;
-        double maxY = minY + 0.5;
-        return switch (facing) {
-            case NORTH -> new AABB(0, minY, 0, 1, maxY, 0.5);
-            case SOUTH -> new AABB(0, minY, 0.5, 1, maxY, 1);
-            case EAST -> new AABB(0.5, minY, 0, 1, maxY, 1);
-            case WEST -> new AABB(0, minY, 0, 0.5, maxY, 1);
-            default -> throw new IllegalArgumentException("Corner facing must be horizontal");
+    private static List<AABB> expectedCorner(BgeCornerBlock.Orientation orientation, double maxY) {
+        return switch (orientation) {
+            case SOUTH_WEST -> List.of(
+                    new AABB(0, 0, 0, 0.5, maxY, 0.5),
+                    new AABB(0, 0, 0.5, 1, maxY, 1));
+            case NORTH_WEST -> List.of(
+                    new AABB(0, 0, 0, 1, maxY, 0.5),
+                    new AABB(0, 0, 0.5, 0.5, maxY, 1));
+            case NORTH_EAST -> List.of(
+                    new AABB(0, 0, 0, 1, maxY, 0.5),
+                    new AABB(0.5, 0, 0.5, 1, maxY, 1));
+            case SOUTH_EAST -> List.of(
+                    new AABB(0.5, 0, 0, 1, maxY, 0.5),
+                    new AABB(0, 0, 0.5, 1, maxY, 1));
+        };
+    }
+
+    private static List<AABB> expectedHoneyCorner(BgeCornerBlock.Orientation orientation) {
+        double one = 1.0 / 16.0;
+        double seven = 7.0 / 16.0;
+        double nine = 9.0 / 16.0;
+        double fifteen = 15.0 / 16.0;
+        return switch (orientation) {
+            case SOUTH_WEST -> List.of(
+                    new AABB(one, 0, one, seven, fifteen, fifteen),
+                    new AABB(seven, 0, nine, fifteen, fifteen, fifteen));
+            case NORTH_WEST -> List.of(
+                    new AABB(one, 0, one, seven, fifteen, fifteen),
+                    new AABB(seven, 0, one, fifteen, fifteen, seven));
+            case NORTH_EAST -> List.of(
+                    new AABB(nine, 0, one, fifteen, fifteen, fifteen),
+                    new AABB(one, 0, one, nine, fifteen, seven));
+            case SOUTH_EAST -> List.of(
+                    new AABB(nine, 0, one, fifteen, fifteen, fifteen),
+                    new AABB(one, 0, nine, nine, fifteen, fifteen));
         };
     }
 
@@ -554,17 +803,58 @@ public final class BgeQuarterGeometryGameTests implements CustomTestMethodInvoke
 
     private static void assertShape(GameTestHelper helper, BlockState state, BlockPos absolute,
             List<AABB> expected, String label) {
-        List<AABB> actual = state.getShape(helper.getLevel(), absolute, CollisionContext.empty()).toAabbs();
-        helper.assertTrue(actual.size() == expected.size()
-                        && expected.stream().allMatch(box -> containsBox(actual, box)),
-                label + " shape changed: expected=" + expected + ", actual=" + actual);
+        VoxelShape actual = state.getShape(helper.getLevel(), absolute, CollisionContext.empty());
+        VoxelShape expectedShape = shape(expected);
+        helper.assertTrue(!Shapes.joinIsNotEmpty(actual, expectedShape, BooleanOp.NOT_SAME)
+                        && shapeVolume(actual.toAabbs()) == shapeVolume(expected),
+                label + " shape changed: expected=" + expected + ", actual=" + actual.toAabbs());
     }
 
-    private static boolean containsBox(List<AABB> boxes, AABB expected) {
-        return boxes.stream().anyMatch(actual -> actual.minX == expected.minX
-                && actual.minY == expected.minY && actual.minZ == expected.minZ
-                && actual.maxX == expected.maxX && actual.maxY == expected.maxY
-                && actual.maxZ == expected.maxZ);
+    private static void assertCollisionShape(GameTestHelper helper, BlockState state,
+            BlockPos absolute, List<AABB> expected, String label) {
+        VoxelShape actual = state.getCollisionShape(
+                helper.getLevel(), absolute, CollisionContext.empty());
+        VoxelShape expectedShape = shape(expected);
+        helper.assertTrue(!Shapes.joinIsNotEmpty(actual, expectedShape, BooleanOp.NOT_SAME)
+                        && shapeVolume(actual.toAabbs()) == shapeVolume(expected),
+                label + " collision changed: expected=" + expected + ", actual=" + actual.toAabbs());
+    }
+
+    private static void assertExposure(GameTestHelper helper, BlockState state, BlockPos pos,
+            SpreadableGeometry.Exposure expected, String label) {
+        SpreadableGeometry geometry = (SpreadableGeometry) state.getBlock();
+        SpreadableGeometry.Exposure actual = geometry.spreadableExposure(
+                state, helper.getLevel(), helper.absolutePos(pos));
+        helper.assertTrue(actual == expected,
+                label + " exposure changed: expected=" + expected + ", actual=" + actual);
+    }
+
+    private static void assertLegacyCornerDecode(GameTestHelper helper,
+            BlockState current, String legacyHalf) {
+        JsonElement encoded = BlockState.CODEC.encodeStart(JsonOps.INSTANCE, current).result()
+                .orElseThrow(() -> new IllegalStateException("Could not encode current Corner state"));
+        JsonObject legacy = encoded.getAsJsonObject().deepCopy();
+        legacy.getAsJsonObject("Properties").addProperty("half", legacyHalf);
+        BlockState decoded = BlockState.CODEC.parse(JsonOps.INSTANCE, legacy).result()
+                .orElseThrow(() -> new IllegalStateException(
+                        "C55 Corner palette state no longer decodes: " + legacy));
+        helper.assertTrue(decoded.equals(current),
+                "Legacy C55 HALF was not safely ignored while preserving cardinal/water state: "
+                        + legacy + " -> " + decoded);
+    }
+
+    private static double shapeVolume(List<AABB> boxes) {
+        return boxes.stream().mapToDouble(box -> (box.maxX - box.minX)
+                * (box.maxY - box.minY) * (box.maxZ - box.minZ)).sum();
+    }
+
+    private static VoxelShape shape(List<AABB> boxes) {
+        VoxelShape result = Shapes.empty();
+        for (AABB box : boxes) {
+            result = Shapes.or(result, Block.box(box.minX * 16, box.minY * 16, box.minZ * 16,
+                    box.maxX * 16, box.maxY * 16, box.maxZ * 16));
+        }
+        return result.optimize();
     }
 
     private static void blockAdjacentPositions(GameTestHelper helper, BlockPos target) {

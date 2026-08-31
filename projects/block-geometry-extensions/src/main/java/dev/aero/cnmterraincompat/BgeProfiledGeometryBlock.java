@@ -179,7 +179,9 @@ public abstract class BgeProfiledGeometryBlock extends Block implements SimpleWa
     @Override
     protected void randomTick(BlockState state, net.minecraft.server.level.ServerLevel level,
             BlockPos pos, RandomSource random) {
-        if (isSpreadableSurface(materialProfile)) SpreadableSemantics.randomTick(state, level, pos, random);
+        if (isSpreadableSurface(materialProfile)) {
+            GeometrySpreadableBehavior.randomTick(state, level, pos, random);
+        }
         if (has(BehaviorCapability.ICE_MELTING)) {
             IceGeometryBehavior.randomTick(ModBlocks.ICE, state, level, pos, random);
         }

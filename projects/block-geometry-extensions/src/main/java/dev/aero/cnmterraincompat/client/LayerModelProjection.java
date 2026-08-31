@@ -26,6 +26,12 @@ import java.util.Objects;
  * authored geometry; Corner is the phase that will exercise that larger UV problem.</p>
  */
 public final class LayerModelProjection {
+    /** Dedicated Workbench GUI scale used for the user-observed physical-pixel correction. */
+    public static final int WORKBENCH_GUI_SCALE = 2;
+    public static final double TARGET_SCREEN_RIGHT_PIXELS = 3;
+    public static final double TARGET_SCREEN_DOWN_PIXELS = 6;
+    private static final int[] GUI_ROTATION = {30, -135, 0};
+    private static final double[] GUI_SCALE = {0.625, 0.625, 0.625};
     private static final Direction[] FACINGS = {
             Direction.UP, Direction.DOWN, Direction.NORTH,
             Direction.SOUTH, Direction.EAST, Direction.WEST
@@ -535,11 +541,76 @@ public final class LayerModelProjection {
         JsonObject firstPerson = transform(new int[]{0, -45, 0}, null, new double[]{0.4, 0.4, 0.4});
         display.add("firstperson_righthand", firstPerson);
         display.add("firstperson_lefthand", firstPerson.deepCopy());
-        // C55 applies the exact observed C54 inventory correction: +3px right and +6px down.
-        display.add("gui", transform(new int[]{30, -135, 0}, new double[]{1.675, -2.75, 0},
-                new double[]{0.625, 0.625, 0.625}));
+        GuiTranslation gui = guiTranslation(WORKBENCH_GUI_SCALE,
+                TARGET_SCREEN_RIGHT_PIXELS, TARGET_SCREEN_DOWN_PIXELS);
+        display.add("gui", transform(GUI_ROTATION, new double[]{gui.x(), gui.y(), gui.z()}, GUI_SCALE));
         display.add("fixed", transform(new int[]{0, 90, 0}, null, new double[]{0.5, 0.5, 0.5}));
         return display;
+    }
+
+    /**
+     * Derives the JSON GUI translation from the actual item-transform/projection pipeline.
+     *
+     * <p>Minecraft divides JSON translation by 16, applies translation before rotation and scale,
+     * and then renders GUI items into a {@code 16 * guiScale} physical-pixel atlas slot with its Y
+     * axis inverted. Consequently one JSON translation unit is one logical GUI pixel, or
+     * {@code guiScale} physical screen pixels. The base term centers the transformed one-layer
+     * cuboid's projected centroid; the correction term converts the observed physical-pixel delta
+     * back into JSON units. It is always derived from the C54 centered projection, never from the
+     * previous candidate's serialized translation.</p>
+     */
+    public static GuiTranslation guiTranslation(int guiScale,
+            double screenRightPixels, double screenDownPixels) {
+        if (guiScale < 1) throw new IllegalArgumentException("GUI scale must be positive");
+        Bounds item = bounds(Direction.UP, 1);
+        double x = (item.x0() + item.x1()) / 32.0 - 0.5;
+        double y = (item.y0() + item.y1()) / 32.0 - 0.5;
+        double z = (item.z0() + item.z1()) / 32.0 - 0.5;
+
+        x *= GUI_SCALE[0];
+        y *= GUI_SCALE[1];
+        z *= GUI_SCALE[2];
+        double[] rotated = rotateXyz(x, y, z,
+                GUI_ROTATION[0], GUI_ROTATION[1], GUI_ROTATION[2]);
+
+        double centeredX = -16.0 * rotated[0];
+        double centeredY = -16.0 * rotated[1];
+        return new GuiTranslation(
+                centeredX + screenRightPixels / guiScale,
+                centeredY - screenDownPixels / guiScale,
+                0.0);
+    }
+
+    /** Projects a JSON translation delta back to physical framebuffer pixels. */
+    public static ScreenDelta physicalPixelDelta(int guiScale,
+            GuiTranslation from, GuiTranslation to) {
+        if (guiScale < 1) throw new IllegalArgumentException("GUI scale must be positive");
+        Objects.requireNonNull(from, "from");
+        Objects.requireNonNull(to, "to");
+        return new ScreenDelta((to.x() - from.x()) * guiScale,
+                -(to.y() - from.y()) * guiScale);
+    }
+
+    private static double[] rotateXyz(double x, double y, double z,
+            double xDegrees, double yDegrees, double zDegrees) {
+        double xRadians = Math.toRadians(xDegrees);
+        double xCos = Math.cos(xRadians);
+        double xSin = Math.sin(xRadians);
+        double rotatedY = xCos * y - xSin * z;
+        double rotatedZ = xSin * y + xCos * z;
+
+        double yRadians = Math.toRadians(yDegrees);
+        double yCos = Math.cos(yRadians);
+        double ySin = Math.sin(yRadians);
+        double rotatedX = yCos * x + ySin * rotatedZ;
+        rotatedZ = -ySin * x + yCos * rotatedZ;
+
+        double zRadians = Math.toRadians(zDegrees);
+        double zCos = Math.cos(zRadians);
+        double zSin = Math.sin(zRadians);
+        double finalX = zCos * rotatedX - zSin * rotatedY;
+        double finalY = zSin * rotatedX + zCos * rotatedY;
+        return new double[]{finalX, finalY, rotatedZ};
     }
 
     private static JsonObject transform(int[] rotation, double[] translation, double[] scale) {
@@ -591,4 +662,8 @@ public final class LayerModelProjection {
             Objects.requireNonNull(itemModel, "itemModel");
         }
     }
+
+    public record GuiTranslation(double x, double y, double z) {}
+
+    public record ScreenDelta(double rightPixels, double downPixels) {}
 }

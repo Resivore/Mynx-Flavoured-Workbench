@@ -248,12 +248,14 @@ public class BgeColumnBlock extends BgeProfiledGeometryBlock
         }
     }
 
-    private static final class SpreadableColumnBlock extends BgeColumnBlock implements SpreadableGeometry {
+    private static final class SpreadableColumnBlock extends BgeColumnBlock
+            implements GeometryAwareSpreadable {
         private SpreadableColumnBlock(NibaruMaterialProfile profile, BlockBehaviour.Properties properties) {
             super(profile, properties);
         }
         @Override public Exposure spreadableExposure(BlockState state, LevelReader level, BlockPos pos) {
-            return state.getValue(WATERLOGGED) ? Exposure.BLOCKED : Exposure.DEFAULT;
+            return GeometrySurfaceExposure.topExposure(level, pos,
+                    state.getValue(OCCUPANCY).topFootprintMask());
         }
     }
 
@@ -325,6 +327,20 @@ public class BgeColumnBlock extends BgeProfiledGeometryBlock
 
         public boolean isDouble() {
             return this == NW_SE || this == NE_SW;
+        }
+
+        /** Exact upward material footprint on BGE's shared 2-by-2 quarter grid. */
+        public int topFootprintMask() {
+            return switch (this) {
+                case NW -> GeometrySurfaceExposure.NORTH_WEST;
+                case NE -> GeometrySurfaceExposure.NORTH_EAST;
+                case SW -> GeometrySurfaceExposure.SOUTH_WEST;
+                case SE -> GeometrySurfaceExposure.SOUTH_EAST;
+                case NW_SE -> GeometrySurfaceExposure.NORTH_WEST
+                        | GeometrySurfaceExposure.SOUTH_EAST;
+                case NE_SW -> GeometrySurfaceExposure.NORTH_EAST
+                        | GeometrySurfaceExposure.SOUTH_WEST;
+            };
         }
 
         public Occupancy rotate(Rotation rotation) {

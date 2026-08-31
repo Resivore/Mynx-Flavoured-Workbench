@@ -9,6 +9,7 @@ import games.twinhead.moreslabsstairsandwalls.block.leaves.LeafSemantics;
 import games.twinhead.moreslabsstairsandwalls.block.spreadable.SpreadableGeometry;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
+import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.entity.item.FallingBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -29,28 +30,23 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
-import net.minecraft.world.level.block.state.properties.Half;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.material.Fluids;
+import net.minecraft.world.phys.shapes.BooleanOp;
 import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 import java.util.Optional;
 
-/** BGE Corner: the reference 16x8x8, hit-oriented, non-combining quarter piece. */
+/** BGE Corner: Extended Block Shapes' full-height Vertical Stairs L geometry. */
 public class BgeCornerBlock extends BgeProfiledGeometryBlock {
+    /**
+     * Cardinal carrier retained so C55 palettes continue to decode; each value maps to one
+     * corner anchor and HALF is deliberately absent from the successor state definition.
+     */
     public static final EnumProperty<Direction> FACING = BlockStateProperties.HORIZONTAL_FACING;
-    public static final EnumProperty<Half> HALF = BlockStateProperties.HALF;
-
-    private static final VoxelShape NORTH_BOTTOM = Block.box(0, 0, 0, 16, 8, 8);
-    private static final VoxelShape SOUTH_BOTTOM = Block.box(0, 0, 8, 16, 8, 16);
-    private static final VoxelShape EAST_BOTTOM = Block.box(8, 0, 0, 16, 8, 16);
-    private static final VoxelShape WEST_BOTTOM = Block.box(0, 0, 0, 8, 8, 16);
-    private static final VoxelShape NORTH_TOP = Block.box(0, 8, 0, 16, 16, 8);
-    private static final VoxelShape SOUTH_TOP = Block.box(0, 8, 8, 16, 16, 16);
-    private static final VoxelShape EAST_TOP = Block.box(8, 8, 0, 16, 16, 16);
-    private static final VoxelShape WEST_TOP = Block.box(0, 8, 0, 8, 16, 16);
 
     public static BgeCornerBlock create(NibaruMaterialProfile profile,
             BlockBehaviour.Properties properties) {
@@ -84,8 +80,7 @@ public class BgeCornerBlock extends BgeProfiledGeometryBlock {
     public BgeCornerBlock(NibaruMaterialProfile profile, BlockBehaviour.Properties properties) {
         super(profile, properties);
         registerDefaultState(stateDefinition.any()
-                .setValue(FACING, Direction.NORTH)
-                .setValue(HALF, Half.BOTTOM)
+                .setValue(FACING, Orientation.SOUTH_WEST.stateFacing())
                 .setValue(WATERLOGGED, false));
     }
 
@@ -99,65 +94,73 @@ public class BgeCornerBlock extends BgeProfiledGeometryBlock {
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
         BlockPos pos = context.getClickedPos();
-        Direction.Axis placementAxis = context.getHorizontalDirection().getAxis();
-        double coordinate = context.getClickLocation().get(placementAxis) - pos.get(placementAxis);
-        Direction facing = switch (placementAxis) {
-            case X -> coordinate < 0.5 ? Direction.WEST : Direction.EAST;
-            case Z -> coordinate < 0.5 ? Direction.NORTH : Direction.SOUTH;
-            case Y -> throw new IllegalStateException("Horizontal placement axis cannot be Y");
-        };
-        Direction clickedFace = context.getClickedFace();
-        double localY = context.getClickLocation().y - pos.getY();
-        Half half = clickedFace == Direction.DOWN
-                || clickedFace != Direction.UP && localY > 0.5
-                ? Half.TOP : Half.BOTTOM;
+        double localX = context.getClickLocation().x - pos.getX();
+        double localZ = context.getClickLocation().z - pos.getZ();
+        Orientation facing = Orientation.fromHit(localX, localZ);
         return applyProfilePlacement(defaultBlockState()
-                .setValue(FACING, facing)
-                .setValue(HALF, half)
+                .setValue(FACING, facing.stateFacing())
                 .setValue(WATERLOGGED,
                         context.getLevel().getFluidState(pos).getType() == Fluids.WATER), context);
     }
 
     @Override
     protected VoxelShape materialCollisionShape(BlockState state, boolean honey) {
-        Direction facing = state.getValue(FACING);
-        boolean top = state.getValue(HALF) == Half.TOP;
-        double minY = top ? 8 : 0;
-        double maxY = top ? honey ? 15 : 14 : honey ? 7 : 6;
-        if (!honey) return halfShape(facing, minY, maxY, 0);
-        return halfShape(facing, minY, maxY, 1);
+        return lShape(orientation(state), honey ? 15 : 14, honey ? 1 : 0);
     }
 
     @Override
     protected boolean equalStateFaceCanCull(BlockState state, Direction direction) {
-        return direction.getAxis().isHorizontal()
-                && direction.getAxis() != state.getValue(FACING).getAxis();
+        return orientation(state).equalStateFaceCanCull(direction);
     }
 
     private static VoxelShape regularShape(BlockState state) {
-        boolean top = state.getValue(HALF) == Half.TOP;
-        return switch (state.getValue(FACING)) {
-            case NORTH -> top ? NORTH_TOP : NORTH_BOTTOM;
-            case SOUTH -> top ? SOUTH_TOP : SOUTH_BOTTOM;
-            case EAST -> top ? EAST_TOP : EAST_BOTTOM;
-            case WEST -> top ? WEST_TOP : WEST_BOTTOM;
-            default -> throw new IllegalStateException("Corner facing must be horizontal");
-        };
+        return lShape(orientation(state), 16, 0);
     }
 
     private static VoxelShape pathShape(BlockState state) {
-        boolean top = state.getValue(HALF) == Half.TOP;
-        return halfShape(state.getValue(FACING), top ? 7 : 0, top ? 15 : 7, 0);
+        return lShape(orientation(state), 15, 0);
     }
 
-    private static VoxelShape halfShape(Direction facing, double minY, double maxY, double inset) {
+    /** Full cube/collision shell minus the quarter diagonally opposite the clicked anchor. */
+    private static VoxelShape lShape(Orientation facing, double maxY, double inset) {
+        if (inset == 1) return honeyInsetShape(facing, maxY);
+        if (inset != 0) throw new IllegalArgumentException("Corner inset must be zero or one pixel");
         return switch (facing) {
-            case NORTH -> Block.box(inset, minY, inset, 16 - inset, maxY, 8 - inset);
-            case SOUTH -> Block.box(inset, minY, 8 + inset, 16 - inset, maxY, 16 - inset);
-            case EAST -> Block.box(8 + inset, minY, inset, 16 - inset, maxY, 16 - inset);
-            case WEST -> Block.box(inset, minY, inset, 8 - inset, maxY, 16 - inset);
-            default -> throw new IllegalStateException("Corner facing must be horizontal");
+            case SOUTH_WEST -> Shapes.or(
+                    Block.box(0, 0, 0, 8, maxY, 8),
+                    Block.box(0, 0, 8, 16, maxY, 16)).optimize();
+            case NORTH_WEST -> Shapes.or(
+                    Block.box(0, 0, 0, 16, maxY, 8),
+                    Block.box(0, 0, 8, 8, maxY, 16)).optimize();
+            case NORTH_EAST -> Shapes.or(
+                    Block.box(0, 0, 0, 16, maxY, 8),
+                    Block.box(8, 0, 8, 16, maxY, 16)).optimize();
+            case SOUTH_EAST -> Shapes.or(
+                    Block.box(8, 0, 0, 16, maxY, 8),
+                    Block.box(0, 0, 8, 16, maxY, 16)).optimize();
         };
+    }
+
+    /** One-pixel erosion of every exposed Honey boundary, including both notch faces. */
+    private static VoxelShape honeyInsetShape(Orientation facing, double maxY) {
+        return switch (facing) {
+            case SOUTH_WEST -> Shapes.or(
+                    Block.box(1, 0, 1, 7, maxY, 15),
+                    Block.box(7, 0, 9, 15, maxY, 15)).optimize();
+            case NORTH_WEST -> Shapes.or(
+                    Block.box(1, 0, 1, 7, maxY, 15),
+                    Block.box(7, 0, 1, 15, maxY, 7)).optimize();
+            case NORTH_EAST -> Shapes.or(
+                    Block.box(9, 0, 1, 15, maxY, 15),
+                    Block.box(1, 0, 1, 9, maxY, 7)).optimize();
+            case SOUTH_EAST -> Shapes.or(
+                    Block.box(9, 0, 1, 15, maxY, 15),
+                    Block.box(1, 0, 9, 9, maxY, 15)).optimize();
+        };
+    }
+
+    public static Orientation orientation(BlockState state) {
+        return Orientation.fromFacing(state.getValue(FACING));
     }
 
     @Override
@@ -167,13 +170,124 @@ public class BgeCornerBlock extends BgeProfiledGeometryBlock {
 
     @Override
     public BlockState mirror(BlockState state, Mirror mirror) {
-        return state.setValue(FACING, mirror.mirror(state.getValue(FACING)));
+        return state.setValue(FACING, orientation(state).mirror(mirror).stateFacing());
     }
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         super.createBlockStateDefinition(builder);
-        builder.add(FACING, HALF);
+        builder.add(FACING);
+    }
+
+    /**
+     * Four-corner anchor used by the reference Vertical Stairs form. The clicked/serialized
+     * corner remains occupied and the diagonally opposite quarter is absent.
+     */
+    public enum Orientation implements StringRepresentable {
+        SOUTH_WEST("south_west", Direction.WEST, GeometrySurfaceExposure.NORTH_EAST),
+        NORTH_WEST("north_west", Direction.NORTH, GeometrySurfaceExposure.SOUTH_EAST),
+        NORTH_EAST("north_east", Direction.EAST, GeometrySurfaceExposure.SOUTH_WEST),
+        SOUTH_EAST("south_east", Direction.SOUTH, GeometrySurfaceExposure.NORTH_WEST);
+
+        private final String serializedName;
+        private final Direction stateFacing;
+        private final int removedQuarterMask;
+
+        Orientation(String serializedName, Direction stateFacing, int removedQuarterMask) {
+            this.serializedName = serializedName;
+            this.stateFacing = stateFacing;
+            this.removedQuarterMask = removedQuarterMask;
+        }
+
+        public static Orientation fromHit(double localX, double localZ) {
+            return localX < 0.5
+                    ? localZ < 0.5 ? NORTH_WEST : SOUTH_WEST
+                    : localZ < 0.5 ? NORTH_EAST : SOUTH_EAST;
+        }
+
+        public int topFootprintMask() {
+            return GeometrySurfaceExposure.FULL ^ removedQuarterMask;
+        }
+
+        public int removedQuarterMask() {
+            return removedQuarterMask;
+        }
+
+        public Direction stateFacing() {
+            return stateFacing;
+        }
+
+        public static Orientation fromFacing(Direction facing) {
+            return switch (facing) {
+                case WEST -> SOUTH_WEST;
+                case NORTH -> NORTH_WEST;
+                case EAST -> NORTH_EAST;
+                case SOUTH -> SOUTH_EAST;
+                default -> throw new IllegalArgumentException("Corner facing must be horizontal: " + facing);
+            };
+        }
+
+        public Orientation rotate(Rotation rotation) {
+            return switch (rotation) {
+                case NONE -> this;
+                case CLOCKWISE_90 -> clockwise();
+                case CLOCKWISE_180 -> clockwise().clockwise();
+                case COUNTERCLOCKWISE_90 -> clockwise().clockwise().clockwise();
+            };
+        }
+
+        private Orientation clockwise() {
+            return switch (this) {
+                case SOUTH_WEST -> NORTH_WEST;
+                case NORTH_WEST -> NORTH_EAST;
+                case NORTH_EAST -> SOUTH_EAST;
+                case SOUTH_EAST -> SOUTH_WEST;
+            };
+        }
+
+        public Orientation mirror(Mirror mirror) {
+            return switch (mirror) {
+                case NONE -> this;
+                case LEFT_RIGHT -> switch (this) {
+                    case SOUTH_WEST -> NORTH_WEST;
+                    case NORTH_WEST -> SOUTH_WEST;
+                    case SOUTH_EAST -> NORTH_EAST;
+                    case NORTH_EAST -> SOUTH_EAST;
+                };
+                case FRONT_BACK -> switch (this) {
+                    case SOUTH_WEST -> SOUTH_EAST;
+                    case SOUTH_EAST -> SOUTH_WEST;
+                    case NORTH_WEST -> NORTH_EAST;
+                    case NORTH_EAST -> NORTH_WEST;
+                };
+            };
+        }
+
+        /** Equal-state translucent culling only where the adjacent L covers this whole boundary. */
+        private boolean equalStateFaceCanCull(Direction direction) {
+            if (direction.getAxis() == Direction.Axis.Y) return true;
+            return switch (this) {
+                case SOUTH_WEST -> direction == Direction.NORTH || direction == Direction.EAST;
+                case NORTH_WEST -> direction == Direction.SOUTH || direction == Direction.EAST;
+                case NORTH_EAST -> direction == Direction.SOUTH || direction == Direction.WEST;
+                case SOUTH_EAST -> direction == Direction.NORTH || direction == Direction.WEST;
+            };
+        }
+
+        /** Orientation in a glazed pattern's unrotated model frame. */
+        public Orientation relativeTo(Direction patternFacing) {
+            int turns = GlazedPatternState.patternYaw(patternFacing) / 90;
+            Orientation result = this;
+            for (int i = 0; i < turns; i++) {
+                result = result.rotate(Rotation.COUNTERCLOCKWISE_90);
+            }
+            return result;
+        }
+
+        @Override
+        public String getSerializedName() {
+            return serializedName;
+        }
     }
 
     @SuppressWarnings("deprecation")
@@ -219,13 +333,14 @@ public class BgeCornerBlock extends BgeProfiledGeometryBlock {
         }
     }
 
-    private static final class SpreadableCornerBlock extends BgeCornerBlock implements SpreadableGeometry {
+    private static final class SpreadableCornerBlock extends BgeCornerBlock
+            implements GeometryAwareSpreadable {
         private SpreadableCornerBlock(NibaruMaterialProfile profile, BlockBehaviour.Properties properties) {
             super(profile, properties);
         }
         @Override public Exposure spreadableExposure(BlockState state, LevelReader level, BlockPos pos) {
-            if (state.getValue(WATERLOGGED)) return Exposure.BLOCKED;
-            return state.getValue(HALF) == Half.BOTTOM ? Exposure.EXPOSED : Exposure.DEFAULT;
+            return GeometrySurfaceExposure.topExposure(level, pos,
+                    orientation(state).topFootprintMask());
         }
     }
 
@@ -233,9 +348,7 @@ public class BgeCornerBlock extends BgeProfiledGeometryBlock {
         private PathCornerBlock(NibaruMaterialProfile profile, BlockBehaviour.Properties properties) {
             super(profile, properties);
         }
-        @Override public boolean pathSurfaceRequiresClearAbove(BlockState state) {
-            return state.getValue(HALF) == Half.TOP;
-        }
+        @Override public boolean pathSurfaceRequiresClearAbove(BlockState state) { return true; }
     }
 
     private static final class CopperCornerBlock extends BgeCornerBlock

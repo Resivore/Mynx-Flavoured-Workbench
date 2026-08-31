@@ -17,7 +17,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.BlockHitResult;
 
 
-final class GrassVerticalSlab extends VerticalSlabBlock implements SpreadableGeometry {
+final class GrassVerticalSlab extends VerticalSlabBlock implements GeometryAwareSpreadable {
     GrassVerticalSlab(BlockBehaviour.Properties properties) {
         super(properties);
     }
@@ -31,7 +31,7 @@ final class GrassVerticalSlab extends VerticalSlabBlock implements SpreadableGeo
 
     @Override
     protected void randomTick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
-        SpreadableSemantics.randomTick(state, level, pos, random);
+        GeometrySpreadableBehavior.randomTick(state, level, pos, random);
     }
 
     static boolean canGrassSurvive(BlockState grassState, LevelReader level, BlockPos pos) {
@@ -40,7 +40,19 @@ final class GrassVerticalSlab extends VerticalSlabBlock implements SpreadableGeo
 
     @Override
     public Exposure spreadableExposure(BlockState state, LevelReader level, BlockPos pos) {
-        if (state.getValue(WATERLOGGED)) return Exposure.BLOCKED;
-        return Exposure.DEFAULT;
+        int footprint = state.getValue(DOUBLE)
+                ? GeometrySurfaceExposure.FULL
+                : switch (state.getValue(FACING)) {
+                    case NORTH -> GeometrySurfaceExposure.NORTH_WEST
+                            | GeometrySurfaceExposure.NORTH_EAST;
+                    case EAST -> GeometrySurfaceExposure.NORTH_EAST
+                            | GeometrySurfaceExposure.SOUTH_EAST;
+                    case SOUTH -> GeometrySurfaceExposure.SOUTH_WEST
+                            | GeometrySurfaceExposure.SOUTH_EAST;
+                    case WEST -> GeometrySurfaceExposure.NORTH_WEST
+                            | GeometrySurfaceExposure.SOUTH_WEST;
+                    default -> throw new IllegalStateException("Vertical Slab facing must be horizontal");
+                };
+        return GeometrySurfaceExposure.topExposure(level, pos, footprint);
     }
 }

@@ -14,7 +14,8 @@ public enum BgeGeometryRole {
     VERTICAL_SLAB(DerivedGeometrySupport.Geometry.VERTICAL_SLAB, 2),
     STEP(DerivedGeometrySupport.Geometry.STEP, 1),
     LAYER(DerivedGeometrySupport.Geometry.LAYER, 4),
-    CORNER(null, 4),
+    // Extended Block Shapes defines Vertical Stairs with logical completeness 1.0.
+    CORNER(null, 1),
     QUARTER_COLUMN(null, 4);
 
     private final DerivedGeometrySupport.Geometry legacyGeometry;

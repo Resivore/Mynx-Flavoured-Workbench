@@ -31,13 +31,22 @@ Shaped modes resolve the exact source `Block` through:
 2. the profile carried by an exact accepted runtime binding for an already
    derived CNM geometry.
 
-The requested target comes only from the profile's typed role:
+The requested target comes only from an owner-authored typed role:
 
 - Slab: `effectiveSlabSource()`
 - Stair: `effectiveStairSource()`
 - Wall: `nativeWall()`
-- Vertical Slab: provider-owned `DerivedGeometrySupport.Geometry.VERTICAL_SLAB`
-- Step: provider-owned `DerivedGeometrySupport.Geometry.STEP`
+- BGE-derived modes: the corresponding stable `BgeGeometryCatalog.Descriptor`
+
+`TargetGeometry` owns only Full, Slab, Stair, and Wall. It projects every other
+mode from `BgeGeometryCatalog.ordered()`, including stable key, persistence ID,
+selector order, display name, availability, and exact resolved block/item. The
+Trowel therefore has no parallel list of BGE geometry names. A later BGE
+descriptor becomes a selector mode without a source change here.
+
+The current BGE catalog contributes Vertical Slab, Step, Corner, Quarter Column,
+and Layer. Missing material support fails closed for that exact mode; it never
+falls back to Full or a related geometry.
 
 The adapter and provider use exact block identity. No `ShapeMap` lookup,
 component offset, canonical-name parser, registry suffix, material string, or
@@ -67,7 +76,10 @@ unchanged.
 
 `TrowelShapeSwitcherOverlay` subclasses CNM's overlay to retain its exact
 layout, motion, HOLD/TOGGLE/PRESS behavior, scrolling, look-to-switch behavior,
-and switch sound. An accessor supplies a six-entry typed icon list. A render
+and switch sound. An accessor supplies the dynamic native-plus-BGE icon list.
+Each icon is an actual item resolved through the selected geometry descriptor;
+if Oak Planks does not support a future role, the first exact supported catalog
+material supplies the representative icon rather than collapsing the role. A render
 redirect substitutes icons only when the overlay instance is the trowel
 subclass; ordinary CNM overlays delegate to the original
 `ShapeMap.transferStack` call. The subclass never calls CNM's
@@ -81,9 +93,11 @@ components; the server remains authoritative.
 
 ## Persisted state and networking
 
-The mode ordinal is stored under `shulker_trowel.geometry` in the trowel
-stack's standard `DataComponents.CUSTOM_DATA`. Invalid or absent stored values
-read as Full.
+The stable mode persistence ID is stored under `shulker_trowel.geometry` in the
+trowel stack's standard `DataComponents.CUSTOM_DATA`. Invalid or absent stored
+values read as Full. IDs 0 through 6 retain their previous identities; Layer
+remains ID 6 even though Corner (ID 7) and Quarter Column (ID 8) precede it in
+the selector. Selector order never acts as saved or network identity.
 
 The narrow `change_geometry` client-to-server payload contains only the
 requested mode ID. The server rejects invalid IDs, dead players, and players

@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.TreeSet;
 
 /**
  * Projects an explicit list of cuboids through one typed Nibaru material frame.
@@ -65,11 +66,32 @@ public final class CuboidListModelProjection {
     /** Creates one dedicated item-only model with the shared BGE display transform. */
     public static JsonObject itemModel(NibaruMaterialProfile profile, Cuboid canonical,
             Direction.Axis materialAxis, boolean glazed) {
-        Cuboid visual = visualCuboid(profile, canonical);
-        Bounds centered = visual.geometry().centered();
+        return itemModel(profile, List.of(canonical), materialAxis, glazed);
+    }
+
+    /** Creates one centered item-only model for a compound cuboid geometry. */
+    public static JsonObject itemModel(NibaruMaterialProfile profile, List<Cuboid> canonical,
+            Direction.Axis materialAxis, boolean glazed) {
+        List<Cuboid> visual = visualCuboids(profile, canonical);
+        double minX = visual.stream().mapToDouble(cuboid -> cuboid.geometry().x0()).min().orElseThrow();
+        double minY = visual.stream().mapToDouble(cuboid -> cuboid.geometry().y0()).min().orElseThrow();
+        double minZ = visual.stream().mapToDouble(cuboid -> cuboid.geometry().z0()).min().orElseThrow();
+        double maxX = visual.stream().mapToDouble(cuboid -> cuboid.geometry().x1()).max().orElseThrow();
+        double maxY = visual.stream().mapToDouble(cuboid -> cuboid.geometry().y1()).max().orElseThrow();
+        double maxZ = visual.stream().mapToDouble(cuboid -> cuboid.geometry().z1()).max().orElseThrow();
+        double dx = 8 - (minX + maxX) / 2;
+        double dy = 8 - (minY + maxY) / 2;
+        double dz = 8 - (minZ + maxZ) / 2;
+        List<Cuboid> centered = visual.stream().map(cuboid -> new Cuboid(
+                translated(cuboid.geometry(), dx, dy, dz), cuboid.uv())).toList();
         MaterialFrame materialFrame = materialAxis == null ? null : MaterialFrame.direct(materialAxis);
-        return model(profile, List.of(new Cuboid(centered, visual.uv())), materialFrame,
+        return model(profile, centered, materialFrame,
                 glazed, false, true);
+    }
+
+    private static Bounds translated(Bounds bounds, double x, double y, double z) {
+        return new Bounds(bounds.x0() + x, bounds.y0() + y, bounds.z0() + z,
+                bounds.x1() + x, bounds.y1() + y, bounds.z1() + z);
     }
 
     /** Applies only profile-owned geometry offsets; it never rotates a material frame. */
@@ -110,17 +132,17 @@ public final class CuboidListModelProjection {
         }
 
         JsonObject result = baseModel(profile, materialFrame, glazed);
-        for (Cuboid cuboid : cuboids) {
+        if (profile.insetVisualContract().isPresent()) {
+            addInsetMaterial(result, profile, cuboids, materialFrame, cullBoundary);
+        } else for (Cuboid cuboid : cuboids) {
             if (profile.visualProfile() == VisualProfile.GLASS_EDGE) {
-                addGlassCuboid(result, cuboid, cullBoundary);
+                addGlassCuboid(result, cuboid, cuboids, cullBoundary);
             } else if (profile.visualProfile() == VisualProfile.ROOTS) {
-                addRoots(result, cuboid, cullBoundary);
-            } else if (profile.insetVisualContract().isPresent()) {
-                addInsetMaterial(result, profile, cuboid, materialFrame, cullBoundary);
+                addRoots(result, cuboid, cuboids, cullBoundary);
             } else {
-                addBox(result, profile, cuboid, materialFrame, false, cullBoundary);
+                addBox(result, profile, cuboid, cuboids, materialFrame, false, cullBoundary);
                 if (!profile.textureRoles().overlay().isEmpty()) {
-                    addOverlay(result, profile, cuboid, cullBoundary);
+                    addOverlay(result, profile, cuboid, cuboids, cullBoundary);
                 }
             }
         }
@@ -162,28 +184,153 @@ public final class CuboidListModelProjection {
     }
 
     private static void addInsetMaterial(JsonObject model, NibaruMaterialProfile profile,
-            Cuboid outer, MaterialFrame materialFrame, boolean cullBoundary) {
+            List<Cuboid> outers, MaterialFrame materialFrame, boolean cullBoundary) {
         NibaruMaterialProfile.InsetVisualContract contract = profile.insetVisualContract().orElseThrow();
         boolean bottomShell = contract.shellTexture()
                 == NibaruMaterialProfile.InsetVisualContract.ShellTexture.BOTTOM;
-        addBox(model, profile, outer, materialFrame, bottomShell, cullBoundary);
-        if (outer.geometry().isFullCube() && !contract.includeInnerLayerOnFullCube()) return;
+        for (Cuboid outer : outers) {
+            addBox(model, profile, outer, outers, materialFrame, bottomShell, cullBoundary);
+        }
+        if (outers.size() == 1) {
+            Cuboid outer = outers.getFirst();
+            if (outer.geometry().isFullCube() && !contract.includeInnerLayerOnFullCube()) return;
+            int xInset = contract.insetForSpan((int) Math.round(outer.geometry().xSpan()));
+            int yInset = contract.insetForSpan((int) Math.round(outer.geometry().ySpan()));
+            int zInset = contract.insetForSpan((int) Math.round(outer.geometry().zSpan()));
+            Bounds geometry = outer.geometry().inset(xInset, yInset, zInset);
+            Bounds uv = outer.uv().inset(xInset, yInset, zInset);
+            if (geometry.hasVolume() && uv.hasVolume()) {
+                addBox(model, profile, new Cuboid(geometry, uv), List.of(),
+                        materialFrame, false, false);
+            }
+            return;
+        }
 
-        int xInset = contract.insetForSpan((int) Math.round(outer.geometry().xSpan()));
-        int yInset = contract.insetForSpan((int) Math.round(outer.geometry().ySpan()));
-        int zInset = contract.insetForSpan((int) Math.round(outer.geometry().zSpan()));
-        Bounds geometry = outer.geometry().inset(xInset, yInset, zInset);
-        Bounds uv = outer.uv().inset(xInset, yInset, zInset);
-        if (geometry.hasVolume() && uv.hasVolume()) {
-            addBox(model, profile, new Cuboid(geometry, uv), materialFrame, false, false);
+        if (outers.stream().anyMatch(cuboid -> !cuboid.geometry().equals(cuboid.uv()))) {
+            throw new IllegalArgumentException(
+                    "Compound inset geometry requires matching world/model UV bounds");
+        }
+        int xInset = outers.stream().mapToInt(cuboid -> contract.insetForSpan(
+                (int) Math.round(cuboid.geometry().xSpan()))).min().orElseThrow();
+        int yInset = outers.stream().mapToInt(cuboid -> contract.insetForSpan(
+                (int) Math.round(cuboid.geometry().ySpan()))).min().orElseThrow();
+        int zInset = outers.stream().mapToInt(cuboid -> contract.insetForSpan(
+                (int) Math.round(cuboid.geometry().zSpan()))).min().orElseThrow();
+        List<Cuboid> inner = erodedUnion(outers, xInset, yInset, zInset);
+        for (Cuboid cuboid : inner) {
+            addBox(model, profile, cuboid, inner, materialFrame, false, false);
         }
     }
 
+    /**
+     * Erodes the occupied compound union, rather than each authored cuboid independently.
+     *
+     * <p>BGE compound footprints are authored on Minecraft's 1px model grid. Sampling exact unit
+     * cells makes concave notch erosion deterministic, and partitioning on every occupancy
+     * transition produces boxes whose shared faces align completely. The renderer can therefore
+     * remove all internal faces without leaving quarter-grid gaps or partial seams.</p>
+     */
+    private static List<Cuboid> erodedUnion(List<Cuboid> outers,
+            int xInset, int yInset, int zInset) {
+        boolean[][][] occupied = new boolean[16][16][16];
+        for (Cuboid cuboid : outers) {
+            Bounds bounds = cuboid.geometry();
+            requirePixelGrid(bounds);
+            for (int x = (int) bounds.x0(); x < (int) bounds.x1(); x++) {
+                for (int y = (int) bounds.y0(); y < (int) bounds.y1(); y++) {
+                    for (int z = (int) bounds.z0(); z < (int) bounds.z1(); z++) {
+                        occupied[x][y][z] = true;
+                    }
+                }
+            }
+        }
+
+        boolean[][][] eroded = new boolean[16][16][16];
+        for (int x = 0; x < 16; x++) for (int y = 0; y < 16; y++) for (int z = 0; z < 16; z++) {
+            if (!occupied[x][y][z]) continue;
+            boolean keep = true;
+            for (int dx = -xInset; keep && dx <= xInset; dx++) {
+                for (int dy = -yInset; keep && dy <= yInset; dy++) {
+                    for (int dz = -zInset; dz <= zInset; dz++) {
+                        int sampleX = x + dx;
+                        int sampleY = y + dy;
+                        int sampleZ = z + dz;
+                        if (sampleX < 0 || sampleX >= 16 || sampleY < 0 || sampleY >= 16
+                                || sampleZ < 0 || sampleZ >= 16
+                                || !occupied[sampleX][sampleY][sampleZ]) {
+                            keep = false;
+                            break;
+                        }
+                    }
+                }
+            }
+            eroded[x][y][z] = keep;
+        }
+
+        List<Integer> xs = transitionPlanes(eroded, Direction.Axis.X);
+        List<Integer> ys = transitionPlanes(eroded, Direction.Axis.Y);
+        List<Integer> zs = transitionPlanes(eroded, Direction.Axis.Z);
+        ArrayList<Cuboid> result = new ArrayList<>();
+        for (int xi = 0; xi + 1 < xs.size(); xi++) {
+            for (int yi = 0; yi + 1 < ys.size(); yi++) {
+                for (int zi = 0; zi + 1 < zs.size(); zi++) {
+                    int x0 = xs.get(xi), y0 = ys.get(yi), z0 = zs.get(zi);
+                    if (!eroded[x0][y0][z0]) continue;
+                    Bounds bounds = new Bounds(x0, y0, z0,
+                            xs.get(xi + 1), ys.get(yi + 1), zs.get(zi + 1));
+                    result.add(Cuboid.world(bounds));
+                }
+            }
+        }
+        return List.copyOf(result);
+    }
+
+    private static void requirePixelGrid(Bounds bounds) {
+        for (double coordinate : new double[]{bounds.x0(), bounds.y0(), bounds.z0(),
+                bounds.x1(), bounds.y1(), bounds.z1()}) {
+            if (coordinate != Math.rint(coordinate)) {
+                throw new IllegalArgumentException(
+                        "Compound inset geometry must use the 1px model grid: " + bounds);
+            }
+        }
+    }
+
+    private static List<Integer> transitionPlanes(boolean[][][] cells, Direction.Axis axis) {
+        TreeSet<Integer> result = new TreeSet<>();
+        for (int plane = 0; plane <= 16; plane++) {
+            boolean transition = false;
+            for (int first = 0; !transition && first < 16; first++) {
+                for (int second = 0; second < 16; second++) {
+                    boolean negative = cell(cells, axis, plane - 1, first, second);
+                    boolean positive = cell(cells, axis, plane, first, second);
+                    if (negative != positive) {
+                        transition = true;
+                        break;
+                    }
+                }
+            }
+            if (transition) result.add(plane);
+        }
+        return List.copyOf(result);
+    }
+
+    private static boolean cell(boolean[][][] cells, Direction.Axis axis,
+            int coordinate, int first, int second) {
+        if (coordinate < 0 || coordinate >= 16) return false;
+        return switch (axis) {
+            case X -> cells[coordinate][first][second];
+            case Y -> cells[first][coordinate][second];
+            case Z -> cells[first][second][coordinate];
+        };
+    }
+
     private static void addBox(JsonObject model, NibaruMaterialProfile profile, Cuboid cuboid,
-            MaterialFrame materialFrame, boolean bottomOnly, boolean cullBoundary) {
+            List<Cuboid> peers, MaterialFrame materialFrame,
+            boolean bottomOnly, boolean cullBoundary) {
         JsonObject element = element(cuboid.geometry());
         JsonObject faces = new JsonObject();
         for (Direction face : FACES) {
+            if (faceCovered(cuboid, face, peers)) continue;
             JsonObject encoded = new JsonObject();
             encoded.addProperty("texture", bottomOnly ? "#bottom" : textureRole(face, materialFrame));
             encoded.add("uv", defaultUv(face, cuboid.uv()));
@@ -200,13 +347,20 @@ public final class CuboidListModelProjection {
     }
 
     /** Splits every cut edge into 1px cells so two-axis Corner/Column cuts retain glass borders. */
-    private static void addGlassCuboid(JsonObject model, Cuboid cuboid, boolean cullBoundary) {
+    private static void addGlassCuboid(JsonObject model, Cuboid cuboid,
+            List<Cuboid> peers, boolean cullBoundary) {
         List<Segment> xs = segments(cuboid.geometry().x0(), cuboid.geometry().x1(),
-                Direction.WEST, Direction.EAST);
+                Direction.WEST, Direction.EAST,
+                !faceCovered(cuboid, Direction.WEST, peers),
+                !faceCovered(cuboid, Direction.EAST, peers));
         List<Segment> ys = segments(cuboid.geometry().y0(), cuboid.geometry().y1(),
-                Direction.DOWN, Direction.UP);
+                Direction.DOWN, Direction.UP,
+                !faceCovered(cuboid, Direction.DOWN, peers),
+                !faceCovered(cuboid, Direction.UP, peers));
         List<Segment> zs = segments(cuboid.geometry().z0(), cuboid.geometry().z1(),
-                Direction.NORTH, Direction.SOUTH);
+                Direction.NORTH, Direction.SOUTH,
+                !faceCovered(cuboid, Direction.NORTH, peers),
+                !faceCovered(cuboid, Direction.SOUTH, peers));
 
         for (Segment x : xs) for (Segment y : ys) for (Segment z : zs) {
             Bounds geometry = new Bounds(x.min(), y.min(), z.min(), x.max(), y.max(), z.max());
@@ -219,6 +373,7 @@ public final class CuboidListModelProjection {
             JsonObject faces = new JsonObject();
             for (Direction face : FACES) {
                 if (!geometry.touches(cuboid.geometry(), face)) continue;
+                if (faceCovered(cuboid, face, peers)) continue;
                 JsonObject encoded = new JsonObject();
                 encoded.addProperty("texture", "#side");
                 encoded.add("uv", glassUv(face, uv, rims));
@@ -236,9 +391,10 @@ public final class CuboidListModelProjection {
     }
 
     private static List<Segment> segments(double min, double max,
-            Direction negative, Direction positive) {
-        boolean cutMin = min > 0;
-        boolean cutMax = max < 16;
+            Direction negative, Direction positive,
+            boolean negativeExposed, boolean positiveExposed) {
+        boolean cutMin = min > 0 && negativeExposed;
+        boolean cutMax = max < 16 && positiveExposed;
         ArrayList<Segment> result = new ArrayList<>(3);
         double bodyMin = min;
         double bodyMax = max;
@@ -287,7 +443,8 @@ public final class CuboidListModelProjection {
     }
 
     /** Eight-element roots topology per cuboid: two crossed planes and six boundary shells. */
-    private static void addRoots(JsonObject model, Cuboid cuboid, boolean cullBoundary) {
+    private static void addRoots(JsonObject model, Cuboid cuboid,
+            List<Cuboid> peers, boolean cullBoundary) {
         Bounds geometry = cuboid.geometry();
         double zMid = (geometry.z0() + geometry.z1()) / 2.0;
         double xMid = (geometry.x0() + geometry.x1()) / 2.0;
@@ -297,7 +454,11 @@ public final class CuboidListModelProjection {
         addRootPlane(model, new Bounds(xMid, geometry.y0(), geometry.z0(),
                         xMid, geometry.y1(), geometry.z1()),
                 Direction.EAST, Direction.WEST, cuboid.uv(), "#side");
-        for (Direction face : FACES) addRootShell(model, cuboid, face, cullBoundary);
+        for (Direction face : FACES) {
+            if (!faceCovered(cuboid, face, peers)) {
+                addRootShell(model, cuboid, face, cullBoundary);
+            }
+        }
     }
 
     private static void addRootPlane(JsonObject model, Bounds geometry, Direction first,
@@ -345,11 +506,12 @@ public final class CuboidListModelProjection {
     }
 
     private static void addOverlay(JsonObject model, NibaruMaterialProfile profile,
-            Cuboid cuboid, boolean cullBoundary) {
+            Cuboid cuboid, List<Cuboid> peers, boolean cullBoundary) {
         JsonObject element = element(cuboid.geometry());
         JsonObject faces = new JsonObject();
         for (Direction face : new Direction[]{Direction.NORTH, Direction.EAST,
                 Direction.SOUTH, Direction.WEST}) {
+            if (faceCovered(cuboid, face, peers)) continue;
             JsonObject encoded = new JsonObject();
             encoded.addProperty("texture", "#overlay");
             encoded.addProperty("tintindex", 0);
@@ -361,6 +523,42 @@ public final class CuboidListModelProjection {
         }
         element.add("faces", faces);
         model.getAsJsonArray("elements").add(element);
+    }
+
+    /** True when one adjacent cuboid completely owns this cuboid's selected face. */
+    private static boolean faceCovered(Cuboid cuboid, Direction face, List<Cuboid> peers) {
+        Bounds own = cuboid.geometry();
+        for (Cuboid peer : peers) {
+            if (peer == cuboid) continue;
+            Bounds other = peer.geometry();
+            boolean covered = switch (face) {
+                case DOWN -> other.y1() == own.y0()
+                        && contains(other.x0(), other.x1(), own.x0(), own.x1())
+                        && contains(other.z0(), other.z1(), own.z0(), own.z1());
+                case UP -> other.y0() == own.y1()
+                        && contains(other.x0(), other.x1(), own.x0(), own.x1())
+                        && contains(other.z0(), other.z1(), own.z0(), own.z1());
+                case NORTH -> other.z1() == own.z0()
+                        && contains(other.x0(), other.x1(), own.x0(), own.x1())
+                        && contains(other.y0(), other.y1(), own.y0(), own.y1());
+                case SOUTH -> other.z0() == own.z1()
+                        && contains(other.x0(), other.x1(), own.x0(), own.x1())
+                        && contains(other.y0(), other.y1(), own.y0(), own.y1());
+                case WEST -> other.x1() == own.x0()
+                        && contains(other.z0(), other.z1(), own.z0(), own.z1())
+                        && contains(other.y0(), other.y1(), own.y0(), own.y1());
+                case EAST -> other.x0() == own.x1()
+                        && contains(other.z0(), other.z1(), own.z0(), own.z1())
+                        && contains(other.y0(), other.y1(), own.y0(), own.y1());
+            };
+            if (covered) return true;
+        }
+        return false;
+    }
+
+    private static boolean contains(double outerMin, double outerMax,
+            double innerMin, double innerMax) {
+        return outerMin <= innerMin && outerMax >= innerMax;
     }
 
     private static JsonArray overlayUv(Direction face, Bounds bounds) {

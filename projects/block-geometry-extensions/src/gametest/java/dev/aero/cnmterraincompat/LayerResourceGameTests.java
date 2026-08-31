@@ -278,17 +278,32 @@ public final class LayerResourceGameTests implements CustomTestMethodInvoker {
         JsonArray translation = gui.getAsJsonArray("translation");
         JsonArray rotation = gui.getAsJsonArray("rotation");
         JsonArray scale = gui.getAsJsonArray("scale");
+        LayerModelProjection.GuiTranslation centered = LayerModelProjection.guiTranslation(
+                LayerModelProjection.WORKBENCH_GUI_SCALE, 0, 0);
+        LayerModelProjection.GuiTranslation intended = LayerModelProjection.guiTranslation(
+                LayerModelProjection.WORKBENCH_GUI_SCALE,
+                LayerModelProjection.TARGET_SCREEN_RIGHT_PIXELS,
+                LayerModelProjection.TARGET_SCREEN_DOWN_PIXELS);
+        LayerModelProjection.GuiTranslation encoded = new LayerModelProjection.GuiTranslation(
+                translation.get(0).getAsDouble(), translation.get(1).getAsDouble(),
+                translation.get(2).getAsDouble());
+        LayerModelProjection.ScreenDelta pixels = LayerModelProjection.physicalPixelDelta(
+                LayerModelProjection.WORKBENCH_GUI_SCALE, centered, encoded);
         helper.assertTrue(translation.size() == 3
-                        && translation.get(0).getAsDouble() == 1.675
-                        && translation.get(1).getAsDouble() == -2.75
-                        && translation.get(2).getAsDouble() == 0.0
+                        && close(encoded.x(), intended.x())
+                        && close(encoded.y(), intended.y())
+                        && close(encoded.z(), intended.z())
+                        && close(pixels.rightPixels(), 3.0)
+                        && close(pixels.downPixels(), 6.0)
                         && rotation.get(0).getAsInt() == 30
                         && rotation.get(1).getAsInt() == -135
                         && rotation.get(2).getAsInt() == 0
                         && scale.get(0).getAsDouble() == 0.625
                         && scale.get(1).getAsDouble() == 0.625
                         && scale.get(2).getAsDouble() == 0.625,
-                "Shared " + description + " Layer GUI transform is not centered: " + gui);
+                "Shared " + description + " Layer GUI transform is not the derived +3 physical "
+                        + "px right/+6 down Workbench projection: gui=" + gui
+                        + ", centered=" + centered + ", pixels=" + pixels);
         helper.assertTrue(projection.blockState().getAsJsonObject("variants").keySet().stream()
                         .noneMatch(key -> key.contains("double")),
                 "CNM economy marker leaked into " + description + " Layer model selectors");
@@ -296,6 +311,10 @@ public final class LayerResourceGameTests implements CustomTestMethodInvoker {
 
     private static JsonObject firstFaces(JsonObject model) {
         return model.getAsJsonArray("elements").get(0).getAsJsonObject().getAsJsonObject("faces");
+    }
+
+    private static boolean close(double left, double right) {
+        return Math.abs(left - right) < 1.0E-9;
     }
 
     private static JsonObject generatedServerJson(Identifier id) {
