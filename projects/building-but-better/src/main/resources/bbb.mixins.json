@@ -1,0 +1,12 @@
+{
+  "required": true,
+  "package": "com.starfish_studios.bbb.mixin",
+  "compatibilityLevel": "JAVA_25",
+  "minVersion": "0.8",
+  "mixins": [
+    "VegetationBlockMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
