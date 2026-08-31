@@ -12,15 +12,17 @@
   "definition": {
     "lifecycle": "ACTIVE",
     "goals": [
-      "Make Frost Protection I or higher on any single equipped armor slot grant the player leather-boots-equivalent immunity to powdered-snow traversal effects.",
+      "Make Frost Protection I or higher on any single equipped armor slot reproduce leather-boots-equivalent powdered-snow traversal and freezing-state behavior, including no freeze-tick accumulation, overlay, or freeze damage while preserving deliberate descent.",
+      "Make Frost Protection III on any one equipped armor slot completely bypass Matcha Flavoured's freezing/cold-water penalty system for that player.",
       "Change the Blessing of Demeter crafted book, without changing its existing recipe, to contain only Frost Protection III by removing the existing Frost Walker II and Frost Protection II enchantments.",
-      "Preserve Frost Protection behavior outside the requested powdered-snow traversal change and preserve unrelated Matcha Flavoured content unless implementation investigation establishes a necessary compatibility adjustment."
+      "Preserve Frost Protection's supported-items and maximum-level contracts, ordinary Frost Walker, and unrelated vanilla and Matcha Flavoured behavior."
     ],
     "scope": [
-      "Pin the exact Matcha Flavoured 1.12 Frost Protection, freezing-water, and Blessing of Demeter contracts plus vanilla Minecraft 26.2's leather-boots powdered-snow traversal seam.",
-      "Extend only vanilla's powdered-snow walkability decision so Frost Protection I or higher on the helmet, chestplate, leggings, or boots is sufficient for the targeted traversal behavior.",
+      "Pin the exact Matcha Flavoured 1.12 Frost Protection definition, complete freezing-water tick/function chain and penalties, and Blessing of Demeter recipe plus vanilla Minecraft 26.2's leather-boots powdered-snow collision, entity-inside, freeze-state, damage, and overlay seams.",
+      "Extend vanilla's powdered-snow walkability decision and leather-wearable canFreeze decision so Frost Protection I or higher on the helmet, chestplate, leggings, or boots supplies the complete relevant leather-boots behavior without directly changing collision descent, entityInside, freeze ticks, damage, or HUD rendering.",
+      "Redirect only the resolved main:environmental/check_freezing_water_conditions function to a fail-closed canonical per-player guard: exact Frost Protection III on head, chest, legs, or feet bypasses the complete Matcha penalty path, while unqualified players receive the exact upstream Slowness V, Darkness I, and one-point freeze-damage commands with player-local targeting.",
       "Replace only the enchantments produced by the resolved Blessing of Demeter recipe so its resulting book contains exactly Frost Protection III, with the existing Frost Walker II and Frost Protection II enchantments absent and no unintended additional enchantments.",
-      "Verify representative client, save/reload, and multiplayer or dedicated-server behavior during Canary 1 runtime acceptance when relevant."
+      "Verify the Canary 2 powdered-snow visual/freezing matrix, complete Matcha cold-water penalty matrix, co-located-player isolation, Demeter result, save/reload, and representative multiplayer behavior during controlled runtime acceptance."
     ],
     "boundaries": {
       "owned_paths": [
@@ -28,12 +30,14 @@
       ],
       "exclusions": [
         "Changes to Matcha's Frost Protection supported-items contract; normal acquisition remains limited to chest armor even though traversal recognizes the enchantment when directly present on any armor slot.",
+        "Changes to Frost Protection's maximum level or to Matcha's level-scaled freezing-damage protection outside the explicit level-III cold-water bypass.",
         "Replacement of Matcha Flavoured's enchantment system or broad changes beyond the narrow behavior and result edits in this project.",
         "Global changes to Frost Walker or changes to ordinary Frost Walker behavior.",
         "Changes to the Blessing of Demeter recipe ingredients, recipe shape, or crafting method.",
-        "Changes to unrelated Matcha Flavoured enchantments, recipes, items, mechanics, projects, or resource packs.",
-        "Changes to Frost Protection's existing behavior outside the requested powdered-snow traversal behavior unless implementation evidence demonstrates that a compatibility adjustment is necessary.",
-        "Modification of originals or either Minecraft instance, runtime-slot mutation, deployment, or inferred runtime validation during Canary 1 implementation."
+        "Direct HUD hiding, direct freeze-tick clearing, post-penalty effect cleanup, broad freeze-damage cancellation, or suppression of unrelated vanilla or Matcha effects.",
+        "Changes to unrelated Matcha Flavoured enchantments, recipes, environmental systems, items, mechanics, projects, or resource packs.",
+        "The Streams Reflowing crash investigation unless new direct evidence implicates this project.",
+        "Modification of originals or either Minecraft instance, runtime-slot mutation, deployment, or inferred runtime validation during Canary 2 implementation."
       ]
     },
     "dependencies": [
@@ -41,44 +45,44 @@
         "type": "MOD",
         "identifier": "minecraft",
         "requirement": "=26.2",
-        "reason": "Exact target game version whose powdered-snow and enchantment behavior Canary 1 preserves and extends narrowly."
+        "reason": "Exact target game version whose powdered-snow collision, entity-inside, freeze-state, damage, overlay, and enchantment behavior Canary 2 preserves and extends narrowly."
       },
       {
         "type": "MOD",
         "identifier": "fabricloader",
         "requirement": ">=0.19.3",
-        "reason": "Fabric runtime loader minimum declared by Canary 1."
+        "reason": "Fabric runtime loader minimum declared by Canary 2."
       },
       {
         "type": "DATA_PACK",
         "identifier": "Matcha Flavoured",
         "requirement": "1.12 (SHA-256 6209783021c358044abedabacee471faff5bd4080437d4e3b5e51963f1804248)",
-        "reason": "Exact pinned Frost Protection enchantment, freezing-water function, and Blessing of Demeter recipe contracts extended by Canary 1."
+        "reason": "Exact pinned Frost Protection enchantment, complete freezing-water chain and penalties, and Blessing of Demeter recipe contracts extended by Canary 2."
       },
       {
         "type": "TOOL",
         "identifier": "java",
         "requirement": "25",
-        "reason": "Required Java release for Minecraft 26.2 and the Canary 1 build."
+        "reason": "Required Java release for Minecraft 26.2 and the Canary 2 build."
       },
       {
         "type": "TOOL",
         "identifier": "gradle",
         "requirement": "9.5.1",
-        "reason": "Exact build-tool version used for the retained Canary 1 artifact."
+        "reason": "Exact build-tool version used for the retained Canary 2 artifact."
       }
     ]
   },
   "state": {
-    "milestone": "Canary 1 implementation is complete, statically verified, retained, and ready for controlled runtime testing, but its project UUID occupies neither test slot, so it remains ACTIVE, not deployed, and Minecraft runtime untested.",
+    "milestone": "Canary 2 implements complete leather-boots-equivalent powdered-snow behavior for Frost Protection I+ and complete Matcha cold-water penalty bypass for Frost Protection III on any armor slot; it is statically verified and retained, but its project UUID occupies neither test slot, so it remains ACTIVE, not deployed, and Minecraft runtime untested.",
     "releases": {
       "current": {
-        "version": "0.1.0-canary1",
+        "version": "0.1.0-canary2",
         "artifact": {
-          "filename": "matcha-frost-protection-0.1.0-canary1.jar",
-          "sha256": "ba7384dc0a325338b9a5922d868de7c4e9242947f3d8372c6cf9684328d92bf6"
+          "filename": "matcha-frost-protection-0.1.0-canary2.jar",
+          "sha256": "88ae708cbf2a9b1f5fe3b322579c3e7b507c7e0420cadb40aca796dba5b4a742"
         },
-        "source_commit": "92e7787d27ed9231d9a6f46cc29cddff38378cdd"
+        "source_commit": "0d3d6650355a38758ff23227b34bc9bda5826d68"
       },
       "accepted": null,
       "rollback": null,
@@ -93,11 +97,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 3,
-    "activity_at": "2026-08-30T07:14:16Z",
-    "updated_at": "2026-08-30T07:14:16Z",
-    "last_codex_at": "2026-08-30T07:14:16Z",
-    "source_commit": "714d20eb4f9bdfd6696780f0d926f0240241e7be",
+    "revision": 4,
+    "activity_at": "2026-08-31T01:54:16Z",
+    "updated_at": "2026-08-31T01:54:16Z",
+    "last_codex_at": "2026-08-31T01:54:16Z",
+    "source_commit": "0d3d6650355a38758ff23227b34bc9bda5826d68",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
