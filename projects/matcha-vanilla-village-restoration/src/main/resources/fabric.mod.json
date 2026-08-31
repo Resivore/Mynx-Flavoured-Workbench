@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "id": "matcha_vanilla_village_restoration",
+  "version": "${version}",
+  "name": "Matcha Vanilla Village Restoration",
+  "description": "Restores Minecraft 26.2's biome-specific vanilla village composition above Matcha Flavoured 1.12 while leaving Matcha's sparse placement contract authoritative.",
+  "authors": ["Resivore compatibility workbench"],
+  "license": "MIT",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "dev.resivore.matchavillagerestoration.MatchaVanillaVillageRestoration"
+    ]
+  },
+  "mixins": [
+    "matcha_vanilla_village_restoration.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.19.3",
+    "fabric-api": ">=0.157.0+26.2",
+    "minecraft": "=26.2",
+    "java": ">=25"
+  },
+  "custom": {
+    "workbench:classification": "GENERATED / STATICALLY VERIFIED / RUNTIME UNTESTED",
+    "workbench:deployment": "NOT DEPLOYED",
+    "workbench:matcha_reference": {
+      "filename": "Matcha_Flavoured_1_12.zip",
+      "sha256": "6209783021c358044abedabacee471faff5bd4080437d4e3b5e51963f1804248"
+    }
+  }
+}

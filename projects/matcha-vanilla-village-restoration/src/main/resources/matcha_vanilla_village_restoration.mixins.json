@@ -1,0 +1,11 @@
+{
+  "required": true,
+  "package": "dev.resivore.matchavillagerestoration.mixin",
+  "compatibilityLevel": "JAVA_25",
+  "mixins": [
+    "MultiPackResourceManagerMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
