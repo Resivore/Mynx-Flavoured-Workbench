@@ -3,7 +3,7 @@
   "id": "matcha_frost_protection",
   "version": "${version}",
   "name": "Matcha Frost Protection",
-  "description": "Adds leather-boots-equivalent powdered-snow traversal for equipped Frost Protection and narrows Blessing of Demeter to Frost Protection III.",
+  "description": "Completes Frost Protection's leather-equivalent powdered-snow behavior, generalizes Matcha cold-water immunity, and narrows Blessing of Demeter to Frost Protection III.",
   "authors": ["Resivore"],
   "environment": "*",
   "entrypoints": {

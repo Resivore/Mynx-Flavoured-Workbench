@@ -53,4 +53,5 @@ class FrostProtectionTraversalTest {
         return FrostProtectionTraversal.hasQualifyingArmor(
                 slot -> slot == equippedSlot ? level : 0);
     }
+
 }

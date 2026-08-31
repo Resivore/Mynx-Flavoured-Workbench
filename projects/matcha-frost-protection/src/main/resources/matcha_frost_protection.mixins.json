@@ -3,8 +3,10 @@
   "package": "dev.resivore.matchafrost.mixin",
   "compatibilityLevel": "JAVA_25",
   "mixins": [
+    "LivingEntityMixin",
     "PowderSnowBlockMixin",
-    "RecipeManagerMixin"
+    "RecipeManagerMixin",
+    "ServerFunctionManagerMixin"
   ],
   "injectors": {
     "defaultRequire": 1
