@@ -208,7 +208,11 @@ Slot B: <canonical project name> - Canary <number>  (or Slot B: Empty)
 ```
 
 Canary numbers derive from every cohort member's canonical `version`, never an
-artifact filename. Empty slots never render `UNKNOWN`. A legacy V2 ledger plus
+artifact filename. Empty slots never render `UNKNOWN`. For a schema-V1 runtime
+state only, the manager also recognizes the exact deterministic pre-cohort
+projection, reports `LEGACY_MIGRATION_REQUIRED`, and replaces it atomically on
+the next cohort deployment; any tamper or legacy-shaped schema-V2 projection is
+rejected. A legacy V2 ledger plus
 the exact pinned `workbench-test-marker-0.1.1.jar` is accepted only as the
 one-step migration preimage; the next successful manager transition replaces
 it with the pinned `0.2.0` JAR, writes the projection, and advances the

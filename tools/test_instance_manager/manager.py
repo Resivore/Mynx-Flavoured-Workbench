@@ -887,6 +887,34 @@ class PhysicalManager:
             "lines": copy.deepcopy(title["lines"]),
         }
 
+    def _legacy_schema_v1_title_projection(self, state: dict[str, Any]) -> dict[str, Any]:
+        """Reproduce the exact pre-cohort projection for a legacy V1 state."""
+
+        if state.get("schema_version") != 1:
+            raise ManagerError("legacy title projection can only be derived from runtime-state schema_version 1")
+        projection = self._title_projection(state)
+        for label in ("A", "B"):
+            slot = projection["slots"][label]
+            if slot["occupied"]:
+                # The historical one-project renderer exposed these member
+                # fields directly and had neither the cohort array nor the
+                # newly explicit canonical version field.
+                del slot["members"]
+                del slot["version"]
+        return projection
+
+    def _title_projection_status(self, projection: Any, state: dict[str, Any]) -> str | None:
+        """Classify only exact current or exact schema-V1 legacy projections."""
+
+        if projection == self._title_projection(state):
+            return "SYNCHRONIZED"
+        if (
+            state.get("schema_version") == 1
+            and projection == self._legacy_schema_v1_title_projection(state)
+        ):
+            return "LEGACY_MIGRATION_REQUIRED"
+        return None
+
     def _verify_title_projection(self, state: dict[str, Any]) -> dict[str, Any]:
         try:
             projection = json.loads(self.title_projection_path.read_text(encoding="utf-8"))
@@ -894,10 +922,11 @@ class PhysicalManager:
             raise ManagerError(f"V2 title display projection is missing: {self.title_projection_path}") from exc
         except (OSError, json.JSONDecodeError) as exc:
             raise ManagerError(f"cannot load V2 title display projection {self.title_projection_path}: {exc}") from exc
-        expected = self._title_projection(state)
-        if projection != expected:
+        status = self._title_projection_status(projection, state)
+        if status is None:
             raise ManagerError("V2 title display projection does not match canonical runtime state")
         return {
+            "status": status,
             "path": self.title_projection_path.name,
             "sha256": _sha256(self.title_projection_path),
             "state_revision": projection["state_revision"],
@@ -1918,7 +1947,10 @@ class PhysicalManager:
         expected_records = [item.ledger_record() for item in expected_inventory]
         if ledger["managed_files"] != expected_records:
             raise ManagerError("target-local ledger managed-file inventory does not match its runtime state")
-        if ledger["schema_version"] == 3 and ledger["title_projection"] != self._title_projection(ledger["runtime_state"]):
+        if (
+            ledger["schema_version"] == 3
+            and self._title_projection_status(ledger["title_projection"], ledger["runtime_state"]) is None
+        ):
             raise ManagerError("target-local ledger title projection does not match its runtime state")
         return ledger
 
@@ -2131,7 +2163,11 @@ class PhysicalManager:
             "slots": slot_evidence,
             "fabric_dependency_graph": copy.deepcopy(dependency_resolution),
             "title_display": {
-                "status": "SYNCHRONIZED" if title_projection_evidence is not None else "LEGACY_MIGRATION_REQUIRED",
+                "status": (
+                    title_projection_evidence["status"]
+                    if title_projection_evidence is not None
+                    else "LEGACY_MIGRATION_REQUIRED"
+                ),
                 "projection": copy.deepcopy(title_projection_evidence),
                 "lines": copy.deepcopy(title["lines"]),
             },
@@ -2482,6 +2518,11 @@ class PhysicalManager:
         current = self.load_repository_state()
         ledger = self._read_ledger()
         self._assert_ledger_matches_repository(ledger, current)
+        if ledger["schema_version"] == 3:
+            # A transition may migrate the exact historical schema-V1
+            # projection, but it must never overwrite arbitrary or tampered
+            # physical display state as though that were a valid preimage.
+            self._verify_title_projection(current)
         current_artifacts = self._managed_inventory_for_ledger(current, ledger)
         finalize_verified_profile = False
 

@@ -1046,6 +1046,180 @@ class AtomicCohortManagerTests(unittest.TestCase):
             },
         }
 
+    @staticmethod
+    def legacy_projection_shape(projection: dict) -> dict:
+        legacy = copy.deepcopy(projection)
+        for label in ("A", "B"):
+            slot = legacy["slots"][label]
+            if slot["occupied"]:
+                del slot["members"]
+                del slot["version"]
+        return legacy
+
+    def install_revision_61_legacy_projection_preimage(self) -> tuple[dict, dict]:
+        state = self.fixture.repository_state()
+        state["revision"] = 60
+        self.fixture.state_path.write_text(json.dumps(state, indent=2) + "\n", encoding="utf-8")
+        self.fixture.manager.adopt(dry_run=False)
+
+        active = self.fixture.repository_state()
+        self.assertEqual(1, active["schema_version"])
+        self.assertEqual(61, active["revision"])
+        current = self.fixture.manager._title_projection(active)
+        legacy = self.legacy_projection_shape(current)
+        ledger = json.loads(self.fixture.manager.ledger_path.read_text(encoding="utf-8"))
+        ledger["title_projection"] = copy.deepcopy(legacy)
+        self.fixture.manager.ledger_path.write_text(
+            json.dumps(ledger, indent=2) + "\n",
+            encoding="utf-8",
+        )
+        self.fixture.manager.title_projection_path.write_text(
+            json.dumps(legacy, indent=2) + "\n",
+            encoding="utf-8",
+        )
+        return active, legacy
+
+    def test_exact_revision_61_legacy_projection_dry_run_and_apply_migrate_atomically(self) -> None:
+        active, legacy = self.install_revision_61_legacy_projection_preimage()
+        verified_legacy = self.fixture.manager.verify()
+        self.assertEqual("PHYSICAL_STATE_VERIFIED", verified_legacy["status"])
+        self.assertEqual("LEGACY_MIGRATION_REQUIRED", verified_legacy["title_display"]["status"])
+        self.assertEqual(
+            "LEGACY_MIGRATION_REQUIRED",
+            verified_legacy["title_display"]["projection"]["status"],
+        )
+        for label in ("A", "B"):
+            self.assertNotIn("members", legacy["slots"][label])
+            self.assertNotIn("version", legacy["slots"][label])
+
+        operation = self.operation()
+        before_dry_run = tree_snapshot(self.fixture.root)
+        dry_run = self.fixture.manager.transition(
+            operation=operation,
+            expected_revision=61,
+            at="2099-01-01T00:00:30Z",
+            dry_run=True,
+        )
+        self.assertEqual(before_dry_run, tree_snapshot(self.fixture.root))
+        self.assertEqual(62, dry_run["target_state_revision"])
+        self.assertEqual(2, len(dry_run["title_projection"]["slots"]["A"]["members"]))
+        self.assertTrue(
+            all("version" in member for member in dry_run["title_projection"]["slots"]["A"]["members"])
+        )
+
+        applied = self.fixture.manager.transition(
+            operation=operation,
+            expected_revision=61,
+            at="2099-01-01T00:00:30Z",
+            dry_run=False,
+        )
+        migrated = self.fixture.repository_state()
+        self.assertFalse(applied["dry_run"])
+        self.assertEqual(2, migrated["schema_version"])
+        self.assertEqual(62, migrated["revision"])
+        final_projection = json.loads(self.fixture.manager.title_projection_path.read_text(encoding="utf-8"))
+        final_ledger = json.loads(self.fixture.manager.ledger_path.read_text(encoding="utf-8"))
+        self.assertEqual(self.fixture.manager._title_projection(migrated), final_projection)
+        self.assertEqual(final_projection, final_ledger["title_projection"])
+        self.assertEqual(2, len(final_projection["slots"]["A"]["members"]))
+        self.assertEqual("SYNCHRONIZED", self.fixture.manager.verify()["title_display"]["status"])
+
+    def test_schema_v1_legacy_projection_tamper_fails_before_transition(self) -> None:
+        active, legacy = self.install_revision_61_legacy_projection_preimage()
+        operation = self.operation()
+        before = tree_snapshot(self.fixture.root)
+
+        tampered_physical = copy.deepcopy(legacy)
+        tampered_physical["slots"]["A"]["canary"] += 1
+        self.fixture.manager.title_projection_path.write_text(
+            json.dumps(tampered_physical, indent=2) + "\n",
+            encoding="utf-8",
+        )
+        with self.assertRaisesRegex(
+            ManagerError,
+            "V2 title display projection does not match canonical runtime state",
+        ):
+            self.fixture.manager.transition(
+                operation=operation,
+                expected_revision=active["revision"],
+                at="2099-01-01T00:00:30Z",
+                dry_run=True,
+            )
+        self.assertEqual(before["repository/runtime-state.json"], self.fixture.state_path.read_bytes())
+
+        self.fixture.manager.title_projection_path.write_text(
+            json.dumps(legacy, indent=2) + "\n",
+            encoding="utf-8",
+        )
+        ledger = json.loads(self.fixture.manager.ledger_path.read_text(encoding="utf-8"))
+        ledger["title_projection"]["slots"]["B"]["project_display_name"] = "Tampered"
+        self.fixture.manager.ledger_path.write_text(
+            json.dumps(ledger, indent=2) + "\n",
+            encoding="utf-8",
+        )
+        with self.assertRaisesRegex(
+            ManagerError,
+            "target-local ledger title projection does not match its runtime state",
+        ):
+            self.fixture.manager.transition(
+                operation=operation,
+                expected_revision=active["revision"],
+                at="2099-01-01T00:00:30Z",
+                dry_run=True,
+            )
+        self.assertEqual(before["repository/runtime-state.json"], self.fixture.state_path.read_bytes())
+
+    def test_schema_v2_rejects_an_otherwise_exact_legacy_shaped_projection(self) -> None:
+        self.fixture.manager.adopt(dry_run=False)
+        candidate, _ = self.fixture.add_repository_candidate()
+        before = self.fixture.repository_state()
+        self.fixture.manager.transition(
+            operation={
+                "type": "DEPLOY_PROFILE",
+                "slots": {
+                    "A": {
+                        "members": [
+                            candidate_declaration(candidate, self.fixture.c5["deployment_id"]),
+                        ]
+                    },
+                    "B": None,
+                },
+            },
+            expected_revision=before["revision"],
+            at="2099-01-01T00:00:30Z",
+            dry_run=False,
+        )
+        state = self.fixture.repository_state()
+        self.assertEqual(2, state["schema_version"])
+        current = self.fixture.manager._title_projection(state)
+        legacy_shaped = self.legacy_projection_shape(current)
+        ledger = json.loads(self.fixture.manager.ledger_path.read_text(encoding="utf-8"))
+        ledger["title_projection"] = copy.deepcopy(legacy_shaped)
+        self.fixture.manager.ledger_path.write_text(
+            json.dumps(ledger, indent=2) + "\n",
+            encoding="utf-8",
+        )
+        with self.assertRaisesRegex(
+            ManagerError,
+            "target-local ledger title projection does not match its runtime state",
+        ):
+            self.fixture.manager.verify()
+
+        ledger["title_projection"] = copy.deepcopy(current)
+        self.fixture.manager.ledger_path.write_text(
+            json.dumps(ledger, indent=2) + "\n",
+            encoding="utf-8",
+        )
+        self.fixture.manager.title_projection_path.write_text(
+            json.dumps(legacy_shaped, indent=2) + "\n",
+            encoding="utf-8",
+        )
+        with self.assertRaisesRegex(
+            ManagerError,
+            "V2 title display projection does not match canonical runtime state",
+        ):
+            self.fixture.manager.verify()
+
     def test_one_revision_atomic_deploy_finalizes_shared_ready_cohort(self) -> None:
         self.fixture.manager.adopt(dry_run=False)
         operation = self.operation()
