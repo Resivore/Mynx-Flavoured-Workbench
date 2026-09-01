@@ -6,6 +6,6 @@ import net.fabricmc.api.ClientModInitializer;
 public final class ShulkerTrowelClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
-        ShulkerTrowel.LOGGER.info("Shulker Trowel Canary 8 client integration initialized");
+        ShulkerTrowel.LOGGER.info("Shulker Trowel Canary 9 client integration initialized");
     }
 }
