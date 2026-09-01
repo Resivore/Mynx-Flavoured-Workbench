@@ -2601,7 +2601,7 @@ def _assert_no_reparse_components(path: Path, label: str, *, root: Path | None =
 
 
 def _windows_processes_using_profile(profile: Path) -> list[dict[str, Any]]:
-    """Return process evidence whose command line contains the exact profile path."""
+    """Return Minecraft JVM evidence whose command line contains the profile path."""
 
     if os.name != "nt":
         return []
@@ -2642,6 +2642,9 @@ def _windows_processes_using_profile(profile: Path) -> list[dict[str, Any]]:
             continue
         command_line = record.get("CommandLine")
         process_id = record.get("ProcessId")
+        process_name = record.get("Name")
+        if not isinstance(process_name, str) or process_name.casefold() not in {"java.exe", "javaw.exe"}:
+            continue
         if not isinstance(command_line, str) or target not in os.path.normcase(command_line).casefold():
             continue
         if process_id == os.getpid():
@@ -2649,7 +2652,7 @@ def _windows_processes_using_profile(profile: Path) -> list[dict[str, Any]]:
         matches.append(
             {
                 "pid": process_id,
-                "name": record.get("Name") or "unknown process",
+                "name": process_name,
                 "executable_path": record.get("ExecutablePath"),
                 "command_line": command_line,
             }

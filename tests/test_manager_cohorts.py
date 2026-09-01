@@ -22,6 +22,7 @@ from tools.test_instance_manager.manager import (
     ManagerError,
     PhysicalManager,
     _fabric_predicate_matches,
+    _windows_processes_using_profile,
 )
 
 
@@ -707,6 +708,46 @@ class AtomicCohortManagerTests(unittest.TestCase):
 
 
 class ProfileUseGuardTests(unittest.TestCase):
+    def test_operator_shell_that_mentions_profile_is_not_minecraft_use(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            profile = Path(temporary) / "Matcha Flavoured 26.2 Workbench"
+            profile.mkdir()
+            evidence = [
+                {
+                    "ProcessId": 101,
+                    "Name": "pwsh.exe",
+                    "ExecutablePath": "C:\\Program Files\\PowerShell\\7\\pwsh.exe",
+                    "CommandLine": f'pwsh.exe -Command "inspect {profile}"',
+                },
+                {
+                    "ProcessId": 102,
+                    "Name": "javaw.exe",
+                    "ExecutablePath": "C:\\Java\\bin\\javaw.exe",
+                    "CommandLine": "javaw.exe -jar unrelated.jar",
+                },
+            ]
+            completed = unittest.mock.Mock(returncode=0, stdout=json.dumps(evidence), stderr="")
+            with patch("tools.test_instance_manager.manager.os.name", "nt"), patch(
+                "tools.test_instance_manager.manager.subprocess.run", return_value=completed
+            ):
+                self.assertEqual([], _windows_processes_using_profile(profile))
+
+    def test_profile_named_java_process_is_detected(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            profile = Path(temporary) / "Matcha Flavoured 26.2 Workbench"
+            profile.mkdir()
+            evidence = {
+                "ProcessId": 4242,
+                "Name": "javaw.exe",
+                "ExecutablePath": "C:\\Java\\bin\\javaw.exe",
+                "CommandLine": f'javaw.exe --gameDir "{profile}"',
+            }
+            completed = unittest.mock.Mock(returncode=0, stdout=json.dumps(evidence), stderr="")
+            with patch("tools.test_instance_manager.manager.os.name", "nt"), patch(
+                "tools.test_instance_manager.manager.subprocess.run", return_value=completed
+            ):
+                self.assertEqual(4242, _windows_processes_using_profile(profile)[0]["pid"])
+
     def test_named_profile_process_blocks_before_lock_or_other_mutation(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary) / "ModrinthApp" / "profiles"

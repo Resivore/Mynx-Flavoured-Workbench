@@ -212,9 +212,11 @@ python -B tools/test_instance_manager/manager.py transition --operation <operati
 
 `transition` is a dry-run unless `--apply` is present. Inspect the complete
 write/removal, ownership, dependency-resolution, slot/cohort, lifecycle, and
-title plan first. The manager checks Windows process command lines and refuses
-mutation when a process names the dedicated profile; it never terminates that
-process. An apply recomputes the plan while holding the target-local exclusive
+title plan first. The manager checks Windows Java/JVM process command lines and
+refuses mutation when a Minecraft JVM names the dedicated profile; it never
+terminates that process. Operator shells and inspection tools that merely quote
+the profile path are not treated as a running Minecraft instance. An apply
+recomputes the plan while holding the target-local exclusive
 lock, stages and hashes every addition, verifies the result, commits the target
 ledger and repository state together, and restores the preimage if any step
 fails.
