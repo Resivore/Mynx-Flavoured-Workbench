@@ -18,7 +18,7 @@
     ]
   },
   "definition": {
-    "lifecycle": "ACCEPTED",
+    "lifecycle": "ACTIVE",
     "goals": [
       "Preserve Matcha Crystal Heart progression as explicit semantic main-hand use instead of automatic inventory-entry consumption.",
       "Preserve project-owned persistent maximum-health state and one-heart-per-death debt from Matcha's 30-heart cap down to the five-heart floor, with Reinforced repair only below the normal ten-heart baseline.",
@@ -39,7 +39,7 @@
         "Forking or modifying Matcha itself, copying Matcha's Crystal Heart art, or taking ownership of unrelated Matcha datapack, resource-pack, worldgen, loot, visual, or gameplay systems.",
         "Changing keepInventory, adding item-loss punishment, or letting Crystal Hearts repair below-baseline health or Reinforced Hearts grant bonus health.",
         "Broad recipe, advancement, loot, or function interception beyond the exact frozen identifiers.",
-        "Co-installing the retired matcha_echo_shard_scarcity mod, failed Canary 7, or another Heart artifact with Canary 10.",
+        "Co-installing the retired matcha_echo_shard_scarcity mod, failed Canary 7, or another Heart artifact with current Canary 11 or accepted Canary 10.",
         "The separate Reach Crafting and Effortless Crafting grid-delay issue.",
         "Dedicated-server or exhaustive runtime claims not present in the recorded evidence.",
         "Redeploying, promoting, or reclassifying failed Canary 7, or treating Canary 10's explicitly authorized static-only baseline promotion as Minecraft runtime evidence."
@@ -50,7 +50,7 @@
         "type": "TOOL",
         "identifier": "java",
         "requirement": "25",
-        "reason": "Minecraft 26.2 and the Canary 10 Fabric build target Java 25."
+        "reason": "Minecraft 26.2 and the Canary 11 Fabric build target Java 25."
       },
       {
         "type": "MOD",
@@ -62,7 +62,7 @@
         "type": "MOD",
         "identifier": "fabricloader",
         "requirement": ">=0.19.3",
-        "reason": "Fabric runtime loader floor declared by Canary 10."
+        "reason": "Fabric runtime loader floor declared by Canary 11."
       },
       {
         "type": "MOD",
@@ -85,15 +85,15 @@
     ]
   },
   "state": {
-    "milestone": "The user's exact Canary 8 aggregate runtime PASS is preserved as the closest known-good rollback: version 0.1.7-canary8, 31,176 bytes, SHA-256 cb36d6917dc61b17f2d8b5cea0d09cb4c1455e04aaca2c186ecaebe5e9960aa2, source 4707b35150cc4169b2eee68b8683f9dfb27c158e. Exact C10 preserves C9 behavior and adds only DataComponents.ENCHANTMENT_GLINT_OVERRIDE=true to Resonant Favour's default Item.Properties, without adding an enchantment or changing recipe, model, texture, Heart, death/recovery, scarcity, loot, advancement, function, or compatibility behavior. The user explicitly authorized C10's USER_APPROVED_UNTESTED_PROMOTION after focused static checks; the exact C10 artifact is accepted in the physically verified Stack v3 baseline but remains runtime untested, and no Canary 8 PASS is inherited by C10.",
+    "milestone": "Exact Canary 11 is the current unaccepted audiovisual successor: version 0.1.10-canary11, 39,105 bytes, SHA-256 a0570179f85d32ec6740d9136ad50890b9c797500661cd2ed2325da5b6b1e4a9, source 8a0002235c6b0921f4d7f6a4cbf73b18ccc421a3. Only after a valid main-hand Heart state transition succeeds, Crystal uses broadcast minecraft:block.beacon.power_select at volume 0.70 and pitch 1.15 with 10 minecraft:end_rod particles, while Reinforced uses the same sound at volume 0.75 and pitch 0.90 with 14 minecraft:glow particles; both restrained bursts are server-authoritative and pose-relative around the upper torso. Exact accepted C10 remains unchanged at version 0.1.9-canary10, 34,751 bytes, SHA-256 f86442ec69ed8afb86d52c97db2e899223c25a659ef7c19f245e51ac642bbc90, source f9c877d14956616bc3f46f3239ac3b512e1ee9c4; exact runtime-passed C8 remains the rollback at version 0.1.7-canary8, 31,176 bytes, SHA-256 cb36d6917dc61b17f2d8b5cea0d09cb4c1455e04aaca2c186ecaebe5e9960aa2, source 4707b35150cc4169b2eee68b8683f9dfb27c158e. C11 is not deployed and runtime untested; no C8 or C10 evidence is inherited.",
     "releases": {
       "current": {
-        "version": "0.1.9-canary10",
+        "version": "0.1.10-canary11",
         "artifact": {
-          "filename": "matcha-heart-death-compat-0.1.9-canary10.jar",
-          "sha256": "f86442ec69ed8afb86d52c97db2e899223c25a659ef7c19f245e51ac642bbc90"
+          "filename": "matcha-heart-death-compat-0.1.10-canary11.jar",
+          "sha256": "a0570179f85d32ec6740d9136ad50890b9c797500661cd2ed2325da5b6b1e4a9"
         },
-        "source_commit": "f9c877d14956616bc3f46f3239ac3b512e1ee9c4"
+        "source_commit": "8a0002235c6b0921f4d7f6a4cbf73b18ccc421a3"
       },
       "accepted": {
         "version": "0.1.9-canary10",
@@ -111,22 +111,22 @@
         },
         "source_commit": "4707b35150cc4169b2eee68b8683f9dfb27c158e"
       },
-      "accepted_current": "CURRENT_IS_ACCEPTED",
+      "accepted_current": "CURRENT_DIFFERS_FROM_ACCEPTED",
       "accepted_rollback": "ROLLBACK_DIFFERS_FROM_ACCEPTED"
     },
     "validation": {
       "build": "STATIC_PASS",
-      "deployment": "READY_TO_TEST_VERIFIED",
+      "deployment": "NOT_DEPLOYED",
       "runtime": "RUNTIME_UNTESTED"
     },
     "blocker": null
   },
   "synchronization": {
-    "revision": 6,
-    "activity_at": "2026-08-30T06:51:06Z",
-    "updated_at": "2026-08-30T06:51:06Z",
-    "last_codex_at": "2026-08-30T06:51:06Z",
-    "source_commit": "8fdfaaf4eddfb4b379ce5d50266f2c40a5294480",
+    "revision": 7,
+    "activity_at": "2026-09-01T02:08:03Z",
+    "updated_at": "2026-09-01T02:08:03Z",
+    "last_codex_at": "2026-09-01T02:08:03Z",
+    "source_commit": "8a0002235c6b0921f4d7f6a4cbf73b18ccc421a3",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
