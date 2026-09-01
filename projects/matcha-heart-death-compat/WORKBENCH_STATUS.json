@@ -18,7 +18,7 @@
     ]
   },
   "definition": {
-    "lifecycle": "ACTIVE",
+    "lifecycle": "ACCEPTED",
     "goals": [
       "Preserve Matcha Crystal Heart progression as explicit semantic main-hand use instead of automatic inventory-entry consumption.",
       "Preserve project-owned persistent maximum-health state and one-heart-per-death debt from Matcha's 30-heart cap down to the five-heart floor, with Reinforced repair only below the normal ten-heart baseline.",
@@ -85,7 +85,7 @@
     ]
   },
   "state": {
-    "milestone": "Exact Canary 11 is the current unaccepted audiovisual successor: version 0.1.10-canary11, 39,105 bytes, SHA-256 a0570179f85d32ec6740d9136ad50890b9c797500661cd2ed2325da5b6b1e4a9, source 8a0002235c6b0921f4d7f6a4cbf73b18ccc421a3. Only after a valid main-hand Heart state transition succeeds, Crystal uses broadcast minecraft:block.beacon.power_select at volume 0.70 and pitch 1.15 with 10 minecraft:end_rod particles, while Reinforced uses the same sound at volume 0.75 and pitch 0.90 with 14 minecraft:glow particles; both restrained bursts are server-authoritative and pose-relative around the upper torso. Exact accepted C10 remains unchanged at version 0.1.9-canary10, 34,751 bytes, SHA-256 f86442ec69ed8afb86d52c97db2e899223c25a659ef7c19f245e51ac642bbc90, source f9c877d14956616bc3f46f3239ac3b512e1ee9c4; exact runtime-passed C8 remains the rollback at version 0.1.7-canary8, 31,176 bytes, SHA-256 cb36d6917dc61b17f2d8b5cea0d09cb4c1455e04aaca2c186ecaebe5e9960aa2, source 4707b35150cc4169b2eee68b8683f9dfb27c158e. C11 is not deployed and runtime untested; no C8 or C10 evidence is inherited.",
+    "milestone": "Exact Canary 11 is accepted in Workbench Stack v11 under the user's explicit USER_APPROVED_UNTESTED_PROMOTION authorization: version 0.1.10-canary11, 39,105 bytes, SHA-256 a0570179f85d32ec6740d9136ad50890b9c797500661cd2ed2325da5b6b1e4a9, source 8a0002235c6b0921f4d7f6a4cbf73b18ccc421a3. The accepted-baseline installation is not a Test Slot deployment or Minecraft runtime PASS; C11 remains independently runtime untested and inherits no evidence. Previous accepted C10 remains repository provenance at version 0.1.9-canary10, 34,751 bytes, SHA-256 f86442ec69ed8afb86d52c97db2e899223c25a659ef7c19f245e51ac642bbc90, source f9c877d14956616bc3f46f3239ac3b512e1ee9c4, while exact runtime-passed C8 remains the declared rollback at version 0.1.7-canary8, 31,176 bytes, SHA-256 cb36d6917dc61b17f2d8b5cea0d09cb4c1455e04aaca2c186ecaebe5e9960aa2, source 4707b35150cc4169b2eee68b8683f9dfb27c158e.",
     "releases": {
       "current": {
         "version": "0.1.10-canary11",
@@ -96,12 +96,12 @@
         "source_commit": "8a0002235c6b0921f4d7f6a4cbf73b18ccc421a3"
       },
       "accepted": {
-        "version": "0.1.9-canary10",
+        "version": "0.1.10-canary11",
         "artifact": {
-          "filename": "matcha-heart-death-compat-0.1.9-canary10.jar",
-          "sha256": "f86442ec69ed8afb86d52c97db2e899223c25a659ef7c19f245e51ac642bbc90"
+          "filename": "matcha-heart-death-compat-0.1.10-canary11.jar",
+          "sha256": "a0570179f85d32ec6740d9136ad50890b9c797500661cd2ed2325da5b6b1e4a9"
         },
-        "source_commit": "f9c877d14956616bc3f46f3239ac3b512e1ee9c4"
+        "source_commit": "8a0002235c6b0921f4d7f6a4cbf73b18ccc421a3"
       },
       "rollback": {
         "version": "0.1.7-canary8",
@@ -111,22 +111,22 @@
         },
         "source_commit": "4707b35150cc4169b2eee68b8683f9dfb27c158e"
       },
-      "accepted_current": "CURRENT_DIFFERS_FROM_ACCEPTED",
+      "accepted_current": "CURRENT_IS_ACCEPTED",
       "accepted_rollback": "ROLLBACK_DIFFERS_FROM_ACCEPTED"
     },
     "validation": {
       "build": "STATIC_PASS",
-      "deployment": "NOT_DEPLOYED",
+      "deployment": "READY_TO_TEST_VERIFIED",
       "runtime": "RUNTIME_UNTESTED"
     },
     "blocker": null
   },
   "synchronization": {
-    "revision": 7,
-    "activity_at": "2026-09-01T02:08:03Z",
-    "updated_at": "2026-09-01T02:08:03Z",
-    "last_codex_at": "2026-09-01T02:08:03Z",
-    "source_commit": "8a0002235c6b0921f4d7f6a4cbf73b18ccc421a3",
+    "revision": 8,
+    "activity_at": "2026-09-01T03:24:52Z",
+    "updated_at": "2026-09-01T03:24:52Z",
+    "last_codex_at": "2026-09-01T03:24:52Z",
+    "source_commit": "cedb14dbc15f336d5b2ef853218f07e2d2650a17",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null

@@ -1,9 +1,9 @@
 # Testing
 
-## Current candidate and preserved baselines
+## Current accepted release and preserved baselines
 
-Test only this exact current Matcha Death Rebalance candidate when a later
-explicit deployment is authorized:
+Test only this exact current and accepted Matcha Death Rebalance release when
+later explicit runtime authority is provided:
 
 - version `0.1.10-canary11`
 - file `matcha-heart-death-compat-0.1.10-canary11.jar`
@@ -11,12 +11,16 @@ explicit deployment is authorized:
 - SHA-256 `A0570179F85D32EC6740D9136AD50890B9C797500661CD2ED2325DA5B6B1E4A9`
 - release source `8a0002235c6b0921f4d7f6a4cbf73b18ccc421a3`
 
-C11 is `STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED`. Java 25 and Gradle
-9.5.1 offline `clean test build --no-daemon --offline` passed all 44 tests in
-eight suites with zero failures, errors, or skips. That result is not Minecraft
-runtime validation.
+C11 is `STATIC_PASS / READY_TO_TEST_VERIFIED / RUNTIME_UNTESTED` and is the
+accepted Matcha Death Rebalance member of Workbench Stack v11 under the user's
+explicit `USER_APPROVED_UNTESTED_PROMOTION`. `READY_TO_TEST_VERIFIED` records
+the physically verified accepted-baseline installation; it is not Test Slot
+occupancy or Minecraft runtime evidence. Java 25 and Gradle 9.5.1 offline
+`clean test build --no-daemon --offline` passed all 44 tests in eight suites
+with zero failures, errors, or skips. No runtime PASS is claimed.
 
-Accepted C10 remains byte-for-byte unchanged: version `0.1.9-canary10`, file
+Previous accepted C10 remains byte-for-byte unchanged as repository
+provenance: version `0.1.9-canary10`, file
 `matcha-heart-death-compat-0.1.9-canary10.jar`, 34,751 bytes, SHA-256
 `F86442EC69ED8AFB86D52C97DB2E899223C25A659EF7C19F245E51AC642BBC90`, source
 `f9c877d14956616bc3f46f3239ac3b512e1ee9c4`. It remains runtime untested.
@@ -40,11 +44,13 @@ Runtime-passed C8 remains the exact rollback: version `0.1.7-canary8`, file
 
 ## Focused Canary 11 runtime matrix
 
-1. Through the serialized Test Instance Manager only after explicit deployment
-   authority and an appropriate slot are available, install exact C11 without
-   co-installing C10, C8, failed C7, or the retired Echo-scarcity artifact.
-   Launch Minecraft Java 26.2 and run `/reload`; stop on any relevant startup,
-   recipe, codec, Mixin, loot, JEI, or compatibility error.
+1. For a later managed-slot run, use the serialized Test Instance Manager only
+   after explicit deployment authority and an appropriate slot are available;
+   for an explicitly reported external run, bind evidence to the exact identity
+   above without fabricating slot history. Do not co-install C10, C8, failed C7,
+   or the retired Echo-scarcity artifact. Launch Minecraft Java 26.2 and run
+   `/reload`; stop on any relevant startup, recipe, codec, Mixin, loot, JEI, or
+   compatibility error.
 2. Move, craft, shift-click, store, and off-hand-use a Crystal Heart. Confirm no
    health change, consumption, beacon sound, End Rod burst, or Glow burst.
    Repeat with an ordinary poisonous potato and another unrelated item.
@@ -75,7 +81,8 @@ Runtime-passed C8 remains the exact rollback: version `0.1.7-canary8`, file
    Echo availability; advancements; functions; and unrelated Matcha behavior.
 
 Record C11 independently as `PASS`, `FAIL`, or `INCONCLUSIVE`, with only the
-behavior actually observed. Stop and preserve the exact evidence on any state,
-consumption, duplication, placement, sound, particle, reload, or regression
-failure. Do not infer C11 runtime status from C8, C10, static tests, artifact
-production, or another project tested in the same launch.
+behavior actually observed. Its accepted status does not imply a PASS. Stop and
+preserve the exact evidence on any state, consumption, duplication, placement,
+sound, particle, reload, or regression failure. Do not infer C11 runtime status
+from C8, C10, static tests, artifact production, or another project tested in
+the same launch.

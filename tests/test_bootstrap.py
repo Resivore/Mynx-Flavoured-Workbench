@@ -1340,8 +1340,8 @@ class RuntimeContractTests(unittest.TestCase):
         # inferred by this bootstrap test.
         tracked = load_json(ROOT / "tools" / "test_instance_manager" / "runtime-state.json")
         self.assertEqual("ACTIVE", tracked["activation"])
-        self.assertEqual(59, tracked["revision"])
-        self.assertEqual(10, tracked["accepted_baseline"]["revision"])
+        self.assertEqual(60, tracked["revision"])
+        self.assertEqual(11, tracked["accepted_baseline"]["revision"])
         self.assertEqual(32, tracked["accepted_baseline"]["provenance"]["accepted_artifact_count"])
         self.assertEqual("TRANSITIONED", tracked["accepted_baseline"]["provenance"]["physical_disposition"])
 
@@ -1393,6 +1393,21 @@ class RuntimeContractTests(unittest.TestCase):
                 (artifact["filename"], artifact["sha256"])
                 for artifact in member["unit"]["artifacts"]
             ])
+
+        authorized_untested_heart = accepted_by_uuid["937d7ccc-44c9-55cb-8d33-0dc0bff5fe45"]
+        self.assertEqual("0.1.10-canary11", authorized_untested_heart["unit"]["version"])
+        self.assertEqual(
+            [
+                (
+                    "matcha-heart-death-compat-0.1.10-canary11.jar",
+                    "a0570179f85d32ec6740d9136ad50890b9c797500661cd2ed2325da5b6b1e4a9",
+                )
+            ],
+            [
+                (artifact["filename"], artifact["sha256"])
+                for artifact in authorized_untested_heart["unit"]["artifacts"]
+            ],
+        )
 
         rooted = accepted_by_uuid["6b8b6166-fd59-4e4e-ab1d-d1140cdbfab8"]
         self.assertEqual(1, len(rooted["retained_rollbacks"]))
@@ -1529,7 +1544,7 @@ class CurrentStateBootstrapTests(unittest.TestCase):
         self.assertEqual({path: manifest["synchronization"]["revision"] for path, manifest in manifests.items()}, revisions)
         self.assertTrue(all(event["record"]["publication_commit"] == "d" * 40 for event in plan["events"]))
 
-    def test_current_heart_r7_and_mossy_r6_authority_produces_exact_reconciliation_events(self) -> None:
+    def test_current_heart_r8_and_mossy_r6_authority_produces_exact_reconciliation_events(self) -> None:
         paths = (
             "projects/matcha-heart-death-compat/WORKBENCH_STATUS.json",
             "projects/mossy-stone/WORKBENCH_STATUS.json",
@@ -1543,7 +1558,7 @@ class CurrentStateBootstrapTests(unittest.TestCase):
         events = {event["record"]["project_uuid"]: event for event in plan["events"]}
         expected = {
             "937d7ccc-44c9-55cb-8d33-0dc0bff5fe45": {
-                "revision": 7,
+                "revision": 8,
                 "filename": "matcha-heart-death-compat-0.1.10-canary11.jar",
                 "sha256": "a0570179f85d32ec6740d9136ad50890b9c797500661cd2ed2325da5b6b1e4a9",
             },
