@@ -88,6 +88,11 @@ public final class MatchaHeartDeathCompat implements ModInitializer {
         }
         stack.shrink(1);
         setState(serverPlayer, after);
+        HeartUseFeedback.emitSuccessful(
+                serverPlayer,
+                crystal ? HeartUseFeedback.Kind.CRYSTAL : HeartUseFeedback.Kind.REINFORCED,
+                before,
+                after);
         return InteractionResult.SUCCESS;
     }
 
