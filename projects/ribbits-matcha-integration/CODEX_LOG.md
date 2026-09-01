@@ -9,3 +9,13 @@
 - Artifact: No current, accepted, or rollback release exists; no Canary, JAR, resource pack, data pack, or protected Ribbits material was created, copied, or imported.
 - Result: PLANNED — NOT_RUN; NOT_DEPLOYED; RUNTIME_UNTESTED; NO_ACCEPTED; NO_ROLLBACK. The project now durably records the dedicated-map approach without changing Ribbits or Matcha behavior.
 - Next state: After the Ribbits 26.2 port is runtime-functional, audit the exact registered Ribbits village identity and Matcha cartographer trade owner, select the narrowest supported Minecraft 26.2/Fabric implementation, build a first candidate, and execute the focused TESTING.md procedure under explicit runtime-slot ownership.
+
+## 2026-09-01T06:07:00Z — Repurpose explorer-map plan as Ribbits × Matcha Integration
+- Revision: 2
+- Source checkpoint: `350394121e563873d7f91844ee7eaaaee3257a9c`
+- Changes: Renamed the official PLANNED project from `ribbits-village-explorer-map` to `ribbits-matcha-integration` while preserving immutable UUID `3ef3a962-1caa-4384-b524-7ebff348774f` and the original name/ID as legacy identity. Broadened the conceptual scope from one cartographer map to cross-system Ribbits × Matcha behavior: the Ribbit Village Explorer Map remains the first named workstream; explicitly approved Matcha-derived trade mappings for Ribbit professions and future similarly bounded Matcha-specific Ribbits integrations are now in scope. Intrinsic Ribbits behavior remains owned by the canonical Ribbits project, unrelated Matcha behavior remains excluded, and blanket automatic mirroring of Matcha's entire trade table is not implied.
+- Build/static: No implementation, build files, generated resources, or artifact exist and no build was run. This remains a planning-only control-record change; build validation remains NOT_RUN.
+- Runtime: No deployment, Test Slot operation, runtime-state mutation, Minecraft launch, villager trade, map purchase, structure locate, or client/server test occurred; runtime remains RUNTIME_UNTESTED.
+- Artifact: No current, accepted, or rollback release exists; no Canary, JAR, resource pack, data pack, protected Ribbits material, or private Matcha material was created, copied, or imported.
+- Result: PLANNED — NOT_RUN; NOT_DEPLOYED; RUNTIME_UNTESTED; NO_ACCEPTED; NO_ROLLBACK. The existing conceptual project is retained and broadened rather than parked or superseded.
+- Next state: After the canonical Ribbits 26.2 line is runtime-functional and an implementation workstream is explicitly chosen, audit the exact current Matcha authoritative trade/integration contract plus the required Ribbits surface, implement only that bounded feature set, and replace this general future matrix with the exact candidate-specific runtime procedure before deployment.
