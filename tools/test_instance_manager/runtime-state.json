@@ -2,16 +2,16 @@
   "$schema": "../../schemas/runtime-state.schema.json",
   "schema_version": 1,
   "activation": "ACTIVE",
-  "revision": 58,
-  "updated_at": "2026-08-31T16:37:05Z",
+  "revision": 59,
+  "updated_at": "2026-09-01T02:35:20Z",
   "accepted_baseline": {
-    "revision": 6,
+    "revision": 10,
     "provenance": {
       "source_repository": "Resivore/Minecraft-26.2-Workbench",
       "source_commit": "f0101f38c446dddaa4226450386402c63597ba7c",
       "source_profile": "matcha-heart-death-mossy-stone",
       "legacy_ledger_sha256": "5f0a26f3d136effeb54e86e3a1ba9d6a98a7252f5adde1c789129461f64c43de",
-      "accepted_artifact_count": 30,
+      "accepted_artifact_count": 32,
       "overlay_order": [
         "937d7ccc-44c9-55cb-8d33-0dc0bff5fe45",
         "9f1c5aa4-09c1-4de3-9921-4b045e8abcd2"
@@ -205,29 +205,29 @@
       },
       {
         "unit": {
-          "deployment_id": "eeb84e4e-ae74-47b4-bece-10425a5dd7dc",
+          "deployment_id": "7272eaab-7f2c-40e2-90ac-bb5a215e3e85",
           "project_uuid": "4d983099-3bfc-5df1-9788-32683ddfc6db",
           "project_id": "matcha-jei-integration",
           "project_identity_source": "CURRENT_MANIFEST",
-          "version": "0.1.1-subtype-registration-fix-canary",
-          "source_commit": "b26c1b62d2f33bbea9c0d99e07d6d373baa1dd48",
+          "version": "C3 (legacy 0.2.0-nonrecipe-discovery-canary1)",
+          "source_commit": "d7879b2d78c2bcf3d26efe2af0ecc5eaafd9e02b",
           "artifacts": [
             {
-              "artifact_id": "4f470261-70ea-41ae-99de-d6b8f7f44c5f",
+              "artifact_id": "899c2a04-e405-4a16-824a-7ac161c91ce1",
               "kind": "MOD",
-              "filename": "matcha-jei-integration-0.1.1-subtype-registration-fix-canary.jar",
-              "sha256": "4ef3ddde44ec06e2ee852dd64f5f5d1cf25c1f4f908282f854e9f49b2d5fb60d",
+              "filename": "matcha-jei-integration-0.2.0-nonrecipe-discovery-canary1.jar",
+              "sha256": "1e4941e2353c1696505f243e86eb58f0239dd1144d544897370b021f6748a455",
               "ownership_keys": [
                 "mod:matcha_jei_integration"
               ],
               "source": {
                 "type": "REPOSITORY",
-                "path": "projects/matcha-jei-integration/artifacts/matcha-jei-integration-0.1.1-subtype-registration-fix-canary.jar"
+                "path": "projects/matcha-jei-integration/artifacts/matcha-jei-integration-0.2.0-nonrecipe-discovery-canary1.jar"
               }
             }
           ]
         },
-        "accepted_at": null
+        "accepted_at": "2026-09-01T02:35:20Z"
       },
       {
         "unit": {
@@ -556,29 +556,29 @@
       },
       {
         "unit": {
-          "deployment_id": "3babd864-6fe1-4774-869a-b79e86839488",
+          "deployment_id": "34b44849-bc2e-455d-923f-e7a2fcfbd609",
           "project_uuid": "2dc7b47a-f3b4-5fbe-a1fa-53e4f0aaa446",
           "project_id": "horse-immunities",
           "project_identity_source": "CURRENT_MANIFEST",
-          "version": "0.1.0-canary2",
-          "source_commit": "5a5a4b239772023345e15ed22b4a6f0ed0b2237b",
+          "version": "C3",
+          "source_commit": "f0b8b66cc657bfd6303475fab75f385f06748782",
           "artifacts": [
             {
-              "artifact_id": "95a27150-9337-4c91-a5d1-016e166bbe23",
+              "artifact_id": "1b47f1dc-1134-4e55-87f4-f7c5f4df661b",
               "kind": "MOD",
-              "filename": "sweet-berry-horse-immunity-0.1.0-canary2.jar",
-              "sha256": "caddc47f9db0d374d44da4beb21605ad5bcb28ecf162136b774733e9dfe37697",
+              "filename": "sweet-berry-horse-immunity-0.1.0-canary3.jar",
+              "sha256": "ab947253c5a6bc1910f05367ca9cc5ed7b5388f1d343b4889605d7b15a10060b",
               "ownership_keys": [
                 "mod:sweet_berry_horse_immunity"
               ],
               "source": {
                 "type": "REPOSITORY",
-                "path": "projects/horse-immunities/artifacts/sweet-berry-horse-immunity-0.1.0-canary2.jar"
+                "path": "projects/horse-immunities/artifacts/sweet-berry-horse-immunity-0.1.0-canary3.jar"
               }
             }
           ]
         },
-        "accepted_at": null
+        "accepted_at": "2026-09-01T02:35:20Z"
       },
       {
         "unit": {
@@ -789,6 +789,58 @@
             "retained_at": "2026-08-31T04:36:25Z"
           }
         ]
+      },
+      {
+        "unit": {
+          "deployment_id": "f2a6a569-f3c4-43d1-8b35-c7b03dbb247f",
+          "project_uuid": "dda2c3b4-5099-4842-a755-29e964cd2192",
+          "project_id": "matcha-vanilla-village-restoration",
+          "project_identity_source": "CURRENT_MANIFEST",
+          "version": "0.2.0-canary2",
+          "source_commit": "ee6070995b036128e6a7d281a6c67ae3f74b9284",
+          "artifacts": [
+            {
+              "artifact_id": "c851ca15-39af-4d41-b093-75ffd7fabd4d",
+              "kind": "MOD",
+              "filename": "matcha-vanilla-village-restoration-0.2.0-canary2.jar",
+              "sha256": "5d5164a89881239400cd2b6776b9b54177b699e2a16a1c97b761cde06e7d8bcd",
+              "ownership_keys": [
+                "mod:matcha_vanilla_village_restoration"
+              ],
+              "source": {
+                "type": "REPOSITORY",
+                "path": "projects/matcha-vanilla-village-restoration/artifacts/matcha-vanilla-village-restoration-0.2.0-canary2.jar"
+              }
+            }
+          ]
+        },
+        "accepted_at": "2026-09-01T02:35:20Z"
+      },
+      {
+        "unit": {
+          "deployment_id": "e3c2471a-2419-422d-8dac-0faf5681a790",
+          "project_uuid": "850b2838-7f90-4685-8ba6-3ec282693003",
+          "project_id": "matcha-frost-protection",
+          "project_identity_source": "CURRENT_MANIFEST",
+          "version": "0.1.0-canary2",
+          "source_commit": "0d3d6650355a38758ff23227b34bc9bda5826d68",
+          "artifacts": [
+            {
+              "artifact_id": "a45bd0bf-3a88-4e75-bd6a-c08f47c8181d",
+              "kind": "MOD",
+              "filename": "matcha-frost-protection-0.1.0-canary2.jar",
+              "sha256": "88ae708cbf2a9b1f5fe3b322579c3e7b507c7e0420cadb40aca796dba5b4a742",
+              "ownership_keys": [
+                "mod:matcha_frost_protection"
+              ],
+              "source": {
+                "type": "REPOSITORY",
+                "path": "projects/matcha-frost-protection/artifacts/matcha-frost-protection-0.1.0-canary2.jar"
+              }
+            }
+          ]
+        },
+        "accepted_at": "2026-09-01T02:35:20Z"
       }
     ]
   },
