@@ -204,8 +204,85 @@ def _accepted_member(value: Any, path: str, project_index: dict[str, str] | None
     return member
 
 
-def _slot(value: Any, path: str, project_index: dict[str, str] | None) -> dict[str, Any]:
-    required = {"unit", "replaces_accepted_deployment_id", "deployment", "runtime_result"}
+def _deployment(value: Any, path: str) -> tuple[dict[str, Any], str, Any, Any]:
+    deployment = _object(value, path, {"state", "deployed_at", "ready_verified_at"})
+    deployment_state = _enum(deployment["state"], f"{path}.state", SLOT_DEPLOYMENT_STATES)
+    deployed_at = None if deployment["deployed_at"] is None else _timestamp(deployment["deployed_at"], f"{path}.deployed_at")
+    ready_at = None if deployment["ready_verified_at"] is None else _timestamp(deployment["ready_verified_at"], f"{path}.ready_verified_at")
+    if deployment_state == "NOT_DEPLOYED" and (deployed_at is not None or ready_at is not None):
+        _fail(path, "NOT_DEPLOYED requires null timestamps")
+    if deployment_state == "DEPLOYED" and (deployed_at is None or ready_at is not None):
+        _fail(path, "DEPLOYED requires deployed_at and no ready_verified_at")
+    if deployment_state == "READY_TO_TEST_VERIFIED" and (deployed_at is None or ready_at is None):
+        _fail(path, "READY_TO_TEST_VERIFIED requires both deployment timestamps")
+    if deployed_at is not None and ready_at is not None and ready_at < deployed_at:
+        _fail(path, "ready verification cannot precede deployment")
+    return deployment, deployment_state, deployed_at, ready_at
+
+
+def _runtime_result(
+    value: Any,
+    path: str,
+    deployment_state: str,
+    ready_at: Any,
+    *,
+    require_ready: bool,
+) -> dict[str, Any]:
+    runtime_result = _object(value, path, {"classification", "recorded_at", "evidence"})
+    classification = _enum(runtime_result["classification"], f"{path}.classification", SLOT_RESULTS)
+    recorded_at = None if runtime_result["recorded_at"] is None else _timestamp(runtime_result["recorded_at"], f"{path}.recorded_at")
+    if classification == "UNTESTED" and recorded_at is not None:
+        _fail(path, "UNTESTED requires recorded_at=null")
+    if classification != "UNTESTED" and recorded_at is None:
+        _fail(path, "a recorded result requires recorded_at")
+    if (
+        require_ready
+        and classification != "UNTESTED"
+        and deployment_state != "READY_TO_TEST_VERIFIED"
+    ):
+        _fail(path, "runtime results require READY_TO_TEST_VERIFIED deployment")
+    if ready_at is not None and recorded_at is not None and recorded_at < ready_at:
+        _fail(f"{path}.recorded_at", "cannot precede ready verification")
+    evidence = _object(runtime_result["evidence"], f"{path}.evidence", {"passed", "failed"})
+    evidence_sets: dict[str, set[str]] = {}
+    for label in ("passed", "failed"):
+        values = evidence[label]
+        if not isinstance(values, list):
+            _fail(f"{path}.evidence.{label}", "must be an array")
+        normalized: set[str] = set()
+        for index, item in enumerate(values):
+            item = _nonblank(item, f"{path}.evidence.{label}[{index}]")
+            key = item.casefold()
+            if key in normalized:
+                _fail(f"{path}.evidence.{label}", f"duplicate evidence: {item}")
+            normalized.add(key)
+        evidence_sets[label] = normalized
+    overlap = evidence_sets["passed"].intersection(evidence_sets["failed"])
+    if overlap:
+        _fail(f"{path}.evidence", "the same check cannot be both passed and failed")
+    if classification == "UNTESTED" and (evidence["passed"] or evidence["failed"]):
+        _fail(f"{path}.evidence", "UNTESTED requires empty evidence")
+    if classification == "PASS" and not evidence["passed"]:
+        _fail(f"{path}.evidence.passed", "PASS requires at least one passed check")
+    if classification == "PASS" and evidence["failed"]:
+        _fail(f"{path}.evidence.failed", "PASS cannot retain failed evidence")
+    if classification == "FAIL" and not evidence["failed"]:
+        _fail(f"{path}.evidence.failed", "FAIL requires at least one failed check")
+    if classification == "INCONCLUSIVE" and not (evidence["passed"] or evidence["failed"]):
+        _fail(f"{path}.evidence", "INCONCLUSIVE requires observed evidence")
+    return runtime_result
+
+
+def _slot_member(
+    value: Any,
+    path: str,
+    project_index: dict[str, str] | None,
+    deployment_state: str,
+    ready_at: Any,
+    *,
+    require_ready_for_recorded_result: bool,
+) -> dict[str, Any]:
+    required = {"unit", "replaces_accepted_deployment_id", "runtime_result"}
     allowed = required | {"dependency_overrides"}
     if not isinstance(value, dict):
         _fail(path, "must be an object")
@@ -215,13 +292,13 @@ def _slot(value: Any, path: str, project_index: dict[str, str] | None) -> dict[s
         _fail(path, f"missing required fields: {', '.join(sorted(missing))}")
     if unknown:
         _fail(path, f"unknown fields: {', '.join(sorted(unknown))}")
-    slot = value
-    unit = _unit(slot["unit"], f"{path}.unit", project_index)
+    member = value
+    unit = _unit(member["unit"], f"{path}.unit", project_index)
     if unit["project_identity_source"] != "CURRENT_MANIFEST":
         _fail(f"{path}.unit.project_identity_source", "runtime slots require CURRENT_MANIFEST identity")
-    if slot["replaces_accepted_deployment_id"] is not None:
-        _uuid(slot["replaces_accepted_deployment_id"], f"{path}.replaces_accepted_deployment_id")
-    dependency_overrides = slot.get("dependency_overrides", [])
+    if member["replaces_accepted_deployment_id"] is not None:
+        _uuid(member["replaces_accepted_deployment_id"], f"{path}.replaces_accepted_deployment_id")
+    dependency_overrides = member.get("dependency_overrides", [])
     if not isinstance(dependency_overrides, list):
         _fail(f"{path}.dependency_overrides", "must be an array")
     seen_overrides: set[str] = set()
@@ -231,62 +308,79 @@ def _slot(value: Any, path: str, project_index: dict[str, str] | None) -> dict[s
             _fail(f"{path}.dependency_overrides", f"duplicate deployment UUID: {deployment_id}")
         seen_overrides.add(deployment_id)
 
-    deployment = _object(slot["deployment"], f"{path}.deployment", {"state", "deployed_at", "ready_verified_at"})
-    deployment_state = _enum(deployment["state"], f"{path}.deployment.state", SLOT_DEPLOYMENT_STATES)
-    deployed_at = None if deployment["deployed_at"] is None else _timestamp(deployment["deployed_at"], f"{path}.deployment.deployed_at")
-    ready_at = None if deployment["ready_verified_at"] is None else _timestamp(deployment["ready_verified_at"], f"{path}.deployment.ready_verified_at")
-    if deployment_state == "NOT_DEPLOYED" and (deployed_at is not None or ready_at is not None):
-        _fail(f"{path}.deployment", "NOT_DEPLOYED requires null timestamps")
-    if deployment_state == "DEPLOYED" and (deployed_at is None or ready_at is not None):
-        _fail(f"{path}.deployment", "DEPLOYED requires deployed_at and no ready_verified_at")
-    if deployment_state == "READY_TO_TEST_VERIFIED" and (deployed_at is None or ready_at is None):
-        _fail(f"{path}.deployment", "READY_TO_TEST_VERIFIED requires both deployment timestamps")
-    if deployed_at is not None and ready_at is not None and ready_at < deployed_at:
-        _fail(f"{path}.deployment", "ready verification cannot precede deployment")
-
-    runtime_result = _object(
-        slot["runtime_result"],
+    _runtime_result(
+        member["runtime_result"],
         f"{path}.runtime_result",
-        {"classification", "recorded_at", "evidence"},
+        deployment_state,
+        ready_at,
+        require_ready=require_ready_for_recorded_result,
     )
-    classification = _enum(runtime_result["classification"], f"{path}.runtime_result.classification", SLOT_RESULTS)
-    recorded_at = None if runtime_result["recorded_at"] is None else _timestamp(runtime_result["recorded_at"], f"{path}.runtime_result.recorded_at")
-    if classification == "UNTESTED" and recorded_at is not None:
-        _fail(f"{path}.runtime_result", "UNTESTED requires recorded_at=null")
-    if classification != "UNTESTED" and recorded_at is None:
-        _fail(f"{path}.runtime_result", "a recorded result requires recorded_at")
-    if classification != "UNTESTED" and deployment_state != "READY_TO_TEST_VERIFIED":
-        _fail(f"{path}.runtime_result", "runtime results require READY_TO_TEST_VERIFIED deployment")
-    if ready_at is not None and recorded_at is not None and recorded_at < ready_at:
-        _fail(f"{path}.runtime_result.recorded_at", "cannot precede ready verification")
-    evidence = _object(runtime_result["evidence"], f"{path}.runtime_result.evidence", {"passed", "failed"})
-    evidence_sets: dict[str, set[str]] = {}
-    for label in ("passed", "failed"):
-        values = evidence[label]
-        if not isinstance(values, list):
-            _fail(f"{path}.runtime_result.evidence.{label}", "must be an array")
-        normalized: set[str] = set()
-        for index, item in enumerate(values):
-            item = _nonblank(item, f"{path}.runtime_result.evidence.{label}[{index}]")
-            key = item.casefold()
-            if key in normalized:
-                _fail(f"{path}.runtime_result.evidence.{label}", f"duplicate evidence: {item}")
-            normalized.add(key)
-        evidence_sets[label] = normalized
-    overlap = evidence_sets["passed"].intersection(evidence_sets["failed"])
-    if overlap:
-        _fail(f"{path}.runtime_result.evidence", "the same check cannot be both passed and failed")
-    if classification == "UNTESTED" and (evidence["passed"] or evidence["failed"]):
-        _fail(f"{path}.runtime_result.evidence", "UNTESTED requires empty evidence")
-    if classification == "PASS" and not evidence["passed"]:
-        _fail(f"{path}.runtime_result.evidence.passed", "PASS requires at least one passed check")
-    if classification == "PASS" and evidence["failed"]:
-        _fail(f"{path}.runtime_result.evidence.failed", "PASS cannot retain failed evidence")
-    if classification == "FAIL" and not evidence["failed"]:
-        _fail(f"{path}.runtime_result.evidence.failed", "FAIL requires at least one failed check")
-    if classification == "INCONCLUSIVE" and not (evidence["passed"] or evidence["failed"]):
-        _fail(f"{path}.runtime_result.evidence", "INCONCLUSIVE requires observed evidence")
+    return member
+
+
+def _slot(
+    value: Any,
+    path: str,
+    project_index: dict[str, str] | None,
+    schema_version: int,
+) -> dict[str, Any]:
+    if schema_version == 1:
+        required = {"unit", "replaces_accepted_deployment_id", "deployment", "runtime_result"}
+        allowed = required | {"dependency_overrides"}
+        if not isinstance(value, dict):
+            _fail(path, "must be an object")
+        missing = required - set(value)
+        unknown = set(value) - allowed
+        if missing:
+            _fail(path, f"missing required fields: {', '.join(sorted(missing))}")
+        if unknown:
+            _fail(path, f"unknown fields: {', '.join(sorted(unknown))}")
+        _, deployment_state, _, ready_at = _deployment(value["deployment"], f"{path}.deployment")
+        legacy_member = {
+            "unit": value["unit"],
+            "replaces_accepted_deployment_id": value["replaces_accepted_deployment_id"],
+            "runtime_result": value["runtime_result"],
+        }
+        if "dependency_overrides" in value:
+            legacy_member["dependency_overrides"] = value["dependency_overrides"]
+        _slot_member(
+            legacy_member,
+            path,
+            project_index,
+            deployment_state,
+            ready_at,
+            require_ready_for_recorded_result=True,
+        )
+        return value
+
+    slot = _object(value, path, {"members", "deployment"})
+    _, deployment_state, _, ready_at = _deployment(slot["deployment"], f"{path}.deployment")
+    members = slot["members"]
+    if not isinstance(members, list) or not members:
+        _fail(f"{path}.members", "must be a nonempty array")
+    for index, member in enumerate(members):
+        _slot_member(
+            member,
+            f"{path}.members[{index}]",
+            project_index,
+            deployment_state,
+            ready_at,
+            require_ready_for_recorded_result=False,
+        )
     return slot
+
+
+def _slot_members_unchecked(slot: dict[str, Any]) -> list[dict[str, Any]]:
+    if "members" in slot:
+        return slot["members"]
+    member = {
+        "unit": slot["unit"],
+        "replaces_accepted_deployment_id": slot["replaces_accepted_deployment_id"],
+        "runtime_result": slot["runtime_result"],
+    }
+    if "dependency_overrides" in slot:
+        member["dependency_overrides"] = slot["dependency_overrides"]
+    return [member]
 
 
 def _all_units(state: dict[str, Any]) -> list[tuple[str, dict[str, Any]]]:
@@ -301,8 +395,11 @@ def _all_units(state: dict[str, Any]) -> list[tuple[str, dict[str, Any]]]:
                 )
             )
     for label in ("A", "B"):
-        if state["slots"][label] is not None:
-            units.append((f"slot {label}", state["slots"][label]["unit"]))
+        slot = state["slots"][label]
+        if slot is None:
+            continue
+        for index, member in enumerate(_slot_members_unchecked(slot)):
+            units.append((f"slot {label}.members[{index}]", member["unit"]))
     return units
 
 
@@ -311,16 +408,55 @@ def _resolved_units_unchecked(state: dict[str, Any]) -> list[dict[str, Any]]:
     for slot in state["slots"].values():
         if slot is None:
             continue
-        if slot["replaces_accepted_deployment_id"] is not None:
-            suppressed.add(slot["replaces_accepted_deployment_id"])
-        suppressed.update(slot.get("dependency_overrides", []))
+        for member in _slot_members_unchecked(slot):
+            if member["replaces_accepted_deployment_id"] is not None:
+                suppressed.add(member["replaces_accepted_deployment_id"])
+            suppressed.update(member.get("dependency_overrides", []))
     result = [
         member["unit"]
         for member in state["accepted_baseline"]["members"]
         if member["unit"]["deployment_id"] not in suppressed
     ]
-    result.extend(state["slots"][label]["unit"] for label in ("A", "B") if state["slots"][label] is not None)
+    for label in ("A", "B"):
+        slot = state["slots"][label]
+        if slot is not None:
+            result.extend(member["unit"] for member in _slot_members_unchecked(slot))
     return result
+
+
+def migrate_runtime_state(
+    state: dict[str, Any],
+    project_index: dict[str, str] | None = None,
+) -> dict[str, Any]:
+    """Losslessly normalize a validated legacy v1 state to cohort-capable v2.
+
+    Migration is deliberately revision-neutral: the physical manager incorporates
+    this deterministic representation change into the same CAS revision as the
+    requested filesystem transition.
+    """
+
+    validate_runtime_state(state, project_index)
+    migrated = copy.deepcopy(state)
+    if migrated["schema_version"] == 2:
+        return migrated
+    migrated["schema_version"] = 2
+    for label in ("A", "B"):
+        legacy = migrated["slots"][label]
+        if legacy is None:
+            continue
+        member = {
+            "unit": legacy["unit"],
+            "replaces_accepted_deployment_id": legacy["replaces_accepted_deployment_id"],
+            "runtime_result": legacy["runtime_result"],
+        }
+        if "dependency_overrides" in legacy:
+            member["dependency_overrides"] = legacy["dependency_overrides"]
+        migrated["slots"][label] = {
+            "members": [member],
+            "deployment": legacy["deployment"],
+        }
+    validate_runtime_state(migrated, project_index)
+    return migrated
 
 
 def _validate_profile_ownership(units: list[dict[str, Any]], path: str) -> None:
@@ -346,8 +482,9 @@ def validate_runtime_state(state: dict[str, Any], project_index: dict[str, str] 
     state = _object(state, "$", {"$schema", "schema_version", "activation", "revision", "updated_at", "accepted_baseline", "slots"})
     if state["$schema"] != RUNTIME_SCHEMA_REF:
         _fail("$.$schema", f"must equal {RUNTIME_SCHEMA_REF}")
-    if state["schema_version"] != 1:
-        _fail("$.schema_version", "must equal 1")
+    schema_version = _integer(state["schema_version"], "$.schema_version", 1)
+    if schema_version not in {1, 2}:
+        _fail("$.schema_version", "must equal 1 or 2")
     activation = _enum(state["activation"], "$.activation", ACTIVATION_STATES)
     state_revision = _integer(state["revision"], "$.revision", 0)
     updated_at = _timestamp(state["updated_at"], "$.updated_at")
@@ -432,9 +569,17 @@ def validate_runtime_state(state: dict[str, Any], project_index: dict[str, str] 
     slots = _object(state["slots"], "$.slots", {"A", "B"})
     for label in ("A", "B"):
         if slots[label] is not None:
-            _slot(slots[label], f"$.slots.{label}", project_index)
+            _slot(slots[label], f"$.slots.{label}", project_index, schema_version)
             slot = slots[label]
-            for timestamp_field in (slot["deployment"]["deployed_at"], slot["deployment"]["ready_verified_at"], slot["runtime_result"]["recorded_at"]):
+            timestamp_fields = [
+                slot["deployment"]["deployed_at"],
+                slot["deployment"]["ready_verified_at"],
+            ]
+            timestamp_fields.extend(
+                member["runtime_result"]["recorded_at"]
+                for member in _slot_members_unchecked(slot)
+            )
+            for timestamp_field in timestamp_fields:
                 if timestamp_field is not None and _timestamp(timestamp_field, f"$.slots.{label}.timestamp") > updated_at:
                     _fail(f"$.slots.{label}", "slot evidence timestamp cannot be later than state updated_at")
 
@@ -461,46 +606,48 @@ def validate_runtime_state(state: dict[str, Any], project_index: dict[str, str] 
         slot = slots[label]
         if slot is None:
             continue
-        unit = slot["unit"]
-        if unit["project_uuid"] in slot_projects:
-            _fail("$.slots", f"project {unit['project_uuid']} occupies both slots")
-        slot_projects.add(unit["project_uuid"])
-        replacement_id = slot["replaces_accepted_deployment_id"]
-        accepted_for_project = accepted_projects.get(unit["project_uuid"])
-        if accepted_for_project is None and replacement_id is not None:
-            _fail(f"$.slots.{label}.replaces_accepted_deployment_id", "new project cannot replace an accepted deployment")
-        if accepted_for_project is not None:
-            expected_deployment_id, expected_project_id = accepted_for_project
-            if replacement_id != expected_deployment_id or unit["project_id"] != expected_project_id:
-                _fail(f"$.slots.{label}.replaces_accepted_deployment_id", "accepted project upgrade must reference its exact accepted deployment")
-        if replacement_id is not None:
-            if replacement_id not in accepted_by_deployment:
-                _fail(f"$.slots.{label}.replaces_accepted_deployment_id", "does not name an accepted deployment")
-            if replacement_id in replacement_ids:
-                _fail("$.slots", "two slots cannot replace the same accepted deployment")
-            replacement_ids.add(replacement_id)
-        slot_ownership = {
-            ownership_key.casefold()
-            for artifact in unit["artifacts"]
-            for ownership_key in artifact["ownership_keys"]
-        }
-        for index, dependency_id in enumerate(slot.get("dependency_overrides", [])):
-            dependency_path = f"$.slots.{label}.dependency_overrides[{index}]"
-            dependency_unit = accepted_by_deployment.get(dependency_id)
-            if dependency_unit is None:
-                _fail(dependency_path, "does not name an accepted deployment")
-            if dependency_unit["project_uuid"] == unit["project_uuid"]:
-                _fail(dependency_path, "the slot project's accepted release must use replaces_accepted_deployment_id")
-            if dependency_id in replacement_ids:
-                _fail("$.slots", "two slot replacement paths cannot suppress the same accepted deployment")
-            dependency_ownership = {
+        for member_index, slot_member in enumerate(_slot_members_unchecked(slot)):
+            member_path = f"$.slots.{label}.members[{member_index}]"
+            unit = slot_member["unit"]
+            if unit["project_uuid"] in slot_projects:
+                _fail("$.slots", f"project {unit['project_uuid']} occupies more than one slot/cohort position")
+            slot_projects.add(unit["project_uuid"])
+            replacement_id = slot_member["replaces_accepted_deployment_id"]
+            accepted_for_project = accepted_projects.get(unit["project_uuid"])
+            if accepted_for_project is None and replacement_id is not None:
+                _fail(f"{member_path}.replaces_accepted_deployment_id", "new project cannot replace an accepted deployment")
+            if accepted_for_project is not None:
+                expected_deployment_id, expected_project_id = accepted_for_project
+                if replacement_id != expected_deployment_id or unit["project_id"] != expected_project_id:
+                    _fail(f"{member_path}.replaces_accepted_deployment_id", "accepted project upgrade must reference its exact accepted deployment")
+            if replacement_id is not None:
+                if replacement_id not in accepted_by_deployment:
+                    _fail(f"{member_path}.replaces_accepted_deployment_id", "does not name an accepted deployment")
+                if replacement_id in replacement_ids:
+                    _fail("$.slots", "two cohort members cannot replace the same accepted deployment")
+                replacement_ids.add(replacement_id)
+            slot_ownership = {
                 ownership_key.casefold()
-                for artifact in dependency_unit["artifacts"]
+                for artifact in unit["artifacts"]
                 for ownership_key in artifact["ownership_keys"]
             }
-            if not dependency_ownership.issubset(slot_ownership):
-                _fail(dependency_path, "slot artifacts must replace every ownership key of the accepted dependency")
-            replacement_ids.add(dependency_id)
+            for index, dependency_id in enumerate(slot_member.get("dependency_overrides", [])):
+                dependency_path = f"{member_path}.dependency_overrides[{index}]"
+                dependency_unit = accepted_by_deployment.get(dependency_id)
+                if dependency_unit is None:
+                    _fail(dependency_path, "does not name an accepted deployment")
+                if dependency_unit["project_uuid"] == unit["project_uuid"]:
+                    _fail(dependency_path, "the cohort member's accepted release must use replaces_accepted_deployment_id")
+                if dependency_id in replacement_ids:
+                    _fail("$.slots", "two cohort replacement paths cannot suppress the same accepted deployment")
+                dependency_ownership = {
+                    ownership_key.casefold()
+                    for artifact in dependency_unit["artifacts"]
+                    for ownership_key in artifact["ownership_keys"]
+                }
+                if not dependency_ownership.issubset(slot_ownership):
+                    _fail(dependency_path, "cohort member artifacts must replace every ownership key of the accepted dependency")
+                replacement_ids.add(dependency_id)
 
     for location, unit in _all_units(state):
         project_uuid = unit["project_uuid"]
@@ -570,30 +717,45 @@ def render_title_state(
             lines.append(line)
             continue
 
-        unit = slot["unit"]
-        project_uuid = unit["project_uuid"]
-        display_name = project_display_names.get(project_uuid)
-        if display_name is None:
-            raise ValidationError(
-                f"cannot render slot {label}: project {project_uuid} has no canonical display name"
+        rendered_members: list[dict[str, Any]] = []
+        member_labels: list[str] = []
+        for index, member in enumerate(_slot_members_unchecked(slot)):
+            unit = member["unit"]
+            project_uuid = unit["project_uuid"]
+            display_name = project_display_names.get(project_uuid)
+            if display_name is None:
+                raise ValidationError(
+                    f"cannot render slot {label} member {index}: project {project_uuid} "
+                    "has no canonical display name"
+                )
+            display_name = _nonblank(display_name, f"project_display_names[{project_uuid!r}]")
+            if "\r" in display_name or "\n" in display_name:
+                raise ValidationError(
+                    f"cannot render slot {label}: canonical display name must occupy one line"
+                )
+            match = CANARY_VERSION_RE.search(unit["version"])
+            if match is None:
+                raise ValidationError(
+                    f"cannot render slot {label}: canonical version {unit['version']!r} has no Canary number"
+                )
+            canary = int(match.group(1))
+            member_labels.append(f"{display_name} - Canary {canary}")
+            rendered_members.append(
+                {
+                    "project_uuid": project_uuid,
+                    "project_display_name": display_name,
+                    "version": unit["version"],
+                    "canary": canary,
+                }
             )
-        display_name = _nonblank(display_name, f"project_display_names[{project_uuid!r}]")
-        if "\r" in display_name or "\n" in display_name:
-            raise ValidationError(f"cannot render slot {label}: canonical display name must occupy one line")
-        match = CANARY_VERSION_RE.search(unit["version"])
-        if match is None:
-            raise ValidationError(
-                f"cannot render slot {label}: canonical version {unit['version']!r} has no Canary number"
-            )
-        canary = int(match.group(1))
-        line = f"Slot {label}: {display_name} - Canary {canary}"
+        line = f"Slot {label}: " + " + ".join(member_labels)
         slots[label] = {
             "occupied": True,
-            "project_uuid": project_uuid,
-            "project_display_name": display_name,
-            "canary": canary,
+            "members": rendered_members,
             "line": line,
         }
+        if len(rendered_members) == 1:
+            slots[label].update(rendered_members[0])
         lines.append(line)
 
     return {
@@ -641,6 +803,8 @@ def _normalize_candidate_declaration(declaration: Any) -> dict[str, Any]:
 
 
 def _materialize_candidate(declaration: Any, existing_slots: dict[str, Any]) -> dict[str, Any]:
+    """Materialize the legacy v1 single-member slot representation."""
+
     declaration = _normalize_candidate_declaration(declaration)
     identity = {
         "unit": declaration["unit"],
@@ -668,6 +832,80 @@ def _materialize_candidate(declaration: Any, existing_slots: dict[str, Any]) -> 
     if declaration.get("dependency_overrides"):
         slot["dependency_overrides"] = copy.deepcopy(declaration["dependency_overrides"])
     return slot
+
+
+def _candidate_identity(declaration: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "unit": declaration["unit"],
+        "replaces_accepted_deployment_id": declaration["replaces_accepted_deployment_id"],
+        "dependency_overrides": declaration.get("dependency_overrides", []),
+    }
+
+
+def _member_identity(member: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "unit": member["unit"],
+        "replaces_accepted_deployment_id": member["replaces_accepted_deployment_id"],
+        "dependency_overrides": member.get("dependency_overrides", []),
+    }
+
+
+def _normalize_member_declarations(declarations: Any, path: str = "members") -> list[dict[str, Any]]:
+    if not isinstance(declarations, list) or not declarations:
+        _fail(path, "must be a nonempty array")
+    normalized: list[dict[str, Any]] = []
+    for index, declaration in enumerate(declarations):
+        try:
+            normalized.append(_normalize_candidate_declaration(declaration))
+        except ValidationError as exc:
+            raise ValidationError(f"{path}[{index}]: {exc}") from exc
+    return normalized
+
+
+def _new_cohort_member(declaration: dict[str, Any]) -> dict[str, Any]:
+    """Materialize one untested member without borrowing companion evidence."""
+
+    member = {
+        "unit": copy.deepcopy(declaration["unit"]),
+        "replaces_accepted_deployment_id": declaration["replaces_accepted_deployment_id"],
+        "runtime_result": {
+            "classification": "UNTESTED",
+            "recorded_at": None,
+            "evidence": {"passed": [], "failed": []},
+        },
+    }
+    if declaration.get("dependency_overrides"):
+        member["dependency_overrides"] = copy.deepcopy(declaration["dependency_overrides"])
+    return member
+
+
+def _materialize_cohort(declarations: Any, existing_slots: dict[str, Any]) -> dict[str, Any]:
+    declarations = _normalize_member_declarations(declarations)
+    identities = [_candidate_identity(declaration) for declaration in declarations]
+    for label in ("A", "B"):
+        existing = existing_slots[label]
+        if existing is None:
+            continue
+        existing_members = _slot_members_unchecked(existing)
+        if [_member_identity(member) for member in existing_members] == identities:
+            if "members" in existing:
+                return copy.deepcopy(existing)
+            migrated_member = {
+                "unit": copy.deepcopy(existing["unit"]),
+                "replaces_accepted_deployment_id": existing["replaces_accepted_deployment_id"],
+                "runtime_result": copy.deepcopy(existing["runtime_result"]),
+            }
+            if "dependency_overrides" in existing:
+                migrated_member["dependency_overrides"] = copy.deepcopy(existing["dependency_overrides"])
+            return {
+                "members": [migrated_member],
+                "deployment": copy.deepcopy(existing["deployment"]),
+            }
+    members = [_new_cohort_member(declaration) for declaration in declarations]
+    return {
+        "members": members,
+        "deployment": {"state": "NOT_DEPLOYED", "deployed_at": None, "ready_verified_at": None},
+    }
 
 
 def _byte_composition(unit: dict[str, Any]) -> tuple[tuple[Any, ...], ...]:
@@ -705,45 +943,112 @@ def plan_transition(
     operation_type = _enum(operation["type"], "operation.type", TRANSITIONS)
     next_state = copy.deepcopy(state)
     slots = next_state["slots"]
+    schema_version = next_state["schema_version"]
 
     if operation_type == "ASSIGN_SLOT":
-        if set(operation) != {"type", "candidate"}:
-            raise ValidationError("ASSIGN_SLOT requires exactly type and candidate")
+        if set(operation) not in ({"type", "candidate"}, {"type", "members"}):
+            raise ValidationError("ASSIGN_SLOT requires exactly one of candidate or members")
         target = "A" if slots["A"] is None else "B" if slots["B"] is None else None
         if target is None:
             raise ValidationError("both runtime test slots are occupied")
-        slots[target] = _materialize_candidate(operation["candidate"], state["slots"])
+        if "members" in operation:
+            if schema_version != 2:
+                raise ValidationError("ASSIGN_SLOT members require migrated runtime-state schema_version 2")
+            slots[target] = _materialize_cohort(operation["members"], state["slots"])
+        elif schema_version == 2:
+            slots[target] = _materialize_cohort([operation["candidate"]], state["slots"])
+        else:
+            slots[target] = _materialize_candidate(operation["candidate"], state["slots"])
     elif operation_type == "UPDATE_SLOT":
-        if set(operation) != {"type", "slot", "candidate"}:
-            raise ValidationError("UPDATE_SLOT requires exactly type, slot, and candidate")
+        if set(operation) not in (
+            {"type", "slot", "candidate"},
+            {"type", "slot", "members"},
+        ):
+            raise ValidationError("UPDATE_SLOT requires slot and exactly one of candidate or members")
         label = operation["slot"]
         if label not in {"A", "B"}:
             raise ValidationError("operation.slot must be A or B")
         if slots[label] is None:
             raise ValidationError(f"slot {label} is empty")
-        declaration = _normalize_candidate_declaration(operation["candidate"])
         prior = slots[label]
-        if (
-            declaration["replaces_accepted_deployment_id"] is None
-            and isinstance(declaration["unit"], dict)
-            and declaration["unit"].get("project_uuid") == prior["unit"]["project_uuid"]
-        ):
-            declaration["replaces_accepted_deployment_id"] = prior["replaces_accepted_deployment_id"]
-        if (
-            "dependency_overrides" not in declaration
-            and isinstance(declaration["unit"], dict)
-            and declaration["unit"].get("project_uuid") == prior["unit"]["project_uuid"]
-            and prior.get("dependency_overrides")
-        ):
-            declaration["dependency_overrides"] = copy.deepcopy(prior["dependency_overrides"])
-        slots[label] = _materialize_candidate(declaration, state["slots"])
+        if "members" in operation:
+            if schema_version != 2:
+                raise ValidationError("UPDATE_SLOT members require migrated runtime-state schema_version 2")
+            declarations = _normalize_member_declarations(operation["members"])
+            slots[label] = _materialize_cohort(declarations, state["slots"])
+        else:
+            declaration = _normalize_candidate_declaration(operation["candidate"])
+            prior_members = _slot_members_unchecked(prior)
+            project_uuid = declaration["unit"].get("project_uuid") if isinstance(declaration["unit"], dict) else None
+            matches = [
+                (index, member)
+                for index, member in enumerate(prior_members)
+                if member["unit"]["project_uuid"] == project_uuid
+            ]
+            if len(prior_members) > 1 and len(matches) != 1:
+                raise ValidationError(
+                    "UPDATE_SLOT candidate must identify exactly one existing cohort member; "
+                    "use members to replace the whole cohort"
+                )
+            if matches:
+                _, prior_member = matches[0]
+                if declaration["replaces_accepted_deployment_id"] is None:
+                    declaration["replaces_accepted_deployment_id"] = prior_member["replaces_accepted_deployment_id"]
+                if "dependency_overrides" not in declaration and prior_member.get("dependency_overrides"):
+                    declaration["dependency_overrides"] = copy.deepcopy(prior_member["dependency_overrides"])
+            if schema_version == 1:
+                slots[label] = _materialize_candidate(declaration, state["slots"])
+            elif len(prior_members) == 1 and not matches:
+                # Preserve legacy one-member UPDATE_SLOT behavior: a candidate
+                # for another project replaces the entire one-member slot.
+                slots[label] = _materialize_cohort([declaration], state["slots"])
+            else:
+                matching_index, prior_member = matches[0]
+                if _candidate_identity(declaration) == _member_identity(prior_member):
+                    slots[label] = copy.deepcopy(prior)
+                else:
+                    members = copy.deepcopy(prior_members)
+                    members[matching_index] = _new_cohort_member(declaration)
+                    slots[label] = {
+                        "members": members,
+                        "deployment": {
+                            "state": "NOT_DEPLOYED",
+                            "deployed_at": None,
+                            "ready_verified_at": None,
+                        },
+                    }
     elif operation_type == "SET_PROFILE":
-        if set(operation) != {"type", "candidates"} or not isinstance(operation["candidates"], list):
-            raise ValidationError("SET_PROFILE requires a candidates array")
-        if len(operation["candidates"]) > 2:
-            raise ValidationError("runtime profile cannot contain more than two candidates")
-        slots["A"] = _materialize_candidate(operation["candidates"][0], state["slots"]) if operation["candidates"] else None
-        slots["B"] = _materialize_candidate(operation["candidates"][1], state["slots"]) if len(operation["candidates"]) == 2 else None
+        if set(operation) == {"type", "candidates"} and isinstance(operation["candidates"], list):
+            if len(operation["candidates"]) > 2:
+                raise ValidationError("runtime profile cannot contain more than two candidates")
+            for index, label in enumerate(("A", "B")):
+                if index >= len(operation["candidates"]):
+                    slots[label] = None
+                elif schema_version == 2:
+                    slots[label] = _materialize_cohort([operation["candidates"][index]], state["slots"])
+                else:
+                    slots[label] = _materialize_candidate(operation["candidates"][index], state["slots"])
+        elif set(operation) == {"type", "slots"}:
+            if schema_version != 2:
+                raise ValidationError("SET_PROFILE slots require migrated runtime-state schema_version 2")
+            desired_slots = _object(operation["slots"], "operation.slots", {"A", "B"})
+            for label in ("A", "B"):
+                desired = desired_slots[label]
+                if desired is None:
+                    slots[label] = None
+                    continue
+                desired = _object(desired, f"operation.slots.{label}", set(desired))
+                if set(desired) == {"candidate"}:
+                    declarations = [desired["candidate"]]
+                elif set(desired) == {"members"}:
+                    declarations = desired["members"]
+                else:
+                    raise ValidationError(
+                        f"operation.slots.{label} requires exactly one of candidate or members"
+                    )
+                slots[label] = _materialize_cohort(declarations, state["slots"])
+        else:
+            raise ValidationError("SET_PROFILE requires exactly candidates or slots")
     elif operation_type == "PROMOTE_USER_PASSED_BATCH":
         if set(operation) != {"type", "authorization", "members"}:
             raise ValidationError(
@@ -768,9 +1073,10 @@ def plan_transition(
             for index, member in enumerate(accepted_members)
         }
         slot_units = [
-            state["slots"][label]["unit"]
+            member["unit"]
             for label in ("A", "B")
             if state["slots"][label] is not None
+            for member in _slot_members_unchecked(state["slots"][label])
         ]
         occupied_project_uuids = {unit["project_uuid"] for unit in slot_units}
         occupied_project_ids = {unit["project_id"].casefold() for unit in slot_units}
@@ -982,11 +1288,28 @@ def plan_transition(
             raise ValidationError("untested direct promotion must replace the same accepted project")
         for label in ("A", "B"):
             existing_slot = slots[label]
-            if existing_slot is None or existing_slot["unit"]["project_uuid"] != unit["project_uuid"]:
+            if existing_slot is None:
                 continue
-            if existing_slot["runtime_result"]["classification"] != "UNTESTED":
-                raise ValidationError("untested direct promotion cannot discard a recorded slot result")
-            slots[label] = None
+            matching_indexes = [
+                index
+                for index, slot_member in enumerate(_slot_members_unchecked(existing_slot))
+                if slot_member["unit"]["project_uuid"] == unit["project_uuid"]
+            ]
+            if not matching_indexes:
+                continue
+            if len(matching_indexes) != 1:
+                raise ValidationError("untested direct promotion found duplicate cohort project members")
+            slot_member = _slot_members_unchecked(existing_slot)[matching_indexes[0]]
+            if slot_member["runtime_result"]["classification"] != "UNTESTED":
+                raise ValidationError(
+                    "untested direct promotion cannot discard a recorded slot result for a cohort member"
+                )
+            if "members" not in existing_slot:
+                slots[label] = None
+            else:
+                del existing_slot["members"][matching_indexes[0]]
+                if not existing_slot["members"]:
+                    slots[label] = None
         byte_identical_reconciliation = _byte_composition(accepted) == _byte_composition(unit)
         if not byte_identical_reconciliation:
             members[indexes[0]] = {"unit": unit, "accepted_at": at}
@@ -1000,7 +1323,10 @@ def plan_transition(
         required_keys = {"type", "slot"}
         if operation_type == "RECORD_RESULT":
             required_keys.update({"classification", "evidence"})
-        if set(operation) != required_keys:
+            allowed_keys = required_keys | {"project_uuid"}
+        else:
+            allowed_keys = required_keys
+        if set(operation) not in (required_keys, allowed_keys):
             raise ValidationError(f"{operation_type} has invalid operation fields")
         label = operation["slot"]
         if label not in {"A", "B"}:
@@ -1021,47 +1347,152 @@ def plan_transition(
             classification = _enum(operation["classification"], "operation.classification", SLOT_RESULTS)
             if slot["deployment"]["state"] != "READY_TO_TEST_VERIFIED":
                 raise ValidationError("RECORD_RESULT requires READY_TO_TEST_VERIFIED")
-            slot["runtime_result"] = {
+            slot_members = _slot_members_unchecked(slot)
+            if "project_uuid" in operation:
+                project_uuid = _uuid(operation["project_uuid"], "operation.project_uuid")
+                matches = [
+                    member
+                    for member in slot_members
+                    if member["unit"]["project_uuid"] == project_uuid
+                ]
+                if len(matches) != 1:
+                    raise ValidationError("RECORD_RESULT project_uuid must name exactly one slot member")
+                result_member = matches[0]
+            elif len(slot_members) == 1:
+                result_member = slot_members[0]
+            else:
+                raise ValidationError("RECORD_RESULT requires project_uuid for a multi-member cohort")
+            recorded_result = {
                 "classification": classification,
                 "recorded_at": None if classification == "UNTESTED" else at,
                 "evidence": copy.deepcopy(operation["evidence"]),
             }
+            if "members" in slot:
+                result_member["runtime_result"] = recorded_result
+            else:
+                slot["runtime_result"] = recorded_result
         elif operation_type == "REMOVE_SLOT":
             slots[label] = None
         elif operation_type == "PROMOTE_SLOT":
-            if slot["deployment"]["state"] != "READY_TO_TEST_VERIFIED" or slot["runtime_result"]["classification"] != "PASS":
-                raise ValidationError("PROMOTE_SLOT requires an explicit READY_TO_TEST_VERIFIED PASS")
-            if slot.get("dependency_overrides"):
+            slot_members = _slot_members_unchecked(slot)
+            if slot["deployment"]["state"] != "READY_TO_TEST_VERIFIED" or any(
+                member["runtime_result"]["classification"] != "PASS"
+                for member in slot_members
+            ):
+                raise ValidationError(
+                    "PROMOTE_SLOT requires an explicit READY_TO_TEST_VERIFIED PASS for every cohort member"
+                )
+            if any(member.get("dependency_overrides") for member in slot_members):
                 raise ValidationError("PROMOTE_SLOT cannot promote temporary accepted dependency overrides")
-            if _timestamp(at, "transition timestamp") < _timestamp(slot["runtime_result"]["recorded_at"], "runtime result timestamp"):
-                raise ValidationError("promotion cannot precede the recorded PASS")
-            replacement_id = slot["replaces_accepted_deployment_id"]
-            member = {"unit": copy.deepcopy(slot["unit"]), "accepted_at": at}
+            for slot_member in slot_members:
+                if _timestamp(at, "transition timestamp") < _timestamp(
+                    slot_member["runtime_result"]["recorded_at"],
+                    "runtime result timestamp",
+                ):
+                    raise ValidationError("promotion cannot precede a recorded member PASS")
             members = next_state["accepted_baseline"]["members"]
-            byte_identical_reconciliation = False
-            if replacement_id is None:
-                members.append(member)
-            else:
-                indexes = [index for index, existing in enumerate(members) if existing["unit"]["deployment_id"] == replacement_id]
-                if len(indexes) != 1:
-                    raise ValidationError("accepted replacement target is not unique")
-                accepted = members[indexes[0]]["unit"]
-                byte_identical_reconciliation = _byte_composition(accepted) == _byte_composition(slot["unit"])
+            stack_revision_delta = 0
+            for slot_member in slot_members:
+                replacement_id = slot_member["replaces_accepted_deployment_id"]
+                accepted_member = {"unit": copy.deepcopy(slot_member["unit"]), "accepted_at": at}
+                byte_identical_reconciliation = False
+                if replacement_id is None:
+                    members.append(accepted_member)
+                else:
+                    indexes = [
+                        index
+                        for index, existing in enumerate(members)
+                        if existing["unit"]["deployment_id"] == replacement_id
+                    ]
+                    if len(indexes) != 1:
+                        raise ValidationError("accepted replacement target is not unique")
+                    accepted = members[indexes[0]]["unit"]
+                    byte_identical_reconciliation = (
+                        _byte_composition(accepted) == _byte_composition(slot_member["unit"])
+                    )
+                    if not byte_identical_reconciliation:
+                        members[indexes[0]] = accepted_member
                 if not byte_identical_reconciliation:
-                    members[indexes[0]] = member
-            if not byte_identical_reconciliation:
+                    stack_revision_delta += 1
+            if stack_revision_delta:
                 next_state["accepted_baseline"]["provenance"]["accepted_artifact_count"] = sum(
                     len(existing["unit"]["artifacts"]) for existing in members
                 )
                 if next_state["activation"] == "ACTIVE":
                     next_state["accepted_baseline"]["provenance"]["physical_disposition"] = "TRANSITIONED"
-                next_state["accepted_baseline"]["revision"] += 1
+                next_state["accepted_baseline"]["revision"] += stack_revision_delta
             slots[label] = None
 
     next_state["revision"] += 1
     next_state["updated_at"] = at
     validate_runtime_state(next_state, project_index)
     return next_state
+
+
+_PHYSICAL_MANAGER_AUTHORITY = object()
+
+
+def finalize_verified_profile_transition(
+    planned_state: dict[str, Any],
+    deployed_at: str,
+    ready_verified_at: str,
+    project_index: dict[str, str] | None = None,
+    *,
+    changed_slots: list[str] | tuple[str, ...] | set[str] | frozenset[str],
+    authority: object,
+) -> dict[str, Any]:
+    """Attach physical READY evidence to an already planned revision in memory.
+
+    The physical manager is the only caller allowed to hold the in-process
+    authority sentinel. It must also identify the exact slots changed by the
+    physical transaction; verification never rewrites an untouched slot.
+    Serialized operations cannot inject deployment evidence, and direct
+    repository commits remain disabled.
+    """
+
+    if authority is not _PHYSICAL_MANAGER_AUTHORITY:
+        raise ValidationError("READY evidence may only be finalized by the physical manager")
+    if (
+        isinstance(changed_slots, (str, bytes))
+        or not isinstance(changed_slots, (list, tuple, set, frozenset))
+        or not changed_slots
+    ):
+        raise ValidationError("verified profile finalization requires explicit changed slot labels")
+    labels: list[str] = []
+    for label in changed_slots:
+        if label not in {"A", "B"}:
+            raise ValidationError("changed slot labels must be A or B")
+        if label in labels:
+            raise ValidationError(f"duplicate changed slot label: {label}")
+        labels.append(label)
+    validate_runtime_state(planned_state, project_index)
+    if planned_state["schema_version"] != 2:
+        raise ValidationError("verified profile finalization requires runtime-state schema_version 2")
+    deployed_time = _timestamp(deployed_at, "physical deployment timestamp")
+    ready_time = _timestamp(ready_verified_at, "physical ready-verification timestamp")
+    if ready_time < deployed_time:
+        raise ValidationError("physical ready verification cannot precede deployment")
+    if ready_time > _timestamp(planned_state["updated_at"], "$.updated_at"):
+        raise ValidationError("planned state updated_at must include physical ready verification")
+
+    finalized = copy.deepcopy(planned_state)
+    changed = False
+    for label in labels:
+        slot = finalized["slots"][label]
+        if slot is None or slot["deployment"]["state"] == "READY_TO_TEST_VERIFIED":
+            continue
+        if slot["deployment"]["state"] not in {"NOT_DEPLOYED", "DEPLOYED"}:
+            raise ValidationError(f"slot {label} has unsupported pre-verification deployment state")
+        slot["deployment"] = {
+            "state": "READY_TO_TEST_VERIFIED",
+            "deployed_at": deployed_at,
+            "ready_verified_at": ready_verified_at,
+        }
+        changed = True
+    if not changed:
+        raise ValidationError("verified profile finalization found no planned slot awaiting verification")
+    validate_runtime_state(finalized, project_index)
+    return finalized
 
 
 def commit_state(

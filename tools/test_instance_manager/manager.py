@@ -17,16 +17,20 @@ import os
 import re
 import shutil
 import stat
+import subprocess
 import tempfile
 import uuid
 import zipfile
-from dataclasses import dataclass
+from dataclasses import dataclass, replace as dataclass_replace
 from datetime import datetime, timezone
 from pathlib import Path, PurePosixPath, PureWindowsPath
-from typing import Any, Callable, Iterable
+from typing import Any, Callable, Iterable, Sequence
 
 try:
     from ..runtime_slots import (
+        _PHYSICAL_MANAGER_AUTHORITY,
+        finalize_verified_profile_transition,
+        migrate_runtime_state,
         plan_transition,
         render_title_state,
         resolve_profile,
@@ -39,6 +43,9 @@ except ImportError:  # Direct execution from tools/test_instance_manager/.
 
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
     from runtime_slots import (  # type: ignore
+        _PHYSICAL_MANAGER_AUTHORITY,
+        finalize_verified_profile_transition,
+        migrate_runtime_state,
         plan_transition,
         render_title_state,
         resolve_profile,
@@ -59,6 +66,39 @@ FailureInjector = Callable[[str], None]
 
 class ManagerError(RuntimeError):
     """A physical preflight, ownership, serialization, or recovery failure."""
+
+
+def _slot_members(slot: dict[str, Any]) -> list[dict[str, Any]]:
+    """Return normalized member records while accepting a legacy one-unit slot."""
+
+    members = slot.get("members")
+    if isinstance(members, list):
+        return members
+    if isinstance(slot.get("unit"), dict):
+        member = {
+            "unit": slot["unit"],
+            "replaces_accepted_deployment_id": slot.get("replaces_accepted_deployment_id"),
+            "runtime_result": slot.get("runtime_result"),
+        }
+        if slot.get("dependency_overrides"):
+            member["dependency_overrides"] = slot["dependency_overrides"]
+        return [member]
+    raise ManagerError("occupied runtime slot has neither members nor a legacy unit")
+
+
+def _slot_physical_identity(slot: dict[str, Any] | None) -> Any:
+    """Return only the member composition which can change physical bytes."""
+
+    if slot is None:
+        return None
+    return [
+        {
+            "unit": copy.deepcopy(member["unit"]),
+            "replaces_accepted_deployment_id": member["replaces_accepted_deployment_id"],
+            "dependency_overrides": copy.deepcopy(member.get("dependency_overrides", [])),
+        }
+        for member in _slot_members(slot)
+    ]
 
 
 @dataclass(frozen=True)
@@ -193,6 +233,7 @@ class ManagerConfig:
 class ManagedArtifact:
     deployment_id: str
     artifact_id: str
+    project_uuid: str
     project_id: str
     filename: str
     sha256: str
@@ -201,6 +242,7 @@ class ManagedArtifact:
     relative_path: str
     active: bool
     source: dict[str, str]
+    expected_fabric_version: str | None = None
     retained_rollback: bool = False
 
     def ledger_record(self) -> dict[str, Any]:
@@ -232,6 +274,27 @@ class RetainedPredecessorMove:
 
 
 @dataclass(frozen=True)
+class FabricModDescriptor:
+    """Exact root Fabric descriptor for one enabled JAR."""
+
+    path: Path
+    relative_path: str
+    filename: str
+    primary_id: str
+    provides: tuple[str, ...]
+    version: str
+    depends: dict[str, tuple[str, ...]]
+    managed_project_uuid: str | None = None
+    managed_project_id: str | None = None
+    managed_deployment_id: str | None = None
+    managed_artifact_id: str | None = None
+
+    @property
+    def ownership_ids(self) -> tuple[str, ...]:
+        return (self.primary_id, *self.provides)
+
+
+@dataclass(frozen=True)
 class PhysicalPlan:
     mode: str
     current_state: dict[str, Any] | None
@@ -243,20 +306,143 @@ class PhysicalPlan:
     removals: tuple[Path, ...]
     unchanged: tuple[str, ...]
     title_projection: dict[str, Any]
+    dependency_resolution: dict[str, Any]
+    profile_use_preflight: dict[str, Any]
     batch_operation: dict[str, Any] | None
+    finalize_verified_profile: bool = False
+    transition_at: str | None = None
+    changed_slots: tuple[str, ...] = ()
 
     def summary(self, *, dry_run: bool) -> dict[str, Any]:
+        def slots_by_project(state: dict[str, Any] | None) -> dict[str, str]:
+            if state is None:
+                return {}
+            return {
+                member["unit"]["project_uuid"]: label
+                for label in ("A", "B")
+                if state["slots"][label] is not None
+                for member in _slot_members(state["slots"][label])
+            }
+
+        def slot_snapshot(
+            state: dict[str, Any] | None,
+            label: str,
+            *,
+            finalized_preview: bool = False,
+        ) -> dict[str, Any] | None:
+            if state is None or state["slots"][label] is None:
+                return None
+            slot = state["slots"][label]
+            return {
+                "deployment_state": (
+                    "READY_TO_TEST_VERIFIED"
+                    if finalized_preview
+                    else slot["deployment"]["state"]
+                ),
+                "members": [
+                    {
+                        "project_uuid": member["unit"]["project_uuid"],
+                        "project_id": member["unit"]["project_id"],
+                        "deployment_id": member["unit"]["deployment_id"],
+                        "version": member["unit"]["version"],
+                        "runtime_result": member["runtime_result"]["classification"],
+                        "replaces_accepted_deployment_id": member["replaces_accepted_deployment_id"],
+                        "dependency_overrides": copy.deepcopy(member.get("dependency_overrides", [])),
+                    }
+                    for member in _slot_members(slot)
+                ],
+            }
+
+        def slot_member_results(state: dict[str, Any] | None) -> dict[str, dict[str, Any]]:
+            if state is None:
+                return {}
+            result: dict[str, dict[str, Any]] = {}
+            for label in ("A", "B"):
+                slot = state["slots"][label]
+                if slot is None:
+                    continue
+                for member in _slot_members(slot):
+                    unit = member["unit"]
+                    result[unit["deployment_id"]] = {
+                        "slot": label,
+                        "project_uuid": unit["project_uuid"],
+                        "project_id": unit["project_id"],
+                        "deployment_id": unit["deployment_id"],
+                        "version": unit["version"],
+                        "runtime_result": copy.deepcopy(member["runtime_result"]),
+                    }
+            return result
+
+        current_slots = slots_by_project(self.current_state)
+        desired_slots = slots_by_project(self.desired_state)
+        projects = sorted(set(current_slots).union(desired_slots))
+        current_results = slot_member_results(self.current_state)
+        desired_results = slot_member_results(self.desired_state)
+        desired_accepted_deployments = {
+            member["unit"]["deployment_id"]
+            for member in self.desired_state["accepted_baseline"]["members"]
+        }
+        displaced_result_preimages: list[dict[str, Any]] = []
+        for deployment_id, record in current_results.items():
+            if deployment_id in desired_results:
+                continue
+            if deployment_id in desired_accepted_deployments:
+                disposition = "PROMOTED"
+            elif record["project_uuid"] in desired_slots:
+                disposition = "REPLACED"
+            else:
+                disposition = "REMOVED"
+            displaced_result_preimages.append(
+                {
+                    **copy.deepcopy(record),
+                    "disposition": disposition,
+                }
+            )
+        preserved_companion_results = [
+            {
+                "project_uuid": before["project_uuid"],
+                "project_id": before["project_id"],
+                "deployment_id": deployment_id,
+                "version": before["version"],
+                "before_slot": before["slot"],
+                "after_slot": desired_results[deployment_id]["slot"],
+                "runtime_result": copy.deepcopy(desired_results[deployment_id]["runtime_result"]),
+            }
+            for deployment_id, before in current_results.items()
+            if deployment_id in desired_results
+            and before["runtime_result"] == desired_results[deployment_id]["runtime_result"]
+        ]
+        deferred_final_digest = dry_run and self.finalize_verified_profile
+        title_projection = copy.deepcopy(self.title_projection)
+        if deferred_final_digest:
+            title_projection["state_digest"] = None
+            title_projection["state_digest_status"] = "DEFERRED_UNTIL_POST_DEPLOYMENT_VERIFICATION"
         return {
             "mode": self.mode,
             "dry_run": dry_run,
             "target_state_revision": self.desired_state["revision"],
-            "target_state_digest": state_digest(self.desired_state),
+            "target_state_digest": None if deferred_final_digest else state_digest(self.desired_state),
+            "preverification_state_digest": (
+                state_digest(self.desired_state) if deferred_final_digest else None
+            ),
+            "target_state_digest_status": (
+                "DEFERRED_UNTIL_POST_DEPLOYMENT_VERIFICATION"
+                if deferred_final_digest
+                else "FINAL"
+            ),
             "activation": self.desired_state["activation"],
             "writes": [
                 {
                     "path": action.relative_path,
                     "sha256": action.artifact.sha256,
                     "source": str(action.source),
+                    "project_uuid": action.artifact.project_uuid,
+                    "project_id": action.artifact.project_id,
+                    "deployment_id": action.artifact.deployment_id,
+                    "artifact_id": action.artifact.artifact_id,
+                    "primary_mod_id": action.artifact.mod_id,
+                    "ownership_mod_ids": list(action.artifact.ownership_mod_ids),
+                    "disposition": "ACTIVE" if action.artifact.active else "DISABLED",
                 }
                 for action in self.writes
             ],
@@ -269,8 +455,52 @@ class PhysicalPlan:
                 for move in self.retained_predecessor_moves
             ],
             "removals": [path.name for path in self.removals],
+            "removal_details": [
+                {
+                    "path": artifact.relative_path,
+                    "sha256": artifact.sha256,
+                    "project_uuid": artifact.project_uuid,
+                    "project_id": artifact.project_id,
+                    "deployment_id": artifact.deployment_id,
+                    "artifact_id": artifact.artifact_id,
+                    "ownership_mod_ids": list(artifact.ownership_mod_ids),
+                    "prior_disposition": "ACTIVE" if artifact.active else "DISABLED",
+                }
+                for path in self.removals
+                for artifact in self.current_artifacts
+                if os.path.normcase(str(path)).casefold()
+                == os.path.normcase(str(Path(artifact.relative_path))).casefold()
+                or path.name.casefold() == Path(artifact.relative_path).name.casefold()
+            ],
             "unchanged": list(self.unchanged),
             "managed_files": [artifact.ledger_record() for artifact in self.desired_artifacts],
+            "dependency_resolution": copy.deepcopy(self.dependency_resolution),
+            "profile_use_preflight": copy.deepcopy(self.profile_use_preflight),
+            "slot_changes": {
+                label: {
+                    "before": slot_snapshot(self.current_state, label),
+                    "after": slot_snapshot(
+                        self.desired_state,
+                        label,
+                        finalized_preview=(
+                            self.finalize_verified_profile and label in self.changed_slots
+                        ),
+                    ),
+                }
+                for label in ("A", "B")
+            },
+            "lifecycle_changes": [
+                {
+                    "project_uuid": project_uuid,
+                    "before": "TESTING" if project_uuid in current_slots else "ACTIVE",
+                    "after": "TESTING" if project_uuid in desired_slots else "ACTIVE",
+                    "before_slot": current_slots.get(project_uuid),
+                    "after_slot": desired_slots.get(project_uuid),
+                }
+                for project_uuid in projects
+            ],
+            "displaced_member_runtime_result_preimages": displaced_result_preimages,
+            "preserved_companion_runtime_results": preserved_companion_results,
             "retained_rollbacks": [
                 {
                     **artifact.ledger_record(),
@@ -283,7 +513,18 @@ class PhysicalPlan:
                 for artifact in self.desired_artifacts
                 if artifact.retained_rollback
             ],
-            "title_projection": copy.deepcopy(self.title_projection),
+            "title_projection": title_projection,
+            "finalization": (
+                {
+                    "mode": "AFTER_PHYSICAL_HASH_AND_DEPENDENCY_VERIFICATION",
+                    "target_deployment_state": "READY_TO_TEST_VERIFIED",
+                    "state_revision_delta": 1,
+                    "timestamp": self.transition_at,
+                    "changed_slots": list(self.changed_slots),
+                }
+                if self.finalize_verified_profile
+                else None
+            ),
         }
 
 
@@ -456,6 +697,33 @@ class PhysicalManager:
                 f"legacy V1 display marker must be retired before verification or transition: {self.legacy_marker_path}"
             )
 
+    def _assert_profile_not_in_use(self) -> dict[str, Any]:
+        """Fail closed when a Minecraft process names the dedicated profile."""
+
+        normalized_parts = {part.casefold() for part in self.target.parts}
+        if not {"modrinthapp", "profiles"}.issubset(normalized_parts):
+            # Isolated test fixtures deliberately use temporary directories;
+            # production configuration is always a Modrinth profile.
+            return {
+                "status": "NOT_APPLICABLE_NON_MODRINTH_FIXTURE",
+                "target": str(self.target),
+                "matching_processes": [],
+            }
+        matches = _windows_processes_using_profile(self.target)
+        if matches:
+            details = ", ".join(
+                f"{item['name']} (PID {item['pid']})" for item in matches
+            )
+            raise ManagerError(
+                "dedicated Minecraft profile is actively in use; physical mutation refused: "
+                f"{self.target}; matching processes: {details}"
+            )
+        return {
+            "status": "DEDICATED_PROFILE_NOT_IN_USE",
+            "target": str(self.target),
+            "matching_processes": [],
+        }
+
     def derive_inventory(self, state: dict[str, Any]) -> tuple[ManagedArtifact, ...]:
         """Resolve runtime-state mods and canonical disabled replacements."""
 
@@ -485,7 +753,25 @@ class PhysicalManager:
         for label in ("A", "B"):
             slot = state["slots"][label]
             if slot is not None:
-                artifacts.extend(self._unit_artifacts(slot["unit"], True, seen_paths))
+                for member in _slot_members(slot):
+                    unit = member["unit"]
+                    if state["schema_version"] == 2 and len(unit["artifacts"]) != 1:
+                        if slot["deployment"]["state"] == "READY_TO_TEST_VERIFIED":
+                            raise ManagerError(
+                                f"schema-v2 ready slot {label} member {unit['project_id']} must have exactly one "
+                                "artifact so its visible version can be bound to one embedded Fabric version"
+                            )
+                        expected_fabric_version = None
+                    else:
+                        expected_fabric_version = unit["version"] if state["schema_version"] == 2 else None
+                    artifacts.extend(
+                        self._unit_artifacts(
+                            unit,
+                            True,
+                            seen_paths,
+                            expected_fabric_version=expected_fabric_version,
+                        )
+                    )
 
         return tuple(artifacts)
 
@@ -499,6 +785,7 @@ class PhysicalManager:
         return ManagedArtifact(
             deployment_id=str(uuid.uuid5(uuid.NAMESPACE_URL, "mynx-title-marker-deployment:" + identity)),
             artifact_id=str(uuid.uuid5(uuid.NAMESPACE_URL, "mynx-title-marker-artifact:" + identity)),
+            project_uuid=str(uuid.uuid5(uuid.NAMESPACE_URL, "mynx-title-marker-project")),
             project_id="workbench-test-marker",
             filename=marker.filename,
             sha256=marker.sha256,
@@ -580,6 +867,7 @@ class PhysicalManager:
         active: bool,
         seen_paths: set[str],
         *,
+        expected_fabric_version: str | None = None,
         retained_rollback: bool = False,
     ) -> list[ManagedArtifact]:
         result: list[ManagedArtifact] = []
@@ -619,6 +907,7 @@ class PhysicalManager:
                 ManagedArtifact(
                     deployment_id=unit["deployment_id"],
                     artifact_id=raw["artifact_id"],
+                    project_uuid=unit["project_uuid"],
                     project_id=unit["project_id"],
                     filename=filename,
                     sha256=raw["sha256"].lower(),
@@ -627,6 +916,7 @@ class PhysicalManager:
                     relative_path=relative_path,
                     active=active,
                     source={"type": source["type"], "path": source["path"]},
+                    expected_fabric_version=expected_fabric_version,
                     retained_rollback=retained_rollback,
                 )
             )
@@ -685,18 +975,26 @@ class PhysicalManager:
         if actual_hash != artifact.sha256:
             raise ManagerError(f"SHA-256 mismatch for {path}: expected {artifact.sha256}, found {actual_hash}")
         declared_ids = frozenset(artifact.ownership_mod_ids)
-        ids = _fabric_mod_ids(path, strict_provides=len(declared_ids) > 1)
+        descriptor = _read_fabric_descriptor(
+            path,
+            strict_provides=len(declared_ids) > 1,
+            relative_path=artifact.relative_path,
+            artifact=artifact,
+        )
+        if (
+            artifact.expected_fabric_version is not None
+            and descriptor.version != artifact.expected_fabric_version
+        ):
+            raise ManagerError(
+                f"embedded Fabric version mismatch for {path}: expected slot member version "
+                f"{artifact.expected_fabric_version}, found {descriptor.version}"
+            )
+        ids = frozenset(descriptor.ownership_ids)
         if artifact.mod_id not in ids:
             raise ManagerError(
                 f"Fabric mod ownership mismatch for {path}: expected primary id {artifact.mod_id}, found {sorted(ids)}"
             )
-        primary = next(iter(ids))  # _fabric_mod_ids returns primary first only conceptually; re-read below for exactness.
-        try:
-            with zipfile.ZipFile(path) as archive:
-                manifest = json.loads(archive.read("fabric.mod.json").decode("utf-8"))
-            primary = manifest["id"]
-        except (OSError, KeyError, UnicodeDecodeError, json.JSONDecodeError, zipfile.BadZipFile) as exc:
-            raise ManagerError(f"cannot verify Fabric manifest in {path}: {exc}") from exc
+        primary = descriptor.primary_id
         if primary != artifact.mod_id:
             raise ManagerError(
                 f"Fabric primary mod id mismatch for {path}: expected {artifact.mod_id}, found {primary}"
@@ -711,6 +1009,276 @@ class PhysicalManager:
                 f"missing provided aliases {missing}, undeclared manifest ids {undeclared}"
             )
         return ids
+
+    def _planned_enabled_descriptors(
+        self,
+        current_artifacts: Sequence[ManagedArtifact],
+        desired_artifacts: Sequence[ManagedArtifact],
+    ) -> tuple[FabricModDescriptor, ...]:
+        """Build the exact proposed enabled-JAR graph without mutating the target."""
+
+        current_paths = {artifact.relative_path.casefold() for artifact in current_artifacts}
+        desired_active_paths = {
+            artifact.relative_path.casefold()
+            for artifact in desired_artifacts
+            if artifact.active
+        }
+        planned_disabled_adopted_sources = {
+            PurePosixPath(artifact.source["path"]).as_posix().casefold()
+            for artifact in desired_artifacts
+            if not artifact.active and artifact.source["type"] == "ADOPTED_TARGET"
+        }
+        current_by_artifact = {artifact.artifact_id: artifact for artifact in current_artifacts}
+        descriptors: list[FabricModDescriptor] = []
+        for artifact in desired_artifacts:
+            if not artifact.active:
+                continue
+            source: Path | None = None
+            prior = current_by_artifact.get(artifact.artifact_id)
+            if prior is not None and prior.sha256 == artifact.sha256:
+                prior_path = self._destination(prior)
+                if prior_path.exists():
+                    source = prior_path
+            if source is None:
+                source = self._source_path(artifact)
+            if not source.exists():
+                source = self._destination(artifact)
+            if not source.exists():
+                raise ManagerError(
+                    f"missing proposed artifact bytes for {artifact.project_id}/{artifact.filename}: {source}"
+                )
+            self._verify_artifact_file(source, artifact)
+            descriptors.append(
+                _read_fabric_descriptor(
+                    source,
+                    strict_provides=len(artifact.ownership_mod_ids) > 1,
+                    relative_path=artifact.relative_path,
+                    artifact=artifact,
+                )
+            )
+
+        try:
+            entries = tuple(self.mods.iterdir())
+        except OSError as exc:
+            raise ManagerError(f"cannot scan managed mods directory {self.mods}: {exc}") from exc
+        for path in entries:
+            if not path.is_file() or not path.name.casefold().endswith(".jar"):
+                continue
+            relative = PurePosixPath(self.config.mods_directory, path.name).as_posix()
+            normalized = relative.casefold()
+            if (
+                normalized in current_paths
+                or normalized in desired_active_paths
+                or normalized in planned_disabled_adopted_sources
+            ):
+                continue
+            if path.is_symlink():
+                raise ManagerError(f"mods inventory contains a symbolic link: {path}")
+            try:
+                descriptors.append(_read_fabric_descriptor(path, relative_path=relative))
+            except ManagerError as exc:
+                if "root fabric.mod.json" in str(exc) or "cannot read Fabric manifest" in str(exc):
+                    # Preserve foreign non-Fabric libraries exactly as the
+                    # inventory verifier does; they cannot own Fabric IDs.
+                    continue
+                raise
+        return tuple(descriptors)
+
+    def _physical_enabled_descriptors(
+        self,
+        desired_artifacts: Sequence[ManagedArtifact],
+    ) -> tuple[FabricModDescriptor, ...]:
+        """Read every physically enabled root Fabric descriptor after apply."""
+
+        managed_by_path = {
+            artifact.relative_path.casefold(): artifact
+            for artifact in desired_artifacts
+            if artifact.active
+        }
+        descriptors: list[FabricModDescriptor] = []
+        try:
+            entries = tuple(self.mods.iterdir())
+        except OSError as exc:
+            raise ManagerError(f"cannot scan managed mods directory {self.mods}: {exc}") from exc
+        for path in entries:
+            if not path.is_file() or not path.name.casefold().endswith(".jar"):
+                continue
+            if path.is_symlink():
+                raise ManagerError(f"mods inventory contains a symbolic link: {path}")
+            relative = PurePosixPath(self.config.mods_directory, path.name).as_posix()
+            artifact = managed_by_path.get(relative.casefold())
+            try:
+                descriptors.append(
+                    _read_fabric_descriptor(
+                        path,
+                        strict_provides=(artifact is not None and len(artifact.ownership_mod_ids) > 1),
+                        relative_path=relative,
+                        artifact=artifact,
+                    )
+                )
+            except ManagerError as exc:
+                if artifact is None and (
+                    "root fabric.mod.json" in str(exc) or "cannot read Fabric manifest" in str(exc)
+                ):
+                    continue
+                raise
+        return tuple(descriptors)
+
+    def _resolve_dependency_graph(
+        self,
+        descriptors: Sequence[FabricModDescriptor],
+        *,
+        managed_ownership_ids: set[str],
+        phase: str,
+    ) -> dict[str, Any]:
+        failure_phase = (
+            "before physical mutation"
+            if phase.startswith("PREFLIGHT") or phase == "TEST"
+            else "during post-deployment physical verification"
+        )
+        providers: dict[str, FabricModDescriptor] = {}
+        for descriptor in descriptors:
+            for ownership_id in descriptor.ownership_ids:
+                previous = providers.get(ownership_id)
+                if previous is not None:
+                    raise ManagerError(
+                        "duplicate enabled Fabric ownership "
+                        f"{ownership_id}: {previous.relative_path}@{previous.version} and "
+                        f"{descriptor.relative_path}@{descriptor.version}"
+                    )
+                providers[ownership_id] = descriptor
+
+        resolutions: list[dict[str, Any]] = []
+        for consumer in descriptors:
+            if consumer.managed_project_id is None:
+                continue
+            for dependency_id, predicates in sorted(consumer.depends.items()):
+                provider = providers.get(dependency_id)
+                base = {
+                    "consumer": {
+                        "project_uuid": consumer.managed_project_uuid,
+                        "project_id": consumer.managed_project_id,
+                        "deployment_id": consumer.managed_deployment_id,
+                        "artifact_id": consumer.managed_artifact_id,
+                        "filename": consumer.filename,
+                        "primary_id": consumer.primary_id,
+                        "version": consumer.version,
+                    },
+                    "dependency_id": dependency_id,
+                    "predicates": list(predicates),
+                }
+                if provider is None:
+                    if dependency_id in _TRUSTED_PLATFORM_DEPENDENCIES:
+                        resolutions.append(
+                            {
+                                **base,
+                                "classification": "TRUSTED_PLATFORM_PROVIDED",
+                                "satisfied": True,
+                                "provider": None,
+                            }
+                        )
+                        continue
+                    ownership = "managed" if dependency_id in managed_ownership_ids else "external"
+                    raise ManagerError(
+                        f"missing {ownership} Fabric dependency {failure_phase}: "
+                        f"{consumer.managed_project_id}@{consumer.version} requires {dependency_id} "
+                        f"({list(predicates)}); no exact enabled provider owns that ID. "
+                        "Supply the compatible provider/companion in the same atomic cohort operation "
+                        "or ensure its unmanaged provider JAR is enabled before planning"
+                    )
+
+                matched_predicates = [
+                    predicate
+                    for predicate in predicates
+                    if _fabric_predicate_matches(provider.version, predicate)
+                ]
+                provider_record = {
+                    "project_uuid": provider.managed_project_uuid,
+                    "project_id": provider.managed_project_id,
+                    "deployment_id": provider.managed_deployment_id,
+                    "artifact_id": provider.managed_artifact_id,
+                    "filename": provider.filename,
+                    "path": provider.relative_path,
+                    "primary_id": provider.primary_id,
+                    "provides": list(provider.provides),
+                    "version": provider.version,
+                }
+                if not matched_predicates:
+                    provider_label = provider.managed_project_id or provider.primary_id
+                    raise ManagerError(
+                        f"unsatisfied managed Fabric dependency {failure_phase}: "
+                        f"{consumer.managed_project_id}@{consumer.version} requires {dependency_id} "
+                        f"{list(predicates)}, but proposed {provider_label}@{provider.version} does not satisfy it; "
+                        "supply a compatible companion project/version in the same atomic cohort operation"
+                    )
+                resolutions.append(
+                    {
+                        **base,
+                        "classification": (
+                            "RESOLVED_MANAGED_PROVIDER"
+                            if provider.managed_project_id is not None
+                            else "RESOLVED_EXTERNAL_ENABLED_PROVIDER"
+                        ),
+                        "satisfied": True,
+                        "matched_predicates": matched_predicates,
+                        "provider": provider_record,
+                    }
+                )
+
+        enabled = [
+            {
+                "filename": descriptor.filename,
+                "path": descriptor.relative_path,
+                "primary_id": descriptor.primary_id,
+                "provides": list(descriptor.provides),
+                "embedded_version": descriptor.version,
+                "managed_project_uuid": descriptor.managed_project_uuid,
+                "managed_project_id": descriptor.managed_project_id,
+                "managed_deployment_id": descriptor.managed_deployment_id,
+                "managed_artifact_id": descriptor.managed_artifact_id,
+            }
+            for descriptor in sorted(descriptors, key=lambda item: item.relative_path.casefold())
+        ]
+        return {
+            "status": "FABRIC_DEPENDENCY_GRAPH_VERIFIED",
+            "phase": phase,
+            "enabled_fabric_jar_count": len(enabled),
+            "enabled_fabric_jars": enabled,
+            "resolutions": resolutions,
+        }
+
+    def _planned_dependency_report(
+        self,
+        current_artifacts: Sequence[ManagedArtifact],
+        desired_artifacts: Sequence[ManagedArtifact],
+    ) -> dict[str, Any]:
+        descriptors = self._planned_enabled_descriptors(current_artifacts, desired_artifacts)
+        managed_ids = {
+            mod_id
+            for artifact in (*tuple(current_artifacts), *tuple(desired_artifacts))
+            for mod_id in artifact.ownership_mod_ids
+        }
+        return self._resolve_dependency_graph(
+            descriptors,
+            managed_ownership_ids=managed_ids,
+            phase="PREFLIGHT_PROPOSED_ENABLED_SET",
+        )
+
+    def _physical_dependency_report(
+        self,
+        artifacts: Sequence[ManagedArtifact],
+    ) -> dict[str, Any]:
+        descriptors = self._physical_enabled_descriptors(artifacts)
+        managed_ids = {
+            mod_id
+            for artifact in artifacts
+            for mod_id in artifact.ownership_mod_ids
+        }
+        return self._resolve_dependency_graph(
+            descriptors,
+            managed_ownership_ids=managed_ids,
+            phase="POST_DEPLOYMENT_ENABLED_SET",
+        )
 
     def _verify_inventory(
         self,
@@ -860,11 +1428,74 @@ class PhysicalManager:
         if ledger["state_digest"] != state_digest(state) or ledger["runtime_state"] != state:
             raise ManagerError("repository runtime state and target-local V2 ledger have diverged")
 
+    def _current_release_comparison(
+        self,
+        unit: dict[str, Any],
+        *,
+        deployment_state: str,
+        statuses: dict[str, tuple[Path, dict[str, Any]]] | None,
+    ) -> dict[str, Any]:
+        status_entry = statuses.get(unit["project_uuid"]) if statuses is not None else None
+        if status_entry is None:
+            # Explicit identity catalogs are the documented test-only mode;
+            # the slot unit is the only available current release authority.
+            exact = True
+            current_release = {
+                "version": unit["version"],
+                "source_commit": unit["source_commit"],
+                "artifacts": [
+                    {
+                        "filename": artifact["filename"],
+                        "sha256": artifact["sha256"].lower(),
+                    }
+                    for artifact in unit["artifacts"]
+                ],
+                "identity_source": "EXPLICIT_TEST_CATALOG",
+            }
+        else:
+            _, manifest = status_entry
+            release = manifest["state"]["releases"]["current"]
+            artifact = release["artifact"]
+            current_release = {
+                "version": release["version"],
+                "source_commit": release["source_commit"],
+                "artifacts": [
+                    {
+                        "filename": artifact["filename"],
+                        "sha256": artifact["sha256"].lower(),
+                    }
+                ],
+                "identity_source": "CURRENT_MANIFEST",
+            }
+            slot_artifacts = [
+                {
+                    "filename": item["filename"],
+                    "sha256": item["sha256"].lower(),
+                }
+                for item in unit["artifacts"]
+            ]
+            exact = (
+                unit["source_commit"] == release["source_commit"]
+                and slot_artifacts == current_release["artifacts"]
+            )
+        if not exact:
+            comparison = "OLDER_RELEASE_DEPLOYED"
+        elif deployment_state == "NOT_DEPLOYED":
+            comparison = "CURRENT_RELEASE_NOT_DEPLOYED"
+        else:
+            comparison = "CURRENT_RELEASE_DEPLOYED"
+        return {
+            "classification": comparison,
+            "slot_matches_current_release": exact,
+            "current_release": current_release,
+        }
+
     def _physical_verification_report(
         self,
         state: dict[str, Any],
         artifacts: tuple[ManagedArtifact, ...],
         title_projection_evidence: dict[str, Any] | None,
+        dependency_resolution: dict[str, Any],
     ) -> dict[str, Any]:
         records: list[dict[str, Any]] = []
         for artifact in artifacts:
@@ -879,10 +1510,16 @@ class PhysicalManager:
                 {
                     "deployment_id": artifact.deployment_id,
                     "artifact_id": artifact.artifact_id,
+                    "project_uuid": artifact.project_uuid,
                     "project_id": artifact.project_id,
                     "filename": artifact.filename,
                     "path": artifact.relative_path,
                     "sha256": actual_sha256,
+                    "expected_fabric_version": artifact.expected_fabric_version,
+                    "embedded_fabric_version": _read_fabric_descriptor(
+                        path,
+                        strict_provides=len(artifact.ownership_mod_ids) > 1,
+                    ).version,
                     "disposition": "ACTIVE" if artifact.active else "DISABLED",
                 }
             )
@@ -907,24 +1544,52 @@ class PhysicalManager:
         }
         retained_records = [record for record in records if record["deployment_id"] in retained_deployments]
         title = self._render_title(state)
+        statuses = self._current_repository_statuses()
         slot_evidence: dict[str, dict[str, Any] | None] = {}
         for label in ("A", "B"):
             slot = state["slots"][label]
             if slot is None:
                 slot_evidence[label] = None
                 continue
-            unit = slot["unit"]
-            slot_evidence[label] = {
-                "deployment_id": unit["deployment_id"],
-                "project_uuid": unit["project_uuid"],
-                "project_id": unit["project_id"],
-                "project_display_name": title["slots"][label]["project_display_name"],
-                "version": unit["version"],
-                "canary": title["slots"][label]["canary"],
+            title_members = title["slots"][label].get("members", [])
+            title_by_uuid = {item["project_uuid"]: item for item in title_members}
+            members: list[dict[str, Any]] = []
+            for slot_member in _slot_members(slot):
+                unit = slot_member["unit"]
+                rendered = title_by_uuid.get(unit["project_uuid"], title["slots"][label])
+                member_artifacts = copy.deepcopy(records_by_deployment.get(unit["deployment_id"], []))
+                members.append(
+                    {
+                        "slot": label,
+                        "deployment_id": unit["deployment_id"],
+                        "project_uuid": unit["project_uuid"],
+                        "project_id": unit["project_id"],
+                        "project_display_name": rendered["project_display_name"],
+                        "version": unit["version"],
+                        "canary": rendered["canary"],
+                        "source_commit": unit["source_commit"],
+                        "deployment_state": slot["deployment"]["state"],
+                        "runtime_result": slot_member["runtime_result"]["classification"],
+                        "current_release_comparison": self._current_release_comparison(
+                            unit,
+                            deployment_state=slot["deployment"]["state"],
+                            statuses=statuses,
+                        ),
+                        "artifacts": member_artifacts,
+                    }
+                )
+            evidence = {
+                "cohort_member_count": len(members),
                 "deployment_state": slot["deployment"]["state"],
-                "runtime_result": slot["runtime_result"]["classification"],
-                "artifacts": copy.deepcopy(records_by_deployment.get(unit["deployment_id"], [])),
+                "deployed_at": slot["deployment"]["deployed_at"],
+                "ready_verified_at": slot["deployment"]["ready_verified_at"],
+                "members": members,
             }
+            if len(members) == 1:
+                # Preserve the V3 one-member receipt surface while making
+                # members authoritative for every slot.
+                evidence.update(members[0])
+            slot_evidence[label] = evidence
 
         return {
             "status": "PHYSICAL_STATE_VERIFIED",
@@ -952,6 +1617,7 @@ class PhysicalManager:
                 },
             },
             "slots": slot_evidence,
+            "fabric_dependency_graph": copy.deepcopy(dependency_resolution),
             "title_display": {
                 "status": "SYNCHRONIZED" if title_projection_evidence is not None else "LEGACY_MIGRATION_REQUIRED",
                 "projection": copy.deepcopy(title_projection_evidence),
@@ -973,8 +1639,9 @@ class PhysicalManager:
         self._assert_ledger_matches_repository(ledger, state)
         artifacts = self._managed_inventory_for_ledger(state, ledger)
         artifacts = self._verify_inventory(state, artifacts, prior_ledger=ledger)
+        dependency_resolution = self._physical_dependency_report(artifacts)
         projection = self._verify_title_projection(state) if ledger["schema_version"] == 3 else None
-        return self._physical_verification_report(state, artifacts, projection)
+        return self._physical_verification_report(state, artifacts, projection, dependency_resolution)
 
     def _current_repository_statuses(self) -> dict[str, tuple[Path, dict[str, Any]]] | None:
         """Reload the authoritative manifest catalog when production binding is enabled."""
@@ -1063,6 +1730,108 @@ class PhysicalManager:
                 repository_source=False,
             )
 
+    def _validate_deploy_profile_manifest_identities(
+        self,
+        operation: dict[str, Any],
+        *,
+        refresh: bool = False,
+    ) -> None:
+        """Bind every atomic cohort member to its current manifest release."""
+
+        if operation.get("type") != "DEPLOY_PROFILE":
+            return
+        statuses = self._current_repository_statuses() if refresh else self.repository_statuses
+        if statuses is None:
+            return
+        raw_slots = operation.get("slots")
+        if not isinstance(raw_slots, dict):
+            raise ManagerError("DEPLOY_PROFILE slots must be an object")
+        for label in ("A", "B"):
+            desired = raw_slots.get(label)
+            if desired is None:
+                continue
+            if not isinstance(desired, dict):
+                raise ManagerError(f"DEPLOY_PROFILE slot {label} must be an object or null")
+            if set(desired) == {"candidate"}:
+                declarations = [desired["candidate"]]
+            elif set(desired) == {"members"} and isinstance(desired["members"], list):
+                declarations = desired["members"]
+            else:
+                raise ManagerError(
+                    f"DEPLOY_PROFILE slot {label} requires exactly candidate or members"
+                )
+            for index, declaration in enumerate(declarations):
+                member_label = f"DEPLOY_PROFILE slot {label} member {index}"
+                if not isinstance(declaration, dict) or not isinstance(declaration.get("unit"), dict):
+                    raise ManagerError(f"{member_label} requires a unit")
+                unit = declaration["unit"]
+                project_uuid = unit.get("project_uuid")
+                status_entry = statuses.get(project_uuid)
+                if status_entry is None:
+                    raise ManagerError(
+                        f"{member_label} project UUID does not resolve to a current manifest: {project_uuid}"
+                    )
+                manifest_path, manifest = status_entry
+                identity = manifest["identity"]
+                if unit.get("project_id") != identity["project_id"]:
+                    raise ManagerError(
+                        f"{member_label} project_id does not match current manifest: "
+                        f"expected {identity['project_id']}, found {unit.get('project_id')}"
+                    )
+                if unit.get("project_identity_source") != "CURRENT_MANIFEST":
+                    raise ManagerError(f"{member_label} requires CURRENT_MANIFEST identity")
+                release = manifest["state"]["releases"]["current"]
+                release_artifact = release["artifact"]
+                raw_artifacts = unit.get("artifacts")
+                if not isinstance(raw_artifacts, list) or len(raw_artifacts) != 1:
+                    raise ManagerError(f"{member_label} requires exactly one current release artifact")
+                artifact = raw_artifacts[0]
+                expected = {
+                    "source_commit": release["source_commit"],
+                    "filename": release_artifact["filename"],
+                    "sha256": release_artifact["sha256"].lower(),
+                }
+                actual = {
+                    "source_commit": unit.get("source_commit"),
+                    "filename": artifact.get("filename"),
+                    "sha256": (
+                        artifact.get("sha256", "").lower()
+                        if isinstance(artifact.get("sha256"), str)
+                        else None
+                    ),
+                }
+                if actual != expected:
+                    raise ManagerError(
+                        f"{member_label} does not exactly match current manifest release identity: "
+                        f"expected {expected}, found {actual}"
+                    )
+                source = artifact.get("source")
+                if not isinstance(source, dict) or source.get("type") != "REPOSITORY":
+                    raise ManagerError(f"{member_label} must use its canonical repository/private build source")
+                relative = _safe_relative(
+                    source.get("path"),
+                    f"{member_label} source",
+                    allow_nested=True,
+                )
+                source_path = (self.config.repository_root / relative).resolve(strict=False)
+                project_root = manifest_path.parent.resolve(strict=False)
+                if not _is_within(source_path, project_root) or source_path.name.casefold() != str(
+                    artifact["filename"]
+                ).casefold():
+                    raise ManagerError(
+                        f"{member_label} source must stay inside its canonical project directory and end in "
+                        f"{artifact['filename']}"
+                    )
+
+    def _validate_operation_manifest_identities(
+        self,
+        operation: dict[str, Any],
+        *,
+        refresh: bool = False,
+    ) -> None:
+        self._validate_batch_manifest_identities(operation, refresh=refresh)
+        self._validate_deploy_profile_manifest_identities(operation, refresh=refresh)
+
     def _assert_unit_matches_manifest_release(
         self,
         unit: dict[str, Any],
@@ -1120,6 +1889,7 @@ class PhysicalManager:
 
     def adoption_plan(self, state: dict[str, Any] | None = None) -> PhysicalPlan:
         self._assert_no_transaction_residue()
+        profile_use_preflight = self._assert_profile_not_in_use()
         state = self.load_repository_state() if state is None else copy.deepcopy(state)
         try:
             validate_runtime_state(state, self.project_index)
@@ -1147,6 +1917,7 @@ class PhysicalManager:
         validate_runtime_state(active, self.project_index)
         desired_artifacts = self._desired_managed_inventory(active)
         writes, retained_moves, removals, unchanged = self._plan_delta(current_artifacts, desired_artifacts)
+        dependency_resolution = self._planned_dependency_report(current_artifacts, desired_artifacts)
         return PhysicalPlan(
             mode="ADOPT",
             current_state=state,
@@ -1158,6 +1929,8 @@ class PhysicalManager:
             removals=removals,
             unchanged=unchanged,
             title_projection=self._title_projection(active),
+            dependency_resolution=dependency_resolution,
+            profile_use_preflight=profile_use_preflight,
             batch_operation=None,
         )
 
@@ -1166,10 +1939,20 @@ class PhysicalManager:
 
         if dry_run:
             return self.adoption_plan().summary(dry_run=True)
+        self._assert_profile_not_in_use()
         with _ExclusiveTargetLock(self.lock_path):
             plan = self.adoption_plan()
-            self._commit_plan(plan, failure_injector=failure_injector)
-            return plan.summary(dry_run=False)
+            committed_state, dependency_resolution = self._commit_plan(
+                plan,
+                failure_injector=failure_injector,
+            )
+            committed_plan = dataclass_replace(
+                plan,
+                desired_state=committed_state,
+                title_projection=self._title_projection(committed_state),
+                dependency_resolution=dependency_resolution,
+            )
+            return committed_plan.summary(dry_run=False)
 
     def transition_plan(
         self,
@@ -1181,19 +1964,32 @@ class PhysicalManager:
     ) -> PhysicalPlan:
         self._assert_no_transaction_residue()
         self._assert_no_legacy_marker()
+        profile_use_preflight = self._assert_profile_not_in_use()
         if (operation is None) == (desired_state is None):
             raise ManagerError("provide exactly one of operation or desired_state")
         current = self.load_repository_state()
         ledger = self._read_ledger()
         self._assert_ledger_matches_repository(ledger, current)
         current_artifacts = self._managed_inventory_for_ledger(current, ledger)
+        finalize_verified_profile = False
 
         if operation is not None:
             if expected_revision is None or at is None:
                 raise ManagerError("operation transitions require expected_revision and at")
-            self._validate_batch_manifest_identities(operation, refresh=True)
+            self._validate_operation_manifest_identities(operation, refresh=True)
+            pure_operation = copy.deepcopy(operation)
+            planning_state = current
+            if operation.get("type") == "DEPLOY_PROFILE":
+                if set(operation) != {"type", "slots"}:
+                    raise ManagerError("DEPLOY_PROFILE requires exactly type and slots")
+                pure_operation = {"type": "SET_PROFILE", "slots": copy.deepcopy(operation["slots"])}
+                try:
+                    planning_state = migrate_runtime_state(current, self.project_index)
+                except ValidationError as exc:
+                    raise ManagerError(f"cannot migrate legacy runtime state for cohort deployment: {exc}") from exc
+                finalize_verified_profile = True
             try:
-                desired = plan_transition(current, expected_revision, operation, at, self.project_index)
+                desired = plan_transition(planning_state, expected_revision, pure_operation, at, self.project_index)
             except ValidationError as exc:
                 raise ManagerError(f"invalid runtime transition: {exc}") from exc
         else:
@@ -1209,6 +2005,16 @@ class PhysicalManager:
             self._assert_desired_is_pure_transition(current, desired)
 
         desired_artifacts = self._desired_managed_inventory(desired)
+        changed_slots = tuple(
+            label
+            for label in ("A", "B")
+            if _slot_physical_identity(current["slots"][label])
+            != _slot_physical_identity(desired["slots"][label])
+        )
+        if finalize_verified_profile and not any(
+            desired["slots"][label] is not None for label in changed_slots
+        ):
+            raise ManagerError("DEPLOY_PROFILE requires at least one changed occupied slot to verify")
         union_mod_ids = {
             mod_id
             for item in current_artifacts
@@ -1233,6 +2039,7 @@ class PhysicalManager:
             prior_ledger=ledger,
         )
         writes, retained_moves, removals, unchanged = self._plan_delta(current_artifacts, desired_artifacts)
+        dependency_resolution = self._planned_dependency_report(current_artifacts, desired_artifacts)
         return PhysicalPlan(
             mode="TRANSITION",
             current_state=current,
@@ -1244,51 +2051,85 @@ class PhysicalManager:
             removals=removals,
             unchanged=unchanged,
             title_projection=self._title_projection(desired),
+            dependency_resolution=dependency_resolution,
+            profile_use_preflight=profile_use_preflight,
             batch_operation=(
                 copy.deepcopy(operation)
-                if operation is not None and operation.get("type") == "PROMOTE_USER_PASSED_BATCH"
+                if operation is not None
+                and operation.get("type") in {"PROMOTE_USER_PASSED_BATCH", "DEPLOY_PROFILE"}
                 else None
             ),
+            finalize_verified_profile=finalize_verified_profile,
+            transition_at=at,
+            changed_slots=changed_slots,
         )
 
     def _assert_desired_is_pure_transition(self, current: dict[str, Any], desired: dict[str, Any]) -> None:
         """Prove that an externally planned next state is one legal pure transition."""
 
-        def declaration(slot: dict[str, Any]) -> dict[str, Any]:
+        def declaration(member: dict[str, Any]) -> dict[str, Any]:
             result = {
-                "unit": copy.deepcopy(slot["unit"]),
-                "replaces_accepted_deployment_id": slot["replaces_accepted_deployment_id"],
+                "unit": copy.deepcopy(member["unit"]),
+                "replaces_accepted_deployment_id": member["replaces_accepted_deployment_id"],
             }
-            if slot.get("dependency_overrides"):
-                result["dependency_overrides"] = copy.deepcopy(slot["dependency_overrides"])
+            if member.get("dependency_overrides"):
+                result["dependency_overrides"] = copy.deepcopy(member["dependency_overrides"])
             return result
+
+        def assignment(slot: dict[str, Any]) -> dict[str, Any]:
+            members = _slot_members(slot)
+            if len(members) == 1 and "unit" in slot:
+                return {"candidate": declaration(members[0])}
+            return {"members": [declaration(member) for member in members]}
 
         operations: list[dict[str, Any]] = []
         for label in ("A", "B"):
             desired_slot = desired["slots"][label]
             if desired_slot is not None:
-                operations.append({"type": "ASSIGN_SLOT", "candidate": declaration(desired_slot)})
-                operations.append({"type": "UPDATE_SLOT", "slot": label, "candidate": declaration(desired_slot)})
+                operations.append({"type": "ASSIGN_SLOT", **assignment(desired_slot)})
+                operations.append({"type": "UPDATE_SLOT", "slot": label, **assignment(desired_slot)})
             operations.extend(
                 {"type": operation_type, "slot": label}
                 for operation_type in ("MARK_DEPLOYED", "MARK_READY", "REMOVE_SLOT", "PROMOTE_SLOT")
             )
             if desired_slot is not None:
-                operations.append(
-                    {
+                for member in _slot_members(desired_slot):
+                    result_operation = {
                         "type": "RECORD_RESULT",
                         "slot": label,
-                        "classification": desired_slot["runtime_result"]["classification"],
-                        "evidence": copy.deepcopy(desired_slot["runtime_result"]["evidence"]),
+                        "classification": member["runtime_result"]["classification"],
+                        "evidence": copy.deepcopy(member["runtime_result"]["evidence"]),
                     }
-                )
+                    if len(_slot_members(desired_slot)) > 1:
+                        result_operation["project_uuid"] = member["unit"]["project_uuid"]
+                    operations.append(result_operation)
         if desired["slots"]["A"] is None and desired["slots"]["B"] is None:
             operations.append({"type": "SET_PROFILE", "candidates": []})
         elif desired["slots"]["A"] is not None:
-            candidates = [declaration(desired["slots"]["A"])]
-            if desired["slots"]["B"] is not None:
-                candidates.append(declaration(desired["slots"]["B"]))
-            operations.append({"type": "SET_PROFILE", "candidates": candidates})
+            if desired["schema_version"] == 1:
+                candidates = [declaration(_slot_members(desired["slots"]["A"])[0])]
+                if desired["slots"]["B"] is not None:
+                    candidates.append(declaration(_slot_members(desired["slots"]["B"])[0]))
+                operations.append({"type": "SET_PROFILE", "candidates": candidates})
+            else:
+                operations.append(
+                    {
+                        "type": "SET_PROFILE",
+                        "slots": {
+                            label: (
+                                {
+                                    "members": [
+                                        declaration(member)
+                                        for member in _slot_members(desired["slots"][label])
+                                    ]
+                                }
+                                if desired["slots"][label] is not None
+                                else None
+                            )
+                            for label in ("A", "B")
+                        },
+                    }
+                )
         operations.extend(
             {
                 "type": "REMOVE_ACCEPTED",
@@ -1419,6 +2260,7 @@ class PhysicalManager:
                 expected_revision=expected_revision,
                 at=at,
             ).summary(dry_run=True)
+        self._assert_profile_not_in_use()
         with _ExclusiveTargetLock(self.lock_path):
             plan = self.transition_plan(
                 operation=operation,
@@ -1426,8 +2268,17 @@ class PhysicalManager:
                 expected_revision=expected_revision,
                 at=at,
             )
-            self._commit_plan(plan, failure_injector=failure_injector)
-            return plan.summary(dry_run=False)
+            committed_state, dependency_resolution = self._commit_plan(
+                plan,
+                failure_injector=failure_injector,
+            )
+            committed_plan = dataclass_replace(
+                plan,
+                desired_state=committed_state,
+                title_projection=self._title_projection(committed_state),
+                dependency_resolution=dependency_resolution,
+            )
+            return committed_plan.summary(dry_run=False)
 
     def verify(self) -> dict[str, Any]:
         with _ExclusiveTargetLock(self.lock_path):
@@ -1491,8 +2342,14 @@ class PhysicalManager:
             result["physical_verification"] = self._verify_current_physical_state()
             return result
 
-    def _commit_plan(self, plan: PhysicalPlan, *, failure_injector: FailureInjector | None) -> None:
+    def _commit_plan(
+        self,
+        plan: PhysicalPlan,
+        *,
+        failure_injector: FailureInjector | None,
+    ) -> tuple[dict[str, Any], dict[str, Any]]:
         injector = failure_injector or (lambda _stage: None)
+        self._assert_profile_not_in_use()
         transaction = self.target / f".mynx-runtime-v2-transaction-{uuid.uuid4()}"
         _assert_no_reparse_components(transaction, "transaction backup", root=self.target)
         self._assert_target_containment(transaction.resolve(strict=False), "transaction backup")
@@ -1514,6 +2371,8 @@ class PhysicalManager:
         state_written = False
         committed = False
         preserve_transaction = False
+        committed_state = plan.desired_state
+        committed_dependency_resolution = plan.dependency_resolution
         try:
             transaction.mkdir(exist_ok=False)
             target_backup = transaction / "target"
@@ -1567,8 +2426,6 @@ class PhysicalManager:
                 action.destination.parent.mkdir(parents=False, exist_ok=True)
                 _atomic_copy(staged[action.destination], action.destination)
                 injector(f"after_write_{index + 1}")
-            _atomic_write_json(self.title_projection_path, plan.title_projection)
-            injector("after_title_projection_write")
             injector("after_physical_apply")
 
             self._verify_inventory(
@@ -1580,23 +2437,41 @@ class PhysicalManager:
                     for mod_id in item.ownership_mod_ids
                 },
             )
-            self._verify_title_projection(plan.desired_state)
+            committed_dependency_resolution = self._physical_dependency_report(plan.desired_artifacts)
+            if plan.finalize_verified_profile:
+                if plan.transition_at is None:
+                    raise ManagerError("verified profile finalization requires a transition timestamp")
+                try:
+                    committed_state = finalize_verified_profile_transition(
+                        plan.desired_state,
+                        plan.transition_at,
+                        plan.transition_at,
+                        self.project_index,
+                        changed_slots=plan.changed_slots,
+                        authority=_PHYSICAL_MANAGER_AUTHORITY,
+                    )
+                except ValidationError as exc:
+                    raise ManagerError(f"cannot finalize physically verified profile state: {exc}") from exc
+            final_title_projection = self._title_projection(committed_state)
+            _atomic_write_json(self.title_projection_path, final_title_projection)
+            injector("after_title_projection_write")
+            self._verify_title_projection(committed_state)
             injector("after_physical_verify")
 
             # Re-read batch-bound manifest releases and recheck the runtime-state
             # compare-and-swap source immediately before committing either
             # ledger. The target lock serializes all manager writers.
             if plan.batch_operation is not None:
-                self._validate_batch_manifest_identities(plan.batch_operation, refresh=True)
+                self._validate_operation_manifest_identities(plan.batch_operation, refresh=True)
             live = self.load_repository_state()
             if live != plan.current_state:
                 raise ManagerError("repository runtime state changed during physical transition")
 
-            ledger = self._ledger(plan.desired_state, plan.desired_artifacts)
+            ledger = self._ledger(committed_state, plan.desired_artifacts)
             _atomic_write_json(self.ledger_path, ledger)
             ledger_written = True
             injector("after_ledger_write")
-            _atomic_write_json(self.config.runtime_state, plan.desired_state)
+            _atomic_write_json(self.config.runtime_state, committed_state)
             state_written = True
             injector("after_state_write")
 
@@ -1604,6 +2479,7 @@ class PhysicalManager:
             final_ledger = self._read_ledger()
             self._assert_ledger_matches_repository(final_ledger, final_state)
             self._verify_inventory(final_state, plan.desired_artifacts, prior_ledger=final_ledger)
+            committed_dependency_resolution = self._physical_dependency_report(plan.desired_artifacts)
             self._verify_title_projection(final_state)
             injector("after_post_verify")
             committed = True
@@ -1637,6 +2513,7 @@ class PhysicalManager:
                 except OSError:
                     if committed:
                         raise ManagerError(f"transition committed but transaction backup cleanup failed: {transaction}")
+        return committed_state, committed_dependency_resolution
 
 
 def _configured_path(base: Path, value: Any, label: str) -> Path:
@@ -1723,6 +2600,64 @@ def _assert_no_reparse_components(path: Path, label: str, *, root: Path | None =
             current /= relative_parts[index]
 
 
+def _windows_processes_using_profile(profile: Path) -> list[dict[str, Any]]:
+    """Return process evidence whose command line contains the exact profile path."""
+
+    if os.name != "nt":
+        return []
+    script = (
+        "Get-CimInstance Win32_Process | "
+        "Select-Object ProcessId,Name,ExecutablePath,CommandLine | "
+        "ConvertTo-Json -Compress -Depth 3"
+    )
+    creation_flags = getattr(subprocess, "CREATE_NO_WINDOW", 0)
+    try:
+        completed = subprocess.run(
+            ["powershell.exe", "-NoLogo", "-NoProfile", "-NonInteractive", "-Command", script],
+            check=False,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            timeout=15,
+            creationflags=creation_flags,
+        )
+    except (OSError, subprocess.SubprocessError) as exc:
+        raise ManagerError(f"cannot prove dedicated profile is inactive from Windows process state: {exc}") from exc
+    if completed.returncode != 0:
+        detail = (completed.stderr or completed.stdout).strip()
+        raise ManagerError(
+            "cannot prove dedicated profile is inactive from Windows process state"
+            + (f": {detail}" if detail else "")
+        )
+    try:
+        raw = json.loads(completed.stdout) if completed.stdout.strip() else []
+    except json.JSONDecodeError as exc:
+        raise ManagerError("cannot parse Windows process evidence for dedicated profile use") from exc
+    records = raw if isinstance(raw, list) else [raw]
+    target = os.path.normcase(str(profile.resolve(strict=False))).casefold()
+    matches: list[dict[str, Any]] = []
+    for record in records:
+        if not isinstance(record, dict):
+            continue
+        command_line = record.get("CommandLine")
+        process_id = record.get("ProcessId")
+        if not isinstance(command_line, str) or target not in os.path.normcase(command_line).casefold():
+            continue
+        if process_id == os.getpid():
+            continue
+        matches.append(
+            {
+                "pid": process_id,
+                "name": record.get("Name") or "unknown process",
+                "executable_path": record.get("ExecutablePath"),
+                "command_line": command_line,
+            }
+        )
+    matches.sort(key=lambda item: (str(item["name"]).casefold(), int(item["pid"] or 0)))
+    return matches
+
+
 def _sha256(path: Path) -> str:
     digest = hashlib.sha256()
     try:
@@ -1738,7 +2673,207 @@ def _utc_now() -> str:
     return datetime.now(timezone.utc).isoformat(timespec="microseconds").replace("+00:00", "Z")
 
 
-def _fabric_mod_ids(path: Path, *, strict_provides: bool = False) -> frozenset[str]:
+@dataclass(frozen=True)
+class _FabricSemanticVersion:
+    components: tuple[int | None, ...]
+    prerelease: str | None
+    build: str | None
+
+
+_FABRIC_PRERELEASE_RE = re.compile(r"(?:|[-0-9A-Za-z]+(?:\.[-0-9A-Za-z]+)*)$")
+_FABRIC_PRERELEASE_INTEGER_RE = re.compile(r"(?:0|[1-9][0-9]*)$")
+_FABRIC_OPERATORS = (">=", "<=", ">", "<", "=", "~", "^")
+_TRUSTED_PLATFORM_DEPENDENCIES = frozenset({"java", "minecraft", "fabricloader"})
+
+
+def _parse_fabric_semantic_version(value: str, *, store_wildcards: bool) -> _FabricSemanticVersion | None:
+    """Parse Fabric Loader's SemanticVersionImpl superset, or return None."""
+
+    if not isinstance(value, str) or not value:
+        return None
+    core_and_prerelease, separator, build = value.partition("+")
+    build_value = build if separator else None
+    core, prerelease_separator, prerelease = core_and_prerelease.partition("-")
+    prerelease_value = prerelease if prerelease_separator else None
+    if prerelease_value is not None and _FABRIC_PRERELEASE_RE.fullmatch(prerelease_value) is None:
+        return None
+    if core.startswith(".") or core.endswith("."):
+        return None
+    raw_components = core.split(".")
+    if not raw_components or any(component == "" for component in raw_components):
+        return None
+    components: list[int | None] = []
+    first_wildcard: int | None = None
+    for index, component in enumerate(raw_components):
+        if store_wildcards and component in {"x", "X", "*"}:
+            if prerelease_value is not None:
+                return None
+            if index == 0:
+                return None
+            if first_wildcard is None:
+                first_wildcard = index
+            components.append(None)
+            continue
+        if first_wildcard is not None or not re.fullmatch(r"[0-9]+", component):
+            return None
+        try:
+            parsed = int(component)
+        except ValueError:
+            return None
+        if parsed > 2_147_483_647:
+            return None
+        components.append(parsed)
+    if first_wildcard is not None:
+        components = components[: first_wildcard + 1]
+    return _FabricSemanticVersion(tuple(components), prerelease_value, build_value)
+
+
+def _fabric_component(version: _FabricSemanticVersion, index: int) -> int | None:
+    if index < len(version.components):
+        return version.components[index]
+    return None if version.components[-1] is None else 0
+
+
+def _compare_fabric_semantic_versions(left: _FabricSemanticVersion, right: _FabricSemanticVersion) -> int:
+    for index in range(max(len(left.components), len(right.components))):
+        left_component = _fabric_component(left, index)
+        right_component = _fabric_component(right, index)
+        if left_component is None or right_component is None:
+            continue
+        if left_component != right_component:
+            return -1 if left_component < right_component else 1
+
+    left_pre = left.prerelease
+    right_pre = right.prerelease
+    if left_pre is None and right_pre is None:
+        return 0
+    if left_pre is None:
+        return 0 if any(component is None for component in left.components) else 1
+    if right_pre is None:
+        return 0 if any(component is None for component in right.components) else -1
+    left_parts = left_pre.split(".")
+    right_parts = right_pre.split(".")
+    for index in range(max(len(left_parts), len(right_parts))):
+        if index >= len(left_parts):
+            return -1
+        if index >= len(right_parts):
+            return 1
+        left_part = left_parts[index]
+        right_part = right_parts[index]
+        left_numeric = _FABRIC_PRERELEASE_INTEGER_RE.fullmatch(left_part) is not None
+        right_numeric = _FABRIC_PRERELEASE_INTEGER_RE.fullmatch(right_part) is not None
+        if left_numeric and right_numeric and len(left_part) != len(right_part):
+            return -1 if len(left_part) < len(right_part) else 1
+        if left_numeric != right_numeric:
+            return -1 if left_numeric else 1
+        if left_part != right_part:
+            return -1 if left_part < right_part else 1
+    return 0
+
+
+def _fabric_predicate_matches(version: str, predicate: str) -> bool:
+    """Evaluate one Fabric Loader VersionPredicate string.
+
+    Space-delimited terms are ANDed. Metadata arrays are handled by the graph
+    resolver as ORs, matching ModDependencyImpl.
+    """
+
+    actual_semantic = _parse_fabric_semantic_version(version, store_wildcards=False)
+    for raw_term in predicate.split(" "):
+        term = raw_term.strip()
+        if not term or term == "*":
+            continue
+        operator = "="
+        for candidate in _FABRIC_OPERATORS:
+            if term.startswith(candidate):
+                operator = candidate
+                term = term[len(candidate) :]
+                break
+        if not term:
+            raise ManagerError(f"invalid Fabric version predicate {predicate!r}: empty reference version")
+        reference_semantic = _parse_fabric_semantic_version(term, store_wildcards=True)
+        if reference_semantic is None:
+            if operator in {">", "<"}:
+                raise ManagerError(
+                    f"invalid Fabric version predicate {predicate!r}: exclusive ranges require semantic versions"
+                )
+            if version != term:
+                return False
+            continue
+
+        if any(component is None for component in reference_semantic.components):
+            if operator != "=":
+                raise ManagerError(
+                    f"invalid Fabric version predicate {predicate!r}: wildcard ranges require equality or no operator"
+                )
+            component_count = len(reference_semantic.components)
+            concrete_components = tuple(
+                component for component in reference_semantic.components[:-1] if component is not None
+            )
+            reference_semantic = _FabricSemanticVersion(
+                concrete_components,
+                "",
+                reference_semantic.build,
+            )
+            if component_count == 2:
+                operator = "^"
+            elif component_count == 3:
+                operator = "~"
+            else:
+                # Fabric Loader represents a.b.c.x (and any longer X-range)
+                # as >=a.b.c- and <a.b.(c+1)-. Keep this explicit instead of
+                # approximating it with the two/three-component shorthands.
+                if actual_semantic is None:
+                    return False
+                if not concrete_components or concrete_components[-1] == 2_147_483_647:
+                    raise ManagerError(
+                        f"invalid Fabric version predicate {predicate!r}: wildcard upper bound overflows"
+                    )
+                upper_components = (*concrete_components[:-1], concrete_components[-1] + 1)
+                upper = _FabricSemanticVersion(upper_components, "", None)
+                if (
+                    _compare_fabric_semantic_versions(actual_semantic, reference_semantic) < 0
+                    or _compare_fabric_semantic_versions(actual_semantic, upper) >= 0
+                ):
+                    return False
+                continue
+
+        if actual_semantic is None:
+            # Fabric treats non-semantic versions as exact-only for inclusive
+            # operators and never matches them against a semantic reference.
+            return False
+        comparison = _compare_fabric_semantic_versions(actual_semantic, reference_semantic)
+        if operator == "=" and comparison != 0:
+            return False
+        if operator == ">=" and comparison < 0:
+            return False
+        if operator == "<=" and comparison > 0:
+            return False
+        if operator == ">" and comparison <= 0:
+            return False
+        if operator == "<" and comparison >= 0:
+            return False
+        if operator == "~" and not (
+            comparison >= 0
+            and _fabric_component(actual_semantic, 0) == _fabric_component(reference_semantic, 0)
+            and _fabric_component(actual_semantic, 1) == _fabric_component(reference_semantic, 1)
+        ):
+            return False
+        if operator == "^" and not (
+            comparison >= 0
+            and _fabric_component(actual_semantic, 0) == _fabric_component(reference_semantic, 0)
+        ):
+            return False
+    return True
+
+
+def _read_fabric_descriptor(
+    path: Path,
+    *,
+    strict_provides: bool = False,
+    relative_path: str | None = None,
+    artifact: ManagedArtifact | None = None,
+) -> FabricModDescriptor:
     try:
         with zipfile.ZipFile(path) as archive:
             matches = [item for item in archive.infolist() if item.filename == "fabric.mod.json"]
@@ -1751,33 +2886,75 @@ def _fabric_mod_ids(path: Path, *, strict_provides: bool = False) -> frozenset[s
         raise
     except (OSError, UnicodeDecodeError, json.JSONDecodeError, zipfile.BadZipFile) as exc:
         raise ManagerError(f"cannot read Fabric manifest from {path}: {exc}") from exc
-    if not isinstance(manifest, dict) or not isinstance(manifest.get("id"), str) or not manifest["id"]:
+    if not isinstance(manifest, dict):
+        raise ManagerError(f"fabric.mod.json in {path} must be an object")
+    primary_id = manifest.get("id")
+    version = manifest.get("version")
+    if not isinstance(primary_id, str) or not primary_id:
         raise ManagerError(f"fabric.mod.json in {path} has no valid id")
-    identifiers = {manifest["id"]}
-    provides = manifest.get("provides", [])
-    if strict_provides:
-        if not isinstance(provides, list):
-            raise ManagerError(f"fabric.mod.json provides in {path} must be an array")
-        seen_provides: set[str] = set()
-        for index, item in enumerate(provides):
+    if not isinstance(version, str) or not version:
+        raise ManagerError(f"fabric.mod.json in {path} has no valid version")
+    provides_value = manifest.get("provides", [])
+    provides: list[str] = []
+    if strict_provides and not isinstance(provides_value, list):
+        raise ManagerError(f"fabric.mod.json provides in {path} must be an array")
+    if isinstance(provides_value, list):
+        seen: set[str] = set()
+        for index, item in enumerate(provides_value):
             if not isinstance(item, str) or not item:
-                raise ManagerError(
-                    f"fabric.mod.json provides[{index}] in {path} must be a non-empty string"
-                )
-            if item == manifest["id"]:
-                raise ManagerError(
-                    f"fabric.mod.json provides in {path} must not repeat primary id {item}"
-                )
-            if item in seen_provides:
-                raise ManagerError(
-                    f"fabric.mod.json provides in {path} contains duplicate alias {item}"
-                )
-            seen_provides.add(item)
-        identifiers.update(seen_provides)
-        return frozenset(identifiers)
-    if isinstance(provides, list):
-        identifiers.update(item for item in provides if isinstance(item, str) and item)
-    return frozenset(identifiers)
+                if strict_provides:
+                    raise ManagerError(
+                        f"fabric.mod.json provides[{index}] in {path} must be a non-empty string"
+                    )
+                continue
+            if item == primary_id:
+                raise ManagerError(f"fabric.mod.json provides in {path} must not repeat primary id {item}")
+            if item in seen:
+                raise ManagerError(f"fabric.mod.json provides in {path} contains duplicate alias {item}")
+            seen.add(item)
+            provides.append(item)
+
+    depends_value = manifest.get("depends", {})
+    if not isinstance(depends_value, dict):
+        raise ManagerError(f"fabric.mod.json depends in {path} must be an object")
+    depends: dict[str, tuple[str, ...]] = {}
+    for dependency_id, raw_predicates in depends_value.items():
+        if not isinstance(dependency_id, str) or not dependency_id:
+            raise ManagerError(f"fabric.mod.json depends in {path} has an invalid dependency id")
+        if isinstance(raw_predicates, str):
+            predicates = (raw_predicates,)
+        elif isinstance(raw_predicates, list) and raw_predicates and all(
+            isinstance(item, str) for item in raw_predicates
+        ):
+            predicates = tuple(raw_predicates)
+        else:
+            raise ManagerError(
+                f"fabric.mod.json dependency {dependency_id!r} in {path} must be a string or nonempty string array"
+            )
+        # Parse every predicate even when no matching provider is currently
+        # visible; malformed Loader metadata is never silently accepted.
+        for predicate in predicates:
+            _fabric_predicate_matches("0.0.0", predicate)
+        depends[dependency_id] = predicates
+
+    return FabricModDescriptor(
+        path=path,
+        relative_path=relative_path or path.name,
+        filename=path.name.removesuffix(".disabled"),
+        primary_id=primary_id,
+        provides=tuple(provides),
+        version=version,
+        depends=depends,
+        managed_project_uuid=artifact.project_uuid if artifact is not None else None,
+        managed_project_id=artifact.project_id if artifact is not None else None,
+        managed_deployment_id=artifact.deployment_id if artifact is not None else None,
+        managed_artifact_id=artifact.artifact_id if artifact is not None else None,
+    )
+
+
+def _fabric_mod_ids(path: Path, *, strict_provides: bool = False) -> frozenset[str]:
+    descriptor = _read_fabric_descriptor(path, strict_provides=strict_provides)
+    return frozenset(descriptor.ownership_ids)
 
 
 def _atomic_copy(source: Path, destination: Path) -> None:

@@ -8,7 +8,10 @@ permanently rejected before access.
 
 The tracked runtime contract contains the exact frozen accepted baseline (23
 project units / 26 artifacts), fixed independent Slots A and B, and exact
-per-slot deployment/runtime evidence. The current accepted composition is
+shared slot deployment evidence plus independent per-member runtime evidence.
+An occupied slot is a cohort of one or more current-manifest project units; a
+one-member cohort is the lossless successor to the former one-project slot.
+The current accepted composition is
 human-readable **Stack v1**: `accepted_baseline.revision` is the sole canonical
 Stack number, so no parallel stack list or hand-maintained title value exists.
 Those JSON values are expected-state metadata, not physical evidence and not
@@ -21,6 +24,68 @@ slot while preserving the exact accepted member/artifact identity and Stack
 number.
 Assignments, candidate replacements, slot clearing, readiness/result recording,
 verification, and display refreshes never increment the Stack number.
+
+## Atomic slot cohorts and Fabric dependencies
+
+Schema V2 represents an occupied slot as `members[]` plus one shared
+`deployment` record. Every member retains its project/deployment/artifact UUIDs,
+version, source checkpoint, accepted-predecessor replacement, optional accepted
+dependency overrides, and independent runtime result. Slot assignment,
+replacement, clearing, staging, filesystem writes, rollback, ledger/state
+commit, and title projection are atomic for the full cohort. Slot A and Slot B
+remain independent.
+
+`DEPLOY_PROFILE` is the physical-manager-only whole-profile operation. Its
+`slots` object declares both A and B, with each occupied slot supplying either a
+legacy `candidate` or a nonempty `members` array. It deterministically migrates
+legacy schema V1 state, plans one next revision through `SET_PROFILE`, stages
+every cohort artifact, verifies the proposed dependency graph, applies the
+entire filesystem transaction, and verifies hashes and the physical enabled
+graph. Only then does the in-process physical-manager authority stamp every new
+occupied slot `READY_TO_TEST_VERIFIED` in that same next revision. No public
+serialized state operation can manufacture that readiness evidence. Any
+failure restores every cohort member, both slot states, the title projection,
+ledger, and repository state to the exact preimage.
+
+Every `DEPLOY_PROFILE` member is bound before staging to its authoritative
+current manifest UUID/ID, source checkpoint, artifact filename, and SHA-256.
+Because the operation admits exactly one current-release artifact per member,
+the member's canonical runtime `version` must also equal that JAR's root
+`fabric.mod.json` version. Preflight rejects a mismatch before mutation, and
+post-deployment verification repeats the same expected/embedded comparison
+before readiness. A schema-V2 ready slot cannot silently use a multi-artifact
+member whose distinct embedded versions cannot be represented by one member
+version.
+Repository sources must stay inside that project's directory, including the
+established ignored private-build subtree. The manager reloads those manifests
+after physical verification and before state/ledger commit, so concurrent
+candidate drift triggers full rollback.
+
+`RECORD_RESULT` requires `project_uuid` for a multi-member cohort and updates
+only that member. Shared deployment readiness never copies a `PASS`, `FAIL`, or
+`INCONCLUSIVE` classification between members. `PROMOTE_SLOT` requires an
+independent explicit `PASS` for every member, rejects temporary dependency
+overrides, and promotes all members atomically; removal likewise clears the
+whole cohort and restores its accepted predecessors/dependencies together.
+
+Preflight and verification read exactly one root `fabric.mod.json` from every
+enabled Fabric JAR. They record primary ID, `provides` aliases, embedded
+version, and hard `depends` predicates. Provider ownership must be unique.
+Fabric predicate evaluation follows Loader semantics: predicate-array entries
+are OR alternatives, space-delimited terms inside one predicate are ANDed, and
+semantic/prerelease/wildcard ordering follows Fabric Loader. A present provider
+must satisfy its predicate. A missing ID known to manager ownership fails and
+names the companion that must be supplied in the same cohort operation.
+Only Fabric's virtual platform IDs (`java`, `minecraft`, `fabricloader`) are
+accepted without an enabled root provider JAR and are explicitly classified in
+the receipt. This JAR-graph check does not claim an exact version attestation
+for those launcher/runtime virtual providers; its exact-version guarantee
+applies to root descriptors from enabled managed and unmanaged JARs. A
+physically present unmanaged provider is accepted and its exact
+path/version is recorded, but a missing external or managed hard dependency
+fails closed. Post-deployment verification repeats the graph from physical
+enabled bytes; readiness is never committed unless both hash inventory and
+graph report `VERIFIED`.
 
 `PROMOTE_UNTESTED_CANDIDATE` is the narrow exception for an explicitly
 user-approved successor that must enter the accepted baseline without claiming
@@ -97,9 +162,13 @@ may emit `PHYSICAL_STATE_VERIFIED`: the normal `verify` command, or the same
 mandatory scan embedded before and after legacy-marker retirement. It
 independently checks every managed physical path, active/disabled disposition,
 SHA-256, Fabric ownership, and absence of superseded enabled artifacts. Its
-receipt names the exact slot projects, versions, physical artifact paths,
-hashes and dispositions, plus accepted-baseline counts and deterministic
-managed-inventory digests.
+receipt enumerates every slot cohort member with project name/UUID, deployment
+UUID, canonical version, source checkpoint, independent runtime result,
+artifact UUID/path/hash/disposition, and embedded Fabric version. It also
+reports dependency-provider resolution and one explicit release comparison per
+member: `CURRENT_RELEASE_DEPLOYED`, `OLDER_RELEASE_DEPLOYED`, or
+`CURRENT_RELEASE_NOT_DEPLOYED`. Accepted-baseline counts and deterministic
+managed-inventory digests remain present.
 
 ## Canonical title projection
 
@@ -113,11 +182,11 @@ identity lines:
 
 ```text
 Baseline: Stack vN
-Slot A: <canonical project name> - Canary <number>  (or Slot A: Empty)
+Slot A: <name> - Canary <number> + <name> - Canary <number>  (or Slot A: Empty)
 Slot B: <canonical project name> - Canary <number>  (or Slot B: Empty)
 ```
 
-Canary numbers derive from each slot unit's canonical `version`, never an
+Canary numbers derive from every cohort member's canonical `version`, never an
 artifact filename. Empty slots never render `UNKNOWN`. A legacy V2 ledger plus
 the exact pinned `workbench-test-marker-0.1.1.jar` is accepted only as the
 one-step migration preimage; the next successful manager transition replaces
@@ -142,10 +211,13 @@ python -B tools/test_instance_manager/manager.py transition --operation <operati
 ```
 
 `transition` is a dry-run unless `--apply` is present. Inspect the complete
-write/removal plan first. An apply recomputes the plan while holding the
-target-local exclusive lock, stages and hashes every addition, verifies the
-result, commits the target ledger and repository state together, and restores
-the preimage if any step fails.
+write/removal, ownership, dependency-resolution, slot/cohort, lifecycle, and
+title plan first. The manager checks Windows process command lines and refuses
+mutation when a process names the dedicated profile; it never terminates that
+process. An apply recomputes the plan while holding the target-local exclusive
+lock, stages and hashes every addition, verifies the result, commits the target
+ledger and repository state together, and restores the preimage if any step
+fails.
 
 The V1 `.workbench-instance-manager.json` file is legacy display metadata, not
 V2 state authority. The 0.2.0 title marker never reads either its active or
@@ -180,8 +252,14 @@ already exists.
   every ownership key of each overridden dependency; removing the slot restores
   those accepted bytes, and a normal slot promotion cannot absorb the temporary
   dependency override into the accepted project.
+- Every project UUID in a cohort occupies that one slot for lifecycle purposes;
+  member runtime results are never aggregated or copied between members.
 - Slots are independent: updating, clearing, or promoting one cannot move or
   rewrite the other.
+- A provider replacement is accepted only when every remaining member's exact
+  staged Fabric dependency is satisfied. An incompatible retained companion
+  fails before any filesystem write; a compatible bounded predicate permits an
+  atomic provider-only member replacement.
 - Unmanaged enabled JARs that provide managed Fabric IDs are rejected;
   intentional legacy-disabled fallbacks are preserved.
 - Symlinks, junctions/reparse points, path escapes, stale revisions/digests,
