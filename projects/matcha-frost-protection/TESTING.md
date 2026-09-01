@@ -1,21 +1,31 @@
 # Testing
 
-## Current gate
+## Accepted identity and evidence
 
-**CANARY 2 RETAINED — READY FOR CONTROLLED SLOT ALLOCATION; NOT DEPLOYED / RUNTIME UNTESTED**
+**CANARY 2 ACCEPTED — USER-REPORTED EXTERNAL AGGREGATE PASS**
 
-Use exact `matcha-frost-protection-0.1.0-canary2.jar`, 18,373 bytes,
-SHA-256 `88ae708cbf2a9b1f5fe3b322579c3e7b507c7e0420cadb40aca796dba5b4a742`.
-The clean Temurin 25.0.4.1 / Gradle 9.5.1 build passed all 28 focused
-tests against Minecraft 26.2 and pristine Matcha Flavoured 1.12. This is
-static evidence only. Neither the user's external Canary 1 feedback nor this
-build is canonical runtime validation.
+The accepted Workbench Stack v10 identity is exact
+`matcha-frost-protection-0.1.0-canary2.jar`, 18,373 bytes,
+SHA-256 `88ae708cbf2a9b1f5fe3b322579c3e7b507c7e0420cadb40aca796dba5b4a742`,
+from source checkpoint `0d3d6650355a38758ff23227b34bc9bda5826d68`.
 
-## Controlled setup
+The user reported an aggregate external runtime `PASS` for that exact current
+canonical candidate. No individual matrix-row observations were supplied, so
+none are inferred. The accepted-stack manager installed and physically
+verified the artifact as accepted deployment
+`e3c2471a-2419-422d-8dac-0faf5681a790`; that accepted-baseline action is not a
+Test Slot deployment and creates no Test Slot history. Canary 1 remains a
+historical artifact only and is not a rollback release.
 
-1. Under explicit Test Slot ownership, deploy this exact JAR through the Test
-   Instance Manager while preserving the other slot. Stop on any hash,
-   readiness, dependency, or slot mismatch.
+The retained clean Temurin 25.0.4.1 / Gradle 9.5.1 build passed all 28 focused
+tests against Minecraft 26.2 and pristine Matcha Flavoured 1.12. That remains
+static evidence independent of the external aggregate runtime result.
+
+## Future regression setup
+
+1. Verify the exact accepted version, filename, SHA-256, source checkpoint,
+   dependencies, and enabled stack before testing. Stop on any identity,
+   readiness, dependency, or ownership mismatch.
 2. Launch the exact Minecraft 26.2 Matcha stack, run `/reload`, and stop on any
    registry, Mixin, function, recipe, or resource-reload error.
 3. Prepare single armor pieces for HEAD, CHEST, LEGS, and FEET with
@@ -76,8 +86,10 @@ damage per qualifying tick. It applies Darkness, not Blindness.
 - Recheck representative client and dedicated-server or multiplayer cases if
   acceptance requires both authority paths.
 
-Pass only after every applicable row is observed against this exact artifact
-and stack. Stop and record `FAIL` or `INCONCLUSIVE` for any overlay/state
-disagreement, blocked deliberate descent, missing or leaked cold-water
-penalty, player cross-targeting, recipe drift, unrelated regression, or
-client/server disagreement. Do not infer runtime results from static tests.
+For a future row-scoped regression, record `PASS` only after every applicable
+row is observed against this exact artifact and stack. Stop and record `FAIL`
+or `INCONCLUSIVE` for any overlay/state disagreement, blocked deliberate
+descent, missing or leaked cold-water penalty, player cross-targeting, recipe
+drift, unrelated regression, or client/server disagreement. Record only
+observations actually made; do not infer row results from the current aggregate
+external report or from static tests.

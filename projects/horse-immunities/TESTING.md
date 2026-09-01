@@ -1,8 +1,10 @@
 # Testing
 
-C3 is the current candidate and remains `NOT_DEPLOYED` and `RUNTIME_UNTESTED`. Run this matrix only during a controlled handoff of the exact retained C3 JAR; the migration itself performed no Minecraft runtime checks.
+Exact C3 `sweet-berry-horse-immunity-0.1.0-canary3.jar`, SHA-256 `ab947253c5a6bc1910f05367ca9cc5ed7b5388f1d343b4889605d7b15a10060b`, is accepted on the user's explicit external aggregate runtime `PASS`. The report supplied no row-level observations, so none are inferred. Its verified accepted-stack installation in Stack v10 is not a Test Slot deployment and created no slot history. Keep this matrix for future regression testing of the exact accepted identity or an explicitly identified successor.
 
-## C3 runtime handoff
+Exact C2 `sweet-berry-horse-immunity-0.1.0-canary2.jar`, SHA-256 `caddc47f9db0d374d44da4beb21605ad5bcb28ecf162136b774733e9dfe37697`, source `5a5a4b239772023345e15ed22b4a6f0ed0b2237b`, remains the repository/control rollback provenance and is not active in Stack v10. No target-local retained rollback is claimed.
+
+## Accepted C3 future regression matrix
 
 1. Move an unmounted ordinary Horse through a mature sweet berry bush; confirm the Horse is neither slowed nor damaged.
 2. Ride an ordinary Horse through a mature sweet berry bush; confirm neither the direct Player rider nor the Horse is slowed or damaged.
@@ -15,4 +17,4 @@ C3 is the current candidate and remains `NOT_DEPLOYED` and `RUNTIME_UNTESTED`. R
 9. Dismount into the sweet berry bush and powdered snow cases; confirm Player protection ends appropriately after dismount while the ordinary Horse remains protected.
 10. Traverse normal snow mounted and unmounted; confirm no regression to normal-snow behavior.
 
-Stop and record the result as failed or inconclusive if the game crashes, the exact Horse sinks or freezes, protection persists for a dismounted Player, an unrelated entity gains immunity, or normal-snow behavior changes. Do not promote C3 without a controlled pass of the applicable matrix.
+Stop and record any future regression result as failed or inconclusive if the game crashes, the exact Horse sinks or freezes, protection persists for a dismounted Player, an unrelated entity gains immunity, or normal-snow behavior changes. Do not apply C3's accepted result to any different artifact, version, hash, or source identity.

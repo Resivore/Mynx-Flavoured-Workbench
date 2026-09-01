@@ -14,7 +14,7 @@
     ]
   },
   "definition": {
-    "lifecycle": "ACTIVE",
+    "lifecycle": "ACCEPTED",
     "goals": [
       "Expose exact component-bearing Matcha Flavoured recipe and non-recipe identities through JEI without duplicating JEI's vanilla recipe ownership.",
       "Keep Matcha recipe knowledge idempotent and server-owned while JEI remains an optional client integration."
@@ -81,7 +81,7 @@
     ]
   },
   "state": {
-    "milestone": "C3 adds non-recipe subtype discovery and is retained and statically validated; it is runtime untested and not deployed, while the accepted subtype fix remains live.",
+    "milestone": "User-reported external aggregate runtime PASS is bound to exact C3; C3 is accepted in Stack v10 with no Test Slot deployment or slot history, C2 is retained as rollback/provenance, and the dedicated-server-without-JEI gate remains unperformed.",
     "releases": {
       "current": {
         "version": "C3 (legacy 0.2.0-nonrecipe-discovery-canary1)",
@@ -92,12 +92,12 @@
         "source_commit": "d7879b2d78c2bcf3d26efe2af0ecc5eaafd9e02b"
       },
       "accepted": {
-        "version": "C2 (0.1.1-subtype-registration-fix-canary)",
+        "version": "C3 (legacy 0.2.0-nonrecipe-discovery-canary1)",
         "artifact": {
-          "filename": "matcha-jei-integration-0.1.1-subtype-registration-fix-canary.jar",
-          "sha256": "4ef3ddde44ec06e2ee852dd64f5f5d1cf25c1f4f908282f854e9f49b2d5fb60d"
+          "filename": "matcha-jei-integration-0.2.0-nonrecipe-discovery-canary1.jar",
+          "sha256": "1e4941e2353c1696505f243e86eb58f0239dd1144d544897370b021f6748a455"
         },
-        "source_commit": "b26c1b62d2f33bbea9c0d99e07d6d373baa1dd48"
+        "source_commit": "d7879b2d78c2bcf3d26efe2af0ecc5eaafd9e02b"
       },
       "rollback": {
         "version": "C2 (0.1.1-subtype-registration-fix-canary)",
@@ -107,22 +107,22 @@
         },
         "source_commit": "b26c1b62d2f33bbea9c0d99e07d6d373baa1dd48"
       },
-      "accepted_current": "CURRENT_DIFFERS_FROM_ACCEPTED",
-      "accepted_rollback": "ACCEPTED_IS_ROLLBACK"
+      "accepted_current": "CURRENT_IS_ACCEPTED",
+      "accepted_rollback": "ROLLBACK_DIFFERS_FROM_ACCEPTED"
     },
     "validation": {
       "build": "STATIC_PASS",
-      "deployment": "NOT_DEPLOYED",
-      "runtime": "RUNTIME_UNTESTED"
+      "deployment": "READY_TO_TEST_VERIFIED",
+      "runtime": "RUNTIME_PASS"
     },
     "blocker": null
   },
   "synchronization": {
-    "revision": 1,
-    "activity_at": "2026-08-28T09:07:01Z",
-    "updated_at": "2026-08-29T21:01:07Z",
-    "last_codex_at": "2026-08-29T21:01:07Z",
-    "source_commit": "d7879b2d78c2bcf3d26efe2af0ecc5eaafd9e02b",
+    "revision": 2,
+    "activity_at": "2026-09-01T02:35:20Z",
+    "updated_at": "2026-09-01T02:35:20Z",
+    "last_codex_at": "2026-09-01T02:35:20Z",
+    "source_commit": "e405fbcf4900788f1c4bee2df68a130f72bfc239",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null

@@ -10,7 +10,7 @@
     "legacy_ids": []
   },
   "definition": {
-    "lifecycle": "ACTIVE",
+    "lifecycle": "ACCEPTED",
     "goals": [
       "Make Frost Protection I or higher on any single equipped armor slot reproduce leather-boots-equivalent powdered-snow traversal and freezing-state behavior, including no freeze-tick accumulation, overlay, or freeze damage while preserving deliberate descent.",
       "Make Frost Protection III on any one equipped armor slot completely bypass Matcha Flavoured's freezing/cold-water penalty system for that player.",
@@ -74,7 +74,7 @@
     ]
   },
   "state": {
-    "milestone": "Canary 2 implements complete leather-boots-equivalent powdered-snow behavior for Frost Protection I+ and complete Matcha cold-water penalty bypass for Frost Protection III on any armor slot; it is statically verified and retained, but its project UUID occupies neither test slot, so it remains ACTIVE, not deployed, and Minecraft runtime untested.",
+    "milestone": "Exact Canary 2 received the user's aggregate external runtime PASS and is accepted in Workbench Stack v10 after manager installation and physical verification; it has no Test Slot deployment history, no checklist-row observations were supplied or inferred, and Canary 1 remains a historical artifact only.",
     "releases": {
       "current": {
         "version": "0.1.0-canary2",
@@ -84,24 +84,31 @@
         },
         "source_commit": "0d3d6650355a38758ff23227b34bc9bda5826d68"
       },
-      "accepted": null,
+      "accepted": {
+        "version": "0.1.0-canary2",
+        "artifact": {
+          "filename": "matcha-frost-protection-0.1.0-canary2.jar",
+          "sha256": "88ae708cbf2a9b1f5fe3b322579c3e7b507c7e0420cadb40aca796dba5b4a742"
+        },
+        "source_commit": "0d3d6650355a38758ff23227b34bc9bda5826d68"
+      },
       "rollback": null,
-      "accepted_current": "NO_ACCEPTED",
+      "accepted_current": "CURRENT_IS_ACCEPTED",
       "accepted_rollback": "NO_ROLLBACK"
     },
     "validation": {
       "build": "STATIC_PASS",
-      "deployment": "NOT_DEPLOYED",
-      "runtime": "RUNTIME_UNTESTED"
+      "deployment": "READY_TO_TEST_VERIFIED",
+      "runtime": "RUNTIME_PASS"
     },
     "blocker": null
   },
   "synchronization": {
-    "revision": 4,
-    "activity_at": "2026-08-31T01:54:16Z",
-    "updated_at": "2026-08-31T01:54:16Z",
-    "last_codex_at": "2026-08-31T01:54:16Z",
-    "source_commit": "0d3d6650355a38758ff23227b34bc9bda5826d68",
+    "revision": 5,
+    "activity_at": "2026-09-01T02:35:20Z",
+    "updated_at": "2026-09-01T02:35:20Z",
+    "last_codex_at": "2026-09-01T02:35:20Z",
+    "source_commit": "e405fbcf4900788f1c4bee2df68a130f72bfc239",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null

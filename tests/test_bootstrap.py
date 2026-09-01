@@ -1340,9 +1340,9 @@ class RuntimeContractTests(unittest.TestCase):
         # inferred by this bootstrap test.
         tracked = load_json(ROOT / "tools" / "test_instance_manager" / "runtime-state.json")
         self.assertEqual("ACTIVE", tracked["activation"])
-        self.assertEqual(58, tracked["revision"])
-        self.assertEqual(6, tracked["accepted_baseline"]["revision"])
-        self.assertEqual(30, tracked["accepted_baseline"]["provenance"]["accepted_artifact_count"])
+        self.assertEqual(59, tracked["revision"])
+        self.assertEqual(10, tracked["accepted_baseline"]["revision"])
+        self.assertEqual(32, tracked["accepted_baseline"]["provenance"]["accepted_artifact_count"])
         self.assertEqual("TRANSITIONED", tracked["accepted_baseline"]["provenance"]["physical_disposition"])
 
         accepted_by_uuid = {
@@ -1364,6 +1364,26 @@ class RuntimeContractTests(unittest.TestCase):
                 "0.1.0-canary1",
                 "rooted-dirt-qol-0.1.0-canary1.jar",
                 "3642f55e0cef611f2dd56478b8aaf2491fd81d370023a04ca71e6852b37307ee",
+            ),
+            "dda2c3b4-5099-4842-a755-29e964cd2192": (
+                "0.2.0-canary2",
+                "matcha-vanilla-village-restoration-0.2.0-canary2.jar",
+                "5d5164a89881239400cd2b6776b9b54177b699e2a16a1c97b761cde06e7d8bcd",
+            ),
+            "850b2838-7f90-4685-8ba6-3ec282693003": (
+                "0.1.0-canary2",
+                "matcha-frost-protection-0.1.0-canary2.jar",
+                "88ae708cbf2a9b1f5fe3b322579c3e7b507c7e0420cadb40aca796dba5b4a742",
+            ),
+            "2dc7b47a-f3b4-5fbe-a1fa-53e4f0aaa446": (
+                "C3",
+                "sweet-berry-horse-immunity-0.1.0-canary3.jar",
+                "ab947253c5a6bc1910f05367ca9cc5ed7b5388f1d343b4889605d7b15a10060b",
+            ),
+            "4d983099-3bfc-5df1-9788-32683ddfc6db": (
+                "C3 (legacy 0.2.0-nonrecipe-discovery-canary1)",
+                "matcha-jei-integration-0.2.0-nonrecipe-discovery-canary1.jar",
+                "1e4941e2353c1696505f243e86eb58f0239dd1144d544897370b021f6748a455",
             ),
         }
         for project_uuid, (version, filename, sha256) in expected_user_passed.items():

@@ -14,7 +14,7 @@
     "legacy_ids": []
   },
   "definition": {
-    "lifecycle": "ACTIVE",
+    "lifecycle": "ACCEPTED",
     "goals": [
       "Restore Minecraft 26.2's normal biome-specific vanilla village composition while preserving Matcha's village eligibility and sparse placement layer.",
       "Keep Matcha as the sole owner of the minecraft:villages structure-set placement contract.",
@@ -72,7 +72,7 @@
     ]
   },
   "state": {
-    "milestone": "Canary 2 is retained as a narrow Fabric mod with executable static proof of required built-in-pack activation and exact-ID precedence over a later Matcha-like pack; Canary 1's aggregate runtime pass remains historical predecessor evidence only, and Canary 2 is ACTIVE, not deployed, and runtime untested because its UUID occupies neither currently occupied test slot.",
+    "milestone": "Exact Canary 2 received the user's aggregate external runtime PASS and is accepted in Workbench Stack v10 after manager installation and physical verification; it has no Test Slot deployment history, no checklist-row observations were supplied or inferred, and Canary 1 remains historical predecessor evidence only.",
     "releases": {
       "current": {
         "version": "0.2.0-canary2",
@@ -82,24 +82,31 @@
         },
         "source_commit": "ee6070995b036128e6a7d281a6c67ae3f74b9284"
       },
-      "accepted": null,
+      "accepted": {
+        "version": "0.2.0-canary2",
+        "artifact": {
+          "filename": "matcha-vanilla-village-restoration-0.2.0-canary2.jar",
+          "sha256": "5d5164a89881239400cd2b6776b9b54177b699e2a16a1c97b761cde06e7d8bcd"
+        },
+        "source_commit": "ee6070995b036128e6a7d281a6c67ae3f74b9284"
+      },
       "rollback": null,
-      "accepted_current": "NO_ACCEPTED",
+      "accepted_current": "CURRENT_IS_ACCEPTED",
       "accepted_rollback": "NO_ROLLBACK"
     },
     "validation": {
       "build": "STATIC_PASS",
-      "deployment": "NOT_DEPLOYED",
-      "runtime": "RUNTIME_UNTESTED"
+      "deployment": "READY_TO_TEST_VERIFIED",
+      "runtime": "RUNTIME_PASS"
     },
     "blocker": null
   },
   "synchronization": {
-    "revision": 3,
-    "activity_at": "2026-08-31T05:32:23Z",
-    "updated_at": "2026-08-31T05:32:23Z",
-    "last_codex_at": "2026-08-31T05:32:23Z",
-    "source_commit": "ee6070995b036128e6a7d281a6c67ae3f74b9284",
+    "revision": 4,
+    "activity_at": "2026-09-01T02:35:20Z",
+    "updated_at": "2026-09-01T02:35:20Z",
+    "last_codex_at": "2026-09-01T02:35:20Z",
+    "source_commit": "e405fbcf4900788f1c4bee2df68a130f72bfc239",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
