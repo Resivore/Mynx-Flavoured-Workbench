@@ -16,6 +16,7 @@ import json
 import os
 import re
 import shutil
+import sqlite3
 import stat
 import subprocess
 import tempfile
@@ -62,6 +63,7 @@ TITLE_PROJECTION_SCHEMA = "mynx-runtime-title-state-v1"
 LEGACY_MARKER_NAME = ".workbench-instance-manager.json"
 RETIRED_LEGACY_MARKER_NAME = ".workbench-instance-manager.v1-retired.json"
 FailureInjector = Callable[[str], None]
+JavaPropertyProbe = Callable[[Path], dict[str, str]]
 
 
 class ManagerError(RuntimeError):
@@ -292,6 +294,43 @@ class FabricModDescriptor:
     @property
     def ownership_ids(self) -> tuple[str, ...]:
         return (self.primary_id, *self.provides)
+
+
+@dataclass(frozen=True)
+class FabricPlatformProvider:
+    """Exact Fabric builtin provider derived from current launch authority."""
+
+    mod_id: str
+    version: str
+    authority: str
+
+
+@dataclass(frozen=True)
+class PlatformAttestation:
+    """One coherent snapshot of the target's authoritative launch inputs."""
+
+    providers: tuple[FabricPlatformProvider, ...]
+    evidence: dict[str, Any]
+    fingerprint: str
+
+    @property
+    def provider_map(self) -> dict[str, FabricPlatformProvider]:
+        return {provider.mod_id: provider for provider in self.providers}
+
+    def receipt(self) -> dict[str, Any]:
+        return {
+            "status": "FABRIC_PLATFORM_PROVIDERS_ATTESTED",
+            "fingerprint": self.fingerprint,
+            "providers": [
+                {
+                    "id": provider.mod_id,
+                    "version": provider.version,
+                    "authority": provider.authority,
+                }
+                for provider in self.providers
+            ],
+            "evidence": copy.deepcopy(self.evidence),
+        }
 
 
 @dataclass(frozen=True)
@@ -568,6 +607,7 @@ class PhysicalManager:
         target: Path | None = None,
         project_index: dict[str, str] | None = None,
         project_display_names: dict[str, str] | None = None,
+        java_property_probe: JavaPropertyProbe | None = None,
     ):
         self.config = config
         requested = config.dedicated_profile if target is None else Path(target)
@@ -624,6 +664,7 @@ class PhysicalManager:
                 project_display_names = copy.deepcopy(project_index)
         self.project_index = copy.deepcopy(project_index)
         self.project_display_names = copy.deepcopy(project_display_names)
+        self._java_property_probe = java_property_probe or _probe_java_properties
         # Supplying both catalogs explicitly is the narrow test-only escape
         # hatch for isolated fixtures which have no project manifests. Normal
         # CLI construction always retains the authoritative manifest catalog.
@@ -636,12 +677,14 @@ class PhysicalManager:
         target: Path | None = None,
         project_index: dict[str, str] | None = None,
         project_display_names: dict[str, str] | None = None,
+        java_property_probe: JavaPropertyProbe | None = None,
     ) -> "PhysicalManager":
         return cls(
             ManagerConfig.load(Path(config_path)),
             target=target,
             project_index=project_index,
             project_display_names=project_display_names,
+            java_property_probe=java_property_probe,
         )
 
     def _assert_safe_target(self) -> None:
@@ -1124,21 +1167,435 @@ class PhysicalManager:
                 raise
         return tuple(descriptors)
 
+    @staticmethod
+    def _required_platform_ids(
+        descriptors: Sequence[FabricModDescriptor],
+    ) -> frozenset[str]:
+        dependency_ids = {
+            dependency_id
+            for descriptor in descriptors
+            if descriptor.managed_project_id is not None
+            for dependency_id in descriptor.depends
+            if dependency_id in _FABRIC_PLATFORM_DEPENDENCIES
+        }
+        ownership_ids = {
+            ownership_id
+            for descriptor in descriptors
+            for ownership_id in descriptor.ownership_ids
+            if ownership_id in _FABRIC_PLATFORM_DEPENDENCIES
+        }
+        return frozenset(dependency_ids.union(ownership_ids))
+
+    def _attest_platform_providers(
+        self,
+        required_ids: Iterable[str],
+    ) -> PlatformAttestation | None:
+        """Derive exact Fabric builtins from the configured target's launch authority.
+
+        This is intentionally a single-row, parameterized read of Modrinth's
+        current applied content set.  It never enumerates profiles.  Java is
+        independently probed through the executable selected for that exact
+        content set, without launching Minecraft.
+        """
+
+        required = frozenset(required_ids)
+        unknown = required.difference(_FABRIC_PLATFORM_DEPENDENCIES)
+        if unknown:
+            raise ManagerError(f"unsupported Fabric platform provider IDs: {sorted(unknown)}")
+        if not required:
+            return None
+        if self.target.parent.name.casefold() != "profiles":
+            raise ManagerError(
+                "cannot attest Fabric platform providers: configured dedicated profile "
+                "is not an exact Modrinth profiles/<profile> target"
+            )
+        app_root = self.target.parent.parent.resolve(strict=False)
+        app_database = app_root / "app.db"
+        if not app_database.exists() or not app_database.is_file() or app_database.is_symlink():
+            raise ManagerError(
+                "cannot attest Fabric platform providers: Modrinth launch authority "
+                f"is missing or unsafe: {app_database}"
+            )
+
+        try:
+            connection = sqlite3.connect(
+                app_database.resolve(strict=True).as_uri() + "?mode=ro",
+                uri=True,
+            )
+        except (OSError, sqlite3.Error) as exc:
+            raise ManagerError(f"cannot open Modrinth launch authority read-only: {exc}") from exc
+        try:
+            connection.row_factory = sqlite3.Row
+            connection.execute("PRAGMA query_only=ON")
+            required_tables = {
+                "instances",
+                "instance_content_sets",
+                "instance_launch_overrides",
+                "java_versions",
+            }
+            present_tables = {
+                row[0]
+                for row in connection.execute(
+                    "SELECT name FROM sqlite_master WHERE type='table' AND name IN (?, ?, ?, ?)",
+                    tuple(sorted(required_tables)),
+                )
+            }
+            if present_tables != required_tables:
+                raise ManagerError(
+                    "cannot attest Fabric platform providers: unsupported or incomplete "
+                    f"Modrinth launch-authority schema (missing {sorted(required_tables - present_tables)})"
+                )
+            try:
+                rows = connection.execute(
+                    """
+                    SELECT
+                        i.id AS instance_id,
+                        i.path AS instance_path,
+                        i.install_stage AS install_stage,
+                        i.applied_content_set_id AS applied_content_set_id,
+                        cs.id AS content_set_id,
+                        cs.status AS content_set_status,
+                        cs.game_version AS game_version,
+                        cs.loader AS loader,
+                        cs.loader_version AS loader_version,
+                        cs.modified AS content_set_modified,
+                        json_extract(o.overrides, '$.java_path') AS java_path
+                    FROM instances AS i
+                    JOIN instance_content_sets AS cs
+                      ON cs.id = i.applied_content_set_id
+                     AND cs.instance_id = i.id
+                    LEFT JOIN instance_launch_overrides AS o
+                      ON o.instance_id = i.id
+                    WHERE i.path = ?
+                    """,
+                    (self.target.name,),
+                ).fetchall()
+            except sqlite3.Error as exc:
+                raise ManagerError(
+                    "cannot attest Fabric platform providers: Modrinth launch-authority "
+                    f"schema/query failed: {exc}"
+                ) from exc
+            if len(rows) != 1:
+                raise ManagerError(
+                    "cannot attest Fabric platform providers: exact configured dedicated "
+                    f"profile identity {self.target.name!r} matched {len(rows)} applied content sets"
+                )
+            row = rows[0]
+            if row["instance_path"] != self.target.name:
+                raise ManagerError("Modrinth launch authority returned a mismatched profile identity")
+            if row["install_stage"] != "installed":
+                raise ManagerError(
+                    "cannot attest Fabric platform providers: exact dedicated profile is not installed "
+                    f"(install_stage={row['install_stage']!r})"
+                )
+            if row["content_set_status"] != "available":
+                raise ManagerError(
+                    "cannot attest Fabric platform providers: exact applied content set is not available "
+                    f"(status={row['content_set_status']!r})"
+                )
+            game_version = row["game_version"]
+            loader = row["loader"]
+            loader_version = row["loader_version"]
+            if loader != "fabric":
+                raise ManagerError(
+                    "cannot attest Fabric platform providers: exact dedicated profile loader "
+                    f"is {loader!r}, not 'fabric'"
+                )
+            if isinstance(loader_version, str) and loader_version.casefold() in {"latest", "stable"}:
+                raise ManagerError(
+                    "cannot attest Fabric platform providers: Fabric Loader selection is an unresolved alias"
+                )
+            for value, label in (
+                (game_version, "Minecraft game version"),
+                (loader_version, "Fabric Loader version"),
+            ):
+                parsed = _parse_fabric_semantic_version(value, store_wildcards=False) if isinstance(value, str) else None
+                if parsed is None or parsed.prerelease is not None or parsed.build is not None:
+                    raise ManagerError(
+                        f"cannot attest Fabric platform providers: {label} is not an exact release semantic version: {value!r}"
+                    )
+            version_id = f"{game_version}-{loader_version}"
+            if re.fullmatch(r"[0-9A-Za-z._+~-]+", version_id) is None:
+                raise ManagerError("cannot attest Fabric platform providers: unsafe cached metadata identity")
+            metadata_path = app_root / "meta" / "versions" / version_id / f"{version_id}.json"
+            if not metadata_path.exists() or not metadata_path.is_file() or metadata_path.is_symlink():
+                raise ManagerError(
+                    "cannot attest Fabric platform providers: exact cached launch metadata is missing or unsafe: "
+                    + str(metadata_path)
+                )
+            try:
+                metadata_bytes = metadata_path.read_bytes()
+            except OSError as exc:
+                raise ManagerError(f"cannot read exact cached launch metadata {metadata_path}: {exc}") from exc
+            if len(metadata_bytes) > 16 * 1024 * 1024:
+                raise ManagerError("exact cached launch metadata is unreasonably large")
+            try:
+                metadata = json.loads(metadata_bytes.decode("utf-8"))
+            except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+                raise ManagerError(f"exact cached launch metadata is invalid JSON: {exc}") from exc
+            if not isinstance(metadata, dict) or metadata.get("id") != version_id:
+                raise ManagerError(
+                    "cannot attest Fabric platform providers: cached launch metadata identity "
+                    f"does not equal {version_id!r}"
+                )
+            java_metadata = metadata.get("javaVersion")
+            required_java_major = java_metadata.get("majorVersion") if isinstance(java_metadata, dict) else None
+            if not isinstance(required_java_major, int) or isinstance(required_java_major, bool) or required_java_major < 1:
+                raise ManagerError(
+                    "cannot attest Fabric platform providers: cached launch metadata has no exact positive Java major"
+                )
+            libraries = metadata.get("libraries")
+            if not isinstance(libraries, list):
+                raise ManagerError("cannot attest Fabric platform providers: cached launch metadata libraries is not an array")
+            loader_coordinates = [
+                item["name"]
+                for item in libraries
+                if isinstance(item, dict)
+                and isinstance(item.get("name"), str)
+                and item["name"].startswith("net.fabricmc:fabric-loader:")
+            ]
+            expected_loader_coordinate = f"net.fabricmc:fabric-loader:{loader_version}"
+            if loader_coordinates != [expected_loader_coordinate]:
+                raise ManagerError(
+                    "cannot attest Fabric platform providers: cached Fabric Loader coordinate "
+                    f"does not uniquely equal {expected_loader_coordinate!r}; found {loader_coordinates}"
+                )
+
+            override_java = row["java_path"]
+            configured_java_source: str
+            configured_java_full_version: str | None
+            if isinstance(override_java, str) and override_java.strip():
+                selected_java = Path(override_java)
+                configured_java_source = "INSTANCE_LAUNCH_OVERRIDE"
+                configured_java_full_version = None
+            elif override_java is None or override_java == "":
+                try:
+                    java_rows = connection.execute(
+                        "SELECT full_version, path FROM java_versions WHERE major_version = ?",
+                        (required_java_major,),
+                    ).fetchall()
+                except sqlite3.Error as exc:
+                    raise ManagerError(f"cannot resolve configured Modrinth Java runtime: {exc}") from exc
+                if len(java_rows) != 1:
+                    raise ManagerError(
+                        "cannot attest Fabric platform providers: required Java major "
+                        f"{required_java_major} resolves to {len(java_rows)} configured runtimes"
+                    )
+                selected_java = Path(java_rows[0]["path"])
+                configured_java_source = "MODRINTH_JAVA_VERSION"
+                configured_java_full_version = java_rows[0]["full_version"]
+            else:
+                raise ManagerError("cannot attest Fabric platform providers: configured Java override is not a path string")
+        finally:
+            connection.close()
+
+        def validated_java_path(candidate: Path, label: str, *, allowed_names: frozenset[str]) -> Path:
+            """Validate one launch-authority executable before resolving or reading it."""
+
+            if not candidate.is_absolute():
+                raise ManagerError(
+                    f"cannot attest Fabric platform providers: {label} path is not absolute"
+                )
+            lexical = Path(os.path.abspath(candidate))
+            protected = Path(os.path.abspath(self.config.protected_profile))
+            if _lexical_paths_equal(lexical, protected) or _is_lexically_within(lexical, protected):
+                raise ManagerError(
+                    "cannot attest Fabric platform providers: selected Java executable "
+                    "resolves lexically into the protected gameplay profile"
+                )
+            if lexical.name.casefold() not in allowed_names:
+                raise ManagerError(
+                    "cannot attest Fabric platform providers: selected Java executable must be "
+                    + " or ".join(sorted(allowed_names))
+                )
+
+            # The executable may legitimately be installed anywhere, including
+            # outside Modrinth's app root. Walk from its filesystem anchor so no
+            # intervening symlink, junction, or other reparse point is trusted.
+            anchor = Path(lexical.anchor)
+            if not lexical.anchor:
+                raise ManagerError(
+                    f"cannot attest Fabric platform providers: {label} has no filesystem anchor"
+                )
+            _assert_no_reparse_components(lexical, label, root=anchor)
+            if not lexical.exists() or not lexical.is_file():
+                raise ManagerError(
+                    f"cannot attest Fabric platform providers: {label} is missing or unsafe: {lexical}"
+                )
+            try:
+                resolved = lexical.resolve(strict=True)
+            except OSError as exc:
+                raise ManagerError(
+                    f"cannot attest Fabric platform providers: cannot resolve {label}: {exc}"
+                ) from exc
+            protected_resolved = self.config.protected_profile.resolve(strict=False)
+            if _paths_equal(resolved, protected_resolved) or _is_within(resolved, protected_resolved):
+                raise ManagerError(
+                    "cannot attest Fabric platform providers: selected Java executable "
+                    "resolves into the protected gameplay profile"
+                )
+            return resolved
+
+        selected_names = (
+            frozenset({"java.exe", "javaw.exe"})
+            if os.name == "nt"
+            else frozenset({"java"})
+        )
+        selected_java = validated_java_path(
+            selected_java,
+            "selected Java executable",
+            allowed_names=selected_names,
+        )
+        probe_java = selected_java
+        if selected_java.name.casefold() == "javaw.exe":
+            probe_java = validated_java_path(
+                selected_java.with_name("java.exe"),
+                "selected javaw.exe sibling java.exe",
+                allowed_names=frozenset({"java.exe"}),
+            )
+        selected_java_sha256 = _sha256(selected_java)
+        probe_java_sha256 = _sha256(probe_java)
+        properties = self._java_property_probe(probe_java)
+        if (
+            _sha256(selected_java) != selected_java_sha256
+            or _sha256(probe_java) != probe_java_sha256
+        ):
+            raise ManagerError(
+                "cannot attest Fabric platform providers: selected Java executable bytes changed during probing"
+            )
+        java_specification_version = properties.get("java.specification.version")
+        java_full_version = properties.get("java.version")
+        java_home = properties.get("java.home")
+        if not all(isinstance(value, str) and value.strip() for value in (
+            java_specification_version,
+            java_full_version,
+            java_home,
+        )):
+            raise ManagerError(
+                "cannot attest Fabric platform providers: Java probe did not report "
+                "java.specification.version, java.version, and java.home"
+            )
+        normalized_java_specification = re.sub(r"^1\.", "", java_specification_version)
+        parsed_java_specification = _parse_fabric_semantic_version(
+            normalized_java_specification,
+            store_wildcards=False,
+        )
+        if (
+            parsed_java_specification is None
+            or parsed_java_specification.prerelease is not None
+            or parsed_java_specification.build is not None
+            or not parsed_java_specification.components
+            or parsed_java_specification.components[0] != required_java_major
+        ):
+            raise ManagerError(
+                "cannot attest Fabric platform providers: probed Java specification version "
+                f"{java_specification_version!r} disagrees with required major {required_java_major}"
+            )
+        if (
+            configured_java_full_version is not None
+            and configured_java_full_version
+            not in {java_full_version, normalized_java_specification}
+        ):
+            raise ManagerError(
+                "cannot attest Fabric platform providers: configured Java version identity "
+                f"{configured_java_full_version!r} agrees with neither probed specification "
+                f"{normalized_java_specification!r} nor full version {java_full_version!r}"
+            )
+        probed_java_home = Path(java_home).resolve(strict=False)
+        selected_java_home = selected_java.parent.parent.resolve(strict=False)
+        if not _paths_equal(probed_java_home, selected_java_home):
+            raise ManagerError(
+                "cannot attest Fabric platform providers: probed java.home "
+                f"{probed_java_home} does not own selected executable {selected_java}"
+            )
+
+        evidence = {
+            "source_classification": "MODRINTH_EXACT_DEDICATED_PROFILE_LAUNCH_AUTHORITY",
+            "required_provider_ids": sorted(required),
+            "app_database": {
+                "path": str(app_database.resolve(strict=True)),
+                "schema": "MODERN_APPLIED_CONTENT_SET",
+                "query_scope": "EXACT_PROFILE_DIRECTORY_NAME",
+            },
+            "target": {
+                "profile_path": str(self.target),
+                "profile_directory_name": self.target.name,
+                "instance_id": _sqlite_identity(row["instance_id"]),
+                "install_stage": row["install_stage"],
+                "applied_content_set_id": _sqlite_identity(row["applied_content_set_id"]),
+                "content_set_id": _sqlite_identity(row["content_set_id"]),
+                "content_set_status": row["content_set_status"],
+                "content_set_modified": row["content_set_modified"],
+            },
+            "minecraft": {
+                "version": game_version,
+                "authority": "APPLIED_CONTENT_SET_GAME_VERSION",
+            },
+            "fabricloader": {
+                "version": loader_version,
+                "authority": "APPLIED_CONTENT_SET_AND_CACHED_LOADER_COORDINATE",
+                "loader": loader,
+                "coordinate": expected_loader_coordinate,
+            },
+            "cached_launch_metadata": {
+                "path": str(metadata_path.resolve(strict=True)),
+                "id": version_id,
+                "sha256": hashlib.sha256(metadata_bytes).hexdigest(),
+                "required_java_major": required_java_major,
+            },
+            "java": {
+                "version": normalized_java_specification,
+                "authority": "PROBED_SELECTED_JAVA_SPECIFICATION_VERSION",
+                "configured_source": configured_java_source,
+                "selected_executable": str(selected_java),
+                "selected_executable_sha256": selected_java_sha256,
+                "probe_executable": str(probe_java.resolve(strict=True)),
+                "probe_executable_sha256": probe_java_sha256,
+                "configured_full_version": configured_java_full_version,
+                "probed_full_version": java_full_version,
+                "probed_home": str(probed_java_home),
+            },
+        }
+        fingerprint = hashlib.sha256(
+            json.dumps(evidence, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
+        ).hexdigest()
+        return PlatformAttestation(
+            providers=(
+                FabricPlatformProvider("fabricloader", loader_version, "MODRINTH_APPLIED_CONTENT_SET"),
+                FabricPlatformProvider("java", normalized_java_specification, "SELECTED_JAVA_PROBE"),
+                FabricPlatformProvider("minecraft", game_version, "MODRINTH_APPLIED_CONTENT_SET"),
+            ),
+            evidence=evidence,
+            fingerprint=fingerprint,
+        )
+
     def _resolve_dependency_graph(
         self,
         descriptors: Sequence[FabricModDescriptor],
         *,
         managed_ownership_ids: set[str],
         phase: str,
+        platform_attestation: PlatformAttestation | None = None,
     ) -> dict[str, Any]:
         failure_phase = (
             "before physical mutation"
             if phase.startswith("PREFLIGHT") or phase == "TEST"
             else "during post-deployment physical verification"
         )
+        platform_providers = (
+            platform_attestation.provider_map
+            if platform_attestation is not None
+            else {}
+        )
         providers: dict[str, FabricModDescriptor] = {}
         for descriptor in descriptors:
             for ownership_id in descriptor.ownership_ids:
+                if ownership_id in platform_providers:
+                    raise ManagerError(
+                        "duplicate enabled Fabric ownership "
+                        f"{ownership_id}: Fabric builtin provider and "
+                        f"{descriptor.relative_path}@{descriptor.version}"
+                    )
                 previous = providers.get(ownership_id)
                 if previous is not None:
                     raise ManagerError(
@@ -1154,6 +1611,7 @@ class PhysicalManager:
                 continue
             for dependency_id, predicates in sorted(consumer.depends.items()):
                 provider = providers.get(dependency_id)
+                platform_provider = platform_providers.get(dependency_id)
                 base = {
                     "consumer": {
                         "project_uuid": consumer.managed_project_uuid,
@@ -1167,17 +1625,7 @@ class PhysicalManager:
                     "dependency_id": dependency_id,
                     "predicates": list(predicates),
                 }
-                if provider is None:
-                    if dependency_id in _TRUSTED_PLATFORM_DEPENDENCIES:
-                        resolutions.append(
-                            {
-                                **base,
-                                "classification": "TRUSTED_PLATFORM_PROVIDED",
-                                "satisfied": True,
-                                "provider": None,
-                            }
-                        )
-                        continue
+                if provider is None and platform_provider is None:
                     ownership = "managed" if dependency_id in managed_ownership_ids else "external"
                     raise ManagerError(
                         f"missing {ownership} Fabric dependency {failure_phase}: "
@@ -1187,38 +1635,65 @@ class PhysicalManager:
                         "or ensure its unmanaged provider JAR is enabled before planning"
                     )
 
+                provider_version = (
+                    platform_provider.version
+                    if platform_provider is not None
+                    else provider.version
+                )
                 matched_predicates = [
                     predicate
                     for predicate in predicates
-                    if _fabric_predicate_matches(provider.version, predicate)
+                    if _fabric_predicate_matches(provider_version, predicate)
                 ]
-                provider_record = {
-                    "project_uuid": provider.managed_project_uuid,
-                    "project_id": provider.managed_project_id,
-                    "deployment_id": provider.managed_deployment_id,
-                    "artifact_id": provider.managed_artifact_id,
-                    "filename": provider.filename,
-                    "path": provider.relative_path,
-                    "primary_id": provider.primary_id,
-                    "provides": list(provider.provides),
-                    "version": provider.version,
-                }
-                if not matched_predicates:
+                if platform_provider is not None:
+                    provider_record = {
+                        "project_uuid": None,
+                        "project_id": None,
+                        "deployment_id": None,
+                        "artifact_id": None,
+                        "filename": None,
+                        "path": None,
+                        "primary_id": platform_provider.mod_id,
+                        "provides": [],
+                        "version": platform_provider.version,
+                        "authority": platform_provider.authority,
+                    }
+                    provider_label = platform_provider.mod_id
+                    classification = "RESOLVED_ATTESTED_PLATFORM_PROVIDER"
+                else:
+                    provider_record = {
+                        "project_uuid": provider.managed_project_uuid,
+                        "project_id": provider.managed_project_id,
+                        "deployment_id": provider.managed_deployment_id,
+                        "artifact_id": provider.managed_artifact_id,
+                        "filename": provider.filename,
+                        "path": provider.relative_path,
+                        "primary_id": provider.primary_id,
+                        "provides": list(provider.provides),
+                        "version": provider.version,
+                    }
                     provider_label = provider.managed_project_id or provider.primary_id
+                    classification = (
+                        "RESOLVED_MANAGED_PROVIDER"
+                        if provider.managed_project_id is not None
+                        else "RESOLVED_EXTERNAL_ENABLED_PROVIDER"
+                    )
+                if not matched_predicates:
+                    remedy = (
+                        "select an exact compatible dedicated-profile launch provider version"
+                        if platform_provider is not None
+                        else "supply a compatible companion project/version in the same atomic cohort operation"
+                    )
                     raise ManagerError(
-                        f"unsatisfied managed Fabric dependency {failure_phase}: "
+                        f"unsatisfied Fabric dependency {failure_phase}: "
                         f"{consumer.managed_project_id}@{consumer.version} requires {dependency_id} "
-                        f"{list(predicates)}, but proposed {provider_label}@{provider.version} does not satisfy it; "
-                        "supply a compatible companion project/version in the same atomic cohort operation"
+                        f"{list(predicates)}, but proposed {provider_label}@{provider_version} does not satisfy it; "
+                        + remedy
                     )
                 resolutions.append(
                     {
                         **base,
-                        "classification": (
-                            "RESOLVED_MANAGED_PROVIDER"
-                            if provider.managed_project_id is not None
-                            else "RESOLVED_EXTERNAL_ENABLED_PROVIDER"
-                        ),
+                        "classification": classification,
                         "satisfied": True,
                         "matched_predicates": matched_predicates,
                         "provider": provider_record,
@@ -1244,6 +1719,11 @@ class PhysicalManager:
             "phase": phase,
             "enabled_fabric_jar_count": len(enabled),
             "enabled_fabric_jars": enabled,
+            "platform_attestation": (
+                platform_attestation.receipt()
+                if platform_attestation is not None
+                else None
+            ),
             "resolutions": resolutions,
         }
 
@@ -1258,10 +1738,14 @@ class PhysicalManager:
             for artifact in (*tuple(current_artifacts), *tuple(desired_artifacts))
             for mod_id in artifact.ownership_mod_ids
         }
+        platform_attestation = self._attest_platform_providers(
+            self._required_platform_ids(descriptors)
+        )
         return self._resolve_dependency_graph(
             descriptors,
             managed_ownership_ids=managed_ids,
             phase="PREFLIGHT_PROPOSED_ENABLED_SET",
+            platform_attestation=platform_attestation,
         )
 
     def _physical_dependency_report(
@@ -1274,11 +1758,39 @@ class PhysicalManager:
             for artifact in artifacts
             for mod_id in artifact.ownership_mod_ids
         }
+        platform_attestation = self._attest_platform_providers(
+            self._required_platform_ids(descriptors)
+        )
         return self._resolve_dependency_graph(
             descriptors,
             managed_ownership_ids=managed_ids,
             phase="POST_DEPLOYMENT_ENABLED_SET",
+            platform_attestation=platform_attestation,
         )
+
+    @staticmethod
+    def _assert_platform_attestation_unchanged(
+        expected_report: dict[str, Any],
+        actual_report: dict[str, Any],
+        *,
+        phase: str,
+    ) -> None:
+        expected = expected_report.get("platform_attestation")
+        actual = actual_report.get("platform_attestation")
+        if expected is None and actual is None:
+            return
+        expected_fingerprint = expected.get("fingerprint") if isinstance(expected, dict) else None
+        actual_fingerprint = actual.get("fingerprint") if isinstance(actual, dict) else None
+        if (
+            not isinstance(expected_fingerprint, str)
+            or not isinstance(actual_fingerprint, str)
+            or expected_fingerprint != actual_fingerprint
+        ):
+            raise ManagerError(
+                "Fabric platform launch authority changed "
+                f"{phase}: expected attestation {expected_fingerprint!r}, "
+                f"found {actual_fingerprint!r}; no runtime state may be committed"
+            )
 
     def _verify_inventory(
         self,
@@ -2350,6 +2862,15 @@ class PhysicalManager:
     ) -> tuple[dict[str, Any], dict[str, Any]]:
         injector = failure_injector or (lambda _stage: None)
         self._assert_profile_not_in_use()
+        under_lock_dependency_resolution = self._planned_dependency_report(
+            plan.current_artifacts,
+            plan.desired_artifacts,
+        )
+        self._assert_platform_attestation_unchanged(
+            plan.dependency_resolution,
+            under_lock_dependency_resolution,
+            phase="between planning and the under-lock pre-mutation check",
+        )
         transaction = self.target / f".mynx-runtime-v2-transaction-{uuid.uuid4()}"
         _assert_no_reparse_components(transaction, "transaction backup", root=self.target)
         self._assert_target_containment(transaction.resolve(strict=False), "transaction backup")
@@ -2372,7 +2893,7 @@ class PhysicalManager:
         committed = False
         preserve_transaction = False
         committed_state = plan.desired_state
-        committed_dependency_resolution = plan.dependency_resolution
+        committed_dependency_resolution = under_lock_dependency_resolution
         try:
             transaction.mkdir(exist_ok=False)
             target_backup = transaction / "target"
@@ -2438,6 +2959,11 @@ class PhysicalManager:
                 },
             )
             committed_dependency_resolution = self._physical_dependency_report(plan.desired_artifacts)
+            self._assert_platform_attestation_unchanged(
+                under_lock_dependency_resolution,
+                committed_dependency_resolution,
+                phase="between the under-lock pre-mutation check and post-write verification",
+            )
             if plan.finalize_verified_profile:
                 if plan.transition_at is None:
                     raise ManagerError("verified profile finalization requires a transition timestamp")
@@ -2480,8 +3006,22 @@ class PhysicalManager:
             self._assert_ledger_matches_repository(final_ledger, final_state)
             self._verify_inventory(final_state, plan.desired_artifacts, prior_ledger=final_ledger)
             committed_dependency_resolution = self._physical_dependency_report(plan.desired_artifacts)
+            self._assert_platform_attestation_unchanged(
+                under_lock_dependency_resolution,
+                committed_dependency_resolution,
+                phase="before final post-commit verification completed",
+            )
             self._verify_title_projection(final_state)
             injector("after_post_verify")
+            # Make launch authority the final observed external input before
+            # the transaction is declared committed. A drift injected after
+            # the earlier post-write scan must still restore the full preimage.
+            committed_dependency_resolution = self._physical_dependency_report(plan.desired_artifacts)
+            self._assert_platform_attestation_unchanged(
+                under_lock_dependency_resolution,
+                committed_dependency_resolution,
+                phase="at the final post-verification commit boundary",
+            )
             committed = True
         except Exception as exc:
             recovery_error: Exception | None = None
@@ -2564,6 +3104,25 @@ def _paths_equal(left: Path, right: Path) -> bool:
     return os.path.normcase(str(left.resolve(strict=False))).casefold() == os.path.normcase(
         str(right.resolve(strict=False))
     ).casefold()
+
+
+def _lexical_paths_equal(left: Path, right: Path) -> bool:
+    """Compare absolute normalized spellings without resolving filesystem links."""
+
+    return os.path.normcase(os.path.abspath(left)).casefold() == os.path.normcase(
+        os.path.abspath(right)
+    ).casefold()
+
+
+def _is_lexically_within(child: Path, parent: Path) -> bool:
+    """Check lexical containment without touching either filesystem path."""
+
+    child_text = os.path.normcase(os.path.abspath(child)).casefold()
+    parent_text = os.path.normcase(os.path.abspath(parent)).casefold()
+    try:
+        return os.path.commonpath([child_text, parent_text]) == parent_text
+    except ValueError:
+        return False
 
 
 def _is_within(child: Path, parent: Path) -> bool:
@@ -2676,6 +3235,47 @@ def _utc_now() -> str:
     return datetime.now(timezone.utc).isoformat(timespec="microseconds").replace("+00:00", "Z")
 
 
+def _sqlite_identity(value: Any) -> str:
+    """Render an opaque SQLite identity without assuming Modrinth's storage type."""
+
+    if isinstance(value, str) and value:
+        return value
+    if isinstance(value, int) and not isinstance(value, bool):
+        return str(value)
+    if isinstance(value, memoryview):
+        value = value.tobytes()
+    if isinstance(value, bytes) and value:
+        return "hex:" + value.hex()
+    raise ManagerError(f"Modrinth launch authority contains an invalid opaque identity: {value!r}")
+
+
+def _probe_java_properties(executable: Path) -> dict[str, str]:
+    """Probe only JVM properties; this never invokes a Minecraft launch."""
+
+    try:
+        completed = subprocess.run(
+            [str(executable), "-XshowSettings:properties", "-version"],
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=15,
+            shell=False,
+            creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
+        )
+    except (OSError, subprocess.SubprocessError) as exc:
+        raise ManagerError(f"cannot probe selected Java executable {executable}: {exc}") from exc
+    if completed.returncode != 0:
+        raise ManagerError(
+            f"selected Java executable probe failed with exit code {completed.returncode}: {executable}"
+        )
+    properties: dict[str, str] = {}
+    for line in (completed.stdout + "\n" + completed.stderr).splitlines():
+        match = re.match(r"^\s*([A-Za-z0-9_.-]+)\s*=\s*(.*?)\s*$", line)
+        if match is not None:
+            properties.setdefault(match.group(1), match.group(2))
+    return properties
+
+
 @dataclass(frozen=True)
 class _FabricSemanticVersion:
     components: tuple[int | None, ...]
@@ -2686,7 +3286,7 @@ class _FabricSemanticVersion:
 _FABRIC_PRERELEASE_RE = re.compile(r"(?:|[-0-9A-Za-z]+(?:\.[-0-9A-Za-z]+)*)$")
 _FABRIC_PRERELEASE_INTEGER_RE = re.compile(r"(?:0|[1-9][0-9]*)$")
 _FABRIC_OPERATORS = (">=", "<=", ">", "<", "=", "~", "^")
-_TRUSTED_PLATFORM_DEPENDENCIES = frozenset({"java", "minecraft", "fabricloader"})
+_FABRIC_PLATFORM_DEPENDENCIES = frozenset({"java", "minecraft", "fabricloader"})
 
 
 def _parse_fabric_semantic_version(value: str, *, store_wildcards: bool) -> _FabricSemanticVersion | None:

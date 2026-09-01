@@ -3,9 +3,12 @@ from __future__ import annotations
 import copy
 import hashlib
 import json
+import os
+import sqlite3
 import tempfile
 import unittest
 import zipfile
+from contextlib import closing
 from pathlib import Path
 from unittest.mock import patch
 
@@ -20,6 +23,7 @@ from tests.test_instance_manager import (
 from tools.test_instance_manager.manager import (
     FabricModDescriptor,
     ManagerError,
+    PlatformAttestation,
     PhysicalManager,
     _fabric_predicate_matches,
     _windows_processes_using_profile,
@@ -83,6 +87,210 @@ def write_dependency_mod(
         )
         archive.writestr("fixture.txt", version)
     return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def install_fake_modrinth_launch_authority(
+    fixture: ManagerFixture,
+    *,
+    game_version: str = "26.2",
+    loader_version: str = "0.19.3",
+    install_stage: str = "installed",
+    content_set_status: str = "available",
+    metadata_id: str | None = None,
+    metadata_loader_coordinates: list[str] | None = None,
+    required_java_major: int = 25,
+    configured_java_version: str = "25.0.2",
+    probed_java_specification: str = "25",
+    probed_java_version: str = "25.0.2",
+) -> dict[str, object]:
+    """Create isolated Modrinth launch authority for the exact fixture target."""
+
+    app_root = fixture.target.parent.parent
+    database = app_root / "app.db"
+    java_home = app_root / "meta" / "java_versions" / "fixture-java"
+    selected_java = java_home / "bin" / ("javaw.exe" if os.name == "nt" else "java")
+    probe_java = selected_java.with_name("java.exe") if os.name == "nt" else selected_java
+    probe_java.parent.mkdir(parents=True, exist_ok=True)
+    selected_java.write_bytes(b"fixture javaw")
+    if probe_java != selected_java:
+        probe_java.write_bytes(b"fixture java")
+
+    instance_id = bytes.fromhex("00112233445566778899aabbccddeeff")
+    content_set_id = bytes.fromhex("ffeeddccbbaa99887766554433221100")
+    decoy_instance_id = bytes.fromhex("11111111111111111111111111111111")
+    decoy_content_set_id = bytes.fromhex("22222222222222222222222222222222")
+    with closing(sqlite3.connect(database)) as connection:
+        connection.executescript(
+            """
+            CREATE TABLE instances (
+                id BLOB PRIMARY KEY,
+                path TEXT,
+                install_stage TEXT,
+                applied_content_set_id BLOB
+            );
+            CREATE TABLE instance_content_sets (
+                id BLOB PRIMARY KEY,
+                instance_id BLOB,
+                status TEXT,
+                game_version TEXT,
+                loader TEXT,
+                loader_version TEXT,
+                modified TEXT
+            );
+            CREATE TABLE instance_launch_overrides (
+                instance_id BLOB PRIMARY KEY,
+                overrides BLOB
+            );
+            CREATE TABLE java_versions (
+                major_version INTEGER,
+                full_version TEXT,
+                path TEXT
+            );
+            """
+        )
+        connection.execute(
+            "INSERT INTO instances VALUES (?, ?, ?, ?)",
+            (instance_id, fixture.target.name, install_stage, content_set_id),
+        )
+        connection.execute(
+            "INSERT INTO instance_content_sets VALUES (?, ?, ?, ?, ?, ?, ?)",
+            (
+                content_set_id,
+                instance_id,
+                content_set_status,
+                game_version,
+                "fabric",
+                loader_version,
+                "2099-01-01T00:00:00Z",
+            ),
+        )
+        connection.execute(
+            "INSERT INTO instance_launch_overrides VALUES (?, jsonb(?))",
+            (instance_id, json.dumps({"java_path": None})),
+        )
+        # This malformed unrelated row proves that production code selects
+        # only the exact configured target rather than enumerating profiles.
+        connection.execute(
+            "INSERT INTO instances VALUES (?, ?, ?, ?)",
+            (decoy_instance_id, "Unrelated Fixture", "broken", decoy_content_set_id),
+        )
+        connection.execute(
+            "INSERT INTO instance_content_sets VALUES (?, ?, ?, ?, ?, ?, ?)",
+            (
+                decoy_content_set_id,
+                decoy_instance_id,
+                "broken",
+                "not-a-version",
+                "unknown",
+                "latest",
+                "2099-01-01T00:00:00Z",
+            ),
+        )
+        connection.execute(
+            "INSERT INTO java_versions VALUES (?, ?, ?)",
+            (required_java_major, configured_java_version, str(selected_java)),
+        )
+        connection.commit()
+
+    version_id = f"{game_version}-{loader_version}"
+    metadata_path = app_root / "meta" / "versions" / version_id / f"{version_id}.json"
+    metadata_path.parent.mkdir(parents=True, exist_ok=True)
+    loader_coordinates = (
+        [f"net.fabricmc:fabric-loader:{loader_version}"]
+        if metadata_loader_coordinates is None
+        else metadata_loader_coordinates
+    )
+    metadata_path.write_text(
+        json.dumps(
+            {
+                "id": version_id if metadata_id is None else metadata_id,
+                "javaVersion": {"majorVersion": required_java_major},
+                "libraries": [
+                    {"name": coordinate}
+                    for coordinate in [*loader_coordinates, "org.example:unrelated:1.0.0"]
+                ],
+            },
+            sort_keys=True,
+        ),
+        encoding="utf-8",
+    )
+    probe_calls: list[Path] = []
+
+    def probe(executable: Path) -> dict[str, str]:
+        probe_calls.append(executable)
+        return {
+            "java.specification.version": probed_java_specification,
+            "java.version": probed_java_version,
+            "java.home": str(java_home),
+        }
+
+    fixture.manager = PhysicalManager.from_config(
+        fixture.config_path,
+        project_index=fixture.project_index,
+        project_display_names=fixture.project_display_names,
+        java_property_probe=probe,
+    )
+    return {
+        "app_root": app_root,
+        "database": database,
+        "metadata_path": metadata_path,
+        "selected_java": selected_java,
+        "probe_java": probe_java,
+        "probe_calls": probe_calls,
+        "java_home": java_home,
+    }
+
+
+def set_fake_java_override(authority: dict[str, object], path: Path) -> None:
+    """Point the exact fixture instance at one explicit Java executable."""
+
+    with closing(sqlite3.connect(authority["database"])) as connection:
+        connection.execute(
+            "UPDATE instance_launch_overrides SET overrides = jsonb(?)",
+            (json.dumps({"java_path": str(path)}),),
+        )
+        connection.commit()
+
+
+def platform_candidate_operation(fixture: ManagerFixture) -> tuple[dict, dict]:
+    version = "0.1.7-canary8"
+    filename = f"matcha-heart-death-compat-{version}.jar"
+    source = fixture.repository / "artifacts" / filename
+    sha256 = write_dependency_mod(
+        source,
+        "matcha_heart_death_compat",
+        version,
+        depends={
+            "minecraft": "=26.2",
+            "fabricloader": ">=0.19.0 <0.20.0-",
+            "java": ">=25",
+        },
+    )
+    candidate = unit(
+        "matcha-heart-death-compat",
+        version,
+        artifact(
+            filename,
+            "matcha_heart_death_compat",
+            sha256,
+            source_type="REPOSITORY",
+            source_path="artifacts/" + filename,
+        ),
+        project_uuid=fixture.heart_uuid,
+    )
+    mossy, _ = fixture.add_mossy_repository_candidate()
+    return candidate, {
+        "type": "DEPLOY_PROFILE",
+        "slots": {
+            "A": {
+                "members": [
+                    candidate_declaration(candidate, fixture.c5["deployment_id"]),
+                    candidate_declaration(mossy),
+                ]
+            },
+            "B": None,
+        },
+    }
 
 
 class FabricPredicateTests(unittest.TestCase):
@@ -242,6 +450,388 @@ class FabricDependencyGraphTests(unittest.TestCase):
         )
         with self.assertRaisesRegex(ManagerError, "duplicate enabled Fabric ownership more_slabs_stairs_and_walls"):
             self.resolve(self.bge_c58, standalone, self.trowel)
+
+    def test_platform_dependency_without_exact_attestation_fails_closed(self) -> None:
+        consumer = descriptor(
+            "builtin-consumer.jar",
+            "builtin_consumer",
+            "1.0.0",
+            depends={"minecraft": ("=26.2",)},
+            project_id="builtin-consumer",
+        )
+        with self.assertRaisesRegex(
+            ManagerError,
+            r"missing external Fabric dependency.*minecraft.*no exact enabled provider",
+        ):
+            self.resolve(consumer)
+
+
+class FabricPlatformAttestationTests(unittest.TestCase):
+    def fixture(self, temporary: str) -> ManagerFixture:
+        profiles = Path(temporary) / "ModrinthApp" / "profiles"
+        profiles.mkdir(parents=True)
+        return ManagerFixture(profiles)
+
+    def test_exact_modrinth_authority_resolves_all_builtins_and_receipts_evidence(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            fixture = self.fixture(temporary)
+            authority = install_fake_modrinth_launch_authority(fixture)
+            before = tree_snapshot(authority["app_root"])
+            attestation = fixture.manager._attest_platform_providers(
+                {"minecraft", "fabricloader", "java"}
+            )
+            self.assertIsNotNone(attestation)
+            self.assertEqual(before, tree_snapshot(authority["app_root"]))
+            self.assertEqual(
+                [authority["probe_java"]],
+                authority["probe_calls"],
+            )
+            self.assertEqual(
+                {"minecraft": "26.2", "fabricloader": "0.19.3", "java": "25"},
+                {item.mod_id: item.version for item in attestation.providers},
+            )
+            self.assertTrue(
+                attestation.evidence["target"]["instance_id"].startswith("hex:")
+            )
+            self.assertEqual(
+                64,
+                len(attestation.evidence["java"]["selected_executable_sha256"]),
+            )
+
+            consumer = descriptor(
+                "builtin-consumer.jar",
+                "builtin_consumer",
+                "1.0.0",
+                depends={
+                    "minecraft": ("=26.2",),
+                    "fabricloader": (">=0.19.0 <0.20.0-",),
+                    "java": (">=25",),
+                },
+                project_id="builtin-consumer",
+            )
+            report = fixture.manager._resolve_dependency_graph(
+                (consumer,),
+                managed_ownership_ids={"builtin_consumer"},
+                phase="TEST",
+                platform_attestation=attestation,
+            )
+            self.assertEqual(
+                {"fabricloader", "java", "minecraft"},
+                {item["dependency_id"] for item in report["resolutions"]},
+            )
+            self.assertTrue(
+                all(
+                    item["classification"] == "RESOLVED_ATTESTED_PLATFORM_PROVIDER"
+                    and item["satisfied"]
+                    and item["matched_predicates"]
+                    for item in report["resolutions"]
+                )
+            )
+            self.assertEqual(
+                attestation.fingerprint,
+                report["platform_attestation"]["fingerprint"],
+            )
+            json.dumps(report)
+
+    def test_builtin_predicate_mismatch_and_duplicate_jar_ownership_fail_closed(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            fixture = self.fixture(temporary)
+            install_fake_modrinth_launch_authority(fixture)
+            attestation = fixture.manager._attest_platform_providers({"minecraft"})
+            incompatible = descriptor(
+                "incompatible.jar",
+                "incompatible_consumer",
+                "1.0.0",
+                depends={"minecraft": ("=26.1",)},
+                project_id="incompatible-consumer",
+            )
+            with self.assertRaisesRegex(
+                ManagerError,
+                r"minecraft \['=26\.1'\].*minecraft@26\.2.*dedicated-profile launch provider",
+            ):
+                fixture.manager._resolve_dependency_graph(
+                    (incompatible,),
+                    managed_ownership_ids={"incompatible_consumer"},
+                    phase="TEST",
+                    platform_attestation=attestation,
+                )
+
+            forged_builtin = descriptor(
+                "forged-minecraft.jar",
+                "minecraft",
+                "26.2",
+                project_id="forged-minecraft",
+            )
+            with self.assertRaisesRegex(
+                ManagerError,
+                "duplicate enabled Fabric ownership minecraft: Fabric builtin provider",
+            ):
+                fixture.manager._resolve_dependency_graph(
+                    (forged_builtin,),
+                    managed_ownership_ids={"minecraft"},
+                    phase="TEST",
+                    platform_attestation=attestation,
+                )
+
+    def test_integrated_dry_run_apply_and_verify_reattest_exact_platform_versions(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            fixture = self.fixture(temporary)
+            authority = install_fake_modrinth_launch_authority(fixture)
+            fixture.manager.adopt(dry_run=False)
+            _candidate, operation = platform_candidate_operation(fixture)
+            before = fixture.repository_state()
+
+            dry_run = fixture.manager.transition(
+                operation=operation,
+                expected_revision=before["revision"],
+                at="2099-01-01T00:00:30Z",
+                dry_run=True,
+            )
+            platform_resolutions = [
+                item
+                for item in dry_run["dependency_resolution"]["resolutions"]
+                if item["classification"] == "RESOLVED_ATTESTED_PLATFORM_PROVIDER"
+            ]
+            self.assertEqual(3, len(platform_resolutions))
+            self.assertEqual(
+                {"minecraft": "26.2", "fabricloader": "0.19.3", "java": "25"},
+                {
+                    item["dependency_id"]: item["provider"]["version"]
+                    for item in platform_resolutions
+                },
+            )
+
+            applied = fixture.manager.transition(
+                operation=operation,
+                expected_revision=before["revision"],
+                at="2099-01-01T00:00:30Z",
+                dry_run=False,
+            )
+            verified = fixture.manager.verify()
+            self.assertEqual("FABRIC_PLATFORM_PROVIDERS_ATTESTED", applied["dependency_resolution"]["platform_attestation"]["status"])
+            self.assertEqual("PHYSICAL_STATE_VERIFIED", verified["status"])
+            self.assertEqual(
+                "FABRIC_PLATFORM_PROVIDERS_ATTESTED",
+                verified["fabric_dependency_graph"]["platform_attestation"]["status"],
+            )
+            self.assertTrue(authority["probe_calls"])
+            self.assertTrue(all(path == authority["probe_java"] for path in authority["probe_calls"]))
+
+    def test_launch_authority_mismatches_fail_closed(self) -> None:
+        cases = (
+            (
+                "stale content set",
+                {"content_set_status": "stale"},
+                "applied content set is not available",
+            ),
+            (
+                "unresolved loader alias",
+                {"loader_version": "latest"},
+                "unresolved alias",
+            ),
+            (
+                "cached metadata id drift",
+                {"metadata_id": "wrong-id"},
+                "metadata identity",
+            ),
+            (
+                "cached loader coordinate drift",
+                {"metadata_loader_coordinates": ["net.fabricmc:fabric-loader:0.19.2"]},
+                "cached Fabric Loader coordinate",
+            ),
+            (
+                "selected java full version drift",
+                {"probed_java_version": "25.0.3"},
+                "configured Java version identity",
+            ),
+            (
+                "java major drift",
+                {"probed_java_specification": "24"},
+                "disagrees with required major 25",
+            ),
+            (
+                "unsafe game version authority",
+                {"game_version": "release/candidate"},
+                "not an exact release semantic version",
+            ),
+        )
+        for label, options, pattern in cases:
+            with self.subTest(label=label), tempfile.TemporaryDirectory() as temporary:
+                fixture = self.fixture(temporary)
+                authority = install_fake_modrinth_launch_authority(fixture, **options)
+                before = tree_snapshot(authority["app_root"])
+                with self.assertRaisesRegex(ManagerError, pattern):
+                    fixture.manager._attest_platform_providers({"minecraft"})
+                self.assertEqual(before, tree_snapshot(authority["app_root"]))
+
+    def test_exact_target_row_must_be_unique(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            fixture = self.fixture(temporary)
+            authority = install_fake_modrinth_launch_authority(fixture)
+            with closing(sqlite3.connect(authority["database"])) as connection:
+                duplicate_instance = bytes.fromhex("33333333333333333333333333333333")
+                duplicate_set = bytes.fromhex("44444444444444444444444444444444")
+                connection.execute(
+                    "INSERT INTO instances VALUES (?, ?, ?, ?)",
+                    (duplicate_instance, fixture.target.name, "installed", duplicate_set),
+                )
+                connection.execute(
+                    "INSERT INTO instance_content_sets VALUES (?, ?, ?, ?, ?, ?, ?)",
+                    (
+                        duplicate_set,
+                        duplicate_instance,
+                        "available",
+                        "26.2",
+                        "fabric",
+                        "0.19.3",
+                        "2099-01-01T00:00:00Z",
+                    ),
+                )
+                connection.commit()
+            with self.assertRaisesRegex(ManagerError, "matched 2 applied content sets"):
+                fixture.manager._attest_platform_providers({"java"})
+
+    def test_arbitrary_launch_override_executable_is_never_probed(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            fixture = self.fixture(temporary)
+            authority = install_fake_modrinth_launch_authority(fixture)
+            arbitrary = authority["app_root"] / "meta" / "java_versions" / "fixture-java" / "bin" / "launcher.exe"
+            arbitrary.write_bytes(b"not a Java launcher")
+            set_fake_java_override(authority, arbitrary)
+
+            with self.assertRaisesRegex(ManagerError, "selected Java executable must be"):
+                fixture.manager._attest_platform_providers({"java"})
+            self.assertEqual([], authority["probe_calls"])
+
+    def test_protected_profile_launch_override_is_rejected_before_access_or_probe(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            fixture = self.fixture(temporary)
+            authority = install_fake_modrinth_launch_authority(fixture)
+            protected_before = tree_snapshot(fixture.protected)
+            protected_java = fixture.protected / "runtime" / "bin" / ("java.exe" if os.name == "nt" else "java")
+            set_fake_java_override(authority, protected_java)
+
+            with self.assertRaisesRegex(ManagerError, "protected gameplay profile"):
+                fixture.manager._attest_platform_providers({"java"})
+            self.assertEqual([], authority["probe_calls"])
+            self.assertEqual(protected_before, tree_snapshot(fixture.protected))
+
+    def test_reparse_traversal_launch_override_is_never_probed_when_supported(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            fixture = self.fixture(temporary)
+            authority = install_fake_modrinth_launch_authority(fixture)
+            linked_home = authority["app_root"] / "linked-java"
+            try:
+                linked_home.symlink_to(authority["java_home"], target_is_directory=True)
+            except (NotImplementedError, OSError) as exc:
+                self.skipTest(f"directory symlinks are unavailable: {exc}")
+            set_fake_java_override(
+                authority,
+                linked_home / "bin" / ("java.exe" if os.name == "nt" else "java"),
+            )
+
+            with self.assertRaisesRegex(ManagerError, "symlink, junction, or reparse point"):
+                fixture.manager._attest_platform_providers({"java"})
+            self.assertEqual([], authority["probe_calls"])
+
+    def test_under_lock_launch_authority_drift_fails_before_transaction(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            fixture = self.fixture(temporary)
+            install_fake_modrinth_launch_authority(fixture)
+            fixture.manager.adopt(dry_run=False)
+            _candidate, operation = platform_candidate_operation(fixture)
+            baseline = fixture.manager._attest_platform_providers(
+                {"minecraft", "fabricloader", "java"}
+            )
+            drifted = PlatformAttestation(
+                providers=baseline.providers,
+                evidence={**baseline.evidence, "fixture_drift": True},
+                fingerprint="f" * 64,
+            )
+            before_state = fixture.repository_state()
+            before_tree = tree_snapshot(fixture.root)
+            stages: list[str] = []
+            with patch.object(
+                fixture.manager,
+                "_attest_platform_providers",
+                side_effect=(baseline, drifted),
+            ), self.assertRaisesRegex(ManagerError, "changed between planning and the under-lock pre-mutation check"):
+                fixture.manager.transition(
+                    operation=operation,
+                    expected_revision=before_state["revision"],
+                    at="2099-01-01T00:00:30Z",
+                    dry_run=False,
+                    failure_injector=stages.append,
+                )
+            self.assertEqual([], stages)
+            self.assertEqual(before_state, fixture.repository_state())
+            self.assertEqual(before_tree, tree_snapshot(fixture.root))
+
+    def test_post_write_launch_authority_drift_rolls_back_exact_profile_preimage(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            fixture = self.fixture(temporary)
+            authority = install_fake_modrinth_launch_authority(fixture)
+            fixture.manager.adopt(dry_run=False)
+            candidate, operation = platform_candidate_operation(fixture)
+            before_state = fixture.repository_state()
+            before_tree = tree_snapshot(fixture.root)
+            reached_post_write = False
+
+            def drift_after_physical_apply(stage: str) -> None:
+                nonlocal reached_post_write
+                if stage != "after_physical_apply":
+                    return
+                reached_post_write = True
+                metadata_path = authority["metadata_path"]
+                metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+                metadata["fixture_nonsemantic_drift"] = True
+                metadata_path.write_text(json.dumps(metadata, sort_keys=True), encoding="utf-8")
+
+            with self.assertRaisesRegex(ManagerError, "changed.*post-write verification"):
+                fixture.manager.transition(
+                    operation=operation,
+                    expected_revision=before_state["revision"],
+                    at="2099-01-01T00:00:30Z",
+                    dry_run=False,
+                    failure_injector=drift_after_physical_apply,
+                )
+            self.assertTrue(reached_post_write)
+            self.assertEqual(before_state, fixture.repository_state())
+            self.assertEqual(before_tree, tree_snapshot(fixture.root))
+            self.assertFalse((fixture.mods / candidate["artifacts"][0]["filename"]).exists())
+
+    def test_final_commit_boundary_launch_authority_drift_rolls_back_exact_preimage(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            fixture = self.fixture(temporary)
+            authority = install_fake_modrinth_launch_authority(fixture)
+            fixture.manager.adopt(dry_run=False)
+            candidate, operation = platform_candidate_operation(fixture)
+            before_state = fixture.repository_state()
+            before_tree = tree_snapshot(fixture.root)
+            reached_final_boundary = False
+
+            def drift_after_post_verify(stage: str) -> None:
+                nonlocal reached_final_boundary
+                if stage != "after_post_verify":
+                    return
+                reached_final_boundary = True
+                metadata_path = authority["metadata_path"]
+                metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+                metadata["fixture_final_boundary_drift"] = True
+                metadata_path.write_text(json.dumps(metadata, sort_keys=True), encoding="utf-8")
+
+            with self.assertRaisesRegex(ManagerError, "changed.*final post-verification commit boundary"):
+                fixture.manager.transition(
+                    operation=operation,
+                    expected_revision=before_state["revision"],
+                    at="2099-01-01T00:00:30Z",
+                    dry_run=False,
+                    failure_injector=drift_after_post_verify,
+                )
+            self.assertTrue(reached_final_boundary)
+            self.assertEqual(before_state, fixture.repository_state())
+            self.assertEqual(before_tree, tree_snapshot(fixture.root))
+            self.assertFalse((fixture.mods / candidate["artifacts"][0]["filename"]).exists())
 
 
 class DependencyCohortTransitionTests(unittest.TestCase):

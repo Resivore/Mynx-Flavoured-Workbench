@@ -76,16 +76,37 @@ are OR alternatives, space-delimited terms inside one predicate are ANDed, and
 semantic/prerelease/wildcard ordering follows Fabric Loader. A present provider
 must satisfy its predicate. A missing ID known to manager ownership fails and
 names the companion that must be supplied in the same cohort operation.
-Only Fabric's virtual platform IDs (`java`, `minecraft`, `fabricloader`) are
-accepted without an enabled root provider JAR and are explicitly classified in
-the receipt. This JAR-graph check does not claim an exact version attestation
-for those launcher/runtime virtual providers; its exact-version guarantee
-applies to root descriptors from enabled managed and unmanaged JARs. A
-physically present unmanaged provider is accepted and its exact
+Fabric's builtin provider IDs (`java`, `minecraft`, `fabricloader`) have no
+enabled root provider JAR, but they are never trusted without a version. When a
+managed descriptor depends on or attempts to own one of those IDs, the manager
+attests all three from the exact configured dedicated profile's current launch
+authority. It issues one parameterized, read-only `app.db` query keyed only by
+that profile directory name; an absent or ambiguous row, a non-installed
+instance, a stale/unavailable applied content set, a non-Fabric loader, or an
+unresolved loader alias fails closed. The applied Minecraft and Loader versions
+must be exact releases. The exact cached merged launch metadata ID and SHA-256,
+its required Java major, and its unique Fabric Loader Maven coordinate must
+agree with the applied content set.
+
+Java resolution uses an exact instance override when present, otherwise the
+sole Modrinth Java runtime configured for the cached metadata's required major.
+The selected path must name an actual platform Java launcher and may not enter
+the protected profile or traverse a symlink, junction, or reparse point. On
+Windows only `java.exe` or `javaw.exe` is accepted, and a selected `javaw.exe`
+is never executed: the manager probes only its safe sibling `java.exe` with
+`-XshowSettings:properties -version`. The probed specification/full versions
+and `java.home` must agree with the selected executable and Modrinth metadata.
+Receipts expose the exact target/content-set identities, metadata path/hash,
+selected and probed Java paths/hashes, exact builtin versions, matched Fabric
+predicates, and one deterministic attestation fingerprint. A synthetic builtin
+provider then passes through the same Fabric predicate evaluator as every JAR
+provider; an enabled JAR that claims a builtin ID is a duplicate-owner failure.
+
+A physically present unmanaged JAR provider is accepted and its exact
 path/version is recorded, but a missing external or managed hard dependency
-fails closed. Post-deployment verification repeats the graph from physical
-enabled bytes; readiness is never committed unless both hash inventory and
-graph report `VERIFIED`.
+fails closed. Post-deployment verification repeats both the physical JAR graph
+and builtin attestation; readiness is never committed unless hash inventory,
+dependency graph, and launch authority all report `VERIFIED`.
 
 `PROMOTE_UNTESTED_CANDIDATE` is the narrow exception for an explicitly
 user-approved successor that must enter the accepted baseline without claiming
@@ -219,7 +240,12 @@ the profile path are not treated as a running Minecraft instance. An apply
 recomputes the plan while holding the target-local exclusive
 lock, stages and hashes every addition, verifies the result, commits the target
 ledger and repository state together, and restores the preimage if any step
-fails.
+fails. Builtin launch authority is attested during dry-run/preflight,
+re-attested immediately under the target lock before a transaction directory
+or managed path is written, repeated after physical writes, and checked again
+at the final commit boundary. Any fingerprint drift fails closed; drift after
+writes rolls back every managed artifact, slot, ledger, title projection, and
+repository-state change.
 
 The V1 `.workbench-instance-manager.json` file is legacy display metadata, not
 V2 state authority. The 0.2.0 title marker never reads either its active or
@@ -262,6 +288,10 @@ already exists.
   staged Fabric dependency is satisfied. An incompatible retained companion
   fails before any filesystem write; a compatible bounded predicate permits an
   atomic provider-only member replacement.
+- Every hard dependency of an enabled managed Fabric JAR resolves to either an
+  exact enabled JAR provider or an exact attested builtin provider and satisfies
+  its declared predicate. Missing external providers, unversioned builtins,
+  duplicate builtin ownership, and launch-authority drift all fail closed.
 - Unmanaged enabled JARs that provide managed Fabric IDs are rejected;
   intentional legacy-disabled fallbacks are preserved.
 - Symlinks, junctions/reparse points, path escapes, stale revisions/digests,
