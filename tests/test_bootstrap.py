@@ -1340,7 +1340,7 @@ class RuntimeContractTests(unittest.TestCase):
         # inferred by this bootstrap test.
         tracked = load_json(ROOT / "tools" / "test_instance_manager" / "runtime-state.json")
         self.assertEqual("ACTIVE", tracked["activation"])
-        self.assertEqual(60, tracked["revision"])
+        self.assertEqual(61, tracked["revision"])
         self.assertEqual(11, tracked["accepted_baseline"]["revision"])
         self.assertEqual(32, tracked["accepted_baseline"]["provenance"]["accepted_artifact_count"])
         self.assertEqual("TRANSITIONED", tracked["accepted_baseline"]["provenance"]["physical_disposition"])
@@ -1443,7 +1443,20 @@ class RuntimeContractTests(unittest.TestCase):
             slot_a["unit"]["artifacts"][0]["ownership_keys"],
         )
         self.assertEqual("READY_TO_TEST_VERIFIED", slot_a["deployment"]["state"])
-        self.assertEqual("UNTESTED", slot_a["runtime_result"]["classification"])
+        self.assertEqual("FAIL", slot_a["runtime_result"]["classification"])
+        self.assertEqual("2026-09-01T05:34:21Z", slot_a["runtime_result"]["recorded_at"])
+        self.assertEqual(
+            {
+                "passed": [
+                    "User-reported broad nonvisual behavior PASS for exact unified BGE C57; "
+                    "no row-level observations were supplied or inferred."
+                ],
+                "failed": [
+                    "User-reported existing glass-Corner visual/UV defect on exact unified BGE C57."
+                ],
+            },
+            slot_a["runtime_result"]["evidence"],
+        )
         self.assertEqual(
             ["e5eb4fcb-6c49-4ab2-86f9-1605ccd192ab"],
             slot_a["dependency_overrides"],

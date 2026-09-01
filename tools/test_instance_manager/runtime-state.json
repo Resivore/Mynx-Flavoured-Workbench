@@ -2,8 +2,8 @@
   "$schema": "../../schemas/runtime-state.schema.json",
   "schema_version": 1,
   "activation": "ACTIVE",
-  "revision": 60,
-  "updated_at": "2026-09-01T03:24:52Z",
+  "revision": 61,
+  "updated_at": "2026-09-01T05:34:21Z",
   "accepted_baseline": {
     "revision": 11,
     "provenance": {
@@ -877,11 +877,15 @@
         "ready_verified_at": "2026-08-31T16:37:02Z"
       },
       "runtime_result": {
-        "classification": "UNTESTED",
-        "recorded_at": null,
+        "classification": "FAIL",
+        "recorded_at": "2026-09-01T05:34:21Z",
         "evidence": {
-          "passed": [],
-          "failed": []
+          "passed": [
+            "User-reported broad nonvisual behavior PASS for exact unified BGE C57; no row-level observations were supplied or inferred."
+          ],
+          "failed": [
+            "User-reported existing glass-Corner visual/UV defect on exact unified BGE C57."
+          ]
         }
       },
       "dependency_overrides": [

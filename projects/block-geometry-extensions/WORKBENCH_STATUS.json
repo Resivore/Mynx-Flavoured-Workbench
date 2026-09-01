@@ -29,7 +29,7 @@
       "Register native slabs, stairs, walls, material profiles, transitions, and client bindings before deriving CNM/BGE geometry through one guarded bootstrap and one root Fabric descriptor.",
       "Preserve all native material profiles, canonical parents, copied settings, TOP/SIDE/BOTTOM roles, axes, patterns, tint, translucency, transitions, drops, and specialized behaviors.",
       "Generate one Layer, Corner, and Quarter Column per supported canonical family while preserving Vertical Slab and Step, deterministic selector order, one-source economy, orientation, waterlogging, collision, and drops.",
-      "Provide primary Fabric ID `cnm_terrain_slabs_compat` and verified legacy alias `more_slabs_stairs_and_walls` from the same mod container and shared version `4.2.1-bge.canary57.unified+26.2`."
+      "Provide primary Fabric ID `cnm_terrain_slabs_compat` and verified legacy alias `more_slabs_stairs_and_walls` from the same mod container and shared version `4.2.2-bge.canary58.glass-corner-uv+26.2`."
     ],
     "boundaries": {
       "owned_paths": [
@@ -37,7 +37,7 @@
       ],
       "exclusions": [
         "Clutter No More source and artifacts remain external and unchanged; its ShapeMap remains the canonical family and switching mechanism.",
-        "The reported small glass-Corner visual issue is intentionally unchanged, undiagnosed, and deferred to a later BGE visual task.",
+        "C58 is limited to the user-authored glass-Corner geometry/UV route; generic glass Quarter Column projection and all non-glass Corner outputs remain C57-equivalent.",
         "`projects/bge-ctm`, shaders, resource-pack classification, BBB source/assets, and unrelated consumer projects are outside this consolidation.",
         "Accepted BGE C52 and its historical accepted Nibaru C45 companion are preserved as rollback provenance and are not promoted or rewritten."
       ]
@@ -47,7 +47,7 @@
         "type": "MOD",
         "identifier": "minecraft",
         "requirement": "~26.2",
-        "reason": "Unified BGE C57 targets Minecraft Java 26.2."
+        "reason": "Unified BGE C58 targets Minecraft Java 26.2."
       },
       {
         "type": "MOD",
@@ -70,15 +70,15 @@
     ]
   },
   "state": {
-    "milestone": "Exact C56 with exact Nibaru C46 is the behaviorally verified migration baseline: every behavior actually covered by the user's report passed, but C56 is overall runtime FAIL solely because a small glass-Corner visual issue remains; no unmentioned matrix row is inferred, and the issue was neither diagnosed nor changed. Unified C57 absorbs the C46 source, native catalog, profiles, resources, licensing, and legacy mod identity into one BGE JAR with unchanged glass-generation inputs and output. Manager revision 58 verifies C57 in Slot A as READY_TO_TEST_VERIFIED / RUNTIME_UNTESTED. Accepted/rollback BGE C52 remains unchanged, with accepted Nibaru C45 retained as historical companion provenance; no promotion occurred.",
+    "milestone": "Manager revision 61 verifies exact unified C57 still in Slot A as READY_TO_TEST_VERIFIED, with the user's broad nonvisual behavior report recorded as PASS and C57 overall recorded as FAIL solely for the glass-Corner visual/UV defect; no row-level observations were inferred. C58 is the statically validated model-only successor derived from the exact user-supplied NORTH_EAST Blockbench geometry/UV contract, but it is NOT_DEPLOYED and RUNTIME_UNTESTED because unchanged Slot B Shulker Trowel C8 pins exact C57 and would be loader-incompatible with C58. The manager replacement was deliberately not attempted, both slots and physical artifacts remain unchanged, and accepted/rollback BGE C52 remains exact and unpromoted.",
     "releases": {
       "current": {
-        "version": "C57 (Unified Nibaru; embedded 4.2.1-bge.canary57.unified+26.2)",
+        "version": "C58 (Glass Corner UV; embedded 4.2.2-bge.canary58.glass-corner-uv+26.2)",
         "artifact": {
-          "filename": "cnm-nibaru-integration-4.2.1-bge.canary57.unified+26.2.jar",
-          "sha256": "7cd01479531ec26975326b882e0a18406c17de26695b1f4fae29b72edb76cbc2"
+          "filename": "cnm-nibaru-integration-4.2.2-bge.canary58.glass-corner-uv+26.2.jar",
+          "sha256": "1a4e4d1cd9c8709720ec84975e70caffb5552ac676537b9bbae42dca96567e87"
         },
-        "source_commit": "f907bdab139fd2ec68f8741f5a449b9ee0c973f4"
+        "source_commit": "d1d753a86b21467141bd39a0bcc1270f7827a8d7"
       },
       "accepted": {
         "version": "C52 (legacy Integration 1.39)",
@@ -101,17 +101,17 @@
     },
     "validation": {
       "build": "CONTROLLED_VALIDATION_PASS",
-      "deployment": "READY_TO_TEST_VERIFIED",
+      "deployment": "NOT_DEPLOYED",
       "runtime": "RUNTIME_UNTESTED"
     },
     "blocker": null
   },
   "synchronization": {
-    "revision": 13,
-    "activity_at": "2026-08-31T16:42:32Z",
-    "updated_at": "2026-08-31T16:42:32Z",
-    "last_codex_at": "2026-08-31T16:42:32Z",
-    "source_commit": "f907bdab139fd2ec68f8741f5a449b9ee0c973f4",
+    "revision": 14,
+    "activity_at": "2026-09-01T05:35:59Z",
+    "updated_at": "2026-09-01T05:35:59Z",
+    "last_codex_at": "2026-09-01T05:35:59Z",
+    "source_commit": "d1d753a86b21467141bd39a0bcc1270f7827a8d7",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null

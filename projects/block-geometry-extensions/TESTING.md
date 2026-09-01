@@ -1,29 +1,26 @@
-# Unified BGE C57 runtime procedure
+# BGE C58 focused glass-Corner runtime procedure
 
-Candidate: `cnm-nibaru-integration-4.2.1-bge.canary57.unified+26.2.jar`, 6,025,701 bytes, SHA-256 `7cd01479531ec26975326b882e0a18406c17de26695b1f4fae29b72edb76cbc2`.
+Candidate: `cnm-nibaru-integration-4.2.2-bge.canary58.glass-corner-uv+26.2.jar`, 6,036,614 bytes, SHA-256 `1a4e4d1cd9c8709720ec84975e70caffb5552ac676537b9bbae42dca96567e87`.
 
-Use only the dedicated Minecraft 26.2 Workbench. Slot A must show BGE Canary 57 as `READY_TO_TEST_VERIFIED`; keep Clutter No More external and install no standalone Nibaru JAR. Static checks, controlled GameTests, exact artifact identity, and manager readiness are not a gameplay pass.
+The broad nonvisual BGE behavior matrix was already user-tested on exact unified C57 and is not reopened by this model-only successor. Record only the focused visual observations below; static checks, controlled GameTests, exact artifact identity, and future manager readiness are not Minecraft runtime evidence.
 
-## Known-issue boundary
+## Deployment precondition
 
-BGE C56 had a user-reported small glass-Corner visual issue. This consolidation intentionally preserves that appearance and does not diagnose or fix it. Record an unchanged reproduction as the known deferred issue, not as a new consolidation regression or a fix. Stop for any new or worsened glass-Corner difference.
+C58 is not currently deployed. Manager revision 61 leaves exact C57 in Slot A because unchanged Slot B Shulker Trowel C8 declares an exact dependency on `4.2.1-bge.canary57.unified+26.2`; replacing C57 alone would create a known Fabric loader incompatibility. Do not copy C58 manually or start this checklist until a compatible Trowel candidate is authorized and the canonical manager verifies C58 as `READY_TO_TEST_VERIFIED / UNTESTED` in the dedicated Minecraft 26.2 Workbench. Never use the protected 26.1.2 profile.
 
-## Matrix
+## Focused visual checklist
 
-1. Startup and ownership: start with CNM plus the single unified BGE JAR and no standalone Nibaru JAR. Confirm one effective mod container supplies both `cnm_terrain_slabs_compat` and alias `more_slabs_stairs_and_walls` without duplicate registry, entrypoint, mixin, or resource errors.
-2. Legacy native identity: resolve representative and edge-case `more_slabs_stairs_and_walls:*` blocks, items, tags, loot, models, textures, and language keys. Confirm exact old IDs pick, place, save, reload, and break without missing or remapped content.
-3. Native slabs, stairs, and walls: exercise crafting and stonecutting, placement, orientation, pick-block, breaking, drops, and item economy across ordinary and specialized families.
-4. CNM selector order: confirm exactly `Full Block`, `Slab`, `Stair`, `Wall`, `Vertical Slab`, `Step`, `Corner`, `Quarter Column`, `Layer`, with no duplicate or missing role.
-5. Vertical Slab and Step: recheck placement faces, rotation, waterlogging where supported, collision, switching, drops, and established economy.
-6. Layer: check all six orientations, thickness states, waterlogging, same-block free growth, first-occupancy debit, failed-attempt economy, item presentation, collision, pick-block, and one-source drop.
-7. Corner: check all four orientations, full-height L footprint, placement, waterlogging, collision, first-occupancy debit, failed-attempt economy, pick-block, and one-source drop.
-8. Quarter Column: check four singleton quadrants, terminal diagonals, compatible free growth, failed-attempt economy, collision, waterlogging, pick-block, and one-source drop.
-9. Canonical material frame: sample TOP/SIDE/BOTTOM roles, pillar axes, glazed patterns, overlays/tints, translucency, honey/slime insets, copied settings, and geometry rotation independent from material/UV orientation.
-10. Specialized behavior: exercise grass and analogous spreading, path conversion, leaves, falling/concrete, copper oxidation/waxing/scraping, coral, redstone, magma, soul sand, ice, stripping, and typed transitions including `DROP_BASE`.
-11. Separated-world compatibility: load a disposable world created with exact BGE C56 plus Nibaru C46; confirm no missing blocks, remaps, duplicate registration, lost states, or changed family identity.
-12. Shulker Trowel integration: when Slot B contains C9, confirm all nine modes resolve the exact unified catalog, icons, placement targets, economy, and fail-closed behavior without a standalone Nibaru JAR.
-13. Logs: inspect loader, registry, mixin, resource, ShapeMap, transition, and catalog logs for missing or duplicate IDs, failed mixins, unresolved resources, recursive generated-material discovery, or dependency errors.
+1. Start with Clutter No More plus the single unified C58 BGE JAR and no standalone Nibaru JAR; confirm one effective container supplies `cnm_terrain_slabs_compat` and alias `more_slabs_stairs_and_walls` without loader or duplicate-registration errors.
+2. Place clear-glass Corner blocks in all four physical orientations: `NORTH_EAST`, `SOUTH_EAST`, `SOUTH_WEST`, and `NORTH_WEST`.
+3. Inspect every outer border and both concave notch faces in each orientation.
+4. Confirm no UV band is mirrored, rotated backward, missing, stretched, duplicated, or attached to the wrong physical face.
+5. Check Corner-to-full-glass adjacency for correct shared-boundary culling and no missing exterior/notch faces.
+6. Check representative same-state and differently oriented Corner-to-Corner arrangements for correct adjacency and culling.
+7. Place at least one stained-glass Corner in all four orientations, or a representative orientation set sufficient to prove the authored mapping is texture-generic and uses that stained-glass texture.
+8. Inspect the creative/inventory Corner item for the established facing, centering, scale, border identity, and material texture.
+9. With a compatible Shulker Trowel build, confirm the Corner icon and placed result use C58 without rebuilding unrelated Trowel behavior or reopening its broad matrix.
+10. Inspect relevant loader, resource, model, atlas, and rendering logs for missing textures, model bake errors, bad cullfaces, duplicate IDs, or dependency failures.
 
 ## Result and stopping conditions
 
-Record only behavior actually observed. Stop and record `FAIL` for startup/registry errors, missing or remapped legacy content, duplicate registration, changed selector identity/order, economy or geometry regressions, new glass-Corner output, or material-profile collapse. Do not promote C57 in this procedure.
+Record `PASS`, `FAIL`, or `INCONCLUSIVE` only for the observations actually made. Stop on any startup/dependency error, incorrect orientation, wrong outer/notch border, mirrored or world-locked UV, missing/duplicated face, adjacency/culling regression, incorrect stained texture, or item regression. Do not promote C58 in this procedure.
