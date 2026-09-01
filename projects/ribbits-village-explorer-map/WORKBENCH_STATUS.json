@@ -3,76 +3,81 @@
   "schema_version": 1,
   "identity": {
     "uuid": "3ef3a962-1caa-4384-b524-7ebff348774f",
-    "name": "Ribbits Village Explorer Map",
+    "name": "Ribbits × Matcha Integration",
     "project_id": "ribbits-village-explorer-map",
     "aliases": [
+      "Ribbits Matcha Integration"
+    ],
+    "legacy_names": [
+      "Ribbits Village Explorer Map",
       "Ribbits × Matcha Cartographer Integration"
     ],
-    "legacy_names": [],
     "legacy_ids": []
   },
   "definition": {
     "lifecycle": "PLANNED",
     "goals": [
-      "Let ordinary cartographers offer a dedicated explorer map that locates the Ribbits village structure in the Minecraft Java 26.2 Fabric stack.",
-      "Preserve Ribbits villages, vanilla swamp huts, and Matcha's existing swamp-hut explorer map as distinct structures and discovery paths."
+      "Maintain the Minecraft Java 26.2 Fabric integration layer between the canonical Mynx-maintained Ribbits line and Matcha Flavoured.",
+      "Make Ribbits participate intentionally in Matcha progression, villager economics, discovery, and other explicitly approved cross-system behavior without turning either project into a general overhaul of the other."
     ],
     "scope": [
-      "Begin implementation only after the Ribbits 26.2 port has a runtime-functional candidate whose exact village structure identity and world-generation behavior can be verified.",
-      "Audit the then-current Minecraft 26.2 explorer-map, structure-tag, villager-trade, and Matcha swamp-hut-map contracts, then use the narrowest server-authoritative Fabric compatibility implementation.",
-      "Add a non-replacing later-tier offer to ordinary cartographers for a translatable Ribbit Village Explorer Map; determine the exact tier, ingredients, emerald cost, uses, experience, and search radius only after comparing the existing Matcha trade table.",
-      "Target only the registered Ribbits village structure or a dedicated compatibility-owned structure tag, without copying, renaming, replacing, or redistributing Ribbits structure data.",
-      "Use a distinct, non-misleading map name and destination marker presentation, with only original or vanilla-compatible resources if a new decoration asset is required.",
-      "Preserve independent Ribbits village spawning, vanilla swamp-hut spawning, existing cartographer offers, villager restocking, map persistence, save/reload behavior, and dedicated-server compatibility."
+      "Begin implementation only after the canonical Ribbits 26.2 project has a runtime-functional candidate and the exact current Matcha integration surfaces required by the chosen workstream can be audited.",
+      "Audit Matcha's authoritative villager-trade ownership and the exact current trade table before adding, deriving, or mapping any Ribbits-facing Matcha trade behavior; use supported server-authoritative hooks and do not rely on ignored or unassigned trade resources.",
+      "Retain the original explorer-map concept as an initial workstream: add a distinct Ribbit Village Explorer Map to Matcha cartographer progression without replacing Matcha's existing swamp-hut explorer map or unrelated cartographer offers.",
+      "Support explicitly approved Matcha-derived trade mappings for appropriate Ribbit professions, documenting whether each mapping is a frozen intentional design or an integration that tracks a defined Matcha contract; do not blanket-mirror Matcha's entire trade table by default.",
+      "Keep behavior intrinsic to Ribbits itself in the canonical Ribbits project; this project owns only behavior whose purpose depends materially on both Ribbits and Matcha.",
+      "Allow future Matcha-specific Ribbits integration workstreams to be added within this project when they cross the same ownership boundary and are individually documented, tested, and versioned.",
+      "Preserve Matcha's unrelated progression, Ribbits' unrelated native behavior, villager restocking and persistence, save/reload behavior, and dedicated-server compatibility."
     ],
     "boundaries": {
       "owned_paths": [
         "projects/ribbits-village-explorer-map"
       ],
       "exclusions": [
-        "Implementation source, build files, generated resources, artifacts, Canary versions, and speculative scaffolding while the project remains PLANNED.",
-        "Replacing swamp huts with Ribbits villages, suppressing either structure's independent world generation, sharing one structure identity, or repurposing the existing swamp-hut explorer map.",
-        "Changes to the Ribbits 26.2 port, its protected All Rights Reserved resources, its private artifact, YUNG's API, Matcha's unrelated content, or any other project.",
-        "A general villager-trade overhaul, general explorer-map framework, structure-frequency rebalance, guaranteed-nearby village generation, or changes to vanilla cartographer progression beyond the dedicated compatibility offer.",
-        "Copying or redistributing protected Ribbits textures, icons, structure templates, data, or other private material.",
-        "Deployment, Test Slot occupancy, Minecraft launch, runtime-state mutation, protected gameplay-instance access, or runtime-validation claims during project initialization."
+        "Implementation source, build files, generated resources, artifacts, Canary versions, or speculative scaffolding while the project remains PLANNED.",
+        "Ribbits-native features that do not materially depend on Matcha, including standalone Ribbit AI, profession behavior, village composition, world generation, items, or independently designed trades; those remain owned by the canonical Ribbits project.",
+        "Unrelated Matcha changes, a general Matcha villager-trade overhaul, blanket replacement of Matcha trade sets, or modification of Matcha progression beyond the explicitly approved Ribbits integration behavior.",
+        "Automatic mirroring of every current or future Matcha trade without an explicit mapping contract and compatibility rationale.",
+        "Replacing swamp huts with Ribbits villages, suppressing either structure's independent world generation, sharing one structure identity, or repurposing Matcha's existing swamp-hut explorer map.",
+        "Copying or redistributing protected Ribbits or private Matcha material beyond what is lawfully available and necessary for local compatibility work.",
+        "Deployment, Test Slot occupancy, Minecraft launch, runtime-state mutation, protected gameplay-instance access, or runtime-validation claims during conceptual planning."
       ]
     },
     "dependencies": [
       {
         "type": "PROJECT",
         "identifier": "2a650718-ec62-568f-8dff-71258a4d6f3f",
-        "requirement": "A runtime-functional Minecraft 26.2 Ribbits release with a verified registered village structure identity.",
-        "reason": "The compatibility map must locate the canonical Ribbits village without modifying or duplicating the base port's world-generation content."
+        "requirement": "A runtime-functional canonical Minecraft 26.2 Ribbits release with the exact entities, professions, village structure identity, and integration surfaces required by the implemented workstream.",
+        "reason": "Cross-system behavior must extend the canonical Ribbits implementation without duplicating or taking ownership of its native content."
       },
       {
         "type": "OTHER",
         "identifier": "minecraft",
         "requirement": "=26.2",
-        "reason": "Exact game target whose villager-trade, explorer-map, map-decoration, structure-tag, and locate contracts must be used."
+        "reason": "Exact game target whose villager trades, explorer maps, structure locate behavior, persistence, and server contracts must be respected."
       },
       {
         "type": "MOD",
         "identifier": "fabricloader",
         "requirement": ">=0.19.3",
-        "reason": "Current Minecraft 26.2 Fabric loader baseline for a separate compatibility mod."
+        "reason": "Minecraft 26.2 Fabric loader baseline for the eventual compatibility implementation."
       },
       {
         "type": "MOD",
         "identifier": "fabric-api",
         "requirement": "=0.157.0+26.2",
-        "reason": "Current Fabric API baseline; the implementation must use supported trade or lifecycle hooks where available and remain server-authoritative."
+        "reason": "Current Fabric API baseline; supported trade, lifecycle, networking, and other integration hooks should be preferred where applicable."
       },
       {
         "type": "OTHER",
         "identifier": "matcha-flavoured",
-        "requirement": "Current Minecraft 26.2 Workbench stack containing the existing swamp-hut explorer-map offer; exact supplying component and version to be audited before implementation.",
-        "reason": "The new Ribbits trade must coexist with Matcha's current swamp-hut discovery path without replacing, renaming, or crowding it out."
+        "requirement": "The exact current Minecraft 26.2 Matcha Flavoured stack and authoritative integration contracts must be audited before each implemented workstream.",
+        "reason": "This project exists specifically to integrate Ribbits with Matcha behavior rather than to reproduce an assumed or stale Matcha contract."
       }
     ]
   },
   "state": {
-    "milestone": "Official PLANNED project initialized for a dedicated cartographer-sold Ribbit Village Explorer Map. Ribbits villages and swamp huts remain separate structures with separate explorer maps; implementation is deferred until the Ribbits 26.2 port is runtime-functional and the exact Matcha trade and structure contracts are audited.",
+    "milestone": "The Ribbits Village Explorer Map concept has been repurposed in place as the general Ribbits × Matcha Integration project while preserving its immutable UUID, stable repository project ID/path, and PLANNED lifecycle. The explorer map remains the first named workstream, and selected Matcha-derived Ribbit trade mappings plus future explicitly approved cross-system features are now in scope; no implementation or runtime candidate exists.",
     "releases": {
       "current": null,
       "accepted": null,
@@ -88,11 +93,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 1,
-    "activity_at": "2026-08-31T06:15:02Z",
-    "updated_at": "2026-08-31T06:15:02Z",
-    "last_codex_at": "2026-08-31T06:15:02Z",
-    "source_commit": "4633da9a20ef414a059b6fbad6a06166c61554a5",
+    "revision": 2,
+    "activity_at": "2026-09-01T06:22:00Z",
+    "updated_at": "2026-09-01T06:22:00Z",
+    "last_codex_at": "2026-09-01T06:22:00Z",
+    "source_commit": "350394121e563873d7f91844ee7eaaaee3257a9c",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
