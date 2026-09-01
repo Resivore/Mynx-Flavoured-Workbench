@@ -376,26 +376,17 @@ public final class CornerColumnResourceGameTests implements CustomTestMethodInvo
         JsonObject glass = selected(CornerColumnModelProjection.projectCorner(
                 profile("minecraft:glass"), CORNER), "facing=west");
         List<CuboidListModelProjection.Bounds> glassExpected = List.of(
+                bounds(0, 0, 9, 16, 16, 16),
+                bounds(9, 0, 8, 16, 16, 9),
+                bounds(0, 0, 8, 7, 16, 9),
+                bounds(8, 0, 8, 9, 16, 9),
                 bounds(0, 0, 0, 7, 16, 8),
-                bounds(7, 0, 0, 8, 16, 8),
-                bounds(0, 0, 8, 8, 16, 16),
-                bounds(8, 0, 8, 16, 16, 9),
-                bounds(8, 0, 9, 16, 16, 16));
-        assertElements(helper, glass, glassExpected, "Glass compound Vertical Stairs");
-        JsonObject joinedSouthWest = glass.getAsJsonArray("elements").get(2).getAsJsonObject();
-        JsonArray joinedTopUv = joinedSouthWest.getAsJsonObject("faces")
-                .getAsJsonObject("up").getAsJsonArray("uv");
-        helper.assertTrue(faceCount(glass) == 20
-                        && joinedSouthWest.getAsJsonArray("from").get(0).getAsInt() == 0
-                        && joinedSouthWest.getAsJsonArray("from").get(2).getAsInt() == 8
-                        && joinedSouthWest.getAsJsonArray("to").get(0).getAsInt() == 8
-                        && joinedSouthWest.getAsJsonArray("to").get(2).getAsInt() == 16
-                        && joinedTopUv.get(0).getAsInt() == 0
-                        && joinedTopUv.get(1).getAsInt() == 8
-                        && joinedTopUv.get(2).getAsInt() == 8
-                        && joinedTopUv.get(3).getAsInt() == 16,
-                "Glass compound Vertical Stairs rendered a false rim at an internal quarter seam: "
-                        + glass);
+                bounds(7, 0, 8, 8, 16, 9),
+                bounds(7, 0, 0, 8, 16, 7),
+                bounds(7, 0, 7, 8, 16, 8));
+        assertElements(helper, glass, glassExpected, "Authored glass Corner");
+        helper.assertTrue(faceCount(glass) == 28,
+                "Authored glass Corner visible-face topology changed: " + glass);
         helper.succeed();
     }
 

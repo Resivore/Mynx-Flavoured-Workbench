@@ -3,7 +3,7 @@
   "id": "cnm_terrain_slabs_compat",
   "version": "${version}",
   "provides": ["more_slabs_stairs_and_walls"],
-  "name": "Block Geometry Extensions Canary 57 — Unified Nibaru",
+  "name": "Block Geometry Extensions Canary 58 — Glass Corner UV",
   "description": "Unified BGE candidate containing the retained Nibaru native material catalog plus Vertical Slab, Step, Corner, Quarter Column, and Layer geometry.",
   "authors": ["Mynx Workbench", "Nibaru"],
   "environment": "*",

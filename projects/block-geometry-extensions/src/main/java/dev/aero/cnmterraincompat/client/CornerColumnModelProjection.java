@@ -8,6 +8,7 @@ import dev.aero.cnmterraincompat.GlazedPatternState;
 import dev.aero.cnmterraincompat.MaterialAxisState;
 import games.twinhead.moreslabsstairsandwalls.api.material.BehaviorCapability;
 import games.twinhead.moreslabsstairsandwalls.api.material.NibaruMaterialProfile;
+import games.twinhead.moreslabsstairsandwalls.api.material.VisualProfile;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -88,10 +89,14 @@ public final class CornerColumnModelProjection {
         }
 
         String itemModel = modelId(shape, "_item");
-        List<Cuboid> itemCuboids = cornerBounds(Orientation.SOUTH_WEST).stream()
-                .map(Cuboid::world).toList();
-        models.put(itemModel, CuboidListModelProjection.itemModel(profile, itemCuboids,
-                axis ? Direction.Axis.Y : null, glazed));
+        if (profile.visualProfile() == VisualProfile.GLASS_EDGE) {
+            models.put(itemModel, AuthoredGlassCornerModel.itemModel(profile));
+        } else {
+            List<Cuboid> itemCuboids = cornerBounds(Orientation.SOUTH_WEST).stream()
+                    .map(Cuboid::world).toList();
+            models.put(itemModel, CuboidListModelProjection.itemModel(profile, itemCuboids,
+                    axis ? Direction.Axis.Y : null, glazed));
+        }
         return projection(variants, models, itemModel);
     }
 
@@ -208,6 +213,9 @@ public final class CornerColumnModelProjection {
 
     private static JsonObject cornerWorldModel(NibaruMaterialProfile profile, Orientation facing,
             Direction.Axis materialAxis, boolean glazed) {
+        if (profile.visualProfile() == VisualProfile.GLASS_EDGE) {
+            return AuthoredGlassCornerModel.worldModel(profile, facing);
+        }
         return CuboidListModelProjection.worldModel(profile,
                 cornerBounds(facing).stream().map(Cuboid::world).toList(), materialAxis, glazed);
     }

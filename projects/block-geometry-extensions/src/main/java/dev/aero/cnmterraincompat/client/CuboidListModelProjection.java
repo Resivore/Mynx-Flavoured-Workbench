@@ -686,7 +686,7 @@ public final class CuboidListModelProjection {
         return result;
     }
 
-    private static JsonObject itemDisplay() {
+    static JsonObject itemDisplay() {
         JsonObject display = new JsonObject();
         JsonObject firstPerson = transform(new int[]{0, -45, 0}, new double[]{0.4, 0.4, 0.4});
         display.add("firstperson_righthand", firstPerson);

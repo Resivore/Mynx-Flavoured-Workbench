@@ -1,7 +1,6 @@
 param(
-    [string]$UnifiedJar = (Join-Path $PSScriptRoot '..\build\libs\cnm-nibaru-integration-4.2.1-bge.canary57.unified+26.2.jar'),
-    [string]$BgeC56Jar = (Join-Path $PSScriptRoot '..\artifacts\cnm-nibaru-integration-0.8.0-bge-canary56-vertical-stairs-catalog.jar'),
-    [string]$NibaruC46Jar = (Join-Path $PSScriptRoot '..\..\nibaru\artifacts\more-slabs-stairs-and-walls-4.2.0+26.2-port-canary46-bge-layer-contract.jar')
+    [string]$UnifiedJar = (Join-Path $PSScriptRoot '..\build\libs\cnm-nibaru-integration-4.2.2-bge.canary58.glass-corner-uv+26.2.jar'),
+    [string]$C57Jar = (Join-Path $PSScriptRoot '..\artifacts\cnm-nibaru-integration-4.2.1-bge.canary57.unified+26.2.jar')
 )
 
 $ErrorActionPreference = 'Stop'
@@ -40,25 +39,21 @@ function Get-EntrySha256([System.IO.Compression.ZipArchiveEntry]$Entry) {
     try { return Get-StreamSha256 $stream } finally { $stream.Dispose() }
 }
 
+function Get-EntryBytes([System.IO.Compression.ZipArchiveEntry]$Entry) {
+    $stream = $Entry.Open()
+    $memory = [System.IO.MemoryStream]::new()
+    try {
+        $stream.CopyTo($memory)
+        return ,$memory.ToArray()
+    } finally {
+        $memory.Dispose()
+        $stream.Dispose()
+    }
+}
+
 function Get-EntryText([System.IO.Compression.ZipArchiveEntry]$Entry) {
     $reader = [System.IO.StreamReader]::new($Entry.Open(), [System.Text.Encoding]::UTF8, $true)
     try { return $reader.ReadToEnd() } finally { $reader.Dispose() }
-}
-
-function Get-TagValueSet([hashtable]$Map, [string]$Path) {
-    Require $Map.ContainsKey($Path) "Missing tag entry: $Path"
-    $json = Get-EntryText $Map[$Path] | ConvertFrom-Json
-    Require ($null -ne $json.values) "Tag has no values array: $Path"
-    $set = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::Ordinal)
-    foreach ($value in @($json.values)) {
-        $key = if ($value -is [string]) {
-            "string:$value"
-        } else {
-            'json:' + ($value | ConvertTo-Json -Depth 50 -Compress)
-        }
-        [void]$set.Add($key)
-    }
-    return ,$set
 }
 
 function New-StringSet([string[]]$Values) {
@@ -67,22 +62,43 @@ function New-StringSet([string[]]$Values) {
     return ,$set
 }
 
-$unifiedPath = (Resolve-Path -LiteralPath $UnifiedJar).Path
-$c56Path = (Resolve-Path -LiteralPath $BgeC56Jar).Path
-$c46Path = (Resolve-Path -LiteralPath $NibaruC46Jar).Path
+function Test-ContainsBytes([byte[]]$Bytes, [byte[]]$Needle) {
+    if ($Needle.Length -eq 0) { return $true }
+    if ($Bytes.Length -lt $Needle.Length) { return $false }
+    for ($offset = 0; $offset -le $Bytes.Length - $Needle.Length; $offset++) {
+        $matches = $true
+        for ($index = 0; $index -lt $Needle.Length; $index++) {
+            if ($Bytes[$offset + $index] -ne $Needle[$index]) {
+                $matches = $false
+                break
+            }
+        }
+        if ($matches) { return $true }
+    }
+    return $false
+}
 
-Require ((Get-FileSha256 $c56Path) -eq '26c76fbd82d0d72632d151d3674ca731817f1dadaff503e46fbfb4372d880f55') `
-        'Exact BGE C56 predecessor hash mismatch'
-Require ((Get-FileSha256 $c46Path) -eq '3281d110f062db62e721d838a35ce915ca73dd41af098a013b52952561ceae7d') `
-        'Exact Nibaru C46 predecessor hash mismatch'
+function Test-AllowedChangedEntry([string]$Name) {
+    return $Name -eq 'fabric.mod.json' -or
+            $Name -match '^dev/aero/cnmterraincompat/client/CornerColumnModelProjection(?:\$.*)?\.class$' -or
+            $Name -match '^dev/aero/cnmterraincompat/client/CuboidListModelProjection(?:\$.*)?\.class$'
+}
+
+function Test-AllowedNewEntry([string]$Name) {
+    return $Name -match '^dev/aero/cnmterraincompat/client/AuthoredGlassCornerModel(?:\$.*)?\.class$'
+}
+
+$unifiedPath = (Resolve-Path -LiteralPath $UnifiedJar).Path
+$c57Path = (Resolve-Path -LiteralPath $C57Jar).Path
+
+Require ((Get-FileSha256 $c57Path) -eq '7cd01479531ec26975326b882e0a18406c17de26695b1f4fae29b72edb76cbc2') `
+        'Exact unified BGE C57 predecessor hash mismatch'
 
 $unified = [System.IO.Compression.ZipFile]::OpenRead($unifiedPath)
-$c56 = [System.IO.Compression.ZipFile]::OpenRead($c56Path)
-$c46 = [System.IO.Compression.ZipFile]::OpenRead($c46Path)
+$c57 = [System.IO.Compression.ZipFile]::OpenRead($c57Path)
 try {
     $unifiedMap = Get-EntryMap $unified
-    $c56Map = Get-EntryMap $c56
-    $c46Map = Get-EntryMap $c46
+    $c57Map = Get-EntryMap $c57
 
     $descriptors = @($unifiedMap.Keys | Where-Object { $_ -eq 'fabric.mod.json' -or $_.EndsWith('/fabric.mod.json') })
     Require ($descriptors.Count -eq 1 -and $descriptors[0] -eq 'fabric.mod.json') `
@@ -93,7 +109,9 @@ try {
     $metadataText = Get-EntryText $unifiedMap['fabric.mod.json']
     $metadata = $metadataText | ConvertFrom-Json
     Require ($metadata.id -eq 'cnm_terrain_slabs_compat') 'Unified primary Fabric ID changed'
-    Require ($metadata.version -eq '4.2.1-bge.canary57.unified+26.2') 'Unified Fabric version changed'
+    Require ($metadata.version -eq '4.2.2-bge.canary58.glass-corner-uv+26.2') 'Unified Fabric version is not exact C58'
+    Require ($metadata.name -eq 'Block Geometry Extensions Canary 58 — Glass Corner UV') `
+            'Unified Fabric display name is not exact C58'
     Require (@($metadata.provides).Count -eq 1 -and $metadata.provides[0] -eq 'more_slabs_stairs_and_walls') `
             'Unified descriptor must provide exactly the legacy Nibaru ID'
     Require ($metadata.PSObject.Properties.Name -notcontains 'jars') 'Unified descriptor must not declare nested JARs'
@@ -113,123 +131,83 @@ try {
     Require $actualMixins.SetEquals($expectedMixins) 'Unified mixin configuration set is incomplete or duplicated'
     foreach ($mixin in $expectedMixins) { Require $unifiedMap.ContainsKey($mixin) "Packaged mixin config missing: $mixin" }
 
-    $tagPaths = @(
-        'data/minecraft/tags/block/dirt.json',
-        'data/minecraft/tags/block/enables_bubble_column_drag_down.json',
-        'data/minecraft/tags/block/enables_bubble_column_push_up.json',
-        'data/minecraft/tags/block/leaves.json',
-        'data/minecraft/tags/block/mineable/hoe.json',
-        'data/minecraft/tags/block/mineable/shovel.json',
-        'data/minecraft/tags/block/slabs.json',
-        'data/minecraft/tags/block/soul_fire_base_blocks.json',
-        'data/minecraft/tags/block/soul_speed_blocks.json'
-    )
-    foreach ($path in $tagPaths) {
-        $expected = Get-TagValueSet $c46Map $path
-        [void]$expected.UnionWith((Get-TagValueSet $c56Map $path))
-        $actual = Get-TagValueSet $unifiedMap $path
-        Require $actual.SetEquals($expected) "Shared tag is not the exact C56+C46 set union: $path"
-        $tagJson = Get-EntryText $unifiedMap[$path] | ConvertFrom-Json
-        Require (@($tagJson.values).Count -eq $actual.Count) "Unified shared tag contains duplicate values: $path"
-        Require ($tagJson.replace -eq $false) "Shared tag must retain additive semantics: $path"
-    }
-
-    $expectedC56Changes = New-StringSet (@(
-        'fabric.mod.json',
-        'dev/aero/cnmterraincompat/CnmTerrainCompat.class',
-        'dev/aero/cnmterraincompat/CnmTerrainCompatClient.class',
-        'dev/aero/cnmterraincompat/CnmTerrainCompatClient$1.class',
-        'dev/aero/cnmterraincompat/mixin/ClutterNoMoreVariantScanMixin.class'
-    ) + $tagPaths)
-    $c56Changed = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::Ordinal)
-    $c56Identical = 0
-    foreach ($name in $c56Map.Keys) {
-        Require $unifiedMap.ContainsKey($name) "Unified artifact lost BGE C56 entry: $name"
-        if ((Get-EntrySha256 $c56Map[$name]) -eq (Get-EntrySha256 $unifiedMap[$name])) {
-            $c56Identical++
-        } else {
-            [void]$c56Changed.Add($name)
-        }
-    }
-    Require $c56Changed.SetEquals($expectedC56Changes) `
-            "Unexplained BGE C56 archive differences: $(@($c56Changed) -join ', ')"
-
-    $wrapperClasses = New-StringSet @(
-        'games/twinhead/moreslabsstairsandwalls/fabric/MoreSlabsStairsAndWallsFabric.class',
-        'games/twinhead/moreslabsstairsandwalls/fabric/MoreSlabsStairsAndWallsFabricClient.class',
-        'games/twinhead/moreslabsstairsandwalls/fabric/MoreSlabsStairsAndWallsFabricClient$1.class'
-    )
-    $expectedC46Changes = New-StringSet (@('fabric.mod.json', 'LICENSE') + $tagPaths)
-    $c46Missing = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::Ordinal)
-    $c46Changed = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::Ordinal)
-    $c46Identical = 0
-    foreach ($name in $c46Map.Keys) {
+    $missing = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::Ordinal)
+    $changed = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::Ordinal)
+    $identical = 0
+    foreach ($name in $c57Map.Keys) {
         if (-not $unifiedMap.ContainsKey($name)) {
-            [void]$c46Missing.Add($name)
+            [void]$missing.Add($name)
             continue
         }
-        if ((Get-EntrySha256 $c46Map[$name]) -eq (Get-EntrySha256 $unifiedMap[$name])) {
-            $c46Identical++
+        if ((Get-EntrySha256 $c57Map[$name]) -eq (Get-EntrySha256 $unifiedMap[$name])) {
+            $identical++
         } else {
-            [void]$c46Changed.Add($name)
+            [void]$changed.Add($name)
         }
     }
-    Require $c46Missing.SetEquals($wrapperClasses) `
-            "Unified artifact lost unexpected Nibaru C46 entries: $(@($c46Missing) -join ', ')"
-    Require $c46Changed.SetEquals($expectedC46Changes) `
-            "Unexplained Nibaru C46 archive differences: $(@($c46Changed) -join ', ')"
-    foreach ($wrapper in $wrapperClasses) { Require (-not $unifiedMap.ContainsKey($wrapper)) "Obsolete wrapper class remains: $wrapper" }
+    Require ($missing.Count -eq 0) "C58 lost retained C57 entries: $(@($missing) -join ', ')"
 
-    $nibaruClasses = @($c46Map.Keys | Where-Object {
-        $_ -match '^games/twinhead/moreslabsstairsandwalls/.+\.class$' -and -not $wrapperClasses.Contains($_)
-    })
-    Require ($nibaruClasses.Count -eq 158) "Expected 158 retained Nibaru implementation classes; found $($nibaruClasses.Count)"
-    foreach ($name in $nibaruClasses) {
-        Require ((Get-EntrySha256 $c46Map[$name]) -eq (Get-EntrySha256 $unifiedMap[$name])) `
-                "Retained Nibaru implementation class changed: $name"
+    $newEntries = New-StringSet @($unifiedMap.Keys | Where-Object { -not $c57Map.ContainsKey($_) })
+    $unexpectedChanges = @($changed | Where-Object { -not (Test-AllowedChangedEntry $_) })
+    $unexpectedNew = @($newEntries | Where-Object { -not (Test-AllowedNewEntry $_) })
+    Require ($unexpectedChanges.Count -eq 0) `
+            "C58 changed entries outside the metadata/Corner projection whitelist: $($unexpectedChanges -join ', ')"
+    Require ($unexpectedNew.Count -eq 0) `
+            "C58 added entries outside the authored Corner class whitelist: $($unexpectedNew -join ', ')"
+
+    foreach ($required in @(
+        'fabric.mod.json',
+        'dev/aero/cnmterraincompat/client/CornerColumnModelProjection.class',
+        'dev/aero/cnmterraincompat/client/CuboidListModelProjection.class'
+    )) {
+        Require $changed.Contains($required) "Required C58 archive change is absent: $required"
+    }
+    foreach ($required in @(
+        'dev/aero/cnmterraincompat/client/AuthoredGlassCornerModel.class',
+        'dev/aero/cnmterraincompat/client/AuthoredGlassCornerModel$AuthoredElement.class',
+        'dev/aero/cnmterraincompat/client/AuthoredGlassCornerModel$AuthoredFace.class',
+        'dev/aero/cnmterraincompat/client/AuthoredGlassCornerModel$Uv.class'
+    )) {
+        Require $newEntries.Contains($required) "Required authored C58 class is absent: $required"
     }
 
-    $glassGeneratorEntries = @($c56Map.Keys | Where-Object {
-        $_ -match '^dev/aero/cnmterraincompat/(?:client/(?:BgeGeneratedResources|CornerColumnModelProjection|CuboidListModelProjection|GeneratedItemModelSupport|QuarterGeometryGeneratedResources)|QuarterGeometryGeneratedData).*\.class$'
+    $forbiddenNames = @($unifiedMap.Keys | Where-Object {
+        $_ -match '(?i)(^|/)uv bbmodel(?:\.zip|/|$)' -or
+        $_ -match '(?i)(^|/)BlockSprite_glass\.png$' -or
+        $_ -match '(?i)(^|/)glass_corner_north_east\.bbmodel$' -or
+        $_ -match '(?i)\.bbmodel$'
     })
-    Require ($glassGeneratorEntries.Count -ge 18) 'Glass/Corner generator chain inventory is unexpectedly incomplete'
-    foreach ($name in $glassGeneratorEntries) {
-        Require ((Get-EntrySha256 $c56Map[$name]) -eq (Get-EntrySha256 $unifiedMap[$name])) `
-                "C56 glass-Corner generator bytecode changed: $name"
-    }
-    $glassTemplates = @($c56Map.Keys | Where-Object {
-        $_ -match '^assets/clutternomore/models/block/templates/provider/glass_.+\.json$'
-    })
-    Require ($glassTemplates.Count -eq 5) "Expected five C56 glass provider templates; found $($glassTemplates.Count)"
-    foreach ($name in $glassTemplates) {
-        Require ((Get-EntrySha256 $c56Map[$name]) -eq (Get-EntrySha256 $unifiedMap[$name])) `
-                "C56 glass provider template changed: $name"
-    }
-    $nibaruGlassInputs = @($c46Map.Keys | Where-Object {
-        $_ -match '^assets/more_slabs_stairs_and_walls/.+(?:glass|glazed).+\.json$'
-    })
-    Require ($nibaruGlassInputs.Count -gt 100) 'Nibaru glass input inventory is unexpectedly incomplete'
-    foreach ($name in $nibaruGlassInputs) {
-        Require ((Get-EntrySha256 $c46Map[$name]) -eq (Get-EntrySha256 $unifiedMap[$name])) `
-                "C46 glass input changed: $name"
-    }
+    Require ($forbiddenNames.Count -eq 0) `
+            "Source archive/model/texture member leaked into production: $($forbiddenNames -join ', ')"
 
-    Require $unifiedMap.ContainsKey('META-INF/licenses/more-slabs-stairs-and-walls-LGPL-3.0-or-later.txt') `
-            'Packaged LGPL license is missing'
-    Require ((Get-EntrySha256 $c46Map['LICENSE']) -eq `
-            (Get-EntrySha256 $unifiedMap['META-INF/licenses/more-slabs-stairs-and-walls-LGPL-3.0-or-later.txt'])) `
-            'Packaged LGPL license differs from exact Nibaru C46 license'
-    Require ((Get-EntrySha256 $c56Map['LICENSE']) -eq (Get-EntrySha256 $unifiedMap['LICENSE'])) `
-            'BGE root license changed during consolidation'
-    Require $unifiedMap.ContainsKey('META-INF/NOTICE') 'Unified component and licensing notice is missing'
-
-    $knownUnion = New-StringSet (@($c56Map.Keys) + @($c46Map.Keys))
-    $extras = New-StringSet @($unifiedMap.Keys | Where-Object { -not $knownUnion.Contains($_) })
-    $expectedExtras = New-StringSet @(
-        'META-INF/licenses/more-slabs-stairs-and-walls-LGPL-3.0-or-later.txt',
-        'META-INF/NOTICE'
+    $forbiddenDigests = New-StringSet @(
+        '0be697e533f7de0dbb27eef37f13166d7da3f75a47d3a74839d4753b8b05c07',
+        'be65b86e763dec985c900ebd23115fd5a07b78a0b882228589abdab1799d3743'
     )
-    Require $extras.SetEquals($expectedExtras) "Unexpected entries outside the C56+C46 union: $(@($extras) -join ', ')"
+    foreach ($name in $unifiedMap.Keys) {
+        Require (-not $forbiddenDigests.Contains((Get-EntrySha256 $unifiedMap[$name]))) `
+                "Supplied or embedded source texture bytes leaked as archive entry: $name"
+    }
+
+    $pngSignature = [byte[]](0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a)
+    foreach ($name in @($changed) + @($newEntries)) {
+        $bytes = Get-EntryBytes $unifiedMap[$name]
+        Require (-not (Test-ContainsBytes $bytes $pngSignature)) `
+                "Changed/new C58 entry embeds raw PNG source bytes: $name"
+        $text = [System.Text.Encoding]::UTF8.GetString($bytes)
+        Require ($text -notmatch '(?i)data:image/png;base64|iVBORw0KGgo|uv bbmodel(?:\.zip)?|BlockSprite_glass\.png|glass_corner_north_east\.bbmodel|\.bbmodel') `
+                "Changed/new C58 entry embeds a forbidden source name or texture encoding: $name"
+    }
+
+    foreach ($path in @(
+        'LICENSE',
+        'META-INF/NOTICE',
+        'META-INF/licenses/more-slabs-stairs-and-walls-LGPL-3.0-or-later.txt'
+    )) {
+        Require $unifiedMap.ContainsKey($path) "Required unified license/provenance entry is missing: $path"
+        Require ((Get-EntrySha256 $unifiedMap[$path]) -eq (Get-EntrySha256 $c57Map[$path])) `
+                "Retained unified license/provenance entry changed: $path"
+    }
 
     $namespace = 'more_slabs_stairs_and_walls'
     $blockstates = @($unifiedMap.Keys | Where-Object { $_ -match "^assets/$namespace/blockstates/[^/]+\.json$" })
@@ -249,22 +227,40 @@ try {
     Require ($itemDefinitions.Count -eq 867 -and $itemModels.Count -eq 867 -and $blockModels.Count -eq 6895) `
             'Native client resource inventory changed'
     Require ($lootTables.Count -eq 866 -and $recipes.Count -eq 0) 'Native server resource inventory changed'
-    $wallValues = Get-TagValueSet $unifiedMap 'data/minecraft/tags/block/walls.json'
-    $nativeWallValues = @($wallValues | Where-Object { $_.StartsWith("string:${namespace}:") })
-    Require ($nativeWallValues.Count -eq 311) 'Native wall tag inventory changed'
+
+    $resourceEntries = @($unifiedMap.Keys | Where-Object {
+        $_ -match '^(?:assets|data)/' -or $_ -match '(?:^|/)pack\.mcmeta$' -or $_ -match '\.mixins\.json$'
+    })
+    foreach ($name in $resourceEntries) {
+        Require $c57Map.ContainsKey($name) "C58 added an unexpected production resource: $name"
+        Require ((Get-EntrySha256 $unifiedMap[$name]) -eq (Get-EntrySha256 $c57Map[$name])) `
+                "C58 changed a retained C57 production resource: $name"
+    }
 
     [ordered]@{
         result = 'PASS'
-        unified = [ordered]@{
+        c58 = [ordered]@{
             filename = [System.IO.Path]::GetFileName($unifiedPath)
             size = (Get-Item -LiteralPath $unifiedPath).Length
             sha256 = Get-FileSha256 $unifiedPath
+            fabric_version = $metadata.version
             fabric_descriptors = $descriptors.Count
             nested_jars = $nestedJars.Count
         }
-        bge_c56 = [ordered]@{ identical_entries = $c56Identical; intentional_changes = $c56Changed.Count; missing = 0 }
-        nibaru_c46 = [ordered]@{ identical_entries = $c46Identical; intentional_changes = $c46Changed.Count; removed_wrapper_classes = $c46Missing.Count }
-        native_inventory = [ordered]@{
+        exact_c57_delta = [ordered]@{
+            predecessor_sha256 = Get-FileSha256 $c57Path
+            byte_identical_entries = $identical
+            intentional_changed_entries = $changed.Count
+            authored_new_entries = $newEntries.Count
+            missing_entries = $missing.Count
+        }
+        source_input_exclusions = [ordered]@{
+            forbidden_names = $forbiddenNames.Count
+            forbidden_texture_digests = 0
+            embedded_png_signatures = 0
+            embedded_base64_or_source_names = 0
+        }
+        retained_inventory = [ordered]@{
             blockstates = $blockstates.Count
             slabs = $slabs.Count
             stairs = $stairs.Count
@@ -275,17 +271,10 @@ try {
             block_models = $blockModels.Count
             loot_tables = $lootTables.Count
             recipes = $recipes.Count
-        }
-        compatibility = [ordered]@{
-            shared_tag_unions = $tagPaths.Count
-            retained_nibaru_classes = $nibaruClasses.Count
-            glass_generator_entries_unchanged = $glassGeneratorEntries.Count
-            glass_templates_unchanged = $glassTemplates.Count
-            glass_inputs_unchanged = $nibaruGlassInputs.Count
+            unchanged_resource_entries = $resourceEntries.Count
         }
     } | ConvertTo-Json -Depth 10
 } finally {
     $unified.Dispose()
-    $c56.Dispose()
-    $c46.Dispose()
+    $c57.Dispose()
 }
