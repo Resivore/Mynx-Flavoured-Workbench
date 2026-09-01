@@ -470,6 +470,83 @@ class StatusContractTests(unittest.TestCase):
         validate_runtime_state(state, project_index={})
         validate_testing_slot_lifecycles(status_catalog(manifest), state)
 
+    def test_active_exact_candidate_accepts_external_runtime_results_without_deployment(self) -> None:
+        unit = deployment_unit("alpha")
+        current_release = {
+            "version": unit["version"],
+            "artifact": {
+                "filename": unit["artifacts"][0]["filename"],
+                "sha256": unit["artifacts"][0]["sha256"],
+            },
+            "source_commit": unit["source_commit"],
+        }
+        for result in ("RUNTIME_PASS", "RUNTIME_FAIL", "INCONCLUSIVE"):
+            with self.subTest(result=result):
+                manifest = planned_manifest(
+                    "alpha",
+                    "Alpha",
+                    uuid_value=unit["project_uuid"],
+                )
+                manifest["definition"]["lifecycle"] = "ACTIVE"
+                manifest["state"]["releases"]["current"] = copy.deepcopy(current_release)
+                manifest["state"]["validation"].update(
+                    deployment="NOT_DEPLOYED",
+                    runtime=result,
+                )
+                validate_status(manifest)
+                state = runtime_state()
+                validate_runtime_state(state, project_index={})
+                validate_testing_slot_lifecycles(status_catalog(manifest), state)
+                self.assertEqual("ACTIVE", manifest["definition"]["lifecycle"])
+                self.assertEqual("NOT_DEPLOYED", manifest["state"]["validation"]["deployment"])
+
+    def test_external_runtime_result_transition_binds_to_preexisting_exact_current_release(self) -> None:
+        unit = deployment_unit("alpha")
+        before = planned_manifest("alpha", "Alpha", uuid_value=unit["project_uuid"])
+        before["definition"]["lifecycle"] = "ACTIVE"
+        before["state"]["releases"]["current"] = {
+            "version": unit["version"],
+            "artifact": {
+                "filename": unit["artifacts"][0]["filename"],
+                "sha256": unit["artifacts"][0]["sha256"],
+            },
+            "source_commit": unit["source_commit"],
+        }
+
+        for result in ("RUNTIME_PASS", "RUNTIME_FAIL", "INCONCLUSIVE"):
+            with self.subTest(result=result):
+                after = advance_manifest(before)
+                after["state"]["validation"]["runtime"] = result
+                validate_status_transition(before, after)
+
+        missing_before = planned_manifest("alpha", "Alpha", uuid_value=unit["project_uuid"])
+        missing_before["definition"]["lifecycle"] = "ACTIVE"
+        missing_after = advance_manifest(missing_before)
+        missing_after["state"]["validation"]["runtime"] = "RUNTIME_PASS"
+        with self.assertRaises(ValidationError):
+            validate_status_transition(missing_before, missing_after)
+
+        artifactless_before = copy.deepcopy(before)
+        artifactless_before["state"]["releases"]["current"]["artifact"] = None
+        artifactless_after = advance_manifest(artifactless_before)
+        artifactless_after["state"]["validation"]["runtime"] = "RUNTIME_PASS"
+        with self.assertRaisesRegex(ValidationError, "artifact/version/hash/source identity"):
+            validate_status_transition(artifactless_before, artifactless_after)
+
+        mutations = {
+            "version": lambda release: release.__setitem__("version", "Canary 2"),
+            "filename": lambda release: release["artifact"].__setitem__("filename", "alpha-canary-2.jar"),
+            "sha256": lambda release: release["artifact"].__setitem__("sha256", "2" * 64),
+            "source_commit": lambda release: release.__setitem__("source_commit", "d" * 40),
+        }
+        for field, mutate in mutations.items():
+            with self.subTest(changed_identity_field=field):
+                changed = advance_manifest(before)
+                changed["state"]["validation"]["runtime"] = "RUNTIME_PASS"
+                mutate(changed["state"]["releases"]["current"])
+                with self.assertRaises(ValidationError):
+                    validate_status_transition(before, changed)
+
     def test_slot_runtime_result_does_not_change_testing_lifecycle(self) -> None:
         unit = deployment_unit("alpha")
         manifest = planned_manifest("alpha", "Alpha", uuid_value=unit["project_uuid"])
@@ -715,7 +792,167 @@ class RuntimeContractTests(unittest.TestCase):
         with self.assertRaisesRegex(ValidationError, "requires CURRENT_MANIFEST identity"):
             plan_transition(state, 0, operation, TIME_2, project_index("alpha"))
 
-    def test_user_passed_batch_rejects_duplicate_occupied_and_accepted_projects(self) -> None:
+    def test_user_passed_batch_replaces_exact_accepted_predecessor_and_preserves_slots(self) -> None:
+        alpha_v1 = deployment_unit("alpha", version="Canary 1")
+        alpha_v2 = deployment_unit("alpha", version="Canary 2")
+        slot_a = candidate(deployment_unit("slot-alpha"), "PASS")
+        slot_b = candidate(deployment_unit("slot-beta"), "FAIL")
+        state = runtime_state(
+            accepted=[{"unit": alpha_v1, "accepted_at": TIME_1}],
+            slot_a=slot_a,
+            slot_b=slot_b,
+        )
+        prior_slots = json.dumps(state["slots"], separators=(",", ":"))
+        promoted = plan_transition(
+            state,
+            state["revision"],
+            {
+                "type": "PROMOTE_USER_PASSED_BATCH",
+                "authorization": "USER_REPORTED_EXACT_RUNTIME_PASS",
+                "members": [
+                    {
+                        "unit": alpha_v2,
+                        "replaces_accepted_deployment_id": alpha_v1["deployment_id"],
+                    }
+                ],
+            },
+            TIME_2,
+            project_index("alpha", "slot-alpha", "slot-beta"),
+        )
+
+        self.assertEqual(prior_slots, json.dumps(promoted["slots"], separators=(",", ":")))
+        self.assertEqual(state["revision"] + 1, promoted["revision"])
+        self.assertEqual(
+            state["accepted_baseline"]["revision"] + 1,
+            promoted["accepted_baseline"]["revision"],
+        )
+        self.assertEqual(1, len(promoted["accepted_baseline"]["members"]))
+        accepted = promoted["accepted_baseline"]["members"][0]
+        self.assertEqual(alpha_v2, accepted["unit"])
+        self.assertEqual(TIME_2, accepted["accepted_at"])
+
+    def test_user_passed_batch_byte_identical_successor_updates_exact_identity_without_stack_bump(self) -> None:
+        alpha_v1 = deployment_unit("alpha", version="Canary 1")
+        alpha_v2 = deployment_unit("alpha", version="Canary 2")
+        alpha_v2["artifacts"][0]["sha256"] = alpha_v1["artifacts"][0]["sha256"]
+        slot_a = candidate(deployment_unit("slot-alpha"), "PASS")
+        slot_b = candidate(deployment_unit("slot-beta"), "FAIL")
+        state = runtime_state(
+            accepted=[{"unit": alpha_v1, "accepted_at": TIME_1}],
+            slot_a=slot_a,
+            slot_b=slot_b,
+        )
+        prior_slots = copy.deepcopy(state["slots"])
+
+        promoted = plan_transition(
+            state,
+            state["revision"],
+            {
+                "type": "PROMOTE_USER_PASSED_BATCH",
+                "authorization": "USER_REPORTED_EXACT_RUNTIME_PASS",
+                "members": [
+                    {
+                        "unit": alpha_v2,
+                        "replaces_accepted_deployment_id": alpha_v1["deployment_id"],
+                    }
+                ],
+            },
+            TIME_2,
+            project_index("alpha", "slot-alpha", "slot-beta"),
+        )
+
+        self.assertEqual(state["revision"] + 1, promoted["revision"])
+        self.assertEqual(
+            state["accepted_baseline"]["revision"],
+            promoted["accepted_baseline"]["revision"],
+        )
+        self.assertEqual(prior_slots, promoted["slots"])
+        self.assertEqual(alpha_v2, promoted["accepted_baseline"]["members"][0]["unit"])
+        self.assertEqual(TIME_2, promoted["accepted_baseline"]["members"][0]["accepted_at"])
+
+    def test_user_passed_batch_replacement_identity_and_slot_occupancy_fail_closed(self) -> None:
+        alpha_v1 = deployment_unit("alpha", version="Canary 1")
+        alpha_v2 = deployment_unit("alpha", version="Canary 2")
+        accepted_state = runtime_state(accepted=[{"unit": alpha_v1, "accepted_at": TIME_1}])
+
+        def replacement_operation(replacement_id: str | None, *, include: bool = True) -> dict:
+            member = {"unit": copy.deepcopy(alpha_v2)}
+            if include:
+                member["replaces_accepted_deployment_id"] = replacement_id
+            return {
+                "type": "PROMOTE_USER_PASSED_BATCH",
+                "authorization": "USER_REPORTED_EXACT_RUNTIME_PASS",
+                "members": [member],
+            }
+
+        for operation in (
+            replacement_operation(None, include=False),
+            replacement_operation(None),
+            replacement_operation(stable_uuid("wrong accepted deployment")),
+        ):
+            with self.subTest(operation=operation):
+                with self.assertRaisesRegex(ValidationError, "exact accepted predecessor deployment"):
+                    plan_transition(
+                        accepted_state,
+                        accepted_state["revision"],
+                        operation,
+                        TIME_2,
+                        project_index("alpha"),
+                    )
+
+        duplicate_deployment = replacement_operation(alpha_v1["deployment_id"])
+        duplicate_deployment["members"][0]["unit"]["deployment_id"] = alpha_v1["deployment_id"]
+        with self.assertRaisesRegex(ValidationError, "deployment_id must be distinct"):
+            plan_transition(
+                accepted_state,
+                accepted_state["revision"],
+                duplicate_deployment,
+                TIME_2,
+                project_index("alpha"),
+            )
+
+        duplicate_artifact = replacement_operation(alpha_v1["deployment_id"])
+        duplicate_artifact["members"][0]["unit"]["artifacts"][0]["artifact_id"] = (
+            alpha_v1["artifacts"][0]["artifact_id"]
+        )
+        with self.assertRaisesRegex(ValidationError, "artifact UUIDs distinct"):
+            plan_transition(
+                accepted_state,
+                accepted_state["revision"],
+                duplicate_artifact,
+                TIME_2,
+                project_index("alpha"),
+            )
+
+        no_predecessor = runtime_state()
+        with self.assertRaisesRegex(ValidationError, "null or omitted"):
+            plan_transition(
+                no_predecessor,
+                0,
+                replacement_operation(alpha_v1["deployment_id"]),
+                TIME_2,
+                project_index("alpha"),
+            )
+
+        for label in ("A", "B"):
+            with self.subTest(occupied_slot=label):
+                occupied_candidate = candidate(alpha_v2)
+                occupied_candidate["replaces_accepted_deployment_id"] = alpha_v1["deployment_id"]
+                occupied = runtime_state(
+                    accepted=[{"unit": alpha_v1, "accepted_at": TIME_1}],
+                    slot_a=occupied_candidate if label == "A" else None,
+                    slot_b=occupied_candidate if label == "B" else None,
+                )
+                with self.assertRaisesRegex(ValidationError, "absent from both managed Test Slots"):
+                    plan_transition(
+                        occupied,
+                        occupied["revision"],
+                        replacement_operation(alpha_v1["deployment_id"]),
+                        TIME_2,
+                        project_index("alpha"),
+                    )
+
+    def test_user_passed_batch_rejects_duplicate_and_occupied_projects(self) -> None:
         alpha = deployment_unit("alpha")
         base_operation = {
             "type": "PROMOTE_USER_PASSED_BATCH",
@@ -735,20 +972,10 @@ class RuntimeContractTests(unittest.TestCase):
             )
 
         occupied = runtime_state(slot_b=candidate(alpha))
-        with self.assertRaisesRegex(ValidationError, "absent from the accepted baseline and both slots"):
+        with self.assertRaisesRegex(ValidationError, "absent from both managed Test Slots"):
             plan_transition(
                 occupied,
                 occupied["revision"],
-                base_operation,
-                TIME_2,
-                project_index("alpha"),
-            )
-
-        accepted = runtime_state(accepted=[{"unit": alpha, "accepted_at": TIME_1}])
-        with self.assertRaisesRegex(ValidationError, "absent from the accepted baseline and both slots"):
-            plan_transition(
-                accepted,
-                accepted["revision"],
                 base_operation,
                 TIME_2,
                 project_index("alpha"),

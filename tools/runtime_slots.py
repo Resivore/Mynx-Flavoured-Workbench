@@ -758,24 +758,31 @@ def plan_transition(
         if not isinstance(declarations, list) or not declarations:
             raise ValidationError("PROMOTE_USER_PASSED_BATCH members must be a nonempty array")
 
-        existing_units = [
-            member["unit"] for member in state["accepted_baseline"]["members"]
-        ]
-        existing_units.extend(
+        accepted_members = next_state["accepted_baseline"]["members"]
+        accepted_by_uuid = {
+            member["unit"]["project_uuid"]: (index, member["unit"])
+            for index, member in enumerate(accepted_members)
+        }
+        accepted_by_project_id = {
+            member["unit"]["project_id"].casefold(): (index, member["unit"])
+            for index, member in enumerate(accepted_members)
+        }
+        slot_units = [
             state["slots"][label]["unit"]
             for label in ("A", "B")
             if state["slots"][label] is not None
-        )
-        unavailable_project_uuids = {unit["project_uuid"] for unit in existing_units}
-        unavailable_project_ids = {unit["project_id"].casefold() for unit in existing_units}
+        ]
+        occupied_project_uuids = {unit["project_uuid"] for unit in slot_units}
+        occupied_project_ids = {unit["project_id"].casefold() for unit in slot_units}
         batch_project_uuids: set[str] = set()
         batch_project_ids: set[str] = set()
-        promoted_members: list[dict[str, Any]] = []
+        promoted_members: list[tuple[int | None, dict[str, Any]]] = []
+        stack_revision_delta = 0
 
         for index, declaration in enumerate(declarations):
             member_path = f"operation.members[{index}]"
             required = {"unit"}
-            allowed = required | {"retained_rollbacks"}
+            allowed = required | {"replaces_accepted_deployment_id", "retained_rollbacks"}
             if not isinstance(declaration, dict):
                 raise ValidationError(f"{member_path} must be an object")
             missing = required - set(declaration)
@@ -797,12 +804,9 @@ def plan_transition(
                 )
             project_uuid = unit["project_uuid"]
             project_id_key = unit["project_id"].casefold()
-            if (
-                project_uuid in unavailable_project_uuids
-                or project_id_key in unavailable_project_ids
-            ):
+            if project_uuid in occupied_project_uuids or project_id_key in occupied_project_ids:
                 raise ValidationError(
-                    f"{member_path}.unit project must be absent from the accepted baseline and both slots"
+                    f"{member_path}.unit project must be absent from both managed Test Slots"
                 )
             if project_uuid in batch_project_uuids or project_id_key in batch_project_ids:
                 raise ValidationError(
@@ -810,6 +814,51 @@ def plan_transition(
                 )
             batch_project_uuids.add(project_uuid)
             batch_project_ids.add(project_id_key)
+
+            accepted_match = accepted_by_uuid.get(project_uuid)
+            accepted_id_match = accepted_by_project_id.get(project_id_key)
+            if (accepted_match is None) != (accepted_id_match is None) or (
+                accepted_match is not None and accepted_id_match is not None
+                and accepted_match[0] != accepted_id_match[0]
+            ):
+                raise ValidationError(
+                    f"{member_path}.unit conflicts with an accepted project identity"
+                )
+            replacement_id = declaration.get("replaces_accepted_deployment_id")
+            if replacement_id is not None:
+                replacement_id = _uuid(
+                    replacement_id,
+                    f"{member_path}.replaces_accepted_deployment_id",
+                )
+            if accepted_match is None:
+                if replacement_id is not None:
+                    raise ValidationError(
+                        f"{member_path}.replaces_accepted_deployment_id must be null or omitted "
+                        "for a project absent from the accepted baseline"
+                    )
+                accepted_index = None
+                accepted_unit = None
+            else:
+                accepted_index, accepted_unit = accepted_match
+                if replacement_id != accepted_unit["deployment_id"]:
+                    raise ValidationError(
+                        f"{member_path}.replaces_accepted_deployment_id must name the exact "
+                        "accepted predecessor deployment"
+                    )
+                if unit["deployment_id"] == accepted_unit["deployment_id"]:
+                    raise ValidationError(
+                        f"{member_path}.unit.deployment_id must be distinct from the accepted predecessor"
+                    )
+                predecessor_artifact_ids = {
+                    artifact["artifact_id"] for artifact in accepted_unit["artifacts"]
+                }
+                successor_artifact_ids = {
+                    artifact["artifact_id"] for artifact in unit["artifacts"]
+                }
+                if predecessor_artifact_ids.intersection(successor_artifact_ids):
+                    raise ValidationError(
+                        f"{member_path}.unit.artifacts must use artifact UUIDs distinct from the accepted predecessor"
+                    )
 
             retained_units = declaration.get("retained_rollbacks", [])
             if not isinstance(retained_units, list):
@@ -859,15 +908,24 @@ def plan_transition(
             member = {"unit": unit, "accepted_at": at}
             if retained_rollbacks:
                 member["retained_rollbacks"] = retained_rollbacks
-            promoted_members.append(member)
+            if accepted_unit is None:
+                promoted_members.append((None, member))
+                stack_revision_delta += 1
+            else:
+                promoted_members.append((accepted_index, member))
+                if _byte_composition(accepted_unit) != _byte_composition(unit):
+                    stack_revision_delta += 1
 
-        members = next_state["accepted_baseline"]["members"]
-        members.extend(promoted_members)
-        next_state["accepted_baseline"]["revision"] += len(promoted_members)
+        for accepted_index, member in promoted_members:
+            if accepted_index is None:
+                accepted_members.append(member)
+            else:
+                accepted_members[accepted_index] = member
+        next_state["accepted_baseline"]["revision"] += stack_revision_delta
         next_state["accepted_baseline"]["provenance"]["accepted_artifact_count"] = sum(
-            len(existing["unit"]["artifacts"]) for existing in members
+            len(existing["unit"]["artifacts"]) for existing in accepted_members
         )
-        if next_state["activation"] == "ACTIVE":
+        if promoted_members and next_state["activation"] == "ACTIVE":
             next_state["accepted_baseline"]["provenance"]["physical_disposition"] = "TRANSITIONED"
     elif operation_type == "REMOVE_ACCEPTED":
         if set(operation) != {"type", "project_uuid"}:

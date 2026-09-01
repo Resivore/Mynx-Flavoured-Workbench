@@ -368,6 +368,26 @@ def validate_status_transition(previous: dict[str, Any], current: dict[str, Any]
     if before_identity["name"] != after_identity["name"] and before_identity["name"] not in after_identity["legacy_names"]:
         _fail("$.identity.legacy_names", "a renamed project must retain its previous name")
 
+    before_validation = previous["state"]["validation"]
+    after_validation = current["state"]["validation"]
+    externally_recordable_results = {"RUNTIME_PASS", "RUNTIME_FAIL", "INCONCLUSIVE"}
+    if (
+        before_validation["runtime"] != after_validation["runtime"]
+        and after_validation["deployment"] == "NOT_DEPLOYED"
+        and after_validation["runtime"] in externally_recordable_results
+    ):
+        before_release = previous["state"]["releases"]["current"]
+        after_release = current["state"]["releases"]["current"]
+        if (
+            before_release is None
+            or before_release["artifact"] is None
+            or after_release != before_release
+        ):
+            _fail(
+                "$.state.releases.current",
+                "an external runtime result requires one exact pre-existing artifact/version/hash/source identity",
+            )
+
 
 def _parse_codex_log(log: str) -> list[dict[str, str]]:
     if not log.startswith("# Codex Log\n"):

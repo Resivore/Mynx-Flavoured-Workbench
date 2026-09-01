@@ -15,9 +15,10 @@ Those JSON values are expected-state metadata, not physical evidence and not
 Minecraft runtime validation.
 
 A genuine `PROMOTE_SLOT` addition or artifact replacement and an intentional
-`REMOVE_ACCEPTED` each increment the Stack number exactly once. A promotion of
-a byte-identical rebuild is a reconciliation: it clears the test slot while
-preserving the exact accepted member/artifact identity and Stack number.
+`REMOVE_ACCEPTED` each increment the Stack number exactly once. A managed-slot
+promotion of a byte-identical rebuild is a reconciliation: it clears the test
+slot while preserving the exact accepted member/artifact identity and Stack
+number.
 Assignments, candidate replacements, slot clearing, readiness/result recording,
 verification, and display refreshes never increment the Stack number.
 
@@ -33,22 +34,43 @@ Because that authorization is not derivable from a desired-state document,
 this exception must use the operation-based `transition --operation` path;
 prevalidated `desired_state` callers cannot synthesize the authorization.
 
-`PROMOTE_USER_PASSED_BATCH` is the serialized path for one or more exact
-candidates whose runtime pass was reported directly by the user. It requires
-the exact `USER_REPORTED_EXACT_RUNTIME_PASS` authorization, preserves both test
-slots byte-for-byte, adds every member in one runtime-state revision, and
-increments the Stack number once per newly accepted project. The production
-CLI binds every candidate's project UUID/ID, version, filename, SHA-256, and
-source checkpoint to that project's current manifest release. Candidate bytes
-must come from the canonical tracked `projects/<project>/artifacts/<filename>`
-(or equivalent canonical project directory) path. If a batch member carries a
-retained rollback, it must match that manifest's rollback release exactly; a
-project with no manifest rollback cannot declare one. A manifest rollback does
-not by itself require target-local retention; `retained_rollbacks` remains
-optional for ordinary repository-backed rollback history. The manager reloads
-the affected current manifests immediately before committing the ledger and
-runtime state, and aborts with physical rollback if any bound release identity
-has drifted since planning.
+An explicit user-reported `PASS`, `FAIL`, or `INCONCLUSIVE` may be recorded for
+a candidate tested outside Slots A and B. Current authoritative `main` must
+uniquely bind the report to the manifest's current release version, filename,
+SHA-256, and source checkpoint; ambiguity or drift fails closed. The project
+`WORKBENCH_STATUS.json` and `CODEX_LOG.md` record it explicitly as
+user-reported/external evidence, without invented row-level observations.
+Deployment remains truthful (`NOT_DEPLOYED` when no manager deployment exists),
+and lifecycle remains outside `TESTING` unless the project UUID actually
+occupies a slot. Recording external evidence alone makes no manager
+transition; `FAIL` and `INCONCLUSIVE` therefore never consume a slot.
+Managed-slot result recording and promotion are unchanged.
+
+`PROMOTE_USER_PASSED_BATCH` is the serialized accepted-stack path for one or
+more exact candidates whose `PASS` was reported directly by the user. It
+requires the exact `USER_REPORTED_EXACT_RUNTIME_PASS` authorization, preserves
+both test slots byte-for-byte, and adds or replaces the declared members in one
+runtime-state revision. The Stack number increments once for each new member or
+byte-changed replacement. A replacement is allowed only when the member's exact
+`replaces_accepted_deployment_id` identifies the sole accepted predecessor for
+the same project; omitting it or setting it to `null` permits only a new
+accepted project. A byte-identical external successor still replaces the exact
+accepted version/source/deployment/artifact identity and refreshes
+`accepted_at`, but does not increment the composition-based Stack number. The
+production CLI binds every candidate's project UUID/ID, version, filename,
+SHA-256, and source checkpoint to that project's current manifest release.
+Candidate bytes must come from the canonical tracked
+`projects/<project>/artifacts/<filename>` (or equivalent canonical project
+directory) path. The project controls preserve a replaced accepted release as
+rollback/provenance where applicable. If a batch member separately requests a
+target-local retained rollback, it must match that manifest's rollback release
+exactly; a project with no manifest rollback cannot declare one. A manifest
+rollback does not by itself require target-local retention;
+`retained_rollbacks` remains optional for ordinary repository-backed rollback
+history. The manager reloads the affected current manifests immediately before
+committing the ledger and runtime state. It aborts with physical rollback if a
+bound current release has drifted; the runtime-state revision CAS independently
+rejects accepted-predecessor or slot drift.
 
 A retained rollback is target-local history, not an active baseline artifact.
 Its unit uses the same project UUID/ID, a `FROZEN_LEGACY` identity, and an exact
@@ -146,9 +168,13 @@ already exists.
 - Artifacts use exact filenames, SHA-256 values, Fabric `mod:<id>` ownership,
   and repository or explicitly adopted-target sources.
 - Accepted artifacts replaced by a slot remain present as `.jar.disabled`.
-- User-passed batch promotion preserves both slots and atomically converts each
-  declared adopted predecessor into an exact manager-owned `.jar.disabled`
-  retained rollback; a wrong or missing predecessor fails before mutation.
+- User-passed batch promotion preserves both slots. It may add a new accepted
+  project or replace the same project's sole predecessor only by exact
+  `replaces_accepted_deployment_id`; a wrong, missing, or drifted predecessor
+  fails before mutation.
+- A separately declared target-local retained rollback is atomically converted
+  into the exact manager-owned `.jar.disabled` form; this remains optional for
+  ordinary repository-backed rollback provenance.
 - A slot may declare `dependency_overrides` for exact accepted dependency
   deployments that it temporarily supersedes. The slot artifact set must cover
   every ownership key of each overridden dependency; removing the slot restores

@@ -42,6 +42,14 @@ Every project task advances the manifest revision exactly once, updates synchron
 
 The physical runtime profile is an accepted baseline plus exactly two independent experimental slots, A and B. Each occupied slot has its own project UUID, version, artifact identity, source checkpoint, deployment state, and independent `UNTESTED`, `PASS`, `FAIL`, or `INCONCLUSIVE` result. Never collapse two slot results into one aggregate result.
 
+### External user runtime evidence
+
+- An explicit user-reported `PASS`, `FAIL`, or `INCONCLUSIVE` may bind to a current canonical candidate without a Test Instance Manager deployment only when current authoritative `main` uniquely identifies the exact release version, filename, SHA-256, and source checkpoint. Ambiguous or drifted identity fails closed.
+- Record such evidence in the project's `WORKBENCH_STATUS.json` and `CODEX_LOG.md` explicitly as user-reported/external runtime evidence. Record only the classification and observations the user actually supplied; never invent row-level observations. Keep deployment truthful (`NOT_DEPLOYED` when no managed deployment exists), and do not use lifecycle `TESTING` unless the project UUID currently occupies a canonical test slot.
+- Recording external evidence alone makes no Test Instance Manager transition; `FAIL` and `INCONCLUSIVE` therefore never consume a slot. To promote an externally tested `PASS`, use `PROMOTE_USER_PASSED_BATCH`; it preserves both slots and may either add the project or replace its accepted predecessor only through that predecessor's exact `replaces_accepted_deployment_id`.
+- When a passing successor replaces an accepted release, preserve the predecessor as rollback/provenance in the project controls where applicable. This does not change the manager's target-local `retained_rollbacks` semantics: target-local retention remains explicit and independently validated.
+- The existing managed-slot assignment, readiness, result-recording, and promotion workflow remains unchanged.
+
 ### `TESTING` lifecycle invariant
 
 - `TESTING` means one thing only: the project's immutable UUID currently occupies Test Slot A or Test Slot B in canonical `tools/test_instance_manager/runtime-state.json` after a verified serialized Test Instance Manager deployment transition.

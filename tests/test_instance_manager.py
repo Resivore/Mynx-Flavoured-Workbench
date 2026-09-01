@@ -248,6 +248,42 @@ class ManagerFixture:
         )
         return unit("matcha-heart-death-compat", version, item, project_uuid=self.heart_uuid), path
 
+    def add_repository_backed_base_successor(
+        self,
+        version: str = "1.1.0-canary1",
+    ) -> tuple[dict, Path, Path]:
+        project_artifacts = self.repository / "projects" / self.base["project_id"] / "artifacts"
+        predecessor_artifact = self.base["artifacts"][0]
+        predecessor_source = project_artifacts / predecessor_artifact["filename"]
+        predecessor_source.parent.mkdir(parents=True, exist_ok=True)
+        predecessor_source.write_bytes(self.base_bytes)
+        predecessor_artifact["source"] = {
+            "type": "REPOSITORY",
+            "path": predecessor_source.relative_to(self.repository).as_posix(),
+        }
+
+        filename = f"accepted-base-{version}.jar"
+        successor_source = project_artifacts / filename
+        sha256 = write_mod(successor_source, "accepted_base", version)
+        successor = unit(
+            self.base["project_id"],
+            version,
+            artifact(
+                filename,
+                "accepted_base",
+                sha256,
+                source_type="REPOSITORY",
+                source_path=successor_source.relative_to(self.repository).as_posix(),
+            ),
+            project_uuid=self.base["project_uuid"],
+        )
+        validate_runtime_state(self.state, self.project_index)
+        self.state_path.write_text(
+            json.dumps(self.state, indent=2) + "\n",
+            encoding="utf-8",
+        )
+        return successor, successor_source, predecessor_source
+
     def add_mossy_repository_candidate(self, version: str = "0.3.0-canary3") -> tuple[dict, Path]:
         filename = f"mossy-stone-{version}.jar"
         path = self.repository / "artifacts" / filename
@@ -1318,6 +1354,119 @@ class PhysicalManagerTests(unittest.TestCase):
         self.fixture.manager.project_index = project_index
         self.fixture.manager._assert_desired_is_pure_transition(current, desired)
 
+    def test_user_passed_batch_replaces_repository_backed_accepted_predecessor(self) -> None:
+        successor, successor_source, predecessor_source = (
+            self.fixture.add_repository_backed_base_successor()
+        )
+        predecessor = copy.deepcopy(self.fixture.base)
+        predecessor_active = self.fixture.mods / predecessor["artifacts"][0]["filename"]
+        successor_active = self.fixture.mods / successor["artifacts"][0]["filename"]
+        predecessor_source_bytes = predecessor_source.read_bytes()
+        successor_source_bytes = successor_source.read_bytes()
+        self.fixture.manager.adopt(dry_run=False)
+        operation = {
+            "type": "PROMOTE_USER_PASSED_BATCH",
+            "authorization": "USER_REPORTED_EXACT_RUNTIME_PASS",
+            "members": [
+                {
+                    "unit": successor,
+                    "replaces_accepted_deployment_id": predecessor["deployment_id"],
+                }
+            ],
+        }
+        before = self.fixture.repository_state()
+        before_tree = tree_snapshot(self.fixture.root)
+        before_slots = json.dumps(
+            before["slots"],
+            sort_keys=True,
+            separators=(",", ":"),
+        ).encode("utf-8")
+        before_slot_artifacts = {
+            f"{label}:{item['filename']}": (
+                self.fixture.mods / item["filename"]
+            ).read_bytes()
+            for label in ("A", "B")
+            for item in before["slots"][label]["unit"]["artifacts"]
+        }
+
+        dry_run = self.fixture.manager.transition(
+            operation=operation,
+            expected_revision=before["revision"],
+            at="2099-01-01T00:00:59Z",
+            dry_run=True,
+        )
+
+        self.assertTrue(dry_run["dry_run"])
+        self.assertEqual(before_tree, tree_snapshot(self.fixture.root))
+        self.assertEqual([], dry_run["retained_rollbacks"])
+        self.assertEqual([], dry_run["retained_predecessor_moves"])
+        self.assertIn(predecessor_active.name, dry_run["removals"])
+        self.assertEqual(
+            [
+                "Baseline: Stack v5",
+                "Slot A: Matcha Death Rebalance - Canary 7",
+                "Slot B: Mossy Stone - Canary 2",
+            ],
+            dry_run["title_projection"]["lines"],
+        )
+
+        applied = self.fixture.manager.transition(
+            operation=operation,
+            expected_revision=before["revision"],
+            at="2099-01-01T00:00:59Z",
+            dry_run=False,
+        )
+
+        after = self.fixture.repository_state()
+        after_slots = json.dumps(
+            after["slots"],
+            sort_keys=True,
+            separators=(",", ":"),
+        ).encode("utf-8")
+        after_slot_artifacts = {
+            f"{label}:{item['filename']}": (
+                self.fixture.mods / item["filename"]
+            ).read_bytes()
+            for label in ("A", "B")
+            for item in after["slots"][label]["unit"]["artifacts"]
+        }
+        accepted = next(
+            member
+            for member in after["accepted_baseline"]["members"]
+            if member["unit"]["project_uuid"] == successor["project_uuid"]
+        )
+        self.assertFalse(applied["dry_run"])
+        self.assertEqual(before["revision"] + 1, after["revision"])
+        self.assertEqual(
+            before["accepted_baseline"]["revision"] + 1,
+            after["accepted_baseline"]["revision"],
+        )
+        self.assertEqual(
+            len(before["accepted_baseline"]["members"]),
+            len(after["accepted_baseline"]["members"]),
+        )
+        self.assertEqual(
+            before["accepted_baseline"]["provenance"]["accepted_artifact_count"],
+            after["accepted_baseline"]["provenance"]["accepted_artifact_count"],
+        )
+        self.assertEqual(before_slots, after_slots)
+        self.assertEqual(before_slot_artifacts, after_slot_artifacts)
+        self.assertEqual(successor, accepted["unit"])
+        self.assertEqual(successor_source_bytes, successor_active.read_bytes())
+        self.assertEqual(
+            successor["artifacts"][0]["sha256"],
+            hashlib.sha256(successor_active.read_bytes()).hexdigest(),
+        )
+        self.assertFalse(predecessor_active.exists())
+        self.assertEqual(predecessor_source_bytes, predecessor_source.read_bytes())
+        self.assertEqual(successor_source_bytes, successor_source.read_bytes())
+        verification = self.fixture.manager.verify()
+        self.assertEqual("PHYSICAL_STATE_VERIFIED", verification["status"])
+        self.assertEqual(
+            0,
+            verification["accepted_baseline"]["retained_rollbacks"]["artifact_count"],
+        )
+
     def test_user_passed_batch_dry_run_and_apply_preserve_slots_and_retain_rollback(self) -> None:
         self.fixture.manager.adopt(dry_run=False)
         operation, first, rooted, rollback, predecessor_bytes = self.fixture.add_user_passed_batch()
@@ -1481,6 +1630,83 @@ class PhysicalManagerTests(unittest.TestCase):
         wrong_candidate["members"][0]["unit"]["version"] = "0.1.1-canary2"
         with self.assertRaisesRegex(ManagerError, "does not exactly match manifest release identity"):
             self.fixture.manager._validate_batch_manifest_identities(wrong_candidate)
+
+    def test_user_passed_accepted_replacement_is_bound_to_exact_current_manifest_candidate(self) -> None:
+        successor, _, _ = self.fixture.add_repository_backed_base_successor()
+        project_uuid = successor["project_uuid"]
+        manifest_path = (
+            self.fixture.repository
+            / "projects"
+            / successor["project_id"]
+            / "WORKBENCH_STATUS.json"
+        )
+        artifact_identity = successor["artifacts"][0]
+        manifest = {
+            "identity": {
+                "uuid": project_uuid,
+                "project_id": successor["project_id"],
+            },
+            "state": {
+                "releases": {
+                    "current": {
+                        "version": successor["version"],
+                        "source_commit": successor["source_commit"],
+                        "artifact": {
+                            "filename": artifact_identity["filename"],
+                            "sha256": artifact_identity["sha256"],
+                        },
+                    },
+                    "rollback": None,
+                }
+            },
+        }
+        self.fixture.manager.repository_statuses = {project_uuid: (manifest_path, manifest)}
+        exact_operation = {
+            "type": "PROMOTE_USER_PASSED_BATCH",
+            "authorization": "USER_REPORTED_EXACT_RUNTIME_PASS",
+            "members": [
+                {
+                    "unit": successor,
+                    "replaces_accepted_deployment_id": self.fixture.base["deployment_id"],
+                }
+            ],
+        }
+        self.fixture.manager._validate_batch_manifest_identities(exact_operation)
+
+        identity_drifts = {
+            "version": ("version", "1.1.1-concurrent"),
+            "source commit": ("source_commit", "f" * 40),
+        }
+        for label, (field, value) in identity_drifts.items():
+            with self.subTest(drift=label):
+                drifted = copy.deepcopy(exact_operation)
+                drifted["members"][0]["unit"][field] = value
+                with self.assertRaisesRegex(
+                    ManagerError,
+                    "does not exactly match manifest release identity",
+                ):
+                    self.fixture.manager._validate_batch_manifest_identities(drifted)
+
+        artifact_drifts = {
+            "filename": ("filename", "accepted-base-1.1.1-concurrent.jar"),
+            "hash": ("sha256", "e" * 64),
+        }
+        for label, (field, value) in artifact_drifts.items():
+            with self.subTest(drift=label):
+                drifted = copy.deepcopy(exact_operation)
+                drifted["members"][0]["unit"]["artifacts"][0][field] = value
+                with self.assertRaisesRegex(
+                    ManagerError,
+                    "does not exactly match manifest release identity",
+                ):
+                    self.fixture.manager._validate_batch_manifest_identities(drifted)
+
+        source_drift = copy.deepcopy(exact_operation)
+        source_drift["members"][0]["unit"]["artifacts"][0]["source"]["path"] = (
+            "projects/accepted-base/artifacts/not-the-current-candidate.jar"
+        )
+        with self.assertRaisesRegex(ManagerError, "source is not canonical"):
+            self.fixture.manager._validate_batch_manifest_identities(source_drift)
 
     def test_user_passed_batch_manifest_drift_before_commit_aborts_and_rolls_back(self) -> None:
         self.fixture.manager.adopt(dry_run=False)
