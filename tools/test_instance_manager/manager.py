@@ -1207,13 +1207,14 @@ class PhysicalManager:
             for dependency_id in descriptor.depends
             if dependency_id in _FABRIC_PLATFORM_DEPENDENCIES
         }
-        ownership_ids = {
+        managed_ownership_ids = {
             ownership_id
             for descriptor in descriptors
+            if descriptor.managed_project_id is not None
             for ownership_id in descriptor.ownership_ids
             if ownership_id in _FABRIC_PLATFORM_DEPENDENCIES
         }
-        return frozenset(dependency_ids.union(ownership_ids))
+        return frozenset(dependency_ids.union(managed_ownership_ids))
 
     def _attest_platform_providers(
         self,
@@ -1616,23 +1617,96 @@ class PhysicalManager:
             if platform_attestation is not None
             else {}
         )
-        providers: dict[str, FabricModDescriptor] = {}
+        managed_dependency_ids = {
+            dependency_id
+            for descriptor in descriptors
+            if descriptor.managed_project_id is not None
+            for dependency_id in descriptor.depends
+        }
+        managed_descriptor_ownership_ids = {
+            ownership_id
+            for descriptor in descriptors
+            if descriptor.managed_project_id is not None
+            for ownership_id in descriptor.ownership_ids
+        }
+        enforced_ownership_ids = (
+            set(managed_ownership_ids)
+            .union(managed_dependency_ids)
+            .union(managed_descriptor_ownership_ids)
+        )
+        ownership_groups: dict[str, list[FabricModDescriptor]] = {}
         for descriptor in descriptors:
             for ownership_id in descriptor.ownership_ids:
-                if ownership_id in platform_providers:
+                ownership_groups.setdefault(ownership_id, []).append(descriptor)
+
+        providers: dict[str, FabricModDescriptor] = {}
+        observed_out_of_scope_duplicate_groups: list[dict[str, Any]] = []
+        for ownership_id, owners in sorted(ownership_groups.items()):
+            platform_provider = platform_providers.get(ownership_id)
+            owner_count = len(owners) + (1 if platform_provider is not None else 0)
+            if owner_count > 1:
+                owner_labels = [
+                    f"{owner.relative_path}@{owner.version}"
+                    for owner in owners
+                ]
+                if platform_provider is not None:
+                    owner_labels.insert(
+                        0,
+                        f"Fabric builtin provider@{platform_provider.version}",
+                    )
+                if ownership_id in enforced_ownership_ids:
                     raise ManagerError(
                         "duplicate enabled Fabric ownership "
-                        f"{ownership_id}: Fabric builtin provider and "
-                        f"{descriptor.relative_path}@{descriptor.version}"
+                        f"{ownership_id}: " + " and ".join(owner_labels)
                     )
-                previous = providers.get(ownership_id)
-                if previous is not None:
-                    raise ManagerError(
-                        "duplicate enabled Fabric ownership "
-                        f"{ownership_id}: {previous.relative_path}@{previous.version} and "
-                        f"{descriptor.relative_path}@{descriptor.version}"
+                observed_owners = [
+                    {
+                        "classification": (
+                            "MANAGED_ENABLED_JAR"
+                            if owner.managed_project_id is not None
+                            else "EXTERNAL_ENABLED_JAR"
+                        ),
+                        "filename": owner.filename,
+                        "path": owner.relative_path,
+                        "primary_id": owner.primary_id,
+                        "provides": list(owner.provides),
+                        "version": owner.version,
+                        "managed_project_uuid": owner.managed_project_uuid,
+                        "managed_project_id": owner.managed_project_id,
+                        "managed_deployment_id": owner.managed_deployment_id,
+                        "managed_artifact_id": owner.managed_artifact_id,
+                    }
+                    for owner in sorted(owners, key=lambda item: item.relative_path.casefold())
+                ]
+                if platform_provider is not None:
+                    observed_owners.insert(
+                        0,
+                        {
+                            "classification": "ATTESTED_PLATFORM_PROVIDER",
+                            "filename": None,
+                            "path": None,
+                            "primary_id": platform_provider.mod_id,
+                            "provides": [],
+                            "version": platform_provider.version,
+                            "managed_project_uuid": None,
+                            "managed_project_id": None,
+                            "managed_deployment_id": None,
+                            "managed_artifact_id": None,
+                            "authority": platform_provider.authority,
+                        },
                     )
-                providers[ownership_id] = descriptor
+                observed_out_of_scope_duplicate_groups.append(
+                    {
+                        "classification": "OBSERVED_EXTERNAL_DUPLICATE_NOT_EVALUATED",
+                        "ownership_id": ownership_id,
+                        "reason": "OUTSIDE_MANAGED_OWNERSHIP_AND_DEPENDENCY_GRAPH",
+                        "provider_resolution": "EXCLUDED_FROM_PROVIDER_SET",
+                        "owners": observed_owners,
+                    }
+                )
+                continue
+            if owners:
+                providers[ownership_id] = owners[0]
 
         resolutions: list[dict[str, Any]] = []
         for consumer in descriptors:
@@ -1753,6 +1827,7 @@ class PhysicalManager:
                 if platform_attestation is not None
                 else None
             ),
+            "observed_out_of_scope_duplicate_ownership_groups": observed_out_of_scope_duplicate_groups,
             "resolutions": resolutions,
         }
 

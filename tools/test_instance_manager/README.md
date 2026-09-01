@@ -70,12 +70,25 @@ whole cohort and restores its accepted predecessors/dependencies together.
 
 Preflight and verification read exactly one root `fabric.mod.json` from every
 enabled Fabric JAR. They record primary ID, `provides` aliases, embedded
-version, and hard `depends` predicates. Provider ownership must be unique.
-Fabric predicate evaluation follows Loader semantics: predicate-array entries
-are OR alternatives, space-delimited terms inside one predicate are ANDed, and
-semantic/prerelease/wildcard ordering follows Fabric Loader. A present provider
-must satisfy its predicate. A missing ID known to manager ownership fails and
-names the companion that must be supplied in the same cohort operation.
+version, and hard `depends` predicates. The manager first groups every enabled
+descriptor by every owned ID. Ownership must be unique for each ID owned by a
+managed artifact and for each hard dependency ID of any managed consumer.
+Duplicates in that enforced graph fail before mutation, whether the competing
+owners are managed or external. Fabric predicate evaluation follows Loader
+semantics: predicate-array entries are OR alternatives, space-delimited terms
+inside one predicate are ANDed, and semantic/prerelease/wildcard ordering
+follows Fabric Loader. A present provider must satisfy its predicate. A missing
+ID known to manager ownership fails and names the companion that must be
+supplied in the same cohort operation.
+
+Duplicate external ownership outside the managed ownership/dependency graph is
+not silently discarded and is not mistaken for a usable provider. It is
+reported as `OBSERVED_EXTERNAL_DUPLICATE_NOT_EVALUATED` with every exact
+path/version owner and `EXCLUDED_FROM_PROVIDER_SET`, but it does not block the
+managed cohort transition or alter accepted Stack composition. Selecting,
+removing, or disabling one of those unrelated external artifacts requires its
+own explicit authority; the manager never guesses based on filename or newer
+version ordering.
 Fabric's builtin provider IDs (`java`, `minecraft`, `fabricloader`) have no
 enabled root provider JAR, but they are never trusted without a version. When a
 managed descriptor depends on or attempts to own one of those IDs, the manager
@@ -100,7 +113,9 @@ Receipts expose the exact target/content-set identities, metadata path/hash,
 selected and probed Java paths/hashes, exact builtin versions, matched Fabric
 predicates, and one deterministic attestation fingerprint. A synthetic builtin
 provider then passes through the same Fabric predicate evaluator as every JAR
-provider; an enabled JAR that claims a builtin ID is a duplicate-owner failure.
+provider. An enabled JAR that claims a builtin ID required or owned by the
+managed graph is a duplicate-owner failure; unrelated external collisions
+remain explicit out-of-scope observations.
 
 A physically present unmanaged JAR provider is accepted and its exact
 path/version is recorded, but a missing external or managed hard dependency
@@ -296,6 +311,9 @@ already exists.
   exact enabled JAR provider or an exact attested builtin provider and satisfies
   its declared predicate. Missing external providers, unversioned builtins,
   duplicate builtin ownership, and launch-authority drift all fail closed.
+- Duplicate ownership outside all managed artifact and hard-dependency IDs is
+  receipt-only evidence, never a selected provider. It cannot mutate accepted
+  Stack composition or authorize removal of an external artifact.
 - Unmanaged enabled JARs that provide managed Fabric IDs are rejected;
   intentional legacy-disabled fallbacks are preserved.
 - Symlinks, junctions/reparse points, path escapes, stale revisions/digests,

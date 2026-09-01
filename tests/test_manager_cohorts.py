@@ -431,6 +431,98 @@ class FabricDependencyGraphTests(unittest.TestCase):
         self.assertEqual("RESOLVED_EXTERNAL_ENABLED_PROVIDER", resolution["classification"])
         self.assertEqual("0.120.0+26.2", resolution["provider"]["version"])
 
+    def test_unrelated_external_duplicate_is_observed_but_does_not_block(self) -> None:
+        sodium_stable = descriptor(
+            "sodium-stable.jar",
+            "sodium",
+            "0.9.1+mc26.2",
+        )
+        sodium_alpha = descriptor(
+            "sodium-alpha.jar",
+            "sodium",
+            "0.9.2-alpha.4+mc26.2",
+        )
+        report = self.resolve(self.bge_c58, self.trowel, sodium_stable, sodium_alpha)
+        groups = report["observed_out_of_scope_duplicate_ownership_groups"]
+        self.assertEqual(1, len(groups))
+        self.assertEqual("sodium", groups[0]["ownership_id"])
+        self.assertEqual(
+            "OBSERVED_EXTERNAL_DUPLICATE_NOT_EVALUATED",
+            groups[0]["classification"],
+        )
+        self.assertEqual("EXCLUDED_FROM_PROVIDER_SET", groups[0]["provider_resolution"])
+        self.assertEqual(
+            {"sodium-stable.jar", "sodium-alpha.jar"},
+            {owner["filename"] for owner in groups[0]["owners"]},
+        )
+        self.assertEqual(
+            ["cnm_terrain_slabs_compat"],
+            [item["dependency_id"] for item in report["resolutions"]],
+        )
+
+    def test_unrelated_external_duplicate_is_visible_in_dry_run_and_verify_receipts(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            fixture = ManagerFixture(Path(temporary))
+            write_dependency_mod(
+                fixture.mods / "sodium-stable.jar",
+                "sodium",
+                "0.9.1+mc26.2",
+            )
+            write_dependency_mod(
+                fixture.mods / "sodium-alpha.jar",
+                "sodium",
+                "0.9.2-alpha.4+mc26.2",
+            )
+
+            dry_run = fixture.manager.adopt(dry_run=True)
+            dry_groups = dry_run["dependency_resolution"][
+                "observed_out_of_scope_duplicate_ownership_groups"
+            ]
+            self.assertEqual(["sodium"], [item["ownership_id"] for item in dry_groups])
+
+            fixture.manager.adopt(dry_run=False)
+            verified = fixture.manager.verify()
+            verify_groups = verified["fabric_dependency_graph"][
+                "observed_out_of_scope_duplicate_ownership_groups"
+            ]
+            self.assertEqual(dry_groups, verify_groups)
+            self.assertEqual("PHYSICAL_STATE_VERIFIED", verified["status"])
+
+    def test_duplicate_external_provider_required_by_managed_consumer_blocks(self) -> None:
+        consumer = descriptor(
+            "managed-consumer.jar",
+            "managed_consumer",
+            "1.0.0",
+            depends={"fabric-api": (">=0.100.0",)},
+            project_id="managed-consumer",
+        )
+        first = descriptor("fabric-api-first.jar", "fabric-api", "0.120.0+26.2")
+        second = descriptor("fabric-api-second.jar", "fabric-api", "0.121.0+26.2")
+        with self.assertRaisesRegex(
+            ManagerError,
+            r"duplicate enabled Fabric ownership fabric-api:.*first.*second",
+        ):
+            self.resolve(consumer, first, second)
+
+    def test_duplicate_managed_ownership_blocks_even_when_not_a_dependency(self) -> None:
+        first = descriptor(
+            "managed-first.jar",
+            "managed_duplicate",
+            "1.0.0",
+            project_id="managed-first",
+        )
+        second = descriptor(
+            "managed-second.jar",
+            "managed_duplicate",
+            "2.0.0",
+            project_id="managed-second",
+        )
+        with self.assertRaisesRegex(
+            ManagerError,
+            r"duplicate enabled Fabric ownership managed_duplicate:.*managed-first.*managed-second",
+        ):
+            self.resolve(first, second)
+
     def test_c57_and_c58_duplicate_provider_fails_closed(self) -> None:
         bge_c57 = descriptor(
             "bge-c57.jar",
