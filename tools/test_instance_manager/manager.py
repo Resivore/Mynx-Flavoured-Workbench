@@ -1830,8 +1830,12 @@ class PhysicalManager:
             for ownership_id in descriptor.ownership_ids:
                 ownership_groups.setdefault(ownership_id, []).append(descriptor)
 
-        providers: dict[str, FabricModDescriptor] = {}
+        candidate_priority = _FabricCandidatePriority(descriptors)
         observed_out_of_scope_duplicate_groups: list[dict[str, Any]] = []
+        candidate_selection_groups: list[dict[str, Any]] = []
+        out_of_scope_duplicate_ids: set[str] = set()
+        inactive_candidate_ids: set[int] = set()
+        selected_candidate_groups: dict[str, FabricModDescriptor] = {}
         for ownership_id, owners in sorted(ownership_groups.items()):
             sorted_owners = sorted(
                 owners,
@@ -1854,10 +1858,70 @@ class PhysicalManager:
                         f"Fabric builtin provider@{platform_provider.version}",
                     )
                 if ownership_id in enforced_ownership_ids:
-                    raise ManagerError(
-                        "duplicate enabled Fabric ownership "
-                        f"{ownership_id}: " + " and ".join(owner_labels)
+                    direct_roots = [owner for owner in sorted_owners if not owner.nested_chain]
+                    if (
+                        platform_provider is not None
+                        or ownership_id in managed_ownership_ids
+                        or len(direct_roots) > 1
+                    ):
+                        raise ManagerError(
+                            "duplicate enabled Fabric ownership "
+                            f"{ownership_id}: " + " and ".join(owner_labels)
+                        )
+                    if len({owner.primary_id for owner in sorted_owners}) != 1:
+                        raise ManagerError(
+                            "duplicate enabled Fabric ownership uses overlapping primary/provides IDs "
+                            f"outside the proven Loader candidate-selection subset for {ownership_id}: "
+                            + " and ".join(owner_labels)
+                        )
+
+                    if direct_roots:
+                        selected = direct_roots[0]
+                    else:
+                        selected = sorted_owners[0]
+                        for candidate in sorted_owners[1:]:
+                            if candidate_priority.compare(candidate, selected) < 0:
+                                selected = candidate
+                        tied = [
+                            candidate
+                            for candidate in sorted_owners
+                            if candidate is not selected
+                            and candidate_priority.compare(candidate, selected) == 0
+                        ]
+                        if tied:
+                            tied_labels = [
+                                f"{candidate.relative_path}@{candidate.version}"
+                                for candidate in (selected, *tied)
+                            ]
+                            raise ManagerError(
+                                "ambiguous equal-priority external nested Fabric candidates for ownership "
+                                f"{ownership_id}: " + " and ".join(tied_labels)
+                                + "; Fabric Loader 0.19.3 build metadata does not break semantic-version "
+                                "precedence, and no unique root/depth/parent priority exists"
+                            )
+
+                    selected_candidate_groups[ownership_id] = selected
+                    inactive = [owner for owner in sorted_owners if owner is not selected]
+                    inactive_candidate_ids.update(id(owner) for owner in inactive)
+                    candidate_selection_groups.append(
+                        {
+                            "classification": "LOADER_0_19_3_CANDIDATE_SELECTION",
+                            "ownership_id": ownership_id,
+                            "selected_candidate": candidate_priority.candidate_record(selected),
+                            "discovered_candidates": [
+                                candidate_priority.candidate_record(owner)
+                                for owner in sorted_owners
+                            ],
+                            "inactive_alternatives": [
+                                {
+                                    **candidate_priority.candidate_record(owner),
+                                    "inactive_reason": candidate_priority.inactive_reason(owner, selected),
+                                }
+                                for owner in inactive
+                            ],
+                        }
                     )
+                    continue
                 observed_owners = [
                     {
                         "classification": (
@@ -1904,13 +1968,40 @@ class PhysicalManager:
                         "owners": observed_owners,
                     }
                 )
+                out_of_scope_duplicate_ids.add(ownership_id)
                 continue
-            if owners:
-                providers[ownership_id] = sorted_owners[0]
+
+        for ownership_id, selected in selected_candidate_groups.items():
+            if id(selected) in inactive_candidate_ids:
+                raise ManagerError(
+                    "interlocking Fabric candidate ownership groups selected an inactive provider for "
+                    f"{ownership_id}; fail closed instead of approximating Loader's SAT solution"
+                )
+
+        selected_descriptors = tuple(
+            descriptor
+            for descriptor in descriptors
+            if id(descriptor) not in inactive_candidate_ids
+        )
+        providers: dict[str, FabricModDescriptor] = {}
+        for ownership_id, owners in sorted(ownership_groups.items()):
+            if ownership_id in out_of_scope_duplicate_ids:
+                continue
+            selected_owners = [owner for owner in owners if id(owner) not in inactive_candidate_ids]
+            if len(selected_owners) > 1:
+                raise ManagerError(
+                    "Fabric candidate selection left duplicate active ownership "
+                    f"{ownership_id}: "
+                    + " and ".join(
+                        f"{owner.relative_path}@{owner.version}" for owner in selected_owners
+                    )
+                )
+            if selected_owners:
+                providers[ownership_id] = selected_owners[0]
 
         resolutions: list[dict[str, Any]] = []
         for consumer in sorted(
-            descriptors,
+            selected_descriptors,
             key=lambda item: (
                 item.relative_path.casefold(),
                 item.primary_id,
@@ -2032,14 +2123,22 @@ class PhysicalManager:
             discovered_descriptors,
             key=lambda item: (item.relative_path.casefold(), item.primary_id),
         )
-        sorted_descriptors = [
+        sorted_eligible_descriptors = [
             descriptor
             for descriptor in sorted_discovered_descriptors
             if descriptor.environment_eligible
         ]
+        sorted_selected_descriptors = sorted(
+            selected_descriptors,
+            key=lambda item: (item.relative_path.casefold(), item.primary_id),
+        )
         enabled_descriptors = [
             descriptor_record(descriptor)
-            for descriptor in sorted_descriptors
+            for descriptor in sorted_selected_descriptors
+        ]
+        discovered_descriptor_records = [
+            descriptor_record(descriptor)
+            for descriptor in sorted_discovered_descriptors
         ]
         environment_excluded_descriptors = [
             {
@@ -2056,6 +2155,7 @@ class PhysicalManager:
         root_count = sum(not descriptor.nested_chain for descriptor in discovered_descriptors)
         eligible_root_count = sum(not descriptor.nested_chain for descriptor in descriptors)
         nested_count = len(descriptors) - eligible_root_count
+        selected_nested_count = sum(bool(descriptor.nested_chain) for descriptor in selected_descriptors)
         discovered_nested_count = len(discovered_descriptors) - root_count
         enabled_root_jars = [
             descriptor_record(descriptor)
@@ -2073,11 +2173,15 @@ class PhysicalManager:
             "client_eligible_root_fabric_descriptor_count": eligible_root_count,
             "discovered_fabric_descriptor_count": len(discovered_descriptors),
             "enabled_fabric_descriptor_count": len(enabled_descriptors),
+            "selected_fabric_descriptor_count": len(enabled_descriptors),
             "declared_nested_fabric_descriptor_count": nested_count,
+            "selected_declared_nested_fabric_descriptor_count": selected_nested_count,
             "discovered_declared_nested_fabric_descriptor_count": discovered_nested_count,
             "environment_excluded_fabric_descriptor_count": len(environment_excluded_descriptors),
             "enabled_fabric_jars": enabled_root_jars,
             "enabled_fabric_descriptors": enabled_descriptors,
+            "selected_fabric_descriptors": enabled_descriptors,
+            "discovered_fabric_descriptors": discovered_descriptor_records,
             "environment_excluded_fabric_descriptors": environment_excluded_descriptors,
             "platform_attestation": (
                 platform_attestation.receipt()
@@ -2085,6 +2189,7 @@ class PhysicalManager:
                 else None
             ),
             "observed_out_of_scope_duplicate_ownership_groups": observed_out_of_scope_duplicate_groups,
+            "candidate_selection_groups": candidate_selection_groups,
             "resolutions": resolutions,
         }
 
@@ -3745,6 +3850,207 @@ def _compare_fabric_semantic_versions(left: _FabricSemanticVersion, right: _Fabr
         if left_part != right_part:
             return -1 if left_part < right_part else 1
     return 0
+
+
+def _fabric_semantic_precedence_key(value: str) -> dict[str, Any]:
+    """Return Loader's comparison key while retaining the full version elsewhere.
+
+    Fabric's ``SemanticVersionImpl.compareTo`` deliberately ignores build
+    metadata.  Receipts make that distinction explicit so equal-precedence
+    candidates never appear to have been ordered by their ``+build`` suffix.
+    """
+
+    parsed = _parse_fabric_semantic_version(value, store_wildcards=False)
+    if parsed is None:
+        return {
+            "kind": "STRING_VERSION",
+            "friendly_string": value,
+            "build_metadata_ignored": False,
+        }
+    return {
+        "kind": "SEMANTIC_VERSION",
+        "components": list(parsed.components),
+        "prerelease": parsed.prerelease,
+        "build_metadata_ignored": True,
+    }
+
+
+def _compare_fabric_versions_for_priority(left: str, right: str) -> int:
+    """Compare versions exactly as Loader's candidate priority comparator."""
+
+    left_semantic = _parse_fabric_semantic_version(left, store_wildcards=False)
+    right_semantic = _parse_fabric_semantic_version(right, store_wildcards=False)
+    if left_semantic is not None and right_semantic is not None:
+        return _compare_fabric_semantic_versions(left_semantic, right_semantic)
+    # SemanticVersionImpl and StringVersion both fall back to friendly-string
+    # ordering when the other operand is not semantic.
+    if left == right:
+        return 0
+    return -1 if left < right else 1
+
+
+class _FabricCandidatePriority:
+    """Loader 0.19.3's root/version/depth/parent priority for discovered mods."""
+
+    def __init__(self, descriptors: Sequence[FabricModDescriptor]) -> None:
+        self._path_to_descriptor: dict[str, FabricModDescriptor] = {}
+        self._parent_cache: dict[int, tuple[FabricModDescriptor, ...]] = {}
+        self._compare_cache: dict[tuple[int, int], int] = {}
+        for descriptor in descriptors:
+            paths = (
+                tuple(origin.candidate_path for origin in descriptor.nested_origins)
+                if descriptor.nested_chain
+                else (descriptor.relative_path,)
+            )
+            for path in paths:
+                prior = self._path_to_descriptor.get(path)
+                if prior is not None and prior is not descriptor:
+                    raise ManagerError(
+                        "distinct Fabric candidates have the same exact discovery path: " + path
+                    )
+                self._path_to_descriptor[path] = descriptor
+
+    @staticmethod
+    def minimum_nesting_depth(descriptor: FabricModDescriptor) -> int:
+        if not descriptor.nested_chain:
+            return 0
+        origins = descriptor.nested_origins
+        return min(len(origin.nested_chain) for origin in origins) if origins else len(descriptor.nested_chain)
+
+    def parents(self, descriptor: FabricModDescriptor) -> tuple[FabricModDescriptor, ...]:
+        cached = self._parent_cache.get(id(descriptor))
+        if cached is not None:
+            return cached
+        if not descriptor.nested_chain:
+            self._parent_cache[id(descriptor)] = ()
+            return ()
+        result: list[FabricModDescriptor] = []
+        seen: set[int] = set()
+        for origin in descriptor.nested_origins:
+            parent_path = origin.nested_chain[-1].container_path
+            parent = self._path_to_descriptor.get(parent_path)
+            if parent is None:
+                raise ManagerError(
+                    "declared nested Fabric candidate has no discovered parent candidate: "
+                    f"{origin.candidate_path} -> {parent_path}"
+                )
+            if id(parent) not in seen:
+                result.append(parent)
+                seen.add(id(parent))
+        parents = tuple(result)
+        self._parent_cache[id(descriptor)] = parents
+        return parents
+
+    def compare(
+        self,
+        left: FabricModDescriptor,
+        right: FabricModDescriptor,
+        stack: frozenset[tuple[int, int]] = frozenset(),
+    ) -> int:
+        """Return negative when ``left`` has Loader-higher priority."""
+
+        if left is right:
+            return 0
+        key = (id(left), id(right))
+        cached = self._compare_cache.get(key)
+        if cached is not None:
+            return cached
+        if key in stack or (key[1], key[0]) in stack:
+            raise ManagerError("cyclic declared nested Fabric candidate parent graph")
+        next_stack = stack.union({key})
+
+        left_depth = self.minimum_nesting_depth(left)
+        right_depth = self.minimum_nesting_depth(right)
+        if (left_depth == 0) != (right_depth == 0):
+            result = -1 if left_depth == 0 else 1
+        elif left.primary_id != right.primary_id:
+            result = -1 if left.primary_id < right.primary_id else 1
+        else:
+            version_comparison = _compare_fabric_versions_for_priority(left.version, right.version)
+            if version_comparison != 0:
+                result = -1 if version_comparison > 0 else 1
+            elif left_depth != right_depth:
+                result = -1 if left_depth < right_depth else 1
+            elif left_depth == 0:
+                result = 0
+            else:
+                left_parents = self.best_parents(left, next_stack)
+                right_parents = self.best_parents(right, next_stack)
+                if not left_parents or not right_parents:
+                    raise ManagerError("nested Fabric candidate has no priority parent")
+                if any(a is b for a in left_parents for b in right_parents):
+                    result = 0
+                else:
+                    result = self.compare(left_parents[0], right_parents[0], next_stack)
+
+        self._compare_cache[key] = result
+        self._compare_cache[(key[1], key[0])] = -result
+        return result
+
+    def best_parents(
+        self,
+        descriptor: FabricModDescriptor,
+        stack: frozenset[tuple[int, int]] = frozenset(),
+    ) -> tuple[FabricModDescriptor, ...]:
+        best: list[FabricModDescriptor] = []
+        for parent in self.parents(descriptor):
+            if not best:
+                best = [parent]
+                continue
+            comparison = self.compare(parent, best[0], stack)
+            if comparison < 0:
+                best = [parent]
+            elif comparison == 0:
+                best.append(parent)
+        return tuple(best)
+
+    def candidate_record(self, descriptor: FabricModDescriptor) -> dict[str, Any]:
+        parents = self.best_parents(descriptor)
+        return {
+            "filename": descriptor.filename,
+            "path": descriptor.relative_path,
+            "primary_id": descriptor.primary_id,
+            "provides": list(descriptor.provides),
+            "full_version": descriptor.version,
+            "semantic_precedence_key": _fabric_semantic_precedence_key(descriptor.version),
+            "root_candidate": not descriptor.nested_chain,
+            "minimum_nesting_depth": self.minimum_nesting_depth(descriptor),
+            "priority_parents": [
+                {
+                    "filename": parent.filename,
+                    "path": parent.relative_path,
+                    "primary_id": parent.primary_id,
+                    "full_version": parent.version,
+                    "semantic_precedence_key": _fabric_semantic_precedence_key(parent.version),
+                    "minimum_nesting_depth": self.minimum_nesting_depth(parent),
+                    "provenance": parent.provenance_record(),
+                }
+                for parent in parents
+            ],
+            "managed_project_uuid": descriptor.managed_project_uuid,
+            "managed_project_id": descriptor.managed_project_id,
+            "managed_deployment_id": descriptor.managed_deployment_id,
+            "managed_artifact_id": descriptor.managed_artifact_id,
+            "provenance": descriptor.provenance_record(),
+        }
+
+    def inactive_reason(
+        self,
+        candidate: FabricModDescriptor,
+        selected: FabricModDescriptor,
+    ) -> str:
+        if not selected.nested_chain and candidate.nested_chain:
+            return "ROOT_SHADOWED_NESTED"
+        version_comparison = _compare_fabric_versions_for_priority(candidate.version, selected.version)
+        if version_comparison < 0:
+            return "LOWER_VERSION"
+        candidate_depth = self.minimum_nesting_depth(candidate)
+        selected_depth = self.minimum_nesting_depth(selected)
+        if candidate_depth > selected_depth:
+            return "DEEPER_NESTING"
+        if candidate_depth and selected_depth and self.compare(candidate, selected) > 0:
+            return "LOWER_PRIORITY_PARENT"
+        return "LOWER_LOADER_PRIORITY"
 
 
 def _fabric_predicate_matches(version: str, predicate: str) -> bool:

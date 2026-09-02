@@ -961,7 +961,7 @@ class DeclaredNestedFabricJarTests(unittest.TestCase):
                 ):
                     _read_fabric_descriptor_tree(path, artifact=artifact_record)
 
-    def test_different_nested_bytes_with_duplicate_id_fail_ownership(self) -> None:
+    def test_different_nested_versions_select_loader_higher_candidate(self) -> None:
         first_path = "META-INF/jars/provider-one.jar"
         second_path = "META-INF/jars/provider-two.jar"
         first = fabric_mod_jar_bytes("nested_provider", "1.0.0")
@@ -975,8 +975,168 @@ class DeclaredNestedFabricJarTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             path, artifact_record = self.write_outer(Path(temporary), outer)
             descriptors = _read_fabric_descriptor_tree(path, artifact=artifact_record)
-        with self.assertRaisesRegex(ManagerError, "duplicate enabled Fabric ownership nested_provider"):
-            self.resolve(descriptors)
+        report = self.resolve(descriptors)
+        selection = report["candidate_selection_groups"][0]
+        self.assertEqual("nested_provider", selection["ownership_id"])
+        self.assertEqual("2.0.0", selection["selected_candidate"]["full_version"])
+        self.assertEqual(
+            [("1.0.0", "LOWER_VERSION")],
+            [
+                (item["full_version"], item["inactive_reason"])
+                for item in selection["inactive_alternatives"]
+            ],
+        )
+        self.assertEqual(3, report["discovered_fabric_descriptor_count"])
+        self.assertEqual(2, report["selected_fabric_descriptor_count"])
+
+    def test_fabric_api_base_build_variants_select_cr_compass_parent_priority(self) -> None:
+        versions = (
+            ("cr_compass", "cr-compass.jar", "2.0.4+ece0632333"),
+            ("fabric_api", "fabric-api.jar", "2.0.4+ece063239e"),
+            ("modmenu", "modmenu.jar", "2.0.4+ece063239c"),
+        )
+        with tempfile.TemporaryDirectory() as temporary:
+            directory = Path(temporary)
+            discovered: list[FabricModDescriptor] = []
+            for parent_id, filename, version in versions:
+                member_path = f"META-INF/jars/fabric-api-base-{version}.jar"
+                nested = fabric_mod_jar_bytes("fabric_api_base", version)
+                outer = fabric_mod_jar_bytes(
+                    parent_id,
+                    "1.0.0",
+                    declared_paths=(member_path,),
+                    nested_entries=((member_path, nested),),
+                )
+                path = directory / filename
+                path.write_bytes(outer)
+                discovered.extend(
+                    _read_fabric_descriptor_tree(
+                        path,
+                        relative_path="mods/" + filename,
+                    )
+                )
+
+        consumer = descriptor(
+            "managed-consumer.jar",
+            "managed_consumer",
+            "1.0.0",
+            depends={"fabric_api_base": ("=2.0.4",)},
+            project_id="managed-consumer",
+        )
+        report = PhysicalManager._resolve_dependency_graph(  # type: ignore[arg-type]
+            None,
+            (*discovered, consumer),
+            managed_ownership_ids={"managed_consumer"},
+            phase="TEST",
+        )
+        selection = next(
+            item
+            for item in report["candidate_selection_groups"]
+            if item["ownership_id"] == "fabric_api_base"
+        )
+        selected = selection["selected_candidate"]
+        self.assertEqual("2.0.4+ece0632333", selected["full_version"])
+        self.assertEqual("cr_compass", selected["priority_parents"][0]["primary_id"])
+        self.assertEqual([2, 0, 4], selected["semantic_precedence_key"]["components"])
+        self.assertTrue(selected["semantic_precedence_key"]["build_metadata_ignored"])
+        self.assertEqual(3, len(selection["discovered_candidates"]))
+        self.assertEqual(
+            {"2.0.4+ece063239e", "2.0.4+ece063239c"},
+            {item["full_version"] for item in selection["inactive_alternatives"]},
+        )
+        self.assertEqual(
+            {"LOWER_PRIORITY_PARENT"},
+            {item["inactive_reason"] for item in selection["inactive_alternatives"]},
+        )
+        resolution = next(
+            item for item in report["resolutions"] if item["dependency_id"] == "fabric_api_base"
+        )
+        self.assertEqual("2.0.4+ece0632333", resolution["provider"]["version"])
+        self.assertEqual(
+            "mods/cr-compass.jar",
+            resolution["provider"]["provenance"]["root_container"]["path"],
+        )
+
+    def test_unique_external_root_shadows_higher_nested_candidate(self) -> None:
+        nested_version = "9.0.0+nested"
+        member_path = "META-INF/jars/fabric-api-base-nested.jar"
+        outer = fabric_mod_jar_bytes(
+            "external_parent",
+            "1.0.0",
+            declared_paths=(member_path,),
+            nested_entries=((member_path, fabric_mod_jar_bytes("fabric_api_base", nested_version)),),
+        )
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary) / "external-parent.jar"
+            path.write_bytes(outer)
+            nested_descriptors = _read_fabric_descriptor_tree(
+                path,
+                relative_path="mods/external-parent.jar",
+            )
+        direct = descriptor("fabric-api-base-direct.jar", "fabric_api_base", "2.0.4+direct")
+        consumer = descriptor(
+            "managed-consumer.jar",
+            "managed_consumer",
+            "1.0.0",
+            depends={"fabric_api_base": ("*",)},
+            project_id="managed-consumer",
+        )
+        report = PhysicalManager._resolve_dependency_graph(  # type: ignore[arg-type]
+            None,
+            (*nested_descriptors, direct, consumer),
+            managed_ownership_ids={"managed_consumer"},
+            phase="TEST",
+        )
+        selection = report["candidate_selection_groups"][0]
+        self.assertEqual("2.0.4+direct", selection["selected_candidate"]["full_version"])
+        self.assertTrue(selection["selected_candidate"]["root_candidate"])
+        self.assertEqual(
+            [(nested_version, "ROOT_SHADOWED_NESTED")],
+            [
+                (item["full_version"], item["inactive_reason"])
+                for item in selection["inactive_alternatives"]
+            ],
+        )
+
+    def test_equal_priority_nested_candidates_with_distinct_tied_roots_fail_closed(self) -> None:
+        variants = (
+            ("first-parent.jar", "2.0.4+build-a"),
+            ("second-parent.jar", "2.0.4+build-b"),
+        )
+        with tempfile.TemporaryDirectory() as temporary:
+            directory = Path(temporary)
+            discovered: list[FabricModDescriptor] = []
+            for filename, version in variants:
+                member_path = f"META-INF/jars/base-{version}.jar"
+                outer = fabric_mod_jar_bytes(
+                    "tied_parent",
+                    "1.0.0",
+                    declared_paths=(member_path,),
+                    nested_entries=((member_path, fabric_mod_jar_bytes("fabric_api_base", version)),),
+                    payload=filename.encode("utf-8"),
+                )
+                path = directory / filename
+                path.write_bytes(outer)
+                discovered.extend(
+                    _read_fabric_descriptor_tree(path, relative_path="mods/" + filename)
+                )
+        consumer = descriptor(
+            "managed-consumer.jar",
+            "managed_consumer",
+            "1.0.0",
+            depends={"fabric_api_base": ("=2.0.4",)},
+            project_id="managed-consumer",
+        )
+        with self.assertRaisesRegex(
+            ManagerError,
+            r"ambiguous equal-priority external nested Fabric candidates.*fabric_api_base.*build metadata",
+        ):
+            PhysicalManager._resolve_dependency_graph(  # type: ignore[arg-type]
+                None,
+                (*discovered, consumer),
+                managed_ownership_ids={"managed_consumer"},
+                phase="TEST",
+            )
 
     def test_byte_identical_nested_candidate_is_deduplicated_with_all_chains(self) -> None:
         first_path = "META-INF/jars/provider-one.jar"

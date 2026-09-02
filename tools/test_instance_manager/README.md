@@ -70,16 +70,23 @@ whole cohort and restores its accepted predecessors/dependencies together.
 
 Preflight and verification read exactly one root `fabric.mod.json` from every
 enabled Fabric JAR. They record primary ID, `provides` aliases, embedded
-version, and hard `depends` predicates. The manager first groups every enabled
-descriptor by every owned ID. Ownership must be unique for each ID owned by a
-managed artifact and for each hard dependency ID of any managed consumer.
-Duplicates in that enforced graph fail before mutation, whether the competing
-owners are managed or external. Fabric predicate evaluation follows Loader
-semantics: predicate-array entries are OR alternatives, space-delimited terms
-inside one predicate are ANDed, and semantic/prerelease/wildcard ordering
-follows Fabric Loader. A present provider must satisfy its predicate. A missing
-ID known to manager ownership fails and names the companion that must be
-supplied in the same cohort operation.
+version, and hard `depends` predicates. The manager first groups every discovered
+descriptor by every owned ID. A duplicate for an ID explicitly owned by a
+manager artifact always fails, as do multiple graph-relevant direct/root JARs;
+this keeps C57 beside C58 and unified BGE beside standalone Nibaru from being
+silently shadow-selected. Graph-relevant external nested candidates are Loader
+alternatives rather than simultaneous owners. The manager selects their exact
+provider with Fabric Loader 0.19.3 priority: a unique external root beats every
+nested alternative, then higher semantic precedence, shallower nesting, and
+recursive parent priority decide. Semantic build metadata is retained in the
+identity receipt but ignored for precedence exactly like Loader. An unresolved
+equal-priority tie fails closed instead of inventing a filename or traversal
+tie-break. Fabric predicate evaluation follows Loader semantics: predicate-array
+entries are OR alternatives, space-delimited terms inside one predicate are
+ANDed, and semantic/prerelease/wildcard ordering follows Fabric Loader. A
+selected provider must satisfy its predicate. A missing ID known to manager
+ownership fails and names the companion that must be supplied in the same
+cohort operation.
 
 Fabric providers embedded through root `fabric.mod.json` `jars[].file`
 declarations are discovered recursively before the graph is resolved. Only an
@@ -102,9 +109,15 @@ the root container hash plus every exact container/member path, compressed and
 expanded size, member SHA-256, and recursive parent chain. Byte-identical
 nested candidates reached anywhere in the enabled graph are deduplicated by
 SHA-256 while every root and chain is retained. A candidate inherits a singular
-managed identity only when exactly one managed root owns it. Different bytes
-that claim the same graph-relevant ID remain distinct and fail duplicate
-ownership; the manager never selects one by filename or traversal order.
+managed identity only when exactly one managed root owns it. Different external
+nested bytes that claim the same graph-relevant primary ID remain distinct
+Loader candidates. `candidate_selection_groups` records every discovered
+candidate, the exact selected candidate, every inactive alternative and reason,
+the full version, build-agnostic semantic precedence key, minimum nesting depth,
+priority parent, and complete provenance. The selected candidate alone enters
+provider and hard-dependency resolution. Overlapping primary/`provides`
+candidate sets outside this proven subset fail closed rather than approximating
+Loader's SAT solver.
 Byte-identical candidates embedded by distinct managed roots retain every
 owning artifact identity and fail with deterministic full-origin evidence when
 that co-ownership enters the managed graph, rather than assigning the provider
@@ -112,9 +125,10 @@ nondeterministically. A nested JAR may not claim `java`, `minecraft`, or
 `fabricloader`.
 The compatibility fields `enabled_fabric_jar_count` and
 `enabled_fabric_jars` continue to describe physical root files;
-`enabled_fabric_descriptors` and its root/nested counts enumerate the
-client-eligible resolved candidate tree, while the dedicated environment-
-exclusion fields retain every discovered but ineligible descriptor.
+`discovered_fabric_descriptors` enumerates the exact candidate tree,
+`selected_fabric_descriptors` and `enabled_fabric_descriptors` enumerate the
+Loader-selected client set, and the dedicated environment-exclusion fields
+retain every discovered but ineligible descriptor.
 
 The dedicated profile is a Fabric client environment. A missing, empty, or
 `*` metadata environment is universal; `client` is eligible and `server` is
