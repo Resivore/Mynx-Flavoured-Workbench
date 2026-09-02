@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   apply:
-    if: github.event.head_commit.message == 'Repair staging apply workflow'
+    if: github.event.head_commit.message == 'Harden staging patch recovery'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -20,10 +20,23 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          git show HEAD^:.github/workflows/codex-apply-dependency-policy.yml \
-            | awk '/^H4sIA/{capture=1} capture && /^PATCH$/{exit} capture{print}' \
-            > /tmp/source.patch.gz.b64
-          base64 --decode /tmp/source.patch.gz.b64 | gzip --decompress > /tmp/source.patch
+          python3 - <<'PY'
+          import base64
+          import gzip
+          import pathlib
+          import re
+          import subprocess
+
+          source = subprocess.check_output([
+              "git", "show",
+              "35c4c4d8bc2acc48d1beb4207d040b2738f250a4:.github/workflows/codex-apply-dependency-policy.yml",
+          ], text=True)
+          match = re.search(r"(?m)^H4sIA[A-Za-z0-9+/=]+$", source)
+          if match is None:
+              raise SystemExit("embedded patch payload not found")
+          compressed = base64.b64decode(match.group(0), validate=True)
+          pathlib.Path("/tmp/source.patch").write_bytes(gzip.decompress(compressed))
+          PY
           echo '76d68f5579cf2156f105aae32aa26c795b3a2a048b4ff64b7aae7277fb6eb782  /tmp/source.patch' | sha256sum --check
           git apply --index --whitespace=error /tmp/source.patch
           git rm .github/workflows/codex-apply-dependency-policy.yml
