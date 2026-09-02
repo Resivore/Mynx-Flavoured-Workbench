@@ -61,6 +61,38 @@ public class ItemModule {
             )
     );
 
+    @AutoRegister("ribbit_chef_spawn_egg")
+    public static final AutoRegisterItem RIBBIT_CHEF_SPAWN_EGG = AutoRegisterItem.of(
+            () -> new RibbitSpawnEggItem(RibbitProfessionModule.CHEF,
+                    new Item.Properties().setId(RegisterHelper.itemKey("ribbit_chef_spawn_egg"))
+                            .spawnEgg(EntityTypeModule.RIBBIT.get())
+            )
+    );
+
+    @AutoRegister("ribbit_farmer_spawn_egg")
+    public static final AutoRegisterItem RIBBIT_FARMER_SPAWN_EGG = AutoRegisterItem.of(
+            () -> new RibbitSpawnEggItem(RibbitProfessionModule.FARMER,
+                    new Item.Properties().setId(RegisterHelper.itemKey("ribbit_farmer_spawn_egg"))
+                            .spawnEgg(EntityTypeModule.RIBBIT.get())
+            )
+    );
+
+    @AutoRegister("ribbit_prospector_spawn_egg")
+    public static final AutoRegisterItem RIBBIT_PROSPECTOR_SPAWN_EGG = AutoRegisterItem.of(
+            () -> new RibbitSpawnEggItem(RibbitProfessionModule.PROSPECTOR,
+                    new Item.Properties().setId(RegisterHelper.itemKey("ribbit_prospector_spawn_egg"))
+                            .spawnEgg(EntityTypeModule.RIBBIT.get())
+            )
+    );
+
+    @AutoRegister("ribbit_guard_spawn_egg")
+    public static final AutoRegisterItem RIBBIT_GUARD_SPAWN_EGG = AutoRegisterItem.of(
+            () -> new RibbitSpawnEggItem(RibbitProfessionModule.GUARD,
+                    new Item.Properties().setId(RegisterHelper.itemKey("ribbit_guard_spawn_egg"))
+                            .spawnEgg(EntityTypeModule.RIBBIT.get())
+            )
+    );
+
     @AutoRegister("maraca")
     public static final AutoRegisterItem MARACA = AutoRegisterItem.of(() -> new MaracaItem(
             new Item.Properties().stacksTo(1).setId(RegisterHelper.itemKey("maraca"))
@@ -83,5 +115,9 @@ public class ItemModule {
         DispenserBlock.registerBehavior(RIBBIT_GARDENER_SPAWN_EGG::get, ribbitSpawnEggDispenseItemBehavior);
         DispenserBlock.registerBehavior(RIBBIT_MERCHANT_SPAWN_EGG::get, ribbitSpawnEggDispenseItemBehavior);
         DispenserBlock.registerBehavior(RIBBIT_SORCERER_SPAWN_EGG::get, ribbitSpawnEggDispenseItemBehavior);
+        DispenserBlock.registerBehavior(RIBBIT_CHEF_SPAWN_EGG::get, ribbitSpawnEggDispenseItemBehavior);
+        DispenserBlock.registerBehavior(RIBBIT_FARMER_SPAWN_EGG::get, ribbitSpawnEggDispenseItemBehavior);
+        DispenserBlock.registerBehavior(RIBBIT_PROSPECTOR_SPAWN_EGG::get, ribbitSpawnEggDispenseItemBehavior);
+        DispenserBlock.registerBehavior(RIBBIT_GUARD_SPAWN_EGG::get, ribbitSpawnEggDispenseItemBehavior);
     }
 }

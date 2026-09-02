@@ -5,11 +5,17 @@ from __future__ import annotations
 
 import copy
 import json
+import struct
 import tempfile
 import unittest
 from pathlib import Path, PurePosixPath
+from unittest import mock
 
 import private_resource_tools as tools
+
+
+NBT_SENTINEL_BEFORE = ("unrelated_before", "sentinel-before-value")
+NBT_SENTINEL_AFTER = ("unrelated_after", "sentinel-after-value")
 
 
 def synthetic_legacy_document(index: int = 0) -> dict[str, object]:
@@ -48,6 +54,108 @@ def write_documents(root: Path, documents: list[tuple[str, object]]) -> None:
         path = root.joinpath(*PurePosixPath(relative).parts)
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(json.dumps(value, indent=2) + "\n", encoding="utf-8", newline="\n")
+
+
+def synthetic_loot(relative: str) -> dict[str, object]:
+    counts = tools.LOOT_POOL_ENTRY_COUNTS[relative]
+    pools: list[dict[str, object]] = []
+    for pool_index, count in enumerate(counts):
+        entries = [
+            {"type": "minecraft:item", "weight": 5, "name": "minecraft:stone"}
+            for _ in range(count)
+        ]
+        if pool_index == 1:
+            entries[0] = {
+                "type": "minecraft:item",
+                "weight": tools.LOOT_EMPTY_WEIGHTS[relative],
+                "name": "minecraft:air",
+            }
+        pools.append({"rolls": 1.0, "bonus_rolls": 0.0, "entries": entries})
+    return {"type": "minecraft:chest", "pools": pools}
+
+
+def synthetic_model(width: int = 64, uv: list[int] | None = None) -> dict[str, object]:
+    return {
+        "format_version": "1.12.0",
+        "minecraft:geometry": [
+            {
+                "description": {
+                    "identifier": "geometry.synthetic",
+                    "texture_width": width,
+                    "texture_height": width,
+                    "visible_bounds_width": 2,
+                    "visible_bounds_height": 2.5,
+                    "visible_bounds_offset": [0, 0.75, 0],
+                },
+                "bones": [
+                    {"name": "main", "pivot": [0, 0, 0]},
+                    {
+                        "name": "body",
+                        "parent": "main",
+                        "pivot": [0, 0, 0],
+                        "cubes": [
+                            {
+                                "origin": [0, 0, 0],
+                                "size": [1, 1, 1],
+                                "uv": [0, 0] if uv is None else uv,
+                            }
+                        ],
+                    },
+                ],
+            }
+        ],
+    }
+
+
+def synthetic_umbrella_model(variant: int) -> dict[str, object]:
+    result = synthetic_model(128)
+    geometry = result["minecraft:geometry"][0]
+    geometry["description"]["identifier"] = f"geometry.umbrella_ribbit_{variant}"
+    geometry["description"]["visible_bounds_width"] = 3
+    name = "umbrella" if variant == 1 else f"umbrella{variant}"
+    geometry["bones"].append(
+        {
+            "name": name,
+            "parent": "body",
+            "pivot": [0, 0, 0],
+            "cubes": [{"origin": [0, 0, 0], "size": [2, 2, 2], "uv": [4, 51]}],
+        }
+    )
+    return result
+
+
+def nbt_string(value: str) -> bytes:
+    encoded = value.encode("utf-8")
+    return struct.pack(">H", len(encoded)) + encoded
+
+
+def named_string(name: str, value: str) -> bytes:
+    return b"\x08" + nbt_string(name) + nbt_string(value)
+
+
+def synthetic_resident_nbt(values: dict[str, str]) -> bytes:
+    ribbit_data = b"".join(named_string(name, value) for name, value in values.items()) + b"\x00"
+    entity_nbt = (
+        named_string("id", "ribbits:ribbit")
+        + named_string(*NBT_SENTINEL_BEFORE)
+        + b"\x0a"
+        + nbt_string("RibbitData")
+        + ribbit_data
+        + named_string(*NBT_SENTINEL_AFTER)
+        + b"\x00"
+    )
+    entity = b"\x0a" + nbt_string("nbt") + entity_nbt + b"\x00"
+    root = (
+        b"\x0a"
+        + nbt_string("")
+        + b"\x09"
+        + nbt_string("entities")
+        + b"\x0a"
+        + struct.pack(">i", 1)
+        + entity
+        + b"\x00"
+    )
+    return tools.deterministic_gzip(root)
 
 
 class ConfiguredFeatureMigrationTest(unittest.TestCase):
@@ -209,6 +317,430 @@ class ConfiguredFeatureMigrationTest(unittest.TestCase):
         documents[0][1]["type"] = "minecraft:simple_block"
         with self.assertRaisesRegex(tools.ValidationError, "must use pristine feature type"):
             tools.migrate_configured_feature_documents(documents)
+
+
+class LootTableRepairTest(unittest.TestCase):
+    def test_exact_air_item_entry_becomes_weighted_empty_without_other_drift(self) -> None:
+        for relative in tools.LOOT_TABLE_PATHS:
+            with self.subTest(relative=relative):
+                source = synthetic_loot(relative)
+                before = copy.deepcopy(source)
+                repaired = tools.repair_air_loot_entry(source, relative)
+
+                expected = copy.deepcopy(before)
+                expected["pools"][1]["entries"][0] = {
+                    "type": "minecraft:empty",
+                    "weight": tools.LOOT_EMPTY_WEIGHTS[relative],
+                }
+
+                self.assertEqual(source, before, "pure loot repair must not mutate its input")
+                self.assertEqual(
+                    expected,
+                    repaired,
+                    "the entire loot document must differ only by the exact weighted-empty repair",
+                )
+                self.assertNotIn("minecraft:air", json.dumps(repaired))
+
+    def test_missing_extra_or_relocated_air_entry_fails_closed(self) -> None:
+        relative = tools.LOOT_TABLE_PATHS[0]
+        mutations = {
+            "missing air": lambda value: value["pools"][1]["entries"][0].update(
+                {"name": "minecraft:stone"}
+            ),
+            "extra function": lambda value: value["pools"][1]["entries"][0].update(
+                {"functions": []}
+            ),
+            "extra pool entry": lambda value: value["pools"][1]["entries"].append(
+                {"type": "minecraft:item", "weight": 1, "name": "minecraft:air"}
+            ),
+        }
+        for label, mutate in mutations.items():
+            with self.subTest(label=label):
+                value = synthetic_loot(relative)
+                mutate(value)
+                with self.assertRaises(tools.ValidationError):
+                    tools.repair_air_loot_entry(value, relative)
+
+    def test_tree_migration_preserves_the_exact_sorcerer_potion_conversion(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            values = {
+                relative: synthetic_loot(relative) for relative in tools.LOOT_TABLE_PATHS
+            }
+            sorcerer = values[tools.LOOT_TABLE_PATHS[1]]
+            potion_entry = sorcerer["pools"][0]["entries"][0]
+            potion_entry["name"] = "minecraft:potion"
+            potion_entry["functions"] = [
+                {
+                    "function": "minecraft:set_components",
+                    "components": {"potion_contents": "minecraft:strong_leaping"},
+                }
+            ]
+            for relative, value in values.items():
+                path = root / PurePosixPath(relative)
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text(json.dumps(value), encoding="utf-8")
+
+            record = tools.migrate_private_loot_tables(root)
+            self.assertEqual(2, record["air_item_entries_replaced_with_empty"])
+            self.assertEqual(1, record["sorcerer_potion_loot_functions_migrated"])
+            migrated = json.loads(
+                (root / PurePosixPath(tools.LOOT_TABLE_PATHS[1])).read_text(encoding="utf-8")
+            )
+            serialized = json.dumps(migrated, separators=(",", ":"))
+            self.assertEqual(1, serialized.count("minecraft:set_potion"))
+            self.assertNotIn("potion_contents", serialized)
+
+            errors: list[str] = []
+            tools.validate_private_loot_tables(
+                root,
+                {
+                    "assets/minecraft/items/stone.json",
+                    "assets/minecraft/items/potion.json",
+                },
+                errors,
+            )
+            self.assertEqual([], errors)
+            missing_registry_errors: list[str] = []
+            tools.validate_private_loot_tables(
+                root,
+                {"assets/minecraft/items/potion.json"},
+                missing_registry_errors,
+            )
+            self.assertTrue(
+                any("item registry evidence is absent" in error for error in missing_registry_errors)
+            )
+
+
+class DonorCompositeTest(unittest.TestCase):
+    def test_fixed_atlas_preserves_decoded_donor_and_shared_pixels(self) -> None:
+        donor_pixel = bytes((10, 20, 30, 255))
+        shared_pixel = bytes((40, 50, 60, 255))
+        donor = tools.encode_rgba_png(64, 64, donor_pixel * (64 * 64))
+        shared = tools.encode_rgba_png(128, 128, shared_pixel * (128 * 128))
+
+        first = tools.build_composite_texture(donor, "synthetic donor", shared)
+        second = tools.build_composite_texture(donor, "synthetic donor", shared)
+        self.assertEqual(first, second)
+        width, height, pixels = tools.decode_rgba_png(first, "synthetic composite")
+        self.assertEqual((256, 128), (width, height))
+
+        def pixel(x: int, y: int) -> bytes:
+            offset = (y * width + x) * 4
+            return pixels[offset : offset + 4]
+
+        self.assertEqual(donor_pixel, pixel(0, 0))
+        self.assertEqual(donor_pixel, pixel(63, 63))
+        self.assertEqual(bytes(4), pixel(64, 0))
+        self.assertEqual(shared_pixel, pixel(128, 0))
+        self.assertEqual(shared_pixel, pixel(255, 127))
+
+    def test_normal_and_all_three_umbrella_models_use_disjoint_atlas_halves(self) -> None:
+        donor = synthetic_model()
+        normal = tools.build_profession_model(donor, "synthetic donor")
+        description = normal["minecraft:geometry"][0]["description"]
+        self.assertEqual(256, description["texture_width"])
+        self.assertEqual(128, description["texture_height"])
+        self.assertEqual(64, donor["minecraft:geometry"][0]["description"]["texture_width"])
+
+        for variant in tools.UMBRELLA_VARIANTS:
+            with self.subTest(variant=variant):
+                composite = tools.build_umbrella_composite_model(
+                    normal, synthetic_umbrella_model(variant), "chef", variant
+                )
+                bone_name = "umbrella" if variant == 1 else f"umbrella{variant}"
+                bone = next(
+                    bone
+                    for bone in composite["minecraft:geometry"][0]["bones"]
+                    if bone["name"] == bone_name
+                )
+                self.assertEqual([132, 51], bone["cubes"][0]["uv"])
+                tools.validate_model_uv_bounds(
+                    composite, "synthetic composite", 128, 256, bone_names={bone_name}
+                )
+
+    def test_donor_cube_crossing_first_half_fails_closed(self) -> None:
+        crossing = synthetic_model(128, [126, 0])
+        with self.assertRaisesRegex(tools.ValidationError, "escapes approved atlas"):
+            tools.build_profession_model(crossing, "crossing donor")
+
+
+class VillageNbtMigrationTest(unittest.TestCase):
+    def test_removes_only_exact_ribbit_data_from_all_five_templates(self) -> None:
+        for relative, values in tools.VILLAGE_RIBBIT_TEMPLATE_DATA.items():
+            with self.subTest(relative=relative):
+                source = synthetic_resident_nbt(values)
+                source_decoded = tools.decode_nbt_bytes(source, relative)
+                source_scanner = tools.scan_nbt(source_decoded, relative)
+                ribbit_data_path = ("entities", "[0]", "nbt", "RibbitData")
+                source_matches = [
+                    item
+                    for item in source_scanner.named_compounds
+                    if item["path"] == ribbit_data_path
+                ]
+                self.assertEqual(1, len(source_matches))
+                removed = source_matches[0]
+                expected_decoded = (
+                    source_decoded[: removed["start"]] + source_decoded[removed["end"] :]
+                )
+                transformed = tools.remove_exact_village_ribbit_data(source, relative)
+                self.assertEqual(
+                    transformed,
+                    tools.remove_exact_village_ribbit_data(source, relative),
+                    "same input must produce byte-identical deterministic NBT",
+                )
+                decoded = tools.decode_nbt_bytes(transformed, relative)
+                self.assertEqual(
+                    expected_decoded,
+                    decoded,
+                    "the NBT payload must be the exact source bytes with only RibbitData spliced",
+                )
+                scanner = tools.scan_nbt(decoded, relative)
+                self.assertEqual((10, 1), scanner.lists[("entities",)])
+                self.assertEqual(
+                    "ribbits:ribbit",
+                    scanner.strings[("entities", "[0]", "nbt", "id")],
+                )
+                for sentinel_name, sentinel_value in (
+                    NBT_SENTINEL_BEFORE,
+                    NBT_SENTINEL_AFTER,
+                ):
+                    sentinel_path = ("entities", "[0]", "nbt", sentinel_name)
+                    self.assertEqual(sentinel_value, scanner.strings[sentinel_path])
+                    self.assertEqual(
+                        1,
+                        decoded.count(named_string(sentinel_name, sentinel_value)),
+                        f"the exact encoded {sentinel_name} tag bytes must survive once",
+                    )
+                self.assertFalse(
+                    any(item["path"][-1:] == ("RibbitData",) for item in scanner.named_compounds)
+                )
+
+    def test_mismatched_pinned_profession_instrument_or_umbrella_fails_closed(self) -> None:
+        relative, expected = next(iter(tools.VILLAGE_RIBBIT_TEMPLATE_DATA.items()))
+        for key in expected:
+            with self.subTest(key=key):
+                altered = dict(expected)
+                altered[key] = "ribbits:unexpected"
+                with self.assertRaisesRegex(tools.ValidationError, "pinned RibbitData differs"):
+                    tools.remove_exact_village_ribbit_data(
+                        synthetic_resident_nbt(altered), relative
+                    )
+
+
+class DonorBoundaryContractTest(unittest.TestCase):
+    def test_exact_accounting_contains_only_approved_visual_members_and_outputs(self) -> None:
+        self.assertEqual("4.1.6+26.2-mynx-canary1", tools.CANDIDATE_VERSION)
+        self.assertEqual(
+            "mynx-ribbits-private-resource-manifest/v1", tools.PRIVATE_MANIFEST_SCHEMA
+        )
+        self.assertEqual(
+            "PRIVATE MYNX ASSEMBLY STAGED / NONREDISTRIBUTABLE DONOR ASSETS",
+            tools.PRIVATE_MANIFEST_CLASSIFICATION,
+        )
+        self.assertEqual(336, tools.OUTPUT_FILE_COUNT)
+        self.assertEqual(41, len(tools.GECKO_MODEL_IDS))
+        self.assertEqual(24, len(tools.REGISTERED_ITEM_IDS))
+        self.assertEqual(9, len(tools.SPAWN_EGG_IDS))
+        self.assertEqual(20, len(tools.DONOR_DERIVED_OUTPUTS))
+        self.assertEqual(
+            8,
+            sum(len(spec["members"]) for spec in tools.DONOR_INPUT_SPECS.values()),
+        )
+        for spec in tools.DONOR_INPUT_SPECS.values():
+            for member in spec["members"]:
+                self.assertTrue(member.endswith((".geo.json", ".png")))
+                self.assertFalse(member.endswith((".class", ".java")))
+                self.assertNotIn("/animations/", member)
+        for output in tools.DONOR_DERIVED_OUTPUTS:
+            self.assertTrue(output.endswith((".geo.json", ".png")))
+            self.assertTrue(output.startswith("assets/ribbits/"))
+
+    def test_originals_path_guard_rejects_outside_or_renamed_inputs(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            base = Path(temp_dir)
+            root = base / "originals"
+            mods = root / "mods"
+            mods.mkdir(parents=True)
+            filename = tools.DONOR_INPUT_SPECS["guard"]["filename"]
+            exact = mods / filename
+            exact.write_bytes(b"synthetic-not-a-donor")
+            self.assertEqual(
+                exact.resolve(),
+                tools.require_exact_originals_member_path(exact, root, filename, "synthetic"),
+            )
+            outside = base / filename
+            outside.write_bytes(b"synthetic-not-a-donor")
+            with self.assertRaisesRegex(tools.ValidationError, "exact originals/mods member"):
+                tools.require_exact_originals_member_path(outside, root, filename, "synthetic")
+            with self.assertRaisesRegex(tools.ValidationError, "size differs"):
+                tools.load_exact_donor(exact, root, "guard")
+
+    def test_source_only_boundary_flags_transformed_assets_and_donor_namespaces(self) -> None:
+        allowed = {
+            "fabric.mod.json",
+            "com/yungnickyoung/minecraft/ribbits/RibbitsCommon.class",
+        }
+        self.assertEqual([], tools.source_only_donor_violations(allowed))
+        forbidden = {
+            next(iter(tools.DONOR_DERIVED_OUTPUTS)),
+            "assets/guardribbits/geo/guard_ribbit.geo.json",
+            "me/rogue_one/useful_ribbits/entity/ChefRibbitEntity.class",
+            "sunbatheproductions28/guardribbits/GuardRibbitEntity.class",
+            "GuardRibbits-1.20.1-Fabric-1.0.4.jar",
+            "META-INF/jars/useful_ribbits-1.0.2-forge-1.20.1.jar",
+        }
+        self.assertEqual(6, len(tools.source_only_donor_violations(forbidden)))
+
+    def test_private_jar_donor_boundary_uses_real_guard_prefix_and_jar_basenames(self) -> None:
+        violations = tools.nonallowlisted_donor_archive_violations(
+            {
+                "sunbatheproductions28/guardribbits/entity/GuardRibbitEntity.class",
+                "me/rogue_one/useful_ribbits/procedures/RBGUIChefBtnProcedure.class",
+                "nested/deeper/GuardRibbits-1.20.1-Fabric-1.0.4.jar",
+                "useful_ribbits-1.0.2-forge-1.20.1.jar",
+                "com/yungnickyoung/minecraft/ribbits/RibbitsCommon.class",
+            }
+        )
+        self.assertEqual(4, len(violations))
+        self.assertNotIn(
+            "com/yungnickyoung/minecraft/ribbits/RibbitsCommon.class", violations
+        )
+
+    def test_zip_entry_paths_and_staging_destinations_fail_closed(self) -> None:
+        for unsafe in (
+            r"assets\guardribbits\geo\guard_ribbit.geo.json",
+            r"C:\donors\GuardRibbits.jar",
+            "C:/donors/GuardRibbits.jar",
+            "../assets/ribbits/escape.png",
+        ):
+            with self.subTest(unsafe=unsafe):
+                with self.assertRaisesRegex(tools.ValidationError, "Unsafe ZIP entry"):
+                    tools.safe_zip_name(unsafe)
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir) / "resources"
+            root.mkdir()
+            tools.require_descendant_path(
+                root / "assets/ribbits/safe.png", root, "synthetic output"
+            )
+            with self.assertRaisesRegex(tools.ValidationError, "must stay inside"):
+                tools.require_descendant_path(
+                    root.parent / "escape.png", root, "synthetic output"
+                )
+
+    def test_private_domain_inventory_must_equal_staged_resources_exactly(self) -> None:
+        staged = {
+            "assets/ribbits/lang/en_us.json",
+            "data/ribbits/loot_table/chests/sorcerer.json",
+            "icon.png",
+            "logo.png",
+        }
+        packaged = staged | {
+            "fabric.mod.json",
+            "com/yungnickyoung/minecraft/ribbits/RibbitsCommon.class",
+        }
+        self.assertEqual((set(), set()), tools.private_domain_inventory_difference(staged, packaged))
+
+        missing, extra = tools.private_domain_inventory_difference(
+            staged,
+            packaged
+            - {"data/ribbits/loot_table/chests/sorcerer.json"}
+            | {
+                "data/ribbits/worldgen/template_pool/donor_extra.json",
+                "assets/ribbits/geckolib/models/donor_extra.geo.json",
+            },
+        )
+        self.assertEqual(
+            {"data/ribbits/loot_table/chests/sorcerer.json"}, missing
+        )
+        self.assertEqual(
+            {
+                "data/ribbits/worldgen/template_pool/donor_extra.json",
+                "assets/ribbits/geckolib/models/donor_extra.geo.json",
+            },
+            extra,
+        )
+
+    def test_manifest_is_never_visible_when_final_donor_rehash_fails(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            manifest = Path(temp_dir) / "manifest.json"
+            checks = [(Path(temp_dir) / "donor.jar", {}, "synthetic donor")]
+
+            observations: list[bool] = []
+
+            def verify_before_publication(*_args: object) -> None:
+                observations.append(manifest.exists())
+                if len(observations) == 2:
+                    raise tools.ValidationError("post-write donor drift")
+
+            with mock.patch.object(
+                tools,
+                "require_donor_unchanged",
+                side_effect=verify_before_publication,
+            ):
+                with self.assertRaisesRegex(tools.ValidationError, "post-write donor drift"):
+                    tools.write_manifest_after_donor_verification(
+                        manifest, {"classification": "eligible"}, checks
+                    )
+            self.assertEqual([False, False], observations)
+            self.assertFalse(manifest.exists())
+            self.assertEqual([], list(Path(temp_dir).glob(".manifest.json.*.tmp")))
+
+    def test_manifest_is_published_only_after_both_donor_rehashes_pass(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            manifest = Path(temp_dir) / "manifest.json"
+            checks = [(Path(temp_dir) / "donor.jar", {}, "synthetic donor")]
+            observations: list[bool] = []
+
+            def verify_before_publication(*_args: object) -> None:
+                observations.append(manifest.exists())
+
+            with mock.patch.object(
+                tools,
+                "require_donor_unchanged",
+                side_effect=verify_before_publication,
+            ):
+                tools.write_manifest_after_donor_verification(
+                    manifest, {"classification": "eligible"}, checks
+                )
+
+            self.assertEqual([False, False], observations)
+            self.assertEqual(
+                {"classification": "eligible"}, tools.load_json(manifest)
+            )
+            self.assertEqual([], list(Path(temp_dir).glob(".manifest.json.*.tmp")))
+
+    def test_manifest_is_never_written_when_prepublication_donor_rehash_fails(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            manifest = Path(temp_dir) / "manifest.json"
+            checks = [(Path(temp_dir) / "donor.jar", {}, "synthetic donor")]
+            with mock.patch.object(
+                tools,
+                "require_donor_unchanged",
+                side_effect=tools.ValidationError("pre-write donor drift"),
+            ):
+                with self.assertRaisesRegex(tools.ValidationError, "pre-write donor drift"):
+                    tools.write_manifest_after_donor_verification(
+                        manifest, {"classification": "eligible"}, checks
+                    )
+            self.assertFalse(manifest.exists())
+
+    def test_musician_and_four_new_egg_translations_are_exact(self) -> None:
+        self.assertEqual(
+            "Musician Ribbit Spawn Egg",
+            tools.EN_US_MYNX_PROFESSION_TRANSLATIONS[
+                "item.ribbits.ribbit_nitwit_spawn_egg"
+            ],
+        )
+        self.assertEqual(
+            set(tools.NEW_SPAWN_EGG_IDS),
+            {
+                key.removeprefix("item.ribbits.")
+                for key in tools.EN_US_MYNX_PROFESSION_TRANSLATIONS
+                if "nitwit" not in key
+            },
+        )
 
 
 if __name__ == "__main__":

@@ -4,11 +4,12 @@ import com.yungnickyoung.minecraft.ribbits.data.RibbitData;
 import com.yungnickyoung.minecraft.ribbits.data.RibbitProfession;
 import com.yungnickyoung.minecraft.ribbits.entity.RibbitEntity;
 import com.yungnickyoung.minecraft.ribbits.module.EntityTypeModule;
-import com.yungnickyoung.minecraft.ribbits.module.RibbitUmbrellaTypeModule;
+import com.yungnickyoung.minecraft.ribbits.module.RibbitProfessionModule;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.stats.Stats;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EntitySpawnReason;
@@ -71,10 +72,7 @@ public class RibbitSpawnEggItem extends SpawnEggItem {
                 !Objects.equals(clicked, spawnPos) && face == Direction.UP);
 
         if (ribbit != null) {
-            ribbit.setRibbitData(new RibbitData(
-                    this.profession,
-                    RibbitUmbrellaTypeModule.getRandomUmbrellaType(),
-                    ribbit.getRibbitData().getInstrument()));
+            ribbit.setSpawnEggRibbitData(this.createRibbitData(level.getRandom()));
             stack.shrink(1);
             level.gameEvent(ctx.getPlayer(), GameEvent.ENTITY_PLACE, clicked);
         }
@@ -100,10 +98,7 @@ public class RibbitSpawnEggItem extends SpawnEggItem {
                 pos, EntitySpawnReason.SPAWN_ITEM_USE, false, false);
         if (ribbit == null) return InteractionResult.PASS;
 
-        ribbit.setRibbitData(new RibbitData(
-                this.profession,
-                RibbitUmbrellaTypeModule.getRandomUmbrellaType(),
-                ribbit.getRibbitData().getInstrument()));
+        ribbit.setSpawnEggRibbitData(this.createRibbitData(level.getRandom()));
 
         if (!player.getAbilities().instabuild) stack.shrink(1);
         player.awardStat(Stats.ITEM_USED.get(this));
@@ -113,5 +108,9 @@ public class RibbitSpawnEggItem extends SpawnEggItem {
 
     public RibbitProfession getProfession() {
         return profession;
+    }
+
+    public RibbitData createRibbitData(RandomSource random) {
+        return RibbitProfessionModule.createTypedSpawnEggData(this.profession, random);
     }
 }

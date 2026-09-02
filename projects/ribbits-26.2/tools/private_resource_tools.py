@@ -12,6 +12,7 @@ import copy
 import gzip
 import hashlib
 import json
+import os
 import platform
 import re
 import shutil
@@ -29,8 +30,17 @@ from typing import Any
 EXPECTED_PRISTINE_SHA256 = (
     "4cf86564aed393410fb1dbca3a9ce2425382307655e92bb6b43f3ddcee5bf731"
 )
+CANDIDATE_VERSION = "4.1.6+26.2-mynx-canary1"
+PRIVATE_MANIFEST_SCHEMA = "mynx-ribbits-private-resource-manifest/v1"
+PRIVATE_MANIFEST_CLASSIFICATION = (
+    "PRIVATE MYNX ASSEMBLY STAGED / NONREDISTRIBUTABLE DONOR ASSETS"
+)
+PRIVATE_ARTIFACT_FILENAME = (
+    "ribbits-private-reconstruction-4.1.6+26.2-mynx-canary1.jar"
+)
+SOURCE_ONLY_ARTIFACT_FILENAME = "ribbits-source-only-4.1.6+26.2-mynx-canary1.jar"
 SOURCE_FILE_COUNT = 287  # 285 assets/data files plus icon.png and logo.png
-OUTPUT_FILE_COUNT = 308
+OUTPUT_FILE_COUNT = 336
 SOURCE_EXTENSION_COUNTS = {
     ".json": 201,
     ".nbt": 29,
@@ -81,13 +91,20 @@ BLOCK_ITEM_IDS = (
     "mossy_oak_door",
     "umbrella_leaf",
 )
-SPAWN_EGG_IDS = (
+PRISTINE_SPAWN_EGG_IDS = (
     "ribbit_nitwit_spawn_egg",
     "ribbit_fisherman_spawn_egg",
     "ribbit_gardener_spawn_egg",
     "ribbit_merchant_spawn_egg",
     "ribbit_sorcerer_spawn_egg",
 )
+NEW_SPAWN_EGG_IDS = (
+    "ribbit_chef_spawn_egg",
+    "ribbit_farmer_spawn_egg",
+    "ribbit_prospector_spawn_egg",
+    "ribbit_guard_spawn_egg",
+)
+SPAWN_EGG_IDS = PRISTINE_SPAWN_EGG_IDS + NEW_SPAWN_EGG_IDS
 REGISTERED_ITEM_IDS = BLOCK_ITEM_IDS + ("maraca",) + SPAWN_EGG_IDS
 
 CUTOUT_MODEL_FILES = (
@@ -119,6 +136,9 @@ CUTOUT_MODEL_FILES = (
     "mossy_oak_door_top_right_open.json",
 )
 
+NEW_PROFESSIONS = ("chef", "farmer", "prospector", "guard")
+UMBRELLA_VARIANTS = (1, 2, 3)
+
 GECKO_MODEL_IDS = {
     "bass_ribbit",
     "bongo_ribbit",
@@ -133,8 +153,168 @@ GECKO_MODEL_IDS = {
     *{
         f"umbrella/{profession}/umbrella_{variant}"
         for profession in ("fisherman", "gardener", "merchant", "nitwit", "sorcerer")
-        for variant in (1, 2, 3)
+        for variant in UMBRELLA_VARIANTS
     },
+    *{f"{profession}_ribbit" for profession in NEW_PROFESSIONS},
+    *{
+        f"umbrella/{profession}/umbrella_{variant}"
+        for profession in NEW_PROFESSIONS
+        for variant in UMBRELLA_VARIANTS
+    },
+}
+
+COMPOSITE_TEXTURE_WIDTH = 256
+COMPOSITE_TEXTURE_HEIGHT = 128
+COMPOSITE_SHARED_TEXTURE_X = 128
+SHARED_RIBBIT_TEXTURE_ENTRY = "assets/ribbits/textures/entity/ribbit.png"
+
+DONOR_INPUT_SPECS: dict[str, dict[str, Any]] = {
+    "guard": {
+        "filename": "GuardRibbits-1.20.1-Fabric-1.0.4.jar",
+        "size": 166_896,
+        "sha256": "52f1e184dc12cf1e29bc224ab5a640b8ea5875aa9f46067c0907c6a45b7d1869",
+        "members": {
+            "assets/guardribbits/geo/guard_ribbit.geo.json": {
+                "size": 2_411,
+                "sha256": "fe1d3f1df26c4cd3d9107c77008208d5baab3581d897b0c3a2f53b032985a021",
+            },
+            "assets/guardribbits/textures/entity/guard_ribbit.png": {
+                "size": 6_490,
+                "sha256": "21bd9bc749885db28ac5d451ebd6cd70e47ce7d3e58bc7ab766cc2d1ba689394",
+            },
+        },
+    },
+    "useful": {
+        "filename": "useful_ribbits-1.0.2-forge-1.20.1.jar",
+        "size": 416_439,
+        "sha256": "2b56007a985b162477113bb2ea1776d9ce2ce602886ea21a88d8b2500d2ded5d",
+        "members": {
+            "assets/useful_ribbits/geo/chef_ribbit.geo.json": {
+                "size": 2_061,
+                "sha256": "d3a217da7ff960963ed5b7d7372c18f0ff1186b4629e07f091b75cc585e45ff8",
+            },
+            "assets/useful_ribbits/textures/entities/chef_ribbit.png": {
+                "size": 1_538,
+                "sha256": "7648086fa2cfcda4483f6a3bf03348e35a54d267e008991ad54b099dd5a514b9",
+            },
+            "assets/useful_ribbits/geo/farmer_ribbit.geo.json": {
+                "size": 2_405,
+                "sha256": "e1e579469aafa8c5c44e3dd0dcfe73b25881ade91a5bc74cf2b327c9ce4e9822",
+            },
+            "assets/useful_ribbits/textures/entities/farmer_ribbit.png": {
+                "size": 1_542,
+                "sha256": "376f1a12cd16ffc536fd9d217dd987ec43dfcf0a7cff819fd37aa74af211e0cd",
+            },
+            "assets/useful_ribbits/geo/miner_ribbit.geo.json": {
+                "size": 2_704,
+                "sha256": "63c4f8391d0261119497555388995b9140bce386dd1b3d3d0fb5447a4c5ffcfd",
+            },
+            "assets/useful_ribbits/textures/entities/miner_ribbit.png": {
+                "size": 1_448,
+                "sha256": "429593b57ad873fea108c27983eec7c64fd9413d18afb837884b0c0a34b91330",
+            },
+        },
+    },
+}
+
+DONOR_ARCHIVE_FILENAMES = frozenset(
+    spec["filename"].casefold() for spec in DONOR_INPUT_SPECS.values()
+)
+DONOR_PACKAGE_PREFIXES = (
+    "assets/guardribbits/",
+    "assets/useful_ribbits/",
+    "sunbatheproductions28/guardribbits/",
+    "me/rogue_one/useful_ribbits/",
+    "guardribbits/",
+)
+
+PROFESSION_DONOR_ASSETS = {
+    "chef": {
+        "donor": "useful",
+        "model": "assets/useful_ribbits/geo/chef_ribbit.geo.json",
+        "texture": "assets/useful_ribbits/textures/entities/chef_ribbit.png",
+    },
+    "farmer": {
+        "donor": "useful",
+        "model": "assets/useful_ribbits/geo/farmer_ribbit.geo.json",
+        "texture": "assets/useful_ribbits/textures/entities/farmer_ribbit.png",
+    },
+    "prospector": {
+        "donor": "useful",
+        "model": "assets/useful_ribbits/geo/miner_ribbit.geo.json",
+        "texture": "assets/useful_ribbits/textures/entities/miner_ribbit.png",
+    },
+    "guard": {
+        "donor": "guard",
+        "model": "assets/guardribbits/geo/guard_ribbit.geo.json",
+        "texture": "assets/guardribbits/textures/entity/guard_ribbit.png",
+    },
+}
+
+DONOR_DERIVED_OUTPUTS = frozenset(
+    {
+        *{
+            f"assets/ribbits/geckolib/models/{profession}_ribbit.geo.json"
+            for profession in NEW_PROFESSIONS
+        },
+        *{
+            f"assets/ribbits/geckolib/models/umbrella/{profession}/umbrella_{variant}.geo.json"
+            for profession in NEW_PROFESSIONS
+            for variant in UMBRELLA_VARIANTS
+        },
+        *{
+            f"assets/ribbits/textures/entity/{profession}_ribbit.png"
+            for profession in NEW_PROFESSIONS
+        },
+    }
+)
+
+VILLAGE_RIBBIT_TEMPLATE_PROFESSIONS = {
+    "data/ribbits/structure/ribbits/ribbit_nitwit.nbt": "ribbits:nitwit",
+    "data/ribbits/structure/ribbits/ribbit_gardener.nbt": "ribbits:gardener",
+    "data/ribbits/structure/ribbits/ribbit_fisherman.nbt": "ribbits:fisherman",
+    "data/ribbits/structure/ribbits/ribbit_merchant.nbt": "ribbits:merchant",
+    "data/ribbits/structure/ribbits/ribbit_sorcerer.nbt": "ribbits:sorcerer",
+}
+VILLAGE_RIBBIT_TEMPLATE_DATA = {
+    "data/ribbits/structure/ribbits/ribbit_fisherman.nbt": {
+        "profession": "ribbits:fisherman",
+        "umbrella": "ribbits:umbrella_3",
+        "instrument": "ribbits:none",
+    },
+    "data/ribbits/structure/ribbits/ribbit_gardener.nbt": {
+        "profession": "ribbits:gardener",
+        "umbrella": "ribbits:umbrella_2",
+        "instrument": "ribbits:none",
+    },
+    "data/ribbits/structure/ribbits/ribbit_merchant.nbt": {
+        "profession": "ribbits:merchant",
+        "umbrella": "ribbits:umbrella_2",
+        "instrument": "ribbits:none",
+    },
+    "data/ribbits/structure/ribbits/ribbit_nitwit.nbt": {
+        "profession": "ribbits:nitwit",
+        "umbrella": "ribbits:umbrella_3",
+        "instrument": "ribbits:bongo",
+    },
+    "data/ribbits/structure/ribbits/ribbit_sorcerer.nbt": {
+        "profession": "ribbits:sorcerer",
+        "umbrella": "ribbits:umbrella_1",
+        "instrument": "ribbits:none",
+    },
+}
+
+LOOT_TABLE_PATHS = (
+    "data/ribbits/loot_table/chests/fisherman_main.json",
+    "data/ribbits/loot_table/chests/sorcerer.json",
+)
+LOOT_POOL_ENTRY_COUNTS = {
+    LOOT_TABLE_PATHS[0]: (4, 4),
+    LOOT_TABLE_PATHS[1]: (6, 2),
+}
+LOOT_EMPTY_WEIGHTS = {
+    LOOT_TABLE_PATHS[0]: 15,
+    LOOT_TABLE_PATHS[1]: 1,
 }
 
 EN_US_CONFIG_ADDITIONS = {
@@ -160,6 +340,14 @@ EN_US_CONFIG_ADDITIONS = {
         "Optional password for proxy authentication.",
 }
 
+EN_US_MYNX_PROFESSION_TRANSLATIONS = {
+    "item.ribbits.ribbit_nitwit_spawn_egg": "Musician Ribbit Spawn Egg",
+    "item.ribbits.ribbit_chef_spawn_egg": "Chef Ribbit Spawn Egg",
+    "item.ribbits.ribbit_farmer_spawn_egg": "Farmer Ribbit Spawn Egg",
+    "item.ribbits.ribbit_prospector_spawn_egg": "Prospector Ribbit Spawn Egg",
+    "item.ribbits.ribbit_guard_spawn_egg": "Guard Ribbit Spawn Egg",
+}
+
 MINECRAFT_FROG_SPAWN_EGG_ENTRY = "assets/minecraft/textures/item/frog_spawn_egg.png"
 RIBBIT_SPAWN_EGG_TEXTURE_ENTRY = "assets/ribbits/textures/item/ribbit_spawn_egg.png"
 EXPECTED_MINECRAFT_FROG_SPAWN_EGG_SHA256 = (
@@ -180,8 +368,8 @@ SPAWN_EGG_MODEL = {
     "textures": {"layer0": "ribbits:item/ribbit_spawn_egg"},
 }
 SPAWN_EGG_SUBSTITUTION_NOTICE = (
-    "Private Canary 2 uses one temporary palette-only green recolor of Minecraft "
-    "26.2's vanilla frog spawn-egg artwork for all five Ribbits profession eggs. "
+    "Private Mynx Canary 1 uses one palette-only green recolor of Minecraft "
+    "26.2's vanilla frog spawn-egg artwork for all nine Ribbits profession eggs. "
     "This is explicitly authorized for the private Workbench and is not exact "
     "Ribbits 4.1.6 spawn-egg visual parity."
 )
@@ -203,6 +391,98 @@ def sha256_file(path: Path) -> str:
     return digest.hexdigest()
 
 
+def require_exact_originals_member_path(
+    path: Path, originals_root: Path, expected_filename: str, label: str
+) -> Path:
+    root = originals_root.resolve(strict=True)
+    if not root.is_dir() or root.name.casefold() != "originals":
+        raise ValidationError(f"Originals root must be the resolved originals directory: {root}")
+    expected = (root / "mods" / expected_filename).resolve(strict=False)
+    candidate = path.resolve(strict=False)
+    if candidate != expected:
+        raise ValidationError(
+            f"{label} must be the exact originals/mods member {expected_filename}: {candidate}"
+        )
+    if path.is_symlink() or not candidate.is_file():
+        raise ValidationError(f"{label} must be an existing regular non-symlink file: {candidate}")
+    return candidate
+
+
+def load_exact_donor(
+    path: Path, originals_root: Path, donor_key: str
+) -> tuple[dict[str, bytes], dict[str, Any]]:
+    spec = DONOR_INPUT_SPECS[donor_key]
+    resolved = require_exact_originals_member_path(
+        path, originals_root, spec["filename"], f"{donor_key.title()} donor JAR"
+    )
+    actual_size = resolved.stat().st_size
+    if actual_size != spec["size"]:
+        raise ValidationError(
+            f"{spec['filename']} size differs: expected {spec['size']}, got {actual_size}"
+        )
+    actual_hash = sha256_file(resolved)
+    if actual_hash != spec["sha256"]:
+        raise ValidationError(
+            f"{spec['filename']} SHA-256 differs: expected {spec['sha256']}, got {actual_hash}"
+        )
+
+    with resolved.open("rb") as donor_stream, zipfile.ZipFile(donor_stream, mode="r") as archive:
+        names = [entry.filename for entry in archive.infolist() if not entry.is_dir()]
+        for name in names:
+            safe_zip_name(name)
+        duplicates = sorted(name for name, count in Counter(names).items() if count > 1)
+        if duplicates:
+            raise ValidationError(f"Duplicate entries in {spec['filename']}: {duplicates}")
+        member_bytes: dict[str, bytes] = {}
+        for name, member_spec in spec["members"].items():
+            matches = [entry for entry in archive.infolist() if entry.filename == name]
+            if len(matches) != 1 or matches[0].is_dir():
+                raise ValidationError(
+                    f"{spec['filename']} must contain exactly one approved member {name}"
+                )
+            data = archive.read(matches[0])
+            if len(data) != member_spec["size"]:
+                raise ValidationError(
+                    f"Approved donor member size differs for {name}: "
+                    f"expected {member_spec['size']}, got {len(data)}"
+                )
+            member_hash = sha256_bytes(data)
+            if member_hash != member_spec["sha256"]:
+                raise ValidationError(
+                    f"Approved donor member SHA-256 differs for {name}: "
+                    f"expected {member_spec['sha256']}, got {member_hash}"
+                )
+            member_bytes[name] = data
+
+    if set(member_bytes) != set(spec["members"]):
+        raise ValidationError(f"Approved donor allowlist accounting differs for {spec['filename']}")
+    identity = {
+        "filename": spec["filename"],
+        "size": actual_size,
+        "sha256": actual_hash,
+        "approved_members": {
+            name: {
+                "size": len(data),
+                "sha256": sha256_bytes(data),
+            }
+            for name, data in member_bytes.items()
+        },
+    }
+    return member_bytes, identity
+
+
+def require_donor_unchanged(path: Path, identity: dict[str, Any], label: str) -> None:
+    if not path.is_file():
+        raise ValidationError(f"{label} disappeared during private assembly: {path}")
+    actual_size = path.stat().st_size
+    actual_hash = sha256_file(path)
+    if actual_size != identity["size"] or actual_hash != identity["sha256"]:
+        raise ValidationError(
+            f"{label} changed during private assembly: expected "
+            f"{identity['size']} bytes/{identity['sha256']}, got {actual_size}/{actual_hash}"
+        )
+
+
 def png_dimensions(data: bytes, label: str) -> tuple[int, int]:
     if len(data) < 24 or data[:8] != b"\x89PNG\r\n\x1a\n" or data[12:16] != b"IHDR":
         raise ValidationError(f"Invalid PNG header: {label}")
@@ -210,6 +490,598 @@ def png_dimensions(data: bytes, label: str) -> tuple[int, int]:
     if width <= 0 or height <= 0:
         raise ValidationError(f"Invalid PNG dimensions: {label}")
     return width, height
+
+
+def _png_chunks(data: bytes, label: str) -> list[tuple[bytes, bytes]]:
+    if not data.startswith(b"\x89PNG\r\n\x1a\n"):
+        raise ValidationError(f"Invalid PNG signature: {label}")
+    chunks: list[tuple[bytes, bytes]] = []
+    offset = 8
+    while offset < len(data):
+        if offset + 12 > len(data):
+            raise ValidationError(f"Truncated PNG chunk: {label}")
+        length = struct.unpack(">I", data[offset : offset + 4])[0]
+        end = offset + 12 + length
+        if end > len(data):
+            raise ValidationError(f"Invalid PNG chunk length: {label}")
+        chunk_type = data[offset + 4 : offset + 8]
+        chunk_data = data[offset + 8 : offset + 8 + length]
+        expected_crc = struct.unpack(">I", data[offset + 8 + length : end])[0]
+        actual_crc = zlib.crc32(chunk_type + chunk_data) & 0xFFFFFFFF
+        if actual_crc != expected_crc:
+            raise ValidationError(f"PNG CRC differs for {label} chunk {chunk_type!r}")
+        chunks.append((chunk_type, chunk_data))
+        offset = end
+        if chunk_type == b"IEND":
+            break
+    if offset != len(data) or not chunks or chunks[-1][0] != b"IEND":
+        raise ValidationError(f"PNG has trailing data or no IEND: {label}")
+    return chunks
+
+
+def _paeth(left: int, above: int, upper_left: int) -> int:
+    estimate = left + above - upper_left
+    left_distance = abs(estimate - left)
+    above_distance = abs(estimate - above)
+    upper_left_distance = abs(estimate - upper_left)
+    if left_distance <= above_distance and left_distance <= upper_left_distance:
+        return left
+    return above if above_distance <= upper_left_distance else upper_left
+
+
+def decode_rgba_png(data: bytes, label: str) -> tuple[int, int, bytes]:
+    chunks = _png_chunks(data, label)
+    ihdr_values = [chunk for chunk_type, chunk in chunks if chunk_type == b"IHDR"]
+    if len(ihdr_values) != 1 or len(ihdr_values[0]) != 13:
+        raise ValidationError(f"PNG must contain one 13-byte IHDR: {label}")
+    width, height, depth, color_type, compression, filtering, interlace = struct.unpack(
+        ">IIBBBBB", ihdr_values[0]
+    )
+    if (depth, color_type, compression, filtering, interlace) != (8, 6, 0, 0, 0):
+        raise ValidationError(
+            f"Approved PNG must be non-interlaced 8-bit RGBA: {label}; got "
+            f"depth={depth}, color={color_type}, compression={compression}, "
+            f"filter={filtering}, interlace={interlace}"
+        )
+    compressed = b"".join(chunk for chunk_type, chunk in chunks if chunk_type == b"IDAT")
+    try:
+        scanlines = zlib.decompress(compressed)
+    except zlib.error as exc:
+        raise ValidationError(f"Could not decompress PNG {label}: {exc}") from exc
+    stride = width * 4
+    if len(scanlines) != height * (stride + 1):
+        raise ValidationError(f"Unexpected decoded scanline length for {label}")
+
+    output = bytearray(height * stride)
+    source_offset = 0
+    for row_index in range(height):
+        filter_type = scanlines[source_offset]
+        source_offset += 1
+        filtered = scanlines[source_offset : source_offset + stride]
+        source_offset += stride
+        row_offset = row_index * stride
+        for column in range(stride):
+            value = filtered[column]
+            left = output[row_offset + column - 4] if column >= 4 else 0
+            above = output[row_offset - stride + column] if row_index else 0
+            upper_left = (
+                output[row_offset - stride + column - 4]
+                if row_index and column >= 4
+                else 0
+            )
+            if filter_type == 0:
+                decoded = value
+            elif filter_type == 1:
+                decoded = value + left
+            elif filter_type == 2:
+                decoded = value + above
+            elif filter_type == 3:
+                decoded = value + ((left + above) // 2)
+            elif filter_type == 4:
+                decoded = value + _paeth(left, above, upper_left)
+            else:
+                raise ValidationError(f"Unsupported PNG filter {filter_type} in {label}")
+            output[row_offset + column] = decoded & 0xFF
+    return width, height, bytes(output)
+
+
+def _png_chunk(chunk_type: bytes, data: bytes) -> bytes:
+    return (
+        struct.pack(">I", len(data))
+        + chunk_type
+        + data
+        + struct.pack(">I", zlib.crc32(chunk_type + data) & 0xFFFFFFFF)
+    )
+
+
+def encode_rgba_png(width: int, height: int, pixels: bytes) -> bytes:
+    if width <= 0 or height <= 0 or len(pixels) != width * height * 4:
+        raise ValidationError("RGBA pixel buffer dimensions differ")
+    stride = width * 4
+    scanlines = b"".join(
+        b"\x00" + pixels[row * stride : (row + 1) * stride] for row in range(height)
+    )
+    ihdr = struct.pack(">IIBBBBB", width, height, 8, 6, 0, 0, 0)
+    return (
+        b"\x89PNG\r\n\x1a\n"
+        + _png_chunk(b"IHDR", ihdr)
+        + _png_chunk(b"IDAT", zlib.compress(scanlines, level=9))
+        + _png_chunk(b"IEND", b"")
+    )
+
+
+def build_composite_texture(
+    donor_texture: bytes, donor_label: str, shared_texture: bytes
+) -> bytes:
+    donor_width, donor_height, donor_pixels = decode_rgba_png(donor_texture, donor_label)
+    shared_width, shared_height, shared_pixels = decode_rgba_png(
+        shared_texture, SHARED_RIBBIT_TEXTURE_ENTRY
+    )
+    if donor_width not in (64, 128) or donor_height not in (64, 128):
+        raise ValidationError(
+            f"Donor texture dimensions are outside the approved 64/128 atlas boundary: "
+            f"{donor_label}={donor_width}x{donor_height}"
+        )
+    if (shared_width, shared_height) != (128, 128):
+        raise ValidationError("Pristine shared Ribbits texture must be exactly 128x128")
+    pixels = bytearray(COMPOSITE_TEXTURE_WIDTH * COMPOSITE_TEXTURE_HEIGHT * 4)
+    output_stride = COMPOSITE_TEXTURE_WIDTH * 4
+    for row in range(donor_height):
+        source = row * donor_width * 4
+        destination = row * output_stride
+        pixels[destination : destination + donor_width * 4] = donor_pixels[
+            source : source + donor_width * 4
+        ]
+    for row in range(shared_height):
+        source = row * shared_width * 4
+        destination = row * output_stride + COMPOSITE_SHARED_TEXTURE_X * 4
+        pixels[destination : destination + shared_width * 4] = shared_pixels[
+            source : source + shared_width * 4
+        ]
+    result = encode_rgba_png(COMPOSITE_TEXTURE_WIDTH, COMPOSITE_TEXTURE_HEIGHT, bytes(pixels))
+    if decode_rgba_png(result, f"composite {donor_label}")[2] != bytes(pixels):
+        raise ValidationError(f"Deterministic composite PNG round-trip differs: {donor_label}")
+    return result
+
+
+def load_json_bytes(data: bytes, label: str) -> Any:
+    try:
+        return json.loads(data.decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise ValidationError(f"Invalid donor JSON {label}: {exc}") from exc
+
+
+def require_geometry_document(value: Any, label: str) -> dict[str, Any]:
+    if not isinstance(value, dict) or set(value) != {"format_version", "minecraft:geometry"}:
+        raise ValidationError(f"Unexpected GeckoLib document fields in {label}")
+    geometries = value.get("minecraft:geometry")
+    if not isinstance(geometries, list) or len(geometries) != 1:
+        raise ValidationError(f"Expected one geometry in {label}")
+    geometry = geometries[0]
+    if not isinstance(geometry, dict) or set(geometry) != {"description", "bones"}:
+        raise ValidationError(f"Unexpected geometry fields in {label}")
+    description = geometry.get("description")
+    bones = geometry.get("bones")
+    if not isinstance(description, dict) or not isinstance(bones, list) or not bones:
+        raise ValidationError(f"Invalid geometry description/bones in {label}")
+    names = [bone.get("name") for bone in bones if isinstance(bone, dict)]
+    if len(names) != len(bones) or any(not isinstance(name, str) for name in names):
+        raise ValidationError(f"Every bone must have a string name in {label}")
+    duplicates = sorted(name for name, count in Counter(names).items() if count > 1)
+    if duplicates:
+        raise ValidationError(f"Duplicate bone names in {label}: {duplicates}")
+    if "main" not in names or "body" not in names:
+        raise ValidationError(f"Required main/body bones are missing in {label}")
+    width = description.get("texture_width")
+    height = description.get("texture_height")
+    if not isinstance(width, int) or not isinstance(height, int) or width <= 0 or height <= 0:
+        raise ValidationError(f"Invalid geometry texture dimensions in {label}")
+    return geometry
+
+
+def cube_uv_rectangles(cube: dict[str, Any], context: str) -> list[tuple[float, float, float, float]]:
+    size = cube.get("size")
+    uv = cube.get("uv")
+    if (
+        not isinstance(size, list)
+        or len(size) != 3
+        or any(not isinstance(value, (int, float)) or isinstance(value, bool) for value in size)
+    ):
+        raise ValidationError(f"Invalid cube size in {context}: {size!r}")
+    x_size, y_size, z_size = (float(value) for value in size)
+    if min(x_size, y_size, z_size) < 0:
+        raise ValidationError(f"Negative cube size in {context}: {size!r}")
+    rectangles: list[tuple[float, float, float, float]] = []
+    if isinstance(uv, list):
+        if (
+            len(uv) != 2
+            or any(not isinstance(value, (int, float)) or isinstance(value, bool) for value in uv)
+        ):
+            raise ValidationError(f"Invalid box UV in {context}: {uv!r}")
+        u, v = (float(value) for value in uv)
+        candidates = (
+            (u, v + z_size, z_size, y_size),
+            (u + z_size, v + z_size, x_size, y_size),
+            (u + z_size + x_size, v + z_size, z_size, y_size),
+            (u + 2 * z_size + x_size, v + z_size, x_size, y_size),
+            (u + z_size, v, x_size, z_size),
+            (u + z_size + x_size, v, x_size, z_size),
+        )
+        rectangles.extend(rectangle for rectangle in candidates if rectangle[2] and rectangle[3])
+    elif isinstance(uv, dict):
+        for face, face_data in uv.items():
+            if not isinstance(face_data, dict):
+                raise ValidationError(f"Invalid per-face UV in {context}/{face}")
+            face_uv = face_data.get("uv")
+            face_size = face_data.get("uv_size")
+            if (
+                not isinstance(face_uv, list)
+                or len(face_uv) != 2
+                or not isinstance(face_size, list)
+                or len(face_size) != 2
+                or any(
+                    not isinstance(value, (int, float)) or isinstance(value, bool)
+                    for value in (*face_uv, *face_size)
+                )
+            ):
+                raise ValidationError(f"Invalid per-face UV coordinates in {context}/{face}")
+            width, height = abs(float(face_size[0])), abs(float(face_size[1]))
+            if width and height:
+                rectangles.append((float(face_uv[0]), float(face_uv[1]), width, height))
+    else:
+        raise ValidationError(f"Cube lacks supported UV data in {context}")
+    return rectangles
+
+
+def validate_model_uv_bounds(
+    value: Any,
+    label: str,
+    minimum_u: float,
+    maximum_u: float,
+    maximum_v: float = COMPOSITE_TEXTURE_HEIGHT,
+    bone_names: set[str] | None = None,
+) -> None:
+    geometry = require_geometry_document(value, label)
+    checked = 0
+    for bone in geometry["bones"]:
+        if bone_names is not None and bone["name"] not in bone_names:
+            continue
+        cubes = bone.get("cubes", [])
+        if not isinstance(cubes, list):
+            raise ValidationError(f"Bone cubes must be a list in {label}/{bone['name']}")
+        for index, cube in enumerate(cubes):
+            if not isinstance(cube, dict):
+                raise ValidationError(f"Invalid cube in {label}/{bone['name']}[{index}]")
+            for u, v, width, height in cube_uv_rectangles(
+                cube, f"{label}/{bone['name']}[{index}]"
+            ):
+                if u < minimum_u or v < 0 or u + width > maximum_u or v + height > maximum_v:
+                    raise ValidationError(
+                        f"Cube UV escapes approved atlas region in {label}/{bone['name']}[{index}]: "
+                        f"({u}, {v}, {width}, {height}) not within "
+                        f"[{minimum_u}, {maximum_u}]x[0, {maximum_v}]"
+                    )
+                checked += 1
+    if checked == 0:
+        raise ValidationError(f"No textured cube faces were validated in {label}")
+
+
+def offset_cube_uv(cube: dict[str, Any], u_offset: int, context: str) -> None:
+    uv = cube.get("uv")
+    if isinstance(uv, list) and len(uv) == 2:
+        uv[0] += u_offset
+        return
+    if isinstance(uv, dict):
+        for face, face_data in uv.items():
+            if not isinstance(face_data, dict) or not isinstance(face_data.get("uv"), list):
+                raise ValidationError(f"Invalid per-face UV while offsetting {context}/{face}")
+            face_data["uv"][0] += u_offset
+        return
+    raise ValidationError(f"Unsupported cube UV while offsetting {context}")
+
+
+def build_profession_model(donor_model: Any, label: str) -> dict[str, Any]:
+    result = copy.deepcopy(donor_model)
+    geometry = require_geometry_document(result, label)
+    donor_width = geometry["description"]["texture_width"]
+    donor_height = geometry["description"]["texture_height"]
+    if donor_width not in (64, 128) or donor_height not in (64, 128):
+        raise ValidationError(f"Unexpected donor model texture dimensions in {label}")
+    validate_model_uv_bounds(result, label, 0, COMPOSITE_SHARED_TEXTURE_X)
+    geometry["description"]["texture_width"] = COMPOSITE_TEXTURE_WIDTH
+    geometry["description"]["texture_height"] = COMPOSITE_TEXTURE_HEIGHT
+    return result
+
+
+def build_umbrella_composite_model(
+    profession_model: Any, umbrella_model: Any, profession: str, variant: int
+) -> dict[str, Any]:
+    label = f"umbrella/{profession}/umbrella_{variant}"
+    result = copy.deepcopy(profession_model)
+    profession_geometry = require_geometry_document(result, f"{profession} donor model")
+    umbrella_geometry = require_geometry_document(umbrella_model, f"pristine {label}")
+    expected_bone_name = "umbrella" if variant == 1 else f"umbrella{variant}"
+    matching_bones = [
+        bone for bone in umbrella_geometry["bones"] if bone["name"] == expected_bone_name
+    ]
+    if len(matching_bones) != 1 or matching_bones[0].get("parent") != "body":
+        raise ValidationError(f"Pristine {label} must have one body-parented umbrella bone")
+    umbrella_bone = copy.deepcopy(matching_bones[0])
+    for index, cube in enumerate(umbrella_bone.get("cubes", [])):
+        offset_cube_uv(cube, COMPOSITE_SHARED_TEXTURE_X, f"{label}[{index}]")
+    if any(bone["name"] == expected_bone_name for bone in profession_geometry["bones"]):
+        raise ValidationError(f"Donor profession model already defines {expected_bone_name}: {profession}")
+    profession_geometry["bones"].append(umbrella_bone)
+
+    source_description = umbrella_geometry["description"]
+    target_description = profession_geometry["description"]
+    target_description["identifier"] = source_description["identifier"]
+    target_description["texture_width"] = COMPOSITE_TEXTURE_WIDTH
+    target_description["texture_height"] = COMPOSITE_TEXTURE_HEIGHT
+    target_description["visible_bounds_width"] = max(
+        target_description.get("visible_bounds_width", 0),
+        source_description.get("visible_bounds_width", 0),
+    )
+    target_description["visible_bounds_height"] = max(
+        target_description.get("visible_bounds_height", 0),
+        source_description.get("visible_bounds_height", 0),
+    )
+    validate_model_uv_bounds(
+        result,
+        label,
+        COMPOSITE_SHARED_TEXTURE_X,
+        COMPOSITE_TEXTURE_WIDTH,
+        bone_names={expected_bone_name},
+    )
+    donor_bones = {bone["name"] for bone in profession_geometry["bones"]} - {expected_bone_name}
+    validate_model_uv_bounds(
+        result,
+        label,
+        0,
+        COMPOSITE_SHARED_TEXTURE_X,
+        bone_names=donor_bones,
+    )
+    return result
+
+
+class NbtScanner:
+    """Bounded NBT scanner used only to locate and prove the exact resident tag splice."""
+
+    def __init__(self, data: bytes, label: str):
+        self.data = data
+        self.label = label
+        self.offset = 0
+        self.strings: dict[tuple[str, ...], str] = {}
+        self.lists: dict[tuple[str, ...], tuple[int, int]] = {}
+        self.compound_fields: dict[tuple[str, ...], list[tuple[str, int]]] = {}
+        self.named_compounds: list[dict[str, Any]] = []
+
+    def read(self, length: int) -> bytes:
+        if length < 0 or self.offset + length > len(self.data):
+            raise ValidationError(f"Truncated NBT while reading {self.label}")
+        result = self.data[self.offset : self.offset + length]
+        self.offset += length
+        return result
+
+    def read_u8(self) -> int:
+        return self.read(1)[0]
+
+    def read_i32(self) -> int:
+        return struct.unpack(">i", self.read(4))[0]
+
+    def read_string(self) -> str:
+        length = struct.unpack(">H", self.read(2))[0]
+        try:
+            return self.read(length).decode("utf-8")
+        except UnicodeDecodeError as exc:
+            raise ValidationError(f"Invalid UTF-8 NBT string in {self.label}") from exc
+
+    def scan_payload(self, tag_type: int, path: tuple[str, ...]) -> None:
+        if tag_type == 0:
+            raise ValidationError(f"Unexpected standalone TAG_End in {self.label}")
+        if tag_type in {1, 2, 3, 4, 5, 6}:
+            self.read({1: 1, 2: 2, 3: 4, 4: 8, 5: 4, 6: 8}[tag_type])
+            return
+        if tag_type == 7:
+            length = self.read_i32()
+            if length < 0:
+                raise ValidationError(f"Negative TAG_Byte_Array length in {self.label}")
+            self.read(length)
+            return
+        if tag_type == 8:
+            self.strings[path] = self.read_string()
+            return
+        if tag_type == 9:
+            element_type = self.read_u8()
+            length = self.read_i32()
+            if length < 0 or (element_type == 0 and length != 0):
+                raise ValidationError(f"Invalid TAG_List header in {self.label}")
+            self.lists[path] = (element_type, length)
+            for index in range(length):
+                self.scan_payload(element_type, path + (f"[{index}]",))
+            return
+        if tag_type == 10:
+            fields: list[tuple[str, int]] = []
+            self.compound_fields[path] = fields
+            while True:
+                tag_start = self.offset
+                child_type = self.read_u8()
+                if child_type == 0:
+                    break
+                if child_type > 12:
+                    raise ValidationError(f"Unknown NBT tag type {child_type} in {self.label}")
+                name = self.read_string()
+                fields.append((name, child_type))
+                payload_start = self.offset
+                child_path = path + (name,)
+                self.scan_payload(child_type, child_path)
+                if child_type == 10:
+                    self.named_compounds.append(
+                        {
+                            "path": child_path,
+                            "start": tag_start,
+                            "payload_start": payload_start,
+                            "end": self.offset,
+                        }
+                    )
+            return
+        if tag_type in {11, 12}:
+            length = self.read_i32()
+            if length < 0:
+                raise ValidationError(f"Negative NBT array length in {self.label}")
+            self.read(length * (4 if tag_type == 11 else 8))
+            return
+        raise ValidationError(f"Unknown NBT tag type {tag_type} in {self.label}")
+
+    def scan_root(self) -> None:
+        root_type = self.read_u8()
+        if root_type != 10:
+            raise ValidationError(f"NBT root is not a compound in {self.label}")
+        self.read_string()  # Root name is semantically irrelevant but length-checked.
+        self.scan_payload(root_type, ())
+        if self.offset != len(self.data):
+            raise ValidationError(f"Trailing bytes after NBT root in {self.label}")
+
+
+def decode_nbt_bytes(data: bytes, label: str) -> bytes:
+    if data.startswith(b"\x1f\x8b"):
+        try:
+            return gzip.decompress(data)
+        except gzip.BadGzipFile as exc:
+            raise ValidationError(f"Invalid compressed NBT {label}: {exc}") from exc
+    return data
+
+
+def deterministic_gzip(data: bytes) -> bytes:
+    compressor = zlib.compressobj(level=9, method=zlib.DEFLATED, wbits=-15)
+    compressed = compressor.compress(data) + compressor.flush()
+    return (
+        b"\x1f\x8b\x08\x00\x00\x00\x00\x00\x02\xff"
+        + compressed
+        + struct.pack("<II", zlib.crc32(data) & 0xFFFFFFFF, len(data) & 0xFFFFFFFF)
+    )
+
+
+def scan_nbt(data: bytes, label: str) -> NbtScanner:
+    scanner = NbtScanner(data, label)
+    scanner.scan_root()
+    return scanner
+
+
+def remove_exact_village_ribbit_data(data: bytes, path: str) -> bytes:
+    if path not in VILLAGE_RIBBIT_TEMPLATE_DATA:
+        raise ValidationError(f"Unexpected village resident template: {path}")
+    if not data.startswith(b"\x1f\x8b"):
+        raise ValidationError(f"Village resident template must remain gzip-compressed: {path}")
+    decoded = decode_nbt_bytes(data, path)
+    scanner = scan_nbt(decoded, path)
+    if scanner.lists.get(("entities",)) != (10, 1):
+        raise ValidationError(f"{path} must contain exactly one compound resident entity")
+    id_path = ("entities", "[0]", "nbt", "id")
+    if scanner.strings.get(id_path) != "ribbits:ribbit":
+        raise ValidationError(f"{path} resident must be exactly ribbits:ribbit")
+    ribbit_data_path = ("entities", "[0]", "nbt", "RibbitData")
+    matches = [item for item in scanner.named_compounds if item["path"] == ribbit_data_path]
+    if len(matches) != 1:
+        raise ValidationError(f"{path} must contain exactly one entities[0].nbt.RibbitData tag")
+    expected = VILLAGE_RIBBIT_TEMPLATE_DATA[path]
+    fields = scanner.compound_fields.get(ribbit_data_path)
+    if fields is None or set(fields) != {(name, 8) for name in expected} or len(fields) != len(expected):
+        raise ValidationError(f"{path} RibbitData must have exactly the pinned string keys")
+    actual = {
+        name: scanner.strings.get(ribbit_data_path + (name,)) for name in expected
+    }
+    if actual != expected:
+        raise ValidationError(f"{path} pinned RibbitData differs: expected {expected}, got {actual}")
+
+    match = matches[0]
+    transformed = decoded[: match["start"]] + decoded[match["end"] :]
+    transformed_scanner = scan_nbt(transformed, f"transformed {path}")
+    if any(item["path"] == ribbit_data_path for item in transformed_scanner.named_compounds):
+        raise ValidationError(f"RibbitData remained after exact splice in {path}")
+    if transformed_scanner.strings.get(id_path) != "ribbits:ribbit":
+        raise ValidationError(f"Resident identity changed while splicing {path}")
+    if transformed != decoded[: match["start"]] + decoded[match["end"] :]:
+        raise AssertionError("NBT splice changed bytes outside the named RibbitData tag")
+    return deterministic_gzip(transformed)
+
+
+def remove_village_profession_assignments(root: Path) -> dict[str, Any]:
+    structure_root = root / "data/ribbits/structure"
+    actual_templates = {
+        path.relative_to(root).as_posix()
+        for path in (structure_root / "ribbits").glob("*.nbt")
+    }
+    expected_templates = set(VILLAGE_RIBBIT_TEMPLATE_DATA)
+    if actual_templates != expected_templates:
+        raise ValidationError(
+            "Private resident template set differs: "
+            f"missing={sorted(expected_templates - actual_templates)}, "
+            f"extra={sorted(actual_templates - expected_templates)}"
+        )
+    records: list[dict[str, Any]] = []
+    for relative in sorted(expected_templates):
+        path = root / PurePosixPath(relative)
+        before = path.read_bytes()
+        after = remove_exact_village_ribbit_data(before, relative)
+        path.write_bytes(after)
+        records.append(
+            {
+                "template": relative,
+                "removed_tag": "entities[0].nbt.RibbitData",
+                "previous": VILLAGE_RIBBIT_TEMPLATE_DATA[relative],
+                "before_sha256": sha256_bytes(before),
+                "after_sha256": sha256_bytes(after),
+            }
+        )
+    return {
+        "count": len(records),
+        "policy": "caller-random explicit Java village profession pool",
+        "templates": records,
+    }
+
+
+def validate_village_profession_assignments(root: Path, errors: list[str]) -> None:
+    expected_templates = set(VILLAGE_RIBBIT_TEMPLATE_DATA)
+    actual_templates = {
+        path.relative_to(root).as_posix()
+        for path in (root / "data/ribbits/structure/ribbits").glob("*.nbt")
+    }
+    if actual_templates != expected_templates:
+        errors.append(
+            "Private resident template set differs after assembly: "
+            f"missing={sorted(expected_templates - actual_templates)}, "
+            f"extra={sorted(actual_templates - expected_templates)}"
+        )
+        return
+    for path in sorted((root / "data/ribbits/structure").rglob("*.nbt")):
+        relative = path.relative_to(root).as_posix()
+        try:
+            scanner = scan_nbt(decode_nbt_bytes(path.read_bytes(), relative), relative)
+        except ValidationError as exc:
+            errors.append(str(exc))
+            continue
+        retained = [
+            item["path"] for item in scanner.named_compounds if item["path"][-1:] == ("RibbitData",)
+        ]
+        if retained:
+            errors.append(f"Private village NBT retains explicit RibbitData in {relative}: {retained}")
+        retained_fields = [
+            path
+            for path in scanner.strings
+            if path[-1:] in {("profession",), ("instrument",), ("umbrella",)}
+            and "entities" in path
+        ]
+        if retained_fields:
+            errors.append(
+                f"Private village resident NBT retains explicit variant fields in "
+                f"{relative}: {retained_fields}"
+            )
+        if relative in expected_templates:
+            if scanner.lists.get(("entities",)) != (10, 1):
+                errors.append(f"{relative} no longer has exactly one resident entity")
+            if scanner.strings.get(("entities", "[0]", "nbt", "id")) != "ribbits:ribbit":
+                errors.append(f"{relative} resident identity is no longer ribbits:ribbit")
 
 
 def load_authorized_vanilla_frog_spawn_egg(
@@ -308,6 +1180,8 @@ def recolor_vanilla_frog_spawn_egg(source: bytes) -> tuple[bytes, str]:
 
 
 def safe_zip_name(name: str) -> PurePosixPath:
+    if "\\" in name or re.match(r"^[A-Za-z]:", name):
+        raise ValidationError(f"Unsafe ZIP entry: {name!r}")
     path = PurePosixPath(name)
     if path.is_absolute() or not path.parts or any(part in ("", ".", "..") for part in path.parts):
         raise ValidationError(f"Unsafe ZIP entry: {name!r}")
@@ -334,6 +1208,19 @@ def require_private_path(path: Path, private_root: Path, label: str) -> None:
         raise ValidationError(f"{label} must never be inside originals/: {candidate}")
 
 
+def require_descendant_path(path: Path, root: Path, label: str) -> None:
+    candidate = path.resolve()
+    resolved_root = root.resolve()
+    try:
+        relative = candidate.relative_to(resolved_root)
+    except ValueError as exc:
+        raise ValidationError(
+            f"{label} must stay inside {resolved_root}: {candidate}"
+        ) from exc
+    if not relative.parts:
+        raise ValidationError(f"{label} must not be the root itself: {candidate}")
+
+
 def require_outside_tree(path: Path, tree: Path, label: str) -> None:
     candidate = path.resolve()
     root = tree.resolve()
@@ -357,6 +1244,34 @@ def write_json(path: Path, value: Any) -> None:
         encoding="utf-8",
         newline="\n",
     )
+
+
+def write_manifest_after_donor_verification(
+    manifest_path: Path,
+    manifest: dict[str, Any],
+    donor_checks: list[tuple[Path, dict[str, Any], str]],
+) -> None:
+    if manifest_path.exists():
+        raise ValidationError(f"Refusing to overwrite existing manifest: {manifest_path}")
+    for path, identity, label in donor_checks:
+        require_donor_unchanged(path, identity, label)
+    manifest_path.parent.mkdir(parents=True, exist_ok=True)
+    descriptor, temporary_name = tempfile.mkstemp(
+        dir=manifest_path.parent,
+        prefix=f".{manifest_path.name}.",
+        suffix=".tmp",
+    )
+    os.close(descriptor)
+    temporary_path = Path(temporary_name)
+    try:
+        write_json(temporary_path, manifest)
+        for path, identity, label in donor_checks:
+            require_donor_unchanged(path, identity, label)
+        if manifest_path.exists():
+            raise ValidationError(f"Refusing to overwrite existing manifest: {manifest_path}")
+        temporary_path.rename(manifest_path)
+    finally:
+        temporary_path.unlink(missing_ok=True)
 
 
 def load_json(path: Path) -> Any:
@@ -693,6 +1608,16 @@ def migrate_languages(root: Path) -> None:
             if overlap:
                 raise ValidationError(f"Unexpected pre-existing en_us config keys: {sorted(overlap)}")
             values.update(EN_US_CONFIG_ADDITIONS)
+            nitwit_key = "item.ribbits.ribbit_nitwit_spawn_egg"
+            if values.get(nitwit_key) != "Nitwit Ribbit Spawn Egg":
+                raise ValidationError("Pristine Nitwit spawn-egg translation differs")
+            new_keys = set(EN_US_MYNX_PROFESSION_TRANSLATIONS) - {nitwit_key}
+            overlap = set(values).intersection(new_keys)
+            if overlap:
+                raise ValidationError(
+                    f"Unexpected pre-existing Mynx profession translations: {sorted(overlap)}"
+                )
+            values.update(EN_US_MYNX_PROFESSION_TRANSLATIONS)
 
         write_json(path, values)
 
@@ -708,6 +1633,137 @@ def migrate_geckolib_paths(root: Path) -> None:
     shutil.move(str(old_models), str(new_models))
     new_animations.parent.mkdir(parents=True, exist_ok=True)
     shutil.move(str(old_animations), str(new_animations))
+
+
+def import_donor_profession_resources(
+    root: Path,
+    donor_members: dict[str, dict[str, bytes]],
+    donor_identities: dict[str, dict[str, Any]],
+) -> list[dict[str, Any]]:
+    shared_texture_path = root / PurePosixPath(SHARED_RIBBIT_TEXTURE_ENTRY)
+    shared_texture = shared_texture_path.read_bytes()
+    if png_dimensions(shared_texture, SHARED_RIBBIT_TEXTURE_ENTRY) != (128, 128):
+        raise ValidationError("Pristine Ribbits shared entity texture must be exactly 128x128")
+
+    records: list[dict[str, Any]] = []
+    for profession in NEW_PROFESSIONS:
+        asset = PROFESSION_DONOR_ASSETS[profession]
+        donor_key = asset["donor"]
+        model_member = asset["model"]
+        texture_member = asset["texture"]
+        members = donor_members[donor_key]
+        if set(members) != set(DONOR_INPUT_SPECS[donor_key]["members"]):
+            raise ValidationError(f"Loaded donor member accounting differs for {donor_key}")
+
+        source_model = load_json_bytes(members[model_member], model_member)
+        profession_model = build_profession_model(source_model, model_member)
+        model_output = (
+            root
+            / f"assets/ribbits/geckolib/models/{profession}_ribbit.geo.json"
+        )
+        if model_output.exists():
+            raise ValidationError(f"Refusing to overwrite donor-derived model: {model_output}")
+        model_output.parent.mkdir(parents=True, exist_ok=True)
+        write_json(model_output, profession_model)
+        model_relative = model_output.relative_to(root).as_posix()
+        records.append(
+            {
+                "output": model_relative,
+                "sources": [
+                    {
+                        "archive": donor_identities[donor_key]["filename"],
+                        "member": model_member,
+                    }
+                ],
+                "transformation": "schema-preserving GeckoLib relocation; 256x128 atlas dimensions",
+            }
+        )
+
+        texture_output = root / f"assets/ribbits/textures/entity/{profession}_ribbit.png"
+        if texture_output.exists():
+            raise ValidationError(f"Refusing to overwrite donor-derived texture: {texture_output}")
+        texture_output.parent.mkdir(parents=True, exist_ok=True)
+        composite_texture = build_composite_texture(
+            members[texture_member], texture_member, shared_texture
+        )
+        texture_output.write_bytes(composite_texture)
+        texture_relative = texture_output.relative_to(root).as_posix()
+        records.append(
+            {
+                "output": texture_relative,
+                "sources": [
+                    {
+                        "archive": donor_identities[donor_key]["filename"],
+                        "member": texture_member,
+                    },
+                    {
+                        "archive": "Ribbits-1.21.1-Fabric-4.1.6.jar",
+                        "member": SHARED_RIBBIT_TEXTURE_ENTRY,
+                    },
+                ],
+                "transformation": (
+                    "deterministic 256x128 RGBA atlas; donor pixels at x=0, "
+                    "pristine shared Ribbits pixels at x=128"
+                ),
+            }
+        )
+
+        for variant in UMBRELLA_VARIANTS:
+            umbrella_source_relative = (
+                f"assets/ribbits/geckolib/models/umbrella/nitwit/"
+                f"umbrella_{variant}.geo.json"
+            )
+            umbrella_source = load_json(root / PurePosixPath(umbrella_source_relative))
+            umbrella_model = build_umbrella_composite_model(
+                profession_model, umbrella_source, profession, variant
+            )
+            umbrella_output = (
+                root
+                / f"assets/ribbits/geckolib/models/umbrella/{profession}/"
+                f"umbrella_{variant}.geo.json"
+            )
+            if umbrella_output.exists():
+                raise ValidationError(
+                    f"Refusing to overwrite donor-derived umbrella model: {umbrella_output}"
+                )
+            umbrella_output.parent.mkdir(parents=True, exist_ok=True)
+            write_json(umbrella_output, umbrella_model)
+            records.append(
+                {
+                    "output": umbrella_output.relative_to(root).as_posix(),
+                    "sources": [
+                        {
+                            "archive": donor_identities[donor_key]["filename"],
+                            "member": model_member,
+                        },
+                        {
+                            "archive": "Ribbits-1.21.1-Fabric-4.1.6.jar",
+                            "member": umbrella_source_relative.replace(
+                                "assets/ribbits/geckolib/models/", "assets/ribbits/geo/"
+                            ),
+                        },
+                    ],
+                    "transformation": (
+                        "donor profession geometry plus exact pristine umbrella bone; "
+                        "umbrella U coordinates offset by 128"
+                    ),
+                }
+            )
+
+    actual_outputs = {record["output"] for record in records}
+    if actual_outputs != DONOR_DERIVED_OUTPUTS or len(records) != len(DONOR_DERIVED_OUTPUTS):
+        raise ValidationError(
+            "Donor-derived output accounting differs: "
+            f"missing={sorted(DONOR_DERIVED_OUTPUTS - actual_outputs)}, "
+            f"extra={sorted(actual_outputs - DONOR_DERIVED_OUTPUTS)}"
+        )
+    for record in records:
+        if any(
+            source["member"].endswith((".class", ".java"))
+            for source in record["sources"]
+        ):
+            raise ValidationError("Executable donor content entered the approved output record")
+    return records
 
 
 def migrate_cutout_models(root: Path) -> None:
@@ -774,9 +1830,61 @@ def migrate_recipe_advancements(root: Path) -> None:
         write_json(path, advancement)
 
 
-def migrate_sorcerer_loot(root: Path) -> None:
-    path = root / "data/ribbits/loot_table/chests/sorcerer.json"
-    loot = load_json(path)
+def require_loot_pool_shape(loot: Any, relative: str, empty_type: str) -> None:
+    if not isinstance(loot, dict) or set(loot) != {"type", "pools"}:
+        raise ValidationError(f"Unexpected top-level loot-table fields in {relative}")
+    if loot.get("type") != "minecraft:chest" or not isinstance(loot.get("pools"), list):
+        raise ValidationError(f"{relative} must remain a chest loot table")
+    expected_counts = LOOT_POOL_ENTRY_COUNTS[relative]
+    if len(loot["pools"]) != len(expected_counts):
+        raise ValidationError(f"{relative} pool count differs")
+    for index, (pool, expected_count) in enumerate(zip(loot["pools"], expected_counts)):
+        if not isinstance(pool, dict) or set(pool) != {"rolls", "bonus_rolls", "entries"}:
+            raise ValidationError(f"Unexpected pool fields in {relative} pool {index}")
+        if pool.get("bonus_rolls") != 0.0 or not isinstance(pool.get("entries"), list):
+            raise ValidationError(f"Unexpected pool structure in {relative} pool {index}")
+        if len(pool["entries"]) != expected_count:
+            raise ValidationError(f"{relative} pool {index} entry count differs")
+    special = loot["pools"][1]["entries"][0]
+    expected_special = {"type": empty_type, "weight": LOOT_EMPTY_WEIGHTS[relative]}
+    if empty_type == "minecraft:item":
+        expected_special["name"] = "minecraft:air"
+    if special != expected_special:
+        raise ValidationError(
+            f"{relative} empty-chance entry differs: expected {expected_special}, got {special}"
+        )
+
+
+def repair_air_loot_entry(loot: Any, relative: str) -> dict[str, Any]:
+    result = copy.deepcopy(loot)
+    require_loot_pool_shape(result, relative, "minecraft:item")
+    special = result["pools"][1]["entries"][0]
+    if special.get("name") != "minecraft:air":
+        raise ValidationError(f"{relative} must contain the exact legacy minecraft:air entry")
+    air_entries = [
+        entry
+        for pool in result["pools"]
+        for entry in pool["entries"]
+        if isinstance(entry, dict)
+        and entry.get("type") == "minecraft:item"
+        and entry.get("name") == "minecraft:air"
+    ]
+    if len(air_entries) != 1:
+        raise ValidationError(f"{relative} must contain exactly one legacy minecraft:air item entry")
+    special["type"] = "minecraft:empty"
+    del special["name"]
+    require_loot_pool_shape(result, relative, "minecraft:empty")
+    return result
+
+
+def migrate_private_loot_tables(root: Path) -> dict[str, Any]:
+    migrated: dict[str, Any] = {}
+    for relative in LOOT_TABLE_PATHS:
+        path = root / PurePosixPath(relative)
+        migrated[relative] = repair_air_loot_entry(load_json(path), relative)
+
+    sorcerer_relative = LOOT_TABLE_PATHS[1]
+    loot = migrated[sorcerer_relative]
     converted = 0
     for pool in loot["pools"]:
         for entry in pool["entries"]:
@@ -793,7 +1901,82 @@ def migrate_sorcerer_loot(root: Path) -> None:
                     converted += 1
     if converted != 1:
         raise ValidationError(f"Expected one sorcerer potion conversion, got {converted}")
-    write_json(path, loot)
+    for relative, value in migrated.items():
+        write_json(root / PurePosixPath(relative), value)
+    return {
+        "tables": list(LOOT_TABLE_PATHS),
+        "air_item_entries_replaced_with_empty": len(LOOT_TABLE_PATHS),
+        "replacement": {
+            "invalid_item_id": "minecraft:air",
+            "faithful_entry_type": "minecraft:empty",
+        },
+        "sorcerer_potion_loot_functions_migrated": converted,
+    }
+
+
+def iter_loot_entries(value: Any) -> list[dict[str, Any]]:
+    entries: list[dict[str, Any]] = []
+    if isinstance(value, dict):
+        if isinstance(value.get("type"), str) and value["type"].startswith("minecraft:"):
+            if value["type"] in {
+                "minecraft:item",
+                "minecraft:empty",
+                "minecraft:alternatives",
+                "minecraft:group",
+                "minecraft:sequence",
+            }:
+                entries.append(value)
+        for child in value.values():
+            entries.extend(iter_loot_entries(child))
+    elif isinstance(value, list):
+        for child in value:
+            entries.extend(iter_loot_entries(child))
+    return entries
+
+
+def validate_private_loot_tables(
+    root: Path, minecraft_entries: set[str], errors: list[str]
+) -> None:
+    for relative in LOOT_TABLE_PATHS:
+        path = root / PurePosixPath(relative)
+        if not path.is_file():
+            errors.append(f"Missing repaired private loot table: {relative}")
+            continue
+        try:
+            loot = load_json(path)
+            require_loot_pool_shape(loot, relative, "minecraft:empty")
+        except ValidationError as exc:
+            errors.append(str(exc))
+            continue
+        for entry in iter_loot_entries(loot):
+            if entry.get("type") != "minecraft:item":
+                continue
+            item_id = entry.get("name")
+            if not isinstance(item_id, str) or ":" not in item_id:
+                errors.append(f"Invalid item ID in {relative}: {item_id!r}")
+                continue
+            if item_id == "minecraft:air":
+                errors.append(f"Item must not be minecraft:air in {relative}")
+                continue
+            namespace, item_path = item_id.split(":", 1)
+            if namespace == "minecraft":
+                evidence = f"assets/minecraft/items/{item_path}.json"
+                if evidence not in minecraft_entries:
+                    errors.append(
+                        f"Minecraft 26.2 item registry evidence is absent for {item_id} in {relative}"
+                    )
+            elif namespace == "ribbits":
+                if not (root / f"assets/ribbits/items/{item_path}.json").is_file():
+                    errors.append(f"Ribbits item definition is absent for {item_id} in {relative}")
+            else:
+                errors.append(f"Unapproved item namespace {namespace!r} in {relative}")
+
+    sorcerer_path = root / PurePosixPath(LOOT_TABLE_PATHS[1])
+    if sorcerer_path.is_file():
+        sorcerer = load_json(sorcerer_path)
+        serialized = json.dumps(sorcerer, separators=(",", ":"))
+        if serialized.count("minecraft:set_potion") != 1 or "potion_contents" in serialized:
+            errors.append("Sorcerer potion loot migration is missing or changed")
 
 
 def write_item_definitions(root: Path) -> None:
@@ -834,7 +2017,7 @@ def migrate_spawn_egg_models(root: Path, minecraft_client: Path) -> dict[str, An
     texture_path.parent.mkdir(parents=True, exist_ok=True)
     texture_path.write_bytes(recolored)
 
-    for spawn_egg_id in SPAWN_EGG_IDS:
+    for spawn_egg_id in PRISTINE_SPAWN_EGG_IDS:
         model_path = root / f"assets/ribbits/models/item/{spawn_egg_id}.json"
         pristine_model = load_json(model_path)
         if pristine_model != {"parent": "minecraft:item/template_spawn_egg"}:
@@ -842,10 +2025,15 @@ def migrate_spawn_egg_models(root: Path, minecraft_client: Path) -> dict[str, An
                 f"Unexpected pristine spawn-egg model for {spawn_egg_id}: {pristine_model!r}"
             )
         write_json(model_path, SPAWN_EGG_MODEL)
+    for spawn_egg_id in NEW_SPAWN_EGG_IDS:
+        model_path = root / f"assets/ribbits/models/item/{spawn_egg_id}.json"
+        if model_path.exists():
+            raise ValidationError(f"Unexpected pre-existing new spawn-egg model: {spawn_egg_id}")
+        write_json(model_path, SPAWN_EGG_MODEL)
 
     return {
         "authorization": (
-            "Explicitly authorized by the Workbench owner for private Ribbits Canary 2"
+            "Explicitly authorized by the Workbench owner for private Mynx Ribbits Canary 1"
         ),
         "temporary": True,
         "exact_ribbits_4_1_6_visual_parity": False,
@@ -883,12 +2071,23 @@ def build_manifest(
     source_hashes: dict[str, str],
     spawn_egg_substitution: dict[str, Any],
     configured_feature_migration: dict[str, Any],
+    donor_identities: dict[str, dict[str, Any]],
+    donor_outputs: list[dict[str, Any]],
+    loot_migration: dict[str, Any],
+    village_nbt_migration: dict[str, Any],
 ) -> dict[str, Any]:
     output_hashes = {
         name: sha256_file(output / PurePosixPath(name)) for name in relative_files(output)
     }
     return {
-        "classification": "PRIVATE ASSEMBLY STAGED / AUTHORIZED SUBSTITUTION",
+        "schema": PRIVATE_MANIFEST_SCHEMA,
+        "classification": PRIVATE_MANIFEST_CLASSIFICATION,
+        "candidate": {
+            "version": CANDIDATE_VERSION,
+            "canary": 1,
+            "private_artifact_filename": PRIVATE_ARTIFACT_FILENAME,
+            "source_only_artifact_filename": SOURCE_ONLY_ARTIFACT_FILENAME,
+        },
         "created_utc": datetime.now(timezone.utc).isoformat(),
         "tool": "projects/ribbits-26.2/tools/private_resource_tools.py",
         "python": platform.python_version(),
@@ -903,23 +2102,45 @@ def build_manifest(
             "file_count": len(output_hashes),
             "files": output_hashes,
         },
+        "read_only_donors": {
+            "logical_root": "originals/mods",
+            "private_use_only": True,
+            "redistribution_authorized": False,
+            "inputs": [
+                {
+                    **donor_identities[key],
+                    "logical_path": f"originals/mods/{donor_identities[key]['filename']}",
+                    "unchanged_after_assembly": True,
+                }
+                for key in ("guard", "useful")
+            ],
+            "derived_outputs": donor_outputs,
+            "derived_output_count": len(donor_outputs),
+        },
         "migrations": {
             "geckolib_models_moved": 25,
             "geckolib_animations_moved": 1,
-            "item_definitions_added": 20,
+            "donor_profession_models_added": 4,
+            "donor_profession_umbrella_models_added": 12,
+            "donor_profession_composite_textures_added": 4,
+            "item_definitions_added": len(REGISTERED_ITEM_IDS),
             "cutout_logical_blocks": 6,
             "cutout_concrete_models": len(CUTOUT_MODEL_FILES),
             "recipes_migrated": 11,
             "recipe_advancements_migrated": 6,
-            "sorcerer_potion_loot_functions_migrated": 1,
+            "private_loot_tables_repaired": loot_migration,
             "language_files_migrated": 11,
             "config_prefix_renames": 33,
             "block_item_translation_keys_added": 154,
             "en_us_config_keys_added": len(EN_US_CONFIG_ADDITIONS),
+            "en_us_mynx_profession_keys_added_or_changed": len(
+                EN_US_MYNX_PROFESSION_TRANSLATIONS
+            ),
             "zh_cn_syntax_repairs": 1,
             "spawn_egg_models_migrated": len(SPAWN_EGG_IDS),
             "spawn_egg_textures_added": 1,
             "configured_feature_random_patch_to_sequence": configured_feature_migration,
+            "village_resident_profession_assignments_removed": village_nbt_migration,
         },
         "authorized_spawn_egg_substitution": spawn_egg_substitution,
         "blockers": [],
@@ -929,6 +2150,9 @@ def build_manifest(
 def _assemble_impl(
     pristine: Path,
     minecraft_client: Path,
+    originals_root: Path,
+    guard_donor: Path,
+    useful_donor: Path,
     output: Path,
     manifest_path: Path,
 ) -> None:
@@ -944,15 +2168,31 @@ def _assemble_impl(
     if manifest_path.exists():
         raise ValidationError(f"Refusing to overwrite existing manifest: {manifest_path}")
 
+    guard_members, guard_identity = load_exact_donor(
+        guard_donor, originals_root, "guard"
+    )
+    useful_members, useful_identity = load_exact_donor(
+        useful_donor, originals_root, "useful"
+    )
+    donor_members = {"guard": guard_members, "useful": useful_members}
+    donor_identities = {"guard": guard_identity, "useful": useful_identity}
+    donor_checks = [
+        (guard_donor, guard_identity, "Guard donor JAR"),
+        (useful_donor, useful_identity, "Useful donor JAR"),
+    ]
+
     output.mkdir(parents=True)
     source_hashes: dict[str, str] = {}
     seen_casefold: set[str] = set()
     try:
         with zipfile.ZipFile(pristine) as archive:
+            source_entries = [entry for entry in archive.infolist() if not entry.is_dir()]
+            for entry in source_entries:
+                safe_zip_name(entry.filename)
             selected = [
                 entry
-                for entry in archive.infolist()
-                if not entry.is_dir() and is_private_source_entry(entry.filename)
+                for entry in source_entries
+                if is_private_source_entry(entry.filename)
             ]
             selected_paths = [safe_zip_name(entry.filename).as_posix() for entry in selected]
             configured_prefix = (
@@ -983,16 +2223,21 @@ def _assemble_impl(
                 seen_casefold.add(folded)
                 data = archive.read(entry)
                 destination = output.joinpath(*relative.parts)
+                require_descendant_path(destination, output, "Private resource output")
                 destination.parent.mkdir(parents=True, exist_ok=True)
                 destination.write_bytes(data)
                 source_hashes[relative.as_posix()] = sha256_bytes(data)
 
         migrate_geckolib_paths(output)
+        donor_outputs = import_donor_profession_resources(
+            output, donor_members, donor_identities
+        )
         migrate_languages(output)
         migrate_cutout_models(output)
         migrate_recipes(output)
         migrate_recipe_advancements(output)
-        migrate_sorcerer_loot(output)
+        loot_migration = migrate_private_loot_tables(output)
+        village_nbt_migration = remove_village_profession_assignments(output)
         configured_feature_migration = migrate_configured_features(output)
         write_item_definitions(output)
         spawn_egg_substitution = migrate_spawn_egg_models(output, minecraft_client)
@@ -1009,18 +2254,33 @@ def _assemble_impl(
             source_hashes,
             spawn_egg_substitution,
             configured_feature_migration,
+            donor_identities,
+            donor_outputs,
+            loot_migration,
+            village_nbt_migration,
         )
-        manifest_path.parent.mkdir(parents=True, exist_ok=True)
-        write_json(manifest_path, manifest)
+        write_manifest_after_donor_verification(manifest_path, manifest, donor_checks)
     except Exception:
         # Leave the ignored staging tree intact for forensic inspection; never silently
-        # delete a partially assembled protected-resource tree.
+        # delete a partially assembled protected-resource tree. A manifest is different:
+        # it must never remain eligible after any failed assembly or donor rehash.
+        manifest_path.unlink(missing_ok=True)
         raise
+    finally:
+        try:
+            for donor_path, identity, label in donor_checks:
+                require_donor_unchanged(donor_path, identity, label)
+        except Exception:
+            manifest_path.unlink(missing_ok=True)
+            raise
 
 
 def assemble(
     pristine: Path,
     minecraft_client: Path,
+    originals_root: Path,
+    guard_donor: Path,
+    useful_donor: Path,
     output: Path,
     manifest_path: Path,
     private_root: Path,
@@ -1028,7 +2288,15 @@ def assemble(
     require_private_path(output, private_root, "Assembly output")
     require_private_path(manifest_path, private_root, "Assembly manifest")
     require_outside_tree(manifest_path, output, "Assembly manifest")
-    _assemble_impl(pristine, minecraft_client, output, manifest_path)
+    _assemble_impl(
+        pristine,
+        minecraft_client,
+        originals_root,
+        guard_donor,
+        useful_donor,
+        output,
+        manifest_path,
+    )
 
 
 def validate_binary_formats(root: Path, errors: list[str]) -> None:
@@ -1068,6 +2336,9 @@ def collect_json_errors(root: Path, errors: list[str]) -> int:
 def validate_pristine_provenance(
     pristine: Path,
     minecraft_client: Path,
+    originals_root: Path,
+    guard_donor: Path,
+    useful_donor: Path,
     root: Path,
     private_root: Path,
     errors: list[str],
@@ -1089,7 +2360,15 @@ def validate_pristine_provenance(
         expected_root = temp_root / "resources"
         expected_manifest = temp_root / "manifest.json"
         try:
-            _assemble_impl(pristine, minecraft_client, expected_root, expected_manifest)
+            _assemble_impl(
+                pristine,
+                minecraft_client,
+                originals_root,
+                guard_donor,
+                useful_donor,
+                expected_root,
+                expected_manifest,
+            )
         except (OSError, KeyError, ValueError, ValidationError, zipfile.BadZipFile) as exc:
             errors.append(f"Could not reconstruct deterministic expected assembly: {exc}")
             return
@@ -1109,8 +2388,117 @@ def validate_pristine_provenance(
                 errors.append(f"Private assembly differs from deterministic migration: {name}")
 
 
+def nonallowlisted_donor_archive_violations(names: list[str] | set[str]) -> list[str]:
+    violations: list[str] = []
+    for name in sorted(set(names)):
+        normalized = safe_zip_name(name).as_posix()
+        folded = normalized.casefold()
+        if folded.startswith(DONOR_PACKAGE_PREFIXES):
+            violations.append(normalized)
+        elif PurePosixPath(normalized).name.casefold() in DONOR_ARCHIVE_FILENAMES:
+            violations.append(normalized)
+    return violations
+
+
+def source_only_donor_violations(names: list[str] | set[str]) -> list[str]:
+    violations = nonallowlisted_donor_archive_violations(names)
+    for name in sorted(set(names)):
+        normalized = safe_zip_name(name).as_posix()
+        if normalized in DONOR_DERIVED_OUTPUTS and normalized not in violations:
+            violations.append(normalized)
+    return sorted(violations)
+
+
+def private_domain_entries(names: list[str] | set[str]) -> set[str]:
+    return {
+        normalized
+        for name in names
+        if (
+            (normalized := safe_zip_name(name).as_posix()).startswith(("assets/", "data/"))
+            or normalized in {"icon.png", "logo.png"}
+        )
+    }
+
+
+def private_domain_inventory_difference(
+    staged_names: list[str] | set[str], packaged_names: list[str] | set[str]
+) -> tuple[set[str], set[str]]:
+    staged = set(staged_names)
+    packaged = private_domain_entries(packaged_names)
+    return staged - packaged, packaged - staged
+
+
+def validate_donor_resource_boundary(root: Path, errors: list[str]) -> None:
+    relative = set(relative_files(root))
+    missing = DONOR_DERIVED_OUTPUTS - relative
+    if missing:
+        errors.append(f"Donor-derived private outputs are missing: {sorted(missing)}")
+        return
+    leaked_names = nonallowlisted_donor_archive_violations(relative)
+    leaked_names.extend(
+        name for name in relative if name.casefold().endswith((".class", ".java"))
+    )
+    if leaked_names:
+        errors.append(f"Non-allowlisted donor payload entered private resources: {sorted(leaked_names)}")
+
+    for profession in NEW_PROFESSIONS:
+        normal_path = root / f"assets/ribbits/geckolib/models/{profession}_ribbit.geo.json"
+        texture_path = root / f"assets/ribbits/textures/entity/{profession}_ribbit.png"
+        try:
+            normal = load_json(normal_path)
+            description = require_geometry_document(normal, normal_path.name)["description"]
+            if (
+                description.get("texture_width") != COMPOSITE_TEXTURE_WIDTH
+                or description.get("texture_height") != COMPOSITE_TEXTURE_HEIGHT
+            ):
+                errors.append(f"Composite atlas dimensions differ in {normal_path.name}")
+            validate_model_uv_bounds(
+                normal, normal_path.name, 0, COMPOSITE_SHARED_TEXTURE_X
+            )
+            if png_dimensions(texture_path.read_bytes(), texture_path.name) != (
+                COMPOSITE_TEXTURE_WIDTH,
+                COMPOSITE_TEXTURE_HEIGHT,
+            ):
+                errors.append(f"Composite profession texture dimensions differ: {texture_path.name}")
+            decode_rgba_png(texture_path.read_bytes(), texture_path.name)
+        except (OSError, ValidationError) as exc:
+            errors.append(f"Invalid donor-derived normal resources for {profession}: {exc}")
+
+        for variant in UMBRELLA_VARIANTS:
+            umbrella_path = (
+                root
+                / f"assets/ribbits/geckolib/models/umbrella/{profession}/"
+                f"umbrella_{variant}.geo.json"
+            )
+            expected_bone = "umbrella" if variant == 1 else f"umbrella{variant}"
+            try:
+                umbrella = load_json(umbrella_path)
+                geometry = require_geometry_document(umbrella, umbrella_path.name)
+                names = {bone["name"] for bone in geometry["bones"]}
+                if expected_bone not in names:
+                    errors.append(f"Missing {expected_bone} bone in {umbrella_path.name}")
+                    continue
+                validate_model_uv_bounds(
+                    umbrella,
+                    umbrella_path.name,
+                    COMPOSITE_SHARED_TEXTURE_X,
+                    COMPOSITE_TEXTURE_WIDTH,
+                    bone_names={expected_bone},
+                )
+                validate_model_uv_bounds(
+                    umbrella,
+                    umbrella_path.name,
+                    0,
+                    COMPOSITE_SHARED_TEXTURE_X,
+                    bone_names=names - {expected_bone},
+                )
+            except (OSError, ValidationError) as exc:
+                errors.append(f"Invalid umbrella resources for {profession}/{variant}: {exc}")
+
+
 def validate_transforms(root: Path, errors: list[str]) -> None:
     validate_configured_features(root, errors)
+    validate_donor_resource_boundary(root, errors)
 
     if (root / "assets/ribbits/geo").exists() or (root / "assets/ribbits/animations").exists():
         errors.append("Legacy GeckoLib resource roots remain")
@@ -1184,6 +2572,12 @@ def validate_transforms(root: Path, errors: list[str]) -> None:
     missing_config = expected_config_keys - set(en_values)
     if missing_config:
         errors.append(f"Missing en_us config translations: {sorted(missing_config)}")
+    for key, expected in EN_US_MYNX_PROFESSION_TRANSLATIONS.items():
+        if en_values.get(key) != expected:
+            errors.append(
+                f"Mynx profession translation differs for {key}: "
+                f"expected {expected!r}, got {en_values.get(key)!r}"
+            )
 
     for path in (root / "data/ribbits/recipe").glob("*.json"):
         recipe = load_json(path)
@@ -1268,11 +2662,20 @@ def load_minecraft_entries(path: Path) -> set[str]:
     if not path.is_file():
         raise ValidationError(f"Minecraft client JAR does not exist: {path}")
     with zipfile.ZipFile(path) as archive:
-        return {entry.filename for entry in archive.infolist() if not entry.is_dir()}
+        names = {entry.filename for entry in archive.infolist() if not entry.is_dir()}
+        for name in names:
+            safe_zip_name(name)
+        return names
 
 
 def validation_report(
-    resources: Path, pristine: Path, minecraft_client: Path, private_root: Path
+    resources: Path,
+    pristine: Path,
+    minecraft_client: Path,
+    originals_root: Path,
+    guard_donor: Path,
+    useful_donor: Path,
+    private_root: Path,
 ) -> dict[str, Any]:
     if not resources.is_dir():
         raise ValidationError(f"Resource directory does not exist: {resources}")
@@ -1281,11 +2684,21 @@ def validation_report(
     json_count = collect_json_errors(resources, errors)
     validate_binary_formats(resources, errors)
     validate_pristine_provenance(
-        pristine, minecraft_client, resources, private_root, errors
+        pristine,
+        minecraft_client,
+        originals_root,
+        guard_donor,
+        useful_donor,
+        resources,
+        private_root,
+        errors,
     )
     if not errors:
+        minecraft_entries = load_minecraft_entries(minecraft_client)
         validate_transforms(resources, errors)
-        validate_resource_references(resources, load_minecraft_entries(minecraft_client), errors)
+        validate_private_loot_tables(resources, minecraft_entries, errors)
+        validate_village_profession_assignments(resources, errors)
+        validate_resource_references(resources, minecraft_entries, errors)
     return {
         "classification": "STATIC GATE BLOCKED" if errors or blockers else "STATIC TREE PASS",
         "validated_utc": datetime.now(timezone.utc).isoformat(),
@@ -1302,9 +2715,20 @@ def validate_jar(
     pristine: Path,
     jar_path: Path,
     minecraft_client: Path,
+    originals_root: Path,
+    guard_donor: Path,
+    useful_donor: Path,
     private_root: Path,
 ) -> dict[str, Any]:
-    report = validation_report(resources, pristine, minecraft_client, private_root)
+    report = validation_report(
+        resources,
+        pristine,
+        minecraft_client,
+        originals_root,
+        guard_donor,
+        useful_donor,
+        private_root,
+    )
     errors: list[str] = report["errors"]
     if not jar_path.is_file():
         errors.append(f"Built JAR does not exist: {jar_path}")
@@ -1317,6 +2741,31 @@ def validate_jar(
         if duplicate_names:
             errors.append(f"Duplicate JAR entries: {duplicate_names}")
         name_set = set(names)
+        staged_private_entries = set(relative_files(resources))
+        missing_private_entries, unexpected_private_entries = (
+            private_domain_inventory_difference(staged_private_entries, name_set)
+        )
+        if missing_private_entries:
+            errors.append(
+                "Packaged private-domain entries are missing from the staged inventory: "
+                f"{sorted(missing_private_entries)}"
+            )
+        if unexpected_private_entries:
+            errors.append(
+                "Packaged private-domain entries exceed the staged inventory: "
+                f"{sorted(unexpected_private_entries)}"
+            )
+        missing_donor_outputs = DONOR_DERIVED_OUTPUTS - name_set
+        if missing_donor_outputs:
+            errors.append(
+                f"Donor-derived private resources omitted from JAR: {sorted(missing_donor_outputs)}"
+            )
+        forbidden_donor_entries = nonallowlisted_donor_archive_violations(name_set)
+        if forbidden_donor_entries:
+            errors.append(
+                "Non-allowlisted donor namespaces/classes entered private JAR: "
+                f"{sorted(forbidden_donor_entries)}"
+            )
         for relative in relative_files(resources):
             if relative not in name_set:
                 errors.append(f"Private resource omitted from JAR: {relative}")
@@ -1359,7 +2808,7 @@ def validate_jar(
         metadata = archive_json("fabric.mod.json")
         if metadata.get("id") != "ribbits":
             errors.append(f"Unexpected mod ID: {metadata.get('id')!r}")
-        if metadata.get("version") != "4.1.6+26.2-port-canary2":
+        if metadata.get("version") != CANDIDATE_VERSION:
             errors.append(f"Unexpected packaged version: {metadata.get('version')!r}")
         if metadata.get("environment") != "*":
             errors.append(f"Unexpected Fabric environment: {metadata.get('environment')!r}")
@@ -1492,6 +2941,9 @@ def parse_args() -> argparse.Namespace:
     assemble_parser.add_argument("--private-root", type=Path, required=True)
     assemble_parser.add_argument("--pristine", type=Path, required=True)
     assemble_parser.add_argument("--minecraft-client", type=Path, required=True)
+    assemble_parser.add_argument("--originals-root", type=Path, required=True)
+    assemble_parser.add_argument("--guard-donor", type=Path, required=True)
+    assemble_parser.add_argument("--useful-donor", type=Path, required=True)
     assemble_parser.add_argument("--output", type=Path, required=True)
     assemble_parser.add_argument("--manifest", type=Path, required=True)
 
@@ -1500,6 +2952,9 @@ def parse_args() -> argparse.Namespace:
     tree_parser.add_argument("--resources", type=Path, required=True)
     tree_parser.add_argument("--pristine", type=Path, required=True)
     tree_parser.add_argument("--minecraft-client", type=Path, required=True)
+    tree_parser.add_argument("--originals-root", type=Path, required=True)
+    tree_parser.add_argument("--guard-donor", type=Path, required=True)
+    tree_parser.add_argument("--useful-donor", type=Path, required=True)
     tree_parser.add_argument("--report", type=Path)
 
     jar_parser = subparsers.add_parser("validate-jar")
@@ -1508,6 +2963,9 @@ def parse_args() -> argparse.Namespace:
     jar_parser.add_argument("--pristine", type=Path, required=True)
     jar_parser.add_argument("--jar", type=Path, required=True)
     jar_parser.add_argument("--minecraft-client", type=Path, required=True)
+    jar_parser.add_argument("--originals-root", type=Path, required=True)
+    jar_parser.add_argument("--guard-donor", type=Path, required=True)
+    jar_parser.add_argument("--useful-donor", type=Path, required=True)
     jar_parser.add_argument("--report", type=Path)
     return parser.parse_args()
 
@@ -1519,6 +2977,9 @@ def main() -> int:
             assemble(
                 args.pristine,
                 args.minecraft_client,
+                args.originals_root,
+                args.guard_donor,
+                args.useful_donor,
                 args.output,
                 args.manifest,
                 args.private_root,
@@ -1533,7 +2994,13 @@ def main() -> int:
                 require_private_path(args.report, args.private_root, "Validation report")
                 require_outside_tree(args.report, args.resources, "Validation report")
             report = validation_report(
-                args.resources, args.pristine, args.minecraft_client, args.private_root
+                args.resources,
+                args.pristine,
+                args.minecraft_client,
+                args.originals_root,
+                args.guard_donor,
+                args.useful_donor,
+                args.private_root,
             )
             write_report(args.report, report)
             return 1 if report["errors"] or report["blockers"] else 0
@@ -1547,6 +3014,9 @@ def main() -> int:
                 args.pristine,
                 args.jar,
                 args.minecraft_client,
+                args.originals_root,
+                args.guard_donor,
+                args.useful_donor,
                 args.private_root,
             )
             write_report(args.report, report)

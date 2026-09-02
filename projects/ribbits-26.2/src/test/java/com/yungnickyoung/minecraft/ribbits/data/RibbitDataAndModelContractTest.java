@@ -11,20 +11,34 @@ import com.yungnickyoung.minecraft.ribbits.module.RibbitUmbrellaTypeModule;
 import com.yungnickyoung.minecraft.ribbits.module.SoundModule;
 import com.geckolib.renderer.base.GeoRenderState;
 import io.netty.buffer.Unpooled;
+import net.minecraft.SharedConstants;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.Identifier;
+import net.minecraft.server.Bootstrap;
 import net.minecraft.sounds.SoundEvent;
+import net.minecraft.util.RandomSource;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class RibbitDataAndModelContractTest {
     @BeforeAll
     static void initializeInstrumentSounds() {
+        SharedConstants.tryDetectVersion();
+        Bootstrap.bootStrap();
         SoundModule.MUSIC_RIBBIT_BASS.setSupplier(() -> sound("music.ribbit.bass"));
         SoundModule.MUSIC_RIBBIT_BONGO.setSupplier(() -> sound("music.ribbit.bongo"));
         SoundModule.MUSIC_RIBBIT_FLUTE.setSupplier(() -> sound("music.ribbit.flute"));
@@ -66,6 +80,182 @@ class RibbitDataAndModelContractTest {
     }
 
     @Test
+    void allNineProfessionsRoundTripThroughPersistentAndStreamCodecs() {
+        for (RibbitProfession profession : RibbitProfessionModule.ALL_PROFESSIONS) {
+            RibbitData expected = new RibbitData(
+                    profession, RibbitUmbrellaTypeModule.UMBRELLA_3, RibbitInstrumentModule.NONE);
+
+            RibbitData persistent = RibbitData.CODEC.parse(
+                    JsonOps.INSTANCE,
+                    RibbitData.CODEC.encodeStart(JsonOps.INSTANCE, expected).getOrThrow()).getOrThrow();
+            assertSame(profession, persistent.getProfession(), profession.toString());
+            assertSame(RibbitUmbrellaTypeModule.UMBRELLA_3, persistent.getUmbrellaType());
+            assertSame(RibbitInstrumentModule.NONE, persistent.getInstrument());
+
+            FriendlyByteBuf buffer = new FriendlyByteBuf(Unpooled.buffer());
+            try {
+                RibbitData.STREAM_CODEC.encode(buffer, expected);
+                RibbitData streamed = RibbitData.STREAM_CODEC.decode(buffer);
+                assertSame(profession, streamed.getProfession(), profession.toString());
+                assertSame(RibbitUmbrellaTypeModule.UMBRELLA_3, streamed.getUmbrellaType());
+                assertSame(RibbitInstrumentModule.NONE, streamed.getInstrument());
+            } finally {
+                buffer.release();
+            }
+        }
+    }
+
+    @Test
+    void unknownPersistentAndStreamIdsFallBackToSafeCanonicalValues() {
+        JsonObject unknown = new JsonObject();
+        unknown.addProperty("profession", "example:removed_profession");
+        unknown.addProperty("umbrella", "example:removed_umbrella");
+        unknown.addProperty("instrument", "example:removed_instrument");
+        RibbitData persistent = RibbitData.CODEC.parse(JsonOps.INSTANCE, unknown).getOrThrow();
+
+        assertSame(RibbitProfessionModule.NITWIT, persistent.getProfession());
+        assertSame(RibbitUmbrellaTypeModule.UMBRELLA_1, persistent.getUmbrellaType());
+        assertSame(RibbitInstrumentModule.NONE, persistent.getInstrument());
+
+        FriendlyByteBuf buffer = new FriendlyByteBuf(Unpooled.buffer());
+        try {
+            Identifier.STREAM_CODEC.encode(buffer, Identifier.parse("example:removed_profession"));
+            Identifier.STREAM_CODEC.encode(buffer, Identifier.parse("example:removed_umbrella"));
+            Identifier.STREAM_CODEC.encode(buffer, Identifier.parse("example:removed_instrument"));
+            RibbitData streamed = RibbitData.STREAM_CODEC.decode(buffer);
+            assertSame(RibbitProfessionModule.NITWIT, streamed.getProfession());
+            assertSame(RibbitUmbrellaTypeModule.UMBRELLA_1, streamed.getUmbrellaType());
+            assertSame(RibbitInstrumentModule.NONE, streamed.getInstrument());
+        } finally {
+            buffer.release();
+        }
+    }
+
+    @Test
+    void professionRegistryAndVillagePoolHaveSeparateExactImmutableOrders() {
+        List<String> allIds = RibbitProfessionModule.ALL_PROFESSIONS.stream()
+                .map(profession -> profession.id().toString())
+                .toList();
+        assertEquals(List.of(
+                "ribbits:nitwit",
+                "ribbits:gardener",
+                "ribbits:sorcerer",
+                "ribbits:fisherman",
+                "ribbits:merchant",
+                "ribbits:chef",
+                "ribbits:farmer",
+                "ribbits:prospector",
+                "ribbits:guard"), allIds);
+        assertEquals(RibbitProfessionModule.ALL_PROFESSIONS,
+                new ArrayList<>(RibbitProfessionModule.professionRegistry().values()));
+        assertEquals(9, new HashSet<>(allIds).size());
+        for (RibbitProfession profession : RibbitProfessionModule.ALL_PROFESSIONS) {
+            assertSame(profession, RibbitProfessionModule.getProfession(profession.id()));
+        }
+
+        assertEquals(List.of(
+                        RibbitProfessionModule.NITWIT,
+                        RibbitProfessionModule.GARDENER,
+                        RibbitProfessionModule.FISHERMAN,
+                        RibbitProfessionModule.MERCHANT,
+                        RibbitProfessionModule.CHEF,
+                        RibbitProfessionModule.FARMER,
+                        RibbitProfessionModule.PROSPECTOR,
+                        RibbitProfessionModule.GUARD),
+                RibbitProfessionModule.VILLAGE_PROFESSIONS);
+        assertFalse(RibbitProfessionModule.VILLAGE_PROFESSIONS.contains(RibbitProfessionModule.SORCERER));
+        assertTrue(RibbitProfessionModule.ALL_PROFESSIONS.contains(RibbitProfessionModule.SORCERER));
+        assertThrows(UnsupportedOperationException.class,
+                () -> RibbitProfessionModule.ALL_PROFESSIONS.add(RibbitProfessionModule.NITWIT));
+        assertThrows(UnsupportedOperationException.class,
+                () -> RibbitProfessionModule.VILLAGE_PROFESSIONS.clear());
+        assertThrows(UnsupportedOperationException.class,
+                () -> RibbitProfessionModule.professionRegistry().clear());
+    }
+
+    @Test
+    void allNormalModelAndTextureIdentitiesAreExactAndIdDefinesEquality() {
+        Map<RibbitProfession, String> models = Map.of(
+                RibbitProfessionModule.NITWIT, "ribbits:nitwit_ribbit",
+                RibbitProfessionModule.GARDENER, "ribbits:gardener_ribbit",
+                RibbitProfessionModule.SORCERER, "ribbits:sorcerer_ribbit",
+                RibbitProfessionModule.FISHERMAN, "ribbits:fisherman_ribbit",
+                RibbitProfessionModule.MERCHANT, "ribbits:merchant_ribbit",
+                RibbitProfessionModule.CHEF, "ribbits:chef_ribbit",
+                RibbitProfessionModule.FARMER, "ribbits:farmer_ribbit",
+                RibbitProfessionModule.PROSPECTOR, "ribbits:prospector_ribbit",
+                RibbitProfessionModule.GUARD, "ribbits:guard_ribbit");
+        for (Map.Entry<RibbitProfession, String> entry : models.entrySet()) {
+            assertEquals(entry.getValue(), entry.getKey().modelLocation().toString());
+        }
+
+        for (RibbitProfession profession : List.of(
+                RibbitProfessionModule.NITWIT,
+                RibbitProfessionModule.GARDENER,
+                RibbitProfessionModule.SORCERER,
+                RibbitProfessionModule.FISHERMAN,
+                RibbitProfessionModule.MERCHANT)) {
+            assertEquals("ribbits:textures/entity/ribbit.png", profession.textureLocation().toString());
+        }
+        for (RibbitProfession profession : List.of(
+                RibbitProfessionModule.CHEF,
+                RibbitProfessionModule.FARMER,
+                RibbitProfessionModule.PROSPECTOR,
+                RibbitProfessionModule.GUARD)) {
+            assertEquals("ribbits:textures/entity/" + profession.id().getPath() + "_ribbit.png",
+                    profession.textureLocation().toString());
+        }
+
+        RibbitProfession sameIdDifferentResources = new RibbitProfession(
+                RibbitProfessionModule.GUARD.id(),
+                RibbitsCommon.id("different_model"),
+                RibbitsCommon.id("textures/entity/different.png"));
+        assertEquals(RibbitProfessionModule.GUARD, sameIdDifferentResources);
+        assertEquals(RibbitProfessionModule.GUARD.hashCode(), sameIdDifferentResources.hashCode());
+    }
+
+    @Test
+    void callerRandomControlsEqualWeightVillageSelectionWithoutSorcerers() {
+        Set<RibbitProfession> observed = new HashSet<>();
+        RandomSource oracle = RandomSource.create(0x5EEDC0DEL);
+        RandomSource caller = RandomSource.create(0x5EEDC0DEL);
+        for (int sample = 0; sample < 512; sample++) {
+            RibbitProfession expectedProfession = RibbitProfessionModule.VILLAGE_PROFESSIONS
+                    .get(oracle.nextInt(RibbitProfessionModule.VILLAGE_PROFESSIONS.size()));
+            var expectedUmbrella = List.of(
+                            RibbitUmbrellaTypeModule.UMBRELLA_1,
+                            RibbitUmbrellaTypeModule.UMBRELLA_2,
+                            RibbitUmbrellaTypeModule.UMBRELLA_3)
+                    .get(oracle.nextInt(3));
+
+            RibbitData actual = RibbitProfessionModule.createVillageRibbitData(caller);
+            assertSame(expectedProfession, actual.getProfession(), "sample " + sample);
+            assertSame(expectedUmbrella, actual.getUmbrellaType(), "sample " + sample);
+            assertSame(expectedProfession == RibbitProfessionModule.NITWIT
+                            ? RibbitInstrumentModule.BONGO
+                            : RibbitInstrumentModule.NONE,
+                    actual.getInstrument(), "sample " + sample);
+            assertNotEquals(RibbitProfessionModule.SORCERER, actual.getProfession());
+            observed.add(actual.getProfession());
+        }
+        assertEquals(new HashSet<>(RibbitProfessionModule.VILLAGE_PROFESSIONS), observed);
+    }
+
+    @Test
+    void typedNewProfessionEggDataAlwaysUsesNoInstrument() {
+        for (RibbitProfession profession : List.of(
+                RibbitProfessionModule.CHEF,
+                RibbitProfessionModule.FARMER,
+                RibbitProfessionModule.PROSPECTOR,
+                RibbitProfessionModule.GUARD)) {
+            RibbitData data = RibbitProfessionModule.createTypedSpawnEggData(
+                    profession, RandomSource.create(42));
+            assertSame(profession, data.getProfession());
+            assertSame(RibbitInstrumentModule.NONE, data.getInstrument());
+        }
+    }
+
+    @Test
     void instrumentModelHasHighestSelectionPriority() {
         GeoRenderState state = state(fisherman(RibbitInstrumentModule.BASS), true, true, true, true);
 
@@ -93,14 +283,9 @@ class RibbitDataAndModelContractTest {
     }
 
     @Test
-    void allTwentyFiveDirectBehaviorModelIdsResolveThroughProductionSelection() {
+    void allFortyOneDirectBehaviorModelIdsResolveThroughProductionSelection() {
         RibbitModel model = new RibbitModel();
-        List<RibbitProfession> professions = List.of(
-                RibbitProfessionModule.NITWIT,
-                RibbitProfessionModule.GARDENER,
-                RibbitProfessionModule.SORCERER,
-                RibbitProfessionModule.FISHERMAN,
-                RibbitProfessionModule.MERCHANT);
+        List<RibbitProfession> professions = RibbitProfessionModule.ALL_PROFESSIONS;
         List<RibbitUmbrellaType> umbrellas = List.of(
                 RibbitUmbrellaTypeModule.UMBRELLA_1,
                 RibbitUmbrellaTypeModule.UMBRELLA_2,
@@ -116,11 +301,15 @@ class RibbitDataAndModelContractTest {
                     profession, RibbitUmbrellaTypeModule.UMBRELLA_1, RibbitInstrumentModule.NONE);
             assertEquals(profession.modelLocation(),
                     model.getModelResource(state(ordinary, false, false, false, false)));
+            assertEquals(profession.textureLocation(),
+                    model.getTextureResource(state(ordinary, false, false, false, false)));
 
             for (RibbitUmbrellaType umbrella : umbrellas) {
                 RibbitData rainy = new RibbitData(profession, umbrella, RibbitInstrumentModule.NONE);
                 assertEquals(RibbitsCommon.id("umbrella/" + profession.id().getPath() + "/" + umbrella.modelLocationSuffix()),
                         model.getModelResource(state(rainy, false, false, true, false)));
+                assertEquals(profession.textureLocation(),
+                        model.getTextureResource(state(rainy, false, false, true, false)));
             }
         }
 
@@ -135,6 +324,17 @@ class RibbitDataAndModelContractTest {
                 new RibbitData(RibbitProfessionModule.NITWIT,
                         RibbitUmbrellaTypeModule.UMBRELLA_1, RibbitInstrumentModule.NONE),
                 false, false, false, true)));
+
+        for (RibbitProfession profession : List.of(
+                RibbitProfessionModule.CHEF,
+                RibbitProfessionModule.FARMER,
+                RibbitProfessionModule.PROSPECTOR,
+                RibbitProfessionModule.GUARD)) {
+            RibbitData impossibleInstrumentState = new RibbitData(
+                    profession, RibbitUmbrellaTypeModule.UMBRELLA_1, RibbitInstrumentModule.BASS);
+            assertEquals(profession.modelLocation(),
+                    model.getModelResource(state(impossibleInstrumentState, true, false, false, false)));
+        }
     }
 
     private static SoundEvent sound(String path) {

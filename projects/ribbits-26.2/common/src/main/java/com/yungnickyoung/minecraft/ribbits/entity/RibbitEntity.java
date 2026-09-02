@@ -14,6 +14,7 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.util.Mth;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -110,6 +111,7 @@ public class RibbitEntity extends AgeableMob implements
     private boolean isWatering = false;
     private boolean isFishing = false;
     private boolean isBuffing = false;
+    private boolean villageProfessionInitialized = false;
 
     // NOTE: Fields below here are used only on Server
     private int ticksPlayingMusic;
@@ -134,7 +136,6 @@ public class RibbitEntity extends AgeableMob implements
         super(entityType, level);
 
         this.getNavigation().setCanOpenDoors(true);
-
         this.reassessGoals();
     }
 
@@ -213,8 +214,15 @@ public class RibbitEntity extends AgeableMob implements
     protected void readAdditionalSaveData(ValueInput valueInput) {
         super.readAdditionalSaveData(valueInput);
 
-        valueInput.read("RibbitData", RibbitData.CODEC)
-                .ifPresent(this::setRibbitData);
+        Optional<RibbitData> savedRibbitData = valueInput.read("RibbitData", RibbitData.CODEC);
+        if (savedRibbitData.isPresent()) {
+            this.villageProfessionInitialized = true;
+            this.setRibbitData(savedRibbitData.get());
+        } else {
+            // Private village templates intentionally omit RibbitData so every structure-loaded
+            // resident receives one equal-weight, Sorcerer-free selection from entity randomness.
+            this.initializeDefaultVillageProfession(this.getRandom());
+        }
 
         valueInput.read("Offers", MerchantOffers.CODEC)
                 .ifPresent(offers -> this.offers = offers);
@@ -275,6 +283,9 @@ public class RibbitEntity extends AgeableMob implements
     public SpawnGroupData finalizeSpawn(ServerLevelAccessor level, DifficultyInstance difficulty,
                                         EntitySpawnReason entitySpawnReason, @Nullable SpawnGroupData groupData) {
         SpawnGroupData data = super.finalizeSpawn(level, difficulty, entitySpawnReason, groupData);
+        if (entitySpawnReason == EntitySpawnReason.STRUCTURE) {
+            this.initializeDefaultVillageProfession(level.getRandom());
+        }
         this.reassessGoals();
         this.homePosition = this.blockPosition();
         return data;
@@ -401,7 +412,27 @@ public class RibbitEntity extends AgeableMob implements
     }
 
     public void setRibbitData(RibbitData data) {
+        this.sidedRibbitData = data;
         this.entityData.set(RIBBIT_DATA, data);
+    }
+
+    public void setSpawnEggRibbitData(RibbitData data) {
+        this.setRibbitData(data);
+        if (!this.level().isClientSide()
+                && RibbitProfessionModule.isMynxVisualProfession(data.getProfession())) {
+            this.reassessGoals();
+        }
+    }
+
+    private void initializeDefaultVillageProfession(RandomSource random) {
+        if (this.villageProfessionInitialized) {
+            return;
+        }
+        this.villageProfessionInitialized = true;
+        this.setRibbitData(RibbitProfessionModule.createVillageRibbitData(random));
+        if (!this.level().isClientSide()) {
+            this.reassessGoals();
+        }
     }
 
     public BlockPos getHomePosition() {
@@ -849,6 +880,10 @@ public class RibbitEntity extends AgeableMob implements
             case GARDENER -> new ItemStack(ItemModule.RIBBIT_GARDENER_SPAWN_EGG.get());
             case MERCHANT -> new ItemStack(ItemModule.RIBBIT_MERCHANT_SPAWN_EGG.get());
             case SORCERER -> new ItemStack(ItemModule.RIBBIT_SORCERER_SPAWN_EGG.get());
+            case CHEF -> new ItemStack(ItemModule.RIBBIT_CHEF_SPAWN_EGG.get());
+            case FARMER -> new ItemStack(ItemModule.RIBBIT_FARMER_SPAWN_EGG.get());
+            case PROSPECTOR -> new ItemStack(ItemModule.RIBBIT_PROSPECTOR_SPAWN_EGG.get());
+            case GUARD -> new ItemStack(ItemModule.RIBBIT_GUARD_SPAWN_EGG.get());
         };
     }
 }

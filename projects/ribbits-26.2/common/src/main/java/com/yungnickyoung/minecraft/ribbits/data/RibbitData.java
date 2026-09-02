@@ -34,20 +34,20 @@ public class RibbitData {
 
     private RibbitData(Identifier professionId, Identifier umbrellaTypeId, Identifier instrumentId) {
         this.profession = RibbitProfessionModule.getProfession(professionId);
-        this.umbrellaType = RibbitUmbrellaTypeModule.getUmbrellaType(umbrellaTypeId);
-        this.instrument = RibbitInstrumentModule.getInstrument(instrumentId);
+        this.umbrellaType = fallbackUmbrella(RibbitUmbrellaTypeModule.getUmbrellaType(umbrellaTypeId));
+        this.instrument = fallbackInstrument(RibbitInstrumentModule.getInstrument(instrumentId));
     }
 
     public RibbitData(RibbitProfession profession, RibbitUmbrellaType umbrellaType, RibbitInstrument instrument) {
-        this.profession = profession;
-        this.umbrellaType = umbrellaType;
-        this.instrument = instrument;
+        this.profession = fallbackProfession(profession);
+        this.umbrellaType = fallbackUmbrella(umbrellaType);
+        this.instrument = fallbackInstrument(instrument);
     }
 
     public RibbitData(FriendlyByteBuf buf) {
         this.profession = RibbitProfessionModule.getProfession(buf.readIdentifier());
-        this.umbrellaType = RibbitUmbrellaTypeModule.getUmbrellaType(buf.readIdentifier());
-        this.instrument = RibbitInstrumentModule.getInstrument(buf.readIdentifier());
+        this.umbrellaType = fallbackUmbrella(RibbitUmbrellaTypeModule.getUmbrellaType(buf.readIdentifier()));
+        this.instrument = fallbackInstrument(RibbitInstrumentModule.getInstrument(buf.readIdentifier()));
     }
 
     public void write(FriendlyByteBuf buf) {
@@ -61,7 +61,7 @@ public class RibbitData {
     }
 
     public void setProfession(RibbitProfession profession) {
-        this.profession = profession;
+        this.profession = fallbackProfession(profession);
     }
 
     public RibbitUmbrellaType getUmbrellaType() {
@@ -73,6 +73,18 @@ public class RibbitData {
     }
 
     public void setInstrument(@Nullable RibbitInstrument instrument) {
-        this.instrument = instrument;
+        this.instrument = fallbackInstrument(instrument);
+    }
+
+    private static RibbitProfession fallbackProfession(@Nullable RibbitProfession profession) {
+        return profession == null ? RibbitProfessionModule.NITWIT : profession;
+    }
+
+    private static RibbitUmbrellaType fallbackUmbrella(@Nullable RibbitUmbrellaType umbrellaType) {
+        return umbrellaType == null ? RibbitUmbrellaTypeModule.UMBRELLA_1 : umbrellaType;
+    }
+
+    private static RibbitInstrument fallbackInstrument(@Nullable RibbitInstrument instrument) {
+        return instrument == null ? RibbitInstrumentModule.NONE : instrument;
     }
 }

@@ -5,12 +5,12 @@ import com.yungnickyoung.minecraft.ribbits.data.RibbitData;
 import com.yungnickyoung.minecraft.ribbits.entity.RibbitEntity;
 import com.yungnickyoung.minecraft.ribbits.module.DataTicketModule;
 import com.yungnickyoung.minecraft.ribbits.module.RibbitInstrumentModule;
+import com.yungnickyoung.minecraft.ribbits.module.RibbitProfessionModule;
 import com.geckolib.model.GeoModel;
 import com.geckolib.renderer.base.GeoRenderState;
 import net.minecraft.resources.Identifier;
 
 public class RibbitModel extends GeoModel<RibbitEntity> {
-    private static final Identifier TEXTURE = RibbitsCommon.id("textures/entity/ribbit.png");
     private static final Identifier ANIMATIONS = RibbitsCommon.id("ribbit");
 
     @Override
@@ -24,7 +24,9 @@ public class RibbitModel extends GeoModel<RibbitEntity> {
         boolean isPride = Boolean.TRUE.equals(
                 renderState.getGeckolibData(DataTicketModule.DT_IS_PRIDE_RIBBIT));
 
-        if (playingInstrument && data.getInstrument() != RibbitInstrumentModule.NONE) {
+        if (playingInstrument
+                && !RibbitProfessionModule.isMynxVisualProfession(data.getProfession())
+                && data.getInstrument() != RibbitInstrumentModule.NONE) {
             return data.getInstrument().modelId();
         }
 
@@ -44,7 +46,8 @@ public class RibbitModel extends GeoModel<RibbitEntity> {
 
     @Override
     public Identifier getTextureResource(GeoRenderState renderState) {
-        return TEXTURE;
+        RibbitData data = renderState.getGeckolibData(DataTicketModule.DT_RIBBIT_DATA);
+        return data.getProfession().textureLocation();
     }
 
     @Override

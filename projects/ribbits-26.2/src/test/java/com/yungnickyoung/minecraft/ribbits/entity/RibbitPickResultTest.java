@@ -20,12 +20,21 @@ class RibbitPickResultTest {
                 RibbitPickResult.eggForProfession(RibbitProfessionModule.MERCHANT));
         assertEquals(RibbitPickResult.Egg.SORCERER,
                 RibbitPickResult.eggForProfession(RibbitProfessionModule.SORCERER));
+        assertEquals(RibbitPickResult.Egg.CHEF,
+                RibbitPickResult.eggForProfession(RibbitProfessionModule.CHEF));
+        assertEquals(RibbitPickResult.Egg.FARMER,
+                RibbitPickResult.eggForProfession(RibbitProfessionModule.FARMER));
+        assertEquals(RibbitPickResult.Egg.PROSPECTOR,
+                RibbitPickResult.eggForProfession(RibbitProfessionModule.PROSPECTOR));
+        assertEquals(RibbitPickResult.Egg.GUARD,
+                RibbitPickResult.eggForProfession(RibbitProfessionModule.GUARD));
     }
 
     @Test
     void unknownProfessionFallsBackToNitwitInsteadOfAnyGenericEgg() {
         RibbitProfession custom = new RibbitProfession(
-                RibbitsCommon.id("custom"), RibbitsCommon.id("custom_ribbit"));
+                RibbitsCommon.id("custom"), RibbitsCommon.id("custom_ribbit"),
+                RibbitsCommon.id("textures/entity/custom.png"));
 
         assertEquals(RibbitPickResult.Egg.NITWIT, RibbitPickResult.eggForProfession(custom));
         assertEquals(RibbitPickResult.Egg.NITWIT, RibbitPickResult.eggForProfession(null));
@@ -34,7 +43,8 @@ class RibbitPickResultTest {
     @Test
     void equalIdButNonCanonicalProfessionStillUsesExactIdentityFallback() {
         RibbitProfession duplicateFisherman = new RibbitProfession(
-                RibbitProfessionModule.FISHERMAN.id(), RibbitsCommon.id("different_model"));
+                RibbitProfessionModule.FISHERMAN.id(), RibbitsCommon.id("different_model"),
+                RibbitsCommon.id("textures/entity/different.png"));
 
         assertEquals(RibbitPickResult.Egg.NITWIT,
                 RibbitPickResult.eggForProfession(duplicateFisherman));

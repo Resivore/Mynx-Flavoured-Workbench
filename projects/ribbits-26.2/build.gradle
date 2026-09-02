@@ -22,6 +22,11 @@ repositories {
     mavenCentral()
 }
 
+if ((privateResourcesDir == null) != (privateManifestFile == null)) {
+    throw new GradleException(
+        'Set RIBBITS_PRIVATE_RESOURCES_DIR and RIBBITS_PRIVATE_MANIFEST together, or leave both unset'
+    )
+}
 if (privateResourcesDir != null && !privateResourcesDir.isDirectory()) {
     throw new GradleException("RIBBITS_PRIVATE_RESOURCES_DIR is not a directory: ${privateResourcesDir}")
 }
@@ -62,11 +67,101 @@ if (privateResourcesDir != null) {
             if (!expectedPristineSha256.equalsIgnoreCase(manifest.pristine.sha256.toString())) {
                 throw new GradleException('Private manifest does not identify the authorized pristine Ribbits JAR')
             }
-            if (manifest.classification.toString() != 'PRIVATE ASSEMBLY STAGED / AUTHORIZED SUBSTITUTION') {
+            if (manifest.schema?.toString() != 'mynx-ribbits-private-resource-manifest/v1' ||
+                manifest.classification?.toString() != 'PRIVATE MYNX ASSEMBLY STAGED / NONREDISTRIBUTABLE DONOR ASSETS' ||
+                manifest.candidate?.version?.toString() != project.mod_version.toString() ||
+                manifest.candidate?.version?.toString() != '4.1.6+26.2-mynx-canary1' ||
+                (manifest.candidate?.canary as int) != 1 ||
+                manifest.candidate?.private_artifact_filename?.toString() !=
+                    'ribbits-private-reconstruction-4.1.6+26.2-mynx-canary1.jar' ||
+                manifest.candidate?.source_only_artifact_filename?.toString() !=
+                    'ribbits-source-only-4.1.6+26.2-mynx-canary1.jar') {
                 throw new GradleException("Private manifest classification is not eligible for private packaging: ${manifest.classification}")
             }
             if ((manifest.blockers as List)) {
                 throw new GradleException("Private manifest still contains blockers: ${manifest.blockers}")
+            }
+
+            def expectedDonorInputs = [
+                'GuardRibbits-1.20.1-Fabric-1.0.4.jar': [
+                    size: 166896L,
+                    sha256: '52f1e184dc12cf1e29bc224ab5a640b8ea5875aa9f46067c0907c6a45b7d1869',
+                    logicalPath: 'originals/mods/GuardRibbits-1.20.1-Fabric-1.0.4.jar',
+                    members: [
+                        'assets/guardribbits/geo/guard_ribbit.geo.json': [
+                            size: 2411L,
+                            sha256: 'fe1d3f1df26c4cd3d9107c77008208d5baab3581d897b0c3a2f53b032985a021',
+                        ],
+                        'assets/guardribbits/textures/entity/guard_ribbit.png': [
+                            size: 6490L,
+                            sha256: '21bd9bc749885db28ac5d451ebd6cd70e47ce7d3e58bc7ab766cc2d1ba689394',
+                        ],
+                    ],
+                ],
+                'useful_ribbits-1.0.2-forge-1.20.1.jar': [
+                    size: 416439L,
+                    sha256: '2b56007a985b162477113bb2ea1776d9ce2ce602886ea21a88d8b2500d2ded5d',
+                    logicalPath: 'originals/mods/useful_ribbits-1.0.2-forge-1.20.1.jar',
+                    members: [
+                        'assets/useful_ribbits/geo/chef_ribbit.geo.json': [
+                            size: 2061L,
+                            sha256: 'd3a217da7ff960963ed5b7d7372c18f0ff1186b4629e07f091b75cc585e45ff8',
+                        ],
+                        'assets/useful_ribbits/textures/entities/chef_ribbit.png': [
+                            size: 1538L,
+                            sha256: '7648086fa2cfcda4483f6a3bf03348e35a54d267e008991ad54b099dd5a514b9',
+                        ],
+                        'assets/useful_ribbits/geo/farmer_ribbit.geo.json': [
+                            size: 2405L,
+                            sha256: 'e1e579469aafa8c5c44e3dd0dcfe73b25881ade91a5bc74cf2b327c9ce4e9822',
+                        ],
+                        'assets/useful_ribbits/textures/entities/farmer_ribbit.png': [
+                            size: 1542L,
+                            sha256: '376f1a12cd16ffc536fd9d217dd987ec43dfcf0a7cff819fd37aa74af211e0cd',
+                        ],
+                        'assets/useful_ribbits/geo/miner_ribbit.geo.json': [
+                            size: 2704L,
+                            sha256: '63c4f8391d0261119497555388995b9140bce386dd1b3d3d0fb5447a4c5ffcfd',
+                        ],
+                        'assets/useful_ribbits/textures/entities/miner_ribbit.png': [
+                            size: 1448L,
+                            sha256: '429593b57ad873fea108c27983eec7c64fd9413d18afb837884b0c0a34b91330',
+                        ],
+                    ],
+                ],
+            ]
+            def donorRecord = manifest.read_only_donors
+            def actualDonorInputs = donorRecord?.inputs as List
+            def actualDonorFilenames = actualDonorInputs?.collect { input ->
+                input?.filename?.toString()
+            }
+            if (donorRecord?.logical_root?.toString() != 'originals/mods' ||
+                donorRecord?.private_use_only != true ||
+                donorRecord?.redistribution_authorized != false ||
+                actualDonorInputs == null || actualDonorInputs.size() != 2 ||
+                actualDonorFilenames.toSet() != expectedDonorInputs.keySet()) {
+                throw new GradleException('Private manifest lacks the exact read-only donor boundary')
+            }
+            actualDonorInputs.each { input ->
+                def filename = input.filename.toString()
+                def expected = expectedDonorInputs[filename]
+                def actualMembers = input.approved_members as Map
+                if (expected == null ||
+                    (input.size as long) != expected.size ||
+                    !expected.sha256.equalsIgnoreCase(input.sha256.toString()) ||
+                    input.logical_path.toString() != expected.logicalPath ||
+                    input.unchanged_after_assembly != true ||
+                    actualMembers.keySet() != expected.members.keySet()) {
+                    throw new GradleException("Private donor identity or allowlist differs: ${filename}")
+                }
+                expected.members.each { member, memberIdentity ->
+                    def actualMember = actualMembers[member]
+                    if (actualMember == null ||
+                        (actualMember.size as long) != memberIdentity.size ||
+                        !memberIdentity.sha256.equalsIgnoreCase(actualMember.sha256.toString())) {
+                        throw new GradleException("Private donor member identity differs: ${member}")
+                    }
+                }
             }
 
             def configuredFeatureMigration =
@@ -100,6 +195,10 @@ if (privateResourcesDir != null) {
                 'ribbit_gardener_spawn_egg',
                 'ribbit_merchant_spawn_egg',
                 'ribbit_sorcerer_spawn_egg',
+                'ribbit_chef_spawn_egg',
+                'ribbit_farmer_spawn_egg',
+                'ribbit_prospector_spawn_egg',
+                'ribbit_guard_spawn_egg',
             ]
             if (spawnEgg == null ||
                 spawnEgg.temporary != true ||
@@ -130,9 +229,151 @@ if (privateResourcesDir != null) {
                 "data/ribbits/worldgen/configured_feature/${target.substring('ribbits:'.length())}.json".toString()
             }
             if ((manifest.pristine.selected_file_count as int) != 287 ||
-                (manifest.output.file_count as int) != 308 ||
-                expectedFiles.size() != 308) {
-                throw new GradleException('Private manifest does not preserve the exact 287-input / 308-output contract')
+                (manifest.output.file_count as int) != 336 ||
+                expectedFiles.size() != 336) {
+                throw new GradleException('Private manifest does not preserve the exact 287-input / 336-output contract')
+            }
+
+            def professionDonors = [
+                chef: [
+                    archive: 'useful_ribbits-1.0.2-forge-1.20.1.jar',
+                    model: 'assets/useful_ribbits/geo/chef_ribbit.geo.json',
+                    texture: 'assets/useful_ribbits/textures/entities/chef_ribbit.png',
+                ],
+                farmer: [
+                    archive: 'useful_ribbits-1.0.2-forge-1.20.1.jar',
+                    model: 'assets/useful_ribbits/geo/farmer_ribbit.geo.json',
+                    texture: 'assets/useful_ribbits/textures/entities/farmer_ribbit.png',
+                ],
+                prospector: [
+                    archive: 'useful_ribbits-1.0.2-forge-1.20.1.jar',
+                    model: 'assets/useful_ribbits/geo/miner_ribbit.geo.json',
+                    texture: 'assets/useful_ribbits/textures/entities/miner_ribbit.png',
+                ],
+                guard: [
+                    archive: 'GuardRibbits-1.20.1-Fabric-1.0.4.jar',
+                    model: 'assets/guardribbits/geo/guard_ribbit.geo.json',
+                    texture: 'assets/guardribbits/textures/entity/guard_ribbit.png',
+                ],
+            ]
+            def expectedDerivedSources = [:]
+            professionDonors.each { profession, donor ->
+                expectedDerivedSources["assets/ribbits/geckolib/models/${profession}_ribbit.geo.json"] = [
+                    [archive: donor.archive, member: donor.model],
+                ]
+                expectedDerivedSources["assets/ribbits/textures/entity/${profession}_ribbit.png"] = [
+                    [archive: donor.archive, member: donor.texture],
+                    [archive: 'Ribbits-1.21.1-Fabric-4.1.6.jar', member: 'assets/ribbits/textures/entity/ribbit.png'],
+                ]
+                (1..3).each { variant ->
+                    expectedDerivedSources[
+                        "assets/ribbits/geckolib/models/umbrella/${profession}/umbrella_${variant}.geo.json"
+                    ] = [
+                        [archive: donor.archive, member: donor.model],
+                        [
+                            archive: 'Ribbits-1.21.1-Fabric-4.1.6.jar',
+                            member: "assets/ribbits/geo/umbrella/nitwit/umbrella_${variant}.geo.json",
+                        ],
+                    ]
+                }
+            }
+            def actualDerivedOutputs = donorRecord.derived_outputs as List
+            def actualDerivedByPath = actualDerivedOutputs.collectEntries { record ->
+                [(record.output.toString()): record]
+            }
+            if ((donorRecord.derived_output_count as int) != 20 ||
+                actualDerivedOutputs.size() != 20 ||
+                actualDerivedByPath.keySet() != expectedDerivedSources.keySet()) {
+                throw new GradleException('Private manifest donor-derived output accounting differs')
+            }
+            expectedDerivedSources.each { outputPath, expectedSources ->
+                def actualSources = (actualDerivedByPath[outputPath].sources as List).collect { source ->
+                    [archive: source.archive.toString(), member: source.member.toString()]
+                }
+                if (actualSources != expectedSources) {
+                    throw new GradleException("Private donor provenance differs for ${outputPath}")
+                }
+            }
+
+            def lootMigration = manifest.migrations?.private_loot_tables_repaired
+            def expectedLootTables = [
+                'data/ribbits/loot_table/chests/fisherman_main.json',
+                'data/ribbits/loot_table/chests/sorcerer.json',
+            ]
+            if ((lootMigration?.tables as List) != expectedLootTables ||
+                (lootMigration?.air_item_entries_replaced_with_empty as int) != 2 ||
+                lootMigration?.replacement?.invalid_item_id?.toString() != 'minecraft:air' ||
+                lootMigration?.replacement?.faithful_entry_type?.toString() != 'minecraft:empty' ||
+                (lootMigration?.sorcerer_potion_loot_functions_migrated as int) != 1) {
+                throw new GradleException('Private manifest lacks the exact two-table loot repair contract')
+            }
+
+            def expectedResidentData = [
+                'data/ribbits/structure/ribbits/ribbit_fisherman.nbt': [
+                    profession: 'ribbits:fisherman', umbrella: 'ribbits:umbrella_3', instrument: 'ribbits:none'],
+                'data/ribbits/structure/ribbits/ribbit_gardener.nbt': [
+                    profession: 'ribbits:gardener', umbrella: 'ribbits:umbrella_2', instrument: 'ribbits:none'],
+                'data/ribbits/structure/ribbits/ribbit_merchant.nbt': [
+                    profession: 'ribbits:merchant', umbrella: 'ribbits:umbrella_2', instrument: 'ribbits:none'],
+                'data/ribbits/structure/ribbits/ribbit_nitwit.nbt': [
+                    profession: 'ribbits:nitwit', umbrella: 'ribbits:umbrella_3', instrument: 'ribbits:bongo'],
+                'data/ribbits/structure/ribbits/ribbit_sorcerer.nbt': [
+                    profession: 'ribbits:sorcerer', umbrella: 'ribbits:umbrella_1', instrument: 'ribbits:none'],
+            ]
+            def villageMigration = manifest.migrations?.village_resident_profession_assignments_removed
+            def actualResidentRecords = (villageMigration?.templates as List).collectEntries { record ->
+                [(record.template.toString()): record]
+            }
+            if ((villageMigration?.count as int) != 5 ||
+                villageMigration?.policy?.toString() != 'caller-random explicit Java village profession pool' ||
+                actualResidentRecords.keySet() != expectedResidentData.keySet()) {
+                throw new GradleException('Private manifest lacks the exact five-template village NBT contract')
+            }
+            expectedResidentData.each { template, previous ->
+                def actual = actualResidentRecords[template]
+                if (actual.removed_tag.toString() != 'entities[0].nbt.RibbitData' ||
+                    (actual.previous as Map) != previous ||
+                    !(actual.before_sha256.toString() ==~ /[0-9a-f]{64}/) ||
+                    !(actual.after_sha256.toString() ==~ /[0-9a-f]{64}/) ||
+                    actual.before_sha256.toString() == actual.after_sha256.toString()) {
+                    throw new GradleException("Private village NBT migration differs for ${template}")
+                }
+            }
+
+            if ((manifest.migrations?.geckolib_models_moved as int) != 25 ||
+                (manifest.migrations?.donor_profession_models_added as int) != 4 ||
+                (manifest.migrations?.donor_profession_umbrella_models_added as int) != 12 ||
+                (manifest.migrations?.donor_profession_composite_textures_added as int) != 4 ||
+                (manifest.migrations?.item_definitions_added as int) != 24 ||
+                (manifest.migrations?.spawn_egg_models_migrated as int) != 9) {
+                throw new GradleException('Private manifest profession/model/item counts differ')
+            }
+
+            def expectedGeckoModelIds = [
+                'bass_ribbit', 'bongo_ribbit', 'fisherman_ribbit', 'flute_ribbit',
+                'gardener_ribbit', 'guitar_ribbit', 'merchant_ribbit', 'nitwit_ribbit',
+                'pride_ribbit', 'sorcerer_ribbit',
+            ] as Set
+            ['fisherman', 'gardener', 'merchant', 'nitwit', 'sorcerer'].each { profession ->
+                (1..3).each { variant ->
+                    expectedGeckoModelIds.add("umbrella/${profession}/umbrella_${variant}".toString())
+                }
+            }
+            professionDonors.keySet().each { profession ->
+                expectedGeckoModelIds.add("${profession}_ribbit".toString())
+                (1..3).each { variant ->
+                    expectedGeckoModelIds.add("umbrella/${profession}/umbrella_${variant}".toString())
+                }
+            }
+            def modelPrefix = 'assets/ribbits/geckolib/models/'
+            def modelSuffix = '.geo.json'
+            def actualGeckoModelIds = expectedFiles.keySet().findAll { name ->
+                name.startsWith(modelPrefix) && name.endsWith(modelSuffix)
+            }.collect { name ->
+                name.substring(modelPrefix.length(), name.length() - modelSuffix.length())
+            } as Set
+            if (actualGeckoModelIds != expectedGeckoModelIds || actualGeckoModelIds.size() != 41) {
+                throw new GradleException('Private manifest GeckoLib model-ID set differs')
             }
             if (!expectedFiles.keySet().containsAll(expectedConfiguredFeaturePaths)) {
                 throw new GradleException(
@@ -268,7 +509,15 @@ tasks.withType(org.gradle.api.tasks.bundling.AbstractArchiveTask).configureEach 
 
 test {
     useJUnitPlatform()
+    // The exact 26.2 loot codec is statically bound to the built-in item registry. Give every
+    // test class a fresh JVM so its one custom Ribbits item can be registered before that registry
+    // is frozen, without weakening the production codec or mutating another suite's bootstrap.
+    forkEvery = 1
     systemProperty 'projectRoot', projectDir.absolutePath
+    if (privateResourcesDir != null) {
+        systemProperty 'privateResourcesDir', privateResourcesDir.canonicalPath
+        dependsOn verifyPrivateResources
+    }
     dependsOn 'testPrivateResourceTools'
 }
 
@@ -300,5 +549,53 @@ jar {
         net.fabricmc.loom.util.ZipReprocessorUtil.reprocessZip(
             archiveFile.get().asFile.toPath(), true, false
         )
+    }
+}
+
+if (privateResourcesDir == null) {
+    def verifySourceOnlyArchiveBoundary = tasks.register('verifySourceOnlyArchiveBoundary') {
+        group = 'verification'
+        description = 'Proves the source-only JAR contains no protected or donor-derived payload.'
+        dependsOn tasks.named('jar')
+
+        doLast {
+            def archiveFile = tasks.named('jar').get().archiveFile.get().asFile
+            def archive = new java.util.zip.ZipFile(archiveFile)
+            try {
+                def names = []
+                def entries = archive.entries()
+                while (entries.hasMoreElements()) {
+                    def entry = entries.nextElement()
+                    if (!entry.directory) {
+                        names.add(entry.name)
+                    }
+                }
+                def donorFilenames = [
+                    'guardribbits-1.20.1-fabric-1.0.4.jar',
+                    'useful_ribbits-1.0.2-forge-1.20.1.jar',
+                ] as Set
+                def forbidden = names.findAll { name ->
+                    def folded = name.toLowerCase(java.util.Locale.ROOT)
+                    def basename = folded.tokenize('/').last()
+                    folded.startsWith('assets/') ||
+                        folded.startsWith('data/') ||
+                        folded == 'icon.png' ||
+                        folded == 'logo.png' ||
+                        folded.startsWith('sunbatheproductions28/guardribbits/') ||
+                        folded.startsWith('me/rogue_one/useful_ribbits/') ||
+                        donorFilenames.contains(basename)
+                }
+                if (!forbidden.isEmpty()) {
+                    throw new GradleException(
+                        "Source-only JAR contains protected or donor-derived payload: ${forbidden.sort()}"
+                    )
+                }
+            } finally {
+                archive.close()
+            }
+        }
+    }
+    tasks.named('check') {
+        dependsOn verifySourceOnlyArchiveBoundary
     }
 }

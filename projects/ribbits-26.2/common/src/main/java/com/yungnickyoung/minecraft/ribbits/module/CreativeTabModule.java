@@ -36,6 +36,10 @@ public class CreativeTabModule {
                 output.accept(ItemModule.RIBBIT_GARDENER_SPAWN_EGG.get());
                 output.accept(ItemModule.RIBBIT_MERCHANT_SPAWN_EGG.get());
                 output.accept(ItemModule.RIBBIT_SORCERER_SPAWN_EGG.get());
+                output.accept(ItemModule.RIBBIT_CHEF_SPAWN_EGG.get());
+                output.accept(ItemModule.RIBBIT_FARMER_SPAWN_EGG.get());
+                output.accept(ItemModule.RIBBIT_PROSPECTOR_SPAWN_EGG.get());
+                output.accept(ItemModule.RIBBIT_GUARD_SPAWN_EGG.get());
             })
             .build();
 }

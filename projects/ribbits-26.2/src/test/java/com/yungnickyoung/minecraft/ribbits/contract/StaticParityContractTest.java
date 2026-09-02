@@ -5,6 +5,10 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.HexFormat;
 import java.util.regex.Pattern;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -86,6 +90,132 @@ class StaticParityContractTest {
             assertEquals(1, occurrences(trades, listing), listing);
         }
         assertEquals(13, merchantListings.length + fishermanListings.length);
+        assertEquals(2, occurrences(trades, "map.put(RibbitProfessionModule."));
+        assertTrue(trades.contains(
+                "int numOffers = ribbit.getRibbitData().getProfession() == RibbitProfessionModule.MERCHANT ? 10 : 4;"));
+        assertTrue(trades.contains("if (itemListings.length > numOffers)"));
+        assertTrue(trades.contains("while (chosenIndices.size() < numOffers)"));
+        assertTrue(trades.contains("chosenIndices.add(ribbit.getRandom().nextInt(itemListings.length))"));
+    }
+
+    @Test
+    void sevenTradeLessProfessionsCannotOpenAnEmptyMerchantScreen() throws IOException {
+        String entity = read("common/src/main/java/com/yungnickyoung/minecraft/ribbits/entity/RibbitEntity.java");
+        String trades = read("common/src/main/java/com/yungnickyoung/minecraft/ribbits/module/RibbitTradeModule.java");
+        String[] tradeLess = {
+                "NITWIT",
+                "GARDENER",
+                "SORCERER",
+                "CHEF",
+                "FARMER",
+                "PROSPECTOR",
+                "GUARD"
+        };
+
+        for (String profession : tradeLess) {
+            assertFalse(trades.contains("map.put(RibbitProfessionModule." + profession), profession);
+        }
+
+        int interactStart = entity.indexOf("public @NotNull InteractionResult mobInteract");
+        int interactEnd = entity.indexOf("public void reassessGoals()", interactStart);
+        String interaction = entity.substring(interactStart, interactEnd);
+        int emptyOffers = interaction.indexOf("boolean bl = this.getOffers().isEmpty();");
+        int emptyReturn = interaction.indexOf("if (bl) {\n                return InteractionResult.PASS;\n            }");
+        int openScreen = interaction.indexOf("this.startTrading(player);");
+        assertTrue(emptyOffers >= 0);
+        assertTrue(emptyReturn > emptyOffers);
+        assertTrue(openScreen > emptyReturn);
+        assertEquals(1, occurrences(interaction, "this.startTrading(player);"));
+    }
+
+    @Test
+    void savedMerchantAndFishermanOffersStillUseTheMinecraftCodec() throws IOException {
+        String entity = read("common/src/main/java/com/yungnickyoung/minecraft/ribbits/entity/RibbitEntity.java");
+        assertTrue(entity.contains("valueInput.read(\"Offers\", MerchantOffers.CODEC)\n"
+                + "                .ifPresent(offers -> this.offers = offers);"));
+        assertTrue(entity.contains("valueOutput.store(\"Offers\", MerchantOffers.CODEC, offers);"));
+        assertEquals(2, occurrences(entity, "MerchantOffers.CODEC"));
+    }
+
+    @Test
+    void restockImplementationRemainsByteExactToAuthoritativeMain() throws IOException, NoSuchAlgorithmException {
+        String entity = read("common/src/main/java/com/yungnickyoung/minecraft/ribbits/entity/RibbitEntity.java");
+        int start = entity.indexOf("    @Override\n    public boolean canRestock()");
+        int end = entity.indexOf("    public boolean isTrading()", start);
+        assertTrue(start >= 0 && end > start);
+        String restock = entity.substring(start, end);
+        String hash = HexFormat.of().formatHex(
+                MessageDigest.getInstance("SHA-256").digest(restock.getBytes(StandardCharsets.UTF_8)));
+        assertEquals("b7993d37498fe79130bdf4d8f3be6ae0e3d18153cb35c05c3dae420b5961e80a", hash);
+    }
+
+    @Test
+    void allNineTypedEggsAreRegisteredDispensableAndMappedToTheirProfession() throws IOException {
+        String items = read("common/src/main/java/com/yungnickyoung/minecraft/ribbits/module/ItemModule.java");
+        String creative = read("common/src/main/java/com/yungnickyoung/minecraft/ribbits/module/CreativeTabModule.java");
+        String entity = read("common/src/main/java/com/yungnickyoung/minecraft/ribbits/entity/RibbitEntity.java");
+        String[] professions = {
+                "NITWIT",
+                "FISHERMAN",
+                "GARDENER",
+                "MERCHANT",
+                "SORCERER",
+                "CHEF",
+                "FARMER",
+                "PROSPECTOR",
+                "GUARD"
+        };
+
+        for (String profession : professions) {
+            String lower = profession.toLowerCase(java.util.Locale.ROOT);
+            String field = "RIBBIT_" + profession + "_SPAWN_EGG";
+            assertTrue(items.contains("@AutoRegister(\"ribbit_" + lower + "_spawn_egg\")"), profession);
+            assertTrue(items.contains("new RibbitSpawnEggItem(RibbitProfessionModule." + profession), profession);
+            assertTrue(items.contains("RegisterHelper.itemKey(\"ribbit_" + lower + "_spawn_egg\")"), profession);
+            assertTrue(items.contains("DispenserBlock.registerBehavior(" + field
+                    + "::get, ribbitSpawnEggDispenseItemBehavior);"), profession);
+            assertTrue(creative.contains("output.accept(ItemModule." + field + ".get());"), profession);
+            assertTrue(entity.contains("case " + profession + " -> new ItemStack(ItemModule."
+                    + field + ".get());"), profession);
+        }
+        assertEquals(9, occurrences(items, "new RibbitSpawnEggItem("));
+        assertEquals(9, occurrences(items, "DispenserBlock.registerBehavior(RIBBIT_"));
+    }
+
+    @Test
+    void newVisualProfessionsHaveNoImportedBehaviorHooks() throws IOException {
+        String entity = read("common/src/main/java/com/yungnickyoung/minecraft/ribbits/entity/RibbitEntity.java");
+        String goals = entity.substring(
+                entity.indexOf("public void reassessGoals()"),
+                entity.indexOf("@Override\n    public float getSpeed()"));
+        for (String profession : new String[]{"CHEF", "FARMER", "PROSPECTOR", "GUARD"}) {
+            assertFalse(goals.contains("RibbitProfessionModule." + profession), profession);
+        }
+        assertFalse(entity.contains("GuardRibbit"));
+        assertFalse(entity.contains("UsefulRibbit"));
+    }
+
+    @Test
+    void villageRandomizationIsLimitedToScrubbedTemplateDataAndStructureFallback() throws IOException {
+        String entity = read("common/src/main/java/com/yungnickyoung/minecraft/ribbits/entity/RibbitEntity.java");
+        int constructorStart = entity.indexOf("public RibbitEntity(EntityType<RibbitEntity> entityType, Level level)");
+        int constructorEnd = entity.indexOf("@Override\n    protected void registerGoals()", constructorStart);
+        String constructor = entity.substring(constructorStart, constructorEnd);
+        assertTrue(constructor.contains("this.reassessGoals();"));
+        assertFalse(constructor.contains("initializeDefaultVillageProfession"));
+
+        int loadStart = entity.indexOf("protected void readAdditionalSaveData(ValueInput valueInput)");
+        int loadEnd = entity.indexOf("protected void addAdditionalSaveData", loadStart);
+        String load = entity.substring(loadStart, loadEnd);
+        assertTrue(load.contains("if (savedRibbitData.isPresent())"));
+        assertTrue(load.contains("this.setRibbitData(savedRibbitData.get());"));
+        assertTrue(load.contains("this.initializeDefaultVillageProfession(this.getRandom());"));
+
+        int finalizeStart = entity.indexOf("public SpawnGroupData finalizeSpawn");
+        int finalizeEnd = entity.indexOf("public boolean removeWhenFarAway", finalizeStart);
+        String finalizeSpawn = entity.substring(finalizeStart, finalizeEnd);
+        assertTrue(finalizeSpawn.contains("if (entitySpawnReason == EntitySpawnReason.STRUCTURE)"));
+        assertTrue(finalizeSpawn.contains("this.initializeDefaultVillageProfession(level.getRandom());"));
     }
 
     @Test

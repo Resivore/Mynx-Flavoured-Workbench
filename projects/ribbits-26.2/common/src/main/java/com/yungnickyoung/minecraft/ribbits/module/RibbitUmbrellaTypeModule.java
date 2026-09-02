@@ -4,6 +4,7 @@ import com.yungnickyoung.minecraft.ribbits.RibbitsCommon;
 import com.yungnickyoung.minecraft.ribbits.data.RibbitUmbrellaType;
 import com.yungnickyoung.minecraft.yungsapi.api.autoregister.AutoRegister;
 import net.minecraft.resources.Identifier;
+import net.minecraft.util.RandomSource;
 
 import java.util.HashMap;
 import java.util.List;
@@ -50,6 +51,14 @@ public class RibbitUmbrellaTypeModule {
         Random random = new Random();
         List<RibbitUmbrellaType> umbrellaTypeList = UMBRELLA_TYPE_REGISTRY.values().stream().toList();
         return umbrellaTypeList.get(random.nextInt(umbrellaTypeList.size()));
+    }
+
+    /**
+     * Gets an equal-weight umbrella type using caller-owned world/entity randomness.
+     */
+    public static RibbitUmbrellaType getRandomUmbrellaType(RandomSource random) {
+        List<RibbitUmbrellaType> umbrellaTypes = List.of(UMBRELLA_1, UMBRELLA_2, UMBRELLA_3);
+        return umbrellaTypes.get(random.nextInt(umbrellaTypes.size()));
     }
 
     /**

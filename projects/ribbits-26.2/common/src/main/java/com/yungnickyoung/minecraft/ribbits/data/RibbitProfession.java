@@ -2,7 +2,14 @@ package com.yungnickyoung.minecraft.ribbits.data;
 
 import net.minecraft.resources.Identifier;
 
-public record RibbitProfession(Identifier id, Identifier modelLocation) {
+import java.util.Objects;
+
+public record RibbitProfession(Identifier id, Identifier modelLocation, Identifier textureLocation) {
+    public RibbitProfession {
+        Objects.requireNonNull(id, "id");
+        Objects.requireNonNull(modelLocation, "modelLocation");
+        Objects.requireNonNull(textureLocation, "textureLocation");
+    }
 
     @Override
     public String toString() {
@@ -18,5 +25,10 @@ public record RibbitProfession(Identifier id, Identifier modelLocation) {
         } else {
             return this.id.equals(other.id());
         }
+    }
+
+    @Override
+    public int hashCode() {
+        return this.id.hashCode();
     }
 }
