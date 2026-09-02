@@ -1,0 +1,32 @@
+name: Codex bootstrap export
+
+on:
+  push:
+    branches:
+      - codex/bootstrap-export-20260902
+
+permissions:
+  contents: read
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Create authenticated repository bundle
+        shell: bash
+        run: |
+          set -euo pipefail
+          git bundle create Mynx-Flavoured-Workbench.bundle --all
+          git bundle verify Mynx-Flavoured-Workbench.bundle
+          sha256sum Mynx-Flavoured-Workbench.bundle > Mynx-Flavoured-Workbench.bundle.sha256
+      - uses: actions/upload-artifact@v4
+        with:
+          name: codex-bootstrap-60df9fd4068099f2a089dafe79f8e811b3194b37
+          path: |
+            Mynx-Flavoured-Workbench.bundle
+            Mynx-Flavoured-Workbench.bundle.sha256
+          if-no-files-found: error
+          retention-days: 1
