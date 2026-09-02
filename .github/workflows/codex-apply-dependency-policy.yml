@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   apply:
-    if: github.event.head_commit.message == 'Recover dependency policy source heredoc'
+    if: github.event.head_commit.message == 'Recover dependency policy source payload'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -42,7 +42,7 @@ jobs:
               if lines[index].strip() == "PATCH"
           )
           encoded = "".join(line.strip() for line in lines[start:end])
-          compressed = base64.b64decode(encoded, validate=True)
+          compressed = base64.b64decode(encoded)
           pathlib.Path("/tmp/source.patch").write_bytes(gzip.decompress(compressed))
           PY
           echo '76d68f5579cf2156f105aae32aa26c795b3a2a048b4ff64b7aae7277fb6eb782  /tmp/source.patch' | sha256sum --check
