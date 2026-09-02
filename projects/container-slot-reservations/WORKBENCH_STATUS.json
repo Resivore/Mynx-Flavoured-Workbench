@@ -14,7 +14,7 @@
     ]
   },
   "definition": {
-    "lifecycle": "ACTIVE",
+    "lifecycle": "TESTING",
     "goals": [
       "Preserve a player's component-exact organization intent after a physical stack leaves an eligible vanilla storage slot.",
       "Apply the same reservation admission rule to manual placement, vanilla QUICK_MOVE, and vanilla hopper insertion without changing extraction, destination order, or routing policy.",
@@ -36,7 +36,7 @@
         "Automatic sorting, item routing, destination selection, routing priority, dump-all behavior, restock quantities, cross-container templates, category or tag matching, and multiple identities per slot.",
         "Changes to vanilla extraction, ordinary chest or barrel drop metadata, unsupported container ownership, or vanilla QUICK_MOVE and hopper ordering beyond reservation admission.",
         "A redesign, dependency expansion, successor Canary, or changes to any other Workbench project or resource pack during this migration.",
-        "Minecraft launch, deployment, Test Slot changes, Test Instance Manager mutation, dedicated Workbench profile access, or protected gameplay profile access during this migration."
+        "Minecraft launch, inferred runtime evidence, acceptance, candidate rebuild or replacement, unrelated Test Slot mutation, or protected gameplay-profile access during this deployment transition."
       ]
     },
     "dependencies": [
@@ -85,7 +85,7 @@
     ]
   },
   "state": {
-    "milestone": "C1 is retained after 28/28 JUnit tests and 10/10 required Fabric GameTests; it is runtime untested and not deployed.",
+    "milestone": "Exact unchanged C1 occupies Test Slot A at manager revision 67 as `Container Slot Reservations - Canary 1` (deployment c0fdfff1-831a-4081-93a3-e596d7fc928d; artifact c3bc9365-5664-4148-9200-3292307f9bce) with CURRENT_RELEASE_DEPLOYED / READY_TO_TEST_VERIFIED. Its prior 28/28 JUnit and 10/10 required Fabric GameTest evidence remains STATIC_PASS only. The artifact was not rebuilt or replaced, Minecraft was not launched, and no runtime result was recorded, so C1 remains independently RUNTIME_UNTESTED and unaccepted.",
     "releases": {
       "current": {
         "version": "0.1.0-canary1",
@@ -102,17 +102,17 @@
     },
     "validation": {
       "build": "STATIC_PASS",
-      "deployment": "NOT_DEPLOYED",
+      "deployment": "READY_TO_TEST_VERIFIED",
       "runtime": "RUNTIME_UNTESTED"
     },
     "blocker": null
   },
   "synchronization": {
-    "revision": 1,
-    "activity_at": "2026-08-28T22:52:51Z",
-    "updated_at": "2026-08-29T22:26:18Z",
-    "last_codex_at": "2026-08-29T22:26:18Z",
-    "source_commit": "e0adc6b9302392440f2e5654c1e4031916b0c996",
+    "revision": 2,
+    "activity_at": "2026-09-02T17:00:13Z",
+    "updated_at": "2026-09-02T17:00:13Z",
+    "last_codex_at": "2026-09-02T17:00:13Z",
+    "source_commit": "27d9fc0f66fd32bcda8fef80cffd92ec5d964242",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null

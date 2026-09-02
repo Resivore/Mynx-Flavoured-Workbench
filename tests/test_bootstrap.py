@@ -15,7 +15,15 @@ from pathlib import Path
 from unittest.mock import patch
 from uuid import NAMESPACE_URL, uuid5
 
-from tools.runtime_slots import candidate_declaration, commit_state, plan_transition, resolve_profile, state_digest, validate_runtime_state
+from tools.runtime_slots import (
+    candidate_declaration,
+    commit_state,
+    plan_transition,
+    render_title_state,
+    resolve_profile,
+    state_digest,
+    validate_runtime_state,
+)
 from tools.sheet_sync import (
     HUMAN_FIELDS,
     RECEIVER_RESPONSE_TIMEOUT_SECONDS,
@@ -36,6 +44,7 @@ from tools.workbench import (
     LIFECYCLES,
     RUNTIME_STATES,
     ValidationError,
+    current_release_deployment_comparison,
     load_json,
     load_repository_statuses,
     validate_log_append,
@@ -1463,10 +1472,11 @@ class RuntimeContractTests(unittest.TestCase):
         tracked = load_json(ROOT / "tools" / "test_instance_manager" / "runtime-state.json")
         self.assertEqual("ACTIVE", tracked["activation"])
         self.assertEqual(2, tracked["schema_version"])
-        self.assertEqual(62, tracked["revision"])
-        self.assertEqual(11, tracked["accepted_baseline"]["revision"])
-        self.assertEqual(32, tracked["accepted_baseline"]["provenance"]["accepted_artifact_count"])
+        self.assertEqual(67, tracked["revision"])
+        self.assertEqual(14, tracked["accepted_baseline"]["revision"])
+        self.assertEqual(31, tracked["accepted_baseline"]["provenance"]["accepted_artifact_count"])
         self.assertEqual("TRANSITIONED", tracked["accepted_baseline"]["provenance"]["physical_disposition"])
+        self.assertEqual(28, len(tracked["accepted_baseline"]["members"]))
 
         accepted_by_uuid = {
             member["unit"]["project_uuid"]: member
@@ -1545,14 +1555,8 @@ class RuntimeContractTests(unittest.TestCase):
             ],
         )
 
-        slot_a = tracked["slots"]["A"]
-        self.assertEqual(2, len(slot_a["members"]))
-        slot_a_by_uuid = {
-            member["unit"]["project_uuid"]: member
-            for member in slot_a["members"]
-        }
-
-        bge = slot_a_by_uuid["4b2342fc-7bdf-5ba6-9f37-d551109d214c"]
+        bge = accepted_by_uuid["4b2342fc-7bdf-5ba6-9f37-d551109d214c"]
+        self.assertEqual("128c78b7-a80d-4b3f-8605-6cdf31bbebf1", bge["unit"]["deployment_id"])
         self.assertEqual("4.2.2-bge.canary58.glass-corner-uv+26.2", bge["unit"]["version"])
         self.assertEqual(
             "d1d753a86b21467141bd39a0bcc1270f7827a8d7",
@@ -1568,21 +1572,17 @@ class RuntimeContractTests(unittest.TestCase):
             [(artifact["filename"], artifact["sha256"]) for artifact in bge["unit"]["artifacts"]],
         )
         self.assertEqual(
+            "7c990388-34b7-4225-8f14-a0b9b5bfae94",
+            bge["unit"]["artifacts"][0]["artifact_id"],
+        )
+        self.assertEqual(
             ["mod:cnm_terrain_slabs_compat", "mod:more_slabs_stairs_and_walls"],
             bge["unit"]["artifacts"][0]["ownership_keys"],
         )
-        self.assertEqual("UNTESTED", bge["runtime_result"]["classification"])
-        self.assertIsNone(bge["runtime_result"]["recorded_at"])
-        self.assertEqual(
-            {"passed": [], "failed": []},
-            bge["runtime_result"]["evidence"],
-        )
-        self.assertEqual(
-            ["e5eb4fcb-6c49-4ab2-86f9-1605ccd192ab"],
-            bge["dependency_overrides"],
-        )
+        self.assertNotIn("680476b9-5336-5422-a575-779f2efd1eff", accepted_by_uuid)
 
-        trowel = slot_a_by_uuid["e28154da-0649-5da7-b6d5-3bff2891719e"]
+        trowel = accepted_by_uuid["e28154da-0649-5da7-b6d5-3bff2891719e"]
+        self.assertEqual("3f15446c-95c2-405b-b1e5-e78de5f5f638", trowel["unit"]["deployment_id"])
         self.assertEqual("0.1.0-canary9", trowel["unit"]["version"])
         self.assertEqual(
             "844bccbb6f9efdfb36749c719d1fb396f71b626f",
@@ -1597,11 +1597,108 @@ class RuntimeContractTests(unittest.TestCase):
             ],
             [(artifact["filename"], artifact["sha256"]) for artifact in trowel["unit"]["artifacts"]],
         )
-        self.assertEqual("UNTESTED", trowel["runtime_result"]["classification"])
+        self.assertEqual(
+            "efbc5761-9899-4a3c-ae5d-7640b8a3022b",
+            trowel["unit"]["artifacts"][0]["artifact_id"],
+        )
+        self.assertEqual(1, len(trowel["retained_rollbacks"]))
+        trowel_rollback = trowel["retained_rollbacks"][0]["unit"]
+        self.assertEqual("6c8c4d94-bce9-479a-916c-66b94eecc852", trowel_rollback["deployment_id"])
+        self.assertEqual("FROZEN_LEGACY", trowel_rollback["project_identity_source"])
+        self.assertEqual("0.1.0-canary4", trowel_rollback["version"])
+
+        resolved_uuids = [unit["project_uuid"] for unit in resolve_profile(tracked)]
+        self.assertIn("4b2342fc-7bdf-5ba6-9f37-d551109d214c", resolved_uuids)
+        self.assertNotIn("680476b9-5336-5422-a575-779f2efd1eff", resolved_uuids)
+
+        slot_a = tracked["slots"]["A"]
+        self.assertEqual(1, len(slot_a["members"]))
+        csr = slot_a["members"][0]
+        self.assertEqual("c0fdfff1-831a-4081-93a3-e596d7fc928d", csr["unit"]["deployment_id"])
+        self.assertEqual("3ab36584-8732-554f-840e-28a75c422660", csr["unit"]["project_uuid"])
+        self.assertEqual("container-slot-reservations", csr["unit"]["project_id"])
+        self.assertEqual("0.1.0-canary1", csr["unit"]["version"])
+        self.assertEqual("e0adc6b9302392440f2e5654c1e4031916b0c996", csr["unit"]["source_commit"])
+        self.assertEqual(
+            (
+                "c3bc9365-5664-4148-9200-3292307f9bce",
+                "container-slot-reservations-0.1.0-canary1.jar",
+                "4e7f0a470a387be76189d0a5e1ae8c614d17ec8b24a6774b400838cc234c4532",
+                ["mod:container_slot_reservations"],
+            ),
+            (
+                csr["unit"]["artifacts"][0]["artifact_id"],
+                csr["unit"]["artifacts"][0]["filename"],
+                csr["unit"]["artifacts"][0]["sha256"],
+                csr["unit"]["artifacts"][0]["ownership_keys"],
+            ),
+        )
+        self.assertIsNone(csr["replaces_accepted_deployment_id"])
+        self.assertEqual(
+            {"classification": "UNTESTED", "recorded_at": None, "evidence": {"passed": [], "failed": []}},
+            csr["runtime_result"],
+        )
         self.assertEqual("READY_TO_TEST_VERIFIED", slot_a["deployment"]["state"])
-        self.assertEqual("2026-09-02T01:58:09Z", slot_a["deployment"]["deployed_at"])
-        self.assertEqual("2026-09-02T01:58:09Z", slot_a["deployment"]["ready_verified_at"])
-        self.assertIsNone(tracked["slots"]["B"])
+        self.assertEqual("2026-09-02T16:58:44Z", slot_a["deployment"]["deployed_at"])
+        self.assertEqual("2026-09-02T16:58:44Z", slot_a["deployment"]["ready_verified_at"])
+
+        slot_b = tracked["slots"]["B"]
+        self.assertEqual(1, len(slot_b["members"]))
+        slab = slot_b["members"][0]
+        self.assertEqual("d6350d3f-bf00-4955-8b27-3f186dace93f", slab["unit"]["deployment_id"])
+        self.assertEqual("62e67860-8a3b-50a7-9c48-9878c01d899d", slab["unit"]["project_uuid"])
+        self.assertEqual("slab-decorations", slab["unit"]["project_id"])
+        self.assertEqual("0.1.0-canary3", slab["unit"]["version"])
+        self.assertEqual("2358342ebbd51cdd1b110e74e815205a68acc882", slab["unit"]["source_commit"])
+        self.assertEqual(
+            (
+                "a80957e9-041d-4758-96fa-fb6868051257",
+                "slab-decorations-0.1.0-canary3.jar",
+                "5dfe24cf686a781c16dca46a11ef4112d7473e1f8d63fac659cb750c6709bf2b",
+                ["mod:slab_decorations"],
+            ),
+            (
+                slab["unit"]["artifacts"][0]["artifact_id"],
+                slab["unit"]["artifacts"][0]["filename"],
+                slab["unit"]["artifacts"][0]["sha256"],
+                slab["unit"]["artifacts"][0]["ownership_keys"],
+            ),
+        )
+        self.assertIsNone(slab["replaces_accepted_deployment_id"])
+        self.assertEqual(
+            {"classification": "UNTESTED", "recorded_at": None, "evidence": {"passed": [], "failed": []}},
+            slab["runtime_result"],
+        )
+        self.assertEqual("READY_TO_TEST_VERIFIED", slot_b["deployment"]["state"])
+        self.assertEqual("2026-09-02T16:58:44Z", slot_b["deployment"]["deployed_at"])
+        self.assertEqual("2026-09-02T16:58:44Z", slot_b["deployment"]["ready_verified_at"])
+
+        csr_manifest = load_json(ROOT / "projects" / "container-slot-reservations" / "WORKBENCH_STATUS.json")
+        slab_manifest = load_json(ROOT / "projects" / "slab-decorations" / "WORKBENCH_STATUS.json")
+        for manifest in (csr_manifest, slab_manifest):
+            self.assertEqual("TESTING", manifest["definition"]["lifecycle"])
+            self.assertEqual("READY_TO_TEST_VERIFIED", manifest["state"]["validation"]["deployment"])
+            self.assertEqual("RUNTIME_UNTESTED", manifest["state"]["validation"]["runtime"])
+            self.assertEqual(
+                "CURRENT_RELEASE_DEPLOYED",
+                current_release_deployment_comparison(manifest, tracked),
+            )
+
+        title_state = render_title_state(
+            tracked,
+            {
+                csr_manifest["identity"]["uuid"]: csr_manifest["identity"]["name"],
+                slab_manifest["identity"]["uuid"]: slab_manifest["identity"]["name"],
+            },
+        )
+        self.assertEqual(
+            [
+                "Baseline: Stack v14",
+                "Slot A: Container Slot Reservations - Canary 1",
+                "Slot B: Slab Decorations - Canary 3",
+            ],
+            title_state["lines"],
+        )
 
 
 class CurrentStateBootstrapTests(unittest.TestCase):

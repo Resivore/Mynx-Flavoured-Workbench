@@ -12,7 +12,7 @@
     ]
   },
   "definition": {
-    "lifecycle": "TESTING",
+    "lifecycle": "ACCEPTED",
     "goals": [
       "Provide a server-authoritative trowel that draws eligible building materials by quantity from the actual offhand shulker and delegates placement through the resolved BlockItem's normal placement path.",
       "Keep Full Block, Slab, Stair, and Wall Trowel-owned while discovering extended modes from the unified BGE catalog without a separate Nibaru artifact or dependency.",
@@ -29,10 +29,10 @@
         "projects/shulker-trowel"
       ],
       "exclusions": [
-        "Protected Jake's Build Tools bytes, the authorized sprite, exact private C10/Private Canary 9 and predecessor C9 candidates, and accepted/rollback private C5 runnable JAR are not tracked or redistributed.",
+        "Protected Jake's Build Tools bytes, the authorized sprite, exact accepted private C10/Private Canary 9, predecessor C9 candidates, and retained rollback private C5 runnable JAR are not tracked or redistributed.",
         "CNM and unified BGE remain external dependency owners; this project does not bundle them or replace their canonical material and geometry systems.",
         "Registry-name parsing, parallel family tables, variant collapsing, and unrelated block mutation behavior.",
-        "Promotion of runtime-untested C10, mutation of accepted C5 provenance, unrelated runtime-slot changes, and protected gameplay-profile access."
+        "Rebuilding, repackaging, metadata mutation, tracking, or redistribution of exact accepted private C10; mutation of retained private C5 rollback provenance; unrelated runtime-slot changes; and protected gameplay-profile access."
       ]
     },
     "dependencies": [
@@ -75,10 +75,11 @@
     ]
   },
   "state": {
-    "milestone": "C10/Private Canary 9 is the minimal behavior-preserving successor to C9: the exact C57 pin is replaced by Fabric Loader predicate `>=4.2.1-bge.canary57.unified+26.2 <4.3.0-`, controlled validation uses exact retained BGE C58, and the authorized private sprite remains byte-identical. Manager revision 62 atomically deployed exact current BGE C58 and private C10 together as a two-member Slot A cohort, cleared Slot B, preserved member-specific UNTESTED results and accepted-predecessor identities, and returned PHYSICAL_STATE_VERIFIED. Dependency verification resolved the bounded predicate to exact active C58, found one unified owner for both BGE/Nibaru IDs, and found no enabled C57, prior Trowel candidate, or standalone Nibaru JAR. Accepted/rollback private C5 remains unchanged; no Minecraft runtime result or promotion is claimed.",
+    "milestone": "The user independently reported aggregate runtime PASS for exact private Trowel C10/Private Canary 9 in the revision-62 Slot A cohort; no checklist-row result is inferred. Manager revision 64 bound that result only to deployment 3f15446c-95c2-405b-b1e5-e78de5f5f638 and artifact efbc5761-9899-4a3c-ae5d-7640b8a3022b, revision 65 removed the completed cohort, and revision 66 atomically promoted exact C10 with exact BGE C58 into accepted Baseline Stack v14. Exact private C5 is retained as rollback provenance. The C10 JAR remains local, ignored, untracked, and non-redistributable; its tested bytes and metadata were not rebuilt, repackaged, or changed, and its existing bounded dependency metadata is grandfathered under the universal runtime-dependency policy.",
     "releases": {
       "current": {
         "version": "C10 (Private Canary 9; embedded 0.1.0-canary9)",
+        "embedded_version": "0.1.0-canary9",
         "artifact": {
           "filename": "shulker-trowel-0.1.0-canary9-private.jar",
           "sha256": "b78679eaf6eaf6f7ff75a32ffae024e45515de3af38bf2ed92ac8727a5138df8"
@@ -86,37 +87,39 @@
         "source_commit": "844bccbb6f9efdfb36749c719d1fb396f71b626f"
       },
       "accepted": {
-        "version": "C5 (legacy Private Canary 4; embedded 0.1.0-canary4)",
+        "version": "C10 (Private Canary 9; embedded 0.1.0-canary9)",
+        "embedded_version": "0.1.0-canary9",
         "artifact": {
-          "filename": "shulker-trowel-0.1.0-canary4-private.jar",
-          "sha256": "73c012c08ca5567e795711cf11c8eaac625528e7350309114467129394f0afba"
+          "filename": "shulker-trowel-0.1.0-canary9-private.jar",
+          "sha256": "b78679eaf6eaf6f7ff75a32ffae024e45515de3af38bf2ed92ac8727a5138df8"
         },
-        "source_commit": "069bc055356c5a46218acfb846c97acc0c0c4789"
+        "source_commit": "844bccbb6f9efdfb36749c719d1fb396f71b626f"
       },
       "rollback": {
         "version": "C5 (legacy Private Canary 4; embedded 0.1.0-canary4)",
+        "embedded_version": "0.1.0-canary4",
         "artifact": {
           "filename": "shulker-trowel-0.1.0-canary4-private.jar",
           "sha256": "73c012c08ca5567e795711cf11c8eaac625528e7350309114467129394f0afba"
         },
         "source_commit": "069bc055356c5a46218acfb846c97acc0c0c4789"
       },
-      "accepted_current": "CURRENT_DIFFERS_FROM_ACCEPTED",
-      "accepted_rollback": "ACCEPTED_IS_ROLLBACK"
+      "accepted_current": "CURRENT_IS_ACCEPTED",
+      "accepted_rollback": "ROLLBACK_DIFFERS_FROM_ACCEPTED"
     },
     "validation": {
       "build": "CONTROLLED_VALIDATION_PASS",
       "deployment": "READY_TO_TEST_VERIFIED",
-      "runtime": "RUNTIME_UNTESTED"
+      "runtime": "RUNTIME_PASS"
     },
     "blocker": null
   },
   "synchronization": {
-    "revision": 6,
-    "activity_at": "2026-09-02T02:04:38Z",
-    "updated_at": "2026-09-02T02:04:38Z",
-    "last_codex_at": "2026-09-02T02:04:38Z",
-    "source_commit": "eae004d5a4db4b36b5a2103aec49b9b237ab26ea",
+    "revision": 7,
+    "activity_at": "2026-09-02T17:00:13Z",
+    "updated_at": "2026-09-02T17:00:13Z",
+    "last_codex_at": "2026-09-02T17:00:13Z",
+    "source_commit": "27d9fc0f66fd32bcda8fef80cffd92ec5d964242",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null

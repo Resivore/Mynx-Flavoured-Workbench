@@ -18,7 +18,7 @@
     ]
   },
   "definition": {
-    "lifecycle": "TESTING",
+    "lifecycle": "ACCEPTED",
     "goals": [
       "Maintain one Fabric mod, source tree, build, version, and deployable JAR for the absorbed Nibaru native material catalog and all BGE geometry.",
       "Preserve every former Nibaru and BGE registry/resource identity, specialized material behavior, and saved-world reference while CNM remains an unchanged external dependency.",
@@ -39,7 +39,7 @@
         "Clutter No More source and artifacts remain external and unchanged; its ShapeMap remains the canonical family and switching mechanism.",
         "C58 is limited to the user-authored glass-Corner geometry/UV route; generic glass Quarter Column projection and all non-glass Corner outputs remain C57-equivalent.",
         "`projects/bge-ctm`, shaders, resource-pack classification, BBB source/assets, and unrelated consumer projects are outside this consolidation.",
-        "Accepted BGE C52 and its historical accepted Nibaru C45 companion are preserved as rollback provenance and are not promoted or rewritten."
+        "Accepted BGE C52 and historical standalone Nibaru C45 are preserved as rollback provenance and are not rewritten."
       ]
     },
     "dependencies": [
@@ -70,10 +70,11 @@
     ]
   },
   "state": {
-    "milestone": "Manager revision 62 atomically replaced the accidental split-slot C57/C9 state with one verified Slot A cohort containing exact current BGE C58 and compatible Shulker Trowel C10/Private Canary 9; Slot B is empty. The prior user observation remains bound only to exact C57, which failed solely for its glass-Corner visual/UV issue; C58 had not been loaded before this transition and remains independently RUNTIME_UNTESTED. Post-transition verification returned PHYSICAL_STATE_VERIFIED, matched exact hashes and embedded versions, resolved Trowel's bounded dependency to exact C58, proved the unified BGE JAR alone owns both BGE and legacy Nibaru IDs, and found no enabled standalone Nibaru or C57 artifact. Accepted/rollback BGE C52 and its accepted standalone Nibaru dependency identity remain unchanged and disabled as required; no C58 visual fix, runtime pass, or promotion is claimed.",
+    "milestone": "The user independently reported aggregate runtime PASS for exact BGE C58 in the revision-62 Slot A cohort; no checklist-row result is inferred. Manager revision 63 bound that result only to deployment 128c78b7-a80d-4b3f-8605-6cdf31bbebf1 and artifact 7c990388-34b7-4225-8f14-a0b9b5bfae94, revision 65 removed the completed cohort, and revision 66 atomically promoted exact C58 with exact private Shulker Trowel C10 into accepted Baseline Stack v14. C58 replaced accepted BGE C52 and absorbed historical accepted standalone Nibaru deployment e5eb4fcb-6c49-4ab2-86f9-1605ccd192ab, so the unified BGE artifact is the sole accepted provider of both stable IDs while C52 remains exact rollback provenance. The tested C58 bytes and metadata were not rebuilt, repackaged, or changed; their existing dependency metadata is grandfathered under the universal runtime-dependency policy.",
     "releases": {
       "current": {
         "version": "C58 (Glass Corner UV; embedded 4.2.2-bge.canary58.glass-corner-uv+26.2)",
+        "embedded_version": "4.2.2-bge.canary58.glass-corner-uv+26.2",
         "artifact": {
           "filename": "cnm-nibaru-integration-4.2.2-bge.canary58.glass-corner-uv+26.2.jar",
           "sha256": "1a4e4d1cd9c8709720ec84975e70caffb5552ac676537b9bbae42dca96567e87"
@@ -81,37 +82,39 @@
         "source_commit": "d1d753a86b21467141bd39a0bcc1270f7827a8d7"
       },
       "accepted": {
-        "version": "C52 (legacy Integration 1.39)",
+        "version": "C58 (Glass Corner UV; embedded 4.2.2-bge.canary58.glass-corner-uv+26.2)",
+        "embedded_version": "4.2.2-bge.canary58.glass-corner-uv+26.2",
         "artifact": {
-          "filename": "cnm-nibaru-integration-0.5.49-nibaru-cnm-canary1.39-native-directional-material-axis.jar",
-          "sha256": "0e84fb7b8c69e31c3c22a592d0667db66c2918c8fd9f461bd2c216d377722e69"
+          "filename": "cnm-nibaru-integration-4.2.2-bge.canary58.glass-corner-uv+26.2.jar",
+          "sha256": "1a4e4d1cd9c8709720ec84975e70caffb5552ac676537b9bbae42dca96567e87"
         },
-        "source_commit": "2e58d752af44f4b84e10bc5e53a41aea00a177ee"
+        "source_commit": "d1d753a86b21467141bd39a0bcc1270f7827a8d7"
       },
       "rollback": {
         "version": "C52 (legacy Integration 1.39)",
+        "embedded_version": "0.5.49-nibaru-cnm-canary1.39-native-directional-material-axis",
         "artifact": {
           "filename": "cnm-nibaru-integration-0.5.49-nibaru-cnm-canary1.39-native-directional-material-axis.jar",
           "sha256": "0e84fb7b8c69e31c3c22a592d0667db66c2918c8fd9f461bd2c216d377722e69"
         },
         "source_commit": "2e58d752af44f4b84e10bc5e53a41aea00a177ee"
       },
-      "accepted_current": "CURRENT_DIFFERS_FROM_ACCEPTED",
-      "accepted_rollback": "ACCEPTED_IS_ROLLBACK"
+      "accepted_current": "CURRENT_IS_ACCEPTED",
+      "accepted_rollback": "ROLLBACK_DIFFERS_FROM_ACCEPTED"
     },
     "validation": {
       "build": "CONTROLLED_VALIDATION_PASS",
       "deployment": "READY_TO_TEST_VERIFIED",
-      "runtime": "RUNTIME_UNTESTED"
+      "runtime": "RUNTIME_PASS"
     },
     "blocker": null
   },
   "synchronization": {
-    "revision": 15,
-    "activity_at": "2026-09-02T02:04:38Z",
-    "updated_at": "2026-09-02T02:04:38Z",
-    "last_codex_at": "2026-09-02T02:04:38Z",
-    "source_commit": "eae004d5a4db4b36b5a2103aec49b9b237ab26ea",
+    "revision": 16,
+    "activity_at": "2026-09-02T17:00:13Z",
+    "updated_at": "2026-09-02T17:00:13Z",
+    "last_codex_at": "2026-09-02T17:00:13Z",
+    "source_commit": "27d9fc0f66fd32bcda8fef80cffd92ec5d964242",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null

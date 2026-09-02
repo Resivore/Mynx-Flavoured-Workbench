@@ -12,15 +12,16 @@
     ]
   },
   "definition": {
-    "lifecycle": "ACTIVE",
+    "lifecycle": "TESTING",
     "goals": [
       "Allow the exact curated vanilla foliage and growable-plant set to use the real horizontal surfaces of canonical Nibaru slabs while preserving each vanilla block's identity, state, lifecycle, growth, harvesting, replacement, and drops.",
       "Delegate bonemeal on exact dry bottom native Nibaru slabs for canonical Grass Block, Moss Block, and Pale Moss Block through the corresponding Minecraft 26.2 substrate implementation without broadening material or geometry ownership."
     ],
     "scope": [
-      "Maintain the exact C2 implementation from frozen legacy project lineage bf1af349a0e43a49f12279e8e49794a2e1423aac, including C1's canonical support resolution, half-height model/outline/targeting representation, survival behavior, narrow plant allowlist, tall-grass/large-fern growth, and nether-wart behavior.",
-      "Maintain C2's bounded canonical projection for Grass Block, Moss Block, and Pale Moss Block substrate bonemeal on exact dry bottom native slabs, including exact slab restoration/reconciliation and the existing half-height representation for generated petals, wildflowers, azaleas, moss carpet, and pale-moss carpet.",
-      "Retain exact C2 as the current runtime-untested candidate and exact C1 as the released, aggregate-focused-runtime-passed predecessor without representing either release as accepted."
+      "Maintain C3 as the metadata-only successor to exact C2, changing only the root Fabric descriptor so runtime eligibility is expressed through the stable `more_slabs_stairs_and_walls` capability/provider contract instead of a standalone Nibaru version pin.",
+      "Preserve the exact C2 implementation from frozen legacy project lineage bf1af349a0e43a49f12279e8e49794a2e1423aac, including canonical support resolution, half-height model/outline/targeting representation, survival behavior, narrow plant allowlist, tall-grass/large-fern growth, nether-wart behavior, and bounded substrate bonemeal for Grass Block, Moss Block, and Pale Moss Block.",
+      "Exercise exact C3 in Test Slot B against unified BGE C58, which alone provides both `cnm_terrain_slabs_compat` and the stable `more_slabs_stairs_and_walls` alias; no standalone Nibaru artifact is part of the enabled graph.",
+      "Keep Clutter No More and primary BGE integration IDs as flexible optional suggestions while treating exact BGE C58, CNM 2.0.7, Terrain Slabs 3.3.2, Java 25, Gradle 9.5.1, and Loom 1.17.19 only as build, test, or read-only comparison baselines."
     ],
     "boundaries": {
       "owned_paths": [
@@ -30,8 +31,8 @@
         "No new plant families, substrate families, bonemeal mechanics, generated outputs, geometry coverage, or block-family behavior beyond exact C2.",
         "Nylium, top/double/waterlogged slabs, vertical slabs, CNM Steps, stairs, walls, arbitrary partial geometry, and unsupported materials remain outside substrate bonemeal.",
         "Mushrooms, saplings and direct lowered-azalea tree growth, mangrove propagules, crops/farmland, sweet berry bushes, columns, arbitrary double plants, aquatic plants, lanterns, and other decorations remain deferred.",
-        "Nibaru retains canonical material/native-slab ownership and Block Geometry Extensions/CNM retain their own geometry and switching systems; this project adds no duplicate plant blocks, persisted offset state, registry-name parser, or competing material table.",
-        "Runtime deployment, Test Slot or Test Instance Manager changes, accepted-stack mutation, dedicated Workbench access, and protected gameplay-instance access during this migration."
+        "Unified Block Geometry Extensions retains canonical material/native-slab ownership and BGE/CNM retain their own geometry and switching systems; this project adds no duplicate plant blocks, persisted offset state, registry-name parser, competing material table, or standalone Nibaru dependency.",
+        "No Minecraft launch, runtime-result inference, accepted-stack promotion of Slab Decorations, unrelated runtime-slot mutation, or protected gameplay-instance access."
       ]
     },
     "dependencies": [
@@ -50,63 +51,73 @@
       {
         "type": "MOD",
         "identifier": "fabric-api",
-        "requirement": ">=0.157.0+26.2",
-        "reason": "Fabric API and Renderer API baseline used by exact C2."
-      },
-      {
-        "type": "PROJECT",
-        "identifier": "680476b9-5336-5422-a575-779f2efd1eff",
-        "requirement": "C41 (legacy Canary 41; 4.2.0+26.2-port-canary41-pale-recipe-fix)",
-        "reason": "Exact C2 build/runtime API input providing NibaruMaterialProfiles, canonicalParent(), and exact nativeSlab() ownership; legacy artifact SHA-256 8dfb6e4f55acf021118d022d99ec9a78cb2c74c13ad469bab58a68734969c7b6."
+        "requirement": ">=0.157.0",
+        "reason": "Fabric API and Renderer API runtime floor declared by C3; 0.157.0+26.2 was the exact build/test baseline."
       },
       {
         "type": "PROJECT",
         "identifier": "4b2342fc-7bdf-5ba6-9f37-d551109d214c",
-        "requirement": "legacy Integration 1.36 (isolated fixture only)",
-        "reason": "Exact cnm-nibaru-integration 0.5.46 fixture used to prove the negative geometry boundary; production code imports no integration implementation API."
+        "requirement": "compatible provider of more_slabs_stairs_and_walls",
+        "reason": "Unified BGE provides the stable native-material/slab capability used at runtime; exact C58 was only the compile, static-validation, and deployed test baseline."
+      },
+      {
+        "type": "MOD",
+        "identifier": "more_slabs_stairs_and_walls",
+        "requirement": "*",
+        "reason": "Stable Fabric capability/provider ID required by C3 for canonical material profiles and native slab ownership; unified BGE C58 supplies this alias without a standalone Nibaru artifact."
       },
       {
         "type": "MOD",
         "identifier": "clutternomore",
-        "requirement": "=2.0.7+26.2",
-        "reason": "Pristine optional/fixture runtime used for CNM geometry exclusions; production code imports no CNM implementation API."
+        "requirement": "* (optional suggestion)",
+        "reason": "Flexible optional geometry fixture; exact 2.0.7+26.2 was used only as the build/test baseline and production code imports no CNM implementation API."
+      },
+      {
+        "type": "MOD",
+        "identifier": "cnm_terrain_slabs_compat",
+        "requirement": "* (optional suggestion)",
+        "reason": "Flexible optional primary BGE identity; it is not a second hard runtime dependency and unified BGE C58 supplied it during controlled validation."
       },
       {
         "type": "OTHER",
         "identifier": "Terrain Slabs v3.3.2-26.2.jar",
         "requirement": "SHA-256 c67c334c8ea0a6a47effa96b740568bf505f41e9484a82e06736819f26f78eda",
-        "reason": "MIT-licensed read-only behavior and artifact-contract reference; it is not a runtime dependency and no code or assets are copied."
+        "reason": "Exact MIT-licensed read-only behavior and artifact-contract test baseline; it is not a runtime dependency and no code or assets are copied."
       },
       {
         "type": "TOOL",
         "identifier": "java",
         "requirement": "25",
-        "reason": "Compilation release and runtime level required by Minecraft 26.2 and exact C2."
+        "reason": "Exact compilation and controlled-test baseline required by Minecraft 26.2; C3 runtime metadata declares the genuine Java 25 floor."
       },
       {
         "type": "TOOL",
         "identifier": "gradle",
         "requirement": "9.5.1",
-        "reason": "Exact build-tool version used for C2 retention and migration verification."
+        "reason": "Exact build-tool baseline used for C3 controlled validation."
       },
       {
         "type": "TOOL",
         "identifier": "fabric-loom",
         "requirement": "1.17.19",
-        "reason": "Pinned Fabric build plugin retained by the maintained C2 build."
+        "reason": "Exact Fabric build-plugin baseline used for C3 controlled validation."
       }
     ]
   },
   "state": {
-    "milestone": "C2 is the exact current retained candidate after a byte-identical Java 25 migration build; it remains STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED. Exact C1 received only an aggregate focused runtime pass and was released without promotion, so it is retained as historical release evidence but is neither accepted nor a V2 rollback release.",
+    "milestone": "C3 is the exact current metadata-only successor to C2. Archive comparison found 31 entries: only root `fabric.mod.json` changed, while the other 30 code/resource entries remained byte-identical. Controlled validation passed 1/1 JUnit test and 16/16 Fabric GameTests. Manager revision 67 deployed exact C3 to Slot B as `Slab Decorations - Canary 3` (deployment d6350d3f-bf00-4955-8b27-3f186dace93f; artifact a80957e9-041d-4758-96fa-fb6868051257) and returned CURRENT_RELEASE_DEPLOYED / READY_TO_TEST_VERIFIED. No Minecraft runtime result was recorded, so C3 remains independently RUNTIME_UNTESTED and unaccepted.",
     "releases": {
       "current": {
-        "version": "0.1.0-canary2",
+        "version": "0.1.0-canary3",
         "artifact": {
-          "filename": "slab-decorations-0.1.0-canary2.jar",
-          "sha256": "d405d5a699aba2c266b4ac227d7418cc2b07982c93d17755012f95087ecfa390"
+          "filename": "slab-decorations-0.1.0-canary3.jar",
+          "sha256": "5dfe24cf686a781c16dca46a11ef4112d7473e1f8d63fac659cb750c6709bf2b"
         },
-        "source_commit": "bf1af349a0e43a49f12279e8e49794a2e1423aac"
+        "source_commit": "2358342ebbd51cdd1b110e74e815205a68acc882",
+        "runtime_dependency_policy": {
+          "contract": "CAPABILITY_OR_PROVIDER",
+          "exceptions": []
+        }
       },
       "accepted": null,
       "rollback": null,
@@ -114,18 +125,18 @@
       "accepted_rollback": "NO_ROLLBACK"
     },
     "validation": {
-      "build": "STATIC_PASS",
-      "deployment": "NOT_DEPLOYED",
+      "build": "CONTROLLED_VALIDATION_PASS",
+      "deployment": "READY_TO_TEST_VERIFIED",
       "runtime": "RUNTIME_UNTESTED"
     },
     "blocker": null
   },
   "synchronization": {
-    "revision": 1,
-    "activity_at": "2026-08-28T19:20:32Z",
-    "updated_at": "2026-08-29T22:41:35Z",
-    "last_codex_at": "2026-08-29T22:41:35Z",
-    "source_commit": "21c32804313e02035b35ba418d7ebdc4631dbc61",
+    "revision": 2,
+    "activity_at": "2026-09-02T17:00:13Z",
+    "updated_at": "2026-09-02T17:00:13Z",
+    "last_codex_at": "2026-09-02T17:00:13Z",
+    "source_commit": "27d9fc0f66fd32bcda8fef80cffd92ec5d964242",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
