@@ -810,6 +810,7 @@ def validate_repository(root: Path) -> dict[str, tuple[Path, dict[str, Any]]]:
         "schemas/workbench-status.schema.json",
         "schemas/runtime-state.schema.json",
         "tools/workbench.py",
+        "tools/artifact_retention.py",
         "tools/runtime_slots.py",
         "tools/sheet_sync.py",
         "tools/sheet_sync/publication.json",
