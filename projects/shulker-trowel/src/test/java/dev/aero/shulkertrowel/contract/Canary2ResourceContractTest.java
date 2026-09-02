@@ -87,7 +87,7 @@ class Canary2ResourceContractTest {
     }
 
     @Test
-    void metadataMarksTheAssemblyPrivateAndNotDeployed() throws IOException {
+    void metadataMarksTheAssemblyPrivateAndLeavesDeploymentTruthToTheManager() throws IOException {
         JsonObject metadata = json("src/main/resources/fabric.mod.json");
         JsonObject custom = metadata.getAsJsonObject("custom");
 
@@ -97,7 +97,7 @@ class Canary2ResourceContractTest {
                 "GENERATED / STATICALLY VALIDATED / RUNTIME UNTESTED / PRIVATE / NOT REDISTRIBUTABLE",
                 custom.get("workbench:classification").getAsString()
         );
-        assertEquals("NOT DEPLOYED", custom.get("workbench:deployment").getAsString());
+        assertFalse(custom.has("workbench:deployment"));
         assertEquals(
                 "assets/shulker_trowel/textures/item/trowel.png",
                 custom.get("workbench:private-resource-required").getAsString()

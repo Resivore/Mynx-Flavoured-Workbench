@@ -1,9 +1,9 @@
 {
   "$schema": "../../schemas/runtime-state.schema.json",
-  "schema_version": 1,
+  "schema_version": 2,
   "activation": "ACTIVE",
-  "revision": 61,
-  "updated_at": "2026-09-01T05:34:21Z",
+  "revision": 62,
+  "updated_at": "2026-09-02T01:58:09Z",
   "accepted_baseline": {
     "revision": 11,
     "provenance": {
@@ -846,90 +846,86 @@
   },
   "slots": {
     "A": {
-      "unit": {
-        "deployment_id": "3d111123-9043-4e31-8d73-61d3a735c0b6",
-        "project_uuid": "4b2342fc-7bdf-5ba6-9f37-d551109d214c",
-        "project_id": "block-geometry-extensions",
-        "project_identity_source": "CURRENT_MANIFEST",
-        "version": "4.2.1-bge.canary57.unified+26.2",
-        "source_commit": "f907bdab139fd2ec68f8741f5a449b9ee0c973f4",
-        "artifacts": [
-          {
-            "artifact_id": "57a7d2f8-a9df-4c7b-843a-c759281978e0",
-            "kind": "MOD",
-            "filename": "cnm-nibaru-integration-4.2.1-bge.canary57.unified+26.2.jar",
-            "sha256": "7cd01479531ec26975326b882e0a18406c17de26695b1f4fae29b72edb76cbc2",
-            "ownership_keys": [
-              "mod:cnm_terrain_slabs_compat",
-              "mod:more_slabs_stairs_and_walls"
-            ],
-            "source": {
-              "type": "REPOSITORY",
-              "path": "projects/block-geometry-extensions/artifacts/cnm-nibaru-integration-4.2.1-bge.canary57.unified+26.2.jar"
+      "members": [
+        {
+          "unit": {
+            "deployment_id": "128c78b7-a80d-4b3f-8605-6cdf31bbebf1",
+            "project_uuid": "4b2342fc-7bdf-5ba6-9f37-d551109d214c",
+            "project_id": "block-geometry-extensions",
+            "project_identity_source": "CURRENT_MANIFEST",
+            "version": "4.2.2-bge.canary58.glass-corner-uv+26.2",
+            "source_commit": "d1d753a86b21467141bd39a0bcc1270f7827a8d7",
+            "artifacts": [
+              {
+                "artifact_id": "7c990388-34b7-4225-8f14-a0b9b5bfae94",
+                "kind": "MOD",
+                "filename": "cnm-nibaru-integration-4.2.2-bge.canary58.glass-corner-uv+26.2.jar",
+                "sha256": "1a4e4d1cd9c8709720ec84975e70caffb5552ac676537b9bbae42dca96567e87",
+                "ownership_keys": [
+                  "mod:cnm_terrain_slabs_compat",
+                  "mod:more_slabs_stairs_and_walls"
+                ],
+                "source": {
+                  "type": "REPOSITORY",
+                  "path": "projects/block-geometry-extensions/artifacts/cnm-nibaru-integration-4.2.2-bge.canary58.glass-corner-uv+26.2.jar"
+                }
+              }
+            ]
+          },
+          "replaces_accepted_deployment_id": "3a3f0f77-d114-4b58-a039-302d625ec449",
+          "runtime_result": {
+            "classification": "UNTESTED",
+            "recorded_at": null,
+            "evidence": {
+              "passed": [],
+              "failed": []
             }
-          }
-        ]
-      },
-      "replaces_accepted_deployment_id": "3a3f0f77-d114-4b58-a039-302d625ec449",
-      "deployment": {
-        "state": "READY_TO_TEST_VERIFIED",
-        "deployed_at": "2026-08-31T16:37:01Z",
-        "ready_verified_at": "2026-08-31T16:37:02Z"
-      },
-      "runtime_result": {
-        "classification": "FAIL",
-        "recorded_at": "2026-09-01T05:34:21Z",
-        "evidence": {
-          "passed": [
-            "User-reported broad nonvisual behavior PASS for exact unified BGE C57; no row-level observations were supplied or inferred."
-          ],
-          "failed": [
-            "User-reported existing glass-Corner visual/UV defect on exact unified BGE C57."
+          },
+          "dependency_overrides": [
+            "e5eb4fcb-6c49-4ab2-86f9-1605ccd192ab"
           ]
-        }
-      },
-      "dependency_overrides": [
-        "e5eb4fcb-6c49-4ab2-86f9-1605ccd192ab"
-      ]
-    },
-    "B": {
-      "unit": {
-        "deployment_id": "3ec63f11-ff42-443a-afe3-5482d8081d4a",
-        "project_uuid": "e28154da-0649-5da7-b6d5-3bff2891719e",
-        "project_id": "shulker-trowel",
-        "project_identity_source": "CURRENT_MANIFEST",
-        "version": "0.1.0-canary8",
-        "source_commit": "f907bdab139fd2ec68f8741f5a449b9ee0c973f4",
-        "artifacts": [
-          {
-            "artifact_id": "4c70ce61-bc45-4355-88c5-47e7396d2851",
-            "kind": "MOD",
-            "filename": "shulker-trowel-0.1.0-canary8-private.jar",
-            "sha256": "2e74d902c46cb3072ab33cdc56ac6ae55e2fd5ec0f4e5ee297cfebec338513ab",
-            "ownership_keys": [
-              "mod:shulker_trowel"
-            ],
-            "source": {
-              "type": "REPOSITORY",
-              "path": "projects/shulker-trowel/test-builds/private/shulker-trowel/canary8/shulker-trowel-0.1.0-canary8-private.jar"
+        },
+        {
+          "unit": {
+            "deployment_id": "3f15446c-95c2-405b-b1e5-e78de5f5f638",
+            "project_uuid": "e28154da-0649-5da7-b6d5-3bff2891719e",
+            "project_id": "shulker-trowel",
+            "project_identity_source": "CURRENT_MANIFEST",
+            "version": "0.1.0-canary9",
+            "source_commit": "844bccbb6f9efdfb36749c719d1fb396f71b626f",
+            "artifacts": [
+              {
+                "artifact_id": "efbc5761-9899-4a3c-ae5d-7640b8a3022b",
+                "kind": "MOD",
+                "filename": "shulker-trowel-0.1.0-canary9-private.jar",
+                "sha256": "b78679eaf6eaf6f7ff75a32ffae024e45515de3af38bf2ed92ac8727a5138df8",
+                "ownership_keys": [
+                  "mod:shulker_trowel"
+                ],
+                "source": {
+                  "type": "REPOSITORY",
+                  "path": "projects/shulker-trowel/test-builds/private/shulker-trowel/canary9/shulker-trowel-0.1.0-canary9-private.jar"
+                }
+              }
+            ]
+          },
+          "replaces_accepted_deployment_id": "6c8c4d94-bce9-479a-916c-66b94eecc852",
+          "runtime_result": {
+            "classification": "UNTESTED",
+            "recorded_at": null,
+            "evidence": {
+              "passed": [],
+              "failed": []
             }
           }
-        ]
-      },
-      "replaces_accepted_deployment_id": "6c8c4d94-bce9-479a-916c-66b94eecc852",
+        }
+      ],
       "deployment": {
         "state": "READY_TO_TEST_VERIFIED",
-        "deployed_at": "2026-08-31T16:37:04Z",
-        "ready_verified_at": "2026-08-31T16:37:05Z"
-      },
-      "runtime_result": {
-        "classification": "UNTESTED",
-        "recorded_at": null,
-        "evidence": {
-          "passed": [],
-          "failed": []
-        }
+        "deployed_at": "2026-09-02T01:58:09Z",
+        "ready_verified_at": "2026-09-02T01:58:09Z"
       }
-    }
+    },
+    "B": null
   }
 }

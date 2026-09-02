@@ -17,7 +17,7 @@ repositories {
 
 def cnmJarPath = project.findProperty('cnmJar') ?: '../../originals/mods/clutternomore-2.0.7+26.2-fabric.jar'
 def bgeJarPath = project.findProperty('bgeJar') ?:
-        '../block-geometry-extensions/artifacts/cnm-nibaru-integration-4.2.1-bge.canary57.unified+26.2.jar'
+        '../block-geometry-extensions/artifacts/cnm-nibaru-integration-4.2.2-bge.canary58.glass-corner-uv+26.2.jar'
 
 dependencies {
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
@@ -54,7 +54,7 @@ processResources {
     }
     doLast {
         // Windows checkout normalization must not alter the established packaged mixin metadata.
-        // Reuse the exact Canary 3 payload because no mixin declaration changes in Canary 8.
+        // Reuse the exact Canary 3 payload because no mixin declaration changes in Canary 9.
         def predecessor = file('artifacts/shulker-trowel-0.1.0-canary3.jar')
         def expectedHash = '5C18755B2F71F44B1F8D6D622DFE0FC892C8165E448CC8E451B72FEE91F752EC'
         def digest = java.security.MessageDigest.getInstance('SHA-256')

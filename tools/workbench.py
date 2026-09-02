@@ -35,6 +35,11 @@ RUNTIME_STATES = {"RUNTIME_UNTESTED", "PARTIAL_RUNTIME_PASS", "RUNTIME_PASS", "R
 DEPENDENCY_TYPES = {"PROJECT", "MOD", "RESOURCE_PACK", "DATA_PACK", "TOOL", "SERVICE", "OTHER"}
 ACCEPTED_CURRENT_STATES = {"NO_ACCEPTED", "CURRENT_IS_ACCEPTED", "CURRENT_DIFFERS_FROM_ACCEPTED"}
 ACCEPTED_ROLLBACK_STATES = {"NO_ROLLBACK", "ACCEPTED_IS_ROLLBACK", "ROLLBACK_DIFFERS_FROM_ACCEPTED"}
+CURRENT_RELEASE_DEPLOYMENT_STATES = {
+    "CURRENT_RELEASE_DEPLOYED",
+    "OLDER_RELEASE_DEPLOYED",
+    "CURRENT_RELEASE_NOT_DEPLOYED",
+}
 
 PROJECT_ID_RE = re.compile(r"^[a-z0-9]+(?:[.-][a-z0-9]+)*$")
 COMMIT_RE = re.compile(r"^[0-9a-f]{40}$")
@@ -531,23 +536,91 @@ def validate_testing_slot_lifecycles(
     runtime_state: dict[str, Any],
 ) -> None:
     """Enforce the repository-only TESTING lifecycle/runtime-slot invariant by UUID."""
-    occupied_slots = {
-        slot["unit"]["project_uuid"]: slot_name
-        for slot_name in ("A", "B")
-        if (slot := runtime_state["slots"][slot_name]) is not None
-    }
+    occupied_slots: dict[str, tuple[str, dict[str, Any], dict[str, Any]]] = {}
+    for slot_name in ("A", "B"):
+        slot = runtime_state["slots"][slot_name]
+        if slot is None:
+            continue
+        members = slot["members"] if "members" in slot else [slot]
+        for member in members:
+            project_uuid = member["unit"]["project_uuid"]
+            if project_uuid in occupied_slots:
+                raise ValidationError(
+                    f"runtime state project UUID {project_uuid} occupies more than one slot/cohort position"
+                )
+            occupied_slots[project_uuid] = (slot_name, member, slot["deployment"])
     for project_uuid, (path, manifest) in statuses.items():
         lifecycle = manifest["definition"]["lifecycle"]
-        slot_name = occupied_slots.get(project_uuid)
-        if lifecycle == "TESTING" and slot_name is None:
+        occupancy = occupied_slots.get(project_uuid)
+        if lifecycle == "TESTING" and occupancy is None:
             raise ValidationError(
                 f"{path}: lifecycle TESTING requires project UUID {project_uuid} to occupy Test Slot A or B"
             )
-        if slot_name is not None and lifecycle != "TESTING":
+        if occupancy is not None and lifecycle != "TESTING":
+            slot_name = occupancy[0]
             raise ValidationError(
                 f"{path}: project UUID {project_uuid} occupies Test Slot {slot_name} "
                 f"but lifecycle is {lifecycle}; it must be TESTING"
             )
+        if occupancy is None:
+            continue
+        slot_name, member, deployment = occupancy
+        current = manifest["state"]["releases"]["current"]
+        if current is None or current["artifact"] is None:
+            continue
+        comparison = current_release_deployment_comparison(manifest, runtime_state)
+        claimed_deployment = manifest["state"]["validation"]["deployment"]
+        if comparison == "OLDER_RELEASE_DEPLOYED" and claimed_deployment != "NOT_DEPLOYED":
+            raise ValidationError(
+                f"{path}: current release is not the exact member physically occupying Test Slot {slot_name}; "
+                f"the current release must remain NOT_DEPLOYED (slot member is "
+                f"{member['unit']['project_id']}@{member['unit']['version']})"
+            )
+        if comparison == "CURRENT_RELEASE_NOT_DEPLOYED" and claimed_deployment != "NOT_DEPLOYED":
+            raise ValidationError(
+                f"{path}: current release occupies Test Slot {slot_name}, but the shared cohort is "
+                "NOT_DEPLOYED; the current release must remain NOT_DEPLOYED"
+            )
+        if comparison == "CURRENT_RELEASE_DEPLOYED" and claimed_deployment != deployment["state"]:
+            raise ValidationError(
+                f"{path}: current release matches Test Slot {slot_name}, so deployment must equal "
+                f"the shared cohort state {deployment['state']}"
+            )
+
+
+def _release_matches_runtime_unit(release: dict[str, Any] | None, unit: dict[str, Any]) -> bool:
+    if release is None or release.get("artifact") is None:
+        return False
+    artifact = release["artifact"]
+    return release.get("source_commit") == unit.get("source_commit") and any(
+        candidate.get("filename") == artifact.get("filename")
+        and candidate.get("sha256") == artifact.get("sha256")
+        for candidate in unit.get("artifacts", [])
+    )
+
+
+def current_release_deployment_comparison(
+    manifest: dict[str, Any],
+    runtime_state: dict[str, Any],
+) -> str:
+    """Compare one repository current release with its exact managed slot member."""
+
+    project_uuid = manifest["identity"]["uuid"]
+    current = manifest["state"]["releases"]["current"]
+    for slot_name in ("A", "B"):
+        slot = runtime_state["slots"][slot_name]
+        if slot is None:
+            continue
+        members = slot["members"] if "members" in slot else [slot]
+        for member in members:
+            if member["unit"]["project_uuid"] != project_uuid:
+                continue
+            if slot["deployment"]["state"] == "NOT_DEPLOYED":
+                return "CURRENT_RELEASE_NOT_DEPLOYED"
+            if _release_matches_runtime_unit(current, member["unit"]):
+                return "CURRENT_RELEASE_DEPLOYED"
+            return "OLDER_RELEASE_DEPLOYED"
+    return "CURRENT_RELEASE_NOT_DEPLOYED"
 
 
 def _validate_publication_config(path: Path) -> None:

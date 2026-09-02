@@ -1,25 +1,23 @@
-# Shulker Trowel C9 runtime procedure
+# Shulker Trowel C10 runtime procedure
 
-Candidate: private `shulker-trowel-0.1.0-canary8-private.jar`, 44,748 bytes, SHA-256 `2e74d902c46cb3072ab33cdc56ac6ae55e2fd5ec0f4e5ee297cfebec338513ab`.
+Verified Slot A cohort:
 
-Use only the dedicated Minecraft 26.2 Workbench. Slot B must show Trowel Canary 8 as `READY_TO_TEST_VERIFIED`; Slot A must contain exact unified BGE C57. Keep CNM external and install no standalone Nibaru JAR.
+- BGE C58: `cnm-nibaru-integration-4.2.2-bge.canary58.glass-corner-uv+26.2.jar`, SHA-256 `1a4e4d1cd9c8709720ec84975e70caffb5552ac676537b9bbae42dca96567e87`.
+- Shulker Trowel C10 / Private Canary 9: `shulker-trowel-0.1.0-canary9-private.jar`, 44,738 bytes, SHA-256 `b78679eaf6eaf6f7ff75a32ffae024e45515de3af38bf2ed92ac8727a5138df8`.
 
-## Matrix
+Manager revision 62 verifies this exact two-member Slot A cohort as `READY_TO_TEST_VERIFIED / UNTESTED` and Slot B as empty. Before testing, run manager verification and require `PHYSICAL_STATE_VERIFIED`, the same exact filenames and hashes, and the visible title `Slot A: Block Geometry Extensions (BGE) - Canary 58 + Shulker Trowel - Canary 9`. Use only the dedicated Minecraft 26.2 Workbench. Keep CNM external and enable no standalone Nibaru JAR.
 
-1. Confirm selector order is unchanged: `Full Block`, `Slab`, `Stair`, `Wall`, `Vertical Slab`, `Step`, `Corner`, `Quarter Column`, `Layer`.
-2. Confirm saved/network mode IDs remain 0–6 for the established modes, Corner remains 7, Quarter Column remains 8, and selector order does not rewrite identity.
-3. For ordinary and specialized materials, verify every available mode shows the exact resolved unified-BGE item icon and targets that exact BlockItem.
-4. Exercise normal delegated placement, orientation, state, sound, waterlogging, variants, collision, first-occupancy debit, compatible free growth, failed-attempt economy, and normal drops.
-5. Confirm unavailable material/geometry combinations retain selected identity and fail closed without consuming, refunding, collapsing, or substituting a mode.
-6. Confirm server authority, client/server synchronization, scrolling, overlay count, saved selection, invalid-data handling, and reconnect behavior remain unchanged.
-7. Confirm the actual offhand shulker inventory is the quantity source and the trowel remains in the required hand through placement.
-8. Confirm no standalone Nibaru dependency, JAR, loader error, or old-project path is required.
-9. Inspect Trowel, CNM, BGE catalog, placement, and synchronization logs for missing descriptors, duplicate modes, wrong resolved items, or rejected dependencies.
+## Focused C58 compatibility checks
 
-## Private-resource and known-issue boundaries
+1. With a representative supported material in the offhand shulker, open the selector and confirm the established order remains `Full Block`, `Slab`, `Stair`, `Wall`, `Vertical Slab`, `Step`, `Corner`, `Quarter Column`, `Layer`.
+2. Select Corner and confirm the overlay shows the exact Corner item resolved by the active BGE C58 catalog, including the corrected glass-Corner icon where applicable.
+3. Place that Corner through the Trowel and confirm the result is the exact BGE C58 Corner block/item for the selected material, with normal delegated `BlockItem` orientation and state.
+4. Exercise one representative non-Corner mode and confirm normal delegated placement, one-item Survival consumption from the actual offhand shulker, placement sound, and selector continuity remain unchanged.
+5. Reopen and scroll the selector, then reconnect once; confirm saved mode identity and client/server synchronization remain continuous without duplicate, substituted, or unavailable modes.
+6. Confirm the loader and logs report no dependency-predicate rejection, missing provider, duplicate BGE/Nibaru ownership, rejected payload, or synchronization error. The active provider for both `cnm_terrain_slabs_compat` and `more_slabs_stairs_and_walls` must be exact BGE C58.
 
-The runnable candidate contains the separately authorized 346-byte private sprite; it must remain untracked and non-redistributable. Do not extract, publish, or replace it.
+## Boundaries and stopping conditions
 
-Unified BGE intentionally retains the known small glass-Corner visual issue. If Trowel displays and places the exact resolved BGE glass-Corner item unchanged, that appearance alone is not a Trowel regression or a fix; report any new Trowel-specific mismatch separately.
+The runnable candidate contains the separately authorized 346-byte private sprite; it remains ignored, private, and non-redistributable. Do not extract, publish, replace, or commit it.
 
-Record only actual runtime observations. Build, focused tests, GameTests, and readiness verification are not runtime evidence. Stop for identity/order drift, wrong icons or targets, consumption/refund changes, delegated-placement changes, authority/synchronization failures, dependency errors, or private-resource leakage. Do not promote C9 in this procedure.
+Record only actual runtime observations. Build, unit tests, GameTest compilation, cohort deployment, and physical verification are not runtime evidence. Stop for a wrong Corner icon or placed result, selector identity/order drift, delegated-placement or consumption changes, dependency errors, duplicate ownership, or synchronization failures. C58 and Trowel C10 remain runtime untested until this focused procedure is completed; do not claim the C58 visual issue is fixed or promote either member from this procedure alone.

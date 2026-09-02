@@ -8,7 +8,10 @@ permanently rejected before access.
 
 The tracked runtime contract contains the exact frozen accepted baseline (23
 project units / 26 artifacts), fixed independent Slots A and B, and exact
-per-slot deployment/runtime evidence. The current accepted composition is
+shared slot deployment evidence plus independent per-member runtime evidence.
+An occupied slot is a cohort of one or more current-manifest project units; a
+one-member cohort is the lossless successor to the former one-project slot.
+The current accepted composition is
 human-readable **Stack v1**: `accepted_baseline.revision` is the sole canonical
 Stack number, so no parallel stack list or hand-maintained title value exists.
 Those JSON values are expected-state metadata, not physical evidence and not
@@ -21,6 +24,161 @@ slot while preserving the exact accepted member/artifact identity and Stack
 number.
 Assignments, candidate replacements, slot clearing, readiness/result recording,
 verification, and display refreshes never increment the Stack number.
+
+## Atomic slot cohorts and Fabric dependencies
+
+Schema V2 represents an occupied slot as `members[]` plus one shared
+`deployment` record. Every member retains its project/deployment/artifact UUIDs,
+version, source checkpoint, accepted-predecessor replacement, optional accepted
+dependency overrides, and independent runtime result. Slot assignment,
+replacement, clearing, staging, filesystem writes, rollback, ledger/state
+commit, and title projection are atomic for the full cohort. Slot A and Slot B
+remain independent.
+
+`DEPLOY_PROFILE` is the physical-manager-only whole-profile operation. Its
+`slots` object declares both A and B, with each occupied slot supplying either a
+legacy `candidate` or a nonempty `members` array. It deterministically migrates
+legacy schema V1 state, plans one next revision through `SET_PROFILE`, stages
+every cohort artifact, verifies the proposed dependency graph, applies the
+entire filesystem transaction, and verifies hashes and the physical enabled
+graph. Only then does the in-process physical-manager authority stamp every new
+occupied slot `READY_TO_TEST_VERIFIED` in that same next revision. No public
+serialized state operation can manufacture that readiness evidence. Any
+failure restores every cohort member, both slot states, the title projection,
+ledger, and repository state to the exact preimage.
+
+Every `DEPLOY_PROFILE` member is bound before staging to its authoritative
+current manifest UUID/ID, source checkpoint, artifact filename, and SHA-256.
+Because the operation admits exactly one current-release artifact per member,
+the member's canonical runtime `version` must also equal that JAR's root
+`fabric.mod.json` version. Preflight rejects a mismatch before mutation, and
+post-deployment verification repeats the same expected/embedded comparison
+before readiness. A schema-V2 ready slot cannot silently use a multi-artifact
+member whose distinct embedded versions cannot be represented by one member
+version.
+Repository sources must stay inside that project's directory, including the
+established ignored private-build subtree. The manager reloads those manifests
+after physical verification and before state/ledger commit, so concurrent
+candidate drift triggers full rollback.
+
+`RECORD_RESULT` requires `project_uuid` for a multi-member cohort and updates
+only that member. Shared deployment readiness never copies a `PASS`, `FAIL`, or
+`INCONCLUSIVE` classification between members. `PROMOTE_SLOT` requires an
+independent explicit `PASS` for every member, rejects temporary dependency
+overrides, and promotes all members atomically; removal likewise clears the
+whole cohort and restores its accepted predecessors/dependencies together.
+
+Preflight and verification read exactly one root `fabric.mod.json` from every
+enabled Fabric JAR. They record primary ID, `provides` aliases, embedded
+version, and hard `depends` predicates. The manager first groups every discovered
+descriptor by every owned ID. A duplicate for an ID explicitly owned by a
+manager artifact always fails, as do multiple graph-relevant direct/root JARs;
+this keeps C57 beside C58 and unified BGE beside standalone Nibaru from being
+silently shadow-selected. Graph-relevant external nested candidates are Loader
+alternatives rather than simultaneous owners. The manager selects their exact
+provider with Fabric Loader 0.19.3 priority: a unique external root beats every
+nested alternative, then higher semantic precedence, shallower nesting, and
+recursive parent priority decide. Semantic build metadata is retained in the
+identity receipt but ignored for precedence exactly like Loader. An unresolved
+equal-priority tie fails closed instead of inventing a filename or traversal
+tie-break. Fabric predicate evaluation follows Loader semantics: predicate-array
+entries are OR alternatives, space-delimited terms inside one predicate are
+ANDed, and semantic/prerelease/wildcard ordering follows Fabric Loader. A
+selected provider must satisfy its predicate. A missing ID known to manager
+ownership fails and names the companion that must be supplied in the same
+cohort operation.
+
+Fabric providers embedded through root `fabric.mod.json` `jars[].file`
+declarations are discovered recursively before the graph is resolved. Only an
+exact declared POSIX member path ending in lowercase `.jar` is eligible; the
+manager never extracts nested content or treats arbitrary archive entries as
+mods. Every declared member must exist exactly once and be an unencrypted,
+regular stored/deflated ZIP entry. Absolute, drive-relative, backslash,
+dot-segment, normalized, duplicate, symbolic-link, nonregular, unsupported-
+compression, or malformed entries fail closed. Traversal is bounded across the
+whole enabled graph to four nested levels, 1,024 declared members, 64 MiB
+compressed and expanded per nested member, 256 MiB cumulative compressed and
+expanded bytes (including manifest reads), and a 200:1 per-member expansion
+ratio. Fabric manifests are independently capped at 1 MiB compressed and
+expanded.
+
+Each declared nested descriptor keeps its own Fabric primary ID, aliases,
+version, and hard dependencies while inheriting the enclosing root artifact's
+managed project/deployment/artifact provenance for graph scope. Receipts expose
+the root container hash plus every exact container/member path, compressed and
+expanded size, member SHA-256, and recursive parent chain. Byte-identical
+nested candidates reached anywhere in the enabled graph are deduplicated by
+SHA-256 while every root and chain is retained. A candidate inherits a singular
+managed identity only when exactly one managed root owns it. Different external
+nested bytes that claim the same graph-relevant primary ID remain distinct
+Loader candidates. `candidate_selection_groups` records every discovered
+candidate, the exact selected candidate, every inactive alternative and reason,
+the full version, build-agnostic semantic precedence key, minimum nesting depth,
+priority parent, and complete provenance. The selected candidate alone enters
+provider and hard-dependency resolution. Overlapping primary/`provides`
+candidate sets outside this proven subset fail closed rather than approximating
+Loader's SAT solver.
+Byte-identical candidates embedded by distinct managed roots retain every
+owning artifact identity and fail with deterministic full-origin evidence when
+that co-ownership enters the managed graph, rather than assigning the provider
+nondeterministically. A nested JAR may not claim `java`, `minecraft`, or
+`fabricloader`.
+The compatibility fields `enabled_fabric_jar_count` and
+`enabled_fabric_jars` continue to describe physical root files;
+`discovered_fabric_descriptors` enumerates the exact candidate tree,
+`selected_fabric_descriptors` and `enabled_fabric_descriptors` enumerate the
+Loader-selected client set, and the dedicated environment-exclusion fields
+retain every discovered but ineligible descriptor.
+
+The dedicated profile is a Fabric client environment. A missing, empty, or
+`*` metadata environment is universal; `client` is eligible and `server` is
+excluded, with ASCII case normalized like Loader. Other or non-string values
+fail closed. Excluded roots and nested candidates are retained in the
+environment-exclusion receipt, but never enter ownership, provider, consumer,
+duplicate, dependency, or platform-attestation decisions. Their declared child
+JARs are not traversed, matching Loader's environment-gated discovery.
+
+Duplicate external ownership outside the managed ownership/dependency graph is
+not silently discarded and is not mistaken for a usable provider. It is
+reported as `OBSERVED_EXTERNAL_DUPLICATE_NOT_EVALUATED` with every exact
+path/version owner and `EXCLUDED_FROM_PROVIDER_SET`, but it does not block the
+managed cohort transition or alter accepted Stack composition. Selecting,
+removing, or disabling one of those unrelated external artifacts requires its
+own explicit authority; the manager never guesses based on filename or newer
+version ordering.
+Fabric's builtin provider IDs (`java`, `minecraft`, `fabricloader`) have no
+enabled root provider JAR, but they are never trusted without a version. When a
+managed descriptor depends on or attempts to own one of those IDs, the manager
+attests all three from the exact configured dedicated profile's current launch
+authority. It issues one parameterized, read-only `app.db` query keyed only by
+that profile directory name; an absent or ambiguous row, a non-installed
+instance, a stale/unavailable applied content set, a non-Fabric loader, or an
+unresolved loader alias fails closed. The applied Minecraft and Loader versions
+must be exact releases. The exact cached merged launch metadata ID and SHA-256,
+its required Java major, and its unique Fabric Loader Maven coordinate must
+agree with the applied content set.
+
+Java resolution uses an exact instance override when present, otherwise the
+sole Modrinth Java runtime configured for the cached metadata's required major.
+The selected path must name an actual platform Java launcher and may not enter
+the protected profile or traverse a symlink, junction, or reparse point. On
+Windows only `java.exe` or `javaw.exe` is accepted, and a selected `javaw.exe`
+is never executed: the manager probes only its safe sibling `java.exe` with
+`-XshowSettings:properties -version`. The probed specification/full versions
+and `java.home` must agree with the selected executable and Modrinth metadata.
+Receipts expose the exact target/content-set identities, metadata path/hash,
+selected and probed Java paths/hashes, exact builtin versions, matched Fabric
+predicates, and one deterministic attestation fingerprint. A synthetic builtin
+provider then passes through the same Fabric predicate evaluator as every JAR
+provider. An enabled JAR that claims a builtin ID required or owned by the
+managed graph is a duplicate-owner failure; unrelated external collisions
+remain explicit out-of-scope observations.
+
+A physically present unmanaged JAR provider is accepted and its exact
+path/version is recorded, but a missing external or managed hard dependency
+fails closed. Post-deployment verification repeats both the physical JAR graph
+and builtin attestation; readiness is never committed unless hash inventory,
+dependency graph, and launch authority all report `VERIFIED`.
 
 `PROMOTE_UNTESTED_CANDIDATE` is the narrow exception for an explicitly
 user-approved successor that must enter the accepted baseline without claiming
@@ -97,9 +255,13 @@ may emit `PHYSICAL_STATE_VERIFIED`: the normal `verify` command, or the same
 mandatory scan embedded before and after legacy-marker retirement. It
 independently checks every managed physical path, active/disabled disposition,
 SHA-256, Fabric ownership, and absence of superseded enabled artifacts. Its
-receipt names the exact slot projects, versions, physical artifact paths,
-hashes and dispositions, plus accepted-baseline counts and deterministic
-managed-inventory digests.
+receipt enumerates every slot cohort member with project name/UUID, deployment
+UUID, canonical version, source checkpoint, independent runtime result,
+artifact UUID/path/hash/disposition, and embedded Fabric version. It also
+reports dependency-provider resolution and one explicit release comparison per
+member: `CURRENT_RELEASE_DEPLOYED`, `OLDER_RELEASE_DEPLOYED`, or
+`CURRENT_RELEASE_NOT_DEPLOYED`. Accepted-baseline counts and deterministic
+managed-inventory digests remain present.
 
 ## Canonical title projection
 
@@ -113,12 +275,16 @@ identity lines:
 
 ```text
 Baseline: Stack vN
-Slot A: <canonical project name> - Canary <number>  (or Slot A: Empty)
+Slot A: <name> - Canary <number> + <name> - Canary <number>  (or Slot A: Empty)
 Slot B: <canonical project name> - Canary <number>  (or Slot B: Empty)
 ```
 
-Canary numbers derive from each slot unit's canonical `version`, never an
-artifact filename. Empty slots never render `UNKNOWN`. A legacy V2 ledger plus
+Canary numbers derive from every cohort member's canonical `version`, never an
+artifact filename. Empty slots never render `UNKNOWN`. For a schema-V1 runtime
+state only, the manager also recognizes the exact deterministic pre-cohort
+projection, reports `LEGACY_MIGRATION_REQUIRED`, and replaces it atomically on
+the next cohort deployment; any tamper or legacy-shaped schema-V2 projection is
+rejected. A legacy V2 ledger plus
 the exact pinned `workbench-test-marker-0.1.1.jar` is accepted only as the
 one-step migration preimage; the next successful manager transition replaces
 it with the pinned `0.2.0` JAR, writes the projection, and advances the
@@ -142,10 +308,20 @@ python -B tools/test_instance_manager/manager.py transition --operation <operati
 ```
 
 `transition` is a dry-run unless `--apply` is present. Inspect the complete
-write/removal plan first. An apply recomputes the plan while holding the
-target-local exclusive lock, stages and hashes every addition, verifies the
-result, commits the target ledger and repository state together, and restores
-the preimage if any step fails.
+write/removal, ownership, dependency-resolution, slot/cohort, lifecycle, and
+title plan first. The manager checks Windows Java/JVM process command lines and
+refuses mutation when a Minecraft JVM names the dedicated profile; it never
+terminates that process. Operator shells and inspection tools that merely quote
+the profile path are not treated as a running Minecraft instance. An apply
+recomputes the plan while holding the target-local exclusive
+lock, stages and hashes every addition, verifies the result, commits the target
+ledger and repository state together, and restores the preimage if any step
+fails. Builtin launch authority is attested during dry-run/preflight,
+re-attested immediately under the target lock before a transaction directory
+or managed path is written, repeated after physical writes, and checked again
+at the final commit boundary. Any fingerprint drift fails closed; drift after
+writes rolls back every managed artifact, slot, ledger, title projection, and
+repository-state change.
 
 The V1 `.workbench-instance-manager.json` file is legacy display metadata, not
 V2 state authority. The 0.2.0 title marker never reads either its active or
@@ -180,8 +356,21 @@ already exists.
   every ownership key of each overridden dependency; removing the slot restores
   those accepted bytes, and a normal slot promotion cannot absorb the temporary
   dependency override into the accepted project.
+- Every project UUID in a cohort occupies that one slot for lifecycle purposes;
+  member runtime results are never aggregated or copied between members.
 - Slots are independent: updating, clearing, or promoting one cannot move or
   rewrite the other.
+- A provider replacement is accepted only when every remaining member's exact
+  staged Fabric dependency is satisfied. An incompatible retained companion
+  fails before any filesystem write; a compatible bounded predicate permits an
+  atomic provider-only member replacement.
+- Every hard dependency of an enabled managed Fabric JAR resolves to either an
+  exact enabled JAR provider or an exact attested builtin provider and satisfies
+  its declared predicate. Missing external providers, unversioned builtins,
+  duplicate builtin ownership, and launch-authority drift all fail closed.
+- Duplicate ownership outside all managed artifact and hard-dependency IDs is
+  receipt-only evidence, never a selected provider. It cannot mutate accepted
+  Stack composition or authorize removal of an external artifact.
 - Unmanaged enabled JARs that provide managed Fabric IDs are rejected;
   intentional legacy-disabled fallbacks are preserved.
 - Symlinks, junctions/reparse points, path escapes, stale revisions/digests,

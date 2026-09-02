@@ -12,21 +12,27 @@ from __future__ import annotations
 import argparse
 import copy
 import hashlib
+import io
 import json
 import os
 import re
 import shutil
+import sqlite3
 import stat
+import subprocess
 import tempfile
 import uuid
 import zipfile
-from dataclasses import dataclass
+from dataclasses import dataclass, replace as dataclass_replace
 from datetime import datetime, timezone
 from pathlib import Path, PurePosixPath, PureWindowsPath
-from typing import Any, Callable, Iterable
+from typing import Any, Callable, Iterable, Sequence
 
 try:
     from ..runtime_slots import (
+        _PHYSICAL_MANAGER_AUTHORITY,
+        finalize_verified_profile_transition,
+        migrate_runtime_state,
         plan_transition,
         render_title_state,
         resolve_profile,
@@ -39,6 +45,9 @@ except ImportError:  # Direct execution from tools/test_instance_manager/.
 
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
     from runtime_slots import (  # type: ignore
+        _PHYSICAL_MANAGER_AUTHORITY,
+        finalize_verified_profile_transition,
+        migrate_runtime_state,
         plan_transition,
         render_title_state,
         resolve_profile,
@@ -55,10 +64,48 @@ TITLE_PROJECTION_SCHEMA = "mynx-runtime-title-state-v1"
 LEGACY_MARKER_NAME = ".workbench-instance-manager.json"
 RETIRED_LEGACY_MARKER_NAME = ".workbench-instance-manager.v1-retired.json"
 FailureInjector = Callable[[str], None]
+JavaPropertyProbe = Callable[[Path], dict[str, str]]
 
 
 class ManagerError(RuntimeError):
     """A physical preflight, ownership, serialization, or recovery failure."""
+
+
+class _NonFabricRootError(ManagerError):
+    """A readable root archive has no root Fabric descriptor."""
+
+
+def _slot_members(slot: dict[str, Any]) -> list[dict[str, Any]]:
+    """Return normalized member records while accepting a legacy one-unit slot."""
+
+    members = slot.get("members")
+    if isinstance(members, list):
+        return members
+    if isinstance(slot.get("unit"), dict):
+        member = {
+            "unit": slot["unit"],
+            "replaces_accepted_deployment_id": slot.get("replaces_accepted_deployment_id"),
+            "runtime_result": slot.get("runtime_result"),
+        }
+        if slot.get("dependency_overrides"):
+            member["dependency_overrides"] = slot["dependency_overrides"]
+        return [member]
+    raise ManagerError("occupied runtime slot has neither members nor a legacy unit")
+
+
+def _slot_physical_identity(slot: dict[str, Any] | None) -> Any:
+    """Return only the member composition which can change physical bytes."""
+
+    if slot is None:
+        return None
+    return [
+        {
+            "unit": copy.deepcopy(member["unit"]),
+            "replaces_accepted_deployment_id": member["replaces_accepted_deployment_id"],
+            "dependency_overrides": copy.deepcopy(member.get("dependency_overrides", [])),
+        }
+        for member in _slot_members(slot)
+    ]
 
 
 @dataclass(frozen=True)
@@ -193,6 +240,7 @@ class ManagerConfig:
 class ManagedArtifact:
     deployment_id: str
     artifact_id: str
+    project_uuid: str
     project_id: str
     filename: str
     sha256: str
@@ -201,6 +249,7 @@ class ManagedArtifact:
     relative_path: str
     active: bool
     source: dict[str, str]
+    expected_fabric_version: str | None = None
     retained_rollback: bool = False
 
     def ledger_record(self) -> dict[str, Any]:
@@ -232,6 +281,219 @@ class RetainedPredecessorMove:
 
 
 @dataclass(frozen=True)
+class NestedJarProvenanceLayer:
+    container_path: str
+    container_sha256: str
+    declared_member_path: str
+    member_sha256: str
+    member_size: int
+    member_compressed_size: int
+
+    def receipt(self) -> dict[str, Any]:
+        return {
+            "container_path": self.container_path,
+            "container_sha256": self.container_sha256,
+            "declared_member_path": self.declared_member_path,
+            "member_sha256": self.member_sha256,
+            "member_size": self.member_size,
+            "member_compressed_size": self.member_compressed_size,
+        }
+
+
+@dataclass(frozen=True)
+class NestedJarProvenanceOrigin:
+    source_path: Path
+    root_container_path: str
+    root_container_filename: str
+    root_container_sha256: str
+    nested_chain: tuple[NestedJarProvenanceLayer, ...]
+    managed_project_uuid: str | None = None
+    managed_project_id: str | None = None
+    managed_deployment_id: str | None = None
+    managed_artifact_id: str | None = None
+
+    @property
+    def candidate_path(self) -> str:
+        layer = self.nested_chain[-1]
+        return layer.container_path + "!/" + layer.declared_member_path
+
+    @property
+    def candidate_filename(self) -> str:
+        return PurePosixPath(self.nested_chain[-1].declared_member_path).name
+
+    @property
+    def managed_root_key(self) -> tuple[str, ...] | None:
+        if self.managed_project_id is None:
+            return None
+        return (
+            self.managed_project_uuid or "",
+            self.managed_project_id,
+            self.managed_deployment_id or "",
+            self.managed_artifact_id or "",
+            self.root_container_path.casefold(),
+            self.root_container_sha256,
+        )
+
+    def receipt(self) -> dict[str, Any]:
+        return {
+            "root_container": {
+                "filename": self.root_container_filename,
+                "path": self.root_container_path,
+                "sha256": self.root_container_sha256,
+            },
+            "candidate": {
+                "filename": self.candidate_filename,
+                "path": self.candidate_path,
+                "sha256": self.nested_chain[-1].member_sha256,
+            },
+            "nested_depth": len(self.nested_chain),
+            "nested_chain": [layer.receipt() for layer in self.nested_chain],
+            "managed_identity": {
+                "project_uuid": self.managed_project_uuid,
+                "project_id": self.managed_project_id,
+                "deployment_id": self.managed_deployment_id,
+                "artifact_id": self.managed_artifact_id,
+            },
+        }
+
+
+@dataclass(frozen=True)
+class FabricModDescriptor:
+    """Exact root or declared nested Fabric descriptor in one enabled JAR."""
+
+    path: Path
+    relative_path: str
+    filename: str
+    primary_id: str
+    provides: tuple[str, ...]
+    version: str
+    depends: dict[str, tuple[str, ...]]
+    environment: str = "*"
+    environment_eligible: bool = True
+    managed_project_uuid: str | None = None
+    managed_project_id: str | None = None
+    managed_deployment_id: str | None = None
+    managed_artifact_id: str | None = None
+    root_container_path: str | None = None
+    root_container_filename: str | None = None
+    root_container_sha256: str | None = None
+    nested_chain: tuple[NestedJarProvenanceLayer, ...] = ()
+    nested_origin_override: NestedJarProvenanceOrigin | None = None
+    alternate_nested_origins: tuple[NestedJarProvenanceOrigin, ...] = ()
+
+    @property
+    def ownership_ids(self) -> tuple[str, ...]:
+        return (self.primary_id, *self.provides)
+
+    @property
+    def primary_nested_origin(self) -> NestedJarProvenanceOrigin | None:
+        if not self.nested_chain:
+            return None
+        if self.nested_origin_override is not None:
+            return self.nested_origin_override
+        return NestedJarProvenanceOrigin(
+            source_path=self.path,
+            root_container_path=self.root_container_path or self.relative_path,
+            root_container_filename=self.root_container_filename or self.filename,
+            root_container_sha256=self.root_container_sha256 or "",
+            nested_chain=self.nested_chain,
+            managed_project_uuid=self.managed_project_uuid,
+            managed_project_id=self.managed_project_id,
+            managed_deployment_id=self.managed_deployment_id,
+            managed_artifact_id=self.managed_artifact_id,
+        )
+
+    @property
+    def nested_origins(self) -> tuple[NestedJarProvenanceOrigin, ...]:
+        primary = self.primary_nested_origin
+        return (primary, *self.alternate_nested_origins) if primary is not None else ()
+
+    @property
+    def alternate_nested_chains(self) -> tuple[tuple[NestedJarProvenanceLayer, ...], ...]:
+        return tuple(origin.nested_chain for origin in self.alternate_nested_origins)
+
+    @property
+    def managed_nested_origins(self) -> tuple[NestedJarProvenanceOrigin, ...]:
+        return tuple(origin for origin in self.nested_origins if origin.managed_root_key is not None)
+
+    @property
+    def managed_root_keys(self) -> frozenset[tuple[str, ...]]:
+        return frozenset(
+            origin.managed_root_key
+            for origin in self.managed_nested_origins
+            if origin.managed_root_key is not None
+        )
+
+    @property
+    def is_managed(self) -> bool:
+        return self.managed_project_id is not None or bool(self.managed_nested_origins)
+
+    def provenance_record(self) -> dict[str, Any]:
+        origins = self.nested_origins
+        return {
+            "classification": (
+                "DECLARED_NESTED_FABRIC_JAR"
+                if self.nested_chain
+                else "ROOT_ENABLED_FABRIC_JAR"
+            ),
+            "root_container": {
+                "filename": self.root_container_filename or self.filename,
+                "path": self.root_container_path or self.relative_path,
+                "sha256": self.root_container_sha256,
+            },
+            "nested_depth": len(self.nested_chain),
+            "nested_chain": [layer.receipt() for layer in self.nested_chain],
+            "nested_chains": [
+                [layer.receipt() for layer in origin.nested_chain]
+                for origin in origins
+            ],
+            "origins": [origin.receipt() for origin in origins],
+            "fabric_environment": {
+                "value": self.environment,
+                "target": "client",
+                "eligible": self.environment_eligible,
+            },
+        }
+
+
+@dataclass(frozen=True)
+class FabricPlatformProvider:
+    """Exact Fabric builtin provider derived from current launch authority."""
+
+    mod_id: str
+    version: str
+    authority: str
+
+
+@dataclass(frozen=True)
+class PlatformAttestation:
+    """One coherent snapshot of the target's authoritative launch inputs."""
+
+    providers: tuple[FabricPlatformProvider, ...]
+    evidence: dict[str, Any]
+    fingerprint: str
+
+    @property
+    def provider_map(self) -> dict[str, FabricPlatformProvider]:
+        return {provider.mod_id: provider for provider in self.providers}
+
+    def receipt(self) -> dict[str, Any]:
+        return {
+            "status": "FABRIC_PLATFORM_PROVIDERS_ATTESTED",
+            "fingerprint": self.fingerprint,
+            "providers": [
+                {
+                    "id": provider.mod_id,
+                    "version": provider.version,
+                    "authority": provider.authority,
+                }
+                for provider in self.providers
+            ],
+            "evidence": copy.deepcopy(self.evidence),
+        }
+
+
+@dataclass(frozen=True)
 class PhysicalPlan:
     mode: str
     current_state: dict[str, Any] | None
@@ -243,20 +505,143 @@ class PhysicalPlan:
     removals: tuple[Path, ...]
     unchanged: tuple[str, ...]
     title_projection: dict[str, Any]
+    dependency_resolution: dict[str, Any]
+    profile_use_preflight: dict[str, Any]
     batch_operation: dict[str, Any] | None
+    finalize_verified_profile: bool = False
+    transition_at: str | None = None
+    changed_slots: tuple[str, ...] = ()
 
     def summary(self, *, dry_run: bool) -> dict[str, Any]:
+        def slots_by_project(state: dict[str, Any] | None) -> dict[str, str]:
+            if state is None:
+                return {}
+            return {
+                member["unit"]["project_uuid"]: label
+                for label in ("A", "B")
+                if state["slots"][label] is not None
+                for member in _slot_members(state["slots"][label])
+            }
+
+        def slot_snapshot(
+            state: dict[str, Any] | None,
+            label: str,
+            *,
+            finalized_preview: bool = False,
+        ) -> dict[str, Any] | None:
+            if state is None or state["slots"][label] is None:
+                return None
+            slot = state["slots"][label]
+            return {
+                "deployment_state": (
+                    "READY_TO_TEST_VERIFIED"
+                    if finalized_preview
+                    else slot["deployment"]["state"]
+                ),
+                "members": [
+                    {
+                        "project_uuid": member["unit"]["project_uuid"],
+                        "project_id": member["unit"]["project_id"],
+                        "deployment_id": member["unit"]["deployment_id"],
+                        "version": member["unit"]["version"],
+                        "runtime_result": member["runtime_result"]["classification"],
+                        "replaces_accepted_deployment_id": member["replaces_accepted_deployment_id"],
+                        "dependency_overrides": copy.deepcopy(member.get("dependency_overrides", [])),
+                    }
+                    for member in _slot_members(slot)
+                ],
+            }
+
+        def slot_member_results(state: dict[str, Any] | None) -> dict[str, dict[str, Any]]:
+            if state is None:
+                return {}
+            result: dict[str, dict[str, Any]] = {}
+            for label in ("A", "B"):
+                slot = state["slots"][label]
+                if slot is None:
+                    continue
+                for member in _slot_members(slot):
+                    unit = member["unit"]
+                    result[unit["deployment_id"]] = {
+                        "slot": label,
+                        "project_uuid": unit["project_uuid"],
+                        "project_id": unit["project_id"],
+                        "deployment_id": unit["deployment_id"],
+                        "version": unit["version"],
+                        "runtime_result": copy.deepcopy(member["runtime_result"]),
+                    }
+            return result
+
+        current_slots = slots_by_project(self.current_state)
+        desired_slots = slots_by_project(self.desired_state)
+        projects = sorted(set(current_slots).union(desired_slots))
+        current_results = slot_member_results(self.current_state)
+        desired_results = slot_member_results(self.desired_state)
+        desired_accepted_deployments = {
+            member["unit"]["deployment_id"]
+            for member in self.desired_state["accepted_baseline"]["members"]
+        }
+        displaced_result_preimages: list[dict[str, Any]] = []
+        for deployment_id, record in current_results.items():
+            if deployment_id in desired_results:
+                continue
+            if deployment_id in desired_accepted_deployments:
+                disposition = "PROMOTED"
+            elif record["project_uuid"] in desired_slots:
+                disposition = "REPLACED"
+            else:
+                disposition = "REMOVED"
+            displaced_result_preimages.append(
+                {
+                    **copy.deepcopy(record),
+                    "disposition": disposition,
+                }
+            )
+        preserved_companion_results = [
+            {
+                "project_uuid": before["project_uuid"],
+                "project_id": before["project_id"],
+                "deployment_id": deployment_id,
+                "version": before["version"],
+                "before_slot": before["slot"],
+                "after_slot": desired_results[deployment_id]["slot"],
+                "runtime_result": copy.deepcopy(desired_results[deployment_id]["runtime_result"]),
+            }
+            for deployment_id, before in current_results.items()
+            if deployment_id in desired_results
+            and before["runtime_result"] == desired_results[deployment_id]["runtime_result"]
+        ]
+        deferred_final_digest = dry_run and self.finalize_verified_profile
+        title_projection = copy.deepcopy(self.title_projection)
+        if deferred_final_digest:
+            title_projection["state_digest"] = None
+            title_projection["state_digest_status"] = "DEFERRED_UNTIL_POST_DEPLOYMENT_VERIFICATION"
         return {
             "mode": self.mode,
             "dry_run": dry_run,
             "target_state_revision": self.desired_state["revision"],
-            "target_state_digest": state_digest(self.desired_state),
+            "target_state_digest": None if deferred_final_digest else state_digest(self.desired_state),
+            "preverification_state_digest": (
+                state_digest(self.desired_state) if deferred_final_digest else None
+            ),
+            "target_state_digest_status": (
+                "DEFERRED_UNTIL_POST_DEPLOYMENT_VERIFICATION"
+                if deferred_final_digest
+                else "FINAL"
+            ),
             "activation": self.desired_state["activation"],
             "writes": [
                 {
                     "path": action.relative_path,
                     "sha256": action.artifact.sha256,
                     "source": str(action.source),
+                    "project_uuid": action.artifact.project_uuid,
+                    "project_id": action.artifact.project_id,
+                    "deployment_id": action.artifact.deployment_id,
+                    "artifact_id": action.artifact.artifact_id,
+                    "primary_mod_id": action.artifact.mod_id,
+                    "ownership_mod_ids": list(action.artifact.ownership_mod_ids),
+                    "disposition": "ACTIVE" if action.artifact.active else "DISABLED",
                 }
                 for action in self.writes
             ],
@@ -269,8 +654,52 @@ class PhysicalPlan:
                 for move in self.retained_predecessor_moves
             ],
             "removals": [path.name for path in self.removals],
+            "removal_details": [
+                {
+                    "path": artifact.relative_path,
+                    "sha256": artifact.sha256,
+                    "project_uuid": artifact.project_uuid,
+                    "project_id": artifact.project_id,
+                    "deployment_id": artifact.deployment_id,
+                    "artifact_id": artifact.artifact_id,
+                    "ownership_mod_ids": list(artifact.ownership_mod_ids),
+                    "prior_disposition": "ACTIVE" if artifact.active else "DISABLED",
+                }
+                for path in self.removals
+                for artifact in self.current_artifacts
+                if os.path.normcase(str(path)).casefold()
+                == os.path.normcase(str(Path(artifact.relative_path))).casefold()
+                or path.name.casefold() == Path(artifact.relative_path).name.casefold()
+            ],
             "unchanged": list(self.unchanged),
             "managed_files": [artifact.ledger_record() for artifact in self.desired_artifacts],
+            "dependency_resolution": copy.deepcopy(self.dependency_resolution),
+            "profile_use_preflight": copy.deepcopy(self.profile_use_preflight),
+            "slot_changes": {
+                label: {
+                    "before": slot_snapshot(self.current_state, label),
+                    "after": slot_snapshot(
+                        self.desired_state,
+                        label,
+                        finalized_preview=(
+                            self.finalize_verified_profile and label in self.changed_slots
+                        ),
+                    ),
+                }
+                for label in ("A", "B")
+            },
+            "lifecycle_changes": [
+                {
+                    "project_uuid": project_uuid,
+                    "before": "TESTING" if project_uuid in current_slots else "ACTIVE",
+                    "after": "TESTING" if project_uuid in desired_slots else "ACTIVE",
+                    "before_slot": current_slots.get(project_uuid),
+                    "after_slot": desired_slots.get(project_uuid),
+                }
+                for project_uuid in projects
+            ],
+            "displaced_member_runtime_result_preimages": displaced_result_preimages,
+            "preserved_companion_runtime_results": preserved_companion_results,
             "retained_rollbacks": [
                 {
                     **artifact.ledger_record(),
@@ -283,7 +712,18 @@ class PhysicalPlan:
                 for artifact in self.desired_artifacts
                 if artifact.retained_rollback
             ],
-            "title_projection": copy.deepcopy(self.title_projection),
+            "title_projection": title_projection,
+            "finalization": (
+                {
+                    "mode": "AFTER_PHYSICAL_HASH_AND_DEPENDENCY_VERIFICATION",
+                    "target_deployment_state": "READY_TO_TEST_VERIFIED",
+                    "state_revision_delta": 1,
+                    "timestamp": self.transition_at,
+                    "changed_slots": list(self.changed_slots),
+                }
+                if self.finalize_verified_profile
+                else None
+            ),
         }
 
 
@@ -327,6 +767,7 @@ class PhysicalManager:
         target: Path | None = None,
         project_index: dict[str, str] | None = None,
         project_display_names: dict[str, str] | None = None,
+        java_property_probe: JavaPropertyProbe | None = None,
     ):
         self.config = config
         requested = config.dedicated_profile if target is None else Path(target)
@@ -383,6 +824,7 @@ class PhysicalManager:
                 project_display_names = copy.deepcopy(project_index)
         self.project_index = copy.deepcopy(project_index)
         self.project_display_names = copy.deepcopy(project_display_names)
+        self._java_property_probe = java_property_probe or _probe_java_properties
         # Supplying both catalogs explicitly is the narrow test-only escape
         # hatch for isolated fixtures which have no project manifests. Normal
         # CLI construction always retains the authoritative manifest catalog.
@@ -395,12 +837,14 @@ class PhysicalManager:
         target: Path | None = None,
         project_index: dict[str, str] | None = None,
         project_display_names: dict[str, str] | None = None,
+        java_property_probe: JavaPropertyProbe | None = None,
     ) -> "PhysicalManager":
         return cls(
             ManagerConfig.load(Path(config_path)),
             target=target,
             project_index=project_index,
             project_display_names=project_display_names,
+            java_property_probe=java_property_probe,
         )
 
     def _assert_safe_target(self) -> None:
@@ -456,6 +900,33 @@ class PhysicalManager:
                 f"legacy V1 display marker must be retired before verification or transition: {self.legacy_marker_path}"
             )
 
+    def _assert_profile_not_in_use(self) -> dict[str, Any]:
+        """Fail closed when a Minecraft process names the dedicated profile."""
+
+        normalized_parts = {part.casefold() for part in self.target.parts}
+        if not {"modrinthapp", "profiles"}.issubset(normalized_parts):
+            # Isolated test fixtures deliberately use temporary directories;
+            # production configuration is always a Modrinth profile.
+            return {
+                "status": "NOT_APPLICABLE_NON_MODRINTH_FIXTURE",
+                "target": str(self.target),
+                "matching_processes": [],
+            }
+        matches = _windows_processes_using_profile(self.target)
+        if matches:
+            details = ", ".join(
+                f"{item['name']} (PID {item['pid']})" for item in matches
+            )
+            raise ManagerError(
+                "dedicated Minecraft profile is actively in use; physical mutation refused: "
+                f"{self.target}; matching processes: {details}"
+            )
+        return {
+            "status": "DEDICATED_PROFILE_NOT_IN_USE",
+            "target": str(self.target),
+            "matching_processes": [],
+        }
+
     def derive_inventory(self, state: dict[str, Any]) -> tuple[ManagedArtifact, ...]:
         """Resolve runtime-state mods and canonical disabled replacements."""
 
@@ -485,7 +956,25 @@ class PhysicalManager:
         for label in ("A", "B"):
             slot = state["slots"][label]
             if slot is not None:
-                artifacts.extend(self._unit_artifacts(slot["unit"], True, seen_paths))
+                for member in _slot_members(slot):
+                    unit = member["unit"]
+                    if state["schema_version"] == 2 and len(unit["artifacts"]) != 1:
+                        if slot["deployment"]["state"] == "READY_TO_TEST_VERIFIED":
+                            raise ManagerError(
+                                f"schema-v2 ready slot {label} member {unit['project_id']} must have exactly one "
+                                "artifact so its visible version can be bound to one embedded Fabric version"
+                            )
+                        expected_fabric_version = None
+                    else:
+                        expected_fabric_version = unit["version"] if state["schema_version"] == 2 else None
+                    artifacts.extend(
+                        self._unit_artifacts(
+                            unit,
+                            True,
+                            seen_paths,
+                            expected_fabric_version=expected_fabric_version,
+                        )
+                    )
 
         return tuple(artifacts)
 
@@ -499,6 +988,7 @@ class PhysicalManager:
         return ManagedArtifact(
             deployment_id=str(uuid.uuid5(uuid.NAMESPACE_URL, "mynx-title-marker-deployment:" + identity)),
             artifact_id=str(uuid.uuid5(uuid.NAMESPACE_URL, "mynx-title-marker-artifact:" + identity)),
+            project_uuid=str(uuid.uuid5(uuid.NAMESPACE_URL, "mynx-title-marker-project")),
             project_id="workbench-test-marker",
             filename=marker.filename,
             sha256=marker.sha256,
@@ -557,6 +1047,34 @@ class PhysicalManager:
             "lines": copy.deepcopy(title["lines"]),
         }
 
+    def _legacy_schema_v1_title_projection(self, state: dict[str, Any]) -> dict[str, Any]:
+        """Reproduce the exact pre-cohort projection for a legacy V1 state."""
+
+        if state.get("schema_version") != 1:
+            raise ManagerError("legacy title projection can only be derived from runtime-state schema_version 1")
+        projection = self._title_projection(state)
+        for label in ("A", "B"):
+            slot = projection["slots"][label]
+            if slot["occupied"]:
+                # The historical one-project renderer exposed these member
+                # fields directly and had neither the cohort array nor the
+                # newly explicit canonical version field.
+                del slot["members"]
+                del slot["version"]
+        return projection
+
+    def _title_projection_status(self, projection: Any, state: dict[str, Any]) -> str | None:
+        """Classify only exact current or exact schema-V1 legacy projections."""
+
+        if projection == self._title_projection(state):
+            return "SYNCHRONIZED"
+        if (
+            state.get("schema_version") == 1
+            and projection == self._legacy_schema_v1_title_projection(state)
+        ):
+            return "LEGACY_MIGRATION_REQUIRED"
+        return None
+
     def _verify_title_projection(self, state: dict[str, Any]) -> dict[str, Any]:
         try:
             projection = json.loads(self.title_projection_path.read_text(encoding="utf-8"))
@@ -564,10 +1082,11 @@ class PhysicalManager:
             raise ManagerError(f"V2 title display projection is missing: {self.title_projection_path}") from exc
         except (OSError, json.JSONDecodeError) as exc:
             raise ManagerError(f"cannot load V2 title display projection {self.title_projection_path}: {exc}") from exc
-        expected = self._title_projection(state)
-        if projection != expected:
+        status = self._title_projection_status(projection, state)
+        if status is None:
             raise ManagerError("V2 title display projection does not match canonical runtime state")
         return {
+            "status": status,
             "path": self.title_projection_path.name,
             "sha256": _sha256(self.title_projection_path),
             "state_revision": projection["state_revision"],
@@ -580,6 +1099,7 @@ class PhysicalManager:
         active: bool,
         seen_paths: set[str],
         *,
+        expected_fabric_version: str | None = None,
         retained_rollback: bool = False,
     ) -> list[ManagedArtifact]:
         result: list[ManagedArtifact] = []
@@ -619,6 +1139,7 @@ class PhysicalManager:
                 ManagedArtifact(
                     deployment_id=unit["deployment_id"],
                     artifact_id=raw["artifact_id"],
+                    project_uuid=unit["project_uuid"],
                     project_id=unit["project_id"],
                     filename=filename,
                     sha256=raw["sha256"].lower(),
@@ -627,6 +1148,7 @@ class PhysicalManager:
                     relative_path=relative_path,
                     active=active,
                     source={"type": source["type"], "path": source["path"]},
+                    expected_fabric_version=expected_fabric_version,
                     retained_rollback=retained_rollback,
                 )
             )
@@ -685,18 +1207,26 @@ class PhysicalManager:
         if actual_hash != artifact.sha256:
             raise ManagerError(f"SHA-256 mismatch for {path}: expected {artifact.sha256}, found {actual_hash}")
         declared_ids = frozenset(artifact.ownership_mod_ids)
-        ids = _fabric_mod_ids(path, strict_provides=len(declared_ids) > 1)
+        descriptor = _read_fabric_descriptor(
+            path,
+            strict_provides=len(declared_ids) > 1,
+            relative_path=artifact.relative_path,
+            artifact=artifact,
+        )
+        if (
+            artifact.expected_fabric_version is not None
+            and descriptor.version != artifact.expected_fabric_version
+        ):
+            raise ManagerError(
+                f"embedded Fabric version mismatch for {path}: expected slot member version "
+                f"{artifact.expected_fabric_version}, found {descriptor.version}"
+            )
+        ids = frozenset(descriptor.ownership_ids)
         if artifact.mod_id not in ids:
             raise ManagerError(
                 f"Fabric mod ownership mismatch for {path}: expected primary id {artifact.mod_id}, found {sorted(ids)}"
             )
-        primary = next(iter(ids))  # _fabric_mod_ids returns primary first only conceptually; re-read below for exactness.
-        try:
-            with zipfile.ZipFile(path) as archive:
-                manifest = json.loads(archive.read("fabric.mod.json").decode("utf-8"))
-            primary = manifest["id"]
-        except (OSError, KeyError, UnicodeDecodeError, json.JSONDecodeError, zipfile.BadZipFile) as exc:
-            raise ManagerError(f"cannot verify Fabric manifest in {path}: {exc}") from exc
+        primary = descriptor.primary_id
         if primary != artifact.mod_id:
             raise ManagerError(
                 f"Fabric primary mod id mismatch for {path}: expected {artifact.mod_id}, found {primary}"
@@ -711,6 +1241,1022 @@ class PhysicalManager:
                 f"missing provided aliases {missing}, undeclared manifest ids {undeclared}"
             )
         return ids
+
+    def _planned_enabled_descriptors(
+        self,
+        current_artifacts: Sequence[ManagedArtifact],
+        desired_artifacts: Sequence[ManagedArtifact],
+    ) -> tuple[FabricModDescriptor, ...]:
+        """Build the exact proposed enabled-JAR graph without mutating the target."""
+
+        current_paths = {artifact.relative_path.casefold() for artifact in current_artifacts}
+        desired_active_paths = {
+            artifact.relative_path.casefold()
+            for artifact in desired_artifacts
+            if artifact.active
+        }
+        planned_disabled_adopted_sources = {
+            PurePosixPath(artifact.source["path"]).as_posix().casefold()
+            for artifact in desired_artifacts
+            if not artifact.active and artifact.source["type"] == "ADOPTED_TARGET"
+        }
+        current_by_artifact = {artifact.artifact_id: artifact for artifact in current_artifacts}
+        descriptors: list[FabricModDescriptor] = []
+        traversal_budget = _NestedJarTraversalBudget()
+        for artifact in desired_artifacts:
+            if not artifact.active:
+                continue
+            source: Path | None = None
+            prior = current_by_artifact.get(artifact.artifact_id)
+            if prior is not None and prior.sha256 == artifact.sha256:
+                prior_path = self._destination(prior)
+                if prior_path.exists():
+                    source = prior_path
+            if source is None:
+                source = self._source_path(artifact)
+            if not source.exists():
+                source = self._destination(artifact)
+            if not source.exists():
+                raise ManagerError(
+                    f"missing proposed artifact bytes for {artifact.project_id}/{artifact.filename}: {source}"
+                )
+            self._verify_artifact_file(source, artifact)
+            descriptors.extend(
+                _read_fabric_descriptor_tree(
+                    source,
+                    strict_provides=len(artifact.ownership_mod_ids) > 1,
+                    relative_path=artifact.relative_path,
+                    artifact=artifact,
+                    budget=traversal_budget,
+                )
+            )
+
+        try:
+            entries = tuple(self.mods.iterdir())
+        except OSError as exc:
+            raise ManagerError(f"cannot scan managed mods directory {self.mods}: {exc}") from exc
+        for path in entries:
+            if not path.is_file() or not path.name.casefold().endswith(".jar"):
+                continue
+            relative = PurePosixPath(self.config.mods_directory, path.name).as_posix()
+            normalized = relative.casefold()
+            if (
+                normalized in current_paths
+                or normalized in desired_active_paths
+                or normalized in planned_disabled_adopted_sources
+            ):
+                continue
+            if path.is_symlink():
+                raise ManagerError(f"mods inventory contains a symbolic link: {path}")
+            try:
+                descriptors.extend(
+                    _read_fabric_descriptor_tree(
+                        path,
+                        relative_path=relative,
+                        budget=traversal_budget,
+                    )
+                )
+            except _NonFabricRootError:
+                # Preserve readable foreign archives with no root Fabric
+                # descriptor; nested descriptor errors must never be skipped.
+                continue
+        return tuple(descriptors)
+
+    def _physical_enabled_descriptors(
+        self,
+        desired_artifacts: Sequence[ManagedArtifact],
+    ) -> tuple[FabricModDescriptor, ...]:
+        """Read every physically enabled root Fabric descriptor after apply."""
+
+        managed_by_path = {
+            artifact.relative_path.casefold(): artifact
+            for artifact in desired_artifacts
+            if artifact.active
+        }
+        descriptors: list[FabricModDescriptor] = []
+        traversal_budget = _NestedJarTraversalBudget()
+        try:
+            entries = tuple(self.mods.iterdir())
+        except OSError as exc:
+            raise ManagerError(f"cannot scan managed mods directory {self.mods}: {exc}") from exc
+        for path in entries:
+            if not path.is_file() or not path.name.casefold().endswith(".jar"):
+                continue
+            if path.is_symlink():
+                raise ManagerError(f"mods inventory contains a symbolic link: {path}")
+            relative = PurePosixPath(self.config.mods_directory, path.name).as_posix()
+            artifact = managed_by_path.get(relative.casefold())
+            try:
+                descriptors.extend(
+                    _read_fabric_descriptor_tree(
+                        path,
+                        strict_provides=(artifact is not None and len(artifact.ownership_mod_ids) > 1),
+                        relative_path=relative,
+                        artifact=artifact,
+                        budget=traversal_budget,
+                    )
+                )
+            except _NonFabricRootError:
+                if artifact is None:
+                    continue
+                raise
+        return tuple(descriptors)
+
+    @staticmethod
+    def _required_platform_ids(
+        descriptors: Sequence[FabricModDescriptor],
+    ) -> frozenset[str]:
+        dependency_ids = {
+            dependency_id
+            for descriptor in descriptors
+            if descriptor.environment_eligible and descriptor.is_managed
+            for dependency_id in descriptor.depends
+            if dependency_id in _FABRIC_PLATFORM_DEPENDENCIES
+        }
+        managed_ownership_ids = {
+            ownership_id
+            for descriptor in descriptors
+            if descriptor.environment_eligible and descriptor.is_managed
+            for ownership_id in descriptor.ownership_ids
+            if ownership_id in _FABRIC_PLATFORM_DEPENDENCIES
+        }
+        return frozenset(dependency_ids.union(managed_ownership_ids))
+
+    def _attest_platform_providers(
+        self,
+        required_ids: Iterable[str],
+    ) -> PlatformAttestation | None:
+        """Derive exact Fabric builtins from the configured target's launch authority.
+
+        This is intentionally a single-row, parameterized read of Modrinth's
+        current applied content set.  It never enumerates profiles.  Java is
+        independently probed through the executable selected for that exact
+        content set, without launching Minecraft.
+        """
+
+        required = frozenset(required_ids)
+        unknown = required.difference(_FABRIC_PLATFORM_DEPENDENCIES)
+        if unknown:
+            raise ManagerError(f"unsupported Fabric platform provider IDs: {sorted(unknown)}")
+        if not required:
+            return None
+        if self.target.parent.name.casefold() != "profiles":
+            raise ManagerError(
+                "cannot attest Fabric platform providers: configured dedicated profile "
+                "is not an exact Modrinth profiles/<profile> target"
+            )
+        app_root = self.target.parent.parent.resolve(strict=False)
+        app_database = app_root / "app.db"
+        if not app_database.exists() or not app_database.is_file() or app_database.is_symlink():
+            raise ManagerError(
+                "cannot attest Fabric platform providers: Modrinth launch authority "
+                f"is missing or unsafe: {app_database}"
+            )
+
+        try:
+            connection = sqlite3.connect(
+                app_database.resolve(strict=True).as_uri() + "?mode=ro",
+                uri=True,
+            )
+        except (OSError, sqlite3.Error) as exc:
+            raise ManagerError(f"cannot open Modrinth launch authority read-only: {exc}") from exc
+        try:
+            connection.row_factory = sqlite3.Row
+            connection.execute("PRAGMA query_only=ON")
+            required_tables = {
+                "instances",
+                "instance_content_sets",
+                "instance_launch_overrides",
+                "java_versions",
+            }
+            present_tables = {
+                row[0]
+                for row in connection.execute(
+                    "SELECT name FROM sqlite_master WHERE type='table' AND name IN (?, ?, ?, ?)",
+                    tuple(sorted(required_tables)),
+                )
+            }
+            if present_tables != required_tables:
+                raise ManagerError(
+                    "cannot attest Fabric platform providers: unsupported or incomplete "
+                    f"Modrinth launch-authority schema (missing {sorted(required_tables - present_tables)})"
+                )
+            try:
+                rows = connection.execute(
+                    """
+                    SELECT
+                        i.id AS instance_id,
+                        i.path AS instance_path,
+                        i.install_stage AS install_stage,
+                        i.applied_content_set_id AS applied_content_set_id,
+                        cs.id AS content_set_id,
+                        cs.status AS content_set_status,
+                        cs.game_version AS game_version,
+                        cs.loader AS loader,
+                        cs.loader_version AS loader_version,
+                        cs.modified AS content_set_modified,
+                        json_extract(o.overrides, '$.java_path') AS java_path
+                    FROM instances AS i
+                    JOIN instance_content_sets AS cs
+                      ON cs.id = i.applied_content_set_id
+                     AND cs.instance_id = i.id
+                    LEFT JOIN instance_launch_overrides AS o
+                      ON o.instance_id = i.id
+                    WHERE i.path = ?
+                    """,
+                    (self.target.name,),
+                ).fetchall()
+            except sqlite3.Error as exc:
+                raise ManagerError(
+                    "cannot attest Fabric platform providers: Modrinth launch-authority "
+                    f"schema/query failed: {exc}"
+                ) from exc
+            if len(rows) != 1:
+                raise ManagerError(
+                    "cannot attest Fabric platform providers: exact configured dedicated "
+                    f"profile identity {self.target.name!r} matched {len(rows)} applied content sets"
+                )
+            row = rows[0]
+            if row["instance_path"] != self.target.name:
+                raise ManagerError("Modrinth launch authority returned a mismatched profile identity")
+            if row["install_stage"] != "installed":
+                raise ManagerError(
+                    "cannot attest Fabric platform providers: exact dedicated profile is not installed "
+                    f"(install_stage={row['install_stage']!r})"
+                )
+            if row["content_set_status"] != "available":
+                raise ManagerError(
+                    "cannot attest Fabric platform providers: exact applied content set is not available "
+                    f"(status={row['content_set_status']!r})"
+                )
+            game_version = row["game_version"]
+            loader = row["loader"]
+            loader_version = row["loader_version"]
+            if loader != "fabric":
+                raise ManagerError(
+                    "cannot attest Fabric platform providers: exact dedicated profile loader "
+                    f"is {loader!r}, not 'fabric'"
+                )
+            if isinstance(loader_version, str) and loader_version.casefold() in {"latest", "stable"}:
+                raise ManagerError(
+                    "cannot attest Fabric platform providers: Fabric Loader selection is an unresolved alias"
+                )
+            for value, label in (
+                (game_version, "Minecraft game version"),
+                (loader_version, "Fabric Loader version"),
+            ):
+                parsed = _parse_fabric_semantic_version(value, store_wildcards=False) if isinstance(value, str) else None
+                if parsed is None or parsed.prerelease is not None or parsed.build is not None:
+                    raise ManagerError(
+                        f"cannot attest Fabric platform providers: {label} is not an exact release semantic version: {value!r}"
+                    )
+            version_id = f"{game_version}-{loader_version}"
+            if re.fullmatch(r"[0-9A-Za-z._+~-]+", version_id) is None:
+                raise ManagerError("cannot attest Fabric platform providers: unsafe cached metadata identity")
+            metadata_path = app_root / "meta" / "versions" / version_id / f"{version_id}.json"
+            if not metadata_path.exists() or not metadata_path.is_file() or metadata_path.is_symlink():
+                raise ManagerError(
+                    "cannot attest Fabric platform providers: exact cached launch metadata is missing or unsafe: "
+                    + str(metadata_path)
+                )
+            try:
+                metadata_bytes = metadata_path.read_bytes()
+            except OSError as exc:
+                raise ManagerError(f"cannot read exact cached launch metadata {metadata_path}: {exc}") from exc
+            if len(metadata_bytes) > 16 * 1024 * 1024:
+                raise ManagerError("exact cached launch metadata is unreasonably large")
+            try:
+                metadata = json.loads(metadata_bytes.decode("utf-8"))
+            except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+                raise ManagerError(f"exact cached launch metadata is invalid JSON: {exc}") from exc
+            if not isinstance(metadata, dict) or metadata.get("id") != version_id:
+                raise ManagerError(
+                    "cannot attest Fabric platform providers: cached launch metadata identity "
+                    f"does not equal {version_id!r}"
+                )
+            java_metadata = metadata.get("javaVersion")
+            required_java_major = java_metadata.get("majorVersion") if isinstance(java_metadata, dict) else None
+            if not isinstance(required_java_major, int) or isinstance(required_java_major, bool) or required_java_major < 1:
+                raise ManagerError(
+                    "cannot attest Fabric platform providers: cached launch metadata has no exact positive Java major"
+                )
+            libraries = metadata.get("libraries")
+            if not isinstance(libraries, list):
+                raise ManagerError("cannot attest Fabric platform providers: cached launch metadata libraries is not an array")
+            loader_coordinates = [
+                item["name"]
+                for item in libraries
+                if isinstance(item, dict)
+                and isinstance(item.get("name"), str)
+                and item["name"].startswith("net.fabricmc:fabric-loader:")
+            ]
+            expected_loader_coordinate = f"net.fabricmc:fabric-loader:{loader_version}"
+            if loader_coordinates != [expected_loader_coordinate]:
+                raise ManagerError(
+                    "cannot attest Fabric platform providers: cached Fabric Loader coordinate "
+                    f"does not uniquely equal {expected_loader_coordinate!r}; found {loader_coordinates}"
+                )
+
+            override_java = row["java_path"]
+            configured_java_source: str
+            configured_java_full_version: str | None
+            if isinstance(override_java, str) and override_java.strip():
+                selected_java = Path(override_java)
+                configured_java_source = "INSTANCE_LAUNCH_OVERRIDE"
+                configured_java_full_version = None
+            elif override_java is None or override_java == "":
+                try:
+                    java_rows = connection.execute(
+                        "SELECT full_version, path FROM java_versions WHERE major_version = ?",
+                        (required_java_major,),
+                    ).fetchall()
+                except sqlite3.Error as exc:
+                    raise ManagerError(f"cannot resolve configured Modrinth Java runtime: {exc}") from exc
+                if len(java_rows) != 1:
+                    raise ManagerError(
+                        "cannot attest Fabric platform providers: required Java major "
+                        f"{required_java_major} resolves to {len(java_rows)} configured runtimes"
+                    )
+                selected_java = Path(java_rows[0]["path"])
+                configured_java_source = "MODRINTH_JAVA_VERSION"
+                configured_java_full_version = java_rows[0]["full_version"]
+            else:
+                raise ManagerError("cannot attest Fabric platform providers: configured Java override is not a path string")
+        finally:
+            connection.close()
+
+        def validated_java_path(candidate: Path, label: str, *, allowed_names: frozenset[str]) -> Path:
+            """Validate one launch-authority executable before resolving or reading it."""
+
+            if not candidate.is_absolute():
+                raise ManagerError(
+                    f"cannot attest Fabric platform providers: {label} path is not absolute"
+                )
+            lexical = Path(os.path.abspath(candidate))
+            protected = Path(os.path.abspath(self.config.protected_profile))
+            if _lexical_paths_equal(lexical, protected) or _is_lexically_within(lexical, protected):
+                raise ManagerError(
+                    "cannot attest Fabric platform providers: selected Java executable "
+                    "resolves lexically into the protected gameplay profile"
+                )
+            if lexical.name.casefold() not in allowed_names:
+                raise ManagerError(
+                    "cannot attest Fabric platform providers: selected Java executable must be "
+                    + " or ".join(sorted(allowed_names))
+                )
+
+            # The executable may legitimately be installed anywhere, including
+            # outside Modrinth's app root. Walk from its filesystem anchor so no
+            # intervening symlink, junction, or other reparse point is trusted.
+            anchor = Path(lexical.anchor)
+            if not lexical.anchor:
+                raise ManagerError(
+                    f"cannot attest Fabric platform providers: {label} has no filesystem anchor"
+                )
+            _assert_no_reparse_components(lexical, label, root=anchor)
+            if not lexical.exists() or not lexical.is_file():
+                raise ManagerError(
+                    f"cannot attest Fabric platform providers: {label} is missing or unsafe: {lexical}"
+                )
+            try:
+                resolved = lexical.resolve(strict=True)
+            except OSError as exc:
+                raise ManagerError(
+                    f"cannot attest Fabric platform providers: cannot resolve {label}: {exc}"
+                ) from exc
+            protected_resolved = self.config.protected_profile.resolve(strict=False)
+            if _paths_equal(resolved, protected_resolved) or _is_within(resolved, protected_resolved):
+                raise ManagerError(
+                    "cannot attest Fabric platform providers: selected Java executable "
+                    "resolves into the protected gameplay profile"
+                )
+            return resolved
+
+        selected_names = (
+            frozenset({"java.exe", "javaw.exe"})
+            if os.name == "nt"
+            else frozenset({"java"})
+        )
+        selected_java = validated_java_path(
+            selected_java,
+            "selected Java executable",
+            allowed_names=selected_names,
+        )
+        probe_java = selected_java
+        if selected_java.name.casefold() == "javaw.exe":
+            probe_java = validated_java_path(
+                selected_java.with_name("java.exe"),
+                "selected javaw.exe sibling java.exe",
+                allowed_names=frozenset({"java.exe"}),
+            )
+        selected_java_sha256 = _sha256(selected_java)
+        probe_java_sha256 = _sha256(probe_java)
+        properties = self._java_property_probe(probe_java)
+        if (
+            _sha256(selected_java) != selected_java_sha256
+            or _sha256(probe_java) != probe_java_sha256
+        ):
+            raise ManagerError(
+                "cannot attest Fabric platform providers: selected Java executable bytes changed during probing"
+            )
+        java_specification_version = properties.get("java.specification.version")
+        java_full_version = properties.get("java.version")
+        java_home = properties.get("java.home")
+        if not all(isinstance(value, str) and value.strip() for value in (
+            java_specification_version,
+            java_full_version,
+            java_home,
+        )):
+            raise ManagerError(
+                "cannot attest Fabric platform providers: Java probe did not report "
+                "java.specification.version, java.version, and java.home"
+            )
+        normalized_java_specification = re.sub(r"^1\.", "", java_specification_version)
+        parsed_java_specification = _parse_fabric_semantic_version(
+            normalized_java_specification,
+            store_wildcards=False,
+        )
+        if (
+            parsed_java_specification is None
+            or parsed_java_specification.prerelease is not None
+            or parsed_java_specification.build is not None
+            or not parsed_java_specification.components
+            or parsed_java_specification.components[0] != required_java_major
+        ):
+            raise ManagerError(
+                "cannot attest Fabric platform providers: probed Java specification version "
+                f"{java_specification_version!r} disagrees with required major {required_java_major}"
+            )
+        if (
+            configured_java_full_version is not None
+            and configured_java_full_version
+            not in {java_full_version, normalized_java_specification}
+        ):
+            raise ManagerError(
+                "cannot attest Fabric platform providers: configured Java version identity "
+                f"{configured_java_full_version!r} agrees with neither probed specification "
+                f"{normalized_java_specification!r} nor full version {java_full_version!r}"
+            )
+        probed_java_home = Path(java_home).resolve(strict=False)
+        selected_java_home = selected_java.parent.parent.resolve(strict=False)
+        if not _paths_equal(probed_java_home, selected_java_home):
+            raise ManagerError(
+                "cannot attest Fabric platform providers: probed java.home "
+                f"{probed_java_home} does not own selected executable {selected_java}"
+            )
+
+        evidence = {
+            "source_classification": "MODRINTH_EXACT_DEDICATED_PROFILE_LAUNCH_AUTHORITY",
+            "required_provider_ids": sorted(required),
+            "app_database": {
+                "path": str(app_database.resolve(strict=True)),
+                "schema": "MODERN_APPLIED_CONTENT_SET",
+                "query_scope": "EXACT_PROFILE_DIRECTORY_NAME",
+            },
+            "target": {
+                "profile_path": str(self.target),
+                "profile_directory_name": self.target.name,
+                "instance_id": _sqlite_identity(row["instance_id"]),
+                "install_stage": row["install_stage"],
+                "applied_content_set_id": _sqlite_identity(row["applied_content_set_id"]),
+                "content_set_id": _sqlite_identity(row["content_set_id"]),
+                "content_set_status": row["content_set_status"],
+                "content_set_modified": row["content_set_modified"],
+            },
+            "minecraft": {
+                "version": game_version,
+                "authority": "APPLIED_CONTENT_SET_GAME_VERSION",
+            },
+            "fabricloader": {
+                "version": loader_version,
+                "authority": "APPLIED_CONTENT_SET_AND_CACHED_LOADER_COORDINATE",
+                "loader": loader,
+                "coordinate": expected_loader_coordinate,
+            },
+            "cached_launch_metadata": {
+                "path": str(metadata_path.resolve(strict=True)),
+                "id": version_id,
+                "sha256": hashlib.sha256(metadata_bytes).hexdigest(),
+                "required_java_major": required_java_major,
+            },
+            "java": {
+                "version": normalized_java_specification,
+                "authority": "PROBED_SELECTED_JAVA_SPECIFICATION_VERSION",
+                "configured_source": configured_java_source,
+                "selected_executable": str(selected_java),
+                "selected_executable_sha256": selected_java_sha256,
+                "probe_executable": str(probe_java.resolve(strict=True)),
+                "probe_executable_sha256": probe_java_sha256,
+                "configured_full_version": configured_java_full_version,
+                "probed_full_version": java_full_version,
+                "probed_home": str(probed_java_home),
+            },
+        }
+        fingerprint = hashlib.sha256(
+            json.dumps(evidence, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
+        ).hexdigest()
+        return PlatformAttestation(
+            providers=(
+                FabricPlatformProvider("fabricloader", loader_version, "MODRINTH_APPLIED_CONTENT_SET"),
+                FabricPlatformProvider("java", normalized_java_specification, "SELECTED_JAVA_PROBE"),
+                FabricPlatformProvider("minecraft", game_version, "MODRINTH_APPLIED_CONTENT_SET"),
+            ),
+            evidence=evidence,
+            fingerprint=fingerprint,
+        )
+
+    def _resolve_dependency_graph(
+        self,
+        descriptors: Sequence[FabricModDescriptor],
+        *,
+        managed_ownership_ids: set[str],
+        phase: str,
+        platform_attestation: PlatformAttestation | None = None,
+    ) -> dict[str, Any]:
+        discovered_descriptors = _deduplicate_nested_descriptors(descriptors)
+        excluded_descriptors = tuple(
+            descriptor
+            for descriptor in discovered_descriptors
+            if not descriptor.environment_eligible
+        )
+        descriptors = tuple(
+            descriptor
+            for descriptor in discovered_descriptors
+            if descriptor.environment_eligible
+        )
+        failure_phase = (
+            "before physical mutation"
+            if phase.startswith("PREFLIGHT") or phase == "TEST"
+            else "during post-deployment physical verification"
+        )
+        platform_providers = (
+            platform_attestation.provider_map
+            if platform_attestation is not None
+            else {}
+        )
+        managed_dependency_ids = {
+            dependency_id
+            for descriptor in descriptors
+            if descriptor.is_managed
+            for dependency_id in descriptor.depends
+        }
+        managed_descriptor_ownership_ids = {
+            ownership_id
+            for descriptor in descriptors
+            if descriptor.is_managed
+            for ownership_id in descriptor.ownership_ids
+        }
+        enforced_ownership_ids = (
+            set(managed_ownership_ids)
+            .union(managed_dependency_ids)
+            .union(managed_descriptor_ownership_ids)
+        )
+        for descriptor in descriptors:
+            if len(descriptor.managed_root_keys) <= 1:
+                continue
+            if not set(descriptor.ownership_ids).intersection(enforced_ownership_ids):
+                continue
+            raise ManagerError(
+                "byte-identical declared nested Fabric candidate has ambiguous managed root ownership "
+                f"in the managed graph: {descriptor.primary_id}@{descriptor.version}; origins="
+                + json.dumps(
+                    [origin.receipt() for origin in descriptor.nested_origins],
+                    sort_keys=True,
+                    separators=(",", ":"),
+                )
+            )
+        ownership_groups: dict[str, list[FabricModDescriptor]] = {}
+        for descriptor in descriptors:
+            for ownership_id in descriptor.ownership_ids:
+                ownership_groups.setdefault(ownership_id, []).append(descriptor)
+
+        candidate_priority = _FabricCandidatePriority(descriptors)
+        observed_out_of_scope_duplicate_groups: list[dict[str, Any]] = []
+        candidate_selection_groups: list[dict[str, Any]] = []
+        out_of_scope_duplicate_ids: set[str] = set()
+        inactive_candidate_ids: set[int] = set()
+        selected_candidate_groups: dict[str, FabricModDescriptor] = {}
+        for ownership_id, owners in sorted(ownership_groups.items()):
+            sorted_owners = sorted(
+                owners,
+                key=lambda item: (
+                    item.relative_path.casefold(),
+                    item.managed_project_id or "",
+                    item.managed_artifact_id or "",
+                ),
+            )
+            platform_provider = platform_providers.get(ownership_id)
+            owner_count = len(owners) + (1 if platform_provider is not None else 0)
+            if owner_count > 1:
+                owner_labels = [
+                    f"{owner.relative_path}@{owner.version}"
+                    for owner in sorted_owners
+                ]
+                if platform_provider is not None:
+                    owner_labels.insert(
+                        0,
+                        f"Fabric builtin provider@{platform_provider.version}",
+                    )
+                if ownership_id in enforced_ownership_ids:
+                    direct_roots = [owner for owner in sorted_owners if not owner.nested_chain]
+                    if (
+                        platform_provider is not None
+                        or ownership_id in managed_ownership_ids
+                        or len(direct_roots) > 1
+                    ):
+                        raise ManagerError(
+                            "duplicate enabled Fabric ownership "
+                            f"{ownership_id}: " + " and ".join(owner_labels)
+                        )
+                    if len({owner.primary_id for owner in sorted_owners}) != 1:
+                        raise ManagerError(
+                            "duplicate enabled Fabric ownership uses overlapping primary/provides IDs "
+                            f"outside the proven Loader candidate-selection subset for {ownership_id}: "
+                            + " and ".join(owner_labels)
+                        )
+
+                    if direct_roots:
+                        selected = direct_roots[0]
+                    else:
+                        selected = sorted_owners[0]
+                        for candidate in sorted_owners[1:]:
+                            if candidate_priority.compare(candidate, selected) < 0:
+                                selected = candidate
+                        tied = [
+                            candidate
+                            for candidate in sorted_owners
+                            if candidate is not selected
+                            and candidate_priority.compare(candidate, selected) == 0
+                        ]
+                        if tied:
+                            tied_labels = [
+                                f"{candidate.relative_path}@{candidate.version}"
+                                for candidate in (selected, *tied)
+                            ]
+                            raise ManagerError(
+                                "ambiguous equal-priority external nested Fabric candidates for ownership "
+                                f"{ownership_id}: " + " and ".join(tied_labels)
+                                + "; Fabric Loader 0.19.3 build metadata does not break semantic-version "
+                                "precedence, and no unique root/depth/parent priority exists"
+                            )
+
+                    selected_candidate_groups[ownership_id] = selected
+                    inactive = [owner for owner in sorted_owners if owner is not selected]
+                    inactive_candidate_ids.update(id(owner) for owner in inactive)
+                    candidate_selection_groups.append(
+                        {
+                            "classification": "LOADER_0_19_3_CANDIDATE_SELECTION",
+                            "ownership_id": ownership_id,
+                            "selected_candidate": candidate_priority.candidate_record(selected),
+                            "discovered_candidates": [
+                                candidate_priority.candidate_record(owner)
+                                for owner in sorted_owners
+                            ],
+                            "inactive_alternatives": [
+                                {
+                                    **candidate_priority.candidate_record(owner),
+                                    "inactive_reason": candidate_priority.inactive_reason(owner, selected),
+                                }
+                                for owner in inactive
+                            ],
+                        }
+                    )
+                    continue
+                observed_owners = [
+                    {
+                        "classification": (
+                            "MANAGED_ENABLED_JAR"
+                            if owner.is_managed
+                            else "EXTERNAL_ENABLED_JAR"
+                        ),
+                        "filename": owner.filename,
+                        "path": owner.relative_path,
+                        "primary_id": owner.primary_id,
+                        "provides": list(owner.provides),
+                        "version": owner.version,
+                        "managed_project_uuid": owner.managed_project_uuid,
+                        "managed_project_id": owner.managed_project_id,
+                        "managed_deployment_id": owner.managed_deployment_id,
+                        "managed_artifact_id": owner.managed_artifact_id,
+                        "provenance": owner.provenance_record(),
+                    }
+                    for owner in sorted_owners
+                ]
+                if platform_provider is not None:
+                    observed_owners.insert(
+                        0,
+                        {
+                            "classification": "ATTESTED_PLATFORM_PROVIDER",
+                            "filename": None,
+                            "path": None,
+                            "primary_id": platform_provider.mod_id,
+                            "provides": [],
+                            "version": platform_provider.version,
+                            "managed_project_uuid": None,
+                            "managed_project_id": None,
+                            "managed_deployment_id": None,
+                            "managed_artifact_id": None,
+                            "authority": platform_provider.authority,
+                        },
+                    )
+                observed_out_of_scope_duplicate_groups.append(
+                    {
+                        "classification": "OBSERVED_EXTERNAL_DUPLICATE_NOT_EVALUATED",
+                        "ownership_id": ownership_id,
+                        "reason": "OUTSIDE_MANAGED_OWNERSHIP_AND_DEPENDENCY_GRAPH",
+                        "provider_resolution": "EXCLUDED_FROM_PROVIDER_SET",
+                        "owners": observed_owners,
+                    }
+                )
+                out_of_scope_duplicate_ids.add(ownership_id)
+                continue
+
+        for ownership_id, selected in selected_candidate_groups.items():
+            if id(selected) in inactive_candidate_ids:
+                raise ManagerError(
+                    "interlocking Fabric candidate ownership groups selected an inactive provider for "
+                    f"{ownership_id}; fail closed instead of approximating Loader's SAT solution"
+                )
+
+        selected_descriptors = tuple(
+            descriptor
+            for descriptor in descriptors
+            if id(descriptor) not in inactive_candidate_ids
+        )
+        providers: dict[str, FabricModDescriptor] = {}
+        for ownership_id, owners in sorted(ownership_groups.items()):
+            if ownership_id in out_of_scope_duplicate_ids:
+                continue
+            selected_owners = [owner for owner in owners if id(owner) not in inactive_candidate_ids]
+            if len(selected_owners) > 1:
+                raise ManagerError(
+                    "Fabric candidate selection left duplicate active ownership "
+                    f"{ownership_id}: "
+                    + " and ".join(
+                        f"{owner.relative_path}@{owner.version}" for owner in selected_owners
+                    )
+                )
+            if selected_owners:
+                providers[ownership_id] = selected_owners[0]
+
+        resolutions: list[dict[str, Any]] = []
+        for consumer in sorted(
+            selected_descriptors,
+            key=lambda item: (
+                item.relative_path.casefold(),
+                item.primary_id,
+                item.managed_project_id or "",
+            ),
+        ):
+            if not consumer.is_managed:
+                continue
+            for dependency_id, predicates in sorted(consumer.depends.items()):
+                provider = providers.get(dependency_id)
+                platform_provider = platform_providers.get(dependency_id)
+                base = {
+                    "consumer": {
+                        "project_uuid": consumer.managed_project_uuid,
+                        "project_id": consumer.managed_project_id,
+                        "deployment_id": consumer.managed_deployment_id,
+                        "artifact_id": consumer.managed_artifact_id,
+                        "filename": consumer.filename,
+                        "primary_id": consumer.primary_id,
+                        "version": consumer.version,
+                        "provenance": consumer.provenance_record(),
+                    },
+                    "dependency_id": dependency_id,
+                    "predicates": list(predicates),
+                }
+                if provider is None and platform_provider is None:
+                    ownership = "managed" if dependency_id in managed_ownership_ids else "external"
+                    raise ManagerError(
+                        f"missing {ownership} Fabric dependency {failure_phase}: "
+                        f"{consumer.managed_project_id}@{consumer.version} requires {dependency_id} "
+                        f"({list(predicates)}); no exact enabled provider owns that ID. "
+                        "Supply the compatible provider/companion in the same atomic cohort operation "
+                        "or ensure its unmanaged provider JAR is enabled before planning"
+                    )
+
+                provider_version = (
+                    platform_provider.version
+                    if platform_provider is not None
+                    else provider.version
+                )
+                matched_predicates = [
+                    predicate
+                    for predicate in predicates
+                    if _fabric_predicate_matches(provider_version, predicate)
+                ]
+                if platform_provider is not None:
+                    provider_record = {
+                        "project_uuid": None,
+                        "project_id": None,
+                        "deployment_id": None,
+                        "artifact_id": None,
+                        "filename": None,
+                        "path": None,
+                        "primary_id": platform_provider.mod_id,
+                        "provides": [],
+                        "version": platform_provider.version,
+                        "authority": platform_provider.authority,
+                    }
+                    provider_label = platform_provider.mod_id
+                    classification = "RESOLVED_ATTESTED_PLATFORM_PROVIDER"
+                else:
+                    provider_record = {
+                        "project_uuid": provider.managed_project_uuid,
+                        "project_id": provider.managed_project_id,
+                        "deployment_id": provider.managed_deployment_id,
+                        "artifact_id": provider.managed_artifact_id,
+                        "filename": provider.filename,
+                        "path": provider.relative_path,
+                        "primary_id": provider.primary_id,
+                        "provides": list(provider.provides),
+                        "version": provider.version,
+                        "provenance": provider.provenance_record(),
+                    }
+                    provider_label = provider.managed_project_id or provider.primary_id
+                    classification = (
+                        "RESOLVED_MANAGED_PROVIDER"
+                        if provider.is_managed
+                        else "RESOLVED_EXTERNAL_ENABLED_PROVIDER"
+                    )
+                if not matched_predicates:
+                    remedy = (
+                        "select an exact compatible dedicated-profile launch provider version"
+                        if platform_provider is not None
+                        else "supply a compatible companion project/version in the same atomic cohort operation"
+                    )
+                    raise ManagerError(
+                        f"unsatisfied Fabric dependency {failure_phase}: "
+                        f"{consumer.managed_project_id}@{consumer.version} requires {dependency_id} "
+                        f"{list(predicates)}, but proposed {provider_label}@{provider_version} does not satisfy it; "
+                        + remedy
+                    )
+                resolutions.append(
+                    {
+                        **base,
+                        "classification": classification,
+                        "satisfied": True,
+                        "matched_predicates": matched_predicates,
+                        "provider": provider_record,
+                    }
+                )
+
+        def descriptor_record(descriptor: FabricModDescriptor) -> dict[str, Any]:
+            return {
+                "filename": descriptor.filename,
+                "path": descriptor.relative_path,
+                "primary_id": descriptor.primary_id,
+                "provides": list(descriptor.provides),
+                "embedded_version": descriptor.version,
+                "environment": descriptor.environment,
+                "environment_eligible": descriptor.environment_eligible,
+                "managed_project_uuid": descriptor.managed_project_uuid,
+                "managed_project_id": descriptor.managed_project_id,
+                "managed_deployment_id": descriptor.managed_deployment_id,
+                "managed_artifact_id": descriptor.managed_artifact_id,
+                "provenance": descriptor.provenance_record(),
+            }
+
+        sorted_discovered_descriptors = sorted(
+            discovered_descriptors,
+            key=lambda item: (item.relative_path.casefold(), item.primary_id),
+        )
+        sorted_eligible_descriptors = [
+            descriptor
+            for descriptor in sorted_discovered_descriptors
+            if descriptor.environment_eligible
+        ]
+        sorted_selected_descriptors = sorted(
+            selected_descriptors,
+            key=lambda item: (item.relative_path.casefold(), item.primary_id),
+        )
+        enabled_descriptors = [
+            descriptor_record(descriptor)
+            for descriptor in sorted_selected_descriptors
+        ]
+        discovered_descriptor_records = [
+            descriptor_record(descriptor)
+            for descriptor in sorted_discovered_descriptors
+        ]
+        environment_excluded_descriptors = [
+            {
+                **descriptor_record(descriptor),
+                "classification": "EXCLUDED_BY_FABRIC_ENVIRONMENT",
+                "target_environment": "client",
+                "reason": "FABRIC_MOD_ENVIRONMENT_SERVER",
+            }
+            for descriptor in sorted(
+                excluded_descriptors,
+                key=lambda item: (item.relative_path.casefold(), item.primary_id),
+            )
+        ]
+        root_count = sum(not descriptor.nested_chain for descriptor in discovered_descriptors)
+        eligible_root_count = sum(not descriptor.nested_chain for descriptor in descriptors)
+        nested_count = len(descriptors) - eligible_root_count
+        selected_nested_count = sum(bool(descriptor.nested_chain) for descriptor in selected_descriptors)
+        discovered_nested_count = len(discovered_descriptors) - root_count
+        enabled_root_jars = [
+            descriptor_record(descriptor)
+            for descriptor in sorted_discovered_descriptors
+            if not descriptor.nested_chain
+        ]
+        return {
+            "status": "FABRIC_DEPENDENCY_GRAPH_VERIFIED",
+            "phase": phase,
+            # Retain the original field as the count of physically enabled
+            # root JARs. Nested descriptors are in-memory candidates declared
+            # by those roots, not additional files in the mods directory.
+            "enabled_fabric_jar_count": root_count,
+            "enabled_root_fabric_jar_count": root_count,
+            "client_eligible_root_fabric_descriptor_count": eligible_root_count,
+            "discovered_fabric_descriptor_count": len(discovered_descriptors),
+            "enabled_fabric_descriptor_count": len(enabled_descriptors),
+            "selected_fabric_descriptor_count": len(enabled_descriptors),
+            "declared_nested_fabric_descriptor_count": nested_count,
+            "selected_declared_nested_fabric_descriptor_count": selected_nested_count,
+            "discovered_declared_nested_fabric_descriptor_count": discovered_nested_count,
+            "environment_excluded_fabric_descriptor_count": len(environment_excluded_descriptors),
+            "enabled_fabric_jars": enabled_root_jars,
+            "enabled_fabric_descriptors": enabled_descriptors,
+            "selected_fabric_descriptors": enabled_descriptors,
+            "discovered_fabric_descriptors": discovered_descriptor_records,
+            "environment_excluded_fabric_descriptors": environment_excluded_descriptors,
+            "platform_attestation": (
+                platform_attestation.receipt()
+                if platform_attestation is not None
+                else None
+            ),
+            "observed_out_of_scope_duplicate_ownership_groups": observed_out_of_scope_duplicate_groups,
+            "candidate_selection_groups": candidate_selection_groups,
+            "resolutions": resolutions,
+        }
+
+    def _planned_dependency_report(
+        self,
+        current_artifacts: Sequence[ManagedArtifact],
+        desired_artifacts: Sequence[ManagedArtifact],
+    ) -> dict[str, Any]:
+        descriptors = self._planned_enabled_descriptors(current_artifacts, desired_artifacts)
+        managed_ids = {
+            mod_id
+            for artifact in (*tuple(current_artifacts), *tuple(desired_artifacts))
+            for mod_id in artifact.ownership_mod_ids
+        }
+        platform_attestation = self._attest_platform_providers(
+            self._required_platform_ids(descriptors)
+        )
+        return self._resolve_dependency_graph(
+            descriptors,
+            managed_ownership_ids=managed_ids,
+            phase="PREFLIGHT_PROPOSED_ENABLED_SET",
+            platform_attestation=platform_attestation,
+        )
+
+    def _physical_dependency_report(
+        self,
+        artifacts: Sequence[ManagedArtifact],
+    ) -> dict[str, Any]:
+        descriptors = self._physical_enabled_descriptors(artifacts)
+        managed_ids = {
+            mod_id
+            for artifact in artifacts
+            for mod_id in artifact.ownership_mod_ids
+        }
+        platform_attestation = self._attest_platform_providers(
+            self._required_platform_ids(descriptors)
+        )
+        return self._resolve_dependency_graph(
+            descriptors,
+            managed_ownership_ids=managed_ids,
+            phase="POST_DEPLOYMENT_ENABLED_SET",
+            platform_attestation=platform_attestation,
+        )
+
+    @staticmethod
+    def _assert_platform_attestation_unchanged(
+        expected_report: dict[str, Any],
+        actual_report: dict[str, Any],
+        *,
+        phase: str,
+    ) -> None:
+        expected = expected_report.get("platform_attestation")
+        actual = actual_report.get("platform_attestation")
+        if expected is None and actual is None:
+            return
+        expected_fingerprint = expected.get("fingerprint") if isinstance(expected, dict) else None
+        actual_fingerprint = actual.get("fingerprint") if isinstance(actual, dict) else None
+        if (
+            not isinstance(expected_fingerprint, str)
+            or not isinstance(actual_fingerprint, str)
+            or expected_fingerprint != actual_fingerprint
+        ):
+            raise ManagerError(
+                "Fabric platform launch authority changed "
+                f"{phase}: expected attestation {expected_fingerprint!r}, "
+                f"found {actual_fingerprint!r}; no runtime state may be committed"
+            )
 
     def _verify_inventory(
         self,
@@ -838,7 +2384,10 @@ class PhysicalManager:
         expected_records = [item.ledger_record() for item in expected_inventory]
         if ledger["managed_files"] != expected_records:
             raise ManagerError("target-local ledger managed-file inventory does not match its runtime state")
-        if ledger["schema_version"] == 3 and ledger["title_projection"] != self._title_projection(ledger["runtime_state"]):
+        if (
+            ledger["schema_version"] == 3
+            and self._title_projection_status(ledger["title_projection"], ledger["runtime_state"]) is None
+        ):
             raise ManagerError("target-local ledger title projection does not match its runtime state")
         return ledger
 
@@ -860,11 +2409,74 @@ class PhysicalManager:
         if ledger["state_digest"] != state_digest(state) or ledger["runtime_state"] != state:
             raise ManagerError("repository runtime state and target-local V2 ledger have diverged")
 
+    def _current_release_comparison(
+        self,
+        unit: dict[str, Any],
+        *,
+        deployment_state: str,
+        statuses: dict[str, tuple[Path, dict[str, Any]]] | None,
+    ) -> dict[str, Any]:
+        status_entry = statuses.get(unit["project_uuid"]) if statuses is not None else None
+        if status_entry is None:
+            # Explicit identity catalogs are the documented test-only mode;
+            # the slot unit is the only available current release authority.
+            exact = True
+            current_release = {
+                "version": unit["version"],
+                "source_commit": unit["source_commit"],
+                "artifacts": [
+                    {
+                        "filename": artifact["filename"],
+                        "sha256": artifact["sha256"].lower(),
+                    }
+                    for artifact in unit["artifacts"]
+                ],
+                "identity_source": "EXPLICIT_TEST_CATALOG",
+            }
+        else:
+            _, manifest = status_entry
+            release = manifest["state"]["releases"]["current"]
+            artifact = release["artifact"]
+            current_release = {
+                "version": release["version"],
+                "source_commit": release["source_commit"],
+                "artifacts": [
+                    {
+                        "filename": artifact["filename"],
+                        "sha256": artifact["sha256"].lower(),
+                    }
+                ],
+                "identity_source": "CURRENT_MANIFEST",
+            }
+            slot_artifacts = [
+                {
+                    "filename": item["filename"],
+                    "sha256": item["sha256"].lower(),
+                }
+                for item in unit["artifacts"]
+            ]
+            exact = (
+                unit["source_commit"] == release["source_commit"]
+                and slot_artifacts == current_release["artifacts"]
+            )
+        if not exact:
+            comparison = "OLDER_RELEASE_DEPLOYED"
+        elif deployment_state == "NOT_DEPLOYED":
+            comparison = "CURRENT_RELEASE_NOT_DEPLOYED"
+        else:
+            comparison = "CURRENT_RELEASE_DEPLOYED"
+        return {
+            "classification": comparison,
+            "slot_matches_current_release": exact,
+            "current_release": current_release,
+        }
+
     def _physical_verification_report(
         self,
         state: dict[str, Any],
         artifacts: tuple[ManagedArtifact, ...],
         title_projection_evidence: dict[str, Any] | None,
+        dependency_resolution: dict[str, Any],
     ) -> dict[str, Any]:
         records: list[dict[str, Any]] = []
         for artifact in artifacts:
@@ -879,10 +2491,16 @@ class PhysicalManager:
                 {
                     "deployment_id": artifact.deployment_id,
                     "artifact_id": artifact.artifact_id,
+                    "project_uuid": artifact.project_uuid,
                     "project_id": artifact.project_id,
                     "filename": artifact.filename,
                     "path": artifact.relative_path,
                     "sha256": actual_sha256,
+                    "expected_fabric_version": artifact.expected_fabric_version,
+                    "embedded_fabric_version": _read_fabric_descriptor(
+                        path,
+                        strict_provides=len(artifact.ownership_mod_ids) > 1,
+                    ).version,
                     "disposition": "ACTIVE" if artifact.active else "DISABLED",
                 }
             )
@@ -907,24 +2525,52 @@ class PhysicalManager:
         }
         retained_records = [record for record in records if record["deployment_id"] in retained_deployments]
         title = self._render_title(state)
+        statuses = self._current_repository_statuses()
         slot_evidence: dict[str, dict[str, Any] | None] = {}
         for label in ("A", "B"):
             slot = state["slots"][label]
             if slot is None:
                 slot_evidence[label] = None
                 continue
-            unit = slot["unit"]
-            slot_evidence[label] = {
-                "deployment_id": unit["deployment_id"],
-                "project_uuid": unit["project_uuid"],
-                "project_id": unit["project_id"],
-                "project_display_name": title["slots"][label]["project_display_name"],
-                "version": unit["version"],
-                "canary": title["slots"][label]["canary"],
+            title_members = title["slots"][label].get("members", [])
+            title_by_uuid = {item["project_uuid"]: item for item in title_members}
+            members: list[dict[str, Any]] = []
+            for slot_member in _slot_members(slot):
+                unit = slot_member["unit"]
+                rendered = title_by_uuid.get(unit["project_uuid"], title["slots"][label])
+                member_artifacts = copy.deepcopy(records_by_deployment.get(unit["deployment_id"], []))
+                members.append(
+                    {
+                        "slot": label,
+                        "deployment_id": unit["deployment_id"],
+                        "project_uuid": unit["project_uuid"],
+                        "project_id": unit["project_id"],
+                        "project_display_name": rendered["project_display_name"],
+                        "version": unit["version"],
+                        "canary": rendered["canary"],
+                        "source_commit": unit["source_commit"],
+                        "deployment_state": slot["deployment"]["state"],
+                        "runtime_result": slot_member["runtime_result"]["classification"],
+                        "current_release_comparison": self._current_release_comparison(
+                            unit,
+                            deployment_state=slot["deployment"]["state"],
+                            statuses=statuses,
+                        ),
+                        "artifacts": member_artifacts,
+                    }
+                )
+            evidence = {
+                "cohort_member_count": len(members),
                 "deployment_state": slot["deployment"]["state"],
-                "runtime_result": slot["runtime_result"]["classification"],
-                "artifacts": copy.deepcopy(records_by_deployment.get(unit["deployment_id"], [])),
+                "deployed_at": slot["deployment"]["deployed_at"],
+                "ready_verified_at": slot["deployment"]["ready_verified_at"],
+                "members": members,
             }
+            if len(members) == 1:
+                # Preserve the V3 one-member receipt surface while making
+                # members authoritative for every slot.
+                evidence.update(members[0])
+            slot_evidence[label] = evidence
 
         return {
             "status": "PHYSICAL_STATE_VERIFIED",
@@ -952,8 +2598,13 @@ class PhysicalManager:
                 },
             },
             "slots": slot_evidence,
+            "fabric_dependency_graph": copy.deepcopy(dependency_resolution),
             "title_display": {
-                "status": "SYNCHRONIZED" if title_projection_evidence is not None else "LEGACY_MIGRATION_REQUIRED",
+                "status": (
+                    title_projection_evidence["status"]
+                    if title_projection_evidence is not None
+                    else "LEGACY_MIGRATION_REQUIRED"
+                ),
                 "projection": copy.deepcopy(title_projection_evidence),
                 "lines": copy.deepcopy(title["lines"]),
             },
@@ -973,8 +2624,9 @@ class PhysicalManager:
         self._assert_ledger_matches_repository(ledger, state)
         artifacts = self._managed_inventory_for_ledger(state, ledger)
         artifacts = self._verify_inventory(state, artifacts, prior_ledger=ledger)
+        dependency_resolution = self._physical_dependency_report(artifacts)
         projection = self._verify_title_projection(state) if ledger["schema_version"] == 3 else None
-        return self._physical_verification_report(state, artifacts, projection)
+        return self._physical_verification_report(state, artifacts, projection, dependency_resolution)
 
     def _current_repository_statuses(self) -> dict[str, tuple[Path, dict[str, Any]]] | None:
         """Reload the authoritative manifest catalog when production binding is enabled."""
@@ -1063,6 +2715,108 @@ class PhysicalManager:
                 repository_source=False,
             )
 
+    def _validate_deploy_profile_manifest_identities(
+        self,
+        operation: dict[str, Any],
+        *,
+        refresh: bool = False,
+    ) -> None:
+        """Bind every atomic cohort member to its current manifest release."""
+
+        if operation.get("type") != "DEPLOY_PROFILE":
+            return
+        statuses = self._current_repository_statuses() if refresh else self.repository_statuses
+        if statuses is None:
+            return
+        raw_slots = operation.get("slots")
+        if not isinstance(raw_slots, dict):
+            raise ManagerError("DEPLOY_PROFILE slots must be an object")
+        for label in ("A", "B"):
+            desired = raw_slots.get(label)
+            if desired is None:
+                continue
+            if not isinstance(desired, dict):
+                raise ManagerError(f"DEPLOY_PROFILE slot {label} must be an object or null")
+            if set(desired) == {"candidate"}:
+                declarations = [desired["candidate"]]
+            elif set(desired) == {"members"} and isinstance(desired["members"], list):
+                declarations = desired["members"]
+            else:
+                raise ManagerError(
+                    f"DEPLOY_PROFILE slot {label} requires exactly candidate or members"
+                )
+            for index, declaration in enumerate(declarations):
+                member_label = f"DEPLOY_PROFILE slot {label} member {index}"
+                if not isinstance(declaration, dict) or not isinstance(declaration.get("unit"), dict):
+                    raise ManagerError(f"{member_label} requires a unit")
+                unit = declaration["unit"]
+                project_uuid = unit.get("project_uuid")
+                status_entry = statuses.get(project_uuid)
+                if status_entry is None:
+                    raise ManagerError(
+                        f"{member_label} project UUID does not resolve to a current manifest: {project_uuid}"
+                    )
+                manifest_path, manifest = status_entry
+                identity = manifest["identity"]
+                if unit.get("project_id") != identity["project_id"]:
+                    raise ManagerError(
+                        f"{member_label} project_id does not match current manifest: "
+                        f"expected {identity['project_id']}, found {unit.get('project_id')}"
+                    )
+                if unit.get("project_identity_source") != "CURRENT_MANIFEST":
+                    raise ManagerError(f"{member_label} requires CURRENT_MANIFEST identity")
+                release = manifest["state"]["releases"]["current"]
+                release_artifact = release["artifact"]
+                raw_artifacts = unit.get("artifacts")
+                if not isinstance(raw_artifacts, list) or len(raw_artifacts) != 1:
+                    raise ManagerError(f"{member_label} requires exactly one current release artifact")
+                artifact = raw_artifacts[0]
+                expected = {
+                    "source_commit": release["source_commit"],
+                    "filename": release_artifact["filename"],
+                    "sha256": release_artifact["sha256"].lower(),
+                }
+                actual = {
+                    "source_commit": unit.get("source_commit"),
+                    "filename": artifact.get("filename"),
+                    "sha256": (
+                        artifact.get("sha256", "").lower()
+                        if isinstance(artifact.get("sha256"), str)
+                        else None
+                    ),
+                }
+                if actual != expected:
+                    raise ManagerError(
+                        f"{member_label} does not exactly match current manifest release identity: "
+                        f"expected {expected}, found {actual}"
+                    )
+                source = artifact.get("source")
+                if not isinstance(source, dict) or source.get("type") != "REPOSITORY":
+                    raise ManagerError(f"{member_label} must use its canonical repository/private build source")
+                relative = _safe_relative(
+                    source.get("path"),
+                    f"{member_label} source",
+                    allow_nested=True,
+                )
+                source_path = (self.config.repository_root / relative).resolve(strict=False)
+                project_root = manifest_path.parent.resolve(strict=False)
+                if not _is_within(source_path, project_root) or source_path.name.casefold() != str(
+                    artifact["filename"]
+                ).casefold():
+                    raise ManagerError(
+                        f"{member_label} source must stay inside its canonical project directory and end in "
+                        f"{artifact['filename']}"
+                    )
+
+    def _validate_operation_manifest_identities(
+        self,
+        operation: dict[str, Any],
+        *,
+        refresh: bool = False,
+    ) -> None:
+        self._validate_batch_manifest_identities(operation, refresh=refresh)
+        self._validate_deploy_profile_manifest_identities(operation, refresh=refresh)
+
     def _assert_unit_matches_manifest_release(
         self,
         unit: dict[str, Any],
@@ -1120,6 +2874,7 @@ class PhysicalManager:
 
     def adoption_plan(self, state: dict[str, Any] | None = None) -> PhysicalPlan:
         self._assert_no_transaction_residue()
+        profile_use_preflight = self._assert_profile_not_in_use()
         state = self.load_repository_state() if state is None else copy.deepcopy(state)
         try:
             validate_runtime_state(state, self.project_index)
@@ -1147,6 +2902,7 @@ class PhysicalManager:
         validate_runtime_state(active, self.project_index)
         desired_artifacts = self._desired_managed_inventory(active)
         writes, retained_moves, removals, unchanged = self._plan_delta(current_artifacts, desired_artifacts)
+        dependency_resolution = self._planned_dependency_report(current_artifacts, desired_artifacts)
         return PhysicalPlan(
             mode="ADOPT",
             current_state=state,
@@ -1158,6 +2914,8 @@ class PhysicalManager:
             removals=removals,
             unchanged=unchanged,
             title_projection=self._title_projection(active),
+            dependency_resolution=dependency_resolution,
+            profile_use_preflight=profile_use_preflight,
             batch_operation=None,
         )
 
@@ -1166,10 +2924,20 @@ class PhysicalManager:
 
         if dry_run:
             return self.adoption_plan().summary(dry_run=True)
+        self._assert_profile_not_in_use()
         with _ExclusiveTargetLock(self.lock_path):
             plan = self.adoption_plan()
-            self._commit_plan(plan, failure_injector=failure_injector)
-            return plan.summary(dry_run=False)
+            committed_state, dependency_resolution = self._commit_plan(
+                plan,
+                failure_injector=failure_injector,
+            )
+            committed_plan = dataclass_replace(
+                plan,
+                desired_state=committed_state,
+                title_projection=self._title_projection(committed_state),
+                dependency_resolution=dependency_resolution,
+            )
+            return committed_plan.summary(dry_run=False)
 
     def transition_plan(
         self,
@@ -1181,19 +2949,37 @@ class PhysicalManager:
     ) -> PhysicalPlan:
         self._assert_no_transaction_residue()
         self._assert_no_legacy_marker()
+        profile_use_preflight = self._assert_profile_not_in_use()
         if (operation is None) == (desired_state is None):
             raise ManagerError("provide exactly one of operation or desired_state")
         current = self.load_repository_state()
         ledger = self._read_ledger()
         self._assert_ledger_matches_repository(ledger, current)
+        if ledger["schema_version"] == 3:
+            # A transition may migrate the exact historical schema-V1
+            # projection, but it must never overwrite arbitrary or tampered
+            # physical display state as though that were a valid preimage.
+            self._verify_title_projection(current)
         current_artifacts = self._managed_inventory_for_ledger(current, ledger)
+        finalize_verified_profile = False
 
         if operation is not None:
             if expected_revision is None or at is None:
                 raise ManagerError("operation transitions require expected_revision and at")
-            self._validate_batch_manifest_identities(operation, refresh=True)
+            self._validate_operation_manifest_identities(operation, refresh=True)
+            pure_operation = copy.deepcopy(operation)
+            planning_state = current
+            if operation.get("type") == "DEPLOY_PROFILE":
+                if set(operation) != {"type", "slots"}:
+                    raise ManagerError("DEPLOY_PROFILE requires exactly type and slots")
+                pure_operation = {"type": "SET_PROFILE", "slots": copy.deepcopy(operation["slots"])}
+                try:
+                    planning_state = migrate_runtime_state(current, self.project_index)
+                except ValidationError as exc:
+                    raise ManagerError(f"cannot migrate legacy runtime state for cohort deployment: {exc}") from exc
+                finalize_verified_profile = True
             try:
-                desired = plan_transition(current, expected_revision, operation, at, self.project_index)
+                desired = plan_transition(planning_state, expected_revision, pure_operation, at, self.project_index)
             except ValidationError as exc:
                 raise ManagerError(f"invalid runtime transition: {exc}") from exc
         else:
@@ -1209,6 +2995,16 @@ class PhysicalManager:
             self._assert_desired_is_pure_transition(current, desired)
 
         desired_artifacts = self._desired_managed_inventory(desired)
+        changed_slots = tuple(
+            label
+            for label in ("A", "B")
+            if _slot_physical_identity(current["slots"][label])
+            != _slot_physical_identity(desired["slots"][label])
+        )
+        if finalize_verified_profile and not any(
+            desired["slots"][label] is not None for label in changed_slots
+        ):
+            raise ManagerError("DEPLOY_PROFILE requires at least one changed occupied slot to verify")
         union_mod_ids = {
             mod_id
             for item in current_artifacts
@@ -1233,6 +3029,7 @@ class PhysicalManager:
             prior_ledger=ledger,
         )
         writes, retained_moves, removals, unchanged = self._plan_delta(current_artifacts, desired_artifacts)
+        dependency_resolution = self._planned_dependency_report(current_artifacts, desired_artifacts)
         return PhysicalPlan(
             mode="TRANSITION",
             current_state=current,
@@ -1244,51 +3041,85 @@ class PhysicalManager:
             removals=removals,
             unchanged=unchanged,
             title_projection=self._title_projection(desired),
+            dependency_resolution=dependency_resolution,
+            profile_use_preflight=profile_use_preflight,
             batch_operation=(
                 copy.deepcopy(operation)
-                if operation is not None and operation.get("type") == "PROMOTE_USER_PASSED_BATCH"
+                if operation is not None
+                and operation.get("type") in {"PROMOTE_USER_PASSED_BATCH", "DEPLOY_PROFILE"}
                 else None
             ),
+            finalize_verified_profile=finalize_verified_profile,
+            transition_at=at,
+            changed_slots=changed_slots,
         )
 
     def _assert_desired_is_pure_transition(self, current: dict[str, Any], desired: dict[str, Any]) -> None:
         """Prove that an externally planned next state is one legal pure transition."""
 
-        def declaration(slot: dict[str, Any]) -> dict[str, Any]:
+        def declaration(member: dict[str, Any]) -> dict[str, Any]:
             result = {
-                "unit": copy.deepcopy(slot["unit"]),
-                "replaces_accepted_deployment_id": slot["replaces_accepted_deployment_id"],
+                "unit": copy.deepcopy(member["unit"]),
+                "replaces_accepted_deployment_id": member["replaces_accepted_deployment_id"],
             }
-            if slot.get("dependency_overrides"):
-                result["dependency_overrides"] = copy.deepcopy(slot["dependency_overrides"])
+            if member.get("dependency_overrides"):
+                result["dependency_overrides"] = copy.deepcopy(member["dependency_overrides"])
             return result
+
+        def assignment(slot: dict[str, Any]) -> dict[str, Any]:
+            members = _slot_members(slot)
+            if len(members) == 1 and "unit" in slot:
+                return {"candidate": declaration(members[0])}
+            return {"members": [declaration(member) for member in members]}
 
         operations: list[dict[str, Any]] = []
         for label in ("A", "B"):
             desired_slot = desired["slots"][label]
             if desired_slot is not None:
-                operations.append({"type": "ASSIGN_SLOT", "candidate": declaration(desired_slot)})
-                operations.append({"type": "UPDATE_SLOT", "slot": label, "candidate": declaration(desired_slot)})
+                operations.append({"type": "ASSIGN_SLOT", **assignment(desired_slot)})
+                operations.append({"type": "UPDATE_SLOT", "slot": label, **assignment(desired_slot)})
             operations.extend(
                 {"type": operation_type, "slot": label}
                 for operation_type in ("MARK_DEPLOYED", "MARK_READY", "REMOVE_SLOT", "PROMOTE_SLOT")
             )
             if desired_slot is not None:
-                operations.append(
-                    {
+                for member in _slot_members(desired_slot):
+                    result_operation = {
                         "type": "RECORD_RESULT",
                         "slot": label,
-                        "classification": desired_slot["runtime_result"]["classification"],
-                        "evidence": copy.deepcopy(desired_slot["runtime_result"]["evidence"]),
+                        "classification": member["runtime_result"]["classification"],
+                        "evidence": copy.deepcopy(member["runtime_result"]["evidence"]),
                     }
-                )
+                    if len(_slot_members(desired_slot)) > 1:
+                        result_operation["project_uuid"] = member["unit"]["project_uuid"]
+                    operations.append(result_operation)
         if desired["slots"]["A"] is None and desired["slots"]["B"] is None:
             operations.append({"type": "SET_PROFILE", "candidates": []})
         elif desired["slots"]["A"] is not None:
-            candidates = [declaration(desired["slots"]["A"])]
-            if desired["slots"]["B"] is not None:
-                candidates.append(declaration(desired["slots"]["B"]))
-            operations.append({"type": "SET_PROFILE", "candidates": candidates})
+            if desired["schema_version"] == 1:
+                candidates = [declaration(_slot_members(desired["slots"]["A"])[0])]
+                if desired["slots"]["B"] is not None:
+                    candidates.append(declaration(_slot_members(desired["slots"]["B"])[0]))
+                operations.append({"type": "SET_PROFILE", "candidates": candidates})
+            else:
+                operations.append(
+                    {
+                        "type": "SET_PROFILE",
+                        "slots": {
+                            label: (
+                                {
+                                    "members": [
+                                        declaration(member)
+                                        for member in _slot_members(desired["slots"][label])
+                                    ]
+                                }
+                                if desired["slots"][label] is not None
+                                else None
+                            )
+                            for label in ("A", "B")
+                        },
+                    }
+                )
         operations.extend(
             {
                 "type": "REMOVE_ACCEPTED",
@@ -1419,6 +3250,7 @@ class PhysicalManager:
                 expected_revision=expected_revision,
                 at=at,
             ).summary(dry_run=True)
+        self._assert_profile_not_in_use()
         with _ExclusiveTargetLock(self.lock_path):
             plan = self.transition_plan(
                 operation=operation,
@@ -1426,8 +3258,17 @@ class PhysicalManager:
                 expected_revision=expected_revision,
                 at=at,
             )
-            self._commit_plan(plan, failure_injector=failure_injector)
-            return plan.summary(dry_run=False)
+            committed_state, dependency_resolution = self._commit_plan(
+                plan,
+                failure_injector=failure_injector,
+            )
+            committed_plan = dataclass_replace(
+                plan,
+                desired_state=committed_state,
+                title_projection=self._title_projection(committed_state),
+                dependency_resolution=dependency_resolution,
+            )
+            return committed_plan.summary(dry_run=False)
 
     def verify(self) -> dict[str, Any]:
         with _ExclusiveTargetLock(self.lock_path):
@@ -1491,8 +3332,23 @@ class PhysicalManager:
             result["physical_verification"] = self._verify_current_physical_state()
             return result
 
-    def _commit_plan(self, plan: PhysicalPlan, *, failure_injector: FailureInjector | None) -> None:
+    def _commit_plan(
+        self,
+        plan: PhysicalPlan,
+        *,
+        failure_injector: FailureInjector | None,
+    ) -> tuple[dict[str, Any], dict[str, Any]]:
         injector = failure_injector or (lambda _stage: None)
+        self._assert_profile_not_in_use()
+        under_lock_dependency_resolution = self._planned_dependency_report(
+            plan.current_artifacts,
+            plan.desired_artifacts,
+        )
+        self._assert_platform_attestation_unchanged(
+            plan.dependency_resolution,
+            under_lock_dependency_resolution,
+            phase="between planning and the under-lock pre-mutation check",
+        )
         transaction = self.target / f".mynx-runtime-v2-transaction-{uuid.uuid4()}"
         _assert_no_reparse_components(transaction, "transaction backup", root=self.target)
         self._assert_target_containment(transaction.resolve(strict=False), "transaction backup")
@@ -1514,6 +3370,8 @@ class PhysicalManager:
         state_written = False
         committed = False
         preserve_transaction = False
+        committed_state = plan.desired_state
+        committed_dependency_resolution = under_lock_dependency_resolution
         try:
             transaction.mkdir(exist_ok=False)
             target_backup = transaction / "target"
@@ -1567,8 +3425,6 @@ class PhysicalManager:
                 action.destination.parent.mkdir(parents=False, exist_ok=True)
                 _atomic_copy(staged[action.destination], action.destination)
                 injector(f"after_write_{index + 1}")
-            _atomic_write_json(self.title_projection_path, plan.title_projection)
-            injector("after_title_projection_write")
             injector("after_physical_apply")
 
             self._verify_inventory(
@@ -1580,23 +3436,46 @@ class PhysicalManager:
                     for mod_id in item.ownership_mod_ids
                 },
             )
-            self._verify_title_projection(plan.desired_state)
+            committed_dependency_resolution = self._physical_dependency_report(plan.desired_artifacts)
+            self._assert_platform_attestation_unchanged(
+                under_lock_dependency_resolution,
+                committed_dependency_resolution,
+                phase="between the under-lock pre-mutation check and post-write verification",
+            )
+            if plan.finalize_verified_profile:
+                if plan.transition_at is None:
+                    raise ManagerError("verified profile finalization requires a transition timestamp")
+                try:
+                    committed_state = finalize_verified_profile_transition(
+                        plan.desired_state,
+                        plan.transition_at,
+                        plan.transition_at,
+                        self.project_index,
+                        changed_slots=plan.changed_slots,
+                        authority=_PHYSICAL_MANAGER_AUTHORITY,
+                    )
+                except ValidationError as exc:
+                    raise ManagerError(f"cannot finalize physically verified profile state: {exc}") from exc
+            final_title_projection = self._title_projection(committed_state)
+            _atomic_write_json(self.title_projection_path, final_title_projection)
+            injector("after_title_projection_write")
+            self._verify_title_projection(committed_state)
             injector("after_physical_verify")
 
             # Re-read batch-bound manifest releases and recheck the runtime-state
             # compare-and-swap source immediately before committing either
             # ledger. The target lock serializes all manager writers.
             if plan.batch_operation is not None:
-                self._validate_batch_manifest_identities(plan.batch_operation, refresh=True)
+                self._validate_operation_manifest_identities(plan.batch_operation, refresh=True)
             live = self.load_repository_state()
             if live != plan.current_state:
                 raise ManagerError("repository runtime state changed during physical transition")
 
-            ledger = self._ledger(plan.desired_state, plan.desired_artifacts)
+            ledger = self._ledger(committed_state, plan.desired_artifacts)
             _atomic_write_json(self.ledger_path, ledger)
             ledger_written = True
             injector("after_ledger_write")
-            _atomic_write_json(self.config.runtime_state, plan.desired_state)
+            _atomic_write_json(self.config.runtime_state, committed_state)
             state_written = True
             injector("after_state_write")
 
@@ -1604,8 +3483,23 @@ class PhysicalManager:
             final_ledger = self._read_ledger()
             self._assert_ledger_matches_repository(final_ledger, final_state)
             self._verify_inventory(final_state, plan.desired_artifacts, prior_ledger=final_ledger)
+            committed_dependency_resolution = self._physical_dependency_report(plan.desired_artifacts)
+            self._assert_platform_attestation_unchanged(
+                under_lock_dependency_resolution,
+                committed_dependency_resolution,
+                phase="before final post-commit verification completed",
+            )
             self._verify_title_projection(final_state)
             injector("after_post_verify")
+            # Make launch authority the final observed external input before
+            # the transaction is declared committed. A drift injected after
+            # the earlier post-write scan must still restore the full preimage.
+            committed_dependency_resolution = self._physical_dependency_report(plan.desired_artifacts)
+            self._assert_platform_attestation_unchanged(
+                under_lock_dependency_resolution,
+                committed_dependency_resolution,
+                phase="at the final post-verification commit boundary",
+            )
             committed = True
         except Exception as exc:
             recovery_error: Exception | None = None
@@ -1637,6 +3531,7 @@ class PhysicalManager:
                 except OSError:
                     if committed:
                         raise ManagerError(f"transition committed but transaction backup cleanup failed: {transaction}")
+        return committed_state, committed_dependency_resolution
 
 
 def _configured_path(base: Path, value: Any, label: str) -> Path:
@@ -1689,6 +3584,25 @@ def _paths_equal(left: Path, right: Path) -> bool:
     ).casefold()
 
 
+def _lexical_paths_equal(left: Path, right: Path) -> bool:
+    """Compare absolute normalized spellings without resolving filesystem links."""
+
+    return os.path.normcase(os.path.abspath(left)).casefold() == os.path.normcase(
+        os.path.abspath(right)
+    ).casefold()
+
+
+def _is_lexically_within(child: Path, parent: Path) -> bool:
+    """Check lexical containment without touching either filesystem path."""
+
+    child_text = os.path.normcase(os.path.abspath(child)).casefold()
+    parent_text = os.path.normcase(os.path.abspath(parent)).casefold()
+    try:
+        return os.path.commonpath([child_text, parent_text]) == parent_text
+    except ValueError:
+        return False
+
+
 def _is_within(child: Path, parent: Path) -> bool:
     child_text = os.path.normcase(str(child.resolve(strict=False))).casefold()
     parent_text = os.path.normcase(str(parent.resolve(strict=False))).casefold()
@@ -1723,6 +3637,67 @@ def _assert_no_reparse_components(path: Path, label: str, *, root: Path | None =
             current /= relative_parts[index]
 
 
+def _windows_processes_using_profile(profile: Path) -> list[dict[str, Any]]:
+    """Return Minecraft JVM evidence whose command line contains the profile path."""
+
+    if os.name != "nt":
+        return []
+    script = (
+        "Get-CimInstance Win32_Process | "
+        "Select-Object ProcessId,Name,ExecutablePath,CommandLine | "
+        "ConvertTo-Json -Compress -Depth 3"
+    )
+    creation_flags = getattr(subprocess, "CREATE_NO_WINDOW", 0)
+    try:
+        completed = subprocess.run(
+            ["powershell.exe", "-NoLogo", "-NoProfile", "-NonInteractive", "-Command", script],
+            check=False,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            timeout=15,
+            creationflags=creation_flags,
+        )
+    except (OSError, subprocess.SubprocessError) as exc:
+        raise ManagerError(f"cannot prove dedicated profile is inactive from Windows process state: {exc}") from exc
+    if completed.returncode != 0:
+        detail = (completed.stderr or completed.stdout).strip()
+        raise ManagerError(
+            "cannot prove dedicated profile is inactive from Windows process state"
+            + (f": {detail}" if detail else "")
+        )
+    try:
+        raw = json.loads(completed.stdout) if completed.stdout.strip() else []
+    except json.JSONDecodeError as exc:
+        raise ManagerError("cannot parse Windows process evidence for dedicated profile use") from exc
+    records = raw if isinstance(raw, list) else [raw]
+    target = os.path.normcase(str(profile.resolve(strict=False))).casefold()
+    matches: list[dict[str, Any]] = []
+    for record in records:
+        if not isinstance(record, dict):
+            continue
+        command_line = record.get("CommandLine")
+        process_id = record.get("ProcessId")
+        process_name = record.get("Name")
+        if not isinstance(process_name, str) or process_name.casefold() not in {"java.exe", "javaw.exe"}:
+            continue
+        if not isinstance(command_line, str) or target not in os.path.normcase(command_line).casefold():
+            continue
+        if process_id == os.getpid():
+            continue
+        matches.append(
+            {
+                "pid": process_id,
+                "name": process_name,
+                "executable_path": record.get("ExecutablePath"),
+                "command_line": command_line,
+            }
+        )
+    matches.sort(key=lambda item: (str(item["name"]).casefold(), int(item["pid"] or 0)))
+    return matches
+
+
 def _sha256(path: Path) -> str:
     digest = hashlib.sha256()
     try:
@@ -1738,46 +3713,997 @@ def _utc_now() -> str:
     return datetime.now(timezone.utc).isoformat(timespec="microseconds").replace("+00:00", "Z")
 
 
-def _fabric_mod_ids(path: Path, *, strict_provides: bool = False) -> frozenset[str]:
+def _sqlite_identity(value: Any) -> str:
+    """Render an opaque SQLite identity without assuming Modrinth's storage type."""
+
+    if isinstance(value, str) and value:
+        return value
+    if isinstance(value, int) and not isinstance(value, bool):
+        return str(value)
+    if isinstance(value, memoryview):
+        value = value.tobytes()
+    if isinstance(value, bytes) and value:
+        return "hex:" + value.hex()
+    raise ManagerError(f"Modrinth launch authority contains an invalid opaque identity: {value!r}")
+
+
+def _probe_java_properties(executable: Path) -> dict[str, str]:
+    """Probe only JVM properties; this never invokes a Minecraft launch."""
+
     try:
-        with zipfile.ZipFile(path) as archive:
-            matches = [item for item in archive.infolist() if item.filename == "fabric.mod.json"]
-            if len(matches) != 1:
-                raise ManagerError(f"{path} must contain exactly one root fabric.mod.json")
-            if matches[0].file_size > 1024 * 1024:
-                raise ManagerError(f"fabric.mod.json is unreasonably large in {path}")
-            manifest = json.loads(archive.read(matches[0]).decode("utf-8"))
+        completed = subprocess.run(
+            [str(executable), "-XshowSettings:properties", "-version"],
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=15,
+            shell=False,
+            creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
+        )
+    except (OSError, subprocess.SubprocessError) as exc:
+        raise ManagerError(f"cannot probe selected Java executable {executable}: {exc}") from exc
+    if completed.returncode != 0:
+        raise ManagerError(
+            f"selected Java executable probe failed with exit code {completed.returncode}: {executable}"
+        )
+    properties: dict[str, str] = {}
+    for line in (completed.stdout + "\n" + completed.stderr).splitlines():
+        match = re.match(r"^\s*([A-Za-z0-9_.-]+)\s*=\s*(.*?)\s*$", line)
+        if match is not None:
+            properties.setdefault(match.group(1), match.group(2))
+    return properties
+
+
+@dataclass(frozen=True)
+class _FabricSemanticVersion:
+    components: tuple[int | None, ...]
+    prerelease: str | None
+    build: str | None
+
+
+_FABRIC_PRERELEASE_RE = re.compile(r"(?:|[-0-9A-Za-z]+(?:\.[-0-9A-Za-z]+)*)$")
+_FABRIC_PRERELEASE_INTEGER_RE = re.compile(r"(?:0|[1-9][0-9]*)$")
+_FABRIC_OPERATORS = (">=", "<=", ">", "<", "=", "~", "^")
+_FABRIC_PLATFORM_DEPENDENCIES = frozenset({"java", "minecraft", "fabricloader"})
+
+
+def _parse_fabric_semantic_version(value: str, *, store_wildcards: bool) -> _FabricSemanticVersion | None:
+    """Parse Fabric Loader's SemanticVersionImpl superset, or return None."""
+
+    if not isinstance(value, str) or not value:
+        return None
+    core_and_prerelease, separator, build = value.partition("+")
+    build_value = build if separator else None
+    core, prerelease_separator, prerelease = core_and_prerelease.partition("-")
+    prerelease_value = prerelease if prerelease_separator else None
+    if prerelease_value is not None and _FABRIC_PRERELEASE_RE.fullmatch(prerelease_value) is None:
+        return None
+    if core.startswith(".") or core.endswith("."):
+        return None
+    raw_components = core.split(".")
+    if not raw_components or any(component == "" for component in raw_components):
+        return None
+    components: list[int | None] = []
+    first_wildcard: int | None = None
+    for index, component in enumerate(raw_components):
+        if store_wildcards and component in {"x", "X", "*"}:
+            if prerelease_value is not None:
+                return None
+            if index == 0:
+                return None
+            if first_wildcard is None:
+                first_wildcard = index
+            components.append(None)
+            continue
+        if first_wildcard is not None or not re.fullmatch(r"[0-9]+", component):
+            return None
+        try:
+            parsed = int(component)
+        except ValueError:
+            return None
+        if parsed > 2_147_483_647:
+            return None
+        components.append(parsed)
+    if first_wildcard is not None:
+        components = components[: first_wildcard + 1]
+    return _FabricSemanticVersion(tuple(components), prerelease_value, build_value)
+
+
+def _fabric_component(version: _FabricSemanticVersion, index: int) -> int | None:
+    if index < len(version.components):
+        return version.components[index]
+    return None if version.components[-1] is None else 0
+
+
+def _compare_fabric_semantic_versions(left: _FabricSemanticVersion, right: _FabricSemanticVersion) -> int:
+    for index in range(max(len(left.components), len(right.components))):
+        left_component = _fabric_component(left, index)
+        right_component = _fabric_component(right, index)
+        if left_component is None or right_component is None:
+            continue
+        if left_component != right_component:
+            return -1 if left_component < right_component else 1
+
+    left_pre = left.prerelease
+    right_pre = right.prerelease
+    if left_pre is None and right_pre is None:
+        return 0
+    if left_pre is None:
+        return 0 if any(component is None for component in left.components) else 1
+    if right_pre is None:
+        return 0 if any(component is None for component in right.components) else -1
+    left_parts = left_pre.split(".")
+    right_parts = right_pre.split(".")
+    for index in range(max(len(left_parts), len(right_parts))):
+        if index >= len(left_parts):
+            return -1
+        if index >= len(right_parts):
+            return 1
+        left_part = left_parts[index]
+        right_part = right_parts[index]
+        left_numeric = _FABRIC_PRERELEASE_INTEGER_RE.fullmatch(left_part) is not None
+        right_numeric = _FABRIC_PRERELEASE_INTEGER_RE.fullmatch(right_part) is not None
+        if left_numeric and right_numeric and len(left_part) != len(right_part):
+            return -1 if len(left_part) < len(right_part) else 1
+        if left_numeric != right_numeric:
+            return -1 if left_numeric else 1
+        if left_part != right_part:
+            return -1 if left_part < right_part else 1
+    return 0
+
+
+def _fabric_semantic_precedence_key(value: str) -> dict[str, Any]:
+    """Return Loader's comparison key while retaining the full version elsewhere.
+
+    Fabric's ``SemanticVersionImpl.compareTo`` deliberately ignores build
+    metadata.  Receipts make that distinction explicit so equal-precedence
+    candidates never appear to have been ordered by their ``+build`` suffix.
+    """
+
+    parsed = _parse_fabric_semantic_version(value, store_wildcards=False)
+    if parsed is None:
+        return {
+            "kind": "STRING_VERSION",
+            "friendly_string": value,
+            "build_metadata_ignored": False,
+        }
+    return {
+        "kind": "SEMANTIC_VERSION",
+        "components": list(parsed.components),
+        "prerelease": parsed.prerelease,
+        "build_metadata_ignored": True,
+    }
+
+
+def _compare_fabric_versions_for_priority(left: str, right: str) -> int:
+    """Compare versions exactly as Loader's candidate priority comparator."""
+
+    left_semantic = _parse_fabric_semantic_version(left, store_wildcards=False)
+    right_semantic = _parse_fabric_semantic_version(right, store_wildcards=False)
+    if left_semantic is not None and right_semantic is not None:
+        return _compare_fabric_semantic_versions(left_semantic, right_semantic)
+    # SemanticVersionImpl and StringVersion both fall back to friendly-string
+    # ordering when the other operand is not semantic.
+    if left == right:
+        return 0
+    return -1 if left < right else 1
+
+
+class _FabricCandidatePriority:
+    """Loader 0.19.3's root/version/depth/parent priority for discovered mods."""
+
+    def __init__(self, descriptors: Sequence[FabricModDescriptor]) -> None:
+        self._path_to_descriptor: dict[str, FabricModDescriptor] = {}
+        self._parent_cache: dict[int, tuple[FabricModDescriptor, ...]] = {}
+        self._compare_cache: dict[tuple[int, int], int] = {}
+        for descriptor in descriptors:
+            paths = (
+                tuple(origin.candidate_path for origin in descriptor.nested_origins)
+                if descriptor.nested_chain
+                else (descriptor.relative_path,)
+            )
+            for path in paths:
+                prior = self._path_to_descriptor.get(path)
+                if prior is not None and prior is not descriptor:
+                    raise ManagerError(
+                        "distinct Fabric candidates have the same exact discovery path: " + path
+                    )
+                self._path_to_descriptor[path] = descriptor
+
+    @staticmethod
+    def minimum_nesting_depth(descriptor: FabricModDescriptor) -> int:
+        if not descriptor.nested_chain:
+            return 0
+        origins = descriptor.nested_origins
+        return min(len(origin.nested_chain) for origin in origins) if origins else len(descriptor.nested_chain)
+
+    def parents(self, descriptor: FabricModDescriptor) -> tuple[FabricModDescriptor, ...]:
+        cached = self._parent_cache.get(id(descriptor))
+        if cached is not None:
+            return cached
+        if not descriptor.nested_chain:
+            self._parent_cache[id(descriptor)] = ()
+            return ()
+        result: list[FabricModDescriptor] = []
+        seen: set[int] = set()
+        for origin in descriptor.nested_origins:
+            parent_path = origin.nested_chain[-1].container_path
+            parent = self._path_to_descriptor.get(parent_path)
+            if parent is None:
+                raise ManagerError(
+                    "declared nested Fabric candidate has no discovered parent candidate: "
+                    f"{origin.candidate_path} -> {parent_path}"
+                )
+            if id(parent) not in seen:
+                result.append(parent)
+                seen.add(id(parent))
+        parents = tuple(result)
+        self._parent_cache[id(descriptor)] = parents
+        return parents
+
+    def compare(
+        self,
+        left: FabricModDescriptor,
+        right: FabricModDescriptor,
+        stack: frozenset[tuple[int, int]] = frozenset(),
+    ) -> int:
+        """Return negative when ``left`` has Loader-higher priority."""
+
+        if left is right:
+            return 0
+        key = (id(left), id(right))
+        cached = self._compare_cache.get(key)
+        if cached is not None:
+            return cached
+        if key in stack or (key[1], key[0]) in stack:
+            raise ManagerError("cyclic declared nested Fabric candidate parent graph")
+        next_stack = stack.union({key})
+
+        left_depth = self.minimum_nesting_depth(left)
+        right_depth = self.minimum_nesting_depth(right)
+        if (left_depth == 0) != (right_depth == 0):
+            result = -1 if left_depth == 0 else 1
+        elif left.primary_id != right.primary_id:
+            result = -1 if left.primary_id < right.primary_id else 1
+        else:
+            version_comparison = _compare_fabric_versions_for_priority(left.version, right.version)
+            if version_comparison != 0:
+                result = -1 if version_comparison > 0 else 1
+            elif left_depth != right_depth:
+                result = -1 if left_depth < right_depth else 1
+            elif left_depth == 0:
+                result = 0
+            else:
+                left_parents = self.best_parents(left, next_stack)
+                right_parents = self.best_parents(right, next_stack)
+                if not left_parents or not right_parents:
+                    raise ManagerError("nested Fabric candidate has no priority parent")
+                if any(a is b for a in left_parents for b in right_parents):
+                    result = 0
+                else:
+                    result = self.compare(left_parents[0], right_parents[0], next_stack)
+
+        self._compare_cache[key] = result
+        self._compare_cache[(key[1], key[0])] = -result
+        return result
+
+    def best_parents(
+        self,
+        descriptor: FabricModDescriptor,
+        stack: frozenset[tuple[int, int]] = frozenset(),
+    ) -> tuple[FabricModDescriptor, ...]:
+        best: list[FabricModDescriptor] = []
+        for parent in self.parents(descriptor):
+            if not best:
+                best = [parent]
+                continue
+            comparison = self.compare(parent, best[0], stack)
+            if comparison < 0:
+                best = [parent]
+            elif comparison == 0:
+                best.append(parent)
+        return tuple(best)
+
+    def candidate_record(self, descriptor: FabricModDescriptor) -> dict[str, Any]:
+        parents = self.best_parents(descriptor)
+        return {
+            "filename": descriptor.filename,
+            "path": descriptor.relative_path,
+            "primary_id": descriptor.primary_id,
+            "provides": list(descriptor.provides),
+            "full_version": descriptor.version,
+            "semantic_precedence_key": _fabric_semantic_precedence_key(descriptor.version),
+            "root_candidate": not descriptor.nested_chain,
+            "minimum_nesting_depth": self.minimum_nesting_depth(descriptor),
+            "priority_parents": [
+                {
+                    "filename": parent.filename,
+                    "path": parent.relative_path,
+                    "primary_id": parent.primary_id,
+                    "full_version": parent.version,
+                    "semantic_precedence_key": _fabric_semantic_precedence_key(parent.version),
+                    "minimum_nesting_depth": self.minimum_nesting_depth(parent),
+                    "provenance": parent.provenance_record(),
+                }
+                for parent in parents
+            ],
+            "managed_project_uuid": descriptor.managed_project_uuid,
+            "managed_project_id": descriptor.managed_project_id,
+            "managed_deployment_id": descriptor.managed_deployment_id,
+            "managed_artifact_id": descriptor.managed_artifact_id,
+            "provenance": descriptor.provenance_record(),
+        }
+
+    def inactive_reason(
+        self,
+        candidate: FabricModDescriptor,
+        selected: FabricModDescriptor,
+    ) -> str:
+        if not selected.nested_chain and candidate.nested_chain:
+            return "ROOT_SHADOWED_NESTED"
+        version_comparison = _compare_fabric_versions_for_priority(candidate.version, selected.version)
+        if version_comparison < 0:
+            return "LOWER_VERSION"
+        candidate_depth = self.minimum_nesting_depth(candidate)
+        selected_depth = self.minimum_nesting_depth(selected)
+        if candidate_depth > selected_depth:
+            return "DEEPER_NESTING"
+        if candidate_depth and selected_depth and self.compare(candidate, selected) > 0:
+            return "LOWER_PRIORITY_PARENT"
+        return "LOWER_LOADER_PRIORITY"
+
+
+def _fabric_predicate_matches(version: str, predicate: str) -> bool:
+    """Evaluate one Fabric Loader VersionPredicate string.
+
+    Space-delimited terms are ANDed. Metadata arrays are handled by the graph
+    resolver as ORs, matching ModDependencyImpl.
+    """
+
+    actual_semantic = _parse_fabric_semantic_version(version, store_wildcards=False)
+    for raw_term in predicate.split(" "):
+        term = raw_term.strip()
+        if not term or term == "*":
+            continue
+        operator = "="
+        for candidate in _FABRIC_OPERATORS:
+            if term.startswith(candidate):
+                operator = candidate
+                term = term[len(candidate) :]
+                break
+        if not term:
+            raise ManagerError(f"invalid Fabric version predicate {predicate!r}: empty reference version")
+        reference_semantic = _parse_fabric_semantic_version(term, store_wildcards=True)
+        if reference_semantic is None:
+            if operator in {">", "<"}:
+                raise ManagerError(
+                    f"invalid Fabric version predicate {predicate!r}: exclusive ranges require semantic versions"
+                )
+            if version != term:
+                return False
+            continue
+
+        if any(component is None for component in reference_semantic.components):
+            if operator != "=":
+                raise ManagerError(
+                    f"invalid Fabric version predicate {predicate!r}: wildcard ranges require equality or no operator"
+                )
+            component_count = len(reference_semantic.components)
+            concrete_components = tuple(
+                component for component in reference_semantic.components[:-1] if component is not None
+            )
+            reference_semantic = _FabricSemanticVersion(
+                concrete_components,
+                "",
+                reference_semantic.build,
+            )
+            if component_count == 2:
+                operator = "^"
+            elif component_count == 3:
+                operator = "~"
+            else:
+                # Fabric Loader represents a.b.c.x (and any longer X-range)
+                # as >=a.b.c- and <a.b.(c+1)-. Keep this explicit instead of
+                # approximating it with the two/three-component shorthands.
+                if actual_semantic is None:
+                    return False
+                if not concrete_components or concrete_components[-1] == 2_147_483_647:
+                    raise ManagerError(
+                        f"invalid Fabric version predicate {predicate!r}: wildcard upper bound overflows"
+                    )
+                upper_components = (*concrete_components[:-1], concrete_components[-1] + 1)
+                upper = _FabricSemanticVersion(upper_components, "", None)
+                if (
+                    _compare_fabric_semantic_versions(actual_semantic, reference_semantic) < 0
+                    or _compare_fabric_semantic_versions(actual_semantic, upper) >= 0
+                ):
+                    return False
+                continue
+
+        if actual_semantic is None:
+            # Fabric treats non-semantic versions as exact-only for inclusive
+            # operators and never matches them against a semantic reference.
+            return False
+        comparison = _compare_fabric_semantic_versions(actual_semantic, reference_semantic)
+        if operator == "=" and comparison != 0:
+            return False
+        if operator == ">=" and comparison < 0:
+            return False
+        if operator == "<=" and comparison > 0:
+            return False
+        if operator == ">" and comparison <= 0:
+            return False
+        if operator == "<" and comparison >= 0:
+            return False
+        if operator == "~" and not (
+            comparison >= 0
+            and _fabric_component(actual_semantic, 0) == _fabric_component(reference_semantic, 0)
+            and _fabric_component(actual_semantic, 1) == _fabric_component(reference_semantic, 1)
+        ):
+            return False
+        if operator == "^" and not (
+            comparison >= 0
+            and _fabric_component(actual_semantic, 0) == _fabric_component(reference_semantic, 0)
+        ):
+            return False
+    return True
+
+
+_MAX_FABRIC_MANIFEST_SIZE = 1024 * 1024
+_MAX_FABRIC_MANIFEST_COMPRESSED_SIZE = 1024 * 1024
+_MAX_NESTED_JAR_DEPTH = 4
+_MAX_NESTED_JAR_COUNT = 1024
+_MAX_NESTED_JAR_ENTRY_SIZE = 64 * 1024 * 1024
+_MAX_NESTED_JAR_ENTRY_COMPRESSED_SIZE = 64 * 1024 * 1024
+_MAX_NESTED_JAR_AGGREGATE_SIZE = 256 * 1024 * 1024
+_MAX_NESTED_JAR_AGGREGATE_COMPRESSED_SIZE = 256 * 1024 * 1024
+_MAX_NESTED_JAR_EXPANSION_RATIO = 200
+_SUPPORTED_JAR_COMPRESSION = frozenset({zipfile.ZIP_STORED, zipfile.ZIP_DEFLATED})
+
+
+@dataclass
+class _NestedJarTraversalBudget:
+    count: int = 0
+    aggregate_size: int = 0
+    aggregate_compressed_size: int = 0
+
+    def charge(
+        self,
+        entry: zipfile.ZipInfo,
+        *,
+        label: str,
+        declared_nested_jar: bool,
+    ) -> None:
+        next_count = self.count + (1 if declared_nested_jar else 0)
+        next_size = self.aggregate_size + entry.file_size
+        next_compressed_size = self.aggregate_compressed_size + entry.compress_size
+        if next_count > _MAX_NESTED_JAR_COUNT:
+            raise ManagerError(
+                f"declared nested JAR count exceeds {_MAX_NESTED_JAR_COUNT} across the enabled graph in {label}"
+            )
+        if next_size > _MAX_NESTED_JAR_AGGREGATE_SIZE:
+            raise ManagerError(
+                "ZIP graph aggregate expanded size exceeds "
+                f"{_MAX_NESTED_JAR_AGGREGATE_SIZE} bytes in {label}"
+            )
+        if next_compressed_size > _MAX_NESTED_JAR_AGGREGATE_COMPRESSED_SIZE:
+            raise ManagerError(
+                "ZIP graph aggregate compressed size exceeds "
+                f"{_MAX_NESTED_JAR_AGGREGATE_COMPRESSED_SIZE} bytes in {label}"
+            )
+        self.count = next_count
+        self.aggregate_size = next_size
+        self.aggregate_compressed_size = next_compressed_size
+
+
+def _validated_zip_entry_name(entry: zipfile.ZipInfo, label: str) -> str:
+    raw_name = entry.orig_filename
+    decoded_name = entry.filename
+    if (
+        not isinstance(raw_name, str)
+        or raw_name != decoded_name
+        or "\x00" in raw_name
+        or "\x00" in decoded_name
+        or "\\" in raw_name
+        or "\\" in decoded_name
+    ):
+        raise ManagerError(
+            f"ZIP entry has an unsafe or normalized raw name in {label}: {raw_name!r}"
+        )
+    return decoded_name
+
+
+def _read_bounded_zip_entry(
+    archive: zipfile.ZipFile,
+    entry: zipfile.ZipInfo,
+    *,
+    label: str,
+    maximum_size: int,
+    maximum_compressed_size: int,
+    enforce_expansion_ratio: bool,
+    budget: _NestedJarTraversalBudget,
+    declared_nested_jar: bool,
+) -> bytes:
+    unix_mode = (entry.external_attr >> 16) & 0o170000
+    dos_directory = entry.create_system == 0 and bool(entry.external_attr & 0x10)
+    if entry.is_dir() or dos_directory or (unix_mode != 0 and unix_mode != stat.S_IFREG):
+        raise ManagerError(f"declared ZIP member is not a regular file in {label}: {entry.filename!r}")
+    if entry.flag_bits & 0x1:
+        raise ManagerError(f"encrypted ZIP member is not supported in {label}: {entry.filename!r}")
+    if entry.compress_type not in _SUPPORTED_JAR_COMPRESSION:
+        raise ManagerError(
+            f"unsupported ZIP compression {entry.compress_type} in {label}: {entry.filename!r}"
+        )
+    if entry.file_size < 0 or entry.file_size > maximum_size:
+        raise ManagerError(
+            f"ZIP member exceeds {maximum_size} bytes in {label}: {entry.filename!r}"
+        )
+    if entry.compress_size < 0 or entry.compress_size > maximum_compressed_size:
+        raise ManagerError(
+            "ZIP member compressed size exceeds "
+            f"{maximum_compressed_size} bytes in {label}: {entry.filename!r}"
+        )
+    if enforce_expansion_ratio and entry.file_size:
+        if (
+            entry.compress_size <= 0
+            or entry.file_size > entry.compress_size * _MAX_NESTED_JAR_EXPANSION_RATIO
+        ):
+            raise ManagerError(
+                "declared nested JAR expansion ratio exceeds "
+                f"{_MAX_NESTED_JAR_EXPANSION_RATIO}:1 in {label}: {entry.filename!r}"
+            )
+    budget.charge(
+        entry,
+        label=label,
+        declared_nested_jar=declared_nested_jar,
+    )
+    output = io.BytesIO()
+    try:
+        with archive.open(entry, "r") as handle:
+            while True:
+                chunk = handle.read(min(1024 * 1024, maximum_size + 1 - output.tell()))
+                if not chunk:
+                    break
+                output.write(chunk)
+                if output.tell() > maximum_size:
+                    raise ManagerError(
+                        f"ZIP member expanded beyond {maximum_size} bytes in {label}: {entry.filename!r}"
+                    )
     except ManagerError:
         raise
-    except (OSError, UnicodeDecodeError, json.JSONDecodeError, zipfile.BadZipFile) as exc:
-        raise ManagerError(f"cannot read Fabric manifest from {path}: {exc}") from exc
-    if not isinstance(manifest, dict) or not isinstance(manifest.get("id"), str) or not manifest["id"]:
-        raise ManagerError(f"fabric.mod.json in {path} has no valid id")
-    identifiers = {manifest["id"]}
-    provides = manifest.get("provides", [])
-    if strict_provides:
-        if not isinstance(provides, list):
-            raise ManagerError(f"fabric.mod.json provides in {path} must be an array")
-        seen_provides: set[str] = set()
-        for index, item in enumerate(provides):
+    except (OSError, RuntimeError, NotImplementedError, zipfile.BadZipFile) as exc:
+        raise ManagerError(f"cannot read ZIP member {entry.filename!r} from {label}: {exc}") from exc
+    value = output.getvalue()
+    if len(value) != entry.file_size:
+        raise ManagerError(f"ZIP member size mismatch in {label}: {entry.filename!r}")
+    return value
+
+
+def _read_fabric_manifest_from_archive(
+    archive: zipfile.ZipFile,
+    label: str,
+    *,
+    budget: _NestedJarTraversalBudget,
+    root_missing_is_non_fabric: bool = False,
+) -> tuple[dict[str, Any], dict[str, zipfile.ZipInfo]]:
+    entries: dict[str, zipfile.ZipInfo] = {}
+    seen_casefold: dict[str, str] = {}
+    for entry in archive.infolist():
+        entry_name = _validated_zip_entry_name(entry, label)
+        normalized = entry_name.casefold()
+        previous = seen_casefold.get(normalized)
+        if previous is not None:
+            raise ManagerError(
+                f"duplicate ZIP entry path in {label}: {previous!r} and {entry_name!r}"
+            )
+        seen_casefold[normalized] = entry_name
+        if entry.is_dir():
+            continue
+        entries[entry_name] = entry
+    manifest_entry = entries.get("fabric.mod.json")
+    if manifest_entry is None:
+        error_type = _NonFabricRootError if root_missing_is_non_fabric else ManagerError
+        raise error_type(f"{label} must contain exactly one root fabric.mod.json")
+    try:
+        manifest_bytes = _read_bounded_zip_entry(
+            archive,
+            manifest_entry,
+            label=label,
+            maximum_size=_MAX_FABRIC_MANIFEST_SIZE,
+            maximum_compressed_size=_MAX_FABRIC_MANIFEST_COMPRESSED_SIZE,
+            enforce_expansion_ratio=False,
+            budget=budget,
+            declared_nested_jar=False,
+        )
+        # Fabric Loader 0.19.3's vendored JsonReader accepts raw C0 control
+        # characters inside quoted metadata strings. Keep that compatibility
+        # scoped to fabric.mod.json; manager state/config JSON remains strict.
+        manifest = json.loads(manifest_bytes.decode("utf-8"), strict=False)
+    except (UnicodeDecodeError, json.JSONDecodeError, RuntimeError, zipfile.BadZipFile) as exc:
+        raise ManagerError(f"cannot read Fabric manifest from {label}: {exc}") from exc
+    if not isinstance(manifest, dict):
+        raise ManagerError(f"fabric.mod.json in {label} must be an object")
+    return manifest, entries
+
+
+def _declared_nested_jar_paths(manifest: dict[str, Any], label: str) -> tuple[str, ...]:
+    raw_jars = manifest.get("jars", [])
+    if not isinstance(raw_jars, list):
+        raise ManagerError(f"fabric.mod.json jars in {label} must be an array")
+    result: list[str] = []
+    seen: set[str] = set()
+    for index, declaration in enumerate(raw_jars):
+        item_label = f"fabric.mod.json jars[{index}] in {label}"
+        if not isinstance(declaration, dict) or set(declaration) != {"file"}:
+            raise ManagerError(f"{item_label} must contain exactly one file field")
+        member_path = declaration["file"]
+        if (
+            not isinstance(member_path, str)
+            or not member_path
+            or "\\" in member_path
+            or "\x00" in member_path
+        ):
+            raise ManagerError(f"{item_label}.file must be a safe non-empty ZIP member path")
+        parsed = PurePosixPath(member_path)
+        if (
+            parsed.is_absolute()
+            or PureWindowsPath(member_path).is_absolute()
+            or bool(PureWindowsPath(member_path).drive)
+            or parsed.as_posix() != member_path
+            or any(part in {"", ".", ".."} for part in parsed.parts)
+            or not member_path.endswith(".jar")
+        ):
+            raise ManagerError(f"{item_label}.file is an unsafe nested JAR path: {member_path!r}")
+        normalized = member_path.casefold()
+        if normalized in seen:
+            raise ManagerError(f"duplicate declared nested JAR path in {label}: {member_path!r}")
+        seen.add(normalized)
+        result.append(member_path)
+    return tuple(result)
+
+
+def _fabric_descriptor_from_manifest(
+    manifest: dict[str, Any],
+    *,
+    path: Path,
+    label: str,
+    relative_path: str,
+    filename: str,
+    strict_provides: bool,
+    artifact: ManagedArtifact | None,
+    root_container_path: str | None = None,
+    root_container_filename: str | None = None,
+    root_container_sha256: str | None = None,
+    nested_chain: tuple[NestedJarProvenanceLayer, ...] = (),
+) -> FabricModDescriptor:
+    primary_id = manifest.get("id")
+    version = manifest.get("version")
+    if not isinstance(primary_id, str) or not primary_id:
+        raise ManagerError(f"fabric.mod.json in {label} has no valid id")
+    if not isinstance(version, str) or not version:
+        raise ManagerError(f"fabric.mod.json in {label} has no valid version")
+    raw_environment = manifest.get("environment", "*")
+    if not isinstance(raw_environment, str):
+        raise ManagerError(f"fabric.mod.json environment in {label} must be a string")
+    normalized_environment = raw_environment.lower()
+    if normalized_environment in {"", "*"}:
+        environment = "*"
+    elif normalized_environment in {"client", "server"}:
+        environment = normalized_environment
+    else:
+        raise ManagerError(
+            f"fabric.mod.json environment in {label} must be '*', 'client', or 'server'"
+        )
+    environment_eligible = environment in {"*", "client"}
+    provides_value = manifest.get("provides", [])
+    provides: list[str] = []
+    if strict_provides and not isinstance(provides_value, list):
+        raise ManagerError(f"fabric.mod.json provides in {label} must be an array")
+    if isinstance(provides_value, list):
+        seen: set[str] = set()
+        for index, item in enumerate(provides_value):
             if not isinstance(item, str) or not item:
+                if strict_provides:
+                    raise ManagerError(
+                        f"fabric.mod.json provides[{index}] in {label} must be a non-empty string"
+                    )
+                continue
+            if item == primary_id:
+                raise ManagerError(f"fabric.mod.json provides in {label} must not repeat primary id {item}")
+            if item in seen:
+                raise ManagerError(f"fabric.mod.json provides in {label} contains duplicate alias {item}")
+            seen.add(item)
+            provides.append(item)
+
+    depends_value = manifest.get("depends", {})
+    if not isinstance(depends_value, dict):
+        raise ManagerError(f"fabric.mod.json depends in {label} must be an object")
+    depends: dict[str, tuple[str, ...]] = {}
+    for dependency_id, raw_predicates in depends_value.items():
+        if not isinstance(dependency_id, str) or not dependency_id:
+            raise ManagerError(f"fabric.mod.json depends in {label} has an invalid dependency id")
+        if isinstance(raw_predicates, str):
+            predicates = (raw_predicates,)
+        elif isinstance(raw_predicates, list) and raw_predicates and all(
+            isinstance(item, str) for item in raw_predicates
+        ):
+            predicates = tuple(raw_predicates)
+        else:
+            raise ManagerError(
+                f"fabric.mod.json dependency {dependency_id!r} in {label} must be a string or nonempty string array"
+            )
+        for predicate in predicates:
+            _fabric_predicate_matches("0.0.0", predicate)
+        depends[dependency_id] = predicates
+
+    return FabricModDescriptor(
+        path=path,
+        relative_path=relative_path,
+        filename=filename,
+        primary_id=primary_id,
+        provides=tuple(provides),
+        version=version,
+        depends=depends,
+        environment=environment,
+        environment_eligible=environment_eligible,
+        managed_project_uuid=artifact.project_uuid if artifact is not None else None,
+        managed_project_id=artifact.project_id if artifact is not None else None,
+        managed_deployment_id=artifact.deployment_id if artifact is not None else None,
+        managed_artifact_id=artifact.artifact_id if artifact is not None else None,
+        root_container_path=root_container_path,
+        root_container_filename=root_container_filename,
+        root_container_sha256=root_container_sha256,
+        nested_chain=nested_chain,
+    )
+
+
+def _read_fabric_descriptor(
+    path: Path,
+    *,
+    strict_provides: bool = False,
+    relative_path: str | None = None,
+    artifact: ManagedArtifact | None = None,
+) -> FabricModDescriptor:
+    label = str(path)
+    budget = _NestedJarTraversalBudget()
+    try:
+        with zipfile.ZipFile(path) as archive:
+            manifest, _entries = _read_fabric_manifest_from_archive(
+                archive,
+                label,
+                budget=budget,
+            )
+    except ManagerError:
+        raise
+    except (OSError, RuntimeError, zipfile.BadZipFile) as exc:
+        raise ManagerError(f"cannot read Fabric manifest from {path}: {exc}") from exc
+    relative = relative_path or path.name
+    return _fabric_descriptor_from_manifest(
+        manifest,
+        path=path,
+        label=label,
+        relative_path=relative,
+        filename=path.name.removesuffix(".disabled"),
+        strict_provides=strict_provides,
+        artifact=artifact,
+        root_container_path=relative,
+        root_container_filename=path.name.removesuffix(".disabled"),
+    )
+
+
+def _read_fabric_descriptor_tree(
+    path: Path,
+    *,
+    strict_provides: bool = False,
+    relative_path: str | None = None,
+    artifact: ManagedArtifact | None = None,
+    budget: _NestedJarTraversalBudget | None = None,
+) -> tuple[FabricModDescriptor, ...]:
+    root_relative_path = relative_path or path.name
+    root_filename = path.name.removesuffix(".disabled")
+    root_sha256 = _sha256(path)
+    traversal_budget = budget if budget is not None else _NestedJarTraversalBudget()
+
+    def walk(
+        archive: zipfile.ZipFile,
+        *,
+        label: str,
+        descriptor_relative_path: str,
+        descriptor_filename: str,
+        container_sha256: str,
+        nested_chain: tuple[NestedJarProvenanceLayer, ...],
+        nested_strict_provides: bool,
+    ) -> list[FabricModDescriptor]:
+        manifest, entries = _read_fabric_manifest_from_archive(
+            archive,
+            label,
+            budget=traversal_budget,
+            root_missing_is_non_fabric=not nested_chain,
+        )
+        descriptor = _fabric_descriptor_from_manifest(
+            manifest,
+            path=path,
+            label=label,
+            relative_path=descriptor_relative_path,
+            filename=descriptor_filename,
+            strict_provides=nested_strict_provides,
+            artifact=artifact,
+            root_container_path=root_relative_path,
+            root_container_filename=root_filename,
+            root_container_sha256=root_sha256,
+            nested_chain=nested_chain,
+        )
+        declarations = _declared_nested_jar_paths(manifest, label)
+        if not descriptor.environment_eligible:
+            # Fabric Loader parses the excluded candidate's metadata, but does
+            # not discover any of its declared children for this environment.
+            return [descriptor]
+        if nested_chain and set(descriptor.ownership_ids).intersection(_FABRIC_PLATFORM_DEPENDENCIES):
+            raise ManagerError(
+                f"declared nested JAR {label} cannot claim Fabric platform IDs: "
+                f"{sorted(set(descriptor.ownership_ids).intersection(_FABRIC_PLATFORM_DEPENDENCIES))}"
+            )
+        if declarations and len(nested_chain) >= _MAX_NESTED_JAR_DEPTH:
+            raise ManagerError(
+                f"declared nested JAR depth exceeds {_MAX_NESTED_JAR_DEPTH} in {label}"
+            )
+        result = [descriptor]
+        for member_path in declarations:
+            entry = entries.get(member_path)
+            if entry is None or entry.is_dir():
                 raise ManagerError(
-                    f"fabric.mod.json provides[{index}] in {path} must be a non-empty string"
+                    f"declared nested JAR member is missing from {label}: {member_path!r}"
                 )
-            if item == manifest["id"]:
+            if entry.file_size > _MAX_NESTED_JAR_ENTRY_SIZE:
                 raise ManagerError(
-                    f"fabric.mod.json provides in {path} must not repeat primary id {item}"
+                    f"declared nested JAR member exceeds {_MAX_NESTED_JAR_ENTRY_SIZE} bytes in {label}: {member_path!r}"
                 )
-            if item in seen_provides:
+            member_bytes = _read_bounded_zip_entry(
+                archive,
+                entry,
+                label=label,
+                maximum_size=_MAX_NESTED_JAR_ENTRY_SIZE,
+                maximum_compressed_size=_MAX_NESTED_JAR_ENTRY_COMPRESSED_SIZE,
+                enforce_expansion_ratio=True,
+                budget=traversal_budget,
+                declared_nested_jar=True,
+            )
+            member_sha256 = hashlib.sha256(member_bytes).hexdigest()
+            layer = NestedJarProvenanceLayer(
+                container_path=descriptor_relative_path,
+                container_sha256=container_sha256,
+                declared_member_path=member_path,
+                member_sha256=member_sha256,
+                member_size=entry.file_size,
+                member_compressed_size=entry.compress_size,
+            )
+            nested_relative_path = descriptor_relative_path + "!/" + member_path
+            try:
+                with zipfile.ZipFile(io.BytesIO(member_bytes)) as nested_archive:
+                    result.extend(
+                        walk(
+                            nested_archive,
+                            label=nested_relative_path,
+                            descriptor_relative_path=nested_relative_path,
+                            descriptor_filename=PurePosixPath(member_path).name,
+                            container_sha256=member_sha256,
+                            nested_chain=(*nested_chain, layer),
+                            nested_strict_provides=True,
+                        )
+                    )
+            except ManagerError:
+                raise
+            except (OSError, RuntimeError, zipfile.BadZipFile) as exc:
                 raise ManagerError(
-                    f"fabric.mod.json provides in {path} contains duplicate alias {item}"
-                )
-            seen_provides.add(item)
-        identifiers.update(seen_provides)
-        return frozenset(identifiers)
-    if isinstance(provides, list):
-        identifiers.update(item for item in provides if isinstance(item, str) and item)
-    return frozenset(identifiers)
+                    f"declared nested JAR member is malformed in {label}: {member_path!r}: {exc}"
+                ) from exc
+        return result
+
+    try:
+        with zipfile.ZipFile(path) as root_archive:
+            descriptors = walk(
+                root_archive,
+                label=str(path),
+                descriptor_relative_path=root_relative_path,
+                descriptor_filename=root_filename,
+                container_sha256=root_sha256,
+                nested_chain=(),
+                nested_strict_provides=strict_provides,
+            )
+            if _sha256(path) != root_sha256:
+                raise ManagerError(f"Fabric root JAR changed while reading descriptor tree: {path}")
+            return _deduplicate_nested_descriptors(descriptors)
+    except ManagerError:
+        raise
+    except (OSError, RuntimeError, zipfile.BadZipFile) as exc:
+        raise ManagerError(f"cannot read Fabric manifest from {path}: {exc}") from exc
+
+
+def _deduplicate_nested_descriptors(
+    descriptors: Sequence[FabricModDescriptor],
+) -> tuple[FabricModDescriptor, ...]:
+    """Deduplicate byte-identical nested candidates and retain every origin.
+
+    Fabric Loader deduplicates nested candidates across the enabled graph, not
+    just inside one root. Keep every exact root/chain and retain a singular
+    managed identity only when exactly one managed root owns the bytes.
+    """
+
+    result: list[FabricModDescriptor] = []
+    nested_by_sha256: dict[str, int] = {}
+    for descriptor in descriptors:
+        if not descriptor.nested_chain:
+            result.append(descriptor)
+            continue
+        member_sha256 = descriptor.nested_chain[-1].member_sha256
+        prior_index = nested_by_sha256.get(member_sha256)
+        if prior_index is None:
+            nested_by_sha256[member_sha256] = len(result)
+            result.append(descriptor)
+            continue
+        prior = result[prior_index]
+        if (
+            prior.primary_id != descriptor.primary_id
+            or prior.provides != descriptor.provides
+            or prior.version != descriptor.version
+            or prior.depends != descriptor.depends
+            or prior.environment != descriptor.environment
+            or prior.environment_eligible != descriptor.environment_eligible
+        ):
+            raise ManagerError(
+                "byte-identical declared nested JARs produced inconsistent Fabric descriptors: "
+                f"{prior.relative_path} and {descriptor.relative_path}"
+            )
+        origins = list(prior.nested_origins)
+        existing_origins = set(origins)
+        for origin in descriptor.nested_origins:
+            if origin not in existing_origins:
+                origins.append(origin)
+                existing_origins.add(origin)
+        managed_root_keys = {
+            origin.managed_root_key
+            for origin in origins
+            if origin.managed_root_key is not None
+        }
+        sole_managed_root = next(iter(managed_root_keys)) if len(managed_root_keys) == 1 else None
+        origins.sort(
+            key=lambda origin: (
+                0 if sole_managed_root is not None and origin.managed_root_key == sole_managed_root else 1,
+                origin.root_container_path.casefold(),
+                origin.root_container_path,
+                origin.candidate_path.casefold(),
+                origin.candidate_path,
+                origin.managed_artifact_id or "",
+            )
+        )
+        primary_origin = origins[0]
+        managed_origin = (
+            next(origin for origin in origins if origin.managed_root_key == sole_managed_root)
+            if sole_managed_root is not None
+            else None
+        )
+        result[prior_index] = dataclass_replace(
+            prior,
+            path=primary_origin.source_path,
+            relative_path=primary_origin.candidate_path,
+            filename=primary_origin.candidate_filename,
+            managed_project_uuid=(managed_origin.managed_project_uuid if managed_origin is not None else None),
+            managed_project_id=(managed_origin.managed_project_id if managed_origin is not None else None),
+            managed_deployment_id=(managed_origin.managed_deployment_id if managed_origin is not None else None),
+            managed_artifact_id=(managed_origin.managed_artifact_id if managed_origin is not None else None),
+            root_container_path=primary_origin.root_container_path,
+            root_container_filename=primary_origin.root_container_filename,
+            root_container_sha256=primary_origin.root_container_sha256,
+            nested_chain=primary_origin.nested_chain,
+            nested_origin_override=primary_origin,
+            alternate_nested_origins=tuple(origins[1:]),
+        )
+    return tuple(result)
+
+
+def _fabric_mod_ids(path: Path, *, strict_provides: bool = False) -> frozenset[str]:
+    descriptor = _read_fabric_descriptor(path, strict_provides=strict_provides)
+    return frozenset(descriptor.ownership_ids)
 
 
 def _atomic_copy(source: Path, destination: Path) -> None:
