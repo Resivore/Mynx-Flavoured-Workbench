@@ -3741,7 +3741,11 @@ class PhysicalManager:
             for index, path in enumerate(touched):
                 self._assert_target_containment(path.resolve(strict=False), f"transaction target {path.name}")
                 if path.exists():
-                    backup = target_backup / f"{index:04d}-{path.name}"
+                    # Transaction files are private, index-addressed snapshots.
+                    # Do not repeat a potentially long managed artifact basename
+                    # under the already-deep transaction directory: that can hit
+                    # classic Win32 MAX_PATH even when the real mods path is safe.
+                    backup = target_backup / f"{index:04d}.bak"
                     shutil.copy2(path, backup)
                     snapshots[path] = backup
                 else:
@@ -3757,12 +3761,12 @@ class PhysicalManager:
 
             staged: dict[Path, Path] = {}
             for index, action in enumerate(plan.writes):
-                stage = source_backup / f"{index:04d}-{action.artifact.filename}"
+                stage = source_backup / f"write-{index:04d}.stage"
                 shutil.copy2(action.source, stage)
                 self._verify_artifact_file(stage, action.artifact)
                 staged[action.destination] = stage
             for index, move in enumerate(plan.retained_predecessor_moves):
-                stage = source_backup / f"move-{index:04d}-{move.artifact.filename}"
+                stage = source_backup / f"move-{index:04d}.stage"
                 shutil.copy2(move.source, stage)
                 self._verify_artifact_file(stage, move.artifact)
             injector("after_backup")

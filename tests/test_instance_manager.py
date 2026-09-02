@@ -3,6 +3,7 @@ from __future__ import annotations
 import copy
 import hashlib
 import json
+import os
 import stat
 import tempfile
 import unittest
@@ -1001,6 +1002,57 @@ class PhysicalManagerTests(unittest.TestCase):
         projection = json.loads((self.fixture.target / ".mynx-runtime-v2-title.json").read_text(encoding="utf-8"))
         self.assertEqual(stack_version, cleared["accepted_baseline"]["revision"])
         self.assertEqual("Slot A: Empty", projection["lines"][1])
+
+    def test_remove_slot_uses_short_transaction_names_when_reactivating_long_accepted_artifact(self) -> None:
+        accepted_artifact = self.fixture.c5["artifacts"][0]
+        old_disabled = self.fixture.mods / (accepted_artifact["filename"] + ".disabled")
+        direct_path_budget = 220
+        filename_length = direct_path_budget - len(str(self.fixture.mods)) - len(os.sep) - len(".disabled")
+        prefix = "accepted-long-"
+        suffix = ".jar"
+        self.assertGreater(filename_length, len(prefix) + len(suffix))
+        long_name = prefix + ("x" * (filename_length - len(prefix) - len(suffix))) + suffix
+        long_disabled = self.fixture.mods / (long_name + ".disabled")
+        self.assertEqual(direct_path_budget, len(str(long_disabled)))
+        old_disabled.replace(long_disabled)
+        accepted_artifact["filename"] = long_name
+        accepted_artifact["artifact_id"] = stable_uuid(
+            "artifact:" + long_name + ":" + accepted_artifact["sha256"]
+        )
+        accepted_artifact["source"]["path"] = "mods/" + long_name
+        validate_runtime_state(self.fixture.state, self.fixture.project_index)
+        self.fixture.state_path.write_text(
+            json.dumps(self.fixture.state, indent=2) + "\n",
+            encoding="utf-8",
+        )
+        self.fixture.manager.adopt(dry_run=False)
+
+        legacy_snapshot = (
+            self.fixture.target
+            / (".mynx-runtime-v2-transaction-" + ("0" * 36))
+            / "target"
+            / ("0000-" + long_name + ".disabled")
+        )
+        self.assertGreaterEqual(len(str(legacy_snapshot)), 260)
+        copy_destinations: list[Path] = []
+        original_copy2 = manager_module.shutil.copy2
+
+        def reject_legacy_max_path(source: Path, destination: Path, *args: object, **kwargs: object) -> object:
+            destination_path = Path(destination)
+            copy_destinations.append(destination_path)
+            if len(str(destination_path)) >= 260:
+                raise FileNotFoundError(3, "The system cannot find the path specified", str(destination_path))
+            return original_copy2(source, destination, *args, **kwargs)
+
+        with patch.object(manager_module.shutil, "copy2", side_effect=reject_legacy_max_path):
+            self.fixture.apply_operation({"type": "REMOVE_SLOT", "slot": "A"})
+
+        self.assertTrue(copy_destinations)
+        self.assertLess(max(len(str(path)) for path in copy_destinations), 260)
+        self.assertTrue((self.fixture.mods / long_name).is_file())
+        self.assertFalse(long_disabled.exists())
+        self.assertIsNone(self.fixture.repository_state()["slots"]["A"])
+        self.assertEqual("PHYSICAL_STATE_VERIFIED", self.fixture.manager.verify()["status"])
 
     def test_genuine_promotion_increments_stack_and_projection_exactly_once(self) -> None:
         self.fixture.deploy_successor_pair()
