@@ -81,6 +81,49 @@ follows Fabric Loader. A present provider must satisfy its predicate. A missing
 ID known to manager ownership fails and names the companion that must be
 supplied in the same cohort operation.
 
+Fabric providers embedded through root `fabric.mod.json` `jars[].file`
+declarations are discovered recursively before the graph is resolved. Only an
+exact declared POSIX member path ending in lowercase `.jar` is eligible; the
+manager never extracts nested content or treats arbitrary archive entries as
+mods. Every declared member must exist exactly once and be an unencrypted,
+regular stored/deflated ZIP entry. Absolute, drive-relative, backslash,
+dot-segment, normalized, duplicate, symbolic-link, nonregular, unsupported-
+compression, or malformed entries fail closed. Traversal is bounded across the
+whole enabled graph to four nested levels, 64 declared members, 64 MiB
+compressed and expanded per nested member, 256 MiB cumulative compressed and
+expanded bytes (including manifest reads), and a 200:1 per-member expansion
+ratio. Fabric manifests are independently capped at 1 MiB compressed and
+expanded.
+
+Each declared nested descriptor keeps its own Fabric primary ID, aliases,
+version, and hard dependencies while inheriting the enclosing root artifact's
+managed project/deployment/artifact provenance for graph scope. Receipts expose
+the root container hash plus every exact container/member path, compressed and
+expanded size, member SHA-256, and recursive parent chain. Byte-identical
+nested candidates reached anywhere in the enabled graph are deduplicated by
+SHA-256 while every root and chain is retained. A candidate inherits a singular
+managed identity only when exactly one managed root owns it. Different bytes
+that claim the same graph-relevant ID remain distinct and fail duplicate
+ownership; the manager never selects one by filename or traversal order.
+Byte-identical candidates embedded by distinct managed roots retain every
+owning artifact identity and fail with deterministic full-origin evidence when
+that co-ownership enters the managed graph, rather than assigning the provider
+nondeterministically. A nested JAR may not claim `java`, `minecraft`, or
+`fabricloader`.
+The compatibility fields `enabled_fabric_jar_count` and
+`enabled_fabric_jars` continue to describe physical root files;
+`enabled_fabric_descriptors` and its root/nested counts enumerate the
+client-eligible resolved candidate tree, while the dedicated environment-
+exclusion fields retain every discovered but ineligible descriptor.
+
+The dedicated profile is a Fabric client environment. A missing, empty, or
+`*` metadata environment is universal; `client` is eligible and `server` is
+excluded, with ASCII case normalized like Loader. Other or non-string values
+fail closed. Excluded roots and nested candidates are retained in the
+environment-exclusion receipt, but never enter ownership, provider, consumer,
+duplicate, dependency, or platform-attestation decisions. Their declared child
+JARs are not traversed, matching Loader's environment-gated discovery.
+
 Duplicate external ownership outside the managed ownership/dependency graph is
 not silently discarded and is not mistaken for a usable provider. It is
 reported as `OBSERVED_EXTERNAL_DUPLICATE_NOT_EVALUATED` with every exact

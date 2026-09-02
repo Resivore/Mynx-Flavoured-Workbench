@@ -2,11 +2,14 @@ from __future__ import annotations
 
 import copy
 import hashlib
+import io
 import json
 import os
 import sqlite3
+import stat
 import tempfile
 import unittest
+import warnings
 import zipfile
 from contextlib import closing
 from pathlib import Path
@@ -22,10 +25,14 @@ from tests.test_instance_manager import (
 )
 from tools.test_instance_manager.manager import (
     FabricModDescriptor,
+    ManagedArtifact,
     ManagerError,
     PlatformAttestation,
     PhysicalManager,
+    _NestedJarTraversalBudget,
     _fabric_predicate_matches,
+    _read_fabric_descriptor_tree,
+    _read_fabric_manifest_from_archive,
     _windows_processes_using_profile,
 )
 
@@ -36,6 +43,7 @@ COMPATIBLE_LATER = "4.2.9-bge.canary99.compatible+26.2"
 PRE_UNIFIED = "4.2.0-bge.canary56.pre-unified+26.2"
 UPPER_BOUND = "4.3.0-"
 TROWEL_RANGE = ">=4.2.1-bge.canary57.unified+26.2 <4.3.0-"
+_ENVIRONMENT_UNSET = object()
 
 
 def descriptor(
@@ -87,6 +95,63 @@ def write_dependency_mod(
         )
         archive.writestr("fixture.txt", version)
     return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def fabric_mod_jar_bytes(
+    primary_id: str,
+    version: str,
+    *,
+    provides: tuple[str, ...] = (),
+    depends: dict[str, str | list[str]] | None = None,
+    declared_paths: tuple[str, ...] = (),
+    nested_entries: tuple[tuple[str, bytes], ...] = (),
+    payload: bytes | None = None,
+    environment: object = _ENVIRONMENT_UNSET,
+) -> bytes:
+    """Build deterministic Fabric fixture bytes, including declared children."""
+
+    output = io.BytesIO()
+    manifest: dict[str, object] = {
+        "schemaVersion": 1,
+        "id": primary_id,
+        "version": version,
+        "name": primary_id,
+        "provides": list(provides),
+        "depends": depends or {},
+        "jars": [{"file": item} for item in declared_paths],
+    }
+    if environment is not _ENVIRONMENT_UNSET:
+        manifest["environment"] = environment
+    with zipfile.ZipFile(output, "w", compression=zipfile.ZIP_STORED) as archive:
+        archive.writestr(
+            "fabric.mod.json",
+            json.dumps(
+                manifest,
+                sort_keys=True,
+            ),
+        )
+        archive.writestr("fixture.bin", payload if payload is not None else version.encode("utf-8"))
+        for member_path, member_bytes in nested_entries:
+            archive.writestr(member_path, member_bytes)
+    return output.getvalue()
+
+
+def managed_fixture_artifact(path: Path, primary_id: str, version: str) -> ManagedArtifact:
+    sha256 = hashlib.sha256(path.read_bytes()).hexdigest()
+    return ManagedArtifact(
+        deployment_id=stable_uuid("nested-deployment:" + primary_id),
+        artifact_id=stable_uuid("nested-artifact:" + sha256),
+        project_uuid=stable_uuid("nested-project:" + primary_id),
+        project_id=primary_id + "-project",
+        filename=path.name,
+        sha256=sha256,
+        mod_id=primary_id,
+        ownership_mod_ids=(primary_id,),
+        relative_path="mods/" + path.name,
+        active=True,
+        source={"type": "ADOPTED_TARGET", "path": "mods/" + path.name},
+        expected_fabric_version=version,
+    )
 
 
 def install_fake_modrinth_launch_authority(
@@ -556,6 +621,639 @@ class FabricDependencyGraphTests(unittest.TestCase):
             r"missing external Fabric dependency.*minecraft.*no exact enabled provider",
         ):
             self.resolve(consumer)
+
+
+class DeclaredNestedFabricJarTests(unittest.TestCase):
+    def write_outer(
+        self,
+        directory: Path,
+        outer_bytes: bytes,
+        *,
+        primary_id: str = "trinkets_updated",
+        version: str = "4.1.0-beta.3+26.2",
+    ) -> tuple[Path, ManagedArtifact]:
+        path = directory / "managed-outer.jar"
+        path.write_bytes(outer_bytes)
+        return path, managed_fixture_artifact(path, primary_id, version)
+
+    @staticmethod
+    def resolve(
+        descriptors: tuple[FabricModDescriptor, ...],
+        managed_id: str = "trinkets_updated",
+    ) -> dict:
+        return PhysicalManager._resolve_dependency_graph(  # type: ignore[arg-type]
+            None,
+            descriptors,
+            managed_ownership_ids={managed_id},
+            phase="TEST",
+        )
+
+    def test_recursive_nested_provider_resolves_with_exact_provenance_receipt(self) -> None:
+        event_bytes = fabric_mod_jar_bytes("yumi_commons_event", "2.0.0")
+        event_path = "META-INF/jars/yumi-commons-event-2.0.0.jar"
+        core_bytes = fabric_mod_jar_bytes(
+            "yumi_mc_core",
+            "1.1.1+26.2",
+            depends={"yumi_commons_event": "~2.0.0"},
+            declared_paths=(event_path,),
+            nested_entries=((event_path, event_bytes),),
+        )
+        core_path = "META-INF/jars/yumi-mc-foundation-1.1.1+26.2.jar"
+        outer_bytes = fabric_mod_jar_bytes(
+            "trinkets_updated",
+            "4.1.0-beta.3+26.2",
+            depends={"yumi_mc_core": ">=1.1.0+26.2"},
+            declared_paths=(core_path,),
+            nested_entries=((core_path, core_bytes),),
+        )
+        with tempfile.TemporaryDirectory() as temporary:
+            path, artifact_record = self.write_outer(Path(temporary), outer_bytes)
+            descriptors = _read_fabric_descriptor_tree(
+                path,
+                relative_path="mods/managed-outer.jar",
+                artifact=artifact_record,
+            )
+
+        self.assertEqual(
+            ["trinkets_updated", "yumi_mc_core", "yumi_commons_event"],
+            [item.primary_id for item in descriptors],
+        )
+        self.assertEqual(
+            {artifact_record.project_id},
+            {item.managed_project_id for item in descriptors},
+        )
+        self.assertEqual([0, 1, 2], [len(item.nested_chain) for item in descriptors])
+        self.assertEqual(hashlib.sha256(outer_bytes).hexdigest(), descriptors[0].root_container_sha256)
+        self.assertEqual(hashlib.sha256(core_bytes).hexdigest(), descriptors[1].nested_chain[-1].member_sha256)
+        self.assertEqual(hashlib.sha256(event_bytes).hexdigest(), descriptors[2].nested_chain[-1].member_sha256)
+
+        report = self.resolve(descriptors)
+        self.assertEqual("FABRIC_DEPENDENCY_GRAPH_VERIFIED", report["status"])
+        self.assertEqual(1, report["enabled_fabric_jar_count"])
+        self.assertEqual(3, report["enabled_fabric_descriptor_count"])
+        self.assertEqual(2, report["declared_nested_fabric_descriptor_count"])
+        self.assertEqual(1, len(report["enabled_fabric_jars"]))
+        self.assertEqual(3, len(report["enabled_fabric_descriptors"]))
+        resolutions = {item["dependency_id"]: item for item in report["resolutions"]}
+        self.assertEqual("1.1.1+26.2", resolutions["yumi_mc_core"]["provider"]["version"])
+        self.assertEqual("2.0.0", resolutions["yumi_commons_event"]["provider"]["version"])
+        self.assertEqual(
+            "DECLARED_NESTED_FABRIC_JAR",
+            resolutions["yumi_mc_core"]["provider"]["provenance"]["classification"],
+        )
+        self.assertEqual(
+            2,
+            resolutions["yumi_commons_event"]["provider"]["provenance"]["nested_depth"],
+        )
+        json.dumps(report)
+
+    def test_default_and_client_environments_are_client_eligible(self) -> None:
+        provider = fabric_mod_jar_bytes("nested_provider", "1.0.0")
+        member_path = "META-INF/jars/provider.jar"
+        cases = (
+            ("default", _ENVIRONMENT_UNSET, "*"),
+            ("empty", "", "*"),
+            ("client", "client", "client"),
+            ("uppercase-client", "CLIENT", "client"),
+        )
+        for label, raw_environment, expected_environment in cases:
+            with self.subTest(label=label), tempfile.TemporaryDirectory() as temporary:
+                kwargs = {} if raw_environment is _ENVIRONMENT_UNSET else {"environment": raw_environment}
+                outer = fabric_mod_jar_bytes(
+                    "trinkets_updated",
+                    "4.1.0-beta.3+26.2",
+                    declared_paths=(member_path,),
+                    nested_entries=((member_path, provider),),
+                    **kwargs,
+                )
+                path, artifact_record = self.write_outer(Path(temporary), outer)
+                descriptors = _read_fabric_descriptor_tree(path, artifact=artifact_record)
+            self.assertEqual(2, len(descriptors))
+            self.assertEqual(expected_environment, descriptors[0].environment)
+            self.assertTrue(all(item.environment_eligible for item in descriptors))
+
+    def test_server_root_is_receipted_but_does_not_traverse_declared_children(self) -> None:
+        outer = fabric_mod_jar_bytes(
+            "trinkets_updated",
+            "4.1.0-beta.3+26.2",
+            declared_paths=("META-INF/jars/missing.jar",),
+            environment="SERVER",
+        )
+        with tempfile.TemporaryDirectory() as temporary:
+            path, artifact_record = self.write_outer(Path(temporary), outer)
+            descriptors = _read_fabric_descriptor_tree(
+                path,
+                relative_path="mods/managed-outer.jar",
+                artifact=artifact_record,
+            )
+        self.assertEqual(1, len(descriptors))
+        self.assertEqual("server", descriptors[0].environment)
+        self.assertFalse(descriptors[0].environment_eligible)
+
+        report = self.resolve(descriptors)
+        self.assertEqual(1, report["enabled_fabric_jar_count"])
+        self.assertEqual(0, report["enabled_fabric_descriptor_count"])
+        self.assertEqual(1, report["environment_excluded_fabric_descriptor_count"])
+        excluded = report["environment_excluded_fabric_descriptors"][0]
+        self.assertEqual("EXCLUDED_BY_FABRIC_ENVIRONMENT", excluded["classification"])
+        self.assertEqual("server", excluded["environment"])
+        self.assertEqual("mods/managed-outer.jar", excluded["provenance"]["root_container"]["path"])
+
+    def test_server_nested_candidate_cannot_satisfy_client_dependency_or_traverse_children(self) -> None:
+        member_path = "META-INF/jars/server-provider.jar"
+        server_provider = fabric_mod_jar_bytes(
+            "server_provider",
+            "1.0.0",
+            declared_paths=("META-INF/jars/missing-grandchild.jar",),
+            environment="server",
+        )
+        outer = fabric_mod_jar_bytes(
+            "trinkets_updated",
+            "4.1.0-beta.3+26.2",
+            declared_paths=(member_path,),
+            nested_entries=((member_path, server_provider),),
+        )
+        with tempfile.TemporaryDirectory() as temporary:
+            path, artifact_record = self.write_outer(Path(temporary), outer)
+            descriptors = _read_fabric_descriptor_tree(
+                path,
+                relative_path="mods/managed-outer.jar",
+                artifact=artifact_record,
+            )
+        self.assertEqual(["trinkets_updated", "server_provider"], [item.primary_id for item in descriptors])
+        report = self.resolve(descriptors)
+        self.assertEqual(1, report["enabled_fabric_descriptor_count"])
+        self.assertEqual(1, report["environment_excluded_fabric_descriptor_count"])
+        self.assertEqual(
+            "mods/managed-outer.jar!/META-INF/jars/server-provider.jar",
+            report["environment_excluded_fabric_descriptors"][0]["path"],
+        )
+
+        consumer = descriptor(
+            "consumer.jar",
+            "managed_consumer",
+            "1.0.0",
+            depends={"server_provider": ("*",)},
+            project_id="managed-consumer",
+        )
+        with self.assertRaisesRegex(
+            ManagerError,
+            r"missing external Fabric dependency.*server_provider.*no exact enabled provider",
+        ):
+            PhysicalManager._resolve_dependency_graph(  # type: ignore[arg-type]
+                None,
+                (*descriptors, consumer),
+                managed_ownership_ids={"trinkets_updated", "managed_consumer"},
+                phase="TEST",
+            )
+
+    def test_invalid_environment_values_fail_closed(self) -> None:
+        for raw_environment in ("dedicated", 7, None):
+            with self.subTest(raw_environment=raw_environment), tempfile.TemporaryDirectory() as temporary:
+                outer = fabric_mod_jar_bytes(
+                    "trinkets_updated",
+                    "4.1.0-beta.3+26.2",
+                    environment=raw_environment,
+                )
+                path, artifact_record = self.write_outer(Path(temporary), outer)
+                with self.assertRaisesRegex(ManagerError, "fabric.mod.json environment"):
+                    _read_fabric_descriptor_tree(path, artifact=artifact_record)
+
+    def test_missing_declared_nested_member_fails_closed(self) -> None:
+        outer = fabric_mod_jar_bytes(
+            "trinkets_updated",
+            "4.1.0-beta.3+26.2",
+            declared_paths=("META-INF/jars/missing.jar",),
+        )
+        with tempfile.TemporaryDirectory() as temporary:
+            path, artifact_record = self.write_outer(Path(temporary), outer)
+            with self.assertRaisesRegex(ManagerError, "declared nested JAR member is missing"):
+                _read_fabric_descriptor_tree(path, artifact=artifact_record)
+
+    def test_malformed_declared_nested_member_fails_closed(self) -> None:
+        member_path = "META-INF/jars/broken.jar"
+        outer = fabric_mod_jar_bytes(
+            "trinkets_updated",
+            "4.1.0-beta.3+26.2",
+            declared_paths=(member_path,),
+            nested_entries=((member_path, b"not a ZIP archive"),),
+        )
+        with tempfile.TemporaryDirectory() as temporary:
+            path, artifact_record = self.write_outer(Path(temporary), outer)
+            with self.assertRaisesRegex(ManagerError, "declared nested JAR member is malformed"):
+                _read_fabric_descriptor_tree(path, artifact=artifact_record)
+
+    def test_only_a_missing_root_descriptor_is_classified_as_non_fabric(self) -> None:
+        non_fabric_output = io.BytesIO()
+        with zipfile.ZipFile(non_fabric_output, "w", compression=zipfile.ZIP_STORED) as archive:
+            archive.writestr("library.class", b"fixture")
+        non_fabric_bytes = non_fabric_output.getvalue()
+        member_path = "META-INF/jars/plain-library.jar"
+        outer = fabric_mod_jar_bytes(
+            "trinkets_updated",
+            "4.1.0-beta.3+26.2",
+            declared_paths=(member_path,),
+            nested_entries=((member_path, non_fabric_bytes),),
+        )
+        with tempfile.TemporaryDirectory() as temporary:
+            directory = Path(temporary)
+            plain_path = directory / "plain.jar"
+            plain_path.write_bytes(non_fabric_bytes)
+            with self.assertRaises(ManagerError) as root_error:
+                _read_fabric_descriptor_tree(plain_path)
+            self.assertEqual("_NonFabricRootError", type(root_error.exception).__name__)
+
+            path, artifact_record = self.write_outer(directory, outer)
+            with self.assertRaises(ManagerError) as nested_error:
+                _read_fabric_descriptor_tree(path, artifact=artifact_record)
+            self.assertIs(type(nested_error.exception), ManagerError)
+            self.assertIn("root fabric.mod.json", str(nested_error.exception))
+
+    def test_unsafe_or_loader_ignored_nested_paths_fail_closed(self) -> None:
+        unsafe_paths = (
+            "../escape.jar",
+            "nested/../escape.jar",
+            "nested\\escape.jar",
+            "/absolute.jar",
+            "C:drive-relative.jar",
+            "META-INF/jars/provider.JAR",
+            "META-INF//jars/provider.jar",
+        )
+        for member_path in unsafe_paths:
+            with self.subTest(member_path=member_path), tempfile.TemporaryDirectory() as temporary:
+                outer = fabric_mod_jar_bytes(
+                    "trinkets_updated",
+                    "4.1.0-beta.3+26.2",
+                    declared_paths=(member_path,),
+                )
+                path, artifact_record = self.write_outer(Path(temporary), outer)
+                with self.assertRaisesRegex(
+                    ManagerError,
+                    r"(?:unsafe nested JAR path|safe non-empty ZIP member path)",
+                ):
+                    _read_fabric_descriptor_tree(path, artifact=artifact_record)
+
+    def test_different_nested_bytes_with_duplicate_id_fail_ownership(self) -> None:
+        first_path = "META-INF/jars/provider-one.jar"
+        second_path = "META-INF/jars/provider-two.jar"
+        first = fabric_mod_jar_bytes("nested_provider", "1.0.0")
+        second = fabric_mod_jar_bytes("nested_provider", "2.0.0")
+        outer = fabric_mod_jar_bytes(
+            "trinkets_updated",
+            "4.1.0-beta.3+26.2",
+            declared_paths=(first_path, second_path),
+            nested_entries=((first_path, first), (second_path, second)),
+        )
+        with tempfile.TemporaryDirectory() as temporary:
+            path, artifact_record = self.write_outer(Path(temporary), outer)
+            descriptors = _read_fabric_descriptor_tree(path, artifact=artifact_record)
+        with self.assertRaisesRegex(ManagerError, "duplicate enabled Fabric ownership nested_provider"):
+            self.resolve(descriptors)
+
+    def test_byte_identical_nested_candidate_is_deduplicated_with_all_chains(self) -> None:
+        first_path = "META-INF/jars/provider-one.jar"
+        second_path = "META-INF/jars/provider-two.jar"
+        provider = fabric_mod_jar_bytes("nested_provider", "1.0.0")
+        outer = fabric_mod_jar_bytes(
+            "trinkets_updated",
+            "4.1.0-beta.3+26.2",
+            declared_paths=(first_path, second_path),
+            nested_entries=((first_path, provider), (second_path, provider)),
+        )
+        with tempfile.TemporaryDirectory() as temporary:
+            path, artifact_record = self.write_outer(Path(temporary), outer)
+            descriptors = _read_fabric_descriptor_tree(path, artifact=artifact_record)
+        self.assertEqual(2, len(descriptors))
+        nested = descriptors[1]
+        self.assertEqual(1, len(nested.alternate_nested_chains))
+        provenance = nested.provenance_record()
+        self.assertEqual(2, len(provenance["nested_chains"]))
+        self.resolve(descriptors)
+
+    def test_identical_nested_bytes_across_managed_roots_fail_with_all_origins(self) -> None:
+        member_path = "META-INF/jars/shared-provider.jar"
+        provider = fabric_mod_jar_bytes("nested_provider", "1.0.0")
+        first_outer = fabric_mod_jar_bytes(
+            "managed_first",
+            "1.0.0",
+            declared_paths=(member_path,),
+            nested_entries=((member_path, provider),),
+        )
+        second_outer = fabric_mod_jar_bytes(
+            "managed_second",
+            "1.0.0",
+            declared_paths=(member_path,),
+            nested_entries=((member_path, provider),),
+        )
+        with tempfile.TemporaryDirectory() as temporary:
+            directory = Path(temporary)
+            first_path = directory / "first.jar"
+            second_path = directory / "second.jar"
+            first_path.write_bytes(first_outer)
+            second_path.write_bytes(second_outer)
+            first_descriptors = _read_fabric_descriptor_tree(
+                first_path,
+                relative_path="mods/first.jar",
+                artifact=managed_fixture_artifact(first_path, "managed_first", "1.0.0"),
+            )
+            second_descriptors = _read_fabric_descriptor_tree(
+                second_path,
+                relative_path="mods/second.jar",
+                artifact=managed_fixture_artifact(second_path, "managed_second", "1.0.0"),
+            )
+        with self.assertRaisesRegex(
+            ManagerError,
+            "ambiguous managed root ownership",
+        ) as captured:
+            PhysicalManager._resolve_dependency_graph(  # type: ignore[arg-type]
+                None,
+                (*first_descriptors, *second_descriptors),
+                managed_ownership_ids={"managed_first", "managed_second"},
+                phase="TEST",
+            )
+        message = str(captured.exception)
+        self.assertIn("mods/first.jar!/META-INF/jars/shared-provider.jar", message)
+        self.assertIn("mods/second.jar!/META-INF/jars/shared-provider.jar", message)
+        self.assertLess(message.index("mods/first.jar"), message.index("mods/second.jar"))
+
+    def test_identical_nested_bytes_across_external_roots_are_one_provider_with_all_origins(self) -> None:
+        member_path = "META-INF/jars/shared-provider.jar"
+        provider = fabric_mod_jar_bytes("nested_provider", "1.0.0")
+        first_outer = fabric_mod_jar_bytes(
+            "external_first",
+            "1.0.0",
+            declared_paths=(member_path,),
+            nested_entries=((member_path, provider),),
+        )
+        second_outer = fabric_mod_jar_bytes(
+            "external_second",
+            "1.0.0",
+            declared_paths=(member_path,),
+            nested_entries=((member_path, provider),),
+        )
+        with tempfile.TemporaryDirectory() as temporary:
+            directory = Path(temporary)
+            first_path = directory / "first.jar"
+            second_path = directory / "second.jar"
+            first_path.write_bytes(first_outer)
+            second_path.write_bytes(second_outer)
+            first_descriptors = _read_fabric_descriptor_tree(
+                first_path,
+                relative_path="mods/first.jar",
+            )
+            second_descriptors = _read_fabric_descriptor_tree(
+                second_path,
+                relative_path="mods/second.jar",
+            )
+        consumer = descriptor(
+            "consumer.jar",
+            "managed_consumer",
+            "1.0.0",
+            depends={"nested_provider": ("=1.0.0",)},
+            project_id="managed-consumer",
+        )
+        report = PhysicalManager._resolve_dependency_graph(  # type: ignore[arg-type]
+            None,
+            (*first_descriptors, *second_descriptors, consumer),
+            managed_ownership_ids={"managed_consumer"},
+            phase="TEST",
+        )
+        resolution = next(item for item in report["resolutions"] if item["dependency_id"] == "nested_provider")
+        self.assertEqual("RESOLVED_EXTERNAL_ENABLED_PROVIDER", resolution["classification"])
+        origins = resolution["provider"]["provenance"]["origins"]
+        self.assertEqual(2, len(origins))
+        self.assertEqual(
+            ["mods/first.jar", "mods/second.jar"],
+            [item["root_container"]["path"] for item in origins],
+        )
+
+    def test_duplicate_declaration_and_duplicate_archive_path_fail_closed(self) -> None:
+        member_path = "META-INF/jars/provider.jar"
+        provider = fabric_mod_jar_bytes("nested_provider", "1.0.0")
+        duplicate_declaration = fabric_mod_jar_bytes(
+            "trinkets_updated",
+            "4.1.0-beta.3+26.2",
+            declared_paths=(member_path, member_path),
+            nested_entries=((member_path, provider),),
+        )
+        with tempfile.TemporaryDirectory() as temporary:
+            path, artifact_record = self.write_outer(Path(temporary), duplicate_declaration)
+            with self.assertRaisesRegex(ManagerError, "duplicate declared nested JAR path"):
+                _read_fabric_descriptor_tree(path, artifact=artifact_record)
+
+        output = io.BytesIO()
+        manifest = {
+            "schemaVersion": 1,
+            "id": "trinkets_updated",
+            "version": "4.1.0-beta.3+26.2",
+            "jars": [{"file": member_path}],
+        }
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", UserWarning)
+            with zipfile.ZipFile(output, "w", compression=zipfile.ZIP_STORED) as archive:
+                archive.writestr("fabric.mod.json", json.dumps(manifest))
+                archive.writestr(member_path, provider)
+                archive.writestr(member_path, provider)
+        with tempfile.TemporaryDirectory() as temporary:
+            path, artifact_record = self.write_outer(Path(temporary), output.getvalue())
+            with self.assertRaisesRegex(ManagerError, "duplicate ZIP entry path"):
+                _read_fabric_descriptor_tree(path, artifact=artifact_record)
+
+    def test_nested_depth_and_size_guards_fail_closed(self) -> None:
+        child = fabric_mod_jar_bytes("depth-five", "1.0.0")
+        for depth in range(4, 0, -1):
+            member_path = f"META-INF/jars/depth-{depth + 1}.jar"
+            child = fabric_mod_jar_bytes(
+                f"depth-{depth}",
+                "1.0.0",
+                declared_paths=(member_path,),
+                nested_entries=((member_path, child),),
+            )
+        root_member = "META-INF/jars/depth-1.jar"
+        outer = fabric_mod_jar_bytes(
+            "trinkets_updated",
+            "4.1.0-beta.3+26.2",
+            declared_paths=(root_member,),
+            nested_entries=((root_member, child),),
+        )
+        with tempfile.TemporaryDirectory() as temporary:
+            path, artifact_record = self.write_outer(Path(temporary), outer)
+            with self.assertRaisesRegex(ManagerError, "nested JAR depth exceeds"):
+                _read_fabric_descriptor_tree(path, artifact=artifact_record)
+
+        provider = fabric_mod_jar_bytes("large-provider", "1.0.0", payload=b"x" * 256)
+        member_path = "META-INF/jars/large-provider.jar"
+        outer = fabric_mod_jar_bytes(
+            "trinkets_updated",
+            "4.1.0-beta.3+26.2",
+            declared_paths=(member_path,),
+            nested_entries=((member_path, provider),),
+        )
+        with tempfile.TemporaryDirectory() as temporary:
+            path, artifact_record = self.write_outer(Path(temporary), outer)
+            with patch(
+                "tools.test_instance_manager.manager._MAX_NESTED_JAR_ENTRY_SIZE",
+                len(provider) - 1,
+            ):
+                with self.assertRaisesRegex(ManagerError, "declared nested JAR member exceeds"):
+                    _read_fabric_descriptor_tree(path, artifact=artifact_record)
+
+    def test_nonregular_nested_member_and_nested_platform_claim_fail_closed(self) -> None:
+        member_path = "META-INF/jars/link.jar"
+        provider = fabric_mod_jar_bytes("nested_provider", "1.0.0")
+        output = io.BytesIO()
+        manifest = {
+            "schemaVersion": 1,
+            "id": "trinkets_updated",
+            "version": "4.1.0-beta.3+26.2",
+            "jars": [{"file": member_path}],
+        }
+        with zipfile.ZipFile(output, "w", compression=zipfile.ZIP_STORED) as archive:
+            archive.writestr("fabric.mod.json", json.dumps(manifest))
+            link_entry = zipfile.ZipInfo(member_path)
+            link_entry.create_system = 3
+            link_entry.external_attr = (stat.S_IFLNK | 0o777) << 16
+            archive.writestr(link_entry, provider)
+        with tempfile.TemporaryDirectory() as temporary:
+            path, artifact_record = self.write_outer(Path(temporary), output.getvalue())
+            with self.assertRaisesRegex(ManagerError, "not a regular file"):
+                _read_fabric_descriptor_tree(path, artifact=artifact_record)
+
+        platform_provider = fabric_mod_jar_bytes("minecraft", "26.2")
+        platform_path = "META-INF/jars/fake-platform.jar"
+        outer = fabric_mod_jar_bytes(
+            "trinkets_updated",
+            "4.1.0-beta.3+26.2",
+            declared_paths=(platform_path,),
+            nested_entries=((platform_path, platform_provider),),
+        )
+        with tempfile.TemporaryDirectory() as temporary:
+            path, artifact_record = self.write_outer(Path(temporary), outer)
+            with self.assertRaisesRegex(ManagerError, "cannot claim Fabric platform IDs"):
+                _read_fabric_descriptor_tree(path, artifact=artifact_record)
+
+    def test_raw_zip_entry_names_fail_closed_before_lookup(self) -> None:
+        root_bytes = fabric_mod_jar_bytes("trinkets_updated", "4.1.0-beta.3+26.2")
+        mutations = (
+            ("orig-name mismatch", lambda item: setattr(item, "orig_filename", "other-name")),
+            ("NUL", lambda item: setattr(item, "filename", item.filename + "\x00shadow")),
+        )
+        for label, mutate in mutations:
+            with self.subTest(label=label), zipfile.ZipFile(io.BytesIO(root_bytes)) as archive:
+                mutate(archive.infolist()[0])
+                with self.assertRaisesRegex(ManagerError, "unsafe or normalized raw name"):
+                    _read_fabric_manifest_from_archive(
+                        archive,
+                        label,
+                        budget=_NestedJarTraversalBudget(),
+                    )
+
+        with zipfile.ZipFile(io.BytesIO(root_bytes)) as archive:
+            entry = archive.getinfo("fixture.bin")
+            entry.orig_filename = "META-INF\\jars\\shadow.jar"
+            entry.filename = entry.orig_filename
+            with self.assertRaisesRegex(ManagerError, "unsafe or normalized raw name"):
+                _read_fabric_manifest_from_archive(
+                    archive,
+                    "backslash fixture",
+                    budget=_NestedJarTraversalBudget(),
+                )
+
+    def test_manifest_and_nested_member_compressed_size_caps_fail_closed(self) -> None:
+        root_bytes = fabric_mod_jar_bytes("trinkets_updated", "4.1.0-beta.3+26.2")
+        with zipfile.ZipFile(io.BytesIO(root_bytes)) as archive:
+            manifest_compressed_size = archive.getinfo("fabric.mod.json").compress_size
+        with tempfile.TemporaryDirectory() as temporary:
+            path, artifact_record = self.write_outer(Path(temporary), root_bytes)
+            with patch(
+                "tools.test_instance_manager.manager._MAX_FABRIC_MANIFEST_COMPRESSED_SIZE",
+                manifest_compressed_size - 1,
+            ):
+                with self.assertRaisesRegex(ManagerError, "ZIP member compressed size exceeds"):
+                    _read_fabric_descriptor_tree(path, artifact=artifact_record)
+
+        provider = fabric_mod_jar_bytes("nested_provider", "1.0.0")
+        member_path = "META-INF/jars/provider.jar"
+        outer = fabric_mod_jar_bytes(
+            "trinkets_updated",
+            "4.1.0-beta.3+26.2",
+            declared_paths=(member_path,),
+            nested_entries=((member_path, provider),),
+        )
+        with tempfile.TemporaryDirectory() as temporary:
+            path, artifact_record = self.write_outer(Path(temporary), outer)
+            with patch(
+                "tools.test_instance_manager.manager._MAX_NESTED_JAR_ENTRY_COMPRESSED_SIZE",
+                len(provider) - 1,
+            ):
+                with self.assertRaisesRegex(ManagerError, "ZIP member compressed size exceeds"):
+                    _read_fabric_descriptor_tree(path, artifact=artifact_record)
+
+    def test_shared_budget_spans_root_manifests_and_nested_counts(self) -> None:
+        first = fabric_mod_jar_bytes("managed_first", "1.0.0")
+        second = fabric_mod_jar_bytes("managed_second", "1.0.0")
+        with zipfile.ZipFile(io.BytesIO(first)) as archive:
+            first_manifest = archive.getinfo("fabric.mod.json")
+            first_expanded = first_manifest.file_size
+            first_compressed = first_manifest.compress_size
+        with zipfile.ZipFile(io.BytesIO(second)) as archive:
+            second_manifest = archive.getinfo("fabric.mod.json")
+            second_expanded = second_manifest.file_size
+            second_compressed = second_manifest.compress_size
+        with tempfile.TemporaryDirectory() as temporary:
+            directory = Path(temporary)
+            first_path = directory / "first.jar"
+            second_path = directory / "second.jar"
+            first_path.write_bytes(first)
+            second_path.write_bytes(second)
+            aggregate_cases = (
+                (
+                    "expanded",
+                    "tools.test_instance_manager.manager._MAX_NESTED_JAR_AGGREGATE_SIZE",
+                    first_expanded + second_expanded - 1,
+                    "aggregate expanded size",
+                ),
+                (
+                    "compressed",
+                    "tools.test_instance_manager.manager._MAX_NESTED_JAR_AGGREGATE_COMPRESSED_SIZE",
+                    first_compressed + second_compressed - 1,
+                    "aggregate compressed size",
+                ),
+            )
+            for label, constant, limit, message in aggregate_cases:
+                with self.subTest(label=label), patch(constant, limit):
+                    budget = _NestedJarTraversalBudget()
+                    _read_fabric_descriptor_tree(first_path, budget=budget)
+                    with self.assertRaisesRegex(ManagerError, message):
+                        _read_fabric_descriptor_tree(second_path, budget=budget)
+
+        provider = fabric_mod_jar_bytes("nested_provider", "1.0.0")
+        member_path = "META-INF/jars/provider.jar"
+        outers = (
+            fabric_mod_jar_bytes(
+                "managed_first",
+                "1.0.0",
+                declared_paths=(member_path,),
+                nested_entries=((member_path, provider),),
+            ),
+            fabric_mod_jar_bytes(
+                "managed_second",
+                "1.0.0",
+                declared_paths=(member_path,),
+                nested_entries=((member_path, provider),),
+            ),
+        )
+        with tempfile.TemporaryDirectory() as temporary:
+            paths = []
+            for index, outer in enumerate(outers):
+                path = Path(temporary) / f"root-{index}.jar"
+                path.write_bytes(outer)
+                paths.append(path)
+            with patch("tools.test_instance_manager.manager._MAX_NESTED_JAR_COUNT", 1):
+                budget = _NestedJarTraversalBudget()
+                _read_fabric_descriptor_tree(paths[0], budget=budget)
+                with self.assertRaisesRegex(ManagerError, "count exceeds 1 across the enabled graph"):
+                    _read_fabric_descriptor_tree(paths[1], budget=budget)
 
 
 class FabricPlatformAttestationTests(unittest.TestCase):

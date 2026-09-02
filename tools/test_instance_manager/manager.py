@@ -12,6 +12,7 @@ from __future__ import annotations
 import argparse
 import copy
 import hashlib
+import io
 import json
 import os
 import re
@@ -68,6 +69,10 @@ JavaPropertyProbe = Callable[[Path], dict[str, str]]
 
 class ManagerError(RuntimeError):
     """A physical preflight, ownership, serialization, or recovery failure."""
+
+
+class _NonFabricRootError(ManagerError):
+    """A readable root archive has no root Fabric descriptor."""
 
 
 def _slot_members(slot: dict[str, Any]) -> list[dict[str, Any]]:
@@ -276,8 +281,85 @@ class RetainedPredecessorMove:
 
 
 @dataclass(frozen=True)
+class NestedJarProvenanceLayer:
+    container_path: str
+    container_sha256: str
+    declared_member_path: str
+    member_sha256: str
+    member_size: int
+    member_compressed_size: int
+
+    def receipt(self) -> dict[str, Any]:
+        return {
+            "container_path": self.container_path,
+            "container_sha256": self.container_sha256,
+            "declared_member_path": self.declared_member_path,
+            "member_sha256": self.member_sha256,
+            "member_size": self.member_size,
+            "member_compressed_size": self.member_compressed_size,
+        }
+
+
+@dataclass(frozen=True)
+class NestedJarProvenanceOrigin:
+    source_path: Path
+    root_container_path: str
+    root_container_filename: str
+    root_container_sha256: str
+    nested_chain: tuple[NestedJarProvenanceLayer, ...]
+    managed_project_uuid: str | None = None
+    managed_project_id: str | None = None
+    managed_deployment_id: str | None = None
+    managed_artifact_id: str | None = None
+
+    @property
+    def candidate_path(self) -> str:
+        layer = self.nested_chain[-1]
+        return layer.container_path + "!/" + layer.declared_member_path
+
+    @property
+    def candidate_filename(self) -> str:
+        return PurePosixPath(self.nested_chain[-1].declared_member_path).name
+
+    @property
+    def managed_root_key(self) -> tuple[str, ...] | None:
+        if self.managed_project_id is None:
+            return None
+        return (
+            self.managed_project_uuid or "",
+            self.managed_project_id,
+            self.managed_deployment_id or "",
+            self.managed_artifact_id or "",
+            self.root_container_path.casefold(),
+            self.root_container_sha256,
+        )
+
+    def receipt(self) -> dict[str, Any]:
+        return {
+            "root_container": {
+                "filename": self.root_container_filename,
+                "path": self.root_container_path,
+                "sha256": self.root_container_sha256,
+            },
+            "candidate": {
+                "filename": self.candidate_filename,
+                "path": self.candidate_path,
+                "sha256": self.nested_chain[-1].member_sha256,
+            },
+            "nested_depth": len(self.nested_chain),
+            "nested_chain": [layer.receipt() for layer in self.nested_chain],
+            "managed_identity": {
+                "project_uuid": self.managed_project_uuid,
+                "project_id": self.managed_project_id,
+                "deployment_id": self.managed_deployment_id,
+                "artifact_id": self.managed_artifact_id,
+            },
+        }
+
+
+@dataclass(frozen=True)
 class FabricModDescriptor:
-    """Exact root Fabric descriptor for one enabled JAR."""
+    """Exact root or declared nested Fabric descriptor in one enabled JAR."""
 
     path: Path
     relative_path: str
@@ -286,14 +368,92 @@ class FabricModDescriptor:
     provides: tuple[str, ...]
     version: str
     depends: dict[str, tuple[str, ...]]
+    environment: str = "*"
+    environment_eligible: bool = True
     managed_project_uuid: str | None = None
     managed_project_id: str | None = None
     managed_deployment_id: str | None = None
     managed_artifact_id: str | None = None
+    root_container_path: str | None = None
+    root_container_filename: str | None = None
+    root_container_sha256: str | None = None
+    nested_chain: tuple[NestedJarProvenanceLayer, ...] = ()
+    nested_origin_override: NestedJarProvenanceOrigin | None = None
+    alternate_nested_origins: tuple[NestedJarProvenanceOrigin, ...] = ()
 
     @property
     def ownership_ids(self) -> tuple[str, ...]:
         return (self.primary_id, *self.provides)
+
+    @property
+    def primary_nested_origin(self) -> NestedJarProvenanceOrigin | None:
+        if not self.nested_chain:
+            return None
+        if self.nested_origin_override is not None:
+            return self.nested_origin_override
+        return NestedJarProvenanceOrigin(
+            source_path=self.path,
+            root_container_path=self.root_container_path or self.relative_path,
+            root_container_filename=self.root_container_filename or self.filename,
+            root_container_sha256=self.root_container_sha256 or "",
+            nested_chain=self.nested_chain,
+            managed_project_uuid=self.managed_project_uuid,
+            managed_project_id=self.managed_project_id,
+            managed_deployment_id=self.managed_deployment_id,
+            managed_artifact_id=self.managed_artifact_id,
+        )
+
+    @property
+    def nested_origins(self) -> tuple[NestedJarProvenanceOrigin, ...]:
+        primary = self.primary_nested_origin
+        return (primary, *self.alternate_nested_origins) if primary is not None else ()
+
+    @property
+    def alternate_nested_chains(self) -> tuple[tuple[NestedJarProvenanceLayer, ...], ...]:
+        return tuple(origin.nested_chain for origin in self.alternate_nested_origins)
+
+    @property
+    def managed_nested_origins(self) -> tuple[NestedJarProvenanceOrigin, ...]:
+        return tuple(origin for origin in self.nested_origins if origin.managed_root_key is not None)
+
+    @property
+    def managed_root_keys(self) -> frozenset[tuple[str, ...]]:
+        return frozenset(
+            origin.managed_root_key
+            for origin in self.managed_nested_origins
+            if origin.managed_root_key is not None
+        )
+
+    @property
+    def is_managed(self) -> bool:
+        return self.managed_project_id is not None or bool(self.managed_nested_origins)
+
+    def provenance_record(self) -> dict[str, Any]:
+        origins = self.nested_origins
+        return {
+            "classification": (
+                "DECLARED_NESTED_FABRIC_JAR"
+                if self.nested_chain
+                else "ROOT_ENABLED_FABRIC_JAR"
+            ),
+            "root_container": {
+                "filename": self.root_container_filename or self.filename,
+                "path": self.root_container_path or self.relative_path,
+                "sha256": self.root_container_sha256,
+            },
+            "nested_depth": len(self.nested_chain),
+            "nested_chain": [layer.receipt() for layer in self.nested_chain],
+            "nested_chains": [
+                [layer.receipt() for layer in origin.nested_chain]
+                for origin in origins
+            ],
+            "origins": [origin.receipt() for origin in origins],
+            "fabric_environment": {
+                "value": self.environment,
+                "target": "client",
+                "eligible": self.environment_eligible,
+            },
+        }
 
 
 @dataclass(frozen=True)
@@ -1102,6 +1262,7 @@ class PhysicalManager:
         }
         current_by_artifact = {artifact.artifact_id: artifact for artifact in current_artifacts}
         descriptors: list[FabricModDescriptor] = []
+        traversal_budget = _NestedJarTraversalBudget()
         for artifact in desired_artifacts:
             if not artifact.active:
                 continue
@@ -1120,12 +1281,13 @@ class PhysicalManager:
                     f"missing proposed artifact bytes for {artifact.project_id}/{artifact.filename}: {source}"
                 )
             self._verify_artifact_file(source, artifact)
-            descriptors.append(
-                _read_fabric_descriptor(
+            descriptors.extend(
+                _read_fabric_descriptor_tree(
                     source,
                     strict_provides=len(artifact.ownership_mod_ids) > 1,
                     relative_path=artifact.relative_path,
                     artifact=artifact,
+                    budget=traversal_budget,
                 )
             )
 
@@ -1147,13 +1309,17 @@ class PhysicalManager:
             if path.is_symlink():
                 raise ManagerError(f"mods inventory contains a symbolic link: {path}")
             try:
-                descriptors.append(_read_fabric_descriptor(path, relative_path=relative))
-            except ManagerError as exc:
-                if "root fabric.mod.json" in str(exc) or "cannot read Fabric manifest" in str(exc):
-                    # Preserve foreign non-Fabric libraries exactly as the
-                    # inventory verifier does; they cannot own Fabric IDs.
-                    continue
-                raise
+                descriptors.extend(
+                    _read_fabric_descriptor_tree(
+                        path,
+                        relative_path=relative,
+                        budget=traversal_budget,
+                    )
+                )
+            except _NonFabricRootError:
+                # Preserve readable foreign archives with no root Fabric
+                # descriptor; nested descriptor errors must never be skipped.
+                continue
         return tuple(descriptors)
 
     def _physical_enabled_descriptors(
@@ -1168,6 +1334,7 @@ class PhysicalManager:
             if artifact.active
         }
         descriptors: list[FabricModDescriptor] = []
+        traversal_budget = _NestedJarTraversalBudget()
         try:
             entries = tuple(self.mods.iterdir())
         except OSError as exc:
@@ -1180,18 +1347,17 @@ class PhysicalManager:
             relative = PurePosixPath(self.config.mods_directory, path.name).as_posix()
             artifact = managed_by_path.get(relative.casefold())
             try:
-                descriptors.append(
-                    _read_fabric_descriptor(
+                descriptors.extend(
+                    _read_fabric_descriptor_tree(
                         path,
                         strict_provides=(artifact is not None and len(artifact.ownership_mod_ids) > 1),
                         relative_path=relative,
                         artifact=artifact,
+                        budget=traversal_budget,
                     )
                 )
-            except ManagerError as exc:
-                if artifact is None and (
-                    "root fabric.mod.json" in str(exc) or "cannot read Fabric manifest" in str(exc)
-                ):
+            except _NonFabricRootError:
+                if artifact is None:
                     continue
                 raise
         return tuple(descriptors)
@@ -1203,14 +1369,14 @@ class PhysicalManager:
         dependency_ids = {
             dependency_id
             for descriptor in descriptors
-            if descriptor.managed_project_id is not None
+            if descriptor.environment_eligible and descriptor.is_managed
             for dependency_id in descriptor.depends
             if dependency_id in _FABRIC_PLATFORM_DEPENDENCIES
         }
         managed_ownership_ids = {
             ownership_id
             for descriptor in descriptors
-            if descriptor.managed_project_id is not None
+            if descriptor.environment_eligible and descriptor.is_managed
             for ownership_id in descriptor.ownership_ids
             if ownership_id in _FABRIC_PLATFORM_DEPENDENCIES
         }
@@ -1607,6 +1773,17 @@ class PhysicalManager:
         phase: str,
         platform_attestation: PlatformAttestation | None = None,
     ) -> dict[str, Any]:
+        discovered_descriptors = _deduplicate_nested_descriptors(descriptors)
+        excluded_descriptors = tuple(
+            descriptor
+            for descriptor in discovered_descriptors
+            if not descriptor.environment_eligible
+        )
+        descriptors = tuple(
+            descriptor
+            for descriptor in discovered_descriptors
+            if descriptor.environment_eligible
+        )
         failure_phase = (
             "before physical mutation"
             if phase.startswith("PREFLIGHT") or phase == "TEST"
@@ -1620,13 +1797,13 @@ class PhysicalManager:
         managed_dependency_ids = {
             dependency_id
             for descriptor in descriptors
-            if descriptor.managed_project_id is not None
+            if descriptor.is_managed
             for dependency_id in descriptor.depends
         }
         managed_descriptor_ownership_ids = {
             ownership_id
             for descriptor in descriptors
-            if descriptor.managed_project_id is not None
+            if descriptor.is_managed
             for ownership_id in descriptor.ownership_ids
         }
         enforced_ownership_ids = (
@@ -1634,6 +1811,20 @@ class PhysicalManager:
             .union(managed_dependency_ids)
             .union(managed_descriptor_ownership_ids)
         )
+        for descriptor in descriptors:
+            if len(descriptor.managed_root_keys) <= 1:
+                continue
+            if not set(descriptor.ownership_ids).intersection(enforced_ownership_ids):
+                continue
+            raise ManagerError(
+                "byte-identical declared nested Fabric candidate has ambiguous managed root ownership "
+                f"in the managed graph: {descriptor.primary_id}@{descriptor.version}; origins="
+                + json.dumps(
+                    [origin.receipt() for origin in descriptor.nested_origins],
+                    sort_keys=True,
+                    separators=(",", ":"),
+                )
+            )
         ownership_groups: dict[str, list[FabricModDescriptor]] = {}
         for descriptor in descriptors:
             for ownership_id in descriptor.ownership_ids:
@@ -1642,12 +1833,20 @@ class PhysicalManager:
         providers: dict[str, FabricModDescriptor] = {}
         observed_out_of_scope_duplicate_groups: list[dict[str, Any]] = []
         for ownership_id, owners in sorted(ownership_groups.items()):
+            sorted_owners = sorted(
+                owners,
+                key=lambda item: (
+                    item.relative_path.casefold(),
+                    item.managed_project_id or "",
+                    item.managed_artifact_id or "",
+                ),
+            )
             platform_provider = platform_providers.get(ownership_id)
             owner_count = len(owners) + (1 if platform_provider is not None else 0)
             if owner_count > 1:
                 owner_labels = [
                     f"{owner.relative_path}@{owner.version}"
-                    for owner in owners
+                    for owner in sorted_owners
                 ]
                 if platform_provider is not None:
                     owner_labels.insert(
@@ -1663,7 +1862,7 @@ class PhysicalManager:
                     {
                         "classification": (
                             "MANAGED_ENABLED_JAR"
-                            if owner.managed_project_id is not None
+                            if owner.is_managed
                             else "EXTERNAL_ENABLED_JAR"
                         ),
                         "filename": owner.filename,
@@ -1675,8 +1874,9 @@ class PhysicalManager:
                         "managed_project_id": owner.managed_project_id,
                         "managed_deployment_id": owner.managed_deployment_id,
                         "managed_artifact_id": owner.managed_artifact_id,
+                        "provenance": owner.provenance_record(),
                     }
-                    for owner in sorted(owners, key=lambda item: item.relative_path.casefold())
+                    for owner in sorted_owners
                 ]
                 if platform_provider is not None:
                     observed_owners.insert(
@@ -1706,11 +1906,18 @@ class PhysicalManager:
                 )
                 continue
             if owners:
-                providers[ownership_id] = owners[0]
+                providers[ownership_id] = sorted_owners[0]
 
         resolutions: list[dict[str, Any]] = []
-        for consumer in descriptors:
-            if consumer.managed_project_id is None:
+        for consumer in sorted(
+            descriptors,
+            key=lambda item: (
+                item.relative_path.casefold(),
+                item.primary_id,
+                item.managed_project_id or "",
+            ),
+        ):
+            if not consumer.is_managed:
                 continue
             for dependency_id, predicates in sorted(consumer.depends.items()):
                 provider = providers.get(dependency_id)
@@ -1724,6 +1931,7 @@ class PhysicalManager:
                         "filename": consumer.filename,
                         "primary_id": consumer.primary_id,
                         "version": consumer.version,
+                        "provenance": consumer.provenance_record(),
                     },
                     "dependency_id": dependency_id,
                     "predicates": list(predicates),
@@ -1774,11 +1982,12 @@ class PhysicalManager:
                         "primary_id": provider.primary_id,
                         "provides": list(provider.provides),
                         "version": provider.version,
+                        "provenance": provider.provenance_record(),
                     }
                     provider_label = provider.managed_project_id or provider.primary_id
                     classification = (
                         "RESOLVED_MANAGED_PROVIDER"
-                        if provider.managed_project_id is not None
+                        if provider.is_managed
                         else "RESOLVED_EXTERNAL_ENABLED_PROVIDER"
                     )
                 if not matched_predicates:
@@ -1803,25 +2012,73 @@ class PhysicalManager:
                     }
                 )
 
-        enabled = [
-            {
+        def descriptor_record(descriptor: FabricModDescriptor) -> dict[str, Any]:
+            return {
                 "filename": descriptor.filename,
                 "path": descriptor.relative_path,
                 "primary_id": descriptor.primary_id,
                 "provides": list(descriptor.provides),
                 "embedded_version": descriptor.version,
+                "environment": descriptor.environment,
+                "environment_eligible": descriptor.environment_eligible,
                 "managed_project_uuid": descriptor.managed_project_uuid,
                 "managed_project_id": descriptor.managed_project_id,
                 "managed_deployment_id": descriptor.managed_deployment_id,
                 "managed_artifact_id": descriptor.managed_artifact_id,
+                "provenance": descriptor.provenance_record(),
             }
-            for descriptor in sorted(descriptors, key=lambda item: item.relative_path.casefold())
+
+        sorted_discovered_descriptors = sorted(
+            discovered_descriptors,
+            key=lambda item: (item.relative_path.casefold(), item.primary_id),
+        )
+        sorted_descriptors = [
+            descriptor
+            for descriptor in sorted_discovered_descriptors
+            if descriptor.environment_eligible
+        ]
+        enabled_descriptors = [
+            descriptor_record(descriptor)
+            for descriptor in sorted_descriptors
+        ]
+        environment_excluded_descriptors = [
+            {
+                **descriptor_record(descriptor),
+                "classification": "EXCLUDED_BY_FABRIC_ENVIRONMENT",
+                "target_environment": "client",
+                "reason": "FABRIC_MOD_ENVIRONMENT_SERVER",
+            }
+            for descriptor in sorted(
+                excluded_descriptors,
+                key=lambda item: (item.relative_path.casefold(), item.primary_id),
+            )
+        ]
+        root_count = sum(not descriptor.nested_chain for descriptor in discovered_descriptors)
+        eligible_root_count = sum(not descriptor.nested_chain for descriptor in descriptors)
+        nested_count = len(descriptors) - eligible_root_count
+        discovered_nested_count = len(discovered_descriptors) - root_count
+        enabled_root_jars = [
+            descriptor_record(descriptor)
+            for descriptor in sorted_discovered_descriptors
+            if not descriptor.nested_chain
         ]
         return {
             "status": "FABRIC_DEPENDENCY_GRAPH_VERIFIED",
             "phase": phase,
-            "enabled_fabric_jar_count": len(enabled),
-            "enabled_fabric_jars": enabled,
+            # Retain the original field as the count of physically enabled
+            # root JARs. Nested descriptors are in-memory candidates declared
+            # by those roots, not additional files in the mods directory.
+            "enabled_fabric_jar_count": root_count,
+            "enabled_root_fabric_jar_count": root_count,
+            "client_eligible_root_fabric_descriptor_count": eligible_root_count,
+            "discovered_fabric_descriptor_count": len(discovered_descriptors),
+            "enabled_fabric_descriptor_count": len(enabled_descriptors),
+            "declared_nested_fabric_descriptor_count": nested_count,
+            "discovered_declared_nested_fabric_descriptor_count": discovered_nested_count,
+            "environment_excluded_fabric_descriptor_count": len(environment_excluded_descriptors),
+            "enabled_fabric_jars": enabled_root_jars,
+            "enabled_fabric_descriptors": enabled_descriptors,
+            "environment_excluded_fabric_descriptors": environment_excluded_descriptors,
             "platform_attestation": (
                 platform_attestation.receipt()
                 if platform_attestation is not None
@@ -3586,60 +3843,276 @@ def _fabric_predicate_matches(version: str, predicate: str) -> bool:
     return True
 
 
-def _read_fabric_descriptor(
-    path: Path,
+_MAX_FABRIC_MANIFEST_SIZE = 1024 * 1024
+_MAX_FABRIC_MANIFEST_COMPRESSED_SIZE = 1024 * 1024
+_MAX_NESTED_JAR_DEPTH = 4
+_MAX_NESTED_JAR_COUNT = 64
+_MAX_NESTED_JAR_ENTRY_SIZE = 64 * 1024 * 1024
+_MAX_NESTED_JAR_ENTRY_COMPRESSED_SIZE = 64 * 1024 * 1024
+_MAX_NESTED_JAR_AGGREGATE_SIZE = 256 * 1024 * 1024
+_MAX_NESTED_JAR_AGGREGATE_COMPRESSED_SIZE = 256 * 1024 * 1024
+_MAX_NESTED_JAR_EXPANSION_RATIO = 200
+_SUPPORTED_JAR_COMPRESSION = frozenset({zipfile.ZIP_STORED, zipfile.ZIP_DEFLATED})
+
+
+@dataclass
+class _NestedJarTraversalBudget:
+    count: int = 0
+    aggregate_size: int = 0
+    aggregate_compressed_size: int = 0
+
+    def charge(
+        self,
+        entry: zipfile.ZipInfo,
+        *,
+        label: str,
+        declared_nested_jar: bool,
+    ) -> None:
+        next_count = self.count + (1 if declared_nested_jar else 0)
+        next_size = self.aggregate_size + entry.file_size
+        next_compressed_size = self.aggregate_compressed_size + entry.compress_size
+        if next_count > _MAX_NESTED_JAR_COUNT:
+            raise ManagerError(
+                f"declared nested JAR count exceeds {_MAX_NESTED_JAR_COUNT} across the enabled graph in {label}"
+            )
+        if next_size > _MAX_NESTED_JAR_AGGREGATE_SIZE:
+            raise ManagerError(
+                "ZIP graph aggregate expanded size exceeds "
+                f"{_MAX_NESTED_JAR_AGGREGATE_SIZE} bytes in {label}"
+            )
+        if next_compressed_size > _MAX_NESTED_JAR_AGGREGATE_COMPRESSED_SIZE:
+            raise ManagerError(
+                "ZIP graph aggregate compressed size exceeds "
+                f"{_MAX_NESTED_JAR_AGGREGATE_COMPRESSED_SIZE} bytes in {label}"
+            )
+        self.count = next_count
+        self.aggregate_size = next_size
+        self.aggregate_compressed_size = next_compressed_size
+
+
+def _validated_zip_entry_name(entry: zipfile.ZipInfo, label: str) -> str:
+    raw_name = entry.orig_filename
+    decoded_name = entry.filename
+    if (
+        not isinstance(raw_name, str)
+        or raw_name != decoded_name
+        or "\x00" in raw_name
+        or "\x00" in decoded_name
+        or "\\" in raw_name
+        or "\\" in decoded_name
+    ):
+        raise ManagerError(
+            f"ZIP entry has an unsafe or normalized raw name in {label}: {raw_name!r}"
+        )
+    return decoded_name
+
+
+def _read_bounded_zip_entry(
+    archive: zipfile.ZipFile,
+    entry: zipfile.ZipInfo,
     *,
-    strict_provides: bool = False,
-    relative_path: str | None = None,
-    artifact: ManagedArtifact | None = None,
-) -> FabricModDescriptor:
+    label: str,
+    maximum_size: int,
+    maximum_compressed_size: int,
+    enforce_expansion_ratio: bool,
+    budget: _NestedJarTraversalBudget,
+    declared_nested_jar: bool,
+) -> bytes:
+    unix_mode = (entry.external_attr >> 16) & 0o170000
+    dos_directory = entry.create_system == 0 and bool(entry.external_attr & 0x10)
+    if entry.is_dir() or dos_directory or (unix_mode != 0 and unix_mode != stat.S_IFREG):
+        raise ManagerError(f"declared ZIP member is not a regular file in {label}: {entry.filename!r}")
+    if entry.flag_bits & 0x1:
+        raise ManagerError(f"encrypted ZIP member is not supported in {label}: {entry.filename!r}")
+    if entry.compress_type not in _SUPPORTED_JAR_COMPRESSION:
+        raise ManagerError(
+            f"unsupported ZIP compression {entry.compress_type} in {label}: {entry.filename!r}"
+        )
+    if entry.file_size < 0 or entry.file_size > maximum_size:
+        raise ManagerError(
+            f"ZIP member exceeds {maximum_size} bytes in {label}: {entry.filename!r}"
+        )
+    if entry.compress_size < 0 or entry.compress_size > maximum_compressed_size:
+        raise ManagerError(
+            "ZIP member compressed size exceeds "
+            f"{maximum_compressed_size} bytes in {label}: {entry.filename!r}"
+        )
+    if enforce_expansion_ratio and entry.file_size:
+        if (
+            entry.compress_size <= 0
+            or entry.file_size > entry.compress_size * _MAX_NESTED_JAR_EXPANSION_RATIO
+        ):
+            raise ManagerError(
+                "declared nested JAR expansion ratio exceeds "
+                f"{_MAX_NESTED_JAR_EXPANSION_RATIO}:1 in {label}: {entry.filename!r}"
+            )
+    budget.charge(
+        entry,
+        label=label,
+        declared_nested_jar=declared_nested_jar,
+    )
+    output = io.BytesIO()
     try:
-        with zipfile.ZipFile(path) as archive:
-            matches = [item for item in archive.infolist() if item.filename == "fabric.mod.json"]
-            if len(matches) != 1:
-                raise ManagerError(f"{path} must contain exactly one root fabric.mod.json")
-            if matches[0].file_size > 1024 * 1024:
-                raise ManagerError(f"fabric.mod.json is unreasonably large in {path}")
-            manifest = json.loads(archive.read(matches[0]).decode("utf-8"))
+        with archive.open(entry, "r") as handle:
+            while True:
+                chunk = handle.read(min(1024 * 1024, maximum_size + 1 - output.tell()))
+                if not chunk:
+                    break
+                output.write(chunk)
+                if output.tell() > maximum_size:
+                    raise ManagerError(
+                        f"ZIP member expanded beyond {maximum_size} bytes in {label}: {entry.filename!r}"
+                    )
     except ManagerError:
         raise
-    except (OSError, UnicodeDecodeError, json.JSONDecodeError, zipfile.BadZipFile) as exc:
-        raise ManagerError(f"cannot read Fabric manifest from {path}: {exc}") from exc
+    except (OSError, RuntimeError, NotImplementedError, zipfile.BadZipFile) as exc:
+        raise ManagerError(f"cannot read ZIP member {entry.filename!r} from {label}: {exc}") from exc
+    value = output.getvalue()
+    if len(value) != entry.file_size:
+        raise ManagerError(f"ZIP member size mismatch in {label}: {entry.filename!r}")
+    return value
+
+
+def _read_fabric_manifest_from_archive(
+    archive: zipfile.ZipFile,
+    label: str,
+    *,
+    budget: _NestedJarTraversalBudget,
+    root_missing_is_non_fabric: bool = False,
+) -> tuple[dict[str, Any], dict[str, zipfile.ZipInfo]]:
+    entries: dict[str, zipfile.ZipInfo] = {}
+    seen_casefold: dict[str, str] = {}
+    for entry in archive.infolist():
+        entry_name = _validated_zip_entry_name(entry, label)
+        normalized = entry_name.casefold()
+        previous = seen_casefold.get(normalized)
+        if previous is not None:
+            raise ManagerError(
+                f"duplicate ZIP entry path in {label}: {previous!r} and {entry_name!r}"
+            )
+        seen_casefold[normalized] = entry_name
+        if entry.is_dir():
+            continue
+        entries[entry_name] = entry
+    manifest_entry = entries.get("fabric.mod.json")
+    if manifest_entry is None:
+        error_type = _NonFabricRootError if root_missing_is_non_fabric else ManagerError
+        raise error_type(f"{label} must contain exactly one root fabric.mod.json")
+    try:
+        manifest_bytes = _read_bounded_zip_entry(
+            archive,
+            manifest_entry,
+            label=label,
+            maximum_size=_MAX_FABRIC_MANIFEST_SIZE,
+            maximum_compressed_size=_MAX_FABRIC_MANIFEST_COMPRESSED_SIZE,
+            enforce_expansion_ratio=False,
+            budget=budget,
+            declared_nested_jar=False,
+        )
+        manifest = json.loads(manifest_bytes.decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError, RuntimeError, zipfile.BadZipFile) as exc:
+        raise ManagerError(f"cannot read Fabric manifest from {label}: {exc}") from exc
     if not isinstance(manifest, dict):
-        raise ManagerError(f"fabric.mod.json in {path} must be an object")
+        raise ManagerError(f"fabric.mod.json in {label} must be an object")
+    return manifest, entries
+
+
+def _declared_nested_jar_paths(manifest: dict[str, Any], label: str) -> tuple[str, ...]:
+    raw_jars = manifest.get("jars", [])
+    if not isinstance(raw_jars, list):
+        raise ManagerError(f"fabric.mod.json jars in {label} must be an array")
+    result: list[str] = []
+    seen: set[str] = set()
+    for index, declaration in enumerate(raw_jars):
+        item_label = f"fabric.mod.json jars[{index}] in {label}"
+        if not isinstance(declaration, dict) or set(declaration) != {"file"}:
+            raise ManagerError(f"{item_label} must contain exactly one file field")
+        member_path = declaration["file"]
+        if (
+            not isinstance(member_path, str)
+            or not member_path
+            or "\\" in member_path
+            or "\x00" in member_path
+        ):
+            raise ManagerError(f"{item_label}.file must be a safe non-empty ZIP member path")
+        parsed = PurePosixPath(member_path)
+        if (
+            parsed.is_absolute()
+            or PureWindowsPath(member_path).is_absolute()
+            or bool(PureWindowsPath(member_path).drive)
+            or parsed.as_posix() != member_path
+            or any(part in {"", ".", ".."} for part in parsed.parts)
+            or not member_path.endswith(".jar")
+        ):
+            raise ManagerError(f"{item_label}.file is an unsafe nested JAR path: {member_path!r}")
+        normalized = member_path.casefold()
+        if normalized in seen:
+            raise ManagerError(f"duplicate declared nested JAR path in {label}: {member_path!r}")
+        seen.add(normalized)
+        result.append(member_path)
+    return tuple(result)
+
+
+def _fabric_descriptor_from_manifest(
+    manifest: dict[str, Any],
+    *,
+    path: Path,
+    label: str,
+    relative_path: str,
+    filename: str,
+    strict_provides: bool,
+    artifact: ManagedArtifact | None,
+    root_container_path: str | None = None,
+    root_container_filename: str | None = None,
+    root_container_sha256: str | None = None,
+    nested_chain: tuple[NestedJarProvenanceLayer, ...] = (),
+) -> FabricModDescriptor:
     primary_id = manifest.get("id")
     version = manifest.get("version")
     if not isinstance(primary_id, str) or not primary_id:
-        raise ManagerError(f"fabric.mod.json in {path} has no valid id")
+        raise ManagerError(f"fabric.mod.json in {label} has no valid id")
     if not isinstance(version, str) or not version:
-        raise ManagerError(f"fabric.mod.json in {path} has no valid version")
+        raise ManagerError(f"fabric.mod.json in {label} has no valid version")
+    raw_environment = manifest.get("environment", "*")
+    if not isinstance(raw_environment, str):
+        raise ManagerError(f"fabric.mod.json environment in {label} must be a string")
+    normalized_environment = raw_environment.lower()
+    if normalized_environment in {"", "*"}:
+        environment = "*"
+    elif normalized_environment in {"client", "server"}:
+        environment = normalized_environment
+    else:
+        raise ManagerError(
+            f"fabric.mod.json environment in {label} must be '*', 'client', or 'server'"
+        )
+    environment_eligible = environment in {"*", "client"}
     provides_value = manifest.get("provides", [])
     provides: list[str] = []
     if strict_provides and not isinstance(provides_value, list):
-        raise ManagerError(f"fabric.mod.json provides in {path} must be an array")
+        raise ManagerError(f"fabric.mod.json provides in {label} must be an array")
     if isinstance(provides_value, list):
         seen: set[str] = set()
         for index, item in enumerate(provides_value):
             if not isinstance(item, str) or not item:
                 if strict_provides:
                     raise ManagerError(
-                        f"fabric.mod.json provides[{index}] in {path} must be a non-empty string"
+                        f"fabric.mod.json provides[{index}] in {label} must be a non-empty string"
                     )
                 continue
             if item == primary_id:
-                raise ManagerError(f"fabric.mod.json provides in {path} must not repeat primary id {item}")
+                raise ManagerError(f"fabric.mod.json provides in {label} must not repeat primary id {item}")
             if item in seen:
-                raise ManagerError(f"fabric.mod.json provides in {path} contains duplicate alias {item}")
+                raise ManagerError(f"fabric.mod.json provides in {label} contains duplicate alias {item}")
             seen.add(item)
             provides.append(item)
 
     depends_value = manifest.get("depends", {})
     if not isinstance(depends_value, dict):
-        raise ManagerError(f"fabric.mod.json depends in {path} must be an object")
+        raise ManagerError(f"fabric.mod.json depends in {label} must be an object")
     depends: dict[str, tuple[str, ...]] = {}
     for dependency_id, raw_predicates in depends_value.items():
         if not isinstance(dependency_id, str) or not dependency_id:
-            raise ManagerError(f"fabric.mod.json depends in {path} has an invalid dependency id")
+            raise ManagerError(f"fabric.mod.json depends in {label} has an invalid dependency id")
         if isinstance(raw_predicates, str):
             predicates = (raw_predicates,)
         elif isinstance(raw_predicates, list) and raw_predicates and all(
@@ -3648,27 +4121,275 @@ def _read_fabric_descriptor(
             predicates = tuple(raw_predicates)
         else:
             raise ManagerError(
-                f"fabric.mod.json dependency {dependency_id!r} in {path} must be a string or nonempty string array"
+                f"fabric.mod.json dependency {dependency_id!r} in {label} must be a string or nonempty string array"
             )
-        # Parse every predicate even when no matching provider is currently
-        # visible; malformed Loader metadata is never silently accepted.
         for predicate in predicates:
             _fabric_predicate_matches("0.0.0", predicate)
         depends[dependency_id] = predicates
 
     return FabricModDescriptor(
         path=path,
-        relative_path=relative_path or path.name,
-        filename=path.name.removesuffix(".disabled"),
+        relative_path=relative_path,
+        filename=filename,
         primary_id=primary_id,
         provides=tuple(provides),
         version=version,
         depends=depends,
+        environment=environment,
+        environment_eligible=environment_eligible,
         managed_project_uuid=artifact.project_uuid if artifact is not None else None,
         managed_project_id=artifact.project_id if artifact is not None else None,
         managed_deployment_id=artifact.deployment_id if artifact is not None else None,
         managed_artifact_id=artifact.artifact_id if artifact is not None else None,
+        root_container_path=root_container_path,
+        root_container_filename=root_container_filename,
+        root_container_sha256=root_container_sha256,
+        nested_chain=nested_chain,
     )
+
+
+def _read_fabric_descriptor(
+    path: Path,
+    *,
+    strict_provides: bool = False,
+    relative_path: str | None = None,
+    artifact: ManagedArtifact | None = None,
+) -> FabricModDescriptor:
+    label = str(path)
+    budget = _NestedJarTraversalBudget()
+    try:
+        with zipfile.ZipFile(path) as archive:
+            manifest, _entries = _read_fabric_manifest_from_archive(
+                archive,
+                label,
+                budget=budget,
+            )
+    except ManagerError:
+        raise
+    except (OSError, RuntimeError, zipfile.BadZipFile) as exc:
+        raise ManagerError(f"cannot read Fabric manifest from {path}: {exc}") from exc
+    relative = relative_path or path.name
+    return _fabric_descriptor_from_manifest(
+        manifest,
+        path=path,
+        label=label,
+        relative_path=relative,
+        filename=path.name.removesuffix(".disabled"),
+        strict_provides=strict_provides,
+        artifact=artifact,
+        root_container_path=relative,
+        root_container_filename=path.name.removesuffix(".disabled"),
+    )
+
+
+def _read_fabric_descriptor_tree(
+    path: Path,
+    *,
+    strict_provides: bool = False,
+    relative_path: str | None = None,
+    artifact: ManagedArtifact | None = None,
+    budget: _NestedJarTraversalBudget | None = None,
+) -> tuple[FabricModDescriptor, ...]:
+    root_relative_path = relative_path or path.name
+    root_filename = path.name.removesuffix(".disabled")
+    root_sha256 = _sha256(path)
+    traversal_budget = budget if budget is not None else _NestedJarTraversalBudget()
+
+    def walk(
+        archive: zipfile.ZipFile,
+        *,
+        label: str,
+        descriptor_relative_path: str,
+        descriptor_filename: str,
+        container_sha256: str,
+        nested_chain: tuple[NestedJarProvenanceLayer, ...],
+        nested_strict_provides: bool,
+    ) -> list[FabricModDescriptor]:
+        manifest, entries = _read_fabric_manifest_from_archive(
+            archive,
+            label,
+            budget=traversal_budget,
+            root_missing_is_non_fabric=not nested_chain,
+        )
+        descriptor = _fabric_descriptor_from_manifest(
+            manifest,
+            path=path,
+            label=label,
+            relative_path=descriptor_relative_path,
+            filename=descriptor_filename,
+            strict_provides=nested_strict_provides,
+            artifact=artifact,
+            root_container_path=root_relative_path,
+            root_container_filename=root_filename,
+            root_container_sha256=root_sha256,
+            nested_chain=nested_chain,
+        )
+        declarations = _declared_nested_jar_paths(manifest, label)
+        if not descriptor.environment_eligible:
+            # Fabric Loader parses the excluded candidate's metadata, but does
+            # not discover any of its declared children for this environment.
+            return [descriptor]
+        if nested_chain and set(descriptor.ownership_ids).intersection(_FABRIC_PLATFORM_DEPENDENCIES):
+            raise ManagerError(
+                f"declared nested JAR {label} cannot claim Fabric platform IDs: "
+                f"{sorted(set(descriptor.ownership_ids).intersection(_FABRIC_PLATFORM_DEPENDENCIES))}"
+            )
+        if declarations and len(nested_chain) >= _MAX_NESTED_JAR_DEPTH:
+            raise ManagerError(
+                f"declared nested JAR depth exceeds {_MAX_NESTED_JAR_DEPTH} in {label}"
+            )
+        result = [descriptor]
+        for member_path in declarations:
+            entry = entries.get(member_path)
+            if entry is None or entry.is_dir():
+                raise ManagerError(
+                    f"declared nested JAR member is missing from {label}: {member_path!r}"
+                )
+            if entry.file_size > _MAX_NESTED_JAR_ENTRY_SIZE:
+                raise ManagerError(
+                    f"declared nested JAR member exceeds {_MAX_NESTED_JAR_ENTRY_SIZE} bytes in {label}: {member_path!r}"
+                )
+            member_bytes = _read_bounded_zip_entry(
+                archive,
+                entry,
+                label=label,
+                maximum_size=_MAX_NESTED_JAR_ENTRY_SIZE,
+                maximum_compressed_size=_MAX_NESTED_JAR_ENTRY_COMPRESSED_SIZE,
+                enforce_expansion_ratio=True,
+                budget=traversal_budget,
+                declared_nested_jar=True,
+            )
+            member_sha256 = hashlib.sha256(member_bytes).hexdigest()
+            layer = NestedJarProvenanceLayer(
+                container_path=descriptor_relative_path,
+                container_sha256=container_sha256,
+                declared_member_path=member_path,
+                member_sha256=member_sha256,
+                member_size=entry.file_size,
+                member_compressed_size=entry.compress_size,
+            )
+            nested_relative_path = descriptor_relative_path + "!/" + member_path
+            try:
+                with zipfile.ZipFile(io.BytesIO(member_bytes)) as nested_archive:
+                    result.extend(
+                        walk(
+                            nested_archive,
+                            label=nested_relative_path,
+                            descriptor_relative_path=nested_relative_path,
+                            descriptor_filename=PurePosixPath(member_path).name,
+                            container_sha256=member_sha256,
+                            nested_chain=(*nested_chain, layer),
+                            nested_strict_provides=True,
+                        )
+                    )
+            except ManagerError:
+                raise
+            except (OSError, RuntimeError, zipfile.BadZipFile) as exc:
+                raise ManagerError(
+                    f"declared nested JAR member is malformed in {label}: {member_path!r}: {exc}"
+                ) from exc
+        return result
+
+    try:
+        with zipfile.ZipFile(path) as root_archive:
+            descriptors = walk(
+                root_archive,
+                label=str(path),
+                descriptor_relative_path=root_relative_path,
+                descriptor_filename=root_filename,
+                container_sha256=root_sha256,
+                nested_chain=(),
+                nested_strict_provides=strict_provides,
+            )
+            if _sha256(path) != root_sha256:
+                raise ManagerError(f"Fabric root JAR changed while reading descriptor tree: {path}")
+            return _deduplicate_nested_descriptors(descriptors)
+    except ManagerError:
+        raise
+    except (OSError, RuntimeError, zipfile.BadZipFile) as exc:
+        raise ManagerError(f"cannot read Fabric manifest from {path}: {exc}") from exc
+
+
+def _deduplicate_nested_descriptors(
+    descriptors: Sequence[FabricModDescriptor],
+) -> tuple[FabricModDescriptor, ...]:
+    """Deduplicate byte-identical nested candidates and retain every origin.
+
+    Fabric Loader deduplicates nested candidates across the enabled graph, not
+    just inside one root. Keep every exact root/chain and retain a singular
+    managed identity only when exactly one managed root owns the bytes.
+    """
+
+    result: list[FabricModDescriptor] = []
+    nested_by_sha256: dict[str, int] = {}
+    for descriptor in descriptors:
+        if not descriptor.nested_chain:
+            result.append(descriptor)
+            continue
+        member_sha256 = descriptor.nested_chain[-1].member_sha256
+        prior_index = nested_by_sha256.get(member_sha256)
+        if prior_index is None:
+            nested_by_sha256[member_sha256] = len(result)
+            result.append(descriptor)
+            continue
+        prior = result[prior_index]
+        if (
+            prior.primary_id != descriptor.primary_id
+            or prior.provides != descriptor.provides
+            or prior.version != descriptor.version
+            or prior.depends != descriptor.depends
+            or prior.environment != descriptor.environment
+            or prior.environment_eligible != descriptor.environment_eligible
+        ):
+            raise ManagerError(
+                "byte-identical declared nested JARs produced inconsistent Fabric descriptors: "
+                f"{prior.relative_path} and {descriptor.relative_path}"
+            )
+        origins = list(prior.nested_origins)
+        existing_origins = set(origins)
+        for origin in descriptor.nested_origins:
+            if origin not in existing_origins:
+                origins.append(origin)
+                existing_origins.add(origin)
+        managed_root_keys = {
+            origin.managed_root_key
+            for origin in origins
+            if origin.managed_root_key is not None
+        }
+        sole_managed_root = next(iter(managed_root_keys)) if len(managed_root_keys) == 1 else None
+        origins.sort(
+            key=lambda origin: (
+                0 if sole_managed_root is not None and origin.managed_root_key == sole_managed_root else 1,
+                origin.root_container_path.casefold(),
+                origin.root_container_path,
+                origin.candidate_path.casefold(),
+                origin.candidate_path,
+                origin.managed_artifact_id or "",
+            )
+        )
+        primary_origin = origins[0]
+        managed_origin = (
+            next(origin for origin in origins if origin.managed_root_key == sole_managed_root)
+            if sole_managed_root is not None
+            else None
+        )
+        result[prior_index] = dataclass_replace(
+            prior,
+            path=primary_origin.source_path,
+            relative_path=primary_origin.candidate_path,
+            filename=primary_origin.candidate_filename,
+            managed_project_uuid=(managed_origin.managed_project_uuid if managed_origin is not None else None),
+            managed_project_id=(managed_origin.managed_project_id if managed_origin is not None else None),
+            managed_deployment_id=(managed_origin.managed_deployment_id if managed_origin is not None else None),
+            managed_artifact_id=(managed_origin.managed_artifact_id if managed_origin is not None else None),
+            root_container_path=primary_origin.root_container_path,
+            root_container_filename=primary_origin.root_container_filename,
+            root_container_sha256=primary_origin.root_container_sha256,
+            nested_chain=primary_origin.nested_chain,
+            nested_origin_override=primary_origin,
+            alternate_nested_origins=tuple(origins[1:]),
+        )
+    return tuple(result)
 
 
 def _fabric_mod_ids(path: Path, *, strict_provides: bool = False) -> frozenset[str]:
