@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   apply:
-    if: github.event.head_commit.message == 'Harden staging patch recovery'
+    if: github.event.head_commit.message == 'Recover dependency policy source checkpoint'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -31,10 +31,10 @@ jobs:
               "git", "show",
               "35c4c4d8bc2acc48d1beb4207d040b2738f250a4:.github/workflows/codex-apply-dependency-policy.yml",
           ], text=True)
-          match = re.search(r"(?m)^H4sIA[A-Za-z0-9+/=]+$", source)
+          match = re.search(r"(?m)^\s*(H4sIA[A-Za-z0-9+/=]+)\s*$", source)
           if match is None:
               raise SystemExit("embedded patch payload not found")
-          compressed = base64.b64decode(match.group(0), validate=True)
+          compressed = base64.b64decode(match.group(1), validate=True)
           pathlib.Path("/tmp/source.patch").write_bytes(gzip.decompress(compressed))
           PY
           echo '76d68f5579cf2156f105aae32aa26c795b3a2a048b4ff64b7aae7277fb6eb782  /tmp/source.patch' | sha256sum --check
