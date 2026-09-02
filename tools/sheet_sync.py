@@ -111,9 +111,19 @@ def migration_adoption_uuids(freeze_text: str) -> frozenset[str]:
 
 def _validate_initial_revision(manifest: dict[str, Any], path: str, adoption_uuids: frozenset[str]) -> None:
     revision = manifest["synchronization"]["revision"]
-    if revision == 1 or manifest["identity"]["uuid"] in adoption_uuids:
+    if manifest["identity"]["uuid"] in adoption_uuids:
         return
-    raise ValidationError(f"{path}: a new project must begin at revision 1 unless its UUID was frozen for migration adoption")
+    if revision != 1:
+        raise ValidationError(f"{path}: a new project must begin at revision 1 unless its UUID was frozen for migration adoption")
+    current = manifest["state"]["releases"]["current"]
+    if (
+        current is not None
+        and current["artifact"] is not None
+        and "runtime_dependency_policy" not in current
+    ):
+        raise ValidationError(
+            f"{path}: a new revision-1 current artifact requires state.releases.current.runtime_dependency_policy"
+        )
 
 
 def _migration_adoption_uuids_at(root: Path, before: str, after: str) -> frozenset[str]:

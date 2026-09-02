@@ -1072,6 +1072,10 @@ def plan_transition(
             member["unit"]["project_id"].casefold(): (index, member["unit"])
             for index, member in enumerate(accepted_members)
         }
+        accepted_by_deployment = {
+            member["unit"]["deployment_id"]: (index, member)
+            for index, member in enumerate(accepted_members)
+        }
         slot_units = [
             member["unit"]
             for label in ("A", "B")
@@ -1080,15 +1084,32 @@ def plan_transition(
         ]
         occupied_project_uuids = {unit["project_uuid"] for unit in slot_units}
         occupied_project_ids = {unit["project_id"].casefold() for unit in slot_units}
+        preserved_slot_accepted_references = {
+            accepted_id
+            for label in ("A", "B")
+            if state["slots"][label] is not None
+            for slot_member in _slot_members_unchecked(state["slots"][label])
+            for accepted_id in (
+                [slot_member["replaces_accepted_deployment_id"]]
+                + slot_member.get("dependency_overrides", [])
+            )
+            if accepted_id is not None
+        }
         batch_project_uuids: set[str] = set()
         batch_project_ids: set[str] = set()
+        claimed_accepted_deployment_ids: set[str] = set()
+        absorbed_accepted_indexes: set[int] = set()
         promoted_members: list[tuple[int | None, dict[str, Any]]] = []
         stack_revision_delta = 0
 
         for index, declaration in enumerate(declarations):
             member_path = f"operation.members[{index}]"
             required = {"unit"}
-            allowed = required | {"replaces_accepted_deployment_id", "retained_rollbacks"}
+            allowed = required | {
+                "replaces_accepted_deployment_id",
+                "absorbs_accepted_deployment_ids",
+                "retained_rollbacks",
+            }
             if not isinstance(declaration, dict):
                 raise ValidationError(f"{member_path} must be an object")
             missing = required - set(declaration)
@@ -1166,6 +1187,83 @@ def plan_transition(
                         f"{member_path}.unit.artifacts must use artifact UUIDs distinct from the accepted predecessor"
                     )
 
+            if replacement_id is not None:
+                if replacement_id in claimed_accepted_deployment_ids:
+                    raise ValidationError(
+                        f"{member_path}.replaces_accepted_deployment_id is already claimed by this promotion batch"
+                    )
+                claimed_accepted_deployment_ids.add(replacement_id)
+
+            absorbed_ids = declaration.get("absorbs_accepted_deployment_ids", [])
+            if not isinstance(absorbed_ids, list):
+                raise ValidationError(
+                    f"{member_path}.absorbs_accepted_deployment_ids must be an array"
+                )
+            successor_ownership = {
+                ownership_key.casefold()
+                for artifact in unit["artifacts"]
+                for ownership_key in artifact["ownership_keys"]
+            }
+            successor_artifact_ids = {
+                artifact["artifact_id"] for artifact in unit["artifacts"]
+            }
+            for absorbed_index, absorbed_value in enumerate(absorbed_ids):
+                absorbed_path = (
+                    f"{member_path}.absorbs_accepted_deployment_ids[{absorbed_index}]"
+                )
+                absorbed_id = _uuid(absorbed_value, absorbed_path)
+                if absorbed_id in claimed_accepted_deployment_ids:
+                    raise ValidationError(
+                        f"{absorbed_path} is already claimed by a direct replacement or absorption"
+                    )
+                absorbed_match = accepted_by_deployment.get(absorbed_id)
+                if absorbed_match is None:
+                    raise ValidationError(
+                        f"{absorbed_path} does not name an exact accepted deployment"
+                    )
+                accepted_absorbed_index, absorbed_member = absorbed_match
+                absorbed_unit = absorbed_member["unit"]
+                if (
+                    absorbed_unit["project_uuid"] == project_uuid
+                    or absorbed_unit["project_id"].casefold() == project_id_key
+                ):
+                    raise ValidationError(
+                        f"{absorbed_path} must name an accepted deployment from another project"
+                    )
+                if absorbed_member.get("retained_rollbacks"):
+                    raise ValidationError(
+                        f"{absorbed_path} cannot discard target-local retained rollback history"
+                    )
+                if absorbed_id in preserved_slot_accepted_references:
+                    raise ValidationError(
+                        f"{absorbed_path} cannot remove an accepted deployment still referenced by a managed Test Slot"
+                    )
+                absorbed_ownership = {
+                    ownership_key.casefold()
+                    for artifact in absorbed_unit["artifacts"]
+                    for ownership_key in artifact["ownership_keys"]
+                }
+                missing_ownership = sorted(absorbed_ownership - successor_ownership)
+                if missing_ownership:
+                    raise ValidationError(
+                        f"{absorbed_path} requires the absorbing successor to own every absorbed ownership key; "
+                        f"missing {missing_ownership}"
+                    )
+                if unit["deployment_id"] == absorbed_id:
+                    raise ValidationError(
+                        f"{member_path}.unit.deployment_id must be distinct from absorbed deployments"
+                    )
+                absorbed_artifact_ids = {
+                    artifact["artifact_id"] for artifact in absorbed_unit["artifacts"]
+                }
+                if successor_artifact_ids.intersection(absorbed_artifact_ids):
+                    raise ValidationError(
+                        f"{member_path}.unit.artifacts must use artifact UUIDs distinct from absorbed deployments"
+                    )
+                claimed_accepted_deployment_ids.add(absorbed_id)
+                absorbed_accepted_indexes.add(accepted_absorbed_index)
+                stack_revision_delta += 1
+
             retained_units = declaration.get("retained_rollbacks", [])
             if not isinstance(retained_units, list):
                 raise ValidationError(f"{member_path}.retained_rollbacks must be an array")
@@ -1227,6 +1325,8 @@ def plan_transition(
                 accepted_members.append(member)
             else:
                 accepted_members[accepted_index] = member
+        for accepted_index in sorted(absorbed_accepted_indexes, reverse=True):
+            del accepted_members[accepted_index]
         next_state["accepted_baseline"]["revision"] += stack_revision_delta
         next_state["accepted_baseline"]["provenance"]["accepted_artifact_count"] = sum(
             len(existing["unit"]["artifacts"]) for existing in accepted_members

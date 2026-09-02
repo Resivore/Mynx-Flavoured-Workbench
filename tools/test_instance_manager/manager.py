@@ -23,7 +23,7 @@ import subprocess
 import tempfile
 import uuid
 import zipfile
-from dataclasses import dataclass, replace as dataclass_replace
+from dataclasses import dataclass, field, replace as dataclass_replace
 from datetime import datetime, timezone
 from pathlib import Path, PurePosixPath, PureWindowsPath
 from typing import Any, Callable, Iterable, Sequence
@@ -368,6 +368,8 @@ class FabricModDescriptor:
     provides: tuple[str, ...]
     version: str
     depends: dict[str, tuple[str, ...]]
+    recommends: dict[str, tuple[str, ...]] = field(default_factory=dict)
+    suggests: dict[str, tuple[str, ...]] = field(default_factory=dict)
     environment: str = "*"
     environment_eligible: bool = True
     managed_project_uuid: str | None = None
@@ -1174,7 +1176,13 @@ class PhysicalManager:
             relative = _safe_relative(descriptor["path"], label, allow_nested=True)
             if PurePosixPath(relative.replace("\\", "/")).parts[0].casefold() == "originals":
                 raise ManagerError(f"{label} cannot use originals/")
-            source = (self.config.repository_root / Path(relative)).resolve(strict=False)
+            raw_source = self.config.repository_root / Path(relative)
+            _assert_no_reparse_components(
+                raw_source,
+                f"repository {label}",
+                root=self.config.repository_root,
+            )
+            source = raw_source.resolve(strict=False)
             if not _is_within(source, self.config.repository_root):
                 raise ManagerError(f"{label} escapes repository root")
             if _is_within(source, self.config.repository_root / "originals"):
@@ -1772,7 +1780,20 @@ class PhysicalManager:
         managed_ownership_ids: set[str],
         phase: str,
         platform_attestation: PlatformAttestation | None = None,
+        repository_statuses: dict[str, tuple[Path, dict[str, Any]]] | None = None,
     ) -> dict[str, Any]:
+        runtime_dependency_policy = (
+            self._runtime_dependency_policy_report(
+                descriptors,
+                repository_statuses=repository_statuses,
+            )
+            if self is not None
+            else {
+                "status": "NOT_APPLICABLE_EXPLICIT_TEST_CATALOG",
+                "enforced_artifacts": [],
+                "grandfathered_artifacts": [],
+            }
+        )
         discovered_descriptors = _deduplicate_nested_descriptors(descriptors)
         excluded_descriptors = tuple(
             descriptor
@@ -2191,12 +2212,111 @@ class PhysicalManager:
             "observed_out_of_scope_duplicate_ownership_groups": observed_out_of_scope_duplicate_groups,
             "candidate_selection_groups": candidate_selection_groups,
             "resolutions": resolutions,
+            "runtime_dependency_policy": runtime_dependency_policy,
+        }
+
+    def _runtime_dependency_policy_report(
+        self,
+        descriptors: Sequence[FabricModDescriptor],
+        *,
+        repository_statuses: dict[str, tuple[Path, dict[str, Any]]] | None = None,
+    ) -> dict[str, Any]:
+        """Enforce release-scoped policy only for exact attested current bytes.
+
+        A manifest release without an attestation is an immutable grandfathered
+        identity. Transition validation requires the attestation when a current
+        artifact changes, so this distinction does not reinterpret older JARs.
+        """
+
+        statuses = self.repository_statuses if repository_statuses is None else repository_statuses
+        if statuses is None:
+            return {
+                "status": "NOT_APPLICABLE_EXPLICIT_TEST_CATALOG",
+                "enforced_artifacts": [],
+                "grandfathered_artifacts": [],
+            }
+        grouped: dict[tuple[str, str, str], list[FabricModDescriptor]] = {}
+        for descriptor in descriptors:
+            project_uuid = descriptor.managed_project_uuid
+            root_sha256 = descriptor.root_container_sha256
+            root_filename = descriptor.root_container_filename or descriptor.filename
+            if project_uuid is None or root_sha256 is None:
+                continue
+            grouped.setdefault(
+                (project_uuid, root_filename, root_sha256.lower()),
+                [],
+            ).append(descriptor)
+
+        enforced: list[dict[str, Any]] = []
+        grandfathered: list[dict[str, Any]] = []
+        for (project_uuid, filename, sha256), owned_descriptors in sorted(grouped.items()):
+            status_entry = statuses.get(project_uuid)
+            if status_entry is None:
+                grandfathered.append(
+                    {
+                        "project_uuid": project_uuid,
+                        "project_id": owned_descriptors[0].managed_project_id,
+                        "filename": filename,
+                        "sha256": sha256,
+                        "manifest": None,
+                        "classification": "NOT_APPLICABLE_PARTIAL_TEST_CATALOG",
+                    }
+                )
+                continue
+            manifest_path, manifest = status_entry
+            current = manifest["state"]["releases"]["current"]
+            current_artifact = current.get("artifact") if isinstance(current, dict) else None
+            exact_current = bool(
+                isinstance(current_artifact, dict)
+                and current_artifact.get("filename", "").casefold() == filename.casefold()
+                and current_artifact.get("sha256", "").lower() == sha256
+            )
+            base = {
+                "project_uuid": project_uuid,
+                "project_id": manifest["identity"]["project_id"],
+                "filename": filename,
+                "sha256": sha256,
+                "manifest": str(manifest_path),
+            }
+            if not exact_current:
+                grandfathered.append(
+                    {
+                        **base,
+                        "classification": "GRANDFATHERED_NONCURRENT_EXACT_BYTES",
+                    }
+                )
+                continue
+            policy = current.get("runtime_dependency_policy")
+            if policy is None:
+                grandfathered.append(
+                    {
+                        **base,
+                        "classification": "GRANDFATHERED_UNCHANGED_CURRENT_EXACT_BYTES",
+                    }
+                )
+                continue
+            enforced.append(
+                {
+                    **base,
+                    **_enforce_runtime_dependency_policy(
+                        owned_descriptors,
+                        policy,
+                        release_label=f"{manifest['identity']['project_id']}/{filename}",
+                    ),
+                }
+            )
+        return {
+            "status": "RUNTIME_DEPENDENCY_POLICY_VERIFIED",
+            "enforced_artifacts": enforced,
+            "grandfathered_artifacts": grandfathered,
         }
 
     def _planned_dependency_report(
         self,
         current_artifacts: Sequence[ManagedArtifact],
         desired_artifacts: Sequence[ManagedArtifact],
+        *,
+        repository_statuses: dict[str, tuple[Path, dict[str, Any]]] | None = None,
     ) -> dict[str, Any]:
         descriptors = self._planned_enabled_descriptors(current_artifacts, desired_artifacts)
         managed_ids = {
@@ -2212,11 +2332,14 @@ class PhysicalManager:
             managed_ownership_ids=managed_ids,
             phase="PREFLIGHT_PROPOSED_ENABLED_SET",
             platform_attestation=platform_attestation,
+            repository_statuses=repository_statuses,
         )
 
     def _physical_dependency_report(
         self,
         artifacts: Sequence[ManagedArtifact],
+        *,
+        repository_statuses: dict[str, tuple[Path, dict[str, Any]]] | None = None,
     ) -> dict[str, Any]:
         descriptors = self._physical_enabled_descriptors(artifacts)
         managed_ids = {
@@ -2232,6 +2355,7 @@ class PhysicalManager:
             managed_ownership_ids=managed_ids,
             phase="POST_DEPLOYMENT_ENABLED_SET",
             platform_attestation=platform_attestation,
+            repository_statuses=repository_statuses,
         )
 
     @staticmethod
@@ -2256,6 +2380,30 @@ class PhysicalManager:
                 "Fabric platform launch authority changed "
                 f"{phase}: expected attestation {expected_fingerprint!r}, "
                 f"found {actual_fingerprint!r}; no runtime state may be committed"
+            )
+
+    @staticmethod
+    def _assert_runtime_dependency_policy_unchanged(
+        expected_report: dict[str, Any],
+        actual_report: dict[str, Any],
+        *,
+        phase: str,
+    ) -> None:
+        """Bind the policy decision to the same manifest snapshot as mutation.
+
+        Release identity checks intentionally ignore policy-only edits because
+        policy is not artifact identity.  The physical transaction therefore
+        compares the complete policy receipt independently at each commit
+        boundary so a concurrent relaxation, removal, or exception edit cannot
+        authorize bytes using a stale preflight decision.
+        """
+
+        expected = expected_report.get("runtime_dependency_policy")
+        actual = actual_report.get("runtime_dependency_policy")
+        if expected != actual:
+            raise ManagerError(
+                "runtime dependency policy changed "
+                f"{phase}; no runtime state may be committed"
             )
 
     def _verify_inventory(
@@ -2643,6 +2791,9 @@ class PhysicalManager:
         operation: dict[str, Any],
         *,
         refresh: bool = False,
+        repository_statuses: dict[str, tuple[Path, dict[str, Any]]] | None = None,
+        runtime_state: dict[str, Any] | None = None,
+        verify_preimage_root_versions: bool = True,
     ) -> None:
         """Bind production direct-pass promotions to current project manifests.
 
@@ -2653,7 +2804,13 @@ class PhysicalManager:
 
         if operation.get("type") != "PROMOTE_USER_PASSED_BATCH":
             return
-        statuses = self._current_repository_statuses() if refresh else self.repository_statuses
+        statuses = (
+            repository_statuses
+            if repository_statuses is not None
+            else self._current_repository_statuses()
+            if refresh
+            else self.repository_statuses
+        )
         if statuses is None:
             return
         members = operation.get("members")
@@ -2682,8 +2839,63 @@ class PhysicalManager:
                 manifest["state"]["releases"]["current"],
                 manifest_path,
                 label=f"{label} candidate",
-                repository_source=True,
+                source_requirement="REPOSITORY",
+                verify_root_fabric_version=True,
             )
+
+            absorbed_ids = member.get("absorbs_accepted_deployment_ids", [])
+            if not isinstance(absorbed_ids, list):
+                raise ManagerError(f"{label}.absorbs_accepted_deployment_ids must be an array")
+            if absorbed_ids:
+                bound_state = self.load_repository_state() if runtime_state is None else runtime_state
+                accepted_members = bound_state["accepted_baseline"]["members"]
+                for absorbed_index, absorbed_id in enumerate(absorbed_ids):
+                    absorbed_label = (
+                        f"{label}.absorbs_accepted_deployment_ids[{absorbed_index}]"
+                    )
+                    matches = [
+                        accepted_member["unit"]
+                        for accepted_member in accepted_members
+                        if accepted_member["unit"]["deployment_id"] == absorbed_id
+                    ]
+                    if len(matches) != 1:
+                        raise ManagerError(
+                            f"{absorbed_label} must name exactly one accepted deployment"
+                        )
+                    absorbed_unit = matches[0]
+                    absorbed_status_entry = statuses.get(absorbed_unit["project_uuid"])
+                    if absorbed_status_entry is None:
+                        raise ManagerError(
+                            f"{absorbed_label} project UUID does not resolve to a current manifest: "
+                            f"{absorbed_unit['project_uuid']}"
+                        )
+                    absorbed_manifest_path, absorbed_manifest = absorbed_status_entry
+                    absorbed_identity = absorbed_manifest["identity"]
+                    if absorbed_unit.get("project_id") != absorbed_identity["project_id"]:
+                        raise ManagerError(
+                            f"{absorbed_label} project_id does not match current manifest: "
+                            f"expected {absorbed_identity['project_id']}, "
+                            f"found {absorbed_unit.get('project_id')}"
+                        )
+                    accepted_release = absorbed_manifest["state"]["releases"].get("accepted")
+                    if accepted_release is None:
+                        raise ManagerError(
+                            f"{absorbed_label} manifest has no accepted release to bind"
+                        )
+                    self._assert_unit_matches_manifest_release(
+                        absorbed_unit,
+                        accepted_release,
+                        absorbed_manifest_path,
+                        label=f"{absorbed_label} accepted deployment",
+                        source_requirement="REPOSITORY_OR_ADOPTED_TARGET",
+                    )
+                    if verify_preimage_root_versions:
+                        self._assert_preimage_unit_root_fabric_version(
+                            absorbed_unit,
+                            accepted_release,
+                            bound_state,
+                            label=f"{absorbed_label} accepted deployment",
+                        )
 
             retained_rollbacks = member.get("retained_rollbacks", [])
             if not isinstance(retained_rollbacks, list):
@@ -2712,20 +2924,43 @@ class PhysicalManager:
                 rollback_release,
                 manifest_path,
                 label=f"{label} retained rollback",
-                repository_source=False,
+                source_requirement="ADOPTED_TARGET",
             )
+            if verify_preimage_root_versions:
+                rollback_artifact = self._unit_artifacts(
+                    rollback_unit,
+                    False,
+                    set(),
+                    retained_rollback=True,
+                )[0]
+                self._assert_exact_release_root_fabric_version(
+                    self._source_path(rollback_artifact),
+                    expected_sha256=rollback_release["artifact"]["sha256"].lower(),
+                    expected_version=rollback_release.get(
+                        "embedded_version",
+                        rollback_release["version"],
+                    ),
+                    label=f"{label} retained rollback",
+                )
 
     def _validate_deploy_profile_manifest_identities(
         self,
         operation: dict[str, Any],
         *,
         refresh: bool = False,
+        repository_statuses: dict[str, tuple[Path, dict[str, Any]]] | None = None,
     ) -> None:
         """Bind every atomic cohort member to its current manifest release."""
 
         if operation.get("type") != "DEPLOY_PROFILE":
             return
-        statuses = self._current_repository_statuses() if refresh else self.repository_statuses
+        statuses = (
+            repository_statuses
+            if repository_statuses is not None
+            else self._current_repository_statuses()
+            if refresh
+            else self.repository_statuses
+        )
         if statuses is None:
             return
         raw_slots = operation.get("slots")
@@ -2765,57 +3000,35 @@ class PhysicalManager:
                     )
                 if unit.get("project_identity_source") != "CURRENT_MANIFEST":
                     raise ManagerError(f"{member_label} requires CURRENT_MANIFEST identity")
-                release = manifest["state"]["releases"]["current"]
-                release_artifact = release["artifact"]
-                raw_artifacts = unit.get("artifacts")
-                if not isinstance(raw_artifacts, list) or len(raw_artifacts) != 1:
-                    raise ManagerError(f"{member_label} requires exactly one current release artifact")
-                artifact = raw_artifacts[0]
-                expected = {
-                    "source_commit": release["source_commit"],
-                    "filename": release_artifact["filename"],
-                    "sha256": release_artifact["sha256"].lower(),
-                }
-                actual = {
-                    "source_commit": unit.get("source_commit"),
-                    "filename": artifact.get("filename"),
-                    "sha256": (
-                        artifact.get("sha256", "").lower()
-                        if isinstance(artifact.get("sha256"), str)
-                        else None
-                    ),
-                }
-                if actual != expected:
-                    raise ManagerError(
-                        f"{member_label} does not exactly match current manifest release identity: "
-                        f"expected {expected}, found {actual}"
-                    )
-                source = artifact.get("source")
-                if not isinstance(source, dict) or source.get("type") != "REPOSITORY":
-                    raise ManagerError(f"{member_label} must use its canonical repository/private build source")
-                relative = _safe_relative(
-                    source.get("path"),
-                    f"{member_label} source",
-                    allow_nested=True,
+                self._assert_unit_matches_manifest_release(
+                    unit,
+                    manifest["state"]["releases"]["current"],
+                    manifest_path,
+                    label=member_label,
+                    source_requirement="REPOSITORY",
                 )
-                source_path = (self.config.repository_root / relative).resolve(strict=False)
-                project_root = manifest_path.parent.resolve(strict=False)
-                if not _is_within(source_path, project_root) or source_path.name.casefold() != str(
-                    artifact["filename"]
-                ).casefold():
-                    raise ManagerError(
-                        f"{member_label} source must stay inside its canonical project directory and end in "
-                        f"{artifact['filename']}"
-                    )
 
     def _validate_operation_manifest_identities(
         self,
         operation: dict[str, Any],
         *,
         refresh: bool = False,
+        repository_statuses: dict[str, tuple[Path, dict[str, Any]]] | None = None,
+        runtime_state: dict[str, Any] | None = None,
+        verify_preimage_root_versions: bool = True,
     ) -> None:
-        self._validate_batch_manifest_identities(operation, refresh=refresh)
-        self._validate_deploy_profile_manifest_identities(operation, refresh=refresh)
+        self._validate_batch_manifest_identities(
+            operation,
+            refresh=refresh,
+            repository_statuses=repository_statuses,
+            runtime_state=runtime_state,
+            verify_preimage_root_versions=verify_preimage_root_versions,
+        )
+        self._validate_deploy_profile_manifest_identities(
+            operation,
+            refresh=refresh,
+            repository_statuses=repository_statuses,
+        )
 
     def _assert_unit_matches_manifest_release(
         self,
@@ -2824,11 +3037,14 @@ class PhysicalManager:
         manifest_path: Path,
         *,
         label: str,
-        repository_source: bool,
+        source_requirement: str,
+        verify_root_fabric_version: bool = False,
     ) -> None:
+        if not isinstance(release, dict) or not isinstance(release.get("artifact"), dict):
+            raise ManagerError(f"{label} manifest release has no concrete artifact")
         artifact = release["artifact"]
         expected_identity = {
-            "version": release["version"],
+            "version": release.get("embedded_version", release["version"]),
             "source_commit": release["source_commit"],
             "filename": artifact["filename"],
             "sha256": artifact["sha256"].lower(),
@@ -2851,26 +3067,147 @@ class PhysicalManager:
                 f"expected {expected_identity}, found {actual_identity}"
             )
         assert isinstance(actual_artifact, dict)
-        expected_source = (
-            {
-                "type": "REPOSITORY",
-                "path": PurePosixPath(
-                    manifest_path.parent.relative_to(self.config.repository_root),
-                    "artifacts",
-                    artifact["filename"],
-                ).as_posix(),
-            }
-            if repository_source
-            else {
-                "type": "ADOPTED_TARGET",
-                "path": PurePosixPath(self.config.mods_directory, artifact["filename"]).as_posix(),
-            }
-        )
-        if actual_artifact.get("source") != expected_source:
-            raise ManagerError(
-                f"{label} source is not canonical: expected {expected_source}, "
-                f"found {actual_artifact.get('source')}"
+        if source_requirement not in {
+            "REPOSITORY",
+            "ADOPTED_TARGET",
+            "REPOSITORY_OR_ADOPTED_TARGET",
+        }:
+            raise ManagerError(f"unsupported manifest source requirement: {source_requirement}")
+        source = actual_artifact.get("source")
+        source_type = source.get("type") if isinstance(source, dict) else None
+        if source_type == "REPOSITORY" and source_requirement in {
+            "REPOSITORY",
+            "REPOSITORY_OR_ADOPTED_TARGET",
+        }:
+            source_path = self._assert_canonical_repository_release_source(
+                actual_artifact,
+                manifest_path,
+                artifact["filename"],
+                label=label,
             )
+            if verify_root_fabric_version:
+                self._assert_exact_release_root_fabric_version(
+                    source_path,
+                    expected_sha256=artifact["sha256"].lower(),
+                    expected_version=expected_identity["version"],
+                    label=label,
+                )
+            return
+        expected_source = {
+            "type": "ADOPTED_TARGET",
+            "path": PurePosixPath(self.config.mods_directory, artifact["filename"]).as_posix(),
+        }
+        if (
+            source_requirement not in {"ADOPTED_TARGET", "REPOSITORY_OR_ADOPTED_TARGET"}
+            or source != expected_source
+        ):
+            raise ManagerError(
+                f"{label} source is not canonical for {source_requirement}: "
+                f"found {source}"
+            )
+
+    def _assert_preimage_unit_root_fabric_version(
+        self,
+        unit: dict[str, Any],
+        release: dict[str, Any],
+        runtime_state: dict[str, Any],
+        *,
+        label: str,
+    ) -> None:
+        """Bind an accepted unit to its exact current physical root descriptor."""
+
+        raw_artifact = unit["artifacts"][0]
+        matches = [
+            artifact
+            for artifact in self.derive_inventory(runtime_state)
+            if artifact.deployment_id == unit["deployment_id"]
+            and artifact.filename.casefold() == raw_artifact["filename"].casefold()
+            and artifact.sha256 == raw_artifact["sha256"].lower()
+        ]
+        if len(matches) != 1:
+            raise ManagerError(f"{label} does not resolve to exactly one physical preimage artifact")
+        self._assert_exact_release_root_fabric_version(
+            self._destination(matches[0]),
+            expected_sha256=release["artifact"]["sha256"].lower(),
+            expected_version=release.get("embedded_version", release["version"]),
+            label=label,
+        )
+
+    def _assert_exact_release_root_fabric_version(
+        self,
+        source_path: Path,
+        *,
+        expected_sha256: str,
+        expected_version: str,
+        label: str,
+    ) -> None:
+        """Bind the manifest label to the root descriptor in the exact hashed JAR."""
+
+        if not source_path.exists() or not source_path.is_file():
+            raise ManagerError(f"missing artifact source for {label}: {source_path}")
+        if source_path.is_symlink():
+            raise ManagerError(f"artifact source for {label} cannot be a symbolic link: {source_path}")
+        try:
+            payload = source_path.read_bytes()
+        except OSError as exc:
+            raise ManagerError(f"cannot read {label} repository source {source_path}: {exc}") from exc
+        actual_sha256 = hashlib.sha256(payload).hexdigest()
+        if actual_sha256 != expected_sha256:
+            raise ManagerError(
+                f"SHA-256 mismatch for {label} repository source {source_path}: "
+                f"expected {expected_sha256}, found {actual_sha256}"
+            )
+        descriptor = _read_fabric_descriptor(source_path, payload=payload)
+        if descriptor.version != expected_version:
+            raise ManagerError(
+                f"embedded Fabric version mismatch for {label} repository source {source_path}: "
+                f"expected {expected_version}, found {descriptor.version}"
+            )
+
+    def _assert_canonical_repository_release_source(
+        self,
+        actual_artifact: dict[str, Any],
+        manifest_path: Path,
+        filename: str,
+        *,
+        label: str,
+    ) -> Path:
+        """Allow only the canonical artifacts path or ignored private subtree."""
+
+        source = actual_artifact.get("source")
+        if not isinstance(source, dict) or source.get("type") != "REPOSITORY":
+            raise ManagerError(
+                f"{label} must use its canonical repository/private build source"
+            )
+        relative = _safe_relative(source.get("path"), f"{label} source", allow_nested=True)
+        repository_root = Path(os.path.abspath(self.config.repository_root))
+        source_path = repository_root / relative
+        project_root = Path(os.path.abspath(manifest_path.parent))
+        canonical_artifact = project_root / "artifacts" / filename
+        private_root = project_root / "test-builds" / "private"
+        if source_path.name.casefold() != filename.casefold() or not (
+            _lexical_paths_equal(source_path, canonical_artifact)
+            or _is_lexically_within(source_path, private_root)
+        ):
+            raise ManagerError(
+                f"{label} source is not canonical; it must be the project artifact or stay inside "
+                f"the project's test-builds/private subtree and end in {filename}"
+            )
+        _assert_no_reparse_components(
+            source_path,
+            f"{label} repository source",
+            root=repository_root,
+        )
+        resolved_source = source_path.resolve(strict=False)
+        resolved_project_root = project_root.resolve(strict=False)
+        if not _is_within(resolved_source, resolved_project_root):
+            raise ManagerError(f"{label} repository source escapes its canonical project directory")
+        if _is_lexically_within(source_path, private_root) and not _is_within(
+            resolved_source,
+            private_root.resolve(strict=False),
+        ):
+            raise ManagerError(f"{label} private repository source escapes test-builds/private")
+        return resolved_source
 
     def adoption_plan(self, state: dict[str, Any] | None = None) -> PhysicalPlan:
         self._assert_no_transaction_residue()
@@ -2953,6 +3290,7 @@ class PhysicalManager:
         if (operation is None) == (desired_state is None):
             raise ManagerError("provide exactly one of operation or desired_state")
         current = self.load_repository_state()
+        planning_repository_statuses = self._current_repository_statuses()
         ledger = self._read_ledger()
         self._assert_ledger_matches_repository(ledger, current)
         if ledger["schema_version"] == 3:
@@ -2966,7 +3304,11 @@ class PhysicalManager:
         if operation is not None:
             if expected_revision is None or at is None:
                 raise ManagerError("operation transitions require expected_revision and at")
-            self._validate_operation_manifest_identities(operation, refresh=True)
+            self._validate_operation_manifest_identities(
+                operation,
+                repository_statuses=planning_repository_statuses,
+                runtime_state=current,
+            )
             pure_operation = copy.deepcopy(operation)
             planning_state = current
             if operation.get("type") == "DEPLOY_PROFILE":
@@ -3029,7 +3371,11 @@ class PhysicalManager:
             prior_ledger=ledger,
         )
         writes, retained_moves, removals, unchanged = self._plan_delta(current_artifacts, desired_artifacts)
-        dependency_resolution = self._planned_dependency_report(current_artifacts, desired_artifacts)
+        dependency_resolution = self._planned_dependency_report(
+            current_artifacts,
+            desired_artifacts,
+            repository_statuses=planning_repository_statuses,
+        )
         return PhysicalPlan(
             mode="TRANSITION",
             current_state=current,
@@ -3340,11 +3686,24 @@ class PhysicalManager:
     ) -> tuple[dict[str, Any], dict[str, Any]]:
         injector = failure_injector or (lambda _stage: None)
         self._assert_profile_not_in_use()
+        under_lock_repository_statuses = self._current_repository_statuses()
+        if plan.batch_operation is not None:
+            self._validate_operation_manifest_identities(
+                plan.batch_operation,
+                repository_statuses=under_lock_repository_statuses,
+                runtime_state=plan.current_state,
+            )
         under_lock_dependency_resolution = self._planned_dependency_report(
             plan.current_artifacts,
             plan.desired_artifacts,
+            repository_statuses=under_lock_repository_statuses,
         )
         self._assert_platform_attestation_unchanged(
+            plan.dependency_resolution,
+            under_lock_dependency_resolution,
+            phase="between planning and the under-lock pre-mutation check",
+        )
+        self._assert_runtime_dependency_policy_unchanged(
             plan.dependency_resolution,
             under_lock_dependency_resolution,
             phase="between planning and the under-lock pre-mutation check",
@@ -3436,8 +3795,16 @@ class PhysicalManager:
                     for mod_id in item.ownership_mod_ids
                 },
             )
-            committed_dependency_resolution = self._physical_dependency_report(plan.desired_artifacts)
+            committed_dependency_resolution = self._physical_dependency_report(
+                plan.desired_artifacts,
+                repository_statuses=under_lock_repository_statuses,
+            )
             self._assert_platform_attestation_unchanged(
+                under_lock_dependency_resolution,
+                committed_dependency_resolution,
+                phase="between the under-lock pre-mutation check and post-write verification",
+            )
+            self._assert_runtime_dependency_policy_unchanged(
                 under_lock_dependency_resolution,
                 committed_dependency_resolution,
                 phase="between the under-lock pre-mutation check and post-write verification",
@@ -3462,11 +3829,27 @@ class PhysicalManager:
             self._verify_title_projection(committed_state)
             injector("after_physical_verify")
 
-            # Re-read batch-bound manifest releases and recheck the runtime-state
-            # compare-and-swap source immediately before committing either
-            # ledger. The target lock serializes all manager writers.
+            # Re-read manifest releases and policy attestations, then recheck
+            # the runtime-state compare-and-swap source immediately before
+            # committing either ledger. The target lock serializes all manager
+            # writers; repository policy remains a separately observed input.
+            commit_repository_statuses = self._current_repository_statuses()
             if plan.batch_operation is not None:
-                self._validate_operation_manifest_identities(plan.batch_operation, refresh=True)
+                self._validate_operation_manifest_identities(
+                    plan.batch_operation,
+                    repository_statuses=commit_repository_statuses,
+                    runtime_state=plan.current_state,
+                    verify_preimage_root_versions=False,
+                )
+            committed_dependency_resolution = self._physical_dependency_report(
+                plan.desired_artifacts,
+                repository_statuses=commit_repository_statuses,
+            )
+            self._assert_runtime_dependency_policy_unchanged(
+                under_lock_dependency_resolution,
+                committed_dependency_resolution,
+                phase="before the ledger and runtime-state commit boundary",
+            )
             live = self.load_repository_state()
             if live != plan.current_state:
                 raise ManagerError("repository runtime state changed during physical transition")
@@ -3483,7 +3866,10 @@ class PhysicalManager:
             final_ledger = self._read_ledger()
             self._assert_ledger_matches_repository(final_ledger, final_state)
             self._verify_inventory(final_state, plan.desired_artifacts, prior_ledger=final_ledger)
-            committed_dependency_resolution = self._physical_dependency_report(plan.desired_artifacts)
+            committed_dependency_resolution = self._physical_dependency_report(
+                plan.desired_artifacts,
+                repository_statuses=commit_repository_statuses,
+            )
             self._assert_platform_attestation_unchanged(
                 under_lock_dependency_resolution,
                 committed_dependency_resolution,
@@ -3494,8 +3880,24 @@ class PhysicalManager:
             # Make launch authority the final observed external input before
             # the transaction is declared committed. A drift injected after
             # the earlier post-write scan must still restore the full preimage.
-            committed_dependency_resolution = self._physical_dependency_report(plan.desired_artifacts)
+            final_repository_statuses = self._current_repository_statuses()
+            if plan.batch_operation is not None:
+                self._validate_operation_manifest_identities(
+                    plan.batch_operation,
+                    repository_statuses=final_repository_statuses,
+                    runtime_state=plan.current_state,
+                    verify_preimage_root_versions=False,
+                )
+            committed_dependency_resolution = self._physical_dependency_report(
+                plan.desired_artifacts,
+                repository_statuses=final_repository_statuses,
+            )
             self._assert_platform_attestation_unchanged(
+                under_lock_dependency_resolution,
+                committed_dependency_resolution,
+                phase="at the final post-verification commit boundary",
+            )
+            self._assert_runtime_dependency_policy_unchanged(
                 under_lock_dependency_resolution,
                 committed_dependency_resolution,
                 phase="at the final post-verification commit boundary",
@@ -4149,6 +4551,118 @@ def _fabric_predicate_matches(version: str, predicate: str) -> bool:
     return True
 
 
+def _runtime_dependency_predicate_restrictions(
+    dependency_id: str,
+    predicate: str,
+) -> tuple[str, ...]:
+    """Classify runtime predicates which need demonstrated-incompatibility evidence."""
+
+    if dependency_id == "minecraft" and predicate.strip() in {"26.2", "=26.2"}:
+        return ()
+    restrictions: set[str] = set()
+    for raw_term in predicate.split(" "):
+        term = raw_term.strip()
+        if not term or term == "*":
+            continue
+        operator = "="
+        for candidate in _FABRIC_OPERATORS:
+            if term.startswith(candidate):
+                operator = candidate
+                term = term[len(candidate) :]
+                break
+        if "+" in term:
+            restrictions.add("SEMANTIC_BUILD_METADATA")
+        if "canary" in term.casefold():
+            restrictions.add("CANARY_SPECIFIC_VERSION")
+        parsed = _parse_fabric_semantic_version(term, store_wildcards=True)
+        if parsed is not None and any(component is None for component in parsed.components):
+            restrictions.add("VERSION_FAMILY_CEILING")
+        if operator == "=":
+            restrictions.add("EXACT_VERSION_PIN")
+        elif operator in {"<", "<=", "~", "^"}:
+            restrictions.add("UPPER_BOUND")
+    return tuple(sorted(restrictions))
+
+
+def _enforce_runtime_dependency_policy(
+    descriptors: Sequence[FabricModDescriptor],
+    policy: dict[str, Any],
+    *,
+    release_label: str,
+) -> dict[str, Any]:
+    """Verify root/nested runtime metadata against one exact release attestation."""
+
+    exceptions = {
+        (
+            item["consumer_id"],
+            item["relationship"],
+            item["dependency_id"],
+            item["predicate"],
+        ): item
+        for item in policy["exceptions"]
+    }
+    used_exceptions: set[tuple[str, str, str, str]] = set()
+    accepted_exceptions: list[dict[str, Any]] = []
+    violations: list[dict[str, Any]] = []
+    checked_predicates = 0
+    for descriptor in sorted(descriptors, key=lambda item: (item.relative_path.casefold(), item.primary_id)):
+        relationships = {
+            "depends": descriptor.depends,
+            "recommends": descriptor.recommends,
+            "suggests": descriptor.suggests,
+        }
+        for relationship, dependencies in relationships.items():
+            for dependency_id, predicates in sorted(dependencies.items()):
+                for predicate in predicates:
+                    checked_predicates += 1
+                    restrictions = _runtime_dependency_predicate_restrictions(
+                        dependency_id,
+                        predicate,
+                    )
+                    if not restrictions:
+                        continue
+                    key = (descriptor.primary_id, relationship, dependency_id, predicate)
+                    exception = exceptions.get(key)
+                    record = {
+                        "consumer_id": descriptor.primary_id,
+                        "consumer_path": descriptor.relative_path,
+                        "relationship": relationship,
+                        "dependency_id": dependency_id,
+                        "predicate": predicate,
+                        "restrictions": list(restrictions),
+                    }
+                    if exception is None:
+                        violations.append(record)
+                        continue
+                    used_exceptions.add(key)
+                    accepted_exceptions.append(
+                        {
+                            **record,
+                            "reason": exception["reason"],
+                            "regression_evidence": copy.deepcopy(exception["regression_evidence"]),
+                        }
+                    )
+    if violations:
+        raise ManagerError(
+            f"runtime dependency policy violation for {release_label}: "
+            + json.dumps(violations, sort_keys=True, separators=(",", ":"))
+            + "; use a stable provider/capability predicate or record an exact demonstrated-incompatibility exception"
+        )
+    unused = sorted(set(exceptions) - used_exceptions)
+    if unused:
+        raise ManagerError(
+            f"runtime dependency policy for {release_label} contains stale or nonmatching exceptions: "
+            + json.dumps(unused, separators=(",", ":"))
+        )
+    return {
+        "classification": "CURRENT_RELEASE_POLICY_ENFORCED",
+        "contract": policy["contract"],
+        "descriptor_count": len(descriptors),
+        "checked_predicate_count": checked_predicates,
+        "accepted_exceptions": accepted_exceptions,
+    }
+
+
 _MAX_FABRIC_MANIFEST_SIZE = 1024 * 1024
 _MAX_FABRIC_MANIFEST_COMPRESSED_SIZE = 1024 * 1024
 _MAX_NESTED_JAR_DEPTH = 4
@@ -4415,26 +4929,32 @@ def _fabric_descriptor_from_manifest(
             seen.add(item)
             provides.append(item)
 
-    depends_value = manifest.get("depends", {})
-    if not isinstance(depends_value, dict):
-        raise ManagerError(f"fabric.mod.json depends in {label} must be an object")
-    depends: dict[str, tuple[str, ...]] = {}
-    for dependency_id, raw_predicates in depends_value.items():
-        if not isinstance(dependency_id, str) or not dependency_id:
-            raise ManagerError(f"fabric.mod.json depends in {label} has an invalid dependency id")
-        if isinstance(raw_predicates, str):
-            predicates = (raw_predicates,)
-        elif isinstance(raw_predicates, list) and raw_predicates and all(
-            isinstance(item, str) for item in raw_predicates
-        ):
-            predicates = tuple(raw_predicates)
-        else:
-            raise ManagerError(
-                f"fabric.mod.json dependency {dependency_id!r} in {label} must be a string or nonempty string array"
-            )
-        for predicate in predicates:
-            _fabric_predicate_matches("0.0.0", predicate)
-        depends[dependency_id] = predicates
+    relationships: dict[str, dict[str, tuple[str, ...]]] = {}
+    for relationship in ("depends", "recommends", "suggests"):
+        raw_relationship = manifest.get(relationship, {})
+        if not isinstance(raw_relationship, dict):
+            raise ManagerError(f"fabric.mod.json {relationship} in {label} must be an object")
+        normalized: dict[str, tuple[str, ...]] = {}
+        for dependency_id, raw_predicates in raw_relationship.items():
+            if not isinstance(dependency_id, str) or not dependency_id:
+                raise ManagerError(
+                    f"fabric.mod.json {relationship} in {label} has an invalid dependency id"
+                )
+            if isinstance(raw_predicates, str):
+                predicates = (raw_predicates,)
+            elif isinstance(raw_predicates, list) and raw_predicates and all(
+                isinstance(item, str) for item in raw_predicates
+            ):
+                predicates = tuple(raw_predicates)
+            else:
+                raise ManagerError(
+                    f"fabric.mod.json {relationship} dependency {dependency_id!r} in {label} "
+                    "must be a string or nonempty string array"
+                )
+            for predicate in predicates:
+                _fabric_predicate_matches("0.0.0", predicate)
+            normalized[dependency_id] = predicates
+        relationships[relationship] = normalized
 
     return FabricModDescriptor(
         path=path,
@@ -4443,7 +4963,9 @@ def _fabric_descriptor_from_manifest(
         primary_id=primary_id,
         provides=tuple(provides),
         version=version,
-        depends=depends,
+        depends=relationships["depends"],
+        recommends=relationships["recommends"],
+        suggests=relationships["suggests"],
         environment=environment,
         environment_eligible=environment_eligible,
         managed_project_uuid=artifact.project_uuid if artifact is not None else None,
@@ -4460,6 +4982,7 @@ def _fabric_descriptor_from_manifest(
 def _read_fabric_descriptor(
     path: Path,
     *,
+    payload: bytes | None = None,
     strict_provides: bool = False,
     relative_path: str | None = None,
     artifact: ManagedArtifact | None = None,
@@ -4467,7 +4990,7 @@ def _read_fabric_descriptor(
     label = str(path)
     budget = _NestedJarTraversalBudget()
     try:
-        with zipfile.ZipFile(path) as archive:
+        with zipfile.ZipFile(path if payload is None else io.BytesIO(payload)) as archive:
             manifest, _entries = _read_fabric_manifest_from_archive(
                 archive,
                 label,

@@ -42,6 +42,7 @@ CURRENT_RELEASE_DEPLOYMENT_STATES = {
 }
 
 PROJECT_ID_RE = re.compile(r"^[a-z0-9]+(?:[.-][a-z0-9]+)*$")
+FABRIC_MOD_ID_RE = re.compile(r"^[a-z][a-z0-9_.-]*$")
 COMMIT_RE = re.compile(r"^[0-9a-f]{40}$")
 SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
 RFC3339_UTC_RE = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,9})?Z$")
@@ -139,6 +140,13 @@ def _project_id(value: Any, path: str) -> str:
     return value
 
 
+def _fabric_mod_id(value: Any, path: str) -> str:
+    value = _nonblank(value, path)
+    if not FABRIC_MOD_ID_RE.fullmatch(value):
+        _fail(path, "must be a lowercase Fabric mod ID")
+    return value
+
+
 def _commit(value: Any, path: str) -> str:
     value = _nonblank(value, path)
     if not COMMIT_RE.fullmatch(value):
@@ -210,15 +218,82 @@ def _artifact(value: Any, path: str) -> dict[str, Any]:
     return value
 
 
+def _runtime_dependency_policy(value: Any, path: str) -> dict[str, Any]:
+    value = _object(value, path, {"contract", "exceptions"})
+    if value["contract"] != "CAPABILITY_OR_PROVIDER":
+        _fail(f"{path}.contract", "must equal CAPABILITY_OR_PROVIDER")
+    exceptions = value["exceptions"]
+    if not isinstance(exceptions, list):
+        _fail(f"{path}.exceptions", "must be an array")
+    seen: set[tuple[str, str, str, str]] = set()
+    for index, exception in enumerate(exceptions):
+        exception_path = f"{path}.exceptions[{index}]"
+        exception = _object(
+            exception,
+            exception_path,
+            {"consumer_id", "relationship", "dependency_id", "predicate", "reason", "regression_evidence"},
+        )
+        consumer_id = _fabric_mod_id(exception["consumer_id"], f"{exception_path}.consumer_id")
+        relationship = _enum(
+            exception["relationship"],
+            f"{exception_path}.relationship",
+            {"depends", "recommends", "suggests"},
+        )
+        dependency_id = _fabric_mod_id(exception["dependency_id"], f"{exception_path}.dependency_id")
+        predicate = _nonblank(exception["predicate"], f"{exception_path}.predicate")
+        _nonblank(exception["reason"], f"{exception_path}.reason")
+        _text_list(exception["regression_evidence"], f"{exception_path}.regression_evidence", minimum=1)
+        key = (consumer_id, relationship, dependency_id, predicate)
+        if key in seen:
+            _fail(f"{path}.exceptions", f"contains duplicate predicate exception: {key}")
+        seen.add(key)
+    return value
+
+
 def _release(value: Any, path: str) -> dict[str, Any] | None:
     if value is None:
         return None
-    value = _object(value, path, {"version", "artifact", "source_commit"})
+    if not isinstance(value, dict):
+        _fail(path, "must be an object")
+    required = {"version", "artifact", "source_commit"}
+    allowed = required | {"embedded_version", "runtime_dependency_policy"}
+    missing = sorted(required - set(value))
+    extra = sorted(set(value) - allowed)
+    if missing:
+        _fail(path, f"missing keys: {', '.join(missing)}")
+    if extra:
+        _fail(path, f"unknown keys: {', '.join(extra)}")
     _nonblank(value["version"], f"{path}.version")
+    if "embedded_version" in value:
+        _nonblank(value["embedded_version"], f"{path}.embedded_version")
     if value["artifact"] is not None:
         _artifact(value["artifact"], f"{path}.artifact")
     _commit(value["source_commit"], f"{path}.source_commit")
+    if "runtime_dependency_policy" in value:
+        if value["artifact"] is None:
+            _fail(f"{path}.runtime_dependency_policy", "requires a concrete artifact")
+        _runtime_dependency_policy(value["runtime_dependency_policy"], f"{path}.runtime_dependency_policy")
     return value
+
+
+def _release_identity(value: dict[str, Any] | None) -> tuple[Any, Any, Any, Any] | None:
+    """Return the pre-existing artifact identity used for grandfathering.
+
+    ``embedded_version`` is additive evidence which binds a logical release
+    label to the packaged Fabric version.  Adding that truthful evidence does
+    not create new bytes and therefore must not turn a historical artifact into
+    a newly built candidate which requires a dependency-policy attestation.
+    """
+
+    if value is None:
+        return None
+    artifact = value["artifact"]
+    return (
+        value["version"],
+        None if artifact is None else artifact["filename"],
+        None if artifact is None else artifact["sha256"],
+        value["source_commit"],
+    )
 
 
 def validate_status(data: dict[str, Any], project_directory: Path | None = None) -> dict[str, Any]:
@@ -373,6 +448,25 @@ def validate_status_transition(previous: dict[str, Any], current: dict[str, Any]
     if before_identity["name"] != after_identity["name"] and before_identity["name"] not in after_identity["legacy_names"]:
         _fail("$.identity.legacy_names", "a renamed project must retain its previous name")
 
+    before_release = previous["state"]["releases"]["current"]
+    after_release = current["state"]["releases"]["current"]
+    if after_release is not None and after_release["artifact"] is not None:
+        policy_present = "runtime_dependency_policy" in after_release
+        if _release_identity(before_release) != _release_identity(after_release) and not policy_present:
+            _fail(
+                "$.state.releases.current.runtime_dependency_policy",
+                "is required whenever the exact current artifact identity changes",
+            )
+        if (
+            before_release is not None
+            and "runtime_dependency_policy" in before_release
+            and not policy_present
+        ):
+            _fail(
+                "$.state.releases.current.runtime_dependency_policy",
+                "cannot be removed from an attested current release",
+            )
+
     before_validation = previous["state"]["validation"]
     after_validation = current["state"]["validation"]
     externally_recordable_results = {"RUNTIME_PASS", "RUNTIME_FAIL", "INCONCLUSIVE"}
@@ -386,7 +480,7 @@ def validate_status_transition(previous: dict[str, Any], current: dict[str, Any]
         if (
             before_release is None
             or before_release["artifact"] is None
-            or after_release != before_release
+            or _release_identity(after_release) != _release_identity(before_release)
         ):
             _fail(
                 "$.state.releases.current",
@@ -592,10 +686,15 @@ def _release_matches_runtime_unit(release: dict[str, Any] | None, unit: dict[str
     if release is None or release.get("artifact") is None:
         return False
     artifact = release["artifact"]
-    return release.get("source_commit") == unit.get("source_commit") and any(
-        candidate.get("filename") == artifact.get("filename")
-        and candidate.get("sha256") == artifact.get("sha256")
-        for candidate in unit.get("artifacts", [])
+    packaged_version = release.get("embedded_version", release.get("version"))
+    return (
+        packaged_version == unit.get("version")
+        and release.get("source_commit") == unit.get("source_commit")
+        and any(
+            candidate.get("filename") == artifact.get("filename")
+            and candidate.get("sha256") == artifact.get("sha256")
+            for candidate in unit.get("artifacts", [])
+        )
     )
 
 

@@ -180,6 +180,34 @@ fails closed. Post-deployment verification repeats both the physical JAR graph
 and builtin attestation; readiness is never committed unless hash inventory,
 dependency graph, and launch authority all report `VERIFIED`.
 
+### Release-scoped runtime dependency policy
+
+Every new or changed current artifact declares
+`state.releases.current.runtime_dependency_policy` with the
+`CAPABILITY_OR_PROVIDER` contract. During each preflight and physical graph
+scan, the manager binds that record to the manifest's exact current filename
+and SHA-256, then checks `depends`, `recommends`, and `suggests` in the root
+`fabric.mod.json` and every declared nested Fabric JAR. `*` and lower-bound-only
+provider predicates are valid, as is the repository's exact `minecraft`
+`=26.2` target. Exact pins, Canary-specific versions, semantic build metadata,
+wildcard/version-family ceilings, and upper bounds fail before mutation unless
+an exception matches the exact consumer ID, relationship, dependency ID, and
+predicate. Every exception carries a reason and concrete regression evidence;
+unused or stale exceptions also fail closed.
+
+An exact release without this field is reported as grandfathered. That permits
+unchanged accepted or runtime-tested bytes to be promoted, retained, and
+verified without rewriting their metadata. Project transition validation
+requires the attestation as soon as the current logical version, filename,
+SHA-256, or source checkpoint changes, and the attestation cannot later be
+removed. Adding a truthful `embedded_version` to bind an unchanged logical
+release label to its packaged Fabric version does not manufacture new bytes or
+end grandfathering. Exact
+Gradle/build/test inputs remain project-log validation baselines, not implicit
+runtime predicates. Provider selection continues to use the dependency's stable
+ID, including a stable alias supplied by a unified JAR's `provides`; a newer
+compatible provider is not rejected merely for being newer.
+
 `PROMOTE_UNTESTED_CANDIDATE` is the narrow exception for an explicitly
 user-approved successor that must enter the accepted baseline without claiming
 runtime evidence or occupying a test slot. It requires the exact authorization
@@ -215,20 +243,43 @@ the same project; omitting it or setting it to `null` permits only a new
 accepted project. A byte-identical external successor still replaces the exact
 accepted version/source/deployment/artifact identity and refreshes
 `accepted_at`, but does not increment the composition-based Stack number. The
-production CLI binds every candidate's project UUID/ID, version, filename,
-SHA-256, and source checkpoint to that project's current manifest release.
-Candidate bytes must come from the canonical tracked
-`projects/<project>/artifacts/<filename>` (or equivalent canonical project
-directory) path. The project controls preserve a replaced accepted release as
-rollback/provenance where applicable. If a batch member separately requests a
+production CLI binds every candidate's project UUID/ID, packaged version,
+filename, SHA-256, and source checkpoint to that project's current manifest
+release. It hashes and parses the same candidate JAR byte snapshot, requiring
+the root `fabric.mod.json` version to equal `embedded_version` when declared or
+the logical release version otherwise.
+Candidate bytes must come from the same project's canonical
+`artifacts/<filename>` path or its established ignored
+`test-builds/private/**/<filename>` subtree. Both forms are normalized,
+project-contained, basename-bound, and rejected if any existing component is a
+symlink, junction, or reparse point. The project controls preserve a replaced
+accepted release as rollback/provenance where applicable. If a batch member separately requests a
 target-local retained rollback, it must match that manifest's rollback release
 exactly; a project with no manifest rollback cannot declare one. A manifest
 rollback does not by itself require target-local retention;
 `retained_rollbacks` remains optional for ordinary repository-backed rollback
-history. The manager reloads the affected current manifests immediately before
-committing the ledger and runtime state. It aborts with physical rollback if a
-bound current release has drifted; the runtime-state revision CAS independently
-rejects accepted-predecessor or slot drift.
+history.
+
+A member may also declare `absorbs_accepted_deployment_ids` when a unified
+successor deliberately replaces a separate accepted provider. Every ID must
+name a unique accepted deployment from another project, may not also be a
+direct replacement, and may not still be referenced by either test slot. The
+absorbing successor must cover every ownership key of the removed deployment.
+Absorption refuses to discard that project's target-local retained rollback,
+binds the exact accepted unit to the absorbed project's manifest `accepted`
+release, and verifies the absorbed physical preimage's exact bytes and root
+Fabric version before mutation. A newly retained rollback receives the same
+pre-mutation byte/version binding. The operation removes absorbed providers
+atomically with the successor promotion and increments the Stack number once
+per absorbed deployment in addition to any new or byte-changed promoted
+members.
+
+The manager reloads operation-bound releases and every policy attestation used
+by the proposed enabled graph during planning, under-lock preflight,
+post-deployment pre-commit, and final verification. It aborts with physical
+rollback if either exact identity or policy-only content drifts; the
+runtime-state revision CAS independently rejects accepted-predecessor or slot
+drift.
 
 A retained rollback is target-local history, not an active baseline artifact.
 Its unit uses the same project UUID/ID, a `FROZEN_LEGACY` identity, and an exact

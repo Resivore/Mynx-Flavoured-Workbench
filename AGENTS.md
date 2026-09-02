@@ -38,6 +38,15 @@ Every project task advances the manifest revision exactly once, updates synchron
 - Preserve original behavior unless a change is requested. Prefer narrow compatibility fixes to broad rewrites.
 - Match investigation, documentation, testing, and build effort to the task's risk. Tiny follow-ups do not justify unrelated repository-wide audits.
 
+## Runtime dependency policy
+
+- Preserve release and evidence identity exactly: version, filename, SHA-256, source commit, deployment UUID, and accepted-predecessor identity are independent of dependency eligibility.
+- Runtime metadata normally depends on a stable Fabric mod ID, `provides` alias, or other capability without pinning the exact version used during development. Exact Gradle, build, fixture, and test inputs may remain pinned for reproducibility, but record them separately as validation baselines in the project log or structured validation metadata; they are not runtime requirements by default.
+- Minecraft may remain exactly targeted to `26.2`. Fabric Loader, Fabric API, Java, and other runtime providers may declare a genuine minimum floor. Do not place exact Canary versions, semantic build metadata, arbitrary version-family ceilings, or speculative upper bounds in `depends`, `recommends`, or `suggests` merely because those versions were tested.
+- An exact pin or upper bound outside the Minecraft exception is allowed only for a demonstrated incompatibility. The current release's `runtime_dependency_policy.exceptions` must bind the exact consumer ID, relationship, dependency ID, and predicate, and must record both the reason and concrete regression evidence.
+- Every new or changed current artifact must carry the release-scoped `runtime_dependency_policy` attestation. The Test Instance Manager enforces it across the packaged root `fabric.mod.json` and every declared nested Fabric JAR. An unchanged release without the field is grandfathered; promotion or evidence updates do not require repackaging, and the next real successor must adopt the policy.
+- Stable provider aliases are compatibility contracts. A compatible future provider must not be rejected only because its version is newer, and replacing a standalone provider with a unified JAR remains valid when the unified JAR declares the stable alias in `provides`.
+
 ## Runtime model
 
 The physical runtime profile is an accepted baseline plus exactly two independent experimental slots, A and B. An occupied slot is one atomic testing cohort containing one or more current-manifest project members. Every member retains its own project/deployment UUIDs, version, artifact identity, source checkpoint, accepted-predecessor replacement, dependency overrides, and independent `UNTESTED`, `PASS`, `FAIL`, or `INCONCLUSIVE` result; only the slot identity, physical deployment state, deployment timestamp, ready-verification timestamp, and filesystem transaction are shared. Never collapse member results into a slot aggregate or attribute one member's artifacts/evidence to another.

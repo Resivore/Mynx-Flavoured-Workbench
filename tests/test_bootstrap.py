@@ -547,6 +547,128 @@ class StatusContractTests(unittest.TestCase):
                 with self.assertRaises(ValidationError):
                     validate_status_transition(before, changed)
 
+    def test_changed_artifact_requires_release_scoped_runtime_dependency_policy(self) -> None:
+        before = planned_manifest("alpha", "Alpha")
+        before["definition"]["lifecycle"] = "ACTIVE"
+        before["state"]["releases"]["current"] = {
+            "version": "0.1.0-canary1",
+            "artifact": {"filename": "alpha-c1.jar", "sha256": "1" * 64},
+            "source_commit": "c" * 40,
+        }
+        after = advance_manifest(before)
+        after["state"]["releases"]["current"] = {
+            "version": "0.1.0-canary2",
+            "artifact": {"filename": "alpha-c2.jar", "sha256": "2" * 64},
+            "source_commit": "d" * 40,
+        }
+        with self.assertRaisesRegex(ValidationError, "runtime_dependency_policy.*required"):
+            validate_status_transition(before, after)
+
+        after["state"]["releases"]["current"]["runtime_dependency_policy"] = {
+            "contract": "CAPABILITY_OR_PROVIDER",
+            "exceptions": [],
+        }
+        validate_status_transition(before, after)
+
+        removal = copy.deepcopy(after)
+        removal["synchronization"].update(
+            revision=after["synchronization"]["revision"] + 1,
+            activity_at=TIME_3,
+            updated_at=TIME_3,
+            last_codex_at=TIME_3,
+            source_commit="e" * 40,
+        )
+        del removal["state"]["releases"]["current"]["runtime_dependency_policy"]
+        with self.assertRaisesRegex(ValidationError, "cannot be removed"):
+            validate_status_transition(after, removal)
+
+    def test_unchanged_historical_bytes_remain_grandfathered_during_promotion(self) -> None:
+        before = planned_manifest("alpha", "Alpha")
+        before["definition"]["lifecycle"] = "TESTING"
+        release = {
+            "version": "0.1.0-canary1",
+            "artifact": {"filename": "alpha-c1.jar", "sha256": "1" * 64},
+            "source_commit": "c" * 40,
+        }
+        before["state"]["releases"]["current"] = copy.deepcopy(release)
+        after = advance_manifest(before)
+        after["definition"]["lifecycle"] = "ACCEPTED"
+        after["state"]["releases"].update(
+            accepted=copy.deepcopy(release),
+            accepted_current="CURRENT_IS_ACCEPTED",
+        )
+        validate_status_transition(before, after)
+
+    def test_additive_embedded_version_preserves_grandfathering_and_external_identity(self) -> None:
+        before = planned_manifest("alpha", "Alpha")
+        before["definition"]["lifecycle"] = "ACTIVE"
+        before["state"]["releases"]["current"] = {
+            "version": "Private Canary 10",
+            "artifact": {"filename": "alpha-c10-private.jar", "sha256": "1" * 64},
+            "source_commit": "c" * 40,
+        }
+        after = advance_manifest(before)
+        after["state"]["releases"]["current"]["embedded_version"] = "0.1.0-canary9"
+        after["state"]["validation"]["runtime"] = "RUNTIME_PASS"
+
+        validate_status_transition(before, after)
+        self.assertNotIn(
+            "runtime_dependency_policy",
+            after["state"]["releases"]["current"],
+        )
+
+    def test_runtime_dependency_exception_shape_requires_exact_regression_evidence(self) -> None:
+        manifest = planned_manifest("alpha", "Alpha")
+        manifest["definition"]["lifecycle"] = "ACTIVE"
+        manifest["state"]["releases"]["current"] = {
+            "version": "0.1.0-canary2",
+            "artifact": {"filename": "alpha-c2.jar", "sha256": "2" * 64},
+            "source_commit": "d" * 40,
+            "runtime_dependency_policy": {
+                "contract": "CAPABILITY_OR_PROVIDER",
+                "exceptions": [
+                    {
+                        "consumer_id": "alpha",
+                        "relationship": "depends",
+                        "dependency_id": "provider_api",
+                        "predicate": "<2.0.0-",
+                        "reason": "Provider 2 removed the required API.",
+                        "regression_evidence": ["Focused provider-2 fixture fails initialization."],
+                    }
+                ],
+            },
+        }
+        validate_status(manifest)
+        manifest["state"]["releases"]["current"]["runtime_dependency_policy"]["exceptions"][0][
+            "regression_evidence"
+        ] = []
+        with self.assertRaisesRegex(ValidationError, "regression_evidence"):
+            validate_status(manifest)
+
+    def test_runtime_dependency_policy_requires_concrete_artifact_in_validator_and_schema(self) -> None:
+        manifest = planned_manifest("alpha", "Alpha")
+        manifest["definition"]["lifecycle"] = "ACTIVE"
+        manifest["state"]["releases"]["current"] = {
+            "version": "0.1.0-canary1",
+            "artifact": None,
+            "source_commit": "c" * 40,
+            "runtime_dependency_policy": {
+                "contract": "CAPABILITY_OR_PROVIDER",
+                "exceptions": [],
+            },
+        }
+        with self.assertRaisesRegex(ValidationError, "requires a concrete artifact"):
+            validate_status(manifest)
+
+        release_schema = load_json(ROOT / "schemas" / "workbench-status.schema.json")["$defs"]["release"]
+        self.assertEqual(
+            {
+                "if": {"required": ["runtime_dependency_policy"]},
+                "then": {"properties": {"artifact": {"$ref": "#/$defs/artifact"}}},
+            },
+            release_schema["allOf"][0],
+        )
+
     def test_slot_runtime_result_does_not_change_testing_lifecycle(self) -> None:
         unit = deployment_unit("alpha")
         manifest = planned_manifest("alpha", "Alpha", uuid_value=unit["project_uuid"])
@@ -1857,6 +1979,39 @@ class SheetPublisherTests(unittest.TestCase):
         self.assertEqual(1, len(events_2))
         self.assertNotEqual(events_1[0]["event_id"], events_2[0]["event_id"])
         self.assertEqual(first["state"], second["state"])
+
+    def test_revision_one_artifact_requires_runtime_dependency_policy_attestation(self) -> None:
+        path = "projects/alpha/WORKBENCH_STATUS.json"
+        manifest = planned_manifest("alpha", "Alpha")
+        manifest["definition"]["lifecycle"] = "ACTIVE"
+        manifest["state"]["releases"]["current"] = {
+            "version": "0.1.0-canary1",
+            "artifact": {"filename": "alpha-c1.jar", "sha256": "1" * 64},
+            "source_commit": "c" * 40,
+        }
+        with self.assertRaisesRegex(ValidationError, "revision-1 current artifact.*runtime_dependency_policy"):
+            build_events(
+                {},
+                {path: manifest},
+                repository=self.config["repository"],
+                ref=self.config["authoritative_ref"],
+                publication_commit="d" * 40,
+                config=self.config,
+            )
+
+        manifest["state"]["releases"]["current"]["runtime_dependency_policy"] = {
+            "contract": "CAPABILITY_OR_PROVIDER",
+            "exceptions": [],
+        }
+        events = build_events(
+            {},
+            {path: manifest},
+            repository=self.config["repository"],
+            ref=self.config["authoritative_ref"],
+            publication_commit="d" * 40,
+            config=self.config,
+        )
+        self.assertEqual([1], [event["record"]["revision"] for event in events])
 
     def test_only_frozen_projects_may_adopt_a_preserved_initial_revision(self) -> None:
         path = "projects/nibaru/WORKBENCH_STATUS.json"

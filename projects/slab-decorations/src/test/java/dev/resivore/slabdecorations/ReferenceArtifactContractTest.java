@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
@@ -17,10 +18,8 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 final class ReferenceArtifactContractTest {
-    private static final String NIBARU_SHA256 =
-            "8DFB6E4F55ACF021118D022D99EC9A78CB2C74C13AD469BAB58A68734969C7B6";
-    private static final String CNM_INTEGRATION_SHA256 =
-            "04EB0E22E7F5D9F37EB9BA9E72C1FA3D767BDDED5BF7A7CAA4C060CAA7ACFCF2";
+    private static final String BGE_SHA256 =
+            "1A4E4D1CD9C8709720EC84975E70CAFFB5552AC676537B9BBAE42DCA96567E87";
     private static final String CNM_UPSTREAM_SHA256 =
             "41A925E70D5E6E8C098BEA7DC88C44486AED46724E35CB2FA4B1622B2A4DBCCE";
     private static final String TERRAIN_SLABS_SHA256 =
@@ -28,24 +27,21 @@ final class ReferenceArtifactContractTest {
 
     @Test
     void exactReferenceArtifactsAndRequiredCanonicalSeamsArePresent() throws Exception {
-        Path nibaru = reference("nibaruReferenceJar");
-        Path integration = reference("cnmIntegrationReferenceJar");
+        Path bge = reference("bgeReferenceJar");
         Path upstream = reference("cnmUpstreamReferenceJar");
         Path terrainSlabs = reference("terrainSlabsReferenceJar");
 
-        assertEquals(NIBARU_SHA256, sha256(nibaru), "accepted Nibaru artifact drifted");
-        assertEquals(CNM_INTEGRATION_SHA256, sha256(integration), "accepted CNM integration artifact drifted");
+        assertEquals(BGE_SHA256, sha256(bge), "BGE C58 validation baseline drifted");
         assertEquals(CNM_UPSTREAM_SHA256, sha256(upstream), "pristine CNM dependency drifted");
         assertEquals(TERRAIN_SLABS_SHA256, sha256(terrainSlabs), "pristine Terrain Slabs reference drifted");
 
-        assertEntries(nibaru, List.of(
+        assertEntries(bge, List.of(
                 "games/twinhead/moreslabsstairsandwalls/api/material/NibaruMaterialProfiles.class",
                 "games/twinhead/moreslabsstairsandwalls/api/material/DerivedMaterialTraits.class",
-                "games/twinhead/moreslabsstairsandwalls/mixin/PlantBlockMixin.class"
-        ));
-        assertEntries(integration, List.of(
+                "games/twinhead/moreslabsstairsandwalls/mixin/PlantBlockMixin.class",
                 "dev/aero/cnmterraincompat/NibaruProviderAdapter.class"
         ));
+        assertBgeProviderIdentity(bge);
         assertEntries(terrainSlabs, List.of(
                 "net/countered/terrainslabs/mixin/ontop/place/VegetationBlockMixin.class",
                 "net/countered/terrainslabs/mixin/ontop/render/MixinBlockStateBase.class",
@@ -79,6 +75,23 @@ final class ReferenceArtifactContractTest {
             for (String entry : expected) {
                 assertNotNull(jar.getJarEntry(entry), () -> jarPath.getFileName() + " is missing " + entry);
             }
+        }
+    }
+
+    private static void assertBgeProviderIdentity(Path jarPath) throws IOException {
+        try (JarFile jar = new JarFile(jarPath.toFile())) {
+            var metadataEntry = jar.getJarEntry("fabric.mod.json");
+            assertNotNull(metadataEntry, "BGE C58 is missing its root fabric.mod.json");
+            String metadata;
+            try (InputStream input = jar.getInputStream(metadataEntry)) {
+                metadata = new String(input.readAllBytes(), StandardCharsets.UTF_8);
+            }
+            assertTrue(metadata.contains("\"id\": \"cnm_terrain_slabs_compat\""),
+                    "BGE C58 primary provider identity drifted");
+            assertTrue(metadata.contains("\"version\": \"4.2.2-bge.canary58.glass-corner-uv+26.2\""),
+                    "BGE C58 embedded version drifted");
+            assertTrue(metadata.contains("\"provides\": [\"more_slabs_stairs_and_walls\"]"),
+                    "BGE C58 no longer provides the stable Nibaru identity");
         }
     }
 }

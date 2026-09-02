@@ -15,12 +15,7 @@ repositories {
 }
 
 configurations {
-    nibaruReference {
-        canBeConsumed = false
-        canBeResolved = true
-        transitive = false
-    }
-    cnmIntegrationReference {
+    bgeReference {
         canBeConsumed = false
         canBeResolved = true
         transitive = false
@@ -40,25 +35,30 @@ configurations {
 def workbenchRoot = providers.gradleProperty('workbench_root')
         .orElse(rootProject.projectDir.parentFile.parentFile.absolutePath)
         .get()
-def nibaruReferenceJar = new File(workbenchRoot, 'artifacts/canaries/nibaru-26.2/canary41-pale-recipe-fix/more-slabs-stairs-and-walls-4.2.0+26.2-port-canary41-pale-recipe-fix.jar')
-def cnmIntegrationReferenceJar = new File(workbenchRoot, 'projects/test-instance-manager/accepted-artifacts/cnm-nibaru-integration-0.5.46-nibaru-cnm-canary1.36-pale-coverage.jar')
-def cnmUpstreamReferenceJar = new File(workbenchRoot, 'originals/mods/clutternomore-2.0.7+26.2-fabric.jar')
-def terrainSlabsReferenceJar = new File(workbenchRoot, 'originals/mods/Terrain Slabs v3.3.2-26.2.jar')
+def referenceLibraryRoot = providers.gradleProperty('reference_library_root')
+        .orElse(workbenchRoot)
+        .get()
+def bgeReferenceJar = new File(workbenchRoot, 'projects/block-geometry-extensions/artifacts/cnm-nibaru-integration-4.2.2-bge.canary58.glass-corner-uv+26.2.jar')
+def cnmUpstreamReferenceJar = new File(referenceLibraryRoot, 'originals/mods/clutternomore-2.0.7+26.2-fabric.jar')
+def terrainSlabsReferenceJar = new File(referenceLibraryRoot, 'originals/mods/Terrain Slabs v3.3.2-26.2.jar')
+def predecessorArtifactJar = layout.projectDirectory.file('artifacts/slab-decorations-0.1.0-canary2.jar')
+def preservedResourcePaths = [
+        'slab_decorations.mixins.json',
+        'slab_decorations.client.mixins.json'
+]
 
 dependencies {
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
     implementation "net.fabricmc:fabric-loader:${project.loader_version}"
     implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
 
-    compileOnly files(nibaruReferenceJar)
-    runtimeOnly files(nibaruReferenceJar)
+    compileOnly files(bgeReferenceJar)
+    runtimeOnly files(bgeReferenceJar)
 
-    // These are isolated-fixture runtime inputs only. Main code consumes no CNM implementation API.
-    runtimeOnly files(cnmIntegrationReferenceJar)
+    // This is an isolated-fixture runtime input only. Main code consumes no CNM implementation API.
     runtimeOnly files(cnmUpstreamReferenceJar)
 
-    nibaruReference files(nibaruReferenceJar)
-    cnmIntegrationReference files(cnmIntegrationReferenceJar)
+    bgeReference files(bgeReferenceJar)
     cnmUpstreamReference files(cnmUpstreamReferenceJar)
     terrainSlabsReference files(terrainSlabsReferenceJar)
 
@@ -79,8 +79,22 @@ fabricApi {
 
 processResources {
     inputs.property 'version', project.version
+    inputs.file(predecessorArtifactJar)
     filesMatching('fabric.mod.json') {
         expand 'version': project.version
+    }
+    doLast {
+        new java.util.zip.ZipFile(predecessorArtifactJar.asFile).withCloseable { predecessor ->
+            preservedResourcePaths.each { path ->
+                def entry = predecessor.getEntry(path)
+                if (entry == null) {
+                    throw new GradleException("Predecessor artifact is missing preserved resource ${path}")
+                }
+                predecessor.getInputStream(entry).withCloseable { input ->
+                    new File(destinationDir, path).withOutputStream { output -> output << input }
+                }
+            }
+        }
     }
 }
 
@@ -91,14 +105,12 @@ tasks.withType(JavaCompile).configureEach {
 test {
     useJUnitPlatform()
     inputs.files(
-            configurations.nibaruReference,
-            configurations.cnmIntegrationReference,
+            configurations.bgeReference,
             configurations.cnmUpstreamReference,
             configurations.terrainSlabsReference
     )
     doFirst {
-        systemProperty 'nibaruReferenceJar', configurations.nibaruReference.singleFile.absolutePath
-        systemProperty 'cnmIntegrationReferenceJar', configurations.cnmIntegrationReference.singleFile.absolutePath
+        systemProperty 'bgeReferenceJar', configurations.bgeReference.singleFile.absolutePath
         systemProperty 'cnmUpstreamReferenceJar', configurations.cnmUpstreamReference.singleFile.absolutePath
         systemProperty 'terrainSlabsReferenceJar', configurations.terrainSlabsReference.singleFile.absolutePath
     }

@@ -30,7 +30,9 @@ from tools.test_instance_manager.manager import (
     PlatformAttestation,
     PhysicalManager,
     _NestedJarTraversalBudget,
+    _enforce_runtime_dependency_policy,
     _fabric_predicate_matches,
+    _runtime_dependency_predicate_restrictions,
     _read_fabric_descriptor_tree,
     _read_fabric_manifest_from_archive,
     _windows_processes_using_profile,
@@ -53,7 +55,10 @@ def descriptor(
     *,
     provides: tuple[str, ...] = (),
     depends: dict[str, tuple[str, ...]] | None = None,
+    recommends: dict[str, tuple[str, ...]] | None = None,
+    suggests: dict[str, tuple[str, ...]] | None = None,
     project_id: str | None = None,
+    root_container_sha256: str | None = None,
 ) -> FabricModDescriptor:
     return FabricModDescriptor(
         path=Path(filename),
@@ -63,10 +68,14 @@ def descriptor(
         provides=provides,
         version=version,
         depends=depends or {},
+        recommends=recommends or {},
+        suggests=suggests or {},
         managed_project_uuid=("00000000-0000-4000-8000-" + ("1" if project_id else "0") * 12),
         managed_project_id=project_id,
         managed_deployment_id=("00000000-0000-4000-8000-" + ("2" if project_id else "0") * 12),
         managed_artifact_id=("00000000-0000-4000-8000-" + ("3" if project_id else "0") * 12),
+        root_container_filename=filename,
+        root_container_sha256=root_container_sha256,
     )
 
 
@@ -103,6 +112,8 @@ def fabric_mod_jar_bytes(
     *,
     provides: tuple[str, ...] = (),
     depends: dict[str, str | list[str]] | None = None,
+    recommends: dict[str, str | list[str]] | None = None,
+    suggests: dict[str, str | list[str]] | None = None,
     declared_paths: tuple[str, ...] = (),
     nested_entries: tuple[tuple[str, bytes], ...] = (),
     payload: bytes | None = None,
@@ -122,6 +133,10 @@ def fabric_mod_jar_bytes(
     }
     if environment is not _ENVIRONMENT_UNSET:
         manifest["environment"] = environment
+    if recommends is not None:
+        manifest["recommends"] = recommends
+    if suggests is not None:
+        manifest["suggests"] = suggests
     with zipfile.ZipFile(output, "w", compression=zipfile.ZIP_STORED) as archive:
         archive.writestr(
             "fabric.mod.json",
@@ -399,6 +414,265 @@ class FabricPredicateTests(unittest.TestCase):
         self.assertFalse(_fabric_predicate_matches("1.2.3.5-", "1.2.3.4.x"))
 
 
+class RuntimeDependencyPolicyTests(unittest.TestCase):
+    @staticmethod
+    def policy(*exceptions: dict[str, object]) -> dict[str, object]:
+        return {
+            "contract": "CAPABILITY_OR_PROVIDER",
+            "exceptions": list(exceptions),
+        }
+
+    def test_capability_alias_and_genuine_minimum_floors_are_allowed(self) -> None:
+        slab = descriptor(
+            "slab-c3.jar",
+            "slab_decorations",
+            "0.1.0-canary3",
+            depends={
+                "minecraft": ("=26.2",),
+                "fabricloader": (">=0.19.3",),
+                "fabric-api": (">=0.157.0",),
+                "java": (">=25",),
+                "more_slabs_stairs_and_walls": ("*",),
+            },
+            suggests={
+                "clutternomore": ("*",),
+                "cnm_terrain_slabs_compat": ("*",),
+            },
+            project_id="slab-decorations",
+        )
+        result = _enforce_runtime_dependency_policy(
+            [slab],
+            self.policy(),
+            release_label="slab-decorations/slab-c3.jar",
+        )
+        self.assertEqual("CURRENT_RELEASE_POLICY_ENFORCED", result["classification"])
+        self.assertEqual(7, result["checked_predicate_count"])
+        self.assertEqual([], result["accepted_exceptions"])
+
+    def test_exact_canary_build_metadata_ceiling_and_family_ranges_need_evidence(self) -> None:
+        cases = {
+            "=" + C58: {"CANARY_SPECIFIC_VERSION", "EXACT_VERSION_PIN", "SEMANTIC_BUILD_METADATA"},
+            "<5.0.0-": {"UPPER_BOUND"},
+            "2.0.x": {"EXACT_VERSION_PIN", "VERSION_FAMILY_CEILING"},
+        }
+        for predicate, expected in cases.items():
+            with self.subTest(predicate=predicate):
+                self.assertEqual(
+                    expected,
+                    set(_runtime_dependency_predicate_restrictions("provider_api", predicate)),
+                )
+                consumer = descriptor(
+                    "consumer.jar",
+                    "consumer",
+                    "1.0.0",
+                    depends={"provider_api": (predicate,)},
+                    project_id="consumer",
+                )
+                with self.assertRaisesRegex(ManagerError, "runtime dependency policy violation"):
+                    _enforce_runtime_dependency_policy(
+                        [consumer],
+                        self.policy(),
+                        release_label="consumer/consumer.jar",
+                    )
+
+    def test_exact_exception_requires_matching_nonstale_regression_evidence(self) -> None:
+        predicate = "<5.0.0-"
+        exception = {
+            "consumer_id": "consumer",
+            "relationship": "depends",
+            "dependency_id": "provider_api",
+            "predicate": predicate,
+            "reason": "Provider 5 removed the API used by this release.",
+            "regression_evidence": ["GameTest provider-5-api-removal fails before initialization."],
+        }
+        consumer = descriptor(
+            "consumer.jar",
+            "consumer",
+            "1.0.0",
+            depends={"provider_api": (predicate,)},
+            project_id="consumer",
+        )
+        result = _enforce_runtime_dependency_policy(
+            [consumer],
+            self.policy(exception),
+            release_label="consumer/consumer.jar",
+        )
+        self.assertEqual(1, len(result["accepted_exceptions"]))
+
+        stale = copy.deepcopy(exception)
+        stale["predicate"] = "<4.0.0-"
+        with self.assertRaisesRegex(ManagerError, "violation"):
+            _enforce_runtime_dependency_policy(
+                [consumer],
+                self.policy(stale),
+                release_label="consumer/consumer.jar",
+            )
+
+    def test_declared_nested_metadata_is_inside_policy_scope(self) -> None:
+        nested = fabric_mod_jar_bytes(
+            "nested_consumer",
+            "1.0.0",
+            depends={"provider_api": "=1.2.3"},
+        )
+        outer = fabric_mod_jar_bytes(
+            "outer_consumer",
+            "1.0.0",
+            declared_paths=("META-INF/jars/nested.jar",),
+            nested_entries=(("META-INF/jars/nested.jar", nested),),
+        )
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary) / "outer.jar"
+            path.write_bytes(outer)
+            descriptors = _read_fabric_descriptor_tree(path)
+        with self.assertRaisesRegex(
+            ManagerError,
+            r"nested_consumer.*outer\.jar!/META-INF/jars/nested\.jar",
+        ):
+            _enforce_runtime_dependency_policy(
+                descriptors,
+                self.policy(),
+                release_label="outer/outer.jar",
+            )
+
+    def test_packaged_optional_relationships_are_parsed_and_enforced(self) -> None:
+        payload = fabric_mod_jar_bytes(
+            "consumer",
+            "1.0.0",
+            recommends={"recommended_api": ">=1.0.0"},
+            suggests={"optional_provider": "=2.0.0+tested"},
+        )
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary) / "consumer.jar"
+            path.write_bytes(payload)
+            descriptors = _read_fabric_descriptor_tree(path)
+        self.assertEqual(
+            {"optional_provider": ("=2.0.0+tested",)},
+            descriptors[0].suggests,
+        )
+        with self.assertRaisesRegex(ManagerError, r"optional_provider.*suggests"):
+            _enforce_runtime_dependency_policy(
+                descriptors,
+                self.policy(),
+                release_label="consumer/consumer.jar",
+            )
+
+    def test_manager_binds_policy_only_to_exact_current_filename_and_hash(self) -> None:
+        sha256 = "a" * 64
+        current = descriptor(
+            "slab-c3.jar",
+            "slab_decorations",
+            "0.1.0-canary3",
+            depends={"more_slabs_stairs_and_walls": ("*",)},
+            project_id="slab-decorations",
+            root_container_sha256=sha256,
+        )
+        manifest = {
+            "identity": {"project_id": "slab-decorations"},
+            "state": {
+                "releases": {
+                    "current": {
+                        "version": "0.1.0-canary3",
+                        "artifact": {"filename": "slab-c3.jar", "sha256": sha256},
+                        "source_commit": "f" * 40,
+                        "runtime_dependency_policy": self.policy(),
+                    }
+                }
+            },
+        }
+
+        class Catalog:
+            repository_statuses = {
+                current.managed_project_uuid: (
+                    Path("projects/slab-decorations/WORKBENCH_STATUS.json"),
+                    manifest,
+                )
+            }
+
+        report = PhysicalManager._runtime_dependency_policy_report(Catalog(), [current])  # type: ignore[arg-type]
+        self.assertEqual("RUNTIME_DEPENDENCY_POLICY_VERIFIED", report["status"])
+        self.assertEqual(1, len(report["enforced_artifacts"]))
+        self.assertEqual([], report["grandfathered_artifacts"])
+
+    def test_shared_nested_bytes_are_enforced_for_each_owning_root_release(self) -> None:
+        nested = fabric_mod_jar_bytes(
+            "shared_nested_consumer",
+            "1.0.0",
+            depends={"provider_api": "=1.2.3"},
+        )
+        exception = {
+            "consumer_id": "shared_nested_consumer",
+            "relationship": "depends",
+            "dependency_id": "provider_api",
+            "predicate": "=1.2.3",
+            "reason": "The fixture intentionally models one demonstrated exact API contract.",
+            "regression_evidence": ["The provider-1.2.4 fixture fails its focused initialization check."],
+        }
+
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            descriptor_sets: list[FabricModDescriptor] = []
+            statuses: dict[str, tuple[Path, dict[str, object]]] = {}
+            for index, project_id in enumerate(("outer-a", "outer-b"), start=1):
+                filename = project_id + ".jar"
+                payload = fabric_mod_jar_bytes(
+                    project_id.replace("-", "_"),
+                    "1.0.0",
+                    declared_paths=("META-INF/jars/shared.jar",),
+                    nested_entries=(("META-INF/jars/shared.jar", nested),),
+                )
+                path = root / filename
+                path.write_bytes(payload)
+                sha256 = hashlib.sha256(payload).hexdigest()
+                project_uuid = f"00000000-0000-4000-8000-{index:012d}"
+                managed = ManagedArtifact(
+                    deployment_id=f"10000000-0000-4000-8000-{index:012d}",
+                    artifact_id=f"20000000-0000-4000-8000-{index:012d}",
+                    project_uuid=project_uuid,
+                    project_id=project_id,
+                    filename=filename,
+                    sha256=sha256,
+                    mod_id=project_id.replace("-", "_"),
+                    ownership_mod_ids=(project_id.replace("-", "_"),),
+                    relative_path="mods/" + filename,
+                    active=True,
+                    source={"type": "REPOSITORY", "path": filename},
+                )
+                descriptor_sets.extend(_read_fabric_descriptor_tree(path, artifact=managed))
+                statuses[project_uuid] = (
+                    Path("projects") / project_id / "WORKBENCH_STATUS.json",
+                    {
+                        "identity": {"project_id": project_id},
+                        "state": {
+                            "releases": {
+                                "current": {
+                                    "version": "1.0.0",
+                                    "artifact": {"filename": filename, "sha256": sha256},
+                                    "source_commit": "f" * 40,
+                                    "runtime_dependency_policy": self.policy(exception),
+                                }
+                            }
+                        },
+                    },
+                )
+
+        class Catalog:
+            repository_statuses = statuses
+
+        report = PhysicalManager._runtime_dependency_policy_report(  # type: ignore[arg-type]
+            Catalog(),
+            descriptor_sets,
+        )
+        self.assertEqual(2, len(report["enforced_artifacts"]))
+        self.assertEqual([2, 2], [item["descriptor_count"] for item in report["enforced_artifacts"]])
+        self.assertEqual(
+            ["shared_nested_consumer", "shared_nested_consumer"],
+            [
+                item["accepted_exceptions"][0]["consumer_id"]
+                for item in report["enforced_artifacts"]
+            ],
+        )
+
+
 class FabricDependencyGraphTests(unittest.TestCase):
     def setUp(self) -> None:
         self.bge_c58 = descriptor(
@@ -439,6 +713,20 @@ class FabricDependencyGraphTests(unittest.TestCase):
             ["more_slabs_stairs_and_walls"],
             resolution["provider"]["provides"],
         )
+
+    def test_flexible_stable_alias_accepts_a_newer_unified_provider(self) -> None:
+        slab = descriptor(
+            "slab-c3.jar",
+            "slab_decorations",
+            "0.1.0-canary3",
+            depends={"more_slabs_stairs_and_walls": ("*",)},
+            project_id="slab-decorations",
+        )
+        report = self.resolve(self.bge_c58, slab)
+        resolution = report["resolutions"][0]
+        self.assertEqual("more_slabs_stairs_and_walls", resolution["dependency_id"])
+        self.assertEqual(C58, resolution["provider"]["version"])
+        self.assertEqual("cnm_terrain_slabs_compat", resolution["provider"]["primary_id"])
 
     def test_metadata_array_predicates_are_or_not_and(self) -> None:
         trowel = descriptor(

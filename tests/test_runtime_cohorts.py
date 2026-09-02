@@ -9,6 +9,7 @@ from tests.test_bootstrap import (
     TIME_1,
     TIME_2,
     TIME_3,
+    adopted_rollback_unit,
     candidate,
     deployment_unit,
     planned_manifest,
@@ -73,6 +74,7 @@ def set_current_release(manifest: dict, unit: dict, deployment: str) -> None:
     manifest["definition"]["lifecycle"] = "TESTING"
     manifest["state"]["releases"]["current"] = {
         "version": f"Repository label ({unit['version']})",
+        "embedded_version": unit["version"],
         "artifact": {"filename": artifact["filename"], "sha256": artifact["sha256"]},
         "source_commit": unit["source_commit"],
     }
@@ -259,6 +261,87 @@ def revision_61_legacy_pair_state() -> tuple[dict, dict[str, str]]:
 
 
 class RuntimeCohortContractTests(unittest.TestCase):
+    def test_user_passed_successor_can_atomically_absorb_another_accepted_provider(self) -> None:
+        predecessor = deployment_unit("unified", version="Canary 1")
+        absorbed = deployment_unit("legacy-provider", version="Canary 1")
+        successor = deployment_unit(
+            "unified",
+            version="Canary 2",
+            ownership_keys=["mod:unified", "mod:legacy-provider"],
+        )
+        state = runtime_state(
+            accepted=[
+                {"unit": predecessor, "accepted_at": TIME_1},
+                {"unit": absorbed, "accepted_at": TIME_1},
+            ]
+        )
+        operation = {
+            "type": "PROMOTE_USER_PASSED_BATCH",
+            "authorization": "USER_REPORTED_EXACT_RUNTIME_PASS",
+            "members": [
+                {
+                    "unit": successor,
+                    "replaces_accepted_deployment_id": predecessor["deployment_id"],
+                    "absorbs_accepted_deployment_ids": [absorbed["deployment_id"]],
+                }
+            ],
+        }
+
+        promoted = plan_transition(
+            state,
+            state["revision"],
+            operation,
+            TIME_2,
+            project_index("unified", "legacy-provider"),
+        )
+
+        self.assertEqual(
+            [successor["deployment_id"]],
+            [member["unit"]["deployment_id"] for member in promoted["accepted_baseline"]["members"]],
+        )
+        self.assertEqual(
+            state["accepted_baseline"]["revision"] + 2,
+            promoted["accepted_baseline"]["revision"],
+        )
+        self.assertEqual(1, promoted["accepted_baseline"]["provenance"]["accepted_artifact_count"])
+
+        missing_alias = copy.deepcopy(operation)
+        missing_alias["members"][0]["unit"]["artifacts"][0]["ownership_keys"] = ["mod:unified"]
+        with self.assertRaisesRegex(ValidationError, "own every absorbed ownership key"):
+            plan_transition(
+                state,
+                state["revision"],
+                missing_alias,
+                TIME_2,
+                project_index("unified", "legacy-provider"),
+            )
+
+        retained_state = copy.deepcopy(state)
+        retained_state["accepted_baseline"]["members"][1]["retained_rollbacks"] = [
+            {"unit": adopted_rollback_unit("legacy-provider"), "retained_at": TIME_1}
+        ]
+        with self.assertRaisesRegex(ValidationError, "cannot discard target-local retained rollback"):
+            plan_transition(
+                retained_state,
+                retained_state["revision"],
+                operation,
+                TIME_2,
+                project_index("unified", "legacy-provider"),
+            )
+
+        referenced_state = copy.deepcopy(state)
+        legacy_successor = candidate(deployment_unit("legacy-provider", version="Canary 2"))
+        legacy_successor["replaces_accepted_deployment_id"] = absorbed["deployment_id"]
+        referenced_state["slots"]["A"] = legacy_successor
+        with self.assertRaisesRegex(ValidationError, "still referenced by a managed Test Slot"):
+            plan_transition(
+                referenced_state,
+                referenced_state["revision"],
+                operation,
+                TIME_2,
+                project_index("unified", "legacy-provider"),
+            )
+
     def test_exact_revision_61_bge_c57_and_trowel_c9_migrate_losslessly(self) -> None:
         legacy, exact_project_index = revision_61_legacy_pair_state()
         preimage = copy.deepcopy(legacy)

@@ -401,15 +401,27 @@ public final class FoliageSurfaceGameTests implements CustomTestMethodInvoker {
         level.setBlockAndUpdate(support, slab(Blocks.GRASS_BLOCK, SlabType.BOTTOM));
         level.setBlockAndUpdate(plant, Blocks.DANDELION.defaultBlockState());
 
-        Vec3 from = new Vec3(support.getX() + 0.05D, support.getY() + 0.75D, support.getZ() + 0.5D);
-        Vec3 to = new Vec3(support.getX() + 0.95D, support.getY() + 0.75D, support.getZ() + 0.5D);
+        BlockState plantState = level.getBlockState(plant);
+        AABB visibleShape = plantState.getShape(level, plant).bounds();
+        double visibleY = plant.getY() + (visibleShape.minY + visibleShape.maxY) / 2.0D;
+        double visibleZ = plant.getZ() + (visibleShape.minZ + visibleShape.maxZ) / 2.0D;
+        Vec3 from = new Vec3(support.getX() + 0.05D, visibleY, visibleZ);
+        Vec3 to = new Vec3(support.getX() + 0.95D, visibleY, visibleZ);
         BlockHitResult vanillaMiss = BlockHitResult.miss(to, Direction.EAST, BlockPos.containing(to));
         HitResult preferred = SlabPlantRaycast.preferShiftedPlant(level, from, to, vanillaMiss);
 
         helper.assertTrue(preferred instanceof BlockHitResult hit
                         && hit.getType() == HitResult.Type.BLOCK
                         && hit.getBlockPos().equals(plant),
-                "shifted ray did not select the logical plant block at its visible half-height position");
+                "shifted ray did not select the logical plant block at its visible half-height position"
+                        + "; resultType=" + preferred.getType()
+                        + "; resultLocation=" + preferred.getLocation()
+                        + "; resultBlock=" + (preferred instanceof BlockHitResult hit ? hit.getBlockPos() : "n/a")
+                        + "; plantState=" + plantState
+                        + "; canSurvive=" + plantState.canSurvive(level, plant)
+                        + "; visibleOffset=" + NibaruHorizontalSurface.visibleOffset(
+                                plantState, level, plant)
+                        + "; shape=" + visibleShape);
         helper.succeed();
     }
 
