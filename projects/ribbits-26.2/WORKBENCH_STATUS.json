@@ -3,10 +3,12 @@
   "schema_version": 1,
   "identity": {
     "uuid": "2a650718-ec62-568f-8dff-71258a4d6f3f",
-    "name": "Ribbits 26.2 Port",
+    "name": "Mynx Ribbits 26.2",
     "project_id": "ribbits-26.2",
     "aliases": [],
-    "legacy_names": [],
+    "legacy_names": [
+      "Ribbits 26.2 Port"
+    ],
     "legacy_ids": [
       "ribbits-26-2"
     ]
@@ -14,22 +16,24 @@
   "definition": {
     "lifecycle": "ACTIVE",
     "goals": [
-      "Maintain the faithful private Fabric port of Ribbits 4.1.6 for Minecraft Java 26.2.",
-      "Preserve source and behavioral parity plus the hash-guarded private-resource assembly contract without publishing protected Ribbits assets."
+      "Maintain a private Minecraft Java 26.2 downstream Ribbits build for the fixed Mynx and Matcha stack, preserving upstream behavior except for individually documented intentional Mynx deviations.",
+      "Keep every private reconstruction deterministic and hash-guarded while isolating protected Ribbits resources and approved local donor visuals from the public source repository."
     ],
     "scope": [
-      "Retain the legally trackable source, build, and test implementation from exact Canary source checkpoint 0105a1114edcf5eb0306bb60a48ad48d963d187d.",
-      "Preserve the private resource assembler, exact input and output identities, and authorized temporary shared green spawn-egg derivation contract.",
-      "Preserve the 32-test JUnit behavioral/static checkpoint and 10-test source-safe private-migration checkpoint while distinguishing source/static evidence from Minecraft runtime validation."
+      "Retain the legally trackable faithful-port baseline and maintain the intentional deviations recorded in MYNX_DEVIATIONS.md without changing stable mod, registry, entity, or save identities.",
+      "Maintain all nine registered Ribbit professions, the explicit equal-weight eight-member natural village pool, and typed spawn-egg, pick-block, dispenser, codec, persistence, model, texture, and umbrella contracts.",
+      "Preserve the authoritative Merchant and Fisherman trade definitions and the existing restock implementation unchanged until a separately scoped trade candidate.",
+      "Preserve the private resource assembler, exact pristine, Minecraft, dependency, donor, output, and archive identities, and the authorized shared green spawn-egg derivation contract."
     ],
     "boundaries": {
       "owned_paths": [
         "projects/ribbits-26.2"
       ],
       "exclusions": [
-        "Protected Ribbits assets, data, icons, logos, pristine binaries, private manifests and reports, and the private Canary JAR are external, ignored, and nonredistributable.",
+        "Protected Ribbits resources, donor-derived models and textures, pristine or donor binaries, private manifests and reports, and the complete private Canary JAR are external, ignored, private-use-only, and nonredistributable.",
         "Public source-only build output is resource-incomplete and must not be represented as a runnable Canary.",
-        "No substitute private resources, resource-pack work, STNC/QSN work, YUNG's API project changes, deployment, Test Instance Manager mutation, or gameplay-profile access."
+        "No redesigned trade economy, strict daily restock limit, Chef progression, Sorcerer trade progression, witch-hut behavior, Matcha or Custom Portals integration, or ribbits-village-explorer-map implementation in Canary 1.",
+        "No substitute private inputs, deployment, Test Instance Manager mutation, gameplay-profile access, or Minecraft runtime claim from source, build, static, codec, tree, or archive evidence."
       ]
     },
     "dependencies": [
@@ -110,19 +114,31 @@
         "identifier": "minecraft-merged-7b44b2d1a4-26.2.jar",
         "requirement": "37,396,380 bytes; SHA-256 200d673e028d27ddb22bd2d365fbcb98b55be4b2043ee52681a8f30812c12cfe",
         "reason": "External read-only source for the authorized vanilla frog spawn-egg derivation."
+      },
+      {
+        "type": "OTHER",
+        "identifier": "GuardRibbits-1.20.1-Fabric-1.0.4.jar",
+        "requirement": "166,896 bytes; SHA-256 52f1e184dc12cf1e29bc224ab5a640b8ea5875aa9f46067c0907c6a45b7d1869",
+        "reason": "Immutable local reference beneath originals/mods; only the exact guard model and texture are approved as private visual inputs, with no donor code, AI, structures, sounds, metadata, or behavior imported."
+      },
+      {
+        "type": "OTHER",
+        "identifier": "useful_ribbits-1.0.2-forge-1.20.1.jar",
+        "requirement": "416,439 bytes; SHA-256 2b56007a985b162477113bb2ea1776d9ce2ce602886ea21a88d8b2500d2ded5d",
+        "reason": "Immutable local reference beneath originals/mods; only the exact Chef, Farmer, and Miner visual models and textures are approved as private inputs, with Miner adapted visually as Prospector and no Forge, MCreator, procedure, structure, GUI, workstation, inventory, worldgen, or behavior imported."
       }
     ]
   },
   "state": {
-    "milestone": "Private Canary 2 fixes the five Minecraft 26.2 configured-feature registry failures, is reproducibly generated at 3,124,301 bytes, and is retained locally with the exact YUNG's API dependency under projects/ribbits-26.2/artifacts; both are Git-ignored and untracked, historical Canary 1 remains immutable and broken for world creation, and Canary 2 remains not deployed and runtime untested.",
+    "milestone": "Mynx Canary 1 repairs the two private loot-table codec failures, adds four visual professions with deterministic private donor transformations and all umbrella variants, routes natural village residents through the explicit equal-weight Sorcerer-free eight-profession pool, preserves existing trades and restocking, and is reproducibly generated at 3,163,214 bytes; it remains not deployed and runtime untested.",
     "releases": {
       "current": {
-        "version": "4.1.6+26.2-port-canary2",
+        "version": "4.1.6+26.2-mynx-canary1",
         "artifact": {
-          "filename": "ribbits-private-reconstruction-4.1.6+26.2-port-canary2.jar",
-          "sha256": "0ad73b7b61c6ee792ec1745056563641767afe6811c0fdf2d3c99123c3f289dc"
+          "filename": "ribbits-private-reconstruction-4.1.6+26.2-mynx-canary1.jar",
+          "sha256": "ec2946d299bcda22ffa393ce310760d1f963ed1d28377a86f45da22e64869443"
         },
-        "source_commit": "efe1970d2447aea4913e67f55c0c6b83cc36c5bb"
+        "source_commit": "3e9b81f2c2464811caf593a6451e6ff1c9136955"
       },
       "accepted": null,
       "rollback": null,
@@ -137,11 +153,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 4,
-    "activity_at": "2026-08-31T06:33:21Z",
-    "updated_at": "2026-08-31T06:33:21Z",
-    "last_codex_at": "2026-08-31T06:33:21Z",
-    "source_commit": "efe1970d2447aea4913e67f55c0c6b83cc36c5bb",
+    "revision": 5,
+    "activity_at": "2026-09-02T02:06:55Z",
+    "updated_at": "2026-09-02T02:06:55Z",
+    "last_codex_at": "2026-09-02T02:06:55Z",
+    "source_commit": "3e9b81f2c2464811caf593a6451e6ff1c9136955",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
