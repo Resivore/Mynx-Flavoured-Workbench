@@ -6,6 +6,7 @@
 - `main` is the sole durable authority. Project branches and worktrees are temporary task surfaces, never alternate project authorities.
 - Start ordinary work from reasonably current `main`, reconcile with newer `main` when necessary, and integrate coherent checkpoints frequently.
 - A project task is complete only after its checkpoint is integrated into `main`, its `WORKBENCH_STATUS.json` revision and `CODEX_LOG.md` entry are updated, and the main-only Sheet publisher has handled the new revision. While Sheet cutover is deliberately gated, the revision and publication event must still be produced for delivery after authorization.
+- When a project task finalizes a current artifact that will remain ignored and untracked, completion also requires `python -B tools/artifact_retention.py --root . projects/<project>` (or the corresponding `resourcepacks/<project>` path) to verify the manifest filename and SHA-256, atomically retain the exact bytes at the same artifact path in the primary local checkout derived from Git's common directory, refuse to overwrite a conflicting copy, and verify the destination hash and complete bytes without tracking or redistributing it. Any retention failure fails the task.
 - Commit and push durable progress. Current `main` must be reconstructable without conversation history, stale task branches, or local-only state.
 
 ## Project contract
@@ -29,7 +30,7 @@ Every project task advances the manifest revision exactly once, updates synchron
 - Same-project parallel work requires explicitly disjoint ownership or one integration owner.
 - Do not rebuild or re-audit unrelated projects merely because `main` advanced.
 - Shared infrastructure and runtime deployment state require an explicitly designated owner.
-- Retire temporary branches/worktrees after their checkpoint lands when appropriate; do not maintain permanent project branches.
+- Retire temporary branches/worktrees after their checkpoint lands when appropriate; never retire a project task worktree before required canonical local artifact retention succeeds, and do not maintain permanent project branches.
 
 ## Evidence and proportionality
 
