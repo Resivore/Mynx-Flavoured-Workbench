@@ -2,16 +2,16 @@
   "$schema": "../../schemas/runtime-state.schema.json",
   "schema_version": 2,
   "activation": "ACTIVE",
-  "revision": 62,
-  "updated_at": "2026-09-02T01:58:09Z",
+  "revision": 67,
+  "updated_at": "2026-09-02T16:58:44Z",
   "accepted_baseline": {
-    "revision": 11,
+    "revision": 14,
     "provenance": {
       "source_repository": "Resivore/Minecraft-26.2-Workbench",
       "source_commit": "f0101f38c446dddaa4226450386402c63597ba7c",
       "source_profile": "matcha-heart-death-mossy-stone",
       "legacy_ledger_sha256": "5f0a26f3d136effeb54e86e3a1ba9d6a98a7252f5adde1c789129461f64c43de",
-      "accepted_artifact_count": 32,
+      "accepted_artifact_count": 31,
       "overlay_order": [
         "937d7ccc-44c9-55cb-8d33-0dc0bff5fe45",
         "9f1c5aa4-09c1-4de3-9921-4b045e8abcd2"
@@ -75,55 +75,30 @@
       },
       {
         "unit": {
-          "deployment_id": "3a3f0f77-d114-4b58-a039-302d625ec449",
+          "deployment_id": "128c78b7-a80d-4b3f-8605-6cdf31bbebf1",
           "project_uuid": "4b2342fc-7bdf-5ba6-9f37-d551109d214c",
           "project_id": "block-geometry-extensions",
           "project_identity_source": "CURRENT_MANIFEST",
-          "version": "0.5.49-nibaru-cnm-canary1.39-native-directional-material-axis",
-          "source_commit": "2e58d752af44f4b84e10bc5e53a41aea00a177ee",
+          "version": "4.2.2-bge.canary58.glass-corner-uv+26.2",
+          "source_commit": "d1d753a86b21467141bd39a0bcc1270f7827a8d7",
           "artifacts": [
             {
-              "artifact_id": "3d3f10bd-8481-417c-adc7-fe154e2766c7",
+              "artifact_id": "7c990388-34b7-4225-8f14-a0b9b5bfae94",
               "kind": "MOD",
-              "filename": "cnm-nibaru-integration-0.5.49-nibaru-cnm-canary1.39-native-directional-material-axis.jar",
-              "sha256": "0e84fb7b8c69e31c3c22a592d0667db66c2918c8fd9f461bd2c216d377722e69",
+              "filename": "cnm-nibaru-integration-4.2.2-bge.canary58.glass-corner-uv+26.2.jar",
+              "sha256": "1a4e4d1cd9c8709720ec84975e70caffb5552ac676537b9bbae42dca96567e87",
               "ownership_keys": [
-                "mod:cnm_terrain_slabs_compat"
-              ],
-              "source": {
-                "type": "REPOSITORY",
-                "path": "projects/block-geometry-extensions/artifacts/cnm-nibaru-integration-0.5.49-nibaru-cnm-canary1.39-native-directional-material-axis.jar"
-              }
-            }
-          ]
-        },
-        "accepted_at": null
-      },
-      {
-        "unit": {
-          "deployment_id": "e5eb4fcb-6c49-4ab2-86f9-1605ccd192ab",
-          "project_uuid": "680476b9-5336-5422-a575-779f2efd1eff",
-          "project_id": "nibaru",
-          "project_identity_source": "CURRENT_MANIFEST",
-          "version": "4.2.0+26.2-port-canary43-native-directional-material-axis",
-          "source_commit": "2e58d752af44f4b84e10bc5e53a41aea00a177ee",
-          "artifacts": [
-            {
-              "artifact_id": "b337b39a-f331-4e03-bbdc-e3c3c6925536",
-              "kind": "MOD",
-              "filename": "more-slabs-stairs-and-walls-4.2.0+26.2-port-canary43-native-directional-material-axis.jar",
-              "sha256": "0a979a75101076e987a35807f8eb293631fe5e664b252e5db0aa263d4eedf07f",
-              "ownership_keys": [
+                "mod:cnm_terrain_slabs_compat",
                 "mod:more_slabs_stairs_and_walls"
               ],
               "source": {
                 "type": "REPOSITORY",
-                "path": "projects/nibaru/artifacts/more-slabs-stairs-and-walls-4.2.0+26.2-port-canary43-native-directional-material-axis.jar"
+                "path": "projects/block-geometry-extensions/artifacts/cnm-nibaru-integration-4.2.2-bge.canary58.glass-corner-uv+26.2.jar"
               }
             }
           ]
         },
-        "accepted_at": null
+        "accepted_at": "2026-09-02T16:56:52Z"
       },
       {
         "unit": {
@@ -634,29 +609,57 @@
       },
       {
         "unit": {
-          "deployment_id": "6c8c4d94-bce9-479a-916c-66b94eecc852",
+          "deployment_id": "3f15446c-95c2-405b-b1e5-e78de5f5f638",
           "project_uuid": "e28154da-0649-5da7-b6d5-3bff2891719e",
           "project_id": "shulker-trowel",
           "project_identity_source": "CURRENT_MANIFEST",
-          "version": "0.1.0-canary4",
-          "source_commit": "069bc055356c5a46218acfb846c97acc0c0c4789",
+          "version": "0.1.0-canary9",
+          "source_commit": "844bccbb6f9efdfb36749c719d1fb396f71b626f",
           "artifacts": [
             {
-              "artifact_id": "80331cb2-02aa-446b-845e-001b24c27415",
+              "artifact_id": "efbc5761-9899-4a3c-ae5d-7640b8a3022b",
               "kind": "MOD",
-              "filename": "shulker-trowel-0.1.0-canary4-private.jar",
-              "sha256": "73c012c08ca5567e795711cf11c8eaac625528e7350309114467129394f0afba",
+              "filename": "shulker-trowel-0.1.0-canary9-private.jar",
+              "sha256": "b78679eaf6eaf6f7ff75a32ffae024e45515de3af38bf2ed92ac8727a5138df8",
               "ownership_keys": [
                 "mod:shulker_trowel"
               ],
               "source": {
-                "type": "ADOPTED_TARGET",
-                "path": "mods/shulker-trowel-0.1.0-canary4-private.jar"
+                "type": "REPOSITORY",
+                "path": "projects/shulker-trowel/artifacts/shulker-trowel-0.1.0-canary9-private.jar"
               }
             }
           ]
         },
-        "accepted_at": null
+        "accepted_at": "2026-09-02T16:56:52Z",
+        "retained_rollbacks": [
+          {
+            "unit": {
+              "deployment_id": "6c8c4d94-bce9-479a-916c-66b94eecc852",
+              "project_uuid": "e28154da-0649-5da7-b6d5-3bff2891719e",
+              "project_id": "shulker-trowel",
+              "project_identity_source": "FROZEN_LEGACY",
+              "version": "0.1.0-canary4",
+              "source_commit": "069bc055356c5a46218acfb846c97acc0c0c4789",
+              "artifacts": [
+                {
+                  "artifact_id": "80331cb2-02aa-446b-845e-001b24c27415",
+                  "kind": "MOD",
+                  "filename": "shulker-trowel-0.1.0-canary4-private.jar",
+                  "sha256": "73c012c08ca5567e795711cf11c8eaac625528e7350309114467129394f0afba",
+                  "ownership_keys": [
+                    "mod:shulker_trowel"
+                  ],
+                  "source": {
+                    "type": "ADOPTED_TARGET",
+                    "path": "mods/shulker-trowel-0.1.0-canary4-private.jar"
+                  }
+                }
+              ]
+            },
+            "retained_at": "2026-09-02T16:56:52Z"
+          }
+        ]
       },
       {
         "unit": {
@@ -849,67 +852,29 @@
       "members": [
         {
           "unit": {
-            "deployment_id": "128c78b7-a80d-4b3f-8605-6cdf31bbebf1",
-            "project_uuid": "4b2342fc-7bdf-5ba6-9f37-d551109d214c",
-            "project_id": "block-geometry-extensions",
+            "deployment_id": "c0fdfff1-831a-4081-93a3-e596d7fc928d",
+            "project_uuid": "3ab36584-8732-554f-840e-28a75c422660",
+            "project_id": "container-slot-reservations",
             "project_identity_source": "CURRENT_MANIFEST",
-            "version": "4.2.2-bge.canary58.glass-corner-uv+26.2",
-            "source_commit": "d1d753a86b21467141bd39a0bcc1270f7827a8d7",
+            "version": "0.1.0-canary1",
+            "source_commit": "e0adc6b9302392440f2e5654c1e4031916b0c996",
             "artifacts": [
               {
-                "artifact_id": "7c990388-34b7-4225-8f14-a0b9b5bfae94",
+                "artifact_id": "c3bc9365-5664-4148-9200-3292307f9bce",
                 "kind": "MOD",
-                "filename": "cnm-nibaru-integration-4.2.2-bge.canary58.glass-corner-uv+26.2.jar",
-                "sha256": "1a4e4d1cd9c8709720ec84975e70caffb5552ac676537b9bbae42dca96567e87",
+                "filename": "container-slot-reservations-0.1.0-canary1.jar",
+                "sha256": "4e7f0a470a387be76189d0a5e1ae8c614d17ec8b24a6774b400838cc234c4532",
                 "ownership_keys": [
-                  "mod:cnm_terrain_slabs_compat",
-                  "mod:more_slabs_stairs_and_walls"
+                  "mod:container_slot_reservations"
                 ],
                 "source": {
                   "type": "REPOSITORY",
-                  "path": "projects/block-geometry-extensions/artifacts/cnm-nibaru-integration-4.2.2-bge.canary58.glass-corner-uv+26.2.jar"
+                  "path": "projects/container-slot-reservations/artifacts/container-slot-reservations-0.1.0-canary1.jar"
                 }
               }
             ]
           },
-          "replaces_accepted_deployment_id": "3a3f0f77-d114-4b58-a039-302d625ec449",
-          "runtime_result": {
-            "classification": "UNTESTED",
-            "recorded_at": null,
-            "evidence": {
-              "passed": [],
-              "failed": []
-            }
-          },
-          "dependency_overrides": [
-            "e5eb4fcb-6c49-4ab2-86f9-1605ccd192ab"
-          ]
-        },
-        {
-          "unit": {
-            "deployment_id": "3f15446c-95c2-405b-b1e5-e78de5f5f638",
-            "project_uuid": "e28154da-0649-5da7-b6d5-3bff2891719e",
-            "project_id": "shulker-trowel",
-            "project_identity_source": "CURRENT_MANIFEST",
-            "version": "0.1.0-canary9",
-            "source_commit": "844bccbb6f9efdfb36749c719d1fb396f71b626f",
-            "artifacts": [
-              {
-                "artifact_id": "efbc5761-9899-4a3c-ae5d-7640b8a3022b",
-                "kind": "MOD",
-                "filename": "shulker-trowel-0.1.0-canary9-private.jar",
-                "sha256": "b78679eaf6eaf6f7ff75a32ffae024e45515de3af38bf2ed92ac8727a5138df8",
-                "ownership_keys": [
-                  "mod:shulker_trowel"
-                ],
-                "source": {
-                  "type": "REPOSITORY",
-                  "path": "projects/shulker-trowel/test-builds/private/shulker-trowel/canary9/shulker-trowel-0.1.0-canary9-private.jar"
-                }
-              }
-            ]
-          },
-          "replaces_accepted_deployment_id": "6c8c4d94-bce9-479a-916c-66b94eecc852",
+          "replaces_accepted_deployment_id": null,
           "runtime_result": {
             "classification": "UNTESTED",
             "recorded_at": null,
@@ -922,10 +887,52 @@
       ],
       "deployment": {
         "state": "READY_TO_TEST_VERIFIED",
-        "deployed_at": "2026-09-02T01:58:09Z",
-        "ready_verified_at": "2026-09-02T01:58:09Z"
+        "deployed_at": "2026-09-02T16:58:44Z",
+        "ready_verified_at": "2026-09-02T16:58:44Z"
       }
     },
-    "B": null
+    "B": {
+      "members": [
+        {
+          "unit": {
+            "deployment_id": "d6350d3f-bf00-4955-8b27-3f186dace93f",
+            "project_uuid": "62e67860-8a3b-50a7-9c48-9878c01d899d",
+            "project_id": "slab-decorations",
+            "project_identity_source": "CURRENT_MANIFEST",
+            "version": "0.1.0-canary3",
+            "source_commit": "2358342ebbd51cdd1b110e74e815205a68acc882",
+            "artifacts": [
+              {
+                "artifact_id": "a80957e9-041d-4758-96fa-fb6868051257",
+                "kind": "MOD",
+                "filename": "slab-decorations-0.1.0-canary3.jar",
+                "sha256": "5dfe24cf686a781c16dca46a11ef4112d7473e1f8d63fac659cb750c6709bf2b",
+                "ownership_keys": [
+                  "mod:slab_decorations"
+                ],
+                "source": {
+                  "type": "REPOSITORY",
+                  "path": "projects/slab-decorations/artifacts/slab-decorations-0.1.0-canary3.jar"
+                }
+              }
+            ]
+          },
+          "replaces_accepted_deployment_id": null,
+          "runtime_result": {
+            "classification": "UNTESTED",
+            "recorded_at": null,
+            "evidence": {
+              "passed": [],
+              "failed": []
+            }
+          }
+        }
+      ],
+      "deployment": {
+        "state": "READY_TO_TEST_VERIFIED",
+        "deployed_at": "2026-09-02T16:58:44Z",
+        "ready_verified_at": "2026-09-02T16:58:44Z"
+      }
+    }
   }
 }
