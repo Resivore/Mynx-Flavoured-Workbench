@@ -89,7 +89,7 @@ mods. Every declared member must exist exactly once and be an unencrypted,
 regular stored/deflated ZIP entry. Absolute, drive-relative, backslash,
 dot-segment, normalized, duplicate, symbolic-link, nonregular, unsupported-
 compression, or malformed entries fail closed. Traversal is bounded across the
-whole enabled graph to four nested levels, 64 declared members, 64 MiB
+whole enabled graph to four nested levels, 1,024 declared members, 64 MiB
 compressed and expanded per nested member, 256 MiB cumulative compressed and
 expanded bytes (including manifest reads), and a 200:1 per-member expansion
 ratio. Fabric manifests are independently capped at 1 MiB compressed and
