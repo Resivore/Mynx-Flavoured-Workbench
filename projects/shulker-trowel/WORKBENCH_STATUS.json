@@ -19,8 +19,8 @@
       "Preserve saved/network identities 0 through 6 while separating selector order from persistence, using exact resolved geometry items, and preserving material identity, consumption, sound, state, and fail-closed semantics."
     ],
     "scope": [
-      "Canonical C9 dependency-aligned source for Minecraft 26.2 Fabric, retaining accepted behavior and stable IDs 0 through 6 for Full Block, Slab, Stair, Wall, Vertical Slab, Step, and Layer, with Corner ID 7 and Quarter Column ID 8.",
-      "The narrow CNM 2.0.7 overlay and input seam plus exact unified BGE C57 catalog resolution, with selector order Full Block, Slab, Stair, Wall, Vertical Slab, Step, Corner, Quarter Column, Layer independent from saved/network identity.",
+      "Canonical C10 dependency-compatible source for Minecraft 26.2 Fabric, retaining accepted behavior and stable IDs 0 through 6 for Full Block, Slab, Stair, Wall, Vertical Slab, Step, and Layer, with Corner ID 7 and Quarter Column ID 8.",
+      "The narrow CNM 2.0.7 overlay and input seam plus the proven unified BGE compatibility line from exact C57 through C58 and later compatible 4.2.x successors, with selector order Full Block, Slab, Stair, Wall, Vertical Slab, Step, Corner, Quarter Column, Layer independent from saved/network identity.",
       "Use each descriptor's actual resolved geometry item for display and normal BlockItem placement, retain selected identity when a material geometry is unavailable, and admit future BGE catalog descriptors without a new hard-coded Trowel geometry name.",
       "The private runnable-asset boundary in which only the separately authorized Jake's Build Tools sprite is added to externally retained, non-redistributable private artifacts."
     ],
@@ -29,10 +29,10 @@
         "projects/shulker-trowel"
       ],
       "exclusions": [
-        "Protected Jake's Build Tools bytes, the authorized sprite, exact private C9/Private Canary 8 and predecessor C8 candidates, and accepted/rollback private C5 runnable JAR are not tracked or redistributed.",
+        "Protected Jake's Build Tools bytes, the authorized sprite, exact private C10/Private Canary 9 and predecessor C9 candidates, and accepted/rollback private C5 runnable JAR are not tracked or redistributed.",
         "CNM and unified BGE remain external dependency owners; this project does not bundle them or replace their canonical material and geometry systems.",
         "Registry-name parsing, parallel family tables, variant collapsing, and unrelated block mutation behavior.",
-        "Promotion of runtime-untested C9, mutation of accepted C5 provenance, unrelated runtime-slot changes, and protected gameplay-profile access."
+        "Promotion of runtime-untested C10, mutation of accepted C5 provenance, unrelated runtime-slot changes, and protected gameplay-profile access."
       ]
     },
     "dependencies": [
@@ -40,13 +40,13 @@
         "type": "OTHER",
         "identifier": "minecraft",
         "requirement": "26.2",
-        "reason": "Target game version for the current C9 implementation."
+        "reason": "Target game version for the current C10 implementation."
       },
       {
         "type": "MOD",
         "identifier": "fabricloader",
         "requirement": ">=0.19.3",
-        "reason": "Fabric runtime loader declared by canonical C9."
+        "reason": "Fabric runtime loader declared by canonical C10."
       },
       {
         "type": "MOD",
@@ -63,8 +63,8 @@
       {
         "type": "PROJECT",
         "identifier": "4b2342fc-7bdf-5ba6-9f37-d551109d214c",
-        "requirement": "=4.2.1-bge.canary57.unified+26.2",
-        "reason": "The current candidate resolves retained native material APIs and Vertical Slab, Step, Corner, Quarter Column, and Layer descriptors from the one exact unified BGE C57 artifact."
+        "requirement": ">=4.2.1-bge.canary57.unified+26.2 <4.3.0-",
+        "reason": "The current candidate resolves retained native material APIs and Vertical Slab, Step, Corner, Quarter Column, and Layer descriptors from the proven unified BGE 4.2 compatibility line, including exact C57 and C58 while rejecting pre-unified and unproven 4.3 releases."
       },
       {
         "type": "OTHER",
@@ -75,15 +75,15 @@
     ]
   },
   "state": {
-    "milestone": "Exact C8/Private Canary 7 remained good with exact BGE C56 and Nibaru C46 and was recorded runtime PASS at manager revision 52; no unrelated behavior is inferred beyond the user's tested integration. C9/Private Canary 8 changes only dependency and packaging alignment: standalone Nibaru wiring is removed and the same modes, selector order, IDs, icons, delegated placement, economy, sound, synchronization, and fail-closed behavior resolve from unified BGE C57. Manager revision 58 verifies exact private C9 in Slot B with exact unified C57 in Slot A as READY_TO_TEST_VERIFIED / RUNTIME_UNTESTED. Accepted/rollback private C5 remains unchanged, and no promotion occurred.",
+    "milestone": "C10/Private Canary 9 is the minimal behavior-preserving successor to C9: the exact C57 pin is replaced by Fabric Loader predicate `>=4.2.1-bge.canary57.unified+26.2 <4.3.0-`, controlled validation uses exact retained BGE C58, and the authorized private sprite remains byte-identical. Manager revision 62 atomically deployed exact current BGE C58 and private C10 together as a two-member Slot A cohort, cleared Slot B, preserved member-specific UNTESTED results and accepted-predecessor identities, and returned PHYSICAL_STATE_VERIFIED. Dependency verification resolved the bounded predicate to exact active C58, found one unified owner for both BGE/Nibaru IDs, and found no enabled C57, prior Trowel candidate, or standalone Nibaru JAR. Accepted/rollback private C5 remains unchanged; no Minecraft runtime result or promotion is claimed.",
     "releases": {
       "current": {
-        "version": "C9 (Private Canary 8; embedded 0.1.0-canary8)",
+        "version": "C10 (Private Canary 9; embedded 0.1.0-canary9)",
         "artifact": {
-          "filename": "shulker-trowel-0.1.0-canary8-private.jar",
-          "sha256": "2e74d902c46cb3072ab33cdc56ac6ae55e2fd5ec0f4e5ee297cfebec338513ab"
+          "filename": "shulker-trowel-0.1.0-canary9-private.jar",
+          "sha256": "b78679eaf6eaf6f7ff75a32ffae024e45515de3af38bf2ed92ac8727a5138df8"
         },
-        "source_commit": "f907bdab139fd2ec68f8741f5a449b9ee0c973f4"
+        "source_commit": "844bccbb6f9efdfb36749c719d1fb396f71b626f"
       },
       "accepted": {
         "version": "C5 (legacy Private Canary 4; embedded 0.1.0-canary4)",
@@ -112,11 +112,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 5,
-    "activity_at": "2026-08-31T16:42:32Z",
-    "updated_at": "2026-08-31T16:42:32Z",
-    "last_codex_at": "2026-08-31T16:42:32Z",
-    "source_commit": "f907bdab139fd2ec68f8741f5a449b9ee0c973f4",
+    "revision": 6,
+    "activity_at": "2026-09-02T02:04:38Z",
+    "updated_at": "2026-09-02T02:04:38Z",
+    "last_codex_at": "2026-09-02T02:04:38Z",
+    "source_commit": "eae004d5a4db4b36b5a2103aec49b9b237ab26ea",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null

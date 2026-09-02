@@ -1340,7 +1340,8 @@ class RuntimeContractTests(unittest.TestCase):
         # inferred by this bootstrap test.
         tracked = load_json(ROOT / "tools" / "test_instance_manager" / "runtime-state.json")
         self.assertEqual("ACTIVE", tracked["activation"])
-        self.assertEqual(61, tracked["revision"])
+        self.assertEqual(2, tracked["schema_version"])
+        self.assertEqual(62, tracked["revision"])
         self.assertEqual(11, tracked["accepted_baseline"]["revision"])
         self.assertEqual(32, tracked["accepted_baseline"]["provenance"]["accepted_artifact_count"])
         self.assertEqual("TRANSITIONED", tracked["accepted_baseline"]["provenance"]["physical_disposition"])
@@ -1423,63 +1424,62 @@ class RuntimeContractTests(unittest.TestCase):
         )
 
         slot_a = tracked["slots"]["A"]
-        self.assertEqual("4b2342fc-7bdf-5ba6-9f37-d551109d214c", slot_a["unit"]["project_uuid"])
-        self.assertEqual("4.2.1-bge.canary57.unified+26.2", slot_a["unit"]["version"])
+        self.assertEqual(2, len(slot_a["members"]))
+        slot_a_by_uuid = {
+            member["unit"]["project_uuid"]: member
+            for member in slot_a["members"]
+        }
+
+        bge = slot_a_by_uuid["4b2342fc-7bdf-5ba6-9f37-d551109d214c"]
+        self.assertEqual("4.2.2-bge.canary58.glass-corner-uv+26.2", bge["unit"]["version"])
         self.assertEqual(
-            "f907bdab139fd2ec68f8741f5a449b9ee0c973f4",
-            slot_a["unit"]["source_commit"],
+            "d1d753a86b21467141bd39a0bcc1270f7827a8d7",
+            bge["unit"]["source_commit"],
         )
         self.assertEqual(
             [
                 (
-                    "cnm-nibaru-integration-4.2.1-bge.canary57.unified+26.2.jar",
-                    "7cd01479531ec26975326b882e0a18406c17de26695b1f4fae29b72edb76cbc2",
+                    "cnm-nibaru-integration-4.2.2-bge.canary58.glass-corner-uv+26.2.jar",
+                    "1a4e4d1cd9c8709720ec84975e70caffb5552ac676537b9bbae42dca96567e87",
                 ),
             ],
-            [(artifact["filename"], artifact["sha256"]) for artifact in slot_a["unit"]["artifacts"]],
+            [(artifact["filename"], artifact["sha256"]) for artifact in bge["unit"]["artifacts"]],
         )
         self.assertEqual(
             ["mod:cnm_terrain_slabs_compat", "mod:more_slabs_stairs_and_walls"],
-            slot_a["unit"]["artifacts"][0]["ownership_keys"],
+            bge["unit"]["artifacts"][0]["ownership_keys"],
         )
-        self.assertEqual("READY_TO_TEST_VERIFIED", slot_a["deployment"]["state"])
-        self.assertEqual("FAIL", slot_a["runtime_result"]["classification"])
-        self.assertEqual("2026-09-01T05:34:21Z", slot_a["runtime_result"]["recorded_at"])
+        self.assertEqual("UNTESTED", bge["runtime_result"]["classification"])
+        self.assertIsNone(bge["runtime_result"]["recorded_at"])
         self.assertEqual(
-            {
-                "passed": [
-                    "User-reported broad nonvisual behavior PASS for exact unified BGE C57; "
-                    "no row-level observations were supplied or inferred."
-                ],
-                "failed": [
-                    "User-reported existing glass-Corner visual/UV defect on exact unified BGE C57."
-                ],
-            },
-            slot_a["runtime_result"]["evidence"],
+            {"passed": [], "failed": []},
+            bge["runtime_result"]["evidence"],
         )
         self.assertEqual(
             ["e5eb4fcb-6c49-4ab2-86f9-1605ccd192ab"],
-            slot_a["dependency_overrides"],
+            bge["dependency_overrides"],
         )
 
-        slot_b = tracked["slots"]["B"]
-        self.assertEqual("e28154da-0649-5da7-b6d5-3bff2891719e", slot_b["unit"]["project_uuid"])
-        self.assertEqual("0.1.0-canary8", slot_b["unit"]["version"])
+        trowel = slot_a_by_uuid["e28154da-0649-5da7-b6d5-3bff2891719e"]
+        self.assertEqual("0.1.0-canary9", trowel["unit"]["version"])
         self.assertEqual(
-            "f907bdab139fd2ec68f8741f5a449b9ee0c973f4",
-            slot_b["unit"]["source_commit"],
+            "844bccbb6f9efdfb36749c719d1fb396f71b626f",
+            trowel["unit"]["source_commit"],
         )
         self.assertEqual(
             [
                 (
-                    "shulker-trowel-0.1.0-canary8-private.jar",
-                    "2e74d902c46cb3072ab33cdc56ac6ae55e2fd5ec0f4e5ee297cfebec338513ab",
+                    "shulker-trowel-0.1.0-canary9-private.jar",
+                    "b78679eaf6eaf6f7ff75a32ffae024e45515de3af38bf2ed92ac8727a5138df8",
                 )
             ],
-            [(artifact["filename"], artifact["sha256"]) for artifact in slot_b["unit"]["artifacts"]],
+            [(artifact["filename"], artifact["sha256"]) for artifact in trowel["unit"]["artifacts"]],
         )
-        self.assertEqual("READY_TO_TEST_VERIFIED", slot_b["deployment"]["state"])
-        self.assertEqual("UNTESTED", slot_b["runtime_result"]["classification"])
+        self.assertEqual("UNTESTED", trowel["runtime_result"]["classification"])
+        self.assertEqual("READY_TO_TEST_VERIFIED", slot_a["deployment"]["state"])
+        self.assertEqual("2026-09-02T01:58:09Z", slot_a["deployment"]["deployed_at"])
+        self.assertEqual("2026-09-02T01:58:09Z", slot_a["deployment"]["ready_verified_at"])
+        self.assertIsNone(tracked["slots"]["B"])
 
 
 class CurrentStateBootstrapTests(unittest.TestCase):

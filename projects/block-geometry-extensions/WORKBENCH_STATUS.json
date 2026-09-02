@@ -70,7 +70,7 @@
     ]
   },
   "state": {
-    "milestone": "Manager revision 61 verifies exact unified C57 still in Slot A as READY_TO_TEST_VERIFIED, with the user's broad nonvisual behavior report recorded as PASS and C57 overall recorded as FAIL solely for the glass-Corner visual/UV defect; no row-level observations were inferred. C58 is the statically validated model-only successor derived from the exact user-supplied NORTH_EAST Blockbench geometry/UV contract, but it is NOT_DEPLOYED and RUNTIME_UNTESTED because unchanged Slot B Shulker Trowel C8 pins exact C57 and would be loader-incompatible with C58. The manager replacement was deliberately not attempted, both slots and physical artifacts remain unchanged, and accepted/rollback BGE C52 remains exact and unpromoted.",
+    "milestone": "Manager revision 62 atomically replaced the accidental split-slot C57/C9 state with one verified Slot A cohort containing exact current BGE C58 and compatible Shulker Trowel C10/Private Canary 9; Slot B is empty. The prior user observation remains bound only to exact C57, which failed solely for its glass-Corner visual/UV issue; C58 had not been loaded before this transition and remains independently RUNTIME_UNTESTED. Post-transition verification returned PHYSICAL_STATE_VERIFIED, matched exact hashes and embedded versions, resolved Trowel's bounded dependency to exact C58, proved the unified BGE JAR alone owns both BGE and legacy Nibaru IDs, and found no enabled standalone Nibaru or C57 artifact. Accepted/rollback BGE C52 and its accepted standalone Nibaru dependency identity remain unchanged and disabled as required; no C58 visual fix, runtime pass, or promotion is claimed.",
     "releases": {
       "current": {
         "version": "C58 (Glass Corner UV; embedded 4.2.2-bge.canary58.glass-corner-uv+26.2)",
@@ -101,17 +101,17 @@
     },
     "validation": {
       "build": "CONTROLLED_VALIDATION_PASS",
-      "deployment": "NOT_DEPLOYED",
+      "deployment": "READY_TO_TEST_VERIFIED",
       "runtime": "RUNTIME_UNTESTED"
     },
     "blocker": null
   },
   "synchronization": {
-    "revision": 14,
-    "activity_at": "2026-09-01T05:35:59Z",
-    "updated_at": "2026-09-01T05:35:59Z",
-    "last_codex_at": "2026-09-01T05:35:59Z",
-    "source_commit": "d1d753a86b21467141bd39a0bcc1270f7827a8d7",
+    "revision": 15,
+    "activity_at": "2026-09-02T02:04:38Z",
+    "updated_at": "2026-09-02T02:04:38Z",
+    "last_codex_at": "2026-09-02T02:04:38Z",
+    "source_commit": "eae004d5a4db4b36b5a2103aec49b9b237ab26ea",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null

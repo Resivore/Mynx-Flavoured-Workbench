@@ -1,11 +1,11 @@
 # Shulker Trowel C10 runtime procedure
 
-Target Slot A cohort:
+Verified Slot A cohort:
 
 - BGE C58: `cnm-nibaru-integration-4.2.2-bge.canary58.glass-corner-uv+26.2.jar`, SHA-256 `1a4e4d1cd9c8709720ec84975e70caffb5552ac676537b9bbae42dca96567e87`.
 - Shulker Trowel C10 / Private Canary 9: `shulker-trowel-0.1.0-canary9-private.jar`, 44,738 bytes, SHA-256 `b78679eaf6eaf6f7ff75a32ffae024e45515de3af38bf2ed92ac8727a5138df8`.
 
-Use only the dedicated Minecraft 26.2 Workbench, and begin only after the manager has verified the exact two-member Slot A cohort as `READY_TO_TEST_VERIFIED`. Slot B must be empty, and the visible title must identify both BGE C58 and Shulker Trowel Canary 9. Keep CNM external and enable no standalone Nibaru JAR.
+Manager revision 62 verifies this exact two-member Slot A cohort as `READY_TO_TEST_VERIFIED / UNTESTED` and Slot B as empty. Before testing, run manager verification and require `PHYSICAL_STATE_VERIFIED`, the same exact filenames and hashes, and the visible title `Slot A: Block Geometry Extensions (BGE) - Canary 58 + Shulker Trowel - Canary 9`. Use only the dedicated Minecraft 26.2 Workbench. Keep CNM external and enable no standalone Nibaru JAR.
 
 ## Focused C58 compatibility checks
 
