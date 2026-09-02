@@ -4009,7 +4009,10 @@ def _read_fabric_manifest_from_archive(
             budget=budget,
             declared_nested_jar=False,
         )
-        manifest = json.loads(manifest_bytes.decode("utf-8"))
+        # Fabric Loader 0.19.3's vendored JsonReader accepts raw C0 control
+        # characters inside quoted metadata strings. Keep that compatibility
+        # scoped to fabric.mod.json; manager state/config JSON remains strict.
+        manifest = json.loads(manifest_bytes.decode("utf-8"), strict=False)
     except (UnicodeDecodeError, json.JSONDecodeError, RuntimeError, zipfile.BadZipFile) as exc:
         raise ManagerError(f"cannot read Fabric manifest from {label}: {exc}") from exc
     if not isinstance(manifest, dict):

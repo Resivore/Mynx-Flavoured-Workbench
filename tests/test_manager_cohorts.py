@@ -624,6 +624,19 @@ class FabricDependencyGraphTests(unittest.TestCase):
 
 
 class DeclaredNestedFabricJarTests(unittest.TestCase):
+    @staticmethod
+    def raw_control_manifest_jar(primary_id: str) -> bytes:
+        manifest = (
+            b'{"schemaVersion":1,"id":"'
+            + primary_id.encode("ascii")
+            + b'","version":"1.0.0","name":"raw control",'
+            b'"description":"line one\nline two"}'
+        )
+        output = io.BytesIO()
+        with zipfile.ZipFile(output, "w", compression=zipfile.ZIP_STORED) as archive:
+            archive.writestr("fabric.mod.json", manifest)
+        return output.getvalue()
+
     def write_outer(
         self,
         directory: Path,
@@ -706,6 +719,61 @@ class DeclaredNestedFabricJarTests(unittest.TestCase):
             resolutions["yumi_commons_event"]["provider"]["provenance"]["nested_depth"],
         )
         json.dumps(report)
+
+    def test_loader_valid_raw_control_character_parses_in_root_and_nested_manifests(self) -> None:
+        nested_bytes = self.raw_control_manifest_jar("raw_nested")
+        member_path = "META-INF/jars/raw-nested.jar"
+        outer_bytes = fabric_mod_jar_bytes(
+            "raw_root",
+            "1.0.0",
+            depends={"raw_nested": "=1.0.0"},
+            declared_paths=(member_path,),
+            nested_entries=((member_path, nested_bytes),),
+        )
+        # Exercise the same leniency in the root descriptor as well.
+        with zipfile.ZipFile(io.BytesIO(outer_bytes), "r") as source:
+            entries = [(entry.filename, source.read(entry)) for entry in source.infolist()]
+        root_manifest = json.loads(next(data for name, data in entries if name == "fabric.mod.json"))
+        root_manifest["description"] = "line one\nline two"
+        rewritten = io.BytesIO()
+        with zipfile.ZipFile(rewritten, "w", compression=zipfile.ZIP_STORED) as archive:
+            for name, data in entries:
+                if name == "fabric.mod.json":
+                    data = json.dumps(root_manifest, sort_keys=True).encode("utf-8").replace(
+                        b"line one\\nline two", b"line one\nline two"
+                    )
+                archive.writestr(name, data)
+
+        with tempfile.TemporaryDirectory() as temporary:
+            path, artifact_record = self.write_outer(
+                Path(temporary), rewritten.getvalue(), primary_id="raw_root", version="1.0.0"
+            )
+            descriptors = _read_fabric_descriptor_tree(
+                path,
+                relative_path="mods/raw-root.jar",
+                artifact=artifact_record,
+            )
+
+        self.assertEqual(["raw_root", "raw_nested"], [item.primary_id for item in descriptors])
+        self.assertEqual("1.0.0", self.resolve(descriptors, "raw_root")["resolutions"][0]["provider"]["version"])
+
+    def test_loader_leniency_does_not_accept_structurally_invalid_manifest(self) -> None:
+        output = io.BytesIO()
+        with zipfile.ZipFile(output, "w", compression=zipfile.ZIP_STORED) as archive:
+            archive.writestr(
+                "fabric.mod.json",
+                b'{"schemaVersion":1,"id":"broken","version":"1.0.0",}',
+            )
+        with tempfile.TemporaryDirectory() as temporary:
+            path, artifact_record = self.write_outer(
+                Path(temporary), output.getvalue(), primary_id="broken", version="1.0.0"
+            )
+            with self.assertRaisesRegex(ManagerError, "cannot read Fabric manifest"):
+                _read_fabric_descriptor_tree(
+                    path,
+                    relative_path="mods/broken.jar",
+                    artifact=artifact_record,
+                )
 
     def test_default_and_client_environments_are_client_eligible(self) -> None:
         provider = fabric_mod_jar_bytes("nested_provider", "1.0.0")
