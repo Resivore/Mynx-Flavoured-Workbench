@@ -21,6 +21,7 @@ dependencies {
 
     testImplementation platform('org.junit:junit-bom:5.13.4')
     testImplementation 'org.junit.jupiter:junit-jupiter'
+    testImplementation 'org.ow2.asm:asm:9.10.1'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
@@ -48,6 +49,40 @@ tasks.withType(JavaCompile).configureEach {
 test {
     useJUnitPlatform()
     systemProperty 'projectRoot', projectDir.absolutePath
+
+    def repositoryRoot = projectDir.toPath().resolve('../..').normalize().toFile()
+    def testedArtifactName = project.property('easy_shulker_boxes_tested_jar').toString()
+    def candidates = []
+    def configuredArtifact = providers.gradleProperty('easyShulkerBoxesJar')
+            .orElse(providers.environmentVariable('EASY_SHULKER_BOXES_JAR'))
+            .orNull
+    if (configuredArtifact != null && !configuredArtifact.isBlank()) {
+        candidates.add(file(configuredArtifact))
+    }
+    candidates.add(new File(repositoryRoot, "originals/mods/${testedArtifactName}"))
+
+    def gitMarker = new File(repositoryRoot, '.git')
+    if (gitMarker.isFile()) {
+        def markerText = gitMarker.getText('UTF-8').trim()
+        if (markerText.startsWith('gitdir:')) {
+            def worktreeGitDir = new File(markerText.substring('gitdir:'.length()).trim())
+            if (!worktreeGitDir.isAbsolute()) {
+                worktreeGitDir = new File(repositoryRoot, worktreeGitDir.path)
+            }
+            def commonGitDir = worktreeGitDir.parentFile?.name == 'worktrees'
+                    ? worktreeGitDir.parentFile.parentFile
+                    : worktreeGitDir
+            if (commonGitDir != null) {
+                candidates.add(new File(commonGitDir.parentFile, "originals/mods/${testedArtifactName}"))
+            }
+        }
+    }
+
+    def testedArtifact = candidates.find { it.isFile() }
+    systemProperty 'easyShulkerBoxesJar', testedArtifact == null ? '' : testedArtifact.absolutePath
+    if (testedArtifact != null) {
+        inputs.file(testedArtifact)
+    }
 }
 
 java {

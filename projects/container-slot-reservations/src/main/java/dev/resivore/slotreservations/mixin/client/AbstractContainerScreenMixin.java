@@ -1,6 +1,7 @@
 package dev.resivore.slotreservations.mixin.client;
 
 import dev.resivore.slotreservations.client.ClientReservationState;
+import dev.resivore.slotreservations.client.ReservationVisualRenderer;
 import dev.resivore.slotreservations.client.ReservationScreenAccess;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
@@ -22,9 +23,6 @@ import java.util.Optional;
 
 @Mixin(AbstractContainerScreen.class)
 abstract class AbstractContainerScreenMixin implements ReservationScreenAccess {
-    private static final int GHOST_WASH = 0x88D8F4F1;
-    private static final int RESERVATION_MARKER = 0xFF24C7B8;
-
     @Shadow @Final protected AbstractContainerMenu menu;
     @Shadow protected Slot hoveredSlot;
     @Shadow @Final protected int imageWidth;
@@ -44,17 +42,15 @@ abstract class AbstractContainerScreenMixin implements ReservationScreenAccess {
     ) {
         Optional<ItemStack> reservation = ClientReservationState.template(menu, slot);
         if (reservation.isEmpty()) return;
-
-        if (slot.getItem().isEmpty()) {
-            ItemStack ghost = reservation.orElseThrow().copyWithCount(1);
-            graphics.item(ghost, slot.x, slot.y, slot.x + slot.y * imageWidth);
-            // 26.2 has no public alpha argument for extracted GUI items. A translucent
-            // post-composite wash makes the icon visibly ghosted without a fake count.
-            graphics.fill(slot.x, slot.y, slot.x + 16, slot.y + 16, GHOST_WASH);
-            graphics.outline(slot.x, slot.y, 16, 16, RESERVATION_MARKER);
-        } else {
-            graphics.fill(slot.x + 13, slot.y, slot.x + 16, slot.y + 3, RESERVATION_MARKER);
-        }
+        ReservationVisualRenderer.extract(
+                graphics,
+                Minecraft.getInstance().font,
+                slot.getItem(),
+                reservation,
+                slot.x,
+                slot.y,
+                slot.x + slot.y * imageWidth
+        );
     }
 
     @Inject(method = "extractTooltip", at = @At("HEAD"), cancellable = true)

@@ -3,7 +3,7 @@
   "id": "quick_stack_nearby_compat",
   "version": "${version}",
   "name": "Workbench Quick Stack Nearby Compatibility",
-  "description": "Unified Workbench compatibility layer for Quick Stack Nearby; Canary 6 retains Canary 5 behavior and restores Inventory Search eligibility on Inventory Extended's player InventoryScreen.",
+  "description": "Unified Workbench compatibility layer for Quick Stack Nearby; Canary 7 adds optional Container Slot Reservations affinity and insertion while retaining Canary 6 behavior.",
   "authors": ["Resivore"],
   "license": "MIT",
   "environment": "*",
@@ -16,18 +16,19 @@
     "minecraft": "=26.2",
     "java": ">=25",
     "fabric-api": ">=0.157.0",
-    "quick-stack-nearby": "=0.4.0"
+    "quick-stack-nearby": ">=0.4.0"
   },
   "suggests": {
-    "inventorysearch": "=3.4.0",
-    "inventoryextended": "=1.1.2",
-    "clutternomore": "=2.0.7+26.2",
-    "cnm_terrain_slabs_compat": "=0.5.46-nibaru-cnm-canary1.36-pale-coverage",
-    "more_slabs_stairs_and_walls": "=4.2.0+26.2-port-canary40-pale-coverage"
+    "container_slot_reservations": "*",
+    "inventorysearch": "*",
+    "inventoryextended": "*",
+    "clutternomore": "*",
+    "cnm_terrain_slabs_compat": "*",
+    "more_slabs_stairs_and_walls": "*"
   },
   "custom": {
     "workbench:classification": "GENERATED / STATICALLY VALIDATED / RUNTIME UNTESTED",
     "workbench:deployment": "NOT DEPLOYED",
-    "workbench:runtime-slot-owner": "Slab Decorations"
+    "workbench:runtime-slot-owner": "Quick Stack Nearby Compatibility — Canary 7"
   }
 }

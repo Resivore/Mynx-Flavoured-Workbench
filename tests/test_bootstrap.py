@@ -1687,20 +1687,20 @@ class RuntimeContractTests(unittest.TestCase):
         csr_manifest = load_json(ROOT / "projects" / "container-slot-reservations" / "WORKBENCH_STATUS.json")
         qsn_manifest = load_json(ROOT / "projects" / "quick-stack-nearby-compat" / "WORKBENCH_STATUS.json")
         slab_manifest = load_json(ROOT / "projects" / "slab-decorations" / "WORKBENCH_STATUS.json")
-        self.assertEqual("ACCEPTED", csr_manifest["definition"]["lifecycle"])
+        self.assertEqual("ACTIVE", csr_manifest["definition"]["lifecycle"])
         self.assertEqual("TESTING", qsn_manifest["definition"]["lifecycle"])
         for manifest in (csr_manifest, qsn_manifest):
-            self.assertEqual("READY_TO_TEST_VERIFIED", manifest["state"]["validation"]["deployment"])
+            self.assertEqual("NOT_DEPLOYED", manifest["state"]["validation"]["deployment"])
         self.assertEqual(
             "CURRENT_RELEASE_NOT_DEPLOYED",
             current_release_deployment_comparison(csr_manifest, tracked),
         )
         self.assertEqual(
-            "CURRENT_RELEASE_DEPLOYED",
+            "OLDER_RELEASE_DEPLOYED",
             current_release_deployment_comparison(qsn_manifest, tracked),
         )
-        self.assertEqual("RUNTIME_PASS", csr_manifest["state"]["validation"]["runtime"])
-        self.assertEqual("RUNTIME_PASS", qsn_manifest["state"]["validation"]["runtime"])
+        self.assertEqual("RUNTIME_UNTESTED", csr_manifest["state"]["validation"]["runtime"])
+        self.assertEqual("RUNTIME_UNTESTED", qsn_manifest["state"]["validation"]["runtime"])
         self.assertEqual("ACTIVE", slab_manifest["definition"]["lifecycle"])
         self.assertEqual("NOT_DEPLOYED", slab_manifest["state"]["validation"]["deployment"])
         self.assertEqual("RUNTIME_UNTESTED", slab_manifest["state"]["validation"]["runtime"])
