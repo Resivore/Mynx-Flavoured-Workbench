@@ -1,9 +1,22 @@
 # Testing
 
-C6 (`0.1.0-canary6`) is the current and accepted release. Its exact retained
+C6 (`0.1.0-canary6`) is the current and accepted release and now independently
+occupies Test Slot B for regression with result `UNTESTED`. Its exact slot
 artifact is `quick-stack-nearby-compat-0.1.0-canary6.jar`, 21,805 bytes, with
 SHA-256
-`c2f4ae3b02a5517ad184998c784c356d90132aeaee91546c91d03a878be6ce98`.
+`c2f4ae3b02a5517ad184998c784c356d90132aeaee91546c91d03a878be6ce98`,
+source `3c8cc5917da9fd016e57a969955fa7c6e3b08661`, deployment
+`34dcf31b-99c9-4c64-9978-f1f94782ed9a`, and slot artifact
+`7293a2b5-ea16-4929-af1b-a6c15f0aef32`. Manager revision 68 physically
+verified `CURRENT_RELEASE_DEPLOYED / READY_TO_TEST_VERIFIED`.
+
+The exact accepted upstream companion remains baseline infrastructure, not a
+slot member: `quick-stack-nearby-0.4.0.jar`, SHA-256
+`43f1130527f782a291231c682791b4fd3766a20916c691cbdb98f91fdcc47e53`,
+accepted deployment `66b8b293-d9ae-41c4-a969-d43baf79c2ff`, artifact
+`cb31d144-b6c4-41fb-ba44-35d896b228f6`. It owns
+`quick-stack-nearby` exactly once and receives no runtime result; the C6 slot
+artifact owns `quick_stack_nearby_compat` exactly once.
 
 The distinct passing rollback is C4 (`0.1.0-canary4`), retained as
 `quick-stack-nearby-compat-0.1.0-canary4.jar`, 17,181 bytes, with SHA-256
@@ -11,8 +24,9 @@ The distinct passing rollback is C4 (`0.1.0-canary4`), retained as
 C4 is superseded, not failed. C5 is a failed dual-button-visibility predecessor
 and is not a rollback release.
 
-This migration does not deploy either artifact, alter a Test Slot or accepted
-physical baseline, launch Minecraft, or add runtime evidence.
+This regression assignment did not launch Minecraft or add, copy, or infer a
+runtime result. The canonical project-level `RUNTIME_PASS` remains the earlier
+accepted C6 aggregate pass; the new Slot B result is independently `UNTESTED`.
 
 ## Preserved evidence
 
@@ -58,6 +72,11 @@ enabled stack, world, log, filenames, versions, and SHA-256 values before
 testing. When reproducing the original C6 environment, use Inventory Search
 3.4.0, embedded Inventory Sort Core 3.4.0, patched Inventory Extended 1.1.2
 Canary 4, Clutter No More 2.0.7+26.2, Nibaru C42, and CNM integration 1.36.
+Before testing, require manager revision 68 or a later canonical revision that
+preserves the exact Slot B deployment/artifact and accepted companion identities
+above, reports `READY_TO_TEST_VERIFIED`, and still shows Slot B `UNTESTED`.
+Stop if either Fabric ID has zero or multiple enabled owners, or if Slot A is no
+longer exact Container Slot Reservations C1.
 
 1. Open the normal Survival player inventory. Confirm Inventory Search owns
    the base right-edge button and QSN appears directly below it, with no shared

@@ -12,7 +12,7 @@
     ]
   },
   "definition": {
-    "lifecycle": "TESTING",
+    "lifecycle": "ACTIVE",
     "goals": [
       "Allow the exact curated vanilla foliage and growable-plant set to use the real horizontal surfaces of canonical Nibaru slabs while preserving each vanilla block's identity, state, lifecycle, growth, harvesting, replacement, and drops.",
       "Delegate bonemeal on exact dry bottom native Nibaru slabs for canonical Grass Block, Moss Block, and Pale Moss Block through the corresponding Minecraft 26.2 substrate implementation without broadening material or geometry ownership."
@@ -20,7 +20,7 @@
     "scope": [
       "Maintain C3 as the metadata-only successor to exact C2, changing only the root Fabric descriptor so runtime eligibility is expressed through the stable `more_slabs_stairs_and_walls` capability/provider contract instead of a standalone Nibaru version pin.",
       "Preserve the exact C2 implementation from frozen legacy project lineage bf1af349a0e43a49f12279e8e49794a2e1423aac, including canonical support resolution, half-height model/outline/targeting representation, survival behavior, narrow plant allowlist, tall-grass/large-fern growth, nether-wart behavior, and bounded substrate bonemeal for Grass Block, Moss Block, and Pale Moss Block.",
-      "Exercise exact C3 in Test Slot B against unified BGE C58, which alone provides both `cnm_terrain_slabs_compat` and the stable `more_slabs_stairs_and_walls` alias; no standalone Nibaru artifact is part of the enabled graph.",
+      "Preserve exact C3 and its completed controlled-validation evidence outside the runtime profile after manager revision 68 cleared it from Test Slot B without a runtime result or promotion.",
       "Keep Clutter No More and primary BGE integration IDs as flexible optional suggestions while treating exact BGE C58, CNM 2.0.7, Terrain Slabs 3.3.2, Java 25, Gradle 9.5.1, and Loom 1.17.19 only as build, test, or read-only comparison baselines."
     ],
     "boundaries": {
@@ -32,7 +32,7 @@
         "Nylium, top/double/waterlogged slabs, vertical slabs, CNM Steps, stairs, walls, arbitrary partial geometry, and unsupported materials remain outside substrate bonemeal.",
         "Mushrooms, saplings and direct lowered-azalea tree growth, mangrove propagules, crops/farmland, sweet berry bushes, columns, arbitrary double plants, aquatic plants, lanterns, and other decorations remain deferred.",
         "Unified Block Geometry Extensions retains canonical material/native-slab ownership and BGE/CNM retain their own geometry and switching systems; this project adds no duplicate plant blocks, persisted offset state, registry-name parser, competing material table, or standalone Nibaru dependency.",
-        "No Minecraft launch, runtime-result inference, accepted-stack promotion of Slab Decorations, unrelated runtime-slot mutation, or protected gameplay-instance access."
+        "No Minecraft launch, runtime-result inference, or accepted-stack promotion of Slab Decorations occurred when C3 left Slot B; future deployment still requires an explicit managed-slot transition, and the protected gameplay instance remains off-limits."
       ]
     },
     "dependencies": [
@@ -105,7 +105,7 @@
     ]
   },
   "state": {
-    "milestone": "C3 is the exact current metadata-only successor to C2. Archive comparison found 31 entries: only root `fabric.mod.json` changed, while the other 30 code/resource entries remained byte-identical. Controlled validation passed 1/1 JUnit test and 16/16 Fabric GameTests. Manager revision 67 deployed exact C3 to Slot B as `Slab Decorations - Canary 3` (deployment d6350d3f-bf00-4955-8b27-3f186dace93f; artifact a80957e9-041d-4758-96fa-fb6868051257) and returned CURRENT_RELEASE_DEPLOYED / READY_TO_TEST_VERIFIED. No Minecraft runtime result was recorded, so C3 remains independently RUNTIME_UNTESTED and unaccepted.",
+    "milestone": "C3 remains the exact current metadata-only successor to C2 with preserved 1/1 JUnit and 16/16 Fabric GameTest controlled-validation evidence. Manager revision 68 removed exact C3 from Slot B without promotion or a runtime result, so it is ACTIVE, NOT_DEPLOYED, independently RUNTIME_UNTESTED, and unaccepted.",
     "releases": {
       "current": {
         "version": "0.1.0-canary3",
@@ -126,17 +126,17 @@
     },
     "validation": {
       "build": "CONTROLLED_VALIDATION_PASS",
-      "deployment": "READY_TO_TEST_VERIFIED",
+      "deployment": "NOT_DEPLOYED",
       "runtime": "RUNTIME_UNTESTED"
     },
     "blocker": null
   },
   "synchronization": {
-    "revision": 2,
-    "activity_at": "2026-09-02T17:00:13Z",
-    "updated_at": "2026-09-02T17:00:13Z",
-    "last_codex_at": "2026-09-02T17:00:13Z",
-    "source_commit": "27d9fc0f66fd32bcda8fef80cffd92ec5d964242",
+    "revision": 3,
+    "activity_at": "2026-09-03T03:22:44Z",
+    "updated_at": "2026-09-03T03:22:44Z",
+    "last_codex_at": "2026-09-03T03:22:44Z",
+    "source_commit": "41d13797ab05356b06b86fed7b4195518c6bc0a1",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null

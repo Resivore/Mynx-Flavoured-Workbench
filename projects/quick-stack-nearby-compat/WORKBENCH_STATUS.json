@@ -18,7 +18,7 @@
     ]
   },
   "definition": {
-    "lifecycle": "ACCEPTED",
+    "lifecycle": "TESTING",
     "goals": [
       "Preserve the exact accepted C6 compatibility layer for Quick Stack Nearby 0.4.0 across Inventory Extended player storage, CNM ShapeMap families, vanilla shelf exclusion, and the demonstrated Inventory Search interoperability seam.",
       "Keep Quick Stack Nearby responsible for discovery, target order, access checks, legal insertion, components, capacities, remainders, rules, persistence, and feedback while consuming only the existing optional owners' narrow public or proven seams.",
@@ -41,7 +41,7 @@
         "No Stack to Nearby Chests implementation, Matcha-specific QSN adapter, general Inventory Search patch, carried-container routing, nested-container routing, reserved-slot redesign, registry-name parsing, fuzzy material equivalence, item conversion, or custom stack merge is owned here.",
         "Official QSN, Inventory Search/Core, Inventory Extended, Clutter No More, BGE, Nibaru, Minecraft, and Fabric classes or JARs are not bundled or redistributed by this project.",
         "The C6 aggregate runtime pass does not establish individual checklist rows, dedicated-server coverage, later Nibaru/CNM-integration pair coverage, or compatibility with an unrecorded dependency identity.",
-        "This migration does not deploy, retest, promote, alter either Test Slot or the accepted physical baseline, mutate Test Instance Manager state, launch Minecraft, or access either gameplay profile."
+        "The current accepted C6 compatibility artifact may occupy a managed Test Slot for an independent regression only through the exact same-project accepted-companion passthrough; the accepted upstream QSN artifact remains baseline infrastructure and receives no slot result. No Minecraft launch, new runtime-result inference, promotion, or protected gameplay-instance access is part of this transition."
       ]
     },
     "dependencies": [
@@ -138,10 +138,11 @@
     ]
   },
   "state": {
-    "milestone": "C6 passed its aggregate focused runtime scope and remains the exact accepted cumulative-stack release; exact runtime-passed C4 is the distinct rollback.",
+    "milestone": "Exact accepted C6 now independently occupies Test Slot B for regression at manager revision 68 while its exact accepted QSN 0.4.0 companion remains baseline infrastructure. The new slot result is UNTESTED; C6's historical aggregate RUNTIME_PASS and exact runtime-passed C4 rollback remain unchanged.",
     "releases": {
       "current": {
         "version": "C6 (0.1.0-canary6)",
+        "embedded_version": "0.1.0-canary6",
         "artifact": {
           "filename": "quick-stack-nearby-compat-0.1.0-canary6.jar",
           "sha256": "c2f4ae3b02a5517ad184998c784c356d90132aeaee91546c91d03a878be6ce98"
@@ -150,6 +151,7 @@
       },
       "accepted": {
         "version": "C6 (0.1.0-canary6)",
+        "embedded_version": "0.1.0-canary6",
         "artifact": {
           "filename": "quick-stack-nearby-compat-0.1.0-canary6.jar",
           "sha256": "c2f4ae3b02a5517ad184998c784c356d90132aeaee91546c91d03a878be6ce98"
@@ -175,11 +177,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 1,
-    "activity_at": "2026-08-28T19:20:32Z",
-    "updated_at": "2026-08-29T22:46:04Z",
-    "last_codex_at": "2026-08-29T22:46:04Z",
-    "source_commit": "1ecb3473873256eef0a46f6b12db26828c22e1f8",
+    "revision": 2,
+    "activity_at": "2026-09-03T03:22:44Z",
+    "updated_at": "2026-09-03T03:22:44Z",
+    "last_codex_at": "2026-09-03T03:22:44Z",
+    "source_commit": "41d13797ab05356b06b86fed7b4195518c6bc0a1",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null

@@ -1472,7 +1472,7 @@ class RuntimeContractTests(unittest.TestCase):
         tracked = load_json(ROOT / "tools" / "test_instance_manager" / "runtime-state.json")
         self.assertEqual("ACTIVE", tracked["activation"])
         self.assertEqual(2, tracked["schema_version"])
-        self.assertEqual(67, tracked["revision"])
+        self.assertEqual(68, tracked["revision"])
         self.assertEqual(14, tracked["accepted_baseline"]["revision"])
         self.assertEqual(31, tracked["accepted_baseline"]["provenance"]["accepted_artifact_count"])
         self.assertEqual("TRANSITIONED", tracked["accepted_baseline"]["provenance"]["physical_disposition"])
@@ -1644,60 +1644,94 @@ class RuntimeContractTests(unittest.TestCase):
 
         slot_b = tracked["slots"]["B"]
         self.assertEqual(1, len(slot_b["members"]))
-        slab = slot_b["members"][0]
-        self.assertEqual("d6350d3f-bf00-4955-8b27-3f186dace93f", slab["unit"]["deployment_id"])
-        self.assertEqual("62e67860-8a3b-50a7-9c48-9878c01d899d", slab["unit"]["project_uuid"])
-        self.assertEqual("slab-decorations", slab["unit"]["project_id"])
-        self.assertEqual("0.1.0-canary3", slab["unit"]["version"])
-        self.assertEqual("2358342ebbd51cdd1b110e74e815205a68acc882", slab["unit"]["source_commit"])
+        qsn = slot_b["members"][0]
+        self.assertEqual("34dcf31b-99c9-4c64-9978-f1f94782ed9a", qsn["unit"]["deployment_id"])
+        self.assertEqual("ffa96cc6-2989-5465-b158-1659a484366b", qsn["unit"]["project_uuid"])
+        self.assertEqual("quick-stack-nearby-compat", qsn["unit"]["project_id"])
+        self.assertEqual("0.1.0-canary6", qsn["unit"]["version"])
+        self.assertEqual("3c8cc5917da9fd016e57a969955fa7c6e3b08661", qsn["unit"]["source_commit"])
         self.assertEqual(
             (
-                "a80957e9-041d-4758-96fa-fb6868051257",
-                "slab-decorations-0.1.0-canary3.jar",
-                "5dfe24cf686a781c16dca46a11ef4112d7473e1f8d63fac659cb750c6709bf2b",
-                ["mod:slab_decorations"],
+                "7293a2b5-ea16-4929-af1b-a6c15f0aef32",
+                "quick-stack-nearby-compat-0.1.0-canary6.jar",
+                "c2f4ae3b02a5517ad184998c784c356d90132aeaee91546c91d03a878be6ce98",
+                ["mod:quick_stack_nearby_compat"],
             ),
             (
-                slab["unit"]["artifacts"][0]["artifact_id"],
-                slab["unit"]["artifacts"][0]["filename"],
-                slab["unit"]["artifacts"][0]["sha256"],
-                slab["unit"]["artifacts"][0]["ownership_keys"],
+                qsn["unit"]["artifacts"][0]["artifact_id"],
+                qsn["unit"]["artifacts"][0]["filename"],
+                qsn["unit"]["artifacts"][0]["sha256"],
+                qsn["unit"]["artifacts"][0]["ownership_keys"],
             ),
         )
-        self.assertIsNone(slab["replaces_accepted_deployment_id"])
+        self.assertEqual(
+            "66b8b293-d9ae-41c4-a969-d43baf79c2ff",
+            qsn["replaces_accepted_deployment_id"],
+        )
+        self.assertEqual(
+            [
+                {
+                    "artifact_id": "cb31d144-b6c4-41fb-ba44-35d896b228f6",
+                    "kind": "MOD",
+                    "filename": "quick-stack-nearby-0.4.0.jar",
+                    "sha256": "43f1130527f782a291231c682791b4fd3766a20916c691cbdb98f91fdcc47e53",
+                    "ownership_keys": ["mod:quick-stack-nearby"],
+                    "source": {
+                        "type": "ADOPTED_TARGET",
+                        "path": "mods/quick-stack-nearby-0.4.0.jar",
+                    },
+                }
+            ],
+            qsn["accepted_companion_artifacts"],
+        )
         self.assertEqual(
             {"classification": "UNTESTED", "recorded_at": None, "evidence": {"passed": [], "failed": []}},
-            slab["runtime_result"],
+            qsn["runtime_result"],
         )
         self.assertEqual("READY_TO_TEST_VERIFIED", slot_b["deployment"]["state"])
-        self.assertEqual("2026-09-02T16:58:44Z", slot_b["deployment"]["deployed_at"])
-        self.assertEqual("2026-09-02T16:58:44Z", slot_b["deployment"]["ready_verified_at"])
+        self.assertEqual("2026-09-03T03:22:44Z", slot_b["deployment"]["deployed_at"])
+        self.assertEqual("2026-09-03T03:22:44Z", slot_b["deployment"]["ready_verified_at"])
 
         csr_manifest = load_json(ROOT / "projects" / "container-slot-reservations" / "WORKBENCH_STATUS.json")
+        qsn_manifest = load_json(ROOT / "projects" / "quick-stack-nearby-compat" / "WORKBENCH_STATUS.json")
         slab_manifest = load_json(ROOT / "projects" / "slab-decorations" / "WORKBENCH_STATUS.json")
-        for manifest in (csr_manifest, slab_manifest):
+        for manifest in (csr_manifest, qsn_manifest):
             self.assertEqual("TESTING", manifest["definition"]["lifecycle"])
             self.assertEqual("READY_TO_TEST_VERIFIED", manifest["state"]["validation"]["deployment"])
-            self.assertEqual("RUNTIME_UNTESTED", manifest["state"]["validation"]["runtime"])
             self.assertEqual(
                 "CURRENT_RELEASE_DEPLOYED",
                 current_release_deployment_comparison(manifest, tracked),
             )
+        self.assertEqual("RUNTIME_UNTESTED", csr_manifest["state"]["validation"]["runtime"])
+        self.assertEqual("RUNTIME_PASS", qsn_manifest["state"]["validation"]["runtime"])
+        self.assertEqual("ACTIVE", slab_manifest["definition"]["lifecycle"])
+        self.assertEqual("NOT_DEPLOYED", slab_manifest["state"]["validation"]["deployment"])
+        self.assertEqual("RUNTIME_UNTESTED", slab_manifest["state"]["validation"]["runtime"])
+        self.assertEqual(
+            "CURRENT_RELEASE_NOT_DEPLOYED",
+            current_release_deployment_comparison(slab_manifest, tracked),
+        )
 
         title_state = render_title_state(
             tracked,
             {
                 csr_manifest["identity"]["uuid"]: csr_manifest["identity"]["name"],
-                slab_manifest["identity"]["uuid"]: slab_manifest["identity"]["name"],
+                qsn_manifest["identity"]["uuid"]: qsn_manifest["identity"]["name"],
             },
         )
         self.assertEqual(
             [
                 "Baseline: Stack v14",
                 "Slot A: Container Slot Reservations - Canary 1",
-                "Slot B: Slab Decorations - Canary 3",
+                "Slot B: Quick Stack Nearby Compatibility - Canary 6",
             ],
             title_state["lines"],
+        )
+        self.assertEqual(
+            qsn["accepted_companion_artifacts"],
+            title_state["slots"]["B"]["accepted_companion_passthrough"][
+                "artifacts"
+            ],
         )
 
 
