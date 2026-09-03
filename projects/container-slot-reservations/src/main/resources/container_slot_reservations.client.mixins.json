@@ -4,7 +4,14 @@
   "compatibilityLevel": "JAVA_25",
   "client": [
     "AbstractContainerScreenMixin",
-    "KeyboardHandlerMixin"
+    "ClientItemContentsTooltipMixin",
+    "ContainerStorageTooltipMixin",
+    "GuiGraphicsExtractorGhostMixin",
+    "GuiItemRenderStateGhostMixin",
+    "GuiRendererGhostMixin",
+    "ItemContentsTooltipSourceMixin",
+    "KeyboardHandlerMixin",
+    "PictureInPictureRendererGhostMixin"
   ],
   "injectors": {
     "defaultRequire": 1

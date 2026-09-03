@@ -1,5 +1,8 @@
 package dev.resivore.slabdecorations.gametest;
 
+import com.google.gson.JsonElement;
+import com.mojang.serialization.JsonOps;
+import dev.resivore.slabdecorations.CanonicalSurvivalProjection;
 import dev.resivore.slabdecorations.NibaruHorizontalSurface;
 import dev.resivore.slabdecorations.PlantFamilyEligibility;
 import dev.resivore.slabdecorations.SlabPlantRaycast;
@@ -14,8 +17,8 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTestHelper;
-import net.minecraft.tags.BlockTags;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.BoneMealItem;
@@ -26,6 +29,7 @@ import net.minecraft.world.level.block.BonemealableBlock;
 import net.minecraft.world.level.block.DoublePlantBlock;
 import net.minecraft.world.level.block.MossyCarpetBlock;
 import net.minecraft.world.level.block.NetherWartBlock;
+import net.minecraft.world.level.block.SweetBerryBushBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
@@ -33,134 +37,215 @@ import net.minecraft.world.level.block.state.properties.SlabType;
 import net.minecraft.world.level.block.state.properties.WallSide;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Optional;
 
 public final class FoliageSurfaceGameTests implements CustomTestMethodInvoker {
     private static final double EPSILON = 1.0E-7D;
-    private static final List<Block> ORDINARY_FOLIAGE_PARENTS = List.of(
-            Blocks.GRASS_BLOCK,
-            Blocks.PODZOL,
-            Blocks.MYCELIUM,
-            Blocks.DIRT,
-            Blocks.COARSE_DIRT,
-            Blocks.ROOTED_DIRT,
-            Blocks.MUD,
-            Blocks.MUDDY_MANGROVE_ROOTS,
-            Blocks.MOSS_BLOCK,
-            Blocks.PALE_MOSS_BLOCK
-    );
 
     @GameTest(maxTicks = 40)
-    public void canonicalMaterialInventoryAndSubstrateAdapterRemainExact(GameTestHelper helper) {
-        long vegetationProfiles = NibaruMaterialProfiles.all().stream()
-                .filter(profile -> profile.nativeSlab().isPresent())
-                .filter(profile -> profile.canonicalParent().defaultBlockState().is(BlockTags.SUPPORTS_VEGETATION))
-                .count();
-        long dryProfiles = NibaruMaterialProfiles.all().stream()
-                .filter(profile -> profile.nativeSlab().isPresent())
-                .filter(profile -> profile.canonicalParent().defaultBlockState()
-                        .is(BlockTags.SUPPORTS_DRY_VEGETATION))
-                .count();
-        long wartProfiles = NibaruMaterialProfiles.all().stream()
-                .filter(profile -> profile.nativeSlab().isPresent())
-                .filter(profile -> profile.canonicalParent().defaultBlockState()
-                        .is(BlockTags.SUPPORTS_NETHER_WART))
-                .count();
+    public void structuralFamiliesAreDiscoveredWithoutARegistryPermissionList(GameTestHelper helper) {
+        assertFamily(helper, Blocks.DANDELION.defaultBlockState(),
+                PlantFamilyEligibility.Family.UPWARD_VEGETATION);
+        assertFamily(helper, Blocks.RED_MUSHROOM.defaultBlockState(),
+                PlantFamilyEligibility.Family.UPWARD_VEGETATION);
+        assertFamily(helper, Blocks.SWEET_BERRY_BUSH.defaultBlockState(),
+                PlantFamilyEligibility.Family.UPWARD_VEGETATION);
+        assertFamily(helper, Blocks.ROSE_BUSH.defaultBlockState(),
+                PlantFamilyEligibility.Family.DOUBLE_HEIGHT_VEGETATION);
+        assertFamily(helper, Blocks.SMALL_DRIPLEAF.defaultBlockState(),
+                PlantFamilyEligibility.Family.DOUBLE_HEIGHT_VEGETATION);
+        assertFamily(helper, Blocks.BIG_DRIPLEAF.defaultBlockState(),
+                PlantFamilyEligibility.Family.DRIPLEAF_COLUMN);
+        assertFamily(helper, Blocks.BIG_DRIPLEAF_STEM.defaultBlockState(),
+                PlantFamilyEligibility.Family.DRIPLEAF_COLUMN);
+        assertFamily(helper, Blocks.MOSS_CARPET.defaultBlockState(),
+                PlantFamilyEligibility.Family.SURFACE_FOLIAGE);
+        assertFamily(helper, Blocks.PALE_MOSS_CARPET.defaultBlockState(),
+                PlantFamilyEligibility.Family.SURFACE_FOLIAGE);
 
-        helper.assertTrue(vegetationProfiles == 10,
-                "accepted Nibaru inventory no longer has exactly ten native vegetation slab families");
-        helper.assertTrue(dryProfiles == 29,
-                "accepted Nibaru inventory no longer has exactly twenty-nine native dry-vegetation slab families");
-        helper.assertTrue(wartProfiles == 1,
-                "accepted Nibaru inventory no longer has exactly one native nether-wart slab family");
-
-        for (Block parent : ORDINARY_FOLIAGE_PARENTS) {
-            NibaruMaterialProfile profile = profile(parent);
-            Block slab = profile.nativeSlab().orElseThrow();
-            helper.assertTrue(profile.canonicalParent() == parent,
-                    "canonical parent identity changed for " + parent);
-            helper.assertTrue(NibaruMaterialProfiles.fromBlock(slab).orElseThrow() == profile,
-                    "native slab did not resolve to its exact canonical profile for " + parent);
-            helper.assertTrue(PlantFamilyEligibility.acceptsCanonicalParent(
-                            Blocks.DANDELION, profile.canonicalParent().defaultBlockState()),
-                    "ordinary foliage adapter rejected canonical parent " + parent);
+        for (Block excluded : List.of(
+                Blocks.WHEAT,
+                Blocks.PITCHER_CROP,
+                Blocks.OAK_SAPLING,
+                Blocks.CRIMSON_FUNGUS,
+                Blocks.SEAGRASS,
+                Blocks.LILY_PAD,
+                Blocks.CARPET.white(),
+                Blocks.RAIL,
+                Blocks.REDSTONE_WIRE,
+                Blocks.TORCH)) {
+            helper.assertTrue(PlantFamilyEligibility.family(excluded.defaultBlockState()).isEmpty(),
+                    "non-foliage or unsupported lifecycle family entered projection: " + excluded);
         }
 
-        helper.assertTrue(PlantFamilyEligibility.acceptsCanonicalParent(
-                        Blocks.DEAD_BUSH, Blocks.SAND.defaultBlockState())
-                        && PlantFamilyEligibility.acceptsCanonicalParent(
-                        Blocks.DEAD_BUSH, Blocks.RED_SAND.defaultBlockState())
-                        && PlantFamilyEligibility.acceptsCanonicalParent(
-                        Blocks.DEAD_BUSH, Blocks.TERRACOTTA.defaultBlockState()),
-                "dead-bush adapter stopped following the exact dry-vegetation tag");
-        helper.assertFalse(PlantFamilyEligibility.acceptsCanonicalParent(
-                        Blocks.DANDELION, Blocks.SAND.defaultBlockState()),
-                "ordinary flowers acquired sand support from the dead-bush family");
-        helper.assertTrue(PlantFamilyEligibility.acceptsCanonicalParent(
-                        Blocks.NETHER_WART, Blocks.SOUL_SAND.defaultBlockState()),
-                "nether wart adapter rejected soul sand");
-        helper.assertFalse(PlantFamilyEligibility.acceptsCanonicalParent(
-                        Blocks.NETHER_WART, Blocks.SOUL_SOIL.defaultBlockState()),
-                "nether wart adapter broadened from soul sand to soul soil");
-        for (Block invalid : List.of(Blocks.STONE, Blocks.GLASS)) {
-            helper.assertFalse(PlantFamilyEligibility.acceptsCanonicalParent(
-                            Blocks.DANDELION, invalid.defaultBlockState()),
-                    "ordinary flower accepted inappropriate canonical material " + invalid);
-            helper.assertFalse(PlantFamilyEligibility.acceptsCanonicalParent(
-                            Blocks.DEAD_BUSH, invalid.defaultBlockState()),
-                    "dead bush accepted inappropriate canonical material " + invalid);
+        EnumSet<PlantFamilyEligibility.Family> discovered = EnumSet.noneOf(
+                PlantFamilyEligibility.Family.class);
+        for (Block block : BuiltInRegistries.BLOCK) {
+            for (BlockState state : block.getStateDefinition().getPossibleStates()) {
+                PlantFamilyEligibility.family(state).ifPresent(discovered::add);
+            }
         }
+        helper.assertTrue(discovered.equals(EnumSet.allOf(PlantFamilyEligibility.Family.class)),
+                "registry-driven structural discovery did not exercise every root/segment family: "
+                        + discovered);
         helper.succeed();
     }
 
     @GameTest(maxTicks = 40)
-    public void actualPlacementSurvivalUsesCanonicalParentSemantics(GameTestHelper helper) {
+    public void redAndBrownMushroomsMatchPodzolAndRejectGlass(GameTestHelper helper) {
         BlockPos support = helper.absolutePos(new BlockPos(1, 1, 1));
         BlockPos plant = support.above();
+        for (Block mushroom : List.of(Blocks.RED_MUSHROOM, Blocks.BROWN_MUSHROOM)) {
+            assertCanonicalParity(helper, support, plant,
+                    mushroom.defaultBlockState(), Blocks.PODZOL, true);
+            assertCanonicalParity(helper, support, plant,
+                    mushroom.defaultBlockState(), Blocks.GLASS, false);
+        }
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 60)
+    public void smallAndBigDripleafMatchMossAndRejectGlassForEverySegment(GameTestHelper helper) {
+        BlockPos support = helper.absolutePos(new BlockPos(2, 1, 2));
         var level = helper.getLevel();
 
-        for (Block parent : ORDINARY_FOLIAGE_PARENTS) {
-            BlockState state = slab(parent, SlabType.BOTTOM);
-            BlockState flower = Blocks.DANDELION.defaultBlockState();
-            level.setBlock(support, state, 2);
-            level.setBlock(plant, flower, 2);
-            helper.assertTrue(flower.canSurvive(level, plant),
-                    "dandelion failed actual survival on canonical native slab " + parent);
-            NibaruHorizontalSurface.Surface surface = NibaruHorizontalSurface
-                    .supporting(flower, level, plant).orElseThrow();
-            helper.assertTrue(surface.profile() == profile(parent)
-                            && surface.supportState().getBlock() == profile(parent).nativeSlab().orElseThrow(),
-                    "surface resolution stopped using exact profile/native-slab identity for " + parent);
+        clearColumn(level, support, 5);
+        level.setBlock(support, Blocks.MOSS_BLOCK.defaultBlockState(), 2);
+        List<BlockPos> smallSegments = placeDouble(level, support.above(),
+                Blocks.SMALL_DRIPLEAF.defaultBlockState());
+        assertSegmentSurvival(helper, smallSegments, true,
+                "small dripleaf over canonical moss");
+        level.setBlock(support, slab(Blocks.MOSS_BLOCK, SlabType.BOTTOM), 2);
+        assertSegmentSurvival(helper, smallSegments, true,
+                "small dripleaf over native moss bottom slab");
+        level.setBlock(support, slab(Blocks.GLASS, SlabType.BOTTOM),
+                Block.UPDATE_SKIP_ALL_SIDEEFFECTS);
+        assertSegmentSurvival(helper, smallSegments, false,
+                "small dripleaf over canonical-rejecting glass slab");
+
+        clearColumn(level, support, 5);
+        level.setBlock(support, Blocks.MOSS_BLOCK.defaultBlockState(), 2);
+        List<BlockPos> bigSegments = placeBigDripleaf(level, support.above());
+        assertSegmentSurvival(helper, bigSegments, true,
+                "big dripleaf column over canonical moss");
+        level.setBlock(support, slab(Blocks.MOSS_BLOCK, SlabType.BOTTOM), 2);
+        assertSegmentSurvival(helper, bigSegments, true,
+                "big dripleaf column over native moss bottom slab");
+        for (BlockPos segment : bigSegments) {
+            helper.assertTrue(NibaruHorizontalSurface.visibleOffset(
+                            level.getBlockState(segment), level, segment)
+                            == NibaruHorizontalSurface.BOTTOM_OFFSET,
+                    "big dripleaf segment did not resolve through its physical root: " + segment);
+        }
+        level.setBlock(support, slab(Blocks.GLASS, SlabType.BOTTOM),
+                Block.UPDATE_SKIP_ALL_SIDEEFFECTS);
+        assertSegmentSurvival(helper, bigSegments, false,
+                "big dripleaf column over canonical-rejecting glass slab");
+
+        clearColumn(level, support, 5);
+        level.setBlock(support, Blocks.MOSS_BLOCK.defaultBlockState(), 2);
+        List<BlockPos> leafSegments = placeBigDripleafLeafStack(level, support.above());
+        assertSegmentSurvival(helper, leafSegments, true,
+                "stacked big-dripleaf leaves over canonical moss");
+        level.setBlock(support, slab(Blocks.MOSS_BLOCK, SlabType.BOTTOM), 2);
+        assertSegmentSurvival(helper, leafSegments, true,
+                "stacked big-dripleaf leaves over native moss bottom slab");
+        for (BlockPos segment : leafSegments) {
+            helper.assertTrue(NibaruHorizontalSurface.visibleOffset(
+                            level.getBlockState(segment), level, segment)
+                            == NibaruHorizontalSurface.BOTTOM_OFFSET,
+                    "stacked big-dripleaf leaf did not resolve the leaf-on-leaf root");
+        }
+        level.setBlock(support, slab(Blocks.GLASS, SlabType.BOTTOM),
+                Block.UPDATE_SKIP_ALL_SIDEEFFECTS);
+        assertSegmentSurvival(helper, leafSegments, false,
+                "stacked big-dripleaf leaves over canonical-rejecting glass slab");
+
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 60)
+    public void retainedFoliageFamiliesFollowTheirOwnCanonicalSurvival(GameTestHelper helper) {
+        BlockPos support = helper.absolutePos(new BlockPos(2, 1, 2));
+        BlockPos plant = support.above();
+
+        for (PlantSupportCase testCase : List.of(
+                new PlantSupportCase(Blocks.DANDELION.defaultBlockState(), Blocks.GRASS_BLOCK, true),
+                new PlantSupportCase(Blocks.POPPY.defaultBlockState(), Blocks.GRASS_BLOCK, true),
+                new PlantSupportCase(Blocks.SHORT_GRASS.defaultBlockState(), Blocks.GRASS_BLOCK, true),
+                new PlantSupportCase(Blocks.FERN.defaultBlockState(), Blocks.GRASS_BLOCK, true),
+                new PlantSupportCase(Blocks.DEAD_BUSH.defaultBlockState(), Blocks.SAND, true),
+                new PlantSupportCase(Blocks.DEAD_BUSH.defaultBlockState(), Blocks.GLASS, false),
+                new PlantSupportCase(Blocks.NETHER_WART.defaultBlockState(), Blocks.SOUL_SAND, true),
+                new PlantSupportCase(Blocks.NETHER_WART.defaultBlockState(), Blocks.SOUL_SOIL, false),
+                new PlantSupportCase(Blocks.PINK_PETALS.defaultBlockState(), Blocks.GRASS_BLOCK, true),
+                new PlantSupportCase(Blocks.WILDFLOWERS.defaultBlockState(), Blocks.GRASS_BLOCK, true),
+                new PlantSupportCase(Blocks.AZALEA.defaultBlockState(), Blocks.MOSS_BLOCK, true),
+                new PlantSupportCase(Blocks.FLOWERING_AZALEA.defaultBlockState(), Blocks.MOSS_BLOCK, true),
+                new PlantSupportCase(Blocks.MOSS_CARPET.defaultBlockState(), Blocks.MOSS_BLOCK, true),
+                new PlantSupportCase(Blocks.PALE_MOSS_CARPET.defaultBlockState(), Blocks.PALE_MOSS_BLOCK, true))) {
+            assertCanonicalParity(helper, support, plant,
+                    testCase.plant(), testCase.parent(), testCase.expected());
         }
 
-        assertSurvival(helper, support, plant, Blocks.DEAD_BUSH, Blocks.SAND, true);
-        assertSurvival(helper, support, plant, Blocks.DANDELION, Blocks.SAND, false);
-        assertSurvival(helper, support, plant, Blocks.NETHER_WART, Blocks.SOUL_SAND, true);
-        assertSurvival(helper, support, plant, Blocks.NETHER_WART, Blocks.SOUL_SOIL, false);
-        assertSurvival(helper, support, plant, Blocks.DANDELION, Blocks.CALCITE, false);
-
-        BlockState flower = Blocks.DANDELION.defaultBlockState();
-        level.setBlock(support, Blocks.STONE_SLAB.defaultBlockState(), 2);
-        level.setBlock(plant, flower, 2);
-        helper.assertFalse(flower.canSurvive(level, plant),
-                "ordinary flower acquired support from a vanilla stone slab");
-        helper.assertTrue(NibaruHorizontalSurface.candidate(flower, level, plant).isEmpty(),
-                "vanilla stone slab was mistaken for a canonical Nibaru native slab");
-
-        for (SlabType type : List.of(SlabType.BOTTOM, SlabType.TOP)) {
-            BlockState waterloggedGrass = slab(Blocks.GRASS_BLOCK, type)
-                    .setValue(BlockStateProperties.WATERLOGGED, true);
-            level.setBlock(support, waterloggedGrass, 2);
-            level.setBlock(plant, flower, 2);
-            helper.assertFalse(flower.canSurvive(level, plant),
-                    "Canary 1 admitted terrestrial foliage over waterlogged " + type + " slab support");
-            helper.assertTrue(NibaruHorizontalSurface.supporting(flower, level, plant).isEmpty(),
-                    "waterlogged " + type + " slab entered the horizontal support path");
+        var level = helper.getLevel();
+        clearColumn(level, support, 4);
+        level.setBlock(support, slab(Blocks.GRASS_BLOCK, SlabType.BOTTOM), 2);
+        List<BlockPos> roseBush = placeDouble(level, plant, Blocks.ROSE_BUSH.defaultBlockState());
+        assertSegmentSurvival(helper, roseBush, true, "rose-bush halves over grass slab");
+        for (BlockPos segment : roseBush) {
+            helper.assertTrue(NibaruHorizontalSurface.visibleOffset(
+                            level.getBlockState(segment), level, segment)
+                            == NibaruHorizontalSurface.BOTTOM_OFFSET,
+                    "double-height flower segment did not share the root surface");
         }
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 60)
+    public void sweetBerryAgeStatesRetainCanonicalParityAndGrowthLifecycle(GameTestHelper helper) {
+        BlockPos support = helper.absolutePos(new BlockPos(2, 1, 2));
+        BlockPos bush = support.above();
+        var level = helper.getLevel();
+
+        for (int age = 0; age <= SweetBerryBushBlock.MAX_AGE; age++) {
+            BlockState state = Blocks.SWEET_BERRY_BUSH.defaultBlockState()
+                    .setValue(SweetBerryBushBlock.AGE, age);
+            assertCanonicalParity(helper, support, bush, state, Blocks.GRASS_BLOCK, true);
+            BlockState retained = level.getBlockState(bush);
+            helper.assertTrue(retained.equals(state)
+                            && retained.getValue(SweetBerryBushBlock.AGE) == age
+                            && retained.isRandomlyTicking() == (age < SweetBerryBushBlock.MAX_AGE)
+                            && codecRoundTrip(retained).equals(retained),
+                    "sweet-berry age state lost identity, ticking, or serialization at age " + age);
+        }
+
+        BlockState immature = Blocks.SWEET_BERRY_BUSH.defaultBlockState()
+                .setValue(SweetBerryBushBlock.AGE, 0);
+        assertCanonicalParity(helper, support, bush, immature, Blocks.GLASS, false);
+
+        level.setBlock(support, slab(Blocks.GRASS_BLOCK, SlabType.BOTTOM), 2);
+        level.setBlock(bush, immature, 2);
+        ItemStack boneMeal = new ItemStack(Items.BONE_MEAL, 2);
+        helper.assertTrue(BoneMealItem.growCrop(boneMeal, level, bush),
+                "sweet-berry bush lost ordinary bonemeal activation on projected grass");
+        BlockState grown = level.getBlockState(bush);
+        helper.assertTrue(boneMeal.getCount() == 1
+                        && grown.is(Blocks.SWEET_BERRY_BUSH)
+                        && grown.getValue(SweetBerryBushBlock.AGE) > 0
+                        && grown.canSurvive(level, bush)
+                        && level.getBlockState(support).equals(
+                                slab(Blocks.GRASS_BLOCK, SlabType.BOTTOM)),
+                "sweet-berry growth changed support/identity or failed to advance its age");
         helper.succeed();
     }
 
@@ -204,32 +289,125 @@ public final class FoliageSurfaceGameTests implements CustomTestMethodInvoker {
         helper.succeed();
     }
 
+    @GameTest(maxTicks = 80)
+    public void everyRootedSegmentMovesOutlineAndBothCollisionOverloadsExactlyOnce(
+            GameTestHelper helper) {
+        BlockPos support = helper.absolutePos(new BlockPos(2, 1, 2));
+        var level = helper.getLevel();
+        Entity geometryProbe = helper.spawn(EntityTypes.PIG, new BlockPos(0, 1, 0));
+
+        clearColumn(level, support, 6);
+        level.setBlock(support, Blocks.GRASS_BLOCK.defaultBlockState(), 2);
+        assertProjectedGeometry(helper, support, Blocks.GRASS_BLOCK,
+                placeDouble(level, support.above(), Blocks.ROSE_BUSH.defaultBlockState()),
+                geometryProbe, "double-height flower");
+
+        clearColumn(level, support, 6);
+        level.setBlock(support, Blocks.MOSS_BLOCK.defaultBlockState(), 2);
+        assertProjectedGeometry(helper, support, Blocks.MOSS_BLOCK,
+                placeDouble(level, support.above(), Blocks.SMALL_DRIPLEAF.defaultBlockState()),
+                geometryProbe, "small dripleaf");
+
+        clearColumn(level, support, 6);
+        level.setBlock(support, Blocks.MOSS_BLOCK.defaultBlockState(), 2);
+        assertProjectedGeometry(helper, support, Blocks.MOSS_BLOCK,
+                placeBigDripleaf(level, support.above()), geometryProbe, "big dripleaf");
+
+        clearColumn(level, support, 6);
+        level.setBlock(support, Blocks.MOSS_BLOCK.defaultBlockState(), 2);
+        assertProjectedGeometry(helper, support, Blocks.MOSS_BLOCK,
+                placeBigDripleafLeafStack(level, support.above()),
+                geometryProbe, "stacked big-dripleaf leaves");
+
+        clearColumn(level, support, 6);
+        level.setBlock(support, Blocks.PALE_MOSS_BLOCK.defaultBlockState(), 2);
+        assertProjectedGeometry(helper, support, Blocks.PALE_MOSS_BLOCK,
+                placePaleMossCarpet(level, support.above()), geometryProbe,
+                "pale-moss carpet column");
+
+        clearColumn(level, support, 6);
+        level.setBlock(support, Blocks.MOSS_BLOCK.defaultBlockState(), 2);
+        level.setBlock(support.above(), Blocks.AZALEA.defaultBlockState(), 2);
+        assertProjectedGeometry(helper, support, Blocks.MOSS_BLOCK,
+                List.of(support.above()), geometryProbe, "azalea default collision");
+
+        clearColumn(level, support, 6);
+        level.setBlock(support, Blocks.GRASS_BLOCK.defaultBlockState(), 2);
+        level.setBlock(support.above(), Blocks.WITHER_ROSE.defaultBlockState(), 2);
+        assertProjectedGeometry(helper, support, Blocks.GRASS_BLOCK,
+                List.of(support.above()), geometryProbe, "wither-rose entity-inside volume");
+        helper.succeed();
+    }
+
     @GameTest(maxTicks = 40)
-    public void cnmVerticalSlabAndStepNeverEnterHorizontalSurfacePath(GameTestHelper helper) {
+    public void waterloggedExcludedGeometryAndFullBlocksRemainOutsideProjection(GameTestHelper helper) {
         BlockPos support = helper.absolutePos(new BlockPos(1, 1, 1));
         BlockPos plant = support.above();
         var level = helper.getLevel();
+        BlockState flower = Blocks.DANDELION.defaultBlockState();
 
-        for (DerivedGeometrySupport.Geometry geometry : List.of(
-                DerivedGeometrySupport.Geometry.VERTICAL_SLAB,
-                DerivedGeometrySupport.Geometry.STEP)) {
-            Block derived = DerivedMaterialTraits.equivalent(Blocks.GRASS_BLOCK, geometry).orElseThrow();
+        level.setBlock(support, Blocks.GRASS_BLOCK.defaultBlockState(), 2);
+        level.setBlock(plant, flower, 2);
+        boolean fullSurvival = flower.canSurvive(level, plant);
+        VoxelShape fullOutline = flower.getShape(level, plant);
+        helper.assertTrue(fullSurvival
+                        && CanonicalSurvivalProjection.evaluate(flower, level, plant).isEmpty()
+                        && NibaruHorizontalSurface.candidate(flower, level, plant).isEmpty()
+                        && NibaruHorizontalSurface.visibleOffset(flower, level, plant) == 0.0D
+                        && sameShape(fullOutline, flower.getShape(level, plant)),
+                "ordinary full-block behavior was intercepted or geometrically changed");
+
+        BlockState mushroom = Blocks.RED_MUSHROOM.defaultBlockState();
+        level.setBlock(support, Blocks.GLASS.defaultBlockState(), 2);
+        level.setBlock(plant, mushroom, 2);
+        helper.assertTrue(!mushroom.canSurvive(level, plant)
+                        && CanonicalSurvivalProjection.evaluate(mushroom, level, plant).isEmpty()
+                        && NibaruHorizontalSurface.candidate(mushroom, level, plant).isEmpty()
+                        && NibaruHorizontalSurface.visibleOffset(mushroom, level, plant) == 0.0D,
+                "canonical rejection on an ordinary full block was broadened by projection");
+
+        BlockState waterlogged = slab(Blocks.GRASS_BLOCK, SlabType.BOTTOM)
+                .setValue(BlockStateProperties.WATERLOGGED, true);
+        level.setBlock(support, waterlogged, 2);
+        level.setBlock(plant, flower, 2);
+        helper.assertFalse(flower.canSurvive(level, plant),
+                "terrestrial foliage survived over a waterlogged bottom slab");
+        helper.assertTrue(NibaruHorizontalSurface.candidate(flower, level, plant).isPresent()
+                        && NibaruHorizontalSurface.supporting(flower, level, plant).isEmpty()
+                        && NibaruHorizontalSurface.visibleOffset(flower, level, plant) == 0.0D,
+                "waterlogged candidate entered usable or shifted surface geometry");
+
+        List<BlockState> excludedGeometry = new ArrayList<>();
+        for (DerivedGeometrySupport.Geometry geometry : DerivedGeometrySupport.Geometry.values()) {
+            Optional<Block> equivalent = DerivedMaterialTraits.equivalent(Blocks.GRASS_BLOCK, geometry);
+            if (geometry == DerivedGeometrySupport.Geometry.VERTICAL_SLAB
+                    || geometry == DerivedGeometrySupport.Geometry.STEP) {
+                helper.assertTrue(equivalent.isPresent(),
+                        "fixture is missing required canonical grass geometry " + geometry);
+            }
+            if (equivalent.isEmpty()) continue;
+            Block derived = equivalent.orElseThrow();
             DerivedMaterialTraits.Entry trait = DerivedMaterialTraits.fromBlock(derived).orElseThrow();
             helper.assertTrue(trait.canonicalParent() == Blocks.GRASS_BLOCK && trait.geometry() == geometry,
                     "fixture did not obtain the canonical CNM grass geometry " + geometry);
-            level.setBlock(support, derived.defaultBlockState(), 2);
-            level.setBlock(plant, Blocks.DANDELION.defaultBlockState(), 2);
-            helper.assertTrue(NibaruHorizontalSurface.supporting(
-                            level.getBlockState(plant), level, plant).isEmpty(),
-                    "CNM " + geometry + " entered the native horizontal-slab resolver");
-            helper.assertTrue(NibaruHorizontalSurface.visibleOffset(
-                            level.getBlockState(plant), level, plant) == 0.0D,
-                    "CNM " + geometry + " received a horizontal foliage offset");
-            ItemStack boneMeal = new ItemStack(Items.BONE_MEAL, 2);
-            helper.assertFalse(BoneMealItem.growCrop(boneMeal, level, support),
-                    "CNM " + geometry + " entered substrate bonemeal activation");
-            helper.assertTrue(boneMeal.getCount() == 2,
-                    "CNM " + geometry + " consumed bonemeal despite exclusion");
+            excludedGeometry.add(derived.defaultBlockState());
+        }
+        NibaruMaterialProfile grass = profile(Blocks.GRASS_BLOCK);
+        excludedGeometry.add(grass.nativeStair().orElseThrow().defaultBlockState());
+        excludedGeometry.add(grass.nativeWall().orElseThrow().defaultBlockState());
+        excludedGeometry.add(Blocks.STONE_SLAB.defaultBlockState());
+
+        for (BlockState geometry : excludedGeometry) {
+            level.setBlock(support, geometry, 2);
+            level.setBlock(plant, flower, 2);
+            helper.assertTrue(CanonicalSurvivalProjection.evaluate(flower, level, plant).isEmpty()
+                            && NibaruHorizontalSurface.candidate(flower, level, plant).isEmpty()
+                            && NibaruHorizontalSurface.supporting(flower, level, plant).isEmpty()
+                            && NibaruHorizontalSurface.visibleOffset(flower, level, plant) == 0.0D,
+                    "excluded support geometry entered canonical horizontal projection: " + geometry);
+            helper.assertTrue(SubstrateBonemeal.target(geometry).isEmpty(),
+                    "excluded support geometry entered this project's substrate adapter: "
+                            + geometry);
         }
         helper.succeed();
     }
@@ -376,21 +554,56 @@ public final class FoliageSurfaceGameTests implements CustomTestMethodInvoker {
     }
 
     @GameTest(maxTicks = 80)
-    public void invalidatingSupportTriggersVanillaNeighbourBreakage(GameTestHelper helper) {
-        BlockPos relativeSupport = new BlockPos(1, 1, 1);
-        BlockPos support = helper.absolutePos(relativeSupport);
-        BlockPos plant = support.above();
+    public void supportRemovalCleansSingleDoubleDripleafAndCarpetRoots(GameTestHelper helper) {
         var level = helper.getLevel();
+        List<RootedFixture> fixtures = new ArrayList<>();
 
-        level.setBlockAndUpdate(support, slab(Blocks.GRASS_BLOCK, SlabType.BOTTOM));
-        level.setBlockAndUpdate(plant, Blocks.DANDELION.defaultBlockState());
-        helper.assertTrue(level.getBlockState(plant).is(Blocks.DANDELION)
-                        && level.getBlockState(plant).canSurvive(level, plant),
-                "valid flower fixture did not establish on a bottom grass slab");
+        BlockPos flowerSupport = helper.absolutePos(new BlockPos(1, 1, 1));
+        level.setBlock(flowerSupport, slab(Blocks.GRASS_BLOCK, SlabType.BOTTOM), 2);
+        level.setBlock(flowerSupport.above(), Blocks.DANDELION.defaultBlockState(), 2);
+        fixtures.add(new RootedFixture(flowerSupport, List.of(flowerSupport.above())));
 
-        level.setBlockAndUpdate(support, slab(Blocks.CALCITE, SlabType.BOTTOM));
-        helper.succeedWhen(() -> helper.assertTrue(level.getBlockState(plant).isAir(),
-                "flower did not break through vanilla neighbour updates after support became invalid"));
+        BlockPos mushroomSupport = helper.absolutePos(new BlockPos(4, 1, 1));
+        level.setBlock(mushroomSupport, slab(Blocks.PODZOL, SlabType.BOTTOM), 2);
+        level.setBlock(mushroomSupport.above(), Blocks.BROWN_MUSHROOM.defaultBlockState(), 2);
+        fixtures.add(new RootedFixture(mushroomSupport, List.of(mushroomSupport.above())));
+
+        BlockPos doubleSupport = helper.absolutePos(new BlockPos(1, 1, 4));
+        level.setBlock(doubleSupport, slab(Blocks.GRASS_BLOCK, SlabType.BOTTOM), 2);
+        fixtures.add(new RootedFixture(doubleSupport,
+                placeDouble(level, doubleSupport.above(), Blocks.ROSE_BUSH.defaultBlockState())));
+
+        BlockPos smallSupport = helper.absolutePos(new BlockPos(4, 1, 4));
+        level.setBlock(smallSupport, slab(Blocks.MOSS_BLOCK, SlabType.BOTTOM), 2);
+        fixtures.add(new RootedFixture(smallSupport,
+                placeDouble(level, smallSupport.above(), Blocks.SMALL_DRIPLEAF.defaultBlockState())));
+
+        BlockPos bigSupport = helper.absolutePos(new BlockPos(7, 1, 1));
+        level.setBlock(bigSupport, slab(Blocks.MOSS_BLOCK, SlabType.BOTTOM), 2);
+        fixtures.add(new RootedFixture(bigSupport, placeBigDripleaf(level, bigSupport.above())));
+
+        BlockPos carpetSupport = helper.absolutePos(new BlockPos(7, 1, 4));
+        level.setBlock(carpetSupport, slab(Blocks.PALE_MOSS_BLOCK, SlabType.BOTTOM), 2);
+        fixtures.add(new RootedFixture(carpetSupport,
+                placePaleMossCarpet(level, carpetSupport.above())));
+
+        for (RootedFixture fixture : fixtures) {
+            assertSegmentSurvival(helper, fixture.segments(), true,
+                    "pre-removal rooted fixture at " + fixture.support());
+        }
+        for (RootedFixture fixture : fixtures) {
+            level.setBlockAndUpdate(fixture.support(), Blocks.AIR.defaultBlockState());
+        }
+
+        helper.succeedWhen(() -> {
+            for (RootedFixture fixture : fixtures) {
+                for (BlockPos segment : fixture.segments()) {
+                    helper.assertTrue(level.getBlockState(segment).isAir(),
+                            "support removal did not clean rooted segment at " + segment
+                                    + ": " + level.getBlockState(segment));
+                }
+            }
+        });
     }
 
     @GameTest(maxTicks = 40)
@@ -426,67 +639,95 @@ public final class FoliageSurfaceGameTests implements CustomTestMethodInvoker {
     }
 
     @GameTest(maxTicks = 40)
-    public void everyEligibleStateKeepsShiftedOutlineInsideItsLogicalColumn(GameTestHelper helper) {
+    public void repeatedProjectionIsGuardedAndNeverMutatesTheWorld(GameTestHelper helper) {
         BlockPos support = helper.absolutePos(new BlockPos(2, 1, 2));
-        BlockPos lower = support.above();
-        BlockPos upper = support.above(2);
+        BlockPos plant = support.above();
         var level = helper.getLevel();
-        int checkedStates = 0;
+        BlockState validSupport = slab(Blocks.PODZOL, SlabType.BOTTOM);
+        BlockState invalidSupport = slab(Blocks.GLASS, SlabType.BOTTOM);
+        BlockState mushroom = Blocks.RED_MUSHROOM.defaultBlockState();
 
-        for (Block plant : BuiltInRegistries.BLOCK) {
-            if (!PlantFamilyEligibility.isEligible(plant)) continue;
-            NibaruMaterialProfile supportProfile = stateSweepSupport(plant);
-
-            for (BlockState variant : plant.getStateDefinition().getPossibleStates()) {
-                // Clear the old double plant top-first. Replacing one paired block directly with a
-                // different DoublePlantBlock lets the removed old half clean up the newly placed half.
-                level.setBlock(upper, Blocks.AIR.defaultBlockState(), 2);
-                level.setBlock(lower, Blocks.AIR.defaultBlockState(), 2);
-                level.setBlock(support, supportProfile.nativeSlab().orElseThrow().defaultBlockState()
-                        .setValue(BlockStateProperties.SLAB_TYPE, SlabType.BOTTOM), 2);
-                if (PlantFamilyEligibility.isDoubleGrassCompanion(plant)) {
-                    DoublePlantBlock.placeAt(level, plant.defaultBlockState(), lower, 2);
-                } else if (PlantFamilyEligibility.isPaleMossCarpetCompanion(plant)
-                        && !variant.getValue(MossyCarpetBlock.BASE)) {
-                    level.setBlock(lower, plant.defaultBlockState(), 2);
-                    level.setBlock(upper, variant, 2);
-                } else {
-                    level.setBlock(lower, variant, 2);
-                    level.setBlock(upper, Blocks.AIR.defaultBlockState(), 2);
-                }
-
-                BlockPos checkedPos = PlantFamilyEligibility.isDoubleGrassCompanion(plant)
-                        && variant.getValue(BlockStateProperties.DOUBLE_BLOCK_HALF) == DoubleBlockHalf.UPPER
-                        || PlantFamilyEligibility.isPaleMossCarpetCompanion(plant)
-                        && !variant.getValue(MossyCarpetBlock.BASE)
-                        ? upper : lower;
-                BlockState checked = level.getBlockState(checkedPos);
-                boolean survives = checked.canSurvive(level, checkedPos);
-                boolean candidate = NibaruHorizontalSurface.candidate(checked, level, checkedPos).isPresent();
-                boolean supporting = NibaruHorizontalSurface.supporting(checked, level, checkedPos).isPresent();
-                double visibleOffset = NibaruHorizontalSurface.visibleOffset(checked, level, checkedPos);
-                helper.assertTrue(survives && candidate && supporting
-                                && visibleOffset == NibaruHorizontalSurface.BOTTOM_OFFSET,
-                        "eligible state did not establish the expected bottom-slab offset: " + checked
-                                + "; survives=" + survives
-                                + ", candidate=" + candidate
-                                + ", supporting=" + supporting
-                                + ", visibleOffset=" + visibleOffset
-                                + ", lower=" + level.getBlockState(lower)
-                                + ", upper=" + level.getBlockState(upper)
-                                + ", support=" + level.getBlockState(support));
-                AABB bounds = checked.getShape(level, checkedPos).bounds();
-                helper.assertTrue(bounds.minX >= -EPSILON && bounds.maxX <= 1.0D + EPSILON
-                                && bounds.minZ >= -EPSILON && bounds.maxZ <= 1.0D + EPSILON,
-                        "shifted outline escaped the logical X/Z column required by the ray DDA: " + checked);
-                helper.assertTrue(bounds.minY >= NibaruHorizontalSurface.BOTTOM_OFFSET - EPSILON,
-                        "eligible outline was translated downward more than once: " + checked);
-                checkedStates++;
-            }
+        level.setBlock(support, validSupport, 2);
+        level.setBlock(plant, mushroom, 2);
+        for (int attempt = 0; attempt < 32; attempt++) {
+            Optional<Boolean> result = CanonicalSurvivalProjection.evaluate(mushroom, level, plant);
+            helper.assertTrue(result.equals(Optional.of(true)),
+                    "valid repeated projection did not return canonical podzol survival");
+            helper.assertFalse(CanonicalSurvivalProjection.isEvaluating(),
+                    "projection recursion guard leaked after valid evaluation");
+            helper.assertTrue(level.getBlockState(support).equals(validSupport)
+                            && level.getBlockState(plant).equals(mushroom),
+                    "valid projection mutated support or plant state");
         }
 
-        helper.assertTrue(checkedStates >= 27,
-                "eligible-state outline sweep did not cover the complete Canary 1 plant inventory");
+        // Preserve this deliberately invalid pair long enough to prove that evaluating it is
+        // read-only; ordinary neighbour processing is covered independently by cleanup tests.
+        level.setBlock(support, invalidSupport, Block.UPDATE_SKIP_ALL_SIDEEFFECTS);
+        Optional<Boolean> invalid = CanonicalSurvivalProjection.evaluate(mushroom, level, plant);
+        helper.assertTrue(invalid.equals(Optional.of(false)),
+                "canonical-rejecting projection did not return false");
+        helper.assertFalse(CanonicalSurvivalProjection.isEvaluating(),
+                "projection recursion guard leaked after rejected evaluation");
+        helper.assertTrue(level.getBlockState(support).equals(invalidSupport)
+                        && level.getBlockState(plant).equals(mushroom),
+                "rejected projection mutated support or plant state");
+
+        level.setBlock(support, validSupport, 2);
+        helper.assertTrue(CanonicalSurvivalProjection.evaluate(mushroom, level, plant)
+                        .equals(Optional.of(true)),
+                "valid projection failed after a preceding rejection");
+        helper.assertTrue(CanonicalSurvivalProjection.evaluate(
+                        Blocks.WHEAT.defaultBlockState(), level, plant).isEmpty(),
+                "excluded crop unexpectedly opened a projection");
+        helper.assertFalse(CanonicalSurvivalProjection.isEvaluating(),
+                "projection recursion guard leaked after a non-candidate evaluation");
+        helper.assertTrue(level.getBlockState(support).equals(validSupport)
+                        && level.getBlockState(plant).equals(mushroom),
+                "sequential projection calls left any world mutation behind");
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 60)
+    public void blockStateCodecRoundTripPreservesRootedIdentityAndAlignment(GameTestHelper helper) {
+        BlockPos support = helper.absolutePos(new BlockPos(2, 1, 2));
+        var level = helper.getLevel();
+        level.setBlock(support, slab(Blocks.MOSS_BLOCK, SlabType.BOTTOM), 2);
+        List<BlockPos> segments = placeBigDripleaf(level, support.above());
+        List<BlockPos> persisted = new ArrayList<>();
+        persisted.add(support);
+        persisted.addAll(segments);
+
+        List<BlockState> encodedStates = new ArrayList<>();
+        List<VoxelShape> shiftedOutlines = new ArrayList<>();
+        for (BlockPos pos : persisted) {
+            BlockState original = level.getBlockState(pos);
+            BlockState decoded = codecRoundTrip(original);
+            helper.assertTrue(decoded.equals(original),
+                    "block-state codec changed identity/properties for " + original);
+            encodedStates.add(decoded);
+            if (!pos.equals(support)) shiftedOutlines.add(original.getShape(level, pos));
+        }
+
+        for (int index = persisted.size() - 1; index >= 0; index--) {
+            level.setBlock(persisted.get(index), Blocks.AIR.defaultBlockState(), 2);
+        }
+        for (int index = 0; index < persisted.size(); index++) {
+            level.setBlock(persisted.get(index), encodedStates.get(index), 2);
+        }
+
+        helper.assertTrue(level.getBlockState(support).equals(encodedStates.getFirst()),
+                "serialized native slab did not restore exactly");
+        for (int index = 0; index < segments.size(); index++) {
+            BlockPos segment = segments.get(index);
+            BlockState restored = level.getBlockState(segment);
+            helper.assertTrue(restored.equals(encodedStates.get(index + 1))
+                            && restored.canSurvive(level, segment)
+                            && NibaruHorizontalSurface.visibleOffset(restored, level, segment)
+                            == NibaruHorizontalSurface.BOTTOM_OFFSET
+                            && sameShape(shiftedOutlines.get(index), restored.getShape(level, segment)),
+                    "serialized/reloaded dripleaf segment lost identity, survival, or alignment at "
+                            + segment);
+        }
         helper.succeed();
     }
 
@@ -556,21 +797,217 @@ public final class FoliageSurfaceGameTests implements CustomTestMethodInvoker {
         });
     }
 
-    private static void assertSurvival(
+    private static void assertFamily(
+            GameTestHelper helper,
+            BlockState state,
+            PlantFamilyEligibility.Family expected) {
+        helper.assertTrue(PlantFamilyEligibility.family(state).orElse(null) == expected,
+                "structural family mismatch for " + state + ": expected " + expected
+                        + ", got " + PlantFamilyEligibility.family(state));
+    }
+
+    private static void assertCanonicalParity(
             GameTestHelper helper,
             BlockPos support,
             BlockPos plantPos,
-            Block plant,
+            BlockState plantState,
             Block parent,
             boolean expected) {
         var level = helper.getLevel();
-        BlockState plantState = plant.defaultBlockState();
-        level.setBlock(support, slab(parent, SlabType.BOTTOM), 2);
+        clearColumn(level, support, 5);
+        level.setBlock(support, parent.defaultBlockState(), 2);
         level.setBlock(plantPos, plantState, 2);
-        helper.assertTrue(plantState.canSurvive(level, plantPos) == expected,
-                plant + " survival over canonical " + parent + " did not match vanilla source semantics");
-        helper.assertTrue(NibaruHorizontalSurface.supporting(plantState, level, plantPos).isPresent() == expected,
-                plant + " surface eligibility over canonical " + parent + " diverged from substrate semantics");
+        boolean canonical = plantState.canSurvive(level, plantPos);
+        helper.assertTrue(canonical == expected,
+                "canonical fixture expectation drifted for " + plantState + " on " + parent
+                        + ": got " + canonical);
+
+        BlockState exactSlab = slab(parent, SlabType.BOTTOM);
+        level.setBlock(support, exactSlab, 2);
+        level.setBlock(plantPos, plantState, 2);
+        boolean projected = plantState.canSurvive(level, plantPos);
+        Optional<Boolean> directProjection = CanonicalSurvivalProjection.evaluate(
+                plantState, level, plantPos);
+        helper.assertTrue(projected == canonical
+                        && directProjection.equals(Optional.of(canonical)),
+                plantState + " slab survival did not delegate to canonical " + parent
+                        + ": full=" + canonical + ", slab=" + projected
+                        + ", direct=" + directProjection);
+        helper.assertTrue(NibaruHorizontalSurface.candidate(plantState, level, plantPos).isPresent()
+                        && NibaruHorizontalSurface.supporting(plantState, level, plantPos).isPresent() == canonical
+                        && NibaruHorizontalSurface.visibleOffset(plantState, level, plantPos)
+                        == (canonical ? NibaruHorizontalSurface.BOTTOM_OFFSET : 0.0D),
+                plantState + " usable surface did not follow projected canonical result");
+        helper.assertTrue(level.getBlockState(support).equals(exactSlab)
+                        && level.getBlockState(plantPos).equals(plantState)
+                        && !CanonicalSurvivalProjection.isEvaluating(),
+                "canonical parity evaluation mutated state or leaked its recursion guard");
+    }
+
+    private static List<BlockPos> placeDouble(
+            net.minecraft.server.level.ServerLevel level,
+            BlockPos lower,
+            BlockState state) {
+        DoublePlantBlock.placeAt(level, state, lower, 2);
+        return List.of(lower, lower.above());
+    }
+
+    private static List<BlockPos> placeBigDripleaf(
+            net.minecraft.server.level.ServerLevel level,
+            BlockPos root) {
+        level.setBlock(root, Blocks.BIG_DRIPLEAF_STEM.defaultBlockState(), 2);
+        level.setBlock(root.above(), Blocks.BIG_DRIPLEAF_STEM.defaultBlockState(), 2);
+        level.setBlock(root.above(2), Blocks.BIG_DRIPLEAF.defaultBlockState(), 2);
+        return List.of(root, root.above(), root.above(2));
+    }
+
+    private static List<BlockPos> placeBigDripleafLeafStack(
+            net.minecraft.server.level.ServerLevel level,
+            BlockPos root) {
+        level.setBlock(root, Blocks.BIG_DRIPLEAF.defaultBlockState(), 2);
+        level.setBlock(root.above(), Blocks.BIG_DRIPLEAF.defaultBlockState(), 2);
+        return List.of(root, root.above());
+    }
+
+    private static List<BlockPos> placePaleMossCarpet(
+            net.minecraft.server.level.ServerLevel level,
+            BlockPos root) {
+        BlockState base = Blocks.PALE_MOSS_CARPET.defaultBlockState()
+                .setValue(MossyCarpetBlock.BASE, true);
+        BlockState topper = Blocks.PALE_MOSS_CARPET.defaultBlockState()
+                .setValue(MossyCarpetBlock.BASE, false)
+                .setValue(MossyCarpetBlock.NORTH, WallSide.LOW);
+        level.setBlock(root, base, 2);
+        level.setBlock(root.above(), topper, 2);
+        return List.of(root, root.above());
+    }
+
+    private static void assertSegmentSurvival(
+            GameTestHelper helper,
+            List<BlockPos> segments,
+            boolean expected,
+            String label) {
+        var level = helper.getLevel();
+        for (BlockPos segment : segments) {
+            BlockState state = level.getBlockState(segment);
+            helper.assertTrue(state.canSurvive(level, segment) == expected,
+                    label + " had mismatched survival at " + segment + ": " + state);
+        }
+    }
+
+    private static void assertProjectedGeometry(
+            GameTestHelper helper,
+            BlockPos support,
+            Block canonicalParent,
+            List<BlockPos> segments,
+            Entity geometryProbe,
+            String label) {
+        var level = helper.getLevel();
+        List<SegmentGeometry> control = new ArrayList<>();
+        for (BlockPos segment : segments) {
+            BlockState state = level.getBlockState(segment);
+            helper.assertTrue(state.canSurvive(level, segment),
+                    label + " canonical control cannot survive at " + segment + ": " + state);
+            control.add(new SegmentGeometry(
+                    state,
+                    state.getShape(level, segment),
+                    state.getCollisionShape(level, segment),
+                    state.getCollisionShape(level, segment, CollisionContext.empty()),
+                    state.getVisualShape(level, segment, CollisionContext.empty()),
+                    state.getInteractionShape(level, segment),
+                    state.getEntityInsideCollisionShape(level, segment, geometryProbe)));
+        }
+
+        level.setBlock(support, slab(canonicalParent, SlabType.BOTTOM), 2);
+        for (int index = 0; index < segments.size(); index++) {
+            BlockPos segment = segments.get(index);
+            SegmentGeometry expected = control.get(index);
+            BlockState state = level.getBlockState(segment);
+            helper.assertTrue(state.equals(expected.state())
+                            && state.canSurvive(level, segment)
+                            && NibaruHorizontalSurface.visibleOffset(state, level, segment)
+                            == NibaruHorizontalSurface.BOTTOM_OFFSET,
+                    label + " segment lost identity/survival/root offset at " + segment);
+            assertShapeShifted(helper, state.getShape(level, segment), expected.outline(),
+                    NibaruHorizontalSurface.BOTTOM_OFFSET, label + " outline at " + segment);
+            assertShapeShifted(helper, state.getCollisionShape(level, segment), expected.cachedCollision(),
+                    NibaruHorizontalSurface.BOTTOM_OFFSET,
+                    label + " cached collision at " + segment);
+            assertShapeShifted(helper,
+                    state.getCollisionShape(level, segment, CollisionContext.empty()),
+                    expected.contextCollision(), NibaruHorizontalSurface.BOTTOM_OFFSET,
+                    label + " contextual collision at " + segment);
+            assertShapeShifted(helper,
+                    state.getVisualShape(level, segment, CollisionContext.empty()),
+                    expected.visualShape(), NibaruHorizontalSurface.BOTTOM_OFFSET,
+                    label + " visual shape at " + segment);
+            assertShapeShifted(helper, state.getInteractionShape(level, segment),
+                    expected.interactionShape(), NibaruHorizontalSurface.BOTTOM_OFFSET,
+                    label + " interaction shape at " + segment);
+            assertShapeShifted(helper,
+                    state.getEntityInsideCollisionShape(level, segment, geometryProbe),
+                    expected.entityInsideShape(), NibaruHorizontalSurface.BOTTOM_OFFSET,
+                    label + " entity-inside collision at " + segment);
+        }
+    }
+
+    private static void assertShapeShifted(
+            GameTestHelper helper,
+            VoxelShape actual,
+            VoxelShape control,
+            double yOffset,
+            String label) {
+        List<AABB> actualBoxes = actual.toAabbs();
+        List<AABB> controlBoxes = control.toAabbs();
+        helper.assertTrue(actualBoxes.size() == controlBoxes.size(),
+                label + " changed shape box count");
+        for (int index = 0; index < controlBoxes.size(); index++) {
+            AABB expected = controlBoxes.get(index);
+            AABB shifted = actualBoxes.get(index);
+            helper.assertTrue(close(shifted.minX, expected.minX)
+                            && close(shifted.maxX, expected.maxX)
+                            && close(shifted.minY, expected.minY + yOffset)
+                            && close(shifted.maxY, expected.maxY + yOffset)
+                            && close(shifted.minZ, expected.minZ)
+                            && close(shifted.maxZ, expected.maxZ),
+                    label + " was not translated exactly once; expected=" + expected
+                            + ", actual=" + shifted);
+        }
+    }
+
+    private static boolean sameShape(VoxelShape first, VoxelShape second) {
+        List<AABB> firstBoxes = first.toAabbs();
+        List<AABB> secondBoxes = second.toAabbs();
+        if (firstBoxes.size() != secondBoxes.size()) return false;
+        for (int index = 0; index < firstBoxes.size(); index++) {
+            AABB firstBox = firstBoxes.get(index);
+            AABB secondBox = secondBoxes.get(index);
+            if (!close(firstBox.minX, secondBox.minX)
+                    || !close(firstBox.maxX, secondBox.maxX)
+                    || !close(firstBox.minY, secondBox.minY)
+                    || !close(firstBox.maxY, secondBox.maxY)
+                    || !close(firstBox.minZ, secondBox.minZ)
+                    || !close(firstBox.maxZ, secondBox.maxZ)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static BlockState codecRoundTrip(BlockState state) {
+        JsonElement encoded = BlockState.CODEC.encodeStart(JsonOps.INSTANCE, state)
+                .getOrThrow(IllegalStateException::new);
+        return BlockState.CODEC.parse(JsonOps.INSTANCE, encoded)
+                .getOrThrow(IllegalStateException::new);
+    }
+
+    private static void clearColumn(
+            net.minecraft.server.level.ServerLevel level,
+            BlockPos support,
+            int height) {
+        for (int dy = height; dy >= 0; dy--) {
+            level.setBlock(support.above(dy), Blocks.AIR.defaultBlockState(), 2);
+        }
     }
 
     private static AABB shapeOver(
@@ -681,7 +1118,7 @@ public final class FoliageSurfaceGameTests implements CustomTestMethodInvoker {
                 for (int dy = 1; dy <= 3; dy++) {
                     BlockPos pos = support.offset(dx, dy, dz);
                     BlockState state = level.getBlockState(pos);
-                    if (!PlantFamilyEligibility.isEligible(state.getBlock())) continue;
+                    if (!PlantFamilyEligibility.isEligible(state)) continue;
                     if (NibaruHorizontalSurface.supporting(state, level, pos).isEmpty()) continue;
                     helper.assertTrue(NibaruHorizontalSurface.visibleOffset(state, level, pos)
                                     == NibaruHorizontalSurface.BOTTOM_OFFSET,
@@ -788,6 +1225,22 @@ public final class FoliageSurfaceGameTests implements CustomTestMethodInvoker {
     private record PatchComparison(PatchSnapshot full, PatchSnapshot slab, int slabOffsetCount) {
     }
 
+    private record PlantSupportCase(BlockState plant, Block parent, boolean expected) {
+    }
+
+    private record RootedFixture(BlockPos support, List<BlockPos> segments) {
+    }
+
+    private record SegmentGeometry(
+            BlockState state,
+            VoxelShape outline,
+            VoxelShape cachedCollision,
+            VoxelShape contextCollision,
+            VoxelShape visualShape,
+            VoxelShape interactionShape,
+            VoxelShape entityInsideShape) {
+    }
+
     private record PatchSnapshot(List<BlockState> states, int vegetationCount, int flowerLikeCount) {
         int canonicalGroundCount(Block parent) {
             int count = 0;
@@ -812,22 +1265,6 @@ public final class FoliageSurfaceGameTests implements CustomTestMethodInvoker {
         NibaruMaterialProfile profile = NibaruMaterialProfiles.fromBlock(canonicalParent).orElseThrow();
         if (profile.canonicalParent() != canonicalParent) {
             throw new AssertionError("profile did not retain canonical block identity for " + canonicalParent);
-        }
-        return profile;
-    }
-
-    private static NibaruMaterialProfile stateSweepSupport(Block plant) {
-        Block canonicalParent = plant == Blocks.NETHER_WART ? Blocks.SOUL_SAND
-                : plant == Blocks.DEAD_BUSH ? Blocks.SAND
-                : plant == Blocks.PINK_PETALS || plant == Blocks.WILDFLOWERS ? Blocks.GRASS_BLOCK
-                : plant == Blocks.AZALEA || plant == Blocks.FLOWERING_AZALEA
-                        || plant == Blocks.MOSS_CARPET ? Blocks.MOSS_BLOCK
-                : plant == Blocks.PALE_MOSS_CARPET ? Blocks.PALE_MOSS_BLOCK
-                : Blocks.GRASS_BLOCK;
-        NibaruMaterialProfile profile = profile(canonicalParent);
-        if (!PlantFamilyEligibility.acceptsCanonicalParent(
-                plant, profile.canonicalParent().defaultBlockState())) {
-            throw new AssertionError("explicit state-sweep support does not admit " + plant);
         }
         return profile;
     }

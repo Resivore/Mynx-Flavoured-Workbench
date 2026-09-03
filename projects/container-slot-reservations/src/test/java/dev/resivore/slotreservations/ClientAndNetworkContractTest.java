@@ -64,19 +64,26 @@ final class ClientAndNetworkContractTest {
     }
 
     @Test
-    void ghostIsEmptyOnlyCountlessAndAnchoredToTheLiveSlot() throws IOException {
+    void ghostIsEmptyOnlyAlphaTintedZeroLabeledAndAnchoredToTheLiveSlot() throws IOException {
         String screen = source("mixin/client/AbstractContainerScreenMixin.java");
+        String renderer = source("client/ReservationVisualRenderer.java");
 
         assertTrue(screen.contains("@Inject(method = \"extractSlot\", at = @At(\"TAIL\"))"));
-        assertTrue(screen.contains("if (slot.getItem().isEmpty())"));
-        assertTrue(screen.contains("copyWithCount(1)"));
-        assertTrue(screen.contains("graphics.item(ghost, slot.x, slot.y"));
-        assertTrue(screen.contains("graphics.fill(slot.x, slot.y, slot.x + 16, slot.y + 16, GHOST_WASH)"));
-        assertTrue(screen.contains("graphics.outline(slot.x, slot.y, 16, 16, RESERVATION_MARKER)"));
+        assertTrue(screen.contains("ReservationVisualRenderer.extract("));
+        assertTrue(screen.contains("slot.x,"));
+        assertTrue(screen.contains("slot.y,"));
+        assertTrue(renderer.contains("copyWithCount(1)"));
+        assertTrue(renderer.contains("GhostItemRenderScope.extract("));
+        assertTrue(renderer.contains("EMPTY_COUNT = \"0\""));
+        assertFalse(renderer.contains("copyWithCount(0)"));
+        assertFalse(renderer.contains("graphics.outline("));
+        assertFalse(renderer.contains("GHOST_WASH"));
         assertTrue(screen.contains("tooltip.container_slot_reservations.reserved"));
         assertTrue(screen.contains("tooltip.container_slot_reservations.empty"));
-        assertFalse(screen.contains("renderItemDecorations"), "Ghosts must not render a physical stack count");
-        assertFalse(screen.contains("getCount()"), "Ghost rendering must not derive decoration from a count");
+        assertFalse(renderer.contains("itemDecorations"),
+                "The literal zero must be text, not decoration on a fake stack");
+        assertFalse(renderer.contains("getCount()"),
+                "Ghost rendering must not derive the literal zero from a stack count");
     }
 
     @Test

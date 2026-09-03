@@ -15,7 +15,9 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
+import java.util.ArrayList;
 import java.util.HexFormat;
+import java.util.List;
 import java.util.jar.JarFile;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -202,11 +204,69 @@ class QsnUpstreamContractTest {
                     "insertIntoEmptySlots",
                     "(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/Container;)I"
             );
-
             assertTrue(hasCall(accepts, "java/util/Set", "contains"));
             assertTrue(hasCall(existing, "tempeststudios/quickstacknearby/InventoryCompat",
                     "sameItemAndComponents"));
             assertTrue(hasCall(empty, "net/minecraft/world/item/ItemStack", "copyWithCount"));
+        }
+    }
+
+    @Test
+    void reservationHookTargetsTheExactPostMergeEmptySlotSeam() throws Exception {
+        try (JarFile jar = openReference()) {
+            ClassNode engine = readClass(jar, "tempeststudios/quickstacknearby/QuickStackMoveEngine.class");
+            MethodNode target = method(
+                    engine,
+                    "insertIntoTarget",
+                    "(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/Container;)I"
+            );
+            MethodNode empty = method(
+                    engine,
+                    "insertIntoEmptySlots",
+                    "(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/Container;)I"
+            );
+            MethodNode move = method(
+                    engine,
+                    "moveMatchingItems",
+                    "(Lnet/minecraft/world/Container;IILjava/util/List;"
+                            + "Ltempeststudios/quickstacknearby/QuickStackMoveEngine$SourceRules;)"
+                            + "Ltempeststudios/quickstacknearby/QuickStackMoveEngine$Result;"
+            );
+            ClassNode inventoryCompat = readClass(
+                    jar,
+                    "tempeststudios/quickstacknearby/InventoryCompat.class"
+            );
+            MethodNode maxStackSize = method(
+                    inventoryCompat,
+                    "maxStackSize",
+                    "(Lnet/minecraft/world/Container;Lnet/minecraft/world/item/ItemStack;)I"
+            );
+
+            assertEquals(Opcodes.ACC_PRIVATE | Opcodes.ACC_STATIC,
+                    empty.access & (Opcodes.ACC_PUBLIC | Opcodes.ACC_PROTECTED | Opcodes.ACC_PRIVATE
+                            | Opcodes.ACC_STATIC));
+            List<String> insertionCalls = new ArrayList<>();
+            for (AbstractInsnNode instruction : target.instructions) {
+                if (instruction instanceof MethodInsnNode call
+                        && call.owner.equals("tempeststudios/quickstacknearby/QuickStackMoveEngine")) {
+                    insertionCalls.add(call.name + call.desc);
+                }
+            }
+            assertEquals(List.of(
+                    "insertIntoExistingStacks(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/Container;)I",
+                    "insertIntoEmptySlots(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/Container;)I"
+            ), insertionCalls);
+            assertTrue(hasCall(empty, "net/minecraft/world/Container", "canPlaceItem"));
+            assertTrue(hasCall(empty, "tempeststudios/quickstacknearby/InventoryCompat", "maxStackSize"));
+            assertTrue(hasCall(empty, "net/minecraft/world/Container", "setItem"));
+            assertTrue(hasCall(empty, "net/minecraft/world/item/ItemStack", "copyWithCount"));
+            assertTrue(hasCall(maxStackSize, "net/minecraft/world/Container", "getMaxStackSize"));
+            assertEquals(Opcodes.ACC_STATIC,
+                    maxStackSize.access & (Opcodes.ACC_PUBLIC | Opcodes.ACC_PROTECTED
+                            | Opcodes.ACC_PRIVATE | Opcodes.ACC_STATIC),
+                    "The audited QSN capacity helper remains package-private static");
+            assertEquals(2, countCalls(move, "net/minecraft/world/Container", "setChanged"),
+                    "QSN must retain source and touched-target dirty tracking around the injected helper");
         }
     }
 

@@ -2,6 +2,7 @@ package dev.resivore.quickstacknearbycompat.mixin;
 
 import dev.resivore.quickstacknearbycompat.core.PlayerStorageSlots;
 import dev.resivore.quickstacknearbycompat.core.QsnDestinationExclusions;
+import dev.resivore.quickstacknearbycompat.core.CsrQuickStackIntegration;
 import dev.resivore.quickstacknearbycompat.core.ShapeMapTargetAffinity;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
@@ -65,11 +66,18 @@ public abstract class QuickStackServiceMixin {
         int firstSourceSlot = args.get(1);
         int exclusiveLastSourceSlot = args.get(2);
         List<QuickStackMoveEngine.Target> targets = args.get(3);
-        args.set(3, ShapeMapTargetAffinity.augmentTargets(
+        List<QuickStackMoveEngine.Target> augmentedTargets = ShapeMapTargetAffinity.augmentTargets(
                 source,
                 firstSourceSlot,
                 exclusiveLastSourceSlot,
                 targets,
+                args.get(4)
+        );
+        args.set(3, CsrQuickStackIntegration.augmentTargets(
+                source,
+                firstSourceSlot,
+                exclusiveLastSourceSlot,
+                augmentedTargets,
                 args.get(4)
         ));
     }

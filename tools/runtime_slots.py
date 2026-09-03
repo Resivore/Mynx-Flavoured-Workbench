@@ -722,28 +722,57 @@ def validate_runtime_state(state: dict[str, Any], project_index: dict[str, str] 
                         "must preserve the accepted unit's exact companion identities and order",
                     )
                 candidate_artifact = unit["artifacts"][0]
-                candidate_identity = {
-                    key: value for key, value in candidate_artifact.items() if key != "artifact_id"
-                }
-                accepted_matches = [
-                    artifact
-                    for artifact in accepted_artifacts
-                    if {key: value for key, value in artifact.items() if key != "artifact_id"}
-                    == candidate_identity
-                ]
-                if len(accepted_matches) != 1 or accepted_matches[0]["artifact_id"] != omitted[0]["artifact_id"]:
-                    _fail(
-                        f"{member_path}.unit.artifacts[0]",
-                        "must unambiguously match the one accepted artifact omitted by companion passthrough",
-                    )
-                if (
-                    unit["version"] != accepted_unit["version"]
-                    or unit["source_commit"] != accepted_unit["source_commit"]
-                ):
+                same_version = unit["version"] == accepted_unit["version"]
+                same_source_commit = unit["source_commit"] == accepted_unit["source_commit"]
+                if same_version != same_source_commit:
                     _fail(
                         f"{member_path}.unit",
-                        "accepted companion passthrough requires the exact accepted version and source checkpoint",
+                        "accepted companion passthrough cannot mix accepted and successor release identity",
                     )
+                if same_version:
+                    candidate_identity = {
+                        key: value for key, value in candidate_artifact.items() if key != "artifact_id"
+                    }
+                    accepted_matches = [
+                        artifact
+                        for artifact in accepted_artifacts
+                        if {key: value for key, value in artifact.items() if key != "artifact_id"}
+                        == candidate_identity
+                    ]
+                    if (
+                        len(accepted_matches) != 1
+                        or accepted_matches[0]["artifact_id"] != omitted[0]["artifact_id"]
+                    ):
+                        _fail(
+                            f"{member_path}.unit.artifacts[0]",
+                            "must unambiguously match the one accepted artifact omitted by companion passthrough",
+                        )
+                else:
+                    candidate_role = (
+                        candidate_artifact["kind"],
+                        candidate_artifact["ownership_keys"],
+                    )
+                    accepted_role_matches = [
+                        artifact
+                        for artifact in accepted_artifacts
+                        if (artifact["kind"], artifact["ownership_keys"]) == candidate_role
+                    ]
+                    if (
+                        len(accepted_role_matches) != 1
+                        or accepted_role_matches[0]["artifact_id"] != omitted[0]["artifact_id"]
+                    ):
+                        _fail(
+                            f"{member_path}.unit.artifacts[0]",
+                            "successor passthrough must unambiguously replace the omitted accepted artifact role",
+                        )
+                    if (
+                        candidate_artifact["source"]["type"] != "REPOSITORY"
+                        or omitted[0]["source"]["type"] != "REPOSITORY"
+                    ):
+                        _fail(
+                            f"{member_path}.unit.artifacts[0].source",
+                            "successor passthrough requires repository-backed candidate and replaced artifacts",
+                        )
             slot_ownership = {
                 ownership_key.casefold()
                 for artifact in unit["artifacts"]
@@ -1660,11 +1689,17 @@ def plan_transition(
                         _byte_composition(accepted)
                         == _byte_composition({"artifacts": replacement_artifacts})
                     )
-                    if slot_member.get("accepted_companion_artifacts") and not byte_identical_reconciliation:
-                        raise ValidationError(
-                            "accepted companion passthrough promotion must reconcile byte-identically "
-                            "with the complete accepted project unit"
+                    if slot_member.get("accepted_companion_artifacts"):
+                        byte_identical_reconciliation = bool(
+                            byte_identical_reconciliation
+                            and slot_member["unit"]["version"] == accepted["version"]
+                            and slot_member["unit"]["source_commit"] == accepted["source_commit"]
                         )
+                        if not byte_identical_reconciliation:
+                            raise ValidationError(
+                                "accepted companion passthrough promotion must reconcile byte-identically "
+                                "with the complete accepted project unit"
+                            )
                     if not byte_identical_reconciliation:
                         members[indexes[0]] = accepted_member
                 if not byte_identical_reconciliation:

@@ -14,25 +14,32 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class CompatibilityScopeTest {
     @Test
-    void inventoryExtendedAndCnmRuntimeSetRemainOptional() throws Exception {
+    void runtimeMetadataUsesFlexibleCapabilityAndOptionalProviderPredicates() throws Exception {
         Path root = projectRoot();
         String metadata = Files.readString(root.resolve("src/main/resources/fabric.mod.json"));
         String build = Files.readString(root.resolve("build.gradle"));
 
-        assertTrue(metadata.contains("\"quick-stack-nearby\": \"=0.4.0\""));
-        assertTrue(metadata.contains("\"inventorysearch\": \"=3.4.0\""));
-        assertTrue(metadata.contains("\"inventoryextended\": \"=1.1.2\""));
+        assertTrue(metadata.contains("\"quick-stack-nearby\": \">=0.4.0\""));
         String depends = metadata.substring(metadata.indexOf("\"depends\""), metadata.indexOf("\"suggests\""));
+        assertFalse(depends.contains("container_slot_reservations"));
         assertFalse(depends.contains("inventoryextended"));
         assertFalse(depends.contains("inventorysearch"));
         assertFalse(depends.contains("clutternomore"));
         assertFalse(depends.contains("cnm_terrain_slabs_compat"));
         assertFalse(depends.contains("more_slabs_stairs_and_walls"));
-        assertTrue(metadata.contains("\"clutternomore\": \"=2.0.7+26.2\""));
-        assertTrue(metadata.contains("\"cnm_terrain_slabs_compat\": \"=0.5.46-nibaru-cnm-canary1.36-pale-coverage\""));
-        assertTrue(metadata.contains("\"more_slabs_stairs_and_walls\": \"=4.2.0+26.2-port-canary40-pale-coverage\""));
+        for (String optional : List.of(
+                "container_slot_reservations",
+                "inventorysearch",
+                "inventoryextended",
+                "clutternomore",
+                "cnm_terrain_slabs_compat",
+                "more_slabs_stairs_and_walls")) {
+            assertTrue(metadata.contains("\"" + optional + "\": \"*\""),
+                    "Missing flexible optional predicate for " + optional);
+        }
         assertTrue(build.contains("compileOnly(\"maven.modrinth:quick-stack-nearby:"));
         assertTrue(build.contains("inventorySearchReference(\"maven.modrinth:"));
+        assertTrue(build.contains("compileOnly files(csrReferenceJar)"));
         assertFalse(build.contains("inventoryextended"));
     }
 
@@ -43,7 +50,7 @@ class CompatibilityScopeTest {
         try (Stream<Path> paths = Files.walk(sourceRoot)) {
             javaFiles = paths.filter(path -> path.toString().endsWith(".java")).toList();
         }
-        assertEquals(12, javaFiles.size());
+        assertEquals(16, javaFiles.size());
 
         StringBuilder sources = new StringBuilder();
         for (Path javaFile : javaFiles) {
@@ -65,9 +72,47 @@ class CompatibilityScopeTest {
         assertFalse(source.contains("ShapeMap.getParent"));
         assertFalse(source.contains("getPath()"));
         assertFalse(source.contains("Identifier.parse"));
-        assertFalse(source.contains("isSameItemSameComponents"));
-        assertFalse(source.contains("insertIntoExistingStacks"));
-        assertFalse(source.contains("insertIntoEmptySlots"));
+        String shapeAffinity = Files.readString(sourceRoot.resolve(
+                "dev/resivore/quickstacknearbycompat/core/ShapeMapTargetAffinity.java"));
+        assertFalse(shapeAffinity.contains("isSameItemSameComponents"));
+        assertFalse(shapeAffinity.contains("insertIntoExistingStacks"));
+        assertFalse(shapeAffinity.contains("insertIntoEmptySlots"));
+    }
+
+    @Test
+    void csrApiLinkageIsOptionalGatedAndReadOnly() throws Exception {
+        Path sourceRoot = projectRoot().resolve("src/main/java");
+        try (Stream<Path> paths = Files.walk(sourceRoot)) {
+            for (Path javaFile : paths.filter(path -> path.toString().endsWith(".java")).toList()) {
+                String source = Files.readString(javaFile, StandardCharsets.UTF_8);
+                if (!javaFile.getFileName().toString().equals("CsrReservationApi.java")) {
+                    assertFalse(source.contains("dev.resivore.slotreservations"),
+                            "Optional CSR API leaked outside its post-gate class: " + javaFile);
+                }
+            }
+        }
+
+        String resolver = Files.readString(sourceRoot.resolve(
+                "dev/resivore/quickstacknearbycompat/core/CsrReservationResolver.java"));
+        String api = Files.readString(sourceRoot.resolve(
+                "dev/resivore/quickstacknearbycompat/core/CsrReservationApi.java"));
+        String integration = Files.readString(sourceRoot.resolve(
+                "dev/resivore/quickstacknearbycompat/core/CsrQuickStackIntegration.java"));
+        assertTrue(resolver.contains("isModLoaded(CSR_MOD_ID)"));
+        assertTrue(resolver.contains("catch (LinkageError"));
+        assertTrue(api.contains("ContainerSlotReservationsApi.classify(container, slot, incoming)"));
+        assertFalse(api.contains("ReservationStore"));
+        assertFalse(api.contains("setData"));
+        assertFalse(api.contains("setItem"));
+        assertTrue(integration.contains("Construct the QSN key only after CSR has confirmed"));
+        assertTrue(integration.contains("target.getMaxStackSize(sourceStack)"));
+
+        String insertionMixin = Files.readString(sourceRoot.resolve(
+                "dev/resivore/quickstacknearbycompat/mixin/QuickStackMoveEngineMixin.java"));
+        assertTrue(insertionMixin.contains(
+                "insertIntoEmptySlots(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/Container;)I"));
+        assertTrue(insertionMixin.contains("require = 1"));
+        assertTrue(insertionMixin.contains("if (moved.isPresent())"));
     }
 
     @Test
@@ -76,6 +121,7 @@ class CompatibilityScopeTest {
         String common = Files.readString(resources.resolve("quick_stack_nearby_compat.mixins.json"));
         String client = Files.readString(resources.resolve("quick_stack_nearby_compat.client.mixins.json"));
 
+        assertTrue(common.contains("\"QuickStackMoveEngineMixin\""));
         assertTrue(common.contains("\"QuickStackServiceMixin\""));
         assertFalse(common.contains("InventoryCompatMixin"));
         assertFalse(Files.exists(projectRoot().resolve(

@@ -4,7 +4,8 @@
   "compatibilityLevel": "JAVA_25",
   "client": [
     "EntityPickMixin",
-    "LevelRendererDestroyOverlayMixin"
+    "LevelRendererDestroyOverlayMixin",
+    "RenderSectionRegionAccessor"
   ],
   "injectors": {
     "defaultRequire": 1

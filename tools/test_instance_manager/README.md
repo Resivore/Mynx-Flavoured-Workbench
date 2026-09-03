@@ -61,17 +61,19 @@ established ignored private-build subtree. The manager reloads those manifests
 after physical verification and before state/ledger commit, so concurrent
 candidate drift triggers full rollback.
 
-An accepted multi-artifact project may use the narrow same-release regression
-override `accepted_companion_artifacts` on a schema-V2 slot member. The member
-must contain exactly one current-manifest artifact that is byte-identical to
-exactly one artifact in that project's sole accepted unit except for its new
-slot artifact UUID. The override lists every other accepted artifact as a full,
-ordered descriptor. Each descriptor must match the accepted artifact's UUID,
-filename, SHA-256, source, kind, and ownership keys exactly; foreign, altered,
-duplicate, incomplete, or ambiguous declarations fail closed. The accepted
-companions remain baseline artifacts with their original accepted identities.
-They are not cohort members and receive neither a title line nor a runtime
-result.
+An accepted multi-artifact project may use the narrow
+`accepted_companion_artifacts` override on a schema-V2 slot member. The member
+must contain exactly one current-manifest artifact and the override must list
+every other artifact from that project's sole accepted unit as full, ordered,
+exact descriptors. A same-release regression artifact must be byte-identical to
+the one accepted artifact it replaces except for its fresh slot artifact UUID.
+A successor release must change both version and source checkpoint, preserve
+the omitted artifact's exact kind and ordered ownership role, and keep both the
+new and omitted artifacts repository-backed. Mixed release identities, foreign,
+altered, duplicate, incomplete, or ambiguous declarations fail closed. The
+accepted companions remain baseline artifacts with their original accepted
+identities. They are not cohort members and receive neither a title line nor a
+runtime result.
 
 Preflight and every under-lock/post-write verification prove that each declared
 companion is transitively reachable from the slot artifact through resolved
@@ -82,7 +84,9 @@ accepted passthrough artifacts without presenting them as tested projects.
 Clearing the slot restores the original complete accepted unit. Promoting an
 explicitly passed byte-identical regression reconciles back to that same
 accepted unit, preserving its deployment/artifact identities, acceptance time,
-and Stack revision.
+and Stack revision. Successor passthrough promotion remains fail-closed until a
+separate transition can rebuild the accepted unit in its original artifact
+order without dropping or re-identifying a retained companion.
 
 `RECORD_RESULT` requires `project_uuid` for a multi-member cohort and updates
 only that member. Shared deployment readiness never copies a `PASS`, `FAIL`, or
@@ -418,11 +422,14 @@ already exists.
 - Artifacts use exact filenames, SHA-256 values, Fabric `mod:<id>` ownership,
   and repository or explicitly adopted-target sources.
 - Accepted artifacts replaced by a slot remain present as `.jar.disabled`.
-- `accepted_companion_artifacts` is an explicit same-project, same-accepted-unit
-  regression override only. It may retain all accepted companions while one
-  exact accepted artifact occupies a slot under a distinct slot artifact UUID;
-  every retained companion must be necessary in that slot member's resolved
-  hard-dependency closure and keeps its accepted-baseline identity and bytes.
+- `accepted_companion_artifacts` is an explicit same-project,
+  same-accepted-unit override. It may retain every exact accepted companion
+  while one current-manifest artifact occupies a slot under a distinct artifact
+  UUID. That artifact is either a byte-identical same-release regression or a
+  repository-backed successor with the same unambiguous artifact role and both
+  a new version and source checkpoint. Every retained companion must be
+  necessary in the slot member's resolved hard-dependency closure and keeps its
+  accepted-baseline identity and bytes.
 - User-passed batch promotion preserves both slots. It may add a new accepted
   project or replace the same project's sole predecessor only by exact
   `replaces_accepted_deployment_id`; a wrong, missing, or drifted predecessor

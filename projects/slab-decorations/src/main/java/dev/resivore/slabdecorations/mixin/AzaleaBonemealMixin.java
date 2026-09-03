@@ -4,7 +4,6 @@ import dev.resivore.slabdecorations.NibaruHorizontalSurface;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.AzaleaBlock;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.SlabType;
 import org.spongepowered.asm.mixin.Mixin;
@@ -21,12 +20,10 @@ public abstract class AzaleaBonemealMixin {
             BlockPos pos,
             BlockState state,
             CallbackInfoReturnable<Boolean> cir) {
-        if (!state.is(Blocks.AZALEA) && !state.is(Blocks.FLOWERING_AZALEA)) return;
+        if (!(state.getBlock() instanceof AzaleaBlock)) return;
         NibaruHorizontalSurface.Surface surface =
                 NibaruHorizontalSurface.supporting(state, level, pos).orElse(null);
-        if (surface != null
-                && surface.type() == SlabType.BOTTOM
-                && surface.profile().canonicalParent() == Blocks.MOSS_BLOCK) {
+        if (surface != null && surface.type() == SlabType.BOTTOM) {
             cir.setReturnValue(false);
         }
     }

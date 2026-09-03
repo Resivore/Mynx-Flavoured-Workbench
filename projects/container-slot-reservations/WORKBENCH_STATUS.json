@@ -14,18 +14,22 @@
     ]
   },
   "definition": {
-    "lifecycle": "ACCEPTED",
+    "lifecycle": "TESTING",
     "goals": [
       "Preserve a player's component-exact organization intent after a physical stack leaves an eligible vanilla storage slot.",
       "Apply the same reservation admission rule to manual placement, vanilla QUICK_MOVE, and vanilla hopper insertion without changing extraction, destination order, or routing policy.",
-      "Keep reservation persistence, synchronization, user actions, and display server-authoritative while exposing classification and reservation queries without becoming an item-routing engine."
+      "Render empty reservations as an actual approximately 35%-opaque item sprite with a vanilla-positioned literal zero while preserving the occupied marker and empty-reservation hover tooltip.",
+      "Overlay the same reservation visuals on the exact 27 physical slots of supported Easy Shulker Boxes and Item Interactions vanilla-shulker tooltips without changing contents, calculations, selection, interaction, or server behavior.",
+      "Keep reservation persistence, synchronization, user actions, and insertion server-authoritative while exposing defensive classification and reservation queries without becoming an item-routing engine."
     ],
     "scope": [
-      "Maintain the exact Minecraft Java 26.2 Fabric Canary 1 implementation reconstructed from legacy source commit 254b8e9e8074380c66ec5d9d5cd17ea009f16097 and retained project head 483e64a8a13ba30343076c1a737c40e3a6d15777.",
+      "Maintain exact Minecraft Java 26.2 Fabric Canary 2 from implementation and artifact checkpoint 48468ad99ba1353ac5455be39dedef6ca143f7ae, now physically verified in Test Slot A at manager revision 71, while preserving accepted Canary 1 as rollback.",
       "Store sparse format-1 reservations as immutable count-one ItemStackTemplate values in a persistent, network-synchronized project component; item identity remains exactly component-aware while count is excluded.",
       "Support exact vanilla chest, trapped-chest, barrel, undyed shulker, and all 16 dyed shulker owners, with double-chest logical slots resolved to the owning physical half and local slot 0 through 26.",
-      "Preserve occupied, cursor-derived, replacement, clear, removal-retains-intent, shulker item round-trip, ghost display, and server-side request-validation behavior from Canary 1.",
-      "Maintain the public defensive query and classification API for supported placed containers and vanilla shulker item stacks."
+      "Preserve Canary 1 occupied, cursor-derived, replacement, clear, removal-retains-intent, shulker item round-trip, persistence, networking, request validation, manual insertion, vanilla QUICK_MOVE, hopper behavior, and public defensive query/classification behavior.",
+      "Render an empty reservation with its exact count-one template sprite using premultiplied alpha 0x59, followed by a shadowed literal zero at vanilla's stack-count position; render no empty-slot wash or outline and retain the compact occupied marker.",
+      "Use client-only string-targeted pseudo mixins at the exact audited Item Interactions 26.2.2 tooltip factory, component, and physical-slot rendering seams; activate only when Easy Shulker Boxes and Item Interactions are both present and the supported shulker has reservations.",
+      "Validate against exact Easy Shulker Boxes 26.2.3 and its nested Item Interactions 26.2.2 artifact bytes while keeping both runtime metadata predicates flexible and optional."
     ],
     "boundaries": {
       "owned_paths": [
@@ -35,8 +39,10 @@
         "Copper chests, arbitrary modded containers, player inventory, equipment, crafting and result slots, trinket slots, trash slots, fake slots, and foreign menu slots.",
         "Automatic sorting, item routing, destination selection, routing priority, dump-all behavior, restock quantities, cross-container templates, category or tag matching, and multiple identities per slot.",
         "Changes to vanilla extraction, ordinary chest or barrel drop metadata, unsupported container ownership, or vanilla QUICK_MOVE and hopper ordering beyond reservation admission.",
-        "A redesign, dependency expansion, successor Canary, or changes to any other Workbench project or resource pack during this migration.",
-        "Minecraft launch, inferred runtime evidence, acceptance, candidate rebuild or replacement, unrelated Test Slot mutation, or protected gameplay-profile access during this deployment transition."
+        "Fake zero-count stacks, mutation of DataComponents.CONTAINER, reservation-aware Easy Shulker Boxes insertion or extraction controls, or changes to tooltip fullness, dimensions, selection, scrolling, collapsing, highlighting, colors, names, storage bars, or mouse interactions.",
+        "Hard runtime dependencies or restrictive upper bounds for Easy Shulker Boxes or Item Interactions, direct modification or redistribution of either upstream artifact, or optional-class linkage outside safely gated client mixins.",
+        "Any further change to another Workbench project, shared Test Instance Manager state, either runtime slot, the dedicated Workbench deployment, or the protected gameplay profile during this postdeployment control checkpoint.",
+        "Minecraft client launch, inferred runtime evidence, successor acceptance or promotion, or mutation of the exact accepted Canary 1 artifact and provenance."
       ]
     },
     "dependencies": [
@@ -44,56 +50,79 @@
         "type": "MOD",
         "identifier": "minecraft",
         "requirement": "=26.2",
-        "reason": "Exact game version targeted by the retained Canary 1 source and artifact."
+        "reason": "Exact game version targeted by Canary 2 and its preserved Canary 1 behavior baseline."
       },
       {
         "type": "MOD",
         "identifier": "fabricloader",
         "requirement": ">=0.19.3",
-        "reason": "Fabric loader floor declared by Canary 1."
+        "reason": "Genuine Fabric loader floor retained by Canary 2 runtime metadata."
       },
       {
         "type": "MOD",
         "identifier": "fabric-api",
         "requirement": "0.157.0+26.2 (metadata minimum >=0.157.0)",
-        "reason": "Exact compile, GameTest, networking, and event baseline retained by Canary 1."
+        "reason": "Exact compile and GameTest baseline with the genuine minimum retained by Canary 2 metadata."
       },
       {
         "type": "TOOL",
         "identifier": "java",
         "requirement": "25",
-        "reason": "Compilation release and runtime level required by Minecraft 26.2 and the retained build."
+        "reason": "Compilation release and controlled-validation runtime level used for Canary 2."
       },
       {
         "type": "TOOL",
         "identifier": "gradle",
         "requirement": "9.5.1",
-        "reason": "Exact build-tool version used for legacy and migration verification."
+        "reason": "Exact build-tool version used for Canary 2 controlled validation."
       },
       {
         "type": "TOOL",
         "identifier": "fabric-loom",
         "requirement": "1.17.19",
-        "reason": "Exact Fabric build plugin pinned by the maintained project."
+        "reason": "Exact Fabric build plugin pinned by the maintained Canary 2 project."
       },
       {
         "type": "OTHER",
         "identifier": "junit-jupiter",
         "requirement": "5.13.4",
-        "reason": "Focused source, API, wiring, and insertion-seam test baseline."
+        "reason": "Focused source, API, rendering, optional-linkage, and upstream-contract test baseline."
+      },
+      {
+        "type": "OTHER",
+        "identifier": "asm",
+        "requirement": "9.10.1",
+        "reason": "Exact test-only bytecode reader used to fail closed on changed Minecraft and Item Interactions rendering seams."
+      },
+      {
+        "type": "MOD",
+        "identifier": "easyshulkerboxes",
+        "requirement": "Optional runtime predicate *; exact audit input 26.2.3",
+        "reason": "Flexible optional tooltip provider validated read-only against EasyShulkerBoxes-v26.2.3-mc26.2.x-Fabric.jar, 639,115 bytes, SHA-256 66f803ae8796a0cdd7086e175fe8b96846515710b8b98b9aebc79d52ea2b0c38."
+      },
+      {
+        "type": "MOD",
+        "identifier": "iteminteractions",
+        "requirement": "Optional runtime predicate *; exact audit input 26.2.2",
+        "reason": "Flexible optional tooltip implementation validated read-only against META-INF/jars/iteminteractions-fabric-26.2.2.jar, 196,177 bytes, SHA-256 1745adf294134817986e46bf554a5a6613837602b660e15a15c50bdc2e0a293c."
       }
     ]
   },
   "state": {
-    "milestone": "The user's aggregate runtime PASS is bound only to exact C1 (deployment c0fdfff1-831a-4081-93a3-e596d7fc928d; artifact c3bc9365-5664-4148-9200-3292307f9bce), which was promoted from Slot A into accepted Stack v15 at manager revision 70. No checklist-row results were inferred, QSN C6 remained independently UNTESTED in Slot B, and Minecraft was not launched during recording or promotion.",
+    "milestone": "Exact Canary 2 from implementation checkpoint 48468ad99ba1353ac5455be39dedef6ca143f7ae is physically deployed and READY_TO_TEST_VERIFIED in Slot A as deployment bee6248a-0cb8-4953-bd55-33ac3f6e5111 and artifact b92b3cd6-a3c2-4882-b279-4a39194fbdc9 at Test Instance Manager revision 71, accepted Stack v15, and state digest bf3b0cafa400620a9755f9d2cd3a3080eb726691922553da3c945f76a25e86f9. Its 41/41 JUnit and 10/10 Fabric GameTest controlled validation remains exact. Minecraft has not been launched, so Canary 2 remains independently RUNTIME_UNTESTED; exact runtime-passed Canary 1 remains accepted and is the unchanged rollback.",
     "releases": {
       "current": {
-        "version": "0.1.0-canary1",
+        "version": "0.1.0-canary2",
+        "embedded_version": "0.1.0-canary2",
         "artifact": {
-          "filename": "container-slot-reservations-0.1.0-canary1.jar",
-          "sha256": "4e7f0a470a387be76189d0a5e1ae8c614d17ec8b24a6774b400838cc234c4532"
+          "filename": "container-slot-reservations-0.1.0-canary2.jar",
+          "sha256": "bb4f269758d43469f2a9c0a36d01dcecb8704054ee8bc01327c46ce614d4a02f"
         },
-        "source_commit": "e0adc6b9302392440f2e5654c1e4031916b0c996"
+        "source_commit": "48468ad99ba1353ac5455be39dedef6ca143f7ae",
+        "runtime_dependency_policy": {
+          "contract": "CAPABILITY_OR_PROVIDER",
+          "exceptions": []
+        }
       },
       "accepted": {
         "version": "0.1.0-canary1",
@@ -103,23 +132,30 @@
         },
         "source_commit": "e0adc6b9302392440f2e5654c1e4031916b0c996"
       },
-      "rollback": null,
-      "accepted_current": "CURRENT_IS_ACCEPTED",
-      "accepted_rollback": "NO_ROLLBACK"
+      "rollback": {
+        "version": "0.1.0-canary1",
+        "artifact": {
+          "filename": "container-slot-reservations-0.1.0-canary1.jar",
+          "sha256": "4e7f0a470a387be76189d0a5e1ae8c614d17ec8b24a6774b400838cc234c4532"
+        },
+        "source_commit": "e0adc6b9302392440f2e5654c1e4031916b0c996"
+      },
+      "accepted_current": "CURRENT_DIFFERS_FROM_ACCEPTED",
+      "accepted_rollback": "ACCEPTED_IS_ROLLBACK"
     },
     "validation": {
-      "build": "STATIC_PASS",
+      "build": "CONTROLLED_VALIDATION_PASS",
       "deployment": "READY_TO_TEST_VERIFIED",
-      "runtime": "RUNTIME_PASS"
+      "runtime": "RUNTIME_UNTESTED"
     },
     "blocker": null
   },
   "synchronization": {
-    "revision": 3,
-    "activity_at": "2026-09-03T04:03:00Z",
-    "updated_at": "2026-09-03T04:03:00Z",
-    "last_codex_at": "2026-09-03T04:03:00Z",
-    "source_commit": "5fbbf9729561facfcb4edb5df507100359bddb52",
+    "revision": 5,
+    "activity_at": "2026-09-03T05:27:46Z",
+    "updated_at": "2026-09-03T05:27:46Z",
+    "last_codex_at": "2026-09-03T05:27:46Z",
+    "source_commit": "2b3d93b2df3d2f2bd5c851570c9ca191c85bafb4",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
