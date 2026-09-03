@@ -2,24 +2,29 @@
 
 ## Current gate
 
-**PLANNED — NO RUNTIME CANDIDATE**
+**PARKED — NO RUNTIME CANDIDATE**
 
-Implementation has not started. No source, build, artifact, Canary, deployment,
-or Minecraft runtime evidence exists for this project. The project now covers
-cross-system Ribbits × Matcha behavior rather than only the explorer-map idea.
-Do not treat runtime evidence from the canonical Ribbits project or Matcha by
-itself as integration evidence.
+This project has no active testing requirement, Test Slot claim, deployment
+request, or candidate. No source, build, artifact, Canary, deployment, or
+Minecraft runtime evidence exists for this project; runtime remains
+`RUNTIME_UNTESTED`.
 
-## Future runtime acceptance procedure
+## Dormant historical procedure — not queued
 
-Use only the portions of this procedure that correspond to workstreams actually
-implemented by the candidate. Unimplemented conceptual workstreams are not test
-requirements. Run after the canonical Ribbits line is runtime-functional, this
-project has an exact candidate artifact, and this UUID has explicit Test Slot
-ownership. Record exact Minecraft, Fabric Loader, Fabric API, Ribbits, YUNG's
-API where applicable, Matcha trade-supplying component or pack, candidate,
-resource-pack order, world seed, artifact hashes, and complete client/server
-logs.
+The procedure below records the superseded integration plan only. Do not
+execute its numbered steps: they are not queued work, current acceptance
+criteria, a deployment request, or a basis for Test Slot occupancy. The
+canonical Ribbit Village Explorer Map now belongs to the canonical Ribbits
+project, with Phase C availability through witch-hut content and Phase D sale
+of the same canonical map by the Wandering Ribbit; neither source materially
+depends on Matcha.
+
+If an explicitly approved feature whose purpose materially depends on both
+Ribbits and Matcha reactivates this project, replace this historical outline
+with an exact candidate-specific runtime procedure before requesting any
+deployment or Test Slot.
+
+The former conceptual acceptance outline was:
 
 1. Start with the exact intended Matcha + Ribbits stack. Confirm Matcha's
    authoritative villager-trade set loads cleanly and the candidate does not

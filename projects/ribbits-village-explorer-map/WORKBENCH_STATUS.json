@@ -15,32 +15,28 @@
     "legacy_ids": []
   },
   "definition": {
-    "lifecycle": "PLANNED",
+    "lifecycle": "PARKED",
     "goals": [
-      "Maintain the Minecraft Java 26.2 Fabric integration layer between the canonical Mynx-maintained Ribbits line and Matcha Flavoured.",
-      "Make Ribbits participate intentionally in Matcha progression, villager economics, discovery, and other explicitly approved cross-system behavior without turning either project into a general overhaul of the other."
+      "Preserve the dormant historical Ribbits × Matcha integration identity and planning provenance without assigning active implementation, release, deployment, or testing work.",
+      "Reactivate only after explicit approval of a feature whose purpose materially depends on both the canonical Ribbits project and Matcha Flavoured."
     ],
     "scope": [
-      "Begin implementation only after the canonical Ribbits 26.2 project has a runtime-functional candidate and the exact current Matcha integration surfaces required by the chosen workstream can be audited.",
-      "Audit Matcha's authoritative villager-trade ownership and the exact current trade table before adding, deriving, or mapping any Ribbits-facing Matcha trade behavior; use supported server-authoritative hooks and do not rely on ignored or unassigned trade resources.",
-      "Retain the original explorer-map concept as an initial workstream: add a distinct Ribbit Village Explorer Map to Matcha cartographer progression without replacing Matcha's existing swamp-hut explorer map or unrelated cartographer offers.",
-      "Support explicitly approved Matcha-derived trade mappings for appropriate Ribbit professions, documenting whether each mapping is a frozen intentional design or an integration that tracks a defined Matcha contract; do not blanket-mirror Matcha's entire trade table by default.",
-      "Keep behavior intrinsic to Ribbits itself in the canonical Ribbits project; this project owns only behavior whose purpose depends materially on both Ribbits and Matcha.",
-      "Allow future Matcha-specific Ribbits integration workstreams to be added within this project when they cross the same ownership boundary and are individually documented, tested, and versioned.",
-      "Preserve Matcha's unrelated progression, Ribbits' unrelated native behavior, villager restocking and persistence, save/reload behavior, and dedicated-server compatibility."
+      "Preserve the canonical controls, immutable UUID, stable repository project ID/path, display identity, aliases, and historical log for this dormant integration identity.",
+      "Record the supersession of the former Matcha-cartographer map concept: the canonical Ribbit Village Explorer Map belongs to the canonical Ribbits project, with Phase C availability through witch-hut content and Phase D sale of the same canonical map by the Wandering Ribbit; neither source materially depends on Matcha.",
+      "Keep all implementation, build, artifact, release, deployment, Test Slot, and runtime work inactive unless an explicitly approved reactivation feature materially depends on both Ribbits and Matcha."
     ],
     "boundaries": {
       "owned_paths": [
         "projects/ribbits-village-explorer-map"
       ],
       "exclusions": [
-        "Implementation source, build files, generated resources, artifacts, Canary versions, or speculative scaffolding while the project remains PLANNED.",
-        "Ribbits-native features that do not materially depend on Matcha, including standalone Ribbit AI, profession behavior, village composition, world generation, items, or independently designed trades; those remain owned by the canonical Ribbits project.",
+        "Implementation source, build files, generated resources, artifacts, Canary versions, or speculative scaffolding while the project remains PARKED.",
+        "Ownership or implementation of the canonical Ribbit Village Explorer Map, including Phase C witch-hut availability and Phase D Wandering Ribbit sale, plus all other Ribbits-native features that do not materially depend on Matcha; those remain owned by the canonical Ribbits project.",
         "Unrelated Matcha changes, a general Matcha villager-trade overhaul, blanket replacement of Matcha trade sets, or modification of Matcha progression beyond the explicitly approved Ribbits integration behavior.",
         "Automatic mirroring of every current or future Matcha trade without an explicit mapping contract and compatibility rationale.",
         "Replacing swamp huts with Ribbits villages, suppressing either structure's independent world generation, sharing one structure identity, or repurposing Matcha's existing swamp-hut explorer map.",
         "Copying or redistributing protected Ribbits or private Matcha material beyond what is lawfully available and necessary for local compatibility work.",
-        "Deployment, Test Slot occupancy, Minecraft launch, runtime-state mutation, protected gameplay-instance access, or runtime-validation claims during conceptual planning."
+        "Deployment, Test Slot occupancy, Minecraft launch, runtime-state mutation, protected gameplay-instance access, or runtime-validation claims while the project is parked."
       ]
     },
     "dependencies": [
@@ -77,7 +73,7 @@
     ]
   },
   "state": {
-    "milestone": "The Ribbits Village Explorer Map concept has been repurposed in place as the general Ribbits × Matcha Integration project while preserving its immutable UUID, stable repository project ID/path, and PLANNED lifecycle. The explorer map remains the first named workstream, and selected Matcha-derived Ribbit trade mappings plus future explicitly approved cross-system features are now in scope; no implementation or runtime candidate exists.",
+    "milestone": "The Ribbits × Matcha Integration project is deliberately PARKED as a dormant historical identity. The canonical Ribbit Village Explorer Map is now owned by the canonical Ribbits project, with Phase C availability through witch-hut content and Phase D sale of the same map by the Wandering Ribbit; neither source materially depends on Matcha, and no other specific Matcha-dependent Ribbits feature is approved. UUID, stable repository project ID/path, display identity, aliases, and history remain preserved. Reactivation requires an explicitly approved feature whose purpose materially depends on both Ribbits and Matcha; no implementation or runtime candidate exists.",
     "releases": {
       "current": null,
       "accepted": null,
@@ -93,11 +89,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 2,
-    "activity_at": "2026-09-01T06:22:00Z",
-    "updated_at": "2026-09-01T06:22:00Z",
-    "last_codex_at": "2026-09-01T06:22:00Z",
-    "source_commit": "350394121e563873d7f91844ee7eaaaee3257a9c",
+    "revision": 3,
+    "activity_at": "2026-09-03T19:24:19Z",
+    "updated_at": "2026-09-03T19:24:19Z",
+    "last_codex_at": "2026-09-03T19:24:19Z",
+    "source_commit": "11d67260a05b414ff17ced7649313980a3b1c511",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
