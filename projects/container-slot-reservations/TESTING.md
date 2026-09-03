@@ -2,21 +2,21 @@
 
 ## Current gate
 
-**NOT DEPLOYED — RUNTIME UNTESTED — NOT READY FOR PROMOTION**
+**READY TO TEST VERIFIED — RUNTIME UNTESTED — NOT READY FOR PROMOTION**
 
-Current Canary 2 is `artifacts/container-slot-reservations-0.1.0-canary2.jar`, 81,962 bytes, SHA-256 `BB4F269758D43469F2A9C0A36D01DCECB8704054EE8BC01327C46CE614D4A02F`, embedded version `0.1.0-canary2`, from source checkpoint `48468ad99ba1353ac5455be39dedef6ca143f7ae`. It is not deployed and has no Minecraft runtime result.
+Current Canary 2 is `artifacts/container-slot-reservations-0.1.0-canary2.jar`, 81,962 bytes, SHA-256 `BB4F269758D43469F2A9C0A36D01DCECB8704054EE8BC01327C46CE614D4A02F`, embedded version `0.1.0-canary2`, from implementation checkpoint `48468ad99ba1353ac5455be39dedef6ca143f7ae`. Test Instance Manager checkpoint `2b3d93b2df3d2f2bd5c851570c9ca191c85bafb4` physically deployed and verified these exact bytes in Slot A as deployment `bee6248a-0cb8-4953-bd55-33ac3f6e5111` and artifact `b92b3cd6-a3c2-4882-b279-4a39194fbdc9` at manager revision 71, accepted Stack v15, and state digest `BF3B0CAFA400620A9755F9D2CD3A3080EB726691922553DA3C945F76A25E86F9`. Minecraft has not been launched and Canary 2 has no runtime result.
 
-Exact accepted Canary 1 is the rollback: `artifacts/container-slot-reservations-0.1.0-canary1.jar`, 63,388 bytes, SHA-256 `4E7F0A470A387BE76189D0A5E1AE8C614D17EC8B24A6774B400838CC234C4532`, source `e0adc6b9302392440f2e5654c1e4031916b0c996`, accepted deployment `c0fdfff1-831a-4081-93a3-e596d7fc928d`, and accepted artifact `c3bc9365-5664-4148-9200-3292307f9bce`. Do not rebuild, relabel, or modify that rollback.
+Exact user-passed and accepted Canary 1 remains the rollback: `artifacts/container-slot-reservations-0.1.0-canary1.jar`, 63,388 bytes, SHA-256 `4E7F0A470A387BE76189D0A5E1AE8C614D17EC8B24A6774B400838CC234C4532`, source `e0adc6b9302392440f2e5654c1e4031916b0c996`, accepted deployment `c0fdfff1-831a-4081-93a3-e596d7fc928d`, and accepted artifact `c3bc9365-5664-4148-9200-3292307f9bce`. Its exact PASS and accepted Stack provenance are unchanged; do not rebuild, relabel, or modify it.
 
 Canary 2 passed a clean Java 25 / Gradle 9.5.1 `test runGameTest build` sequence: 41/41 JUnit tests and all 10 required Fabric GameTests passed. The static suite validates the exact Minecraft 26.2 premultiplied item-rendering seams, component-rich reservation identity, slot indices 0 through 26, no-mutation and no-reservation paths, and optional pseudo-mixin handler/linkage contracts. These are controlled build results, not gameplay evidence. No client or gameplay profile was launched.
 
 The optional tooltip audit inputs were read-only exact Easy Shulker Boxes `26.2.3`, `EasyShulkerBoxes-v26.2.3-mc26.2.x-Fabric.jar`, 639,115 bytes, SHA-256 `66F803AE8796A0CDD7086E175FE8B96846515710B8B98B9AEBC79D52EA2B0C38`, and its nested Item Interactions `26.2.2`, `META-INF/jars/iteminteractions-fabric-26.2.2.jar`, 196,177 bytes, SHA-256 `1745ADF294134817986E46BF554A5A6613837602B660E15A15C50BDC2E0A293C`. Runtime metadata keeps both integrations optional with flexible `*` predicates; the exact hashes are validation identities, not runtime ceilings.
 
-## Predeployment checks
+## Deployment identity and launch checks
 
-Before assigning Canary 2 to a Test Slot, verify the exact filename, size, SHA-256, embedded version, and source checkpoint above. Use only the serialized Test Instance Manager workflow with CAS/locking, rollback protection, dry-run, atomic apply, and live physical verification. Preserve the other slot and accepted Stack. Never touch the protected Minecraft 26.1.2 gameplay profile.
+Before every runtime launch, run the Test Instance Manager's read-only verification and require `PHYSICAL_STATE_VERIFIED` for exact revision 71, Stack v15, state digest `BF3B0CAFA400620A9755F9D2CD3A3080EB726691922553DA3C945F76A25E86F9`, and the Slot A deployment/artifact/file/hash/source identity above. Stop if any value differs. Do not reassign either slot or modify the dedicated profile while testing; preserve the independent Slot B state and never touch the protected Minecraft 26.1.2 gameplay profile.
 
-Test first without Easy Shulker Boxes and Item Interactions to prove the optional integration is absent-safe. For the tooltip cases, use the exact audited Easy Shulker Boxes artifact and its required compatible providers, and verify their resolved identities before launch. Do not load Canary 1 and Canary 2 together.
+Test first without Easy Shulker Boxes and Item Interactions to prove the optional integration is absent-safe. For the tooltip cases, use the exact audited Easy Shulker Boxes artifact and its required compatible providers, and verify their resolved identities before launch. Do not enable the disabled Canary 1 predecessor or otherwise load Canary 1 and Canary 2 together.
 
 ## Runtime matrix
 

@@ -14,7 +14,7 @@
     ]
   },
   "definition": {
-    "lifecycle": "ACTIVE",
+    "lifecycle": "TESTING",
     "goals": [
       "Preserve a player's component-exact organization intent after a physical stack leaves an eligible vanilla storage slot.",
       "Apply the same reservation admission rule to manual placement, vanilla QUICK_MOVE, and vanilla hopper insertion without changing extraction, destination order, or routing policy.",
@@ -23,7 +23,7 @@
       "Keep reservation persistence, synchronization, user actions, and insertion server-authoritative while exposing defensive classification and reservation queries without becoming an item-routing engine."
     ],
     "scope": [
-      "Maintain exact Minecraft Java 26.2 Fabric Canary 2 from implementation and artifact checkpoint 48468ad99ba1353ac5455be39dedef6ca143f7ae while preserving accepted Canary 1 as rollback.",
+      "Maintain exact Minecraft Java 26.2 Fabric Canary 2 from implementation and artifact checkpoint 48468ad99ba1353ac5455be39dedef6ca143f7ae, now physically verified in Test Slot A at manager revision 71, while preserving accepted Canary 1 as rollback.",
       "Store sparse format-1 reservations as immutable count-one ItemStackTemplate values in a persistent, network-synchronized project component; item identity remains exactly component-aware while count is excluded.",
       "Support exact vanilla chest, trapped-chest, barrel, undyed shulker, and all 16 dyed shulker owners, with double-chest logical slots resolved to the owning physical half and local slot 0 through 26.",
       "Preserve Canary 1 occupied, cursor-derived, replacement, clear, removal-retains-intent, shulker item round-trip, persistence, networking, request validation, manual insertion, vanilla QUICK_MOVE, hopper behavior, and public defensive query/classification behavior.",
@@ -41,7 +41,7 @@
         "Changes to vanilla extraction, ordinary chest or barrel drop metadata, unsupported container ownership, or vanilla QUICK_MOVE and hopper ordering beyond reservation admission.",
         "Fake zero-count stacks, mutation of DataComponents.CONTAINER, reservation-aware Easy Shulker Boxes insertion or extraction controls, or changes to tooltip fullness, dimensions, selection, scrolling, collapsing, highlighting, colors, names, storage bars, or mouse interactions.",
         "Hard runtime dependencies or restrictive upper bounds for Easy Shulker Boxes or Item Interactions, direct modification or redistribution of either upstream artifact, or optional-class linkage outside safely gated client mixins.",
-        "Changes to another Workbench project, shared Test Instance Manager state, either runtime slot, the dedicated Workbench deployment, or the protected gameplay profile during this predeployment checkpoint.",
+        "Any further change to another Workbench project, shared Test Instance Manager state, either runtime slot, the dedicated Workbench deployment, or the protected gameplay profile during this postdeployment control checkpoint.",
         "Minecraft client launch, inferred runtime evidence, successor acceptance or promotion, or mutation of the exact accepted Canary 1 artifact and provenance."
       ]
     },
@@ -109,7 +109,7 @@
     ]
   },
   "state": {
-    "milestone": "Canary 2 is the current predeployment successor from exact implementation checkpoint 48468ad99ba1353ac5455be39dedef6ca143f7ae. Its 41/41 JUnit and 10/10 Fabric GameTest controlled validation covers true premultiplied 35% empty-reservation visuals, literal-zero placement, scoped render state, exact Item Interactions bytecode seams, optional-class linkage, and unchanged reservation behavior. Exact runtime-passed Canary 1 remains accepted and is now the rollback; Canary 2 is ACTIVE, NOT_DEPLOYED, and independently RUNTIME_UNTESTED.",
+    "milestone": "Exact Canary 2 from implementation checkpoint 48468ad99ba1353ac5455be39dedef6ca143f7ae is physically deployed and READY_TO_TEST_VERIFIED in Slot A as deployment bee6248a-0cb8-4953-bd55-33ac3f6e5111 and artifact b92b3cd6-a3c2-4882-b279-4a39194fbdc9 at Test Instance Manager revision 71, accepted Stack v15, and state digest bf3b0cafa400620a9755f9d2cd3a3080eb726691922553da3c945f76a25e86f9. Its 41/41 JUnit and 10/10 Fabric GameTest controlled validation remains exact. Minecraft has not been launched, so Canary 2 remains independently RUNTIME_UNTESTED; exact runtime-passed Canary 1 remains accepted and is the unchanged rollback.",
     "releases": {
       "current": {
         "version": "0.1.0-canary2",
@@ -145,17 +145,17 @@
     },
     "validation": {
       "build": "CONTROLLED_VALIDATION_PASS",
-      "deployment": "NOT_DEPLOYED",
+      "deployment": "READY_TO_TEST_VERIFIED",
       "runtime": "RUNTIME_UNTESTED"
     },
     "blocker": null
   },
   "synchronization": {
-    "revision": 4,
-    "activity_at": "2026-09-03T04:51:00Z",
-    "updated_at": "2026-09-03T04:51:00Z",
-    "last_codex_at": "2026-09-03T04:51:00Z",
-    "source_commit": "48468ad99ba1353ac5455be39dedef6ca143f7ae",
+    "revision": 5,
+    "activity_at": "2026-09-03T05:27:46Z",
+    "updated_at": "2026-09-03T05:27:46Z",
+    "last_codex_at": "2026-09-03T05:27:46Z",
+    "source_commit": "2b3d93b2df3d2f2bd5c851570c9ca191c85bafb4",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null

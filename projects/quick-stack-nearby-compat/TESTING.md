@@ -1,40 +1,42 @@
 # Testing
 
-C7 (`0.1.0-canary7`) is the current predeployment candidate. Its exact artifact
-is `quick-stack-nearby-compat-0.1.0-canary7.jar`, 31,568 bytes, SHA-256
+C7 (`0.1.0-canary7`) is the current deployed candidate. Its exact artifact is
+`quick-stack-nearby-compat-0.1.0-canary7.jar`, 31,568 bytes, SHA-256
 `9e2ef78a5f40f5bcdeed0e8c6af8cd7cfb15a35d541360017c4e46e94521995e`,
 from implementation checkpoint `3f124a44086e52845e35805d5abb3049379150b8`.
-It has `CONTROLLED_VALIDATION_PASS`, is `NOT_DEPLOYED`, and is
+It has `CONTROLLED_VALIDATION_PASS`, `READY_TO_TEST_VERIFIED`, and
 `RUNTIME_UNTESTED`.
 
-The project lifecycle remains `TESTING` only because exact accepted C6 still
-occupies Test Slot B at manager revision 70. Slot B deployment
-`34dcf31b-99c9-4c64-9978-f1f94782ed9a` uses slot artifact
-`7293a2b5-ea16-4929-af1b-a6c15f0aef32`, exact C6 source
-`3c8cc5917da9fd016e57a969955fa7c6e3b08661`, and reports `UNTESTED`.
-C6's earlier accepted aggregate `RUNTIME_PASS` is separate historical evidence.
-Neither result applies to C7. Exact C4 remains the passing rollback.
+Manager revision 71 physically verified Stack v15 with C7 in Test Slot B.
+Deployment `2c2ca107-d652-45bc-a7d6-23c0238d00f7` binds slot artifact
+`918d23dd-6268-47c9-baa0-c49daf85e05d` to those exact file, hash, and source
+identities. The verified state digest is
+`bf3b0cafa400620a9755f9d2cd3a3080eb726691922553da3c945f76a25e86f9`.
+C7's Slot B result is independently `UNTESTED`. C6's earlier accepted aggregate
+`RUNTIME_PASS` is separate historical evidence and does not apply to C7. Exact
+C6 remains accepted and exact C4 remains the passing rollback.
 
 ## Preconditions
 
-- Use a serialized Test Instance Manager transition before gameplay testing.
-  Replace the same-project C6 member in Slot B with exact C7; preserve Slot A,
-  every unrelated accepted artifact, and the accepted upstream QSN companion.
-  Do not launch until the manager returns a physically verified C7 deployment.
+- Require manager revision 71, or a later canonical revision that preserves the
+  exact C7 Slot B deployment and artifact identities above, reports
+  `READY_TO_TEST_VERIFIED`, and still shows C7 as `UNTESTED`. Revision 71 must
+  match the recorded Stack v15 digest. Stop rather than redeploying if it does
+  not.
 - Require official `quick-stack-nearby-0.4.0.jar`, 159,918 bytes, SHA-256
   `43f1130527f782a291231c682791b4fd3766a20916c691cbdb98f91fdcc47e53`.
   Its accepted deployment `66b8b293-d9ae-41c4-a969-d43baf79c2ff` and artifact
-  `cb31d144-b6c4-41fb-ba44-35d896b228f6` remain baseline infrastructure, not a
-  second slot member.
-- For the CSR-enabled pass, require the accepted C1 provider
-  `container-slot-reservations-0.1.0-canary1.jar`, 63,388 bytes, SHA-256
-  `4e7f0a470a387be76189d0a5e1ae8c614d17ec8b24a6774b400838cc234c4532`,
-  or record the exact later compatible provider deliberately substituted by an
-  authorized manager transition. C2 pairing has controlled GameTest evidence,
-  not gameplay evidence.
-- Before testing, record the manager revision, C7 deployment and artifact IDs,
-  complete enabled stack, world, log, filenames, versions, and SHA-256 values.
-  Stop if either QSN or C7 has zero or multiple enabled Fabric-ID owners.
+  `cb31d144-b6c4-41fb-ba44-35d896b228f6` must remain active through the verified
+  accepted-companion passthrough, not as a second slot member.
+- For the CSR-enabled pass, require exact C2 in Slot A: deployment
+  `bee6248a-0cb8-4953-bd55-33ac3f6e5111`, artifact
+  `b92b3cd6-a3c2-4882-b279-4a39194fbdc9`, file
+  `container-slot-reservations-0.1.0-canary2.jar`, 81,962 bytes, SHA-256
+  `bb4f269758d43469f2a9c0a36d01dcecb8704054ee8bc01327c46ce614d4a02f`,
+  source `48468ad99ba1353ac5455be39dedef6ca143f7ae`, and result `UNTESTED`.
+- Before testing, record the manager revision, complete enabled stack, world,
+  and log. Confirm exactly one enabled owner for `quick_stack_nearby_compat`,
+  `quick-stack-nearby`, and `container_slot_reservations`; stop on any drift.
 
 ## C7 runtime procedure
 

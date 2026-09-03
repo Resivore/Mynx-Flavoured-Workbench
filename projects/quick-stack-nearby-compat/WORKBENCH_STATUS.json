@@ -45,8 +45,8 @@
         "Official QSN, CSR, Inventory Search/Core, Inventory Extended, Clutter No More, BGE, Nibaru, Minecraft, and Fabric classes or JARs are not bundled or redistributed by this project.",
         "C7 mirrors the exact audited QSN 0.4.0 package-private maximum-stack helper through its current Container#getMaxStackSize delegate because attempted Java-package and Mixin invokers were not runtime-safe; a future QSN helper change requires seam re-audit.",
         "Controlled JUnit and Fabric GameTest results are build/static evidence, not Minecraft gameplay runtime validation.",
-        "Lifecycle remains TESTING solely because exact accepted C6 still occupies Test Slot B at manager revision 70; neither C6's historical accepted aggregate pass nor Slot B's current UNTESTED result is assigned to undeployed C7.",
-        "No Test Instance Manager transition, dedicated-profile mutation, Minecraft launch, promotion, runtime-result inference, or protected gameplay-instance access is part of the C7 build and predeployment control update."
+        "Lifecycle remains TESTING because exact current C7 occupies Test Slot B at manager revision 71 with its own UNTESTED result; C6's historical accepted aggregate pass remains separate and is not assigned to C7.",
+        "This checkpoint records only the serialized, physically verified Test Instance Manager deployment. Minecraft was not launched, no runtime result was inferred, accepted C6 and rollback C4 were not promoted or replaced, and the protected gameplay instance remained untouched."
       ]
     },
     "dependencies": [
@@ -149,7 +149,7 @@
     ]
   },
   "state": {
-    "milestone": "C7 is the current controlled-validation-passed, undeployed, runtime-untested candidate at implementation checkpoint 3f124a44086e52845e35805d5abb3049379150b8. Lifecycle remains TESTING solely because exact accepted C6 still occupies Slot B at manager revision 70 with its independent UNTESTED result; C6's historical accepted aggregate RUNTIME_PASS and exact C4 rollback remain preserved and do not apply to C7.",
+    "milestone": "C7 is the current controlled-validation-passed, physically verified, runtime-untested Slot B candidate at manager revision 71 and Stack v15. Deployment 2c2ca107-d652-45bc-a7d6-23c0238d00f7 binds artifact 918d23dd-6268-47c9-baa0-c49daf85e05d to exact implementation 3f124a44086e52845e35805d5abb3049379150b8; accepted QSN 0.4.0 remains active through verified companion passthrough. C6's historical accepted aggregate RUNTIME_PASS and exact C4 rollback remain preserved and do not apply to C7's independent UNTESTED result.",
     "releases": {
       "current": {
         "version": "C7 (0.1.0-canary7)",
@@ -186,17 +186,17 @@
     },
     "validation": {
       "build": "CONTROLLED_VALIDATION_PASS",
-      "deployment": "NOT_DEPLOYED",
+      "deployment": "READY_TO_TEST_VERIFIED",
       "runtime": "RUNTIME_UNTESTED"
     },
     "blocker": null
   },
   "synchronization": {
-    "revision": 3,
-    "activity_at": "2026-09-03T04:51:00Z",
-    "updated_at": "2026-09-03T04:51:00Z",
-    "last_codex_at": "2026-09-03T04:51:00Z",
-    "source_commit": "3f124a44086e52845e35805d5abb3049379150b8",
+    "revision": 4,
+    "activity_at": "2026-09-03T05:27:46Z",
+    "updated_at": "2026-09-03T05:27:46Z",
+    "last_codex_at": "2026-09-03T05:27:46Z",
+    "source_commit": "2b3d93b2df3d2f2bd5c851570c9ca191c85bafb4",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
