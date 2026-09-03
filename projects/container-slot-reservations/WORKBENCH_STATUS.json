@@ -14,7 +14,7 @@
     ]
   },
   "definition": {
-    "lifecycle": "TESTING",
+    "lifecycle": "ACCEPTED",
     "goals": [
       "Preserve a player's component-exact organization intent after a physical stack leaves an eligible vanilla storage slot.",
       "Apply the same reservation admission rule to manual placement, vanilla QUICK_MOVE, and vanilla hopper insertion without changing extraction, destination order, or routing policy.",
@@ -85,7 +85,7 @@
     ]
   },
   "state": {
-    "milestone": "Exact unchanged C1 occupies Test Slot A at manager revision 67 as `Container Slot Reservations - Canary 1` (deployment c0fdfff1-831a-4081-93a3-e596d7fc928d; artifact c3bc9365-5664-4148-9200-3292307f9bce) with CURRENT_RELEASE_DEPLOYED / READY_TO_TEST_VERIFIED. Its prior 28/28 JUnit and 10/10 required Fabric GameTest evidence remains STATIC_PASS only. The artifact was not rebuilt or replaced, Minecraft was not launched, and no runtime result was recorded, so C1 remains independently RUNTIME_UNTESTED and unaccepted.",
+    "milestone": "The user's aggregate runtime PASS is bound only to exact C1 (deployment c0fdfff1-831a-4081-93a3-e596d7fc928d; artifact c3bc9365-5664-4148-9200-3292307f9bce), which was promoted from Slot A into accepted Stack v15 at manager revision 70. No checklist-row results were inferred, QSN C6 remained independently UNTESTED in Slot B, and Minecraft was not launched during recording or promotion.",
     "releases": {
       "current": {
         "version": "0.1.0-canary1",
@@ -95,24 +95,31 @@
         },
         "source_commit": "e0adc6b9302392440f2e5654c1e4031916b0c996"
       },
-      "accepted": null,
+      "accepted": {
+        "version": "0.1.0-canary1",
+        "artifact": {
+          "filename": "container-slot-reservations-0.1.0-canary1.jar",
+          "sha256": "4e7f0a470a387be76189d0a5e1ae8c614d17ec8b24a6774b400838cc234c4532"
+        },
+        "source_commit": "e0adc6b9302392440f2e5654c1e4031916b0c996"
+      },
       "rollback": null,
-      "accepted_current": "NO_ACCEPTED",
+      "accepted_current": "CURRENT_IS_ACCEPTED",
       "accepted_rollback": "NO_ROLLBACK"
     },
     "validation": {
       "build": "STATIC_PASS",
       "deployment": "READY_TO_TEST_VERIFIED",
-      "runtime": "RUNTIME_UNTESTED"
+      "runtime": "RUNTIME_PASS"
     },
     "blocker": null
   },
   "synchronization": {
-    "revision": 2,
-    "activity_at": "2026-09-02T17:00:13Z",
-    "updated_at": "2026-09-02T17:00:13Z",
-    "last_codex_at": "2026-09-02T17:00:13Z",
-    "source_commit": "27d9fc0f66fd32bcda8fef80cffd92ec5d964242",
+    "revision": 3,
+    "activity_at": "2026-09-03T04:03:00Z",
+    "updated_at": "2026-09-03T04:03:00Z",
+    "last_codex_at": "2026-09-03T04:03:00Z",
+    "source_commit": "5fbbf9729561facfcb4edb5df507100359bddb52",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null

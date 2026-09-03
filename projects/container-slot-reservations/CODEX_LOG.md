@@ -19,3 +19,13 @@
 - Artifact: Unchanged current/unaccepted `container-slot-reservations-0.1.0-canary1.jar`, version `0.1.0-canary1`, 63,388 bytes, SHA-256 `4E7F0A470A387BE76189D0A5E1AE8C614D17EC8B24A6774B400838CC234C4532`, source `e0adc6b9302392440f2e5654c1e4031916b0c996`; no accepted or rollback release exists.
 - Result: TESTING — exact unchanged Canary 1 occupies Slot A at manager revision 67 with `STATIC_PASS / READY_TO_TEST_VERIFIED / RUNTIME_UNTESTED`.
 - Next state: Under explicit runtime ownership, run the current `TESTING.md` matrix in the dedicated Workbench, preserve the independent Slot B result, and record only behavior actually observed before considering acceptance.
+
+## 2026-09-03T04:03:00Z — Record exact Canary 1 PASS and promote it
+- Revision: 3
+- Source checkpoint: `5fbbf9729561facfcb4edb5df507100359bddb52`
+- Changes: Bound the user's aggregate runtime `PASS` only to exact Canary 1 deployment `c0fdfff1-831a-4081-93a3-e596d7fc928d` and artifact `c3bc9365-5664-4148-9200-3292307f9bce`, then promoted that exact unit from Slot A into accepted Stack v15 through serialized Test Instance Manager revisions 69 and 70. Slot A was cleared; QSN C6 and its accepted-companion passthrough remained in Slot B with its independent current result unchanged as `UNTESTED`.
+- Build/static: No source, metadata, dependency, version, artifact byte, or prior static evidence changed. The retained 63,388-byte C1 artifact and its existing 28/28 JUnit plus 10/10 Fabric GameTest evidence remain exact; automated evidence was not reclassified as runtime evidence.
+- Runtime: User-reported aggregate `PASS` for exact C1; no individual checklist-row observations were supplied or inferred. The manager recorded the result against the existing verified Slot A identity before promotion. Minecraft was not launched for recording, promotion, or verification, and no QSN C6 regression result was created.
+- Artifact: Accepted/current C1 `container-slot-reservations-0.1.0-canary1.jar`, embedded version `0.1.0-canary1`, 63,388 bytes, SHA-256 `4E7F0A470A387BE76189D0A5E1AE8C614D17EC8B24A6774B400838CC234C4532`, source `e0adc6b9302392440f2e5654c1e4031916b0c996`; deployment `c0fdfff1-831a-4081-93a3-e596d7fc928d`, artifact `c3bc9365-5664-4148-9200-3292307f9bce`. No rollback release exists yet because this is the first accepted CSR release.
+- Result: ACCEPTED — exact C1 is `STATIC_PASS / READY_TO_TEST_VERIFIED / RUNTIME_PASS`, is an accepted Stack v15 member, and no longer occupies Slot A; no blocker is recorded.
+- Next state: Preserve exact C1 as the accepted predecessor and rollback/provenance when introducing the next material CSR successor; do not mutate or relabel the accepted JAR.
