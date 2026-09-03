@@ -37,6 +37,7 @@ from tools.test_instance_manager.manager import (
     _read_fabric_manifest_from_archive,
     _windows_processes_using_profile,
 )
+from tools.runtime_slots import migrate_runtime_state, validate_runtime_state
 
 
 C57 = "4.2.1-bge.canary57.unified+26.2"
@@ -104,6 +105,140 @@ def write_dependency_mod(
         )
         archive.writestr("fixture.txt", version)
     return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+class AcceptedCompanionFixture:
+    """QSN-shaped accepted multi-artifact unit with one manifest-bound slot artifact."""
+
+    def __init__(self, root: Path, *, compat_depends_on_upstream: bool = True):
+        self.fixture = ManagerFixture(root)
+        fixture = self.fixture
+        self.project_uuid = stable_uuid("project:quick-stack-nearby-compat")
+        self.version = "0.1.0-canary6"
+        self.source_commit = "3c8cc5917da9fd016e57a969955fa7c6e3b08661"
+        self.core_name = "quick-stack-nearby-0.4.0.jar"
+        self.compat_name = "quick-stack-nearby-compat-0.1.0-canary6.jar"
+
+        core_hash = write_dependency_mod(
+            fixture.mods / self.core_name,
+            "quick-stack-nearby",
+            "0.4.0",
+        )
+        compat_source = fixture.repository / "artifacts" / self.compat_name
+        compat_hash = write_dependency_mod(
+            compat_source,
+            "quick_stack_nearby_compat",
+            self.version,
+            depends=(
+                {"quick-stack-nearby": "=0.4.0"}
+                if compat_depends_on_upstream
+                else None
+            ),
+        )
+        (fixture.mods / self.compat_name).write_bytes(compat_source.read_bytes())
+        self.core_bytes = (fixture.mods / self.core_name).read_bytes()
+        self.compat_bytes = compat_source.read_bytes()
+
+        self.core_artifact = artifact(
+            self.core_name,
+            "quick-stack-nearby",
+            core_hash,
+        )
+        self.compat_artifact = artifact(
+            self.compat_name,
+            "quick_stack_nearby_compat",
+            compat_hash,
+            source_type="REPOSITORY",
+            source_path="artifacts/" + self.compat_name,
+        )
+        self.accepted_unit = unit(
+            "quick-stack-nearby-compat",
+            self.version,
+            self.core_artifact,
+            project_uuid=self.project_uuid,
+        )
+        self.accepted_unit["source_commit"] = self.source_commit
+        self.accepted_unit["artifacts"].append(copy.deepcopy(self.compat_artifact))
+
+        self.slot_unit = copy.deepcopy(self.accepted_unit)
+        self.slot_unit["deployment_id"] = stable_uuid("qsn-regression-deployment")
+        slot_artifact = copy.deepcopy(self.compat_artifact)
+        slot_artifact["artifact_id"] = stable_uuid("qsn-regression-artifact")
+        self.slot_unit["artifacts"] = [slot_artifact]
+
+        fixture.project_index[self.project_uuid] = "quick-stack-nearby-compat"
+        fixture.project_display_names[self.project_uuid] = "Quick Stack Nearby Compatibility"
+        state = migrate_runtime_state(fixture.state, fixture.project_index)
+        state["accepted_baseline"]["members"].append(
+            {
+                "unit": copy.deepcopy(self.accepted_unit),
+                "accepted_at": "2026-08-29T12:00:00Z",
+            }
+        )
+        state["accepted_baseline"]["provenance"]["accepted_artifact_count"] += 2
+        validate_runtime_state(state, fixture.project_index)
+        fixture.state = state
+        fixture.state_path.write_text(
+            json.dumps(state, indent=2) + "\n",
+            encoding="utf-8",
+        )
+        fixture.manager.project_index = copy.deepcopy(fixture.project_index)
+        fixture.manager.project_display_names = copy.deepcopy(
+            fixture.project_display_names
+        )
+        fixture.manager.adopt(dry_run=False)
+
+    @staticmethod
+    def _member_declaration(member: dict) -> dict:
+        return candidate_declaration(
+            member["unit"],
+            member["replaces_accepted_deployment_id"],
+            member.get("dependency_overrides"),
+            member.get("accepted_companion_artifacts"),
+        )
+
+    def operation(
+        self,
+        *,
+        companion_artifacts: list[dict] | None | object = ...,
+        slot_unit: dict | None = None,
+    ) -> dict:
+        state = self.fixture.repository_state()
+        slot_a = state["slots"]["A"]
+        assert slot_a is not None
+        candidate = candidate_declaration(
+            slot_unit or self.slot_unit,
+            self.accepted_unit["deployment_id"],
+        )
+        if companion_artifacts is ...:
+            candidate["accepted_companion_artifacts"] = [
+                copy.deepcopy(self.core_artifact)
+            ]
+        elif companion_artifacts is not None:
+            candidate["accepted_companion_artifacts"] = copy.deepcopy(
+                companion_artifacts
+            )
+        return {
+            "type": "DEPLOY_PROFILE",
+            "slots": {
+                "A": {
+                    "members": [
+                        self._member_declaration(member)
+                        for member in slot_a["members"]
+                    ]
+                },
+                "B": {"candidate": candidate},
+            },
+        }
+
+    def deploy(self, *, at: str = "2099-01-01T00:00:30Z") -> dict:
+        state = self.fixture.repository_state()
+        return self.fixture.manager.transition(
+            operation=self.operation(),
+            expected_revision=state["revision"],
+            at=at,
+            dry_run=False,
+        )
 
 
 def fabric_mod_jar_bytes(
@@ -2326,6 +2461,279 @@ class DependencyCohortTransitionTests(unittest.TestCase):
             dry_run=True,
         )
         self.assertEqual("FABRIC_DEPENDENCY_GRAPH_VERIFIED", dry_run["dependency_resolution"]["status"])
+
+
+class AcceptedCompanionPassthroughTests(unittest.TestCase):
+    def setUp(self) -> None:
+        self.temp = tempfile.TemporaryDirectory()
+        self.qsn = AcceptedCompanionFixture(Path(self.temp.name))
+        self.fixture = self.qsn.fixture
+
+    def tearDown(self) -> None:
+        self.temp.cleanup()
+
+    def test_accepted_qsn_artifact_can_regress_with_required_upstream_passthrough(self) -> None:
+        before = self.fixture.repository_state()
+        before_a = copy.deepcopy(before["slots"]["A"])
+        before_tree = tree_snapshot(self.fixture.root)
+        operation = self.qsn.operation()
+
+        dry_run = self.fixture.manager.transition(
+            operation=operation,
+            expected_revision=before["revision"],
+            at="2099-01-01T00:00:30Z",
+            dry_run=True,
+        )
+        self.assertEqual(before_tree, tree_snapshot(self.fixture.root))
+        after_b = dry_run["slot_changes"]["B"]["after"]["members"][0]
+        self.assertEqual(
+            [self.qsn.core_artifact],
+            after_b["accepted_companion_artifacts"],
+        )
+        projected_b = dry_run["title_projection"]["slots"]["B"]
+        self.assertEqual(
+            [self.qsn.core_artifact],
+            projected_b["accepted_companion_passthrough"]["artifacts"],
+        )
+        self.assertNotIn("quick-stack-nearby-0.4.0", projected_b["line"])
+        passthrough = dry_run["dependency_resolution"][
+            "accepted_companion_passthrough"
+        ]
+        self.assertEqual("ACCEPTED_COMPANION_PASSTHROUGH_VERIFIED", passthrough["status"])
+        self.assertEqual(1, passthrough["companion_count"])
+        self.assertEqual(
+            self.qsn.core_artifact["artifact_id"],
+            passthrough["companions"][0]["artifact"]["artifact_id"],
+        )
+
+        self.qsn.deploy()
+        deployed = self.fixture.repository_state()
+        self.assertEqual(before_a, deployed["slots"]["A"])
+        self.assertEqual(
+            "UNTESTED",
+            deployed["slots"]["B"]["members"][0]["runtime_result"][
+                "classification"
+            ],
+        )
+        self.assertEqual(
+            self.qsn.core_bytes,
+            (self.fixture.mods / self.qsn.core_name).read_bytes(),
+        )
+        self.assertEqual(
+            self.qsn.compat_bytes,
+            (self.fixture.mods / self.qsn.compat_name).read_bytes(),
+        )
+        self.assertEqual(
+            self.qsn.compat_bytes,
+            (self.fixture.mods / (self.qsn.compat_name + ".disabled")).read_bytes(),
+        )
+
+        receipt = self.fixture.manager.verify()
+        self.assertEqual("PHYSICAL_STATE_VERIFIED", receipt["status"])
+        slot_b = receipt["slots"]["B"]
+        self.assertEqual(1, len(slot_b["artifacts"]))
+        self.assertEqual(
+            self.qsn.slot_unit["artifacts"][0]["artifact_id"],
+            slot_b["artifacts"][0]["artifact_id"],
+        )
+        companion = slot_b["accepted_companion_passthrough"]["companions"][0]
+        self.assertEqual(
+            "ACCEPTED_BASELINE_COMPANION_PASSTHROUGH",
+            companion["classification"],
+        )
+        self.assertEqual(
+            self.qsn.core_artifact,
+            companion["accepted_artifact_identity"],
+        )
+        self.assertEqual("ACTIVE", companion["physical_artifact"]["disposition"])
+        enabled_ids = [
+            item["primary_id"]
+            for item in receipt["fabric_dependency_graph"]["enabled_fabric_jars"]
+        ]
+        self.assertEqual(1, enabled_ids.count("quick-stack-nearby"))
+        self.assertEqual(1, enabled_ids.count("quick_stack_nearby_compat"))
+
+    def test_missing_required_companion_fails_without_mutation(self) -> None:
+        state = self.fixture.repository_state()
+        before = tree_snapshot(self.fixture.root)
+        with self.assertRaisesRegex(ManagerError, "missing managed Fabric dependency"):
+            self.fixture.manager.transition(
+                operation=self.qsn.operation(companion_artifacts=None),
+                expected_revision=state["revision"],
+                at="2099-01-01T00:00:30Z",
+                dry_run=True,
+            )
+        self.assertEqual(before, tree_snapshot(self.fixture.root))
+
+    def test_altered_companion_descriptor_is_rejected(self) -> None:
+        altered = copy.deepcopy(self.qsn.core_artifact)
+        altered["sha256"] = "0" * 64
+        state = self.fixture.repository_state()
+        before = tree_snapshot(self.fixture.root)
+        with self.assertRaisesRegex(ManagerError, "must exactly match the accepted companion"):
+            self.fixture.manager.transition(
+                operation=self.qsn.operation(companion_artifacts=[altered]),
+                expected_revision=state["revision"],
+                at="2099-01-01T00:00:30Z",
+                dry_run=True,
+            )
+        self.assertEqual(before, tree_snapshot(self.fixture.root))
+
+    def test_foreign_project_companion_is_rejected(self) -> None:
+        state = self.fixture.repository_state()
+        before = tree_snapshot(self.fixture.root)
+        foreign = copy.deepcopy(self.fixture.base["artifacts"][0])
+        with self.assertRaisesRegex(ManagerError, "same accepted project unit"):
+            self.fixture.manager.transition(
+                operation=self.qsn.operation(companion_artifacts=[foreign]),
+                expected_revision=state["revision"],
+                at="2099-01-01T00:00:30Z",
+                dry_run=True,
+            )
+        self.assertEqual(before, tree_snapshot(self.fixture.root))
+
+    def test_duplicate_enabled_owner_of_companion_id_is_rejected(self) -> None:
+        write_dependency_mod(
+            self.fixture.mods / "unmanaged-qsn-duplicate.jar",
+            "quick-stack-nearby",
+            "0.4.0",
+        )
+        state = self.fixture.repository_state()
+        before = tree_snapshot(self.fixture.root)
+        with self.assertRaisesRegex(
+            ManagerError,
+            "unmanaged conflicting mod artifact .* owns quick-stack-nearby",
+        ):
+            self.fixture.manager.transition(
+                operation=self.qsn.operation(),
+                expected_revision=state["revision"],
+                at="2099-01-01T00:00:30Z",
+                dry_run=True,
+            )
+        self.assertEqual(before, tree_snapshot(self.fixture.root))
+
+    def test_unnecessary_companion_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            qsn = AcceptedCompanionFixture(
+                Path(temporary),
+                compat_depends_on_upstream=False,
+            )
+            state = qsn.fixture.repository_state()
+            before = tree_snapshot(qsn.fixture.root)
+            with self.assertRaisesRegex(ManagerError, "unnecessary accepted companion"):
+                qsn.fixture.manager.transition(
+                    operation=qsn.operation(),
+                    expected_revision=state["revision"],
+                    at="2099-01-01T00:00:30Z",
+                    dry_run=True,
+                )
+            self.assertEqual(before, tree_snapshot(qsn.fixture.root))
+
+    def test_failed_transition_rolls_back_passthrough_bytes_and_receipts(self) -> None:
+        state = self.fixture.repository_state()
+        before = tree_snapshot(self.fixture.root)
+
+        def fail_after_physical_apply(stage: str) -> None:
+            if stage == "after_physical_apply":
+                raise RuntimeError("accepted companion rollback fixture")
+
+        with self.assertRaisesRegex(ManagerError, "rolled back"):
+            self.fixture.manager.transition(
+                operation=self.qsn.operation(),
+                expected_revision=state["revision"],
+                at="2099-01-01T00:00:30Z",
+                dry_run=False,
+                failure_injector=fail_after_physical_apply,
+            )
+        self.assertEqual(before, tree_snapshot(self.fixture.root))
+        self.assertEqual("PHYSICAL_STATE_VERIFIED", self.fixture.manager.verify()["status"])
+
+    def test_slot_clear_restores_original_complete_accepted_unit(self) -> None:
+        accepted_before = copy.deepcopy(
+            next(
+                member
+                for member in self.fixture.repository_state()["accepted_baseline"][
+                    "members"
+                ]
+                if member["unit"]["project_uuid"] == self.qsn.project_uuid
+            )
+        )
+        self.qsn.deploy()
+        deployed = self.fixture.repository_state()
+        slot_a_before = copy.deepcopy(deployed["slots"]["A"])
+        self.fixture.manager.transition(
+            operation={"type": "REMOVE_SLOT", "slot": "B"},
+            expected_revision=deployed["revision"],
+            at="2099-01-01T00:00:31Z",
+            dry_run=False,
+        )
+        cleared = self.fixture.repository_state()
+        accepted_after = next(
+            member
+            for member in cleared["accepted_baseline"]["members"]
+            if member["unit"]["project_uuid"] == self.qsn.project_uuid
+        )
+        self.assertEqual(accepted_before, accepted_after)
+        self.assertEqual(slot_a_before, cleared["slots"]["A"])
+        self.assertIsNone(cleared["slots"]["B"])
+        self.assertEqual(
+            self.qsn.core_bytes,
+            (self.fixture.mods / self.qsn.core_name).read_bytes(),
+        )
+        self.assertEqual(
+            self.qsn.compat_bytes,
+            (self.fixture.mods / self.qsn.compat_name).read_bytes(),
+        )
+        self.assertFalse(
+            (self.fixture.mods / (self.qsn.compat_name + ".disabled")).exists()
+        )
+        self.assertEqual("PHYSICAL_STATE_VERIFIED", self.fixture.manager.verify()["status"])
+
+    def test_byte_identical_promotion_reconciles_original_accepted_identity(self) -> None:
+        before = self.fixture.repository_state()
+        stack_revision = before["accepted_baseline"]["revision"]
+        accepted_before = copy.deepcopy(
+            next(
+                member
+                for member in before["accepted_baseline"]["members"]
+                if member["unit"]["project_uuid"] == self.qsn.project_uuid
+            )
+        )
+        self.qsn.deploy()
+        deployed = self.fixture.repository_state()
+        self.fixture.manager.transition(
+            operation={
+                "type": "RECORD_RESULT",
+                "slot": "B",
+                "classification": "PASS",
+                "evidence": {"passed": ["fixture pass"], "failed": []},
+            },
+            expected_revision=deployed["revision"],
+            at="2099-01-01T00:00:31Z",
+            dry_run=False,
+        )
+        passed = self.fixture.repository_state()
+        slot_a_before = copy.deepcopy(passed["slots"]["A"])
+        self.fixture.manager.transition(
+            operation={"type": "PROMOTE_SLOT", "slot": "B"},
+            expected_revision=passed["revision"],
+            at="2099-01-01T00:00:32Z",
+            dry_run=False,
+        )
+        reconciled = self.fixture.repository_state()
+        accepted_after = next(
+            member
+            for member in reconciled["accepted_baseline"]["members"]
+            if member["unit"]["project_uuid"] == self.qsn.project_uuid
+        )
+        self.assertEqual(accepted_before, accepted_after)
+        self.assertEqual(stack_revision, reconciled["accepted_baseline"]["revision"])
+        self.assertEqual(slot_a_before, reconciled["slots"]["A"])
+        self.assertIsNone(reconciled["slots"]["B"])
+        self.assertFalse(
+            (self.fixture.mods / (self.qsn.compat_name + ".disabled")).exists()
+        )
+        self.assertEqual("PHYSICAL_STATE_VERIFIED", self.fixture.manager.verify()["status"])
 
 
 class AtomicCohortManagerTests(unittest.TestCase):

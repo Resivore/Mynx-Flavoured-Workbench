@@ -283,7 +283,7 @@ def _slot_member(
     require_ready_for_recorded_result: bool,
 ) -> dict[str, Any]:
     required = {"unit", "replaces_accepted_deployment_id", "runtime_result"}
-    allowed = required | {"dependency_overrides"}
+    allowed = required | {"dependency_overrides", "accepted_companion_artifacts"}
     if not isinstance(value, dict):
         _fail(path, "must be an object")
     missing = required - set(value)
@@ -307,6 +307,23 @@ def _slot_member(
         if deployment_id in seen_overrides:
             _fail(f"{path}.dependency_overrides", f"duplicate deployment UUID: {deployment_id}")
         seen_overrides.add(deployment_id)
+
+    accepted_companions = member.get("accepted_companion_artifacts", [])
+    if not isinstance(accepted_companions, list):
+        _fail(f"{path}.accepted_companion_artifacts", "must be an array")
+    if "accepted_companion_artifacts" in member and not accepted_companions:
+        _fail(f"{path}.accepted_companion_artifacts", "must be nonempty when declared")
+    seen_companion_ids: set[str] = set()
+    for index, companion in enumerate(accepted_companions):
+        companion_path = f"{path}.accepted_companion_artifacts[{index}]"
+        _artifact(companion, companion_path)
+        artifact_id = companion["artifact_id"]
+        if artifact_id in seen_companion_ids:
+            _fail(
+                f"{path}.accepted_companion_artifacts",
+                f"duplicate accepted companion artifact UUID: {artifact_id}",
+            )
+        seen_companion_ids.add(artifact_id)
 
     _runtime_result(
         member["runtime_result"],
@@ -405,18 +422,36 @@ def _all_units(state: dict[str, Any]) -> list[tuple[str, dict[str, Any]]]:
 
 def _resolved_units_unchecked(state: dict[str, Any]) -> list[dict[str, Any]]:
     suppressed: set[str] = set()
+    passthrough_ids: dict[str, set[str]] = {}
     for slot in state["slots"].values():
         if slot is None:
             continue
         for member in _slot_members_unchecked(slot):
             if member["replaces_accepted_deployment_id"] is not None:
-                suppressed.add(member["replaces_accepted_deployment_id"])
+                replacement_id = member["replaces_accepted_deployment_id"]
+                suppressed.add(replacement_id)
+                companions = member.get("accepted_companion_artifacts", [])
+                if companions:
+                    passthrough_ids[replacement_id] = {
+                        artifact["artifact_id"] for artifact in companions
+                    }
             suppressed.update(member.get("dependency_overrides", []))
-    result = [
-        member["unit"]
-        for member in state["accepted_baseline"]["members"]
-        if member["unit"]["deployment_id"] not in suppressed
-    ]
+    result: list[dict[str, Any]] = []
+    for member in state["accepted_baseline"]["members"]:
+        unit = member["unit"]
+        deployment_id = unit["deployment_id"]
+        if deployment_id not in suppressed:
+            result.append(unit)
+            continue
+        retained_ids = passthrough_ids.get(deployment_id, set())
+        if retained_ids:
+            retained_unit = copy.deepcopy(unit)
+            retained_unit["artifacts"] = [
+                artifact
+                for artifact in retained_unit["artifacts"]
+                if artifact["artifact_id"] in retained_ids
+            ]
+            result.append(retained_unit)
     for label in ("A", "B"):
         slot = state["slots"][label]
         if slot is not None:
@@ -626,6 +661,89 @@ def validate_runtime_state(state: dict[str, Any], project_index: dict[str, str] 
                 if replacement_id in replacement_ids:
                     _fail("$.slots", "two cohort members cannot replace the same accepted deployment")
                 replacement_ids.add(replacement_id)
+            accepted_companions = slot_member.get("accepted_companion_artifacts", [])
+            if accepted_companions:
+                if replacement_id is None:
+                    _fail(
+                        f"{member_path}.accepted_companion_artifacts",
+                        "requires a same-project accepted replacement deployment",
+                    )
+                accepted_unit = accepted_by_deployment.get(replacement_id)
+                if accepted_unit is None or accepted_unit["project_uuid"] != unit["project_uuid"]:
+                    _fail(
+                        f"{member_path}.accepted_companion_artifacts",
+                        "must come from the slot member's sole accepted project unit",
+                    )
+                if len(unit["artifacts"]) != 1:
+                    _fail(
+                        f"{member_path}.unit.artifacts",
+                        "accepted companion passthrough requires exactly one manifest-bound slot artifact",
+                    )
+                assert accepted_unit is not None
+                accepted_artifacts = accepted_unit["artifacts"]
+                if len(accepted_artifacts) < 2:
+                    _fail(
+                        f"{member_path}.accepted_companion_artifacts",
+                        "requires an accepted project unit with multiple artifacts",
+                    )
+                accepted_by_artifact_id = {
+                    artifact["artifact_id"]: artifact for artifact in accepted_artifacts
+                }
+                companion_ids: set[str] = set()
+                for index, companion in enumerate(accepted_companions):
+                    companion_path = f"{member_path}.accepted_companion_artifacts[{index}]"
+                    accepted_companion = accepted_by_artifact_id.get(companion["artifact_id"])
+                    if accepted_companion is None:
+                        _fail(
+                            companion_path,
+                            "does not identify an artifact from the same accepted project unit",
+                        )
+                    if companion != accepted_companion:
+                        _fail(companion_path, "must exactly match the accepted companion artifact")
+                    companion_ids.add(companion["artifact_id"])
+                omitted = [
+                    artifact
+                    for artifact in accepted_artifacts
+                    if artifact["artifact_id"] not in companion_ids
+                ]
+                if len(omitted) != 1:
+                    _fail(
+                        f"{member_path}.accepted_companion_artifacts",
+                        "must retain every accepted companion so exactly one accepted artifact is replaced",
+                    )
+                expected_companions = [
+                    artifact
+                    for artifact in accepted_artifacts
+                    if artifact["artifact_id"] != omitted[0]["artifact_id"]
+                ]
+                if accepted_companions != expected_companions:
+                    _fail(
+                        f"{member_path}.accepted_companion_artifacts",
+                        "must preserve the accepted unit's exact companion identities and order",
+                    )
+                candidate_artifact = unit["artifacts"][0]
+                candidate_identity = {
+                    key: value for key, value in candidate_artifact.items() if key != "artifact_id"
+                }
+                accepted_matches = [
+                    artifact
+                    for artifact in accepted_artifacts
+                    if {key: value for key, value in artifact.items() if key != "artifact_id"}
+                    == candidate_identity
+                ]
+                if len(accepted_matches) != 1 or accepted_matches[0]["artifact_id"] != omitted[0]["artifact_id"]:
+                    _fail(
+                        f"{member_path}.unit.artifacts[0]",
+                        "must unambiguously match the one accepted artifact omitted by companion passthrough",
+                    )
+                if (
+                    unit["version"] != accepted_unit["version"]
+                    or unit["source_commit"] != accepted_unit["source_commit"]
+                ):
+                    _fail(
+                        f"{member_path}.unit",
+                        "accepted companion passthrough requires the exact accepted version and source checkpoint",
+                    )
             slot_ownership = {
                 ownership_key.casefold()
                 for artifact in unit["artifacts"]
@@ -740,14 +858,21 @@ def render_title_state(
                 )
             canary = int(match.group(1))
             member_labels.append(f"{display_name} - Canary {canary}")
-            rendered_members.append(
-                {
-                    "project_uuid": project_uuid,
-                    "project_display_name": display_name,
-                    "version": unit["version"],
-                    "canary": canary,
+            rendered_member = {
+                "project_uuid": project_uuid,
+                "project_display_name": display_name,
+                "version": unit["version"],
+                "canary": canary,
+            }
+            accepted_companions = member.get("accepted_companion_artifacts", [])
+            if accepted_companions:
+                rendered_member["accepted_companion_passthrough"] = {
+                    "accepted_deployment_id": member[
+                        "replaces_accepted_deployment_id"
+                    ],
+                    "artifacts": copy.deepcopy(accepted_companions),
                 }
-            )
+            rendered_members.append(rendered_member)
         line = f"Slot {label}: " + " + ".join(member_labels)
         slots[label] = {
             "occupied": True,
@@ -773,6 +898,7 @@ def candidate_declaration(
     unit: dict[str, Any],
     replaces_accepted_deployment_id: str | None = None,
     dependency_overrides: list[str] | None = None,
+    accepted_companion_artifacts: list[dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     """Build immutable candidate input; deployment evidence is intentionally absent."""
 
@@ -782,12 +908,14 @@ def candidate_declaration(
     }
     if dependency_overrides is not None:
         declaration["dependency_overrides"] = copy.deepcopy(dependency_overrides)
+    if accepted_companion_artifacts is not None:
+        declaration["accepted_companion_artifacts"] = copy.deepcopy(accepted_companion_artifacts)
     return declaration
 
 
 def _normalize_candidate_declaration(declaration: Any) -> dict[str, Any]:
     required = {"unit", "replaces_accepted_deployment_id"}
-    allowed = required | {"dependency_overrides"}
+    allowed = required | {"dependency_overrides", "accepted_companion_artifacts"}
     if not isinstance(declaration, dict):
         _fail("candidate", "must be an object")
     missing = required - set(declaration)
@@ -799,6 +927,10 @@ def _normalize_candidate_declaration(declaration: Any) -> dict[str, Any]:
     normalized = copy.deepcopy(declaration)
     if "dependency_overrides" in normalized and not isinstance(normalized["dependency_overrides"], list):
         _fail("candidate.dependency_overrides", "must be an array")
+    if "accepted_companion_artifacts" in normalized:
+        companions = normalized["accepted_companion_artifacts"]
+        if not isinstance(companions, list) or not companions:
+            _fail("candidate.accepted_companion_artifacts", "must be a nonempty array")
     return normalized
 
 
@@ -806,6 +938,11 @@ def _materialize_candidate(declaration: Any, existing_slots: dict[str, Any]) -> 
     """Materialize the legacy v1 single-member slot representation."""
 
     declaration = _normalize_candidate_declaration(declaration)
+    if declaration.get("accepted_companion_artifacts"):
+        _fail(
+            "candidate.accepted_companion_artifacts",
+            "requires a schema-version-2 cohort slot",
+        )
     identity = {
         "unit": declaration["unit"],
         "replaces_accepted_deployment_id": declaration["replaces_accepted_deployment_id"],
@@ -839,6 +976,7 @@ def _candidate_identity(declaration: dict[str, Any]) -> dict[str, Any]:
         "unit": declaration["unit"],
         "replaces_accepted_deployment_id": declaration["replaces_accepted_deployment_id"],
         "dependency_overrides": declaration.get("dependency_overrides", []),
+        "accepted_companion_artifacts": declaration.get("accepted_companion_artifacts", []),
     }
 
 
@@ -847,6 +985,7 @@ def _member_identity(member: dict[str, Any]) -> dict[str, Any]:
         "unit": member["unit"],
         "replaces_accepted_deployment_id": member["replaces_accepted_deployment_id"],
         "dependency_overrides": member.get("dependency_overrides", []),
+        "accepted_companion_artifacts": member.get("accepted_companion_artifacts", []),
     }
 
 
@@ -876,6 +1015,10 @@ def _new_cohort_member(declaration: dict[str, Any]) -> dict[str, Any]:
     }
     if declaration.get("dependency_overrides"):
         member["dependency_overrides"] = copy.deepcopy(declaration["dependency_overrides"])
+    if declaration.get("accepted_companion_artifacts"):
+        member["accepted_companion_artifacts"] = copy.deepcopy(
+            declaration["accepted_companion_artifacts"]
+        )
     return member
 
 
@@ -1364,6 +1507,8 @@ def plan_transition(
         declaration = _normalize_candidate_declaration(operation["candidate"])
         if declaration.get("dependency_overrides"):
             raise ValidationError("an untested direct promotion cannot include temporary dependency overrides")
+        if declaration.get("accepted_companion_artifacts"):
+            raise ValidationError("accepted companion passthrough is valid only for a managed Test Slot")
         unit = copy.deepcopy(declaration["unit"])
         _unit(unit, "candidate.unit", project_index)
         if unit["project_identity_source"] != "CURRENT_MANIFEST":
@@ -1507,9 +1652,19 @@ def plan_transition(
                     if len(indexes) != 1:
                         raise ValidationError("accepted replacement target is not unique")
                     accepted = members[indexes[0]]["unit"]
+                    replacement_artifacts = [
+                        *slot_member["unit"]["artifacts"],
+                        *slot_member.get("accepted_companion_artifacts", []),
+                    ]
                     byte_identical_reconciliation = (
-                        _byte_composition(accepted) == _byte_composition(slot_member["unit"])
+                        _byte_composition(accepted)
+                        == _byte_composition({"artifacts": replacement_artifacts})
                     )
+                    if slot_member.get("accepted_companion_artifacts") and not byte_identical_reconciliation:
+                        raise ValidationError(
+                            "accepted companion passthrough promotion must reconcile byte-identically "
+                            "with the complete accepted project unit"
+                        )
                     if not byte_identical_reconciliation:
                         members[indexes[0]] = accepted_member
                 if not byte_identical_reconciliation:

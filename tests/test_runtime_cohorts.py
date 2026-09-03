@@ -726,6 +726,15 @@ class RuntimeCohortSchemaTests(unittest.TestCase):
         self.assertIn("legacySlot", schema["$defs"])
         self.assertIn("cohortSlot", schema["$defs"])
         self.assertEqual(["members", "deployment"], schema["$defs"]["cohortSlot"]["required"])
+        cohort_companions = schema["$defs"]["cohortMember"]["properties"][
+            "accepted_companion_artifacts"
+        ]
+        self.assertEqual(1, cohort_companions["minItems"])
+        self.assertEqual("#/$defs/artifact", cohort_companions["items"]["$ref"])
+        self.assertNotIn(
+            "accepted_companion_artifacts",
+            schema["$defs"]["legacySlot"]["properties"],
+        )
 
 
 if __name__ == "__main__":

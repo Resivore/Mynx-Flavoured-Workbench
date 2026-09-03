@@ -272,6 +272,13 @@
           "uniqueItems": true,
           "items": { "$ref": "#/$defs/uuid" }
         },
+        "accepted_companion_artifacts": {
+          "type": "array",
+          "description": "Exact artifacts retained active from this member's same-project accepted unit while its one manifest-bound artifact occupies the slot.",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/artifact" }
+        },
         "runtime_result": { "$ref": "#/$defs/runtimeResult" }
       }
     },

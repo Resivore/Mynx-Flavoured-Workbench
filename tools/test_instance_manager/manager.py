@@ -103,6 +103,9 @@ def _slot_physical_identity(slot: dict[str, Any] | None) -> Any:
             "unit": copy.deepcopy(member["unit"]),
             "replaces_accepted_deployment_id": member["replaces_accepted_deployment_id"],
             "dependency_overrides": copy.deepcopy(member.get("dependency_overrides", [])),
+            "accepted_companion_artifacts": copy.deepcopy(
+                member.get("accepted_companion_artifacts", [])
+            ),
         }
         for member in _slot_members(slot)
     ]
@@ -549,6 +552,9 @@ class PhysicalPlan:
                         "runtime_result": member["runtime_result"]["classification"],
                         "replaces_accepted_deployment_id": member["replaces_accepted_deployment_id"],
                         "dependency_overrides": copy.deepcopy(member.get("dependency_overrides", [])),
+                        "accepted_companion_artifacts": copy.deepcopy(
+                            member.get("accepted_companion_artifacts", [])
+                        ),
                     }
                     for member in _slot_members(slot)
                 ],
@@ -938,14 +944,26 @@ class PhysicalManager:
         except ValidationError as exc:
             raise ManagerError(f"invalid runtime state: {exc}") from exc
 
-        active_deployments = {unit["deployment_id"] for unit in active_units}
+        active_artifact_ids = {
+            artifact["artifact_id"]
+            for unit in active_units
+            for artifact in unit["artifacts"]
+        }
         artifacts: list[ManagedArtifact] = []
         seen_paths: set[str] = set()
 
         for member in state["accepted_baseline"]["members"]:
             unit = member["unit"]
-            active = unit["deployment_id"] in active_deployments
-            artifacts.extend(self._unit_artifacts(unit, active, seen_paths))
+            for raw_artifact in unit["artifacts"]:
+                single_artifact_unit = copy.deepcopy(unit)
+                single_artifact_unit["artifacts"] = [copy.deepcopy(raw_artifact)]
+                artifacts.extend(
+                    self._unit_artifacts(
+                        single_artifact_unit,
+                        raw_artifact["artifact_id"] in active_artifact_ids,
+                        seen_paths,
+                    )
+                )
             for retained in member.get("retained_rollbacks", []):
                 artifacts.extend(
                     self._unit_artifacts(
@@ -2311,8 +2329,108 @@ class PhysicalManager:
             "grandfathered_artifacts": grandfathered,
         }
 
+    def _accepted_companion_passthrough_report(
+        self,
+        state: dict[str, Any],
+        dependency_report: dict[str, Any],
+    ) -> dict[str, Any]:
+        """Prove every accepted companion is in its slot member's hard-dependency closure."""
+
+        report = copy.deepcopy(dependency_report)
+        resolutions = report.get("resolutions", [])
+        edges_by_consumer: dict[str, list[dict[str, Any]]] = {}
+        for resolution in resolutions:
+            consumer_id = resolution.get("consumer", {}).get("artifact_id")
+            provider_id = resolution.get("provider", {}).get("artifact_id")
+            if isinstance(consumer_id, str) and isinstance(provider_id, str):
+                edges_by_consumer.setdefault(consumer_id, []).append(resolution)
+        for edges in edges_by_consumer.values():
+            edges.sort(
+                key=lambda item: (
+                    item.get("dependency_id", ""),
+                    item.get("provider", {}).get("artifact_id", ""),
+                )
+            )
+
+        receipts: list[dict[str, Any]] = []
+        for label in ("A", "B"):
+            slot = state["slots"][label]
+            if slot is None:
+                continue
+            for member in _slot_members(slot):
+                companions = member.get("accepted_companion_artifacts", [])
+                if not companions:
+                    continue
+                unit = member["unit"]
+                roots = [artifact["artifact_id"] for artifact in unit["artifacts"]]
+                discovered = set(roots)
+                queue = list(roots)
+                predecessor: dict[str, tuple[str, dict[str, Any]]] = {}
+                cursor = 0
+                while cursor < len(queue):
+                    consumer_id = queue[cursor]
+                    cursor += 1
+                    for resolution in edges_by_consumer.get(consumer_id, []):
+                        provider_id = resolution["provider"]["artifact_id"]
+                        if provider_id in discovered:
+                            continue
+                        discovered.add(provider_id)
+                        predecessor[provider_id] = (consumer_id, resolution)
+                        queue.append(provider_id)
+
+                for companion in companions:
+                    companion_id = companion["artifact_id"]
+                    if companion_id not in discovered or companion_id in roots:
+                        raise ManagerError(
+                            "unnecessary accepted companion: slot "
+                            f"{label} member {unit['project_id']} has no hard-dependency path to "
+                            f"{companion['filename']} ({companion_id})"
+                        )
+                    path: list[dict[str, Any]] = []
+                    step = companion_id
+                    while step not in roots:
+                        previous, resolution = predecessor[step]
+                        path.append(copy.deepcopy(resolution))
+                        step = previous
+                    path.reverse()
+                    provider = path[-1]["provider"]
+                    if (
+                        provider.get("project_uuid") != unit["project_uuid"]
+                        or provider.get("deployment_id")
+                        != member["replaces_accepted_deployment_id"]
+                        or provider.get("artifact_id") != companion_id
+                    ):
+                        raise ManagerError(
+                            "accepted companion dependency path resolved to the wrong physical owner: "
+                            f"{companion['filename']} ({companion_id})"
+                        )
+                    receipts.append(
+                        {
+                            "slot": label,
+                            "slot_project_uuid": unit["project_uuid"],
+                            "slot_project_id": unit["project_id"],
+                            "slot_deployment_id": unit["deployment_id"],
+                            "accepted_deployment_id": member[
+                                "replaces_accepted_deployment_id"
+                            ],
+                            "artifact": copy.deepcopy(companion),
+                            "dependency_path": path,
+                        }
+                    )
+        report["accepted_companion_passthrough"] = {
+            "status": (
+                "ACCEPTED_COMPANION_PASSTHROUGH_VERIFIED"
+                if receipts
+                else "NOT_PRESENT"
+            ),
+            "companion_count": len(receipts),
+            "companions": receipts,
+        }
+        return report
+
     def _planned_dependency_report(
         self,
+        state: dict[str, Any],
         current_artifacts: Sequence[ManagedArtifact],
         desired_artifacts: Sequence[ManagedArtifact],
         *,
@@ -2327,16 +2445,18 @@ class PhysicalManager:
         platform_attestation = self._attest_platform_providers(
             self._required_platform_ids(descriptors)
         )
-        return self._resolve_dependency_graph(
+        report = self._resolve_dependency_graph(
             descriptors,
             managed_ownership_ids=managed_ids,
             phase="PREFLIGHT_PROPOSED_ENABLED_SET",
             platform_attestation=platform_attestation,
             repository_statuses=repository_statuses,
         )
+        return self._accepted_companion_passthrough_report(state, report)
 
     def _physical_dependency_report(
         self,
+        state: dict[str, Any],
         artifacts: Sequence[ManagedArtifact],
         *,
         repository_statuses: dict[str, tuple[Path, dict[str, Any]]] | None = None,
@@ -2350,13 +2470,14 @@ class PhysicalManager:
         platform_attestation = self._attest_platform_providers(
             self._required_platform_ids(descriptors)
         )
-        return self._resolve_dependency_graph(
+        report = self._resolve_dependency_graph(
             descriptors,
             managed_ownership_ids=managed_ids,
             phase="POST_DEPLOYMENT_ENABLED_SET",
             platform_attestation=platform_attestation,
             repository_statuses=repository_statuses,
         )
+        return self._accepted_companion_passthrough_report(state, report)
 
     @staticmethod
     def _assert_platform_attestation_unchanged(
@@ -2672,6 +2793,17 @@ class PhysicalManager:
             for retained in member.get("retained_rollbacks", [])
         }
         retained_records = [record for record in records if record["deployment_id"] in retained_deployments]
+        passthrough_by_slot_member: dict[tuple[str, str], list[dict[str, Any]]] = {}
+        for companion_receipt in dependency_resolution.get(
+            "accepted_companion_passthrough", {}
+        ).get("companions", []):
+            passthrough_by_slot_member.setdefault(
+                (
+                    companion_receipt["slot"],
+                    companion_receipt["slot_deployment_id"],
+                ),
+                [],
+            ).append(companion_receipt)
         title = self._render_title(state)
         statuses = self._current_repository_statuses()
         slot_evidence: dict[str, dict[str, Any] | None] = {}
@@ -2687,6 +2819,39 @@ class PhysicalManager:
                 unit = slot_member["unit"]
                 rendered = title_by_uuid.get(unit["project_uuid"], title["slots"][label])
                 member_artifacts = copy.deepcopy(records_by_deployment.get(unit["deployment_id"], []))
+                companion_records: list[dict[str, Any]] = []
+                for companion_receipt in passthrough_by_slot_member.get(
+                    (label, unit["deployment_id"]), []
+                ):
+                    accepted_artifact = companion_receipt["artifact"]
+                    physical_matches = [
+                        record
+                        for record in records
+                        if record["artifact_id"] == accepted_artifact["artifact_id"]
+                    ]
+                    if (
+                        len(physical_matches) != 1
+                        or physical_matches[0]["disposition"] != "ACTIVE"
+                    ):
+                        raise ManagerError(
+                            "accepted companion did not resolve to exactly one active physical artifact: "
+                            f"{accepted_artifact['filename']} ({accepted_artifact['artifact_id']})"
+                        )
+                    companion_records.append(
+                        {
+                            "classification": "ACCEPTED_BASELINE_COMPANION_PASSTHROUGH",
+                            "accepted_deployment_id": companion_receipt[
+                                "accepted_deployment_id"
+                            ],
+                            "accepted_artifact_identity": copy.deepcopy(
+                                accepted_artifact
+                            ),
+                            "physical_artifact": copy.deepcopy(physical_matches[0]),
+                            "dependency_path": copy.deepcopy(
+                                companion_receipt["dependency_path"]
+                            ),
+                        }
+                    )
                 members.append(
                     {
                         "slot": label,
@@ -2705,6 +2870,14 @@ class PhysicalManager:
                             statuses=statuses,
                         ),
                         "artifacts": member_artifacts,
+                        "accepted_companion_passthrough": {
+                            "status": (
+                                "ACCEPTED_COMPANION_PASSTHROUGH_VERIFIED"
+                                if companion_records
+                                else "NOT_PRESENT"
+                            ),
+                            "companions": companion_records,
+                        },
                     }
                 )
             evidence = {
@@ -2772,7 +2945,7 @@ class PhysicalManager:
         self._assert_ledger_matches_repository(ledger, state)
         artifacts = self._managed_inventory_for_ledger(state, ledger)
         artifacts = self._verify_inventory(state, artifacts, prior_ledger=ledger)
-        dependency_resolution = self._physical_dependency_report(artifacts)
+        dependency_resolution = self._physical_dependency_report(state, artifacts)
         projection = self._verify_title_projection(state) if ledger["schema_version"] == 3 else None
         return self._physical_verification_report(state, artifacts, projection, dependency_resolution)
 
@@ -3006,6 +3179,7 @@ class PhysicalManager:
                     manifest_path,
                     label=member_label,
                     source_requirement="REPOSITORY",
+                    verify_root_fabric_version=True,
                 )
 
     def _validate_operation_manifest_identities(
@@ -3239,7 +3413,11 @@ class PhysicalManager:
         validate_runtime_state(active, self.project_index)
         desired_artifacts = self._desired_managed_inventory(active)
         writes, retained_moves, removals, unchanged = self._plan_delta(current_artifacts, desired_artifacts)
-        dependency_resolution = self._planned_dependency_report(current_artifacts, desired_artifacts)
+        dependency_resolution = self._planned_dependency_report(
+            active,
+            current_artifacts,
+            desired_artifacts,
+        )
         return PhysicalPlan(
             mode="ADOPT",
             current_state=state,
@@ -3372,6 +3550,7 @@ class PhysicalManager:
         )
         writes, retained_moves, removals, unchanged = self._plan_delta(current_artifacts, desired_artifacts)
         dependency_resolution = self._planned_dependency_report(
+            desired,
             current_artifacts,
             desired_artifacts,
             repository_statuses=planning_repository_statuses,
@@ -3410,6 +3589,10 @@ class PhysicalManager:
             }
             if member.get("dependency_overrides"):
                 result["dependency_overrides"] = copy.deepcopy(member["dependency_overrides"])
+            if member.get("accepted_companion_artifacts"):
+                result["accepted_companion_artifacts"] = copy.deepcopy(
+                    member["accepted_companion_artifacts"]
+                )
             return result
 
         def assignment(slot: dict[str, Any]) -> dict[str, Any]:
@@ -3694,6 +3877,7 @@ class PhysicalManager:
                 runtime_state=plan.current_state,
             )
         under_lock_dependency_resolution = self._planned_dependency_report(
+            plan.desired_state,
             plan.current_artifacts,
             plan.desired_artifacts,
             repository_statuses=under_lock_repository_statuses,
@@ -3800,6 +3984,7 @@ class PhysicalManager:
                 },
             )
             committed_dependency_resolution = self._physical_dependency_report(
+                plan.desired_state,
                 plan.desired_artifacts,
                 repository_statuses=under_lock_repository_statuses,
             )
@@ -3846,6 +4031,7 @@ class PhysicalManager:
                     verify_preimage_root_versions=False,
                 )
             committed_dependency_resolution = self._physical_dependency_report(
+                committed_state,
                 plan.desired_artifacts,
                 repository_statuses=commit_repository_statuses,
             )
@@ -3871,6 +4057,7 @@ class PhysicalManager:
             self._assert_ledger_matches_repository(final_ledger, final_state)
             self._verify_inventory(final_state, plan.desired_artifacts, prior_ledger=final_ledger)
             committed_dependency_resolution = self._physical_dependency_report(
+                final_state,
                 plan.desired_artifacts,
                 repository_statuses=commit_repository_statuses,
             )
@@ -3893,6 +4080,7 @@ class PhysicalManager:
                     verify_preimage_root_versions=False,
                 )
             committed_dependency_resolution = self._physical_dependency_report(
+                final_state,
                 plan.desired_artifacts,
                 repository_statuses=final_repository_statuses,
             )
