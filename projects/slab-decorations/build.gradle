@@ -41,12 +41,6 @@ def referenceLibraryRoot = providers.gradleProperty('reference_library_root')
 def bgeReferenceJar = new File(workbenchRoot, 'projects/block-geometry-extensions/artifacts/cnm-nibaru-integration-4.2.2-bge.canary58.glass-corner-uv+26.2.jar')
 def cnmUpstreamReferenceJar = new File(referenceLibraryRoot, 'originals/mods/clutternomore-2.0.7+26.2-fabric.jar')
 def terrainSlabsReferenceJar = new File(referenceLibraryRoot, 'originals/mods/Terrain Slabs v3.3.2-26.2.jar')
-def predecessorArtifactJar = layout.projectDirectory.file('artifacts/slab-decorations-0.1.0-canary2.jar')
-def preservedResourcePaths = [
-        'slab_decorations.mixins.json',
-        'slab_decorations.client.mixins.json'
-]
-
 dependencies {
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
     implementation "net.fabricmc:fabric-loader:${project.loader_version}"
@@ -79,22 +73,8 @@ fabricApi {
 
 processResources {
     inputs.property 'version', project.version
-    inputs.file(predecessorArtifactJar)
     filesMatching('fabric.mod.json') {
         expand 'version': project.version
-    }
-    doLast {
-        new java.util.zip.ZipFile(predecessorArtifactJar.asFile).withCloseable { predecessor ->
-            preservedResourcePaths.each { path ->
-                def entry = predecessor.getEntry(path)
-                if (entry == null) {
-                    throw new GradleException("Predecessor artifact is missing preserved resource ${path}")
-                }
-                predecessor.getInputStream(entry).withCloseable { input ->
-                    new File(destinationDir, path).withOutputStream { output -> output << input }
-                }
-            }
-        }
     }
 }
 
