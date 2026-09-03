@@ -2,8 +2,8 @@
   "$schema": "../../schemas/runtime-state.schema.json",
   "schema_version": 2,
   "activation": "ACTIVE",
-  "revision": 67,
-  "updated_at": "2026-09-02T16:58:44Z",
+  "revision": 68,
+  "updated_at": "2026-09-03T03:22:44Z",
   "accepted_baseline": {
     "revision": 14,
     "provenance": {
@@ -895,29 +895,29 @@
       "members": [
         {
           "unit": {
-            "deployment_id": "d6350d3f-bf00-4955-8b27-3f186dace93f",
-            "project_uuid": "62e67860-8a3b-50a7-9c48-9878c01d899d",
-            "project_id": "slab-decorations",
+            "deployment_id": "34dcf31b-99c9-4c64-9978-f1f94782ed9a",
+            "project_uuid": "ffa96cc6-2989-5465-b158-1659a484366b",
+            "project_id": "quick-stack-nearby-compat",
             "project_identity_source": "CURRENT_MANIFEST",
-            "version": "0.1.0-canary3",
-            "source_commit": "2358342ebbd51cdd1b110e74e815205a68acc882",
+            "version": "0.1.0-canary6",
+            "source_commit": "3c8cc5917da9fd016e57a969955fa7c6e3b08661",
             "artifacts": [
               {
-                "artifact_id": "a80957e9-041d-4758-96fa-fb6868051257",
+                "artifact_id": "7293a2b5-ea16-4929-af1b-a6c15f0aef32",
                 "kind": "MOD",
-                "filename": "slab-decorations-0.1.0-canary3.jar",
-                "sha256": "5dfe24cf686a781c16dca46a11ef4112d7473e1f8d63fac659cb750c6709bf2b",
+                "filename": "quick-stack-nearby-compat-0.1.0-canary6.jar",
+                "sha256": "c2f4ae3b02a5517ad184998c784c356d90132aeaee91546c91d03a878be6ce98",
                 "ownership_keys": [
-                  "mod:slab_decorations"
+                  "mod:quick_stack_nearby_compat"
                 ],
                 "source": {
                   "type": "REPOSITORY",
-                  "path": "projects/slab-decorations/artifacts/slab-decorations-0.1.0-canary3.jar"
+                  "path": "projects/quick-stack-nearby-compat/artifacts/quick-stack-nearby-compat-0.1.0-canary6.jar"
                 }
               }
             ]
           },
-          "replaces_accepted_deployment_id": null,
+          "replaces_accepted_deployment_id": "66b8b293-d9ae-41c4-a969-d43baf79c2ff",
           "runtime_result": {
             "classification": "UNTESTED",
             "recorded_at": null,
@@ -925,13 +925,28 @@
               "passed": [],
               "failed": []
             }
-          }
+          },
+          "accepted_companion_artifacts": [
+            {
+              "artifact_id": "cb31d144-b6c4-41fb-ba44-35d896b228f6",
+              "kind": "MOD",
+              "filename": "quick-stack-nearby-0.4.0.jar",
+              "sha256": "43f1130527f782a291231c682791b4fd3766a20916c691cbdb98f91fdcc47e53",
+              "ownership_keys": [
+                "mod:quick-stack-nearby"
+              ],
+              "source": {
+                "type": "ADOPTED_TARGET",
+                "path": "mods/quick-stack-nearby-0.4.0.jar"
+              }
+            }
+          ]
         }
       ],
       "deployment": {
         "state": "READY_TO_TEST_VERIFIED",
-        "deployed_at": "2026-09-02T16:58:44Z",
-        "ready_verified_at": "2026-09-02T16:58:44Z"
+        "deployed_at": "2026-09-03T03:22:44Z",
+        "ready_verified_at": "2026-09-03T03:22:44Z"
       }
     }
   }
