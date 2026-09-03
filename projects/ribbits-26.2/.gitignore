@@ -29,6 +29,8 @@ atlassian-ide-plugin.xml
 /artifacts/YungsApi-26.2-Fabric-6.1.1-compat.1.jar
 /artifacts/ribbits-private-reconstruction-4.1.6+26.2-mynx-canary2.jar
 /artifacts/ribbits-source-only-4.1.6+26.2-mynx-canary2.jar
+/artifacts/ribbits-private-reconstruction-4.1.6+26.2-mynx-canary3.jar
+/artifacts/ribbits-source-only-4.1.6+26.2-mynx-canary3.jar
 *.war
 *.nar
 *.ear

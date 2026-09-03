@@ -30,16 +30,34 @@ from typing import Any
 EXPECTED_PRISTINE_SHA256 = (
     "4cf86564aed393410fb1dbca3a9ce2425382307655e92bb6b43f3ddcee5bf731"
 )
-CANDIDATE_VERSION = "4.1.6+26.2-mynx-canary2"
-CANDIDATE_CANARY = 2
+CANDIDATE_VERSION = "4.1.6+26.2-mynx-canary3"
+CANDIDATE_CANARY = 3
 PRIVATE_MANIFEST_SCHEMA = "mynx-ribbits-private-resource-manifest/v1"
 PRIVATE_MANIFEST_CLASSIFICATION = (
     "PRIVATE MYNX ASSEMBLY STAGED / NONREDISTRIBUTABLE DONOR ASSETS"
 )
 PRIVATE_ARTIFACT_FILENAME = (
-    "ribbits-private-reconstruction-4.1.6+26.2-mynx-canary2.jar"
+    "ribbits-private-reconstruction-4.1.6+26.2-mynx-canary3.jar"
 )
-SOURCE_ONLY_ARTIFACT_FILENAME = "ribbits-source-only-4.1.6+26.2-mynx-canary2.jar"
+SOURCE_ONLY_ARTIFACT_FILENAME = "ribbits-source-only-4.1.6+26.2-mynx-canary3.jar"
+SOURCE_SAFE_PUBLIC_RESOURCE_PATHS = frozenset(
+    {
+        "assets/ribbits/items/glowcap.json",
+        "assets/ribbits/items/toadstool_heart.json",
+        "data/ribbits/advancement/recipes/misc/toadstool_heart.json",
+        "data/ribbits/recipe/toadstool_heart.json",
+    }
+)
+REQUIRED_FABRIC_DEPENDENCIES = {
+    "minecraft": ">=26.2",
+    "java": ">=25",
+    "yungsapi": ">=26.2-Fabric-6.1.1-compat.2",
+    "fabric-api": ">=0.157.0",
+    "geckolib": ">=5.5.1",
+    "cloth-config2": ">=26.2.155",
+    "customportals": ">=4.0.0",
+    "matcha_heart_death_compat": ">=0.1.10-canary11",
+}
 SOURCE_FILE_COUNT = 287  # 285 assets/data files plus icon.png and logo.png
 OUTPUT_FILE_COUNT = 336
 SOURCE_EXTENSION_COUNTS = {
@@ -318,6 +336,80 @@ LOOT_EMPTY_WEIGHTS = {
     LOOT_TABLE_PATHS[1]: 1,
 }
 
+VILLAGE_CHEST_LOOT_TABLE_PATHS = (
+    "data/ribbits/loot_table/chests/fisherman_main.json",
+    "data/ribbits/loot_table/chests/fisherman_storage.json",
+    "data/ribbits/loot_table/chests/gardener.json",
+    "data/ribbits/loot_table/chests/merchant.json",
+    "data/ribbits/loot_table/chests/nitwit.json",
+    "data/ribbits/loot_table/chests/sorcerer.json",
+)
+VILLAGE_LOOT_POOL_ENTRY_COUNTS = {
+    VILLAGE_CHEST_LOOT_TABLE_PATHS[0]: (4, 4),
+    VILLAGE_CHEST_LOOT_TABLE_PATHS[1]: (8,),
+    VILLAGE_CHEST_LOOT_TABLE_PATHS[2]: (4,),
+    VILLAGE_CHEST_LOOT_TABLE_PATHS[3]: (2,),
+    VILLAGE_CHEST_LOOT_TABLE_PATHS[4]: (4,),
+    VILLAGE_CHEST_LOOT_TABLE_PATHS[5]: (6, 2),
+}
+GLOWCAP_CURRENCY_SOURCE_ID = "minecraft:amethyst_shard"
+GLOWCAP_CURRENCY_TARGET_ID = "ribbits:glowcap"
+SOURCE_SAFE_PUBLIC_LOOT_ITEM_IDS = frozenset({GLOWCAP_CURRENCY_TARGET_ID})
+GLOWCAP_CURRENCY_ENTRY_SPECS = {
+    VILLAGE_CHEST_LOOT_TABLE_PATHS[1]: {
+        "pool": 0,
+        "entry": 7,
+        "weight": 5,
+        "count_min": 1.0,
+        "count_max": 3.0,
+    },
+    VILLAGE_CHEST_LOOT_TABLE_PATHS[2]: {
+        "pool": 0,
+        "entry": 3,
+        "weight": 3,
+        "count_min": 1.0,
+        "count_max": 2.0,
+    },
+    VILLAGE_CHEST_LOOT_TABLE_PATHS[3]: {
+        "pool": 0,
+        "entry": 0,
+        "weight": 8,
+        "count_min": 2.0,
+        "count_max": 4.0,
+    },
+    VILLAGE_CHEST_LOOT_TABLE_PATHS[4]: {
+        "pool": 0,
+        "entry": 3,
+        "weight": 3,
+        "count_min": 1.0,
+        "count_max": 3.0,
+    },
+    VILLAGE_CHEST_LOOT_TABLE_PATHS[5]: {
+        "pool": 0,
+        "entry": 4,
+        "weight": 5,
+        "count_min": 2.0,
+        "count_max": 6.0,
+    },
+}
+UNRELATED_AMETHYST_BLOCK_SPEC = {
+    "table": VILLAGE_CHEST_LOOT_TABLE_PATHS[3],
+    "pool": 0,
+    "entry": 1,
+    "value": {
+        "type": "minecraft:item",
+        "weight": 1,
+        "functions": [
+            {
+                "function": "minecraft:set_count",
+                "count": 1,
+                "add": False,
+            }
+        ],
+        "name": "minecraft:amethyst_block",
+    },
+}
+
 EN_US_CONFIG_ADDITIONS = {
     f"{NEW_CONFIG_PREFIX}.option.general": "General Settings",
     f"{NEW_CONFIG_PREFIX}.option.general.disablePrideFlagCN":
@@ -347,6 +439,38 @@ EN_US_MYNX_PROFESSION_TRANSLATIONS = {
     "item.ribbits.ribbit_farmer_spawn_egg": "Farmer Ribbit Spawn Egg",
     "item.ribbits.ribbit_prospector_spawn_egg": "Prospector Ribbit Spawn Egg",
     "item.ribbits.ribbit_guard_spawn_egg": "Guard Ribbit Spawn Egg",
+    "item.ribbits.glowcap": "Glowcap",
+    "item.ribbits.toadstool_heart": "Toadstool Heart",
+    "entity.ribbits.merchant.gardener.tier_1": "Sprout Tender",
+    "entity.ribbits.merchant.gardener.tier_2": "Toadstool Keeper",
+    "entity.ribbits.merchant.farmer.tier_1": "Vine Puller",
+    "entity.ribbits.merchant.farmer.tier_2": "Root Wrangler",
+    "entity.ribbits.merchant.farmer.tier_3": "Mudfield Steward",
+    "entity.ribbits.merchant.fisherman.tier_1": "Pond Forager",
+    "entity.ribbits.merchant.fisherman.tier_2": "Coral Keeper",
+    "entity.ribbits.merchant.fisherman.tier_3": "Amphibian Attendant",
+    "entity.ribbits.merchant.fisherman.tier_4": "Opal Angler",
+    "entity.ribbits.merchant.fisherman.tier_5": "Monument Mariner",
+    "entity.ribbits.merchant.merchant.tier_1": "Moss Peddler",
+    "entity.ribbits.merchant.merchant.tier_2": "Lantern Trader",
+    "entity.ribbits.merchant.merchant.tier_3": "Glowgoods Baron",
+    "entity.ribbits.merchant.chef.tier_1": "Tadpole Cook",
+    "entity.ribbits.merchant.chef.tier_2": "Pond Cook",
+    "entity.ribbits.merchant.chef.tier_3": "Swamp Chef",
+    "entity.ribbits.merchant.chef.tier_4": "Grand Chef",
+    "entity.ribbits.merchant.chef.tier_5": "Master of the Feast",
+    "entity.ribbits.merchant.sorcerer.tier_1": "Wart Whisperer",
+    "entity.ribbits.merchant.sorcerer.tier_2": "Gatecaller",
+    "entity.ribbits.merchant.sorcerer.tier_3": "Flask Sage",
+    "entity.ribbits.merchant.sorcerer.tier_4": "Deep-Pond Oracle",
+    "entity.ribbits.merchant.prospector.tier_1": "Pebble Picker",
+    "entity.ribbits.merchant.prospector.tier_2": "Vein-Seeker",
+    "entity.ribbits.merchant.prospector.tier_3": "Deep Delver",
+    "entity.ribbits.merchant.guard.tier_1": "Pond Sentry",
+    "entity.ribbits.merchant.guard.tier_2": "Lily Warden",
+    "entity.ribbits.merchant.guard.tier_3": "Marsh Marshal",
+    "entity.ribbits.merchant.guard.tier_4": "Bulwark of the Bog",
+    "entity.ribbits.merchant.nitwit.musician": "Musician",
 }
 
 MINECRAFT_FROG_SPAWN_EGG_ENTRY = "assets/minecraft/textures/item/frog_spawn_egg.png"
@@ -369,7 +493,7 @@ SPAWN_EGG_MODEL = {
     "textures": {"layer0": "ribbits:item/ribbit_spawn_egg"},
 }
 SPAWN_EGG_SUBSTITUTION_NOTICE = (
-    "Private Mynx Canary 2 uses one palette-only green recolor of Minecraft "
+    "Private Mynx Canary 3 uses one palette-only green recolor of Minecraft "
     "26.2's vanilla frog spawn-egg artwork for all nine Ribbits profession eggs. "
     "This is explicitly authorized for the private Workbench and is not exact "
     "Ribbits 4.1.6 spawn-egg visual parity."
@@ -1878,6 +2002,186 @@ def repair_air_loot_entry(loot: Any, relative: str) -> dict[str, Any]:
     return result
 
 
+def require_village_chest_loot_inventory(root: Path) -> None:
+    chest_root = root / "data/ribbits/loot_table/chests"
+    if not chest_root.is_dir():
+        raise ValidationError(f"Missing private village chest loot directory: {chest_root}")
+    actual = {
+        f"data/ribbits/loot_table/chests/{relative}"
+        for relative in relative_files(chest_root)
+    }
+    expected = set(VILLAGE_CHEST_LOOT_TABLE_PATHS)
+    if actual != expected:
+        raise ValidationError(
+            "Private village chest loot-table inventory differs: "
+            f"missing={sorted(expected - actual)}, unexpected={sorted(actual - expected)}"
+        )
+
+
+def require_village_loot_shape(loot: Any, relative: str) -> None:
+    if not isinstance(loot, dict) or set(loot) != {"type", "pools"}:
+        raise ValidationError(f"Unexpected top-level loot-table fields in {relative}")
+    if loot.get("type") != "minecraft:chest" or not isinstance(loot.get("pools"), list):
+        raise ValidationError(f"{relative} must remain a chest loot table")
+    expected_counts = VILLAGE_LOOT_POOL_ENTRY_COUNTS[relative]
+    if len(loot["pools"]) != len(expected_counts):
+        raise ValidationError(f"{relative} pool count differs")
+    for index, (pool, expected_count) in enumerate(zip(loot["pools"], expected_counts)):
+        if not isinstance(pool, dict) or set(pool) != {"rolls", "bonus_rolls", "entries"}:
+            raise ValidationError(f"Unexpected pool fields in {relative} pool {index}")
+        if pool.get("bonus_rolls") != 0.0 or not isinstance(pool.get("entries"), list):
+            raise ValidationError(f"Unexpected pool structure in {relative} pool {index}")
+        if len(pool["entries"]) != expected_count:
+            raise ValidationError(f"{relative} pool {index} entry count differs")
+
+
+def expected_glowcap_currency_entry(spec: dict[str, Any], item_id: str) -> dict[str, Any]:
+    return {
+        "type": "minecraft:item",
+        "weight": spec["weight"],
+        "functions": [
+            {
+                "function": "minecraft:set_count",
+                "count": {
+                    "type": "minecraft:uniform",
+                    "min": spec["count_min"],
+                    "max": spec["count_max"],
+                },
+                "add": False,
+            }
+        ],
+        "name": item_id,
+    }
+
+
+def require_glowcap_currency_state(loot: Any, relative: str, item_id: str) -> None:
+    require_village_loot_shape(loot, relative)
+    if item_id not in {GLOWCAP_CURRENCY_SOURCE_ID, GLOWCAP_CURRENCY_TARGET_ID}:
+        raise ValidationError(f"Unsupported private currency state: {item_id}")
+
+    spec = GLOWCAP_CURRENCY_ENTRY_SPECS.get(relative)
+    item_entries = [
+        entry for entry in iter_loot_entries(loot) if entry.get("type") == "minecraft:item"
+    ]
+    source_entries = [
+        entry for entry in item_entries if entry.get("name") == GLOWCAP_CURRENCY_SOURCE_ID
+    ]
+    target_entries = [
+        entry for entry in item_entries if entry.get("name") == GLOWCAP_CURRENCY_TARGET_ID
+    ]
+    expected_count = 1 if spec is not None else 0
+    active_entries = source_entries if item_id == GLOWCAP_CURRENCY_SOURCE_ID else target_entries
+    inactive_entries = target_entries if item_id == GLOWCAP_CURRENCY_SOURCE_ID else source_entries
+    if len(active_entries) != expected_count or inactive_entries:
+        raise ValidationError(
+            f"{relative} has an unexpected private currency inventory: "
+            f"source={len(source_entries)}, target={len(target_entries)}, "
+            f"expected_active={expected_count}"
+        )
+    if spec is not None:
+        try:
+            actual = loot["pools"][spec["pool"]]["entries"][spec["entry"]]
+        except (IndexError, KeyError, TypeError) as exc:
+            raise ValidationError(f"Pinned private currency location is absent in {relative}") from exc
+        expected = expected_glowcap_currency_entry(spec, item_id)
+        if actual != expected:
+            raise ValidationError(
+                f"Pinned private currency entry differs in {relative}: "
+                f"expected {expected}, got {actual}"
+            )
+
+    if relative == UNRELATED_AMETHYST_BLOCK_SPEC["table"]:
+        block_spec = UNRELATED_AMETHYST_BLOCK_SPEC
+        try:
+            actual_block = loot["pools"][block_spec["pool"]]["entries"][block_spec["entry"]]
+        except (IndexError, KeyError, TypeError) as exc:
+            raise ValidationError(
+                f"Pinned unrelated amethyst-block entry is absent in {relative}"
+            ) from exc
+        if actual_block != block_spec["value"]:
+            raise ValidationError(
+                f"Unrelated amethyst-block entry differs in {relative}: {actual_block}"
+            )
+
+
+def replace_private_glowcap_currency_entries(root: Path) -> dict[str, Any]:
+    """Replace only the five pinned village-currency entries, preserving all other bytes."""
+    require_village_chest_loot_inventory(root)
+    source_token = json.dumps(GLOWCAP_CURRENCY_SOURCE_ID).encode("utf-8")
+    target_token = json.dumps(GLOWCAP_CURRENCY_TARGET_ID).encode("utf-8")
+    planned: list[tuple[Path, bytes]] = []
+    records: list[dict[str, Any]] = []
+
+    # Validate and compute every output before writing any file. A drifted private input
+    # therefore fails closed without leaving a partially substituted tree.
+    for relative in VILLAGE_CHEST_LOOT_TABLE_PATHS:
+        path = root / PurePosixPath(relative)
+        before_bytes = path.read_bytes()
+        try:
+            before = json.loads(before_bytes.decode("utf-8"))
+        except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+            raise ValidationError(f"Invalid JSON {path}: {exc}") from exc
+        require_glowcap_currency_state(before, relative, GLOWCAP_CURRENCY_SOURCE_ID)
+
+        expected_count = 1 if relative in GLOWCAP_CURRENCY_ENTRY_SPECS else 0
+        if before_bytes.count(source_token) != expected_count or target_token in before_bytes:
+            raise ValidationError(
+                f"{relative} does not contain the exact pinned serialized currency token count"
+            )
+        after_bytes = before_bytes.replace(source_token, target_token)
+        try:
+            after = json.loads(after_bytes.decode("utf-8"))
+        except (UnicodeDecodeError, json.JSONDecodeError) as exc:  # pragma: no cover - replacement is ASCII
+            raise ValidationError(f"Currency substitution produced invalid JSON {path}: {exc}") from exc
+        require_glowcap_currency_state(after, relative, GLOWCAP_CURRENCY_TARGET_ID)
+
+        expected_after = copy.deepcopy(before)
+        if expected_count:
+            spec = GLOWCAP_CURRENCY_ENTRY_SPECS[relative]
+            expected_after["pools"][spec["pool"]]["entries"][spec["entry"]]["name"] = (
+                GLOWCAP_CURRENCY_TARGET_ID
+            )
+        if after != expected_after:
+            raise ValidationError(f"Currency substitution changed unrelated loot data in {relative}")
+
+        planned.append((path, after_bytes))
+        if expected_count:
+            records.append(
+                {
+                    "table": relative,
+                    "pool": spec["pool"],
+                    "entry": spec["entry"],
+                    "weight": spec["weight"],
+                    "count": {
+                        "type": "minecraft:uniform",
+                        "min": spec["count_min"],
+                        "max": spec["count_max"],
+                    },
+                    "add": False,
+                    "before_sha256": sha256_bytes(before_bytes),
+                    "after_sha256": sha256_bytes(after_bytes),
+                }
+            )
+
+    for path, after_bytes in planned:
+        if path.read_bytes() != after_bytes:
+            path.write_bytes(after_bytes)
+
+    return {
+        "tables_inspected": list(VILLAGE_CHEST_LOOT_TABLE_PATHS),
+        "source_item": GLOWCAP_CURRENCY_SOURCE_ID,
+        "replacement_item": GLOWCAP_CURRENCY_TARGET_ID,
+        "entries_replaced": len(records),
+        "targets": records,
+        "unrelated_amethyst_preserved": {
+            "table": UNRELATED_AMETHYST_BLOCK_SPEC["table"],
+            "pool": UNRELATED_AMETHYST_BLOCK_SPEC["pool"],
+            "entry": UNRELATED_AMETHYST_BLOCK_SPEC["entry"],
+            "item": "minecraft:amethyst_block",
+        },
+    }
+
+
 def migrate_private_loot_tables(root: Path) -> dict[str, Any]:
     migrated: dict[str, Any] = {}
     for relative in LOOT_TABLE_PATHS:
@@ -1904,6 +2208,7 @@ def migrate_private_loot_tables(root: Path) -> dict[str, Any]:
         raise ValidationError(f"Expected one sorcerer potion conversion, got {converted}")
     for relative, value in migrated.items():
         write_json(root / PurePosixPath(relative), value)
+    currency_migration = replace_private_glowcap_currency_entries(root)
     return {
         "tables": list(LOOT_TABLE_PATHS),
         "air_item_entries_replaced_with_empty": len(LOOT_TABLE_PATHS),
@@ -1912,6 +2217,7 @@ def migrate_private_loot_tables(root: Path) -> dict[str, Any]:
             "faithful_entry_type": "minecraft:empty",
         },
         "sorcerer_potion_loot_functions_migrated": converted,
+        "glowcap_currency_substitution": currency_migration,
     }
 
 
@@ -1938,14 +2244,22 @@ def iter_loot_entries(value: Any) -> list[dict[str, Any]]:
 def validate_private_loot_tables(
     root: Path, minecraft_entries: set[str], errors: list[str]
 ) -> None:
-    for relative in LOOT_TABLE_PATHS:
+    try:
+        require_village_chest_loot_inventory(root)
+    except ValidationError as exc:
+        errors.append(str(exc))
+        return
+    for relative in VILLAGE_CHEST_LOOT_TABLE_PATHS:
         path = root / PurePosixPath(relative)
         if not path.is_file():
-            errors.append(f"Missing repaired private loot table: {relative}")
+            errors.append(f"Missing private village chest loot table: {relative}")
             continue
         try:
             loot = load_json(path)
-            require_loot_pool_shape(loot, relative, "minecraft:empty")
+            require_village_loot_shape(loot, relative)
+            if relative in LOOT_TABLE_PATHS:
+                require_loot_pool_shape(loot, relative, "minecraft:empty")
+            require_glowcap_currency_state(loot, relative, GLOWCAP_CURRENCY_TARGET_ID)
         except ValidationError as exc:
             errors.append(str(exc))
             continue
@@ -1967,7 +2281,10 @@ def validate_private_loot_tables(
                         f"Minecraft 26.2 item registry evidence is absent for {item_id} in {relative}"
                     )
             elif namespace == "ribbits":
-                if not (root / f"assets/ribbits/items/{item_path}.json").is_file():
+                if (
+                    item_id not in SOURCE_SAFE_PUBLIC_LOOT_ITEM_IDS
+                    and not (root / f"assets/ribbits/items/{item_path}.json").is_file()
+                ):
                     errors.append(f"Ribbits item definition is absent for {item_id} in {relative}")
             else:
                 errors.append(f"Unapproved item namespace {namespace!r} in {relative}")
@@ -2034,7 +2351,7 @@ def migrate_spawn_egg_models(root: Path, minecraft_client: Path) -> dict[str, An
 
     return {
         "authorization": (
-            "Explicitly authorized by the Workbench owner for private Mynx Ribbits Canary 2"
+            "Explicitly authorized by the Workbench owner for private Mynx Ribbits Canary 3"
         ),
         "temporary": True,
         "exact_ribbits_4_1_6_visual_parity": False,
@@ -2426,7 +2743,53 @@ def private_domain_inventory_difference(
 ) -> tuple[set[str], set[str]]:
     staged = set(staged_names)
     packaged = private_domain_entries(packaged_names)
-    return staged - packaged, packaged - staged
+    expected = staged | SOURCE_SAFE_PUBLIC_RESOURCE_PATHS
+    return expected - packaged, packaged - expected
+
+
+def validate_source_safe_public_resource_boundary(
+    archive: zipfile.ZipFile,
+    staged_private_entries: list[str] | set[str],
+    errors: list[str],
+    source_root: Path | None = None,
+) -> None:
+    staged_public_entries = set(staged_private_entries) & SOURCE_SAFE_PUBLIC_RESOURCE_PATHS
+    if staged_public_entries:
+        errors.append(
+            "Source-safe public resources entered private staging: "
+            f"{sorted(staged_public_entries)}"
+        )
+
+    tracked_root = (
+        source_root
+        if source_root is not None
+        else Path(__file__).resolve().parent.parent / "common" / "src" / "main" / "resources"
+    )
+    for relative in sorted(SOURCE_SAFE_PUBLIC_RESOURCE_PATHS):
+        tracked_path = tracked_root.joinpath(*PurePosixPath(relative).parts)
+        if not tracked_path.is_file():
+            errors.append(f"Tracked source-safe public resource is missing: {relative}")
+            continue
+        try:
+            packaged_bytes = archive.read(relative)
+        except KeyError:
+            # The exact inventory comparison reports the missing archive member.
+            continue
+        if packaged_bytes != tracked_path.read_bytes():
+            errors.append(f"Source-safe public resource changed during packaging: {relative}")
+
+
+def validate_required_fabric_dependencies(metadata: Any, errors: list[str]) -> None:
+    actual_dependencies = metadata.get("depends", {}) if isinstance(metadata, dict) else {}
+    if not isinstance(actual_dependencies, dict):
+        errors.append("Packaged Fabric dependency map is not an object")
+        return
+    for dependency, expected in REQUIRED_FABRIC_DEPENDENCIES.items():
+        if actual_dependencies.get(dependency) != expected:
+            errors.append(
+                f"Dependency {dependency} differs: expected {expected!r}, "
+                f"got {actual_dependencies.get(dependency)!r}"
+            )
 
 
 def validate_donor_resource_boundary(root: Path, errors: list[str]) -> None:
@@ -2756,6 +3119,9 @@ def validate_jar(
                 "Packaged private-domain entries exceed the staged inventory: "
                 f"{sorted(unexpected_private_entries)}"
             )
+        validate_source_safe_public_resource_boundary(
+            archive, staged_private_entries, errors
+        )
         missing_donor_outputs = DONOR_DERIVED_OUTPUTS - name_set
         if missing_donor_outputs:
             errors.append(
@@ -2815,21 +3181,7 @@ def validate_jar(
             errors.append(f"Unexpected Fabric environment: {metadata.get('environment')!r}")
         if "accessWidener" in metadata:
             errors.append("Unexpected access widener declaration remains")
-        expected_dependencies = {
-            "minecraft": ">=26.2",
-            "java": ">=25",
-            "yungsapi": ">=26.2-Fabric-6.1.1-compat.2",
-            "fabric-api": ">=0.157.0",
-            "geckolib": ">=5.5.1",
-            "cloth-config2": ">=26.2.155",
-        }
-        actual_dependencies = metadata.get("depends", {})
-        for dependency, expected in expected_dependencies.items():
-            if actual_dependencies.get(dependency) != expected:
-                errors.append(
-                    f"Dependency {dependency} differs: expected {expected!r}, "
-                    f"got {actual_dependencies.get(dependency)!r}"
-                )
+        validate_required_fabric_dependencies(metadata, errors)
 
         entrypoints = metadata.get("entrypoints", {})
         expected_entrypoints = {

@@ -53,8 +53,8 @@ class PrivateChestLootTableCodecTest {
         SharedConstants.tryDetectVersion();
 
         // Item.CODEC is intentionally bound to BuiltInRegistries.ITEM in Minecraft 26.2.
-        // Populate that exact registry without freezing it, register the one private Ribbits
-        // item referenced by these tables, then freeze it exactly once. Gradle forks every test
+        // Populate that exact registry without freezing it, register the two Ribbits items
+        // referenced by these tables, then freeze it exactly once. Gradle forks every test
         // class so no other bootstrap can race or pre-freeze this exact codec context.
         Field bootstrapped = Bootstrap.class.getDeclaredField("isBootstrapped");
         bootstrapped.setAccessible(true);
@@ -64,6 +64,10 @@ class PrivateChestLootTableCodecTest {
                 Registries.ITEM, Identifier.parse("ribbits:giant_lilypad"));
         Registry.register(BuiltInRegistries.ITEM, giantLilypadKey,
                 new Item(new Item.Properties().setId(giantLilypadKey)));
+        ResourceKey<Item> glowcapKey = ResourceKey.create(
+                Registries.ITEM, Identifier.parse("ribbits:glowcap"));
+        Registry.register(BuiltInRegistries.ITEM, glowcapKey,
+                new Item(new Item.Properties().setId(glowcapKey)));
         invokeBuiltInRegistryPhase("freeze");
         itemRegistry = BuiltInRegistries.ITEM;
 
@@ -87,6 +91,8 @@ class PrivateChestLootTableCodecTest {
                 JsonOps.INSTANCE, new RegistryAccess.ImmutableRegistryAccess(registries));
         assertTrue(registryOps.getter(Registries.ITEM).orElseThrow()
                 .get(giantLilypadKey).isPresent());
+        assertTrue(registryOps.getter(Registries.ITEM).orElseThrow()
+                .get(glowcapKey).isPresent());
     }
 
     private static void invokeBuiltInRegistryPhase(String methodName)

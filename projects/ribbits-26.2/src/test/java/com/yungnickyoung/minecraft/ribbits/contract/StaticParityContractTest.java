@@ -57,68 +57,29 @@ class StaticParityContractTest {
     void professionGoalsAndTradeInventoryRemainMappedToExactRoles() throws IOException {
         String entity = read("common/src/main/java/com/yungnickyoung/minecraft/ribbits/entity/RibbitEntity.java");
         String trades = read("common/src/main/java/com/yungnickyoung/minecraft/ribbits/module/RibbitTradeModule.java");
-        String[] merchantListings = {
-                "new ItemsForAmethysts(BlockModule.BROWN_TOADSTOOL.get().asItem(), 1, 1, 8, 16, 32)",
-                "new ItemsForAmethysts(BlockModule.RED_TOADSTOOL.get().asItem(), 1, 1, 8, 16, 32)",
-                "new ItemsForAmethysts(BlockModule.TOADSTOOL_STEM.get().asItem(), 1, 1, 8, 16, 32)",
-                "new ItemsForAmethysts(BlockModule.MOSSY_OAK_PLANKS.get().asItem(), 1, 2, 16, 32, 32)",
-                "new ItemsForAmethysts(BlockModule.SWAMP_LANTERN.get().asItem(), 2, 3, 4, 8, 32)",
-                "new ItemsForAmethysts(ItemModule.MARACA.get(), 6, 8, 1, 1, 4)"
-        };
-        String[] fishermanListings = {
-                "new ItemsForAmethysts(Items.AXOLOTL_BUCKET, 4, 8, 1, 1, 16)",
-                "new ItemsForAmethysts(Items.TROPICAL_FISH_BUCKET, 4, 8, 1, 1, 16)",
-                "new ItemsForAmethysts(Items.COOKED_COD, 4, 8, 8, 24, 16)",
-                "new ItemsForAmethysts(Items.COOKED_SALMON, 4, 8, 8, 24, 16)",
-                "new EnchantedItemForAmethyst(Items.FISHING_ROD, 12, 16, 4)",
-                "new AmethystForItems(Items.COD, 16, 32, 4, 8, 16)",
-                "new AmethystForItems(Items.SALMON, 16, 32, 4, 8, 16)"
-        };
 
         assertTrue(entity.contains("RibbitProfessionModule.NITWIT)) {\n            this.goalSelector.addGoal(6, this.musicGoal)"));
         assertTrue(entity.contains("RibbitProfessionModule.GARDENER)) {\n            this.goalSelector.addGoal(6, this.waterCropsGoal)"));
         assertTrue(entity.contains("RibbitProfessionModule.FISHERMAN)) {\n            this.goalSelector.addGoal(6, this.fishGoal)"));
         assertTrue(entity.contains("RibbitProfessionModule.SORCERER)) {\n            this.goalSelector.addGoal(6, this.applyBuffGoal)"));
 
-        int merchantStart = trades.indexOf("map.put(RibbitProfessionModule.MERCHANT");
-        int fishermanStart = trades.indexOf("map.put(RibbitProfessionModule.FISHERMAN");
-        assertTrue(merchantStart >= 0 && fishermanStart > merchantStart);
-        for (String listing : merchantListings) {
-            int index = trades.indexOf(listing);
-            assertTrue(index > merchantStart && index < fishermanStart, listing);
-            assertEquals(1, occurrences(trades, listing), listing);
+        assertTrue(trades.contains("Central, declarative trade-profile layer"));
+        for (String profession : List.of("nitwit", "gardener", "fisherman", "merchant",
+                "chef", "farmer", "sorcerer", "prospector", "guard")) {
+            assertTrue(trades.contains("\"" + profession + "\""), profession);
         }
-        for (String listing : fishermanListings) {
-            int index = trades.indexOf(listing);
-            assertTrue(index > fishermanStart, listing);
-            assertEquals(1, occurrences(trades, listing), listing);
-        }
-        assertEquals(13, merchantListings.length + fishermanListings.length);
-        assertEquals(2, occurrences(trades, "map.put(RibbitProfessionModule."));
-        assertTrue(trades.contains(
-                "int numOffers = ribbit.getRibbitData().getProfession() == RibbitProfessionModule.MERCHANT ? 10 : 4;"));
-        assertTrue(trades.contains("if (itemListings.length > numOffers)"));
-        assertTrue(trades.contains("while (chosenIndices.size() < numOffers)"));
-        assertTrue(trades.contains("chosenIndices.add(ribbit.getRandom().nextInt(itemListings.length))"));
+        assertTrue(trades.contains("FIXED_PRICE_MULTIPLIER = 0.0F"));
+        assertFalse(trades.contains("ItemsForAmethysts"));
+        assertFalse(trades.contains("AmethystForItems"));
+        assertFalse(trades.contains("minecraft:amethyst_shard"));
     }
 
     @Test
-    void sevenTradeLessProfessionsCannotOpenAnEmptyMerchantScreen() throws IOException {
+    void allNineProfessionsUseTheNormalMerchantScreenWhenTheyHaveOffers() throws IOException {
         String entity = read("common/src/main/java/com/yungnickyoung/minecraft/ribbits/entity/RibbitEntity.java");
         String trades = read("common/src/main/java/com/yungnickyoung/minecraft/ribbits/module/RibbitTradeModule.java");
-        String[] tradeLess = {
-                "NITWIT",
-                "GARDENER",
-                "SORCERER",
-                "CHEF",
-                "FARMER",
-                "PROSPECTOR",
-                "GUARD"
-        };
-
-        for (String profession : tradeLess) {
-            assertFalse(trades.contains("map.put(RibbitProfessionModule." + profession), profession);
-        }
+        assertTrue(trades.contains("profiles.put(\"nitwit\""));
+        assertTrue(trades.contains("private static final List<TradeOfferSpec> ALL_OFFERS"));
 
         int interactStart = entity.indexOf("public @NotNull InteractionResult mobInteract");
         int interactEnd = entity.indexOf("public void reassessGoals()", interactStart);
@@ -136,21 +97,24 @@ class StaticParityContractTest {
     void savedMerchantAndFishermanOffersStillUseTheMinecraftCodec() throws IOException {
         String entity = read("common/src/main/java/com/yungnickyoung/minecraft/ribbits/entity/RibbitEntity.java");
         assertTrue(entity.contains("valueInput.read(\"Offers\", MerchantOffers.CODEC)\n"
-                + "                .ifPresent(offers -> this.offers = offers);"));
-        assertTrue(entity.contains("valueOutput.store(\"Offers\", MerchantOffers.CODEC, offers);"));
+                + "                .ifPresent(offers -> {"));
+        assertTrue(entity.contains("RibbitTradeModule.restoreStrictComponentMatching(this, offers);"));
+        assertTrue(entity.contains("valueOutput.store(\"Offers\", MerchantOffers.CODEC, offersToSave);"));
         assertEquals(2, occurrences(entity, "MerchantOffers.CODEC"));
     }
 
     @Test
-    void restockImplementationRemainsByteExactToAuthoritativeMain() throws IOException, NoSuchAlgorithmException {
+    void restockImplementationIsPersistentDailyAndDemandFree() throws IOException {
         String entity = read("common/src/main/java/com/yungnickyoung/minecraft/ribbits/entity/RibbitEntity.java");
-        int start = entity.indexOf("    @Override\n    public boolean canRestock()");
-        int end = entity.indexOf("    public boolean isTrading()", start);
-        assertTrue(start >= 0 && end > start);
-        String restock = entity.substring(start, end);
-        String hash = HexFormat.of().formatHex(
-                MessageDigest.getInstance("SHA-256").digest(restock.getBytes(StandardCharsets.UTF_8)));
-        assertEquals("b7993d37498fe79130bdf4d8f3be6ae0e3d18153cb35c05c3dae420b5961e80a", hash);
+        String policy = read("common/src/main/java/com/yungnickyoung/minecraft/ribbits/entity/trade/RibbitRestockPolicy.java");
+        assertTrue(entity.contains("MynxRestockDay") || read(
+                "common/src/main/java/com/yungnickyoung/minecraft/ribbits/entity/trade/RibbitTradeState.java")
+                .contains("MynxRestockDay"));
+        assertTrue(policy.contains("MAX_ADDITIONAL_RESTOCKS = 2"));
+        assertTrue(policy.contains("MIN_RESTOCK_SPACING = 2400L"));
+        assertTrue(entity.contains("this.needsToRestock()"));
+        assertTrue(entity.contains("pendingChefDayChange"));
+        assertFalse(entity.contains("updateDemand();"));
     }
 
     @Test
@@ -198,6 +162,8 @@ class StaticParityContractTest {
                 "giant_lilypad",
                 "swamp_daisy",
                 "toadstool",
+                "glowcap",
+                "toadstool_heart",
                 "umbrella_leaf",
                 "mossy_oak_planks",
                 "mossy_oak_planks_stairs",

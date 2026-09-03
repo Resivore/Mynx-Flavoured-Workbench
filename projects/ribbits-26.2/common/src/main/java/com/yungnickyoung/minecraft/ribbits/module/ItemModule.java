@@ -15,6 +15,16 @@ import net.minecraft.world.level.block.DispenserBlock;
 
 @AutoRegister(RibbitsCommon.MOD_ID)
 public class ItemModule {
+    @AutoRegister("glowcap")
+    public static final AutoRegisterItem GLOWCAP = AutoRegisterItem.of(() -> new Item(
+            new Item.Properties().stacksTo(64).setId(RegisterHelper.itemKey("glowcap"))
+    ));
+
+    @AutoRegister("toadstool_heart")
+    public static final AutoRegisterItem TOADSTOOL_HEART = AutoRegisterItem.of(() -> new Item(
+            new Item.Properties().stacksTo(64).setId(RegisterHelper.itemKey("toadstool_heart"))
+    ));
+
     @AutoRegister("giant_lilypad")
     public static final AutoRegisterItem GIANT_LILYPAD = AutoRegisterItem.of(() -> new PlaceOnWaterBlockItem(
             BlockModule.GIANT_LILYPAD.get(),

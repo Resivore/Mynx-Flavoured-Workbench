@@ -8,6 +8,7 @@ import json
 import struct
 import tempfile
 import unittest
+import zipfile
 from pathlib import Path, PurePosixPath
 from unittest import mock
 
@@ -57,21 +58,34 @@ def write_documents(root: Path, documents: list[tuple[str, object]]) -> None:
 
 
 def synthetic_loot(relative: str) -> dict[str, object]:
-    counts = tools.LOOT_POOL_ENTRY_COUNTS[relative]
+    counts = tools.VILLAGE_LOOT_POOL_ENTRY_COUNTS[relative]
     pools: list[dict[str, object]] = []
     for pool_index, count in enumerate(counts):
         entries = [
             {"type": "minecraft:item", "weight": 5, "name": "minecraft:stone"}
             for _ in range(count)
         ]
-        if pool_index == 1:
+        if relative in tools.LOOT_TABLE_PATHS and pool_index == 1:
             entries[0] = {
                 "type": "minecraft:item",
                 "weight": tools.LOOT_EMPTY_WEIGHTS[relative],
                 "name": "minecraft:air",
             }
         pools.append({"rolls": 1.0, "bonus_rolls": 0.0, "entries": entries})
-    return {"type": "minecraft:chest", "pools": pools}
+    result = {"type": "minecraft:chest", "pools": pools}
+    currency_spec = tools.GLOWCAP_CURRENCY_ENTRY_SPECS.get(relative)
+    if currency_spec is not None:
+        result["pools"][currency_spec["pool"]]["entries"][currency_spec["entry"]] = (
+            tools.expected_glowcap_currency_entry(
+                currency_spec, tools.GLOWCAP_CURRENCY_SOURCE_ID
+            )
+        )
+    block_spec = tools.UNRELATED_AMETHYST_BLOCK_SPEC
+    if relative == block_spec["table"]:
+        result["pools"][block_spec["pool"]]["entries"][block_spec["entry"]] = copy.deepcopy(
+            block_spec["value"]
+        )
+    return result
 
 
 def synthetic_model(width: int = 64, uv: list[int] | None = None) -> dict[str, object]:
@@ -365,7 +379,8 @@ class LootTableRepairTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temp_dir:
             root = Path(temp_dir)
             values = {
-                relative: synthetic_loot(relative) for relative in tools.LOOT_TABLE_PATHS
+                relative: synthetic_loot(relative)
+                for relative in tools.VILLAGE_CHEST_LOOT_TABLE_PATHS
             }
             sorcerer = values[tools.LOOT_TABLE_PATHS[1]]
             potion_entry = sorcerer["pools"][0]["entries"][0]
@@ -380,10 +395,14 @@ class LootTableRepairTest(unittest.TestCase):
                 path = root / PurePosixPath(relative)
                 path.parent.mkdir(parents=True, exist_ok=True)
                 path.write_text(json.dumps(value), encoding="utf-8")
-
             record = tools.migrate_private_loot_tables(root)
             self.assertEqual(2, record["air_item_entries_replaced_with_empty"])
             self.assertEqual(1, record["sorcerer_potion_loot_functions_migrated"])
+            currency = record["glowcap_currency_substitution"]
+            self.assertEqual(5, currency["entries_replaced"])
+            self.assertEqual(
+                tools.GLOWCAP_CURRENCY_TARGET_ID, currency["replacement_item"]
+            )
             migrated = json.loads(
                 (root / PurePosixPath(tools.LOOT_TABLE_PATHS[1])).read_text(encoding="utf-8")
             )
@@ -397,10 +416,15 @@ class LootTableRepairTest(unittest.TestCase):
                 {
                     "assets/minecraft/items/stone.json",
                     "assets/minecraft/items/potion.json",
+                    "assets/minecraft/items/amethyst_block.json",
                 },
                 errors,
             )
             self.assertEqual([], errors)
+            self.assertFalse((root / "assets/ribbits/items/glowcap.json").exists())
+            self.assertEqual(
+                frozenset({"ribbits:glowcap"}), tools.SOURCE_SAFE_PUBLIC_LOOT_ITEM_IDS
+            )
             missing_registry_errors: list[str] = []
             tools.validate_private_loot_tables(
                 root,
@@ -410,6 +434,138 @@ class LootTableRepairTest(unittest.TestCase):
             self.assertTrue(
                 any("item registry evidence is absent" in error for error in missing_registry_errors)
             )
+
+    def test_exact_five_currency_entries_change_without_other_byte_drift(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            before_bytes: dict[str, bytes] = {}
+            before_values: dict[str, dict[str, object]] = {}
+            for relative in tools.VILLAGE_CHEST_LOOT_TABLE_PATHS:
+                value = synthetic_loot(relative)
+                path = root / PurePosixPath(relative)
+                path.parent.mkdir(parents=True, exist_ok=True)
+                payload = (json.dumps(value, indent=4) + "\n").encode("utf-8")
+                path.write_bytes(payload)
+                before_bytes[relative] = payload
+                before_values[relative] = copy.deepcopy(value)
+
+            record = tools.replace_private_glowcap_currency_entries(root)
+
+            self.assertEqual(5, record["entries_replaced"])
+            self.assertEqual(
+                list(tools.VILLAGE_CHEST_LOOT_TABLE_PATHS), record["tables_inspected"]
+            )
+            self.assertEqual(
+                list(tools.GLOWCAP_CURRENCY_ENTRY_SPECS),
+                [target["table"] for target in record["targets"]],
+            )
+            source_token = json.dumps(tools.GLOWCAP_CURRENCY_SOURCE_ID).encode("utf-8")
+            target_token = json.dumps(tools.GLOWCAP_CURRENCY_TARGET_ID).encode("utf-8")
+            records_by_table = {target["table"]: target for target in record["targets"]}
+
+            for relative in tools.VILLAGE_CHEST_LOOT_TABLE_PATHS:
+                with self.subTest(relative=relative):
+                    path = root / PurePosixPath(relative)
+                    actual_bytes = path.read_bytes()
+                    expected_count = int(relative in tools.GLOWCAP_CURRENCY_ENTRY_SPECS)
+                    expected_bytes = before_bytes[relative].replace(source_token, target_token)
+                    self.assertEqual(expected_bytes, actual_bytes)
+                    self.assertEqual(expected_count, actual_bytes.count(target_token))
+                    self.assertNotIn(source_token, actual_bytes)
+
+                    expected_value = copy.deepcopy(before_values[relative])
+                    spec = tools.GLOWCAP_CURRENCY_ENTRY_SPECS.get(relative)
+                    if spec is not None:
+                        expected_value["pools"][spec["pool"]]["entries"][spec["entry"]][
+                            "name"
+                        ] = tools.GLOWCAP_CURRENCY_TARGET_ID
+                        target = records_by_table[relative]
+                        self.assertEqual(spec["weight"], target["weight"])
+                        self.assertEqual(
+                            {
+                                "type": "minecraft:uniform",
+                                "min": spec["count_min"],
+                                "max": spec["count_max"],
+                            },
+                            target["count"],
+                        )
+                        self.assertFalse(target["add"])
+                        self.assertEqual(
+                            tools.sha256_bytes(before_bytes[relative]),
+                            target["before_sha256"],
+                        )
+                        self.assertEqual(
+                            tools.sha256_bytes(actual_bytes), target["after_sha256"]
+                        )
+                    self.assertEqual(expected_value, json.loads(actual_bytes))
+
+            fisherman_main = tools.VILLAGE_CHEST_LOOT_TABLE_PATHS[0]
+            self.assertEqual(
+                before_bytes[fisherman_main],
+                (root / PurePosixPath(fisherman_main)).read_bytes(),
+            )
+            block_spec = tools.UNRELATED_AMETHYST_BLOCK_SPEC
+            merchant = json.loads(
+                (root / PurePosixPath(block_spec["table"])).read_text(encoding="utf-8")
+            )
+            self.assertEqual(
+                block_spec["value"],
+                merchant["pools"][block_spec["pool"]]["entries"][block_spec["entry"]],
+            )
+
+    def test_currency_substitution_fails_before_writing_if_any_pinned_input_drifts(self) -> None:
+        cases = (
+            "missing currency",
+            "changed price metadata",
+            "extra currency",
+            "changed unrelated amethyst",
+            "unexpected table",
+        )
+        for label in cases:
+            with self.subTest(label=label), tempfile.TemporaryDirectory() as temp_dir:
+                root = Path(temp_dir)
+                values = {
+                    relative: synthetic_loot(relative)
+                    for relative in tools.VILLAGE_CHEST_LOOT_TABLE_PATHS
+                }
+                if label == "missing currency":
+                    relative = tools.VILLAGE_CHEST_LOOT_TABLE_PATHS[2]
+                    spec = tools.GLOWCAP_CURRENCY_ENTRY_SPECS[relative]
+                    values[relative]["pools"][spec["pool"]]["entries"][spec["entry"]][
+                        "name"
+                    ] = "minecraft:stone"
+                elif label == "changed price metadata":
+                    relative = tools.VILLAGE_CHEST_LOOT_TABLE_PATHS[1]
+                    spec = tools.GLOWCAP_CURRENCY_ENTRY_SPECS[relative]
+                    values[relative]["pools"][spec["pool"]]["entries"][spec["entry"]][
+                        "weight"
+                    ] = 99
+                elif label == "extra currency":
+                    relative = tools.VILLAGE_CHEST_LOOT_TABLE_PATHS[0]
+                    values[relative]["pools"][0]["entries"][0]["name"] = (
+                        tools.GLOWCAP_CURRENCY_SOURCE_ID
+                    )
+                elif label == "changed unrelated amethyst":
+                    block_spec = tools.UNRELATED_AMETHYST_BLOCK_SPEC
+                    values[block_spec["table"]]["pools"][block_spec["pool"]]["entries"][
+                        block_spec["entry"]
+                    ]["name"] = "minecraft:stone"
+
+                for relative, value in values.items():
+                    path = root / PurePosixPath(relative)
+                    path.parent.mkdir(parents=True, exist_ok=True)
+                    path.write_text(json.dumps(value), encoding="utf-8")
+                if label == "unexpected table":
+                    extra = root / "data/ribbits/loot_table/chests/unexpected.json"
+                    extra.write_text(json.dumps(synthetic_loot(tools.LOOT_TABLE_PATHS[0])))
+
+                before = {
+                    path: path.read_bytes()
+                    for path in (root / "data/ribbits/loot_table/chests").glob("*.json")
+                }
+                with self.assertRaises(tools.ValidationError):
+                    tools.replace_private_glowcap_currency_entries(root)
+                self.assertEqual(before, {path: path.read_bytes() for path in before})
 
 
 class DonorCompositeTest(unittest.TestCase):
@@ -530,8 +686,8 @@ class VillageNbtMigrationTest(unittest.TestCase):
 
 class DonorBoundaryContractTest(unittest.TestCase):
     def test_exact_accounting_contains_only_approved_visual_members_and_outputs(self) -> None:
-        self.assertEqual("4.1.6+26.2-mynx-canary2", tools.CANDIDATE_VERSION)
-        self.assertEqual(2, tools.CANDIDATE_CANARY)
+        self.assertEqual("4.1.6+26.2-mynx-canary3", tools.CANDIDATE_VERSION)
+        self.assertEqual(3, tools.CANDIDATE_CANARY)
         self.assertEqual(
             "mynx-ribbits-private-resource-manifest/v1", tools.PRIVATE_MANIFEST_SCHEMA
         )
@@ -542,6 +698,8 @@ class DonorBoundaryContractTest(unittest.TestCase):
         self.assertEqual(336, tools.OUTPUT_FILE_COUNT)
         self.assertEqual(41, len(tools.GECKO_MODEL_IDS))
         self.assertEqual(24, len(tools.REGISTERED_ITEM_IDS))
+        self.assertNotIn("glowcap", tools.REGISTERED_ITEM_IDS)
+        self.assertNotIn("toadstool_heart", tools.REGISTERED_ITEM_IDS)
         self.assertEqual(9, len(tools.SPAWN_EGG_IDS))
         self.assertEqual(20, len(tools.DONOR_DERIVED_OUTPUTS))
         self.assertEqual(
@@ -637,7 +795,7 @@ class DonorBoundaryContractTest(unittest.TestCase):
             "icon.png",
             "logo.png",
         }
-        packaged = staged | {
+        packaged = staged | tools.SOURCE_SAFE_PUBLIC_RESOURCE_PATHS | {
             "fabric.mod.json",
             "com/yungnickyoung/minecraft/ribbits/RibbitsCommon.class",
         }
@@ -661,6 +819,84 @@ class DonorBoundaryContractTest(unittest.TestCase):
                 "assets/ribbits/geckolib/models/donor_extra.geo.json",
             },
             extra,
+        )
+
+    def test_private_jar_allows_only_exact_tracked_public_resource_bytes(self) -> None:
+        expected_paths = {
+            "assets/ribbits/items/glowcap.json",
+            "assets/ribbits/items/toadstool_heart.json",
+            "data/ribbits/advancement/recipes/misc/toadstool_heart.json",
+            "data/ribbits/recipe/toadstool_heart.json",
+        }
+        self.assertEqual(expected_paths, tools.SOURCE_SAFE_PUBLIC_RESOURCE_PATHS)
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            source_root = root / "tracked-resources"
+            archive_path = root / "private.jar"
+            expected_bytes: dict[str, bytes] = {}
+            for index, relative in enumerate(sorted(expected_paths)):
+                payload = f"source-safe-{index}\n".encode("utf-8")
+                expected_bytes[relative] = payload
+                tracked = source_root.joinpath(*PurePosixPath(relative).parts)
+                tracked.parent.mkdir(parents=True, exist_ok=True)
+                tracked.write_bytes(payload)
+
+            with zipfile.ZipFile(archive_path, "w") as archive:
+                for relative, payload in expected_bytes.items():
+                    archive.writestr(relative, payload)
+
+            errors: list[str] = []
+            with zipfile.ZipFile(archive_path) as archive:
+                tools.validate_source_safe_public_resource_boundary(
+                    archive, set(), errors, source_root
+                )
+            self.assertEqual([], errors)
+
+            with zipfile.ZipFile(archive_path, "w") as archive:
+                for relative, payload in expected_bytes.items():
+                    archive.writestr(
+                        relative,
+                        b"changed\n" if relative.endswith("glowcap.json") else payload,
+                    )
+            errors = []
+            with zipfile.ZipFile(archive_path) as archive:
+                tools.validate_source_safe_public_resource_boundary(
+                    archive,
+                    {"data/ribbits/recipe/toadstool_heart.json"},
+                    errors,
+                    source_root,
+                )
+            self.assertTrue(
+                any("entered private staging" in error for error in errors), errors
+            )
+            self.assertTrue(
+                any("changed during packaging: assets/ribbits/items/glowcap.json" in error
+                    for error in errors),
+                errors,
+            )
+
+    def test_private_jar_requires_exact_economy_runtime_dependencies(self) -> None:
+        self.assertEqual(">=4.0.0", tools.REQUIRED_FABRIC_DEPENDENCIES["customportals"])
+        self.assertEqual(
+            ">=0.1.10-canary11",
+            tools.REQUIRED_FABRIC_DEPENDENCIES["matcha_heart_death_compat"],
+        )
+
+        errors: list[str] = []
+        tools.validate_required_fabric_dependencies(
+            {"depends": dict(tools.REQUIRED_FABRIC_DEPENDENCIES)}, errors
+        )
+        self.assertEqual([], errors)
+
+        drifted = dict(tools.REQUIRED_FABRIC_DEPENDENCIES)
+        drifted.pop("customportals")
+        drifted["matcha_heart_death_compat"] = ">=0.1.9"
+        errors = []
+        tools.validate_required_fabric_dependencies({"depends": drifted}, errors)
+        self.assertTrue(any("Dependency customportals differs" in error for error in errors))
+        self.assertTrue(
+            any("Dependency matcha_heart_death_compat differs" in error for error in errors)
         )
 
     def test_manifest_is_never_visible_when_final_donor_rehash_fails(self) -> None:
@@ -739,9 +975,70 @@ class DonorBoundaryContractTest(unittest.TestCase):
             {
                 key.removeprefix("item.ribbits.")
                 for key in tools.EN_US_MYNX_PROFESSION_TRANSLATIONS
-                if "nitwit" not in key
+                if key.startswith("item.ribbits.ribbit_")
+                and key.endswith("_spawn_egg")
+                and "nitwit" not in key
             },
         )
+
+    def test_economy_item_and_rank_title_translations_are_exact(self) -> None:
+        expected_items = {
+            "item.ribbits.glowcap": "Glowcap",
+            "item.ribbits.toadstool_heart": "Toadstool Heart",
+        }
+        self.assertEqual(
+            expected_items,
+            {
+                key: tools.EN_US_MYNX_PROFESSION_TRANSLATIONS[key]
+                for key in expected_items
+            },
+        )
+
+        rank_names = {
+            "gardener": ("Sprout Tender", "Toadstool Keeper"),
+            "farmer": ("Vine Puller", "Root Wrangler", "Mudfield Steward"),
+            "fisherman": (
+                "Pond Forager",
+                "Coral Keeper",
+                "Amphibian Attendant",
+                "Opal Angler",
+                "Monument Mariner",
+            ),
+            "merchant": ("Moss Peddler", "Lantern Trader", "Glowgoods Baron"),
+            "chef": (
+                "Tadpole Cook",
+                "Pond Cook",
+                "Swamp Chef",
+                "Grand Chef",
+                "Master of the Feast",
+            ),
+            "sorcerer": (
+                "Wart Whisperer",
+                "Gatecaller",
+                "Flask Sage",
+                "Deep-Pond Oracle",
+            ),
+            "prospector": ("Pebble Picker", "Vein-Seeker", "Deep Delver"),
+            "guard": (
+                "Pond Sentry",
+                "Lily Warden",
+                "Marsh Marshal",
+                "Bulwark of the Bog",
+            ),
+        }
+        expected_titles = {
+            f"entity.ribbits.merchant.{profession}.tier_{tier}": name
+            for profession, names in rank_names.items()
+            for tier, name in enumerate(names, start=1)
+        }
+        expected_titles["entity.ribbits.merchant.nitwit.musician"] = "Musician"
+        actual_titles = {
+            key: value
+            for key, value in tools.EN_US_MYNX_PROFESSION_TRANSLATIONS.items()
+            if key.startswith("entity.ribbits.merchant.")
+        }
+        self.assertEqual(30, len(expected_titles))
+        self.assertEqual(expected_titles, actual_titles)
 
 
 if __name__ == "__main__":
