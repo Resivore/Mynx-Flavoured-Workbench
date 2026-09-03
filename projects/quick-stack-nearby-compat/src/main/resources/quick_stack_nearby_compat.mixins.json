@@ -3,6 +3,7 @@
   "package": "dev.resivore.quickstacknearbycompat.mixin",
   "compatibilityLevel": "JAVA_25",
   "mixins": [
+    "QuickStackMoveEngineMixin",
     "QuickStackServiceMixin"
   ],
   "injectors": {
