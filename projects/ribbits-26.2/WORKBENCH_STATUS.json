@@ -17,12 +17,14 @@
     "lifecycle": "ACTIVE",
     "goals": [
       "Maintain a private Minecraft Java 26.2 downstream Ribbits build for the fixed Mynx and Matcha stack, preserving upstream behavior except for individually documented intentional Mynx deviations.",
+      "Maintain the user-approved tiered Glowcap trade economy, persistent profession progression and daily restocking, exact cross-stack item contracts, and Toadstool Heart home-setting behavior without converting Ribbits into vanilla Villagers.",
       "Keep every private reconstruction deterministic and hash-guarded while isolating protected Ribbits resources and approved local donor visuals from the public source repository."
     ],
     "scope": [
       "Retain the legally trackable faithful-port baseline and maintain the intentional deviations recorded in MYNX_DEVIATIONS.md without changing stable mod, registry, entity, or save identities.",
       "Maintain all nine registered Ribbit professions, the explicit equal-weight eight-member natural village pool, and typed spawn-egg, pick-block, dispenser, codec, persistence, model, texture, and umbrella contracts.",
-      "Preserve the authoritative Merchant and Fisherman trade definitions and the existing restock implementation unchanged until a separately scoped trade candidate.",
+      "Maintain the cumulative profession trade-profile framework, fixed Glowcap prices, persistent specializations and gates, deterministic Chef menus, two-restocks-per-day policy, and exact component-aware Matcha and Custom Portals stack matching introduced by Mynx Canary 3.",
+      "Maintain ribbits:glowcap and ribbits:toadstool_heart as permanent mechanical identities while their temporary Warped Fungus and original Crystal Heart visual models await a narrow final-art successor.",
       "Preserve the private resource assembler, exact pristine, Minecraft, dependency, donor, output, and archive identities, and the authorized shared green spawn-egg derivation contract."
     ],
     "boundaries": {
@@ -32,7 +34,7 @@
       "exclusions": [
         "Protected Ribbits resources, donor-derived models and textures, pristine or donor binaries, private manifests and reports, and the complete private Canary JAR are external, ignored, private-use-only, and nonredistributable.",
         "Public source-only build output is resource-incomplete and must not be represented as a runnable Canary.",
-        "No redesigned trade economy, strict daily restock limit, Chef progression, Sorcerer trade progression, witch-hut behavior, Matcha or Custom Portals integration, or ribbits-village-explorer-map implementation in Canary 2.",
+        "No witch-hut Sorcerer generation, witch suppression or structure changes, Ribbit Village Explorer Map, cartographer integration, generalized old-offer migration, donor AI, Guard combat AI, home-dimension redesign, Fortune Blessing, Silver Bullion, or Adamant/Netherite economy additions in Canary 3.",
         "No substitute private inputs, deployment, Test Instance Manager mutation, gameplay-profile access, or Minecraft runtime claim from source, build, static, codec, tree, or archive evidence."
       ]
     },
@@ -78,6 +80,18 @@
         "identifier": "97d76c44-7c17-4b36-be84-57525f884e40",
         "requirement": "=26.2-Fabric-6.1.1-compat.2; YungsApi-26.2-Fabric-6.1.1-compat.2.jar; 1,260,939 bytes; SHA-256 ff22a6b509ba559988d7a9352dc94ac612c4b099517acac7da7c81322d797ed7",
         "reason": "Coordinated YUNG's API compatibility successor from implementation checkpoint f0be1f9c6c1f3e843a0e44791a650df237836537; provides the stable yungsapi runtime capability at the minimum version required by Ribbits and remains a separate, unbundled official project artifact."
+      },
+      {
+        "type": "PROJECT",
+        "identifier": "26065ff3-182f-5314-a5f6-976d6ffd394a",
+        "requirement": "=4.0.0+26.2-port-canary2; custom-portals-26.2-4.0.0+26.2-port-canary2.jar; SHA-256 13fd0e76748fcc3ef963bcc2f4a820d5fc2d473a90ad5d5988cbe0129c2be148",
+        "reason": "Accepted Custom Portals source 604720aa69f96e4628535722a015a5bf1726e0ea provides the real customportals registry identities used by all sixteen exact Sorcerer catalyst offers; Ribbits declares customportals >=4.0.0 and does not bundle or modify it."
+      },
+      {
+        "type": "PROJECT",
+        "identifier": "937d7ccc-44c9-55cb-8d33-0dc0bff5fe45",
+        "requirement": "=0.1.10-canary11; matcha-heart-death-compat-0.1.10-canary11.jar; SHA-256 a0570179f85d32ec6740d9136ad50890b9c797500661cd2ed2325da5b6b1e4a9",
+        "reason": "Matcha Heart Death compatibility source 8a0002235c6b0921f4d7f6a4cbf73b18ccc421a3 owns the exact original Crystal Heart recipe contract required by the Toadstool Heart recipe; Ribbits declares matcha_heart_death_compat >=0.1.10-canary11 and rejects reinforced or generic base-item substitutes."
       },
       {
         "type": "TOOL",
@@ -126,19 +140,25 @@
         "identifier": "useful_ribbits-1.0.2-forge-1.20.1.jar",
         "requirement": "416,439 bytes; SHA-256 2b56007a985b162477113bb2ea1776d9ce2ce602886ea21a88d8b2500d2ded5d",
         "reason": "Immutable local reference beneath originals/mods; only the exact Chef, Farmer, and Miner visual models and textures are approved as private inputs, with Miner adapted visually as Prospector and no Forge, MCreator, procedure, structure, GUI, workstation, inventory, worldgen, or behavior imported."
+      },
+      {
+        "type": "OTHER",
+        "identifier": "Matcha_Flavoured_1_12.zip",
+        "requirement": "12,248,989 bytes; SHA-256 6209783021c358044abedabacee471faff5bd4080437d4e3b5e51963f1804248",
+        "reason": "Immutable exact Minecraft 26.2 Matcha data/component reference used to audit and fingerprint the named recipe-result stacks, Opal, equipment, placeholder Crystal Heart model, effects, durations, rarities, glint, and component-aware trade contracts; never bundled or modified."
       }
     ]
   },
   "state": {
-    "milestone": "Mynx Canary 2 retains Canary 1's profession, loot, trade, and private-resource work, coordinates with YUNG's API compat.2 to make enhanced-beardifier iteration call-local and concurrency-safe, and emits the Ribbits creative tab through one ordered duplicate-checked 24-entry table. The exact successor is statically validated but remains not deployed and runtime untested because manager revision 71 has unrelated current candidates in both Test Slots; the supplied failed-cohort identities did not match canonical Canary 1 and remain unbound investigation input.",
+    "milestone": "Mynx Canary 3 retains all Phase A profession, model, egg, umbrella, village-pool, loot-repair, donor-boundary, creative-tab, and coordinated YUNG's API Compat.2 behavior while adding permanent ribbits:glowcap currency, consumable ribbits:toadstool_heart home setting, exact component-aware Matcha and Custom Portals stacks, cumulative tiered ranks and gates, persistent equal-weight specializations, deterministic Chef menus, and a persisted maximum of two exhausted-offer restocks per day. Glowcap temporarily renders as minecraft:item/warped_fungus and Toadstool Heart as minecraft:item/heart_container; both remain mechanically distinct permanent Ribbits items awaiting an asset-only final-art successor. The user's Phase A observations remain partial, unbound external evidence: villages and the expanded roster appeared operational, the Prospector egg/model worked, and natural Prospector occurrence was unobserved in that sample; no complete matrix or exact cohort/log identity was supplied. Canary 3 itself was not deployed or launched and remains runtime untested.",
     "releases": {
       "current": {
-        "version": "4.1.6+26.2-mynx-canary2",
+        "version": "4.1.6+26.2-mynx-canary3",
         "artifact": {
-          "filename": "ribbits-private-reconstruction-4.1.6+26.2-mynx-canary2.jar",
-          "sha256": "587b200a52300ff57c919ed5656e357de5840d0d05c321d6d055405382d299bd"
+          "filename": "ribbits-private-reconstruction-4.1.6+26.2-mynx-canary3.jar",
+          "sha256": "69ad105b44e3e9131d540e26887eb09ce6be1da89ee9c4b3c49e4e95341f3e19"
         },
-        "source_commit": "f0be1f9c6c1f3e843a0e44791a650df237836537",
+        "source_commit": "fc983c0534ac2a73308111d2052530a202156777",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
@@ -157,11 +177,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 6,
-    "activity_at": "2026-09-03T05:51:22Z",
-    "updated_at": "2026-09-03T05:51:22Z",
-    "last_codex_at": "2026-09-03T05:51:22Z",
-    "source_commit": "f0be1f9c6c1f3e843a0e44791a650df237836537",
+    "revision": 7,
+    "activity_at": "2026-09-03T20:04:17Z",
+    "updated_at": "2026-09-03T20:04:17Z",
+    "last_codex_at": "2026-09-03T20:04:17Z",
+    "source_commit": "fc983c0534ac2a73308111d2052530a202156777",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
