@@ -3,11 +3,14 @@ package com.yungnickyoung.minecraft.ribbits.entity;
 import com.yungnickyoung.minecraft.ribbits.data.RibbitData;
 import com.yungnickyoung.minecraft.ribbits.data.RibbitInstrument;
 import com.yungnickyoung.minecraft.ribbits.entity.goal.*;
+import com.yungnickyoung.minecraft.ribbits.entity.trade.RibbitRestockPolicy;
+import com.yungnickyoung.minecraft.ribbits.entity.trade.RibbitTradeState;
 import com.yungnickyoung.minecraft.ribbits.module.*;
 import com.yungnickyoung.minecraft.ribbits.util.GeoIP;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -28,7 +31,6 @@ import net.minecraft.world.entity.ai.goal.OpenDoorGoal;
 import net.minecraft.world.entity.ai.goal.PanicGoal;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.item.trading.Merchant;
 import net.minecraft.world.item.trading.MerchantOffer;
 import net.minecraft.world.item.trading.MerchantOffers;
@@ -85,9 +87,8 @@ public class RibbitEntity extends AgeableMob implements
     private Player tradingPlayer;
     @Nullable
     protected MerchantOffers offers;
-    private long lastRestockGameTime;
-    private int numberOfRestocksToday;
-    private long lastRestockCheckDayTime;
+    private final RibbitTradeState tradeState = new RibbitTradeState();
+    private boolean pendingChefDayChange;
 
     // How much to multiply movement speed when in water
     public static final float WATER_SPEED_MULTIPLIER = 2.0f;
@@ -179,6 +180,7 @@ public class RibbitEntity extends AgeableMob implements
                 this.waterCropsCooldown--;
             }
 
+            this.handleDailyStockBoundary();
             if (this.shouldRestock()) {
                 this.restock();
             }
@@ -224,8 +226,15 @@ public class RibbitEntity extends AgeableMob implements
             this.initializeDefaultVillageProfession(this.getRandom());
         }
 
+        this.tradeState.read(valueInput,
+                this.getRibbitData().getProfession() == RibbitProfessionModule.NITWIT);
+        RibbitTradeModule.normalizePersistentState(this);
+
         valueInput.read("Offers", MerchantOffers.CODEC)
-                .ifPresent(offers -> this.offers = offers);
+                .ifPresent(offers -> {
+                    this.offers = offers;
+                    RibbitTradeModule.restoreStrictComponentMatching(this, offers);
+                });
 
         Optional<Integer> homeX = valueInput.getInt("HomePosX");
         Optional<Integer> homeY = valueInput.getInt("HomePosY");
@@ -245,12 +254,15 @@ public class RibbitEntity extends AgeableMob implements
         super.addAdditionalSaveData(valueOutput);
 
         valueOutput.store("RibbitData", RibbitData.CODEC, this.getRibbitData());
-
+        MerchantOffers offersToSave = null;
         if (!this.level().isClientSide()) {
-            MerchantOffers offers = this.getOffers();
-            if (!offers.isEmpty()) {
-                valueOutput.store("Offers", MerchantOffers.CODEC, offers);
-            }
+            // Construct a never-opened Ribbit's current economy before persisting the schema
+            // marker, so its first save cannot pair schema 0 with schema-1 serialized offers.
+            offersToSave = this.getOffers();
+        }
+        this.tradeState.write(valueOutput);
+        if (offersToSave != null && !offersToSave.isEmpty()) {
+            valueOutput.store("Offers", MerchantOffers.CODEC, offersToSave);
         }
 
         if (this.homePosition != null) {
@@ -300,16 +312,23 @@ public class RibbitEntity extends AgeableMob implements
     public @NotNull InteractionResult mobInteract(Player player, @NotNull InteractionHand interactionHand) {
         ItemStack itemStack = player.getItemInHand(interactionHand);
 
-        if (player.isSecondaryUseActive() && itemStack.is(Items.AMETHYST_SHARD)) {
-            this.homePosition = this.blockPosition();
-            this.level().broadcastEntityEvent(this, (byte) 12);
-
-            if (!player.getAbilities().instabuild) {
-                itemStack.shrink(1);
+        if (player.isSecondaryUseActive() && itemStack.is(ItemModule.TOADSTOOL_HEART.get())) {
+            if (!this.level().isClientSide()) {
+                this.homePosition = this.blockPosition();
+                this.level().broadcastEntityEvent(this, (byte) 12);
+                if (!player.getAbilities().instabuild) {
+                    itemStack.shrink(1);
+                }
             }
+            return InteractionResult.SUCCESS;
         } else if (this.isAlive() && !this.isTrading() && !this.isSleeping()) {
             if (this.isBaby()) {
                 return InteractionResult.PASS;
+            }
+            // Fixed Matcha stacks are resolved from the authoritative server recipe manager.
+            // The client acknowledges the interaction but must never construct merchant offers.
+            if (this.level().isClientSide()) {
+                return InteractionResult.SUCCESS;
             }
             boolean bl = this.getOffers().isEmpty();
 
@@ -317,7 +336,7 @@ public class RibbitEntity extends AgeableMob implements
                 return InteractionResult.PASS;
             }
 
-            if (!this.level().isClientSide() && !this.offers.isEmpty()) {
+            if (!this.offers.isEmpty()) {
                 this.startTrading(player);
             }
 
@@ -702,16 +721,41 @@ public class RibbitEntity extends AgeableMob implements
 
     @Override
     public MerchantOffers getOffers() {
+        this.initializeRestockDayIfNeeded();
+        RibbitTradeModule.normalizePersistentState(this);
         if (this.offers == null) {
             this.offers = new MerchantOffers();
             RibbitTradeModule.updateTrades(this);
+        } else {
+            RibbitTradeModule.restoreStrictComponentMatching(this, this.offers);
         }
 
         return this.offers;
     }
 
+    /** Internal non-recursive access used while constructing an offer inventory. */
+    public MerchantOffers getMutableOffers() {
+        if (this.offers == null) {
+            this.offers = new MerchantOffers();
+        }
+        return this.offers;
+    }
+
+    public RibbitTradeState getTradeState() {
+        return this.tradeState;
+    }
+
+    public long currentRestockDay() {
+        long current = Math.floorDiv(this.level().getOverworldClockTime(), 24000L);
+        return this.tradeState.restockDay() == RibbitTradeState.UNSET_DAY
+                ? current
+                : Math.max(current, this.tradeState.restockDay());
+    }
+
     @Override
     public void overrideOffers(MerchantOffers merchantOffers) {
+        this.offers = merchantOffers;
+        RibbitTradeModule.restoreStrictComponentMatching(this, this.offers);
     }
 
     @Override
@@ -719,6 +763,27 @@ public class RibbitEntity extends AgeableMob implements
         merchantOffer.increaseUses();
         this.ambientSoundTime = -this.getAmbientSoundInterval();
         this.rewardTradeXp(merchantOffer);
+
+        RibbitTradeModule.Gate gate = RibbitTradeModule.gateForCompletedOffer(this, merchantOffer);
+        if (gate == RibbitTradeModule.Gate.SORCERER_BENZENE
+                && !this.tradeState.sorcererBenzeneGate()) {
+            this.tradeState.sorcererBenzeneGate(true);
+            this.forceGatePromotion(2, RibbitTradeModule.XP_THRESHOLDS[1]);
+        } else if (gate == RibbitTradeModule.Gate.FISHERMAN_OPAL
+                && !this.tradeState.fishermanOpalGate()) {
+            this.tradeState.fishermanOpalGate(true);
+            this.forceGatePromotion(5, RibbitTradeModule.XP_THRESHOLDS[4]);
+        }
+    }
+
+    private void forceGatePromotion(int targetRank, int xpFloor) {
+        int oldRank = this.tradeState.rank();
+        this.tradeState.xp(Math.max(this.tradeState.xp(), xpFloor));
+        this.tradeState.rank(Math.max(oldRank, targetRank));
+        for (int tier = oldRank + 1; tier <= this.tradeState.rank(); tier++) {
+            RibbitTradeModule.addUnlockedTier(this, tier);
+        }
+        this.resendOffersToTradingPlayer();
     }
 
     protected void rewardTradeXp(MerchantOffer merchantOffer) {
@@ -738,7 +803,14 @@ public class RibbitEntity extends AgeableMob implements
 
     private void startTrading(Player player) {
         this.setTradingPlayer(player);
-        this.openTradingScreen(player, this.getDisplayName(), 0);
+        RibbitTradeModule.TradeProfile profile = RibbitTradeModule.profile(
+                this.getRibbitData().getProfession());
+        int displayLevel = profile.tiered()
+                ? Math.max(1, Math.min(this.tradeState.rank(), 4))
+                : 0;
+        Component title = this.hasCustomName() ? this.getDisplayName() : RibbitTradeModule.title(this);
+        this.openTradingScreen(player, title, displayLevel);
+        this.resendOffersToTradingPlayer();
     }
 
     @Override
@@ -747,13 +819,24 @@ public class RibbitEntity extends AgeableMob implements
         this.tradingPlayer = player;
 
         if (bl) {
-            this.stopTrading();
+            this.finishTradingSession();
         }
     }
 
     protected void stopTrading() {
-        this.setTradingPlayer(null);
+        this.tradingPlayer = null;
+        this.finishTradingSession();
+    }
+
+    private void finishTradingSession() {
         this.resetSpecialPrices();
+        if (this.pendingChefDayChange) {
+            this.pendingChefDayChange = false;
+            long day = Math.floorDiv(this.level().getOverworldClockTime(), 24000L);
+            if (day > this.tradeState.restockDay()) {
+                this.beginNewStockDay(day);
+            }
+        }
     }
 
     private void resetSpecialPrices() {
@@ -768,20 +851,29 @@ public class RibbitEntity extends AgeableMob implements
     }
 
     public void restock() {
-        this.updateDemand();
         for (MerchantOffer merchantOffer : this.getOffers()) {
             merchantOffer.resetUses();
         }
+        this.tradeState.lastRestockGameTime(this.level().getGameTime());
+        this.tradeState.restocksUsedToday(this.tradeState.restocksUsedToday() + 1);
         this.resendOffersToTradingPlayer();
-        this.lastRestockGameTime = this.level().getGameTime();
-        ++this.numberOfRestocksToday;
     }
 
     private void resendOffersToTradingPlayer() {
-        MerchantOffers merchantOffers = this.getOffers();
         Player player = this.getTradingPlayer();
-        if (player != null && !merchantOffers.isEmpty()) {
-            player.sendMerchantOffers(player.containerMenu.containerId, merchantOffers, 0, this.getVillagerXp(), this.showProgressBar(), this.canRestock());
+        if (player != null) {
+            MerchantOffers merchantOffers = this.getOffers();
+            if (merchantOffers.isEmpty()) {
+                return;
+            }
+            RibbitTradeModule.TradeProfile profile = RibbitTradeModule.profile(
+                    this.getRibbitData().getProfession());
+            int displayLevel = profile.tiered()
+                    ? Math.max(1, Math.min(this.tradeState.rank(), 4))
+                    : 0;
+            int displayXp = RibbitTradeModule.uiXpFor(this.tradeState, profile);
+            player.sendMerchantOffers(player.containerMenu.containerId, merchantOffers,
+                    displayLevel, displayXp, this.showProgressBar(), this.canRestock());
         }
     }
 
@@ -793,50 +885,52 @@ public class RibbitEntity extends AgeableMob implements
         return false;
     }
 
-    private boolean allowedToRestock() {
-        return this.numberOfRestocksToday == 0 || this.numberOfRestocksToday < 2 && this.level().getGameTime() > this.lastRestockGameTime + 2400L;
-    }
-
     public boolean shouldRestock() {
-        long l = this.lastRestockGameTime + 12000L;
-        long m = this.level().getGameTime();
-        boolean bl = m > l;
-        long n = this.level().getOverworldClockTime();
-        if (this.lastRestockCheckDayTime > 0L) {
-            long p = n / 24000L;
-            long o = this.lastRestockCheckDayTime / 24000L;
-            bl |= p > o;
-        }
-        this.lastRestockCheckDayTime = n;
-        if (bl) {
-            this.lastRestockGameTime = m;
-            this.resetNumberOfRestocks();
-        }
-        return this.allowedToRestock() && this.needsToRestock();
+        return RibbitRestockPolicy.mayOrdinarilyRestock(
+                this.needsToRestock(),
+                this.pendingChefDayChange,
+                this.tradeState.restocksUsedToday(),
+                this.tradeState.lastRestockGameTime(),
+                this.level().getGameTime());
     }
 
-    private void resetNumberOfRestocks() {
-        this.catchUpDemand();
-        this.numberOfRestocksToday = 0;
+    private void initializeRestockDayIfNeeded() {
+        if (this.tradeState.restockDay() == RibbitTradeState.UNSET_DAY) {
+            this.tradeState.restockDay(Math.floorDiv(
+                    this.level().getOverworldClockTime(), 24000L));
+            this.tradeState.restocksUsedToday(0);
+            this.tradeState.lastRestockGameTime(this.level().getGameTime());
+        }
     }
 
-    private void catchUpDemand() {
-        int i = 2 - this.numberOfRestocksToday;
-        if (i > 0) {
-            for (MerchantOffer merchantOffer : this.getOffers()) {
-                merchantOffer.resetUses();
+    private void handleDailyStockBoundary() {
+        this.initializeRestockDayIfNeeded();
+        long day = Math.floorDiv(this.level().getOverworldClockTime(), 24000L);
+        if (!RibbitRestockPolicy.beginsFreshDay(this.tradeState.restockDay(), day)) {
+            return;
+        }
+        boolean chef = this.getRibbitData().getProfession() == RibbitProfessionModule.CHEF;
+        if (chef && this.isTrading()) {
+            this.pendingChefDayChange = true;
+            return;
+        }
+        this.beginNewStockDay(day);
+    }
+
+    private void beginNewStockDay(long day) {
+        this.tradeState.restockDay(day);
+        this.tradeState.restocksUsedToday(0);
+        this.tradeState.lastRestockGameTime(this.level().getGameTime());
+        boolean chef = this.getRibbitData().getProfession() == RibbitProfessionModule.CHEF;
+        if (chef && this.offers != null) {
+            RibbitTradeModule.updateChefMenuForDay(this, day);
+            RibbitTradeModule.rebuildTrades(this);
+        } else if (this.offers != null) {
+            for (MerchantOffer offer : this.offers) {
+                offer.resetUses();
             }
         }
-        for (int j = 0; j < i; ++j) {
-            this.updateDemand();
-        }
         this.resendOffersToTradingPlayer();
-    }
-
-    private void updateDemand() {
-        for (MerchantOffer merchantOffer : this.getOffers()) {
-            merchantOffer.updateDemand();
-        }
     }
 
     public boolean isTrading() {
@@ -845,16 +939,33 @@ public class RibbitEntity extends AgeableMob implements
 
     @Override
     public int getVillagerXp() {
-        return 0;
+        return this.tradeState.xp();
     }
 
     @Override
     public void overrideXp(int i) {
+        RibbitTradeModule.TradeProfile profile = RibbitTradeModule.profile(
+                this.getRibbitData().getProfession());
+        if (!profile.tiered()) {
+            return;
+        }
+        int maxXp = RibbitTradeModule.XP_THRESHOLDS[profile.maxTier() - 1];
+        int nextXp = Math.max(this.tradeState.xp(), Math.min(i, maxXp));
+        int oldRank = this.tradeState.rank();
+        this.tradeState.xp(nextXp);
+        int newRank = RibbitTradeModule.rankForXp(profile, this.tradeState, nextXp);
+        if (newRank > oldRank) {
+            this.tradeState.rank(newRank);
+            for (int tier = oldRank + 1; tier <= newRank; tier++) {
+                RibbitTradeModule.addUnlockedTier(this, tier);
+            }
+            this.resendOffersToTradingPlayer();
+        }
     }
 
     @Override
     public boolean showProgressBar() {
-        return false;
+        return RibbitTradeModule.profile(this.getRibbitData().getProfession()).tiered();
     }
 
     @Override

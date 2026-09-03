@@ -34,19 +34,33 @@ if (privateResourcesDir != null && (privateManifestFile == null || !privateManif
     throw new GradleException('Set RIBBITS_PRIVATE_MANIFEST to the assembler manifest when using private resources')
 }
 
+def allowedPublicResources = [
+    'common/src/main/resources/assets/ribbits/items/glowcap.json',
+    'common/src/main/resources/assets/ribbits/items/toadstool_heart.json',
+    'common/src/main/resources/data/ribbits/recipe/toadstool_heart.json',
+    'common/src/main/resources/data/ribbits/advancement/recipes/misc/toadstool_heart.json',
+] as Set
+def protectedResourceRoots = [
+    file('common/src/main/resources/assets'),
+    file('common/src/main/resources/data'),
+    file('fabric/src/main/resources/assets'),
+    file('fabric/src/main/resources/data'),
+]
+def unexpectedDefaultResources = protectedResourceRoots.findAll { it.exists() }.collectMany { root ->
+    fileTree(root).files.collect { candidate ->
+        project.relativePath(candidate).replace('\\', '/')
+    }
+}.findAll { !allowedPublicResources.contains(it) }
 def prohibitedDefaultResourcePaths = [
-    'common/src/main/resources/assets',
-    'common/src/main/resources/data',
     'common/src/main/resources/icon.png',
     'common/src/main/resources/logo.png',
-    'fabric/src/main/resources/assets',
-    'fabric/src/main/resources/data',
     'fabric/src/main/resources/icon.png',
     'fabric/src/main/resources/logo.png',
 ].findAll { file(it).exists() }
-if (!prohibitedDefaultResourcePaths.isEmpty()) {
+if (!unexpectedDefaultResources.isEmpty() || !prohibitedDefaultResourcePaths.isEmpty()) {
     throw new GradleException(
-        "Protected/private resources must not exist in default source roots: ${prohibitedDefaultResourcePaths}"
+        "Only reviewed source-safe public resources may exist in default roots: " +
+            "unexpected=${unexpectedDefaultResources.sort()}, protected=${prohibitedDefaultResourcePaths}"
     )
 }
 
@@ -70,12 +84,12 @@ if (privateResourcesDir != null) {
             if (manifest.schema?.toString() != 'mynx-ribbits-private-resource-manifest/v1' ||
                 manifest.classification?.toString() != 'PRIVATE MYNX ASSEMBLY STAGED / NONREDISTRIBUTABLE DONOR ASSETS' ||
                 manifest.candidate?.version?.toString() != project.mod_version.toString() ||
-                manifest.candidate?.version?.toString() != '4.1.6+26.2-mynx-canary2' ||
-                (manifest.candidate?.canary as int) != 2 ||
+                manifest.candidate?.version?.toString() != '4.1.6+26.2-mynx-canary3' ||
+                (manifest.candidate?.canary as int) != 3 ||
                 manifest.candidate?.private_artifact_filename?.toString() !=
-                    'ribbits-private-reconstruction-4.1.6+26.2-mynx-canary2.jar' ||
+                    'ribbits-private-reconstruction-4.1.6+26.2-mynx-canary3.jar' ||
                 manifest.candidate?.source_only_artifact_filename?.toString() !=
-                    'ribbits-source-only-4.1.6+26.2-mynx-canary2.jar') {
+                    'ribbits-source-only-4.1.6+26.2-mynx-canary3.jar') {
                 throw new GradleException("Private manifest classification is not eligible for private packaging: ${manifest.classification}")
             }
             if ((manifest.blockers as List)) {
@@ -307,6 +321,26 @@ if (privateResourcesDir != null) {
                 (lootMigration?.sorcerer_potion_loot_functions_migrated as int) != 1) {
                 throw new GradleException('Private manifest lacks the exact two-table loot repair contract')
             }
+            def glowcapMigration = lootMigration?.glowcap_currency_substitution
+            def expectedGlowcapTargets = [
+                ['data/ribbits/loot_table/chests/fisherman_storage.json', 0, 7, 5, 1.0, 3.0],
+                ['data/ribbits/loot_table/chests/gardener.json', 0, 3, 3, 1.0, 2.0],
+                ['data/ribbits/loot_table/chests/merchant.json', 0, 0, 8, 2.0, 4.0],
+                ['data/ribbits/loot_table/chests/nitwit.json', 0, 3, 3, 1.0, 3.0],
+                ['data/ribbits/loot_table/chests/sorcerer.json', 0, 4, 5, 2.0, 6.0],
+            ]
+            def actualGlowcapTargets = (glowcapMigration?.targets as List)?.collect { target ->
+                [target.table?.toString(), target.pool as int, target.entry as int,
+                 target.weight as int, target.count?.min as double, target.count?.max as double]
+            }
+            if (glowcapMigration?.source_item?.toString() != 'minecraft:amethyst_shard' ||
+                glowcapMigration?.replacement_item?.toString() != 'ribbits:glowcap' ||
+                (glowcapMigration?.entries_replaced as int) != 5 ||
+                actualGlowcapTargets != expectedGlowcapTargets ||
+                glowcapMigration?.unrelated_amethyst_preserved?.item?.toString() !=
+                    'minecraft:amethyst_block') {
+                throw new GradleException('Private manifest lacks the exact five-entry Glowcap substitution')
+            }
 
             def expectedResidentData = [
                 'data/ribbits/structure/ribbits/ribbit_fisherman.nbt': [
@@ -426,6 +460,8 @@ sourceSets {
         resources.srcDirs = ['common/src/main/resources', 'fabric/src/main/resources']
         if (privateResourcesDir != null) {
             resources.srcDir(privateResourcesDir)
+        } else {
+            resources.srcDir('common/src/publicResources')
         }
     }
 }
@@ -574,11 +610,14 @@ if (privateResourcesDir == null) {
                     'guardribbits-1.20.1-fabric-1.0.4.jar',
                     'useful_ribbits-1.0.2-forge-1.20.1.jar',
                 ] as Set
+                def reviewedPublicResources = (allowedPublicResources.collect { path ->
+                    path.substring('common/src/main/resources/'.length())
+                } + ['assets/ribbits/lang/en_us.json']) as Set
                 def forbidden = names.findAll { name ->
                     def folded = name.toLowerCase(java.util.Locale.ROOT)
                     def basename = folded.tokenize('/').last()
-                    folded.startsWith('assets/') ||
-                        folded.startsWith('data/') ||
+                    ((folded.startsWith('assets/') || folded.startsWith('data/')) &&
+                        !reviewedPublicResources.contains(name)) ||
                         folded == 'icon.png' ||
                         folded == 'logo.png' ||
                         folded.startsWith('sunbatheproductions28/guardribbits/') ||

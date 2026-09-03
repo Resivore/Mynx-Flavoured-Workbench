@@ -28,6 +28,8 @@ public class CreativeTabModule {
             CreativeEntry.of("giant_lilypad", ItemModule.GIANT_LILYPAD::get),
             CreativeEntry.of("swamp_daisy", BlockModule.SWAMP_DAISY::get),
             CreativeEntry.of("toadstool", BlockModule.TOADSTOOL::get),
+            CreativeEntry.of("glowcap", ItemModule.GLOWCAP::get),
+            CreativeEntry.of("toadstool_heart", ItemModule.TOADSTOOL_HEART::get),
             CreativeEntry.of("umbrella_leaf", BlockModule.UMBRELLA_LEAF::get),
             CreativeEntry.of("mossy_oak_planks", BlockModule.MOSSY_OAK_PLANKS::get),
             CreativeEntry.of("mossy_oak_planks_stairs", BlockModule.MOSSY_OAK_PLANKS::getStairs),

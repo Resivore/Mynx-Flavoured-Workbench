@@ -6,6 +6,7 @@ import com.yungnickyoung.minecraft.ribbits.fabric.module.NetworkModuleFabric;
 import com.yungnickyoung.minecraft.ribbits.network.payload.RequestSupporterHatStatePayload;
 import com.yungnickyoung.minecraft.ribbits.player.PlayerInstrumentTracker;
 import com.yungnickyoung.minecraft.ribbits.supporters.SupportersListServer;
+import com.yungnickyoung.minecraft.ribbits.module.RibbitTradeModule;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
@@ -23,6 +24,12 @@ public class RibbitsFabric implements ModInitializer {
     public void onInitialize() {
         ServerLifecycleEvents.SERVER_STARTED.register(server -> {
             currentServer = server;
+            RibbitTradeModule.validateRuntime(server.overworld());
+        });
+        ServerLifecycleEvents.END_DATA_PACK_RELOAD.register((server, resourceManager, success) -> {
+            if (success) {
+                RibbitTradeModule.validateRuntime(server.overworld());
+            }
         });
         ServerLifecycleEvents.SERVER_STOPPED.register(server -> {
             currentServer = null;

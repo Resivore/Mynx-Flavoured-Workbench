@@ -42,6 +42,8 @@
     "yungsapi": ">=26.2-Fabric-6.1.1-compat.2",
     "fabric-api": ">=0.157.0",
     "geckolib": ">=5.5.1",
-    "cloth-config2": ">=26.2.155"
+    "cloth-config2": ">=26.2.155",
+    "customportals": ">=4.0.0",
+    "matcha_heart_death_compat": ">=0.1.10-canary11"
   }
 }
