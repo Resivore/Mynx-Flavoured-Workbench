@@ -3,7 +3,7 @@
   "id": "quick_stack_nearby_compat",
   "version": "${version}",
   "name": "Workbench Quick Stack Nearby Compatibility",
-  "description": "Unified Workbench compatibility layer for Quick Stack Nearby; Canary 7 adds optional Container Slot Reservations affinity and insertion while retaining Canary 6 behavior.",
+  "description": "Unified Workbench compatibility layer for Quick Stack Nearby; Canary 8 admits exact Container Slot Reservations affinity at QSN's native discovery prefilter while retaining Canary 6/7 behavior.",
   "authors": ["Resivore"],
   "license": "MIT",
   "environment": "*",
@@ -29,6 +29,6 @@
   "custom": {
     "workbench:classification": "GENERATED / STATICALLY VALIDATED / RUNTIME UNTESTED",
     "workbench:deployment": "NOT DEPLOYED",
-    "workbench:runtime-slot-owner": "Quick Stack Nearby Compatibility — Canary 7"
+    "workbench:runtime-slot-owner": "Quick Stack Nearby Compatibility — Canary 8"
   }
 }

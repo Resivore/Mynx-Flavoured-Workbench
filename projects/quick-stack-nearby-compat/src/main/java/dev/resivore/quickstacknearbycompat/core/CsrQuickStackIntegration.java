@@ -9,10 +9,81 @@ import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.OptionalInt;
+import java.util.Set;
+import java.util.function.Supplier;
 
 /** Adds optional CSR affinity and reserved-empty-slot priority without taking over QSN routing. */
 public final class CsrQuickStackIntegration {
+    private static final ThreadLocal<DiscoveryRequest> ACTIVE_DISCOVERY = new ThreadLocal<>();
+
     private CsrQuickStackIntegration() {}
+
+    /**
+     * Scopes the exact source window and rules to QSN's native nearby-container scan.
+     * The scan and its accepted-type prefilter are synchronous on the server thread;
+     * restoring the previous value in {@code finally} makes nested calls and failures safe.
+     */
+    public static <T> T withDiscoverySource(
+            Container source,
+            int firstSourceSlot,
+            int exclusiveLastSourceSlot,
+            QuickStackMoveEngine.SourceRules sourceRules,
+            Supplier<T> action) {
+        DiscoveryRequest previous = ACTIVE_DISCOVERY.get();
+        ACTIVE_DISCOVERY.set(new DiscoveryRequest(
+                source,
+                firstSourceSlot,
+                exclusiveLastSourceSlot,
+                normalizedRules(sourceRules)
+        ));
+        try {
+            return action.get();
+        } finally {
+            if (previous == null) {
+                ACTIVE_DISCOVERY.remove();
+            } else {
+                ACTIVE_DISCOVERY.set(previous);
+            }
+        }
+    }
+
+    /**
+     * Adds reservation-only affinity at QSN's raw accepted-types seam, after QSN has
+     * already accepted the container's access/validity and before it discards an empty set.
+     */
+    public static Set<QuickStackMoveEngine.StackKey> augmentDiscoveredAcceptedTypes(
+            Container target,
+            Set<QuickStackMoveEngine.StackKey> nativeAcceptedTypes) {
+        if (!CsrReservationResolver.isAvailable()) {
+            return nativeAcceptedTypes;
+        }
+        return augmentActiveDiscoveryAcceptedTypes(
+                target,
+                nativeAcceptedTypes,
+                (container, slot, incoming) ->
+                        CsrReservationResolver.classify(container, slot, incoming)
+                                == CsrReservationResolver.SlotClass.MATCHING_RESERVATION
+        );
+    }
+
+    static Set<QuickStackMoveEngine.StackKey> augmentActiveDiscoveryAcceptedTypes(
+            Container target,
+            Set<QuickStackMoveEngine.StackKey> nativeAcceptedTypes,
+            ReservationMatcher reservations) {
+        DiscoveryRequest request = ACTIVE_DISCOVERY.get();
+        if (request == null) {
+            return nativeAcceptedTypes;
+        }
+        return augmentAcceptedTypes(
+                request.source(),
+                request.firstSourceSlot(),
+                request.exclusiveLastSourceSlot(),
+                target,
+                nativeAcceptedTypes,
+                request.sourceRules(),
+                reservations
+        );
+    }
 
     public static List<QuickStackMoveEngine.Target> augmentTargets(
             Container source,
@@ -47,51 +118,98 @@ public final class CsrQuickStackIntegration {
         }
 
         QuickStackMoveEngine.SourceRules rules = sourceRules == null
-                ? QuickStackMoveEngine.SourceRules.EMPTY
-                : sourceRules;
-        List<ItemStack> sourceStacks = new ArrayList<>();
-        int lastSourceSlot = Math.min(exclusiveLastSourceSlot, source.getContainerSize());
-        for (int sourceSlot = Math.max(0, firstSourceSlot); sourceSlot < lastSourceSlot; sourceSlot++) {
-            ItemStack stack = source.getItem(sourceSlot);
-            if (stack.isEmpty() || rules.isLocked(sourceSlot)
-                    || rules.movableCount(sourceSlot, stack.getCount()) <= 0) {
-                continue;
-            }
-            sourceStacks.add(stack);
-        }
-        if (sourceStacks.isEmpty()) {
-            return targets;
-        }
+                ? QuickStackMoveEngine.SourceRules.EMPTY : sourceRules;
 
         List<QuickStackMoveEngine.Target> augmented = new ArrayList<>(targets.size());
         boolean changed = false;
         for (QuickStackMoveEngine.Target target : targets) {
-            LinkedHashSet<QuickStackMoveEngine.StackKey> acceptedTypes =
-                    new LinkedHashSet<>(target.acceptedTypes());
             Container targetContainer = target.container();
-            for (int targetSlot = 0; targetSlot < targetContainer.getContainerSize(); targetSlot++) {
-                if (!targetContainer.getItem(targetSlot).isEmpty()) {
-                    continue;
-                }
-                for (ItemStack sourceStack : sourceStacks) {
-                    if (reservations.matches(targetContainer, targetSlot, sourceStack)) {
-                        // Construct the QSN key only after CSR has confirmed exact item+component identity.
-                        acceptedTypes.add(QuickStackMoveEngine.StackKey.of(sourceStack));
-                    }
-                }
-            }
+            Set<QuickStackMoveEngine.StackKey> acceptedTypes = augmentAcceptedTypes(
+                    source,
+                    firstSourceSlot,
+                    exclusiveLastSourceSlot,
+                    targetContainer,
+                    target.acceptedTypes(),
+                    rules,
+                    reservations
+            );
 
-            if (acceptedTypes.equals(target.acceptedTypes())) {
+            if (acceptedTypes == target.acceptedTypes()) {
                 augmented.add(target);
             } else {
                 changed = true;
-                augmented.add(new QuickStackMoveEngine.Target(
-                        targetContainer,
-                        Collections.unmodifiableSet(acceptedTypes)
-                ));
+                augmented.add(new QuickStackMoveEngine.Target(targetContainer, acceptedTypes));
             }
         }
         return changed ? List.copyOf(augmented) : targets;
+    }
+
+    static Set<QuickStackMoveEngine.StackKey> augmentAcceptedTypes(
+            Container source,
+            int firstSourceSlot,
+            int exclusiveLastSourceSlot,
+            Container target,
+            Set<QuickStackMoveEngine.StackKey> nativeAcceptedTypes,
+            QuickStackMoveEngine.SourceRules sourceRules,
+            ReservationMatcher reservations) {
+        List<ItemStack> sourceStacks = movableSourceStacks(
+                source,
+                firstSourceSlot,
+                exclusiveLastSourceSlot,
+                normalizedRules(sourceRules)
+        );
+        if (sourceStacks.isEmpty()) {
+            return nativeAcceptedTypes;
+        }
+
+        LinkedHashSet<QuickStackMoveEngine.StackKey> acceptedTypes = null;
+        for (int targetSlot = 0; targetSlot < target.getContainerSize(); targetSlot++) {
+            if (!target.getItem(targetSlot).isEmpty()) {
+                continue;
+            }
+            for (ItemStack sourceStack : sourceStacks) {
+                if (!reservations.matches(target, targetSlot, sourceStack)) {
+                    continue;
+                }
+
+                // Construct the QSN key only after CSR has confirmed exact item+component identity.
+                QuickStackMoveEngine.StackKey key = QuickStackMoveEngine.StackKey.of(sourceStack);
+                if (nativeAcceptedTypes.contains(key)
+                        || acceptedTypes != null && acceptedTypes.contains(key)) {
+                    continue;
+                }
+                if (acceptedTypes == null) {
+                    acceptedTypes = new LinkedHashSet<>(nativeAcceptedTypes);
+                }
+                acceptedTypes.add(key);
+            }
+        }
+        return acceptedTypes == null
+                ? nativeAcceptedTypes
+                : Collections.unmodifiableSet(acceptedTypes);
+    }
+
+    private static List<ItemStack> movableSourceStacks(
+            Container source,
+            int firstSourceSlot,
+            int exclusiveLastSourceSlot,
+            QuickStackMoveEngine.SourceRules sourceRules) {
+        List<ItemStack> sourceStacks = new ArrayList<>();
+        int lastSourceSlot = Math.min(exclusiveLastSourceSlot, source.getContainerSize());
+        for (int sourceSlot = Math.max(0, firstSourceSlot); sourceSlot < lastSourceSlot; sourceSlot++) {
+            ItemStack stack = source.getItem(sourceSlot);
+            if (stack.isEmpty() || sourceRules.isLocked(sourceSlot)
+                    || sourceRules.movableCount(sourceSlot, stack.getCount()) <= 0) {
+                continue;
+            }
+            sourceStacks.add(stack);
+        }
+        return sourceStacks;
+    }
+
+    private static QuickStackMoveEngine.SourceRules normalizedRules(
+            QuickStackMoveEngine.SourceRules sourceRules) {
+        return sourceRules == null ? QuickStackMoveEngine.SourceRules.EMPTY : sourceRules;
     }
 
     /**
@@ -190,5 +308,12 @@ public final class CsrQuickStackIntegration {
     @FunctionalInterface
     interface SlotClassifier {
         CsrReservationResolver.SlotClass classify(Container container, int slot, ItemStack incoming);
+    }
+
+    private record DiscoveryRequest(
+            Container source,
+            int firstSourceSlot,
+            int exclusiveLastSourceSlot,
+            QuickStackMoveEngine.SourceRules sourceRules) {
     }
 }

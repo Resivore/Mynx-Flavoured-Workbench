@@ -292,6 +292,57 @@ class QsnUpstreamContractTest {
         }
     }
 
+    @Test
+    void reservationDiscoveryHookTargetsTheExactAcceptedTypesPrefilterBeforeEmptyDrop() throws Exception {
+        try (JarFile jar = openReference()) {
+            ClassNode service = readClass(jar, "tempeststudios/quickstacknearby/QuickStackService.class");
+            MethodNode scan = method(
+                    service,
+                    "scanContainer",
+                    "(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/server/level/ServerPlayer;"
+                            + "Lnet/minecraft/core/BlockPos;Lnet/minecraft/core/BlockPos;)"
+                            + "Ltempeststudios/quickstacknearby/QuickStackService$ScannedContainer;"
+            );
+            MethodNode nearby = method(
+                    service,
+                    "nearbyTargets",
+                    "(Lnet/minecraft/server/level/ServerPlayer;)Ljava/util/List;"
+            );
+
+            int canUse = firstCallIndex(
+                    scan, "tempeststudios/quickstacknearby/QuickStackService", "canUseContainer");
+            int acceptedTypes = firstCallIndex(
+                    scan, "tempeststudios/quickstacknearby/QuickStackMoveEngine", "acceptedTypes");
+            int scannedRecord = firstCallIndex(
+                    scan, "tempeststudios/quickstacknearby/QuickStackService$ScannedContainer", "<init>");
+            assertEquals(1, countCalls(
+                    scan, "tempeststudios/quickstacknearby/QuickStackMoveEngine", "acceptedTypes"));
+            assertTrue(canUse >= 0 && canUse < acceptedTypes && acceptedTypes < scannedRecord,
+                    "QSN no longer derives accepted types after its access gate and before the scanned record");
+
+            int scanCall = firstCallIndex(
+                    nearby, "tempeststudios/quickstacknearby/QuickStackService", "scanContainer");
+            List<Integer> recordAffinityReads = callIndexes(
+                    nearby, "tempeststudios/quickstacknearby/QuickStackService$ScannedContainer", "acceptedTypes");
+            int emptyDrop = firstCallIndex(nearby, "java/util/Set", "isEmpty");
+            int rawAdd = firstCallIndex(nearby, "java/util/List", "add");
+            int distanceSort = firstCallIndex(nearby, "java/util/List", "sort");
+            int targetConstruction = firstCallIndex(
+                    nearby, "tempeststudios/quickstacknearby/QuickStackMoveEngine$Target", "<init>");
+            assertEquals(2, recordAffinityReads.size(),
+                    "QSN must read the frozen affinity once for admission and once for Target construction");
+            assertEquals(1, countCalls(nearby, "java/util/Set", "isEmpty"));
+            assertTrue(scanCall >= 0
+                            && scanCall < recordAffinityReads.getFirst()
+                            && recordAffinityReads.getFirst() < emptyDrop
+                            && emptyDrop < rawAdd
+                            && rawAdd < distanceSort
+                            && distanceSort < recordAffinityReads.get(1)
+                            && recordAffinityReads.get(1) < targetConstruction,
+                    "QSN's raw empty-affinity discard, distance ordering, or frozen Target seam changed");
+        }
+    }
+
     private static Path referenceJar() {
         String configured = System.getProperty("qsnReferenceJar");
         assertNotNull(configured, "Gradle must provide qsnReferenceJar");
@@ -382,6 +433,25 @@ class QsnUpstreamContractTest {
             }
         }
         return count;
+    }
+
+    private static int firstCallIndex(MethodNode method, String owner, String name) {
+        List<Integer> indices = callIndexes(method, owner, name);
+        return indices.isEmpty() ? -1 : indices.getFirst();
+    }
+
+    private static List<Integer> callIndexes(MethodNode method, String owner, String name) {
+        List<Integer> indices = new ArrayList<>();
+        int index = 0;
+        for (AbstractInsnNode instruction : method.instructions) {
+            if (instruction instanceof MethodInsnNode call
+                    && call.owner.equals(owner)
+                    && call.name.equals(name)) {
+                indices.add(index);
+            }
+            index++;
+        }
+        return indices;
     }
 
     private static int countCallsAcrossJar(JarFile jar, String owner, String name) throws Exception {

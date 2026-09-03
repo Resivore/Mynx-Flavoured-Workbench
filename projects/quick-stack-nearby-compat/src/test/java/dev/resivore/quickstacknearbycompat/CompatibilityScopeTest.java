@@ -107,6 +107,21 @@ class CompatibilityScopeTest {
         assertTrue(integration.contains("Construct the QSN key only after CSR has confirmed"));
         assertTrue(integration.contains("target.getMaxStackSize(sourceStack)"));
 
+        String serviceMixin = Files.readString(sourceRoot.resolve(
+                "dev/resivore/quickstacknearbycompat/mixin/QuickStackServiceMixin.java"));
+        assertTrue(serviceMixin.contains("@WrapMethod"));
+        assertTrue(serviceMixin.contains("quickStackNearbyCompat$scopeReservationDiscovery"));
+        assertTrue(serviceMixin.contains(
+                "scanContainer(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/server/level/ServerPlayer;"));
+        assertTrue(serviceMixin.contains(
+                "QuickStackMoveEngine;acceptedTypes(Lnet/minecraft/world/Container;)Ljava/util/Set;"));
+        assertTrue(serviceMixin.contains("augmentDiscoveredAcceptedTypes"));
+        assertFalse(serviceMixin.contains("CsrQuickStackIntegration.augmentTargets("),
+                "CSR affinity must happen before QSN's empty accepted-types prefilter, not after discovery");
+        assertFalse(integration.contains("BlockPos"));
+        assertFalse(integration.contains("ServerLevel"));
+        assertFalse(integration.contains("betweenClosed"));
+
         String insertionMixin = Files.readString(sourceRoot.resolve(
                 "dev/resivore/quickstacknearbycompat/mixin/QuickStackMoveEngineMixin.java"));
         assertTrue(insertionMixin.contains(

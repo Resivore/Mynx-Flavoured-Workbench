@@ -15,6 +15,7 @@ import tempeststudios.quickstacknearby.QuickStackMoveEngine;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -29,6 +30,163 @@ class CsrQuickStackIntegrationTest {
         bindTestComponents(Items.POISONOUS_POTATO);
         bindTestComponents(Items.COBBLESTONE);
         bindTestComponents(Items.DIRT);
+    }
+
+    @Test
+    void rawDiscoveryPrefilterAdmitsOtherwiseEmptyAndMixedTargetsForExactReservations() {
+        ItemStack exact = namedPotato(8, "reserved");
+        ItemStack distinct = namedPotato(8, "distinct");
+        SimpleContainer source = new SimpleContainer(2);
+        source.setItem(0, exact);
+        source.setItem(1, distinct);
+
+        SimpleContainer empty = new SimpleContainer(9);
+        Set<QuickStackMoveEngine.StackKey> emptyNative = QuickStackMoveEngine.acceptedTypes(empty);
+        Set<QuickStackMoveEngine.StackKey> emptyAugmented = CsrQuickStackIntegration.augmentAcceptedTypes(
+                source,
+                0,
+                2,
+                empty,
+                emptyNative,
+                QuickStackMoveEngine.SourceRules.EMPTY,
+                (container, slot, incoming) -> container == empty
+                        && slot == 4
+                        && ItemStack.isSameItemSameComponents(incoming, exact)
+        );
+        assertTrue(emptyNative.isEmpty());
+        assertTrue(emptyAugmented.contains(QuickStackMoveEngine.StackKey.of(exact)));
+        assertFalse(emptyAugmented.contains(QuickStackMoveEngine.StackKey.of(distinct)));
+
+        SimpleContainer mixed = new SimpleContainer(9);
+        mixed.setItem(0, new ItemStack(Items.DIRT, 12));
+        Set<QuickStackMoveEngine.StackKey> mixedNative = QuickStackMoveEngine.acceptedTypes(mixed);
+        Set<QuickStackMoveEngine.StackKey> mixedAugmented = CsrQuickStackIntegration.augmentAcceptedTypes(
+                source,
+                0,
+                2,
+                mixed,
+                mixedNative,
+                QuickStackMoveEngine.SourceRules.EMPTY,
+                (container, slot, incoming) -> container == mixed
+                        && slot == 5
+                        && ItemStack.isSameItemSameComponents(incoming, exact)
+        );
+        assertTrue(mixedAugmented.contains(QuickStackMoveEngine.StackKey.of(new ItemStack(Items.DIRT))));
+        assertTrue(mixedAugmented.contains(QuickStackMoveEngine.StackKey.of(exact)));
+        assertFalse(mixedAugmented.contains(QuickStackMoveEngine.StackKey.of(distinct)));
+    }
+
+    @Test
+    void nativeAcceptedTargetRetainsSetIdentityAndCannotGainADuplicateKey() {
+        ItemStack exact = namedPotato(8, "reserved");
+        SimpleContainer source = new SimpleContainer(exact);
+        SimpleContainer target = new SimpleContainer(9);
+        target.setItem(0, exact.copyWithCount(12));
+        Set<QuickStackMoveEngine.StackKey> nativeTypes = QuickStackMoveEngine.acceptedTypes(target);
+
+        Set<QuickStackMoveEngine.StackKey> augmented = CsrQuickStackIntegration.augmentAcceptedTypes(
+                source,
+                0,
+                1,
+                target,
+                nativeTypes,
+                QuickStackMoveEngine.SourceRules.EMPTY,
+                (container, slot, incoming) -> slot == 4
+        );
+
+        assertSame(nativeTypes, augmented);
+        assertEquals(1, augmented.size());
+        assertTrue(augmented.contains(QuickStackMoveEngine.StackKey.of(exact)));
+    }
+
+    @Test
+    void rawDiscoveryAffinityHonorsExactSourceWindowLocksAndKeepCounts() {
+        ItemStack outside = namedPotato(8, "outside");
+        ItemStack locked = namedPotato(8, "locked");
+        ItemStack kept = namedPotato(8, "kept");
+        ItemStack movable = namedPotato(8, "movable");
+        SimpleContainer source = new SimpleContainer(4);
+        source.setItem(0, outside);
+        source.setItem(1, locked);
+        source.setItem(2, kept);
+        source.setItem(3, movable);
+        SimpleContainer target = new SimpleContainer(9);
+        Set<QuickStackMoveEngine.StackKey> nativeTypes = QuickStackMoveEngine.acceptedTypes(target);
+        QuickStackMoveEngine.SourceRules rules = new QuickStackMoveEngine.SourceRules(Map.of(
+                1, new QuickStackMoveEngine.SlotRule(true, 0),
+                2, new QuickStackMoveEngine.SlotRule(false, kept.getCount())
+        ));
+
+        Set<QuickStackMoveEngine.StackKey> augmented = CsrQuickStackIntegration.augmentAcceptedTypes(
+                source,
+                1,
+                4,
+                target,
+                nativeTypes,
+                rules,
+                (container, slot, incoming) -> slot == 6
+        );
+
+        assertEquals(Set.of(QuickStackMoveEngine.StackKey.of(movable)), augmented);
+        assertFalse(augmented.contains(QuickStackMoveEngine.StackKey.of(outside)));
+        assertFalse(augmented.contains(QuickStackMoveEngine.StackKey.of(locked)));
+        assertFalse(augmented.contains(QuickStackMoveEngine.StackKey.of(kept)));
+    }
+
+    @Test
+    void discoverySourceScopeRestoresNestedAndExceptionalCallsWithoutLeakage() {
+        ItemStack outerStack = namedPotato(8, "outer");
+        ItemStack innerStack = namedPotato(8, "inner");
+        SimpleContainer outerSource = new SimpleContainer(outerStack);
+        SimpleContainer innerSource = new SimpleContainer(innerStack);
+        SimpleContainer target = new SimpleContainer(3);
+        Set<QuickStackMoveEngine.StackKey> nativeTypes = QuickStackMoveEngine.acceptedTypes(target);
+        CsrQuickStackIntegration.ReservationMatcher matchesEveryEmpty =
+                (container, slot, incoming) -> true;
+
+        try {
+            CsrQuickStackIntegration.withDiscoverySource(
+                    outerSource,
+                    0,
+                    1,
+                    QuickStackMoveEngine.SourceRules.EMPTY,
+                    () -> {
+                    Set<QuickStackMoveEngine.StackKey> outer =
+                            CsrQuickStackIntegration.augmentActiveDiscoveryAcceptedTypes(
+                                    target, nativeTypes, matchesEveryEmpty);
+                    assertEquals(Set.of(QuickStackMoveEngine.StackKey.of(outerStack)), outer);
+
+                    try {
+                        CsrQuickStackIntegration.withDiscoverySource(
+                                innerSource,
+                                0,
+                                1,
+                                QuickStackMoveEngine.SourceRules.EMPTY,
+                                () -> {
+                                    Set<QuickStackMoveEngine.StackKey> inner =
+                                            CsrQuickStackIntegration.augmentActiveDiscoveryAcceptedTypes(
+                                                    target, nativeTypes, matchesEveryEmpty);
+                                    assertEquals(Set.of(QuickStackMoveEngine.StackKey.of(innerStack)), inner);
+                                    throw new ExpectedDiscoveryFailure();
+                                }
+                        );
+                    } catch (ExpectedDiscoveryFailure expected) {
+                        // The outer request must be restored even when the wrapped scan fails.
+                    }
+
+                    Set<QuickStackMoveEngine.StackKey> restored =
+                            CsrQuickStackIntegration.augmentActiveDiscoveryAcceptedTypes(
+                                    target, nativeTypes, matchesEveryEmpty);
+                    assertEquals(Set.of(QuickStackMoveEngine.StackKey.of(outerStack)), restored);
+                        throw new ExpectedDiscoveryFailure();
+                    }
+            );
+        } catch (ExpectedDiscoveryFailure expected) {
+            // The outer request must also be removed when the wrapped QSN call fails.
+        }
+
+        assertSame(nativeTypes, CsrQuickStackIntegration.augmentActiveDiscoveryAcceptedTypes(
+                target, nativeTypes, matchesEveryEmpty));
     }
 
     @Test
@@ -247,5 +405,8 @@ class CsrQuickStackIntegrationTest {
         public int getMaxStackSize(ItemStack stack) {
             return maxStackSize;
         }
+    }
+
+    private static final class ExpectedDiscoveryFailure extends RuntimeException {
     }
 }

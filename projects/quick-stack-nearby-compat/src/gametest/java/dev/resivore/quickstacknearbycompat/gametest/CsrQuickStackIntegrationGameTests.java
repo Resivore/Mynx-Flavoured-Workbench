@@ -11,52 +11,44 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BarrelBlockEntity;
+import net.minecraft.world.level.block.entity.HopperBlockEntity;
 import tempeststudios.quickstacknearby.QuickStackMoveEngine;
+import tempeststudios.quickstacknearby.QuickStackService;
 
 import java.lang.reflect.Method;
 import java.util.List;
+import java.util.Map;
 import java.util.OptionalInt;
 
 public final class CsrQuickStackIntegrationGameTests implements CustomTestMethodInvoker {
     @GameTest(maxTicks = 40)
-    public void reservationOnlyTargetGainsExactAffinityAndRetainsReservation(GameTestHelper helper) {
+    public void realDiscoveryAdmitsReservationOnlyTargetAndRejectsComponentMismatch(GameTestHelper helper) {
         requireCsr(helper);
         BarrelBlockEntity barrel = barrel(helper);
+        ServerPlayer player = playerAt(helper, new BlockPos(0, 2, 1));
         ItemStack reserved = namedPotato(1, "reserved");
         ItemStack exact = reserved.copyWithCount(12);
         ItemStack distinct = namedPotato(12, "distinct");
         ItemStack distinctIdentity = distinct.copyWithCount(1);
         ReservationStore.set(SupportedContainerResolver.resolve(barrel, 5).orElseThrow(), reserved);
 
-        SimpleContainer exactSource = new SimpleContainer(exact);
-        QuickStackMoveEngine.Target raw = QuickStackMoveEngine.Target.fromCurrentContents(barrel);
-        List<QuickStackMoveEngine.Target> augmented = CsrQuickStackIntegration.augmentTargets(
-                exactSource,
-                0,
-                1,
-                List.of(raw),
-                QuickStackMoveEngine.SourceRules.EMPTY
-        );
-        helper.assertTrue(!raw.accepts(QuickStackMoveEngine.StackKey.of(exact))
-                        && augmented.getFirst().accepts(QuickStackMoveEngine.StackKey.of(exact)),
-                "An exact empty reservation did not add the source's native QSN StackKey affinity");
-
-        QuickStackMoveEngine.Result result = QuickStackMoveEngine.moveMatchingItems(
-                exactSource,
-                0,
-                1,
-                augmented,
+        player.getInventory().setItem(9, exact);
+        helper.assertTrue(QuickStackMoveEngine.acceptedTypes(barrel).isEmpty(),
+                "The reservation-only fixture unexpectedly had native physical affinity");
+        QuickStackMoveEngine.Result result = QuickStackService.quickStack(
+                player,
                 QuickStackMoveEngine.SourceRules.EMPTY
         );
         helper.assertTrue(result.itemsMoved() == 12
                         && result.sourceStacksTouched() == 1
                         && result.targetContainersTouched() == 1
-                        && exactSource.isEmpty()
+                        && player.getInventory().getItem(9).isEmpty()
                         && barrel.getItem(0).isEmpty()
                         && ItemStack.isSameItemSameComponents(barrel.getItem(5), reserved)
                         && barrel.getItem(5).getCount() == 12
@@ -67,51 +59,31 @@ public final class CsrQuickStackIntegrationGameTests implements CustomTestMethod
         helper.assertTrue(ContainerSlotReservationsApi.reservationMatches(barrel, 5, reserved),
                 "Extraction cleared the independent CSR reservation");
 
-        SimpleContainer distinctSource = new SimpleContainer(distinct);
-        List<QuickStackMoveEngine.Target> rejected = CsrQuickStackIntegration.augmentTargets(
-                distinctSource,
-                0,
-                1,
-                List.of(QuickStackMoveEngine.Target.fromCurrentContents(barrel)),
+        player.getInventory().setItem(9, distinct);
+        QuickStackMoveEngine.Result rejectedResult = QuickStackService.quickStack(
+                player,
                 QuickStackMoveEngine.SourceRules.EMPTY
         );
-        QuickStackMoveEngine.Result rejectedResult = QuickStackMoveEngine.moveMatchingItems(
-                distinctSource,
-                0,
-                1,
-                rejected,
-                QuickStackMoveEngine.SourceRules.EMPTY
-        );
-        helper.assertTrue(!rejected.getFirst().accepts(QuickStackMoveEngine.StackKey.of(distinct))
-                        && rejectedResult.itemsMoved() == 0
-                        && distinctSource.getItem(0).getCount() == 12
+        helper.assertTrue(rejectedResult.itemsMoved() == 0
+                        && rejectedResult.targetContainersTouched() == 0
+                        && player.getInventory().getItem(9).getCount() == 12
                         && barrel.getItem(5).isEmpty(),
-                "A registry-equal but component-distinct source gained reservation affinity or entered the slot");
+                "Real QSN discovery admitted a registry-equal but component-distinct reservation");
 
         barrel.setItem(0, distinct.copyWithCount(distinct.getMaxStackSize()));
-        List<QuickStackMoveEngine.Target> physicallyAdmitted = CsrQuickStackIntegration.augmentTargets(
-                distinctSource,
-                0,
-                1,
-                List.of(QuickStackMoveEngine.Target.fromCurrentContents(barrel)),
-                QuickStackMoveEngine.SourceRules.EMPTY
-        );
-        QuickStackMoveEngine.Result physicalResult = QuickStackMoveEngine.moveMatchingItems(
-                distinctSource,
-                0,
-                1,
-                physicallyAdmitted,
+        QuickStackMoveEngine.Result physicalResult = QuickStackService.quickStack(
+                player,
                 QuickStackMoveEngine.SourceRules.EMPTY
         );
         helper.assertTrue(physicalResult.itemsMoved() == 12
-                        && distinctSource.isEmpty()
+                        && player.getInventory().getItem(9).isEmpty()
                         && barrel.getItem(5).isEmpty()
                         && ItemStack.isSameItemSameComponents(barrel.getItem(1), distinctIdentity)
                         && barrel.getItem(1).getCount() == 12
                         && ContainerSlotReservationsApi.reservationMatches(barrel, 5, reserved),
                 "A component-mismatched reservation accepted a normally admitted physical source"
                         + "; moved=" + physicalResult.itemsMoved()
-                        + ", source=" + distinctSource.getItem(0).getCount()
+                        + ", source=" + player.getInventory().getItem(9).getCount()
                         + ", slot0=" + barrel.getItem(0).getCount()
                         + ", slot1=" + barrel.getItem(1).getCount()
                         + ", slot5=" + barrel.getItem(5).getCount()
@@ -123,30 +95,21 @@ public final class CsrQuickStackIntegrationGameTests implements CustomTestMethod
     public void nativePhysicalMergePrecedesReservationAndReservationPrecedesOrdinaryEmpty(GameTestHelper helper) {
         requireCsr(helper);
         BarrelBlockEntity barrel = barrel(helper);
+        ServerPlayer player = playerAt(helper, new BlockPos(0, 2, 1));
         ItemStack identity = namedPotato(1, "reserved");
         barrel.setItem(0, identity.copyWithCount(60));
         ReservationStore.set(SupportedContainerResolver.resolve(barrel, 4).orElseThrow(), identity);
-        SimpleContainer source = new SimpleContainer(identity.copyWithCount(70));
+        player.getInventory().setItem(9, identity.copyWithCount(70));
 
-        List<QuickStackMoveEngine.Target> targets = CsrQuickStackIntegration.augmentTargets(
-                source,
-                0,
-                1,
-                List.of(QuickStackMoveEngine.Target.fromCurrentContents(barrel)),
-                QuickStackMoveEngine.SourceRules.EMPTY
-        );
-        QuickStackMoveEngine.Result result = QuickStackMoveEngine.moveMatchingItems(
-                source,
-                0,
-                1,
-                targets,
+        QuickStackMoveEngine.Result result = QuickStackService.quickStack(
+                player,
                 QuickStackMoveEngine.SourceRules.EMPTY
         );
 
         helper.assertTrue(result.itemsMoved() == 70
                         && result.sourceStacksTouched() == 1
                         && result.targetContainersTouched() == 1
-                        && source.isEmpty()
+                        && player.getInventory().getItem(9).isEmpty()
                         && barrel.getItem(0).getCount() == 64
                         && barrel.getItem(4).getCount() == 64
                         && barrel.getItem(1).getCount() == 2
@@ -158,28 +121,133 @@ public final class CsrQuickStackIntegrationGameTests implements CustomTestMethod
     @GameTest(maxTicks = 40)
     public void unrelatedReservationUnreservedAndUnsupportedEmptyTargetsGainNoAffinity(GameTestHelper helper) {
         requireCsr(helper);
-        BarrelBlockEntity barrel = barrel(helper);
+        ServerPlayer player = playerAt(helper, new BlockPos(0, 2, 1));
+        BarrelBlockEntity unrelatedBarrel = barrel(helper, new BlockPos(1, 2, 1));
+        BarrelBlockEntity unreservedBarrel = barrel(helper, new BlockPos(2, 2, 1));
+        BlockPos hopperPos = new BlockPos(3, 2, 1);
+        helper.setBlock(hopperPos, Blocks.HOPPER);
+        HopperBlockEntity unsupportedHopper = helper.getBlockEntity(hopperPos, HopperBlockEntity.class);
         ItemStack sourceStack = namedPotato(8, "source");
         ItemStack unrelated = new ItemStack(Items.COBBLESTONE);
-        ReservationStore.set(SupportedContainerResolver.resolve(barrel, 3).orElseThrow(), unrelated);
-        SimpleContainer source = new SimpleContainer(sourceStack);
-        SimpleContainer unsupported = new SimpleContainer(9);
-        QuickStackMoveEngine.Target barrelTarget = QuickStackMoveEngine.Target.fromCurrentContents(barrel);
-        QuickStackMoveEngine.Target unsupportedTarget = QuickStackMoveEngine.Target.fromCurrentContents(unsupported);
-        List<QuickStackMoveEngine.Target> original = List.of(barrelTarget, unsupportedTarget);
+        ReservationStore.set(
+                SupportedContainerResolver.resolve(unrelatedBarrel, 3).orElseThrow(),
+                unrelated
+        );
+        player.getInventory().setItem(9, sourceStack);
 
-        List<QuickStackMoveEngine.Target> targets = CsrQuickStackIntegration.augmentTargets(
-                source,
-                0,
-                1,
-                original,
+        QuickStackMoveEngine.Result result = QuickStackService.quickStack(
+                player,
                 QuickStackMoveEngine.SourceRules.EMPTY
         );
 
-        helper.assertTrue(targets == original
-                        && !barrelTarget.accepts(QuickStackMoveEngine.StackKey.of(sourceStack))
-                        && !unsupportedTarget.accepts(QuickStackMoveEngine.StackKey.of(sourceStack)),
-                "An unrelated, unreserved, or unsupported empty target created CSR affinity");
+        helper.assertTrue(result.itemsMoved() == 0
+                        && result.targetContainersTouched() == 0
+                        && player.getInventory().getItem(9).getCount() == 8
+                        && unrelatedBarrel.isEmpty()
+                        && unreservedBarrel.isEmpty()
+                        && unsupportedHopper.isEmpty()
+                        && ContainerSlotReservationsApi.reservationMatches(
+                                unrelatedBarrel, 3, unrelated),
+                "Real discovery admitted an unrelated, unreserved, or CSR-unsupported empty target");
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void mixedContainerWithZeroPhysicalReservedItemIsDiscovered(GameTestHelper helper) {
+        requireCsr(helper);
+        ServerPlayer player = playerAt(helper, new BlockPos(0, 2, 1));
+        BarrelBlockEntity barrel = barrel(helper);
+        ItemStack reserved = namedPotato(1, "reserved");
+        barrel.setItem(0, new ItemStack(Items.DIRT, 12));
+        ReservationStore.set(SupportedContainerResolver.resolve(barrel, 6).orElseThrow(), reserved);
+        player.getInventory().setItem(9, reserved.copyWithCount(7));
+
+        QuickStackMoveEngine.Result result = QuickStackService.quickStack(
+                player,
+                QuickStackMoveEngine.SourceRules.EMPTY
+        );
+
+        helper.assertTrue(result.itemsMoved() == 7
+                        && result.targetContainersTouched() == 1
+                        && player.getInventory().getItem(9).isEmpty()
+                        && barrel.getItem(0).is(Items.DIRT)
+                        && barrel.getItem(0).getCount() == 12
+                        && ItemStack.isSameItemSameComponents(barrel.getItem(6), reserved)
+                        && barrel.getItem(6).getCount() == 7,
+                "A container with unrelated contents and zero physical reserved items was dropped");
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void reservationOnlyTargetKeepsItsNaturalRawDiscoveryOrder(GameTestHelper helper) {
+        requireCsr(helper);
+        ServerPlayer player = playerAt(helper, new BlockPos(0, 2, 1));
+        BarrelBlockEntity nearReservationOnly = barrel(helper, new BlockPos(1, 2, 1));
+        BarrelBlockEntity fartherNative = barrel(helper, new BlockPos(2, 2, 1));
+        ItemStack identity = namedPotato(1, "ordered");
+        ReservationStore.set(
+                SupportedContainerResolver.resolve(nearReservationOnly, 4).orElseThrow(),
+                identity
+        );
+        fartherNative.setItem(0, identity.copyWithCount(20));
+        player.getInventory().setItem(9, identity.copyWithCount(4));
+
+        QuickStackMoveEngine.Result result = QuickStackService.quickStack(
+                player,
+                QuickStackMoveEngine.SourceRules.EMPTY
+        );
+
+        helper.assertTrue(result.itemsMoved() == 4
+                        && result.targetContainersTouched() == 1
+                        && nearReservationOnly.getItem(4).getCount() == 4
+                        && fartherNative.getItem(0).getCount() == 20,
+                "Reservation-only affinity was globally appended instead of retaining QSN distance order");
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void reservationDiscoveryHonorsLockedAndFullyKeptSourceRules(GameTestHelper helper) {
+        requireCsr(helper);
+        ServerPlayer player = playerAt(helper, new BlockPos(0, 2, 1));
+        BarrelBlockEntity barrel = barrel(helper);
+        ItemStack identity = namedPotato(8, "ruled");
+        ReservationStore.set(SupportedContainerResolver.resolve(barrel, 4).orElseThrow(), identity);
+
+        player.getInventory().setItem(9, identity.copy());
+        QuickStackMoveEngine.Result locked = QuickStackService.quickStack(
+                player,
+                new QuickStackMoveEngine.SourceRules(Map.of(
+                        9, new QuickStackMoveEngine.SlotRule(true, 0)
+                ))
+        );
+        helper.assertTrue(locked.itemsMoved() == 0
+                        && player.getInventory().getItem(9).getCount() == 8
+                        && barrel.getItem(4).isEmpty(),
+                "A locked source created reservation-only discovery affinity");
+
+        QuickStackMoveEngine.Result kept = QuickStackService.quickStack(
+                player,
+                new QuickStackMoveEngine.SourceRules(Map.of(
+                        9, new QuickStackMoveEngine.SlotRule(false, 8)
+                ))
+        );
+        helper.assertTrue(kept.itemsMoved() == 0
+                        && player.getInventory().getItem(9).getCount() == 8
+                        && barrel.getItem(4).isEmpty(),
+                "A fully kept source created reservation-only discovery affinity");
+
+        QuickStackMoveEngine.Result partialKeep = QuickStackService.quickStack(
+                player,
+                new QuickStackMoveEngine.SourceRules(Map.of(
+                        9, new QuickStackMoveEngine.SlotRule(false, 3)
+                ))
+        );
+        helper.assertTrue(partialKeep.itemsMoved() == 5
+                        && partialKeep.sourceStacksTouched() == 1
+                        && partialKeep.targetContainersTouched() == 1
+                        && player.getInventory().getItem(9).getCount() == 3
+                        && barrel.getItem(4).getCount() == 5,
+                "Reservation-only discovery or insertion changed QSN's keep-count remainder");
         helper.succeed();
     }
 
@@ -238,9 +306,23 @@ public final class CsrQuickStackIntegrationGameTests implements CustomTestMethod
     }
 
     private static BarrelBlockEntity barrel(GameTestHelper helper) {
-        BlockPos pos = new BlockPos(1, 2, 1);
+        return barrel(helper, new BlockPos(1, 2, 1));
+    }
+
+    private static BarrelBlockEntity barrel(GameTestHelper helper, BlockPos pos) {
         helper.setBlock(pos, Blocks.BARREL);
         return helper.getBlockEntity(pos, BarrelBlockEntity.class);
+    }
+
+    private static ServerPlayer playerAt(GameTestHelper helper, BlockPos relativePos) {
+        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        BlockPos absolutePos = helper.absolutePos(relativePos);
+        player.setPos(
+                absolutePos.getX() + 0.5,
+                absolutePos.getY(),
+                absolutePos.getZ() + 0.5
+        );
+        return player;
     }
 
     private static boolean csrAvailable() {
@@ -249,7 +331,7 @@ public final class CsrQuickStackIntegrationGameTests implements CustomTestMethod
 
     private static void requireCsr(GameTestHelper helper) {
         helper.assertTrue(csrAvailable(),
-                "Container Slot Reservations C1 is required for the C7 behavioral fixture");
+                "Container Slot Reservations C1 or a compatible successor is required for the C8 fixture");
     }
 
     private static ItemStack namedPotato(int count, String name) {

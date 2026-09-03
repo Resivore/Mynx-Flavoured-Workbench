@@ -59,10 +59,23 @@ class CsrAbsentRuntimeTest {
                 originalTargets,
                 QuickStackMoveEngine.SourceRules.EMPTY
         );
+        Set<QuickStackMoveEngine.StackKey> nativeTypes = targetView.acceptedTypes();
+        Set<QuickStackMoveEngine.StackKey> discoveryTypes =
+                CsrQuickStackIntegration.withDiscoverySource(
+                        source,
+                        0,
+                        source.getContainerSize(),
+                        QuickStackMoveEngine.SourceRules.EMPTY,
+                        () -> CsrQuickStackIntegration.augmentDiscoveredAcceptedTypes(
+                                target,
+                                nativeTypes
+                        )
+                );
         OptionalInt inserted = CsrQuickStackIntegration.insertIntoEmptySlots(moving, target);
 
         assertSame(originalTargets, augmented);
         assertSame(targetView, augmented.getFirst());
+        assertSame(nativeTypes, discoveryTypes);
         assertSame(moving, source.getItem(0));
         assertEquals(17, moving.getCount());
         assertTrue(inserted.isEmpty());
