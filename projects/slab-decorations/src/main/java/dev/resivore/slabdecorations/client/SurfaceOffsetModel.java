@@ -1,6 +1,7 @@
 package dev.resivore.slabdecorations.client;
 
 import dev.resivore.slabdecorations.NibaruHorizontalSurface;
+import dev.resivore.slabdecorations.mixin.client.RenderSectionRegionAccessor;
 import net.fabricmc.fabric.api.client.renderer.v1.Renderer;
 import net.fabricmc.fabric.api.client.renderer.v1.mesh.MutableMesh;
 import net.fabricmc.fabric.api.client.renderer.v1.mesh.QuadEmitter;
@@ -11,6 +12,7 @@ import net.minecraft.client.resources.model.sprite.Material;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
 
@@ -33,7 +35,15 @@ public final class SurfaceOffsetModel implements BlockStateModel {
             BlockState state,
             RandomSource random,
             Predicate<@Nullable Direction> cullTest) {
-        double offset = NibaruHorizontalSurface.visibleOffset(state, level, pos);
+        double offset;
+        if (level instanceof RenderSectionRegionAccessor snapshot) {
+            offset = NibaruHorizontalSurface.visibleOffset(
+                    state, level, snapshot.slabDecorations$getLevel(), pos);
+        } else if (!(level instanceof LevelReader)) {
+            offset = 0.0D;
+        } else {
+            offset = NibaruHorizontalSurface.visibleOffset(state, level, pos);
+        }
         if (offset == 0.0D) {
             wrapped.emitQuads(output, level, pos, state, random, cullTest);
             return;

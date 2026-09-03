@@ -5,9 +5,9 @@
   "mixins": [
     "AzaleaBonemealMixin",
     "BoneMealItemMixin",
+    "BlockStateBaseSurvivalMixin",
     "BlockStateBaseShapeMixin",
-    "MossyCarpetCollisionMixin",
-    "VegetationBlockSurvivalMixin"
+    "MushroomBonemealMixin"
   ],
   "injectors": {
     "defaultRequire": 1

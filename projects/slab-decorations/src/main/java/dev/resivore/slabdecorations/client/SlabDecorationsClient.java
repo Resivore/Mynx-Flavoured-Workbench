@@ -10,7 +10,7 @@ public final class SlabDecorationsClient implements ClientModInitializer {
     public void onInitializeClient() {
         ModelLoadingPlugin.register(pluginContext ->
                 pluginContext.modifyBlockModelAfterBake().register(ModelModifier.WRAP_PHASE, (model, bakeContext) ->
-                        PlantFamilyEligibility.isEligible(bakeContext.state().getBlock())
+                        PlantFamilyEligibility.isEligible(bakeContext.state())
                                 ? new SurfaceOffsetModel(model)
                                 : model));
     }
