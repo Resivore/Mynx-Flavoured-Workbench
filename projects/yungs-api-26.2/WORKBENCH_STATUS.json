@@ -1,0 +1,132 @@
+{
+  "$schema": "../../schemas/workbench-status.schema.json",
+  "schema_version": 1,
+  "identity": {
+    "uuid": "97d76c44-7c17-4b36-be84-57525f884e40",
+    "name": "YUNG's API 26.2 Compatibility",
+    "project_id": "yungs-api-26.2",
+    "aliases": [],
+    "legacy_names": [
+      "YUNG's API 26.2 compatibility port"
+    ],
+    "legacy_ids": [
+      "yungs-api-26.2"
+    ]
+  },
+  "definition": {
+    "lifecycle": "ACTIVE",
+    "goals": [
+      "Maintain an LGPLv3, Minecraft Java 26.2 Fabric build of YUNG's API for Ribbits and other compatible downstream consumers.",
+      "Keep enhanced terrain-adaptation density evaluation safe for empty, repeated, and parallel calls by following the official upstream fresh-iterator correction while preserving nonempty behavior."
+    ],
+    "scope": [
+      "Preserve the legacy 6.1.1 Common and Fabric implementation at the exact imported checkpoint, except for the official upstream three-file enhanced-beardifier concurrency fix and the minimum Fabric-only build adaptation.",
+      "Retain focused consumer fixtures for automatic registration, JSON randomization, structure-processor codecs, jigsaw generation, and empty, nonempty, repeated, and parallel enhanced terrain-adaptation density evaluation.",
+      "Produce the reproducible Fabric artifact with mod ID yungsapi and embedded version 26.2-Fabric-6.1.1-compat.2."
+    ],
+    "boundaries": {
+      "owned_paths": [
+        "projects/yungs-api-26.2"
+      ],
+      "exclusions": [
+        "NeoForge source and configuration, CurseForge or Modrinth publication tooling, unrelated upstream feature changes, and broader YUNG's API modernization are outside this compatibility successor.",
+        "Ribbits source, private Ribbits resources, other downstream consumers, and their release or runtime records remain independently owned.",
+        "Deployment, Test Slot and Test Instance Manager mutation, Minecraft runtime claims, and access to the protected Matcha Flavoured 26.1.2 gameplay instance are outside this source/build checkpoint."
+      ]
+    },
+    "dependencies": [
+      {
+        "type": "MOD",
+        "identifier": "minecraft",
+        "requirement": "=26.2",
+        "reason": "Exact game target for the compatibility source, mappings, automated Fabric fixture, and intended runtime cohort."
+      },
+      {
+        "type": "MOD",
+        "identifier": "fabricloader",
+        "requirement": ">=0.19.3",
+        "reason": "Fabric loader floor declared by the exact retained artifact."
+      },
+      {
+        "type": "MOD",
+        "identifier": "fabric-api",
+        "requirement": ">=0.157.0",
+        "reason": "Fabric API floor declared by the exact retained artifact; 0.157.0+26.2 was the build and automated-fixture baseline."
+      },
+      {
+        "type": "MOD",
+        "identifier": "cloth-config-fabric",
+        "requirement": "=26.2.155",
+        "reason": "Exact upstream-compatible build and automated-fixture classpath dependency; the retained artifact does not declare it as a hard runtime dependency."
+      },
+      {
+        "type": "MOD",
+        "identifier": "modmenu",
+        "requirement": "=18.0.0-beta.1",
+        "reason": "Exact upstream-compatible build and automated-fixture classpath dependency; the retained artifact does not declare it as a hard runtime dependency."
+      },
+      {
+        "type": "TOOL",
+        "identifier": "java",
+        "requirement": "25",
+        "reason": "Compilation and automated Fabric-server fixture runtime required by Minecraft 26.2."
+      },
+      {
+        "type": "TOOL",
+        "identifier": "gradle",
+        "requirement": "9.2.0",
+        "reason": "Exact tracked wrapper version used for the clean compatibility build and consumer fixture."
+      },
+      {
+        "type": "TOOL",
+        "identifier": "fabric-loom",
+        "requirement": "1.15.5",
+        "reason": "Exact Fabric build plugin pinned by the maintained compatibility build."
+      },
+      {
+        "type": "OTHER",
+        "identifier": "YUNG-GANG/YUNGs-API",
+        "requirement": "LGPL-3.0; upstream base fc5af0d11170eda2adfedd3caaa0cea7599ecb03; fix 0196d1800cf071764df7f04be6d5412ad4bc04b9",
+        "reason": "Official upstream source and exact fresh-iterator concurrency correction preserved by this compatible modified version."
+      }
+    ]
+  },
+  "state": {
+    "milestone": "Compat.2 is retained after a Java 25 clean Fabric build and focused consumer-fixture pass, including deterministic empty, nonempty, repeat, and parallel enhanced-beardifier coverage; it remains unaccepted, not deployed, and runtime untested.",
+    "releases": {
+      "current": {
+        "version": "26.2-Fabric-6.1.1-compat.2",
+        "artifact": {
+          "filename": "YungsApi-26.2-Fabric-6.1.1-compat.2.jar",
+          "sha256": "ff22a6b509ba559988d7a9352dc94ac612c4b099517acac7da7c81322d797ed7"
+        },
+        "source_commit": "f0be1f9c6c1f3e843a0e44791a650df237836537",
+        "runtime_dependency_policy": {
+          "contract": "CAPABILITY_OR_PROVIDER",
+          "exceptions": []
+        }
+      },
+      "accepted": null,
+      "rollback": null,
+      "accepted_current": "NO_ACCEPTED",
+      "accepted_rollback": "NO_ROLLBACK"
+    },
+    "validation": {
+      "build": "STATIC_PASS",
+      "deployment": "NOT_DEPLOYED",
+      "runtime": "RUNTIME_UNTESTED"
+    },
+    "blocker": null
+  },
+  "synchronization": {
+    "revision": 1,
+    "activity_at": "2026-09-03T05:36:57Z",
+    "updated_at": "2026-09-03T05:36:57Z",
+    "last_codex_at": "2026-09-03T05:36:57Z",
+    "source_commit": "f0be1f9c6c1f3e843a0e44791a650df237836537",
+    "google_sheet": {
+      "participates": true,
+      "exclusion_reason": null
+    }
+  }
+}

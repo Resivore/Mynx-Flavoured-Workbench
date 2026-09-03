@@ -32,7 +32,7 @@
       "exclusions": [
         "Protected Ribbits resources, donor-derived models and textures, pristine or donor binaries, private manifests and reports, and the complete private Canary JAR are external, ignored, private-use-only, and nonredistributable.",
         "Public source-only build output is resource-incomplete and must not be represented as a runnable Canary.",
-        "No redesigned trade economy, strict daily restock limit, Chef progression, Sorcerer trade progression, witch-hut behavior, Matcha or Custom Portals integration, or ribbits-village-explorer-map implementation in Canary 1.",
+        "No redesigned trade economy, strict daily restock limit, Chef progression, Sorcerer trade progression, witch-hut behavior, Matcha or Custom Portals integration, or ribbits-village-explorer-map implementation in Canary 2.",
         "No substitute private inputs, deployment, Test Instance Manager mutation, gameplay-profile access, or Minecraft runtime claim from source, build, static, codec, tree, or archive evidence."
       ]
     },
@@ -74,10 +74,10 @@
         "reason": "Validated optional configuration-screen integration."
       },
       {
-        "type": "MOD",
-        "identifier": "yungsapi",
-        "requirement": "YungsApi-26.2-Fabric-6.1.1-compat.1.jar; SHA-256 527850c4f061fa9ab327ae0b32a3d26ebc77b51fb86234f5f6b1e3418ca084ca",
-        "reason": "Exact Git-ignored local dependency retained at projects/ribbits-26.2/artifacts/YungsApi-26.2-Fabric-6.1.1-compat.1.jar from legacy source commit 57a89b593ce9410db98b75a350916ae36caf9522; SHA-256 527850C4F061FA9AB327AE0B32A3D26EBC77B51FB86234F5F6B1E3418CA084CA; untracked and not bundled."
+        "type": "PROJECT",
+        "identifier": "97d76c44-7c17-4b36-be84-57525f884e40",
+        "requirement": "=26.2-Fabric-6.1.1-compat.2; YungsApi-26.2-Fabric-6.1.1-compat.2.jar; 1,260,939 bytes; SHA-256 ff22a6b509ba559988d7a9352dc94ac612c4b099517acac7da7c81322d797ed7",
+        "reason": "Coordinated YUNG's API compatibility successor from implementation checkpoint f0be1f9c6c1f3e843a0e44791a650df237836537; provides the stable yungsapi runtime capability at the minimum version required by Ribbits and remains a separate, unbundled official project artifact."
       },
       {
         "type": "TOOL",
@@ -130,15 +130,19 @@
     ]
   },
   "state": {
-    "milestone": "Mynx Canary 1 repairs the two private loot-table codec failures, adds four visual professions with deterministic private donor transformations and all umbrella variants, routes natural village residents through the explicit equal-weight Sorcerer-free eight-profession pool, preserves existing trades and restocking, and is reproducibly generated at 3,163,214 bytes; it remains not deployed and runtime untested.",
+    "milestone": "Mynx Canary 2 retains Canary 1's profession, loot, trade, and private-resource work, coordinates with YUNG's API compat.2 to make enhanced-beardifier iteration call-local and concurrency-safe, and emits the Ribbits creative tab through one ordered duplicate-checked 24-entry table. The exact successor is statically validated but remains not deployed and runtime untested; the supplied failed-cohort identities did not match canonical Canary 1 and remain unbound investigation input.",
     "releases": {
       "current": {
-        "version": "4.1.6+26.2-mynx-canary1",
+        "version": "4.1.6+26.2-mynx-canary2",
         "artifact": {
-          "filename": "ribbits-private-reconstruction-4.1.6+26.2-mynx-canary1.jar",
-          "sha256": "ec2946d299bcda22ffa393ce310760d1f963ed1d28377a86f45da22e64869443"
+          "filename": "ribbits-private-reconstruction-4.1.6+26.2-mynx-canary2.jar",
+          "sha256": "587b200a52300ff57c919ed5656e357de5840d0d05c321d6d055405382d299bd"
         },
-        "source_commit": "3e9b81f2c2464811caf593a6451e6ff1c9136955"
+        "source_commit": "f0be1f9c6c1f3e843a0e44791a650df237836537",
+        "runtime_dependency_policy": {
+          "contract": "CAPABILITY_OR_PROVIDER",
+          "exceptions": []
+        }
       },
       "accepted": null,
       "rollback": null,
@@ -153,11 +157,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 5,
-    "activity_at": "2026-09-02T02:06:55Z",
-    "updated_at": "2026-09-02T02:06:55Z",
-    "last_codex_at": "2026-09-02T02:06:55Z",
-    "source_commit": "3e9b81f2c2464811caf593a6451e6ff1c9136955",
+    "revision": 6,
+    "activity_at": "2026-09-03T05:35:59Z",
+    "updated_at": "2026-09-03T05:35:59Z",
+    "last_codex_at": "2026-09-03T05:35:59Z",
+    "source_commit": "f0be1f9c6c1f3e843a0e44791a650df237836537",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null

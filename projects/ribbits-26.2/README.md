@@ -6,19 +6,23 @@ Upstream code is covered by LGPL-3.0. Ribbits resources and the approved Guard R
 
 ## Current candidate
 
-- Version: `4.1.6+26.2-mynx-canary1`
-- Implementation checkpoint: `3e9b81f2c2464811caf593a6451e6ff1c9136955`
-- Private artifact: `ribbits-private-reconstruction-4.1.6+26.2-mynx-canary1.jar`, 3,163,214 bytes, SHA-256 `EC2946D299BCDA22FFA393CE310760D1F963ED1D28377A86F45DA22E64869443`
-- Source-only artifact: `ribbits-source-only-4.1.6+26.2-mynx-canary1.jar`, 1,100,732 bytes, SHA-256 `9810B58958F6E0D06A1A391E483781364275AEFCDA7481F2A4B70FF3F3A308D7`
+- Version: `4.1.6+26.2-mynx-canary2`
+- Implementation checkpoint: `f0be1f9c6c1f3e843a0e44791a650df237836537`
+- Private artifact: `ribbits-private-reconstruction-4.1.6+26.2-mynx-canary2.jar`, 3,166,148 bytes, SHA-256 `587B200A52300FF57C919ED5656E357DE5840D0D05C321D6D055405382D299BD`
+- Source-only artifact: `ribbits-source-only-4.1.6+26.2-mynx-canary2.jar`, 1,103,666 bytes, SHA-256 `8B3A4B96AE944C1C8CDAE35A10AC0D9085B66EE062200592D8908E29F73C8AAF`
 - State: `ACTIVE / STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED`
 
-Two independent clean private assemblies from the implementation checkpoint produced the same filename, size, SHA-256, and complete JAR bytes. The source-only artifact contains no protected or donor-derived assets and is deliberately non-runnable.
+Two independent fresh assemblies beneath `C:\Users\resiv\AppData\Local\Temp\test-builds\private\ribbits-c2-c-01a06591` and `C:\Users\resiv\AppData\Local\Temp\test-builds\private\ribbits-c2-d-01a06591` each reported candidate Canary 2, passed complete private tree/JAR validation, and produced the same filename, size, SHA-256, and complete JAR bytes. Conventional Minecraft datagen was unavailable, so deterministic assembly and validation supply the resource evidence. The source-only artifact contains no protected or donor-derived assets and is deliberately non-runnable.
+
+The exact canonical predecessor remains private Mynx Canary 1: version `4.1.6+26.2-mynx-canary1`, filename `ribbits-private-reconstruction-4.1.6+26.2-mynx-canary1.jar`, 3,163,214 bytes, SHA-256 `EC2946D299BCDA22FFA393CE310760D1F963ED1D28377A86F45DA22E64869443`, source checkpoint `3e9b81f2c2464811caf593a6451e6ff1c9136955`. It was not renamed or overwritten.
 
 The exact faithful-port baseline remains historical private Canary 2: `ribbits-private-reconstruction-4.1.6+26.2-port-canary2.jar`, 3,124,301 bytes, SHA-256 `0AD73B7B61C6EE792EC1745056563641767AFE6811C0FDF2D3C99123C3F289DC`, source checkpoint `efe1970d2447aea4913e67f55c0c6b83cc36c5bb`. It was not renamed, overwritten, accepted, or designated as rollback.
 
-## Canary 1 scope
+## Canary 2 scope
 
-Canary 1 fixes the two private chest-loot codec failures, adds Chef, Farmer, Prospector, and Guard as visual variants of `RibbitEntity`, retains `ribbits:nitwit` with the display name Musician, and replaces implicit registry-wide village selection with an explicit ordered equal-weight pool of Musician, Gardener, Fisherman, Merchant, Chef, Farmer, Prospector, and Guard. Sorcerer remains registered and available through its typed egg and commands but is absent from natural village assignment.
+Canary 2 retains Canary 1's two private chest-loot codec repairs, Chef, Farmer, Prospector, and Guard visual professions, `ribbits:nitwit`/Musician identity, typed eggs, private donor transformations, and explicit equal-weight Sorcerer-free natural village pool. It adds two focused runtime-defect corrections without broad behavior changes.
+
+The coordinated YUNG's API Compat.2 stores enhanced-beardifier pieces and junctions as reusable lists and creates fresh call-local iterators for every density evaluation. This removes shared exhausted/mutating cursor state during concurrent chunk generation; empty input contributes neutral density, while nonempty terrain-adaptation calculations retain their established formulas. Ribbits now emits its creative tab from one ordered duplicate-checked 24-entry table, preserving the intended item order and one emission path.
 
 Profession identity continues to serialize only by stable registry ID. The existing five professions retain their exact model IDs and shared texture. New professions supply private model/texture identities, initialize without instruments, and receive no donor AI or behavior. The rendering contract uses deterministic composite textures and twelve private profession-specific umbrella models so each new profession keeps its accessories through all three existing rain/umbrella variants.
 
@@ -29,13 +33,13 @@ Merchant's six definitions and Fisherman's seven-definition/four-random-offer be
 Supply the exact YUNG's API compatibility JAR through `YUNGS_API_26_2_JAR`; leave the two private-resource variables unset.
 
 ```powershell
-$env:YUNGS_API_26_2_JAR = 'C:\path\to\YungsApi-26.2-Fabric-6.1.1-compat.1.jar'
+$env:YUNGS_API_26_2_JAR = 'C:\path\to\YungsApi-26.2-Fabric-6.1.1-compat.2.jar'
 Remove-Item Env:RIBBITS_PRIVATE_RESOURCES_DIR -ErrorAction SilentlyContinue
 Remove-Item Env:RIBBITS_PRIVATE_MANIFEST -ErrorAction SilentlyContinue
 .\gradlew.bat clean test build --offline --no-daemon
 ```
 
-Required dependency identity: `YungsApi-26.2-Fabric-6.1.1-compat.1.jar`, 1,266,121 bytes, SHA-256 `527850C4F061FA9AB327AE0B32A3D26EBC77B51FB86234F5F6B1E3418CA084CA`. The build verifies the resulting source-only archive contains no protected or donor-derived payload.
+Required dependency identity: official project UUID `97d76c44-7c17-4b36-be84-57525f884e40`, version `26.2-Fabric-6.1.1-compat.2`, `YungsApi-26.2-Fabric-6.1.1-compat.2.jar`, 1,260,939 bytes, SHA-256 `FF22A6B509BA559988D7A9352DC94AC612C4B099517ACAC7DA7C81322D797ED7`, source checkpoint `f0be1f9c6c1f3e843a0e44791a650df237836537`. The candidate's release-scoped runtime dependency policy is `CAPABILITY_OR_PROVIDER` with no exceptions. The build verifies the resulting source-only archive contains no protected or donor-derived payload.
 
 ## Private assembly contract
 
@@ -60,4 +64,4 @@ The exact assembly contains 336 resource files: 245 strict JSON, 29 NBT, 18 OGG,
 
 For the private Gradle build, set `RIBBITS_PRIVATE_RESOURCES_DIR` and `RIBBITS_PRIVATE_MANIFEST` to that exact staged tree and eligible manifest, then run the same clean offline build. Keep the complete private artifact, donor-derived resources, private trees, manifests, reports, and previews ignored and untracked.
 
-The exact archive-diff boundary, donor member allowlist, rendering decisions, compatibility repairs, and deferred roadmap are recorded in `MYNX_DEVIATIONS.md`. Runtime work must use the separate procedure in `TESTING.md` and must never infer a runtime pass from these static results.
+The exact archive-diff boundary, donor member allowlist, rendering decisions, compatibility repairs, and deferred roadmap are recorded in `MYNX_DEVIATIONS.md`. Runtime work must use the separate procedure in `TESTING.md`; its village traversal, enhanced-beardifier/error, terrain-adaptation, creative-tab uniqueness/order, profession, loot, trade, persistence, and multiplayer checks are all still manual and pending. No runtime pass follows from the static results.
