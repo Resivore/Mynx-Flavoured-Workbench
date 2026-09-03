@@ -1,0 +1,23 @@
+plugins {
+    // see https://fabricmc.net/develop/ for new versions
+    id 'net.fabricmc.fabric-loom' version '1.15.5' apply false
+}
+
+subprojects {
+    tasks.withType(org.gradle.api.tasks.bundling.AbstractArchiveTask).configureEach {
+        preserveFileTimestamps = false
+        reproducibleFileOrder = true
+    }
+
+    configurations.all {
+        resolutionStrategy {
+            cacheChangingModulesFor 60, 'seconds'
+            cacheDynamicVersionsFor 60, 'seconds'
+        }
+    }
+    // Pass the raw project version string as an extra property to each subproject
+    // since the version property will be overwritten by the complete version string
+    ext {
+        rawVersion = project.version
+    }
+}

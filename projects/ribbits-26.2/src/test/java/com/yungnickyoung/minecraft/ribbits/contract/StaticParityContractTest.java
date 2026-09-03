@@ -8,7 +8,11 @@ import java.nio.file.Path;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.HexFormat;
+import java.util.List;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -174,12 +178,58 @@ class StaticParityContractTest {
             assertTrue(items.contains("RegisterHelper.itemKey(\"ribbit_" + lower + "_spawn_egg\")"), profession);
             assertTrue(items.contains("DispenserBlock.registerBehavior(" + field
                     + "::get, ribbitSpawnEggDispenseItemBehavior);"), profession);
-            assertTrue(creative.contains("output.accept(ItemModule." + field + ".get());"), profession);
+            assertTrue(creative.contains("CreativeEntry.of(\"ribbit_" + lower
+                    + "_spawn_egg\", ItemModule." + field + "::get)"), profession);
             assertTrue(entity.contains("case " + profession + " -> new ItemStack(ItemModule."
                     + field + ".get());"), profession);
         }
         assertEquals(9, occurrences(items, "new RibbitSpawnEggItem("));
         assertEquals(9, occurrences(items, "DispenserBlock.registerBehavior(RIBBIT_"));
+    }
+
+    @Test
+    void creativeTabHasOneValidatedOrderedEntryPerRegisteredItem() throws IOException {
+        String creative = read("common/src/main/java/com/yungnickyoung/minecraft/ribbits/module/CreativeTabModule.java");
+        List<String> expectedIds = List.of(
+                "red_toadstool",
+                "brown_toadstool",
+                "toadstool_stem",
+                "swamp_lantern",
+                "giant_lilypad",
+                "swamp_daisy",
+                "toadstool",
+                "umbrella_leaf",
+                "mossy_oak_planks",
+                "mossy_oak_planks_stairs",
+                "mossy_oak_planks_slab",
+                "mossy_oak_planks_fence",
+                "mossy_oak_planks_fence_gate",
+                "mossy_oak_door",
+                "maraca",
+                "ribbit_nitwit_spawn_egg",
+                "ribbit_fisherman_spawn_egg",
+                "ribbit_gardener_spawn_egg",
+                "ribbit_merchant_spawn_egg",
+                "ribbit_sorcerer_spawn_egg",
+                "ribbit_chef_spawn_egg",
+                "ribbit_farmer_spawn_egg",
+                "ribbit_prospector_spawn_egg",
+                "ribbit_guard_spawn_egg"
+        );
+
+        Matcher matcher = Pattern.compile("CreativeEntry\\.of\\(\\\"([^\\\"]+)\\\"").matcher(creative);
+        List<String> actualIds = new ArrayList<>();
+        while (matcher.find()) {
+            actualIds.add(matcher.group(1));
+        }
+
+        assertEquals(expectedIds, actualIds, "creative entry IDs and order");
+        assertEquals(expectedIds.size(), new HashSet<>(actualIds).size(), "creative entry IDs must be unique");
+        assertEquals(1, occurrences(creative, "CreativeEntry.of(\"mossy_oak_planks_slab\""));
+        assertEquals(1, occurrences(creative, "output.accept("), "the generator must emit only through the validated table");
+        assertTrue(creative.contains("BuiltInRegistries.ITEM.getKey(item)"));
+        assertTrue(creative.contains("!seenItems.add(item) || !seenIds.add(actualId)"));
+        assertTrue(creative.contains("Duplicate Ribbits creative entry"));
     }
 
     @Test

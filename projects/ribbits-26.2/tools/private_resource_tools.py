@@ -30,15 +30,16 @@ from typing import Any
 EXPECTED_PRISTINE_SHA256 = (
     "4cf86564aed393410fb1dbca3a9ce2425382307655e92bb6b43f3ddcee5bf731"
 )
-CANDIDATE_VERSION = "4.1.6+26.2-mynx-canary1"
+CANDIDATE_VERSION = "4.1.6+26.2-mynx-canary2"
+CANDIDATE_CANARY = 2
 PRIVATE_MANIFEST_SCHEMA = "mynx-ribbits-private-resource-manifest/v1"
 PRIVATE_MANIFEST_CLASSIFICATION = (
     "PRIVATE MYNX ASSEMBLY STAGED / NONREDISTRIBUTABLE DONOR ASSETS"
 )
 PRIVATE_ARTIFACT_FILENAME = (
-    "ribbits-private-reconstruction-4.1.6+26.2-mynx-canary1.jar"
+    "ribbits-private-reconstruction-4.1.6+26.2-mynx-canary2.jar"
 )
-SOURCE_ONLY_ARTIFACT_FILENAME = "ribbits-source-only-4.1.6+26.2-mynx-canary1.jar"
+SOURCE_ONLY_ARTIFACT_FILENAME = "ribbits-source-only-4.1.6+26.2-mynx-canary2.jar"
 SOURCE_FILE_COUNT = 287  # 285 assets/data files plus icon.png and logo.png
 OUTPUT_FILE_COUNT = 336
 SOURCE_EXTENSION_COUNTS = {
@@ -368,7 +369,7 @@ SPAWN_EGG_MODEL = {
     "textures": {"layer0": "ribbits:item/ribbit_spawn_egg"},
 }
 SPAWN_EGG_SUBSTITUTION_NOTICE = (
-    "Private Mynx Canary 1 uses one palette-only green recolor of Minecraft "
+    "Private Mynx Canary 2 uses one palette-only green recolor of Minecraft "
     "26.2's vanilla frog spawn-egg artwork for all nine Ribbits profession eggs. "
     "This is explicitly authorized for the private Workbench and is not exact "
     "Ribbits 4.1.6 spawn-egg visual parity."
@@ -2033,7 +2034,7 @@ def migrate_spawn_egg_models(root: Path, minecraft_client: Path) -> dict[str, An
 
     return {
         "authorization": (
-            "Explicitly authorized by the Workbench owner for private Mynx Ribbits Canary 1"
+            "Explicitly authorized by the Workbench owner for private Mynx Ribbits Canary 2"
         ),
         "temporary": True,
         "exact_ribbits_4_1_6_visual_parity": False,
@@ -2084,7 +2085,7 @@ def build_manifest(
         "classification": PRIVATE_MANIFEST_CLASSIFICATION,
         "candidate": {
             "version": CANDIDATE_VERSION,
-            "canary": 1,
+            "canary": CANDIDATE_CANARY,
             "private_artifact_filename": PRIVATE_ARTIFACT_FILENAME,
             "source_only_artifact_filename": SOURCE_ONLY_ARTIFACT_FILENAME,
         },
@@ -2817,7 +2818,7 @@ def validate_jar(
         expected_dependencies = {
             "minecraft": ">=26.2",
             "java": ">=25",
-            "yungsapi": ">=26.2-Fabric-6.1.1-compat.1",
+            "yungsapi": ">=26.2-Fabric-6.1.1-compat.2",
             "fabric-api": ">=0.157.0",
             "geckolib": ">=5.5.1",
             "cloth-config2": ">=26.2.155",

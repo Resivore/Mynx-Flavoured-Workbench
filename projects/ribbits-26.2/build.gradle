@@ -70,12 +70,12 @@ if (privateResourcesDir != null) {
             if (manifest.schema?.toString() != 'mynx-ribbits-private-resource-manifest/v1' ||
                 manifest.classification?.toString() != 'PRIVATE MYNX ASSEMBLY STAGED / NONREDISTRIBUTABLE DONOR ASSETS' ||
                 manifest.candidate?.version?.toString() != project.mod_version.toString() ||
-                manifest.candidate?.version?.toString() != '4.1.6+26.2-mynx-canary1' ||
-                (manifest.candidate?.canary as int) != 1 ||
+                manifest.candidate?.version?.toString() != '4.1.6+26.2-mynx-canary2' ||
+                (manifest.candidate?.canary as int) != 2 ||
                 manifest.candidate?.private_artifact_filename?.toString() !=
-                    'ribbits-private-reconstruction-4.1.6+26.2-mynx-canary1.jar' ||
+                    'ribbits-private-reconstruction-4.1.6+26.2-mynx-canary2.jar' ||
                 manifest.candidate?.source_only_artifact_filename?.toString() !=
-                    'ribbits-source-only-4.1.6+26.2-mynx-canary1.jar') {
+                    'ribbits-source-only-4.1.6+26.2-mynx-canary2.jar') {
                 throw new GradleException("Private manifest classification is not eligible for private packaging: ${manifest.classification}")
             }
             if ((manifest.blockers as List)) {
@@ -446,7 +446,7 @@ yungsApiFile.withInputStream { input ->
         yungsApiDigest.update(buffer, 0, count)
     }
 }
-def expectedYungsApiSha256 = '527850c4f061fa9ab327ae0b32a3d26ebc77b51fb86234f5f6b1e3418ca084ca'
+def expectedYungsApiSha256 = 'ff22a6b509ba559988d7a9352dc94ac612c4b099517acac7da7c81322d797ed7'
 def actualYungsApiSha256 = yungsApiDigest.digest().encodeHex().toString()
 if (actualYungsApiSha256 != expectedYungsApiSha256) {
     throw new GradleException("YUNGS_API_26_2_JAR SHA-256 mismatch: expected ${expectedYungsApiSha256}, got ${actualYungsApiSha256}")

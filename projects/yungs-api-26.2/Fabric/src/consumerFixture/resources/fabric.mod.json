@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "id": "yungsapi_consumer_fixture",
+  "version": "1.0.0",
+  "name": "YUNG's API 26.2 Consumer Fixture",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "workbench.yungsapi.fixture.YungsApiConsumerFixture"
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=0.19.3",
+    "fabric-api": "*",
+    "minecraft": "26.2",
+    "yungsapi": "*"
+  }
+}

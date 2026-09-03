@@ -1,0 +1,116 @@
+plugins {
+    id 'multiloader-loader'
+    id 'net.fabricmc.fabric-loom'
+}
+
+repositories {
+    maven { url "https://maven.shedaniel.me/" }
+    maven { url "https://maven.terraformersmc.com/releases/" }
+}
+
+dependencies {
+    minecraft "com.mojang:minecraft:${mc_version}"
+    implementation "net.fabricmc:fabric-loader:${fabric_loader_version}"
+    implementation "net.fabricmc.fabric-api:fabric-api:${fabric_version}+${mc_version}"
+
+    // Reflections
+    implementation(include("org.reflections:reflections:0.10.2"))
+    implementation(include("org.javassist:javassist:3.29.2-GA"))
+
+    // ClothConfig
+    implementation "me.shedaniel.cloth:cloth-config-fabric:${project.clothconfig_version_fabric}"
+
+    // ModMenu
+    implementation ("com.terraformersmc:modmenu:${project.modmenu_version_fabric}") { transitive = false }
+}
+
+sourceSets {
+    consumerFixture {
+        compileClasspath += sourceSets.main.output + sourceSets.main.compileClasspath
+        runtimeClasspath += sourceSets.main.output
+    }
+}
+
+configurations {
+    consumerFixtureImplementation.extendsFrom implementation
+    consumerFixtureRuntimeOnly.extendsFrom runtimeOnly
+}
+
+loom {
+    mods {
+        yungsapi_consumer_fixture {
+            sourceSet sourceSets.consumerFixture
+        }
+    }
+}
+
+tasks.register('consumerFixtureJar', Jar) {
+    group = 'verification'
+    description = "Packages the isolated downstream-consumer fixture without adding it to the production JAR."
+    archiveClassifier = 'consumer-fixture'
+    from sourceSets.consumerFixture.output
+}
+
+tasks.register('runConsumerFixtures') {
+    group = 'verification'
+    description = "Runs the isolated downstream-consumer fixture in the normal Fabric server environment."
+    dependsOn tasks.named('consumerFixtureJar')
+    dependsOn tasks.named('runServer')
+}
+
+tasks.named('runServer') {
+    mustRunAfter tasks.named('consumerFixtureJar')
+    doFirst {
+        if (gradle.taskGraph.hasTask(tasks.named('runConsumerFixtures').get())) {
+            systemProperty 'fabric.addMods', tasks.named('consumerFixtureJar').get().archiveFile.get().asFile.absolutePath
+        }
+    }
+}
+tasks.named('jar') {
+    doLast {
+        // Loom adds included libraries after Gradle normalizes the archive.
+        net.fabricmc.loom.util.ZipReprocessorUtil.reprocessZip(
+                archiveFile.get().asFile.toPath(), true, false
+        )
+    }
+}
+
+loom {
+    def aw = project(':Common').file("src/main/resources/${mod_id}.accesswidener")
+    if (aw.exists()) {
+        accessWidenerPath.set(aw)
+    }
+    runs {
+        client {
+            client()
+            setConfigName("Fabric Client")
+            ideConfigGenerated(true)
+            runDir("runs/client")
+        }
+        server {
+            server()
+            setConfigName("Fabric Server")
+            ideConfigGenerated(true)
+            runDir("runs/server")
+        }
+    }
+}
+
+// Implement mcgradleconventions loader attribute
+def loaderAttribute = Attribute.of('io.github.mcgradleconventions.loader', String)
+['apiElements', 'runtimeElements', 'sourcesElements', 'javadocElements', 'includeInternal', 'modCompileClasspath'].each { variant ->
+    configurations.named("$variant") {
+        attributes {
+            attribute(loaderAttribute, 'fabric')
+        }
+    }
+}
+sourceSets.configureEach {
+    [it.compileClasspathConfigurationName, it.runtimeClasspathConfigurationName].each { variant->
+        configurations.named("$variant") {
+            attributes {
+                attribute(loaderAttribute, 'fabric')
+            }
+        }
+    }
+}

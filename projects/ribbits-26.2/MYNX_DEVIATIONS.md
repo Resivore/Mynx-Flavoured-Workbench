@@ -2,7 +2,7 @@
 
 This file records intentional departures from the faithful Minecraft Java 26.2 Ribbits port. The exact faithful-port baseline is private Canary 2: version `4.1.6+26.2-port-canary2`, artifact `ribbits-private-reconstruction-4.1.6+26.2-port-canary2.jar`, 3,124,301 bytes, SHA-256 `0AD73B7B61C6EE792EC1745056563641767AFE6811C0FDF2D3C99123C3F289DC`, implementation checkpoint `efe1970d2447aea4913e67f55c0c6b83cc36c5bb`. It remains historical provenance, not an accepted or rollback release.
 
-## Canary 1 deviations
+## Canary 1 deviations retained by Canary 2
 
 - The private `ribbits:chests/fisherman_main` table's weight-15 no-loot sentinel used the item entry `minecraft:air`, which Minecraft 26.2 decodes as invalid. It is faithfully represented as a weight-15 `minecraft:empty` loot entry.
 - The private `ribbits:chests/sorcerer` table's weight-1 no-loot sentinel used the same invalid item entry. It is faithfully represented as a weight-1 `minecraft:empty` loot entry. The existing `minecraft:set_potion` migration to `minecraft:strong_leaping` is unchanged.
@@ -15,7 +15,13 @@ This file records intentional departures from the faithful Minecraft Java 26.2 R
 - Four typed spawn eggs use the existing authorized shared green private Ribbit egg texture and generated-item model. No donor egg graphic is imported.
 - Merchant and Fisherman offers, saved offers, interaction behavior, and the existing restock implementation remain unchanged. Gardener, Sorcerer, Musician, Chef, Farmer, Prospector, and Guard have no newly added trades.
 
-Canary 1 deliberately does not implement redesigned trades, Gardener conversions, Farmer field clearing, Prospector exchanges, Guard or Quartermaster trades, Chef foods/levels/XP, strict two-restocks-per-day persistence, Sorcerer progression, Benzene, Portal Catalysts, Estus Flasks, Blessings, witch-hut Sorcerers, witch suppression, witch-hut or Ribbit Village maps, Matcha integration, or Custom Portals integration.
+Canary 2 deliberately does not implement redesigned trades, Gardener conversions, Farmer field clearing, Prospector exchanges, Guard or Quartermaster trades, Chef foods/levels/XP, strict two-restocks-per-day persistence, Sorcerer progression, Benzene, Portal Catalysts, Estus Flasks, Blessings, witch-hut Sorcerers, witch suppression, witch-hut or Ribbit Village maps, Matcha integration, or Custom Portals integration.
+
+## Canary 2 runtime hardening
+
+- Creative-tab contents now come from one ordered 24-entry table. Before emitting any stack, the generator verifies every resolved item against its intended `ribbits` registry ID and rejects duplicate item identities or registry keys. Mossy Oak Slab remains registered, keeps its position between Mossy Oak Stairs and Fence, and has one contribution.
+- The coordinated YUNG's API `6.1.1-compat.2` dependency carries upstream's narrow enhanced-beardifier concurrency fix: Beardifier state retains piece and junction lists, while each density call obtains fresh local iterators. No terrain adaptation is disabled, and nonempty contribution formulas remain unchanged.
+- The duplicate-stack report came from an unavailable runtime pair whose hashes differ from authoritative Canary 1. The one canonical Canary 1 creative contribution and retained artifact were not rewritten or misclassified; Canary 2 adds a fail-closed invariant around the reconstructed path.
 
 ## Private donor boundary
 
