@@ -2,8 +2,8 @@
   "$schema": "../../schemas/runtime-state.schema.json",
   "schema_version": 2,
   "activation": "ACTIVE",
-  "revision": 73,
-  "updated_at": "2026-09-03T20:01:33Z",
+  "revision": 74,
+  "updated_at": "2026-09-03T20:35:13Z",
   "accepted_baseline": {
     "revision": 15,
     "provenance": {
@@ -878,84 +878,78 @@
       "members": [
         {
           "unit": {
-            "deployment_id": "bee6248a-0cb8-4953-bd55-33ac3f6e5111",
+            "deployment_id": "a9d922c7-346b-4bda-a42a-75b26d64e90e",
             "project_uuid": "3ab36584-8732-554f-840e-28a75c422660",
             "project_id": "container-slot-reservations",
             "project_identity_source": "CURRENT_MANIFEST",
-            "version": "0.1.0-canary2",
-            "source_commit": "48468ad99ba1353ac5455be39dedef6ca143f7ae",
+            "version": "0.1.0-canary3",
+            "source_commit": "d69469ba90b0d85a257db57ce65588e63f4cc248",
             "artifacts": [
               {
-                "artifact_id": "b92b3cd6-a3c2-4882-b279-4a39194fbdc9",
+                "artifact_id": "464c5676-979f-4403-93fe-7a2e76d013c5",
                 "kind": "MOD",
-                "filename": "container-slot-reservations-0.1.0-canary2.jar",
-                "sha256": "bb4f269758d43469f2a9c0a36d01dcecb8704054ee8bc01327c46ce614d4a02f",
+                "filename": "container-slot-reservations-0.1.0-canary3.jar",
+                "sha256": "dfd1a7c1f0e594d12b3fbc1052ae2a1507dd5bd5f5ff9a77d2f8f93667b53ead",
                 "ownership_keys": [
                   "mod:container_slot_reservations"
                 ],
                 "source": {
                   "type": "REPOSITORY",
-                  "path": "projects/container-slot-reservations/artifacts/container-slot-reservations-0.1.0-canary2.jar"
+                  "path": "projects/container-slot-reservations/artifacts/container-slot-reservations-0.1.0-canary3.jar"
                 }
               }
             ]
           },
           "replaces_accepted_deployment_id": "c0fdfff1-831a-4081-93a3-e596d7fc928d",
           "runtime_result": {
-            "classification": "FAIL",
-            "recorded_at": "2026-09-03T20:01:32Z",
+            "classification": "UNTESTED",
+            "recorded_at": null,
             "evidence": {
-              "passed": [
-                "User reported that the new literal-zero and other revised reservation presentation were acceptable."
-              ],
-              "failed": [
-                "User reported that empty-reservation ghost item sprites appeared excessively dark, as though translucency had been applied over black or the sprite RGB had already been reduced before final blending; the failure may be more obvious for naturally dark item sprites."
-              ]
+              "passed": [],
+              "failed": []
             }
           }
         }
       ],
       "deployment": {
         "state": "READY_TO_TEST_VERIFIED",
-        "deployed_at": "2026-09-03T05:27:46Z",
-        "ready_verified_at": "2026-09-03T05:27:46Z"
+        "deployed_at": "2026-09-03T20:35:13Z",
+        "ready_verified_at": "2026-09-03T20:35:13Z"
       }
     },
     "B": {
       "members": [
         {
           "unit": {
-            "deployment_id": "2c2ca107-d652-45bc-a7d6-23c0238d00f7",
+            "deployment_id": "30a3d125-ecb6-4a7a-862b-ca2e2c1bbcfe",
             "project_uuid": "ffa96cc6-2989-5465-b158-1659a484366b",
             "project_id": "quick-stack-nearby-compat",
             "project_identity_source": "CURRENT_MANIFEST",
-            "version": "0.1.0-canary7",
-            "source_commit": "3f124a44086e52845e35805d5abb3049379150b8",
+            "version": "0.1.0-canary8",
+            "source_commit": "1f545721658cce803200fa277737052cead79b70",
             "artifacts": [
               {
-                "artifact_id": "918d23dd-6268-47c9-baa0-c49daf85e05d",
+                "artifact_id": "62f897e7-dc2e-4754-82f0-43240d4655be",
                 "kind": "MOD",
-                "filename": "quick-stack-nearby-compat-0.1.0-canary7.jar",
-                "sha256": "9e2ef78a5f40f5bcdeed0e8c6af8cd7cfb15a35d541360017c4e46e94521995e",
+                "filename": "quick-stack-nearby-compat-0.1.0-canary8.jar",
+                "sha256": "e6aaf43d881f31202931c40b6f40762f2e2dab1f2ae8d0ce5fd7f213ec0cbba5",
                 "ownership_keys": [
                   "mod:quick_stack_nearby_compat"
                 ],
                 "source": {
                   "type": "REPOSITORY",
-                  "path": "projects/quick-stack-nearby-compat/artifacts/quick-stack-nearby-compat-0.1.0-canary7.jar"
+                  "path": "projects/quick-stack-nearby-compat/artifacts/quick-stack-nearby-compat-0.1.0-canary8.jar"
                 }
               }
             ]
           },
           "replaces_accepted_deployment_id": "66b8b293-d9ae-41c4-a969-d43baf79c2ff",
           "runtime_result": {
-            "classification": "FAIL",
-            "recorded_at": "2026-09-03T20:01:33Z",
+            "classification": "UNTESTED",
+            "recorded_at": null,
             "evidence": {
               "passed": [],
-              "failed": [
-                "User reported that a matching CSR reservation did not make the nearby container a QSN destination when the reserved item had zero physical quantity in that container; zero physical quantity means no physical matching ItemStack existed and does not authorize fake zero-count stacks."
-              ]
+              "failed": []
             }
           },
           "accepted_companion_artifacts": [
@@ -977,8 +971,8 @@
       ],
       "deployment": {
         "state": "READY_TO_TEST_VERIFIED",
-        "deployed_at": "2026-09-03T05:27:46Z",
-        "ready_verified_at": "2026-09-03T05:27:46Z"
+        "deployed_at": "2026-09-03T20:35:13Z",
+        "ready_verified_at": "2026-09-03T20:35:13Z"
       }
     }
   }
