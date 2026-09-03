@@ -39,6 +39,9 @@ def allowedPublicResources = [
     'common/src/main/resources/assets/ribbits/items/toadstool_heart.json',
     'common/src/main/resources/data/ribbits/recipe/toadstool_heart.json',
     'common/src/main/resources/data/ribbits/advancement/recipes/misc/toadstool_heart.json',
+    'common/src/main/resources/data/ribbits/tags/worldgen/structure/on_ribbit_village_explorer_maps.json',
+    'common/src/main/resources/data/ribbits/item_modifier/ribbit_village_explorer_result.json',
+    'common/src/main/resources/data/ribbits/loot_table/chests/swamp_hut_map.json',
 ] as Set
 def protectedResourceRoots = [
     file('common/src/main/resources/assets'),
@@ -84,12 +87,12 @@ if (privateResourcesDir != null) {
             if (manifest.schema?.toString() != 'mynx-ribbits-private-resource-manifest/v1' ||
                 manifest.classification?.toString() != 'PRIVATE MYNX ASSEMBLY STAGED / NONREDISTRIBUTABLE DONOR ASSETS' ||
                 manifest.candidate?.version?.toString() != project.mod_version.toString() ||
-                manifest.candidate?.version?.toString() != '4.1.6+26.2-mynx-canary3' ||
-                (manifest.candidate?.canary as int) != 3 ||
+                manifest.candidate?.version?.toString() != '4.1.6+26.2-mynx-canary4' ||
+                (manifest.candidate?.canary as int) != 4 ||
                 manifest.candidate?.private_artifact_filename?.toString() !=
-                    'ribbits-private-reconstruction-4.1.6+26.2-mynx-canary3.jar' ||
+                    'ribbits-private-reconstruction-4.1.6+26.2-mynx-canary4.jar' ||
                 manifest.candidate?.source_only_artifact_filename?.toString() !=
-                    'ribbits-source-only-4.1.6+26.2-mynx-canary3.jar') {
+                    'ribbits-source-only-4.1.6+26.2-mynx-canary4.jar') {
                 throw new GradleException("Private manifest classification is not eligible for private packaging: ${manifest.classification}")
             }
             if ((manifest.blockers as List)) {
@@ -371,6 +374,129 @@ if (privateResourcesDir != null) {
                     !(actual.after_sha256.toString() ==~ /[0-9a-f]{64}/) ||
                     actual.before_sha256.toString() == actual.after_sha256.toString()) {
                     throw new GradleException("Private village NBT migration differs for ${template}")
+                }
+            }
+
+            def expectedUtilityTransforms = [
+                'data/ribbits/structure/houses/brown_sorcerer_house.nbt': [
+                    coordinate: [6, 2, 5],
+                    sourceState: [Name: 'minecraft:brewing_stand', Properties: [
+                        has_bottle_0: 'false', has_bottle_1: 'false', has_bottle_2: 'false']],
+                    replacementState: [Name: 'minecraft:air'],
+                    blockEntity: 'minecraft:brewing_stand', paletteIndex: 79,
+                    before: '502dc904d293d411a5ebafed2c7f71b8eed8e36ab2123553ae8ae3295a56aa76',
+                    after: 'd6878d280ec391a7ffd48fcd442fbdd33f6b341031e7efe753f98812270d1b63'],
+                'data/ribbits/structure/houses/red_sorcerer_house.nbt': [
+                    coordinate: [6, 2, 5],
+                    sourceState: [Name: 'minecraft:brewing_stand', Properties: [
+                        has_bottle_0: 'false', has_bottle_1: 'false', has_bottle_2: 'false']],
+                    replacementState: [Name: 'minecraft:air'],
+                    blockEntity: 'minecraft:brewing_stand', paletteIndex: 76,
+                    before: 'ef66d580570c81657500f714b76eb761de910285571ff0ce36442b14e4bc8948',
+                    after: '57dcf47cdece4e459522cea74b69215269a45c81028a2c42f2f3ebfaee43d516'],
+                'data/ribbits/structure/houses/small_house_brown_2.nbt': [
+                    coordinate: [5, 1, 6],
+                    sourceState: [Name: 'minecraft:smoker', Properties: [lit: 'false', facing: 'north']],
+                    replacementState: [Name: 'minecraft:stone_bricks'],
+                    blockEntity: 'minecraft:smoker', paletteIndex: 20,
+                    before: '7e7ca64fe02c9953b6e3ccf3bf2a2393c3274bbbb3848ae874b4ff8c9c6b1676',
+                    after: 'bc65457ea8c0b6aaaf3902b04840ff8f1ba04ee5818b85e5c11c70cb5683b695'],
+                'data/ribbits/structure/houses/small_house_brown_3.nbt': [
+                    coordinate: [3, 1, 5],
+                    sourceState: [Name: 'minecraft:damaged_anvil', Properties: [facing: 'west']],
+                    replacementState: [Name: 'minecraft:air'],
+                    blockEntity: null, paletteIndex: 61,
+                    before: '329dd885fd3a26fbf809cc37b74696799bea2e5397a6dd645810261bfbb1055a',
+                    after: 'b54530ffebc2284ab4397796b8bbad411193fb318e3dfcf93f61558b78327b87'],
+                'data/ribbits/structure/houses/small_house_red_2.nbt': [
+                    coordinate: [4, 1, 2],
+                    sourceState: [Name: 'minecraft:blast_furnace', Properties: [lit: 'false', facing: 'south']],
+                    replacementState: [Name: 'minecraft:stone_bricks'],
+                    blockEntity: 'minecraft:blast_furnace', paletteIndex: 21,
+                    before: 'a91945113b28214f5be8935efdbb4c42f6ec469bf9ca9bae5074a0579023d20a',
+                    after: '7ceb960251b893a75c82fa08d2268a307676a55d00a2cd5be897ceb0b08d272d'],
+                'data/ribbits/structure/houses/small_house_red_3.nbt': [
+                    coordinate: [3, 1, 5],
+                    sourceState: [Name: 'minecraft:damaged_anvil', Properties: [facing: 'west']],
+                    replacementState: [Name: 'minecraft:air'],
+                    blockEntity: null, paletteIndex: 60,
+                    before: '4652d7c9fa1481b9d210a32140eedc751a797c0d2deb6b6e12f53d4c60955e70',
+                    after: '2c5a76cf50f5993ed0f6f089aefabe3b04feab2e75962e80b8cfa6f5788ccb3e'],
+            ]
+            def utilityMigration = manifest.migrations?.private_village_progression_utilities_removed
+            def actualUtilityRecords = (utilityMigration?.templates as List)?.collectEntries { record ->
+                [(record.template.toString()): record]
+            }
+            def expectedRemovedUtilities = [
+                'minecraft:brewing_stand': 2,
+                'minecraft:damaged_anvil': 2,
+                'minecraft:smoker': 1,
+                'minecraft:blast_furnace': 1,
+            ]
+            def expectedRemovedAfter = expectedRemovedUtilities.collectEntries { name, _count ->
+                [(name): 0]
+            }
+            def expectedRetainedBlocks = [
+                'minecraft:barrel': 60, 'minecraft:chest': 11,
+                'minecraft:crafting_table': 6, 'minecraft:water_cauldron': 8,
+                'minecraft:campfire': 2, 'minecraft:blue_bed': 6,
+                'minecraft:gray_bed': 2, 'minecraft:green_bed': 10,
+                'minecraft:light_gray_bed': 10, 'minecraft:purple_bed': 4,
+                'minecraft:red_bed': 6, 'minecraft:yellow_bed': 4,
+                'minecraft:cake': 2,
+            ]
+            def expectedSentinels = [
+                'minecraft:lapis_block': 287, 'minecraft:end_stone': 78,
+                'minecraft:orange_stained_glass': 112, 'minecraft:red_nether_bricks': 28,
+                'minecraft:warped_planks': 152, 'minecraft:crimson_planks': 1,
+                'minecraft:stripped_crimson_stem': 34, 'minecraft:crimson_fence': 4,
+            ]
+            def expectedLootBindings = [
+                'ribbits:chests/fisherman_main': 11,
+                'ribbits:chests/fisherman_storage': 25,
+                'ribbits:chests/gardener': 3,
+                'ribbits:chests/merchant': 4,
+                'ribbits:chests/nitwit': 10,
+                'ribbits:chests/sorcerer': 6,
+            ]
+            if ((utilityMigration?.count as int) != 6 ||
+                utilityMigration?.policy?.toString() !=
+                    'future placements only; exact coordinate and hash-pinned compressed NBT rewrite' ||
+                (utilityMigration?.canonical_template_count as int) != 29 ||
+                actualUtilityRecords?.keySet() != expectedUtilityTransforms.keySet() ||
+                utilityMigration?.template_tree_before_sha256?.toString() !=
+                    '9c2f704975baf2fe7e1c530c85a82cc1a69116be609ee769615c422cfb8d0499' ||
+                utilityMigration?.template_tree_after_sha256?.toString() !=
+                    '9d321d21a57f0800e564e05432e564341d3836696831624383eabf1be48dd827' ||
+                (utilityMigration?.removed_utility_counts_before as Map) != expectedRemovedUtilities ||
+                (utilityMigration?.removed_utility_counts_after as Map) != expectedRemovedAfter ||
+                (utilityMigration?.retained_block_counts as Map) != expectedRetainedBlocks ||
+                (utilityMigration?.raw_processor_sentinel_counts as Map) != expectedSentinels ||
+                (utilityMigration?.loot_binding_counts as Map) != expectedLootBindings ||
+                utilityMigration?.all_non_target_block_counts_unchanged != true ||
+                utilityMigration?.all_non_target_block_records_byte_identical != true ||
+                utilityMigration?.all_loot_bindings_unchanged != true ||
+                utilityMigration?.deterministic_compressed_nbt != true) {
+                throw new GradleException('Private manifest lacks the exact six-template utility transform contract')
+            }
+            expectedUtilityTransforms.each { template, expected ->
+                def actual = actualUtilityRecords[template]
+                def expectsBlockEntity = expected.blockEntity != null
+                def isBrewingStand = expected.sourceState.Name == 'minecraft:brewing_stand'
+                if ((actual.coordinate as List) != expected.coordinate ||
+                    (actual.source_state as Map) != expected.sourceState ||
+                    (actual.replacement_state as Map) != expected.replacementState ||
+                    actual.removed_block_entity_id != expected.blockEntity ||
+                    actual.removed_block_entity_nbt != expectsBlockEntity ||
+                    actual.processor_generated_brewing_contents_eliminated != isBrewingStand ||
+                    (actual.replacement_palette_index as int) != expected.paletteIndex ||
+                    actual.replacement_palette_state_appended != false ||
+                    !actual.before_sha256.toString().equalsIgnoreCase(expected.before) ||
+                    !actual.after_sha256.toString().equalsIgnoreCase(expected.after) ||
+                    actual.non_target_block_records_byte_identical != true ||
+                    !manifest.pristine.files[template].toString().equalsIgnoreCase(expected.before) ||
+                    !expectedFiles[template].toString().equalsIgnoreCase(expected.after)) {
+                    throw new GradleException("Private utility transform differs for ${template}")
                 }
             }
 

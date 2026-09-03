@@ -1,6 +1,9 @@
 {
   "item.ribbits.glowcap": "Glowcap",
   "item.ribbits.toadstool_heart": "Toadstool Heart",
+  "item.ribbits.ribbit_village_explorer_map": "Ribbit Village Explorer Map",
+  "item.ribbits.uncharted_ribbit_map": "Uncharted Ribbit Map",
+  "item.ribbits.uncharted_ribbit_map.lore": "No Ribbit village could be charted.",
   "entity.ribbits.merchant.gardener.tier_1": "Sprout Tender",
   "entity.ribbits.merchant.gardener.tier_2": "Toadstool Keeper",
   "entity.ribbits.merchant.farmer.tier_1": "Vine Puller",

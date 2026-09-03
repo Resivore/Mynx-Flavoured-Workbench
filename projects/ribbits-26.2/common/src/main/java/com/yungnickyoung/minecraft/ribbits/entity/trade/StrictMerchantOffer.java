@@ -1,5 +1,6 @@
 package com.yungnickyoung.minecraft.ribbits.entity.trade;
 
+import com.yungnickyoung.minecraft.ribbits.world.loot.RibbitVillageExplorerMap;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.trading.ItemCost;
 import net.minecraft.world.item.trading.MerchantOffer;
@@ -14,13 +15,25 @@ import java.util.Optional;
 public final class StrictMerchantOffer extends MerchantOffer {
     private final boolean exactA;
     private final boolean exactB;
+    private final boolean failedMapA;
+    private final boolean failedMapB;
 
     public StrictMerchantOffer(ItemCost first, Optional<ItemCost> second, ItemStack result,
                                int maxUses, int xp, float priceMultiplier,
                                boolean exactA, boolean exactB) {
+        this(first, second, result, maxUses, xp, priceMultiplier,
+                exactA, exactB, false, false);
+    }
+
+    public StrictMerchantOffer(ItemCost first, Optional<ItemCost> second, ItemStack result,
+                               int maxUses, int xp, float priceMultiplier,
+                               boolean exactA, boolean exactB,
+                               boolean failedMapA, boolean failedMapB) {
         super(first, second, result, maxUses, xp, priceMultiplier);
         this.exactA = exactA;
         this.exactB = exactB;
+        this.failedMapA = failedMapA;
+        this.failedMapB = failedMapB;
     }
 
     private StrictMerchantOffer(MerchantOffer saved, StrictMerchantOffer template) {
@@ -30,6 +43,8 @@ public final class StrictMerchantOffer extends MerchantOffer {
         this.setSpecialPriceDiff(saved.getSpecialPriceDiff());
         this.exactA = template.exactA;
         this.exactB = template.exactB;
+        this.failedMapA = template.failedMapA;
+        this.failedMapB = template.failedMapB;
     }
 
     /**
@@ -39,7 +54,8 @@ public final class StrictMerchantOffer extends MerchantOffer {
      */
     public static MerchantOffer restoreFromTemplate(MerchantOffer saved, MerchantOffer template) {
         if (saved instanceof StrictMerchantOffer || !(template instanceof StrictMerchantOffer strict)
-                || (!strict.exactA && !strict.exactB)) {
+                || (!strict.exactA && !strict.exactB
+                    && !strict.failedMapA && !strict.failedMapB)) {
             return saved;
         }
         return new StrictMerchantOffer(saved, strict);
@@ -53,6 +69,12 @@ public final class StrictMerchantOffer extends MerchantOffer {
         }
         if (this.exactB && !ItemStack.isSameItemSameComponents(
                 second, this.getItemCostB().orElseThrow().itemStack())) {
+            return false;
+        }
+        if (this.failedMapA && !RibbitVillageExplorerMap.isFailedMap(first)) {
+            return false;
+        }
+        if (this.failedMapB && !RibbitVillageExplorerMap.isFailedMap(second)) {
             return false;
         }
         return super.satisfiedBy(first, second);

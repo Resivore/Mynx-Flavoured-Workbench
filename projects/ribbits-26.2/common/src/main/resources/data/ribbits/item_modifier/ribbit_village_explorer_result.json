@@ -1,0 +1,13 @@
+[
+  {
+    "function": "minecraft:exploration_map",
+    "destination": "ribbits:on_ribbit_village_explorer_maps",
+    "decoration": "minecraft:village_plains",
+    "zoom": 2,
+    "search_radius": 100,
+    "skip_existing_chunks": false
+  },
+  {
+    "function": "ribbits:finalize_ribbit_village_explorer_result"
+  }
+]

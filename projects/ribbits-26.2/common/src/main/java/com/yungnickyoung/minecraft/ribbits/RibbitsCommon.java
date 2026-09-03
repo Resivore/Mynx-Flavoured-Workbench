@@ -1,6 +1,7 @@
 package com.yungnickyoung.minecraft.ribbits;
 
 import com.yungnickyoung.minecraft.ribbits.module.ConfigModule;
+import com.yungnickyoung.minecraft.ribbits.module.LootFunctionModule;
 import com.yungnickyoung.minecraft.ribbits.module.NetworkModule;
 import com.yungnickyoung.minecraft.ribbits.module.RecipeModule;
 import com.yungnickyoung.minecraft.yungsapi.api.YungAutoRegister;
@@ -17,6 +18,7 @@ public class RibbitsCommon {
 
     public static void init() {
         RecipeModule.init();
+        LootFunctionModule.init();
         YungAutoRegister.scanPackageForAnnotations("com.yungnickyoung.minecraft.ribbits");
         ConfigModule.init();
         NetworkModule.init();

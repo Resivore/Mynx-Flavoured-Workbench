@@ -1,6 +1,7 @@
 package com.yungnickyoung.minecraft.ribbits.entity.trade;
 
 import com.google.gson.JsonElement;
+import com.yungnickyoung.minecraft.ribbits.world.loot.RibbitVillageExplorerMap;
 import com.mojang.serialization.JsonOps;
 import net.minecraft.SharedConstants;
 import net.minecraft.core.HolderLookup;
@@ -20,6 +21,7 @@ import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.item.trading.ItemCost;
 import net.minecraft.world.item.trading.MerchantOffer;
+import net.minecraft.world.level.saveddata.maps.MapId;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -28,6 +30,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Optional;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -106,6 +109,49 @@ class StrictMerchantOfferCodecTest {
         renamedOpal.set(DataComponents.CUSTOM_NAME, Component.literal("Almost Opal"));
         assertFalse(restored.satisfiedBy(renamedOpal, ItemStack.EMPTY),
                 "exact component-bearing gates reject unrelated extra components");
+    }
+
+    @Test
+    void codecRoundTripRestoresPrivateFailedMapMatchingWithoutDependingOnDisplayText() {
+        ItemStack failedMap = RibbitVillageExplorerMap.createFailedMap(1);
+        ItemCost failedMapCost = new ItemCost(failedMap.typeHolder(), 1,
+                DataComponentExactPredicate.expect(
+                        DataComponents.CUSTOM_DATA,
+                        RibbitVillageExplorerMap.failedMarker()),
+                failedMap);
+        StrictMerchantOffer template = new StrictMerchantOffer(
+                failedMapCost, Optional.empty(), new ItemStack(Items.HEART_OF_THE_SEA),
+                16, 0, 0.0F, false, false, true, false);
+
+        MerchantOffer restored = StrictMerchantOffer.restoreFromTemplate(roundTrip(template), template);
+        assertEquals(16, restored.getMaxUses());
+        assertEquals(0, restored.getXp());
+        assertEquals(0.0F, restored.getPriceMultiplier());
+        assertEquals(failedMap.get(DataComponents.CUSTOM_NAME),
+                restored.getItemCostA().itemStack().get(DataComponents.CUSTOM_NAME),
+                "the visible failed-map cost is restored after vanilla codec decoding");
+        assertTrue(restored.satisfiedBy(failedMap.copy(), ItemStack.EMPTY));
+
+        ItemStack renamedGenuine = failedMap.copy();
+        renamedGenuine.set(DataComponents.CUSTOM_NAME, Component.literal("Still genuine"));
+        assertTrue(restored.satisfiedBy(renamedGenuine, ItemStack.EMPTY),
+                "authenticity is the private marker rather than display text");
+
+        ItemStack generic = new ItemStack(Items.MAP);
+        assertFalse(restored.satisfiedBy(generic, ItemStack.EMPTY));
+        generic.set(DataComponents.CUSTOM_NAME,
+                Component.translatable(RibbitVillageExplorerMap.FAILURE_NAME_KEY));
+        assertFalse(restored.satisfiedBy(generic, ItemStack.EMPTY),
+                "a renamed generic empty map is not redeemable");
+
+        ItemStack successful = new ItemStack(Items.FILLED_MAP);
+        successful.set(DataComponents.MAP_ID, new MapId(7));
+        assertFalse(restored.satisfiedBy(successful, ItemStack.EMPTY));
+
+        ItemStack staleMappedFailure = failedMap.copy();
+        staleMappedFailure.set(DataComponents.MAP_ID, new MapId(7));
+        assertFalse(restored.satisfiedBy(staleMappedFailure, ItemStack.EMPTY),
+                "even a marked stack with map data is not an empty-search failure");
     }
 
     @Test

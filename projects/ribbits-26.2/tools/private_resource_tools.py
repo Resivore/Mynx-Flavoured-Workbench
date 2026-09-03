@@ -30,22 +30,25 @@ from typing import Any
 EXPECTED_PRISTINE_SHA256 = (
     "4cf86564aed393410fb1dbca3a9ce2425382307655e92bb6b43f3ddcee5bf731"
 )
-CANDIDATE_VERSION = "4.1.6+26.2-mynx-canary3"
-CANDIDATE_CANARY = 3
+CANDIDATE_VERSION = "4.1.6+26.2-mynx-canary4"
+CANDIDATE_CANARY = 4
 PRIVATE_MANIFEST_SCHEMA = "mynx-ribbits-private-resource-manifest/v1"
 PRIVATE_MANIFEST_CLASSIFICATION = (
     "PRIVATE MYNX ASSEMBLY STAGED / NONREDISTRIBUTABLE DONOR ASSETS"
 )
 PRIVATE_ARTIFACT_FILENAME = (
-    "ribbits-private-reconstruction-4.1.6+26.2-mynx-canary3.jar"
+    "ribbits-private-reconstruction-4.1.6+26.2-mynx-canary4.jar"
 )
-SOURCE_ONLY_ARTIFACT_FILENAME = "ribbits-source-only-4.1.6+26.2-mynx-canary3.jar"
+SOURCE_ONLY_ARTIFACT_FILENAME = "ribbits-source-only-4.1.6+26.2-mynx-canary4.jar"
 SOURCE_SAFE_PUBLIC_RESOURCE_PATHS = frozenset(
     {
         "assets/ribbits/items/glowcap.json",
         "assets/ribbits/items/toadstool_heart.json",
         "data/ribbits/advancement/recipes/misc/toadstool_heart.json",
+        "data/ribbits/item_modifier/ribbit_village_explorer_result.json",
+        "data/ribbits/loot_table/chests/swamp_hut_map.json",
         "data/ribbits/recipe/toadstool_heart.json",
+        "data/ribbits/tags/worldgen/structure/on_ribbit_village_explorer_maps.json",
     }
 )
 REQUIRED_FABRIC_DEPENDENCIES = {
@@ -323,6 +326,126 @@ VILLAGE_RIBBIT_TEMPLATE_DATA = {
     },
 }
 
+# The immutable Ribbits 4.1.6 archive stores building templates under
+# structure/houses; structure/ribbits contains only the five resident entities.
+# Every input hash below is the compressed NBT member hash from the pristine JAR.
+PRIVATE_VILLAGE_TEMPLATE_COUNT = 29
+PRIVATE_VILLAGE_UTILITY_TRANSFORMS: dict[str, dict[str, Any]] = {
+    "data/ribbits/structure/houses/brown_sorcerer_house.nbt": {
+        "before_sha256": "502dc904d293d411a5ebafed2c7f71b8eed8e36ab2123553ae8ae3295a56aa76",
+        "after_sha256": "d6878d280ec391a7ffd48fcd442fbdd33f6b341031e7efe753f98812270d1b63",
+        "coordinate": (6, 2, 5),
+        "source_state": {
+            "Name": "minecraft:brewing_stand",
+            "Properties": {
+                "has_bottle_0": "false",
+                "has_bottle_1": "false",
+                "has_bottle_2": "false",
+            },
+        },
+        "replacement_state": {"Name": "minecraft:air"},
+        "block_entity_id": "minecraft:brewing_stand",
+    },
+    "data/ribbits/structure/houses/red_sorcerer_house.nbt": {
+        "before_sha256": "ef66d580570c81657500f714b76eb761de910285571ff0ce36442b14e4bc8948",
+        "after_sha256": "57dcf47cdece4e459522cea74b69215269a45c81028a2c42f2f3ebfaee43d516",
+        "coordinate": (6, 2, 5),
+        "source_state": {
+            "Name": "minecraft:brewing_stand",
+            "Properties": {
+                "has_bottle_0": "false",
+                "has_bottle_1": "false",
+                "has_bottle_2": "false",
+            },
+        },
+        "replacement_state": {"Name": "minecraft:air"},
+        "block_entity_id": "minecraft:brewing_stand",
+    },
+    "data/ribbits/structure/houses/small_house_brown_3.nbt": {
+        "before_sha256": "329dd885fd3a26fbf809cc37b74696799bea2e5397a6dd645810261bfbb1055a",
+        "after_sha256": "b54530ffebc2284ab4397796b8bbad411193fb318e3dfcf93f61558b78327b87",
+        "coordinate": (3, 1, 5),
+        "source_state": {
+            "Name": "minecraft:damaged_anvil",
+            "Properties": {"facing": "west"},
+        },
+        "replacement_state": {"Name": "minecraft:air"},
+        "block_entity_id": None,
+    },
+    "data/ribbits/structure/houses/small_house_red_3.nbt": {
+        "before_sha256": "4652d7c9fa1481b9d210a32140eedc751a797c0d2deb6b6e12f53d4c60955e70",
+        "after_sha256": "2c5a76cf50f5993ed0f6f089aefabe3b04feab2e75962e80b8cfa6f5788ccb3e",
+        "coordinate": (3, 1, 5),
+        "source_state": {
+            "Name": "minecraft:damaged_anvil",
+            "Properties": {"facing": "west"},
+        },
+        "replacement_state": {"Name": "minecraft:air"},
+        "block_entity_id": None,
+    },
+    "data/ribbits/structure/houses/small_house_brown_2.nbt": {
+        "before_sha256": "7e7ca64fe02c9953b6e3ccf3bf2a2393c3274bbbb3848ae874b4ff8c9c6b1676",
+        "after_sha256": "bc65457ea8c0b6aaaf3902b04840ff8f1ba04ee5818b85e5c11c70cb5683b695",
+        "coordinate": (5, 1, 6),
+        "source_state": {
+            "Name": "minecraft:smoker",
+            "Properties": {"lit": "false", "facing": "north"},
+        },
+        "replacement_state": {"Name": "minecraft:stone_bricks"},
+        "block_entity_id": "minecraft:smoker",
+    },
+    "data/ribbits/structure/houses/small_house_red_2.nbt": {
+        "before_sha256": "a91945113b28214f5be8935efdbb4c42f6ec469bf9ca9bae5074a0579023d20a",
+        "after_sha256": "7ceb960251b893a75c82fa08d2268a307676a55d00a2cd5be897ceb0b08d272d",
+        "coordinate": (4, 1, 2),
+        "source_state": {
+            "Name": "minecraft:blast_furnace",
+            "Properties": {"lit": "false", "facing": "south"},
+        },
+        "replacement_state": {"Name": "minecraft:stone_bricks"},
+        "block_entity_id": "minecraft:blast_furnace",
+    },
+}
+PRIVATE_VILLAGE_REMOVED_UTILITY_COUNTS = {
+    "minecraft:brewing_stand": 2,
+    "minecraft:damaged_anvil": 2,
+    "minecraft:smoker": 1,
+    "minecraft:blast_furnace": 1,
+}
+PRIVATE_VILLAGE_PRESERVED_BLOCK_COUNTS = {
+    "minecraft:barrel": 60,
+    "minecraft:chest": 11,
+    "minecraft:crafting_table": 6,
+    "minecraft:water_cauldron": 8,
+    "minecraft:campfire": 2,
+    "minecraft:blue_bed": 6,
+    "minecraft:gray_bed": 2,
+    "minecraft:green_bed": 10,
+    "minecraft:light_gray_bed": 10,
+    "minecraft:purple_bed": 4,
+    "minecraft:red_bed": 6,
+    "minecraft:yellow_bed": 4,
+    "minecraft:cake": 2,
+}
+PRIVATE_VILLAGE_PROCESSOR_SENTINEL_COUNTS = {
+    "minecraft:lapis_block": 287,
+    "minecraft:end_stone": 78,
+    "minecraft:orange_stained_glass": 112,
+    "minecraft:red_nether_bricks": 28,
+    "minecraft:warped_planks": 152,
+    "minecraft:crimson_planks": 1,
+    "minecraft:stripped_crimson_stem": 34,
+    "minecraft:crimson_fence": 4,
+}
+PRIVATE_VILLAGE_LOOT_BINDING_COUNTS = {
+    "ribbits:chests/fisherman_main": 11,
+    "ribbits:chests/fisherman_storage": 25,
+    "ribbits:chests/gardener": 3,
+    "ribbits:chests/merchant": 4,
+    "ribbits:chests/nitwit": 10,
+    "ribbits:chests/sorcerer": 6,
+}
+
 LOOT_TABLE_PATHS = (
     "data/ribbits/loot_table/chests/fisherman_main.json",
     "data/ribbits/loot_table/chests/sorcerer.json",
@@ -433,6 +556,12 @@ EN_US_CONFIG_ADDITIONS = {
         "Optional password for proxy authentication.",
 }
 
+PHASE_C_MAP_TRANSLATIONS = {
+    "item.ribbits.ribbit_village_explorer_map": "Ribbit Village Explorer Map",
+    "item.ribbits.uncharted_ribbit_map": "Uncharted Ribbit Map",
+    "item.ribbits.uncharted_ribbit_map.lore": "No Ribbit village could be charted.",
+}
+
 EN_US_MYNX_PROFESSION_TRANSLATIONS = {
     "item.ribbits.ribbit_nitwit_spawn_egg": "Musician Ribbit Spawn Egg",
     "item.ribbits.ribbit_chef_spawn_egg": "Chef Ribbit Spawn Egg",
@@ -441,6 +570,7 @@ EN_US_MYNX_PROFESSION_TRANSLATIONS = {
     "item.ribbits.ribbit_guard_spawn_egg": "Guard Ribbit Spawn Egg",
     "item.ribbits.glowcap": "Glowcap",
     "item.ribbits.toadstool_heart": "Toadstool Heart",
+    **PHASE_C_MAP_TRANSLATIONS,
     "entity.ribbits.merchant.gardener.tier_1": "Sprout Tender",
     "entity.ribbits.merchant.gardener.tier_2": "Toadstool Keeper",
     "entity.ribbits.merchant.farmer.tier_1": "Vine Puller",
@@ -493,7 +623,7 @@ SPAWN_EGG_MODEL = {
     "textures": {"layer0": "ribbits:item/ribbit_spawn_egg"},
 }
 SPAWN_EGG_SUBSTITUTION_NOTICE = (
-    "Private Mynx Canary 3 uses one palette-only green recolor of Minecraft "
+    "Private Mynx Canary 4 uses one palette-only green recolor of Minecraft "
     "26.2's vanilla frog spawn-egg artwork for all nine Ribbits profession eggs. "
     "This is explicitly authorized for the private Workbench and is not exact "
     "Ribbits 4.1.6 spawn-egg visual parity."
@@ -970,15 +1100,20 @@ def build_umbrella_composite_model(
 
 
 class NbtScanner:
-    """Bounded NBT scanner used only to locate and prove the exact resident tag splice."""
+    """Bounded NBT scanner for exact, byte-preserving private structure transforms."""
 
     def __init__(self, data: bytes, label: str):
         self.data = data
         self.label = label
         self.offset = 0
         self.strings: dict[tuple[str, ...], str] = {}
+        self.ints: dict[tuple[str, ...], int] = {}
+        self.int_payload_ranges: dict[tuple[str, ...], tuple[int, int]] = {}
         self.lists: dict[tuple[str, ...], tuple[int, int]] = {}
+        self.list_details: dict[tuple[str, ...], dict[str, int]] = {}
+        self.list_items: dict[tuple[str, ...], dict[str, Any]] = {}
         self.compound_fields: dict[tuple[str, ...], list[tuple[str, int]]] = {}
+        self.named_tags: list[dict[str, Any]] = []
         self.named_compounds: list[dict[str, Any]] = []
 
     def read(self, length: int) -> bytes:
@@ -1005,7 +1140,11 @@ class NbtScanner:
         if tag_type == 0:
             raise ValidationError(f"Unexpected standalone TAG_End in {self.label}")
         if tag_type in {1, 2, 3, 4, 5, 6}:
-            self.read({1: 1, 2: 2, 3: 4, 4: 8, 5: 4, 6: 8}[tag_type])
+            payload_start = self.offset
+            payload = self.read({1: 1, 2: 2, 3: 4, 4: 8, 5: 4, 6: 8}[tag_type])
+            if tag_type == 3:
+                self.ints[path] = struct.unpack(">i", payload)[0]
+                self.int_payload_ranges[path] = (payload_start, self.offset)
             return
         if tag_type == 7:
             length = self.read_i32()
@@ -1018,12 +1157,28 @@ class NbtScanner:
             return
         if tag_type == 9:
             element_type = self.read_u8()
+            length_start = self.offset
             length = self.read_i32()
             if length < 0 or (element_type == 0 and length != 0):
                 raise ValidationError(f"Invalid TAG_List header in {self.label}")
             self.lists[path] = (element_type, length)
+            detail = {
+                "element_type": element_type,
+                "length": length,
+                "length_start": length_start,
+                "items_start": self.offset,
+            }
+            self.list_details[path] = detail
             for index in range(length):
-                self.scan_payload(element_type, path + (f"[{index}]",))
+                item_path = path + (f"[{index}]",)
+                item_start = self.offset
+                self.scan_payload(element_type, item_path)
+                self.list_items[item_path] = {
+                    "tag_type": element_type,
+                    "start": item_start,
+                    "end": self.offset,
+                }
+            detail["items_end"] = self.offset
             return
         if tag_type == 10:
             fields: list[tuple[str, int]] = []
@@ -1040,15 +1195,16 @@ class NbtScanner:
                 payload_start = self.offset
                 child_path = path + (name,)
                 self.scan_payload(child_type, child_path)
+                named_tag = {
+                    "path": child_path,
+                    "tag_type": child_type,
+                    "start": tag_start,
+                    "payload_start": payload_start,
+                    "end": self.offset,
+                }
+                self.named_tags.append(named_tag)
                 if child_type == 10:
-                    self.named_compounds.append(
-                        {
-                            "path": child_path,
-                            "start": tag_start,
-                            "payload_start": payload_start,
-                            "end": self.offset,
-                        }
-                    )
+                    self.named_compounds.append(named_tag)
             return
         if tag_type in {11, 12}:
             length = self.read_i32()
@@ -1207,6 +1363,556 @@ def validate_village_profession_assignments(root: Path, errors: list[str]) -> No
                 errors.append(f"{relative} no longer has exactly one resident entity")
             if scanner.strings.get(("entities", "[0]", "nbt", "id")) != "ribbits:ribbit":
                 errors.append(f"{relative} resident identity is no longer ribbits:ribbit")
+
+
+def _require_unique_nbt_fields(
+    scanner: NbtScanner,
+    path: tuple[str, ...],
+    required: set[tuple[str, int]],
+    optional: set[tuple[str, int]],
+    label: str,
+) -> list[tuple[str, int]]:
+    fields = scanner.compound_fields.get(path)
+    if fields is None:
+        raise ValidationError(f"Missing NBT compound {'.'.join(path)} in {label}")
+    if len({name for name, _tag_type in fields}) != len(fields):
+        raise ValidationError(f"Duplicate NBT compound field in {'.'.join(path)} of {label}")
+    actual = set(fields)
+    if not required.issubset(actual) or not actual.issubset(required | optional):
+        raise ValidationError(
+            f"Unexpected NBT fields in {'.'.join(path)} of {label}: {fields}"
+        )
+    return fields
+
+
+def _structure_palette(scanner: NbtScanner, label: str) -> list[dict[str, Any]]:
+    palette_header = scanner.lists.get(("palette",))
+    if palette_header is None or palette_header[0] != 10 or palette_header[1] <= 0:
+        raise ValidationError(f"{label} must contain a nonempty compound palette")
+    states: list[dict[str, Any]] = []
+    for index in range(palette_header[1]):
+        path = ("palette", f"[{index}]")
+        fields = _require_unique_nbt_fields(
+            scanner,
+            path,
+            {("Name", 8)},
+            {("Properties", 10)},
+            label,
+        )
+        name = scanner.strings.get(path + ("Name",))
+        if not isinstance(name, str) or not name:
+            raise ValidationError(f"Palette state {index} lacks a valid Name in {label}")
+        state: dict[str, Any] = {"Name": name}
+        if ("Properties", 10) in fields:
+            property_path = path + ("Properties",)
+            property_fields = scanner.compound_fields.get(property_path)
+            if property_fields is None or not property_fields:
+                raise ValidationError(f"Empty or missing Properties in palette state {index} of {label}")
+            if (
+                len({key for key, _tag_type in property_fields}) != len(property_fields)
+                or any(tag_type != 8 for _key, tag_type in property_fields)
+            ):
+                raise ValidationError(
+                    f"Palette state {index} has non-string or duplicate Properties in {label}"
+                )
+            properties = {
+                key: scanner.strings.get(property_path + (key,))
+                for key, _tag_type in property_fields
+            }
+            if any(not isinstance(value, str) for value in properties.values()):
+                raise ValidationError(f"Palette state {index} has missing Properties in {label}")
+            state["Properties"] = properties
+        states.append(state)
+    return states
+
+
+def inspect_structure_template(data: bytes, label: str) -> dict[str, Any]:
+    if not data.startswith(b"\x1f\x8b"):
+        raise ValidationError(f"Private structure template must remain gzip-compressed: {label}")
+    decoded = decode_nbt_bytes(data, label)
+    scanner = scan_nbt(decoded, label)
+    palette = _structure_palette(scanner, label)
+    blocks_header = scanner.lists.get(("blocks",))
+    if blocks_header is None or blocks_header[0] != 10:
+        raise ValidationError(f"{label} must contain a compound blocks list")
+
+    blocks: list[dict[str, Any]] = []
+    positions: set[tuple[int, int, int]] = set()
+    for index in range(blocks_header[1]):
+        path = ("blocks", f"[{index}]")
+        fields = _require_unique_nbt_fields(
+            scanner,
+            path,
+            {("pos", 9), ("state", 3)},
+            {("nbt", 10)},
+            label,
+        )
+        if scanner.lists.get(path + ("pos",)) != (3, 3):
+            raise ValidationError(f"Block {index} position is not exactly three TAG_Ints in {label}")
+        try:
+            position = tuple(
+                scanner.ints[path + ("pos", f"[{axis}]")] for axis in range(3)
+            )
+            state_index = scanner.ints[path + ("state",)]
+            state_range = scanner.int_payload_ranges[path + ("state",)]
+        except KeyError as exc:
+            raise ValidationError(f"Block {index} lacks exact position/state data in {label}") from exc
+        if position in positions:
+            raise ValidationError(f"Duplicate block coordinate {position} in {label}")
+        positions.add(position)
+        if state_index < 0 or state_index >= len(palette):
+            raise ValidationError(f"Block {index} has invalid palette index {state_index} in {label}")
+        item_range = scanner.list_items.get(path)
+        if item_range is None or item_range["tag_type"] != 10:
+            raise ValidationError(f"Block {index} lacks an exact compound payload range in {label}")
+        nbt_matches = [tag for tag in scanner.named_tags if tag["path"] == path + ("nbt",)]
+        expects_nbt = ("nbt", 10) in fields
+        if len(nbt_matches) != (1 if expects_nbt else 0):
+            raise ValidationError(f"Block {index} has inconsistent block-entity NBT in {label}")
+        block_entity_id = None
+        loot_table = None
+        nbt_range = None
+        if nbt_matches:
+            nbt_range = (nbt_matches[0]["start"], nbt_matches[0]["end"])
+            block_entity_id = scanner.strings.get(path + ("nbt", "id"))
+            if not isinstance(block_entity_id, str) or not block_entity_id:
+                raise ValidationError(f"Block {index} block entity lacks a valid id in {label}")
+            loot_table = scanner.strings.get(path + ("nbt", "LootTable"))
+            if loot_table is not None and not isinstance(loot_table, str):
+                raise ValidationError(f"Block {index} has invalid LootTable data in {label}")
+        blocks.append(
+            {
+                "index": index,
+                "path": path,
+                "position": position,
+                "state_index": state_index,
+                "state": palette[state_index],
+                "state_payload_range": state_range,
+                "payload_range": (item_range["start"], item_range["end"]),
+                "nbt_range": nbt_range,
+                "block_entity_id": block_entity_id,
+                "loot_table": loot_table,
+            }
+        )
+    return {
+        "decoded": decoded,
+        "scanner": scanner,
+        "palette": palette,
+        "blocks": blocks,
+    }
+
+
+def _encode_nbt_string(value: str) -> bytes:
+    encoded = value.encode("utf-8")
+    if len(encoded) > 0xFFFF:
+        raise ValidationError("NBT string is too long")
+    return struct.pack(">H", len(encoded)) + encoded
+
+
+def _encode_palette_state_payload(state: dict[str, Any]) -> bytes:
+    if set(state) not in ({"Name"}, {"Name", "Properties"}):
+        raise ValidationError(f"Unsupported appended palette state: {state!r}")
+    name = state.get("Name")
+    if not isinstance(name, str) or not name:
+        raise ValidationError(f"Invalid appended palette state Name: {state!r}")
+    payload = b"\x08" + _encode_nbt_string("Name") + _encode_nbt_string(name)
+    properties = state.get("Properties")
+    if properties is not None:
+        if not isinstance(properties, dict) or not properties:
+            raise ValidationError(f"Invalid appended palette Properties: {state!r}")
+        payload += b"\x0a" + _encode_nbt_string("Properties")
+        for key in sorted(properties):
+            value = properties[key]
+            if not isinstance(key, str) or not isinstance(value, str):
+                raise ValidationError(f"Invalid appended palette property: {key!r}={value!r}")
+            payload += b"\x08" + _encode_nbt_string(key) + _encode_nbt_string(value)
+        payload += b"\x00"
+    return payload + b"\x00"
+
+
+def _apply_exact_byte_patches(
+    data: bytes, patches: list[tuple[int, int, bytes, str]], label: str
+) -> bytes:
+    result = bytearray()
+    previous_end = 0
+    for start, end, replacement, description in sorted(patches, key=lambda patch: patch[0]):
+        if start < previous_end or start < 0 or end < start or end > len(data):
+            raise ValidationError(
+                f"Overlapping or invalid {description} byte patch [{start}, {end}) in {label}"
+            )
+        result.extend(data[previous_end:start])
+        result.extend(replacement)
+        previous_end = end
+    result.extend(data[previous_end:])
+    return bytes(result)
+
+
+def transform_exact_private_village_utility(
+    data: bytes, relative: str, spec: dict[str, Any]
+) -> tuple[bytes, dict[str, Any]]:
+    before_sha256 = sha256_bytes(data)
+    if before_sha256 != spec["before_sha256"]:
+        raise ValidationError(
+            f"Private utility template SHA-256 differs for {relative}: "
+            f"expected {spec['before_sha256']}, got {before_sha256}"
+        )
+    inspected = inspect_structure_template(data, relative)
+    source_state = spec["source_state"]
+    source_name = source_state["Name"]
+    coordinate = tuple(spec["coordinate"])
+    source_matches = [
+        block for block in inspected["blocks"] if block["state"]["Name"] == source_name
+    ]
+    if len(source_matches) != 1:
+        raise ValidationError(
+            f"{relative} must contain exactly one {source_name}, found {len(source_matches)}"
+        )
+    target = source_matches[0]
+    if target["position"] != coordinate:
+        raise ValidationError(
+            f"{relative} {source_name} shifted: expected {coordinate}, got {target['position']}"
+        )
+    if target["state"] != source_state:
+        raise ValidationError(
+            f"{relative} source state differs at {coordinate}: "
+            f"expected {source_state}, got {target['state']}"
+        )
+    blocks_at_coordinate = [
+        block for block in inspected["blocks"] if block["position"] == coordinate
+    ]
+    if blocks_at_coordinate != [target]:
+        raise ValidationError(f"{relative} has a duplicate or ambiguous target at {coordinate}")
+
+    expected_block_entity_id = spec["block_entity_id"]
+    if target["block_entity_id"] != expected_block_entity_id:
+        raise ValidationError(
+            f"{relative} block entity differs at {coordinate}: "
+            f"expected {expected_block_entity_id!r}, got {target['block_entity_id']!r}"
+        )
+    if expected_block_entity_id is None and target["nbt_range"] is not None:
+        raise ValidationError(f"{relative} unexpectedly has block-entity NBT at {coordinate}")
+    if expected_block_entity_id is not None and target["nbt_range"] is None:
+        raise ValidationError(f"{relative} lacks required block-entity NBT at {coordinate}")
+
+    replacement_state = spec["replacement_state"]
+    replacement_indices = [
+        index for index, state in enumerate(inspected["palette"]) if state == replacement_state
+    ]
+    if len(replacement_indices) > 1:
+        raise ValidationError(
+            f"{relative} has duplicate exact replacement palette states: {replacement_indices}"
+        )
+    patches: list[tuple[int, int, bytes, str]] = []
+    palette_appended = not replacement_indices
+    if replacement_indices:
+        replacement_index = replacement_indices[0]
+    else:
+        replacement_index = len(inspected["palette"])
+        palette_detail = inspected["scanner"].list_details.get(("palette",))
+        if palette_detail is None:
+            raise ValidationError(f"{relative} lacks palette byte-range metadata")
+        patches.extend(
+            [
+                (
+                    palette_detail["length_start"],
+                    palette_detail["length_start"] + 4,
+                    struct.pack(">i", replacement_index + 1),
+                    "palette length",
+                ),
+                (
+                    palette_detail["items_end"],
+                    palette_detail["items_end"],
+                    _encode_palette_state_payload(replacement_state),
+                    "appended palette state",
+                ),
+            ]
+        )
+    state_start, state_end = target["state_payload_range"]
+    patches.append(
+        (state_start, state_end, struct.pack(">i", replacement_index), "target state index")
+    )
+    if target["nbt_range"] is not None:
+        nbt_start, nbt_end = target["nbt_range"]
+        patches.append((nbt_start, nbt_end, b"", "target block-entity NBT removal"))
+
+    transformed_decoded = _apply_exact_byte_patches(
+        inspected["decoded"], patches, relative
+    )
+    transformed = deterministic_gzip(transformed_decoded)
+    if transformed != deterministic_gzip(transformed_decoded):
+        raise AssertionError("Deterministic NBT encoder produced inconsistent bytes")
+    after_sha256 = sha256_bytes(transformed)
+    if after_sha256 != spec["after_sha256"]:
+        raise ValidationError(
+            f"Private utility template output SHA-256 differs for {relative}: "
+            f"expected {spec['after_sha256']}, got {after_sha256}"
+        )
+
+    after_inspected = inspect_structure_template(transformed, f"transformed {relative}")
+    after_by_position = {block["position"]: block for block in after_inspected["blocks"]}
+    if set(after_by_position) != {block["position"] for block in inspected["blocks"]}:
+        raise ValidationError(f"{relative} block coordinates changed during utility transform")
+    after_target = after_by_position[coordinate]
+    if after_target["state"] != replacement_state or after_target["nbt_range"] is not None:
+        raise ValidationError(
+            f"{relative} target did not become clean {replacement_state} at {coordinate}"
+        )
+    before_by_position = {block["position"]: block for block in inspected["blocks"]}
+    for position, after_block in after_by_position.items():
+        if position == coordinate:
+            continue
+        before_block = before_by_position[position]
+        before_start, before_end = before_block["payload_range"]
+        after_start, after_end = after_block["payload_range"]
+        if (
+            before_block["state"] != after_block["state"]
+            or inspected["decoded"][before_start:before_end]
+            != after_inspected["decoded"][after_start:after_end]
+        ):
+            raise ValidationError(
+                f"{relative} changed unrelated block record at {position}"
+            )
+
+    return transformed, {
+        "template": relative,
+        "coordinate": list(coordinate),
+        "source_state": source_state,
+        "replacement_state": replacement_state,
+        "removed_block_entity_id": expected_block_entity_id,
+        "removed_block_entity_nbt": target["nbt_range"] is not None,
+        "processor_generated_brewing_contents_eliminated": source_name
+        == "minecraft:brewing_stand",
+        "replacement_palette_index": replacement_index,
+        "replacement_palette_state_appended": palette_appended,
+        "before_sha256": before_sha256,
+        "after_sha256": after_sha256,
+        "non_target_block_records_byte_identical": True,
+    }
+
+
+def _private_village_structure_inventory(payloads: dict[str, bytes]) -> dict[str, Any]:
+    block_counts: Counter[str] = Counter()
+    block_entity_counts: Counter[str] = Counter()
+    loot_bindings: Counter[str] = Counter()
+    inspected: dict[str, dict[str, Any]] = {}
+    for relative in sorted(payloads):
+        template = inspect_structure_template(payloads[relative], relative)
+        inspected[relative] = template
+        for block in template["blocks"]:
+            block_counts[block["state"]["Name"]] += 1
+            if block["block_entity_id"] is not None:
+                block_entity_counts[block["block_entity_id"]] += 1
+            if block["loot_table"] is not None:
+                loot_bindings[block["loot_table"]] += 1
+    return {
+        "block_counts": block_counts,
+        "block_entity_counts": block_entity_counts,
+        "loot_bindings": loot_bindings,
+        "inspected": inspected,
+    }
+
+
+def _require_pinned_inventory_counts(
+    actual: Counter[str], expected: dict[str, int], category: str
+) -> None:
+    differences = {
+        name: {"expected": count, "actual": actual[name]}
+        for name, count in expected.items()
+        if actual[name] != count
+    }
+    if differences:
+        raise ValidationError(f"Private village {category} counts differ: {differences}")
+
+
+def _private_village_template_tree_hash(payloads: dict[str, bytes]) -> str:
+    digest = hashlib.sha256()
+    for relative in sorted(payloads):
+        encoded_name = relative.encode("utf-8")
+        digest.update(struct.pack(">I", len(encoded_name)))
+        digest.update(encoded_name)
+        digest.update(struct.pack(">Q", len(payloads[relative])))
+        digest.update(payloads[relative])
+    return digest.hexdigest()
+
+
+def transform_private_village_utilities(root: Path) -> dict[str, Any]:
+    structure_root = root / "data/ribbits/structure"
+    paths = sorted(structure_root.rglob("*.nbt"))
+    payloads = {path.relative_to(root).as_posix(): path.read_bytes() for path in paths}
+    if len(payloads) != PRIVATE_VILLAGE_TEMPLATE_COUNT:
+        raise ValidationError(
+            f"Expected {PRIVATE_VILLAGE_TEMPLATE_COUNT} private village templates, "
+            f"found {len(payloads)}"
+        )
+    expected_targets = set(PRIVATE_VILLAGE_UTILITY_TRANSFORMS)
+    missing_targets = expected_targets - set(payloads)
+    if missing_targets:
+        raise ValidationError(f"Private village utility templates are missing: {sorted(missing_targets)}")
+    for relative, spec in PRIVATE_VILLAGE_UTILITY_TRANSFORMS.items():
+        actual_hash = sha256_bytes(payloads[relative])
+        if actual_hash != spec["before_sha256"]:
+            raise ValidationError(
+                f"Private utility template SHA-256 differs for {relative}: "
+                f"expected {spec['before_sha256']}, got {actual_hash}"
+            )
+
+    before = _private_village_structure_inventory(payloads)
+    _require_pinned_inventory_counts(
+        before["block_counts"], PRIVATE_VILLAGE_REMOVED_UTILITY_COUNTS, "removed utility"
+    )
+    _require_pinned_inventory_counts(
+        before["block_counts"], PRIVATE_VILLAGE_PRESERVED_BLOCK_COUNTS, "retained block"
+    )
+    _require_pinned_inventory_counts(
+        before["block_counts"],
+        PRIVATE_VILLAGE_PROCESSOR_SENTINEL_COUNTS,
+        "raw processor sentinel",
+    )
+    _require_pinned_inventory_counts(
+        before["loot_bindings"], PRIVATE_VILLAGE_LOOT_BINDING_COUNTS, "loot binding"
+    )
+
+    transformed_payloads = dict(payloads)
+    records: list[dict[str, Any]] = []
+    for relative in sorted(PRIVATE_VILLAGE_UTILITY_TRANSFORMS):
+        transformed, record = transform_exact_private_village_utility(
+            payloads[relative], relative, PRIVATE_VILLAGE_UTILITY_TRANSFORMS[relative]
+        )
+        transformed_again, _record_again = transform_exact_private_village_utility(
+            payloads[relative], relative, PRIVATE_VILLAGE_UTILITY_TRANSFORMS[relative]
+        )
+        if transformed_again != transformed:
+            raise AssertionError(f"Nondeterministic private utility transform for {relative}")
+        transformed_payloads[relative] = transformed
+        records.append(record)
+
+    after = _private_village_structure_inventory(transformed_payloads)
+    expected_after_blocks = before["block_counts"].copy()
+    for name, count in PRIVATE_VILLAGE_REMOVED_UTILITY_COUNTS.items():
+        expected_after_blocks[name] -= count
+        if expected_after_blocks[name] == 0:
+            del expected_after_blocks[name]
+    expected_after_blocks["minecraft:air"] += 4
+    expected_after_blocks["minecraft:stone_bricks"] += 2
+    if after["block_counts"] != expected_after_blocks:
+        raise ValidationError("Private village block inventory changed outside six exact utilities")
+
+    expected_after_block_entities = before["block_entity_counts"].copy()
+    for name, count in {
+        "minecraft:brewing_stand": 2,
+        "minecraft:smoker": 1,
+        "minecraft:blast_furnace": 1,
+    }.items():
+        expected_after_block_entities[name] -= count
+        if expected_after_block_entities[name] == 0:
+            del expected_after_block_entities[name]
+    if after["block_entity_counts"] != expected_after_block_entities:
+        raise ValidationError("Private village block-entity inventory changed outside exact removals")
+    if after["loot_bindings"] != before["loot_bindings"]:
+        raise ValidationError("Private village loot bindings changed during utility transform")
+    _require_pinned_inventory_counts(
+        after["block_counts"], PRIVATE_VILLAGE_PRESERVED_BLOCK_COUNTS, "retained block"
+    )
+    _require_pinned_inventory_counts(
+        after["block_counts"],
+        PRIVATE_VILLAGE_PROCESSOR_SENTINEL_COUNTS,
+        "raw processor sentinel",
+    )
+    _require_pinned_inventory_counts(
+        after["loot_bindings"], PRIVATE_VILLAGE_LOOT_BINDING_COUNTS, "loot binding"
+    )
+    for name in PRIVATE_VILLAGE_REMOVED_UTILITY_COUNTS:
+        if after["block_counts"][name] != 0:
+            raise ValidationError(f"Private village still contains removed utility {name}")
+
+    for relative in sorted(PRIVATE_VILLAGE_UTILITY_TRANSFORMS):
+        root.joinpath(*PurePosixPath(relative).parts).write_bytes(transformed_payloads[relative])
+
+    return {
+        "count": len(records),
+        "policy": "future placements only; exact coordinate and hash-pinned compressed NBT rewrite",
+        "canonical_template_count": len(payloads),
+        "templates": records,
+        "template_tree_before_sha256": _private_village_template_tree_hash(payloads),
+        "template_tree_after_sha256": _private_village_template_tree_hash(transformed_payloads),
+        "removed_utility_counts_before": dict(PRIVATE_VILLAGE_REMOVED_UTILITY_COUNTS),
+        "removed_utility_counts_after": {
+            name: after["block_counts"][name]
+            for name in PRIVATE_VILLAGE_REMOVED_UTILITY_COUNTS
+        },
+        "retained_block_counts": dict(PRIVATE_VILLAGE_PRESERVED_BLOCK_COUNTS),
+        "raw_processor_sentinel_counts": dict(PRIVATE_VILLAGE_PROCESSOR_SENTINEL_COUNTS),
+        "loot_binding_counts": dict(PRIVATE_VILLAGE_LOOT_BINDING_COUNTS),
+        "all_non_target_block_counts_unchanged": True,
+        "all_non_target_block_records_byte_identical": True,
+        "all_loot_bindings_unchanged": True,
+        "deterministic_compressed_nbt": True,
+    }
+
+
+def validate_private_village_utility_transform(root: Path, errors: list[str]) -> None:
+    try:
+        structure_root = root / "data/ribbits/structure"
+        paths = sorted(structure_root.rglob("*.nbt"))
+        payloads = {path.relative_to(root).as_posix(): path.read_bytes() for path in paths}
+        if len(payloads) != PRIVATE_VILLAGE_TEMPLATE_COUNT:
+            raise ValidationError(
+                f"Expected {PRIVATE_VILLAGE_TEMPLATE_COUNT} private village templates after "
+                f"assembly, found {len(payloads)}"
+            )
+        if not set(PRIVATE_VILLAGE_UTILITY_TRANSFORMS).issubset(payloads):
+            raise ValidationError("Private village utility output templates are missing")
+        inventory = _private_village_structure_inventory(payloads)
+        for relative, spec in PRIVATE_VILLAGE_UTILITY_TRANSFORMS.items():
+            actual_hash = sha256_bytes(payloads[relative])
+            if actual_hash != spec["after_sha256"]:
+                raise ValidationError(
+                    f"Private utility output SHA-256 differs for {relative}: "
+                    f"expected {spec['after_sha256']}, got {actual_hash}"
+                )
+            expected_coordinate = tuple(spec["coordinate"])
+            target = [
+                block
+                for block in inventory["inspected"][relative]["blocks"]
+                if block["position"] == expected_coordinate
+            ]
+            if (
+                len(target) != 1
+                or target[0]["state"] != spec["replacement_state"]
+                or target[0]["nbt_range"] is not None
+            ):
+                raise ValidationError(
+                    f"Private utility output target differs in {relative} at {expected_coordinate}"
+                )
+        for name in PRIVATE_VILLAGE_REMOVED_UTILITY_COUNTS:
+            if inventory["block_counts"][name] != 0:
+                raise ValidationError(f"Private village still contains removed utility {name}")
+        _require_pinned_inventory_counts(
+            inventory["block_counts"],
+            PRIVATE_VILLAGE_PRESERVED_BLOCK_COUNTS,
+            "retained block",
+        )
+        _require_pinned_inventory_counts(
+            inventory["block_counts"],
+            PRIVATE_VILLAGE_PROCESSOR_SENTINEL_COUNTS,
+            "raw processor sentinel",
+        )
+        _require_pinned_inventory_counts(
+            inventory["loot_bindings"],
+            PRIVATE_VILLAGE_LOOT_BINDING_COUNTS,
+            "loot binding",
+        )
+        for removed_block_entity in (
+            "minecraft:brewing_stand",
+            "minecraft:smoker",
+            "minecraft:blast_furnace",
+        ):
+            if inventory["block_entity_counts"][removed_block_entity] != 0:
+                raise ValidationError(
+                    f"Private village still contains block-entity NBT for {removed_block_entity}"
+                )
+    except (KeyError, OSError, ValueError, ValidationError) as exc:
+        errors.append(f"Private village utility transform is invalid: {exc}")
 
 
 def load_authorized_vanilla_frog_spawn_egg(
@@ -2351,7 +3057,7 @@ def migrate_spawn_egg_models(root: Path, minecraft_client: Path) -> dict[str, An
 
     return {
         "authorization": (
-            "Explicitly authorized by the Workbench owner for private Mynx Ribbits Canary 3"
+            "Explicitly authorized by the Workbench owner for private Mynx Ribbits Canary 4"
         ),
         "temporary": True,
         "exact_ribbits_4_1_6_visual_parity": False,
@@ -2393,6 +3099,7 @@ def build_manifest(
     donor_outputs: list[dict[str, Any]],
     loot_migration: dict[str, Any],
     village_nbt_migration: dict[str, Any],
+    village_utility_migration: dict[str, Any],
 ) -> dict[str, Any]:
     output_hashes = {
         name: sha256_file(output / PurePosixPath(name)) for name in relative_files(output)
@@ -2459,6 +3166,7 @@ def build_manifest(
             "spawn_egg_textures_added": 1,
             "configured_feature_random_patch_to_sequence": configured_feature_migration,
             "village_resident_profession_assignments_removed": village_nbt_migration,
+            "private_village_progression_utilities_removed": village_utility_migration,
         },
         "authorized_spawn_egg_substitution": spawn_egg_substitution,
         "blockers": [],
@@ -2556,6 +3264,7 @@ def _assemble_impl(
         migrate_recipe_advancements(output)
         loot_migration = migrate_private_loot_tables(output)
         village_nbt_migration = remove_village_profession_assignments(output)
+        village_utility_migration = transform_private_village_utilities(output)
         configured_feature_migration = migrate_configured_features(output)
         write_item_definitions(output)
         spawn_egg_substitution = migrate_spawn_egg_models(output, minecraft_client)
@@ -2576,6 +3285,7 @@ def _assemble_impl(
             donor_outputs,
             loot_migration,
             village_nbt_migration,
+            village_utility_migration,
         )
         write_manifest_after_donor_verification(manifest_path, manifest, donor_checks)
     except Exception:
@@ -3062,6 +3772,7 @@ def validation_report(
         validate_transforms(resources, errors)
         validate_private_loot_tables(resources, minecraft_entries, errors)
         validate_village_profession_assignments(resources, errors)
+        validate_private_village_utility_transform(resources, errors)
         validate_resource_references(resources, minecraft_entries, errors)
     return {
         "classification": "STATIC GATE BLOCKED" if errors or blockers else "STATIC TREE PASS",

@@ -38,7 +38,7 @@ class RibbitTradeModuleContractTest {
             assertEquals(null, duplicate, "duplicate concrete offer ID " + spec.id());
         }
 
-        assertEquals(128, actual.size(), "complete concrete descriptor count");
+        assertEquals(129, actual.size(), "complete concrete descriptor count");
         assertEquals(EXPECTED.keySet(), byId.keySet(), "missing, extra, or reordered offer descriptors");
         for (Map.Entry<String, ExpectedOffer> entry : EXPECTED.entrySet()) {
             String id = entry.getKey();
@@ -74,7 +74,7 @@ class RibbitTradeModuleContractTest {
                         "merchant", 5L,
                         "nitwit", 1L,
                         "chef", 16L,
-                        "sorcerer", 20L,
+                        "sorcerer", 21L,
                         "prospector", 18L,
                         "guard", 32L
                 ), countsBy(TradeOfferSpec::profession));
@@ -172,7 +172,7 @@ class RibbitTradeModuleContractTest {
         }
         for (int blessing = 0; blessing < 2; blessing++) {
             int choice = blessing;
-            assertMaterializedCount("sorcerer", state -> state.sorcererBlessingChoice(choice), 19);
+            assertMaterializedCount("sorcerer", state -> state.sorcererBlessingChoice(choice), 20);
         }
         for (int bullion = 0; bullion < 3; bullion++) {
             int choice = bullion;
@@ -300,6 +300,40 @@ class RibbitTradeModuleContractTest {
                 .filter(spec -> !spec.id().equals("prospector_electrum"))
                 .allMatch(spec -> !spec.first().exactComponents()),
                 "tool, weapon, mount, and armor buybacks accept damage and extra components");
+    }
+
+    @Test
+    void failedMapRedemptionIsTheOnlyMarkerMatchedOfferAndIsRankIndependent() throws Exception {
+        TradeOfferSpec redemption = offer("sorcerer_failed_map_redemption");
+        assertEquals("sorcerer", redemption.profession());
+        assertEquals(0, redemption.tier());
+        assertEquals("minecraft:map", redemption.first().stack().auditIdentity());
+        assertEquals(1, redemption.first().count());
+        assertFalse(redemption.first().exactComponents());
+        assertTrue(redemption.first().failedMapMarkerOnly());
+        assertEquals(null, redemption.second());
+        assertEquals("ribbits:toadstool_heart", redemption.result().auditIdentity());
+        assertEquals(1, redemption.resultCount());
+        assertEquals(16, redemption.maxUses());
+        assertEquals(0, redemption.merchantXp());
+        assertEquals(Gate.NONE, redemption.gate());
+
+        assertEquals(List.of("sorcerer_failed_map_redemption"),
+                RibbitTradeModule.allOffers().stream()
+                        .filter(spec -> spec.first().failedMapMarkerOnly()
+                                || (spec.second() != null && spec.second().failedMapMarkerOnly()))
+                        .map(TradeOfferSpec::id)
+                        .toList());
+
+        Method isSelected = RibbitTradeModule.class.getDeclaredMethod(
+                "isSelected", TradeOfferSpec.class, RibbitTradeState.class);
+        isSelected.setAccessible(true);
+        for (int rank = 1; rank <= 4; rank++) {
+            RibbitTradeState state = new RibbitTradeState();
+            state.rank(rank);
+            assertTrue(redemption.tier() <= rank && (boolean) isSelected.invoke(null, redemption, state),
+                    "redemption remains selected at Sorcerer rank " + rank);
+        }
     }
 
     @Test
@@ -506,6 +540,8 @@ class RibbitTradeModuleContractTest {
         fixed(offers, "chef_tonkotsu_ramen", 5, 20, "food:ramen", 1,
                 "chef_master", 2);
 
+        add(offers, "sorcerer_failed_map_redemption", "sorcerer", 0,
+                item("minecraft:map", 1), null, "ribbits:toadstool_heart", 1, 16);
         add(offers, "sorcerer_benzene_gate", "sorcerer", 1,
                 exact("recipe:crafting:benzene", 4), null, "ribbits:glowcap", 1, 16,
                 "always", 0, Gate.SORCERER_BENZENE);

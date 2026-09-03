@@ -147,6 +147,85 @@ def named_string(name: str, value: str) -> bytes:
     return b"\x08" + nbt_string(name) + nbt_string(value)
 
 
+def named_int(name: str, value: int) -> bytes:
+    return b"\x03" + nbt_string(name) + struct.pack(">i", value)
+
+
+def named_compound(name: str, payload: bytes) -> bytes:
+    return b"\x0a" + nbt_string(name) + payload + b"\x00"
+
+
+def named_list(name: str, element_type: int, payloads: list[bytes]) -> bytes:
+    return (
+        b"\x09"
+        + nbt_string(name)
+        + bytes([element_type])
+        + struct.pack(">i", len(payloads))
+        + b"".join(payloads)
+    )
+
+
+def synthetic_structure_nbt(
+    palette: list[dict[str, object]], blocks: list[dict[str, object]]
+) -> bytes:
+    """Build a vanilla-only structure fixture without protected Ribbits content."""
+    palette_payloads = [tools._encode_palette_state_payload(state) for state in palette]
+    block_payloads: list[bytes] = []
+    for block in blocks:
+        payload = b""
+        block_entity_id = block.get("block_entity_id")
+        if block_entity_id is not None:
+            nbt_payload = named_string("id", str(block_entity_id))
+            loot_table = block.get("loot_table")
+            if loot_table is not None:
+                nbt_payload += named_string("LootTable", str(loot_table))
+            nbt_payload += named_string("synthetic_sentinel", "preserved")
+            payload += named_compound("nbt", nbt_payload)
+        position = tuple(block["position"])
+        payload += named_list(
+            "pos", 3, [struct.pack(">i", int(coordinate)) for coordinate in position]
+        )
+        payload += named_int("state", int(block["state"]))
+        block_payloads.append(payload + b"\x00")
+    root = (
+        b"\x0a"
+        + nbt_string("")
+        + named_list("blocks", 10, block_payloads)
+        + named_list("palette", 10, palette_payloads)
+        + b"\x00"
+    )
+    return tools.deterministic_gzip(root)
+
+
+def pin_synthetic_utility_spec(
+    data: bytes,
+    relative: str,
+    coordinate: tuple[int, int, int],
+    source_state: dict[str, object],
+    replacement_state: dict[str, object],
+    block_entity_id: str | None,
+) -> dict[str, object]:
+    spec: dict[str, object] = {
+        "before_sha256": tools.sha256_bytes(data),
+        "after_sha256": "0" * 64,
+        "coordinate": coordinate,
+        "source_state": source_state,
+        "replacement_state": replacement_state,
+        "block_entity_id": block_entity_id,
+    }
+    try:
+        tools.transform_exact_private_village_utility(data, relative, spec)
+    except tools.ValidationError as exc:
+        message = str(exc)
+        marker = "got "
+        if "output SHA-256 differs" not in message or marker not in message:
+            raise
+        spec["after_sha256"] = message.rsplit(marker, 1)[1]
+    else:
+        raise AssertionError("Synthetic output hash probe unexpectedly matched zero")
+    return spec
+
+
 def synthetic_resident_nbt(values: dict[str, str]) -> bytes:
     ribbit_data = b"".join(named_string(name, value) for name, value in values.items()) + b"\x00"
     entity_nbt = (
@@ -684,10 +763,341 @@ class VillageNbtMigrationTest(unittest.TestCase):
                     )
 
 
+class PrivateVillageUtilityTransformTest(unittest.TestCase):
+    def test_exact_six_template_hash_and_inventory_contract_is_pinned(self) -> None:
+        expected_hashes = {
+            "data/ribbits/structure/houses/brown_sorcerer_house.nbt": (
+                "502dc904d293d411a5ebafed2c7f71b8eed8e36ab2123553ae8ae3295a56aa76",
+                "d6878d280ec391a7ffd48fcd442fbdd33f6b341031e7efe753f98812270d1b63",
+            ),
+            "data/ribbits/structure/houses/red_sorcerer_house.nbt": (
+                "ef66d580570c81657500f714b76eb761de910285571ff0ce36442b14e4bc8948",
+                "57dcf47cdece4e459522cea74b69215269a45c81028a2c42f2f3ebfaee43d516",
+            ),
+            "data/ribbits/structure/houses/small_house_brown_2.nbt": (
+                "7e7ca64fe02c9953b6e3ccf3bf2a2393c3274bbbb3848ae874b4ff8c9c6b1676",
+                "bc65457ea8c0b6aaaf3902b04840ff8f1ba04ee5818b85e5c11c70cb5683b695",
+            ),
+            "data/ribbits/structure/houses/small_house_brown_3.nbt": (
+                "329dd885fd3a26fbf809cc37b74696799bea2e5397a6dd645810261bfbb1055a",
+                "b54530ffebc2284ab4397796b8bbad411193fb318e3dfcf93f61558b78327b87",
+            ),
+            "data/ribbits/structure/houses/small_house_red_2.nbt": (
+                "a91945113b28214f5be8935efdbb4c42f6ec469bf9ca9bae5074a0579023d20a",
+                "7ceb960251b893a75c82fa08d2268a307676a55d00a2cd5be897ceb0b08d272d",
+            ),
+            "data/ribbits/structure/houses/small_house_red_3.nbt": (
+                "4652d7c9fa1481b9d210a32140eedc751a797c0d2deb6b6e12f53d4c60955e70",
+                "2c5a76cf50f5993ed0f6f089aefabe3b04feab2e75962e80b8cfa6f5788ccb3e",
+            ),
+        }
+        self.assertEqual(29, tools.PRIVATE_VILLAGE_TEMPLATE_COUNT)
+        self.assertEqual(set(expected_hashes), set(tools.PRIVATE_VILLAGE_UTILITY_TRANSFORMS))
+        for relative, (before, after) in expected_hashes.items():
+            with self.subTest(relative=relative):
+                spec = tools.PRIVATE_VILLAGE_UTILITY_TRANSFORMS[relative]
+                self.assertEqual(before, spec["before_sha256"])
+                self.assertEqual(after, spec["after_sha256"])
+                self.assertRegex(before, r"^[0-9a-f]{64}$")
+                self.assertRegex(after, r"^[0-9a-f]{64}$")
+                self.assertTrue(relative.startswith("data/ribbits/structure/houses/"))
+        self.assertEqual(
+            {
+                "minecraft:brewing_stand": 2,
+                "minecraft:damaged_anvil": 2,
+                "minecraft:smoker": 1,
+                "minecraft:blast_furnace": 1,
+            },
+            tools.PRIVATE_VILLAGE_REMOVED_UTILITY_COUNTS,
+        )
+        self.assertEqual(60, tools.PRIVATE_VILLAGE_PRESERVED_BLOCK_COUNTS["minecraft:barrel"])
+        self.assertEqual(11, tools.PRIVATE_VILLAGE_PRESERVED_BLOCK_COUNTS["minecraft:chest"])
+        self.assertEqual(
+            59, sum(tools.PRIVATE_VILLAGE_LOOT_BINDING_COUNTS.values())
+        )
+
+    def test_exact_rewrite_removes_block_entity_and_preserves_unrelated_record(self) -> None:
+        source_state = {
+            "Name": "minecraft:smoker",
+            "Properties": {"lit": "false", "facing": "north"},
+        }
+        replacement_state = {"Name": "minecraft:stone_bricks"}
+        palette = [replacement_state, source_state, {"Name": "minecraft:barrel"}]
+        data = synthetic_structure_nbt(
+            palette,
+            [
+                {
+                    "position": (5, 1, 6),
+                    "state": 1,
+                    "block_entity_id": "minecraft:smoker",
+                },
+                {
+                    "position": (0, 0, 0),
+                    "state": 2,
+                    "block_entity_id": "minecraft:barrel",
+                    "loot_table": "ribbits:synthetic",
+                },
+            ],
+        )
+        relative = "data/ribbits/structure/houses/synthetic_smoker.nbt"
+        spec = pin_synthetic_utility_spec(
+            data,
+            relative,
+            (5, 1, 6),
+            source_state,
+            replacement_state,
+            "minecraft:smoker",
+        )
+        transformed, record = tools.transform_exact_private_village_utility(
+            data, relative, spec
+        )
+        transformed_again, _ = tools.transform_exact_private_village_utility(
+            data, relative, spec
+        )
+        self.assertEqual(transformed, transformed_again)
+        self.assertFalse(record["replacement_palette_state_appended"])
+        self.assertTrue(record["removed_block_entity_nbt"])
+        self.assertTrue(record["non_target_block_records_byte_identical"])
+        inspected = tools.inspect_structure_template(transformed, relative)
+        by_position = {block["position"]: block for block in inspected["blocks"]}
+        self.assertEqual(replacement_state, by_position[(5, 1, 6)]["state"])
+        self.assertIsNone(by_position[(5, 1, 6)]["block_entity_id"])
+        self.assertEqual("minecraft:barrel", by_position[(0, 0, 0)]["block_entity_id"])
+        self.assertEqual("ribbits:synthetic", by_position[(0, 0, 0)]["loot_table"])
+
+    def test_missing_replacement_state_is_appended_deterministically(self) -> None:
+        source_state = {
+            "Name": "minecraft:damaged_anvil",
+            "Properties": {"facing": "west"},
+        }
+        replacement_state = {"Name": "minecraft:air"}
+        data = synthetic_structure_nbt(
+            [source_state, {"Name": "minecraft:stone"}],
+            [{"position": (3, 1, 5), "state": 0}],
+        )
+        relative = "data/ribbits/structure/houses/synthetic_anvil.nbt"
+        spec = pin_synthetic_utility_spec(
+            data, relative, (3, 1, 5), source_state, replacement_state, None
+        )
+        transformed, record = tools.transform_exact_private_village_utility(
+            data, relative, spec
+        )
+        self.assertTrue(record["replacement_palette_state_appended"])
+        inspected = tools.inspect_structure_template(transformed, relative)
+        self.assertEqual(3, len(inspected["palette"]))
+        self.assertEqual(replacement_state, inspected["palette"][-1])
+        self.assertEqual(replacement_state, inspected["blocks"][0]["state"])
+
+    def test_missing_shifted_duplicate_modified_and_nbt_drift_fail_closed(self) -> None:
+        source_state = {
+            "Name": "minecraft:damaged_anvil",
+            "Properties": {"facing": "west"},
+        }
+        replacement_state = {"Name": "minecraft:air"}
+        relative = "data/ribbits/structure/houses/synthetic_drift.nbt"
+
+        cases = {
+            "shifted": (
+                synthetic_structure_nbt(
+                    [source_state, replacement_state],
+                    [{"position": (4, 1, 5), "state": 0}],
+                ),
+                "shifted",
+            ),
+            "duplicate": (
+                synthetic_structure_nbt(
+                    [source_state, replacement_state],
+                    [
+                        {"position": (3, 1, 5), "state": 0},
+                        {"position": (4, 1, 5), "state": 0},
+                    ],
+                ),
+                "exactly one",
+            ),
+            "already modified or missing": (
+                synthetic_structure_nbt(
+                    [source_state, replacement_state],
+                    [{"position": (3, 1, 5), "state": 1}],
+                ),
+                "exactly one",
+            ),
+            "unexpected block entity": (
+                synthetic_structure_nbt(
+                    [source_state, replacement_state],
+                    [
+                        {
+                            "position": (3, 1, 5),
+                            "state": 0,
+                            "block_entity_id": "minecraft:chest",
+                        }
+                    ],
+                ),
+                "block entity differs",
+            ),
+        }
+        for name, (data, expected_error) in cases.items():
+            with self.subTest(name=name):
+                spec = {
+                    "before_sha256": tools.sha256_bytes(data),
+                    "after_sha256": "0" * 64,
+                    "coordinate": (3, 1, 5),
+                    "source_state": source_state,
+                    "replacement_state": replacement_state,
+                    "block_entity_id": None,
+                }
+                with self.assertRaisesRegex(tools.ValidationError, expected_error):
+                    tools.transform_exact_private_village_utility(data, relative, spec)
+
+        valid = synthetic_structure_nbt(
+            [source_state, replacement_state],
+            [{"position": (3, 1, 5), "state": 0}],
+        )
+        bad_hash_spec = {
+            "before_sha256": "f" * 64,
+            "after_sha256": "0" * 64,
+            "coordinate": (3, 1, 5),
+            "source_state": source_state,
+            "replacement_state": replacement_state,
+            "block_entity_id": None,
+        }
+        with self.assertRaisesRegex(tools.ValidationError, "SHA-256 differs"):
+            tools.transform_exact_private_village_utility(valid, relative, bad_hash_spec)
+
+    def test_complete_29_template_inventory_and_tree_output_are_deterministic(self) -> None:
+        target_shapes = [
+            ("brown_sorcerer_house.nbt", (6, 2, 5), {
+                "Name": "minecraft:brewing_stand",
+                "Properties": {
+                    "has_bottle_0": "false",
+                    "has_bottle_1": "false",
+                    "has_bottle_2": "false",
+                },
+            }, {"Name": "minecraft:air"}, "minecraft:brewing_stand"),
+            ("red_sorcerer_house.nbt", (6, 2, 5), {
+                "Name": "minecraft:brewing_stand",
+                "Properties": {
+                    "has_bottle_0": "false",
+                    "has_bottle_1": "false",
+                    "has_bottle_2": "false",
+                },
+            }, {"Name": "minecraft:air"}, "minecraft:brewing_stand"),
+            ("small_house_brown_3.nbt", (3, 1, 5), {
+                "Name": "minecraft:damaged_anvil", "Properties": {"facing": "west"},
+            }, {"Name": "minecraft:air"}, None),
+            ("small_house_red_3.nbt", (3, 1, 5), {
+                "Name": "minecraft:damaged_anvil", "Properties": {"facing": "west"},
+            }, {"Name": "minecraft:air"}, None),
+            ("small_house_brown_2.nbt", (5, 1, 6), {
+                "Name": "minecraft:smoker",
+                "Properties": {"lit": "false", "facing": "north"},
+            }, {"Name": "minecraft:stone_bricks"}, "minecraft:smoker"),
+            ("small_house_red_2.nbt", (4, 1, 2), {
+                "Name": "minecraft:blast_furnace",
+                "Properties": {"lit": "false", "facing": "south"},
+            }, {"Name": "minecraft:stone_bricks"}, "minecraft:blast_furnace"),
+        ]
+        payloads: dict[str, bytes] = {}
+        specs: dict[str, dict[str, object]] = {}
+        for filename, coordinate, source, replacement, block_entity in target_shapes:
+            relative = f"data/ribbits/structure/houses/{filename}"
+            palette = [replacement, source, {"Name": "minecraft:barrel"}]
+            data = synthetic_structure_nbt(
+                palette,
+                [
+                    {
+                        "position": coordinate,
+                        "state": 1,
+                        "block_entity_id": block_entity,
+                    },
+                    {
+                        "position": (0, 0, 0),
+                        "state": 2,
+                        "block_entity_id": "minecraft:barrel",
+                        "loot_table": "ribbits:synthetic",
+                    },
+                ],
+            )
+            payloads[relative] = data
+            specs[relative] = pin_synthetic_utility_spec(
+                data, relative, coordinate, source, replacement, block_entity
+            )
+        for index in range(23):
+            relative = f"data/ribbits/structure/paths/synthetic_{index:02d}.nbt"
+            payloads[relative] = synthetic_structure_nbt(
+                [{"Name": "minecraft:barrel"}],
+                [
+                    {
+                        "position": (0, 0, 0),
+                        "state": 0,
+                        "block_entity_id": "minecraft:barrel",
+                        "loot_table": "ribbits:synthetic",
+                    }
+                ],
+            )
+
+        def write_tree(root: Path) -> None:
+            for relative, payload in payloads.items():
+                path = root.joinpath(*PurePosixPath(relative).parts)
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_bytes(payload)
+
+        patches = (
+            mock.patch.object(tools, "PRIVATE_VILLAGE_TEMPLATE_COUNT", 29),
+            mock.patch.object(tools, "PRIVATE_VILLAGE_UTILITY_TRANSFORMS", specs),
+            mock.patch.object(
+                tools,
+                "PRIVATE_VILLAGE_REMOVED_UTILITY_COUNTS",
+                {
+                    "minecraft:brewing_stand": 2,
+                    "minecraft:damaged_anvil": 2,
+                    "minecraft:smoker": 1,
+                    "minecraft:blast_furnace": 1,
+                },
+            ),
+            mock.patch.object(
+                tools, "PRIVATE_VILLAGE_PRESERVED_BLOCK_COUNTS", {"minecraft:barrel": 29}
+            ),
+            mock.patch.object(tools, "PRIVATE_VILLAGE_PROCESSOR_SENTINEL_COUNTS", {}),
+            mock.patch.object(
+                tools, "PRIVATE_VILLAGE_LOOT_BINDING_COUNTS", {"ribbits:synthetic": 29}
+            ),
+        )
+        with tempfile.TemporaryDirectory() as first_dir, tempfile.TemporaryDirectory() as second_dir:
+            roots = (Path(first_dir), Path(second_dir))
+            for root in roots:
+                write_tree(root)
+            with patches[0], patches[1], patches[2], patches[3], patches[4], patches[5]:
+                first_record = tools.transform_private_village_utilities(roots[0])
+                second_record = tools.transform_private_village_utilities(roots[1])
+                self.assertEqual(
+                    first_record["template_tree_before_sha256"],
+                    second_record["template_tree_before_sha256"],
+                )
+                self.assertEqual(
+                    first_record["template_tree_after_sha256"],
+                    second_record["template_tree_after_sha256"],
+                )
+                self.assertEqual(6, first_record["count"])
+                self.assertEqual(29, first_record["canonical_template_count"])
+                self.assertEqual(
+                    {name: 0 for name in tools.PRIVATE_VILLAGE_REMOVED_UTILITY_COUNTS},
+                    first_record["removed_utility_counts_after"],
+                )
+                self.assertTrue(first_record["all_loot_bindings_unchanged"])
+                for relative in payloads:
+                    self.assertEqual(
+                        roots[0].joinpath(*PurePosixPath(relative).parts).read_bytes(),
+                        roots[1].joinpath(*PurePosixPath(relative).parts).read_bytes(),
+                    )
+                errors: list[str] = []
+                tools.validate_private_village_utility_transform(roots[0], errors)
+                self.assertEqual([], errors)
+
+
 class DonorBoundaryContractTest(unittest.TestCase):
     def test_exact_accounting_contains_only_approved_visual_members_and_outputs(self) -> None:
-        self.assertEqual("4.1.6+26.2-mynx-canary3", tools.CANDIDATE_VERSION)
-        self.assertEqual(3, tools.CANDIDATE_CANARY)
+        self.assertEqual("4.1.6+26.2-mynx-canary4", tools.CANDIDATE_VERSION)
+        self.assertEqual(4, tools.CANDIDATE_CANARY)
         self.assertEqual(
             "mynx-ribbits-private-resource-manifest/v1", tools.PRIVATE_MANIFEST_SCHEMA
         )
@@ -826,7 +1236,10 @@ class DonorBoundaryContractTest(unittest.TestCase):
             "assets/ribbits/items/glowcap.json",
             "assets/ribbits/items/toadstool_heart.json",
             "data/ribbits/advancement/recipes/misc/toadstool_heart.json",
+            "data/ribbits/item_modifier/ribbit_village_explorer_result.json",
+            "data/ribbits/loot_table/chests/swamp_hut_map.json",
             "data/ribbits/recipe/toadstool_heart.json",
+            "data/ribbits/tags/worldgen/structure/on_ribbit_village_explorer_maps.json",
         }
         self.assertEqual(expected_paths, tools.SOURCE_SAFE_PUBLIC_RESOURCE_PATHS)
 
@@ -985,12 +1398,27 @@ class DonorBoundaryContractTest(unittest.TestCase):
         expected_items = {
             "item.ribbits.glowcap": "Glowcap",
             "item.ribbits.toadstool_heart": "Toadstool Heart",
+            "item.ribbits.ribbit_village_explorer_map": "Ribbit Village Explorer Map",
+            "item.ribbits.uncharted_ribbit_map": "Uncharted Ribbit Map",
+            "item.ribbits.uncharted_ribbit_map.lore":
+                "No Ribbit village could be charted.",
         }
         self.assertEqual(
             expected_items,
             {
                 key: tools.EN_US_MYNX_PROFESSION_TRANSLATIONS[key]
                 for key in expected_items
+            },
+        )
+        public_language = tools.load_json(
+            Path(__file__).resolve().parent.parent
+            / "common/src/publicResources/assets/ribbits/lang/en_us.json"
+        )
+        self.assertEqual(
+            tools.PHASE_C_MAP_TRANSLATIONS,
+            {
+                key: public_language.get(key)
+                for key in tools.PHASE_C_MAP_TRANSLATIONS
             },
         )
 

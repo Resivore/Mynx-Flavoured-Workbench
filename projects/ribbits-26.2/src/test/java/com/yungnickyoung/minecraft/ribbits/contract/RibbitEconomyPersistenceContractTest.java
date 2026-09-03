@@ -135,6 +135,17 @@ class RibbitEconomyPersistenceContractTest {
         assertTrue(trades.contains("CURRENT_TRADE_SCHEMA = 1"));
         assertTrue(trades.contains("tradeSchema() != CURRENT_TRADE_SCHEMA"));
         assertTrue(trades.contains("StrictMerchantOffer.restoreFromTemplate"));
+        assertTrue(entity.contains("RibbitTradeModule.ensurePhaseCRedemptionOffer(this, this.offers);"));
+        assertTrue(trades.contains("if (!\"sorcerer\".equals(profile.profession))"));
+        assertTrue(trades.contains("offers.add(0, redemptionTemplate);"));
+        assertFalse(trades.contains("migratePhaseCTradeSchema"));
+        assertFalse(trades.contains("CURRENT_TRADE_SCHEMA = 2"));
+        int phaseCMethod = trades.indexOf("public static void ensurePhaseCRedemptionOffer");
+        int professionGuard = trades.indexOf("if (!\"sorcerer\".equals(profile.profession))", phaseCMethod);
+        int expectedOfferConstruction = trades.indexOf("List<TradeOfferSpec> currentSpecs", phaseCMethod);
+        assertTrue(phaseCMethod >= 0 && professionGuard > phaseCMethod
+                        && professionGuard < expectedOfferConstruction,
+                "all non-Sorcerer professions return before Phase C offer construction or mutation");
         assertTrue(entity.contains("Component title = this.hasCustomName() ? this.getDisplayName() : RibbitTradeModule.title(this);"));
         assertTrue(entity.contains("this.openTradingScreen(player, title, displayLevel);"));
         assertTrue(entity.contains("return RibbitTradeModule.profile(this.getRibbitData().getProfession()).tiered();"));

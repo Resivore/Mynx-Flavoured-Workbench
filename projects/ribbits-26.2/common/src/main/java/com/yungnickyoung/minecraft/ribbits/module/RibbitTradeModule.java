@@ -6,7 +6,9 @@ import com.yungnickyoung.minecraft.ribbits.entity.trade.MatchaStackCatalog;
 import com.yungnickyoung.minecraft.ribbits.entity.trade.MatchaStackCatalog.FixedStack;
 import com.yungnickyoung.minecraft.ribbits.entity.trade.RibbitTradeState;
 import com.yungnickyoung.minecraft.ribbits.entity.trade.StrictMerchantOffer;
+import com.yungnickyoung.minecraft.ribbits.world.loot.RibbitVillageExplorerMap;
 import net.minecraft.core.component.DataComponentExactPredicate;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -89,9 +91,29 @@ public final class RibbitTradeModule {
         }
     }
 
-    public record CostSpec(StackRef stack, int count, boolean exactComponents) {
+    public record CostSpec(StackRef stack, int count, boolean exactComponents,
+                           boolean failedMapMarkerOnly) {
+        public CostSpec(StackRef stack, int count, boolean exactComponents) {
+            this(stack, count, exactComponents, false);
+        }
+
+        public CostSpec {
+            if (exactComponents && failedMapMarkerOnly) {
+                throw new IllegalArgumentException("A cost cannot use both exact-stack and failed-map matching");
+            }
+        }
+
         public ItemCost resolve(Level level) {
-            ItemStack resolved = this.stack.resolve(level).copyWithCount(this.count);
+            ItemStack resolved = this.failedMapMarkerOnly
+                    ? RibbitVillageExplorerMap.createFailedMap(this.count)
+                    : this.stack.resolve(level).copyWithCount(this.count);
+            if (this.failedMapMarkerOnly) {
+                return new ItemCost(resolved.typeHolder(), this.count,
+                        DataComponentExactPredicate.expect(
+                                DataComponents.CUSTOM_DATA,
+                                RibbitVillageExplorerMap.failedMarker()),
+                        resolved);
+            }
             if (!this.exactComponents) {
                 return new ItemCost(resolved.getItem(), this.count);
             }
@@ -110,7 +132,9 @@ public final class RibbitTradeModule {
                     this.result.resolve(level).copyWithCount(this.resultCount),
                     this.maxUses, this.merchantXp, FIXED_PRICE_MULTIPLIER,
                     this.first.exactComponents,
-                    this.second != null && this.second.exactComponents);
+                    this.second != null && this.second.exactComponents,
+                    this.first.failedMapMarkerOnly,
+                    this.second != null && this.second.failedMapMarkerOnly);
         }
     }
 
@@ -257,6 +281,8 @@ public final class RibbitTradeModule {
         addFixed(offers, "chef_tonkotsu_ramen", "chef", 5, 20,
                 FixedStack.TONKOTSU_RAMEN, 1, "chef_master", 2);
 
+        add(offers, "sorcerer_failed_map_redemption", "sorcerer", 0,
+                failedMap(1), null, item("ribbits:toadstool_heart"), 1, 16);
         add(offers, "sorcerer_benzene_gate", "sorcerer", 1,
                 exact(StackRef.fixed(FixedStack.BENZENE), 4), null, GLOWCAP, 1, 16,
                 "always", 0, Gate.SORCERER_BENZENE);
@@ -354,6 +380,9 @@ public final class RibbitTradeModule {
     private static CostSpec item(String id, int count) { return new CostSpec(item(id), count, false); }
     private static CostSpec glowcaps(int count) { return new CostSpec(GLOWCAP, count, false); }
     private static CostSpec exact(StackRef stack, int count) { return new CostSpec(stack, count, true); }
+    private static CostSpec failedMap(int count) {
+        return new CostSpec(item("minecraft:map"), count, false, true);
+    }
 
     private static void addFixed(List<TradeOfferSpec> offers, String id, String profession,
                                  int tier, int glowcapCount, FixedStack result, int maxUses,
@@ -575,21 +604,78 @@ public final class RibbitTradeModule {
         }
     }
 
+    /**
+     * Adds the sole Phase C economy change to a Canary 3 Sorcerer without migrating or rebuilding
+     * any Phase B offer. Existing offers (including use, demand, and special-price state) remain
+     * the same objects. Other professions and unexpected schemas/shapes are untouched.
+     */
+    public static void ensurePhaseCRedemptionOffer(RibbitEntity ribbit, MerchantOffers offers) {
+        RibbitTradeState state = ribbit.getTradeState();
+        if (state.tradeSchema() != CURRENT_TRADE_SCHEMA) {
+            return;
+        }
+
+        TradeProfile profile = profile(ribbit.getRibbitData().getProfession());
+        if (!"sorcerer".equals(profile.profession)) {
+            return;
+        }
+
+        int rank = state.rank();
+        List<TradeOfferSpec> currentSpecs = selectedSpecs(ribbit, rank);
+        if (currentSpecs.isEmpty()
+                || !"sorcerer_failed_map_redemption".equals(currentSpecs.getFirst().id)) {
+            throw new IllegalStateException("Phase C Sorcerer service is not the first selected offer");
+        }
+
+        MerchantOffer redemptionTemplate = currentSpecs.getFirst().create(ribbit.level());
+        List<MerchantOffer> expectedPhaseB = new ArrayList<>(currentSpecs.size() - 1);
+        for (int index = 1; index < currentSpecs.size(); index++) {
+            expectedPhaseB.add(currentSpecs.get(index).create(ribbit.level()));
+        }
+        prependPhaseCRedemptionOffer(offers, redemptionTemplate, expectedPhaseB);
+    }
+
+    /** Package-visible deterministic core, separated so state preservation is directly testable. */
+    static boolean prependPhaseCRedemptionOffer(MerchantOffers offers,
+                                                 MerchantOffer redemptionTemplate,
+                                                 List<MerchantOffer> expectedPhaseB) {
+        if (offers.size() == expectedPhaseB.size() + 1) {
+            // Phase C list (or an unexpected same-sized list): restoration validates full shape.
+            return false;
+        }
+        if (offers.size() != expectedPhaseB.size()) {
+            return false;
+        }
+        for (int index = 0; index < expectedPhaseB.size(); index++) {
+            if (!sameOfferShape(offers.get(index), expectedPhaseB.get(index))) {
+                return false;
+            }
+        }
+
+        offers.add(0, redemptionTemplate);
+        return true;
+    }
+
     private static boolean sameOfferShape(MerchantOffer saved, MerchantOffer template) {
         return sameCostShape(saved.getItemCostA(), template.getItemCostA())
                 && saved.getItemCostB().isPresent() == template.getItemCostB().isPresent()
                 && (saved.getItemCostB().isEmpty()
                     || sameCostShape(saved.getItemCostB().orElseThrow(),
                             template.getItemCostB().orElseThrow()))
-                && saved.getResult().is(template.getResult().getItem())
+                && ItemStack.isSameItemSameComponents(saved.getResult(), template.getResult())
                 && saved.getResult().getCount() == template.getResult().getCount()
                 && saved.getMaxUses() == template.getMaxUses()
                 && saved.getXp() == template.getXp()
+                && saved.shouldRewardExp() == template.shouldRewardExp()
                 && Float.compare(saved.getPriceMultiplier(), template.getPriceMultiplier()) == 0;
     }
 
     private static boolean sameCostShape(ItemCost saved, ItemCost template) {
-        return saved.item().equals(template.item()) && saved.count() == template.count();
+        // Compare the serialized predicate, not ItemCost#itemStack: a decoded spawn egg restores
+        // its default entity_data even when the exact Benzene predicate deliberately omits it.
+        return saved.item().equals(template.item())
+                && saved.count() == template.count()
+                && saved.components().equals(template.components());
     }
 
     public static Gate gateForCompletedOffer(RibbitEntity ribbit, MerchantOffer offer) {
