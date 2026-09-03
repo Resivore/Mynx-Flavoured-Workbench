@@ -1,91 +1,42 @@
 # Testing
 
-C7 (`0.1.0-canary7`) is the current deployed candidate. Its exact artifact is
-`quick-stack-nearby-compat-0.1.0-canary7.jar`, 31,568 bytes, SHA-256
-`9e2ef78a5f40f5bcdeed0e8c6af8cd7cfb15a35d541360017c4e46e94521995e`,
-from implementation checkpoint `3f124a44086e52845e35805d5abb3049379150b8`.
-It has `CONTROLLED_VALIDATION_PASS`, `READY_TO_TEST_VERIFIED`, and
-`RUNTIME_UNTESTED`.
+## Current gate
 
-Manager revision 71 physically verified Stack v15 with C7 in Test Slot B.
-Deployment `2c2ca107-d652-45bc-a7d6-23c0238d00f7` binds slot artifact
-`918d23dd-6268-47c9-baa0-c49daf85e05d` to those exact file, hash, and source
-identities. The verified state digest is
-`bf3b0cafa400620a9755f9d2cd3a3080eb726691922553da3c945f76a25e86f9`.
-C7's Slot B result is independently `UNTESTED`. C6's earlier accepted aggregate
-`RUNTIME_PASS` is separate historical evidence and does not apply to C7. Exact
-C6 remains accepted and exact C4 remains the passing rollback.
+**READY TO TEST VERIFIED — RUNTIME UNTESTED — NOT READY FOR PROMOTION**
 
-## Preconditions
+Current C8 / `0.1.0-canary8` is `artifacts/quick-stack-nearby-compat-0.1.0-canary8.jar`, 34,941 bytes, SHA-256 `E6AAF43D881F31202931C40B6F40762F2E2DAB1F2AE8D0CE5FD7F213EC0CBBA5`, from implementation checkpoint `1f545721658cce803200fa277737052cead79b70`. Test Instance Manager checkpoint `3ec1b618829fc99774bffef0ccddfc42bd0a6a44` physically deployed and verified these exact bytes in Slot B as deployment `30a3d125-ecb6-4a7a-862b-ca2e2c1bbcfe` and artifact `62f897e7-dc2e-4754-82f0-43240d4655be` at manager revision 74, accepted Stack v15, and state digest `5E87E8F64FC1C860FD430DAE15DE3883AB857F12B61E0A09A9DA2C5F712BD8A9`. C8 is `CONTROLLED_VALIDATION_PASS / READY_TO_TEST_VERIFIED / RUNTIME_UNTESTED`; Minecraft was not launched.
 
-- Require manager revision 71, or a later canonical revision that preserves the
-  exact C7 Slot B deployment and artifact identities above, reports
-  `READY_TO_TEST_VERIFIED`, and still shows C7 as `UNTESTED`. Revision 71 must
-  match the recorded Stack v15 digest. Stop rather than redeploying if it does
-  not.
-- Require official `quick-stack-nearby-0.4.0.jar`, 159,918 bytes, SHA-256
-  `43f1130527f782a291231c682791b4fd3766a20916c691cbdb98f91fdcc47e53`.
-  Its accepted deployment `66b8b293-d9ae-41c4-a969-d43baf79c2ff` and artifact
-  `cb31d144-b6c4-41fb-ba44-35d896b228f6` must remain active through the verified
-  accepted-companion passthrough, not as a second slot member.
-- For the CSR-enabled pass, require exact C2 in Slot A: deployment
-  `bee6248a-0cb8-4953-bd55-33ac3f6e5111`, artifact
-  `b92b3cd6-a3c2-4882-b279-4a39194fbdc9`, file
-  `container-slot-reservations-0.1.0-canary2.jar`, 81,962 bytes, SHA-256
-  `bb4f269758d43469f2a9c0a36d01dcecb8704054ee8bc01327c46ce614d4a02f`,
-  source `48468ad99ba1353ac5455be39dedef6ca143f7ae`, and result `UNTESTED`.
-- Before testing, record the manager revision, complete enabled stack, world,
-  and log. Confirm exactly one enabled owner for `quick_stack_nearby_compat`,
-  `quick-stack-nearby`, and `container_slot_reservations`; stop on any drift.
+Exact C7 is a failed predecessor: `quick-stack-nearby-compat-0.1.0-canary7.jar`, 31,568 bytes, SHA-256 `9E2EF78A5F40F5BCDEED0E8C6AF8CD7CFB15A35D541360017C4E46E94521995E`, source `3f124a44086e52845e35805d5abb3049379150b8`, deployment `2c2ca107-d652-45bc-a7d6-23c0238d00f7`, and artifact `918d23dd-6268-47c9-baa0-c49daf85e05d`. The user reported that a matching CSR reservation did not make a nearby container a QSN destination when the container held zero physical instances of the reserved item. That required case is `RUNTIME_FAIL`; no passed row was reported or inferred, and zero physical quantity does not authorize a fake zero-count stack.
 
-## C7 runtime procedure
+C7 augmented only target objects already returned by QSN. Its controlled reservation-only proof manually constructed `QuickStackMoveEngine.Target`, bypassing the production path that discarded an empty-affinity container first. The exact QSN 0.4.0 path is `quickStack → nearbyTargets → scanContainer → QuickStackMoveEngine.acceptedTypes(Container) → ScannedContainer.acceptedTypes → empty-set discard → distance sort → Target construction`. C8 wraps only the accepted-types call after QSN's native container, ownership, access, and validity checks but before the empty-set discard. It derives exact reservation affinity from the real source window and rules, so a reservation-only target remains at its natural raw-discovery position and native ordering is preserved without a separate world scan.
 
-1. Establish a nearby supported container with a physically empty slot reserved
-   through CSR for an exact item-and-component stack. Keep that item absent from
-   the target's physical stacks. Quick-stack the matching source and confirm the
-   reservation alone gives the container target affinity and receives the item.
-2. Repeat with the same item ID but different components. Confirm the mismatched
-   source gains no reservation affinity and does not enter the reserved slot.
-3. Give one target a partial matching physical stack, then a matching reserved
-   empty, an ordinary empty, and a mismatched reserved empty. Confirm QSN merges
-   the physical stack first, visits matching reserved empties in physical order,
-   then ordinary empties in physical order, and leaves the mismatch untouched.
-4. Admit a target through an existing physical match while its only remaining
-   empty slot is reserved for another stack. Confirm the physical merge remains
-   native and the mismatched reserved empty cannot be filled by QSN's fallback.
-5. Exercise an otherwise identical wholly unreserved supported container and a
-   CSR-unsupported container. Confirm C7 delegates their empty-slot work and
-   ordinary QSN behavior remains unchanged.
-6. Exercise a low-capacity target and a source larger than the available legal
-   capacity. Reconcile source, target, moved count, remainder, container change,
-   rule ceiling, packet/result, and user feedback with native QSN behavior.
-7. Restart the world after creating reservations and repeat a matching and a
-   mismatching case. Confirm CSR still owns persistence and C7 only consumes the
-   public classification result.
-8. Put a matching source in Inventory Extended row 4, 5, or 6. Confirm QSN uses
-   it while hotbar, equipment, offhand, crafting/result, Trinkets, trash, and
-   foreign menu slots remain outside C7's source-window expansion. Exercise one
-   lock/keep-count rule and confirm its ceiling remains QSN-owned.
-9. Merge one Clutter No More ShapeMap-equivalent geometry into a partial nearby
-   destination and repeat in reverse. Confirm the existing destination geometry
-   wins, exact source variants remain distinct, and QSN retains target order,
-   capacity, and remainder ownership.
-10. Put a matching destination in a vanilla shelf and another in an ordinary
-    chest or barrel. Confirm the shelf remains excluded and the ordinary target
-    remains eligible without changing access or validity behavior.
-11. Open the normal Survival inventory with Inventory Search and Inventory
-    Extended enabled. Confirm Inventory Search owns the base right-edge button,
-    QSN appears immediately below without overlap, both actions work, and the
-    layout remains correct after reopening and toggling the recipe book.
-12. Repeat representative native cases without each optional C6 provider where
-    an authorized runtime configuration already exists. A gameplay no-CSR pass
-    requires its own explicit manager transition; do not treat C7's successful
-    CSR-absent unit launch as runtime evidence.
+C8 passed 53/53 focused JUnit tests in the normal provider configuration, 53/53 with CSR runtime excluded, 15/15 Fabric GameTests against the accepted CSR C1 public API floor, and 15/15 paired GameTests against exact CSR Canary 3. Exact official QSN 0.4.0 bytecode validates the discovery prefilter, empty discard, sorting, target construction, insertion, and capacity seams. Artifact checks validate the embedded Fabric ID/version and exclude nested upstream JARs and foreign classes. These are controlled results, not Minecraft runtime evidence.
 
-Throughout, reconcile exact item and component totals. Stop and preserve the
-world and log if a reservation alone fails to create affinity, a component
-mismatch is admitted, a mismatched reserved slot receives an item, slot order or
-capacity diverges, an unsupported target loses native behavior, a C6 regression
-appears, counts diverge, a ghost stack or conversion occurs, or a relevant
-Mixin/client/server error appears. Record only the rows actually observed and
-never infer C7 runtime evidence from C6 or from controlled GameTests.
+Exact accepted C6 remains `quick-stack-nearby-compat-0.1.0-canary6.jar`, 21,805 bytes, SHA-256 `C2F4AE3B02A5517AD184998C784C356D90132AEAEE91546C91D03A878BE6CE98`, source `3c8cc5917da9fd016e57a969955fa7c6e3b08661`. Exact runtime-passed rollback C4 remains `quick-stack-nearby-compat-0.1.0-canary4.jar`, 17,181 bytes, SHA-256 `93581DE741DAA22426A22E1C816B630B9E0FFB90224A2CD27260563530AFB441`, source `7312aac2fb8b38a616cd172b6f8bdd65054ff120`. Neither historical result applies to C8.
+
+## Deployment identity and preconditions
+
+- Require manager revision 74, Stack v15, state digest `5E87E8F64FC1C860FD430DAE15DE3883AB857F12B61E0A09A9DA2C5F712BD8A9`, `PHYSICAL_STATE_VERIFIED`, and the exact C8 Slot B deployment/artifact/file/hash/source above. Stop on any drift rather than redeploying during testing.
+- Require exact CSR C3 in Slot A: deployment `a9d922c7-346b-4bda-a42a-75b26d64e90e`, artifact `464c5676-979f-4403-93fe-7a2e76d013c5`, `container-slot-reservations-0.1.0-canary3.jar`, 85,397 bytes, SHA-256 `DFD1A7C1F0E594D12B3FBC1052AE2A1507DD5BD5F5FF9A77D2F8F93667B53EAD`, source `d69469ba90b0d85a257db57ce65588e63f4cc248`, and independent result `UNTESTED`.
+- Require official `quick-stack-nearby-0.4.0.jar`, 159,918 bytes, SHA-256 `43F1130527F782A291231C682791B4FD3766A20916C691CBDB98F91FDCC47E53`. Its accepted deployment `66b8b293-d9ae-41c4-a969-d43baf79c2ff` and artifact `cb31d144-b6c4-41fb-ba44-35d896b228f6` must remain active through the verified accepted-companion passthrough, not as another slot member.
+- Confirm exactly one enabled owner for `quick_stack_nearby_compat`, `quick-stack-nearby`, and `container_slot_reservations`. Use only the dedicated 26.2 Workbench and never access the protected Minecraft 26.1.2 gameplay profile.
+
+## C8 runtime matrix
+
+1. In an otherwise-empty nearby barrel, reserve one empty physical slot for the exact item and complete component identity of a movable source stack. Keep all physical instances of that item out of the barrel, quick-stack, and confirm the reservation alone admits the barrel and receives the item without creating a zero-count stack.
+2. Repeat with a container that holds unrelated physical items but zero physical instances of the reserved item. Confirm the exact matching source still creates affinity and existing unrelated contents remain unchanged.
+3. Repeat with the same item registry ID but different components, then with an unrelated reservation. Confirm neither source gains reservation affinity and neither enters the reserved slot.
+4. Exercise a wholly unreserved empty supported container and a CSR-unsupported container. Confirm neither becomes a reservation-only target and the unsupported container retains exact native QSN behavior.
+5. Make the same container eligible through an existing physical match and through a matching reservation. Confirm it appears only once, retains its native identity and natural position, and does not receive a duplicate accepted key or move.
+6. Place a nearer reservation-only target and a farther native physical-match target in the raw scan. Confirm native distance/order policy is retained and the reservation-only target is not globally appended.
+7. In one target, provide a partial matching physical stack, multiple matching reserved empties, an ordinary empty, and a mismatched reserved empty. Confirm native existing-stack merge occurs first, matching reserved empties receive the remainder in physical order, ordinary empties follow in physical order, and the mismatch remains protected.
+8. Exercise limited capacity and a source exceeding legal space. Reconcile source count, target count, moved count, touched-stack/container counts, remainder, container changes, packet/result, and feedback with native QSN behavior.
+9. Exercise locked, fully kept, and partially kept source rules, including a matching source in Inventory Extended row 4, 5, or 6. Confirm only movable quantities create discovery affinity and hotbar, equipment, offhand, crafting/result, Trinkets, trash, and foreign slots remain outside the source-window expansion.
+10. Repeat representative targets with Clutter No More ShapeMap-equivalent geometry in both directions. Confirm native ShapeMap affinity and merge ownership, existing destination geometry, exact source variants, order, capacity, and remainder behavior remain unchanged.
+11. Put a matching destination in a vanilla shelf and another in an ordinary chest or barrel. Confirm the shelf remains excluded and the ordinary target remains eligible without bypassing native range, ownership, obstruction, access, validity, or supported-container checks.
+12. Open Survival inventory with Inventory Search and Inventory Extended. Confirm Inventory Search retains its base right-edge button, QSN remains immediately below without overlap, both actions work, and reopening or toggling the recipe book preserves layout and results.
+13. Save, restart, and repeat exact-match, component-mismatch, reservation-only, and native-target controls. Confirm CSR still owns persistence and C8 consumes only the public read-only classification boundary.
+
+CSR-absent JUnit validation is not a gameplay pass. A runtime CSR-absent case requires a separate authorized Test Instance Manager transition; do not disable CSR manually or reinterpret controlled evidence. Throughout this matrix, reconcile exact item/component totals and record only rows actually observed for C8.
+
+Stop and record `RUNTIME_FAIL` or `INCONCLUSIVE` if exact identity or readiness differs, reservation-only discovery fails, a mismatch or unreserved empty gains affinity, a native target duplicates or reorders, a native access/range/validity decision is bypassed, insertion priority changes, capacity/rules/remainders/feedback diverge, a C6 integration regresses, any physical or fake zero-count stack is fabricated, totals diverge, or a relevant Mixin/client/server error appears. Do not promote from controlled tests or inherit C6/C4 runtime evidence.

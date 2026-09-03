@@ -20,19 +20,22 @@
   "definition": {
     "lifecycle": "TESTING",
     "goals": [
-      "Advance the accepted C6 compatibility layer to C7 while preserving its Inventory Extended player-storage, Clutter No More ShapeMap, vanilla shelf, and Inventory Search behavior.",
-      "Add optional Container Slot Reservations integration so an exact reserved item-and-component match can create QSN target affinity and reserved empty slots receive items before ordinary empty slots.",
+      "Advance the accepted C6 compatibility layer to C8 while preserving its Inventory Extended player-storage, Clutter No More ShapeMap, vanilla shelf, and Inventory Search behavior.",
+      "Admit a normally valid nearby container at QSN's real discovery prefilter when CSR reports an empty physical slot reserved for an exact source item and complete component identity, even when the container has zero physical instances of that item.",
       "Keep Quick Stack Nearby responsible for discovery, target order, existing-stack merges, access and placement checks, capacity, remainders, rules, persistence, packets, and feedback; delegate unchanged when CSR is absent or a target has no reservation-governed empty slot.",
       "Preserve exact accepted C6 and the distinct runtime-passed C4 rollback with their immutable artifact, source, and evidence boundaries."
     ],
     "scope": [
-      "Maintain sixteen production Java classes and three production resources at implementation checkpoint 3f124a44086e52845e35805d5abb3049379150b8.",
-      "Augment QSN's discovered target list only when the optional public CSR API reports an exact item-and-component reservation match, retaining every original target object and order.",
+      "Maintain the production implementation and resources at checkpoint 1f545721658cce803200fa277737052cead79b70 while preserving all accepted C6 behavior and retained C7 insertion behavior outside the failed discovery seam.",
+      "Wrap QSN 0.4.0's exact QuickStackMoveEngine.acceptedTypes(Container) call inside scanContainer after native access and validity checks but before nearbyTargets discards an empty accepted-types set, using only CSR's public read-only exact reservation classifier.",
+      "Scope the real source container, source window, locks, and keep-count rules around QSN's native quickStack call so reservation-only affinity is derived from movable source items and is restored without leakage after nested or exceptional calls.",
+      "Preserve existing native target set identity when no new key is needed, avoid duplicate keys and targets, and retain reservation-only targets at their natural raw-discovery and distance-sorted position rather than globally appending them.",
       "Intercept QSN 0.4.0's exact post-merge empty-slot seam only when an empty slot is governed by a matching or mismatched reservation; insert into matching reserved empties in physical order, then ordinary empties in physical order, while mismatched reserved empties remain protected.",
       "Preserve exact no-op identity when CSR is absent and delegate QSN's native empty-slot helper for unsupported or wholly unreserved targets.",
       "Retain C6's Inventory Extended source-window expansion and lock ceiling, Clutter No More ShapeMap affinity and merge delegation, vanilla shelf exclusion, and Inventory Search button/result compatibility.",
-      "Audit exact QSN 0.4.0 and CSR C1 bytecode/API seams, exercise the CSR C1 API floor and retained CSR C2 provider pair, and keep runtime metadata predicates flexible for compatible providers.",
-      "Retain exact C4 as the distinct focused-runtime-pass rollback and preserve the failed C5 result textually rather than as a current or rollback artifact."
+      "Audit exact QSN 0.4.0 and CSR C1 bytecode/API seams, exercise the CSR C1 API floor and paired CSR Canary 3 provider, and keep runtime metadata predicates flexible for compatible providers.",
+      "Retain exact C4 as the distinct focused-runtime-pass rollback, accepted C6 as accepted, and failed C5 and C7 results textually rather than as current or rollback artifacts.",
+      "Preserve the exact user-bound C7 RUNTIME_FAIL with no passed rows: its post-discovery target augmentation did not admit a nearby container whose only matching affinity was a reservation and which held zero physical instances of that item."
     ],
     "boundaries": {
       "owned_paths": [
@@ -40,13 +43,13 @@
       ],
       "exclusions": [
         "Container Slot Reservations, Carried Container Auto-Routing, Matcha × Stack to Nearby Chests Compatibility, Inventory Search, Block Geometry Extensions, Nibaru, Clutter No More, Quick Stack Nearby, and every other nearby-routing or inventory project retain their own identities, source, artifacts, controls, and behavior ownership.",
-        "No CSR reservation mutation, persistence, user interface, container-support policy, or classification logic is reimplemented; C7 consumes only CSR's public read-only reservation API when the provider is loaded.",
+        "No CSR reservation mutation, persistence, user interface, container-support policy, or classification logic is reimplemented; C8 consumes only CSR's public read-only reservation API when the provider is loaded.",
         "No Stack to Nearby Chests implementation, Matcha-specific QSN adapter, general Inventory Search patch, carried-container routing, nested-container routing, registry-name parsing, fuzzy material equivalence, item conversion, or custom existing-stack merge is owned here.",
         "Official QSN, CSR, Inventory Search/Core, Inventory Extended, Clutter No More, BGE, Nibaru, Minecraft, and Fabric classes or JARs are not bundled or redistributed by this project.",
-        "C7 mirrors the exact audited QSN 0.4.0 package-private maximum-stack helper through its current Container#getMaxStackSize delegate because attempted Java-package and Mixin invokers were not runtime-safe; a future QSN helper change requires seam re-audit.",
+        "C8 mirrors the exact audited QSN 0.4.0 package-private maximum-stack helper through its current Container#getMaxStackSize delegate because attempted Java-package and Mixin invokers were not runtime-safe; a future QSN helper change requires seam re-audit.",
         "Controlled JUnit and Fabric GameTest results are build/static evidence, not Minecraft gameplay runtime validation.",
-        "Lifecycle remains TESTING because exact current C7 occupies Test Slot B at manager revision 71 with its own UNTESTED result; C6's historical accepted aggregate pass remains separate and is not assigned to C7.",
-        "This checkpoint records only the serialized, physically verified Test Instance Manager deployment. Minecraft was not launched, no runtime result was inferred, accepted C6 and rollback C4 were not promoted or replaced, and the protected gameplay instance remained untouched."
+        "Lifecycle remains TESTING because exact current C8 occupies Test Slot B at manager revision 74 with its own UNTESTED result; C6's historical accepted aggregate pass and C7's independent failure remain separate and are not assigned to C8.",
+        "Beyond the explicitly bound C7 user failure, C8 has only controlled validation and serialized, physically verified deployment evidence. Minecraft was not launched, no C8 runtime result was inferred, accepted C6 and rollback C4 were not promoted or replaced, and the protected gameplay instance remained untouched."
       ]
     },
     "dependencies": [
@@ -54,13 +57,13 @@
         "type": "MOD",
         "identifier": "minecraft",
         "requirement": "=26.2",
-        "reason": "Exact target game version for C7 source, artifact, and controlled validation."
+        "reason": "Exact target game version for C8 source, artifact, and controlled validation."
       },
       {
         "type": "MOD",
         "identifier": "fabricloader",
         "requirement": ">=0.19.3",
-        "reason": "C7 declares this capability floor and was validated with Loader 0.19.3."
+        "reason": "C8 declares this capability floor and was validated with Loader 0.19.3."
       },
       {
         "type": "MOD",
@@ -72,12 +75,12 @@
         "type": "MOD",
         "identifier": "quick-stack-nearby",
         "requirement": ">=0.4.0; audited quick-stack-nearby-0.4.0.jar, 159,918 bytes, SHA-256 43f1130527f782a291231c682791b4fd3766a20916c691cbdb98f91fdcc47e53; Modrinth 5Hu4HCfZ/snE5O0Gh",
-        "reason": "Required upstream owner of discovery, ordering, movement, rules, packets, and feedback; C7's exact injection and capacity seams are audited against 0.4.0."
+        "reason": "Required upstream owner of discovery, ordering, movement, rules, packets, and feedback; C8's scanContainer accepted-types prefilter, empty discard, sorting, injection, and capacity seams are audited against exact 0.4.0 bytecode."
       },
       {
         "type": "PROJECT",
         "identifier": "3ab36584-8732-554f-840e-28a75c422660",
-        "requirement": "Optional suggests \"*\"; API floor C1 container-slot-reservations-0.1.0-canary1.jar, 63,388 bytes, SHA-256 4e7f0a470a387be76189d0a5e1ae8c614d17ec8b24a6774b400838cc234c4532; paired validation C2, 81,962 bytes, SHA-256 bb4f269758d43469f2a9c0a36d01dcecb8704054ee8bc01327c46ce614d4a02f",
+        "requirement": "Optional suggests \"*\"; API floor C1 container-slot-reservations-0.1.0-canary1.jar, 63,388 bytes, SHA-256 4e7f0a470a387be76189d0a5e1ae8c614d17ec8b24a6774b400838cc234c4532; paired validation C3 container-slot-reservations-0.1.0-canary3.jar, 85,397 bytes, SHA-256 dfd1a7c1f0e594d12b3fbc1052ae2a1507dd5bd5f5ff9a77d2f8f93667b53ead, source d69469ba90b0d85a257db57ce65588e63f4cc248",
         "reason": "Optional public reservation classifier consumed for exact target affinity and empty-slot ordering; absence and unsupported containers fail closed to native QSN behavior."
       },
       {
@@ -126,7 +129,7 @@
         "type": "TOOL",
         "identifier": "fabric-loom",
         "requirement": "=1.17.19",
-        "reason": "Exact Fabric build plugin pinned by C7."
+        "reason": "Exact Fabric build plugin pinned by C8."
       },
       {
         "type": "OTHER",
@@ -149,16 +152,16 @@
     ]
   },
   "state": {
-    "milestone": "C7 is the current controlled-validation-passed, physically verified, runtime-untested Slot B candidate at manager revision 71 and Stack v15. Deployment 2c2ca107-d652-45bc-a7d6-23c0238d00f7 binds artifact 918d23dd-6268-47c9-baa0-c49daf85e05d to exact implementation 3f124a44086e52845e35805d5abb3049379150b8; accepted QSN 0.4.0 remains active through verified companion passthrough. C6's historical accepted aggregate RUNTIME_PASS and exact C4 rollback remain preserved and do not apply to C7's independent UNTESTED result.",
+    "milestone": "C8 is the current controlled-validation-passed, physically verified, runtime-untested Slot B candidate at manager revision 74 and accepted Stack v15. Deployment 30a3d125-ecb6-4a7a-862b-ca2e2c1bbcfe binds artifact 62f897e7-dc2e-4754-82f0-43240d4655be to exact implementation 1f545721658cce803200fa277737052cead79b70 under state digest 5e87e8f64fc1c860fd430dae15de3883ab857f12b61e0a09a9da2c5f712bd8a9; accepted QSN 0.4.0 remains active through verified companion passthrough. Exact C7 is independently RUNTIME_FAIL with no passed rows, while C6's historical accepted aggregate RUNTIME_PASS and exact C4 rollback remain preserved and do not apply to C8.",
     "releases": {
       "current": {
-        "version": "C7 (0.1.0-canary7)",
-        "embedded_version": "0.1.0-canary7",
+        "version": "C8 (0.1.0-canary8)",
+        "embedded_version": "0.1.0-canary8",
         "artifact": {
-          "filename": "quick-stack-nearby-compat-0.1.0-canary7.jar",
-          "sha256": "9e2ef78a5f40f5bcdeed0e8c6af8cd7cfb15a35d541360017c4e46e94521995e"
+          "filename": "quick-stack-nearby-compat-0.1.0-canary8.jar",
+          "sha256": "e6aaf43d881f31202931c40b6f40762f2e2dab1f2ae8d0ce5fd7f213ec0cbba5"
         },
-        "source_commit": "3f124a44086e52845e35805d5abb3049379150b8",
+        "source_commit": "1f545721658cce803200fa277737052cead79b70",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
@@ -192,11 +195,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 4,
-    "activity_at": "2026-09-03T05:27:46Z",
-    "updated_at": "2026-09-03T05:27:46Z",
-    "last_codex_at": "2026-09-03T05:27:46Z",
-    "source_commit": "2b3d93b2df3d2f2bd5c851570c9ca191c85bafb4",
+    "revision": 5,
+    "activity_at": "2026-09-03T20:35:13Z",
+    "updated_at": "2026-09-03T20:35:13Z",
+    "last_codex_at": "2026-09-03T20:35:13Z",
+    "source_commit": "3ec1b618829fc99774bffef0ccddfc42bd0a6a44",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
