@@ -23,6 +23,8 @@ public final class ContainerSlotReservationsClient implements ClientModInitializ
 
     @Override
     public void onInitializeClient() {
+        GhostItemRenderPipeline.initialize();
+
         KeyMapping.Category category = KeyMapping.Category.register(Identifier.fromNamespaceAndPath(
                 ContainerSlotReservations.MOD_ID, "controls"));
         reservationKey = KeyMappingHelper.registerKeyMapping(new KeyMapping(

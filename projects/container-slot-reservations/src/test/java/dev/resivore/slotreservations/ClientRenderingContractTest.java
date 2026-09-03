@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -32,6 +33,12 @@ final class ClientRenderingContractTest {
         assertTrue(renderer.contains("return itemY + 9"));
         assertTrue(renderer.contains("-1,"));
         assertTrue(renderer.contains("true"));
+        assertTrue(renderer.contains("case UNRESERVED -> {"));
+        assertTrue(renderer.contains("itemX + 13,"));
+        assertTrue(renderer.contains("itemY,"));
+        assertTrue(renderer.contains("itemX + 16,"));
+        assertTrue(renderer.contains("itemY + 3,"));
+        assertTrue(renderer.contains("RESERVATION_MARKER"));
         assertFalse(renderer.contains("copyWithCount(0)"));
         assertTrue(scope.contains("try {"));
         assertTrue(scope.contains("finally {"));
@@ -39,28 +46,67 @@ final class ClientRenderingContractTest {
     }
 
     @Test
-    void atlasBlitAlphaIsPerItemStateAndOptionalTooltipMixinsHaveNoFuzsLinkage() throws IOException {
+    void atlasAndPipGhostsShareAnIsolatedNeutralWhiteAlphaPipeline() throws IOException {
         String extractor = source("mixin/client/GuiGraphicsExtractorGhostMixin.java");
         String state = source("mixin/client/GuiItemRenderStateGhostMixin.java");
         String guiRenderer = source("mixin/client/GuiRendererGhostMixin.java");
         String pipRenderer = source("mixin/client/PictureInPictureRendererGhostMixin.java");
+        String pipeline = source("client/GhostItemRenderPipeline.java");
+        String scope = source("client/GhostItemRenderScope.java");
+        String shader = Files.readString(ROOT.resolve(
+                "src/main/resources/assets/container_slot_reservations/shaders/core/ghost_item_alpha.fsh"
+        ));
+
+        assertTrue(extractor.contains("GuiRenderState;addItem"));
+        assertTrue(extractor.contains("GhostItemRenderScope.activeAlpha()"));
+        assertTrue(state.contains("GhostItemRenderScope.OPAQUE_ALPHA"));
+        assertTrue(scope.contains("return ARGB.white(alpha)"));
+        assertFalse(scope.contains("alpha << 16"));
+        assertTrue(pipeline.contains("RenderPipeline.builder(RenderPipelines.GUI_TEXTURED_SNIPPET)"));
+        assertTrue(pipeline.contains("BlendFunction.TRANSLUCENT_PREMULTIPLIED_ALPHA"));
+        assertTrue(pipeline.contains("GhostItemRenderScope.alphaOnlyWhite(alpha)"));
+        assertTrue(shader.contains("vec4 ghost = vec4(item.rgb * opacity, item.a * opacity);"));
+        assertTrue(shader.contains("if (ghost.a == 0.0)"));
+        assertFalse(shader.contains("vertexColor.rgb"),
+                "The packed RGB channels must never tint the cached item texture");
+        assertFalse(shader.contains("0.2627") || shader.contains("0.2118")
+                        || shader.contains("0.1647"),
+                "The Matcha #43362A background must never be baked into the sprite shader");
+        assertFalse(shader.contains("vec4(0.0") || shader.contains("vec3(0.0"),
+                "The final item blit must not introduce a black fill or matte");
+        assertFalse(pipeline.contains("fill(") || guiRenderer.contains("fill(")
+                        || pipRenderer.contains("fill("),
+                "The ghost seam must remain a texture-only blit");
+        assertEquals(1, occurrences(guiRenderer, "GhostItemRenderPipeline.blit("));
+        assertEquals(1, occurrences(pipRenderer, "GhostItemRenderPipeline.blit("));
+        assertTrue(guiRenderer.contains("at = @At(\"HEAD\")"));
+        assertTrue(guiRenderer.contains("cancellable = true"));
+        assertTrue(guiRenderer.contains("require = 1"));
+        assertTrue(guiRenderer.contains("expect = 1"));
+        assertTrue(guiRenderer.contains("allow = 1"));
+        assertTrue(guiRenderer.contains("callback.cancel()"));
+        assertTrue(guiRenderer.contains("if (alpha == GhostItemRenderScope.OPAQUE_ALPHA)"));
+        assertTrue(pipRenderer.contains("state instanceof OversizedItemRenderState"));
+        assertTrue(pipRenderer.contains("at = @At(\"HEAD\")"));
+        assertTrue(pipRenderer.contains("cancellable = true"));
+        assertTrue(pipRenderer.contains("require = 1"));
+        assertTrue(pipRenderer.contains("expect = 1"));
+        assertTrue(pipRenderer.contains("allow = 1"));
+        assertTrue(pipRenderer.contains("callback.cancel()"));
+        assertTrue(pipRenderer.contains("if (alpha == GhostItemRenderScope.OPAQUE_ALPHA)"));
+        assertFalse(guiRenderer.contains("ModifyConstant"));
+        assertFalse(pipRenderer.contains("ModifyConstant"));
+        assertFalse(guiRenderer.contains("0x59595959"));
+        assertFalse(pipRenderer.contains("0x59595959"));
+    }
+
+    @Test
+    void optionalTooltipMixinsHaveNoFuzsLinkage() throws IOException {
         String itemTooltip = source("mixin/client/ItemContentsTooltipSourceMixin.java");
         String clientTooltip = source("mixin/client/ClientItemContentsTooltipMixin.java");
         String storageTooltip = source("mixin/client/ContainerStorageTooltipMixin.java");
         String fabricMetadata = Files.readString(ROOT.resolve("src/main/resources/fabric.mod.json"));
 
-        assertTrue(extractor.contains("GuiRenderState;addItem"));
-        assertTrue(extractor.contains("GhostItemRenderScope.activeAlpha()"));
-        assertTrue(state.contains("GhostItemRenderScope.OPAQUE_ALPHA"));
-        assertTrue(guiRenderer.contains(
-                "method = \"submitBlitFromItemAtlas(Lnet/minecraft/client/renderer/state/gui/GuiItemRenderState;"
-        ));
-        assertTrue(guiRenderer.contains("GhostItemRenderScope.premultipliedWhite(alpha)"));
-        assertTrue(pipRenderer.contains("state instanceof OversizedItemRenderState"));
-        assertTrue(pipRenderer.contains(
-                "method = \"blitTexture(Lnet/minecraft/client/renderer/state/gui/pip/PictureInPictureRenderState;"
-        ));
-        assertTrue(pipRenderer.contains("GhostItemRenderScope.premultipliedWhite(alpha)"));
         assertTrue(itemTooltip.contains("@Pseudo"));
         assertTrue(clientTooltip.contains("@Pseudo"));
         assertTrue(clientTooltip.contains(
@@ -99,5 +145,14 @@ final class ClientRenderingContractTest {
         } catch (ClassNotFoundException ignored) {
             return false;
         }
+    }
+
+    private static int occurrences(String value, String needle) {
+        int count = 0;
+        for (int index = 0; (index = value.indexOf(needle, index)) >= 0;
+             index += needle.length()) {
+            count++;
+        }
+        return count;
     }
 }

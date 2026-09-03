@@ -11,7 +11,7 @@ import java.util.Optional;
 public final class ReservationVisualRenderer {
     public static final float GHOST_ALPHA = 0.35F;
     public static final int GHOST_ALPHA_8 = 0x59;
-    public static final int GHOST_PREMULTIPLIED_COLOR = 0x59595959;
+    public static final int GHOST_ALPHA_ONLY_COLOR = 0x59FFFFFF;
     public static final int RESERVATION_MARKER = 0xFF24C7B8;
 
     private static final String EMPTY_COUNT = "0";

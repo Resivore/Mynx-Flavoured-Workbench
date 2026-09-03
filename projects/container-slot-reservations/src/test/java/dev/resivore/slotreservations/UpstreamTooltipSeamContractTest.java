@@ -1,5 +1,7 @@
 package dev.resivore.slotreservations;
 
+import com.mojang.blaze3d.pipeline.BlendFunction;
+import com.mojang.blaze3d.platform.BlendFactor;
 import org.junit.jupiter.api.Test;
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.ClassReader;
@@ -238,7 +240,7 @@ final class UpstreamTooltipSeamContractTest {
     }
 
     @Test
-    void exactMinecraftGhostBlitSeamsRequirePremultipliedWhite() throws IOException {
+    void exactMinecraftGhostBlitSeamsRequireOneExplicitAlphaConversion() throws IOException {
         String texturedShader = new String(
                 classpathEntry("assets/minecraft/shaders/core/position_tex_color.fsh"),
                 StandardCharsets.UTF_8
@@ -249,6 +251,19 @@ final class UpstreamTooltipSeamContractTest {
         assertTrue(texturedShader.contains("fragColor = color * ColorModulator;"));
         assertFalse(texturedShader.contains("color.rgb *= color.a"),
                 "If the shader begins premultiplying vertex tint, the ghost color contract changes");
+
+        assertEquals(BlendFactor.ONE,
+                BlendFunction.TRANSLUCENT_PREMULTIPLIED_ALPHA.color().sourceFactor());
+        assertEquals(BlendFactor.ONE_MINUS_SRC_ALPHA,
+                BlendFunction.TRANSLUCENT_PREMULTIPLIED_ALPHA.color().destFactor());
+        assertEquals(BlendFactor.ONE,
+                BlendFunction.TRANSLUCENT_PREMULTIPLIED_ALPHA.alpha().sourceFactor());
+        assertEquals(BlendFactor.ONE_MINUS_SRC_ALPHA,
+                BlendFunction.TRANSLUCENT_PREMULTIPLIED_ALPHA.alpha().destFactor());
+        assertEquals(BlendFactor.SRC_ALPHA,
+                BlendFunction.TRANSLUCENT.color().sourceFactor());
+        assertEquals(BlendFactor.ONE_MINUS_SRC_ALPHA,
+                BlendFunction.TRANSLUCENT.color().destFactor());
 
         String guiRenderer = "net/minecraft/client/gui/render/GuiRenderer.class";
         String atlasDescriptor =
@@ -271,6 +286,69 @@ final class UpstreamTooltipSeamContractTest {
                 "GUI_TEXTURED_PREMULTIPLIED_ALPHA",
                 "Lcom/mojang/blaze3d/pipeline/RenderPipeline;"
         )));
+        assertTrue(atlasBlit.fields.contains(new FieldAccess(
+                Opcodes.GETSTATIC,
+                "com/mojang/blaze3d/textures/FilterMode",
+                "NEAREST",
+                "Lcom/mojang/blaze3d/textures/FilterMode;"
+        )));
+        assertTrue(atlasBlit.calls.contains(new Invocation(
+                "net/minecraft/client/gui/render/TextureSetup",
+                "singleTexture",
+                "(Lcom/mojang/blaze3d/textures/GpuTextureView;Lcom/mojang/blaze3d/textures/GpuSampler;)Lnet/minecraft/client/gui/render/TextureSetup;",
+                Opcodes.INVOKESTATIC,
+                false
+        )));
+
+        MethodCode transparentClear = methodCode(guiRendererClass, "<clinit>", "()V");
+        assertEquals(1, transparentClear.floatZeroConstants,
+                "GuiRenderer.CLEAR_COLOR must continue to be constructed from exactly zero");
+        assertTrue(transparentClear.calls.contains(new Invocation(
+                "org/joml/Vector4f",
+                "<init>",
+                "(F)V",
+                Opcodes.INVOKESPECIAL,
+                false
+        )));
+        assertTrue(transparentClear.fields.contains(new FieldAccess(
+                Opcodes.PUTSTATIC,
+                "net/minecraft/client/gui/render/GuiRenderer",
+                "CLEAR_COLOR",
+                "Lorg/joml/Vector4fc;"
+        )));
+
+        MethodCode guiDraw = methodCode(guiRendererClass, "draw", "()V");
+        assertTrue(guiDraw.calls.contains(new Invocation(
+                "net/minecraft/client/renderer/DynamicUniforms",
+                "writeTransform",
+                "(Lorg/joml/Matrix4f;)Lcom/mojang/blaze3d/buffers/GpuBufferSlice;",
+                Opcodes.INVOKEVIRTUAL,
+                false
+        )), "The GUI final pass must retain its neutral default ColorModulator overload");
+        byte[] dynamicUniforms = classpathEntry(
+                "net/minecraft/client/renderer/DynamicUniforms.class"
+        );
+        MethodCode defaultTransform = methodCode(
+                dynamicUniforms,
+                "writeTransform",
+                "(Lorg/joml/Matrix4f;)Lcom/mojang/blaze3d/buffers/GpuBufferSlice;"
+        );
+        assertTrue(defaultTransform.fields.contains(new FieldAccess(
+                Opcodes.GETSTATIC,
+                "net/minecraft/client/renderer/DynamicUniforms",
+                "WHITE",
+                "Lorg/joml/Vector4fc;"
+        )));
+        MethodCode uniformConstants = methodCode(dynamicUniforms, "<clinit>", "()V");
+        assertEquals(4, uniformConstants.floatOneConstants,
+                "The default GUI ColorModulator must remain neutral RGBA white");
+        assertTrue(uniformConstants.calls.contains(new Invocation(
+                "org/joml/Vector4f",
+                "<init>",
+                "(FFFF)V",
+                Opcodes.INVOKESPECIAL,
+                false
+        )));
 
         String pipRenderer =
                 "net/minecraft/client/gui/render/pip/PictureInPictureRenderer.class";
@@ -290,22 +368,177 @@ final class UpstreamTooltipSeamContractTest {
                 "GUI_TEXTURED_PREMULTIPLIED_ALPHA",
                 "Lcom/mojang/blaze3d/pipeline/RenderPipeline;"
         )));
+        assertTrue(pipBlit.fields.contains(new FieldAccess(
+                Opcodes.GETSTATIC,
+                "com/mojang/blaze3d/textures/FilterMode",
+                "NEAREST",
+                "Lcom/mojang/blaze3d/textures/FilterMode;"
+        )));
+        assertTrue(pipBlit.calls.contains(new Invocation(
+                "net/minecraft/client/gui/render/TextureSetup",
+                "singleTexture",
+                "(Lcom/mojang/blaze3d/textures/GpuTextureView;Lcom/mojang/blaze3d/textures/GpuSampler;)Lnet/minecraft/client/gui/render/TextureSetup;",
+                Opcodes.INVOKESTATIC,
+                false
+        )));
+
+        MethodCode atlasAllocation = methodCode(
+                classpathEntry("net/minecraft/client/gui/render/GuiItemAtlas.class"),
+                "<init>",
+                "(Lnet/minecraft/client/renderer/feature/FeatureRenderDispatcher;II)V"
+        );
+        assertTrue(atlasAllocation.fields.contains(new FieldAccess(
+                Opcodes.GETSTATIC,
+                "com/mojang/blaze3d/GpuFormat",
+                "RGBA8_UNORM",
+                "Lcom/mojang/blaze3d/GpuFormat;"
+        )));
+        MethodCode atlasRender = methodCode(
+                classpathEntry("net/minecraft/client/gui/render/GuiItemAtlas.class"),
+                "drawToSlot",
+                "(IIZLnet/minecraft/client/renderer/item/ItemStackRenderState;)V"
+        );
+        assertTrue(atlasRender.fields.contains(new FieldAccess(
+                Opcodes.PUTSTATIC,
+                "com/mojang/blaze3d/systems/RenderSystem",
+                "outputColorTextureOverride",
+                "Lcom/mojang/blaze3d/textures/GpuTextureView;"
+        )));
+        assertTrue(atlasRender.calls.stream().anyMatch(call ->
+                call.owner().equals("com/mojang/blaze3d/systems/CommandEncoder")
+                        && call.name().equals("clearColorAndDepthTextures")));
+        assertTrue(atlasRender.calls.stream().anyMatch(call ->
+                call.owner().equals("net/minecraft/client/renderer/feature/FeatureRenderDispatcher")
+                        && call.name().equals("renderAllFeatures")));
+
+        MethodCode pipAllocation = methodCode(
+                pipRendererClass,
+                "prepareTexturesAndProjection",
+                "(ZII)V"
+        );
+        assertTrue(pipAllocation.fields.contains(new FieldAccess(
+                Opcodes.GETSTATIC,
+                "com/mojang/blaze3d/GpuFormat",
+                "RGBA8_UNORM",
+                "Lcom/mojang/blaze3d/GpuFormat;"
+        )));
+        assertTrue(pipAllocation.fields.contains(new FieldAccess(
+                Opcodes.GETSTATIC,
+                "net/minecraft/client/gui/render/GuiRenderer",
+                "CLEAR_COLOR",
+                "Lorg/joml/Vector4fc;"
+        )));
+        assertTrue(pipAllocation.calls.stream().anyMatch(call ->
+                call.owner().equals("com/mojang/blaze3d/systems/CommandEncoder")
+                        && call.name().equals("clearColorAndDepthTextures")));
+
+        MethodCode pipPrepare = methodCode(
+                pipRendererClass,
+                "prepare",
+                "(Lnet/minecraft/client/renderer/state/gui/pip/PictureInPictureRenderState;Lnet/minecraft/client/renderer/state/gui/GuiRenderState;Lnet/minecraft/client/renderer/feature/FeatureRenderDispatcher;I)V"
+        );
+        assertTrue(pipPrepare.fields.contains(new FieldAccess(
+                Opcodes.PUTSTATIC,
+                "com/mojang/blaze3d/systems/RenderSystem",
+                "outputColorTextureOverride",
+                "Lcom/mojang/blaze3d/textures/GpuTextureView;"
+        )));
+        assertTrue(pipPrepare.calls.stream().anyMatch(call -> call.name().equals("renderToTexture")));
+
+        MethodCode vertices = methodCode(
+                classpathEntry("net/minecraft/client/renderer/state/gui/BlitRenderState.class"),
+                "buildVertices",
+                "(Lcom/mojang/blaze3d/vertex/VertexConsumer;)V"
+        );
+        assertEquals(4, vertices.calls.stream().filter(call ->
+                call.owner().equals("com/mojang/blaze3d/vertex/VertexConsumer")
+                        && call.name().equals("setColor")
+                        && call.descriptor().equals("(I)Lcom/mojang/blaze3d/vertex/VertexConsumer;"))
+                .count());
+        MethodCode packedColor = methodCode(
+                classpathEntry("com/mojang/blaze3d/vertex/BufferBuilder.class"),
+                "putRgba",
+                "(JI)V"
+        );
+        assertEquals(List.of(new Invocation(
+                "net/minecraft/util/ARGB",
+                "toABGR",
+                "(I)I",
+                Opcodes.INVOKESTATIC,
+                false
+        )), packedColor.calls.stream().filter(call ->
+                call.owner().equals("net/minecraft/util/ARGB")).toList(),
+                "Packed vertex color must only be channel-reordered, never premultiplied");
 
         Set<Member> atlasMixin = members(classpathEntry(
                 "dev/resivore/slotreservations/mixin/client/GuiRendererGhostMixin.class"
         ));
         assertTrue(atlasMixin.contains(new Member(
-                "containerSlotReservations$applyGhostAlpha",
-                "(ILnet/minecraft/client/renderer/state/gui/GuiItemRenderState;Lnet/minecraft/client/gui/render/GuiItemAtlas$SlotView;)I",
+                "containerSlotReservations$submitAlphaOnlyGhost",
+                "(Lnet/minecraft/client/renderer/state/gui/GuiItemRenderState;Lnet/minecraft/client/gui/render/GuiItemAtlas$SlotView;Lorg/spongepowered/asm/mixin/injection/callback/CallbackInfo;)V",
                 Opcodes.ACC_PRIVATE
         )));
+        MethodCode atlasMixinHandler = methodCode(
+                classpathEntry("dev/resivore/slotreservations/mixin/client/GuiRendererGhostMixin.class"),
+                "containerSlotReservations$submitAlphaOnlyGhost",
+                "(Lnet/minecraft/client/renderer/state/gui/GuiItemRenderState;Lnet/minecraft/client/gui/render/GuiItemAtlas$SlotView;Lorg/spongepowered/asm/mixin/injection/callback/CallbackInfo;)V"
+        );
+        assertTrue(atlasMixinHandler.calls.stream().anyMatch(call ->
+                call.owner().equals("dev/resivore/slotreservations/client/GhostItemRenderPipeline")
+                        && call.name().equals("blit")));
+        assertTrue(atlasMixinHandler.calls.stream().noneMatch(call ->
+                call.name().equals("fill") || call.name().equals("clearColorTexture")
+                        || call.name().equals("clearColorAndDepthTextures")));
         Set<Member> pipMixin = members(classpathEntry(
                 "dev/resivore/slotreservations/mixin/client/PictureInPictureRendererGhostMixin.class"
         ));
         assertTrue(pipMixin.contains(new Member(
-                "containerSlotReservations$applyOversizedGhostAlpha",
-                "(ILnet/minecraft/client/renderer/state/gui/pip/PictureInPictureRenderState;Lnet/minecraft/client/renderer/state/gui/GuiRenderState;)I",
+                "containerSlotReservations$submitOversizedAlphaOnlyGhost",
+                "(Lnet/minecraft/client/renderer/state/gui/pip/PictureInPictureRenderState;Lnet/minecraft/client/renderer/state/gui/GuiRenderState;Lorg/spongepowered/asm/mixin/injection/callback/CallbackInfo;)V",
                 Opcodes.ACC_PRIVATE
+        )));
+        MethodCode pipMixinHandler = methodCode(
+                classpathEntry("dev/resivore/slotreservations/mixin/client/PictureInPictureRendererGhostMixin.class"),
+                "containerSlotReservations$submitOversizedAlphaOnlyGhost",
+                "(Lnet/minecraft/client/renderer/state/gui/pip/PictureInPictureRenderState;Lnet/minecraft/client/renderer/state/gui/GuiRenderState;Lorg/spongepowered/asm/mixin/injection/callback/CallbackInfo;)V"
+        );
+        assertTrue(pipMixinHandler.calls.stream().anyMatch(call ->
+                call.owner().equals("dev/resivore/slotreservations/client/GhostItemRenderPipeline")
+                        && call.name().equals("blit")));
+        assertTrue(pipMixinHandler.calls.stream().noneMatch(call ->
+                call.name().equals("fill") || call.name().equals("clearColorTexture")
+                        || call.name().equals("clearColorAndDepthTextures")));
+
+        String ghostShader = new String(classpathEntry(
+                "assets/container_slot_reservations/shaders/core/ghost_item_alpha.fsh"
+        ), StandardCharsets.UTF_8);
+        assertTrue(ghostShader.contains("float opacity = vertexColor.a;"));
+        assertTrue(ghostShader.contains(
+                "vec4 ghost = vec4(item.rgb * opacity, item.a * opacity);"
+        ));
+        assertFalse(ghostShader.contains("vertexColor.rgb"));
+
+        MethodCode customPipeline = methodCode(classpathEntry(
+                "dev/resivore/slotreservations/client/GhostItemRenderPipeline.class"
+        ), "<clinit>", "()V");
+        assertTrue(customPipeline.fields.contains(new FieldAccess(
+                Opcodes.GETSTATIC,
+                "net/minecraft/client/renderer/RenderPipelines",
+                "GUI_TEXTURED_SNIPPET",
+                "Lcom/mojang/blaze3d/pipeline/RenderPipeline$Snippet;"
+        )));
+        assertTrue(customPipeline.fields.contains(new FieldAccess(
+                Opcodes.GETSTATIC,
+                "com/mojang/blaze3d/pipeline/BlendFunction",
+                "TRANSLUCENT_PREMULTIPLIED_ALPHA",
+                "Lcom/mojang/blaze3d/pipeline/BlendFunction;"
+        )));
+        assertTrue(customPipeline.calls.contains(new Invocation(
+                "net/minecraft/client/renderer/RenderPipelines",
+                "register",
+                "(Lcom/mojang/blaze3d/pipeline/RenderPipeline;)Lcom/mojang/blaze3d/pipeline/RenderPipeline;",
+                Opcodes.INVOKESTATIC,
+                false
         )));
     }
 
@@ -364,9 +597,25 @@ final class UpstreamTooltipSeamContractTest {
                     }
 
                     @Override
+                    public void visitMethodInsn(int opcode, String owner, String name,
+                                                String descriptor, boolean isInterface) {
+                        result.calls.add(new Invocation(
+                                owner,
+                                name,
+                                descriptor,
+                                opcode,
+                                isInterface
+                        ));
+                    }
+
+                    @Override
                     public void visitInsn(int opcode) {
                         if (opcode == Opcodes.ICONST_M1) {
                             result.negativeOneConstants++;
+                        } else if (opcode == Opcodes.FCONST_0) {
+                            result.floatZeroConstants++;
+                        } else if (opcode == Opcodes.FCONST_1) {
+                            result.floatOneConstants++;
                         }
                     }
 
@@ -687,6 +936,9 @@ final class UpstreamTooltipSeamContractTest {
     private static final class MethodCode {
         private boolean found;
         private int negativeOneConstants;
+        private int floatZeroConstants;
+        private int floatOneConstants;
         private final List<FieldAccess> fields = new ArrayList<>();
+        private final List<Invocation> calls = new ArrayList<>();
     }
 }

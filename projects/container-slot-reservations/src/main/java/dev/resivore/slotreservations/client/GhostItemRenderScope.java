@@ -1,11 +1,12 @@
 package dev.resivore.slotreservations.client;
 
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.util.ARGB;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.Objects;
 
-/** Marks exactly one extracted GUI item for an alpha-tinted atlas blit. */
+/** Marks exactly one extracted GUI item for an alpha-only final blit. */
 public final class GhostItemRenderScope {
     public static final int OPAQUE_ALPHA = 0xFF;
 
@@ -31,14 +32,10 @@ public final class GhostItemRenderScope {
         return alpha == null ? OPAQUE_ALPHA : alpha;
     }
 
-    /**
-     * The vanilla item-atlas and picture-in-picture blits use premultiplied-alpha blending.
-     * Scale white's RGB channels with alpha as well, otherwise a translucent item keeps an
-     * incorrectly full-bright source color.
-     */
-    public static int premultipliedWhite(int alpha) {
+    /** Returns a straight ARGB opacity control whose RGB multiplier is neutral white. */
+    public static int alphaOnlyWhite(int alpha) {
         validateAlpha(alpha);
-        return alpha << 24 | alpha << 16 | alpha << 8 | alpha;
+        return ARGB.white(alpha);
     }
 
     static void withAlpha(int alpha, Runnable extraction) {

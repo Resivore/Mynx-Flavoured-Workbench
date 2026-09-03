@@ -44,12 +44,12 @@ final class ReservationVisualRendererTest {
                 ReservationVisualRenderer.state(ItemStack.EMPTY, Optional.of(template))
         );
         assertEquals(0x59, ReservationVisualRenderer.GHOST_ALPHA_8);
-        assertEquals(0x59595959, ReservationVisualRenderer.GHOST_PREMULTIPLIED_COLOR);
+        assertEquals(0x59FFFFFF, ReservationVisualRenderer.GHOST_ALPHA_ONLY_COLOR);
         assertEquals(
-                ReservationVisualRenderer.GHOST_PREMULTIPLIED_COLOR,
-                GhostItemRenderScope.premultipliedWhite(ReservationVisualRenderer.GHOST_ALPHA_8)
+                ReservationVisualRenderer.GHOST_ALPHA_ONLY_COLOR,
+                GhostItemRenderScope.alphaOnlyWhite(ReservationVisualRenderer.GHOST_ALPHA_8)
         );
-        assertEquals(-1, GhostItemRenderScope.premultipliedWhite(0xFF));
+        assertEquals(-1, GhostItemRenderScope.alphaOnlyWhite(0xFF));
         assertEquals(
                 ReservationVisualRenderer.GHOST_ALPHA,
                 ReservationVisualRenderer.GHOST_ALPHA_8 / 255.0F,
@@ -161,9 +161,9 @@ final class ReservationVisualRendererTest {
         }));
         assertEquals(GhostItemRenderScope.OPAQUE_ALPHA, GhostItemRenderScope.activeAlpha());
         assertThrows(IllegalArgumentException.class,
-                () -> GhostItemRenderScope.premultipliedWhite(-1));
+                () -> GhostItemRenderScope.alphaOnlyWhite(-1));
         assertThrows(IllegalArgumentException.class,
-                () -> GhostItemRenderScope.premultipliedWhite(0x100));
+                () -> GhostItemRenderScope.alphaOnlyWhite(0x100));
     }
 
     @Test
