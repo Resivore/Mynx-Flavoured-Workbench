@@ -12,6 +12,8 @@ This project maintains the LGPLv3 Fabric build of YUNG's API used by the Minecra
 
 The artifact is retained locally under the ignored `artifacts/` directory. It is not accepted or a rollback release, and build or automated fixture success is not Minecraft runtime validation.
 
+The dedicated profile passed manager verification at revision 71, but unrelated current candidates occupied both Test Slots. No deployment was applied and neither existing candidate was displaced or combined with the Ribbits/YUNG cohort; runtime work waits for a slot-owning workflow to release one.
+
 ## Compatibility correction
 
 The legacy implementation stored mutable piece and junction iterators on each enhanced Beardifier. Concurrent or re-entrant density samples could advance the same cursor between `hasNext()` and `next()`, causing the observed empty-deque `NoSuchElementException` and allowing exhausted state to leak between calls. Legitimately empty filtered inputs were not themselves malformed.

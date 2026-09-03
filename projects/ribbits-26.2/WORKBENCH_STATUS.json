@@ -130,7 +130,7 @@
     ]
   },
   "state": {
-    "milestone": "Mynx Canary 2 retains Canary 1's profession, loot, trade, and private-resource work, coordinates with YUNG's API compat.2 to make enhanced-beardifier iteration call-local and concurrency-safe, and emits the Ribbits creative tab through one ordered duplicate-checked 24-entry table. The exact successor is statically validated but remains not deployed and runtime untested; the supplied failed-cohort identities did not match canonical Canary 1 and remain unbound investigation input.",
+    "milestone": "Mynx Canary 2 retains Canary 1's profession, loot, trade, and private-resource work, coordinates with YUNG's API compat.2 to make enhanced-beardifier iteration call-local and concurrency-safe, and emits the Ribbits creative tab through one ordered duplicate-checked 24-entry table. The exact successor is statically validated but remains not deployed and runtime untested because manager revision 71 has unrelated current candidates in both Test Slots; the supplied failed-cohort identities did not match canonical Canary 1 and remain unbound investigation input.",
     "releases": {
       "current": {
         "version": "4.1.6+26.2-mynx-canary2",
@@ -158,9 +158,9 @@
   },
   "synchronization": {
     "revision": 6,
-    "activity_at": "2026-09-03T05:35:59Z",
-    "updated_at": "2026-09-03T05:35:59Z",
-    "last_codex_at": "2026-09-03T05:35:59Z",
+    "activity_at": "2026-09-03T05:51:22Z",
+    "updated_at": "2026-09-03T05:51:22Z",
+    "last_codex_at": "2026-09-03T05:51:22Z",
     "source_commit": "f0be1f9c6c1f3e843a0e44791a650df237836537",
     "google_sheet": {
       "participates": true,

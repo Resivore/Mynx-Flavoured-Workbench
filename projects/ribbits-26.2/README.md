@@ -14,6 +14,8 @@ Upstream code is covered by LGPL-3.0. Ribbits resources and the approved Guard R
 
 Two independent fresh assemblies beneath `C:\Users\resiv\AppData\Local\Temp\test-builds\private\ribbits-c2-c-01a06591` and `C:\Users\resiv\AppData\Local\Temp\test-builds\private\ribbits-c2-d-01a06591` each reported candidate Canary 2, passed complete private tree/JAR validation, and produced the same filename, size, SHA-256, and complete JAR bytes. Conventional Minecraft datagen was unavailable, so deterministic assembly and validation supply the resource evidence. The source-only artifact contains no protected or donor-derived assets and is deliberately non-runnable.
 
+The dedicated profile passed manager verification at revision 71, but unrelated current candidates occupied both Test Slots. No deployment was applied and neither existing candidate was displaced or combined with this cohort; runtime work waits for a slot-owning workflow to release one.
+
 The exact canonical predecessor remains private Mynx Canary 1: version `4.1.6+26.2-mynx-canary1`, filename `ribbits-private-reconstruction-4.1.6+26.2-mynx-canary1.jar`, 3,163,214 bytes, SHA-256 `EC2946D299BCDA22FFA393CE310760D1F963ED1D28377A86F45DA22E64869443`, source checkpoint `3e9b81f2c2464811caf593a6451e6ff1c9136955`. It was not renamed or overwritten.
 
 The exact faithful-port baseline remains historical private Canary 2: `ribbits-private-reconstruction-4.1.6+26.2-port-canary2.jar`, 3,124,301 bytes, SHA-256 `0AD73B7B61C6EE792EC1745056563641767AFE6811C0FDF2D3C99123C3F289DC`, source checkpoint `efe1970d2447aea4913e67f55c0c6b83cc36c5bb`. It was not renamed, overwritten, accepted, or designated as rollback.

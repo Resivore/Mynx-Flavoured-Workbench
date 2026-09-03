@@ -92,7 +92,7 @@
     ]
   },
   "state": {
-    "milestone": "Compat.2 is retained after a Java 25 clean Fabric build and focused consumer-fixture pass, including deterministic empty, nonempty, repeat, and parallel enhanced-beardifier coverage; it remains unaccepted, not deployed, and runtime untested.",
+    "milestone": "Compat.2 is retained after a Java 25 clean Fabric build and focused consumer-fixture pass, including deterministic empty, nonempty, repeat, and parallel enhanced-beardifier coverage; it remains unaccepted, not deployed, and runtime untested because manager revision 71 has unrelated current candidates in both Test Slots.",
     "releases": {
       "current": {
         "version": "26.2-Fabric-6.1.1-compat.2",
@@ -120,9 +120,9 @@
   },
   "synchronization": {
     "revision": 1,
-    "activity_at": "2026-09-03T05:36:57Z",
-    "updated_at": "2026-09-03T05:36:57Z",
-    "last_codex_at": "2026-09-03T05:36:57Z",
+    "activity_at": "2026-09-03T05:51:22Z",
+    "updated_at": "2026-09-03T05:51:22Z",
+    "last_codex_at": "2026-09-03T05:51:22Z",
     "source_commit": "f0be1f9c6c1f3e843a0e44791a650df237836537",
     "google_sheet": {
       "participates": true,
