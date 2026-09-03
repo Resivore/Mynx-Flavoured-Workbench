@@ -2,16 +2,16 @@
   "$schema": "../../schemas/runtime-state.schema.json",
   "schema_version": 2,
   "activation": "ACTIVE",
-  "revision": 68,
-  "updated_at": "2026-09-03T03:22:44Z",
+  "revision": 70,
+  "updated_at": "2026-09-03T04:03:00Z",
   "accepted_baseline": {
-    "revision": 14,
+    "revision": 15,
     "provenance": {
       "source_repository": "Resivore/Minecraft-26.2-Workbench",
       "source_commit": "f0101f38c446dddaa4226450386402c63597ba7c",
       "source_profile": "matcha-heart-death-mossy-stone",
       "legacy_ledger_sha256": "5f0a26f3d136effeb54e86e3a1ba9d6a98a7252f5adde1c789129461f64c43de",
-      "accepted_artifact_count": 31,
+      "accepted_artifact_count": 32,
       "overlay_order": [
         "937d7ccc-44c9-55cb-8d33-0dc0bff5fe45",
         "9f1c5aa4-09c1-4de3-9921-4b045e8abcd2"
@@ -844,53 +844,37 @@
           ]
         },
         "accepted_at": "2026-09-01T02:35:20Z"
+      },
+      {
+        "unit": {
+          "deployment_id": "c0fdfff1-831a-4081-93a3-e596d7fc928d",
+          "project_uuid": "3ab36584-8732-554f-840e-28a75c422660",
+          "project_id": "container-slot-reservations",
+          "project_identity_source": "CURRENT_MANIFEST",
+          "version": "0.1.0-canary1",
+          "source_commit": "e0adc6b9302392440f2e5654c1e4031916b0c996",
+          "artifacts": [
+            {
+              "artifact_id": "c3bc9365-5664-4148-9200-3292307f9bce",
+              "kind": "MOD",
+              "filename": "container-slot-reservations-0.1.0-canary1.jar",
+              "sha256": "4e7f0a470a387be76189d0a5e1ae8c614d17ec8b24a6774b400838cc234c4532",
+              "ownership_keys": [
+                "mod:container_slot_reservations"
+              ],
+              "source": {
+                "type": "REPOSITORY",
+                "path": "projects/container-slot-reservations/artifacts/container-slot-reservations-0.1.0-canary1.jar"
+              }
+            }
+          ]
+        },
+        "accepted_at": "2026-09-03T04:03:00Z"
       }
     ]
   },
   "slots": {
-    "A": {
-      "members": [
-        {
-          "unit": {
-            "deployment_id": "c0fdfff1-831a-4081-93a3-e596d7fc928d",
-            "project_uuid": "3ab36584-8732-554f-840e-28a75c422660",
-            "project_id": "container-slot-reservations",
-            "project_identity_source": "CURRENT_MANIFEST",
-            "version": "0.1.0-canary1",
-            "source_commit": "e0adc6b9302392440f2e5654c1e4031916b0c996",
-            "artifacts": [
-              {
-                "artifact_id": "c3bc9365-5664-4148-9200-3292307f9bce",
-                "kind": "MOD",
-                "filename": "container-slot-reservations-0.1.0-canary1.jar",
-                "sha256": "4e7f0a470a387be76189d0a5e1ae8c614d17ec8b24a6774b400838cc234c4532",
-                "ownership_keys": [
-                  "mod:container_slot_reservations"
-                ],
-                "source": {
-                  "type": "REPOSITORY",
-                  "path": "projects/container-slot-reservations/artifacts/container-slot-reservations-0.1.0-canary1.jar"
-                }
-              }
-            ]
-          },
-          "replaces_accepted_deployment_id": null,
-          "runtime_result": {
-            "classification": "UNTESTED",
-            "recorded_at": null,
-            "evidence": {
-              "passed": [],
-              "failed": []
-            }
-          }
-        }
-      ],
-      "deployment": {
-        "state": "READY_TO_TEST_VERIFIED",
-        "deployed_at": "2026-09-02T16:58:44Z",
-        "ready_verified_at": "2026-09-02T16:58:44Z"
-      }
-    },
+    "A": null,
     "B": {
       "members": [
         {
