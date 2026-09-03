@@ -18,12 +18,15 @@
     "goals": [
       "Maintain a private Minecraft Java 26.2 downstream Ribbits build for the fixed Mynx and Matcha stack, preserving upstream behavior except for individually documented intentional Mynx deviations.",
       "Maintain the user-approved tiered Glowcap trade economy, persistent profession progression and daily restocking, exact cross-stack item contracts, and Toadstool Heart home-setting behavior without converting Ribbits into vanilla Villagers.",
+      "Maintain the exact Phase C swamp-hut Sorcerer, natural-Witch boundary, shared Ribbit Village explorer-map result, failed-map Sorcerer service, and future-only village utility cleanup without retrofitting existing structures.",
       "Keep every private reconstruction deterministic and hash-guarded while isolating protected Ribbits resources and approved local donor visuals from the public source repository."
     ],
     "scope": [
       "Retain the legally trackable faithful-port baseline and maintain the intentional deviations recorded in MYNX_DEVIATIONS.md without changing stable mod, registry, entity, or save identities.",
       "Maintain all nine registered Ribbit professions, the explicit equal-weight eight-member natural village pool, and typed spawn-egg, pick-block, dispenser, codec, persistence, model, texture, and umbrella contracts.",
       "Maintain the cumulative profession trade-profile framework, fixed Glowcap prices, persistent specializations and gates, deterministic Chef menus, two-restocks-per-day policy, and exact component-aware Matcha and Custom Portals stack matching introduced by Mynx Canary 3.",
+      "Maintain new-hut-only replacement of the initial swamp-hut Witch with one persistent Sorcerer, independent Cat relocation, an exact-piece natural-Witch rejection, one lazy map barrel, and the marker-authenticated rank-independent failed-map redemption introduced by Mynx Canary 4.",
+      "Maintain the exact hash-pinned six-template private NBT transform for future Ribbit village placement while preserving every non-target record, retained utility, storage block, loot binding, and processor sentinel.",
       "Maintain ribbits:glowcap and ribbits:toadstool_heart as permanent mechanical identities while their temporary Warped Fungus and original Crystal Heart visual models await a narrow final-art successor.",
       "Preserve the private resource assembler, exact pristine, Minecraft, dependency, donor, output, and archive identities, and the authorized shared green spawn-egg derivation contract."
     ],
@@ -34,7 +37,7 @@
       "exclusions": [
         "Protected Ribbits resources, donor-derived models and textures, pristine or donor binaries, private manifests and reports, and the complete private Canary JAR are external, ignored, private-use-only, and nonredistributable.",
         "Public source-only build output is resource-incomplete and must not be represented as a runnable Canary.",
-        "No witch-hut Sorcerer generation, witch suppression or structure changes, Ribbit Village Explorer Map, cartographer integration, generalized old-offer migration, donor AI, Guard combat AI, home-dimension redesign, Fortune Blessing, Silver Bullion, or Adamant/Netherite economy additions in Canary 3.",
+        "No Wandering Ribbit or map sale, automatic Sorcerer replacement, existing-hut or existing-village retrofit, conversion of saved Witches, global Witch suppression, Matcha cartographer or Witch Hut map changes, asynchronous map search, custom map item or GUI, generalized old-offer migration, donor AI, Guard combat AI, home-dimension redesign, Fortune Blessing, Silver Bullion, or Adamant/Netherite economy additions in Canary 4.",
         "No substitute private inputs, deployment, Test Instance Manager mutation, gameplay-profile access, or Minecraft runtime claim from source, build, static, codec, tree, or archive evidence."
       ]
     },
@@ -150,15 +153,15 @@
     ]
   },
   "state": {
-    "milestone": "Mynx Canary 3 retains all Phase A profession, model, egg, umbrella, village-pool, loot-repair, donor-boundary, creative-tab, and coordinated YUNG's API Compat.2 behavior while adding permanent ribbits:glowcap currency, consumable ribbits:toadstool_heart home setting, exact component-aware Matcha and Custom Portals stacks, cumulative tiered ranks and gates, persistent equal-weight specializations, deterministic Chef menus, and a persisted maximum of two exhausted-offer restocks per day. Glowcap temporarily renders as minecraft:item/warped_fungus and Toadstool Heart as minecraft:item/heart_container; both remain mechanically distinct permanent Ribbits items awaiting an asset-only final-art successor. The user's Phase A observations remain partial, unbound external evidence: villages and the expanded roster appeared operational, the Prospector egg/model worked, and natural Prospector occurrence was unobserved in that sample; no complete matrix or exact cohort/log identity was supplied. Canary 3 itself was not deployed or launched and remains runtime untested.",
+    "milestone": "Mynx Canary 4 preserves the complete Phase A profession surface and Phase B Glowcap economy while adding Phase C: each newly generated procedural vanilla swamp hut consumes the vanilla Witch one-shot but creates one persistent ribbits:sorcerer at local (3,2,5), keeps and moves only the initial Cat to (2,2,4), and places one north-facing lazy map barrel at (2,2,6). Natural Witch candidates alone are rejected only inside an actual SwampHutPiece of exact minecraft:swamp_hut metadata; existing Witches and non-natural creation paths remain unchanged. The barrel uses ribbits:chests/swamp_hut_map and shared modifier ribbits:ribbit_village_explorer_result for #ribbits:on_ribbit_village_explorer_maps at raw radius 100, zoom 2, plains marker, and skip-existing-chunks false; misses become one exact marked Uncharted Ribbit Map redeemable by every Sorcerer for one Toadstool Heart with 16 uses, zero profession XP, zero multiplier, and no Benzene-gate or rank effect. Six hash-pinned private village templates remove Brewing Stands and Damaged Anvils to air and replace the Smoker and Blast Furnace with Stone Bricks for future placement only while preserving every non-target record. Existing huts/villages are not retrofitted; removing Ribbits can leave a Phase C hut without its consumed initial Witch, and synchronous radius-100 map misses may stall. Exact retained Canary 3 and YUNG's API Compat.2 binaries bind the user's scoped Phase B practical PASS; practical use was sufficient to continue, but the exhaustive trade matrix was not executed and no individual untested row or edge case is marked observed. Canary 3 is not promoted or assigned a managed-slot result. Canary 4 was not deployed or launched and has no runtime evidence.",
     "releases": {
       "current": {
-        "version": "4.1.6+26.2-mynx-canary3",
+        "version": "4.1.6+26.2-mynx-canary4",
         "artifact": {
-          "filename": "ribbits-private-reconstruction-4.1.6+26.2-mynx-canary3.jar",
-          "sha256": "69ad105b44e3e9131d540e26887eb09ce6be1da89ee9c4b3c49e4e95341f3e19"
+          "filename": "ribbits-private-reconstruction-4.1.6+26.2-mynx-canary4.jar",
+          "sha256": "da7a37e0aeece4d7633f0c5104298d76e066cd38dd5255fae616df95c5fbc712"
         },
-        "source_commit": "fc983c0534ac2a73308111d2052530a202156777",
+        "source_commit": "cbc247054ecba937ad009dd651cde31fac504c22",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
@@ -177,11 +180,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 7,
-    "activity_at": "2026-09-03T20:04:17Z",
-    "updated_at": "2026-09-03T20:04:17Z",
-    "last_codex_at": "2026-09-03T20:04:17Z",
-    "source_commit": "fc983c0534ac2a73308111d2052530a202156777",
+    "revision": 8,
+    "activity_at": "2026-09-03T23:34:05Z",
+    "updated_at": "2026-09-03T23:34:05Z",
+    "last_codex_at": "2026-09-03T23:34:05Z",
+    "source_commit": "cbc247054ecba937ad009dd651cde31fac504c22",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
