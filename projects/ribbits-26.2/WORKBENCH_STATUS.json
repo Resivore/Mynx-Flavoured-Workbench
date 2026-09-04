@@ -37,7 +37,7 @@
       "exclusions": [
         "Protected Ribbits resources, donor-derived models and textures, pristine or donor binaries, private manifests and reports, and the complete private Canary JAR are external, ignored, private-use-only, and nonredistributable.",
         "Public source-only build output is resource-incomplete and must not be represented as a runnable Canary.",
-        "No Wandering Ribbit or map sale, automatic Sorcerer replacement, existing-hut or existing-village retrofit, conversion of saved Witches, global Witch suppression, Matcha cartographer or Witch Hut map changes, asynchronous map search, custom map item or GUI, generalized old-offer migration, donor AI, Guard combat AI, home-dimension redesign, Fortune Blessing, Silver Bullion, or Adamant/Netherite economy additions in Canary 4.",
+        "No Wandering Ribbit or map sale, automatic Sorcerer replacement, existing-hut or existing-village retrofit, conversion of saved Witches, global Witch suppression, Matcha cartographer or Witch Hut map changes, asynchronous map search, custom map item or GUI, generalized old-offer migration, donor AI, Guard combat AI, home-dimension redesign, Fortune Blessing, Silver Bullion, or Adamant/Netherite economy additions in Canary 5.",
         "No substitute private inputs, deployment, Test Instance Manager mutation, gameplay-profile access, or Minecraft runtime claim from source, build, static, codec, tree, or archive evidence."
       ]
     },
@@ -153,15 +153,15 @@
     ]
   },
   "state": {
-    "milestone": "Mynx Canary 4 preserves the complete Phase A profession surface and Phase B Glowcap economy while adding Phase C: each newly generated procedural vanilla swamp hut consumes the vanilla Witch one-shot but creates one persistent ribbits:sorcerer at local (3,2,5), keeps and moves only the initial Cat to (2,2,4), and places one north-facing lazy map barrel at (2,2,6). Natural Witch candidates alone are rejected only inside an actual SwampHutPiece of exact minecraft:swamp_hut metadata; existing Witches and non-natural creation paths remain unchanged. The barrel uses ribbits:chests/swamp_hut_map and shared modifier ribbits:ribbit_village_explorer_result for #ribbits:on_ribbit_village_explorer_maps at raw radius 100, zoom 2, plains marker, and skip-existing-chunks false; misses become one exact marked Uncharted Ribbit Map redeemable by every Sorcerer for one Toadstool Heart with 16 uses, zero profession XP, zero multiplier, and no Benzene-gate or rank effect. Six hash-pinned private village templates remove Brewing Stands and Damaged Anvils to air and replace the Smoker and Blast Furnace with Stone Bricks for future placement only while preserving every non-target record. Existing huts/villages are not retrofitted; removing Ribbits can leave a Phase C hut without its consumed initial Witch, and synchronous radius-100 map misses may stall. Exact retained Canary 3 and YUNG's API Compat.2 binaries bind the user's scoped Phase B practical PASS; practical use was sufficient to continue, but the exhaustive trade matrix was not executed and no individual untested row or edge case is marked observed. Canary 3 is not promoted or assigned a managed-slot result. Canary 4 was not deployed or launched and has no runtime evidence.",
+    "milestone": "Mynx Canary 5 is a narrow startup-repair successor that preserves Phase C and every earlier behavior. Exact production Minecraft 26.2 bytecode declares protected getWorldPos(III)BlockPos$MutableBlockPos and placeBlock on StructurePiece while both actual getWorldPos INVOKEVIRTUAL instructions in SwampHutPiece.postProcess and spawnCat use SwampHutPiece as owner. Canary 4 incorrectly shadowed the inherited methods on SwampHutPiece and the exact canonical Canary 4 artifact has a bound user-reported external RUNTIME_FAIL: startup aborted at @Shadow getWorldPos before Phase C gameplay, with no managed deployment or inferred gameplay rows. Canary 5 removes both invalid inherited shadows, uses a registered non-reflective StructurePiece invoker for both transforms and barrel placement, retains the exact invocation-owner selectors, and makes all four hut hooks plus the natural-spawn hook fail-loud with require=1 and allow=1. The official runtime namespace requires no refmap; the diagnostic No refMap loaded did not contribute. A production-equivalent Knot/Mixin harness applied StructurePieceInvoker, SwampHutPieceMixin, and NaturalSpawnerMixin and resolved every required injection exactly once. Sorcerer (3,2,5), Cat (2,2,4), barrel (2,2,6), one-shot resident behavior, exact-piece Witch suppression, map/redemption, Phase B economy, private six-template transform, and all model/texture/umbrella/egg/donor boundaries remain unchanged. Canary 5 was not deployed or launched and is RUNTIME_UNTESTED.",
     "releases": {
       "current": {
-        "version": "4.1.6+26.2-mynx-canary4",
+        "version": "4.1.6+26.2-mynx-canary5",
         "artifact": {
-          "filename": "ribbits-private-reconstruction-4.1.6+26.2-mynx-canary4.jar",
-          "sha256": "da7a37e0aeece4d7633f0c5104298d76e066cd38dd5255fae616df95c5fbc712"
+          "filename": "ribbits-private-reconstruction-4.1.6+26.2-mynx-canary5.jar",
+          "sha256": "0dde14caaf1ef1e4b52ca118d61e0ed0706bb0ead4b718471ca3cc5b5a70be4f"
         },
-        "source_commit": "cbc247054ecba937ad009dd651cde31fac504c22",
+        "source_commit": "fb21c43d1f483108cbbb108d96213736db310e2b",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
@@ -180,11 +180,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 8,
-    "activity_at": "2026-09-03T23:34:05Z",
-    "updated_at": "2026-09-03T23:34:05Z",
-    "last_codex_at": "2026-09-03T23:34:05Z",
-    "source_commit": "cbc247054ecba937ad009dd651cde31fac504c22",
+    "revision": 9,
+    "activity_at": "2026-09-04T02:07:14Z",
+    "updated_at": "2026-09-04T02:07:14Z",
+    "last_codex_at": "2026-09-04T02:07:14Z",
+    "source_commit": "fb21c43d1f483108cbbb108d96213736db310e2b",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
