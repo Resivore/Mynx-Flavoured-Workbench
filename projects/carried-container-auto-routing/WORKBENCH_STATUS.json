@@ -14,28 +14,32 @@
     ]
   },
   "definition": {
-    "lifecycle": "ACCEPTED",
+    "lifecycle": "TESTING",
     "goals": [
-      "Route newly acquired matching items into deterministic occupied destinations, including supported unlocked carried shulker boxes and bundles, without changing exact item or component identity.",
+      "Route acquired items into supported unlocked carried shulkers using exact physical matching contents or matching empty CSR reservations, preserving component identity, effective capacities, counts, and existing global destination order.",
       "Preserve established passive-pickup, external QUICK_MOVE, and player-origin QUICK_MOVE behavior across vanilla and Inventory Extended storage while composing safely with Offhand Shift-Click QoL.",
       "Provide a server-authoritative lock control that excludes selected carriers from automatic routing without altering their other contents or components."
     ],
     "scope": [
-      "Canonical C11 source for Minecraft Java 26.2 Fabric, historically versioned 0.3.6-external-quick-move-priority-fix-canary, reconstructed from frozen legacy source checkpoint 64d63d9bcca268297601af5c9a7537e8d8946812.",
+      "Canonical C12 / 0.3.7-csr-reservation-affinity-canary1 for Minecraft Java 26.2 Fabric, implementation checkpoint c373b663c99d7a217fc9147db5007d3f1057678f; deliberate optional CSR affinity expansion beyond accepted C11.",
       "Passive ground pickup and external-container QUICK_MOVE priority through component-identical occupied main hand, qualifying carried containers, occupied hotbar, occupied offhand, compatible ordinary-storage partials, empty hotbar, and empty ordinary storage.",
       "Player-origin QUICK_MOVE routing to a component-identical occupied offhand and qualifying carried containers before returning exact remainder ownership to the active menu's normal algorithm.",
-      "Creative and Survival inventory snapshot alignment, source cleanup and menu callbacks, exact remainder accounting, stable carrier order, and persistent per-carrier auto-routing lock state."
+      "Creative and Survival inventory snapshot alignment, source cleanup and menu callbacks, exact remainder accounting, stable carrier order, and persistent per-carrier auto-routing lock state.",
+      "Only the shared ShulkerDestination changes routing admission: physical component-exact matches seed affinity unless their reservation conflicts; full matching physical stacks retain affinity. Physically empty RESERVED_MATCH slots also seed affinity. Empty unreserved, unrelated, locked, and nesting-prohibited destinations remain ineligible.",
+      "Read only ContainerSlotReservationsApi.classify(ItemStack,int,ItemStack), isReserved(ItemStack,int), and reservationMatches(ItemStack,int,ItemStack), behind FabricLoader optional-mod discovery. Incompatible API linkage or classification fails closed before mutation with a diagnostic. CSR is suggests *, never a hard runtime dependency or nested implementation.",
+      "Build one immutable slot/count plan before mutation: compatible occupied stacks in physical order, all matching reserved empties in physical order, then unreserved empties in physical order. Rewrite CONTAINER once and shrink the incoming stack by exactly the accepted total; retain reservations, lock, name, lore, damage, and unrelated components.",
+      "Keep accepted bundle class bytes unchanged, global destination and carrier order unchanged, all existing pickup/QUICK_MOVE contexts, offhand/excluded-source behavior, and Stacks Are Stacks effective maximums without a new stack-size implementation."
     ],
     "boundaries": {
       "owned_paths": [
         "projects/carried-container-auto-routing"
       ],
       "exclusions": [
-        "Equipment, Trinkets, trash, and foreign menu slots are never routing destinations.",
-        "Locked, empty, unrelated, full, or component-distinct carried containers cannot claim a new item type.",
-        "Inventory Extended and Offhand Shift-Click QoL remain separate optional owners; their code and artifacts are not bundled or migrated here.",
-        "Earlier C7-C9 failed or superseded canary binaries and legacy status READMEs, BUILD_PROVENANCE, accumulated test matrices, global status records, manager state, snapshots, and notes remain only in the frozen historical repository.",
-        "This migration does not deploy to Minecraft, alter either Test Slot or the accepted physical baseline, launch Minecraft, or access the protected gameplay instance."
+        "Equipment, Trinkets, trash, and foreign menu slots remain excluded.",
+        "No generic automatic backpack: an empty unreserved shulker or a nonmatching reservation cannot establish affinity; locked carriers and forbidden nesting remain denied.",
+        "No internal CSR persistence access, reservation mutation, fake stacks, runtime CSR pin, foreign classes, or nested CSR/upstream JAR.",
+        "No modifications to bundles, global destination/carrier order, accepted C11/rollback C10 bytes, QSN C8, SAS C2, Easy Shulker Boxes, Item Interactions, or other project implementations.",
+        "No successor runtime pass/promotion inferred from controlled tests; no dedicated Minecraft launch or protected gameplay-profile access."
       ]
     },
     "dependencies": [
@@ -74,19 +78,30 @@
         "identifier": "offhand_shift_click_qol",
         "requirement": "=0.3.3-acquisition-priority-fix-canary",
         "reason": "Exact optional paired identity used by the preserved focused runtime evidence and composable QUICK_MOVE ownership contract."
+      },
+      {
+        "type": "MOD",
+        "identifier": "container_slot_reservations",
+        "requirement": "Optional suggests *; validation baselines accepted 0.1.0-canary4 and exact 0.1.0-canary7",
+        "reason": "Read-only carried-shulker classification and reservation affinity; optional provider class references are isolated behind FabricLoader discovery."
       }
     ]
   },
   "state": {
-    "milestone": "C11 passed the reported aggregate focused runtime scope and is accepted; the exact prior runtime-passed rollback remains retained.",
+    "milestone": "C12 deliberately expands accepted C11 with optional CSR reservation affinity; C11's accepted aggregate RUNTIME_PASS and exact C10 rollback remain valid. C12 0.3.7-csr-reservation-affinity-canary1 at c373b663c99d7a217fc9147db5007d3f1057678f, carried-container-auto-routing-0.3.7-csr-reservation-affinity-canary1.jar, 42805 bytes, SHA-256 f00b1e6bc64a0e63ac1199d89c08f7510a20d5bbb9a486b40bd97833df522a2f, passed three final clean Java 25 / Gradle 9.5.1 69/69 JUnit tests in 7 suites and 7/7 controlled GameTests with CSR absent, accepted C4, and exact C7. Six project GameTests plus Fabric's required control exercise actual world pickup, external QUICK_MOVE in Survival/Creative, player-origin QUICK_MOVE, offhand/source exclusions, selected-hand/carrier order, and lock/unlock. Behavioral fixtures cover exact counts, full physical affinity, conflicting reservations, reserved-first empty insertion, components/persistence, and effective normally-nonstackable saddle maximum 64 without an explicit MAX_STACK_SIZE patch. Direct accepted C11 bytes reject the new affinity case; BundleDestination bytes are identical. C12 remains runtime untested. Manager revision 90 / accepted Stack v18; state SHA-256 3cc3a9d83c34aa763263478fb7d54c1fb6aa1aee384ae48af3e815130f4a43b5; physical inventory SHA-256 1d4138fc6648f9181daaecde5374f99810072e778da9c513910fdcee96284d9e. Both exact current releases are READY_TO_TEST_VERIFIED with independent UNTESTED results. Slot B: deployment 98fe1cc9-eeaa-4c07-8b72-17678bc07581, artifact 2eb193ee-0975-4a2c-a725-c97a721c35b4, carried-container-auto-routing-0.3.7-csr-reservation-affinity-canary1.jar, 42,805 bytes, SHA-256 f00b1e6bc64a0e63ac1199d89c08f7510a20d5bbb9a486b40bd97833df522a2f, source c373b663c99d7a217fc9147db5007d3f1057678f. Exact ignored successor bytes were hash-and-byte verified and retained by tools/artifact_retention.py in the primary checkout. No dedicated Minecraft client was launched; controlled GameTests are not user runtime evidence.",
     "releases": {
       "current": {
-        "version": "C11 (legacy 0.3.6-external-quick-move-priority-fix-canary)",
+        "version": "0.3.7-csr-reservation-affinity-canary1",
+        "embedded_version": "0.3.7-csr-reservation-affinity-canary1",
         "artifact": {
-          "filename": "carried-container-auto-routing-0.3.6-external-quick-move-priority-fix-canary.jar",
-          "sha256": "01913b0455d961d20174c601b0544c178ed47868113e6f1173e132290fe4ca02"
+          "filename": "carried-container-auto-routing-0.3.7-csr-reservation-affinity-canary1.jar",
+          "sha256": "f00b1e6bc64a0e63ac1199d89c08f7510a20d5bbb9a486b40bd97833df522a2f"
         },
-        "source_commit": "64d63d9bcca268297601af5c9a7537e8d8946812"
+        "source_commit": "c373b663c99d7a217fc9147db5007d3f1057678f",
+        "runtime_dependency_policy": {
+          "contract": "CAPABILITY_OR_PROVIDER",
+          "exceptions": []
+        }
       },
       "accepted": {
         "version": "C11 (legacy 0.3.6-external-quick-move-priority-fix-canary)",
@@ -104,22 +119,22 @@
         },
         "source_commit": "c8ec833d81f89ac5bca3040e83dbde26d6d0e906"
       },
-      "accepted_current": "CURRENT_IS_ACCEPTED",
+      "accepted_current": "CURRENT_DIFFERS_FROM_ACCEPTED",
       "accepted_rollback": "ROLLBACK_DIFFERS_FROM_ACCEPTED"
     },
     "validation": {
-      "build": "STATIC_PASS",
+      "build": "CONTROLLED_VALIDATION_PASS",
       "deployment": "READY_TO_TEST_VERIFIED",
-      "runtime": "RUNTIME_PASS"
+      "runtime": "RUNTIME_UNTESTED"
     },
     "blocker": null
   },
   "synchronization": {
-    "revision": 1,
-    "activity_at": "2026-08-26T04:30:31Z",
-    "updated_at": "2026-08-29T21:29:38Z",
-    "last_codex_at": "2026-08-29T21:29:38Z",
-    "source_commit": "a27c174a8b4a330af8f44edf9003c762cd751739",
+    "revision": 2,
+    "activity_at": "2026-09-04T23:24:09Z",
+    "updated_at": "2026-09-04T23:24:09Z",
+    "last_codex_at": "2026-09-04T23:24:09Z",
+    "source_commit": "c373b663c99d7a217fc9147db5007d3f1057678f",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
