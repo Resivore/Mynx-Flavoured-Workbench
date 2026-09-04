@@ -26,8 +26,8 @@
       "Maintain all nine registered Ribbit professions, the explicit equal-weight eight-member natural village pool, and typed spawn-egg, pick-block, dispenser, codec, persistence, model, texture, and umbrella contracts.",
       "Maintain the cumulative profession trade-profile framework, fixed Glowcap prices, persistent specializations and gates, deterministic Chef menus, two-restocks-per-day policy, and exact component-aware Matcha and Custom Portals stack matching introduced by Mynx Canary 3.",
       "Maintain new-hut-only replacement of the initial swamp-hut Witch with one persistent Sorcerer, independent Cat relocation, an exact-piece natural-Witch rejection, one lazy map barrel, and the marker-authenticated rank-independent failed-map redemption introduced by Mynx Canary 4.",
-      "Maintain the exact hash-pinned six-template private NBT transform for future Ribbit village placement while preserving every non-target record, retained utility, storage block, loot binding, and processor sentinel.",
-      "Maintain ribbits:glowcap and ribbits:toadstool_heart as permanent mechanical identities while their temporary Warped Fungus and original Crystal Heart visual models await a narrow final-art successor.",
+      "Maintain the exact hash-pinned four-template private NBT transform for future Ribbit village placement while preserving the pristine Smoker and Blast Furnace templates byte-for-byte and retaining every non-target record, storage block, loot binding, and processor sentinel.",
+      "Maintain ribbits:glowcap and ribbits:toadstool_heart as permanent mechanical identities with their exact user-approved final 16-by-16 RGBA sprites and conventional generated-item models.",
       "Preserve the private resource assembler, exact pristine, Minecraft, dependency, donor, output, and archive identities, and the authorized shared green spawn-egg derivation contract."
     ],
     "boundaries": {
@@ -37,7 +37,7 @@
       "exclusions": [
         "Protected Ribbits resources, donor-derived models and textures, pristine or donor binaries, private manifests and reports, and the complete private Canary JAR are external, ignored, private-use-only, and nonredistributable.",
         "Public source-only build output is resource-incomplete and must not be represented as a runnable Canary.",
-        "No Wandering Ribbit or map sale, automatic Sorcerer replacement, existing-hut or existing-village retrofit, conversion of saved Witches, global Witch suppression, Matcha cartographer or Witch Hut map changes, asynchronous map search, custom map item or GUI, generalized old-offer migration, donor AI, Guard combat AI, home-dimension redesign, Fortune Blessing, Silver Bullion, or Adamant/Netherite economy additions in Canary 5.",
+        "No Wandering Ribbit or map sale, automatic Sorcerer replacement, existing-hut or existing-village retrofit, conversion of saved Witches, global Witch suppression, Matcha cartographer or Witch Hut map changes, asynchronous map search, custom map item or GUI, generalized old-offer migration, donor AI, Guard combat AI, home-dimension redesign, Fortune Blessing, Silver Bullion, or Adamant/Netherite economy additions in Canary 6.",
         "No substitute private inputs, deployment, Test Instance Manager mutation, gameplay-profile access, or Minecraft runtime claim from source, build, static, codec, tree, or archive evidence."
       ]
     },
@@ -153,15 +153,15 @@
     ]
   },
   "state": {
-    "milestone": "Mynx Canary 5 is a narrow startup-repair successor that preserves Phase C and every earlier behavior. Exact production Minecraft 26.2 bytecode declares protected getWorldPos(III)BlockPos$MutableBlockPos and placeBlock on StructurePiece while both actual getWorldPos INVOKEVIRTUAL instructions in SwampHutPiece.postProcess and spawnCat use SwampHutPiece as owner. Canary 4 incorrectly shadowed the inherited methods on SwampHutPiece and the exact canonical Canary 4 artifact has a bound user-reported external RUNTIME_FAIL: startup aborted at @Shadow getWorldPos before Phase C gameplay, with no managed deployment or inferred gameplay rows. Canary 5 removes both invalid inherited shadows, uses a registered non-reflective StructurePiece invoker for both transforms and barrel placement, retains the exact invocation-owner selectors, and makes all four hut hooks plus the natural-spawn hook fail-loud with require=1 and allow=1. The official runtime namespace requires no refmap; the diagnostic No refMap loaded did not contribute. A production-equivalent Knot/Mixin harness applied StructurePieceInvoker, SwampHutPieceMixin, and NaturalSpawnerMixin and resolved every required injection exactly once. Sorcerer (3,2,5), Cat (2,2,4), barrel (2,2,6), one-shot resident behavior, exact-piece Witch suppression, map/redemption, Phase B economy, private six-template transform, and all model/texture/umbrella/egg/donor boundaries remain unchanged. Canary 5 was not deployed or launched and is RUNTIME_UNTESTED.",
+    "milestone": "Mynx Canary 6 is a narrow final-sprite, village-utility-restoration, and private-loot successor that preserves every other Canary 5 behavior. It installs the exact user-approved 16-by-16 RGBA Glowcap and Toadstool Heart PNG bytes through conventional Ribbits generated-item models without changing either mechanical identity. Fresh private assembly from the exact pristine Ribbits input keeps only the two Brewing Stand and two Damaged Anvil removals, restores small_house_brown_2 and small_house_red_2 byte-for-byte with their original Smoker and Blast Furnace block entities, and reduces the destructive transform from six templates to four. The private Sorcerer table replaces only its weight-5 Glass Bottle and weight-1 strong-leaping Potion entries with same-weight empty entries while preserving the existing empty sentinel, Glowcap entry, all unrelated probabilities, and all six bindings. Two clean source-only builds and two independent clean private builds are byte-identical within their lanes; private tree and JAR gates, the exact Matcha reference suite, and the production-equivalent Knot/Mixin harness pass. Canary 5's startup repair, all Phase C placement/map/Witch behavior, the Phase B economy, profession behavior, donor assets, and unrelated resources remain unchanged. Canary 6 was not deployed or launched and is RUNTIME_UNTESTED.",
     "releases": {
       "current": {
-        "version": "4.1.6+26.2-mynx-canary5",
+        "version": "4.1.6+26.2-mynx-canary6",
         "artifact": {
-          "filename": "ribbits-private-reconstruction-4.1.6+26.2-mynx-canary5.jar",
-          "sha256": "0dde14caaf1ef1e4b52ca118d61e0ed0706bb0ead4b718471ca3cc5b5a70be4f"
+          "filename": "ribbits-private-reconstruction-4.1.6+26.2-mynx-canary6.jar",
+          "sha256": "cbeedd06bab0d6809fd528662e4c7e4f11e308f241d60fce0d6ad0f57add0759"
         },
-        "source_commit": "fb21c43d1f483108cbbb108d96213736db310e2b",
+        "source_commit": "fe8f08bf128791f1d64f227524b9a0585ef333d5",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
@@ -180,11 +180,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 9,
-    "activity_at": "2026-09-04T02:07:14Z",
-    "updated_at": "2026-09-04T02:07:14Z",
-    "last_codex_at": "2026-09-04T02:07:14Z",
-    "source_commit": "fb21c43d1f483108cbbb108d96213736db310e2b",
+    "revision": 10,
+    "activity_at": "2026-09-04T03:52:33Z",
+    "updated_at": "2026-09-04T03:52:33Z",
+    "last_codex_at": "2026-09-04T03:52:33Z",
+    "source_commit": "fe8f08bf128791f1d64f227524b9a0585ef333d5",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
