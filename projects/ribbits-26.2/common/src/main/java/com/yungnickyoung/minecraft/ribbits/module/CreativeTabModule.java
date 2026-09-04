@@ -47,7 +47,8 @@ public class CreativeTabModule {
             CreativeEntry.of("ribbit_chef_spawn_egg", ItemModule.RIBBIT_CHEF_SPAWN_EGG::get),
             CreativeEntry.of("ribbit_farmer_spawn_egg", ItemModule.RIBBIT_FARMER_SPAWN_EGG::get),
             CreativeEntry.of("ribbit_prospector_spawn_egg", ItemModule.RIBBIT_PROSPECTOR_SPAWN_EGG::get),
-            CreativeEntry.of("ribbit_guard_spawn_egg", ItemModule.RIBBIT_GUARD_SPAWN_EGG::get)
+            CreativeEntry.of("ribbit_guard_spawn_egg", ItemModule.RIBBIT_GUARD_SPAWN_EGG::get),
+            CreativeEntry.of("wandering_ribbit_spawn_egg", ItemModule.WANDERING_RIBBIT_SPAWN_EGG::get)
     );
 
     @AutoRegister("general")

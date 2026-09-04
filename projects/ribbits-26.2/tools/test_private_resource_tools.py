@@ -1287,8 +1287,8 @@ class PrivateVillageUtilityTransformTest(unittest.TestCase):
 
 class DonorBoundaryContractTest(unittest.TestCase):
     def test_exact_accounting_contains_only_approved_visual_members_and_outputs(self) -> None:
-        self.assertEqual("4.1.6+26.2-mynx-canary7", tools.CANDIDATE_VERSION)
-        self.assertEqual(7, tools.CANDIDATE_CANARY)
+        self.assertEqual("4.1.6+26.2-mynx-canary8", tools.CANDIDATE_VERSION)
+        self.assertEqual(8, tools.CANDIDATE_CANARY)
         self.assertEqual(
             "mynx-ribbits-private-resource-manifest/v1", tools.PRIVATE_MANIFEST_SCHEMA
         )
@@ -1296,8 +1296,8 @@ class DonorBoundaryContractTest(unittest.TestCase):
             "PRIVATE MYNX ASSEMBLY STAGED / NONREDISTRIBUTABLE DONOR ASSETS",
             tools.PRIVATE_MANIFEST_CLASSIFICATION,
         )
-        self.assertEqual(344, tools.OUTPUT_FILE_COUNT)
-        self.assertEqual(2_729_248, tools.OUTPUT_TOTAL_SIZE)
+        self.assertEqual(346, tools.OUTPUT_FILE_COUNT)
+        self.assertEqual(2_729_540, tools.OUTPUT_TOTAL_SIZE)
         self.assertEqual(2_563, tools.SORCERER_LOOT_OUTPUT_SIZE)
         self.assertEqual(
             "5b06e06502bf11f661161e89bf34e329d8f23268b7b0104371038c38ad9b378d",
@@ -1312,11 +1312,11 @@ class DonorBoundaryContractTest(unittest.TestCase):
             tools.PRIVATE_VILLAGE_TEMPLATE_TREE_AFTER_SHA256,
         )
         self.assertEqual(42, len(tools.GECKO_MODEL_IDS))
-        self.assertEqual(25, len(tools.REGISTERED_ITEM_IDS))
+        self.assertEqual(26, len(tools.REGISTERED_ITEM_IDS))
         self.assertEqual({"chute_leaf_open"}, tools.AUXILIARY_ITEM_DEFINITION_IDS)
         self.assertNotIn("glowcap", tools.REGISTERED_ITEM_IDS)
         self.assertNotIn("toadstool_heart", tools.REGISTERED_ITEM_IDS)
-        self.assertEqual(9, len(tools.SPAWN_EGG_IDS))
+        self.assertEqual(10, len(tools.SPAWN_EGG_IDS))
         self.assertIn("chute_leaf", tools.REGISTERED_ITEM_IDS)
         self.assertEqual(
             {"alexsmobs", "minecraft", "ribbits", "trinkets"},
@@ -1794,7 +1794,7 @@ class DonorBoundaryContractTest(unittest.TestCase):
                     )
             self.assertFalse(manifest.exists())
 
-    def test_musician_and_four_new_egg_translations_are_exact(self) -> None:
+    def test_musician_and_five_new_egg_translations_are_exact(self) -> None:
         self.assertEqual(
             "Musician Ribbit Spawn Egg",
             tools.EN_US_MYNX_PROFESSION_TRANSLATIONS[
@@ -1806,10 +1806,16 @@ class DonorBoundaryContractTest(unittest.TestCase):
             {
                 key.removeprefix("item.ribbits.")
                 for key in tools.EN_US_MYNX_PROFESSION_TRANSLATIONS
-                if key.startswith("item.ribbits.ribbit_")
+                if key.startswith("item.ribbits.")
                 and key.endswith("_spawn_egg")
                 and "nitwit" not in key
             },
+        )
+        self.assertEqual(
+            "Wandering Ribbit Spawn Egg",
+            tools.EN_US_MYNX_PROFESSION_TRANSLATIONS[
+                "item.ribbits.wandering_ribbit_spawn_egg"
+            ],
         )
 
     def test_economy_item_and_rank_title_translations_are_exact(self) -> None:

@@ -256,7 +256,7 @@ public final class MatchaStackCatalog {
         validateFingerprint("Matcha Opal loot entry", entry, OPAL_ENTRY_CONTRACT_SHA256);
     }
 
-    private static JsonElement readJson(ResourceManager resourceManager, Identifier resourceId) {
+    static JsonElement readJson(ResourceManager resourceManager, Identifier resourceId) {
         try (BufferedReader reader = resourceManager.openAsReader(resourceId)) {
             return JsonParser.parseReader(reader);
         } catch (IOException | JsonParseException exception) {

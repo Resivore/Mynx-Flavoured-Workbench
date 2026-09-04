@@ -12,10 +12,10 @@ import net.minecraft.world.item.trading.MerchantOffer;
 import java.util.ArrayList;
 import java.util.List;
 
-/** The permanent native five-offer Wandering Ribbit menu. */
+/** The permanent native Wandering Ribbit menu. */
 final class WanderingRibbitNativeTradeProvider implements WanderingRibbitTradeProvider {
-    static final int NATIVE_OFFER_COUNT = 5;
-    private static final int SCHEMA_VERSION = 1;
+    static final int NATIVE_OFFER_COUNT = 6;
+    private static final int SCHEMA_VERSION = 2;
 
     private static final Identifier GLOWCAP = RibbitsCommon.id("glowcap");
     private static final Identifier CHUTE_LEAF = RibbitsCommon.id("chute_leaf");
@@ -66,6 +66,11 @@ final class WanderingRibbitNativeTradeProvider implements WanderingRibbitTradePr
                     new ItemStack(requireItem(curiosity.itemId()), curiosity.count()),
                     2, 0, 0.0F));
         }
+
+        // Preserve the original five offers and their indexes; the ordinary compass buyback is
+        // the sole native schema-2 append.
+        offers.add(WanderingRibbitCompassTrades.buyback(
+                new ItemStack(Items.COMPASS), glowcap, 4));
     }
 
     private static Item requireItem(Identifier id) {

@@ -18,11 +18,14 @@ import java.util.Objects;
 /** Stable deterministic registry for native and later optional Wandering Ribbit trade providers. */
 public final class WanderingRibbitTradeProviders {
     public static final Identifier NATIVE_PROVIDER_ID = RibbitsCommon.id("native");
+    public static final Identifier OPTIONAL_MATCHA_COMPASSES_PROVIDER_ID =
+            RibbitsCommon.id("optional_matcha_compasses");
 
     private static final Map<Identifier, WanderingRibbitTradeProvider> PROVIDERS = new LinkedHashMap<>();
 
     static {
         registerInternal(new WanderingRibbitNativeTradeProvider());
+        registerInternal(new WanderingRibbitMatchaCompassTradeProvider());
     }
 
     private WanderingRibbitTradeProviders() {

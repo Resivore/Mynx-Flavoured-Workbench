@@ -12,6 +12,7 @@ import com.yungnickyoung.minecraft.yungsapi.api.autoregister.AutoRegisterUtils;
 import net.minecraft.core.dispenser.DispenseItemBehavior;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.PlaceOnWaterBlockItem;
+import net.minecraft.world.item.SpawnEggItem;
 import net.minecraft.world.level.block.DispenserBlock;
 
 @AutoRegister(RibbitsCommon.MOD_ID)
@@ -106,6 +107,14 @@ public class ItemModule {
             () -> new RibbitSpawnEggItem(RibbitProfessionModule.GUARD,
                     new Item.Properties().setId(RegisterHelper.itemKey("ribbit_guard_spawn_egg"))
                             .spawnEgg(EntityTypeModule.RIBBIT.get())
+            )
+    );
+
+    @AutoRegister("wandering_ribbit_spawn_egg")
+    public static final AutoRegisterItem WANDERING_RIBBIT_SPAWN_EGG = AutoRegisterItem.of(
+            () -> new SpawnEggItem(
+                    new Item.Properties().setId(RegisterHelper.itemKey("wandering_ribbit_spawn_egg"))
+                            .spawnEgg(EntityTypeModule.WANDERING_RIBBIT.get())
             )
     );
 

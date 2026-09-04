@@ -24,6 +24,9 @@ class WanderingRibbitProviderTest {
                 .orElseThrow();
         assertThrows(IllegalArgumentException.class, () ->
                 WanderingRibbitTradeProviders.register(nativeProvider));
+        assertTrue(providers.stream().anyMatch(provider ->
+                provider.id().equals(WanderingRibbitTradeProviders.OPTIONAL_MATCHA_COMPASSES_PROVIDER_ID)
+                        && provider.schemaVersion() == 1));
     }
 
     @Test
@@ -41,10 +44,13 @@ class WanderingRibbitProviderTest {
     @Test
     void snapshotRetainsExactProviderOfferRanges() {
         var nativeRange = new WanderingRibbitTradeSnapshot.ProviderRange(
-                WanderingRibbitTradeProviders.NATIVE_PROVIDER_ID, 1, 0, 5);
-        var snapshot = new WanderingRibbitTradeSnapshot(99L, List.of(nativeRange));
+                WanderingRibbitTradeProviders.NATIVE_PROVIDER_ID, 2, 0, 6);
+        var matchaRange = new WanderingRibbitTradeSnapshot.ProviderRange(
+                WanderingRibbitTradeProviders.OPTIONAL_MATCHA_COMPASSES_PROVIDER_ID, 1, 6, 3);
+        var snapshot = new WanderingRibbitTradeSnapshot(99L, List.of(nativeRange, matchaRange));
         assertEquals(99L, snapshot.seed());
-        assertEquals(5, snapshot.totalOfferCount());
+        assertEquals(9, snapshot.totalOfferCount());
         assertEquals(nativeRange, snapshot.providers().getFirst());
+        assertEquals(matchaRange, snapshot.providers().getLast());
     }
 }
