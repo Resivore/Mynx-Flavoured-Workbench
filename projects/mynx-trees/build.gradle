@@ -1,0 +1,33 @@
+plugins { id 'net.fabricmc.fabric-loom' version '1.17.19' }
+version = project.mod_version
+group = 'dev.resivore'
+base { archivesName = 'mynx-trees-private' }
+repositories { mavenCentral() }
+dependencies {
+    minecraft 'com.mojang:minecraft:26.2'
+    implementation 'net.fabricmc:fabric-loader:0.19.3'
+    implementation 'net.fabricmc.fabric-api:fabric-api:0.157.0+26.2'
+    testImplementation platform('org.junit:junit-bom:5.13.4')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+loom { splitEnvironmentSourceSets(); mods { mynx_trees { sourceSet sourceSets.main; sourceSet sourceSets.client } } }
+sourceSets.main.resources.srcDir 'build/generated/resources'
+tasks.register('generateResources', Exec) {
+    commandLine 'python', '-B', 'tools/generate_resources.py'
+    inputs.file 'build-inputs.json'
+    inputs.file 'tools/generate_resources.py'
+    outputs.dir 'build/generated/resources'
+    // Always verify the immutable local input hashes, including on incremental builds.
+    outputs.upToDateWhen { false }
+}
+processResources {
+    dependsOn generateResources
+    inputs.property 'version', project.version
+    filesMatching('fabric.mod.json') { expand 'version': project.version }
+}
+tasks.withType(JavaCompile).configureEach { options.release = 25 }
+test { useJUnitPlatform(); systemProperty 'projectRoot', projectDir.absolutePath }
+
+tasks.register('verifyPackage', Exec) { dependsOn jar; commandLine 'python', '-B', 'tools/verify_resources.py' }
+check.dependsOn verifyPackage
