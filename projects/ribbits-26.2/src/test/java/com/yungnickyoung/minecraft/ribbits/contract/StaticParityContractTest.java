@@ -152,6 +152,28 @@ class StaticParityContractTest {
     }
 
     @Test
+    void wanderingEggUsesTheStandardComponentBackedSpawnPathExactlyOnce() throws IOException {
+        String items = read("common/src/main/java/com/yungnickyoung/minecraft/ribbits/module/ItemModule.java");
+        String creative = read("common/src/main/java/com/yungnickyoung/minecraft/ribbits/module/CreativeTabModule.java");
+        String fabric = read("fabric/src/main/java/com/yungnickyoung/minecraft/ribbits/fabric/RibbitsFabric.java");
+        String entity = read("common/src/main/java/com/yungnickyoung/minecraft/ribbits/entity/WanderingRibbitEntity.java");
+
+        assertEquals(1, occurrences(items, "@AutoRegister(\"wandering_ribbit_spawn_egg\")"));
+        assertEquals(1, occurrences(items, "new SpawnEggItem("));
+        assertTrue(items.contains(".spawnEgg(EntityTypeModule.WANDERING_RIBBIT.get())"));
+        assertFalse(items.contains("DispenserBlock.registerBehavior(WANDERING_RIBBIT_SPAWN_EGG"));
+        assertFalse(items.contains("new RibbitSpawnEggItem(RibbitProfessionModule.WANDERING"));
+        assertEquals(1, occurrences(creative,
+                "CreativeEntry.of(\"wandering_ribbit_spawn_egg\", ItemModule.WANDERING_RIBBIT_SPAWN_EGG::get)"));
+        assertEquals(1, occurrences(fabric,
+                "CreativeModeTabEvents.modifyOutputEvent(CreativeModeTabs.SPAWN_EGGS)"));
+        assertEquals(1, occurrences(fabric, "CreativeModeTab.TabVisibility.PARENT_TAB_ONLY"));
+        assertFalse(fabric.contains("CreativeModeTabs.SEARCH"));
+        assertFalse(entity.contains("getPickResult()"),
+                "standard Mob pick-block must resolve the component-bound SpawnEggItem");
+    }
+
+    @Test
     void creativeTabHasOneValidatedOrderedEntryPerRegisteredItem() throws IOException {
         String creative = read("common/src/main/java/com/yungnickyoung/minecraft/ribbits/module/CreativeTabModule.java");
         List<String> expectedIds = List.of(
@@ -181,7 +203,8 @@ class StaticParityContractTest {
                 "ribbit_chef_spawn_egg",
                 "ribbit_farmer_spawn_egg",
                 "ribbit_prospector_spawn_egg",
-                "ribbit_guard_spawn_egg"
+                "ribbit_guard_spawn_egg",
+                "wandering_ribbit_spawn_egg"
         );
 
         Matcher matcher = Pattern.compile("CreativeEntry\\.of\\(\\\"([^\\\"]+)\\\"").matcher(creative);

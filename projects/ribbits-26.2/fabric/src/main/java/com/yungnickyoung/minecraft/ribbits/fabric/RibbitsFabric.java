@@ -6,14 +6,18 @@ import com.yungnickyoung.minecraft.ribbits.fabric.module.NetworkModuleFabric;
 import com.yungnickyoung.minecraft.ribbits.network.payload.RequestSupporterHatStatePayload;
 import com.yungnickyoung.minecraft.ribbits.player.PlayerInstrumentTracker;
 import com.yungnickyoung.minecraft.ribbits.supporters.SupportersListServer;
+import com.yungnickyoung.minecraft.ribbits.module.ItemModule;
 import com.yungnickyoung.minecraft.ribbits.module.RibbitTradeModule;
 import com.yungnickyoung.minecraft.ribbits.world.spawn.WanderingRibbitScheduler;
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.creativetab.v1.CreativeModeTabEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.CreativeModeTabs;
 
 import java.util.List;
 import java.util.UUID;
@@ -38,6 +42,13 @@ public class RibbitsFabric implements ModInitializer {
         EntityDataSerializerModuleFabric.init();
         NetworkModuleFabric.register();
         RibbitsCommon.init();
+
+        CreativeModeTabEvents.modifyOutputEvent(CreativeModeTabs.SPAWN_EGGS).register(output ->
+                output.accept(
+                        ItemModule.WANDERING_RIBBIT_SPAWN_EGG.get(),
+                        CreativeModeTab.TabVisibility.PARENT_TAB_ONLY
+                )
+        );
 
         // Player join: send supporter hat state
         ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {

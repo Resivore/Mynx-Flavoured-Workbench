@@ -30,16 +30,16 @@ from typing import Any
 EXPECTED_PRISTINE_SHA256 = (
     "4cf86564aed393410fb1dbca3a9ce2425382307655e92bb6b43f3ddcee5bf731"
 )
-CANDIDATE_VERSION = "4.1.6+26.2-mynx-canary7"
-CANDIDATE_CANARY = 7
+CANDIDATE_VERSION = "4.1.6+26.2-mynx-canary8"
+CANDIDATE_CANARY = 8
 PRIVATE_MANIFEST_SCHEMA = "mynx-ribbits-private-resource-manifest/v1"
 PRIVATE_MANIFEST_CLASSIFICATION = (
     "PRIVATE MYNX ASSEMBLY STAGED / NONREDISTRIBUTABLE DONOR ASSETS"
 )
 PRIVATE_ARTIFACT_FILENAME = (
-    "ribbits-private-reconstruction-4.1.6+26.2-mynx-canary7.jar"
+    "ribbits-private-reconstruction-4.1.6+26.2-mynx-canary8.jar"
 )
-SOURCE_ONLY_ARTIFACT_FILENAME = "ribbits-source-only-4.1.6+26.2-mynx-canary7.jar"
+SOURCE_ONLY_ARTIFACT_FILENAME = "ribbits-source-only-4.1.6+26.2-mynx-canary8.jar"
 SOURCE_SAFE_PUBLIC_RESOURCE_PATHS = frozenset(
     {
         "assets/ribbits/items/glowcap.json",
@@ -141,9 +141,9 @@ REQUIRED_FABRIC_DEPENDENCIES = {
     "matcha_heart_death_compat": ">=0.1.10-canary11",
 }
 SOURCE_FILE_COUNT = 287  # 285 assets/data files plus icon.png and logo.png
-OUTPUT_FILE_COUNT = 344
-# Exact deterministic Canary 7 private staging inventory.
-OUTPUT_TOTAL_SIZE = 2_729_248
+OUTPUT_FILE_COUNT = 346
+# Exact deterministic Canary 8 private staging inventory.
+OUTPUT_TOTAL_SIZE = 2_729_540
 SOURCE_EXTENSION_COUNTS = {
     ".json": 201,
     ".nbt": 29,
@@ -206,6 +206,7 @@ NEW_SPAWN_EGG_IDS = (
     "ribbit_farmer_spawn_egg",
     "ribbit_prospector_spawn_egg",
     "ribbit_guard_spawn_egg",
+    "wandering_ribbit_spawn_egg",
 )
 SPAWN_EGG_IDS = PRISTINE_SPAWN_EGG_IDS + NEW_SPAWN_EGG_IDS
 REGISTERED_ITEM_IDS = BLOCK_ITEM_IDS + ("maraca", "chute_leaf") + SPAWN_EGG_IDS
@@ -766,6 +767,7 @@ EN_US_MYNX_PROFESSION_TRANSLATIONS = {
     "item.ribbits.ribbit_farmer_spawn_egg": "Farmer Ribbit Spawn Egg",
     "item.ribbits.ribbit_prospector_spawn_egg": "Prospector Ribbit Spawn Egg",
     "item.ribbits.ribbit_guard_spawn_egg": "Guard Ribbit Spawn Egg",
+    "item.ribbits.wandering_ribbit_spawn_egg": "Wandering Ribbit Spawn Egg",
     "item.ribbits.glowcap": "Glowcap",
     "item.ribbits.toadstool_heart": "Toadstool Heart",
     "item.ribbits.chute_leaf": "Chute Leaf",
@@ -824,8 +826,8 @@ SPAWN_EGG_MODEL = {
     "textures": {"layer0": "ribbits:item/ribbit_spawn_egg"},
 }
 SPAWN_EGG_SUBSTITUTION_NOTICE = (
-    "Private Mynx Canary 7 preserves the palette-only green recolor of Minecraft "
-    "26.2's vanilla frog spawn-egg artwork for all nine Ribbits profession eggs. "
+    "Private Mynx Canary 8 preserves the palette-only green recolor of Minecraft "
+    "26.2's vanilla frog spawn-egg artwork for all ten Ribbits spawn eggs. "
     "This is explicitly authorized for the private Workbench and is not exact "
     "Ribbits 4.1.6 spawn-egg visual parity."
 )
@@ -3644,7 +3646,7 @@ def migrate_spawn_egg_models(root: Path, minecraft_client: Path) -> dict[str, An
     return {
         "authorization": (
             "First authorized by the Workbench owner for private Mynx Ribbits Canary 6; "
-            "preserved unchanged in Canary 7"
+            "preserved unchanged in Canary 8"
         ),
         "temporary": True,
         "exact_ribbits_4_1_6_visual_parity": False,

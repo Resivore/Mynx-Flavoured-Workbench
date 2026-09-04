@@ -19,24 +19,24 @@
       "Maintain a private Minecraft Java 26.2 downstream Ribbits build for the fixed Mynx and Matcha stack, preserving upstream behavior except for individually documented intentional Mynx deviations.",
       "Maintain the user-approved tiered Glowcap trade economy, persistent profession progression and daily restocking, exact cross-stack item contracts, and Toadstool Heart home-setting behavior without converting Ribbits into vanilla Villagers.",
       "Maintain the exact Phase C swamp-hut Sorcerer, natural-Witch boundary, shared Ribbit Village explorer-map result, failed-map Sorcerer service, and future-only village utility cleanup without retrofitting existing structures.",
-      "Provide one dedicated nonprofession Wandering Ribbit merchant and an independent persistent server scheduler whose exact one-entity lease, bounded loaded-chunk placement, visit lifetime, and fair player selection never reuse or alter vanilla Wandering Trader state.",
+      "Provide one dedicated nonprofession Wandering Ribbit merchant with its own Creative spawn egg, lore-friendly wooded/green/lush automatic habitat policy, four exact compass buybacks, and an independent persistent server scheduler whose exact one-entity lease, bounded loaded-chunk placement, visit lifetime, and fair player selection never reuse or alter vanilla Wandering Trader state.",
       "Provide the unlimited-use ribbits:chute_leaf as a server-authoritative controlled-descent item eligible only for the accepted one-entry chest/cape Trinkets slot, with exact Elytra/glider conflict boundaries and no Elytra flight behavior.",
       "Own the native ribbits:ribbit_village map-decoration identity and exact successful-map presentation while exposing stable optional Wandering trade-provider and Map Marker Extensions boundaries and retaining the ordinary vanilla map contract used by Compass Ribbon.",
       "Keep every private reconstruction deterministic and hash-guarded while isolating protected Ribbits resources and approved local donor visuals from the public source repository."
     ],
     "scope": [
       "Retain the legally trackable faithful-port baseline and maintain the intentional deviations recorded in MYNX_DEVIATIONS.md without changing stable mod, registry, entity, or save identities.",
-      "Maintain all nine registered Ribbit professions, the explicit equal-weight eight-member natural village pool, and typed spawn-egg, pick-block, dispenser, codec, persistence, model, texture, and umbrella contracts.",
+      "Maintain all nine registered Ribbit professions, their typed eggs, the explicit equal-weight eight-member natural village pool, and the separate nonprofession Wandering Ribbit egg with exact Creative, hand, dispenser, pick-block, codec, persistence, model, texture, and umbrella contracts.",
       "Maintain the cumulative profession trade-profile framework, fixed Glowcap prices, persistent specializations and gates, deterministic Chef menus, two-restocks-per-day policy, and exact component-aware Matcha and Custom Portals stack matching introduced by Mynx Canary 3.",
       "Maintain new-hut-only replacement of the initial swamp-hut Witch with one persistent Sorcerer, independent Cat relocation, an exact-piece natural-Witch rejection, one lazy map barrel, and the marker-authenticated rank-independent failed-map redemption introduced by Mynx Canary 4.",
       "Maintain the exact hash-pinned four-template private NBT transform for future Ribbit village placement while preserving the pristine Smoker and Blast Furnace templates byte-for-byte and retaining every non-target record, storage block, loot binding, and processor sentinel.",
       "Maintain ribbits:glowcap and ribbits:toadstool_heart as permanent mechanical identities with their exact user-approved final 16-by-16 RGBA sprites and conventional generated-item models.",
-      "Maintain ribbits:wandering_ribbit as a separate 0.5-by-0.75 AbstractVillager with 15 health, approximately 0.125 movement speed, no breeding, profession, home, rank, restock, progress, spawn egg, or permanent automatic residency, and preserve command-created merchants as persistent and scheduler-independent.",
-      "Maintain server-global SavedData ribbits:wandering_ribbit_spawner with next attempt time, lease generation, active UUID and dimension, visit expiry, fair-player cursor, and last-observed time; one execution per server tick; cap one; 48,000-72,000 first delay; 120,000-168,000 success cooldown; 1,200 retry; 48,000 visit; and at most 64 loaded-chunk-only site candidates.",
-      "Maintain stable sorted WanderingRibbitTradeProvider identities, persisted seed/provider/schema/offer ranges and exact serialized offers, with native provider ribbits:native always materializing one Chute offer, one canonical map result exactly once, and three curiosity offers without replacement.",
+      "Maintain ribbits:wandering_ribbit as a separate 0.5-by-0.75 AbstractVillager with 15 health, approximately 0.125 movement speed, no breeding, profession, home, rank, restock, progress, or permanent automatic residency; preserve command- and egg-created merchants as persistent and scheduler-independent.",
+      "Maintain server-global SavedData ribbits:wandering_ribbit_spawner with next attempt time, lease generation, active UUID and dimension, visit expiry, fair-player cursor, and last-observed time; one execution per server tick; cap one; exact unchanged timing; at most 64 loaded-chunk-only site candidates; candidate-feet biome evaluation; the exact 20-biome vanilla baseline; audited family-tag extension; authoritative empty allow tags; missing-tag fallback; and deny precedence.",
+      "Maintain stable sorted WanderingRibbitTradeProvider identities, persisted seed/provider/schema/offer ranges and exact serialized offers: native schema 2 preserves the original five offers and appends ordinary Compass to four Glowcaps, while optional provider ribbits:optional_matcha_compasses schema 1 atomically adds Copper, Golden, and Titanium buybacks for the exact intended Matcha stack without altering saved merchants.",
       "Maintain ribbits:chute_leaf as a stack-one noncraftable nondurable item using only data/trinkets/tags/item/chest/cape.json, a monotonic physical-jump request and owner acknowledgement protocol, a server-owned pending/deployed state machine, and a narrow terminal-descent cap of -0.10 blocks per tick.",
       "Maintain native map-decoration type ribbits:ribbit_village, exact success custom-data marker ribbits:ribbit_village_explorer_map=true, ordinary filled-map/map-id/decorations synchronization, and exact user-authored marker and successful filled-map item artwork under the Ribbits namespace.",
-      "Preserve the private resource assembler, exact pristine, Minecraft, dependency, three-donor, output, and archive identities, and the authorized shared green spawn-egg derivation contract."
+      "Preserve the private resource assembler, exact pristine, Minecraft, dependency, three-donor, output, and archive identities, and the authorized shared green ten-egg derivation contract including the Wandering Ribbit egg."
     ],
     "boundaries": {
       "owned_paths": [
@@ -45,8 +45,8 @@
       "exclusions": [
         "Protected Ribbits resources, donor-derived models and textures, pristine or donor binaries, private manifests and reports, and the complete private Canary JAR are external, ignored, private-use-only, and nonredistributable.",
         "Public source-only build output is resource-incomplete and must not be represented as a runnable Canary.",
-        "Canary 7 adds no Naturalist or Regions Unexplored provider, trade, rescued-baby capsule, spawn egg, recipe, pattern, botanical good, or hard dependency; optional providers may safely contribute zero offers when their target mod is absent.",
-        "Canary 7 adds no chest/back assignment or eligibility, Trinkets all-tag, new slot/group definition, vanilla glider or equippable component, Elytra tag, second inventory implementation, Elytra wings renderer, flight, steering, lift, pose, durability, or firework behavior; accepted Inventory Extended, Trinkets, their companion, Traveler Toolbelt, and Elytra-support artifacts remain separate and unchanged.",
+        "Canary 8 adds no Naturalist or Regions Unexplored provider, trade, rescued-baby capsule, pattern, botanical good, or hard dependency; the only new Matcha offers are the authorized optional compass buybacks, and optional provider failure safely contributes zero offers.",
+        "Canary 8 adds no chest/back assignment or eligibility, Trinkets all-tag, new slot/group definition, vanilla glider or equippable component, Elytra tag, second inventory implementation, Elytra wings renderer, flight, steering, lift, pose, durability, or firework behavior; accepted Inventory Extended, Trinkets, their companion, Traveler Toolbelt, and Elytra-support artifacts remain separate and unchanged.",
         "No Wandering forest camp, donor scheduler/trades/code/AI/sounds/world generation, vanilla Wandering Trader replacement or suppression, trader llama, automatic Sorcerer replacement, existing-hut or village retrofit, saved-Witch conversion, global Witch suppression, asynchronous map search, custom map item or GUI, direct failed-map fallback, generalized old-offer migration, home-dimension redesign, Fortune Blessing, Silver Bullion, or Adamant/Netherite economy additions are introduced.",
         "Ribbits has no dependency on Map Marker Extensions or Compass Ribbon, contributes no custom map HUD or side-channel destination, and does not modify either project; Map Marker Extensions owns only its optional carried-target projection and Compass Ribbon consumes the standard native decoration path.",
         "No substitute private inputs, deployment, Test Instance Manager mutation, gameplay-profile access, or Minecraft runtime claim from source, build, static, codec, tree, or archive evidence."
@@ -93,7 +93,7 @@
         "type": "MOD",
         "identifier": "trinkets_updated",
         "requirement": "=4.1.0-beta.3+26.2; trinkets-4.1.0-beta.3+26.2-inventory-compat-canary5.jar; 560,208 bytes; SHA-256 4c1fa6ac36c0457483fd0d395b99bbd94c9334aad6defece7633bbf0552d1724",
-        "reason": "Exact accepted patched Trinkets member providing persistent and synchronized chest/cape equipment; Canary 7 adds only Chute item eligibility to the pre-existing amount-one slot and does not redefine the slot or accepted archive."
+        "reason": "Exact accepted patched Trinkets member providing persistent and synchronized chest/cape equipment; Canary 8 preserves Canary 7's Chute item eligibility in the pre-existing amount-one slot and does not redefine the slot or accepted archive."
       },
       {
         "type": "PROJECT",
@@ -123,13 +123,13 @@
         "type": "TOOL",
         "identifier": "gradle",
         "requirement": "9.5.1",
-        "reason": "Exact tracked wrapper version used for Canary 7 controlled builds."
+        "reason": "Exact tracked wrapper version used for Canary 8 controlled builds."
       },
       {
         "type": "TOOL",
         "identifier": "fabric-loom",
         "requirement": "1.15.5",
-        "reason": "Exact build plugin used for Canary 7 controlled builds."
+        "reason": "Exact build plugin used for Canary 8 controlled builds."
       },
       {
         "type": "TOOL",
@@ -171,20 +171,20 @@
         "type": "OTHER",
         "identifier": "Matcha_Flavoured_1_12.zip",
         "requirement": "12,248,989 bytes; SHA-256 6209783021c358044abedabacee471faff5bd4080437d4e3b5e51963f1804248",
-        "reason": "Immutable exact Minecraft 26.2 Matcha data/component reference used to audit and fingerprint the named recipe-result stacks, Opal, equipment, placeholder Crystal Heart model, effects, durations, rarities, glint, and component-aware trade contracts; never bundled or modified."
+        "reason": "Immutable exact Minecraft 26.2 Matcha data/component reference used to audit and fingerprint the named recipe-result stacks, Opal, equipment, placeholder Crystal Heart model, effects, durations, rarities, glint, component-aware trade contracts, and the Copper/Golden recipe plus Titanium loot-entry compass identities; never bundled or modified."
       }
     ]
   },
   "state": {
-    "milestone": "Mynx Canary 7 implements Phase D while preserving Canary 6 and all earlier intended behavior: one dedicated Wandering Ribbit AbstractVillager, an independent persistent cap-one scheduler and lease, the stable ribbits:native trade provider with five materialized nonrestocking offers, functional stack-one Chute Leaf equipment only in the accepted amount-one chest/cape slot, a server-authoritative physical-jump deployment protocol and -0.10 terminal descent, exact private Wandering/Chute visuals, native ribbits:ribbit_village map decoration, exact user-authored marker and filled-map item art, one shared Phase C map-result contract, optional MME C8 recognition, and standard Compass Ribbon architectural compatibility. Exact canonical Canary 6 version 4.1.6+26.2-mynx-canary6, file ribbits-private-reconstruction-4.1.6+26.2-mynx-canary6.jar, 3,222,195 bytes, SHA-256 cbeedd06bab0d6809fd528662e4c7e4f11e308f241d60fce0d6ad0f57add0759, source fe8f08bf128791f1d64f227524b9a0585ef333d5, and its exact YUNG's API Compat.2, Custom Portals C2, and Matcha Heart Death C11 dependencies recorded below were independently rehashed, so the user's statement that Phase C is good is bound only as a scoped external practical PASS for that exact C6 cohort; no individual matrix row, managed Test Slot result, deployment, acceptance, or promotion is inferred. Canary 7 passed controlled build, test, private-resource, archive, codec, registry, dependency, donor, and production-equivalent Mixin gates, but no Minecraft client or server was launched and it remains NOT_DEPLOYED and RUNTIME_UNTESTED.",
+    "milestone": "Mynx Canary 8 preserves Canary 7 and all earlier intended behavior while broadening automatic Wandering Ribbit habitat to the exact 20-biome vanilla baseline with candidate-feet evaluation, deny precedence, authoritative empty allow tags, and audited-family missing-tag fallback; adding the dedicated shared-green Wandering Ribbit Spawn Egg through Minecraft 26.2 hand/dispenser/pick-block and three-view Creative paths; and adding four exact component-aware Compass buybacks through native schema 2 plus optional Matcha schema 1, for nine newly materialized offers in the intended stack while preserving old serialized menus. Scheduler timing, cap, lease, Chute, maps, professions, vanilla Wandering Traders, accepted and rollback state, and the scoped external Canary 6 Phase C report remain unchanged. Canary 8 passed controlled source/private builds, 153 Java tests, 41 private-resource tests, deterministic archive/resource/component/tag and production-equivalent Mixin gates; no Minecraft client or server was launched, so it remains NOT_DEPLOYED and RUNTIME_UNTESTED.",
     "releases": {
       "current": {
-        "version": "4.1.6+26.2-mynx-canary7",
+        "version": "4.1.6+26.2-mynx-canary8",
         "artifact": {
-          "filename": "ribbits-private-reconstruction-4.1.6+26.2-mynx-canary7.jar",
-          "sha256": "6b18658c5a68d66623b9a388cc644e2f7a1b864e490b6f8b35d57fcd73a5bf74"
+          "filename": "ribbits-private-reconstruction-4.1.6+26.2-mynx-canary8.jar",
+          "sha256": "3a8e4ff06378265d949f01067672eb6baec56fcd0ad0ab57260b6f32f630067b"
         },
-        "source_commit": "a7ddb6afa6ed9cd620f49a28522c7866fdd35f04",
+        "source_commit": "eec044758df774f6fb037a453e36904c8b9afb5d",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
@@ -203,11 +203,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 12,
-    "activity_at": "2026-09-04T20:02:18Z",
-    "updated_at": "2026-09-04T20:02:18Z",
-    "last_codex_at": "2026-09-04T20:02:18Z",
-    "source_commit": "4dbad838ac558b29e307899c3375ca710ac273ef",
+    "revision": 13,
+    "activity_at": "2026-09-04T21:24:56Z",
+    "updated_at": "2026-09-04T21:24:56Z",
+    "last_codex_at": "2026-09-04T21:24:56Z",
+    "source_commit": "eec044758df774f6fb037a453e36904c8b9afb5d",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null

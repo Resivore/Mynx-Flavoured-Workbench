@@ -41,6 +41,9 @@ class WanderingRibbitStaticContractTest {
         assertTrue(scheduler.contains("VISIT_LIFETIME_TICKS = 48_000"));
         assertTrue(scheduler.contains("player.gameMode()"));
         assertTrue(scheduler.contains("GameType.ADVENTURE"));
+        assertTrue(scheduler.contains("Holder<Biome> biome = level.getBiome(feet)"));
+        assertTrue(scheduler.contains(".get(ALLOW_BIOMES)"));
+        assertTrue(scheduler.contains(".isPresent()"));
     }
 
     @Test
@@ -67,12 +70,35 @@ class WanderingRibbitStaticContractTest {
     }
 
     @Test
-    void biomeTagsAreConcreteAndDenyOceans() throws Exception {
+    void biomeTagsCarryTheAuditedBaselineAndDenyFamilies() throws Exception {
         String allow = read("common/src/main/resources/data/ribbits/tags/worldgen/biome/allows_wandering_ribbit_spawns.json");
         String deny = read("common/src/main/resources/data/ribbits/tags/worldgen/biome/without_wandering_ribbit_spawns.json");
+        String[] baseline = {
+                "swamp", "mangrove_swamp",
+                "forest", "flower_forest", "birch_forest", "old_growth_birch_forest",
+                "dark_forest", "pale_garden",
+                "plains", "sunflower_plains", "meadow", "cherry_grove",
+                "jungle", "sparse_jungle", "bamboo_jungle",
+                "taiga", "old_growth_pine_taiga", "old_growth_spruce_taiga",
+                "mushroom_fields", "river"
+        };
+        for (String biome : baseline) {
+            assertEquals(1, occurrences(allow, "\"minecraft:" + biome + "\""), biome);
+        }
         assertTrue(allow.contains("#minecraft:is_forest"));
-        assertTrue(allow.contains("#minecraft:has_structure/swamp_hut"));
+        assertTrue(allow.contains("#minecraft:is_jungle"));
+        assertTrue(allow.contains("#minecraft:is_taiga"));
+        assertTrue(allow.contains("#minecraft:is_river"));
+        assertTrue(allow.contains("minecraft:mangrove_swamp"));
+        assertTrue(allow.contains("minecraft:meadow"));
+        assertTrue(allow.contains("minecraft:cherry_grove"));
+        assertTrue(allow.contains("minecraft:mushroom_fields"));
         assertTrue(deny.contains("#minecraft:is_ocean"));
+        assertTrue(deny.contains("#minecraft:is_badlands"));
+        assertTrue(deny.contains("#minecraft:is_savanna"));
+        assertTrue(deny.contains("#minecraft:is_hill"));
+        assertTrue(deny.contains("#minecraft:spawns_snow_foxes"));
+        assertTrue(deny.contains("minecraft:stony_peaks"));
     }
 
     private String read(String relative) throws Exception {

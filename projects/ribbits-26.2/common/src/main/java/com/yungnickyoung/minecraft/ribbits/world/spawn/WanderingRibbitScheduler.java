@@ -9,6 +9,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -312,18 +313,30 @@ public final class WanderingRibbitScheduler {
     }
 
     private static boolean biomeAllowed(ServerLevel level, Holder<Biome> biome) {
-        if (biome.is(DENY_BIOMES) || biome.is(BiomeTags.IS_OCEAN)) {
-            return false; // Explicit deny always wins.
-        }
+        boolean denied = biome.is(DENY_BIOMES)
+                || biome.is(BiomeTags.IS_OCEAN)
+                || biome.is(BiomeTags.IS_BADLANDS)
+                || biome.is(BiomeTags.IS_SAVANNA)
+                || biome.is(BiomeTags.IS_HILL)
+                || biome.is(BiomeTags.SPAWNS_SNOW_FOXES)
+                || biome.unwrapKey().map(ResourceKey::identifier).map(identifier ->
+                        identifier.equals(Identifier.withDefaultNamespace("desert"))
+                                || identifier.equals(Identifier.withDefaultNamespace("stony_peaks")))
+                .orElse(false);
         boolean allowTagExists = level.registryAccess()
                 .lookupOrThrow(Registries.BIOME)
                 .get(ALLOW_BIOMES)
                 .isPresent();
-        if (allowTagExists) {
-            return biome.is(ALLOW_BIOMES);
-        }
-        // Data-pack-free fallback: dry surfaces in forest and swamp-hut biomes.
-        return biome.is(BiomeTags.IS_FOREST) || biome.is(BiomeTags.HAS_SWAMP_HUT);
+        boolean auditedFamilyMember = biome.is(BiomeTags.IS_FOREST)
+                || biome.is(BiomeTags.IS_JUNGLE)
+                || biome.is(BiomeTags.IS_TAIGA)
+                || biome.is(BiomeTags.IS_RIVER);
+        return WanderingRibbitBiomePolicy.allows(
+                biome.unwrapKey().map(ResourceKey::identifier).orElse(null),
+                denied,
+                allowTagExists,
+                biome.is(ALLOW_BIOMES),
+                auditedFamilyMember);
     }
 
     private static boolean isHazardous(BlockState state) {
