@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 1,
+  "id": "carried-routing-fixtures",
+  "version": "1.0.0",
+  "name": "Carried Routing Controlled Fixtures",
+  "environment": "*",
+  "entrypoints": { "fabric-gametest": ["dev.resivore.carriedrouting.ReservationAcquisitionGameTests"] },
+  "depends": { "carried_container_auto_routing": "*", "fabric-gametest-api-v1": "*" }
+}

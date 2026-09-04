@@ -1,0 +1,9 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "dev.resivore.carryonpatch.common.mixin",
+  "plugin": "dev.resivore.carryonpatch.common.PersistenceMixinPlugin",
+  "compatibilityLevel": "JAVA_25",
+  "mixins": ["PlayerCarryStateMixin", "GrabHandlerMixin", "ServerPlayerCarryMixin"],
+  "injectors": {"defaultRequire": 1}
+}

@@ -2,8 +2,8 @@
   "$schema": "../../schemas/runtime-state.schema.json",
   "schema_version": 2,
   "activation": "ACTIVE",
-  "revision": 88,
-  "updated_at": "2026-09-04T20:19:06Z",
+  "revision": 90,
+  "updated_at": "2026-09-04T23:23:00Z",
   "accepted_baseline": {
     "revision": 18,
     "provenance": {
@@ -904,24 +904,24 @@
       "members": [
         {
           "unit": {
-            "deployment_id": "9783fefa-2d3f-4f4b-acdc-766d6b5ac2ab",
+            "deployment_id": "2764b293-5c8a-41c2-a4a5-66b2913b1642",
             "project_uuid": "3ab36584-8732-554f-840e-28a75c422660",
             "project_id": "container-slot-reservations",
             "project_identity_source": "CURRENT_MANIFEST",
-            "version": "0.1.0-canary6",
-            "source_commit": "6a1a284b0410bcce77467756e5046ed76117aa80",
+            "version": "0.1.0-canary7",
+            "source_commit": "c373b663c99d7a217fc9147db5007d3f1057678f",
             "artifacts": [
               {
-                "artifact_id": "1ef9a92a-47ef-4ea5-9f9f-b0166d042dd1",
+                "artifact_id": "9cbbc908-966c-4cd5-99d7-7244de6bf6d9",
                 "kind": "MOD",
-                "filename": "container-slot-reservations-0.1.0-canary6.jar",
-                "sha256": "93616bd2794a936eb6485614c3215ad2f42b149053bcb8dcd80e6a7c668aed40",
+                "filename": "container-slot-reservations-0.1.0-canary7.jar",
+                "sha256": "fafbdbc4b5f3c470f291183baa6fd161ec56604ad6a06fd64bf59556d037e239",
                 "ownership_keys": [
                   "mod:container_slot_reservations"
                 ],
                 "source": {
                   "type": "REPOSITORY",
-                  "path": "projects/container-slot-reservations/artifacts/container-slot-reservations-0.1.0-canary6.jar"
+                  "path": "projects/container-slot-reservations/artifacts/container-slot-reservations-0.1.0-canary7.jar"
                 }
               }
             ]
@@ -939,10 +939,52 @@
       ],
       "deployment": {
         "state": "READY_TO_TEST_VERIFIED",
-        "deployed_at": "2026-09-04T20:19:06Z",
-        "ready_verified_at": "2026-09-04T20:19:06Z"
+        "deployed_at": "2026-09-04T23:23:00Z",
+        "ready_verified_at": "2026-09-04T23:23:00Z"
       }
     },
-    "B": null
+    "B": {
+      "members": [
+        {
+          "unit": {
+            "deployment_id": "98fe1cc9-eeaa-4c07-8b72-17678bc07581",
+            "project_uuid": "fcb7d036-c756-5114-abe1-01c4331e7ea8",
+            "project_id": "carried-container-auto-routing",
+            "project_identity_source": "CURRENT_MANIFEST",
+            "version": "0.3.7-csr-reservation-affinity-canary1",
+            "source_commit": "c373b663c99d7a217fc9147db5007d3f1057678f",
+            "artifacts": [
+              {
+                "artifact_id": "2eb193ee-0975-4a2c-a725-c97a721c35b4",
+                "kind": "MOD",
+                "filename": "carried-container-auto-routing-0.3.7-csr-reservation-affinity-canary1.jar",
+                "sha256": "f00b1e6bc64a0e63ac1199d89c08f7510a20d5bbb9a486b40bd97833df522a2f",
+                "ownership_keys": [
+                  "mod:carried_container_auto_routing"
+                ],
+                "source": {
+                  "type": "REPOSITORY",
+                  "path": "projects/carried-container-auto-routing/artifacts/carried-container-auto-routing-0.3.7-csr-reservation-affinity-canary1.jar"
+                }
+              }
+            ]
+          },
+          "replaces_accepted_deployment_id": "1b6d00e9-7fc4-45e3-83a5-f632636e2f26",
+          "runtime_result": {
+            "classification": "UNTESTED",
+            "recorded_at": null,
+            "evidence": {
+              "passed": [],
+              "failed": []
+            }
+          }
+        }
+      ],
+      "deployment": {
+        "state": "READY_TO_TEST_VERIFIED",
+        "deployed_at": "2026-09-04T23:23:00Z",
+        "ready_verified_at": "2026-09-04T23:23:00Z"
+      }
+    }
   }
 }

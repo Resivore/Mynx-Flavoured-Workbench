@@ -923,6 +923,40 @@ final class UpstreamTooltipSeamContractTest {
         return result;
     }
 
+    @Test
+    void emptyTooltipOverrideIsConfinedToTheAuditedProviderDecision() throws IOException {
+        byte[] nested;
+        try (ZipFile outer = new ZipFile(testedArtifact().toFile())) {
+            nested = bytes(outer, NESTED_ENTRY);
+        }
+        String holder = "fuzs/iteminteractions/common/api/v2/world/item/storage/ItemStorageHolder";
+        String storage = "fuzs/iteminteractions/common/api/v2/world/item/storage/ContainerStorage";
+        String args = "(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/entity/player/Player;)";
+        var gate = invocations(nested, holder + ".class", "getTooltipImage", args + "Ljava/util/Optional;");
+        assertEquals(List.of("hasContents", "storage", "getTooltipImage", "empty"),
+                gate.calls.stream().map(Invocation::name).toList());
+        var eligibility = invocations(nested, holder + ".class", "hasContents", args + "Z");
+        assertEquals(List.of("getCount", "storage", "hasContents"),
+                eligibility.calls.stream().map(Invocation::name).toList());
+        var physical = invocations(nested, storage + ".class", "hasContents", args + "Z");
+        assertEquals(List.of("getOrDefault", "nonEmptyItemCopyStream", "findAny", "isPresent"),
+                physical.calls.stream().map(Invocation::name).toList());
+        var nativeFactory = invocations(nested,
+                "fuzs/iteminteractions/common/api/v2/world/item/storage/VisualItemStorage.class",
+                "getTooltipImage", args + "Ljava/util/Optional;");
+        assertEquals(List.of("getItemContainer", "getItems", "createTooltipImageComponent", "of", "of"),
+                nativeFactory.calls.stream().map(Invocation::name).toList());
+        // The existing wrapper owns disabled/modifier-key/held-item visibility even for native components.
+        String wrapper = "fuzs/iteminteractions/common/impl/client/gui/screens/inventory/tooltip/CollapsibleClientTooltipComponent.class";
+        for (String method : List.of("getWidth", "getHeight")) {
+            var config = invocations(nested, wrapper, method, "(Lnet/minecraft/client/gui/Font;)I");
+            assertTrue(config.calls.stream().anyMatch(call -> call.name().equals("isUsed")));
+        }
+        byte[] mixin = classpathEntry("dev/resivore/slotreservations/mixin/client/ItemStorageHolderTooltipMixin.class");
+        assertTrue(classAnnotations(mixin).contains("Lorg/spongepowered/asm/mixin/Pseudo;"));
+        assertNoHardFuzsTypeLinks(mixin, "ItemStorageHolderTooltipMixin");
+    }
+
     private static byte[] classpathEntry(String name) throws IOException {
         try (InputStream input = UpstreamTooltipSeamContractTest.class
                 .getClassLoader()

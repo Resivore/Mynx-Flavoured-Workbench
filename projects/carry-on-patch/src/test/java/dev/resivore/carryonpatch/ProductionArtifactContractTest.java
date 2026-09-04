@@ -20,13 +20,13 @@ class ProductionArtifactContractTest {
     private static final Path PATCH = propertyPath("patchJar");
 
     @Test
-    void packagedMetadataIsClientOnlyAndRequiresTheExactAuditedFloor() throws Exception {
-        assertEquals("carry-on-patch-0.1.0-canary2.jar", PATCH.getFileName().toString());
+    void packagedMetadataHasSeparatedSidesAndRequiresTheExactAuditedFloor() throws Exception {
+        assertEquals("carry-on-patch-0.1.0-canary3.jar", PATCH.getFileName().toString());
         try (ZipFile zip = new ZipFile(PATCH.toFile())) {
             String metadata = readUtf8(zip, "fabric.mod.json");
             assertJsonString(metadata, "id", "carry_on_patch");
-            assertJsonString(metadata, "version", "0.1.0-canary2");
-            assertJsonString(metadata, "environment", "client");
+            assertJsonString(metadata, "version", "0.1.0-canary3");
+            assertJsonString(metadata, "environment", "*");
             assertJsonString(metadata, "fabricloader", ">=0.19.3");
             assertJsonString(metadata, "minecraft", "=26.2");
             assertJsonString(metadata, "java", ">=25");
@@ -82,7 +82,9 @@ class ProductionArtifactContractTest {
                 }
             }
 
-            assertEquals(new TreeSet<>(expectedClasses), classes);
+            assertEquals(new TreeSet<>(expectedClasses), new TreeSet<>(classes.stream().filter(n -> !n.contains("/common/")).toList()));
+            assertTrue(classes.contains("dev/resivore/carryonpatch/common/CarryPlacement.class"));
+            assertTrue(names.contains("carry_on_patch.mixins.json"));
             assertTrue(forbidden.isEmpty(), () -> "forbidden packaged payload: " + forbidden);
             assertFalse(names.stream().anyMatch(name -> name.contains("GrabAndGo")));
         }

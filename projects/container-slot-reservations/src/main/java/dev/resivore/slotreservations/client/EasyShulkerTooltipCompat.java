@@ -19,6 +19,27 @@ public final class EasyShulkerTooltipCompat {
     private EasyShulkerTooltipCompat() {
     }
 
+    public static boolean hasEmptyReservationTooltip(Object holder, ItemStack stack) {
+        if (!ENABLED || !hasEmptyReservations(stack)) return false;
+        try {
+            // Exact provider eligibility is retained; VoidStorage and alternate providers stay excluded.
+            Object storage = holder.getClass().getMethod("storage").invoke(holder);
+            return storage != null && storage.getClass().getName().equals(
+                    "fuzs.iteminteractions.common.api.v2.world.item.storage.ContainerStorage");
+        } catch (ReflectiveOperationException exception) {
+            throw new IllegalStateException("CSR: audited Item Interactions tooltip provider seam changed", exception);
+        }
+    }
+
+    static boolean hasEmptyReservations(ItemStack stack) {
+        return stack.getCount() == 1
+                && SupportedContainerResolver.isSupportedShulkerItem(stack)
+                && stack.getOrDefault(net.minecraft.core.component.DataComponents.CONTAINER,
+                        net.minecraft.world.item.component.ItemContainerContents.EMPTY)
+                        .nonEmptyItemCopyStream().findAny().isEmpty()
+                && !ReservationStore.getData(stack).isEmpty();
+    }
+
     public static void captureSource(
             ItemStack sourceStack,
             Optional<TooltipComponent> tooltipComponent
