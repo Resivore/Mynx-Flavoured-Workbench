@@ -1,0 +1,320 @@
+import groovy.json.JsonSlurper
+import java.security.MessageDigest
+import org.gradle.api.tasks.bundling.AbstractArchiveTask
+
+plugins {
+    id 'net.fabricmc.fabric-loom' version '1.17.19'
+}
+
+version = project.mod_version
+group = project.maven_group
+
+base {
+    archivesName = project.archives_base_name
+}
+
+repositories {
+    maven { url = 'https://maven.fabricmc.net/' }
+    mavenCentral()
+}
+
+def requiredFileProperty = { String propertyName, String description ->
+    def suppliedPath = providers.gradleProperty(propertyName).orNull
+    if (suppliedPath == null || suppliedPath.isBlank()) {
+        throw new GradleException("Pass -P${propertyName}=<path to ${description}>")
+    }
+    def resolved = file(suppliedPath)
+    if (!resolved.isFile()) {
+        throw new GradleException("${description} was not found at ${resolved}")
+    }
+    resolved
+}
+
+def xaeroJar = requiredFileProperty('xaero_jar', 'xaerominimap-fabric-26.2-26.4.2.jar')
+def worldMapJar = requiredFileProperty('world_map_jar', 'xaeroworldmap-fabric-26.2-1.44.2.jar')
+def geckolibJar = requiredFileProperty('geckolib_jar', 'geckolib-fabric-26.2-5.5.1.jar')
+def ribbitsJar = requiredFileProperty('ribbits_jar', 'ribbits-private-reconstruction-4.1.6+26.2-mynx-canary7.jar')
+def acceptedC3Jar = requiredFileProperty('accepted_c3_jar', 'xaero-emf-entity-icon-compat-0.1.0-canary3.jar')
+def emfJar = requiredFileProperty('emf_jar', 'entity_model_features-3.2.6-26.2-fabric.jar')
+def etfJar = requiredFileProperty('etf_jar', 'entity_texture_features-7.1.1-26.2-fabric.jar')
+def fabricApiJar = requiredFileProperty('fabric_api_jar', 'fabric-api-0.157.0+26.2.jar')
+def freshAnimationsPack = requiredFileProperty('fresh_animations_pack', 'FreshAnimations_v1.10.5.zip')
+def yungsApiJar = requiredFileProperty('yungs_api_jar', 'YungsApi-26.2-Fabric-6.1.1-compat.2.jar')
+def clothConfigJar = requiredFileProperty('cloth_config_jar', 'cloth-config-26.2.155.jar')
+def customPortalsJar = requiredFileProperty('custom_portals_jar', 'custom-portals 4.0.0 compatibility JAR')
+def yaclJar = requiredFileProperty('yacl_jar', 'yet_another_config_lib_v3-3.9.6+26.2-fabric.jar')
+def matchaHeartJar = requiredFileProperty('matcha_heart_jar', 'matcha-heart-death-compat-0.1.10-canary11.jar')
+def trinketsJar = requiredFileProperty('trinkets_jar', 'trinkets-4.1.0-beta.3+26.2-inventory-compat-canary5.jar')
+def xaeroLibJar = layout.buildDirectory.file('compile-deps/xaerolib-fabric-26.2-1.7.1.jar')
+def productionMinecraftCache = new File(
+        gradle.gradleUserHomeDir, "caches/fabric-loom/${project.minecraft_version}")
+def productionMinecraftClientJar = new File(productionMinecraftCache, 'minecraft-client.jar')
+
+dependencies {
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    implementation "net.fabricmc:fabric-loader:${project.loader_version}"
+
+    compileOnly files(xaeroJar, geckolibJar, ribbitsJar, xaeroLibJar)
+
+    testImplementation platform('org.junit:junit-bom:5.13.4')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    testImplementation 'org.ow2.asm:asm:9.10.1'
+    testImplementation 'org.ow2.asm:asm-tree:9.10.1'
+    testImplementation files(xaeroJar, geckolibJar, ribbitsJar, xaeroLibJar)
+}
+
+tasks.register('extractXaeroLib', Copy) {
+    from(zipTree(xaeroJar)) {
+        include 'META-INF/jars/xaerolib-fabric-26.2-1.7.1.jar'
+        eachFile { details -> details.path = 'xaerolib-fabric-26.2-1.7.1.jar' }
+        includeEmptyDirs = false
+    }
+    into(layout.buildDirectory.dir('compile-deps'))
+    doLast {
+        if (!xaeroLibJar.get().asFile.isFile()) {
+            throw new GradleException('Exact nested XaeroLib 1.7.1 was not found in Xaero Minimap')
+        }
+    }
+}
+
+compileJava.dependsOn tasks.named('extractXaeroLib')
+compileTestJava.dependsOn tasks.named('extractXaeroLib')
+
+processResources {
+    inputs.property 'version', project.version
+    filesMatching('fabric.mod.json') {
+        expand 'version': project.version
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.release = 25
+}
+
+tasks.withType(AbstractArchiveTask).configureEach {
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
+}
+
+def productionJar = tasks.named('jar').flatMap { it.archiveFile }
+
+test {
+    useJUnitPlatform()
+    dependsOn tasks.named('jar')
+    inputs.files(
+            productionJar,
+            xaeroJar,
+            xaeroLibJar,
+            worldMapJar,
+            geckolibJar,
+            ribbitsJar,
+            acceptedC3Jar,
+            emfJar,
+            etfJar,
+            fabricApiJar,
+            freshAnimationsPack,
+            trinketsJar)
+    systemProperty 'projectRoot', projectDir.absolutePath
+    systemProperty 'patchJar', productionJar.get().asFile.absolutePath
+    systemProperty 'xaeroJar', xaeroJar.absolutePath
+    systemProperty 'xaeroLibJar', xaeroLibJar.get().asFile.absolutePath
+    systemProperty 'worldMapJar', worldMapJar.absolutePath
+    systemProperty 'geckolibJar', geckolibJar.absolutePath
+    systemProperty 'ribbitsJar', ribbitsJar.absolutePath
+    systemProperty 'acceptedC3Jar', acceptedC3Jar.absolutePath
+    systemProperty 'emfJar', emfJar.absolutePath
+    systemProperty 'etfJar', etfJar.absolutePath
+    systemProperty 'fabricApiJar', fabricApiJar.absolutePath
+    systemProperty 'freshAnimationsPack', freshAnimationsPack.absolutePath
+    systemProperty 'trinketsJar', trinketsJar.absolutePath
+}
+
+def productionMixinTest = tasks.register('productionMixinTest', JavaExec) {
+    group = 'verification'
+    description = 'Applies packaged Canary 1 and accepted C3 through exact production Fabric Knot/Mixin without launching Minecraft.'
+    dependsOn tasks.named('testClasses'), tasks.named('jar')
+
+    inputs.file(productionJar)
+    inputs.files(
+            xaeroJar, worldMapJar, geckolibJar, ribbitsJar, acceptedC3Jar,
+            emfJar, etfJar, fabricApiJar, yungsApiJar, clothConfigJar,
+            customPortalsJar, yaclJar, matchaHeartJar, xaeroLibJar,
+            trinketsJar,
+            productionMinecraftClientJar)
+
+    mainClass = 'dev.resivore.ribbitsxaeroicons.ProductionMixinApplicationHarness'
+    classpath = files({
+        def mainOutput = sourceSets.main.output.files
+        def runtime = configurations.testRuntimeClasspath.files.findAll { candidate ->
+            !mainOutput.contains(candidate) &&
+                    !candidate.name.startsWith('minecraft-merged-deobf-') &&
+                    candidate != xaeroJar && candidate != geckolibJar &&
+                    candidate != ribbitsJar && candidate != xaeroLibJar.get().asFile
+        }
+        sourceSets.test.output.files.findAll { it.exists() } + runtime + [
+                productionMinecraftClientJar,
+                productionJar.get().asFile,
+                xaeroJar,
+                worldMapJar,
+                geckolibJar,
+                ribbitsJar,
+                acceptedC3Jar,
+                emfJar,
+                etfJar,
+                fabricApiJar,
+                yungsApiJar,
+                clothConfigJar,
+                customPortalsJar,
+                yaclJar,
+                matchaHeartJar,
+                trinketsJar
+        ]
+    })
+    systemProperty 'fabric.development', 'false'
+    systemProperty 'fabric.unitTest', 'true'
+    systemProperty 'mixin.debug.verbose', 'true'
+    systemProperty 'mixin.debug.countInjections', 'true'
+
+    doFirst {
+        if (!productionMinecraftClientJar.isFile()) {
+            throw new GradleException(
+                    "Missing production Minecraft 26.2 client JAR: ${productionMinecraftClientJar}")
+        }
+        def discoveredMods = [
+                productionJar.get().asFile,
+                xaeroJar,
+                worldMapJar,
+                geckolibJar,
+                ribbitsJar,
+                acceptedC3Jar,
+                emfJar,
+                etfJar,
+                fabricApiJar,
+                yungsApiJar,
+                clothConfigJar,
+                customPortalsJar,
+                yaclJar,
+                matchaHeartJar,
+                trinketsJar
+        ]
+        systemProperty 'fabric.addMods',
+                discoveredMods.collect { it.absolutePath }.join(File.pathSeparator)
+        args = [
+                productionJar.get().asFile.absolutePath,
+                xaeroJar.absolutePath,
+                geckolibJar.absolutePath,
+                ribbitsJar.absolutePath,
+                acceptedC3Jar.absolutePath,
+                emfJar.absolutePath,
+                trinketsJar.absolutePath
+        ]
+        workingDir.mkdirs()
+    }
+    workingDir layout.buildDirectory.dir('production-mixin-test')
+}
+
+tasks.register('verifyClientOnlyArtifact') {
+    group = 'verification'
+    dependsOn tasks.named('jar')
+    inputs.file(productionJar)
+    doLast {
+        def artifact = productionJar.get().asFile
+        def archive = zipTree(artifact)
+        def paths = []
+        archive.visit { details ->
+            if (!details.directory) {
+                paths.add(details.relativePath.pathString.replace('\\', '/'))
+            }
+        }
+
+        def metadata = new JsonSlurper().parse(
+                archive.matching { include 'fabric.mod.json' }.singleFile)
+        if (metadata.id != 'ribbits_xaero_entity_icons_compat' ||
+                metadata.version != project.version || metadata.environment != 'client') {
+            throw new GradleException("Unexpected client metadata in ${artifact.name}")
+        }
+        if (metadata.mixins != ['ribbits_xaero_entity_icons_compat.mixins.json']) {
+            throw new GradleException("Unexpected mixin registration in ${artifact.name}")
+        }
+        if (metadata.depends?.minecraft != '=26.2' ||
+                metadata.depends?.fabricloader != '>=0.19.3' ||
+                metadata.depends?.java != '>=25') {
+            throw new GradleException("Unexpected runtime dependency floor in ${artifact.name}")
+        }
+        if (metadata.suggests?.xaerominimap != '*' ||
+                metadata.suggests?.geckolib != '*' ||
+                metadata.suggests?.ribbits != '*') {
+            throw new GradleException("Unexpected provider-capability metadata in ${artifact.name}")
+        }
+
+        def mixinConfig = new JsonSlurper().parse(
+                archive.matching {
+                    include 'ribbits_xaero_entity_icons_compat.mixins.json'
+                }.singleFile)
+        def expectedMixins = [
+                'RadarIconCacheAccessor',
+                'RadarIconCreatorMixin',
+                'RadarIconManagerMixin',
+                'RadarIconVariantHandlerMixin'
+        ]
+        if (mixinConfig.required != true || mixinConfig.minVersion != '0.8' ||
+                mixinConfig['package'] != 'dev.resivore.ribbitsxaeroicons.mixin' ||
+                mixinConfig.compatibilityLevel != 'JAVA_25' ||
+                mixinConfig.plugin !=
+                        'dev.resivore.ribbitsxaeroicons.mixin.RibbitsXaeroIconsMixinPlugin' ||
+                mixinConfig.client != expectedMixins ||
+                mixinConfig.injectors?.defaultRequire != 1) {
+            throw new GradleException("Unexpected fail-closed mixin contract in ${artifact.name}")
+        }
+
+        def forbiddenPrefixes = [
+                'net/minecraft/', 'xaero/', 'com/geckolib/',
+                'com/yungnickyoung/', 'traben/', 'META-INF/jars/', 'assets/', 'data/'
+        ]
+        def invalid = paths.findAll { path ->
+            forbiddenPrefixes.any { path.startsWith(it) } ||
+                    (path.endsWith('.class') &&
+                            !path.startsWith('dev/resivore/ribbitsxaeroicons/')) ||
+                    path.endsWith('.refmap.json')
+        }
+        if (!invalid.isEmpty()) {
+            throw new GradleException(
+                    "Compatibility JAR contains forbidden or foreign entries: ${invalid.unique().sort()}")
+        }
+
+        def required = [
+                'fabric.mod.json',
+                'ribbits_xaero_entity_icons_compat.mixins.json',
+                'dev/resivore/ribbitsxaeroicons/CompatibilityActivation.class',
+                'dev/resivore/ribbitsxaeroicons/RibbitGeoIconProvider.class',
+                'dev/resivore/ribbitsxaeroicons/RibbitHeadSelector.class',
+                'dev/resivore/ribbitsxaeroicons/mixin/RibbitsXaeroIconsMixinPlugin.class',
+                'dev/resivore/ribbitsxaeroicons/mixin/RadarIconCacheAccessor.class',
+                'dev/resivore/ribbitsxaeroicons/mixin/RadarIconCreatorMixin.class',
+                'dev/resivore/ribbitsxaeroicons/mixin/RadarIconVariantHandlerMixin.class',
+                'dev/resivore/ribbitsxaeroicons/mixin/RadarIconManagerMixin.class'
+        ]
+        def missing = required.findAll { !paths.contains(it) }
+        if (!missing.isEmpty()) {
+            throw new GradleException("Compatibility JAR is missing required entries: ${missing}")
+        }
+    }
+}
+
+tasks.register('stageCanaryArtifact', Copy) {
+    group = 'build'
+    description = 'Stages the verified Canary 1 JAR in this task worktree artifact directory.'
+    dependsOn tasks.named('check')
+    from(productionJar)
+    into(layout.projectDirectory.dir('artifacts'))
+}
+
+tasks.named('check') {
+    dependsOn productionMixinTest
+    dependsOn tasks.named('verifyClientOnlyArtifact')
+}
+
+java {
+    withSourcesJar()
+}

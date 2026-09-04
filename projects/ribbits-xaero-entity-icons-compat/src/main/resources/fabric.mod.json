@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "id": "ribbits_xaero_entity_icons_compat",
+  "version": "${version}",
+  "name": "Ribbits × Xaero Entity Icon Compatibility",
+  "description": "Adds an exact-version, fail-closed GeckoLib icon path for Ribbits in Xaero's Minimap.",
+  "authors": ["Resivore compatibility workbench"],
+  "license": "MIT",
+  "environment": "client",
+  "mixins": [
+    "ribbits_xaero_entity_icons_compat.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.19.3",
+    "minecraft": "=26.2",
+    "java": ">=25"
+  },
+  "suggests": {
+    "xaerominimap": "*",
+    "geckolib": "*",
+    "ribbits": "*"
+  },
+  "custom": {
+    "workbench:classification": "GENERATED / CONTROLLED STATIC PASS / RUNTIME UNTESTED",
+    "workbench:deployment": "NOT DEPLOYED",
+    "workbench:selector": "ribbits:ribbit exact main/body direct cubes only"
+  }
+}
