@@ -203,11 +203,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 11,
-    "activity_at": "2026-09-04T18:31:47Z",
-    "updated_at": "2026-09-04T18:31:47Z",
-    "last_codex_at": "2026-09-04T18:31:47Z",
-    "source_commit": "a7ddb6afa6ed9cd620f49a28522c7866fdd35f04",
+    "revision": 12,
+    "activity_at": "2026-09-04T20:02:18Z",
+    "updated_at": "2026-09-04T20:02:18Z",
+    "last_codex_at": "2026-09-04T20:02:18Z",
+    "source_commit": "4dbad838ac558b29e307899c3375ca710ac273ef",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
