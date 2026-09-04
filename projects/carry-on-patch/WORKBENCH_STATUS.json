@@ -1,0 +1,116 @@
+{
+  "$schema": "../../schemas/workbench-status.schema.json",
+  "schema_version": 1,
+  "identity": {
+    "uuid": "4048a9cf-f8c3-4fc0-8c3c-b8f1caebab46",
+    "name": "Carry On Patch",
+    "project_id": "carry-on-patch",
+    "aliases": [],
+    "legacy_names": [],
+    "legacy_ids": []
+  },
+  "definition": {
+    "lifecycle": "ACTIVE",
+    "goals": [
+      "Keep GrabAndGo 1.0.1 carried-entity rendering functional on Minecraft Java 26.2 by assigning safe identity to its otherwise unassigned client-created synthetic entities before render-state extraction.",
+      "Preserve the actual carried Ribbit and other supported entity models across first-person, third-person, shadow, GUI picture-in-picture, shader, and ordinary world renderer passes without suppressing rendering or changing real entity behavior."
+    ],
+    "scope": [
+      "Maintain a narrow client-only Fabric mixin that replaces only GrabAndGo's shared synthetic-entity cache implementation and assigns one stable, unique negative render-only ID when a newly cached entity still has Minecraft 26.2's zero sentinel.",
+      "Pin build and compatibility evidence to public GrabAndGo coordinate maven.modrinth:199VyzmC:STumnqJf, embedded mod ID grapandgo, version 1.0.1, and SHA-256 9360863791c9e2f898de7abf5c2a671343fa47b793fadd51cc41bf254ef5bb64.",
+      "Retain reproducible Canary 1 source, exact public-binary and Minecraft bytecode contracts, production Knot/Mixin application coverage, user-facing runtime procedure, and the small client-only release artifact."
+    ],
+    "boundaries": {
+      "owned_paths": [
+        "projects/carry-on-patch"
+      ],
+      "exclusions": [
+        "Global Entity.getId or renderer suppression, client-world insertion, entity-tracker or networking mutation, carried NBT mutation, persistent-data migration, and changes to GrabAndGo or Ribbits payloads are outside Canary 1.",
+        "GrabAndGo 1.0.1's independent GrabAndGo_CarriedData STRING-versus-COMPOUND save/load warning is documented but deliberately not rewritten without verified lossless old/new/corrupt migration fixtures.",
+        "Test Instance Manager state, dedicated-profile deployment, Minecraft gameplay claims, occupied-slot mutation, and all access to the protected Matcha Flavoured 26.1.2 profile are outside this source/build checkpoint."
+      ]
+    },
+    "dependencies": [
+      {
+        "type": "MOD",
+        "identifier": "minecraft",
+        "requirement": "=26.2",
+        "reason": "Exact game target whose Entity zero-ID sentinel, Level allocation behavior, and client render-state extraction contract were verified from production bytecode."
+      },
+      {
+        "type": "MOD",
+        "identifier": "fabricloader",
+        "requirement": ">=0.19.3",
+        "reason": "Runtime floor declared by Carry On Patch and exact loader used by the production client Knot/Mixin harness."
+      },
+      {
+        "type": "MOD",
+        "identifier": "grapandgo",
+        "requirement": ">=1.0.1",
+        "reason": "Required runtime provider. Canary 1 was inspected, compiled, and tested against exact public coordinate maven.modrinth:199VyzmC:STumnqJf, 381703-byte GrabAndGo 1.0.1 JAR SHA-256 9360863791c9e2f898de7abf5c2a671343fa47b793fadd51cc41bf254ef5bb64; its metadata declares MIT and contains no nested JAR or bundled license file."
+      },
+      {
+        "type": "MOD",
+        "identifier": "fabric-api",
+        "requirement": "*",
+        "reason": "GrabAndGo 1.0.1 declares this runtime dependency. Fabric API 0.157.0+26.2 was supplied only to the production-equivalent test classpath; Carry On Patch neither compiles against it nor packages or independently declares it."
+      },
+      {
+        "type": "TOOL",
+        "identifier": "java",
+        "requirement": "25",
+        "reason": "Compilation, test execution, and production client Mixin application target required by Minecraft 26.2."
+      },
+      {
+        "type": "TOOL",
+        "identifier": "gradle",
+        "requirement": "9.5.1",
+        "reason": "Shared tracked Workbench wrapper used for both independent clean builds."
+      },
+      {
+        "type": "TOOL",
+        "identifier": "fabric-loom",
+        "requirement": "1.17.19",
+        "reason": "Pinned Fabric build plugin used to compile and package the official-mappings client patch."
+      }
+    ]
+  },
+  "state": {
+    "milestone": "Canary 1 is retained after two byte-identical clean Java 25 builds, 18 focused JUnit/ASM contract tests, and a production Minecraft 26.2 client Knot/Mixin application pass against exact GrabAndGo 1.0.1; it remains unaccepted, not deployed, and runtime untested because both canonical Test Slots are occupied at manager revision 82.",
+    "releases": {
+      "current": {
+        "version": "0.1.0-canary1",
+        "artifact": {
+          "filename": "carry-on-patch-0.1.0-canary1.jar",
+          "sha256": "95eafef212acb40326325e42fa89f01a0f382d8ecfd7c2f37bf0b38dd10146f6"
+        },
+        "source_commit": "98e4efce44e9ef7b2d267d0532b0adb7d9256555",
+        "runtime_dependency_policy": {
+          "contract": "CAPABILITY_OR_PROVIDER",
+          "exceptions": []
+        }
+      },
+      "accepted": null,
+      "rollback": null,
+      "accepted_current": "NO_ACCEPTED",
+      "accepted_rollback": "NO_ROLLBACK"
+    },
+    "validation": {
+      "build": "STATIC_PASS",
+      "deployment": "NOT_DEPLOYED",
+      "runtime": "RUNTIME_UNTESTED"
+    },
+    "blocker": null
+  },
+  "synchronization": {
+    "revision": 1,
+    "activity_at": "2026-09-04T06:22:03Z",
+    "updated_at": "2026-09-04T06:22:03Z",
+    "last_codex_at": "2026-09-04T06:22:03Z",
+    "source_commit": "98e4efce44e9ef7b2d267d0532b0adb7d9256555",
+    "google_sheet": {
+      "participates": true,
+      "exclusion_reason": null
+    }
+  }
+}
