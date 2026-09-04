@@ -18,14 +18,14 @@
     "scope": [
       "Maintain a narrow client-only Fabric mixin that replaces only GrabAndGo's shared synthetic-entity cache implementation and assigns one stable, unique negative render-only ID when a newly cached entity still has Minecraft 26.2's zero sentinel.",
       "Pin build and compatibility evidence to public GrabAndGo coordinate maven.modrinth:199VyzmC:STumnqJf, embedded mod ID grapandgo, version 1.0.1, and SHA-256 9360863791c9e2f898de7abf5c2a671343fa47b793fadd51cc41bf254ef5bb64.",
-      "Retain reproducible Canary 1 source, exact public-binary and Minecraft bytecode contracts, production Knot/Mixin application coverage, user-facing runtime procedure, and the small client-only release artifact."
+      "Maintain reproducible Canary 2 source, exact public-binary and Minecraft bytecode contracts, production Knot/Mixin application coverage for both carried render paths, focused visual procedure, and a small client-only release. Target only ribbits:ribbit and ribbits:wandering_ribbit via extracted registry identity; translate only their carried draw with independent first/third-person values and balanced pose handling."
     ],
     "boundaries": {
       "owned_paths": [
         "projects/carry-on-patch"
       ],
       "exclusions": [
-        "Global Entity.getId or renderer suppression, client-world insertion, entity-tracker or networking mutation, carried NBT mutation, persistent-data migration, and changes to GrabAndGo or Ribbits payloads are outside Canary 1.",
+        "Global Entity.getId or renderer suppression, client-world insertion, entity-tracker or networking mutation, carried NBT mutation, persistent-data migration, and changes to GrabAndGo or Ribbits payloads are outside this patch.",
         "GrabAndGo 1.0.1's independent GrabAndGo_CarriedData STRING-versus-COMPOUND save/load warning is documented but deliberately not rewritten without verified lossless old/new/corrupt migration fixtures.",
         "Test Instance Manager state, dedicated-profile deployment, Minecraft gameplay claims, occupied-slot mutation, and all access to the protected Matcha Flavoured 26.1.2 profile are outside this source/build checkpoint."
       ]
@@ -76,15 +76,15 @@
     ]
   },
   "state": {
-    "milestone": "Canary 1 is retained after two byte-identical clean Java 25 builds, 18 focused JUnit/ASM contract tests, and a production Minecraft 26.2 client Knot/Mixin application pass against exact GrabAndGo 1.0.1; it remains unaccepted, not deployed, and runtime untested because both canonical Test Slots are occupied at manager revision 82.",
+    "milestone": "Canary 2 independently raises and moves forward only carried Ribbits at GrabAndGo entity submit calls, preserving Canary 1 synthetic cache/stable render-only ID behavior and upstream scale, orientation, and animation. Java 25 clean offline build, 22 JUnit/ASM tests, client-only archive gate, and production Knot/Mixin application for both render paths pass. Ready for managed visual testing; ACTIVE / NOT_DEPLOYED / RUNTIME_UNTESTED, not accepted. User-reported external observation: carry-triggered lag is gone, but first/third-person Ribbit placement is too low. Screenshots do not establish the tested installed artifact identity, so that observation is not attributed to an exact release or recorded as full runtime acceptance. Prior canonical Canary 1 bytes were rehashed successfully (95eafef212acb40326325e42fa89f01a0f382d8ecfd7c2f37bf0b38dd10146f6; source 98e4efce44e9ef7b2d267d0532b0adb7d9256555), which verifies the retained candidate only. Prior candidate remains retained; all new visual/runtime rows remain untested.",
     "releases": {
       "current": {
-        "version": "0.1.0-canary1",
+        "version": "0.1.0-canary2",
         "artifact": {
-          "filename": "carry-on-patch-0.1.0-canary1.jar",
-          "sha256": "95eafef212acb40326325e42fa89f01a0f382d8ecfd7c2f37bf0b38dd10146f6"
+          "filename": "carry-on-patch-0.1.0-canary2.jar",
+          "sha256": "3dad00a72685e53452ed5717d6e46409a9c030f181591a6c68ee4e3b52de878b"
         },
-        "source_commit": "98e4efce44e9ef7b2d267d0532b0adb7d9256555",
+        "source_commit": "a4c9df81ce5ec6a2891c15baea7e922a1bc92585",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
@@ -103,11 +103,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 1,
-    "activity_at": "2026-09-04T06:22:03Z",
-    "updated_at": "2026-09-04T06:22:03Z",
-    "last_codex_at": "2026-09-04T06:22:03Z",
-    "source_commit": "98e4efce44e9ef7b2d267d0532b0adb7d9256555",
+    "revision": 2,
+    "activity_at": "2026-09-04T21:35:04Z",
+    "updated_at": "2026-09-04T21:35:04Z",
+    "last_codex_at": "2026-09-04T21:35:04Z",
+    "source_commit": "a4c9df81ce5ec6a2891c15baea7e922a1bc92585",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
