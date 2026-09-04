@@ -1472,10 +1472,10 @@ class RuntimeContractTests(unittest.TestCase):
         tracked = load_json(ROOT / "tools" / "test_instance_manager" / "runtime-state.json")
         self.assertEqual("ACTIVE", tracked["activation"])
         self.assertEqual(2, tracked["schema_version"])
-        self.assertEqual(88, tracked["revision"])
-        self.assertEqual("2026-09-04T20:19:06Z", tracked["updated_at"])
+        self.assertEqual(90, tracked["revision"])
+        self.assertEqual("2026-09-04T23:23:00Z", tracked["updated_at"])
         self.assertEqual(
-            "dee397c4ffebacabf41028a0fafb22d674ee695a937ba22f9a6122771577c9a4",
+            "3cc3a9d83c34aa763263478fb7d54c1fb6aa1aee384ae48af3e815130f4a43b5",
             state_digest(tracked),
         )
         self.assertEqual(18, tracked["accepted_baseline"]["revision"])
@@ -1676,21 +1676,21 @@ class RuntimeContractTests(unittest.TestCase):
         self.assertEqual(1, len(slot_a["members"]))
         csr_successor = slot_a["members"][0]
         self.assertEqual(
-            "9783fefa-2d3f-4f4b-acdc-766d6b5ac2ab",
+            "2764b293-5c8a-41c2-a4a5-66b2913b1642",
             csr_successor["unit"]["deployment_id"],
         )
         self.assertEqual("3ab36584-8732-554f-840e-28a75c422660", csr_successor["unit"]["project_uuid"])
         self.assertEqual("container-slot-reservations", csr_successor["unit"]["project_id"])
-        self.assertEqual("0.1.0-canary6", csr_successor["unit"]["version"])
+        self.assertEqual("0.1.0-canary7", csr_successor["unit"]["version"])
         self.assertEqual(
-            "6a1a284b0410bcce77467756e5046ed76117aa80",
+            "c373b663c99d7a217fc9147db5007d3f1057678f",
             csr_successor["unit"]["source_commit"],
         )
         self.assertEqual(
             (
-                "1ef9a92a-47ef-4ea5-9f9f-b0166d042dd1",
-                "container-slot-reservations-0.1.0-canary6.jar",
-                "93616bd2794a936eb6485614c3215ad2f42b149053bcb8dcd80e6a7c668aed40",
+                "9cbbc908-966c-4cd5-99d7-7244de6bf6d9",
+                "container-slot-reservations-0.1.0-canary7.jar",
+                "fafbdbc4b5f3c470f291183baa6fd161ec56604ad6a06fd64bf59556d037e239",
                 ["mod:container_slot_reservations"],
             ),
             (
@@ -1709,8 +1709,8 @@ class RuntimeContractTests(unittest.TestCase):
             csr_successor["runtime_result"],
         )
         self.assertEqual("READY_TO_TEST_VERIFIED", slot_a["deployment"]["state"])
-        self.assertEqual("2026-09-04T20:19:06Z", slot_a["deployment"]["deployed_at"])
-        self.assertEqual("2026-09-04T20:19:06Z", slot_a["deployment"]["ready_verified_at"])
+        self.assertEqual("2026-09-04T23:23:00Z", slot_a["deployment"]["deployed_at"])
+        self.assertEqual("2026-09-04T23:23:00Z", slot_a["deployment"]["ready_verified_at"])
 
         sas = accepted_by_uuid["58086966-05a1-4237-9f4f-ffca6c05da87"]
         self.assertEqual("66cd7696-3d01-4d92-805e-9221c1b93e07", sas["unit"]["deployment_id"])
@@ -1733,7 +1733,31 @@ class RuntimeContractTests(unittest.TestCase):
             ),
         )
         self.assertEqual("2026-09-04T20:16:38Z", sas["accepted_at"])
-        self.assertIsNone(tracked["slots"]["B"])
+
+        slot_b = tracked["slots"]["B"]
+        self.assertEqual(1, len(slot_b["members"]))
+        ccar_successor = slot_b["members"][0]
+        self.assertEqual("98fe1cc9-eeaa-4c07-8b72-17678bc07581", ccar_successor["unit"]["deployment_id"])
+        self.assertEqual("fcb7d036-c756-5114-abe1-01c4331e7ea8", ccar_successor["unit"]["project_uuid"])
+        self.assertEqual("0.3.7-csr-reservation-affinity-canary1", ccar_successor["unit"]["version"])
+        self.assertEqual("c373b663c99d7a217fc9147db5007d3f1057678f", ccar_successor["unit"]["source_commit"])
+        self.assertEqual("1b6d00e9-7fc4-45e3-83a5-f632636e2f26", ccar_successor["replaces_accepted_deployment_id"])
+        self.assertEqual(
+            ("2eb193ee-0975-4a2c-a725-c97a721c35b4",
+             "carried-container-auto-routing-0.3.7-csr-reservation-affinity-canary1.jar",
+             "f00b1e6bc64a0e63ac1199d89c08f7510a20d5bbb9a486b40bd97833df522a2f"),
+            tuple(ccar_successor["unit"]["artifacts"][0][key] for key in ("artifact_id", "filename", "sha256")),
+        )
+        self.assertEqual(
+            {"classification": "UNTESTED", "recorded_at": None, "evidence": {"passed": [], "failed": []}},
+            ccar_successor["runtime_result"],
+        )
+        self.assertEqual(slot_a["deployment"], slot_b["deployment"])
+        ccar_manifest = load_json(ROOT / "projects" / "carried-container-auto-routing" / "WORKBENCH_STATUS.json")
+        self.assertEqual("TESTING", ccar_manifest["definition"]["lifecycle"])
+        self.assertEqual("RUNTIME_UNTESTED", ccar_manifest["state"]["validation"]["runtime"])
+        self.assertEqual("CURRENT_RELEASE_DEPLOYED", current_release_deployment_comparison(ccar_manifest, tracked))
+
 
         csr_manifest = load_json(ROOT / "projects" / "container-slot-reservations" / "WORKBENCH_STATUS.json")
         qsn_manifest = load_json(ROOT / "projects" / "quick-stack-nearby-compat" / "WORKBENCH_STATUS.json")
@@ -1774,6 +1798,7 @@ class RuntimeContractTests(unittest.TestCase):
             tracked,
             {
                 csr_manifest["identity"]["uuid"]: csr_manifest["identity"]["name"],
+                ccar_manifest["identity"]["uuid"]: ccar_manifest["identity"]["name"],
                 qsn_manifest["identity"]["uuid"]: qsn_manifest["identity"]["name"],
                 sas_manifest["identity"]["uuid"]: sas_manifest["identity"]["name"],
             },
@@ -1781,8 +1806,8 @@ class RuntimeContractTests(unittest.TestCase):
         self.assertEqual(
             [
                 "Baseline: Stack v18",
-                "Slot A: Container Slot Reservations - Canary 6",
-                "Slot B: Empty",
+                "Slot A: Container Slot Reservations - Canary 7",
+                "Slot B: Carried Container Auto-Routing - Canary 1",
             ],
             title_state["lines"],
         )
