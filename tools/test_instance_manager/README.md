@@ -84,9 +84,12 @@ accepted passthrough artifacts without presenting them as tested projects.
 Clearing the slot restores the original complete accepted unit. Promoting an
 explicitly passed byte-identical regression reconciles back to that same
 accepted unit, preserving its deployment/artifact identities, acceptance time,
-and Stack revision. Successor passthrough promotion remains fail-closed until a
-separate transition can rebuild the accepted unit in its original artifact
-order without dropping or re-identifying a retained companion.
+and Stack revision. Promoting an explicitly passed successor rebuilds the
+accepted unit in its original artifact order: the slot artifact replaces the
+sole omitted accepted role, every passthrough companion keeps its exact
+descriptor and artifact UUID, and the rebuilt unit takes the successor's
+deployment, version, and source checkpoint. That changed project composition
+increments the Stack revision exactly once.
 
 `RECORD_RESULT` requires `project_uuid` for a multi-member cohort and updates
 only that member. Shared deployment readiness never copies a `PASS`, `FAIL`, or

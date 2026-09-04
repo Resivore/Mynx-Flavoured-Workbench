@@ -1095,6 +1095,30 @@ def _byte_composition(unit: dict[str, Any]) -> tuple[tuple[Any, ...], ...]:
     )
 
 
+def _promoted_accepted_unit(
+    slot_member: dict[str, Any],
+    accepted_unit: dict[str, Any],
+) -> dict[str, Any]:
+    """Rebuild a passthrough successor in the accepted unit's artifact order."""
+
+    promoted_unit = copy.deepcopy(slot_member["unit"])
+    companions = slot_member.get("accepted_companion_artifacts", [])
+    if not companions:
+        return promoted_unit
+
+    companion_ids = {artifact["artifact_id"] for artifact in companions}
+    candidate_artifact = promoted_unit["artifacts"][0]
+    promoted_unit["artifacts"] = [
+        copy.deepcopy(
+            accepted_artifact
+            if accepted_artifact["artifact_id"] in companion_ids
+            else candidate_artifact
+        )
+        for accepted_artifact in accepted_unit["artifacts"]
+    ]
+    return promoted_unit
+
+
 def plan_transition(
     state: dict[str, Any],
     expected_revision: int,
@@ -1668,9 +1692,12 @@ def plan_transition(
             stack_revision_delta = 0
             for slot_member in slot_members:
                 replacement_id = slot_member["replaces_accepted_deployment_id"]
-                accepted_member = {"unit": copy.deepcopy(slot_member["unit"]), "accepted_at": at}
                 byte_identical_reconciliation = False
                 if replacement_id is None:
+                    accepted_member = {
+                        "unit": copy.deepcopy(slot_member["unit"]),
+                        "accepted_at": at,
+                    }
                     members.append(accepted_member)
                 else:
                     indexes = [
@@ -1681,13 +1708,11 @@ def plan_transition(
                     if len(indexes) != 1:
                         raise ValidationError("accepted replacement target is not unique")
                     accepted = members[indexes[0]]["unit"]
-                    replacement_artifacts = [
-                        *slot_member["unit"]["artifacts"],
-                        *slot_member.get("accepted_companion_artifacts", []),
-                    ]
+                    promoted_unit = _promoted_accepted_unit(slot_member, accepted)
+                    accepted_member = {"unit": promoted_unit, "accepted_at": at}
                     byte_identical_reconciliation = (
                         _byte_composition(accepted)
-                        == _byte_composition({"artifacts": replacement_artifacts})
+                        == _byte_composition(promoted_unit)
                     )
                     if slot_member.get("accepted_companion_artifacts"):
                         byte_identical_reconciliation = bool(
@@ -1695,11 +1720,6 @@ def plan_transition(
                             and slot_member["unit"]["version"] == accepted["version"]
                             and slot_member["unit"]["source_commit"] == accepted["source_commit"]
                         )
-                        if not byte_identical_reconciliation:
-                            raise ValidationError(
-                                "accepted companion passthrough promotion must reconcile byte-identically "
-                                "with the complete accepted project unit"
-                            )
                     if not byte_identical_reconciliation:
                         members[indexes[0]] = accepted_member
                 if not byte_identical_reconciliation:

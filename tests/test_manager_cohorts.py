@@ -2685,10 +2685,11 @@ class AcceptedCompanionPassthroughTests(unittest.TestCase):
                         dry_run=True,
                     )
 
-    def test_successor_passthrough_promotion_remains_fail_closed(self) -> None:
+    def test_successor_passthrough_promotion_rebuilds_and_verifies_accepted_unit(self) -> None:
         successor = self.qsn.successor_slot_unit()
         self.qsn.deploy(at="2099-01-01T00:00:30Z", slot_unit=successor)
         deployed = self.fixture.repository_state()
+        slot_a_before = copy.deepcopy(deployed["slots"]["A"])
         self.fixture.manager.transition(
             operation={
                 "type": "RECORD_RESULT",
@@ -2701,16 +2702,63 @@ class AcceptedCompanionPassthroughTests(unittest.TestCase):
             dry_run=False,
         )
         passed = self.fixture.repository_state()
-        with self.assertRaisesRegex(
-            ManagerError,
-            "accepted companion passthrough promotion must reconcile byte-identically",
-        ):
-            self.fixture.manager.transition(
-                operation={"type": "PROMOTE_SLOT", "slot": "B"},
-                expected_revision=passed["revision"],
-                at="2099-01-01T00:00:32Z",
-                dry_run=True,
-            )
+        dry_run = self.fixture.manager.transition(
+            operation={"type": "PROMOTE_SLOT", "slot": "B"},
+            expected_revision=passed["revision"],
+            at="2099-01-01T00:00:32Z",
+            dry_run=True,
+        )
+        self.assertIsNone(dry_run["slot_changes"]["B"]["after"])
+        self.assertIn(
+            "mods/" + self.qsn.core_name,
+            dry_run["unchanged"],
+        )
+        self.assertIn(
+            "mods/" + successor["artifacts"][0]["filename"],
+            dry_run["unchanged"],
+        )
+        self.assertIn(
+            self.qsn.compat_name + ".disabled",
+            dry_run["removals"],
+        )
+
+        self.fixture.manager.transition(
+            operation={"type": "PROMOTE_SLOT", "slot": "B"},
+            expected_revision=passed["revision"],
+            at="2099-01-01T00:00:32Z",
+            dry_run=False,
+        )
+        promoted = self.fixture.repository_state()
+        accepted = next(
+            member
+            for member in promoted["accepted_baseline"]["members"]
+            if member["unit"]["project_uuid"] == self.qsn.project_uuid
+        )
+        self.assertEqual(slot_a_before, promoted["slots"]["A"])
+        self.assertIsNone(promoted["slots"]["B"])
+        self.assertEqual(
+            passed["accepted_baseline"]["revision"] + 1,
+            promoted["accepted_baseline"]["revision"],
+        )
+        self.assertEqual(successor["deployment_id"], accepted["unit"]["deployment_id"])
+        self.assertEqual(successor["version"], accepted["unit"]["version"])
+        self.assertEqual(successor["source_commit"], accepted["unit"]["source_commit"])
+        self.assertEqual(
+            [self.qsn.core_artifact, successor["artifacts"][0]],
+            accepted["unit"]["artifacts"],
+        )
+        self.assertFalse((self.fixture.mods / (self.qsn.compat_name + ".disabled")).exists())
+        receipt = self.fixture.manager.verify()
+        self.assertEqual("PHYSICAL_STATE_VERIFIED", receipt["status"])
+        enabled = {
+            item["primary_id"]: item
+            for item in receipt["fabric_dependency_graph"]["enabled_fabric_jars"]
+        }
+        self.assertEqual(self.qsn.core_name, enabled["quick-stack-nearby"]["filename"])
+        self.assertEqual(
+            successor["artifacts"][0]["filename"],
+            enabled["quick_stack_nearby_compat"]["filename"],
+        )
 
     def test_missing_required_companion_fails_without_mutation(self) -> None:
         state = self.fixture.repository_state()

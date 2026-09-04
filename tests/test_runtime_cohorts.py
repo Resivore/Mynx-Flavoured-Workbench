@@ -532,6 +532,73 @@ class RuntimeCohortContractTests(unittest.TestCase):
                 project_index("alpha", "beta"),
             )
 
+    def test_passed_successor_passthrough_rebuilds_accepted_unit_in_original_order(self) -> None:
+        project_id = "quick-stack-nearby-compat"
+        accepted = deployment_unit(
+            project_id,
+            version="0.1.0-canary6",
+            filename="quick-stack-nearby-compat-0.1.0-canary6.jar",
+            ownership="mod:quick_stack_nearby_compat",
+        )
+        core = deployment_unit(
+            "quick-stack-nearby-core",
+            version="0.4.0",
+            filename="quick-stack-nearby-0.4.0.jar",
+            ownership="mod:quick-stack-nearby",
+        )["artifacts"][0]
+        core["source"] = {
+            "type": "ADOPTED_TARGET",
+            "path": "mods/quick-stack-nearby-0.4.0.jar",
+        }
+        accepted["artifacts"].insert(0, core)
+
+        successor = deployment_unit(
+            project_id,
+            version="0.1.0-canary8",
+            filename="quick-stack-nearby-compat-0.1.0-canary8.jar",
+            ownership="mod:quick_stack_nearby_compat",
+        )
+        successor["source_commit"] = "e" * 40
+        successor["artifacts"][0]["sha256"] = "3" * 64
+        slot_member = cohort_member(
+            successor,
+            replacement=accepted["deployment_id"],
+            result="PASS",
+        )
+        slot_member["accepted_companion_artifacts"] = [copy.deepcopy(core)]
+        state = cohort_state(slot_member, ready=True)
+        state["accepted_baseline"]["revision"] = 1
+        state["accepted_baseline"]["members"] = [
+            {"unit": copy.deepcopy(accepted), "accepted_at": TIME_1}
+        ]
+        state["accepted_baseline"]["provenance"]["accepted_artifact_count"] = 2
+        validate_runtime_state(state, project_index(project_id))
+
+        promoted = plan_transition(
+            state,
+            state["revision"],
+            {"type": "PROMOTE_SLOT", "slot": "A"},
+            TIME_2,
+            project_index(project_id),
+        )
+
+        accepted_after = promoted["accepted_baseline"]["members"][0]
+        self.assertIsNone(promoted["slots"]["A"])
+        self.assertEqual(state["revision"] + 1, promoted["revision"])
+        self.assertEqual(
+            state["accepted_baseline"]["revision"] + 1,
+            promoted["accepted_baseline"]["revision"],
+        )
+        self.assertEqual(2, promoted["accepted_baseline"]["provenance"]["accepted_artifact_count"])
+        self.assertEqual(successor["deployment_id"], accepted_after["unit"]["deployment_id"])
+        self.assertEqual(successor["version"], accepted_after["unit"]["version"])
+        self.assertEqual(successor["source_commit"], accepted_after["unit"]["source_commit"])
+        self.assertEqual(
+            [core, successor["artifacts"][0]],
+            accepted_after["unit"]["artifacts"],
+        )
+        self.assertEqual(TIME_2, accepted_after["accepted_at"])
+
     def test_atomic_set_profile_builds_one_cohort_and_clears_other_slot_once(self) -> None:
         old_alpha = deployment_unit("alpha", version="Canary 1")
         old_beta = deployment_unit("beta", version="Canary 1")
