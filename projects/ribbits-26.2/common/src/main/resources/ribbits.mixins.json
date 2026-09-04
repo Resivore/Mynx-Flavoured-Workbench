@@ -4,6 +4,7 @@
   "compatibilityLevel": "JAVA_25",
   "mixins": [
     "accessor.DoorBlockAccessor",
+    "accessor.StructurePieceInvoker",
     "world.NaturalSpawnerMixin",
     "world.SwampHutPieceMixin"
   ],

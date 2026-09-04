@@ -30,16 +30,16 @@ from typing import Any
 EXPECTED_PRISTINE_SHA256 = (
     "4cf86564aed393410fb1dbca3a9ce2425382307655e92bb6b43f3ddcee5bf731"
 )
-CANDIDATE_VERSION = "4.1.6+26.2-mynx-canary4"
-CANDIDATE_CANARY = 4
+CANDIDATE_VERSION = "4.1.6+26.2-mynx-canary5"
+CANDIDATE_CANARY = 5
 PRIVATE_MANIFEST_SCHEMA = "mynx-ribbits-private-resource-manifest/v1"
 PRIVATE_MANIFEST_CLASSIFICATION = (
     "PRIVATE MYNX ASSEMBLY STAGED / NONREDISTRIBUTABLE DONOR ASSETS"
 )
 PRIVATE_ARTIFACT_FILENAME = (
-    "ribbits-private-reconstruction-4.1.6+26.2-mynx-canary4.jar"
+    "ribbits-private-reconstruction-4.1.6+26.2-mynx-canary5.jar"
 )
-SOURCE_ONLY_ARTIFACT_FILENAME = "ribbits-source-only-4.1.6+26.2-mynx-canary4.jar"
+SOURCE_ONLY_ARTIFACT_FILENAME = "ribbits-source-only-4.1.6+26.2-mynx-canary5.jar"
 SOURCE_SAFE_PUBLIC_RESOURCE_PATHS = frozenset(
     {
         "assets/ribbits/items/glowcap.json",
@@ -623,7 +623,7 @@ SPAWN_EGG_MODEL = {
     "textures": {"layer0": "ribbits:item/ribbit_spawn_egg"},
 }
 SPAWN_EGG_SUBSTITUTION_NOTICE = (
-    "Private Mynx Canary 4 uses one palette-only green recolor of Minecraft "
+    "Private Mynx Canary 5 uses one palette-only green recolor of Minecraft "
     "26.2's vanilla frog spawn-egg artwork for all nine Ribbits profession eggs. "
     "This is explicitly authorized for the private Workbench and is not exact "
     "Ribbits 4.1.6 spawn-egg visual parity."
@@ -3057,7 +3057,7 @@ def migrate_spawn_egg_models(root: Path, minecraft_client: Path) -> dict[str, An
 
     return {
         "authorization": (
-            "Explicitly authorized by the Workbench owner for private Mynx Ribbits Canary 4"
+            "Explicitly authorized by the Workbench owner for private Mynx Ribbits Canary 5"
         ),
         "temporary": True,
         "exact_ribbits_4_1_6_visual_parity": False,

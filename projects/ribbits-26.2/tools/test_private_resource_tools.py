@@ -1096,8 +1096,8 @@ class PrivateVillageUtilityTransformTest(unittest.TestCase):
 
 class DonorBoundaryContractTest(unittest.TestCase):
     def test_exact_accounting_contains_only_approved_visual_members_and_outputs(self) -> None:
-        self.assertEqual("4.1.6+26.2-mynx-canary4", tools.CANDIDATE_VERSION)
-        self.assertEqual(4, tools.CANDIDATE_CANARY)
+        self.assertEqual("4.1.6+26.2-mynx-canary5", tools.CANDIDATE_VERSION)
+        self.assertEqual(5, tools.CANDIDATE_CANARY)
         self.assertEqual(
             "mynx-ribbits-private-resource-manifest/v1", tools.PRIVATE_MANIFEST_SCHEMA
         )

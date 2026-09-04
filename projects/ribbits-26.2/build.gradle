@@ -10,6 +10,12 @@ def privateResourcesDir = privateResourcesPath ? file(privateResourcesPath) : nu
 def privateManifestPath = System.getenv('RIBBITS_PRIVATE_MANIFEST')
 def privateManifestFile = privateManifestPath ? file(privateManifestPath) : null
 def pythonExecutable = System.getenv('PYTHON') ?: 'python'
+def productionMinecraftCache = new File(
+    gradle.gradleUserHomeDir,
+    "caches/fabric-loom/${project.minecraft_version}"
+)
+def productionMinecraftMergedJar = new File(productionMinecraftCache, 'minecraft-merged.jar')
+def productionMinecraftServerJar = new File(productionMinecraftCache, 'minecraft-extracted_server.jar')
 
 base {
     archivesName = privateResourcesDir != null ? "${project.archives_name}-private-reconstruction" : "${project.archives_name}-source-only"
@@ -87,12 +93,12 @@ if (privateResourcesDir != null) {
             if (manifest.schema?.toString() != 'mynx-ribbits-private-resource-manifest/v1' ||
                 manifest.classification?.toString() != 'PRIVATE MYNX ASSEMBLY STAGED / NONREDISTRIBUTABLE DONOR ASSETS' ||
                 manifest.candidate?.version?.toString() != project.mod_version.toString() ||
-                manifest.candidate?.version?.toString() != '4.1.6+26.2-mynx-canary4' ||
-                (manifest.candidate?.canary as int) != 4 ||
+                manifest.candidate?.version?.toString() != '4.1.6+26.2-mynx-canary5' ||
+                (manifest.candidate?.canary as int) != 5 ||
                 manifest.candidate?.private_artifact_filename?.toString() !=
-                    'ribbits-private-reconstruction-4.1.6+26.2-mynx-canary4.jar' ||
+                    'ribbits-private-reconstruction-4.1.6+26.2-mynx-canary5.jar' ||
                 manifest.candidate?.source_only_artifact_filename?.toString() !=
-                    'ribbits-source-only-4.1.6+26.2-mynx-canary4.jar') {
+                    'ribbits-source-only-4.1.6+26.2-mynx-canary5.jar') {
                 throw new GradleException("Private manifest classification is not eligible for private packaging: ${manifest.classification}")
             }
             if ((manifest.blockers as List)) {
@@ -676,11 +682,52 @@ test {
     // is frozen, without weakening the production codec or mutating another suite's bootstrap.
     forkEvery = 1
     systemProperty 'projectRoot', projectDir.absolutePath
+    systemProperty 'productionMinecraftJar', productionMinecraftMergedJar.absolutePath
     if (privateResourcesDir != null) {
         systemProperty 'privateResourcesDir', privateResourcesDir.canonicalPath
         dependsOn verifyPrivateResources
     }
     dependsOn 'testPrivateResourceTools'
+}
+
+def productionMixinTest = tasks.register('productionMixinTest', JavaExec) {
+    group = 'verification'
+    description = 'Applies the packaged common mixins to production Minecraft 26.2 server classes without launching Minecraft.'
+    dependsOn tasks.named('testClasses'), tasks.named('jar')
+
+    def productionJar = tasks.named('jar').flatMap { it.archiveFile }
+    inputs.file(productionJar)
+    inputs.file(productionMinecraftServerJar)
+
+    mainClass = 'com.yungnickyoung.minecraft.ribbits.mixin.ProductionMixinApplicationHarness'
+    classpath = files({
+        def mainOutput = sourceSets.main.output.files
+        def runtime = configurations.testRuntimeClasspath.files.findAll { candidate ->
+            !mainOutput.contains(candidate) &&
+                !candidate.name.startsWith('minecraft-merged-deobf-')
+        }
+        sourceSets.test.output.files.findAll { it.exists() } + runtime +
+            [productionMinecraftServerJar, productionJar.get().asFile]
+    })
+    systemProperty 'fabric.development', 'false'
+    systemProperty 'fabric.unitTest', 'true'
+    systemProperty 'mixin.debug.verbose', 'true'
+    systemProperty 'mixin.debug.countInjections', 'true'
+
+    doFirst {
+        if (!productionMinecraftServerJar.isFile()) {
+            throw new GradleException(
+                "Missing production Minecraft 26.2 server JAR: ${productionMinecraftServerJar}"
+            )
+        }
+        args = [productionJar.get().asFile.absolutePath]
+        workingDir.mkdirs()
+    }
+    workingDir layout.buildDirectory.dir('production-mixin-test')
+}
+
+tasks.named('check') {
+    dependsOn productionMixinTest
 }
 
 tasks.register('testPrivateResourceTools', Exec) {

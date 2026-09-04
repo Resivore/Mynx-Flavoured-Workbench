@@ -36,7 +36,8 @@ public abstract class NaturalSpawnerMixin {
                     + "Lnet/minecraft/core/BlockPos$MutableBlockPos;D)Z",
             at = @At("HEAD"),
             cancellable = true,
-            require = 1
+            require = 1,
+            allow = 1
     )
     private static void ribbits$suppressNaturalWitchInsideExactHutPiece(
             ServerLevel level,

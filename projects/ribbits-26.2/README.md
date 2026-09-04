@@ -6,19 +6,27 @@ Upstream code is covered by LGPL-3.0. Ribbits resources and the approved Guard R
 
 ## Current candidate
 
-- Internal version: `4.1.6+26.2-mynx-canary4`
-- Private artifact: `ribbits-private-reconstruction-4.1.6+26.2-mynx-canary4.jar`, 3,219,246 bytes, SHA-256 `DA7A37E0AEECE4D7633F0C5104298D76E066CD38DD5255FAE616DF95C5FBC712`
-- Source-only artifact: `ribbits-source-only-4.1.6+26.2-mynx-canary4.jar`, 1,159,347 bytes, SHA-256 `FE9E03AA72964CEB3EB3851EF485BAD50444AED00F6B8F1924DFFD0287CE01E4`
+- Internal version: `4.1.6+26.2-mynx-canary5`
+- Private artifact: `ribbits-private-reconstruction-4.1.6+26.2-mynx-canary5.jar`, 3,220,021 bytes, SHA-256 `0DDE14CAAF1EF1E4B52CA118D61E0ED0706BB0EAD4B718471CA3CC5B5A70BE4F`
+- Source-only artifact: `ribbits-source-only-4.1.6+26.2-mynx-canary5.jar`, 1,160,122 bytes, SHA-256 `7386A91EEB45E6628222092E3A9ABDD8306932B05EC6F87A792D0E77204FB040`
 - State: `ACTIVE / STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED`
 - The exact implementation checkpoint is recorded in `WORKBENCH_STATUS.json` by the administrative checkpoint after the implementation commit is frozen.
 
-Canary 4 succeeds, but does not overwrite or relabel, Canary 3: version `4.1.6+26.2-mynx-canary3`, private artifact `ribbits-private-reconstruction-4.1.6+26.2-mynx-canary3.jar`, 3,204,738 bytes, SHA-256 `69AD105B44E3E9131D540E26887EB09CE6BE1DA89EE9C4B3C49E4E95341F3E19`, implementation checkpoint `fc983c0534ac2a73308111d2052530a202156777`. Canary 2 and the exact faithful-port baseline also remain historical at their recorded identities.
+Canary 5 succeeds, but does not overwrite or relabel, Canary 4: version `4.1.6+26.2-mynx-canary4`, private artifact `ribbits-private-reconstruction-4.1.6+26.2-mynx-canary4.jar`, 3,219,246 bytes, SHA-256 `DA7A37E0AEECE4D7633F0C5104298D76E066CD38DD5255FAE616DF95C5FBC712`, source checkpoint `cbc247054ecba937ad009dd651cde31fac504c22`. Canary 3, Canary 2, and the exact faithful-port baseline also remain historical at their recorded identities.
 
-No Minecraft client or server was launched and no candidate was deployed for this task. Static compilation, tests, deterministic assembly, archive inspection, and codec validation are not runtime evidence. The current useful future runtime procedure is in `TESTING.md`.
+No Minecraft client or server was launched and no candidate was deployed by this task. Static compilation, tests, deterministic assembly, archive inspection, codec validation, and the production-equivalent Knot/Mixin application test are not gameplay runtime evidence. The current useful future runtime procedure is in `TESTING.md`.
+
+## Canary 4 startup failure and Canary 5 repair
+
+The user's startup report binds only to the exact canonical Canary 4 identity above: Minecraft aborted during startup with an `InvalidMixinException` because `SwampHutPieceMixin` declared an invalid `@Shadow getWorldPos(int,int,int)` that Mixin could not locate directly on `SwampHutPiece`. It is recorded as an external user-reported runtime `FAIL` for Canary 4 without claiming a managed deployment, occupied test slot, or any Phase C gameplay observation. Canary 5 does not inherit that result and remains `RUNTIME_UNTESTED`.
+
+Inspection of the exact production-remapped Minecraft 26.2 bytecode found that `getWorldPos` is protected and declared on superclass `net/minecraft/world/level/levelgen/structure/StructurePiece`, not on `SwampHutPiece` or its intermediary superclass. Its runtime name is `getWorldPos`, return type is `net/minecraft/core/BlockPos$MutableBlockPos`, and descriptor is `(III)Lnet/minecraft/core/BlockPos$MutableBlockPos;`. The actual `INVOKEVIRTUAL` instructions in both `SwampHutPiece.postProcess` and `SwampHutPiece.spawnCat` use owner `net/minecraft/world/level/levelgen/structure/structures/SwampHutPiece`, method name `getWorldPos`, and that same descriptor.
+
+Canary 5 removes the invalid shadow, registers a narrow `StructurePiece` invoker for protected `getWorldPos` and the similarly protected `placeBlock`, routes the mixin's direct coordinate transforms and barrel placement through those non-reflective invokers, and targets both `@ModifyArgs` selectors at the real `SwampHutPiece` invocation owner. All four hut hooks and the natural-spawn hook are fail-loud with `require=1` and `allow=1`. The official-namespace production setup does not require a refmap for these selectors, so the absent refmap did not contribute to the Canary 4 failure and adding one would not have repaired the invalid shadow. A production-equivalent Knot/Mixin harness applied `StructurePieceInvoker`, `SwampHutPieceMixin`, and `NaturalSpawnerMixin` successfully and verified each required injection resolved exactly once.
 
 ## Permanent items and temporary visuals
 
-Canary 3 introduced, and Canary 4 preserves, two permanent, mechanically distinct Ribbits items:
+Canary 3 introduced, and Canary 5 preserves, two permanent, mechanically distinct Ribbits items:
 
 - `ribbits:glowcap` is the stack-64, noncraftable currency used by all monetary Ribbit offers and the intended private village-chest currency entries. Its item definition temporarily renders through `minecraft:item/warped_fungus`. It is not `minecraft:warped_fungus`, is not a block item, and receives none of Warped Fungus's placement, composting, tags, recipes, or other behavior.
 - `ribbits:toadstool_heart` is a stack-64 ordinary item, the exact recipe output, and the only home-setting item. Its item definition temporarily renders through `minecraft:item/heart_container`, the model used by the original Crystal Heart. It receives none of the Crystal Heart's components, health effects, consumption behavior, attributes, rarity, glint, or progression behavior.
@@ -49,7 +57,7 @@ The saved rank and XP always use those exact Mynx thresholds. The merchant packe
 | Guard | 4 | Pond Sentry; Lily Warden; Marsh Marshal; Bulwark of the Bog | 11 weapons / 12 mount / 15 armor |
 | Musician | unranked | Musician | 1 |
 
-Player-assigned custom entity names remain intact. Rank, XP, progression-gate completion, profession choices, Chef menu state, and daily restock state are saved with safe defaults when absent. There is deliberately no generalized migration of old serialized offer schemas; Canary 4 recognizes only the exact saved Canary 3 Sorcerer offer shapes needed to insert its one new service without resetting existing offers or uses.
+Player-assigned custom entity names remain intact. Rank, XP, progression-gate completion, profession choices, Chef menu state, and daily restock state are saved with safe defaults when absent. There is deliberately no generalized migration of old serialized offer schemas; Canary 5 preserves Canary 4's recognition of only the exact saved Canary 3 Sorcerer offer shapes needed to insert its one new service without resetting existing offers or uses.
 
 Persistent equal-weight choices are one linked Gardener Tier-1 pair; Farmer Tier-2 and Tier-3 choices; Fisherman aquatic material and one linked coral family; Chef Master specialty; Sorcerer Blessing; Prospector bullion; and one Guard branch. These choices do not reroll on menu open, restock, rank advancement, chunk reload, save/reload, restart, or dimension travel. Fisherman's first exact Opal buyback gates promotion from Opal Angler to Monument Mariner even at 100 ordinary XP. Sorcerer's first exact Benzene buyback immediately gates promotion to Gatecaller. Both gate offers remain available afterward.
 
@@ -95,7 +103,7 @@ The complete 29-template validation requires zero remaining Brewing Stands, Dama
 
 ## Preserved Phase A behavior and exclusions
 
-Canary 4 preserves all nine registered professions, the equal-weight eight-profession natural village pool (Musician, Gardener, Fisherman, Merchant, Chef, Farmer, Prospector, Guard), natural-village exclusion of Sorcerer, every Phase B price/rank/menu/gate/restock contract, profession textures/models and umbrella variants, typed eggs, pick-block/dispenser mappings, creative-tab duplicate protection, generic behavior for the four added professions, cosmetic-only Guard equipment, private donor isolation, repaired private loot tables, and the coordinated YUNG's API concurrency fix. It adds no donor AI or Guard combat AI.
+Canary 5 preserves all nine registered professions, the equal-weight eight-profession natural village pool (Musician, Gardener, Fisherman, Merchant, Chef, Farmer, Prospector, Guard), natural-village exclusion of Sorcerer, every Phase B price/rank/menu/gate/restock contract, profession textures/models and umbrella variants, typed eggs, pick-block/dispenser mappings, creative-tab duplicate protection, generic behavior for the four added professions, cosmetic-only Guard equipment, private donor isolation, repaired private loot tables, and the coordinated YUNG's API concurrency fix. It adds no donor AI or Guard combat AI.
 
 This candidate deliberately excludes a Wandering Ribbit and its map sale, automatic Sorcerer death replacement, existing-hut retrofits, conversion of saved Witches, global Witch suppression, whole-hut replacement, asynchronous map search, a new map item or GUI, direct Toadstool Heart barrel fallback, Matcha cartographer integration or Witch Hut map changes, donor profession behavior, generalized old-offer migration, dimension-aware homes, Fortune Blessing, Silver Bullion, Adamant/Netherite bullion or equipment additions, Netherite tool recycling, and unrelated Matcha or Custom Portals behavior changes.
 
@@ -105,7 +113,7 @@ The user reports that the Phase A profession candidate's tested functionality ap
 
 ## Bound Phase B report
 
-The retained canonical Canary 3 and YUNG's API Compat.2 binaries rehashed exactly against authoritative `main`. The user's Phase B report therefore binds to that exact pair as a practical gameplay `PASS`, with practical use sufficient to continue. The exhaustive profession-by-profession and tier-by-tier trade matrix was intentionally not executed, so no unexecuted trade, component rejection, daily rotation, specialization, or restock edge case is marked observed. This report does not promote Canary 3 or assign a managed-slot result. Canary 4 has no runtime evidence and remains `RUNTIME_UNTESTED`.
+The retained canonical Canary 3 and YUNG's API Compat.2 binaries rehashed exactly against authoritative `main`. The user's Phase B report therefore binds to that exact pair as a practical gameplay `PASS`, with practical use sufficient to continue. The exhaustive profession-by-profession and tier-by-tier trade matrix was intentionally not executed, so no unexecuted trade, component rejection, daily rotation, specialization, or restock edge case is marked observed. This report does not promote Canary 3 or assign a managed-slot result. Canary 5 has no gameplay runtime evidence and remains `RUNTIME_UNTESTED`; Canary 4's separately bound startup `FAIL` does not change that classification.
 
 ## Build and private assembly
 

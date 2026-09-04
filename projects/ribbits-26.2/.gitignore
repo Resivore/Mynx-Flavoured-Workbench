@@ -33,6 +33,8 @@ atlassian-ide-plugin.xml
 /artifacts/ribbits-source-only-4.1.6+26.2-mynx-canary3.jar
 /artifacts/ribbits-private-reconstruction-4.1.6+26.2-mynx-canary4.jar
 /artifacts/ribbits-source-only-4.1.6+26.2-mynx-canary4.jar
+/artifacts/ribbits-private-reconstruction-4.1.6+26.2-mynx-canary5.jar
+/artifacts/ribbits-source-only-4.1.6+26.2-mynx-canary5.jar
 *.war
 *.nar
 *.ear

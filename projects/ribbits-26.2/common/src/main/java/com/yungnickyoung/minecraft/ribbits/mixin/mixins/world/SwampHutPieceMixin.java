@@ -3,6 +3,7 @@ package com.yungnickyoung.minecraft.ribbits.mixin.mixins.world;
 import com.yungnickyoung.minecraft.ribbits.RibbitsCommon;
 import com.yungnickyoung.minecraft.ribbits.data.RibbitData;
 import com.yungnickyoung.minecraft.ribbits.entity.RibbitEntity;
+import com.yungnickyoung.minecraft.ribbits.mixin.mixins.accessor.StructurePieceInvoker;
 import com.yungnickyoung.minecraft.ribbits.module.EntityTypeModule;
 import com.yungnickyoung.minecraft.ribbits.module.RibbitInstrumentModule;
 import com.yungnickyoung.minecraft.ribbits.module.RibbitProfessionModule;
@@ -30,7 +31,6 @@ import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.structures.SwampHutPiece;
 import net.minecraft.world.level.storage.loot.LootTable;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyArgs;
@@ -56,13 +56,6 @@ public abstract class SwampHutPieceMixin {
     private static final ResourceKey<LootTable> MAP_BARREL_LOOT_TABLE = ResourceKey.create(
             Registries.LOOT_TABLE, RibbitsCommon.id("chests/swamp_hut_map"));
 
-    @Shadow
-    protected abstract BlockPos.MutableBlockPos getWorldPos(int x, int y, int z);
-
-    @Shadow
-    protected abstract void placeBlock(WorldGenLevel level, BlockState blockState,
-                                       int x, int y, int z, BoundingBox chunkBB);
-
     @ModifyArgs(
             method = POST_PROCESS,
             at = @At(
@@ -71,7 +64,8 @@ public abstract class SwampHutPieceMixin {
                             + "getWorldPos(III)Lnet/minecraft/core/BlockPos$MutableBlockPos;",
                     ordinal = 0
             ),
-            require = 1
+            require = 1,
+            allow = 1
     )
     private void ribbits$moveInitialResidentToSorcererPosition(Args args) {
         requireCoordinates(args, 2, 2, 5, "initial Witch");
@@ -90,7 +84,8 @@ public abstract class SwampHutPieceMixin {
                             + "Lnet/minecraft/world/entity/Entity;",
                     ordinal = 0
             ),
-            require = 1
+            require = 1,
+            allow = 1
     )
     private Entity ribbits$replaceInitialWitch(
             EntityType<?> entityType,
@@ -109,7 +104,7 @@ public abstract class SwampHutPieceMixin {
             throw new IllegalStateException("Phase C initial-resident hook no longer targets the exact structure Witch");
         }
 
-        BlockPos spawnPos = this.getWorldPos(
+        BlockPos spawnPos = structurePiece().ribbits$invokeGetWorldPos(
                 SwampHutPhaseC.SORCERER_LOCAL.getX(),
                 SwampHutPhaseC.SORCERER_LOCAL.getY(),
                 SwampHutPhaseC.SORCERER_LOCAL.getZ()).immutable();
@@ -150,7 +145,8 @@ public abstract class SwampHutPieceMixin {
                             + "getWorldPos(III)Lnet/minecraft/core/BlockPos$MutableBlockPos;",
                     ordinal = 0
             ),
-            require = 1
+            require = 1,
+            allow = 1
     )
     private void ribbits$moveInitialCat(Args args) {
         requireCoordinates(args, 2, 2, 5, "initial Cat");
@@ -167,7 +163,8 @@ public abstract class SwampHutPieceMixin {
                     ordinal = 0,
                     shift = At.Shift.BEFORE
             ),
-            require = 1
+            require = 1,
+            allow = 1
     )
     private void ribbits$placeMapBarrel(
             WorldGenLevel level,
@@ -179,7 +176,7 @@ public abstract class SwampHutPieceMixin {
             BlockPos referencePos,
             CallbackInfo ci
     ) {
-        BlockPos pos = this.getWorldPos(
+        BlockPos pos = structurePiece().ribbits$invokeGetWorldPos(
                 SwampHutPhaseC.BARREL_LOCAL.getX(),
                 SwampHutPhaseC.BARREL_LOCAL.getY(),
                 SwampHutPhaseC.BARREL_LOCAL.getZ()).immutable();
@@ -192,7 +189,7 @@ public abstract class SwampHutPieceMixin {
         BlockState localState = Blocks.BARREL.defaultBlockState()
                 .setValue(BarrelBlock.FACING, Direction.NORTH)
                 .setValue(BarrelBlock.OPEN, false);
-        this.placeBlock(level, localState,
+        structurePiece().ribbits$invokePlaceBlock(level, localState,
                 SwampHutPhaseC.BARREL_LOCAL.getX(),
                 SwampHutPhaseC.BARREL_LOCAL.getY(),
                 SwampHutPhaseC.BARREL_LOCAL.getZ(), chunkBB);
@@ -212,5 +209,9 @@ public abstract class SwampHutPieceMixin {
             throw new IllegalStateException("Phase C " + target + " coordinate drifted from ("
                     + x + "," + y + "," + z + ")");
         }
+    }
+
+    private StructurePieceInvoker structurePiece() {
+        return (StructurePieceInvoker) (Object) this;
     }
 }
