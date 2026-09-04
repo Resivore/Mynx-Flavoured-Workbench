@@ -5,7 +5,8 @@
   "compatibilityLevel": "JAVA_25",
   "client": [
     "EntityIdAccessor",
-    "CarriedObjectFeatureRendererMixin"
+    "CarriedObjectFeatureRendererMixin",
+    "FirstPersonCarryPlacementMixin"
   ],
   "injectors": {
     "defaultRequire": 1

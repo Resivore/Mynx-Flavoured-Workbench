@@ -32,7 +32,7 @@ public final class ProductionMixinApplicationHarness {
         Path expectedPatch = Path.of(args[0]).toRealPath();
         Path expectedUpstream = Path.of(args[1]).toRealPath();
         require(expectedPatch.getFileName().toString()
-                        .equals("carry-on-patch-0.1.0-canary1.jar"),
+                        .equals("carry-on-patch-0.1.0-canary2.jar"),
                 "unexpected patch JAR " + expectedPatch);
         requireOfficialNamespace(expectedUpstream);
 
@@ -41,6 +41,7 @@ public final class ProductionMixinApplicationHarness {
 
         requireResourceFrom(targetLoader, "carry_on_patch.client.mixins.json", expectedPatch);
         requireResourceFrom(targetLoader, "grabandgo.client.mixins.json", expectedUpstream);
+        Mixins.addConfiguration("grabandgo.client.mixins.json");
         Mixins.addConfiguration("carry_on_patch.client.mixins.json");
 
         Class<?> entity = Class.forName(ENTITY, false, targetLoader);
@@ -60,6 +61,14 @@ public final class ProductionMixinApplicationHarness {
                                 .contains("carryOnPatch$installAssigningCache"))
                         .count() == 1,
                 "cache-construction redirect handler did not apply exactly once");
+
+        Class<?> hands = Class.forName("net.minecraft.client.renderer.ItemInHandRenderer", false, targetLoader);
+        require(Arrays.stream(hands.getDeclaredMethods()).filter(m -> m.getName()
+                        .contains("carryOnPatch$placeFirstPerson")).count() == 1,
+                "first-person carried submit redirect did not apply exactly once");
+        require(Arrays.stream(renderer.getDeclaredMethods()).filter(m -> m.getName()
+                        .contains("carryOnPatch$placeThirdPerson")).count() == 1,
+                "third-person carried submit redirect did not apply exactly once");
 
         Field cacheField = renderer.getDeclaredField("dummyEntityCache");
         Object cache = cacheField.get(null);

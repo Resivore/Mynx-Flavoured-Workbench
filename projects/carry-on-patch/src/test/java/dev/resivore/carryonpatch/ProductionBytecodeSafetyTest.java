@@ -39,7 +39,7 @@ class ProductionBytecodeSafetyTest {
                 for (MethodNode method : owner.methods) {
                     for (MethodInsnNode call : methodCalls(method)) {
                         assertFalse(call.name.equals("getId"), location(owner, method, call));
-                        assertFalse(call.name.equals("addFreshEntity"),
+                        assertFalse(Set.of("addFreshEntity", "setPos", "setXRot", "setYRot", "load", "save", "saveWithoutId").contains(call.name),
                                 location(owner, method, call));
                         assertFalse(call.owner.startsWith("net/minecraft/network/")
                                         || call.owner.startsWith("net/fabricmc/fabric/api/networking/")

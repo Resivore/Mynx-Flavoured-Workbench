@@ -21,11 +21,11 @@ class ProductionArtifactContractTest {
 
     @Test
     void packagedMetadataIsClientOnlyAndRequiresTheExactAuditedFloor() throws Exception {
-        assertEquals("carry-on-patch-0.1.0-canary1.jar", PATCH.getFileName().toString());
+        assertEquals("carry-on-patch-0.1.0-canary2.jar", PATCH.getFileName().toString());
         try (ZipFile zip = new ZipFile(PATCH.toFile())) {
             String metadata = readUtf8(zip, "fabric.mod.json");
             assertJsonString(metadata, "id", "carry_on_patch");
-            assertJsonString(metadata, "version", "0.1.0-canary1");
+            assertJsonString(metadata, "version", "0.1.0-canary2");
             assertJsonString(metadata, "environment", "client");
             assertJsonString(metadata, "fabricloader", ">=0.19.3");
             assertJsonString(metadata, "minecraft", "=26.2");
@@ -46,9 +46,11 @@ class ProductionArtifactContractTest {
     }
 
     @Test
-    void packagedPayloadContainsOnlyTheFourPatchClassesAndNoForeignPayload() throws Exception {
+    void packagedPayloadContainsOnlyPatchClassesAndNoForeignPayload() throws Exception {
         Set<String> expectedClasses = Set.of(
                 "dev/resivore/carryonpatch/RenderOnlyEntityIds.class",
+                "dev/resivore/carryonpatch/RibbitCarryPlacement.class",
+                "dev/resivore/carryonpatch/mixin/FirstPersonCarryPlacementMixin.class",
                 "dev/resivore/carryonpatch/RenderIdAssigningEntityCache.class",
                 "dev/resivore/carryonpatch/mixin/EntityIdAccessor.class",
                 "dev/resivore/carryonpatch/mixin/CarriedObjectFeatureRendererMixin.class");

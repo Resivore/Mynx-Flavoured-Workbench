@@ -3,7 +3,7 @@
   "id": "carry_on_patch",
   "version": "${version}",
   "name": "Carry On Patch",
-  "description": "Assigns safe render-only IDs to GrabAndGo's cached synthetic carried entities before render-state extraction.",
+  "description": "Assigns safe render-only IDs to GrabAndGo's cached synthetic carried entities before render-state extraction, with independent first/third-person carried Ribbit placement.",
   "authors": ["Resivore"],
   "license": "MIT",
   "environment": "client",
