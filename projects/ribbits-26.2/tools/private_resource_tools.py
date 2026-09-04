@@ -30,30 +30,40 @@ from typing import Any
 EXPECTED_PRISTINE_SHA256 = (
     "4cf86564aed393410fb1dbca3a9ce2425382307655e92bb6b43f3ddcee5bf731"
 )
-CANDIDATE_VERSION = "4.1.6+26.2-mynx-canary6"
-CANDIDATE_CANARY = 6
+CANDIDATE_VERSION = "4.1.6+26.2-mynx-canary7"
+CANDIDATE_CANARY = 7
 PRIVATE_MANIFEST_SCHEMA = "mynx-ribbits-private-resource-manifest/v1"
 PRIVATE_MANIFEST_CLASSIFICATION = (
     "PRIVATE MYNX ASSEMBLY STAGED / NONREDISTRIBUTABLE DONOR ASSETS"
 )
 PRIVATE_ARTIFACT_FILENAME = (
-    "ribbits-private-reconstruction-4.1.6+26.2-mynx-canary6.jar"
+    "ribbits-private-reconstruction-4.1.6+26.2-mynx-canary7.jar"
 )
-SOURCE_ONLY_ARTIFACT_FILENAME = "ribbits-source-only-4.1.6+26.2-mynx-canary6.jar"
+SOURCE_ONLY_ARTIFACT_FILENAME = "ribbits-source-only-4.1.6+26.2-mynx-canary7.jar"
 SOURCE_SAFE_PUBLIC_RESOURCE_PATHS = frozenset(
     {
         "assets/ribbits/items/glowcap.json",
         "assets/ribbits/items/toadstool_heart.json",
+        "assets/ribbits/items/ribbit_village_explorer_map.json",
         "assets/ribbits/models/item/glowcap.json",
         "assets/ribbits/models/item/toadstool_heart.json",
+        "assets/ribbits/models/item/ribbit_village_explorer_map.json",
         "assets/ribbits/textures/item/glowcap.png",
         "assets/ribbits/textures/item/toadstool_heart.png",
+        "assets/ribbits/textures/item/ribbit_village_explorer_map.png",
+        "assets/ribbits/textures/map/decorations/ribbit_village.png",
         "data/ribbits/advancement/recipes/misc/toadstool_heart.json",
         "data/ribbits/item_modifier/ribbit_village_explorer_result.json",
         "data/ribbits/loot_table/chests/swamp_hut_map.json",
         "data/ribbits/recipe/toadstool_heart.json",
         "data/ribbits/tags/worldgen/structure/on_ribbit_village_explorer_maps.json",
+        "data/ribbits/tags/worldgen/biome/allows_wandering_ribbit_spawns.json",
+        "data/ribbits/tags/worldgen/biome/without_wandering_ribbit_spawns.json",
+        "data/trinkets/tags/item/chest/cape.json",
     }
+)
+EXPECTED_PRIVATE_DATA_NAMESPACES = frozenset(
+    {"alexsmobs", "minecraft", "ribbits", "trinkets"}
 )
 FINAL_ITEM_SPRITE_SPECS: dict[str, dict[str, Any]] = {
     "assets/ribbits/textures/item/glowcap.png": {
@@ -74,6 +84,24 @@ FINAL_ITEM_SPRITE_SPECS: dict[str, dict[str, Any]] = {
         "transparent_pixels": 152,
         "opaque_pixels": 104,
     },
+    "assets/ribbits/textures/item/ribbit_village_explorer_map.png": {
+        "item": "ribbits:ribbit_village_explorer_map",
+        "source_filename": "610cbaa3-e4e8-4d55-abb9-377f0545e672.png",
+        "size": 506,
+        "sha256": "6065e126da4d3d70725cc3adca725e2ce2812ba8a0155a07c1e510b373aa38f5",
+        "dimensions": (16, 16),
+        "transparent_pixels": 33,
+        "opaque_pixels": 223,
+    },
+    "assets/ribbits/textures/map/decorations/ribbit_village.png": {
+        "item": "ribbits:ribbit_village_explorer_map",
+        "source_filename": "ribbit_village_marker_16x16.png",
+        "size": 168,
+        "sha256": "df63eb91eda13e91e3b984b11cdffc3d2f3e8c8482d090d4ee1c744ec428b2ba",
+        "dimensions": (16, 16),
+        "transparent_pixels": 222,
+        "opaque_pixels": 34,
+    },
 }
 FINAL_ITEM_RESOURCE_MODELS = {
     "assets/ribbits/items/glowcap.json": {
@@ -81,6 +109,12 @@ FINAL_ITEM_RESOURCE_MODELS = {
     },
     "assets/ribbits/items/toadstool_heart.json": {
         "model": {"type": "minecraft:model", "model": "ribbits:item/toadstool_heart"}
+    },
+    "assets/ribbits/items/ribbit_village_explorer_map.json": {
+        "model": {
+            "type": "minecraft:model",
+            "model": "ribbits:item/ribbit_village_explorer_map",
+        }
     },
     "assets/ribbits/models/item/glowcap.json": {
         "parent": "minecraft:item/generated",
@@ -90,20 +124,26 @@ FINAL_ITEM_RESOURCE_MODELS = {
         "parent": "minecraft:item/generated",
         "textures": {"layer0": "ribbits:item/toadstool_heart"},
     },
+    "assets/ribbits/models/item/ribbit_village_explorer_map.json": {
+        "parent": "minecraft:item/generated",
+        "textures": {"layer0": "ribbits:item/ribbit_village_explorer_map"},
+    },
 }
 REQUIRED_FABRIC_DEPENDENCIES = {
     "minecraft": ">=26.2",
     "java": ">=25",
     "yungsapi": ">=26.2-Fabric-6.1.1-compat.2",
     "fabric-api": ">=0.157.0",
+    "trinkets_updated": "4.1.0-beta.3+26.2",
     "geckolib": ">=5.5.1",
     "cloth-config2": ">=26.2.155",
     "customportals": ">=4.0.0",
     "matcha_heart_death_compat": ">=0.1.10-canary11",
 }
 SOURCE_FILE_COUNT = 287  # 285 assets/data files plus icon.png and logo.png
-OUTPUT_FILE_COUNT = 336
-OUTPUT_TOTAL_SIZE = 2_714_466
+OUTPUT_FILE_COUNT = 344
+# Exact deterministic Canary 7 private staging inventory.
+OUTPUT_TOTAL_SIZE = 2_729_248
 SOURCE_EXTENSION_COUNTS = {
     ".json": 201,
     ".nbt": 29,
@@ -168,7 +208,8 @@ NEW_SPAWN_EGG_IDS = (
     "ribbit_guard_spawn_egg",
 )
 SPAWN_EGG_IDS = PRISTINE_SPAWN_EGG_IDS + NEW_SPAWN_EGG_IDS
-REGISTERED_ITEM_IDS = BLOCK_ITEM_IDS + ("maraca",) + SPAWN_EGG_IDS
+REGISTERED_ITEM_IDS = BLOCK_ITEM_IDS + ("maraca", "chute_leaf") + SPAWN_EGG_IDS
+AUXILIARY_ITEM_DEFINITION_IDS = frozenset({"chute_leaf_open"})
 
 CUTOUT_MODEL_FILES = (
     "swamp_lantern.json",
@@ -213,6 +254,7 @@ GECKO_MODEL_IDS = {
     "nitwit_ribbit",
     "pride_ribbit",
     "sorcerer_ribbit",
+    "wandering_ribbit",
     *{
         f"umbrella/{profession}/umbrella_{variant}"
         for profession in ("fisherman", "gardener", "merchant", "nitwit", "sorcerer")
@@ -278,6 +320,33 @@ DONOR_INPUT_SPECS: dict[str, dict[str, Any]] = {
             },
         },
     },
+    "wandering": {
+        "filename": "wandering_ribbit-4.0-forge.jar",
+        "size": 98_047,
+        "sha256": "5bfd24a88c84d6948f72dc19153155ce99ca5bb4baef90acadda0ab0ca529e4a",
+        "members": {
+            "assets/wandering_ribbit/geo/wandering_ribbit.geo.json": {
+                "size": 3_277,
+                "sha256": "c86ea5f798f12c4af172a2df1939e318900b349463d6ca9e26a250134f6c8d08",
+            },
+            "assets/wandering_ribbit/textures/entity/wandering_ribbit.png": {
+                "size": 6_233,
+                "sha256": "8e481fa8b4e4458adb52d60ab3123801e612835b65cd362264c00801d84d681a",
+            },
+            "assets/wandering_ribbit/models/custom/umbrella_leaf.json": {
+                "size": 3_841,
+                "sha256": "59506a4a35e71f5630a22f45332fb0813df1bff4a985096328e206df9a5f5027",
+            },
+            "assets/wandering_ribbit/textures/item/umbrella_leaf_item.png": {
+                "size": 305,
+                "sha256": "d595d40e69a838c7ff3bdc5d59de92bc9c84b39a4a3a433d84590ec4fd1c04ad",
+            },
+            "assets/wandering_ribbit/textures/item/umbrella_leaf_texture.png": {
+                "size": 548,
+                "sha256": "3505383ee2da238b600c3a445f676209066307f5a2a690252179b767b50f99ff",
+            },
+        },
+    },
 }
 
 DONOR_ARCHIVE_FILENAMES = frozenset(
@@ -289,6 +358,9 @@ DONOR_PACKAGE_PREFIXES = (
     "sunbatheproductions28/guardribbits/",
     "me/rogue_one/useful_ribbits/",
     "guardribbits/",
+    "assets/wandering_ribbit/",
+    "data/wandering_ribbit/",
+    "com/cosmicbarri/wandering_ribbit/",
 )
 
 PROFESSION_DONOR_ASSETS = {
@@ -314,7 +386,7 @@ PROFESSION_DONOR_ASSETS = {
     },
 }
 
-DONOR_DERIVED_OUTPUTS = frozenset(
+PROFESSION_DONOR_DERIVED_OUTPUTS = frozenset(
     {
         *{
             f"assets/ribbits/geckolib/models/{profession}_ribbit.geo.json"
@@ -330,6 +402,22 @@ DONOR_DERIVED_OUTPUTS = frozenset(
             for profession in NEW_PROFESSIONS
         },
     }
+)
+
+WANDERING_DONOR_DERIVED_OUTPUTS = frozenset(
+    {
+        "assets/ribbits/geckolib/models/wandering_ribbit.geo.json",
+        "assets/ribbits/textures/entity/wandering_ribbit.png",
+        "assets/ribbits/models/item/chute_leaf.json",
+        "assets/ribbits/models/item/chute_leaf_open.json",
+        "assets/ribbits/items/chute_leaf_open.json",
+        "assets/ribbits/textures/item/chute_leaf.png",
+        "assets/ribbits/textures/item/chute_leaf_open.png",
+    }
+)
+
+DONOR_DERIVED_OUTPUTS = frozenset(
+    PROFESSION_DONOR_DERIVED_OUTPUTS | WANDERING_DONOR_DERIVED_OUTPUTS
 )
 
 VILLAGE_RIBBIT_TEMPLATE_PROFESSIONS = {
@@ -680,6 +768,9 @@ EN_US_MYNX_PROFESSION_TRANSLATIONS = {
     "item.ribbits.ribbit_guard_spawn_egg": "Guard Ribbit Spawn Egg",
     "item.ribbits.glowcap": "Glowcap",
     "item.ribbits.toadstool_heart": "Toadstool Heart",
+    "item.ribbits.chute_leaf": "Chute Leaf",
+    "item.ribbits.chute_leaf.tooltip": "Jump again while airborne to deploy.",
+    "entity.ribbits.wandering_ribbit": "Wandering Ribbit",
     **PHASE_C_MAP_TRANSLATIONS,
     "entity.ribbits.merchant.gardener.tier_1": "Sprout Tender",
     "entity.ribbits.merchant.gardener.tier_2": "Toadstool Keeper",
@@ -733,7 +824,7 @@ SPAWN_EGG_MODEL = {
     "textures": {"layer0": "ribbits:item/ribbit_spawn_egg"},
 }
 SPAWN_EGG_SUBSTITUTION_NOTICE = (
-    "Private Mynx Canary 6 uses one palette-only green recolor of Minecraft "
+    "Private Mynx Canary 7 preserves the palette-only green recolor of Minecraft "
     "26.2's vanilla frog spawn-egg artwork for all nine Ribbits profession eggs. "
     "This is explicitly authorized for the private Workbench and is not exact "
     "Ribbits 4.1.6 spawn-egg visual parity."
@@ -2851,11 +2942,14 @@ def import_donor_profession_resources(
             )
 
     actual_outputs = {record["output"] for record in records}
-    if actual_outputs != DONOR_DERIVED_OUTPUTS or len(records) != len(DONOR_DERIVED_OUTPUTS):
+    if (
+        actual_outputs != PROFESSION_DONOR_DERIVED_OUTPUTS
+        or len(records) != len(PROFESSION_DONOR_DERIVED_OUTPUTS)
+    ):
         raise ValidationError(
-            "Donor-derived output accounting differs: "
-            f"missing={sorted(DONOR_DERIVED_OUTPUTS - actual_outputs)}, "
-            f"extra={sorted(actual_outputs - DONOR_DERIVED_OUTPUTS)}"
+            "Profession donor-derived output accounting differs: "
+            f"missing={sorted(PROFESSION_DONOR_DERIVED_OUTPUTS - actual_outputs)}, "
+            f"extra={sorted(actual_outputs - PROFESSION_DONOR_DERIVED_OUTPUTS)}"
         )
     for record in records:
         if any(
@@ -2863,6 +2957,132 @@ def import_donor_profession_resources(
             for source in record["sources"]
         ):
             raise ValidationError("Executable donor content entered the approved output record")
+    return records
+
+
+def import_wandering_visual_resources(
+    root: Path,
+    members: dict[str, bytes],
+    identity: dict[str, Any],
+) -> list[dict[str, Any]]:
+    expected_members = DONOR_INPUT_SPECS["wandering"]["members"]
+    if set(members) != set(expected_members):
+        raise ValidationError("Loaded Wandering Ribbit donor member accounting differs")
+
+    archive = identity["filename"]
+    model_member = "assets/wandering_ribbit/geo/wandering_ribbit.geo.json"
+    texture_member = "assets/wandering_ribbit/textures/entity/wandering_ribbit.png"
+    chute_model_member = "assets/wandering_ribbit/models/custom/umbrella_leaf.json"
+    chute_closed_member = "assets/wandering_ribbit/textures/item/umbrella_leaf_item.png"
+    chute_open_member = "assets/wandering_ribbit/textures/item/umbrella_leaf_texture.png"
+    records: list[dict[str, Any]] = []
+
+    def write_exact(member: str, relative: str, transformation: str) -> None:
+        destination = root / PurePosixPath(relative)
+        if destination.exists():
+            raise ValidationError(f"Refusing to overwrite Wandering donor output: {destination}")
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        destination.write_bytes(members[member])
+        records.append(
+            {
+                "output": relative,
+                "sources": [{"archive": archive, "member": member}],
+                "transformation": transformation,
+            }
+        )
+
+    write_exact(
+        model_member,
+        "assets/ribbits/geckolib/models/wandering_ribbit.geo.json",
+        "exact approved bytes under the canonical Ribbits GeckoLib model path",
+    )
+    write_exact(
+        texture_member,
+        "assets/ribbits/textures/entity/wandering_ribbit.png",
+        "exact approved bytes under the canonical Ribbits entity-texture path",
+    )
+    write_exact(
+        chute_closed_member,
+        "assets/ribbits/textures/item/chute_leaf.png",
+        "exact approved closed Chute Leaf item sprite bytes",
+    )
+    write_exact(
+        chute_open_member,
+        "assets/ribbits/textures/item/chute_leaf_open.png",
+        "exact approved open Chute Leaf texture bytes",
+    )
+
+    closed_model_relative = "assets/ribbits/models/item/chute_leaf.json"
+    closed_model_path = root / PurePosixPath(closed_model_relative)
+    if closed_model_path.exists():
+        raise ValidationError(f"Refusing to overwrite Wandering donor output: {closed_model_path}")
+    closed_model_path.parent.mkdir(parents=True, exist_ok=True)
+    write_json(
+        closed_model_path,
+        {
+            "parent": "minecraft:item/generated",
+            "textures": {"layer0": "ribbits:item/chute_leaf"},
+        },
+    )
+    records.append(
+        {
+            "output": closed_model_relative,
+            "sources": [{"archive": archive, "member": chute_closed_member}],
+            "transformation": "Minecraft 26.2 generated-item model bound to the exact closed sprite",
+        }
+    )
+
+    source_open_model = load_json_bytes(members[chute_model_member], chute_model_member)
+    if not isinstance(source_open_model, dict) or "textures" in source_open_model:
+        raise ValidationError("Approved Wandering Ribbit Chute model has unexpected texture bindings")
+    open_model = copy.deepcopy(source_open_model)
+    open_model["textures"] = {
+        "0": "ribbits:item/chute_leaf_open",
+        "particle": "ribbits:item/chute_leaf_open",
+    }
+    open_model_relative = "assets/ribbits/models/item/chute_leaf_open.json"
+    open_model_path = root / PurePosixPath(open_model_relative)
+    if open_model_path.exists():
+        raise ValidationError(f"Refusing to overwrite Wandering donor output: {open_model_path}")
+    write_json(open_model_path, open_model)
+    records.append(
+        {
+            "output": open_model_relative,
+            "sources": [{"archive": archive, "member": chute_model_member}],
+            "transformation": (
+                "exact approved custom geometry with only canonical Ribbits open-texture "
+                "and particle bindings added"
+            ),
+        }
+    )
+
+    open_item_relative = "assets/ribbits/items/chute_leaf_open.json"
+    open_item_path = root / PurePosixPath(open_item_relative)
+    if open_item_path.exists():
+        raise ValidationError(f"Refusing to overwrite Wandering donor output: {open_item_path}")
+    open_item_path.parent.mkdir(parents=True, exist_ok=True)
+    write_json(
+        open_item_path,
+        {"model": {"type": "minecraft:model", "model": "ribbits:item/chute_leaf_open"}},
+    )
+    records.append(
+        {
+            "output": open_item_relative,
+            "sources": [{"archive": archive, "member": chute_model_member}],
+            "transformation": "Minecraft 26.2 item-definition bridge for the open Chute model",
+        }
+    )
+
+    actual_outputs = {record["output"] for record in records}
+    if (
+        actual_outputs != WANDERING_DONOR_DERIVED_OUTPUTS
+        or len(records) != len(WANDERING_DONOR_DERIVED_OUTPUTS)
+    ):
+        raise ValidationError(
+            "Wandering donor-derived output accounting differs: "
+            f"missing={sorted(WANDERING_DONOR_DERIVED_OUTPUTS - actual_outputs)}, "
+            f"extra={sorted(actual_outputs - WANDERING_DONOR_DERIVED_OUTPUTS)}"
+        )
     return records
 
 
@@ -3423,7 +3643,8 @@ def migrate_spawn_egg_models(root: Path, minecraft_client: Path) -> dict[str, An
 
     return {
         "authorization": (
-            "Explicitly authorized by the Workbench owner for private Mynx Ribbits Canary 6"
+            "First authorized by the Workbench owner for private Mynx Ribbits Canary 6; "
+            "preserved unchanged in Canary 7"
         ),
         "temporary": True,
         "exact_ribbits_4_1_6_visual_parity": False,
@@ -3506,7 +3727,7 @@ def build_manifest(
                     "logical_path": f"originals/mods/{donor_identities[key]['filename']}",
                     "unchanged_after_assembly": True,
                 }
-                for key in ("guard", "useful")
+                for key in ("guard", "useful", "wandering")
             ],
             "derived_outputs": donor_outputs,
             "derived_output_count": len(donor_outputs),
@@ -3518,6 +3739,11 @@ def build_manifest(
             "donor_profession_models_added": 4,
             "donor_profession_umbrella_models_added": 12,
             "donor_profession_composite_textures_added": 4,
+            "wandering_ribbit_models_added": 1,
+            "wandering_ribbit_textures_added": 1,
+            "chute_leaf_models_added": 2,
+            "chute_leaf_item_definitions_added": 2,
+            "chute_leaf_textures_added": 2,
             "item_definitions_added": len(REGISTERED_ITEM_IDS),
             "cutout_logical_blocks": 6,
             "cutout_concrete_models": len(CUTOUT_MODEL_FILES),
@@ -3549,6 +3775,7 @@ def _assemble_impl(
     originals_root: Path,
     guard_donor: Path,
     useful_donor: Path,
+    wandering_donor: Path,
     output: Path,
     manifest_path: Path,
 ) -> None:
@@ -3570,11 +3797,23 @@ def _assemble_impl(
     useful_members, useful_identity = load_exact_donor(
         useful_donor, originals_root, "useful"
     )
-    donor_members = {"guard": guard_members, "useful": useful_members}
-    donor_identities = {"guard": guard_identity, "useful": useful_identity}
+    wandering_members, wandering_identity = load_exact_donor(
+        wandering_donor, originals_root, "wandering"
+    )
+    donor_members = {
+        "guard": guard_members,
+        "useful": useful_members,
+        "wandering": wandering_members,
+    }
+    donor_identities = {
+        "guard": guard_identity,
+        "useful": useful_identity,
+        "wandering": wandering_identity,
+    }
     donor_checks = [
         (guard_donor, guard_identity, "Guard donor JAR"),
         (useful_donor, useful_identity, "Useful donor JAR"),
+        (wandering_donor, wandering_identity, "Wandering Ribbit donor JAR"),
     ]
 
     output.mkdir(parents=True)
@@ -3652,10 +3891,17 @@ def _assemble_impl(
             != PRIVATE_VILLAGE_TEMPLATE_TREE_AFTER_SHA256
         ):
             raise ValidationError(
-                "Private village template-tree identity differs from the exact Canary 6 contract"
+                "Private village template-tree identity differs from the preserved Canary 6 contract"
             )
         configured_feature_migration = migrate_configured_features(output)
         write_item_definitions(output)
+        donor_outputs.extend(
+            import_wandering_visual_resources(
+                output,
+                donor_members["wandering"],
+                donor_identities["wandering"],
+            )
+        )
         spawn_egg_substitution = migrate_spawn_egg_models(output, minecraft_client)
 
         output_file_count = len(relative_files(output))
@@ -3703,6 +3949,7 @@ def assemble(
     originals_root: Path,
     guard_donor: Path,
     useful_donor: Path,
+    wandering_donor: Path,
     output: Path,
     manifest_path: Path,
     private_root: Path,
@@ -3716,6 +3963,7 @@ def assemble(
         originals_root,
         guard_donor,
         useful_donor,
+        wandering_donor,
         output,
         manifest_path,
     )
@@ -3761,6 +4009,7 @@ def validate_pristine_provenance(
     originals_root: Path,
     guard_donor: Path,
     useful_donor: Path,
+    wandering_donor: Path,
     root: Path,
     private_root: Path,
     errors: list[str],
@@ -3788,6 +4037,7 @@ def validate_pristine_provenance(
                 originals_root,
                 guard_donor,
                 useful_donor,
+                wandering_donor,
                 expected_root,
                 expected_manifest,
             )
@@ -3964,6 +4214,67 @@ def validate_donor_resource_boundary(root: Path, errors: list[str]) -> None:
             except (OSError, ValidationError) as exc:
                 errors.append(f"Invalid umbrella resources for {profession}/{variant}: {exc}")
 
+    wandering_exact_outputs = {
+        "assets/ribbits/geckolib/models/wandering_ribbit.geo.json": (
+            "assets/wandering_ribbit/geo/wandering_ribbit.geo.json"
+        ),
+        "assets/ribbits/textures/entity/wandering_ribbit.png": (
+            "assets/wandering_ribbit/textures/entity/wandering_ribbit.png"
+        ),
+        "assets/ribbits/textures/item/chute_leaf.png": (
+            "assets/wandering_ribbit/textures/item/umbrella_leaf_item.png"
+        ),
+        "assets/ribbits/textures/item/chute_leaf_open.png": (
+            "assets/wandering_ribbit/textures/item/umbrella_leaf_texture.png"
+        ),
+    }
+    for output, member in wandering_exact_outputs.items():
+        path = root / PurePosixPath(output)
+        spec = DONOR_INPUT_SPECS["wandering"]["members"][member]
+        try:
+            actual_size = path.stat().st_size
+            actual_hash = sha256_file(path)
+        except OSError as exc:
+            errors.append(f"Could not inspect exact Wandering donor output {output}: {exc}")
+            continue
+        if actual_size != spec["size"] or actual_hash != spec["sha256"]:
+            errors.append(
+                f"Exact Wandering donor output differs for {output}: expected "
+                f"{spec['size']} bytes/{spec['sha256']}, got {actual_size}/{actual_hash}"
+            )
+
+    try:
+        require_geometry_document(
+            load_json(root / "assets/ribbits/geckolib/models/wandering_ribbit.geo.json"),
+            "wandering_ribbit.geo.json",
+        )
+        closed_model = load_json(root / "assets/ribbits/models/item/chute_leaf.json")
+        if closed_model != {
+            "parent": "minecraft:item/generated",
+            "textures": {"layer0": "ribbits:item/chute_leaf"},
+        }:
+            errors.append(f"Closed Chute Leaf model differs: {closed_model!r}")
+        open_model = load_json(root / "assets/ribbits/models/item/chute_leaf_open.json")
+        if not isinstance(open_model, dict) or open_model.get("textures") != {
+            "0": "ribbits:item/chute_leaf_open",
+            "particle": "ribbits:item/chute_leaf_open",
+        }:
+            errors.append("Open Chute Leaf custom model lacks exact canonical texture bindings")
+        open_item = load_json(root / "assets/ribbits/items/chute_leaf_open.json")
+        if open_item != {
+            "model": {"type": "minecraft:model", "model": "ribbits:item/chute_leaf_open"}
+        }:
+            errors.append(f"Open Chute Leaf item definition differs: {open_item!r}")
+        for output in (
+            "assets/ribbits/textures/entity/wandering_ribbit.png",
+            "assets/ribbits/textures/item/chute_leaf.png",
+            "assets/ribbits/textures/item/chute_leaf_open.png",
+        ):
+            data = (root / PurePosixPath(output)).read_bytes()
+            decode_rgba_png(data, output)
+    except (OSError, ValidationError) as exc:
+        errors.append(f"Invalid Wandering Ribbit/Chute visual resources: {exc}")
+
 
 def validate_transforms(root: Path, errors: list[str]) -> None:
     validate_configured_features(root, errors)
@@ -4000,9 +4311,10 @@ def validate_transforms(root: Path, errors: list[str]) -> None:
 
     item_dir = root / "assets/ribbits/items"
     actual_item_defs = {path.stem for path in item_dir.glob("*.json")}
-    if actual_item_defs != set(REGISTERED_ITEM_IDS):
+    expected_item_defs = set(REGISTERED_ITEM_IDS) | AUXILIARY_ITEM_DEFINITION_IDS
+    if actual_item_defs != expected_item_defs:
         errors.append(
-            f"Item definition set differs: expected={sorted(REGISTERED_ITEM_IDS)}, "
+            f"Item definition set differs: expected={sorted(expected_item_defs)}, "
             f"actual={sorted(actual_item_defs)}"
         )
 
@@ -4145,6 +4457,7 @@ def validation_report(
     originals_root: Path,
     guard_donor: Path,
     useful_donor: Path,
+    wandering_donor: Path,
     private_root: Path,
 ) -> dict[str, Any]:
     if not resources.is_dir():
@@ -4159,6 +4472,7 @@ def validation_report(
         originals_root,
         guard_donor,
         useful_donor,
+        wandering_donor,
         resources,
         private_root,
         errors,
@@ -4189,6 +4503,7 @@ def validate_jar(
     originals_root: Path,
     guard_donor: Path,
     useful_donor: Path,
+    wandering_donor: Path,
     private_root: Path,
 ) -> dict[str, Any]:
     report = validation_report(
@@ -4198,6 +4513,7 @@ def validate_jar(
         originals_root,
         guard_donor,
         useful_donor,
+        wandering_donor,
         private_root,
     )
     errors: list[str] = report["errors"]
@@ -4366,7 +4682,7 @@ def validate_jar(
         }
         if asset_namespaces != {"ribbits"}:
             errors.append(f"Unexpected packaged asset namespaces: {sorted(asset_namespaces)}")
-        if data_namespaces != {"alexsmobs", "minecraft", "ribbits"}:
+        if data_namespaces != EXPECTED_PRIVATE_DATA_NAMESPACES:
             errors.append(f"Unexpected packaged data namespaces: {sorted(data_namespaces)}")
 
         for main_safe_class in (
@@ -4404,6 +4720,7 @@ def parse_args() -> argparse.Namespace:
     assemble_parser.add_argument("--originals-root", type=Path, required=True)
     assemble_parser.add_argument("--guard-donor", type=Path, required=True)
     assemble_parser.add_argument("--useful-donor", type=Path, required=True)
+    assemble_parser.add_argument("--wandering-donor", type=Path, required=True)
     assemble_parser.add_argument("--output", type=Path, required=True)
     assemble_parser.add_argument("--manifest", type=Path, required=True)
 
@@ -4415,6 +4732,7 @@ def parse_args() -> argparse.Namespace:
     tree_parser.add_argument("--originals-root", type=Path, required=True)
     tree_parser.add_argument("--guard-donor", type=Path, required=True)
     tree_parser.add_argument("--useful-donor", type=Path, required=True)
+    tree_parser.add_argument("--wandering-donor", type=Path, required=True)
     tree_parser.add_argument("--report", type=Path)
 
     jar_parser = subparsers.add_parser("validate-jar")
@@ -4426,6 +4744,7 @@ def parse_args() -> argparse.Namespace:
     jar_parser.add_argument("--originals-root", type=Path, required=True)
     jar_parser.add_argument("--guard-donor", type=Path, required=True)
     jar_parser.add_argument("--useful-donor", type=Path, required=True)
+    jar_parser.add_argument("--wandering-donor", type=Path, required=True)
     jar_parser.add_argument("--report", type=Path)
     return parser.parse_args()
 
@@ -4440,6 +4759,7 @@ def main() -> int:
                 args.originals_root,
                 args.guard_donor,
                 args.useful_donor,
+                args.wandering_donor,
                 args.output,
                 args.manifest,
                 args.private_root,
@@ -4460,6 +4780,7 @@ def main() -> int:
                 args.originals_root,
                 args.guard_donor,
                 args.useful_donor,
+                args.wandering_donor,
                 args.private_root,
             )
             write_report(args.report, report)
@@ -4477,6 +4798,7 @@ def main() -> int:
                 args.originals_root,
                 args.guard_donor,
                 args.useful_donor,
+                args.wandering_donor,
                 args.private_root,
             )
             write_report(args.report, report)

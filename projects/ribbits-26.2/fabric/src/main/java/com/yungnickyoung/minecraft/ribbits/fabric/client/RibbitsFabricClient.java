@@ -19,6 +19,7 @@ public class RibbitsFabricClient implements ClientModInitializer {
     public void onInitializeClient() {
         RibbitsCommonClient.init();
         ClientNetworkModuleFabric.register();
+        WanderingRibbitClientHooks.register();
         EntityRendererRegistry.register(EntityTypeModule.RIBBIT.get(), RibbitRenderer::new);
         ModelLayerRegistry.registerModelLayer(SupporterHatModel.LAYER_LOCATION, SupporterHatModel::getTexturedModelData);
 

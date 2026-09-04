@@ -57,6 +57,21 @@ final class MapMarkerArchitectureTest {
         assertTrue(guard >= 0 && integration > guard);
     }
 
+    @Test
+    void filledMapWrappersComposeByDelegatingEveryIdentityMmeDoesNotOwn()
+        throws IOException {
+        String model = source("client/MapMarkerItemModel.java");
+        String external = source("core/ExternalNativeMapIdentities.java");
+
+        assertTrue(model.contains("extends WrapperBakedItemModel"));
+        assertTrue(model.contains("MapMarkerItemIdentity.find(stack).orElse(null)"));
+        assertTrue(model.contains("if (model == null)"));
+        assertTrue(model.contains("super.update("));
+        assertFalse(model.contains("ExternalNativeMapIdentities"));
+        assertFalse(model.contains("DataComponents.CUSTOM_DATA"));
+        assertTrue(external.contains("ribbits:ribbit_village_explorer_map"));
+    }
+
     private static String source(String relativePath) throws IOException {
         return Files.readString(PROJECT.resolve(
             "src/main/java/dev/resivore/mapmarkerextension/" + relativePath

@@ -1,6 +1,7 @@
 package com.yungnickyoung.minecraft.ribbits.network;
 
 import com.yungnickyoung.minecraft.ribbits.RibbitsCommon;
+import com.yungnickyoung.minecraft.ribbits.chute.ChuteServerController;
 import com.yungnickyoung.minecraft.ribbits.client.supporters.SupportersJSON;
 import com.yungnickyoung.minecraft.ribbits.entity.RibbitEntity;
 import com.yungnickyoung.minecraft.ribbits.network.payload.*;
@@ -16,6 +17,10 @@ import java.util.List;
 import java.util.UUID;
 
 public class ServerNetworkHandler {
+
+    public static void handleChutePressC2S(ServerPlayer player, ChutePressC2S payload) {
+        ChuteServerController.handlePress(player, payload);
+    }
 
     public static void handleToggleSupporterHatC2S(ToggleSupporterHatPayloadC2S payload) {
 

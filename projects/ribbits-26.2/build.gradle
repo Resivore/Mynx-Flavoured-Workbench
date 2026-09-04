@@ -25,6 +25,7 @@ repositories {
     maven { url 'https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/' }
     maven { url 'https://maven.shedaniel.me/' }
     maven { url 'https://maven.terraformersmc.com/releases/' }
+    maven { url 'https://maven.nucleoid.xyz/releases' }
     mavenCentral()
 }
 
@@ -42,16 +43,23 @@ if (privateResourcesDir != null && (privateManifestFile == null || !privateManif
 
 def allowedPublicResources = [
     'common/src/main/resources/assets/ribbits/items/glowcap.json',
+    'common/src/main/resources/assets/ribbits/items/ribbit_village_explorer_map.json',
     'common/src/main/resources/assets/ribbits/items/toadstool_heart.json',
     'common/src/main/resources/assets/ribbits/models/item/glowcap.json',
+    'common/src/main/resources/assets/ribbits/models/item/ribbit_village_explorer_map.json',
     'common/src/main/resources/assets/ribbits/models/item/toadstool_heart.json',
     'common/src/main/resources/assets/ribbits/textures/item/glowcap.png',
+    'common/src/main/resources/assets/ribbits/textures/item/ribbit_village_explorer_map.png',
     'common/src/main/resources/assets/ribbits/textures/item/toadstool_heart.png',
+    'common/src/main/resources/assets/ribbits/textures/map/decorations/ribbit_village.png',
     'common/src/main/resources/data/ribbits/recipe/toadstool_heart.json',
     'common/src/main/resources/data/ribbits/advancement/recipes/misc/toadstool_heart.json',
     'common/src/main/resources/data/ribbits/tags/worldgen/structure/on_ribbit_village_explorer_maps.json',
+    'common/src/main/resources/data/ribbits/tags/worldgen/biome/allows_wandering_ribbit_spawns.json',
+    'common/src/main/resources/data/ribbits/tags/worldgen/biome/without_wandering_ribbit_spawns.json',
     'common/src/main/resources/data/ribbits/item_modifier/ribbit_village_explorer_result.json',
     'common/src/main/resources/data/ribbits/loot_table/chests/swamp_hut_map.json',
+    'common/src/main/resources/data/trinkets/tags/item/chest/cape.json',
 ] as Set
 def protectedResourceRoots = [
     file('common/src/main/resources/assets'),
@@ -97,12 +105,12 @@ if (privateResourcesDir != null) {
             if (manifest.schema?.toString() != 'mynx-ribbits-private-resource-manifest/v1' ||
                 manifest.classification?.toString() != 'PRIVATE MYNX ASSEMBLY STAGED / NONREDISTRIBUTABLE DONOR ASSETS' ||
                 manifest.candidate?.version?.toString() != project.mod_version.toString() ||
-                manifest.candidate?.version?.toString() != '4.1.6+26.2-mynx-canary6' ||
-                (manifest.candidate?.canary as int) != 6 ||
+                manifest.candidate?.version?.toString() != '4.1.6+26.2-mynx-canary7' ||
+                (manifest.candidate?.canary as int) != 7 ||
                 manifest.candidate?.private_artifact_filename?.toString() !=
-                    'ribbits-private-reconstruction-4.1.6+26.2-mynx-canary6.jar' ||
+                    'ribbits-private-reconstruction-4.1.6+26.2-mynx-canary7.jar' ||
                 manifest.candidate?.source_only_artifact_filename?.toString() !=
-                    'ribbits-source-only-4.1.6+26.2-mynx-canary6.jar') {
+                    'ribbits-source-only-4.1.6+26.2-mynx-canary7.jar') {
                 throw new GradleException("Private manifest classification is not eligible for private packaging: ${manifest.classification}")
             }
             if ((manifest.blockers as List)) {
@@ -122,6 +130,17 @@ if (privateResourcesDir != null) {
                     packaged_bytes: 'exact tracked attachment bytes',
                 ],
                 [
+                    item: 'ribbits:ribbit_village_explorer_map',
+                    source_filename: '610cbaa3-e4e8-4d55-abb9-377f0545e672.png',
+                    path: 'assets/ribbits/textures/item/ribbit_village_explorer_map.png',
+                    size: 506,
+                    sha256: '6065e126da4d3d70725cc3adca725e2ce2812ba8a0155a07c1e510b373aa38f5',
+                    dimensions: [16, 16],
+                    format: 'non-interlaced 8-bit RGBA PNG',
+                    alpha: [transparent_pixels: 33, opaque_pixels: 223, partial_alpha_pixels: 0],
+                    packaged_bytes: 'exact tracked attachment bytes',
+                ],
+                [
                     item: 'ribbits:toadstool_heart',
                     source_filename: '4e8e067e-3969-49ea-be28-fb8d91ea932b.png',
                     path: 'assets/ribbits/textures/item/toadstool_heart.png',
@@ -130,6 +149,17 @@ if (privateResourcesDir != null) {
                     dimensions: [16, 16],
                     format: 'non-interlaced 8-bit RGBA PNG',
                     alpha: [transparent_pixels: 152, opaque_pixels: 104, partial_alpha_pixels: 0],
+                    packaged_bytes: 'exact tracked attachment bytes',
+                ],
+                [
+                    item: 'ribbits:ribbit_village_explorer_map',
+                    source_filename: 'ribbit_village_marker_16x16.png',
+                    path: 'assets/ribbits/textures/map/decorations/ribbit_village.png',
+                    size: 168,
+                    sha256: 'df63eb91eda13e91e3b984b11cdffc3d2f3e8c8482d090d4ee1c744ec428b2ba',
+                    dimensions: [16, 16],
+                    format: 'non-interlaced 8-bit RGBA PNG',
+                    alpha: [transparent_pixels: 222, opaque_pixels: 34, partial_alpha_pixels: 0],
                     packaged_bytes: 'exact tracked attachment bytes',
                 ],
             ]
@@ -184,6 +214,33 @@ if (privateResourcesDir != null) {
                         ],
                     ],
                 ],
+                'wandering_ribbit-4.0-forge.jar': [
+                    size: 98047L,
+                    sha256: '5bfd24a88c84d6948f72dc19153155ce99ca5bb4baef90acadda0ab0ca529e4a',
+                    logicalPath: 'originals/mods/wandering_ribbit-4.0-forge.jar',
+                    members: [
+                        'assets/wandering_ribbit/geo/wandering_ribbit.geo.json': [
+                            size: 3277L,
+                            sha256: 'c86ea5f798f12c4af172a2df1939e318900b349463d6ca9e26a250134f6c8d08',
+                        ],
+                        'assets/wandering_ribbit/textures/entity/wandering_ribbit.png': [
+                            size: 6233L,
+                            sha256: '8e481fa8b4e4458adb52d60ab3123801e612835b65cd362264c00801d84d681a',
+                        ],
+                        'assets/wandering_ribbit/models/custom/umbrella_leaf.json': [
+                            size: 3841L,
+                            sha256: '59506a4a35e71f5630a22f45332fb0813df1bff4a985096328e206df9a5f5027',
+                        ],
+                        'assets/wandering_ribbit/textures/item/umbrella_leaf_item.png': [
+                            size: 305L,
+                            sha256: 'd595d40e69a838c7ff3bdc5d59de92bc9c84b39a4a3a433d84590ec4fd1c04ad',
+                        ],
+                        'assets/wandering_ribbit/textures/item/umbrella_leaf_texture.png': [
+                            size: 548L,
+                            sha256: '3505383ee2da238b600c3a445f676209066307f5a2a690252179b767b50f99ff',
+                        ],
+                    ],
+                ],
             ]
             def donorRecord = manifest.read_only_donors
             def actualDonorInputs = donorRecord?.inputs as List
@@ -193,7 +250,7 @@ if (privateResourcesDir != null) {
             if (donorRecord?.logical_root?.toString() != 'originals/mods' ||
                 donorRecord?.private_use_only != true ||
                 donorRecord?.redistribution_authorized != false ||
-                actualDonorInputs == null || actualDonorInputs.size() != 2 ||
+                actualDonorInputs == null || actualDonorInputs.size() != 3 ||
                 actualDonorFilenames.toSet() != expectedDonorInputs.keySet()) {
                 throw new GradleException('Private manifest lacks the exact read-only donor boundary')
             }
@@ -284,11 +341,11 @@ if (privateResourcesDir != null) {
                 "data/ribbits/worldgen/configured_feature/${target.substring('ribbits:'.length())}.json".toString()
             }
             if ((manifest.pristine.selected_file_count as int) != 287 ||
-                (manifest.output.file_count as int) != 336 ||
-                (manifest.output.total_size as long) != 2714466L ||
-                expectedFiles.size() != 336) {
+                (manifest.output.file_count as int) != 344 ||
+                (manifest.output.total_size as long) != 2729248L ||
+                expectedFiles.size() != 344) {
                 throw new GradleException(
-                    'Private manifest does not preserve the exact 287-input / 336-output / 2,714,466-byte contract'
+                    'Private manifest does not preserve the exact 287-input / 344-output / 2,729,248-byte contract'
                 )
             }
 
@@ -335,12 +392,39 @@ if (privateResourcesDir != null) {
                     ]
                 }
             }
+            def wanderingArchive = 'wandering_ribbit-4.0-forge.jar'
+            def wanderingModel = 'assets/wandering_ribbit/geo/wandering_ribbit.geo.json'
+            def wanderingTexture = 'assets/wandering_ribbit/textures/entity/wandering_ribbit.png'
+            def chuteModel = 'assets/wandering_ribbit/models/custom/umbrella_leaf.json'
+            def chuteClosedTexture = 'assets/wandering_ribbit/textures/item/umbrella_leaf_item.png'
+            def chuteOpenTexture = 'assets/wandering_ribbit/textures/item/umbrella_leaf_texture.png'
+            expectedDerivedSources['assets/ribbits/geckolib/models/wandering_ribbit.geo.json'] = [
+                [archive: wanderingArchive, member: wanderingModel],
+            ]
+            expectedDerivedSources['assets/ribbits/textures/entity/wandering_ribbit.png'] = [
+                [archive: wanderingArchive, member: wanderingTexture],
+            ]
+            expectedDerivedSources['assets/ribbits/models/item/chute_leaf.json'] = [
+                [archive: wanderingArchive, member: chuteClosedTexture],
+            ]
+            expectedDerivedSources['assets/ribbits/models/item/chute_leaf_open.json'] = [
+                [archive: wanderingArchive, member: chuteModel],
+            ]
+            expectedDerivedSources['assets/ribbits/items/chute_leaf_open.json'] = [
+                [archive: wanderingArchive, member: chuteModel],
+            ]
+            expectedDerivedSources['assets/ribbits/textures/item/chute_leaf.png'] = [
+                [archive: wanderingArchive, member: chuteClosedTexture],
+            ]
+            expectedDerivedSources['assets/ribbits/textures/item/chute_leaf_open.png'] = [
+                [archive: wanderingArchive, member: chuteOpenTexture],
+            ]
             def actualDerivedOutputs = donorRecord.derived_outputs as List
             def actualDerivedByPath = actualDerivedOutputs.collectEntries { record ->
                 [(record.output.toString()): record]
             }
-            if ((donorRecord.derived_output_count as int) != 20 ||
-                actualDerivedOutputs.size() != 20 ||
+            if ((donorRecord.derived_output_count as int) != 27 ||
+                actualDerivedOutputs.size() != 27 ||
                 actualDerivedByPath.keySet() != expectedDerivedSources.keySet()) {
                 throw new GradleException('Private manifest donor-derived output accounting differs')
             }
@@ -608,7 +692,12 @@ if (privateResourcesDir != null) {
                 (manifest.migrations?.donor_profession_models_added as int) != 4 ||
                 (manifest.migrations?.donor_profession_umbrella_models_added as int) != 12 ||
                 (manifest.migrations?.donor_profession_composite_textures_added as int) != 4 ||
-                (manifest.migrations?.item_definitions_added as int) != 24 ||
+                (manifest.migrations?.wandering_ribbit_models_added as int) != 1 ||
+                (manifest.migrations?.wandering_ribbit_textures_added as int) != 1 ||
+                (manifest.migrations?.chute_leaf_models_added as int) != 2 ||
+                (manifest.migrations?.chute_leaf_item_definitions_added as int) != 2 ||
+                (manifest.migrations?.chute_leaf_textures_added as int) != 2 ||
+                (manifest.migrations?.item_definitions_added as int) != 25 ||
                 (manifest.migrations?.spawn_egg_models_migrated as int) != 9) {
                 throw new GradleException('Private manifest profession/model/item counts differ')
             }
@@ -629,6 +718,7 @@ if (privateResourcesDir != null) {
                     expectedGeckoModelIds.add("umbrella/${profession}/umbrella_${variant}".toString())
                 }
             }
+            expectedGeckoModelIds.add('wandering_ribbit')
             def modelPrefix = 'assets/ribbits/geckolib/models/'
             def modelSuffix = '.geo.json'
             def actualGeckoModelIds = expectedFiles.keySet().findAll { name ->
@@ -636,7 +726,7 @@ if (privateResourcesDir != null) {
             }.collect { name ->
                 name.substring(modelPrefix.length(), name.length() - modelSuffix.length())
             } as Set
-            if (actualGeckoModelIds != expectedGeckoModelIds || actualGeckoModelIds.size() != 41) {
+            if (actualGeckoModelIds != expectedGeckoModelIds || actualGeckoModelIds.size() != 42) {
                 throw new GradleException('Private manifest GeckoLib model-ID set differs')
             }
             if (!expectedFiles.keySet().containsAll(expectedConfiguredFeaturePaths)) {
@@ -718,11 +808,32 @@ if (actualYungsApiSha256 != expectedYungsApiSha256) {
     throw new GradleException("YUNGS_API_26_2_JAR SHA-256 mismatch: expected ${expectedYungsApiSha256}, got ${actualYungsApiSha256}")
 }
 
+def acceptedTrinketsFile = file('../trinkets-inventory-extended-compat/artifacts/' +
+        'trinkets-4.1.0-beta.3+26.2-inventory-compat-canary5.jar')
+if (!acceptedTrinketsFile.isFile()) {
+    throw new GradleException("Missing accepted Trinkets Updated artifact: ${acceptedTrinketsFile}")
+}
+def trinketsDigest = java.security.MessageDigest.getInstance('SHA-256')
+acceptedTrinketsFile.withInputStream { input ->
+    byte[] buffer = new byte[8192]
+    int count
+    while ((count = input.read(buffer)) != -1) {
+        trinketsDigest.update(buffer, 0, count)
+    }
+}
+def expectedTrinketsSha256 = '4c1fa6ac36c0457483fd0d395b99bbd94c9334aad6defece7633bbf0552d1724'
+def actualTrinketsSha256 = trinketsDigest.digest().encodeHex().toString()
+if (actualTrinketsSha256 != expectedTrinketsSha256) {
+    throw new GradleException("Accepted Trinkets Updated SHA-256 mismatch: expected ${expectedTrinketsSha256}, got ${actualTrinketsSha256}")
+}
+
 dependencies {
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
     implementation "net.fabricmc:fabric-loader:${project.fabric_loader_version}"
     implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
     implementation files(yungsApiFile)
+    implementation files(acceptedTrinketsFile)
+    compileOnly 'dev.yumi.mc.core:yumi-mc-foundation:1.1.1+26.2'
     implementation "com.geckolib:geckolib-fabric-26.2:${project.geckolib_version}"
     implementation("me.shedaniel.cloth:cloth-config-fabric:${project.cloth_version}") {
         exclude group: 'net.fabricmc'
@@ -889,6 +1000,7 @@ if (privateResourcesDir == null) {
                 def donorFilenames = [
                     'guardribbits-1.20.1-fabric-1.0.4.jar',
                     'useful_ribbits-1.0.2-forge-1.20.1.jar',
+                    'wandering_ribbit-4.0-forge.jar',
                 ] as Set
                 def reviewedPublicResources = (allowedPublicResources.collect { path ->
                     path.substring('common/src/main/resources/'.length())
@@ -902,6 +1014,9 @@ if (privateResourcesDir == null) {
                         folded == 'logo.png' ||
                         folded.startsWith('sunbatheproductions28/guardribbits/') ||
                         folded.startsWith('me/rogue_one/useful_ribbits/') ||
+                        folded.startsWith('assets/wandering_ribbit/') ||
+                        folded.startsWith('data/wandering_ribbit/') ||
+                        folded.startsWith('com/cosmicbarri/wandering_ribbit/') ||
                         donorFilenames.contains(basename)
                 }
                 if (!forbidden.isEmpty()) {

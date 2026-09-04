@@ -5,12 +5,19 @@
   "mixins": [
     "accessor.DoorBlockAccessor",
     "accessor.StructurePieceInvoker",
+    "chute.ArmorSlotChuteMixin",
+    "chute.EquippableChuteMixin",
+    "chute.PlayerChuteDataMixin",
+    "chute.PlayerChuteMovementMixin",
     "world.NaturalSpawnerMixin",
     "world.SwampHutPieceMixin"
   ],
   "client": [
     "client.accessor.ClientLevelAccessor",
     "client.accessor.SoundBufferAccessor",
+    "client.chute.ClientPlayerChuteMovementMixin",
+    "client.chute.KeyboardInputChuteMixin",
+    "client.chute.LocalPlayerChuteTickMixin",
     "client.maraca.ConditionalItemModelPropertiesMixin",
     "client.maraca.ItemInHandRendererMixin",
     "client.music.ChannelMixin",

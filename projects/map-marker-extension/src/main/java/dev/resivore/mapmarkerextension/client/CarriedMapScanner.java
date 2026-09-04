@@ -1,6 +1,8 @@
 package dev.resivore.mapmarkerextension.client;
 
 import dev.resivore.mapmarkerextension.core.DecorationObservation;
+import dev.resivore.mapmarkerextension.core.ExternalNativeMapIdentities;
+import dev.resivore.mapmarkerextension.core.ExternalNativeMapIdentity;
 import dev.resivore.mapmarkerextension.core.MapMarkerIdentity;
 import dev.resivore.mapmarkerextension.core.MapMarkerItemIdentity;
 import dev.resivore.mapmarkerextension.core.MapMarkerTargetResolver;
@@ -43,6 +45,8 @@ public final class CarriedMapScanner {
                 continue;
             }
             Optional<MapMarkerIdentity> identity = MapMarkerItemIdentity.find(stack);
+            Optional<ExternalNativeMapIdentity> externalNativeIdentity =
+                ExternalNativeMapIdentities.find(stack);
             MapDecorations decorations = stack.getOrDefault(
                 DataComponents.MAP_DECORATIONS,
                 MapDecorations.EMPTY
@@ -63,6 +67,7 @@ public final class CarriedMapScanner {
                 true,
                 Level.OVERWORLD.identifier().toString(),
                 identity,
+                externalNativeIdentity,
                 decorationObservations
             ));
         }

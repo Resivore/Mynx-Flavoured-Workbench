@@ -7,6 +7,7 @@ import com.google.gson.JsonParser;
 import com.mojang.serialization.JsonOps;
 import com.yungnickyoung.minecraft.ribbits.RibbitsCommon;
 import com.yungnickyoung.minecraft.ribbits.module.LootFunctionModule;
+import com.yungnickyoung.minecraft.ribbits.module.MapDecorationTypeModule;
 import net.minecraft.SharedConstants;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.RegistryAccess;
@@ -15,6 +16,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.registries.VanillaRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.server.Bootstrap;
 import net.minecraft.world.item.ItemStack;
@@ -23,6 +25,7 @@ import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.component.ItemLore;
 import net.minecraft.world.item.component.MapPostProcessing;
 import net.minecraft.world.level.saveddata.maps.MapId;
+import net.minecraft.world.level.saveddata.maps.MapDecorationType;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.functions.LootItemFunction;
 import net.minecraft.world.level.storage.loot.functions.LootItemFunctions;
@@ -57,6 +60,7 @@ class RibbitVillageExplorerMapContractTest {
         bootstrapped.setAccessible(true);
         bootstrapped.setBoolean(null, true);
         invokeBuiltInRegistryPhase("createContents");
+        MapDecorationTypeModule.init();
         LootFunctionModule.init();
         invokeBuiltInRegistryPhase("freeze");
         RegistryAccess builtIns = RegistryAccess.fromRegistryOfRegistries(BuiltInRegistries.REGISTRY);
@@ -104,7 +108,7 @@ class RibbitVillageExplorerMapContractTest {
         // notation includes the leading '#': #ribbits:on_ribbit_village_explorer_maps.
         assertEquals("ribbits:on_ribbit_village_explorer_maps",
                 search.get("destination").getAsString());
-        assertEquals("minecraft:village_plains", search.get("decoration").getAsString());
+        assertEquals("ribbits:ribbit_village", search.get("decoration").getAsString());
         assertEquals(100, search.get("search_radius").getAsInt());
         assertEquals(2, search.get("zoom").getAsInt());
         assertFalse(search.get("skip_existing_chunks").getAsBoolean());
@@ -141,6 +145,9 @@ class RibbitVillageExplorerMapContractTest {
         assertEquals(new MapId(4), success.get(DataComponents.MAP_ID));
         assertEquals(Component.translatable(RibbitVillageExplorerMap.SUCCESS_NAME_KEY),
                 success.get(DataComponents.CUSTOM_NAME));
+        assertTrue(RibbitVillageExplorerMap.isSuccessfulMap(success));
+        assertTrue(success.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY)
+                .copyTag().getBooleanOr(RibbitVillageExplorerMap.SUCCESS_MARKER_KEY, false));
         assertFalse(RibbitVillageExplorerMap.isFailedMap(success));
 
         ItemStack malformed = new ItemStack(Items.FILLED_MAP, 7);
@@ -234,6 +241,49 @@ class RibbitVillageExplorerMapContractTest {
         ItemStack staleMapId = RibbitVillageExplorerMap.createFailedMap(1);
         staleMapId.set(DataComponents.MAP_ID, new MapId(99));
         assertFalse(RibbitVillageExplorerMap.isFailedMap(staleMapId));
+    }
+
+    @Test
+    void successAuthenticityRequiresFilledMapMapIdAndExactPrivateMarker() {
+        ItemStack genuine = new ItemStack(Items.FILLED_MAP);
+        genuine.set(DataComponents.MAP_ID, new MapId(23));
+        CustomData.update(DataComponents.CUSTOM_DATA, genuine,
+                tag -> tag.putBoolean(RibbitVillageExplorerMap.SUCCESS_MARKER_KEY, true));
+        assertTrue(RibbitVillageExplorerMap.isSuccessfulMap(genuine));
+
+        genuine.set(DataComponents.CUSTOM_NAME, Component.literal("Renamed but genuine"));
+        assertTrue(RibbitVillageExplorerMap.isSuccessfulMap(genuine));
+
+        ItemStack translatedOnly = new ItemStack(Items.FILLED_MAP);
+        translatedOnly.set(DataComponents.MAP_ID, new MapId(24));
+        translatedOnly.set(DataComponents.CUSTOM_NAME,
+                Component.translatable(RibbitVillageExplorerMap.SUCCESS_NAME_KEY));
+        assertFalse(RibbitVillageExplorerMap.isSuccessfulMap(translatedOnly));
+
+        ItemStack noMapId = new ItemStack(Items.FILLED_MAP);
+        CustomData.update(DataComponents.CUSTOM_DATA, noMapId,
+                tag -> tag.putBoolean(RibbitVillageExplorerMap.SUCCESS_MARKER_KEY, true));
+        assertFalse(RibbitVillageExplorerMap.isSuccessfulMap(noMapId));
+
+        ItemStack wrongItem = new ItemStack(Items.MAP);
+        wrongItem.set(DataComponents.MAP_ID, new MapId(25));
+        CustomData.update(DataComponents.CUSTOM_DATA, wrongItem,
+                tag -> tag.putBoolean(RibbitVillageExplorerMap.SUCCESS_MARKER_KEY, true));
+        assertFalse(RibbitVillageExplorerMap.isSuccessfulMap(wrongItem));
+    }
+
+    @Test
+    void nativeRibbitDecorationCopiesThePlainsVillageBehaviorFlags() {
+        MapDecorationType source = BuiltInRegistries.MAP_DECORATION_TYPE
+                .get(Identifier.parse("minecraft:village_plains"))
+                .orElseThrow().value();
+        MapDecorationType ribbit = MapDecorationTypeModule.ribbitVillage().value();
+
+        assertEquals(Identifier.parse("ribbits:ribbit_village"), ribbit.assetId());
+        assertEquals(source.showOnItemFrame(), ribbit.showOnItemFrame());
+        assertEquals(source.mapColor(), ribbit.mapColor());
+        assertEquals(source.explorationMapElement(), ribbit.explorationMapElement());
+        assertEquals(source.trackCount(), ribbit.trackCount());
     }
 
     @Test

@@ -124,6 +124,42 @@ final class MapMarkerTargetResolverTest {
     }
 
     @Test
+    void externalRibbitIdentityPassesThroughItsNativeTypeAssetAndCoordinates() {
+        MapMarkerTarget target = resolve(externalMap(
+            73,
+            ExternalNativeMapIdentities.RIBBIT_VILLAGE,
+            decoration(
+                "ribbits:ribbit_village",
+                "ribbits:ribbit_village",
+                -7.0D,
+                25.0D
+            )
+        )).getFirst();
+
+        assertEquals("ribbits:ribbit_village", target.decorationTypeId());
+        assertEquals("ribbits:ribbit_village", target.decorationAssetId());
+        assertEquals(-7, target.blockX());
+        assertEquals(25, target.blockZ());
+        assertEquals(Set.of(73), target.sourceMapIds());
+    }
+
+    @Test
+    void externalTypeAndStackIdentityMustMatchEachOther() {
+        assertTrue(resolve(map(
+            74,
+            true,
+            "minecraft:overworld",
+            decoration("ribbits:ribbit_village", "ribbits:ribbit_village", 9.0D, 25.0D)
+        )).isEmpty(), "the native type alone is not enough without the exact stack marker");
+
+        assertTrue(resolve(externalMap(
+            75,
+            ExternalNativeMapIdentities.RIBBIT_VILLAGE,
+            decoration("example:other", "example:other", 9.0D, 25.0D)
+        )).isEmpty(), "the stack marker cannot admit an unrelated decoration type");
+    }
+
+    @Test
     void legacyAcceptedTargetsRemainVisibleDuringTheMigrationTick() {
         assertEquals(
             MapMarkerTargetResolver.LEGACY_ADMITTED_DECORATION_IDS,
@@ -174,6 +210,21 @@ final class MapMarkerTargetResolverTest {
             id,
             true,
             "minecraft:overworld",
+            Optional.of(identity),
+            List.of(decorations)
+        );
+    }
+
+    private static MapObservation externalMap(
+        int id,
+        ExternalNativeMapIdentity identity,
+        DecorationObservation... decorations
+    ) {
+        return new MapObservation(
+            id,
+            true,
+            "minecraft:overworld",
+            Optional.empty(),
             Optional.of(identity),
             List.of(decorations)
         );

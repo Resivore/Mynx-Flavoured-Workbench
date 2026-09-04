@@ -2,6 +2,7 @@ package com.yungnickyoung.minecraft.ribbits.module;
 
 import com.yungnickyoung.minecraft.ribbits.RibbitsCommon;
 import com.yungnickyoung.minecraft.ribbits.item.MaracaItem;
+import com.yungnickyoung.minecraft.ribbits.item.ChuteLeafItem;
 import com.yungnickyoung.minecraft.ribbits.item.RibbitSpawnEggDispenseItemBehavior;
 import com.yungnickyoung.minecraft.ribbits.item.RibbitSpawnEggItem;
 import com.yungnickyoung.minecraft.ribbits.util.RegisterHelper;
@@ -23,6 +24,11 @@ public class ItemModule {
     @AutoRegister("toadstool_heart")
     public static final AutoRegisterItem TOADSTOOL_HEART = AutoRegisterItem.of(() -> new Item(
             new Item.Properties().stacksTo(64).setId(RegisterHelper.itemKey("toadstool_heart"))
+    ));
+
+    @AutoRegister("chute_leaf")
+    public static final AutoRegisterItem CHUTE_LEAF = AutoRegisterItem.of(() -> new ChuteLeafItem(
+            new Item.Properties().stacksTo(1).setId(RegisterHelper.itemKey("chute_leaf"))
     ));
 
     @AutoRegister("giant_lilypad")

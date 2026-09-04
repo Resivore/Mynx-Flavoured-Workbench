@@ -46,7 +46,11 @@ public final class MapMarkerTargetResolver {
             for (DecorationObservation decoration : map.decorations()) {
                 Optional<MapMarkerIdentity> matchedIdentity = map.identity()
                     .filter(identity -> identity.matchesSourceOrResultType(decoration.typeId()));
+                Optional<ExternalNativeMapIdentity> matchedExternalIdentity =
+                    map.externalNativeIdentity()
+                        .filter(identity -> identity.admitsDecorationType(decoration.typeId()));
                 boolean admitted = matchedIdentity.isPresent()
+                    || matchedExternalIdentity.isPresent()
                     || LEGACY_ADMITTED_DECORATION_IDS.contains(decoration.typeId())
                     || CUSTOM_DECORATION_IDS.contains(decoration.typeId());
                 if (!admitted

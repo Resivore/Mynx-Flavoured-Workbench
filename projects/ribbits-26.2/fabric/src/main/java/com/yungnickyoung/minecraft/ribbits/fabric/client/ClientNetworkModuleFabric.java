@@ -1,6 +1,8 @@
 package com.yungnickyoung.minecraft.ribbits.fabric.client;
 
+import com.yungnickyoung.minecraft.ribbits.client.chute.ChuteClientController;
 import com.yungnickyoung.minecraft.ribbits.network.ClientNetworkHandler;
+import com.yungnickyoung.minecraft.ribbits.network.payload.ChuteAckS2C;
 import com.yungnickyoung.minecraft.ribbits.network.payload.RequestSupporterHatStatePayload;
 import com.yungnickyoung.minecraft.ribbits.network.payload.RibbitStartMusicAllPayload;
 import com.yungnickyoung.minecraft.ribbits.network.payload.RibbitStartMusicSinglePayload;
@@ -17,6 +19,7 @@ final class ClientNetworkModuleFabric {
 
     static void register() {
         PlatformHelper.setClientPacketSender(ClientPlayNetworking::send);
+        ChuteClientController.initialize();
         ClientPlayNetworking.registerGlobalReceiver(RibbitStartMusicSinglePayload.TYPE, (payload, context) ->
                 ClientNetworkHandler.handleStartMusicSingleS2C(payload));
         ClientPlayNetworking.registerGlobalReceiver(RibbitStopMusicSinglePayload.TYPE, (payload, context) ->
@@ -31,5 +34,7 @@ final class ClientNetworkModuleFabric {
                 ClientNetworkHandler.handleRequestSupporterHatStateS2C(payload));
         ClientPlayNetworking.registerGlobalReceiver(ToggleSupporterHatPayloadS2C.TYPE, (payload, context) ->
                 ClientNetworkHandler.handleToggleSupporterHatS2C(payload));
+        ClientPlayNetworking.registerGlobalReceiver(ChuteAckS2C.TYPE, (payload, context) ->
+                ClientNetworkHandler.handleChuteAckS2C(payload));
     }
 }

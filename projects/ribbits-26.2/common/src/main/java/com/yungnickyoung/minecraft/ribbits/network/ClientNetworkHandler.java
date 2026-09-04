@@ -1,6 +1,7 @@
 package com.yungnickyoung.minecraft.ribbits.network;
 
 import com.yungnickyoung.minecraft.ribbits.RibbitsCommon;
+import com.yungnickyoung.minecraft.ribbits.client.chute.ChuteClientController;
 import com.yungnickyoung.minecraft.ribbits.client.sound.PlayerInstrumentSoundInstance;
 import com.yungnickyoung.minecraft.ribbits.client.sound.RibbitInstrumentSoundInstance;
 import com.yungnickyoung.minecraft.ribbits.client.supporters.RibbitOptionsJSON;
@@ -31,6 +32,11 @@ public class ClientNetworkHandler {
 
     public static void clearPendingActions() {
         PENDING_ENTITY_ACTIONS.clear();
+        ChuteClientController.resetConnection();
+    }
+
+    public static void handleChuteAckS2C(ChuteAckS2C payload) {
+        ChuteClientController.handleAcknowledgement(payload);
     }
 
     private static void queueOrExecute(UUID entityId, Consumer<Entity> action) {

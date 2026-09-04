@@ -11,8 +11,8 @@ import java.util.Arrays;
 import java.util.jar.JarFile;
 
 /**
- * Loads, transforms, and links the two Phase C targets through production Fabric Loader and
- * Mixin without invoking either Minecraft entry point.
+ * Loads, transforms, and links the Phase C and Phase D server targets through production
+ * Fabric Loader and Mixin without invoking either Minecraft entry point.
  */
 public final class ProductionMixinApplicationHarness {
     private static final String STRUCTURE_PIECE =
@@ -20,8 +20,13 @@ public final class ProductionMixinApplicationHarness {
     private static final String SWAMP_HUT_PIECE =
             "net.minecraft.world.level.levelgen.structure.structures.SwampHutPiece";
     private static final String NATURAL_SPAWNER = "net.minecraft.world.level.NaturalSpawner";
+    private static final String PLAYER = "net.minecraft.world.entity.player.Player";
+    private static final String ARMOR_SLOT = "net.minecraft.world.inventory.ArmorSlot";
+    private static final String EQUIPPABLE = "net.minecraft.world.item.equipment.Equippable";
     private static final String STRUCTURE_PIECE_INVOKER =
             "com.yungnickyoung.minecraft.ribbits.mixin.mixins.accessor.StructurePieceInvoker";
+    private static final String CHUTE_PLAYER_ACCESS =
+            "com.yungnickyoung.minecraft.ribbits.chute.ChutePlayerAccess";
 
     private ProductionMixinApplicationHarness() {
     }
@@ -52,6 +57,9 @@ public final class ProductionMixinApplicationHarness {
         Class<?> structurePiece = Class.forName(STRUCTURE_PIECE, false, targetLoader);
         Class<?> swampHutPiece = Class.forName(SWAMP_HUT_PIECE, false, targetLoader);
         Class<?> naturalSpawner = Class.forName(NATURAL_SPAWNER, false, targetLoader);
+        Class<?> player = Class.forName(PLAYER, false, targetLoader);
+        Class<?> armorSlot = Class.forName(ARMOR_SLOT, false, targetLoader);
+        Class<?> equippable = Class.forName(EQUIPPABLE, false, targetLoader);
 
         require(Arrays.stream(structurePiece.getInterfaces())
                         .anyMatch(type -> type.getName().equals(STRUCTURE_PIECE_INVOKER)),
@@ -71,6 +79,21 @@ public final class ProductionMixinApplicationHarness {
         require(methodTokenCount(naturalSpawner,
                         "ribbits$suppressNaturalWitchInsideExactHutPiece") == 1,
                 "natural-Witch Inject did not apply exactly once");
+        require(Arrays.stream(player.getInterfaces())
+                        .anyMatch(type -> type.getName().equals(CHUTE_PLAYER_ACCESS)),
+                "Chute player-data mixin did not apply");
+        require(methodTokenCount(player, "ribbits$defineChuteDeployment") == 1,
+                "Chute synchronized-data Inject did not apply exactly once");
+        require(methodTokenCount(player, "ribbits$capChuteBeforeTravel") == 1,
+                "pre-travel Chute cap Inject did not apply exactly once");
+        require(methodTokenCount(player, "ribbits$capChuteAfterTravel") == 1,
+                "post-travel Chute cap Inject did not apply exactly once");
+        require(methodTokenCount(armorSlot, "ribbits$rejectChestGliderBesideChute") == 1,
+                "ArmorSlot Chute conflict Inject did not apply exactly once");
+        require(methodTokenCount(equippable, "ribbits$rejectChestGliderSwap") == 1,
+                "right-click Chute conflict Inject did not apply exactly once");
+        require(methodTokenCount(equippable, "ribbits$rejectChestGliderTargetEquip") == 1,
+                "target-equip Chute conflict Inject did not apply exactly once");
 
         System.out.println("Production Minecraft 26.2 mixin application passed for "
                 + expectedModJar.getFileName());

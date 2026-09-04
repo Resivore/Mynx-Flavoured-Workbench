@@ -164,6 +164,7 @@ class StaticParityContractTest {
                 "toadstool",
                 "glowcap",
                 "toadstool_heart",
+                "chute_leaf",
                 "umbrella_leaf",
                 "mossy_oak_planks",
                 "mossy_oak_planks_stairs",
@@ -278,7 +279,8 @@ class StaticParityContractTest {
                 "StartHearingMaracaPayload",
                 "StopHearingMaracaPayload",
                 "RequestSupporterHatStatePayload",
-                "ToggleSupporterHatPayloadS2C"
+                "ToggleSupporterHatPayloadS2C",
+                "ChuteAckS2C"
         };
 
         for (String payload : clientbound) {
@@ -290,9 +292,11 @@ class StaticParityContractTest {
 
         assertTrue(registrations.contains(
                 "PayloadTypeRegistry.serverboundPlay().register(ToggleSupporterHatPayloadC2S.TYPE, ToggleSupporterHatPayloadC2S.STREAM_CODEC)"));
-        assertEquals(7, occurrences(registrations, "PayloadTypeRegistry.clientboundPlay().register("));
-        assertEquals(1, occurrences(registrations, "PayloadTypeRegistry.serverboundPlay().register("));
-        assertEquals(7, occurrences(clientReceivers, "ClientPlayNetworking.registerGlobalReceiver("));
+        assertTrue(registrations.contains(
+                "PayloadTypeRegistry.serverboundPlay().register(ChutePressC2S.TYPE, ChutePressC2S.STREAM_CODEC)"));
+        assertEquals(8, occurrences(registrations, "PayloadTypeRegistry.clientboundPlay().register("));
+        assertEquals(2, occurrences(registrations, "PayloadTypeRegistry.serverboundPlay().register("));
+        assertEquals(8, occurrences(clientReceivers, "ClientPlayNetworking.registerGlobalReceiver("));
         assertFalse(registrations.contains("ClientNetworkHandler"));
     }
 

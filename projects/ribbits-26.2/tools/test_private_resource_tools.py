@@ -1287,8 +1287,8 @@ class PrivateVillageUtilityTransformTest(unittest.TestCase):
 
 class DonorBoundaryContractTest(unittest.TestCase):
     def test_exact_accounting_contains_only_approved_visual_members_and_outputs(self) -> None:
-        self.assertEqual("4.1.6+26.2-mynx-canary6", tools.CANDIDATE_VERSION)
-        self.assertEqual(6, tools.CANDIDATE_CANARY)
+        self.assertEqual("4.1.6+26.2-mynx-canary7", tools.CANDIDATE_VERSION)
+        self.assertEqual(7, tools.CANDIDATE_CANARY)
         self.assertEqual(
             "mynx-ribbits-private-resource-manifest/v1", tools.PRIVATE_MANIFEST_SCHEMA
         )
@@ -1296,8 +1296,8 @@ class DonorBoundaryContractTest(unittest.TestCase):
             "PRIVATE MYNX ASSEMBLY STAGED / NONREDISTRIBUTABLE DONOR ASSETS",
             tools.PRIVATE_MANIFEST_CLASSIFICATION,
         )
-        self.assertEqual(336, tools.OUTPUT_FILE_COUNT)
-        self.assertEqual(2_714_466, tools.OUTPUT_TOTAL_SIZE)
+        self.assertEqual(344, tools.OUTPUT_FILE_COUNT)
+        self.assertEqual(2_729_248, tools.OUTPUT_TOTAL_SIZE)
         self.assertEqual(2_563, tools.SORCERER_LOOT_OUTPUT_SIZE)
         self.assertEqual(
             "5b06e06502bf11f661161e89bf34e329d8f23268b7b0104371038c38ad9b378d",
@@ -1311,24 +1311,102 @@ class DonorBoundaryContractTest(unittest.TestCase):
             "cb1cac748727cc4387092cee0d77426816204d0986866d44e9995d6948468de0",
             tools.PRIVATE_VILLAGE_TEMPLATE_TREE_AFTER_SHA256,
         )
-        self.assertEqual(41, len(tools.GECKO_MODEL_IDS))
-        self.assertEqual(24, len(tools.REGISTERED_ITEM_IDS))
+        self.assertEqual(42, len(tools.GECKO_MODEL_IDS))
+        self.assertEqual(25, len(tools.REGISTERED_ITEM_IDS))
+        self.assertEqual({"chute_leaf_open"}, tools.AUXILIARY_ITEM_DEFINITION_IDS)
         self.assertNotIn("glowcap", tools.REGISTERED_ITEM_IDS)
         self.assertNotIn("toadstool_heart", tools.REGISTERED_ITEM_IDS)
         self.assertEqual(9, len(tools.SPAWN_EGG_IDS))
-        self.assertEqual(20, len(tools.DONOR_DERIVED_OUTPUTS))
+        self.assertIn("chute_leaf", tools.REGISTERED_ITEM_IDS)
         self.assertEqual(
-            8,
+            {"alexsmobs", "minecraft", "ribbits", "trinkets"},
+            tools.EXPECTED_PRIVATE_DATA_NAMESPACES,
+        )
+        self.assertEqual(27, len(tools.DONOR_DERIVED_OUTPUTS))
+        self.assertEqual(
+            13,
             sum(len(spec["members"]) for spec in tools.DONOR_INPUT_SPECS.values()),
         )
         for spec in tools.DONOR_INPUT_SPECS.values():
             for member in spec["members"]:
-                self.assertTrue(member.endswith((".geo.json", ".png")))
+                self.assertTrue(member.endswith((".json", ".png")))
                 self.assertFalse(member.endswith((".class", ".java")))
                 self.assertNotIn("/animations/", member)
         for output in tools.DONOR_DERIVED_OUTPUTS:
-            self.assertTrue(output.endswith((".geo.json", ".png")))
+            self.assertTrue(output.endswith((".json", ".png")))
             self.assertTrue(output.startswith("assets/ribbits/"))
+
+    def test_wandering_visual_import_is_exact_and_bounded(self) -> None:
+        model_member = "assets/wandering_ribbit/geo/wandering_ribbit.geo.json"
+        texture_member = "assets/wandering_ribbit/textures/entity/wandering_ribbit.png"
+        chute_model_member = "assets/wandering_ribbit/models/custom/umbrella_leaf.json"
+        closed_member = "assets/wandering_ribbit/textures/item/umbrella_leaf_item.png"
+        open_member = "assets/wandering_ribbit/textures/item/umbrella_leaf_texture.png"
+        payloads = {
+            model_member: b'{"format_version":"1.12.0","minecraft:geometry":[]}',
+            texture_member: b"entity-png",
+            chute_model_member: json.dumps(
+                {
+                    "parent": "minecraft:builtin/entity",
+                    "display": {"gui": {"rotation": [30, 225, 0]}},
+                    "elements": [],
+                }
+            ).encode("utf-8"),
+            closed_member: b"closed-png",
+            open_member: b"open-png",
+        }
+        self.assertEqual(
+            set(payloads), set(tools.DONOR_INPUT_SPECS["wandering"]["members"])
+        )
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            records = tools.import_wandering_visual_resources(
+                root,
+                payloads,
+                {"filename": tools.DONOR_INPUT_SPECS["wandering"]["filename"]},
+            )
+            self.assertEqual(
+                tools.WANDERING_DONOR_DERIVED_OUTPUTS,
+                {record["output"] for record in records},
+            )
+            self.assertEqual(
+                payloads[model_member],
+                (root / "assets/ribbits/geckolib/models/wandering_ribbit.geo.json").read_bytes(),
+            )
+            self.assertEqual(
+                payloads[texture_member],
+                (root / "assets/ribbits/textures/entity/wandering_ribbit.png").read_bytes(),
+            )
+            self.assertEqual(
+                payloads[closed_member],
+                (root / "assets/ribbits/textures/item/chute_leaf.png").read_bytes(),
+            )
+            self.assertEqual(
+                payloads[open_member],
+                (root / "assets/ribbits/textures/item/chute_leaf_open.png").read_bytes(),
+            )
+            self.assertEqual(
+                {
+                    "model": {
+                        "type": "minecraft:model",
+                        "model": "ribbits:item/chute_leaf_open",
+                    }
+                },
+                tools.load_json(root / "assets/ribbits/items/chute_leaf_open.json"),
+            )
+            open_model = tools.load_json(
+                root / "assets/ribbits/models/item/chute_leaf_open.json"
+            )
+            self.assertEqual([], open_model["elements"])
+            self.assertEqual(
+                {
+                    "0": "ribbits:item/chute_leaf_open",
+                    "particle": "ribbits:item/chute_leaf_open",
+                },
+                open_model["textures"],
+            )
+            self.assertFalse((root / "assets/ribbits/geckolib/animations/wandering.json").exists())
 
     def test_originals_path_guard_rejects_outside_or_renamed_inputs(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -1363,8 +1441,11 @@ class DonorBoundaryContractTest(unittest.TestCase):
             "sunbatheproductions28/guardribbits/GuardRibbitEntity.class",
             "GuardRibbits-1.20.1-Fabric-1.0.4.jar",
             "META-INF/jars/useful_ribbits-1.0.2-forge-1.20.1.jar",
+            "assets/wandering_ribbit/geo/wandering_ribbit.geo.json",
+            "com/cosmicbarri/wandering_ribbit/entity/WanderingRibbitEntity.class",
+            "nested/wandering_ribbit-4.0-forge.jar",
         }
-        self.assertEqual(6, len(tools.source_only_donor_violations(forbidden)))
+        self.assertEqual(9, len(tools.source_only_donor_violations(forbidden)))
 
     def test_private_jar_donor_boundary_uses_real_guard_prefix_and_jar_basenames(self) -> None:
         violations = tools.nonallowlisted_donor_archive_violations(
@@ -1373,10 +1454,13 @@ class DonorBoundaryContractTest(unittest.TestCase):
                 "me/rogue_one/useful_ribbits/procedures/RBGUIChefBtnProcedure.class",
                 "nested/deeper/GuardRibbits-1.20.1-Fabric-1.0.4.jar",
                 "useful_ribbits-1.0.2-forge-1.20.1.jar",
+                "assets/wandering_ribbit/models/custom/umbrella_leaf.json",
+                "com/cosmicbarri/wandering_ribbit/WanderingRibbit.class",
+                "nested/deeper/wandering_ribbit-4.0-forge.jar",
                 "com/yungnickyoung/minecraft/ribbits/RibbitsCommon.class",
             }
         )
-        self.assertEqual(4, len(violations))
+        self.assertEqual(7, len(violations))
         self.assertNotIn(
             "com/yungnickyoung/minecraft/ribbits/RibbitsCommon.class", violations
         )
@@ -1439,16 +1523,23 @@ class DonorBoundaryContractTest(unittest.TestCase):
     def test_private_jar_allows_only_exact_tracked_public_resource_bytes(self) -> None:
         expected_paths = {
             "assets/ribbits/items/glowcap.json",
+            "assets/ribbits/items/ribbit_village_explorer_map.json",
             "assets/ribbits/items/toadstool_heart.json",
             "assets/ribbits/models/item/glowcap.json",
+            "assets/ribbits/models/item/ribbit_village_explorer_map.json",
             "assets/ribbits/models/item/toadstool_heart.json",
             "assets/ribbits/textures/item/glowcap.png",
+            "assets/ribbits/textures/item/ribbit_village_explorer_map.png",
             "assets/ribbits/textures/item/toadstool_heart.png",
+            "assets/ribbits/textures/map/decorations/ribbit_village.png",
             "data/ribbits/advancement/recipes/misc/toadstool_heart.json",
             "data/ribbits/item_modifier/ribbit_village_explorer_result.json",
             "data/ribbits/loot_table/chests/swamp_hut_map.json",
             "data/ribbits/recipe/toadstool_heart.json",
             "data/ribbits/tags/worldgen/structure/on_ribbit_village_explorer_maps.json",
+            "data/ribbits/tags/worldgen/biome/allows_wandering_ribbit_spawns.json",
+            "data/ribbits/tags/worldgen/biome/without_wandering_ribbit_spawns.json",
+            "data/trinkets/tags/item/chest/cape.json",
         }
         self.assertEqual(expected_paths, tools.SOURCE_SAFE_PUBLIC_RESOURCE_PATHS)
 
@@ -1540,6 +1631,21 @@ class DonorBoundaryContractTest(unittest.TestCase):
                     "packaged_bytes": "exact tracked attachment bytes",
                 },
                 {
+                    "item": "ribbits:ribbit_village_explorer_map",
+                    "source_filename": "610cbaa3-e4e8-4d55-abb9-377f0545e672.png",
+                    "path": "assets/ribbits/textures/item/ribbit_village_explorer_map.png",
+                    "size": 506,
+                    "sha256": "6065e126da4d3d70725cc3adca725e2ce2812ba8a0155a07c1e510b373aa38f5",
+                    "dimensions": [16, 16],
+                    "format": "non-interlaced 8-bit RGBA PNG",
+                    "alpha": {
+                        "transparent_pixels": 33,
+                        "opaque_pixels": 223,
+                        "partial_alpha_pixels": 0,
+                    },
+                    "packaged_bytes": "exact tracked attachment bytes",
+                },
+                {
                     "item": "ribbits:toadstool_heart",
                     "source_filename": "4e8e067e-3969-49ea-be28-fb8d91ea932b.png",
                     "path": "assets/ribbits/textures/item/toadstool_heart.png",
@@ -1550,6 +1656,21 @@ class DonorBoundaryContractTest(unittest.TestCase):
                     "alpha": {
                         "transparent_pixels": 152,
                         "opaque_pixels": 104,
+                        "partial_alpha_pixels": 0,
+                    },
+                    "packaged_bytes": "exact tracked attachment bytes",
+                },
+                {
+                    "item": "ribbits:ribbit_village_explorer_map",
+                    "source_filename": "ribbit_village_marker_16x16.png",
+                    "path": "assets/ribbits/textures/map/decorations/ribbit_village.png",
+                    "size": 168,
+                    "sha256": "df63eb91eda13e91e3b984b11cdffc3d2f3e8c8482d090d4ee1c744ec428b2ba",
+                    "dimensions": [16, 16],
+                    "format": "non-interlaced 8-bit RGBA PNG",
+                    "alpha": {
+                        "transparent_pixels": 222,
+                        "opaque_pixels": 34,
                         "partial_alpha_pixels": 0,
                     },
                     "packaged_bytes": "exact tracked attachment bytes",
@@ -1583,6 +1704,10 @@ class DonorBoundaryContractTest(unittest.TestCase):
             self.assertTrue(tampered_errors)
 
     def test_private_jar_requires_exact_economy_runtime_dependencies(self) -> None:
+        self.assertEqual(
+            "4.1.0-beta.3+26.2",
+            tools.REQUIRED_FABRIC_DEPENDENCIES["trinkets_updated"],
+        )
         self.assertEqual(">=4.0.0", tools.REQUIRED_FABRIC_DEPENDENCIES["customportals"])
         self.assertEqual(
             ">=0.1.10-canary11",

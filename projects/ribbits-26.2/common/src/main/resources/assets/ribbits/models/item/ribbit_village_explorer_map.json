@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "ribbits:item/ribbit_village_explorer_map"
+  }
+}

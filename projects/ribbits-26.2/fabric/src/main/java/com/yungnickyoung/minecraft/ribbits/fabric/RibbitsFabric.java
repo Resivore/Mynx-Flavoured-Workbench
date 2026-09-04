@@ -7,6 +7,7 @@ import com.yungnickyoung.minecraft.ribbits.network.payload.RequestSupporterHatSt
 import com.yungnickyoung.minecraft.ribbits.player.PlayerInstrumentTracker;
 import com.yungnickyoung.minecraft.ribbits.supporters.SupportersListServer;
 import com.yungnickyoung.minecraft.ribbits.module.RibbitTradeModule;
+import com.yungnickyoung.minecraft.ribbits.world.spawn.WanderingRibbitScheduler;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
@@ -44,7 +45,10 @@ public class RibbitsFabric implements ModInitializer {
             ServerPlayNetworking.send(handler.getPlayer(), new RequestSupporterHatStatePayload(playersWithSupporterHat));
         });
 
-        ServerTickEvents.START_SERVER_TICK.register(server -> PlayerInstrumentTracker.onServerTick());
+        ServerTickEvents.START_SERVER_TICK.register(server -> {
+            PlayerInstrumentTracker.onServerTick();
+            WanderingRibbitScheduler.tick(server);
+        });
     }
 
     public static MinecraftServer getCurrentServer() {

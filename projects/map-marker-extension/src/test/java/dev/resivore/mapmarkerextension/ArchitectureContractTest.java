@@ -97,12 +97,39 @@ final class ArchitectureContractTest {
         assertTrue(scanner.contains("Items.FILLED_MAP"));
         assertTrue(scanner.contains("DataComponents.MAP_ID"));
         assertTrue(scanner.contains("DataComponents.MAP_DECORATIONS"));
+        assertTrue(scanner.contains("ExternalNativeMapIdentities.find(stack)"));
         assertTrue(scanner.contains("Level.OVERWORLD.identifier().toString()"));
         assertTrue(scanner.contains("client.player == null || client.level == null"));
         assertTrue(scanner.contains("targets.clear()"));
         assertFalse(repository.contains("java.nio.file"));
         assertFalse(productionJava().toLowerCase().contains("waypoint"));
         assertFalse(productionJava().toLowerCase().contains("terrain discovery"));
+    }
+
+    @Test
+    void ribbitsSupportRecognizesOnlyExternalIdentityAndTakesNoOwnership()
+        throws IOException {
+        String identity = source("core/ExternalNativeMapIdentity.java");
+        String identities = source("core/ExternalNativeMapIdentities.java");
+        String ownedIdentities = source("core/MapMarkerIdentity.java");
+        String registrations = source("core/MapMarkerDecorationTypes.java");
+        String resolver = source("core/MapMarkerTargetResolver.java");
+        String metadata = Files.readString(PROJECT.resolve("src/main/resources/fabric.mod.json"));
+
+        assertTrue(identity.contains("stack.is(Items.FILLED_MAP)"));
+        assertTrue(identity.contains("stack.has(DataComponents.MAP_ID)"));
+        assertTrue(identity.contains("DataComponents.CUSTOM_DATA"));
+        assertTrue(identity.contains("getBooleanOr(stackMarkerKey, false)"));
+        assertTrue(identities.contains("ribbits:ribbit_village_explorer_map"));
+        assertTrue(identities.contains("ribbits:ribbit_village"));
+        assertTrue(resolver.contains("identity.admitsDecorationType(decoration.typeId())"));
+        assertFalse(ownedIdentities.contains("RIBBIT_VILLAGE"));
+        assertFalse(registrations.contains("ExternalNativeMap"));
+        assertFalse(metadata.contains("\"ribbits\""));
+        assertFalse(productionJava().contains("com.yungnickyoung"));
+
+        Path externalAssets = PROJECT.resolve("src/main/resources/assets/ribbits");
+        assertFalse(Files.exists(externalAssets));
     }
 
     @Test

@@ -16,6 +16,7 @@ public final class RibbitVillageExplorerMap {
     public static final String FAILURE_NAME_KEY = "item.ribbits.uncharted_ribbit_map";
     public static final String FAILURE_LORE_KEY = "item.ribbits.uncharted_ribbit_map.lore";
     public static final String FAILED_MARKER_KEY = "ribbits:failed_ribbit_village_map";
+    public static final String SUCCESS_MARKER_KEY = "ribbits:ribbit_village_explorer_map";
 
     private static final CustomData FAILED_MARKER = createFailedMarker();
 
@@ -54,6 +55,8 @@ public final class RibbitVillageExplorerMap {
     public static ItemStack finalizeSearchResult(ItemStack stack) {
         if (stack.is(Items.FILLED_MAP) && stack.has(DataComponents.MAP_ID)) {
             stack.setCount(1);
+            CustomData.update(DataComponents.CUSTOM_DATA, stack,
+                    tag -> tag.putBoolean(SUCCESS_MARKER_KEY, true));
             stack.set(DataComponents.CUSTOM_NAME, Component.translatable(SUCCESS_NAME_KEY));
             return stack;
         }
@@ -65,5 +68,13 @@ public final class RibbitVillageExplorerMap {
         return stack.is(Items.MAP)
                 && !stack.has(DataComponents.MAP_ID)
                 && FAILED_MARKER.equals(stack.get(DataComponents.CUSTOM_DATA));
+    }
+
+    /** Exact mechanical success identity; names and item-model state are never authoritative. */
+    public static boolean isSuccessfulMap(ItemStack stack) {
+        return stack.is(Items.FILLED_MAP)
+                && stack.has(DataComponents.MAP_ID)
+                && stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY)
+                        .copyTag().getBooleanOr(SUCCESS_MARKER_KEY, false);
     }
 }

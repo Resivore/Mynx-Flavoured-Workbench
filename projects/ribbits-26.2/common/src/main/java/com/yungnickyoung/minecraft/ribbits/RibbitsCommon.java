@@ -2,8 +2,10 @@ package com.yungnickyoung.minecraft.ribbits;
 
 import com.yungnickyoung.minecraft.ribbits.module.ConfigModule;
 import com.yungnickyoung.minecraft.ribbits.module.LootFunctionModule;
+import com.yungnickyoung.minecraft.ribbits.module.MapDecorationTypeModule;
 import com.yungnickyoung.minecraft.ribbits.module.NetworkModule;
 import com.yungnickyoung.minecraft.ribbits.module.RecipeModule;
+import com.yungnickyoung.minecraft.ribbits.world.spawn.WanderingRibbitScheduler;
 import com.yungnickyoung.minecraft.yungsapi.api.YungAutoRegister;
 import net.minecraft.resources.Identifier;
 import org.apache.logging.log4j.LogManager;
@@ -17,11 +19,13 @@ public class RibbitsCommon {
 
 
     public static void init() {
+        MapDecorationTypeModule.init();
         RecipeModule.init();
         LootFunctionModule.init();
         YungAutoRegister.scanPackageForAnnotations("com.yungnickyoung.minecraft.ribbits");
         ConfigModule.init();
         NetworkModule.init();
+        WanderingRibbitScheduler.init();
     }
 
     public static Identifier id(String path) {

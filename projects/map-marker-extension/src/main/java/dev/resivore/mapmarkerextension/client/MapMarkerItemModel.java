@@ -58,6 +58,8 @@ public final class MapMarkerItemModel extends WrapperBakedItemModel {
         MapMarkerIdentity identity = MapMarkerItemIdentity.find(stack).orElse(null);
         ItemModel model = identity == null ? null : resolve(identity);
         if (model == null) {
+            // Preserve the wrapped model chain so another mod's filled-map wrapper can handle
+            // identities that MME does not own, regardless of modifier registration order.
             super.update(renderState, stack, resolver, displayContext, level, owner, seed);
             return;
         }
