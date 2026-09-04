@@ -1,7 +1,10 @@
 package dev.resivore.slotreservations.client;
 
+import dev.resivore.slotreservations.ContainerSlotReservations;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.Objects;
@@ -12,9 +15,13 @@ public final class ReservationVisualRenderer {
     public static final float GHOST_ALPHA = 0.35F;
     public static final int GHOST_ALPHA_8 = 0x59;
     public static final int GHOST_ALPHA_ONLY_COLOR = 0x59FFFFFF;
-    public static final int RESERVATION_MARKER = 0xFF24C7B8;
 
     private static final String EMPTY_COUNT = "0";
+    private static final int OCCUPIED_MARKER_SIZE = 3;
+    private static final Identifier OCCUPIED_RESERVATION_MARKER = Identifier.fromNamespaceAndPath(
+            ContainerSlotReservations.MOD_ID,
+            "occupied_reservation_marker"
+    );
 
     private ReservationVisualRenderer() {
     }
@@ -54,12 +61,13 @@ public final class ReservationVisualRenderer {
                         true
                 );
             }
-            case OCCUPIED_RESERVED -> graphics.fill(
+            case OCCUPIED_RESERVED -> graphics.blitSprite(
+                    RenderPipelines.GUI_TEXTURED,
+                    OCCUPIED_RESERVATION_MARKER,
                     itemX + 13,
                     itemY,
-                    itemX + 16,
-                    itemY + 3,
-                    RESERVATION_MARKER
+                    OCCUPIED_MARKER_SIZE,
+                    OCCUPIED_MARKER_SIZE
             );
         }
     }

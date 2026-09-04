@@ -23,6 +23,11 @@ configurations {
 }
 
 def repositoryRoot = projectDir.toPath().resolve('../..').normalize().toFile()
+def occupiedMarkerResource =
+        'assets/container_slot_reservations/textures/gui/sprites/occupied_reservation_marker.png'
+def occupiedMarkerSource = layout.projectDirectory.file("src/main/resources/${occupiedMarkerResource}")
+def occupiedMarkerSha256 =
+        '5A9FE986E6AED154D8E1302C1A8F066D76A2AFF10AA4F6FC9FD973D0E5BCAACE'
 def doubleBarrelsReferenceJar = new File(
         repositoryRoot,
         "projects/double-barrels/artifacts/${project.double_barrels_tested_jar}"
@@ -60,6 +65,44 @@ processResources {
     filesMatching('fabric.mod.json') {
         expand 'version': project.version
     }
+}
+
+def verifyOccupiedReservationMarkerArtifact = tasks.register('verifyOccupiedReservationMarkerArtifact') {
+    dependsOn tasks.named('jar')
+    inputs.file(occupiedMarkerSource)
+    inputs.file(tasks.named('jar').flatMap { it.archiveFile })
+
+    doLast {
+        def hash = { byte[] bytes ->
+            java.util.HexFormat.of().withUpperCase().formatHex(
+                    java.security.MessageDigest.getInstance('SHA-256').digest(bytes)
+            )
+        }
+        def sourceBytes = occupiedMarkerSource.asFile.bytes
+        if (sourceBytes.length != 103 || hash(sourceBytes) != occupiedMarkerSha256) {
+            throw new GradleException('The source occupied-reservation marker is not the exact supplied PNG')
+        }
+
+        def artifact = tasks.named('jar').get().archiveFile.get().asFile
+        def archive = new java.util.zip.ZipFile(artifact)
+        try {
+            def entry = archive.getEntry(occupiedMarkerResource)
+            if (entry == null) {
+                throw new GradleException("Built artifact is missing ${occupiedMarkerResource}")
+            }
+            def artifactBytes = archive.getInputStream(entry).withCloseable { it.bytes }
+            if (artifactBytes.length != 103 || hash(artifactBytes) != occupiedMarkerSha256
+                    || !java.util.Arrays.equals(sourceBytes, artifactBytes)) {
+                throw new GradleException('Built artifact changed the exact occupied-reservation marker bytes')
+            }
+        } finally {
+            archive.close()
+        }
+    }
+}
+
+tasks.named('check') {
+    dependsOn verifyOccupiedReservationMarkerArtifact
 }
 
 tasks.withType(JavaCompile).configureEach {

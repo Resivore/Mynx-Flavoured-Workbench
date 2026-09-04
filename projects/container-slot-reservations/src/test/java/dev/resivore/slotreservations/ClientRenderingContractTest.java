@@ -34,12 +34,19 @@ final class ClientRenderingContractTest {
         assertTrue(renderer.contains("-1,"));
         assertTrue(renderer.contains("true"));
         assertTrue(renderer.contains("case UNRESERVED -> {"));
+        assertTrue(renderer.contains("case OCCUPIED_RESERVED -> graphics.blitSprite("));
+        assertTrue(renderer.contains("RenderPipelines.GUI_TEXTURED,"));
+        assertTrue(renderer.contains("\"occupied_reservation_marker\""));
         assertTrue(renderer.contains("itemX + 13,"));
         assertTrue(renderer.contains("itemY,"));
-        assertTrue(renderer.contains("itemX + 16,"));
-        assertTrue(renderer.contains("itemY + 3,"));
-        assertTrue(renderer.contains("RESERVATION_MARKER"));
+        assertTrue(renderer.contains("private static final int OCCUPIED_MARKER_SIZE = 3"));
+        assertEquals(3, occurrences(renderer, "OCCUPIED_MARKER_SIZE"),
+                "The exact 3x3 sprite must be drawn one-to-one without scaling");
+        assertFalse(renderer.contains("graphics.fill("));
+        assertFalse(renderer.contains("0xFF24C7B8"));
         assertFalse(renderer.contains("copyWithCount(0)"));
+        assertTrue(screen.contains("slot.x,"));
+        assertTrue(screen.contains("slot.y,"));
         assertTrue(scope.contains("try {"));
         assertTrue(scope.contains("finally {"));
         assertTrue(scope.contains("ACTIVE_ALPHA.remove()"));
