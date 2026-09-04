@@ -1,79 +1,65 @@
 # Testing
 
-## Current gate
+Canary 3 is **ACTIVE / CONTROLLED_VALIDATION_PASS / DEPLOYED / RUNTIME_FAIL**.
+The user withdrew its aggregate pass and reported no correct head icon for all
+11 entities listed below. Project acceptance and rollback are empty. Its exact
+28,351-byte artifact, `xaero-emf-entity-icon-compat-0.1.0-canary3.jar`, SHA-256
+`4f34d743f5fffd8e938c8f5157c630fd85f3b263ac1ae9f96c432cfe51668df2`, source
+`2478f021982c5f26e51ff0579fa2f5dad85ed200`, remains unchanged.
 
-Exact Canary 3 is the accepted Xaero Minimap × EMF Entity Icon Compatibility
-release. The user supplied one aggregate focused runtime **PASS** for the exact
-retained artifact; the historical checklist rows were not reported separately
-and must not be retroactively classified one by one.
+DEPLOYED describes the exact file found in the dedicated profile and the existing
+manager baseline entry. It does not claim a fresh readiness check or project
+acceptance. This project-only correction does not edit that manager entry or
+assign a slot. A separate manager owner must reconcile the withdrawn acceptance.
+Earlier Diagnostic1/C1/C2 observations remain in CODEX_LOG.md; no individual C3
+control pass is inferred from the withdrawn aggregate report.
 
-This migration did not deploy an artifact, launch Minecraft, change either Test
-Slot or the accepted baseline, modify map data, or access the protected gameplay
-instance. The retained deployment and runtime classifications are prior evidence
-for the exact binary, not new validation performed during migration.
+## Profile boundaries
 
-- Current/accepted: `xaero-emf-entity-icon-compat-0.1.0-canary3.jar`,
-  28,351 bytes, SHA-256
-  `4F34D743F5FFFD8E938C8F5157C630FD85F3B263AC1AE9F96C432CFE51668DF2`,
-  from legacy source `2478f021982c5f26e51ff0579fa2f5dad85ed200`.
-  No prior canary is a valid known-good rollback; C1 and C2 remain failed or
-  incomplete provenance only.
-- Migration verification reproduced the Java 25 / Gradle 9.5.1 controlled
-  build against the exact Xaero 26.4.2, World Map 1.44.2, EMF 3.2.6, ETF 7.1.1,
-  and Fresh Animations 1.10.5 inputs: 35/35 tests passed with zero failures,
-  errors, or skips, and client-only packaging verification passed. The fresh
-  build was not substituted for the retained runtime-tested JAR.
-- The immutable Canary 3 source and embedded metadata still carry their
-  pre-runtime generated/not-deployed classification. Preserve those bytes;
-  current acceptance is recorded only in the canonical status and evidence.
+- Dedicated managed test target: `C:\Users\resiv\AppData\Roaming\ModrinthApp\profiles\Matcha Flavoured 26.2 Workbench`. Deployment requires separate serialized manager ownership.
+- External/manual evidence only: `C:\Users\resiv\AppData\Roaming\ModrinthApp\profiles\Matcha 26.2 Player Instance`. Read-only logs, archived logs, crash reports, config and installed-mod metadata/hash inspection are authorized. It may be in active use. Never modify files, deploy, launch/stop/restart/control the game or launcher, acquire exclusive locks, or enroll it in the manager. Capture only necessary evidence outside the profile with source/time and live/stability labels; skip or retry locked/changing files without interrupting gameplay. Never commit/publish raw private evidence.
+- Protected `Matcha Flavoured 26.1.2` gameplay instance: permanently off-limits, including reads.
 
-## Retained unsuccessful and incomplete evidence
+## Future combined runtime procedure
 
-- Diagnostic1, `xaero-entity-icon-diagnostic-0.1.0-diagnostic1.jar`, 6,742
-  bytes, SHA-256
-  `05C41F987909276A29CF106F8CBE138E83F6DCBD4DDE401F193F21CEE31EF440`,
-  from `a92f62c0c51286d8a8844b0707b813a1eb14c7cb`, is retired diagnostic
-  provenance. Adult sheep and creeper had empty traces, returned `FAILED`, and
-  remained absent; baby sheep had a non-empty trace and atlas icon at `0,64`
-  but still had no final minimap head.
-- Canary 1, `xaero-emf-entity-icon-compat-0.1.0-canary1.jar`, 7,555 bytes,
-  SHA-256
-  `A9F21BAADDDCDFA1AE937653B11E5274C6CA9EEF954A303CCC98EE7469A33239`,
-  from `0da32ff62bf191165a7989f8aff227502d7d05d0`, is **FAIL / NOT
-  ACCEPTED**: with Fresh Animations enabled, sheep and horse heads remained
-  absent. No all-mob failure is inferred.
-- Canary 2, `xaero-emf-entity-icon-compat-0.1.0-canary2.jar`, 16,848 bytes,
-  SHA-256
-  `B796A2CC55AE50B8D927EA576D3AF1F2C9E4FAAB4446460B2F3681CE1411BA73`,
-  from `647d4646c0fa7ec2982e8ef18f49f61b579db57e`, is **PARTIAL RUNTIME
-  PASS / NOT ACCEPTED**: sheep rendered at giant/bad scale, horse remained
-  absent, and sea-turtle geometry was malformed. It must not be restored or
-  promoted as a fix.
+The intended pair is Ribbits compatibility `0.1.0-canary2` and EMF compatibility
+`0.1.0-canary4`. Neither successor has been built or validated by this correction.
+Do not deploy the failed current pair as a replacement test candidate.
 
-## Current useful runtime checks
+1. Finish the successors and their exact dependency/structural gates, independent
+   clean deterministic builds, artifact scans, and production Knot/Mixin checks.
+   Use the external session/version evidence and its limits in the audit addendum.
+2. In a separately authorized serialized Test Instance Manager task, assign the
+   two independently identified successor members as one atomic cohort. Record
+   each filename, version, bytes, SHA-256 and source checkpoint, all dependency
+   identities, complete resource-pack order and effective model resources. Preserve
+   the other slot. No assignment, deployment or Minecraft launch is authorized here.
+3. Fully restart; retain the launch log and bounded activation/stage diagnostics.
+   Enable Xaero entity heads and put each representative entity within an admitted
+   category and range. Compare against heads disabled, category excluded and out
+   of range controls. Restore the positive configuration before grading icons.
+4. Check Ribbit active textures and every direct cube at exact `main/body` with
+   inherited main/body transforms; exclude all children, descendants and siblings.
+   Cover Nitwit, Chef, Farmer, Merchant and Guard, adult/baby, Pride, rain/umbrella
+   and instrument variants. Keep Wandering Ribbit outside this provider.
+5. Grade wolf, bat, axolotl, parrot, frog, allay, sniffer, iron golem, vex, ravager
+   and witch separately. Check intended head-local geometry, framing and texture;
+   exclude torso, wings, legs, held items and unrelated sibling geometry.
+6. Retain adult sheep, horse, sea turtle and creeper controls; also use a vanilla
+   entity without an EMF replacement and an unsupported non-Ribbit GeckoLib entity.
+   Compare normal in-world Fresh Animations and Ribbits rendering throughout.
+7. Exercise a valid cache entry and a deliberately failed one in the controlled
+   cohort, reload resources, and confirm both are invalidated and regenerated.
+   Repeat after a full restart. Capture the first rejecting stage and final
+   displayed result; a successful static fixture or atlas allocation is insufficient.
+8. Record independent results for the two projects and individual observations.
+   Never promote either member from the other member's result or from static tests.
 
-Run these only in a separately authorized runtime task when a specific issue
-requires confirmation or a successor candidate exists. Use the exact candidate
-hash, fully restart the client, enable Fresh Animations, and configure Xaero to
-show entity heads.
-
-1. Confirm an adult sheep head renders at normal Xaero icon scale and framing,
-   not the Canary 2 full-body or giant result.
-2. Confirm a horse head/neck icon renders with normal framing and orientation.
-3. Confirm a sea turtle shows only the intended head without body, shell, or
-   rectangle-like cube geometry.
-4. Recheck a creeper or another actually established working Fresh Animations
-   mob for no regression, duplicate icon, or changed framing.
-5. Observe the same entities in-world and confirm normal Fresh Animations
-   geometry, animation, orientation, and scaling remain unchanged.
-6. Record baby-sheep and any other unreported mob/state result separately; the
-   prior baby-sheep downstream display failure and broader entity coverage were
-   not proven fixed by the aggregate Canary 3 report.
-
-Stop and record **FAIL** for a crash, dependency or mixin failure, missing or
-malformed sheep/horse/turtle icon, control regression, duplicate rendering, or
-in-world Fresh Animations change. Record **INCONCLUSIVE** when the exact hash,
-resource/mod versions, Xaero head configuration, full restart, representative
-entity, or visual observation cannot be confirmed. Do not turn an unreported
-mob/state observation into a Canary 3 pass, change another project's files, or
-promote a successor from static/build evidence alone.
+- **PASS:** all applicable owned cases and controls visibly show the intended
+  correct head icon, correct texture/framing, reload recovery and unchanged world
+  rendering. Colored dots or names are not head-icon passes.
+- **FAIL:** an eligible tested entity lacks a correct head icon, shows wrong or
+  contaminated geometry/texture/framing, retains a stale failed cache, crashes, or
+  regresses a control. Describe only the fallback actually observed.
+- **INCONCLUSIVE:** release/cohort/resource identity, category/range, cache/reload
+  sequence, or visual evidence is insufficient. Do not infer unreported passes.

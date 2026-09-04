@@ -18,9 +18,9 @@
     ]
   },
   "definition": {
-    "lifecycle": "ACCEPTED",
+    "lifecycle": "ACTIVE",
     "goals": [
-      "Preserve the exact accepted Canary 3 client companion that repairs the demonstrated Xaero Minimap model-part detection and canonical-frame gaps for Fresh Animations models rendered through Entity Model Features.",
+      "Repair demonstrated Fresh Animations entity-head failures through the narrow EMF-to-Xaero adapter; retain exact Canary 3 as failed/partial provenance after withdrawal of its aggregate pass.",
       "Keep the generic EMF-to-Xaero trace and canonical-frame adapter narrow, fail-closed, and free of species-specific offsets, replacement renderers, or new icon behavior.",
       "Retain exact unsuccessful diagnostic and canary evidence without reclassifying incomplete or failed observations as passes."
     ],
@@ -34,7 +34,7 @@
         "projects/xaero-entity-icons"
       ],
       "exclusions": [
-        "New icon behavior, species-specific fixes, broad renderer redesign, or attempts to resolve remaining or unreported Fresh Animations and Xaero rendering issues.",
+        "Species-specific screen offsets, broad renderer redesign, whole-body icons, live model mutation, and unsupported claims about unreported cases.",
         "Changes to Xaero Minimap, Xaero World Map, Fresh Animations, Entity Model Features, Entity Texture Features, Map Marker Extension, or any other Workbench project.",
         "Static mob icons, copied upstream assets or classes, replacement entity rendering, networking, server behavior, and redistribution of Xaero's All Rights Reserved content.",
         "The retired Diagnostic2 source workspace, unretained generated outputs, legacy status narratives, Test Instance Manager state, deployment ledgers, snapshots, and historical administrative matrices.",
@@ -112,7 +112,7 @@
     ]
   },
   "state": {
-    "milestone": "Exact Canary 3 remains the current and accepted release after the user's aggregate focused runtime PASS; no individual checklist row is inferred. Canary 1, Canary 2, and Diagnostic1 remain exact failed or incomplete provenance and were not restored or promoted.",
+    "milestone": "The user withdrew the premature Canary 3 aggregate runtime PASS and reported no correct minimap head icon for wolf, bat, axolotl, parrot, frog, allay, sniffer, iron golem, vex, ravager, witch. Exact canonical Canary 3 is now RUNTIME_FAIL, unaccepted, with no rollback; earlier Diagnostic1/C1/C2 and partial sheep/horse/sea-turtle/creeper observations are retained separately. The exact C3 artifact is physically present and remains recorded in the manager accepted baseline, which this project-only correction cannot mutate; this is deployment provenance, not renewed project acceptance. Neither slot owns this project. External Player Instance sessions discover exact C3-version EMF/ETF/Xaero together with retired Diagnostic1. No single visual observation is timestamp-bound; per-entity runtime traces/first rejection remain unproven. Fresh Animations and an iron-golem override are current external model inputs, not automatically historical launch bytes. Canary 4 is not built.",
     "releases": {
       "current": {
         "version": "0.1.0-canary3",
@@ -122,31 +122,24 @@
         },
         "source_commit": "2478f021982c5f26e51ff0579fa2f5dad85ed200"
       },
-      "accepted": {
-        "version": "0.1.0-canary3",
-        "artifact": {
-          "filename": "xaero-emf-entity-icon-compat-0.1.0-canary3.jar",
-          "sha256": "4f34d743f5fffd8e938c8f5157c630fd85f3b263ac1ae9f96c432cfe51668df2"
-        },
-        "source_commit": "2478f021982c5f26e51ff0579fa2f5dad85ed200"
-      },
+      "accepted": null,
       "rollback": null,
-      "accepted_current": "CURRENT_IS_ACCEPTED",
+      "accepted_current": "NO_ACCEPTED",
       "accepted_rollback": "NO_ROLLBACK"
     },
     "validation": {
       "build": "CONTROLLED_VALIDATION_PASS",
-      "deployment": "READY_TO_TEST_VERIFIED",
-      "runtime": "RUNTIME_PASS"
+      "deployment": "DEPLOYED",
+      "runtime": "RUNTIME_FAIL"
     },
     "blocker": null
   },
   "synchronization": {
-    "revision": 1,
-    "activity_at": "2026-08-28T20:51:33Z",
-    "updated_at": "2026-08-29T21:33:09Z",
-    "last_codex_at": "2026-08-29T21:33:09Z",
-    "source_commit": "6174660f25a7a34a0c7e444bea584435a779cb50",
+    "revision": 2,
+    "activity_at": "2026-09-04T23:00:36Z",
+    "updated_at": "2026-09-04T23:00:36Z",
+    "last_codex_at": "2026-09-04T23:00:36Z",
+    "source_commit": "a4f16ccceb1d64b1056c8556c4c6e8af187011a5",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
