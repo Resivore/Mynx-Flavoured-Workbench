@@ -32,17 +32,17 @@ final class OccupiedReservationMarkerContractTest {
             "assets/container_slot_reservations/textures/gui/sprites/occupied_reservation_marker.png";
     private static final Path SOURCE = ROOT.resolve("src/main/resources").resolve(RESOURCE);
     private static final String SHA256 =
-            "5A9FE986E6AED154D8E1302C1A8F066D76A2AFF10AA4F6FC9FD973D0E5BCAACE";
+            "D12D0BE850A742C69795259FDE9A5D9D52E822DF529196445948241B4B199F02";
     private static final int[][] PIXELS = {
-            {0xFF787744, 0xFF818049, 0xFF787744},
-            {0xFF635F37, 0xFF787744, 0xFF635F37},
-            {0x00000000, 0xFF635F37, 0x00000000}
+            {0xFF6E7C48, 0xFF768450, 0xFF6E7C48},
+            {0xFF586632, 0xFF6E7C48, 0xFF586632},
+            {0x00000000, 0xFF586632, 0x00000000}
     };
 
     @Test
     void sourceAndProcessedResourceAreTheExactThreeByThreeRgbaPng() throws Exception {
         byte[] source = Files.readAllBytes(SOURCE);
-        assertEquals(103, source.length);
+        assertEquals(1_723, source.length);
         assertEquals(SHA256, sha256(source));
         assertArrayEquals(
                 new byte[]{(byte) 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A},

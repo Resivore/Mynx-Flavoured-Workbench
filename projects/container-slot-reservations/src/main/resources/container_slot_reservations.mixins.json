@@ -10,6 +10,7 @@
     "CrafterBlockEntityMixin",
     "DoubleBarrelIntegrationMixin",
     "FurnaceFuelSlotMixin",
+    "ItemStackingContextMixin",
     "PlayerEnderChestContainerMixin",
     "PlayerEnderChestPersistenceMixin",
     "ShulkerBoxMenuMixin",
