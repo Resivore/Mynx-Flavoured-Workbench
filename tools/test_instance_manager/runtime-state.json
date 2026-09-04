@@ -2,10 +2,10 @@
   "$schema": "../../schemas/runtime-state.schema.json",
   "schema_version": 2,
   "activation": "ACTIVE",
-  "revision": 79,
-  "updated_at": "2026-09-04T05:16:41Z",
+  "revision": 81,
+  "updated_at": "2026-09-04T05:23:27Z",
   "accepted_baseline": {
-    "revision": 15,
+    "revision": 17,
     "provenance": {
       "source_repository": "Resivore/Minecraft-26.2-Workbench",
       "source_commit": "f0101f38c446dddaa4226450386402c63597ba7c",
@@ -414,12 +414,12 @@
       },
       {
         "unit": {
-          "deployment_id": "66b8b293-d9ae-41c4-a969-d43baf79c2ff",
+          "deployment_id": "30a3d125-ecb6-4a7a-862b-ca2e2c1bbcfe",
           "project_uuid": "ffa96cc6-2989-5465-b158-1659a484366b",
           "project_id": "quick-stack-nearby-compat",
           "project_identity_source": "CURRENT_MANIFEST",
-          "version": "0.1.0-canary6",
-          "source_commit": "3c8cc5917da9fd016e57a969955fa7c6e3b08661",
+          "version": "0.1.0-canary8",
+          "source_commit": "1f545721658cce803200fa277737052cead79b70",
           "artifacts": [
             {
               "artifact_id": "cb31d144-b6c4-41fb-ba44-35d896b228f6",
@@ -435,21 +435,21 @@
               }
             },
             {
-              "artifact_id": "dd71ea5d-30c2-4ae6-a062-7bf9901812b2",
+              "artifact_id": "62f897e7-dc2e-4754-82f0-43240d4655be",
               "kind": "MOD",
-              "filename": "quick-stack-nearby-compat-0.1.0-canary6.jar",
-              "sha256": "c2f4ae3b02a5517ad184998c784c356d90132aeaee91546c91d03a878be6ce98",
+              "filename": "quick-stack-nearby-compat-0.1.0-canary8.jar",
+              "sha256": "e6aaf43d881f31202931c40b6f40762f2e2dab1f2ae8d0ce5fd7f213ec0cbba5",
               "ownership_keys": [
                 "mod:quick_stack_nearby_compat"
               ],
               "source": {
                 "type": "REPOSITORY",
-                "path": "projects/quick-stack-nearby-compat/artifacts/quick-stack-nearby-compat-0.1.0-canary6.jar"
+                "path": "projects/quick-stack-nearby-compat/artifacts/quick-stack-nearby-compat-0.1.0-canary8.jar"
               }
             }
           ]
         },
-        "accepted_at": null
+        "accepted_at": "2026-09-04T05:23:27Z"
       },
       {
         "unit": {
@@ -847,137 +847,34 @@
       },
       {
         "unit": {
-          "deployment_id": "c0fdfff1-831a-4081-93a3-e596d7fc928d",
+          "deployment_id": "8211900d-913c-40f2-9829-68509e0d71fe",
           "project_uuid": "3ab36584-8732-554f-840e-28a75c422660",
           "project_id": "container-slot-reservations",
           "project_identity_source": "CURRENT_MANIFEST",
-          "version": "0.1.0-canary1",
-          "source_commit": "e0adc6b9302392440f2e5654c1e4031916b0c996",
+          "version": "0.1.0-canary4",
+          "source_commit": "d09c3f7153d4e53a36f41fb1ea80d85b4cb2e28f",
           "artifacts": [
             {
-              "artifact_id": "c3bc9365-5664-4148-9200-3292307f9bce",
+              "artifact_id": "cc469fa7-e2a5-417e-8e5c-978355f052f3",
               "kind": "MOD",
-              "filename": "container-slot-reservations-0.1.0-canary1.jar",
-              "sha256": "4e7f0a470a387be76189d0a5e1ae8c614d17ec8b24a6774b400838cc234c4532",
+              "filename": "container-slot-reservations-0.1.0-canary4.jar",
+              "sha256": "006f2c01e3502bd19d67e26a53979ccc65d53dde08aa07313094017ca170df65",
               "ownership_keys": [
                 "mod:container_slot_reservations"
               ],
               "source": {
                 "type": "REPOSITORY",
-                "path": "projects/container-slot-reservations/artifacts/container-slot-reservations-0.1.0-canary1.jar"
+                "path": "projects/container-slot-reservations/artifacts/container-slot-reservations-0.1.0-canary4.jar"
               }
             }
           ]
         },
-        "accepted_at": "2026-09-03T04:03:00Z"
+        "accepted_at": "2026-09-04T05:22:28Z"
       }
     ]
   },
   "slots": {
-    "A": {
-      "members": [
-        {
-          "unit": {
-            "deployment_id": "8211900d-913c-40f2-9829-68509e0d71fe",
-            "project_uuid": "3ab36584-8732-554f-840e-28a75c422660",
-            "project_id": "container-slot-reservations",
-            "project_identity_source": "CURRENT_MANIFEST",
-            "version": "0.1.0-canary4",
-            "source_commit": "d09c3f7153d4e53a36f41fb1ea80d85b4cb2e28f",
-            "artifacts": [
-              {
-                "artifact_id": "cc469fa7-e2a5-417e-8e5c-978355f052f3",
-                "kind": "MOD",
-                "filename": "container-slot-reservations-0.1.0-canary4.jar",
-                "sha256": "006f2c01e3502bd19d67e26a53979ccc65d53dde08aa07313094017ca170df65",
-                "ownership_keys": [
-                  "mod:container_slot_reservations"
-                ],
-                "source": {
-                  "type": "REPOSITORY",
-                  "path": "projects/container-slot-reservations/artifacts/container-slot-reservations-0.1.0-canary4.jar"
-                }
-              }
-            ]
-          },
-          "replaces_accepted_deployment_id": "c0fdfff1-831a-4081-93a3-e596d7fc928d",
-          "runtime_result": {
-            "classification": "PASS",
-            "recorded_at": "2026-09-04T05:16:05Z",
-            "evidence": {
-              "passed": [
-                "User-reported aggregate PASS for the latest combined CSR Canary 4 and QSN Canary 8 runtime test; no individual checklist-row observations were supplied or inferred."
-              ],
-              "failed": []
-            }
-          }
-        }
-      ],
-      "deployment": {
-        "state": "READY_TO_TEST_VERIFIED",
-        "deployed_at": "2026-09-04T03:12:46Z",
-        "ready_verified_at": "2026-09-04T03:12:46Z"
-      }
-    },
-    "B": {
-      "members": [
-        {
-          "unit": {
-            "deployment_id": "30a3d125-ecb6-4a7a-862b-ca2e2c1bbcfe",
-            "project_uuid": "ffa96cc6-2989-5465-b158-1659a484366b",
-            "project_id": "quick-stack-nearby-compat",
-            "project_identity_source": "CURRENT_MANIFEST",
-            "version": "0.1.0-canary8",
-            "source_commit": "1f545721658cce803200fa277737052cead79b70",
-            "artifacts": [
-              {
-                "artifact_id": "62f897e7-dc2e-4754-82f0-43240d4655be",
-                "kind": "MOD",
-                "filename": "quick-stack-nearby-compat-0.1.0-canary8.jar",
-                "sha256": "e6aaf43d881f31202931c40b6f40762f2e2dab1f2ae8d0ce5fd7f213ec0cbba5",
-                "ownership_keys": [
-                  "mod:quick_stack_nearby_compat"
-                ],
-                "source": {
-                  "type": "REPOSITORY",
-                  "path": "projects/quick-stack-nearby-compat/artifacts/quick-stack-nearby-compat-0.1.0-canary8.jar"
-                }
-              }
-            ]
-          },
-          "replaces_accepted_deployment_id": "66b8b293-d9ae-41c4-a969-d43baf79c2ff",
-          "runtime_result": {
-            "classification": "PASS",
-            "recorded_at": "2026-09-04T05:16:41Z",
-            "evidence": {
-              "passed": [
-                "User-reported aggregate PASS for the latest combined CSR Canary 4 and QSN Canary 8 runtime test; no individual checklist-row observations were supplied or inferred."
-              ],
-              "failed": []
-            }
-          },
-          "accepted_companion_artifacts": [
-            {
-              "artifact_id": "cb31d144-b6c4-41fb-ba44-35d896b228f6",
-              "kind": "MOD",
-              "filename": "quick-stack-nearby-0.4.0.jar",
-              "sha256": "43f1130527f782a291231c682791b4fd3766a20916c691cbdb98f91fdcc47e53",
-              "ownership_keys": [
-                "mod:quick-stack-nearby"
-              ],
-              "source": {
-                "type": "ADOPTED_TARGET",
-                "path": "mods/quick-stack-nearby-0.4.0.jar"
-              }
-            }
-          ]
-        }
-      ],
-      "deployment": {
-        "state": "READY_TO_TEST_VERIFIED",
-        "deployed_at": "2026-09-03T20:35:13Z",
-        "ready_verified_at": "2026-09-03T20:35:13Z"
-      }
-    }
+    "A": null,
+    "B": null
   }
 }
