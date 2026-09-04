@@ -382,3 +382,140 @@ profile/config/resource-pack/save mutation, protected-instance access, or
 change to either input project occurred. The historical user observation
 remains unbound to an exact Ribbits binary; a future runtime task must establish
 that identity rather than infer it from C6.
+
+## 2026-09-04 external/manual failure reconciliation addendum
+
+This addendum supersedes earlier present-tense acceptance conclusions without
+rewriting their historical evidence. Starting main:
+`a4f16ccceb1d64b1056c8556c4c6e8af187011a5`.
+
+The user withdrew EMF C3's aggregate PASS and reported no correct icons for wolf,
+bat, axolotl, parrot, frog, allay, sniffer, iron golem, vex, ravager and witch;
+Ribbits C1 also had no correct head icon. No exact fallback subtype or unlisted
+pass is established. Both projects now have no accepted release or rollback.
+Earlier sheep/horse/turtle/creeper observations remain in the unchanged historical
+logs and cannot imply broader or individual C3 coverage.
+
+### Read-only external profile and session binding
+
+The user authorized `Matcha 26.2 Player Instance` for read-only diagnostics only.
+Both projects' TESTING.md record the complete boundary. It is not a manager slot.
+No protected-profile access, game/launcher control or profile write occurred.
+Relevant logs were copied to task-local private scratch outside the profile.
+Capture metadata records source path, UTC capture time, byte size, SHA-256,
+source modification time and whether size/mtime stayed stable during each read.
+All reads in the successful capture were stable; latest.log remains labeled live.
+Raw logs/resource archives/configs are not committed or published.
+
+The dedicated Workbench's 179 available log files had no Ribbits/GeckoLib/C1
+mod-list entry. Its latest launch at 2026-09-04 17:26:26 local time is not the
+reported Ribbits launch. The external profile supplies these relevant sessions
+(2026-09-04, America/Chicago, UTC = local + 05:00):
+
+| Log | Launch local | Ribbits | C1 | GeckoLib | Stop local |
+| --- | --- | --- | --- | --- | --- |
+| 2026-09-04-1.log.gz | 15:59:20 | C7 | absent | 5.5.4 | 16:05:33 |
+| 2026-09-04-2.log.gz | 16:06:49 | C7 | present | 5.5.4 | 16:24:10 |
+| 2026-09-04-3.log.gz | 16:37:16 | C7 | present | 5.5.4 | 16:48:06 |
+| 2026-09-04-4.log.gz | 16:48:56 | C8 | present | 5.5.4 | 16:55:36 |
+| 2026-09-04-5.log.gz | 17:03:19 | C8 | present | 5.5.4 | 17:06:55 |
+| 2026-09-04-6.log.gz | 17:07:15 | C8 | present | 5.5.4 | 17:23:47 |
+| 2026-09-04-7.log.gz | 17:37:39 | C8 | present | 5.5.4 | 17:41:47 |
+| latest.log captured after 23:02 UTC | 17:54:31 | C9 | present | 5.5.4 | 18:01:43 |
+
+Every listed session discovers Minecraft 26.2, Fabric Loader 0.19.3, Xaero
+Minimap 26.4.2, nested XaeroLib 1.7.1, World Map 1.44.2, EMF 3.2.6, ETF 7.1.1,
+EMF C3 and retired Diagnostic1. C1 is discovered only where indicated. The user
+has not bound a particular visual observation to a particular session. Archive
+mod lists prove versions, not historical byte hashes. Current hashes below were
+captured separately at 2026-09-04T23:04:47Z and must not be backdated.
+
+### Captured current external artifact identities
+
+| Filename | Version | Bytes | SHA-256 |
+| --- | --- | ---: | --- |
+| `entity_model_features-3.2.6-26.2-fabric.jar` | `3.2.6` | 587,342 | `876a3e4ffda021a6266df87208f2d9980322cf86223d4fe1e313ca996631f115` |
+| `entity_texture_features-7.1.1-26.2-fabric.jar` | `7.1.1` | 762,131 | `f469bc914302a13a5c767296623df60fb0cc3d4e4a02a77c56541a733ad36e3a` |
+| `fabric-api-0.157.0+26.2.jar` | `0.157.0+26.2` | 2,533,297 | `acb7dc90a0430519c49548074d3fbf6fd81d13063f08f0af344b2a6b08a42620` |
+| `geckolib-fabric-26.2-5.5.4.jar` | `5.5.4` | 1,183,876 | `a5770f9ea0c21db157559fe266874fd84be8c7da689d37aa7bf2b06304a6a65d` |
+| `ribbits-private-reconstruction-4.1.6+26.2-mynx-canary9.jar` | `4.1.6+26.2-mynx-canary9` | 3,333,513 | `e433cd048bc362edae91e2e057c8170d92d110cbe7b9917c105c7336be6543de` |
+| `ribbits-xaero-entity-icons-compat-0.1.0-canary1.jar` | `0.1.0-canary1` | 52,119 | `dac701cb5bb1ec3d42ed9dc642bb224235b2e1cf1dd84528557ef3ab494f585a` |
+| `xaero-emf-entity-icon-compat-0.1.0-canary3.jar` | `0.1.0-canary3` | 28,351 | `4f34d743f5fffd8e938c8f5157c630fd85f3b263ac1ae9f96c432cfe51668df2` |
+| `xaero-entity-icon-diagnostic-0.1.0-diagnostic1.jar` | `0.1.0-diagnostic1` | 6,742 | `05c41f987909276a29cf106f8cbe138e83f6dcbd4dde401f193f21cee31ef440` |
+| `xaerominimap-fabric-26.2-26.4.2.jar` | `26.4.2` | 2,221,925 | `69284892d2eb853c9aefa85a4c9b74232c322da00207994c67ab8aeed8a64048` |
+| `xaeroworldmap-fabric-26.2-1.44.2.jar` | `1.44.2` | 1,473,719 | `d55ef45c559ae0adcf66d894c022f61d9d921629b0c885d04aa00424546a2389` |
+
+Nested XaeroLib in each exact Minimap/World Map archive originates at
+`META-INF/jars/xaerolib-fabric-26.2-1.7.1.jar`, 621,485 bytes, SHA-256
+`7f4a78dd7e046fea0500fef83b1481d85317c8348d47e947035d7a07efe51065`.
+The duplicate identical nested providers do not establish which parent Fabric
+selected in a historical launch.
+FreshAnimations_v1.10.5.zip is 645,816 bytes, SHA-256
+`cf9f17a2977e171b33cb0b598bc4357dd0383e09c10d5f768ff17c12d0a028ee`.
+The currently selected later `Frog_Villagers_x_Fresh_Animations_baby_fix_v4.zip`
+is 952,955 bytes, SHA-256
+`9edb6ad75b82a52214dcb8126d0f4af83f73704b5fdb3076e0e278280cc55aa7` and supplies
+an iron_golem.jem override. Its current bytes are not proof of historical bytes.
+
+### First Ribbits rejection and selector evidence
+
+C1 checks whole-origin Xaero, nested XaeroLib, GeckoLib, then Ribbits identities.
+Every evidenced C1 session uses GeckoLib 5.5.4, so the 5.5.1 gate rejects before
+Ribbits geometry or provider registration can run. Later C8/C9 also mismatch
+C1's exact C7 gate, but the C7/C8 mismatch is not the first rejecting condition.
+No activation decision appears in normal latest.log; C1 uses System.Logger.
+The runtime decision is inferred from exact plugin source and session versions,
+not fabricated as an observed log message. No Geo prerender, selector or draw
+failure is established. Preserve the Xaero/XaeroLib/GeckoLib gates for the next
+controlled 5.5.1 cohort; do not silently treat manual 5.5.4 as supported.
+
+Read-only C7/C8/C9 comparison proves that all 41 ordinary Geo model entries share
+manifest SHA-256 `0d41371da10e5328a803ed960914de54b6bf7f28e19133e2b0bc5305cfa0060c`.
+Each has one top-level main and direct body with nonempty direct cubes; counts
+are 3x29, 4x8, 9x3, 10x1 (156 total). The separate Wandering model is excluded.
+RibbitRenderer, RibbitModel and DataTicketModule class bytes also match across
+all three releases. Current C9 is 3,333,513 bytes, SHA-256
+`e433cd048bc362edae91e2e057c8170d92d110cbe7b9917c105c7336be6543de`, source
+`8dc886c01f6d402ccf19b45756383d62185f0d4e`.
+The literal main/body direct-cube rule needs no geometry change on this evidence.
+
+Xaero 26.4.2 bytecode has its requiresEntityModel invocation at create offset 84
+and prerender invocation at offset 222; the call precedes prerender on the
+inspected path. C1's cached Boolean null guard is therefore not a demonstrated
+failure on this binary, though the successor must remove that hidden assumption.
+The initial javap inspection emitted an archive access error after producing the
+method output; it is inspection evidence, not a passed production harness.
+
+### EMF first-stage evidence boundary
+
+No per-entity resolver trace/destination is present in the captured logs. C3's
+version gate is eligible in these sessions, but silent plugin/resolver behavior
+prevents claiming an observed per-entity first guard. The following are exact
+base Fresh Animations structural inputs only, not reconstructed live EMF trees.
+Retained vanilla canonical identity, live root class/path, trace admission,
+transformed destination and first C3 rejection all remain unproven per row.
+
+| Entity | Base JEM semantic path | Direct cubes | Descendant cubes | Runtime first guard/stage |
+| --- | --- | ---: | ---: | --- |
+| wolf | body/head2 | 1 | 9 | unresolved |
+| bat | body/head2 | 1 | 4 | unresolved |
+| axolotl | body/head2 | 1 | 5 | unresolved |
+| parrot | body/head2 | 2 | 5 | unresolved |
+| frog | body/body2/head2 | 2 | 10 | unresolved |
+| allay | body/head2 | 1 | 3 | unresolved |
+| sniffer | body/head2 | 2 | 6 | unresolved |
+| iron golem | body/head2 (base; current override exists) | 1 | 4 | unresolved |
+| vex | body/head2 | 1 | 6 | unresolved |
+| ravager | body/head2 | 2 | 10 | unresolved |
+| witch | body/head2 | 1 | 8 | unresolved |
+
+C3's actual static guards require a direct root head/head_parts, empty canonical
+EMF subtree, retained vanilla direct cubes, a traced semantic candidate, exactly
+one dimensional cube match and finite invertible frames. These are candidate
+limitations to test, not one inferred common cause for all eleven mobs.
+Neither successor is built at this evidence-correction checkpoint. Diagnostics,
+exact controlled fixtures and production classloading remain implementation work.
+
+The manager has neither project in A/B. C3's stale accepted-baseline entry is
+preserved under the explicitly restricted project-only scope; clearing project
+acceptance does not change physical deployment or claim an accepted promotion.
