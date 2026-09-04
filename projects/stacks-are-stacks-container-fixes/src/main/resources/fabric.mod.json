@@ -23,7 +23,7 @@
     "stacksarestacks": "=2.1.2-1.26.2"
   },
   "custom": {
-    "workbench:classification": "GENERATED / UNTESTED",
+    "workbench:classification": "GENERATED / STATICALLY VALIDATED / RUNTIME UNTESTED",
     "workbench:deployment": "NOT DEPLOYED"
   }
 }

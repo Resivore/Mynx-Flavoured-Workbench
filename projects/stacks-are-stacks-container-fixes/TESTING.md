@@ -4,39 +4,42 @@
 
 **READY TO TEST VERIFIED — RUNTIME UNTESTED — NOT READY FOR PROMOTION**
 
-Test only unchanged `artifacts/stacks-are-stacks-container-fixes-0.1.0-canary1.jar`, 3,677 bytes, SHA-256 `AB3634C31C2F3B231908CF392ED5ADA074E624E3DFBA45B5707D8B38958E1EED`, embedded version `0.1.0-canary1`, source `625143806c44d6e5dc6725282edbfea0fafd8f53`.
+Test only `artifacts/stacks-are-stacks-container-fixes-0.1.0-canary2.jar`, 16,921 bytes, SHA-256 `7C294CE614CCC6F889DDE7DB5B5BD474B74DC8B6A6C8E62FAEFD44E5811896F2`, embedded version `0.1.0-canary2`, source `382cb276455ffe74efc100ce65e853b499204b56`.
 
-Test Instance Manager revision 82, accepted Stack v17, state digest `19C42A70EF995A671B9A6D063AD61A927F0BD8A22617722FEF103F862F971577`, Slot B deployment `f58e3578-1149-4373-a32f-c6b3e1c9ceea`, and artifact `4eff5256-9775-4e5e-b459-ec40188849a5` bind the exact unchanged candidate. Its deployment is `READY_TO_TEST_VERIFIED`; its independent result is `UNTESTED`.
+Test Instance Manager revision 84, accepted Stack v17, state digest `589256B4CDECA64B22933887B1C14DA37B9BBF4BBDB972FA9F8D91B6EC075C02`, Slot B deployment `66cd7696-3d01-4d92-805e-9221c1b93e07`, and artifact `01661d77-c5d5-4838-8485-1cb4309265ce` bind exact Canary 2 as `READY_TO_TEST_VERIFIED / UNTESTED`. Slot A remains exact CSR Canary 5 deployment `f12e434a-51c1-4e84-a487-3ebcadbe3d64` / artifact `c9551ad6-7a35-4a0e-ac25-af3efeccd86a`, independently `UNTESTED`. Accepted QSN C8 remains active from the baseline.
 
-The verified hard dependency is the unmanaged external enabled provider `mods/StacksAreStacks-2.1.2-1.26.2.jar`, Fabric ID `stacksarestacks`, version `2.1.2-1.26.2`, 358,573 bytes, SHA-256 `8E318394EA52A6DB343A00987DD1B122C69BF48E42DEB7813CC5EF293E655917`. It is not a manager accepted-baseline member and has no invented deployment or artifact UUID.
+The verified external provider is `mods/StacksAreStacks-2.1.2-1.26.2.jar`, Fabric ID/version `stacksarestacks` / `2.1.2-1.26.2`, 358,573 bytes, SHA-256 `8E318394EA52A6DB343A00987DD1B122C69BF48E42DEB7813CC5EF293E655917`. Do not substitute it or alter its configuration.
 
-Slot A is the separate CSR Canary 5 marker test. Accepted QSN C8 remains active from the baseline and occupies no Test Slot. Minecraft was not launched during deployment.
+Canary 1 is not the candidate. Its exact former deployment is canonically `FAIL`: `CLIENT_STARTED` invoked upstream `setStackSizes(null)` before every built-in item holder had bound components, producing the supplied uncaught render-thread `NullPointerException: Components not bound yet`. The launcher exit code does not change that result.
 
-## Preflight
+## Preflight and startup gate
 
-From the repository root, run the Test Instance Manager's read-only `verify` command and require `PHYSICAL_STATE_VERIFIED` for both exact slot identities, the upstream dependency receipt, Stack v17, revision 82, and the state digest above. Stop on drift. Do not rebuild or substitute the patch, change Stacks Are Stacks configuration, or touch the protected 26.1.2 gameplay profile. Use a disposable world and inspect the complete log through normal shutdown.
+Use only the dedicated Minecraft 26.2 Workbench. Never access the protected 26.1.2 gameplay profile. Before launching, run the manager's read-only `verify` command and require `PHYSICAL_STATE_VERIFIED`, revision 84, the exact state digest, both slot identities/results, Stack v17, and the exact external provider above. Stop on drift.
 
-## Question 2 — Stacks Are Stacks patch
+Startup is the first and mandatory runtime gate:
 
-1. Create a stack of three saddles or another eligible normally non-stackable item.
-2. Confirm the actual and displayed count remains three in the player inventory and an ordinary container.
-3. Move, split, merge, shift-click, close, and reopen it; confirm actual and displayed counts remain correct.
-4. Put it in a shulker and confirm Easy Shulker Boxes displays the item and count.
-5. Use an ordinary vanilla-stackable item as a control and confirm its behavior is unchanged.
-6. Reconnect once and confirm the client holder maximum remains aligned.
+1. Launch to the title screen and confirm there is no `Components not bound yet`, mixin, linkage, or holder-alignment failure.
+2. Confirm the log says registry synchronization completed, every item holder passed readiness, and the alignment completed exactly once for that binding epoch.
+3. Enter a disposable world only after the startup gate passes.
 
-Judge this question independently from the Slot A CSR C5 marker check in that project's current `TESTING.md`.
+## Focused SAS and CSR matrix
 
-## CSR/Stacks Are Stacks diagnostic-only probe
+Use an eligible stack of three saddles unless the exact unchanged Stacks Are Stacks configuration excludes saddles; if it does, record that fact and use another eligible normally non-stackable item.
 
-1. Attempt to create a CSR reservation using an eligible Stacks Are Stacks item.
-2. Remove the physical stack and inspect the empty reservation.
-3. Attempt matching manual and `QUICK_MOVE` reinsertion.
-4. Optionally observe hopper and accepted QSN C8 behavior.
-5. Record exactly what happens.
-
-This probe is observation-only. A failure or inconclusive result is input for a future compatibility task; it is not authority to modify either implementation here, and no CSR/Stacks Are Stacks compatibility fix is claimed.
+1. Confirm the actual and displayed count remains three in player inventory, an ordinary supported container, and an Easy Shulker Boxes preview.
+2. Split, merge, drag, manually move, and vanilla `QUICK_MOVE` the stack; confirm no clamp, loss, duplication, or hidden count.
+3. Create a CSR reservation from the stack, remove the physical stack, and confirm the translucent count-one identity ghost, literal zero, tooltip, and empty-reservation behavior remain correct.
+4. Reinsert a matching stack by manual placement, vanilla `QUICK_MOVE`, hopper insertion where native sided rules permit it, and accepted QSN C8; confirm existing CSR affinity, admission, order, capacity, remainder, packet, and feedback behavior.
+5. Confirm a matching occupied reservation accepts more items only up to the effective Stacks Are Stacks maximum.
+6. Confirm a different item and a component-distinct saddle are rejected while count differences alone still match.
+7. Confirm unsupported, player-inventory, hotbar, fake, inactive, result, and foreign slots remain unaffected.
+8. Confirm vanilla-stackable controls, the CSR occupied marker, carried-shulker persistence, component preservation, Easy Shulker Boxes / Item Interactions overlays, and representative accepted Canary 4 storage/machine behavior remain unchanged.
+9. Close and reopen the container; confirm the physical count, reservation, ghost/marker, and tooltip remain correct.
+10. Disconnect and reconnect once. Confirm a fresh configuration epoch aligns once, the prior epoch is not reused, and the same stack/reservation checks remain correct.
+11. Inspect the complete log through normal shutdown for duplicate alignment, overlap/rejection, partial mutation, count loss, serialization errors, or CSR/QSN regressions.
 
 ## Stopping and recording
 
-Stop and report `RUNTIME_FAIL` or `INCONCLUSIVE` for the patch if identity/readiness or the exact dependency drifts; startup fails; a retained count is visually clamped or lost; a shulker-preview entry remains blank; movement, vanilla controls, configuration, eligibility, or reconnect behavior regresses; or a patch-attributable error appears. Record only observations actually made and do not promote Canary 1 without a complete applicable runtime pass.
+Stop and record Canary 2 as `RUNTIME_FAIL` or `INCONCLUSIVE`, as supported by the actual observations, if startup fails; readiness does not pass; alignment is absent, duplicated within one epoch, or runs off the client thread; any count clamps, disappears, duplicates, or becomes visually hidden; matching/component-distinct reservation behavior is wrong; manual, `QUICK_MOVE`, hopper, or QSN insertion regresses; reconnect fails to realign; exact identities drift; or a patch-attributable error appears.
+
+Judge CSR Canary 5's marker question independently even though the combined path is exercised. Record only behavior actually observed. Controlled tests, GameTests, deployment, and physical verification are not Minecraft runtime evidence; do not promote or mark either candidate passed without a complete applicable runtime pass.

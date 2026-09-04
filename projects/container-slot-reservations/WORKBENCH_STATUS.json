@@ -19,7 +19,7 @@
       "Preserve a player's component-exact organization intent after a physical stack leaves an eligible persistent storage or machine slot.",
       "Apply native insertion permission AND exact reservation admission to manual placement, vanilla QUICK_MOVE, hoppers, sided automation, and QSN without changing extraction, destination order, internal processing, or routing ownership.",
       "Resolve every eligible logical menu slot to one stable block-owned or player-owned reservation holder, its physical local slot, physical stack, real slot count, and native admission result.",
-      "Retain accepted Canary 4's user-approved alpha-only ghost visuals, literal zero, hover behavior, carried-shulker persistence, optional tooltip overlays, and server-authoritative public API while Canary 5 changes only the occupied-reservation marker image.",
+      "Retain accepted Canary 4's user-approved alpha-only ghost visuals, literal zero, hover behavior, carried-shulker persistence, optional tooltip overlays, server-authoritative public API, and count-one component-exact identity while Canary 5 changes only the occupied-reservation marker image.",
       "Keep the supported-owner and menu policy intentionally exact rather than admitting arbitrary modded, temporary, fake, foreign, player-inventory, or entity containers."
     ],
     "scope": [
@@ -34,7 +34,7 @@
       "Keep getReservation, isReserved, reservationMatches, mayInsert, classify, and every ReservationSlotClass value binary-compatible with accepted CSR C1 consumers and QSN C8; native-non-writable reservations classify NON_WRITABLE and cannot create QSN affinity.",
       "Preserve neutral 0x59FFFFFF alpha-only ghost rendering, the audited premultiplied pipeline, #43362A solely as the Matcha slot background, literal-zero placement/shadow, hover tooltip, reservation-free rendering, DataComponents.CONTAINER integrity, and Easy Shulker Boxes / Item Interactions overlays; render only OCCUPIED_RESERVED slots with the exact 103-byte 3x3 RGBA marker at itemX + 13, itemY through the nearest-sampled GUI sprite path.",
       "Record the user's exact Canary 3 visual observation only as a narrow INCONCLUSIVE result at manager revision 75; it is not a complete C3 matrix pass and supplies no C4 runtime evidence.",
-      "Keep the independently deployed Stacks Are Stacks Container Fixes Canary 1 in Slot B separate from CSR; this task adds no CSR/Stacks Are Stacks compatibility behavior and the observation-only probe supplies evidence only for a future task."
+      "Keep exact CSR Canary 5 byte-identical while Stacks Are Stacks Container Fixes Canary 2 supplies post-registry client holder-default alignment; shared contracts cover count-one template materialization, component-exact matching, and effective-maximum classification without CSR production linkage."
     ],
     "boundaries": {
       "owned_paths": [
@@ -48,7 +48,7 @@
         "Generic setItem interception, reservation-bearing drops for chests, barrels, machines, or Double Barrels, fake zero-count stacks, or mutation of DataComponents.CONTAINER; only the established shulker block-to-item reservation round trip persists.",
         "Ender Chest block ownership, Ender Chest hopper access, Ender Chest QSN scanning, cross-player reservation sharing, or keepInventory-dependent durability.",
         "Hard runtime dependencies, nested redistribution, or restrictive upper bounds for Double Barrels, Easy Shulker Boxes, or Item Interactions; optional seams fail closed when absent or changed.",
-        "Any Stacks Are Stacks-specific CSR workaround, change to projects/stacks-are-stacks-container-fixes, claim of CSR/Stacks Are Stacks compatibility, inferred runtime evidence, Minecraft launch during deployment, or access to the protected 26.1.2 gameplay instance."
+        "Any Stacks Are Stacks-specific CSR workaround or hard dependency, persisting an aligned holder default as an explicit MAX_STACK_SIZE reservation component, changing count-one/component-exact identity, inferring runtime compatibility from controlled tests or deployment, Minecraft launch during deployment, or access to the protected 26.1.2 gameplay instance."
       ]
     },
     "dependencies": [
@@ -121,7 +121,7 @@
     ]
   },
   "state": {
-    "milestone": "The user's aggregate combined-test PASS was bound only to exact CSR Canary 4 deployment 8211900d-913c-40f2-9829-68509e0d71fe / artifact cc469fa7-e2a5-417e-8e5c-978355f052f3 at manager revision 78; no row-level observations were inferred. Exact C4 was promoted at revision 80 and is the accepted predecessor. Canary 5 changes only the occupied-reservation marker to the supplied 103-byte 3x3 RGBA sprite, passed 62/62 JUnit tests, 20/20 Fabric GameTests without Double Barrels, 20/20 with exact accepted Double Barrels, and the complete clean Java 25 / Gradle 9.5.1 offline build. Manager revision 82 physically verifies C5 in Slot A as deployment f12e434a-51c1-4e84-a487-3ebcadbe3d64 / artifact c9551ad6-7a35-4a0e-ac25-af3efeccd86a at Stack v17 and state digest 19c42a70ef995a671b9a6d063ad61a927f0bd8a22617722fef103f862f971577. Minecraft was not launched; C5 is RUNTIME_UNTESTED. Exact accepted C1 remains rollback, failed C2 and displaced C3 provenance remain immutable, and no CSR/Stacks Are Stacks compatibility code was added.",
+    "milestone": "Exact CSR Canary 5 remains byte-identical at 112,541 bytes / SHA-256 d228ef4ece4893a6538a845b34c1684a72fe8659790dc63aa12ab608aa886b8e and retains accepted C4 plus rollback C1. Its complete Java 25 / Gradle 9.5.1 suite was reconfirmed twice: 62/62 JUnit and 20/20 GameTests both without and with exact accepted Double Barrels. Accepted QSN C8 passed 52 applicable behavioral/API contracts and 15/15 GameTests against exact C5; only its intentionally historical C1 byte-identity assertion was excluded. The compatibility fault was a stale client Stacks Are Stacks holder default, because CSR serializes holder identity, count, and component patch rather than resolved defaults; SAS patch C2 now aligns those defaults at the proven post-bind/pre-play seam without any CSR binary change. Manager revision 84 preserves the exact Slot A deployment f12e434a-51c1-4e84-a487-3ebcadbe3d64 / artifact c9551ad6-7a35-4a0e-ac25-af3efeccd86a, original readiness timestamps, and independent UNTESTED result beside SAS C2 in Slot B, accepted Stack v17, and state digest 589256b4cdeca64b22933887b1c14da37b9bbf4bbdb972fa9f8d91b6ec075c02. Runtime compatibility remains unverified.",
     "releases": {
       "current": {
         "version": "0.1.0-canary5",
@@ -168,11 +168,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 8,
-    "activity_at": "2026-09-04T05:34:49Z",
-    "updated_at": "2026-09-04T05:34:49Z",
-    "last_codex_at": "2026-09-04T05:34:49Z",
-    "source_commit": "2bc724420fb99b21e90c9a27c22d2ad0fdfa8064",
+    "revision": 9,
+    "activity_at": "2026-09-04T18:46:31Z",
+    "updated_at": "2026-09-04T18:46:31Z",
+    "last_codex_at": "2026-09-04T18:46:31Z",
+    "source_commit": "382cb276455ffe74efc100ce65e853b499204b56",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
