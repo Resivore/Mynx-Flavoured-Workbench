@@ -1,7 +1,6 @@
 package dev.resivore.slotreservations.menu;
 
-import dev.resivore.slotreservations.ReservationStore;
-import dev.resivore.slotreservations.SupportedContainerResolver;
+import dev.resivore.slotreservations.NativeInsertionPolicy;
 import net.minecraft.world.Container;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
@@ -14,9 +13,11 @@ public class ReservationAwareSlot extends Slot {
 
     @Override
     public boolean mayPlace(ItemStack incoming) {
-        return super.mayPlace(incoming)
-                && SupportedContainerResolver.resolve(container, getContainerSlot())
-                .map(resolved -> ReservationStore.reservationAllows(resolved, incoming))
-                .orElse(true);
+        return NativeInsertionPolicy.applyReservation(
+                container,
+                getContainerSlot(),
+                incoming,
+                super.mayPlace(incoming)
+        );
     }
 }

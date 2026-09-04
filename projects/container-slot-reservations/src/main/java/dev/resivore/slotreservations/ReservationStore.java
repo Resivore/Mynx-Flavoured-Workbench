@@ -1,6 +1,7 @@
 package dev.resivore.slotreservations;
 
 import net.minecraft.core.component.DataComponentMap;
+import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 
@@ -13,7 +14,18 @@ public final class ReservationStore {
     }
 
     public static ReservationData getData(SupportedContainerResolver.ResolvedSlot slot) {
-        return getData(Objects.requireNonNull(slot, "slot").blockEntity());
+        return getOwnerData(Objects.requireNonNull(slot, "slot").owner());
+    }
+
+    private static ReservationData getOwnerData(Container owner) {
+        Objects.requireNonNull(owner, "owner");
+        if (owner instanceof BlockEntity blockEntity) {
+            return getData(blockEntity);
+        }
+        if (owner instanceof EnderChestReservationHolder holder) {
+            return holder.containerSlotReservations$getReservations();
+        }
+        return ReservationData.EMPTY;
     }
 
     public static ReservationData getData(BlockEntity blockEntity) {
@@ -37,6 +49,21 @@ public final class ReservationStore {
         blockEntity.setChanged();
     }
 
+    public static void setOwnerData(Container owner, ReservationData data) {
+        Objects.requireNonNull(owner, "owner");
+        Objects.requireNonNull(data, "data");
+        if (owner instanceof BlockEntity blockEntity) {
+            setData(blockEntity, data);
+            return;
+        }
+        if (owner instanceof EnderChestReservationHolder holder) {
+            holder.containerSlotReservations$setReservations(data);
+            owner.setChanged();
+            return;
+        }
+        throw new IllegalArgumentException("Unsupported reservation owner: " + owner.getClass().getName());
+    }
+
     public static void setData(ItemStack shulker, ReservationData data) {
         Objects.requireNonNull(shulker, "shulker");
         Objects.requireNonNull(data, "data");
@@ -55,14 +82,14 @@ public final class ReservationStore {
     public static ReservationData set(SupportedContainerResolver.ResolvedSlot slot, ItemStack template) {
         Objects.requireNonNull(slot, "slot");
         ReservationData changed = getData(slot).with(slot.localSlot(), template);
-        setData(slot.blockEntity(), changed);
+        setOwnerData(slot.owner(), changed);
         return changed;
     }
 
     public static ReservationData clear(SupportedContainerResolver.ResolvedSlot slot) {
         Objects.requireNonNull(slot, "slot");
         ReservationData changed = getData(slot).without(slot.localSlot());
-        setData(slot.blockEntity(), changed);
+        setOwnerData(slot.owner(), changed);
         return changed;
     }
 

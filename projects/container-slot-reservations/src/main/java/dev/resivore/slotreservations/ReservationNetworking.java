@@ -9,12 +9,18 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.BlastFurnaceMenu;
+import net.minecraft.world.inventory.BrewingStandMenu;
 import net.minecraft.world.inventory.ChestMenu;
+import net.minecraft.world.inventory.CrafterMenu;
+import net.minecraft.world.inventory.DispenserMenu;
+import net.minecraft.world.inventory.FurnaceMenu;
+import net.minecraft.world.inventory.HopperMenu;
 import net.minecraft.world.inventory.ShulkerBoxMenu;
 import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.inventory.SmokerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemStackTemplate;
-import net.minecraft.world.level.block.entity.ShulkerBoxBlockEntity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,7 +51,7 @@ public final class ReservationNetworking {
         if (validated.isEmpty()) return false;
 
         ValidatedTarget target = validated.orElseThrow();
-        ItemStack physical = target.slot().getItem();
+        ItemStack physical = target.resolvedSlot().physicalStack();
         ItemStack carried = target.menu().getCarried();
         ReservationData current = ReservationStore.getData(target.resolvedSlot());
         ReservationTransition.Result transition = null;
@@ -60,7 +66,7 @@ public final class ReservationNetworking {
             }
             case CARRIED_STACK -> {
                 if (!physical.isEmpty() || carried.isEmpty()) return false;
-                if (target.resolvedSlot().blockEntity() instanceof ShulkerBoxBlockEntity
+                if (SupportedContainerResolver.isShulkerOwner(target.resolvedSlot())
                         && !carried.getItem().canFitInsideContainerItems()) {
                     return false;
                 }
@@ -77,7 +83,7 @@ public final class ReservationNetworking {
 
         if (transition == null) return false;
         if (!transition.changed()) return true;
-        ReservationStore.setData(target.resolvedSlot().blockEntity(), transition.data());
+        ReservationStore.setOwnerData(target.resolvedSlot().owner(), transition.data());
         if (transition.outcome() == ReservationTransition.Outcome.CLEARED) {
             player.sendOverlayMessage(Component.translatable(
                     "text.container_slot_reservations.cleared"));
@@ -169,7 +175,16 @@ public final class ReservationNetworking {
     }
 
     private static boolean isSupportedMenu(AbstractContainerMenu menu) {
-        return menu.getClass() == ChestMenu.class || menu.getClass() == ShulkerBoxMenu.class;
+        Class<?> type = menu.getClass();
+        return type == ChestMenu.class
+                || type == ShulkerBoxMenu.class
+                || type == DispenserMenu.class
+                || type == HopperMenu.class
+                || type == FurnaceMenu.class
+                || type == BlastFurnaceMenu.class
+                || type == SmokerMenu.class
+                || type == BrewingStandMenu.class
+                || type == CrafterMenu.class;
     }
 
     record ValidatedTarget(
