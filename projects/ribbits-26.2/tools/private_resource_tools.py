@@ -30,16 +30,16 @@ from typing import Any
 EXPECTED_PRISTINE_SHA256 = (
     "4cf86564aed393410fb1dbca3a9ce2425382307655e92bb6b43f3ddcee5bf731"
 )
-CANDIDATE_VERSION = "4.1.6+26.2-mynx-canary8"
-CANDIDATE_CANARY = 8
+CANDIDATE_VERSION = "4.1.6+26.2-mynx-canary9"
+CANDIDATE_CANARY = 9
 PRIVATE_MANIFEST_SCHEMA = "mynx-ribbits-private-resource-manifest/v1"
 PRIVATE_MANIFEST_CLASSIFICATION = (
     "PRIVATE MYNX ASSEMBLY STAGED / NONREDISTRIBUTABLE DONOR ASSETS"
 )
 PRIVATE_ARTIFACT_FILENAME = (
-    "ribbits-private-reconstruction-4.1.6+26.2-mynx-canary8.jar"
+    "ribbits-private-reconstruction-4.1.6+26.2-mynx-canary9.jar"
 )
-SOURCE_ONLY_ARTIFACT_FILENAME = "ribbits-source-only-4.1.6+26.2-mynx-canary8.jar"
+SOURCE_ONLY_ARTIFACT_FILENAME = "ribbits-source-only-4.1.6+26.2-mynx-canary9.jar"
 SOURCE_SAFE_PUBLIC_RESOURCE_PATHS = frozenset(
     {
         "assets/ribbits/items/glowcap.json",
@@ -68,9 +68,9 @@ EXPECTED_PRIVATE_DATA_NAMESPACES = frozenset(
 FINAL_ITEM_SPRITE_SPECS: dict[str, dict[str, Any]] = {
     "assets/ribbits/textures/item/glowcap.png": {
         "item": "ribbits:glowcap",
-        "source_filename": "glowcap_16x16_final.png",
-        "size": 323,
-        "sha256": "414ba9042f4bf97278927cb8d65c78ae076b14824a4f34f87f6c7c729543d5df",
+        "source_filename": "glowcap_16x16_down1.png",
+        "size": 221,
+        "sha256": "9f79b36007a4a4e5e0b5683264c335d76c0f7e00572116b74a33b9e26c0d5abe",
         "dimensions": (16, 16),
         "transparent_pixels": 178,
         "opaque_pixels": 78,
@@ -95,11 +95,11 @@ FINAL_ITEM_SPRITE_SPECS: dict[str, dict[str, Any]] = {
     },
     "assets/ribbits/textures/map/decorations/ribbit_village.png": {
         "item": "ribbits:ribbit_village_explorer_map",
-        "source_filename": "ribbit_village_marker_16x16.png",
-        "size": 168,
-        "sha256": "df63eb91eda13e91e3b984b11cdffc3d2f3e8c8482d090d4ee1c744ec428b2ba",
-        "dimensions": (16, 16),
-        "transparent_pixels": 222,
+        "source_filename": "ribbit_village_marker_8x8.png",
+        "size": 122,
+        "sha256": "bd05ccfbe6ade532d20fc42f05c665074a0a733a9398069d8d766b515aba861d",
+        "dimensions": (8, 8),
+        "transparent_pixels": 30,
         "opaque_pixels": 34,
     },
 }
@@ -134,7 +134,7 @@ REQUIRED_FABRIC_DEPENDENCIES = {
     "java": ">=25",
     "yungsapi": ">=26.2-Fabric-6.1.1-compat.2",
     "fabric-api": ">=0.157.0",
-    "trinkets_updated": "4.1.0-beta.3+26.2",
+    "trinkets_updated": ">=4.1.0-beta.3",
     "geckolib": ">=5.5.1",
     "cloth-config2": ">=26.2.155",
     "customportals": ">=4.0.0",
@@ -142,8 +142,8 @@ REQUIRED_FABRIC_DEPENDENCIES = {
 }
 SOURCE_FILE_COUNT = 287  # 285 assets/data files plus icon.png and logo.png
 OUTPUT_FILE_COUNT = 346
-# Exact deterministic Canary 8 private staging inventory.
-OUTPUT_TOTAL_SIZE = 2_729_540
+# Exact deterministic Canary 9 private staging inventory.
+OUTPUT_TOTAL_SIZE = 2_735_353
 SOURCE_EXTENSION_COUNTS = {
     ".json": 201,
     ".nbt": 29,
@@ -1058,7 +1058,7 @@ def final_item_sprite_manifest_records() -> list[dict[str, Any]]:
                 "opaque_pixels": spec["opaque_pixels"],
                 "partial_alpha_pixels": 0,
             },
-            "packaged_bytes": "exact tracked attachment bytes",
+            "packaged_bytes": "exact tracked sprite bytes",
         }
         for relative, spec in sorted(FINAL_ITEM_SPRITE_SPECS.items())
     ]
@@ -2998,6 +2998,16 @@ def import_wandering_visual_resources(
         "assets/ribbits/geckolib/models/wandering_ribbit.geo.json",
         "exact approved bytes under the canonical Ribbits GeckoLib model path",
     )
+    model_path = root / "assets/ribbits/geckolib/models/wandering_ribbit.geo.json"
+    model = load_json(model_path)
+    for geometry in model["minecraft:geometry"]:
+        bones = geometry["bones"]
+        removed = {"umbrella_leaf", "grip", "leaf2"}
+        if {bone["name"] for bone in bones} & removed != removed:
+            raise ValidationError("Wandering held-leaf bones differ from the approved donor")
+        geometry["bones"] = [bone for bone in bones if bone["name"] not in removed]
+    write_json(model_path, model)
+    records[-1]["transformation"] = "remove only held umbrella_leaf/grip/leaf2 bones; preserve all other geometry"
     write_exact(
         texture_member,
         "assets/ribbits/textures/entity/wandering_ribbit.png",
@@ -3008,6 +3018,13 @@ def import_wandering_visual_resources(
         "assets/ribbits/textures/item/chute_leaf.png",
         "exact approved closed Chute Leaf item sprite bytes",
     )
+    replacement = Path(__file__).resolve().parent / "assets/chute_leaf.png"
+    replacement_bytes = replacement.read_bytes()
+    if hashlib.sha256(replacement_bytes).hexdigest() != "816e4d4edc23542afeb2f2f90a5af8a2076ae61829f1acb016711e05fec0191d":
+        raise ValidationError("User Chute Leaf attachment identity differs")
+    (root / "assets/ribbits/textures/item/chute_leaf.png").write_bytes(replacement_bytes)
+    records[-1]["sources"] = [{"archive": "tracked-project", "member": "tools/assets/chute_leaf.png"}]
+    records[-1]["transformation"] = "exact user-supplied 16x16 PNG replacement; no pixel or byte conversion"
     write_exact(
         chute_open_member,
         "assets/ribbits/textures/item/chute_leaf_open.png",
@@ -4216,15 +4233,19 @@ def validate_donor_resource_boundary(root: Path, errors: list[str]) -> None:
             except (OSError, ValidationError) as exc:
                 errors.append(f"Invalid umbrella resources for {profession}/{variant}: {exc}")
 
+    # Release-specific outputs intentionally differ from the immutable donor.
+    for relative, expected in {
+        "assets/ribbits/geckolib/models/wandering_ribbit.geo.json":
+            "f7ee351ae54cb90c86e36a5faf991f22a25a11a7d755e4b4234d096c2d71a920",
+        "assets/ribbits/textures/item/chute_leaf.png":
+            "816e4d4edc23542afeb2f2f90a5af8a2076ae61829f1acb016711e05fec0191d",
+    }.items():
+        if sha256_file(root / relative) != expected:
+            errors.append(f"Polished Wandering resource identity differs: {relative}")
+
     wandering_exact_outputs = {
-        "assets/ribbits/geckolib/models/wandering_ribbit.geo.json": (
-            "assets/wandering_ribbit/geo/wandering_ribbit.geo.json"
-        ),
         "assets/ribbits/textures/entity/wandering_ribbit.png": (
             "assets/wandering_ribbit/textures/entity/wandering_ribbit.png"
-        ),
-        "assets/ribbits/textures/item/chute_leaf.png": (
-            "assets/wandering_ribbit/textures/item/umbrella_leaf_item.png"
         ),
         "assets/ribbits/textures/item/chute_leaf_open.png": (
             "assets/wandering_ribbit/textures/item/umbrella_leaf_texture.png"

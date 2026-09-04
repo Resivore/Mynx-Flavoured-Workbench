@@ -14,7 +14,7 @@ class WanderingRibbitCompassProviderContractTest {
                         WanderingRibbitTradeProviders.NATIVE_PROVIDER_ID,
                         WanderingRibbitTradeProviders.OPTIONAL_MATCHA_COMPASSES_PROVIDER_ID),
                 providers.stream().map(WanderingRibbitTradeProvider::id).toList());
-        assertEquals(2, providers.get(0).schemaVersion());
+        assertEquals(3, providers.get(0).schemaVersion());
         assertEquals(1, providers.get(1).schemaVersion());
         assertEquals(6, WanderingRibbitNativeTradeProvider.NATIVE_OFFER_COUNT);
     }

@@ -23,14 +23,16 @@ class RibbitVillageMapPresentationContractTest {
         assertPng(
                 "common/src/main/resources/assets/ribbits/textures/map/decorations/"
                         + "ribbit_village.png",
-                168,
-                "df63eb91eda13e91e3b984b11cdffc3d2f3e8c8482d090d4ee1c744ec428b2ba",
-                222,
+                122,
+                8,
+                "bd05ccfbe6ade532d20fc42f05c665074a0a733a9398069d8d766b515aba861d",
+                30,
                 34);
         assertPng(
                 "common/src/main/resources/assets/ribbits/textures/item/"
                         + "ribbit_village_explorer_map.png",
                 506,
+                16,
                 "6065e126da4d3d70725cc3adca725e2ce2812ba8a0155a07c1e510b373aa38f5",
                 33,
                 223);
@@ -45,8 +47,8 @@ class RibbitVillageMapPresentationContractTest {
         int minY = 16;
         int maxX = -1;
         int maxY = -1;
-        for (int y = 0; y < 16; y++) {
-            for (int x = 0; x < 16; x++) {
+        for (int y = 0; y < image.getHeight(); y++) {
+            for (int x = 0; x < image.getWidth(); x++) {
                 if (((image.getRGB(x, y) >>> 24) & 0xff) != 0) {
                     minX = Math.min(minX, x);
                     minY = Math.min(minY, y);
@@ -55,10 +57,10 @@ class RibbitVillageMapPresentationContractTest {
                 }
             }
         }
-        assertEquals(5, minX);
-        assertEquals(4, minY);
-        assertEquals(10, maxX);
-        assertEquals(10, maxY);
+        assertEquals(1, minX);
+        assertEquals(0, minY);
+        assertEquals(6, maxX);
+        assertEquals(6, maxY);
     }
 
     @Test
@@ -88,6 +90,7 @@ class RibbitVillageMapPresentationContractTest {
     private static void assertPng(
             String relative,
             int expectedSize,
+            int expectedDimension,
             String expectedSha256,
             int expectedTransparent,
             int expectedOpaque) throws IOException, NoSuchAlgorithmException {
@@ -98,8 +101,8 @@ class RibbitVillageMapPresentationContractTest {
                 HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(bytes)));
 
         BufferedImage image = ImageIO.read(path.toFile());
-        assertEquals(16, image.getWidth());
-        assertEquals(16, image.getHeight());
+        assertEquals(expectedDimension, image.getWidth());
+        assertEquals(expectedDimension, image.getHeight());
         assertTrue(image.getColorModel().hasAlpha());
         int transparent = 0;
         int opaque = 0;

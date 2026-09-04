@@ -1287,8 +1287,8 @@ class PrivateVillageUtilityTransformTest(unittest.TestCase):
 
 class DonorBoundaryContractTest(unittest.TestCase):
     def test_exact_accounting_contains_only_approved_visual_members_and_outputs(self) -> None:
-        self.assertEqual("4.1.6+26.2-mynx-canary8", tools.CANDIDATE_VERSION)
-        self.assertEqual(8, tools.CANDIDATE_CANARY)
+        self.assertEqual("4.1.6+26.2-mynx-canary9", tools.CANDIDATE_VERSION)
+        self.assertEqual(9, tools.CANDIDATE_CANARY)
         self.assertEqual(
             "mynx-ribbits-private-resource-manifest/v1", tools.PRIVATE_MANIFEST_SCHEMA
         )
@@ -1297,7 +1297,7 @@ class DonorBoundaryContractTest(unittest.TestCase):
             tools.PRIVATE_MANIFEST_CLASSIFICATION,
         )
         self.assertEqual(346, tools.OUTPUT_FILE_COUNT)
-        self.assertEqual(2_729_540, tools.OUTPUT_TOTAL_SIZE)
+        self.assertEqual(2_735_353, tools.OUTPUT_TOTAL_SIZE)
         self.assertEqual(2_563, tools.SORCERER_LOOT_OUTPUT_SIZE)
         self.assertEqual(
             "5b06e06502bf11f661161e89bf34e329d8f23268b7b0104371038c38ad9b378d",
@@ -1343,7 +1343,14 @@ class DonorBoundaryContractTest(unittest.TestCase):
         closed_member = "assets/wandering_ribbit/textures/item/umbrella_leaf_item.png"
         open_member = "assets/wandering_ribbit/textures/item/umbrella_leaf_texture.png"
         payloads = {
-            model_member: b'{"format_version":"1.12.0","minecraft:geometry":[]}',
+            model_member: json.dumps({"format_version": "1.12.0", "minecraft:geometry": [{"bones": [
+                {"name": "body", "cubes": [{"sentinel": "preserve"}]},
+                {"name": "left_arm", "parent": "body"},
+                {"name": "leaf", "parent": "body"},
+                {"name": "umbrella_leaf", "parent": "left_arm"},
+                {"name": "grip", "parent": "umbrella_leaf"},
+                {"name": "leaf2", "parent": "umbrella_leaf"},
+            ]}]}).encode(),
             texture_member: b"entity-png",
             chute_model_member: json.dumps(
                 {
@@ -1371,15 +1378,16 @@ class DonorBoundaryContractTest(unittest.TestCase):
                 {record["output"] for record in records},
             )
             self.assertEqual(
-                payloads[model_member],
-                (root / "assets/ribbits/geckolib/models/wandering_ribbit.geo.json").read_bytes(),
+                {"format_version": "1.12.0", "minecraft:geometry": [{"bones":
+                    json.loads(payloads[model_member])["minecraft:geometry"][0]["bones"][:3]}]},
+                tools.load_json(root / "assets/ribbits/geckolib/models/wandering_ribbit.geo.json"),
             )
             self.assertEqual(
                 payloads[texture_member],
                 (root / "assets/ribbits/textures/entity/wandering_ribbit.png").read_bytes(),
             )
             self.assertEqual(
-                payloads[closed_member],
+                (Path(tools.__file__).parent / "assets/chute_leaf.png").read_bytes(),
                 (root / "assets/ribbits/textures/item/chute_leaf.png").read_bytes(),
             )
             self.assertEqual(
@@ -1407,6 +1415,26 @@ class DonorBoundaryContractTest(unittest.TestCase):
                 open_model["textures"],
             )
             self.assertFalse((root / "assets/ribbits/geckolib/animations/wandering.json").exists())
+
+    def test_polish_pixels_preserve_artwork_exactly(self) -> None:
+        source = Path(tools.__file__).resolve().parents[1] / "common/src/main/resources/assets/ribbits/textures"
+        w, h, pixels = tools.decode_rgba_png((source / "item/glowcap.png").read_bytes(), "glowcap")
+        self.assertEqual((16, 16), (w, h))
+        self.assertEqual(bytes(64), pixels[:64])
+        # Moving back up recovers every original RGBA byte, including transparent RGB.
+        self.assertEqual("b7b9cdcd1dd03452699011e8b4b970bb8b047dba8b807620448e1d5a6d82b0d2",
+                         tools.sha256_bytes(pixels[64:] + bytes(64)))
+        w, h, pixels = tools.decode_rgba_png((source / "map/decorations/ribbit_village.png").read_bytes(), "marker")
+        self.assertEqual((8, 8), (w, h))
+        restored = bytearray(16 * 16 * 4)
+        for y in range(8):
+            restored[((y + 4) * 16 + 4) * 4:((y + 4) * 16 + 12) * 4] = pixels[y * 32:(y + 1) * 32]
+        self.assertEqual("ab282bfb3c9099ecdcea98d66c9e382024e0cebc0b04f26589d3bea979598458",
+                         tools.sha256_bytes(restored))
+        leaf = (Path(tools.__file__).parent / "assets/chute_leaf.png").read_bytes()
+        self.assertEqual((16, 16), tools.png_dimensions(leaf, "user leaf"))
+        self.assertEqual("816e4d4edc23542afeb2f2f90a5af8a2076ae61829f1acb016711e05fec0191d",
+                         tools.sha256_bytes(leaf))
 
     def test_originals_path_guard_rejects_outside_or_renamed_inputs(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -1617,10 +1645,10 @@ class DonorBoundaryContractTest(unittest.TestCase):
             [
                 {
                     "item": "ribbits:glowcap",
-                    "source_filename": "glowcap_16x16_final.png",
+                    "source_filename": "glowcap_16x16_down1.png",
                     "path": "assets/ribbits/textures/item/glowcap.png",
-                    "size": 323,
-                    "sha256": "414ba9042f4bf97278927cb8d65c78ae076b14824a4f34f87f6c7c729543d5df",
+                    "size": 221,
+                    "sha256": "9f79b36007a4a4e5e0b5683264c335d76c0f7e00572116b74a33b9e26c0d5abe",
                     "dimensions": [16, 16],
                     "format": "non-interlaced 8-bit RGBA PNG",
                     "alpha": {
@@ -1628,7 +1656,7 @@ class DonorBoundaryContractTest(unittest.TestCase):
                         "opaque_pixels": 78,
                         "partial_alpha_pixels": 0,
                     },
-                    "packaged_bytes": "exact tracked attachment bytes",
+                    "packaged_bytes": "exact tracked sprite bytes",
                 },
                 {
                     "item": "ribbits:ribbit_village_explorer_map",
@@ -1643,7 +1671,7 @@ class DonorBoundaryContractTest(unittest.TestCase):
                         "opaque_pixels": 223,
                         "partial_alpha_pixels": 0,
                     },
-                    "packaged_bytes": "exact tracked attachment bytes",
+                    "packaged_bytes": "exact tracked sprite bytes",
                 },
                 {
                     "item": "ribbits:toadstool_heart",
@@ -1658,22 +1686,22 @@ class DonorBoundaryContractTest(unittest.TestCase):
                         "opaque_pixels": 104,
                         "partial_alpha_pixels": 0,
                     },
-                    "packaged_bytes": "exact tracked attachment bytes",
+                    "packaged_bytes": "exact tracked sprite bytes",
                 },
                 {
                     "item": "ribbits:ribbit_village_explorer_map",
-                    "source_filename": "ribbit_village_marker_16x16.png",
+                    "source_filename": "ribbit_village_marker_8x8.png",
                     "path": "assets/ribbits/textures/map/decorations/ribbit_village.png",
-                    "size": 168,
-                    "sha256": "df63eb91eda13e91e3b984b11cdffc3d2f3e8c8482d090d4ee1c744ec428b2ba",
-                    "dimensions": [16, 16],
+                    "size": 122,
+                    "sha256": "bd05ccfbe6ade532d20fc42f05c665074a0a733a9398069d8d766b515aba861d",
+                    "dimensions": [8, 8],
                     "format": "non-interlaced 8-bit RGBA PNG",
                     "alpha": {
-                        "transparent_pixels": 222,
+                        "transparent_pixels": 30,
                         "opaque_pixels": 34,
                         "partial_alpha_pixels": 0,
                     },
-                    "packaged_bytes": "exact tracked attachment bytes",
+                    "packaged_bytes": "exact tracked sprite bytes",
                 },
             ],
             tools.final_item_sprite_manifest_records(),
@@ -1705,7 +1733,7 @@ class DonorBoundaryContractTest(unittest.TestCase):
 
     def test_private_jar_requires_exact_economy_runtime_dependencies(self) -> None:
         self.assertEqual(
-            "4.1.0-beta.3+26.2",
+            ">=4.1.0-beta.3",
             tools.REQUIRED_FABRIC_DEPENDENCIES["trinkets_updated"],
         )
         self.assertEqual(">=4.0.0", tools.REQUIRED_FABRIC_DEPENDENCIES["customportals"])

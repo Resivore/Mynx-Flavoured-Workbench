@@ -72,14 +72,12 @@ public final class ChuteLeafRenderer implements TrinketRenderer {
 
         boolean deployed = ChuteClientController.isRenderedDeployed(player);
         poseStack.pushPose();
-        TrinketRenderer.translateToChest(poseStack, humanoidModel, humanoidState);
         if (deployed) {
-            // Body attachment inherits vanilla sleeping/swimming/crawling/riding/death transforms.
-            poseStack.translate(0.0D, -1.35D, 0.18D);
-            poseStack.scale(1.2F, 1.2F, 1.2F);
-            submitModel(openStack(stack), ItemDisplayContext.FIXED, player, avatar.id,
+            applyDeployedPose(poseStack);
+            submitModel(openStack(stack), ItemDisplayContext.NONE, player, avatar.id,
                     poseStack, submit, light, renderState.outlineColor);
         } else {
+            TrinketRenderer.translateToChest(poseStack, humanoidModel, humanoidState);
             // Keep the closed leaf just outside armor/cape depth on the player's back.
             poseStack.translate(0.0D, 0.0D, 0.38D);
             poseStack.mulPose(Axis.YP.rotationDegrees(180.0F));
@@ -149,6 +147,14 @@ public final class ChuteLeafRenderer implements TrinketRenderer {
         submitModel(openStack(stack), displayContext, player, player.getId(),
                 poseStack, submit, light, 0);
         poseStack.popPose();
+    }
+
+    static void applyDeployedPose(PoseStack poseStack) {
+        // Do not inherit animated chest pitch or the donor item-frame Z tilt.
+        // Entity model space has Y down; turn item Y up so the canopy stays above its grip.
+        poseStack.translate(0.0D, -0.10D, 0.18D);
+        poseStack.mulPose(Axis.XP.rotationDegrees(180.0F));
+        poseStack.scale(1.2F, 1.2F, 1.2F);
     }
 
     private static ItemStack openStack(ItemStack equipped) {

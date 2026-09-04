@@ -56,7 +56,9 @@ class WanderingRibbitStaticContractTest {
         String nativeProvider = read("common/src/main/java/com/yungnickyoung/minecraft/ribbits/entity/trade/WanderingRibbitNativeTradeProvider.java");
         assertTrue(nativeProvider.contains("new ItemCost(glowcap, 20)"));
         assertTrue(nativeProvider.contains("new ItemCost(glowcap, 8)"));
-        assertTrue(nativeProvider.contains("new ItemCost(Items.COMPASS, 1)"));
+        assertFalse(nativeProvider.contains("new ItemCost(Items.COMPASS, 1)"));
+        assertTrue(nativeProvider.contains("new ItemCost(glowcap, 8)"));
+        assertTrue(nativeProvider.contains("SCHEMA_VERSION = 3"));
         assertTrue(nativeProvider.contains("for (int i = 0; i < 3; i++)"));
         assertTrue(nativeProvider.contains("pool.set(i, pool.get(selected))"));
     }

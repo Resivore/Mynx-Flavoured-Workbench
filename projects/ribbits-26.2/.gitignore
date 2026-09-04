@@ -143,3 +143,6 @@ runs/
 
 # Avoid ignoring Gradle wrapper jar file (.jar files are usually ignored)
 !gradle-wrapper.jar
+
+/artifacts/ribbits-private-reconstruction-4.1.6+26.2-mynx-canary9.jar
+/artifacts/ribbits-source-only-4.1.6+26.2-mynx-canary9.jar

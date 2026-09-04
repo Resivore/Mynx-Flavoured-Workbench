@@ -15,7 +15,7 @@ import java.util.List;
 /** The permanent native Wandering Ribbit menu. */
 final class WanderingRibbitNativeTradeProvider implements WanderingRibbitTradeProvider {
     static final int NATIVE_OFFER_COUNT = 6;
-    private static final int SCHEMA_VERSION = 2;
+    private static final int SCHEMA_VERSION = 3;
 
     private static final Identifier GLOWCAP = RibbitsCommon.id("glowcap");
     private static final Identifier CHUTE_LEAF = RibbitsCommon.id("chute_leaf");
@@ -49,7 +49,6 @@ final class WanderingRibbitNativeTradeProvider implements WanderingRibbitTradePr
                 1, 0, 0.0F));
         offers.add(new MerchantOffer(
                 new ItemCost(glowcap, 8),
-                java.util.Optional.of(new ItemCost(Items.COMPASS, 1)),
                 WanderingRibbitMapOffer.materialize(context),
                 1, 0, 0.0F));
 
@@ -67,8 +66,7 @@ final class WanderingRibbitNativeTradeProvider implements WanderingRibbitTradePr
                     2, 0, 0.0F));
         }
 
-        // Preserve the original five offers and their indexes; the ordinary compass buyback is
-        // the sole native schema-2 append.
+        // Keep the schema-2 compass buyback at index 5; schema 3 only removes the map second input.
         offers.add(WanderingRibbitCompassTrades.buyback(
                 new ItemStack(Items.COMPASS), glowcap, 4));
     }

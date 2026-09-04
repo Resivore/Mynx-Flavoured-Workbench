@@ -105,12 +105,12 @@ if (privateResourcesDir != null) {
             if (manifest.schema?.toString() != 'mynx-ribbits-private-resource-manifest/v1' ||
                 manifest.classification?.toString() != 'PRIVATE MYNX ASSEMBLY STAGED / NONREDISTRIBUTABLE DONOR ASSETS' ||
                 manifest.candidate?.version?.toString() != project.mod_version.toString() ||
-                manifest.candidate?.version?.toString() != '4.1.6+26.2-mynx-canary8' ||
-                (manifest.candidate?.canary as int) != 8 ||
+                manifest.candidate?.version?.toString() != '4.1.6+26.2-mynx-canary9' ||
+                (manifest.candidate?.canary as int) != 9 ||
                 manifest.candidate?.private_artifact_filename?.toString() !=
-                    'ribbits-private-reconstruction-4.1.6+26.2-mynx-canary8.jar' ||
+                    'ribbits-private-reconstruction-4.1.6+26.2-mynx-canary9.jar' ||
                 manifest.candidate?.source_only_artifact_filename?.toString() !=
-                    'ribbits-source-only-4.1.6+26.2-mynx-canary8.jar') {
+                    'ribbits-source-only-4.1.6+26.2-mynx-canary9.jar') {
                 throw new GradleException("Private manifest classification is not eligible for private packaging: ${manifest.classification}")
             }
             if ((manifest.blockers as List)) {
@@ -120,14 +120,14 @@ if (privateResourcesDir != null) {
             def expectedFinalItemSprites = [
                 [
                     item: 'ribbits:glowcap',
-                    source_filename: 'glowcap_16x16_final.png',
+                    source_filename: 'glowcap_16x16_down1.png',
                     path: 'assets/ribbits/textures/item/glowcap.png',
-                    size: 323,
-                    sha256: '414ba9042f4bf97278927cb8d65c78ae076b14824a4f34f87f6c7c729543d5df',
+                    size: 221,
+                    sha256: '9f79b36007a4a4e5e0b5683264c335d76c0f7e00572116b74a33b9e26c0d5abe',
                     dimensions: [16, 16],
                     format: 'non-interlaced 8-bit RGBA PNG',
                     alpha: [transparent_pixels: 178, opaque_pixels: 78, partial_alpha_pixels: 0],
-                    packaged_bytes: 'exact tracked attachment bytes',
+                    packaged_bytes: 'exact tracked sprite bytes',
                 ],
                 [
                     item: 'ribbits:ribbit_village_explorer_map',
@@ -138,7 +138,7 @@ if (privateResourcesDir != null) {
                     dimensions: [16, 16],
                     format: 'non-interlaced 8-bit RGBA PNG',
                     alpha: [transparent_pixels: 33, opaque_pixels: 223, partial_alpha_pixels: 0],
-                    packaged_bytes: 'exact tracked attachment bytes',
+                    packaged_bytes: 'exact tracked sprite bytes',
                 ],
                 [
                     item: 'ribbits:toadstool_heart',
@@ -149,18 +149,18 @@ if (privateResourcesDir != null) {
                     dimensions: [16, 16],
                     format: 'non-interlaced 8-bit RGBA PNG',
                     alpha: [transparent_pixels: 152, opaque_pixels: 104, partial_alpha_pixels: 0],
-                    packaged_bytes: 'exact tracked attachment bytes',
+                    packaged_bytes: 'exact tracked sprite bytes',
                 ],
                 [
                     item: 'ribbits:ribbit_village_explorer_map',
-                    source_filename: 'ribbit_village_marker_16x16.png',
+                    source_filename: 'ribbit_village_marker_8x8.png',
                     path: 'assets/ribbits/textures/map/decorations/ribbit_village.png',
-                    size: 168,
-                    sha256: 'df63eb91eda13e91e3b984b11cdffc3d2f3e8c8482d090d4ee1c744ec428b2ba',
-                    dimensions: [16, 16],
+                    size: 122,
+                    sha256: 'bd05ccfbe6ade532d20fc42f05c665074a0a733a9398069d8d766b515aba861d',
+                    dimensions: [8, 8],
                     format: 'non-interlaced 8-bit RGBA PNG',
-                    alpha: [transparent_pixels: 222, opaque_pixels: 34, partial_alpha_pixels: 0],
-                    packaged_bytes: 'exact tracked attachment bytes',
+                    alpha: [transparent_pixels: 30, opaque_pixels: 34, partial_alpha_pixels: 0],
+                    packaged_bytes: 'exact tracked sprite bytes',
                 ],
             ]
             if ((manifest.source_safe_final_item_sprites as List) != expectedFinalItemSprites) {
@@ -343,7 +343,7 @@ if (privateResourcesDir != null) {
             }
             if ((manifest.pristine.selected_file_count as int) != 287 ||
                 (manifest.output.file_count as int) != 346 ||
-                (manifest.output.total_size as long) != 2729540L ||
+                (manifest.output.total_size as long) != 2735353L ||
                 expectedFiles.size() != 346) {
                 throw new GradleException(
                     'Private manifest does not preserve the exact 287-input / 346-output / 2,729,540-byte contract'
@@ -415,7 +415,7 @@ if (privateResourcesDir != null) {
                 [archive: wanderingArchive, member: chuteModel],
             ]
             expectedDerivedSources['assets/ribbits/textures/item/chute_leaf.png'] = [
-                [archive: wanderingArchive, member: chuteClosedTexture],
+                [archive: 'tracked-project', member: 'tools/assets/chute_leaf.png'],
             ]
             expectedDerivedSources['assets/ribbits/textures/item/chute_leaf_open.png'] = [
                 [archive: wanderingArchive, member: chuteOpenTexture],

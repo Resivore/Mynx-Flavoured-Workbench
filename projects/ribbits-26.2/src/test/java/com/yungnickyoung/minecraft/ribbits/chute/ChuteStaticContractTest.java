@@ -67,6 +67,11 @@ class ChuteStaticContractTest {
         assertTrue(renderer.contains("RibbitsCommon.id(\"chute_leaf_open\")"));
         assertTrue(renderer.contains("renderState.isInvisible"));
         assertTrue(renderer.contains("if (!isMainHand"));
+        String deployed = renderer.substring(renderer.indexOf("if (deployed) {"), renderer.indexOf("} else {"));
+        assertTrue(deployed.contains("ItemDisplayContext.NONE"));
+        assertTrue(deployed.contains("applyDeployedPose(poseStack)"));
+        assertFalse(deployed.contains("translateToChest"));
+        assertFalse(deployed.contains("ItemDisplayContext.FIXED"));
         assertFalse(renderer.contains("WingsTrinketElement"));
         assertFalse(renderer.contains("minecraft:elytra"));
         assertFalse(controller.contains("addEffect"));
@@ -83,7 +88,7 @@ class ChuteStaticContractTest {
 
         assertTrue(gradle.contains("trinkets-4.1.0-beta.3+26.2-inventory-compat-canary5.jar"));
         assertTrue(gradle.contains("4c1fa6ac36c0457483fd0d395b99bbd94c9334aad6defece7633bbf0552d1724"));
-        assertTrue(metadata.contains("\"trinkets_updated\": \"4.1.0-beta.3+26.2\""));
+        assertTrue(metadata.contains("\"trinkets_updated\": \">=4.1.0-beta.3\""));
         assertTrue(equipment.contains("SLOT_ID = \"chest/cape\""));
         assertTrue(equipment.contains("TrinketCanEquipCallback.EVENT.register"));
         assertTrue(equipment.contains("slot.slotType().validatorCheck(stack, slot, player)"));

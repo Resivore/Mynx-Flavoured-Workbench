@@ -56,9 +56,9 @@ class ItemAndRecipeResourceContractTest {
 
         assertApprovedSprite(
                 "common/src/main/resources/assets/ribbits/textures/item/glowcap.png",
-                "glowcap_16x16_final.png",
-                323,
-                "414ba9042f4bf97278927cb8d65c78ae076b14824a4f34f87f6c7c729543d5df");
+                "glowcap_16x16_down1.png",
+                221,
+                "9f79b36007a4a4e5e0b5683264c335d76c0f7e00572116b74a33b9e26c0d5abe");
         assertApprovedSprite(
                 "common/src/main/resources/assets/ribbits/textures/item/toadstool_heart.png",
                 "4e8e067e-3969-49ea-be28-fb8d91ea932b.png",
