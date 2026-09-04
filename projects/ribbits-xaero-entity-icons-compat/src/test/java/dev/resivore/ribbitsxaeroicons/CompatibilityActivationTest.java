@@ -16,8 +16,8 @@ class CompatibilityActivationTest {
             "geckolib", "5.5.1", 703_096L,
             "4bf1c86b4b47aa2c5d84208255695f10d79d609b23d802c995711e64b45cfce0");
     private static final CompatibilityActivation.DependencyIdentity RIBBITS = identity(
-            "ribbits", "4.1.6+26.2-mynx-canary7", 3_320_708L,
-            "6b18658c5a68d66623b9a388cc644e2f7a1b864e490b6f8b35d57fcd73a5bf74");
+            "ribbits", "4.1.6+26.2-mynx-canary9", 3_333_513L,
+            "e433cd048bc362edae91e2e057c8170d92d110cbe7b9917c105c7336be6543de");
 
     @Test
     void exactAuditedFourArchiveSetIsTheOnlyActiveContract() {

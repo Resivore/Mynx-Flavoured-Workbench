@@ -1,16 +1,29 @@
 # Testing
 
-Canary 1 is **ACTIVE / STATIC_PASS / NOT_DEPLOYED / RUNTIME_FAIL**, based on the
-user's external report of no correct Ribbit head icon. It is not accepted and is
-not a rollback. Its exact retained identity is unchanged: 52,119 bytes,
-`ribbits-xaero-entity-icons-compat-0.1.0-canary1.jar`, SHA-256
-`dac701cb5bb1ec3d42ed9dc642bb224235b2e1cf1dd84528557ef3ab494f585a`, source
-`6edd1e801d0a2714b5b5e1c3048ee49f824aa3e7`.
+Current `ribbits-xaero-entity-icons-compat-0.1.0-canary2.jar` is **ACTIVE / STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED**.
+It is unaccepted and has no rollback. Identity: 56,657 bytes, SHA-256
+`d4435d678ba40d2f1ec6749eeeb89c7b92d2c8c4cd6f3a8898b435d7d27aa920`; source checkpoint is in WORKBENCH_STATUS.json.
+Two independent clean builds produced identical bytes; 59 tests in 13 suites and the
+combined 80-mod production Knot/Mixin harness passed. These are not Minecraft
+runtime observations. Prior C1/C3 failures remain in CODEX_LOG.md and AUDIT.md.
 
-Its exact C7 activation gate does not support current Ribbits C9. External sessions with C1 all used GeckoLib 5.5.4 rather than gated 5.5.1.
-This prevents activation before the additional C8/C9 Ribbits gate mismatch.
-No later geometry/cache failure is proven. See the dated AUDIT.md addendum for evidence.
-The preserved selector remains all and only direct cubes at exact `main/body`.
+C2 preserves every direct cube at `main/body` and excludes all children/siblings.
+It activates only for exact Ribbits C9, GeckoLib 5.5.1, Minimap 26.4.2 and nested
+XaeroLib 1.7.1 archive identities. Player Instance GeckoLib 5.5.4 remains unsupported.
+A nonempty vertex submission or allocated atlas is not proof of visible pixels.
+
+## Exact future controlled inputs
+
+Use Java 25 (build baseline Temurin 25.0.4.1+1), Minecraft 26.2, Loader 0.19.3,
+Fabric API 0.157.0+26.2, Xaero Minimap 26.4.2 / nested XaeroLib 1.7.1 / World Map
+1.44.2, EMF 3.2.6, ETF 7.1.1, and FreshAnimations_v1.10.5.zip. Exact hashes remain
+in the manifests and audit addenda. The Ribbits input is C9, 3,333,513 bytes,
+SHA-256 `e433cd048bc362edae91e2e057c8170d92d110cbe7b9917c105c7336be6543de`,
+source `8dc886c01f6d402ccf19b45756383d62185f0d4e`; GeckoLib 5.5.1 is 703,096 bytes,
+SHA-256 `4bf1c86b4b47aa2c5d84208255695f10d79d609b23d802c995711e64b45cfce0`.
+Use the base Fresh Animations pack first, then explicitly test resource overrides
+as separately identified cases. Do not infer historical pack contents from the
+currently installed files.
 
 ## Profile boundaries
 
@@ -20,13 +33,14 @@ The preserved selector remains all and only direct cubes at exact `main/body`.
 
 ## Future combined runtime procedure
 
-The intended pair is Ribbits compatibility `0.1.0-canary2` and EMF compatibility
-`0.1.0-canary4`. Neither successor has been built or validated by this correction.
-Do not deploy the failed current pair as a replacement test candidate.
+The pair is Ribbits compatibility `0.1.0-canary2` and EMF compatibility
+`0.1.0-canary4`. Both are static candidates, not runtime passes. Keep failed
+Ribbits C1, EMF C3 and Diagnostic1 out of the future controlled cohort.
 
-1. Finish the successors and their exact dependency/structural gates, independent
-   clean deterministic builds, artifact scans, and production Knot/Mixin checks.
-   Use the external session/version evidence and its limits in the audit addendum.
+1. Verify the exact hashes from both current manifests and the tested dependency
+   inputs below. Static gates, deterministic builds and the combined production
+   Knot/Mixin harness have passed; runtime remains untested. Keep external
+   session-version evidence distinct from current byte hashes.
 2. In a separately authorized serialized Test Instance Manager task, assign the
    two independently identified successor members as one atomic cohort. Record
    each filename, version, bytes, SHA-256 and source checkpoint, all dependency

@@ -6,7 +6,7 @@ import net.minecraft.world.entity.Entity;
 import xaero.hud.minimap.element.render.MinimapElementGraphics;
 import xaero.hud.minimap.radar.icon.creator.RadarIconCreator;
 
-/** Internal opt-in provider boundary; Canary 1 registers exactly one implementation. */
+/** Internal opt-in provider boundary; Canary 2 registers exactly one implementation. */
 public interface GeoIconProvider {
     boolean supports(
             Entity entity,

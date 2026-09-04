@@ -26,7 +26,7 @@ public final class ProductionMixinApplicationHarness {
 
     public static void main(String[] args) throws Exception {
         require(args.length == 7,
-                "expected patch, Xaero, GeckoLib, Ribbits, accepted C3, EMF, and Trinkets paths");
+                "expected patch, Xaero, GeckoLib, Ribbits, historical C3, EMF, and Trinkets paths");
         Path expectedPatch = Path.of(args[0]).toRealPath();
         Path expectedXaero = Path.of(args[1]).toRealPath();
         Path expectedGecko = Path.of(args[2]).toRealPath();
@@ -36,8 +36,8 @@ public final class ProductionMixinApplicationHarness {
         Path expectedTrinkets = Path.of(args[6]).toRealPath();
 
         require(expectedPatch.getFileName().toString()
-                        .equals("ribbits-xaero-entity-icons-compat-0.1.0-canary1.jar"),
-                "unexpected Canary 1 JAR " + expectedPatch);
+                        .equals("ribbits-xaero-entity-icons-compat-0.1.0-canary2.jar"),
+                "unexpected Canary 2 JAR " + expectedPatch);
         requireOfficialNamespace(expectedXaero);
         requireOfficialNamespace(expectedGecko);
         requireOfficialNamespace(expectedRibbits);
@@ -60,12 +60,19 @@ public final class ProductionMixinApplicationHarness {
 
         Class<?> creator = loadFrom(targetLoader, CREATOR, expectedXaero);
         requireSingleHandler(creator, "ribbitsXaeroIcons$wrapGeoPrerenderer");
+        requireSingleHandler(creator, "ribbitsXaeroIcons$result");
+        Class<?> entityCache = loadFrom(targetLoader, "xaero.hud.minimap.radar.icon.cache.RadarIconEntityCache", expectedXaero);
+        requireSingleHandler(entityCache, "ribbitsXaeroIcons$cacheResult");
+        if (expectedC3.getFileName().toString().contains("canary4")) {
+            requireSingleHandler(entityCache, "xaeroEmf$cache");
+        }
 
         Class<?> variantHandler = loadFrom(targetLoader, VARIANT_HANDLER, expectedXaero);
         requireSingleHandler(variantHandler, "ribbitsXaeroIcons$extendRibbitVariant");
 
         Class<?> manager = loadFrom(targetLoader, MANAGER, expectedXaero);
         requireSingleHandler(manager, "ribbitsXaeroIcons$invalidateRibbitResources");
+        if (expectedC3.getFileName().toString().contains("canary4")) requireSingleHandler(manager, "xaeroEmf$reload");
 
         Class<?> cache = loadFrom(targetLoader, CACHE, expectedXaero);
         require(Arrays.stream(cache.getInterfaces())
@@ -76,7 +83,7 @@ public final class ProductionMixinApplicationHarness {
         Class<?> provider = Class.forName(
                 "dev.resivore.ribbitsxaeroicons.RibbitGeoIconProvider", false, targetLoader);
         require(codeSource(provider).equals(expectedPatch),
-                "provider did not load from packaged Canary 1");
+                "provider did not load from packaged Canary 2");
 
         Class<?> c3ModelMixinTarget = loadFrom(
                 targetLoader,
@@ -86,11 +93,11 @@ public final class ProductionMixinApplicationHarness {
         require(Arrays.stream(c3ModelMixinTarget.getDeclaredMethods())
                         .anyMatch(method -> method.getName()
                                 .contains("xaeroEmfEntityIconCompat$renderRelocatedHead")),
-                "accepted C3 model-prerender mixin did not coexist");
+                "historical C3 model-prerender mixin did not coexist");
 
         System.out.println("Production Minecraft 26.2 Knot/Mixin application passed for "
                 + expectedPatch.getFileName()
-                + " with exact Xaero, GeckoLib, Ribbits C7, Trinkets, and C3");
+                + " with exact Xaero, GeckoLib, Ribbits C9, Trinkets, and the specified EMF companion");
     }
 
     private static Class<?> loadFrom(

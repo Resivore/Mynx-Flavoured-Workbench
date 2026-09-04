@@ -7,7 +7,11 @@
   "client": [
     "EMFModelPartMixin",
     "RadarIconModelPrerendererMixin",
-    "RadarIconModelPartPrerendererMixin"
+    "RadarIconModelPartPrerendererMixin",
+    "RadarIconCacheAccessor",
+    "RadarIconManagerMixin",
+    "RadarIconEntityCacheMixin",
+    "RadarIconCreatorMixin"
   ],
   "injectors": {
     "defaultRequire": 1

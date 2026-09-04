@@ -53,14 +53,13 @@ public final class EmfIconPartResolver {
             boolean resetHeadRotation
     ) {
         if (!isExactEmfRoot(root)) {
-            return Optional.empty();
+            return reject("NON_EMF_ROOT", root == null ? "null" : root.getClass().getName());
         }
 
         ModelPart canonicalHead = unwrapCanonicalPart(failedMainPart);
         ModelPart vanillaRoot = retainedVanillaRoot(root).orElse(null);
-        if (canonicalHead == null || vanillaRoot == null) {
-            return Optional.empty();
-        }
+        if (canonicalHead == null) return reject("MISSING_CANONICAL_PART", "root");
+        if (vanillaRoot == null) return reject("MISSING_RETAINED_VANILLA_ROOT", "root");
         return resolveRelocatedHead(
                 root, canonicalHead, vanillaRoot, trace, resetHeadRotation);
     }
@@ -73,16 +72,21 @@ public final class EmfIconPartResolver {
             boolean resetHeadRotation
     ) {
         List<PathNode> canonicalPath = findIdentityPath(root, canonicalHead);
-        if (canonicalPath == null || !isDirectCanonicalHeadPath(canonicalPath)
-                || ModelPartUtil.hasCubes(canonicalHead)) {
-            return Optional.empty();
-        }
-
+        if (canonicalPath == null) return reject("MISSING_CANONICAL_PATH", "root");
+        if (canonicalPath.size() < 2 || canonicalPath.size() > 16)
+            return reject("UNSUPPORTED_CANONICAL_PATH", pathText(canonicalPath));
+        String canonicalName = canonicalPath.getLast().name();
+        if (!canonicalName.equals("head") && !canonicalName.equals("head_parts"))
+            return reject("UNSUPPORTED_CANONICAL_NAME", pathText(canonicalPath));
+        if (ModelPartUtil.hasCubes(canonicalHead))
+            return reject("CANONICAL_EMF_CONTAINS_GEOMETRY", pathText(canonicalPath));
         ModelPart vanillaCanonicalHead = followPath(vanillaRoot, canonicalPath);
-        if (vanillaCanonicalHead == null
-                || !ModelPartUtil.hasDirectCubes(vanillaCanonicalHead)) {
-            return Optional.empty();
-        }
+        if (vanillaCanonicalHead == null)
+            return reject("MISSING_RETAINED_VANILLA_GEOMETRY", pathText(canonicalPath));
+        // A transform-only canonical head may own its geometry through one child path.
+        ModelPart vanillaGeometry = uniqueGeometryOwner(vanillaCanonicalHead);
+        if (vanillaGeometry == null)
+            return reject("MISSING_OR_AMBIGUOUS_RETAINED_GEOMETRY", pathText(canonicalPath));
 
         List<Node> candidates = new ArrayList<>();
         collect(root, "root", List.of(), canonicalHead, trace, candidates);
@@ -90,18 +94,17 @@ public final class EmfIconPartResolver {
                 .max(Comparator.comparingInt(Node::score)
                         .thenComparingInt(node -> -node.path().size())
                         .thenComparing(Node::pathText));
-        if (selected.isEmpty()) {
-            return Optional.empty();
-        }
+        if (selected.isEmpty()) return reject("NO_TRACED_HEAD_CANDIDATE", pathText(canonicalPath));
+        int bestScore = selected.orElseThrow().score();
+        if (candidates.stream().filter(n -> n.score() == bestScore).count() != 1)
+            return reject("MULTIPLE_AMBIGUOUS_CANDIDATES", pathText(canonicalPath));
 
         Node node = selected.orElseThrow();
         ModelPart.Cube canonicalCuboid =
-                ModelPartUtil.getBiggestCuboid(vanillaCanonicalHead);
+                ModelPartUtil.getBiggestCuboid(vanillaGeometry);
         GeometrySelection geometry = selectCanonicalGeometry(
                 node.path(), canonicalCuboid).orElse(null);
-        if (geometry == null) {
-            return Optional.empty();
-        }
+        if (geometry == null) return Optional.empty();
 
         ModelPart adapter = buildAdapter(
                 node.part(),
@@ -110,11 +113,10 @@ public final class EmfIconPartResolver {
                 canonicalCuboid,
                 resetHeadRotation
         );
-        if (adapter == null) {
-            return Optional.empty();
-        }
+        if (adapter == null) return reject("INVALID_OR_SINGULAR_TRANSFORM", node.pathText());
         ModelPart centeringPart = canonicalFrame(
-                canonicalHead, ModelPartUtil.getCubes(vanillaCanonicalHead));
+                canonicalHead, ModelPartUtil.getCubes(vanillaGeometry));
+        IconDiagnostics.event("RESOLVED", pathText(canonicalPath) + " -> " + pathText(geometry.path()));
         return Optional.of(new Resolution(
                 canonicalHead,
                 node.part(),
@@ -126,6 +128,24 @@ public final class EmfIconPartResolver {
                 node.pathText(),
                 pathText(geometry.path())
         ));
+    }
+
+    private static <T> Optional<T> reject(String reason, String path) {
+        IconDiagnostics.event(reason, path);
+        return Optional.empty();
+    }
+
+    private static ModelPart uniqueGeometryOwner(ModelPart root) {
+        if (ModelPartUtil.hasDirectCubes(root)) return root;
+        Map<String, ModelPart> children = ModelPartUtil.getChildren(root);
+        if (children == null) return null;
+        List<ModelPart> populated = children.values().stream().filter(ModelPartUtil::hasCubes).toList();
+        if (populated.size() != 1) return null;
+        ModelPart child = populated.getFirst();
+        // Do not silently discard an intermediate transform when selecting reference geometry.
+        if (child.x != 0 || child.y != 0 || child.z != 0 || child.xRot != 0 || child.yRot != 0
+                || child.zRot != 0 || child.xScale != 1 || child.yScale != 1 || child.zScale != 1) return null;
+        return uniqueGeometryOwner(child);
     }
 
     private static void collect(
@@ -166,9 +186,7 @@ public final class EmfIconPartResolver {
             List<PathNode> semanticHeadPath,
             ModelPart.Cube canonicalCuboid
     ) {
-        if (canonicalCuboid == null) {
-            return Optional.empty();
-        }
+        if (canonicalCuboid == null) return reject("MISSING_RETAINED_VANILLA_GEOMETRY", pathText(semanticHeadPath));
         for (int index = semanticHeadPath.size() - 1; index >= 1; index--) {
             ModelPart candidate = semanticHeadPath.get(index).part();
             if (index < semanticHeadPath.size() - 1
@@ -176,9 +194,7 @@ public final class EmfIconPartResolver {
                 break;
             }
             List<CubeMatch> matches = findMatchingCubes(candidate, canonicalCuboid);
-            if (matches.size() > 1) {
-                return Optional.empty();
-            }
+            if (matches.size() > 1) return reject("MULTIPLE_MATCHING_GEOMETRY_REGIONS", pathText(semanticHeadPath));
             if (matches.size() == 1) {
                 return Optional.of(new GeometrySelection(
                         candidate,
@@ -187,7 +203,7 @@ public final class EmfIconPartResolver {
                 ));
             }
         }
-        return Optional.empty();
+        return reject("NO_MATCHING_GEOMETRY", pathText(semanticHeadPath));
     }
 
     private static List<CubeMatch> findMatchingCubes(

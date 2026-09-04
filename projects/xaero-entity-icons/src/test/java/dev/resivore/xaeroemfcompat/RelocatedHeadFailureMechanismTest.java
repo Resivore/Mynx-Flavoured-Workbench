@@ -36,9 +36,9 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class RelocatedHeadFailureMechanismTest {
-    private static final Path FRESH_ANIMATIONS =
+    static final Path FRESH_ANIMATIONS =
             Path.of(Objects.requireNonNull(System.getProperty("freshAnimationsPack")));
-    private static final Set<Direction> ALL_DIRECTIONS =
+    static final Set<Direction> ALL_DIRECTIONS =
             Set.copyOf(Arrays.asList(Direction.values()));
 
     @Test
@@ -403,7 +403,7 @@ class RelocatedHeadFailureMechanismTest {
                 .isEmpty());
     }
 
-    private static ModelPart customPart(JsonObject data) {
+    static ModelPart customPart(JsonObject data) {
         String invertAxis = data.has("invertAxis")
                 ? data.get("invertAxis").getAsString().toLowerCase()
                 : "";
@@ -455,7 +455,7 @@ class RelocatedHeadFailureMechanismTest {
         return result;
     }
 
-    private static float invertedOrigin(
+    static float invertedOrigin(
             float origin,
             float size,
             String invertAxis,
@@ -464,15 +464,15 @@ class RelocatedHeadFailureMechanismTest {
         return invertAxis.indexOf(axis) >= 0 ? -origin - size : origin;
     }
 
-    private static float inverted(float value, String invertAxis, char axis) {
+    static float inverted(float value, String invertAxis, char axis) {
         return invertAxis.indexOf(axis) >= 0 ? -value : value;
     }
 
-    private static float radians(float degrees) {
+    static float radians(float degrees) {
         return degrees * ((float) Math.PI / 180.0F);
     }
 
-    private static float[] floats(JsonArray values, int expected) {
+    static float[] floats(JsonArray values, int expected) {
         assertEquals(expected, values.size());
         float[] result = new float[expected];
         for (int index = 0; index < expected; index++) {
@@ -481,7 +481,7 @@ class RelocatedHeadFailureMechanismTest {
         return result;
     }
 
-    private static Bounds centeredBounds(ModelPart part, ModelPart mainPart) {
+    static Bounds centeredBounds(ModelPart part, ModelPart mainPart) {
         float centerX = mainPart.x;
         float centerY = mainPart.y;
         float centerZ = mainPart.z;
@@ -521,7 +521,7 @@ class RelocatedHeadFailureMechanismTest {
         return bounds;
     }
 
-    private static void assertSpanClose(Bounds expected, Bounds actual, float tolerance) {
+    static void assertSpanClose(Bounds expected, Bounds actual, float tolerance) {
         assertEquals(expected.spanX(), actual.spanX(), tolerance,
                 () -> "X expected=" + expected + " actual=" + actual);
         assertEquals(expected.spanY(), actual.spanY(), tolerance,
@@ -530,7 +530,7 @@ class RelocatedHeadFailureMechanismTest {
                 () -> "Z expected=" + expected + " actual=" + actual);
     }
 
-    private static void assertBoundsClose(
+    static void assertBoundsClose(
             Bounds expected,
             Bounds actual,
             float tolerance
@@ -550,7 +550,7 @@ class RelocatedHeadFailureMechanismTest {
                 () -> "maxZ expected=" + expected + " actual=" + actual);
     }
 
-    private static void assertCenterClose(
+    static void assertCenterClose(
             Bounds expected,
             Bounds actual,
             float tolerance
@@ -560,19 +560,19 @@ class RelocatedHeadFailureMechanismTest {
         assertEquals(expected.centerZ(), actual.centerZ(), tolerance);
     }
 
-    private static int cubeCount(ModelPart part) {
+    static int cubeCount(ModelPart part) {
         AtomicInteger count = new AtomicInteger();
         part.visit(new PoseStack(), (pose, path, index, cube) -> count.incrementAndGet());
         return count.get();
     }
 
-    private static List<String> cubePaths(ModelPart part) {
+    static List<String> cubePaths(ModelPart part) {
         List<String> paths = new ArrayList<>();
         part.visit(new PoseStack(), (pose, path, index, cube) -> paths.add(path));
         return paths;
     }
 
-    private static int identityCount(ModelPart root, ModelPart target) {
+    static int identityCount(ModelPart root, ModelPart target) {
         int result = root == target ? 1 : 0;
         for (ModelPart child : ModelPartUtil.getChildren(root).values()) {
             result += identityCount(child, target);
@@ -580,13 +580,13 @@ class RelocatedHeadFailureMechanismTest {
         return result;
     }
 
-    private static List<PartState> partStates(ModelPart root) {
+    static List<PartState> partStates(ModelPart root) {
         List<PartState> result = new ArrayList<>();
         collectPartStates(root, "root", result);
         return List.copyOf(result);
     }
 
-    private static void collectPartStates(
+    static void collectPartStates(
             ModelPart part,
             String path,
             List<PartState> result
@@ -605,19 +605,19 @@ class RelocatedHeadFailureMechanismTest {
                         entry.getValue(), path + "/" + entry.getKey(), result));
     }
 
-    private static ModelRenderTrace traced(ModelPart part, int color) {
+    static ModelRenderTrace traced(ModelPart part, int color) {
         ModelRenderTrace trace = trace();
         trace.addVisibleModelPart(part, color);
         return trace;
     }
 
-    private static ModelRenderTrace trace() {
+    static ModelRenderTrace trace() {
         return new ModelRenderTrace(
                 null, Map.of(), null, false, false, false,
                 null, null, null, null, 0xFFFFFFFF);
     }
 
-    private static ModelPart transformedEmpty(
+    static ModelPart transformedEmpty(
             ModelPart source,
             Map<String, ModelPart> children
     ) {
@@ -635,11 +635,11 @@ class RelocatedHeadFailureMechanismTest {
         return result;
     }
 
-    private static ModelPart emptyPart(Map<String, ModelPart> children) {
+    static ModelPart emptyPart(Map<String, ModelPart> children) {
         return new ModelPart(List.of(), children);
     }
 
-    private static ModelPart cubePart(Map<String, ModelPart> children) {
+    static ModelPart cubePart(Map<String, ModelPart> children) {
         ModelPart.Cube cube = new ModelPart.Cube(
                 0, 0,
                 -1.0F, -1.0F, -1.0F,
@@ -650,11 +650,11 @@ class RelocatedHeadFailureMechanismTest {
         return new ModelPart(List.of(cube), children);
     }
 
-    private static ModelPart child(ModelPart parent, String name) {
+    static ModelPart child(ModelPart parent, String name) {
         return Objects.requireNonNull(ModelPartUtil.getChildren(parent).get(name), name);
     }
 
-    private static JsonObject jem(String entity) throws Exception {
+    static JsonObject jem(String entity) throws Exception {
         try (ZipFile pack = new ZipFile(FRESH_ANIMATIONS.toFile())) {
             String path = "assets/minecraft/optifine/cem/" + entity + ".jem";
             var entry = Objects.requireNonNull(pack.getEntry(path), path);
@@ -665,7 +665,7 @@ class RelocatedHeadFailureMechanismTest {
         }
     }
 
-    private static JsonObject topLevelPart(JsonObject jem, String part) {
+    static JsonObject topLevelPart(JsonObject jem, String part) {
         for (var element : jem.getAsJsonArray("models")) {
             JsonObject model = element.getAsJsonObject();
             if (model.has("part") && part.equals(model.get("part").getAsString())) {
@@ -675,7 +675,7 @@ class RelocatedHeadFailureMechanismTest {
         throw new AssertionError("Missing top-level part " + part);
     }
 
-    private static JsonObject findDirectSubmodel(JsonObject parent, String id) {
+    static JsonObject findDirectSubmodel(JsonObject parent, String id) {
         for (var element : parent.getAsJsonArray("submodels")) {
             JsonObject child = element.getAsJsonObject();
             if (id.equals(child.get("id").getAsString())) {
@@ -685,11 +685,11 @@ class RelocatedHeadFailureMechanismTest {
         throw new AssertionError("Missing direct submodel " + id);
     }
 
-    private static int directBoxCount(JsonObject part) {
+    static int directBoxCount(JsonObject part) {
         return part.has("boxes") ? part.getAsJsonArray("boxes").size() : 0;
     }
 
-    private static final class Bounds {
+    static final class Bounds {
         private float minX = Float.POSITIVE_INFINITY;
         private float minY = Float.POSITIVE_INFINITY;
         private float minZ = Float.POSITIVE_INFINITY;
@@ -708,15 +708,15 @@ class RelocatedHeadFailureMechanismTest {
             count++;
         }
 
-        private float spanX() {
+        float spanX() {
             return maxX - minX;
         }
 
-        private float spanY() {
+        float spanY() {
             return maxY - minY;
         }
 
-        private float spanZ() {
+        float spanZ() {
             return maxZ - minZ;
         }
 

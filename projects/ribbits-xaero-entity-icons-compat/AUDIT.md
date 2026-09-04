@@ -519,3 +519,74 @@ exact controlled fixtures and production classloading remain implementation work
 The manager has neither project in A/B. C3's stale accepted-baseline entry is
 preserved under the explicitly restricted project-only scope; clearing project
 acceptance does not change physical deployment or claim an accepted promotion.
+
+## Successor static validation addendum — C2 and C4
+
+The urgent correction was integrated separately at
+`4eadc6e68e4699de634e831cf0abf0c6b4f47857`; main-only receiver acknowledgements
+confirmed Ribbits revision 3 and EMF revision 2 after retrying a transient HTTP
+404 for the Ribbits event. The successor checkpoint advances each project once
+more as a distinct implementation checkpoint rather than reusing a published
+revision with conflicting content.
+
+C2 changes the Ribbits whole-archive gate to exact current C9 while retaining
+Xaero, nested-origin XaeroLib and GeckoLib 5.5.1 gates. It removes the hidden
+wrapper Boolean initialization precondition, routes bounded diagnostics through
+Log4j into normal Fabric logging, counts actual submitted vertices, rejects empty
+submissions, observes the final Xaero result and successful/FAILED cache insertion,
+and retains successful/FAILED resource-reload eviction. Selector geometry is
+unchanged. Exact control-flow testing proves that no create path reaches the
+prerender invocation without the requiresEntityModel invocation on Xaero 26.4.2.
+The private C9 probe passes 41 ordinary models / 156 direct cubes; Wandering stays
+excluded. The tested successor cohort deliberately does not support manual
+GeckoLib 5.5.4. Future normal-log diagnostics distinguish activation from geometry.
+
+C4 adds recursive canonical identity paths (bounded depth), follows the same path
+through retained vanilla geometry, and accepts a transform-only reference head
+only through one unambiguous zero-transform child path. It preserves the existing
+single matched-cube framing and composite head subtree; no species offset or
+unproven broad geometry heuristic was added. Ambiguous highest-ranked candidates
+fail closed. Diagnostic reasons distinguish root/canonical/reference/trace/path,
+geometry match, transform, draw/destination, downstream and cache stages. Resource
+reload evicts successful and FAILED caches for entity types actually observed
+with an EMF root; normal vanilla/nonowned entity caches remain outside this change.
+Draw exceptions clear partial destination results and flush pending buffers.
+
+The eleven fixtures use exact local Fresh Animations JEM structure and vanilla
+26.2 model factories. They invoke the actual retained C3 JAR in an isolated
+resolver classloader (hash asserted), not a rewritten C3 algorithm. Their supplied
+trace is controlled input, not a captured runtime trace or a complete EMF bake.
+Every C4 fixture selects the intended head subtree without body/sibling cubes and
+has finite deterministic bounds. The exact external iron-golem override is
+identified above but has not been certified by these base-pack fixtures.
+
+| Entity | Vanilla model (net.minecraft.client.model.*Model) | Canonical/retained path from model root | C3 first fixture rejection | C4 fixture |
+| --- | --- | --- | --- | --- |
+| wolf | animal.wolf.AdultWolf | head | retained canonical parent has no direct cubes; real_head child owns them | resolves |
+| bat | ambient.Bat | head | none; base fixture already resolves | resolves |
+| axolotl | animal.axolotl.AdultAxolotl | body/head | canonical path is not a direct root child | resolves |
+| parrot | animal.parrot.Parrot | head | none; base fixture already resolves | resolves |
+| frog | animal.frog.Frog | root/body/head | canonical path is not a direct root child | resolves |
+| allay | animal.allay.Allay | root/head | canonical path is not a direct root child | resolves |
+| sniffer | animal.sniffer.Sniffer | bone/body/head | canonical path is not a direct root child | resolves |
+| iron golem | animal.golem.IronGolem | head | none for base FA; external override remains a separate input | resolves base FA |
+| vex | monster.vex.Vex | root/head | canonical path is not a direct root child | resolves |
+| ravager | monster.ravager.Ravager | neck/head | canonical path is not a direct root child | resolves |
+| witch | monster.witch.Witch | head | none; base fixture already resolves | resolves |
+
+For each fixture, the canonical replacement has no cubes; semantic head paths and
+direct/descendant counts are in the preceding table. Actual external EMF root
+class, retained path, render trace, final destination and first runtime rejection
+are not observed. In particular, no first C3 rejection is invented for the four
+already-resolving fixtures. Their new bounded diagnostic runtime test is still
+necessary. No successor visible-icon or in-world result is recorded as a pass.
+
+Final static evidence: C2 59 tests / 13 suites; C4 36 tests / 7 suites; zero
+failures, errors or skips. Both independent clean builds are byte-identical.
+The combined exact 80-mod/nested production client Knot/Mixin harness applies both
+successors, including overlapping cache/creator hooks, without launching Minecraft.
+Artifact scans accept only original project classes, two project metadata
+resources and the manifest, with no dependencies, private/donor/ARR assets,
+decompiled classes, refmaps, duplicates or CRC failures. C2 has 41 ZIP entries;
+C4 has 27. Exact filenames, bytes, hashes and source checkpoint are recorded in
+the final manifests/logs. Java/fixture/classloading tests are not runtime validation.

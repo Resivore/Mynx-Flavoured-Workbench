@@ -23,6 +23,7 @@ public final class XaeroEmfCompatMixinPlugin implements IMixinConfigPlugin {
 
     @Override
     public void onLoad(String mixinPackage) {
+        dev.resivore.xaeroemfcompat.IconDiagnostics.activation("plugin loaded");
     }
 
     @Override
@@ -35,14 +36,20 @@ public final class XaeroEmfCompatMixinPlugin implements IMixinConfigPlugin {
         FabricLoader loader = FabricLoader.getInstance();
         Optional<String> xaeroVersion = loader.getModContainer(XAERO_MOD_ID).map(XaeroEmfCompatMixinPlugin::version);
         Optional<String> emfVersion = loader.getModContainer(EMF_MOD_ID).map(XaeroEmfCompatMixinPlugin::version);
-        if (!CompatibilityActivation.shouldApply(xaeroVersion, emfVersion)) {
+        boolean active = CompatibilityActivation.shouldApply(xaeroVersion, emfVersion);
+        dev.resivore.xaeroemfcompat.IconDiagnostics.event("DEPENDENCY_DECISION", "xaero=" + xaeroVersion + " emf=" + emfVersion + " active=" + active);
+        if (!active) {
             return false;
         }
 
         if (!Set.of(
                 EMF_TARGET,
                 XAERO_PRERENDER_TARGET,
-                XAERO_PART_PRERENDER_TARGET
+                XAERO_PART_PRERENDER_TARGET,
+                "xaero.hud.minimap.radar.icon.cache.RadarIconCache",
+                "xaero.hud.minimap.radar.icon.creator.RadarIconCreator",
+                "xaero.hud.minimap.radar.icon.RadarIconManager",
+                "xaero.hud.minimap.radar.icon.cache.RadarIconEntityCache"
         ).contains(targetClassName)) {
             throw new IllegalStateException("Unexpected compatibility mixin target: " + targetClassName);
         }

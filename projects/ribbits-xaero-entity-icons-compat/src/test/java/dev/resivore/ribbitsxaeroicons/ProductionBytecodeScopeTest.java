@@ -412,7 +412,8 @@ class ProductionBytecodeScopeTest {
     }
 
     private static boolean isAllowedXaeroOwner(String owner) {
-        return owner.startsWith("xaero/hud/minimap/radar/icon/")
+        return owner.equals("xaero/common/icon/XaeroIcon")
+                || owner.startsWith("xaero/hud/minimap/radar/icon/")
                 || owner.equals("xaero/hud/minimap/element/render/MinimapElementGraphics")
                 || owner.equals("xaero/common/minimap/render/MinimapRendererHelper")
                 || owner.equals("xaero/lib/client/graphics/XaeroBufferProvider");

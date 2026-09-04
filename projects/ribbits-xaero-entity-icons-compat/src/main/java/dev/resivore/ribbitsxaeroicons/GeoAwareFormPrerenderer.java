@@ -28,6 +28,8 @@ public final class GeoAwareFormPrerenderer implements IRadarIconFormPrerenderer 
         if (upstreamRequiresEntityModel == null) {
             upstreamRequiresEntityModel = upstream.requiresEntityModel();
         }
+        GeoIconLog.stage("requires-model", upstream.getClass().getName(),
+                "upstream=" + upstreamRequiresEntityModel + " wrapper=false");
         // The Geo branch reuses the populated state without asking Xaero for a vanilla model.
         return false;
     }
@@ -51,9 +53,8 @@ public final class GeoAwareFormPrerenderer implements IRadarIconFormPrerenderer 
             Entity entity,
             List<ModelRenderTrace> unusedVanillaTraces,
             RadarIconCreator.Parameters parameters) {
-        if (upstreamRequiresEntityModel == null) {
-            return false;
-        }
+        // Resolve the upstream protocol here too: no implicit call-order precondition.
+        requiresEntityModel();
         if (!upstreamRequiresEntityModel) {
             return upstream.prerender(
                     graphics,

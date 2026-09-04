@@ -18,7 +18,7 @@ from pathlib import Path
 
 
 EXPECTED_C3_SHA256 = "4f34d743f5fffd8e938c8f5157c630fd85f3b263ac1ae9f96c432cfe51668df2"
-EXPECTED_RIBBITS_C7_SHA256 = "6b18658c5a68d66623b9a388cc644e2f7a1b864e490b6f8b35d57fcd73a5bf74"
+EXPECTED_RIBBITS_C9_SHA256 = "e433cd048bc362edae91e2e057c8170d92d110cbe7b9917c105c7336be6543de"
 EXPECTED_GECKOLIB_SHA256 = "4bf1c86b4b47aa2c5d84208255695f10d79d609b23d802c995711e64b45cfce0"
 EXPECTED_MODEL_MANIFEST_SHA256 = "0d41371da10e5328a803ed960914de54b6bf7f28e19133e2b0bc5305cfa0060c"
 DISTINCT_WANDERING_MODEL = "assets/ribbits/geckolib/models/wandering_ribbit.geo.json"
@@ -137,7 +137,7 @@ def check_source_contracts(project: Path) -> dict[str, str]:
 def check_c3(project: Path) -> dict[str, object]:
     artifact = project.parent / "xaero-entity-icons/artifacts/xaero-emf-entity-icon-compat-0.1.0-canary3.jar"
     digest = sha256(artifact)
-    require(digest == EXPECTED_C3_SHA256, "accepted C3 artifact hash drift")
+    require(digest == EXPECTED_C3_SHA256, "historical C3 artifact hash drift")
     with zipfile.ZipFile(artifact) as archive:
         class_blob = b"".join(
             archive.read(name) for name in archive.namelist() if name.endswith(".class")
@@ -157,7 +157,7 @@ def check_c3(project: Path) -> dict[str, object]:
 
 def check_ribbits_archive(path: Path) -> dict[str, object]:
     digest = sha256(path)
-    require(digest == EXPECTED_RIBBITS_C7_SHA256, "Ribbits C7 artifact hash drift")
+    require(digest == EXPECTED_RIBBITS_C9_SHA256, "Ribbits C9 artifact hash drift")
     renderer_entry = "com/yungnickyoung/minecraft/ribbits/client/render/RibbitRenderer.class"
     model_entry = "com/yungnickyoung/minecraft/ribbits/client/model/RibbitModel.class"
     renderer_super = archive_class_super(path, renderer_entry)
@@ -236,17 +236,17 @@ def check_geckolib(path: Path) -> dict[str, object]:
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--ribbits-jar", type=Path, help="exact private Ribbits C7 archive (read-only)")
+    parser.add_argument("--ribbits-jar", type=Path, help="exact private Ribbits C9 archive (read-only)")
     parser.add_argument("--geckolib-jar", type=Path, help="exact GeckoLib 5.5.1 archive (read-only)")
     args = parser.parse_args()
 
     project = Path(__file__).resolve().parent
     result: dict[str, object] = {
         "source_contracts": check_source_contracts(project),
-        "accepted_c3": check_c3(project),
+        "historical_c3": check_c3(project),
     }
     if args.ribbits_jar:
-        result["ribbits_c7"] = check_ribbits_archive(args.ribbits_jar.resolve())
+        result["ribbits_c9"] = check_ribbits_archive(args.ribbits_jar.resolve())
     if args.geckolib_jar:
         result["geckolib_5_5_1"] = check_geckolib(args.geckolib_jar.resolve())
     print(json.dumps(result, indent=2, sort_keys=True))

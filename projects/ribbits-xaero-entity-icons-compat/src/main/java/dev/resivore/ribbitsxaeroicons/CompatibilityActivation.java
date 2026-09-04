@@ -3,7 +3,7 @@ package dev.resivore.ribbitsxaeroicons;
 import java.util.Locale;
 import java.util.Objects;
 
-/** Exact whole-archive dependency policy for the Canary 1 binary seams. */
+/** Exact whole-archive dependency policy for the Canary 2 binary seams. */
 public final class CompatibilityActivation {
     public static final DependencyIdentity SUPPORTED_XAERO = new DependencyIdentity(
             "xaerominimap",
@@ -22,9 +22,9 @@ public final class CompatibilityActivation {
             "4bf1c86b4b47aa2c5d84208255695f10d79d609b23d802c995711e64b45cfce0");
     public static final DependencyIdentity SUPPORTED_RIBBITS = new DependencyIdentity(
             "ribbits",
-            "4.1.6+26.2-mynx-canary7",
-            3_320_708L,
-            "6b18658c5a68d66623b9a388cc644e2f7a1b864e490b6f8b35d57fcd73a5bf74");
+            "4.1.6+26.2-mynx-canary9",
+            3_333_513L,
+            "e433cd048bc362edae91e2e057c8170d92d110cbe7b9917c105c7336be6543de");
 
     private CompatibilityActivation() {
     }
@@ -47,7 +47,7 @@ public final class CompatibilityActivation {
             return new Decision(false, mismatch("Ribbits", SUPPORTED_RIBBITS, ribbits));
         }
 
-        return new Decision(true, "exact Canary 1 dependency contract matched");
+        return new Decision(true, "exact Canary 2 dependency contract matched");
     }
 
     private static String mismatch(

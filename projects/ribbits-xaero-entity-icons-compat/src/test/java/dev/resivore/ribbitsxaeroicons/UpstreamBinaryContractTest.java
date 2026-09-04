@@ -39,10 +39,10 @@ class UpstreamBinaryContractTest {
     private static final String XAEROLIB_SHA =
             "7f4a78dd7e046fea0500fef83b1481d85317c8348d47e947035d7a07efe51065";
     private static final String RIBBITS_SHA =
-            "6b18658c5a68d66623b9a388cc644e2f7a1b864e490b6f8b35d57fcd73a5bf74";
+            "e433cd048bc362edae91e2e057c8170d92d110cbe7b9917c105c7336be6543de";
     private static final String TRINKETS_SHA =
             "4c1fa6ac36c0457483fd0d395b99bbd94c9334aad6defece7633bbf0552d1724";
-    private static final String ACCEPTED_C3_FULL_SHA =
+    private static final String HISTORICAL_C3_FULL_SHA =
             "4f34d743f5fffd8e938c8f5157c630fd85f3b263ac1ae9f96c432cfe51668df2";
     private static final String MODEL_MANIFEST_SHA =
             "0d41371da10e5328a803ed960914de54b6bf7f28e19133e2b0bc5305cfa0060c";
@@ -51,7 +51,7 @@ class UpstreamBinaryContractTest {
     private static final Path XAEROLIB = requiredPropertyPath("xaeroLibJar");
     private static final Path WORLD_MAP = requiredPropertyPath("worldMapJar");
     private static final Path GECKOLIB = requiredPropertyPath("geckolibJar", "geckoLibJar");
-    private static final Path ACCEPTED_C3 = requiredPropertyPath("acceptedC3Jar");
+    private static final Path HISTORICAL_C3 = requiredPropertyPath("historicalC3Jar");
     private static final Path EMF = requiredPropertyPath("emfJar");
     private static final Path ETF = requiredPropertyPath("etfJar");
     private static final Path FABRIC_API = requiredPropertyPath("fabricApiJar");
@@ -67,7 +67,7 @@ class UpstreamBinaryContractTest {
         assertArtifact(WORLD_MAP, 1_473_719L,
                 "d55ef45c559ae0adcf66d894c022f61d9d921629b0c885d04aa00424546a2389");
         assertArtifact(GECKOLIB, 703_096L, GECKOLIB_SHA);
-        assertArtifact(ACCEPTED_C3, 28_351L, ACCEPTED_C3_FULL_SHA);
+        assertArtifact(HISTORICAL_C3, 28_351L, HISTORICAL_C3_FULL_SHA);
         assertArtifact(EMF, 587_342L,
                 "876a3e4ffda021a6266df87208f2d9980322cf86223d4fe1e313ca996631f115");
         assertArtifact(ETF, 762_131L,
@@ -108,7 +108,7 @@ class UpstreamBinaryContractTest {
 
     @Test
     void acceptedEmfCanaryThreeIdentityAndScopeRemainUntouched() throws Exception {
-        try (ZipFile zip = new ZipFile(ACCEPTED_C3.toFile())) {
+        try (ZipFile zip = new ZipFile(HISTORICAL_C3.toFile())) {
             List<byte[]> classes = zip.stream()
                     .filter(entry -> !entry.isDirectory() && entry.getName().endsWith(".class"))
                     .map(entry -> readUnchecked(zip, entry))
@@ -132,7 +132,7 @@ class UpstreamBinaryContractTest {
         Assumptions.assumeTrue(supplied.isPresent(),
                 "set -DribbitsJar to the exact ignored private C7 archive");
         Path ribbits = supplied.orElseThrow();
-        assertArtifact(ribbits, 3_320_708L, RIBBITS_SHA);
+        assertArtifact(ribbits, 3_333_513L, RIBBITS_SHA);
 
         ClassNode renderer = readClass(ribbits,
                 "com/yungnickyoung/minecraft/ribbits/client/render/RibbitRenderer.class");
@@ -196,6 +196,35 @@ class UpstreamBinaryContractTest {
         assertEquals(0, headCount);
         assertEquals(Map.of(3, 29, 4, 8, 9, 3, 10, 1), directCubeDistribution);
         assertEquals(MODEL_MANIFEST_SHA, HexFormat.of().formatHex(manifest.digest()));
+    }
+
+    @Test
+    void everyReachablePrerenderPathCallsRequiresEntityModelFirst() throws Exception {
+        ClassNode owner=readClass(XAERO,"xaero/hud/minimap/radar/icon/creator/RadarIconCreator.class");
+        var method=owner.methods.stream().filter(m->m.name.equals("create")).findFirst().orElseThrow();
+        var insns=method.instructions;
+        var queue=new java.util.ArrayDeque<Integer>();
+        var seen=new java.util.HashSet<Integer>();queue.add(0);
+        boolean foundRequirement=false;
+        while(!queue.isEmpty()) {
+            int i=queue.remove();if(i<0 || i>=insns.size() || !seen.add(i))continue;
+            var insn=insns.get(i);
+            if(insn instanceof MethodInsnNode call) {
+                assertFalse(call.name.equals("prerender"),"prerender reachable without requirement call");
+                if(call.name.equals("requiresEntityModel")){foundRequirement=true;continue;}
+            }
+            for(var block:method.tryCatchBlocks)if(i>=insns.indexOf(block.start) && i<insns.indexOf(block.end))queue.add(insns.indexOf(block.handler));
+            if(insn instanceof org.objectweb.asm.tree.JumpInsnNode jump) {
+                queue.add(insns.indexOf(jump.label));
+                if(insn.getOpcode()==org.objectweb.asm.Opcodes.GOTO)continue;
+            }
+            int opcode=insn.getOpcode();
+            if((opcode>=org.objectweb.asm.Opcodes.IRETURN && opcode<=org.objectweb.asm.Opcodes.RETURN) || opcode==org.objectweb.asm.Opcodes.ATHROW)continue;
+            queue.add(i+1);
+        }
+        assertTrue(foundRequirement);
+        assertEquals(1,java.util.stream.StreamSupport.stream(insns.spliterator(),false)
+                .filter(n->n instanceof MethodInsnNode c && c.name.equals("prerender")).count());
     }
 
     private static List<JsonObject> namedBones(JsonArray bones, String name) {

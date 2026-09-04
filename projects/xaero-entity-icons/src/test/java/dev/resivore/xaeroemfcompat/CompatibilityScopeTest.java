@@ -21,8 +21,8 @@ class CompatibilityScopeTest {
         assertFalse(metadata.contains("\"entrypoints\""));
         assertFalse(metadata.contains("\"server\""));
         assertFalse(metadata.contains("network"));
-        assertTrue(metadata.contains("\"xaerominimap\": \"=26.4.2\""));
-        assertTrue(metadata.contains("\"entity_model_features\": \"=3.2.6\""));
+        assertTrue(metadata.contains("\"xaerominimap\": \"*\""));
+        assertTrue(metadata.contains("\"entity_model_features\": \"*\""));
         assertTrue(metadata.contains(
                 "\"workbench:classification\": \"GENERATED / CONTROLLED STATIC PASS / RUNTIME UNTESTED\""));
         assertTrue(metadata.contains("\"workbench:deployment\": \"NOT DEPLOYED\""));
@@ -42,7 +42,7 @@ class CompatibilityScopeTest {
     }
 
     @Test
-    void exactlyThreeRequiredMixinsCoverOnlyDetectionAndFailedPrerenderSelection() throws Exception {
+    void requiredMixinsCoverDetectionSelectionAndObservedEmfCacheReload() throws Exception {
         String emfMixin = Files.readString(PROJECT.resolve(
                 "src/main/java/dev/resivore/xaeroemfcompat/mixin/EMFModelPartMixin.java"));
         String xaeroMixin = Files.readString(PROJECT.resolve(

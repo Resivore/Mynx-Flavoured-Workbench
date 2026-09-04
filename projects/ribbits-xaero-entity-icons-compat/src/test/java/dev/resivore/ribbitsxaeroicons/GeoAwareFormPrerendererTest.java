@@ -60,16 +60,16 @@ class GeoAwareFormPrerendererTest {
     }
 
     @Test
-    void prerenderBeforeXaeroAsksForModelRequirementFailsClosedAndFlagsDelegate() {
+    void prerenderBeforeRequirementStillResolvesTheProtocolAndFlagsDelegate() {
         CountingUpstream upstream = new CountingUpstream(true, true, false, true);
         CountingProvider provider = new CountingProvider(true, true);
         GeoAwareFormPrerenderer wrapper = new GeoAwareFormPrerenderer(upstream, provider);
 
-        assertFalse(prerender(wrapper));
-        assertEquals(0, upstream.requirementCalls);
+        assertTrue(prerender(wrapper));
+        assertEquals(1, upstream.requirementCalls);
         assertEquals(0, upstream.prerenderCalls);
-        assertEquals(0, provider.supportCalls);
-        assertEquals(0, provider.prerenderCalls);
+        assertEquals(1, provider.supportCalls);
+        assertEquals(1, provider.prerenderCalls);
         assertTrue(wrapper.isFlipped());
         assertFalse(wrapper.isOutlined());
     }

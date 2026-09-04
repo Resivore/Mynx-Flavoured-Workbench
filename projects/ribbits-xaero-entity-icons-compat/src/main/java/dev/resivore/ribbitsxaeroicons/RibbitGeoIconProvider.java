@@ -27,7 +27,7 @@ import xaero.hud.minimap.element.render.MinimapElementGraphics;
 import xaero.hud.minimap.radar.icon.creator.RadarIconCreator;
 import xaero.lib.client.graphics.XaeroBufferProvider;
 
-/** Exact Ribbits opt-in provider; no other GeckoLib entity is enabled in Canary 1. */
+/** Exact Ribbits opt-in provider; no other GeckoLib entity is enabled in Canary 2. */
 public final class RibbitGeoIconProvider implements GeoIconProvider {
     public static final String ENTITY_TYPE = "ribbits:ribbit";
     public static final String PROVIDER_ID = "ribbits-gecko-provider-v1";
@@ -88,11 +88,13 @@ public final class RibbitGeoIconProvider implements GeoIconProvider {
             EntityRenderState renderState,
             Entity entity,
             RadarIconCreator.Parameters parameters) {
+        GeoIconLog.stage("geo-prerender", "ribbits:ribbit", "entered");
         if (!(parameters.variant instanceof RibbitCacheVariant variant)) {
             GeoIconLog.failure("variant", "Xaero parameters do not contain the Ribbit cache record");
             return false;
         }
 
+        GeoIconLog.stage("cache-variant", variant.identity(), "present");
         final Prepared prepared;
         try {
             RenderSystem.assertOnRenderThread();
@@ -111,13 +113,15 @@ public final class RibbitGeoIconProvider implements GeoIconProvider {
         XaeroBufferProvider buffers = graphics.getBufferSource();
         RenderType[] activeType = new RenderType[1];
         pose.pushPose();
-        return RenderStateGuard.run(
+        int[] submitted = {0};
+        GeoIconLog.stage("draw-start", prepared.basic().identity(), "selected direct cubes=" + prepared.plan().cubes().size());
+        boolean completed = RenderStateGuard.run(
                 () -> {
                     Minecraft.getInstance().gameRenderer.lighting()
                             .setupFor(com.mojang.blaze3d.platform.Lighting.Entry.ITEMS_FLAT);
                     prepared.plan().applyFraming(pose, parameters.scale);
                     activeType[0] = prepared.renderType();
-                    var consumer = buffers.getBuffer(activeType[0]);
+                    var consumer = new CountingVertexConsumer(buffers.getBuffer(activeType[0]));
                     for (GeoCube cube : prepared.plan().cubes()) {
                         pose.pushPose();
                         try {
@@ -131,9 +135,14 @@ public final class RibbitGeoIconProvider implements GeoIconProvider {
                             pose.popPose();
                         }
                     }
+                    submitted[0] = consumer.vertices();
                 },
                 () -> restoreRenderState(buffers, activeType[0], pose),
                 failure -> GeoIconLog.failure("draw", failure));
+        GeoIconLog.stage("draw-complete", prepared.basic().identity(),
+                "completed=" + completed + " destinationVertices=" + submitted[0]);
+        // Submission alone does not prove visible pixels; final Xaero result is logged separately.
+        return completed && submitted[0] > 0;
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
@@ -143,6 +152,7 @@ public final class RibbitGeoIconProvider implements GeoIconProvider {
         GeoModel model = basic.model();
         BakedGeoModel baked = model.getBakedModel(basic.modelId());
         require(baked != null && !baked.isMissingno(), "active baked model is missing");
+        GeoIconLog.stage("baked-model", basic.modelId(), "available");
         require(Minecraft.getInstance().getResourceManager()
                         .getResource(basic.textureId()).isPresent(),
                 "active texture resource is missing");
@@ -160,7 +170,9 @@ public final class RibbitGeoIconProvider implements GeoIconProvider {
         CuboidGeoBone cuboidBody = (CuboidGeoBone) body;
         require(cuboidBody.cubes != null && cuboidBody.cubes.length > 0,
                 "direct body cube array is empty");
+        GeoIconLog.stage("selector", basic.modelId(), "main/body direct cubes=" + cuboidBody.cubes.length);
         GeometryPlan plan = GeometryPlan.create(main, cuboidBody, cuboidBody.cubes);
+        GeoIconLog.stage("geometry-plan", basic.modelId(), "finite inherited transforms and framing created");
 
         GeoEntityRenderer geoRenderer = basic.renderer();
         RenderType renderType = geoRenderer.getRenderType(renderState, basic.textureId());
@@ -181,6 +193,7 @@ public final class RibbitGeoIconProvider implements GeoIconProvider {
                 "render state does not implement the GeckoLib state contract");
         GeoRenderState geoState = (GeoRenderState) renderState;
         requirePopulatedTickets(geoState);
+        GeoIconLog.stage("populated-tickets", "ribbits:ribbit", "all required tickets present");
 
         GeoEntityRenderer geoRenderer = (GeoEntityRenderer) renderer;
         GeoModel model = geoRenderer.getGeoModel();
@@ -191,6 +204,8 @@ public final class RibbitGeoIconProvider implements GeoIconProvider {
         require(modelId != null && textureId != null,
                 "active Ribbit model or texture resource is absent");
 
+        GeoIconLog.stage("model-resolved", modelId, "active model");
+        GeoIconLog.stage("texture-resolved", textureId, "active texture");
         RibbitData data = geoState.getGeckolibData(DataTicketModule.DT_RIBBIT_DATA);
         require(data != null && data.getProfession() != null
                         && data.getProfession().id() != null,

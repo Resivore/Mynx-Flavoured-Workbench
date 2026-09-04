@@ -1,18 +1,31 @@
 # Testing
 
-Canary 3 is **ACTIVE / CONTROLLED_VALIDATION_PASS / DEPLOYED / RUNTIME_FAIL**.
-The user withdrew its aggregate pass and reported no correct head icon for all
-11 entities listed below. Project acceptance and rollback are empty. Its exact
-28,351-byte artifact, `xaero-emf-entity-icon-compat-0.1.0-canary3.jar`, SHA-256
-`4f34d743f5fffd8e938c8f5157c630fd85f3b263ac1ae9f96c432cfe51668df2`, source
-`2478f021982c5f26e51ff0579fa2f5dad85ed200`, remains unchanged.
+Current `xaero-emf-entity-icon-compat-0.1.0-canary4.jar` is **ACTIVE / STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED**.
+It is unaccepted and has no rollback. Identity: 37,884 bytes, SHA-256
+`03444601251c6edad68d5a19648bd37e4d925b508f0d7b8a91b352883b151639`; source checkpoint is in WORKBENCH_STATUS.json.
+Two independent clean builds produced identical bytes; 36 tests in 7 suites and the
+combined 80-mod production Knot/Mixin harness passed. These are not Minecraft
+runtime observations. Prior C1/C3 failures remain in CODEX_LOG.md and AUDIT.md.
 
-DEPLOYED describes the exact file found in the dedicated profile and the existing
-manager baseline entry. It does not claim a fresh readiness check or project
-acceptance. This project-only correction does not edit that manager entry or
-assign a slot. A separate manager owner must reconcile the withdrawn acceptance.
-Earlier Diagnostic1/C1/C2 observations remain in CODEX_LOG.md; no individual C3
-control pass is inferred from the withdrawn aggregate report.
+C4 repairs seven reproduced structural rejections: recursive canonical paths for
+axolotl, frog, allay, sniffer, vex and ravager, plus wolf's transform-only head
+parent. Bat, parrot, base iron golem and witch already resolve in the controlled
+C3 fixtures; their external runtime failure stages remain unproven. C4 adds
+bounded diagnostics for these cases, not a claim that their visible failures
+are fixed. The current external iron-golem override is outside the base fixture.
+
+## Exact future controlled inputs
+
+Use Java 25 (build baseline Temurin 25.0.4.1+1), Minecraft 26.2, Loader 0.19.3,
+Fabric API 0.157.0+26.2, Xaero Minimap 26.4.2 / nested XaeroLib 1.7.1 / World Map
+1.44.2, EMF 3.2.6, ETF 7.1.1, and FreshAnimations_v1.10.5.zip. Exact hashes remain
+in the manifests and audit addenda. The Ribbits input is C9, 3,333,513 bytes,
+SHA-256 `e433cd048bc362edae91e2e057c8170d92d110cbe7b9917c105c7336be6543de`,
+source `8dc886c01f6d402ccf19b45756383d62185f0d4e`; GeckoLib 5.5.1 is 703,096 bytes,
+SHA-256 `4bf1c86b4b47aa2c5d84208255695f10d79d609b23d802c995711e64b45cfce0`.
+Use the base Fresh Animations pack first, then explicitly test resource overrides
+as separately identified cases. Do not infer historical pack contents from the
+currently installed files.
 
 ## Profile boundaries
 
@@ -22,13 +35,14 @@ control pass is inferred from the withdrawn aggregate report.
 
 ## Future combined runtime procedure
 
-The intended pair is Ribbits compatibility `0.1.0-canary2` and EMF compatibility
-`0.1.0-canary4`. Neither successor has been built or validated by this correction.
-Do not deploy the failed current pair as a replacement test candidate.
+The pair is Ribbits compatibility `0.1.0-canary2` and EMF compatibility
+`0.1.0-canary4`. Both are static candidates, not runtime passes. Keep failed
+Ribbits C1, EMF C3 and Diagnostic1 out of the future controlled cohort.
 
-1. Finish the successors and their exact dependency/structural gates, independent
-   clean deterministic builds, artifact scans, and production Knot/Mixin checks.
-   Use the external session/version evidence and its limits in the audit addendum.
+1. Verify the exact hashes from both current manifests and the tested dependency
+   inputs below. Static gates, deterministic builds and the combined production
+   Knot/Mixin harness have passed; runtime remains untested. Keep external
+   session-version evidence distinct from current byte hashes.
 2. In a separately authorized serialized Test Instance Manager task, assign the
    two independently identified successor members as one atomic cohort. Record
    each filename, version, bytes, SHA-256 and source checkpoint, all dependency

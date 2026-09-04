@@ -26,8 +26,8 @@ def requiredFileProperty = { String propertyName, String description ->
     resolved
 }
 
-def xaeroJar = file('../../originals/mods/xaerominimap-fabric-26.2-26.4.2.jar')
-def worldMapJar = file('../../originals/mods/xaeroworldmap-fabric-26.2-1.44.2.jar')
+def xaeroJar = requiredFileProperty('xaero_jar', 'Xaero Minimap 26.4.2')
+def worldMapJar = requiredFileProperty('world_map_jar', 'Xaero World Map 1.44.2')
 def emfJar = requiredFileProperty('emf_jar', 'entity_model_features-3.2.6-26.2-fabric.jar')
 def etfJar = requiredFileProperty('etf_jar', 'entity_texture_features-7.1.1-26.2-fabric.jar')
 def freshAnimationsPack = requiredFileProperty('fresh_animations_pack', 'FreshAnimations_v1.10.5.zip')
@@ -110,4 +110,9 @@ tasks.named('check') {
 
 java {
     withSourcesJar()
+}
+
+tasks.withType(AbstractArchiveTask).configureEach {
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
 }

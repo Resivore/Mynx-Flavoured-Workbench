@@ -38,41 +38,60 @@ abstract class RadarIconModelPrerendererMixin {
             RadarIconModelPrerenderer.Parameters parameters,
             CallbackInfoReturnable<ModelPart> callbackInfo
     ) {
-        if (!parameters.renderedDest.isEmpty()) {
-            return;
-        }
+        dev.resivore.xaeroemfcompat.IconDiagnostics.context(
+                net.minecraft.world.entity.EntityType.getKey(entity.getType()) + " model=" + model.getClass().getName());
+        try {
+            if (model.root() != null && model.root().getClass().getName().equals(
+                    "traben.entity_model_features.models.parts.EMFModelPartRoot")) {
+                dev.resivore.xaeroemfcompat.IconDiagnostics.observe(entity.getType());
+            }
+            if (!parameters.renderedDest.isEmpty()) {
+                dev.resivore.xaeroemfcompat.IconDiagnostics.event("UPSTREAM_NONEMPTY_DESTINATION", "upstream");
+                return;
+            }
+            Optional<EmfIconPartResolver.Resolution> resolved =
+                    EmfIconPartResolver.resolve(
+                            model.root(),
+                            callbackInfo.getReturnValue(),
+                            parameters.mrt,
+                            parameters.config.modelPartsRotationReset
+                    );
+            if (resolved.isEmpty()) {
+                return;
+            }
 
-        Optional<EmfIconPartResolver.Resolution> resolved =
-                EmfIconPartResolver.resolve(
-                        model.root(),
-                        callbackInfo.getReturnValue(),
-                        parameters.mrt,
-                        parameters.config.modelPartsRotationReset
-                );
-        if (resolved.isEmpty()) {
-            return;
-        }
-
-        EmfIconPartResolver.Resolution resolution = resolved.orElseThrow();
-        RadarIconModelPrerenderer prerenderer =
-                (RadarIconModelPrerenderer) (Object) this;
-        VertexConsumer vertexConsumer = prerenderer.getLayerModelVertexConsumer(
-                bufferSource,
-                parameters.textures,
-                parameters.textureAtlasSprite,
-                parameters.mrt
-        );
-        ModelPart adapter = resolution.renderAdapter();
-        prerenderer.getPartPrerenderer().renderPart(
-                matrixStack,
-                vertexConsumer,
-                adapter,
-                resolution.centeringPart(),
-                parameters
-        );
-        bufferSource.endBatch();
-        if (!parameters.renderedDest.isEmpty()) {
-            callbackInfo.setReturnValue(resolution.centeringPart());
+            EmfIconPartResolver.Resolution resolution = resolved.orElseThrow();
+            RadarIconModelPrerenderer prerenderer =
+                    (RadarIconModelPrerenderer) (Object) this;
+            VertexConsumer vertexConsumer = prerenderer.getLayerModelVertexConsumer(
+                    bufferSource,
+                    parameters.textures,
+                    parameters.textureAtlasSprite,
+                    parameters.mrt
+            );
+            ModelPart adapter = resolution.renderAdapter();
+            prerenderer.getPartPrerenderer().renderPart(
+                    matrixStack,
+                    vertexConsumer,
+                    adapter,
+                    resolution.centeringPart(),
+                    parameters
+            );
+            bufferSource.endBatch();
+            dev.resivore.xaeroemfcompat.IconDiagnostics.event(
+                    parameters.renderedDest.isEmpty() ? "DRAW_NO_DESTINATION" : "DRAW_NONEMPTY_DESTINATION",
+                    resolution.geometryPath());
+            if (!parameters.renderedDest.isEmpty()) {
+                callbackInfo.setReturnValue(resolution.centeringPart());
+            }
+        } catch (RuntimeException failure) {
+            parameters.renderedDest.clear();
+            try { bufferSource.endBatch(); } catch (RuntimeException flushFailure) {
+                failure.addSuppressed(flushFailure);
+            }
+            dev.resivore.xaeroemfcompat.IconDiagnostics.event("ADAPTER_BUILD_OR_DRAW_FAILURE", failure.getClass().getSimpleName());
+        } finally {
+            dev.resivore.xaeroemfcompat.IconDiagnostics.clearContext();
         }
     }
 }

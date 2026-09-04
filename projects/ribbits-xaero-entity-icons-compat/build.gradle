@@ -33,8 +33,9 @@ def requiredFileProperty = { String propertyName, String description ->
 def xaeroJar = requiredFileProperty('xaero_jar', 'xaerominimap-fabric-26.2-26.4.2.jar')
 def worldMapJar = requiredFileProperty('world_map_jar', 'xaeroworldmap-fabric-26.2-1.44.2.jar')
 def geckolibJar = requiredFileProperty('geckolib_jar', 'geckolib-fabric-26.2-5.5.1.jar')
-def ribbitsJar = requiredFileProperty('ribbits_jar', 'ribbits-private-reconstruction-4.1.6+26.2-mynx-canary7.jar')
-def acceptedC3Jar = requiredFileProperty('accepted_c3_jar', 'xaero-emf-entity-icon-compat-0.1.0-canary3.jar')
+def ribbitsJar = requiredFileProperty('ribbits_jar', 'ribbits-private-reconstruction-4.1.6+26.2-mynx-canary9.jar')
+def historicalC3Jar = requiredFileProperty('historical_c3_jar', 'xaero-emf-entity-icon-compat-0.1.0-canary3.jar')
+def emfCandidateJar = providers.gradleProperty('emf_candidate_jar').map { file(it) }.getOrElse(historicalC3Jar)
 def emfJar = requiredFileProperty('emf_jar', 'entity_model_features-3.2.6-26.2-fabric.jar')
 def etfJar = requiredFileProperty('etf_jar', 'entity_texture_features-7.1.1-26.2-fabric.jar')
 def fabricApiJar = requiredFileProperty('fabric_api_jar', 'fabric-api-0.157.0+26.2.jar')
@@ -109,7 +110,7 @@ test {
             worldMapJar,
             geckolibJar,
             ribbitsJar,
-            acceptedC3Jar,
+            historicalC3Jar,
             emfJar,
             etfJar,
             fabricApiJar,
@@ -122,7 +123,7 @@ test {
     systemProperty 'worldMapJar', worldMapJar.absolutePath
     systemProperty 'geckolibJar', geckolibJar.absolutePath
     systemProperty 'ribbitsJar', ribbitsJar.absolutePath
-    systemProperty 'acceptedC3Jar', acceptedC3Jar.absolutePath
+    systemProperty 'historicalC3Jar', historicalC3Jar.absolutePath
     systemProperty 'emfJar', emfJar.absolutePath
     systemProperty 'etfJar', etfJar.absolutePath
     systemProperty 'fabricApiJar', fabricApiJar.absolutePath
@@ -132,12 +133,12 @@ test {
 
 def productionMixinTest = tasks.register('productionMixinTest', JavaExec) {
     group = 'verification'
-    description = 'Applies packaged Canary 1 and accepted C3 through exact production Fabric Knot/Mixin without launching Minecraft.'
+    description = 'Applies packaged Canary 2 and historical C3 through exact production Fabric Knot/Mixin without launching Minecraft.'
     dependsOn tasks.named('testClasses'), tasks.named('jar')
 
     inputs.file(productionJar)
     inputs.files(
-            xaeroJar, worldMapJar, geckolibJar, ribbitsJar, acceptedC3Jar,
+            xaeroJar, worldMapJar, geckolibJar, ribbitsJar, emfCandidateJar,
             emfJar, etfJar, fabricApiJar, yungsApiJar, clothConfigJar,
             customPortalsJar, yaclJar, matchaHeartJar, xaeroLibJar,
             trinketsJar,
@@ -159,7 +160,7 @@ def productionMixinTest = tasks.register('productionMixinTest', JavaExec) {
                 worldMapJar,
                 geckolibJar,
                 ribbitsJar,
-                acceptedC3Jar,
+                emfCandidateJar,
                 emfJar,
                 etfJar,
                 fabricApiJar,
@@ -187,7 +188,7 @@ def productionMixinTest = tasks.register('productionMixinTest', JavaExec) {
                 worldMapJar,
                 geckolibJar,
                 ribbitsJar,
-                acceptedC3Jar,
+                emfCandidateJar,
                 emfJar,
                 etfJar,
                 fabricApiJar,
@@ -205,7 +206,7 @@ def productionMixinTest = tasks.register('productionMixinTest', JavaExec) {
                 xaeroJar.absolutePath,
                 geckolibJar.absolutePath,
                 ribbitsJar.absolutePath,
-                acceptedC3Jar.absolutePath,
+                emfCandidateJar.absolutePath,
                 emfJar.absolutePath,
                 trinketsJar.absolutePath
         ]
@@ -255,6 +256,7 @@ tasks.register('verifyClientOnlyArtifact') {
         def expectedMixins = [
                 'RadarIconCacheAccessor',
                 'RadarIconCreatorMixin',
+                'RadarIconEntityCacheMixin',
                 'RadarIconManagerMixin',
                 'RadarIconVariantHandlerMixin'
         ]
@@ -304,7 +306,7 @@ tasks.register('verifyClientOnlyArtifact') {
 
 tasks.register('stageCanaryArtifact', Copy) {
     group = 'build'
-    description = 'Stages the verified Canary 1 JAR in this task worktree artifact directory.'
+    description = 'Stages the verified Canary 2 JAR in this task worktree artifact directory.'
     dependsOn tasks.named('check')
     from(productionJar)
     into(layout.projectDirectory.dir('artifacts'))

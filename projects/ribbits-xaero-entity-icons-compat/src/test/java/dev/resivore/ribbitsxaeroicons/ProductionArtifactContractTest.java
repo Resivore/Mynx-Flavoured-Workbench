@@ -27,12 +27,12 @@ class ProductionArtifactContractTest {
 
     @Test
     void packagedMetadataIsExactAndClientOnly() throws Exception {
-        assertEquals("ribbits-xaero-entity-icons-compat-0.1.0-canary1.jar",
+        assertEquals("ribbits-xaero-entity-icons-compat-0.1.0-canary2.jar",
                 PATCH.getFileName().toString());
         try (ZipFile zip = new ZipFile(PATCH.toFile())) {
             JsonObject metadata = json(zip, "fabric.mod.json");
             assertEquals("ribbits_xaero_entity_icons_compat", metadata.get("id").getAsString());
-            assertEquals("0.1.0-canary1", metadata.get("version").getAsString());
+            assertEquals("0.1.0-canary2", metadata.get("version").getAsString());
             assertEquals("client", metadata.get("environment").getAsString());
             assertFalse(metadata.has("entrypoints"));
 
@@ -68,6 +68,7 @@ class ProductionArtifactContractTest {
             assertEquals(List.of(
                             "RadarIconCacheAccessor",
                             "RadarIconCreatorMixin",
+                "RadarIconEntityCacheMixin",
                             "RadarIconManagerMixin",
                             "RadarIconVariantHandlerMixin"),
                     mixins.getAsJsonArray("client").asList().stream()

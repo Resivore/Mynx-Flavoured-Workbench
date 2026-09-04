@@ -16,8 +16,8 @@
     "java": ">=25"
   },
   "suggests": {
-    "xaerominimap": "=26.4.2",
-    "entity_model_features": "=3.2.6"
+    "xaerominimap": "*",
+    "entity_model_features": "*"
   },
   "custom": {
     "workbench:classification": "GENERATED / CONTROLLED STATIC PASS / RUNTIME UNTESTED",

@@ -13,6 +13,7 @@ import org.spongepowered.asm.mixin.extensibility.IMixinInfo;
 public final class RibbitsXaeroIconsMixinPlugin implements IMixinConfigPlugin {
     private static final Set<String> EXACT_TARGETS = Set.of(
             "xaero.hud.minimap.radar.icon.cache.RadarIconCache",
+            "xaero.hud.minimap.radar.icon.cache.RadarIconEntityCache",
             "xaero.hud.minimap.radar.icon.creator.RadarIconCreator",
             "xaero.hud.minimap.radar.icon.RadarIconManager",
             "xaero.hud.minimap.radar.icon.cache.id.variant.RadarIconVariantHandler");
@@ -21,11 +22,12 @@ public final class RibbitsXaeroIconsMixinPlugin implements IMixinConfigPlugin {
 
     @Override
     public void onLoad(String mixinPackage) {
+        GeoIconLog.activation("Ribbits Xaero Canary 2 mixin plugin loaded");
         CompatibilityActivation.Decision decision = RuntimeCompatibility.evaluateLoadedMods();
         active = decision.active();
         initialized = true;
         GeoIconLog.activation((active ? "Activated" : "Safely declined")
-                + " Ribbits Xaero entity icons Canary 1: " + decision.reason());
+                + " Ribbits Xaero entity icons Canary 2: " + decision.reason());
     }
 
     @Override

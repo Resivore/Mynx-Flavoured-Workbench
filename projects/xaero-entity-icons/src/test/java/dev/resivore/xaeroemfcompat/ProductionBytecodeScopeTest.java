@@ -108,7 +108,8 @@ class ProductionBytecodeScopeTest {
                         "xaero/hud/minimap/radar/icon/creator/render/form/model/part/"
                                 + "RadarIconModelPartPrerenderer")
                 && call.name.equals("renderPart")).count());
-        assertEquals(1, calls.stream().filter(call -> call.owner.equals(
+        // One normal flush and one exception-cleanup flush; no additional render call.
+        assertEquals(2, calls.stream().filter(call -> call.owner.equals(
                         "xaero/lib/client/graphics/XaeroBufferProvider")
                 && call.name.equals("endBatch")).count());
         assertEquals(1, calls.stream().filter(call -> call.owner.equals(

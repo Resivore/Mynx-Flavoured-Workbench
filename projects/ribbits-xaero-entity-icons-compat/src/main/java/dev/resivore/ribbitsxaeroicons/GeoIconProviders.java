@@ -6,7 +6,7 @@ import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.world.entity.Entity;
 
-/** Deliberately closed registration list for Canary 1. */
+/** Deliberately closed registration list for Canary 2. */
 public final class GeoIconProviders {
     private static final RibbitGeoIconProvider RIBBIT_PROVIDER = new RibbitGeoIconProvider();
     private static final List<GeoIconProvider> PROVIDERS = List.of(RIBBIT_PROVIDER);

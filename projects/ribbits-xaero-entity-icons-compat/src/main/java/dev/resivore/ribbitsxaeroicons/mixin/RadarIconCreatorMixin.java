@@ -47,11 +47,30 @@ abstract class RadarIconCreatorMixin {
         if (upstream == null) {
             return upstream;
         }
+        if (dev.resivore.ribbitsxaeroicons.RibbitGeoIconProvider.owns(entity)) {
+            dev.resivore.ribbitsxaeroicons.GeoIconLog.stage("wrapper-reached", "ribbits:ribbit", "provider lookup attempted");
+        }
         Optional<GeoIconProvider> provider =
                 GeoIconProviders.find(entity, renderer, renderState, false);
         if (provider.isEmpty()) {
             return upstream;
         }
+        dev.resivore.ribbitsxaeroicons.GeoIconLog.stage("provider-selected", "ribbits:ribbit", "Ribbit provider selected");
         return new GeoAwareFormPrerenderer(upstream, provider.orElseThrow());
     }
+    @org.spongepowered.asm.mixin.injection.Inject(method = "create", at = @At("RETURN"), require = 1)
+    private void ribbitsXaeroIcons$result(MinimapElementGraphics graphics,
+            EntityRenderer<?, ?> renderer, EntityRenderState state, Entity entity,
+            RenderTarget target, RadarIconCreator.Parameters parameters,
+            org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable<xaero.common.icon.XaeroIcon> callback) {
+        if (dev.resivore.ribbitsxaeroicons.RibbitGeoIconProvider.owns(entity)) {
+            var result = callback.getReturnValue();
+            Object identity = parameters.variant instanceof dev.resivore.ribbitsxaeroicons.RibbitCacheVariant v
+                    ? v.identity() : "ribbits:ribbit:no-variant";
+            dev.resivore.ribbitsxaeroicons.GeoIconLog.stage("xaero-result", identity,
+                    result == null || result == xaero.hud.minimap.radar.icon.RadarIconManager.FAILED
+                    ? "discarded-or-failed" : "accepted atlas=" + (result.getTextureAtlas() != null));
+        }
+    }
+
 }
