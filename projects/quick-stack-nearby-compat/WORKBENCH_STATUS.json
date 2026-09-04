@@ -18,12 +18,12 @@
     ]
   },
   "definition": {
-    "lifecycle": "TESTING",
+    "lifecycle": "ACCEPTED",
     "goals": [
-      "Advance the accepted C6 compatibility layer to C8 while preserving its Inventory Extended player-storage, Clutter No More ShapeMap, vanilla shelf, and Inventory Search behavior.",
+      "Keep accepted C8's Inventory Extended player-storage, Clutter No More ShapeMap, vanilla shelf, Inventory Search, and CSR reservation-affinity behavior unchanged.",
       "Admit a normally valid nearby container at QSN's real discovery prefilter when CSR reports an empty physical slot reserved for an exact source item and complete component identity, even when the container has zero physical instances of that item.",
       "Keep Quick Stack Nearby responsible for discovery, target order, existing-stack merges, access and placement checks, capacity, remainders, rules, persistence, packets, and feedback; delegate unchanged when CSR is absent or a target has no reservation-governed empty slot.",
-      "Preserve exact accepted C6 and the distinct runtime-passed C4 rollback with their immutable artifact, source, and evidence boundaries."
+      "Preserve exact prior accepted C6 as rollback and distinct runtime-passed C4 as historical provenance with immutable artifact, source, and evidence boundaries."
     ],
     "scope": [
       "Maintain the production implementation and resources at checkpoint 1f545721658cce803200fa277737052cead79b70 while preserving all accepted C6 behavior and retained C7 insertion behavior outside the failed discovery seam.",
@@ -34,7 +34,7 @@
       "Preserve exact no-op identity when CSR is absent and delegate QSN's native empty-slot helper for unsupported or wholly unreserved targets.",
       "Retain C6's Inventory Extended source-window expansion and lock ceiling, Clutter No More ShapeMap affinity and merge delegation, vanilla shelf exclusion, and Inventory Search button/result compatibility.",
       "Audit exact QSN 0.4.0 and CSR C1 bytecode/API seams, exercise the CSR C1 API floor and paired CSR Canary 4 provider, and keep runtime metadata predicates flexible for compatible providers.",
-      "Retain exact C4 as the distinct focused-runtime-pass rollback, accepted C6 as accepted, and failed C5 and C7 results textually rather than as current or rollback artifacts.",
+      "Retain exact prior accepted C6 as rollback, exact C4 as distinct historical focused-runtime-pass provenance, and failed C5 and C7 results textually rather than as current or rollback artifacts.",
       "Preserve the exact user-bound C7 RUNTIME_FAIL with no passed rows: its post-discovery target augmentation did not admit a nearby container whose only matching affinity was a reservation and which held zero physical instances of that item."
     ],
     "boundaries": {
@@ -48,8 +48,8 @@
         "Official QSN, CSR, Inventory Search/Core, Inventory Extended, Clutter No More, BGE, Nibaru, Minecraft, and Fabric classes or JARs are not bundled or redistributed by this project.",
         "C8 mirrors the exact audited QSN 0.4.0 package-private maximum-stack helper through its current Container#getMaxStackSize delegate because attempted Java-package and Mixin invokers were not runtime-safe; a future QSN helper change requires seam re-audit.",
         "Controlled JUnit and Fabric GameTest results are build/static evidence, not Minecraft gameplay runtime validation.",
-        "Lifecycle remains TESTING because exact current C8 occupies Test Slot B at manager revision 77 with its own INCONCLUSIVE result; C6's historical accepted aggregate pass and C7's independent failure remain separate and are not assigned to C8.",
-        "C8 has controlled validation, serialized physically verified deployment evidence, and one narrow user-reported positive observation: QSN C8 compatibility for a matching reserved slot with zero physical matching quantity now works. That observation is INCONCLUSIVE rather than a full matrix pass; no other row was inferred, accepted C6 and rollback C4 were not promoted or replaced, and the protected gameplay instance remained untouched."
+        "Lifecycle is ACCEPTED because exact current C8 was promoted into accepted Stack v17 and no longer occupies a Test Slot; C6 is rollback, C4 remains distinct historical passing provenance, and C7's independent failure remains separate.",
+        "C8 has controlled validation and exact serialized deployment/promotion evidence. The user's later combined CSR/QSN report was recorded only as an aggregate C8 PASS with no inferred row-level observations; the earlier narrow zero-physical-quantity observation remains preserved in history, and the protected gameplay instance remained untouched."
       ]
     },
     "dependencies": [
@@ -152,7 +152,7 @@
     ]
   },
   "state": {
-    "milestone": "C8 is the current controlled-validation-passed, physically verified Slot B candidate with an independent INCONCLUSIVE result at manager revision 77 and accepted Stack v15. Deployment 30a3d125-ecb6-4a7a-862b-ca2e2c1bbcfe still binds artifact 62f897e7-dc2e-4754-82f0-43240d4655be to exact implementation 1f545721658cce803200fa277737052cead79b70 under state digest 02020f5ec695bc7cfa0d15478ee1df31a7d1506188e5ea1ecdb9c60c2264d854; the user reported only that QSN C8 compatibility for a matching reserved slot with zero physical matching quantity now works. Exact CSR C4 now occupies paired Slot A, and accepted QSN 0.4.0 remains active through verified companion passthrough. Exact C7 is independently RUNTIME_FAIL with no passed rows, while C6's historical accepted aggregate RUNTIME_PASS and exact C4 rollback remain preserved and do not apply to C8.",
+    "milestone": "The user's combined CSR/QSN report was bound only as an aggregate PASS to exact QSN C8 deployment 30a3d125-ecb6-4a7a-862b-ca2e2c1bbcfe / artifact 62f897e7-dc2e-4754-82f0-43240d4655be at manager revision 79; no individual checklist row was inferred. Revision 81 promoted the exact two-artifact QSN unit into accepted Stack v17, preserving upstream quick-stack-nearby-0.4.0.jar artifact cb31d144-b6c4-41fb-ba44-35d896b228f6 before C8 artifact 62f897e7-dc2e-4754-82f0-43240d4655be. C8 is current and accepted, no longer occupies a Test Slot, and remains active while CSR C5 and SAS patch C1 occupy the slots at verified manager revision 82 / digest 19c42a70ef995a671b9a6d063ad61a927f0bd8a22617722fef103f862f971577. Exact C6 is rollback, exact C4 remains historical passing provenance, and exact C7 remains independently failed.",
     "releases": {
       "current": {
         "version": "C8 (0.1.0-canary8)",
@@ -168,6 +168,19 @@
         }
       },
       "accepted": {
+        "version": "C8 (0.1.0-canary8)",
+        "embedded_version": "0.1.0-canary8",
+        "artifact": {
+          "filename": "quick-stack-nearby-compat-0.1.0-canary8.jar",
+          "sha256": "e6aaf43d881f31202931c40b6f40762f2e2dab1f2ae8d0ce5fd7f213ec0cbba5"
+        },
+        "source_commit": "1f545721658cce803200fa277737052cead79b70",
+        "runtime_dependency_policy": {
+          "contract": "CAPABILITY_OR_PROVIDER",
+          "exceptions": []
+        }
+      },
+      "rollback": {
         "version": "C6 (0.1.0-canary6)",
         "embedded_version": "0.1.0-canary6",
         "artifact": {
@@ -176,30 +189,22 @@
         },
         "source_commit": "3c8cc5917da9fd016e57a969955fa7c6e3b08661"
       },
-      "rollback": {
-        "version": "C4 (0.1.0-canary4)",
-        "artifact": {
-          "filename": "quick-stack-nearby-compat-0.1.0-canary4.jar",
-          "sha256": "93581de741daa22426a22e1c816b630b9e0ffb90224a2cd27260563530afb441"
-        },
-        "source_commit": "7312aac2fb8b38a616cd172b6f8bdd65054ff120"
-      },
-      "accepted_current": "CURRENT_DIFFERS_FROM_ACCEPTED",
+      "accepted_current": "CURRENT_IS_ACCEPTED",
       "accepted_rollback": "ROLLBACK_DIFFERS_FROM_ACCEPTED"
     },
     "validation": {
       "build": "CONTROLLED_VALIDATION_PASS",
       "deployment": "READY_TO_TEST_VERIFIED",
-      "runtime": "INCONCLUSIVE"
+      "runtime": "RUNTIME_PASS"
     },
     "blocker": null
   },
   "synchronization": {
-    "revision": 6,
-    "activity_at": "2026-09-04T03:16:18Z",
-    "updated_at": "2026-09-04T03:16:18Z",
-    "last_codex_at": "2026-09-04T03:16:18Z",
-    "source_commit": "de49752d45270c1102d18a2d0fe46686fbd3cbf1",
+    "revision": 7,
+    "activity_at": "2026-09-04T05:34:49Z",
+    "updated_at": "2026-09-04T05:34:49Z",
+    "last_codex_at": "2026-09-04T05:34:49Z",
+    "source_commit": "2bc724420fb99b21e90c9a27c22d2ad0fdfa8064",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null

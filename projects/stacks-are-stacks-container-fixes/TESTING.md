@@ -1,21 +1,42 @@
 # Testing
 
-Canary 1 is the current unaccepted candidate and remains `NOT_DEPLOYED` and `RUNTIME_UNTESTED`. Migration verification preserved all 11 source/build/test blobs and the retained JAR byte-for-byte from the coherent legacy checkpoints, then passed all 9 focused tests in 3 suites with Temurin Java 25.0.4.1+1, Gradle 9.5.1, and Fabric Loom 1.17.19. Those results are build/static evidence, not Minecraft runtime evidence.
+## Current gate
 
-The fresh verification build produced a 3,683-byte JAR at SHA-256 `a42f0dbb5e99425e289201eed9fdb9379c775882dd8f7758baaaed2430fb45f3`, so it did not replace the exact retained 3,677-byte artifact. All class files, `fabric.mod.json`, and the JAR manifest matched byte-for-byte; the sole entry difference was CRLF rather than LF line endings in the otherwise identical mixin JSON. The retained `stacks-are-stacks-container-fixes-0.1.0-canary1.jar` at SHA-256 `ab3634c31c2f3b231908cf392ed5ada074e624e3dfba45b5707d8b38958e1eed` remains authoritative.
+**READY TO TEST VERIFIED — RUNTIME UNTESTED — NOT READY FOR PROMOTION**
 
-Legacy records preserve two pre-fix observations: a chest retained three saddles while the client rendered the slot as one with no `3`, and normally non-stackable stacked contents disappeared from the Easy Shulker Boxes tooltip preview. These are historical defect observations only; Canary 1 was never deployed or launched and has no runtime pass.
+Test only unchanged `artifacts/stacks-are-stacks-container-fixes-0.1.0-canary1.jar`, 3,677 bytes, SHA-256 `AB3634C31C2F3B231908CF392ED5ADA074E624E3DFBA45B5707D8B38958E1EED`, embedded version `0.1.0-canary1`, source `625143806c44d6e5dc6725282edbfea0fafd8f53`.
 
-## Runtime handoff
+Test Instance Manager revision 82, accepted Stack v17, state digest `19C42A70EF995A671B9A6D063AD61A927F0BD8A22617722FEF103F862F971577`, Slot B deployment `f58e3578-1149-4373-a32f-c6b3e1c9ceea`, and artifact `4eff5256-9775-4e5e-b459-ec40188849a5` bind the exact unchanged candidate. Its deployment is `READY_TO_TEST_VERIFIED`; its independent result is `UNTESTED`.
 
-Run this matrix only after a Test Slot owner deploys the exact retained Canary 1 alongside exact Stacks Are Stacks `2.1.2-1.26.2`. The legacy representative configuration was `StackSize=64`, `AffectAll=false`, `Exclude=[]`, and `ConsumableFix=true`; Easy Shulker Boxes `26.2.3` with embedded Item Interactions `26.2.2` is needed only for the preview case.
+The verified hard dependency is the unmanaged external enabled provider `mods/StacksAreStacks-2.1.2-1.26.2.jar`, Fabric ID `stacksarestacks`, version `2.1.2-1.26.2`, 358,573 bytes, SHA-256 `8E318394EA52A6DB343A00987DD1B122C69BF48E42DEB7813CC5EF293E655917`. It is not a manager accepted-baseline member and has no invented deployment or artifact UUID.
 
-1. Launch and connect normally; confirm both mods initialize without a mixin, invoker, or client-start error.
-2. Obtain one stack of three saddles, put it in a chest, close and reopen the chest, and confirm the slot visibly renders `3` while retaining the actual count.
-3. Move, split, merge, and shift-click that saddle stack; confirm visible and actual counts remain correct through each operation and another close/reopen cycle.
-4. Put three saddles and another eligible normally non-stackable item in a shulker, hover it through the Easy Shulker Boxes preview, and confirm every item icon and applicable count is visible.
-5. Place three stone as a vanilla-stackable control in the same chest and shulker preview; confirm its icon and count behavior is unchanged.
-6. If the test configuration defines an excluded or otherwise ineligible item, confirm this add-on does not make it stackable or change its client presentation.
-7. Sanity-check player-inventory display and reconnect once; confirm the aligned client holder maximums remain stable.
+Slot A is the separate CSR Canary 5 marker test. Accepted QSN C8 remains active from the baseline and occupies no Test Slot. Minecraft was not launched during deployment.
 
-Stop and record `RUNTIME_FAIL` or `INCONCLUSIVE` if the exact dependency/candidate identities cannot be established, startup fails, a retained count is visually clamped or lost, a shulker entry remains blank, an ineligible item changes behavior, the vanilla control regresses, or reconnecting destabilizes the result. Do not promote Canary 1 without a controlled pass of every applicable case.
+## Preflight
+
+From the repository root, run the Test Instance Manager's read-only `verify` command and require `PHYSICAL_STATE_VERIFIED` for both exact slot identities, the upstream dependency receipt, Stack v17, revision 82, and the state digest above. Stop on drift. Do not rebuild or substitute the patch, change Stacks Are Stacks configuration, or touch the protected 26.1.2 gameplay profile. Use a disposable world and inspect the complete log through normal shutdown.
+
+## Question 2 — Stacks Are Stacks patch
+
+1. Create a stack of three saddles or another eligible normally non-stackable item.
+2. Confirm the actual and displayed count remains three in the player inventory and an ordinary container.
+3. Move, split, merge, shift-click, close, and reopen it; confirm actual and displayed counts remain correct.
+4. Put it in a shulker and confirm Easy Shulker Boxes displays the item and count.
+5. Use an ordinary vanilla-stackable item as a control and confirm its behavior is unchanged.
+6. Reconnect once and confirm the client holder maximum remains aligned.
+
+Judge this question independently from the Slot A CSR C5 marker check in that project's current `TESTING.md`.
+
+## CSR/Stacks Are Stacks diagnostic-only probe
+
+1. Attempt to create a CSR reservation using an eligible Stacks Are Stacks item.
+2. Remove the physical stack and inspect the empty reservation.
+3. Attempt matching manual and `QUICK_MOVE` reinsertion.
+4. Optionally observe hopper and accepted QSN C8 behavior.
+5. Record exactly what happens.
+
+This probe is observation-only. A failure or inconclusive result is input for a future compatibility task; it is not authority to modify either implementation here, and no CSR/Stacks Are Stacks compatibility fix is claimed.
+
+## Stopping and recording
+
+Stop and report `RUNTIME_FAIL` or `INCONCLUSIVE` for the patch if identity/readiness or the exact dependency drifts; startup fails; a retained count is visually clamped or lost; a shulker-preview entry remains blank; movement, vanilla controls, configuration, eligibility, or reconnect behavior regresses; or a patch-attributable error appears. Record only observations actually made and do not promote Canary 1 without a complete applicable runtime pass.

@@ -13,7 +13,7 @@
     "legacy_ids": []
   },
   "definition": {
-    "lifecycle": "ACTIVE",
+    "lifecycle": "TESTING",
     "goals": [
       "Keep eligible normally non-stackable item counts intact across Minecraft 26.2 client container and strict item-template reconstruction paths.",
       "Align the client with Stacks Are Stacks' own effective holder maximums while preserving its configuration, eligibility, exclusions, damageable-item handling, and server authority.",
@@ -22,7 +22,7 @@
     "scope": [
       "Maintain the client-only Fabric initializer and string-targeted Mixin invoker from Canary 1, exact-pinned to Stacks Are Stacks 2.1.2-1.26.2.",
       "Retain the focused upstream-bytecode, vanilla-rendering-path, and stale-versus-aligned-client contract tests for the two demonstrated failures.",
-      "Retain the exact unaccepted Canary 1 binary and its implementation and retention provenance."
+      "Retain the exact unaccepted Canary 1 binary and its implementation and retention provenance while its physically verified Slot B deployment is tested independently."
     ],
     "boundaries": {
       "owned_paths": [
@@ -32,7 +32,7 @@
         "Replacing or redistributing Stacks Are Stacks, copying its implementation, or changing its stack eligibility, configured maximums, exclusions, ConsumableFix behavior, or server authority.",
         "Mixing into ItemStack, SimpleContainer, menus, slots, container screens, item-count renderers, Easy Shulker Boxes, or Item Interactions, and any unrelated inventory or container behavior.",
         "Treating Easy Shulker Boxes 26.2.3 or its embedded Item Interactions 26.2.2 consumer path as a declared runtime dependency of this add-on.",
-        "Runtime deployment, either Test Slot, accepted-baseline changes, Test Instance Manager changes, the dedicated Workbench profile, and protected gameplay profile access during this migration."
+        "Rebuilding or substituting Canary 1, changing its source or the upstream Stacks Are Stacks configuration, promoting it before runtime testing, adding CSR-specific compatibility behavior, claiming CSR/Stacks Are Stacks compatibility, launching Minecraft during deployment, or accessing the protected 26.1.2 gameplay profile."
       ]
     },
     "dependencies": [
@@ -93,7 +93,7 @@
     ]
   },
   "state": {
-    "milestone": "C1 is retained after 9 focused tests and static reproductions of both client rendering failures; it remains runtime untested and not deployed.",
+    "milestone": "Exact unchanged Canary 1 remains retained after 9 focused static tests and was physically deployed to Slot B at manager revision 82 as deployment f58e3578-1149-4373-a32f-c6b3e1c9ceea / artifact 4eff5256-9775-4e5e-b459-ec40188849a5, Stack v17, state digest 19c42a70ef995a671b9a6d063ad61a927f0bd8a22617722fef103f862f971577. Its exact =2.1.2-1.26.2 dependency resolves to unmanaged external enabled provider StacksAreStacks-2.1.2-1.26.2.jar, 358,573 bytes, SHA-256 8e318394ea52a6db343a00987dd1b122c69bf48e42deb7813cc5ef293e655917. Minecraft was not launched; Canary 1 remains unaccepted and RUNTIME_UNTESTED, and no CSR/Stacks Are Stacks compatibility implementation was added.",
     "releases": {
       "current": {
         "version": "0.1.0-canary1",
@@ -110,17 +110,17 @@
     },
     "validation": {
       "build": "STATIC_PASS",
-      "deployment": "NOT_DEPLOYED",
+      "deployment": "READY_TO_TEST_VERIFIED",
       "runtime": "RUNTIME_UNTESTED"
     },
     "blocker": null
   },
   "synchronization": {
-    "revision": 1,
-    "activity_at": "2026-08-28T18:39:27Z",
-    "updated_at": "2026-08-29T21:31:10Z",
-    "last_codex_at": "2026-08-29T21:31:10Z",
-    "source_commit": "625143806c44d6e5dc6725282edbfea0fafd8f53",
+    "revision": 2,
+    "activity_at": "2026-09-04T05:34:49Z",
+    "updated_at": "2026-09-04T05:34:49Z",
+    "last_codex_at": "2026-09-04T05:34:49Z",
+    "source_commit": "2bc724420fb99b21e90c9a27c22d2ad0fdfa8064",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
