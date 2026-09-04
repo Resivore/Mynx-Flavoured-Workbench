@@ -4,12 +4,17 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonParser;
 import org.junit.jupiter.api.Test;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.security.MessageDigest;
+import java.util.HexFormat;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ItemAndRecipeResourceContractTest {
@@ -28,18 +33,37 @@ class ItemAndRecipeResourceContractTest {
     }
 
     @Test
-    void placeholdersReferenceExistingVisualModelsWithoutCommittingTextures() throws IOException {
+    void approvedFinalSpritesAndGeneratedItemModelsAreExact() throws Exception {
         assertEquals("{\n  \"model\": {\n    \"type\": \"minecraft:model\",\n"
-                        + "    \"model\": \"minecraft:item/warped_fungus\"\n  }\n}\n",
+                        + "    \"model\": \"ribbits:item/glowcap\"\n  }\n}\n",
                 read("common/src/main/resources/assets/ribbits/items/glowcap.json"));
         assertEquals("{\n  \"model\": {\n    \"type\": \"minecraft:model\",\n"
-                        + "    \"model\": \"minecraft:item/heart_container\"\n  }\n}\n",
+                        + "    \"model\": \"ribbits:item/toadstool_heart\"\n  }\n}\n",
                 read("common/src/main/resources/assets/ribbits/items/toadstool_heart.json"));
+        assertEquals("{\n  \"parent\": \"minecraft:item/generated\",\n  \"textures\": {\n"
+                        + "    \"layer0\": \"ribbits:item/glowcap\"\n  }\n}\n",
+                read("common/src/main/resources/assets/ribbits/models/item/glowcap.json"));
+        assertEquals("{\n  \"parent\": \"minecraft:item/generated\",\n  \"textures\": {\n"
+                        + "    \"layer0\": \"ribbits:item/toadstool_heart\"\n  }\n}\n",
+                read("common/src/main/resources/assets/ribbits/models/item/toadstool_heart.json"));
 
-        assertFalse(Files.exists(PROJECT_ROOT.resolve(
-                "common/src/main/resources/assets/ribbits/textures/item/glowcap.png")));
-        assertFalse(Files.exists(PROJECT_ROOT.resolve(
-                "common/src/main/resources/assets/ribbits/textures/item/toadstool_heart.png")));
+        String publicItemResources = read("common/src/main/resources/assets/ribbits/items/glowcap.json")
+                + read("common/src/main/resources/assets/ribbits/items/toadstool_heart.json")
+                + read("common/src/main/resources/assets/ribbits/models/item/glowcap.json")
+                + read("common/src/main/resources/assets/ribbits/models/item/toadstool_heart.json");
+        assertFalse(publicItemResources.contains("minecraft:item/warped_fungus"));
+        assertFalse(publicItemResources.contains("minecraft:item/heart_container"));
+
+        assertApprovedSprite(
+                "common/src/main/resources/assets/ribbits/textures/item/glowcap.png",
+                "glowcap_16x16_final.png",
+                323,
+                "414ba9042f4bf97278927cb8d65c78ae076b14824a4f34f87f6c7c729543d5df");
+        assertApprovedSprite(
+                "common/src/main/resources/assets/ribbits/textures/item/toadstool_heart.png",
+                "4e8e067e-3969-49ea-be28-fb8d91ea932b.png",
+                881,
+                "024773d1cccfbe15ba4378b53b09d8522e6157c6ef7cb6e693a99ac8ae36ecb0");
     }
 
     @Test
@@ -94,6 +118,36 @@ class ItemAndRecipeResourceContractTest {
 
     private static String read(String relativePath) throws IOException {
         return Files.readString(PROJECT_ROOT.resolve(relativePath)).replace("\r\n", "\n");
+    }
+
+    private static void assertApprovedSprite(
+            String relativePath, String sourceFilename, int expectedSize, String expectedSha256
+    ) throws Exception {
+        Path path = PROJECT_ROOT.resolve(relativePath);
+        byte[] bytes = Files.readAllBytes(path);
+        assertEquals(expectedSize, bytes.length, sourceFilename + " byte size");
+        assertEquals(expectedSha256,
+                HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(bytes)),
+                sourceFilename + " SHA-256");
+        assertTrue(bytes.length >= 26, sourceFilename + " PNG header length");
+        assertEquals(8, bytes[24] & 0xff, sourceFilename + " must be 8-bit PNG");
+        assertEquals(6, bytes[25] & 0xff, sourceFilename + " must use PNG RGBA color type 6");
+
+        BufferedImage image = ImageIO.read(path.toFile());
+        assertNotNull(image, sourceFilename + " must decode as PNG");
+        assertEquals(16, image.getWidth(), sourceFilename + " width");
+        assertEquals(16, image.getHeight(), sourceFilename + " height");
+        assertTrue(image.getColorModel().hasAlpha(), sourceFilename + " must carry alpha");
+        boolean hasTransparentPixel = false;
+        for (int y = 0; y < image.getHeight() && !hasTransparentPixel; y++) {
+            for (int x = 0; x < image.getWidth(); x++) {
+                if ((image.getRGB(x, y) >>> 24) != 0xff) {
+                    hasTransparentPixel = true;
+                    break;
+                }
+            }
+        }
+        assertTrue(hasTransparentPixel, sourceFilename + " must contain real transparency");
     }
 
     private static int occurrences(String value, String needle) {

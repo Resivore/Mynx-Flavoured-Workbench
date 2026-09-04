@@ -130,7 +130,7 @@ class PrivateChestLootTableCodecTest {
 
     private static void validateTable(JsonObject table, int emptyWeight,
                                       int firstPoolEntries, int secondPoolEntries,
-                                      boolean expectPotionMigration) {
+                                      boolean expectSorcererLootRemoval) {
         assertEquals("minecraft:chest", table.get("type").getAsString());
         JsonArray pools = table.getAsJsonArray("pools");
         assertEquals(2, pools.size());
@@ -141,9 +141,7 @@ class PrivateChestLootTableCodecTest {
 
         JsonObject empty = pools.get(1).getAsJsonObject()
                 .getAsJsonArray("entries").get(0).getAsJsonObject();
-        assertEquals("minecraft:empty", empty.get("type").getAsString());
-        assertEquals(emptyWeight, empty.get("weight").getAsInt());
-        assertFalse(empty.has("name"));
+        assertExactWeightedEmpty(empty, emptyWeight);
 
         List<String> itemIds = new ArrayList<>();
         collectItemIds(table, itemIds);
@@ -159,18 +157,33 @@ class PrivateChestLootTableCodecTest {
             assertNotEquals(BuiltInRegistries.ITEM.getKey(net.minecraft.world.item.Items.AIR), id);
         }
 
-        if (expectPotionMigration) {
-            JsonObject potion = pools.get(1).getAsJsonObject()
+        if (expectSorcererLootRemoval) {
+            JsonObject removedBottle = pools.get(0).getAsJsonObject()
+                    .getAsJsonArray("entries").get(2).getAsJsonObject();
+            JsonObject removedPotion = pools.get(1).getAsJsonObject()
                     .getAsJsonArray("entries").get(1).getAsJsonObject();
-            assertEquals("minecraft:potion", potion.get("name").getAsString());
-            JsonArray functions = potion.getAsJsonArray("functions");
-            assertEquals(1, functions.size());
-            JsonObject setPotion = functions.get(0).getAsJsonObject();
-            assertEquals("minecraft:set_potion", setPotion.get("function").getAsString());
-            assertEquals("minecraft:strong_leaping", setPotion.get("id").getAsString());
+            assertExactWeightedEmpty(removedBottle, 5);
+            assertExactWeightedEmpty(removedPotion, 1);
+
+            String serialized = table.toString();
+            for (String forbidden : List.of(
+                    "minecraft:glass_bottle", "minecraft:potion",
+                    "minecraft:splash_potion", "minecraft:lingering_potion",
+                    "minecraft:set_potion", "potion_contents")) {
+                assertFalse(serialized.contains(forbidden),
+                        "removed Sorcerer loot marker remains: " + forbidden);
+            }
         }
 
         LootTable.DIRECT_CODEC.parse(registryOps, table).getOrThrow();
+    }
+
+    private static void assertExactWeightedEmpty(JsonObject entry, int weight) {
+        assertEquals(2, entry.size());
+        assertEquals("minecraft:empty", entry.get("type").getAsString());
+        assertEquals(weight, entry.get("weight").getAsInt());
+        assertFalse(entry.has("name"));
+        assertFalse(entry.has("functions"));
     }
 
     private static void collectItemIds(JsonElement element, List<String> itemIds) {
@@ -226,7 +239,7 @@ class PrivateChestLootTableCodecTest {
     }
 
     private static JsonObject syntheticTable(int firstPoolEntries, int secondPoolEntries,
-                                             int emptyWeight, boolean potion) {
+                                             int emptyWeight, boolean sorcererLootRemoval) {
         JsonObject table = JsonParser.parseString("""
                 {
                   "type": "minecraft:chest",
@@ -242,19 +255,19 @@ class PrivateChestLootTableCodecTest {
                     {"type":"minecraft:item","weight":5,"name":"minecraft:stone"}
                     """));
         }
+        if (sorcererLootRemoval) {
+            first.set(2, JsonParser.parseString("""
+                    {"type":"minecraft:empty","weight":5}
+                    """));
+        }
         JsonArray second = table.getAsJsonArray("pools").get(1).getAsJsonObject().getAsJsonArray("entries");
         JsonObject empty = new JsonObject();
         empty.addProperty("type", "minecraft:empty");
         empty.addProperty("weight", emptyWeight);
         second.add(empty);
-        if (potion) {
+        if (sorcererLootRemoval) {
             second.add(JsonParser.parseString("""
-                    {
-                      "type":"minecraft:item",
-                      "weight":1,
-                      "functions":[{"function":"minecraft:set_potion","id":"minecraft:strong_leaping"}],
-                      "name":"minecraft:potion"
-                    }
+                    {"type":"minecraft:empty","weight":1}
                     """));
         } else {
             while (second.size() < secondPoolEntries) {

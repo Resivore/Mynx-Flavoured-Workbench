@@ -226,6 +226,30 @@ def pin_synthetic_utility_spec(
     return spec
 
 
+def pin_synthetic_restored_utility_spec(
+    data: bytes,
+    relative: str,
+    coordinate: tuple[int, int, int],
+    state: dict[str, object],
+    block_entity_id: str,
+) -> dict[str, object]:
+    inspected = tools.inspect_structure_template(data, relative)
+    target = next(
+        block for block in inspected["blocks"] if block["position"] == coordinate
+    )
+    nbt_start, nbt_end = target["nbt_range"]
+    return {
+        "sha256": tools.sha256_bytes(data),
+        "size": len(data),
+        "coordinate": coordinate,
+        "state": state,
+        "block_entity_id": block_entity_id,
+        "block_entity_nbt_sha256": tools.sha256_bytes(
+            inspected["decoded"][nbt_start:nbt_end]
+        ),
+    }
+
+
 def synthetic_resident_nbt(values: dict[str, str]) -> bytes:
     ribbit_data = b"".join(named_string(name, value) for name, value in values.items()) + b"\x00"
     entity_nbt = (
@@ -454,7 +478,7 @@ class LootTableRepairTest(unittest.TestCase):
                 with self.assertRaises(tools.ValidationError):
                     tools.repair_air_loot_entry(value, relative)
 
-    def test_tree_migration_preserves_the_exact_sorcerer_potion_conversion(self) -> None:
+    def test_tree_migration_replaces_only_exact_sorcerer_bottle_and_potion_entries(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             root = Path(temp_dir)
             values = {
@@ -462,21 +486,28 @@ class LootTableRepairTest(unittest.TestCase):
                 for relative in tools.VILLAGE_CHEST_LOOT_TABLE_PATHS
             }
             sorcerer = values[tools.LOOT_TABLE_PATHS[1]]
-            potion_entry = sorcerer["pools"][0]["entries"][0]
-            potion_entry["name"] = "minecraft:potion"
-            potion_entry["functions"] = [
-                {
-                    "function": "minecraft:set_components",
-                    "components": {"potion_contents": "minecraft:strong_leaping"},
-                }
-            ]
+            for spec in tools.SORCERER_REMOVED_LOOT_ENTRY_SPECS:
+                sorcerer["pools"][spec["pool"]]["entries"][spec["entry"]] = copy.deepcopy(
+                    spec["source"]
+                )
+            before = copy.deepcopy(values)
             for relative, value in values.items():
                 path = root / PurePosixPath(relative)
                 path.parent.mkdir(parents=True, exist_ok=True)
                 path.write_text(json.dumps(value), encoding="utf-8")
             record = tools.migrate_private_loot_tables(root)
             self.assertEqual(2, record["air_item_entries_replaced_with_empty"])
-            self.assertEqual(1, record["sorcerer_potion_loot_functions_migrated"])
+            self.assertEqual(
+                2, record["sorcerer_bottle_and_potion_entries_replaced_with_empty"]
+            )
+            self.assertTrue(record["all_unrelated_sorcerer_loot_unchanged"])
+            self.assertEqual(
+                ["minecraft:glass_bottle", "minecraft:potion"],
+                [
+                    target["source_item"]
+                    for target in record["sorcerer_bottle_and_potion_targets"]
+                ],
+            )
             currency = record["glowcap_currency_substitution"]
             self.assertEqual(5, currency["entries_replaced"])
             self.assertEqual(
@@ -486,15 +517,43 @@ class LootTableRepairTest(unittest.TestCase):
                 (root / PurePosixPath(tools.LOOT_TABLE_PATHS[1])).read_text(encoding="utf-8")
             )
             serialized = json.dumps(migrated, separators=(",", ":"))
-            self.assertEqual(1, serialized.count("minecraft:set_potion"))
+            self.assertNotIn("minecraft:glass_bottle", serialized)
+            self.assertNotIn("minecraft:potion", serialized)
+            self.assertNotIn("minecraft:splash_potion", serialized)
+            self.assertNotIn("minecraft:lingering_potion", serialized)
+            self.assertNotIn("minecraft:set_potion", serialized)
             self.assertNotIn("potion_contents", serialized)
+            expected_sorcerer = copy.deepcopy(before[tools.LOOT_TABLE_PATHS[1]])
+            expected_sorcerer["pools"][1]["entries"][0] = {
+                "type": "minecraft:empty",
+                "weight": tools.LOOT_EMPTY_WEIGHTS[tools.LOOT_TABLE_PATHS[1]],
+            }
+            for spec in tools.SORCERER_REMOVED_LOOT_ENTRY_SPECS:
+                expected_sorcerer["pools"][spec["pool"]]["entries"][spec["entry"]] = (
+                    copy.deepcopy(spec["replacement"])
+                )
+            currency_spec = tools.GLOWCAP_CURRENCY_ENTRY_SPECS[tools.LOOT_TABLE_PATHS[1]]
+            expected_sorcerer["pools"][currency_spec["pool"]]["entries"][
+                currency_spec["entry"]
+            ]["name"] = tools.GLOWCAP_CURRENCY_TARGET_ID
+            self.assertEqual(expected_sorcerer, migrated)
+            sorcerer_bytes = (
+                root / PurePosixPath(tools.LOOT_TABLE_PATHS[1])
+            ).read_bytes()
+            self.assertEqual(
+                {
+                    "path": tools.LOOT_TABLE_PATHS[1],
+                    "size": len(sorcerer_bytes),
+                    "sha256": tools.sha256_bytes(sorcerer_bytes),
+                },
+                record["sorcerer_output"],
+            )
 
             errors: list[str] = []
             tools.validate_private_loot_tables(
                 root,
                 {
                     "assets/minecraft/items/stone.json",
-                    "assets/minecraft/items/potion.json",
                     "assets/minecraft/items/amethyst_block.json",
                 },
                 errors,
@@ -507,11 +566,50 @@ class LootTableRepairTest(unittest.TestCase):
             missing_registry_errors: list[str] = []
             tools.validate_private_loot_tables(
                 root,
-                {"assets/minecraft/items/potion.json"},
+                set(),
                 missing_registry_errors,
             )
             self.assertTrue(
                 any("item registry evidence is absent" in error for error in missing_registry_errors)
+            )
+
+    def test_sorcerer_bottle_and_potion_replacement_fails_closed_on_drift(self) -> None:
+        relative = tools.LOOT_TABLE_PATHS[1]
+        source = synthetic_loot(relative)
+        for spec in tools.SORCERER_REMOVED_LOOT_ENTRY_SPECS:
+            source["pools"][spec["pool"]]["entries"][spec["entry"]] = copy.deepcopy(
+                spec["source"]
+            )
+        source = tools.repair_air_loot_entry(source, relative)
+
+        for label, mutate in {
+            "changed weight": lambda value: value["pools"][0]["entries"][2].update(
+                {"weight": 6}
+            ),
+            "relocated potion": lambda value: value["pools"][1]["entries"].reverse(),
+            "extra potion form": lambda value: value["pools"][0]["entries"][0].update(
+                {"name": "minecraft:splash_potion"}
+            ),
+        }.items():
+            with self.subTest(label=label):
+                drifted = copy.deepcopy(source)
+                mutate(drifted)
+                with self.assertRaises(tools.ValidationError):
+                    tools.replace_sorcerer_bottle_and_potion_loot(drifted, relative)
+
+        source_snapshot = copy.deepcopy(source)
+        replaced, _records = tools.replace_sorcerer_bottle_and_potion_loot(
+            source, relative
+        )
+        self.assertEqual(source_snapshot, source, "pure replacement must not mutate its input")
+        for forbidden in tools.SORCERER_FORBIDDEN_LOOT_ITEM_IDS:
+            self.assertNotIn(forbidden, json.dumps(replaced))
+        self.assertNotIn("minecraft:set_potion", json.dumps(replaced))
+        unrelated_drift = copy.deepcopy(replaced)
+        unrelated_drift["pools"][0]["entries"][0]["weight"] = 99
+        with self.assertRaisesRegex(tools.ValidationError, "outside the two exact entries"):
+            tools.require_exact_sorcerer_loot_replacement(
+                source_snapshot, unrelated_drift, relative
             )
 
     def test_exact_five_currency_entries_change_without_other_byte_drift(self) -> None:
@@ -764,7 +862,7 @@ class VillageNbtMigrationTest(unittest.TestCase):
 
 
 class PrivateVillageUtilityTransformTest(unittest.TestCase):
-    def test_exact_six_template_hash_and_inventory_contract_is_pinned(self) -> None:
+    def test_exact_four_template_transform_and_two_pristine_restorations_are_pinned(self) -> None:
         expected_hashes = {
             "data/ribbits/structure/houses/brown_sorcerer_house.nbt": (
                 "502dc904d293d411a5ebafed2c7f71b8eed8e36ab2123553ae8ae3295a56aa76",
@@ -774,17 +872,9 @@ class PrivateVillageUtilityTransformTest(unittest.TestCase):
                 "ef66d580570c81657500f714b76eb761de910285571ff0ce36442b14e4bc8948",
                 "57dcf47cdece4e459522cea74b69215269a45c81028a2c42f2f3ebfaee43d516",
             ),
-            "data/ribbits/structure/houses/small_house_brown_2.nbt": (
-                "7e7ca64fe02c9953b6e3ccf3bf2a2393c3274bbbb3848ae874b4ff8c9c6b1676",
-                "bc65457ea8c0b6aaaf3902b04840ff8f1ba04ee5818b85e5c11c70cb5683b695",
-            ),
             "data/ribbits/structure/houses/small_house_brown_3.nbt": (
                 "329dd885fd3a26fbf809cc37b74696799bea2e5397a6dd645810261bfbb1055a",
                 "b54530ffebc2284ab4397796b8bbad411193fb318e3dfcf93f61558b78327b87",
-            ),
-            "data/ribbits/structure/houses/small_house_red_2.nbt": (
-                "a91945113b28214f5be8935efdbb4c42f6ec469bf9ca9bae5074a0579023d20a",
-                "7ceb960251b893a75c82fa08d2268a307676a55d00a2cd5be897ceb0b08d272d",
             ),
             "data/ribbits/structure/houses/small_house_red_3.nbt": (
                 "4652d7c9fa1481b9d210a32140eedc751a797c0d2deb6b6e12f53d4c60955e70",
@@ -805,13 +895,48 @@ class PrivateVillageUtilityTransformTest(unittest.TestCase):
             {
                 "minecraft:brewing_stand": 2,
                 "minecraft:damaged_anvil": 2,
-                "minecraft:smoker": 1,
-                "minecraft:blast_furnace": 1,
             },
             tools.PRIVATE_VILLAGE_REMOVED_UTILITY_COUNTS,
         )
+        expected_restored = {
+            "data/ribbits/structure/houses/small_house_brown_2.nbt": (
+                2_810,
+                "7e7ca64fe02c9953b6e3ccf3bf2a2393c3274bbbb3848ae874b4ff8c9c6b1676",
+                "minecraft:smoker",
+                "65c78f8c0d18fbe8de274adf10d4d3d7e5365e37e7f7a8f95295719d0265b536",
+            ),
+            "data/ribbits/structure/houses/small_house_red_2.nbt": (
+                2_881,
+                "a91945113b28214f5be8935efdbb4c42f6ec469bf9ca9bae5074a0579023d20a",
+                "minecraft:blast_furnace",
+                "f0f5c4e4e4987767031407cd66b704e739a8c092bb08df7269888f172440ad25",
+            ),
+        }
+        self.assertEqual(
+            set(expected_restored), set(tools.PRIVATE_VILLAGE_RESTORED_UTILITY_SPECS)
+        )
+        for relative, (size, digest, block_entity, nbt_digest) in expected_restored.items():
+            with self.subTest(restored=relative):
+                spec = tools.PRIVATE_VILLAGE_RESTORED_UTILITY_SPECS[relative]
+                self.assertEqual(size, spec["size"])
+                self.assertEqual(digest, spec["sha256"])
+                self.assertEqual(block_entity, spec["block_entity_id"])
+                self.assertEqual(nbt_digest, spec["block_entity_nbt_sha256"])
         self.assertEqual(60, tools.PRIVATE_VILLAGE_PRESERVED_BLOCK_COUNTS["minecraft:barrel"])
         self.assertEqual(11, tools.PRIVATE_VILLAGE_PRESERVED_BLOCK_COUNTS["minecraft:chest"])
+        self.assertEqual(1, tools.PRIVATE_VILLAGE_PRESERVED_BLOCK_COUNTS["minecraft:smoker"])
+        self.assertEqual(
+            1, tools.PRIVATE_VILLAGE_PRESERVED_BLOCK_COUNTS["minecraft:blast_furnace"]
+        )
+        self.assertEqual(0, tools.PRIVATE_VILLAGE_PRESERVED_BLOCK_COUNTS["minecraft:furnace"])
+        self.assertEqual(
+            {
+                "minecraft:smoker": 1,
+                "minecraft:blast_furnace": 1,
+                "minecraft:furnace": 0,
+            },
+            tools.PRIVATE_VILLAGE_PRESERVED_BLOCK_ENTITY_COUNTS,
+        )
         self.assertEqual(
             59, sum(tools.PRIVATE_VILLAGE_LOOT_BINDING_COUNTS.values())
         )
@@ -987,14 +1112,6 @@ class PrivateVillageUtilityTransformTest(unittest.TestCase):
             ("small_house_red_3.nbt", (3, 1, 5), {
                 "Name": "minecraft:damaged_anvil", "Properties": {"facing": "west"},
             }, {"Name": "minecraft:air"}, None),
-            ("small_house_brown_2.nbt", (5, 1, 6), {
-                "Name": "minecraft:smoker",
-                "Properties": {"lit": "false", "facing": "north"},
-            }, {"Name": "minecraft:stone_bricks"}, "minecraft:smoker"),
-            ("small_house_red_2.nbt", (4, 1, 2), {
-                "Name": "minecraft:blast_furnace",
-                "Properties": {"lit": "false", "facing": "south"},
-            }, {"Name": "minecraft:stone_bricks"}, "minecraft:blast_furnace"),
         ]
         payloads: dict[str, bytes] = {}
         specs: dict[str, dict[str, object]] = {}
@@ -1021,6 +1138,49 @@ class PrivateVillageUtilityTransformTest(unittest.TestCase):
             specs[relative] = pin_synthetic_utility_spec(
                 data, relative, coordinate, source, replacement, block_entity
             )
+        restored_shapes = [
+            (
+                "small_house_brown_2.nbt",
+                (5, 1, 6),
+                {
+                    "Name": "minecraft:smoker",
+                    "Properties": {"lit": "false", "facing": "north"},
+                },
+                "minecraft:smoker",
+            ),
+            (
+                "small_house_red_2.nbt",
+                (4, 1, 2),
+                {
+                    "Name": "minecraft:blast_furnace",
+                    "Properties": {"lit": "false", "facing": "south"},
+                },
+                "minecraft:blast_furnace",
+            ),
+        ]
+        restored_specs: dict[str, dict[str, object]] = {}
+        for filename, coordinate, state, block_entity in restored_shapes:
+            relative = f"data/ribbits/structure/houses/{filename}"
+            data = synthetic_structure_nbt(
+                [state, {"Name": "minecraft:barrel"}],
+                [
+                    {
+                        "position": coordinate,
+                        "state": 0,
+                        "block_entity_id": block_entity,
+                    },
+                    {
+                        "position": (0, 0, 0),
+                        "state": 1,
+                        "block_entity_id": "minecraft:barrel",
+                        "loot_table": "ribbits:synthetic",
+                    },
+                ],
+            )
+            payloads[relative] = data
+            restored_specs[relative] = pin_synthetic_restored_utility_spec(
+                data, relative, coordinate, state, block_entity
+            )
         for index in range(23):
             relative = f"data/ribbits/structure/paths/synthetic_{index:02d}.nbt"
             payloads[relative] = synthetic_structure_nbt(
@@ -1045,17 +1205,34 @@ class PrivateVillageUtilityTransformTest(unittest.TestCase):
             mock.patch.object(tools, "PRIVATE_VILLAGE_TEMPLATE_COUNT", 29),
             mock.patch.object(tools, "PRIVATE_VILLAGE_UTILITY_TRANSFORMS", specs),
             mock.patch.object(
+                tools, "PRIVATE_VILLAGE_RESTORED_UTILITY_SPECS", restored_specs
+            ),
+            mock.patch.object(
                 tools,
                 "PRIVATE_VILLAGE_REMOVED_UTILITY_COUNTS",
                 {
                     "minecraft:brewing_stand": 2,
                     "minecraft:damaged_anvil": 2,
-                    "minecraft:smoker": 1,
-                    "minecraft:blast_furnace": 1,
                 },
             ),
             mock.patch.object(
-                tools, "PRIVATE_VILLAGE_PRESERVED_BLOCK_COUNTS", {"minecraft:barrel": 29}
+                tools,
+                "PRIVATE_VILLAGE_PRESERVED_BLOCK_COUNTS",
+                {
+                    "minecraft:barrel": 29,
+                    "minecraft:smoker": 1,
+                    "minecraft:blast_furnace": 1,
+                    "minecraft:furnace": 0,
+                },
+            ),
+            mock.patch.object(
+                tools,
+                "PRIVATE_VILLAGE_PRESERVED_BLOCK_ENTITY_COUNTS",
+                {
+                    "minecraft:smoker": 1,
+                    "minecraft:blast_furnace": 1,
+                    "minecraft:furnace": 0,
+                },
             ),
             mock.patch.object(tools, "PRIVATE_VILLAGE_PROCESSOR_SENTINEL_COUNTS", {}),
             mock.patch.object(
@@ -1066,7 +1243,16 @@ class PrivateVillageUtilityTransformTest(unittest.TestCase):
             roots = (Path(first_dir), Path(second_dir))
             for root in roots:
                 write_tree(root)
-            with patches[0], patches[1], patches[2], patches[3], patches[4], patches[5]:
+            with (
+                patches[0],
+                patches[1],
+                patches[2],
+                patches[3],
+                patches[4],
+                patches[5],
+                patches[6],
+                patches[7],
+            ):
                 first_record = tools.transform_private_village_utilities(roots[0])
                 second_record = tools.transform_private_village_utilities(roots[1])
                 self.assertEqual(
@@ -1077,13 +1263,18 @@ class PrivateVillageUtilityTransformTest(unittest.TestCase):
                     first_record["template_tree_after_sha256"],
                     second_record["template_tree_after_sha256"],
                 )
-                self.assertEqual(6, first_record["count"])
+                self.assertEqual(4, first_record["count"])
+                self.assertEqual(2, first_record["restored_count"])
                 self.assertEqual(29, first_record["canonical_template_count"])
                 self.assertEqual(
                     {name: 0 for name in tools.PRIVATE_VILLAGE_REMOVED_UTILITY_COUNTS},
                     first_record["removed_utility_counts_after"],
                 )
                 self.assertTrue(first_record["all_loot_bindings_unchanged"])
+                for relative in restored_specs:
+                    self.assertEqual(payloads[relative], roots[0].joinpath(
+                        *PurePosixPath(relative).parts
+                    ).read_bytes())
                 for relative in payloads:
                     self.assertEqual(
                         roots[0].joinpath(*PurePosixPath(relative).parts).read_bytes(),
@@ -1096,8 +1287,8 @@ class PrivateVillageUtilityTransformTest(unittest.TestCase):
 
 class DonorBoundaryContractTest(unittest.TestCase):
     def test_exact_accounting_contains_only_approved_visual_members_and_outputs(self) -> None:
-        self.assertEqual("4.1.6+26.2-mynx-canary5", tools.CANDIDATE_VERSION)
-        self.assertEqual(5, tools.CANDIDATE_CANARY)
+        self.assertEqual("4.1.6+26.2-mynx-canary6", tools.CANDIDATE_VERSION)
+        self.assertEqual(6, tools.CANDIDATE_CANARY)
         self.assertEqual(
             "mynx-ribbits-private-resource-manifest/v1", tools.PRIVATE_MANIFEST_SCHEMA
         )
@@ -1106,6 +1297,20 @@ class DonorBoundaryContractTest(unittest.TestCase):
             tools.PRIVATE_MANIFEST_CLASSIFICATION,
         )
         self.assertEqual(336, tools.OUTPUT_FILE_COUNT)
+        self.assertEqual(2_714_466, tools.OUTPUT_TOTAL_SIZE)
+        self.assertEqual(2_563, tools.SORCERER_LOOT_OUTPUT_SIZE)
+        self.assertEqual(
+            "5b06e06502bf11f661161e89bf34e329d8f23268b7b0104371038c38ad9b378d",
+            tools.SORCERER_LOOT_OUTPUT_SHA256,
+        )
+        self.assertEqual(
+            "9c2f704975baf2fe7e1c530c85a82cc1a69116be609ee769615c422cfb8d0499",
+            tools.PRIVATE_VILLAGE_TEMPLATE_TREE_BEFORE_SHA256,
+        )
+        self.assertEqual(
+            "cb1cac748727cc4387092cee0d77426816204d0986866d44e9995d6948468de0",
+            tools.PRIVATE_VILLAGE_TEMPLATE_TREE_AFTER_SHA256,
+        )
         self.assertEqual(41, len(tools.GECKO_MODEL_IDS))
         self.assertEqual(24, len(tools.REGISTERED_ITEM_IDS))
         self.assertNotIn("glowcap", tools.REGISTERED_ITEM_IDS)
@@ -1235,6 +1440,10 @@ class DonorBoundaryContractTest(unittest.TestCase):
         expected_paths = {
             "assets/ribbits/items/glowcap.json",
             "assets/ribbits/items/toadstool_heart.json",
+            "assets/ribbits/models/item/glowcap.json",
+            "assets/ribbits/models/item/toadstool_heart.json",
+            "assets/ribbits/textures/item/glowcap.png",
+            "assets/ribbits/textures/item/toadstool_heart.png",
             "data/ribbits/advancement/recipes/misc/toadstool_heart.json",
             "data/ribbits/item_modifier/ribbit_village_explorer_result.json",
             "data/ribbits/loot_table/chests/swamp_hut_map.json",
@@ -1247,9 +1456,22 @@ class DonorBoundaryContractTest(unittest.TestCase):
             root = Path(temp_dir)
             source_root = root / "tracked-resources"
             archive_path = root / "private.jar"
+            canonical_root = (
+                Path(__file__).resolve().parent.parent
+                / "common"
+                / "src"
+                / "main"
+                / "resources"
+            )
             expected_bytes: dict[str, bytes] = {}
             for index, relative in enumerate(sorted(expected_paths)):
-                payload = f"source-safe-{index}\n".encode("utf-8")
+                canonical = canonical_root.joinpath(*PurePosixPath(relative).parts)
+                payload = (
+                    canonical.read_bytes()
+                    if relative in tools.FINAL_ITEM_RESOURCE_MODELS
+                    or relative in tools.FINAL_ITEM_SPRITE_SPECS
+                    else f"source-safe-{index}\n".encode("utf-8")
+                )
                 expected_bytes[relative] = payload
                 tracked = source_root.joinpath(*PurePosixPath(relative).parts)
                 tracked.parent.mkdir(parents=True, exist_ok=True)
@@ -1288,6 +1510,77 @@ class DonorBoundaryContractTest(unittest.TestCase):
                     for error in errors),
                 errors,
             )
+
+    def test_final_item_sprites_and_models_match_exact_approved_identities(self) -> None:
+        source_root = (
+            Path(__file__).resolve().parent.parent
+            / "common"
+            / "src"
+            / "main"
+            / "resources"
+        )
+        errors: list[str] = []
+        tools.validate_final_item_public_resources(source_root, errors)
+        self.assertEqual([], errors)
+        self.assertEqual(
+            [
+                {
+                    "item": "ribbits:glowcap",
+                    "source_filename": "glowcap_16x16_final.png",
+                    "path": "assets/ribbits/textures/item/glowcap.png",
+                    "size": 323,
+                    "sha256": "414ba9042f4bf97278927cb8d65c78ae076b14824a4f34f87f6c7c729543d5df",
+                    "dimensions": [16, 16],
+                    "format": "non-interlaced 8-bit RGBA PNG",
+                    "alpha": {
+                        "transparent_pixels": 178,
+                        "opaque_pixels": 78,
+                        "partial_alpha_pixels": 0,
+                    },
+                    "packaged_bytes": "exact tracked attachment bytes",
+                },
+                {
+                    "item": "ribbits:toadstool_heart",
+                    "source_filename": "4e8e067e-3969-49ea-be28-fb8d91ea932b.png",
+                    "path": "assets/ribbits/textures/item/toadstool_heart.png",
+                    "size": 881,
+                    "sha256": "024773d1cccfbe15ba4378b53b09d8522e6157c6ef7cb6e693a99ac8ae36ecb0",
+                    "dimensions": [16, 16],
+                    "format": "non-interlaced 8-bit RGBA PNG",
+                    "alpha": {
+                        "transparent_pixels": 152,
+                        "opaque_pixels": 104,
+                        "partial_alpha_pixels": 0,
+                    },
+                    "packaged_bytes": "exact tracked attachment bytes",
+                },
+            ],
+            tools.final_item_sprite_manifest_records(),
+        )
+
+        glowcap = source_root / "assets/ribbits/textures/item/glowcap.png"
+        with tempfile.TemporaryDirectory() as temp_dir:
+            tampered_root = Path(temp_dir)
+            for relative in tools.FINAL_ITEM_RESOURCE_MODELS:
+                destination = tampered_root.joinpath(*PurePosixPath(relative).parts)
+                destination.parent.mkdir(parents=True, exist_ok=True)
+                destination.write_bytes(
+                    source_root.joinpath(*PurePosixPath(relative).parts).read_bytes()
+                )
+            for relative in tools.FINAL_ITEM_SPRITE_SPECS:
+                destination = tampered_root.joinpath(*PurePosixPath(relative).parts)
+                destination.parent.mkdir(parents=True, exist_ok=True)
+                destination.write_bytes(
+                    source_root.joinpath(*PurePosixPath(relative).parts).read_bytes()
+                )
+            tampered = bytearray(glowcap.read_bytes())
+            tampered[-1] ^= 1
+            tampered_root.joinpath(
+                *PurePosixPath("assets/ribbits/textures/item/glowcap.png").parts
+            ).write_bytes(tampered)
+            tampered_errors: list[str] = []
+            tools.validate_final_item_public_resources(tampered_root, tampered_errors)
+            self.assertTrue(tampered_errors)
 
     def test_private_jar_requires_exact_economy_runtime_dependencies(self) -> None:
         self.assertEqual(">=4.0.0", tools.REQUIRED_FABRIC_DEPENDENCIES["customportals"])

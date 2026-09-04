@@ -43,6 +43,10 @@ if (privateResourcesDir != null && (privateManifestFile == null || !privateManif
 def allowedPublicResources = [
     'common/src/main/resources/assets/ribbits/items/glowcap.json',
     'common/src/main/resources/assets/ribbits/items/toadstool_heart.json',
+    'common/src/main/resources/assets/ribbits/models/item/glowcap.json',
+    'common/src/main/resources/assets/ribbits/models/item/toadstool_heart.json',
+    'common/src/main/resources/assets/ribbits/textures/item/glowcap.png',
+    'common/src/main/resources/assets/ribbits/textures/item/toadstool_heart.png',
     'common/src/main/resources/data/ribbits/recipe/toadstool_heart.json',
     'common/src/main/resources/data/ribbits/advancement/recipes/misc/toadstool_heart.json',
     'common/src/main/resources/data/ribbits/tags/worldgen/structure/on_ribbit_village_explorer_maps.json',
@@ -93,16 +97,44 @@ if (privateResourcesDir != null) {
             if (manifest.schema?.toString() != 'mynx-ribbits-private-resource-manifest/v1' ||
                 manifest.classification?.toString() != 'PRIVATE MYNX ASSEMBLY STAGED / NONREDISTRIBUTABLE DONOR ASSETS' ||
                 manifest.candidate?.version?.toString() != project.mod_version.toString() ||
-                manifest.candidate?.version?.toString() != '4.1.6+26.2-mynx-canary5' ||
-                (manifest.candidate?.canary as int) != 5 ||
+                manifest.candidate?.version?.toString() != '4.1.6+26.2-mynx-canary6' ||
+                (manifest.candidate?.canary as int) != 6 ||
                 manifest.candidate?.private_artifact_filename?.toString() !=
-                    'ribbits-private-reconstruction-4.1.6+26.2-mynx-canary5.jar' ||
+                    'ribbits-private-reconstruction-4.1.6+26.2-mynx-canary6.jar' ||
                 manifest.candidate?.source_only_artifact_filename?.toString() !=
-                    'ribbits-source-only-4.1.6+26.2-mynx-canary5.jar') {
+                    'ribbits-source-only-4.1.6+26.2-mynx-canary6.jar') {
                 throw new GradleException("Private manifest classification is not eligible for private packaging: ${manifest.classification}")
             }
             if ((manifest.blockers as List)) {
                 throw new GradleException("Private manifest still contains blockers: ${manifest.blockers}")
+            }
+
+            def expectedFinalItemSprites = [
+                [
+                    item: 'ribbits:glowcap',
+                    source_filename: 'glowcap_16x16_final.png',
+                    path: 'assets/ribbits/textures/item/glowcap.png',
+                    size: 323,
+                    sha256: '414ba9042f4bf97278927cb8d65c78ae076b14824a4f34f87f6c7c729543d5df',
+                    dimensions: [16, 16],
+                    format: 'non-interlaced 8-bit RGBA PNG',
+                    alpha: [transparent_pixels: 178, opaque_pixels: 78, partial_alpha_pixels: 0],
+                    packaged_bytes: 'exact tracked attachment bytes',
+                ],
+                [
+                    item: 'ribbits:toadstool_heart',
+                    source_filename: '4e8e067e-3969-49ea-be28-fb8d91ea932b.png',
+                    path: 'assets/ribbits/textures/item/toadstool_heart.png',
+                    size: 881,
+                    sha256: '024773d1cccfbe15ba4378b53b09d8522e6157c6ef7cb6e693a99ac8ae36ecb0',
+                    dimensions: [16, 16],
+                    format: 'non-interlaced 8-bit RGBA PNG',
+                    alpha: [transparent_pixels: 152, opaque_pixels: 104, partial_alpha_pixels: 0],
+                    packaged_bytes: 'exact tracked attachment bytes',
+                ],
+            ]
+            if ((manifest.source_safe_final_item_sprites as List) != expectedFinalItemSprites) {
+                throw new GradleException('Private manifest lacks the exact final item-sprite identities')
             }
 
             def expectedDonorInputs = [
@@ -253,8 +285,11 @@ if (privateResourcesDir != null) {
             }
             if ((manifest.pristine.selected_file_count as int) != 287 ||
                 (manifest.output.file_count as int) != 336 ||
+                (manifest.output.total_size as long) != 2714466L ||
                 expectedFiles.size() != 336) {
-                throw new GradleException('Private manifest does not preserve the exact 287-input / 336-output contract')
+                throw new GradleException(
+                    'Private manifest does not preserve the exact 287-input / 336-output / 2,714,466-byte contract'
+                )
             }
 
             def professionDonors = [
@@ -323,11 +358,49 @@ if (privateResourcesDir != null) {
                 'data/ribbits/loot_table/chests/fisherman_main.json',
                 'data/ribbits/loot_table/chests/sorcerer.json',
             ]
+            def expectedRemovedSorcererLoot = [
+                [
+                    table: 'data/ribbits/loot_table/chests/sorcerer.json',
+                    pool: 0,
+                    entry: 2,
+                    source_item: 'minecraft:glass_bottle',
+                    weight: 5,
+                    removed_functions: [[
+                        function: 'minecraft:set_count',
+                        count: [type: 'minecraft:uniform', min: 2.0, max: 4.0],
+                        add: false,
+                    ]],
+                    replacement: [type: 'minecraft:empty', weight: 5],
+                    unrelated_entry_data_unchanged: true,
+                ],
+                [
+                    table: 'data/ribbits/loot_table/chests/sorcerer.json',
+                    pool: 1,
+                    entry: 1,
+                    source_item: 'minecraft:potion',
+                    weight: 1,
+                    removed_functions: [[
+                        function: 'minecraft:set_components',
+                        components: [potion_contents: 'minecraft:strong_leaping'],
+                    ]],
+                    replacement: [type: 'minecraft:empty', weight: 1],
+                    unrelated_entry_data_unchanged: true,
+                ],
+            ]
             if ((lootMigration?.tables as List) != expectedLootTables ||
                 (lootMigration?.air_item_entries_replaced_with_empty as int) != 2 ||
                 lootMigration?.replacement?.invalid_item_id?.toString() != 'minecraft:air' ||
                 lootMigration?.replacement?.faithful_entry_type?.toString() != 'minecraft:empty' ||
-                (lootMigration?.sorcerer_potion_loot_functions_migrated as int) != 1) {
+                (lootMigration?.sorcerer_bottle_and_potion_entries_replaced_with_empty as int) != 2 ||
+                (lootMigration?.sorcerer_bottle_and_potion_targets as List) !=
+                    expectedRemovedSorcererLoot ||
+                lootMigration?.all_unrelated_sorcerer_loot_unchanged != true ||
+                lootMigration?.sorcerer_output?.path?.toString() !=
+                    'data/ribbits/loot_table/chests/sorcerer.json' ||
+                (lootMigration?.sorcerer_output?.size as int) != 2563 ||
+                !lootMigration?.sorcerer_output?.sha256?.toString()?.equalsIgnoreCase(
+                    '5b06e06502bf11f661161e89bf34e329d8f23268b7b0104371038c38ad9b378d'
+                )) {
                 throw new GradleException('Private manifest lacks the exact two-table loot repair contract')
             }
             def glowcapMigration = lootMigration?.glowcap_currency_substitution
@@ -400,13 +473,6 @@ if (privateResourcesDir != null) {
                     blockEntity: 'minecraft:brewing_stand', paletteIndex: 76,
                     before: 'ef66d580570c81657500f714b76eb761de910285571ff0ce36442b14e4bc8948',
                     after: '57dcf47cdece4e459522cea74b69215269a45c81028a2c42f2f3ebfaee43d516'],
-                'data/ribbits/structure/houses/small_house_brown_2.nbt': [
-                    coordinate: [5, 1, 6],
-                    sourceState: [Name: 'minecraft:smoker', Properties: [lit: 'false', facing: 'north']],
-                    replacementState: [Name: 'minecraft:stone_bricks'],
-                    blockEntity: 'minecraft:smoker', paletteIndex: 20,
-                    before: '7e7ca64fe02c9953b6e3ccf3bf2a2393c3274bbbb3848ae874b4ff8c9c6b1676',
-                    after: 'bc65457ea8c0b6aaaf3902b04840ff8f1ba04ee5818b85e5c11c70cb5683b695'],
                 'data/ribbits/structure/houses/small_house_brown_3.nbt': [
                     coordinate: [3, 1, 5],
                     sourceState: [Name: 'minecraft:damaged_anvil', Properties: [facing: 'west']],
@@ -414,13 +480,6 @@ if (privateResourcesDir != null) {
                     blockEntity: null, paletteIndex: 61,
                     before: '329dd885fd3a26fbf809cc37b74696799bea2e5397a6dd645810261bfbb1055a',
                     after: 'b54530ffebc2284ab4397796b8bbad411193fb318e3dfcf93f61558b78327b87'],
-                'data/ribbits/structure/houses/small_house_red_2.nbt': [
-                    coordinate: [4, 1, 2],
-                    sourceState: [Name: 'minecraft:blast_furnace', Properties: [lit: 'false', facing: 'south']],
-                    replacementState: [Name: 'minecraft:stone_bricks'],
-                    blockEntity: 'minecraft:blast_furnace', paletteIndex: 21,
-                    before: 'a91945113b28214f5be8935efdbb4c42f6ec469bf9ca9bae5074a0579023d20a',
-                    after: '7ceb960251b893a75c82fa08d2268a307676a55d00a2cd5be897ceb0b08d272d'],
                 'data/ribbits/structure/houses/small_house_red_3.nbt': [
                     coordinate: [3, 1, 5],
                     sourceState: [Name: 'minecraft:damaged_anvil', Properties: [facing: 'west']],
@@ -429,15 +488,30 @@ if (privateResourcesDir != null) {
                     before: '4652d7c9fa1481b9d210a32140eedc751a797c0d2deb6b6e12f53d4c60955e70',
                     after: '2c5a76cf50f5993ed0f6f089aefabe3b04feab2e75962e80b8cfa6f5788ccb3e'],
             ]
+            def expectedRestoredUtilities = [
+                'data/ribbits/structure/houses/small_house_brown_2.nbt': [
+                    coordinate: [5, 1, 6],
+                    state: [Name: 'minecraft:smoker', Properties: [lit: 'false', facing: 'north']],
+                    blockEntity: 'minecraft:smoker',
+                    blockEntityNbt: '65c78f8c0d18fbe8de274adf10d4d3d7e5365e37e7f7a8f95295719d0265b536',
+                    hash: '7e7ca64fe02c9953b6e3ccf3bf2a2393c3274bbbb3848ae874b4ff8c9c6b1676'],
+                'data/ribbits/structure/houses/small_house_red_2.nbt': [
+                    coordinate: [4, 1, 2],
+                    state: [Name: 'minecraft:blast_furnace', Properties: [lit: 'false', facing: 'south']],
+                    blockEntity: 'minecraft:blast_furnace',
+                    blockEntityNbt: 'f0f5c4e4e4987767031407cd66b704e739a8c092bb08df7269888f172440ad25',
+                    hash: 'a91945113b28214f5be8935efdbb4c42f6ec469bf9ca9bae5074a0579023d20a'],
+            ]
             def utilityMigration = manifest.migrations?.private_village_progression_utilities_removed
             def actualUtilityRecords = (utilityMigration?.templates as List)?.collectEntries { record ->
+                [(record.template.toString()): record]
+            }
+            def actualRestoredRecords = (utilityMigration?.restored_templates as List)?.collectEntries { record ->
                 [(record.template.toString()): record]
             }
             def expectedRemovedUtilities = [
                 'minecraft:brewing_stand': 2,
                 'minecraft:damaged_anvil': 2,
-                'minecraft:smoker': 1,
-                'minecraft:blast_furnace': 1,
             ]
             def expectedRemovedAfter = expectedRemovedUtilities.collectEntries { name, _count ->
                 [(name): 0]
@@ -449,7 +523,12 @@ if (privateResourcesDir != null) {
                 'minecraft:gray_bed': 2, 'minecraft:green_bed': 10,
                 'minecraft:light_gray_bed': 10, 'minecraft:purple_bed': 4,
                 'minecraft:red_bed': 6, 'minecraft:yellow_bed': 4,
-                'minecraft:cake': 2,
+                'minecraft:cake': 2, 'minecraft:smoker': 1,
+                'minecraft:blast_furnace': 1, 'minecraft:furnace': 0,
+            ]
+            def expectedRetainedBlockEntities = [
+                'minecraft:smoker': 1, 'minecraft:blast_furnace': 1,
+                'minecraft:furnace': 0,
             ]
             def expectedSentinels = [
                 'minecraft:lapis_block': 287, 'minecraft:end_stone': 78,
@@ -465,25 +544,29 @@ if (privateResourcesDir != null) {
                 'ribbits:chests/nitwit': 10,
                 'ribbits:chests/sorcerer': 6,
             ]
-            if ((utilityMigration?.count as int) != 6 ||
+            if ((utilityMigration?.count as int) != 4 ||
+                (utilityMigration?.restored_count as int) != 2 ||
                 utilityMigration?.policy?.toString() !=
                     'future placements only; exact coordinate and hash-pinned compressed NBT rewrite' ||
                 (utilityMigration?.canonical_template_count as int) != 29 ||
                 actualUtilityRecords?.keySet() != expectedUtilityTransforms.keySet() ||
+                actualRestoredRecords?.keySet() != expectedRestoredUtilities.keySet() ||
                 utilityMigration?.template_tree_before_sha256?.toString() !=
                     '9c2f704975baf2fe7e1c530c85a82cc1a69116be609ee769615c422cfb8d0499' ||
                 utilityMigration?.template_tree_after_sha256?.toString() !=
-                    '9d321d21a57f0800e564e05432e564341d3836696831624383eabf1be48dd827' ||
+                    'cb1cac748727cc4387092cee0d77426816204d0986866d44e9995d6948468de0' ||
                 (utilityMigration?.removed_utility_counts_before as Map) != expectedRemovedUtilities ||
                 (utilityMigration?.removed_utility_counts_after as Map) != expectedRemovedAfter ||
                 (utilityMigration?.retained_block_counts as Map) != expectedRetainedBlocks ||
+                (utilityMigration?.retained_block_entity_counts as Map) !=
+                    expectedRetainedBlockEntities ||
                 (utilityMigration?.raw_processor_sentinel_counts as Map) != expectedSentinels ||
                 (utilityMigration?.loot_binding_counts as Map) != expectedLootBindings ||
                 utilityMigration?.all_non_target_block_counts_unchanged != true ||
                 utilityMigration?.all_non_target_block_records_byte_identical != true ||
                 utilityMigration?.all_loot_bindings_unchanged != true ||
                 utilityMigration?.deterministic_compressed_nbt != true) {
-                throw new GradleException('Private manifest lacks the exact six-template utility transform contract')
+                throw new GradleException('Private manifest lacks the exact four-template utility transform contract')
             }
             expectedUtilityTransforms.each { template, expected ->
                 def actual = actualUtilityRecords[template]
@@ -503,6 +586,21 @@ if (privateResourcesDir != null) {
                     !manifest.pristine.files[template].toString().equalsIgnoreCase(expected.before) ||
                     !expectedFiles[template].toString().equalsIgnoreCase(expected.after)) {
                     throw new GradleException("Private utility transform differs for ${template}")
+                }
+            }
+            expectedRestoredUtilities.each { template, expected ->
+                def actual = actualRestoredRecords[template]
+                if ((actual.coordinate as List) != expected.coordinate ||
+                    (actual.state as Map) != expected.state ||
+                    actual.block_entity_id?.toString() != expected.blockEntity ||
+                    !actual.block_entity_nbt_sha256.toString().equalsIgnoreCase(expected.blockEntityNbt) ||
+                    !actual.before_sha256.toString().equalsIgnoreCase(expected.hash) ||
+                    !actual.after_sha256.toString().equalsIgnoreCase(expected.hash) ||
+                    actual.compressed_template_byte_identical_to_pristine != true ||
+                    actual.block_entity_nbt_byte_identical_to_pristine != true ||
+                    !manifest.pristine.files[template].toString().equalsIgnoreCase(expected.hash) ||
+                    !expectedFiles[template].toString().equalsIgnoreCase(expected.hash)) {
+                    throw new GradleException("Restored private utility differs for ${template}")
                 }
             }
 
@@ -779,6 +877,15 @@ if (privateResourcesDir == null) {
                         names.add(entry.name)
                     }
                 }
+                def duplicateNames = names.countBy { name -> name }
+                    .findAll { name, count -> count > 1 }
+                    .keySet()
+                    .sort()
+                if (!duplicateNames.isEmpty()) {
+                    throw new GradleException(
+                        "Source-only JAR contains duplicate payload paths: ${duplicateNames}"
+                    )
+                }
                 def donorFilenames = [
                     'guardribbits-1.20.1-fabric-1.0.4.jar',
                     'useful_ribbits-1.0.2-forge-1.20.1.jar',
@@ -801,6 +908,24 @@ if (privateResourcesDir == null) {
                     throw new GradleException(
                         "Source-only JAR contains protected or donor-derived payload: ${forbidden.sort()}"
                     )
+                }
+                reviewedPublicResources.each { name ->
+                    def entry = archive.getEntry(name)
+                    if (entry == null || entry.directory) {
+                        throw new GradleException("Source-only JAR omits reviewed public resource: ${name}")
+                    }
+                    def tracked = name == 'assets/ribbits/lang/en_us.json'
+                        ? file("common/src/publicResources/${name}")
+                        : file("common/src/main/resources/${name}")
+                    if (!tracked.isFile()) {
+                        throw new GradleException("Reviewed tracked public resource is missing: ${tracked}")
+                    }
+                    def packagedBytes = archive.getInputStream(entry).withCloseable { input -> input.bytes }
+                    if (!java.util.Arrays.equals(packagedBytes, tracked.bytes)) {
+                        throw new GradleException(
+                            "Source-only public resource changed during packaging: ${name}"
+                        )
+                    }
                 }
             } finally {
                 archive.close()

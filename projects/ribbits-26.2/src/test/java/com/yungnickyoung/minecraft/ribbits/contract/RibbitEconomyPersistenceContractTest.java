@@ -248,14 +248,16 @@ class RibbitEconomyPersistenceContractTest {
     }
 
     @Test
-    void placeholderModelsDoNotChangeEitherPermanentItemsMechanicalIdentity() throws IOException {
+    void finalModelsDoNotChangeEitherPermanentItemsMechanicalIdentity() throws IOException {
         String itemModule = read("common/src/main/java/com/yungnickyoung/minecraft/ribbits/module/ItemModule.java");
         String glowcap = read("common/src/main/resources/assets/ribbits/items/glowcap.json");
         String heart = read("common/src/main/resources/assets/ribbits/items/toadstool_heart.json");
         String recipe = read("common/src/main/java/com/yungnickyoung/minecraft/ribbits/recipe/ToadstoolHeartRecipe.java");
 
-        assertTrue(glowcap.contains("\"model\": \"minecraft:item/warped_fungus\""));
-        assertTrue(heart.contains("\"model\": \"minecraft:item/heart_container\""));
+        assertTrue(glowcap.contains("\"model\": \"ribbits:item/glowcap\""));
+        assertTrue(heart.contains("\"model\": \"ribbits:item/toadstool_heart\""));
+        assertFalse(glowcap.contains("minecraft:item/warped_fungus"));
+        assertFalse(heart.contains("minecraft:item/heart_container"));
         assertEquals(1, occurrences(itemModule, "@AutoRegister(\"glowcap\")"));
         assertEquals(1, occurrences(itemModule, "@AutoRegister(\"toadstool_heart\")"));
         String glowcapRegistration = between(itemModule,

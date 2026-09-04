@@ -30,20 +30,24 @@ from typing import Any
 EXPECTED_PRISTINE_SHA256 = (
     "4cf86564aed393410fb1dbca3a9ce2425382307655e92bb6b43f3ddcee5bf731"
 )
-CANDIDATE_VERSION = "4.1.6+26.2-mynx-canary5"
-CANDIDATE_CANARY = 5
+CANDIDATE_VERSION = "4.1.6+26.2-mynx-canary6"
+CANDIDATE_CANARY = 6
 PRIVATE_MANIFEST_SCHEMA = "mynx-ribbits-private-resource-manifest/v1"
 PRIVATE_MANIFEST_CLASSIFICATION = (
     "PRIVATE MYNX ASSEMBLY STAGED / NONREDISTRIBUTABLE DONOR ASSETS"
 )
 PRIVATE_ARTIFACT_FILENAME = (
-    "ribbits-private-reconstruction-4.1.6+26.2-mynx-canary5.jar"
+    "ribbits-private-reconstruction-4.1.6+26.2-mynx-canary6.jar"
 )
-SOURCE_ONLY_ARTIFACT_FILENAME = "ribbits-source-only-4.1.6+26.2-mynx-canary5.jar"
+SOURCE_ONLY_ARTIFACT_FILENAME = "ribbits-source-only-4.1.6+26.2-mynx-canary6.jar"
 SOURCE_SAFE_PUBLIC_RESOURCE_PATHS = frozenset(
     {
         "assets/ribbits/items/glowcap.json",
         "assets/ribbits/items/toadstool_heart.json",
+        "assets/ribbits/models/item/glowcap.json",
+        "assets/ribbits/models/item/toadstool_heart.json",
+        "assets/ribbits/textures/item/glowcap.png",
+        "assets/ribbits/textures/item/toadstool_heart.png",
         "data/ribbits/advancement/recipes/misc/toadstool_heart.json",
         "data/ribbits/item_modifier/ribbit_village_explorer_result.json",
         "data/ribbits/loot_table/chests/swamp_hut_map.json",
@@ -51,6 +55,42 @@ SOURCE_SAFE_PUBLIC_RESOURCE_PATHS = frozenset(
         "data/ribbits/tags/worldgen/structure/on_ribbit_village_explorer_maps.json",
     }
 )
+FINAL_ITEM_SPRITE_SPECS: dict[str, dict[str, Any]] = {
+    "assets/ribbits/textures/item/glowcap.png": {
+        "item": "ribbits:glowcap",
+        "source_filename": "glowcap_16x16_final.png",
+        "size": 323,
+        "sha256": "414ba9042f4bf97278927cb8d65c78ae076b14824a4f34f87f6c7c729543d5df",
+        "dimensions": (16, 16),
+        "transparent_pixels": 178,
+        "opaque_pixels": 78,
+    },
+    "assets/ribbits/textures/item/toadstool_heart.png": {
+        "item": "ribbits:toadstool_heart",
+        "source_filename": "4e8e067e-3969-49ea-be28-fb8d91ea932b.png",
+        "size": 881,
+        "sha256": "024773d1cccfbe15ba4378b53b09d8522e6157c6ef7cb6e693a99ac8ae36ecb0",
+        "dimensions": (16, 16),
+        "transparent_pixels": 152,
+        "opaque_pixels": 104,
+    },
+}
+FINAL_ITEM_RESOURCE_MODELS = {
+    "assets/ribbits/items/glowcap.json": {
+        "model": {"type": "minecraft:model", "model": "ribbits:item/glowcap"}
+    },
+    "assets/ribbits/items/toadstool_heart.json": {
+        "model": {"type": "minecraft:model", "model": "ribbits:item/toadstool_heart"}
+    },
+    "assets/ribbits/models/item/glowcap.json": {
+        "parent": "minecraft:item/generated",
+        "textures": {"layer0": "ribbits:item/glowcap"},
+    },
+    "assets/ribbits/models/item/toadstool_heart.json": {
+        "parent": "minecraft:item/generated",
+        "textures": {"layer0": "ribbits:item/toadstool_heart"},
+    },
+}
 REQUIRED_FABRIC_DEPENDENCIES = {
     "minecraft": ">=26.2",
     "java": ">=25",
@@ -63,6 +103,7 @@ REQUIRED_FABRIC_DEPENDENCIES = {
 }
 SOURCE_FILE_COUNT = 287  # 285 assets/data files plus icon.png and logo.png
 OUTPUT_FILE_COUNT = 336
+OUTPUT_TOTAL_SIZE = 2_714_466
 SOURCE_EXTENSION_COUNTS = {
     ".json": 201,
     ".nbt": 29,
@@ -330,6 +371,12 @@ VILLAGE_RIBBIT_TEMPLATE_DATA = {
 # structure/houses; structure/ribbits contains only the five resident entities.
 # Every input hash below is the compressed NBT member hash from the pristine JAR.
 PRIVATE_VILLAGE_TEMPLATE_COUNT = 29
+PRIVATE_VILLAGE_TEMPLATE_TREE_BEFORE_SHA256 = (
+    "9c2f704975baf2fe7e1c530c85a82cc1a69116be609ee769615c422cfb8d0499"
+)
+PRIVATE_VILLAGE_TEMPLATE_TREE_AFTER_SHA256 = (
+    "cb1cac748727cc4387092cee0d77426816204d0986866d44e9995d6948468de0"
+)
 PRIVATE_VILLAGE_UTILITY_TRANSFORMS: dict[str, dict[str, Any]] = {
     "data/ribbits/structure/houses/brown_sorcerer_house.nbt": {
         "before_sha256": "502dc904d293d411a5ebafed2c7f71b8eed8e36ab2123553ae8ae3295a56aa76",
@@ -383,34 +430,38 @@ PRIVATE_VILLAGE_UTILITY_TRANSFORMS: dict[str, dict[str, Any]] = {
         "replacement_state": {"Name": "minecraft:air"},
         "block_entity_id": None,
     },
+}
+PRIVATE_VILLAGE_RESTORED_UTILITY_SPECS: dict[str, dict[str, Any]] = {
     "data/ribbits/structure/houses/small_house_brown_2.nbt": {
-        "before_sha256": "7e7ca64fe02c9953b6e3ccf3bf2a2393c3274bbbb3848ae874b4ff8c9c6b1676",
-        "after_sha256": "bc65457ea8c0b6aaaf3902b04840ff8f1ba04ee5818b85e5c11c70cb5683b695",
+        "sha256": "7e7ca64fe02c9953b6e3ccf3bf2a2393c3274bbbb3848ae874b4ff8c9c6b1676",
+        "size": 2_810,
         "coordinate": (5, 1, 6),
-        "source_state": {
+        "state": {
             "Name": "minecraft:smoker",
             "Properties": {"lit": "false", "facing": "north"},
         },
-        "replacement_state": {"Name": "minecraft:stone_bricks"},
         "block_entity_id": "minecraft:smoker",
+        "block_entity_nbt_sha256": (
+            "65c78f8c0d18fbe8de274adf10d4d3d7e5365e37e7f7a8f95295719d0265b536"
+        ),
     },
     "data/ribbits/structure/houses/small_house_red_2.nbt": {
-        "before_sha256": "a91945113b28214f5be8935efdbb4c42f6ec469bf9ca9bae5074a0579023d20a",
-        "after_sha256": "7ceb960251b893a75c82fa08d2268a307676a55d00a2cd5be897ceb0b08d272d",
+        "sha256": "a91945113b28214f5be8935efdbb4c42f6ec469bf9ca9bae5074a0579023d20a",
+        "size": 2_881,
         "coordinate": (4, 1, 2),
-        "source_state": {
+        "state": {
             "Name": "minecraft:blast_furnace",
             "Properties": {"lit": "false", "facing": "south"},
         },
-        "replacement_state": {"Name": "minecraft:stone_bricks"},
         "block_entity_id": "minecraft:blast_furnace",
+        "block_entity_nbt_sha256": (
+            "f0f5c4e4e4987767031407cd66b704e739a8c092bb08df7269888f172440ad25"
+        ),
     },
 }
 PRIVATE_VILLAGE_REMOVED_UTILITY_COUNTS = {
     "minecraft:brewing_stand": 2,
     "minecraft:damaged_anvil": 2,
-    "minecraft:smoker": 1,
-    "minecraft:blast_furnace": 1,
 }
 PRIVATE_VILLAGE_PRESERVED_BLOCK_COUNTS = {
     "minecraft:barrel": 60,
@@ -426,6 +477,14 @@ PRIVATE_VILLAGE_PRESERVED_BLOCK_COUNTS = {
     "minecraft:red_bed": 6,
     "minecraft:yellow_bed": 4,
     "minecraft:cake": 2,
+    "minecraft:smoker": 1,
+    "minecraft:blast_furnace": 1,
+    "minecraft:furnace": 0,
+}
+PRIVATE_VILLAGE_PRESERVED_BLOCK_ENTITY_COUNTS = {
+    "minecraft:smoker": 1,
+    "minecraft:blast_furnace": 1,
+    "minecraft:furnace": 0,
 }
 PRIVATE_VILLAGE_PROCESSOR_SENTINEL_COUNTS = {
     "minecraft:lapis_block": 287,
@@ -458,6 +517,57 @@ LOOT_EMPTY_WEIGHTS = {
     LOOT_TABLE_PATHS[0]: 15,
     LOOT_TABLE_PATHS[1]: 1,
 }
+SORCERER_FORBIDDEN_LOOT_ITEM_IDS = frozenset(
+    {
+        "minecraft:glass_bottle",
+        "minecraft:potion",
+        "minecraft:splash_potion",
+        "minecraft:lingering_potion",
+    }
+)
+SORCERER_REMOVED_LOOT_ENTRY_SPECS = (
+    {
+        "pool": 0,
+        "entry": 2,
+        "source": {
+            "type": "minecraft:item",
+            "weight": 5,
+            "functions": [
+                {
+                    "function": "minecraft:set_count",
+                    "count": {
+                        "type": "minecraft:uniform",
+                        "min": 2.0,
+                        "max": 4.0,
+                    },
+                    "add": False,
+                }
+            ],
+            "name": "minecraft:glass_bottle",
+        },
+        "replacement": {"type": "minecraft:empty", "weight": 5},
+    },
+    {
+        "pool": 1,
+        "entry": 1,
+        "source": {
+            "type": "minecraft:item",
+            "weight": 1,
+            "functions": [
+                {
+                    "function": "minecraft:set_components",
+                    "components": {"potion_contents": "minecraft:strong_leaping"},
+                }
+            ],
+            "name": "minecraft:potion",
+        },
+        "replacement": {"type": "minecraft:empty", "weight": 1},
+    },
+)
+SORCERER_LOOT_OUTPUT_SIZE = 2_563
+SORCERER_LOOT_OUTPUT_SHA256 = (
+    "5b06e06502bf11f661161e89bf34e329d8f23268b7b0104371038c38ad9b378d"
+)
 
 VILLAGE_CHEST_LOOT_TABLE_PATHS = (
     "data/ribbits/loot_table/chests/fisherman_main.json",
@@ -623,7 +733,7 @@ SPAWN_EGG_MODEL = {
     "textures": {"layer0": "ribbits:item/ribbit_spawn_egg"},
 }
 SPAWN_EGG_SUBSTITUTION_NOTICE = (
-    "Private Mynx Canary 5 uses one palette-only green recolor of Minecraft "
+    "Private Mynx Canary 6 uses one palette-only green recolor of Minecraft "
     "26.2's vanilla frog spawn-egg artwork for all nine Ribbits profession eggs. "
     "This is explicitly authorized for the private Workbench and is not exact "
     "Ribbits 4.1.6 spawn-egg visual parity."
@@ -838,6 +948,83 @@ def decode_rgba_png(data: bytes, label: str) -> tuple[int, int, bytes]:
                 raise ValidationError(f"Unsupported PNG filter {filter_type} in {label}")
             output[row_offset + column] = decoded & 0xFF
     return width, height, bytes(output)
+
+
+def final_item_sprite_manifest_records() -> list[dict[str, Any]]:
+    return [
+        {
+            "item": spec["item"],
+            "source_filename": spec["source_filename"],
+            "path": relative,
+            "size": spec["size"],
+            "sha256": spec["sha256"],
+            "dimensions": list(spec["dimensions"]),
+            "format": "non-interlaced 8-bit RGBA PNG",
+            "alpha": {
+                "transparent_pixels": spec["transparent_pixels"],
+                "opaque_pixels": spec["opaque_pixels"],
+                "partial_alpha_pixels": 0,
+            },
+            "packaged_bytes": "exact tracked attachment bytes",
+        }
+        for relative, spec in sorted(FINAL_ITEM_SPRITE_SPECS.items())
+    ]
+
+
+def validate_final_item_public_resources(root: Path, errors: list[str]) -> None:
+    for relative, expected in FINAL_ITEM_RESOURCE_MODELS.items():
+        path = root.joinpath(*PurePosixPath(relative).parts)
+        if not path.is_file():
+            errors.append(f"Final item model resource is missing: {relative}")
+            continue
+        try:
+            actual = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+            errors.append(f"Final item model resource is invalid: {relative}: {exc}")
+            continue
+        if actual != expected:
+            errors.append(
+                f"Final item model resource differs: {relative}: "
+                f"expected {expected!r}, got {actual!r}"
+            )
+
+    for relative, expected in FINAL_ITEM_SPRITE_SPECS.items():
+        path = root.joinpath(*PurePosixPath(relative).parts)
+        if not path.is_file():
+            errors.append(f"Final item sprite is missing: {relative}")
+            continue
+        try:
+            data = path.read_bytes()
+            width, height, pixels = decode_rgba_png(data, relative)
+        except (OSError, ValidationError) as exc:
+            errors.append(f"Final item sprite is invalid: {relative}: {exc}")
+            continue
+        actual_hash = sha256_bytes(data)
+        if len(data) != expected["size"] or actual_hash != expected["sha256"]:
+            errors.append(
+                f"Final item sprite identity differs for {relative}: expected "
+                f"{expected['size']} bytes/{expected['sha256']}, got {len(data)}/{actual_hash}"
+            )
+        if (width, height) != expected["dimensions"]:
+            errors.append(
+                f"Final item sprite dimensions differ for {relative}: "
+                f"expected {expected['dimensions']}, got {(width, height)}"
+            )
+        alpha = pixels[3::4]
+        transparent = alpha.count(0)
+        opaque = alpha.count(255)
+        partial = len(alpha) - transparent - opaque
+        if (
+            transparent != expected["transparent_pixels"]
+            or opaque != expected["opaque_pixels"]
+            or partial != 0
+        ):
+            errors.append(
+                f"Final item sprite alpha differs for {relative}: expected "
+                f"transparent={expected['transparent_pixels']}, "
+                f"opaque={expected['opaque_pixels']}, partial=0; got "
+                f"transparent={transparent}, opaque={opaque}, partial={partial}"
+            )
 
 
 def _png_chunk(chunk_type: bytes, data: bytes) -> bytes:
@@ -1690,6 +1877,55 @@ def transform_exact_private_village_utility(
     }
 
 
+def inspect_restored_private_village_utility(
+    data: bytes, relative: str, spec: dict[str, Any]
+) -> dict[str, Any]:
+    actual_hash = sha256_bytes(data)
+    if len(data) != spec["size"] or actual_hash != spec["sha256"]:
+        raise ValidationError(
+            f"Restored private utility template identity differs for {relative}: expected "
+            f"{spec['size']} bytes/{spec['sha256']}, got {len(data)}/{actual_hash}"
+        )
+    inspected = inspect_structure_template(data, relative)
+    coordinate = tuple(spec["coordinate"])
+    targets = [
+        block for block in inspected["blocks"] if block["position"] == coordinate
+    ]
+    if len(targets) != 1:
+        raise ValidationError(
+            f"{relative} must contain exactly one restored target at {coordinate}"
+        )
+    target = targets[0]
+    if target["state"] != spec["state"]:
+        raise ValidationError(
+            f"{relative} restored state differs at {coordinate}: "
+            f"expected {spec['state']}, got {target['state']}"
+        )
+    if target["block_entity_id"] != spec["block_entity_id"] or target["nbt_range"] is None:
+        raise ValidationError(
+            f"{relative} restored block entity differs at {coordinate}: "
+            f"expected {spec['block_entity_id']!r}, got {target['block_entity_id']!r}"
+        )
+    nbt_start, nbt_end = target["nbt_range"]
+    nbt_hash = sha256_bytes(inspected["decoded"][nbt_start:nbt_end])
+    if nbt_hash != spec["block_entity_nbt_sha256"]:
+        raise ValidationError(
+            f"{relative} restored block-entity NBT differs at {coordinate}: "
+            f"expected {spec['block_entity_nbt_sha256']}, got {nbt_hash}"
+        )
+    return {
+        "template": relative,
+        "coordinate": list(coordinate),
+        "state": spec["state"],
+        "block_entity_id": spec["block_entity_id"],
+        "block_entity_nbt_sha256": nbt_hash,
+        "before_sha256": actual_hash,
+        "after_sha256": actual_hash,
+        "compressed_template_byte_identical_to_pristine": True,
+        "block_entity_nbt_byte_identical_to_pristine": True,
+    }
+
+
 def _private_village_structure_inventory(payloads: dict[str, bytes]) -> dict[str, Any]:
     block_counts: Counter[str] = Counter()
     block_entity_counts: Counter[str] = Counter()
@@ -1755,6 +1991,10 @@ def transform_private_village_utilities(root: Path) -> dict[str, Any]:
                 f"Private utility template SHA-256 differs for {relative}: "
                 f"expected {spec['before_sha256']}, got {actual_hash}"
             )
+    restored_records = [
+        inspect_restored_private_village_utility(payloads[relative], relative, spec)
+        for relative, spec in sorted(PRIVATE_VILLAGE_RESTORED_UTILITY_SPECS.items())
+    ]
 
     before = _private_village_structure_inventory(payloads)
     _require_pinned_inventory_counts(
@@ -1762,6 +2002,11 @@ def transform_private_village_utilities(root: Path) -> dict[str, Any]:
     )
     _require_pinned_inventory_counts(
         before["block_counts"], PRIVATE_VILLAGE_PRESERVED_BLOCK_COUNTS, "retained block"
+    )
+    _require_pinned_inventory_counts(
+        before["block_entity_counts"],
+        PRIVATE_VILLAGE_PRESERVED_BLOCK_ENTITY_COUNTS,
+        "retained block-entity",
     )
     _require_pinned_inventory_counts(
         before["block_counts"],
@@ -1788,30 +2033,34 @@ def transform_private_village_utilities(root: Path) -> dict[str, Any]:
 
     after = _private_village_structure_inventory(transformed_payloads)
     expected_after_blocks = before["block_counts"].copy()
-    for name, count in PRIVATE_VILLAGE_REMOVED_UTILITY_COUNTS.items():
-        expected_after_blocks[name] -= count
-        if expected_after_blocks[name] == 0:
-            del expected_after_blocks[name]
-    expected_after_blocks["minecraft:air"] += 4
-    expected_after_blocks["minecraft:stone_bricks"] += 2
+    for spec in PRIVATE_VILLAGE_UTILITY_TRANSFORMS.values():
+        source_name = spec["source_state"]["Name"]
+        replacement_name = spec["replacement_state"]["Name"]
+        expected_after_blocks[source_name] -= 1
+        if expected_after_blocks[source_name] == 0:
+            del expected_after_blocks[source_name]
+        expected_after_blocks[replacement_name] += 1
     if after["block_counts"] != expected_after_blocks:
-        raise ValidationError("Private village block inventory changed outside six exact utilities")
+        raise ValidationError("Private village block inventory changed outside four exact utilities")
 
     expected_after_block_entities = before["block_entity_counts"].copy()
-    for name, count in {
-        "minecraft:brewing_stand": 2,
-        "minecraft:smoker": 1,
-        "minecraft:blast_furnace": 1,
-    }.items():
-        expected_after_block_entities[name] -= count
-        if expected_after_block_entities[name] == 0:
-            del expected_after_block_entities[name]
+    for spec in PRIVATE_VILLAGE_UTILITY_TRANSFORMS.values():
+        name = spec["block_entity_id"]
+        if name is not None:
+            expected_after_block_entities[name] -= 1
+            if expected_after_block_entities[name] == 0:
+                del expected_after_block_entities[name]
     if after["block_entity_counts"] != expected_after_block_entities:
         raise ValidationError("Private village block-entity inventory changed outside exact removals")
     if after["loot_bindings"] != before["loot_bindings"]:
         raise ValidationError("Private village loot bindings changed during utility transform")
     _require_pinned_inventory_counts(
         after["block_counts"], PRIVATE_VILLAGE_PRESERVED_BLOCK_COUNTS, "retained block"
+    )
+    _require_pinned_inventory_counts(
+        after["block_entity_counts"],
+        PRIVATE_VILLAGE_PRESERVED_BLOCK_ENTITY_COUNTS,
+        "retained block-entity",
     )
     _require_pinned_inventory_counts(
         after["block_counts"],
@@ -1824,6 +2073,14 @@ def transform_private_village_utilities(root: Path) -> dict[str, Any]:
     for name in PRIVATE_VILLAGE_REMOVED_UTILITY_COUNTS:
         if after["block_counts"][name] != 0:
             raise ValidationError(f"Private village still contains removed utility {name}")
+    for relative, spec in PRIVATE_VILLAGE_RESTORED_UTILITY_SPECS.items():
+        if transformed_payloads[relative] != payloads[relative]:
+            raise ValidationError(
+                f"Restored private utility template changed after pristine extraction: {relative}"
+            )
+        inspect_restored_private_village_utility(
+            transformed_payloads[relative], relative, spec
+        )
 
     for relative in sorted(PRIVATE_VILLAGE_UTILITY_TRANSFORMS):
         root.joinpath(*PurePosixPath(relative).parts).write_bytes(transformed_payloads[relative])
@@ -1833,6 +2090,8 @@ def transform_private_village_utilities(root: Path) -> dict[str, Any]:
         "policy": "future placements only; exact coordinate and hash-pinned compressed NBT rewrite",
         "canonical_template_count": len(payloads),
         "templates": records,
+        "restored_count": len(restored_records),
+        "restored_templates": restored_records,
         "template_tree_before_sha256": _private_village_template_tree_hash(payloads),
         "template_tree_after_sha256": _private_village_template_tree_hash(transformed_payloads),
         "removed_utility_counts_before": dict(PRIVATE_VILLAGE_REMOVED_UTILITY_COUNTS),
@@ -1841,6 +2100,9 @@ def transform_private_village_utilities(root: Path) -> dict[str, Any]:
             for name in PRIVATE_VILLAGE_REMOVED_UTILITY_COUNTS
         },
         "retained_block_counts": dict(PRIVATE_VILLAGE_PRESERVED_BLOCK_COUNTS),
+        "retained_block_entity_counts": dict(
+            PRIVATE_VILLAGE_PRESERVED_BLOCK_ENTITY_COUNTS
+        ),
         "raw_processor_sentinel_counts": dict(PRIVATE_VILLAGE_PROCESSOR_SENTINEL_COUNTS),
         "loot_binding_counts": dict(PRIVATE_VILLAGE_LOOT_BINDING_COUNTS),
         "all_non_target_block_counts_unchanged": True,
@@ -1884,6 +2146,12 @@ def validate_private_village_utility_transform(root: Path, errors: list[str]) ->
                 raise ValidationError(
                     f"Private utility output target differs in {relative} at {expected_coordinate}"
                 )
+        for relative, spec in PRIVATE_VILLAGE_RESTORED_UTILITY_SPECS.items():
+            if relative not in payloads:
+                raise ValidationError(
+                    f"Restored private village utility template is missing: {relative}"
+                )
+            inspect_restored_private_village_utility(payloads[relative], relative, spec)
         for name in PRIVATE_VILLAGE_REMOVED_UTILITY_COUNTS:
             if inventory["block_counts"][name] != 0:
                 raise ValidationError(f"Private village still contains removed utility {name}")
@@ -1891,6 +2159,11 @@ def validate_private_village_utility_transform(root: Path, errors: list[str]) ->
             inventory["block_counts"],
             PRIVATE_VILLAGE_PRESERVED_BLOCK_COUNTS,
             "retained block",
+        )
+        _require_pinned_inventory_counts(
+            inventory["block_entity_counts"],
+            PRIVATE_VILLAGE_PRESERVED_BLOCK_ENTITY_COUNTS,
+            "retained block-entity",
         )
         _require_pinned_inventory_counts(
             inventory["block_counts"],
@@ -1902,11 +2175,7 @@ def validate_private_village_utility_transform(root: Path, errors: list[str]) ->
             PRIVATE_VILLAGE_LOOT_BINDING_COUNTS,
             "loot binding",
         )
-        for removed_block_entity in (
-            "minecraft:brewing_stand",
-            "minecraft:smoker",
-            "minecraft:blast_furnace",
-        ):
+        for removed_block_entity in ("minecraft:brewing_stand",):
             if inventory["block_entity_counts"][removed_block_entity] != 0:
                 raise ValidationError(
                     f"Private village still contains block-entity NBT for {removed_block_entity}"
@@ -2708,6 +2977,105 @@ def repair_air_loot_entry(loot: Any, relative: str) -> dict[str, Any]:
     return result
 
 
+def require_sorcerer_removed_loot_state(loot: Any, relative: str) -> None:
+    require_loot_pool_shape(loot, relative, "minecraft:empty")
+    for spec in SORCERER_REMOVED_LOOT_ENTRY_SPECS:
+        try:
+            actual = loot["pools"][spec["pool"]]["entries"][spec["entry"]]
+        except (IndexError, KeyError, TypeError) as exc:
+            raise ValidationError(
+                f"Pinned removed Sorcerer-loot entry is absent in {relative}"
+            ) from exc
+        if actual != spec["replacement"]:
+            raise ValidationError(
+                f"Removed Sorcerer-loot entry differs in {relative} at "
+                f"pool {spec['pool']} entry {spec['entry']}: expected "
+                f"{spec['replacement']}, got {actual}"
+            )
+
+    remaining_forbidden = sorted(
+        entry.get("name")
+        for entry in iter_loot_entries(loot)
+        if entry.get("type") == "minecraft:item"
+        and entry.get("name") in SORCERER_FORBIDDEN_LOOT_ITEM_IDS
+    )
+    if remaining_forbidden:
+        raise ValidationError(
+            f"Forbidden bottle or potion items remain in {relative}: {remaining_forbidden}"
+        )
+    serialized = json.dumps(loot, separators=(",", ":"))
+    if "minecraft:set_potion" in serialized or "potion_contents" in serialized:
+        raise ValidationError(f"Potion-specific loot functions remain in {relative}")
+
+
+def require_exact_sorcerer_loot_replacement(
+    before: Any, after: Any, relative: str
+) -> None:
+    expected = copy.deepcopy(before)
+    for spec in SORCERER_REMOVED_LOOT_ENTRY_SPECS:
+        expected["pools"][spec["pool"]]["entries"][spec["entry"]] = copy.deepcopy(
+            spec["replacement"]
+        )
+    if after != expected:
+        raise ValidationError(
+            f"Sorcerer loot replacement changed data outside the two exact entries in {relative}"
+        )
+
+
+def replace_sorcerer_bottle_and_potion_loot(
+    loot: Any, relative: str
+) -> tuple[dict[str, Any], list[dict[str, Any]]]:
+    result = copy.deepcopy(loot)
+    require_loot_pool_shape(result, relative, "minecraft:empty")
+    source_forbidden = [
+        entry.get("name")
+        for entry in iter_loot_entries(result)
+        if entry.get("type") == "minecraft:item"
+        and entry.get("name") in SORCERER_FORBIDDEN_LOOT_ITEM_IDS
+    ]
+    expected_forbidden = [spec["source"]["name"] for spec in SORCERER_REMOVED_LOOT_ENTRY_SPECS]
+    if sorted(source_forbidden) != sorted(expected_forbidden):
+        raise ValidationError(
+            f"Sorcerer bottle/potion source inventory differs in {relative}: expected "
+            f"{sorted(expected_forbidden)}, got {sorted(source_forbidden)}"
+        )
+
+    before = copy.deepcopy(result)
+    records: list[dict[str, Any]] = []
+    for spec in SORCERER_REMOVED_LOOT_ENTRY_SPECS:
+        pool_index = spec["pool"]
+        entry_index = spec["entry"]
+        try:
+            actual = result["pools"][pool_index]["entries"][entry_index]
+        except (IndexError, KeyError, TypeError) as exc:
+            raise ValidationError(
+                f"Pinned Sorcerer bottle/potion entry is absent in {relative}"
+            ) from exc
+        if actual != spec["source"]:
+            raise ValidationError(
+                f"Pinned Sorcerer bottle/potion entry differs in {relative} at "
+                f"pool {pool_index} entry {entry_index}: expected {spec['source']}, got {actual}"
+            )
+        replacement = copy.deepcopy(spec["replacement"])
+        result["pools"][pool_index]["entries"][entry_index] = replacement
+        records.append(
+            {
+                "table": relative,
+                "pool": pool_index,
+                "entry": entry_index,
+                "source_item": spec["source"]["name"],
+                "weight": spec["source"]["weight"],
+                "removed_functions": copy.deepcopy(spec["source"].get("functions", [])),
+                "replacement": replacement,
+                "unrelated_entry_data_unchanged": True,
+            }
+        )
+
+    require_exact_sorcerer_loot_replacement(before, result, relative)
+    require_sorcerer_removed_loot_state(result, relative)
+    return result, records
+
+
 def require_village_chest_loot_inventory(root: Path) -> None:
     chest_root = root / "data/ribbits/loot_table/chests"
     if not chest_root.is_dir():
@@ -2895,26 +3263,15 @@ def migrate_private_loot_tables(root: Path) -> dict[str, Any]:
         migrated[relative] = repair_air_loot_entry(load_json(path), relative)
 
     sorcerer_relative = LOOT_TABLE_PATHS[1]
-    loot = migrated[sorcerer_relative]
-    converted = 0
-    for pool in loot["pools"]:
-        for entry in pool["entries"]:
-            functions = entry.get("functions", [])
-            for index, function in enumerate(functions):
-                if function == {
-                    "function": "minecraft:set_components",
-                    "components": {"potion_contents": "minecraft:strong_leaping"},
-                }:
-                    functions[index] = {
-                        "function": "minecraft:set_potion",
-                        "id": "minecraft:strong_leaping",
-                    }
-                    converted += 1
-    if converted != 1:
-        raise ValidationError(f"Expected one sorcerer potion conversion, got {converted}")
+    migrated[sorcerer_relative], removed_entries = (
+        replace_sorcerer_bottle_and_potion_loot(
+            migrated[sorcerer_relative], sorcerer_relative
+        )
+    )
     for relative, value in migrated.items():
         write_json(root / PurePosixPath(relative), value)
     currency_migration = replace_private_glowcap_currency_entries(root)
+    sorcerer_bytes = root.joinpath(*PurePosixPath(sorcerer_relative).parts).read_bytes()
     return {
         "tables": list(LOOT_TABLE_PATHS),
         "air_item_entries_replaced_with_empty": len(LOOT_TABLE_PATHS),
@@ -2922,7 +3279,14 @@ def migrate_private_loot_tables(root: Path) -> dict[str, Any]:
             "invalid_item_id": "minecraft:air",
             "faithful_entry_type": "minecraft:empty",
         },
-        "sorcerer_potion_loot_functions_migrated": converted,
+        "sorcerer_bottle_and_potion_entries_replaced_with_empty": len(removed_entries),
+        "sorcerer_bottle_and_potion_targets": removed_entries,
+        "all_unrelated_sorcerer_loot_unchanged": True,
+        "sorcerer_output": {
+            "path": sorcerer_relative,
+            "size": len(sorcerer_bytes),
+            "sha256": sha256_bytes(sorcerer_bytes),
+        },
         "glowcap_currency_substitution": currency_migration,
     }
 
@@ -2997,10 +3361,12 @@ def validate_private_loot_tables(
 
     sorcerer_path = root / PurePosixPath(LOOT_TABLE_PATHS[1])
     if sorcerer_path.is_file():
-        sorcerer = load_json(sorcerer_path)
-        serialized = json.dumps(sorcerer, separators=(",", ":"))
-        if serialized.count("minecraft:set_potion") != 1 or "potion_contents" in serialized:
-            errors.append("Sorcerer potion loot migration is missing or changed")
+        try:
+            require_sorcerer_removed_loot_state(
+                load_json(sorcerer_path), LOOT_TABLE_PATHS[1]
+            )
+        except ValidationError as exc:
+            errors.append(str(exc))
 
 
 def write_item_definitions(root: Path) -> None:
@@ -3057,7 +3423,7 @@ def migrate_spawn_egg_models(root: Path, minecraft_client: Path) -> dict[str, An
 
     return {
         "authorization": (
-            "Explicitly authorized by the Workbench owner for private Mynx Ribbits Canary 5"
+            "Explicitly authorized by the Workbench owner for private Mynx Ribbits Canary 6"
         ),
         "temporary": True,
         "exact_ribbits_4_1_6_visual_parity": False,
@@ -3125,6 +3491,9 @@ def build_manifest(
         "output": {
             "path": str(output.resolve()),
             "file_count": len(output_hashes),
+            "total_size": sum(
+                (output / PurePosixPath(name)).stat().st_size for name in output_hashes
+            ),
             "files": output_hashes,
         },
         "read_only_donors": {
@@ -3142,6 +3511,7 @@ def build_manifest(
             "derived_outputs": donor_outputs,
             "derived_output_count": len(donor_outputs),
         },
+        "source_safe_final_item_sprites": final_item_sprite_manifest_records(),
         "migrations": {
             "geckolib_models_moved": 25,
             "geckolib_animations_moved": 1,
@@ -3263,8 +3633,27 @@ def _assemble_impl(
         migrate_recipes(output)
         migrate_recipe_advancements(output)
         loot_migration = migrate_private_loot_tables(output)
+        expected_sorcerer_output = {
+            "path": LOOT_TABLE_PATHS[1],
+            "size": SORCERER_LOOT_OUTPUT_SIZE,
+            "sha256": SORCERER_LOOT_OUTPUT_SHA256,
+        }
+        if loot_migration["sorcerer_output"] != expected_sorcerer_output:
+            raise ValidationError(
+                "Final Sorcerer loot-table identity differs: expected "
+                f"{expected_sorcerer_output}, got {loot_migration['sorcerer_output']}"
+            )
         village_nbt_migration = remove_village_profession_assignments(output)
         village_utility_migration = transform_private_village_utilities(output)
+        if (
+            village_utility_migration["template_tree_before_sha256"]
+            != PRIVATE_VILLAGE_TEMPLATE_TREE_BEFORE_SHA256
+            or village_utility_migration["template_tree_after_sha256"]
+            != PRIVATE_VILLAGE_TEMPLATE_TREE_AFTER_SHA256
+        ):
+            raise ValidationError(
+                "Private village template-tree identity differs from the exact Canary 6 contract"
+            )
         configured_feature_migration = migrate_configured_features(output)
         write_item_definitions(output)
         spawn_egg_substitution = migrate_spawn_egg_models(output, minecraft_client)
@@ -3273,6 +3662,11 @@ def _assemble_impl(
         if output_file_count != OUTPUT_FILE_COUNT:
             raise ValidationError(
                 f"Expected {OUTPUT_FILE_COUNT} assembled files, found {output_file_count}"
+            )
+        output_total_size = sum(path.stat().st_size for path in output.rglob("*") if path.is_file())
+        if output_total_size != OUTPUT_TOTAL_SIZE:
+            raise ValidationError(
+                f"Expected {OUTPUT_TOTAL_SIZE} assembled bytes, found {output_total_size}"
             )
 
         manifest = build_manifest(
@@ -3475,6 +3869,7 @@ def validate_source_safe_public_resource_boundary(
         if source_root is not None
         else Path(__file__).resolve().parent.parent / "common" / "src" / "main" / "resources"
     )
+    validate_final_item_public_resources(tracked_root, errors)
     for relative in sorted(SOURCE_SAFE_PUBLIC_RESOURCE_PATHS):
         tracked_path = tracked_root.joinpath(*PurePosixPath(relative).parts)
         if not tracked_path.is_file():
@@ -3672,9 +4067,10 @@ def validate_transforms(root: Path, errors: list[str]) -> None:
                         errors.append(f"Advancement item predicate is not a 26.2 scalar: {path.name}")
 
     sorcerer = load_json(root / "data/ribbits/loot_table/chests/sorcerer.json")
-    serialized_sorcerer = json.dumps(sorcerer, separators=(",", ":"))
-    if "minecraft:set_potion" not in serialized_sorcerer or "potion_contents" in serialized_sorcerer:
-        errors.append("Sorcerer potion loot migration is missing")
+    try:
+        require_sorcerer_removed_loot_state(sorcerer, LOOT_TABLE_PATHS[1])
+    except ValidationError as exc:
+        errors.append(str(exc))
 
     processor = load_json(root / "data/ribbits/worldgen/processor_list/main.json")
     processor_text = json.dumps(processor, separators=(",", ":"))

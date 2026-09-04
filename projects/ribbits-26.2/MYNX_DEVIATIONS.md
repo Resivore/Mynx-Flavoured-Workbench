@@ -2,14 +2,14 @@
 
 This file records intentional departures from the faithful Minecraft Java 26.2 Ribbits port. The exact faithful-port baseline is private Canary 2: version `4.1.6+26.2-port-canary2`, artifact `ribbits-private-reconstruction-4.1.6+26.2-port-canary2.jar`, 3,124,301 bytes, SHA-256 `0AD73B7B61C6EE792EC1745056563641767AFE6811C0FDF2D3C99123C3F289DC`, implementation checkpoint `efe1970d2447aea4913e67f55c0c6b83cc36c5bb`. It remains historical provenance, not an accepted or rollback release.
 
-The direct predecessor is Mynx Canary 4: version `4.1.6+26.2-mynx-canary4`, artifact `ribbits-private-reconstruction-4.1.6+26.2-mynx-canary4.jar`, 3,219,246 bytes, SHA-256 `DA7A37E0AEECE4D7633F0C5104298D76E066CD38DD5255FAE616DF95C5FBC712`, source checkpoint `cbc247054ecba937ad009dd651cde31fac504c22`. That exact identity has a bound user-reported external startup `FAIL`, described below. Canary 5 preserves Canary 4 exactly and does not rebuild, overwrite, rename, promote, or misrepresent it. Canary 3 and Canary 2 also remain historical and untouched at their recorded identities.
+The direct predecessor is Mynx Canary 5: version `4.1.6+26.2-mynx-canary5`, artifact `ribbits-private-reconstruction-4.1.6+26.2-mynx-canary5.jar`, 3,220,021 bytes, SHA-256 `0DDE14CAAF1EF1E4B52CA118D61E0ED0706BB0EAD4B718471CA3CC5B5A70BE4F`, source checkpoint `fb21c43d1f483108cbbb108d96213736db310e2b`. Canary 6 preserves all behavior outside its narrowly declared asset, village-utility, and private-loot changes and does not rebuild, overwrite, rename, promote, or misrepresent Canary 5. Canary 4, whose exact identity has a bound user-reported external startup `FAIL` described below, and Canary 3 and Canary 2 remain historical and untouched.
 
-The current narrow Phase C startup-repair successor is `4.1.6+26.2-mynx-canary5`: private artifact `ribbits-private-reconstruction-4.1.6+26.2-mynx-canary5.jar`, 3,220,021 bytes, SHA-256 `0DDE14CAAF1EF1E4B52CA118D61E0ED0706BB0EAD4B718471CA3CC5B5A70BE4F`; source-only artifact `ribbits-source-only-4.1.6+26.2-mynx-canary5.jar`, 1,160,122 bytes, SHA-256 `7386A91EEB45E6628222092E3A9ABDD8306932B05EC6F87A792D0E77204FB040`. It is `ACTIVE / STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED`. Its implementation checkpoint is assigned only after this content and the reproducible artifacts are frozen.
+The current narrow successor is `4.1.6+26.2-mynx-canary6`: private artifact `ribbits-private-reconstruction-4.1.6+26.2-mynx-canary6.jar`, 3,222,195 bytes, SHA-256 `CBEEDD06BAB0D6809FD528662E4C7E4F11E308F241D60FCE0D6AD0F57ADD0759`; source-only artifact `ribbits-source-only-4.1.6+26.2-mynx-canary6.jar`, 1,162,715 bytes, SHA-256 `0EF6117836F9AE70354C9859236F1E38216411842A65941597C274CC008515F5`. It is `ACTIVE / STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED`. Its implementation checkpoint is assigned only after this content and the reproducible artifacts are frozen.
 
 ## Phase A and Phase B deviations retained
 
 - The private `ribbits:chests/fisherman_main` table's invalid weight-15 `minecraft:air` no-loot sentinel remains repaired as a weight-15 `minecraft:empty` entry.
-- The private `ribbits:chests/sorcerer` table's invalid weight-1 `minecraft:air` sentinel remains repaired as a weight-1 `minecraft:empty` entry. Its established strong-leaping potion migration remains unchanged.
+- The private `ribbits:chests/sorcerer` table's invalid weight-1 `minecraft:air` sentinel remains repaired as a weight-1 `minecraft:empty` entry. Canary 6 separately replaces its weight-5 Glass Bottle entry and weight-1 strong-leaping Potion entry with same-weight empty entries as detailed below.
 - Four visual professions remain registered without separate entity types: `ribbits:chef`, `ribbits:farmer`, `ribbits:prospector`, and `ribbits:guard`.
 - Internal profession `ribbits:nitwit` retains its registry/save identity and appears to users as Musician.
 - Natural villages retain one equal-weight pool of Musician, Gardener, Fisherman, Merchant, Chef, Farmer, Prospector, and Guard. `ribbits:sorcerer` remains registered and accessible through its typed egg/commands but excluded from natural villages.
@@ -58,9 +58,9 @@ Every Sorcerer receives a rank-independent `1 exact marked Uncharted Ribbit Map 
 
 - `ribbits:glowcap` is a permanent distinct stack-64 Ribbits item and the sole money in this candidate's Ribbit trade profiles. It has no crafting recipe and appears once in the creative tab.
 - `ribbits:toadstool_heart` is a permanent distinct stack-64 Ribbits item, appears once in the creative tab, and is produced only by the approved shaped recipe.
-- The two final user-authored sprites were unavailable to this remote task. Glowcap therefore temporarily references `minecraft:item/warped_fungus`; Toadstool Heart temporarily references `minecraft:item/heart_container`, the original Crystal Heart visual. No vanilla or protected texture bytes are committed.
-- These references are visual-only. Glowcap does not inherit Warped Fungus placement, composting, tags, food, recipes, or block-item behavior. Toadstool Heart does not inherit Crystal Heart effects, food/consumable components, attributes, enchantments, rarity, glint, or progression behavior.
-- The placeholders are not approved final art. Replacing them later is intentionally an asset-only change that must preserve both registry IDs, the recipe, every trade/loot reference, saved state, and behavior.
+- Canary 6 tracks the attached final user-approved sprites byte-for-byte. Glowcap source `glowcap_16x16_final.png` is 323 bytes, 16×16, 8-bit RGBA with real binary transparency, SHA-256 `414BA9042F4BF97278927CB8D65C78AE076B14824A4F34F87F6C7C729543D5DF`; it is installed unchanged as `assets/ribbits/textures/item/glowcap.png`. Toadstool Heart source `4e8e067e-3969-49ea-be28-fb8d91ea932b.png` is 881 bytes, 16×16, 8-bit RGBA with real binary transparency, SHA-256 `024773D1CCCFBE15BA4378B53B09D8522E6157C6EF7CB6E693A99AC8AE36ECB0`; it is installed unchanged as `assets/ribbits/textures/item/toadstool_heart.png`. Neither sprite was generated, redrawn, recolored, smoothed, resized, optimized, or otherwise reinterpreted.
+- The item definitions `assets/ribbits/items/glowcap.json` and `assets/ribbits/items/toadstool_heart.json` now select `ribbits:item/glowcap` and `ribbits:item/toadstool_heart`. Their conventional models are respectively `assets/ribbits/models/item/glowcap.json` and `assets/ribbits/models/item/toadstool_heart.json`, each with parent `minecraft:item/generated` and its matching Ribbits `layer0`. The former `minecraft:item/warped_fungus` and `minecraft:item/heart_container` placeholder references are absent.
+- These user-approved textures, models, and item definitions are trackable public resources and are admitted to the source-only artifact. Both registry IDs, names, stack sizes, the recipe, every trade and loot reference, saved state, and all mechanics remain unchanged. Glowcap gains no Warped Fungus placement, composting, tags, food, recipe, or block-item behavior; Toadstool Heart gains no Crystal Heart effect, consumable component, attribute, enchantment, rarity, glint, or progression behavior.
 - The recipe is `T T` / `THT` / ` T ` and returns one Toadstool Heart. `T` is exactly five `ribbits:toadstool` foliage items and excludes red/brown block caps, stems, and other huge-mushroom building blocks.
 - `H` is exact original Crystal Heart: `minecraft:poisonous_potato` with item model `minecraft:heart_container`, item-name translation `item.kleispack.crystal_heart`, rare rarity, glint override, and no consumable component. The component-aware recipe rejects ordinary poisonous potatoes and the epic Reinforced Crystal Heart.
 - Crouch/secondary-use of a Toadstool Heart on any Ribbit writes the existing `HomePosX/Y/Z` at the entity's current block position, keeps the existing heart-particle confirmation, and consumes one outside Creative. Amethyst shards no longer set home or consume through that path. Navigation goals and non-dimension-aware home storage are not redesigned.
@@ -153,7 +153,7 @@ The prior loose restock cycle is replaced with saved overworld-day, restocks-use
 
 Chunk unload, relog, server restart, and dimension changes retain the allowance. Backward or unusual time changes cannot repeatedly manufacture fresh days. If the Chef day changes during an active trading session, only daily menu replacement is deferred until the screen closes. Designed prices remain exact because all offers use zero demand multiplier. The maximum is exactly three stock batches per day: initial plus two restocks.
 
-## Private Glowcap loot transform
+## Private village loot transform
 
 The protected loot tables remain private. The deterministic assembler performs a one-for-one item-ID substitution at exactly these pre-existing amethyst-currency entries:
 
@@ -165,11 +165,13 @@ The protected loot tables remain private. The deterministic assembler performs a
 | `ribbits:chests/nitwit` | pool 0, entry 3 | 3 | 1–3 |
 | `ribbits:chests/sorcerer` | pool 0, entry 4 | 5 | 2–6 |
 
-Only `minecraft:amethyst_shard` becomes `ribbits:glowcap`; each pool, rolls, entry order, functions, conditions, weight, and count range remains unchanged. `fisherman_main` contains no currency substitution. The unrelated merchant `minecraft:amethyst_block` entry is retained. Existing repaired empty sentinels remain `minecraft:empty` and all private tables continue through exact Minecraft 26.2 codec/registry validation.
+Only `minecraft:amethyst_shard` becomes `ribbits:glowcap`; each pool, rolls, entry order, functions, conditions, weight, and count range remains unchanged. `fisherman_main` contains no currency substitution. The unrelated merchant `minecraft:amethyst_block` entry is retained.
+
+Canary 6 makes exactly two additional replacements in `data/ribbits/loot_table/chests/sorcerer.json`. Pool 0 entry 2 changes from the weight-5 `minecraft:glass_bottle` item with uniform 2–4 `minecraft:set_count` to `{type: minecraft:empty, weight: 5}`. Pool 1 entry 1 changes from the weight-1 strong-leaping `minecraft:potion` item to `{type: minecraft:empty, weight: 1}`; its item-specific potion function is removed. The exact pristine assembler input expresses that potion through legacy `minecraft:set_components` with `potion_contents=minecraft:strong_leaping`, while Canary 5's packaged table expresses it through `minecraft:set_potion`; the Canary 6 final table contains neither form. The previously repaired, distinct pool 1 entry 0 weight-1 empty sentinel remains. The canonical final table is 2,563 bytes with SHA-256 `5B06E06502BF11F661161E89BF34E329D8F23268B7B0104371038C38AD9B378D`. It contains zero Glass Bottle, Potion, Splash Potion, or Lingering Potion item entries, zero `minecraft:set_potion` functions, and no legacy potion-contents component function. Every unrelated entry, probability, pool roll, condition, weight, function, Glowcap substitution, and all six existing Sorcerer-container bindings remain unchanged. Already-resolved inventories in existing worlds are not retroactively changed; an unresolved container that still references this table may use Canary 6 when vanilla lazily resolves its loot.
 
 ## Future-only private village utility transform
 
-The deterministic private assembler hash-pins and rewrites six protected templates under their verified current archive paths `data/ribbits/structure/houses/` (the audited pristine JAR does not store these six under the prompt's expected `structure/ribbits/` path). It requires each exact source hash, coordinate, palette state, and block-entity shape exactly once, preserves all non-target block records, reuses an exact existing air or Stone Bricks palette state, removes incompatible block-entity NBT, writes deterministic compressed NBT, and verifies the complete 29-template village tree.
+The deterministic private assembler hash-pins and rewrites four protected templates under their verified current archive paths `data/ribbits/structure/houses/`. It requires each exact source hash, coordinate, palette state, and block-entity shape exactly once, preserves all non-target block records, reuses an exact existing air palette state, removes only incompatible Brewing Stand block-entity NBT, writes deterministic compressed NBT, and verifies the complete 29-template village tree.
 
 | Private template | Source SHA-256 | Output SHA-256 | Coordinate | Exact change |
 | --- | --- | --- | --- | --- |
@@ -177,10 +179,15 @@ The deterministic private assembler hash-pins and rewrites six protected templat
 | `red_sorcerer_house.nbt` | `EF66D580570C81657500F714B76EB761DE910285571FF0CE36442B14E4BC8948` | `57DCF47CDECE4E459522CEA74B69215269A45C81028A2C42F2F3EBFAEE43D516` | `(6,2,5)` | Brewing Stand to air; remove `minecraft:brewing_stand` block-entity NBT and processor-supplied contents |
 | `small_house_brown_3.nbt` | `329DD885FD3A26FBF809CC37B74696799BEA2E5397A6DD645810261BFBB1055A` | `B54530FFEB4C2284AB4397796B8BBAD411193FB318E3DFCF93F61558B78327B87` | `(3,1,5)` | Damaged Anvil to air; no target block-entity NBT existed |
 | `small_house_red_3.nbt` | `4652D7C9FA1481B9D210A32140EEDC751A797C0D2DEB6B6E12F53D4C60955E70` | `2C5A76CF50F5993ED0F6F089AEFABE3B04FEAB2E75962E80B8CFA6F5788CCB3E` | `(3,1,5)` | Damaged Anvil to air; no target block-entity NBT existed |
-| `small_house_brown_2.nbt` | `7E7CA64FE02C9953B6E3CCF3BF2A2393C3274BBBB3848AE874B4FF8C9C6B1676` | `BC65457EA8C0B6AAAF3902B04840FF8F1BA04EE5818B85E5C11C70CB5683B695` | `(5,1,6)` | Smoker to ordinary `minecraft:stone_bricks`; remove `minecraft:smoker` block-entity NBT |
-| `small_house_red_2.nbt` | `A91945113B28214F5BE8935EFDBB4C42F6EC469BF9CA9BAE5074A0579023D20A` | `7CEB960251B893A75C82FA08D2268A307676A55D00A2CD5BE897CEB0B08D272D` | `(4,1,2)` | Blast Furnace to ordinary `minecraft:stone_bricks`; remove `minecraft:blast_furnace` block-entity NBT |
 
-The canonical 29-template tree changes deterministically from SHA-256 `9C2F704975BAF2FE7E1C530C85A82CC1A69116BE609EE769615C422CFB8D0499` to `9D321D21A57F0800E564E05432E564341D3836696831624383EABF1BE48DD827`. Across all 29 templates the future-placement counts of Brewing Stands, Damaged Anvils, Smokers, and Blast Furnaces become zero. Existing generated villages are not edited. All Barrels, Chests, private loot bindings, Crafting Tables, Water Cauldrons, rooftop Campfires, beds, cakes, counters, floors, chimney surroundings, and every unrelated block remain. Raw lapis, end-stone, glass, Nether, and other processor sentinels are deliberately preserved in source templates and continue to be checked against final-world leakage.
+The two former processor transformations are removed, not reversed against a Canary 5 stage. Fresh assembly from the exact pristine input preserves these complete compressed template bytes:
+
+| Guarded pristine pass-through | Bytes / SHA-256 | Coordinate | Exact retained state |
+| --- | --- | --- | --- |
+| `small_house_brown_2.nbt` | 2,810 / `7E7CA64FE02C9953B6E3CCF3BF2A2393C3274BBBB3848AE874B4FF8C9C6B1676` | `(5,1,6)` | north-facing unlit `minecraft:smoker`; original `minecraft:smoker` block entity, exact block-entity-NBT digest `65C78F8C0D18FBE8DE274ADF10D4D3D7E5365E37E7F7A8F95295719D0265B536` |
+| `small_house_red_2.nbt` | 2,881 / `A91945113B28214F5BE8935EFDBB4C42F6EC469BF9CA9BAE5074A0579023D20A` | `(4,1,2)` | south-facing unlit `minecraft:blast_furnace`; original `minecraft:blast_furnace` block entity, exact block-entity-NBT digest `F0F5C4E4E4987767031407CD66B704E739A8C092BB08DF7269888F172440AD25` |
+
+The canonical 29-template tree changes deterministically from SHA-256 `9C2F704975BAF2FE7E1C530C85A82CC1A69116BE609EE769615C422CFB8D0499` to `CB1CAC748727CC4387092CEE0D77426816204D0986866D44E9995D6948468DE0`. Across all templates the future-placement counts are zero Brewing Stands, zero Damaged Anvils, one Smoker, one Blast Furnace, and zero ordinary Furnaces. Existing generated villages are not edited. All Barrels, Chests, private loot bindings, Crafting Tables, Water Cauldrons, rooftop Campfires, beds, cakes, counters, floors, chimney surroundings, and every unrelated block remain. Raw lapis, end-stone, glass, Nether, and other processor sentinels are deliberately preserved in source templates and continue to be checked against final-world leakage.
 
 ## Private donor boundary
 
@@ -201,6 +208,28 @@ The exact allowlisted archive members remain:
 - `assets/useful_ribbits/textures/entities/miner_ribbit.png`
 
 No donor Java/classes, AI, procedures, combat, structures, generation, sounds, animations, spawn-egg graphics, workstations, inventories, GUIs, or unrelated assets enter the build. Derived outputs remain private-use-only and no relicensing claim is made. Source-only output remains truthful and contains no protected/donor-private material.
+
+## Mynx Canary 5 to Canary 6 archive audit
+
+The final private archive advances from 606 to 610 ZIP records: 484 to 488 file records with 122 directory records unchanged, four added files, zero removals, six changed files, and 478 byte-identical common files. The four additions are exactly:
+
+- `assets/ribbits/models/item/glowcap.json`
+- `assets/ribbits/models/item/toadstool_heart.json`
+- `assets/ribbits/textures/item/glowcap.png`
+- `assets/ribbits/textures/item/toadstool_heart.png`
+
+The six changed files are exactly:
+
+- `assets/ribbits/items/glowcap.json`
+- `assets/ribbits/items/toadstool_heart.json`
+- `data/ribbits/loot_table/chests/sorcerer.json`
+- `data/ribbits/structure/houses/small_house_brown_2.nbt`
+- `data/ribbits/structure/houses/small_house_red_2.nbt`
+- `fabric.mod.json`
+
+The source-only archive advances from 218 to 226 ZIP records: 149 to 153 file records and 69 to 73 directory records. Its four added files are the same two generated-item models and two exact PNGs above; the four accompanying model/texture directory records are also new. It has zero removals, exactly three changed files (`assets/ribbits/items/glowcap.json`, `assets/ribbits/items/toadstool_heart.json`, and `fabric.mod.json`), and 146 byte-identical common files. In both archive classes every common entry retains its relative order and metadata, every Canary 6 record uses the fixed ZIP timestamp `1980-01-01T00:00:00-06:00`, every CRC validates, and no duplicate path exists.
+
+Clean builds A and B are byte-identical: each private JAR is 3,222,195 bytes with SHA-256 `CBEEDD06BAB0D6809FD528662E4C7E4F11E308F241D60FCE0D6AD0F57ADD0759`, and each source-only JAR is 1,162,715 bytes with SHA-256 `0EF6117836F9AE70354C9859236F1E38216411842A65941597C274CC008515F5`. Both fresh private assembly trees contain exactly 336 files, including 245 strict JSON files, totaling 2,714,466 bytes; both tree and JAR validations pass. Focused validation passed all 102 JUnit tests across 19 suites and all 40 Python tests with no failures, errors, or skips. No unrelated private resource, class, model, umbrella, spawn egg, donor asset, trade, profession, or behavior payload changed.
 
 ## Mynx Canary 4 to Canary 5 archive audit
 
@@ -239,7 +268,7 @@ The retained predecessor audit changed the complete uncompressed payload invento
 
 ## Explicit deferrals
 
-Canary 5 does not implement a Wandering Ribbit, Wandering Ribbit map sale, automatic Sorcerer replacement after death, retrofit injection into existing huts, conversion of saved Witches, global Witch suppression, a whole swamp-hut replacement, asynchronous map search, a custom map GUI, a new registered map item, direct Toadstool Heart barrel fallback, Matcha cartographer Ribbit Village maps, changes to Matcha Witch Hut maps, donor Guard/Chef/Farmer/Miner behavior, generalized old-offer migration, dimension-aware homes, Fortune Blessing, Silver Bullion, Adamant/Netherite bullion or mount equipment, Netherite tool recycling, unrelated Matcha trades, or Custom Portals recipe/behavior changes.
+Canary 6 does not implement a Wandering Ribbit, Wandering Ribbit map sale, automatic Sorcerer replacement after death, retrofit injection into existing huts, conversion of saved Witches, global Witch suppression, a whole swamp-hut replacement, asynchronous map search, a custom map GUI, a new registered map item, direct Toadstool Heart barrel fallback, Matcha cartographer Ribbit Village maps, changes to Matcha Witch Hut maps, donor Guard/Chef/Farmer/Miner behavior, generalized old-offer migration, dimension-aware homes, Fortune Blessing, Silver Bullion, Adamant/Netherite bullion or mount equipment, Netherite tool recycling, unrelated Matcha trades, or Custom Portals recipe/behavior changes.
 
 ## Runtime evidence boundary
 
@@ -249,4 +278,4 @@ The retained canonical Canary 3 and YUNG's API Compat.2 binaries rehashed exactl
 
 The reported failing artifact is unambiguously the canonical Canary 4 private artifact: version `4.1.6+26.2-mynx-canary4`, filename `ribbits-private-reconstruction-4.1.6+26.2-mynx-canary4.jar`, 3,219,246 bytes, SHA-256 `DA7A37E0AEECE4D7633F0C5104298D76E066CD38DD5255FAE616DF95C5FBC712`, source checkpoint `cbc247054ecba937ad009dd651cde31fac504c22`. The user's supplied observation is therefore bound only to that exact identity as an external runtime `FAIL`: startup aborted at the invalid `@Shadow getWorldPos` before Phase C gameplay could run. The task made no Test Instance Manager transition, so the report supplies no managed deployment or slot result and no unreported gameplay row is inferred.
 
-Canary 5 was not deployed or launched and remains `RUNTIME_UNTESTED`. Its successful production-equivalent Knot/Mixin application and the rest of its static validation must not be reported as Minecraft gameplay runtime correctness.
+Canary 6 was not deployed or launched and remains `RUNTIME_UNTESTED`. Its successful production-equivalent Knot/Mixin application and the rest of its static validation must not be reported as Minecraft gameplay runtime correctness.
