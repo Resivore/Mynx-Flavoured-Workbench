@@ -30,12 +30,12 @@
       "Maintain the cumulative profession trade-profile framework, fixed Glowcap prices, persistent specializations and gates, deterministic Chef menus, two-restocks-per-day policy, and exact component-aware Matcha and Custom Portals stack matching introduced by Mynx Canary 3.",
       "Maintain new-hut-only replacement of the initial swamp-hut Witch with one persistent Sorcerer, independent Cat relocation, an exact-piece natural-Witch rejection, one lazy map barrel, and the marker-authenticated rank-independent failed-map redemption introduced by Mynx Canary 4.",
       "Maintain the exact hash-pinned four-template private NBT transform for future Ribbit village placement while preserving the pristine Smoker and Blast Furnace templates byte-for-byte and retaining every non-target record, storage block, loot binding, and processor sentinel.",
-      "Maintain ribbits:glowcap and ribbits:toadstool_heart as permanent mechanical identities with their exact user-approved final 16-by-16 RGBA sprites and conventional generated-item models.",
+      "Maintain ribbits:glowcap and ribbits:toadstool_heart as permanent mechanical identities with their user-approved 16-by-16 RGBA sprites, with the authorized Canary 9 one-pixel-down Glowcap alignment and conventional generated-item models.",
       "Maintain ribbits:wandering_ribbit as a separate 0.5-by-0.75 AbstractVillager with 15 health, approximately 0.125 movement speed, no breeding, profession, home, rank, restock, progress, or permanent automatic residency; preserve command- and egg-created merchants as persistent and scheduler-independent.",
       "Maintain server-global SavedData ribbits:wandering_ribbit_spawner with next attempt time, lease generation, active UUID and dimension, visit expiry, fair-player cursor, and last-observed time; one execution per server tick; cap one; exact unchanged timing; at most 64 loaded-chunk-only site candidates; candidate-feet biome evaluation; the exact 20-biome vanilla baseline; audited family-tag extension; authoritative empty allow tags; missing-tag fallback; and deny precedence.",
-      "Maintain stable sorted WanderingRibbitTradeProvider identities, persisted seed/provider/schema/offer ranges and exact serialized offers: native schema 2 preserves the original five offers and appends ordinary Compass to four Glowcaps, while optional provider ribbits:optional_matcha_compasses schema 1 atomically adds Copper, Golden, and Titanium buybacks for the exact intended Matcha stack without altering saved merchants.",
+      "Maintain stable sorted WanderingRibbitTradeProvider identities, persisted seed/provider/schema/offer ranges and exact serialized offers: native schema 3 preserves offer indexes and all buybacks while pricing newly materialized maps at eight Glowcaps with no compass, while optional provider ribbits:optional_matcha_compasses schema 1 atomically adds Copper, Golden, and Titanium buybacks for the exact intended Matcha stack without altering saved merchants.",
       "Maintain ribbits:chute_leaf as a stack-one noncraftable nondurable item using only data/trinkets/tags/item/chest/cape.json, a monotonic physical-jump request and owner acknowledgement protocol, a server-owned pending/deployed state machine, and a narrow terminal-descent cap of -0.10 blocks per tick.",
-      "Maintain native map-decoration type ribbits:ribbit_village, exact success custom-data marker ribbits:ribbit_village_explorer_map=true, ordinary filled-map/map-id/decorations synchronization, and exact user-authored marker and successful filled-map item artwork under the Ribbits namespace.",
+      "Maintain native map-decoration type ribbits:ribbit_village, exact success custom-data marker ribbits:ribbit_village_explorer_map=true, ordinary filled-map/map-id/decorations synchronization, and user-authored marker cropped without resampling to the native 8-by-8 atlas canvas and successful filled-map item artwork under the Ribbits namespace.",
       "Preserve the private resource assembler, exact pristine, Minecraft, dependency, three-donor, output, and archive identities, and the authorized shared green ten-egg derivation contract including the Wandering Ribbit egg."
     ],
     "boundaries": {
@@ -111,7 +111,7 @@
         "type": "PROJECT",
         "identifier": "937d7ccc-44c9-55cb-8d33-0dc0bff5fe45",
         "requirement": "=0.1.10-canary11; matcha-heart-death-compat-0.1.10-canary11.jar; 39,105 bytes; SHA-256 a0570179f85d32ec6740d9136ad50890b9c797500661cd2ed2325da5b6b1e4a9",
-        "reason": "Matcha Heart Death compatibility source 8a0002235c6b0921f4d7f6a4cbf73b18ccc421a3 owns the exact original Crystal Heart recipe contract required by the Toadstool Heart recipe; Ribbits declares matcha_heart_death_compat >=0.1.10-canary11 and rejects reinforced or generic base-item substitutes."
+        "reason": "Matcha Heart Death compatibility source 8a0002235c6b0921f4d7f6a4cbf73b18ccc421a3 owns the exact original Crystal Heart recipe contract required by the Toadstool Heart recipe; Ribbits uses runtime floor matcha_heart_death_compat >=0.1.10-0 with the exact C11 validation baseline recorded separately and rejects reinforced or generic base-item substitutes."
       },
       {
         "type": "TOOL",
@@ -176,15 +176,15 @@
     ]
   },
   "state": {
-    "milestone": "Mynx Canary 8 preserves Canary 7 and all earlier intended behavior while broadening automatic Wandering Ribbit habitat to the exact 20-biome vanilla baseline with candidate-feet evaluation, deny precedence, authoritative empty allow tags, and audited-family missing-tag fallback; adding the dedicated shared-green Wandering Ribbit Spawn Egg through Minecraft 26.2 hand/dispenser/pick-block and three-view Creative paths; and adding four exact component-aware Compass buybacks through native schema 2 plus optional Matcha schema 1, for nine newly materialized offers in the intended stack while preserving old serialized menus. Scheduler timing, cap, lease, Chute, maps, professions, vanilla Wandering Traders, accepted and rollback state, and the scoped external Canary 6 Phase C report remain unchanged. Canary 8 passed controlled source/private builds, 153 Java tests, 41 private-resource tests, deterministic archive/resource/component/tag and production-equivalent Mixin gates; no Minecraft client or server was launched, so it remains NOT_DEPLOYED and RUNTIME_UNTESTED.",
+    "milestone": "Mynx Canary 9 narrowly polishes the Chute Leaf using the exact user closed sprite and an unskewed horizontal deployed canopy; removes only the Wandering held-leaf geometry; crops the native map-decoration mushroom to verified 8x8; shifts Glowcap pixels down exactly one; and changes newly materialized Wandering map offers to eight Glowcaps without a compass. Native schema 3 preserves saved menus and all compass buybacks. Source/private builds pass 154 Java tests, 42 resource tests, production-equivalent Mixin and exact archive/resource/dependency checks. Runtime remains NOT_DEPLOYED / RUNTIME_UNTESTED; no runtime profile or manager state was touched.",
     "releases": {
       "current": {
-        "version": "4.1.6+26.2-mynx-canary8",
+        "version": "4.1.6+26.2-mynx-canary9",
         "artifact": {
-          "filename": "ribbits-private-reconstruction-4.1.6+26.2-mynx-canary8.jar",
-          "sha256": "3a8e4ff06378265d949f01067672eb6baec56fcd0ad0ab57260b6f32f630067b"
+          "filename": "ribbits-private-reconstruction-4.1.6+26.2-mynx-canary9.jar",
+          "sha256": "e433cd048bc362edae91e2e057c8170d92d110cbe7b9917c105c7336be6543de"
         },
-        "source_commit": "eec044758df774f6fb037a453e36904c8b9afb5d",
+        "source_commit": "8dc886c01f6d402ccf19b45756383d62185f0d4e",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
@@ -203,11 +203,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 13,
-    "activity_at": "2026-09-04T21:24:56Z",
-    "updated_at": "2026-09-04T21:24:56Z",
-    "last_codex_at": "2026-09-04T21:24:56Z",
-    "source_commit": "eec044758df774f6fb037a453e36904c8b9afb5d",
+    "revision": 14,
+    "activity_at": "2026-09-04T22:36:15Z",
+    "updated_at": "2026-09-04T22:36:15Z",
+    "last_codex_at": "2026-09-04T22:36:15Z",
+    "source_commit": "8dc886c01f6d402ccf19b45756383d62185f0d4e",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
