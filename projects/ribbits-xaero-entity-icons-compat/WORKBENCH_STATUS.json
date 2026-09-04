@@ -1,0 +1,155 @@
+{
+  "$schema": "../../schemas/workbench-status.schema.json",
+  "schema_version": 1,
+  "identity": {
+    "uuid": "7d2e42bd-c917-43bf-99a8-94edc24c5948",
+    "name": "Ribbits × Xaero Entity Icon Compatibility",
+    "project_id": "ribbits-xaero-entity-icons-compat",
+    "aliases": [
+      "Ribbits Xaero entity icons",
+      "Ribbits × Xaero icons"
+    ],
+    "legacy_names": [],
+    "legacy_ids": []
+  },
+  "definition": {
+    "lifecycle": "PLANNED",
+    "goals": [
+      "Provide correct, fail-closed Xaero entity-head icons for Ribbits through a distinct compatibility companion without changing normal Ribbits rendering or the accepted Xaero × EMF Canary 3 behavior.",
+      "Implement a reusable Xaero × GeckoLib icon-capture core with explicit opt-in entity selectors, using a Ribbits-specific face/core selector only where exact model structure supports it.",
+      "Preserve exact-version, cache, render-state, resource-reload, transform, private-asset, and All Rights Reserved boundaries established by the audit before producing any runtime candidate."
+    ],
+    "scope": [
+      "Intercept Xaero's model-icon path at or before its null vanilla-EntityModel failure for supported GeckoLib renderers, while leaving vanilla, EMF, and unsupported renderer paths unchanged.",
+      "Reuse one fully populated GeckoLib render-state snapshot to resolve model and profession texture, select only explicitly approved direct face/core geometry with inherited transforms, and rasterize it through an isolated icon-only path.",
+      "Provide Ribbits model/provider metadata that accounts for nine professions, transient instrument and umbrella/rain selection, Pride policy, baby scaling, cache identity, and resource reload without copying private models or textures.",
+      "Fail closed to Xaero's ordinary failed-icon dot/name behavior on version drift, missing data, missing or ambiguous selectors, structural drift, invalid transforms, or rendering failure."
+    ],
+    "boundaries": {
+      "owned_paths": [
+        "projects/ribbits-xaero-entity-icons-compat"
+      ],
+      "exclusions": [
+        "Changes to projects/xaero-entity-icons or its accepted/current Canary 3 source, tests, artifacts, releases, lifecycle, runtime evidence, or documented EMF-only scope.",
+        "Changes to projects/ribbits-26.2, its renderer, private resources, artifacts, releases, lifecycle, or runtime evidence.",
+        "A dummy vanilla EntityModel or ModelPart facade, whole-body Gecko capture, mutation or replay of the in-world renderer, or a generic head-bone name heuristic.",
+        "Redistribution of Xaero All Rights Reserved code/assets, private or donor-derived Ribbits models/textures/manifests, decompiled upstream class bodies, or unlicensed static icon art.",
+        "Production implementation, a build or successor compatibility artifact, deployment, Minecraft launch, Test Slot A or B use, accepted-baseline mutation, or runtime validation in this audit revision.",
+        "Modification of the dedicated Workbench profile, runtime-manager state, originals, or any access to the protected Matcha Flavoured 26.1.2 gameplay instance."
+      ]
+    },
+    "dependencies": [
+      {
+        "type": "PROJECT",
+        "identifier": "2a650718-ec62-568f-8dff-71258a4d6f3f",
+        "requirement": "Audited current unaccepted 4.1.6+26.2-mynx-canary6; ribbits-private-reconstruction-4.1.6+26.2-mynx-canary6.jar; SHA-256 cbeedd06bab0d6809fd528662e4c7e4f11e308f241d60fce0d6ad0f57add0759; source fe8f08bf128791f1d64f227524b9a0585ef333d5; NOT_DEPLOYED and RUNTIME_UNTESTED",
+        "reason": "Provides the exact current Ribbits renderer, dynamic model/texture contract, and private model-structure input used only for static audit; it is not identified as the user's observed runtime binary."
+      },
+      {
+        "type": "PROJECT",
+        "identifier": "3f28bc98-058b-57a2-967b-81ad8e35f957",
+        "requirement": "Accepted/current 0.1.0-canary3; xaero-emf-entity-icon-compat-0.1.0-canary3.jar; SHA-256 4f34d743f5fffd8e938c8f5157c630fd85f3b263ac1ae9f96c432cfe51668df2; source 2478f021982c5f26e51ff0579fa2f5dad85ed200",
+        "reason": "Read-only accepted compatibility baseline whose exact EMF/vanilla ModelPart scope must remain unchanged."
+      },
+      {
+        "type": "MOD",
+        "identifier": "minecraft",
+        "requirement": "=26.2",
+        "reason": "Target game and renderer-state contract audited."
+      },
+      {
+        "type": "MOD",
+        "identifier": "fabricloader",
+        "requirement": ">=0.19.3; audited profile version 0.19.3",
+        "reason": "Loader floor declared by accepted Canary 3 and exact version reported by the dedicated-profile log."
+      },
+      {
+        "type": "MOD",
+        "identifier": "fabric-api",
+        "requirement": "=0.157.0+26.2; SHA-256 acb7dc90a0430519c49548074d3fbf6fd81d13063f08f0af344b2a6b08a42620",
+        "reason": "Exact dedicated-profile Fabric API input at audit time."
+      },
+      {
+        "type": "MOD",
+        "identifier": "xaerominimap",
+        "requirement": "=26.4.2; SHA-256 69284892d2eb853c9aefa85a4c9b74232c322da00207994c67ab8aeed8a64048",
+        "reason": "Provides the exact icon-creator, renderer-model extraction, failed-icon, cache, and display contracts audited."
+      },
+      {
+        "type": "MOD",
+        "identifier": "xaerolib",
+        "requirement": "=1.7.1 (nested in Xaero Minimap 26.4.2)",
+        "reason": "Nested library identity used by the exact Xaero binary and accepted compatibility tests."
+      },
+      {
+        "type": "MOD",
+        "identifier": "xaeroworldmap",
+        "requirement": "=1.44.2; SHA-256 d55ef45c559ae0adcf66d894c022f61d9d921629b0c885d04aa00424546a2389",
+        "reason": "Exact World Map binary covered by the accepted compatibility binary-contract suite."
+      },
+      {
+        "type": "MOD",
+        "identifier": "entity_model_features",
+        "requirement": "=3.2.6; SHA-256 876a3e4ffda021a6266df87208f2d9980322cf86223d4fe1e313ca996631f115",
+        "reason": "Exact EMF root/retained-vanilla/model-part contract accepted by Canary 3 and shown not to own the GeckoLib Ribbit renderer path."
+      },
+      {
+        "type": "MOD",
+        "identifier": "entity_texture_features",
+        "requirement": "=7.1.1; SHA-256 f469bc914302a13a5c767296623df60fb0cc3d4e4a02a77c56541a733ad36e3a",
+        "reason": "Exact ETF companion input used by the dedicated profile and reproduced accepted suite."
+      },
+      {
+        "type": "MOD",
+        "identifier": "geckolib",
+        "requirement": "=5.5.1 for Fabric 26.2; SHA-256 4bf1c86b4b47aa2c5d84208255695f10d79d609b23d802c995711e64b45cfce0",
+        "reason": "Exact static-only renderer, GeoModel, baked-model, bone, state, transform, and buffer-submission contract required by canonical Ribbits C6."
+      },
+      {
+        "type": "RESOURCE_PACK",
+        "identifier": "FreshAnimations_v1.10.5.zip",
+        "requirement": "SHA-256 cf9f17a2977e171b33cb0b598bc4357dd0383e09c10d5f768ff17c12d0a028ee",
+        "reason": "Exact active EMF resource input used by accepted Canary 3 validation; it contains no Ribbits namespace."
+      },
+      {
+        "type": "TOOL",
+        "identifier": "java",
+        "requirement": "25",
+        "reason": "Exact Java generation used by Minecraft 26.2 and the reproduced accepted compatibility suite."
+      },
+      {
+        "type": "TOOL",
+        "identifier": "gradle",
+        "requirement": "9.5.1 with Fabric Loom 1.17.19",
+        "reason": "Exact offline toolchain used to rerun the unmodified accepted compatibility suite."
+      }
+    ]
+  },
+  "state": {
+    "milestone": "Static audit proves Xaero 26.4.2 returns FAILED when its vanilla EntityModel extractor receives Ribbits' GeckoLib GeoEntityRenderer, before accepted EMF Canary 3 can run. A distinct generic Geo-aware bridge with an opt-in Ribbits selector is warranted; no runtime candidate exists and the user's historical Ribbits artifact remains unbound.",
+    "releases": {
+      "current": null,
+      "accepted": null,
+      "rollback": null,
+      "accepted_current": "NO_ACCEPTED",
+      "accepted_rollback": "NO_ROLLBACK"
+    },
+    "validation": {
+      "build": "NOT_RUN",
+      "deployment": "NOT_DEPLOYED",
+      "runtime": "RUNTIME_UNTESTED"
+    },
+    "blocker": null
+  },
+  "synchronization": {
+    "revision": 1,
+    "activity_at": "2026-09-04T06:17:52Z",
+    "updated_at": "2026-09-04T06:17:52Z",
+    "last_codex_at": "2026-09-04T06:17:52Z",
+    "source_commit": "f724af85027f6bbaf2afcd0c50907b24879cda49",
+    "google_sheet": {
+      "participates": true,
+      "exclusion_reason": null
+    }
+  }
+}
