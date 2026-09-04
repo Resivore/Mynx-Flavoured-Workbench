@@ -1,0 +1,16 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "dev.resivore.ribbitsxaeroicons.mixin",
+  "compatibilityLevel": "JAVA_25",
+  "plugin": "dev.resivore.ribbitsxaeroicons.mixin.RibbitsXaeroIconsMixinPlugin",
+  "client": [
+    "RadarIconCacheAccessor",
+    "RadarIconCreatorMixin",
+    "RadarIconManagerMixin",
+    "RadarIconVariantHandlerMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
