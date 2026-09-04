@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "id": "mynx_trees",
+  "version": "${version}",
+  "name": "Mynx Trees",
+  "description": "Silver birch, wisteria and Sweet Violets for Minecraft 26.2.",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "dev.resivore.mynxtrees.MynxTrees"
+    ],
+    "client": [
+      "dev.resivore.mynxtrees.MynxTreesClient"
+    ]
+  },
+  "license": "LicenseRef-Private-Assets",
+  "depends": {
+    "fabricloader": ">=0.19.3",
+    "minecraft": "26.2",
+    "java": ">=25",
+    "fabric-api": ">=0.157.0"
+  }
+}

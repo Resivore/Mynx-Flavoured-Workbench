@@ -1,31 +1,39 @@
 # Testing
 
-C11, historically named `0.3.6-external-quick-move-priority-fix-canary`, is the current and accepted release. Its exact retained artifact is `carried-container-auto-routing-0.3.6-external-quick-move-priority-fix-canary.jar`, 34,528 bytes, with SHA-256 `01913b0455d961d20174c601b0544c178ed47868113e6f1173e132290fe4ca02`.
+**READY TO TEST VERIFIED — RUNTIME UNTESTED — NOT PROMOTED**
 
-The exact runtime-passed rollback is `0.3.5-storage-partial-priority-fix-canary`. Its retained artifact is `carried-container-auto-routing-0.3.5-storage-partial-priority-fix-canary.jar`, 34,489 bytes, with SHA-256 `610f6c65c36468c9b98ce8aa7892f8a57003c59a28cb989fe3c80742bec4eaa2`. It is not failed and is not the live accepted release.
+Slot B: deployment 98fe1cc9-eeaa-4c07-8b72-17678bc07581, artifact 2eb193ee-0975-4a2c-a725-c97a721c35b4, carried-container-auto-routing-0.3.7-csr-reservation-affinity-canary1.jar, 42,805 bytes, SHA-256 f00b1e6bc64a0e63ac1199d89c08f7510a20d5bbb9a486b40bd97833df522a2f, source c373b663c99d7a217fc9147db5007d3f1057678f.
 
-This migration does not deploy either artifact, alter a Test Slot or accepted physical baseline, launch Minecraft, or add runtime evidence.
+Manager revision 90 / accepted Stack v18; state SHA-256 3cc3a9d83c34aa763263478fb7d54c1fb6aa1aee384ae48af3e815130f4a43b5; physical inventory SHA-256 1d4138fc6648f9181daaecde5374f99810072e778da9c513910fdcee96284d9e. Both exact current releases are READY_TO_TEST_VERIFIED with independent UNTESTED results.
 
-## Preserved historical runtime evidence
+The paired providers are CSR C7 and CCAR C12. Accepted CSR C4 and CCAR C11 remain exact predecessors; CSR C1 and CCAR C10 remain exact rollback artifacts. The manager receipt records deployment/readiness timestamp 2026-09-04T23:23:00Z. Physical verification is not a gameplay pass.
 
-- The user reported that the exact deployed C11 / `0.3.6` binary passed the intended focused external `QUICK_MOVE` storage-partial-priority scope in aggregate while paired with unchanged accepted Offhand Shift-Click QoL `0.3.3-acquisition-priority-fix-canary`, SHA-256 `d0c2ebe7cd2d1a6dcbe2654dbee42dd9f5dce4fd710ea3748f3d15dad6f2b04a`. This is an aggregate focused runtime pass; it does not assert that each representative case below was separately reported. The same Carried bytes were promoted without rebuild, and the legacy accepted-stack verifier returned exactly `READY_TO_TEST_VERIFIED` with 23 accepted artifacts and zero overlays.
-- The user reported that exact rollback `0.3.5` passed its focused passive-pickup storage-partial-priority runtime scope in aggregate. It was promoted unchanged, and the legacy accepted-stack verifier returned exactly `READY_TO_TEST_VERIFIED`. It remains the known passing rollback and was not invalidated by C11.
-- Exact `0.3.4-menu-sync-priority-fix-canary`, paired with exact Offhand Shift-Click QoL `0.3.3`, previously passed the focused Survival/Creative inventory, repeated bundle/shulker mutation, persistence, acquisition, player-origin routing, lock, ordering, component-identity, and exact-remainder scope with no observed crash or loss. That artifact is a superseded historical predecessor and is not migrated.
-- Exact `0.3.3-inventory-open-safety-fix-canary` was unsafe: repeated shulker interaction crashed with carrier loss after reload, bundle interaction lagged one action, and empty hotbar slots incorrectly preceded matching carriers/offhand for ground and external acquisition. Its successor fixed the demonstrated snapshot synchronization and priority defects. The failed artifact is not migrated.
+## Before testing
 
-No standalone or exhaustive runtime validation is inferred from those historical observations. Dedicated-server behavior was not established by the preserved evidence.
+1. Use only the dedicated Matcha Flavoured 26.2 Workbench. Verify the canonical manager reports PHYSICAL_STATE_VERIFIED, revision 90, Stack v18, the digests above, exact current C7 in A and C12 in B, and independent UNTESTED results. Stop on drift.
+2. Launch only when performing this user runtime procedure. Inspect startup logs for injection, linkage, registry/component, or dependency errors before entering a disposable world. No dedicated client was launched during this task.
+3. Preserve accepted QSN C8, SAS Container Fixes C2 with Stacks Are Stacks 2.1.2-1.26.2, accepted Offhand Shift-Click QoL, ESB 26.2.3 and nested Item Interactions 26.2.2. Do not change the protected 26.1.2 gameplay profile.
 
-## Representative future recheck
+## Reservation affinity in all acquisition paths
 
-Use only the exact retained C11 artifact, with exact Offhand Shift-Click QoL `0.3.3-acquisition-priority-fix-canary` when paired composition is under test. Reconcile source, destination, remainder, and total counts after every mutation.
+1. Carry an otherwise physically empty unlocked shulker with an exact matching CSR reservation. Acquire the item through ground pickup, external-container QUICK_MOVE and player-origin QUICK_MOVE in separate cases. Require the item to enter that reserved physical index.
+2. Put an earlier-index unreserved empty before a later matching reserved empty; the reservation must win. Use several matching reservations and require physical order across all of them before any ordinary empty.
+3. Test same-item/component-different and unrelated reservations: neither creates affinity. An entirely unreserved empty shulker remains ineligible. Do not expect a generic backpack.
+4. Combine a physical matching partial, a matching reserved empty and an unreserved empty. Require occupied merge, then matching reserved empty, then ordinary empty; reconcile every source, destination and remainder count.
+5. A full physical matching stack must still establish affinity and permit an unreserved fallback. A conflicting reservation on an occupied stack must neither allow growth nor create affinity through that conflict.
+6. Deny mismatched reservations when no permitted fallback exists, without changing the incoming stack, reservation or carrier. Deny shulker nesting. Remove an inserted item and require the original reservation to remain.
 
-1. In chest `QUICK_MOVE`, place a compatible partial stack at Inventory Extended backing indices `9`, `36`, and `62` in separate repetitions while an empty hotbar slot exists. Each occupied storage partial must fill before a new hotbar stack opens.
-2. Give a storage partial room for `10`, transfer an incoming stack of `20`, and confirm the exact `10` remainder may then use the empty hotbar. Repeat with multiple compatible storage partials and confirm stable inventory order and exhaustion before hotbar placement.
-3. Preserve occupied-destination priority: selected main hand, matching unlocked carried shulker/bundle, compatible physical hotbar stack, matching occupied offhand, compatible ordinary-storage partial, empty physical hotbar, then empty ordinary storage.
-4. With no compatible occupied stack, confirm empty hotbar still precedes empty ordinary storage. Confirm a component-distinct stack does not merge or block that fallback.
-5. Repeat representative external transfer from a barrel and furnace, preserving source cleanup, menu callbacks, and exact remainder.
-6. Sanity-check passive ground pickup and player-origin `QUICK_MOVE`; player-origin transfer must offer matching occupied offhand and qualifying carried containers before returning the exact remainder to the menu's normal path.
-7. Recheck stable first-carrier order, locked-carrier skip, lock/unlock feedback, component-identical matching, and exclusion of empty or unrelated carriers.
-8. Repeatedly mutate bundle and filled-shulker contents in Survival and Creative inventory, then save/reload or reconnect. Confirm immediate synchronization, carrier persistence, no duplication or loss, and no related exception or Mixin conflict in `logs/latest.log`.
+## Priority, composition and persistence
 
-Stop and record a failure or inconclusive result if the artifact filename, embedded version, or SHA-256 differs; an inventory/menu screen crashes or desynchronizes; a carrier or item is duplicated or lost; any destination tier is selected out of order; exact remainder accounting fails; locked/empty/unrelated carriers claim items; or relevant listener, snapshot, routing, or Mixin errors appear. Do not broaden the runtime classification beyond the cases actually observed.
+1. A locked shulker must not qualify; unlocking restores affinity. Test ordinary inventory storage and offhand carriers, multiple carriers in stable scan order, excluded source slots and explicit offhand exclusion. Do not prioritize reservation carriers over earlier physical-match carriers.
+2. Preserve selected occupied main hand, carried-container tier, occupied hotbar/offhand, ordinary-storage partials, empty hotbar and empty ordinary-storage fallbacks. Include Inventory Extended storage at indices 9, 36 and 62 where present, and accepted Offhand Shift-Click QoL composition.
+3. Repeat real acquisition/menu cases in Survival and Creative. Test counts below, equal to and above one slot capacity; reconcile totals and exact remainder ownership.
+4. Repeat with an eligible normally nonstackable SAS item whose effective maximum exceeds one, such as a configured saddle. Require the effective maximum and exact total count to survive. Do not add a MAX_STACK_SIZE reservation patch.
+5. Recheck bundle routing and QSN C8 without changing their behavior. Confirm custom name, lore, damage, lock, CSR reservations and unrelated carrier components survive insertion, removal, close/reopen, save/reload and reconnect.
+6. Run [CSR's empty-reservation tooltip procedure](../container-slot-reservations/TESTING.md). Ghost reservations must remain visual metadata; the shulker's physical fullness must reflect only real items.
+
+## Evidence and stopping conditions
+
+Accepted C11 retains its aggregate focused RUNTIME_PASS; requiring physical matching contents was its deliberate design. C12 adds reservation affinity and remains independently UNTESTED. CSR absence was controlled-tested with no CSR runtime classes, and incompatible API failure is fail-closed; do not alter the dedicated paired stack just to repeat those controlled cases.
+
+Record only actual PASS, FAIL or INCONCLUSIVE observations for C12. Do not transfer a CSR result to CCAR. Stop on identity drift, startup/linkage errors, wrong priority, reservation mismatch insertion, locked-carrier admission, component/reservation loss, desynchronization, count/remainder discrepancy or item duplication/loss. Neither successor is ready for promotion without its own runtime evidence.

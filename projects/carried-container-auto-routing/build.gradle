@@ -4,6 +4,12 @@ group = project.maven_group
 base { archivesName = project.archives_base_name }
 repositories { maven { url = 'https://maven.fabricmc.net/' } }
 dependencies {
+    compileOnly files(providers.gradleProperty('csrApiJar').getOrElse(
+            '../container-slot-reservations/artifacts/container-slot-reservations-0.1.0-canary4.jar'))
+    if (providers.gradleProperty('csrRuntimeJar').isPresent()) {
+        testImplementation files(providers.gradleProperty('csrRuntimeJar').get())
+        runtimeOnly files(providers.gradleProperty('csrRuntimeJar').get())
+    }
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
     implementation "net.fabricmc:fabric-loader:${project.loader_version}"
     implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
@@ -17,3 +23,13 @@ test {
     systemProperty 'projectRoot', projectDir.absolutePath
 }
 java { withSourcesJar() }
+
+fabricApi {
+    configureTests {
+        createSourceSet = true
+        modId = 'carried-routing-fixtures'
+        enableGameTests = true
+        enableClientGameTests = false
+        eula = true
+    }
+}

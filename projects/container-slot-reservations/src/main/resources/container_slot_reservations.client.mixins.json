@@ -6,6 +6,7 @@
     "AbstractContainerScreenMixin",
     "ClientItemContentsTooltipMixin",
     "ContainerStorageTooltipMixin",
+    "ItemStorageHolderTooltipMixin",
     "GuiGraphicsExtractorGhostMixin",
     "GuiItemRenderStateGhostMixin",
     "GuiRendererGhostMixin",

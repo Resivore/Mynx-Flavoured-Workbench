@@ -1,0 +1,99 @@
+{
+  "$schema": "../../schemas/workbench-status.schema.json",
+  "schema_version": 1,
+  "identity": {
+    "uuid": "1988a317-2307-4d57-9b6e-6c828cbf5f7f",
+    "name": "Mynx Trees",
+    "project_id": "mynx-trees",
+    "aliases": [],
+    "legacy_names": [],
+    "legacy_ids": []
+  },
+  "definition": {
+    "lifecycle": "ACTIVE",
+    "goals": [
+      "Provide Silver Birch, Wisteria and Sweet Violets as separate Minecraft Java 26.2 Fabric content using supplied private textures.",
+      "Preserve target-version tree shapes and density while replacing old-growth birch materials and selecting 25% Wisteria in cherry groves."
+    ],
+    "scope": [
+      "Nine block/item identities, direct vanilla plank recipes, all-bark wood recipes, vanilla axe stripping, tool-gated leaf collection, leaf-to-sapling recipes, composting and normal sapling behavior.",
+      "Loaded tree/fallen-tree material substitution preserves shape parameters and applicable decorators; biome-scoped selectors cover standing/fallen birch variants and weighted cherry/Wisteria attempts.",
+      "Preferred tree-associated Sweet Violets with a bounded successful-growth decorator; remove the independent grove petal pass; retain Nemo ordinary cherry and unrelated decorators without a required Nemo dependency.",
+      "Position-dependent golden Silver Birch leaf tint, #B0C73A old-growth grass tint with normal blending, separate Wisteria particle sprites, unchanged supplied private pixel assets."
+    ],
+    "boundaries": {
+      "owned_paths": [
+        "projects/mynx-trees"
+      ],
+      "exclusions": [
+        "No new planks, custom stripped blocks, additional wood families, biomes, RU world generation, runtime RU dependency, CTM base-log block or bushy/drooping geometry.",
+        "No runtime deployment, slot changes, retrogen, existing-tree conversion, profile mutation or protected gameplay-instance access.",
+        "No redistribution of supplied restricted pixels, reference binaries or privately retained artifact."
+      ]
+    },
+    "dependencies": [
+      {
+        "type": "MOD",
+        "identifier": "minecraft",
+        "requirement": "=26.2",
+        "reason": "Exact target for audited tree data and APIs."
+      },
+      {
+        "type": "MOD",
+        "identifier": "fabricloader",
+        "requirement": ">=0.19.3",
+        "reason": "Fabric loader for target game."
+      },
+      {
+        "type": "MOD",
+        "identifier": "fabric-api",
+        "requirement": ">=0.157.0",
+        "reason": "Block, biome, content registry, creative-tab, client tint and particle APIs."
+      },
+      {
+        "type": "MOD",
+        "identifier": "java",
+        "requirement": ">=25",
+        "reason": "Required JVM classfile baseline."
+      }
+    ]
+  },
+  "state": {
+    "milestone": "Canary 1 clean build and 19 focused checks pass; exact private artifact retained through the canonical retention workflow. Preferred tree-associated Sweet Violets implemented; awaiting managed runtime validation.",
+    "releases": {
+      "current": {
+        "version": "0.1.0+26.2-canary1",
+        "artifact": {
+          "filename": "mynx-trees-private-0.1.0+26.2-canary1.jar",
+          "sha256": "74aaa3a00755beca878aaa5edc6be3a279e0b5ef075e297a316514ed097b6ebf"
+        },
+        "source_commit": "02e24fb48eeb8ae491be0b1d930b9d2a3a04e865",
+        "runtime_dependency_policy": {
+          "contract": "CAPABILITY_OR_PROVIDER",
+          "exceptions": []
+        }
+      },
+      "accepted": null,
+      "rollback": null,
+      "accepted_current": "NO_ACCEPTED",
+      "accepted_rollback": "NO_ROLLBACK"
+    },
+    "validation": {
+      "build": "STATIC_PASS",
+      "deployment": "NOT_DEPLOYED",
+      "runtime": "RUNTIME_UNTESTED"
+    },
+    "blocker": null
+  },
+  "synchronization": {
+    "revision": 1,
+    "activity_at": "2026-09-04T23:36:23Z",
+    "updated_at": "2026-09-04T23:36:23Z",
+    "last_codex_at": "2026-09-04T23:36:23Z",
+    "source_commit": "02e24fb48eeb8ae491be0b1d930b9d2a3a04e865",
+    "google_sheet": {
+      "participates": true,
+      "exclusion_reason": null
+    }
+  }
+}
