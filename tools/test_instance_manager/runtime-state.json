@@ -2,8 +2,8 @@
   "$schema": "../../schemas/runtime-state.schema.json",
   "schema_version": 2,
   "activation": "ACTIVE",
-  "revision": 88,
-  "updated_at": "2026-09-04T20:19:06Z",
+  "revision": 89,
+  "updated_at": "2026-09-04T23:16:10Z",
   "accepted_baseline": {
     "revision": 18,
     "provenance": {
@@ -928,11 +928,15 @@
           },
           "replaces_accepted_deployment_id": "8211900d-913c-40f2-9829-68509e0d71fe",
           "runtime_result": {
-            "classification": "UNTESTED",
-            "recorded_at": null,
+            "classification": "FAIL",
+            "recorded_at": "2026-09-04T23:16:10Z",
             "evidence": {
-              "passed": [],
-              "failed": []
+              "passed": [
+                "User reported for exact CSR C6: Easy Shulker Boxes carried-shulker insertion repair works; random, unrelated, or component-mismatched items no longer take over a mismatched reserved slot."
+              ],
+              "failed": [
+                "User reported for exact CSR C6: Easy Shulker Boxes displays no contents tooltip for a physically empty shulker with reservations, so reservation ghosts and literal zeroes remain invisible until a physical item exists."
+              ]
             }
           }
         }
