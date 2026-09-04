@@ -1,0 +1,207 @@
+import groovy.json.JsonSlurper
+import org.gradle.api.tasks.bundling.AbstractArchiveTask
+
+plugins {
+    id 'net.fabricmc.fabric-loom' version '1.17.19'
+}
+
+version = project.mod_version
+group = project.maven_group
+
+base {
+    archivesName = project.archives_base_name
+}
+
+repositories {
+    maven { url = 'https://maven.fabricmc.net/' }
+    mavenCentral()
+    maven {
+        name = 'Modrinth'
+        url = 'https://api.modrinth.com/maven'
+        content { includeGroup 'maven.modrinth' }
+    }
+}
+
+configurations {
+    grabAndGoReference {
+        canBeConsumed = false
+        canBeResolved = true
+        transitive = false
+    }
+}
+
+def grabAndGoCoordinate =
+        "maven.modrinth:${project.grabandgo_maven_project}:${project.grabandgo_maven_version}"
+def productionMinecraftCache = new File(
+        gradle.gradleUserHomeDir,
+        "caches/fabric-loom/${project.minecraft_version}"
+)
+def productionMinecraftJar = new File(productionMinecraftCache, 'minecraft-merged.jar')
+def productionMinecraftClientJar = new File(productionMinecraftCache, 'minecraft-client.jar')
+
+dependencies {
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    implementation "net.fabricmc:fabric-loader:${project.loader_version}"
+
+    compileOnly(grabAndGoCoordinate) { transitive = false }
+    runtimeOnly(grabAndGoCoordinate) { transitive = false }
+    grabAndGoReference(grabAndGoCoordinate) { transitive = false }
+    testCompileOnly(grabAndGoCoordinate) { transitive = false }
+    testRuntimeOnly(grabAndGoCoordinate) { transitive = false }
+
+    // GrabAndGo itself requires Fabric API. It is present only in the production-equivalent
+    // client Mixin harness; Carry On Patch does not compile against or depend on Fabric API.
+    testRuntimeOnly "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_test_version}"
+
+    testImplementation platform('org.junit:junit-bom:5.13.4')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    testImplementation 'org.ow2.asm:asm:9.10.1'
+    testImplementation 'org.ow2.asm:asm-tree:9.10.1'
+}
+
+processResources {
+    inputs.property 'version', project.version
+    filesMatching('fabric.mod.json') {
+        expand 'version': project.version
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.release = 25
+}
+
+tasks.withType(AbstractArchiveTask).configureEach {
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
+}
+
+def productionPatchJar = tasks.named('jar').flatMap { it.archiveFile }
+
+test {
+    useJUnitPlatform()
+    dependsOn tasks.named('jar')
+    inputs.files(configurations.grabAndGoReference)
+    inputs.file(productionMinecraftJar)
+    inputs.file(productionPatchJar)
+    doFirst {
+        if (!productionMinecraftJar.isFile()) {
+            throw new GradleException(
+                    "Missing production Minecraft 26.2 merged JAR: ${productionMinecraftJar}")
+        }
+        systemProperty 'projectRoot', projectDir.absolutePath
+        systemProperty 'grabAndGoReferenceJar',
+                configurations.grabAndGoReference.singleFile.absolutePath
+        systemProperty 'productionMinecraftJar', productionMinecraftJar.absolutePath
+        systemProperty 'patchJar', productionPatchJar.get().asFile.absolutePath
+    }
+}
+
+def productionMixinTest = tasks.register('productionMixinTest', JavaExec) {
+    group = 'verification'
+    description = 'Applies Carry On Patch to exact GrabAndGo 1.0.1 through production Fabric Knot/Mixin without launching Minecraft.'
+    dependsOn tasks.named('testClasses'), tasks.named('jar')
+
+    inputs.file(productionPatchJar)
+    inputs.files(configurations.grabAndGoReference)
+    inputs.file(productionMinecraftClientJar)
+
+    mainClass = 'dev.resivore.carryonpatch.ProductionMixinApplicationHarness'
+    classpath = files({
+        def mainOutput = sourceSets.main.output.files
+        def runtime = configurations.testRuntimeClasspath.files.findAll { candidate ->
+            !mainOutput.contains(candidate) &&
+                    !candidate.name.startsWith('minecraft-merged-deobf-')
+        }
+        sourceSets.test.output.files.findAll { it.exists() } + runtime + [
+                productionMinecraftClientJar,
+                productionPatchJar.get().asFile
+        ]
+    })
+    systemProperty 'fabric.development', 'false'
+    systemProperty 'fabric.unitTest', 'true'
+    systemProperty 'mixin.debug.verbose', 'true'
+    systemProperty 'mixin.debug.countInjections', 'true'
+
+    doFirst {
+        if (!productionMinecraftClientJar.isFile()) {
+            throw new GradleException(
+                    "Missing production Minecraft 26.2 client JAR: ${productionMinecraftClientJar}")
+        }
+        args = [
+                productionPatchJar.get().asFile.absolutePath,
+                configurations.grabAndGoReference.singleFile.absolutePath
+        ]
+        workingDir.mkdirs()
+    }
+    workingDir layout.buildDirectory.dir('production-mixin-test')
+}
+
+tasks.register('verifyClientOnlyArtifact') {
+    group = 'verification'
+    dependsOn tasks.named('jar')
+    inputs.file(productionPatchJar)
+    doLast {
+        def artifact = productionPatchJar.get().asFile
+        def files = zipTree(artifact)
+        def paths = []
+        files.visit { details ->
+            if (!details.directory) {
+                paths.add(details.relativePath.pathString.replace('\\', '/'))
+            }
+        }
+
+        def metadataFile = files.matching { include 'fabric.mod.json' }.singleFile
+        def metadata = new JsonSlurper().parse(metadataFile)
+        if (metadata.id != 'carry_on_patch' || metadata.version != project.version ||
+                metadata.environment != 'client') {
+            throw new GradleException("Unexpected client metadata in ${artifact.name}")
+        }
+        if (metadata.depends?.grapandgo != '>=1.0.1' ||
+                metadata.depends?.minecraft != '=26.2' ||
+                metadata.depends?.fabricloader != '>=0.19.3' ||
+                metadata.depends?.java != '>=25') {
+            throw new GradleException("Unexpected runtime dependency contract in ${artifact.name}")
+        }
+        if (metadata.depends?.containsKey('fabric-api')) {
+            throw new GradleException('Carry On Patch must not claim an unused Fabric API dependency')
+        }
+
+        def forbiddenPrefixes = [
+                'org/chermew/', 'net/minecraft/', 'software/bernie/', 'META-INF/jars/',
+                'assets/grapandgo/', 'data/grapandgo/'
+        ]
+        def invalid = paths.findAll { path ->
+            forbiddenPrefixes.any { path.startsWith(it) } ||
+                    (path.endsWith('.class') &&
+                            !path.startsWith('dev/resivore/carryonpatch/')) ||
+                    path.endsWith('.refmap.json')
+        }
+        if (!invalid.isEmpty()) {
+            throw new GradleException(
+                    "Client patch contains forbidden or foreign entries: ${invalid.unique().sort()}")
+        }
+
+        def required = [
+                'fabric.mod.json',
+                'carry_on_patch.client.mixins.json',
+                'dev/resivore/carryonpatch/RenderOnlyEntityIds.class',
+                'dev/resivore/carryonpatch/RenderIdAssigningEntityCache.class',
+                'dev/resivore/carryonpatch/mixin/EntityIdAccessor.class',
+                'dev/resivore/carryonpatch/mixin/CarriedObjectFeatureRendererMixin.class'
+        ]
+        def missing = required.findAll { !paths.contains(it) }
+        if (!missing.isEmpty()) {
+            throw new GradleException("Client patch is missing required entries: ${missing}")
+        }
+    }
+}
+
+tasks.named('check') {
+    dependsOn productionMixinTest
+    dependsOn tasks.named('verifyClientOnlyArtifact')
+}
+
+java {
+    withSourcesJar()
+}

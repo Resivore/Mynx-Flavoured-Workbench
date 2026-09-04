@@ -1,0 +1,13 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "dev.resivore.carryonpatch.mixin",
+  "compatibilityLevel": "JAVA_25",
+  "client": [
+    "EntityIdAccessor",
+    "CarriedObjectFeatureRendererMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

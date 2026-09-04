@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "id": "carry_on_patch",
+  "version": "${version}",
+  "name": "Carry On Patch",
+  "description": "Assigns safe render-only IDs to GrabAndGo's cached synthetic carried entities before render-state extraction.",
+  "authors": ["Resivore"],
+  "license": "MIT",
+  "environment": "client",
+  "mixins": [
+    {
+      "config": "carry_on_patch.client.mixins.json",
+      "environment": "client"
+    }
+  ],
+  "depends": {
+    "fabricloader": ">=0.19.3",
+    "minecraft": "=26.2",
+    "java": ">=25",
+    "grapandgo": ">=1.0.1"
+  },
+  "custom": {
+    "workbench:classification": "GENERATED / STATICALLY VALIDATED / RUNTIME UNTESTED",
+    "workbench:deployment": "NOT DEPLOYED"
+  }
+}
