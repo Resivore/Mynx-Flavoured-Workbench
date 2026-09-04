@@ -2,8 +2,8 @@
   "$schema": "../../schemas/runtime-state.schema.json",
   "schema_version": 2,
   "activation": "ACTIVE",
-  "revision": 77,
-  "updated_at": "2026-09-04T03:12:46Z",
+  "revision": 79,
+  "updated_at": "2026-09-04T05:16:41Z",
   "accepted_baseline": {
     "revision": 15,
     "provenance": {
@@ -902,10 +902,12 @@
           },
           "replaces_accepted_deployment_id": "c0fdfff1-831a-4081-93a3-e596d7fc928d",
           "runtime_result": {
-            "classification": "UNTESTED",
-            "recorded_at": null,
+            "classification": "PASS",
+            "recorded_at": "2026-09-04T05:16:05Z",
             "evidence": {
-              "passed": [],
+              "passed": [
+                "User-reported aggregate PASS for the latest combined CSR Canary 4 and QSN Canary 8 runtime test; no individual checklist-row observations were supplied or inferred."
+              ],
               "failed": []
             }
           }
@@ -945,11 +947,11 @@
           },
           "replaces_accepted_deployment_id": "66b8b293-d9ae-41c4-a969-d43baf79c2ff",
           "runtime_result": {
-            "classification": "INCONCLUSIVE",
-            "recorded_at": "2026-09-04T03:07:38Z",
+            "classification": "PASS",
+            "recorded_at": "2026-09-04T05:16:41Z",
             "evidence": {
               "passed": [
-                "User reported that QSN C8 compatibility for a matching reserved slot with zero physical matching quantity now works."
+                "User-reported aggregate PASS for the latest combined CSR Canary 4 and QSN Canary 8 runtime test; no individual checklist-row observations were supplied or inferred."
               ],
               "failed": []
             }
