@@ -137,7 +137,7 @@ def productionMixinTest = tasks.register('productionMixinTest', JavaExec) {
     workingDir layout.buildDirectory.dir('production-mixin-test')
 }
 
-tasks.register('verifyClientOnlyArtifact') {
+tasks.register('verifySidedArtifact') {
     group = 'verification'
     dependsOn tasks.named('jar')
     inputs.file(productionPatchJar)
@@ -154,8 +154,8 @@ tasks.register('verifyClientOnlyArtifact') {
         def metadataFile = files.matching { include 'fabric.mod.json' }.singleFile
         def metadata = new JsonSlurper().parse(metadataFile)
         if (metadata.id != 'carry_on_patch' || metadata.version != project.version ||
-                metadata.environment != 'client') {
-            throw new GradleException("Unexpected client metadata in ${artifact.name}")
+                metadata.environment != '*') {
+            throw new GradleException("Unexpected common metadata in ${artifact.name}")
         }
         if (metadata.depends?.grapandgo != '>=1.0.1' ||
                 metadata.depends?.minecraft != '=26.2' ||
@@ -185,6 +185,8 @@ tasks.register('verifyClientOnlyArtifact') {
         def required = [
                 'fabric.mod.json',
                 'carry_on_patch.client.mixins.json',
+                'carry_on_patch.mixins.json',
+                'dev/resivore/carryonpatch/common/CarryPlacement.class',
                 'dev/resivore/carryonpatch/RenderOnlyEntityIds.class',
                 'dev/resivore/carryonpatch/RibbitCarryPlacement.class',
                 'dev/resivore/carryonpatch/mixin/FirstPersonCarryPlacementMixin.class',
@@ -201,9 +203,35 @@ tasks.register('verifyClientOnlyArtifact') {
 
 tasks.named('check') {
     dependsOn productionMixinTest
-    dependsOn tasks.named('verifyClientOnlyArtifact')
+    dependsOn tasks.named('verifySidedArtifact')
 }
 
 java {
     withSourcesJar()
 }
+
+// A separate process with the extracted dedicated-server JAR, never the client or merged JAR.
+def productionServerMixinTest = tasks.register('productionServerMixinTest', JavaExec) {
+    group = 'verification'
+    dependsOn tasks.named('testClasses'), tasks.named('jar')
+    mainClass = 'dev.resivore.carryonpatch.ProductionMixinApplicationHarness'
+    classpath = files({
+        configurations.testRuntimeClasspath.files.findAll {
+            !it.name.startsWith('minecraft-merged-deobf-')
+        } + sourceSets.test.output.files.findAll { it.exists() } + [
+            new File(productionMinecraftCache, 'minecraft-extracted_server.jar'),
+            productionPatchJar.get().asFile
+        ]
+    })
+    systemProperty 'fabric.development', 'false'
+    systemProperty 'fabric.unitTest', 'true'
+    systemProperty 'carryOnPatch.serverTest', 'true'
+    systemProperty 'mixin.debug.countInjections', 'true'
+    doFirst {
+        args = [productionPatchJar.get().asFile.absolutePath,
+                configurations.grabAndGoReference.singleFile.absolutePath]
+        workingDir.mkdirs()
+    }
+    workingDir layout.buildDirectory.dir('production-server-mixin-test')
+}
+tasks.named('check') { dependsOn productionServerMixinTest }

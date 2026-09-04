@@ -3,11 +3,14 @@
   "id": "carry_on_patch",
   "version": "${version}",
   "name": "Carry On Patch",
-  "description": "Assigns safe render-only IDs to GrabAndGo's cached synthetic carried entities before render-state extraction, with independent first/third-person carried Ribbit placement.",
-  "authors": ["Resivore"],
+  "description": "Preserves GrabAndGo carried data across reload and restores objects safely on the logical server, with stable client render IDs and Ribbit alignment.",
+  "authors": [
+    "Resivore"
+  ],
   "license": "MIT",
-  "environment": "client",
+  "environment": "*",
   "mixins": [
+    "carry_on_patch.mixins.json",
     {
       "config": "carry_on_patch.client.mixins.json",
       "environment": "client"

@@ -4,18 +4,24 @@
 
 **STATIC PASS — NOT DEPLOYED — RUNTIME UNTESTED — READY FOR MANAGED RUNTIME TESTING — NOT READY FOR PROMOTION**
 
-Test only Carry On Patch `0.1.0-canary2`, artifact `carry-on-patch-0.1.0-canary2.jar`, Fabric mod ID `carry_on_patch`. Before deployment, require its filename, byte size, SHA-256, and source checkpoint to match the current release recorded in `WORKBENCH_STATUS.json` and the revision 2 `CODEX_LOG.md` entry. Stop on any identity drift; do not rebuild or substitute the candidate during runtime testing.
+Test only Carry On Patch `0.1.0-canary3`, artifact `carry-on-patch-0.1.0-canary3.jar`, Fabric mod ID `carry_on_patch`. Before deployment, require its filename, byte size, SHA-256, and source checkpoint to match the current release recorded in `WORKBENCH_STATUS.json` and the revision 3 `CODEX_LOG.md` entry. Stop on any identity drift; do not rebuild or substitute the candidate during runtime testing.
 
 The exact compatibility baseline is GrabAndGo `1.0.1` from Modrinth coordinate `maven.modrinth:199VyzmC:STumnqJf`. Require the enabled GrabAndGo JAR's verified Fabric mod ID, embedded version, filename, byte size, SHA-256, environment, nested-JAR inventory, and target method shape to match the revision 1 audit record. Do not use an alternate GrabAndGo build merely because it reports the same display version.
 
-Canary 2 remains `ACTIVE / NOT_DEPLOYED / RUNTIME_UNTESTED` until a serialized Test Instance Manager transition places its immutable project UUID in a canonical slot cohort and verifies the exact physical deployment. Do not clear, replace, append to, or otherwise disturb an occupied cohort merely to run this test. The current canonical Ribbits candidate and all of its required dependencies may accompany Carry On Patch only as one legitimate, fully represented manager cohort. Never copy experimental patch, Ribbits, GrabAndGo, GeckoLib, or companion files into the dedicated profile outside manager ownership, and never access the protected Matcha Flavoured 26.1.2 gameplay profile.
+Canary 3 remains `ACTIVE / NOT_DEPLOYED / RUNTIME_UNTESTED` until a serialized Test Instance Manager transition places its immutable project UUID in a canonical slot cohort and verifies the exact physical deployment. Do not clear, replace, append to, or otherwise disturb an occupied cohort merely to run this test. The current canonical Ribbits candidate and all of its required dependencies may accompany Carry On Patch only as one legitimate, fully represented manager cohort. Never copy experimental patch, Ribbits, GrabAndGo, GeckoLib, or companion files into the dedicated profile outside manager ownership, and never access the protected Matcha Flavoured 26.1.2 gameplay profile.
+
+## Installation sides and current evidence
+
+Install this same Canary 3 JAR alongside GrabAndGo in the singleplayer client; its integrated logical server runs the common persistence patch. For multiplayer, install it on the server and on each testing client. The server installation repairs authoritative persistence/placement; the client installation supplies the existing rendering/alignment fixes and matching common patch. A client-only installation cannot repair an unpatched remote server. Dedicated-server loading excludes every client rendering mixin.
+
+The user reports that the latest alignment candidate looks good and carry-triggered lag is gone, separately reporting that placement after relog produces no mob. The retained Canary 2 file was rehashed, but installed/tested identity was not verified from a managed deployment or supplied installed hash. These observations remain release-unbound and do not constitute full project acceptance. Canary 3 is not runtime-passed.
 
 ## Managed preflight
 
 1. Acquire explicit ownership of one serialized Test Instance Manager deployment to the dedicated Matcha Flavoured 26.2 Workbench.
 2. Re-read authoritative `main` and canonical `tools/test_instance_manager/runtime-state.json`. Require a genuinely available slot or an explicitly authorized whole-cohort transition that preserves the other slot exactly.
 3. Deploy through the Test Instance Manager and run its read-only verification. Require `PHYSICAL_STATE_VERIFIED`, this project's exact current release comparison to be `CURRENT_RELEASE_DEPLOYED`, the cohort deployment to be `READY_TO_TEST_VERIFIED`, and this member's independent result to remain `UNTESTED` before launching Minecraft.
-4. Verify Minecraft `26.2`, Java `25`, GrabAndGo `1.0.1`, Carry On Patch Canary 2, and exactly one enabled provider of each required Fabric mod ID. Require no duplicate Carry On Patch JAR and no alternate GrabAndGo JAR.
+4. Verify Minecraft `26.2`, Java `25`, GrabAndGo `1.0.1`, Carry On Patch Canary 3, and exactly one enabled provider of each required Fabric mod ID. Require no duplicate Carry On Patch JAR and no alternate GrabAndGo JAR.
 5. Require the manager cohort to contain the current canonical Ribbits test candidate and every required companion, including its exact GeckoLib/provider dependencies, when performing the Ribbit rows. Stop rather than manually adding a missing dependency.
 6. Use a disposable test world. Preserve the complete client log from startup through normal shutdown. Do not delete, reset, or rewrite player data to prepare the test.
 
@@ -72,12 +78,32 @@ Stop for clipping into player/arms/camera, HUD intrusion, unsupported/floating a
 4. Carry a container with distinctive contents. Drop/place it and require every tested item and count to survive unchanged.
 5. Where the test setup permits two carried synthetic entities to be cached concurrently, exercise both and require no wrong-model swap, flicker, disappearance, or other ID-collision symptom.
 
-## Persistence and secondary warning
+## Required persistence sequence � all runtime rows UNTESTED
 
-1. With a representative carried object, save and exit the disposable world normally, then re-enter it. Exercise the supported GrabAndGo resume/drop path and require no carried-state, entity-state, inventory, container-content, or NBT loss.
-2. Inspect the complete log for `GrabAndGo_CarriedData`, especially `Expected field 'GrabAndGo_CarriedData' to contain value of type STRING, but got COMPOUND`.
-3. Record that warning separately from the render-ID result. This canary does not change that independent persistence warning; do not report it fixed.
-4. Do not delete or reset player data in response to the warning. If it prevents safe carry, resume, or drop validation, stop and classify the affected persistence result as `INCONCLUSIVE` or `RUNTIME_FAIL` according to the observed behavior.
+Use only disposable worlds in the managed dedicated Workbench. For each object, record the exact candidate, upstream and companion hashes; UUID where applicable; saved identifying state; screenshots/logs; and before/after contents. Static fixtures do not pass these rows.
+
+| Representative object | State to record and verify after placement | Relog | Full client restart | Server reconnect/restart | Post-placement reload | Failed attempt/retry |
+| --- | --- | --- | --- | --- | --- | --- |
+| Ribbit | Identifiable profession, name/appearance/accessories and relevant profession state; ordinary AI/activity after restoration | UNTESTED | UNTESTED | UNTESTED | UNTESTED | UNTESTED |
+| Supported vanilla mob | Named/dyed sheep with recorded color, age and other distinguishable saved properties; normal behavior | UNTESTED | UNTESTED | UNTESTED | UNTESTED | UNTESTED |
+| Filled supported container | Barrel and chest with recorded slot-by-slot item IDs, counts and components | UNTESTED | UNTESTED | UNTESTED | UNTESTED | UNTESTED |
+
+1. Pick up the object, save and leave the disposable world, rejoin, then place. Require authoritative restoration of the original state/contents, not merely a visible carried model. Check the carrying player's first-person state and, where available, a second client's observation.
+2. Repeat pickup, normal save and exit, complete client shutdown/restart, rejoin and place. In a separately authorized dedicated-server setup, repeat disconnect/reconnect and a normal server shutdown/restart with both server and clients patched. No server setup was established by this artifact task; those rows remain untested.
+3. After successful placement, save/leave/rejoin again. Require exactly one restored object, empty hands/carry state, and no stale object restored by repeated placement requests. Check saved properties and actual container contents again.
+4. First attempt a blocked placement, then choose a valid location. Require data retained after rejection and exactly one successful restoration on retry. A fixture-tested rejected spawn is not proof of runtime rejection handling. Do not create UUID conflicts or corrupt data in an existing user save.
+5. Recheck sustained carrying, both third-person views, first-person alignment, GUI/shadow/shader passes, and the absence of the old render-error/lag loop using the renderer procedure above.
+6. If a death/respawn test is appropriate in the disposable setup, obstruct the upstream death-drop placement, respawn, and verify retained carry state; clear space and retry. Partial-effect/decode locks must survive player replacement. This row also remains UNTESTED.
+
+### Migration and failure handling
+
+Valid legacy SNBT STRING and COMPOUND payloads load into GrabAndGo's unchanged synchronized STRING/BOOLEAN fields. Saves use a complete COMPOUND. Unknown nested fields, numeric tag types and arrays remain intact through migration. Nonempty valid data reconciles a stale false flag. Empty/absent data with a false flag is empty; a true flag without usable data is reported as inconsistent and retained, not fabricated into an entity.
+
+Malformed/unexpected original tags are written back exactly, with the original carrying flag. `CarryOnPatch_Warned` remembers the last reported reason; it does not discard data. `CarryOnPatch_RetryBlocked` prevents automatic retry after decoding failure or uncertain partial world effects, and survives saves and player replacement. The original payload remains in `GrabAndGo_CarriedData`. Missing registry IDs, UUID conflicts and ordinary blocked/rejected placements retain data; a safe rejection can be retried after correcting the cause. No default mob/item fallback is used. Container contents are decoded before world insertion; uncertain partial placement blocks further attempts rather than risking duplication.
+
+On a recovery warning, stop the affected test and preserve the log and disposable world's data. Do not delete the payload, reset player data, remove the retry lock, or keep spawning substitutes. Recovery requires inspecting the retained payload and any physical side effects together; no automatic recovery command is supplied. The patch cannot recover a previously lost mob when neither its original payload nor a backup exists. No user save was modified during development.
+
+The old STRING-versus-COMPOUND warning and missing `ValueInput.contains` call must not recur in the patched save/load path. Record any warning, decoding rejection or blocked recovery separately from render/performance results.
 
 ## Stopping conditions and result
 
@@ -94,4 +120,4 @@ Stop and report `RUNTIME_FAIL` or `INCONCLUSIVE`, with only the observations act
 - shader-only, shadow-only, GUI-only, camera-only, or restart-only recurrence;
 - vanilla entity, second GeckoLib entity, block, container, networking, persistence, or ordinary server-created identity regression.
 
-Record a project `RUNTIME_PASS` only after every applicable required row above is actually completed against the exact verified candidate and baseline, the complete log remains free of the specified render loop and patch application failures, carried models remain visible, and carry/drop restoration remains correct. Keep the independent `GrabAndGo_CarriedData` observation explicit. Compilation, static tests, a Knot/Mixin application harness, artifact inspection, deterministic builds, manager readiness, and an unexecuted checklist are not Minecraft runtime evidence.
+Record a project `RUNTIME_PASS` only after every applicable required row above is actually completed against the exact verified candidate and baseline, the complete log remains free of the specified render loop and patch application failures, carried models remain visible, and carry/drop restoration remains correct. Keep every persistence warning and recovery outcome explicit. Compilation, static tests, a Knot/Mixin application harness, artifact inspection, deterministic builds, manager readiness, and an unexecuted checklist are not Minecraft runtime evidence.
