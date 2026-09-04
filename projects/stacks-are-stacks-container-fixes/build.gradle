@@ -21,7 +21,15 @@ configurations {
         canBeResolved = true
         transitive = false
     }
+    csrAudit {
+        canBeConsumed = false
+        canBeResolved = true
+        transitive = false
+    }
 }
+
+def csrReferenceJar = file(
+        '../container-slot-reservations/artifacts/container-slot-reservations-0.1.0-canary5.jar')
 
 dependencies {
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
@@ -29,6 +37,8 @@ dependencies {
     implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
     upstreamAudit "maven.modrinth:Pg1TxNQ1:${project.stacks_are_stacks_version_id}"
+    csrAudit files(csrReferenceJar)
+    testImplementation files(csrReferenceJar)
 
     testImplementation platform('org.junit:junit-bom:5.13.4')
     testImplementation 'org.junit.jupiter:junit-jupiter'
@@ -50,8 +60,10 @@ tasks.withType(JavaCompile).configureEach {
 
 test {
     useJUnitPlatform()
+    inputs.file(csrReferenceJar)
     doFirst {
         systemProperty 'stacksAreStacksJar', configurations.upstreamAudit.singleFile.absolutePath
+        systemProperty 'csrJar', configurations.csrAudit.singleFile.absolutePath
     }
 }
 
