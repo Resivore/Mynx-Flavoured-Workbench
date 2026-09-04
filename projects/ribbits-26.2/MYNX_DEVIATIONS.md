@@ -2,9 +2,9 @@
 
 This file records intentional departures from the faithful Minecraft Java 26.2 Ribbits port. The exact faithful-port baseline is private Canary 2: version `4.1.6+26.2-port-canary2`, artifact `ribbits-private-reconstruction-4.1.6+26.2-port-canary2.jar`, 3,124,301 bytes, SHA-256 `0AD73B7B61C6EE792EC1745056563641767AFE6811C0FDF2D3C99123C3F289DC`, implementation checkpoint `efe1970d2447aea4913e67f55c0c6b83cc36c5bb`. It remains historical provenance, not an accepted or rollback release.
 
-The direct predecessor is Mynx Canary 5: version `4.1.6+26.2-mynx-canary5`, artifact `ribbits-private-reconstruction-4.1.6+26.2-mynx-canary5.jar`, 3,220,021 bytes, SHA-256 `0DDE14CAAF1EF1E4B52CA118D61E0ED0706BB0EAD4B718471CA3CC5B5A70BE4F`, source checkpoint `fb21c43d1f483108cbbb108d96213736db310e2b`. Canary 6 preserves all behavior outside its narrowly declared asset, village-utility, and private-loot changes and does not rebuild, overwrite, rename, promote, or misrepresent Canary 5. Canary 4, whose exact identity has a bound user-reported external startup `FAIL` described below, and Canary 3 and Canary 2 remain historical and untouched.
+The direct predecessor is Mynx Canary 6: version `4.1.6+26.2-mynx-canary6`, artifact `ribbits-private-reconstruction-4.1.6+26.2-mynx-canary6.jar`, 3,222,195 bytes, SHA-256 `CBEEDD06BAB0D6809FD528662E4C7E4F11E308F241D60FCE0D6AD0F57ADD0759`, source checkpoint `fe8f08bf128791f1d64f227524b9a0585ef333d5`. Canary 7 preserves all earlier intended behavior outside its declared Phase D additions and does not rebuild, overwrite, rename, promote, or misrepresent Canary 6. Canary 5, Canary 4, whose exact identity has a bound user-reported external startup `FAIL` described below, Canary 3, and Canary 2 remain historical and untouched.
 
-The current narrow successor is `4.1.6+26.2-mynx-canary6`: private artifact `ribbits-private-reconstruction-4.1.6+26.2-mynx-canary6.jar`, 3,222,195 bytes, SHA-256 `CBEEDD06BAB0D6809FD528662E4C7E4F11E308F241D60FCE0D6AD0F57ADD0759`; source-only artifact `ribbits-source-only-4.1.6+26.2-mynx-canary6.jar`, 1,162,715 bytes, SHA-256 `0EF6117836F9AE70354C9859236F1E38216411842A65941597C274CC008515F5`. It is `ACTIVE / STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED`. Its implementation checkpoint is assigned only after this content and the reproducible artifacts are frozen.
+The current Phase D successor is `4.1.6+26.2-mynx-canary7`: private artifact `ribbits-private-reconstruction-4.1.6+26.2-mynx-canary7.jar`, 3,320,708 bytes, SHA-256 `6B18658C5A68D66623B9A388CC644E2F7A1B864E490B6F8B35D57FCD73A5BF74`; source-only artifact `ribbits-source-only-4.1.6+26.2-mynx-canary7.jar`, 1,251,192 bytes, SHA-256 `1194083C64B3409D4752EBA292516E092C4A68E26A2114F5272FB4A4EC792061`. It is `ACTIVE / STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED` from implementation checkpoint `a7ddb6afa6ed9cd620f49a28522c7866fdd35f04`.
 
 ## Phase A and Phase B deviations retained
 
@@ -45,14 +45,53 @@ The official-namespace production mapping setup requires no refmap for these sel
 ## Ribbit Village Explorer Map result
 
 - The dedicated base structure tag `#ribbits:on_ribbit_village_explorer_maps` contains exactly `ribbits:ribbit_village` and is distinct from the biome tag `#ribbits:has_structure/ribbit_village`.
-- The shared item modifier `ribbits:ribbit_village_explorer_result` is the canonical result factory for this barrel and is ready for a future Phase D consumer without implementing one. Starting from exactly one vanilla empty map, its vanilla exploration-map function uses destination `#ribbits:on_ribbit_village_explorer_maps`, decoration `minecraft:village_plains`, raw structure-placement search radius `100`, zoom `2`, and `skip_existing_chunks=false`. Minecraft 26.2's `TagKey` JSON codec serializes that conceptual `#` tag as bare `ribbits:on_ribbit_village_explorer_maps`, matching vanilla cartographer data. Resolution remains synchronous and server-authoritative on first legitimate inventory unpack/access.
-- Success is exactly one `minecraft:filled_map` with a valid vanilla `minecraft:map_id`, normal tracking and plains-village marker, named by translation key `item.ribbits.ribbit_village_explorer_map` as `Ribbit Village Explorer Map`.
+- The shared item modifier `ribbits:ribbit_village_explorer_result` is the sole canonical result factory for the Phase C barrel and Phase D Wandering Ribbit sale. Starting from exactly one vanilla empty map, its vanilla exploration-map function uses destination `#ribbits:on_ribbit_village_explorer_maps`, native decoration `ribbits:ribbit_village`, raw structure-placement search radius `100`, zoom `2`, and `skip_existing_chunks=false`. Minecraft 26.2's `TagKey` JSON codec serializes that conceptual `#` tag as bare `ribbits:on_ribbit_village_explorer_maps`, matching vanilla cartographer data. Resolution remains synchronous and server-authoritative on first legitimate barrel access or one-time merchant materialization.
+- `ribbits:ribbit_village` is one Ribbits-owned registered `MapDecorationType` with its own asset identity and the same map behavior flags as `minecraft:village_plains`. Its tracked user-approved marker `assets/ribbits/textures/map/decorations/ribbit_village.png` is copied byte-for-byte from `ribbit_village_marker_16x16.png`: 168 bytes, 16×16 8-bit RGBA, SHA-256 `DF63EB91EDA13E91E3B984B11CDFFC3D2F3E8C8482D090D4EE1C744EC428B2BA`.
+- Success is exactly one `minecraft:filled_map` with valid vanilla `minecraft:map_id`, native `ribbits:ribbit_village` decoration, exact custom-data boolean `{ribbits:ribbit_village_explorer_map:1b}`, and translation key `item.ribbits.ribbit_village_explorer_map` (`Ribbit Village Explorer Map`). A chain-preserving wrapper for `minecraft:filled_map` claims only that exact mechanical identity and otherwise delegates. Its tracked conventional generated-item presentation uses the supplied `610cbaa3-e4e8-4d55-abb9-377f0545e672.png` unchanged as `assets/ribbits/textures/item/ribbit_village_explorer_map.png`: 506 bytes, 16×16 8-bit RGBA, SHA-256 `6065E126DA4D3D70725CC3ADCA725E2CE2812BA8A0155A07C1E510B373AA38F5`.
 - A normal no-target miss remains inside the same modifier and becomes exactly one vanilla `minecraft:map`, with no map ID or successful-map component, translated name `Uncharted Ribbit Map`, translated lore `No Ribbit village could be charted.`, and exact `minecraft:custom_data` boolean marker `{ribbits:failed_ribbit_village_map:1b}`. The modifier's common-side final step is registered as `ribbits:finalize_ribbit_village_explorer_result`; it preserves only a filled map with a valid map ID and otherwise constructs a fresh canonical failure, so persistent, transient (`minecraft:map_post_processing`), modded, and stale success components cannot leak. The marker—not display text—identifies the genuine failed search. The lazy loot result is fixed permanently once the barrel resolves.
 - This map path uses only vanilla map data plus the existing Ribbits structure and introduces no new Matcha dependency. It does not alter Matcha Witch Hut maps or add a Matcha cartographer offer.
 
 ## Failed-map Sorcerer service
 
 Every Sorcerer receives a rank-independent `1 exact marked Uncharted Ribbit Map -> 1 ribbits:toadstool_heart` offer at all four ranks, including command-, egg-, and hut-generated Sorcerers. It accepts only `minecraft:map` with the exact private custom-data marker and no map ID; generic or merely renamed empty maps, successful filled maps, and unrelated explorer maps fail. The service has `maxUses=16`, profession XP `0`, and price multiplier `0`. It neither completes nor bypasses the Benzene gate and cannot promote the Sorcerer; existing ordinary restocking may replenish it. A narrow Canary 3 save upgrade recognizes the exact component-aware Sorcerer offer shape at each rank and inserts only this service while preserving every existing serialized Phase B offer object, use count, demand, price adjustment, gate, rank, XP, specialization, and menu state; unexpected legacy or drifted shapes fail closed.
+
+## Dedicated Wandering Ribbit entity
+
+- `ribbits:wandering_ribbit` is a dedicated final `AbstractVillager`, not `RibbitEntity`, not a tenth profession, and not a subclass or relabeling of vanilla `WanderingTrader`. It has a 0.5×0.75 bounding box, 15 maximum health, 0.125 movement speed, its own entity type and renderer, retained Ribbits idle/walk animations, and ordinary Ribbits ambient, step, hurt, death, and trade sounds.
+- It cannot breed, shows no profession progress, awards no merchant or player XP, never restocks, and receives no rank, POI, workstation, gossip, brain, daily schedule, llama, invisibility potion, milk, camp, structure, world generation, or vanilla Wandering Trader state.
+- Command-created entities remain non-scheduler-managed, persistent ordinary merchants and may use portals normally. Scheduler-managed entities are event-spawned, persistent, bound to one generation/dimension/expiry/target, and cannot portal away from the lease.
+- The entity persists its independent trade seed, ordinary serialized `MerchantOffers` and use counts, provider snapshot, wander target, scheduler-managed flag, lease generation, expiry, and dimension. Expiry pauses while a valid merchant session remains open and resumes immediately when that session ceases to be valid.
+
+## Independent scheduler and lease
+
+- One server-global scheduler executes once per server tick and never reads, mutates, delays, caps, replaces, or reuses vanilla Wandering Trader state. SavedData type `ribbits:wandering_ribbit_spawner` persists exactly `next_attempt_time`, `active_lease_generation`, optional active entity UUID, optional active dimension, `visit_expiry`, `fair_player_cursor`, and `last_observed_time`.
+- First initialization delays 48,000–72,000 ticks. A successful spawn delays the next attempt 120,000–168,000 ticks; any failed attempt retries after 1,200 ticks; a scheduled visit lasts 48,000 ticks. Backward game-time movement rebases absolute deadlines rather than manufacturing retries or expiration.
+- The cap is one generation-stamped active lease across the server. The lease commits only after the exact `EVENT`-spawned entity is inserted, alive, addressable by UUID, and has successfully materialized all native offers. An unloaded holder retains the lease without a chunk ticket or force-load. Missing dimensions, wrong entity types, exact destruction, or expiry clear only the owned lease; a stale/replayed generation self-discards and cannot coexist with a successor.
+- Only living, connected, non-spectating Survival or Adventure players in the Overworld are candidates. Stable UUID sorting and the persisted round-robin cursor prevent permanent first-player bias. The scheduler examines at most 16 random positions per selected player and 64 total, within a 24–48-block annulus and at least 16 blocks from every eligible player.
+- Placement uses only already-loaded, entity-ready chunks and the existing motion-blocking-no-leaves heightmap. It requires sturdy dry ground, dry body/head space, collision clearance, world-border containment, and rejects fire, cactus, magma, powder snow, lit campfires, invalid heights, fluids, and denied biomes. Reloadable biome tag `ribbits:without_wandering_ribbit_spawns` wins over `ribbits:allows_wandering_ribbit_spawns`; shipped data permits forests and swamp-hut biomes and excludes oceans.
+
+## Stable Wandering trade providers and exact offers
+
+- The provider registry bootstraps permanent native provider `ribbits:native`, rejects duplicate IDs or replacement of the native provider, returns providers in stable ID order, and derives a provider-isolated seed from the entity seed plus provider ID. Adding, removing, or failing an optional provider cannot perturb another provider's choices.
+- Provider ID, positive schema version, first-offer index, and offer count are persisted as sorted contiguous ranges. The ordinary offers and uses remain authoritative on reload. A failing optional provider contributes a persisted zero-offer range; native-provider failure rejects entity materialization and prevents lease commit.
+- Native schema 1 materializes exactly five offers once: `20 ribbits:glowcap -> 1 ribbits:chute_leaf` (`maxUses=1`); `8 ribbits:glowcap + 1 minecraft:compass ->` one canonical shared map result (`maxUses=1`); and three distinct `1 ribbits:glowcap -> curiosity` offers (`maxUses=2`) sampled without replacement from Red Toadstool ×8, Brown Toadstool ×8, Toadstool Stem ×8, Mossy Oak Planks ×8, Swamp Lantern ×4, Umbrella Leaf ×8, Swamp Daisy ×8, and Giant Lily Pad ×4.
+- All five offers have zero merchant/player XP and zero price multiplier, never restock, and never reroll on interaction, save/reload, chunk unload, or restart. The map modifier is invoked exactly once during materialization; its success or canonical failure stack is then serialized like every other result.
+
+## Chute Leaf equipment, authority, movement, and rendering
+
+- `ribbits:chute_leaf` is a stack-one, noncraftable, nondurable, unlimited-use Ribbits item. Its sole Trinkets eligibility file is `data/trinkets/tags/item/chest/cape.json`. Both tag and runtime logic require exact slot ID `chest/cape`, index 0, in the already accepted amount-one slot. There is no `chest/back` or broad all-slot tag, slot/group definition, second inventory, equippable component, glider component, recipe, or spawn egg.
+- The exact accepted dependency is `trinkets-4.1.0-beta.3+26.2-inventory-compat-canary5.jar`, 560,208 bytes, SHA-256 `4C1FA6AC36C0457483FD0D395B99BBD94C9334AAD6DEFECE7633BBF0552D1724`. Canary 7 only adds the Chute's item eligibility and does not alter that artifact, Inventory Extended, the Trinkets companion, Traveler's Toolbelt, the accepted amount-one `chest/cape` definition, or disabled Elytra-support policy.
+- Equip callbacks and vanilla-equipment insertion/swap checks reject the Chute outside exact `chest/cape`, reject Chute insertion beside any equipped vanilla or Trinkets glider, and reject glider insertion beside an active Chute. A broken glider still conflicts with insertion; movement validity independently follows usable-glider rules.
+- The client samples only physical jump-key rising edges and queues a monotonically increasing sequence plus current dimension. The server advances highest-sequence authority before every other check, rejects replays and wrong dimensions, accepts at most one request per two ticks, deploys immediately at nonpositive vertical velocity, or keeps an ascending request pending for at most 60 ticks until descent begins. A second accepted press never closes a deployed Chute. Owner-only acknowledgements are exactly `REJECTED`, `PENDING`, and `DEPLOYED`.
+- Pending/deployed state is server-owned and transient. Only the deployed boolean is synchronized to clients, never saved. Death, disconnect, missing/invalid Chute, ground, vehicle, swimming/crawling, water/lava, climbing, sleep, levitation, flight, fall-flying, usable glider, dimension mismatch, or another invalid state clears motion state; stale acknowledgements cannot reopen it.
+- Valid deployment clamps only vertical velocity below `-0.10` blocks per tick before and after travel. It preserves horizontal velocity, ascent, and already-slower descent and resets fall distance only while the server-authoritative state remains valid. It adds no lift, steering, horizontal drag, Elytra pose, flight, durability, firework, or portal behavior.
+- One item-specific Trinkets renderer owns presentation: a closed leaf sits on the back, an open canopy follows ordinary player transforms while deployed, invisible render states draw nothing, and first person renders through exactly the physical main-arm callback. No Elytra wing renderer or second generic layer is registered.
+
+## Optional Map Marker Extensions and Compass Ribbon boundary
+
+Map Marker Extensions C8 remains a separate optional project: `map-marker-extension-0.4.0-canary8.jar`, 58,720 bytes, SHA-256 `C3DA533B207050855C691584DB6BC3C85B383A9EC8E338737F7986D426668CA2`, and `map-marker-extension-icons-0.4.0-canary8.zip`, 34,938 bytes, SHA-256 `E88B18402275139A28A5FC9C1CE860937138D0E665CBD842EDEC5DE6EDA2521C`. Its icon pack is byte-identical to C7. C8 recognizes only an externally owned `minecraft:filled_map` with `minecraft:map_id` and exact `ribbits:ribbit_village_explorer_map=true`, admits only the native `ribbits:ribbit_village` holder, and passes the live holder, ordinary coordinates, and asset through its existing Xaero projection. It contains only inert Ribbits identifier strings, no Ribbits class/resource dependency, and never registers, supplies, or rewrites the Ribbits marker or item art. Nested wrapper tests passed in both registration orders. C8 remains unaccepted, not deployed, and runtime untested.
+
+Static inspection of official Compass Ribbon 2.9.0 for Minecraft 26.2, CurseForge file 8261473, exact 469,546-byte SHA-256 `0F3A03C4ECC8B78420ECDCB4CC126810EA10581694AB808141D7F81B16D59905`, confirmed that its standard map-decoration path is generic over the live decoration holder/asset and contains no vanilla-only type whitelist. That establishes only static architectural compatibility for `ribbits:ribbit_village`; neither Compass Ribbon nor the combined native marker presentation has runtime evidence.
 
 ## Permanent currency and home item
 
@@ -195,6 +234,7 @@ The immutable donor references remain:
 
 - `GuardRibbits-1.20.1-Fabric-1.0.4.jar` — 166,896 bytes; SHA-256 `52F1E184DC12CF1E29BC224AB5A640B8EA5875AA9F46067C0907C6A45B7D1869`.
 - `useful_ribbits-1.0.2-forge-1.20.1.jar` — 416,439 bytes; SHA-256 `2B56007A985B162477113BB2EA1776D9CE2CE602886EA21A88D8B2500D2DED5D`.
+- `wandering_ribbit-4.0-forge.jar` — 98,047 bytes; SHA-256 `5BFD24A88C84D6948F72DC19153155CE99CA5BB4BAEF90ACADDA0AB0CA529E4A`.
 
 The exact allowlisted archive members remain:
 
@@ -206,8 +246,108 @@ The exact allowlisted archive members remain:
 - `assets/useful_ribbits/textures/entities/farmer_ribbit.png`
 - `assets/useful_ribbits/geo/miner_ribbit.geo.json`
 - `assets/useful_ribbits/textures/entities/miner_ribbit.png`
+- `assets/wandering_ribbit/geo/wandering_ribbit.geo.json` — 3,277 bytes; SHA-256 `C86EA5F798F12C4AF172A2DF1939E318900B349463D6CA9E26A250134F6C8D08`
+- `assets/wandering_ribbit/textures/entity/wandering_ribbit.png` — 6,233 bytes; SHA-256 `8E481FA8B4E4458ADB52D60AB3123801E612835B65CD362264C00801D84D681A`
+- `assets/wandering_ribbit/models/custom/umbrella_leaf.json` — 3,841 bytes; SHA-256 `59506A4A35E71F5630A22F45332FB0813DF1BFF4A985096328E206DF9A5F5027`
+- `assets/wandering_ribbit/textures/item/umbrella_leaf_item.png` — 305 bytes; SHA-256 `D595D40E69A838C7FF3BDC5D59DE92BC9C84B39A4A3A433D84590EC4FD1C04AD`
+- `assets/wandering_ribbit/textures/item/umbrella_leaf_texture.png` — 548 bytes; SHA-256 `3505383EE2DA238B600C3A445F676209066307F5A2A690252179B767B50F99FF`
 
-No donor Java/classes, AI, procedures, combat, structures, generation, sounds, animations, spawn-egg graphics, workstations, inventories, GUIs, or unrelated assets enter the build. Derived outputs remain private-use-only and no relicensing claim is made. Source-only output remains truthful and contains no protected/donor-private material.
+The Wandering donor contributes only the allowlisted entity model/texture and Chute custom model plus closed/open textures. Deterministic private assembly copies the entity visual, derives only the two Chute conventional models and item definitions needed by Minecraft 26.2, and leaves all outputs inside the ignored private boundary. No donor Java/classes, AI, procedures, combat, structures, camps, generation, sounds, animations, spawn-egg graphics, workstations, inventories, GUIs, or unrelated assets enter the build. Derived outputs remain private-use-only and no relicensing claim is made. Source-only output remains truthful and contains no protected/donor-private material.
+
+## Mynx Canary 6 to Canary 7 archive audit
+
+The final private archive advances from 610 ZIP records (488 files and 122 directories) to 677 records (544 files and 133 directories): 56 added files, 11 added directories, zero removed files or directories, 18 changed common files, and 470 byte-identical common files. Its uncompressed member payload advances from 4,307,032 to 4,511,621 bytes; added payload contributes 198,035 bytes, the changed set advances from 80,561 to 87,115 bytes, and total uncompressed growth is 204,589 bytes. Compressed member bytes advance from 3,102,063 to 3,185,554, a growth of 83,491.
+
+The final source-only archive advances from 226 records (153 files and 73 directories) to 286 records (201 files and 85 directories): 48 added files, 12 added directories, zero removed files or directories, the same 18 changed common files, and 135 byte-identical common files. Its uncompressed member payload advances from 1,594,711 to 1,784,695 bytes; added payload contributes 183,430 bytes, the changed set advances from 76,044 to 82,598 bytes, and total uncompressed growth is 189,984 bytes. Compressed member bytes advance from 1,115,037 to 1,189,798, a growth of 74,761.
+
+These 48 added files are the complete source-only addition set and are also present in the private archive:
+
+- `assets/ribbits/items/ribbit_village_explorer_map.json`
+- `assets/ribbits/models/item/ribbit_village_explorer_map.json`
+- `assets/ribbits/textures/item/ribbit_village_explorer_map.png`
+- `assets/ribbits/textures/map/decorations/ribbit_village.png`
+- `com/yungnickyoung/minecraft/ribbits/chute/ChuteAckState.class`
+- `com/yungnickyoung/minecraft/ribbits/chute/ChuteEquipment.class`
+- `com/yungnickyoung/minecraft/ribbits/chute/ChuteInputState.class`
+- `com/yungnickyoung/minecraft/ribbits/chute/ChutePhysics.class`
+- `com/yungnickyoung/minecraft/ribbits/chute/ChutePlayerAccess.class`
+- `com/yungnickyoung/minecraft/ribbits/chute/ChuteServerController$PlayerState.class`
+- `com/yungnickyoung/minecraft/ribbits/chute/ChuteServerController.class`
+- `com/yungnickyoung/minecraft/ribbits/chute/ChuteStateMachine$Acknowledgement.class`
+- `com/yungnickyoung/minecraft/ribbits/chute/ChuteStateMachine.class`
+- `com/yungnickyoung/minecraft/ribbits/client/chute/ChuteClientController.class`
+- `com/yungnickyoung/minecraft/ribbits/client/model/WanderingRibbitModel.class`
+- `com/yungnickyoung/minecraft/ribbits/client/render/ChuteLeafRenderer.class`
+- `com/yungnickyoung/minecraft/ribbits/client/render/RibbitVillageMapItemModel.class`
+- `com/yungnickyoung/minecraft/ribbits/client/render/WanderingRibbitRenderer.class`
+- `com/yungnickyoung/minecraft/ribbits/entity/WanderingRibbitEntity.class`
+- `com/yungnickyoung/minecraft/ribbits/entity/goal/WanderingRibbitMoveToTargetGoal.class`
+- `com/yungnickyoung/minecraft/ribbits/entity/trade/WanderingRibbitMapOffer.class`
+- `com/yungnickyoung/minecraft/ribbits/entity/trade/WanderingRibbitNativeTradeProvider$Curiosity.class`
+- `com/yungnickyoung/minecraft/ribbits/entity/trade/WanderingRibbitNativeTradeProvider.class`
+- `com/yungnickyoung/minecraft/ribbits/entity/trade/WanderingRibbitTradeContext.class`
+- `com/yungnickyoung/minecraft/ribbits/entity/trade/WanderingRibbitTradeProvider$OfferCollector.class`
+- `com/yungnickyoung/minecraft/ribbits/entity/trade/WanderingRibbitTradeProvider.class`
+- `com/yungnickyoung/minecraft/ribbits/entity/trade/WanderingRibbitTradeProviders$Materialization.class`
+- `com/yungnickyoung/minecraft/ribbits/entity/trade/WanderingRibbitTradeProviders.class`
+- `com/yungnickyoung/minecraft/ribbits/entity/trade/WanderingRibbitTradeSnapshot$ProviderRange.class`
+- `com/yungnickyoung/minecraft/ribbits/entity/trade/WanderingRibbitTradeSnapshot.class`
+- `com/yungnickyoung/minecraft/ribbits/fabric/client/WanderingRibbitClientHooks.class`
+- `com/yungnickyoung/minecraft/ribbits/item/ChuteLeafItem.class`
+- `com/yungnickyoung/minecraft/ribbits/mixin/mixins/chute/ArmorSlotChuteMixin.class`
+- `com/yungnickyoung/minecraft/ribbits/mixin/mixins/chute/EquippableChuteMixin.class`
+- `com/yungnickyoung/minecraft/ribbits/mixin/mixins/chute/PlayerChuteDataMixin.class`
+- `com/yungnickyoung/minecraft/ribbits/mixin/mixins/chute/PlayerChuteMovementMixin.class`
+- `com/yungnickyoung/minecraft/ribbits/mixin/mixins/client/chute/ClientPlayerChuteMovementMixin.class`
+- `com/yungnickyoung/minecraft/ribbits/mixin/mixins/client/chute/KeyboardInputChuteMixin.class`
+- `com/yungnickyoung/minecraft/ribbits/mixin/mixins/client/chute/LocalPlayerChuteTickMixin.class`
+- `com/yungnickyoung/minecraft/ribbits/module/MapDecorationTypeModule.class`
+- `com/yungnickyoung/minecraft/ribbits/network/payload/ChuteAckS2C.class`
+- `com/yungnickyoung/minecraft/ribbits/network/payload/ChutePressC2S.class`
+- `com/yungnickyoung/minecraft/ribbits/world/spawn/WanderingRibbitScheduler$SpawnSite.class`
+- `com/yungnickyoung/minecraft/ribbits/world/spawn/WanderingRibbitScheduler.class`
+- `com/yungnickyoung/minecraft/ribbits/world/spawn/WanderingRibbitSpawnerData.class`
+- `data/ribbits/tags/worldgen/biome/allows_wandering_ribbit_spawns.json`
+- `data/ribbits/tags/worldgen/biome/without_wandering_ribbit_spawns.json`
+- `data/trinkets/tags/item/chest/cape.json`
+
+The private archive adds exactly these eight further private-only files, and none enters source-only output:
+
+- `assets/ribbits/geckolib/models/wandering_ribbit.geo.json`
+- `assets/ribbits/items/chute_leaf.json`
+- `assets/ribbits/items/chute_leaf_open.json`
+- `assets/ribbits/models/item/chute_leaf.json`
+- `assets/ribbits/models/item/chute_leaf_open.json`
+- `assets/ribbits/textures/entity/wandering_ribbit.png`
+- `assets/ribbits/textures/item/chute_leaf.png`
+- `assets/ribbits/textures/item/chute_leaf_open.png`
+
+The complete changed-file set is identical in both lanes:
+
+- `assets/ribbits/lang/en_us.json`
+- `com/yungnickyoung/minecraft/ribbits/RibbitsCommon.class`
+- `com/yungnickyoung/minecraft/ribbits/client/RibbitsCommonClient.class`
+- `com/yungnickyoung/minecraft/ribbits/fabric/RibbitsFabric.class`
+- `com/yungnickyoung/minecraft/ribbits/fabric/client/ClientNetworkModuleFabric.class`
+- `com/yungnickyoung/minecraft/ribbits/fabric/client/RibbitsFabricClient.class`
+- `com/yungnickyoung/minecraft/ribbits/fabric/module/NetworkModuleFabric.class`
+- `com/yungnickyoung/minecraft/ribbits/module/CreativeTabModule$CreativeEntry.class`
+- `com/yungnickyoung/minecraft/ribbits/module/CreativeTabModule.class`
+- `com/yungnickyoung/minecraft/ribbits/module/EntityTypeModule.class`
+- `com/yungnickyoung/minecraft/ribbits/module/ItemModule.class`
+- `com/yungnickyoung/minecraft/ribbits/module/NetworkModule.class`
+- `com/yungnickyoung/minecraft/ribbits/network/ClientNetworkHandler.class`
+- `com/yungnickyoung/minecraft/ribbits/network/ServerNetworkHandler.class`
+- `com/yungnickyoung/minecraft/ribbits/world/loot/RibbitVillageExplorerMap.class`
+- `data/ribbits/item_modifier/ribbit_village_explorer_result.json`
+- `fabric.mod.json`
+- `ribbits.mixins.json`
+
+The private archive adds exactly these 11 directory records: `assets/ribbits/textures/map/`, `assets/ribbits/textures/map/decorations/`, `com/yungnickyoung/minecraft/ribbits/chute/`, `com/yungnickyoung/minecraft/ribbits/client/chute/`, `com/yungnickyoung/minecraft/ribbits/mixin/mixins/chute/`, `com/yungnickyoung/minecraft/ribbits/mixin/mixins/client/chute/`, `com/yungnickyoung/minecraft/ribbits/world/spawn/`, `data/trinkets/`, `data/trinkets/tags/`, `data/trinkets/tags/item/`, and `data/trinkets/tags/item/chest/`. Source-only adds those same 11 plus `data/ribbits/tags/worldgen/biome/`, which already existed as a directory record in private Canary 6. There are no removed member records of either kind.
+
+All 335 Canary 6 private-only files remain present and byte-identical in Canary 7; none changes or disappears. Every one of the 201 Canary 7 source-only files is present in private output, 200 are byte-identical between lanes, and only the intentionally private-complete `assets/ribbits/lang/en_us.json` differs. The two public map PNG members retain their exact supplied identities recorded above. No unexpected private boundary was found.
+
+Every archive has unique canonical forward-slash paths, validates every recorded CRC, and has no member extra field, member comment, or archive comment. Every record uses DEFLATE method 8, flag bits 2056, and timestamp `1980-01-01T00:00:00`; `META-INF/MANIFEST.MF` is first, every remaining record is lexicographically ordered, physical local-header offsets increase monotonically, every common file retains relative order, and no common member has metadata-only drift. Clean A and B outputs are byte-identical: each private Canary 7 JAR is 3,320,708 bytes with SHA-256 `6B18658C5A68D66623B9A388CC644E2F7A1B864E490B6F8B35D57FCD73A5BF74`, and each source-only Canary 7 JAR is 1,251,192 bytes with SHA-256 `1194083C64B3409D4752EBA292516E092C4A68E26A2114F5272FB4A4EC792061`.
 
 ## Mynx Canary 5 to Canary 6 archive audit
 
@@ -268,7 +408,7 @@ The retained predecessor audit changed the complete uncompressed payload invento
 
 ## Explicit deferrals
 
-Canary 6 does not implement a Wandering Ribbit, Wandering Ribbit map sale, automatic Sorcerer replacement after death, retrofit injection into existing huts, conversion of saved Witches, global Witch suppression, a whole swamp-hut replacement, asynchronous map search, a custom map GUI, a new registered map item, direct Toadstool Heart barrel fallback, Matcha cartographer Ribbit Village maps, changes to Matcha Witch Hut maps, donor Guard/Chef/Farmer/Miner behavior, generalized old-offer migration, dimension-aware homes, Fortune Blessing, Silver Bullion, Adamant/Netherite bullion or mount equipment, Netherite tool recycling, unrelated Matcha trades, or Custom Portals recipe/behavior changes.
+Canary 7 does not implement a Naturalist or Regions Unexplored Wandering trade provider, rescued-baby capsule, Chute recipe or spawn egg, `chest/back` or broad Trinkets eligibility, new slot/group definition, vanilla glider component, automatic Sorcerer replacement after death, retrofit injection into existing huts, conversion of saved Witches, global Witch suppression, a whole swamp-hut replacement, asynchronous map search, a custom map GUI, a new registered map item, direct Toadstool Heart barrel fallback, Matcha cartographer Ribbit Village maps, changes to Matcha Witch Hut maps, donor behavior, generalized old-offer migration, dimension-aware homes, Fortune Blessing, Silver Bullion, Adamant/Netherite bullion or mount equipment, Netherite tool recycling, unrelated Matcha trades, or Custom Portals recipe/behavior changes.
 
 ## Runtime evidence boundary
 
@@ -278,4 +418,6 @@ The retained canonical Canary 3 and YUNG's API Compat.2 binaries rehashed exactl
 
 The reported failing artifact is unambiguously the canonical Canary 4 private artifact: version `4.1.6+26.2-mynx-canary4`, filename `ribbits-private-reconstruction-4.1.6+26.2-mynx-canary4.jar`, 3,219,246 bytes, SHA-256 `DA7A37E0AEECE4D7633F0C5104298D76E066CD38DD5255FAE616DF95C5FBC712`, source checkpoint `cbc247054ecba937ad009dd651cde31fac504c22`. The user's supplied observation is therefore bound only to that exact identity as an external runtime `FAIL`: startup aborted at the invalid `@Shadow getWorldPos` before Phase C gameplay could run. The task made no Test Instance Manager transition, so the report supplies no managed deployment or slot result and no unreported gameplay row is inferred.
 
-Canary 6 was not deployed or launched and remains `RUNTIME_UNTESTED`. Its successful production-equivalent Knot/Mixin application and the rest of its static validation must not be reported as Minecraft gameplay runtime correctness.
+The user's statement that Phase C is good binds to the exact canonical Canary 6 cohort independently rehashed from authoritative records: private Ribbits Canary 6 `ribbits-private-reconstruction-4.1.6+26.2-mynx-canary6.jar`, 3,222,195 bytes, SHA-256 `CBEEDD06BAB0D6809FD528662E4C7E4F11E308F241D60FCE0D6AD0F57ADD0759`, source `fe8f08bf128791f1d64f227524b9a0585ef333d5`; YUNG's API Compat.2 `YungsApi-26.2-Fabric-6.1.1-compat.2.jar`, 1,260,939 bytes, SHA-256 `FF22A6B509BA559988D7A9352DC94AC612C4B099517ACAC7DA7C81322D797ED7`; accepted Custom Portals C2 `custom-portals-26.2-4.0.0+26.2-port-canary2.jar`, 910,246 bytes, SHA-256 `13FD0E76748FCC3EF963BCC2F4A820D5FC2D473A90AD5D5988CBE0129C2BE148`; and Matcha Heart Death C11 `matcha-heart-death-compat-0.1.10-canary11.jar`, 39,105 bytes, SHA-256 `A0570179F85D32EC6740D9136AD50890B9C797500661CD2ED2325DA5B6B1E4A9`. It is recorded only as a scoped external practical `PASS`; no individual Phase C or retained regression row is inferred, no managed deployment or Test Slot result is assigned, and no release is accepted or promoted from it.
+
+Canary 7 was not deployed or launched and remains `RUNTIME_UNTESTED`. Its successful build, tests, deterministic assembly, archive/codec/dependency/donor checks, production-equivalent Knot/Mixin application, MME wrapper-order tests, and static Compass Ribbon audit must not be reported as Minecraft gameplay runtime correctness.

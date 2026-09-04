@@ -19,6 +19,9 @@
       "Maintain a private Minecraft Java 26.2 downstream Ribbits build for the fixed Mynx and Matcha stack, preserving upstream behavior except for individually documented intentional Mynx deviations.",
       "Maintain the user-approved tiered Glowcap trade economy, persistent profession progression and daily restocking, exact cross-stack item contracts, and Toadstool Heart home-setting behavior without converting Ribbits into vanilla Villagers.",
       "Maintain the exact Phase C swamp-hut Sorcerer, natural-Witch boundary, shared Ribbit Village explorer-map result, failed-map Sorcerer service, and future-only village utility cleanup without retrofitting existing structures.",
+      "Provide one dedicated nonprofession Wandering Ribbit merchant and an independent persistent server scheduler whose exact one-entity lease, bounded loaded-chunk placement, visit lifetime, and fair player selection never reuse or alter vanilla Wandering Trader state.",
+      "Provide the unlimited-use ribbits:chute_leaf as a server-authoritative controlled-descent item eligible only for the accepted one-entry chest/cape Trinkets slot, with exact Elytra/glider conflict boundaries and no Elytra flight behavior.",
+      "Own the native ribbits:ribbit_village map-decoration identity and exact successful-map presentation while exposing stable optional Wandering trade-provider and Map Marker Extensions boundaries and retaining the ordinary vanilla map contract used by Compass Ribbon.",
       "Keep every private reconstruction deterministic and hash-guarded while isolating protected Ribbits resources and approved local donor visuals from the public source repository."
     ],
     "scope": [
@@ -28,7 +31,12 @@
       "Maintain new-hut-only replacement of the initial swamp-hut Witch with one persistent Sorcerer, independent Cat relocation, an exact-piece natural-Witch rejection, one lazy map barrel, and the marker-authenticated rank-independent failed-map redemption introduced by Mynx Canary 4.",
       "Maintain the exact hash-pinned four-template private NBT transform for future Ribbit village placement while preserving the pristine Smoker and Blast Furnace templates byte-for-byte and retaining every non-target record, storage block, loot binding, and processor sentinel.",
       "Maintain ribbits:glowcap and ribbits:toadstool_heart as permanent mechanical identities with their exact user-approved final 16-by-16 RGBA sprites and conventional generated-item models.",
-      "Preserve the private resource assembler, exact pristine, Minecraft, dependency, donor, output, and archive identities, and the authorized shared green spawn-egg derivation contract."
+      "Maintain ribbits:wandering_ribbit as a separate 0.5-by-0.75 AbstractVillager with 15 health, approximately 0.125 movement speed, no breeding, profession, home, rank, restock, progress, spawn egg, or permanent automatic residency, and preserve command-created merchants as persistent and scheduler-independent.",
+      "Maintain server-global SavedData ribbits:wandering_ribbit_spawner with next attempt time, lease generation, active UUID and dimension, visit expiry, fair-player cursor, and last-observed time; one execution per server tick; cap one; 48,000-72,000 first delay; 120,000-168,000 success cooldown; 1,200 retry; 48,000 visit; and at most 64 loaded-chunk-only site candidates.",
+      "Maintain stable sorted WanderingRibbitTradeProvider identities, persisted seed/provider/schema/offer ranges and exact serialized offers, with native provider ribbits:native always materializing one Chute offer, one canonical map result exactly once, and three curiosity offers without replacement.",
+      "Maintain ribbits:chute_leaf as a stack-one noncraftable nondurable item using only data/trinkets/tags/item/chest/cape.json, a monotonic physical-jump request and owner acknowledgement protocol, a server-owned pending/deployed state machine, and a narrow terminal-descent cap of -0.10 blocks per tick.",
+      "Maintain native map-decoration type ribbits:ribbit_village, exact success custom-data marker ribbits:ribbit_village_explorer_map=true, ordinary filled-map/map-id/decorations synchronization, and exact user-authored marker and successful filled-map item artwork under the Ribbits namespace.",
+      "Preserve the private resource assembler, exact pristine, Minecraft, dependency, three-donor, output, and archive identities, and the authorized shared green spawn-egg derivation contract."
     ],
     "boundaries": {
       "owned_paths": [
@@ -37,7 +45,10 @@
       "exclusions": [
         "Protected Ribbits resources, donor-derived models and textures, pristine or donor binaries, private manifests and reports, and the complete private Canary JAR are external, ignored, private-use-only, and nonredistributable.",
         "Public source-only build output is resource-incomplete and must not be represented as a runnable Canary.",
-        "No Wandering Ribbit or map sale, automatic Sorcerer replacement, existing-hut or existing-village retrofit, conversion of saved Witches, global Witch suppression, Matcha cartographer or Witch Hut map changes, asynchronous map search, custom map item or GUI, generalized old-offer migration, donor AI, Guard combat AI, home-dimension redesign, Fortune Blessing, Silver Bullion, or Adamant/Netherite economy additions in Canary 6.",
+        "Canary 7 adds no Naturalist or Regions Unexplored provider, trade, rescued-baby capsule, spawn egg, recipe, pattern, botanical good, or hard dependency; optional providers may safely contribute zero offers when their target mod is absent.",
+        "Canary 7 adds no chest/back assignment or eligibility, Trinkets all-tag, new slot/group definition, vanilla glider or equippable component, Elytra tag, second inventory implementation, Elytra wings renderer, flight, steering, lift, pose, durability, or firework behavior; accepted Inventory Extended, Trinkets, their companion, Traveler Toolbelt, and Elytra-support artifacts remain separate and unchanged.",
+        "No Wandering forest camp, donor scheduler/trades/code/AI/sounds/world generation, vanilla Wandering Trader replacement or suppression, trader llama, automatic Sorcerer replacement, existing-hut or village retrofit, saved-Witch conversion, global Witch suppression, asynchronous map search, custom map item or GUI, direct failed-map fallback, generalized old-offer migration, home-dimension redesign, Fortune Blessing, Silver Bullion, or Adamant/Netherite economy additions are introduced.",
+        "Ribbits has no dependency on Map Marker Extensions or Compass Ribbon, contributes no custom map HUD or side-channel destination, and does not modify either project; Map Marker Extensions owns only its optional carried-target projection and Compass Ribbon consumes the standard native decoration path.",
         "No substitute private inputs, deployment, Test Instance Manager mutation, gameplay-profile access, or Minecraft runtime claim from source, build, static, codec, tree, or archive evidence."
       ]
     },
@@ -79,6 +90,12 @@
         "reason": "Validated optional configuration-screen integration."
       },
       {
+        "type": "MOD",
+        "identifier": "trinkets_updated",
+        "requirement": "=4.1.0-beta.3+26.2; trinkets-4.1.0-beta.3+26.2-inventory-compat-canary5.jar; 560,208 bytes; SHA-256 4c1fa6ac36c0457483fd0d395b99bbd94c9334aad6defece7633bbf0552d1724",
+        "reason": "Exact accepted patched Trinkets member providing persistent and synchronized chest/cape equipment; Canary 7 adds only Chute item eligibility to the pre-existing amount-one slot and does not redefine the slot or accepted archive."
+      },
+      {
         "type": "PROJECT",
         "identifier": "97d76c44-7c17-4b36-be84-57525f884e40",
         "requirement": "=26.2-Fabric-6.1.1-compat.2; YungsApi-26.2-Fabric-6.1.1-compat.2.jar; 1,260,939 bytes; SHA-256 ff22a6b509ba559988d7a9352dc94ac612c4b099517acac7da7c81322d797ed7",
@@ -87,13 +104,13 @@
       {
         "type": "PROJECT",
         "identifier": "26065ff3-182f-5314-a5f6-976d6ffd394a",
-        "requirement": "=4.0.0+26.2-port-canary2; custom-portals-26.2-4.0.0+26.2-port-canary2.jar; SHA-256 13fd0e76748fcc3ef963bcc2f4a820d5fc2d473a90ad5d5988cbe0129c2be148",
+        "requirement": "=4.0.0+26.2-port-canary2; custom-portals-26.2-4.0.0+26.2-port-canary2.jar; 910,246 bytes; SHA-256 13fd0e76748fcc3ef963bcc2f4a820d5fc2d473a90ad5d5988cbe0129c2be148",
         "reason": "Accepted Custom Portals source 604720aa69f96e4628535722a015a5bf1726e0ea provides the real customportals registry identities used by all sixteen exact Sorcerer catalyst offers; Ribbits declares customportals >=4.0.0 and does not bundle or modify it."
       },
       {
         "type": "PROJECT",
         "identifier": "937d7ccc-44c9-55cb-8d33-0dc0bff5fe45",
-        "requirement": "=0.1.10-canary11; matcha-heart-death-compat-0.1.10-canary11.jar; SHA-256 a0570179f85d32ec6740d9136ad50890b9c797500661cd2ed2325da5b6b1e4a9",
+        "requirement": "=0.1.10-canary11; matcha-heart-death-compat-0.1.10-canary11.jar; 39,105 bytes; SHA-256 a0570179f85d32ec6740d9136ad50890b9c797500661cd2ed2325da5b6b1e4a9",
         "reason": "Matcha Heart Death compatibility source 8a0002235c6b0921f4d7f6a4cbf73b18ccc421a3 owns the exact original Crystal Heart recipe contract required by the Toadstool Heart recipe; Ribbits declares matcha_heart_death_compat >=0.1.10-canary11 and rejects reinforced or generic base-item substitutes."
       },
       {
@@ -106,13 +123,13 @@
         "type": "TOOL",
         "identifier": "gradle",
         "requirement": "9.5.1",
-        "reason": "Exact tracked wrapper version used for Canary 2."
+        "reason": "Exact tracked wrapper version used for Canary 7 controlled builds."
       },
       {
         "type": "TOOL",
         "identifier": "fabric-loom",
         "requirement": "1.15.5",
-        "reason": "Exact build plugin used for Canary 2."
+        "reason": "Exact build plugin used for Canary 7 controlled builds."
       },
       {
         "type": "TOOL",
@@ -146,6 +163,12 @@
       },
       {
         "type": "OTHER",
+        "identifier": "wandering_ribbit-4.0-forge.jar",
+        "requirement": "98,047 bytes; SHA-256 5bfd24a88c84d6948f72dc19153155ce99ca5bb4baef90acadda0ab0ca529e4a",
+        "reason": "Immutable local reference beneath originals/mods; only geo/wandering_ribbit.geo.json, textures/entity/wandering_ribbit.png, models/custom/umbrella_leaf.json, textures/item/umbrella_leaf_item.png, and textures/item/umbrella_leaf_texture.png are approved private visual inputs, with no donor class, code, animation, sound, camp, structure, world generation, scheduler, trade, token map, spawn egg, or unrelated resource imported."
+      },
+      {
+        "type": "OTHER",
         "identifier": "Matcha_Flavoured_1_12.zip",
         "requirement": "12,248,989 bytes; SHA-256 6209783021c358044abedabacee471faff5bd4080437d4e3b5e51963f1804248",
         "reason": "Immutable exact Minecraft 26.2 Matcha data/component reference used to audit and fingerprint the named recipe-result stacks, Opal, equipment, placeholder Crystal Heart model, effects, durations, rarities, glint, and component-aware trade contracts; never bundled or modified."
@@ -153,15 +176,15 @@
     ]
   },
   "state": {
-    "milestone": "Mynx Canary 6 is a narrow final-sprite, village-utility-restoration, and private-loot successor that preserves every other Canary 5 behavior. It installs the exact user-approved 16-by-16 RGBA Glowcap and Toadstool Heart PNG bytes through conventional Ribbits generated-item models without changing either mechanical identity. Fresh private assembly from the exact pristine Ribbits input keeps only the two Brewing Stand and two Damaged Anvil removals, restores small_house_brown_2 and small_house_red_2 byte-for-byte with their original Smoker and Blast Furnace block entities, and reduces the destructive transform from six templates to four. The private Sorcerer table replaces only its weight-5 Glass Bottle and weight-1 strong-leaping Potion entries with same-weight empty entries while preserving the existing empty sentinel, Glowcap entry, all unrelated probabilities, and all six bindings. Two clean source-only builds and two independent clean private builds are byte-identical within their lanes; private tree and JAR gates, the exact Matcha reference suite, and the production-equivalent Knot/Mixin harness pass. Canary 5's startup repair, all Phase C placement/map/Witch behavior, the Phase B economy, profession behavior, donor assets, and unrelated resources remain unchanged. Canary 6 was not deployed or launched and is RUNTIME_UNTESTED.",
+    "milestone": "Mynx Canary 7 implements Phase D while preserving Canary 6 and all earlier intended behavior: one dedicated Wandering Ribbit AbstractVillager, an independent persistent cap-one scheduler and lease, the stable ribbits:native trade provider with five materialized nonrestocking offers, functional stack-one Chute Leaf equipment only in the accepted amount-one chest/cape slot, a server-authoritative physical-jump deployment protocol and -0.10 terminal descent, exact private Wandering/Chute visuals, native ribbits:ribbit_village map decoration, exact user-authored marker and filled-map item art, one shared Phase C map-result contract, optional MME C8 recognition, and standard Compass Ribbon architectural compatibility. Exact canonical Canary 6 version 4.1.6+26.2-mynx-canary6, file ribbits-private-reconstruction-4.1.6+26.2-mynx-canary6.jar, 3,222,195 bytes, SHA-256 cbeedd06bab0d6809fd528662e4c7e4f11e308f241d60fce0d6ad0f57add0759, source fe8f08bf128791f1d64f227524b9a0585ef333d5, and its exact YUNG's API Compat.2, Custom Portals C2, and Matcha Heart Death C11 dependencies recorded below were independently rehashed, so the user's statement that Phase C is good is bound only as a scoped external practical PASS for that exact C6 cohort; no individual matrix row, managed Test Slot result, deployment, acceptance, or promotion is inferred. Canary 7 passed controlled build, test, private-resource, archive, codec, registry, dependency, donor, and production-equivalent Mixin gates, but no Minecraft client or server was launched and it remains NOT_DEPLOYED and RUNTIME_UNTESTED.",
     "releases": {
       "current": {
-        "version": "4.1.6+26.2-mynx-canary6",
+        "version": "4.1.6+26.2-mynx-canary7",
         "artifact": {
-          "filename": "ribbits-private-reconstruction-4.1.6+26.2-mynx-canary6.jar",
-          "sha256": "cbeedd06bab0d6809fd528662e4c7e4f11e308f241d60fce0d6ad0f57add0759"
+          "filename": "ribbits-private-reconstruction-4.1.6+26.2-mynx-canary7.jar",
+          "sha256": "6b18658c5a68d66623b9a388cc644e2f7a1b864e490b6f8b35d57fcd73a5bf74"
         },
-        "source_commit": "fe8f08bf128791f1d64f227524b9a0585ef333d5",
+        "source_commit": "a7ddb6afa6ed9cd620f49a28522c7866fdd35f04",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
@@ -180,11 +203,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 10,
-    "activity_at": "2026-09-04T03:52:33Z",
-    "updated_at": "2026-09-04T03:52:33Z",
-    "last_codex_at": "2026-09-04T03:52:33Z",
-    "source_commit": "fe8f08bf128791f1d64f227524b9a0585ef333d5",
+    "revision": 11,
+    "activity_at": "2026-09-04T18:31:47Z",
+    "updated_at": "2026-09-04T18:31:47Z",
+    "last_codex_at": "2026-09-04T18:31:47Z",
+    "source_commit": "a7ddb6afa6ed9cd620f49a28522c7866fdd35f04",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null

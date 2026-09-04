@@ -26,13 +26,15 @@
     "goals": [
       "Preserve distinct native map-marker identities for Matcha structure maps across vanilla opened maps, carried-map item presentation, and optional compatible map viewers without collapsing formerly shared decoration groups.",
       "Expose possession-gated, ephemeral carried-map targets to Xaero Minimap and Xaero World Map while preserving exact coordinates, dimensions, deduplication, lifecycle, upright orientation, and accepted positive 2x World Map scale.",
-      "Normalize only the known plus-sign map decoration to its expected custom holder while preserving coordinates, rotation, every unrelated decoration, and all other ItemStack components."
+      "Normalize only the known plus-sign map decoration to its expected custom holder while preserving coordinates, rotation, every unrelated decoration, and all other ItemStack components.",
+      "Recognize explicitly marked externally owned native filled-map identities for possession-gated Xaero projection without registering, rewriting, classlinking, or supplying the external marker or item artwork."
     ],
     "scope": [
-      "Canonical C7 source for Minecraft Java 26.2 Fabric, historically versioned 0.4.0-canary7, reconstructed from exact legacy source/build checkpoint 883f0c1a165c2b783d27e5da67bd90e038204af8 and retention checkpoint 5e89daada6d6e9e9826bdb945761b86b34090b37.",
+      "Canonical C8 source for Minecraft Java 26.2 Fabric, narrowly succeeding reconstructed C7 with an external-native identity boundary while preserving C7's 18 owned products, 17 custom holders, resources, normalization, and Xaero rendering behavior.",
       "The sole 18-row MapMarkerIdentity table, 17 registered map_marker_extension MapDecorationType holders, vanilla minecraft:red_x retention for buried treasure, idempotent map normalization, and immediate MapItemSavedData refresh behavior.",
+      "One marker-gated external-native identity for a real minecraft:filled_map with minecraft:map_id and ribbits:ribbit_village_explorer_map=true, admitting only the existing ribbits:ribbit_village holder and passing its ordinary decoration coordinates and live asset through to Xaero.",
       "Optional client-only Xaero integrations, common/server-capable persistent marker identity, bundled fallback marker sprites, and the project-owned 88.0 icon-pack source for 17 opened-map marker sprites plus 18 filled-map item models.",
-      "Exact current C7 retained pair map-marker-extension-0.4.0-canary7.jar and map-marker-extension-icons-0.4.0-canary7.zip, with exact accepted Treasure X C4 retained separately as the binary rollback baseline."
+      "Exact current C8 retained pair map-marker-extension-0.4.0-canary8.jar and map-marker-extension-icons-0.4.0-canary8.zip, with exact accepted Treasure X C4 retained separately as the binary rollback baseline."
     ],
     "boundaries": {
       "owned_paths": [
@@ -40,8 +42,9 @@
       ],
       "exclusions": [
         "Xaero Minimap, Xaero World Map, Minecraft map-rendering internals, Compass Ribbon, Matcha, and other icon systems remain separate owners and are not modified or bundled.",
+        "Ribbits owns ribbits:ribbit_village registration, marker sprite, filled-map item presentation, success-marker production, and all Ribbits classes and resources; MME holds only inert string identities and reads standard synchronized components.",
         "Marker targeting, atlas ownership, icon normalization, compass integration, rendering geometry, and persistence behavior are migrated unchanged rather than redesigned.",
-        "C7 and Treasure X C4 must never be co-loaded; C4 is a retained artifact rollback, not a data-safe world rollback after C7 has persisted custom holder keys.",
+        "C8 and Treasure X C4 must never be co-loaded; C4 is a retained artifact rollback, not a data-safe world rollback after C7 or C8 has persisted custom holder keys.",
         "Legacy status READMEs, BUILD_PROVENANCE, MATCHA_MAPS_PROJECT, accumulated canary histories, C1-C3/C5-C6 binaries, deployment snapshots, manager state, global trackers, and historical administrative records are not migrated.",
         "Minecraft deployment, Test Slot mutation, accepted physical-stack changes, dedicated Workbench mutation, and protected gameplay-instance access are outside this migration."
       ]
@@ -51,7 +54,7 @@
         "type": "TOOL",
         "identifier": "java",
         "requirement": "25",
-        "reason": "Minecraft 26.2 and the retained C7 build target Java 25."
+        "reason": "Minecraft 26.2 and the retained C8 build target Java 25."
       },
       {
         "type": "MOD",
@@ -63,7 +66,7 @@
         "type": "MOD",
         "identifier": "fabricloader",
         "requirement": ">=0.19.3",
-        "reason": "Fabric runtime loader floor declared by C7."
+        "reason": "Fabric runtime loader floor declared by C8."
       },
       {
         "type": "MOD",
@@ -75,13 +78,13 @@
         "type": "MOD",
         "identifier": "xaerominimap",
         "requirement": "=26.4.2",
-        "reason": "Optional exact client integration target preserved by C7."
+        "reason": "Optional exact client integration target preserved by C8."
       },
       {
         "type": "MOD",
         "identifier": "xaeroworldmap",
         "requirement": "=1.44.2",
-        "reason": "Optional exact client integration target preserving C4's accepted presentation geometry and C7's live marker assets."
+        "reason": "Optional exact client integration target preserving C4's accepted presentation geometry and C8's live marker assets."
       },
       {
         "type": "MOD",
@@ -98,15 +101,19 @@
     ]
   },
   "state": {
-    "milestone": "Exact MME C7 is the current development release and retained mod/pack pair after controlled validation, but it remains runtime untested, not accepted, and not deployed. Exact legacy Treasure X C4 remains the accepted promoted binary baseline and rollback; its exact binary was not separately runtime-tested, and the genuine focused World Map runtime observation belongs only to C3.",
+    "milestone": "Exact MME C8 is the current development release and retained mod/pack pair after controlled validation of the narrow external-native Ribbits identity path, but it remains runtime untested, not accepted, and not deployed. Exact legacy Treasure X C4 remains the accepted promoted binary baseline and rollback; its exact binary was not separately runtime-tested, and the genuine focused World Map runtime observation belongs only to C3.",
     "releases": {
       "current": {
-        "version": "C7 (0.4.0-canary7)",
+        "version": "C8 (0.4.0-canary8)",
         "artifact": {
-          "filename": "map-marker-extension-0.4.0-canary7.jar",
-          "sha256": "09a3bec8a74b333b65ab34ee6c9aace85b27eeea46c82dbf800a452429f5a228"
+          "filename": "map-marker-extension-0.4.0-canary8.jar",
+          "sha256": "c3da533b207050855c691584db6bc3c85b383a9ec8e338737f7986d426668ca2"
         },
-        "source_commit": "883f0c1a165c2b783d27e5da67bd90e038204af8"
+        "source_commit": "a7ddb6afa6ed9cd620f49a28522c7866fdd35f04",
+        "runtime_dependency_policy": {
+          "contract": "CAPABILITY_OR_PROVIDER",
+          "exceptions": []
+        }
       },
       "accepted": {
         "version": "Treasure X C4 (0.2.0-canary4)",
@@ -135,11 +142,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 1,
-    "activity_at": "2026-08-28T20:13:44Z",
-    "updated_at": "2026-08-29T22:39:56Z",
-    "last_codex_at": "2026-08-29T22:39:56Z",
-    "source_commit": "a7d62d7fb1816bc5b7d7dae712556625d4f9cd90",
+    "revision": 2,
+    "activity_at": "2026-09-04T18:31:47Z",
+    "updated_at": "2026-09-04T18:31:47Z",
+    "last_codex_at": "2026-09-04T18:31:47Z",
+    "source_commit": "a7ddb6afa6ed9cd620f49a28522c7866fdd35f04",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
