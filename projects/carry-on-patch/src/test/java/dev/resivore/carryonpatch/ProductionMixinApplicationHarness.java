@@ -32,13 +32,34 @@ public final class ProductionMixinApplicationHarness {
         Path expectedPatch = Path.of(args[0]).toRealPath();
         Path expectedUpstream = Path.of(args[1]).toRealPath();
         require(expectedPatch.getFileName().toString()
-                        .equals("carry-on-patch-0.1.0-canary2.jar"),
+                        .equals("carry-on-patch-0.1.0-canary3.jar"),
                 "unexpected patch JAR " + expectedPatch);
         requireOfficialNamespace(expectedUpstream);
 
-        Knot knot = new Knot(EnvType.CLIENT);
+        boolean server = Boolean.getBoolean("carryOnPatch.serverTest");
+        Knot knot = new Knot(server ? EnvType.SERVER : EnvType.CLIENT);
         ClassLoader targetLoader = knot.init(new String[0]);
 
+        if (!server) {
+            Mixins.addConfiguration("grabandgo.client.mixins.json");
+            Mixins.addConfiguration("carry_on_patch.client.mixins.json");
+        }
+        Mixins.addConfiguration("grabandgo.mixins.json");
+        Mixins.addConfiguration("carry_on_patch.mixins.json");
+        Class<?> player = Class.forName("net.minecraft.world.entity.player.Player", false, targetLoader);
+        require(Arrays.stream(player.getInterfaces()).anyMatch(t -> t.getName().equals(
+                "dev.resivore.carryonpatch.common.CarryStateAccess")), "common player mixin missing");
+        Class<?> handler = Class.forName("org.chermew.grabandgo.event.GrabHandler", false, targetLoader);
+        require(Arrays.stream(handler.getDeclaredMethods()).anyMatch(m -> m.getName().contains("carryOnPatch$place")),
+                "server placement interception missing");
+        Class.forName("dev.resivore.carryonpatch.PersistenceFixtures", true, targetLoader)
+                .getMethod("run").invoke(null);
+        if (server) {
+            require(Arrays.stream(Class.forName(ENTITY, false, targetLoader).getInterfaces())
+                    .noneMatch(t -> t.getName().equals(ACCESSOR)), "client accessor leaked into server");
+            System.out.println("Production SERVER common persistence/application fixtures passed");
+            return;
+        }
         requireResourceFrom(targetLoader, "carry_on_patch.client.mixins.json", expectedPatch);
         requireResourceFrom(targetLoader, "grabandgo.client.mixins.json", expectedUpstream);
         Mixins.addConfiguration("grabandgo.client.mixins.json");
