@@ -10,21 +10,32 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.Bootstrap;
+import net.minecraft.world.SimpleContainer;
+import net.minecraft.world.inventory.PlayerEnderChestContainer;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BarrelBlockEntity;
+import net.minecraft.world.level.block.entity.BlastFurnaceBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BrewingStandBlockEntity;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
+import net.minecraft.world.level.block.entity.CrafterBlockEntity;
+import net.minecraft.world.level.block.entity.DispenserBlockEntity;
+import net.minecraft.world.level.block.entity.DropperBlockEntity;
+import net.minecraft.world.level.block.entity.FurnaceBlockEntity;
+import net.minecraft.world.level.block.entity.HopperBlockEntity;
 import net.minecraft.world.level.block.entity.ShulkerBoxBlockEntity;
+import net.minecraft.world.level.block.entity.SmokerBlockEntity;
 import net.minecraft.world.level.block.entity.TrappedChestBlockEntity;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -38,7 +49,7 @@ final class ContainerSlotReservationsApiTest {
     }
 
     @Test
-    void resolverSupportsOnlyExactVanillaPhysicalContainerTypes() {
+    void resolverSupportsTheExactRequestedPhysicalContainerMatrix() {
         ChestBlockEntity chest = chest(Blocks.CHEST);
         TrappedChestBlockEntity trapped = trappedChest();
         BarrelBlockEntity barrel = new BarrelBlockEntity(BlockPos.ZERO, Blocks.BARREL.defaultBlockState());
@@ -52,9 +63,31 @@ final class ContainerSlotReservationsApiTest {
         assertTrue(SupportedContainerResolver.resolve(chest, -1).isEmpty());
         assertTrue(SupportedContainerResolver.resolve(chest, 27).isEmpty());
 
-        ChestBlockEntity copperChestShape = chest(Blocks.COPPER_CHEST.asList().getFirst());
-        assertTrue(SupportedContainerResolver.resolve(copperChestShape, 0).isEmpty(),
-                "Canary 1 must not silently broaden ownership to copper or modded chests");
+        for (Block copper : Blocks.COPPER_CHEST.asList()) {
+            assertResolved(chest(copper), 26);
+        }
+
+        assertResolved(new DispenserBlockEntity(BlockPos.ZERO, Blocks.DISPENSER.defaultBlockState()), 8);
+        assertResolved(new DropperBlockEntity(BlockPos.ZERO, Blocks.DROPPER.defaultBlockState()), 8);
+        assertResolved(new HopperBlockEntity(BlockPos.ZERO, Blocks.HOPPER.defaultBlockState()), 4);
+        assertResolved(new FurnaceBlockEntity(BlockPos.ZERO, Blocks.FURNACE.defaultBlockState()), 2);
+        assertResolved(new BlastFurnaceBlockEntity(
+                BlockPos.ZERO, Blocks.BLAST_FURNACE.defaultBlockState()), 2);
+        assertResolved(new SmokerBlockEntity(BlockPos.ZERO, Blocks.SMOKER.defaultBlockState()), 2);
+        assertResolved(new BrewingStandBlockEntity(
+                BlockPos.ZERO, Blocks.BREWING_STAND.defaultBlockState()), 4);
+        assertResolved(new CrafterBlockEntity(BlockPos.ZERO, Blocks.CRAFTER.defaultBlockState()), 8);
+
+        PlayerEnderChestContainer ender = new PlayerEnderChestContainer();
+        SupportedContainerResolver.ResolvedSlot enderSlot = SupportedContainerResolver
+                .resolve(ender, 26).orElseThrow();
+        assertSame(ender, enderSlot.owner());
+        assertEquals(27, enderSlot.ownerSlotCount());
+        assertEquals(26, enderSlot.localSlot());
+        assertNull(enderSlot.blockEntity());
+
+        assertTrue(SupportedContainerResolver.resolve(new SimpleContainer(27), 0).isEmpty(),
+                "Arbitrary Container implementations must remain unsupported");
     }
 
     @Test

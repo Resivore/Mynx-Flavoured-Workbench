@@ -14,10 +14,30 @@ repositories {
     mavenCentral()
 }
 
+configurations {
+    doubleBarrelsReference {
+        canBeConsumed = false
+        canBeResolved = true
+        transitive = false
+    }
+}
+
+def repositoryRoot = projectDir.toPath().resolve('../..').normalize().toFile()
+def doubleBarrelsReferenceJar = new File(
+        repositoryRoot,
+        "projects/double-barrels/artifacts/${project.double_barrels_tested_jar}"
+)
+
 dependencies {
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
     implementation "net.fabricmc:fabric-loader:${project.loader_version}"
     implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+
+    compileOnly files(doubleBarrelsReferenceJar)
+    doubleBarrelsReference files(doubleBarrelsReferenceJar)
+    if (providers.gradleProperty('includeDoubleBarrelsRuntime').isPresent()) {
+        runtimeOnly files(doubleBarrelsReferenceJar)
+    }
 
     testImplementation platform('org.junit:junit-bom:5.13.4')
     testImplementation 'org.junit.jupiter:junit-jupiter'
@@ -50,7 +70,6 @@ test {
     useJUnitPlatform()
     systemProperty 'projectRoot', projectDir.absolutePath
 
-    def repositoryRoot = projectDir.toPath().resolve('../..').normalize().toFile()
     def testedArtifactName = project.property('easy_shulker_boxes_tested_jar').toString()
     def candidates = []
     def configuredArtifact = providers.gradleProperty('easyShulkerBoxesJar')
@@ -80,6 +99,8 @@ test {
 
     def testedArtifact = candidates.find { it.isFile() }
     systemProperty 'easyShulkerBoxesJar', testedArtifact == null ? '' : testedArtifact.absolutePath
+    systemProperty 'doubleBarrelsReferenceJar', doubleBarrelsReferenceJar.absolutePath
+    inputs.file(doubleBarrelsReferenceJar)
     if (testedArtifact != null) {
         inputs.file(testedArtifact)
     }

@@ -2,6 +2,7 @@ package dev.resivore.slotreservations.api;
 
 import dev.resivore.slotreservations.ReservationData;
 import dev.resivore.slotreservations.ReservationStore;
+import dev.resivore.slotreservations.NativeInsertionPolicy;
 import dev.resivore.slotreservations.SupportedContainerResolver;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.Container;
@@ -45,12 +46,13 @@ public final class ContainerSlotReservationsApi {
             return ReservationSlotClass.INELIGIBLE;
         }
         SupportedContainerResolver.ResolvedSlot physical = resolved.orElseThrow();
+        boolean nativeWritable = NativeInsertionPolicy.nativeMayInsert(physical, incoming);
         return classify(
                 ReservationStore.getData(physical),
                 physical.localSlot(),
                 physical.physicalStack(),
                 incoming,
-                physical.blockEntity() instanceof ShulkerBoxBlockEntity,
+                nativeWritable,
                 physical.owner().getMaxStackSize(incoming)
         );
     }
@@ -96,7 +98,7 @@ public final class ContainerSlotReservationsApi {
                 slot,
                 physical,
                 incoming,
-                true,
+                !incoming.isEmpty() && incoming.getItem().canFitInsideContainerItems(),
                 incoming.getMaxStackSize()
         );
     }
@@ -106,10 +108,10 @@ public final class ContainerSlotReservationsApi {
             int slot,
             ItemStack physical,
             ItemStack incoming,
-            boolean shulker,
+            boolean nativeWritable,
             int maxStackSize
     ) {
-        if (incoming.isEmpty() || shulker && !incoming.getItem().canFitInsideContainerItems()) {
+        if (!nativeWritable) {
             return ReservationSlotClass.NON_WRITABLE;
         }
 

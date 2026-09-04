@@ -17,8 +17,12 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -27,6 +31,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 final class ClientAndNetworkContractTest {
     private static final Path ROOT = Path.of(System.getProperty("projectRoot"));
+    private static final Pattern MENU_TYPE = Pattern.compile("type == ([A-Za-z]+Menu)\\.class");
 
     @BeforeAll
     static void bootstrapMinecraftRegistries() {
@@ -40,7 +45,7 @@ final class ClientAndNetworkContractTest {
         String client = source("client/ContainerSlotReservationsClient.java");
         String keyboard = source("mixin/client/KeyboardHandlerMixin.java");
 
-        assertTrue(client.contains("GLFW.GLFW_KEY_UNKNOWN"), "Canary 1 must ship the key unbound");
+        assertTrue(client.contains("GLFW.GLFW_KEY_UNKNOWN"), "The reservation key must ship unbound");
         assertTrue(client.contains("key.container_slot_reservations.toggle"));
         assertFalse(client.contains("consumeClick"), "Screen input must not add an end-tick click loop");
         assertEquals(1, occurrences(client, "ClientPlayNetworking.send(new ReservationActionPayload("),
@@ -54,13 +59,101 @@ final class ClientAndNetworkContractTest {
     void mutationPayloadCarriesContextAndSourceModeButNoClientTemplate() throws IOException {
         String payload = source("network/ReservationActionPayload.java");
 
-        assertTrue(payload.contains("record ReservationActionPayload(int menuId, int menuSlotIndex, Source source)"));
+        assertTrue(payload.contains(
+                "record ReservationActionPayload(int menuId, int menuSlotIndex, Source source)"));
         assertTrue(payload.contains("SLOT_STACK"));
         assertTrue(payload.contains("CARRIED_STACK"));
         assertTrue(payload.contains("CLEAR_EMPTY"));
-        assertFalse(payload.contains("ItemStack"), "The client must not authoritatively send a reservation stack");
+        assertFalse(payload.contains("ItemStack"),
+                "The client must not authoritatively send a reservation stack");
         assertFalse(payload.contains("ItemStackTemplate"),
                 "The client must not authoritatively send a reservation template");
+    }
+
+    @Test
+    void serverUsesAClosedExactMenuAllowlistRatherThanGenericMenus() throws IOException {
+        String networking = source("ReservationNetworking.java");
+        String supportedMenus = between(
+                networking,
+                "private static boolean isSupportedMenu(AbstractContainerMenu menu)",
+                "record ValidatedTarget("
+        );
+        Set<String> expected = Set.of(
+                "ChestMenu",
+                "ShulkerBoxMenu",
+                "DispenserMenu",
+                "HopperMenu",
+                "FurnaceMenu",
+                "BlastFurnaceMenu",
+                "SmokerMenu",
+                "BrewingStandMenu",
+                "CrafterMenu"
+        );
+        Set<String> actual = new HashSet<>();
+        Matcher matcher = MENU_TYPE.matcher(supportedMenus);
+        int matches = 0;
+        while (matcher.find()) {
+            matches++;
+            assertTrue(actual.add(matcher.group(1)), "The exact menu allowlist must not contain duplicates");
+        }
+
+        assertEquals(expected, actual,
+                "Snapshots and actions must be limited to the nine requested exact menu classes");
+        assertEquals(expected.size(), matches);
+        assertTrue(supportedMenus.contains("Class<?> type = menu.getClass()"));
+        assertFalse(supportedMenus.contains("instanceof"),
+                "Subclass and generic menu admission would silently expand the support contract");
+        assertFalse(supportedMenus.contains("isAssignableFrom"));
+        assertFalse(supportedMenus.contains("AbstractContainerMenu.class"));
+    }
+
+    @Test
+    void serverValidatesAuthorityAndReadsTheResolvedPhysicalOwnerStack() throws IOException {
+        String networking = source("ReservationNetworking.java");
+
+        assertTrue(networking.contains("ItemStack physical = target.resolvedSlot().physicalStack()"));
+        assertFalse(networking.contains("target.slot().getItem()"),
+                "An ephemeral combined view must not author the physical slot state");
+        assertTrue(networking.contains("ItemStack carried = target.menu().getCarried()"));
+        assertTrue(networking.contains("case SLOT_STACK"));
+        assertTrue(networking.contains("if (physical.isEmpty()) return false"));
+        assertTrue(networking.contains("case CARRIED_STACK"));
+        assertTrue(networking.contains("if (!physical.isEmpty() || carried.isEmpty()) return false"));
+        assertTrue(networking.contains("SupportedContainerResolver.isShulkerOwner(target.resolvedSlot())"));
+        assertTrue(networking.contains("!carried.getItem().canFitInsideContainerItems()"),
+                "Server must reject impossible nested-container reservation templates for shulkers");
+        assertTrue(networking.contains("case CLEAR_EMPTY"));
+        assertTrue(networking.contains("ReservationStore.setOwnerData(target.resolvedSlot().owner()"),
+                "Mutation must bind to the stable physical or player-owned reservation owner");
+
+        assertTrue(networking.contains("player.containerMenu"));
+        assertTrue(networking.contains("player.isAlive()"));
+        assertTrue(networking.contains("!player.isSpectator()"));
+        assertTrue(networking.contains("menu.containerId == menuId"));
+        assertTrue(networking.contains("menu.stillValid(player)"));
+        assertTrue(networking.contains("menuSlotIndex >= menu.slots.size()"));
+        assertTrue(networking.contains("slot.index != menuSlotIndex || !slot.isActive() || slot.isFake()"));
+        assertTrue(networking.contains(
+                "SupportedContainerResolver.resolve(slot.container, slot.getContainerSlot())"));
+        assertFalse(networking.contains("payload.template()"));
+        assertFalse(networking.contains("payload.stack()"));
+    }
+
+    @Test
+    void snapshotsContainOnlyResolvedLiveOwnerSlotsAndSynchronizeEveryViewer() throws IOException {
+        String networking = source("ReservationNetworking.java");
+
+        assertTrue(networking.contains("if (!isSupportedMenu(menu)) return List.of()"));
+        assertTrue(networking.contains(
+                "if (slot.index != menuIndex || !slot.isActive() || slot.isFake()) continue"));
+        assertTrue(networking.contains(
+                "SupportedContainerResolver.resolve(slot.container, slot.getContainerSlot())"));
+        assertTrue(networking.contains("new ReservationSnapshotPayload.Entry(menuIndex, template)"));
+        assertTrue(networking.contains("ReservationSnapshotPayload.MAX_ENTRIES"));
+        assertTrue(networking.contains("target.menu().broadcastChanges()"));
+        assertTrue(networking.contains("syncAllOpenSupportedMenus(player.level().getServer())"));
+        assertTrue(networking.contains("for (ServerPlayer viewer : server.getPlayerList().getPlayers())"));
+        assertTrue(networking.contains("sendSnapshot(viewer, viewer.containerMenu)"));
     }
 
     @Test
@@ -93,11 +186,14 @@ final class ClientAndNetworkContractTest {
                 Identifier.fromNamespaceAndPath("matcha_fixture", "green_curry"));
         ItemStackTemplate many = ItemStackTemplate.fromNonEmptyStack(logicalItem);
 
-        ReservationSnapshotPayload.Entry normalized = new ReservationSnapshotPayload.Entry(4, Optional.of(many));
+        ReservationSnapshotPayload.Entry normalized =
+                new ReservationSnapshotPayload.Entry(4, Optional.of(many));
         assertEquals(1, normalized.template().orElseThrow().count());
         assertEquals(1, normalized.template().orElseThrow().create().getCount());
-        assertTrue(ItemStack.isSameItemSameComponents(logicalItem,
-                normalized.template().orElseThrow().create()));
+        assertTrue(ItemStack.isSameItemSameComponents(
+                logicalItem,
+                normalized.template().orElseThrow().create()
+        ));
 
         assertThrows(IllegalArgumentException.class,
                 () -> new ReservationSnapshotPayload.Entry(-1, Optional.empty()));
@@ -105,16 +201,27 @@ final class ClientAndNetworkContractTest {
         for (int index = 0; index <= ReservationSnapshotPayload.MAX_ENTRIES; index++) {
             oversized.add(new ReservationSnapshotPayload.Entry(index, Optional.empty()));
         }
-        assertThrows(IllegalArgumentException.class, () -> new ReservationSnapshotPayload(1, oversized));
+        assertThrows(IllegalArgumentException.class,
+                () -> new ReservationSnapshotPayload(1, oversized));
     }
 
     private static String source(String relative) throws IOException {
         return Files.readString(ROOT.resolve("src/main/java/dev/resivore/slotreservations").resolve(relative));
     }
 
+    private static String between(String text, String startMarker, String endMarker) {
+        int start = text.indexOf(startMarker);
+        assertTrue(start >= 0, "Missing source-contract marker: " + startMarker);
+        int end = text.indexOf(endMarker, start + startMarker.length());
+        assertTrue(end >= 0, "Missing source-contract marker: " + endMarker);
+        return text.substring(start, end);
+    }
+
     private static int occurrences(String text, String needle) {
         int count = 0;
-        for (int index = 0; (index = text.indexOf(needle, index)) >= 0; index += needle.length()) count++;
+        for (int index = 0; (index = text.indexOf(needle, index)) >= 0; index += needle.length()) {
+            count++;
+        }
         return count;
     }
 
