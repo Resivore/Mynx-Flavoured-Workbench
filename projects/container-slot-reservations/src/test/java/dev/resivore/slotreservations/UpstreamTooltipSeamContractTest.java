@@ -193,6 +193,260 @@ final class UpstreamTooltipSeamContractTest {
     }
 
     @Test
+    void carriedShulkerWriterBytecodeSeamMatchesTheExactReservationGate() throws IOException {
+        byte[] nested;
+        try (ZipFile outer = new ZipFile(testedArtifact().toFile())) {
+            nested = bytes(outer, NESTED_ENTRY);
+        }
+
+        String stackingClass =
+                "fuzs/iteminteractions/common/impl/world/item/container/ItemStackingContext.class";
+        String tryInsertDescriptor =
+                "(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/ItemStack;I)I";
+        String addItemDescriptor =
+                "(Lnet/minecraft/world/Container;Lnet/minecraft/world/item/ItemStack;I)Lfuzs/iteminteractions/common/impl/world/inventory/ItemSlot;";
+        String moveItemsDescriptor =
+                "(Lnet/minecraft/world/Container;Lnet/minecraft/world/item/ItemStack;I)I";
+        Set<Member> stackingMembers = members(nested, stackingClass);
+        assertTrue(stackingMembers.contains(new Member(
+                "tryInsert",
+                tryInsertDescriptor,
+                Opcodes.ACC_PUBLIC
+        )));
+        assertTrue(stackingMembers.contains(new Member(
+                "addItem",
+                addItemDescriptor,
+                Opcodes.ACC_PRIVATE
+        )));
+        assertTrue(stackingMembers.contains(new Member(
+                "moveItemToOccupiedSlotsWithSameType",
+                moveItemsDescriptor,
+                Opcodes.ACC_PRIVATE
+        )));
+        assertTrue(stackingMembers.contains(new Member(
+                "moveItemToEmptySlots",
+                moveItemsDescriptor,
+                Opcodes.ACC_PRIVATE
+        )));
+
+        Invocation openCarriedContainer = new Invocation(
+                "fuzs/iteminteractions/common/api/v2/world/item/storage/ContainerItemStorage",
+                "getItemContainer",
+                "(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/entity/player/Player;Z)Lnet/minecraft/world/SimpleContainer;",
+                Opcodes.INVOKEINTERFACE,
+                true
+        );
+        Invocation addItem = new Invocation(
+                "fuzs/iteminteractions/common/impl/world/item/container/ItemStackingContext",
+                "addItem",
+                addItemDescriptor,
+                Opcodes.INVOKEVIRTUAL,
+                false
+        );
+        Invocations tryInsertCalls = invocations(
+                nested,
+                stackingClass,
+                "tryInsert",
+                tryInsertDescriptor
+        );
+        assertTrue(tryInsertCalls.calls.contains(openCarriedContainer));
+        assertTrue(tryInsertCalls.calls.contains(addItem));
+        assertTrue(tryInsertCalls.calls.indexOf(openCarriedContainer)
+                        < tryInsertCalls.calls.indexOf(addItem),
+                "The carried container must be opened before Item Interactions selects a destination");
+
+        Invocation occupiedPath = new Invocation(
+                "fuzs/iteminteractions/common/impl/world/item/container/ItemStackingContext",
+                "moveItemToOccupiedSlotsWithSameType",
+                moveItemsDescriptor,
+                Opcodes.INVOKEVIRTUAL,
+                false
+        );
+        Invocation emptyPath = new Invocation(
+                "fuzs/iteminteractions/common/impl/world/item/container/ItemStackingContext",
+                "moveItemToEmptySlots",
+                moveItemsDescriptor,
+                Opcodes.INVOKEVIRTUAL,
+                false
+        );
+        Invocations addItemCalls = invocations(
+                nested,
+                stackingClass,
+                "addItem",
+                addItemDescriptor
+        );
+        assertTrue(addItemCalls.calls.contains(occupiedPath));
+        assertTrue(addItemCalls.calls.contains(emptyPath));
+        assertTrue(addItemCalls.calls.indexOf(occupiedPath)
+                        < addItemCalls.calls.indexOf(emptyPath),
+                "Item Interactions must retain occupied-first, empty-fallback routing");
+
+        Invocation candidateArray = new Invocation(
+                "it/unimi/dsi/fastutil/ints/IntSet",
+                "toIntArray",
+                "()[I",
+                Opcodes.INVOKEINTERFACE,
+                true
+        );
+        Invocation occupiedWrite = new Invocation(
+                "fuzs/iteminteractions/common/impl/world/item/container/ItemStackingContext",
+                "moveItemsBetweenStacks",
+                "(Lnet/minecraft/world/Container;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/ItemStack;I)V",
+                Opcodes.INVOKEVIRTUAL,
+                false
+        );
+        Invocations occupiedCalls = invocations(
+                nested,
+                stackingClass,
+                "moveItemToOccupiedSlotsWithSameType",
+                moveItemsDescriptor
+        );
+        assertEquals(1L, occupiedCalls.calls.stream()
+                .filter(candidateArray::equals)
+                .count(), "The occupied-path redirect requires exactly one candidate-array seam");
+        assertTrue(occupiedCalls.calls.contains(occupiedWrite));
+        assertTrue(occupiedCalls.calls.indexOf(candidateArray)
+                        < occupiedCalls.calls.indexOf(occupiedWrite),
+                "Occupied candidates must be filterable before Item Interactions mutates a stack");
+
+        Invocation emptyWrite = new Invocation(
+                "net/minecraft/world/Container",
+                "setItem",
+                "(ILnet/minecraft/world/item/ItemStack;)V",
+                Opcodes.INVOKEINTERFACE,
+                true
+        );
+        Invocations emptyCalls = invocations(
+                nested,
+                stackingClass,
+                "moveItemToEmptySlots",
+                moveItemsDescriptor
+        );
+        assertEquals(1L, emptyCalls.calls.stream()
+                .filter(candidateArray::equals)
+                .count(), "The empty-path redirect requires exactly one candidate-array seam");
+        assertTrue(emptyCalls.calls.contains(emptyWrite));
+        assertTrue(emptyCalls.calls.indexOf(candidateArray)
+                        < emptyCalls.calls.indexOf(emptyWrite),
+                "Empty candidates must be ordered and filtered before the direct container write");
+    }
+
+    @Test
+    void carriedShulkerPseudoMixinMatchesTheAuditedWriterWithoutHardFuzsLinks()
+            throws IOException {
+        String config = Files.readString(ROOT.resolve(
+                "src/main/resources/container_slot_reservations.mixins.json"
+        ));
+        assertTrue(config.contains("\"ItemStackingContextMixin\""),
+                "The carried-shulker gate must remain registered in the common mixin list");
+
+        String mixinName = "ItemStackingContextMixin";
+        String mixinOwner = "dev/resivore/slotreservations/mixin/" + mixinName;
+        byte[] mixinClass = classpathEntry(mixinOwner + ".class");
+        assertTrue(classAnnotations(mixinClass).contains(
+                "Lorg/spongepowered/asm/mixin/Pseudo;"
+        ));
+        assertNoHardFuzsTypeLinks(mixinClass, mixinName);
+
+        String insertHandlerDescriptor =
+                "(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/ItemStack;ILorg/spongepowered/asm/mixin/injection/callback/CallbackInfoReturnable;)V";
+        String redirectHandlerDescriptor =
+                "(Lit/unimi/dsi/fastutil/ints/IntSet;Lnet/minecraft/world/Container;Lnet/minecraft/world/item/ItemStack;I)[I";
+        Set<Member> mixinMembers = members(mixinClass);
+        assertTrue(mixinMembers.contains(new Member(
+                "containerSlotReservations$sourceShulker",
+                "Lnet/minecraft/world/item/ItemStack;",
+                Opcodes.ACC_PRIVATE
+        )));
+        assertTrue(mixinMembers.contains(new Member(
+                "containerSlotReservations$captureSource",
+                insertHandlerDescriptor,
+                Opcodes.ACC_PRIVATE
+        )));
+        assertTrue(mixinMembers.contains(new Member(
+                "containerSlotReservations$filterOccupiedCandidates",
+                redirectHandlerDescriptor,
+                Opcodes.ACC_PRIVATE
+        )));
+        assertTrue(mixinMembers.contains(new Member(
+                "containerSlotReservations$orderEmptyCandidates",
+                redirectHandlerDescriptor,
+                Opcodes.ACC_PRIVATE
+        )));
+        assertTrue(mixinMembers.contains(new Member(
+                "containerSlotReservations$clearSource",
+                insertHandlerDescriptor,
+                Opcodes.ACC_PRIVATE
+        )));
+
+        FieldAccess capturedSource = new FieldAccess(
+                Opcodes.PUTFIELD,
+                mixinOwner,
+                "containerSlotReservations$sourceShulker",
+                "Lnet/minecraft/world/item/ItemStack;"
+        );
+        MethodCode captureSource = methodCode(
+                mixinClass,
+                "containerSlotReservations$captureSource",
+                insertHandlerDescriptor
+        );
+        assertTrue(captureSource.fields.contains(capturedSource));
+        MethodCode clearSource = methodCode(
+                mixinClass,
+                "containerSlotReservations$clearSource",
+                insertHandlerDescriptor
+        );
+        assertTrue(clearSource.fields.contains(new FieldAccess(
+                Opcodes.GETSTATIC,
+                "net/minecraft/world/item/ItemStack",
+                "EMPTY",
+                "Lnet/minecraft/world/item/ItemStack;"
+        )));
+        assertTrue(clearSource.fields.contains(capturedSource));
+
+        Invocation candidateArray = new Invocation(
+                "it/unimi/dsi/fastutil/ints/IntSet",
+                "toIntArray",
+                "()[I",
+                Opcodes.INVOKEINTERFACE,
+                true
+        );
+        MethodCode occupiedHandler = methodCode(
+                mixinClass,
+                "containerSlotReservations$filterOccupiedCandidates",
+                redirectHandlerDescriptor
+        );
+        Invocation occupiedPolicy = new Invocation(
+                "dev/resivore/slotreservations/CarriedShulkerInsertionPolicy",
+                "occupiedCandidates",
+                "(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/Container;Lnet/minecraft/world/item/ItemStack;[I)[I",
+                Opcodes.INVOKESTATIC,
+                false
+        );
+        assertTrue(occupiedHandler.calls.contains(candidateArray));
+        assertTrue(occupiedHandler.calls.contains(occupiedPolicy));
+        assertTrue(occupiedHandler.calls.indexOf(candidateArray)
+                        < occupiedHandler.calls.indexOf(occupiedPolicy));
+
+        MethodCode emptyHandler = methodCode(
+                mixinClass,
+                "containerSlotReservations$orderEmptyCandidates",
+                redirectHandlerDescriptor
+        );
+        Invocation emptyPolicy = new Invocation(
+                "dev/resivore/slotreservations/CarriedShulkerInsertionPolicy",
+                "emptyCandidates",
+                "(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/Container;Lnet/minecraft/world/item/ItemStack;[I)[I",
+                Opcodes.INVOKESTATIC,
+                false
+        );
+        assertTrue(emptyHandler.calls.contains(candidateArray));
+        assertTrue(emptyHandler.calls.contains(emptyPolicy));
+        assertTrue(emptyHandler.calls.indexOf(candidateArray)
+                        < emptyHandler.calls.indexOf(emptyPolicy));
+    }
+
+    @Test
     void optionalPseudoMixinHandlersMatchTheAuditedTargetsWithoutHardFuzsLinks()
             throws IOException {
         String config = Files.readString(ROOT.resolve(

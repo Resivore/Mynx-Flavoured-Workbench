@@ -37,7 +37,8 @@ final class ClientRenderingContractTest {
         assertTrue(renderer.contains("case OCCUPIED_RESERVED -> graphics.blitSprite("));
         assertTrue(renderer.contains("RenderPipelines.GUI_TEXTURED,"));
         assertTrue(renderer.contains("\"occupied_reservation_marker\""));
-        assertTrue(renderer.contains("itemX + 13,"));
+        assertTrue(renderer.contains("itemX + 12,"));
+        assertFalse(renderer.contains("itemX + 13,"));
         assertTrue(renderer.contains("itemY,"));
         assertTrue(renderer.contains("private static final int OCCUPIED_MARKER_SIZE = 3"));
         assertEquals(3, occurrences(renderer, "OCCUPIED_MARKER_SIZE"),

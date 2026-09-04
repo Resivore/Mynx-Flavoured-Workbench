@@ -284,6 +284,80 @@ final class ProductionWiringContractTest {
     }
 
     @Test
+    void carriedShulkerWriterIsOptionalExactAndReservationReadOnly() throws IOException {
+        String mixin = source("mixin/ItemStackingContextMixin.java");
+        String policy = source("CarriedShulkerInsertionPolicy.java");
+        String reservationData = source("ReservationData.java");
+        String commonMixins = resource("container_slot_reservations.mixins.json");
+
+        assertEquals(1, occurrences(commonMixins, "\"ItemStackingContextMixin\""),
+                "The optional carried-container seam must be registered exactly once");
+        assertEquals(1, occurrences(mixin, "@Pseudo"));
+        assertEquals(1, occurrences(mixin,
+                "targets = \"fuzs.iteminteractions.common.impl.world.item.container.ItemStackingContext\""));
+        assertTrue(mixin.contains("priority = 900"));
+        assertFalse(mixin.contains("import fuzs."),
+                "The optional Item Interactions target must never become a hard class link");
+        assertEquals(1, occurrences(mixin, "fuzs.iteminteractions."),
+                "The audited target name must be the only Fuzs identity in the common mixin");
+
+        String tryInsert =
+                "tryInsert(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/ItemStack;I)I";
+        assertEquals(2, occurrences(mixin, "method = \"" + tryInsert + "\""));
+        assertEquals(1, occurrences(mixin, "at = @At(\"HEAD\")"));
+        assertEquals(1, occurrences(mixin, "at = @At(\"RETURN\")"));
+        assertEquals(1, occurrences(mixin,
+                "method = \"moveItemToOccupiedSlotsWithSameType(Lnet/minecraft/world/Container;"
+                        + "Lnet/minecraft/world/item/ItemStack;I)I\""));
+        assertEquals(1, occurrences(mixin,
+                "method = \"moveItemToEmptySlots(Lnet/minecraft/world/Container;"
+                        + "Lnet/minecraft/world/item/ItemStack;I)I\""));
+        assertEquals(2, occurrences(mixin,
+                "target = \"Lit/unimi/dsi/fastutil/ints/IntSet;toIntArray()[I\""));
+        assertEquals(4, occurrences(mixin, "require = 1"));
+        assertEquals(2, occurrences(mixin, "expect = 1"));
+        assertEquals(2, occurrences(mixin, "allow = 1"));
+        assertEquals(5, occurrences(mixin, "remap = false"));
+        assertEquals(2, occurrences(mixin, "candidates.toIntArray()"),
+                "CSR may only filter the two upstream candidate arrays");
+        assertFalse(mixin.contains("setItem("),
+                "Item Interactions must retain ownership of insertion and component write-back");
+
+        assertTrue(policy.contains(
+                "SupportedContainerResolver.isSupportedShulkerItem(sourceShulker)"),
+                "The carried-container policy must activate only for CSR-supported shulker items");
+        assertTrue(policy.contains("ReservationStore.getData(sourceShulker)"));
+        assertTrue(reservationData.contains("public static final int SLOT_COUNT = 27;"));
+        assertTrue(policy.contains(
+                "liveContents.getContainerSize() == ReservationData.SLOT_COUNT"),
+                "Unexpected temporary container views must fail closed");
+        assertTrue(policy.contains("!incoming.isEmpty()"));
+        assertTrue(policy.contains("incoming.getItem().canFitInsideContainerItems()"),
+                "Native shulker nesting admission must remain authoritative");
+        assertTrue(policy.contains("ItemStack.isSameItemSameComponents(template, incoming)"),
+                "Reserved admission must stay component-exact");
+        assertTrue(policy.contains(".orElse(true)"),
+                "Unreserved destinations must remain valid fallback candidates");
+        assertTrue(policy.indexOf("reservations.get(slot).filter(template ->")
+                        < policy.indexOf("reservations.get(slot).isEmpty()"),
+                "Matching reserved empties must remain ahead of unreserved fallback slots");
+
+        for (String mutation : Set.of(
+                "setItem(",
+                "removeItem(",
+                "clearContent(",
+                "ReservationStore.setData(",
+                "DataComponents.CONTAINER",
+                "reservations.with(",
+                "reservations.without("
+        )) {
+            assertFalse(policy.contains(mutation),
+                    "Candidate admission must not mutate contents, components, or reservations: "
+                            + mutation);
+        }
+    }
+
+    @Test
     void shulkerRoundTripStillUsesTheNarrowComponentSeams() throws IOException {
         String shulkerBlock = source("mixin/ShulkerBoxBlockMixin.java");
         String drops = source("ShulkerReservationDrops.java");

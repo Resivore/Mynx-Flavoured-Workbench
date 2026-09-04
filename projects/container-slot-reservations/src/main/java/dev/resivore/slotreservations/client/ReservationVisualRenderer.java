@@ -64,7 +64,7 @@ public final class ReservationVisualRenderer {
             case OCCUPIED_RESERVED -> graphics.blitSprite(
                     RenderPipelines.GUI_TEXTURED,
                     OCCUPIED_RESERVATION_MARKER,
-                    itemX + 13,
+                    itemX + 12,
                     itemY,
                     OCCUPIED_MARKER_SIZE,
                     OCCUPIED_MARKER_SIZE

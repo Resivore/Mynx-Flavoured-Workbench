@@ -2,16 +2,16 @@
   "$schema": "../../schemas/runtime-state.schema.json",
   "schema_version": 2,
   "activation": "ACTIVE",
-  "revision": 84,
-  "updated_at": "2026-09-04T18:46:31Z",
+  "revision": 88,
+  "updated_at": "2026-09-04T20:19:06Z",
   "accepted_baseline": {
-    "revision": 17,
+    "revision": 18,
     "provenance": {
       "source_repository": "Resivore/Minecraft-26.2-Workbench",
       "source_commit": "f0101f38c446dddaa4226450386402c63597ba7c",
       "source_profile": "matcha-heart-death-mossy-stone",
       "legacy_ledger_sha256": "5f0a26f3d136effeb54e86e3a1ba9d6a98a7252f5adde1c789129461f64c43de",
-      "accepted_artifact_count": 32,
+      "accepted_artifact_count": 33,
       "overlay_order": [
         "937d7ccc-44c9-55cb-8d33-0dc0bff5fe45",
         "9f1c5aa4-09c1-4de3-9921-4b045e8abcd2"
@@ -870,6 +870,32 @@
           ]
         },
         "accepted_at": "2026-09-04T05:22:28Z"
+      },
+      {
+        "unit": {
+          "deployment_id": "66cd7696-3d01-4d92-805e-9221c1b93e07",
+          "project_uuid": "58086966-05a1-4237-9f4f-ffca6c05da87",
+          "project_id": "stacks-are-stacks-container-fixes",
+          "project_identity_source": "CURRENT_MANIFEST",
+          "version": "0.1.0-canary2",
+          "source_commit": "382cb276455ffe74efc100ce65e853b499204b56",
+          "artifacts": [
+            {
+              "artifact_id": "01661d77-c5d5-4838-8485-1cb4309265ce",
+              "kind": "MOD",
+              "filename": "stacks-are-stacks-container-fixes-0.1.0-canary2.jar",
+              "sha256": "7c294ce614ccc6f889dde7db5b5bd474b74dc8b6a6c8e62faefd44e5811896f2",
+              "ownership_keys": [
+                "mod:stacksarestacks_container_fixes"
+              ],
+              "source": {
+                "type": "REPOSITORY",
+                "path": "projects/stacks-are-stacks-container-fixes/artifacts/stacks-are-stacks-container-fixes-0.1.0-canary2.jar"
+              }
+            }
+          ]
+        },
+        "accepted_at": "2026-09-04T20:16:38Z"
       }
     ]
   },
@@ -878,24 +904,24 @@
       "members": [
         {
           "unit": {
-            "deployment_id": "f12e434a-51c1-4e84-a487-3ebcadbe3d64",
+            "deployment_id": "9783fefa-2d3f-4f4b-acdc-766d6b5ac2ab",
             "project_uuid": "3ab36584-8732-554f-840e-28a75c422660",
             "project_id": "container-slot-reservations",
             "project_identity_source": "CURRENT_MANIFEST",
-            "version": "0.1.0-canary5",
-            "source_commit": "793a29fa0cac2f505e6fcf373c56b76e16eca568",
+            "version": "0.1.0-canary6",
+            "source_commit": "6a1a284b0410bcce77467756e5046ed76117aa80",
             "artifacts": [
               {
-                "artifact_id": "c9551ad6-7a35-4a0e-ac25-af3efeccd86a",
+                "artifact_id": "1ef9a92a-47ef-4ea5-9f9f-b0166d042dd1",
                 "kind": "MOD",
-                "filename": "container-slot-reservations-0.1.0-canary5.jar",
-                "sha256": "d228ef4ece4893a6538a845b34c1684a72fe8659790dc63aa12ab608aa886b8e",
+                "filename": "container-slot-reservations-0.1.0-canary6.jar",
+                "sha256": "93616bd2794a936eb6485614c3215ad2f42b149053bcb8dcd80e6a7c668aed40",
                 "ownership_keys": [
                   "mod:container_slot_reservations"
                 ],
                 "source": {
                   "type": "REPOSITORY",
-                  "path": "projects/container-slot-reservations/artifacts/container-slot-reservations-0.1.0-canary5.jar"
+                  "path": "projects/container-slot-reservations/artifacts/container-slot-reservations-0.1.0-canary6.jar"
                 }
               }
             ]
@@ -913,52 +939,10 @@
       ],
       "deployment": {
         "state": "READY_TO_TEST_VERIFIED",
-        "deployed_at": "2026-09-04T05:32:04Z",
-        "ready_verified_at": "2026-09-04T05:32:04Z"
+        "deployed_at": "2026-09-04T20:19:06Z",
+        "ready_verified_at": "2026-09-04T20:19:06Z"
       }
     },
-    "B": {
-      "members": [
-        {
-          "unit": {
-            "deployment_id": "66cd7696-3d01-4d92-805e-9221c1b93e07",
-            "project_uuid": "58086966-05a1-4237-9f4f-ffca6c05da87",
-            "project_id": "stacks-are-stacks-container-fixes",
-            "project_identity_source": "CURRENT_MANIFEST",
-            "version": "0.1.0-canary2",
-            "source_commit": "382cb276455ffe74efc100ce65e853b499204b56",
-            "artifacts": [
-              {
-                "artifact_id": "01661d77-c5d5-4838-8485-1cb4309265ce",
-                "kind": "MOD",
-                "filename": "stacks-are-stacks-container-fixes-0.1.0-canary2.jar",
-                "sha256": "7c294ce614ccc6f889dde7db5b5bd474b74dc8b6a6c8e62faefd44e5811896f2",
-                "ownership_keys": [
-                  "mod:stacksarestacks_container_fixes"
-                ],
-                "source": {
-                  "type": "REPOSITORY",
-                  "path": "projects/stacks-are-stacks-container-fixes/artifacts/stacks-are-stacks-container-fixes-0.1.0-canary2.jar"
-                }
-              }
-            ]
-          },
-          "replaces_accepted_deployment_id": null,
-          "runtime_result": {
-            "classification": "UNTESTED",
-            "recorded_at": null,
-            "evidence": {
-              "passed": [],
-              "failed": []
-            }
-          }
-        }
-      ],
-      "deployment": {
-        "state": "READY_TO_TEST_VERIFIED",
-        "deployed_at": "2026-09-04T18:46:31Z",
-        "ready_verified_at": "2026-09-04T18:46:31Z"
-      }
-    }
+    "B": null
   }
 }

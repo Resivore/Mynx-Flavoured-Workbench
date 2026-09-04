@@ -1,5 +1,6 @@
 package dev.resivore.slotreservations.gametest;
 
+import dev.resivore.slotreservations.CarriedShulkerInsertionPolicy;
 import dev.resivore.slotreservations.ModComponents;
 import dev.resivore.slotreservations.ReservationData;
 import dev.resivore.slotreservations.ReservationStore;
@@ -15,6 +16,7 @@ import net.fabricmc.fabric.api.gametest.v1.GameTest;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.NonNullList;
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -47,6 +49,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.Rarity;
+import net.minecraft.world.item.component.ItemContainerContents;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -378,6 +381,95 @@ public final class ContainerSlotReservationGameTests implements CustomTestMethod
                 "applyComponentsFromItemStack did not restore reservation, contents, and unrelated name");
         helper.assertTrue(dropped.has(ModComponents.RESERVATIONS),
                 "The retained shulker item lacks the registered reservation component");
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void carriedShulkerInsertionOrdersReservationsAndPreservesComponentsAcrossReopen(
+            GameTestHelper helper
+    ) {
+        ItemStack carriedShulker = new ItemStack(Blocks.SHULKER_BOX);
+        Component customName = Component.literal("Carried reservation fixture");
+        carriedShulker.set(DataComponents.CUSTOM_NAME, customName);
+        carriedShulker.set(DataComponents.RARITY, Rarity.EPIC);
+
+        ItemStack incoming = identity(Items.POISONOUS_POTATO, 7, "green_curry", "Green Curry");
+        ItemStack mismatched = identity(Items.RABBIT_STEW, 1, "ramen", "Ramen");
+        ReservationData reservations = ReservationData.EMPTY
+                .with(1, mismatched)
+                .with(5, incoming);
+        ReservationStore.setData(carriedShulker, reservations);
+
+        SimpleContainer liveContents = new SimpleContainer(ReservationData.SLOT_COUNT);
+        int[] candidates = CarriedShulkerInsertionPolicy.emptyCandidates(
+                carriedShulker,
+                liveContents,
+                incoming,
+                new int[]{1, 0, 5, 2, 26}
+        );
+        helper.assertTrue(candidates.length == 4
+                        && candidates[0] == 5
+                        && candidates[1] == 0
+                        && candidates[2] == 2
+                        && candidates[3] == 26,
+                "Carried shulker did not reject the mismatch, prioritize the exact reservation, "
+                        + "and retain unreserved fallback order");
+
+        ItemStack transferred = incoming.copyAndClear();
+        liveContents.setItem(candidates[0], transferred);
+        carriedShulker.set(
+                DataComponents.CONTAINER,
+                ItemContainerContents.fromItems(liveContents.getItems())
+        );
+        helper.assertTrue(incoming.isEmpty()
+                        && liveContents.getItem(1).isEmpty()
+                        && liveContents.getItem(5).getCount() == 7
+                        && ItemStack.isSameItemSameComponents(liveContents.getItem(5), transferred)
+                        && ReservationStore.getData(carriedShulker).equals(reservations)
+                        && ContainerSlotReservationsApi.classify(carriedShulker, 5, transferred)
+                        == ReservationSlotClass.OCCUPIED_COMPATIBLE
+                        && customName.equals(carriedShulker.get(DataComponents.CUSTOM_NAME))
+                        && carriedShulker.getOrDefault(DataComponents.RARITY, Rarity.COMMON) == Rarity.EPIC,
+                "Carried insertion changed admission, reservation data, or unrelated shulker components");
+
+        ItemStack reopenedShulker = carriedShulker.copy();
+        NonNullList<ItemStack> reopenedItems = NonNullList.withSize(
+                ReservationData.SLOT_COUNT,
+                ItemStack.EMPTY
+        );
+        reopenedShulker.getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY)
+                .copyInto(reopenedItems);
+        SimpleContainer reopenedContents = new SimpleContainer(reopenedItems.toArray(ItemStack[]::new));
+        ItemStack removed = reopenedContents.removeItemNoUpdate(5);
+        reopenedShulker.set(
+                DataComponents.CONTAINER,
+                ItemContainerContents.fromItems(reopenedContents.getItems())
+        );
+
+        ItemStack reopenedAfterRemoval = reopenedShulker.copy();
+        NonNullList<ItemStack> finalItems = NonNullList.withSize(
+                ReservationData.SLOT_COUNT,
+                ItemStack.EMPTY
+        );
+        reopenedAfterRemoval.getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY)
+                .copyInto(finalItems);
+        helper.assertTrue(removed.getCount() == 7
+                        && ItemStack.isSameItemSameComponents(removed, transferred)
+                        && finalItems.get(5).isEmpty()
+                        && ReservationStore.getData(reopenedAfterRemoval).equals(reservations)
+                        && ContainerSlotReservationsApi.classify(reopenedAfterRemoval, 5, removed)
+                        == ReservationSlotClass.RESERVED_MATCH
+                        && CarriedShulkerInsertionPolicy.emptyCandidates(
+                            reopenedAfterRemoval,
+                            new SimpleContainer(finalItems.toArray(ItemStack[]::new)),
+                            mismatched,
+                            new int[]{5}
+                        ).length == 0
+                        && customName.equals(reopenedAfterRemoval.get(DataComponents.CUSTOM_NAME))
+                        && reopenedAfterRemoval.getOrDefault(DataComponents.RARITY, Rarity.COMMON)
+                        == Rarity.EPIC,
+                "Removing and reopening the carried shulker did not reveal the exact reservation "
+                        + "or preserve unrelated components");
         helper.succeed();
     }
 

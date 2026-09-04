@@ -27,7 +27,7 @@ def occupiedMarkerResource =
         'assets/container_slot_reservations/textures/gui/sprites/occupied_reservation_marker.png'
 def occupiedMarkerSource = layout.projectDirectory.file("src/main/resources/${occupiedMarkerResource}")
 def occupiedMarkerSha256 =
-        '5A9FE986E6AED154D8E1302C1A8F066D76A2AFF10AA4F6FC9FD973D0E5BCAACE'
+        'D12D0BE850A742C69795259FDE9A5D9D52E822DF529196445948241B4B199F02'
 def doubleBarrelsReferenceJar = new File(
         repositoryRoot,
         "projects/double-barrels/artifacts/${project.double_barrels_tested_jar}"
@@ -79,7 +79,7 @@ def verifyOccupiedReservationMarkerArtifact = tasks.register('verifyOccupiedRese
             )
         }
         def sourceBytes = occupiedMarkerSource.asFile.bytes
-        if (sourceBytes.length != 103 || hash(sourceBytes) != occupiedMarkerSha256) {
+        if (sourceBytes.length != 1723 || hash(sourceBytes) != occupiedMarkerSha256) {
             throw new GradleException('The source occupied-reservation marker is not the exact supplied PNG')
         }
 
@@ -91,7 +91,7 @@ def verifyOccupiedReservationMarkerArtifact = tasks.register('verifyOccupiedRese
                 throw new GradleException("Built artifact is missing ${occupiedMarkerResource}")
             }
             def artifactBytes = archive.getInputStream(entry).withCloseable { it.bytes }
-            if (artifactBytes.length != 103 || hash(artifactBytes) != occupiedMarkerSha256
+            if (artifactBytes.length != 1723 || hash(artifactBytes) != occupiedMarkerSha256
                     || !java.util.Arrays.equals(sourceBytes, artifactBytes)) {
                 throw new GradleException('Built artifact changed the exact occupied-reservation marker bytes')
             }

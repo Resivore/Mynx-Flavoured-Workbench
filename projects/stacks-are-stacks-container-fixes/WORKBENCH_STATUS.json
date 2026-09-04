@@ -13,7 +13,7 @@
     "legacy_ids": []
   },
   "definition": {
-    "lifecycle": "TESTING",
+    "lifecycle": "ACCEPTED",
     "goals": [
       "Keep eligible normally non-stackable item counts intact across Minecraft 26.2 client container and strict item-template reconstruction paths.",
       "Align the client with Stacks Are Stacks' own effective holder maximums while preserving its configuration, eligibility, exclusions, damageable-item handling, and server authority.",
@@ -22,7 +22,7 @@
     "scope": [
       "Maintain the client-only Canary 2 Fabric initializer and string-targeted Mixin invoker, exact-pinned to audited Stacks Are Stacks 2.1.2-1.26.2.",
       "At Fabric client configuration completion, verify every built-in item Holder.Reference has bound components before invoking the unchanged upstream routine; serialize attempts, reject overlap, and align once per configuration-listener identity while permitting reconnect and play reconfiguration epochs.",
-      "Retain focused exact-upstream, Minecraft/Fabric lifecycle, readiness/epoch, stale-versus-aligned container and ItemStackTemplate, unchanged CSR Canary 5, absent-CSR linkage, and vanilla-control contracts, plus exact Canary 1 failure provenance."
+      "Retain focused exact-upstream, Minecraft/Fabric lifecycle, readiness/epoch, stale-versus-aligned container and ItemStackTemplate, exact tested CSR Canary 5, absent-CSR linkage, and vanilla-control contracts, plus exact Canary 1 failure provenance and the aggregate-only Canary 2 runtime result."
     ],
     "boundaries": {
       "owned_paths": [
@@ -32,7 +32,7 @@
         "Replacing or redistributing Stacks Are Stacks, copying its implementation, or changing its stack eligibility, configured maximums, exclusions, ConsumableFix behavior, or server authority.",
         "Mixing into ItemStack, SimpleContainer, menus, slots, container screens, item-count renderers, Easy Shulker Boxes, or Item Interactions, and any unrelated inventory or container behavior.",
         "Treating Easy Shulker Boxes, Item Interactions, Container Slot Reservations, or Quick Stack Nearby as a hard runtime dependency of this add-on; Canary 2 supplies the shared holder-default correction without linking their production classes.",
-        "Retrying by delay or tick count, suppressing the known unbound-component exception, partially mutating before readiness, changing the upstream configuration, inferring a runtime pass from controlled tests or deployment, promoting Canary 2 before runtime testing, launching Minecraft during deployment, or accessing the protected 26.1.2 gameplay profile."
+        "Retrying by delay or tick count, suppressing the known unbound-component exception, partially mutating before readiness, changing the upstream configuration, inferring checklist-row observations from the aggregate Canary 2 pass, transferring that pass to another patch or CSR version, launching Minecraft during a manager transition, or accessing the protected 26.1.2 gameplay profile."
       ]
     },
     "dependencies": [
@@ -99,7 +99,7 @@
     ]
   },
   "state": {
-    "milestone": "Canary 1's exact Slot B deployment f58e3578-1149-4373-a32f-c6b3e1c9ceea / artifact 4eff5256-9775-4e5e-b459-ec40188849a5 is recorded as RUNTIME_FAIL at manager revision 83: its CLIENT_STARTED callback directly invoked upstream setStackSizes(null), which called Item.getDefaultMaxStackSize while a built-in holder was unbound and raised the supplied uncaught render-thread NullPointerException 'Components not bound yet'. Canary 2 moves alignment to the proven post-bind/pre-play Fabric configuration-complete seam, performs a complete all-holder readiness pass before the unchanged upstream mutation, and guards each listener-identity epoch. Two clean builds passed the same 25/25 tests and produced exact C2 at 16,921 bytes / SHA-256 7c294ce614ccc6f889dde7db5b5bd474b74dc8b6a6c8e62faefd44e5811896f2. Manager revision 84 physically verifies it in Slot B as deployment 66cd7696-3d01-4d92-805e-9221c1b93e07 / artifact 01661d77-c5d5-4838-8485-1cb4309265ce, READY_TO_TEST_VERIFIED / RUNTIME_UNTESTED, beside unchanged independently UNTESTED CSR C5 in Slot A, accepted Stack v17, and state digest 589256b4cdeca64b22933887b1c14da37b9bbf4bbdb972fa9f8d91b6ec075c02. No Minecraft runtime pass was inferred.",
+    "milestone": "The user's aggregate statement that CSR × SAS is passing was bound only to exact Canary 2 deployment 66cd7696-3d01-4d92-805e-9221c1b93e07 / artifact 01661d77-c5d5-4838-8485-1cb4309265ce and exact Stacks Are Stacks 2.1.2-1.26.2 at manager revision 85; no checklist row or unrelated CSR success was inferred. Manager revision 87 promoted those unchanged C2 bytes into accepted Stack v18 and cleared Slot B. Final manager revision 88 remains PHYSICAL_STATE_VERIFIED with Stack v18, empty Slot B, state digest dee397c4ffebacabf41028a0fafb22d674ee695a937ba22f9a6122771577c9a4, and inventory digest c6fd9345dd5da38d5fd07ed46628d09baf0c3b6b2014c3be24a1848647a73f2d after the independent CSR successor deployment. Exact C2 is current and accepted with aggregate RUNTIME_PASS; no rollback is designated. Canary 1's exact pre-title-screen holder-binding RUNTIME_FAIL remains historical provenance.",
     "releases": {
       "current": {
         "version": "0.1.0-canary2",
@@ -125,24 +125,47 @@
           ]
         }
       },
-      "accepted": null,
+      "accepted": {
+        "version": "0.1.0-canary2",
+        "embedded_version": "0.1.0-canary2",
+        "artifact": {
+          "filename": "stacks-are-stacks-container-fixes-0.1.0-canary2.jar",
+          "sha256": "7c294ce614ccc6f889dde7db5b5bd474b74dc8b6a6c8e62faefd44e5811896f2"
+        },
+        "source_commit": "382cb276455ffe74efc100ce65e853b499204b56",
+        "runtime_dependency_policy": {
+          "contract": "CAPABILITY_OR_PROVIDER",
+          "exceptions": [
+            {
+              "consumer_id": "stacksarestacks_container_fixes",
+              "relationship": "depends",
+              "dependency_id": "stacksarestacks",
+              "predicate": "=2.1.2-1.26.2",
+              "reason": "Canary 2 invokes the audited provider's non-public static setStackSizes(MinecraftServer) routine through an exact Mixin invoker, so its name, descriptor, argument-use contract, eligibility predicates, and Holder.Reference mutation seam are binary-version-specific.",
+              "regression_evidence": [
+                "The focused ASM contract binds the integration to the 358,573-byte provider at SHA-256 8e318394ea52a6db343a00987dd1b122c69bf48e42deb7813cc5ef293e655917 and fails before deployment if that private descriptor, unused server argument, MAX_STACK_SIZE holder mutation, artifact identity, or embedded version changes."
+              ]
+            }
+          ]
+        }
+      },
       "rollback": null,
-      "accepted_current": "NO_ACCEPTED",
+      "accepted_current": "CURRENT_IS_ACCEPTED",
       "accepted_rollback": "NO_ROLLBACK"
     },
     "validation": {
       "build": "CONTROLLED_VALIDATION_PASS",
       "deployment": "READY_TO_TEST_VERIFIED",
-      "runtime": "RUNTIME_UNTESTED"
+      "runtime": "RUNTIME_PASS"
     },
     "blocker": null
   },
   "synchronization": {
-    "revision": 3,
-    "activity_at": "2026-09-04T18:46:31Z",
-    "updated_at": "2026-09-04T18:46:31Z",
-    "last_codex_at": "2026-09-04T18:46:31Z",
-    "source_commit": "382cb276455ffe74efc100ce65e853b499204b56",
+    "revision": 4,
+    "activity_at": "2026-09-04T20:20:20Z",
+    "updated_at": "2026-09-04T20:20:20Z",
+    "last_codex_at": "2026-09-04T20:20:20Z",
+    "source_commit": "6a1a284b0410bcce77467756e5046ed76117aa80",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null

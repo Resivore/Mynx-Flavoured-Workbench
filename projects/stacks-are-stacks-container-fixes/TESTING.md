@@ -1,45 +1,36 @@
 # Testing
 
-## Current gate
+## Accepted baseline
 
-**READY TO TEST VERIFIED — RUNTIME UNTESTED — NOT READY FOR PROMOTION**
+**ACCEPTED — AGGREGATE RUNTIME PASS — RETAIN FOR REGRESSION**
 
-Test only `artifacts/stacks-are-stacks-container-fixes-0.1.0-canary2.jar`, 16,921 bytes, SHA-256 `7C294CE614CCC6F889DDE7DB5B5BD474B74DC8B6A6C8E62FAEFD44E5811896F2`, embedded version `0.1.0-canary2`, source `382cb276455ffe74efc100ce65e853b499204b56`.
+The accepted release is `artifacts/stacks-are-stacks-container-fixes-0.1.0-canary2.jar`, embedded version `0.1.0-canary2`, 16,921 bytes, SHA-256 `7C294CE614CCC6F889DDE7DB5B5BD474B74DC8B6A6C8E62FAEFD44E5811896F2`, source `382cb276455ffe74efc100ce65e853b499204b56`.
 
-Test Instance Manager revision 84, accepted Stack v17, state digest `589256B4CDECA64B22933887B1C14DA37B9BBF4BBDB972FA9F8D91B6EC075C02`, Slot B deployment `66cd7696-3d01-4d92-805e-9221c1b93e07`, and artifact `01661d77-c5d5-4838-8485-1cb4309265ce` bind exact Canary 2 as `READY_TO_TEST_VERIFIED / UNTESTED`. Slot A remains exact CSR Canary 5 deployment `f12e434a-51c1-4e84-a487-3ebcadbe3d64` / artifact `c9551ad6-7a35-4a0e-ac25-af3efeccd86a`, independently `UNTESTED`. Accepted QSN C8 remains active from the baseline.
+Its exact external provider is `StacksAreStacks-2.1.2-1.26.2.jar`, Fabric ID/version `stacksarestacks` / `2.1.2-1.26.2`, 358,573 bytes, SHA-256 `8E318394EA52A6DB343A00987DD1B122C69BF48E42DEB7813CC5EF293E655917`. Do not substitute another provider version or alter its configuration while reproducing the accepted result.
 
-The verified external provider is `mods/StacksAreStacks-2.1.2-1.26.2.jar`, Fabric ID/version `stacksarestacks` / `2.1.2-1.26.2`, 358,573 bytes, SHA-256 `8E318394EA52A6DB343A00987DD1B122C69BF48E42DEB7813CC5EF293E655917`. Do not substitute it or alter its configuration.
+At `2026-09-04T20:15:03Z`, manager revision 85 recorded the user's aggregate statement that CSR × SAS is passing only for Canary 2 deployment `66cd7696-3d01-4d92-805e-9221c1b93e07` / artifact `01661d77-c5d5-4838-8485-1cb4309265ce` with that exact upstream provider. No individual checklist row and no unrelated CSR behavior is claimed. Manager revision 87 at `2026-09-04T20:16:38Z` promoted the unchanged patch, cleared Slot B, and produced accepted Stack v18 with state digest `954271FD5113BA0E330203A042B94DA4FA2EFB7F6D9AEB3063F861F5C10DD3AA`.
 
-Canary 1 is not the candidate. Its exact former deployment is canonically `FAIL`: `CLIENT_STARTED` invoked upstream `setStackSizes(null)` before every built-in item holder had bound components, producing the supplied uncaught render-thread `NullPointerException: Components not bound yet`. The launcher exit code does not change that result.
+After the independent CSR successor deployment, final manager revision 88 is `PHYSICAL_STATE_VERIFIED`, accepted Stack v18, with empty Slot B, state digest `DEE397C4FFEBACABF41028A0FAFB22D674EE695A937BA22F9A6122771577C9A4`, and physical inventory digest `C6FD9345DD5DA38D5FD07ED46628D09BAF0C3B6B2014C3BE24A1848647A73F2`. Canary 2 is supplied by the accepted baseline, not an experimental slot.
 
-## Preflight and startup gate
+Canary 1 remains a failed historical predecessor, not a regression candidate. Its `CLIENT_STARTED` hook invoked the upstream alignment before all built-in item components were bound and produced the supplied uncaught render-thread `NullPointerException: Components not bound yet` before the title screen.
 
-Use only the dedicated Minecraft 26.2 Workbench. Never access the protected 26.1.2 gameplay profile. Before launching, run the manager's read-only `verify` command and require `PHYSICAL_STATE_VERIFIED`, revision 84, the exact state digest, both slot identities/results, Stack v17, and the exact external provider above. Stop on drift.
+## Regression preflight
 
-Startup is the first and mandatory runtime gate:
+Use only the dedicated Minecraft 26.2 Workbench. Never access the protected 26.1.2 gameplay profile. Before a regression run, use the Test Instance Manager's read-only verification and require the current canonical revision and digest to match the physical profile, accepted Canary 2 to remain the sole `stacksarestacks_container_fixes` provider, and the exact upstream provider above to resolve its hard dependency. Stop on identity, dependency, or physical-state drift.
 
-1. Launch to the title screen and confirm there is no `Components not bound yet`, mixin, linkage, or holder-alignment failure.
-2. Confirm the log says registry synchronization completed, every item holder passed readiness, and the alignment completed exactly once for that binding epoch.
-3. Enter a disposable world only after the startup gate passes.
+When testing a new CSR release against accepted SAS Canary 2, record the new observation for that CSR release unless the evidence establishes a patch-specific SAS regression. The historical aggregate PASS must not be transferred to another SAS or CSR version.
 
-## Focused SAS and CSR matrix
+## Current regression procedure
 
-Use an eligible stack of three saddles unless the exact unchanged Stacks Are Stacks configuration excludes saddles; if it does, record that fact and use another eligible normally non-stackable item.
-
-1. Confirm the actual and displayed count remains three in player inventory, an ordinary supported container, and an Easy Shulker Boxes preview.
-2. Split, merge, drag, manually move, and vanilla `QUICK_MOVE` the stack; confirm no clamp, loss, duplication, or hidden count.
-3. Create a CSR reservation from the stack, remove the physical stack, and confirm the translucent count-one identity ghost, literal zero, tooltip, and empty-reservation behavior remain correct.
-4. Reinsert a matching stack by manual placement, vanilla `QUICK_MOVE`, hopper insertion where native sided rules permit it, and accepted QSN C8; confirm existing CSR affinity, admission, order, capacity, remainder, packet, and feedback behavior.
-5. Confirm a matching occupied reservation accepts more items only up to the effective Stacks Are Stacks maximum.
-6. Confirm a different item and a component-distinct saddle are rejected while count differences alone still match.
-7. Confirm unsupported, player-inventory, hotbar, fake, inactive, result, and foreign slots remain unaffected.
-8. Confirm vanilla-stackable controls, the CSR occupied marker, carried-shulker persistence, component preservation, Easy Shulker Boxes / Item Interactions overlays, and representative accepted Canary 4 storage/machine behavior remain unchanged.
-9. Close and reopen the container; confirm the physical count, reservation, ghost/marker, and tooltip remain correct.
-10. Disconnect and reconnect once. Confirm a fresh configuration epoch aligns once, the prior epoch is not reused, and the same stack/reservation checks remain correct.
-11. Inspect the complete log through normal shutdown for duplicate alignment, overlap/rejection, partial mutation, count loss, serialization errors, or CSR/QSN regressions.
+1. Launch to the title screen and confirm there is no `Components not bound yet`, mixin, linkage, or holder-alignment failure. Confirm registry synchronization completes, every item holder passes readiness, and Canary 2 aligns exactly once for the binding epoch.
+2. Use an eligible stack of three saddles unless the unchanged Stacks Are Stacks configuration excludes saddles; if so, record that fact and use another eligible normally non-stackable item.
+3. Confirm the actual and displayed count remains three in player inventory, an ordinary container, and an Easy Shulker Boxes preview. Split, merge, drag, manually move, and vanilla `QUICK_MOVE` the stack, checking for clamp, loss, duplication, or a hidden count.
+4. With the current CSR candidate present, create a reservation from the stack, remove it, and check the ghost, literal zero, tooltip, and occupied marker. Reinsert an exact match through representative manual, `QUICK_MOVE`, hopper, QSN, and supported carried-shulker paths; confirm a different item and a component-distinct stack are rejected, count differences still match, unreserved fallback remains available, and effective Stacks Are Stacks capacity is preserved.
+5. Close and reopen the container, then disconnect and reconnect once. Confirm the physical count and reservation survive, a fresh configuration epoch aligns exactly once, and no prior epoch is reused.
+6. Check vanilla-stackable controls and inspect the complete log through normal shutdown for duplicate alignment, overlap, partial mutation, count loss, serialization errors, or CSR/QSN regressions.
 
 ## Stopping and recording
 
-Stop and record Canary 2 as `RUNTIME_FAIL` or `INCONCLUSIVE`, as supported by the actual observations, if startup fails; readiness does not pass; alignment is absent, duplicated within one epoch, or runs off the client thread; any count clamps, disappears, duplicates, or becomes visually hidden; matching/component-distinct reservation behavior is wrong; manual, `QUICK_MOVE`, hopper, or QSN insertion regresses; reconnect fails to realign; exact identities drift; or a patch-attributable error appears.
+Stop and record only the behavior actually observed if startup or readiness fails; alignment is absent, duplicated in one epoch, or off-thread; any count clamps, disappears, duplicates, or becomes hidden; reservation matching, admission, capacity, or persistence regresses; reconnect fails; exact identities drift; or a patch-attributable error appears.
 
-Judge CSR Canary 5's marker question independently even though the combined path is exercised. Record only behavior actually observed. Controlled tests, GameTests, deployment, and physical verification are not Minecraft runtime evidence; do not promote or mark either candidate passed without a complete applicable runtime pass.
+Do not replace Canary 2's accepted aggregate result with inferred row-level results. Controlled tests, GameTests, accepted-baseline membership, and physical verification are not additional Minecraft runtime evidence.
