@@ -25,9 +25,9 @@
       "Retain exact unsuccessful diagnostic and canary evidence without reclassifying incomplete or failed observations as passes."
     ],
     "scope": [
-      "Maintain Canary 1's custom EMF model-part trace bridge and Canary 3's icon-only canonical-frame adapter for direct root head or head_parts identities after Xaero's ordinary prerender returns empty.",
-      "Preserve the live transform path while excluding ancestor and sibling body geometry, aligning against Xaero's canonical direct cube, retaining trace color and identity, and failing closed on ambiguous, non-finite, singular, untraced, non-head, vanilla, or upstream-success paths.",
-      "Maintain the current build, seven production Java files, two resources, six focused JUnit/ASM/JEM/bounds/scope tests, and the exact retained Diagnostic1 and Canary 1 through Canary 3 artifacts."
+      "Maintain the custom EMF trace bridge and icon-only canonical-frame adapter after ordinary Xaero prerender returns empty; follow a bounded recursive head/head_parts identity path through the retained vanilla root.",
+      "Follow a unique zero-transform retained geometry owner when the canonical container is empty, preserve required ancestor transforms and render only an unambiguous semantic head-local subtree. Exclude body siblings and fail closed on ambiguous, non-finite, singular, untraced, non-head, vanilla or upstream-success paths.",
+      "Retain exact Diagnostic1 and Canary 1 through Canary 4 artifacts. Validate eleven reported entity structures with the exact retained C3 binary alongside sheep, horse, sea turtle and creeper controls. Bound normal Fabric diagnostics and invalidate only observed EMF entity-type successful/failed icon caches on reload."
     ],
     "boundaries": {
       "owned_paths": [
@@ -35,7 +35,7 @@
       ],
       "exclusions": [
         "Species-specific screen offsets, broad renderer redesign, whole-body icons, live model mutation, and unsupported claims about unreported cases.",
-        "Changes to Xaero Minimap, Xaero World Map, Fresh Animations, Entity Model Features, Entity Texture Features, Map Marker Extension, or any other Workbench project.",
+        "Changes to upstream Xaero, Fresh Animations, EMF, ETF or other projects except the explicitly owned Ribbits icon companion integration in this reconciliation.",
         "Static mob icons, copied upstream assets or classes, replacement entity rendering, networking, server behavior, and redistribution of Xaero's All Rights Reserved content.",
         "The retired Diagnostic2 source workspace, unretained generated outputs, legacy status narratives, Test Instance Manager state, deployment ledgers, snapshots, and historical administrative matrices.",
         "Runtime deployment, Minecraft launch, either Test Slot, accepted-baseline mutation, map-data changes, and access to the protected gameplay instance during this migration.",
@@ -53,13 +53,13 @@
         "type": "MOD",
         "identifier": "fabricloader",
         "requirement": ">=0.19.3",
-        "reason": "Fabric loader floor declared by the retained Canary 3 metadata."
+        "reason": "Fabric loader floor declared by the Canary 4 metadata."
       },
       {
         "type": "MOD",
         "identifier": "xaerominimap",
         "requirement": "=26.4.2; SHA-256 69284892d2eb853c9aefa85a4c9b74232c322da00207994c67ab8aeed8a64048",
-        "reason": "Supported Xaero Minimap runtime and exact read-only binary contract used by the focused tests."
+        "reason": "Exact validation baseline, not an exact runtime metadata requirement; the optional provider relationship is capability-based."
       },
       {
         "type": "MOD",
@@ -77,7 +77,7 @@
         "type": "MOD",
         "identifier": "entity_model_features",
         "requirement": "=3.2.6; SHA-256 876a3e4ffda021a6266df87208f2d9980322cf86223d4fe1e313ca996631f115",
-        "reason": "Provides the exact EMF model-root, retained vanilla-root, and custom-part contracts bridged by Canary 3."
+        "reason": "Provides the exact EMF model-root, retained vanilla-root, and custom-part contracts bridged by Canary 4."
       },
       {
         "type": "MOD",
@@ -112,15 +112,19 @@
     ]
   },
   "state": {
-    "milestone": "The user withdrew the premature Canary 3 aggregate runtime PASS and reported no correct minimap head icon for wolf, bat, axolotl, parrot, frog, allay, sniffer, iron golem, vex, ravager, witch. Exact canonical Canary 3 is now RUNTIME_FAIL, unaccepted, with no rollback; earlier Diagnostic1/C1/C2 and partial sheep/horse/sea-turtle/creeper observations are retained separately. The exact C3 artifact is physically present and remains recorded in the manager accepted baseline, which this project-only correction cannot mutate; this is deployment provenance, not renewed project acceptance. Neither slot owns this project. External Player Instance sessions discover exact C3-version EMF/ETF/Xaero together with retired Diagnostic1. No single visual observation is timestamp-bound; per-entity runtime traces/first rejection remain unproven. Fresh Animations and an iron-golem override are current external model inputs, not automatically historical launch bytes. Canary 4 is not built.",
+    "milestone": "Canary 4 built twice byte-identically with 36 passing tests and combined C2/C4 production Knot/Mixin validation. Exact retained C3 resolver fixtures reproduce recursive-path rejection for axolotl/frog/allay/sniffer/vex/ravager and missing retained direct geometry for wolf; C4 resolves the controlled eleven head-local fixtures. Bat/parrot/iron golem/witch already resolve in those C3 fixtures: their actual runtime first failures remain unresolved, including the external iron-golem override and co-loaded retired Diagnostic1. Bounded stage/rejection/cache diagnostics support the next authorized runtime test. Prior C3 external FAIL and acceptance withdrawal remain in revision 2; its unchanged manager baseline/physical provenance is not current C4 deployment or acceptance. C4 is NOT_DEPLOYED and RUNTIME_UNTESTED; neither project occupies a slot.",
     "releases": {
       "current": {
-        "version": "0.1.0-canary3",
+        "version": "0.1.0-canary4",
         "artifact": {
-          "filename": "xaero-emf-entity-icon-compat-0.1.0-canary3.jar",
-          "sha256": "4f34d743f5fffd8e938c8f5157c630fd85f3b263ac1ae9f96c432cfe51668df2"
+          "filename": "xaero-emf-entity-icon-compat-0.1.0-canary4.jar",
+          "sha256": "03444601251c6edad68d5a19648bd37e4d925b508f0d7b8a91b352883b151639"
         },
-        "source_commit": "2478f021982c5f26e51ff0579fa2f5dad85ed200"
+        "source_commit": "43a3949d81f15c1bba3ab62685ceeb515a52ddef",
+        "runtime_dependency_policy": {
+          "contract": "CAPABILITY_OR_PROVIDER",
+          "exceptions": []
+        }
       },
       "accepted": null,
       "rollback": null,
@@ -128,18 +132,18 @@
       "accepted_rollback": "NO_ROLLBACK"
     },
     "validation": {
-      "build": "CONTROLLED_VALIDATION_PASS",
-      "deployment": "DEPLOYED",
-      "runtime": "RUNTIME_FAIL"
+      "build": "STATIC_PASS",
+      "deployment": "NOT_DEPLOYED",
+      "runtime": "RUNTIME_UNTESTED"
     },
     "blocker": null
   },
   "synchronization": {
-    "revision": 2,
-    "activity_at": "2026-09-04T23:00:36Z",
-    "updated_at": "2026-09-04T23:00:36Z",
-    "last_codex_at": "2026-09-04T23:00:36Z",
-    "source_commit": "a4f16ccceb1d64b1056c8556c4c6e8af187011a5",
+    "revision": 3,
+    "activity_at": "2026-09-04T23:41:23Z",
+    "updated_at": "2026-09-04T23:41:23Z",
+    "last_codex_at": "2026-09-04T23:41:23Z",
+    "source_commit": "43a3949d81f15c1bba3ab62685ceeb515a52ddef",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
