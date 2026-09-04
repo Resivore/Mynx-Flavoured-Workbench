@@ -78,7 +78,7 @@ Stop for clipping into player/arms/camera, HUD intrusion, unsupported/floating a
 4. Carry a container with distinctive contents. Drop/place it and require every tested item and count to survive unchanged.
 5. Where the test setup permits two carried synthetic entities to be cached concurrently, exercise both and require no wrong-model swap, flicker, disappearance, or other ID-collision symptom.
 
-## Required persistence sequence — all runtime rows UNTESTED
+## Required persistence sequence â€” all runtime rows UNTESTED
 
 Use only disposable worlds in the managed dedicated Workbench. For each object, record the exact candidate, upstream and companion hashes; UUID where applicable; saved identifying state; screenshots/logs; and before/after contents. Static fixtures do not pass these rows.
 
