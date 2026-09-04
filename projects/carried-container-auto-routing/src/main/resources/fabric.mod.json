@@ -10,5 +10,6 @@
     "client": ["dev.resivore.carriedrouting.client.CarriedContainerAutoRoutingClient"]
   },
   "mixins": ["carried_container_auto_routing.mixins.json"],
-  "depends": { "fabricloader": ">=0.19.3", "minecraft": "~26.2", "java": ">=25", "fabric-api": "*" }
+  "depends": { "fabricloader": ">=0.19.3", "minecraft": "26.2", "java": ">=25", "fabric-api": "*" },
+  "suggests": { "container_slot_reservations": "*" }
 }
