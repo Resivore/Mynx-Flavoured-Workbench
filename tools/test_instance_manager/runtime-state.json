@@ -2,8 +2,8 @@
   "$schema": "../../schemas/runtime-state.schema.json",
   "schema_version": 2,
   "activation": "ACTIVE",
-  "revision": 82,
-  "updated_at": "2026-09-04T05:32:04Z",
+  "revision": 83,
+  "updated_at": "2026-09-04T18:23:16Z",
   "accepted_baseline": {
     "revision": 17,
     "provenance": {
@@ -945,11 +945,13 @@
           },
           "replaces_accepted_deployment_id": null,
           "runtime_result": {
-            "classification": "UNTESTED",
-            "recorded_at": null,
+            "classification": "FAIL",
+            "recorded_at": "2026-09-04T18:23:16Z",
             "evidence": {
               "passed": [],
-              "failed": []
+              "failed": [
+                "Client startup aborted with the supplied uncaught render-thread java.lang.NullPointerException: Components not bound yet when Canary 1's CLIENT_STARTED callback directly invoked StacksAreStacksMod.setStackSizes(null); the launcher's eventual exit code 0 does not negate the startup failure."
+              ]
             }
           }
         }
