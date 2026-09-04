@@ -19,11 +19,11 @@
       "Preserve a player's component-exact organization intent after a physical stack leaves an eligible persistent storage or machine slot.",
       "Apply native insertion permission AND exact reservation admission to manual placement, vanilla QUICK_MOVE, hoppers, sided automation, and QSN without changing extraction, destination order, internal processing, or routing ownership.",
       "Resolve every eligible logical menu slot to one stable block-owned or player-owned reservation holder, its physical local slot, physical stack, real slot count, and native admission result.",
-      "Retain accepted Canary 4's user-approved alpha-only ghost visuals, literal zero, hover behavior, carried-shulker persistence, optional tooltip overlays, server-authoritative public API, and count-one component-exact identity while Canary 5 changes only the occupied-reservation marker image.",
+      "Retain accepted Canary 4's user-approved alpha-only ghost visuals, literal zero, hover behavior, carried-shulker persistence, optional tooltip overlays, server-authoritative public API, and count-one component-exact identity while Canary 6 enforces reservations at the carried-shulker insertion seam and updates only the occupied-reservation marker asset and anchor.",
       "Keep the supported-owner and menu policy intentionally exact rather than admitting arbitrary modded, temporary, fake, foreign, player-inventory, or entity containers."
     ],
     "scope": [
-      "Maintain exact Minecraft Java 26.2 Fabric Canary 5 from implementation/artifact checkpoint 793a29fa0cac2f505e6fcf373c56b76e16eca568, physically verified in Test Slot A at manager revision 82.",
+      "Maintain exact Minecraft Java 26.2 Fabric Canary 6 from implementation/artifact checkpoint 6a1a284b0410bcce77467756e5046ed76117aa80, physically verified in Test Slot A at manager revision 88.",
       "Store sparse format-1 count-one ItemStackTemplate reservations per stable physical owner; requested block entities use only their real local slot range, vanilla and Double Barrels doubles retain two independent 27-slot owners, and the player Ender inventory is one player-owned 27-slot holder.",
       "Support exact vanilla chest and trapped-chest families, barrel, undyed and all 16 dyed shulkers, dispenser, dropper, hopper, furnace, blast furnace, smoker, brewing stand, crafter, and PlayerEnderChestContainer.",
       "Recognize ordinary and all eight unwaxed/waxed copper chest states through the authoritative predicate blockEntity.getType() == BlockEntityTypes.CHEST && BlockEntityTypes.CHEST.isValid(blockEntity.getBlockState()); single and permitted double forms keep exact physical-half ownership across oxidation, scraping, waxing, and unwaxing.",
@@ -32,9 +32,11 @@
       "Use a scoped native-admission bypass to query the actual owner's vanilla canPlaceItem policy, retain targeted post-native hooks for furnace-family, brewing, and crafter rules, preserve specialized menu Slot subclasses and callbacks, and never gate internal setItem writes.",
       "Expose only exact supported storage slots in ChestMenu, ShulkerBoxMenu, DispenserMenu, HopperMenu, FurnaceMenu, BlastFurnaceMenu, SmokerMenu, BrewingStandMenu, and CrafterMenu snapshots/actions; player, hotbar, fake, inactive, result-inventory, and foreign slots remain excluded.",
       "Keep getReservation, isReserved, reservationMatches, mayInsert, classify, and every ReservationSlotClass value binary-compatible with accepted CSR C1 consumers and QSN C8; native-non-writable reservations classify NON_WRITABLE and cannot create QSN affinity.",
-      "Preserve neutral 0x59FFFFFF alpha-only ghost rendering, the audited premultiplied pipeline, #43362A solely as the Matcha slot background, literal-zero placement/shadow, hover tooltip, reservation-free rendering, DataComponents.CONTAINER integrity, and Easy Shulker Boxes / Item Interactions overlays; render only OCCUPIED_RESERVED slots with the exact 103-byte 3x3 RGBA marker at itemX + 13, itemY through the nearest-sampled GUI sprite path.",
+      "Preserve neutral 0x59FFFFFF alpha-only ghost rendering, the audited premultiplied pipeline, #43362A solely as the Matcha slot background, literal-zero placement/shadow, hover tooltip, reservation-free rendering, DataComponents.CONTAINER integrity, and Easy Shulker Boxes / Item Interactions overlays; render only OCCUPIED_RESERVED slots with the exact supplied 1,723-byte 3x3 RGBA marker at itemX + 12, itemY through the nearest-sampled GUI sprite path.",
       "Record the user's exact Canary 3 visual observation only as a narrow INCONCLUSIVE result at manager revision 75; it is not a complete C3 matrix pass and supplies no C4 runtime evidence.",
-      "Keep exact CSR Canary 5 byte-identical while Stacks Are Stacks Container Fixes Canary 2 supplies post-registry client holder-default alignment; shared contracts cover count-one template materialization, component-exact matching, and effective-maximum classification without CSR production linkage."
+      "Continue to leave Stacks Are Stacks holder-default alignment to Stacks Are Stacks Container Fixes; preserve count-one ItemStackTemplate materialization, component-exact matching, and effective-maximum classification without CSR production linkage or a MAX_STACK_SIZE reservation component.",
+      "Bind the exact Canary 5 deployment f12e434a-51c1-4e84-a487-3ebcadbe3d64 / artifact c9551ad6-7a35-4a0e-ac25-af3efeccd86a FAIL at manager revision 86 only to the user's report that Easy Shulker Boxes carried-shulker insertion admitted a mismatched reservation and the reservation remained visible after removal; infer no unrelated row result.",
+      "Use an absent-safe @Pseudo string-targeted ItemStackingContext filter that captures the source shulker and filters the exact occupied and empty candidate arrays before Item Interactions mutates its temporary SimpleContainer: preserve native shulker nesting and exact item/components admission, prefer matching reserved candidates before unreserved candidates, deny mismatches, mutate neither reservations nor contents in the filter, and fail closed if the audited seam drifts."
     ],
     "boundaries": {
       "owned_paths": [
@@ -56,7 +58,7 @@
         "type": "MOD",
         "identifier": "minecraft",
         "requirement": "=26.2",
-        "reason": "Exact game version whose block-entity, Container, menu, native-admission, player persistence, respawn, and GUI sprite seams Canary 5 retains or audits."
+        "reason": "Exact game version whose block-entity, Container, menu, native-admission, player persistence, respawn, carried-shulker, and GUI sprite seams Canary 6 retains or audits."
       },
       {
         "type": "MOD",
@@ -74,19 +76,19 @@
         "type": "TOOL",
         "identifier": "java",
         "requirement": "25",
-        "reason": "Compilation release and controlled-validation runtime level used for Canary 5."
+        "reason": "Compilation release and controlled-validation runtime level used for Canary 6."
       },
       {
         "type": "TOOL",
         "identifier": "gradle",
         "requirement": "9.5.1",
-        "reason": "Exact build-tool version used for Canary 5 controlled validation."
+        "reason": "Exact build-tool version used for Canary 6 controlled validation."
       },
       {
         "type": "TOOL",
         "identifier": "fabric-loom",
         "requirement": "1.17.19",
-        "reason": "Exact Fabric build plugin pinned by the maintained Canary 5 project."
+        "reason": "Exact Fabric build plugin pinned by the maintained Canary 6 project."
       },
       {
         "type": "OTHER",
@@ -104,13 +106,13 @@
         "type": "MOD",
         "identifier": "easyshulkerboxes",
         "requirement": "Optional runtime predicate *; exact audit input 26.2.3",
-        "reason": "Flexible optional tooltip provider validated read-only against EasyShulkerBoxes-v26.2.3-mc26.2.x-Fabric.jar, 639,115 bytes, SHA-256 66f803ae8796a0cdd7086e175fe8b96846515710b8b98b9aebc79d52ea2b0c38."
+        "reason": "Flexible optional carried-shulker provider validated read-only against EasyShulkerBoxes-v26.2.3-mc26.2.x-Fabric.jar, 639,115 bytes, SHA-256 66f803ae8796a0cdd7086e175fe8b96846515710b8b98b9aebc79d52ea2b0c38."
       },
       {
         "type": "MOD",
         "identifier": "iteminteractions",
         "requirement": "Optional runtime predicate *; exact audit input 26.2.2",
-        "reason": "Flexible optional tooltip implementation validated read-only against META-INF/jars/iteminteractions-fabric-26.2.2.jar, 196,177 bytes, SHA-256 1745adf294134817986e46bf554a5a6613837602b660e15a15c50bdc2e0a293c."
+        "reason": "Flexible optional nested insertion implementation whose audited temporary-SimpleContainer occupied/empty candidate seam Canary 6 filters before mutation; validated read-only against META-INF/jars/iteminteractions-fabric-26.2.2.jar, 196,177 bytes, SHA-256 1745adf294134817986e46bf554a5a6613837602b660e15a15c50bdc2e0a293c."
       },
       {
         "type": "PROJECT",
@@ -121,16 +123,16 @@
     ]
   },
   "state": {
-    "milestone": "Exact CSR Canary 5 remains byte-identical at 112,541 bytes / SHA-256 d228ef4ece4893a6538a845b34c1684a72fe8659790dc63aa12ab608aa886b8e and retains accepted C4 plus rollback C1. Its complete Java 25 / Gradle 9.5.1 suite was reconfirmed twice: 62/62 JUnit and 20/20 GameTests both without and with exact accepted Double Barrels. Accepted QSN C8 passed 52 applicable behavioral/API contracts and 15/15 GameTests against exact C5; only its intentionally historical C1 byte-identity assertion was excluded. The compatibility fault was a stale client Stacks Are Stacks holder default, because CSR serializes holder identity, count, and component patch rather than resolved defaults; SAS patch C2 now aligns those defaults at the proven post-bind/pre-play seam without any CSR binary change. Manager revision 84 preserves the exact Slot A deployment f12e434a-51c1-4e84-a487-3ebcadbe3d64 / artifact c9551ad6-7a35-4a0e-ac25-af3efeccd86a, original readiness timestamps, and independent UNTESTED result beside SAS C2 in Slot B, accepted Stack v17, and state digest 589256b4cdeca64b22933887b1c14da37b9bbf4bbdb972fa9f8d91b6ec075c02. Runtime compatibility remains unverified.",
+    "milestone": "Exact CSR Canary 6 is current at source 6a1a284b0410bcce77467756e5046ed76117aa80, 117,505 bytes, and SHA-256 93616bd2794a936eb6485614c3215ad2f42b149053bcb8dcd80e6a7c668aed40, while accepted C4 and rollback C1 remain exact. Exact C5 was recorded FAIL at manager revision 86 only for the user's Easy Shulker Boxes report that carried-shulker insertion admitted a mismatched reservation and the reservation remained visible after removal; no unrelated row is inferred. The audited Item Interactions path writes through a temporary SimpleContainer without Slot.mayPlace or Container.canPlaceItem, so C6's absent-safe @Pseudo string-targeted ItemStackingContext integration captures the source shulker and filters occupied and empty candidates before upstream mutation, preserving native nesting and exact item/components semantics, preferring matching reservations before unreserved candidates, denying mismatches, mutating neither reservations nor contents in the filter, and failing closed on seam drift. C6 also carries the exact supplied 1,723-byte 3x3 RGBA occupied-only marker at itemX + 12, itemY, SHA-256 d12d0be850a742c69795259fde9a5d9d52e822df529196445948241b4b199f02. Two clean controlled builds each passed 71/71 JUnit tests in 13 suites and 21/21 GameTests, without and with exact accepted Double Barrels, and produced an identical JAR. Manager revision 88 at 2026-09-04T20:19:06Z physically verified Stack v18, state digest dee397c4ffebacabf41028a0fafb22d674ee695a937ba22f9a6122771577c9a4, and physical inventory digest c6fd9345dd5da38d5fd07ed46628d09baf0c3b6b2014c3be24a1848647a73f2d with exact C6 deployment 9783fefa-2d3f-4f4b-acdc-766d6b5ac2ab / artifact 1ef9a92a-47ef-4ea5-9f9f-b0166d042dd1 READY_TO_TEST_VERIFIED / UNTESTED in Slot A and Slot B empty. C6 differs from accepted C4 and remains runtime untested.",
     "releases": {
       "current": {
-        "version": "0.1.0-canary5",
-        "embedded_version": "0.1.0-canary5",
+        "version": "0.1.0-canary6",
+        "embedded_version": "0.1.0-canary6",
         "artifact": {
-          "filename": "container-slot-reservations-0.1.0-canary5.jar",
-          "sha256": "d228ef4ece4893a6538a845b34c1684a72fe8659790dc63aa12ab608aa886b8e"
+          "filename": "container-slot-reservations-0.1.0-canary6.jar",
+          "sha256": "93616bd2794a936eb6485614c3215ad2f42b149053bcb8dcd80e6a7c668aed40"
         },
-        "source_commit": "793a29fa0cac2f505e6fcf373c56b76e16eca568",
+        "source_commit": "6a1a284b0410bcce77467756e5046ed76117aa80",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
@@ -168,11 +170,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 9,
-    "activity_at": "2026-09-04T18:46:31Z",
-    "updated_at": "2026-09-04T18:46:31Z",
-    "last_codex_at": "2026-09-04T18:46:31Z",
-    "source_commit": "382cb276455ffe74efc100ce65e853b499204b56",
+    "revision": 10,
+    "activity_at": "2026-09-04T20:20:20Z",
+    "updated_at": "2026-09-04T20:20:20Z",
+    "last_codex_at": "2026-09-04T20:20:20Z",
+    "source_commit": "6a1a284b0410bcce77467756e5046ed76117aa80",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null

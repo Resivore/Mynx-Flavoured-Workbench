@@ -1472,16 +1472,16 @@ class RuntimeContractTests(unittest.TestCase):
         tracked = load_json(ROOT / "tools" / "test_instance_manager" / "runtime-state.json")
         self.assertEqual("ACTIVE", tracked["activation"])
         self.assertEqual(2, tracked["schema_version"])
-        self.assertEqual(84, tracked["revision"])
-        self.assertEqual("2026-09-04T18:46:31Z", tracked["updated_at"])
+        self.assertEqual(88, tracked["revision"])
+        self.assertEqual("2026-09-04T20:19:06Z", tracked["updated_at"])
         self.assertEqual(
-            "589256b4cdeca64b22933887b1c14da37b9bbf4bbdb972fa9f8d91b6ec075c02",
+            "dee397c4ffebacabf41028a0fafb22d674ee695a937ba22f9a6122771577c9a4",
             state_digest(tracked),
         )
-        self.assertEqual(17, tracked["accepted_baseline"]["revision"])
-        self.assertEqual(32, tracked["accepted_baseline"]["provenance"]["accepted_artifact_count"])
+        self.assertEqual(18, tracked["accepted_baseline"]["revision"])
+        self.assertEqual(33, tracked["accepted_baseline"]["provenance"]["accepted_artifact_count"])
         self.assertEqual("TRANSITIONED", tracked["accepted_baseline"]["provenance"]["physical_disposition"])
-        self.assertEqual(29, len(tracked["accepted_baseline"]["members"]))
+        self.assertEqual(30, len(tracked["accepted_baseline"]["members"]))
 
         accepted_by_uuid = {
             member["unit"]["project_uuid"]: member
@@ -1676,21 +1676,21 @@ class RuntimeContractTests(unittest.TestCase):
         self.assertEqual(1, len(slot_a["members"]))
         csr_successor = slot_a["members"][0]
         self.assertEqual(
-            "f12e434a-51c1-4e84-a487-3ebcadbe3d64",
+            "9783fefa-2d3f-4f4b-acdc-766d6b5ac2ab",
             csr_successor["unit"]["deployment_id"],
         )
         self.assertEqual("3ab36584-8732-554f-840e-28a75c422660", csr_successor["unit"]["project_uuid"])
         self.assertEqual("container-slot-reservations", csr_successor["unit"]["project_id"])
-        self.assertEqual("0.1.0-canary5", csr_successor["unit"]["version"])
+        self.assertEqual("0.1.0-canary6", csr_successor["unit"]["version"])
         self.assertEqual(
-            "793a29fa0cac2f505e6fcf373c56b76e16eca568",
+            "6a1a284b0410bcce77467756e5046ed76117aa80",
             csr_successor["unit"]["source_commit"],
         )
         self.assertEqual(
             (
-                "c9551ad6-7a35-4a0e-ac25-af3efeccd86a",
-                "container-slot-reservations-0.1.0-canary5.jar",
-                "d228ef4ece4893a6538a845b34c1684a72fe8659790dc63aa12ab608aa886b8e",
+                "1ef9a92a-47ef-4ea5-9f9f-b0166d042dd1",
+                "container-slot-reservations-0.1.0-canary6.jar",
+                "93616bd2794a936eb6485614c3215ad2f42b149053bcb8dcd80e6a7c668aed40",
                 ["mod:container_slot_reservations"],
             ),
             (
@@ -1709,12 +1709,10 @@ class RuntimeContractTests(unittest.TestCase):
             csr_successor["runtime_result"],
         )
         self.assertEqual("READY_TO_TEST_VERIFIED", slot_a["deployment"]["state"])
-        self.assertEqual("2026-09-04T05:32:04Z", slot_a["deployment"]["deployed_at"])
-        self.assertEqual("2026-09-04T05:32:04Z", slot_a["deployment"]["ready_verified_at"])
+        self.assertEqual("2026-09-04T20:19:06Z", slot_a["deployment"]["deployed_at"])
+        self.assertEqual("2026-09-04T20:19:06Z", slot_a["deployment"]["ready_verified_at"])
 
-        slot_b = tracked["slots"]["B"]
-        self.assertEqual(1, len(slot_b["members"]))
-        sas = slot_b["members"][0]
+        sas = accepted_by_uuid["58086966-05a1-4237-9f4f-ffca6c05da87"]
         self.assertEqual("66cd7696-3d01-4d92-805e-9221c1b93e07", sas["unit"]["deployment_id"])
         self.assertEqual("58086966-05a1-4237-9f4f-ffca6c05da87", sas["unit"]["project_uuid"])
         self.assertEqual("stacks-are-stacks-container-fixes", sas["unit"]["project_id"])
@@ -1734,18 +1732,8 @@ class RuntimeContractTests(unittest.TestCase):
                 sas["unit"]["artifacts"][0]["ownership_keys"],
             ),
         )
-        self.assertIsNone(sas["replaces_accepted_deployment_id"])
-        self.assertEqual(
-            {
-                "classification": "UNTESTED",
-                "recorded_at": None,
-                "evidence": {"passed": [], "failed": []},
-            },
-            sas["runtime_result"],
-        )
-        self.assertEqual("READY_TO_TEST_VERIFIED", slot_b["deployment"]["state"])
-        self.assertEqual("2026-09-04T18:46:31Z", slot_b["deployment"]["deployed_at"])
-        self.assertEqual("2026-09-04T18:46:31Z", slot_b["deployment"]["ready_verified_at"])
+        self.assertEqual("2026-09-04T20:16:38Z", sas["accepted_at"])
+        self.assertIsNone(tracked["slots"]["B"])
 
         csr_manifest = load_json(ROOT / "projects" / "container-slot-reservations" / "WORKBENCH_STATUS.json")
         qsn_manifest = load_json(ROOT / "projects" / "quick-stack-nearby-compat" / "WORKBENCH_STATUS.json")
@@ -1753,7 +1741,7 @@ class RuntimeContractTests(unittest.TestCase):
         slab_manifest = load_json(ROOT / "projects" / "slab-decorations" / "WORKBENCH_STATUS.json")
         self.assertEqual("TESTING", csr_manifest["definition"]["lifecycle"])
         self.assertEqual("ACCEPTED", qsn_manifest["definition"]["lifecycle"])
-        self.assertEqual("TESTING", sas_manifest["definition"]["lifecycle"])
+        self.assertEqual("ACCEPTED", sas_manifest["definition"]["lifecycle"])
         for manifest in (csr_manifest, sas_manifest):
             self.assertEqual(
                 "READY_TO_TEST_VERIFIED",
@@ -1768,12 +1756,12 @@ class RuntimeContractTests(unittest.TestCase):
             current_release_deployment_comparison(qsn_manifest, tracked),
         )
         self.assertEqual(
-            "CURRENT_RELEASE_DEPLOYED",
+            "CURRENT_RELEASE_NOT_DEPLOYED",
             current_release_deployment_comparison(sas_manifest, tracked),
         )
         self.assertEqual("RUNTIME_UNTESTED", csr_manifest["state"]["validation"]["runtime"])
         self.assertEqual("RUNTIME_PASS", qsn_manifest["state"]["validation"]["runtime"])
-        self.assertEqual("RUNTIME_UNTESTED", sas_manifest["state"]["validation"]["runtime"])
+        self.assertEqual("RUNTIME_PASS", sas_manifest["state"]["validation"]["runtime"])
         self.assertEqual("ACTIVE", slab_manifest["definition"]["lifecycle"])
         self.assertEqual("NOT_DEPLOYED", slab_manifest["state"]["validation"]["deployment"])
         self.assertEqual("RUNTIME_UNTESTED", slab_manifest["state"]["validation"]["runtime"])
@@ -1792,9 +1780,9 @@ class RuntimeContractTests(unittest.TestCase):
         )
         self.assertEqual(
             [
-                "Baseline: Stack v17",
-                "Slot A: Container Slot Reservations - Canary 5",
-                "Slot B: Stacks Are Stacks — Container Fixes - Canary 2",
+                "Baseline: Stack v18",
+                "Slot A: Container Slot Reservations - Canary 6",
+                "Slot B: Empty",
             ],
             title_state["lines"],
         )
