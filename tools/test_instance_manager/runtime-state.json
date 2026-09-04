@@ -2,8 +2,8 @@
   "$schema": "../../schemas/runtime-state.schema.json",
   "schema_version": 2,
   "activation": "ACTIVE",
-  "revision": 83,
-  "updated_at": "2026-09-04T18:23:16Z",
+  "revision": 84,
+  "updated_at": "2026-09-04T18:46:31Z",
   "accepted_baseline": {
     "revision": 17,
     "provenance": {
@@ -921,45 +921,43 @@
       "members": [
         {
           "unit": {
-            "deployment_id": "f58e3578-1149-4373-a32f-c6b3e1c9ceea",
+            "deployment_id": "66cd7696-3d01-4d92-805e-9221c1b93e07",
             "project_uuid": "58086966-05a1-4237-9f4f-ffca6c05da87",
             "project_id": "stacks-are-stacks-container-fixes",
             "project_identity_source": "CURRENT_MANIFEST",
-            "version": "0.1.0-canary1",
-            "source_commit": "625143806c44d6e5dc6725282edbfea0fafd8f53",
+            "version": "0.1.0-canary2",
+            "source_commit": "382cb276455ffe74efc100ce65e853b499204b56",
             "artifacts": [
               {
-                "artifact_id": "4eff5256-9775-4e5e-b459-ec40188849a5",
+                "artifact_id": "01661d77-c5d5-4838-8485-1cb4309265ce",
                 "kind": "MOD",
-                "filename": "stacks-are-stacks-container-fixes-0.1.0-canary1.jar",
-                "sha256": "ab3634c31c2f3b231908cf392ed5ada074e624e3dfba45b5707d8b38958e1eed",
+                "filename": "stacks-are-stacks-container-fixes-0.1.0-canary2.jar",
+                "sha256": "7c294ce614ccc6f889dde7db5b5bd474b74dc8b6a6c8e62faefd44e5811896f2",
                 "ownership_keys": [
                   "mod:stacksarestacks_container_fixes"
                 ],
                 "source": {
                   "type": "REPOSITORY",
-                  "path": "projects/stacks-are-stacks-container-fixes/artifacts/stacks-are-stacks-container-fixes-0.1.0-canary1.jar"
+                  "path": "projects/stacks-are-stacks-container-fixes/artifacts/stacks-are-stacks-container-fixes-0.1.0-canary2.jar"
                 }
               }
             ]
           },
           "replaces_accepted_deployment_id": null,
           "runtime_result": {
-            "classification": "FAIL",
-            "recorded_at": "2026-09-04T18:23:16Z",
+            "classification": "UNTESTED",
+            "recorded_at": null,
             "evidence": {
               "passed": [],
-              "failed": [
-                "Client startup aborted with the supplied uncaught render-thread java.lang.NullPointerException: Components not bound yet when Canary 1's CLIENT_STARTED callback directly invoked StacksAreStacksMod.setStackSizes(null); the launcher's eventual exit code 0 does not negate the startup failure."
-              ]
+              "failed": []
             }
           }
         }
       ],
       "deployment": {
         "state": "READY_TO_TEST_VERIFIED",
-        "deployed_at": "2026-09-04T05:32:04Z",
-        "ready_verified_at": "2026-09-04T05:32:04Z"
+        "deployed_at": "2026-09-04T18:46:31Z",
+        "ready_verified_at": "2026-09-04T18:46:31Z"
       }
     }
   }
