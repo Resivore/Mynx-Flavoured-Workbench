@@ -1738,7 +1738,7 @@ class DonorBoundaryContractTest(unittest.TestCase):
         )
         self.assertEqual(">=4.0.0", tools.REQUIRED_FABRIC_DEPENDENCIES["customportals"])
         self.assertEqual(
-            ">=0.1.10-canary11",
+            ">=0.1.10-0",
             tools.REQUIRED_FABRIC_DEPENDENCIES["matcha_heart_death_compat"],
         )
 

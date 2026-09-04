@@ -138,7 +138,7 @@ REQUIRED_FABRIC_DEPENDENCIES = {
     "geckolib": ">=5.5.1",
     "cloth-config2": ">=26.2.155",
     "customportals": ">=4.0.0",
-    "matcha_heart_death_compat": ">=0.1.10-canary11",
+    "matcha_heart_death_compat": ">=0.1.10-0",
 }
 SOURCE_FILE_COUNT = 287  # 285 assets/data files plus icon.png and logo.png
 OUTPUT_FILE_COUNT = 346
