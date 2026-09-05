@@ -1,23 +1,23 @@
 # Testing
 
-Mynx Ribbits Canary 11 is `ACTIVE / STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED`. Build/static checks do not establish Minecraft gameplay correctness. Read the exact current artifact filename/SHA-256 and implementation checkpoint in `WORKBENCH_STATUS.json`, and size/build evidence in the revision-16 log entry. Rehash the ignored private JAR before separately authorized deployment. Never deploy the resource-incomplete source-only JAR, and never install Canary 11 beside another JAR with the same `ribbits` mod ID.
+Mynx Ribbits Canary 12 is `ACTIVE / STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED`. Build/static checks do not establish Minecraft gameplay correctness. Read the exact current artifact filename/SHA-256 and implementation checkpoint in `WORKBENCH_STATUS.json`, and size/build evidence in the revision-17 log entry. Rehash the ignored private JAR before separately authorized deployment. Never deploy the resource-incomplete source-only JAR, and replace rather than install Canary 12 beside another JAR with the same `ribbits` mod ID.
 
-## Canary 11 focused deployed Drop Leaf checks - all pending
+## Canary 12 focused deployed Drop Leaf check - all pending
 
 Use only the dedicated `Matcha Flavoured 26.2 Workbench` through the serialized deployment procedure below. Record exact artifact identities and local/remote observations.
 
-1. Equip Drop Leaf in chest/cape while grounded. Confirm the inactive back-mounted presentation and inventory sprite are unchanged.
-2. Descend from a safe height and use the existing second-jump input to deploy. Confirm activation, acknowledgement and descent behavior remain normal.
-3. Confirm the donor rain leaf appears above/behind the player's back through the existing chute attachment, with its vertical stem and leaf-silhouette canopy; it must not appear in either hand.
-4. Inspect after startup, resource reload and reconnect. Require no magenta/missing texture anywhere on the stem or canopy.
-5. Require no old fully visible square canopy or legacy held-item presentation. The transparent donor leaf silhouette should define the canopy shape.
-6. Inspect third-person front, back, both sides, above and below while rotating through several headings. Require appropriate two-sided visibility, horizontal canopy placement and no torso clipping.
-7. Repeat in first person with each main arm and representative held items. Require the existing single-callback behavior and placement to remain correct.
-8. Land and repeat a grounded/redeploy cycle. Require the deployed visual to retract and the unchanged closed back-mounted state to return.
+1. Equip Drop Leaf in chest/cape.
+2. Descend from a safe height and deploy with the existing second-jump input.
+3. Require the rain-leaf stem/canopy above and behind the player's back.
+4. Require the actual green donor leaf artwork.
+5. Require the donor PNG's transparent area not to render.
+6. Require no magenta/black missing texture.
+7. Require no fully visible square canopy.
+8. Land and require normal retraction to the unchanged closed state.
 
 ## Earlier evidence boundary
 
-The exact Canary 6 cohort and the user's scoped Phase C practical `PASS`, the exact Canary 4 external startup `FAIL`, and the bound Canary 3 Phase B report remain recorded in `CODEX_LOG.md`. None supplies runtime evidence for Canary 11. Canary 11 preserves the Canary 5 startup repair and all later behavior, but its rain-leaf visual and combined stack are still untested in Minecraft.
+The exact Canary 6 cohort and the user's scoped Phase C practical `PASS`, the exact Canary 4 external startup `FAIL`, and the bound Canary 3 Phase B report remain recorded in `CODEX_LOG.md`. Canary 11 now has an exact external runtime `FAIL`: its rain geometry appeared through the correct back attachment, but the canopy resolved to the magenta/black missing texture. That result supplies no runtime evidence for Canary 12, whose item-atlas correction and combined stack remain untested in Minecraft.
 
 ## Deployment preconditions
 

@@ -105,12 +105,12 @@ if (privateResourcesDir != null) {
             if (manifest.schema?.toString() != 'mynx-ribbits-private-resource-manifest/v1' ||
                 manifest.classification?.toString() != 'PRIVATE MYNX ASSEMBLY STAGED / NONREDISTRIBUTABLE DONOR ASSETS' ||
                 manifest.candidate?.version?.toString() != project.mod_version.toString() ||
-                manifest.candidate?.version?.toString() != '4.1.6+26.2-mynx-canary11' ||
-                (manifest.candidate?.canary as int) != 11 ||
+                manifest.candidate?.version?.toString() != '4.1.6+26.2-mynx-canary12' ||
+                (manifest.candidate?.canary as int) != 12 ||
                 manifest.candidate?.private_artifact_filename?.toString() !=
-                    'ribbits-private-reconstruction-4.1.6+26.2-mynx-canary11.jar' ||
+                    'ribbits-private-reconstruction-4.1.6+26.2-mynx-canary12.jar' ||
                 manifest.candidate?.source_only_artifact_filename?.toString() !=
-                    'ribbits-source-only-4.1.6+26.2-mynx-canary11.jar') {
+                    'ribbits-source-only-4.1.6+26.2-mynx-canary12.jar') {
                 throw new GradleException("Private manifest classification is not eligible for private packaging: ${manifest.classification}")
             }
             if ((manifest.blockers as List)) {
@@ -343,10 +343,10 @@ if (privateResourcesDir != null) {
             }
             if ((manifest.pristine.selected_file_count as int) != 287 ||
                 (manifest.output.file_count as int) != 349 ||
-                (manifest.output.total_size as long) != 2733657L ||
+                (manifest.output.total_size as long) != 2739336L ||
                 expectedFiles.size() != 349) {
                 throw new GradleException(
-                    'Private manifest does not preserve the exact 287-input / 349-output / 2,733,657-byte contract'
+                    'Private manifest does not preserve the exact 287-input / 349-output / 2,739,336-byte contract'
                 )
             }
 
@@ -397,7 +397,6 @@ if (privateResourcesDir != null) {
             def wanderingModel = 'assets/wandering_ribbit/geo/wandering_ribbit.geo.json'
             def wanderingTexture = 'assets/wandering_ribbit/textures/entity/wandering_ribbit.png'
             def chuteClosedTexture = 'assets/wandering_ribbit/textures/item/umbrella_leaf_item.png'
-            def chuteOpenTexture = 'assets/wandering_ribbit/textures/item/umbrella_leaf_texture.png'
             expectedDerivedSources['assets/ribbits/geckolib/models/wandering_ribbit.geo.json'] = [
                 [archive: wanderingArchive, member: wanderingModel],
             ]
@@ -415,7 +414,7 @@ if (privateResourcesDir != null) {
                 [archive: 'tracked-project', member: 'tools/assets/chute_leaf.png'],
             ]
             expectedDerivedSources['assets/ribbits/textures/item/chute_leaf_open.png'] = [
-                [archive: wanderingArchive, member: chuteOpenTexture],
+                [archive: wanderingArchive, member: wanderingTexture],
             ]
             expectedDerivedSources['assets/ribbits/models/item/chute_leaf.json'] = [
                 [archive: 'tracked-project', member: 'tools/assets/drop_leaf_inventory.png'],

@@ -30,16 +30,16 @@ from typing import Any
 EXPECTED_PRISTINE_SHA256 = (
     "4cf86564aed393410fb1dbca3a9ce2425382307655e92bb6b43f3ddcee5bf731"
 )
-CANDIDATE_VERSION = "4.1.6+26.2-mynx-canary11"
-CANDIDATE_CANARY = 11
+CANDIDATE_VERSION = "4.1.6+26.2-mynx-canary12"
+CANDIDATE_CANARY = 12
 PRIVATE_MANIFEST_SCHEMA = "mynx-ribbits-private-resource-manifest/v1"
 PRIVATE_MANIFEST_CLASSIFICATION = (
     "PRIVATE MYNX ASSEMBLY STAGED / NONREDISTRIBUTABLE DONOR ASSETS"
 )
 PRIVATE_ARTIFACT_FILENAME = (
-    "ribbits-private-reconstruction-4.1.6+26.2-mynx-canary11.jar"
+    "ribbits-private-reconstruction-4.1.6+26.2-mynx-canary12.jar"
 )
-SOURCE_ONLY_ARTIFACT_FILENAME = "ribbits-source-only-4.1.6+26.2-mynx-canary11.jar"
+SOURCE_ONLY_ARTIFACT_FILENAME = "ribbits-source-only-4.1.6+26.2-mynx-canary12.jar"
 SOURCE_SAFE_PUBLIC_RESOURCE_PATHS = frozenset(
     {
         "assets/ribbits/items/glowcap.json",
@@ -142,8 +142,8 @@ REQUIRED_FABRIC_DEPENDENCIES = {
 }
 SOURCE_FILE_COUNT = 287  # 285 assets/data files plus icon.png and logo.png
 OUTPUT_FILE_COUNT = 349
-# Exact deterministic Canary 11 private staging inventory.
-OUTPUT_TOTAL_SIZE = 2_733_657
+# Exact deterministic Canary 12 private staging inventory.
+OUTPUT_TOTAL_SIZE = 2_739_336
 SOURCE_EXTENSION_COUNTS = {
     ".json": 201,
     ".nbt": 29,
@@ -3029,9 +3029,9 @@ def import_wandering_visual_resources(
     records[-1]["sources"] = [{"archive": "tracked-project", "member": "tools/assets/chute_leaf.png"}]
     records[-1]["transformation"] = "exact user-supplied 16x16 PNG replacement; no pixel or byte conversion"
     write_exact(
-        chute_open_member,
+        texture_member,
         "assets/ribbits/textures/item/chute_leaf_open.png",
-        "exact approved open Drop Leaf texture bytes",
+        "exact 128x128 donor entity-texture bytes under the item-atlas-safe Drop Leaf path",
     )
 
     closed_model_relative = "assets/ribbits/models/item/chute_leaf.json"
@@ -3170,8 +3170,8 @@ def import_wandering_visual_resources(
     open_model = {
         "ambientocclusion": False,
         "textures": {
-            "0": "ribbits:entity/wandering_ribbit",
-            "particle": "ribbits:entity/wandering_ribbit",
+            "0": "ribbits:item/chute_leaf_open",
+            "particle": "ribbits:item/chute_leaf_open",
         },
         "elements": [
             {
@@ -4390,7 +4390,7 @@ def validate_donor_resource_boundary(root: Path, errors: list[str]) -> None:
             "assets/wandering_ribbit/textures/entity/wandering_ribbit.png"
         ),
         "assets/ribbits/textures/item/chute_leaf_open.png": (
-            "assets/wandering_ribbit/textures/item/umbrella_leaf_texture.png"
+            "assets/wandering_ribbit/textures/entity/wandering_ribbit.png"
         ),
     }
     for output, member in wandering_exact_outputs.items():
@@ -4426,18 +4426,23 @@ def validate_donor_resource_boundary(root: Path, errors: list[str]) -> None:
             errors.append(f"Closed Drop Leaf model differs: {closed_model!r}")
         open_model = load_json(root / "assets/ribbits/models/item/chute_leaf_open.json")
         if not isinstance(open_model, dict) or open_model.get("textures") != {
-            "0": "ribbits:entity/wandering_ribbit",
-            "particle": "ribbits:entity/wandering_ribbit",
+            "0": "ribbits:item/chute_leaf_open",
+            "particle": "ribbits:item/chute_leaf_open",
         }:
-            errors.append("Open Drop Leaf rain model lacks exact donor entity-texture bindings")
+            errors.append("Open Drop Leaf rain model lacks exact item-atlas-safe texture bindings")
         if isinstance(open_model, dict) and any(
             legacy_key in open_model
             for legacy_key in ("format_version", "credit", "texture_size", "display", "groups")
         ):
             errors.append("Open Drop Leaf still contains the legacy held-item model contract")
-        open_texture = root / "assets/ribbits/textures/entity/wandering_ribbit.png"
+        entity_texture = root / "assets/ribbits/textures/entity/wandering_ribbit.png"
+        open_texture = root / "assets/ribbits/textures/item/chute_leaf_open.png"
         if not open_texture.is_file():
-            errors.append("Open Drop Leaf donor entity-texture reference does not resolve")
+            errors.append("Open Drop Leaf item-atlas texture reference does not resolve")
+        elif open_texture.read_bytes() != entity_texture.read_bytes():
+            errors.append("Open Drop Leaf item-atlas texture differs from the donor entity texture")
+        elif png_dimensions(open_texture.read_bytes(), str(open_texture)) != (128, 128):
+            errors.append("Open Drop Leaf item-atlas texture is not the exact 128x128 donor atlas")
         open_elements = open_model.get("elements") if isinstance(open_model, dict) else None
         if not isinstance(open_elements, list) or len(open_elements) != 2:
             errors.append("Open Drop Leaf does not contain exactly the donor rain grip and canopy")

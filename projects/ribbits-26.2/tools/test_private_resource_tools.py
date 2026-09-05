@@ -1287,8 +1287,8 @@ class PrivateVillageUtilityTransformTest(unittest.TestCase):
 
 class DonorBoundaryContractTest(unittest.TestCase):
     def test_exact_accounting_contains_only_approved_visual_members_and_outputs(self) -> None:
-        self.assertEqual("4.1.6+26.2-mynx-canary11", tools.CANDIDATE_VERSION)
-        self.assertEqual(11, tools.CANDIDATE_CANARY)
+        self.assertEqual("4.1.6+26.2-mynx-canary12", tools.CANDIDATE_VERSION)
+        self.assertEqual(12, tools.CANDIDATE_CANARY)
         self.assertEqual(
             "mynx-ribbits-private-resource-manifest/v1", tools.PRIVATE_MANIFEST_SCHEMA
         )
@@ -1297,7 +1297,7 @@ class DonorBoundaryContractTest(unittest.TestCase):
             tools.PRIVATE_MANIFEST_CLASSIFICATION,
         )
         self.assertEqual(349, tools.OUTPUT_FILE_COUNT)
-        self.assertEqual(2_733_657, tools.OUTPUT_TOTAL_SIZE)
+        self.assertEqual(2_739_336, tools.OUTPUT_TOTAL_SIZE)
         self.assertEqual(2_563, tools.SORCERER_LOOT_OUTPUT_SIZE)
         self.assertEqual(
             "5b06e06502bf11f661161e89bf34e329d8f23268b7b0104371038c38ad9b378d",
@@ -1359,7 +1359,9 @@ class DonorBoundaryContractTest(unittest.TestCase):
                     ]},
                 ]
             }]}).encode(),
-            texture_member: b"entity-png",
+            texture_member: tools.encode_rgba_png(
+                128, 128, bytes((35, 95, 38, 255)) * (128 * 128)
+            ),
             chute_model_member: json.dumps(
                 {
                     "parent": "minecraft:builtin/entity",
@@ -1401,8 +1403,19 @@ class DonorBoundaryContractTest(unittest.TestCase):
                 (root / "assets/ribbits/textures/item/chute_leaf.png").read_bytes(),
             )
             self.assertEqual(
-                payloads[open_member],
+                payloads[texture_member],
                 (root / "assets/ribbits/textures/item/chute_leaf_open.png").read_bytes(),
+            )
+            self.assertEqual(
+                (128, 128),
+                tools.png_dimensions(
+                    (root / "assets/ribbits/textures/item/chute_leaf_open.png").read_bytes(),
+                    "assembled open leaf",
+                ),
+            )
+            self.assertEqual(
+                "8e481fa8b4e4458adb52d60ab3123801e612835b65cd362264c00801d84d681a",
+                tools.DONOR_INPUT_SPECS["wandering"]["members"][texture_member]["sha256"],
             )
             self.assertEqual(
                 {
@@ -1433,11 +1446,12 @@ class DonorBoundaryContractTest(unittest.TestCase):
             self.assertTrue(all("cullface" not in face for face in open_model["elements"][1]["faces"].values()))
             self.assertEqual(
                 {
-                    "0": "ribbits:entity/wandering_ribbit",
-                    "particle": "ribbits:entity/wandering_ribbit",
+                    "0": "ribbits:item/chute_leaf_open",
+                    "particle": "ribbits:item/chute_leaf_open",
                 },
                 open_model["textures"],
             )
+            self.assertNotIn("ribbits:entity/wandering_ribbit", json.dumps(open_model))
             self.assertFalse((root / "assets/ribbits/geckolib/animations/wandering.json").exists())
 
     def test_polish_pixels_preserve_artwork_exactly(self) -> None:

@@ -6,14 +6,14 @@ Upstream code is covered by LGPL-3.0. Ribbits resources and the approved Guard R
 
 ## Current candidate
 
-- Internal version: `4.1.6+26.2-mynx-canary11`
-- Private artifact: `ribbits-private-reconstruction-4.1.6+26.2-mynx-canary11.jar`, 3,334,222 bytes, SHA-256 `258CA17B5D61C825AFBAF852413C1F44183D2533446BFF297C4B8453AD9CECAA`
-- Source-only artifact: `ribbits-source-only-4.1.6+26.2-mynx-canary11.jar`, 1,263,471 bytes, SHA-256 `3315C1ED9A56D5B7169196660834E06781C1E6D8C2DAA93E9F7BD5652B57F43C`
+- Internal version: `4.1.6+26.2-mynx-canary12`
+- Private artifact: `ribbits-private-reconstruction-4.1.6+26.2-mynx-canary12.jar`, 3,339,908 bytes, SHA-256 `23F358B8ACB5BE956C020FA62D427BF432E21E2F09A22474838EB67714B95813`
+- Source-only artifact: `ribbits-source-only-4.1.6+26.2-mynx-canary12.jar`, 1,263,471 bytes, SHA-256 `A4E73C16E5CC79BA9D7C758BC3B5CEF7AE557125F6C14BF9D3A0F4144C9C2BFA`
 - State: `ACTIVE / STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED`
 
-Canary 11 succeeds, but does not overwrite or relabel, Canary 10: version `4.1.6+26.2-mynx-canary10`, private artifact `ribbits-private-reconstruction-4.1.6+26.2-mynx-canary10.jar`, 3,334,581 bytes, SHA-256 `3D0EA590BA7186FA1B1A7CF3A6BE7689EEF5C424275B19AACF5D6CF59945AED9`, source checkpoint `681f120c444d2a0c34cfd1b448426f23cf9371bd`. Canary 9 and earlier identities remain historical at their recorded identities.
+Canary 12 succeeds, but does not overwrite or relabel, runtime-failed Canary 11: `ribbits-private-reconstruction-4.1.6+26.2-mynx-canary11.jar`, 3,334,222 bytes, SHA-256 `258CA17B5D61C825AFBAF852413C1F44183D2533446BFF297C4B8453AD9CECAA`, source checkpoint `784b745d6480e076fb94598a3b466cfb98bbec04`. The user's runtime screenshot/report binds exactly to that canonical identity: its deployed rain geometry appeared, but the canopy resolved to Minecraft's magenta/black missing-texture sprite. Canary 10 and earlier identities remain historical at their recorded identities.
 
-No Minecraft client or server was launched and no candidate was deployed by this task. Static compilation, tests, deterministic assembly, archive inspection, codec validation, and the production-equivalent Knot/Mixin application test are not gameplay runtime evidence. The current useful future runtime procedure is in `TESTING.md`.
+This correction task launched no Minecraft client/server and made no deployment. Static compilation, tests, deterministic assembly, archive inspection, codec validation, and the production-equivalent Knot/Mixin application test are not gameplay runtime evidence for Canary 12. The current useful future runtime procedure is in `TESTING.md`.
 
 ## Canary 4 startup failure and Canary 5 repair
 
@@ -105,7 +105,7 @@ Optional provider `ribbits:optional_matcha_compasses`, schema 1, resolves Copper
 
 ## Drop Leaf
 
-Canary 11 retains registry ID `ribbits:chute_leaf` and the displayed name **Drop Leaf**. Its inactive inventory sprite, auxiliary `chute_leaf_closed` back model, renderer attachment, first-person path, activation protocol and movement mechanics are unchanged. Only the private `ribbits:item/chute_leaf_open` model changes: the assembler now derives its stem and canopy from the donor entity's rain-held `umbrella_leaf/grip/leaf2` bones in `geo/wandering_ribbit.geo.json` and binds their populated UV region to the exact `ribbits:entity/wandering_ribbit` texture. The former separate hand-held `models/custom/umbrella_leaf.json` substitute no longer resolves for deployed Drop Leaf. See `MYNX_DEVIATIONS.md` for exact current visual identities and `TESTING.md` for pending runtime checks.
+Canary 12 retains registry ID `ribbits:chute_leaf` and the displayed name **Drop Leaf**. Its inactive inventory sprite, auxiliary `chute_leaf_closed` back model, renderer attachment, first-person path, activation protocol, movement mechanics, and Canary 11 rain-held `umbrella_leaf/grip/leaf2` geometry/UVs are unchanged. The exact 128×128 donor entity PNG is now also copied byte-for-byte to item-atlas-safe `assets/ribbits/textures/item/chute_leaf_open.png`, and the open model binds both texture keys to `ribbits:item/chute_leaf_open`. This corrects Canary 11's runtime-invalid entity-namespace item-model reference without using the separate hand-held donor model or its unrelated 32×32 texture. See `MYNX_DEVIATIONS.md` for exact identities and `TESTING.md` for the pending focused runtime check.
 
 `ribbits:chute_leaf` is a stack-one, noncraftable, nondurable, unlimited-use Trinket. Its only eligibility declaration is `data/trinkets/tags/item/chest/cape.json`, and runtime checks require exact slot `chest/cape`, index `0`, in the accepted amount-one slot. It has no `chest/back` or broad Trinkets tag, creates no slot or inventory, carries no equippable or glider component, and is mutually exclusive with usable or broken Elytra/glider equipment in both insertion directions. Canary 8 compiles against and hash-gates the unchanged accepted `trinkets-4.1.0-beta.3+26.2-inventory-compat-canary5.jar`, 560,208 bytes, SHA-256 `4C1FA6AC36C0457483FD0D395B99BBD94C9334AAD6DEFECE7633BBF0552D1724`.
 
