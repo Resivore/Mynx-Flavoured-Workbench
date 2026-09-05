@@ -1799,9 +1799,9 @@ class RuntimeContractTests(unittest.TestCase):
         )
         self.assertEqual(
             [
-                "Baseline: Stack v18",
+                "Baseline: Stack v19",
                 "Slot A: Container Slot Reservations - Canary 7",
-                "Slot B: Carried Container Auto-Routing - Canary 1",
+                "Slot B: Empty",
             ],
             title_state["lines"],
         )
