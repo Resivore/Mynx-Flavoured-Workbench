@@ -16,25 +16,26 @@
     "lifecycle": "ACTIVE",
     "goals": [
       "Provide fail-closed Xaero entity-head icons for Ribbits through a distinct compatibility companion without changing normal Ribbits rendering or the EMF companion behavior.",
-      "Maintain a provider-based Xaero × GeckoLib icon-capture core with explicit opt-in entity selectors; Canary 3 registers only the exact ribbits:ribbit provider and its literal main/body direct-cube rule.",
+      "Maintain an explicitly registered ordinary Ribbit and Wandering Ribbit GeckoLib capture provider; ordinary main/body remains DIRECT-CUBES-ONLY, while Wandering selects only its face core and paired eyes.",
       "Preserve non-Gecko exact-binary gates, required GeckoLib APIs, bounded-cache, render-state, resource-reload, transform, private-asset, and All Rights Reserved boundaries while the statically validated Canary awaits controlled runtime evidence."
     ],
     "scope": [
-      "Wrap the sole RadarIconForm.getPrerenderer call in Xaero RadarIconCreator.create so only an exact unsupported ribbits:ribbit GeoEntityRenderer can use the Geo-aware provider; preserve upstream vanilla, Ender Dragon, EMF, already-handled, disabled-head, and category-filtered paths.",
-      "Reuse Xaero's one fully populated GeckoLib render-state snapshot to resolve the active Ribbit model, baked geometry, profession/Pride state, and texture, then select exactly one top-level main and exactly one direct child body.",
-      "Render all and only cubes owned directly by body with inherited static main/body and cube transforms, no descendant or sibling traversal, no model-specific pruning, and framing derived solely from transformed selected-cube bounds.",
-      "Use bounded model/texture/profession/Pride/baby-policy/reload cache identity, invalidate successful and FAILED Ribbit cache entries on resource reload, and fail closed to Xaero's ordinary dot/name fallback on any contract or render failure.",
-      "Retain and statically validate client-only Canary 3 against exact Xaero 26.4.2, nested XaeroLib 1.7.1, actual GeckoLib 5.5.4 and 5.5.1 regression binaries, authoritative Mynx Ribbits C9, Minecraft 26.2, and unaccepted Canary 4 in the combined production classloading harness. Retained failed C3 remains an exact historical binary regression input."
+      "Wrap the sole RadarIconForm.getPrerenderer call in Xaero RadarIconCreator.create for only exact unsupported ribbits:ribbit or ribbits:wandering_ribbit renderers; preserve vanilla, Ender Dragon, EMF, already-handled, disabled-head and category-filtered paths.",
+      "Reuse Xaero populated render state and active model/texture. Ordinary Ribbits retain required profession/Pride/instrument/umbrella/rain tickets; exact WanderingRibbitRenderer/WanderingRibbitModel require living Geo state and no custom Ribbit tickets.",
+      "Ordinary selection preserves every direct cube at exact main/body, inherited bind and cube transforms, and excludes every descendant/sibling. Wandering uses the same exact hierarchy but a separate fail-closed geometry selector for its face core and two eyes; excludes direct clothing/backpack and descendant/sibling accessories/limbs.",
+      "Normalize selected transformed bounds to the ordinary Xaero head capture span of 16 pixels (32 pixels per model unit times 8/16 head units), preserving capture min(1, Parameters.scale) and downstream display scale. Map Gecko baked +Y/-Z to screen -Y/camera +Z without the erroneous Y half-turn; inherited creator capture pose is identity.",
+      "Keep bounded model/texture/profession/Pride/baby/reload identities; ordinary and Wandering have distinct entity/provider/selector identities, including unresolved sentinels. Invalidate both successful and FAILED outer entity caches on reload, without enabling arbitrary GeckoLib entities.",
+      "Canary 4 static validation uses exact Xaero 26.4.2/nested XaeroLib 1.7.1, authoritative Ribbits C9, actual GeckoLib 5.5.4 and 5.5.1, and unchanged EMF C4 in the production classloading harness. GeckoLib remains capability-based; all non-Gecko dependency gates remain unchanged."
     ],
     "boundaries": {
       "owned_paths": [
         "projects/ribbits-xaero-entity-icons-compat"
       ],
       "exclusions": [
-        "Cross-project EMF implementation changes except the explicitly owned companion Canary 4 integration in this reconciliation; future Ribbits-only work must not modify the EMF project.",
+        "Any EMF companion implementation, artifact, status or behavior changes.",
         "Changes to projects/ribbits-26.2, its renderer, private resources, artifacts, releases, lifecycle, or runtime evidence.",
         "A dummy vanilla EntityModel or ModelPart facade, whole-body Gecko capture, mutation or replay of the in-world renderer, recursive body rendering, or a generic head-bone heuristic.",
-        "Model- or profession-specific cube pruning, automatic support for non-Ribbit GeckoLib entities, or cache keys derived from animation time, transient progress, UUID, or world position.",
+        "Ordinary Ribbit cube pruning; automatic support for arbitrary GeckoLib entities; animation time, transient progress, entity UUID or world position in cache keys.",
         "Redistribution of Xaero All Rights Reserved code/assets, private or donor-derived Ribbits models/textures/manifests, decompiled upstream class bodies, or unlicensed static icon art.",
         "Deployment, Minecraft launch, Test Slot A or B use, accepted-baseline mutation, or any claim of runtime validation for this static candidate.",
         "Modification of the dedicated Workbench profile, runtime-manager state, originals, or any access to the protected Matcha Flavoured 26.1.2 gameplay instance."
@@ -45,7 +46,7 @@
         "type": "PROJECT",
         "identifier": "2a650718-ec62-568f-8dff-71258a4d6f3f",
         "requirement": "Exact activation and validation baseline: 4.1.6+26.2-mynx-canary9; ribbits-private-reconstruction-4.1.6+26.2-mynx-canary9.jar; 3,333,513 bytes; SHA-256 e433cd048bc362edae91e2e057c8170d92d110cbe7b9917c105c7336be6543de; source 8dc886c01f6d402ccf19b45756383d62185f0d4e. This identity does not assert Ribbits runtime acceptance.",
-        "reason": "Provides the exact Ribbit renderer, populated data tickets, dynamic model/texture contract, and read-only private model-structure input supported by Canary 3; its separate Wandering Ribbit entity/model remains outside the provider."
+        "reason": "Exact unchanged C9 gate and read-only renderer/model/geometry input for ordinary and separately registered Wandering Ribbit capture."
       },
       {
         "type": "MOD",
@@ -111,7 +112,7 @@
         "type": "MOD",
         "identifier": "geckolib",
         "requirement": "Presence and required renderer/model/render-state/direct-cube APIs; no version, archive size, SHA-256 or origin-layout activation restriction. Validation baselines only: geckolib-fabric-26.2-5.5.4.jar / 1,183,876 bytes / SHA-256 a5770f9ea0c21db157559fe266874fd84be8c7da689d37aa7bf2b06304a6a65d; regression geckolib-fabric-26.2-5.5.1.jar / 703,096 bytes / SHA-256 4bf1c86b4b47aa2c5d84208255695f10d79d609b23d802c995711e64b45cfce0.",
-        "reason": "Canary 3 reads only required API signatures before mixin application, without loading game classes; absent/incompatible requirements fail closed with a named diagnostic. Both actual binaries passed the project suite and combined production classloading harness; neither is runtime evidence or an allowlist."
+        "reason": "Capability-based C3 API activation policy preserved in C4. Actual 5.5.4 and 5.5.1 each pass 71 tests in 16 suites and production classloading; validation identities are not runtime restrictions."
       },
       {
         "type": "RESOURCE_PACK",
@@ -134,15 +135,15 @@
     ]
   },
   "state": {
-    "milestone": "Canary 3 removes only GeckoLib version/archive activation allowlisting and probes required APIs without early game-class loading. Actual Fabric 26.2 GeckoLib 5.5.4 and 5.5.1 each passed 66 tests in 14 suites and the combined production Knot/Mixin classloading harness; both clean builds produced identical 58,821-byte successor archives. Xaero, nested XaeroLib and Ribbits C9 gates, main/body direct-cube selection, rendering, transforms, caches and EMF companion remain unchanged. C1 external FAIL and untested C2 retain historical identities in the log; C3 is ACTIVE, NOT_DEPLOYED and RUNTIME_UNTESTED, with no accepted release or rollback.",
+    "milestone": "Canary 4 fixes 58-versus-16 capture sizing mismatch and baked face/up axis mapping, preserving user display scaling, ordinary direct cubes, static bind transforms and active texture. Explicit Wandering face selector excludes clothes/backpack/limbs and has distinct reload-safe identities. 61,889-byte successor: 71 tests in 16 suites and production classloading pass independently on actual GeckoLib 5.5.4 and 5.5.1; identical clean-build bytes. User-reported external visual FAIL: enormous icons, top-of-head rather than face views, missing Wandering support. Report lacks observation timestamp, installed compatibility version/hash and session/resource identity, so it is not bound to C3 or another exact release. Current C4 remains ACTIVE / NOT_DEPLOYED / RUNTIME_UNTESTED and unaccepted; no instance or slot changes.",
     "releases": {
       "current": {
-        "version": "0.1.0-canary3",
+        "version": "0.1.0-canary4",
         "artifact": {
-          "filename": "ribbits-xaero-entity-icons-compat-0.1.0-canary3.jar",
-          "sha256": "79815cb8a958cd1d1a13338487a0ea1b0bb1f8a09493705a5e8ddb84a70469da"
+          "filename": "ribbits-xaero-entity-icons-compat-0.1.0-canary4.jar",
+          "sha256": "cc4a690712a37e3fa58e4bff7fce6164285e4a91b8e83ca665ded60c2b0cdc2d"
         },
-        "source_commit": "33d4c1135d9428d16aab5e84de070ab392fcb776",
+        "source_commit": "828e17547625875e6bc7a7892c6841f1d8666229",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
@@ -161,11 +162,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 5,
-    "activity_at": "2026-09-05T00:34:22Z",
-    "updated_at": "2026-09-05T00:34:22Z",
-    "last_codex_at": "2026-09-05T00:34:22Z",
-    "source_commit": "33d4c1135d9428d16aab5e84de070ab392fcb776",
+    "revision": 6,
+    "activity_at": "2026-09-05T01:24:48Z",
+    "updated_at": "2026-09-05T01:24:48Z",
+    "last_codex_at": "2026-09-05T01:24:48Z",
+    "source_commit": "828e17547625875e6bc7a7892c6841f1d8666229",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
