@@ -1,21 +1,57 @@
-# CSR C9 runtime procedure
+# CSR C9 failure and blocked tooltip audit
 
-**CONTROLLED VALIDATION PASS — READY_TO_TEST_VERIFIED — RUNTIME UNTESTED**
+**Current installed C9: READY_TO_TEST_VERIFIED / RUNTIME_FAIL. Audit build: not built or deployed.**
 
-Exact candidate: `container-slot-reservations-0.1.0-canary9.jar`, embedded `0.1.0-canary9`, 142591 bytes, SHA-256 `c6b62239dbf826fb4c9423f22eb900c486a845884a1c3f9243fa87a797537c92`, source `1b978f0b553b3545f8a943e18cc743c363e67aac`. Slot A deployment `58606ffd-251f-42ad-9232-0a68f97654f7`, artifact `cb9b9417-4e68-486b-962c-c431f4bbc90d`. Verify canonical manager readiness before the user launches the dedicated 26.2 Workbench.
+The user reports that physically empty unreserved and physically empty reserved Easy Shulker Boxes tooltip cells still cannot be hovered or targeted by the CSR editor. The previous two Canary efforts did not establish full runtime editing compatibility. No occupied-cell, template, other-container, visual, insertion, synchronization, or other checklist result is inferred. The root cause remains unresolved; earlier modeled tests are insufficient runtime proof.
 
-1. Hover a count-one shulker in its outer slot for a frame, then move into its tooltip with the outer slot no longer hovered. The original host and tooltip anchor must persist. Repeat for physically empty reservation-only and physically nonempty shulkers. Verify native back/front highlight on occupied, empty reserved and empty unreserved cells, covering all 27 cells and their corners, especially indices 0, 8/9, 17/18 and 26.
-2. Repeat at GUI scales 1 and 2 or higher, with the host at left/right/top/bottom screen edges and native scrolling, expansion, collapse and modifier settings. The highlight must follow the final drawn cell; the tooltip must not chase the pointer. Collapsed or closed tooltips cannot receive edits.
-3. With the existing CSR key, set/replace an occupied template and toggle an exact match off. Set/replace an empty cell from the cursor, clear an empty reserved cell with an empty cursor, and verify empty unreserved plus empty cursor is a non-consuming no-op. A valid tooltip cell takes priority over the outer slot. Wait for acknowledgement and repeat.
-4. Test player-inventory and shared-chest hosts, including identical duplicate shulkers. Only the exact selected host changes. Move/change the host or outer slot, increase host count, change the screen/menu, close the tooltip or leave the valid host-to-tooltip region before an action; stale actions must do nothing. Reopening must acquire the new exact host.
-5. Keep a second viewer on the shared chest. Both viewers must update immediately without reopening. Contents, name, lore, lock and all unrelated components must survive, including after reopening and rejoining.
-6. A physically empty reserved shulker has its native 9x3 tooltip with 27 actual empty contents, ghosts and literal zeroes. Clear the final reservation and verify native no-tooltip behavior returns, with no stale hit or placeholder contents.
-7. Create a reservation from an empty named/lore-bearing undyed and dyed shulker in a normal menu. Exact identity must match; filled or internally reserved variants must be rejected. Eligible multi-count template identity normalizes to one; multi-count host editing is rejected.
-8. Filled, reservation-bearing and combined shulker templates are rejected from occupied/cursor creation paths. Historical invalid templates remain visible and explicitly clearable, with no migration.
-9. Recheck C6 carried insertion filtering: mismatched item/components cannot enter a reserved cell; matching reserved candidates precede ordinary empties, contents/reservations remain intact, and shulker nesting stays denied.
-10. Recheck ghost alpha, literal zero, the exact occupied marker at itemX+12, copper chest and Double Barrels ownership, Ender persistence, automation and machine permissions, Stacks Are Stacks capacities and QSN read-only API behavior. QSN C9's independent INCONCLUSIVE result does not validate CSR C9.
-11. Inspect the full client/server log. Stop on mixin/network errors, stale or wrong-host edits, visual geometry drift, lost components, mismatched insertion, desynchronization or count discrepancy. Record only observed rows and the exact release identity.
+Current exact Slot A is `container-slot-reservations-0.1.0-canary9.jar`, version `0.1.0-canary9`, 142591 bytes, SHA-256 `c6b62239dbf826fb4c9423f22eb900c486a845884a1c3f9243fa87a797537c92`, source `1b978f0b553b3545f8a943e18cc743c363e67aac`, deployment `58606ffd-251f-42ad-9232-0a68f97654f7`, artifact `cb9b9417-4e68-486b-962c-c431f4bbc90d`.
 
-Controlled evidence: 87 existing JUnit tests and 24 required GameTests passed in clean builds without and with accepted Double Barrels. Final deterministic native/production lifecycle suite: 44 passes, also executed against the exact packaged C9 artifact; the two focused C8 regressions fail as expected. These tests do not establish interactive client-runtime behavior.
+## Stop condition reached
 
-Manager revision 96 / accepted Stack v19; deployed 2026-09-05T06:07:58Z; state SHA-256 2473241803c3f355c8138968da9845d921e46c4643a2f3e0ba64f0ce9ce20e25; physical inventory SHA-256 493c01f74dea121be5832dbad05368d96bfa4e53626e3daeb17a2c2b85256cc6. All 38 managed files physically verified. One atomic DEPLOY_PROFILE added CSR C9 and removed CSR C8 only; Slot B including its result and timestamps, accepted baseline, companions, rollback bytes and all unrelated deployments are unchanged. CSR C9 remains UNTESTED. QSN C9 remains independently INCONCLUSIVE in unchanged Slot B. No Minecraft client was launched.
+The requested audit stopped before instrumentation, build, and replacement because the canonical manager cannot represent an explicitly diagnostic, non-promotable artifact. Its strict candidate/member/unit/artifact records reject diagnostic and promotable fields; its title displays the proposed `0.1.0-canary9-esb-tooltip-audit1` as ordinary Canary 9; its pure promotion planner accepts that suffix after a PASS. This was demonstrated only in memory, with no synthetic evidence saved or deployed. A suffix or prose label cannot supply the missing promotion guard. No manager implementation was changed.
+
+Do not try to collect the requested audit traces from currently installed C9: it has no `[CSR-ESB-AUDIT]` tracer or capture indication. Do not modify the profile, enable hidden configuration, install another mod, or use the protected gameplay instance. A separately authorized manager change must establish diagnostic identity, truthful display, and promotion exclusion before the original audit implementation can resume.
+
+The project remains TESTING because C9 still occupies Slot A; that lifecycle does not imply a runtime pass or diagnostic availability.
+
+## Conditional procedure after the audit is implemented and verified
+
+This procedure becomes usable only after canonical records identify an actual validated diagnostic artifact in Slot A. The proposed version is `0.1.0-canary9-esb-tooltip-audit1`; no artifact, source checkpoint, hash or deployment identity exists for it yet. The build must preserve C9 behavior and must not be promoted.
+
+Use only the dedicated **Matcha Flavoured 26.2 Workbench**. Make one distinguishable count-one shulker containing one occupied physical cell, one physically empty reserved cell, and one physically empty unreserved cell. Keep their positions distinguishable. Use the existing CSR reservation key.
+
+For each case in the table:
+
+1. Hover the outer shulker until its native 9x3 tooltip is visible.
+2. Move the pointer into the specified internal cell.
+3. Pause briefly.
+4. Press the existing CSR reservation key once.
+5. Wait for `CSR tooltip audit trace <id> written` and note the case and trace ID.
+6. Move away before the next case. Restore the intended occupied/reserved/unreserved setup if the normal reservation action changed it.
+
+| Case | Screen / shulker location | Target cell | Cursor |
+| --- | --- | --- | --- |
+| A1 | Survival inventory | Occupied | Empty |
+| A2 | Survival inventory | Empty reserved | Empty |
+| A3 | Survival inventory | Empty unreserved | Empty |
+| A4 | Survival inventory | Empty unreserved | Simple valid item, such as cobblestone |
+| B1 | Open ordinary chest | Empty reserved | Empty |
+| B2 | Open ordinary chest | Empty unreserved | Empty |
+| C1 | Inventory Extended inventory screen | Empty reserved | Empty |
+| C2 | Inventory Extended inventory screen | Empty unreserved | Empty |
+| D1 | Creative inventory, actual player-inventory tab | Empty reserved | Empty |
+| D2 | Creative inventory, actual player-inventory tab | Empty unreserved | Empty |
+
+Also collect an outer-host control: hover the outer shulker until its tooltip is visible, keep the pointer on the outer shulker without entering the tooltip, pause, press the same key once, wait for the capture indication, and move away. A missing nested hit must still flush the preceding event window. Capture indicates only that evidence was written, not that editing passed.
+
+After all cases, close the screen, exit the world normally, and close Minecraft normally. Preserve and provide the complete dedicated Workbench `logs/latest.log`, not a copied exception excerpt. Search for `[CSR-ESB-AUDIT]` and retain every line from the startup summary through the final trace flush. Preserve the log before a subsequent launch replaces it. Report each attempted case, trace ID or missing indication, and only behavior actually observed.
+
+Stop on failed mixin injection, absent capture indication, a client error, item loss/duplication, or a changed artifact identity; retain the complete log. Do not lower injection requirements, change mods/configuration, or attempt a speculative fix. The eventual C10 requires the first divergence in this actual live trace.
+
+The future trace must cover logical frames/extractor construction, outer host and tooltip scheduling order, Item Interactions factory/binding attachment, deferred extraction/position/collapse, retention rejection reasons, grid show/live/hit decisions, both native highlight passes, every reservation-key attempt including fallback, server validation/broadcast, and startup versions/mixin application. None of these audit seams is implemented in the currently installed C9.
+
+## Verified state after recording this report
+
+Canonical RECORD_RESULT at `2026-09-05T17:28:50Z` advanced manager revision 96 to 97 with zero mod-file writes/removals. Accepted Stack v19 and all 38 managed files physically verified unchanged. State digest: `5d03a29a5baea3906b5967fcb21fa369797347f4dcf57cf9bb84e1427865c27c`. Physical inventory digest: `493c01f74dea121be5832dbad05368d96bfa4e53626e3daeb17a2c2b85256cc6`.
+
+Slot B remains exact QSN C9, independently INCONCLUSIVE, with only the preserved observation: "Nested shulker routing using an internal CSR reservation worked." Deployment `03f7540f-94f0-47c5-b6bd-94f2af232ff4`, artifact `8b8abdf9-26a4-407c-bbd6-1623f0a5eeb5`, SHA-256 `14a6844b04d9236233c7007ed111a452db659cc5662dca07aa11f33b2cb4ec76`, source `a333a4b5fa417cd9d35f6fc2608727828c23f6ea`, and the upstream QSN 0.4.0 companion remain unchanged. CSR's failure is not a QSN result. No Minecraft client was launched for this task.

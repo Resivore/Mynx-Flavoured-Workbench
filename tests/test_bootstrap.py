@@ -1472,10 +1472,10 @@ class RuntimeContractTests(unittest.TestCase):
         tracked = load_json(ROOT / "tools" / "test_instance_manager" / "runtime-state.json")
         self.assertEqual("ACTIVE", tracked["activation"])
         self.assertEqual(2, tracked["schema_version"])
-        self.assertEqual(96, tracked["revision"])
-        self.assertEqual("2026-09-05T06:07:58Z", tracked["updated_at"])
+        self.assertEqual(97, tracked["revision"])
+        self.assertEqual("2026-09-05T17:28:50Z", tracked["updated_at"])
         self.assertEqual(
-            "2473241803c3f355c8138968da9845d921e46c4643a2f3e0ba64f0ce9ce20e25",
+            "5d03a29a5baea3906b5967fcb21fa369797347f4dcf57cf9bb84e1427865c27c",
             state_digest(tracked),
         )
         self.assertEqual(19, tracked["accepted_baseline"]["revision"])
@@ -1705,7 +1705,7 @@ class RuntimeContractTests(unittest.TestCase):
             csr_successor["replaces_accepted_deployment_id"],
         )
         self.assertEqual(
-            {"classification": "UNTESTED", "recorded_at": None, "evidence": {"passed": [], "failed": []}},
+            {'classification': 'FAIL', 'recorded_at': '2026-09-05T17:28:50Z', 'evidence': {'passed': [], 'failed': ['CSR Canary 9 still does not allow the user to hover physically empty unreserved cells in the Easy Shulker Boxes tooltip.', 'CSR Canary 9 still does not allow the user to hover physically empty reserved cells in that tooltip.', 'As a result, the tooltip-based CSR editor remains unusable for those cells.', 'The previous two Canary efforts did not establish the intended full Easy Shulker Boxes editing compatibility in actual runtime.']}},
             csr_successor["runtime_result"],
         )
         self.assertEqual("READY_TO_TEST_VERIFIED", slot_a["deployment"]["state"])
@@ -1779,7 +1779,7 @@ class RuntimeContractTests(unittest.TestCase):
             "CURRENT_RELEASE_NOT_DEPLOYED",
             current_release_deployment_comparison(sas_manifest, tracked),
         )
-        self.assertEqual("RUNTIME_UNTESTED", csr_manifest["state"]["validation"]["runtime"])
+        self.assertEqual("RUNTIME_FAIL", csr_manifest["state"]["validation"]["runtime"])
         self.assertEqual("INCONCLUSIVE", qsn_manifest["state"]["validation"]["runtime"])
         self.assertEqual("RUNTIME_PASS", sas_manifest["state"]["validation"]["runtime"])
         self.assertEqual("ACTIVE", slab_manifest["definition"]["lifecycle"])

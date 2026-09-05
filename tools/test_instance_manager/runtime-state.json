@@ -2,8 +2,8 @@
   "$schema": "../../schemas/runtime-state.schema.json",
   "schema_version": 2,
   "activation": "ACTIVE",
-  "revision": 96,
-  "updated_at": "2026-09-05T06:07:58Z",
+  "revision": 97,
+  "updated_at": "2026-09-05T17:28:50Z",
   "accepted_baseline": {
     "revision": 19,
     "provenance": {
@@ -928,11 +928,16 @@
           },
           "replaces_accepted_deployment_id": "8211900d-913c-40f2-9829-68509e0d71fe",
           "runtime_result": {
-            "classification": "UNTESTED",
-            "recorded_at": null,
+            "classification": "FAIL",
+            "recorded_at": "2026-09-05T17:28:50Z",
             "evidence": {
               "passed": [],
-              "failed": []
+              "failed": [
+                "CSR Canary 9 still does not allow the user to hover physically empty unreserved cells in the Easy Shulker Boxes tooltip.",
+                "CSR Canary 9 still does not allow the user to hover physically empty reserved cells in that tooltip.",
+                "As a result, the tooltip-based CSR editor remains unusable for those cells.",
+                "The previous two Canary efforts did not establish the intended full Easy Shulker Boxes editing compatibility in actual runtime."
+              ]
             }
           }
         }
