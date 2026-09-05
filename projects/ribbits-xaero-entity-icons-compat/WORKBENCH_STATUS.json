@@ -16,15 +16,15 @@
     "lifecycle": "ACTIVE",
     "goals": [
       "Provide fail-closed Xaero entity-head icons for Ribbits through a distinct compatibility companion without changing normal Ribbits rendering or the EMF companion behavior.",
-      "Maintain a provider-based Xaero × GeckoLib icon-capture core with explicit opt-in entity selectors; Canary 2 registers only the exact ribbits:ribbit provider and its literal main/body direct-cube rule.",
-      "Preserve exact-binary, bounded-cache, render-state, resource-reload, transform, private-asset, and All Rights Reserved boundaries while the statically validated Canary awaits controlled runtime evidence."
+      "Maintain a provider-based Xaero × GeckoLib icon-capture core with explicit opt-in entity selectors; Canary 3 registers only the exact ribbits:ribbit provider and its literal main/body direct-cube rule.",
+      "Preserve non-Gecko exact-binary gates, required GeckoLib APIs, bounded-cache, render-state, resource-reload, transform, private-asset, and All Rights Reserved boundaries while the statically validated Canary awaits controlled runtime evidence."
     ],
     "scope": [
       "Wrap the sole RadarIconForm.getPrerenderer call in Xaero RadarIconCreator.create so only an exact unsupported ribbits:ribbit GeoEntityRenderer can use the Geo-aware provider; preserve upstream vanilla, Ender Dragon, EMF, already-handled, disabled-head, and category-filtered paths.",
       "Reuse Xaero's one fully populated GeckoLib render-state snapshot to resolve the active Ribbit model, baked geometry, profession/Pride state, and texture, then select exactly one top-level main and exactly one direct child body.",
       "Render all and only cubes owned directly by body with inherited static main/body and cube transforms, no descendant or sibling traversal, no model-specific pruning, and framing derived solely from transformed selected-cube bounds.",
       "Use bounded model/texture/profession/Pride/baby-policy/reload cache identity, invalidate successful and FAILED Ribbit cache entries on resource reload, and fail closed to Xaero's ordinary dot/name fallback on any contract or render failure.",
-      "Retain and statically validate client-only Canary 2 against exact Xaero 26.4.2, nested XaeroLib 1.7.1, GeckoLib 5.5.1, authoritative Mynx Ribbits C9, Minecraft 26.2, and unaccepted Canary 4 in the combined production classloading harness. Retained failed C3 remains an exact historical binary regression input."
+      "Retain and statically validate client-only Canary 3 against exact Xaero 26.4.2, nested XaeroLib 1.7.1, actual GeckoLib 5.5.4 and 5.5.1 regression binaries, authoritative Mynx Ribbits C9, Minecraft 26.2, and unaccepted Canary 4 in the combined production classloading harness. Retained failed C3 remains an exact historical binary regression input."
     ],
     "boundaries": {
       "owned_paths": [
@@ -45,13 +45,13 @@
         "type": "PROJECT",
         "identifier": "2a650718-ec62-568f-8dff-71258a4d6f3f",
         "requirement": "Exact activation and validation baseline: 4.1.6+26.2-mynx-canary9; ribbits-private-reconstruction-4.1.6+26.2-mynx-canary9.jar; 3,333,513 bytes; SHA-256 e433cd048bc362edae91e2e057c8170d92d110cbe7b9917c105c7336be6543de; source 8dc886c01f6d402ccf19b45756383d62185f0d4e. This identity does not assert Ribbits runtime acceptance.",
-        "reason": "Provides the exact Ribbit renderer, populated data tickets, dynamic model/texture contract, and read-only private model-structure input supported by Canary 2; its separate Wandering Ribbit entity/model remains outside the provider."
+        "reason": "Provides the exact Ribbit renderer, populated data tickets, dynamic model/texture contract, and read-only private model-structure input supported by Canary 3; its separate Wandering Ribbit entity/model remains outside the provider."
       },
       {
         "type": "MOD",
         "identifier": "trinkets_updated",
         "requirement": "=4.1.0-beta.3+26.2; trinkets-4.1.0-beta.3+26.2-inventory-compat-canary5.jar; 560,208 bytes; SHA-256 4c1fa6ac36c0457483fd0d395b99bbd94c9334aad6defece7633bbf0552d1724",
-        "reason": "Historical Ribbits C7 validation dependency included in the controlled production-classpath cohort; it is not bundled or used as a Canary 2 icon seam."
+        "reason": "Historical Ribbits C7 validation dependency included in the controlled production-classpath cohort; it is not bundled or used as a Canary 3 icon seam."
       },
       {
         "type": "PROJECT",
@@ -81,7 +81,7 @@
         "type": "MOD",
         "identifier": "xaerominimap",
         "requirement": "=26.4.2; 2,221,925 bytes; SHA-256 69284892d2eb853c9aefa85a4c9b74232c322da00207994c67ab8aeed8a64048",
-        "reason": "Exact whole-origin activation gate and owner of the icon-creator, prerenderer, cache, failed-icon, and render-state seams used by Canary 2."
+        "reason": "Exact whole-origin activation gate and owner of the icon-creator, prerenderer, cache, failed-icon, and render-state seams used by Canary 3."
       },
       {
         "type": "MOD",
@@ -110,8 +110,8 @@
       {
         "type": "MOD",
         "identifier": "geckolib",
-        "requirement": "=5.5.1 for Fabric 26.2; 703,096 bytes; SHA-256 4bf1c86b4b47aa2c5d84208255695f10d79d609b23d802c995711e64b45cfce0",
-        "reason": "Exact whole-origin activation gate and renderer, GeoModel, baked-model, bone, render-state, transform, and buffer-submission contract used by Canary 2."
+        "requirement": "Presence and required renderer/model/render-state/direct-cube APIs; no version, archive size, SHA-256 or origin-layout activation restriction. Validation baselines only: geckolib-fabric-26.2-5.5.4.jar / 1,183,876 bytes / SHA-256 a5770f9ea0c21db157559fe266874fd84be8c7da689d37aa7bf2b06304a6a65d; regression geckolib-fabric-26.2-5.5.1.jar / 703,096 bytes / SHA-256 4bf1c86b4b47aa2c5d84208255695f10d79d609b23d802c995711e64b45cfce0.",
+        "reason": "Canary 3 reads only required API signatures before mixin application, without loading game classes; absent/incompatible requirements fail closed with a named diagnostic. Both actual binaries passed the project suite and combined production classloading harness; neither is runtime evidence or an allowlist."
       },
       {
         "type": "RESOURCE_PACK",
@@ -122,8 +122,8 @@
       {
         "type": "TOOL",
         "identifier": "java",
-        "requirement": "25; controlled build runtime Temurin 25.0.4.1+1",
-        "reason": "Language and runtime generation used by Minecraft 26.2, Canary 2, and both controlled compatibility suites."
+        "requirement": "25; current controlled build runtime Temurin 25.0.4+7",
+        "reason": "Language/runtime generation for Minecraft 26.2 and current Canary 3 validation."
       },
       {
         "type": "TOOL",
@@ -134,15 +134,15 @@
     ]
   },
   "state": {
-    "milestone": "Canary 2 built twice byte-identically against authoritative Ribbits C9, with 59 passing tests and combined C2/C4 production Knot/Mixin validation. Exact main/body direct-cube selector remains unchanged. C1 external FAIL is preserved in revision 3: evidenced Player Instance sessions use GeckoLib 5.5.4, which fails the first exact 5.5.1 gate; later C8/C9 also mismatch C1 C7. No selector/draw failure was demonstrated. C2 updates only the Ribbits gate to exact C9 and adds normal Fabric stage diagnostics; GeckoLib 5.5.4 still deliberately declines. Current C2 is not deployed or runtime tested; no accepted release or rollback.",
+    "milestone": "Canary 3 removes only GeckoLib version/archive activation allowlisting and probes required APIs without early game-class loading. Actual Fabric 26.2 GeckoLib 5.5.4 and 5.5.1 each passed 66 tests in 14 suites and the combined production Knot/Mixin classloading harness; both clean builds produced identical 58,821-byte successor archives. Xaero, nested XaeroLib and Ribbits C9 gates, main/body direct-cube selection, rendering, transforms, caches and EMF companion remain unchanged. C1 external FAIL and untested C2 retain historical identities in the log; C3 is ACTIVE, NOT_DEPLOYED and RUNTIME_UNTESTED, with no accepted release or rollback.",
     "releases": {
       "current": {
-        "version": "0.1.0-canary2",
+        "version": "0.1.0-canary3",
         "artifact": {
-          "filename": "ribbits-xaero-entity-icons-compat-0.1.0-canary2.jar",
-          "sha256": "d4435d678ba40d2f1ec6749eeeb89c7b92d2c8c4cd6f3a8898b435d7d27aa920"
+          "filename": "ribbits-xaero-entity-icons-compat-0.1.0-canary3.jar",
+          "sha256": "79815cb8a958cd1d1a13338487a0ea1b0bb1f8a09493705a5e8ddb84a70469da"
         },
-        "source_commit": "43a3949d81f15c1bba3ab62685ceeb515a52ddef",
+        "source_commit": "33d4c1135d9428d16aab5e84de070ab392fcb776",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
@@ -161,11 +161,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 4,
-    "activity_at": "2026-09-04T23:41:23Z",
-    "updated_at": "2026-09-04T23:41:23Z",
-    "last_codex_at": "2026-09-04T23:41:23Z",
-    "source_commit": "43a3949d81f15c1bba3ab62685ceeb515a52ddef",
+    "revision": 5,
+    "activity_at": "2026-09-05T00:34:22Z",
+    "updated_at": "2026-09-05T00:34:22Z",
+    "last_codex_at": "2026-09-05T00:34:22Z",
+    "source_commit": "33d4c1135d9428d16aab5e84de070ab392fcb776",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
