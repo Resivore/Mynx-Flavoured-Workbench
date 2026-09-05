@@ -31,16 +31,20 @@ public final class RuntimeCompatibility {
     public static CompatibilityActivation.Decision evaluateLoadedMods() {
         try {
             FabricLoader loader = FabricLoader.getInstance();
-            // GeckoLib metadata is not an archive fingerprint or version allowlist.
+            // Ribbits and GeckoLib metadata are not archive fingerprints or version allowlists.
             CompatibilityActivation.Decision identities = CompatibilityActivation.evaluate(
                     identity(loader, CompatibilityActivation.SUPPORTED_XAERO.modId()),
                     nestedXaeroLibIdentity(loader),
                     loader.getModContainer("geckolib").map(container ->
                             new CompatibilityActivation.DependencyIdentity(
                                     "geckolib", version(container), 0L, "")).orElse(null),
-                    identity(loader, CompatibilityActivation.SUPPORTED_RIBBITS.modId()));
-            return identities.active()
-                    ? verifyGeckoApi(RuntimeCompatibility.class.getClassLoader()) : identities;
+                    loader.getModContainer("ribbits").map(container ->
+                            new CompatibilityActivation.DependencyIdentity(
+                                    "ribbits", version(container), 0L, "")).orElse(null));
+            if (!identities.active()) return identities;
+            ClassLoader classes = RuntimeCompatibility.class.getClassLoader();
+            var gecko = verifyGeckoApi(classes);
+            return gecko.active() ? RibbitsApiCompatibility.verify(classes) : gecko;
         } catch (Throwable failure) {
             return new CompatibilityActivation.Decision(
                     false, "could not verify required dependency origins: "

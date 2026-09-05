@@ -22,12 +22,12 @@ public final class RibbitsXaeroIconsMixinPlugin implements IMixinConfigPlugin {
 
     @Override
     public void onLoad(String mixinPackage) {
-        GeoIconLog.activation("Ribbits Xaero Canary 2 mixin plugin loaded");
+        GeoIconLog.activation("Ribbits Xaero mixin plugin loaded");
         CompatibilityActivation.Decision decision = RuntimeCompatibility.evaluateLoadedMods();
         active = decision.active();
         initialized = true;
         GeoIconLog.activation((active ? "Activated" : "Safely declined")
-                + " Ribbits Xaero entity icons Canary 2: " + decision.reason());
+                + " Ribbits Xaero entity icons: " + decision.reason());
     }
 
     @Override

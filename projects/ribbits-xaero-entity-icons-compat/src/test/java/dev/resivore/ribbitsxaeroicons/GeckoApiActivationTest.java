@@ -61,7 +61,7 @@ class GeckoApiActivationTest {
     @Test
     void missingFabricGeckoModHasClearDiagnostic() {
         var decision = CompatibilityActivation.evaluate(CompatibilityActivation.SUPPORTED_XAERO,
-                CompatibilityActivation.SUPPORTED_XAEROLIB, null, CompatibilityActivation.SUPPORTED_RIBBITS);
+                CompatibilityActivation.SUPPORTED_XAEROLIB, null, new CompatibilityActivation.DependencyIdentity("ribbits", "future", 0L, ""));
         assertFalse(decision.active());
         assertEquals("missing Fabric mod geckolib", decision.reason());
     }

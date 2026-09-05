@@ -8,7 +8,7 @@ class SuccessorDiagnosticsTest {
         var gecko=new CompatibilityActivation.DependencyIdentity("geckolib","5.5.4",1183876L,
                 "a5770f9ea0c21db157559fe266874fd84be8c7da689d37aa7bf2b06304a6a65d");
         var decision=CompatibilityActivation.evaluate(CompatibilityActivation.SUPPORTED_XAERO,
-                CompatibilityActivation.SUPPORTED_XAEROLIB,gecko,CompatibilityActivation.SUPPORTED_RIBBITS);
+                CompatibilityActivation.SUPPORTED_XAEROLIB,gecko,new CompatibilityActivation.DependencyIdentity("ribbits", "future", 0L, ""));
         assertTrue(decision.active(), decision.reason());
     }
     @Test void emptyDestinationIsDistinctFromSubmittedVertices() {

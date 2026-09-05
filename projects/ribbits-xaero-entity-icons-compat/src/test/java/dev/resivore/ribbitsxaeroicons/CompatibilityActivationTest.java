@@ -68,13 +68,13 @@ class CompatibilityActivationTest {
     }
 
     @Test
-    void anyRibbitsIdentityDriftFailsClosed() {
-        assertInactive(XAERO, XAEROLIB, GECKOLIB,
-                identity("ribbits", "4.1.6+26.2-mynx-canary6",
+    void ribbitsVersionSizeAndHashAreNotEligibilityGates() {
+        assertActive(XAERO, XAEROLIB, GECKOLIB,
+                identity("ribbits", "4.1.6+26.2-mynx-canary999",
                         RIBBITS.size(), RIBBITS.sha256()));
-        assertInactive(XAERO, XAEROLIB, GECKOLIB, identity("ribbits", RIBBITS.version(),
+        assertActive(XAERO, XAEROLIB, GECKOLIB, identity("ribbits", RIBBITS.version(),
                 RIBBITS.size() + 1L, RIBBITS.sha256()));
-        assertInactive(XAERO, XAEROLIB, GECKOLIB, identity("ribbits", RIBBITS.version(),
+        assertActive(XAERO, XAEROLIB, GECKOLIB, identity("ribbits", RIBBITS.version(),
                 RIBBITS.size(), flip(RIBBITS.sha256())));
         assertInactive(XAERO, XAEROLIB, GECKOLIB,
                 identity("other-ribbit-mod", RIBBITS.version(),

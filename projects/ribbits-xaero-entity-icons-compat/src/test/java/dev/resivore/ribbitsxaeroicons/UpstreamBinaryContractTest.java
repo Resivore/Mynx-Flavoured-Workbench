@@ -144,7 +144,17 @@ class UpstreamBinaryContractTest {
         Assumptions.assumeTrue(supplied.isPresent(),
                 "set -DribbitsJar to the exact ignored private C7 archive");
         Path ribbits = supplied.orElseThrow();
-        assertArtifact(ribbits, 3_333_513L, RIBBITS_SHA);
+        // Exact regression inputs only; production eligibility never consults these identities.
+        try (ZipFile zip = new ZipFile(ribbits.toFile())) {
+            String version = JsonParser.parseString(new String(read(zip, zip.getEntry("fabric.mod.json")),
+                    StandardCharsets.UTF_8)).getAsJsonObject().get("version").getAsString();
+            if (version.endsWith("canary9")) assertArtifact(ribbits, 3_333_513L, RIBBITS_SHA);
+            else {
+                assertEquals("4.1.6+26.2-mynx-canary10", version);
+                assertArtifact(ribbits, 3_334_581L,
+                        "3d0ea590ba7186fa1b1a7cf3a6be7689eef5c424275b19aacf5d6cf59945aed9");
+            }
+        }
 
         ClassNode renderer = readClass(ribbits,
                 "com/yungnickyoung/minecraft/ribbits/client/render/RibbitRenderer.class");

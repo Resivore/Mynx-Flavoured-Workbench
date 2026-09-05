@@ -1,14 +1,20 @@
 # Testing
 
-Current `ribbits-xaero-entity-icons-compat-0.1.0-canary4.jar` is **ACTIVE / STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED**.
-It is unaccepted and has no rollback. Identity: 61,889 bytes, SHA-256
-`cc4a690712a37e3fa58e4bff7fce6164285e4a91b8e83ca665ded60c2b0cdc2d`; source checkpoint is in WORKBENCH_STATUS.json.
-Clean builds against actual Fabric 26.2 GeckoLib 5.5.4 and 5.5.1 produced identical
-bytes. Each passed 71 tests in 16 suites and the combined production Knot/Mixin
+Current `ribbits-xaero-entity-icons-compat-0.1.0-canary5.jar` is **ACTIVE / STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED**.
+It is unaccepted and has no rollback. Identity: 64,544 bytes, SHA-256
+`d48d45ec47604250ae45c8f20e03741f9f6613d5ada462cda436ce14876c3413`; source checkpoint is in WORKBENCH_STATUS.json.
+Clean builds across actual Ribbits C9/C10 and Fabric 26.2 GeckoLib 5.5.4/5.5.1
+produced identical bytes. Each passed 78 tests in 17 suites and the combined production Knot/Mixin
 classloading harness without launching Minecraft. These are not runtime observations. Prior C1/C3 failures remain in CODEX_LOG.md and AUDIT.md.
 
 C4 preserves every direct cube at `main/body` and excludes all children/siblings.
-Exact Ribbits C9, Minimap 26.4.2 and nested XaeroLib 1.7.1 gates remain unchanged.
+Minimap 26.4.2 and nested XaeroLib 1.7.1 gates remain unchanged.
+Ribbits must be present and expose the public data-ticket fields, getProfession()
+and profession id() APIs used by capture. Version, archive size, SHA-256 and archive
+layout are not eligibility gates. The probe reads bytecode without loading game
+classes. Missing requirements produce a named incompatible Ribbits API diagnostic.
+Existing exact entity/renderer, populated-state, active-resource and geometry checks
+remain at capture time. Do not reintroduce a per-Canary pin for a compatible update.
 GeckoLib must be present and expose the required renderer/model/state/direct-cube
 APIs. Its version, archive size, hash and origin layout are not activation allowlists.
 Missing requirements produce a named `incompatible GeckoLib API` or missing-mod
@@ -26,7 +32,11 @@ and face normals; they do not establish visible pixels or runtime success.
 The latest user-reported external visual FAIL described enormous icons, top-of-head
 rather than face views, and absent Wandering support. No observation timestamp,
 installed compatibility JAR hash/version, session or resource-pack identity was
-supplied with that report. Do not bind it to an exact prior release or to C4.
+supplied with that report. Do not bind it to an exact prior release or to C5.
+
+A subsequent user report says icons worked with Ribbits C9 and stopped with C10.
+That progression matches the removed whole-archive gate, but does not identify the
+installed icon-companion bytes or establish a visual pass for C4/C5.
 
 A nonempty vertex submission or allocated atlas is not proof of visible pixels.
 
@@ -35,9 +45,13 @@ A nonempty vertex submission or allocated atlas is not proof of visible pixels.
 Use Java 25 (build baseline Temurin 25.0.4.1+1), Minecraft 26.2, Loader 0.19.3,
 Fabric API 0.157.0+26.2, Xaero Minimap 26.4.2 / nested XaeroLib 1.7.1 / World Map
 1.44.2, EMF 3.2.6, ETF 7.1.1, and FreshAnimations_v1.10.5.zip. Exact hashes remain
-in the manifests and audit addenda. The Ribbits input is C9, 3,333,513 bytes,
+in the manifests and audit addenda. The Ribbits C9 regression input is 3,333,513 bytes,
 SHA-256 `e433cd048bc362edae91e2e057c8170d92d110cbe7b9917c105c7336be6543de`,
-source `8dc886c01f6d402ccf19b45756383d62185f0d4e`. Primary GeckoLib validation input:
+source `8dc886c01f6d402ccf19b45756383d62185f0d4e`. Primary Ribbits input is
+`ribbits-private-reconstruction-4.1.6+26.2-mynx-canary10.jar`, 3,334,581 bytes,
+SHA-256 `3d0ea590ba7186fa1b1a7cf3a6be7689eef5c424275b19aacf5d6cf59945aed9`,
+source `681f120c444d2a0c34cfd1b448426f23cf9371bd`. These are validation baselines,
+not runtime pins. Primary GeckoLib validation input:
 `geckolib-fabric-26.2-5.5.4.jar`, 1,183,876 bytes, SHA-256
 `a5770f9ea0c21db157559fe266874fd84be8c7da689d37aa7bf2b06304a6a65d`.
 Regression input: `geckolib-fabric-26.2-5.5.1.jar`, 703,096 bytes, SHA-256
@@ -57,7 +71,7 @@ currently installed files.
 
 ## Future combined runtime procedure
 
-The pair is Ribbits compatibility `0.1.0-canary4` and EMF compatibility
+The pair is Ribbits compatibility `0.1.0-canary5` and EMF compatibility
 `0.1.0-canary4`. Both are static candidates, not runtime passes. Keep failed
 Ribbits C1, EMF C3 and Diagnostic1 out of the future controlled cohort.
 

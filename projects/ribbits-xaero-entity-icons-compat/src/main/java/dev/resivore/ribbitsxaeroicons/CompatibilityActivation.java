@@ -3,7 +3,7 @@ package dev.resivore.ribbitsxaeroicons;
 import java.util.Locale;
 import java.util.Objects;
 
-/** Exact non-Gecko dependency gates; GeckoLib eligibility is based on its used APIs. */
+/** Exact Xaero gates; Ribbits and GeckoLib eligibility is based on required capabilities. */
 public final class CompatibilityActivation {
     public static final DependencyIdentity SUPPORTED_XAERO = new DependencyIdentity(
             "xaerominimap",
@@ -15,11 +15,6 @@ public final class CompatibilityActivation {
             "1.7.1",
             621_485L,
             "7f4a78dd7e046fea0500fef83b1481d85317c8348d47e947035d7a07efe51065");
-    public static final DependencyIdentity SUPPORTED_RIBBITS = new DependencyIdentity(
-            "ribbits",
-            "4.1.6+26.2-mynx-canary9",
-            3_333_513L,
-            "e433cd048bc362edae91e2e057c8170d92d110cbe7b9917c105c7336be6543de");
 
     private CompatibilityActivation() {
     }
@@ -38,11 +33,11 @@ public final class CompatibilityActivation {
         if (gecko == null || !"geckolib".equals(gecko.modId())) {
             return new Decision(false, "missing Fabric mod geckolib");
         }
-        if (!SUPPORTED_RIBBITS.equals(ribbits)) {
-            return new Decision(false, mismatch("Ribbits", SUPPORTED_RIBBITS, ribbits));
+        if (ribbits == null || !"ribbits".equals(ribbits.modId())) {
+            return new Decision(false, "missing Fabric mod ribbits");
         }
 
-        return new Decision(true, "dependency identity gates matched; GeckoLib API verification required");
+        return new Decision(true, "Xaero gates matched; Ribbits and GeckoLib API verification required");
     }
 
     private static String mismatch(
