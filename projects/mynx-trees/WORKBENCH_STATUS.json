@@ -20,7 +20,8 @@
       "Loaded tree/fallen-tree material substitution preserves shape parameters and applicable decorators; biome-scoped selectors cover standing/fallen birch variants and weighted cherry/Wisteria attempts.",
       "Preferred tree-associated Sweet Violets with a bounded successful-growth decorator; remove the independent grove petal pass; retain Nemo ordinary cherry and unrelated decorators without a required Nemo dependency.",
       "Position-dependent golden Silver Birch leaf tint, a normal cube leaf item with one matching default golden tint, #B0C73A old-growth grass tint, separately namespaced Wisteria particles, and the standalone user-supplied Wisteria log-top texture.",
-      "Optional client Iris material-map fallback for only the two custom leaf species: inherit loaded vanilla birch/cherry state IDs only when no explicit custom mapping exists; no shader-pack/profile edits or fake animation."
+      "Optional client Iris material-map fallback for only the two custom leaf species: inherit loaded vanilla birch/cherry state IDs only when no explicit custom mapping exists; no shader-pack/profile edits or fake animation.",
+      "Client-only soil-dependent base bark on upright Silver Birch log sides, using the exact supplied packaged texture and extensible silver_birch_base_soils block tag; ordinary items and live vanilla birch end grain remain. Contextual geometry keys and resource/tag/neighbor rebuild handling preserve current placed trees without saved-state changes."
     ],
     "boundaries": {
       "owned_paths": [
@@ -60,15 +61,15 @@
     ]
   },
   "state": {
-    "milestone": "Canary 2 replaces the Wisteria log-top pixels, uses a tinted Silver Birch leaf block item, and adds optional Iris leaf-material inheritance; clean build and 27 focused checks pass. Exact private artifact retained, NOT_DEPLOYED and RUNTIME_UNTESTED; visual waving awaits managed runtime validation.",
+    "milestone": "Canary 3 implements soil-dependent upright Silver Birch base bark, with six default soils, ordinary item fallback and contextual geometry/reload handling; clean build passes 23 Java and 16 Python checks. Exact private artifact retained. ACTIVE / NOT_DEPLOYED / RUNTIME_UNTESTED; obsolete overlay CTM rule must be removed separately before managed visual testing.",
     "releases": {
       "current": {
-        "version": "0.1.0+26.2-canary2",
+        "version": "0.1.0+26.2-canary3",
         "artifact": {
-          "filename": "mynx-trees-private-0.1.0+26.2-canary2.jar",
-          "sha256": "da8f5f3d352efac79c30f133d337c7fba399c2121771ce23b8eaa69922f57e6c"
+          "filename": "mynx-trees-private-0.1.0+26.2-canary3.jar",
+          "sha256": "3307474445d3205c7a088b6724ba9d45b248404a54e076eae6835385c1601e1f"
         },
-        "source_commit": "ba4be474fd30d000b1bb0af15cea7a98e27db4c2",
+        "source_commit": "13438476b6ed311503ce6b138dc45090e55b46fb",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
@@ -87,11 +88,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 2,
-    "activity_at": "2026-09-05T00:28:56Z",
-    "updated_at": "2026-09-05T00:28:56Z",
-    "last_codex_at": "2026-09-05T00:28:56Z",
-    "source_commit": "ba4be474fd30d000b1bb0af15cea7a98e27db4c2",
+    "revision": 3,
+    "activity_at": "2026-09-05T18:14:28Z",
+    "updated_at": "2026-09-05T18:14:28Z",
+    "last_codex_at": "2026-09-05T18:14:28Z",
+    "source_commit": "13438476b6ed311503ce6b138dc45090e55b46fb",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
