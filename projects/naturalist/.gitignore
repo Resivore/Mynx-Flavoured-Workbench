@@ -1,6 +1,7 @@
 /.gradle/
 /build/
 /run/
+/logs/
 /.idea/
 /*.iml
 
@@ -9,5 +10,6 @@
 /generated/
 /extracted-resources/
 /test-builds/private/
+/artifacts/
 /common/src/main/resources/
 /fabric/src/main/resources/

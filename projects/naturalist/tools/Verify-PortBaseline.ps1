@@ -87,7 +87,7 @@ Assert-Equal $properties.upstream_original_sha256 $expectedJarSha256 'declared o
 $metadataPath = Join-Path $projectRoot 'src\main\resources\fabric.mod.json'
 $metadata = Get-Content -LiteralPath $metadataPath -Raw | ConvertFrom-Json
 Assert-Equal $metadata.id 'naturalist' 'Fabric mod id'
-Assert-Equal $metadata.depends.minecraft '~${minecraft_version}' 'Fabric metadata Minecraft constraint'
+Assert-Equal $metadata.depends.minecraft '${minecraft_version}' 'Fabric metadata Minecraft constraint'
 Assert-Equal $metadata.depends.java '>=25' 'Fabric metadata Java constraint'
 Assert-SetEqual @($metadata.depends.PSObject.Properties.Name) @('fabricloader', 'fabric-api', 'minecraft', 'java') 'Fabric required dependency ids'
 Assert-SetEqual @($metadata.suggests.PSObject.Properties.Name) @('lambdynlights') 'Fabric suggested dependency ids'

@@ -1,5 +1,6 @@
 import java.security.MessageDigest
 import groovy.json.JsonOutput
+import groovy.json.JsonSlurper
 
 plugins {
     id 'net.fabricmc.fabric-loom' version '1.17-SNAPSHOT'
@@ -33,6 +34,8 @@ def legacyMinecraftJarPath = providers.gradleProperty('naturalistLegacyMinecraft
 def stagedOriginalResources = layout.buildDirectory.dir('generated/original-resources')
 def stagedLegacySpawnEggResources = layout.buildDirectory.dir('generated/legacy-spawn-egg-resources')
 def generatedItemModelResources = layout.buildDirectory.dir('generated/item-model-compat')
+def sourceCheckpoint = providers.gradleProperty('naturalistSourceCommit').orElse(
+        providers.exec { commandLine 'git', 'rev-parse', 'HEAD' }.standardOutput.asText.map { it.trim() })
 def legacySpawnEggResourceHashes = [
         'assets/minecraft/models/item/template_spawn_egg.json'        : '2aa28f3dfc96c06980df9a6242eca2a375b18e9c5f4fa68771de3c88dcbe4e1f',
         'assets/minecraft/textures/item/spawn_egg.png'                 : 'f6b985a0094408770f4b0ba919c2cb6365c6e8b65080334b33617518be2089c1',
@@ -91,6 +94,14 @@ sourceSets {
         compileClasspath += sourceSets.main.compileClasspath
         runtimeClasspath += output + compileClasspath
     }
+    startupTest {
+        java.srcDir 'src/startupTest/java'
+        compileClasspath += sourceSets.main.output + sourceSets.main.compileClasspath
+        // Prove the gate can load and run without either optional provider.
+        runtimeClasspath += output + compileClasspath.filter {
+            !it.name.startsWith('field-guide-') && !it.name.startsWith('lambdynamiclights-')
+        }
+    }
 }
 
 configurations {
@@ -98,6 +109,8 @@ configurations {
     persistenceTestRuntimeOnly.extendsFrom runtimeOnly
     itemModelTestImplementation.extendsFrom implementation
     itemModelTestRuntimeOnly.extendsFrom runtimeOnly
+    startupTestImplementation.extendsFrom implementation
+    startupTestRuntimeOnly.extendsFrom runtimeOnly
 }
 
 dependencies {
@@ -109,6 +122,9 @@ dependencies {
     itemModelTestImplementation 'org.junit.jupiter:junit-jupiter'
     itemModelTestImplementation "net.fabricmc:fabric-loader-junit:${project.fabric_loader_version}"
     itemModelTestRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    startupTestImplementation platform('org.junit:junit-bom:5.11.4')
+    startupTestImplementation 'org.junit.jupiter:junit-jupiter'
+    startupTestRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
 tasks.register('verifyOriginalJar') {
@@ -146,6 +162,13 @@ tasks.register('stageOriginalResources', Sync) {
         exclude 'architectury_inject_*/**'
     }
     into stagedOriginalResources
+    doLast {
+        // Patch only the private staged configuration; keep the pristine input immutable.
+        File configFile = stagedOriginalResources.get().file('naturalist.fieldguide.mixins.json').asFile
+        def config = new JsonSlurper().parse(configFile)
+        config.plugin = 'com.crispytwig.naturalist.fabric.compat.FieldGuideMixinPlugin'
+        configFile.setText(JsonOutput.prettyPrint(JsonOutput.toJson(config)) + '\n', 'UTF-8')
+    }
 }
 
 tasks.register('verifyLegacySpawnEggResources') {
@@ -276,7 +299,8 @@ tasks.named('processResources') {
                 version: project.version,
                 minecraft_version: project.minecraft_version,
                 fabric_loader_version: project.fabric_loader_version,
-                fabric_api_version: project.fabric_api_version
+                // The exact build input stays pinned; runtime needs only the provider floor.
+                fabric_api_version: project.fabric_api_version.split('\\+')[0]
         ])
     }
 }
@@ -312,6 +336,17 @@ tasks.register('itemModelTest', Test) {
     useJUnitPlatform()
 }
 
+tasks.register('startupTest', Test) {
+    group = 'verification'
+    description = 'Checks the real Minecraft rest descriptor and optional Field Guide mixin gating.'
+    dependsOn tasks.named('startupTestClasses')
+    testClassesDirs = sourceSets.startupTest.output.classesDirs
+    classpath = sourceSets.startupTest.runtimeClasspath
+    useJUnitPlatform()
+}
+
+tasks.named('check') { dependsOn tasks.named('startupTest') }
+
 java {
     toolchain.languageVersion = JavaLanguageVersion.of(25)
     withSourcesJar()
@@ -330,6 +365,7 @@ tasks.withType(Jar).configureEach {
                 'Specification-Version': project.upstream_version,
                 'Implementation-Title': project.archives_base_name,
                 'Implementation-Version': project.version,
+                'Naturalist-Source-Commit': sourceCheckpoint.get(),
                 'Naturalist-Upstream-Commit': project.upstream_source_commit,
                 'Naturalist-Original-SHA256': project.upstream_original_sha256
         ])
