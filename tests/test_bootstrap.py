@@ -1472,13 +1472,13 @@ class RuntimeContractTests(unittest.TestCase):
         tracked = load_json(ROOT / "tools" / "test_instance_manager" / "runtime-state.json")
         self.assertEqual("ACTIVE", tracked["activation"])
         self.assertEqual(2, tracked["schema_version"])
-        self.assertEqual(90, tracked["revision"])
-        self.assertEqual("2026-09-04T23:23:00Z", tracked["updated_at"])
+        self.assertEqual(92, tracked["revision"])
+        self.assertEqual("2026-09-05T03:42:09Z", tracked["updated_at"])
         self.assertEqual(
-            "3cc3a9d83c34aa763263478fb7d54c1fb6aa1aee384ae48af3e815130f4a43b5",
+            "5566aa2deaa5dcefceeab7f040000182d0ea2e28eefa92a152d3a5802dfd5f4f",
             state_digest(tracked),
         )
-        self.assertEqual(18, tracked["accepted_baseline"]["revision"])
+        self.assertEqual(19, tracked["accepted_baseline"]["revision"])
         self.assertEqual(33, tracked["accepted_baseline"]["provenance"]["accepted_artifact_count"])
         self.assertEqual("TRANSITIONED", tracked["accepted_baseline"]["provenance"]["physical_disposition"])
         self.assertEqual(30, len(tracked["accepted_baseline"]["members"]))
@@ -1735,28 +1735,22 @@ class RuntimeContractTests(unittest.TestCase):
         self.assertEqual("2026-09-04T20:16:38Z", sas["accepted_at"])
 
         slot_b = tracked["slots"]["B"]
-        self.assertEqual(1, len(slot_b["members"]))
-        ccar_successor = slot_b["members"][0]
+        self.assertIsNone(slot_b)
+        ccar_successor = accepted_by_uuid["fcb7d036-c756-5114-abe1-01c4331e7ea8"]
         self.assertEqual("98fe1cc9-eeaa-4c07-8b72-17678bc07581", ccar_successor["unit"]["deployment_id"])
         self.assertEqual("fcb7d036-c756-5114-abe1-01c4331e7ea8", ccar_successor["unit"]["project_uuid"])
         self.assertEqual("0.3.7-csr-reservation-affinity-canary1", ccar_successor["unit"]["version"])
         self.assertEqual("c373b663c99d7a217fc9147db5007d3f1057678f", ccar_successor["unit"]["source_commit"])
-        self.assertEqual("1b6d00e9-7fc4-45e3-83a5-f632636e2f26", ccar_successor["replaces_accepted_deployment_id"])
         self.assertEqual(
             ("2eb193ee-0975-4a2c-a725-c97a721c35b4",
              "carried-container-auto-routing-0.3.7-csr-reservation-affinity-canary1.jar",
              "f00b1e6bc64a0e63ac1199d89c08f7510a20d5bbb9a486b40bd97833df522a2f"),
             tuple(ccar_successor["unit"]["artifacts"][0][key] for key in ("artifact_id", "filename", "sha256")),
         )
-        self.assertEqual(
-            {"classification": "UNTESTED", "recorded_at": None, "evidence": {"passed": [], "failed": []}},
-            ccar_successor["runtime_result"],
-        )
-        self.assertEqual(slot_a["deployment"], slot_b["deployment"])
         ccar_manifest = load_json(ROOT / "projects" / "carried-container-auto-routing" / "WORKBENCH_STATUS.json")
-        self.assertEqual("TESTING", ccar_manifest["definition"]["lifecycle"])
-        self.assertEqual("RUNTIME_UNTESTED", ccar_manifest["state"]["validation"]["runtime"])
-        self.assertEqual("CURRENT_RELEASE_DEPLOYED", current_release_deployment_comparison(ccar_manifest, tracked))
+        self.assertEqual("ACCEPTED", ccar_manifest["definition"]["lifecycle"])
+        self.assertEqual("RUNTIME_PASS", ccar_manifest["state"]["validation"]["runtime"])
+        self.assertEqual("CURRENT_RELEASE_NOT_DEPLOYED", current_release_deployment_comparison(ccar_manifest, tracked))
 
 
         csr_manifest = load_json(ROOT / "projects" / "container-slot-reservations" / "WORKBENCH_STATUS.json")
