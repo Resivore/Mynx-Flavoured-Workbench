@@ -16,6 +16,7 @@ public final class MynxTreesClient implements ClientModInitializer {
         return java.awt.Color.HSBtoRGB(hue,0.8F,1.0F);
     }
     @Override public void onInitializeClient() {
+        SilverBirchBaseModels.register();
         BlockColorRegistry.register(List.of(new BlockTintSource() {
             @Override public int colorInWorld(BlockState state, BlockAndTintGetter level, BlockPos pos) { return golden(pos.getX(),pos.getZ()); }
             @Override public int color(BlockState state) { return golden(0,0); }

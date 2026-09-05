@@ -14,7 +14,7 @@
     {
       "source": "originals/assets/block_silver_birch_log_base.png",
       "sha256": "d0360942c1726406d838c8e48f40a6529bb2eed51751c40e780a5036a269844e",
-      "usage": "deferred, not packaged"
+      "usage": "private build input; soil-dependent upright Silver Birch log sides since Canary 3"
     },
     {
       "source": "originals/assets/block_silver_birch_sapling.png",
@@ -515,6 +515,16 @@
         16
       ],
       "png_color_type": 6
+    },
+    {
+      "source": "originals/assets/block_silver_birch_log_base.png",
+      "target": "assets/mynx_trees/textures/block/silver_birch_log_base.png",
+      "sha256": "d0360942c1726406d838c8e48f40a6529bb2eed51751c40e780a5036a269844e",
+      "dimensions": [
+        16,
+        16
+      ],
+      "png_color_type": 2
     }
   ],
   "direct_log_recipe_audit": [
@@ -550,5 +560,25 @@
     "wind_entry": "shaders/lib/materials/materialMethods/wavingBlocks.glsl",
     "wind_dispatch": "WAVING_LEAVES guards mat == 10009 -> DoWave_Leaves(playerPos.xyz, worldPos, 1.0)",
     "saved_options": "No WAVING/LEAVES/FOLIAGE override found in the active pack options; no settings changed."
+  },
+  "base_bark_rendering": {
+    "predicate": "Only mynx_trees:silver_birch_log axis=y at a matching world position with the immediately-below block in mynx_trees:silver_birch_base_soils. No above/side query.",
+    "default_soils": [
+      "minecraft:grass_block",
+      "minecraft:dirt",
+      "minecraft:coarse_dirt",
+      "minecraft:rooted_dirt",
+      "minecraft:podzol",
+      "minecraft:mycelium"
+    ],
+    "models": "Two resource-baked cube_column models; base changes side only, live minecraft:block/birch_log_top ends; block-only wrapping, ordinary item model.",
+    "api_baseline": {
+      "fabric-renderer-api-v1": "14.1.3+2b0d8a229e",
+      "fabric-model-loading-api-v1": "8.0.16+c80601bb9e",
+      "fabric-lifecycle-events-v1": "4.1.3+4575b05f9e"
+    },
+    "invalidation": "26.2 LevelExtractor.setBlockDirty/setBlocksDirty dirties the +/-1 block halo, crossing sections. RenderSectionRegion reads copied neighboring sections. Client TAGS_LOADED schedules levelExtractor.allChanged; model loading rebuilds wrappers on resource reload. Geometry keys include wrapper identity, chosen branch and delegate key; null delegate keys remain uncached.",
+    "obsolete_ctm_remove_before_testing": "assets/minecraft/optifine/ctm/mynx/silver_birch_base/silver_birch_base.properties",
+    "runtime_evidence": "UNTESTED; target API/source inspection and focused tests only."
   }
 }

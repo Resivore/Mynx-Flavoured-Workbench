@@ -23,7 +23,7 @@ def assemble():
     for entry in INPUTS['assets']:
         source=COMMON/entry['source']
         if hashlib.sha256(source.read_bytes()).hexdigest()!=entry['sha256']:raise ValueError('Changed immutable input: '+str(source))
-    for name in ['log','leaves','sapling']:
+    for name in ['log','log_base','leaves','sapling']:
         write('assets/mynx_trees/textures/block/silver_birch_'+name+'.png',(COMMON/('originals/assets/block_silver_birch_'+name+'.png')).read_bytes())
     write('assets/mynx_trees/textures/block/wisteria_log_top.png',(COMMON/'originals/assets/block_wisteria_log_top.png').read_bytes())
     with zipfile.ZipFile(COMMON/'originals/assets/cherry-to-wisteria.zip') as pack:
@@ -33,6 +33,8 @@ def assemble():
         def vanilla(path):return json.loads(mc.read(path))
         def data(kind,name,obj):write(f'data/mynx_trees/{kind}/{name}.json',obj)
         def asset(kind,name,obj):write(f'assets/mynx_trees/{kind}/{name}.json',obj)
+        asset('models/block','silver_birch_log_base',{'parent':'minecraft:block/cube_column','textures':{'side':'mynx_trees:block/silver_birch_log_base','end':'minecraft:block/birch_log_top'}})
+        data('tags/block','silver_birch_base_soils',{'replace':False,'values':['minecraft:'+n for n in ['grass_block','dirt','coarse_dirt','rooted_dirt','podzol','mycelium']]})
         names=[]
         for tree,wood in [('silver_birch','birch'),('wisteria','pale_oak')]:
             for part in ['log','wood','leaves','sapling']:

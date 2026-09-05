@@ -103,6 +103,48 @@ class Resources(unittest.TestCase):
         source=(ROOT/'src/client/java/dev/resivore/mynxtrees/mixin/IrisLeafMaterialMixin.java').read_text();self.assertEqual(2,source.count('LeafShaderAliases.inheritUnmapped('));self.assertEqual(2,source.count('.withPropertiesOf(state)'));self.assertIn('@At("RETURN")',source);self.assertNotIn('10009',source);self.assertIn('@Pseudo',source)
         plugin=(ROOT/'src/client/java/dev/resivore/mynxtrees/IrisLeafMixinPlugin.java').read_text();self.assertIn('isModLoaded("iris")',plugin)
         for name in ['silver_birch_leaves','wisteria_leaves']:self.assertIn('mynx_trees:'+name,self.read('data/minecraft/tags/block/leaves.json')['values'])
+    def test_base_bark_soils_are_exact_and_independent(self):
+        tag=self.read('data/mynx_trees/tags/block/silver_birch_base_soils.json')
+        self.assertEqual({'replace':False,'values':['minecraft:'+n for n in ['grass_block','dirt','coarse_dirt','rooted_dirt','podzol','mycelium']]},tag)
+        for p in (ROOT/'src/main/java').rglob('*.java'):self.assertNotIn('silver_birch_base_soils',p.read_text())
+        for p in (OUT/'data/mynx_trees/worldgen').rglob('*.json'):self.assertNotIn('silver_birch_base_soils',p.read_text())
+    def test_base_bark_is_side_only_and_items_stay_ordinary(self):
+        ordinary=self.read('assets/mynx_trees/models/block/silver_birch_log.json')
+        base=self.read('assets/mynx_trees/models/block/silver_birch_log_base.json')
+        expected=json.loads(json.dumps(ordinary));expected['textures']['side']='mynx_trees:block/silver_birch_log_base'
+        self.assertEqual(expected,base);self.assertEqual('minecraft:block/birch_log_top',base['textures']['end'])
+        self.assertEqual('minecraft:block/cube_column',base['parent'])
+        item=self.read('assets/mynx_trees/items/silver_birch_log.json')
+        self.assertEqual({'model':{'type':'minecraft:model','model':'mynx_trees:item/silver_birch_log'}},item)
+        self.assertEqual({'parent':'mynx_trees:block/silver_birch_log'},self.read('assets/mynx_trees/models/item/silver_birch_log.json'))
+        states=self.read('assets/mynx_trees/blockstates/silver_birch_log.json')
+        self.assertEqual({'axis=x','axis=y','axis=z'},set(states['variants']))
+        for state in states['variants'].values():self.assertEqual('mynx_trees:block/silver_birch_log',state['model'])
+        with zipfile.ZipFile(MC) as mc:
+            column=json.loads(mc.read('assets/minecraft/models/block/cube_column.json'))
+            cube=json.loads(mc.read('assets/minecraft/models/block/cube.json'))
+            faces=cube['elements'][0]['faces']
+            self.assertEqual({'down','up','north','south','west','east'},set(faces))
+            for face,data in faces.items():
+                self.assertEqual('#'+face,data['texture'])
+                self.assertEqual('#end' if face in ['up','down'] else '#side',column['textures'][face])
+    def test_base_bark_client_scope_cache_and_reload_contract(self):
+        folder=ROOT/'src/client/java/dev/resivore/mynxtrees'
+        registration=(folder/'SilverBirchBaseModels.java').read_text();model=(folder/'SilverBirchBaseModel.java').read_text()
+        self.assertIn('state.is(MynxTrees.SILVER_LOG)',registration);self.assertIn('state.getValue(RotatedPillarBlock.AXIS) == Direction.Axis.Y',registration)
+        self.assertIn('modifyBlockModelOnLoad()',registration);self.assertNotIn('modifyItemModel',registration)
+        self.assertIn('BASE_MODEL.resolveDependencies(resolver)',registration);self.assertIn('BASE_MODEL.bake(baker)',registration)
+        self.assertIn('TAGS_LOADED.register',registration);self.assertIn('if (client)',registration);self.assertIn('minecraft.execute(',registration);self.assertIn('minecraft.levelExtractor.allChanged()',registration)
+        self.assertIn('level::getBlockState',model);self.assertIn('below.is(SilverBirchBaseModels.SOILS)',model)
+        self.assertIn('GroundContact.geometryKey(this, grounded,',model);self.assertIn('delegate(grounded).createGeometryKey',model)
+        self.assertEqual(1,model.count('.emitQuads('));self.assertIn('ordinary.materialFlags() | base.materialFlags()',model)
+        for forbidden in ['getChunk','ServerLevel','ClientTickEvents','new Block','BlockEntity','pushTransform']:
+            self.assertNotIn(forbidden,registration+model)
+        meta=json.loads((ROOT/'src/main/resources/fabric.mod.json').read_text())
+        for dependency in ['iris','continuity','sodium']:self.assertNotIn(dependency,meta['depends'])
+        for p in (OUT/'assets/mynx_trees/models').rglob('*.json'):
+            for ref in json.loads(p.read_text()).get('textures',{}).values():
+                if ref.startswith('mynx_trees:'):self.assertTrue((OUT/('assets/mynx_trees/textures/'+ref.split(':',1)[1]+'.png')).exists(),ref)
     def test_final_jar_exact_assets_and_no_reference_binaries(self):
         jars=list((ROOT/'build/libs').glob('mynx-trees-private-*.jar'));self.assertEqual(1,len(jars))
         with zipfile.ZipFile(jars[0]) as z:
