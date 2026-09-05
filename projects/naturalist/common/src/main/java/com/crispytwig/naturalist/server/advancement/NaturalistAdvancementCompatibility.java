@@ -25,7 +25,10 @@ public final class NaturalistAdvancementCompatibility {
 
     private NaturalistAdvancementCompatibility() { }
 
-    public static void prepareForPublication(Map<Identifier, Advancement> advancements) {
+    public static Map<Identifier, Advancement> prepareForPublication(Map<Identifier, Advancement> incoming) {
+        // Reload listeners may supply immutable maps. Keep their entries and nested
+        // collections intact, and return the copy consumed by the publication hook.
+        Map<Identifier, Advancement> advancements = new LinkedHashMap<>(incoming);
         // Matcha filters the vanilla husbandry tree and provides this root.
         // Keep vanilla parenting whenever available; never rewrite another mod.
         if (!advancements.containsKey(HUSBANDRY_ROOT) && advancements.containsKey(MATCHA_ROOT)
@@ -41,7 +44,7 @@ public final class NaturalistAdvancementCompatibility {
         }
 
         Advancement fishing = advancements.get(TACTICAL_FISHING);
-        if (fishing == null || fishing.requirements().isEmpty()) return;
+        if (fishing == null || fishing.requirements().isEmpty()) return advancements;
         Map<String, Criterion<?>> criteria = new LinkedHashMap<>(fishing.criteria());
         var requirements = new ArrayList<>(fishing.requirements().requirements());
         var alternatives = new ArrayList<>(requirements.getFirst());
@@ -50,6 +53,7 @@ public final class NaturalistAdvancementCompatibility {
         requirements.set(0, alternatives);
         advancements.put(TACTICAL_FISHING, new Advancement(fishing.parent(), fishing.display(), fishing.rewards(),
                 criteria, new AdvancementRequirements(requirements), fishing.sendsTelemetryEvent(), fishing.name()));
+        return advancements;
     }
 
     private static void addBucket(Map<String, Criterion<?>> criteria, List<String> alternatives, String name, Item item) {

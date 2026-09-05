@@ -163,6 +163,10 @@ class LifecycleTest {
         return EntityContracts.roster(registries);
     }
 
+    @TestFactory Stream<DynamicTest> immutableAdvancementPublication() {
+        return AdvancementPublicationContracts.cases();
+    }
+
     static class RecipeHarness extends RecipeManager {
         RecipeHarness(HolderLookup.Provider registries) { super(registries); }
         void load(ResourceManager resources) {
@@ -184,7 +188,8 @@ class LifecycleTest {
         assertEquals(40, manager.tree().nodes().stream().filter(n -> n.holder().id().getNamespace().equals("naturalist")).count());
         for (String name : List.of("feed_bear_honeycomb", "feed_hippo_melon", "ride_giraffe_with_map")) {
             Identifier id = Naturalist.location("husbandry/" + name);
-            Advancement old = before.get(id), value = filtered.get(id);
+            Advancement old = before.get(id), value = manager.get(id).value();
+            assertSame(old, filtered.get(id), "Publication must leave the input unchanged");
             assertEquals(Optional.of(root), value.parent());
             assertEquals(old.criteria(), value.criteria());
             assertEquals(old.requirements(), value.requirements());
@@ -197,14 +202,15 @@ class LifecycleTest {
         var values = new HashMap<>(preparedAdvancements);
         Identifier id = Identifier.withDefaultNamespace("husbandry/tactical_fishing");
         var original = values.get(id);
-        NaturalistAdvancementCompatibility.prepareForPublication(values);
-        var updated = values.get(id);
+        var published = NaturalistAdvancementCompatibility.prepareForPublication(values);
+        var updated = published.get(id);
+        assertSame(original, values.get(id));
         assertEquals(original.criteria().size() + 2, updated.criteria().size());
         assertTrue(updated.criteria().entrySet().containsAll(original.criteria().entrySet()));
         assertEquals(original.rewards(), updated.rewards());
         assertTrue(updated.requirements().validate(updated.criteria().keySet()).isSuccess());
-        NaturalistAdvancementCompatibility.prepareForPublication(values);
-        assertEquals(updated, values.get(id));
+        var repeated = NaturalistAdvancementCompatibility.prepareForPublication(published);
+        assertEquals(updated, repeated.get(id));
     }
 
     @Test void everyStagedDynamicRegistryEntrySurvivesMappedRegistryLoading() {
