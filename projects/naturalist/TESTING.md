@@ -2,32 +2,28 @@
 
 ## Current gate
 
-**PRIVATE CANARY 5 RETAINED — NOT DEPLOYED / RUNTIME UNTESTED**
+**PRIVATE CANARY 6 RETAINED — NOT DEPLOYED / RUNTIME UNTESTED**
 
-- Version: `2.0.3+26.2-port-canary5`.
-- Artifact: `artifacts/naturalist-2.0.3+26.2-port-canary5.jar`, 11,374,087 bytes.
-- SHA-256: `18a1e4aafaf4b2a11df3dba6d7f94a657fbd2a3ff29b3b20fb884f5f8ab36a04`.
-- Source checkpoint (also embedded): `76ea6ea90976efdf0c4f65ceafe915bb8078bee2`.
-- Java 25 clean build, 315 tests, six preservation verifiers, dependency-policy
-  scan and narrow comparison against retained Canary 4 pass.
+- Version: `2.0.3+26.2-port-canary6`.
+- Artifact: `artifacts/naturalist-2.0.3+26.2-port-canary6.jar`, 11,374,192 bytes.
+- SHA-256: `132bea8de2356999656828fd3455126f45e46d622a19c611658eeb4405a1a67a`.
+- Source checkpoint (also embedded): `4d25f3b5720400da4c7817cb4fc505a32b5b36cd`.
+- Java 25 clean build, 351 tests, six preservation verifiers, dependency-policy
+  scan and narrow comparison against retained Canary 5 pass.
 
 Manager revision 98 has occupied A (CSR Canary 10) and B (QSN Canary 9).
 Recheck current main before deployment. Keep Naturalist ACTIVE until a verified
 serialized manager transition assigns its UUID to a free slot. No Minecraft
-runtime validation, dedicated deployment or Player Instance mutation occurred.
+runtime validation or dedicated deployment occurred for Canary 6.
 
-Canary 4 is **external user-reported runtime FAIL**, superseding its earlier
-untested description: September 5, 2026 ~15:30 America/Chicago, Matcha 26.2 Player
-Instance, Minecraft 26.2, Loader 0.19.3, Java 25. Title, world and player entry
-worked; prior helper, mass recipe, dragonfly loot and stale sound failures were
-absent. Butterfly crashed querying `tempt_range`; catch_bee failed before item
-components existed; three husbandry advancements had a missing parent; Polymer
-rejected Shellstone Brick Wall in the tab. The user deleted the installed JAR
-and identified the retained Canary 4 as the forensic input. Its verified hash
-is `fc7a214b59fa1ef9ebc4ffbb8a603867a12276742c56278d705123b0ea0cd922`, filename
-`naturalist-2.0.3+26.2-port-canary4.jar`, source
-`d577b5bb4c93484cea6be0871fa1297372662a0a`, 11,369,270 bytes. No post-deletion
-installed-file hash was measured. This is external evidence, not Workbench acceptance.
+Canary 5 is **external user-reported world-load FAIL**: September 5, 2026,
+Matcha 26.2 Player Instance launch 16:43:50 America/Chicago, failure 16:44:24,
+Minecraft 26.2, Loader 0.19.3, Java 25. The archived log corroborates immutable
+Map.put throwing UnsupportedOperationException in prepareForPublication,
+immediately after Matcha heart advancement enforcement. It establishes loaded
+version 2.0.3+26.2-port-canary5, without binding an exact installed filename,
+hash or source checkpoint. This is external evidence, not Workbench acceptance.
+The Player Instance was inspected read-only; protected 26.1.2 was never accessed.
 
 ## Focused executable coverage
 
@@ -43,10 +39,18 @@ The existing resource codec and 661-reference sound tests remain independent.
 
 Final advancement publication checks all 40 nodes with vanilla parents and with
 a fixture matching Matcha's filtered husbandry tree. The uncorrected tree rejects
-exactly three nodes. The fallback changes only their parent to `main:tutorial/root`
-when vanilla husbandry/root is absent and that Matcha root exists. Criteria,
-requirements, rewards and display remain equal. The decoded tactical-fishing hook
-retains the original catfish/bass bucket alternatives and is idempotent.
+exactly three nodes. Another 36 executable cases use Map.copyOf, unmodifiable-map
+wrappers and mutable input through the production-transformed manager. They cover
+valid/absent/invalid Matcha roots, vanilla parenting, already-reparented entries,
+the exact three-ID fallback allowlist, absent/empty/populated tactical fishing,
+existing bucket criteria in first and later requirement groups, input/nested
+collection preservation, repeated publication and removal on a fresh reload.
+A preceding HEAD hook returns an immutable map with its own root, advancement and
+parent changes; the final manager/tree retains them and applies Naturalist's
+remaining adjustments. Exported transformed bytecode confirms HEAD replacement,
+then Naturalist's returned receiver, then Map.forEach, holder publication and tree
+construction. The old HEAD mutation reproduced UnsupportedOperationException.
+All record fields outside the intended parent/bucket adjustments remain equal.
 
 All 51 actual entity factories and 48 living suppliers are checked using mocked
 server services, real constructors, installed goals and real attributes. Bytecode
@@ -73,9 +77,10 @@ This reconstructs the integration seam; it is not a rerun of the entire Player I
 Prior render-helper package guards, state lookup, Glow Goop's six registration/
 selection cases, required MonsterMixin descriptor, optional Field Guide gating,
 persistence and item-model suites remain enabled. Protected originals are immutable.
-Only four additional private recipe ingredient migrations and one required Mixin
-registration change staged resources relative to Canary 4. All protected assets,
-prior corrected data, 67 item roots and 47 spawn-egg roots remain byte-identical.
+Relative to retained Canary 5, only the advancement helper, manager Mixin and two
+release metadata entries change. All other 3,030 JAR entries, including protected
+assets, staged data, previous fixes, 67 item roots and 47 spawn-egg roots, remain
+byte-identical. No test fixture or library is packaged.
 
 ## Runtime procedure when a slot is free
 
@@ -83,9 +88,16 @@ prior corrected data, 67 item roots and 47 spawn-egg roots remain byte-identical
    the serialized Test Instance Manager only into a free dedicated Workbench slot;
    require readiness verification. Never displace another project, modify/relaunch
    the Player Instance or access protected 26.1.2.
-2. With Field Guide absent, reach title and enter a disposable world. Inspect logs
-   for Naturalist errors during load and resource reload, including catch_bee,
-   advancement parents, helper loading, Glow Goop, MonsterMixin and sounds.
+2. With the relevant Matcha advancement stack and Field Guide absent, enter a
+   disposable world, run /reload, inspect the advancement tree, then save, quit
+   and reopen. Confirm world loading completes and no immutable-map exception
+   occurs after Matcha heart enforcement. Check its heart/recipe advancements
+   remain present. Verify all three Naturalist fallback entries attach to the
+   parent permitted by the current packs, retaining vanilla or previously changed
+   parents when appropriate. Confirm tactical fishing retains its original
+   requirements and catfish/bass alternatives without duplicates after reload.
+   Inspect logs for other Naturalist load errors, including catch_bee, helper
+   loading, Glow Goop, MonsterMixin and sounds. A title screen alone is insufficient.
 3. Open Naturalist's tab under the full Workbench stack. Confirm Shellstone Brick
    Wall and the other ordinary shapes, snail colors and bucket variants appear;
    inspect search entries and confirm no false duplicate error.
@@ -121,7 +133,7 @@ Run `clean build persistenceTest itemModelTest` with the existing
 `naturalistOriginalJar` and `naturalistLegacyMinecraftJar` input properties.
 `build` includes startupTest, glowGoopTest, resourceCodecTest and lifecycleTest.
 After administrative commits reproduce the stamp with
-`-PnaturalistSourceCommit=76ea6ea90976efdf0c4f65ceafe915bb8078bee2` on this exact source tree.
+`-PnaturalistSourceCommit=4d25f3b5720400da4c7817cb4fc505a32b5b36cd` on this exact source tree.
 Run all six `tools/Verify-*.ps1` verifiers after resource generation.
 
 Sound verification uses cached `26.2-32.json`, index SHA-1
