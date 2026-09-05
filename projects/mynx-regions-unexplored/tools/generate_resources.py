@@ -97,7 +97,10 @@ def main():
             if name in {"stone_bud", "clover"}: model["tints"] = [grass_tint]
             elif name == "windswept_grass": model["tints"] = [{"type": "minecraft:constant", "value": -12012264}]
             write(f"assets/{NS}/items/{name}.json", {"model": model})
-        write(f"assets/{NS}/lang/en_us.json", {f"block.{NS}.{n}": n.replace("_", " ").title() for n in OBTAINABLE})
+        translations = {f"block.{NS}.{n}": n.replace("_", " ").title() for n in OBTAINABLE}
+        translations[f"block.{NS}.dropleaf"] = "Glowleaf"
+        translations[f"block.{NS}.dropleaf_plant"] = "Glowleaf Plant"
+        write(f"assets/{NS}/lang/en_us.json", translations)
 
         def vanilla(path): return json.loads(mc.read(path))
         def replaced(obj, pairs):

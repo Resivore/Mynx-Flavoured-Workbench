@@ -22,6 +22,8 @@ class Contract(unittest.TestCase):
                 self.assertEqual(source.read("assets/regions_unexplored/textures/" + relative), target.read_bytes(), relative)
 
     def test_exact_registry_and_item_surface(self):
+        self.assertEqual(16, len(OBTAINABLE))
+        self.assertEqual(8, len(COMPANIONS))
         self.assertEqual(set(OBTAINABLE), {p.stem for p in (OUT / f"assets/{NS}/items").glob("*.json")})
         self.assertEqual(set(OBTAINABLE + COMPANIONS), {p.stem for p in (OUT / f"assets/{NS}/blockstates").glob("*.json")})
         source = (ROOT / "src/main/java/dev/resivore/mynxregions/MynxRegionsUnexplored.java").read_text()
@@ -29,6 +31,22 @@ class Contract(unittest.TestCase):
         for forbidden in INPUTS["scope"]["explicit_exclusions"][:4]: self.assertNotIn(f'"{forbidden}"', source)
         self.assertIn('registerBlockNoItem("dropleaf_plant"', source)
         self.assertEqual(7, source.count('pot("potted_'))
+
+    def test_display_only_glowleaf_rename_is_generated(self):
+        language = self.read(f"assets/{NS}/lang/en_us.json")
+        self.assertEqual("Glowleaf", language[f"block.{NS}.dropleaf"])
+        self.assertEqual("Glowleaf Plant", language[f"block.{NS}.dropleaf_plant"])
+        self.assertNotIn(f"block.{NS}.glowleaf", language)
+        generator = (ROOT / "tools/generate_resources.py").read_text(encoding="utf-8")
+        self.assertIn('translations[f"block.{NS}.dropleaf"] = "Glowleaf"', generator)
+        self.assertIn('translations[f"block.{NS}.dropleaf_plant"] = "Glowleaf Plant"', generator)
+
+    def test_requested_and_preserved_light_levels(self):
+        source = (ROOT / "src/main/java/dev/resivore/mynxregions/MynxRegionsUnexplored.java").read_text(encoding="utf-8")
+        self.assertIn('.sound(SoundType.ROOTS).lightLevel(state -> 14));', source)
+        self.assertIn('pot("potted_mycotoxic_daisy", MYCOTOXIC_DAISY, 14)', source)
+        self.assertIn('return head ? p.randomTicks().lightLevel(state -> 14) : p;', source)
+        self.assertIn('registerBlockNoItem("dropleaf_plant", DropleafPlantBlock::new, dropleafProperties(false))', source)
 
     def test_resource_references_are_closed(self):
         def walk(value):

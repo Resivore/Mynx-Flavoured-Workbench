@@ -43,7 +43,7 @@ public final class MynxRegionsUnexplored implements ModInitializer {
     public static final StoneBudBlock STONE_BUD = registerBlock("stone_bud", StoneBudBlock::new, plantCopy(Blocks.SHORT_GRASS));
     public static final MycotoxicDaisyBlock MYCOTOXIC_DAISY = registerBlock("mycotoxic_daisy", MycotoxicDaisyBlock::new,
             BlockBehaviour.Properties.ofFullCopy(Blocks.WARPED_ROOTS).replaceable().noCollision().offsetType(BlockBehaviour.OffsetType.XZ)
-                    .sound(SoundType.ROOTS).lightLevel(state -> 4));
+                    .sound(SoundType.ROOTS).lightLevel(state -> 14));
     public static final Block HYSSOP = registerFlower("hyssop", MobEffects.LUCK, 10.0F);
     public static final Block BLUE_LUPINE = registerFlower("blue_lupine", MobEffects.SATURATION, 0.2F);
     public static final Block PINK_LUPINE = registerFlower("pink_lupine", MobEffects.SATURATION, 0.2F);
@@ -64,7 +64,7 @@ public final class MynxRegionsUnexplored implements ModInitializer {
     public static final Block POTTED_PURPLE_LUPINE = pot("potted_purple_lupine", PURPLE_LUPINE, 0);
     public static final Block POTTED_RED_LUPINE = pot("potted_red_lupine", RED_LUPINE, 0);
     public static final Block POTTED_YELLOW_LUPINE = pot("potted_yellow_lupine", YELLOW_LUPINE, 0);
-    public static final Block POTTED_MYCOTOXIC_DAISY = pot("potted_mycotoxic_daisy", MYCOTOXIC_DAISY, 8);
+    public static final Block POTTED_MYCOTOXIC_DAISY = pot("potted_mycotoxic_daisy", MYCOTOXIC_DAISY, 14);
 
     public static final List<Block> OBTAINABLE = List.of(DROPLEAF, BARLEY, WINDSWEPT_GRASS, CLOVER, STONE_BUD,
             MYCOTOXIC_DAISY, HYSSOP, BLUE_LUPINE, PINK_LUPINE, PURPLE_LUPINE, RED_LUPINE, YELLOW_LUPINE,
