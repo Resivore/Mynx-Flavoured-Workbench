@@ -1,0 +1,12 @@
+// Run QSN's controlled suites against its exact retained production JAR and a selected CSR provider.
+// Invoke with -p projects/quick-stack-nearby-compat and -PqsnRetainedArtifact=<exact C9 path>.
+gradle.projectsEvaluated {
+    def p = gradle.rootProject
+    def artifact = p.file(p.providers.gradleProperty('qsnRetainedArtifact').get())
+    def expected = '14a6844b04d9236233c7007ed111a452db659cc5662dca07aa11f33b2cb4ec76'
+    def hash = java.util.HexFormat.of().formatHex(java.security.MessageDigest.getInstance('SHA-256').digest(artifact.bytes))
+    if (hash != expected) throw new GradleException('QSN retained C9 identity mismatch')
+    p.sourceSets.main.output.classesDirs.setFrom(artifact)
+    p.sourceSets.main.output.resourcesDir = null
+    ['compileJava', 'processResources', 'jar', 'sourcesJar'].each { name -> p.tasks.named(name) { enabled = false } }
+}

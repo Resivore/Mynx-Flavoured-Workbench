@@ -23,6 +23,15 @@ import java.util.Optional;
 
 @Mixin(AbstractContainerScreen.class)
 abstract class AbstractContainerScreenMixin implements ReservationScreenAccess {
+    @com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod(
+            method = "extractTooltip(Lnet/minecraft/client/gui/GuiGraphicsExtractor;II)V")
+    private void containerSlotReservations$scopeHost(GuiGraphicsExtractor graphics, int mouseX, int mouseY,
+            com.llamalad7.mixinextras.injector.wrapoperation.Operation<Void> original) {
+        dev.resivore.slotreservations.client.NestedTooltipEditor.schedule(
+                (AbstractContainerScreen<?>) (Object) this, hoveredSlot, mouseX, mouseY,
+                () -> original.call(graphics, mouseX, mouseY));
+    }
+
     @Shadow @Final protected AbstractContainerMenu menu;
     @Shadow protected Slot hoveredSlot;
     @Shadow @Final protected int imageWidth;

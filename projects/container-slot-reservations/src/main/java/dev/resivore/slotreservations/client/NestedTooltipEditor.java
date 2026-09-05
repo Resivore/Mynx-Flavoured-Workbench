@@ -10,6 +10,7 @@ import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.ItemContainerContents;
 
@@ -22,16 +23,23 @@ public final class NestedTooltipEditor {
     private static long sentFrame;
     private NestedTooltipEditor() {}
 
-    public record Binding(AbstractContainerScreen<?> screen, Slot slot, ItemStack identity,
-                          int anchorX, int anchorY) {
+    public record Binding(AbstractContainerScreen<?> screen, AbstractContainerMenu menu, int menuId,
+                          int menuSlot, Slot slot, int menuState, ItemStack identity,
+                          int anchorX, int anchorY, long frame) {
         public boolean live() {
             var client = Minecraft.getInstance();
             return client.gui.screen() == screen && client.player != null
-                    && client.player.containerMenu == screen.getMenu()
-                    && slot.index >= 0 && slot.index < screen.getMenu().slots.size()
-                    && screen.getMenu().slots.get(slot.index) == slot && slot.isActive() && !slot.isFake()
+                    && client.player.containerMenu == menu && screen.getMenu() == menu
+                    && menu.containerId == menuId && menu.getStateId() == menuState
+                    && menuSlot >= 0 && menuSlot < menu.slots.size() && slot.index == menuSlot
+                    && menu.slots.get(menuSlot) == slot && slot.isActive() && !slot.isFake()
                     && slot.getItem().getCount() == 1
+                    && SupportedContainerResolver.isSupportedShulkerItem(slot.getItem())
                     && ItemStack.isSameItemSameComponents(slot.getItem(), identity);
+        }
+        Binding refresh(ItemStack stack) {
+            return new Binding(screen, menu, menuId, menuSlot, slot, menu.getStateId(), stack.copy(),
+                    anchorX, anchorY, NestedTooltipEditor.frame);
         }
     }
     private record Hit(long frame, Object tooltip, Binding host, TooltipGrid grid,
@@ -47,10 +55,11 @@ public final class NestedTooltipEditor {
 
     public static void beginFrame() {
         previous = hit;
+        frame++;
         if (previous != null && expectedReply != null) {
             Binding old = previous.host();
             if (ItemStack.matches(old.slot().getItem(), expectedReply)) {
-                Binding refreshed = new Binding(old.screen(), old.slot(), expectedReply.copy(), old.anchorX(), old.anchorY());
+                Binding refreshed = old.refresh(expectedReply);
                 previous = new Hit(previous.frame(), previous.tooltip(), refreshed, previous.grid(),
                         previous.mouseX(), previous.mouseY(), previous.width(), previous.height(), old.screen().getMenu().getStateId());
                 expectedReply = null;
@@ -58,19 +67,34 @@ public final class NestedTooltipEditor {
         }
         hit = null;
         renderingHost = null;
-        frame++;
+    }
+    public static void endFrame() {
+        renderingHost = null;
+        if (hit == null) { previous = null; expectedReply = null; }
+    }
+    /** Scope only the exact outer slot scheduling this tooltip, including repeated image queries. */
+    public static void schedule(AbstractContainerScreen<?> screen, Slot slot, int x, int y, Runnable nativeSchedule) {
+        Binding host = null;
+        if (slot != null) {
+            var menu = screen.getMenu();
+            host = new Binding(screen, menu, menu.containerId, slot.index, slot, menu.getStateId(),
+                    slot.getItem().copy(), x, y, frame);
+            if (!host.live()) host = null;
+        }
+        withHost(host, nativeSchedule);
+    }
+    private static void withHost(Binding host, Runnable nativeSchedule) {
+        Binding outer = renderingHost;
+        renderingHost = host;
+        try { nativeSchedule.run(); }
+        finally { renderingHost = outer; }
     }
     public static Binding capture(ItemStack stack) {
-        var client = Minecraft.getInstance();
-        if (renderingHost != null && renderingHost.slot().getItem() == stack) return renderingHost;
-        if (client == null || stack.getCount() != 1 || !(client.gui.screen() instanceof AbstractContainerScreen<?> screen)) return null;
-        Slot slot = ((ReservationScreenAccess) screen).containerSlotReservations$getHoveredSlot();
-        if (slot == null || slot.getItem() != stack) return null;
-        return new Binding(screen, slot, stack.copy(), (int) client.mouseHandler.getScaledXPos(client.getWindow()),
-                (int) client.mouseHandler.getScaledYPos(client.getWindow()));
+        return renderingHost != null && renderingHost.frame() == frame && renderingHost.live()
+                && ItemStack.matches(renderingHost.identity(), stack) ? renderingHost : null;
     }
     public static void show(Object tooltip, Binding host, int gridX, int gridY, GuiGraphicsExtractor graphics) {
-        if (host == null || !host.live()) return;
+        if (host == null || host.frame() != frame || !host.live()) return;
         var client = Minecraft.getInstance();
         hit = new Hit(frame, tooltip, host, new TooltipGrid(gridX, gridY),
                 client.mouseHandler.getScaledXPos(client.getWindow()), client.mouseHandler.getScaledYPos(client.getWindow()),
@@ -88,14 +112,16 @@ public final class NestedTooltipEditor {
                 || previous.height() != graphics.guiHeight()) return false;
         Binding host = previous.host();
         TooltipGrid grid = previous.grid();
+        Slot outer = ((ReservationScreenAccess) screen).containerSlotReservations$getHoveredSlot();
+        if (outer != null && outer != host.slot() && grid.slot(mouseX, mouseY) < 0) return false;
         // Include the small native gap from the host hover point to its tooltip border.
         int left = Math.min(host.anchorX() - 2, grid.x() - 7);
         int right = Math.max(host.anchorX() + 2, grid.x() + 169);
         int top = Math.min(host.anchorY() - 2, grid.y() - 7);
         int bottom = Math.max(host.anchorY() + 2, grid.y() + 61);
         if (mouseX < left || mouseX >= right || mouseY < top || mouseY >= bottom) return false;
-        renderingHost = host;
-        graphics.setTooltipForNextFrame(Minecraft.getInstance().font, host.slot().getItem(), host.anchorX(), host.anchorY());
+        withHost(host.refresh(host.slot().getItem()), () -> graphics.setTooltipForNextFrame(
+                Minecraft.getInstance().font, host.slot().getItem(), host.anchorX(), host.anchorY()));
         return true;
     }
     /** null = outside the current valid grid; false = valid grid with no action. */

@@ -55,16 +55,22 @@ abstract class ClientItemContentsTooltipMixin {
     }
 
 
-    @Inject(method = "extractImage", at = @At("HEAD"), require = 1, remap = false)
+    @Inject(method = "extractImage(Lnet/minecraft/client/gui/Font;IIIILnet/minecraft/client/gui/GuiGraphicsExtractor;)V",
+            at = @At(value = "INVOKE", ordinal = 0,
+                    target = "Lfuzs/iteminteractions/common/api/v2/client/gui/screens/inventory/tooltip/ClientItemContentsTooltip;extractSlots(Lnet/minecraft/client/gui/Font;Lnet/minecraft/client/gui/GuiGraphicsExtractor;IILfuzs/iteminteractions/common/api/v2/client/gui/screens/inventory/tooltip/ClientItemContentsTooltip$SlotRenderer;)V"),
+            locals = org.spongepowered.asm.mixin.injection.callback.LocalCapture.CAPTURE_FAILHARD,
+            require = 1, allow = 1, remap = false)
     private void containerSlotReservations$grid(Font font, int x, int y, int width, int height,
-            GuiGraphicsExtractor graphics, CallbackInfo ci) {
+            GuiGraphicsExtractor graphics, CallbackInfo ci, int gridPixelWidth, int gridPixelHeight,
+            int xStartPos, int yStartPos) {
         if (gridWidth == 9 && gridHeight == 3 && itemList.size() == 27)
             dev.resivore.slotreservations.client.NestedTooltipEditor.show(this, containerSlotReservations$host,
-                    x + (width - (9 * 18 + 14)) / 2 + 7, y + 7, graphics);
+                    xStartPos + 7, yStartPos + 7, graphics);
     }
 
     @org.spongepowered.asm.mixin.injection.ModifyVariable(
-            method = {"extractSlotContents", "extractHighlightSlotContents"}, at = @At("HEAD"),
+            method = {"extractSlotContents(Lnet/minecraft/client/gui/Font;Lnet/minecraft/client/gui/GuiGraphicsExtractor;IIIZ)V",
+                    "extractHighlightSlotContents(Lnet/minecraft/client/gui/Font;Lnet/minecraft/client/gui/GuiGraphicsExtractor;IIIZ)V"}, at = @At("HEAD"),
             ordinal = 0, argsOnly = true, require = 2, remap = false)
     private boolean containerSlotReservations$nativeHover(boolean selected, Font font,
             GuiGraphicsExtractor graphics, int x, int y, int physicalSlot, boolean original) {

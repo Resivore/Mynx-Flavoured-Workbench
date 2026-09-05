@@ -47,6 +47,7 @@ dependencies {
     testImplementation platform('org.junit:junit-bom:5.13.4')
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testImplementation 'org.ow2.asm:asm:9.10.1'
+    testImplementation 'org.mockito:mockito-core:5.20.0'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
@@ -151,4 +152,59 @@ test {
 
 java {
     withSourcesJar()
+}
+
+// Offline Mixin application followed by a headless deterministic client lifecycle fixture.
+// Optional upstream bytes are read from the exact audited reference, never packaged.
+def tooltipReference = layout.buildDirectory.file('tooltip-lifecycle/reference/iteminteractions.jar')
+def extractTooltipReference = tasks.register('extractTooltipReference') {
+    doLast {
+        def outer = file(tasks.named('test').get().systemProperties['easyShulkerBoxesJar'])
+        def zip = new java.util.zip.ZipFile(outer)
+        try {
+            def target = tooltipReference.get().asFile
+            target.parentFile.mkdirs()
+            target.bytes = zip.getInputStream(zip.getEntry(project.item_interactions_tested_entry)).bytes
+        } finally { zip.close() }
+    }
+}
+sourceSets {
+    tooltipTransform {
+        compileClasspath += sourceSets.test.compileClasspath
+        runtimeClasspath += sourceSets.test.runtimeClasspath
+    }
+    tooltipLifecycle {
+        compileClasspath += sourceSets.test.compileClasspath + files(tooltipReference)
+        runtimeClasspath += sourceSets.test.runtimeClasspath + files(tooltipReference)
+    }
+}
+tasks.named('compileTooltipLifecycleJava') { dependsOn extractTooltipReference }
+dependencies {
+    tooltipTransformImplementation 'net.fabricmc:class-tweaker:0.3.0-beta.2'
+    tooltipLifecycleImplementation files(providers.gradleProperty('puzzlesLibJar').getOrElse(
+            '../../originals/mods/PuzzlesLib-v26.2.3-mc26.2.x-Fabric.jar'))
+}
+def tooltipProvider = providers.gradleProperty('tooltipProviderJar')
+def transformedTooltipClasses = layout.buildDirectory.dir('tooltip-lifecycle/transformed' + (tooltipProvider.isPresent() ? '-predecessor' : ''))
+def transformTooltipMixins = tasks.register('transformTooltipMixins', JavaExec) {
+    dependsOn tasks.named('tooltipTransformClasses'), tasks.named('classes'), extractTooltipReference
+    classpath = (tooltipProvider.isPresent() ? files(tooltipProvider.get()) : files()) + sourceSets.tooltipTransform.runtimeClasspath + files(tooltipReference)
+    mainClass = 'dev.resivore.slotreservations.fixture.TransformTooltipMixins'
+    systemProperty 'mixin.service', 'dev.resivore.slotreservations.fixture.TooltipMixinService'
+    systemProperty 'mixin.service.boot', 'dev.resivore.slotreservations.fixture.TooltipMixinService'
+    systemProperty 'mixin.env.remapRefMap', 'false'
+    systemProperty 'puzzlesLibJar', providers.gradleProperty('puzzlesLibJar').getOrElse(
+            '../../originals/mods/PuzzlesLib-v26.2.3-mc26.2.x-Fabric.jar')
+    args transformedTooltipClasses.get().asFile.absolutePath
+    if (tooltipProvider.isPresent()) args 'predecessor'
+}
+tasks.register('tooltipLifecycleTest', Test) {
+    dependsOn transformTooltipMixins, tasks.named('tooltipLifecycleClasses')
+    testClassesDirs = sourceSets.tooltipLifecycle.output.classesDirs
+    classpath = files(transformedTooltipClasses) + sourceSets.tooltipLifecycle.output +
+            (tooltipProvider.isPresent() ? files(tooltipProvider.get()) : files()) + sourceSets.tooltipLifecycle.runtimeClasspath
+    useJUnitPlatform()
+    systemProperty 'projectRoot', projectDir.absolutePath
+    jvmArgs '-XX:+EnableDynamicAgentLoading'
+    systemProperty 'sodiumConsoleJar', providers.gradleProperty('sodiumConsoleJar').getOrElse('')
 }

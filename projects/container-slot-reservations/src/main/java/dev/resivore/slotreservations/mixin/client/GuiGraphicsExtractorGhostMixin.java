@@ -10,13 +10,6 @@ import org.spongepowered.asm.mixin.injection.ModifyArg;
 
 @Mixin(GuiGraphicsExtractor.class)
 abstract class GuiGraphicsExtractorGhostMixin {
-    @org.spongepowered.asm.mixin.injection.Inject(
-            method = "<init>(Lnet/minecraft/client/Minecraft;Lnet/minecraft/client/renderer/state/gui/GuiRenderState;II)V",
-            at = @At("RETURN"), require = 1)
-    private void containerSlotReservations$frame(org.spongepowered.asm.mixin.injection.callback.CallbackInfo ci) {
-        dev.resivore.slotreservations.client.NestedTooltipEditor.beginFrame();
-    }
-
     @ModifyArg(
             method = "item(Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/level/Level;Lnet/minecraft/world/item/ItemStack;III)V",
             at = @At(
