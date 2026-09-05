@@ -14,7 +14,7 @@
     ]
   },
   "definition": {
-    "lifecycle": "TESTING",
+    "lifecycle": "ACCEPTED",
     "goals": [
       "Route acquired items into supported unlocked carried shulkers using exact physical matching contents or matching empty CSR reservations, preserving component identity, effective capacities, counts, and existing global destination order.",
       "Preserve established passive-pickup, external QUICK_MOVE, and player-origin QUICK_MOVE behavior across vanilla and Inventory Extended storage while composing safely with Offhand Shift-Click QoL.",
@@ -88,7 +88,7 @@
     ]
   },
   "state": {
-    "milestone": "C12 deliberately expands accepted C11 with optional CSR reservation affinity; C11's accepted aggregate RUNTIME_PASS and exact C10 rollback remain valid. C12 0.3.7-csr-reservation-affinity-canary1 at c373b663c99d7a217fc9147db5007d3f1057678f, carried-container-auto-routing-0.3.7-csr-reservation-affinity-canary1.jar, 42805 bytes, SHA-256 f00b1e6bc64a0e63ac1199d89c08f7510a20d5bbb9a486b40bd97833df522a2f, passed three final clean Java 25 / Gradle 9.5.1 69/69 JUnit tests in 7 suites and 7/7 controlled GameTests with CSR absent, accepted C4, and exact C7. Six project GameTests plus Fabric's required control exercise actual world pickup, external QUICK_MOVE in Survival/Creative, player-origin QUICK_MOVE, offhand/source exclusions, selected-hand/carrier order, and lock/unlock. Behavioral fixtures cover exact counts, full physical affinity, conflicting reservations, reserved-first empty insertion, components/persistence, and effective normally-nonstackable saddle maximum 64 without an explicit MAX_STACK_SIZE patch. Direct accepted C11 bytes reject the new affinity case; BundleDestination bytes are identical. C12 remains runtime untested. Manager revision 90 / accepted Stack v18; state SHA-256 3cc3a9d83c34aa763263478fb7d54c1fb6aa1aee384ae48af3e815130f4a43b5; physical inventory SHA-256 1d4138fc6648f9181daaecde5374f99810072e778da9c513910fdcee96284d9e. Both exact current releases are READY_TO_TEST_VERIFIED with independent UNTESTED results. Slot B: deployment 98fe1cc9-eeaa-4c07-8b72-17678bc07581, artifact 2eb193ee-0975-4a2c-a725-c97a721c35b4, carried-container-auto-routing-0.3.7-csr-reservation-affinity-canary1.jar, 42,805 bytes, SHA-256 f00b1e6bc64a0e63ac1199d89c08f7510a20d5bbb9a486b40bd97833df522a2f, source c373b663c99d7a217fc9147db5007d3f1057678f. Exact ignored successor bytes were hash-and-byte verified and retained by tools/artifact_retention.py in the primary checkout. No dedicated Minecraft client was launched; controlled GameTests are not user runtime evidence.",
+    "milestone": "User-reported aggregate C12 RUNTIME_PASS, no individual checklist observations. Bound to verified main 5344927bbb52f0af74c8a75eecd68745963d7db3 and exact Slot B deployment 98fe1cc9-eeaa-4c07-8b72-17678bc07581 / artifact 2eb193ee-0975-4a2c-a725-c97a721c35b4 at manager 90. RECORD_RESULT revision 91 and PROMOTE_SLOT revision 92 accepted unchanged C12 into Stack 19 and cleared Slot B. Slot A C7 remains exactly UNTESTED; every unrelated accepted unit including Offhand Shift-Click QoL is unchanged. Final state digest 5566aa2deaa5dcefceeab7f040000182d0ea2e28eefa92a152d3a5802dfd5f4f; physical digest 5bac87139a1c525bdeb4fa3c9c324b89d87dc3c27abd6b4767405e0fe066cf92. Exact C11 is rollback; C10 remains historical passing provenance. No rebuild, repackaging or Minecraft launch.",
     "releases": {
       "current": {
         "version": "0.3.7-csr-reservation-affinity-canary1",
@@ -104,6 +104,19 @@
         }
       },
       "accepted": {
+        "version": "0.3.7-csr-reservation-affinity-canary1",
+        "embedded_version": "0.3.7-csr-reservation-affinity-canary1",
+        "artifact": {
+          "filename": "carried-container-auto-routing-0.3.7-csr-reservation-affinity-canary1.jar",
+          "sha256": "f00b1e6bc64a0e63ac1199d89c08f7510a20d5bbb9a486b40bd97833df522a2f"
+        },
+        "source_commit": "c373b663c99d7a217fc9147db5007d3f1057678f",
+        "runtime_dependency_policy": {
+          "contract": "CAPABILITY_OR_PROVIDER",
+          "exceptions": []
+        }
+      },
+      "rollback": {
         "version": "C11 (legacy 0.3.6-external-quick-move-priority-fix-canary)",
         "artifact": {
           "filename": "carried-container-auto-routing-0.3.6-external-quick-move-priority-fix-canary.jar",
@@ -111,30 +124,22 @@
         },
         "source_commit": "64d63d9bcca268297601af5c9a7537e8d8946812"
       },
-      "rollback": {
-        "version": "C10 (legacy 0.3.5-storage-partial-priority-fix-canary)",
-        "artifact": {
-          "filename": "carried-container-auto-routing-0.3.5-storage-partial-priority-fix-canary.jar",
-          "sha256": "610f6c65c36468c9b98ce8aa7892f8a57003c59a28cb989fe3c80742bec4eaa2"
-        },
-        "source_commit": "c8ec833d81f89ac5bca3040e83dbde26d6d0e906"
-      },
-      "accepted_current": "CURRENT_DIFFERS_FROM_ACCEPTED",
+      "accepted_current": "CURRENT_IS_ACCEPTED",
       "accepted_rollback": "ROLLBACK_DIFFERS_FROM_ACCEPTED"
     },
     "validation": {
       "build": "CONTROLLED_VALIDATION_PASS",
       "deployment": "READY_TO_TEST_VERIFIED",
-      "runtime": "RUNTIME_UNTESTED"
+      "runtime": "RUNTIME_PASS"
     },
     "blocker": null
   },
   "synchronization": {
-    "revision": 2,
-    "activity_at": "2026-09-04T23:24:09Z",
-    "updated_at": "2026-09-04T23:24:09Z",
-    "last_codex_at": "2026-09-04T23:24:09Z",
-    "source_commit": "c373b663c99d7a217fc9147db5007d3f1057678f",
+    "revision": 3,
+    "activity_at": "2026-09-05T03:43:25Z",
+    "updated_at": "2026-09-05T03:43:25Z",
+    "last_codex_at": "2026-09-05T03:43:25Z",
+    "source_commit": "941a590561d3af5f2479e75d368a4d8973ac8123",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
