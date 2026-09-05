@@ -39,7 +39,13 @@ class PrivateResourcePreservationTest {
                     assertEquals("com.crispytwig.naturalist.fabric.compat.FieldGuideMixinPlugin",
                             after.remove("plugin").getAsString());
                     assertEquals(before, after);
-                } else if (name.startsWith("data/naturalist/recipe/") || name.startsWith("data/naturalist/advancement/")
+                } else if (name.equals("naturalist.mixins.json")) {
+                    var before = JsonParser.parseString(new String(original, StandardCharsets.UTF_8)).getAsJsonObject();
+                    var after = JsonParser.parseString(new String(staged, StandardCharsets.UTF_8)).getAsJsonObject();
+                    var expected = before.deepCopy();
+                    expected.getAsJsonArray("mixins").add("CreativeItemStackIdentityMixin");
+                    assertEquals(expected, after);
+                } else if (name.startsWith("data/minecraft/recipe/") || name.startsWith("data/naturalist/recipe/") || name.startsWith("data/naturalist/advancement/")
                         || name.startsWith("data/naturalist/loot_table/") || name.equals("assets/naturalist/sounds.json")) {
                     int oldIngredients = ingredients, oldTypes = entityTypes;
                     compare(JsonParser.parseString(new String(original, StandardCharsets.UTF_8)),
@@ -52,7 +58,7 @@ class PrivateResourcePreservationTest {
                 }
             }
         }
-        assertEquals(100, recipes);
+        assertEquals(104, recipes);
         assertTrue(ingredients >= 100);
         assertEquals(4, predicates);
         assertEquals(5, entityTypes);
@@ -63,7 +69,7 @@ class PrivateResourcePreservationTest {
     private void compare(JsonElement before, JsonElement after, String file, String path) {
         if (before.equals(after)) return;
         String location = file + path;
-        if (file.startsWith("data/naturalist/recipe/") &&
+        if ((file.startsWith("data/naturalist/recipe/") || file.startsWith("data/minecraft/recipe/")) &&
                 path.matches("/(ingredient|ingredients/[0-9]+|key/.)") &&
                 before.isJsonObject() && after.isJsonPrimitive()) {
             var object = before.getAsJsonObject();

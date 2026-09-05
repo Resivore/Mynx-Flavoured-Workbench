@@ -144,7 +144,7 @@ public class Mole extends NaturalistAnimal implements HidingAnimal, DataDrivenVa
     }
 
     public static AttributeSupplier.Builder createAttributes() {
-        return Mob.createMobAttributes()
+        return Mob.createMobAttributes().add(Attributes.TEMPT_RANGE, 10.0D)
                 .add(Attributes.MAX_HEALTH, 8.0D)
                 .add(Attributes.MOVEMENT_SPEED, 0.2D);
     }

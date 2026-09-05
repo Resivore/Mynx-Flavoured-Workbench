@@ -1,6 +1,7 @@
 package com.crispytwig.naturalist.registry;
 
 import com.crispytwig.naturalist.Naturalist;
+import com.crispytwig.naturalist.server.item.NaturalistCreativeIdentity;
 import com.crispytwig.naturalist.server.block.SnailShellBlock;
 import com.crispytwig.naturalist.server.entity.mob.Snail;
 import net.minecraft.world.item.DyeColor;
@@ -28,7 +29,7 @@ public class NaturalistCreativeTab {
             () -> CreativeModeTab.builder(CreativeModeTab.Row.TOP, 0)
                     .icon(NaturalistRegistry.CAPTURE_NET.get()::getDefaultInstance)
                     .title(Component.translatable("itemGroup.naturalist.tab"))
-                    .displayItems((params, output) -> NaturalistRegistry.ITEMS.getEntries().forEach(entry -> {
+                    .displayItems((params, output) -> NaturalistCreativeIdentity.generate(() -> NaturalistRegistry.ITEMS.getEntries().forEach(entry -> {
                         Item item = entry.get();
                         if (item == NaturalistRegistry.SNAIL.get()) {
                             acceptSnailColors(output, item);
@@ -41,7 +42,7 @@ public class NaturalistCreativeTab {
                         } else {
                             output.accept(item);
                         }
-                    }))
+                    })))
                     .build()
     );
 

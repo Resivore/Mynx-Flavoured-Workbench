@@ -1,0 +1,1 @@
+{"schemaVersion":1,"id":"naturalist_lifecycle_fixture","version":"1.0.0","mixins":["naturalist.lifecycle-production.json","naturalist.lifecycle-shapes.json"]}

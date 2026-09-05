@@ -81,7 +81,7 @@ public class Tortoise extends TamableAnimal implements HidingAnimal, EggLayingAn
     }
 
     public static AttributeSupplier.@NotNull Builder createAttributes() {
-        return Mob.createMobAttributes().add(Attributes.MOVEMENT_SPEED, 0.17f).add(Attributes.MAX_HEALTH, 30.0).add(Attributes.ATTACK_DAMAGE, 2.0).add(Attributes.KNOCKBACK_RESISTANCE, 0.6);
+        return Mob.createMobAttributes().add(Attributes.TEMPT_RANGE, 10.0D).add(Attributes.MOVEMENT_SPEED, 0.17f).add(Attributes.MAX_HEALTH, 30.0).add(Attributes.ATTACK_DAMAGE, 2.0).add(Attributes.KNOCKBACK_RESISTANCE, 0.6);
     }
 
     @Override

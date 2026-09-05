@@ -124,6 +124,18 @@ sourceSets {
             !it.name.startsWith('field-guide-') && !it.name.startsWith('lambdynamiclights-')
         }
     }
+    lifecycleTest {
+        java.srcDir 'src/lifecycleTest/java'
+        resources {
+            srcDirs = ['src/lifecycleTest/resources', stagedOriginalResources]
+            include 'fabric.mod.json', 'naturalist.lifecycle*.json'
+            include 'META-INF/services/**'
+        }
+        compileClasspath += sourceSets.main.output.classesDirs + sourceSets.main.compileClasspath
+        runtimeClasspath += output + compileClasspath.filter {
+            !it.name.startsWith('field-guide-') && !it.name.startsWith('lambdynamiclights-')
+        }
+    }
 }
 
 configurations {
@@ -137,6 +149,8 @@ configurations {
     glowGoopTestRuntimeOnly.extendsFrom runtimeOnly
     resourceCodecTestImplementation.extendsFrom implementation
     resourceCodecTestRuntimeOnly.extendsFrom runtimeOnly
+    lifecycleTestImplementation.extendsFrom implementation
+    lifecycleTestRuntimeOnly.extendsFrom runtimeOnly
 }
 
 dependencies {
@@ -161,6 +175,11 @@ dependencies {
     resourceCodecTestImplementation 'org.objenesis:objenesis:3.3'
     resourceCodecTestImplementation "net.fabricmc:fabric-loader-junit:${project.fabric_loader_version}"
     resourceCodecTestRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    lifecycleTestImplementation platform('org.junit:junit-bom:5.11.4')
+    lifecycleTestImplementation 'org.junit.jupiter:junit-jupiter'
+    lifecycleTestImplementation "net.fabricmc:fabric-loader-junit:${project.fabric_loader_version}"
+    lifecycleTestImplementation 'org.mockito:mockito-core:5.20.0'
+    lifecycleTestRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
 tasks.register('verifyOriginalJar') {
@@ -205,6 +224,10 @@ tasks.register('stageOriginalResources', Sync) {
         def config = new JsonSlurper().parse(configFile)
         config.plugin = 'com.crispytwig.naturalist.fabric.compat.FieldGuideMixinPlugin'
         configFile.setText(JsonOutput.prettyPrint(JsonOutput.toJson(config)) + '\n', 'UTF-8')
+        File mainMixinFile = stagedOriginalResources.get().file('naturalist.mixins.json').asFile
+        def mainMixins = new JsonSlurper().parse(mainMixinFile)
+        if (!mainMixins.mixins.contains('CreativeItemStackIdentityMixin')) mainMixins.mixins.add('CreativeItemStackIdentityMixin')
+        mainMixinFile.setText(JsonOutput.prettyPrint(JsonOutput.toJson(mainMixins)) + '\n', 'UTF-8')
         migrateNaturalistResources(stagedOriginalResources.get().asFile)
     }
 }
@@ -412,7 +435,20 @@ tasks.register('resourceCodecTest', Test) {
 }
 
 tasks.named('check') {
-    dependsOn tasks.named('startupTest'), tasks.named('glowGoopTest'), tasks.named('resourceCodecTest')
+    dependsOn tasks.named('startupTest'), tasks.named('glowGoopTest'), tasks.named('resourceCodecTest'), tasks.named('lifecycleTest')
+}
+
+tasks.named('processLifecycleTestResources') { dependsOn tasks.named('stageOriginalResources') }
+tasks.register('lifecycleTest', Test) {
+    group = 'verification'
+    description = 'Checks resource preparation/publication, creative inventory and real entity/goal construction.'
+    dependsOn tasks.named('lifecycleTestClasses'), tasks.named('classes')
+    exclude '**/mixin/**' // Mixin classes are transformed into targets, never loaded as tests.
+    testClassesDirs = sourceSets.lifecycleTest.output.classesDirs
+    classpath = sourceSets.lifecycleTest.runtimeClasspath
+    inputs.dir stagedOriginalResources
+    systemProperty 'naturalist.stagedResources', stagedOriginalResources.get().asFile.absolutePath
+    useJUnitPlatform()
 }
 
 java {

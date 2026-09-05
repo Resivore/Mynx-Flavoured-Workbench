@@ -256,7 +256,7 @@ public class Crab extends TamableAnimal implements HidingAnimal, FollowingPet, C
 
     //region Spawning / Misc.
     public static AttributeSupplier.Builder createAttributes() {
-        return Mob.createMobAttributes()
+        return Mob.createMobAttributes().add(Attributes.TEMPT_RANGE, 10.0D)
                 .add(Attributes.MAX_HEALTH, 8.0D)
                 .add(Attributes.MOVEMENT_SPEED, 0.15D)
                 .add(Attributes.ATTACK_DAMAGE, 2.0D);

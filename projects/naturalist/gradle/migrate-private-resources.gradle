@@ -41,25 +41,29 @@ ext.migrateNaturalistResources = { File root ->
         }
     }
     ['recipe', 'advancement', 'loot_table'].each { folder ->
-        fileTree(new File(root, 'data/naturalist/' + folder)).matching { include '**/*.json' }.each { file ->
-            def data = new JsonSlurper().parse(file)
-            String before = JsonOutput.toJson(data)
-            if (folder == 'recipe') {
-                // Results and patterns are deliberately outside the ingredient migration.
-                if (data.key instanceof Map) data.key.replaceAll { key, value -> ingredient(value) }
-                if (data.ingredients instanceof List) data.ingredients = data.ingredients.collect { ingredient(it) }
-                if (data.containsKey('ingredient')) data.ingredient = ingredient(data.ingredient)
-            } else {
-                if (folder == 'advancement') {
-                    data.criteria?.values()?.each { criterion ->
-                        entityPredicate(criterion.conditions?.player)
-                        entityPredicate(criterion.conditions?.entity)
+        // Naturalist also owns four vanilla recipe overrides in the verified original.
+        def namespaces = folder == 'recipe' ? ['naturalist', 'minecraft'] : ['naturalist']
+        namespaces.each { namespace ->
+            fileTree(new File(root, 'data/' + namespace + '/' + folder)).matching { include '**/*.json' }.each { file ->
+                def data = new JsonSlurper().parse(file)
+                String before = JsonOutput.toJson(data)
+                if (folder == 'recipe') {
+                    // Results and patterns are deliberately outside the ingredient migration.
+                    if (data.key instanceof Map) data.key.replaceAll { key, value -> ingredient(value) }
+                    if (data.ingredients instanceof List) data.ingredients = data.ingredients.collect { ingredient(it) }
+                    if (data.containsKey('ingredient')) data.ingredient = ingredient(data.ingredient)
+                } else {
+                    if (folder == 'advancement') {
+                        data.criteria?.values()?.each { criterion ->
+                            entityPredicate(criterion.conditions?.player)
+                            entityPredicate(criterion.conditions?.entity)
+                        }
                     }
+                    conditions(data)
                 }
-                conditions(data)
-            }
-            if (before != JsonOutput.toJson(data)) {
-                file.setText(JsonOutput.prettyPrint(JsonOutput.toJson(data)) + '\n', 'UTF-8')
+                if (before != JsonOutput.toJson(data)) {
+                    file.setText(JsonOutput.prettyPrint(JsonOutput.toJson(data)) + '\n', 'UTF-8')
+                }
             }
         }
     }

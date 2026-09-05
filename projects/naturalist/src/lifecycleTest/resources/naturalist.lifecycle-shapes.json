@@ -1,0 +1,1 @@
+{"required":true,"package":"com.crispytwig.naturalist.lifecycle.mixin","compatibilityLevel":"JAVA_25","mixins":["ShapeEqualityFixtureMixin"],"injectors":{"defaultRequire":1}}
