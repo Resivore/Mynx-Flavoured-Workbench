@@ -2,8 +2,8 @@
   "$schema": "../../schemas/runtime-state.schema.json",
   "schema_version": 2,
   "activation": "ACTIVE",
-  "revision": 93,
-  "updated_at": "2026-09-05T04:27:20Z",
+  "revision": 95,
+  "updated_at": "2026-09-05T06:05:00Z",
   "accepted_baseline": {
     "revision": 19,
     "provenance": {
@@ -928,11 +928,15 @@
           },
           "replaces_accepted_deployment_id": "8211900d-913c-40f2-9829-68509e0d71fe",
           "runtime_result": {
-            "classification": "UNTESTED",
-            "recorded_at": null,
+            "classification": "FAIL",
+            "recorded_at": "2026-09-05T06:04:18Z",
             "evidence": {
               "passed": [],
-              "failed": []
+              "failed": [
+                "The Easy Shulker Boxes tooltip appears, but physically empty unreserved cells cannot be hovered.",
+                "Physically empty reserved cells also cannot be hovered.",
+                "Consequently those cells cannot be targeted by the CSR tooltip editor."
+              ]
             }
           }
         }
@@ -971,10 +975,12 @@
           },
           "replaces_accepted_deployment_id": "30a3d125-ecb6-4a7a-862b-ca2e2c1bbcfe",
           "runtime_result": {
-            "classification": "UNTESTED",
-            "recorded_at": null,
+            "classification": "INCONCLUSIVE",
+            "recorded_at": "2026-09-05T06:05:00Z",
             "evidence": {
-              "passed": [],
+              "passed": [
+                "Nested shulker routing using an internal CSR reservation worked."
+              ],
               "failed": []
             }
           },
