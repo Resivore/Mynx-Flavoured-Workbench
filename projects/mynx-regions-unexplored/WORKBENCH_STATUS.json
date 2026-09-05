@@ -1,0 +1,98 @@
+{
+  "$schema": "../../schemas/workbench-status.schema.json",
+  "schema_version": 1,
+  "identity": {
+    "uuid": "4fa0f3c6-988a-42a5-bdcf-8f1be17a3f27",
+    "name": "Mynx Regions Unexplored",
+    "project_id": "mynx-regions-unexplored",
+    "aliases": [],
+    "legacy_names": [],
+    "legacy_ids": []
+  },
+  "definition": {
+    "lifecycle": "ACTIVE",
+    "goals": [
+      "Preserve sixteen selected Regions Unexplored plants as focused Minecraft Java 26.2 Fabric content without a runtime dependency on Regions Unexplored.",
+      "Retain reference gameplay, assets and practical shader movement where target APIs permit, with narrow compatibility repairs and explicit 26.2 additions."
+    ],
+    "scope": [
+      "Dropleaf plus its body block, Barley, Windswept Grass, Clover, historical Stone Bud, Mycotoxic Daisy, Hyssop, five Lupines, Cattail, Duckweed, Tassel and Meadow Sage as sixteen obtainable items.",
+      "Reference-supported potted Hyssop, five Lupines and Mycotoxic Daisy; exact focused private resource assembly; support, growth, loot, food, recipe, compost, fire and bee behaviors.",
+      "Optional client-only Iris aliases inherit the active shader pack's vanilla short-foliage, tall-half, lily-pad and weeping-vine classifications while preserving explicit mappings and excluding pots."
+    ],
+    "boundaries": {
+      "owned_paths": [
+        "projects/mynx-regions-unexplored"
+      ],
+      "exclusions": [
+        "No RU world generation, biomes, trades, other plants, Grass Sprouts substitution, Create recipe without a supported 26.2 serializer, or first-copy acquisition path.",
+        "No Regions Unexplored, Iris, shader-pack or Create runtime requirement; no shader/profile edits, hardcoded shader material IDs or potted-plant wind aliases.",
+        "No runtime deployment, Test Instance Manager slot changes, Ribbits or Mynx Trees edits, protected-profile access, or redistribution of reference binaries/private artwork."
+      ]
+    },
+    "dependencies": [
+      {
+        "type": "MOD",
+        "identifier": "minecraft",
+        "requirement": "=26.2",
+        "reason": "Exact target for audited block, item, data and client APIs."
+      },
+      {
+        "type": "MOD",
+        "identifier": "fabricloader",
+        "requirement": ">=0.19.3",
+        "reason": "Fabric loader baseline for the target game."
+      },
+      {
+        "type": "MOD",
+        "identifier": "fabric-api",
+        "requirement": ">=0.157.0",
+        "reason": "Content registration, creative-tab, compost, fire and client color APIs."
+      },
+      {
+        "type": "MOD",
+        "identifier": "java",
+        "requirement": ">=25",
+        "reason": "Required Minecraft 26.2 JVM baseline."
+      }
+    ]
+  },
+  "state": {
+    "milestone": "Canary 1 implements the exact focused 16-plant set, one Dropleaf body and seven archive-supported pots with private generated resources, gameplay/data behavior and optional shader-material inheritance. Clean build passes one Java and nine Python checks. Exact private artifact retained. ACTIVE / NOT_DEPLOYED / RUNTIME_UNTESTED.",
+    "releases": {
+      "current": {
+        "version": "0.1.0+26.2-canary1",
+        "artifact": {
+          "filename": "mynx-regions-unexplored-private-0.1.0+26.2-canary1.jar",
+          "sha256": "7051e5590715d7680e754a9c32620762f410d55f53e817eecc8ca800ff4b476f"
+        },
+        "source_commit": "8747df624929cd509ef335722f9beb85e2a9af59",
+        "runtime_dependency_policy": {
+          "contract": "CAPABILITY_OR_PROVIDER",
+          "exceptions": []
+        }
+      },
+      "accepted": null,
+      "rollback": null,
+      "accepted_current": "NO_ACCEPTED",
+      "accepted_rollback": "NO_ROLLBACK"
+    },
+    "validation": {
+      "build": "STATIC_PASS",
+      "deployment": "NOT_DEPLOYED",
+      "runtime": "RUNTIME_UNTESTED"
+    },
+    "blocker": null
+  },
+  "synchronization": {
+    "revision": 1,
+    "activity_at": "2026-09-05T19:36:54Z",
+    "updated_at": "2026-09-05T19:36:54Z",
+    "last_codex_at": "2026-09-05T19:36:54Z",
+    "source_commit": "8747df624929cd509ef335722f9beb85e2a9af59",
+    "google_sheet": {
+      "participates": true,
+      "exclusion_reason": null
+    }
+  }
+}
