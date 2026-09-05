@@ -1,0 +1,13 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "dev.resivore.mynxtrees.mixin",
+  "compatibilityLevel": "JAVA_25",
+  "plugin": "dev.resivore.mynxtrees.IrisLeafMixinPlugin",
+  "client": [
+    "IrisLeafMaterialMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

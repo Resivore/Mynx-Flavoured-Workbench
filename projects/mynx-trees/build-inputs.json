@@ -29,7 +29,12 @@
     {
       "source": "originals/assets/item_silver_birch_leaves.png",
       "sha256": "d67b09de62eba7262fd678085d594e232d5a6be0108da5adab88216d1aa8735d",
-      "usage": "private build input"
+      "usage": "unused reference; not packaged since Canary 2"
+    },
+    {
+      "source": "originals/assets/block_wisteria_log_top.png",
+      "sha256": "68f630d51c1c900286def61b213b343dcfa5bc166fda85d5c0ade622e87b3d0b",
+      "usage": "private build input; supplied standalone replacement for Wisteria unstripped log top"
     }
   ],
   "references": [
@@ -284,7 +289,9 @@
     "grass": "#B0C73A",
     "unused_generic_foliage": "#88BB42",
     "leaf_hsv": "h = sin(x/10 + sin((z+x)/50)*3)/75 + 0.15; s = 0.8; v = 1; float arithmetic, Minecraft sine lookup, RGB rounding as Java HSBtoRGB",
-    "permission_scope": "User explicitly requested minimal visual behavior reproduction from ARR read-only reference; no RU source/assets imported."
+    "permission_scope": "User explicitly requested minimal visual behavior reproduction from ARR read-only reference; no RU source/assets imported.",
+    "inventory_rgb": "#FFEB33",
+    "inventory_behavior": "Normal Silver Birch leaf cube/block item with exactly one constant golden tint matching golden(0,0); no flat inventory sprite packaged."
   },
   "decoration_policy": {
     "natural": "Remove flower_cherry background pass only when trees_cherry is replaced; 25% wisteria selection per original attempt. One wisteria-specific 48-attempt radius-5 ground pass per successful wisteria; ordinary cherry uses loaded Nemo decorator when present, otherwise same bounded pass with Pink Petals. No fallback patch replacement.",
@@ -330,16 +337,6 @@
       "png_color_type": 6
     },
     {
-      "source": "originals/assets/item_silver_birch_leaves.png",
-      "target": "assets/mynx_trees/textures/item/silver_birch_leaves.png",
-      "sha256": "d67b09de62eba7262fd678085d594e232d5a6be0108da5adab88216d1aa8735d",
-      "dimensions": [
-        16,
-        16
-      ],
-      "png_color_type": 6
-    },
-    {
       "source": "originals/assets/cherry-to-wisteria.zip!/cherry-to-wisteria/assets/minecraft/textures/block/cherry_leaves.png",
       "target": "assets/mynx_trees/textures/block/wisteria_leaves.png",
       "sha256": "2e5f8e84365942226b9775dfec68e54b09996a2f7abe188ddb5bd8c5d3282e8c",
@@ -353,16 +350,6 @@
       "source": "originals/assets/cherry-to-wisteria.zip!/cherry-to-wisteria/assets/minecraft/textures/block/cherry_log.png",
       "target": "assets/mynx_trees/textures/block/wisteria_log.png",
       "sha256": "3118594596c96f0934dadbe990bb6dd13b31519e94420ffe503acc84553b007c",
-      "dimensions": [
-        16,
-        16
-      ],
-      "png_color_type": 6
-    },
-    {
-      "source": "originals/assets/cherry-to-wisteria.zip!/cherry-to-wisteria/assets/minecraft/textures/block/cherry_log_top.png",
-      "target": "assets/mynx_trees/textures/block/wisteria_log_top.png",
-      "sha256": "fd350023b4a41eef79e6d3507b68885402ee5ccd08d560c9e250b0f01e02c806",
       "dimensions": [
         16,
         16
@@ -518,6 +505,16 @@
         3
       ],
       "png_color_type": 6
+    },
+    {
+      "source": "originals/assets/block_wisteria_log_top.png",
+      "target": "assets/mynx_trees/textures/block/wisteria_log_top.png",
+      "sha256": "68f630d51c1c900286def61b213b343dcfa5bc166fda85d5c0ade622e87b3d0b",
+      "dimensions": [
+        16,
+        16
+      ],
+      "png_color_type": 6
     }
   ],
   "direct_log_recipe_audit": [
@@ -529,5 +526,29 @@
   "api_sources": [
     "https://docs.fabricmc.net/develop/blocks/block-tinting",
     "https://www.fabricmc.net/2026/03/14/261.html"
-  ]
+  ],
+  "standalone_wisteria_log_top": {
+    "received_as": "codex-clipboard-1482da4a-1610-4fa1-a24c-863a7678ddc7.png",
+    "source": "originals/assets/block_wisteria_log_top.png",
+    "sha256": "68f630d51c1c900286def61b213b343dcfa5bc166fda85d5c0ade622e87b3d0b",
+    "license": "User supplied for this private build; no additional redistribution grant inferred.",
+    "supersedes": "originals/assets/cherry-to-wisteria.zip!/cherry-to-wisteria/assets/minecraft/textures/block/cherry_log_top.png"
+  },
+  "shader_reference": {
+    "shader_pack": "ComplementaryUnbound_r5.8.1.zip",
+    "shader_sha256": "bb89b1fc54687d4147a837fb2e3c3f7261a13bee51819761e9b6a91cb7915965",
+    "iris_jar": "iris-fabric-1.11.2+mc26.2.jar",
+    "iris_sha256": "df0e2ccddaea17b191eda32b21c979e131bc9d4ef4f831113b50b461fc4a3804",
+    "source_instance": "Matcha 26.2 Player Instance (read-only)",
+    "block_properties_entry": "shaders/block.properties",
+    "observed_leaf_id": 10009,
+    "observed_mapping": "Explicit vanilla leaf block names; no #minecraft:leaves rule. Mere block tags cannot supply this shader material ID.",
+    "implementation": "Optional client Iris RETURN hook adds only absent custom leaf-state entries to the newly built material ID map, inheriting corresponding vanilla birch/cherry state IDs. Explicit custom mappings, including non-waving mappings, win. No hardcoded shader IDs, shader file edits, geometry animation, or unrelated block changes. Existing native leaf classes, tags, properties and alpha-derived rendering are retained.",
+    "target": "net.irisshaders.iris.shaderpack.materialmap.BlockMaterialMapping#createBlockStateIdMap",
+    "descriptor": "(Lit/unimi/dsi/fastutil/ints/Int2ObjectLinkedOpenHashMap;Lit/unimi/dsi/fastutil/ints/Int2ObjectLinkedOpenHashMap;)Lit/unimi/dsi/fastutil/objects/Object2IntMap;",
+    "runtime_evidence": "UNTESTED; shader classification and hook are checked statically, waving not observed.",
+    "wind_entry": "shaders/lib/materials/materialMethods/wavingBlocks.glsl",
+    "wind_dispatch": "WAVING_LEAVES guards mat == 10009 -> DoWave_Leaves(playerPos.xyz, worldPos, 1.0)",
+    "saved_options": "No WAVING/LEAVES/FOLIAGE override found in the active pack options; no settings changed."
+  }
 }

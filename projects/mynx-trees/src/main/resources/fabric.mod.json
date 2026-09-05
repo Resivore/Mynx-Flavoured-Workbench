@@ -19,5 +19,11 @@
     "minecraft": "26.2",
     "java": ">=25",
     "fabric-api": ">=0.157.0"
-  }
+  },
+  "mixins": [
+    {
+      "config": "mynx_trees.client.mixins.json",
+      "environment": "client"
+    }
+  ]
 }

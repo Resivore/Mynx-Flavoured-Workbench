@@ -17,15 +17,17 @@ def rename(value, replacements):
     return value
 
 def assemble():
+    for retired in ['assets/mynx_trees/textures/item/silver_birch_leaves.png']:
+        (OUT/retired).unlink(missing_ok=True)
     if hashlib.sha256(MC.read_bytes()).hexdigest()!=INPUTS['minecraft_baseline']['sha256']:raise ValueError('Changed Minecraft 26.2 build baseline')
     for entry in INPUTS['assets']:
         source=COMMON/entry['source']
         if hashlib.sha256(source.read_bytes()).hexdigest()!=entry['sha256']:raise ValueError('Changed immutable input: '+str(source))
     for name in ['log','leaves','sapling']:
         write('assets/mynx_trees/textures/block/silver_birch_'+name+'.png',(COMMON/('originals/assets/block_silver_birch_'+name+'.png')).read_bytes())
-    write('assets/mynx_trees/textures/item/silver_birch_leaves.png',(COMMON/'originals/assets/item_silver_birch_leaves.png').read_bytes())
+    write('assets/mynx_trees/textures/block/wisteria_log_top.png',(COMMON/'originals/assets/block_wisteria_log_top.png').read_bytes())
     with zipfile.ZipFile(COMMON/'originals/assets/cherry-to-wisteria.zip') as pack:
-        for folder,old,new in [('block','cherry_leaves','wisteria_leaves'),('block','cherry_log','wisteria_log'),('block','cherry_log_top','wisteria_log_top'),('block','cherry_sapling','wisteria_sapling'),('block','pink_petals','sweet_violets'),('item','pink_petals','sweet_violets')]+[('particle','cherry_'+str(i),'wisteria_'+str(i)) for i in range(12)]:
+        for folder,old,new in [('block','cherry_leaves','wisteria_leaves'),('block','cherry_log','wisteria_log'),('block','cherry_sapling','wisteria_sapling'),('block','pink_petals','sweet_violets'),('item','pink_petals','sweet_violets')]+[('particle','cherry_'+str(i),'wisteria_'+str(i)) for i in range(12)]:
             write(f'assets/mynx_trees/textures/{folder}/{new}.png',pack.read(f'cherry-to-wisteria/assets/minecraft/textures/{folder}/{old}.png'))
     with zipfile.ZipFile(MC) as mc:
         def vanilla(path):return json.loads(mc.read(path))
@@ -52,9 +54,14 @@ def assemble():
                     asset('blockstates',name,{'variants':{'':{'model':'mynx_trees:block/'+name}}})
                     asset('models/block',name,{'parent':'minecraft:block/cross','textures':{'cross':'mynx_trees:block/'+name}})
                     data('loot_table/blocks',name,{'type':'minecraft:block','pools':[{'rolls':1,'entries':[{'type':'minecraft:item','name':ident}],'conditions':[{'condition':'minecraft:survives_explosion'}]}]})
-                sprite=part=='sapling' or (part=='leaves' and tree=='silver_birch')
+                sprite=part=='sapling'
                 asset('models/item',name,{'parent':'minecraft:item/generated','textures':{'layer0':'mynx_trees:'+('item/' if part=='leaves' else 'block/')+name}} if sprite else {'parent':'mynx_trees:block/'+name})
-                asset('items',name,{'model':{'type':'minecraft:model','model':'mynx_trees:item/'+name}})
+                if tree=='silver_birch' and part=='leaves':
+                    # Exactly one vanilla-style item tint; the block texture remains the source pixels.
+                    rgb=int(INPUTS['color_reference']['inventory_rgb'][1:],16)
+                    asset('items',name,{'model':{'type':'minecraft:model','model':'mynx_trees:block/'+name,'tints':[{'type':'minecraft:constant','value':rgb-0x1000000}]}})
+                else:
+                    asset('items',name,{'model':{'type':'minecraft:model','model':'mynx_trees:item/'+name}})
             data('recipe',tree+'_wood',{'type':'minecraft:crafting_shaped','category':'building','pattern':['##','##'],'key':{'#':'mynx_trees:'+tree+'_log'},'result':{'id':'mynx_trees:'+tree+'_wood','count':3}})
         names.append('sweet_violets')
         mapping={'minecraft:pink_petals':'mynx_trees:sweet_violets','minecraft:blocks/pink_petals':'mynx_trees:blocks/sweet_violets',**{'minecraft:block/pink_petals_'+str(i):'mynx_trees:block/sweet_violets_'+str(i) for i in range(1,5)}}

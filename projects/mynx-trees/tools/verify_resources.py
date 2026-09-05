@@ -85,13 +85,24 @@ class Resources(unittest.TestCase):
         loot=self.read('data/mynx_trees/loot_table/blocks/sweet_violets.json');functions=loot['pools'][0]['entries'][0]['functions'];self.assertEqual([1,2,3,4],[f['count'] for f in functions if 'count' in f]);self.assertNotIn('minecraft:pink_petals',json.dumps(loot))
         log=self.read('assets/mynx_trees/models/block/silver_birch_log.json');self.assertEqual('minecraft:block/birch_log_top',log['textures']['end'])
         log=self.read('assets/mynx_trees/models/block/wisteria_log.json');self.assertEqual('mynx_trees:block/wisteria_log_top',log['textures']['end'])
-        inv=self.read('assets/mynx_trees/items/silver_birch_leaves.json');self.assertNotIn('tints',str(inv));self.assertEqual('minecraft:item/generated',self.read('assets/mynx_trees/models/item/silver_birch_leaves.json')['parent'])
+        inv=self.read('assets/mynx_trees/items/silver_birch_leaves.json');self.assertEqual('mynx_trees:block/silver_birch_leaves',inv['model']['model']);self.assertEqual([{'type':'minecraft:constant','value':-5325}],inv['model']['tints']);self.assertFalse((OUT/'assets/mynx_trees/textures/item/silver_birch_leaves.png').exists());self.assertEqual('mynx_trees:block/silver_birch_leaves',self.read('assets/mynx_trees/models/item/silver_birch_leaves.json')['parent'])
     def test_bounded_deterministic_decoration_and_native_interactions(self):
         source=(ROOT/'src/main/java/dev/resivore/mynxtrees/GroveFlowers.java').read_text();self.assertIn('context.random()',source);self.assertIn('state.canSurvive',source);self.assertIn('!context.isAir(pos)',source);self.assertNotIn('new Random',source)
         common=(ROOT/'src/main/java/dev/resivore/mynxtrees/MynxTrees.java').read_text();self.assertIn('extends SaplingBlock',common);self.assertIn('extends FlowerBedBlock',common)
         self.assertEqual(4,common.count('StrippableBlockRegistry.register('));self.assertIn('CompostableRegistry.INSTANCE.add(SWEET_VIOLETS, 0.3F)',common)
         self.assertIn('BiomeSelectors.includeByKey(Biomes.OLD_GROWTH_BIRCH_FOREST)',common);self.assertIn('BiomeSelectors.includeByKey(Biomes.CHERRY_GROVE)',common)
         self.assertIn('vanillaPlaced("flower_cherry")',common)
+    def test_standalone_wisteria_top_and_no_flat_leaf_icon(self):
+        manifest=json.loads((ROOT/'build-inputs.json').read_text())
+        entries=manifest['packaged_assets'];top=[e for e in entries if e['target']=='assets/mynx_trees/textures/block/wisteria_log_top.png']
+        self.assertEqual(1,len(top));self.assertEqual('originals/assets/block_wisteria_log_top.png',top[0]['source']);self.assertEqual([16,16],top[0]['dimensions']);self.assertEqual('68f630d51c1c900286def61b213b343dcfa5bc166fda85d5c0ade622e87b3d0b',top[0]['sha256'])
+        self.assertFalse(any('item_silver_birch_leaves.png' in e['source'] or '/cherry_log_top.png' in e['source'] for e in entries))
+    def test_optional_iris_hook_is_client_only_and_two_species_only(self):
+        meta=json.loads((ROOT/'src/main/resources/fabric.mod.json').read_text());self.assertNotIn('iris',meta['depends']);self.assertEqual([{'config':'mynx_trees.client.mixins.json','environment':'client'}],meta['mixins'])
+        cfg=json.loads((ROOT/'src/main/resources/mynx_trees.client.mixins.json').read_text());self.assertNotIn('mixins',cfg);self.assertEqual(['IrisLeafMaterialMixin'],cfg['client'])
+        source=(ROOT/'src/client/java/dev/resivore/mynxtrees/mixin/IrisLeafMaterialMixin.java').read_text();self.assertEqual(2,source.count('LeafShaderAliases.inheritUnmapped('));self.assertEqual(2,source.count('.withPropertiesOf(state)'));self.assertIn('@At("RETURN")',source);self.assertNotIn('10009',source);self.assertIn('@Pseudo',source)
+        plugin=(ROOT/'src/client/java/dev/resivore/mynxtrees/IrisLeafMixinPlugin.java').read_text();self.assertIn('isModLoaded("iris")',plugin)
+        for name in ['silver_birch_leaves','wisteria_leaves']:self.assertIn('mynx_trees:'+name,self.read('data/minecraft/tags/block/leaves.json')['values'])
     def test_final_jar_exact_assets_and_no_reference_binaries(self):
         jars=list((ROOT/'build/libs').glob('mynx-trees-private-*.jar'));self.assertEqual(1,len(jars))
         with zipfile.ZipFile(jars[0]) as z:
