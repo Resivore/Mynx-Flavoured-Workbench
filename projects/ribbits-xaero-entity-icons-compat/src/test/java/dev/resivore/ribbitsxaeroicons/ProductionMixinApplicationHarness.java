@@ -36,7 +36,7 @@ public final class ProductionMixinApplicationHarness {
         Path expectedTrinkets = Path.of(args[6]).toRealPath();
 
         require(expectedPatch.getFileName().toString()
-                        .equals("ribbits-xaero-entity-icons-compat-0.1.0-canary3.jar"),
+                        .equals("ribbits-xaero-entity-icons-compat-0.1.0-canary4.jar"),
                 "unexpected Canary 2 JAR " + expectedPatch);
         requireOfficialNamespace(expectedXaero);
         requireOfficialNamespace(expectedGecko);

@@ -45,6 +45,7 @@ class ReloadGenerationTest {
         CacheKey emf = new CacheKey("emf", "minecraft:sheep");
         CacheKey unsupportedGeo = new CacheKey("other-gecko", "othermod:gecko_mob");
         Map<CacheKey, Object> cache = new LinkedHashMap<>();
+        cache.put(new CacheKey("wanderer", "ribbits:wandering_ribbit"), Map.of("normal", "VALID_ICON", "old", "FAILED"));
         cache.put(ribbit, Map.of(
                 "normal", "VALID_ICON",
                 "umbrella", "FAILED"));

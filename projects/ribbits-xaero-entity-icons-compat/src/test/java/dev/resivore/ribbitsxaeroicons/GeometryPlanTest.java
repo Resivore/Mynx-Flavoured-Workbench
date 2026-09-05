@@ -127,7 +127,7 @@ class GeometryPlanTest {
         GeoCube cube = plan.cubes().getFirst();
         Vector4f left = transform(normal, cube, cube.quads()[0].vertices()[0]);
         Vector4f right = transform(normal, cube, cube.quads()[0].vertices()[1]);
-        assertTrue(left.x > right.x, "fixed 180-degree front orientation must mirror model X");
+        assertTrue(left.x < right.x, "baked X must retain its front-view direction");
     }
 
     @Test

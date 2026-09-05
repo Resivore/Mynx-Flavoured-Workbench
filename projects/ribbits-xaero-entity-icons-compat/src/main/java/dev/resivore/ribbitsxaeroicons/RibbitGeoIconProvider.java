@@ -27,7 +27,7 @@ import xaero.hud.minimap.element.render.MinimapElementGraphics;
 import xaero.hud.minimap.radar.icon.creator.RadarIconCreator;
 import xaero.lib.client.graphics.XaeroBufferProvider;
 
-/** Exact Ribbits opt-in provider; no other GeckoLib entity is enabled in Canary 2. */
+/** Two explicit Ribbits capture profiles; no other GeckoLib entity is enabled. */
 public final class RibbitGeoIconProvider implements GeoIconProvider {
     public static final String ENTITY_TYPE = "ribbits:ribbit";
     public static final String PROVIDER_ID = "ribbits-gecko-provider-v1";
@@ -39,11 +39,28 @@ public final class RibbitGeoIconProvider implements GeoIconProvider {
             "com.yungnickyoung.minecraft.ribbits.client.model.RibbitModel";
     private static final String UNRESOLVED = "<unresolved>";
 
-    public RibbitGeoIconProvider() {
+    public static final String WANDERING_ENTITY_TYPE = "ribbits:wandering_ribbit";
+    private final boolean wandering;
+    private final String entityType;
+    private final String providerId;
+    private final String selectorVersion;
+    private final String rendererClass;
+    private final String modelClass;
+
+    public RibbitGeoIconProvider() { this(false); }
+
+    /** Explicit second registration, never a generic Gecko entity provider. */
+    RibbitGeoIconProvider(boolean wandering) {
+        this.wandering = wandering;
+        entityType = wandering ? WANDERING_ENTITY_TYPE : ENTITY_TYPE;
+        providerId = wandering ? "wandering-ribbit-gecko-provider-v1" : PROVIDER_ID;
+        selectorVersion = wandering ? "wandering-face-direct-cubes-v1" : SELECTOR_VERSION;
+        rendererClass = wandering ? RENDERER_CLASS.replace(".RibbitRenderer", ".WanderingRibbitRenderer") : RENDERER_CLASS;
+        modelClass = wandering ? MODEL_CLASS.replace(".RibbitModel", ".WanderingRibbitModel") : MODEL_CLASS;
     }
 
     public static boolean owns(String entityType) {
-        return ENTITY_TYPE.equals(entityType);
+        return ENTITY_TYPE.equals(entityType) || WANDERING_ENTITY_TYPE.equals(entityType);
     }
 
     public static boolean owns(Entity entity) {
@@ -51,7 +68,7 @@ public final class RibbitGeoIconProvider implements GeoIconProvider {
     }
 
     public boolean supports(String entityType, boolean geoRenderer, boolean upstreamHandled) {
-        return owns(entityType) && geoRenderer && !upstreamHandled;
+        return this.entityType.equals(entityType) && geoRenderer && !upstreamHandled;
     }
 
     @Override
@@ -65,8 +82,9 @@ public final class RibbitGeoIconProvider implements GeoIconProvider {
         }
         String entityType = EntityTypeIdentity.of(entity);
         boolean exactGeoRenderer = renderer instanceof GeoEntityRenderer<?, ?>
-                && RENDERER_CLASS.equals(renderer.getClass().getName())
-                && renderState instanceof GeoRenderState;
+                && rendererClass.equals(renderer.getClass().getName())
+                && renderState instanceof GeoRenderState
+                && (!wandering || renderState instanceof net.minecraft.client.renderer.entity.state.LivingEntityRenderState);
         return supports(entityType, exactGeoRenderer, upstreamHandled);
     }
 
@@ -88,7 +106,7 @@ public final class RibbitGeoIconProvider implements GeoIconProvider {
             EntityRenderState renderState,
             Entity entity,
             RadarIconCreator.Parameters parameters) {
-        GeoIconLog.stage("geo-prerender", "ribbits:ribbit", "entered");
+        GeoIconLog.stage("geo-prerender", entityType, "entered");
         if (!(parameters.variant instanceof RibbitCacheVariant variant)) {
             GeoIconLog.failure("variant", "Xaero parameters do not contain the Ribbit cache record");
             return false;
@@ -146,7 +164,7 @@ public final class RibbitGeoIconProvider implements GeoIconProvider {
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
-    private static Prepared prepare(
+    private Prepared prepare(
             Entity entity, EntityRenderer<?, ?> renderer, EntityRenderState renderState) {
         BasicResolution basic = resolveBasic(entity, renderer, renderState);
         GeoModel model = basic.model();
@@ -170,8 +188,11 @@ public final class RibbitGeoIconProvider implements GeoIconProvider {
         CuboidGeoBone cuboidBody = (CuboidGeoBone) body;
         require(cuboidBody.cubes != null && cuboidBody.cubes.length > 0,
                 "direct body cube array is empty");
-        GeoIconLog.stage("selector", basic.modelId(), "main/body direct cubes=" + cuboidBody.cubes.length);
-        GeometryPlan plan = GeometryPlan.create(main, cuboidBody, cuboidBody.cubes);
+        GeoIconLog.stage("selector", basic.modelId(), "main/body owned cubes=" + cuboidBody.cubes.length);
+        GeoCube[] selected = wandering
+                ? WanderingRibbitHeadSelector.select(cuboidBody.cubes)
+                : cuboidBody.cubes;
+        GeometryPlan plan = GeometryPlan.create(main, cuboidBody, selected);
         GeoIconLog.stage("geometry-plan", basic.modelId(), "finite inherited transforms and framing created");
 
         GeoEntityRenderer geoRenderer = basic.renderer();
@@ -181,23 +202,26 @@ public final class RibbitGeoIconProvider implements GeoIconProvider {
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
-    private static BasicResolution resolveBasic(
+    private BasicResolution resolveBasic(
             Entity entity, EntityRenderer<?, ?> renderer, EntityRenderState renderState) {
         require(entity != null && renderer != null && renderState != null,
                 "entity, renderer, or populated render state is absent");
-        require(owns(entity), "entity is not ribbits:ribbit");
+        require(entityType.equals(EntityTypeIdentity.of(entity)), "entity is not owned by this provider");
         require(renderer instanceof GeoEntityRenderer<?, ?>
-                        && RENDERER_CLASS.equals(renderer.getClass().getName()),
+                        && rendererClass.equals(renderer.getClass().getName()),
                 "renderer is not the exact supported Ribbit GeoEntityRenderer");
         require(renderState instanceof GeoRenderState,
                 "render state does not implement the GeckoLib state contract");
         GeoRenderState geoState = (GeoRenderState) renderState;
-        requirePopulatedTickets(geoState);
-        GeoIconLog.stage("populated-tickets", "ribbits:ribbit", "all required tickets present");
+        if (!wandering) requirePopulatedTickets(geoState);
+        require(!wandering || renderState instanceof net.minecraft.client.renderer.entity.state.LivingEntityRenderState,
+                "Wandering renderer requires a populated living render state");
+        GeoIconLog.stage("populated-tickets", entityType,
+                wandering ? "living Geo state; no custom Ribbit tickets required" : "all required tickets present");
 
         GeoEntityRenderer geoRenderer = (GeoEntityRenderer) renderer;
         GeoModel model = geoRenderer.getGeoModel();
-        require(model != null && MODEL_CLASS.equals(model.getClass().getName()),
+        require(model != null && modelClass.equals(model.getClass().getName()),
                 "renderer does not expose the exact supported Ribbit model");
         Identifier modelId = (Identifier) model.getModelResource(geoState);
         Identifier textureId = (Identifier) model.getTextureResource(geoState);
@@ -206,19 +230,19 @@ public final class RibbitGeoIconProvider implements GeoIconProvider {
 
         GeoIconLog.stage("model-resolved", modelId, "active model");
         GeoIconLog.stage("texture-resolved", textureId, "active texture");
-        RibbitData data = geoState.getGeckolibData(DataTicketModule.DT_RIBBIT_DATA);
-        require(data != null && data.getProfession() != null
-                        && data.getProfession().id() != null,
+        RibbitData data = wandering ? null : geoState.getGeckolibData(DataTicketModule.DT_RIBBIT_DATA);
+        require(wandering || (data != null && data.getProfession() != null
+                        && data.getProfession().id() != null),
                 "Ribbit profession identity is absent");
-        boolean pride = Boolean.TRUE.equals(
+        boolean pride = !wandering && Boolean.TRUE.equals(
                 geoState.getGeckolibData(DataTicketModule.DT_IS_PRIDE_RIBBIT));
         CacheIdentity identity = new CacheIdentity(
-                ENTITY_TYPE,
-                PROVIDER_ID,
-                SELECTOR_VERSION,
+                entityType,
+                providerId,
+                selectorVersion,
                 modelId.toString(),
                 textureId.toString(),
-                data.getProfession().id().toString(),
+                wandering ? "not-applicable" : data.getProfession().id().toString(),
                 BABY_POLICY,
                 pride,
                 ReloadGeneration.current());
@@ -238,11 +262,11 @@ public final class RibbitGeoIconProvider implements GeoIconProvider {
                 "Pride-state ticket is absent");
     }
 
-    private static CacheIdentity unresolvedIdentity() {
+    private CacheIdentity unresolvedIdentity() {
         return new CacheIdentity(
-                ENTITY_TYPE,
-                PROVIDER_ID,
-                SELECTOR_VERSION,
+                entityType,
+                providerId,
+                selectorVersion,
                 UNRESOLVED,
                 UNRESOLVED,
                 UNRESOLVED,

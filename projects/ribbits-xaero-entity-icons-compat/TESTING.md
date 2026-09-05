@@ -1,19 +1,33 @@
 # Testing
 
-Current `ribbits-xaero-entity-icons-compat-0.1.0-canary3.jar` is **ACTIVE / STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED**.
-It is unaccepted and has no rollback. Identity: 58,821 bytes, SHA-256
-`79815cb8a958cd1d1a13338487a0ea1b0bb1f8a09493705a5e8ddb84a70469da`; source checkpoint is in WORKBENCH_STATUS.json.
+Current `ribbits-xaero-entity-icons-compat-0.1.0-canary4.jar` is **ACTIVE / STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED**.
+It is unaccepted and has no rollback. Identity: 61,889 bytes, SHA-256
+`cc4a690712a37e3fa58e4bff7fce6164285e4a91b8e83ca665ded60c2b0cdc2d`; source checkpoint is in WORKBENCH_STATUS.json.
 Clean builds against actual Fabric 26.2 GeckoLib 5.5.4 and 5.5.1 produced identical
-bytes. Each passed 66 tests in 14 suites and the combined production Knot/Mixin
+bytes. Each passed 71 tests in 16 suites and the combined production Knot/Mixin
 classloading harness without launching Minecraft. These are not runtime observations. Prior C1/C3 failures remain in CODEX_LOG.md and AUDIT.md.
 
-C3 preserves every direct cube at `main/body` and excludes all children/siblings.
+C4 preserves every direct cube at `main/body` and excludes all children/siblings.
 Exact Ribbits C9, Minimap 26.4.2 and nested XaeroLib 1.7.1 gates remain unchanged.
 GeckoLib must be present and expose the required renderer/model/state/direct-cube
 APIs. Its version, archive size, hash and origin layout are not activation allowlists.
 Missing requirements produce a named `incompatible GeckoLib API` or missing-mod
 diagnostic and disable the patch. The API probe reads signatures without loading
 game classes during mixin setup.
+Sizing/orientation contract: Xaero captures an ordinary 8/16-model-unit head with
+32 pixels per model unit, giving a 16-pixel span. C4 normalizes selected bounds to
+that span, retaining Xaero's capture `min(1, Parameters.scale)` and downstream
+display magnification. It no longer fills the 58-pixel clipping window. Creator
+resets incoming pose/model-view to identity; no vanilla model-form rotation has
+run at this seam. Gecko's baked +Y up/-Z face becomes screen -Y/+Z toward camera,
+with static bind/cube transforms intact. Real-model tests verify composed bounds
+and face normals; they do not establish visible pixels or runtime success.
+
+The latest user-reported external visual FAIL described enormous icons, top-of-head
+rather than face views, and absent Wandering support. No observation timestamp,
+installed compatibility JAR hash/version, session or resource-pack identity was
+supplied with that report. Do not bind it to an exact prior release or to C4.
+
 A nonempty vertex submission or allocated atlas is not proof of visible pixels.
 
 ## Exact future controlled inputs
@@ -43,7 +57,7 @@ currently installed files.
 
 ## Future combined runtime procedure
 
-The pair is Ribbits compatibility `0.1.0-canary3` and EMF compatibility
+The pair is Ribbits compatibility `0.1.0-canary4` and EMF compatibility
 `0.1.0-canary4`. Both are static candidates, not runtime passes. Keep failed
 Ribbits C1, EMF C3 and Diagnostic1 out of the future controlled cohort.
 
@@ -60,10 +74,17 @@ Ribbits C1, EMF C3 and Diagnostic1 out of the future controlled cohort.
    Enable Xaero entity heads and put each representative entity within an admitted
    category and range. Compare against heads disabled, category excluded and out
    of range controls. Restore the positive configuration before grading icons.
-4. Check Ribbit active textures and every direct cube at exact `main/body` with
+4. At identical minimap zoom and icon-size settings, compare each Ribbit head
+   against an ordinary vanilla head. Exercise smaller, default and larger icon-size
+   settings: sizes should track the setting together. Confirm eyes above face,
+   upright front view, no top/back view, no clipping and no mirrored active texture.
+   Check Ribbit active textures and every direct cube at exact `main/body` with
    inherited main/body transforms; exclude all children, descendants and siblings.
    Cover Nitwit, Chef, Farmer, Merchant and Guard, adult/baby, Pride, rain/umbrella
-   and instrument variants. Keep Wandering Ribbit outside this provider.
+   and instrument variants. Separately check `ribbits:wandering_ribbit`: upright
+   face core and paired eyes with its active texture; exclude clothes, backpack,
+   leaf, arms and legs. Its exact renderer requires living Geo state, not ordinary
+   profession/instrument/umbrella/Pride tickets. Changed face layout fails closed.
 5. Grade wolf, bat, axolotl, parrot, frog, allay, sniffer, iron golem, vex, ravager
    and witch separately. Check intended head-local geometry, framing and texture;
    exclude torso, wings, legs, held items and unrelated sibling geometry.
@@ -72,6 +93,7 @@ Ribbits C1, EMF C3 and Diagnostic1 out of the future controlled cohort.
    Compare normal in-world Fresh Animations and Ribbits rendering throughout.
 7. Exercise a valid cache entry and a deliberately failed one in the controlled
    cohort, reload resources, and confirm both are invalidated and regenerated.
+   Verify both ordinary and Wandering success/FAILED caches regenerate independently.
    Repeat after a full restart. Capture the first rejecting stage and final
    displayed result; a successful static fixture or atlas allocation is insufficient.
 8. Record independent results for the two projects and individual observations.

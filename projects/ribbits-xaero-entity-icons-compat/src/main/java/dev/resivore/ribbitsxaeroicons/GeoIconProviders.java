@@ -6,10 +6,11 @@ import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.world.entity.Entity;
 
-/** Deliberately closed registration list for Canary 2. */
+/** Deliberately closed registration list for ordinary and Wandering Ribbits. */
 public final class GeoIconProviders {
     private static final RibbitGeoIconProvider RIBBIT_PROVIDER = new RibbitGeoIconProvider();
-    private static final List<GeoIconProvider> PROVIDERS = List.of(RIBBIT_PROVIDER);
+    private static final RibbitGeoIconProvider WANDERING_PROVIDER = new RibbitGeoIconProvider(true);
+    private static final List<GeoIconProvider> PROVIDERS = List.of(RIBBIT_PROVIDER, WANDERING_PROVIDER);
 
     private GeoIconProviders() {
     }
@@ -35,6 +36,8 @@ public final class GeoIconProviders {
         if (!RibbitGeoIconProvider.owns(entity)) {
             throw new IllegalArgumentException("entity type is not owned by the Ribbits provider");
         }
-        return RIBBIT_PROVIDER.cacheIdentity(entity, renderer, renderState);
+        return (net.minecraft.world.entity.EntityType.getKey(entity.getType()).toString()
+                .equals(RibbitGeoIconProvider.WANDERING_ENTITY_TYPE) ? WANDERING_PROVIDER : RIBBIT_PROVIDER)
+                .cacheIdentity(entity, renderer, renderState);
     }
 }

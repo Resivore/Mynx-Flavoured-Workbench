@@ -17,7 +17,9 @@ import org.joml.Vector4f;
 final class GeometryPlan {
     static final float FRAME_CENTER = 32.0F;
     static final float FRAME_DEPTH = -450.0F;
-    static final float FRAME_SPAN = 58.0F;
+    // Xaero uses 32 capture pixels per model unit; an ordinary 8/16-unit head spans 16.
+    // Filling the 58-pixel clipping area instead makes the displayed icon 58/16 too large.
+    static final float FRAME_SPAN = 32.0F * (8.0F / 16.0F);
     private static final double MIN_EXTENT = 1.0e-6;
 
     private final GeoBone main;
@@ -49,7 +51,6 @@ final class GeometryPlan {
         validateBone(body);
 
         PoseStack pose = new PoseStack();
-        pose.mulPose(Axis.YP.rotationDegrees(180.0F));
         applyBindTransform(pose, main);
         applyBindTransform(pose, body);
         require(TransformSafety.isFiniteAndInvertibleMatrix(pose.last().pose()),
@@ -93,9 +94,11 @@ final class GeometryPlan {
         float boundedXaeroScale = Math.min(1.0F, xaeroScale);
         float scale = fitScale * boundedXaeroScale;
         pose.translate(FRAME_CENTER, FRAME_CENTER, FRAME_DEPTH);
-        pose.scale(scale, scale, -scale);
+        // Creator.setupMatrices supplies identity. Gecko baked vertices are Y-up, with
+        // the face at -Z. Screen Y is down and the camera-facing depth is +Z.
+        // No vanilla model form/default rotations have run on this replacement path.
+        pose.scale(scale, -scale, -scale);
         pose.translate(-bounds.centerX(), -bounds.centerY(), -bounds.centerZ());
-        pose.mulPose(Axis.YP.rotationDegrees(180.0F));
         applyBindTransform(pose, main);
         applyBindTransform(pose, body);
         require(TransformSafety.isFiniteAndInvertibleMatrix(pose.last().pose()),
