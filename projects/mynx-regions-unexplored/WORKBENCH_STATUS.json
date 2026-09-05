@@ -16,7 +16,7 @@
       "Retain reference gameplay, assets and practical shader movement where target APIs permit, with narrow compatibility repairs and explicit 26.2 additions."
     ],
     "scope": [
-      "Dropleaf plus its body block, Barley, Windswept Grass, Clover, historical Stone Bud, Mycotoxic Daisy, Hyssop, five Lupines, Cattail, Duckweed, Tassel and Meadow Sage as sixteen obtainable items.",
+      "Glowleaf (upstream Dropleaf) plus its body block, Barley, Windswept Grass, Clover, historical Stone Bud, Mycotoxic Daisy, Hyssop, five Lupines, Cattail, Duckweed, Tassel and Meadow Sage as sixteen obtainable items; the display-only Glowleaf name preserves the upstream dropleaf registry and resource identity.",
       "Reference-supported potted Hyssop, five Lupines and Mycotoxic Daisy; exact focused private resource assembly; support, growth, loot, food, recipe, compost, fire and bee behaviors.",
       "Optional client-only Iris aliases inherit the active shader pack's vanilla short-foliage, tall-half, lily-pad and weeping-vine classifications while preserving explicit mappings and excluding pots."
     ],
@@ -58,15 +58,15 @@
     ]
   },
   "state": {
-    "milestone": "Canary 1 implements the exact focused 16-plant set, one Dropleaf body and seven archive-supported pots with private generated resources, gameplay/data behavior and optional shader-material inheritance. Clean build passes one Java and nine Python checks. Exact private artifact retained. ACTIVE / NOT_DEPLOYED / RUNTIME_UNTESTED.",
+    "milestone": "Canary 2 displays Glowleaf for the existing upstream Dropleaf head/item and body IDs, and intentionally raises both Mycotoxic Daisy halves and its potted form to block light 14. The exact 16-item/24-block registry surface, Glowleaf behavior and lighting, other plant behavior, private resources and shader mappings remain unchanged. Clean build passes one Java and eleven Python checks. Exact private artifact retained. ACTIVE / NOT_DEPLOYED / RUNTIME_UNTESTED.",
     "releases": {
       "current": {
-        "version": "0.1.0+26.2-canary1",
+        "version": "0.1.0+26.2-canary2",
         "artifact": {
-          "filename": "mynx-regions-unexplored-private-0.1.0+26.2-canary1.jar",
-          "sha256": "7051e5590715d7680e754a9c32620762f410d55f53e817eecc8ca800ff4b476f"
+          "filename": "mynx-regions-unexplored-private-0.1.0+26.2-canary2.jar",
+          "sha256": "7518440d8d75fb76aafbb0a36d3f2decf26eaf10c98d754b86cadf23c0f42025"
         },
-        "source_commit": "8747df624929cd509ef335722f9beb85e2a9af59",
+        "source_commit": "b85c72f9ee59cdd7f19dab451580b01d8291cc65",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
@@ -85,11 +85,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 1,
-    "activity_at": "2026-09-05T19:36:54Z",
-    "updated_at": "2026-09-05T19:36:54Z",
-    "last_codex_at": "2026-09-05T19:36:54Z",
-    "source_commit": "8747df624929cd509ef335722f9beb85e2a9af59",
+    "revision": 2,
+    "activity_at": "2026-09-05T21:54:23Z",
+    "updated_at": "2026-09-05T21:54:23Z",
+    "last_codex_at": "2026-09-05T21:54:23Z",
+    "source_commit": "b85c72f9ee59cdd7f19dab451580b01d8291cc65",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
