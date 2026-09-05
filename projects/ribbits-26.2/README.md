@@ -6,13 +6,12 @@ Upstream code is covered by LGPL-3.0. Ribbits resources and the approved Guard R
 
 ## Current candidate
 
-- Internal version: `4.1.6+26.2-mynx-canary8`
-- Private artifact: `ribbits-private-reconstruction-4.1.6+26.2-mynx-canary8.jar`, 3,333,563 bytes, SHA-256 `3A8E4FF06378265D949F01067672EB6BAEC56FCD0AD0AB57260B6F32F630067B`
-- Source-only artifact: `ribbits-source-only-4.1.6+26.2-mynx-canary8.jar`, 1,263,483 bytes, SHA-256 `180A614AADA36ADF156628CCD9FFB7920806D78091CC26A31FD905B4BF094D23`
+- Internal version: `4.1.6+26.2-mynx-canary11`
+- Private artifact: `ribbits-private-reconstruction-4.1.6+26.2-mynx-canary11.jar`, 3,334,222 bytes, SHA-256 `258CA17B5D61C825AFBAF852413C1F44183D2533446BFF297C4B8453AD9CECAA`
+- Source-only artifact: `ribbits-source-only-4.1.6+26.2-mynx-canary11.jar`, 1,263,471 bytes, SHA-256 `3315C1ED9A56D5B7169196660834E06781C1E6D8C2DAA93E9F7BD5652B57F43C`
 - State: `ACTIVE / STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED`
-- Implementation checkpoint: `eec044758df774f6fb037a453e36904c8b9afb5d`
 
-Canary 8 succeeds, but does not overwrite or relabel, Canary 7: version `4.1.6+26.2-mynx-canary7`, private artifact `ribbits-private-reconstruction-4.1.6+26.2-mynx-canary7.jar`, 3,320,708 bytes, SHA-256 `6B18658C5A68D66623B9A388CC644E2F7A1B864E490B6F8B35D57FCD73A5BF74`, source checkpoint `a7ddb6afa6ed9cd620f49a28522c7866fdd35f04`. Canary 6, Canary 5, Canary 4, Canary 3, Canary 2, and the exact faithful-port baseline remain historical at their recorded identities.
+Canary 11 succeeds, but does not overwrite or relabel, Canary 10: version `4.1.6+26.2-mynx-canary10`, private artifact `ribbits-private-reconstruction-4.1.6+26.2-mynx-canary10.jar`, 3,334,581 bytes, SHA-256 `3D0EA590BA7186FA1B1A7CF3A6BE7689EEF5C424275B19AACF5D6CF59945AED9`, source checkpoint `681f120c444d2a0c34cfd1b448426f23cf9371bd`. Canary 9 and earlier identities remain historical at their recorded identities.
 
 No Minecraft client or server was launched and no candidate was deployed by this task. Static compilation, tests, deterministic assembly, archive inspection, codec validation, and the production-equivalent Knot/Mixin application test are not gameplay runtime evidence. The current useful future runtime procedure is in `TESTING.md`.
 
@@ -106,7 +105,7 @@ Optional provider `ribbits:optional_matcha_compasses`, schema 1, resolves Copper
 
 ## Drop Leaf
 
-Canary 10 retains registry ID `ribbits:chute_leaf` while displaying **Drop Leaf**. The latest exact user sprite is used by the inventory model; the auxiliary `chute_leaf_closed` model preserves the earlier closed-back sprite. Canary 9's deployed NONE-context canopy, native 8x8 marker, empty-handed Wandering model, one-pixel Glowcap shift and compass-free new map cost remain unchanged. See `MYNX_DEVIATIONS.md` for exact current visual identities and `TESTING.md` for pending runtime checks.
+Canary 11 retains registry ID `ribbits:chute_leaf` and the displayed name **Drop Leaf**. Its inactive inventory sprite, auxiliary `chute_leaf_closed` back model, renderer attachment, first-person path, activation protocol and movement mechanics are unchanged. Only the private `ribbits:item/chute_leaf_open` model changes: the assembler now derives its stem and canopy from the donor entity's rain-held `umbrella_leaf/grip/leaf2` bones in `geo/wandering_ribbit.geo.json` and binds their populated UV region to the exact `ribbits:entity/wandering_ribbit` texture. The former separate hand-held `models/custom/umbrella_leaf.json` substitute no longer resolves for deployed Drop Leaf. See `MYNX_DEVIATIONS.md` for exact current visual identities and `TESTING.md` for pending runtime checks.
 
 `ribbits:chute_leaf` is a stack-one, noncraftable, nondurable, unlimited-use Trinket. Its only eligibility declaration is `data/trinkets/tags/item/chest/cape.json`, and runtime checks require exact slot `chest/cape`, index `0`, in the accepted amount-one slot. It has no `chest/back` or broad Trinkets tag, creates no slot or inventory, carries no equippable or glider component, and is mutually exclusive with usable or broken Elytra/glider equipment in both insertion directions. Canary 8 compiles against and hash-gates the unchanged accepted `trinkets-4.1.0-beta.3+26.2-inventory-compat-canary5.jar`, 560,208 bytes, SHA-256 `4C1FA6AC36C0457483FD0D395B99BBD94C9334AAD6DEFECE7633BBF0552D1724`.
 

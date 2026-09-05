@@ -18,7 +18,7 @@ class ChuteLeafPoseTest {
             Vector3f a = pose.last().pose().transformPosition(new Vector3f(-0.53125F, 0.875F, -0.53125F));
             Vector3f b = pose.last().pose().transformPosition(new Vector3f(0.53125F, 0.875F, -0.53125F));
             Vector3f c = pose.last().pose().transformPosition(new Vector3f(-0.53125F, 0.875F, 0.53125F));
-            Vector3f grip = pose.last().pose().transformPosition(new Vector3f(0, -0.5F, 0));
+            Vector3f grip = pose.last().pose().transformPosition(new Vector3f(0.015625F, -0.0625F, 0));
             assertEquals(a.y, b.y, 0.00001F);
             assertEquals(a.y, c.y, 0.00001F);
             assertTrue(a.y > grip.y);

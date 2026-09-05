@@ -30,16 +30,16 @@ from typing import Any
 EXPECTED_PRISTINE_SHA256 = (
     "4cf86564aed393410fb1dbca3a9ce2425382307655e92bb6b43f3ddcee5bf731"
 )
-CANDIDATE_VERSION = "4.1.6+26.2-mynx-canary10"
-CANDIDATE_CANARY = 9
+CANDIDATE_VERSION = "4.1.6+26.2-mynx-canary11"
+CANDIDATE_CANARY = 11
 PRIVATE_MANIFEST_SCHEMA = "mynx-ribbits-private-resource-manifest/v1"
 PRIVATE_MANIFEST_CLASSIFICATION = (
     "PRIVATE MYNX ASSEMBLY STAGED / NONREDISTRIBUTABLE DONOR ASSETS"
 )
 PRIVATE_ARTIFACT_FILENAME = (
-    "ribbits-private-reconstruction-4.1.6+26.2-mynx-canary10.jar"
+    "ribbits-private-reconstruction-4.1.6+26.2-mynx-canary11.jar"
 )
-SOURCE_ONLY_ARTIFACT_FILENAME = "ribbits-source-only-4.1.6+26.2-mynx-canary10.jar"
+SOURCE_ONLY_ARTIFACT_FILENAME = "ribbits-source-only-4.1.6+26.2-mynx-canary11.jar"
 SOURCE_SAFE_PUBLIC_RESOURCE_PATHS = frozenset(
     {
         "assets/ribbits/items/glowcap.json",
@@ -142,8 +142,8 @@ REQUIRED_FABRIC_DEPENDENCIES = {
 }
 SOURCE_FILE_COUNT = 287  # 285 assets/data files plus icon.png and logo.png
 OUTPUT_FILE_COUNT = 349
-# Exact deterministic Canary 10 private staging inventory.
-OUTPUT_TOTAL_SIZE = 2_735_812
+# Exact deterministic Canary 11 private staging inventory.
+OUTPUT_TOTAL_SIZE = 2_733_657
 SOURCE_EXTENSION_COUNTS = {
     ".json": 201,
     ".nbt": 29,
@@ -829,7 +829,7 @@ SPAWN_EGG_MODEL = {
     "textures": {"layer0": "ribbits:item/ribbit_spawn_egg"},
 }
 SPAWN_EGG_SUBSTITUTION_NOTICE = (
-    "Private Mynx Canary 8 preserves the palette-only green recolor of Minecraft "
+    "The private Mynx release preserves the palette-only green recolor of Minecraft "
     "26.2's vanilla frog spawn-egg artwork for all ten Ribbits spawn eggs. "
     "This is explicitly authorized for the private Workbench and is not exact "
     "Ribbits 4.1.6 spawn-egg visual parity."
@@ -3071,13 +3071,131 @@ def import_wandering_visual_resources(
     for relative in (closed_back, closed_item, inventory_relative):
         records.append({"output": relative, "sources": [{"archive": "tracked-project", "member": "tools/assets/" + ("drop_leaf_inventory.png" if relative == inventory_relative else "chute_leaf.png")}], "transformation": "separate exact inventory artwork from preserved closed-back presentation"})
 
-    source_open_model = load_json_bytes(members[chute_model_member], chute_model_member)
-    if not isinstance(source_open_model, dict) or "textures" in source_open_model:
-        raise ValidationError("Approved Wandering Ribbit Chute model has unexpected texture bindings")
-    open_model = copy.deepcopy(source_open_model)
-    open_model["textures"] = {
-        "0": "ribbits:item/chute_leaf_open",
-        "particle": "ribbits:item/chute_leaf_open",
+    # The donor's rain predicate selects the entity's holding animations. Those
+    # animations reveal the umbrella_leaf bone, whose grip and leaf2 children are
+    # the actual rain shelter. The similarly named custom model is the separate
+    # hand-held item and must not stand in for the entity rain geometry.
+    donor_item_model = load_json_bytes(members[chute_model_member], chute_model_member)
+    if not isinstance(donor_item_model, dict) or "elements" not in donor_item_model:
+        raise ValidationError("Approved Wandering Ribbit held-item model differs")
+
+    source_geometry = load_json_bytes(members[model_member], model_member)
+    geometry = require_geometry_document(source_geometry, PurePosixPath(model_member).name)
+    bones = {bone.get("name"): bone for bone in geometry["bones"]}
+    umbrella = bones.get("umbrella_leaf")
+    grip = bones.get("grip")
+    canopy = bones.get("leaf2")
+    if (
+        not isinstance(umbrella, dict)
+        or umbrella.get("parent") != "left_arm"
+        or not isinstance(grip, dict)
+        or grip.get("parent") != "umbrella_leaf"
+        or not isinstance(canopy, dict)
+        or canopy.get("parent") != "umbrella_leaf"
+        or len(grip.get("cubes", [])) != 1
+        or len(canopy.get("cubes", [])) != 1
+    ):
+        raise ValidationError("Wandering Ribbit rain-leaf bone contract differs")
+
+    grip_cube = grip["cubes"][0]
+    canopy_cube = canopy["cubes"][0]
+    for name, cube in (("grip", grip_cube), ("leaf2", canopy_cube)):
+        if (
+            not isinstance(cube, dict)
+            or not isinstance(cube.get("origin"), list)
+            or len(cube["origin"]) != 3
+            or not isinstance(cube.get("size"), list)
+            or len(cube["size"]) != 3
+            or not isinstance(cube.get("uv"), list)
+            or len(cube["uv"]) != 2
+        ):
+            raise ValidationError(f"Wandering Ribbit {name} cube contract differs")
+
+    canopy_origin = [float(value) for value in canopy_cube["origin"]]
+    canopy_size = [float(value) for value in canopy_cube["size"]]
+    grip_origin = [float(value) for value in grip_cube["origin"]]
+    grip_size = [float(value) for value in grip_cube["size"]]
+    if canopy_size[1] != 0 or min(canopy_size[0], canopy_size[2]) <= 0:
+        raise ValidationError("Wandering Ribbit rain canopy is not the expected horizontal plane")
+    if min(grip_size) <= 0 or grip_size[1] <= max(grip_size[0], grip_size[2]):
+        raise ValidationError("Wandering Ribbit rain grip is not the expected vertical stem")
+
+    # Keep the donor dimensions and relative placement. Center the canopy in
+    # Java item-model space and retain the established deployed canopy height so
+    # ChuteLeafRenderer's back-mounted pose needs no Java workaround.
+    offset = [
+        8.0 - (canopy_origin[0] + canopy_size[0] / 2.0),
+        22.0 - canopy_origin[1],
+        8.0 - (canopy_origin[2] + canopy_size[2] / 2.0),
+    ]
+
+    def translated_bounds(origin: list[float], size: list[float]) -> tuple[list[float], list[float]]:
+        start = [origin[index] + offset[index] for index in range(3)]
+        end = [start[index] + size[index] for index in range(3)]
+        return start, end
+
+    def normalized_uv(values: list[float]) -> list[float]:
+        return [value / 8.0 for value in values]
+
+    grip_from, grip_to = translated_bounds(grip_origin, grip_size)
+    canopy_from, canopy_to = translated_bounds(canopy_origin, canopy_size)
+    grip_u, grip_v = (float(value) for value in grip_cube["uv"])
+    canopy_u, canopy_v = (float(value) for value in canopy_cube["uv"])
+    # GeckoLib box UV uses the donor texture's pixel coordinates. Give every
+    # narrow stem side the same exact donor strip so the half-pixel-wide cube
+    # remains stable in Java's item baker instead of collapsing to zero-width UVs.
+    grip_side_uv = normalized_uv(
+        [grip_u, grip_v, grip_u + 1.0, grip_v + grip_size[1]]
+    )
+    grip_cap_uv = normalized_uv([grip_u, grip_v, grip_u + 1.0, grip_v + 1.0])
+    # For a box-UV cube, DOWN begins at u + z + x and v + z, then spans
+    # +x and -z. This is the populated 17x17 donor leaf region; the paired
+    # UP region is transparent. Bind the populated region to both faces to
+    # preserve the donor artwork while making the zero-thickness leaf visible
+    # from both expected chute viewing sides without cull-face elimination.
+    populated_canopy_uv = normalized_uv(
+        [
+            canopy_u + canopy_size[2] + canopy_size[0],
+            canopy_v + canopy_size[2],
+            canopy_u + canopy_size[2] + canopy_size[0] * 2.0,
+            canopy_v,
+        ]
+    )
+    opposite_canopy_uv = [
+        populated_canopy_uv[0],
+        populated_canopy_uv[3],
+        populated_canopy_uv[2],
+        populated_canopy_uv[1],
+    ]
+    open_model = {
+        "ambientocclusion": False,
+        "textures": {
+            "0": "ribbits:entity/wandering_ribbit",
+            "particle": "ribbits:entity/wandering_ribbit",
+        },
+        "elements": [
+            {
+                "from": grip_from,
+                "to": grip_to,
+                "faces": {
+                    face: {"uv": copy.deepcopy(grip_side_uv), "texture": "#0"}
+                    for face in ("north", "east", "south", "west")
+                }
+                | {
+                    "up": {"uv": copy.deepcopy(grip_cap_uv), "texture": "#0"},
+                    "down": {"uv": copy.deepcopy(grip_cap_uv), "texture": "#0"},
+                },
+            },
+            {
+                "from": canopy_from,
+                "to": canopy_to,
+                "shade": False,
+                "faces": {
+                    "up": {"uv": opposite_canopy_uv, "texture": "#0"},
+                    "down": {"uv": populated_canopy_uv, "texture": "#0"},
+                },
+            },
+        ],
     }
     open_model_relative = "assets/ribbits/models/item/chute_leaf_open.json"
     open_model_path = root / PurePosixPath(open_model_relative)
@@ -3087,10 +3205,13 @@ def import_wandering_visual_resources(
     records.append(
         {
             "output": open_model_relative,
-            "sources": [{"archive": archive, "member": chute_model_member}],
+            "sources": [
+                {"archive": archive, "member": model_member},
+                {"archive": archive, "member": texture_member},
+            ],
             "transformation": (
-                "exact approved custom geometry with only canonical Ribbits open-texture "
-                "and particle bindings added"
+                "convert only the exact rain-held umbrella_leaf/grip/leaf2 entity bones "
+                "to a centered double-sided Java item model using the exact entity texture"
             ),
         }
     )
@@ -3107,8 +3228,8 @@ def import_wandering_visual_resources(
     records.append(
         {
             "output": open_item_relative,
-            "sources": [{"archive": archive, "member": chute_model_member}],
-            "transformation": "Minecraft 26.2 item-definition bridge for the open Chute model",
+            "sources": [{"archive": archive, "member": model_member}],
+            "transformation": "Minecraft 26.2 item-definition bridge for the rain-leaf Chute model",
         }
     )
 
@@ -4305,10 +4426,45 @@ def validate_donor_resource_boundary(root: Path, errors: list[str]) -> None:
             errors.append(f"Closed Drop Leaf model differs: {closed_model!r}")
         open_model = load_json(root / "assets/ribbits/models/item/chute_leaf_open.json")
         if not isinstance(open_model, dict) or open_model.get("textures") != {
-            "0": "ribbits:item/chute_leaf_open",
-            "particle": "ribbits:item/chute_leaf_open",
+            "0": "ribbits:entity/wandering_ribbit",
+            "particle": "ribbits:entity/wandering_ribbit",
         }:
-            errors.append("Open Drop Leaf custom model lacks exact canonical texture bindings")
+            errors.append("Open Drop Leaf rain model lacks exact donor entity-texture bindings")
+        if isinstance(open_model, dict) and any(
+            legacy_key in open_model
+            for legacy_key in ("format_version", "credit", "texture_size", "display", "groups")
+        ):
+            errors.append("Open Drop Leaf still contains the legacy held-item model contract")
+        open_texture = root / "assets/ribbits/textures/entity/wandering_ribbit.png"
+        if not open_texture.is_file():
+            errors.append("Open Drop Leaf donor entity-texture reference does not resolve")
+        open_elements = open_model.get("elements") if isinstance(open_model, dict) else None
+        if not isinstance(open_elements, list) or len(open_elements) != 2:
+            errors.append("Open Drop Leaf does not contain exactly the donor rain grip and canopy")
+        else:
+            grip_element, canopy_element = open_elements
+            if (
+                grip_element.get("from") != [8.0, 7.0, 7.75]
+                or grip_element.get("to") != [8.5, 22.0, 8.25]
+                or set(grip_element.get("faces", {}))
+                != {"north", "east", "south", "west", "up", "down"}
+            ):
+                errors.append("Open Drop Leaf rain grip geometry differs")
+            if (
+                canopy_element.get("from") != [-0.5, 22.0, -0.5]
+                or canopy_element.get("to") != [16.5, 22.0, 16.5]
+                or canopy_element.get("shade") is not False
+                or set(canopy_element.get("faces", {})) != {"up", "down"}
+                or canopy_element.get("faces", {}).get("up", {}).get("uv")
+                != [11.875, 5.875, 14.0, 8.0]
+                or canopy_element.get("faces", {}).get("down", {}).get("uv")
+                != [11.875, 8.0, 14.0, 5.875]
+                or any(
+                    face.get("texture") != "#0" or "cullface" in face
+                    for face in canopy_element.get("faces", {}).values()
+                )
+            ):
+                errors.append("Open Drop Leaf rain canopy geometry/double-sided contract differs")
         open_item = load_json(root / "assets/ribbits/items/chute_leaf_open.json")
         if open_item != {
             "model": {"type": "minecraft:model", "model": "ribbits:item/chute_leaf_open"}

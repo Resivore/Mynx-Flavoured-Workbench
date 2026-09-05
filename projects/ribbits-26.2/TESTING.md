@@ -1,25 +1,23 @@
 # Testing
 
-Mynx Ribbits Canary 10 is `ACTIVE / STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED`. Build/static checks do not establish Minecraft gameplay correctness. Read the exact current artifact filename/SHA-256 and implementation checkpoint in `WORKBENCH_STATUS.json`, and size/build evidence in the revision-15 log entry. Rehash the ignored private JAR before separately authorized deployment. Never deploy the resource-incomplete source-only JAR.
+Mynx Ribbits Canary 11 is `ACTIVE / STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED`. Build/static checks do not establish Minecraft gameplay correctness. Read the exact current artifact filename/SHA-256 and implementation checkpoint in `WORKBENCH_STATUS.json`, and size/build evidence in the revision-16 log entry. Rehash the ignored private JAR before separately authorized deployment. Never deploy the resource-incomplete source-only JAR, and never install Canary 11 beside another JAR with the same `ribbits` mod ID.
 
-## Canary 10 focused polish checks - all pending
+## Canary 11 focused deployed Drop Leaf checks - all pending
 
 Use only the dedicated `Matcha Flavoured 26.2 Workbench` through the serialized deployment procedure below. Record exact artifact identities and local/remote observations.
 
-1. Give a Drop Leaf and compare its inventory/GUI icon against the latest 249-byte 16x16 inventory sprite (SHA-256 `5ACBE4AFC118B2EC1A04EC5A2DCFD91F7DB05BD61937019A75300756CC257A30`). Require no old/missing texture or blur.
-2. Equip chest/cape while grounded. Inspect closed back from rear, sides and front, with/without armor, standing, walking and crouching. Require the earlier Canary 9 closed sprite (SHA-256 `816E4D4EDC23542AFEB2F2F90A5AF8A2076AE61829F1ACB016711E05FEC0191D`) and preserved closed attachment behavior; the new inventory sprite must not replace it.
-3. Deploy while descending from safe height. Inspect rear, front, both sides, above and below, rotate through several headings, look up/down, crouch airborne, and have a second client observe. Require a horizontal canopy above/behind the player with vertical grip, parallel to the ground, without diagonal tilt or torso clipping. Confirm descent cap and folding on landing.
-4. Repeat first-person deployment with each main arm and with held items. Require one rendering with preserved placement/appearance. Repeat after resource reload and reconnect.
-5. Carry a successful Ribbit Village explorer map with the intended Compass Ribbon/MME stack. At multiple GUI scales compare mushroom size/alignment with a native marker. Require clear native 8x8 artwork without excess padding or missing atlas sprite. Also inspect the map marker; filled-map inventory artwork must remain unchanged.
-6. Spawn/summon a fresh Wandering Ribbit. Inspect both hands from all sides while idle, walking and trading: no held leaf/grip. Preserve body decoration, arms and ordinary Ribbit held-item/umbrella behavior.
-7. Open a newly materialized Wandering menu: map costs exactly eight Glowcaps with an empty second cost slot. Seven must fail; eight without a compass must succeed and consume exactly eight. Preserve canonical success/failed-map output, one use, no restock and all compass buybacks. Save/reload schema-3 offers. Previously materialized C7/C8 merchants deliberately retain their saved menus, including old map cost.
-8. Inspect Glowcap in inventory, hotbar and merchant GUI against C8/reference: exactly one texture pixel lower on the same 16x16 canvas, with sharp edges, unchanged palette/transparency and no clipping.
-
-9. Confirm the displayed name is `Drop Leaf` in Creative/search, inventory, tooltips and the Wandering trade result. `/give @s ribbits:chute_leaf` and existing saved equipment must still work without migration.
+1. Equip Drop Leaf in chest/cape while grounded. Confirm the inactive back-mounted presentation and inventory sprite are unchanged.
+2. Descend from a safe height and use the existing second-jump input to deploy. Confirm activation, acknowledgement and descent behavior remain normal.
+3. Confirm the donor rain leaf appears above/behind the player's back through the existing chute attachment, with its vertical stem and leaf-silhouette canopy; it must not appear in either hand.
+4. Inspect after startup, resource reload and reconnect. Require no magenta/missing texture anywhere on the stem or canopy.
+5. Require no old fully visible square canopy or legacy held-item presentation. The transparent donor leaf silhouette should define the canopy shape.
+6. Inspect third-person front, back, both sides, above and below while rotating through several headings. Require appropriate two-sided visibility, horizontal canopy placement and no torso clipping.
+7. Repeat in first person with each main arm and representative held items. Require the existing single-callback behavior and placement to remain correct.
+8. Land and repeat a grounded/redeploy cycle. Require the deployed visual to retract and the unchanged closed back-mounted state to return.
 
 ## Earlier evidence boundary
 
-The exact Canary 6 cohort and the user's scoped Phase C practical `PASS`, the exact Canary 4 external startup `FAIL`, and the bound Canary 3 Phase B report remain recorded in `CODEX_LOG.md`. None supplies runtime evidence for Canary 10. Canary 10 preserves the Canary 5 startup repair, but its habitat policy, egg, compass buybacks, retained Phase D behavior, and combined stack are all still untested in Minecraft.
+The exact Canary 6 cohort and the user's scoped Phase C practical `PASS`, the exact Canary 4 external startup `FAIL`, and the bound Canary 3 Phase B report remain recorded in `CODEX_LOG.md`. None supplies runtime evidence for Canary 11. Canary 11 preserves the Canary 5 startup repair and all later behavior, but its rain-leaf visual and combined stack are still untested in Minecraft.
 
 ## Deployment preconditions
 

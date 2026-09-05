@@ -1287,8 +1287,8 @@ class PrivateVillageUtilityTransformTest(unittest.TestCase):
 
 class DonorBoundaryContractTest(unittest.TestCase):
     def test_exact_accounting_contains_only_approved_visual_members_and_outputs(self) -> None:
-        self.assertEqual("4.1.6+26.2-mynx-canary10", tools.CANDIDATE_VERSION)
-        self.assertEqual(9, tools.CANDIDATE_CANARY)
+        self.assertEqual("4.1.6+26.2-mynx-canary11", tools.CANDIDATE_VERSION)
+        self.assertEqual(11, tools.CANDIDATE_CANARY)
         self.assertEqual(
             "mynx-ribbits-private-resource-manifest/v1", tools.PRIVATE_MANIFEST_SCHEMA
         )
@@ -1297,7 +1297,7 @@ class DonorBoundaryContractTest(unittest.TestCase):
             tools.PRIVATE_MANIFEST_CLASSIFICATION,
         )
         self.assertEqual(349, tools.OUTPUT_FILE_COUNT)
-        self.assertEqual(2_735_812, tools.OUTPUT_TOTAL_SIZE)
+        self.assertEqual(2_733_657, tools.OUTPUT_TOTAL_SIZE)
         self.assertEqual(2_563, tools.SORCERER_LOOT_OUTPUT_SIZE)
         self.assertEqual(
             "5b06e06502bf11f661161e89bf34e329d8f23268b7b0104371038c38ad9b378d",
@@ -1343,14 +1343,22 @@ class DonorBoundaryContractTest(unittest.TestCase):
         closed_member = "assets/wandering_ribbit/textures/item/umbrella_leaf_item.png"
         open_member = "assets/wandering_ribbit/textures/item/umbrella_leaf_texture.png"
         payloads = {
-            model_member: json.dumps({"format_version": "1.12.0", "minecraft:geometry": [{"bones": [
-                {"name": "body", "cubes": [{"sentinel": "preserve"}]},
-                {"name": "left_arm", "parent": "body"},
-                {"name": "leaf", "parent": "body"},
-                {"name": "umbrella_leaf", "parent": "left_arm"},
-                {"name": "grip", "parent": "umbrella_leaf"},
-                {"name": "leaf2", "parent": "umbrella_leaf"},
-            ]}]}).encode(),
+            model_member: json.dumps({"format_version": "1.12.0", "minecraft:geometry": [{
+                "description": {"texture_width": 128, "texture_height": 128},
+                "bones": [
+                    {"name": "main"},
+                    {"name": "body", "cubes": [{"sentinel": "preserve"}]},
+                    {"name": "left_arm", "parent": "body"},
+                    {"name": "leaf", "parent": "body"},
+                    {"name": "umbrella_leaf", "parent": "left_arm"},
+                    {"name": "grip", "parent": "umbrella_leaf", "cubes": [
+                        {"origin": [4, 5, 2.75], "size": [0.5, 15, 0.5], "uv": [97, 64]}
+                    ]},
+                    {"name": "leaf2", "parent": "umbrella_leaf", "cubes": [
+                        {"origin": [-4.5, 20, -5.5], "size": [17, 0, 17], "uv": [61, 47]}
+                    ]},
+                ]
+            }]}).encode(),
             texture_member: b"entity-png",
             chute_model_member: json.dumps(
                 {
@@ -1378,8 +1386,10 @@ class DonorBoundaryContractTest(unittest.TestCase):
                 {record["output"] for record in records},
             )
             self.assertEqual(
-                {"format_version": "1.12.0", "minecraft:geometry": [{"bones":
-                    json.loads(payloads[model_member])["minecraft:geometry"][0]["bones"][:3]}]},
+                {"format_version": "1.12.0", "minecraft:geometry": [{
+                    "description": {"texture_width": 128, "texture_height": 128},
+                    "bones": json.loads(payloads[model_member])["minecraft:geometry"][0]["bones"][:-3],
+                }]},
                 tools.load_json(root / "assets/ribbits/geckolib/models/wandering_ribbit.geo.json"),
             )
             self.assertEqual(
@@ -1414,11 +1424,17 @@ class DonorBoundaryContractTest(unittest.TestCase):
             open_model = tools.load_json(
                 root / "assets/ribbits/models/item/chute_leaf_open.json"
             )
-            self.assertEqual([], open_model["elements"])
+            self.assertEqual(2, len(open_model["elements"]))
+            self.assertEqual([8.0, 7.0, 7.75], open_model["elements"][0]["from"])
+            self.assertEqual([8.5, 22.0, 8.25], open_model["elements"][0]["to"])
+            self.assertEqual([-0.5, 22.0, -0.5], open_model["elements"][1]["from"])
+            self.assertEqual([16.5, 22.0, 16.5], open_model["elements"][1]["to"])
+            self.assertEqual({"up", "down"}, set(open_model["elements"][1]["faces"]))
+            self.assertTrue(all("cullface" not in face for face in open_model["elements"][1]["faces"].values()))
             self.assertEqual(
                 {
-                    "0": "ribbits:item/chute_leaf_open",
-                    "particle": "ribbits:item/chute_leaf_open",
+                    "0": "ribbits:entity/wandering_ribbit",
+                    "particle": "ribbits:entity/wandering_ribbit",
                 },
                 open_model["textures"],
             )
