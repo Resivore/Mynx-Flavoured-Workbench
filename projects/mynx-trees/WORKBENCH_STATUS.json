@@ -19,7 +19,8 @@
       "Nine block/item identities, direct vanilla plank recipes, all-bark wood recipes, vanilla axe stripping, tool-gated leaf collection, leaf-to-sapling recipes, composting and normal sapling behavior.",
       "Loaded tree/fallen-tree material substitution preserves shape parameters and applicable decorators; biome-scoped selectors cover standing/fallen birch variants and weighted cherry/Wisteria attempts.",
       "Preferred tree-associated Sweet Violets with a bounded successful-growth decorator; remove the independent grove petal pass; retain Nemo ordinary cherry and unrelated decorators without a required Nemo dependency.",
-      "Position-dependent golden Silver Birch leaf tint, #B0C73A old-growth grass tint with normal blending, separate Wisteria particle sprites, unchanged supplied private pixel assets."
+      "Position-dependent golden Silver Birch leaf tint, a normal cube leaf item with one matching default golden tint, #B0C73A old-growth grass tint, separately namespaced Wisteria particles, and the standalone user-supplied Wisteria log-top texture.",
+      "Optional client Iris material-map fallback for only the two custom leaf species: inherit loaded vanilla birch/cherry state IDs only when no explicit custom mapping exists; no shader-pack/profile edits or fake animation."
     ],
     "boundaries": {
       "owned_paths": [
@@ -59,15 +60,15 @@
     ]
   },
   "state": {
-    "milestone": "Canary 1 clean build and 19 focused checks pass; exact private artifact retained through the canonical retention workflow. Preferred tree-associated Sweet Violets implemented; awaiting managed runtime validation.",
+    "milestone": "Canary 2 replaces the Wisteria log-top pixels, uses a tinted Silver Birch leaf block item, and adds optional Iris leaf-material inheritance; clean build and 27 focused checks pass. Exact private artifact retained, NOT_DEPLOYED and RUNTIME_UNTESTED; visual waving awaits managed runtime validation.",
     "releases": {
       "current": {
-        "version": "0.1.0+26.2-canary1",
+        "version": "0.1.0+26.2-canary2",
         "artifact": {
-          "filename": "mynx-trees-private-0.1.0+26.2-canary1.jar",
-          "sha256": "74aaa3a00755beca878aaa5edc6be3a279e0b5ef075e297a316514ed097b6ebf"
+          "filename": "mynx-trees-private-0.1.0+26.2-canary2.jar",
+          "sha256": "da8f5f3d352efac79c30f133d337c7fba399c2121771ce23b8eaa69922f57e6c"
         },
-        "source_commit": "02e24fb48eeb8ae491be0b1d930b9d2a3a04e865",
+        "source_commit": "ba4be474fd30d000b1bb0af15cea7a98e27db4c2",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
@@ -86,11 +87,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 1,
-    "activity_at": "2026-09-04T23:36:23Z",
-    "updated_at": "2026-09-04T23:36:23Z",
-    "last_codex_at": "2026-09-04T23:36:23Z",
-    "source_commit": "02e24fb48eeb8ae491be0b1d930b9d2a3a04e865",
+    "revision": 2,
+    "activity_at": "2026-09-05T00:28:56Z",
+    "updated_at": "2026-09-05T00:28:56Z",
+    "last_codex_at": "2026-09-05T00:28:56Z",
+    "source_commit": "ba4be474fd30d000b1bb0af15cea7a98e27db4c2",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
