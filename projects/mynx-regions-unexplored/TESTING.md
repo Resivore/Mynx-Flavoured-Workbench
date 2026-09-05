@@ -1,6 +1,6 @@
-# Mynx Regions Unexplored — Canary 2 runtime procedure
+# Mynx Regions Unexplored — Canary 3 runtime procedure
 
-Current candidate: `0.1.0+26.2-canary2`, `mynx-regions-unexplored-private-0.1.0+26.2-canary2.jar`. The canonical manifest records its exact SHA-256 and implementation checkpoint. It is ACTIVE, NOT_DEPLOYED, and RUNTIME_UNTESTED. Build and package checks are not Minecraft observations. Canary 2 changes the player-visible name of Glowleaf (upstream Dropleaf) without changing the `dropleaf` or `dropleaf_plant` registry IDs, and intentionally raises planted and potted Mycotoxic Daisy block light to 14.
+Current candidate: `0.1.0+26.2-canary3`, `mynx-regions-unexplored-private-0.1.0+26.2-canary3.jar`. The canonical manifest records its exact SHA-256 and implementation checkpoint. It is ACTIVE, NOT_DEPLOYED, and RUNTIME_UNTESTED. Build and package checks are not Minecraft observations. Canary 3 adds sparse, gently drifting vanilla end-rod particles around Mycotoxic Daisy flowers through the client ambient-display tick. The tall plant emits only from its upper half, and the existing potted form participates. Canary 2's Glowleaf display names and planted/potted Daisy block light 14 remain unchanged.
 
 ## Build and static reproduction
 
@@ -52,8 +52,16 @@ Use a disposable creative world with cheats after managed deployment. Record the
 2. Break the lower half, break the upper half, remove support, pot and unpot the flower, and reload the world after each representative setup. Confirm normal lighting updates immediately or after the normal engine recalculation, with no lingering light and no duplicate drops.
 3. Repeat placement and removal beside opaque blocks and at a chunk boundary. Confirm the existing artwork, transparency, geometry and normal shader movement are unchanged; no shader bloom or dynamic-light feature is needed for surrounding blocks to illuminate.
 
+## Focused Daisy particle regression
+
+1. With the particle setting on All, observe one planted Mycotoxic Daisy for several minutes. Confirm sparse individual vanilla end-rod particles appear around its flowers with small horizontal motion and gentle upward drift; the lower half must not independently emit or double the effect.
+2. Repeat with the existing potted Mycotoxic Daisy. Confirm the same sparse particle character is positioned around the potted flower, with no change to potting, retrieval, drops, model, texture or block light 14.
+3. Compare equal observation periods on All, Decreased and Minimal. Decreased must visibly reduce the already sparse effect over a sufficient sample, and Minimal must suppress it through Minecraft's normal particle limiter. No always-visible or limiter-bypassing particle path is expected.
+4. Repeat with shaders disabled and with the normal shader setup. Confirm particles require no shader or dynamic-light feature, and that Daisy lighting, transparency, geometry and wind motion remain unchanged.
+5. Start a dedicated Fabric server and connect a client. Confirm server startup and plant gameplay require no client class, particle packet, server tick or shader dependency; particle presentation remains local to each client's settings.
+
 ## Compatibility and stopping conditions
 
 Run the focused matrix once with only required Fabric dependencies, then with the normal Workbench stack. Confirm no runtime dependency on Regions Unexplored and no Create serializer or recipe when Create is unavailable for 26.2. Verify the enabled dependency graph and server startup, client join, resource reload and shutdown. Do not claim Create compatibility, shader motion, bee behavior, fluid restoration, dispenser behavior or dedicated-server safety until directly observed.
 
-No Minecraft client, server, GameTest world, managed deployment, Test Instance Manager state or testing slot was launched or changed during implementation. Every runtime case above remains NOT_RUN.
+No Minecraft client, server, GameTest world, managed deployment, Test Instance Manager state or testing slot was launched or changed during implementation. Every runtime case above, including particle appearance and setting behavior, remains NOT_RUN.

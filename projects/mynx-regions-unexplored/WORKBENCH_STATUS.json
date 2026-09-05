@@ -17,7 +17,7 @@
     ],
     "scope": [
       "Glowleaf (upstream Dropleaf) plus its body block, Barley, Windswept Grass, Clover, historical Stone Bud, Mycotoxic Daisy, Hyssop, five Lupines, Cattail, Duckweed, Tassel and Meadow Sage as sixteen obtainable items; the display-only Glowleaf name preserves the upstream dropleaf registry and resource identity.",
-      "Reference-supported potted Hyssop, five Lupines and Mycotoxic Daisy; exact focused private resource assembly; support, growth, loot, food, recipe, compost, fire and bee behaviors.",
+      "Reference-supported potted Hyssop, five Lupines and Mycotoxic Daisy; sparse vanilla end-rod particles from the client ambient-display tick around the upper-half and potted Mycotoxic Daisy flowers; exact focused private resource assembly; support, growth, loot, food, recipe, compost, fire and bee behaviors.",
       "Optional client-only Iris aliases inherit the active shader pack's vanilla short-foliage, tall-half, lily-pad and weeping-vine classifications while preserving explicit mappings and excluding pots."
     ],
     "boundaries": {
@@ -58,15 +58,15 @@
     ]
   },
   "state": {
-    "milestone": "Canary 2 displays Glowleaf for the existing upstream Dropleaf head/item and body IDs, and intentionally raises both Mycotoxic Daisy halves and its potted form to block light 14. The exact 16-item/24-block registry surface, Glowleaf behavior and lighting, other plant behavior, private resources and shader mappings remain unchanged. Clean build passes one Java and eleven Python checks. Exact private artifact retained. ACTIVE / NOT_DEPLOYED / RUNTIME_UNTESTED.",
+    "milestone": "Canary 3 adds sparse, gently drifting vanilla end-rod particles around Mycotoxic Daisy flowers through the normal client ambient-display path. The tall plant emits only from its upper half and the existing potted form participates; Minecraft's particle limiter remains authoritative. Canary 2 lighting/names, the exact 16-item/24-block registry surface, gameplay, private resources and shader mappings remain unchanged. Clean build passes two Java and twelve Python checks. Exact private artifact retained. ACTIVE / NOT_DEPLOYED / RUNTIME_UNTESTED.",
     "releases": {
       "current": {
-        "version": "0.1.0+26.2-canary2",
+        "version": "0.1.0+26.2-canary3",
         "artifact": {
-          "filename": "mynx-regions-unexplored-private-0.1.0+26.2-canary2.jar",
-          "sha256": "7518440d8d75fb76aafbb0a36d3f2decf26eaf10c98d754b86cadf23c0f42025"
+          "filename": "mynx-regions-unexplored-private-0.1.0+26.2-canary3.jar",
+          "sha256": "20460eac76b1712be8d0c6d39b5bcb755f2a7664e51eb70e73ad4ef071fd99a5"
         },
-        "source_commit": "b85c72f9ee59cdd7f19dab451580b01d8291cc65",
+        "source_commit": "b12564572871441efdd6478aecdb434322ada923",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
@@ -85,11 +85,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 2,
-    "activity_at": "2026-09-05T21:54:23Z",
-    "updated_at": "2026-09-05T21:54:23Z",
-    "last_codex_at": "2026-09-05T21:54:23Z",
-    "source_commit": "b85c72f9ee59cdd7f19dab451580b01d8291cc65",
+    "revision": 3,
+    "activity_at": "2026-09-05T22:19:15Z",
+    "updated_at": "2026-09-05T22:19:15Z",
+    "last_codex_at": "2026-09-05T22:19:15Z",
+    "source_commit": "b12564572871441efdd6478aecdb434322ada923",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
