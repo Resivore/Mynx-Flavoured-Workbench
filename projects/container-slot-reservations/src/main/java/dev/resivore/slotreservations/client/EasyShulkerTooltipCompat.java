@@ -59,6 +59,12 @@ public final class EasyShulkerTooltipCompat {
         }
 
         captureSource(sourceStack, ReservationStore.getData(sourceStack), tooltipComponent);
+        tooltipComponent.ifPresent(component -> {
+            if (component instanceof TooltipSourceAccess access) {
+                access.containerSlotReservations$setSourceStack(sourceStack.copy());
+                access.containerSlotReservations$setHost(NestedTooltipEditor.capture(sourceStack));
+            }
+        });
     }
 
     static void captureSource(

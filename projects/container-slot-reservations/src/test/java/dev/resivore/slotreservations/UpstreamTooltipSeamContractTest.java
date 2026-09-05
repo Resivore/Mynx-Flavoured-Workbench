@@ -44,6 +44,25 @@ final class UpstreamTooltipSeamContractTest {
             "1745adf294134817986e46bf554a5a6613837602b660e15a15c50bdc2e0a293c";
 
     @Test
+    void nativeEmptyCellHighlightAndFinalGeometrySeamsRemainAvailable() throws IOException {
+        byte[] nested;
+        try (ZipFile outer = new ZipFile(testedArtifact().toFile())) { nested = bytes(outer, NESTED_ENTRY); }
+        byte[] code;
+        try (ZipInputStream zip = new ZipInputStream(new ByteArrayInputStream(nested))) {
+            code = bytes(zip, "fuzs/iteminteractions/common/api/v2/client/gui/screens/inventory/tooltip/ClientItemContentsTooltip.class");
+        }
+        var node = new org.objectweb.asm.tree.ClassNode(); new ClassReader(code).accept(node,0);
+        var highlight = node.methods.stream().filter(m -> m.name.equals("extractHighlightSlotContents")).findFirst().orElseThrow();
+        List<String> calls = new ArrayList<>();
+        for (var instruction : highlight.instructions) if(instruction instanceof org.objectweb.asm.tree.MethodInsnNode call) calls.add(call.name);
+        assertTrue(calls.contains("blitBackSprite") && calls.contains("blitFrontSprite"));
+        assertFalse(calls.contains("isEmpty"), "Native highlight must accept a physically empty cell");
+        assertTrue(node.methods.stream().anyMatch(m -> m.name.equals("extractImage") && m.desc.equals(
+                "(Lnet/minecraft/client/gui/Font;IIIILnet/minecraft/client/gui/GuiGraphicsExtractor;)V")));
+        assertTrue(node.methods.stream().anyMatch(m -> m.name.equals("extractSlotContents") && m.desc.endsWith("IIIZ)V")));
+    }
+
+    @Test
     void exactEasyShulkerArtifactCarriesTheAuditedItemInteractionsBuild() throws IOException {
         Path artifact = testedArtifact();
         assertEquals(639_115L, Files.size(artifact));

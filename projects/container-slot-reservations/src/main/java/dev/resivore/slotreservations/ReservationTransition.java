@@ -18,6 +18,7 @@ final class ReservationTransition {
             return new Result(current.without(slot), Outcome.CLEARED);
         }
 
+        if (!ReservationTemplateEligibility.allows(physical)) return new Result(current, Outcome.REJECTED);
         return new Result(current.with(slot, physical), Outcome.SET);
     }
 
@@ -26,6 +27,7 @@ final class ReservationTransition {
         Objects.requireNonNull(cursor, "cursor");
         if (cursor.isEmpty()) throw new IllegalArgumentException("Cursor transition requires a carried stack");
 
+        if (!ReservationTemplateEligibility.allows(cursor)) return new Result(current, Outcome.REJECTED);
         ReservationData changed = current.with(slot, cursor);
         return new Result(changed, changed == current ? Outcome.UNCHANGED : Outcome.SET);
     }
@@ -37,6 +39,7 @@ final class ReservationTransition {
     }
 
     enum Outcome {
+        REJECTED,
         UNCHANGED,
         SET,
         CLEARED
@@ -49,7 +52,7 @@ final class ReservationTransition {
         }
 
         boolean changed() {
-            return outcome != Outcome.UNCHANGED;
+            return outcome == Outcome.SET || outcome == Outcome.CLEARED;
         }
     }
 }

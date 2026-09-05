@@ -42,6 +42,7 @@ public final class ShapeMapTargetAffinity {
         List<QuickStackMoveEngine.Target> augmented = new ArrayList<>(targets.size());
         boolean changed = false;
         for (QuickStackMoveEngine.Target target : targets) {
+            if (target.container() instanceof NestedShulkerTarget) { augmented.add(target); continue; }
             LinkedHashSet<QuickStackMoveEngine.StackKey> acceptedTypes = new LinkedHashSet<>(target.acceptedTypes());
             Container targetContainer = target.container();
             for (int targetSlot = 0; targetSlot < targetContainer.getContainerSize(); targetSlot++) {

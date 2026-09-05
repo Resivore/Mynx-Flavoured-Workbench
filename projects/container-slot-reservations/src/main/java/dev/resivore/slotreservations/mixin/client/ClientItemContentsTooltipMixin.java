@@ -31,6 +31,7 @@ abstract class ClientItemContentsTooltipMixin {
     @Shadow @Final private int gridWidth;
     @Shadow @Final private int gridHeight;
 
+    @Unique private dev.resivore.slotreservations.client.NestedTooltipEditor.Binding containerSlotReservations$host;
     @Unique
     private ItemStack containerSlotReservations$sourceStack;
 
@@ -45,11 +46,30 @@ abstract class ClientItemContentsTooltipMixin {
             CallbackInfo callbackInfo
     ) {
         if (originalTooltip instanceof TooltipSourceAccess access) {
+            containerSlotReservations$host = access.containerSlotReservations$getHost();
             ItemStack sourceStack = access.containerSlotReservations$getSourceStack();
             if (!sourceStack.isEmpty()) {
                 containerSlotReservations$sourceStack = sourceStack.copy();
             }
         }
+    }
+
+
+    @Inject(method = "extractImage", at = @At("HEAD"), require = 1, remap = false)
+    private void containerSlotReservations$grid(Font font, int x, int y, int width, int height,
+            GuiGraphicsExtractor graphics, CallbackInfo ci) {
+        if (gridWidth == 9 && gridHeight == 3 && itemList.size() == 27)
+            dev.resivore.slotreservations.client.NestedTooltipEditor.show(this, containerSlotReservations$host,
+                    x + (width - (9 * 18 + 14)) / 2 + 7, y + 7, graphics);
+    }
+
+    @org.spongepowered.asm.mixin.injection.ModifyVariable(
+            method = {"extractSlotContents", "extractHighlightSlotContents"}, at = @At("HEAD"),
+            ordinal = 0, argsOnly = true, require = 2, remap = false)
+    private boolean containerSlotReservations$nativeHover(boolean selected, Font font,
+            GuiGraphicsExtractor graphics, int x, int y, int physicalSlot, boolean original) {
+        int hovered = dev.resivore.slotreservations.client.NestedTooltipEditor.hovered(this);
+        return hovered >= 0 ? physicalSlot == hovered : selected;
     }
 
     @Inject(

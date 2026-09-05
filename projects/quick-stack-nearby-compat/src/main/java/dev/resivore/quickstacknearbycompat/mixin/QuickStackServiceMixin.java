@@ -43,7 +43,7 @@ public abstract class QuickStackServiceMixin {
                 window.firstInclusive(),
                 window.endExclusive(),
                 effectiveRules,
-                () -> original.call(player, sourceRules)
+                () -> dev.resivore.quickstacknearbycompat.core.NestedShulkerDiscovery.scoped(() -> original.call(player, sourceRules))
         );
     }
 
@@ -59,11 +59,12 @@ public abstract class QuickStackServiceMixin {
     )
     private static Set<QuickStackMoveEngine.StackKey> quickStackNearbyCompat$includeReservationAffinity(
             Container target,
-            Operation<Set<QuickStackMoveEngine.StackKey>> original) {
-        return CsrQuickStackIntegration.augmentDiscoveredAcceptedTypes(
-                target,
-                original.call(target)
-        );
+            Operation<Set<QuickStackMoveEngine.StackKey>> original,
+            net.minecraft.server.level.ServerLevel level, ServerPlayer player,
+            net.minecraft.core.BlockPos origin, net.minecraft.core.BlockPos position,
+            @com.llamalad7.mixinextras.sugar.Local(ordinal = 0) List<net.minecraft.core.BlockPos> positions) {
+        return dev.resivore.quickstacknearbycompat.core.NestedShulkerDiscovery.discover(target,
+                CsrQuickStackIntegration.augmentDiscoveredAcceptedTypes(target, original.call(target)), level, player, positions);
     }
 
     @Inject(
@@ -77,7 +78,8 @@ public abstract class QuickStackServiceMixin {
             ServerPlayer player,
             CallbackInfoReturnable<List<QuickStackMoveEngine.Target>> callback) {
         List<QuickStackMoveEngine.Target> targets = callback.getReturnValue();
-        List<QuickStackMoveEngine.Target> filtered = QsnDestinationExclusions.filterVanillaShelves(targets);
+        List<QuickStackMoveEngine.Target> filtered = dev.resivore.quickstacknearbycompat.core.NestedShulkerDiscovery.expand(
+                QsnDestinationExclusions.filterVanillaShelves(targets));
         if (filtered != targets) {
             callback.setReturnValue(filtered);
         }

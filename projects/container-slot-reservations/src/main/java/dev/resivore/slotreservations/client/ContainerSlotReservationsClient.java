@@ -48,6 +48,8 @@ public final class ContainerSlotReservationsClient implements ClientModInitializ
             return false;
         }
 
+        Boolean nested = NestedTooltipEditor.send();
+        if (nested != null) return nested;
         Slot slot = ((ReservationScreenAccess) screen).containerSlotReservations$getHoveredSlot();
         if (slot == null || !ClientReservationState.isEligible(screen.getMenu(), slot)) return false;
         int menuSlotIndex = screen.getMenu().slots.indexOf(slot);

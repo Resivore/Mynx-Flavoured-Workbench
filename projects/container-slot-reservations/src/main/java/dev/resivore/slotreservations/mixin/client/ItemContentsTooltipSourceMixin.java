@@ -13,6 +13,9 @@ import org.spongepowered.asm.mixin.Unique;
         remap = false
 )
 abstract class ItemContentsTooltipSourceMixin implements TooltipSourceAccess {
+    @Unique private dev.resivore.slotreservations.client.NestedTooltipEditor.Binding containerSlotReservations$host;
+    @Override public dev.resivore.slotreservations.client.NestedTooltipEditor.Binding containerSlotReservations$getHost() { return containerSlotReservations$host; }
+    @Override public void containerSlotReservations$setHost(dev.resivore.slotreservations.client.NestedTooltipEditor.Binding host) { containerSlotReservations$host = host; }
     @Unique
     private ItemStack containerSlotReservations$sourceStack;
 

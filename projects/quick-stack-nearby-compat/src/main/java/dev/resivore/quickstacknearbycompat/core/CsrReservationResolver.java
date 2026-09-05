@@ -25,6 +25,16 @@ final class CsrReservationResolver {
         }
     }
 
+    static NestedClass classify(ItemStack host, int slot, ItemStack incoming, ItemStack physical) {
+        if (!isAvailable()) return physical.isEmpty() ? NestedClass.UNRESERVED_EMPTY
+                : ItemStack.isSameItemSameComponents(physical, incoming) ? NestedClass.OCCUPIED_COMPATIBLE : NestedClass.BLOCKED;
+        try { return CsrReservationApi.classify(host, slot, incoming); }
+        catch (LinkageError unavailableApi) {
+            throw new IllegalStateException("Loaded CSR lacks the audited ItemStack classification API", unavailableApi);
+        }
+    }
+    enum NestedClass { RESERVED_MATCH, UNRESERVED_EMPTY, OCCUPIED_COMPATIBLE, BLOCKED }
+
     enum SlotClass {
         MATCHING_RESERVATION,
         MISMATCHED_RESERVATION,

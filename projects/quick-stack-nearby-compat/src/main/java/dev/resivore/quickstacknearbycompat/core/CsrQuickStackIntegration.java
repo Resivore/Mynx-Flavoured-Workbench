@@ -189,6 +189,11 @@ public final class CsrQuickStackIntegration {
                 : Collections.unmodifiableSet(acceptedTypes);
     }
 
+    static List<ItemStack> activeSourceStacks() {
+        DiscoveryRequest request = ACTIVE_DISCOVERY.get();
+        return request == null ? List.of() : movableSourceStacks(request.source(), request.firstSourceSlot(),
+                request.exclusiveLastSourceSlot(), request.sourceRules());
+    }
     private static List<ItemStack> movableSourceStacks(
             Container source,
             int firstSourceSlot,

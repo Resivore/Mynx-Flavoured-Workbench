@@ -125,6 +125,10 @@ dependencies {
     }
     csrReference files(csrReferenceJar)
 
+    if (providers.gradleProperty('withDoubleBarrels').isPresent()) {
+        runtimeOnly files('../double-barrels/artifacts/doublebarrels-fabric-26.2-1.0.1+26.2-canary2.jar')
+    }
+
     testImplementation 'org.junit.jupiter:junit-jupiter:5.12.2'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.12.2'
     testImplementation 'org.ow2.asm:asm:9.10.1'
@@ -173,10 +177,24 @@ test {
         systemProperty 'nibaruReferenceJar', configurations.nibaruReference.singleFile.absolutePath
         systemProperty 'cnmIntegrationReferenceJar', configurations.cnmIntegrationReference.singleFile.absolutePath
         systemProperty 'cnmUpstreamReferenceJar', configurations.cnmUpstreamReference.singleFile.absolutePath
-        systemProperty 'csrReferenceJar', configurations.csrReference.singleFile.absolutePath
+        systemProperty 'csrReferenceJar', file('../container-slot-reservations/artifacts/container-slot-reservations-0.1.0-canary1.jar').absolutePath
+        systemProperty 'csrSelectedProviderJar', configurations.csrReference.singleFile.absolutePath
     }
 }
 
 java {
     withSourcesJar()
+}
+
+// The absence run must not load CSR fixture entrypoints or require its provider.
+tasks.named('processGametestResources') {
+    inputs.property 'excludeCsrRuntime', providers.gradleProperty('excludeCsrRuntime').isPresent()
+    filesMatching('fabric.mod.json') {
+        if (providers.gradleProperty('excludeCsrRuntime').isPresent()) {
+            filter { line -> line.contains('"container_slot_reservations":')
+                    || line.contains('CsrQuickStackIntegrationGameTests')
+                    || line.contains('ReservedNestedGameTests') ? '' : line }
+            filter { line -> line.replace('PhysicalNestedGameTests",', 'PhysicalNestedGameTests"') }
+        }
+    }
 }

@@ -13,6 +13,14 @@ import java.util.OptionalInt;
 
 @Mixin(value = QuickStackMoveEngine.class, remap = false)
 public abstract class QuickStackMoveEngineMixin {
+    @Inject(method = "insertIntoTarget(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/Container;)I",
+            at = @At("HEAD"), cancellable = true, require = 1, remap = false)
+    private static void quickStackNearbyCompat$commitNested(ItemStack source, Container target,
+            CallbackInfoReturnable<Integer> callback) {
+        if (target instanceof dev.resivore.quickstacknearbycompat.core.NestedShulkerTarget nested)
+            callback.setReturnValue(nested.insert(source));
+    }
+
     @Inject(
             method = "insertIntoEmptySlots(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/Container;)I",
             at = @At("HEAD"),

@@ -32,6 +32,12 @@ public final class ReservationNetworking {
 
     public static void register() {
         PayloadTypeRegistry.serverboundPlay().register(
+                dev.resivore.slotreservations.network.NestedReservationActionPayload.TYPE,
+                dev.resivore.slotreservations.network.NestedReservationActionPayload.CODEC);
+        ServerPlayNetworking.registerGlobalReceiver(
+                dev.resivore.slotreservations.network.NestedReservationActionPayload.TYPE, (payload, context) ->
+                        context.server().execute(() -> NestedReservationActions.handle(context.player(), payload)));
+        PayloadTypeRegistry.serverboundPlay().register(
                 ReservationActionPayload.TYPE, ReservationActionPayload.CODEC);
         PayloadTypeRegistry.serverboundPlay().register(
                 ReservationSnapshotRequestPayload.TYPE, ReservationSnapshotRequestPayload.CODEC);
@@ -81,7 +87,7 @@ public final class ReservationNetworking {
             }
         }
 
-        if (transition == null) return false;
+        if (transition == null || transition.outcome() == ReservationTransition.Outcome.REJECTED) return false;
         if (!transition.changed()) return true;
         ReservationStore.setOwnerData(target.resolvedSlot().owner(), transition.data());
         if (transition.outcome() == ReservationTransition.Outcome.CLEARED) {

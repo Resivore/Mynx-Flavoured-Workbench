@@ -81,6 +81,7 @@ public final class ReservationStore {
 
     public static ReservationData set(SupportedContainerResolver.ResolvedSlot slot, ItemStack template) {
         Objects.requireNonNull(slot, "slot");
+        if (!ReservationTemplateEligibility.allows(template)) return getData(slot);
         ReservationData changed = getData(slot).with(slot.localSlot(), template);
         setOwnerData(slot.owner(), changed);
         return changed;

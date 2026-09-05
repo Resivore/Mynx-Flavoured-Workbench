@@ -60,6 +60,10 @@ abstract class AbstractContainerScreenMixin implements ReservationScreenAccess {
             int mouseY,
             CallbackInfo callbackInfo
     ) {
+        if (dev.resivore.slotreservations.client.NestedTooltipEditor.retainPreview(
+                (AbstractContainerScreen<?>) (Object) this, graphics, mouseX, mouseY)) {
+            callbackInfo.cancel(); return;
+        }
         if (hoveredSlot == null || !hoveredSlot.getItem().isEmpty()) return;
         Optional<ItemStack> reservation = ClientReservationState.template(menu, hoveredSlot);
         if (reservation.isEmpty()) return;
