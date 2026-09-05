@@ -47,7 +47,7 @@ class ChuteStaticContractTest {
     void translationIsSourceSafeAndPrivatePathIsNotDuplicated() throws IOException {
         JsonObject language = JsonParser.parseString(read(
                 "common/src/publicResources/assets/ribbits/lang/en_us.json")).getAsJsonObject();
-        assertEquals("Chute Leaf", language.get("item.ribbits.chute_leaf").getAsString());
+        assertEquals("Drop Leaf", language.get("item.ribbits.chute_leaf").getAsString());
         assertEquals("Jump again while airborne to deploy.",
                 language.get("item.ribbits.chute_leaf.tooltip").getAsString());
         assertFalse(Files.exists(ROOT.resolve("common/src/main/resources/assets/ribbits/lang/en_us.json")));
@@ -65,6 +65,9 @@ class ChuteStaticContractTest {
         assertTrue(clientMixin.contains("instanceof LocalPlayer"));
         assertEquals(1, occurrences(renderer, "TrinketRendererRegistry.registerRenderer"));
         assertTrue(renderer.contains("RibbitsCommon.id(\"chute_leaf_open\")"));
+        assertTrue(renderer.contains("RibbitsCommon.id(\"chute_leaf_closed\")"));
+        assertTrue(renderer.contains("submitModel(closedStack(stack), ItemDisplayContext.FIXED"));
+        assertTrue(renderer.contains("closed.set(DataComponents.ITEM_MODEL, CLOSED_MODEL)"));
         assertTrue(renderer.contains("renderState.isInvisible"));
         assertTrue(renderer.contains("if (!isMainHand"));
         String deployed = renderer.substring(renderer.indexOf("if (deployed) {"), renderer.indexOf("} else {"));

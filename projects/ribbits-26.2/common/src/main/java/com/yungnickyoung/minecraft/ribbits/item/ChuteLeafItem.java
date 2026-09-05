@@ -9,7 +9,7 @@ import net.minecraft.world.item.component.TooltipDisplay;
 
 import java.util.function.Consumer;
 
-/** The unlimited-use Chute Leaf; deployment state lives on the player, never on the stack. */
+/** The unlimited-use Drop Leaf; deployment state lives on the player, never on the stack. */
 public final class ChuteLeafItem extends Item {
     public ChuteLeafItem(Properties properties) {
         super(properties);

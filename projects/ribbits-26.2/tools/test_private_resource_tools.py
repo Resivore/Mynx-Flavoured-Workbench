@@ -1287,7 +1287,7 @@ class PrivateVillageUtilityTransformTest(unittest.TestCase):
 
 class DonorBoundaryContractTest(unittest.TestCase):
     def test_exact_accounting_contains_only_approved_visual_members_and_outputs(self) -> None:
-        self.assertEqual("4.1.6+26.2-mynx-canary9", tools.CANDIDATE_VERSION)
+        self.assertEqual("4.1.6+26.2-mynx-canary10", tools.CANDIDATE_VERSION)
         self.assertEqual(9, tools.CANDIDATE_CANARY)
         self.assertEqual(
             "mynx-ribbits-private-resource-manifest/v1", tools.PRIVATE_MANIFEST_SCHEMA
@@ -1296,8 +1296,8 @@ class DonorBoundaryContractTest(unittest.TestCase):
             "PRIVATE MYNX ASSEMBLY STAGED / NONREDISTRIBUTABLE DONOR ASSETS",
             tools.PRIVATE_MANIFEST_CLASSIFICATION,
         )
-        self.assertEqual(346, tools.OUTPUT_FILE_COUNT)
-        self.assertEqual(2_735_353, tools.OUTPUT_TOTAL_SIZE)
+        self.assertEqual(349, tools.OUTPUT_FILE_COUNT)
+        self.assertEqual(2_735_812, tools.OUTPUT_TOTAL_SIZE)
         self.assertEqual(2_563, tools.SORCERER_LOOT_OUTPUT_SIZE)
         self.assertEqual(
             "5b06e06502bf11f661161e89bf34e329d8f23268b7b0104371038c38ad9b378d",
@@ -1313,7 +1313,7 @@ class DonorBoundaryContractTest(unittest.TestCase):
         )
         self.assertEqual(42, len(tools.GECKO_MODEL_IDS))
         self.assertEqual(26, len(tools.REGISTERED_ITEM_IDS))
-        self.assertEqual({"chute_leaf_open"}, tools.AUXILIARY_ITEM_DEFINITION_IDS)
+        self.assertEqual({"chute_leaf_open", "chute_leaf_closed"}, tools.AUXILIARY_ITEM_DEFINITION_IDS)
         self.assertNotIn("glowcap", tools.REGISTERED_ITEM_IDS)
         self.assertNotIn("toadstool_heart", tools.REGISTERED_ITEM_IDS)
         self.assertEqual(10, len(tools.SPAWN_EGG_IDS))
@@ -1322,7 +1322,7 @@ class DonorBoundaryContractTest(unittest.TestCase):
             {"alexsmobs", "minecraft", "ribbits", "trinkets"},
             tools.EXPECTED_PRIVATE_DATA_NAMESPACES,
         )
-        self.assertEqual(27, len(tools.DONOR_DERIVED_OUTPUTS))
+        self.assertEqual(30, len(tools.DONOR_DERIVED_OUTPUTS))
         self.assertEqual(
             13,
             sum(len(spec["members"]) for spec in tools.DONOR_INPUT_SPECS.values()),
@@ -1403,6 +1403,14 @@ class DonorBoundaryContractTest(unittest.TestCase):
                 },
                 tools.load_json(root / "assets/ribbits/items/chute_leaf_open.json"),
             )
+            self.assertEqual((Path(tools.__file__).parent / "assets/drop_leaf_inventory.png").read_bytes(),
+                             (root / "assets/ribbits/textures/item/drop_leaf_inventory.png").read_bytes())
+            self.assertEqual({"parent": "minecraft:item/generated", "textures": {"layer0": "ribbits:item/drop_leaf_inventory"}},
+                             tools.load_json(root / "assets/ribbits/models/item/chute_leaf.json"))
+            self.assertEqual({"parent": "minecraft:item/generated", "textures": {"layer0": "ribbits:item/chute_leaf"}},
+                             tools.load_json(root / "assets/ribbits/models/item/chute_leaf_closed.json"))
+            self.assertEqual({"model": {"type": "minecraft:model", "model": "ribbits:item/chute_leaf_closed"}},
+                             tools.load_json(root / "assets/ribbits/items/chute_leaf_closed.json"))
             open_model = tools.load_json(
                 root / "assets/ribbits/models/item/chute_leaf_open.json"
             )
@@ -1431,6 +1439,10 @@ class DonorBoundaryContractTest(unittest.TestCase):
             restored[((y + 4) * 16 + 4) * 4:((y + 4) * 16 + 12) * 4] = pixels[y * 32:(y + 1) * 32]
         self.assertEqual("ab282bfb3c9099ecdcea98d66c9e382024e0cebc0b04f26589d3bea979598458",
                          tools.sha256_bytes(restored))
+        inventory = (Path(tools.__file__).parent / "assets/drop_leaf_inventory.png").read_bytes()
+        self.assertEqual((16, 16), tools.png_dimensions(inventory, "inventory leaf"))
+        self.assertEqual("5acbe4afc118b2ec1a04ec5a2dcfd91f7db05bd61937019a75300756cc257a30",
+                         tools.sha256_bytes(inventory))
         leaf = (Path(tools.__file__).parent / "assets/chute_leaf.png").read_bytes()
         self.assertEqual((16, 16), tools.png_dimensions(leaf, "user leaf"))
         self.assertEqual("816e4d4edc23542afeb2f2f90a5af8a2076ae61829f1acb016711e05fec0191d",

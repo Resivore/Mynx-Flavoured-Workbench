@@ -33,6 +33,9 @@ public final class ChuteLeafRenderer implements TrinketRenderer {
     private static final net.minecraft.resources.Identifier OPEN_MODEL =
             RibbitsCommon.id("chute_leaf_open");
 
+    private static final net.minecraft.resources.Identifier CLOSED_MODEL =
+            RibbitsCommon.id("chute_leaf_closed");
+
     private ChuteLeafRenderer() {
     }
 
@@ -82,7 +85,7 @@ public final class ChuteLeafRenderer implements TrinketRenderer {
             poseStack.translate(0.0D, 0.0D, 0.38D);
             poseStack.mulPose(Axis.YP.rotationDegrees(180.0F));
             poseStack.scale(0.65F, 0.65F, 0.65F);
-            submitModel(stack, ItemDisplayContext.FIXED, player, avatar.id,
+            submitModel(closedStack(stack), ItemDisplayContext.FIXED, player, avatar.id,
                     poseStack, submit, light, renderState.outlineColor);
         }
         poseStack.popPose();
@@ -155,6 +158,12 @@ public final class ChuteLeafRenderer implements TrinketRenderer {
         poseStack.translate(0.0D, -0.10D, 0.18D);
         poseStack.mulPose(Axis.XP.rotationDegrees(180.0F));
         poseStack.scale(1.2F, 1.2F, 1.2F);
+    }
+
+    private static ItemStack closedStack(ItemStack equipped) {
+        ItemStack closed = equipped.copy();
+        closed.set(DataComponents.ITEM_MODEL, CLOSED_MODEL);
+        return closed;
     }
 
     private static ItemStack openStack(ItemStack equipped) {

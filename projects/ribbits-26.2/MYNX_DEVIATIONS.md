@@ -2,11 +2,19 @@
 
 This file records intentional departures from the faithful Minecraft Java 26.2 Ribbits port. The exact faithful-port baseline is private Canary 2: version `4.1.6+26.2-port-canary2`, artifact `ribbits-private-reconstruction-4.1.6+26.2-port-canary2.jar`, 3,124,301 bytes, SHA-256 `0AD73B7B61C6EE792EC1745056563641767AFE6811C0FDF2D3C99123C3F289DC`, implementation checkpoint `efe1970d2447aea4913e67f55c0c6b83cc36c5bb`. It remains historical provenance, not an accepted or rollback release.
 
-The direct predecessor is Mynx Canary 8: `ribbits-private-reconstruction-4.1.6+26.2-mynx-canary8.jar`, 3,333,563 bytes, SHA-256 `3A8E4FF06378265D949F01067672EB6BAEC56FCD0AD0AB57260B6F32F630067B`, source `eec044758df774f6fb037a453e36904c8b9afb5d`. It and earlier private artifacts remain unchanged and unaccepted.
+The direct predecessor is Mynx Canary 9: `ribbits-private-reconstruction-4.1.6+26.2-mynx-canary9.jar`, 3,333,513 bytes, SHA-256 `E433CD048BC362EDAE91E2E057C8170D92D110CBE7B9917C105C7336BE6543DE`, source `8dc886c01f6d402ccf19b45756383d62185f0d4e`. It and earlier private artifacts remain unchanged and unaccepted.
 
-Current successor `4.1.6+26.2-mynx-canary9` has its exact artifact/source identity in `WORKBENCH_STATUS.json` and the revision-14 log entry. It remains `ACTIVE / STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED`. These polish changes supersede corresponding historical Canary 6-8 details below; other behavior is preserved.
+Current successor `4.1.6+26.2-mynx-canary10` has its exact artifact/source identity in `WORKBENCH_STATUS.json` and the revision-15 log entry. It remains `ACTIVE / STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED`.
 
-## Canary 9 polish
+## Canary 10 inventory and naming follow-up
+
+- The displayed name is now **Drop Leaf** in both public and assembled localization. Registry/save identity `ribbits:chute_leaf`, tooltip key, trades, equipment and mechanics remain unchanged; no migration is needed.
+- Latest attachment `codex-clipboard-891633e9-1445-4435-8f6c-2a6fd99e5413.png` is copied byte-for-byte to `tools/assets/drop_leaf_inventory.png`: 249 bytes, 16x16, SHA-256 `5ACBE4AFC118B2EC1A04EC5A2DCFD91F7DB05BD61937019A75300756CC257A30`. Assembly copies it to `assets/ribbits/textures/item/drop_leaf_inventory.png`; the existing `chute_leaf` item/model selects it for inventory and ordinary item presentation. No generation, redraw, resampling or conversion occurs.
+- A separate auxiliary `chute_leaf_closed` item definition/model selects the unchanged earlier `chute_leaf.png` sprite. Only the closed-back renderer selects that model on a temporary stack copy. Its FIXED context, chest attachment, translation, rotation and scale remain unchanged. The equipped stack is not mutated. Open/deployed and first-person paths are unchanged.
+- Canary 9 already implements the requested horizontal canopy, empty-handed Wandering model, eight-Glowcap map cost, native 8x8 mushroom marker and one-pixel-down Glowcap. These are preserved, not applied twice. This follow-up independently confirms the local Minecraft 26.2 atlas has 35 decoration PNGs, all 8x8, and Compass Ribbon 2.9.0+26.2 resolves `MAP_DECORATIONS` by `MapDecorationType.assetId()` and blits full sprite UVs. The marker is independent of the filled-map inventory model. Existing asset and pose tests retain the exact crop/shift and deployed NONE-context contracts.
+- All nine focused runtime checks in `TESTING.md` remain pending. Builds and resource/pose tests are static evidence only.
+
+## Historical Canary 9 polish
 
 - User attachment `codex-clipboard-52834f3e-016e-42ab-a25a-a71fe0524e40.png` is retained byte-for-byte as `tools/assets/chute_leaf.png`: 293 bytes, 16x16 RGBA, SHA-256 `816E4D4EDC23542AFEB2F2F90A5AF8A2076AE61829F1ACB016711E05FEC0191D`. Private assembly copies it to `assets/ribbits/textures/item/chute_leaf.png`; the existing generated model uses that path for inventory and closed back rendering. Open texture, geometry and display settings remain separate and unchanged. No generative imaging was used.
 - The donor canopy is already an XZ surface at Y=22. Its `display.fixed.rotation=[0,0,42.75]` is an item-frame presentation incorrectly inherited by the old deployed renderer. Deployment now uses `ItemDisplayContext.NONE`, bypasses animated chest attachment, and applies X=180 degrees to convert item Y-up into entity model Y-down. Translation `(0,-0.10,0.18)` and uniform scale 1.2 position the horizontal canopy above its grip. Closed chest attachment and first-person transforms remain unchanged; no distorted geometry compensation is used.

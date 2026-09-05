@@ -30,16 +30,16 @@ from typing import Any
 EXPECTED_PRISTINE_SHA256 = (
     "4cf86564aed393410fb1dbca3a9ce2425382307655e92bb6b43f3ddcee5bf731"
 )
-CANDIDATE_VERSION = "4.1.6+26.2-mynx-canary9"
+CANDIDATE_VERSION = "4.1.6+26.2-mynx-canary10"
 CANDIDATE_CANARY = 9
 PRIVATE_MANIFEST_SCHEMA = "mynx-ribbits-private-resource-manifest/v1"
 PRIVATE_MANIFEST_CLASSIFICATION = (
     "PRIVATE MYNX ASSEMBLY STAGED / NONREDISTRIBUTABLE DONOR ASSETS"
 )
 PRIVATE_ARTIFACT_FILENAME = (
-    "ribbits-private-reconstruction-4.1.6+26.2-mynx-canary9.jar"
+    "ribbits-private-reconstruction-4.1.6+26.2-mynx-canary10.jar"
 )
-SOURCE_ONLY_ARTIFACT_FILENAME = "ribbits-source-only-4.1.6+26.2-mynx-canary9.jar"
+SOURCE_ONLY_ARTIFACT_FILENAME = "ribbits-source-only-4.1.6+26.2-mynx-canary10.jar"
 SOURCE_SAFE_PUBLIC_RESOURCE_PATHS = frozenset(
     {
         "assets/ribbits/items/glowcap.json",
@@ -141,9 +141,9 @@ REQUIRED_FABRIC_DEPENDENCIES = {
     "matcha_heart_death_compat": ">=0.1.10-0",
 }
 SOURCE_FILE_COUNT = 287  # 285 assets/data files plus icon.png and logo.png
-OUTPUT_FILE_COUNT = 346
-# Exact deterministic Canary 9 private staging inventory.
-OUTPUT_TOTAL_SIZE = 2_735_353
+OUTPUT_FILE_COUNT = 349
+# Exact deterministic Canary 10 private staging inventory.
+OUTPUT_TOTAL_SIZE = 2_735_812
 SOURCE_EXTENSION_COUNTS = {
     ".json": 201,
     ".nbt": 29,
@@ -210,7 +210,7 @@ NEW_SPAWN_EGG_IDS = (
 )
 SPAWN_EGG_IDS = PRISTINE_SPAWN_EGG_IDS + NEW_SPAWN_EGG_IDS
 REGISTERED_ITEM_IDS = BLOCK_ITEM_IDS + ("maraca", "chute_leaf") + SPAWN_EGG_IDS
-AUXILIARY_ITEM_DEFINITION_IDS = frozenset({"chute_leaf_open"})
+AUXILIARY_ITEM_DEFINITION_IDS = frozenset({"chute_leaf_open", "chute_leaf_closed"})
 
 CUTOUT_MODEL_FILES = (
     "swamp_lantern.json",
@@ -410,6 +410,9 @@ WANDERING_DONOR_DERIVED_OUTPUTS = frozenset(
         "assets/ribbits/geckolib/models/wandering_ribbit.geo.json",
         "assets/ribbits/textures/entity/wandering_ribbit.png",
         "assets/ribbits/models/item/chute_leaf.json",
+        "assets/ribbits/models/item/chute_leaf_closed.json",
+        "assets/ribbits/items/chute_leaf_closed.json",
+        "assets/ribbits/textures/item/drop_leaf_inventory.png",
         "assets/ribbits/models/item/chute_leaf_open.json",
         "assets/ribbits/items/chute_leaf_open.json",
         "assets/ribbits/textures/item/chute_leaf.png",
@@ -770,7 +773,7 @@ EN_US_MYNX_PROFESSION_TRANSLATIONS = {
     "item.ribbits.wandering_ribbit_spawn_egg": "Wandering Ribbit Spawn Egg",
     "item.ribbits.glowcap": "Glowcap",
     "item.ribbits.toadstool_heart": "Toadstool Heart",
-    "item.ribbits.chute_leaf": "Chute Leaf",
+    "item.ribbits.chute_leaf": "Drop Leaf",
     "item.ribbits.chute_leaf.tooltip": "Jump again while airborne to deploy.",
     "entity.ribbits.wandering_ribbit": "Wandering Ribbit",
     **PHASE_C_MAP_TRANSLATIONS,
@@ -3016,19 +3019,19 @@ def import_wandering_visual_resources(
     write_exact(
         chute_closed_member,
         "assets/ribbits/textures/item/chute_leaf.png",
-        "exact approved closed Chute Leaf item sprite bytes",
+        "exact approved closed Drop Leaf item sprite bytes",
     )
     replacement = Path(__file__).resolve().parent / "assets/chute_leaf.png"
     replacement_bytes = replacement.read_bytes()
     if hashlib.sha256(replacement_bytes).hexdigest() != "816e4d4edc23542afeb2f2f90a5af8a2076ae61829f1acb016711e05fec0191d":
-        raise ValidationError("User Chute Leaf attachment identity differs")
+        raise ValidationError("User Drop Leaf attachment identity differs")
     (root / "assets/ribbits/textures/item/chute_leaf.png").write_bytes(replacement_bytes)
     records[-1]["sources"] = [{"archive": "tracked-project", "member": "tools/assets/chute_leaf.png"}]
     records[-1]["transformation"] = "exact user-supplied 16x16 PNG replacement; no pixel or byte conversion"
     write_exact(
         chute_open_member,
         "assets/ribbits/textures/item/chute_leaf_open.png",
-        "exact approved open Chute Leaf texture bytes",
+        "exact approved open Drop Leaf texture bytes",
     )
 
     closed_model_relative = "assets/ribbits/models/item/chute_leaf.json"
@@ -3050,6 +3053,23 @@ def import_wandering_visual_resources(
             "transformation": "Minecraft 26.2 generated-item model bound to the exact closed sprite",
         }
     )
+
+    # Preserve the earlier back sprite/model; the inventory receives its own exact asset.
+    closed_back = "assets/ribbits/models/item/chute_leaf_closed.json"
+    write_json(root / closed_back, load_json(closed_model_path))
+    closed_item = "assets/ribbits/items/chute_leaf_closed.json"
+    (root / closed_item).parent.mkdir(parents=True, exist_ok=True)
+    write_json(root / closed_item, {"model": {"type": "minecraft:model", "model": "ribbits:item/chute_leaf_closed"}})
+    inventory_relative = "assets/ribbits/textures/item/drop_leaf_inventory.png"
+    inventory_bytes = (Path(__file__).resolve().parent / "assets/drop_leaf_inventory.png").read_bytes()
+    if sha256_bytes(inventory_bytes) != "5acbe4afc118b2ec1a04ec5a2dcfd91f7db05bd61937019a75300756cc257a30":
+        raise ValidationError("User Drop Leaf inventory attachment identity differs")
+    (root / inventory_relative).write_bytes(inventory_bytes)
+    write_json(closed_model_path, {"parent": "minecraft:item/generated", "textures": {"layer0": "ribbits:item/drop_leaf_inventory"}})
+    records[-1]["sources"] = [{"archive": "tracked-project", "member": "tools/assets/drop_leaf_inventory.png"}]
+    records[-1]["transformation"] = "generated inventory model bound to the exact latest user sprite"
+    for relative in (closed_back, closed_item, inventory_relative):
+        records.append({"output": relative, "sources": [{"archive": "tracked-project", "member": "tools/assets/" + ("drop_leaf_inventory.png" if relative == inventory_relative else "chute_leaf.png")}], "transformation": "separate exact inventory artwork from preserved closed-back presentation"})
 
     source_open_model = load_json_bytes(members[chute_model_member], chute_model_member)
     if not isinstance(source_open_model, dict) or "textures" in source_open_model:
@@ -3760,9 +3780,9 @@ def build_manifest(
             "donor_profession_composite_textures_added": 4,
             "wandering_ribbit_models_added": 1,
             "wandering_ribbit_textures_added": 1,
-            "chute_leaf_models_added": 2,
-            "chute_leaf_item_definitions_added": 2,
-            "chute_leaf_textures_added": 2,
+            "chute_leaf_models_added": 3,
+            "chute_leaf_item_definitions_added": 3,
+            "chute_leaf_textures_added": 3,
             "item_definitions_added": len(REGISTERED_ITEM_IDS),
             "cutout_logical_blocks": 6,
             "cutout_concrete_models": len(CUTOUT_MODEL_FILES),
@@ -4237,6 +4257,7 @@ def validate_donor_resource_boundary(root: Path, errors: list[str]) -> None:
     for relative, expected in {
         "assets/ribbits/geckolib/models/wandering_ribbit.geo.json":
             "f7ee351ae54cb90c86e36a5faf991f22a25a11a7d755e4b4234d096c2d71a920",
+        "assets/ribbits/textures/item/drop_leaf_inventory.png": "5acbe4afc118b2ec1a04ec5a2dcfd91f7db05bd61937019a75300756cc257a30",
         "assets/ribbits/textures/item/chute_leaf.png":
             "816e4d4edc23542afeb2f2f90a5af8a2076ae61829f1acb016711e05fec0191d",
     }.items():
@@ -4271,23 +4292,28 @@ def validate_donor_resource_boundary(root: Path, errors: list[str]) -> None:
             load_json(root / "assets/ribbits/geckolib/models/wandering_ribbit.geo.json"),
             "wandering_ribbit.geo.json",
         )
-        closed_model = load_json(root / "assets/ribbits/models/item/chute_leaf.json")
+        inventory_model = load_json(root / "assets/ribbits/models/item/chute_leaf.json")
+        if inventory_model != {"parent": "minecraft:item/generated", "textures": {"layer0": "ribbits:item/drop_leaf_inventory"}}:
+            errors.append("Drop Leaf inventory model differs")
+        if load_json(root / "assets/ribbits/items/chute_leaf_closed.json") != {"model": {"type": "minecraft:model", "model": "ribbits:item/chute_leaf_closed"}}:
+            errors.append("Drop Leaf closed-back item definition differs")
+        closed_model = load_json(root / "assets/ribbits/models/item/chute_leaf_closed.json")
         if closed_model != {
             "parent": "minecraft:item/generated",
             "textures": {"layer0": "ribbits:item/chute_leaf"},
         }:
-            errors.append(f"Closed Chute Leaf model differs: {closed_model!r}")
+            errors.append(f"Closed Drop Leaf model differs: {closed_model!r}")
         open_model = load_json(root / "assets/ribbits/models/item/chute_leaf_open.json")
         if not isinstance(open_model, dict) or open_model.get("textures") != {
             "0": "ribbits:item/chute_leaf_open",
             "particle": "ribbits:item/chute_leaf_open",
         }:
-            errors.append("Open Chute Leaf custom model lacks exact canonical texture bindings")
+            errors.append("Open Drop Leaf custom model lacks exact canonical texture bindings")
         open_item = load_json(root / "assets/ribbits/items/chute_leaf_open.json")
         if open_item != {
             "model": {"type": "minecraft:model", "model": "ribbits:item/chute_leaf_open"}
         }:
-            errors.append(f"Open Chute Leaf item definition differs: {open_item!r}")
+            errors.append(f"Open Drop Leaf item definition differs: {open_item!r}")
         for output in (
             "assets/ribbits/textures/entity/wandering_ribbit.png",
             "assets/ribbits/textures/item/chute_leaf.png",
