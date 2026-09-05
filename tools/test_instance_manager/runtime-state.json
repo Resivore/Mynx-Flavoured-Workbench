@@ -2,8 +2,8 @@
   "$schema": "../../schemas/runtime-state.schema.json",
   "schema_version": 2,
   "activation": "ACTIVE",
-  "revision": 95,
-  "updated_at": "2026-09-05T06:05:00Z",
+  "revision": 96,
+  "updated_at": "2026-09-05T06:07:58Z",
   "accepted_baseline": {
     "revision": 19,
     "provenance": {
@@ -904,47 +904,43 @@
       "members": [
         {
           "unit": {
-            "deployment_id": "fcbab307-141b-49da-9e91-0ae1c6327205",
+            "deployment_id": "58606ffd-251f-42ad-9232-0a68f97654f7",
             "project_uuid": "3ab36584-8732-554f-840e-28a75c422660",
             "project_id": "container-slot-reservations",
             "project_identity_source": "CURRENT_MANIFEST",
-            "version": "0.1.0-canary8",
-            "source_commit": "a333a4b5fa417cd9d35f6fc2608727828c23f6ea",
+            "version": "0.1.0-canary9",
+            "source_commit": "1b978f0b553b3545f8a943e18cc743c363e67aac",
             "artifacts": [
               {
-                "artifact_id": "4d1dc3c0-e081-431b-82d9-65be1d012ca5",
+                "artifact_id": "cb9b9417-4e68-486b-962c-c431f4bbc90d",
                 "kind": "MOD",
-                "filename": "container-slot-reservations-0.1.0-canary8.jar",
-                "sha256": "e1a21bf322384e23ab60dc30cd3dc7fabe4d4a580d708b439751e1bf70b84708",
+                "filename": "container-slot-reservations-0.1.0-canary9.jar",
+                "sha256": "c6b62239dbf826fb4c9423f22eb900c486a845884a1c3f9243fa87a797537c92",
                 "ownership_keys": [
                   "mod:container_slot_reservations"
                 ],
                 "source": {
                   "type": "REPOSITORY",
-                  "path": "projects/container-slot-reservations/artifacts/container-slot-reservations-0.1.0-canary8.jar"
+                  "path": "projects/container-slot-reservations/artifacts/container-slot-reservations-0.1.0-canary9.jar"
                 }
               }
             ]
           },
           "replaces_accepted_deployment_id": "8211900d-913c-40f2-9829-68509e0d71fe",
           "runtime_result": {
-            "classification": "FAIL",
-            "recorded_at": "2026-09-05T06:04:18Z",
+            "classification": "UNTESTED",
+            "recorded_at": null,
             "evidence": {
               "passed": [],
-              "failed": [
-                "The Easy Shulker Boxes tooltip appears, but physically empty unreserved cells cannot be hovered.",
-                "Physically empty reserved cells also cannot be hovered.",
-                "Consequently those cells cannot be targeted by the CSR tooltip editor."
-              ]
+              "failed": []
             }
           }
         }
       ],
       "deployment": {
         "state": "READY_TO_TEST_VERIFIED",
-        "deployed_at": "2026-09-05T04:27:20Z",
-        "ready_verified_at": "2026-09-05T04:27:20Z"
+        "deployed_at": "2026-09-05T06:07:58Z",
+        "ready_verified_at": "2026-09-05T06:07:58Z"
       }
     },
     "B": {

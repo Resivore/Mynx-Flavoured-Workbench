@@ -24,7 +24,7 @@
       "Interactive native Item Interactions 27-cell geometry and empty-cell highlight, frame/screen/host/pointer rejection, exact-slot server-authoritative nested payload and shared-viewer broadcast; centralized physically-empty and reservation-empty shulker template eligibility; historical invalid templates remain explicit-clearable."
     ],
     "scope": [
-      "Current 0.1.0-canary8: Interactive native Item Interactions 27-cell geometry and empty-cell highlight, frame/screen/host/pointer rejection, exact-slot server-authoritative nested payload and shared-viewer broadcast; centralized physically-empty and reservation-empty shulker template eligibility; historical invalid templates remain explicit-clearable. Prior Canary descriptions below are retained historical baseline context.",
+      "Current 0.1.0-canary9: C9 scopes the exact outer scheduling screen/menu/menu ID/menu-slot index/Slot/state ID/count-one complete shulker identity through the native image factory, including equal copies and explicit retained-host resubmission without an inventory equality search. One Gui.extractRenderState logical boundary replaces rollover on every GuiGraphicsExtractor constructor. Final native xStartPos/yStartPos plus the seven-pixel border supply the 9x3, 18x18 grid; both native highlight passes use every logical cell independent of physical/reservation emptiness. Anchoring, nested priority, stale-state rejection, existing actions, payload/server validation, shared-viewer synchronization, C7 native empty-tooltip gate, C6 insertion protection, templates, public API and exact visuals are preserved. Prior Canary descriptions below are historical baseline context.",
       "Canonical Minecraft Java 26.2 Fabric Canary 7 from implementation checkpoint c373b663c99d7a217fc9147db5007d3f1057678f; exact C6's user-reported empty-reservation tooltip failure is preserved without promoting C6.",
       "Store sparse format-1 count-one ItemStackTemplate reservations per stable physical owner; requested block entities use only their real local slot range, vanilla and Double Barrels doubles retain two independent 27-slot owners, and the player Ender inventory is one player-owned 27-slot holder.",
       "Support exact vanilla chest and trapped-chest families, barrel, undyed and all 16 dyed shulkers, dispenser, dropper, hopper, furnace, blast furnace, smoker, brewing stand, crafter, and PlayerEnderChestContainer.",
@@ -126,16 +126,16 @@
     ]
   },
   "state": {
-    "milestone": "Interactive native Item Interactions 27-cell geometry and empty-cell highlight, frame/screen/host/pointer rejection, exact-slot server-authoritative nested payload and shared-viewer broadcast; centralized physically-empty and reservation-empty shulker template eligibility; historical invalid templates remain explicit-clearable. 87 JUnit tests; 24 GameTests; clean Java 25 / Gradle 9.5.1 / Loom 1.17.19 build with accepted Double Barrels; absence baseline and native ESB 26.2.3 / ItemInteractions 26.2.2 bytecode audit. GUI geometry/state and native empty-highlight seams have controlled coverage; actual interactive client rendering/scroll/collapse remains unobserved. Manager revision 93, accepted Stack 19, timestamp 2026-09-05T04:27:20Z; state SHA-256 6a9e9cd01e01b210b239d50416483cd4eb426c3b57a57f25a3f9f914f39eb2e6; physical inventory SHA-256 d50a36599630947d42b95bf9e2a185acad04709f4705a32359deed8e8b274639. One atomic DEPLOY_PROFILE replaced C7 in A and placed C9 in B. Both exact current releases are READY_TO_TEST_VERIFIED with independent UNTESTED results. Accepted CCAR C12, SAS C2, Stacks Are Stacks, Offhand Shift-Click QoL, Double Barrels and all unrelated accepted units remain unchanged. Exact upstream QSN 0.4.0 remains accepted passthrough; accepted C8 is disabled as the reversible predecessor. No dedicated client was launched.",
+    "milestone": "C9 scopes the exact outer scheduling screen/menu/menu ID/menu-slot index/Slot/state ID/count-one complete shulker identity through the native image factory, including equal copies and explicit retained-host resubmission without an inventory equality search. One Gui.extractRenderState logical boundary replaces rollover on every GuiGraphicsExtractor constructor. Final native xStartPos/yStartPos plus the seven-pixel border supply the 9x3, 18x18 grid; both native highlight passes use every logical cell independent of physical/reservation emptiness. Anchoring, nested priority, stale-state rejection, existing actions, payload/server validation, shared-viewer synchronization, C7 native empty-tooltip gate, C6 insertion protection, templates, public API and exact visuals are preserved. Exact CSR 0.1.0-canary8, container-slot-reservations-0.1.0-canary8.jar, 140230 bytes, SHA-256 e1a21bf322384e23ab60dc30cd3dc7fabe4d4a580d708b439751e1bf70b84708, source a333a4b5fa417cd9d35f6fc2608727828c23f6ea, deployment fcbab307-141b-49da-9e91-0ae1c6327205, artifact UUID 4d1dc3c0-e081-431b-82d9-65be1d012ca5 was recorded FAIL at manager revision 94 before replacement. User-reported observations only: \"The Easy Shulker Boxes tooltip appears, but physically empty unreserved cells cannot be hovered.\" \"Physically empty reserved cells also cannot be hovered.\" \"Consequently those cells cannot be targeted by the CSR tooltip editor.\" No occupied-cell or other row pass is inferred. This exact evidence was committed at e5c1a54833dc258d476c33d3a65c500284d67ebb. Manager revision 96 / accepted Stack v19; deployed 2026-09-05T06:07:58Z; state SHA-256 2473241803c3f355c8138968da9845d921e46c4643a2f3e0ba64f0ce9ce20e25; physical inventory SHA-256 493c01f74dea121be5832dbad05368d96bfa4e53626e3daeb17a2c2b85256cc6. All 38 managed files physically verified. One atomic DEPLOY_PROFILE added CSR C9 and removed CSR C8 only; Slot B including its result and timestamps, accepted baseline, companions, rollback bytes and all unrelated deployments are unchanged. C9 has 87 existing JUnit, 24 GameTest and 44 deterministic lifecycle passes, including packaged mixin execution; two C8 negative regressions fail as expected. New C9 remains RUNTIME_UNTESTED; no Minecraft client launched. QSN C9 independently remains INCONCLUSIVE.",
     "releases": {
       "current": {
-        "version": "0.1.0-canary8",
-        "embedded_version": "0.1.0-canary8",
+        "version": "0.1.0-canary9",
+        "embedded_version": "0.1.0-canary9",
         "artifact": {
-          "filename": "container-slot-reservations-0.1.0-canary8.jar",
-          "sha256": "e1a21bf322384e23ab60dc30cd3dc7fabe4d4a580d708b439751e1bf70b84708"
+          "filename": "container-slot-reservations-0.1.0-canary9.jar",
+          "sha256": "c6b62239dbf826fb4c9423f22eb900c486a845884a1c3f9243fa87a797537c92"
         },
-        "source_commit": "a333a4b5fa417cd9d35f6fc2608727828c23f6ea",
+        "source_commit": "1b978f0b553b3545f8a943e18cc743c363e67aac",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
@@ -173,11 +173,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 12,
-    "activity_at": "2026-09-05T04:26:23Z",
-    "updated_at": "2026-09-05T04:26:23Z",
-    "last_codex_at": "2026-09-05T04:26:23Z",
-    "source_commit": "a333a4b5fa417cd9d35f6fc2608727828c23f6ea",
+    "revision": 13,
+    "activity_at": "2026-09-05T06:15:38Z",
+    "updated_at": "2026-09-05T06:15:38Z",
+    "last_codex_at": "2026-09-05T06:15:38Z",
+    "source_commit": "1b978f0b553b3545f8a943e18cc743c363e67aac",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null

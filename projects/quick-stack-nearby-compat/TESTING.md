@@ -1,6 +1,8 @@
 # QSN C9 runtime procedure
 
-**CONTROLLED VALIDATION PASS - RUNTIME UNTESTED**
+**CONTROLLED VALIDATION PASS — READY_TO_TEST_VERIFIED — RUNTIME INCONCLUSIVE**
+
+User reported only: "Nested shulker routing using an internal CSR reservation worked." No other C9 matrix behavior was reported. This partial success does not justify promotion; remaining cases below still require observation.
 
 Exact candidate: `quick-stack-nearby-compat-0.1.0-canary9.jar`, 46607 bytes, SHA-256 `14a6844b04d9236233c7007ed111a452db659cc5662dca07aa11f33b2cb4ec76`, source `a333a4b5fa417cd9d35f6fc2608727828c23f6ea`. Verified Slot B; deployment `03f7540f-94f0-47c5-b6bd-94f2af232ff4`, artifact `8b8abdf9-26a4-407c-bbd6-1623f0a5eeb5`. Verify canonical manager readiness before the user launches the dedicated 26.2 Workbench.
 
@@ -12,8 +14,8 @@ Exact candidate: `quick-stack-nearby-compat-0.1.0-canary9.jar`, 46607 bytes, SHA
 6. Empty unreserved, multi-count, component-mismatched and unsupported hosts must not attract items. Deny shulker nesting, output-only hosts, locked/inaccessible/unloaded/out-of-range or stale/replaced parents without loss or duplication.
 7. Preserve host CSR reservations, custom name, lore, CCAR lock and unrelated components. Removing physical contents reveals the same reservation. Check effective Stacks Are Stacks maximums and exact remainder on full targets.
 8. Check source locks/keep counts, Inventory Extended rows, top-level CSR priorities, CNM ShapeMap, shelf exclusion, Inventory Search and unchanged QSN button/packet/feedback behavior.
-9. Inspect the full log; stop on startup errors, ordering changes, duplicate host writes, stale edits, unauthorized destinations, lost components, sync failures or any count discrepancy. Record only observed rows and exact C9 identity; CCAR C12 and CSR C8 results stay independent.
+9. Inspect the full log; stop on startup errors, ordering changes, duplicate host writes, stale edits, unauthorized destinations, lost components, sync failures or any count discrepancy. Record only observed rows and exact C9 identity; CCAR C12 and CSR C9 results stay independent.
 
-Controlled evidence: 60 JUnit tests; 26 GameTests in final clean build with exact CSR C8 and accepted Double Barrels. Earlier provider matrix passed 25 GameTests with accepted CSR C4 and 14 with CSR absent; connected-barrel case is inactive when provider absent. Exact API-floor audit, existing top-level contracts and optional-class isolation passed. No user runtime evidence.
+Controlled evidence: Retained exact QSN C9 passed 60 JUnit tests and 26 required GameTests against new CSR C9 and accepted Double Barrels, with QSN production compilation/resources/JAR tasks disabled. No QSN production or artifact changed. Earlier provider matrix and API-floor evidence remains recorded in CODEX_LOG.md; controlled tests do not extend the supplied runtime observation.
 
-Deployment verification: Manager revision 93, accepted Stack 19, timestamp 2026-09-05T04:27:20Z; state SHA-256 6a9e9cd01e01b210b239d50416483cd4eb426c3b57a57f25a3f9f914f39eb2e6; physical inventory SHA-256 d50a36599630947d42b95bf9e2a185acad04709f4705a32359deed8e8b274639. One atomic DEPLOY_PROFILE replaced C7 in A and placed C9 in B. Both exact current releases are READY_TO_TEST_VERIFIED with independent UNTESTED results. Accepted CCAR C12, SAS C2, Stacks Are Stacks, Offhand Shift-Click QoL, Double Barrels and all unrelated accepted units remain unchanged. Exact upstream QSN 0.4.0 remains accepted passthrough; accepted C8 is disabled as the reversible predecessor. No dedicated client was launched.
+Manager revision 96 / accepted Stack v19; deployed 2026-09-05T06:07:58Z; state SHA-256 2473241803c3f355c8138968da9845d921e46c4643a2f3e0ba64f0ce9ce20e25; physical inventory SHA-256 493c01f74dea121be5832dbad05368d96bfa4e53626e3daeb17a2c2b85256cc6. All 38 managed files physically verified. One atomic DEPLOY_PROFILE added CSR C9 and removed CSR C8 only; Slot B including its result and timestamps, accepted baseline, companions, rollback bytes and all unrelated deployments are unchanged. QSN C9 remains independently INCONCLUSIVE; current CSR C9 in Slot A remains UNTESTED. No Minecraft client was launched.
