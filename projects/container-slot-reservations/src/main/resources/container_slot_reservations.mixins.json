@@ -3,6 +3,7 @@
   "package": "dev.resivore.slotreservations.mixin",
   "compatibilityLevel": "JAVA_25",
   "mixins": [
+    "AbstractContainerMenuMixin",
     "AbstractFurnaceBlockEntityMixin",
     "BrewingStandBlockEntityMixin",
     "BrewingStandSlotMixin",
@@ -10,7 +11,6 @@
     "CrafterBlockEntityMixin",
     "DoubleBarrelIntegrationMixin",
     "FurnaceFuelSlotMixin",
-    "ItemStackingContextMixin",
     "PlayerEnderChestContainerMixin",
     "PlayerEnderChestPersistenceMixin",
     "ShulkerBoxMenuMixin",

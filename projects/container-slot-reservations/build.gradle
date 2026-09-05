@@ -102,8 +102,49 @@ def verifyOccupiedReservationMarkerArtifact = tasks.register('verifyOccupiedRese
     }
 }
 
-tasks.named('check') {
+def verifyReleaseArtifact = tasks.register('verifyReleaseArtifact') {
     dependsOn verifyOccupiedReservationMarkerArtifact
+    inputs.file(tasks.named('jar').flatMap { it.archiveFile })
+    doLast {
+        def artifact = tasks.named('jar').get().archiveFile.get().asFile
+        if (artifact.name != "container-slot-reservations-${project.version}.jar") {
+            throw new GradleException("Unexpected release filename: ${artifact.name}")
+        }
+        def archive = new java.util.zip.ZipFile(artifact)
+        try {
+            def entries = archive.entries().toList()
+            if (entries.any { it.name.endsWith('.jar') }) {
+                throw new GradleException('Release artifact must not contain nested JARs')
+            }
+            if (entries.any { it.name.startsWith('fuzs/') }) {
+                throw new GradleException('Release artifact contains a foreign fuzs class')
+            }
+            for (def entry : entries.findAll { !it.directory }) {
+                byte[] bytes = archive.getInputStream(entry).withCloseable { it.bytes }
+                String searchable = new String(bytes, java.nio.charset.StandardCharsets.ISO_8859_1)
+                        .toLowerCase(java.util.Locale.ROOT)
+                if (searchable.contains('easyshulkerboxes') || searchable.contains('iteminteractions')
+                        || searchable.contains('fuzs/')) {
+                    throw new GradleException("Release artifact retains external linkage in ${entry.name}")
+                }
+            }
+            def metadata = new groovy.json.JsonSlurper().parse(
+                    archive.getInputStream(archive.getEntry('fabric.mod.json')))
+            if (metadata.id != 'container_slot_reservations' || metadata.version != project.version.toString()) {
+                throw new GradleException('Release Fabric identity does not match the declared Canary')
+            }
+            if (metadata.suggests?.containsKey('easyshulkerboxes')
+                    || metadata.suggests?.containsKey('iteminteractions')) {
+                throw new GradleException('Release metadata retains a retired external suggestion')
+            }
+        } finally {
+            archive.close()
+        }
+    }
+}
+
+tasks.named('check') {
+    dependsOn verifyReleaseArtifact
 }
 
 tasks.withType(JavaCompile).configureEach {
@@ -113,98 +154,10 @@ tasks.withType(JavaCompile).configureEach {
 test {
     useJUnitPlatform()
     systemProperty 'projectRoot', projectDir.absolutePath
-
-    def testedArtifactName = project.property('easy_shulker_boxes_tested_jar').toString()
-    def candidates = []
-    def configuredArtifact = providers.gradleProperty('easyShulkerBoxesJar')
-            .orElse(providers.environmentVariable('EASY_SHULKER_BOXES_JAR'))
-            .orNull
-    if (configuredArtifact != null && !configuredArtifact.isBlank()) {
-        candidates.add(file(configuredArtifact))
-    }
-    candidates.add(new File(repositoryRoot, "originals/mods/${testedArtifactName}"))
-
-    def gitMarker = new File(repositoryRoot, '.git')
-    if (gitMarker.isFile()) {
-        def markerText = gitMarker.getText('UTF-8').trim()
-        if (markerText.startsWith('gitdir:')) {
-            def worktreeGitDir = new File(markerText.substring('gitdir:'.length()).trim())
-            if (!worktreeGitDir.isAbsolute()) {
-                worktreeGitDir = new File(repositoryRoot, worktreeGitDir.path)
-            }
-            def commonGitDir = worktreeGitDir.parentFile?.name == 'worktrees'
-                    ? worktreeGitDir.parentFile.parentFile
-                    : worktreeGitDir
-            if (commonGitDir != null) {
-                candidates.add(new File(commonGitDir.parentFile, "originals/mods/${testedArtifactName}"))
-            }
-        }
-    }
-
-    def testedArtifact = candidates.find { it.isFile() }
-    systemProperty 'easyShulkerBoxesJar', testedArtifact == null ? '' : testedArtifact.absolutePath
     systemProperty 'doubleBarrelsReferenceJar', doubleBarrelsReferenceJar.absolutePath
     inputs.file(doubleBarrelsReferenceJar)
-    if (testedArtifact != null) {
-        inputs.file(testedArtifact)
-    }
 }
 
 java {
     withSourcesJar()
-}
-
-// Offline Mixin application followed by a headless deterministic client lifecycle fixture.
-// Optional upstream bytes are read from the exact audited reference, never packaged.
-def tooltipReference = layout.buildDirectory.file('tooltip-lifecycle/reference/iteminteractions.jar')
-def extractTooltipReference = tasks.register('extractTooltipReference') {
-    doLast {
-        def outer = file(tasks.named('test').get().systemProperties['easyShulkerBoxesJar'])
-        def zip = new java.util.zip.ZipFile(outer)
-        try {
-            def target = tooltipReference.get().asFile
-            target.parentFile.mkdirs()
-            target.bytes = zip.getInputStream(zip.getEntry(project.item_interactions_tested_entry)).bytes
-        } finally { zip.close() }
-    }
-}
-sourceSets {
-    tooltipTransform {
-        compileClasspath += sourceSets.test.compileClasspath
-        runtimeClasspath += sourceSets.test.runtimeClasspath
-    }
-    tooltipLifecycle {
-        compileClasspath += sourceSets.test.compileClasspath + files(tooltipReference)
-        runtimeClasspath += sourceSets.test.runtimeClasspath + files(tooltipReference)
-    }
-}
-tasks.named('compileTooltipLifecycleJava') { dependsOn extractTooltipReference }
-dependencies {
-    tooltipTransformImplementation 'net.fabricmc:class-tweaker:0.3.0-beta.2'
-    tooltipLifecycleImplementation files(providers.gradleProperty('puzzlesLibJar').getOrElse(
-            '../../originals/mods/PuzzlesLib-v26.2.3-mc26.2.x-Fabric.jar'))
-}
-def tooltipProvider = providers.gradleProperty('tooltipProviderJar')
-def transformedTooltipClasses = layout.buildDirectory.dir('tooltip-lifecycle/transformed' + (tooltipProvider.isPresent() ? '-predecessor' : ''))
-def transformTooltipMixins = tasks.register('transformTooltipMixins', JavaExec) {
-    dependsOn tasks.named('tooltipTransformClasses'), tasks.named('classes'), extractTooltipReference
-    classpath = (tooltipProvider.isPresent() ? files(tooltipProvider.get()) : files()) + sourceSets.tooltipTransform.runtimeClasspath + files(tooltipReference)
-    mainClass = 'dev.resivore.slotreservations.fixture.TransformTooltipMixins'
-    systemProperty 'mixin.service', 'dev.resivore.slotreservations.fixture.TooltipMixinService'
-    systemProperty 'mixin.service.boot', 'dev.resivore.slotreservations.fixture.TooltipMixinService'
-    systemProperty 'mixin.env.remapRefMap', 'false'
-    systemProperty 'puzzlesLibJar', providers.gradleProperty('puzzlesLibJar').getOrElse(
-            '../../originals/mods/PuzzlesLib-v26.2.3-mc26.2.x-Fabric.jar')
-    args transformedTooltipClasses.get().asFile.absolutePath
-    if (tooltipProvider.isPresent()) args 'predecessor'
-}
-tasks.register('tooltipLifecycleTest', Test) {
-    dependsOn transformTooltipMixins, tasks.named('tooltipLifecycleClasses')
-    testClassesDirs = sourceSets.tooltipLifecycle.output.classesDirs
-    classpath = files(transformedTooltipClasses) + sourceSets.tooltipLifecycle.output +
-            (tooltipProvider.isPresent() ? files(tooltipProvider.get()) : files()) + sourceSets.tooltipLifecycle.runtimeClasspath
-    useJUnitPlatform()
-    systemProperty 'projectRoot', projectDir.absolutePath
-    jvmArgs '-XX:+EnableDynamicAgentLoading'
-    systemProperty 'sodiumConsoleJar', providers.gradleProperty('sodiumConsoleJar').getOrElse('')
 }

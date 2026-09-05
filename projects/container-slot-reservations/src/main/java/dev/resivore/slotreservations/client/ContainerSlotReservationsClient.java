@@ -5,6 +5,7 @@ import dev.resivore.slotreservations.ContainerSlotReservations;
 import dev.resivore.slotreservations.network.ReservationActionPayload;
 import dev.resivore.slotreservations.network.ReservationSnapshotPayload;
 import dev.resivore.slotreservations.network.ReservationSnapshotRequestPayload;
+import dev.resivore.slotreservations.network.ShulkerPanelSyncPayload;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
@@ -35,6 +36,8 @@ public final class ContainerSlotReservationsClient implements ClientModInitializ
 
         ClientPlayNetworking.registerGlobalReceiver(ReservationSnapshotPayload.TYPE, (payload, context) ->
                 context.client().execute(() -> acceptSnapshot(context.client(), payload)));
+        ClientPlayNetworking.registerGlobalReceiver(ShulkerPanelSyncPayload.TYPE, (payload, context) ->
+                context.client().execute(() -> ShulkerPanel.acceptSync(payload)));
 
         ClientTickEvents.END_CLIENT_TICK.register(ContainerSlotReservationsClient::requestSnapshotForNewScreen);
     }
@@ -48,8 +51,8 @@ public final class ContainerSlotReservationsClient implements ClientModInitializ
             return false;
         }
 
-        Boolean nested = NestedTooltipEditor.send();
-        if (nested != null) return nested;
+        Boolean panel = ShulkerPanel.reservationKey();
+        if (panel != null) return panel;
         Slot slot = ((ReservationScreenAccess) screen).containerSlotReservations$getHoveredSlot();
         if (slot == null || !ClientReservationState.isEligible(screen.getMenu(), slot)) return false;
         int menuSlotIndex = screen.getMenu().slots.indexOf(slot);

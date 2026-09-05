@@ -4,14 +4,9 @@
   "compatibilityLevel": "JAVA_25",
   "client": [
     "AbstractContainerScreenMixin",
-    "ClientItemContentsTooltipMixin",
-    "ContainerStorageTooltipMixin",
-    "ItemStorageHolderTooltipMixin",
     "GuiGraphicsExtractorGhostMixin",
-    "GuiTooltipFrameMixin",
     "GuiItemRenderStateGhostMixin",
     "GuiRendererGhostMixin",
-    "ItemContentsTooltipSourceMixin",
     "KeyboardHandlerMixin",
     "PictureInPictureRendererGhostMixin"
   ],

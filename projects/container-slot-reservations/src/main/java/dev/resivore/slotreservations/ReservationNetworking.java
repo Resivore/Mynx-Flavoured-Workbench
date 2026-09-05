@@ -3,7 +3,12 @@ package dev.resivore.slotreservations;
 import dev.resivore.slotreservations.network.ReservationActionPayload;
 import dev.resivore.slotreservations.network.ReservationSnapshotPayload;
 import dev.resivore.slotreservations.network.ReservationSnapshotRequestPayload;
+import dev.resivore.slotreservations.network.ShulkerPanelContentActionPayload;
+import dev.resivore.slotreservations.network.ShulkerPanelReservationActionPayload;
+import dev.resivore.slotreservations.network.ShulkerPanelSyncPayload;
+import dev.resivore.slotreservations.network.ShulkerSelectionPayload;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
@@ -31,12 +36,14 @@ public final class ReservationNetworking {
     }
 
     public static void register() {
-        PayloadTypeRegistry.serverboundPlay().register(
-                dev.resivore.slotreservations.network.NestedReservationActionPayload.TYPE,
-                dev.resivore.slotreservations.network.NestedReservationActionPayload.CODEC);
-        ServerPlayNetworking.registerGlobalReceiver(
-                dev.resivore.slotreservations.network.NestedReservationActionPayload.TYPE, (payload, context) ->
-                        context.server().execute(() -> NestedReservationActions.handle(context.player(), payload)));
+        PayloadTypeRegistry.serverboundPlay().register(ShulkerPanelReservationActionPayload.TYPE,
+                ShulkerPanelReservationActionPayload.CODEC);
+        PayloadTypeRegistry.serverboundPlay().register(ShulkerPanelContentActionPayload.TYPE,
+                ShulkerPanelContentActionPayload.CODEC);
+        PayloadTypeRegistry.serverboundPlay().register(ShulkerSelectionPayload.TYPE,
+                ShulkerSelectionPayload.CODEC);
+        PayloadTypeRegistry.clientboundPlay().register(ShulkerPanelSyncPayload.TYPE,
+                ShulkerPanelSyncPayload.CODEC);
         PayloadTypeRegistry.serverboundPlay().register(
                 ReservationActionPayload.TYPE, ReservationActionPayload.CODEC);
         PayloadTypeRegistry.serverboundPlay().register(
@@ -48,6 +55,25 @@ public final class ReservationNetworking {
                 context.server().execute(() -> handleAction(context.player(), payload)));
         ServerPlayNetworking.registerGlobalReceiver(ReservationSnapshotRequestPayload.TYPE, (payload, context) ->
                 context.server().execute(() -> handleSnapshotRequest(context.player(), payload)));
+        ServerPlayNetworking.registerGlobalReceiver(ShulkerPanelReservationActionPayload.TYPE, (payload, context) ->
+                context.server().execute(() -> ShulkerPanelActions.handleReservation(context.player(), payload)));
+        ServerPlayNetworking.registerGlobalReceiver(ShulkerPanelContentActionPayload.TYPE, (payload, context) ->
+                context.server().execute(() -> ShulkerPanelActions.handleContent(context.player(), payload)));
+        ServerPlayNetworking.registerGlobalReceiver(ShulkerSelectionPayload.TYPE, (payload, context) ->
+                context.server().execute(() -> handleSelection(context.player(), payload)));
+        ServerPlayConnectionEvents.DISCONNECT.register((handler, server) ->
+                ShulkerSelectionTracker.clear(handler.getPlayer()));
+    }
+
+    static boolean handleSelection(ServerPlayer player, ShulkerSelectionPayload payload) {
+        var host = ShulkerHostResolver.resolve(player, payload.menuId(), payload.host(), payload.hostFingerprint());
+        if (host.isEmpty()) return false;
+        if (payload.internalSlot() == -1) {
+            ShulkerSelectionTracker.clear(player);
+            return true;
+        }
+        return ShulkerSelectionTracker.select(player, host.orElseThrow(), payload.host(),
+                payload.internalSlot(), payload.hostFingerprint());
     }
 
     static boolean handleAction(ServerPlayer player, ReservationActionPayload payload) {

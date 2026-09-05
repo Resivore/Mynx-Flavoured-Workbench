@@ -109,37 +109,26 @@ final class ClientRenderingContractTest {
     }
 
     @Test
-    void optionalTooltipMixinsHaveNoFuzsLinkage() throws IOException {
-        String itemTooltip = source("mixin/client/ItemContentsTooltipSourceMixin.java");
-        String clientTooltip = source("mixin/client/ClientItemContentsTooltipMixin.java");
-        String storageTooltip = source("mixin/client/ContainerStorageTooltipMixin.java");
+    void nativePanelOwnsItsRenderingWithoutOptionalModLinkage() throws IOException {
+        String panel = source("client/ShulkerPanel.java");
+        String screen = source("mixin/client/AbstractContainerScreenMixin.java");
         String fabricMetadata = Files.readString(ROOT.resolve("src/main/resources/fabric.mod.json"));
-
-        assertTrue(itemTooltip.contains("@Pseudo"));
-        assertTrue(clientTooltip.contains("@Pseudo"));
-        assertTrue(clientTooltip.contains(
-                "method = \"extractSlot(Lnet/minecraft/client/gui/Font;"
-        ));
-        assertTrue(clientTooltip.contains("slotX + 1"));
-        assertTrue(clientTooltip.contains("slotY + 1"));
-        assertFalse(itemTooltip.contains("import fuzs."));
-        assertFalse(clientTooltip.contains("import fuzs."));
-        assertTrue(storageTooltip.contains("@Pseudo"));
-        assertTrue(storageTooltip.contains(
-                "method = \"createTooltipImageComponent(Lnet/minecraft/world/item/ItemStack;"
-        ));
-        assertTrue(storageTooltip.contains("EasyShulkerTooltipCompat.captureSource("));
-        assertFalse(storageTooltip.contains("import fuzs."));
-        assertTrue(fabricMetadata.contains("\"easyshulkerboxes\": \"*\""));
-        assertTrue(fabricMetadata.contains("\"iteminteractions\": \"*\""));
+        assertTrue(panel.contains("textures/gui/container/shulker_box.png"));
+        assertTrue(panel.contains("ShulkerPanelGeometry.WIDTH"));
+        assertTrue(panel.contains("ShulkerPanelOverlay.plan("));
+        assertTrue(screen.contains("ShulkerPanel.updateAndRender("));
+        assertTrue(screen.contains("ShulkerPanel.extractTooltip("));
+        assertFalse(panel.contains("fuzs."));
+        assertFalse(screen.contains("@Pseudo"));
+        assertFalse(fabricMetadata.contains("easyshulkerboxes"));
+        assertFalse(fabricMetadata.contains("iteminteractions"));
     }
 
     @Test
     void ordinaryTestRuntimeDoesNotCarryOptionalMods() {
-        assertFalse(classExists(
-                "fuzs.iteminteractions.common.api.v2.world.inventory.tooltip.ItemContentsTooltip"));
+        assertFalse(classExists("fuzs.iteminteractions.common.impl.ItemInteractions"));
         assertFalse(classExists("fuzs.easyshulkerboxes.common.EasyShulkerBoxes"));
-        assertTrue(classExists("dev.resivore.slotreservations.client.EasyShulkerTooltipCompat"));
+        assertTrue(classExists("dev.resivore.slotreservations.client.ShulkerPanel"));
     }
 
     private static String source(String relative) throws IOException {

@@ -71,6 +71,54 @@ final class ClientAndNetworkContractTest {
     }
 
     @Test
+    void panelPayloadsCarryOnlyExactAuthorityAndNeverClientComputedStacks() throws IOException {
+        String content = source("network/ShulkerPanelContentActionPayload.java");
+        String reservation = source("network/ShulkerPanelReservationActionPayload.java");
+        String selection = source("network/ShulkerSelectionPayload.java");
+        String resolver = source("ShulkerHostResolver.java");
+        String actions = source("ShulkerPanelActions.java");
+        String tracker = source("ShulkerSelectionTracker.java");
+
+        for (String payload : List.of(content, reservation, selection)) {
+            assertTrue(payload.contains("int menuId"));
+            assertTrue(payload.contains("ShulkerHostLocator host"));
+            assertTrue(payload.contains("int internalSlot"));
+            assertTrue(payload.contains("String hostFingerprint"));
+            assertFalse(payload.contains("ItemStack"));
+            assertFalse(payload.contains("ItemStackTemplate"));
+        }
+        assertTrue(content.contains("Click click"));
+        assertTrue(reservation.contains("ReservationActionPayload.Source source"));
+        assertTrue(resolver.contains("menu.slots.get(menuSlot) != slot"));
+        assertTrue(resolver.contains("stack.getCount() != 1"));
+        assertTrue(resolver.contains("!slot.isActive() || slot.isFake()"));
+        assertTrue(resolver.contains("!slot.mayPickup(player) || !slot.mayPlace(stack)"));
+        assertTrue(actions.contains("ShulkerTransferPlanner.planExactInsertion("));
+        assertTrue(actions.contains("ShulkerTransferPlanner.planExtraction("));
+        assertTrue(actions.contains("host.menu().broadcastChanges()"));
+        assertTrue(actions.contains("candidate.owner() == changed.owner()"),
+                "Shared compound-container viewers must synchronize by physical owner identity");
+        assertTrue(tracker.contains("private static final Map<Player, Selection> SELECTIONS"));
+        assertFalse(tracker.contains("DataComponents"));
+        assertFalse(tracker.contains("ReservationStore.set"));
+    }
+
+    @Test
+    void panelInputOwnsCoveredCoordinatesAndRejectsUnsupportedGestures() throws IOException {
+        String screen = source("mixin/client/AbstractContainerScreenMixin.java");
+        String panel = source("client/ShulkerPanel.java");
+        assertTrue(screen.contains("!doubleClick && !event.hasShiftDown()"));
+        assertTrue(screen.contains("!event.hasControlDown() && !event.hasAltDown()"));
+        assertTrue(screen.contains("checkHotbarKeyPressed"));
+        assertTrue(screen.contains("ShulkerPanel.ownsHoveredCell()"));
+        assertTrue(panel.contains("STATE.capturePointer()"));
+        assertTrue(panel.contains("STATE.ownsDrag("));
+        assertTrue(panel.contains("STATE.releasePointer("));
+        assertTrue(panel.contains("if (standardClick && slot >= 0"));
+        assertTrue(panel.contains("return true;"), "Owned panel bounds must consume no-op input");
+    }
+
+    @Test
     void serverUsesAClosedExactMenuAllowlistRatherThanGenericMenus() throws IOException {
         String networking = source("ReservationNetworking.java");
         String supportedMenus = between(

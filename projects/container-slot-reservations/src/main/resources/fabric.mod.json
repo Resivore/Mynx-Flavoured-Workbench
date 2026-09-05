@@ -26,8 +26,6 @@
     "java": ">=25"
   },
   "suggests": {
-    "doublebarrels": "*",
-    "easyshulkerboxes": "*",
-    "iteminteractions": "*"
+    "doublebarrels": "*"
   }
 }

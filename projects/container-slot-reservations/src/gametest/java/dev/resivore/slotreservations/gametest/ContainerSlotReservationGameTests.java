@@ -1,6 +1,6 @@
 package dev.resivore.slotreservations.gametest;
 
-import dev.resivore.slotreservations.CarriedShulkerInsertionPolicy;
+import dev.resivore.slotreservations.ShulkerTransferPlanner;
 import dev.resivore.slotreservations.ModComponents;
 import dev.resivore.slotreservations.ReservationData;
 import dev.resivore.slotreservations.ReservationStore;
@@ -400,31 +400,16 @@ public final class ContainerSlotReservationGameTests implements CustomTestMethod
                 .with(5, incoming);
         ReservationStore.setData(carriedShulker, reservations);
 
-        SimpleContainer liveContents = new SimpleContainer(ReservationData.SLOT_COUNT);
-        int[] candidates = CarriedShulkerInsertionPolicy.emptyCandidates(
-                carriedShulker,
-                liveContents,
-                incoming,
-                new int[]{1, 0, 5, 2, 26}
-        );
-        helper.assertTrue(candidates.length == 4
-                        && candidates[0] == 5
-                        && candidates[1] == 0
-                        && candidates[2] == 2
-                        && candidates[3] == 26,
-                "Carried shulker did not reject the mismatch, prioritize the exact reservation, "
-                        + "and retain unreserved fallback order");
-
-        ItemStack transferred = incoming.copyAndClear();
-        liveContents.setItem(candidates[0], transferred);
-        carriedShulker.set(
-                DataComponents.CONTAINER,
-                ItemContainerContents.fromItems(liveContents.getItems())
-        );
-        helper.assertTrue(incoming.isEmpty()
-                        && liveContents.getItem(1).isEmpty()
-                        && liveContents.getItem(5).getCount() == 7
-                        && ItemStack.isSameItemSameComponents(liveContents.getItem(5), transferred)
+        ShulkerTransferPlanner.Insertion insertion = ShulkerTransferPlanner.planInsertion(carriedShulker, incoming);
+        ItemStack transferred = incoming.copy();
+        carriedShulker = insertion.shulker();
+        NonNullList<ItemStack> liveContents = NonNullList.withSize(ReservationData.SLOT_COUNT, ItemStack.EMPTY);
+        carriedShulker.getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY).copyInto(liveContents);
+        helper.assertTrue(insertion.moved() == 7
+                        && insertion.remainder().isEmpty()
+                        && liveContents.get(1).isEmpty()
+                        && liveContents.get(5).getCount() == 7
+                        && ItemStack.isSameItemSameComponents(liveContents.get(5), transferred)
                         && ReservationStore.getData(carriedShulker).equals(reservations)
                         && ContainerSlotReservationsApi.classify(carriedShulker, 5, transferred)
                         == ReservationSlotClass.OCCUPIED_COMPATIBLE
@@ -459,12 +444,8 @@ public final class ContainerSlotReservationGameTests implements CustomTestMethod
                         && ReservationStore.getData(reopenedAfterRemoval).equals(reservations)
                         && ContainerSlotReservationsApi.classify(reopenedAfterRemoval, 5, removed)
                         == ReservationSlotClass.RESERVED_MATCH
-                        && CarriedShulkerInsertionPolicy.emptyCandidates(
-                            reopenedAfterRemoval,
-                            new SimpleContainer(finalItems.toArray(ItemStack[]::new)),
-                            mismatched,
-                            new int[]{5}
-                        ).length == 0
+                        && ShulkerTransferPlanner.planExactInsertion(
+                            reopenedAfterRemoval, mismatched, 5, false).moved() == 0
                         && customName.equals(reopenedAfterRemoval.get(DataComponents.CUSTOM_NAME))
                         && reopenedAfterRemoval.getOrDefault(DataComponents.RARITY, Rarity.COMMON)
                         == Rarity.EPIC,
