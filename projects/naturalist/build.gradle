@@ -102,6 +102,15 @@ sourceSets {
             !it.name.startsWith('field-guide-') && !it.name.startsWith('lambdynamiclights-')
         }
     }
+    glowGoopTest {
+        java.srcDir 'src/glowGoopTest/java'
+        // Use production classes with only NaturalistRegistry replaced by the small
+        // test holder fixture. Exclude main resources to avoid unrelated mod bootstrap.
+        compileClasspath += sourceSets.main.output.classesDirs + sourceSets.main.compileClasspath
+        runtimeClasspath += output + compileClasspath.filter {
+            !it.name.startsWith('field-guide-') && !it.name.startsWith('lambdynamiclights-')
+        }
+    }
 }
 
 configurations {
@@ -111,6 +120,8 @@ configurations {
     itemModelTestRuntimeOnly.extendsFrom runtimeOnly
     startupTestImplementation.extendsFrom implementation
     startupTestRuntimeOnly.extendsFrom runtimeOnly
+    glowGoopTestImplementation.extendsFrom implementation
+    glowGoopTestRuntimeOnly.extendsFrom runtimeOnly
 }
 
 dependencies {
@@ -125,6 +136,10 @@ dependencies {
     startupTestImplementation platform('org.junit:junit-bom:5.11.4')
     startupTestImplementation 'org.junit.jupiter:junit-jupiter'
     startupTestRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    glowGoopTestImplementation platform('org.junit:junit-bom:5.11.4')
+    glowGoopTestImplementation 'org.junit.jupiter:junit-jupiter'
+    glowGoopTestImplementation "net.fabricmc:fabric-loader-junit:${project.fabric_loader_version}"
+    glowGoopTestRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
 tasks.register('verifyOriginalJar') {
@@ -345,7 +360,16 @@ tasks.register('startupTest', Test) {
     useJUnitPlatform()
 }
 
-tasks.named('check') { dependsOn tasks.named('startupTest') }
+tasks.register('glowGoopTest', Test) {
+    group = 'verification'
+    description = 'Exercises production Glow Goop registration caches and live held-item selection.'
+    dependsOn tasks.named('glowGoopTestClasses'), tasks.named('classes')
+    testClassesDirs = sourceSets.glowGoopTest.output.classesDirs
+    classpath = sourceSets.glowGoopTest.runtimeClasspath
+    useJUnitPlatform()
+}
+
+tasks.named('check') { dependsOn tasks.named('startupTest'), tasks.named('glowGoopTest') }
 
 java {
     toolchain.languageVersion = JavaLanguageVersion.of(25)

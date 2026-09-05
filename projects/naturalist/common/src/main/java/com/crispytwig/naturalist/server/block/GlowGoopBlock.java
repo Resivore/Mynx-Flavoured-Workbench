@@ -122,7 +122,10 @@ public class GlowGoopBlock extends Block implements SimpleWaterloggedBlock {
     }
 
     public @NotNull VoxelShape getShape(@NotNull BlockState state, @NotNull BlockGetter level, @NotNull BlockPos pos, CollisionContext context) {
-        return context.isHoldingItem(NaturalistRegistry.GLOW_GOOP.get()) ? Shapes.block() : Shapes.empty();
+        // Fabric initializes block-state caches before the following item registration.
+        // Keep the lookup live: Block.asItem() could permanently cache AIR here.
+        return NaturalistRegistry.GLOW_GOOP != null && context.isHoldingItem(NaturalistRegistry.GLOW_GOOP.get())
+            ? Shapes.block() : Shapes.empty();
     }
 
     protected float getShadeBrightness(@NotNull BlockState state, @NotNull BlockGetter level, @NotNull BlockPos pos) {
