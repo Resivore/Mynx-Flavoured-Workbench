@@ -20,7 +20,7 @@ class CompatibilityActivationTest {
             "e433cd048bc362edae91e2e057c8170d92d110cbe7b9917c105c7336be6543de");
 
     @Test
-    void exactAuditedFourArchiveSetIsTheOnlyActiveContract() {
+    void nonGeckoGatesAndGeckoPresenceAllowApiVerification() {
         CompatibilityActivation.Decision decision =
                 CompatibilityActivation.evaluate(XAERO, XAEROLIB, GECKOLIB, RIBBITS);
 
@@ -53,13 +53,13 @@ class CompatibilityActivationTest {
     }
 
     @Test
-    void anyGeckoLibIdentityDriftFailsClosed() {
-        assertInactive(XAERO, XAEROLIB,
-                identity("geckolib", "5.5.2", GECKOLIB.size(), GECKOLIB.sha256()), RIBBITS);
-        assertInactive(XAERO, XAEROLIB,
+    void geckoVersionSizeAndHashAreNotEligibilityGates() {
+        assertActive(XAERO, XAEROLIB,
+                identity("geckolib", "99.0.0", GECKOLIB.size(), GECKOLIB.sha256()), RIBBITS);
+        assertActive(XAERO, XAEROLIB,
                 identity("geckolib", GECKOLIB.version(), GECKOLIB.size() + 1L,
                         GECKOLIB.sha256()), RIBBITS);
-        assertInactive(XAERO, XAEROLIB,
+        assertActive(XAERO, XAEROLIB,
                 identity("geckolib", GECKOLIB.version(), GECKOLIB.size(),
                         flip(GECKOLIB.sha256())), RIBBITS);
         assertInactive(XAERO, XAEROLIB,
@@ -87,6 +87,15 @@ class CompatibilityActivationTest {
         assertInactive(XAERO, null, GECKOLIB, RIBBITS);
         assertInactive(XAERO, XAEROLIB, null, RIBBITS);
         assertInactive(XAERO, XAEROLIB, GECKOLIB, null);
+    }
+
+    private static void assertActive(
+            CompatibilityActivation.DependencyIdentity xaero,
+            CompatibilityActivation.DependencyIdentity xaeroLib,
+            CompatibilityActivation.DependencyIdentity geckolib,
+            CompatibilityActivation.DependencyIdentity ribbits) {
+        var decision = CompatibilityActivation.evaluate(xaero, xaeroLib, geckolib, ribbits);
+        assertTrue(decision.active(), decision.reason());
     }
 
     private static void assertInactive(

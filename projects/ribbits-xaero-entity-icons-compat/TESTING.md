@@ -1,15 +1,19 @@
 # Testing
 
-Current `ribbits-xaero-entity-icons-compat-0.1.0-canary2.jar` is **ACTIVE / STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED**.
-It is unaccepted and has no rollback. Identity: 56,657 bytes, SHA-256
-`d4435d678ba40d2f1ec6749eeeb89c7b92d2c8c4cd6f3a8898b435d7d27aa920`; source checkpoint is in WORKBENCH_STATUS.json.
-Two independent clean builds produced identical bytes; 59 tests in 13 suites and the
-combined 80-mod production Knot/Mixin harness passed. These are not Minecraft
-runtime observations. Prior C1/C3 failures remain in CODEX_LOG.md and AUDIT.md.
+Current `ribbits-xaero-entity-icons-compat-0.1.0-canary3.jar` is **ACTIVE / STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED**.
+It is unaccepted and has no rollback. Identity: 58,821 bytes, SHA-256
+`79815cb8a958cd1d1a13338487a0ea1b0bb1f8a09493705a5e8ddb84a70469da`; source checkpoint is in WORKBENCH_STATUS.json.
+Clean builds against actual Fabric 26.2 GeckoLib 5.5.4 and 5.5.1 produced identical
+bytes. Each passed 66 tests in 14 suites and the combined production Knot/Mixin
+classloading harness without launching Minecraft. These are not runtime observations. Prior C1/C3 failures remain in CODEX_LOG.md and AUDIT.md.
 
-C2 preserves every direct cube at `main/body` and excludes all children/siblings.
-It activates only for exact Ribbits C9, GeckoLib 5.5.1, Minimap 26.4.2 and nested
-XaeroLib 1.7.1 archive identities. Player Instance GeckoLib 5.5.4 remains unsupported.
+C3 preserves every direct cube at `main/body` and excludes all children/siblings.
+Exact Ribbits C9, Minimap 26.4.2 and nested XaeroLib 1.7.1 gates remain unchanged.
+GeckoLib must be present and expose the required renderer/model/state/direct-cube
+APIs. Its version, archive size, hash and origin layout are not activation allowlists.
+Missing requirements produce a named `incompatible GeckoLib API` or missing-mod
+diagnostic and disable the patch. The API probe reads signatures without loading
+game classes during mixin setup.
 A nonempty vertex submission or allocated atlas is not proof of visible pixels.
 
 ## Exact future controlled inputs
@@ -19,8 +23,14 @@ Fabric API 0.157.0+26.2, Xaero Minimap 26.4.2 / nested XaeroLib 1.7.1 / World Ma
 1.44.2, EMF 3.2.6, ETF 7.1.1, and FreshAnimations_v1.10.5.zip. Exact hashes remain
 in the manifests and audit addenda. The Ribbits input is C9, 3,333,513 bytes,
 SHA-256 `e433cd048bc362edae91e2e057c8170d92d110cbe7b9917c105c7336be6543de`,
-source `8dc886c01f6d402ccf19b45756383d62185f0d4e`; GeckoLib 5.5.1 is 703,096 bytes,
-SHA-256 `4bf1c86b4b47aa2c5d84208255695f10d79d609b23d802c995711e64b45cfce0`.
+source `8dc886c01f6d402ccf19b45756383d62185f0d4e`. Primary GeckoLib validation input:
+`geckolib-fabric-26.2-5.5.4.jar`, 1,183,876 bytes, SHA-256
+`a5770f9ea0c21db157559fe266874fd84be8c7da689d37aa7bf2b06304a6a65d`.
+Regression input: `geckolib-fabric-26.2-5.5.1.jar`, 703,096 bytes, SHA-256
+`4bf1c86b4b47aa2c5d84208255695f10d79d609b23d802c995711e64b45cfce0`.
+These are exact validation records, not runtime version restrictions. Record the
+actual GeckoLib binary used for future observations; do not downgrade any instance
+to match a validation baseline. Fixture metadata changes are not binary evidence.
 Use the base Fresh Animations pack first, then explicitly test resource overrides
 as separately identified cases. Do not infer historical pack contents from the
 currently installed files.
@@ -33,7 +43,7 @@ currently installed files.
 
 ## Future combined runtime procedure
 
-The pair is Ribbits compatibility `0.1.0-canary2` and EMF compatibility
+The pair is Ribbits compatibility `0.1.0-canary3` and EMF compatibility
 `0.1.0-canary4`. Both are static candidates, not runtime passes. Keep failed
 Ribbits C1, EMF C3 and Diagnostic1 out of the future controlled cohort.
 

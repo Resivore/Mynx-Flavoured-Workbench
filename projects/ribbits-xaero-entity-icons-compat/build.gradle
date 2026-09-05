@@ -32,7 +32,7 @@ def requiredFileProperty = { String propertyName, String description ->
 
 def xaeroJar = requiredFileProperty('xaero_jar', 'xaerominimap-fabric-26.2-26.4.2.jar')
 def worldMapJar = requiredFileProperty('world_map_jar', 'xaeroworldmap-fabric-26.2-1.44.2.jar')
-def geckolibJar = requiredFileProperty('geckolib_jar', 'geckolib-fabric-26.2-5.5.1.jar')
+def geckolibJar = requiredFileProperty('geckolib_jar', 'a Fabric 26.2 GeckoLib validation JAR (5.5.4 primary; 5.5.1 regression)')
 def ribbitsJar = requiredFileProperty('ribbits_jar', 'ribbits-private-reconstruction-4.1.6+26.2-mynx-canary9.jar')
 def historicalC3Jar = requiredFileProperty('historical_c3_jar', 'xaero-emf-entity-icon-compat-0.1.0-canary3.jar')
 def emfCandidateJar = providers.gradleProperty('emf_candidate_jar').map { file(it) }.getOrElse(historicalC3Jar)
@@ -133,7 +133,7 @@ test {
 
 def productionMixinTest = tasks.register('productionMixinTest', JavaExec) {
     group = 'verification'
-    description = 'Applies packaged Canary 2 and historical C3 through exact production Fabric Knot/Mixin without launching Minecraft.'
+    description = 'Applies packaged Canary 3 and the specified EMF companion through exact production Fabric Knot/Mixin without launching Minecraft.'
     dependsOn tasks.named('testClasses'), tasks.named('jar')
 
     inputs.file(productionJar)
@@ -306,7 +306,7 @@ tasks.register('verifyClientOnlyArtifact') {
 
 tasks.register('stageCanaryArtifact', Copy) {
     group = 'build'
-    description = 'Stages the verified Canary 2 JAR in this task worktree artifact directory.'
+    description = 'Stages the verified Canary 3 JAR in this task worktree artifact directory.'
     dependsOn tasks.named('check')
     from(productionJar)
     into(layout.projectDirectory.dir('artifacts'))

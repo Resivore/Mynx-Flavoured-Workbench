@@ -3,7 +3,7 @@ package dev.resivore.ribbitsxaeroicons;
 import java.util.Locale;
 import java.util.Objects;
 
-/** Exact whole-archive dependency policy for the Canary 2 binary seams. */
+/** Exact non-Gecko dependency gates; GeckoLib eligibility is based on its used APIs. */
 public final class CompatibilityActivation {
     public static final DependencyIdentity SUPPORTED_XAERO = new DependencyIdentity(
             "xaerominimap",
@@ -15,11 +15,6 @@ public final class CompatibilityActivation {
             "1.7.1",
             621_485L,
             "7f4a78dd7e046fea0500fef83b1481d85317c8348d47e947035d7a07efe51065");
-    public static final DependencyIdentity SUPPORTED_GECKOLIB = new DependencyIdentity(
-            "geckolib",
-            "5.5.1",
-            703_096L,
-            "4bf1c86b4b47aa2c5d84208255695f10d79d609b23d802c995711e64b45cfce0");
     public static final DependencyIdentity SUPPORTED_RIBBITS = new DependencyIdentity(
             "ribbits",
             "4.1.6+26.2-mynx-canary9",
@@ -40,14 +35,14 @@ public final class CompatibilityActivation {
         if (!SUPPORTED_XAEROLIB.equals(xaeroLib)) {
             return new Decision(false, mismatch("XaeroLib", SUPPORTED_XAEROLIB, xaeroLib));
         }
-        if (!SUPPORTED_GECKOLIB.equals(gecko)) {
-            return new Decision(false, mismatch("GeckoLib", SUPPORTED_GECKOLIB, gecko));
+        if (gecko == null || !"geckolib".equals(gecko.modId())) {
+            return new Decision(false, "missing Fabric mod geckolib");
         }
         if (!SUPPORTED_RIBBITS.equals(ribbits)) {
             return new Decision(false, mismatch("Ribbits", SUPPORTED_RIBBITS, ribbits));
         }
 
-        return new Decision(true, "exact Canary 2 dependency contract matched");
+        return new Decision(true, "dependency identity gates matched; GeckoLib API verification required");
     }
 
     private static String mismatch(

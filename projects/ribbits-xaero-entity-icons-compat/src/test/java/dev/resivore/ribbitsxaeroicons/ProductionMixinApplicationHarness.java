@@ -36,7 +36,7 @@ public final class ProductionMixinApplicationHarness {
         Path expectedTrinkets = Path.of(args[6]).toRealPath();
 
         require(expectedPatch.getFileName().toString()
-                        .equals("ribbits-xaero-entity-icons-compat-0.1.0-canary2.jar"),
+                        .equals("ribbits-xaero-entity-icons-compat-0.1.0-canary3.jar"),
                 "unexpected Canary 2 JAR " + expectedPatch);
         requireOfficialNamespace(expectedXaero);
         requireOfficialNamespace(expectedGecko);
@@ -83,7 +83,7 @@ public final class ProductionMixinApplicationHarness {
         Class<?> provider = Class.forName(
                 "dev.resivore.ribbitsxaeroicons.RibbitGeoIconProvider", false, targetLoader);
         require(codeSource(provider).equals(expectedPatch),
-                "provider did not load from packaged Canary 2");
+                "provider did not load from packaged Canary 3");
 
         Class<?> c3ModelMixinTarget = loadFrom(
                 targetLoader,

@@ -66,7 +66,19 @@ class UpstreamBinaryContractTest {
         assertArtifact(XAEROLIB, 621_485L, XAEROLIB_SHA);
         assertArtifact(WORLD_MAP, 1_473_719L,
                 "d55ef45c559ae0adcf66d894c022f61d9d921629b0c885d04aa00424546a2389");
-        assertArtifact(GECKOLIB, 703_096L, GECKOLIB_SHA);
+        // Exact binary validation baselines only, never production eligibility.
+        try (ZipFile gecko = new ZipFile(GECKOLIB.toFile())) {
+            String version = JsonParser.parseString(new String(
+                    read(gecko, gecko.getEntry("fabric.mod.json")), StandardCharsets.UTF_8))
+                    .getAsJsonObject().get("version").getAsString();
+            if (version.equals("5.5.1")) {
+                assertArtifact(GECKOLIB, 703_096L, GECKOLIB_SHA);
+            } else {
+                assertEquals("5.5.4", version, "unrecorded validation input");
+                assertArtifact(GECKOLIB, 1_183_876L,
+                        "a5770f9ea0c21db157559fe266874fd84be8c7da689d37aa7bf2b06304a6a65d");
+            }
+        }
         assertArtifact(HISTORICAL_C3, 28_351L, HISTORICAL_C3_FULL_SHA);
         assertArtifact(EMF, 587_342L,
                 "876a3e4ffda021a6266df87208f2d9980322cf86223d4fe1e313ca996631f115");

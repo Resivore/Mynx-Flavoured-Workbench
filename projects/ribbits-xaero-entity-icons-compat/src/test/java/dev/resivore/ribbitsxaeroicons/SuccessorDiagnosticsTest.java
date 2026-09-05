@@ -4,12 +4,12 @@ import static org.junit.jupiter.api.Assertions.*;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import java.lang.reflect.Proxy;
 class SuccessorDiagnosticsTest {
-    @Test void manuallyTestedGeckoVersionDeclinesBeforeTheRibbitsMismatch() {
-        var badGecko=new CompatibilityActivation.DependencyIdentity("geckolib","5.5.4",1183876L,
+    @Test void reportedGeckoIdentityNoLongerBlocksActivation() {
+        var gecko=new CompatibilityActivation.DependencyIdentity("geckolib","5.5.4",1183876L,
                 "a5770f9ea0c21db157559fe266874fd84be8c7da689d37aa7bf2b06304a6a65d");
         var decision=CompatibilityActivation.evaluate(CompatibilityActivation.SUPPORTED_XAERO,
-                CompatibilityActivation.SUPPORTED_XAEROLIB,badGecko,CompatibilityActivation.SUPPORTED_RIBBITS);
-        assertFalse(decision.active());assertTrue(decision.reason().startsWith("GeckoLib exact binary mismatch"));
+                CompatibilityActivation.SUPPORTED_XAEROLIB,gecko,CompatibilityActivation.SUPPORTED_RIBBITS);
+        assertTrue(decision.active(), decision.reason());
     }
     @Test void emptyDestinationIsDistinctFromSubmittedVertices() {
         int[] calls={0};

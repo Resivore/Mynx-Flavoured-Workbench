@@ -3,6 +3,9 @@ package dev.resivore.ribbitsxaeroicons;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
+import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.tree.ClassNode;
 import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -15,7 +18,7 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
 import net.fabricmc.loader.api.metadata.ModOrigin;
 
-/** Resolves and hashes the actual Fabric origins once, before any unsafe mixin can apply. */
+/** Verifies dependency gates once before mixin application, without loading game classes. */
 public final class RuntimeCompatibility {
     private static final String XAEROLIB_NESTED_PATH =
             "META-INF/jars/xaerolib-fabric-26.2-1.7.1.jar";
@@ -28,15 +31,77 @@ public final class RuntimeCompatibility {
     public static CompatibilityActivation.Decision evaluateLoadedMods() {
         try {
             FabricLoader loader = FabricLoader.getInstance();
-            return CompatibilityActivation.evaluate(
+            // GeckoLib metadata is not an archive fingerprint or version allowlist.
+            CompatibilityActivation.Decision identities = CompatibilityActivation.evaluate(
                     identity(loader, CompatibilityActivation.SUPPORTED_XAERO.modId()),
                     nestedXaeroLibIdentity(loader),
-                    identity(loader, CompatibilityActivation.SUPPORTED_GECKOLIB.modId()),
+                    loader.getModContainer("geckolib").map(container ->
+                            new CompatibilityActivation.DependencyIdentity(
+                                    "geckolib", version(container), 0L, "")).orElse(null),
                     identity(loader, CompatibilityActivation.SUPPORTED_RIBBITS.modId()));
+            return identities.active()
+                    ? verifyGeckoApi(RuntimeCompatibility.class.getClassLoader()) : identities;
         } catch (Throwable failure) {
             return new CompatibilityActivation.Decision(
-                    false, "could not verify exact dependency origins: "
+                    false, "could not verify required dependency origins: "
                             + failure.getClass().getSimpleName() + ": " + failure.getMessage());
+        }
+    }
+
+    /** Read only the used API signatures: loading game classes during mixin setup is unsafe. */
+    static CompatibilityActivation.Decision verifyGeckoApi(ClassLoader loader) {
+        try {
+            String model = "Lcom/geckolib/model/GeoModel;";
+            String state = "Lcom/geckolib/renderer/base/GeoRenderState;";
+            String ticket = "Lcom/geckolib/constant/dataticket/DataTicket;";
+            String id = "Lnet/minecraft/resources/Identifier;";
+            requireGeckoMethod(loader, "renderer/GeoEntityRenderer", "getGeoModel", "()" + model);
+            requireGeckoMethod(loader, "renderer/GeoEntityRenderer", "getRenderType",
+                    "(Lnet/minecraft/client/renderer/entity/state/EntityRenderState;" + id
+                            + ")Lnet/minecraft/client/renderer/rendertype/RenderType;");
+            requireGeckoMethod(loader, "model/GeoModel", "getModelResource", "(" + state + ")" + id);
+            requireGeckoMethod(loader, "model/GeoModel", "getTextureResource", "(" + state + ")" + id);
+            requireGeckoMethod(loader, "model/GeoModel", "getBakedModel",
+                    "(" + id + ")Lcom/geckolib/cache/model/BakedGeoModel;");
+            requireGeckoMethod(loader, "renderer/base/GeoRenderState", "getGeckolibData",
+                    "(" + ticket + ")Ljava/lang/Object;");
+            requireGeckoMethod(loader, "renderer/base/GeoRenderState", "hasGeckolibData", "(" + ticket + ")Z");
+            requireGeckoMethod(loader, "cache/model/BakedGeoModel", "isMissingno", "()Z");
+            requireGeckoMethod(loader, "cache/model/BakedGeoModel", "topLevelBones",
+                    "()[Lcom/geckolib/cache/model/GeoBone;");
+            ClassNode cuboid = geckoClass(loader, "cache/model/cuboid/CuboidGeoBone");
+            if (cuboid.fields.stream().noneMatch(field -> field.name.equals("cubes")
+                    && field.desc.equals("[Lcom/geckolib/cache/model/cuboid/GeoCube;")
+                    && (field.access & (Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC)) == Opcodes.ACC_PUBLIC)) {
+                throw new IOException("CuboidGeoBone.cubes requires public instance GeoCube[]");
+            }
+            requireGeckoMethod(loader, "cache/model/cuboid/GeoCube", "render",
+                    "(Lcom/mojang/blaze3d/vertex/PoseStack;Lcom/mojang/blaze3d/vertex/VertexConsumer;III)V");
+            return new CompatibilityActivation.Decision(true, "required GeckoLib APIs available; dependency gates matched");
+        } catch (IOException | RuntimeException | LinkageError failure) {
+            return new CompatibilityActivation.Decision(false, "incompatible GeckoLib API: "
+                    + failure.getClass().getSimpleName() + ": " + failure.getMessage());
+        }
+    }
+
+    private static ClassNode geckoClass(ClassLoader loader, String name) throws IOException {
+        String path = "com/geckolib/" + name + ".class";
+        try (InputStream input = loader.getResourceAsStream(path)) {
+            if (input == null) throw new IOException("missing " + path);
+            ClassNode node = new ClassNode();
+            new ClassReader(input).accept(node,
+                    ClassReader.SKIP_CODE | ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
+            return node;
+        }
+    }
+
+    private static void requireGeckoMethod(ClassLoader loader, String owner, String name, String descriptor)
+            throws IOException {
+        ClassNode node = geckoClass(loader, owner);
+        if (node.methods.stream().noneMatch(method -> method.name.equals(name)
+                && method.desc.equals(descriptor)
+                && (method.access & (Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC)) == Opcodes.ACC_PUBLIC)) {
+            throw new IOException("missing public instance GeckoLib method " + owner + "." + name + descriptor);
         }
     }
 
