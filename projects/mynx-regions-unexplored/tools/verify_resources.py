@@ -30,7 +30,8 @@ class Contract(unittest.TestCase):
         for name in OBTAINABLE + COMPANIONS: self.assertIn(f'"{name}"', source)
         for forbidden in INPUTS["scope"]["explicit_exclusions"][:4]: self.assertNotIn(f'"{forbidden}"', source)
         self.assertIn('registerBlockNoItem("dropleaf_plant"', source)
-        self.assertEqual(7, source.count('pot("potted_'))
+        self.assertEqual(6, source.count('pot("potted_'))
+        self.assertIn('pottedMycotoxicDaisy("potted_mycotoxic_daisy", MYCOTOXIC_DAISY, 14)', source)
 
     def test_display_only_glowleaf_rename_is_generated(self):
         language = self.read(f"assets/{NS}/lang/en_us.json")
@@ -44,9 +45,27 @@ class Contract(unittest.TestCase):
     def test_requested_and_preserved_light_levels(self):
         source = (ROOT / "src/main/java/dev/resivore/mynxregions/MynxRegionsUnexplored.java").read_text(encoding="utf-8")
         self.assertIn('.sound(SoundType.ROOTS).lightLevel(state -> 14));', source)
-        self.assertIn('pot("potted_mycotoxic_daisy", MYCOTOXIC_DAISY, 14)', source)
+        self.assertIn('pottedMycotoxicDaisy("potted_mycotoxic_daisy", MYCOTOXIC_DAISY, 14)', source)
         self.assertIn('return head ? p.randomTicks().lightLevel(state -> 14) : p;', source)
         self.assertIn('registerBlockNoItem("dropleaf_plant", DropleafPlantBlock::new, dropleafProperties(false))', source)
+
+    def test_mycotoxic_daisy_particles_are_client_ambient_and_limited(self):
+        tall = (ROOT / "src/main/java/dev/resivore/mynxregions/MycotoxicDaisyBlock.java").read_text(encoding="utf-8")
+        pot = (ROOT / "src/main/java/dev/resivore/mynxregions/MycotoxicDaisyPotBlock.java").read_text(encoding="utf-8")
+        particles = (ROOT / "src/main/java/dev/resivore/mynxregions/MycotoxicDaisyParticles.java").read_text(encoding="utf-8")
+        self.assertIn("void animateTick(", tall)
+        self.assertIn("state.getValue(HALF) == DoubleBlockHalf.UPPER", tall)
+        self.assertEqual(1, tall.count("MycotoxicDaisyParticles.trySpawn("))
+        self.assertIn("extends FlowerPotBlock", pot)
+        self.assertEqual(1, pot.count("MycotoxicDaisyParticles.trySpawn("))
+        self.assertIn("private static final int SPAWN_CHANCE = 4;", particles)
+        self.assertIn("level.addParticle(ParticleTypes.END_ROD", particles)
+        self.assertNotIn("addAlwaysVisibleParticle", particles)
+        for source in (tall, pot, particles):
+            self.assertNotIn("randomTick(", source)
+            self.assertNotIn("ServerLevel", source)
+            self.assertNotIn("Minecraft.getInstance", source)
+            self.assertNotIn("ParticleStatus", source)
 
     def test_resource_references_are_closed(self):
         def walk(value):
@@ -123,6 +142,17 @@ class Contract(unittest.TestCase):
             names=jar.namelist()
             for path in OUT.rglob("*"):
                 if path.is_file(): self.assertEqual(path.read_bytes(), jar.read(path.relative_to(OUT).as_posix()))
+            particle_classes = [
+                "dev/resivore/mynxregions/MycotoxicDaisyBlock.class",
+                "dev/resivore/mynxregions/MycotoxicDaisyParticles.class",
+                "dev/resivore/mynxregions/MycotoxicDaisyPotBlock.class",
+            ]
+            for name in particle_classes: self.assertIn(name, names)
+            particle_bytecode = b"".join(jar.read(name) for name in particle_classes)
+            self.assertIn(b"animateTick", particle_bytecode)
+            self.assertIn(b"END_ROD", particle_bytecode)
+            for forbidden in [b"ServerLevel", b"net/minecraft/network", b"net/minecraft/client/Minecraft", b"ParticleStatus", b"addAlwaysVisibleParticle"]:
+                self.assertNotIn(forbidden, particle_bytecode)
             self.assertFalse(any(n.endswith(".jar") for n in names))
             self.assertFalse(any(n.startswith(("assets/regions_unexplored/", "io/github/uhq_games/", "data/create/")) for n in names))
 

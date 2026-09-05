@@ -64,7 +64,7 @@ public final class MynxRegionsUnexplored implements ModInitializer {
     public static final Block POTTED_PURPLE_LUPINE = pot("potted_purple_lupine", PURPLE_LUPINE, 0);
     public static final Block POTTED_RED_LUPINE = pot("potted_red_lupine", RED_LUPINE, 0);
     public static final Block POTTED_YELLOW_LUPINE = pot("potted_yellow_lupine", YELLOW_LUPINE, 0);
-    public static final Block POTTED_MYCOTOXIC_DAISY = pot("potted_mycotoxic_daisy", MYCOTOXIC_DAISY, 14);
+    public static final Block POTTED_MYCOTOXIC_DAISY = pottedMycotoxicDaisy("potted_mycotoxic_daisy", MYCOTOXIC_DAISY, 14);
 
     public static final List<Block> OBTAINABLE = List.of(DROPLEAF, BARLEY, WINDSWEPT_GRASS, CLOVER, STONE_BUD,
             MYCOTOXIC_DAISY, HYSSOP, BLUE_LUPINE, PINK_LUPINE, PURPLE_LUPINE, RED_LUPINE, YELLOW_LUPINE,
@@ -115,6 +115,11 @@ public final class MynxRegionsUnexplored implements ModInitializer {
         BlockBehaviour.Properties properties = BlockBehaviour.Properties.ofFullCopy(Blocks.FLOWER_POT).noOcclusion();
         if (light > 0) properties.lightLevel(state -> light);
         return registerBlockNoItem(name, p -> new FlowerPotBlock(content, p), properties);
+    }
+    private static Block pottedMycotoxicDaisy(String name, Block content, int light) {
+        BlockBehaviour.Properties properties = BlockBehaviour.Properties.ofFullCopy(Blocks.FLOWER_POT).noOcclusion();
+        if (light > 0) properties.lightLevel(state -> light);
+        return registerBlockNoItem(name, p -> new MycotoxicDaisyPotBlock(content, p), properties);
     }
     private static <T extends Block> T registerBlock(String name, Function<BlockBehaviour.Properties, T> factory, BlockBehaviour.Properties properties) {
         T block = registerBlockNoItem(name, factory, properties);
