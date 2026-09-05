@@ -2,153 +2,134 @@
 
 ## Current gate
 
-**PRIVATE CANARY 4 RETAINED — NOT DEPLOYED / RUNTIME UNTESTED**
+**PRIVATE CANARY 5 RETAINED — NOT DEPLOYED / RUNTIME UNTESTED**
 
-- Version: `2.0.3+26.2-port-canary4`.
-- Artifact: `artifacts/naturalist-2.0.3+26.2-port-canary4.jar`, 11,369,270 bytes.
-- SHA-256: `fc7a214b59fa1ef9ebc4ffbb8a603867a12276742c56278d705123b0ea0cd922`.
-- Source checkpoint (also embedded in the JAR): `d577b5bb4c93484cea6be0871fa1297372662a0a`.
-- Java 25 clean build, 255 tests, all six preservation verifiers, full private
-  resource comparison, sound resolution and root/nested dependency policy pass.
-- Compared with Canary 3, only five render mixin classes, the two relocated
-  helpers and nested Source record, 100 recipe JSON files, three advancements,
-  dragonfly loot, sounds.json and two release-metadata entries change.
-  Glow Goop, MonsterMixin, optional Field Guide gating, other protected resources,
-  67 client-item roots and all 47 spawn-egg roots are unchanged.
+- Version: `2.0.3+26.2-port-canary5`.
+- Artifact: `artifacts/naturalist-2.0.3+26.2-port-canary5.jar`, 11,374,087 bytes.
+- SHA-256: `18a1e4aafaf4b2a11df3dba6d7f94a657fbd2a3ff29b3b20fb884f5f8ab36a04`.
+- Source checkpoint (also embedded): `76ea6ea90976efdf0c4f65ceafe915bb8078bee2`.
+- Java 25 clean build, 315 tests, six preservation verifiers, dependency-policy
+  scan and narrow comparison against retained Canary 4 pass.
 
-Both canonical Workbench slots remain occupied at manager revision 97: A holds
-Container Slot Reservations Canary 9 and B holds Quick Stack Nearby compatibility
-Canary 9. No deployment, profile access or Minecraft launch was performed for
-Canary 4. Keep Naturalist ACTIVE until its UUID occupies a verified manager slot.
+Manager revision 98 has occupied A (CSR Canary 10) and B (QSN Canary 9).
+Recheck current main before deployment. Keep Naturalist ACTIVE until a verified
+serialized manager transition assigns its UUID to a free slot. No Minecraft
+runtime validation, dedicated deployment or Player Instance mutation occurred.
 
-The new user-reported September 5, 2026 **Matcha 26.2 Player Instance** observation
-is an **external runtime FAIL for Canary 3**, superseding its earlier untested
-description. The launch definitely loaded Minecraft 26.2, Loader 0.19.3 and
-Naturalist `2.0.3+26.2-port-canary3`. It crashed through EntityRenderDispatcher
-with IllegalClassLoadError because `mixin.NaturalistRenderEntityLookup` was an
-ordinary runtime class in a declared Mixin package. The report also identified
-Naturalist ingredient and entity-subpredicate parsing failures and missing vanilla
-sound paths. The supplied version alone does not bind the launched filename,
-SHA-256 or source checkpoint; no exact-hash runtime claim is inferred.
+Canary 4 is **external user-reported runtime FAIL**, superseding its earlier
+untested description: September 5, 2026 ~15:30 America/Chicago, Matcha 26.2 Player
+Instance, Minecraft 26.2, Loader 0.19.3, Java 25. Title, world and player entry
+worked; prior helper, mass recipe, dragonfly loot and stale sound failures were
+absent. Butterfly crashed querying `tempt_range`; catch_bee failed before item
+components existed; three husbandry advancements had a missing parent; Polymer
+rejected Shellstone Brick Wall in the tab. The user deleted the installed JAR
+and identified the retained Canary 4 as the forensic input. Its verified hash
+is `fc7a214b59fa1ef9ebc4ffbb8a603867a12276742c56278d705123b0ea0cd922`, filename
+`naturalist-2.0.3+26.2-port-canary4.jar`, source
+`d577b5bb4c93484cea6be0871fa1297372662a0a`, 11,369,270 bytes. No post-deletion
+installed-file hash was measured. This is external evidence, not Workbench acceptance.
 
-The preserved local Canary 3 remains `naturalist-2.0.3+26.2-port-canary3.jar`,
-11,369,742 bytes, SHA-256
-`5aabc54ae858c77d90870baa3bcbfbee6448f67cecf489a448085b04c15d8d75`, source
-`038de70b6579cd66e43426539468cd684bb46d4a`. It is provenance, not the current
-runtime candidate. Canary 1 and Canary 2 also remain locally preserved.
+## Focused executable coverage
 
-## Focused executable regressions
+`lifecycleTest` bootstraps actual vanilla/Fabric/Naturalist registries and applies
+both production creative-identity and advancement-manager Mixins. It uses Fabric's
+world-registry list to load all 48 variant registries, 99 authored definitions,
+and eight damage/song/painting/worldgen entries. Actual reloadable loot registries
+load and validate all 78 tables and resolved references. RecipeManager prepares
+all 101 Naturalist recipes plus four Naturalist-owned vanilla overrides before
+pending components are published, then finalizes recipes. catch_bee's declared
+result materializes only afterward; its upstream declaration is preserved exactly.
+The existing resource codec and 661-reference sound tests remain independent.
 
-`startupTest` scans both declared Mixin packages for ordinary classes, verifies
-public helper call targets and the actual dispatcher extraction descriptor/RETURN
-hook, and checks that baked-rider selection still uses the remembered entity.
-`resourceCodecTest` exercises state reuse, entity/partial-tick isolation and the
-queued shoulder-parrot marker. Opaque Entity identity fixtures use test-only
-Objenesis 3.3 without constructing a world or exercising Entity behavior.
+Final advancement publication checks all 40 nodes with vanilla parents and with
+a fixture matching Matcha's filtered husbandry tree. The uncorrected tree rejects
+exactly three nodes. The fallback changes only their parent to `main:tutorial/root`
+when vanilla husbandry/root is absent and that Matcha root exists. Criteria,
+requirements, rewards and display remain equal. The decoded tactical-fishing hook
+retains the original catfish/bass bucket alternatives and is idempotent.
 
-The same suite bootstraps real vanilla and production Naturalist registries,
-loads private jukebox entries and real item tags, initializes item components,
-and parses every staged recipe (101), advancement (40) and loot table (78) with
-Minecraft 26.2 codecs. Its negative control reproduces exactly 100 recipe failures,
-three advancement failures and dragonfly loot failure from the pristine private
-data used by Canary 3. No fixture replaces a recipe, entity predicate or loot codec.
+All 51 actual entity factories and 48 living suppliers are checked using mocked
+server services, real constructors, installed goals and real attributes. Bytecode
+checks cover installed vanilla goal/control hierarchies, direct Naturalist family
+attribute reads and attack-damage call paths. Representative goals exercise canUse
+and, after a valid start, canContinueToUse. The 23 repaired suppliers are Bear,
+Black Bear, Boar, Butterfly, Capybara, Crab, Deer, Duck, Elephant, Giant Isopod,
+Giraffe, Hedgehog, Hippo, Komodo Dragon, Lion, Lizard, Mammoth, Mole, Ostrich, Rat,
+Tiger, Tortoise and Turkey. Zebra already inherits the canonical range. No other
+missing required attribute was demonstrated. Mocked services are not a game world
+or evidence of successful real AI ticks, combat, spawning or integration.
 
-The preservation comparison permits only ingredient object-to-string/tag changes,
-five `type` to `minecraft:entity_type` predicate keys, and 15 vanilla sound-path
-replacements. It checks entire recipe types, ingredients, patterns, result IDs,
-counts/components, criteria, flags, equipment, vehicle and NBT conditions. All 16
-snail-shell color recipes are shapeless; every existing shaped pattern parses
-after the ingredient correction, so no pattern or acquisition redesign is needed.
-The custom net recipe and remaining data are preserved. All 661 sound references
-resolve against private assets or the 26.2 vanilla index/events, retaining volume
-and other sound settings. Protected upstream bytes stay external or ignored.
+Creative checks verify every deferred holder, item/block ownership, all 141 item
+identities, 198 exact-distinct stacks, all snail/shell colors and bucket variants,
+search entries and repeated builds. The exact retained Canary 4 generator and
+registries passed isolated vanilla and Polymer 0.17.3 output checks, but failed
+with `naturalist:shellstone_brick_wall` under the verified CNM 2.0.7 shape-family
+RETURN-hook behavior plus a forced hash-bucket collision. The new required Mixin
+scopes strict item/component comparison to Naturalist generation; the same
+collision fixture now passes, and inventory family equality remains unchanged.
+Scope nesting and exception cleanup are checked. No output deduplication occurs.
+This reconstructs the integration seam; it is not a rerun of the entire Player Instance.
 
-`glowGoopTest` uses production GlowGoopBlock, GlowGoopItem, DeferredHolder, and
-FabricRegistrationProvider with a test-only item-holder fixture. Actual Fabric
-registration must invoke the shape cache for all six GOOP 1–3 / dry-waterlogged
-states before the holder exists. It also explicitly repeats initCache and direct
-empty-context queries before registering the real Glow Goop item.
+Prior render-helper package guards, state lookup, Glow Goop's six registration/
+selection cases, required MonsterMixin descriptor, optional Field Guide gating,
+persistence and item-model suites remain enabled. Protected originals are immutable.
+Only four additional private recipe ingredient migrations and one required Mixin
+registration change staged resources relative to Canary 4. All protected assets,
+prior corrected data, 67 item roots and 47 spawn-egg roots remain byte-identical.
 
-The same states then switch repeatedly between Glow Goop, a different item, and
-no item through both direct and BlockState shape queries. Full selection is
-expected only for the actual Glow Goop item. The tests repeat cache initialization
-after registration and check noncollision, invisibility, replaceability,
-waterlogging, GOOP × 5 emission, and dry/waterlogged skylight propagation.
-Substituting the original unguarded Canary 2 implementation was confirmed to fail
-through FabricRegistrationProvider → Fabric shape-cache callback → initCache →
-propagatesSkylightDown → getShape with the reported null-holder NPE.
+## Runtime procedure when a slot is free
 
-Minecraft 26.2's selection getShape delegates to the block each time; initCache
-does not freeze that selection result. Keep the holder lookup live, and never use
-Block.asItem() for the early lookup because it can memoize AIR before registration.
-No dynamic-shape or global-registration change is needed.
-
-## Startup and world regression procedure
-
-1. Once a slot is available, use the serialized Test Instance Manager to deploy
-   this exact Canary 4 into the dedicated **Matcha Flavoured 26.2 Workbench**.
-   Recheck current main, slot ownership, artifact identity, dependencies and the
-   normal readiness receipt. Do not displace another project. Do not modify,
-   deploy to, stop or relaunch the Player Instance; never access protected 26.1.2.
-2. Prioritize Field Guide absent. Reach the title screen and a disposable world;
-   inspect startup and data reload logs for Naturalist helper classload failures,
-   rejected recipes/advancements/loot, stale pufferfish/horse sound paths, the
-   prior Glow Goop null-holder/MonsterMixin errors and absent Field Guide targets.
-3. Render representative Naturalist mobs, a rider on an IK mount, a shoulder
-   parrot transitioning between perched and flying, and a digging wolf. Check
-   model animation, rider visibility, deferred state isolation and partial ticks.
-4. Craft representative shaped, shapeless, cooking and stonecutting recipes,
-   including all snail-shell colors and shellstone forms. Verify original
-   ingredients, shapes and result counts/components. Exercise the bear honeycomb,
-   hippo melon and both-hand giraffe-map conditions; confirm frog/variant-dependent
-   dragonfly loot, ordinary loot and the capture-net path without duplicate drops.
-   Hear blobfish/piranha/catfish flops and zebra eating at the intended volume.
-5. Place Glow Goop dry and waterlogged; test GOOP 1/2/3, stacking maximum, full
-   selection while holding Glow Goop, empty selection with another/no item,
-   repeated held-item switches on the same state, and save/reload. Check no
-   collision, invisible rendering, fluid state, light 5/10/15, replacement,
-   drops and pick-block identity without loss or duplication.
-6. At a valid Overworld bed at night in Survival, verify a nearby hostile monster
-   prevents sleep without a plush bear, then permits it while holding one in
-   either hand. Reset nighttime and repeat the no-plush vanilla control.
-7. Test dedicated-server startup and Field Guide-present rendering, entries,
-   aquatic previews and icons only in an authorized setup with a compatible
-   provider. Field Guide must stay optional and absent-safe; do not install or
-   bundle it merely to complete this matrix. Both paths remain runtime-untested
-   for Canary 4.
-8. Stop on identity drift, occupied slots, startup/resource failure or changed
-   behavior; record exact observations and any independent blocker. Static
-   fixtures and codec passes do not establish Minecraft runtime acceptance.
+1. Recheck authoritative main and both slots. Deploy this exact artifact through
+   the serialized Test Instance Manager only into a free dedicated Workbench slot;
+   require readiness verification. Never displace another project, modify/relaunch
+   the Player Instance or access protected 26.1.2.
+2. With Field Guide absent, reach title and enter a disposable world. Inspect logs
+   for Naturalist errors during load and resource reload, including catch_bee,
+   advancement parents, helper loading, Glow Goop, MonsterMixin and sounds.
+3. Open Naturalist's tab under the full Workbench stack. Confirm Shellstone Brick
+   Wall and the other ordinary shapes, snail colors and bucket variants appear;
+   inspect search entries and confirm no false duplicate error.
+4. Spawn and tick Butterfly, tempt with its intended flower, then tempt another
+   repaired species. Exercise representatives of flying, passive, hostile, aquatic,
+   inventory-bearing and tameable/equipment-bearing families. Check goal behavior,
+   health, movement, targeting and inventory interactions against upstream semantics.
+5. Exercise bee capture with the capture net and verify the original declared
+   acquisition result without double emission. Confirm all three repaired
+   advancements load and award only for their preserved honeycomb, melon and
+   giraffe/map conditions. Verify shaped/shapeless/cooking/stonecutting recipes,
+   including Naturalist's cake, leather, pumpkin-pie and spectral-arrow overrides.
+6. Save/reload the world. Render representative mobs, an IK rider and a shoulder
+   parrot under the Workbench rendering stack. Check variants, inventories and
+   remembered partial ticks. Verify dragonfly/ordinary loot and flop/eating sounds.
+7. Repeat Glow Goop GOOP 1/2/3, dry/waterlogged, selection with actual/other/no item,
+   stacking, light 5/10/15, save/reload, drops and pick-block checks. Verify hostile
+   bed blocking without a plush bear and its original main/offhand exception.
+8. Dedicated-server and optional-provider-present checks require an authorized
+   setup. Do not install Field Guide merely to complete the matrix.
+9. Stop at identity drift, an occupied slot, changed behavior or any new
+   Naturalist-specific error. Record actual observations and the exact artifact;
+   do not repair unrelated mod noise during this procedure.
 
 ## Reproducible static checks
 
 Use Temurin 25.0.4.1, Gradle 9.6.1, Loom 1.17.20, Loader 0.19.3, Fabric API
-0.157.0+26.2, and optional compile surfaces LambDynamicLights 4.12.2+26.2 and
-Field Guide 1.7.10-26.2-fabric. These are validation baselines. Packaged runtime
-requirements are Minecraft 26.2, Loader >=0.19.3, Fabric API >=0.157.0, Java >=25;
-LambDynamicLights remains optional and Field Guide is neither required nor bundled.
+0.157.0+26.2; optional compile baselines are Field Guide 1.7.10-26.2-fabric and
+LambDynamicLights 4.12.2+26.2. Mockito 5.20.0 is test-only. No optional provider or
+test library is required or packaged at runtime.
 
-Run `clean build persistenceTest itemModelTest` from this project with the
-existing `naturalistOriginalJar` and `naturalistLegacyMinecraftJar` properties.
-`build` includes `startupTest`, `glowGoopTest` and `resourceCodecTest`; optional
-providers are excluded from the test runtimes. To reproduce
-the retained source stamp after a later administrative commit, also pass
-`-PnaturalistSourceCommit=d577b5bb4c93484cea6be0871fa1297372662a0a` while using this exact source tree.
-Run all six `tools/Verify-*.ps1` preservation verifiers after resource generation,
-passing the external input paths where supported.
+Run `clean build persistenceTest itemModelTest` with the existing
+`naturalistOriginalJar` and `naturalistLegacyMinecraftJar` input properties.
+`build` includes startupTest, glowGoopTest, resourceCodecTest and lifecycleTest.
+After administrative commits reproduce the stamp with
+`-PnaturalistSourceCommit=76ea6ea90976efdf0c4f65ceafe915bb8078bee2` on this exact source tree.
+Run all six `tools/Verify-*.ps1` verifiers after resource generation.
 
-Sound verification uses the cached `26.2-32.json` asset index and its hash-checked
-`minecraft/sounds.json` object. Override the index location with
-`-PnaturalistMinecraftAssetIndex=<absolute path>` when needed. The validation
-baseline is Loom index SHA-1 `773791767c043b4f9493b50c54257619cecb08a4` and
-vanilla sounds object `9ac006d5537ed0fa4a7bcd1eccfc505155847686`.
-
-Keep immutable private inputs external: Naturalist 2.0.3 SHA-256
-`3d16c975326e0df24486d44d8010d9e614fc9efdf891864de7b5a0efedfc12f9`;
-Minecraft 1.21.1 client SHA-256
-`499f6897d1837516680f3114072d8106e11c9adcd933fe5cf051b551089b0c99`.
-The Field Guide configuration is patched only in ignored staging; every other
-upstream mixin configuration setting and compatibility initializer is preserved.
+Sound verification uses cached `26.2-32.json`, index SHA-1
+`773791767c043b4f9493b50c54257619cecb08a4` and sounds object
+`9ac006d5537ed0fa4a7bcd1eccfc505155847686`. Override its path using
+`-PnaturalistMinecraftAssetIndex=<absolute path>` if needed. Private input hashes:
+Naturalist 2.0.3 `3d16c975326e0df24486d44d8010d9e614fc9efdf891864de7b5a0efedfc12f9`;
+Minecraft 1.21.1 client `499f6897d1837516680f3114072d8106e11c9adcd933fe5cf051b551089b0c99`.
 
 ## Preservation guards
 

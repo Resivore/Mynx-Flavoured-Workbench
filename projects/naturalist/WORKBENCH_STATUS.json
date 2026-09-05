@@ -89,15 +89,15 @@
     ]
   },
   "state": {
-    "milestone": "Private Canary 4 moves both runtime render helpers out of declared Mixin packages, preserving entity/partial-tick lookup and queued shoulder-parrot state. Hash-verified private staging converts obsolete ingredients in 100 recipes, five entity-type predicates across three advancements and dragonfly loot, and 15 stale vanilla sound paths. All 101 recipes, 40 advancements and 78 loot tables parse with real Minecraft 26.2 codecs; all 661 sound references resolve. Java 25 clean build, 255 tests, six preservation verifiers, dependency policy and narrow JAR comparison pass. NEW EXTERNAL RUNTIME FAIL: the user reports Minecraft 26.2 / Loader 0.19.3 / Naturalist Canary 3 in the Matcha 26.2 Player Instance failed with IllegalClassLoadError for mixin.NaturalistRenderEntityLookup through EntityRenderDispatcher, alongside Naturalist recipe/entity-predicate errors and stale sound warnings. This supersedes the earlier untested description of Canary 3; exact launched filename/hash/source are not established by the version report. Canary 4 remains ACTIVE, NOT_DEPLOYED and RUNTIME_UNTESTED. No Minecraft launch or profile access occurred; canonical manager revision 97 still has CSR C9 in A and QSN C9 in B. Runtime rendering, acquisition, sound and prior regression checks await a free slot.",
+    "milestone": "Private Canary 5 fixes 23 missing TEMPT_RANGE suppliers using the canonical 26.2 animal value 10; the complete 51-entity constructor/goal/direct-attribute audit passes, including Zebra's inherited range. Net recipes now defer result ItemStack creation through ItemStackTemplate until components are published. The actual advancement-manager hook preserves decoded criteria/rewards and conditionally reparents three husbandry advancements to main:tutorial/root when Matcha removes their vanilla parent; the vanilla tactical-fishing bucket hook now handles decoded advancements. Naturalist creative generation scopes exact registry-item/component comparison, preventing CNM shape-family equality from causing Polymer false duplicates without changing inventory stacking or removing variants. The retained Canary 4 generator reproduces shellstone_brick_wall rejection under a faithful CNM equality hook and forced hash collision; Canary 5 keeps 141 registered items and 198 exact-distinct stacks. Four Naturalist-owned vanilla recipe overrides also migrate privately. Java 25 clean build, 315 tests, six preservation verifiers, 101 Naturalist plus four owned vanilla recipes, 40 final advancements, 78 reloadable loot tables, 48 variant registries/99 definitions plus eight other dynamic entries, all 661 sound references, dependency policy and narrow JAR comparison pass. Canary 4 is EXTERNAL USER-REPORTED RUNTIME FAIL from September 5, 2026 ~15:30 America/Chicago in the Matcha 26.2 Player Instance (Minecraft 26.2, Loader 0.19.3, Java 25): title/world/player entry and prior render/data/sound fixes worked, but Butterfly tempt_range crashed and catch_bee, three advancement parents and Polymer's Shellstone tab comparison failed. The user deleted the installed JAR and identified the retained Canary 4; its filename/hash/source were verified locally, not measured from the removed installed file. Canary 5 is ACTIVE, NOT_DEPLOYED, RUNTIME_UNTESTED. Manager revision 98 has CSR C10 in A and QSN C9 in B; no deployment or Minecraft launch occurred. Player Instance inspection was read-only; protected 26.1.2 was never accessed. Remaining work is authorized runtime validation of this exact successor, including whole-stack creative inventory, capture, AI, advancement, rendering and save/reload checks.",
     "releases": {
       "current": {
-        "version": "2.0.3+26.2-port-canary4",
+        "version": "2.0.3+26.2-port-canary5",
         "artifact": {
-          "filename": "naturalist-2.0.3+26.2-port-canary4.jar",
-          "sha256": "fc7a214b59fa1ef9ebc4ffbb8a603867a12276742c56278d705123b0ea0cd922"
+          "filename": "naturalist-2.0.3+26.2-port-canary5.jar",
+          "sha256": "18a1e4aafaf4b2a11df3dba6d7f94a657fbd2a3ff29b3b20fb884f5f8ab36a04"
         },
-        "source_commit": "d577b5bb4c93484cea6be0871fa1297372662a0a",
+        "source_commit": "76ea6ea90976efdf0c4f65ceafe915bb8078bee2",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
@@ -116,11 +116,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 8,
-    "activity_at": "2026-09-05T19:49:05Z",
-    "updated_at": "2026-09-05T19:49:05Z",
-    "last_codex_at": "2026-09-05T19:49:05Z",
-    "source_commit": "d577b5bb4c93484cea6be0871fa1297372662a0a",
+    "revision": 9,
+    "activity_at": "2026-09-05T21:32:08Z",
+    "updated_at": "2026-09-05T21:32:08Z",
+    "last_codex_at": "2026-09-05T21:32:08Z",
+    "source_commit": "76ea6ea90976efdf0c4f65ceafe915bb8078bee2",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
