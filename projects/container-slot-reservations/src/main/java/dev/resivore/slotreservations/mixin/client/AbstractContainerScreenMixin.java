@@ -38,10 +38,13 @@ abstract class AbstractContainerScreenMixin implements ReservationScreenAccess {
         return hoveredSlot;
     }
 
-    @Inject(method = "extractRenderState", at = @At(value = "INVOKE",
-            target = "Lnet/minecraft/client/gui/screens/inventory/AbstractContainerScreen;extractCarriedItem(Lnet/minecraft/client/gui/GuiGraphicsExtractor;II)V"))
+    @Inject(
+            method = "extractCarriedItem(Lnet/minecraft/client/gui/GuiGraphicsExtractor;II)V",
+            at = @At("HEAD"),
+            require = 1
+    )
     private void containerSlotReservations$extractPinnedShulkerPanel(
-            GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta, CallbackInfo callbackInfo) {
+            GuiGraphicsExtractor graphics, int mouseX, int mouseY, CallbackInfo callbackInfo) {
         ShulkerPanel.updateAndRender((AbstractContainerScreen<?>) (Object) this, hoveredSlot,
                 graphics, mouseX, mouseY, leftPos, topPos, imageWidth);
     }

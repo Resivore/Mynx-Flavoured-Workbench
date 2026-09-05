@@ -1,0 +1,12 @@
+// Run CCAR's controlled suites against its exact retained C12 production JAR and a selected CSR provider.
+// Invoke with -p projects/carried-container-auto-routing and -PccarRetainedArtifact=<exact C12 path>.
+gradle.projectsEvaluated {
+    def p = gradle.rootProject
+    def artifact = p.file(p.providers.gradleProperty('ccarRetainedArtifact').get())
+    def expected = 'f00b1e6bc64a0e63ac1199d89c08f7510a20d5bbb9a486b40bd97833df522a2f'
+    def hash = java.util.HexFormat.of().formatHex(java.security.MessageDigest.getInstance('SHA-256').digest(artifact.bytes))
+    if (hash != expected) throw new GradleException('CCAR retained C12 identity mismatch')
+    p.sourceSets.main.output.classesDirs.setFrom(artifact)
+    p.sourceSets.main.output.resourcesDir = null
+    ['compileJava', 'processResources', 'jar', 'sourcesJar'].each { name -> p.tasks.named(name) { enabled = false } }
+}

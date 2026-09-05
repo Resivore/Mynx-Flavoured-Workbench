@@ -32,6 +32,23 @@ def doubleBarrelsReferenceJar = new File(
         repositoryRoot,
         "projects/double-barrels/artifacts/${project.double_barrels_tested_jar}"
 )
+def gitMetadata = repositoryRoot.toPath().resolve('.git')
+def worktreeGitDir = java.nio.file.Files.isDirectory(gitMetadata)
+        ? gitMetadata
+        : java.nio.file.Path.of(java.nio.file.Files.readString(gitMetadata).trim().substring('gitdir: '.length()))
+def commonGitDirFile = worktreeGitDir.resolve('commondir')
+def commonGitDir = java.nio.file.Files.exists(commonGitDirFile)
+        ? worktreeGitDir.resolve(java.nio.file.Files.readString(commonGitDirFile).trim()).normalize()
+        : worktreeGitDir
+def primaryRepositoryRoot = commonGitDir.parent.toFile()
+def canary10ReferenceJar = new File(
+        primaryRepositoryRoot,
+        'projects/container-slot-reservations/artifacts/container-slot-reservations-0.1.0-canary10.jar'
+)
+def inventoryExtendedReferenceJar = new File(
+        repositoryRoot,
+        'projects/trinkets-inventory-extended-compat/artifacts/inventoryextended-1.1.2-mc26.2-trinkets-compat-canary4.jar'
+)
 
 dependencies {
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
@@ -152,10 +169,16 @@ tasks.withType(JavaCompile).configureEach {
 }
 
 test {
+    dependsOn tasks.named('jar')
     useJUnitPlatform()
     systemProperty 'projectRoot', projectDir.absolutePath
     systemProperty 'doubleBarrelsReferenceJar', doubleBarrelsReferenceJar.absolutePath
+    systemProperty 'canary10ReferenceJar', canary10ReferenceJar.absolutePath
+    systemProperty 'canary11Artifact', tasks.named('jar').get().archiveFile.get().asFile.absolutePath
+    systemProperty 'inventoryExtendedReferenceJar', inventoryExtendedReferenceJar.absolutePath
     inputs.file(doubleBarrelsReferenceJar)
+    inputs.file(canary10ReferenceJar)
+    inputs.file(inventoryExtendedReferenceJar)
 }
 
 java {

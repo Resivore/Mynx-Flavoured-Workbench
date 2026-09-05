@@ -1,0 +1,19 @@
+// Add the exact Easy Shulker Boxes setup from the dedicated 26.2 profile to controlled CSR suites.
+gradle.beforeProject { p ->
+    def references = [
+            [property: 'easyShulkerBoxesJar', sha256: '66f803ae8796a0cdd7086e175fe8b96846515710b8b98b9aebc79d52ea2b0c38'],
+            [property: 'puzzlesLibJar', sha256: '746d90c6723fccce4fca076e7e87753354abc4670016e1c461120a3306ee9af1'],
+            [property: 'forgeConfigApiPortJar', sha256: '1b4b17fc4150481447201152604688c74726d6631c9a626dd21f2c5e2b3df1ac']
+    ]
+    p.plugins.withId('java') {
+        references.each { reference ->
+            def artifact = p.file(p.providers.gradleProperty(reference.property).get())
+            def actual = java.util.HexFormat.of().formatHex(
+                    java.security.MessageDigest.getInstance('SHA-256').digest(artifact.bytes))
+            if (actual != reference.sha256) {
+                throw new GradleException("${reference.property} identity mismatch")
+            }
+            p.dependencies.add('runtimeOnly', p.files(artifact))
+        }
+    }
+}
