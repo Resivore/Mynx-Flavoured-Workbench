@@ -2,10 +2,10 @@
   "$schema": "../../schemas/runtime-state.schema.json",
   "schema_version": 2,
   "activation": "ACTIVE",
-  "revision": 90,
-  "updated_at": "2026-09-04T23:23:00Z",
+  "revision": 92,
+  "updated_at": "2026-09-05T03:42:09Z",
   "accepted_baseline": {
-    "revision": 18,
+    "revision": 19,
     "provenance": {
       "source_repository": "Resivore/Minecraft-26.2-Workbench",
       "source_commit": "f0101f38c446dddaa4226450386402c63597ba7c",
@@ -154,29 +154,29 @@
       },
       {
         "unit": {
-          "deployment_id": "1b6d00e9-7fc4-45e3-83a5-f632636e2f26",
+          "deployment_id": "98fe1cc9-eeaa-4c07-8b72-17678bc07581",
           "project_uuid": "fcb7d036-c756-5114-abe1-01c4331e7ea8",
           "project_id": "carried-container-auto-routing",
           "project_identity_source": "CURRENT_MANIFEST",
-          "version": "0.3.6-external-quick-move-priority-fix-canary",
-          "source_commit": "64d63d9bcca268297601af5c9a7537e8d8946812",
+          "version": "0.3.7-csr-reservation-affinity-canary1",
+          "source_commit": "c373b663c99d7a217fc9147db5007d3f1057678f",
           "artifacts": [
             {
-              "artifact_id": "4f8db88c-5b1b-479b-9167-46f2783d1e93",
+              "artifact_id": "2eb193ee-0975-4a2c-a725-c97a721c35b4",
               "kind": "MOD",
-              "filename": "carried-container-auto-routing-0.3.6-external-quick-move-priority-fix-canary.jar",
-              "sha256": "01913b0455d961d20174c601b0544c178ed47868113e6f1173e132290fe4ca02",
+              "filename": "carried-container-auto-routing-0.3.7-csr-reservation-affinity-canary1.jar",
+              "sha256": "f00b1e6bc64a0e63ac1199d89c08f7510a20d5bbb9a486b40bd97833df522a2f",
               "ownership_keys": [
                 "mod:carried_container_auto_routing"
               ],
               "source": {
                 "type": "REPOSITORY",
-                "path": "projects/carried-container-auto-routing/artifacts/carried-container-auto-routing-0.3.6-external-quick-move-priority-fix-canary.jar"
+                "path": "projects/carried-container-auto-routing/artifacts/carried-container-auto-routing-0.3.7-csr-reservation-affinity-canary1.jar"
               }
             }
           ]
         },
-        "accepted_at": null
+        "accepted_at": "2026-09-05T03:42:09Z"
       },
       {
         "unit": {
@@ -943,48 +943,6 @@
         "ready_verified_at": "2026-09-04T23:23:00Z"
       }
     },
-    "B": {
-      "members": [
-        {
-          "unit": {
-            "deployment_id": "98fe1cc9-eeaa-4c07-8b72-17678bc07581",
-            "project_uuid": "fcb7d036-c756-5114-abe1-01c4331e7ea8",
-            "project_id": "carried-container-auto-routing",
-            "project_identity_source": "CURRENT_MANIFEST",
-            "version": "0.3.7-csr-reservation-affinity-canary1",
-            "source_commit": "c373b663c99d7a217fc9147db5007d3f1057678f",
-            "artifacts": [
-              {
-                "artifact_id": "2eb193ee-0975-4a2c-a725-c97a721c35b4",
-                "kind": "MOD",
-                "filename": "carried-container-auto-routing-0.3.7-csr-reservation-affinity-canary1.jar",
-                "sha256": "f00b1e6bc64a0e63ac1199d89c08f7510a20d5bbb9a486b40bd97833df522a2f",
-                "ownership_keys": [
-                  "mod:carried_container_auto_routing"
-                ],
-                "source": {
-                  "type": "REPOSITORY",
-                  "path": "projects/carried-container-auto-routing/artifacts/carried-container-auto-routing-0.3.7-csr-reservation-affinity-canary1.jar"
-                }
-              }
-            ]
-          },
-          "replaces_accepted_deployment_id": "1b6d00e9-7fc4-45e3-83a5-f632636e2f26",
-          "runtime_result": {
-            "classification": "UNTESTED",
-            "recorded_at": null,
-            "evidence": {
-              "passed": [],
-              "failed": []
-            }
-          }
-        }
-      ],
-      "deployment": {
-        "state": "READY_TO_TEST_VERIFIED",
-        "deployed_at": "2026-09-04T23:23:00Z",
-        "ready_verified_at": "2026-09-04T23:23:00Z"
-      }
-    }
+    "B": null
   }
 }
