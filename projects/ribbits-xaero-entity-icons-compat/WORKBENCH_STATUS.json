@@ -17,7 +17,7 @@
     "goals": [
       "Provide fail-closed Xaero entity-head icons for Ribbits through a distinct compatibility companion without changing normal Ribbits rendering or the EMF companion behavior.",
       "Maintain an explicitly registered ordinary Ribbit and Wandering Ribbit GeckoLib capture provider; ordinary main/body remains DIRECT-CUBES-ONLY, while Wandering selects only its face core and paired eyes.",
-      "Preserve non-Gecko exact-binary gates, required GeckoLib APIs, bounded-cache, render-state, resource-reload, transform, private-asset, and All Rights Reserved boundaries while the statically validated Canary awaits controlled runtime evidence."
+      "Preserve required Ribbits/GeckoLib API and per-capture contracts without release fingerprint gates; preserve Xaero binary seams, bounded caches, render-state/reload/transform and private-asset boundaries while awaiting visual runtime evidence."
     ],
     "scope": [
       "Wrap the sole RadarIconForm.getPrerenderer call in Xaero RadarIconCreator.create for only exact unsupported ribbits:ribbit or ribbits:wandering_ribbit renderers; preserve vanilla, Ender Dragon, EMF, already-handled, disabled-head and category-filtered paths.",
@@ -25,7 +25,7 @@
       "Ordinary selection preserves every direct cube at exact main/body, inherited bind and cube transforms, and excludes every descendant/sibling. Wandering uses the same exact hierarchy but a separate fail-closed geometry selector for its face core and two eyes; excludes direct clothing/backpack and descendant/sibling accessories/limbs.",
       "Normalize selected transformed bounds to the ordinary Xaero head capture span of 16 pixels (32 pixels per model unit times 8/16 head units), preserving capture min(1, Parameters.scale) and downstream display scale. Map Gecko baked +Y/-Z to screen -Y/camera +Z without the erroneous Y half-turn; inherited creator capture pose is identity.",
       "Keep bounded model/texture/profession/Pride/baby/reload identities; ordinary and Wandering have distinct entity/provider/selector identities, including unresolved sentinels. Invalidate both successful and FAILED outer entity caches on reload, without enabling arbitrary GeckoLib entities.",
-      "Canary 4 static validation uses exact Xaero 26.4.2/nested XaeroLib 1.7.1, authoritative Ribbits C9, actual GeckoLib 5.5.4 and 5.5.1, and unchanged EMF C4 in the production classloading harness. GeckoLib remains capability-based; all non-Gecko dependency gates remain unchanged."
+      "Canary 5 validates actual Ribbits C10 and C9 across GeckoLib 5.5.4 and 5.5.1 with unchanged EMF C4 and exact Xaero 26.4.2/nested XaeroLib 1.7.1. Ribbits and GeckoLib eligibility uses mod presence and required APIs, never version, whole-archive size/hash or archive layout. Preserve per-capture entity/renderer/state/resource/geometry checks; do not reintroduce a Canary pin for a compatible update."
     ],
     "boundaries": {
       "owned_paths": [
@@ -45,8 +45,8 @@
       {
         "type": "PROJECT",
         "identifier": "2a650718-ec62-568f-8dff-71258a4d6f3f",
-        "requirement": "Exact activation and validation baseline: 4.1.6+26.2-mynx-canary9; ribbits-private-reconstruction-4.1.6+26.2-mynx-canary9.jar; 3,333,513 bytes; SHA-256 e433cd048bc362edae91e2e057c8170d92d110cbe7b9917c105c7336be6543de; source 8dc886c01f6d402ccf19b45756383d62185f0d4e. This identity does not assert Ribbits runtime acceptance.",
-        "reason": "Exact unchanged C9 gate and read-only renderer/model/geometry input for ordinary and separately registered Wandering Ribbit capture."
+        "requirement": "Ribbits presence and required public DataTicketModule fields, RibbitData.getProfession and RibbitProfession.id APIs. No version, archive size, SHA-256 or archive-layout eligibility restriction. Validation baselines only: C10 4.1.6+26.2-mynx-canary10 / ribbits-private-reconstruction-4.1.6+26.2-mynx-canary10.jar / 3,334,581 bytes / SHA-256 3d0ea590ba7186fa1b1a7cf3a6be7689eef5c424275b19aacf5d6cf59945aed9 / source 681f120c444d2a0c34cfd1b448426f23cf9371bd; C9 4.1.6+26.2-mynx-canary9 / ribbits-private-reconstruction-4.1.6+26.2-mynx-canary9.jar / 3,333,513 bytes / SHA-256 e433cd048bc362edae91e2e057c8170d92d110cbe7b9917c105c7336be6543de / source 8dc886c01f6d402ccf19b45756383d62185f0d4e.",
+        "reason": "C10 does not change the ordinary/Wandering icon renderer, model, data-ticket or geometry contracts. Read signatures without early classloading; missing requirements produce an incompatible Ribbits API diagnostic. Exact entity/renderer, populated state, active resources and selected geometry remain checked at capture time."
       },
       {
         "type": "MOD",
@@ -112,7 +112,7 @@
         "type": "MOD",
         "identifier": "geckolib",
         "requirement": "Presence and required renderer/model/render-state/direct-cube APIs; no version, archive size, SHA-256 or origin-layout activation restriction. Validation baselines only: geckolib-fabric-26.2-5.5.4.jar / 1,183,876 bytes / SHA-256 a5770f9ea0c21db157559fe266874fd84be8c7da689d37aa7bf2b06304a6a65d; regression geckolib-fabric-26.2-5.5.1.jar / 703,096 bytes / SHA-256 4bf1c86b4b47aa2c5d84208255695f10d79d609b23d802c995711e64b45cfce0.",
-        "reason": "Capability-based C3 API activation policy preserved in C4. Actual 5.5.4 and 5.5.1 each pass 71 tests in 16 suites and production classloading; validation identities are not runtime restrictions."
+        "reason": "C3 capability-based activation remains unchanged. Each C9/C10 and 5.5.4/5.5.1 combination passes 78 tests in 17 suites and production classloading; recorded identities are validation baselines only."
       },
       {
         "type": "RESOURCE_PACK",
@@ -135,15 +135,15 @@
     ]
   },
   "state": {
-    "milestone": "Canary 4 fixes 58-versus-16 capture sizing mismatch and baked face/up axis mapping, preserving user display scaling, ordinary direct cubes, static bind transforms and active texture. Explicit Wandering face selector excludes clothes/backpack/limbs and has distinct reload-safe identities. 61,889-byte successor: 71 tests in 16 suites and production classloading pass independently on actual GeckoLib 5.5.4 and 5.5.1; identical clean-build bytes. User-reported external visual FAIL: enormous icons, top-of-head rather than face views, missing Wandering support. Report lacks observation timestamp, installed compatibility version/hash and session/resource identity, so it is not bound to C3 or another exact release. Current C4 remains ACTIVE / NOT_DEPLOYED / RUNTIME_UNTESTED and unaccepted; no instance or slot changes.",
+    "milestone": "Canary 5 removes the Ribbits C9 version/size/SHA-256/origin gate so compatible releases, including C10, remain eligible. Required directly linked Ribbits APIs are checked by bytecode signatures without early game classloading; per-capture contracts and all C4 face/size/Wandering/cache behavior remain unchanged. Actual C9/C10 crossed with GeckoLib 5.5.4/5.5.1 pass 78 tests in 17 suites and the production Knot/Mixin harness. Retained successor is 64,544 bytes, runtime untested and unaccepted. User reports icons worked with Ribbits C9 but stopped with C10; this matches the removed gate, but installed companion binary/session identity is unspecified, so no exact-release visual PASS/FAIL is assigned. Prior visual failure identity limits remain in the log. No runtime or instance transition.",
     "releases": {
       "current": {
-        "version": "0.1.0-canary4",
+        "version": "0.1.0-canary5",
         "artifact": {
-          "filename": "ribbits-xaero-entity-icons-compat-0.1.0-canary4.jar",
-          "sha256": "cc4a690712a37e3fa58e4bff7fce6164285e4a91b8e83ca665ded60c2b0cdc2d"
+          "filename": "ribbits-xaero-entity-icons-compat-0.1.0-canary5.jar",
+          "sha256": "d48d45ec47604250ae45c8f20e03741f9f6613d5ada462cda436ce14876c3413"
         },
-        "source_commit": "828e17547625875e6bc7a7892c6841f1d8666229",
+        "source_commit": "d272c2dc9650f1c992fdf6b8f8663866dad39a8b",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
@@ -162,11 +162,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 6,
-    "activity_at": "2026-09-05T01:24:48Z",
-    "updated_at": "2026-09-05T01:24:48Z",
-    "last_codex_at": "2026-09-05T01:24:48Z",
-    "source_commit": "828e17547625875e6bc7a7892c6841f1d8666229",
+    "revision": 7,
+    "activity_at": "2026-09-05T02:51:29Z",
+    "updated_at": "2026-09-05T02:51:29Z",
+    "last_codex_at": "2026-09-05T02:51:29Z",
+    "source_commit": "d272c2dc9650f1c992fdf6b8f8663866dad39a8b",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
