@@ -2,65 +2,89 @@
 
 ## Current gate
 
-**PRIVATE CANARY 2 RETAINED — NOT DEPLOYED / RUNTIME UNTESTED**
+**PRIVATE CANARY 3 RETAINED — NOT DEPLOYED / RUNTIME UNTESTED**
 
-- Version: `2.0.3+26.2-port-canary2`.
-- Artifact: `artifacts/naturalist-2.0.3+26.2-port-canary2.jar`, 11,369,726 bytes.
-- SHA-256: `8e4032ac0948bbe7c45ab48d047312b6a6bbc041102a137d4f3f21e79de1feff`.
-- Source checkpoint (also embedded in the JAR): `da1c33d7eb1040ee8425d8b7a746dbcfc4352436`.
-- Java 25 build, all 22 focused tests (14 existing and 8 startup regressions),
-  all six preservation verifiers, and root/nested dependency-policy inspection pass.
-  All existing JAR entries except MonsterMixin and the three intended metadata/
-  configuration entries are byte-identical to Canary 1; only the gate class is added.
+- Version: `2.0.3+26.2-port-canary3`.
+- Artifact: `artifacts/naturalist-2.0.3+26.2-port-canary3.jar`, 11,369,742 bytes.
+- SHA-256: `5aabc54ae858c77d90870baa3bcbfbee6448f67cecf489a448085b04c15d8d75`.
+- Source checkpoint (also embedded in the JAR): `038de70b6579cd66e43426539468cd684bb46d4a`.
+- Java 25 clean build, 28 focused tests, all six preservation verifiers, and
+  root/nested dependency-policy checks pass. Only GlowGoopBlock.class and the
+  two release-metadata entries differ from Canary 2; no entries were added or
+  removed. Protected resources, MonsterMixin, Field Guide gating, and the
+  production registry/registration classes remain byte-identical.
 
-Both canonical Workbench slots were occupied at manager revision 96: A held
-Container Slot Reservations Canary 9, and B held Quick Stack Nearby compatibility
-Canary 9. No deployment or Minecraft launch was performed for this task. Keep
+Both canonical Workbench slots remain occupied at manager revision 97: A holds
+Container Slot Reservations Canary 9, and B holds Quick Stack Nearby compatibility
+Canary 9. No deployment or Minecraft launch was performed for Canary 3. Keep
 Naturalist ACTIVE until its UUID actually occupies a verified manager slot.
-Do not displace another project or treat static checks as bootstrap evidence.
 
-The September 5, 2026 user-reported **Matcha 26.2 Player Instance** launch used
-Minecraft 26.2, Loader 0.19.3, Java 25, and Naturalist version
-`2.0.3+26.2-port-canary1`. Its MonsterMixin callback lacked ServerLevel before
-Player and failed bootstrap. Field Guide was absent; its missing-target warnings
-were a separate optional-integration defect. The reported launch's exact JAR hash
-is unknown and must not be inferred from its version or bound to the retained
-Canary 1 hash. This was external historical evidence, not a dedicated Workbench test.
+The user-reported September 5, 2026 **12:28 Matcha 26.2 Player Instance** launch
+used Minecraft 26.2, Loader 0.19.3, Java 25, and Naturalist
+`2.0.3+26.2-port-canary2`. It failed with GLOW_GOOP null in
+`GlowGoopBlock.getShape`, reached through `BlockStateBase.initCache`,
+`propagatesSkylightDown`, and Fabric registration. The previous MonsterMixin
+failure and Naturalist-owned Field Guide missing-target warnings did not appear
+in the supplied report; Field Guide was absent. This is external historical
+evidence, not a dedicated Workbench test. Its exact binary hash/source were not
+established and must not be inferred from the version or retained Canary 2.
 
-## Startup and sleep regression procedure
+## Focused executable regression
+
+`glowGoopTest` uses production GlowGoopBlock, GlowGoopItem, DeferredHolder, and
+FabricRegistrationProvider with a test-only item-holder fixture. Actual Fabric
+registration must invoke the shape cache for all six GOOP 1–3 / dry-waterlogged
+states before the holder exists. It also explicitly repeats initCache and direct
+empty-context queries before registering the real Glow Goop item.
+
+The same states then switch repeatedly between Glow Goop, a different item, and
+no item through both direct and BlockState shape queries. Full selection is
+expected only for the actual Glow Goop item. The tests repeat cache initialization
+after registration and check noncollision, invisibility, replaceability,
+waterlogging, GOOP × 5 emission, and dry/waterlogged skylight propagation.
+Substituting the original unguarded Canary 2 implementation was confirmed to fail
+through FabricRegistrationProvider → Fabric shape-cache callback → initCache →
+propagatesSkylightDown → getShape with the reported null-holder NPE.
+
+Minecraft 26.2's selection getShape delegates to the block each time; initCache
+does not freeze that selection result. Keep the holder lookup live, and never use
+Block.asItem() for the early lookup because it can memoize AIR before registration.
+No dynamic-shape or global-registration change is needed.
+
+## Startup and world regression procedure
 
 1. When a slot becomes available, use the serialized Test Instance Manager to
-   deploy the exact retained Canary 2 into the dedicated **Matcha Flavoured 26.2
-   Workbench**. Recheck current main, slot ownership, exact artifact identity,
-   dependency resolution, and the normal readiness receipt before launching.
-   Do not modify, deploy to, stop, or relaunch the Player Instance. Never access
-   the protected 26.1.2 instance.
-2. Prioritize **Field Guide absent**. Confirm the enabled mod inventory lacks
-   `fieldguide`, launch the dedicated Workbench, and inspect that launch's log:
-   no `MonsterMixin.onIsPreventingPlayerRest` descriptor/injection failure and
-   no Naturalist-owned Field Guide missing targets (`EntryRenderHelper`,
-   `FieldGuideEntryScreen`, `IconCacheManager`). Reach the title screen, then a
-   disposable test world. A later failure is a separate blocker; record its exact
-   log and stop without repairing unrelated mods.
-3. In the test world, use a valid Overworld bed at night in Survival, with a
-   nearby vanilla hostile monster whose normal rest predicate is true. Hold no
-   plush bear and attempt sleep: the nearby-monster refusal must remain.
-   Hold Naturalist's plush bear in the main hand and retry, then in the offhand:
-   that monster must no longer prevent rest in either case. Keep other sleep
-   conditions valid, reset nighttime between attempts, and remove the plush bear
-   for a final vanilla-refusal control. Record each actual result independently.
-4. Check server startup only in an authorized dedicated Workbench setup through
-   the same manager/readiness boundaries. The gate must not load client or Field
-   Guide classes on a server; static present/absent server gate tests already pass.
-5. Check **Field Guide present** only when a compatible dependency and an
-   authorized setup are available; do not install or bundle it merely to complete
-   this matrix. Confirm all three existing client mixins remain enabled and check
-   variants, entry-screen rendering, aquatic previews, and icon generation.
-   This branch is currently runtime-untested despite passing gate fixtures.
-6. Stop on startup failure, missing-target warnings, identity drift, occupied
-   slots, or changed sleep behavior. Record only observations actually made.
-   Successful bootstrap/sleep checks constitute focused partial evidence and do
-   not imply full Naturalist acceptance; the broader matrix below remains required.
+   deploy this exact Canary 3 into the dedicated **Matcha Flavoured 26.2
+   Workbench**. Recheck current main, slot ownership, artifact identity,
+   dependencies, and the normal readiness receipt before launching.
+   Do not displace another project. Do not modify, deploy to, stop, or relaunch
+   the Player Instance; never access the protected 26.1.2 instance.
+2. Prioritize **Field Guide absent**. Confirm the enabled inventory lacks
+   `fieldguide`; launch and inspect the new log for the Glow Goop null-holder
+   error, the prior MonsterMixin descriptor error, and Naturalist-owned missing
+   Field Guide targets. Reach the title screen and a disposable world. Record any
+   later independent startup blocker and stop without repairing unrelated mods.
+3. Place Glow Goop in dry and waterlogged positions. Cycle GOOP through 1, 2, and
+   3, verify further stacking respects the maximum, and switch held items:
+   Glow Goop must give full-block selection; another item and no item must give
+   empty selection. Repeat switches on the same placed state and after reload.
+   Check no collision, invisible rendering, expected water fluid state, and light
+   emission 5/10/15. Verify replacement/drop counts and pick-block return the
+   existing Glow Goop item with no lost or duplicate drops. Record each result.
+4. Preserve the plush-bear sleep checks: in Survival at a valid Overworld bed
+   at night, an appropriately nearby hostile monster prevents rest with no plush
+   bear. Holding the plush bear in either hand removes that monster's refusal.
+   Reset nighttime between attempts and remove it for a final vanilla control.
+5. Check server startup only in an authorized dedicated Workbench setup through
+   the same manager/readiness boundaries. Optional integration must not eagerly
+   load Field Guide or client-only classes on a server.
+6. Check Field Guide-present variants, entry rendering, aquatic previews, and
+   icon generation only when a compatible dependency and an authorized setup
+   are available. Do not install or bundle it merely to complete this matrix.
+   Both present and absent Minecraft runtime paths remain untested for Canary 3.
+7. Stop on identity drift, occupied slots, startup failure, or changed behavior.
+   A build, fixture pass, successful bootstrap, or focused world check does not
+   imply full Naturalist acceptance; the broader matrix below remains required.
 
 ## Reproducible static checks
 
@@ -72,9 +96,9 @@ LambDynamicLights remains optional and Field Guide is neither required nor bundl
 
 Run `clean build persistenceTest itemModelTest` from this project with the
 existing `naturalistOriginalJar` and `naturalistLegacyMinecraftJar` properties.
-`build` includes `startupTest`; its classpath excludes Field Guide. To reproduce
+`build` includes `startupTest` and `glowGoopTest`; both exclude Field Guide. To reproduce
 the retained source stamp after a later administrative commit, also pass
-`-PnaturalistSourceCommit=da1c33d7eb1040ee8425d8b7a746dbcfc4352436` while using this exact source tree.
+`-PnaturalistSourceCommit=038de70b6579cd66e43426539468cd684bb46d4a` while using this exact source tree.
 Run all six `tools/Verify-*.ps1` preservation verifiers after resource generation,
 passing the external input paths where supported.
 

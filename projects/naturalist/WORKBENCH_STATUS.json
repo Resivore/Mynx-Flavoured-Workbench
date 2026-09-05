@@ -89,15 +89,15 @@
     ]
   },
   "state": {
-    "milestone": "Private Canary 2 fixes the Minecraft 26.2 MonsterMixin callback descriptor and gates Field Guide-only client mixins before target resolution using the actual fieldguide mod ID. Java 25 build, 22 focused tests, all six preservation verifiers, exact JAR comparison, and runtime dependency policy pass. Historical external user report: September 5 Player Instance launch with Canary 1 failed at MonsterMixin; Field Guide was absent and its missing-target warnings were separate. That launch's exact binary hash is unknown. Canary 2 is NOT_DEPLOYED / RUNTIME_UNTESTED: both dedicated Workbench slots are occupied (A container-slot-reservations C9; B quick-stack-nearby-compat C9, manager revision 96); startup, sleep behavior, and Field Guide-present runtime checks await an available authorized slot.",
+    "milestone": "Private Canary 3 makes Glow Goop selection safe while Fabric registers its block before the item holder. The null-holder fallback is empty; later selection still queries the actual registered item on every call. Java 25 clean build, 28 focused tests, all six preservation verifiers, dependency policy and JAR comparison pass. The regression suite rejects original Canary 2 code with the reported getShape/initCache NPE. External user report: September 5, 2026 at 12:28, Matcha 26.2 Player Instance with Canary 2 failed at GlowGoopBlock.getShape because GLOW_GOOP was null; previous MonsterMixin failure and Naturalist-owned Field Guide missing-target warnings did not appear, and Field Guide was absent. The launch's exact binary hash is unknown. Canary 3 remains ACTIVE, NOT_DEPLOYED and RUNTIME_UNTESTED: Workbench slots A and B are occupied by CSR C9 and QSN C9 at manager revision 97; startup and world checks await a free slot.",
     "releases": {
       "current": {
-        "version": "2.0.3+26.2-port-canary2",
+        "version": "2.0.3+26.2-port-canary3",
         "artifact": {
-          "filename": "naturalist-2.0.3+26.2-port-canary2.jar",
-          "sha256": "8e4032ac0948bbe7c45ab48d047312b6a6bbc041102a137d4f3f21e79de1feff"
+          "filename": "naturalist-2.0.3+26.2-port-canary3.jar",
+          "sha256": "5aabc54ae858c77d90870baa3bcbfbee6448f67cecf489a448085b04c15d8d75"
         },
-        "source_commit": "da1c33d7eb1040ee8425d8b7a746dbcfc4352436",
+        "source_commit": "038de70b6579cd66e43426539468cd684bb46d4a",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
@@ -116,11 +116,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 6,
-    "activity_at": "2026-09-05T17:21:01Z",
-    "updated_at": "2026-09-05T17:21:01Z",
-    "last_codex_at": "2026-09-05T17:21:01Z",
-    "source_commit": "da1c33d7eb1040ee8425d8b7a746dbcfc4352436",
+    "revision": 7,
+    "activity_at": "2026-09-05T17:56:46Z",
+    "updated_at": "2026-09-05T17:56:46Z",
+    "last_codex_at": "2026-09-05T17:56:46Z",
+    "source_commit": "038de70b6579cd66e43426539468cd684bb46d4a",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
