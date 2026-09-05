@@ -1472,10 +1472,10 @@ class RuntimeContractTests(unittest.TestCase):
         tracked = load_json(ROOT / "tools" / "test_instance_manager" / "runtime-state.json")
         self.assertEqual("ACTIVE", tracked["activation"])
         self.assertEqual(2, tracked["schema_version"])
-        self.assertEqual(97, tracked["revision"])
-        self.assertEqual("2026-09-05T17:28:50Z", tracked["updated_at"])
+        self.assertEqual(98, tracked["revision"])
+        self.assertEqual("2026-09-05T19:52:17Z", tracked["updated_at"])
         self.assertEqual(
-            "5d03a29a5baea3906b5967fcb21fa369797347f4dcf57cf9bb84e1427865c27c",
+            "0547fd5c82c3e1a03707eecdf1f26cef9630faa848509b778cfd1cdc028aebb7",
             state_digest(tracked),
         )
         self.assertEqual(19, tracked["accepted_baseline"]["revision"])
@@ -1676,21 +1676,21 @@ class RuntimeContractTests(unittest.TestCase):
         self.assertEqual(1, len(slot_a["members"]))
         csr_successor = slot_a["members"][0]
         self.assertEqual(
-            "58606ffd-251f-42ad-9232-0a68f97654f7",
+            "0c8732a8-34a8-423e-a3b6-be7abb8b310c",
             csr_successor["unit"]["deployment_id"],
         )
         self.assertEqual("3ab36584-8732-554f-840e-28a75c422660", csr_successor["unit"]["project_uuid"])
         self.assertEqual("container-slot-reservations", csr_successor["unit"]["project_id"])
-        self.assertEqual("0.1.0-canary9", csr_successor["unit"]["version"])
+        self.assertEqual("0.1.0-canary10", csr_successor["unit"]["version"])
         self.assertEqual(
-            "1b978f0b553b3545f8a943e18cc743c363e67aac",
+            "12eec63fcb08a3f47c6041d1b4961ca231879fe4",
             csr_successor["unit"]["source_commit"],
         )
         self.assertEqual(
             (
-                "cb9b9417-4e68-486b-962c-c431f4bbc90d",
-                "container-slot-reservations-0.1.0-canary9.jar",
-                "c6b62239dbf826fb4c9423f22eb900c486a845884a1c3f9243fa87a797537c92",
+                "6fda1dd5-bcb7-4902-a098-20329934d937",
+                "container-slot-reservations-0.1.0-canary10.jar",
+                "04334c1cd2316d97ec2930f43fa6945be1898607f1209d19bf92c562cd441b75",
                 ["mod:container_slot_reservations"],
             ),
             (
@@ -1705,12 +1705,12 @@ class RuntimeContractTests(unittest.TestCase):
             csr_successor["replaces_accepted_deployment_id"],
         )
         self.assertEqual(
-            {'classification': 'FAIL', 'recorded_at': '2026-09-05T17:28:50Z', 'evidence': {'passed': [], 'failed': ['CSR Canary 9 still does not allow the user to hover physically empty unreserved cells in the Easy Shulker Boxes tooltip.', 'CSR Canary 9 still does not allow the user to hover physically empty reserved cells in that tooltip.', 'As a result, the tooltip-based CSR editor remains unusable for those cells.', 'The previous two Canary efforts did not establish the intended full Easy Shulker Boxes editing compatibility in actual runtime.']}},
+            {'classification': 'UNTESTED', 'recorded_at': None, 'evidence': {'passed': [], 'failed': []}},
             csr_successor["runtime_result"],
         )
         self.assertEqual("READY_TO_TEST_VERIFIED", slot_a["deployment"]["state"])
-        self.assertEqual("2026-09-05T06:07:58Z", slot_a["deployment"]["deployed_at"])
-        self.assertEqual("2026-09-05T06:07:58Z", slot_a["deployment"]["ready_verified_at"])
+        self.assertEqual("2026-09-05T19:52:17Z", slot_a["deployment"]["deployed_at"])
+        self.assertEqual("2026-09-05T19:52:17Z", slot_a["deployment"]["ready_verified_at"])
 
         sas = accepted_by_uuid["58086966-05a1-4237-9f4f-ffca6c05da87"]
         self.assertEqual("66cd7696-3d01-4d92-805e-9221c1b93e07", sas["unit"]["deployment_id"])
@@ -1779,7 +1779,7 @@ class RuntimeContractTests(unittest.TestCase):
             "CURRENT_RELEASE_NOT_DEPLOYED",
             current_release_deployment_comparison(sas_manifest, tracked),
         )
-        self.assertEqual("RUNTIME_FAIL", csr_manifest["state"]["validation"]["runtime"])
+        self.assertEqual("RUNTIME_UNTESTED", csr_manifest["state"]["validation"]["runtime"])
         self.assertEqual("INCONCLUSIVE", qsn_manifest["state"]["validation"]["runtime"])
         self.assertEqual("RUNTIME_PASS", sas_manifest["state"]["validation"]["runtime"])
         self.assertEqual("ACTIVE", slab_manifest["definition"]["lifecycle"])
@@ -1802,7 +1802,7 @@ class RuntimeContractTests(unittest.TestCase):
         self.assertEqual(
             [
                 "Baseline: Stack v19",
-                "Slot A: Container Slot Reservations - Canary 9",
+                "Slot A: Container Slot Reservations - Canary 10",
                 "Slot B: Quick Stack Nearby Compatibility - Canary 9",
             ],
             title_state["lines"],

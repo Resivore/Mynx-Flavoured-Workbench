@@ -19,14 +19,18 @@
       "Preserve a player's component-exact organization intent after a physical stack leaves an eligible persistent storage or machine slot.",
       "Apply native insertion permission AND exact reservation admission to manual placement, vanilla QUICK_MOVE, hoppers, sided automation, and QSN without changing extraction, destination order, internal processing, or routing ownership.",
       "Resolve every eligible logical menu slot to one stable block-owned or player-owned reservation holder, its physical local slot, physical stack, real slot count, and native admission result.",
-      "Preserve accepted C4 visuals and C6 carried-shulker insertion protection while C7 narrowly enables the native Easy Shulker Boxes / Item Interactions tooltip for physically empty carried vanilla shulkers with reservations.",
-      "Keep the supported-owner and menu policy intentionally exact rather than admitting arbitrary modded, temporary, fake, foreign, player-inventory, or entity containers.",
-      "Interactive native Item Interactions 27-cell geometry and empty-cell highlight, frame/screen/host/pointer rejection, exact-slot server-authoritative nested payload and shared-viewer broadcast; centralized physically-empty and reservation-empty shulker template eligibility; historical invalid templates remain explicit-clearable."
+      "Expose a CSR-owned pinned 27-cell shulker panel with exact-slot viewing, reservation editing, insertion, extraction, persistent transient selection, and fail-closed host identity.",
+      "Own recognized native secondary-click shulker transfers while preserving vanilla behavior for unrelated clicks, exact reservation ordering, effective capacities, callbacks, and conserved counts.",
+      "Preserve accepted C4 storage reservations, exact ghost/zero/marker visuals, public API compatibility for QSN C9 and CCAR C12, and the centralized empty-shulker template rule without external tooltip integration."
     ],
     "scope": [
-      "Audit request stopped before instrumentation/build/deployment under the explicit manager limitation stop condition. Current production C9 is RUNTIME_FAIL for user-reported physically empty reserved and unreserved tooltip-cell hovering/targeting only. Proposed 0.1.0-canary9-esb-tooltip-audit1 is unbuilt and not a release, successor Canary, accepted release, or promotion candidate; no Canary 10 was created. Root cause remains unresolved pending a future live diagnostic trace.",
-      "Current 0.1.0-canary9: C9 scopes the exact outer scheduling screen/menu/menu ID/menu-slot index/Slot/state ID/count-one complete shulker identity through the native image factory, including equal copies and explicit retained-host resubmission without an inventory equality search. One Gui.extractRenderState logical boundary replaces rollover on every GuiGraphicsExtractor constructor. Final native xStartPos/yStartPos plus the seven-pixel border supply the 9x3, 18x18 grid; both native highlight passes use every logical cell independent of physical/reservation emptiness. Anchoring, nested priority, stale-state rejection, existing actions, payload/server validation, shared-viewer synchronization, C7 native empty-tooltip gate, C6 insertion protection, templates, public API and exact visuals are preserved. Prior Canary descriptions below are historical baseline context.",
-      "Canonical Minecraft Java 26.2 Fabric Canary 7 from implementation checkpoint c373b663c99d7a217fc9147db5007d3f1057678f; exact C6's user-reported empty-reservation tooltip failure is preserved without promoting C6.",
+      "Current 0.1.0-canary10 from implementation checkpoint 12eec63fcb08a3f47c6041d1b4961ca231879fe4 replaces the failed external-tooltip direction with a CSR-owned pinned panel rendered through the vanilla AbstractContainerScreen and shulker-box texture.",
+      "Bind one exact count-one shulker host by screen, menu, menu ID, visible slot index, Slot instance, underlying container slot, explicit Creative player-inventory locator where applicable, and complete SHA-256 ItemStack fingerprint; never search for an equal stack.",
+      "Render and hit-test one fixed 176x77 native panel with 27 physical 18x18 cells, right-then-left clamped placement, a narrow deterministic corridor, one grace frame, live contents, vanilla cell highlights, exact existing reservation visuals, and carried-stack-above-panel strata.",
+      "Keep pointer hover separate from server-authoritative per-player transient selection; select and cycle only occupied cells, migrate only through the exact server-observed host-slot-to-cursor pickup, and clear on stale identity, menu close, or disconnect.",
+      "Use one shared deterministic planner for native secondary-click quick insertion and exact-cell panel transfers: occupied compatible merges, matching reserved empties, then unreserved empties; deny nesting, mismatches, full/nonwritable targets, fake slots, and multi-count hosts.",
+      "Derive all panel reservation templates and content transactions from live server state; payloads carry only menu/locator/index/action/fingerprint authority, preserve unrelated components and ReservationData, update real owners once, and broadcast legitimate shared viewers.",
+      "Remove every CSR production/build/test dependency on Easy Shulker Boxes, Item Interactions, PuzzlesLib, external tooltip lifecycle, @Pseudo fuzs targets, and nested candidate filtering. C9 and earlier external-tooltip work remains historical provenance in CODEX_LOG.md.",
       "Store sparse format-1 count-one ItemStackTemplate reservations per stable physical owner; requested block entities use only their real local slot range, vanilla and Double Barrels doubles retain two independent 27-slot owners, and the player Ender inventory is one player-owned 27-slot holder.",
       "Support exact vanilla chest and trapped-chest families, barrel, undyed and all 16 dyed shulkers, dispenser, dropper, hopper, furnace, blast furnace, smoker, brewing stand, crafter, and PlayerEnderChestContainer.",
       "Recognize ordinary and all eight unwaxed/waxed copper chest states through the authoritative predicate blockEntity.getType() == BlockEntityTypes.CHEST && BlockEntityTypes.CHEST.isValid(blockEntity.getBlockState()); single and permitted double forms keep exact physical-half ownership across oxidation, scraping, waxing, and unwaxing.",
@@ -35,12 +39,11 @@
       "Use a scoped native-admission bypass to query the actual owner's vanilla canPlaceItem policy, retain targeted post-native hooks for furnace-family, brewing, and crafter rules, preserve specialized menu Slot subclasses and callbacks, and never gate internal setItem writes.",
       "Expose only exact supported storage slots in ChestMenu, ShulkerBoxMenu, DispenserMenu, HopperMenu, FurnaceMenu, BlastFurnaceMenu, SmokerMenu, BrewingStandMenu, and CrafterMenu snapshots/actions; player, hotbar, fake, inactive, result-inventory, and foreign slots remain excluded.",
       "Keep getReservation, isReserved, reservationMatches, mayInsert, classify, and every ReservationSlotClass value binary-compatible with accepted CSR C1 consumers and QSN C8; native-non-writable reservations classify NON_WRITABLE and cannot create QSN affinity.",
-      "Preserve neutral 0x59FFFFFF alpha-only ghost rendering, the audited premultiplied pipeline, #43362A solely as the Matcha slot background, literal-zero placement/shadow, hover tooltip, reservation-free rendering, DataComponents.CONTAINER integrity, and Easy Shulker Boxes / Item Interactions overlays; render only OCCUPIED_RESERVED slots with the exact supplied 1,723-byte 3x3 RGBA marker at itemX + 12, itemY through the nearest-sampled GUI sprite path.",
+      "Preserve neutral 0x59FFFFFF alpha-only ghost rendering, the audited premultiplied pipeline, #43362A solely as the Matcha slot background, literal-zero placement/shadow, hover tooltip, reservation-free rendering, DataComponents.CONTAINER integrity, and the exact supplied 1,723-byte 3x3 RGBA marker at itemX + 12, itemY.",
       "Record the user's exact Canary 3 visual observation only as a narrow INCONCLUSIVE result at manager revision 75; it is not a complete C3 matrix pass and supplies no C4 runtime evidence.",
       "Continue to leave Stacks Are Stacks holder-default alignment to Stacks Are Stacks Container Fixes; preserve count-one ItemStackTemplate materialization, component-exact matching, and effective-maximum classification without CSR production linkage or a MAX_STACK_SIZE reservation component.",
       "Bind the exact Canary 5 deployment f12e434a-51c1-4e84-a487-3ebcadbe3d64 / artifact c9551ad6-7a35-4a0e-ac25-af3efeccd86a FAIL at manager revision 86 only to the user's report that Easy Shulker Boxes carried-shulker insertion admitted a mismatched reservation and the reservation remained visible after removal; infer no unrelated row result.",
-      "Use an absent-safe @Pseudo string-targeted ItemStackingContext filter that captures the source shulker and filters the exact occupied and empty candidate arrays before Item Interactions mutates its temporary SimpleContainer: preserve native shulker nesting and exact item/components admission, prefer matching reserved candidates before unreserved candidates, deny mismatches, mutate neither reservations nor contents in the filter, and fail closed if the audited seam drifts.",
-      "C7 redirects only ItemStorageHolder.getTooltipImage's hasContents invocation. A count-one supported vanilla shulker with physically empty CONTAINER, nonempty reservations, both optional mods loaded, and the exact native ContainerStorage provider may continue into the ordinary VisualItemStorage.getTooltipImage / ContainerStorage.createTooltipImageComponent path. The original native component factory, source capture, 27 real empty slots, and client slot-local ghost/zero overlay remain intact; native CollapsibleClientTooltipComponent owns disabled/modifier/visibility configuration, and bars, fullness, selection, scrolling, and interactions keep their original paths."
+      "Preserve the historical C5-C9 failures and their exact artifacts as provenance only; Canary 10 is a material successor and does not infer runtime success from controlled validation."
     ],
     "boundaries": {
       "owned_paths": [
@@ -53,7 +56,7 @@
         "Changes to extraction, machine processing, sided rules, transfer cooldowns, comparator/drop/open-close behavior, stack limits, XP/result callbacks, or native menu layout and notifications.",
         "Generic setItem interception, reservation-bearing drops for chests, barrels, machines, or Double Barrels, fake zero-count stacks, or mutation of DataComponents.CONTAINER; only the established shulker block-to-item reservation round trip persists.",
         "Ender Chest block ownership, Ender Chest hopper access, Ender Chest QSN scanning, cross-player reservation sharing, or keepInventory-dependent durability.",
-        "Hard runtime dependencies, nested redistribution, or restrictive upper bounds for Double Barrels, Easy Shulker Boxes, or Item Interactions; optional seams fail closed when absent or changed.",
+        "Hard runtime dependencies, nested redistribution, or restrictive upper bounds for Double Barrels; Easy Shulker Boxes, Item Interactions, and PuzzlesLib are neither dependencies nor suggested providers.",
         "Any Stacks Are Stacks-specific CSR workaround or hard dependency, persisting an aligned holder default as an explicit MAX_STACK_SIZE reservation component, changing count-one/component-exact identity, inferring runtime compatibility from controlled tests or deployment, Minecraft launch during deployment, or access to the protected 26.1.2 gameplay instance."
       ]
     },
@@ -104,19 +107,7 @@
         "type": "OTHER",
         "identifier": "asm",
         "requirement": "9.10.1",
-        "reason": "Exact test-only bytecode reader used to fail closed on changed Minecraft, QSN, Double Barrels, cache, blend, shader, and Item Interactions seams."
-      },
-      {
-        "type": "MOD",
-        "identifier": "easyshulkerboxes",
-        "requirement": "Optional runtime predicate *; exact audit input 26.2.3",
-        "reason": "Flexible optional carried-shulker provider validated read-only against EasyShulkerBoxes-v26.2.3-mc26.2.x-Fabric.jar, 639,115 bytes, SHA-256 66f803ae8796a0cdd7086e175fe8b96846515710b8b98b9aebc79d52ea2b0c38."
-      },
-      {
-        "type": "MOD",
-        "identifier": "iteminteractions",
-        "requirement": "Optional runtime predicate *; exact audit input 26.2.2",
-        "reason": "Flexible optional nested insertion implementation whose audited temporary-SimpleContainer occupied/empty candidate seam Canary 6 filters before mutation; validated read-only against META-INF/jars/iteminteractions-fabric-26.2.2.jar, 196,177 bytes, SHA-256 1745adf294134817986e46bf554a5a6613837602b660e15a15c50bdc2e0a293c."
+        "reason": "Exact test-only bytecode reader used to fail closed on changed Minecraft, QSN, Double Barrels, cache, blend, shader, and native menu seams."
       },
       {
         "type": "PROJECT",
@@ -127,16 +118,16 @@
     ]
   },
   "state": {
-    "milestone": "User-reported runtime evidence bound to exact current-main and physically verified CSR C9: CSR Canary 9 still does not allow the user to hover physically empty unreserved cells in the Easy Shulker Boxes tooltip. CSR Canary 9 still does not allow the user to hover physically empty reserved cells in that tooltip. As a result, the tooltip-based CSR editor remains unusable for those cells. The previous two Canary efforts did not establish the intended full Easy Shulker Boxes editing compatibility in actual runtime. C9's prior synthetic diagnosis and controlled tests did not establish the intended runtime compatibility; the first live divergence remains unknown. Unchanged 0.1.0-canary9; container-slot-reservations-0.1.0-canary9.jar; 142591 bytes; SHA-256 c6b62239dbf826fb4c9423f22eb900c486a845884a1c3f9243fa87a797537c92; source 1b978f0b553b3545f8a943e18cc743c363e67aac; Slot A deployment 58606ffd-251f-42ad-9232-0a68f97654f7; artifact UUID cb9b9417-4e68-486b-962c-c431f4bbc90d. DIAGNOSTIC_REPRESENTATION_UNSUPPORTED: current manager/runtime schema has no diagnostic purpose or non-promotable member/unit/artifact field. Candidate declarations and all three runtime record levels reject diagnostic/promotable as unknown fields. A pure in-memory capability probe rendered 0.1.0-canary9-esb-tooltip-audit1 as Slot A: Container Slot Reservations - Canary 9 and allowed ordinary PROMOTE_SLOT after a synthetic PASS; that probe was never deployed or recorded as runtime evidence. Manager DEPLOY_PROFILE binds each member to state.releases.current. Renaming the version or adding prose cannot establish a canonical diagnostic promotion guard. Per the user stop condition, no audit source, classes, mixins, JAR, trace session, or diagnostic deployment was produced. Manager revision 97 / accepted Stack v19; recorded 2026-09-05T17:28:50Z; state SHA-256 5d03a29a5baea3906b5967fcb21fa369797347f4dcf57cf9bb84e1427865c27c; physical inventory SHA-256 493c01f74dea121be5832dbad05368d96bfa4e53626e3daeb17a2c2b85256cc6. Canonical RECORD_RESULT performed zero mod-file writes/removals, and a fresh full physical verification passed all 38 managed files. Both deployment timestamps and all artifact/deployment identities, accepted baseline, and entire Slot B are unchanged. QSN C9 remains independently INCONCLUSIVE with only its existing positive observation: Nested shulker routing using an internal CSR reservation worked. QSN source, records and exact artifacts are untouched. Lifecycle remains TESTING because C9 still occupies Slot A; state.blocker must remain null under the schema, so this audit task limitation is recorded here and in TESTING.md/CODEX_LOG.md. Next: a separately authorized manager contract change must support explicitly diagnostic, non-promotable artifacts before the requested C9 instrumentation/build/deployment can resume. No external mod edit, Minecraft launch, originals write, or protected-profile access.",
+    "milestone": "CSR Canary 10 replaces the failed C7-C9 external-tooltip direction with a CSR-owned pinned 27-cell shulker panel and server-authoritative selection/transfers. Final clean controlled validation passed 75/75 JUnit tests and 26/26 GameTests; exact installed ESB/Item Interactions coexistence passed 26/26 GameTests; retained QSN C9 passed 60/60 JUnit and 26/26 GameTests; CCAR C12 passed 69/69 JUnit and 7/7 GameTests. Exact retained artifact: container-slot-reservations-0.1.0-canary10.jar, 167546 bytes, SHA-256 04334c1cd2316d97ec2930f43fa6945be1898607f1209d19bf92c562cd441b75, source 12eec63fcb08a3f47c6041d1b4961ca231879fe4, deployment 0c8732a8-34a8-423e-a3b6-be7abb8b310c, artifact UUID 6fda1dd5-bcb7-4902-a098-20329934d937. Manager revision 98 / accepted Stack v19 at 2026-09-05T19:52:17Z; state SHA-256 0547fd5c82c3e1a03707eecdf1f26cef9630faa848509b778cfd1cdc028aebb7; physical inventory SHA-256 ced07e98678166d812c735c5c83fcb772473a22fa20353c7ee8367e67133bbe7; all 38 managed files verified. One atomic DEPLOY_PROFILE replaced only CSR C9 in Slot A and preserved accepted C4, rollback C1, the failed C9 provenance, accepted baseline, and every unrelated deployment. Slot B QSN C9 remains byte-for-byte and identity-for-identity unchanged, including its original timestamps and independent INCONCLUSIVE result with sole observation: Nested shulker routing using an internal CSR reservation worked. Minecraft was not launched; Canary 10 remains RUNTIME_UNTESTED and no controlled result is a gameplay pass. Next: run TESTING.md on the dedicated 26.2 Workbench, record only actual Canary 10 and QSN C9 observations independently, and do not promote without an explicit exact runtime PASS.",
     "releases": {
       "current": {
-        "version": "0.1.0-canary9",
-        "embedded_version": "0.1.0-canary9",
+        "version": "0.1.0-canary10",
+        "embedded_version": "0.1.0-canary10",
         "artifact": {
-          "filename": "container-slot-reservations-0.1.0-canary9.jar",
-          "sha256": "c6b62239dbf826fb4c9423f22eb900c486a845884a1c3f9243fa87a797537c92"
+          "filename": "container-slot-reservations-0.1.0-canary10.jar",
+          "sha256": "04334c1cd2316d97ec2930f43fa6945be1898607f1209d19bf92c562cd441b75"
         },
-        "source_commit": "1b978f0b553b3545f8a943e18cc743c363e67aac",
+        "source_commit": "12eec63fcb08a3f47c6041d1b4961ca231879fe4",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
@@ -169,16 +160,16 @@
     "validation": {
       "build": "CONTROLLED_VALIDATION_PASS",
       "deployment": "READY_TO_TEST_VERIFIED",
-      "runtime": "RUNTIME_FAIL"
+      "runtime": "RUNTIME_UNTESTED"
     },
     "blocker": null
   },
   "synchronization": {
-    "revision": 14,
-    "activity_at": "2026-09-05T17:28:50Z",
-    "updated_at": "2026-09-05T17:28:50Z",
-    "last_codex_at": "2026-09-05T17:28:50Z",
-    "source_commit": "dca586fad8a1f94971e87df9631df0ff446edae5",
+    "revision": 15,
+    "activity_at": "2026-09-05T19:52:17Z",
+    "updated_at": "2026-09-05T19:52:17Z",
+    "last_codex_at": "2026-09-05T19:52:17Z",
+    "source_commit": "12eec63fcb08a3f47c6041d1b4961ca231879fe4",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
