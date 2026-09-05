@@ -33,7 +33,7 @@
       "exclusions": [
         "Tracked upstream All Rights Reserved resource directories, the pristine upstream JAR, and redistribution claims beyond the preserved license.",
         "Legacy status/history narratives, generated output, caches, diagnostics, and unretained artifacts.",
-        "Gameplay runtime validation, deployment, and Test Instance Manager changes during this static port-completion milestone.",
+        "Runtime deployment outside the dedicated Workbench, displacement of another project's testing slot, Player Instance mutation, and protected gameplay-instance access.",
         "Matcha-specific spawn tuning or other new gameplay policy during the preservation port."
       ]
     },
@@ -70,9 +70,9 @@
       },
       {
         "type": "MOD",
-        "identifier": "field-guide",
+        "identifier": "fieldguide",
         "requirement": "1.7.10-26.2-fabric (optional compile surface)",
-        "reason": "Retains optional upstream Field Guide integration without making it a runtime requirement."
+        "reason": "Actual Fabric mod ID verified from the optional 1.7.10-26.2-fabric compile JAR; not required or bundled at runtime."
       },
       {
         "type": "OTHER",
@@ -89,15 +89,19 @@
     ]
   },
   "state": {
-    "milestone": "Naturalist 2.0.3 now compiles cleanly for Minecraft 26.2 on Java 25 and exact private Canary 1 is retained at 11,368,203 bytes; all 190 baseline diagnostics are eliminated, 14 focused tests, all six static verifiers, and the full build pass, while deployment and runtime validation remain unperformed.",
+    "milestone": "Private Canary 2 fixes the Minecraft 26.2 MonsterMixin callback descriptor and gates Field Guide-only client mixins before target resolution using the actual fieldguide mod ID. Java 25 build, 22 focused tests, all six preservation verifiers, exact JAR comparison, and runtime dependency policy pass. Historical external user report: September 5 Player Instance launch with Canary 1 failed at MonsterMixin; Field Guide was absent and its missing-target warnings were separate. That launch's exact binary hash is unknown. Canary 2 is NOT_DEPLOYED / RUNTIME_UNTESTED: both dedicated Workbench slots are occupied (A container-slot-reservations C9; B quick-stack-nearby-compat C9, manager revision 96); startup, sleep behavior, and Field Guide-present runtime checks await an available authorized slot.",
     "releases": {
       "current": {
-        "version": "2.0.3+26.2-port-canary1",
+        "version": "2.0.3+26.2-port-canary2",
         "artifact": {
-          "filename": "naturalist-2.0.3+26.2-port-canary1.jar",
-          "sha256": "b5f136f042f28617b9fb130d8d298e70f8538824c5c03dcdbf53fec266d5c7ac"
+          "filename": "naturalist-2.0.3+26.2-port-canary2.jar",
+          "sha256": "8e4032ac0948bbe7c45ab48d047312b6a6bbc041102a137d4f3f21e79de1feff"
         },
-        "source_commit": "2d239bcbbec10b4a15716924549bf3147c440465"
+        "source_commit": "da1c33d7eb1040ee8425d8b7a746dbcfc4352436",
+        "runtime_dependency_policy": {
+          "contract": "CAPABILITY_OR_PROVIDER",
+          "exceptions": []
+        }
       },
       "accepted": null,
       "rollback": null,
@@ -112,11 +116,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 5,
-    "activity_at": "2026-08-30T01:38:14Z",
-    "updated_at": "2026-08-30T01:38:14Z",
-    "last_codex_at": "2026-08-30T01:38:14Z",
-    "source_commit": "2d239bcbbec10b4a15716924549bf3147c440465",
+    "revision": 6,
+    "activity_at": "2026-09-05T17:21:01Z",
+    "updated_at": "2026-09-05T17:21:01Z",
+    "last_codex_at": "2026-09-05T17:21:01Z",
+    "source_commit": "da1c33d7eb1040ee8425d8b7a746dbcfc4352436",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null

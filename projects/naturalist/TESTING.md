@@ -2,41 +2,88 @@
 
 ## Current gate
 
-**PRIVATE CANARY RETAINED — NOT DEPLOYED / RUNTIME UNTESTED**
+**PRIVATE CANARY 2 RETAINED — NOT DEPLOYED / RUNTIME UNTESTED**
 
-Naturalist now compiles cleanly on Java 25. Exact private Canary 1 is retained
-from implementation commit `2d239bcbbec10b4a15716924549bf3147c440465`, but
-it has not been deployed to the dedicated Workbench or exercised in Minecraft.
-It therefore remains generated/static-pass evidence rather than a runtime pass.
+- Version: `2.0.3+26.2-port-canary2`.
+- Artifact: `artifacts/naturalist-2.0.3+26.2-port-canary2.jar`, 11,369,726 bytes.
+- SHA-256: `8e4032ac0948bbe7c45ab48d047312b6a6bbc041102a137d4f3f21e79de1feff`.
+- Source checkpoint (also embedded in the JAR): `da1c33d7eb1040ee8425d8b7a746dbcfc4352436`.
+- Java 25 build, all 22 focused tests (14 existing and 8 startup regressions),
+  all six preservation verifiers, and root/nested dependency-policy inspection pass.
+  All existing JAR entries except MonsterMixin and the three intended metadata/
+  configuration entries are byte-identical to Canary 1; only the gate class is added.
 
-The next task is to deploy this exact retained binary through the Test Instance
-Manager, run the normal focused readiness verifier, and execute the focused
-runtime matrix below. Do not rebuild or substitute the artifact during that
-handoff.
+Both canonical Workbench slots were occupied at manager revision 96: A held
+Container Slot Reservations Canary 9, and B held Quick Stack Nearby compatibility
+Canary 9. No deployment or Minecraft launch was performed for this task. Keep
+Naturalist ACTIVE until its UUID actually occupies a verified manager slot.
+Do not displace another project or treat static checks as bootstrap evidence.
 
-## Current static evidence
+The September 5, 2026 user-reported **Matcha 26.2 Player Instance** launch used
+Minecraft 26.2, Loader 0.19.3, Java 25, and Naturalist version
+`2.0.3+26.2-port-canary1`. Its MonsterMixin callback lacked ServerLevel before
+Player and failed bootstrap. Field Guide was absent; its missing-target warnings
+were a separate optional-integration defect. The reported launch's exact JAR hash
+is unknown and must not be inferred from its version or bound to the retained
+Canary 1 hash. This was external historical evidence, not a dedicated Workbench test.
 
-- Temurin 25.0.4.1, Gradle 9.6.1, and Loom 1.17.20 reduced the frozen baseline
-  from exactly 190 raw javac diagnostics to a clean production compile.
-- `clean build persistenceTest itemModelTest` passed with 16 actionable tasks
-  (15 executed, one up-to-date); all 14 focused tests passed with no failures,
-  errors, or skips, and all six static preservation verifiers passed.
-- The external pristine Naturalist 2.0.3 JAR matched SHA-256
-  `3d16c975326e0df24486d44d8010d9e614fc9efdf891864de7b5a0efedfc12f9`;
-  its 2,097 protected files (9,946,791 bytes) staged only into ignored output.
-- The external Minecraft 1.21.1 client JAR was 26,836,906 bytes with SHA-256
-  `499f6897d1837516680f3114072d8106e11c9adcd933fe5cf051b551089b0c99`.
-  Exactly the legacy spawn-egg model template and two texture layers were
-  entry-hash verified and staged privately; no protected resource was tracked.
-- The 26.2 client-item generator produced 67 roots, including all 47 spawn eggs
-  with their two upstream color tuples in primary/secondary order. The enabled
-  26.2 access widener contains exactly one audited field-access entry.
-- Retained artifact: `naturalist-2.0.3+26.2-port-canary1.jar`, 11,368,203 bytes,
-  SHA-256 `b5f136f042f28617b9fb130d8d298e70f8538824c5c03dcdbf53fec266d5c7ac`.
-  JAR inspection confirmed version metadata, both mixin configs, the one-entry
-  access widener, all three legacy template assets, 67 roots, and 47 egg roots.
-- No Minecraft profile, runtime slot, deployment state, or gameplay result was
-  touched or inferred from this static validation.
+## Startup and sleep regression procedure
+
+1. When a slot becomes available, use the serialized Test Instance Manager to
+   deploy the exact retained Canary 2 into the dedicated **Matcha Flavoured 26.2
+   Workbench**. Recheck current main, slot ownership, exact artifact identity,
+   dependency resolution, and the normal readiness receipt before launching.
+   Do not modify, deploy to, stop, or relaunch the Player Instance. Never access
+   the protected 26.1.2 instance.
+2. Prioritize **Field Guide absent**. Confirm the enabled mod inventory lacks
+   `fieldguide`, launch the dedicated Workbench, and inspect that launch's log:
+   no `MonsterMixin.onIsPreventingPlayerRest` descriptor/injection failure and
+   no Naturalist-owned Field Guide missing targets (`EntryRenderHelper`,
+   `FieldGuideEntryScreen`, `IconCacheManager`). Reach the title screen, then a
+   disposable test world. A later failure is a separate blocker; record its exact
+   log and stop without repairing unrelated mods.
+3. In the test world, use a valid Overworld bed at night in Survival, with a
+   nearby vanilla hostile monster whose normal rest predicate is true. Hold no
+   plush bear and attempt sleep: the nearby-monster refusal must remain.
+   Hold Naturalist's plush bear in the main hand and retry, then in the offhand:
+   that monster must no longer prevent rest in either case. Keep other sleep
+   conditions valid, reset nighttime between attempts, and remove the plush bear
+   for a final vanilla-refusal control. Record each actual result independently.
+4. Check server startup only in an authorized dedicated Workbench setup through
+   the same manager/readiness boundaries. The gate must not load client or Field
+   Guide classes on a server; static present/absent server gate tests already pass.
+5. Check **Field Guide present** only when a compatible dependency and an
+   authorized setup are available; do not install or bundle it merely to complete
+   this matrix. Confirm all three existing client mixins remain enabled and check
+   variants, entry-screen rendering, aquatic previews, and icon generation.
+   This branch is currently runtime-untested despite passing gate fixtures.
+6. Stop on startup failure, missing-target warnings, identity drift, occupied
+   slots, or changed sleep behavior. Record only observations actually made.
+   Successful bootstrap/sleep checks constitute focused partial evidence and do
+   not imply full Naturalist acceptance; the broader matrix below remains required.
+
+## Reproducible static checks
+
+Use Temurin 25.0.4.1, Gradle 9.6.1, Loom 1.17.20, Loader 0.19.3, Fabric API
+0.157.0+26.2, and optional compile surfaces LambDynamicLights 4.12.2+26.2 and
+Field Guide 1.7.10-26.2-fabric. These are validation baselines. Packaged runtime
+requirements are Minecraft 26.2, Loader >=0.19.3, Fabric API >=0.157.0, Java >=25;
+LambDynamicLights remains optional and Field Guide is neither required nor bundled.
+
+Run `clean build persistenceTest itemModelTest` from this project with the
+existing `naturalistOriginalJar` and `naturalistLegacyMinecraftJar` properties.
+`build` includes `startupTest`; its classpath excludes Field Guide. To reproduce
+the retained source stamp after a later administrative commit, also pass
+`-PnaturalistSourceCommit=da1c33d7eb1040ee8425d8b7a746dbcfc4352436` while using this exact source tree.
+Run all six `tools/Verify-*.ps1` preservation verifiers after resource generation,
+passing the external input paths where supported.
+
+Keep immutable private inputs external: Naturalist 2.0.3 SHA-256
+`3d16c975326e0df24486d44d8010d9e614fc9efdf891864de7b5a0efedfc12f9`;
+Minecraft 1.21.1 client SHA-256
+`499f6897d1837516680f3114072d8106e11c9adcd933fe5cf051b551089b0c99`.
+The Field Guide configuration is patched only in ignored staging; every other
+upstream mixin configuration setting and compatibility initializer is preserved.
 
 ## Preservation guards
 
@@ -56,7 +103,7 @@ handoff.
   judgment must cover Pale Garden forest inheritance, Sulfur Caves snails, and
   the preserved Frozen River edge against the actually deployed Matcha version.
 
-## Focused runtime matrix
+## Broader preservation acceptance matrix
 
 Run this only after the exact retained Canary is deployed and the normal
 readiness verifier reports **READY TO TEST**:
