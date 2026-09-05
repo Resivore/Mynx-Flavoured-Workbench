@@ -6,6 +6,8 @@ plugins {
     id 'net.fabricmc.fabric-loom' version '1.17-SNAPSHOT'
 }
 
+apply from: 'gradle/migrate-private-resources.gradle'
+
 version = project.mod_version
 group = project.maven_group
 
@@ -111,6 +113,17 @@ sourceSets {
             !it.name.startsWith('field-guide-') && !it.name.startsWith('lambdynamiclights-')
         }
     }
+    resourceCodecTest {
+        java.srcDir 'src/resourceCodecTest/java'
+        resources {
+            srcDir stagedOriginalResources
+            include 'META-INF/services/**'
+        }
+        compileClasspath += sourceSets.main.output.classesDirs + sourceSets.main.compileClasspath
+        runtimeClasspath += output + compileClasspath.filter {
+            !it.name.startsWith('field-guide-') && !it.name.startsWith('lambdynamiclights-')
+        }
+    }
 }
 
 configurations {
@@ -122,6 +135,8 @@ configurations {
     startupTestRuntimeOnly.extendsFrom runtimeOnly
     glowGoopTestImplementation.extendsFrom implementation
     glowGoopTestRuntimeOnly.extendsFrom runtimeOnly
+    resourceCodecTestImplementation.extendsFrom implementation
+    resourceCodecTestRuntimeOnly.extendsFrom runtimeOnly
 }
 
 dependencies {
@@ -140,6 +155,12 @@ dependencies {
     glowGoopTestImplementation 'org.junit.jupiter:junit-jupiter'
     glowGoopTestImplementation "net.fabricmc:fabric-loader-junit:${project.fabric_loader_version}"
     glowGoopTestRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    resourceCodecTestImplementation platform('org.junit:junit-bom:5.11.4')
+    resourceCodecTestImplementation 'org.junit.jupiter:junit-jupiter'
+    // Opaque Entity identities for the lookup test; no world is created.
+    resourceCodecTestImplementation 'org.objenesis:objenesis:3.3'
+    resourceCodecTestImplementation "net.fabricmc:fabric-loader-junit:${project.fabric_loader_version}"
+    resourceCodecTestRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
 tasks.register('verifyOriginalJar') {
@@ -170,6 +191,7 @@ tasks.register('stageOriginalResources', Sync) {
     group = 'naturalist port'
     description = 'Stages protected upstream resources from the verified original into ignored build output.'
     dependsOn tasks.named('verifyOriginalJar')
+    inputs.file 'gradle/migrate-private-resources.gradle'
     from({ zipTree(originalJar.get()) }) {
         exclude '**/*.class'
         exclude 'META-INF/MANIFEST.MF'
@@ -183,6 +205,7 @@ tasks.register('stageOriginalResources', Sync) {
         def config = new JsonSlurper().parse(configFile)
         config.plugin = 'com.crispytwig.naturalist.fabric.compat.FieldGuideMixinPlugin'
         configFile.setText(JsonOutput.prettyPrint(JsonOutput.toJson(config)) + '\n', 'UTF-8')
+        migrateNaturalistResources(stagedOriginalResources.get().asFile)
     }
 }
 
@@ -357,6 +380,12 @@ tasks.register('startupTest', Test) {
     dependsOn tasks.named('startupTestClasses')
     testClassesDirs = sourceSets.startupTest.output.classesDirs
     classpath = sourceSets.startupTest.runtimeClasspath
+    inputs.dir stagedOriginalResources
+    systemProperty 'naturalist.stagedResources', stagedOriginalResources.get().asFile.absolutePath
+    systemProperty 'naturalist.originalJar', originalJar.get().absolutePath
+    systemProperty 'naturalist.classes', sourceSets.main.output.classesDirs.singleFile.absolutePath
+    systemProperty 'naturalist.assetIndex', providers.gradleProperty('naturalistMinecraftAssetIndex')
+            .orElse(new File(gradle.gradleUserHomeDir, 'caches/fabric-loom/assets/indexes/26.2-32.json').absolutePath).get()
     useJUnitPlatform()
 }
 
@@ -369,7 +398,22 @@ tasks.register('glowGoopTest', Test) {
     useJUnitPlatform()
 }
 
-tasks.named('check') { dependsOn tasks.named('startupTest'), tasks.named('glowGoopTest') }
+tasks.named('processResourceCodecTestResources') { dependsOn tasks.named('stageOriginalResources') }
+tasks.register('resourceCodecTest', Test) {
+    group = 'verification'
+    description = 'Parses every private staged Naturalist recipe, advancement and loot table with Minecraft codecs.'
+    dependsOn tasks.named('resourceCodecTestClasses'), tasks.named('classes')
+    testClassesDirs = sourceSets.resourceCodecTest.output.classesDirs
+    classpath = sourceSets.resourceCodecTest.runtimeClasspath
+    inputs.dir stagedOriginalResources
+    systemProperty 'naturalist.stagedResources', stagedOriginalResources.get().asFile.absolutePath
+    systemProperty 'naturalist.originalJar', originalJar.get().absolutePath
+    useJUnitPlatform()
+}
+
+tasks.named('check') {
+    dependsOn tasks.named('startupTest'), tasks.named('glowGoopTest'), tasks.named('resourceCodecTest')
+}
 
 java {
     toolchain.languageVersion = JavaLanguageVersion.of(25)

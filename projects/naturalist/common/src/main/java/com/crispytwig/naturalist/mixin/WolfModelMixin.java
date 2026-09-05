@@ -1,5 +1,6 @@
 package com.crispytwig.naturalist.mixin;
 
+import com.crispytwig.naturalist.client.NaturalistRenderEntityLookup;
 import com.crispytwig.naturalist.server.entity.base.WolfMoleDigging;
 import net.minecraft.client.model.animal.wolf.WolfModel;
 import net.minecraft.client.model.geom.ModelPart;

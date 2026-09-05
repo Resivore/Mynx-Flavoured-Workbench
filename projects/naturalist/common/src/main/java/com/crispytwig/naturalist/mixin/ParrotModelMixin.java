@@ -1,8 +1,6 @@
 package com.crispytwig.naturalist.mixin;
 
-import java.util.Collections;
-import java.util.Set;
-import java.util.WeakHashMap;
+import com.crispytwig.naturalist.client.NaturalistParrotRenderStateLookup;
 import net.minecraft.client.model.animal.parrot.ParrotModel;
 import net.minecraft.client.renderer.entity.state.ParrotRenderState;
 import net.minecraft.util.Mth;
@@ -23,25 +21,5 @@ public abstract class ParrotModelMixin {
         }
         state.pose = ParrotModel.Pose.FLYING;
         state.flapAngle = Mth.sin(state.ageInTicks * 1.5F) + 1.0F;
-    }
-}
-
-/**
- * Tracks the ephemeral shoulder-parrot states that need Naturalist's flight pose. Model setup is
- * deferred in 26.2, so the decision must follow the queued state rather than a frame-global flag.
- */
-final class NaturalistParrotRenderStateLookup {
-    private static final Set<ParrotRenderState> FLYING_SHOULDERS =
-            Collections.newSetFromMap(Collections.synchronizedMap(new WeakHashMap<>()));
-
-    private NaturalistParrotRenderStateLookup() {
-    }
-
-    static void markFlyingShoulder(ParrotRenderState state) {
-        FLYING_SHOULDERS.add(state);
-    }
-
-    static boolean isFlyingShoulder(ParrotRenderState state) {
-        return FLYING_SHOULDERS.contains(state);
     }
 }

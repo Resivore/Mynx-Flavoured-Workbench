@@ -1,5 +1,7 @@
 package com.crispytwig.naturalist.mixin;
 
+import com.crispytwig.naturalist.client.NaturalistRenderEntityLookup;
+import com.crispytwig.naturalist.client.NaturalistParrotRenderStateLookup;
 import com.crispytwig.naturalist.server.entity.util.ParrotFlight;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.renderer.SubmitNodeCollector;
