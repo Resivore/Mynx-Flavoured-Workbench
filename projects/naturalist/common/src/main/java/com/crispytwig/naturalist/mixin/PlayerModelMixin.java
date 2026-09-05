@@ -1,5 +1,6 @@
 package com.crispytwig.naturalist.mixin;
 
+import com.crispytwig.naturalist.client.NaturalistRenderEntityLookup;
 import com.crispytwig.naturalist.server.entity.base.IKMount;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.geom.ModelPart;

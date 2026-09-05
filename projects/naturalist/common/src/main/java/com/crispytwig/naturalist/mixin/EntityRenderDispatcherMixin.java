@@ -1,5 +1,6 @@
 package com.crispytwig.naturalist.mixin;
 
+import com.crispytwig.naturalist.client.NaturalistRenderEntityLookup;
 import com.crispytwig.naturalist.server.entity.base.IKMount;
 import com.crispytwig.naturalist.server.entity.base.MultipartMob;
 import com.crispytwig.naturalist.server.entity.util.MobPart;
@@ -20,10 +21,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-
-import java.util.Collections;
-import java.util.Map;
-import java.util.WeakHashMap;
 
 @Mixin({EntityRenderDispatcher.class, EntityHitboxDebugRenderer.class})
 public class EntityRenderDispatcherMixin {
@@ -64,32 +61,5 @@ public class EntityRenderDispatcherMixin {
                         GizmoStyle.stroke(ARGB.colorFromFloat(1.0F, 0.25F, 1.0F, 0.0F)));
             }
         }
-    }
-}
-
-final class NaturalistRenderEntityLookup {
-    private static final Map<EntityRenderState, Source> SOURCES =
-            Collections.synchronizedMap(new WeakHashMap<>());
-
-    private NaturalistRenderEntityLookup() {
-    }
-
-    static void remember(EntityRenderState state, Entity entity, float partialTick) {
-        if (state != null) {
-            SOURCES.put(state, new Source(entity, partialTick));
-        }
-    }
-
-    static Entity source(EntityRenderState state) {
-        Source source = SOURCES.get(state);
-        return source == null ? null : source.entity();
-    }
-
-    static float partialTick(EntityRenderState state) {
-        Source source = SOURCES.get(state);
-        return source == null ? 0.0F : source.partialTick();
-    }
-
-    private record Source(Entity entity, float partialTick) {
     }
 }

@@ -1,0 +1,9 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "dev.resivore.mynxregions.mixin",
+  "compatibilityLevel": "JAVA_25",
+  "plugin": "dev.resivore.mynxregions.IrisPlantMixinPlugin",
+  "client": ["IrisPlantMaterialMixin"],
+  "injectors": { "defaultRequire": 1 }
+}

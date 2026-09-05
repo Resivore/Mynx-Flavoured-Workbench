@@ -1,0 +1,34 @@
+{
+  "reference": {
+    "path": "originals/mods/RegionsUnexploredFabric-0.5.6+1.20.1.jar",
+    "filename": "RegionsUnexploredFabric-0.5.6+1.20.1.jar",
+    "size": 5689530,
+    "sha256": "d24dc3a6a08432d51d042750fe50a6c5051f9d0c725cfc434cf9ce6eb8b7e332",
+    "mod_id": "regions_unexplored",
+    "version": "0.5.6+1.20.1",
+    "license": "ARR",
+    "use": "Read-only behavior/artwork baseline; only requested asset closure is privately assembled into the ignored artifact."
+  },
+  "minecraft_baseline": {
+    "version": "26.2",
+    "sha256": "f26880408f8c2404630293322fe5f5984e0a66409e31374ec51d29490660c1b4"
+  },
+  "shader_reference": {
+    "iris": "iris-fabric-1.11.2+mc26.2.jar",
+    "iris_sha256": "df0e2ccddaea17b191eda32b21c979e131bc9d4ef4f831113b50b461fc4a3804",
+    "shader": "ComplementaryUnbound_r5.8.1.zip",
+    "shader_sha256": "bb89b1fc54687d4147a837fb2e3c3f7261a13bee51819761e9b6a91cb7915965",
+    "mechanism": "Optional Iris material-map aliases inherit the active pack's own short foliage, tall lower/upper, weeping-vine, and lily-pad classifications; explicit mappings win and pots are excluded.",
+    "runtime_evidence": "NOT_RUN"
+  },
+  "scope": {
+    "obtainable": ["dropleaf", "barley", "windswept_grass", "clover", "stone_bud", "mycotoxic_daisy", "hyssop", "blue_lupine", "pink_lupine", "purple_lupine", "red_lupine", "yellow_lupine", "cattail", "duckweed", "tassel", "meadow_sage"],
+    "companions": ["dropleaf_plant", "potted_hyssop", "potted_blue_lupine", "potted_pink_lupine", "potted_purple_lupine", "potted_red_lupine", "potted_yellow_lupine", "potted_mycotoxic_daisy"],
+    "explicit_exclusions": ["grass_sprouts", "medium_grass", "redstone_bud", "cave_hyssop", "worldgen", "trades"]
+  },
+  "compatibility_repairs": [
+    "Cattail cleanup returns source water for a removed waterlogged half so target-version fluid restoration cannot be lost through DoublePlantBlock's air replacement.",
+    "Windswept Grass uses the 26.2 vanilla tall-grass paired-half loot structure with the reference output changed to two Windswept Grass items, preventing a second independent half roll.",
+    "Bee attraction and bee-food tags are deliberately added for the nine requested flowers; this is an explicit requested addition absent or incomplete in the old reference."
+  ]
+}

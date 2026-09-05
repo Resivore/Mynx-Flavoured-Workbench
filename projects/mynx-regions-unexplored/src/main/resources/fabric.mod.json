@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "id": "mynx_regions_unexplored",
+  "version": "${version}",
+  "name": "Mynx Regions Unexplored",
+  "description": "A private, focused preservation of sixteen Regions Unexplored plants for Minecraft 26.2.",
+  "environment": "*",
+  "entrypoints": {
+    "main": ["dev.resivore.mynxregions.MynxRegionsUnexplored"],
+    "client": ["dev.resivore.mynxregions.MynxRegionsUnexploredClient"]
+  },
+  "license": "LicenseRef-Private-ARR-Reference",
+  "depends": {
+    "fabricloader": ">=0.19.3",
+    "minecraft": "26.2",
+    "java": ">=25",
+    "fabric-api": ">=0.157.0"
+  },
+  "mixins": [
+    { "config": "mynx_regions_unexplored.client.mixins.json", "environment": "client" }
+  ]
+}

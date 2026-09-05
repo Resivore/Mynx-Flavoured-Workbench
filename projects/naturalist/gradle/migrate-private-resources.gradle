@@ -1,0 +1,81 @@
+import groovy.json.JsonOutput
+import groovy.json.JsonSlurper
+
+// Operate only on the hash-verified private staging tree. No upstream JSON or
+// audio is embedded here, and the pristine input JAR is never modified.
+ext.migrateNaturalistResources = { File root ->
+    Closure ingredient
+    ingredient = { value ->
+        if (value instanceof Map && value.keySet() == ['item'] as Set) return value.item
+        if (value instanceof Map && value.keySet() == ['tag'] as Set) return '#' + value.tag
+        if (value instanceof List) return value.collect { ingredient(it) }
+        return value
+    }
+    Closure entityPredicate
+    entityPredicate = { value ->
+        if (!(value instanceof Map)) return
+        if (value.containsKey('type')) {
+            if (value.containsKey('minecraft:entity_type')) {
+                throw new GradleException('Conflicting old and new entity type predicates in private resources')
+            }
+            value['minecraft:entity_type'] = value.remove('type')
+        }
+        ['vehicle', 'passenger', 'targeted_entity'].each { key ->
+            entityPredicate(value[key])
+            entityPredicate(value['minecraft:' + key])
+        }
+    }
+    Closure conditions
+    conditions = { value ->
+        if (value instanceof List) {
+            value.each { conditions(it) }
+        } else if (value instanceof Map) {
+            if (value.condition in ['entity_properties', 'minecraft:entity_properties']) {
+                entityPredicate(value.predicate)
+            }
+            if (value.condition in ['damage_source_properties', 'minecraft:damage_source_properties']) {
+                entityPredicate(value.predicate?.source_entity)
+                entityPredicate(value.predicate?.direct_entity)
+            }
+            value.values().each { conditions(it) }
+        }
+    }
+    ['recipe', 'advancement', 'loot_table'].each { folder ->
+        fileTree(new File(root, 'data/naturalist/' + folder)).matching { include '**/*.json' }.each { file ->
+            def data = new JsonSlurper().parse(file)
+            String before = JsonOutput.toJson(data)
+            if (folder == 'recipe') {
+                // Results and patterns are deliberately outside the ingredient migration.
+                if (data.key instanceof Map) data.key.replaceAll { key, value -> ingredient(value) }
+                if (data.ingredients instanceof List) data.ingredients = data.ingredients.collect { ingredient(it) }
+                if (data.containsKey('ingredient')) data.ingredient = ingredient(data.ingredient)
+            } else {
+                if (folder == 'advancement') {
+                    data.criteria?.values()?.each { criterion ->
+                        entityPredicate(criterion.conditions?.player)
+                        entityPredicate(criterion.conditions?.entity)
+                    }
+                }
+                conditions(data)
+            }
+            if (before != JsonOutput.toJson(data)) {
+                file.setText(JsonOutput.prettyPrint(JsonOutput.toJson(data)) + '\n', 'UTF-8')
+            }
+        }
+    }
+    File soundFile = new File(root, 'assets/naturalist/sounds.json')
+    def sounds = new JsonSlurper().parse(soundFile)
+    sounds.values().each { event ->
+        event.sounds = event.sounds.collect { sound ->
+            String name = sound instanceof Map ? sound.name : sound
+            if ((!(sound instanceof Map) || (sound.type ?: 'file') == 'file') &&
+                    name ==~ /minecraft:entity\/(pufferfish\/flop[1-4]|horse\/eat[1-5])/) {
+                String replacement = name.replace('minecraft:entity/', 'minecraft:mob/')
+                if (sound instanceof Map) sound.name = replacement
+                else return replacement
+            }
+            return sound
+        }
+    }
+    soundFile.setText(JsonOutput.prettyPrint(JsonOutput.toJson(sounds)) + '\n', 'UTF-8')
+}
