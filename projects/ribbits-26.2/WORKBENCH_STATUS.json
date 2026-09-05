@@ -37,7 +37,7 @@
       "Maintain ribbits:chute_leaf as a stack-one noncraftable nondurable item using only data/trinkets/tags/item/chest/cape.json, a monotonic physical-jump request and owner acknowledgement protocol, a server-owned pending/deployed state machine, and a narrow terminal-descent cap of -0.10 blocks per tick.",
       "Maintain native map-decoration type ribbits:ribbit_village, exact success custom-data marker ribbits:ribbit_village_explorer_map=true, ordinary filled-map/map-id/decorations synchronization, and user-authored marker cropped without resampling to the native 8-by-8 atlas canvas and successful filled-map item artwork under the Ribbits namespace.",
       "Preserve the private resource assembler, exact pristine, Minecraft, dependency, three-donor, output, and archive identities, and the authorized shared green ten-egg derivation contract including the Wandering Ribbit egg.",
-      "Display Drop Leaf while preserving ribbits:chute_leaf registry/save identity; use the exact latest 16x16 inventory PNG independently from the earlier closed-back sprite through a render-only auxiliary chute_leaf_closed model, and derive only the deployed open model from the donor Wandering Ribbit entity's rain-held umbrella_leaf/grip/leaf2 geometry and exact entity texture while preserving renderer attachment, first-person presentation, activation, and movement behavior."
+      "Display Drop Leaf while preserving ribbits:chute_leaf registry/save identity; use the exact latest 16x16 inventory PNG independently from the earlier closed-back sprite through a render-only auxiliary chute_leaf_closed model, derive only the deployed open model from the donor Wandering Ribbit entity's rain-held umbrella_leaf/grip/leaf2 geometry, and expose the exact 128x128 donor entity PNG through an item-atlas-safe Ribbits texture path while preserving renderer attachment, first-person presentation, activation, and movement behavior."
     ],
     "boundaries": {
       "owned_paths": [
@@ -177,15 +177,15 @@
     ]
   },
   "state": {
-    "milestone": "Mynx Canary 11 replaces only the deployed ribbits:chute_leaf_open visual with a deterministic item-model conversion of the donor Wandering Ribbit entity's actual rain-held umbrella_leaf/grip/leaf2 geometry and exact entity texture. The inactive inventory sprite, closed back model, renderer attachment, first-person path, registry/save identity, activation protocol, descent mechanics, Wandering behavior and all other Canary 10 content remain unchanged. Source/private builds, 154 Java tests, 42 resource tests, production-equivalent Mixin, two independent private trees, final JAR validation, archive-delta inspection and dependency policy checks pass. Runtime remains NOT_DEPLOYED / RUNTIME_UNTESTED; eight dedicated Workbench checks are pending.",
+    "milestone": "Mynx Canary 12 corrects only Canary 11's runtime-failed item-atlas binding: Minecraft 26.2's item atlas stitches textures/item but not textures/entity, so the deployed two-element rain geometry appeared with the magenta/black missing-texture sprite. The exact 6,233-byte 128x128 donor entity PNG is now copied byte-for-byte to assets/ribbits/textures/item/chute_leaf_open.png and the open model binds ribbits:item/chute_leaf_open. Canary 11 geometry, UVs, renderer/back attachment, inactive/closed/first-person presentation, mechanics, identities, Wandering behavior and all other content remain unchanged. Source/private builds, 154 Java tests, 42 resource tests, production-equivalent Mixin, two independent private trees/JARs, final JAR inspection and dependency policy checks pass. Canary 11 is an exact external user-reported runtime FAIL; Canary 12 is ACTIVE / STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED with eight focused checks pending.",
     "releases": {
       "current": {
-        "version": "4.1.6+26.2-mynx-canary11",
+        "version": "4.1.6+26.2-mynx-canary12",
         "artifact": {
-          "filename": "ribbits-private-reconstruction-4.1.6+26.2-mynx-canary11.jar",
-          "sha256": "258ca17b5d61c825afbaf852413c1f44183d2533446bff297c4b8453ad9cecaa"
+          "filename": "ribbits-private-reconstruction-4.1.6+26.2-mynx-canary12.jar",
+          "sha256": "23f358b8acb5be956c020fa62d427bf432e21e2f09a22474838eb67714b95813"
         },
-        "source_commit": "784b745d6480e076fb94598a3b466cfb98bbec04",
+        "source_commit": "3ba1db7d62d17a29722739819c7194f91fc40c76",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
@@ -204,11 +204,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 16,
-    "activity_at": "2026-09-05T21:58:09Z",
-    "updated_at": "2026-09-05T21:58:09Z",
-    "last_codex_at": "2026-09-05T21:58:09Z",
-    "source_commit": "784b745d6480e076fb94598a3b466cfb98bbec04",
+    "revision": 17,
+    "activity_at": "2026-09-05T22:31:09Z",
+    "updated_at": "2026-09-05T22:31:09Z",
+    "last_codex_at": "2026-09-05T22:31:09Z",
+    "source_commit": "3ba1db7d62d17a29722739819c7194f91fc40c76",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
