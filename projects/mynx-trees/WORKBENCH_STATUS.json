@@ -61,15 +61,15 @@
     ]
   },
   "state": {
-    "milestone": "Canary 7 records the user's external/manual C6 observation: overall brightness is much closer, but Silver Birch Leaves remain too lemon-yellow; the remaining mismatch against the supplied target screenshot is primarily hue. It changes only SILVER_BIRCH_HUE_BASE to 0.12F, retaining SILVER_BIRCH_VALUE = 0.52F, saturation 0.8F, positional hue variation, exact PNG bytes, corresponding absent-state Birch Leaves inheritance, leaf-style waving and Wisteria Cherry Leaves fallback. Exact private artifact retained. ACTIVE / NOT_DEPLOYED / RUNTIME_UNTESTED; no managed Workbench runtime result is claimed.",
+    "milestone": "Canary 8 retains the previously recorded external/manual C6 hue observation and implements the user's narrow request for slight desaturation. It changes only SILVER_BIRCH_SATURATION to 0.75F, retaining SILVER_BIRCH_HUE_BASE = 0.12F, SILVER_BIRCH_VALUE = 0.52F, positional hue variation, exact PNG bytes, corresponding absent-state Birch Leaves inheritance, leaf-style waving and Wisteria Cherry Leaves fallback. The request is not new runtime evidence. Exact private artifact retained. ACTIVE / NOT_DEPLOYED / RUNTIME_UNTESTED; no managed Workbench runtime result is claimed.",
     "releases": {
       "current": {
-        "version": "0.1.0+26.2-canary7",
+        "version": "0.1.0+26.2-canary8",
         "artifact": {
-          "filename": "mynx-trees-private-0.1.0+26.2-canary7.jar",
-          "sha256": "8dac6add090a5da77629e22a86f3ce2984a16cd1fe06377c27f3b4f13807b93c"
+          "filename": "mynx-trees-private-0.1.0+26.2-canary8.jar",
+          "sha256": "7505c21dcb4553e79a051272695a352eb2749a9584949882c7683c6d90f6a634"
         },
-        "source_commit": "77a7f0057aeeef6c6032dad0d2769db718322f9c",
+        "source_commit": "a41446f956d73b7d1418576dc8bfde4c7f6cff15",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
@@ -88,11 +88,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 7,
-    "activity_at": "2026-09-06T22:27:35Z",
-    "updated_at": "2026-09-06T22:27:35Z",
-    "last_codex_at": "2026-09-06T22:27:35Z",
-    "source_commit": "77a7f0057aeeef6c6032dad0d2769db718322f9c",
+    "revision": 8,
+    "activity_at": "2026-09-06T23:05:03Z",
+    "updated_at": "2026-09-06T23:05:03Z",
+    "last_codex_at": "2026-09-06T23:05:03Z",
+    "source_commit": "a41446f956d73b7d1418576dc8bfde4c7f6cff15",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
