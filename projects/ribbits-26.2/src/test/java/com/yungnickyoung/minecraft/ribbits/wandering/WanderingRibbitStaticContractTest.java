@@ -58,6 +58,16 @@ class WanderingRibbitStaticContractTest {
         assertTrue(scheduler.contains("spawn stage=naturalist_companions_initialized"));
         assertTrue(scheduler.contains("spawn stage=entity_validity_check_passed"));
         assertTrue(scheduler.contains("spawn stage=scheduler_lease_committed"));
+        assertTrue(scheduler.contains("if (!diagnostics.collisionDetailLogged)"));
+        assertTrue(scheduler.contains("diagnostics.collisionDetailLogged = true"));
+        assertTrue(scheduler.contains("logCollisionRejection(level, feet, selectedPlayer, spawnBox"));
+        assertTrue(scheduler.contains("level.noBlockCollision(null, spawnBox)"));
+        assertTrue(scheduler.contains("level.noEntityCollision(null, spawnBox)"));
+        assertTrue(scheduler.contains("level.noBorderCollision(null, spawnBox)"));
+        assertTrue(scheduler.contains("spawnBox.inflate(ENTITY_COLLISION_QUERY_EPSILON)"));
+        assertTrue(scheduler.contains("EntitySelector.CAN_BE_COLLIDED_WITH"));
+        assertTrue(scheduler.contains("noCollisionSources={} blocksClear={} entitiesClear={}"));
+        assertTrue(scheduler.contains("ground={} body={} head={}"));
     }
 
     @Test

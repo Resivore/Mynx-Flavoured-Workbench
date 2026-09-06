@@ -7,6 +7,7 @@ import com.yungnickyoung.minecraft.ribbits.module.EntityTypeModule;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.Identifier;
@@ -18,6 +19,8 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityDimensions;
+import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.GameType;
@@ -30,6 +33,8 @@ import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.VoxelShape;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -61,6 +66,8 @@ public final class WanderingRibbitScheduler {
 
     private static final Map<MinecraftServer, Long> LAST_EXECUTED_TICK = new WeakHashMap<>();
     private static final String DIAGNOSTIC_PREFIX = "[WanderingRibbitDiagnostic]";
+    // EntityGetter.getEntityCollisions(null, box) uses this exact 26.2 query expansion.
+    private static final double ENTITY_COLLISION_QUERY_EPSILON = 1.0E-7D;
 
     private WanderingRibbitScheduler() {
     }
@@ -283,7 +290,7 @@ public final class WanderingRibbitScheduler {
                         || distanceSquared > (long) MAX_RADIUS * MAX_RADIUS) {
                     continue;
                 }
-                BlockPos safe = safeSurfacePosition(level, x, z, players, diagnostics);
+                BlockPos safe = safeSurfacePosition(level, x, z, selected, players, diagnostics);
                 if (safe != null) {
                     return new SpawnSite(safe, target);
                 }
@@ -296,6 +303,7 @@ public final class WanderingRibbitScheduler {
             ServerLevel level,
             int x,
             int z,
+            ServerPlayer selectedPlayer,
             List<ServerPlayer> eligiblePlayers,
             SpawnDiagnostics diagnostics
     ) {
@@ -352,6 +360,10 @@ public final class WanderingRibbitScheduler {
         }
         if (!level.noCollision(spawnBox)) {
             diagnostics.collisionRejected++;
+            if (!diagnostics.collisionDetailLogged) {
+                diagnostics.collisionDetailLogged = true;
+                logCollisionRejection(level, feet, selectedPlayer, spawnBox, groundPos, ground, body, head);
+            }
             return null;
         }
         Vec3 center = Vec3.atBottomCenterOf(feet);
@@ -364,6 +376,91 @@ public final class WanderingRibbitScheduler {
         }
         diagnostics.acceptedSpawnSites++;
         return feet;
+    }
+
+    /**
+     * One bounded, read-only explanation of the precise 26.2 noCollision(AABB) path. This runs
+     * only after the unchanged scheduler decision has rejected a candidate, and never consumes
+     * scheduler randomness or changes candidate selection.
+     */
+    private static void logCollisionRejection(
+            ServerLevel level,
+            BlockPos feet,
+            ServerPlayer selectedPlayer,
+            AABB spawnBox,
+            BlockPos groundPos,
+            BlockState ground,
+            BlockState body,
+            BlockState head
+    ) {
+        boolean blocksClear = level.noBlockCollision(null, spawnBox);
+        boolean entitiesClear = level.noEntityCollision(null, spawnBox);
+        boolean borderClear = level.noBorderCollision(null, spawnBox);
+        List<VoxelShape> entityCollisionShapes = level.getEntityCollisions(null, spawnBox);
+        List<Entity> entityColliders = level.getEntities(
+                (Entity) null,
+                spawnBox.inflate(ENTITY_COLLISION_QUERY_EPSILON),
+                EntitySelector.CAN_BE_COLLIDED_WITH);
+        EntityDimensions dimensions = EntityTypeModule.WANDERING_RIBBIT.get().getDimensions();
+        String failureSources = collisionFailureSources(blocksClear, entitiesClear, borderClear);
+
+        RibbitsCommon.LOGGER.info(
+                "{} collision detail feet={} chunk=({}, {}) selectedPlayer={} spawnBox={} "
+                        + "dimensions=({}, {}) noCollisionSources={} blocksClear={} entitiesClear={} "
+                        + "borderClear={} worldBorderWithinBounds={} blockCollisionShapes={} "
+                        + "entityCollisionShapes={} entityColliders={} ground={} body={} head={}",
+                DIAGNOSTIC_PREFIX, feet, feet.getX() >> 4, feet.getZ() >> 4,
+                selectedPlayer.blockPosition(), spawnBox, dimensions.width(), dimensions.height(),
+                failureSources, blocksClear, entitiesClear, borderClear,
+                level.getWorldBorder().isWithinBounds(spawnBox),
+                collisionShapes(level.getBlockCollisions(null, spawnBox)),
+                collisionShapes(entityCollisionShapes), collisionEntities(entityColliders),
+                blockProbe(level, groundPos, ground, spawnBox),
+                blockProbe(level, feet, body, spawnBox),
+                blockProbe(level, feet.above(), head, spawnBox));
+    }
+
+    private static String collisionFailureSources(
+            boolean blocksClear,
+            boolean entitiesClear,
+            boolean borderClear
+    ) {
+        ArrayList<String> sources = new ArrayList<>(3);
+        if (!blocksClear) {
+            sources.add("blocks");
+        }
+        if (!entitiesClear) {
+            sources.add("entities");
+        }
+        if (!borderClear) {
+            sources.add("world_border");
+        }
+        return sources.isEmpty() ? "none" : String.join(",", sources);
+    }
+
+    private static String blockProbe(ServerLevel level, BlockPos position, BlockState state, AABB query) {
+        VoxelShape shape = state.getCollisionShape(level, position, CollisionContext.empty()).move(position);
+        return "{pos=" + position + ",state=" + state + ",shape=" + collisionShapes(List.of(shape))
+                + ",intersectsQuery=" + shape.toAabbs().stream().anyMatch(box -> box.intersects(query)) + "}";
+    }
+
+    private static String collisionShapes(Iterable<VoxelShape> shapes) {
+        ArrayList<String> boxes = new ArrayList<>();
+        for (VoxelShape shape : shapes) {
+            for (AABB box : shape.toAabbs()) {
+                boxes.add(box.toString());
+            }
+        }
+        return boxes.toString();
+    }
+
+    private static String collisionEntities(List<Entity> entities) {
+        ArrayList<String> values = new ArrayList<>(entities.size());
+        for (Entity entity : entities) {
+            values.add("{type=" + BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType()) + ",uuid=" + entity.getUUID()
+                    + ",box=" + entity.getBoundingBox() + "}");
+        }
+        return values.toString();
     }
 
     private static void logAttempt(
@@ -473,5 +570,6 @@ public final class WanderingRibbitScheduler {
         private int collisionRejected;
         private int minimumPlayerDistanceRejected;
         private int acceptedSpawnSites;
+        private boolean collisionDetailLogged;
     }
 }
