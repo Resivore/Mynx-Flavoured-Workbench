@@ -1,8 +1,31 @@
 # Testing
 
-Mynx Ribbits Canary 12 is `ACTIVE / STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED`. Build/static checks do not establish Minecraft gameplay correctness. Read the exact current artifact filename/SHA-256 and implementation checkpoint in `WORKBENCH_STATUS.json`, and size/build evidence in the revision-17 log entry. Rehash the ignored private JAR before separately authorized deployment. Never deploy the resource-incomplete source-only JAR, and replace rather than install Canary 12 beside another JAR with the same `ribbits` mod ID.
+Mynx Ribbits Canary 13 is `ACTIVE / STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED`. Build/static checks do not establish Minecraft gameplay correctness. Read the exact current artifact filename/SHA-256 and implementation checkpoint in `WORKBENCH_STATUS.json`, and size/build evidence in the revision-18 log entry. Rehash the ignored private JAR before separately authorized deployment. Never deploy the resource-incomplete source-only JAR, and replace rather than install Canary 13 beside another JAR with the same `ribbits` mod ID.
 
-## Canary 12 focused deployed Drop Leaf check - all pending
+## Canary 13 focused Naturalist fauna-controls checks — all pending
+
+Use only the dedicated `Matcha Flavoured 26.2 Workbench` through a serialized
+deployment that includes the exact retained Naturalist Canary 8 artifact. Record exact
+artifact identities and observations; no row is satisfied by static evidence.
+
+1. Start with Naturalist absent. Require Ribbits startup, manual/automatic Wandering
+   Ribbit persistence, and existing native/Matcha offers to remain normal; the optional
+   Naturalist provider must contribute no range or offer and no snails.
+2. Start with exact Naturalist Canary 8. Each newly materialized merchant must gain
+   exactly two Naturalist fauna offers selected without replacement from the approved
+   19 baby eggs and nine buckets. Each has one use; verify prices, bucket variants,
+   baby age, display names, and save/restart preservation. Existing snapshots must not
+   reroll or gain fauna offers.
+3. For scheduler-created merchants only, require exactly two brown tagged snails,
+   both leashed to that merchant. Confirm persistence does not duplicate them and lease
+   expiry/removal cleans them up. Egg- and command-created merchants must never gain
+   companions or scheduler state.
+4. Exercise each entry across repeated controlled materializations until all 28
+   approved identities are observed. Stop with `FAIL` for a non-approved identity,
+   duplicate selection, more/fewer than two offers or companions, wrong color/leash,
+   missing cleanup, Naturalist linkage failure, or saved-offer drift.
+
+## Canary 13 focused deployed Drop Leaf regression — all pending
 
 Use only the dedicated `Matcha Flavoured 26.2 Workbench` through the serialized deployment procedure below. Record exact artifact identities and local/remote observations.
 
@@ -17,7 +40,7 @@ Use only the dedicated `Matcha Flavoured 26.2 Workbench` through the serialized 
 
 ## Earlier evidence boundary
 
-The exact Canary 6 cohort and the user's scoped Phase C practical `PASS`, the exact Canary 4 external startup `FAIL`, and the bound Canary 3 Phase B report remain recorded in `CODEX_LOG.md`. Canary 11 now has an exact external runtime `FAIL`: its rain geometry appeared through the correct back attachment, but the canopy resolved to the magenta/black missing texture. That result supplies no runtime evidence for Canary 12, whose item-atlas correction and combined stack remain untested in Minecraft.
+The exact Canary 6 cohort and the user's scoped Phase C practical `PASS`, the exact Canary 4 external startup `FAIL`, and the bound Canary 3 Phase B report remain recorded in `CODEX_LOG.md`. Canary 11 has an exact external runtime `FAIL`: its rain geometry appeared through the correct back attachment, but the canopy resolved to the magenta/black missing texture. That result supplies no runtime evidence for Canary 13; Canary 12's item-atlas correction and Canary 13's fauna controls remain untested in Minecraft.
 
 ## Deployment preconditions
 

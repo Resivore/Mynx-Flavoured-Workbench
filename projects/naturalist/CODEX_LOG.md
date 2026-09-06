@@ -79,3 +79,13 @@
 - Artifact: `naturalist-2.0.3+26.2-port-canary7.jar`, 11,056,134 bytes, SHA-256 `4dd2bd7baa5500740b3906f0e2b7d61608b3592bb336bc93f12dd7f9ef3400ba`, embedded source `83004e268a0407eb33a6053ec425843917bf1ebb`. Finalized at `projects/naturalist/artifacts/naturalist-2.0.3+26.2-port-canary7.jar`; canonical artifact retention verifies filename, hash, complete bytes, atomic retention, and local Git exclusion. Canary 6 remains unchanged.
 - Result: ACTIVE — STATIC_PASS; NOT_DEPLOYED; RUNTIME_UNTESTED.
 - Next state: Integrate revision 11 into current `main` and publish its UUID-keyed Sheet revision while preserving Notes. When an authorized dedicated slot is free, deploy only this exact retained artifact through the manager and follow `TESTING.md`.
+
+## 2026-09-06T04:05:28Z — Finalize Naturalist fauna-controls Canary 8
+- Revision: 12
+- Source checkpoint: `637ba2f7f5c6916fa1451449f8d4e05b25b75eed`
+- Changes: Removed Whistle and plush-bear registration/resources, and made every retained `FollowingPet` cycle owner-authorized empty-hand secondary-use FOLLOW → WANDER → STAY → FOLLOW with translated action-bar feedback. Naturalist remains an optional registry-only integration surface for Ribbits; no deployment behavior, slot state, or unrelated content changed.
+- Build/static: Temurin Java 25 / Gradle 9.6.1 `jar`, `resourceCodecTest` (73/73), and freshly executed `lifecycleTest` (93/93) passed with zero failures/skips. `Verify-ContentCull.ps1` passed. This is static/build evidence only.
+- Runtime: No Minecraft client/server, Test Instance Manager operation, dedicated Workbench slot, deployment, world, Player Instance, or protected Matcha Flavoured 26.1.2 profile was accessed or changed. No runtime result is claimed.
+- Artifact: Current private `naturalist-2.0.3+26.2-port-canary8.jar`, 11,040,164 bytes, SHA-256 `65e9ff11e94f17011acbac25ee40f42723516fe6b04c78d93662800461317b3d`, embedded source `637ba2f7f5c6916fa1451449f8d4e05b25b75eed`; canonical artifact retention verifies the exact ignored artifact at the primary local checkout without tracking or redistribution. Canary 7 remains unchanged.
+- Result: ACTIVE — `STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED`; accepted and rollback releases remain empty.
+- Next state: Publish revision 12 from authoritative `main` while preserving Sheet Notes. Under separately authorized serialized dedicated-Workbench deployment, use the revised pet-mode procedure in `TESTING.md` before recording any runtime result.

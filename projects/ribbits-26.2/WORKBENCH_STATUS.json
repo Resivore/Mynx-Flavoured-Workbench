@@ -33,7 +33,8 @@
       "Maintain ribbits:glowcap and ribbits:toadstool_heart as permanent mechanical identities with their user-approved 16-by-16 RGBA sprites, with the authorized Canary 9 one-pixel-down Glowcap alignment and conventional generated-item models.",
       "Maintain ribbits:wandering_ribbit as a separate 0.5-by-0.75 AbstractVillager with 15 health, approximately 0.125 movement speed, no breeding, profession, home, rank, restock, progress, or permanent automatic residency; preserve command- and egg-created merchants as persistent and scheduler-independent.",
       "Maintain server-global SavedData ribbits:wandering_ribbit_spawner with next attempt time, lease generation, active UUID and dimension, visit expiry, fair-player cursor, and last-observed time; one execution per server tick; cap one; exact unchanged timing; at most 64 loaded-chunk-only site candidates; candidate-feet biome evaluation; the exact 20-biome vanilla baseline; audited family-tag extension; authoritative empty allow tags; missing-tag fallback; and deny precedence.",
-      "Maintain stable sorted WanderingRibbitTradeProvider identities, persisted seed/provider/schema/offer ranges and exact serialized offers: native schema 3 preserves offer indexes and all buybacks while pricing newly materialized maps at eight Glowcaps with no compass, while optional provider ribbits:optional_matcha_compasses schema 1 atomically adds Copper, Golden, and Titanium buybacks for the exact intended Matcha stack without altering saved merchants.",
+      "Maintain stable sorted WanderingRibbitTradeProvider identities, persisted seed/provider/schema/offer ranges and exact serialized offers: native schema 3 preserves offer indexes and all buybacks while pricing newly materialized maps at eight Glowcaps with no compass; optional provider ribbits:optional_matcha_compasses schema 1 atomically adds Copper, Golden, and Titanium buybacks for the exact intended Matcha stack; optional provider ribbits:optional_naturalist_fauna selects two of 19 approved baby fauna eggs and nine approved variant buckets without replacement, only when their registry entries are available, without altering saved merchants.",
+      "Maintain scheduler-only Naturalist snail companionship as an optional reflective bridge: exactly two brown tagged snails are created once for an automatically materialized Wandering Ribbit, leashed to it, persisted by UUID, and removed or cleaned up with the lease; command- and egg-created merchants remain companion-free and no Naturalist class is linked by Ribbits.",
       "Maintain ribbits:chute_leaf as a stack-one noncraftable nondurable item using only data/trinkets/tags/item/chest/cape.json, a monotonic physical-jump request and owner acknowledgement protocol, a server-owned pending/deployed state machine, and a narrow terminal-descent cap of -0.10 blocks per tick.",
       "Maintain native map-decoration type ribbits:ribbit_village, exact success custom-data marker ribbits:ribbit_village_explorer_map=true, ordinary filled-map/map-id/decorations synchronization, and user-authored marker cropped without resampling to the native 8-by-8 atlas canvas and successful filled-map item artwork under the Ribbits namespace.",
       "Preserve the private resource assembler, exact pristine, Minecraft, dependency, three-donor, output, and archive identities, and the authorized shared green ten-egg derivation contract including the Wandering Ribbit egg.",
@@ -46,7 +47,7 @@
       "exclusions": [
         "Protected Ribbits resources, donor-derived models and textures, pristine or donor binaries, private manifests and reports, and the complete private Canary JAR are external, ignored, private-use-only, and nonredistributable.",
         "Public source-only build output is resource-incomplete and must not be represented as a runnable Canary.",
-        "Canary 8 adds no Naturalist or Regions Unexplored provider, trade, rescued-baby capsule, pattern, botanical good, or hard dependency; the only new Matcha offers are the authorized optional compass buybacks, and optional provider failure safely contributes zero offers.",
+        "Canary 13 adds only the optional Naturalist fauna provider and scheduler-only brown-snail companions; it adds no hard Naturalist dependency, Regions Unexplored provider, rescued-baby capsule, pattern, botanical good, or unrelated economy. An unavailable Naturalist entry safely contributes zero offers and no companion.",
         "Canary 8 adds no chest/back assignment or eligibility, Trinkets all-tag, new slot/group definition, vanilla glider or equippable component, Elytra tag, second inventory implementation, Elytra wings renderer, flight, steering, lift, pose, durability, or firework behavior; accepted Inventory Extended, Trinkets, their companion, Traveler Toolbelt, and Elytra-support artifacts remain separate and unchanged.",
         "No Wandering forest camp, donor scheduler/trades/code/AI/sounds/world generation, vanilla Wandering Trader replacement or suppression, trader llama, automatic Sorcerer replacement, existing-hut or village retrofit, saved-Witch conversion, global Witch suppression, asynchronous map search, custom map item or GUI, direct failed-map fallback, generalized old-offer migration, home-dimension redesign, Fortune Blessing, Silver Bullion, or Adamant/Netherite economy additions are introduced.",
         "Ribbits has no dependency on Map Marker Extensions or Compass Ribbon, contributes no custom map HUD or side-channel destination, and does not modify either project; Map Marker Extensions owns only its optional carried-target projection and Compass Ribbon consumes the standard native decoration path.",
@@ -177,15 +178,15 @@
     ]
   },
   "state": {
-    "milestone": "Mynx Canary 12 corrects only Canary 11's runtime-failed item-atlas binding: Minecraft 26.2's item atlas stitches textures/item but not textures/entity, so the deployed two-element rain geometry appeared with the magenta/black missing-texture sprite. The exact 6,233-byte 128x128 donor entity PNG is now copied byte-for-byte to assets/ribbits/textures/item/chute_leaf_open.png and the open model binds ribbits:item/chute_leaf_open. Canary 11 geometry, UVs, renderer/back attachment, inactive/closed/first-person presentation, mechanics, identities, Wandering behavior and all other content remain unchanged. Source/private builds, 154 Java tests, 42 resource tests, production-equivalent Mixin, two independent private trees/JARs, final JAR inspection and dependency policy checks pass. Canary 11 is an exact external user-reported runtime FAIL; Canary 12 is ACTIVE / STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED with eight focused checks pending.",
+    "milestone": "Mynx Canary 13 adds only optional Naturalist fauna controls: a stable no-linkage provider deterministically selects two of 19 baby fauna spawn eggs and nine variant buckets without replacement, each with one use, and automatically materialized Wandering Ribbits receive exactly two brown leased snails once. Manual merchants remain companion-free; missing Naturalist entries safely add nothing; saved offers remain authoritative. Focused fauna/static Java tests, 42 private-resource tests, private-tree and final JAR validation pass. Canary 13 is ACTIVE / STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED; no runtime result is claimed.",
     "releases": {
       "current": {
-        "version": "4.1.6+26.2-mynx-canary12",
+        "version": "4.1.6+26.2-mynx-canary13",
         "artifact": {
-          "filename": "ribbits-private-reconstruction-4.1.6+26.2-mynx-canary12.jar",
-          "sha256": "23f358b8acb5be956c020fa62d427bf432e21e2f09a22474838eb67714b95813"
+          "filename": "ribbits-private-reconstruction-4.1.6+26.2-mynx-canary13.jar",
+          "sha256": "a4602b320f145331c4d279dae307f7cfce8fd666b8e74ffded637987bc5609d6"
         },
-        "source_commit": "3ba1db7d62d17a29722739819c7194f91fc40c76",
+        "source_commit": "637ba2f7f5c6916fa1451449f8d4e05b25b75eed",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
@@ -204,11 +205,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 17,
-    "activity_at": "2026-09-05T22:31:09Z",
-    "updated_at": "2026-09-05T22:31:09Z",
-    "last_codex_at": "2026-09-05T22:31:09Z",
-    "source_commit": "3ba1db7d62d17a29722739819c7194f91fc40c76",
+    "revision": 18,
+    "activity_at": "2026-09-06T04:05:28Z",
+    "updated_at": "2026-09-06T04:05:28Z",
+    "last_codex_at": "2026-09-06T04:05:28Z",
+    "source_commit": "637ba2f7f5c6916fa1451449f8d4e05b25b75eed",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null

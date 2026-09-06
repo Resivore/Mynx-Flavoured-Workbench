@@ -24,7 +24,7 @@
     "scope": [
       "Maintain the 26.2 persistence, rendering, behavior, egg/hatching, and client-item migrations for the retained roster.",
       "Retain 49 entity types, 47 retained variant entities, legacy variant decoding, and selected upstream geometry/assets through the hash-verified private staging path.",
-      "Do not reintroduce retired custom foods/materials, Ant/ant hill/carried-food systems, snail shells, Froglass, Shellstone, antivenom, or protected-resource redistribution."
+      "Do not reintroduce retired custom foods/materials, Ant/ant hill/carried-food systems, snail shells, Froglass, Shellstone, antivenom, Whistle, plush bear, or protected-resource redistribution; retained tameable pets use owner-authorized empty-hand secondary-use FOLLOW/WANDER/STAY cycling."
     ],
     "boundaries": {
       "owned_paths": [
@@ -89,15 +89,15 @@
     ]
   },
   "state": {
-    "milestone": "Private Canary 7 applies the authorized Naturalist content cull: Ant, ant hill/carried-food, snail shell, Froglass, Shellstone, antivenom, and retired custom foods/materials are absent from registration and staged assets/data. Retained animals, variants, eggs, Glow Goop, capture net, buckets, Knapsack, music discs, and client roots remain; retired acquisition is replaced with vanilla equivalents where retained behavior requires one. Java 25 clean build and focused static checks pass. Canary 7 is ACTIVE, STATIC_PASS, NOT_DEPLOYED, RUNTIME_UNTESTED. No manager deployment or Minecraft runtime validation occurred; protected 26.1.2 and the Player Instance were not accessed.",
+    "milestone": "Private Canary 8 completes the narrow fauna-controls companion work: Whistle and plush bear are absent; all retained FollowingPet species cycle FOLLOW, WANDER, and STAY only for their owner using empty-hand secondary use. Naturalist remains optional to Ribbits; when present, its optional provider can add two deterministic one-use fauna offers and scheduler-created Wandering Ribbits can receive two brown-snail companions without any Naturalist class linkage. Java 25 focused static checks pass. Canary 8 is ACTIVE, STATIC_PASS, NOT_DEPLOYED, RUNTIME_UNTESTED. No manager deployment or Minecraft runtime validation occurred; protected 26.1.2 and the Player Instance were not accessed.",
     "releases": {
       "current": {
-        "version": "2.0.3+26.2-port-canary7",
+        "version": "2.0.3+26.2-port-canary8",
         "artifact": {
-          "filename": "naturalist-2.0.3+26.2-port-canary7.jar",
-          "sha256": "4dd2bd7baa5500740b3906f0e2b7d61608b3592bb336bc93f12dd7f9ef3400ba"
+          "filename": "naturalist-2.0.3+26.2-port-canary8.jar",
+          "sha256": "65e9ff11e94f17011acbac25ee40f42723516fe6b04c78d93662800461317b3d"
         },
-        "source_commit": "83004e268a0407eb33a6053ec425843917bf1ebb",
+        "source_commit": "637ba2f7f5c6916fa1451449f8d4e05b25b75eed",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
@@ -116,11 +116,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 11,
-    "activity_at": "2026-09-06T03:00:00Z",
-    "updated_at": "2026-09-06T03:00:00Z",
-    "last_codex_at": "2026-09-06T03:00:00Z",
-    "source_commit": "83004e268a0407eb33a6053ec425843917bf1ebb",
+    "revision": 12,
+    "activity_at": "2026-09-06T04:05:28Z",
+    "updated_at": "2026-09-06T04:05:28Z",
+    "last_codex_at": "2026-09-06T04:05:28Z",
+    "source_commit": "637ba2f7f5c6916fa1451449f8d4e05b25b75eed",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
