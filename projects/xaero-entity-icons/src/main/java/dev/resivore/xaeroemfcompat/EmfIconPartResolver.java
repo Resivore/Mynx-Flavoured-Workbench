@@ -83,10 +83,20 @@ public final class EmfIconPartResolver {
         if (!canonicalName.equals("head") && !canonicalName.equals("head_parts"))
             return reject("UNSUPPORTED_CANONICAL_NAME", pathText(canonicalPath));
         ModelPart vanillaCanonicalHead = followPath(vanillaRoot, canonicalPath);
-        if (vanillaCanonicalHead == null)
-            return reject("MISSING_RETAINED_VANILLA_GEOMETRY", pathText(canonicalPath));
+        if (vanillaCanonicalHead == null) {
+            // Non-attached JEM replacements can relocate the live semantic
+            // head without preserving the corresponding canonical path in
+            // EMF's retained vanilla tree.  Do not accept that fact by
+            // itself: it only permits the already-bounded traced-head
+            // selector below to prove one safe replacement.
+            IconDiagnostics.event("RETAINED_CANONICAL_PATH_ABSENT", pathText(canonicalPath));
+        } else {
+            IconDiagnostics.event("RETAINED_CANONICAL_PATH_FOUND", pathText(canonicalPath));
+        }
         // A transform-only canonical head may own its geometry through one child path.
-        ModelPart vanillaGeometry = uniqueGeometryOwner(vanillaCanonicalHead);
+        ModelPart vanillaGeometry = vanillaCanonicalHead == null
+                ? null
+                : uniqueGeometryOwner(vanillaCanonicalHead);
 
         // Xaero's ordinary path can still leave the destination empty when a
         // canonical head is an EMF part with direct cubes.  Render a detached
@@ -113,13 +123,19 @@ public final class EmfIconPartResolver {
 
         Node node = selected.orElseThrow();
         if (vanillaGeometry == null) {
-            // EMF clears the mapped vanilla cubes for non-attached JEM parts.
-            // Frog, allay, and vex therefore cannot supply Xaero's ordinary
-            // canonical reference cube even though a uniquely traced semantic
-            // head is available.  This is not a broader geometry search: use
-            // only that already-selected direct head as the reference frame.
+            // This is not a broader geometry search: use only the already
+            // selected direct semantic head as the reference frame.  C8
+            // covered an existing retained path whose geometry was absent;
+            // C9 also covers a retained path that cannot be followed at all.
             return resolveWithoutRetainedVanillaGeometry(
-                    node, canonicalHead, resetHeadRotation, canonicalPath);
+                    node,
+                    canonicalHead,
+                    resetHeadRotation,
+                    canonicalPath,
+                    vanillaCanonicalHead == null
+                            ? "TRACED_HEAD_NO_RETAINED_PATH_FALLBACK"
+                            : "TRACED_HEAD_FRAME_FALLBACK"
+            );
         }
         ModelPart.Cube canonicalCuboid =
                 ModelPartUtil.getBiggestCuboid(vanillaGeometry);
@@ -189,11 +205,12 @@ public final class EmfIconPartResolver {
             Node node,
             ModelPart canonicalHead,
             boolean resetHeadRotation,
-            List<PathNode> canonicalPath
+            List<PathNode> canonicalPath,
+            String fallbackStage
     ) {
         ModelPart.Cube headCube = ModelPartUtil.getBiggestCuboid(node.part());
         if (headCube == null) {
-            return reject("MISSING_RETAINED_VANILLA_GEOMETRY", pathText(canonicalPath));
+            return reject("EMPTY_TRACED_HEAD_GEOMETRY", node.pathText());
         }
         GeometrySelection geometry = new GeometrySelection(
                 node.part(), node.path(), new CubeMatch(headCube, List.of(node.part())));
@@ -204,7 +221,7 @@ public final class EmfIconPartResolver {
         }
         ModelPart centeringPart = canonicalFrame(
                 canonicalHead, ModelPartUtil.getCubes(node.part()));
-        IconDiagnostics.event("TRACED_HEAD_FRAME_FALLBACK",
+        IconDiagnostics.event(fallbackStage,
                 pathText(canonicalPath) + " -> " + node.pathText());
         return Optional.of(new Resolution(
                 canonicalHead,

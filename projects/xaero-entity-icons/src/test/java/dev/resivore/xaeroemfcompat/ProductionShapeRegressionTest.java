@@ -6,6 +6,7 @@ import net.minecraft.client.model.animal.sheep.SheepModel;
 import net.minecraft.client.model.geom.ModelPart;
 import org.junit.jupiter.api.Test;
 import xaero.hud.minimap.radar.icon.creator.render.form.model.part.ModelPartUtil;
+import xaero.hud.minimap.radar.icon.creator.render.trace.ModelRenderTrace;
 
 import java.lang.reflect.Proxy;
 import java.util.List;
@@ -16,6 +17,7 @@ import static dev.resivore.xaeroemfcompat.RelocatedHeadFailureMechanismTest.cube
 import static dev.resivore.xaeroemfcompat.RelocatedHeadFailureMechanismTest.cubePart;
 import static dev.resivore.xaeroemfcompat.RelocatedHeadFailureMechanismTest.cubePaths;
 import static dev.resivore.xaeroemfcompat.RelocatedHeadFailureMechanismTest.emptyPart;
+import static dev.resivore.xaeroemfcompat.RelocatedHeadFailureMechanismTest.trace;
 import static dev.resivore.xaeroemfcompat.RelocatedHeadFailureMechanismTest.traced;
 import static dev.resivore.xaeroemfcompat.RelocatedHeadFailureMechanismTest.transformedEmpty;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -192,6 +194,81 @@ class ProductionShapeRegressionTest {
                     || path.contains("EMF_unrelated_body")), entity);
             assertTrue(submittedVertices(result.renderAdapter()) > 0, entity);
         }
+    }
+
+    @Test
+    void missingRetainedCanonicalPathUsesOnlyTheUniqueTracedHeadFrame() {
+        for (String entity : List.of("frog", "allay", "vex")) {
+            ModelPart tracedHead = cubePart(Map.of("eyes", cubePart(Map.of())));
+            ModelPart relocated = emptyPart(Map.of(
+                    "EMF_head2", tracedHead,
+                    "EMF_wing", cubePart(Map.of()),
+                    "EMF_unrelated_body", cubePart(Map.of())));
+            ModelPart canonical = emptyPart(Map.of());
+            ModelPart root = entity.equals("frog")
+                    ? emptyPart(Map.of("body", emptyPart(Map.of(
+                    "head", canonical, "EMF_body", relocated))))
+                    : emptyPart(Map.of("head", canonical, "body", relocated));
+            // C8's early followPath result was null here, so it rejected
+            // before reaching its traced-head selector.  C9 must reach the
+            // same narrow selector and use only its one traced head.
+            ModelPart retained = entity.equals("frog")
+                    ? emptyPart(Map.of("body", emptyPart(Map.of())))
+                    : emptyPart(Map.of());
+
+            var result = EmfIconPartResolver.resolveRelocatedHead(
+                    root, canonical, retained, traced(tracedHead, 0xFF102030), true).orElseThrow();
+            assertSame(tracedHead, result.geometryRoot(), entity);
+            assertEquals("TRACED_HEAD_NO_RETAINED_PATH_FALLBACK", IconDiagnostics.lastReason(), entity);
+            List<String> paths = cubePaths(result.renderAdapter());
+            assertTrue(paths.stream().anyMatch(path -> path.contains("EMF_head2")), entity);
+            assertFalse(paths.stream().anyMatch(path -> path.contains("EMF_wing")
+                    || path.contains("EMF_unrelated_body")), entity);
+            assertTrue(submittedVertices(result.renderAdapter()) > 0, entity);
+        }
+    }
+
+    @Test
+    void missingRetainedCanonicalPathFailsClosedWithoutOneSafeTracedHead() {
+        ModelPart canonical = emptyPart(Map.of());
+        ModelPart retained = emptyPart(Map.of());
+
+        assertTrue(EmfIconPartResolver.resolveRelocatedHead(
+                emptyPart(Map.of("head", canonical)), canonical, retained, trace(), true).isEmpty());
+        assertEquals("NO_TRACED_HEAD_CANDIDATE", IconDiagnostics.lastReason());
+
+        ModelPart firstHead = cubePart(Map.of());
+        ModelPart secondHead = cubePart(Map.of());
+        ModelRenderTrace ambiguousTrace = traced(firstHead, 0xFF102030);
+        ambiguousTrace.addVisibleModelPart(secondHead, 0xFF102030);
+        assertTrue(EmfIconPartResolver.resolveRelocatedHead(
+                emptyPart(Map.of("head", canonical, "body", emptyPart(Map.of(
+                        "EMF_head2", firstHead, "EMF_head3", secondHead)))),
+                canonical, retained, ambiguousTrace, true).isEmpty());
+        assertEquals("MULTIPLE_AMBIGUOUS_CANDIDATES", IconDiagnostics.lastReason());
+
+        ModelPart emptyHead = emptyPart(Map.of());
+        ModelRenderTrace emptyTrace = traced(emptyHead, 0xFF102030);
+        assertTrue(EmfIconPartResolver.resolveRelocatedHead(
+                emptyPart(Map.of("head", canonical, "body", emptyPart(Map.of(
+                        "EMF_head2", emptyHead)))),
+                canonical, retained, emptyTrace, true).isEmpty());
+        assertEquals("NO_TRACED_HEAD_CANDIDATE", IconDiagnostics.lastReason());
+
+        ModelPart singularHead = cubePart(Map.of());
+        singularHead.xScale = 0.0F;
+        assertTrue(EmfIconPartResolver.resolveRelocatedHead(
+                emptyPart(Map.of("head", canonical, "body", emptyPart(Map.of(
+                        "EMF_head2", singularHead)))),
+                canonical, retained, traced(singularHead, 0xFF102030), true).isEmpty());
+        assertEquals("INVALID_OR_SINGULAR_TRANSFORM", IconDiagnostics.lastReason());
+
+        ModelPart body = cubePart(Map.of());
+        assertTrue(EmfIconPartResolver.resolveRelocatedHead(
+                emptyPart(Map.of("head", canonical, "body", emptyPart(Map.of(
+                        "EMF_body", body)))),
+                canonical, retained, traced(body, 0xFF102030), true).isEmpty());
+        assertEquals("NO_TRACED_HEAD_CANDIDATE", IconDiagnostics.lastReason());
     }
 
     @Test
