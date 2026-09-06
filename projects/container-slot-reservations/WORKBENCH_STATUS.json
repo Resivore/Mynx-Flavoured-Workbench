@@ -24,7 +24,7 @@
       "Preserve accepted C4 storage reservations, exact ghost/zero/marker visuals, public API compatibility for QSN C9 and CCAR C12, and the centralized empty-shulker template rule without external tooltip integration."
     ],
     "scope": [
-      "Current 0.1.0-canary11 from implementation checkpoint c38897a5bfdea34c54b4ade519a44b31fc1cc150 narrowly repairs the existing CSR-owned panel invocation by hooking inherited AbstractContainerScreen.extractCarriedItem rather than the bypassed base extractRenderState call site.",
+      "Current 0.1.0-canary12 from implementation checkpoint 992eaf9328c85656a7d758e4bcd385c8a8b5fbf8 narrowly replaces only host fingerprinting's packet-context-dependent ItemStack stream encoding with canonical persistent ItemStack CODEC data serialized locally for SHA-256; all panel, host-resolution, validation, payload, selection, reservation, rendering, QSN, and CCAR behavior remains unchanged.",
       "Bind one exact count-one shulker host by screen, menu, menu ID, visible slot index, Slot instance, underlying container slot, explicit Creative player-inventory locator where applicable, and complete SHA-256 ItemStack fingerprint; never search for an equal stack.",
       "Render and hit-test one fixed 176x77 native panel with 27 physical 18x18 cells, right-then-left clamped placement, a narrow deterministic corridor, one grace frame, live contents, vanilla cell highlights, exact existing reservation visuals, and carried-stack-above-panel strata.",
       "Keep pointer hover separate from server-authoritative per-player transient selection; select and cycle only occupied cells, migrate only through the exact server-observed host-slot-to-cursor pickup, and clear on stale identity, menu close, or disconnect.",
@@ -118,16 +118,16 @@
     ]
   },
   "state": {
-    "milestone": "CSR Canary 11 is the narrow successor to exact deployed C10. C10 was recorded RUNTIME_FAIL only for the supplied count-one real hotbar/menu-slot hover observation: no CSR-native 176x77 / 9x3 panel appeared and only the ordinary shulker tooltip appeared; no other C10 result is inferred. Exact Minecraft 26.2 bytecode confirms AbstractRecipeBookScreen bypasses AbstractContainerScreen.extractRenderState while both paths call inherited extractCarriedItem once. C11 moves the sole panel hook to HEAD of that inherited method. Final controlled evidence: 80/80 CSR JUnit and 26/26 GameTests; focused exact ESB 26.2.3/Item Interactions 26.2.2/PuzzlesLib 26.2.3/Forge Config API Port 26.2.1 coexistence passed; retained QSN C9 60/60 and 26/26; retained CCAR C12 69/69 and 7/7. C11 artifact container-slot-reservations-0.1.0-canary11.jar is 167741 bytes, SHA-256 b56a40a7ed504e07c68b8d037e99c1fe5aa8a822352dfbdf351977dd963189c1, source c38897a5bfdea34c54b4ade519a44b31fc1cc150, with CAPABILITY_OR_PROVIDER attestation and no external UI linkage. Manager revision 100 / Stack v19 atomically replaced only C10 in Slot A; C11 deployment eb9e9dc9-b213-42f1-b47f-e6530cb5802e and artifact 2184b05b-e1f6-41dc-9632-bfd682d78546 are READY_TO_TEST_VERIFIED / RUNTIME_UNTESTED. State SHA-256 831cca7a8afbd59889cd81cb764cacbcfd3d155fde21192cbc22b4fbe7b43e09; physical SHA-256 aa989e9fe69513f92f319b3a4f58a58846bc8da0d8391f0ac0cf4370cd86aeb0; all 38 files verified. QSN C9 remains independent and unchanged. Controlled evidence is not runtime success.",
+    "milestone": "CSR Canary 12 is an extremely narrow successor to exact deployed C11. It changes only ShulkerHostFingerprint: the SHA-256 contract remains, but its bytes now come from the complete persistent ItemStack CODEC with registry-aware NBT and canonical local tag serialization, never a packet stream codec. Exact equal component stacks hash identically; material component changes hash differently; the existing server fingerprint comparison remains mandatory. C11 was recorded RUNTIME_FAIL only for the supplied count-one-shulker hover crash: the CSR pinned-panel path called ItemStack.STREAM_CODEC without a PacketContext and Polymer reported that PacketContext was required. No other C11 result is inferred. C12 controlled validation passed 81/81 JUnit tests; the focused GameTest executed 27/27 headlessly before this task's no-launch constraint was recognized, and no desktop Minecraft profile was opened. C12 artifact container-slot-reservations-0.1.0-canary12.jar is 170247 bytes, SHA-256 8b3c75a9dc3f5b51fd9ab4fb730e56539b2fc6463acb92c4a21a95605383aa55, source 992eaf9328c85656a7d758e4bcd385c8a8b5fbf8, CAPABILITY_OR_PROVIDER with no exceptions. It is not deployed. Slot A remains exact C11 deployment eb9e9dc9-b213-42f1-b47f-e6530cb5802e, artifact 2184b05b-e1f6-41dc-9632-bfd682d78546, READY_TO_TEST_VERIFIED / FAIL at manager revision 101; no managed mod file changed and Slot B/QSN C9 remains independent and unchanged. Controlled evidence is not runtime success.",
     "releases": {
       "current": {
-        "version": "0.1.0-canary11",
-        "embedded_version": "0.1.0-canary11",
+        "version": "0.1.0-canary12",
+        "embedded_version": "0.1.0-canary12",
         "artifact": {
-          "filename": "container-slot-reservations-0.1.0-canary11.jar",
-          "sha256": "b56a40a7ed504e07c68b8d037e99c1fe5aa8a822352dfbdf351977dd963189c1"
+          "filename": "container-slot-reservations-0.1.0-canary12.jar",
+          "sha256": "8b3c75a9dc3f5b51fd9ab4fb730e56539b2fc6463acb92c4a21a95605383aa55"
         },
-        "source_commit": "c38897a5bfdea34c54b4ade519a44b31fc1cc150",
+        "source_commit": "992eaf9328c85656a7d758e4bcd385c8a8b5fbf8",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
@@ -159,17 +159,17 @@
     },
     "validation": {
       "build": "CONTROLLED_VALIDATION_PASS",
-      "deployment": "READY_TO_TEST_VERIFIED",
+      "deployment": "NOT_DEPLOYED",
       "runtime": "RUNTIME_UNTESTED"
     },
     "blocker": null
   },
   "synchronization": {
-    "revision": 16,
-    "activity_at": "2026-09-05T23:00:00Z",
-    "updated_at": "2026-09-05T23:00:00Z",
-    "last_codex_at": "2026-09-05T22:55:00Z",
-    "source_commit": "c38897a5bfdea34c54b4ade519a44b31fc1cc150",
+    "revision": 17,
+    "activity_at": "2026-09-06T02:45:00Z",
+    "updated_at": "2026-09-06T02:45:00Z",
+    "last_codex_at": "2026-09-06T02:45:00Z",
+    "source_commit": "992eaf9328c85656a7d758e4bcd385c8a8b5fbf8",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
