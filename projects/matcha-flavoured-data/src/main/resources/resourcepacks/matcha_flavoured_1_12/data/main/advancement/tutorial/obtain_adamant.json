@@ -1,0 +1,32 @@
+{
+  "parent": "main:tutorial/obtain_gold",
+  "criteria": {
+    "get_smithing": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "minecraft:netherite_ingot"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "adv.kleispack.obtain_adamant.desc"
+    },
+    "icon": {
+      "count": 1,
+      "id": "minecraft:netherite_ingot"
+    },
+    "title": {
+      "translate": "adv.kleispack.obtain_adamant"
+    }
+  },
+  "requirements": [
+    [
+      "get_smithing"
+    ]
+  ]
+}
