@@ -52,12 +52,16 @@ public final class EmfIconPartResolver {
             ModelRenderTrace trace,
             boolean resetHeadRotation
     ) {
-        if (!isExactEmfRoot(root)) {
+        if (!isSupportedEmfRoot(root)) {
             return reject("NON_EMF_ROOT", root == null ? "null" : root.getClass().getName());
         }
 
         ModelPart canonicalHead = unwrapCanonicalPart(failedMainPart);
-        ModelPart vanillaRoot = retainedVanillaRoot(root).orElse(null);
+        // EMFModelPartVanilla is itself the retained vanilla tree.  Some CEM
+        // variants use it as the model root rather than wrapping it in
+        // EMFModelPartRoot, so requiring the wrapper incorrectly excluded
+        // frog, allay, and vex before the selector could even run.
+        ModelPart vanillaRoot = retainedVanillaRoot(root).orElse(root);
         if (canonicalHead == null) return reject("MISSING_CANONICAL_PART", "root");
         if (vanillaRoot == null) return reject("MISSING_RETAINED_VANILLA_ROOT", "root");
         return resolveRelocatedHead(
@@ -78,8 +82,6 @@ public final class EmfIconPartResolver {
         String canonicalName = canonicalPath.getLast().name();
         if (!canonicalName.equals("head") && !canonicalName.equals("head_parts"))
             return reject("UNSUPPORTED_CANONICAL_NAME", pathText(canonicalPath));
-        if (ModelPartUtil.hasCubes(canonicalHead))
-            return reject("CANONICAL_EMF_CONTAINS_GEOMETRY", pathText(canonicalPath));
         ModelPart vanillaCanonicalHead = followPath(vanillaRoot, canonicalPath);
         if (vanillaCanonicalHead == null)
             return reject("MISSING_RETAINED_VANILLA_GEOMETRY", pathText(canonicalPath));
@@ -87,6 +89,18 @@ public final class EmfIconPartResolver {
         ModelPart vanillaGeometry = uniqueGeometryOwner(vanillaCanonicalHead);
         if (vanillaGeometry == null)
             return reject("MISSING_OR_AMBIGUOUS_RETAINED_GEOMETRY", pathText(canonicalPath));
+
+        // Xaero's ordinary path can still leave the destination empty when a
+        // canonical head is an EMF part with direct cubes.  Render a detached
+        // vanilla ModelPart copy of just that semantic head (and explicitly
+        // named headwear branches) rather than asking Xaero to render the live
+        // EMF implementation again.  This is deliberately not a recursive
+        // descendant fallback: body, arms, accessories, and sibling parts are
+        // never copied.
+        if (ModelPartUtil.hasDirectCubes(canonicalHead)) {
+            return resolveCanonicalGeometry(
+                    canonicalHead, vanillaGeometry, trace, pathText(canonicalPath));
+        }
 
         List<Node> candidates = new ArrayList<>();
         collect(root, "root", List.of(), canonicalHead, trace, candidates);
@@ -128,6 +142,93 @@ public final class EmfIconPartResolver {
                 node.pathText(),
                 pathText(geometry.path())
         ));
+    }
+
+    private static Optional<Resolution> resolveCanonicalGeometry(
+            ModelPart canonicalHead,
+            ModelPart vanillaGeometry,
+            ModelRenderTrace trace,
+            String canonicalPath
+    ) {
+        ModelPartRenderTrace renderInfo = trace.getModelPartRenderInfo(canonicalHead);
+        if (renderInfo == null) {
+            return reject("UNTRACED_CANONICAL_HEAD", canonicalPath);
+        }
+        ModelPart detachedHead = detachedCanonicalHead(canonicalHead);
+        if (detachedHead == null || !ModelPartUtil.hasCubes(detachedHead)) {
+            return reject("EMPTY_CANONICAL_HEAD_COPY", canonicalPath);
+        }
+        ModelPart adapter = new ModelPart(List.of(), Map.of("head", detachedHead));
+        adapter.setInitialPose(adapter.storePose());
+        ADAPTERS.put(adapter, new AdapterMetadata(
+                canonicalHead, detachedHead, new Matrix4f().identity()));
+        ModelPart centeringPart = canonicalFrame(
+                canonicalHead, ModelPartUtil.getCubes(vanillaGeometry));
+        IconDiagnostics.event("RESOLVED_CANONICAL_GEOMETRY", canonicalPath);
+        return Optional.of(new Resolution(
+                canonicalHead,
+                canonicalHead,
+                canonicalHead,
+                adapter,
+                centeringPart,
+                renderInfo.color,
+                canonicalPath,
+                canonicalPath,
+                canonicalPath
+        ));
+    }
+
+    private static ModelPart detachedCanonicalHead(ModelPart source) {
+        Map<String, ModelPart> children = new java.util.LinkedHashMap<>();
+        Map<String, ModelPart> sourceChildren = ModelPartUtil.getChildren(source);
+        if (sourceChildren != null) {
+            sourceChildren.entrySet().stream()
+                    .filter(entry -> isHeadAttachedAnchor(entry.getKey()))
+                    .sorted(Map.Entry.comparingByKey())
+                    .forEach(entry -> children.put(entry.getKey(),
+                            detachedHeadwearBranch(entry.getValue())));
+        }
+        ModelPart copy = new ModelPart(List.copyOf(ModelPartUtil.getCubes(source)), children);
+        copyCurrentTransform(source, copy);
+        copy.visible = source.visible;
+        copy.skipDraw = source.skipDraw;
+        copy.setInitialPose(source.getInitialPose());
+        return copy;
+    }
+
+    private static ModelPart detachedHeadwearBranch(ModelPart source) {
+        Map<String, ModelPart> children = new java.util.LinkedHashMap<>();
+        Map<String, ModelPart> sourceChildren = ModelPartUtil.getChildren(source);
+        if (sourceChildren != null) {
+            sourceChildren.entrySet().stream()
+                    .sorted(Map.Entry.comparingByKey())
+                    .forEach(entry -> children.put(entry.getKey(),
+                            detachedHeadwearBranch(entry.getValue())));
+        }
+        ModelPart copy = new ModelPart(List.copyOf(ModelPartUtil.getCubes(source)), children);
+        copyCurrentTransform(source, copy);
+        copy.visible = source.visible;
+        copy.skipDraw = source.skipDraw;
+        copy.setInitialPose(source.getInitialPose());
+        return copy;
+    }
+
+    private static boolean isHeadAttachedAnchor(String rawName) {
+        String name = rawName.toLowerCase(Locale.ROOT);
+        if (name.startsWith("emf_")) {
+            name = name.substring(4);
+        }
+        return name.equals("hat") || name.equals("headwear")
+                || name.startsWith("hat_") || name.startsWith("headwear_")
+                // Vanilla's facial attachment points are part of the head
+                // boundary.  The active hatted-villager layouts attach their
+                // hat below nose, not below a generic headwear sibling.
+                || name.equals("nose") || name.equals("snout")
+                || name.equals("beak") || name.equals("muzzle")
+                || name.equals("ear") || name.equals("ears")
+                || name.startsWith("ear_") || name.startsWith("ear")
+                || name.equals("horn") || name.equals("horns")
+                || name.startsWith("horn_");
     }
 
     private static <T> Optional<T> reject(String reason, String path) {
@@ -203,7 +304,33 @@ public final class EmfIconPartResolver {
                 ));
             }
         }
+        // Resource packs may intentionally reshape a head, so identical cube
+        // dimensions are not an ownership requirement.  A uniquely traced
+        // semantic head with direct cubes remains a safe, bounded owner.  Do
+        // not search siblings or arbitrary descendants for a substitute.
+        ModelPart semanticHead = semanticHeadPath.getLast().part();
+        if (!hasCubeBearingAncestor(semanticHeadPath)
+                && ModelPartUtil.hasDirectCubes(semanticHead)) {
+            ModelPart.Cube headCuboid = ModelPartUtil.getBiggestCuboid(semanticHead);
+            if (headCuboid != null) {
+                IconDiagnostics.event("SEMANTIC_HEAD_GEOMETRY_FALLBACK", pathText(semanticHeadPath));
+                return Optional.of(new GeometrySelection(
+                        semanticHead,
+                        List.copyOf(semanticHeadPath),
+                        new CubeMatch(headCuboid, List.of(semanticHead))
+                ));
+            }
+        }
         return reject("NO_MATCHING_GEOMETRY", pathText(semanticHeadPath));
+    }
+
+    private static boolean hasCubeBearingAncestor(List<PathNode> path) {
+        for (int index = 1; index < path.size() - 1; index++) {
+            if (ModelPartUtil.hasDirectCubes(path.get(index).part())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static List<CubeMatch> findMatchingCubes(
@@ -459,7 +586,23 @@ public final class EmfIconPartResolver {
                     ? Optional.of(modelPart)
                     : Optional.empty();
         } catch (ReflectiveOperationException ignored) {
-            return Optional.empty();
+            // EMFModelPartVanilla has a public getRoot() which leads back to
+            // its EMFModelPartRoot.  Its own class has no vanillaRoot field,
+            // so use that published relationship instead of treating the
+            // selected leaf as an independent vanilla tree.
+            try {
+                Object emfRoot = root.getClass().getMethod("getRoot").invoke(root);
+                if (emfRoot == null) {
+                    return Optional.empty();
+                }
+                Field field = emfRoot.getClass().getField(VANILLA_ROOT_FIELD);
+                Object value = field.get(emfRoot);
+                return value instanceof ModelPart modelPart
+                        ? Optional.of(modelPart)
+                        : Optional.empty();
+            } catch (ReflectiveOperationException ignoredAgain) {
+                return Optional.empty();
+            }
         }
     }
 
@@ -540,8 +683,13 @@ public final class EmfIconPartResolver {
         return frame;
     }
 
-    private static boolean isExactEmfRoot(ModelPart root) {
-        return root != null && EMF_ROOT_CLASS.equals(root.getClass().getName());
+    private static boolean isSupportedEmfRoot(ModelPart root) {
+        if (root == null) {
+            return false;
+        }
+        String name = root.getClass().getName();
+        return EMF_ROOT_CLASS.equals(name)
+                || name.equals("traben.entity_model_features.models.parts.EMFModelPartVanilla");
     }
 
     private static int semanticHeadScore(String rawName) {

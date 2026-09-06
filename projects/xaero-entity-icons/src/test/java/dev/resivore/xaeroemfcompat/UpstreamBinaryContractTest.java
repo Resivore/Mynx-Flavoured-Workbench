@@ -170,6 +170,25 @@ class UpstreamBinaryContractTest {
     }
 
     @Test
+    void emfVanillaRootFamilyIsAnEmfPartAndKeepsAPublicRouteToTheRetainedRoot() throws IOException {
+        ClassNode vanilla = readClass(EMF,
+                "traben/entity_model_features/models/parts/EMFModelPartVanilla.class");
+        assertEquals("traben/entity_model_features/models/parts/EMFModelPartWithState", vanilla.superName);
+        ClassNode withState = readClass(EMF,
+                "traben/entity_model_features/models/parts/EMFModelPartWithState.class");
+        assertEquals("traben/entity_model_features/models/parts/EMFModelPart", withState.superName);
+        ClassNode emfPart = readClass(EMF,
+                "traben/entity_model_features/models/parts/EMFModelPart.class");
+        assertTrue(emfPart.methods.stream().anyMatch(method -> method.name.equals("getRoot")
+                && method.desc.equals("()Ltraben/entity_model_features/models/parts/EMFModelPartRoot;")));
+
+        String resolver = Files.readString(Path.of(System.getProperty("projectRoot"))
+                .resolve("src/main/java/dev/resivore/xaeroemfcompat/EmfIconPartResolver.java"));
+        assertTrue(resolver.contains("EMFModelPartVanilla"));
+        assertTrue(resolver.contains("getMethod(\"getRoot\")"));
+    }
+
+    @Test
     void xaeroCentersFromOnlyTheCanonicalPartsDirectLargestCube() throws IOException {
         ClassNode util = readClass(XAERO,
                 "xaero/hud/minimap/radar/icon/creator/render/form/model/part/"

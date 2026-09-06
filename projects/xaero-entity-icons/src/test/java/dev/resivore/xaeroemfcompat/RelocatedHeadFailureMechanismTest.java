@@ -393,7 +393,7 @@ class RelocatedHeadFailureMechanismTest {
         ModelPart wrongHead = cubePart(Map.of());
         ModelPart root = emptyPart(Map.of(
                 "head", canonicalHead,
-                "body", emptyPart(Map.of("EMF_head2", wrongHead))
+                "body", emptyPart(Map.of("EMF_ear", wrongHead))
         ));
 
         assertTrue(EmfIconPartResolver.resolveRelocatedHead(
@@ -401,6 +401,50 @@ class RelocatedHeadFailureMechanismTest {
         assertTrue(EmfIconPartResolver.resolveRelocatedHead(
                 root, canonicalHead, vanillaRoot, traced(wrongHead, 0xFFFFFFFF), true)
                 .isEmpty());
+    }
+
+    @Test
+    void dimensionChangedButUniquelyTracedSemanticHeadUsesBoundedFallback() {
+        ModelPart vanillaRoot = SheepModel.createBodyLayer().bakeRoot();
+        ModelPart canonicalHead = transformedEmpty(vanillaRoot.getChild("head"), Map.of());
+        ModelPart reshapedHead = cubePart(Map.of());
+        ModelPart body = emptyPart(Map.of("EMF_head2", reshapedHead, "EMF_arm", cubePart(Map.of())));
+        ModelPart root = emptyPart(Map.of("head", canonicalHead, "body", body));
+
+        EmfIconPartResolver.Resolution result = EmfIconPartResolver.resolveRelocatedHead(
+                root, canonicalHead, vanillaRoot, traced(reshapedHead, 0xFF102030), true).orElseThrow();
+
+        assertSame(reshapedHead, result.geometryRoot());
+        assertEquals(1, cubeCount(result.renderAdapter()));
+        assertFalse(cubePaths(result.renderAdapter()).stream().anyMatch(path -> path.contains("EMF_arm")));
+        assertEquals("RESOLVED", IconDiagnostics.lastReason());
+    }
+
+    @Test
+    void canonicalEmfHeadIsDetachedWithOnlyFacialHeadwearAndNoBodySiblings() {
+        ModelPart vanillaRoot = SheepModel.createBodyLayer().bakeRoot();
+        ModelPart vanillaHead = vanillaRoot.getChild("head");
+        ModelPart nose = cubePart(Map.of("ribbits_farmer_hat", cubePart(Map.of("band", cubePart(Map.of())))));
+        ModelPart canonicalHead = new ModelPart(
+                List.copyOf(ModelPartUtil.getCubes(vanillaHead)),
+                Map.of("nose", nose, "body", cubePart(Map.of()), "left_arm", cubePart(Map.of())));
+        canonicalHead.x = vanillaHead.x;
+        canonicalHead.y = vanillaHead.y;
+        canonicalHead.z = vanillaHead.z;
+        canonicalHead.setInitialPose(canonicalHead.storePose());
+        ModelPart root = emptyPart(Map.of("head", canonicalHead));
+
+        EmfIconPartResolver.Resolution result = EmfIconPartResolver.resolveRelocatedHead(
+                root, canonicalHead, vanillaRoot, traced(canonicalHead, 0xFFAABBCC), true).orElseThrow();
+
+        assertSame(canonicalHead, result.tracedHead());
+        assertSame(canonicalHead, result.geometryRoot());
+        assertEquals("root/head", result.geometryPath());
+        List<String> paths = cubePaths(result.renderAdapter());
+        assertTrue(paths.stream().anyMatch(path -> path.contains("nose/ribbits_farmer_hat/band")));
+        assertFalse(paths.stream().anyMatch(path -> path.contains("body")));
+        assertFalse(paths.stream().anyMatch(path -> path.contains("left_arm")));
+        assertEquals("RESOLVED_CANONICAL_GEOMETRY", IconDiagnostics.lastReason());
     }
 
     static ModelPart customPart(JsonObject data) {
