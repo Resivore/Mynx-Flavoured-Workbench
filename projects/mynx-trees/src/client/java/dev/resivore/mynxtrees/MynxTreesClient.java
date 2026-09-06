@@ -12,7 +12,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.util.Mth;
 public final class MynxTreesClient implements ClientModInitializer {
     /** Compensates the raw RU color-provider value for the current Iris/Complementary render pipeline. */
-    public static final float SILVER_BIRCH_VALUE = 0.70F;
+    public static final float SILVER_BIRCH_VALUE = 0.52F;
 
     public static int golden(int x, int z) {
         float hue=Mth.sin(x/10.0F+Mth.sin(((float)z+x)/50.0F)*3.0F)/75.0F+0.15F;
