@@ -1,0 +1,33 @@
+{
+  "parent": "main:tutorial/obtain_blast_furnace",
+  "criteria": {
+    "get_gold": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "minecraft:gold_ingot"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "adv.kleispack.obtain_gold.desc"
+    },
+    "icon": {
+      "count": 1,
+      "id": "minecraft:gold_ingot"
+    },
+    "title": {
+      "translate": "adv.kleispack.obtain_gold"
+    },
+    "hidden": false
+  },
+  "requirements": [
+    [
+      "get_gold"
+    ]
+  ]
+}

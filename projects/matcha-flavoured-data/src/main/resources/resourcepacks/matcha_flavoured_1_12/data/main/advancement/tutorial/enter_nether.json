@@ -1,0 +1,32 @@
+{
+	"parent": "main:tutorial/obtain_diamond",
+	"criteria": {
+		"entered_nether": {
+			"conditions": {
+				"to": "minecraft:the_nether"
+			},
+			"trigger": "minecraft:changed_dimension"
+		}
+	},
+	"display": {
+		"description": {
+			"translate": "adv.kleispack.enter_nether.desc"
+		},
+		"icon": {
+			"components": {
+				"minecraft:enchantment_glint_override": true
+			},
+			"count": 1,
+			"id": "minecraft:blaze_rod"
+		},
+		"title": {
+			"translate": "adv.kleispack.enter_nether"
+		},
+		"frame": "goal"
+	},
+	"requirements": [
+		[
+			"entered_nether"
+		]
+	]
+}
