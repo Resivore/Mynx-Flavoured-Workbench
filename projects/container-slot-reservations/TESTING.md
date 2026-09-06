@@ -1,21 +1,22 @@
-# Container Slot Reservations Canary 14 runtime procedure
+# Container Slot Reservations Canary 15 runtime procedure
 
-**Candidate: `0.1.0-canary14`; controlled validation is not a runtime pass. Do not promote.**
+**Candidate: `0.1.0-canary15`; controlled validation and deployment are not a runtime pass. Do not promote.**
 
 Use only the dedicated **Matcha Flavoured 26.2 Workbench**. Never use the protected 26.1.2 gameplay profile. Preserve `logs/latest.log` and stop immediately for a crash, absent or duplicated panel, competing outer tooltip, wrong host binding, click-through, loss, duplication, or unexpected mod/profile change.
 
-Exact candidate: `container-slot-reservations-0.1.0-canary14.jar`, 170465 bytes, SHA-256 `72b602c1fa781a53fecfbdfd58a3174ee85a910a7f0c099dcdd178c339d1f790`, source `4cd247732e39787fdafef9d9fa25a461b9665f0e`. It is verified in dedicated Workbench Slot A as deployment `fa2ee388-d8f7-4cb6-a2fc-1410b0b7e561` / artifact `7c38c5f3-25f9-4d4a-9f16-1d41c88fa314` at manager revision 104 (2026-09-06T06:30:00Z), and remains `RUNTIME_UNTESTED`. Exact C13 Slot A deployment `377b5b52-c3a5-49c6-9c5e-bc722f263cf7` / artifact `3bbd66ef-c703-41ab-8ada-92275c9f6f3b` is historical `UNTESTED` evidence only.
+Exact candidate: `container-slot-reservations-0.1.0-canary15.jar`, 174491 bytes, SHA-256 `daf24d25732d4e436d37d3e44305a3d63b67a1ab86b586bc8ec7207b98a8ed1b`, source `f33060e874258c46bde48c2aafd015615adf3ec0`. It is verified in dedicated Workbench Slot A as deployment `2f718451-1b67-4ebc-bbfe-ed6a685bf6fb` / artifact `bf64fb59-2421-4743-b6c9-f015ae4e2bd3` at manager revision 106, and remains `RUNTIME_UNTESTED`. Exact C14 Slot A deployment `fa2ee388-d8f7-4cb6-a2fc-1410b0b7e561` / artifact `7c38c5f3-25f9-4d4a-9f16-1d41c88fa314` is historical `FAIL` evidence only for its incorrect hardcoded bottom-bezel source.
 
-## Canary 14 focused gate
+## Canary 15 focused gate
 
-### Bottom bezel
+### Active-resource-pack bottom bezel and reload
 
-- Hover a count-one shulker and inspect the standalone panel.
-- Confirm the panel ends directly below the third shulker row with the matching bottom bezel from the active `minecraft:textures/gui/container/shulker_box.png`.
-- Confirm no player-inventory or hotbar slot dividers appear in that strip.
-- If practical, change or reload a resource pack that replaces the shulker GUI and confirm the upper panel and bezel change together.
+- With the active Matcha / Inventory Extended compatibility texture, hover a count-one shulker and inspect the standalone panel.
+- Require the 176x83 panel to retain its unchanged upper 176x77 shulker region and end directly below the third shulker row with a clean six-pixel bottom bezel. The lower strip must not show player-inventory divider lines.
+- Reload or change to a resource pack with the vanilla shulker layout, then reopen/hover the host. Require the same runtime texture to supply the upper panel and the clean bottom bezel without restarting Minecraft.
+- Reload or return to the taller compatibility texture and require the clean extended-layout bezel to return, again without restarting Minecraft.
+- If a replacement texture is malformed or unsupported, require the upper 176x77 panel to remain stable and stop/report if an arbitrary inventory-row fragment appears as the bottom frame.
 
-### Backmost extraction
+### Preserved backmost extraction
 
 Put visibly different items into at least two separated shulker slots, including an early/front slot and a later/back slot. Carry the count-one shulker on the cursor and secondary-click an empty writable player slot.
 

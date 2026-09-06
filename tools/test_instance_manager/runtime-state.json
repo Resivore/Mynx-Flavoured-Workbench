@@ -2,8 +2,8 @@
   "$schema": "../../schemas/runtime-state.schema.json",
   "schema_version": 2,
   "activation": "ACTIVE",
-  "revision": 104,
-  "updated_at": "2026-09-06T06:30:00Z",
+  "revision": 106,
+  "updated_at": "2026-09-06T23:10:00Z",
   "accepted_baseline": {
     "revision": 19,
     "provenance": {
@@ -904,24 +904,24 @@
       "members": [
         {
           "unit": {
-            "deployment_id": "fa2ee388-d8f7-4cb6-a2fc-1410b0b7e561",
+            "deployment_id": "2f718451-1b67-4ebc-bbfe-ed6a685bf6fb",
             "project_uuid": "3ab36584-8732-554f-840e-28a75c422660",
             "project_id": "container-slot-reservations",
             "project_identity_source": "CURRENT_MANIFEST",
-            "version": "0.1.0-canary14",
-            "source_commit": "4cd247732e39787fdafef9d9fa25a461b9665f0e",
+            "version": "0.1.0-canary15",
+            "source_commit": "f33060e874258c46bde48c2aafd015615adf3ec0",
             "artifacts": [
               {
-                "artifact_id": "7c38c5f3-25f9-4d4a-9f16-1d41c88fa314",
+                "artifact_id": "bf64fb59-2421-4743-b6c9-f015ae4e2bd3",
                 "kind": "MOD",
-                "filename": "container-slot-reservations-0.1.0-canary14.jar",
-                "sha256": "72b602c1fa781a53fecfbdfd58a3174ee85a910a7f0c099dcdd178c339d1f790",
+                "filename": "container-slot-reservations-0.1.0-canary15.jar",
+                "sha256": "daf24d25732d4e436d37d3e44305a3d63b67a1ab86b586bc8ec7207b98a8ed1b",
                 "ownership_keys": [
                   "mod:container_slot_reservations"
                 ],
                 "source": {
                   "type": "REPOSITORY",
-                  "path": "projects/container-slot-reservations/artifacts/container-slot-reservations-0.1.0-canary14.jar"
+                  "path": "projects/container-slot-reservations/artifacts/container-slot-reservations-0.1.0-canary15.jar"
                 }
               }
             ]
@@ -939,8 +939,8 @@
       ],
       "deployment": {
         "state": "READY_TO_TEST_VERIFIED",
-        "deployed_at": "2026-09-06T06:30:00Z",
-        "ready_verified_at": "2026-09-06T06:30:00Z"
+        "deployed_at": "2026-09-06T23:10:00Z",
+        "ready_verified_at": "2026-09-06T23:10:00Z"
       }
     },
     "B": {

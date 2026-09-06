@@ -24,7 +24,7 @@
       "Preserve accepted C4 storage reservations, exact ghost/zero/marker visuals, public API compatibility for QSN C9 and CCAR C12, and the centralized empty-shulker template rule without external tooltip integration."
     ],
     "scope": [
-      "Current 0.1.0-canary14 from implementation checkpoint 4cd247732e39787fdafef9d9fa25a461b9665f0e retains the active-resource-pack shulker texture composition: its unchanged 176x77 upper title/grid region is followed directly by only the true six-pixel bottom bezel (source Y=160 through 165), with a focused vanilla-26.2 pixel contract rejecting player inventory/hotbar divider rows. It makes every implicit carried-shulker default choose the highest occupied internal slot, preserves a valid explicit selection, retains a capacity-limited selected remainder, and after a full default extraction continues backward through occupied slots. Reservations, component identity, panel grid coordinates, QSN, CCAR, persistence, and GUI assets remain unchanged.",
+      "Current 0.1.0-canary15 from implementation checkpoint f33060e874258c46bde48c2aafd015615adf3ec0 retains the unchanged 176x77 upper title/grid region and 176x6 bottom-frame composition from the same active minecraft:textures/gui/container/shulker_box.png, but resolves the bottom source during client-resource reload by scanning the final non-transparent row in logical X=0..175. Vanilla resolves Y=160..165; a taller compatibility layout resolves its true Y=214..219; unsupported layouts fail closed by omitting only the bottom blit. It makes every implicit carried-shulker default choose the highest occupied internal slot, preserves a valid explicit selection, retains a capacity-limited selected remainder, and after a full default extraction continues backward through occupied slots. Reservations, component identity, panel grid coordinates, QSN, CCAR, persistence, and GUI assets remain unchanged.",
       "While CSR owns Slot A and remains TESTING, a finalized current CSR testing successor normally replaces the preceding CSR candidate through one serialized Test Instance Manager Slot A transition; only a concrete manager preimage, dependency, or physical-safety failure may leave that successor retained but not deployed.",
       "Bind one exact count-one shulker host by screen, menu, menu ID, visible slot index, Slot instance, underlying container slot, explicit Creative player-inventory locator where applicable, and complete SHA-256 ItemStack fingerprint; never search for an equal stack.",
       "Render and hit-test one fixed 176x83 native panel with an unchanged 176x77 upper shulker region plus the same runtime texture's 176x6 bottom frame, 27 physical 18x18 cells, right-then-left clamped placement, a narrow deterministic corridor, one grace frame, live contents, vanilla cell highlights, exact existing reservation visuals, and carried-stack-above-panel strata.",
@@ -119,16 +119,16 @@
     ]
   },
   "state": {
-    "milestone": "CSR Canary 14 is the controlled-validation successor to C13. It preserves the runtime-resolved shulker texture and establishes a pixel-level contract for its true Y=160..165 six-pixel bottom bezel, excluding the player inventory/hotbar divider row. At the native carried-shulker secondary-click seam, no valid selection defaults to the highest occupied ordinary internal slot; an explicit valid cell still wins; a partial capacity-limited move retains that cell; and complete repeated default moves walk backward across gaps. Exact C12 manual observations and C13 Slot A deployment 377b5b52-c3a5-49c6-9c5e-bc722f263cf7 / artifact 3bbd66ef-c703-41ab-8ada-92275c9f6f3b remain historical evidence only. The physical manager verified C14 in Slot A as deployment fa2ee388-d8f7-4cb6-a2fc-1410b0b7e561 / artifact 7c38c5f3-25f9-4d4a-9f16-1d41c88fa314 at manager revision 104; it remains RUNTIME_UNTESTED. Slot B/QSN C9 remains independent and unchanged. Controlled validation and ready deployment are not runtime success.",
+    "milestone": "CSR Canary 15 is the controlled-validation successor to C14's exact Slot A bottom-bezel FAIL: C14 rendered the intended 176x83 panel and six-pixel strip, but the active Matcha / Inventory Extended texture made C14's hardcoded Y=160..165 strip show inventory-slot dividers; no other C14 behavior is inferred. C15 caches the bottom-frame Y resolved from the highest-priority active shulker texture on each client-resource reload, preserves the 176x77 main crop and all unrelated behavior, and fails closed without a guessed bottom strip for unsupported resources. C15 replaces C14 in Slot A as deployment 2f718451-1b67-4ebc-bbfe-ed6a685bf6fb / artifact bf64fb59-2421-4743-b6c9-f015ae4e2bd3 at manager revision 106 and remains RUNTIME_UNTESTED. Slot B/QSN C9 remains independent and unchanged. Controlled validation and ready deployment are not runtime success.",
     "releases": {
       "current": {
-        "version": "0.1.0-canary14",
-        "embedded_version": "0.1.0-canary14",
+        "version": "0.1.0-canary15",
+        "embedded_version": "0.1.0-canary15",
         "artifact": {
-          "filename": "container-slot-reservations-0.1.0-canary14.jar",
-          "sha256": "72b602c1fa781a53fecfbdfd58a3174ee85a910a7f0c099dcdd178c339d1f790"
+          "filename": "container-slot-reservations-0.1.0-canary15.jar",
+          "sha256": "daf24d25732d4e436d37d3e44305a3d63b67a1ab86b586bc8ec7207b98a8ed1b"
         },
-        "source_commit": "4cd247732e39787fdafef9d9fa25a461b9665f0e",
+        "source_commit": "f33060e874258c46bde48c2aafd015615adf3ec0",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
@@ -166,11 +166,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 23,
-    "activity_at": "2026-09-06T06:35:00Z",
-    "updated_at": "2026-09-06T06:35:00Z",
-    "last_codex_at": "2026-09-06T06:35:00Z",
-    "source_commit": "8ed671f9daf1c1257e3f833c0198d78d9839bd42",
+    "revision": 24,
+    "activity_at": "2026-09-06T23:10:00Z",
+    "updated_at": "2026-09-06T23:10:00Z",
+    "last_codex_at": "2026-09-06T23:10:00Z",
+    "source_commit": "f33060e874258c46bde48c2aafd015615adf3ec0",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
