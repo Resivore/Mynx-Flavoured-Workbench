@@ -85,7 +85,7 @@ class Resources(unittest.TestCase):
         loot=self.read('data/mynx_trees/loot_table/blocks/sweet_violets.json');functions=loot['pools'][0]['entries'][0]['functions'];self.assertEqual([1,2,3,4],[f['count'] for f in functions if 'count' in f]);self.assertNotIn('minecraft:pink_petals',json.dumps(loot))
         log=self.read('assets/mynx_trees/models/block/silver_birch_log.json');self.assertEqual('minecraft:block/birch_log_top',log['textures']['end'])
         log=self.read('assets/mynx_trees/models/block/wisteria_log.json');self.assertEqual('mynx_trees:block/wisteria_log_top',log['textures']['end'])
-        inv=self.read('assets/mynx_trees/items/silver_birch_leaves.json');self.assertEqual('mynx_trees:block/silver_birch_leaves',inv['model']['model']);self.assertEqual([{'type':'minecraft:constant','value':-8034533}],inv['model']['tints']);self.assertFalse((OUT/'assets/mynx_trees/textures/item/silver_birch_leaves.png').exists());self.assertEqual('mynx_trees:block/silver_birch_leaves',self.read('assets/mynx_trees/models/item/silver_birch_leaves.json')['parent'])
+        inv=self.read('assets/mynx_trees/items/silver_birch_leaves.json');self.assertEqual('mynx_trees:block/silver_birch_leaves',inv['model']['model']);self.assertEqual([{'type':'minecraft:constant','value':-8034015}],inv['model']['tints']);self.assertFalse((OUT/'assets/mynx_trees/textures/item/silver_birch_leaves.png').exists());self.assertEqual('mynx_trees:block/silver_birch_leaves',self.read('assets/mynx_trees/models/item/silver_birch_leaves.json')['parent'])
     def test_bounded_deterministic_decoration_and_native_interactions(self):
         source=(ROOT/'src/main/java/dev/resivore/mynxtrees/GroveFlowers.java').read_text();self.assertIn('context.random()',source);self.assertIn('state.canSurvive',source);self.assertIn('!context.isAir(pos)',source);self.assertNotIn('new Random',source)
         common=(ROOT/'src/main/java/dev/resivore/mynxtrees/MynxTrees.java').read_text();self.assertIn('extends SaplingBlock',common);self.assertIn('extends FlowerBedBlock',common)
@@ -107,15 +107,16 @@ class Resources(unittest.TestCase):
         for name in ['silver_birch_leaves','wisteria_leaves']:self.assertIn('mynx_trees:'+name,self.read('data/minecraft/tags/block/leaves.json')['values'])
     def test_silver_birch_tint_and_texture_contracts_stay_exact(self):
         manifest=json.loads((ROOT/'build-inputs.json').read_text());color=manifest['color_reference']
-        self.assertEqual('h = sin(x/10 + sin((z+x)/50)*3)/75 + 0.12; s = 0.8; v = 0.52; float arithmetic, Minecraft sine lookup, RGB rounding as Java HSBtoRGB; this is the current intentional render compensation toward the user-supplied visual target, not byte-for-byte RU raw provider output',color['leaf_hsv'])
-        self.assertEqual('#85671B',color['inventory_rgb']);self.assertEqual('#B0C73A',color['grass'])
+        self.assertEqual('h = sin(x/10 + sin((z+x)/50)*3)/75 + 0.12; s = 0.75; v = 0.52; float arithmetic, Minecraft sine lookup, RGB rounding as Java HSBtoRGB; this is the current intentional render compensation toward the user-supplied visual target, not byte-for-byte RU raw provider output',color['leaf_hsv'])
+        self.assertEqual('#856921',color['inventory_rgb']);self.assertEqual('#B0C73A',color['grass'])
         leaf=next(asset for asset in manifest['packaged_assets'] if asset['target']=='assets/mynx_trees/textures/block/silver_birch_leaves.png')
         self.assertEqual('fdabcce828735f8435dca7884d63957d4b7271e43fa38cf7349df06eb928e8fc',leaf['sha256'])
         client=(ROOT/'src/client/java/dev/resivore/mynxtrees/MynxTreesClient.java').read_text()
         self.assertIn('public static final float SILVER_BIRCH_HUE_BASE = 0.12F;',client)
+        self.assertIn('public static final float SILVER_BIRCH_SATURATION = 0.75F;',client)
         self.assertIn('float hue=Mth.sin(x/10.0F+Mth.sin(((float)z+x)/50.0F)*3.0F)/75.0F+SILVER_BIRCH_HUE_BASE;',client)
         self.assertIn('public static final float SILVER_BIRCH_VALUE = 0.52F;',client)
-        self.assertIn('return java.awt.Color.HSBtoRGB(hue,0.8F,SILVER_BIRCH_VALUE);',client)
+        self.assertIn('return java.awt.Color.HSBtoRGB(hue,SILVER_BIRCH_SATURATION,SILVER_BIRCH_VALUE);',client)
     def test_base_bark_soils_are_exact_and_independent(self):
         tag=self.read('data/mynx_trees/tags/block/silver_birch_base_soils.json')
         self.assertEqual({'replace':False,'values':['minecraft:'+n for n in ['grass_block','dirt','coarse_dirt','rooted_dirt','podzol','mycelium']]},tag)

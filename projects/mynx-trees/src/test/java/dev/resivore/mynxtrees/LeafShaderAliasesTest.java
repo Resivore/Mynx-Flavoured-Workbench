@@ -45,7 +45,8 @@ class LeafShaderAliasesTest {
     }
     @Test void inventoryGoldenTintMatchesWorldDefaultOnce() {
         assertEquals(0.12F,MynxTreesClient.SILVER_BIRCH_HUE_BASE);
+        assertEquals(0.75F,MynxTreesClient.SILVER_BIRCH_SATURATION);
         assertEquals(0.52F,MynxTreesClient.SILVER_BIRCH_VALUE);
-        assertEquals(0xFF85671B,MynxTreesClient.golden(0,0));
+        assertEquals(0xFF856921,MynxTreesClient.golden(0,0));
     }
 }
