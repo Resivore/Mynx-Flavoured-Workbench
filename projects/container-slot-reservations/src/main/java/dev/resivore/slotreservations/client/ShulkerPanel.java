@@ -165,15 +165,13 @@ public final class ShulkerPanel {
     private static void render(GuiGraphicsExtractor graphics, NonNullList<ItemStack> contents) {
         graphics.nextStratum();
         graphics.blit(RenderPipelines.GUI_TEXTURED, SHULKER_TEXTURE, geometry.x(), geometry.y(),
-                0, 0, ShulkerPanelGeometry.WIDTH, ShulkerPanelGeometry.HEIGHT, 256, 256);
+                0, 0, ShulkerPanelGeometry.WIDTH, ShulkerPanelGeometry.MAIN_HEIGHT, 256, 256);
+        graphics.blit(RenderPipelines.GUI_TEXTURED, SHULKER_TEXTURE, geometry.x(),
+                geometry.y() + ShulkerPanelGeometry.MAIN_HEIGHT, 0,
+                ShulkerPanelGeometry.BOTTOM_FRAME_SOURCE_Y, ShulkerPanelGeometry.WIDTH,
+                ShulkerPanelGeometry.BOTTOM_FRAME_HEIGHT, 256, 256);
         graphics.text(Minecraft.getInstance().font, binding.slot().getItem().getHoverName(),
                 geometry.x() + 8, geometry.y() + 6, 0x404040, false);
-        int selected = selectedIndex();
-        if (selected >= 0) {
-            var rect = geometry.cellBounds(selected);
-            graphics.fill(rect.x() + 1, rect.y() + 1, rect.right() - 1, rect.bottom() - 1, 0x5938A8FF);
-            graphics.outline(rect.x(), rect.y(), rect.width(), rect.height(), 0xFF38A8FF);
-        }
         if (hoveredCell >= 0) highlight(graphics, HIGHLIGHT_BACK, hoveredCell);
         List<ShulkerPanelOverlay.SlotOverlay> overlays = ShulkerPanelOverlay.plan(binding.slot().getItem(), contents);
         for (ShulkerPanelOverlay.SlotOverlay overlay : overlays) {
