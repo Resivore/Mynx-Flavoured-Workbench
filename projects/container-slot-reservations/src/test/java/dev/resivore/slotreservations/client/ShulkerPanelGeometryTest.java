@@ -2,9 +2,7 @@ package dev.resivore.slotreservations.client;
 
 import org.junit.jupiter.api.Test;
 
-import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
-import java.io.InputStream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -45,8 +43,6 @@ final class ShulkerPanelGeometryTest {
         assertEquals(176, tiny.bounds().width());
         assertEquals(83, tiny.bounds().height());
         assertEquals(77, ShulkerPanelGeometry.MAIN_HEIGHT);
-        assertEquals(160, ShulkerPanelGeometry.BOTTOM_FRAME_SOURCE_Y,
-                "26.2's true bottom bezel starts after the player inventory and hotbar rows");
         assertEquals(6, ShulkerPanelGeometry.BOTTOM_FRAME_HEIGHT,
                 "The selected region is only the six-pixel bottom bezel, never a slot row");
     }
@@ -63,25 +59,55 @@ final class ShulkerPanelGeometryTest {
                 "Extending the lower frame must not move the 9x3 cell grid");
     }
 
-    @Test void vanilla26BottomSourceIsOnlyTheSolidShulkerBezel() throws Exception {
-        try (InputStream input = ShulkerPanelGeometryTest.class.getClassLoader().getResourceAsStream(
-                "assets/minecraft/textures/gui/container/shulker_box.png")) {
-            assertNotNull(input, "The exact 26.2 runtime-resolved shulker texture is required for this contract");
-            BufferedImage texture = ImageIO.read(input);
-            assertNotNull(texture);
-            assertEquals(256, texture.getWidth());
-            assertEquals(256, texture.getHeight());
+    @Test void vanillaLayoutResolvesItsFinalSixRowsAsTheBottomFrame() {
+        BufferedImage vanilla = contentThrough(256, 165);
+        assertEquals(160, resolve(vanilla).orElseThrow());
+    }
 
-            // Y=156 is the hotbar slot row: its vertical dividers must never become panel bezel pixels.
-            assertNotEquals(texture.getRGB(7, 156), texture.getRGB(24, 156));
-            for (int y = ShulkerPanelGeometry.BOTTOM_FRAME_SOURCE_Y;
-                 y < ShulkerPanelGeometry.BOTTOM_FRAME_SOURCE_Y + ShulkerPanelGeometry.BOTTOM_FRAME_HEIGHT; y++) {
-                int uninterruptedBezel = texture.getRGB(8, y);
-                for (int dividerPosition : new int[]{26, 44, 62, 80, 98, 116, 134, 152}) {
-                    assertEquals(uninterruptedBezel, texture.getRGB(dividerPosition, y),
-                            "Bottom source must not include a player-inventory or hotbar slot divider at Y=" + y);
-                }
-            }
-        }
+    @Test void extendedLayoutRejectsTheInventoryDividerRowAndUsesItsActualBezel() {
+        BufferedImage extended = contentThrough(256, 219);
+        extended.setRGB(7, 160, 0xFF111111);
+        extended.setRGB(24, 160, 0xFFEEEEEE);
+        assertNotEquals(extended.getRGB(7, 160), extended.getRGB(24, 160),
+                "The synthetic compatibility row must retain inventory-divider material");
+        assertEquals(214, resolve(extended).orElseThrow());
+        assertNotEquals(160, resolve(extended).orElseThrow());
+    }
+
+    @Test void integerScaledTextureMapsPhysicalContentBackToLogicalCoordinates() {
+        BufferedImage scaled = contentThrough(512, 439);
+        assertEquals(214, resolve(scaled).orElseThrow());
+    }
+
+    @Test void resourceReloadReplacesTheCachedBottomFrameLayout() {
+        BufferedImage vanilla = contentThrough(256, 165);
+        BufferedImage extended = contentThrough(256, 219);
+        reload(vanilla);
+        assertEquals(160, ShulkerPanelTextureLayout.bottomFrameSourceY().orElseThrow());
+        reload(extended);
+        assertEquals(214, ShulkerPanelTextureLayout.bottomFrameSourceY().orElseThrow());
+    }
+
+    @Test void unsupportedOrEmptyTextureFailsClosedWithoutGuessingABottomFrame() {
+        assertTrue(ShulkerPanelTextureLayout.resolve(300, 300, (x, y) -> 255).isEmpty());
+        assertTrue(ShulkerPanelTextureLayout.resolve(256, 256, (x, y) -> 0).isEmpty());
+        ShulkerPanelTextureLayout.reloadForTest(300, 300, (x, y) -> 255);
+        assertTrue(ShulkerPanelTextureLayout.bottomFrameSourceY().isEmpty());
+    }
+
+    private static BufferedImage contentThrough(int size, int lastContentRow) {
+        BufferedImage image = new BufferedImage(size, size, BufferedImage.TYPE_INT_ARGB);
+        for (int y = 0; y <= lastContentRow; y++) image.setRGB(0, y, 0xFF4C4C4C);
+        return image;
+    }
+
+    private static java.util.OptionalInt resolve(BufferedImage image) {
+        return ShulkerPanelTextureLayout.resolve(image.getWidth(), image.getHeight(),
+                (x, y) -> image.getRGB(x, y) >>> 24);
+    }
+
+    private static void reload(BufferedImage image) {
+        ShulkerPanelTextureLayout.reloadForTest(image.getWidth(), image.getHeight(),
+                (x, y) -> image.getRGB(x, y) >>> 24);
     }
 }

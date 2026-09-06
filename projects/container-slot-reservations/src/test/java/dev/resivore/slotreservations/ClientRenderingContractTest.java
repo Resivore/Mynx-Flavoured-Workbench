@@ -111,13 +111,18 @@ final class ClientRenderingContractTest {
     @Test
     void nativePanelOwnsItsRenderingWithoutOptionalModLinkage() throws IOException {
         String panel = source("client/ShulkerPanel.java");
+        String layout = source("client/ShulkerPanelTextureLayout.java");
         String screen = source("mixin/client/AbstractContainerScreenMixin.java");
         String fabricMetadata = Files.readString(ROOT.resolve("src/main/resources/fabric.mod.json"));
-        assertTrue(panel.contains("textures/gui/container/shulker_box.png"));
+        assertTrue(layout.contains("textures/gui/container/shulker_box.png"));
+        assertTrue(layout.contains("resources.getResource(SHULKER_TEXTURE)"));
+        assertTrue(layout.contains("height != width"));
+        assertTrue(layout.contains("bottomFrameSourceY = resolved"));
         assertTrue(panel.contains("ShulkerPanelGeometry.WIDTH"));
         assertTrue(panel.contains("ShulkerPanelGeometry.MAIN_HEIGHT"));
-        assertTrue(panel.contains("ShulkerPanelGeometry.BOTTOM_FRAME_SOURCE_Y"));
+        assertTrue(panel.contains("ShulkerPanelTextureLayout.bottomFrameSourceY()"));
         assertTrue(panel.contains("ShulkerPanelGeometry.BOTTOM_FRAME_HEIGHT"));
+        assertFalse(panel.contains("BOTTOM_FRAME_SOURCE_Y"));
         assertFalse(panel.contains("0x5938A8FF"), "CSR must not draw a selected-cell blue fill");
         assertFalse(panel.contains("0xFF38A8FF"), "CSR must not draw a selected-cell blue outline");
         assertTrue(panel.contains("highlight(graphics, HIGHLIGHT_BACK, hoveredCell)"));

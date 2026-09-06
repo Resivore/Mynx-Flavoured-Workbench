@@ -10,11 +10,15 @@ import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
+import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.resources.Identifier;
+import net.minecraft.server.packs.PackType;
+import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.inventory.Slot;
 import org.lwjgl.glfw.GLFW;
 
@@ -25,6 +29,19 @@ public final class ContainerSlotReservationsClient implements ClientModInitializ
     @Override
     public void onInitializeClient() {
         GhostItemRenderPipeline.initialize();
+        ResourceManagerHelper.get(PackType.CLIENT_RESOURCES).registerReloadListener(
+                new SimpleSynchronousResourceReloadListener() {
+                    @Override
+                    public Identifier getFabricId() {
+                        return Identifier.fromNamespaceAndPath(ContainerSlotReservations.MOD_ID,
+                                "shulker_panel_texture_layout");
+                    }
+
+                    @Override
+                    public void onResourceManagerReload(ResourceManager resources) {
+                        ShulkerPanelTextureLayout.reload(resources);
+                    }
+                });
 
         KeyMapping.Category category = KeyMapping.Category.register(Identifier.fromNamespaceAndPath(
                 ContainerSlotReservations.MOD_ID, "controls"));

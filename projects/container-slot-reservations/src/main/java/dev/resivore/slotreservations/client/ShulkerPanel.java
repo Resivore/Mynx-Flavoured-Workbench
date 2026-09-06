@@ -33,8 +33,7 @@ import java.util.Optional;
 
 /** CSR-owned pinned panel state machine, rendering, hit testing, and input ownership. */
 public final class ShulkerPanel {
-    private static final Identifier SHULKER_TEXTURE = Identifier.withDefaultNamespace(
-            "textures/gui/container/shulker_box.png");
+    private static final Identifier SHULKER_TEXTURE = ShulkerPanelTextureLayout.SHULKER_TEXTURE;
     private static final Identifier HIGHLIGHT_BACK = Identifier.withDefaultNamespace("container/slot_highlight_back");
     private static final Identifier HIGHLIGHT_FRONT = Identifier.withDefaultNamespace("container/slot_highlight_front");
     private static Binding binding;
@@ -166,10 +165,10 @@ public final class ShulkerPanel {
         graphics.nextStratum();
         graphics.blit(RenderPipelines.GUI_TEXTURED, SHULKER_TEXTURE, geometry.x(), geometry.y(),
                 0, 0, ShulkerPanelGeometry.WIDTH, ShulkerPanelGeometry.MAIN_HEIGHT, 256, 256);
-        graphics.blit(RenderPipelines.GUI_TEXTURED, SHULKER_TEXTURE, geometry.x(),
-                geometry.y() + ShulkerPanelGeometry.MAIN_HEIGHT, 0,
-                ShulkerPanelGeometry.BOTTOM_FRAME_SOURCE_Y, ShulkerPanelGeometry.WIDTH,
-                ShulkerPanelGeometry.BOTTOM_FRAME_HEIGHT, 256, 256);
+        ShulkerPanelTextureLayout.bottomFrameSourceY().ifPresent(sourceY ->
+                graphics.blit(RenderPipelines.GUI_TEXTURED, SHULKER_TEXTURE, geometry.x(),
+                        geometry.y() + ShulkerPanelGeometry.MAIN_HEIGHT, 0, sourceY,
+                        ShulkerPanelGeometry.WIDTH, ShulkerPanelGeometry.BOTTOM_FRAME_HEIGHT, 256, 256));
         graphics.text(Minecraft.getInstance().font, binding.slot().getItem().getHoverName(),
                 geometry.x() + 8, geometry.y() + 6, 0x404040, false);
         if (hoveredCell >= 0) highlight(graphics, HIGHLIGHT_BACK, hoveredCell);
