@@ -18,13 +18,13 @@
   "definition": {
     "lifecycle": "ACTIVE",
     "goals": [
-      "Complete a faithful Fabric preservation port of Naturalist 2.0.3 to Minecraft Java 26.2.",
-      "Retain the upstream entity roster, variants, behavior, data, rendering, geometry, items, and interactions unless a later explicit Workbench decision changes policy."
+      "Maintain the selected Naturalist 2.0.3 Fabric gameplay roster on Minecraft Java 26.2.",
+      "Retain only animals, variant systems, eggs, Glow Goop, capture net, buckets, Knapsack, music discs, and their required assets/data; use vanilla replacements for retired custom material drops."
     ],
     "scope": [
-      "Maintain the persistence, entity render/model, entity behavior/API, egg/hatching, and dynamic item-model migrations present at frozen legacy checkpoint 63a8b46ac939d6bd48e21d4840c480361ad852ef.",
-      "Preserve 51 entity types, 48 synced variant registries with 99 definitions, legacy variant decoding, authored geometry, and exact upstream acquisition and drop ownership.",
-      "Maintain the completed Minecraft 26.2 API migration and its private, hash-verified resource-staging path without feature trimming, inert stubs, or protected-resource redistribution."
+      "Maintain the 26.2 persistence, rendering, behavior, egg/hatching, and client-item migrations for the retained roster.",
+      "Retain 49 entity types, 47 retained variant entities, legacy variant decoding, and selected upstream geometry/assets through the hash-verified private staging path.",
+      "Do not reintroduce retired custom foods/materials, Ant/ant hill/carried-food systems, snail shells, Froglass, Shellstone, antivenom, or protected-resource redistribution."
     ],
     "boundaries": {
       "owned_paths": [
@@ -89,15 +89,15 @@
     ]
   },
   "state": {
-    "milestone": "Private Canary 6 fixes Canary 5's immutable advancement-map world-load failure. The helper copies the incoming decoded map and the required production ModifyReceiver hook supplies that copy to Minecraft 26.2's Map.forEach publication step, after prior argument-replacing hooks including Matcha heart's immutable HEAD replacement. The unsafe mutating HEAD callback is removed. Exactly three conditional Matcha fallback parents, vanilla/already-reparented behavior, tactical-fishing catfish/bass alternatives, all requirement groups, unrelated entries and prior-hook contributions are preserved without input/nested-collection mutation or stale reload state. Java 25 clean build, 351 tests including 36 new production-transformed publication cases, all six preservation verifiers and dependency policy pass. Only two advancement classes and two metadata entries differ from retained Canary 5; all other 3,030 JAR entries and previous port fixes are byte-identical. Canary 5 is EXTERNAL USER-REPORTED WORLD-LOAD FAIL: September 5, 2026 Player Instance launch 16:43:50 America/Chicago, failure 16:44:24, Minecraft 26.2 / Loader 0.19.3 / Java 25; archived log corroborates UnsupportedOperationException at immutable Map.put immediately after Matcha heart enforcement. Loaded version is established, but no exact installed filename/hash/source binding is inferred. Canary 6 is ACTIVE, STATIC_PASS, NOT_DEPLOYED, RUNTIME_UNTESTED. Both dedicated slots remain occupied at manager revision 98 (A CSR C10, B QSN C9); no Minecraft launch or deployment occurred. Player diagnostics were read-only; protected 26.1.2 was never accessed. Await an authorized free slot for world entry, /reload, advancement-tree inspection and save/reopen under the relevant Matcha stack.",
+    "milestone": "Private Canary 7 applies the authorized Naturalist content cull: Ant, ant hill/carried-food, snail shell, Froglass, Shellstone, antivenom, and retired custom foods/materials are absent from registration and staged assets/data. Retained animals, variants, eggs, Glow Goop, capture net, buckets, Knapsack, music discs, and client roots remain; retired acquisition is replaced with vanilla equivalents where retained behavior requires one. Java 25 clean build and focused static checks pass. Canary 7 is ACTIVE, STATIC_PASS, NOT_DEPLOYED, RUNTIME_UNTESTED. No manager deployment or Minecraft runtime validation occurred; protected 26.1.2 and the Player Instance were not accessed.",
     "releases": {
       "current": {
-        "version": "2.0.3+26.2-port-canary6",
+        "version": "2.0.3+26.2-port-canary7",
         "artifact": {
-          "filename": "naturalist-2.0.3+26.2-port-canary6.jar",
-          "sha256": "132bea8de2356999656828fd3455126f45e46d622a19c611658eeb4405a1a67a"
+          "filename": "naturalist-2.0.3+26.2-port-canary7.jar",
+          "sha256": "4dd2bd7baa5500740b3906f0e2b7d61608b3592bb336bc93f12dd7f9ef3400ba"
         },
-        "source_commit": "4d25f3b5720400da4c7817cb4fc505a32b5b36cd",
+        "source_commit": "83004e268a0407eb33a6053ec425843917bf1ebb",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
@@ -116,11 +116,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 10,
-    "activity_at": "2026-09-05T22:30:39Z",
-    "updated_at": "2026-09-05T22:30:39Z",
-    "last_codex_at": "2026-09-05T22:30:39Z",
-    "source_commit": "4d25f3b5720400da4c7817cb4fc505a32b5b36cd",
+    "revision": 11,
+    "activity_at": "2026-09-06T03:00:00Z",
+    "updated_at": "2026-09-06T03:00:00Z",
+    "last_codex_at": "2026-09-06T03:00:00Z",
+    "source_commit": "83004e268a0407eb33a6053ec425843917bf1ebb",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
