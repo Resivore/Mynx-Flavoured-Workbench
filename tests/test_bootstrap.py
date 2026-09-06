@@ -1472,10 +1472,10 @@ class RuntimeContractTests(unittest.TestCase):
         tracked = load_json(ROOT / "tools" / "test_instance_manager" / "runtime-state.json")
         self.assertEqual("ACTIVE", tracked["activation"])
         self.assertEqual(2, tracked["schema_version"])
-        self.assertEqual(100, tracked["revision"])
-        self.assertEqual("2026-09-05T23:00:00Z", tracked["updated_at"])
+        self.assertEqual(101, tracked["revision"])
+        self.assertEqual("2026-09-06T02:45:00Z", tracked["updated_at"])
         self.assertEqual(
-            "831cca7a8afbd59889cd81cb764cacbcfd3d155fde21192cbc22b4fbe7b43e09",
+            "8a27b15836ec7dbffe91f1cb7725dd0eda32ed76e409160975ff18c3af578795",
             state_digest(tracked),
         )
         self.assertEqual(19, tracked["accepted_baseline"]["revision"])
@@ -1705,7 +1705,19 @@ class RuntimeContractTests(unittest.TestCase):
             csr_successor["replaces_accepted_deployment_id"],
         )
         self.assertEqual(
-            {'classification': 'UNTESTED', 'recorded_at': None, 'evidence': {'passed': [], 'failed': []}},
+            {
+                "classification": "FAIL",
+                "recorded_at": "2026-09-06T02:45:00Z",
+                "evidence": {
+                    "passed": [],
+                    "failed": [
+                        "User-reported: hovering a count-one shulker reached CSR's pinned-panel path, "
+                        "then crashed because ShulkerHostFingerprint.of() invoked ItemStack.STREAM_CODEC "
+                        "outside a network PacketContext; Polymer reported: PacketContext is required, "
+                        "but it wasn't set up! No other Canary 11 test result is inferred."
+                    ],
+                },
+            },
             csr_successor["runtime_result"],
         )
         self.assertEqual("READY_TO_TEST_VERIFIED", slot_a["deployment"]["state"])
@@ -1762,13 +1774,16 @@ class RuntimeContractTests(unittest.TestCase):
         self.assertEqual("TESTING", csr_manifest["definition"]["lifecycle"])
         self.assertEqual("TESTING", qsn_manifest["definition"]["lifecycle"])
         self.assertEqual("ACCEPTED", sas_manifest["definition"]["lifecycle"])
-        for manifest in (csr_manifest, sas_manifest):
-            self.assertEqual(
-                "READY_TO_TEST_VERIFIED",
-                manifest["state"]["validation"]["deployment"],
-            )
         self.assertEqual(
-            "CURRENT_RELEASE_DEPLOYED",
+            "NOT_DEPLOYED",
+            csr_manifest["state"]["validation"]["deployment"],
+        )
+        self.assertEqual(
+            "READY_TO_TEST_VERIFIED",
+            sas_manifest["state"]["validation"]["deployment"],
+        )
+        self.assertEqual(
+            "OLDER_RELEASE_DEPLOYED",
             current_release_deployment_comparison(csr_manifest, tracked),
         )
         self.assertEqual(
