@@ -178,15 +178,15 @@
     ]
   },
   "state": {
-    "milestone": "Mynx Canary 14 is a diagnostic-instrumentation successor to behavioral-baseline Canary 13. It adds only aggregate [WanderingRibbitDiagnostic] scheduler-attempt counters, selected-site and spawn-stage markers, and the one-time initial scheduler deadline line; timing, randomness, candidate generation, chunk/biome/placement policy, spawn reason, lease, merchant, trade, Naturalist, manual-merchant, and vanilla Wandering Trader behavior remain unchanged. The motivating external observation was a Survival player in a Peaceful flat open Overworld plains world with minecraft:plains admitted by the allow tag, advanced past the 48,000-72,000 initial window and several 1,200-tick retries with no Wandering Ribbit and no scheduled-initialization exception; no cause is diagnosed. Focused static Java tests, 42 private-resource tests, private-tree and final JAR validation pass. Canary 14 is ACTIVE / STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED; no runtime result is claimed.",
+    "milestone": "Mynx Canary 15 is an instrumentation-only successor to behavioral-baseline Canary 14. It preserves every scheduler and placement decision, and logs one bounded collision-source detail for the first existing !level.noCollision(spawnBox) rejection in each due attempt. The supplied external Canary 14 runtime evidence is bound to gameTime/scheduledAttemptTime 73392: one eligible Survival player in a Peaceful flat open Overworld minecraft:plains world admitted by #ribbits:allows_wandering_ribbit_spawns, 16 candidates examined, all prior gate counts zero, collisionRejected=16, acceptedSpawnSites=0; repeated eligible-player attempts reached the same gate. That evidence establishes collision rejection but not its source because Canary 14 only logged coordinates after safeSurfacePosition succeeded. Canary 15 separately reports exact block, entity, and world-border sub-results without correcting behavior. Focused/static build, 42 private-resource tests, private-tree, and final-JAR validation pass. Canary 15 is ACTIVE / STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED; the collision source remains undiagnosed pending its runtime evidence.",
     "releases": {
       "current": {
-        "version": "4.1.6+26.2-mynx-canary14",
+        "version": "4.1.6+26.2-mynx-canary15",
         "artifact": {
-          "filename": "ribbits-private-reconstruction-4.1.6+26.2-mynx-canary14.jar",
-          "sha256": "a6922d982eda00f6c3c87b23871c22630ed9aa67eb438ee39c745ec1b5890b6d"
+          "filename": "ribbits-private-reconstruction-4.1.6+26.2-mynx-canary15.jar",
+          "sha256": "38441ba48ad945899ce4aa0d5f6b437b2612855a2a8b909eb96b9ac24fb4d9ae"
         },
-        "source_commit": "25d45de50db8807ab3fcc74163ac3794551f2832",
+        "source_commit": "40de669634f458ad3263c56680b06bbc75ab3465",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
@@ -205,11 +205,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 19,
-    "activity_at": "2026-09-06T06:10:33Z",
-    "updated_at": "2026-09-06T06:10:33Z",
-    "last_codex_at": "2026-09-06T06:10:33Z",
-    "source_commit": "25d45de50db8807ab3fcc74163ac3794551f2832",
+    "revision": 20,
+    "activity_at": "2026-09-06T20:40:00Z",
+    "updated_at": "2026-09-06T20:40:00Z",
+    "last_codex_at": "2026-09-06T20:40:00Z",
+    "source_commit": "40de669634f458ad3263c56680b06bbc75ab3465",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
