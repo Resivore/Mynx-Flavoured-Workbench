@@ -82,6 +82,7 @@ public final class WanderingRibbitScheduler {
         }
 
         WanderingRibbitSpawnerData data = data(server);
+        cleanupLoadedNaturalistCompanions(server, data);
         RandomSource random = overworld.getRandom();
         if (data.initializeIfNeeded(now, randomInclusive(
                 random, FIRST_ATTEMPT_MIN_TICKS, FIRST_ATTEMPT_MAX_TICKS))) {
@@ -139,6 +140,7 @@ public final class WanderingRibbitScheduler {
         }
 
         data.clearLeaseIfOwned(entity.getUUID(), level.dimension(), entity.getLeaseGeneration());
+        entity.discardNaturalistCompanions(level);
         entity.discard();
     }
 
@@ -147,6 +149,7 @@ public final class WanderingRibbitScheduler {
         if (!entity.isSchedulerManaged() || entity.getLeaseDimension() == null) {
             return;
         }
+        entity.discardNaturalistCompanions(level);
         data(level.getServer()).clearLeaseIfOwned(
                 entity.getUUID(), entity.getLeaseDimension(), entity.getLeaseGeneration());
     }
@@ -189,6 +192,7 @@ public final class WanderingRibbitScheduler {
         }
         data.clearLease();
         if (loaded instanceof WanderingRibbitEntity ribbit) {
+            ribbit.discardNaturalistCompanions(level);
             ribbit.discard();
         }
     }
@@ -213,6 +217,7 @@ public final class WanderingRibbitScheduler {
             entity.initializeSchedulerLease(
                     generation, expiry, level.dimension(), site.wanderTarget(), tradeSeed);
             entity.materializeOffers(level);
+            entity.initializeNaturalistCompanions(level);
             if (entity.isRemoved()
                     || !entity.isAlive()
                     || level.getEntity(entity.getUUID()) != entity) {
@@ -365,6 +370,14 @@ public final class WanderingRibbitScheduler {
 
     private static int randomInclusive(RandomSource random, int minimum, int maximum) {
         return minimum + random.nextInt(maximum - minimum + 1);
+    }
+
+    private static void cleanupLoadedNaturalistCompanions(MinecraftServer server,
+                                                           WanderingRibbitSpawnerData data) {
+        java.util.UUID activeMerchant = data.activeEntityUuid().orElse(null);
+        for (ServerLevel level : server.getAllLevels()) {
+            NaturalistSnailCompanions.discardLoadedStaleCompanions(level, activeMerchant);
+        }
     }
 
     private static long saturatedAdd(long left, long right) {

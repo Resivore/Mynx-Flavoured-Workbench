@@ -98,9 +98,9 @@ class ResourceCodecTest {
         }));
     }
 
-    @TestFactory Stream<DynamicTest> recipes() throws Exception { return resources("recipe", 9, Recipe.CODEC); }
-    @TestFactory Stream<DynamicTest> advancements() throws Exception { return resources("advancement", 10, Advancement.CODEC); }
-    @TestFactory Stream<DynamicTest> lootTables() throws Exception { return resources("loot_table", 57, LootTable.DIRECT_CODEC); }
+    @TestFactory Stream<DynamicTest> recipes() throws Exception { return resources("recipe", 7, Recipe.CODEC); }
+    @TestFactory Stream<DynamicTest> advancements() throws Exception { return resources("advancement", 8, Advancement.CODEC); }
+    @TestFactory Stream<DynamicTest> lootTables() throws Exception { return resources("loot_table", 56, LootTable.DIRECT_CODEC); }
 
     @Test
     void renderLookupKeepsEntityAndPartialTickTogetherAcrossStateReuse() {

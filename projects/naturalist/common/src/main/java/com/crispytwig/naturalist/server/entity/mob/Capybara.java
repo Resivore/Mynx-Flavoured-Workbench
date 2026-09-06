@@ -227,9 +227,9 @@ public class Capybara extends TamableAnimal implements DyeableAnimal, FollowingP
 
     @Override
     public @NotNull InteractionResult mobInteract(@NotNull Player player, @NotNull InteractionHand hand) {
-        InteractionResult whistle = FollowingPet.tryWhistle(this, player, hand);
-        if (whistle != null) {
-            return whistle;
+        InteractionResult petMode = FollowingPet.tryCyclePetMode(this, player, hand);
+        if (petMode != null) {
+            return petMode;
         }
         Optional<InteractionResult> dyeResult = DyeableAnimal.tryClearDye(this, player, hand);
         if (dyeResult.isEmpty()) {

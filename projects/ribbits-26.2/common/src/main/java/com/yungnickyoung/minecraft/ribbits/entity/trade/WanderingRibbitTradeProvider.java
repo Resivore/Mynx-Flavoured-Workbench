@@ -15,6 +15,16 @@ public interface WanderingRibbitTradeProvider {
 
     int schemaVersion();
 
+    /**
+     * Declares the persisted refresh boundary for the provider's exact offer range.  This is
+     * deliberately independent of the Wandering Ribbit's current no-restock behavior so a
+     * future retained-merchant feature can refresh ordinary merchandise without resurrecting
+     * conservation-sensitive offers.
+     */
+    default WanderingRibbitTradeSnapshot.RestockPolicy restockPolicy() {
+        return WanderingRibbitTradeSnapshot.RestockPolicy.ORDINARY;
+    }
+
     void contributeOffers(WanderingRibbitTradeContext context, OfferCollector offers);
 
     @FunctionalInterface

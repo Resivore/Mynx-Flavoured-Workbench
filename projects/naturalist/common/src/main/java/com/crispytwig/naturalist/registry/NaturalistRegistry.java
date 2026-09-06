@@ -11,7 +11,6 @@ import com.crispytwig.naturalist.server.item.HedgehogItem;
 import com.crispytwig.naturalist.server.item.BugNetItem;
 import com.crispytwig.naturalist.server.item.DuckEggItem;
 import com.crispytwig.naturalist.server.item.KnapsackItem;
-import com.crispytwig.naturalist.server.item.WhistleItem;
 import com.crispytwig.naturalist.server.item.GlowGoopItem;
 import com.crispytwig.naturalist.server.item.CaughtMobItem;
 import com.crispytwig.naturalist.server.item.CaughtMobWithVariantsItem;
@@ -54,14 +53,12 @@ public class NaturalistRegistry {
 
     public static final DeferredHolder<Block, GlowGoopBlock> GLOW_GOOP_BLOCK = registerBlockOnly("glow_goop", key -> new GlowGoopBlock(blockProperties(key).strength(0.5F).replaceable().noOcclusion().noCollision().lightLevel(GlowGoopBlock.LIGHT_EMISSION).sound(SoundType.HONEY_BLOCK)));
     public static final DeferredHolder<Item, GlowGoopItem> GLOW_GOOP = registerItem("glow_goop", properties -> new GlowGoopItem(GLOW_GOOP_BLOCK.get(), properties));
-    public static final DeferredHolder<Block, TeddyBearBlock> PLUSH_BEAR = registerBlock("plush_bear", key -> new TeddyBearBlock(blockProperties(key).strength(0.8f).sound(SoundType.WOOL).noOcclusion()));
     public static final DeferredHolder<Item, NaturalistBucketItem> CATFISH_BUCKET = registerItem("catfish_bucket", properties -> new NaturalistBucketItem(NaturalistEntityTypes.CATFISH.get(), Fluids.WATER, SoundEvents.BUCKET_EMPTY_FISH, properties.stacksTo(1)));
     public static final DeferredHolder<Item, NaturalistBucketItem> BASS_BUCKET = registerItem("bass_bucket", properties -> new NaturalistBucketItem(NaturalistEntityTypes.BASS.get(), Fluids.WATER, SoundEvents.BUCKET_EMPTY_FISH, properties.stacksTo(1), true, null, Bass.VARIANT_NAMES));
     public static final DeferredHolder<Item, NaturalistBucketItem> DUCK_BUCKET = registerItem("duck_bucket", properties -> new NaturalistBucketItem(NaturalistEntityTypes.DUCK.get(), Fluids.EMPTY, SoundEvents.BUCKET_EMPTY, properties.stacksTo(1).component(DataComponents.BUCKET_ENTITY_DATA, ducklingBucketData())));
     public static final DeferredHolder<Item, CaughtMobWithVariantsItem> CRAB = registerItem("crab", properties -> new CaughtMobWithVariantsItem(NaturalistEntityTypes.CRAB, () -> Fluids.EMPTY, NaturalistSoundEvents.CRAB_AMBIENT, "tooltip.naturalist.crab_", Crab.VARIANT_NAMES, properties.stacksTo(1)));
     public static final DeferredHolder<Item, BugNetItem> CAPTURE_NET = registerItem("capture_net", properties -> new BugNetItem(properties.durability(64)));
     public static final DeferredHolder<Item, KnapsackItem> KNAPSACK = registerItem("knapsack", properties -> new KnapsackItem(properties.stacksTo(1)));
-    public static final DeferredHolder<Item, WhistleItem> WHISTLE = registerItem("whistle", properties -> new WhistleItem(properties.stacksTo(1)));
     public static final ResourceKey<JukeboxSong> WILD_ONES_SONG = ResourceKey.create(Registries.JUKEBOX_SONG, Naturalist.location("wild_ones"));
     public static final DeferredHolder<Item, Item> MUSIC_DISC_WILD_ONES = registerItem("music_disc_wild_ones", properties -> new Item(properties.stacksTo(1).rarity(Rarity.RARE).jukeboxPlayable(WILD_ONES_SONG)));
     public static final ResourceKey<JukeboxSong> DEATH_BY_HOGS_SONG = ResourceKey.create(Registries.JUKEBOX_SONG, Naturalist.location("death_by_hogs"));

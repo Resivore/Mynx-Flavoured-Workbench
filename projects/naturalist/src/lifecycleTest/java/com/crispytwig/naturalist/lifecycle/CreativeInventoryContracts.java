@@ -22,7 +22,7 @@ final class CreativeInventoryContracts {
                 assertEquals(BuiltInRegistries.ITEM.getKey(item), BuiltInRegistries.BLOCK.getKey(blockItem.getBlock()));
             }
         }
-        assertEquals(80, registered.size());
+        assertEquals(78, registered.size());
         assertEquals(registered, BuiltInRegistries.ITEM.stream().filter(i -> BuiltInRegistries.ITEM.getKey(i).getNamespace().equals("naturalist")).collect(Collectors.toSet()));
         var tab = NaturalistCreativeTab.ITEM_GROUP.get();
         var params = new CreativeModeTab.ItemDisplayParameters(FeatureFlags.VANILLA_SET, true, registries);
@@ -47,11 +47,11 @@ final class CreativeInventoryContracts {
             }
             System.out.println("Exact external output class passed: " + externalOutput);
         }
-        System.out.println("Creative inventory: 80 registry identities after the content cull; 3 rebuilds");
+        System.out.println("Creative inventory: 78 registry identities after the content cull; 3 rebuilds");
     }
 
     private static void verifyStacks(Set<Item> registered, Collection<ItemStack> stacks) {
-        assertEquals(122, stacks.size());
+        assertEquals(120, stacks.size());
         var exact = ItemStackLinkedSet.createTypeAndComponentsSet();
         Map<Item, List<ItemStack>> byItem = new IdentityHashMap<>();
         for (var stack : stacks) {

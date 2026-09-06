@@ -83,7 +83,7 @@ class LifecycleTest {
 
     @Test
     void everyNaturalistRecipeSurvivesManagerPreparationAndFinalization() {
-        assertEquals(9, recipes.getRecipes().stream().filter(r -> r.id().identifier().getNamespace().equals("naturalist")).count());
+        assertEquals(7, recipes.getRecipes().stream().filter(r -> r.id().identifier().getNamespace().equals("naturalist")).count());
         for (String ownedOverride : List.of("cake", "leather", "pumpkin_pie")) {
             assertTrue(recipes.byKey(ResourceKey.create(Registries.RECIPE, Identifier.withDefaultNamespace(ownedOverride))).isPresent(), ownedOverride);
         }
@@ -102,7 +102,7 @@ class LifecycleTest {
     void allAdvancementsPublishWithVanillaParents() {
         var manager = new AdvancementHarness(registries);
         manager.publish(new HashMap<>(preparedAdvancements));
-        assertEquals(10, manager.tree().nodes().stream().filter(n -> n.holder().id().getNamespace().equals("naturalist")).count());
+        assertEquals(8, manager.tree().nodes().stream().filter(n -> n.holder().id().getNamespace().equals("naturalist")).count());
         preparedAdvancements.forEach((id, advancement) -> {
             if (id.getNamespace().equals("naturalist")) {
                 var problems = new ProblemReporter.Collector();
@@ -150,10 +150,10 @@ class LifecycleTest {
         var before = new HashMap<>(filtered);
         var rejected = new AdvancementTree();
         rejected.addAll(filtered.entrySet().stream().map(e -> new AdvancementHolder(e.getKey(), e.getValue())).toList());
-        assertEquals(7, rejected.nodes().stream().filter(n -> n.holder().id().getNamespace().equals("naturalist")).count(), "Raw decoding misses the three unresolved parents");
+        assertEquals(5, rejected.nodes().stream().filter(n -> n.holder().id().getNamespace().equals("naturalist")).count(), "Raw decoding misses the three unresolved parents");
         var manager = new AdvancementHarness(registries);
         manager.publish(filtered);
-        assertEquals(10, manager.tree().nodes().stream().filter(n -> n.holder().id().getNamespace().equals("naturalist")).count());
+        assertEquals(8, manager.tree().nodes().stream().filter(n -> n.holder().id().getNamespace().equals("naturalist")).count());
         for (String name : List.of("feed_bear_honeycomb", "feed_hippo_melon", "ride_giraffe_with_map")) {
             Identifier id = Naturalist.location("husbandry/" + name);
             Advancement old = before.get(id), value = manager.get(id).value();
@@ -199,7 +199,7 @@ class LifecycleTest {
 
     @Test void allLootTablesSurviveReloadAndReferenceValidation() {
         var tables = lootRegistries.lookupOrThrow(Registries.LOOT_TABLE);
-        assertEquals(57, tables.listElements().filter(h -> h.key().identifier().getNamespace().equals("naturalist")).count());
+        assertEquals(56, tables.listElements().filter(h -> h.key().identifier().getNamespace().equals("naturalist")).count());
         var problems = new ProblemReporter.Collector();
         var context = new ValidationContextSource(problems, lootRegistries);
         LootDataType.values().forEach(type -> validateLoot(context, type));

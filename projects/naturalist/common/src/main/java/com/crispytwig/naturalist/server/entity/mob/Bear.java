@@ -407,9 +407,9 @@ public class Bear extends TamableAnimal implements NeutralMob, SleepingAnimal, D
     @Override
     public @NotNull InteractionResult mobInteract(@NotNull Player player, @NotNull InteractionHand hand) {
         ItemStack itemStack = player.getItemInHand(hand);
-        InteractionResult whistle = FollowingPet.tryWhistle(this, player, hand);
-        if (whistle != null) {
-            return whistle;
+        InteractionResult petMode = FollowingPet.tryCyclePetMode(this, player, hand);
+        if (petMode != null) {
+            return petMode;
         }
         Optional<InteractionResult> dyeClear = DyeableAnimal.tryClearDye(this, player, hand);
         if (dyeClear.isPresent()) {

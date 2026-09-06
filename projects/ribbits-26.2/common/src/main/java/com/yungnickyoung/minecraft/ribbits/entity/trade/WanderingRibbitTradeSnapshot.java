@@ -51,7 +51,18 @@ public record WanderingRibbitTradeSnapshot(long seed, List<ProviderRange> provid
         return DataResult.success(snapshot);
     }
 
-    public record ProviderRange(Identifier id, int schemaVersion, int firstOffer, int offerCount) {
+    public enum RestockPolicy {
+        ORDINARY,
+        NEVER_RESTOCK;
+
+        private static final Codec<RestockPolicy> CODEC = Codec.STRING.xmap(
+                value -> RestockPolicy.valueOf(value.toUpperCase(java.util.Locale.ROOT)),
+                value -> value.name().toLowerCase(java.util.Locale.ROOT));
+    }
+
+    public record ProviderRange(
+            Identifier id, int schemaVersion, int firstOffer, int offerCount, RestockPolicy restockPolicy
+    ) {
         public static final Codec<ProviderRange> CODEC = RecordCodecBuilder.create(instance -> instance.group(
                 Identifier.CODEC.fieldOf("id").forGetter(ProviderRange::id),
                 Codec.intRange(1, Integer.MAX_VALUE).fieldOf("schema_version")
@@ -59,11 +70,19 @@ public record WanderingRibbitTradeSnapshot(long seed, List<ProviderRange> provid
                 Codec.intRange(0, Integer.MAX_VALUE).fieldOf("first_offer")
                         .forGetter(ProviderRange::firstOffer),
                 Codec.intRange(0, Integer.MAX_VALUE).fieldOf("offer_count")
-                        .forGetter(ProviderRange::offerCount)
+                        .forGetter(ProviderRange::offerCount),
+                RestockPolicy.CODEC.optionalFieldOf("restock_policy", RestockPolicy.ORDINARY)
+                        .forGetter(ProviderRange::restockPolicy)
         ).apply(instance, ProviderRange::new));
+
+        /** Compatibility constructor for older source and snapshots without a policy field. */
+        public ProviderRange(Identifier id, int schemaVersion, int firstOffer, int offerCount) {
+            this(id, schemaVersion, firstOffer, offerCount, RestockPolicy.ORDINARY);
+        }
 
         public ProviderRange {
             Objects.requireNonNull(id, "id");
+            Objects.requireNonNull(restockPolicy, "restockPolicy");
             if (schemaVersion < 1 || firstOffer < 0 || offerCount < 0) {
                 throw new IllegalArgumentException("Invalid Wandering Ribbit provider range");
             }

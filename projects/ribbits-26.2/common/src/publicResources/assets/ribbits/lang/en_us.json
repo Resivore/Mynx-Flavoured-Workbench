@@ -37,5 +37,6 @@
   "entity.ribbits.merchant.guard.tier_2": "Lily Warden",
   "entity.ribbits.merchant.guard.tier_3": "Marsh Marshal",
   "entity.ribbits.merchant.guard.tier_4": "Bulwark of the Bog",
-  "entity.ribbits.merchant.nitwit.musician": "Musician"
+  "entity.ribbits.merchant.nitwit.musician": "Musician",
+  "trade.ribbits.naturalist_fauna.baby": "Baby %s"
 }

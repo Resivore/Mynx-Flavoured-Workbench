@@ -379,9 +379,9 @@ public class Rat extends TamableClimbingAnimal implements SleepingAnimal, Follow
 
     @Override
     public @NotNull InteractionResult mobInteract(@NotNull Player player, @NotNull InteractionHand hand) {
-        InteractionResult whistle = FollowingPet.tryWhistle(this, player, hand);
-        if (whistle != null) {
-            return whistle;
+        InteractionResult petMode = FollowingPet.tryCyclePetMode(this, player, hand);
+        if (petMode != null) {
+            return petMode;
         }
         if (this.isTame()) {
             Optional<InteractionResult> caught = Catchable.catchAnimal(player, hand, this, true);

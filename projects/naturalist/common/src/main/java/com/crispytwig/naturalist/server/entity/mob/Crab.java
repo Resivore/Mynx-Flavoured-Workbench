@@ -355,9 +355,9 @@ public class Crab extends TamableAnimal implements HidingAnimal, FollowingPet, C
     @Override
     public @NotNull InteractionResult mobInteract(@NotNull Player player, @NotNull InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
-        InteractionResult whistle = FollowingPet.tryWhistle(this, player, hand);
-        if (whistle != null) {
-            return whistle;
+        InteractionResult petMode = FollowingPet.tryCyclePetMode(this, player, hand);
+        if (petMode != null) {
+            return petMode;
         }
 
         Optional<InteractionResult> caught = Catchable.catchAnimal(player, hand, this, true);

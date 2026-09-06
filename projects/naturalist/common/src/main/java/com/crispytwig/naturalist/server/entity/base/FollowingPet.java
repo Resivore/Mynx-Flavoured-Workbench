@@ -1,7 +1,5 @@
 package com.crispytwig.naturalist.server.entity.base;
 
-import com.crispytwig.naturalist.registry.NaturalistRegistry;
-import com.crispytwig.naturalist.registry.NaturalistSoundEvents;
 import net.minecraft.ChatFormatting;
 import com.mojang.serialization.Codec;
 import net.minecraft.network.chat.Component;
@@ -29,27 +27,61 @@ public interface FollowingPet {
     }
 
     @Nullable
-    static <T extends TamableAnimal & FollowingPet> InteractionResult tryWhistle(T mob, Player player, InteractionHand hand) {
+    static <T extends TamableAnimal & FollowingPet> InteractionResult tryCyclePetMode(T mob, Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
-        if (!stack.is(NaturalistRegistry.WHISTLE.get()) || !mob.isTame() || !mob.isOwnedBy(player)
-                || player.isSecondaryUseActive() || player.getCooldowns().isOnCooldown(stack)) {
+        if (!stack.isEmpty() || !mob.isTame() || !mob.isOwnedBy(player) || !player.isSecondaryUseActive()) {
             return null;
         }
         if (!mob.level().isClientSide()) {
-            boolean follow = !mob.isFollowingOwner();
-            mob.setFollowingOwner(follow);
-            mob.setOrderedToSit(false);
-            if (!follow) {
-                mob.setTarget(null);
-            }
-            mob.playSound(NaturalistSoundEvents.WHISTLE.get(), 0.8F, 1.0F);
+            PetMode next = currentMode(mob).next();
+            applyMode(mob, next);
             Component name = mob.getDisplayName().copy().withStyle(Style.EMPTY.withColor(ChatFormatting.YELLOW).withItalic(false));
-            Component state = Component.translatable(follow ? "naturalist.whistle.following" : "naturalist.whistle.wandering")
+            Component state = Component.translatable("naturalist.pet_mode." + next.translationKey)
                     .withStyle(Style.EMPTY.withColor(ChatFormatting.YELLOW).withBold(true).withItalic(false));
-            player.sendOverlayMessage(Component.translatable("naturalist.whistle.message", name, state)
+            player.sendOverlayMessage(Component.translatable("naturalist.pet_mode.message", name, state)
                     .withStyle(Style.EMPTY.withColor(ChatFormatting.GRAY).withItalic(true)));
         }
-        player.getCooldowns().addCooldown(stack, 20);
         return mob.level().isClientSide() ? InteractionResult.SUCCESS : InteractionResult.CONSUME;
+    }
+
+    static <T extends TamableAnimal & FollowingPet> PetMode currentMode(T mob) {
+        return mob.isOrderedToSit() ? PetMode.STAY : mob.isFollowingOwner() ? PetMode.FOLLOW : PetMode.WANDER;
+    }
+
+    static <T extends TamableAnimal & FollowingPet> void applyMode(T mob, PetMode mode) {
+        switch (mode) {
+            case FOLLOW -> {
+                mob.setOrderedToSit(false);
+                mob.setFollowingOwner(true);
+            }
+            case WANDER -> {
+                mob.setOrderedToSit(false);
+                mob.setFollowingOwner(false);
+                mob.setTarget(null);
+                mob.getNavigation().stop();
+            }
+            case STAY -> {
+                mob.setOrderedToSit(true);
+                mob.getNavigation().stop();
+            }
+        }
+    }
+
+    enum PetMode {
+        FOLLOW("following"), WANDER("wandering"), STAY("staying");
+
+        private final String translationKey;
+
+        PetMode(String translationKey) {
+            this.translationKey = translationKey;
+        }
+
+        PetMode next() {
+            return switch (this) {
+                case FOLLOW -> WANDER;
+                case WANDER -> STAY;
+                case STAY -> FOLLOW;
+            };
+        }
     }
 }

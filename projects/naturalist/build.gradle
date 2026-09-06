@@ -232,6 +232,7 @@ tasks.register('stageOriginalResources', Sync) {
         File mainMixinFile = stagedOriginalResources.get().file('naturalist.mixins.json').asFile
         def mainMixins = new JsonSlurper().parse(mainMixinFile)
         if (!mainMixins.mixins.contains('CreativeItemStackIdentityMixin')) mainMixins.mixins.add('CreativeItemStackIdentityMixin')
+        mainMixins.mixins.remove('MonsterMixin')
         mainMixinFile.setText(JsonOutput.prettyPrint(JsonOutput.toJson(mainMixins)) + '\n', 'UTF-8')
         migrateNaturalistResources(stagedOriginalResources.get().asFile)
     }

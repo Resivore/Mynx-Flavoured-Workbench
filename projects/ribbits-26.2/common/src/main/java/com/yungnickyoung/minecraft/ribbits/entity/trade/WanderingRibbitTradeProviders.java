@@ -20,12 +20,15 @@ public final class WanderingRibbitTradeProviders {
     public static final Identifier NATIVE_PROVIDER_ID = RibbitsCommon.id("native");
     public static final Identifier OPTIONAL_MATCHA_COMPASSES_PROVIDER_ID =
             RibbitsCommon.id("optional_matcha_compasses");
+    public static final Identifier OPTIONAL_NATURALIST_FAUNA_PROVIDER_ID =
+            RibbitsCommon.id("optional_naturalist_fauna");
 
     private static final Map<Identifier, WanderingRibbitTradeProvider> PROVIDERS = new LinkedHashMap<>();
 
     static {
         registerInternal(new WanderingRibbitNativeTradeProvider());
         registerInternal(new WanderingRibbitMatchaCompassTradeProvider());
+        registerInternal(new WanderingRibbitNaturalistFaunaTradeProvider());
     }
 
     private WanderingRibbitTradeProviders() {
@@ -76,7 +79,8 @@ public final class WanderingRibbitTradeProviders {
                         provider.id(), exception);
             }
             ranges.add(new WanderingRibbitTradeSnapshot.ProviderRange(
-                    provider.id(), provider.schemaVersion(), firstOffer, offers.size() - firstOffer));
+                    provider.id(), provider.schemaVersion(), firstOffer, offers.size() - firstOffer,
+                    provider.restockPolicy()));
         }
 
         WanderingRibbitTradeSnapshot.ProviderRange nativeRange = ranges.stream()

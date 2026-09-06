@@ -346,9 +346,9 @@ public class Snake extends TamableClimbingAnimal implements SleepingAnimal, Neut
     @Override
     public @NotNull InteractionResult mobInteract(@NotNull Player player, @NotNull InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
-        InteractionResult whistle = FollowingPet.tryWhistle(this, player, hand);
-        if (whistle != null) {
-            return whistle;
+        InteractionResult petMode = FollowingPet.tryCyclePetMode(this, player, hand);
+        if (petMode != null) {
+            return petMode;
         }
         if (this.level().isClientSide()) {
             return (this.isOwnedBy(player) || this.isTame() || (this.isTameFood(stack) && !this.isTame())) ? InteractionResult.CONSUME : InteractionResult.PASS;

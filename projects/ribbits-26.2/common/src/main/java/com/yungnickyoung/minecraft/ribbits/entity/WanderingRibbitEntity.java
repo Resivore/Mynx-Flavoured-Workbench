@@ -13,8 +13,10 @@ import com.yungnickyoung.minecraft.ribbits.entity.goal.WanderingRibbitMoveToTarg
 import com.yungnickyoung.minecraft.ribbits.entity.trade.WanderingRibbitTradeProviders;
 import com.yungnickyoung.minecraft.ribbits.entity.trade.WanderingRibbitTradeSnapshot;
 import com.yungnickyoung.minecraft.ribbits.module.SoundModule;
+import com.yungnickyoung.minecraft.ribbits.world.spawn.NaturalistSnailCompanions;
 import com.yungnickyoung.minecraft.ribbits.world.spawn.WanderingRibbitScheduler;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.UUIDUtil;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
@@ -46,6 +48,9 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.List;
+import java.util.UUID;
+
 /** A dedicated profession-free, non-restocking Ribbit merchant. */
 public final class WanderingRibbitEntity extends AbstractVillager implements GeoEntity {
     private static final RawAnimation IDLE = RawAnimation.begin().thenPlay("idle");
@@ -64,6 +69,8 @@ public final class WanderingRibbitEntity extends AbstractVillager implements Geo
     private long leaseExpiry = -1L;
     @Nullable
     private net.minecraft.resources.ResourceKey<Level> leaseDimension;
+    private boolean naturalistCompanionsInitialized;
+    private List<UUID> naturalistCompanionUuids = List.of();
 
     public WanderingRibbitEntity(EntityType<? extends WanderingRibbitEntity> entityType, Level level) {
         super(entityType, level);
@@ -211,6 +218,19 @@ public final class WanderingRibbitEntity extends AbstractVillager implements Geo
         this.leaseExpiry = authoritativeExpiry;
     }
 
+    /** Scheduler-only, one-time optional companion initialization. */
+    public void initializeNaturalistCompanions(ServerLevel level) {
+        if (!schedulerManaged || naturalistCompanionsInitialized) {
+            return;
+        }
+        naturalistCompanionUuids = NaturalistSnailCompanions.createPair(level, this);
+        naturalistCompanionsInitialized = true;
+    }
+
+    public void discardNaturalistCompanions(ServerLevel level) {
+        NaturalistSnailCompanions.discardLoadedManagedCompanions(level, this.getUUID());
+    }
+
     @Nullable
     public BlockPos getWanderTarget() {
         return wanderTarget;
@@ -243,6 +263,8 @@ public final class WanderingRibbitEntity extends AbstractVillager implements Geo
             output.putLong("LeaseGeneration", leaseGeneration);
             output.putLong("LeaseExpiry", leaseExpiry);
             output.storeNullable("LeaseDimension", Level.RESOURCE_KEY_CODEC, leaseDimension);
+            output.putBoolean("NaturalistCompanionsInitialized", naturalistCompanionsInitialized);
+            output.store("NaturalistCompanionUuids", UUIDUtil.CODEC.listOf(), naturalistCompanionUuids);
         }
     }
 
@@ -257,10 +279,15 @@ public final class WanderingRibbitEntity extends AbstractVillager implements Geo
             leaseGeneration = input.getLongOr("LeaseGeneration", -1L);
             leaseExpiry = input.getLongOr("LeaseExpiry", -1L);
             leaseDimension = input.read("LeaseDimension", Level.RESOURCE_KEY_CODEC).orElse(null);
+            naturalistCompanionsInitialized = input.getBooleanOr("NaturalistCompanionsInitialized", false);
+            naturalistCompanionUuids = List.copyOf(input.read("NaturalistCompanionUuids",
+                    UUIDUtil.CODEC.listOf()).orElse(List.of()));
         } else {
             leaseGeneration = -1L;
             leaseExpiry = -1L;
             leaseDimension = null;
+            naturalistCompanionsInitialized = false;
+            naturalistCompanionUuids = List.of();
         }
         this.setAge(Math.max(0, this.getAge()));
     }

@@ -82,7 +82,7 @@ ext.migrateNaturalistResources = { File root ->
         }
     }
     sounds.entrySet().removeIf { entry ->
-        entry.value.sounds.any { sound ->
+        entry.key == 'item.whistle' || entry.value.sounds.any { sound ->
             String name = sound instanceof Map ? sound.name : sound
             name.startsWith('naturalist:mob/ant/')
         }
@@ -130,7 +130,8 @@ ext.migrateNaturalistResources = { File root ->
             'naturalist:shellstone_brick_stairs', 'naturalist:shellstone_brick_slab', 'naturalist:shellstone_brick_wall',
             'naturalist:cut_shellstone', 'naturalist:cut_shellstone_stairs', 'naturalist:cut_shellstone_slab',
             'naturalist:cut_shellstone_wall', 'naturalist:smooth_shellstone', 'naturalist:smooth_shellstone_stairs',
-            'naturalist:smooth_shellstone_slab', 'naturalist:smooth_shellstone_wall'
+            'naturalist:smooth_shellstone_slab', 'naturalist:smooth_shellstone_wall',
+            'naturalist:whistle', 'naturalist:plush_bear'
     ] as Set
 
     Closure rewriteIdentifiers
@@ -207,6 +208,17 @@ ext.migrateNaturalistResources = { File root ->
             return
         }
         def data = new JsonSlurper().parse(file)
+        if (relative.contains('/lang/') && data instanceof Map) {
+            data.keySet().removeIf { key -> key.contains('whistle') || key.contains('plush_bear') || key.contains('teddy_bear') }
+            if (relative.endsWith('/en_us.json')) {
+                data['naturalist.pet_mode.message'] = '%s: %s'
+                data['naturalist.pet_mode.following'] = 'Following'
+                data['naturalist.pet_mode.wandering'] = 'Wandering'
+                data['naturalist.pet_mode.staying'] = 'Staying'
+            }
+            file.setText(JsonOutput.prettyPrint(JsonOutput.toJson(data)) + '\n', 'UTF-8')
+            return
+        }
         boolean itemData = relative.contains('/tags/item/') || relative.contains('/recipe/')
         def rewritten = rewriteIdentifiers(data, itemData)
         if (relative.endsWith('/loot_table/entities/anglerfish.json')) rewritten = replaceAnglerGlowstone(rewritten)
@@ -231,7 +243,7 @@ ext.migrateNaturalistResources = { File root ->
         if (!file.isFile()) return
         String relative = root.toPath().relativize(file.toPath()).toString().replace('\\', '/')
         Set<String> removedResourceNames = [
-                'ant', 'queen_ant', 'ant_hill', 'carried_food', 'snail_shell',
+                'ant', 'queen_ant', 'ant_hill', 'carried_food', 'snail_shell', 'whistle', 'plush_bear', 'teddy_bear',
                 'azure_froglass', 'verdant_froglass', 'crimson_froglass',
                 'azure_froglass_pane', 'verdant_froglass_pane', 'crimson_froglass_pane',
                 'shellstone', 'shellstone_stairs', 'shellstone_slab', 'shellstone_wall',

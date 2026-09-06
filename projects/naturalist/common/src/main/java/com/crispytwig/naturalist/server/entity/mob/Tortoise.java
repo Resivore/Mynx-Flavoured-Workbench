@@ -310,9 +310,9 @@ public class Tortoise extends TamableAnimal implements HidingAnimal, EggLayingAn
     public @NotNull InteractionResult mobInteract(Player player, @NotNull InteractionHand hand) {
         InteractionResult interactionResult;
         ItemStack itemStack = player.getItemInHand(hand);
-        InteractionResult whistle = FollowingPet.tryWhistle(this, player, hand);
-        if (whistle != null) {
-            return whistle;
+        InteractionResult petMode = FollowingPet.tryCyclePetMode(this, player, hand);
+        if (petMode != null) {
+            return petMode;
         }
         if (this.level().isClientSide()) {
             if (this.isTame() && this.isOwnedBy(player)) {

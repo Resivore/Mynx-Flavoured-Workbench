@@ -470,9 +470,9 @@ public class Ostrich extends TamableAnimal implements EggLayingAnimal, HidingAni
     @Override
     public @NotNull InteractionResult mobInteract(@NotNull Player player, @NotNull InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
-        InteractionResult whistle = FollowingPet.tryWhistle(this, player, hand);
-        if (whistle != null) {
-            return whistle;
+        InteractionResult petMode = FollowingPet.tryCyclePetMode(this, player, hand);
+        if (petMode != null) {
+            return petMode;
         }
         if (this.isTame() && this.isOwnedBy(player) && this.isSaddled() && stack.is(NaturalistTags.ItemTags.SHEARS)) {
             if (!this.level().isClientSide()) {

@@ -26,7 +26,7 @@ $removedRegistrations = @(
     'blobfish', 'cooked_blobfish', 'piranha', 'cooked_piranha', 'clam_meat',
     'cooked_clam_meat', 'crab_meat', 'cooked_crab_meat', 'scorpion_poison_gland',
     'queen_ant', 'ant_hill', 'snail_shell', 'azure_froglass', 'verdant_froglass',
-    'crimson_froglass', 'shellstone'
+    'crimson_froglass', 'shellstone', 'whistle', 'plush_bear'
 )
 foreach ($id in $removedRegistrations) {
     if ($registry -match ('register(?:Item|Block|BlockOnly)\("' + [regex]::Escape($id) + '"')) {
@@ -52,7 +52,7 @@ $removedItemIds = @(
     'naturalist:cooked_bass', 'naturalist:anglerfish', 'naturalist:cooked_anglerfish',
     'naturalist:blobfish', 'naturalist:cooked_blobfish', 'naturalist:piranha', 'naturalist:cooked_piranha', 'naturalist:clam_meat',
     'naturalist:cooked_clam_meat', 'naturalist:crab_meat', 'naturalist:cooked_crab_meat',
-    'naturalist:scorpion_poison_gland'
+    'naturalist:scorpion_poison_gland', 'naturalist:whistle', 'naturalist:plush_bear'
 )
 $itemData = Get-ChildItem -LiteralPath $staged -Recurse -File -Filter '*.json' | Where-Object {
     $_.FullName -match '[\\/]tags[\\/]item[\\/]' -or $_.FullName -match '[\\/]recipe[\\/]' -or $_.FullName -match '[\\/]loot_table[\\/]'
@@ -60,6 +60,12 @@ $itemData = Get-ChildItem -LiteralPath $staged -Recurse -File -Filter '*.json' |
 foreach ($file in $itemData) {
     $text = Read-Text $file.FullName
     foreach ($id in $removedItemIds) { Assert-NotContains $text ('"' + $id + '"') $file.FullName }
+}
+
+foreach ($needle in @('whistle', 'plush_bear', 'teddy_bear')) {
+    Get-ChildItem -LiteralPath $staged -Recurse -File | ForEach-Object {
+        Assert-NotContains (Read-Text $_.FullName) $needle $_.FullName
+    }
 }
 
 $anglerLoot = Get-ChildItem -LiteralPath (Join-Path $staged 'data\naturalist\loot_table\entities') -File |
