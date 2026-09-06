@@ -1,5 +1,5 @@
 """Read-only validation of the exact Iris/Complementary seam; no profile mutation or runtime launch."""
-import argparse,hashlib,json,pathlib,struct,zipfile
+import argparse,hashlib,json,pathlib,re,struct,zipfile
 ROOT=pathlib.Path(__file__).resolve().parents[1]
 
 def methods(data):
@@ -42,10 +42,22 @@ def main():
         assert b'Object2IntLinkedOpenHashMap' in data,'Expected mutable map construction'
     hook=(ROOT/'src/client/java/dev/resivore/mynxtrees/mixin/IrisLeafMaterialMixin.java').read_text()
     assert 'createBlockStateIdMap'+ref['descriptor'] in hook,'Mixin and inspected target differ'
+    assert 'inheritUnmappedFromFirstPresent' in hook and 'Blocks.BIRCH_LEAVES' not in hook,'Silver Birch must use dynamic upper foliage, not birch leaves'
+    assert not re.search(r'\b1\d{4}\b',hook),'Shader material IDs must not be hardcoded in the mixin'
     with zipfile.ZipFile(args.shader) as z:
-        mapping=z.read(ref['block_properties_entry']).decode();leaf=next(l for l in mapping.splitlines() if l.startswith('block.10009='))
-        assert 'birch_leaves' in leaf and 'cherry_leaves' in leaf
+        mapping=z.read(ref['block_properties_entry']).decode()
+        upper=next((line for line in mapping.splitlines() if line.startswith('block.') and 'sunflower:half=upper' in line),None)
+        assert upper is not None,'Expected a mapped upper sunflower foliage representative'
+        material=re.fullmatch(r'block\.(\d+)=(.*)',upper)
+        assert material is not None and all(state in material.group(2) for state in ['sunflower:half=upper','lilac:half=upper','rose_bush:half=upper','peony:half=upper'])
+        material_id=material.group(1)
         waving=z.read('shaders/lib/materials/materialMethods/wavingBlocks.glsl').decode()
-        assert '#ifdef WAVING_LEAVES' in waving and 'if (mat == 10009)' in waving and 'DoWave_Leaves(playerPos.xyz, worldPos, 1.0)' in waving
-    print('STATIC PASS: exact Iris static target/descriptor and mutable map, configured mixin selector, Complementary leaf ID and leaf-wind dispatch. No runtime waving observed.')
+        upper_waving=re.search(r'else if \(mat == '+re.escape(material_id)+r'\).*?DoWave_Foliage\(playerPos\.xyz, worldPos, 1\.0\)',waving,re.S)
+        assert upper_waving is not None,'Upper foliage source must reach foliage waving'
+        terrain=z.read('shaders/lib/materials/materialHandling/terrainMaterials.glsl').decode()
+        upper_treatment=terrain.split('else if (mat == '+material_id+')',1)
+        assert len(upper_treatment)==2,'Expected upper foliage material treatment'
+        upper_treatment=upper_treatment[1].split('} else if',1)[0]
+        assert 'DoFoliageColorTweaks' in upper_treatment and 'leaves.glsl' not in upper_treatment,'Upper foliage must avoid the normal leaves treatment'
+    print('STATIC PASS: exact Iris target/descriptor, dynamic upper-foliage representative, foliage waving and non-leaves material treatment verified. No runtime waving observed.')
 if __name__=='__main__':main()
