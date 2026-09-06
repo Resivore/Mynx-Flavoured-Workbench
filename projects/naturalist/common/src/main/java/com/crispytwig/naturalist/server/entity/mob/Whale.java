@@ -2,7 +2,6 @@ package com.crispytwig.naturalist.server.entity.mob;
 
 import com.crispytwig.naturalist.Naturalist;
 import com.crispytwig.naturalist.registry.NaturalistEntityTypes;
-import com.crispytwig.naturalist.registry.NaturalistRegistry;
 import com.crispytwig.naturalist.registry.NaturalistSoundEvents;
 import com.crispytwig.naturalist.server.entity.ai.goal.WhaleDiveGoal;
 import com.crispytwig.naturalist.server.entity.ai.goal.WhaleSeekDeeperWaterGoal;
@@ -236,8 +235,7 @@ public class Whale extends Animal implements MultipartMob, DataDrivenVariantAnim
     @Override
     public boolean isFood(@NotNull ItemStack stack) {
         return stack.is(Items.COD) || stack.is(Items.COOKED_COD)
-                || stack.is(Items.SALMON) || stack.is(Items.COOKED_SALMON)
-                || stack.is(NaturalistRegistry.CRAB_MEAT.get()) || stack.is(NaturalistRegistry.COOKED_CRAB_MEAT.get());
+                || stack.is(Items.SALMON) || stack.is(Items.COOKED_SALMON);
     }
 
     @Override

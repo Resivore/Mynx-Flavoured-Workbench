@@ -47,9 +47,14 @@ def naturalistRegistrySource = layout.projectDirectory.file(
         'common/src/main/java/com/crispytwig/naturalist/registry/NaturalistRegistry.java')
 def dynamicClientItemModelIds = [
         'catfish_bucket', 'bass_bucket', 'duck_bucket', 'crab', 'caterpillar', 'butterfly',
-        'ant', 'rat', 'scorpion', 'hedgehog', 'snail', 'starfish_bucket',
+        'rat', 'scorpion', 'hedgehog', 'snail', 'starfish_bucket',
         'giant_isopod_bucket', 'anglerfish_bucket', 'jellyfish_bucket', 'ray_bucket',
-        'blobfish_bucket', 'piranha_bucket', 'snail_shell', 'knapsack'
+        'blobfish_bucket', 'piranha_bucket', 'knapsack',
+        // Legacy item-model JSON is not a Minecraft 26.2 client-item definition.  These
+        // retained ordinary/block items need explicit roots as well as the dynamic items above.
+        'glow_goop', 'capture_net', 'music_disc_wild_ones', 'music_disc_death_by_hogs',
+        'duck_egg', 'chrysalis', 'red_starfish', 'orange_starfish', 'blue_starfish',
+        'purple_starfish', 'alligator_egg', 'tortoise_egg', 'ostrich_egg', 'snail_eggs'
 ]
 
 dependencies {
@@ -322,8 +327,8 @@ tasks.register('generateItemModelCompatibilityResources') {
                 throw new GradleException("Duplicate Naturalist spawn-egg color registration: ${itemId}")
             }
         }
-        if (spawnEggColors.size() != 47) {
-            throw new GradleException("Expected 47 Naturalist spawn-egg color registrations, found ${spawnEggColors.size()}")
+        if (spawnEggColors.size() != 46) {
+            throw new GradleException("Expected 46 retained Naturalist spawn-egg color registrations, found ${spawnEggColors.size()}")
         }
 
         spawnEggColors.each { itemId, colors ->

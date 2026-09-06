@@ -22,7 +22,7 @@ final class CreativeInventoryContracts {
                 assertEquals(BuiltInRegistries.ITEM.getKey(item), BuiltInRegistries.BLOCK.getKey(blockItem.getBlock()));
             }
         }
-        assertEquals(141, registered.size());
+        assertEquals(80, registered.size());
         assertEquals(registered, BuiltInRegistries.ITEM.stream().filter(i -> BuiltInRegistries.ITEM.getKey(i).getNamespace().equals("naturalist")).collect(Collectors.toSet()));
         var tab = NaturalistCreativeTab.ITEM_GROUP.get();
         var params = new CreativeModeTab.ItemDisplayParameters(FeatureFlags.VANILLA_SET, true, registries);
@@ -47,11 +47,11 @@ final class CreativeInventoryContracts {
             }
             System.out.println("Exact external output class passed: " + externalOutput);
         }
-        System.out.println("Creative inventory: 141 registry identities, 198 unique component-distinct stacks; 3 rebuilds");
+        System.out.println("Creative inventory: 80 registry identities after the content cull; 3 rebuilds");
     }
 
     private static void verifyStacks(Set<Item> registered, Collection<ItemStack> stacks) {
-        assertEquals(198, stacks.size());
+        assertEquals(122, stacks.size());
         var exact = ItemStackLinkedSet.createTypeAndComponentsSet();
         Map<Item, List<ItemStack>> byItem = new IdentityHashMap<>();
         for (var stack : stacks) {
@@ -62,7 +62,7 @@ final class CreativeInventoryContracts {
         assertEquals(registered, byItem.keySet());
         for (Item item : registered) {
             List<ItemStack> variants = byItem.get(item);
-            if (item == NaturalistRegistry.SNAIL.get() || item == NaturalistRegistry.SNAIL_SHELL.get()) {
+            if (item == NaturalistRegistry.SNAIL.get()) {
                 assertEquals(16, variants.size());
                 Set<Integer> colors = variants.stream().map(s -> s.get(DataComponents.CUSTOM_DATA).copyTag().getIntOr("Color", -1)).collect(Collectors.toSet());
                 assertEquals(java.util.stream.IntStream.range(0,16).boxed().collect(Collectors.toSet()), colors);

@@ -34,6 +34,7 @@ import net.minecraft.world.entity.ai.goal.AvoidEntityGoal;
 import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.animal.fish.AbstractSchoolingFish;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.entity.animal.axolotl.Axolotl;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -271,7 +272,7 @@ public class Bass extends AbstractSchoolingFish implements DataDrivenVariantAnim
 
     public static void devour(Mob predator, Bass prey, boolean dropBoneMeal) {
         if (predator.level() instanceof ServerLevel serverLevel) {
-            ItemParticleOption bassParticle = new ItemParticleOption(ParticleTypes.ITEM, net.minecraft.world.item.ItemStackTemplate.fromNonEmptyStack(new ItemStack(NaturalistRegistry.BASS.get())));
+            ItemParticleOption bassParticle = new ItemParticleOption(ParticleTypes.ITEM, net.minecraft.world.item.ItemStackTemplate.fromNonEmptyStack(new ItemStack(Items.COD)));
             for (int i = 0; i < 16; i++) {
                 serverLevel.sendParticles(bassParticle, prey.getRandomX(1.0D), prey.getRandomY(), prey.getRandomZ(1.0D), 1, 0.0D, 0.0D, 0.0D, 0.05D);
             }

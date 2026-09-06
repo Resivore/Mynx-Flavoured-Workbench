@@ -22,7 +22,7 @@ import static org.mockito.ArgumentMatchers.*;
 final class EntityContracts {
     static Stream<DynamicTest> roster(RegistryAccess.Frozen registries) {
         var types = BuiltInRegistries.ENTITY_TYPE.stream().filter(t -> BuiltInRegistries.ENTITY_TYPE.getKey(t).getNamespace().equals("naturalist")).toList();
-        assertEquals(51, types.size());
+        assertEquals(49, types.size());
         return types.stream().map(type -> DynamicTest.dynamicTest(BuiltInRegistries.ENTITY_TYPE.getKey(type).toString(), () -> inspect(type, registries)));
     }
 
@@ -40,7 +40,7 @@ final class EntityContracts {
         assertNotNull(entity);
         entity.setId(1);
         if (!(entity instanceof LivingEntity living)) {
-            assertTrue(Set.of("duck_egg", "dirt_trail", "carried_food").contains(BuiltInRegistries.ENTITY_TYPE.getKey(type).getPath()));
+            assertTrue(Set.of("duck_egg", "dirt_trail").contains(BuiltInRegistries.ENTITY_TYPE.getKey(type).getPath()));
             return;
         }
         assertTrue(DefaultAttributes.hasSupplier(type), "No registered supplier");

@@ -81,5 +81,171 @@ ext.migrateNaturalistResources = { File root ->
             return sound
         }
     }
+    sounds.entrySet().removeIf { entry ->
+        entry.value.sounds.any { sound ->
+            String name = sound instanceof Map ? sound.name : sound
+            name.startsWith('naturalist:mob/ant/')
+        }
+    }
     soundFile.setText(JsonOutput.prettyPrint(JsonOutput.toJson(sounds)) + '\n', 'UTF-8')
+
+    // Workbench gameplay policy: retain the animals, but stop distributing the
+    // upstream's duplicate food/material registry surface.  Do this while the
+    // verified upstream archive is staged, never by editing that archive.
+    Map<String, String> vanillaReplacements = [
+            'naturalist:anglerfish'           : 'minecraft:cod',
+            'naturalist:bass'                 : 'minecraft:cod',
+            'naturalist:blobfish'             : 'minecraft:cod',
+            'naturalist:catfish'              : 'minecraft:cod',
+            'naturalist:piranha'              : 'minecraft:cod',
+            'naturalist:bushmeat'             : 'minecraft:beef',
+            'naturalist:mammoth_meat'         : 'minecraft:beef',
+            'naturalist:venison'              : 'minecraft:mutton',
+            'naturalist:duck'                 : 'minecraft:chicken',
+            'naturalist:drumstick'            : 'minecraft:chicken',
+            'naturalist:morsel'               : 'minecraft:rabbit',
+            'naturalist:lizard_tail'          : 'minecraft:rabbit',
+            'naturalist:fur'                  : 'minecraft:rabbit_hide',
+            'naturalist:hide'                 : 'minecraft:leather',
+            'naturalist:tooth'                : 'minecraft:bone',
+            'naturalist:antler'               : 'minecraft:bone',
+            'naturalist:scorpion_poison_gland': 'minecraft:spider_eye'
+    ]
+    Set<String> removedIdentifiers = [
+            'naturalist:cooked_anglerfish', 'naturalist:cooked_bass',
+            'naturalist:cooked_blobfish', 'naturalist:cooked_catfish',
+            'naturalist:cooked_piranha', 'naturalist:cooked_bushmeat',
+            'naturalist:cooked_mammoth_meat', 'naturalist:cooked_venison',
+            'naturalist:cooked_duck', 'naturalist:cooked_drumstick',
+            'naturalist:cooked_lizard_tail', 'naturalist:fat',
+            'naturalist:clam_meat', 'naturalist:cooked_clam_meat',
+            'naturalist:crab_meat', 'naturalist:cooked_crab_meat',
+            'naturalist:cooked_egg', 'naturalist:ant', 'naturalist:queen_ant',
+            'naturalist:ant_hill', 'naturalist:ant_hill_small', 'naturalist:ant_hill_big',
+            'naturalist:carried_food', 'naturalist:snail_shell',
+            'naturalist:azure_froglass', 'naturalist:verdant_froglass', 'naturalist:crimson_froglass',
+            'naturalist:azure_froglass_pane', 'naturalist:verdant_froglass', 'naturalist:verdant_froglass_pane',
+            'naturalist:crimson_froglass_pane', 'naturalist:shellstone', 'naturalist:shellstone_stairs',
+            'naturalist:shellstone_slab', 'naturalist:shellstone_wall', 'naturalist:shellstone_bricks',
+            'naturalist:shellstone_brick_stairs', 'naturalist:shellstone_brick_slab', 'naturalist:shellstone_brick_wall',
+            'naturalist:cut_shellstone', 'naturalist:cut_shellstone_stairs', 'naturalist:cut_shellstone_slab',
+            'naturalist:cut_shellstone_wall', 'naturalist:smooth_shellstone', 'naturalist:smooth_shellstone_stairs',
+            'naturalist:smooth_shellstone_slab', 'naturalist:smooth_shellstone_wall'
+    ] as Set
+
+    Closure rewriteIdentifiers
+    rewriteIdentifiers = { value, boolean itemContext = false ->
+        if (value instanceof String) return itemContext ? vanillaReplacements.getOrDefault(value, value) : value
+        if (value instanceof List) return value.collect { rewriteIdentifiers(it, itemContext) }
+        if (value instanceof Map) {
+            def rewritten = new LinkedHashMap<>()
+            boolean itemEntry = itemContext || value.type in ['minecraft:item', 'item']
+            value.each { key, child ->
+                boolean childIsItem = itemEntry || key in ['item', 'items', 'ingredient', 'ingredients', 'result']
+                rewritten[key] = rewriteIdentifiers(child, childIsItem)
+            }
+            return rewritten
+        }
+        return value
+    }
+    Closure referencesRemoved
+    referencesRemoved = { value ->
+        if (value instanceof String) return removedIdentifiers.contains(value)
+        if (value instanceof List) return value.any { referencesRemoved(it) }
+        if (value instanceof Map) return value.values().any { referencesRemoved(it) }
+        return false
+    }
+    Closure replaceAnglerGlowstone
+    replaceAnglerGlowstone = { value ->
+        if (value instanceof String) return value == 'minecraft:glowstone_dust' ? 'minecraft:glow_ink_sac' : value
+        if (value instanceof List) return value.collect { replaceAnglerGlowstone(it) }
+        if (value instanceof Map) {
+            def rewritten = new LinkedHashMap<>()
+            value.each { key, child -> rewritten[key] = replaceAnglerGlowstone(child) }
+            return rewritten
+        }
+        return value
+    }
+    Closure scrubRemoved
+    scrubRemoved = { value ->
+        if (value instanceof String) return (removedIdentifiers.contains(value) ||
+                (value.startsWith('#') && removedIdentifiers.contains(value.substring(1)))) ? null : value
+        if (value instanceof List) return value.collect { scrubRemoved(it) }.findAll { it != null }
+        if (value instanceof Map) {
+            def cleaned = new LinkedHashMap<>()
+            value.each { key, child -> cleaned[key] = scrubRemoved(child) }
+            // Loot entries and predicates with a removed direct target must go as a whole;
+            // retaining an empty name/item/block field would make the data invalid.
+            if (['name', 'item', 'result', 'id', 'block', 'entity'].any { key ->
+                value.containsKey(key) && cleaned[key] == null
+            }) return null
+            return cleaned
+        }
+        return value
+    }
+    Closure glowGoopCooking
+    glowGoopCooking = { data ->
+        if (!(data instanceof Map)) return false
+        def result = data.result
+        String resultId = result instanceof String ? result : result instanceof Map ? result.id : null
+        return resultId == 'naturalist:glow_goop' &&
+                data.type in ['minecraft:smelting', 'minecraft:smoking', 'minecraft:campfire_cooking']
+    }
+
+    // Remove data whose registry identity disappears, while preserving mixed loot tables by
+    // pruning only their obsolete entries.  Recipes and advancements are deleted as units so
+    // a dangling criterion or malformed ingredient can never reach the 26.2 codecs.
+    fileTree(root).matching { include '**/*.json' }.each { file ->
+        String relative = root.toPath().relativize(file.toPath()).toString().replace('\\', '/')
+        boolean retiredNamedResource = relative ==~ /.*\/(?:ant|queen_ant|ant_hill|carried_food|snail_shell|(?:azure|verdant|crimson)_froglass(?:_pane)?|(?:cut_|smooth_)?shellstone(?:_bricks)?(?:_[a-z_]+)?|bushmeat|cooked_bushmeat|fur|tooth|fat|hide|morsel|cooked_egg|antler|duck|cooked_duck|venison|cooked_venison|drumstick|cooked_drumstick|mammoth_meat|cooked_mammoth_meat|lizard_tail|cooked_lizard_tail|(?:cooked_)?(?:anglerfish|bass|blobfish|catfish|piranha)|(?:cooked_)?(?:clam_meat|crab_meat)|scorpion_poison_gland|(?:forest_dasher|long_forest_dasher|strong_forest_dasher|antivenom))\.json/
+        // Fish/duck/lizard identifiers are shared by retained entities and their retired item
+        // forms.  Never delete an entity loot table just because its item model is retired.
+        boolean pathRemoved = retiredNamedResource && (relative.contains('/recipe/') ||
+                relative.contains('/advancement/recipes/') || relative.contains('/assets/naturalist/models/item/'))
+        if (pathRemoved) {
+            file.delete()
+            return
+        }
+        def data = new JsonSlurper().parse(file)
+        boolean itemData = relative.contains('/tags/item/') || relative.contains('/recipe/')
+        def rewritten = rewriteIdentifiers(data, itemData)
+        if (relative.endsWith('/loot_table/entities/anglerfish.json')) rewritten = replaceAnglerGlowstone(rewritten)
+        boolean recipe = relative.contains('/recipe/')
+        boolean advancement = relative.contains('/advancement/')
+        if ((recipe && (referencesRemoved(rewritten) || glowGoopCooking(rewritten))) ||
+                (advancement && referencesRemoved(rewritten))) {
+            file.delete()
+            return
+        }
+        def cleaned = scrubRemoved(rewritten)
+        if (cleaned == null) {
+            file.delete()
+        } else if (JsonOutput.toJson(data) != JsonOutput.toJson(cleaned)) {
+            file.setText(JsonOutput.prettyPrint(JsonOutput.toJson(cleaned)) + '\n', 'UTF-8')
+        }
+    }
+
+    // Legacy item models are not client-item definitions in 26.2.  Removed item-model assets
+    // and all ant/shellstone/froglass resources are omitted from the staged pack entirely.
+    root.eachFileRecurse { file ->
+        if (!file.isFile()) return
+        String relative = root.toPath().relativize(file.toPath()).toString().replace('\\', '/')
+        Set<String> removedResourceNames = [
+                'ant', 'queen_ant', 'ant_hill', 'carried_food', 'snail_shell',
+                'azure_froglass', 'verdant_froglass', 'crimson_froglass',
+                'azure_froglass_pane', 'verdant_froglass_pane', 'crimson_froglass_pane',
+                'shellstone', 'shellstone_stairs', 'shellstone_slab', 'shellstone_wall',
+                'shellstone_bricks', 'shellstone_brick_stairs', 'shellstone_brick_slab', 'shellstone_brick_wall',
+                'cut_shellstone', 'cut_shellstone_stairs', 'cut_shellstone_slab', 'cut_shellstone_wall',
+                'smooth_shellstone', 'smooth_shellstone_stairs', 'smooth_shellstone_slab', 'smooth_shellstone_wall'
+        ] as Set
+        boolean removedFamily = relative.tokenize('/').any { segment ->
+            String base = segment.replaceFirst(/\.[^.]+$/, '')
+            removedResourceNames.any { name -> base == name || base.startsWith(name + '_') }
+        }
+        boolean removedItemModel = relative ==~ /assets\/naturalist\/models\/item\/(?:bushmeat|cooked_bushmeat|fur|tooth|fat|hide|morsel|cooked_egg|antler|duck|cooked_duck|venison|cooked_venison|drumstick|cooked_drumstick|mammoth_meat|cooked_mammoth_meat|lizard_tail|cooked_lizard_tail|(?:cooked_)?(?:anglerfish|bass|blobfish|catfish|piranha)|(?:cooked_)?(?:clam_meat|crab_meat)|scorpion_poison_gland|(?:forest_dasher|long_forest_dasher|strong_forest_dasher|antivenom))\.json/
+        if (removedFamily || removedItemModel) {
+            if (!file.delete()) throw new GradleException("Unable to remove retired staged resource ${relative}")
+        }
+    }
 }

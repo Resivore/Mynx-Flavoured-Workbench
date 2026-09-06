@@ -23,12 +23,10 @@ public class NaturalistTags {
         public static final TagKey<Block> CATTAIL_PLACEABLE = tag("cattail_placeable");
         public static final TagKey<Block> ALLIGATOR_EGG_LAYABLE_ON = tag("alligator_egg_layable_on");
         public static final TagKey<Block> TORTOISE_EGG_LAYABLE_ON = tag("tortoise_egg_layable_on");
-        public static final TagKey<Block> SHELLSTONE = tag("shellstone");
         public static final TagKey<Block> MOTHS_ATTRACTED_TO = tag("moths_attracted_to");
         public static final TagKey<Block> KOMODO_DRAGONS_SPAWNABLE_ON = tag("komodo_dragons_spawnable_on");
         public static final TagKey<Block> OSTRICH_EGG_LAYABLE_ON = tag("ostrich_egg_layable_on");
         public static final TagKey<Block> SCORPIONS_SPAWNABLE_ON = tag("scorpions_spawnable_on");
-        public static final TagKey<Block> SNAIL_SHELL_BLACKLIST = tag("snail_shell_blacklist");
 
         private static TagKey<Block> tag(@NotNull String name) {
             return TagKey.create(Registries.BLOCK, Naturalist.location(name));
@@ -150,7 +148,6 @@ public class NaturalistTags {
         public static final TagKey<Biome> HAS_VULTURE = tag("has_vulture");
         public static final TagKey<Biome> HAS_ZEBRA = tag("has_zebra");
         public static final TagKey<Biome> HAS_WHALE = tag("has_whale");
-        public static final TagKey<Biome> HAS_ANT_HILL = tag("has_ant_hill");
 
         public static final TagKey<Biome> BLACKLIST_ALLIGATOR = tag("blacklist/blacklist_alligator");
         public static final TagKey<Biome> BLACKLIST_ANGLERFISH = tag("blacklist/blacklist_anglerfish");

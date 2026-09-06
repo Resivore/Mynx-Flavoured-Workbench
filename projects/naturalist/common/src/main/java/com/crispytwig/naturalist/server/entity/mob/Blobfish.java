@@ -33,6 +33,7 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.control.SmoothSwimmingLookControl;
 import net.minecraft.world.entity.ai.control.SmoothSwimmingMoveControl;
 import net.minecraft.world.entity.ai.goal.AvoidEntityGoal;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.animal.fish.AbstractFish;
@@ -216,7 +217,7 @@ public class Blobfish extends AbstractFish implements DataDrivenVariantAnimal {
 
     private void onTransform() {
         if (this.level() instanceof ServerLevel serverLevel) {
-            ItemParticleOption particle = new ItemParticleOption(ParticleTypes.ITEM, net.minecraft.world.item.ItemStackTemplate.fromNonEmptyStack(new ItemStack(NaturalistRegistry.BLOBFISH.get())));
+            ItemParticleOption particle = new ItemParticleOption(ParticleTypes.ITEM, net.minecraft.world.item.ItemStackTemplate.fromNonEmptyStack(new ItemStack(Items.COD)));
             for (int i = 0; i < 16; i++) {
                 serverLevel.sendParticles(particle, this.getRandomX(1.0), this.getRandomY(), this.getRandomZ(1.0), 1, 0.0, 0.0, 0.0, 0.05);
             }

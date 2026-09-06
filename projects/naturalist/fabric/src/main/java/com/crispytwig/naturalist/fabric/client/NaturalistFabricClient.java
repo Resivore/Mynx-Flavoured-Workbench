@@ -17,7 +17,6 @@ import net.fabricmc.fabric.api.client.model.loading.v1.ExtraModelKey;
 import net.fabricmc.fabric.api.client.model.loading.v1.PreparableModelLoadingPlugin;
 import net.fabricmc.fabric.api.client.model.loading.v1.SimpleUnbakedExtraModel;
 import net.fabricmc.fabric.api.client.particle.v1.ParticleProviderRegistry;
-import net.fabricmc.fabric.api.client.rendering.v1.BlockEntityRendererRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.ModelLayerRegistry;
 import net.minecraft.client.gui.screens.MenuScreens;
@@ -47,7 +46,6 @@ public class NaturalistFabricClient implements ClientModInitializer {
         NaturalistClient.registerLayerDefinitions((location, definition) ->
                 ModelLayerRegistry.registerModelLayer(location, definition::get));
         NaturalistClient.registerRenderers(EntityRendererRegistry::register);
-        NaturalistClient.registerBlockEntityRenderers(BlockEntityRendererRegistry::register);
 
         NaturalistClient.registerItemProperties();
         NaturalistClient.registerMenuScreens(MenuScreens::register);

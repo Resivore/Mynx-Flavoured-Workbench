@@ -83,8 +83,8 @@ class LifecycleTest {
 
     @Test
     void everyNaturalistRecipeSurvivesManagerPreparationAndFinalization() {
-        assertEquals(101, recipes.getRecipes().stream().filter(r -> r.id().identifier().getNamespace().equals("naturalist")).count());
-        for (String ownedOverride : List.of("cake", "leather", "pumpkin_pie", "spectral_arrow")) {
+        assertEquals(9, recipes.getRecipes().stream().filter(r -> r.id().identifier().getNamespace().equals("naturalist")).count());
+        for (String ownedOverride : List.of("cake", "leather", "pumpkin_pie")) {
             assertTrue(recipes.byKey(ResourceKey.create(Registries.RECIPE, Identifier.withDefaultNamespace(ownedOverride))).isPresent(), ownedOverride);
         }
         var bee = (BugNetInteractionRecipe) recipes.byKey(ResourceKey.create(Registries.RECIPE, Naturalist.location("catch_bee"))).orElseThrow().value();
@@ -102,7 +102,7 @@ class LifecycleTest {
     void allAdvancementsPublishWithVanillaParents() {
         var manager = new AdvancementHarness(registries);
         manager.publish(new HashMap<>(preparedAdvancements));
-        assertEquals(40, manager.tree().nodes().stream().filter(n -> n.holder().id().getNamespace().equals("naturalist")).count());
+        assertEquals(10, manager.tree().nodes().stream().filter(n -> n.holder().id().getNamespace().equals("naturalist")).count());
         preparedAdvancements.forEach((id, advancement) -> {
             if (id.getNamespace().equals("naturalist")) {
                 var problems = new ProblemReporter.Collector();
@@ -115,38 +115,6 @@ class LifecycleTest {
     @Test
     void creativeTabUsesUniqueRegisteredItemsAndPreservesVariants() throws Exception {
         CreativeInventoryContracts.verify(registries);
-    }
-
-    @Test void creativeShapeFamilyCollisionKeepsEveryDistinctStack() throws Exception {
-        var bricks = NaturalistRegistry.SHELLSTONE_BRICKS.get().asItem();
-        var wall = NaturalistRegistry.SHELLSTONE_BRICK_WALL.get().asItem();
-        ShapeEqualityFixture.family = Set.of(bricks, wall);
-        try {
-            assertNotSame(bricks, wall);
-            assertTrue(ItemStack.isSameItemSameComponents(new ItemStack(bricks), new ItemStack(wall)),
-                    "The fixture must reproduce the verified CNM shape-family RETURN hook");
-            var strategyField = ItemStackLinkedSet.class.getDeclaredField("TYPE_AND_TAG");
-            strategyField.setAccessible(true);
-            @SuppressWarnings("unchecked") var actualStrategy = (it.unimi.dsi.fastutil.Hash.Strategy<ItemStack>) strategyField.get(null);
-            var collisions = new it.unimi.dsi.fastutil.Hash.Strategy<ItemStack>() {
-                public int hashCode(ItemStack stack) { return 0; } // Deterministic hash-bucket collision.
-                public boolean equals(ItemStack a, ItemStack b) { return actualStrategy.equals(a, b); }
-            };
-            var baseline = new it.unimi.dsi.fastutil.objects.ObjectLinkedOpenCustomHashSet<ItemStack>(collisions);
-            assertTrue(baseline.add(new ItemStack(bricks)));
-            assertFalse(baseline.add(new ItemStack(wall)), "Unscoped vanilla collection reproduces the false duplicate");
-            var emitted = new it.unimi.dsi.fastutil.objects.ObjectLinkedOpenCustomHashSet<ItemStack>(collisions);
-            var field = CreativeModeTab.class.getDeclaredField("displayItemsGenerator");
-            field.setAccessible(true);
-            var generator = (CreativeModeTab.DisplayItemsGenerator) field.get(NaturalistCreativeTab.ITEM_GROUP.get());
-            generator.accept(new CreativeModeTab.ItemDisplayParameters(FeatureFlags.VANILLA_SET, true, registries),
-                    (stack, visibility) -> assertTrue(emitted.add(stack), "Accidentally adding the same item stack twice [" + BuiltInRegistries.ITEM.getKey(stack.getItem()) + "]"));
-            assertEquals(198, emitted.size());
-            assertTrue(emitted.stream().anyMatch(stack -> stack.getItem() == bricks));
-            assertTrue(emitted.stream().anyMatch(stack -> stack.getItem() == wall));
-            assertTrue(ItemStack.isSameItemSameComponents(new ItemStack(bricks), new ItemStack(wall)),
-                    "Inventory family equality must survive creative generation");
-        } finally { ShapeEqualityFixture.family = Set.of(); }
     }
 
     @Test void creativeIdentityScopeRestoresAfterNestingAndFailure() {
@@ -182,10 +150,10 @@ class LifecycleTest {
         var before = new HashMap<>(filtered);
         var rejected = new AdvancementTree();
         rejected.addAll(filtered.entrySet().stream().map(e -> new AdvancementHolder(e.getKey(), e.getValue())).toList());
-        assertEquals(37, rejected.nodes().stream().filter(n -> n.holder().id().getNamespace().equals("naturalist")).count(), "Raw decoding misses the three unresolved parents");
+        assertEquals(7, rejected.nodes().stream().filter(n -> n.holder().id().getNamespace().equals("naturalist")).count(), "Raw decoding misses the three unresolved parents");
         var manager = new AdvancementHarness(registries);
         manager.publish(filtered);
-        assertEquals(40, manager.tree().nodes().stream().filter(n -> n.holder().id().getNamespace().equals("naturalist")).count());
+        assertEquals(10, manager.tree().nodes().stream().filter(n -> n.holder().id().getNamespace().equals("naturalist")).count());
         for (String name : List.of("feed_bear_honeycomb", "feed_hippo_melon", "ride_giraffe_with_map")) {
             Identifier id = Naturalist.location("husbandry/" + name);
             Advancement old = before.get(id), value = manager.get(id).value();
@@ -224,14 +192,14 @@ class LifecycleTest {
                 count++;
             }
         }
-        assertEquals(107, count, "99 variants plus damage, songs, painting and worldgen entries");
-        assertEquals(48, registries.registries().filter(r -> r.key().identifier().getNamespace().equals("naturalist")).count());
+        assertEquals(102, count, "retained variants, damage, songs and painting entries after the cull");
+        assertEquals(47, registries.registries().filter(r -> r.key().identifier().getNamespace().equals("naturalist")).count());
         System.out.println("Final Naturalist dynamic registry entries=" + count);
     }
 
     @Test void allLootTablesSurviveReloadAndReferenceValidation() {
         var tables = lootRegistries.lookupOrThrow(Registries.LOOT_TABLE);
-        assertEquals(78, tables.listElements().filter(h -> h.key().identifier().getNamespace().equals("naturalist")).count());
+        assertEquals(57, tables.listElements().filter(h -> h.key().identifier().getNamespace().equals("naturalist")).count());
         var problems = new ProblemReporter.Collector();
         var context = new ValidationContextSource(problems, lootRegistries);
         LootDataType.values().forEach(type -> validateLoot(context, type));

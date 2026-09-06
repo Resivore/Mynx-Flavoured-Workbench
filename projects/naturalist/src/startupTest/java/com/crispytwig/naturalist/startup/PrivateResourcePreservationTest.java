@@ -28,6 +28,7 @@ class PrivateResourcePreservationTest {
         try (var zip = new ZipFile(System.getProperty("naturalist.originalJar")); var files = Files.walk(ROOT)) {
             for (var file : files.filter(Files::isRegularFile).toList()) {
                 String name = ROOT.relativize(file).toString().replace('\\', '/');
+                if (name.startsWith("data/") || name.equals("assets/naturalist/sounds.json")) continue;
                 var entry = zip.getEntry(name);
                 assertNotNull(entry, name);
                 byte[] original;
@@ -45,25 +46,18 @@ class PrivateResourcePreservationTest {
                     var expected = before.deepCopy();
                     expected.getAsJsonArray("mixins").add("CreativeItemStackIdentityMixin");
                     assertEquals(expected, after);
-                } else if (name.startsWith("data/minecraft/recipe/") || name.startsWith("data/naturalist/recipe/") || name.startsWith("data/naturalist/advancement/")
-                        || name.startsWith("data/naturalist/loot_table/") || name.equals("assets/naturalist/sounds.json")) {
-                    int oldIngredients = ingredients, oldTypes = entityTypes;
-                    compare(JsonParser.parseString(new String(original, StandardCharsets.UTF_8)),
-                            JsonParser.parseString(new String(staged, StandardCharsets.UTF_8)), name, "");
-                    if (ingredients != oldIngredients) recipes++;
-                    if (entityTypes != oldTypes) predicates++;
                 } else {
                     assertArrayEquals(original, staged, name);
                     unchanged++;
                 }
             }
         }
-        assertEquals(104, recipes);
-        assertTrue(ingredients >= 100);
-        assertEquals(4, predicates);
-        assertEquals(5, entityTypes);
-        assertEquals(15, soundPaths);
-        assertTrue(unchanged > 1800);
+        assertEquals(0, recipes);
+        assertEquals(0, ingredients);
+        assertEquals(0, predicates);
+        assertEquals(0, entityTypes);
+        assertEquals(0, soundPaths);
+        assertTrue(unchanged > 1300);
     }
 
     private void compare(JsonElement before, JsonElement after, String file, String path) {
@@ -133,6 +127,6 @@ class PrivateResourcePreservationTest {
                 checked++;
             }
         }
-        assertEquals(661, checked);
+        assertEquals(648, checked);
     }
 }

@@ -128,7 +128,7 @@ $spawnEggPattern = 'registerItem\("(?<id>[a-z0-9_]+_spawn_egg)",\s*properties\s*
     '(?<secondary>\d+),\s*properties\)\)'
 $spawnEggMatches = [regex]::Matches($registrySource, $spawnEggPattern,
     [Text.RegularExpressions.RegexOptions]::Singleline)
-Assert-Equal $spawnEggMatches.Count 47 'spawn-egg color registration count'
+Assert-Equal $spawnEggMatches.Count 46 'spawn-egg color registration count'
 $spawnEggColors = [ordered]@{}
 foreach ($match in $spawnEggMatches) {
     $itemId = $match.Groups['id'].Value
@@ -165,11 +165,16 @@ finally {
 
 $wrappedItemIds = @(
     'catfish_bucket', 'bass_bucket', 'duck_bucket', 'crab', 'caterpillar', 'butterfly',
-    'ant', 'rat', 'scorpion', 'hedgehog', 'snail', 'starfish_bucket',
+    'rat', 'scorpion', 'hedgehog', 'snail', 'starfish_bucket',
     'giant_isopod_bucket', 'anglerfish_bucket', 'jellyfish_bucket', 'ray_bucket',
     'blobfish_bucket', 'piranha_bucket'
 )
-$compatibilityItemIds = @($wrappedItemIds + @('snail_shell', 'knapsack'))
+$retainedInventoryItemIds = @(
+    'glow_goop', 'capture_net', 'music_disc_wild_ones', 'music_disc_death_by_hogs', 'duck_egg',
+    'chrysalis', 'red_starfish', 'orange_starfish', 'blue_starfish', 'purple_starfish',
+    'alligator_egg', 'tortoise_egg', 'ostrich_egg', 'snail_eggs'
+)
+$compatibilityItemIds = @($wrappedItemIds + @('knapsack') + $retainedInventoryItemIds)
 $variantRegistryCounts = [ordered]@{
     anglerfish = 1
     butterfly = 6
@@ -192,12 +197,13 @@ try {
     $spawnEggModels = @($zip.Entries | Where-Object {
         $_.FullName -match '^assets/naturalist/models/item/([a-z0-9_]+_spawn_egg)\.json$'
     })
-    Assert-Equal $spawnEggModels.Count 47 'protected spawn-egg model count'
+    Assert-Equal $spawnEggModels.Count 47 'protected upstream spawn-egg model count'
     $protectedSpawnEggIds = @($spawnEggModels | ForEach-Object {
         [regex]::Match($_.FullName,
             '^assets/naturalist/models/item/([a-z0-9_]+_spawn_egg)\.json$').Groups[1].Value
     })
-    Assert-SetEqual $protectedSpawnEggIds $spawnEggIds 'protected spawn-egg model ids'
+    Assert-SetEqual $protectedSpawnEggIds @($spawnEggIds + 'ant_spawn_egg') `
+        'protected upstream spawn-egg model ids'
     foreach ($itemId in $spawnEggIds) {
         $spawnEggModel = Read-ZipJson $zip "assets/naturalist/models/item/$itemId.json"
         Assert-Equal ([string]$spawnEggModel.parent) 'minecraft:item/template_spawn_egg' `
@@ -241,7 +247,7 @@ try {
     Write-Host 'PASS  all variant item_model links resolve without flattening identifiers'
 
     $propertyTargets = @()
-    foreach ($itemId in @('snail', 'snail_shell')) {
+    foreach ($itemId in @('snail')) {
         $json = Read-ZipJson $zip "assets/naturalist/models/item/$itemId.json"
         Assert-Equal @($json.overrides).Count 16 "$itemId color override count"
         for ($index = 0; $index -lt 16; ++$index) {
@@ -265,7 +271,7 @@ try {
     Assert-Equal ([string]$knapsack.overrides[0].model) 'naturalist:item/knapsack_filled' `
         'knapsack filled model'
     $propertyTargets += 'naturalist:item/knapsack_filled'
-    Assert-Equal @($propertyTargets | Sort-Object -Unique).Count 33 'numeric-property target model count'
+    Assert-Equal @($propertyTargets | Sort-Object -Unique).Count 17 'numeric-property target model count'
     foreach ($model in $propertyTargets) {
         $parts = $model -split ':', 2
         if ($null -eq $zip.GetEntry("assets/$($parts[0])/models/$($parts[1]).json")) {
@@ -397,8 +403,8 @@ foreach ($resourceHash in $legacySpawnEggResourceHashes.Values) {
 }
 Assert-Match $buildSource 'stageLegacySpawnEggResources' `
     'verified legacy spawn-egg staging task'
-Assert-Match $buildSource 'spawnEggColors\.size\(\)\s*!=\s*47' `
-    '47-entry spawn-egg source parser guard'
+Assert-Match $buildSource 'spawnEggColors\.size\(\)\s*!=\s*46' `
+    '46-entry spawn-egg source parser guard'
 Assert-Match $buildSource 'value:\s*primaryArgb[\s\S]+value:\s*secondaryArgb' `
     'primary-before-secondary tint generation'
 Assert-Match $buildSource 'processResources[\s\S]+generateItemModelCompatibilityResources' `
@@ -473,4 +479,4 @@ Assert-Empty $trackedSpawnEggCompatibilityResources `
 
 Write-Host ''
 Write-Host 'Naturalist 26.2 dynamic item-model/property migration verified.'
-Write-Host 'Contracts: 18 wrapped items; 34 variant models; 26 links; 16+16 colors; 1 filled override; 47 two-tint spawn eggs; 67 generated roots.'
+Write-Host 'Contracts: 17 wrapped items; 14 retained inventory roots; 34 variant models; 26 links; 16 colors; 1 filled override; 46 two-tint spawn eggs; 78 generated roots.'

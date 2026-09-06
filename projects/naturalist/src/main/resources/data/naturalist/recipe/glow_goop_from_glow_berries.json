@@ -1,0 +1,10 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    "minecraft:glow_berries"
+  ],
+  "result": {
+    "id": "naturalist:glow_goop",
+    "count": 1
+  }
+}
