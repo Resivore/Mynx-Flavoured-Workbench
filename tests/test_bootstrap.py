@@ -1472,10 +1472,10 @@ class RuntimeContractTests(unittest.TestCase):
         tracked = load_json(ROOT / "tools" / "test_instance_manager" / "runtime-state.json")
         self.assertEqual("ACTIVE", tracked["activation"])
         self.assertEqual(2, tracked["schema_version"])
-        self.assertEqual(101, tracked["revision"])
-        self.assertEqual("2026-09-06T02:45:00Z", tracked["updated_at"])
+        self.assertEqual(102, tracked["revision"])
+        self.assertEqual("2026-09-06T04:32:19Z", tracked["updated_at"])
         self.assertEqual(
-            "8a27b15836ec7dbffe91f1cb7725dd0eda32ed76e409160975ff18c3af578795",
+            "2fe9b76f1c02cadd979dc39a423db6140f762ff65e16fecdd92951e13f60da4a",
             state_digest(tracked),
         )
         self.assertEqual(19, tracked["accepted_baseline"]["revision"])
@@ -1676,21 +1676,21 @@ class RuntimeContractTests(unittest.TestCase):
         self.assertEqual(1, len(slot_a["members"]))
         csr_successor = slot_a["members"][0]
         self.assertEqual(
-            "eb9e9dc9-b213-42f1-b47f-e6530cb5802e",
+            "377b5b52-c3a5-49c6-9c5e-bc722f263cf7",
             csr_successor["unit"]["deployment_id"],
         )
         self.assertEqual("3ab36584-8732-554f-840e-28a75c422660", csr_successor["unit"]["project_uuid"])
         self.assertEqual("container-slot-reservations", csr_successor["unit"]["project_id"])
-        self.assertEqual("0.1.0-canary11", csr_successor["unit"]["version"])
+        self.assertEqual("0.1.0-canary13", csr_successor["unit"]["version"])
         self.assertEqual(
-            "c38897a5bfdea34c54b4ade519a44b31fc1cc150",
+            "6d8258f74e7b80625db81cd61c7fec0e4a3a49b0",
             csr_successor["unit"]["source_commit"],
         )
         self.assertEqual(
             (
-                "2184b05b-e1f6-41dc-9632-bfd682d78546",
-                "container-slot-reservations-0.1.0-canary11.jar",
-                "b56a40a7ed504e07c68b8d037e99c1fe5aa8a822352dfbdf351977dd963189c1",
+                "3bbd66ef-c703-41ab-8ada-92275c9f6f3b",
+                "container-slot-reservations-0.1.0-canary13.jar",
+                "61d24c69f12da4f0ca1c68407d929cc8f21e83ef29e32ac2b5922d5a650bf23e",
                 ["mod:container_slot_reservations"],
             ),
             (
@@ -1705,24 +1705,12 @@ class RuntimeContractTests(unittest.TestCase):
             csr_successor["replaces_accepted_deployment_id"],
         )
         self.assertEqual(
-            {
-                "classification": "FAIL",
-                "recorded_at": "2026-09-06T02:45:00Z",
-                "evidence": {
-                    "passed": [],
-                    "failed": [
-                        "User-reported: hovering a count-one shulker reached CSR's pinned-panel path, "
-                        "then crashed because ShulkerHostFingerprint.of() invoked ItemStack.STREAM_CODEC "
-                        "outside a network PacketContext; Polymer reported: PacketContext is required, "
-                        "but it wasn't set up! No other Canary 11 test result is inferred."
-                    ],
-                },
-            },
+            {"classification": "UNTESTED", "recorded_at": None, "evidence": {"passed": [], "failed": []}},
             csr_successor["runtime_result"],
         )
         self.assertEqual("READY_TO_TEST_VERIFIED", slot_a["deployment"]["state"])
-        self.assertEqual("2026-09-05T23:00:00Z", slot_a["deployment"]["deployed_at"])
-        self.assertEqual("2026-09-05T23:00:00Z", slot_a["deployment"]["ready_verified_at"])
+        self.assertEqual("2026-09-06T04:32:19Z", slot_a["deployment"]["deployed_at"])
+        self.assertEqual("2026-09-06T04:32:19Z", slot_a["deployment"]["ready_verified_at"])
 
         sas = accepted_by_uuid["58086966-05a1-4237-9f4f-ffca6c05da87"]
         self.assertEqual("66cd7696-3d01-4d92-805e-9221c1b93e07", sas["unit"]["deployment_id"])
@@ -1775,7 +1763,7 @@ class RuntimeContractTests(unittest.TestCase):
         self.assertEqual("TESTING", qsn_manifest["definition"]["lifecycle"])
         self.assertEqual("ACCEPTED", sas_manifest["definition"]["lifecycle"])
         self.assertEqual(
-            "NOT_DEPLOYED",
+            "READY_TO_TEST_VERIFIED",
             csr_manifest["state"]["validation"]["deployment"],
         )
         self.assertEqual(
@@ -1783,7 +1771,7 @@ class RuntimeContractTests(unittest.TestCase):
             sas_manifest["state"]["validation"]["deployment"],
         )
         self.assertEqual(
-            "OLDER_RELEASE_DEPLOYED",
+            "CURRENT_RELEASE_DEPLOYED",
             current_release_deployment_comparison(csr_manifest, tracked),
         )
         self.assertEqual(
@@ -1817,7 +1805,7 @@ class RuntimeContractTests(unittest.TestCase):
         self.assertEqual(
             [
                 "Baseline: Stack v19",
-                "Slot A: Container Slot Reservations - Canary 11",
+                "Slot A: Container Slot Reservations - Canary 13",
                 "Slot B: Quick Stack Nearby Compatibility - Canary 9",
             ],
             title_state["lines"],
