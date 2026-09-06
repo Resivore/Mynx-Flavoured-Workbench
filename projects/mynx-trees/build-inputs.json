@@ -288,9 +288,9 @@
     "binding": "SILVER_BIRCH_LEAVES -> getAspenColor",
     "grass": "#B0C73A",
     "unused_generic_foliage": "#88BB42",
-    "leaf_hsv": "h = sin(x/10 + sin((z+x)/50)*3)/75 + 0.15; s = 0.8; v = 0.70; float arithmetic, Minecraft sine lookup, RGB rounding as Java HSBtoRGB; v is explicit current Iris/Complementary render compensation, not byte-for-byte RU raw provider output",
+    "leaf_hsv": "h = sin(x/10 + sin((z+x)/50)*3)/75 + 0.15; s = 0.8; v = 0.52; float arithmetic, Minecraft sine lookup, RGB rounding as Java HSBtoRGB; v is the current intentional render compensation, not byte-for-byte RU raw provider output",
     "permission_scope": "User explicitly requested minimal visual behavior reproduction from ARR read-only reference; no RU source/assets imported.",
-    "inventory_rgb": "#B3A424",
+    "inventory_rgb": "#857A1B",
     "inventory_behavior": "Normal Silver Birch leaf cube/block item with exactly one compensated mustard-gold tint matching golden(0,0); no flat inventory sprite packaged."
   },
   "decoration_policy": {
