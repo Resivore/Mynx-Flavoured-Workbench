@@ -27,7 +27,7 @@
     "scope": [
       "Maintain the custom EMF trace bridge and icon-only canonical-frame adapter after ordinary Xaero prerender returns empty; follow bounded recursive head/head_parts identity paths through the retained vanilla root or EMFModelPartVanilla's public retained-root route.",
       "Follow a unique zero-transform retained geometry owner when the canonical container is empty, or detach direct canonical EMF head geometry into a plain ModelPart with only explicit facial/headwear anchors. The traced detached head itself is renderable even when EMF marks its traversal node skipDraw; named descendants retain their own transforms and visibility. Exclude body siblings, and fail closed on ambiguous, non-finite, singular, untraced, non-head, vanilla or upstream-success paths.",
-      "Retain exact Diagnostic1 and Canary 1 through Canary 6 artifacts. Validate reported entity structures with exact retained C3/C4 provenance alongside sheep, horse, sea turtle and creeper controls. Bound normal Fabric diagnostics, invalidate only observed EMF entity-type successful/failed icon caches on reload, and retry one already-cached FAILED value only after the current LivingEntity renderer is structurally confirmed as an EMF root."
+      "Retain exact Diagnostic1 and Canary 1 through Canary 7 artifacts. Validate reported entity structures with exact retained C3/C4 provenance alongside sheep, horse, sea turtle and creeper controls. Bound normal Fabric diagnostics, invalidate only observed EMF entity-type successful/failed icon caches on reload, and retry one already-cached FAILED value only after the current LivingEntity renderer is structurally confirmed as an EMF root."
     ],
     "boundaries": {
       "owned_paths": [
@@ -112,15 +112,15 @@
     ]
   },
   "state": {
-    "milestone": "User-supplied external C6 evidence is bound to the exact retained C6 identity: axolotl, sniffer, iron golem, wolf, bat, parrot, witch and ravager visibly work; frog, allay and vex show Xaero's yellow generic entity square plus name instead of a head icon; every user-tested custom hatted villager has that same fallback, including farmer, butcher, cleric and mason. Farmer is specifically a C6 regression from C5's working icon. C7 preserves C6 geometry selection and fixes the proven final-handoff defect: C6 consumed its one FAILED-cache retry on an ordinary manager lookup while Xaero could not prerender, then left FAILED stored, so later lookups bypassed creation and returned the generic fallback. C7 defers retry consumption to that exact cache read only when Xaero can invoke the creator, lets successful creation overwrite FAILED under the same variant key, and records final manager return state. C7 passed 45 tests in nine suites, two clean byte-identical builds, archive checks, and the 80-mod production Knot/Mixin harness; it is NOT_DEPLOYED and RUNTIME_UNTESTED.",
+    "milestone": "User-supplied external C7 evidence is bound to the exact retained C7 identity: axolotl, sniffer, iron golem, wolf, bat, parrot, witch, ravager, farmer villager and cleric villager visibly work; butcher villager, mason villager, frog, allay and vex show Xaero's yellow generic entity square plus name instead of a head icon. Read-only C7 diagnostics prove two remaining mechanisms: butcher/mason reach a C7 NO_TRACED_HEAD_CANDIDATE boundary because their effective Ribbit Villagers headwear uses transformed empty containers with nested cube owners, unlike farmer/cleric's direct owner success path; frog/allay/vex reach creator and their normal variant keys but fail MISSING_RETAINED_VANILLA_GEOMETRY before adapter drawing because EMF cleared their mapped vanilla head cubes. C8 copies only explicit head-local anchors through transformed empty containers while making copied EMF traversal nodes renderable, and uses only the uniquely traced semantic head as a frame when that retained canonical geometry is absent. C8 passed 47 tests in nine suites, two clean byte-identical builds, client-only allowlist, and archive validation; it is NOT_DEPLOYED and RUNTIME_UNTESTED.",
     "releases": {
       "current": {
-        "version": "0.1.0-canary7",
+        "version": "0.1.0-canary8",
         "artifact": {
-          "filename": "xaero-emf-entity-icon-compat-0.1.0-canary7.jar",
-          "sha256": "b70d04024ee22440d573c8b6682c8097e2eda34f5f6e15b171c401db09943ee0"
+          "filename": "xaero-emf-entity-icon-compat-0.1.0-canary8.jar",
+          "sha256": "337adff555afae9fbcedf1c51320595654bfe4f1ab120f8c0dfb7d03bad3aa7c"
         },
-        "source_commit": "736bc9553528bd31ffc18fb2504423886665de92",
+        "source_commit": "8c45f2f9ccdcf12f4403ba3380a32f81f975e077",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
@@ -139,11 +139,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 6,
-    "activity_at": "2026-09-06T04:46:17Z",
-    "updated_at": "2026-09-06T04:46:17Z",
-    "last_codex_at": "2026-09-06T04:46:17Z",
-    "source_commit": "736bc9553528bd31ffc18fb2504423886665de92",
+    "revision": 7,
+    "activity_at": "2026-09-06T06:04:05Z",
+    "updated_at": "2026-09-06T06:04:05Z",
+    "last_codex_at": "2026-09-06T06:04:05Z",
+    "source_commit": "8c45f2f9ccdcf12f4403ba3380a32f81f975e077",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
