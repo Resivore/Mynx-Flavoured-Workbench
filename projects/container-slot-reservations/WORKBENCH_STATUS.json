@@ -24,7 +24,7 @@
       "Preserve accepted C4 storage reservations, exact ghost/zero/marker visuals, public API compatibility for QSN C9 and CCAR C12, and the centralized empty-shulker template rule without external tooltip integration."
     ],
     "scope": [
-      "Current 0.1.0-canary13 from implementation checkpoint 6d8258f74e7b80625db81cd61c7fec0e4a3a49b0 removes only CSR's separate blue selected-cell draw while preserving server-authoritative selection; it makes carried-shulker extraction deterministically repair a matching pre-migration selection or use the established first-occupied default at the native click seam; and it composes the unchanged 176x77 shulker upper panel with the runtime texture's 176x6 bottom frame from source Y=160. Reservations, component identity, panel grid coordinates, QSN, and CCAR behavior remain unchanged.",
+      "Current 0.1.0-canary14 from implementation checkpoint 4cd247732e39787fdafef9d9fa25a461b9665f0e retains the active-resource-pack shulker texture composition: its unchanged 176x77 upper title/grid region is followed directly by only the true six-pixel bottom bezel (source Y=160 through 165), with a focused vanilla-26.2 pixel contract rejecting player inventory/hotbar divider rows. It makes every implicit carried-shulker default choose the highest occupied internal slot, preserves a valid explicit selection, retains a capacity-limited selected remainder, and after a full default extraction continues backward through occupied slots. Reservations, component identity, panel grid coordinates, QSN, CCAR, persistence, and GUI assets remain unchanged.",
       "While CSR owns Slot A and remains TESTING, a finalized current CSR testing successor normally replaces the preceding CSR candidate through one serialized Test Instance Manager Slot A transition; only a concrete manager preimage, dependency, or physical-safety failure may leave that successor retained but not deployed.",
       "Bind one exact count-one shulker host by screen, menu, menu ID, visible slot index, Slot instance, underlying container slot, explicit Creative player-inventory locator where applicable, and complete SHA-256 ItemStack fingerprint; never search for an equal stack.",
       "Render and hit-test one fixed 176x83 native panel with an unchanged 176x77 upper shulker region plus the same runtime texture's 176x6 bottom frame, 27 physical 18x18 cells, right-then-left clamped placement, a narrow deterministic corridor, one grace frame, live contents, vanilla cell highlights, exact existing reservation visuals, and carried-stack-above-panel strata.",
@@ -119,16 +119,16 @@
     ]
   },
   "state": {
-    "milestone": "CSR Canary 13 is the controlled-validation successor to C12: it removes the separate blue selection draw, repairs carried-shulker extraction at the real native-click seam without relying on selection-payload ordering, and appends the runtime-resolved vanilla shulker texture's six-pixel bottom frame (source Y=160) to form a 176x83 panel without moving its grid. Exact manual C12 observations remain historical external evidence only: its PacketContext/Polymer hover crash is resolved; the pinned panel generally functions; right-click insertion into the shulker works; a transient blue selected-cell visual is unwanted; secondary-click extraction into an empty writable inventory slot is broken; and the panel lacks its bottom frame. C12 is not a full runtime PASS. At manager revision 102, a serialized verified Slot A transition replaced exact C11 deployment eb9e9dc9-b213-42f1-b47f-e6530cb5802e / artifact 2184b05b-e1f6-41dc-9632-bfd682d78546 with C13 deployment 377b5b52-c3a5-49c6-9c5e-bc722f263cf7 / artifact 3bbd66ef-c703-41ab-8ada-92275c9f6f3b. C13 is READY_TO_TEST_VERIFIED / RUNTIME_UNTESTED. Slot B/QSN C9 remains independent and unchanged. Controlled evidence and physical readiness are not runtime success.",
+    "milestone": "CSR Canary 14 is the controlled-validation successor to C13. It preserves the runtime-resolved shulker texture and establishes a pixel-level contract for its true Y=160..165 six-pixel bottom bezel, excluding the player inventory/hotbar divider row. At the native carried-shulker secondary-click seam, no valid selection defaults to the highest occupied ordinary internal slot; an explicit valid cell still wins; a partial capacity-limited move retains that cell; and complete repeated default moves walk backward across gaps. Exact C12 manual observations and C13 Slot A deployment 377b5b52-c3a5-49c6-9c5e-bc722f263cf7 / artifact 3bbd66ef-c703-41ab-8ada-92275c9f6f3b remain historical evidence only. C14 passed controlled non-launching validation but is not deployed and has no runtime result. Slot B/QSN C9 remains independent and unchanged. Controlled validation is not runtime success.",
     "releases": {
       "current": {
-        "version": "0.1.0-canary13",
-        "embedded_version": "0.1.0-canary13",
+        "version": "0.1.0-canary14",
+        "embedded_version": "0.1.0-canary14",
         "artifact": {
-          "filename": "container-slot-reservations-0.1.0-canary13.jar",
-          "sha256": "61d24c69f12da4f0ca1c68407d929cc8f21e83ef29e32ac2b5922d5a650bf23e"
+          "filename": "container-slot-reservations-0.1.0-canary14.jar",
+          "sha256": "72b602c1fa781a53fecfbdfd58a3174ee85a910a7f0c099dcdd178c339d1f790"
         },
-        "source_commit": "6d8258f74e7b80625db81cd61c7fec0e4a3a49b0",
+        "source_commit": "4cd247732e39787fdafef9d9fa25a461b9665f0e",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
@@ -160,17 +160,17 @@
     },
     "validation": {
       "build": "CONTROLLED_VALIDATION_PASS",
-      "deployment": "READY_TO_TEST_VERIFIED",
+      "deployment": "NOT_DEPLOYED",
       "runtime": "RUNTIME_UNTESTED"
     },
     "blocker": null
   },
   "synchronization": {
-    "revision": 20,
-    "activity_at": "2026-09-06T04:44:57Z",
-    "updated_at": "2026-09-06T04:44:57Z",
-    "last_codex_at": "2026-09-06T04:44:57Z",
-    "source_commit": "af7f6f1f3a0033180f25bfaaa6220c6da8c825fa",
+    "revision": 21,
+    "activity_at": "2026-09-06T06:14:34Z",
+    "updated_at": "2026-09-06T06:14:34Z",
+    "last_codex_at": "2026-09-06T06:14:34Z",
+    "source_commit": "4cd247732e39787fdafef9d9fa25a461b9665f0e",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
