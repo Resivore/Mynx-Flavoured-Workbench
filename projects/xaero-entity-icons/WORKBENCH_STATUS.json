@@ -112,15 +112,15 @@
     ]
   },
   "state": {
-    "milestone": "User-reported external C5 evidence is bound to the exact installed C5 hash: axolotl and sniffer remained correct; iron golem and farmer were fixed; wolf, bat, parrot, frog, ravager, witch, butcher, cleric and mason were invisible, with mason a regression from the C4 hatted-villager control; allay and vex retained Xaero's ordinary entity-icon/name-tag fallback rather than a head icon. Read-only archives contain older C4 bounded diagnostics but no C5 RESOLVED_CANONICAL_GEOMETRY draw/result sequence, so C6 does not invent per-row C5 stages. C6 makes the narrow evidenced correction: the detached traced canonical head no longer inherits EMF's traversal-only skipDraw flag, preserving named headwear descendants and excluding body/limb siblings. It also observes both EMF root families before cache lookup and retries one stale FAILED value only for a current structurally confirmed EMF LivingEntity, separating the allay/vex final-handoff/cache path from geometry selection. C6 passed 42 tests in eight suites, two clean byte-identical builds, archive checks, and the combined 80-mod production Knot/Mixin harness; it is NOT_DEPLOYED and RUNTIME_UNTESTED.",
+    "milestone": "User-supplied external C6 evidence is bound to the exact retained C6 identity: axolotl, sniffer, iron golem, wolf, bat, parrot, witch and ravager visibly work; frog, allay and vex show Xaero's yellow generic entity square plus name instead of a head icon; every user-tested custom hatted villager has that same fallback, including farmer, butcher, cleric and mason. Farmer is specifically a C6 regression from C5's working icon. C7 preserves C6 geometry selection and fixes the proven final-handoff defect: C6 consumed its one FAILED-cache retry on an ordinary manager lookup while Xaero could not prerender, then left FAILED stored, so later lookups bypassed creation and returned the generic fallback. C7 defers retry consumption to that exact cache read only when Xaero can invoke the creator, lets successful creation overwrite FAILED under the same variant key, and records final manager return state. C7 passed 45 tests in nine suites, two clean byte-identical builds, archive checks, and the 80-mod production Knot/Mixin harness; it is NOT_DEPLOYED and RUNTIME_UNTESTED.",
     "releases": {
       "current": {
-        "version": "0.1.0-canary6",
+        "version": "0.1.0-canary7",
         "artifact": {
-          "filename": "xaero-emf-entity-icon-compat-0.1.0-canary6.jar",
-          "sha256": "f4e989342fd767b219c1b1c617845562d5db0966fe0e508db62f5b4cd06a89f3"
+          "filename": "xaero-emf-entity-icon-compat-0.1.0-canary7.jar",
+          "sha256": "b70d04024ee22440d573c8b6682c8097e2eda34f5f6e15b171c401db09943ee0"
         },
-        "source_commit": "03c88d9d57981dbf99e46e080fb495009e31df76",
+        "source_commit": "736bc9553528bd31ffc18fb2504423886665de92",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
@@ -139,11 +139,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 5,
-    "activity_at": "2026-09-06T03:47:28Z",
-    "updated_at": "2026-09-06T03:47:28Z",
-    "last_codex_at": "2026-09-06T03:47:28Z",
-    "source_commit": "03c88d9d57981dbf99e46e080fb495009e31df76",
+    "revision": 6,
+    "activity_at": "2026-09-06T04:46:17Z",
+    "updated_at": "2026-09-06T04:46:17Z",
+    "last_codex_at": "2026-09-06T04:46:17Z",
+    "source_commit": "736bc9553528bd31ffc18fb2504423886665de92",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
