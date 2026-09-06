@@ -1,60 +1,67 @@
 # Testing
 
-Current `xaero-emf-entity-icon-compat-0.1.0-canary5.jar` is **ACTIVE /
+Current `xaero-emf-entity-icon-compat-0.1.0-canary6.jar` is **ACTIVE /
 STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED**. It is unaccepted and has no
-rollback. Identity: 39,467 bytes, SHA-256
-`75dfaec7b34a5284ab9cc626fd7ae403c4c9f103dd12a2b9941de33f79769087`; source
-checkpoint is `003c5df81255df05c6b6957f5369e45d3c28fe97`.
+rollback. Identity: 40,659 bytes, SHA-256
+`f4e989342fd767b219c1b1c617845562d5db0966fe0e508db62f5b4cd06a89f3`; source
+checkpoint is `03c88d9d57981dbf99e46e080fb495009e31df76`.
 
 Two independent Java 25 / Gradle 9.5.1 / Loom 1.17.19 clean offline `check jar`
-builds produced byte-identical files. All 41 tests in eight suites passed, as did
-the client-only allowlist, CRC and duplicate-entry scan (27 entries) and the
-combined 80-mod production Knot/Mixin application with C5, Xaero 26.4.2, EMF
-3.2.6, ETF 7.1.1, current Ribbits C12, GeckoLib 5.5.4 and the recorded companion
-cohort. No Minecraft game was launched. Those are static/classloading results,
+builds produced byte-identical C6 files. All 42 tests in eight suites passed,
+as did the client-only allowlist, CRC and duplicate-entry scan (27 entries),
+and the combined 80-mod production Knot/Mixin application with C6, Xaero 26.4.2,
+EMF 3.2.6, ETF 7.1.1, Ribbits C12, GeckoLib 5.5.4 and the recorded companion
+cohort. No Minecraft game was launched. These are static/classloading results,
 not runtime observations.
 
-## C4 external evidence retained for C5
+## C5 external runtime evidence retained for C6
 
-The authorized Player Instance contained the exact C4 artifact (SHA-256
-`03444601251c6edad68d5a19648bd37e4d925b508f0d7b8a91b352883b151639`), EMF
-3.2.6 and Xaero 26.4.2. Its archived bounded diagnostics recorded C4 resolution,
-nonempty destination and downstream acceptance for axolotl and sniffer, matching
-the user's visible C4 success report. It recorded these first C4 rejection shapes
-for the remaining user-reported failures:
+The authorized Player Instance contains the exact C5 artifact (SHA-256
+`75dfaec7b34a5284ab9cc626fd7ae403c4c9f103dd12a2b9941de33f79769087`). The
+user reports these C5 visible results: axolotl and sniffer remained correct;
+iron golem and farmer were fixed; wolf, bat, parrot, frog, ravager, witch,
+butcher and cleric were invisible; mason was invisible and is specifically a
+regression from the known working C4 hatted-villager control; and allay/vex kept
+the ordinary Xaero entity-icon/name-tag fallback instead of the intended head
+icon. These remain user-reported external evidence, not a C6 result.
 
-- direct canonical EMF geometry: bat, wolf, parrot, witch and ravager;
-- `EMFModelPartVanilla` root family: frog, allay and vex;
-- uniquely traced but dimension-mismatched head geometry: iron golem.
+Read-only archived logs preserve C4 bounded diagnostics but no C5
+`RESOLVED_CANONICAL_GEOMETRY` draw/result sequence. C6 therefore does not claim
+unobserved C5 per-entity allocation, vertex, cache or final-display stages. Its
+static diagnosis is bounded: C5 copied EMF's traversal-only `skipDraw` flag to
+the detached plain head, which can make Xaero's accepted adapter submit no
+canonical-head geometry; farmer's direct hat differs from butcher/mason's
+transformed nested hat-cube containers, while cleric again owns direct hat
+geometry. Separately, C5 recognized `EMFModelPartVanilla` in the resolver but
+only recorded the wrapper root before cache lookup, allowing a prior FAILED
+entry to block allay/vex from retrying. C6 forces only the traced detached head
+to render, preserves named descendant transforms/visibility, and retries one
+FAILED cache value only after the current LivingEntity renderer is structurally
+verified as either supported EMF root family.
 
-The enabled resource stack included Fresh Animations and later corresponding
-entries from `Ribbit Villagers v1.zip`; read-only structural inspection found the
-active villager/iron-golem overrides there. Its farmer/butcher/cleric/mason model
-variants put hats below the `nose` attachment. The C4 log has both a mason
-downstream-accepted line and a later mason failed-cache line, while the user
-explicitly reports mason as the working visual control. Keep that conflict
-unresolved: no C4 profession-wide visual pass is claimed. C4 remains preserved
-provenance, not C5 runtime evidence.
-
-## C5 manual runtime matrix
+## C6 manual runtime matrix
 
 Under separately authorized Test Instance Manager ownership only, install the
-exact C5 hash above and record the full resource-pack order/effective model
-identities. Do not reuse C4 cache entries. Verify each row visibly and record
-only the observed outcome:
+exact C6 hash above, clear/reload the relevant Xaero resources, and record the
+actual effective resource-pack order and model identities. Do not reuse C4/C5
+cache results. Every row must visibly have the intended textured head icon,
+finite framing, no body/limb/wing/held-item contamination, and unchanged
+in-world EMF/Fresh Animations rendering.
 
-| Case | Required visible result |
+| Cases | Required observation |
 | --- | --- |
-| Axolotl, sniffer | Remain correct; head-only geometry, framing and texture. |
-| Wolf, bat, parrot, frog, allay, iron golem, vex, ravager, witch | Correct intended head icon; no absent, contaminated or misframed result. |
-| Mason | Remains the hatted-villager positive control. |
-| Farmer and butcher | Correct intended head/headwear icon when their demonstrated active layouts apply. |
-| Normal villager | No regression; ordinary upstream-success behavior is untouched. |
-| Sheep, horse, sea turtle, creeper; vanilla non-EMF control | Existing icon behavior remains correct. |
-| Resource reload | Successful and FAILED relevant cache entries are evicted and regenerated; no stale failure or duplicate destination after a draw failure. |
+| Axolotl; sniffer | Preserve the confirmed C4/C5 head icon. |
+| Iron golem; farmer | Preserve C5's successful icon and headwear result. |
+| Mason; butcher; cleric | Restore the hatted-villager head icon; mason is the regression control. |
+| Wolf; bat; parrot; frog; ravager; witch | Visible, correctly framed EMF head icon. |
+| Allay; vex | The C6 result replaces the ordinary fallback with the EMF head icon; confirm one stale-failure retry at most, then final successful cache/display behavior. |
+| Sheep; horse; sea turtle; creeper; normal villager; vanilla non-EMF | Existing normal/Xaero behavior remains unchanged. |
+| Resource reload | Relevant successful and FAILED entries are evicted; only structurally observed EMF types may retry one stale FAILED value, with no persistent retry loop. |
 
-For every owned row, verify correct texture and finite framing, unchanged in-world
-EMF/Fresh Animations rendering, and exclusion of torso, limbs, wings, held items,
-backpacks and unrelated accessories. A build, atlas allocation, diagnostic line,
-or cache insertion is not a runtime pass. Do not promote C5 without actual
-visible Minecraft observations tied to this exact artifact and resource cohort.
+Stop and record `RUNTIME_FAIL` or `INCONCLUSIVE` for an absent/fallback/blank,
+body-contaminated, wrongly framed or stale icon; a C6 Mixin error; an EMF/Fresh
+Animations world-rendering regression; a normal Xaero icon regression; or any
+cache/reload result other than the bounded behavior above. A build, allocated
+destination, submitted vertices, diagnostic line, or cache insertion is not a
+visible-icon pass. Do not mark C6 accepted without exact-artifact runtime
+observations.
