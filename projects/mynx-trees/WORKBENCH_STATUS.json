@@ -19,8 +19,8 @@
       "Nine block/item identities, direct vanilla plank recipes, all-bark wood recipes, vanilla axe stripping, tool-gated leaf collection, leaf-to-sapling recipes, composting and normal sapling behavior.",
       "Loaded tree/fallen-tree material substitution preserves shape parameters and applicable decorators; biome-scoped selectors cover standing/fallen birch variants and weighted cherry/Wisteria attempts.",
       "Preferred tree-associated Sweet Violets with a bounded successful-growth decorator; remove the independent grove petal pass; retain Nemo ordinary cherry and unrelated decorators without a required Nemo dependency.",
-      "Position-dependent golden Silver Birch leaf tint, a normal cube leaf item with one matching default golden tint, #B0C73A old-growth grass tint, separately namespaced Wisteria particles, and the standalone user-supplied Wisteria log-top texture.",
-      "Optional client Iris material-map fallback: only absent Silver Birch states inherit the first loaded vanilla upper-half foliage assignment (sunflower, lilac, rose bush, then peony), while only absent Wisteria states continue inheriting matching vanilla cherry state IDs; no shader-pack/profile edits or fake animation.",
+      "Position-dependent compensated mustard-gold Silver Birch leaf tint with exact existing hue variation and saturation, a normal cube leaf item with one matching default tint, #B0C73A old-growth grass tint, separately namespaced Wisteria particles, and the standalone user-supplied Wisteria log-top texture.",
+      "Optional client Iris material-map fallback: only absent Silver Birch states inherit corresponding loaded vanilla Birch Leaves state assignments, while only absent Wisteria states continue inheriting matching vanilla Cherry Leaves state IDs; no shader-pack/profile edits or fake animation.",
       "Client-only soil-dependent base bark on upright Silver Birch log sides, using the exact supplied packaged texture and extensible silver_birch_base_soils block tag; ordinary items and live vanilla birch end grain remain. Contextual geometry keys and resource/tag/neighbor rebuild handling preserve current placed trees without saved-state changes."
     ],
     "boundaries": {
@@ -61,15 +61,15 @@
     ]
   },
   "state": {
-    "milestone": "Canary 4 moves only Silver Birch's optional Iris fallback from vanilla Birch Leaves to the first loaded upper-half foliage representative, preserving its exact RU texture/tint and Wisteria's Cherry Leaves fallback; clean build passes 25 Java and 17 Python checks plus the exact read-only Iris/Complementary reference audit. Exact private artifact retained. ACTIVE / NOT_DEPLOYED / RUNTIME_UNTESTED; runtime visual confirmation remains required.",
+    "milestone": "Canary 5 records the user's external/manual C4 observation that upper-foliage classification did not correct inordinately bright Silver Birch Leaves; it restores only absent-state Birch Leaves inheritance for leaf-style waving and applies SILVER_BIRCH_VALUE = 0.70F while preserving the exact PNG, positional hue math, saturation and Wisteria Cherry Leaves fallback. Exact private artifact retained. ACTIVE / NOT_DEPLOYED / RUNTIME_UNTESTED; no managed Workbench runtime result is claimed.",
     "releases": {
       "current": {
-        "version": "0.1.0+26.2-canary4",
+        "version": "0.1.0+26.2-canary5",
         "artifact": {
-          "filename": "mynx-trees-private-0.1.0+26.2-canary4.jar",
-          "sha256": "a761a001d48acfc5bb30a35214e236ab840d02699a162c3e199326f9dd93bbce"
+          "filename": "mynx-trees-private-0.1.0+26.2-canary5.jar",
+          "sha256": "71573c5f295a2dd00072496a651e728befdabdf32502dbb1566d17e56dc12556"
         },
-        "source_commit": "34d33c3079a9b1dc841de8b50771032e90619c2d",
+        "source_commit": "eb06fa0fbdb119785f985a7ddf3a6116eae2e88d",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
@@ -88,11 +88,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 4,
-    "activity_at": "2026-09-06T05:36:37Z",
-    "updated_at": "2026-09-06T05:36:37Z",
-    "last_codex_at": "2026-09-06T05:36:37Z",
-    "source_commit": "34d33c3079a9b1dc841de8b50771032e90619c2d",
+    "revision": 5,
+    "activity_at": "2026-09-06T06:09:59Z",
+    "updated_at": "2026-09-06T06:09:59Z",
+    "last_codex_at": "2026-09-06T06:09:59Z",
+    "source_commit": "eb06fa0fbdb119785f985a7ddf3a6116eae2e88d",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null

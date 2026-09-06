@@ -87,8 +87,6 @@ public final class EmfIconPartResolver {
             return reject("MISSING_RETAINED_VANILLA_GEOMETRY", pathText(canonicalPath));
         // A transform-only canonical head may own its geometry through one child path.
         ModelPart vanillaGeometry = uniqueGeometryOwner(vanillaCanonicalHead);
-        if (vanillaGeometry == null)
-            return reject("MISSING_OR_AMBIGUOUS_RETAINED_GEOMETRY", pathText(canonicalPath));
 
         // Xaero's ordinary path can still leave the destination empty when a
         // canonical head is an EMF part with direct cubes.  Render a detached
@@ -97,7 +95,7 @@ public final class EmfIconPartResolver {
         // EMF implementation again.  This is deliberately not a recursive
         // descendant fallback: body, arms, accessories, and sibling parts are
         // never copied.
-        if (ModelPartUtil.hasDirectCubes(canonicalHead)) {
+        if (vanillaGeometry != null && hasCanonicalHeadGeometry(canonicalHead)) {
             return resolveCanonicalGeometry(
                     canonicalHead, vanillaGeometry, trace, pathText(canonicalPath));
         }
@@ -114,6 +112,15 @@ public final class EmfIconPartResolver {
             return reject("MULTIPLE_AMBIGUOUS_CANDIDATES", pathText(canonicalPath));
 
         Node node = selected.orElseThrow();
+        if (vanillaGeometry == null) {
+            // EMF clears the mapped vanilla cubes for non-attached JEM parts.
+            // Frog, allay, and vex therefore cannot supply Xaero's ordinary
+            // canonical reference cube even though a uniquely traced semantic
+            // head is available.  This is not a broader geometry search: use
+            // only that already-selected direct head as the reference frame.
+            return resolveWithoutRetainedVanillaGeometry(
+                    node, canonicalHead, resetHeadRotation, canonicalPath);
+        }
         ModelPart.Cube canonicalCuboid =
                 ModelPartUtil.getBiggestCuboid(vanillaGeometry);
         GeometrySelection geometry = selectCanonicalGeometry(
@@ -178,6 +185,40 @@ public final class EmfIconPartResolver {
         ));
     }
 
+    private static Optional<Resolution> resolveWithoutRetainedVanillaGeometry(
+            Node node,
+            ModelPart canonicalHead,
+            boolean resetHeadRotation,
+            List<PathNode> canonicalPath
+    ) {
+        ModelPart.Cube headCube = ModelPartUtil.getBiggestCuboid(node.part());
+        if (headCube == null) {
+            return reject("MISSING_RETAINED_VANILLA_GEOMETRY", pathText(canonicalPath));
+        }
+        GeometrySelection geometry = new GeometrySelection(
+                node.part(), node.path(), new CubeMatch(headCube, List.of(node.part())));
+        ModelPart adapter = buildAdapter(
+                node.part(), geometry, canonicalHead, headCube, resetHeadRotation);
+        if (adapter == null) {
+            return reject("INVALID_OR_SINGULAR_TRANSFORM", node.pathText());
+        }
+        ModelPart centeringPart = canonicalFrame(
+                canonicalHead, ModelPartUtil.getCubes(node.part()));
+        IconDiagnostics.event("TRACED_HEAD_FRAME_FALLBACK",
+                pathText(canonicalPath) + " -> " + node.pathText());
+        return Optional.of(new Resolution(
+                canonicalHead,
+                node.part(),
+                node.part(),
+                adapter,
+                centeringPart,
+                node.color(),
+                pathText(canonicalPath),
+                node.pathText(),
+                node.pathText()
+        ));
+    }
+
     private static ModelPart detachedCanonicalHead(ModelPart source) {
         Map<String, ModelPart> children = new java.util.LinkedHashMap<>();
         Map<String, ModelPart> sourceChildren = ModelPartUtil.getChildren(source);
@@ -214,7 +255,11 @@ public final class EmfIconPartResolver {
         ModelPart copy = new ModelPart(List.copyOf(ModelPartUtil.getCubes(source)), children);
         copyCurrentTransform(source, copy);
         copy.visible = source.visible;
-        copy.skipDraw = source.skipDraw;
+        // EMF's skipDraw marks a traversal implementation boundary, not a
+        // request to hide semantic headwear.  A plain detached ModelPart must
+        // render through an empty transformed owner to reach its nested cubes.
+        // Visibility remains the authoritative semantic visibility state.
+        copy.skipDraw = false;
         copy.setInitialPose(source.getInitialPose());
         return copy;
     }
@@ -235,6 +280,16 @@ public final class EmfIconPartResolver {
                 || name.startsWith("ear_") || name.startsWith("ear")
                 || name.equals("horn") || name.equals("horns")
                 || name.startsWith("horn_");
+    }
+
+    private static boolean hasCanonicalHeadGeometry(ModelPart canonicalHead) {
+        if (ModelPartUtil.hasDirectCubes(canonicalHead)) {
+            return true;
+        }
+        Map<String, ModelPart> children = ModelPartUtil.getChildren(canonicalHead);
+        return children != null && children.entrySet().stream()
+                .filter(entry -> isHeadAttachedAnchor(entry.getKey()))
+                .anyMatch(entry -> ModelPartUtil.hasCubes(entry.getValue()));
     }
 
     private static <T> Optional<T> reject(String reason, String path) {
