@@ -1,5 +1,5 @@
 """Focused package-contract checks, not Minecraft runtime validation."""
-import json, pathlib, zipfile, hashlib, unittest
+import json, pathlib, zipfile, hashlib, re, unittest
 ROOT=pathlib.Path(__file__).resolve().parents[1]
 OUT=ROOT/'build/generated/resources'
 MC=pathlib.Path.home()/'.gradle/caches/fabric-loom/26.2/minecraft-merged.jar'
@@ -100,9 +100,20 @@ class Resources(unittest.TestCase):
     def test_optional_iris_hook_is_client_only_and_two_species_only(self):
         meta=json.loads((ROOT/'src/main/resources/fabric.mod.json').read_text());self.assertNotIn('iris',meta['depends']);self.assertEqual([{'config':'mynx_trees.client.mixins.json','environment':'client'}],meta['mixins'])
         cfg=json.loads((ROOT/'src/main/resources/mynx_trees.client.mixins.json').read_text());self.assertNotIn('mixins',cfg);self.assertEqual(['IrisLeafMaterialMixin'],cfg['client'])
-        source=(ROOT/'src/client/java/dev/resivore/mynxtrees/mixin/IrisLeafMaterialMixin.java').read_text();self.assertEqual(2,source.count('LeafShaderAliases.inheritUnmapped('));self.assertEqual(2,source.count('.withPropertiesOf(state)'));self.assertIn('@At("RETURN")',source);self.assertNotIn('10009',source);self.assertIn('@Pseudo',source)
+        source=(ROOT/'src/client/java/dev/resivore/mynxtrees/mixin/IrisLeafMaterialMixin.java').read_text();self.assertEqual(1,source.count('LeafShaderAliases.inheritUnmappedFromFirstPresent('));self.assertEqual(1,source.count('LeafShaderAliases.inheritUnmapped('));self.assertEqual(1,source.count('.withPropertiesOf(state)'));self.assertIn('@At("RETURN")',source);self.assertNotIn('Blocks.BIRCH_LEAVES',source);self.assertNotRegex(source,r'\b1\d{4}\b');self.assertIn('@Pseudo',source)
+        for state in ['Blocks.SUNFLOWER','Blocks.LILAC','Blocks.ROSE_BUSH','Blocks.PEONY']:self.assertIn(state,source)
+        aliases=(ROOT/'src/client/java/dev/resivore/mynxtrees/LeafShaderAliases.java').read_text();self.assertIn('inheritUnmappedFromFirstPresent',aliases);self.assertIn('if (representative == null) return;',aliases)
         plugin=(ROOT/'src/client/java/dev/resivore/mynxtrees/IrisLeafMixinPlugin.java').read_text();self.assertIn('isModLoaded("iris")',plugin)
         for name in ['silver_birch_leaves','wisteria_leaves']:self.assertIn('mynx_trees:'+name,self.read('data/minecraft/tags/block/leaves.json')['values'])
+    def test_silver_birch_tint_and_texture_contracts_stay_exact(self):
+        manifest=json.loads((ROOT/'build-inputs.json').read_text());color=manifest['color_reference']
+        self.assertEqual('h = sin(x/10 + sin((z+x)/50)*3)/75 + 0.15; s = 0.8; v = 1; float arithmetic, Minecraft sine lookup, RGB rounding as Java HSBtoRGB',color['leaf_hsv'])
+        self.assertEqual('#FFEB33',color['inventory_rgb']);self.assertEqual('#B0C73A',color['grass'])
+        leaf=next(asset for asset in manifest['packaged_assets'] if asset['target']=='assets/mynx_trees/textures/block/silver_birch_leaves.png')
+        self.assertEqual('fdabcce828735f8435dca7884d63957d4b7271e43fa38cf7349df06eb928e8fc',leaf['sha256'])
+        client=(ROOT/'src/client/java/dev/resivore/mynxtrees/MynxTreesClient.java').read_text()
+        self.assertIn('float hue=Mth.sin(x/10.0F+Mth.sin(((float)z+x)/50.0F)*3.0F)/75.0F+0.15F;',client)
+        self.assertIn('return java.awt.Color.HSBtoRGB(hue,0.8F,1.0F);',client)
     def test_base_bark_soils_are_exact_and_independent(self):
         tag=self.read('data/mynx_trees/tags/block/silver_birch_base_soils.json')
         self.assertEqual({'replace':False,'values':['minecraft:'+n for n in ['grass_block','dirt','coarse_dirt','rooted_dirt','podzol','mycelium']]},tag)

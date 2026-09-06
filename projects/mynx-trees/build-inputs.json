@@ -551,14 +551,13 @@
     "iris_sha256": "df0e2ccddaea17b191eda32b21c979e131bc9d4ef4f831113b50b461fc4a3804",
     "source_instance": "Matcha 26.2 Player Instance (read-only)",
     "block_properties_entry": "shaders/block.properties",
-    "observed_leaf_id": 10009,
-    "observed_mapping": "Explicit vanilla leaf block names; no #minecraft:leaves rule. Mere block tags cannot supply this shader material ID.",
-    "implementation": "Optional client Iris RETURN hook adds only absent custom leaf-state entries to the newly built material ID map, inheriting corresponding vanilla birch/cherry state IDs. Explicit custom mappings, including non-waving mappings, win. No hardcoded shader IDs, shader file edits, geometry animation, or unrelated block changes. Existing native leaf classes, tags, properties and alpha-derived rendering are retained.",
+    "observed_mapping": "Explicit vanilla leaf block names and upper-half foliage states; no #minecraft:leaves rule. Mere block tags cannot supply a shader material assignment.",
+    "implementation": "Optional client Iris RETURN hook adds only absent Silver Birch leaf states from the first mapped vanilla upper-half foliage representative (sunflower, lilac, rose bush, then peony), and only absent Wisteria states from corresponding vanilla cherry states. Explicit custom mappings, including non-waving mappings, win. No shader material IDs, shader file edits, geometry animation, or unrelated block changes are hardcoded. Existing native leaf classes, tags, properties and alpha-derived rendering are retained.",
     "target": "net.irisshaders.iris.shaderpack.materialmap.BlockMaterialMapping#createBlockStateIdMap",
     "descriptor": "(Lit/unimi/dsi/fastutil/ints/Int2ObjectLinkedOpenHashMap;Lit/unimi/dsi/fastutil/ints/Int2ObjectLinkedOpenHashMap;)Lit/unimi/dsi/fastutil/objects/Object2IntMap;",
     "runtime_evidence": "UNTESTED; shader classification and hook are checked statically, waving not observed.",
     "wind_entry": "shaders/lib/materials/materialMethods/wavingBlocks.glsl",
-    "wind_dispatch": "WAVING_LEAVES guards mat == 10009 -> DoWave_Leaves(playerPos.xyz, worldPos, 1.0)",
+    "wind_dispatch": "The mapped upper-half foliage representative reaches the shader's upper foliage DoWave_Foliage path and material treatment; the read-only verifier dynamically confirms that it does not enter the normal leaves.glsl treatment.",
     "saved_options": "No WAVING/LEAVES/FOLIAGE override found in the active pack options; no settings changed."
   },
   "base_bark_rendering": {
