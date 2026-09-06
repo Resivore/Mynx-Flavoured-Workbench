@@ -85,6 +85,40 @@ public final class ShulkerSelectionTracker {
         }
     }
 
+    /**
+     * Resolves the server-authoritative carried selection at the native-click seam.
+     *
+     * A client selection packet may arrive adjacent to the pickup packet that moved the
+     * host to the cursor.  Preserve a matching pre-migration host selection when it is
+     * still present; otherwise use CSR's existing deterministic first-occupied default.
+     * The cursor stack and its complete fingerprint remain the authority in both cases.
+     */
+    public static synchronized Selection ensureCarriedSelection(Player player, AbstractContainerMenu menu,
+                                                                ItemStack carried) {
+        if (carried.getCount() != 1 || !SupportedContainerResolver.isSupportedShulkerItem(carried)) return null;
+        String fingerprint = ShulkerHostFingerprint.of(carried, player.registryAccess());
+        var contents = ShulkerContents.copy(carried);
+        Selection current = SELECTIONS.get(player);
+        int selected = -1;
+        ShulkerHostLocator locator = ShulkerHostLocator.menuSlot(-1);
+        if (current != null && current.menu() == menu && current.fingerprint().equals(fingerprint)
+                && current.internalSlot() >= 0 && current.internalSlot() < ReservationData.SLOT_COUNT
+                && !contents.get(current.internalSlot()).isEmpty()) {
+            selected = current.internalSlot();
+            locator = current.locator();
+        } else {
+            selected = ShulkerContents.firstOccupied(contents);
+        }
+        if (selected < 0) {
+            if (current != null && current.menu() == menu) SELECTIONS.remove(player);
+            return null;
+        }
+        Selection carriedSelection = new Selection(HostKind.CARRIED_CURSOR, menu, null, locator,
+                fingerprint, selected);
+        SELECTIONS.put(player, carriedSelection);
+        return carriedSelection;
+    }
+
     public static synchronized ClickMigration beforeClick(Player player, AbstractContainerMenu menu,
                                                           int slotId, int button, ContainerInput input) {
         Selection selection = validate(player);

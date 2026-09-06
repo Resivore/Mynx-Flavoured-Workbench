@@ -271,7 +271,7 @@ final class ShulkerPanelRenderLifecycleTest {
         assertTrue(result.visible(), "No shulker-panel background was submitted");
         assertEquals(SHULKER_TEXTURE, result.frame.texture);
         assertEquals(176, result.frame.width);
-        assertEquals(77, result.frame.height);
+        assertEquals(83, result.frame.height);
         assertEquals(27, result.frame.overlays.size());
     }
 

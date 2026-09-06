@@ -34,12 +34,15 @@ final class ShulkerPanelGeometryTest {
         assertEquals(0, top.y());
         var bottom = ShulkerPanelGeometry.place(500, 120, 40, 176,
                 new ShulkerPanelGeometry.Rect(100, 200, 18, 18));
-        assertEquals(43, bottom.y());
+        assertEquals(37, bottom.y());
         var tiny = ShulkerPanelGeometry.place(100, 50, 20, 176, HOST);
         assertEquals(0, tiny.x());
         assertEquals(0, tiny.y());
         assertEquals(176, tiny.bounds().width());
-        assertEquals(77, tiny.bounds().height());
+        assertEquals(83, tiny.bounds().height());
+        assertEquals(77, ShulkerPanelGeometry.MAIN_HEIGHT);
+        assertEquals(160, ShulkerPanelGeometry.BOTTOM_FRAME_SOURCE_Y);
+        assertEquals(6, ShulkerPanelGeometry.BOTTOM_FRAME_HEIGHT);
     }
 
     @Test void resizeRecomputesPlacementAndCorridorIsNarrowAndContinuous() {
@@ -49,6 +52,8 @@ final class ShulkerPanelGeometryTest {
         assertTrue(large.corridorContains(HOST, 119, 89));
         assertFalse(large.corridorContains(HOST, 150, 130));
         assertTrue(large.bounds().contains(large.x(), large.y()));
-        assertFalse(large.bounds().contains(large.x() + 176, large.y() + 76));
+        assertFalse(large.bounds().contains(large.x() + 176, large.y() + 82));
+        assertEquals(26, large.slot(large.cellBounds(26).x() + 0.5, large.cellBounds(26).y() + 0.5),
+                "Extending the lower frame must not move the 9x3 cell grid");
     }
 }

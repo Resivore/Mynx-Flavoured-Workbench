@@ -65,9 +65,9 @@ public final class ShulkerContextualTransfers {
     }
 
     private static void extractSelected(Player player, AbstractContainerMenu menu, Slot target, ItemStack shulker) {
-        ShulkerSelectionTracker.Selection selection = ShulkerSelectionTracker.validate(player);
-        if (selection == null || selection.kind() != ShulkerSelectionTracker.HostKind.CARRIED_CURSOR
-                || selection.menu() != menu) return;
+        ShulkerSelectionTracker.Selection selection = ShulkerSelectionTracker.ensureCarriedSelection(
+                player, menu, shulker);
+        if (selection == null) return;
         ItemStack physical = ShulkerContents.copy(shulker).get(selection.internalSlot());
         if (physical.isEmpty() || !target.getItem().isEmpty()
                 || !ShulkerHostResolver.writableTarget(player, target, physical)) return;
