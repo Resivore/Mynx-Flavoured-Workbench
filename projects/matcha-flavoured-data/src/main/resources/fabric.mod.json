@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "id": "matcha_flavoured_data",
+  "version": "${version}",
+  "name": "Matcha Flavoured Data",
+  "description": "Always-enabled exact Matcha Flavoured 1.12 server data for Minecraft 26.2.",
+  "authors": ["Resivore compatibility workbench"],
+  "license": "MIT",
+  "environment": "*",
+  "entrypoints": {
+    "main": ["dev.resivore.matchaflavoureddata.MatchaFlavouredData"]
+  },
+  "depends": {
+    "fabricloader": ">=0.19.3",
+    "fabric-api": ">=0.157.0+26.2",
+    "minecraft": "=26.2",
+    "java": ">=25"
+  },
+  "custom": {
+    "workbench:matcha_source": {
+      "filename": "Matcha_Flavoured_1_12.zip",
+      "size": 12248989,
+      "sha256": "6209783021c358044abedabacee471faff5bd4080437d4e3b5e51963f1804248"
+    }
+  }
+}

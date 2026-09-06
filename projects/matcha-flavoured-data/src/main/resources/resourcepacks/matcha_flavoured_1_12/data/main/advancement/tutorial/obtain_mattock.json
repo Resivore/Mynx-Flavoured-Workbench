@@ -1,0 +1,68 @@
+{
+	"parent": "main:tutorial/obtain_copper",
+	"criteria": {
+		"copper_dolabra": {
+			"trigger": "minecraft:recipe_crafted",
+			"conditions": {
+				"recipe_id": "crafting:copper_dolabra"
+			}
+		},
+		"copper_mattock": {
+			"trigger": "minecraft:recipe_crafted",
+			"conditions": {
+				"recipe_id": "crafting:copper_mattock"
+			}
+		},
+		"iron_dolabra": {
+			"trigger": "minecraft:recipe_crafted",
+			"conditions": {
+				"recipe_id": "crafting:iron_dolabra"
+			}
+		},
+		"iron_mattock": {
+			"trigger": "minecraft:recipe_crafted",
+			"conditions": {
+				"recipe_id": "crafting:iron_mattock"
+			}
+		},
+		"diamond_dolabra": {
+			"trigger": "minecraft:recipe_crafted",
+			"conditions": {
+				"recipe_id": "crafting:diamond_dolabra"
+			}
+		},
+		"diamond_mattock": {
+			"trigger": "minecraft:recipe_crafted",
+			"conditions": {
+				"recipe_id": "crafting:diamond_mattock"
+			}
+		}
+	},
+	"display": {
+		"description": {
+			"translate": "adv.kleispack.obtain_mattock.desc"
+		},
+		"icon": {
+			"components": {
+				"minecraft:item_model": "copper_dolabra"
+			},
+			"count": 1,
+			"id": "minecraft:stone_axe"
+		},
+		"title": {
+			"translate": "adv.kleispack.obtain_mattock"
+		},
+		"frame": "goal",
+		"hidden": false
+	},
+	"requirements": [
+		[
+			"diamond_mattock",
+			"diamond_dolabra",
+			"iron_dolabra",
+			"iron_mattock",
+			"copper_dolabra",
+			"copper_mattock"
+		]
+	]
+}

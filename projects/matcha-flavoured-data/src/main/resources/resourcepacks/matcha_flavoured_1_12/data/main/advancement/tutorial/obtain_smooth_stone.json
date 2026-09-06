@@ -1,0 +1,33 @@
+{
+  "parent": "main:tutorial/obtain_copper",
+  "criteria": {
+    "get_primary_material": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "minecraft:smooth_stone"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "adv.kleispack.obtain_smooth_stone.desc"
+    },
+    "icon": {
+      "count": 1,
+      "id": "minecraft:smooth_stone"
+    },
+    "title": {
+      "translate": "adv.kleispack.obtain_smooth_stone"
+    },
+    "hidden": false
+  },
+  "requirements": [
+    [
+      "get_primary_material"
+    ]
+  ]
+}
