@@ -15,13 +15,21 @@ public final class IconDiagnostics {
     public static void observe(net.minecraft.world.entity.EntityType<?> type) {OWNED.add(type);}
     public static boolean owns(net.minecraft.world.entity.EntityType<?> type) {return OWNED.contains(type);}
     /**
-     * Allows one cache retry per exact resource generation for a model root
-     * already proven to belong to this narrow EMF bridge.  This replaces a
-     * stale FAILED sentinel without turning persistent failures into a hot
-     * render loop.
+     * Allows one cache retry only at Xaero's actual prerender opportunity.
+     * A cache lookup also happens during ordinary map draws, when Xaero cannot
+     * create an icon.  Consuming the retry there leaves FAILED in storage and
+     * permanently routes later draws to Xaero's generic fallback.
      */
-    public static boolean retryFailedOnce(net.minecraft.world.entity.EntityType<?> type,Object variant) {
-        return owns(type) && RETRIED_FAILED.add(generation+":"+net.minecraft.world.entity.EntityType.getKey(type)+":"+variant);
+    public static boolean retryFailedOnceAtPrerender(
+            net.minecraft.world.entity.EntityType<?> type, Object variant, boolean canPrerender) {
+        return retryFailedOnceAtPrerender(
+                String.valueOf(net.minecraft.world.entity.EntityType.getKey(type)),
+                variant, owns(type), canPrerender);
+    }
+    static boolean retryFailedOnceAtPrerender(
+            String entityKey, Object variant, boolean observed, boolean canPrerender) {
+        return canPrerender && observed
+                && RETRIED_FAILED.add(generation+":"+entityKey+":"+variant);
     }
     private IconDiagnostics() {}
     public static void context(String value) {CONTEXT.set(value);LAST.remove();}

@@ -88,9 +88,14 @@ class CompatibilityScopeTest {
         assertTrue(xaeroPartMixin.contains("remap = true"));
         assertTrue(xaeroPartMixin.contains("EmfIconPartResolver.renderAdapter"));
         assertTrue(xaeroMixin.contains("EmfIconPartResolver.isSupportedEmfRoot"));
-        assertTrue(cacheMixin.contains("retryFailedOnce"));
+        assertFalse(cacheMixin.contains("method=\"get\""));
+        assertFalse(cacheMixin.contains("setReturnValue"));
         assertTrue(managerMixin.contains("LivingEntityRenderer"));
         assertTrue(managerMixin.contains("EmfIconPartResolver.isSupportedEmfRoot"));
+        assertTrue(managerMixin.contains("RadarIconEntityCache;get"));
+        assertTrue(managerMixin.contains("retryFailedOnceAtPrerender"));
+        assertTrue(managerMixin.contains("FAILED_RETRY_DEFERRED_NO_PRERENDER"));
+        assertTrue(managerMixin.contains("MANAGER_RETURNED_ICON"));
         assertFalse(xaeroPartMixin.contains("@Inject"));
         assertTrue(config.contains("\"required\": true"));
         assertTrue(config.contains("\"defaultRequire\": 1"));
@@ -98,6 +103,7 @@ class CompatibilityScopeTest {
         assertEquals(1, occurrences(config, "RadarIconModelPrerendererMixin"));
         assertEquals(1, occurrences(config, "RadarIconModelPartPrerendererMixin"));
         assertEquals(1, occurrences(config, "RadarIconEntityCacheMixin"));
+        assertEquals(1, occurrences(config, "RadarIconEntityCacheTypeAccessor"));
         assertEquals(1, occurrences(config, "RadarIconManagerMixin"));
     }
 

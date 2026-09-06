@@ -148,6 +148,36 @@ class UpstreamBinaryContractTest {
     }
 
     @Test
+    void c7RetriesTheExactFailedCacheReadOnlyWhenXaeroCanRecreateIt() throws Exception {
+        ClassNode manager = readClass(XAERO,
+                "xaero/hud/minimap/radar/icon/RadarIconManager.class");
+        MethodNode get = manager.methods.stream()
+                .filter(candidate -> candidate.name.equals("get")
+                        && candidate.desc.contains("RadarIconDefinition"))
+                .findFirst().orElseThrow();
+        int cacheGet = firstCallIndex(get,
+                "xaero/hud/minimap/radar/icon/cache/RadarIconEntityCache", "get");
+        int creator = firstCallIndex(get,
+                "xaero/hud/minimap/radar/icon/creator/RadarIconCreator", "create");
+        assertTrue(cacheGet >= 0 && creator > cacheGet,
+                "Xaero reads the cached result before it can recreate an icon");
+
+        Path source = Path.of(System.getProperty("projectRoot")).resolve(
+                "src/main/java/dev/resivore/xaeroemfcompat/mixin/RadarIconManagerMixin.java");
+        String c7 = Files.readString(source);
+        assertTrue(c7.contains("@Redirect"));
+        assertTrue(c7.contains("RadarIconEntityCache;get"));
+        assertTrue(c7.contains("retryFailedOnceAtPrerender(type,key.getVariant(),canPrerender)"));
+        assertTrue(c7.contains("FAILED_RETRY_DEFERRED_NO_PRERENDER"));
+        assertTrue(c7.contains("MANAGER_RETURNED_NULL"));
+
+        String cacheMixin = Files.readString(Path.of(System.getProperty("projectRoot")).resolve(
+                "src/main/java/dev/resivore/xaeroemfcompat/mixin/RadarIconEntityCacheMixin.java"));
+        assertFalse(cacheMixin.contains("method=\"get\""));
+        assertFalse(cacheMixin.contains("setReturnValue"));
+    }
+
+    @Test
     void emfNonAttachedJemPartsClearTheMappedVanillaCubes() throws IOException {
         ClassNode root = readClass(EMF,
                 "traben/entity_model_features/models/parts/EMFModelPartRoot.class");
@@ -277,6 +307,18 @@ class UpstreamBinaryContractTest {
         return methodCalls(method).stream()
                 .filter(call -> call.owner.equals(owner) && call.name.equals(name))
                 .count();
+    }
+
+    private static int firstCallIndex(MethodNode method, String owner, String name) {
+        int index = 0;
+        for (AbstractInsnNode instruction : method.instructions) {
+            if (instruction instanceof MethodInsnNode call
+                    && call.owner.equals(owner) && call.name.equals(name)) {
+                return index;
+            }
+            index++;
+        }
+        return -1;
     }
 
     private static long fieldWrites(MethodNode method, String owner, String name) {
