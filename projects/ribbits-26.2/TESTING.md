@@ -1,46 +1,19 @@
 # Testing
 
-Mynx Ribbits Canary 13 is `ACTIVE / STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED`. Build/static checks do not establish Minecraft gameplay correctness. Read the exact current artifact filename/SHA-256 and implementation checkpoint in `WORKBENCH_STATUS.json`, and size/build evidence in the revision-18 log entry. Rehash the ignored private JAR before separately authorized deployment. Never deploy the resource-incomplete source-only JAR, and replace rather than install Canary 13 beside another JAR with the same `ribbits` mod ID.
+Mynx Ribbits Canary 14 is a diagnostic-instrumentation build and is `ACTIVE / STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED`. Build/static checks do not establish Minecraft gameplay correctness. Read the exact current artifact filename/SHA-256 and implementation checkpoint in `WORKBENCH_STATUS.json`, and size/build evidence in the revision-19 log entry. Rehash the ignored private JAR before separately authorized deployment. Never deploy the resource-incomplete source-only JAR, and replace rather than install Canary 14 beside another JAR with the same `ribbits` mod ID.
 
-## Canary 13 focused Naturalist fauna-controls checks — all pending
+## Canary 14 Wandering Ribbit scheduler diagnostic — pending
 
-Use only the dedicated `Matcha Flavoured 26.2 Workbench` through a serialized
-deployment that includes the exact retained Naturalist Canary 8 artifact. Record exact
-artifact identities and observations; no row is satisfied by static evidence.
+Use only the dedicated `Matcha Flavoured 26.2 Workbench` through a serialized deployment that includes the exact retained Naturalist Canary 8 artifact. Do not change scheduler timing, saved scheduler data, chunks, game rules, or spawn conditions merely to force a result. Record the exact artifact identities and the complete log excerpt; this build diagnoses a rejection only and does not change its policy.
 
-1. Start with Naturalist absent. Require Ribbits startup, manual/automatic Wandering
-   Ribbit persistence, and existing native/Matcha offers to remain normal; the optional
-   Naturalist provider must contribute no range or offer and no snails.
-2. Start with exact Naturalist Canary 8. Each newly materialized merchant must gain
-   exactly two Naturalist fauna offers selected without replacement from the approved
-   19 baby eggs and nine buckets. Each has one use; verify prices, bucket variants,
-   baby age, display names, and save/restart preservation. Existing snapshots must not
-   reroll or gain fauna offers.
-3. For scheduler-created merchants only, require exactly two brown tagged snails,
-   both leashed to that merchant. Confirm persistence does not duplicate them and lease
-   expiry/removal cleans them up. Egg- and command-created merchants must never gain
-   companions or scheduler state.
-4. Exercise each entry across repeated controlled materializations until all 28
-   approved identities are observed. Stop with `FAIL` for a non-approved identity,
-   duplicate selection, more/fewer than two offers or companions, wrong color/leash,
-   missing cleanup, Naturalist linkage failure, or saved-offer drift.
-
-## Canary 13 focused deployed Drop Leaf regression — all pending
-
-Use only the dedicated `Matcha Flavoured 26.2 Workbench` through the serialized deployment procedure below. Record exact artifact identities and local/remote observations.
-
-1. Equip Drop Leaf in chest/cape.
-2. Descend from a safe height and deploy with the existing second-jump input.
-3. Require the rain-leaf stem/canopy above and behind the player's back.
-4. Require the actual green donor leaf artwork.
-5. Require the donor PNG's transparent area not to render.
-6. Require no magenta/black missing texture.
-7. Require no fully visible square canopy.
-8. Land and require normal retraction to the unchanged closed state.
+1. In a Survival-player, Peaceful, flat open Overworld test with the player in `minecraft:plains`, start from newly initialized `ribbits:wandering_ribbit_spawner` data. Confirm one `[WanderingRibbitDiagnostic] scheduler initialized gameTime=... initialDelayTicks=... firstAttemptTime=...` line.
+2. Advance beyond that recorded first-attempt time and through a 6,000-tick sprint. For each due attempt, retain exactly one `[WanderingRibbitDiagnostic] attempt ...` aggregate line. It reports the scheduled time, eligible-player count, examined candidates, the first rejecting observed gate for each candidate, and accepted site count without one line per candidate.
+3. If `acceptedSpawnSites=1`, retain the selected-site line and all subsequent `spawn stage=...` lines. They distinguish a null `EVENT` spawn, entity creation, lease initialization, offer materialization, Naturalist companion initialization, entity validity, and lease commit. Keep any existing `Failed to initialize a scheduled Wandering Ribbit` exception with those lines.
+4. Interpret only the recorded counter/stage values. Absence of a merchant is not proof of a particular gate, and Canary 14 must remain `RUNTIME_UNTESTED` until exact runtime observations are reported and recorded.
 
 ## Earlier evidence boundary
 
-The exact Canary 6 cohort and the user's scoped Phase C practical `PASS`, the exact Canary 4 external startup `FAIL`, and the bound Canary 3 Phase B report remain recorded in `CODEX_LOG.md`. Canary 11 has an exact external runtime `FAIL`: its rain geometry appeared through the correct back attachment, but the canopy resolved to the magenta/black missing texture. That result supplies no runtime evidence for Canary 13; Canary 12's item-atlas correction and Canary 13's fauna controls remain untested in Minecraft.
+The exact Canary 6 cohort and the user's scoped Phase C practical `PASS`, the exact Canary 4 external startup `FAIL`, and the bound Canary 3 Phase B report remain recorded in `CODEX_LOG.md`. Canary 11 has an exact external runtime `FAIL`: its rain geometry appeared through the correct back attachment, but the canopy resolved to the magenta/black missing texture. Canary 13 is the behavioral baseline for Canary 14; its Naturalist fauna/companion behavior and Canary 12's item-atlas correction remain independently untested in Minecraft.
 
 ## Deployment preconditions
 

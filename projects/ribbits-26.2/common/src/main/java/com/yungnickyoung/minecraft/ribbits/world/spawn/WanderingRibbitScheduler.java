@@ -60,6 +60,7 @@ public final class WanderingRibbitScheduler {
             Registries.BIOME, RibbitsCommon.id("without_wandering_ribbit_spawns"));
 
     private static final Map<MinecraftServer, Long> LAST_EXECUTED_TICK = new WeakHashMap<>();
+    private static final String DIAGNOSTIC_PREFIX = "[WanderingRibbitDiagnostic]";
 
     private WanderingRibbitScheduler() {
     }
@@ -84,8 +85,11 @@ public final class WanderingRibbitScheduler {
         WanderingRibbitSpawnerData data = data(server);
         cleanupLoadedNaturalistCompanions(server, data);
         RandomSource random = overworld.getRandom();
-        if (data.initializeIfNeeded(now, randomInclusive(
-                random, FIRST_ATTEMPT_MIN_TICKS, FIRST_ATTEMPT_MAX_TICKS))) {
+        int initialDelay = randomInclusive(random, FIRST_ATTEMPT_MIN_TICKS, FIRST_ATTEMPT_MAX_TICKS);
+        if (data.initializeIfNeeded(now, initialDelay)) {
+            RibbitsCommon.LOGGER.info(
+                    "{} scheduler initialized gameTime={} initialDelayTicks={} firstAttemptTime={}",
+                    DIAGNOSTIC_PREFIX, now, initialDelay, data.nextAttemptTime());
             return;
         }
         data.observeClock(now);
@@ -100,14 +104,23 @@ public final class WanderingRibbitScheduler {
             return;
         }
 
+        long scheduledAttemptTime = data.nextAttemptTime();
         List<ServerPlayer> players = eligiblePlayers(server);
+        SpawnDiagnostics diagnostics = new SpawnDiagnostics();
         if (players.isEmpty()) {
+            logAttempt(now, scheduledAttemptTime, players.size(), diagnostics);
             data.scheduleNextAttempt(now, FAILURE_RETRY_TICKS);
             return;
         }
 
         int start = data.takeFairPlayerStart(players.size());
-        SpawnSite site = findSpawnSite(overworld, players, start, random);
+        SpawnSite site = findSpawnSite(overworld, players, start, random, diagnostics);
+        logAttempt(now, scheduledAttemptTime, players.size(), diagnostics);
+        if (site != null) {
+            RibbitsCommon.LOGGER.info(
+                    "{} selected site gameTime={} position={} wanderTarget={}",
+                    DIAGNOSTIC_PREFIX, now, site.position(), site.wanderTarget());
+        }
         if (site == null || !spawn(overworld, data, site, now, random)) {
             data.scheduleNextAttempt(now, FAILURE_RETRY_TICKS);
             return;
@@ -207,8 +220,12 @@ public final class WanderingRibbitScheduler {
         WanderingRibbitEntity entity = EntityTypeModule.WANDERING_RIBBIT.get()
                 .spawn(level, site.position(), EntitySpawnReason.EVENT);
         if (entity == null) {
+            RibbitsCommon.LOGGER.info("{} spawn stage=entity_spawn_returned_null position={}",
+                    DIAGNOSTIC_PREFIX, site.position());
             return false;
         }
+        RibbitsCommon.LOGGER.info("{} spawn stage=wandering_ribbit_entity_created position={}",
+                DIAGNOSTIC_PREFIX, site.position());
 
         long generation = data.nextLeaseGeneration();
         long expiry = saturatedAdd(now, VISIT_LIFETIME_TICKS);
@@ -216,15 +233,23 @@ public final class WanderingRibbitScheduler {
         try {
             entity.initializeSchedulerLease(
                     generation, expiry, level.dimension(), site.wanderTarget(), tradeSeed);
+            RibbitsCommon.LOGGER.info("{} spawn stage=scheduler_lease_initialized generation={} expiry={}",
+                    DIAGNOSTIC_PREFIX, generation, expiry);
             entity.materializeOffers(level);
+            RibbitsCommon.LOGGER.info("{} spawn stage=offers_materialized", DIAGNOSTIC_PREFIX);
             entity.initializeNaturalistCompanions(level);
+            RibbitsCommon.LOGGER.info("{} spawn stage=naturalist_companions_initialized", DIAGNOSTIC_PREFIX);
             if (entity.isRemoved()
                     || !entity.isAlive()
                     || level.getEntity(entity.getUUID()) != entity) {
+                RibbitsCommon.LOGGER.info("{} spawn stage=entity_validity_check_failed", DIAGNOSTIC_PREFIX);
                 entity.discard();
                 return false;
             }
+            RibbitsCommon.LOGGER.info("{} spawn stage=entity_validity_check_passed", DIAGNOSTIC_PREFIX);
             data.commitLease(entity.getUUID(), level.dimension(), generation, expiry);
+            RibbitsCommon.LOGGER.info("{} spawn stage=scheduler_lease_committed generation={}",
+                    DIAGNOSTIC_PREFIX, generation);
             return true;
         } catch (RuntimeException exception) {
             entity.discard();
@@ -237,7 +262,8 @@ public final class WanderingRibbitScheduler {
             ServerLevel level,
             List<ServerPlayer> players,
             int start,
-            RandomSource random
+            RandomSource random,
+            SpawnDiagnostics diagnostics
     ) {
         int playersToTry = Math.min(players.size(), MAX_CANDIDATES / CANDIDATES_PER_PLAYER);
         int attempted = 0;
@@ -249,6 +275,7 @@ public final class WanderingRibbitScheduler {
                 int radius = randomInclusive(random, MIN_RADIUS, MAX_RADIUS);
                 int x = target.getX() + (int) Math.round(Math.cos(angle) * radius);
                 int z = target.getZ() + (int) Math.round(Math.sin(angle) * radius);
+                diagnostics.candidatePositionsExamined++;
                 long deltaX = (long) x - target.getX();
                 long deltaZ = (long) z - target.getZ();
                 long distanceSquared = deltaX * deltaX + deltaZ * deltaZ;
@@ -256,7 +283,7 @@ public final class WanderingRibbitScheduler {
                         || distanceSquared > (long) MAX_RADIUS * MAX_RADIUS) {
                     continue;
                 }
-                BlockPos safe = safeSurfacePosition(level, x, z, players);
+                BlockPos safe = safeSurfacePosition(level, x, z, players, diagnostics);
                 if (safe != null) {
                     return new SpawnSite(safe, target);
                 }
@@ -269,52 +296,94 @@ public final class WanderingRibbitScheduler {
             ServerLevel level,
             int x,
             int z,
-            List<ServerPlayer> eligiblePlayers
+            List<ServerPlayer> eligiblePlayers,
+            SpawnDiagnostics diagnostics
     ) {
         int chunkX = x >> 4;
         int chunkZ = z >> 4;
         LevelChunk chunk = level.getChunkSource().getChunkNow(chunkX, chunkZ);
-        if (chunk == null || !level.areEntitiesLoaded(ChunkPos.pack(chunkX, chunkZ))) {
+        if (chunk == null) {
+            diagnostics.chunkUnavailable++;
+            return null;
+        }
+        if (!level.areEntitiesLoaded(ChunkPos.pack(chunkX, chunkZ))) {
+            diagnostics.entitiesNotLoaded++;
             return null;
         }
 
         int y = chunk.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x & 15, z & 15);
         BlockPos feet = new BlockPos(x, y, z);
         if (y <= level.getMinY() + 1 || y >= level.getMaxY() - 1) {
+            diagnostics.invalidHeight++;
             return null;
         }
         BlockPos groundPos = feet.below();
         BlockState ground = chunk.getBlockState(groundPos);
         BlockState body = chunk.getBlockState(feet);
         BlockState head = chunk.getBlockState(feet.above());
-        if (!ground.isFaceSturdy(level, groundPos, Direction.UP)
-                || isHazardous(ground)
+        if (!ground.isFaceSturdy(level, groundPos, Direction.UP)) {
+            diagnostics.groundNotSturdy++;
+            return null;
+        }
+        if (isHazardous(ground)
                 || isHazardous(body)
-                || isHazardous(head)
-                || !ground.getFluidState().isEmpty()
+                || isHazardous(head)) {
+            diagnostics.hazardousGroundBodyHead++;
+            return null;
+        }
+        if (!ground.getFluidState().isEmpty()
                 || !body.getFluidState().isEmpty()
                 || !head.getFluidState().isEmpty()) {
+            diagnostics.fluidGroundBodyHead++;
             return null;
         }
 
         Holder<Biome> biome = level.getBiome(feet);
         if (!biomeAllowed(level, biome)) {
+            diagnostics.biomeRejected++;
             return null;
         }
 
         AABB spawnBox = EntityTypeModule.WANDERING_RIBBIT.get().getSpawnAABB(
                 x + 0.5D, y, z + 0.5D);
-        if (!level.getWorldBorder().isWithinBounds(spawnBox) || !level.noCollision(spawnBox)) {
+        if (!level.getWorldBorder().isWithinBounds(spawnBox)) {
+            diagnostics.worldBorderRejected++;
+            return null;
+        }
+        if (!level.noCollision(spawnBox)) {
+            diagnostics.collisionRejected++;
             return null;
         }
         Vec3 center = Vec3.atBottomCenterOf(feet);
         double minimumSquared = (double) MIN_PLAYER_DISTANCE * MIN_PLAYER_DISTANCE;
         for (ServerPlayer player : eligiblePlayers) {
             if (player.distanceToSqr(center) < minimumSquared) {
+                diagnostics.minimumPlayerDistanceRejected++;
                 return null;
             }
         }
+        diagnostics.acceptedSpawnSites++;
         return feet;
+    }
+
+    private static void logAttempt(
+            long now,
+            long scheduledAttemptTime,
+            int eligiblePlayerCount,
+            SpawnDiagnostics diagnostics
+    ) {
+        RibbitsCommon.LOGGER.info(
+                "{} attempt gameTime={} scheduledAttemptTime={} eligiblePlayers={} candidatesExamined={} "
+                        + "chunkUnavailable={} entitiesNotLoaded={} invalidHeight={} groundNotSturdy={} "
+                        + "hazardousGroundBodyHead={} fluidGroundBodyHead={} biomeRejected={} "
+                        + "worldBorderRejected={} collisionRejected={} minimumPlayerDistanceRejected={} "
+                        + "acceptedSpawnSites={}",
+                DIAGNOSTIC_PREFIX, now, scheduledAttemptTime, eligiblePlayerCount,
+                diagnostics.candidatePositionsExamined, diagnostics.chunkUnavailable,
+                diagnostics.entitiesNotLoaded, diagnostics.invalidHeight, diagnostics.groundNotSturdy,
+                diagnostics.hazardousGroundBodyHead, diagnostics.fluidGroundBodyHead,
+                diagnostics.biomeRejected, diagnostics.worldBorderRejected, diagnostics.collisionRejected,
+                diagnostics.minimumPlayerDistanceRejected, diagnostics.acceptedSpawnSites);
     }
 
     private static boolean biomeAllowed(ServerLevel level, Holder<Biome> biome) {
@@ -389,5 +458,20 @@ public final class WanderingRibbitScheduler {
             position = position.immutable();
             wanderTarget = wanderTarget.immutable();
         }
+    }
+
+    private static final class SpawnDiagnostics {
+        private int candidatePositionsExamined;
+        private int chunkUnavailable;
+        private int entitiesNotLoaded;
+        private int invalidHeight;
+        private int groundNotSturdy;
+        private int hazardousGroundBodyHead;
+        private int fluidGroundBodyHead;
+        private int biomeRejected;
+        private int worldBorderRejected;
+        private int collisionRejected;
+        private int minimumPlayerDistanceRejected;
+        private int acceptedSpawnSites;
     }
 }
