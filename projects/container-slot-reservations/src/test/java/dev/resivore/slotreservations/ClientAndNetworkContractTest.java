@@ -104,6 +104,24 @@ final class ClientAndNetworkContractTest {
     }
 
     @Test
+    void hostFingerprintUsesOnlyThePersistentContextFreeCodec() throws IOException {
+        String fingerprint = source("ShulkerHostFingerprint.java");
+        String resolver = source("ShulkerHostResolver.java");
+
+        assertTrue(fingerprint.contains("ItemStack.CODEC"));
+        assertTrue(fingerprint.contains("RegistryOps.create(NbtOps.INSTANCE, registries)"));
+        assertTrue(fingerprint.contains("writeCanonical"));
+        assertFalse(fingerprint.contains("STREAM_CODEC"));
+        assertFalse(fingerprint.contains("RegistryFriendlyByteBuf"));
+        assertFalse(fingerprint.contains("ClientPlayNetworking"));
+        assertFalse(fingerprint.contains("PacketContext"));
+        assertFalse(fingerprint.contains("Polymer"));
+        assertTrue(resolver.contains(
+                "ShulkerHostFingerprint.of(host.stack(), player.registryAccess()).equals(fingerprint)"),
+                "Server-side component-exact host validation must remain mandatory");
+    }
+
+    @Test
     void panelInputOwnsCoveredCoordinatesAndRejectsUnsupportedGestures() throws IOException {
         String screen = source("mixin/client/AbstractContainerScreenMixin.java");
         String panel = source("client/ShulkerPanel.java");

@@ -174,7 +174,7 @@ test {
     systemProperty 'projectRoot', projectDir.absolutePath
     systemProperty 'doubleBarrelsReferenceJar', doubleBarrelsReferenceJar.absolutePath
     systemProperty 'canary10ReferenceJar', canary10ReferenceJar.absolutePath
-    systemProperty 'canary11Artifact', tasks.named('jar').get().archiveFile.get().asFile.absolutePath
+    systemProperty 'canary12Artifact', tasks.named('jar').get().archiveFile.get().asFile.absolutePath
     systemProperty 'inventoryExtendedReferenceJar', inventoryExtendedReferenceJar.absolutePath
     inputs.file(doubleBarrelsReferenceJar)
     inputs.file(canary10ReferenceJar)

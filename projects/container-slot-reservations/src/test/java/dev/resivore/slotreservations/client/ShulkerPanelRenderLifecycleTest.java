@@ -70,7 +70,7 @@ final class ShulkerPanelRenderLifecycleTest {
             "dev/resivore/slotreservations/client/ShulkerPanelRenderLifecycleTest$RenderProbe";
     private static final String SHULKER_TEXTURE = "textures/gui/container/shulker_box.png";
     private static final Path C10 = Path.of(System.getProperty("canary10ReferenceJar"));
-    private static final Path C11 = Path.of(System.getProperty("canary11Artifact"));
+    private static final Path C12 = Path.of(System.getProperty("canary12Artifact"));
     private static final Path INVENTORY_EXTENDED =
             Path.of(System.getProperty("inventoryExtendedReferenceJar"));
 
@@ -102,7 +102,7 @@ final class ShulkerPanelRenderLifecycleTest {
         assertEquals("INVOKE", predecessor.atValue);
         assertEquals("L" + BASE + ";extractCarriedItem" + CARRIED, predecessor.atTarget);
 
-        InjectionSpec successor = injectionSpec(C11);
+        InjectionSpec successor = injectionSpec(C12);
         assertEquals(Set.of("extractCarriedItem" + CARRIED), Set.copyOf(successor.methods));
         assertEquals("HEAD", successor.atValue);
         assertEquals(1, successor.require);
@@ -122,14 +122,14 @@ final class ShulkerPanelRenderLifecycleTest {
                 "26.2 recipe-book rendering must bypass the base extractRenderState body");
         assertEquals(1, inventory.count(callOwned(RECIPE, "extractRenderState", RENDER)));
 
-        assertEquals(1, packagedPanelInvocationCount(C11));
+        assertEquals(1, packagedPanelInvocationCount(C12));
         assertEquals(0, method(classBytes(BASE), "extractRenderState", RENDER)
                 .count(callOwned(PANEL, "updateAndRender", null)),
                 "Vanilla must not contain a second CSR panel call");
-        assertTrue(jarText(C11, "container_slot_reservations.client.mixins.json")
+        assertTrue(jarText(C12, "container_slot_reservations.client.mixins.json")
                 .contains("container_slot_reservations.refmap.json"));
-        assertNotNull(jarBytes(C11, "container_slot_reservations.refmap.json"));
-        assertTrue(jarText(C11, "container_slot_reservations.refmap.json").contains("\"mappings\""));
+        assertNotNull(jarBytes(C12, "container_slot_reservations.refmap.json"));
+        assertTrue(jarText(C12, "container_slot_reservations.refmap.json").contains("\"mappings\""));
 
         String ieMixins = jarText(INVENTORY_EXTENDED, "inventoryextended.mixins.json");
         assertTrue(ieMixins.contains("PlayerInventoryRecipeButton"));
@@ -154,9 +154,9 @@ final class ShulkerPanelRenderLifecycleTest {
 
     @Test
     void transformedCanary11SubmitsOneVisiblePanelForRecipeAndOrdinaryPaths() throws Exception {
-        RenderLifecycle transformedC11 = transformedLifecycle(injectionSpec(C11));
+        RenderLifecycle transformedC12 = transformedLifecycle(injectionSpec(C12));
 
-        RenderResult survival = transformedC11.execute(INVENTORY, eligibleHost(35));
+        RenderResult survival = transformedC12.execute(INVENTORY, eligibleHost(35));
         requireVisiblePanel(survival);
         assertEquals(1, survival.panelInvocations);
         assertEquals(1, survival.tooltipVisits);
@@ -171,7 +171,7 @@ final class ShulkerPanelRenderLifecycleTest {
         assertTrue(survival.frame.overlays.get(1).physical().isEmpty());
         assertEquals(3, survival.frame.overlays.get(0).physical().getCount());
 
-        RenderResult chest = transformedC11.execute(BASE, eligibleHost(0));
+        RenderResult chest = transformedC12.execute(BASE, eligibleHost(0));
         requireVisiblePanel(chest);
         assertEquals(1, chest.panelInvocations);
         assertEquals(1, chest.tooltipVisits);
@@ -180,9 +180,9 @@ final class ShulkerPanelRenderLifecycleTest {
 
     @Test
     void acceptedInventoryExtendedSlotsUseTheSameSingleCommonHook() throws Exception {
-        RenderLifecycle transformedC11 = transformedLifecycle(injectionSpec(C11));
+        RenderLifecycle transformedC12 = transformedLifecycle(injectionSpec(C12));
         Host extendedOrdinaryStorage = eligibleHost(53);
-        RenderResult result = transformedC11.execute(INVENTORY, extendedOrdinaryStorage);
+        RenderResult result = transformedC12.execute(INVENTORY, extendedOrdinaryStorage);
         requireVisiblePanel(result);
         assertEquals(53, extendedOrdinaryStorage.slot.getContainerSlot());
         assertEquals(1, result.panelInvocations);
@@ -191,7 +191,7 @@ final class ShulkerPanelRenderLifecycleTest {
 
     @Test
     void negativeControlsNeverCreateAnActionableOrDuplicatePanel() throws Exception {
-        RenderLifecycle transformedC11 = transformedLifecycle(injectionSpec(C11));
+        RenderLifecycle transformedC12 = transformedLifecycle(injectionSpec(C12));
         List<Host> denied = List.of(
                 eligibleHost(0).withoutHover(),
                 eligibleHost(0).asCursorHeldOnly(),
@@ -204,7 +204,7 @@ final class ShulkerPanelRenderLifecycleTest {
         );
         for (int deniedIndex = 0; deniedIndex < denied.size(); deniedIndex++) {
             Host host = denied.get(deniedIndex);
-            RenderResult result = transformedC11.execute(INVENTORY, host);
+            RenderResult result = transformedC12.execute(INVENTORY, host);
             assertEquals(1, result.panelInvocations,
                     "The inherited render seam still executes exactly once for a denied host");
             assertFalse(result.visible(), "Denied host " + deniedIndex + " rendered: " + host
@@ -213,8 +213,8 @@ final class ShulkerPanelRenderLifecycleTest {
             assertFalse(result.outerTooltipSuppressed,
                     "Denied host " + deniedIndex + " suppressed tooltip: " + host);
         }
-        assertEquals(1, transformedC11.execute(BASE, eligibleHost(0)).panelInvocations);
-        assertEquals(1, transformedC11.execute(INVENTORY, eligibleHost(0)).panelInvocations);
+        assertEquals(1, transformedC12.execute(BASE, eligibleHost(0)).panelInvocations);
+        assertEquals(1, transformedC12.execute(INVENTORY, eligibleHost(0)).panelInvocations);
     }
 
     private static RenderLifecycle transformedLifecycle(InjectionSpec spec) throws IOException {

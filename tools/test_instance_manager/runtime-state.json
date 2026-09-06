@@ -2,8 +2,8 @@
   "$schema": "../../schemas/runtime-state.schema.json",
   "schema_version": 2,
   "activation": "ACTIVE",
-  "revision": 100,
-  "updated_at": "2026-09-05T23:00:00Z",
+  "revision": 101,
+  "updated_at": "2026-09-06T02:45:00Z",
   "accepted_baseline": {
     "revision": 19,
     "provenance": {
@@ -928,11 +928,13 @@
           },
           "replaces_accepted_deployment_id": "8211900d-913c-40f2-9829-68509e0d71fe",
           "runtime_result": {
-            "classification": "UNTESTED",
-            "recorded_at": null,
+            "classification": "FAIL",
+            "recorded_at": "2026-09-06T02:45:00Z",
             "evidence": {
               "passed": [],
-              "failed": []
+              "failed": [
+                "User-reported: hovering a count-one shulker reached CSR's pinned-panel path, then crashed because ShulkerHostFingerprint.of() invoked ItemStack.STREAM_CODEC outside a network PacketContext; Polymer reported: PacketContext is required, but it wasn't set up! No other Canary 11 test result is inferred."
+              ]
             }
           }
         }

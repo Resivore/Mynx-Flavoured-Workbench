@@ -42,6 +42,40 @@ public final class ShulkerPanelGameTests implements CustomTestMethodInvoker {
     }
 
     @GameTest(maxTicks = 40)
+    public void localFingerprintIsContextFreeComponentExactAndStillBindsTheServerHost(GameTestHelper helper) {
+        BlockPos position = new BlockPos(1, 2, 1);
+        helper.setBlock(position, Blocks.CHEST);
+        ChestBlockEntity chest = helper.getBlockEntity(position, ChestBlockEntity.class);
+        ServerPlayer player = player(helper);
+        player.containerMenu = ChestMenu.threeRows(6, player.getInventory(), chest);
+
+        ItemStack host = new ItemStack(Blocks.SHULKER_BOX);
+        host.set(DataComponents.CUSTOM_NAME, Component.literal("Canonical host"));
+        host.set(DataComponents.CONTAINER, ItemContainerContents.fromItems(List.of(new ItemStack(Items.STONE, 3))));
+        String ordinaryContext = ShulkerHostFingerprint.of(host, player.registryAccess());
+        String equalClientOrServerCopy = ShulkerHostFingerprint.of(host.copy(), player.registryAccess());
+        helper.assertTrue(ordinaryContext.matches("[0-9a-f]{64}"),
+                "Local fingerprinting did not produce the SHA-256 contract value");
+        helper.assertTrue(ordinaryContext.equals(equalClientOrServerCopy),
+                "Equal component-exact stacks did not produce one deterministic client/server fingerprint");
+
+        ItemStack componentChanged = host.copy();
+        componentChanged.set(DataComponents.CUSTOM_NAME, Component.literal("Different component"));
+        helper.assertTrue(!ordinaryContext.equals(ShulkerHostFingerprint.of(componentChanged, player.registryAccess())),
+                "A materially different component did not change the host fingerprint");
+
+        chest.setItem(0, host);
+        helper.assertTrue(ShulkerHostResolver.resolve(player, player.containerMenu.containerId,
+                        ShulkerHostLocator.menuSlot(0), ordinaryContext).isPresent(),
+                "The server rejected its matching component-exact host fingerprint");
+        chest.setItem(0, componentChanged);
+        helper.assertTrue(ShulkerHostResolver.resolve(player, player.containerMenu.containerId,
+                        ShulkerHostLocator.menuSlot(0), ordinaryContext).isEmpty(),
+                "The server accepted a stale fingerprint after the host components changed");
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
     public void allBoundaryCellsUseExactPhysicalIndicesAndPreserveComponents(GameTestHelper helper) {
         BlockPos position = new BlockPos(1, 2, 1);
         helper.setBlock(position, Blocks.CHEST);
