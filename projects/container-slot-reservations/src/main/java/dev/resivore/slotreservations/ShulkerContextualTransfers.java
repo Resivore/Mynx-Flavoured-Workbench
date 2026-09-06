@@ -81,7 +81,9 @@ public final class ShulkerContextualTransfers {
         target.setChanged();
         target.container.setChanged();
         menu.setCarried(plan.shulker());
-        int selected = ShulkerContents.nextOccupied(plan.contents(), selection.internalSlot());
+        int selected = plan.contents().get(selection.internalSlot()).isEmpty()
+                ? ShulkerContents.previousOccupied(plan.contents(), selection.internalSlot())
+                : selection.internalSlot();
         String fingerprint = ShulkerHostFingerprint.of(plan.shulker(), player.registryAccess());
         ShulkerSelectionTracker.rebindCarried(player, menu, fingerprint, selected);
         menu.broadcastChanges();

@@ -122,6 +122,23 @@ final class ClientAndNetworkContractTest {
     }
 
     @Test
+    void implicitCarriedShulkerSelectionUsesBackmostCellWithoutOverridingAnExplicitSelection() throws IOException {
+        String contents = source("ShulkerContents.java");
+        String panel = source("client/ShulkerPanel.java");
+        String tracker = source("ShulkerSelectionTracker.java");
+        String transfers = source("ShulkerContextualTransfers.java");
+
+        assertTrue(contents.contains("public static int lastOccupied"));
+        assertTrue(panel.contains("setSelection(ShulkerContents.lastOccupied(contents))"));
+        assertTrue(tracker.contains("selected = ShulkerContents.lastOccupied(contents)"));
+        assertTrue(tracker.contains("current.internalSlot()"),
+                "A valid carried selection must remain authoritative over the fallback");
+        assertTrue(transfers.contains("ShulkerContents.previousOccupied(plan.contents(), selection.internalSlot())"));
+        assertTrue(transfers.contains("plan.contents().get(selection.internalSlot()).isEmpty()"),
+                "A capacity-limited extraction must retain its still-occupied selected stack");
+    }
+
+    @Test
     void panelInputOwnsCoveredCoordinatesAndRejectsUnsupportedGestures() throws IOException {
         String screen = source("mixin/client/AbstractContainerScreenMixin.java");
         String panel = source("client/ShulkerPanel.java");

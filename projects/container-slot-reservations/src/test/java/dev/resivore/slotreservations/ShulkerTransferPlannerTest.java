@@ -80,10 +80,12 @@ final class ShulkerTransferPlannerTest {
         var contents = empty();
         contents.set(0, new ItemStack(Items.STONE)); contents.set(17, new ItemStack(Items.DIRT));
         assertEquals(0, ShulkerContents.firstOccupied(contents));
+        assertEquals(17, ShulkerContents.lastOccupied(contents));
         assertEquals(17, ShulkerContents.nextOccupied(contents, 0));
         assertEquals(0, ShulkerContents.nextOccupied(contents, 17));
         assertEquals(17, ShulkerContents.previousOccupied(contents, 0));
         assertEquals(-1, ShulkerContents.firstOccupied(empty()));
+        assertEquals(-1, ShulkerContents.lastOccupied(empty()));
     }
 
     @Test void liveEffectiveMaximumAllowsAHighCountNormallyNonstackableItem() {

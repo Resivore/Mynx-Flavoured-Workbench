@@ -27,6 +27,11 @@ public final class ShulkerContents {
         return nextOccupied(contents, -1);
     }
 
+    /** Returns the highest-index occupied ordinary shulker cell, or {@code -1}. */
+    public static int lastOccupied(List<ItemStack> contents) {
+        return previousOccupied(contents, 0);
+    }
+
     public static int nextOccupied(List<ItemStack> contents, int after) {
         for (int offset = 1; offset <= ReservationData.SLOT_COUNT; offset++) {
             int slot = Math.floorMod(after + offset, ReservationData.SLOT_COUNT);

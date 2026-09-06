@@ -243,7 +243,7 @@ public final class ShulkerPanelGameTests implements CustomTestMethodInvoker {
     }
 
     @GameTest(maxTicks = 40)
-    public void nativeCarriedExtractionRepairsMissingMigrationAndRespectsCapacityAndReservations(
+    public void nativeCarriedExtractionDefaultsBackwardsAndRespectsCapacityAndReservations(
             GameTestHelper helper
     ) {
         BlockPos position = new BlockPos(1, 2, 1);
@@ -254,7 +254,9 @@ public final class ShulkerPanelGameTests implements CustomTestMethodInvoker {
 
         ItemStack host = new ItemStack(Blocks.SHULKER_BOX);
         var contents = net.minecraft.core.NonNullList.withSize(ReservationData.SLOT_COUNT, ItemStack.EMPTY);
-        contents.set(0, new ItemStack(Items.DIAMOND, 7));
+        contents.set(0, new ItemStack(Items.STONE, 2));
+        contents.set(8, new ItemStack(Items.DIAMOND, 6));
+        contents.set(20, new ItemStack(Items.DIRT, 7));
         ShulkerContents.replace(host, contents);
         chest.setItem(0, host);
         var resolved = ShulkerHostResolver.resolveMenuSlot(player, player.containerMenu,
@@ -265,25 +267,40 @@ public final class ShulkerPanelGameTests implements CustomTestMethodInvoker {
         // Model the packet-order edge: the native click is authoritative even if no carried record survived.
         ShulkerSelectionTracker.clear(player);
 
-        Slot limitedTarget = new Slot(chest, 1, 0, 0) {
+        Slot limitedTarget = new Slot(player.getInventory(), 9, 0, 0) {
             @Override
             public int getMaxStackSize(ItemStack stack) {
                 return 3;
             }
         };
-        player.containerMenu.slots.set(1, limitedTarget);
-        player.containerMenu.clicked(1, 1, ContainerInput.PICKUP, player);
-        helper.assertTrue(chest.getItem(1).getCount() == 3 && chest.getItem(1).is(Items.DIAMOND)
-                        && ShulkerContents.copy(player.containerMenu.getCarried()).get(0).getCount() == 4
+        player.containerMenu.slots.set(27, limitedTarget);
+        player.containerMenu.clicked(27, 1, ContainerInput.PICKUP, player);
+        helper.assertTrue(player.containerMenu.getSlot(27).getItem().getCount() == 3
+                        && player.containerMenu.getSlot(27).getItem().is(Items.DIRT)
+                        && ShulkerContents.copy(player.containerMenu.getCarried()).get(20).getCount() == 4
                         && ShulkerSelectionTracker.validate(player) != null
-                        && ShulkerSelectionTracker.validate(player).internalSlot() == 0,
-                "Native extraction did not deterministically repair selection or respect target capacity");
+                        && ShulkerSelectionTracker.validate(player).internalSlot() == 20,
+                "Backmost default extraction did not preserve its capacity-limited remainder");
 
-        ReservationStore.setData(chest, ReservationData.EMPTY.with(2, new ItemStack(Items.DIRT)));
+        ReservationStore.setData(chest, ReservationData.EMPTY.with(2, new ItemStack(Items.STONE)));
         player.containerMenu.clicked(2, 1, ContainerInput.PICKUP, player);
         helper.assertTrue(chest.getItem(2).isEmpty()
-                        && ShulkerContents.copy(player.containerMenu.getCarried()).get(0).getCount() == 4,
+                        && ShulkerContents.copy(player.containerMenu.getCarried()).get(20).getCount() == 4,
                 "A reservation-mismatched native extraction mutated either source or target");
+
+        player.containerMenu.clicked(28, 1, ContainerInput.PICKUP, player);
+        helper.assertTrue(player.containerMenu.getSlot(28).getItem().getCount() == 4
+                        && player.containerMenu.getSlot(28).getItem().is(Items.DIRT)
+                        && ShulkerContents.copy(player.containerMenu.getCarried()).get(20).isEmpty()
+                        && ShulkerSelectionTracker.validate(player).internalSlot() == 8,
+                "After the backmost stack is empty, the next default must be the previous occupied gap-aware cell");
+
+        player.containerMenu.clicked(29, 1, ContainerInput.PICKUP, player);
+        helper.assertTrue(player.containerMenu.getSlot(29).getItem().getCount() == 6
+                        && player.containerMenu.getSlot(29).getItem().is(Items.DIAMOND)
+                        && ShulkerContents.copy(player.containerMenu.getCarried()).get(8).isEmpty()
+                        && ShulkerSelectionTracker.validate(player).internalSlot() == 0,
+                "Repeated default extraction must continue backward through occupied internal cells");
         helper.succeed();
     }
 

@@ -143,7 +143,7 @@ public final class ShulkerPanel {
         if (current != null && current.kind() == ShulkerSelectionTracker.HostKind.MENU_SLOT
                 && current.slot() == binding.slot() && current.internalSlot() >= 0
                 && !contents.get(current.internalSlot()).isEmpty()) return;
-        setSelection(ShulkerContents.firstOccupied(contents));
+        setSelection(ShulkerContents.lastOccupied(contents));
     }
 
     private static void setSelection(int slot) {
@@ -245,7 +245,7 @@ public final class ShulkerPanel {
                 || geometry.corridorContains(binding.hostBounds(), mouseX, mouseY))) return false;
         NonNullList<ItemStack> contents = ShulkerContents.copy(binding.slot().getItem());
         int selected = selectedIndex();
-        if (selected < 0) selected = ShulkerContents.firstOccupied(contents);
+        if (selected < 0) selected = ShulkerContents.lastOccupied(contents);
         else selected = vertical > 0 ? ShulkerContents.previousOccupied(contents, selected)
                 : ShulkerContents.nextOccupied(contents, selected);
         setSelection(selected);

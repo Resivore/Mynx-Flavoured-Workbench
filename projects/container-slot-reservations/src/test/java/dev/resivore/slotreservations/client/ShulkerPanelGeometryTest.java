@@ -2,6 +2,10 @@ package dev.resivore.slotreservations.client;
 
 import org.junit.jupiter.api.Test;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.InputStream;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 final class ShulkerPanelGeometryTest {
@@ -41,8 +45,10 @@ final class ShulkerPanelGeometryTest {
         assertEquals(176, tiny.bounds().width());
         assertEquals(83, tiny.bounds().height());
         assertEquals(77, ShulkerPanelGeometry.MAIN_HEIGHT);
-        assertEquals(160, ShulkerPanelGeometry.BOTTOM_FRAME_SOURCE_Y);
-        assertEquals(6, ShulkerPanelGeometry.BOTTOM_FRAME_HEIGHT);
+        assertEquals(160, ShulkerPanelGeometry.BOTTOM_FRAME_SOURCE_Y,
+                "26.2's true bottom bezel starts after the player inventory and hotbar rows");
+        assertEquals(6, ShulkerPanelGeometry.BOTTOM_FRAME_HEIGHT,
+                "The selected region is only the six-pixel bottom bezel, never a slot row");
     }
 
     @Test void resizeRecomputesPlacementAndCorridorIsNarrowAndContinuous() {
@@ -55,5 +61,27 @@ final class ShulkerPanelGeometryTest {
         assertFalse(large.bounds().contains(large.x() + 176, large.y() + 82));
         assertEquals(26, large.slot(large.cellBounds(26).x() + 0.5, large.cellBounds(26).y() + 0.5),
                 "Extending the lower frame must not move the 9x3 cell grid");
+    }
+
+    @Test void vanilla26BottomSourceIsOnlyTheSolidShulkerBezel() throws Exception {
+        try (InputStream input = ShulkerPanelGeometryTest.class.getClassLoader().getResourceAsStream(
+                "assets/minecraft/textures/gui/container/shulker_box.png")) {
+            assertNotNull(input, "The exact 26.2 runtime-resolved shulker texture is required for this contract");
+            BufferedImage texture = ImageIO.read(input);
+            assertNotNull(texture);
+            assertEquals(256, texture.getWidth());
+            assertEquals(256, texture.getHeight());
+
+            // Y=156 is the hotbar slot row: its vertical dividers must never become panel bezel pixels.
+            assertNotEquals(texture.getRGB(7, 156), texture.getRGB(24, 156));
+            for (int y = ShulkerPanelGeometry.BOTTOM_FRAME_SOURCE_Y;
+                 y < ShulkerPanelGeometry.BOTTOM_FRAME_SOURCE_Y + ShulkerPanelGeometry.BOTTOM_FRAME_HEIGHT; y++) {
+                int uninterruptedBezel = texture.getRGB(8, y);
+                for (int dividerPosition : new int[]{26, 44, 62, 80, 98, 116, 134, 152}) {
+                    assertEquals(uninterruptedBezel, texture.getRGB(dividerPosition, y),
+                            "Bottom source must not include a player-inventory or hotbar slot divider at Y=" + y);
+                }
+            }
+        }
     }
 }

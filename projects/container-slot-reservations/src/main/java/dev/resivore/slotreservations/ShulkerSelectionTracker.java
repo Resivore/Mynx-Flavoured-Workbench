@@ -90,7 +90,7 @@ public final class ShulkerSelectionTracker {
      *
      * A client selection packet may arrive adjacent to the pickup packet that moved the
      * host to the cursor.  Preserve a matching pre-migration host selection when it is
-     * still present; otherwise use CSR's existing deterministic first-occupied default.
+     * still present; otherwise use the deterministic backmost occupied-cell default.
      * The cursor stack and its complete fingerprint remain the authority in both cases.
      */
     public static synchronized Selection ensureCarriedSelection(Player player, AbstractContainerMenu menu,
@@ -107,7 +107,7 @@ public final class ShulkerSelectionTracker {
             selected = current.internalSlot();
             locator = current.locator();
         } else {
-            selected = ShulkerContents.firstOccupied(contents);
+            selected = ShulkerContents.lastOccupied(contents);
         }
         if (selected < 0) {
             if (current != null && current.menu() == menu) SELECTIONS.remove(player);
