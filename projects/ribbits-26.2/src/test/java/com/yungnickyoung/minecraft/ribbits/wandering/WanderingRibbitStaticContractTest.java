@@ -1,6 +1,7 @@
 package com.yungnickyoung.minecraft.ribbits.wandering;
 
 import org.junit.jupiter.api.Test;
+import net.minecraft.world.phys.AABB;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -68,6 +69,30 @@ class WanderingRibbitStaticContractTest {
         assertTrue(scheduler.contains("EntitySelector.CAN_BE_COLLIDED_WITH"));
         assertTrue(scheduler.contains("noCollisionSources={} blocksClear={} entitiesClear={}"));
         assertTrue(scheduler.contains("ground={} body={} head={}"));
+    }
+
+    @Test
+    void schedulerUsesTheHeightmapSurfaceAsSupportAndPlacesFeetAboveIt() throws Exception {
+        String scheduler = read("common/src/main/java/com/yungnickyoung/minecraft/ribbits/world/spawn/WanderingRibbitScheduler.java");
+        assertTrue(scheduler.contains("int surfaceY = chunk.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x & 15, z & 15);"));
+        assertTrue(scheduler.contains("BlockPos groundPos = new BlockPos(x, surfaceY, z);"));
+        assertTrue(scheduler.contains("BlockPos feet = groundPos.above();"));
+        assertTrue(scheduler.contains("groundPos.getY() < level.getMinY() || feet.above().getY() >= level.getMaxY()"));
+        assertTrue(scheduler.contains("BlockState ground = chunk.getBlockState(groundPos);"));
+        assertTrue(scheduler.contains("BlockState body = chunk.getBlockState(feet);"));
+        assertTrue(scheduler.contains("BlockState head = chunk.getBlockState(feet.above());"));
+        assertTrue(scheduler.contains("x + 0.5D, feet.getY(), z + 0.5D"));
+        assertTrue(scheduler.contains("EntitySpawnReason.EVENT"));
+        assertFalse(scheduler.contains("BlockPos feet = new BlockPos(x, y, z);"));
+        assertFalse(scheduler.contains("BlockPos groundPos = feet.below();"));
+
+        // The mapped AABB type confirms the corrected feet-height geometry: the 0.5 x 0.75
+        // merchant box clears a full support block, while an actual body-space block intersects.
+        AABB support = new AABB(30.0D, -61.0D, -22.0D, 31.0D, -60.0D, -21.0D);
+        AABB correctedMerchant = new AABB(30.25D, -60.0D, -21.75D, 30.75D, -59.25D, -21.25D);
+        AABB bodyObstruction = new AABB(30.0D, -60.0D, -22.0D, 31.0D, -59.0D, -21.0D);
+        assertFalse(correctedMerchant.intersects(support));
+        assertTrue(correctedMerchant.intersects(bodyObstruction));
     }
 
     @Test

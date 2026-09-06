@@ -319,13 +319,15 @@ public final class WanderingRibbitScheduler {
             return null;
         }
 
-        int y = chunk.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x & 15, z & 15);
-        BlockPos feet = new BlockPos(x, y, z);
-        if (y <= level.getMinY() + 1 || y >= level.getMaxY() - 1) {
+        // In mapped 26.2 ChunkAccess, getHeight returns getFirstAvailable(...) - 1: the
+        // occupied top surface, not the open position an entity should stand in.
+        int surfaceY = chunk.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x & 15, z & 15);
+        BlockPos groundPos = new BlockPos(x, surfaceY, z);
+        BlockPos feet = groundPos.above();
+        if (groundPos.getY() < level.getMinY() || feet.above().getY() >= level.getMaxY()) {
             diagnostics.invalidHeight++;
             return null;
         }
-        BlockPos groundPos = feet.below();
         BlockState ground = chunk.getBlockState(groundPos);
         BlockState body = chunk.getBlockState(feet);
         BlockState head = chunk.getBlockState(feet.above());
@@ -353,7 +355,7 @@ public final class WanderingRibbitScheduler {
         }
 
         AABB spawnBox = EntityTypeModule.WANDERING_RIBBIT.get().getSpawnAABB(
-                x + 0.5D, y, z + 0.5D);
+                x + 0.5D, feet.getY(), z + 0.5D);
         if (!level.getWorldBorder().isWithinBounds(spawnBox)) {
             diagnostics.worldBorderRejected++;
             return null;
