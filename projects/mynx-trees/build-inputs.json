@@ -288,10 +288,10 @@
     "binding": "SILVER_BIRCH_LEAVES -> getAspenColor",
     "grass": "#B0C73A",
     "unused_generic_foliage": "#88BB42",
-    "leaf_hsv": "h = sin(x/10 + sin((z+x)/50)*3)/75 + 0.15; s = 0.8; v = 1; float arithmetic, Minecraft sine lookup, RGB rounding as Java HSBtoRGB",
+    "leaf_hsv": "h = sin(x/10 + sin((z+x)/50)*3)/75 + 0.15; s = 0.8; v = 0.70; float arithmetic, Minecraft sine lookup, RGB rounding as Java HSBtoRGB; v is explicit current Iris/Complementary render compensation, not byte-for-byte RU raw provider output",
     "permission_scope": "User explicitly requested minimal visual behavior reproduction from ARR read-only reference; no RU source/assets imported.",
-    "inventory_rgb": "#FFEB33",
-    "inventory_behavior": "Normal Silver Birch leaf cube/block item with exactly one constant golden tint matching golden(0,0); no flat inventory sprite packaged."
+    "inventory_rgb": "#B3A424",
+    "inventory_behavior": "Normal Silver Birch leaf cube/block item with exactly one compensated mustard-gold tint matching golden(0,0); no flat inventory sprite packaged."
   },
   "decoration_policy": {
     "natural": "Remove flower_cherry background pass only when trees_cherry is replaced; 25% wisteria selection per original attempt. One wisteria-specific 48-attempt radius-5 ground pass per successful wisteria; ordinary cherry uses loaded Nemo decorator when present, otherwise same bounded pass with Pink Petals. No fallback patch replacement.",
@@ -552,12 +552,12 @@
     "source_instance": "Matcha 26.2 Player Instance (read-only)",
     "block_properties_entry": "shaders/block.properties",
     "observed_mapping": "Explicit vanilla leaf block names and upper-half foliage states; no #minecraft:leaves rule. Mere block tags cannot supply a shader material assignment.",
-    "implementation": "Optional client Iris RETURN hook adds only absent Silver Birch leaf states from the first mapped vanilla upper-half foliage representative (sunflower, lilac, rose bush, then peony), and only absent Wisteria states from corresponding vanilla cherry states. Explicit custom mappings, including non-waving mappings, win. No shader material IDs, shader file edits, geometry animation, or unrelated block changes are hardcoded. Existing native leaf classes, tags, properties and alpha-derived rendering are retained.",
+    "implementation": "Optional client Iris RETURN hook adds only absent Silver Birch leaf states from corresponding loaded vanilla Birch Leaves states, and only absent Wisteria states from corresponding vanilla Cherry Leaves states. Explicit custom mappings, including non-waving mappings, win. No shader material IDs, shader file edits, geometry animation, or unrelated block changes are hardcoded. Existing native leaf classes, tags, properties and alpha-derived rendering are retained.",
     "target": "net.irisshaders.iris.shaderpack.materialmap.BlockMaterialMapping#createBlockStateIdMap",
     "descriptor": "(Lit/unimi/dsi/fastutil/ints/Int2ObjectLinkedOpenHashMap;Lit/unimi/dsi/fastutil/ints/Int2ObjectLinkedOpenHashMap;)Lit/unimi/dsi/fastutil/objects/Object2IntMap;",
     "runtime_evidence": "UNTESTED; shader classification and hook are checked statically, waving not observed.",
     "wind_entry": "shaders/lib/materials/materialMethods/wavingBlocks.glsl",
-    "wind_dispatch": "The mapped upper-half foliage representative reaches the shader's upper foliage DoWave_Foliage path and material treatment; the read-only verifier dynamically confirms that it does not enter the normal leaves.glsl treatment.",
+    "wind_dispatch": "The corresponding loaded vanilla Birch Leaves material is used only when a custom Silver Birch state is absent, retaining the shader pack's normal leaf-specific waving path. The current color value is intentionally compensated separately rather than by changing shader classification.",
     "saved_options": "No WAVING/LEAVES/FOLIAGE override found in the active pack options; no settings changed."
   },
   "base_bark_rendering": {

@@ -16,21 +16,4 @@ public final class LeafShaderAliases {
             if (ids.containsKey(vanilla)) ids.put(custom, ids.getInt(vanilla));
         }
     }
-
-    /** Fill missing entries from the first shader-pack-mapped representative. */
-    public static <S> void inheritUnmappedFromFirstPresent(Object2IntMap<S> ids, Collection<S> customStates,
-                                                            Collection<S> representatives) {
-        S representative = null;
-        for (S candidate : representatives) {
-            if (ids.containsKey(candidate)) {
-                representative = candidate;
-                break;
-            }
-        }
-        if (representative == null) return;
-        int material = ids.getInt(representative);
-        for (S custom : customStates) {
-            if (!ids.containsKey(custom)) ids.put(custom, material);
-        }
-    }
 }
