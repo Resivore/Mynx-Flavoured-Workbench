@@ -108,6 +108,12 @@ tasks.named('check') {
     dependsOn tasks.named('verifyClientOnlyArtifact')
 }
 
+tasks.register('stageCanaryArtifact', Copy) {
+    dependsOn tasks.named('check')
+    from(tasks.named('jar'))
+    into(layout.projectDirectory.dir('artifacts'))
+}
+
 java {
     withSourcesJar()
 }

@@ -190,8 +190,14 @@ public final class EmfIconPartResolver {
         }
         ModelPart copy = new ModelPart(List.copyOf(ModelPartUtil.getCubes(source)), children);
         copyCurrentTransform(source, copy);
-        copy.visible = source.visible;
-        copy.skipDraw = source.skipDraw;
+        // This copy is handed to Xaero as the selected, traced head.  EMF
+        // commonly leaves the canonical part as a traversal container and
+        // sets skipDraw while its own renderer compiles the cubes.  Retaining
+        // that flag on a plain ModelPart makes Xaero accept the adapter but
+        // submit no head vertices.  The original part is not changed; named
+        // headwear descendants still keep their individual visibility state.
+        copy.visible = true;
+        copy.skipDraw = false;
         copy.setInitialPose(source.getInitialPose());
         return copy;
     }
@@ -683,7 +689,8 @@ public final class EmfIconPartResolver {
         return frame;
     }
 
-    private static boolean isSupportedEmfRoot(ModelPart root) {
+    /** True only for the two public EMF root families handled by this bridge. */
+    public static boolean isSupportedEmfRoot(ModelPart root) {
         if (root == null) {
             return false;
         }

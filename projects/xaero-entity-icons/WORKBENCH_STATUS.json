@@ -26,8 +26,8 @@
     ],
     "scope": [
       "Maintain the custom EMF trace bridge and icon-only canonical-frame adapter after ordinary Xaero prerender returns empty; follow bounded recursive head/head_parts identity paths through the retained vanilla root or EMFModelPartVanilla's public retained-root route.",
-      "Follow a unique zero-transform retained geometry owner when the canonical container is empty, or detach direct canonical EMF head geometry into a plain ModelPart with only explicit facial/headwear anchors. Preserve required ancestor transforms, exclude body siblings, and fail closed on ambiguous, non-finite, singular, untraced, non-head, vanilla or upstream-success paths.",
-      "Retain exact Diagnostic1 and Canary 1 through Canary 5 artifacts. Validate eleven reported entity structures with exact retained C3/C4 provenance alongside sheep, horse, sea turtle and creeper controls. Bound normal Fabric diagnostics and invalidate only observed EMF entity-type successful/failed icon caches on reload."
+      "Follow a unique zero-transform retained geometry owner when the canonical container is empty, or detach direct canonical EMF head geometry into a plain ModelPart with only explicit facial/headwear anchors. The traced detached head itself is renderable even when EMF marks its traversal node skipDraw; named descendants retain their own transforms and visibility. Exclude body siblings, and fail closed on ambiguous, non-finite, singular, untraced, non-head, vanilla or upstream-success paths.",
+      "Retain exact Diagnostic1 and Canary 1 through Canary 6 artifacts. Validate reported entity structures with exact retained C3/C4 provenance alongside sheep, horse, sea turtle and creeper controls. Bound normal Fabric diagnostics, invalidate only observed EMF entity-type successful/failed icon caches on reload, and retry one already-cached FAILED value only after the current LivingEntity renderer is structurally confirmed as an EMF root."
     ],
     "boundaries": {
       "owned_paths": [
@@ -112,15 +112,15 @@
     ]
   },
   "state": {
-    "milestone": "Canary 4 external runtime evidence is now bound to an exact C4 hash and read-only Player Instance diagnostics: axolotl and sniffer reached nonempty destination/downstream acceptance and are user-reported visibly correct; bat/wolf/parrot/witch/ravager rejected direct canonical EMF geometry; frog/allay/vex were rejected as EMFModelPartVanilla roots; and the active Ribbit Villagers iron-golem override failed C4's dimension match. User-reported hatted-villager results remain distinct from session identity where conflicting cache lines exist; the active override structurally places profession hats below nose. C5 detaches direct canonical head geometry into a plain bounded head/facial/headwear copy, follows EMFModelPartVanilla through getRoot to retained vanilla geometry, and admits only a uniquely traced direct semantic head when no ancestor owns direct geometry. C5 passed 41 tests in eight suites, two clean byte-identical builds, archive checks, and the combined 80-mod production Knot/Mixin harness; it is NOT_DEPLOYED and RUNTIME_UNTESTED.",
+    "milestone": "User-reported external C5 evidence is bound to the exact installed C5 hash: axolotl and sniffer remained correct; iron golem and farmer were fixed; wolf, bat, parrot, frog, ravager, witch, butcher, cleric and mason were invisible, with mason a regression from the C4 hatted-villager control; allay and vex retained Xaero's ordinary entity-icon/name-tag fallback rather than a head icon. Read-only archives contain older C4 bounded diagnostics but no C5 RESOLVED_CANONICAL_GEOMETRY draw/result sequence, so C6 does not invent per-row C5 stages. C6 makes the narrow evidenced correction: the detached traced canonical head no longer inherits EMF's traversal-only skipDraw flag, preserving named headwear descendants and excluding body/limb siblings. It also observes both EMF root families before cache lookup and retries one stale FAILED value only for a current structurally confirmed EMF LivingEntity, separating the allay/vex final-handoff/cache path from geometry selection. C6 passed 42 tests in eight suites, two clean byte-identical builds, archive checks, and the combined 80-mod production Knot/Mixin harness; it is NOT_DEPLOYED and RUNTIME_UNTESTED.",
     "releases": {
       "current": {
-        "version": "0.1.0-canary5",
+        "version": "0.1.0-canary6",
         "artifact": {
-          "filename": "xaero-emf-entity-icon-compat-0.1.0-canary5.jar",
-          "sha256": "75dfaec7b34a5284ab9cc626fd7ae403c4c9f103dd12a2b9941de33f79769087"
+          "filename": "xaero-emf-entity-icon-compat-0.1.0-canary6.jar",
+          "sha256": "f4e989342fd767b219c1b1c617845562d5db0966fe0e508db62f5b4cd06a89f3"
         },
-        "source_commit": "003c5df81255df05c6b6957f5369e45d3c28fe97",
+        "source_commit": "03c88d9d57981dbf99e46e080fb495009e31df76",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
@@ -139,11 +139,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 4,
-    "activity_at": "2026-09-06T02:12:31Z",
-    "updated_at": "2026-09-06T02:12:31Z",
-    "last_codex_at": "2026-09-06T02:12:31Z",
-    "source_commit": "003c5df81255df05c6b6957f5369e45d3c28fe97",
+    "revision": 5,
+    "activity_at": "2026-09-06T03:47:28Z",
+    "updated_at": "2026-09-06T03:47:28Z",
+    "last_codex_at": "2026-09-06T03:47:28Z",
+    "source_commit": "03c88d9d57981dbf99e46e080fb495009e31df76",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
