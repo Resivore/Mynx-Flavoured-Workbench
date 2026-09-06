@@ -4,7 +4,7 @@ This file records intentional departures from the faithful Minecraft Java 26.2 R
 
 The direct predecessor is runtime-failed Mynx Canary 11: `ribbits-private-reconstruction-4.1.6+26.2-mynx-canary11.jar`, 3,334,222 bytes, SHA-256 `258CA17B5D61C825AFBAF852413C1F44183D2533446BFF297C4B8453AD9CECAA`, source `784b745d6480e076fb94598a3b466cfb98bbec04`. It and earlier private artifacts remain unchanged and unaccepted.
 
-Current successor `4.1.6+26.2-mynx-canary15` is a logging-only Wandering Ribbit scheduler collision-source diagnostic. It preserves Canary 14's placement and scheduler behavior, and reports only the first `noCollision(AABB)` rejection per due attempt with its exact block, entity, and world-border sub-results. Its exact artifact/source identity is in `WORKBENCH_STATUS.json` and the revision-20 log entry. It remains `ACTIVE / STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED`.
+Current successor `4.1.6+26.2-mynx-canary16` changes only the Wandering Ribbit scheduler's heightmap-result-to-feet conversion. Mapped Minecraft Java 26.2 `ChunkAccess.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z)` returns `Heightmap.getFirstAvailable(x & 15, z & 15) - 1`, the occupied top surface. Canary 16 keeps that result as `groundPos`, uses `groundPos.above()` as feet, and builds the unchanged AABB and `EVENT` spawn at those feet; body/head, hazards, fluids, biome, collision and bounds therefore use their actual positions. Canary 15's bounded diagnostics remain unchanged. Its exact artifact/source identity is in `WORKBENCH_STATUS.json` and the revision-21 log entry. It remains `ACTIVE / STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED`.
 
 ## Canary 12 item-atlas correction
 

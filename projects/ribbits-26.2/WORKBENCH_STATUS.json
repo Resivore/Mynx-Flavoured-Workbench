@@ -178,15 +178,15 @@
     ]
   },
   "state": {
-    "milestone": "Mynx Canary 15 is an instrumentation-only successor to behavioral-baseline Canary 14. It preserves every scheduler and placement decision, and logs one bounded collision-source detail for the first existing !level.noCollision(spawnBox) rejection in each due attempt. The supplied external Canary 14 runtime evidence is bound to gameTime/scheduledAttemptTime 73392: one eligible Survival player in a Peaceful flat open Overworld minecraft:plains world admitted by #ribbits:allows_wandering_ribbit_spawns, 16 candidates examined, all prior gate counts zero, collisionRejected=16, acceptedSpawnSites=0; repeated eligible-player attempts reached the same gate. That evidence establishes collision rejection but not its source because Canary 14 only logged coordinates after safeSurfacePosition succeeded. Canary 15 separately reports exact block, entity, and world-border sub-results without correcting behavior. Focused/static build, 42 private-resource tests, private-tree, and final-JAR validation pass. Canary 15 is ACTIVE / STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED; the collision source remains undiagnosed pending its runtime evidence.",
+    "milestone": "Mynx Canary 16 is the narrow functional successor to Canary 15. Mapped Minecraft Java 26.2 ChunkAccess.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z) returns Heightmap.getFirstAvailable(x & 15, z & 15) - 1, the occupied top surface. Canary 15 external runtime evidence therefore diagnoses the defect: its returned grass-block surface was used as merchant feet, while dirt below was wrongly treated as ground, placing the unchanged AABB inside grass. Canary 16 maps that surface to groundPos and feet to groundPos.above(), then uses corrected feet for body/head, biome, AABB, collision and EVENT spawn while applying build bounds to ground/body/head. Canary 15 diagnostics remain intact. Static/build validation passes; Canary 16 remains ACTIVE / STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED until actual Minecraft testing confirms automatic merchant and Naturalist companion behavior.",
     "releases": {
       "current": {
-        "version": "4.1.6+26.2-mynx-canary15",
+        "version": "4.1.6+26.2-mynx-canary16",
         "artifact": {
-          "filename": "ribbits-private-reconstruction-4.1.6+26.2-mynx-canary15.jar",
-          "sha256": "38441ba48ad945899ce4aa0d5f6b437b2612855a2a8b909eb96b9ac24fb4d9ae"
+          "filename": "ribbits-private-reconstruction-4.1.6+26.2-mynx-canary16.jar",
+          "sha256": "d95a813a3ba55f007786e79ecca2bde18dd64b775048ca24e9f24f9985a5dd81"
         },
-        "source_commit": "40de669634f458ad3263c56680b06bbc75ab3465",
+        "source_commit": "3b1b25ab88fb5c1803e8f4b3b0a2af2c4b89d17a",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
@@ -205,11 +205,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 20,
-    "activity_at": "2026-09-06T20:40:00Z",
-    "updated_at": "2026-09-06T20:40:00Z",
-    "last_codex_at": "2026-09-06T20:40:00Z",
-    "source_commit": "40de669634f458ad3263c56680b06bbc75ab3465",
+    "revision": 21,
+    "activity_at": "2026-09-06T22:17:24Z",
+    "updated_at": "2026-09-06T22:17:24Z",
+    "last_codex_at": "2026-09-06T22:17:24Z",
+    "source_commit": "3b1b25ab88fb5c1803e8f4b3b0a2af2c4b89d17a",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
