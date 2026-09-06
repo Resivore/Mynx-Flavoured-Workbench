@@ -25,9 +25,9 @@
       "Retain exact unsuccessful diagnostic and canary evidence without reclassifying incomplete or failed observations as passes."
     ],
     "scope": [
-      "Maintain the custom EMF trace bridge and icon-only canonical-frame adapter after ordinary Xaero prerender returns empty; follow a bounded recursive head/head_parts identity path through the retained vanilla root.",
-      "Follow a unique zero-transform retained geometry owner when the canonical container is empty, preserve required ancestor transforms and render only an unambiguous semantic head-local subtree. Exclude body siblings and fail closed on ambiguous, non-finite, singular, untraced, non-head, vanilla or upstream-success paths.",
-      "Retain exact Diagnostic1 and Canary 1 through Canary 4 artifacts. Validate eleven reported entity structures with the exact retained C3 binary alongside sheep, horse, sea turtle and creeper controls. Bound normal Fabric diagnostics and invalidate only observed EMF entity-type successful/failed icon caches on reload."
+      "Maintain the custom EMF trace bridge and icon-only canonical-frame adapter after ordinary Xaero prerender returns empty; follow bounded recursive head/head_parts identity paths through the retained vanilla root or EMFModelPartVanilla's public retained-root route.",
+      "Follow a unique zero-transform retained geometry owner when the canonical container is empty, or detach direct canonical EMF head geometry into a plain ModelPart with only explicit facial/headwear anchors. Preserve required ancestor transforms, exclude body siblings, and fail closed on ambiguous, non-finite, singular, untraced, non-head, vanilla or upstream-success paths.",
+      "Retain exact Diagnostic1 and Canary 1 through Canary 5 artifacts. Validate eleven reported entity structures with exact retained C3/C4 provenance alongside sheep, horse, sea turtle and creeper controls. Bound normal Fabric diagnostics and invalidate only observed EMF entity-type successful/failed icon caches on reload."
     ],
     "boundaries": {
       "owned_paths": [
@@ -112,15 +112,15 @@
     ]
   },
   "state": {
-    "milestone": "Canary 4 built twice byte-identically with 36 passing tests and combined C2/C4 production Knot/Mixin validation. Exact retained C3 resolver fixtures reproduce recursive-path rejection for axolotl/frog/allay/sniffer/vex/ravager and missing retained direct geometry for wolf; C4 resolves the controlled eleven head-local fixtures. Bat/parrot/iron golem/witch already resolve in those C3 fixtures: their actual runtime first failures remain unresolved, including the external iron-golem override and co-loaded retired Diagnostic1. Bounded stage/rejection/cache diagnostics support the next authorized runtime test. Prior C3 external FAIL and acceptance withdrawal remain in revision 2; its unchanged manager baseline/physical provenance is not current C4 deployment or acceptance. C4 is NOT_DEPLOYED and RUNTIME_UNTESTED; neither project occupies a slot.",
+    "milestone": "Canary 4 external runtime evidence is now bound to an exact C4 hash and read-only Player Instance diagnostics: axolotl and sniffer reached nonempty destination/downstream acceptance and are user-reported visibly correct; bat/wolf/parrot/witch/ravager rejected direct canonical EMF geometry; frog/allay/vex were rejected as EMFModelPartVanilla roots; and the active Ribbit Villagers iron-golem override failed C4's dimension match. User-reported hatted-villager results remain distinct from session identity where conflicting cache lines exist; the active override structurally places profession hats below nose. C5 detaches direct canonical head geometry into a plain bounded head/facial/headwear copy, follows EMFModelPartVanilla through getRoot to retained vanilla geometry, and admits only a uniquely traced direct semantic head when no ancestor owns direct geometry. C5 passed 41 tests in eight suites, two clean byte-identical builds, archive checks, and the combined 80-mod production Knot/Mixin harness; it is NOT_DEPLOYED and RUNTIME_UNTESTED.",
     "releases": {
       "current": {
-        "version": "0.1.0-canary4",
+        "version": "0.1.0-canary5",
         "artifact": {
-          "filename": "xaero-emf-entity-icon-compat-0.1.0-canary4.jar",
-          "sha256": "03444601251c6edad68d5a19648bd37e4d925b508f0d7b8a91b352883b151639"
+          "filename": "xaero-emf-entity-icon-compat-0.1.0-canary5.jar",
+          "sha256": "75dfaec7b34a5284ab9cc626fd7ae403c4c9f103dd12a2b9941de33f79769087"
         },
-        "source_commit": "43a3949d81f15c1bba3ab62685ceeb515a52ddef",
+        "source_commit": "003c5df81255df05c6b6957f5369e45d3c28fe97",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
@@ -139,11 +139,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 3,
-    "activity_at": "2026-09-04T23:41:23Z",
-    "updated_at": "2026-09-04T23:41:23Z",
-    "last_codex_at": "2026-09-04T23:41:23Z",
-    "source_commit": "43a3949d81f15c1bba3ab62685ceeb515a52ddef",
+    "revision": 4,
+    "activity_at": "2026-09-06T02:12:31Z",
+    "updated_at": "2026-09-06T02:12:31Z",
+    "last_codex_at": "2026-09-06T02:12:31Z",
+    "source_commit": "003c5df81255df05c6b6957f5369e45d3c28fe97",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
