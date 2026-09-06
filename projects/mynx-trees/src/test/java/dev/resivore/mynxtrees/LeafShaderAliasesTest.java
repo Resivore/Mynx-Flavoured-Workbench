@@ -44,6 +44,8 @@ class LeafShaderAliasesTest {
         LeafShaderAliases.inheritUnmapped(map,List.of("silver"),s->"cherry");assertEquals(expected,map);assertEquals(7,map.getInt("stone"));assertEquals(47,map.getInt("birch"));assertEquals(123,map.getInt("cherry"));assertEquals(5,map.size());
     }
     @Test void inventoryGoldenTintMatchesWorldDefaultOnce() {
-        assertEquals(0xFF857A1B,MynxTreesClient.golden(0,0));
+        assertEquals(0.12F,MynxTreesClient.SILVER_BIRCH_HUE_BASE);
+        assertEquals(0.52F,MynxTreesClient.SILVER_BIRCH_VALUE);
+        assertEquals(0xFF85671B,MynxTreesClient.golden(0,0));
     }
 }
