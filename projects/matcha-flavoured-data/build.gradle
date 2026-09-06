@@ -45,12 +45,14 @@ tasks.withType(AbstractArchiveTask).configureEach {
     reproducibleFileOrder = true
 }
 
+def packagedJarTask = tasks.named('jar')
+
 test {
-    dependsOn tasks.remapJar
+    dependsOn packagedJarTask
     useJUnitPlatform()
     systemProperty 'projectRoot', projectDir.absolutePath
     systemProperty 'workbenchRoot', workbenchRoot
-    systemProperty 'packagedJar', tasks.remapJar.archiveFile.get().asFile.absolutePath
+    systemProperty 'packagedJar', packagedJarTask.flatMap { it.archiveFile }.get().asFile.absolutePath
 }
 
 java {
