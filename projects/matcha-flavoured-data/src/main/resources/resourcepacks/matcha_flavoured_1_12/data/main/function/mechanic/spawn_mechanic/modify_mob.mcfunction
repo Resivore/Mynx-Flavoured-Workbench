@@ -1,0 +1,3 @@
+execute if score current_world_settings_difficulty difficulty_score matches 1 run function main:mechanic/spawn_mechanic/easy_modifications
+execute if score current_world_settings_difficulty difficulty_score matches 2 run function main:mechanic/spawn_mechanic/normal_modifications
+execute if score current_world_settings_difficulty difficulty_score matches 3 run function main:mechanic/spawn_mechanic/hard_modifications

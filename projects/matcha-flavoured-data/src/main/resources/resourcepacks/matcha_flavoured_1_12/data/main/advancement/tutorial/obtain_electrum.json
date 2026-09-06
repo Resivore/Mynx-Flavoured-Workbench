@@ -1,0 +1,33 @@
+{
+  "parent": "main:tutorial/obtain_silver",
+  "criteria": {
+    "get_electrum": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "minecraft:heart_of_the_sea"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "adv.kleispack.obtain_electrum.desc"
+    },
+    "icon": {
+      "count": 1,
+      "id": "minecraft:heart_of_the_sea"
+    },
+    "title": {
+      "translate": "adv.kleispack.obtain_electrum"
+    },
+    "hidden": false
+  },
+  "requirements": [
+    [
+      "get_electrum"
+    ]
+  ]
+}

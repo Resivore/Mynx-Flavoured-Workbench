@@ -1,0 +1,33 @@
+{
+	"parent": "main:end/kill_dragon",
+	"criteria": {
+		"elytra": {
+			"conditions": {
+				"items": [
+					{
+						"items": "minecraft:elytra"
+					}
+				]
+			},
+			"trigger": "minecraft:inventory_changed"
+		}
+	},
+	"display": {
+		"description": {
+			"translate": "adv.kleispack.end.elytra.desc"
+		},
+		"frame": "goal",
+		"icon": {
+			"count": 1,
+			"id": "minecraft:elytra"
+		},
+		"title": {
+			"translate": "adv.kleispack.end.elytra"
+		}
+	},
+	"requirements": [
+		[
+			"elytra"
+		]
+	]
+}

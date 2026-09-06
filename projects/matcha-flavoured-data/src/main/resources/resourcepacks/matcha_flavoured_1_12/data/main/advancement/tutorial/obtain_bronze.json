@@ -1,0 +1,33 @@
+{
+  "parent": "main:tutorial/obtain_silver",
+  "criteria": {
+    "get_smithing": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "minecraft:phantom_membrane"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "adv.kleispack.obtain_bronze.desc"
+    },
+    "icon": {
+      "count": 1,
+      "id": "minecraft:phantom_membrane"
+    },
+    "title": {
+      "translate": "adv.kleispack.obtain_bronze"
+    },
+    "hidden": false
+  },
+  "requirements": [
+    [
+      "get_smithing"
+    ]
+  ]
+}

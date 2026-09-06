@@ -1,0 +1,103 @@
+{
+  "$schema": "../../schemas/workbench-status.schema.json",
+  "schema_version": 1,
+  "identity": {
+    "uuid": "a0a522b0-bc02-48dc-81de-efc8757171c5",
+    "name": "Matcha Flavoured Data",
+    "project_id": "matcha-flavoured-data",
+    "aliases": ["Matcha server data"],
+    "legacy_names": [],
+    "legacy_ids": []
+  },
+  "definition": {
+    "lifecycle": "ACTIVE",
+    "goals": [
+      "Make the exact Matcha Flavoured 1.12 server-data tree automatically available during Minecraft 26.2 Fabric create-world preparation and normal world reloads.",
+      "Preserve all existing Matcha namespaces, identifiers, source bytes, and server-data behavior without moving its client resource-pack assets."
+    ],
+    "scope": [
+      "Package only the exact source pack.mcmeta and 2,433 files from the Matcha 1.12 data/ tree as one Fabric built-in server-data pack.",
+      "Register the pack as ALWAYS_ENABLED without globally reordering other packs, preserving the existing Matcha Vanilla Village Restoration module's explicit higher-priority village restoration.",
+      "Statically verify byte identity, all original namespaces and minecraft overrides, Frost Protection and Ribbits contracts, packaged-JAR contents, and exact-legacy-pack coexistence semantics."
+    ],
+    "boundaries": {
+      "owned_paths": ["projects/matcha-flavoured-data"],
+      "exclusions": [
+        "Any Matcha data rewrite, namespace rename, recipe/effect/loot/advancement/worldgen rebalance, Java recreation, or alteration of the immutable originals archive.",
+        "Matcha client assets, textures, models, sounds, UI, and any replacement for the existing Matcha client resource pack.",
+        "Automatic editing of worlds or automatic removal/disablement of legacy world datapacks.",
+        "Changes to Matcha Frost Protection, Matcha Death Rebalance, Matcha JEI Integration, Matcha Vanilla Village Restoration, Matcha Noxious Redstone, Ribbits, either runtime profile, or test-slot state."
+      ]
+    },
+    "dependencies": [
+      {
+        "type": "MOD",
+        "identifier": "minecraft",
+        "requirement": "=26.2",
+        "reason": "The exact game target of the source pack and Fabric mod."
+      },
+      {
+        "type": "MOD",
+        "identifier": "fabricloader",
+        "requirement": ">=0.19.3",
+        "reason": "Minimum Fabric Loader declared by the built mod."
+      },
+      {
+        "type": "MOD",
+        "identifier": "fabric-api",
+        "requirement": ">=0.157.0+26.2",
+        "reason": "Provides the built-in server-data-pack registration API."
+      },
+      {
+        "type": "DATA_PACK",
+        "identifier": "Matcha_Flavoured_1_12.zip",
+        "requirement": "12,248,989 bytes; SHA-256 6209783021c358044abedabacee471faff5bd4080437d4e3b5e51963f1804248",
+        "reason": "Immutable source of every embedded server-data file and pack metadata."
+      },
+      {
+        "type": "PROJECT",
+        "identifier": "dda2c3b4-5099-4842-a755-29e964cd2192",
+        "requirement": "current main",
+        "reason": "Its deliberate explicit priority remains the authority for the five restored vanilla village definitions."
+      }
+    ]
+  },
+  "state": {
+    "milestone": "Canary 1 embeds the exact Matcha Flavoured 1.12 server data as the ALWAYS_ENABLED Fabric built-in pack matcha_flavoured_data:matcha_flavoured_1_12. Static source/tree/JAR checks pass; both Test Slots are occupied, so no runtime profile or deployment was touched and runtime acceptance remains required.",
+    "releases": {
+      "current": {
+        "version": "0.1.0-canary1",
+        "artifact": {
+          "filename": "matcha-flavoured-data-0.1.0-canary1.jar",
+          "sha256": "5a845a9f0027c25fb3b350eb7bf4c3f943a65cdc427581199dd5dfa05d8e9998"
+        },
+        "source_commit": "3722b4bbc1c2e671576a959126c6f87ee451550a",
+        "runtime_dependency_policy": {
+          "contract": "CAPABILITY_OR_PROVIDER",
+          "exceptions": []
+        }
+      },
+      "accepted": null,
+      "rollback": null,
+      "accepted_current": "NO_ACCEPTED",
+      "accepted_rollback": "NO_ROLLBACK"
+    },
+    "validation": {
+      "build": "STATIC_PASS",
+      "deployment": "NOT_DEPLOYED",
+      "runtime": "RUNTIME_UNTESTED"
+    },
+    "blocker": null
+  },
+  "synchronization": {
+    "revision": 1,
+    "activity_at": "2026-09-06T05:50:30Z",
+    "updated_at": "2026-09-06T05:50:30Z",
+    "last_codex_at": "2026-09-06T05:50:30Z",
+    "source_commit": "3722b4bbc1c2e671576a959126c6f87ee451550a",
+    "google_sheet": {
+      "participates": true,
+      "exclusion_reason": null
+    }
+  }
+}

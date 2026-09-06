@@ -1,0 +1,131 @@
+{
+	"type": "minecraft:chest",
+	"pools": [
+		{
+			"bonus_rolls": 0,
+			"entries": [
+				{
+					"type": "minecraft:item",
+					"functions": [
+						{
+							"add": false,
+							"count": {
+								"type": "minecraft:uniform",
+								"max": 4,
+								"min": 1
+							},
+							"function": "minecraft:set_count"
+						}
+					],
+					"name": "minecraft:bone",
+					"weight": 10
+				},
+				{
+					"type": "minecraft:item",
+					"functions": [
+						{
+							"add": false,
+							"count": {
+								"type": "minecraft:uniform",
+								"max": 4,
+								"min": 1
+							},
+							"function": "minecraft:set_count"
+						}
+					],
+					"name": "minecraft:glowstone_dust",
+					"weight": 10
+				},
+				{
+					"type": "minecraft:item",
+					"quality": 1,
+					"functions": [
+						{
+							"add": false,
+							"count": {
+								"type": "minecraft:uniform",
+								"max": 1,
+								"min": 1
+							},
+							"function": "minecraft:set_count"
+						}
+					],
+					"name": "minecraft:emerald",
+					"weight": 2
+				},
+				{
+					"type": "minecraft:item",
+					"name": "minecraft:rabbit_hide",
+					"weight": 10,
+					"conditions": [],
+					"functions": [
+						{
+							"function": "minecraft:set_count",
+							"count": {
+								"min": 4,
+								"max": 8
+							}
+						}
+					]
+				}
+			],
+			"rolls": 3
+		},
+		{
+			"rolls": 1,
+			"entries": [
+				{
+					"type": "minecraft:item",
+					"name": "minecraft:arrow",
+					"functions": [
+						{
+							"function": "minecraft:set_count",
+							"count": {
+								"min": 8,
+								"max": 16
+							}
+						}
+					]
+				}
+			]
+		},
+		{
+			"entries": [
+				{
+					"type": "minecraft:item",
+					"name": "minecraft:goat_horn"
+				}
+			],
+			"functions": [
+				{
+					"function": "minecraft:set_instrument",
+					"options": "#minecraft:regular_goat_horns"
+				}
+			],
+			"rolls": {
+				"max": 1,
+				"min": 1
+			}
+		},
+		{
+			"entries": [
+				{
+					"type": "minecraft:empty",
+					"weight": 3
+				},
+				{
+					"type": "minecraft:item",
+					"functions": [
+						{
+							"count": 2,
+							"function": "minecraft:set_count"
+						}
+					],
+					"name": "minecraft:sentry_armor_trim_smithing_template"
+				}
+			],
+			"rolls": 1
+		}
+	],
+	"random_sequence": "minecraft:chests/pillager_outpost"
+}
