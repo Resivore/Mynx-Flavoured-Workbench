@@ -44,6 +44,20 @@ class WanderingRibbitStaticContractTest {
         assertTrue(scheduler.contains("Holder<Biome> biome = level.getBiome(feet)"));
         assertTrue(scheduler.contains(".get(ALLOW_BIOMES)"));
         assertTrue(scheduler.contains(".isPresent()"));
+        assertTrue(scheduler.contains("[WanderingRibbitDiagnostic]"));
+        assertTrue(scheduler.contains("scheduler initialized gameTime={} initialDelayTicks={} firstAttemptTime={}"));
+        assertTrue(scheduler.contains("attempt gameTime={} scheduledAttemptTime={} eligiblePlayers={} candidatesExamined={}"));
+        assertTrue(scheduler.contains("chunkUnavailable={} entitiesNotLoaded={} invalidHeight={} groundNotSturdy={}"));
+        assertTrue(scheduler.contains("hazardousGroundBodyHead={} fluidGroundBodyHead={} biomeRejected={}"));
+        assertTrue(scheduler.contains("worldBorderRejected={} collisionRejected={} minimumPlayerDistanceRejected={}"));
+        assertTrue(scheduler.contains("acceptedSpawnSites={}"));
+        assertTrue(scheduler.contains("spawn stage=entity_spawn_returned_null"));
+        assertTrue(scheduler.contains("spawn stage=wandering_ribbit_entity_created"));
+        assertTrue(scheduler.contains("spawn stage=scheduler_lease_initialized"));
+        assertTrue(scheduler.contains("spawn stage=offers_materialized"));
+        assertTrue(scheduler.contains("spawn stage=naturalist_companions_initialized"));
+        assertTrue(scheduler.contains("spawn stage=entity_validity_check_passed"));
+        assertTrue(scheduler.contains("spawn stage=scheduler_lease_committed"));
     }
 
     @Test
