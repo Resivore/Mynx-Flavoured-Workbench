@@ -154,7 +154,7 @@
     ]
   },
   "state": {
-    "milestone": "Exact QSN C9 was recorded INCONCLUSIVE at manager revision 95 with the sole supplied user observation: \"Nested shulker routing using an internal CSR reservation worked.\" No other QSN C9 matrix behavior was reported; no other passed row is inferred and no promotion occurred. Evidence checkpoint e5c1a54833dc258d476c33d3a65c500284d67ebb. Unchanged embedded 0.1.0-canary9; quick-stack-nearby-compat-0.1.0-canary9.jar; 46607 bytes; SHA-256 14a6844b04d9236233c7007ed111a452db659cc5662dca07aa11f33b2cb4ec76; release source a333a4b5fa417cd9d35f6fc2608727828c23f6ea; Slot B deployment 03f7540f-94f0-47c5-b6bd-94f2af232ff4; artifact UUID 8b8abdf9-26a4-407c-bbd6-1623f0a5eeb5; replaces accepted deployment 30a3d125-ecb6-4a7a-862b-ca2e2c1bbcfe. Accepted upstream quick-stack-nearby-0.4.0.jar, SHA-256 43f1130527f782a291231c682791b4fd3766a20916c691cbdb98f91fdcc47e53, artifact UUID cb31d144-b6c4-41fb-ba44-35d896b228f6 stays the exact accepted passthrough companion. Current CAPABILITY_OR_PROVIDER attestation, accepted C8, rollback C6 and prior provenance remain unchanged. Retained C9 passed 60 JUnit and 26 GameTests against new exact CSR C9 and accepted Double Barrels without changing or rebuilding QSN production. These controlled tests do not extend user-runtime evidence. Manager revision 96 / accepted Stack v19; deployed 2026-09-05T06:07:58Z; state SHA-256 2473241803c3f355c8138968da9845d921e46c4643a2f3e0ba64f0ce9ce20e25; physical inventory SHA-256 493c01f74dea121be5832dbad05368d96bfa4e53626e3daeb17a2c2b85256cc6. All 38 managed files physically verified. One atomic DEPLOY_PROFILE added CSR C9 and removed CSR C8 only; Slot B including its result and timestamps, accepted baseline, companions, rollback bytes and all unrelated deployments are unchanged.",
+    "milestone": "Exact QSN C9 remains INCONCLUSIVE with the sole supplied user observation: \"Nested shulker routing using an internal CSR reservation worked.\" No other QSN C9 matrix behavior, passed row, source, artifact, runtime evidence, deployment or promotion is inferred or changed. Embedded 0.1.0-canary9; quick-stack-nearby-compat-0.1.0-canary9.jar; 46607 bytes; SHA-256 14a6844b04d9236233c7007ed111a452db659cc5662dca07aa11f33b2cb4ec76; release source a333a4b5fa417cd9d35f6fc2608727828c23f6ea; Slot B deployment 03f7540f-94f0-47c5-b6bd-94f2af232ff4; artifact UUID 8b8abdf9-26a4-407c-bbd6-1623f0a5eeb5; accepted upstream companion and CAPABILITY_OR_PROVIDER attestation unchanged. Retained C9 passed 60 JUnit and 26 GameTests against CSR C11 without rebuilding QSN production; controlled evidence does not extend runtime evidence. Shared manager reference only: revision 100 / Stack v19, state SHA-256 831cca7a8afbd59889cd81cb764cacbcfd3d155fde21192cbc22b4fbe7b43e09, physical inventory SHA-256 aa989e9fe69513f92f319b3a4f58a58846bc8da0d8391f0ac0cf4370cd86aeb0; all 38 files verified after an atomic Slot A-only CSR C11 replacement. Slot B identity, timestamps and result remain exact.",
     "releases": {
       "current": {
         "version": "0.1.0-canary9",
@@ -202,11 +202,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 9,
-    "activity_at": "2026-09-05T06:15:38Z",
-    "updated_at": "2026-09-05T06:15:38Z",
-    "last_codex_at": "2026-09-05T06:15:38Z",
-    "source_commit": "1b978f0b553b3545f8a943e18cc743c363e67aac",
+    "revision": 10,
+    "activity_at": "2026-09-05T23:00:00Z",
+    "updated_at": "2026-09-05T23:00:00Z",
+    "last_codex_at": "2026-09-05T23:00:00Z",
+    "source_commit": "c38897a5bfdea34c54b4ade519a44b31fc1cc150",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null

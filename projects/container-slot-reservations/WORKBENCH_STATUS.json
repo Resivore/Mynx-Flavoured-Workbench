@@ -24,7 +24,7 @@
       "Preserve accepted C4 storage reservations, exact ghost/zero/marker visuals, public API compatibility for QSN C9 and CCAR C12, and the centralized empty-shulker template rule without external tooltip integration."
     ],
     "scope": [
-      "Current 0.1.0-canary10 from implementation checkpoint 12eec63fcb08a3f47c6041d1b4961ca231879fe4 replaces the failed external-tooltip direction with a CSR-owned pinned panel rendered through the vanilla AbstractContainerScreen and shulker-box texture.",
+      "Current 0.1.0-canary11 from implementation checkpoint c38897a5bfdea34c54b4ade519a44b31fc1cc150 narrowly repairs the existing CSR-owned panel invocation by hooking inherited AbstractContainerScreen.extractCarriedItem rather than the bypassed base extractRenderState call site.",
       "Bind one exact count-one shulker host by screen, menu, menu ID, visible slot index, Slot instance, underlying container slot, explicit Creative player-inventory locator where applicable, and complete SHA-256 ItemStack fingerprint; never search for an equal stack.",
       "Render and hit-test one fixed 176x77 native panel with 27 physical 18x18 cells, right-then-left clamped placement, a narrow deterministic corridor, one grace frame, live contents, vanilla cell highlights, exact existing reservation visuals, and carried-stack-above-panel strata.",
       "Keep pointer hover separate from server-authoritative per-player transient selection; select and cycle only occupied cells, migrate only through the exact server-observed host-slot-to-cursor pickup, and clear on stale identity, menu close, or disconnect.",
@@ -118,16 +118,16 @@
     ]
   },
   "state": {
-    "milestone": "CSR Canary 10 replaces the failed C7-C9 external-tooltip direction with a CSR-owned pinned 27-cell shulker panel and server-authoritative selection/transfers. Final clean controlled validation passed 75/75 JUnit tests and 26/26 GameTests; exact installed ESB/Item Interactions coexistence passed 26/26 GameTests; retained QSN C9 passed 60/60 JUnit and 26/26 GameTests; CCAR C12 passed 69/69 JUnit and 7/7 GameTests. Exact retained artifact: container-slot-reservations-0.1.0-canary10.jar, 167546 bytes, SHA-256 04334c1cd2316d97ec2930f43fa6945be1898607f1209d19bf92c562cd441b75, source 12eec63fcb08a3f47c6041d1b4961ca231879fe4, deployment 0c8732a8-34a8-423e-a3b6-be7abb8b310c, artifact UUID 6fda1dd5-bcb7-4902-a098-20329934d937. Manager revision 98 / accepted Stack v19 at 2026-09-05T19:52:17Z; state SHA-256 0547fd5c82c3e1a03707eecdf1f26cef9630faa848509b778cfd1cdc028aebb7; physical inventory SHA-256 ced07e98678166d812c735c5c83fcb772473a22fa20353c7ee8367e67133bbe7; all 38 managed files verified. One atomic DEPLOY_PROFILE replaced only CSR C9 in Slot A and preserved accepted C4, rollback C1, the failed C9 provenance, accepted baseline, and every unrelated deployment. Slot B QSN C9 remains byte-for-byte and identity-for-identity unchanged, including its original timestamps and independent INCONCLUSIVE result with sole observation: Nested shulker routing using an internal CSR reservation worked. Minecraft was not launched; Canary 10 remains RUNTIME_UNTESTED and no controlled result is a gameplay pass. Next: run TESTING.md on the dedicated 26.2 Workbench, record only actual Canary 10 and QSN C9 observations independently, and do not promote without an explicit exact runtime PASS.",
+    "milestone": "CSR Canary 11 is the narrow successor to exact deployed C10. C10 was recorded RUNTIME_FAIL only for the supplied count-one real hotbar/menu-slot hover observation: no CSR-native 176x77 / 9x3 panel appeared and only the ordinary shulker tooltip appeared; no other C10 result is inferred. Exact Minecraft 26.2 bytecode confirms AbstractRecipeBookScreen bypasses AbstractContainerScreen.extractRenderState while both paths call inherited extractCarriedItem once. C11 moves the sole panel hook to HEAD of that inherited method. Final controlled evidence: 80/80 CSR JUnit and 26/26 GameTests; focused exact ESB 26.2.3/Item Interactions 26.2.2/PuzzlesLib 26.2.3/Forge Config API Port 26.2.1 coexistence passed; retained QSN C9 60/60 and 26/26; retained CCAR C12 69/69 and 7/7. C11 artifact container-slot-reservations-0.1.0-canary11.jar is 167741 bytes, SHA-256 b56a40a7ed504e07c68b8d037e99c1fe5aa8a822352dfbdf351977dd963189c1, source c38897a5bfdea34c54b4ade519a44b31fc1cc150, with CAPABILITY_OR_PROVIDER attestation and no external UI linkage. Manager revision 100 / Stack v19 atomically replaced only C10 in Slot A; C11 deployment eb9e9dc9-b213-42f1-b47f-e6530cb5802e and artifact 2184b05b-e1f6-41dc-9632-bfd682d78546 are READY_TO_TEST_VERIFIED / RUNTIME_UNTESTED. State SHA-256 831cca7a8afbd59889cd81cb764cacbcfd3d155fde21192cbc22b4fbe7b43e09; physical SHA-256 aa989e9fe69513f92f319b3a4f58a58846bc8da0d8391f0ac0cf4370cd86aeb0; all 38 files verified. QSN C9 remains independent and unchanged. Controlled evidence is not runtime success.",
     "releases": {
       "current": {
-        "version": "0.1.0-canary10",
-        "embedded_version": "0.1.0-canary10",
+        "version": "0.1.0-canary11",
+        "embedded_version": "0.1.0-canary11",
         "artifact": {
-          "filename": "container-slot-reservations-0.1.0-canary10.jar",
-          "sha256": "04334c1cd2316d97ec2930f43fa6945be1898607f1209d19bf92c562cd441b75"
+          "filename": "container-slot-reservations-0.1.0-canary11.jar",
+          "sha256": "b56a40a7ed504e07c68b8d037e99c1fe5aa8a822352dfbdf351977dd963189c1"
         },
-        "source_commit": "12eec63fcb08a3f47c6041d1b4961ca231879fe4",
+        "source_commit": "c38897a5bfdea34c54b4ade519a44b31fc1cc150",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
@@ -165,11 +165,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 15,
-    "activity_at": "2026-09-05T19:52:17Z",
-    "updated_at": "2026-09-05T19:52:17Z",
-    "last_codex_at": "2026-09-05T19:52:17Z",
-    "source_commit": "12eec63fcb08a3f47c6041d1b4961ca231879fe4",
+    "revision": 16,
+    "activity_at": "2026-09-05T23:00:00Z",
+    "updated_at": "2026-09-05T23:00:00Z",
+    "last_codex_at": "2026-09-05T22:55:00Z",
+    "source_commit": "c38897a5bfdea34c54b4ade519a44b31fc1cc150",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
