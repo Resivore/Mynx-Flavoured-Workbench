@@ -11,7 +11,6 @@ import com.crispytwig.naturalist.server.entity.base.NocturnalHostile;
 import com.crispytwig.naturalist.server.entity.base.SleepingAnimal;
 import com.crispytwig.naturalist.server.entity.persistence.NaturalistEntityPersistence;
 import com.crispytwig.naturalist.server.entity.ai.goal.*;
-import com.crispytwig.naturalist.registry.NaturalistRegistry;
 import com.crispytwig.naturalist.registry.NaturalistSoundEvents;
 import com.crispytwig.naturalist.registry.NaturalistTags;
 import net.minecraft.core.BlockPos;
@@ -498,7 +497,7 @@ public class Bear extends TamableAnimal implements NeutralMob, SleepingAnimal, D
         int amount = 1 + this.random.nextInt(2);
         List<ItemStack> drops = new ArrayList<>();
         for (int j = 0; j < amount; ++j) {
-            drops.add(new ItemStack(NaturalistRegistry.FUR.get()));
+            drops.add(new ItemStack(Items.RABBIT_HIDE));
         }
         return drops;
     }

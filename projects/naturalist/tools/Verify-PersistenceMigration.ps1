@@ -87,7 +87,7 @@ function Read-EntitySource {
 }
 
 # The baseline verifier is the single existing authority for the source JAR,
-# registration/resource guard, and the 48-registry/99-definition invariants.
+# registration/resource guard, and the preserved upstream variant invariants.
 $baselineVerifier = Join-Path $PSScriptRoot 'Verify-PortBaseline.ps1'
 $baselineArguments = @{}
 if (-not [string]::IsNullOrWhiteSpace($OriginalJar)) {
@@ -96,8 +96,8 @@ if (-not [string]::IsNullOrWhiteSpace($OriginalJar)) {
 & $baselineVerifier @baselineArguments
 
 $expectedValueIoTypes = @(
-    'Alligator', 'Anglerfish', 'Ant', 'Bass', 'Bear', 'Bird', 'Blobfish', 'Boar',
-    'Butterfly', 'Capybara', 'CarriedFoodEntity', 'Caterpillar', 'Catfish', 'Clam',
+    'Alligator', 'Anglerfish', 'Bass', 'Bear', 'Bird', 'Blobfish', 'Boar',
+    'Butterfly', 'Capybara', 'Caterpillar', 'Catfish', 'Clam',
     'Crab', 'Deer', 'DesertScorpion', 'DirtTrail', 'Dragonfly', 'Duck', 'Elephant',
     'Firefly', 'GiantIsopod', 'Giraffe', 'GreatWhiteShark', 'Hedgehog', 'Hippo',
     'Jellyfish', 'JungleScorpion', 'KomodoDragon', 'Lion', 'Lizard', 'LizardTail',
@@ -131,13 +131,13 @@ foreach ($file in $javaFiles) {
 Assert-Empty $partialValueIoTypes 'partial ValueInput/ValueOutput entity save/load pairs'
 Assert-Empty $legacySaveLoadTypes 'legacy CompoundTag entity save/load signatures'
 Assert-SetEqual $valueIoTypes $expectedValueIoTypes 'current ValueInput/ValueOutput entity save/load files'
-Assert-Equal $valueIoTypes.Count 49 'current ValueInput/ValueOutput entity save/load file count'
+Assert-Equal $valueIoTypes.Count 47 'current ValueInput/ValueOutput entity save/load file count'
 
-# Forty-six entity classes own their variant save/load pair directly. BlackBear
+# Forty-five entity classes own their variant save/load pair directly. BlackBear
 # and Mammoth deliberately inherit the exact same preservation path from Bear
-# and Elephant, completing coverage of all 48 registered variant entity types.
+# and Elephant, completing coverage of all 47 retained variant entity types.
 $directVariantTypes = @(
-    'Alligator', 'Anglerfish', 'Ant', 'Bass', 'Bear', 'Bird', 'Blobfish', 'Boar',
+    'Alligator', 'Anglerfish', 'Bass', 'Bear', 'Bird', 'Blobfish', 'Boar',
     'Butterfly', 'Capybara', 'Caterpillar', 'Catfish', 'Clam', 'Crab', 'Deer',
     'DesertScorpion', 'Dragonfly', 'Duck', 'Elephant', 'Firefly', 'GiantIsopod',
     'Giraffe', 'GreatWhiteShark', 'Hedgehog', 'Hippo', 'Jellyfish', 'JungleScorpion',
@@ -145,7 +145,7 @@ $directVariantTypes = @(
     'Rat', 'Ray', 'Rhino', 'Snail', 'Snake', 'Starfish', 'Tiger', 'Tortoise',
     'Turkey', 'Vulture', 'Whale', 'Zebra'
 )
-Assert-Equal $directVariantTypes.Count 46 'direct variant persistence class count'
+Assert-Equal $directVariantTypes.Count 45 'direct variant persistence class count'
 foreach ($typeName in $directVariantTypes) {
     $source = Read-EntitySource $typeName
     Assert-Matches $source '\bthis\.saveVariant\s*\(' "$typeName variant save wiring"
@@ -183,8 +183,8 @@ foreach ($legacyId in @('bluejay', 'cardinal', 'robin', 'sparrow', 'canary', 'fi
     Assert-Matches $legacyRemap ([regex]::Escape("naturalist:$legacyId")) "legacy $legacyId identity retained"
 }
 
-$neutralTypes = @('Ant', 'Bear', 'Boar', 'Elephant', 'Ostrich', 'Snake')
-$serializedAngerTypes = @('Ant', 'Bear', 'Elephant', 'Ostrich', 'Snake')
+$neutralTypes = @('Bear', 'Boar', 'Elephant', 'Ostrich', 'Snake')
+$serializedAngerTypes = @('Bear', 'Elephant', 'Ostrich', 'Snake')
 foreach ($typeName in $neutralTypes) {
     $source = Read-EntitySource $typeName
     Assert-Matches $source '\bimplements\b[^\{]*\bNeutralMob\b' "$typeName remains a NeutralMob"
@@ -285,21 +285,11 @@ Assert-Matches $ratSource 'NaturalistEntityPersistence\.loadPackedInventory\s*\(
 Assert-Matches $persistenceHelper '\.storeAsItemList\s*\(' 'packed inventory preserves compact save semantics'
 Assert-Matches $persistenceHelper 'input\.list\s*\([^;]*ItemStack\.CODEC\s*\)\.ifPresent\s*\(\s*inventory::fromItemList\s*\)' 'packed inventory preserves compact optional load semantics'
 
-$antSource = Read-EntitySource 'Ant'
-$carriedFoodSource = Read-EntitySource 'CarriedFoodEntity'
-Assert-Matches $antSource '\bEntityReference\s*<\s*CarriedFoodEntity\s*>\s+carriedFoodReference\b' 'Ant carried-food typed reference'
-Assert-Matches $antSource 'saveReference\s*\([^;]*"CarriedFood"' 'Ant carried-food reference save wiring'
-Assert-Matches $antSource 'readReference\s*\([^;]*"CarriedFood"' 'Ant carried-food reference load wiring'
-Assert-Matches $antSource 'EntityReference\.get\s*\([^;]*CarriedFoodEntity\.class' 'Ant carried-food reference resolution'
-Assert-Matches $carriedFoodSource '\bEntityReference\s*<\s*Ant\s*>\s+antReference\b' 'CarriedFoodEntity typed ant reference'
-Assert-Matches $carriedFoodSource 'saveReference\s*\([^;]*"Ant"' 'CarriedFoodEntity ant reference save wiring'
-Assert-Matches $carriedFoodSource 'readReference\s*\([^;]*"Ant"' 'CarriedFoodEntity ant reference load wiring'
-Assert-Matches $carriedFoodSource 'EntityReference\.get\s*\([^;]*Ant\.class' 'CarriedFoodEntity ant reference resolution'
 Assert-Matches $persistenceHelper 'EntityReference\.store\s*\(' 'shared entity-reference save adapter'
 Assert-Matches $persistenceHelper 'EntityReference\.read\s*\(' 'shared entity-reference load adapter'
 
 Write-Host ''
 Write-Host 'Naturalist 26.2 persistence migration verified.'
-Write-Host 'Coverage: 49 ValueInput/ValueOutput pairs; 46 direct + 2 inherited variant entities.'
-Write-Host 'References: 6 NeutralMob anger owners plus bidirectional Ant/carried-food references.'
+Write-Host 'Coverage: 47 ValueInput/ValueOutput pairs; 45 direct + 2 inherited variant entities.'
+Write-Host 'References: 5 NeutralMob anger owners and shared entity-reference adapters.'
 Write-Host 'Inventories: Elephant fixed-slot and Rat compact carried-item semantics.'

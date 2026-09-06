@@ -46,7 +46,6 @@ public final class NaturalistClient {
         r.register(AlligatorBabyModel.LAYER_LOCATION, AlligatorBabyModel::createBodyLayer);
         r.register(AlligatorModel.LAYER_LOCATION, AlligatorModel::createBodyLayer);
         r.register(AnglerfishModel.LAYER_LOCATION, AnglerfishModel::createBodyLayer);
-        r.register(AntModel.LAYER_LOCATION, AntModel::createBodyLayer);
         r.register(BassModel.LAYER_LOCATION, BassModel::createBodyLayer);
         r.register(MediumBassModel.LAYER_LOCATION, MediumBassModel::createBodyLayer);
         r.register(LargeBassModel.LAYER_LOCATION, LargeBassModel::createBodyLayer);
@@ -160,8 +159,6 @@ public final class NaturalistClient {
         r.register(NaturalistEntityTypes.BLOBFISH.get(), BlobfishRenderer::new);
         r.register(NaturalistEntityTypes.PIRANHA.get(), PiranhaRenderer::new);
         r.register(NaturalistEntityTypes.WHALE.get(), WhaleRenderer::new);
-        r.register(NaturalistEntityTypes.ANT.get(), AntRenderer::new);
-        r.register(NaturalistEntityTypes.CARRIED_FOOD.get(), CarriedFoodRenderer::new);
         r.register(NaturalistEntityTypes.MOLE.get(), MoleRenderer::new);
         r.register(NaturalistEntityTypes.DIRT_TRAIL.get(), DirtTrailRenderer::new);
         r.register(NaturalistEntityTypes.RAT.get(), RatRenderer::new);
@@ -186,16 +183,6 @@ public final class NaturalistClient {
         r.register(NaturalistMenus.ELEPHANT.get(), ElephantInventoryScreen::new);
     }
 
-    @FunctionalInterface
-    public interface BlockEntityRendererRegistrar {
-        <T extends BlockEntity, S extends BlockEntityRenderState> void register(
-                BlockEntityType<T> type, BlockEntityRendererProvider<? super T, ? super S> provider);
-    }
-
-    public static void registerBlockEntityRenderers(BlockEntityRendererRegistrar r) {
-        r.register(NaturalistBlockEntities.SNAIL_SHELL.get(), SnailShellRenderer::new);
-    }
-
     public static void registerItemProperties() {
         NaturalistItemModelProperties.Property color = (stack, level, entity, seed) -> {
             CustomData customData = stack.get(DataComponents.CUSTOM_DATA);
@@ -203,9 +190,6 @@ public final class NaturalistClient {
         };
         NaturalistItemModelProperties.register(
                 NaturalistRegistry.SNAIL.get(), Identifier.withDefaultNamespace("color"), color);
-        NaturalistItemModelProperties.register(
-                NaturalistRegistry.SNAIL_SHELL.get(), Identifier.withDefaultNamespace("color"), color);
-
         NaturalistItemModelProperties.register(NaturalistRegistry.KNAPSACK.get(),
                 Naturalist.location("filled"),
                 (stack, level, entity, seed) -> KnapsackItem.isFilled(stack) ? 1.0F : 0.0F);

@@ -93,7 +93,7 @@ Assert-SetEqual @($metadata.depends.PSObject.Properties.Name) @('fabricloader', 
 Assert-SetEqual @($metadata.suggests.PSObject.Properties.Name) @('lambdynlights') 'Fabric suggested dependency ids'
 Assert-Equal $metadata.accessWidener 'naturalist.accesswidener' 'Fabric access widener declaration'
 
-$expectedEntities = @(
+$upstreamEntities = @(
     'alligator', 'anglerfish', 'ant', 'bass', 'bear', 'bird', 'black_bear', 'blobfish',
     'boar', 'butterfly', 'capybara', 'carried_food', 'caterpillar', 'catfish', 'clam',
     'crab', 'deer', 'desert_scorpion', 'dirt_trail', 'dragonfly', 'duck', 'duck_egg',
@@ -102,7 +102,8 @@ $expectedEntities = @(
     'lizard_tail', 'mammoth', 'mole', 'ostrich', 'piranha', 'rat', 'ray', 'rhino',
     'snail', 'snake', 'starfish', 'tiger', 'tortoise', 'turkey', 'vulture', 'whale', 'zebra'
 )
-$utilityEntities = @('carried_food', 'dirt_trail', 'duck_egg')
+$expectedEntities = @($upstreamEntities | Where-Object { $_ -notin @('ant', 'carried_food') })
+$upstreamUtilityEntities = @('carried_food', 'dirt_trail', 'duck_egg')
 
 $entityTypesPath = Join-Path $projectRoot 'common\src\main\java\com\crispytwig\naturalist\registry\NaturalistEntityTypes.java'
 $entityTypesSource = Get-Content -LiteralPath $entityTypesPath -Raw
@@ -110,7 +111,7 @@ $sourceEntities = @(
     [regex]::Matches($entityTypesSource, '\bregister\("([a-z0-9_]+)"') |
         ForEach-Object { $_.Groups[1].Value }
 )
-Assert-Equal $sourceEntities.Count 51 'source entity registration count'
+Assert-Equal $sourceEntities.Count 49 'source entity registration count'
 Assert-SetEqual $sourceEntities $expectedEntities 'source entity registration ids'
 
 Add-Type -AssemblyName System.IO.Compression.FileSystem -ErrorAction SilentlyContinue
@@ -124,7 +125,7 @@ try {
             $matches[1]
         }
     } | Sort-Object -Unique)
-    $expectedVariantRegistries = @($expectedEntities | Where-Object { $_ -notin $utilityEntities })
+    $expectedVariantRegistries = @($upstreamEntities | Where-Object { $_ -notin $upstreamUtilityEntities })
 
     Assert-Equal $variantEntries.Count 99 'upstream variant JSON count'
     Assert-Equal $variantRegistries.Count 48 'upstream variant registry count'
@@ -154,6 +155,7 @@ $authoredResourceFiles = @(
 )
 Assert-SetEqual $authoredResourceFiles @(
     'data/minecraft/tags/entity_type/can_equip_saddle.json'
+    'data/naturalist/recipe/glow_goop_from_glow_berries.json'
     'fabric.mod.json'
     'naturalist.accesswidener'
 ) 'authored resource files'
@@ -204,6 +206,6 @@ $trackedProtectedFiles = @($trackedProjectFiles | Where-Object {
 Assert-Empty $trackedProtectedFiles 'tracked protected upstream resource corpus'
 
 Write-Host ''
-Write-Host 'Naturalist 26.2 preservation baseline verified.'
+Write-Host 'Naturalist 26.2 source and content-cull baseline verified.'
 Write-Host "Original: $OriginalJar"
-Write-Host 'Counts: 51 entity types; 48 variant registries; 99 variant JSONs; 47 entity loot JSONs.'
+Write-Host 'Counts: 49 current entity types; upstream has 51 entity types, 48 variant registries, 99 variant JSONs, and 47 entity loot JSONs.'

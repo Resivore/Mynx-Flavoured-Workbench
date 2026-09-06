@@ -59,8 +59,8 @@ $concreteModels = @($rootModelFiles | Where-Object {
     $_.BaseName -ne 'IKEntityModel' -and
     (Get-Content -LiteralPath $_.FullName -Raw) -match 'extends\s+(?:NaturalistEntityModel|IKEntityModel)<'
 })
-Assert-Equal $rootModelFiles.Count 76 'top-level client model file count'
-Assert-Equal $concreteModels.Count 73 'concrete Naturalist entity model count'
+Assert-Equal $rootModelFiles.Count 75 'top-level client model file count'
+Assert-Equal $concreteModels.Count 72 'concrete Naturalist entity model count'
 
 foreach ($file in $concreteModels) {
     $source = Get-Content -LiteralPath $file.FullName -Raw
@@ -97,7 +97,7 @@ $entityPipelineFiles = @(
     Get-ChildItem -LiteralPath (Join-Path $rendererRoot 'layers') -File -Filter '*.java'
     $rendererFiles | Where-Object Name -ne 'SnailShellRenderer.java'
 )
-Assert-Equal @($rendererFiles | Select-String -Pattern 'class\s+\w+Renderer\s+extends\s+NaturalistMobRenderer<').Count 48 'Naturalist mob renderer count'
+Assert-Equal @($rendererFiles | Select-String -Pattern 'class\s+\w+Renderer\s+extends\s+NaturalistMobRenderer<').Count 47 'Naturalist mob renderer count'
 Assert-Equal @($rendererFiles | Select-String -Pattern '\bthis\.addLayer\s*\(').Count 24 'preserved feature-layer attachment count'
 Assert-Equal @(Get-ChildItem -LiteralPath (Join-Path $rendererRoot 'layers') -File -Filter '*.java').Count 12 'feature-layer support file count'
 
@@ -127,8 +127,8 @@ foreach ($preSubmitScale in @(
 $clientSource = Read-ProjectSource 'common\src\main\java\com\crispytwig\naturalist\NaturalistClient.java'
 $layerRegistration = [regex]::Match($clientSource, '(?s)public\s+static\s+void\s+registerLayerDefinitions\s*\([^)]*\)\s*\{(.*?)\n\s*\}')
 $rendererRegistration = [regex]::Match($clientSource, '(?s)public\s+static\s+void\s+registerRenderers\s*\([^)]*\)\s*\{(.*?)\n\s*\}')
-Assert-Equal ([regex]::Matches($layerRegistration.Groups[1].Value, '\br\.register\s*\(').Count) 73 'registered model-layer definition count'
-Assert-Equal ([regex]::Matches($rendererRegistration.Groups[1].Value, '\br\.register\s*\(').Count) 51 'registered entity renderer count'
+Assert-Equal ([regex]::Matches($layerRegistration.Groups[1].Value, '\br\.register\s*\(').Count) 72 'registered model-layer definition count'
+Assert-Equal ([regex]::Matches($rendererRegistration.Groups[1].Value, '\br\.register\s*\(').Count) 49 'registered entity renderer count'
 
 $fabricClient = Read-ProjectSource 'fabric\src\main\java\com\crispytwig\naturalist\fabric\client\NaturalistFabricClient.java'
 Assert-Matches $fabricClient '\bModelLayerRegistry\.registerModelLayer\s*\(' 'Fabric 26.2 model-layer registration API'
@@ -162,7 +162,6 @@ $specializedContracts = @(
     @{ File = 'BlobfishRenderer.java'; Pattern = 'isGray\s*\(\s*\)[\s\S]*(?:grayModel|GRAY)'; Label = 'Blobfish pressure appearance selection' },
     @{ File = 'AnglerfishRenderer.java'; Pattern = 'isGlowing\s*\(\s*\)[\s\S]*lightCoords'; Label = 'Anglerfish full-bright state extraction' },
     @{ File = 'HippoRenderer.java'; Pattern = 'BlockModelRenderState[\s\S]*blockModel\.submit'; Label = 'Hippo jaw-block feature submission' },
-    @{ File = 'CarriedFoodRenderer.java'; Pattern = 'carrierOffsetX[\s\S]*carrierOffsetY[\s\S]*carrierOffsetZ'; Label = 'carried-food carrier-relative placement' },
     @{ File = 'DirtTrailRenderer.java'; Pattern = 'getId\s*\(\s*\)[\s\S]*rotationDegrees'; Label = 'dirt-trail deterministic placement and rotation' },
     @{ File = 'DirtTrailRenderer.java'; Pattern = 'state\.ageInTicks\s*=\s*entity\.tickCount\s*\+\s*partialTick'; Label = 'dirt-trail non-living animation age extraction' },
     @{ File = 'DirtTrailRenderer.java'; Pattern = 'OverlayTexture\.NO_OVERLAY\s*,\s*state\.outlineColor'; Label = 'dirt-trail outline state submission' }

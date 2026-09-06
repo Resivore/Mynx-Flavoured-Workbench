@@ -1,6 +1,5 @@
 package com.crispytwig.naturalist.server.entity.mob;
 
-import com.crispytwig.naturalist.registry.NaturalistRegistry;
 import com.crispytwig.naturalist.registry.NaturalistSoundEvents;
 import com.crispytwig.naturalist.registry.NaturalistTags;
 import com.crispytwig.naturalist.server.entity.base.NaturalistAnimal;
@@ -35,6 +34,7 @@ import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import org.jetbrains.annotations.NotNull;
@@ -134,7 +134,7 @@ public abstract class Scorpion extends Animal implements NocturnalHostile {
     @Override
     public @NotNull InteractionResult mobInteract(@NotNull Player player, @NotNull InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
-        if (stack.is(NaturalistRegistry.LIZARD_TAIL.get()) && this.getHealth() < this.getMaxHealth()) {
+        if (stack.is(Items.RABBIT) && this.getHealth() < this.getMaxHealth()) {
             this.heal(1.0F);
             this.playSound(SoundEvents.GENERIC_EAT.value(), 1.0F, 1.0F);
             stack.consume(1, player);

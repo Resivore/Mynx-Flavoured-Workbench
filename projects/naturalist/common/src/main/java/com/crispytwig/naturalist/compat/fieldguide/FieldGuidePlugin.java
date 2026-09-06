@@ -9,7 +9,7 @@ import java.util.List;
 public class FieldGuidePlugin {
 
     private static final List<Class<? extends Mob>> VARIANT_MOBS = List.of(
-            Alligator.class, Anglerfish.class, Ant.class, Bass.class, Bear.class,
+            Alligator.class, Anglerfish.class, Bass.class, Bear.class,
             Bird.class, BlackBear.class, Blobfish.class, Boar.class, Butterfly.class,
             Capybara.class, Caterpillar.class, Catfish.class, Clam.class, Crab.class, Deer.class,
             DesertScorpion.class, Dragonfly.class, Duck.class, Elephant.class, Firefly.class,

@@ -2,7 +2,6 @@ package com.crispytwig.naturalist.registry;
 
 import com.crispytwig.naturalist.Naturalist;
 import com.crispytwig.naturalist.server.entity.mob.*;
-import com.crispytwig.naturalist.server.entity.misc.CarriedFoodEntity;
 import com.crispytwig.naturalist.server.entity.misc.DirtTrail;
 import com.crispytwig.naturalist.server.entity.misc.ThrownDuckEgg;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -18,7 +17,6 @@ public class NaturalistEntityTypes {
     public static final DeferredRegister<EntityType<?>> ENTITY_TYPES = DeferredRegister.create(BuiltInRegistries.ENTITY_TYPE, Naturalist.MOD_ID);
 
     public static final DeferredHolder<EntityType<?>, EntityType<Alligator>> ALLIGATOR = register("alligator", EntityType.Builder.of(Alligator::new, MobCategory.CREATURE).sized(1.8F, 0.8F).clientTrackingRange(10));
-    public static final DeferredHolder<EntityType<?>, EntityType<Ant>> ANT = register("ant", EntityType.Builder.of(Ant::new, MobCategory.CREATURE).sized(0.6F, 0.5F).clientTrackingRange(8));
     public static final DeferredHolder<EntityType<?>, EntityType<Anglerfish>> ANGLERFISH = register("anglerfish", EntityType.Builder.of(Anglerfish::new, MobCategory.WATER_AMBIENT).sized(0.9F, 0.8F).clientTrackingRange(8));
     public static final DeferredHolder<EntityType<?>, EntityType<Ray>> RAY = register("ray", EntityType.Builder.of(Ray::new, MobCategory.WATER_AMBIENT).sized(1.0F, 0.4F).clientTrackingRange(8));
     public static final DeferredHolder<EntityType<?>, EntityType<Blobfish>> BLOBFISH = register("blobfish", EntityType.Builder.of(Blobfish::new, MobCategory.WATER_AMBIENT).sized(0.8F, 0.4F).clientTrackingRange(8));
@@ -39,7 +37,6 @@ public class NaturalistEntityTypes {
     public static final DeferredHolder<EntityType<?>, EntityType<Duck>> DUCK = register("duck", EntityType.Builder.of(Duck::new, MobCategory.CREATURE).sized(0.6F, 1.0F).clientTrackingRange(10));
     public static final DeferredHolder<EntityType<?>, EntityType<ThrownDuckEgg>> DUCK_EGG = register("duck_egg", EntityType.Builder.<ThrownDuckEgg>of(ThrownDuckEgg::new, MobCategory.MISC).sized(0.25F, 0.25F).clientTrackingRange(16));
     public static final DeferredHolder<EntityType<?>, EntityType<DirtTrail>> DIRT_TRAIL = register("dirt_trail", EntityType.Builder.of(DirtTrail::new, MobCategory.MISC).sized(0.7F, 0.3F).fireImmune().clientTrackingRange(8));
-    public static final DeferredHolder<EntityType<?>, EntityType<CarriedFoodEntity>> CARRIED_FOOD = register("carried_food", EntityType.Builder.<CarriedFoodEntity>of(CarriedFoodEntity::new, MobCategory.MISC).sized(0.25F, 0.25F).clientTrackingRange(8));
     public static final DeferredHolder<EntityType<?>, EntityType<Elephant>> ELEPHANT = register("elephant", EntityType.Builder.of(Elephant::new, MobCategory.CREATURE).sized(2.5F, 3.5F).clientTrackingRange(10));
     public static final DeferredHolder<EntityType<?>, EntityType<Firefly>> FIREFLY = register("firefly", EntityType.Builder.of(Firefly::new, MobCategory.AMBIENT).sized(0.7F, 0.6F).clientTrackingRange(8));
     public static final DeferredHolder<EntityType<?>, EntityType<GiantIsopod>> GIANT_ISOPOD = register("giant_isopod", EntityType.Builder.of(GiantIsopod::new, MobCategory.WATER_AMBIENT).sized(0.6F, 0.4F).clientTrackingRange(8));

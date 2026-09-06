@@ -9,12 +9,10 @@ import com.crispytwig.naturalist.server.entity.mob.*;
 import com.crispytwig.naturalist.server.item.CaughtMobItem;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.Holder;
 import net.minecraft.core.dispenser.BlockSource;
 import net.minecraft.core.dispenser.DefaultDispenseItemBehavior;
 import net.minecraft.core.dispenser.DispenseItemBehavior;
 import net.minecraft.core.dispenser.ProjectileDispenseBehavior;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.EntityType;
@@ -27,18 +25,14 @@ import net.minecraft.world.entity.SpawnPlacements;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.animal.fish.WaterAnimal;
 import net.minecraft.world.item.DispensibleContainerItem;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.alchemy.Potion;
-import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.DispenserBlock;
 import net.minecraft.world.level.levelgen.Heightmap;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 
-import java.util.function.Supplier;
 
 public final class Naturalist {
     public static final String MOD_ID = "naturalist";
@@ -59,8 +53,6 @@ public final class Naturalist {
         NaturalistRegistry.init();
         touch(NaturalistBlockEntities.BLOCK_ENTITY_TYPES);
         touch(NaturalistMenus.MENUS);
-        touch(NaturalistMobEffects.MOB_EFFECTS);
-        touch(NaturalistPotions.POTIONS);
         touch(NaturalistRecipes.RECIPE_TYPES);
         touch(NaturalistRecipes.RECIPE_SERIALIZERS);
         touch(NaturalistCreativeTab.CREATIVE_MODE_TABS);
@@ -82,11 +74,6 @@ public final class Naturalist {
     @FunctionalInterface
     public interface SpawnPlacementRegistrar {
         <T extends Mob> void register(EntityType<T> type, SpawnPlacementType placementType, Heightmap.Types heightmap, SpawnPlacements.SpawnPredicate<T> predicate);
-    }
-
-    @FunctionalInterface
-    public interface BrewingRegistrar {
-        void addMix(Holder<Potion> input, Item ingredient, Holder<Potion> output);
     }
 
     public static void createAttributes(AttributeRegistrar r) {
@@ -125,7 +112,6 @@ public final class Naturalist {
         r.register(NaturalistEntityTypes.GIANT_ISOPOD.get(), GiantIsopod.createAttributes());
         r.register(NaturalistEntityTypes.JELLYFISH.get(), Jellyfish.createAttributes());
         r.register(NaturalistEntityTypes.WHALE.get(), Whale.createAttributes());
-        r.register(NaturalistEntityTypes.ANT.get(), Ant.createAttributes());
         r.register(NaturalistEntityTypes.MOLE.get(), Mole.createAttributes());
         r.register(NaturalistEntityTypes.RAT.get(), Rat.createAttributes());
         r.register(NaturalistEntityTypes.BLACK_BEAR.get(), BlackBear.createAttributes());
@@ -194,17 +180,6 @@ public final class Naturalist {
         r.register(NaturalistEntityTypes.TURKEY.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, NaturalistAnimal::checkNaturalistAnimalSpawnRules);
         r.register(NaturalistEntityTypes.CAPYBARA.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, NaturalistAnimal::checkNaturalistAnimalSpawnRules);
         r.register(NaturalistEntityTypes.HEDGEHOG.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, NaturalistAnimal::checkNaturalistAnimalSpawnRules);
-    }
-
-    public static void registerPotionMixes(BrewingRegistrar r) {
-        r.addMix(Potions.AWKWARD, NaturalistRegistry.ANTLER.get(), potion(NaturalistPotions.FOREST_DASHER));
-        r.addMix(potion(NaturalistPotions.FOREST_DASHER), Items.REDSTONE, potion(NaturalistPotions.LONG_FOREST_DASHER));
-        r.addMix(potion(NaturalistPotions.FOREST_DASHER), Items.GLOWSTONE_DUST, potion(NaturalistPotions.STRONG_FOREST_DASHER));
-        r.addMix(Potions.AWKWARD, NaturalistRegistry.SCORPION_POISON_GLAND.get(), potion(NaturalistPotions.ANTIVENOM));
-    }
-
-    private static Holder<Potion> potion(Supplier<Potion> potion) {
-        return BuiltInRegistries.POTION.wrapAsHolder(potion.get());
     }
 
     public static void registerDispenserBehaviors() {

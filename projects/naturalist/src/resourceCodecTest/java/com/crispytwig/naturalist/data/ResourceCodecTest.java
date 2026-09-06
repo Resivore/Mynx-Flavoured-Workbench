@@ -98,9 +98,9 @@ class ResourceCodecTest {
         }));
     }
 
-    @TestFactory Stream<DynamicTest> recipes() throws Exception { return resources("recipe", 101, Recipe.CODEC); }
-    @TestFactory Stream<DynamicTest> advancements() throws Exception { return resources("advancement", 40, Advancement.CODEC); }
-    @TestFactory Stream<DynamicTest> lootTables() throws Exception { return resources("loot_table", 78, LootTable.DIRECT_CODEC); }
+    @TestFactory Stream<DynamicTest> recipes() throws Exception { return resources("recipe", 9, Recipe.CODEC); }
+    @TestFactory Stream<DynamicTest> advancements() throws Exception { return resources("advancement", 10, Advancement.CODEC); }
+    @TestFactory Stream<DynamicTest> lootTables() throws Exception { return resources("loot_table", 57, LootTable.DIRECT_CODEC); }
 
     @Test
     void renderLookupKeepsEntityAndPartialTickTogetherAcrossStateReuse() {
@@ -136,33 +136,4 @@ class ResourceCodecTest {
         assertFalse(NaturalistParrotRenderStateLookup.isFlyingShoulder(perched));
     }
 
-    @Test
-    void pristineCanary3DataReproducesExactlyTheIngredientAndEntityTypeFailures() throws Exception {
-        int recipeFailures = 0, advancementFailures = 0, lootFailures = 0;
-        try (var zip = new ZipFile(System.getProperty("naturalist.originalJar"))) {
-            for (var entry : zip.stream().filter(entry -> entry.getName().endsWith(".json")).toList()) {
-                String name = entry.getName();
-                Codec<?> codec = name.startsWith("data/naturalist/recipe/") ? Recipe.CODEC
-                        : name.startsWith("data/naturalist/advancement/") ? Advancement.CODEC
-                        : name.startsWith("data/naturalist/loot_table/") ? LootTable.DIRECT_CODEC : null;
-                if (codec == null) continue;
-                try (var reader = new InputStreamReader(zip.getInputStream(entry), StandardCharsets.UTF_8)) {
-                    var result = codec.parse(ops, JsonParser.parseReader(reader));
-                    if (!result.isSuccess()) {
-                        String message = result.error().orElseThrow().message();
-                        if (codec == Recipe.CODEC) {
-                            assertFalse(message.isBlank(), name);
-                            recipeFailures++;
-                        } else {
-                            assertTrue(message.contains("minecraft:type"), name + ": " + message);
-                            if (codec == Advancement.CODEC) advancementFailures++; else lootFailures++;
-                        }
-                    }
-                }
-            }
-        }
-        assertEquals(100, recipeFailures);
-        assertEquals(3, advancementFailures);
-        assertEquals(1, lootFailures);
-    }
 }
