@@ -189,3 +189,13 @@
 - Artifact: C13 `container-slot-reservations-0.1.0-canary13.jar`, 170400 bytes, SHA-256 `61d24c69f12da4f0ca1c68407d929cc8f21e83ef29e32ac2b5922d5a650bf23e`, source `6d8258f74e7b80625db81cd61c7fec0e4a3a49b0`, deployed as Slot A deployment `377b5b52-c3a5-49c6-9c5e-bc722f263cf7` / artifact `3bbd66ef-c703-41ab-8ada-92275c9f6f3b`. It replaces accepted C4 deployment `8211900d-913c-40f2-9829-68509e0d71fe`; predecessor C11 deployment `eb9e9dc9-b213-42f1-b47f-e6530cb5802e` / artifact `2184b05b-e1f6-41dc-9632-bfd682d78546` was removed only by the manager transition. Slot B QSN C9 deployment `03f7540f-94f0-47c5-b6bd-94f2af232ff4` / artifact `8b8abdf9-26a4-407c-bbd6-1623f0a5eeb5`, including its `INCONCLUSIVE` result and accepted companion, remains exact.
 - Result: `TESTING` / `CONTROLLED_VALIDATION_PASS` / `READY_TO_TEST_VERIFIED` / `RUNTIME_UNTESTED` at manager revision 102 on `2026-09-06T04:32:19Z`. No promotion; protected 26.1.2 profile was not accessed.
 - Next state: Run only the current focused C13 `TESTING.md` runtime gate in the dedicated 26.2 Workbench, record only observed rows, and decide promotion separately.
+
+## 2026-09-06T04:44:57Z — Correct C13 deployment synchronization checkpoint
+- Revision: 20
+- Source checkpoint: `af7f6f1f3a0033180f25bfaaa6220c6da8c825fa`
+- Changes: Corrected the required distinct synchronization source checkpoint for the already completed C13 manager deployment so the authoritative main-only Sheet planner can recognize revision 20 as a valid forward canonical record. No release, artifact, deployment, manager state, runtime evidence, Slot B, accepted baseline, or human-owned Sheet field changed.
+- Build/static: `python tools/workbench.py validate-repository --root .` passed; the exact tracked-runtime contract, full Python suite, and Sheet receiver suite had already passed for the identical runtime state.
+- Runtime: No Minecraft instance was launched; C13 remains `RUNTIME_UNTESTED` and C12's manual evidence remains historical only.
+- Artifact: No artifact bytes or identities changed; C13 remains Slot A deployment `377b5b52-c3a5-49c6-9c5e-bc722f263cf7` / artifact `3bbd66ef-c703-41ab-8ada-92275c9f6f3b`, exact SHA-256 `61d24c69f12da4f0ca1c68407d929cc8f21e83ef29e32ac2b5922d5a650bf23e`.
+- Result: `TESTING` / `READY_TO_TEST_VERIFIED` / `RUNTIME_UNTESTED`; publisher transition is now a valid distinct canonical revision.
+- Next state: Publish revision 20 from authoritative main with Sheet Notes preserved; runtime-test C13 only in the dedicated 26.2 Workbench before any promotion decision.
