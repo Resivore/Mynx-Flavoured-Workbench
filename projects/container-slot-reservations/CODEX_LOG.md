@@ -219,3 +219,13 @@
 - Artifact: C14 `container-slot-reservations-0.1.0-canary14.jar`, 170465 bytes, SHA-256 `72b602c1fa781a53fecfbdfd58a3174ee85a910a7f0c099dcdd178c339d1f790`, source `4cd247732e39787fdafef9d9fa25a461b9665f0e`, is Slot A deployment `fa2ee388-d8f7-4cb6-a2fc-1410b0b7e561` / artifact `7c38c5f3-25f9-4d4a-9f16-1d41c88fa314`, replacing accepted C4 deployment `8211900d-913c-40f2-9829-68509e0d71fe`. C13's prior Slot A identity remains historical displaced-candidate provenance. Slot B QSN C9 deployment `03f7540f-94f0-47c5-b6bd-94f2af232ff4` / artifact `8b8abdf9-26a4-407c-bbd6-1623f0a5eeb5`, its INCONCLUSIVE result, companion, timestamps, accepted baseline, and all unrelated managed artifacts remain unchanged.
 - Result: `TESTING` / `CONTROLLED_VALIDATION_PASS` / `READY_TO_TEST_VERIFIED` / `RUNTIME_UNTESTED`. No promotion.
 - Next state: Run only the current focused C14 `TESTING.md` gate in the dedicated 26.2 Workbench, record only observed results, and publish this authoritative revision with Sheet Notes preserved.
+
+## 2026-09-06T06:35:00Z — Correct Canary 14 deployment synchronization checkpoint
+- Revision: 23
+- Source checkpoint: `8ed671f9daf1c1257e3f833c0198d78d9839bd42`
+- Changes: Corrected the required distinct synchronization source checkpoint after the C14 deployment record, so the authoritative main-only Sheet planner can emit one forward canonical record. No release identity, artifact bytes, Slot A deployment, Slot B, accepted baseline, runtime state, runtime evidence, or human-owned Sheet field changed.
+- Build/static: Repository validation and the Sheet transition planner passed from authoritative main. The manager's exact revision-104 physical verification remains current.
+- Runtime: No Minecraft instance was launched; C14 remains `RUNTIME_UNTESTED`.
+- Artifact: Unchanged C14 `container-slot-reservations-0.1.0-canary14.jar`, SHA-256 `72b602c1fa781a53fecfbdfd58a3174ee85a910a7f0c099dcdd178c339d1f790`, Slot A deployment `fa2ee388-d8f7-4cb6-a2fc-1410b0b7e561` / artifact `7c38c5f3-25f9-4d4a-9f16-1d41c88fa314`.
+- Result: `TESTING` / `READY_TO_TEST_VERIFIED` / `RUNTIME_UNTESTED`; publication is now eligible for the configured main-only gate.
+- Next state: Publish revision 23 with Sheet Notes preserved, then obtain only the current focused dedicated-workbench runtime observations before any promotion decision.

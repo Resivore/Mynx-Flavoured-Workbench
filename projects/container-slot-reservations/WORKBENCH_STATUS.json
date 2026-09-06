@@ -166,11 +166,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 22,
-    "activity_at": "2026-09-06T06:30:00Z",
-    "updated_at": "2026-09-06T06:30:00Z",
-    "last_codex_at": "2026-09-06T06:30:00Z",
-    "source_commit": "4cd247732e39787fdafef9d9fa25a461b9665f0e",
+    "revision": 23,
+    "activity_at": "2026-09-06T06:35:00Z",
+    "updated_at": "2026-09-06T06:35:00Z",
+    "last_codex_at": "2026-09-06T06:35:00Z",
+    "source_commit": "8ed671f9daf1c1257e3f833c0198d78d9839bd42",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
