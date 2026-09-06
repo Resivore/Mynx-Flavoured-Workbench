@@ -4,7 +4,9 @@
 
 Use only the dedicated **Matcha Flavoured 26.2 Workbench**. Never use the protected 26.1.2 gameplay profile. Preserve `logs/latest.log` and stop immediately for a crash, absent or duplicated panel, competing outer tooltip, wrong host binding, click-through, loss, duplication, or unexpected mod/profile change.
 
-Exact candidate: `container-slot-reservations-0.1.0-canary13.jar`, 170400 bytes, SHA-256 `61d24c69f12da4f0ca1c68407d929cc8f21e83ef29e32ac2b5922d5a650bf23e`, source `6d8258f74e7b80625db81cd61c7fec0e4a3a49b0`. It is `NOT_DEPLOYED` / `RUNTIME_UNTESTED`; do not use the intentionally present manually deployed C12 JAR as managed-deployment provenance. Slot A remains exact C11 deployment `eb9e9dc9-b213-42f1-b47f-e6530cb5802e`, artifact `2184b05b-e1f6-41dc-9632-bfd682d78546`, `READY_TO_TEST_VERIFIED` / `FAIL` at manager revision 101. That C11 failure is limited to the supplied missing-PacketContext crash; no other C11 row is inferred.
+Exact candidate: `container-slot-reservations-0.1.0-canary13.jar`, 170400 bytes, SHA-256 `61d24c69f12da4f0ca1c68407d929cc8f21e83ef29e32ac2b5922d5a650bf23e`, source `6d8258f74e7b80625db81cd61c7fec0e4a3a49b0`. It is managed Slot A deployment `377b5b52-c3a5-49c6-9c5e-bc722f263cf7`, artifact `3bbd66ef-c703-41ab-8ada-92275c9f6f3b`, `READY_TO_TEST_VERIFIED` at manager revision 102 on `2026-09-06T04:32:19Z`, and remains `RUNTIME_UNTESTED`. The exact C11 predecessor deployment `eb9e9dc9-b213-42f1-b47f-e6530cb5802e` / artifact `2184b05b-e1f6-41dc-9632-bfd682d78546` remains historical `FAIL` evidence only, limited to the supplied missing-PacketContext crash; no other C11 row is inferred.
+
+While CSR owns Slot A and remains `TESTING`, a finalized current CSR successor normally replaces the preceding CSR Slot A candidate through the serialized Test Instance Manager. A concrete preimage, dependency, or physical-safety blocker must fail closed; a retained successor is not a deployment.
 
 ## Supplied manual C12 evidence — do not expand it
 
