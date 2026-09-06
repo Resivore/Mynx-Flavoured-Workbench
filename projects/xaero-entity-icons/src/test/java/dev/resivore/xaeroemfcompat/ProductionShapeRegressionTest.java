@@ -38,6 +38,11 @@ class ProductionShapeRegressionTest {
                     Map.of("nose", cubePart(Map.of("hat", cubePart(Map.of()))),
                             "body", cubePart(Map.of()), "wing", cubePart(Map.of())));
             canonical.setInitialPose(canonical.storePose());
+            // EMF uses skipDraw on a canonical traversal node while its own
+            // renderer compiles the traced cubes.  C5 copied that flag into a
+            // plain adapter, so Xaero accepted the selection but emitted no
+            // direct-head vertices.
+            canonical.skipDraw = true;
             ModelPart root = entity.equals("ravager")
                     ? emptyPart(Map.of("neck", emptyPart(Map.of("head", canonical))))
                     : emptyPart(Map.of("head", canonical));
@@ -51,6 +56,39 @@ class ProductionShapeRegressionTest {
             assertFalse(cubePaths(result.renderAdapter()).stream()
                     .anyMatch(path -> path.contains("body") || path.contains("wing")), entity);
             assertTrue(submittedVertices(result.renderAdapter()) > 0, entity);
+        }
+    }
+
+    @Test
+    void villagerHeadwearKeepsNestedHatGeometryWithoutBodyOrArms() {
+        ModelPart vanillaRoot = SheepModel.createBodyLayer().bakeRoot();
+        ModelPart vanillaHead = vanillaRoot.getChild("head");
+        for (Map.Entry<String, ModelPart> fixture : Map.of(
+                "farmer", cubePart(Map.of()),
+                "butcher", emptyPart(Map.of(
+                        "chef_hat_cube_1", cubePart(Map.of()),
+                        "chef_hat_cube_2", cubePart(Map.of()))),
+                "cleric", cubePart(Map.of()),
+                "mason", emptyPart(Map.of(
+                        "prospector_hat_cube_1", cubePart(Map.of()),
+                        "prospector_hat_cube_2", cubePart(Map.of())))
+        ).entrySet()) {
+            ModelPart canonical = new ModelPart(
+                    List.copyOf(ModelPartUtil.getCubes(vanillaHead)),
+                    Map.of("nose", cubePart(Map.of(fixture.getKey() + "_hat", fixture.getValue())),
+                            "body", cubePart(Map.of()), "arms", cubePart(Map.of())));
+            canonical.skipDraw = true;
+            canonical.setInitialPose(canonical.storePose());
+            ModelPart root = emptyPart(Map.of("head", canonical));
+
+            var result = EmfIconPartResolver.resolveRelocatedHead(
+                    root, canonical, vanillaRoot, traced(canonical, 0xFF406080), true).orElseThrow();
+            List<String> paths = cubePaths(result.renderAdapter());
+            assertTrue(paths.stream().anyMatch(path -> path.contains(fixture.getKey() + "_hat")),
+                    fixture.getKey());
+            assertFalse(paths.stream().anyMatch(path -> path.contains("body") || path.contains("arms")),
+                    fixture.getKey());
+            assertTrue(submittedVertices(result.renderAdapter()) > 0, fixture.getKey());
         }
     }
 

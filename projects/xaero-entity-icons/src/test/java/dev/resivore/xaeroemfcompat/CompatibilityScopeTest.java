@@ -51,6 +51,12 @@ class CompatibilityScopeTest {
         String xaeroPartMixin = Files.readString(PROJECT.resolve(
                 "src/main/java/dev/resivore/xaeroemfcompat/mixin/"
                         + "RadarIconModelPartPrerendererMixin.java"));
+        String cacheMixin = Files.readString(PROJECT.resolve(
+                "src/main/java/dev/resivore/xaeroemfcompat/mixin/"
+                        + "RadarIconEntityCacheMixin.java"));
+        String managerMixin = Files.readString(PROJECT.resolve(
+                "src/main/java/dev/resivore/xaeroemfcompat/mixin/"
+                        + "RadarIconManagerMixin.java"));
         String config = Files.readString(PROJECT.resolve(
                 "src/main/resources/xaero_emf_entity_icon_compat.mixins.json"));
 
@@ -81,12 +87,18 @@ class CompatibilityScopeTest {
         assertTrue(xaeroPartMixin.contains("ModelPart;render("));
         assertTrue(xaeroPartMixin.contains("remap = true"));
         assertTrue(xaeroPartMixin.contains("EmfIconPartResolver.renderAdapter"));
+        assertTrue(xaeroMixin.contains("EmfIconPartResolver.isSupportedEmfRoot"));
+        assertTrue(cacheMixin.contains("retryFailedOnce"));
+        assertTrue(managerMixin.contains("LivingEntityRenderer"));
+        assertTrue(managerMixin.contains("EmfIconPartResolver.isSupportedEmfRoot"));
         assertFalse(xaeroPartMixin.contains("@Inject"));
         assertTrue(config.contains("\"required\": true"));
         assertTrue(config.contains("\"defaultRequire\": 1"));
         assertEquals(1, occurrences(config, "EMFModelPartMixin"));
         assertEquals(1, occurrences(config, "RadarIconModelPrerendererMixin"));
         assertEquals(1, occurrences(config, "RadarIconModelPartPrerendererMixin"));
+        assertEquals(1, occurrences(config, "RadarIconEntityCacheMixin"));
+        assertEquals(1, occurrences(config, "RadarIconManagerMixin"));
     }
 
     @Test

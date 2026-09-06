@@ -41,8 +41,7 @@ abstract class RadarIconModelPrerendererMixin {
         dev.resivore.xaeroemfcompat.IconDiagnostics.context(
                 net.minecraft.world.entity.EntityType.getKey(entity.getType()) + " model=" + model.getClass().getName());
         try {
-            if (model.root() != null && model.root().getClass().getName().equals(
-                    "traben.entity_model_features.models.parts.EMFModelPartRoot")) {
+            if (EmfIconPartResolver.isSupportedEmfRoot(model.root())) {
                 dev.resivore.xaeroemfcompat.IconDiagnostics.observe(entity.getType());
             }
             if (!parameters.renderedDest.isEmpty()) {
