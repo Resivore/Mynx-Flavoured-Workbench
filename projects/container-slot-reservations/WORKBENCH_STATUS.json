@@ -119,7 +119,7 @@
     ]
   },
   "state": {
-    "milestone": "CSR Canary 14 is the controlled-validation successor to C13. It preserves the runtime-resolved shulker texture and establishes a pixel-level contract for its true Y=160..165 six-pixel bottom bezel, excluding the player inventory/hotbar divider row. At the native carried-shulker secondary-click seam, no valid selection defaults to the highest occupied ordinary internal slot; an explicit valid cell still wins; a partial capacity-limited move retains that cell; and complete repeated default moves walk backward across gaps. Exact C12 manual observations and C13 Slot A deployment 377b5b52-c3a5-49c6-9c5e-bc722f263cf7 / artifact 3bbd66ef-c703-41ab-8ada-92275c9f6f3b remain historical evidence only. C14 passed controlled non-launching validation but is not deployed and has no runtime result. Slot B/QSN C9 remains independent and unchanged. Controlled validation is not runtime success.",
+    "milestone": "CSR Canary 14 is the controlled-validation successor to C13. It preserves the runtime-resolved shulker texture and establishes a pixel-level contract for its true Y=160..165 six-pixel bottom bezel, excluding the player inventory/hotbar divider row. At the native carried-shulker secondary-click seam, no valid selection defaults to the highest occupied ordinary internal slot; an explicit valid cell still wins; a partial capacity-limited move retains that cell; and complete repeated default moves walk backward across gaps. Exact C12 manual observations and C13 Slot A deployment 377b5b52-c3a5-49c6-9c5e-bc722f263cf7 / artifact 3bbd66ef-c703-41ab-8ada-92275c9f6f3b remain historical evidence only. The physical manager verified C14 in Slot A as deployment fa2ee388-d8f7-4cb6-a2fc-1410b0b7e561 / artifact 7c38c5f3-25f9-4d4a-9f16-1d41c88fa314 at manager revision 104; it remains RUNTIME_UNTESTED. Slot B/QSN C9 remains independent and unchanged. Controlled validation and ready deployment are not runtime success.",
     "releases": {
       "current": {
         "version": "0.1.0-canary14",
@@ -160,16 +160,16 @@
     },
     "validation": {
       "build": "CONTROLLED_VALIDATION_PASS",
-      "deployment": "NOT_DEPLOYED",
+      "deployment": "READY_TO_TEST_VERIFIED",
       "runtime": "RUNTIME_UNTESTED"
     },
     "blocker": null
   },
   "synchronization": {
-    "revision": 21,
-    "activity_at": "2026-09-06T06:14:34Z",
-    "updated_at": "2026-09-06T06:14:34Z",
-    "last_codex_at": "2026-09-06T06:14:34Z",
+    "revision": 22,
+    "activity_at": "2026-09-06T06:30:00Z",
+    "updated_at": "2026-09-06T06:30:00Z",
+    "last_codex_at": "2026-09-06T06:30:00Z",
     "source_commit": "4cd247732e39787fdafef9d9fa25a461b9665f0e",
     "google_sheet": {
       "participates": true,
