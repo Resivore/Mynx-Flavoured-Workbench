@@ -20,6 +20,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.inventory.ChestMenu;
 import net.minecraft.world.inventory.ContainerInput;
+import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.ItemContainerContents;
@@ -217,15 +218,72 @@ public final class ShulkerPanelGameTests implements CustomTestMethodInvoker {
                         == ShulkerSelectionTracker.HostKind.CARRIED_CURSOR,
                 "Selection did not follow the exact host slot-to-cursor transaction");
 
-        player.containerMenu.clicked(1, 1, ContainerInput.PICKUP, player);
-        helper.assertTrue(chest.getItem(1).getCount() == 4 && chest.getItem(1).is(Items.DIAMOND),
-                "Selected physical stack did not enter the exact empty target slot");
+        // Slot 27 is the first real player-inventory slot in a three-row chest menu.
+        player.containerMenu.clicked(27, 1, ContainerInput.PICKUP, player);
+        helper.assertTrue(player.containerMenu.getSlot(27).getItem().getCount() == 4
+                        && player.containerMenu.getSlot(27).getItem().is(Items.DIAMOND),
+                "Selected physical stack did not enter the exact empty player-inventory target slot");
         helper.assertTrue(ShulkerContents.copy(player.containerMenu.getCarried()).get(5).isEmpty()
                         && ShulkerContents.copy(player.containerMenu.getCarried()).get(20).getCount() == 2,
                 "Extraction changed an unselected internal slot");
         helper.assertTrue(ReservationStore.getData(player.containerMenu.getCarried()).matches(
                         5, new ItemStack(Items.DIAMOND)),
                 "Full extraction cleared the selected slot's reservation");
+        helper.assertTrue(ShulkerSelectionTracker.validate(player) != null
+                        && ShulkerSelectionTracker.validate(player).internalSlot() == 20,
+                "A fully removed selected stack did not advance to the next occupied cell");
+
+        player.containerMenu.clicked(28, 1, ContainerInput.PICKUP, player);
+        helper.assertTrue(player.containerMenu.getSlot(28).getItem().getCount() == 2
+                        && player.containerMenu.getSlot(28).getItem().is(Items.DIRT)
+                        && ShulkerContents.copy(player.containerMenu.getCarried()).get(20).isEmpty()
+                        && ShulkerSelectionTracker.get(player).isEmpty(),
+                "Removing the final occupied cell did not clear carried selection exactly");
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void nativeCarriedExtractionRepairsMissingMigrationAndRespectsCapacityAndReservations(
+            GameTestHelper helper
+    ) {
+        BlockPos position = new BlockPos(1, 2, 1);
+        helper.setBlock(position, Blocks.CHEST);
+        ChestBlockEntity chest = helper.getBlockEntity(position, ChestBlockEntity.class);
+        ServerPlayer player = player(helper);
+        player.containerMenu = ChestMenu.threeRows(12, player.getInventory(), chest);
+
+        ItemStack host = new ItemStack(Blocks.SHULKER_BOX);
+        var contents = net.minecraft.core.NonNullList.withSize(ReservationData.SLOT_COUNT, ItemStack.EMPTY);
+        contents.set(0, new ItemStack(Items.DIAMOND, 7));
+        ShulkerContents.replace(host, contents);
+        chest.setItem(0, host);
+        var resolved = ShulkerHostResolver.resolveMenuSlot(player, player.containerMenu,
+                player.containerMenu.getSlot(0)).orElseThrow();
+        helper.assertTrue(ShulkerSelectionTracker.select(player, resolved,
+                ShulkerHostLocator.menuSlot(0), 0, fingerprint(player, 0)), "Selection setup was rejected");
+        player.containerMenu.clicked(0, 0, ContainerInput.PICKUP, player);
+        // Model the packet-order edge: the native click is authoritative even if no carried record survived.
+        ShulkerSelectionTracker.clear(player);
+
+        Slot limitedTarget = new Slot(chest, 1, 0, 0) {
+            @Override
+            public int getMaxStackSize(ItemStack stack) {
+                return 3;
+            }
+        };
+        player.containerMenu.slots.set(1, limitedTarget);
+        player.containerMenu.clicked(1, 1, ContainerInput.PICKUP, player);
+        helper.assertTrue(chest.getItem(1).getCount() == 3 && chest.getItem(1).is(Items.DIAMOND)
+                        && ShulkerContents.copy(player.containerMenu.getCarried()).get(0).getCount() == 4
+                        && ShulkerSelectionTracker.validate(player) != null
+                        && ShulkerSelectionTracker.validate(player).internalSlot() == 0,
+                "Native extraction did not deterministically repair selection or respect target capacity");
+
+        ReservationStore.setData(chest, ReservationData.EMPTY.with(2, new ItemStack(Items.DIRT)));
+        player.containerMenu.clicked(2, 1, ContainerInput.PICKUP, player);
+        helper.assertTrue(chest.getItem(2).isEmpty()
+                        && ShulkerContents.copy(player.containerMenu.getCarried()).get(0).getCount() == 4,
+                "A reservation-mismatched native extraction mutated either source or target");
         helper.succeed();
     }
 

@@ -115,6 +115,14 @@ final class ClientRenderingContractTest {
         String fabricMetadata = Files.readString(ROOT.resolve("src/main/resources/fabric.mod.json"));
         assertTrue(panel.contains("textures/gui/container/shulker_box.png"));
         assertTrue(panel.contains("ShulkerPanelGeometry.WIDTH"));
+        assertTrue(panel.contains("ShulkerPanelGeometry.MAIN_HEIGHT"));
+        assertTrue(panel.contains("ShulkerPanelGeometry.BOTTOM_FRAME_SOURCE_Y"));
+        assertTrue(panel.contains("ShulkerPanelGeometry.BOTTOM_FRAME_HEIGHT"));
+        assertFalse(panel.contains("0x5938A8FF"), "CSR must not draw a selected-cell blue fill");
+        assertFalse(panel.contains("0xFF38A8FF"), "CSR must not draw a selected-cell blue outline");
+        assertTrue(panel.contains("highlight(graphics, HIGHLIGHT_BACK, hoveredCell)"));
+        assertTrue(panel.contains("highlight(graphics, HIGHLIGHT_FRONT, hoveredCell)"),
+                "The ordinary vanilla pointer-hover sprites must remain");
         assertTrue(panel.contains("ShulkerPanelOverlay.plan("));
         assertTrue(screen.contains("ShulkerPanel.updateAndRender("));
         assertTrue(screen.contains("ShulkerPanel.extractTooltip("));

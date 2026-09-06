@@ -1,7 +1,12 @@
 package dev.resivore.slotreservations.client;
 
 public record ShulkerPanelGeometry(int x, int y, boolean rightSide) {
-    public static final int WIDTH = 176, HEIGHT = 77;
+    public static final int WIDTH = 176;
+    /** The existing top/title/grid portion of the vanilla shulker screen. */
+    public static final int MAIN_HEIGHT = 77;
+    /** The full-width bottom frame in the same runtime shulker_box texture. */
+    public static final int BOTTOM_FRAME_SOURCE_Y = 160, BOTTOM_FRAME_HEIGHT = 6;
+    public static final int HEIGHT = MAIN_HEIGHT + BOTTOM_FRAME_HEIGHT;
     public static final int GRID_X = 7, GRID_Y = 17, CELL = 18, COLUMNS = 9, ROWS = 3;
     private static final int GAP = 2;
 
