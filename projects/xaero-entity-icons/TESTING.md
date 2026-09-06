@@ -1,61 +1,63 @@
 # Testing
 
-Current `xaero-emf-entity-icon-compat-0.1.0-canary8.jar` is **ACTIVE /
+Current `xaero-emf-entity-icon-compat-0.1.0-canary9.jar` is **ACTIVE /
 STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED**. It is unaccepted and has no
-rollback. Identity: 42,659 bytes, SHA-256
-`337adff555afae9fbcedf1c51320595654bfe4f1ab120f8c0dfb7d03bad3aa7c`;
-source checkpoint is `8c45f2f9ccdcf12f4403ba3380a32f81f975e077`.
+rollback. Identity: 42,828 bytes, SHA-256
+`184ca0da6d6c055c0ba9b2d0e9fb3bccc3c30da9ea7f700a64792d4d1513551a`;
+implementation source checkpoint is `6c1b4e0ede3ada8470bc7b4ba54ea8b51f9d2e93`.
 
 Two independent Java 25 / Gradle 9.5.1 / Loom 1.17.19 clean offline `check
-jar` builds produced byte-identical C8 files. All 47 tests in nine suites
+jar` builds produced byte-identical C9 files. All 49 tests in nine suites
 passed. The client-only allowlist passed; the 28-entry archive has no duplicate
 or nested-JAR entries, and every ZIP entry was read successfully for the CRC
 scan. No Minecraft game was launched. These are static results, not runtime
 observations.
 
-## C7 external runtime evidence reconciled for C8
+## C8 external runtime evidence reconciled for C9
 
-The authorized Player Instance contains exact C7 SHA-256
-`b70d04024ee22440d573c8b6682c8097e2eda34f5f6e15b171c401db09943ee`.
-The user reports that C7 works for axolotl, sniffer, iron golem, wolf, bat,
-parrot, witch, ravager, farmer villager, and cleric villager. Butcher villager,
-mason villager, frog, allay, and vex instead show Xaero's yellow generic entity
-square plus name.
+Exact C8 is `xaero-emf-entity-icon-compat-0.1.0-canary8.jar`, 42,659 bytes,
+SHA-256 `337adff555afae9fbcedf1c51320595654bfe4f1ab120f8c0dfb7d03bad3aa7c`,
+source checkpoint `8c45f2f9ccdcf12f4403ba3380a32f81f975e077`. The user reports
+that C8 fixed the remaining hatted villagers: farmer, cleric, butcher, and
+mason are all good. No other unreported C8 row is inferred.
 
-Read-only C7 diagnostics show butcher/mason take Xaero's failed creation route
-under their own profession variants. Their effective `Ribbit Villagers v1.zip`
-models use transformed empty hat containers with nested cube owners; farmer and
-cleric use direct cube owners and succeeded. C8 retains the full named
-head-local chain, renders copied EMF traversal containers without copying their
-`skipDraw` suppression, and retains actual `visible` state. It never copies
-body or arm branches.
+Frog, allay, and vex still show Xaero's yellow generic entity marker plus name
+with no rendered head icon. For allay and vex the canonical identity is
+`root/head`; for frog it is `root/body/head`. Each diagnostics sequence reaches
+`MANAGER_RETURNED_NULL`, `MISSING_RETAINED_VANILLA_GEOMETRY`, downstream
+failure, cached failure, and the bounded C7 prerender retry; vex records one
+deferred retry before that prerender retry. Crucially none emitted
+`TRACED_HEAD_FRAME_FALLBACK`.
 
-Frog, allay, and vex share a second confirmed cause. C7 reaches creator under
-each normal texture variant and performs its bounded retry, then fails at
-`MISSING_RETAINED_VANILLA_GEOMETRY` before adapter drawing. EMF has cleared the
-mapped vanilla canonical-head cubes for these non-attached JEM models. C8 uses
-only the already uniquely traced semantic `head2` and its direct cube as the
-reference frame in that exact absent-retained-geometry case. It does not add a
-retry or broaden model search.
+C8 rejected `followPath(vanillaRoot, canonicalPath) == null` before collecting
+or selecting a traced candidate. Its fallback therefore handled only a retained
+canonical path whose geometry owner was absent, not the observed missing-path
+state. C9 records whether the retained canonical path is found or absent, keeps
+the C8 found-path behavior, and permits the same fallback only after exactly one
+traced semantic head passes existing direct-cube and finite/invertible transform
+checks. It never selects body, wing, arm, leg, sibling, ambiguous, empty, or
+untraced geometry; the C7 cache policy and C8 transformed hatted-villager code
+are unchanged.
 
-## C8 manual runtime matrix
+## C9 manual runtime matrix
 
 Under separately authorized Test Instance Manager ownership only, install the
-exact C8 hash above, clear/reload relevant Xaero resources, and record effective
-resource-pack order and model identities. For every owned target, **PASS** is a
-correctly textured and framed minimap head icon. Xaero's yellow generic entity
-square plus name is **FAIL**. Do not promote from this procedure without actual
+exact C9 hash above, clear/reload relevant Xaero resources, and record effective
+resource-pack order and model identities. **PASS** is only a correctly textured
+and framed minimap head icon. Xaero's yellow generic marker plus name, a blank
+icon, wrong framing or texture, body/wing contamination, or a repeated failed
+retry loop is **FAIL**. Do not promote from this procedure without actual
 observations.
 
 | Cases | Required observation |
 | --- | --- |
-| Preserve: axolotl; sniffer; iron golem; wolf; bat; parrot; witch; ravager; farmer villager; cleric villager | Still display correctly framed head icons without body, limb, wing, held-item, or unwanted headwear contamination. |
-| Fix: butcher villager; mason villager | Display correct head icons and their complete visible transformed nested headwear chain; no body/arms. |
-| Fix: frog; allay; vex | Replace yellow fallback with correctly textured/framed head icons. Confirm the existing one-retry-per-key lifecycle remains bounded. |
+| Fix: frog | `RETAINED_CANONICAL_PATH_ABSENT`, selected traced head, `TRACED_HEAD_NO_RETAINED_PATH_FALLBACK`, nonempty draw, downstream acceptance, cached success, and final manager icon; visually correct head only. |
+| Fix: allay | Same sequence and correct textured/framed head only for canonical `root/head`. |
+| Fix: vex | Same sequence and correct textured/framed head only for canonical `root/head`; retain the existing single bounded retry lifecycle. |
+| Preserve: axolotl; sniffer; iron golem; wolf; bat; parrot; witch; ravager; farmer; cleric; butcher; mason | Existing correctly framed head icons remain correct; hatted villagers retain complete visible transformed nested headwear without body or arms. |
 | Controls: normal villager; sheep; horse; sea turtle; creeper; vanilla non-EMF entity | Preserve ordinary Xaero behavior. |
 | World rendering and reload | Fresh Animations/EMF world rendering remains intact. Reload clears relevant cache state with no persistent retry loop. |
 
-Stop and record `RUNTIME_FAIL` or `INCONCLUSIVE` for yellow fallback,
-blank/invisible/wrongly framed or textured icons, included body/limb/wing/held
-items, ordinary-icon regressions, EMF/Fresh Animations world-rendering
-regressions, Mixin errors, or cache behavior outside the bounded lifecycle.
+Stop and record `RUNTIME_FAIL` or `INCONCLUSIVE` for any fail condition,
+ordinary-icon regression, EMF/Fresh Animations world-rendering regression,
+Mixin error, or cache behavior outside the bounded lifecycle.

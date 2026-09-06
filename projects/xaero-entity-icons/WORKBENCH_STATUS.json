@@ -112,15 +112,15 @@
     ]
   },
   "state": {
-    "milestone": "User-supplied external C7 evidence is bound to the exact retained C7 identity: axolotl, sniffer, iron golem, wolf, bat, parrot, witch, ravager, farmer villager and cleric villager visibly work; butcher villager, mason villager, frog, allay and vex show Xaero's yellow generic entity square plus name instead of a head icon. Read-only C7 diagnostics prove two remaining mechanisms: butcher/mason reach a C7 NO_TRACED_HEAD_CANDIDATE boundary because their effective Ribbit Villagers headwear uses transformed empty containers with nested cube owners, unlike farmer/cleric's direct owner success path; frog/allay/vex reach creator and their normal variant keys but fail MISSING_RETAINED_VANILLA_GEOMETRY before adapter drawing because EMF cleared their mapped vanilla head cubes. C8 copies only explicit head-local anchors through transformed empty containers while making copied EMF traversal nodes renderable, and uses only the uniquely traced semantic head as a frame when that retained canonical geometry is absent. C8 passed 47 tests in nine suites, two clean byte-identical builds, client-only allowlist, and archive validation; it is NOT_DEPLOYED and RUNTIME_UNTESTED.",
+    "milestone": "User-supplied external C8 evidence is bound to exact C8 identity 337adff555afae9fbcedf1c51320595654bfe4f1ab120f8c0dfb7d03bad3aa7c: all tested hatted villagers (farmer, cleric, butcher, mason) are now good; frog, allay and vex still show Xaero's yellow generic marker plus name and no rendered head icon. Their bounded diagnostics each reject MISSING_RETAINED_VANILLA_GEOMETRY before C8 emits TRACED_HEAD_FRAME_FALLBACK: the retained canonical path itself is absent, so C8's later traced-head fallback is unreachable. C9 preserves the C8 direct-canonical and transformed nested-headwear branches and C7 cache policy; only when that retained path is absent does it invoke the existing uniquely traced, direct semantic-head frame path. C9 passed 49 tests in nine suites, two clean byte-identical builds, client-only allowlist and archive validation; it is NOT_DEPLOYED and RUNTIME_UNTESTED.",
     "releases": {
       "current": {
-        "version": "0.1.0-canary8",
+        "version": "0.1.0-canary9",
         "artifact": {
-          "filename": "xaero-emf-entity-icon-compat-0.1.0-canary8.jar",
-          "sha256": "337adff555afae9fbcedf1c51320595654bfe4f1ab120f8c0dfb7d03bad3aa7c"
+          "filename": "xaero-emf-entity-icon-compat-0.1.0-canary9.jar",
+          "sha256": "184ca0da6d6c055c0ba9b2d0e9fb3bccc3c30da9ea7f700a64792d4d1513551a"
         },
-        "source_commit": "8c45f2f9ccdcf12f4403ba3380a32f81f975e077",
+        "source_commit": "6c1b4e0ede3ada8470bc7b4ba54ea8b51f9d2e93",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
@@ -139,11 +139,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 7,
-    "activity_at": "2026-09-06T06:04:05Z",
-    "updated_at": "2026-09-06T06:04:05Z",
-    "last_codex_at": "2026-09-06T06:04:05Z",
-    "source_commit": "8c45f2f9ccdcf12f4403ba3380a32f81f975e077",
+    "revision": 8,
+    "activity_at": "2026-09-06T09:24:58Z",
+    "updated_at": "2026-09-06T09:24:58Z",
+    "last_codex_at": "2026-09-06T09:24:58Z",
+    "source_commit": "6c1b4e0ede3ada8470bc7b4ba54ea8b51f9d2e93",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
