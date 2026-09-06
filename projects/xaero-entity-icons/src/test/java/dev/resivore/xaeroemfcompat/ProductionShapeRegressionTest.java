@@ -19,6 +19,8 @@ import static dev.resivore.xaeroemfcompat.RelocatedHeadFailureMechanismTest.empt
 import static dev.resivore.xaeroemfcompat.RelocatedHeadFailureMechanismTest.traced;
 import static dev.resivore.xaeroemfcompat.RelocatedHeadFailureMechanismTest.transformedEmpty;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -89,6 +91,106 @@ class ProductionShapeRegressionTest {
             assertFalse(paths.stream().anyMatch(path -> path.contains("body") || path.contains("arms")),
                     fixture.getKey());
             assertTrue(submittedVertices(result.renderAdapter()) > 0, fixture.getKey());
+        }
+    }
+
+    @Test
+    void transformedNestedVillagerHeadwearRetainsEveryTransformAndRenders() {
+        ModelPart vanillaRoot = SheepModel.createBodyLayer().bakeRoot();
+        ModelPart vanillaHead = vanillaRoot.getChild("head");
+        for (String profession : List.of("butcher", "mason")) {
+            ModelPart firstCube = cubePart(Map.of());
+            firstCube.x = 0.0F;
+            firstCube.y = 0.5F;
+            firstCube.z = -0.25F;
+            firstCube.xRot = 0.43F;
+            firstCube.skipDraw = true;
+            firstCube.setInitialPose(firstCube.storePose());
+            ModelPart secondCube = cubePart(Map.of());
+            secondCube.x = 0.0F;
+            secondCube.y = 0.25F;
+            secondCube.z = 0.5F;
+            secondCube.xRot = 0.43F;
+            secondCube.skipDraw = true;
+            secondCube.setInitialPose(secondCube.storePose());
+            ModelPart hat = transformedEmpty(vanillaHead, Map.of(
+                    profession + "_hat_cube_1", firstCube,
+                    profession + "_hat_cube_2", secondCube));
+            hat.x = 0.0F;
+            hat.y = 5.0F;
+            hat.z = 2.0F;
+            hat.xRot = 0.52F;
+            hat.skipDraw = true;
+            hat.setInitialPose(hat.storePose());
+            ModelPart nose = transformedEmpty(vanillaHead, Map.of(profession + "_hat", hat));
+            nose.x = 0.0F;
+            nose.y = -2.0F;
+            nose.z = 0.0F;
+            nose.setInitialPose(nose.storePose());
+            ModelPart canonical = new ModelPart(
+                    List.of(),
+                    Map.of("nose", nose, "body", cubePart(Map.of()), "arms", cubePart(Map.of())));
+            canonical.skipDraw = true;
+            canonical.setInitialPose(canonical.storePose());
+
+            var result = EmfIconPartResolver.resolveRelocatedHead(
+                    emptyPart(Map.of("head", canonical)), canonical, vanillaRoot,
+                    traced(canonical, 0xFF406080), true).orElseThrow();
+            List<String> paths = cubePaths(result.renderAdapter());
+            assertTrue(paths.stream().anyMatch(path -> path.contains(profession + "_hat_cube_1")), profession);
+            assertTrue(paths.stream().anyMatch(path -> path.contains(profession + "_hat_cube_2")), profession);
+            assertFalse(paths.stream().anyMatch(path -> path.contains("body") || path.contains("arms")), profession);
+            assertTrue(submittedVertices(result.renderAdapter()) > 0, profession);
+
+            ModelPart copiedHat = ModelPartUtil.getChildren(
+                    ModelPartUtil.getChildren(result.renderAdapter()).get("head"))
+                    .get("nose");
+            copiedHat = ModelPartUtil.getChildren(copiedHat).get(profession + "_hat");
+            assertEquals(5.0F, copiedHat.y, profession);
+            assertEquals(0.52F, copiedHat.xRot, profession);
+
+            hat.y = 0.0F;
+            hat.xRot = 0.0F;
+            hat.setInitialPose(hat.storePose());
+            var withoutIntermediateTransform = EmfIconPartResolver.resolveRelocatedHead(
+                    emptyPart(Map.of("head", canonical)), canonical, vanillaRoot,
+                    traced(canonical, 0xFF406080), true).orElseThrow();
+            assertNotEquals(
+                    RelocatedHeadFailureMechanismTest.centeredBounds(
+                            result.renderAdapter(), result.centeringPart()).toString(),
+                    RelocatedHeadFailureMechanismTest.centeredBounds(
+                            withoutIntermediateTransform.renderAdapter(),
+                            withoutIntermediateTransform.centeringPart()).toString(),
+                    profession);
+        }
+    }
+
+    @Test
+    void absentRetainedVanillaHeadGeometryUsesOnlyTheUniqueTracedHeadFrame() {
+        for (String entity : List.of("frog", "allay", "vex")) {
+            ModelPart tracedHead = cubePart(Map.of("eyes", cubePart(Map.of())));
+            ModelPart emfBody = emptyPart(Map.of(
+                    "EMF_head2", tracedHead,
+                    "EMF_wing", cubePart(Map.of()),
+                    "EMF_unrelated_body", cubePart(Map.of())));
+            ModelPart canonical = emptyPart(Map.of());
+            ModelPart root = entity.equals("frog")
+                    ? emptyPart(Map.of("body", emptyPart(Map.of("head", canonical,
+                    "EMF_body", emfBody))))
+                    : emptyPart(Map.of("head", canonical, "body", emfBody));
+            ModelPart retained = entity.equals("frog")
+                    ? emptyPart(Map.of("body", emptyPart(Map.of("head", emptyPart(Map.of())))))
+                    : emptyPart(Map.of("head", emptyPart(Map.of())));
+
+            var result = EmfIconPartResolver.resolveRelocatedHead(
+                    root, canonical, retained, traced(tracedHead, 0xFF102030), true).orElseThrow();
+            assertSame(tracedHead, result.geometryRoot(), entity);
+            assertEquals("TRACED_HEAD_FRAME_FALLBACK", IconDiagnostics.lastReason(), entity);
+            List<String> paths = cubePaths(result.renderAdapter());
+            assertTrue(paths.stream().anyMatch(path -> path.contains("EMF_head2")), entity);
+            assertFalse(paths.stream().anyMatch(path -> path.contains("EMF_wing")
+                    || path.contains("EMF_unrelated_body")), entity);
+            assertTrue(submittedVertices(result.renderAdapter()) > 0, entity);
         }
     }
 
