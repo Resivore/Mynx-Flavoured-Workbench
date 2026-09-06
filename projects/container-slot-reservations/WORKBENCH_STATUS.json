@@ -25,6 +25,7 @@
     ],
     "scope": [
       "Current 0.1.0-canary13 from implementation checkpoint 6d8258f74e7b80625db81cd61c7fec0e4a3a49b0 removes only CSR's separate blue selected-cell draw while preserving server-authoritative selection; it makes carried-shulker extraction deterministically repair a matching pre-migration selection or use the established first-occupied default at the native click seam; and it composes the unchanged 176x77 shulker upper panel with the runtime texture's 176x6 bottom frame from source Y=160. Reservations, component identity, panel grid coordinates, QSN, and CCAR behavior remain unchanged.",
+      "While CSR owns Slot A and remains TESTING, a finalized current CSR testing successor normally replaces the preceding CSR candidate through one serialized Test Instance Manager Slot A transition; only a concrete manager preimage, dependency, or physical-safety failure may leave that successor retained but not deployed.",
       "Bind one exact count-one shulker host by screen, menu, menu ID, visible slot index, Slot instance, underlying container slot, explicit Creative player-inventory locator where applicable, and complete SHA-256 ItemStack fingerprint; never search for an equal stack.",
       "Render and hit-test one fixed 176x83 native panel with an unchanged 176x77 upper shulker region plus the same runtime texture's 176x6 bottom frame, 27 physical 18x18 cells, right-then-left clamped placement, a narrow deterministic corridor, one grace frame, live contents, vanilla cell highlights, exact existing reservation visuals, and carried-stack-above-panel strata.",
       "Keep pointer hover separate from server-authoritative per-player transient selection; select and cycle only occupied cells, migrate only through the exact server-observed host-slot-to-cursor pickup, and clear on stale identity, menu close, or disconnect.",
@@ -118,7 +119,7 @@
     ]
   },
   "state": {
-    "milestone": "CSR Canary 13 is the controlled-validation successor to C12: it removes the separate blue selection draw, repairs carried-shulker extraction at the real native-click seam without relying on selection-payload ordering, and appends the runtime-resolved vanilla shulker texture's six-pixel bottom frame (source Y=160) to form a 176x83 panel without moving its grid. Exact manually deployed C12 user evidence is recorded only as supplied: its PacketContext/Polymer hover crash is resolved; the pinned panel generally functions; right-click insertion into the shulker works; a transient blue selected-cell visual is unwanted; secondary-click extraction into an empty writable inventory slot is broken; and the panel lacks its bottom frame. C12 is not a full runtime PASS. C13 controlled validation passed 81/81 JUnit tests and 28/28 headless GameTests; it is not a managed deployment and has no runtime result. Slot A remains exact C11 deployment eb9e9dc9-b213-42f1-b47f-e6530cb5802e, artifact 2184b05b-e1f6-41dc-9632-bfd682d78546, READY_TO_TEST_VERIFIED / FAIL at manager revision 101; no managed mod file changed and Slot B/QSN C9 remains independent and unchanged. Controlled evidence is not runtime success.",
+    "milestone": "CSR Canary 13 is the controlled-validation successor to C12: it removes the separate blue selection draw, repairs carried-shulker extraction at the real native-click seam without relying on selection-payload ordering, and appends the runtime-resolved vanilla shulker texture's six-pixel bottom frame (source Y=160) to form a 176x83 panel without moving its grid. Exact manual C12 observations remain historical external evidence only: its PacketContext/Polymer hover crash is resolved; the pinned panel generally functions; right-click insertion into the shulker works; a transient blue selected-cell visual is unwanted; secondary-click extraction into an empty writable inventory slot is broken; and the panel lacks its bottom frame. C12 is not a full runtime PASS. At manager revision 102, a serialized verified Slot A transition replaced exact C11 deployment eb9e9dc9-b213-42f1-b47f-e6530cb5802e / artifact 2184b05b-e1f6-41dc-9632-bfd682d78546 with C13 deployment 377b5b52-c3a5-49c6-9c5e-bc722f263cf7 / artifact 3bbd66ef-c703-41ab-8ada-92275c9f6f3b. C13 is READY_TO_TEST_VERIFIED / RUNTIME_UNTESTED. Slot B/QSN C9 remains independent and unchanged. Controlled evidence and physical readiness are not runtime success.",
     "releases": {
       "current": {
         "version": "0.1.0-canary13",
@@ -159,16 +160,16 @@
     },
     "validation": {
       "build": "CONTROLLED_VALIDATION_PASS",
-      "deployment": "NOT_DEPLOYED",
+      "deployment": "READY_TO_TEST_VERIFIED",
       "runtime": "RUNTIME_UNTESTED"
     },
     "blocker": null
   },
   "synchronization": {
-    "revision": 18,
-    "activity_at": "2026-09-06T03:30:00Z",
-    "updated_at": "2026-09-06T03:30:00Z",
-    "last_codex_at": "2026-09-06T03:30:00Z",
+    "revision": 19,
+    "activity_at": "2026-09-06T04:32:19Z",
+    "updated_at": "2026-09-06T04:32:19Z",
+    "last_codex_at": "2026-09-06T04:32:19Z",
     "source_commit": "6d8258f74e7b80625db81cd61c7fec0e4a3a49b0",
     "google_sheet": {
       "participates": true,
