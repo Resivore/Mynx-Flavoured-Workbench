@@ -124,7 +124,7 @@ try {
     $metadata = $metadataText | ConvertFrom-Json
     Require ($metadata.id -eq 'cnm_terrain_slabs_compat') 'Unified primary Fabric ID changed'
     Require ($metadata.version -eq '4.2.7-bge.canary63.inventory-preview+26.2') 'Unified Fabric version is not exact C63'
-    Require ($metadata.name -eq 'Block Geometry Extensions Canary 63 — Axis Item Preview') `
+    Require ($metadata.name -eq ('Block Geometry Extensions Canary 63 ' + [char]0x2014 + ' Axis Item Preview')) `
             'Unified Fabric display name is not exact C63'
     Require (@($metadata.provides).Count -eq 1 -and $metadata.provides[0] -eq 'more_slabs_stairs_and_walls') `
             'Unified descriptor must provide exactly the legacy Nibaru ID'
