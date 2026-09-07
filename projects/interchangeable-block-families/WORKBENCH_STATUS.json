@@ -20,13 +20,13 @@
     "goals": [
       "Contribute the exact audited literal block and accessory families to Clutter No More ShapeMap so approved material forms can share one interchangeable storage family.",
       "Preserve Clutter No More as the sole switching, transmutation, recipe-cleanup, and equivalence authority while keeping component patches and source variants exact.",
-      "Keep exact accepted C3 live as the rollback baseline; a controlled C5 recipe-cleanup regression must be corrected before any C5 artifact, deployment, or runtime validation."
+      "Keep exact accepted C3 live as the rollback baseline while C5 is ready for focused manual runtime validation."
     ],
     "scope": [
       "Preserve the accepted 96-family and 944-member C3 catalog byte-for-byte while extending the C4 133-family/1,120-member catalog to C5's 134 mutually disjoint families, 1,209 unique item IDs, and 22-member maximum without suffix, tag, or provider-name inference.",
-      "Add only C5's nine literal Aurora Lantern chandelier members, the Ribbits Mossy Oak fence/gate family, and the audited Macaw Paths paving members; do not manufacture a C5 artifact while the controlled cleanup regression remains unresolved.",
+      "Add only C5's nine literal Aurora Lantern chandelier members, the Ribbits Mossy Oak fence/gate family, and the audited Macaw Paths paving members; retain C5 only after its narrow canonical-parent cleanup correction passes the full C8 dependency control.",
       "Preserve pre/post ShapeMap collision validation, equal-component-patch equivalence, fail-closed transfer validation, audited alternate-door loot narrowing, recipe cleanup contracts, Quick Stack Nearby affinity, and large-family viewport handling.",
-      "Retain exact historical C4 and exact accepted/effective-rollback C3 artifacts; C4 remains the independently deployed, runtime-untested Slot B member, C3 remains accepted and live, and C5 has no artifact."
+      "Retain exact historical C4 and exact accepted/effective-rollback C3 artifacts; C5 supersedes C4 in Slot B after manager verification while C3 remains accepted rollback provenance."
     ],
     "boundaries": {
       "owned_paths": [
@@ -37,7 +37,7 @@
         "Minecraft, Macaw, and Dramatic Doors providers own native blocks, placement, collision, redstone, recipes and costs, drops, copper weathering, waxing, scraping, and lightning behavior; IBF does not normalize or replace those semantics.",
         "Nibaru and Block Geometry Extensions own geometry and material behavior, while Quick Stack Nearby and its compatibility layer only consume Clutter No More affinity; IBF does not modify, duplicate, or bundle those projects.",
         "Partial provider materialization, dynamic discovery, registry-name or tag inference, cross-material or cross-finish collapsing, Macaw paving/full/slab/stair forms, and Building But Better integration are outside the audited C4 contract.",
-        "C5 does not deploy, mutate a Test Slot or accepted physical baseline, access either Minecraft profile, or create new in-game runtime evidence; the existing C4 Slot B deployment remains independently recorded in revision 2 and TESTING refers only to that immutable project UUID occupancy.",
+        "C5 may replace only the same-project C4 Slot B member through the serialized Test Instance Manager workflow; it must not alter Slot A, the accepted baseline, or the protected gameplay profile.",
         "Legacy status READMEs, provenance and audit narratives, historical C1/C2 matrices and binaries, manager records, snapshots, branches, worktrees, and Git history are not imported."
       ]
     },
@@ -129,13 +129,20 @@
     ]
   },
   "state": {
-    "milestone": "C5 source adds the Aurora, Ribbits, and paving slice but has no artifact: the full C8 dependency GameTest control leaves the exact canonical minecraft:iron_bars recipe missing only when CNM recipe cleanup is enabled. The older exact C4 remains the independently deployed Slot B member; accepted C3 remains the disabled rollback.",
+    "milestone": "C5 corrects CNM 2.0.7's cleanup interaction by excluding an IBF canonical parent from only CNM's parent-result cleanup match while leaving alternate and non-IBF cleanup untouched. The full exact C8 dependency GameTest passes 18/18; C5 is retained and awaiting Slot B readiness verification, while C3 remains the accepted rollback.",
     "releases": {
       "current": {
-        "version": "C5 source candidate (0.1.0-canary5; artifact withheld)",
+        "version": "C5 (0.1.0-canary5)",
         "embedded_version": "0.1.0-canary5",
-        "artifact": null,
-        "source_commit": "e86b80dd6c6be66d43789679c6563059f26c64bd"
+        "artifact": {
+          "filename": "interchangeable-block-families-0.1.0-canary5.jar",
+          "sha256": "f9086f493df13142ffceb306caff1231d424ad6cca49f357195f0eccd0f44d0a"
+        },
+        "source_commit": "e07724cfe756e56b228f85cdaa153e56c29ec75e",
+        "runtime_dependency_policy": {
+          "contract": "CAPABILITY_OR_PROVIDER",
+          "exceptions": []
+        }
       },
       "accepted": {
         "version": "C3 (0.1.0-canary3)",
@@ -157,18 +164,18 @@
       "accepted_rollback": "ACCEPTED_IS_ROLLBACK"
     },
     "validation": {
-      "build": "CONTROLLED_VALIDATION_FAIL",
+      "build": "CONTROLLED_VALIDATION_PASS",
       "deployment": "NOT_DEPLOYED",
       "runtime": "RUNTIME_UNTESTED"
     },
     "blocker": null
   },
   "synchronization": {
-    "revision": 3,
-    "activity_at": "2026-09-07T21:18:28.4948692Z",
-    "updated_at": "2026-09-07T21:18:28.4948692Z",
-    "last_codex_at": "2026-09-07T21:18:28.4948692Z",
-    "source_commit": "e86b80dd6c6be66d43789679c6563059f26c64bd",
+    "revision": 4,
+    "activity_at": "2026-09-07T22:10:38.5106842Z",
+    "updated_at": "2026-09-07T22:10:38.5106842Z",
+    "last_codex_at": "2026-09-07T22:10:38.5106842Z",
+    "source_commit": "e07724cfe756e56b228f85cdaa153e56c29ec75e",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null

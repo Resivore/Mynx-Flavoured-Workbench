@@ -1,7 +1,10 @@
-# Testing
+# C5 focused runtime checklist
 
-C5 has no artifact and must not be deployed or runtime-tested. Its full controlled Fabric GameTest stack, including exact Dramatic Doors C8 `dramaticdoors-1.20.1-3.3.3+26.2-workbench-canary7.jar` SHA-256 `43c3efd19619a59a10957b5893adce081766f653d8cccb13f38bfbaacec2cefb`, loads 134 audited families / 1,209 items and completes 17 of 18 checks. The one failure is canonical `minecraft:iron_bars`: it is present with CNM recipe cleanup disabled and missing with cleanup enabled, despite the resolved ShapeMap proving it is not an alternate. Correct that CNM/IBF cleanup interaction before producing a C5 JAR.
+Exact candidate: `interchangeable-block-families-0.1.0-canary5.jar`, embedded version `0.1.0-canary5`, SHA-256 `f9086f493df13142ffceb306caff1231d424ad6cca49f357195f0eccd0f44d0a`.
 
-The existing exact C4 `interchangeable-block-families-0.1.0-canary4.jar`, 51,171 bytes, SHA-256 `8f805d0cc6cf65599c8fab190be2aa023006a9bd990bcdd2bf0c45f62f1a2968`, remains in dedicated Workbench Slot B as deployment `573a027d-5579-4a2b-aefd-a4c57a6ee34a` / artifact `3d2a3524-6242-43b1-b0a8-c3a6e592087e`, `READY_TO_TEST_VERIFIED` at observed UTC `2026-09-07T03:57:38.772589Z`, and `RUNTIME_UNTESTED`. This pre-existing deployment is not C5 evidence and was not touched.
+1. In the dedicated Matcha Flavoured 26.2 Workbench only, confirm Iron Bars has its normal crafting recipe and craft it from iron ingots.
+2. Confirm Iron Chain has no independent recipe, then use CNM's selector to switch Iron Bars among Iron Bars, Iron Chain, and Aurora's iron chandelier.
+3. Check one representative copper bars/chain/chandelier family, Mossy Oak fence/fence gate, and an audited Macaw paving family: canonical acquisition remains available and alternates retain CNM cleanup behavior.
+4. Restart/reload the world once and repeat the Iron Bars availability and selector check. Stop and report any missing canonical recipe, restored alternate recipe, selector mismatch, crash, or data-reload error.
 
-Exact accepted C3 remains the effective disabled rollback: `interchangeable-block-families-0.1.0-canary3.jar`, 47,456 bytes, SHA-256 `d0150aea777dd7837d0c9b4f5cf41ce45f510c60ef416fb7001d06a36a6b0e87`. Manager revision 111 / Stack v27 and physical inventory SHA-256 `dafdb93c1f970c3775571cdfffe84b8d6f95432e3f36dd158c2d376d62f24c84` were post-deployment verified.
+No manual Minecraft result is recorded yet. C5 passed controlled validation only: Java 25 / Gradle 9.5.1 / Loom 1.17.19 JUnit and the exact Dramatic Doors C8 dependency GameTest suite (18/18). C3 remains the accepted rollback.
