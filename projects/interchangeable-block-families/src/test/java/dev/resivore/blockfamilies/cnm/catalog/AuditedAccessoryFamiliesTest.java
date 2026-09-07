@@ -26,24 +26,24 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 final class AuditedAccessoryFamiliesTest {
     @Test
-    void ironAndEveryCopperFinishHaveOneExactTwoMemberBarChainFamily() {
+    void ironAndEveryCopperFinishHaveOneExactThreeMemberBarChainFamily() {
         List<ExpectedFamily> expected = List.of(
-                pair("iron", "minecraft:iron_bars", "minecraft:iron_chain"),
-                pair("copper", "minecraft:copper_bars", "minecraft:copper_chain"),
-                pair("exposed_copper", "minecraft:exposed_copper_bars",
-                        "minecraft:exposed_copper_chain"),
-                pair("weathered_copper", "minecraft:weathered_copper_bars",
-                        "minecraft:weathered_copper_chain"),
-                pair("oxidized_copper", "minecraft:oxidized_copper_bars",
-                        "minecraft:oxidized_copper_chain"),
-                pair("waxed_copper", "minecraft:waxed_copper_bars",
-                        "minecraft:waxed_copper_chain"),
-                pair("waxed_exposed_copper", "minecraft:waxed_exposed_copper_bars",
-                        "minecraft:waxed_exposed_copper_chain"),
-                pair("waxed_weathered_copper", "minecraft:waxed_weathered_copper_bars",
-                        "minecraft:waxed_weathered_copper_chain"),
-                pair("waxed_oxidized_copper", "minecraft:waxed_oxidized_copper_bars",
-                        "minecraft:waxed_oxidized_copper_chain"));
+                triple("iron", "minecraft:iron_bars", "minecraft:iron_chain", "auroraslanterns:chandelier/iron"),
+                triple("copper", "minecraft:copper_bars", "minecraft:copper_chain", "auroraslanterns:chandelier/copper"),
+                triple("exposed_copper", "minecraft:exposed_copper_bars",
+                        "minecraft:exposed_copper_chain", "auroraslanterns:chandelier/exposed_copper"),
+                triple("weathered_copper", "minecraft:weathered_copper_bars",
+                        "minecraft:weathered_copper_chain", "auroraslanterns:chandelier/weathered_copper"),
+                triple("oxidized_copper", "minecraft:oxidized_copper_bars",
+                        "minecraft:oxidized_copper_chain", "auroraslanterns:chandelier/oxidized_copper"),
+                triple("waxed_copper", "minecraft:waxed_copper_bars",
+                        "minecraft:waxed_copper_chain", "auroraslanterns:chandelier/waxed_copper"),
+                triple("waxed_exposed_copper", "minecraft:waxed_exposed_copper_bars",
+                        "minecraft:waxed_exposed_copper_chain", "auroraslanterns:chandelier/waxed_exposed_copper"),
+                triple("waxed_weathered_copper", "minecraft:waxed_weathered_copper_bars",
+                        "minecraft:waxed_weathered_copper_chain", "auroraslanterns:chandelier/waxed_weathered_copper"),
+                triple("waxed_oxidized_copper", "minecraft:waxed_oxidized_copper_bars",
+                        "minecraft:waxed_oxidized_copper_chain", "auroraslanterns:chandelier/waxed_oxidized_copper"));
 
         List<AuditedShapeFamily> actual = AuditedShapeFamilies.families(BAR_CHAIN);
         assertEquals(expected.size(), actual.size());
@@ -56,10 +56,10 @@ final class AuditedAccessoryFamiliesTest {
             assertEquals(BAR_CHAIN, actualFamily.category());
             assertEquals(expectedFamily.members(), actualFamily.members());
             assertEquals(expectedFamily.members().getFirst(), actualFamily.canonicalParent());
-            assertEquals(2, actualFamily.members().size());
+            assertEquals(3, actualFamily.members().size());
             assertTrue(members.addAll(actualFamily.members()), actualFamily.key().toString());
         }
-        assertEquals(18, members.size());
+        assertEquals(27, members.size());
 
         for (int first = 1; first < actual.size(); first++) {
             for (int second = first + 1; second < actual.size(); second++) {
@@ -114,7 +114,13 @@ final class AuditedAccessoryFamiliesTest {
                         id("mcwpaths:blackstone_strewn_rocky_path"),
                         id("mcwpaths:blackstone_windmill_weave_path"),
                         id("mcwpaths:blackstone_flagstone_path"),
-                        id("mcwpaths:blackstone_crystal_floor_path")),
+                        id("mcwpaths:blackstone_crystal_floor_path"),
+                        id("mcwpaths:blackstone_diamond_paving"),
+                        id("mcwpaths:blackstone_basket_weave_paving"),
+                        id("mcwpaths:blackstone_square_paving"),
+                        id("mcwpaths:blackstone_honeycomb_paving"),
+                        id("mcwpaths:blackstone_clover_paving"),
+                        id("mcwpaths:blackstone_dumble_paving")),
                 family("blackstone").members());
 
         Set<Identifier> oak = Set.copyOf(family("oak").members());
@@ -134,7 +140,7 @@ final class AuditedAccessoryFamiliesTest {
 
         List<AuditedShapeFamily> accessories = AuditedShapeFamilies.families(BUILDING_ACCESSORY);
         assertEquals(28, accessories.size());
-        assertEquals(158, accessories.stream().mapToInt(value -> value.members().size()).sum());
+        assertEquals(236, accessories.stream().mapToInt(value -> value.members().size()).sum());
         for (AuditedShapeFamily accessory : accessories) {
             assertTrue(accessory.members().size() >= 2, "Singleton family " + accessory.key());
         }
@@ -149,7 +155,7 @@ final class AuditedAccessoryFamiliesTest {
     }
 
     @Test
-    void onlyTheExactThinMacawPathFormsAreAdmitted() {
+    void onlyTheExactAuditedMacawPathAndPavingFormsAreAdmitted() {
         Set<String> expected = new LinkedHashSet<>();
         for (String wood : List.of(
                 "oak", "spruce", "birch", "jungle", "acacia", "dark_oak",
@@ -166,6 +172,16 @@ final class AuditedAccessoryFamiliesTest {
                 expected.add("mcwpaths:" + material + "_" + design);
             }
         }
+        for (String material : List.of(
+                "andesite", "diorite", "granite", "sandstone", "red_sandstone", "brick",
+                "cobblestone", "mossy_cobblestone", "cobbled_deepslate", "deepslate", "mud_brick",
+                "blackstone", "dark_prismarine")) {
+            for (String design : List.of(
+                    "diamond_paving", "basket_weave_paving", "square_paving", "honeycomb_paving",
+                    "clover_paving", "dumble_paving")) {
+                expected.add("mcwpaths:" + material + "_" + design);
+            }
+        }
 
         Set<String> actual = new LinkedHashSet<>();
         for (AuditedShapeFamily family : AuditedShapeFamilies.families(BUILDING_ACCESSORY)) {
@@ -175,9 +191,9 @@ final class AuditedAccessoryFamiliesTest {
                 }
             }
         }
-        assertEquals(77, actual.size());
+        assertEquals(155, actual.size());
         assertEquals(expected, actual);
-        assertTrue(actual.stream().allMatch(value -> value.endsWith("_path")));
+        assertEquals(78, actual.stream().filter(value -> value.endsWith("_paving")).count());
         assertTrue(actual.stream().noneMatch(value -> value.endsWith("_path_block")));
 
         for (String excluded : List.of(
@@ -187,8 +203,9 @@ final class AuditedAccessoryFamiliesTest {
                 "mcwpaths:andesite_windmill_weave",
                 "mcwpaths:andesite_running_bond_slab",
                 "mcwpaths:andesite_running_bond_stairs",
-                "mcwpaths:andesite_basket_weave_paving",
-                "mcwpaths:andesite_clover_paving",
+                "mcwpaths:andesite_running_bond_paving",
+                "mcwpaths:andesite_paving_slab",
+                "mcwpaths:andesite_paving_stairs",
                 "mcwpaths:dirt_path_block",
                 "mcwpaths:gravel_path_block",
                 "mcwpaths:podzol_path_block",
@@ -204,6 +221,7 @@ final class AuditedAccessoryFamiliesTest {
                 TWO_HIGH_DOOR, THREE_HIGH_DOOR, TRAPDOOR, WINDOW, FENCE_GATE);
         List<AuditedShapeFamily> legacyFamilies = AuditedShapeFamilies.families().stream()
                 .filter(family -> legacy.contains(family.category()))
+                .filter(family -> !family.key().getPath().equals("cnm/fence_gate/ribbits_mossy_oak_planks"))
                 .toList();
 
         assertEquals(96, legacyFamilies.size());
@@ -212,8 +230,20 @@ final class AuditedAccessoryFamiliesTest {
                 digest(legacyFamilies));
     }
 
-    private static ExpectedFamily pair(String keySuffix, String parent, String alternative) {
-        return new ExpectedFamily(keySuffix, List.of(id(parent), id(alternative)));
+    void ribbitsMossyOakFenceGateIsTheOnlyRibbitsFamily() {
+        List<AuditedShapeFamily> fences = AuditedShapeFamilies.families(FENCE_GATE);
+        AuditedShapeFamily mossyOak = fences.getLast();
+        assertEquals(id("interchangeable_block_families:cnm/fence_gate/ribbits_mossy_oak_planks"), mossyOak.key());
+        assertEquals(List.of(id("ribbits:mossy_oak_planks_fence"),
+                id("ribbits:mossy_oak_planks_fence_gate")), mossyOak.members());
+        assertEquals(1, fences.stream().filter(family -> family.members().stream()
+                .anyMatch(member -> member.getNamespace().equals("ribbits"))).count());
+        assertFalse(allMembers().contains(id("ribbits:mossy_oak_planks_slab")));
+    }
+
+    private static ExpectedFamily triple(String keySuffix, String parent, String alternative,
+                                         String chandelier) {
+        return new ExpectedFamily(keySuffix, List.of(id(parent), id(alternative), id(chandelier)));
     }
 
     private static AuditedShapeFamily family(String keySuffix) {

@@ -67,18 +67,24 @@ final class ProviderBoundaryContractTest {
             "mangrove", "cherry", "pale_oak", "crimson", "warped");
 
     @Test
-    void catalogContainsExactlyTheAuditedSeventySevenThinPaths() throws Exception {
+    void catalogContainsExactlyTheAuditedPathsAndSeventyEightPavings() throws Exception {
         Set<String> expectedPaths = expectedPathIds();
+        Set<String> expectedPavings = product(PAVING_MATERIALS, PAVING_DESIGNS, "_");
         assertEquals(77, expectedPaths.size());
+        assertEquals(78, expectedPavings.size());
 
         Set<String> catalogPaths = catalogMembers(
                 AuditedShapeFamily.Category.BUILDING_ACCESSORY, "mcwpaths");
-        assertEquals(namespaced("mcwpaths", expectedPaths), catalogPaths);
+        Set<String> expectedCatalogPaths = new LinkedHashSet<>(expectedPaths);
+        expectedCatalogPaths.addAll(expectedPavings);
+        assertEquals(155, expectedCatalogPaths.size());
+        assertEquals(namespaced("mcwpaths", expectedCatalogPaths), catalogPaths);
 
         try (JarFile jar = providerJar(PATHS_JAR_PROPERTY)) {
             Set<String> blockstates = blockstateIds(jar, "mcwpaths");
             Set<String> providerPaths = matching(blockstates, id -> id.endsWith("_path"));
             assertEquals(expectedPaths, providerPaths);
+            assertEquals(expectedPavings, matching(blockstates, id -> id.endsWith("_paving")));
 
             for (String id : expectedPaths) {
                 assertJarEntry(jar, blockstateEntry("mcwpaths", id));
@@ -125,12 +131,11 @@ final class ProviderBoundaryContractTest {
             assertEquals(52, fullBlocks.size());
 
             Set<String> excluded = new LinkedHashSet<>();
-            excluded.addAll(pavings);
             excluded.addAll(pathBlocks);
             excluded.addAll(slabs);
             excluded.addAll(stairs);
             excluded.addAll(fullBlocks);
-            assertEquals(239, excluded.size());
+            assertEquals(161, excluded.size());
             assertTrue(disjoint(namespaced("mcwpaths", excluded), allCatalogMembers()),
                     "An explicitly excluded Macaw Paths form entered an IBF family");
         }

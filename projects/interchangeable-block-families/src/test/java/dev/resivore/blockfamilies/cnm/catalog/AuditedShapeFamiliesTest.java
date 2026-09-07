@@ -28,8 +28,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class AuditedShapeFamiliesTest {
     @Test
     void exposesExactAuditedTotals() {
-        assertEquals(133, AuditedShapeFamilies.families().size());
-        assertEquals(1_120, AuditedShapeFamilies.uniqueMemberCount());
+        assertEquals(134, AuditedShapeFamilies.families().size());
+        assertEquals(1_209, AuditedShapeFamilies.uniqueMemberCount());
         assertEquals(22, AuditedShapeFamilies.largestFamilySize());
         assertEquals(AuditedShapeFamilies.EXPECTED_FAMILY_COUNT, AuditedShapeFamilies.families().size());
         assertEquals(AuditedShapeFamilies.EXPECTED_UNIQUE_MEMBER_COUNT,
@@ -45,7 +45,7 @@ class AuditedShapeFamiliesTest {
                 THREE_HIGH_DOOR, 12,
                 TRAPDOOR, 13,
                 WINDOW, 46,
-                FENCE_GATE, 12,
+                FENCE_GATE, 13,
                 BAR_CHAIN, 9,
                 BUILDING_ACCESSORY, 28);
         Map<AuditedShapeFamily.Category, Integer> expectedMembers = Map.of(
@@ -53,9 +53,9 @@ class AuditedShapeFamiliesTest {
                 THREE_HIGH_DOOR, 229,
                 TRAPDOOR, 232,
                 WINDOW, 186,
-                FENCE_GATE, 24,
-                BAR_CHAIN, 18,
-                BUILDING_ACCESSORY, 158);
+                FENCE_GATE, 26,
+                BAR_CHAIN, 27,
+                BUILDING_ACCESSORY, 236);
 
         for (AuditedShapeFamily.Category category : AuditedShapeFamily.Category.values()) {
             List<AuditedShapeFamily> families = AuditedShapeFamilies.families(category);
@@ -80,8 +80,8 @@ class AuditedShapeFamiliesTest {
             }
         }
 
-        assertEquals(133, keys.size());
-        assertEquals(1_120, members.size());
+        assertEquals(134, keys.size());
+        assertEquals(1_209, members.size());
     }
 
     @Test
@@ -93,8 +93,10 @@ class AuditedShapeFamiliesTest {
                 families.get(48).key());
         assertEquals(id("interchangeable_block_families", "cnm/fence_gate/warped"),
                 families.get(95).key());
-        assertEquals(id("interchangeable_block_families", "cnm/bar_chain/iron"),
+        assertEquals(id("interchangeable_block_families", "cnm/fence_gate/ribbits_mossy_oak_planks"),
                 families.get(96).key());
+        assertEquals(id("interchangeable_block_families", "cnm/bar_chain/iron"),
+                families.get(97).key());
         assertEquals(id("interchangeable_block_families", "cnm/building_accessory/dark_prismarine"),
                 families.getLast().key());
 
@@ -119,9 +121,9 @@ class AuditedShapeFamiliesTest {
         assertEquals(Map.of(9, 1L, 20, 11L), sizeDistribution(THREE_HIGH_DOOR));
         assertEquals(Map.of(5, 1L, 18, 1L, 19, 11L), sizeDistribution(TRAPDOOR));
         assertEquals(Map.of(4, 44L, 5, 2L), sizeDistribution(WINDOW));
-        assertEquals(Map.of(2, 12L), sizeDistribution(FENCE_GATE));
-        assertEquals(Map.of(2, 9L), sizeDistribution(BAR_CHAIN));
-        assertEquals(Map.of(2, 2L, 3, 2L, 5, 8L, 6, 4L, 7, 12L),
+        assertEquals(Map.of(2, 13L), sizeDistribution(FENCE_GATE));
+        assertEquals(Map.of(3, 9L), sizeDistribution(BAR_CHAIN));
+        assertEquals(Map.of(2, 2L, 3, 2L, 7, 11L, 11, 8L, 12, 4L, 13, 1L),
                 sizeDistribution(BUILDING_ACCESSORY));
     }
 
@@ -227,7 +229,7 @@ class AuditedShapeFamiliesTest {
         String digest = HexFormat.of().withUpperCase().formatHex(
                 MessageDigest.getInstance("SHA-256")
                         .digest(serialization.toString().getBytes(StandardCharsets.UTF_8)));
-        assertEquals("B97003B8046A517BCB44F5EE146661B934A9DE2DF42E808453260D5436C27634", digest);
+        assertEquals("46FA910A483BDDA19EAEE2F4D95F6363AC9F838B4510E5A9525E3A12B818EC53", digest);
     }
 
     private static Map<Integer, Long> sizeDistribution(AuditedShapeFamily.Category category) {
