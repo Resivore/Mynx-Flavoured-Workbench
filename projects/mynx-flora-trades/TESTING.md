@@ -1,12 +1,16 @@
 # Testing
 
-Candidate `mynx-flora-trades-0.1.0+26.2-canary2.jar` is ACTIVE, not deployed, and runtime untested. Use only the dedicated Matcha Flavoured 26.2 Workbench after an atomic Test Slot assignment.
+Candidate `mynx-flora-trades-0.1.0+26.2-canary3.jar` is ACTIVE, not deployed, and runtime untested. Use only the dedicated Matcha Flavoured 26.2 Workbench after an atomic Test Slot assignment.
 
-1. Verify Farmer level 1 and level 2 each retain one persistent choice and visually show 1 Glowcap on the player-input side: 64 Clover or 32 Stone Bud at level 1, then 32 Barley or 32 Windswept Grass at level 2.
-2. Save and reload; confirm both selected Farmer flora options persist rather than reroll.
-3. Verify Wandering Group 1 shows 1 Glowcap for 16 Glowleaf (`mynx_regions_unexplored:dropleaf`) or 16 Mycotoxic Daisy, and Group 2 shows 1 Glowcap for 16 Cattail or 32 Duckweed.
-4. Save and reload; confirm one selection from each Wandering flora group persists. Exercise ordinary Wandering restocking and confirm only the Flora provider follows its existing ORDINARY policy.
-5. Place an empty flower pot near an unemployed villager and confirm it claims the pot and becomes `mynx_flora_trades:florist`.
-6. Repeat with a representative vanilla potted flower, then a representative Mynx Regions Unexplored potted flower; confirm normal navigation and work-site memory in each case.
-7. Confirm all eight Florist offers are immediate, simultaneous, zero-XP, one-level offers of 1 Obol (`minecraft:emerald`) for 8 selected MRU flowers, without progression.
-8. Break the claimed pot and confirm normal villager job-site/profession behavior. Smoke native Ribbits trades to ensure they are unchanged.
+1. With a fresh adult unemployed villager and an empty flower pot, verify natural claim, normal pathing, and conversion to `mynx_flora_trades:florist`.
+2. Repeat with a vanilla potted flower and a representative Mynx Regions Unexplored potted flower.
+3. Save and reload, then break and replace the claimed pot; verify normal job-site release and reacquisition.
+4. Verify a second unemployed villager cannot claim the occupied one-capacity pot.
+5. Verify all eight Florist offers are immediate, simultaneous, zero-XP, one-level offers of 1 Obol (`minecraft:emerald`) for the selected MRU flowers.
+6. Verify Farmer level 1 retains one persistent choice—64 Clover or 32 Stone Bud—for exactly 1 merchant XP, visibly ranks normally, and persists through reload.
+7. Verify Farmer level 2 retains one persistent choice—32 Barley or 32 Windswept Grass—for exactly 2 merchant XP and persists through reload.
+8. Smoke native gardener behavior; it must remain unchanged.
+9. Verify Wandering Group 1 is 1 Glowcap for 16 Glowleaf (`mynx_regions_unexplored:dropleaf`) or 16 Mycotoxic Daisy, and Group 2 is 1 Glowcap for 16 Cattail or 32 Duckweed; provider offers grant no merchant XP.
+10. Verify Naturalist and Matcha behavior remain unchanged.
+
+Stop and record FAIL or INCONCLUSIVE on any divergence; do not change a Test Slot, deployment, or protected gameplay profile outside the Test Instance Manager workflow.

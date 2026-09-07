@@ -19,3 +19,13 @@
 - Artifact: `mynx-flora-trades-0.1.0+26.2-canary2.jar`; 20,413 bytes; SHA-256 `5a611b1cfc3fba7411f8757d48cef0fd44c25bfebe29876ccc9cc2f21d136b4d`.
 - Result: ACTIVE / STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED.
 - Next state: Retain Canary 2 locally, publish revision 2 from integrated authoritative main through the gated Sheet workflow, then run the focused dedicated-Workbench retest without changing either existing test cohort.
+
+## 2026-09-07T20:20:37Z — Repair Mynx Flora Trades Canary 3
+- Revision: 3
+- Source checkpoint: `d9ec458f878913e78517ef672c64b07100b5c880`
+- Changes: Recorded Canary 2 as user-reported external RUNTIME_FAIL: Farmer/Wandering direction improved, but Farmer Flora offers granted no merchant XP, Florist did not acquire flower pots, and unemployed villagers did not become `mynx_flora_trades:florist`. Traced Minecraft 26.2's real path: `VillagerProfession.NONE` uses `ALL_ACQUIRABLE_JOBS`, which tests `PoiTypeTags.ACQUIRABLE_JOB_SITE`, before `AcquirePoi` reserves a candidate. FlowerPotBlock recognition/indexing worked; Florist was absent from that tag and was filtered before reservation. Added the non-replacing `data/minecraft/tags/point_of_interest_type/acquirable_job_site.json` extension for Florist while retaining the narrow FlowerPotBlock mixins needed for dynamic pot-state recognition. Farmer offers now use their native tier as merchant XP: tier 1 = 1 and tier 2 = 2; Wandering grants none and the one-level Florist remains zero-XP.
+- Build/static: Two independent Java 25 / Gradle 9.5.1 clean builds were byte-identical. JUnit economy coverage passed; three controlled Fabric GameTests passed, including empty-pot and potted-poppy real `AcquirePoi` candidate/reservation, vanilla assignment, and release after pot break. Test-only Ribbits fixtures isolate the real Florist registry path while the accepted MRU Canary 3 JAR supplies the actual flora registry; no fixture ships in the production JAR. Packaged Minecraft 26.2 POI mixin lookup coverage passed.
+- Runtime: Canary 2 is external/user-reported RUNTIME_FAIL only. Canary 3 is RUNTIME_UNTESTED, NOT_DEPLOYED, and occupies no Test Slot; no profile was touched.
+- Artifact: `mynx-flora-trades-0.1.0+26.2-canary3.jar`; 21,222 bytes; SHA-256 `fe08a7da4ef0e24780432f9094ed2aa4b55fd4c7808b6811e8ba4be9e9ebf484`.
+- Result: ACTIVE / STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED.
+- Next state: Retain this exact artifact, publish revision 3 from integrated authoritative main through the gated Sheet workflow, then perform the focused dedicated-Workbench runtime procedure without changing either test cohort.
