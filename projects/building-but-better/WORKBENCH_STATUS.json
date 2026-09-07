@@ -99,15 +99,15 @@
     ]
   },
   "state": {
-    "milestone": "The complete eleven-form Minecraft 26.2-native Pale Oak BBB family is built and statically verified; the candidate remains undeployed, runtime untested, unaccepted, and retained locally only because its combined JAR includes staged upstream ARR resources.",
+    "milestone": "The corrected complete eleven-form Minecraft 26.2-native Pale Oak BBB family is built and statically verified with resolved model/texture closure and generated authored Pale Oak sheets; the candidate remains undeployed, runtime untested, unaccepted, and retained locally only because its combined JAR includes staged upstream ARR resources.",
     "releases": {
       "current": {
-        "version": "2.0pre4+26.2-pale-oak-dev",
+        "version": "2.0pre4+26.2-pale-oak-dev.2",
         "artifact": {
-          "filename": "bbb-fabric-26.2-2.0pre4+26.2-pale-oak-dev.jar",
-          "sha256": "25976bafae7d0a5ba570b24150310468b72393abcd76e60992850d768330e4b1"
+          "filename": "bbb-fabric-26.2-2.0pre4+26.2-pale-oak-dev.2.jar",
+          "sha256": "8c591183cd820e557189ae0a0f3a9eff8b2519cd6e29c4c167242dd2cf204dde"
         },
-        "source_commit": "42d53bdaa48d61363418e04080d5b1c398e88cc7",
+        "source_commit": "3f1b80a95a9dbf9cc74f1703c2d2476089581802",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
@@ -126,11 +126,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 2,
-    "activity_at": "2026-09-07T21:56:04Z",
-    "updated_at": "2026-09-07T21:56:04Z",
-    "last_codex_at": "2026-09-07T21:56:04Z",
-    "source_commit": "42d53bdaa48d61363418e04080d5b1c398e88cc7",
+    "revision": 3,
+    "activity_at": "2026-09-07T23:03:06Z",
+    "updated_at": "2026-09-07T23:03:06Z",
+    "last_codex_at": "2026-09-07T23:03:06Z",
+    "source_commit": "3f1b80a95a9dbf9cc74f1703c2d2476089581802",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null

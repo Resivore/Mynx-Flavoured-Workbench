@@ -1,5 +1,8 @@
 import groovy.json.JsonOutput
 import groovy.json.JsonSlurper
+import java.awt.image.BufferedImage
+import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.security.MessageDigest
@@ -37,6 +40,7 @@ def expectedOriginalSize = 1_701_505L
 def expectedOriginalSha256 = '1E7AE114AAEC53475133E11C607FC65DCE493BBA5897EAF0044D53959B508FC0'
 def curatedRegistryFile = layout.projectDirectory.file('src/porting/curated-registry.json')
 def stagedResourcesDir = layout.buildDirectory.dir('generated/bbb-resources')
+def minecraftClientJar = providers.provider { loom.minecraftProvider.minecraftClientJar }
 
 def locateOriginalJar = {
     def configured = providers.gradleProperty('bbbOriginalJar').orElse(providers.environmentVariable('BBB_ORIGINAL_JAR')).orNull
@@ -178,6 +182,9 @@ tasks.register('stageBbbResources') {
     inputs.file(providers.provider { locateOriginalJar() })
             .withPropertyName('exactBbbOriginalJar')
             .withPathSensitivity(PathSensitivity.NONE)
+    inputs.file(minecraftClientJar)
+            .withPropertyName('minecraft262ClientJar')
+            .withPathSensitivity(PathSensitivity.NONE)
     inputs.property('expectedOriginalName', expectedOriginalName)
     inputs.property('expectedOriginalSize', expectedOriginalSize)
     inputs.property('expectedOriginalSha256', expectedOriginalSha256)
@@ -218,9 +225,17 @@ tasks.register('stageBbbResources') {
         project.delete(outputRoot)
         outputRoot.mkdirs()
 
+        File vanillaClientJar = minecraftClientJar.get()
+        if (!vanillaClientJar.isFile()) {
+            throw new GradleException("Missing resolved Minecraft ${project.minecraft_version} client JAR")
+        }
+
         ZipFile zip = new ZipFile(originalJar)
+        ZipFile vanillaZip = new ZipFile(vanillaClientJar)
         try {
             Map<String, java.util.zip.ZipEntry> entries = zip.entries().findAll { !it.directory }.collectEntries { [(it.name): it] }
+            Map<String, java.util.zip.ZipEntry> vanillaEntries = vanillaZip.entries().findAll { !it.directory }
+                    .collectEntries { [(it.name): it] }
 
             def readBytes = { String name ->
                 def entry = entries[name]
@@ -239,6 +254,13 @@ tasks.register('stageBbbResources') {
                 byte[] bytes = readBytes(name)
                 if (bytes == null) throw new GradleException("Exact BBB input is missing required curated resource ${name}")
                 bytes
+            }
+            def requireVanillaEntry = { String name ->
+                def entry = vanillaEntries[name]
+                if (entry == null) {
+                    throw new GradleException("Resolved Minecraft ${project.minecraft_version} client JAR is missing ${name}")
+                }
+                vanillaZip.getInputStream(entry).withCloseable { it.readAllBytes() }
             }
 
             LinkedHashSet<String> queue = new LinkedHashSet<>()
@@ -306,18 +328,16 @@ tasks.register('stageBbbResources') {
             }
 
             // The Pale Oak resource family is deliberately generated in ignored
-            // output.  Its model layout is the retained Cherry layout, while all
-            // wood texture references resolve directly to Minecraft 26.2 Pale Oak
-            // assets.  This avoids introducing an ARR texture copy into source and
-            // preserves the authored geometry/state coverage exactly.
+            // output. Its model layout is the retained Cherry layout. Native log
+            // surfaces point directly at Minecraft 26.2 textures; authored sheets
+            // are regenerated below from the actual vanilla Pale Oak palette while
+            // preserving transparency and non-wood pixels from the audited BBB sheet.
             def paleOakText = { String text ->
                 text.replace('cherry', 'pale_oak')
-                        .replace('bbb:block/beam/pale_oak_top', 'minecraft:block/stripped_pale_oak_log_top')
-                        .replace('bbb:block/beam/pale_oak', 'minecraft:block/stripped_pale_oak_log')
-                        .replace('block/pale_oak_log_top', 'minecraft:block/pale_oak_log_top')
-                        .replace('block/pale_oak_log', 'minecraft:block/pale_oak_log')
-                        .replaceAll('bbb:block/(?:balustrade|frame|lantern|lattice|pallet|sanded_planks|trim)/pale_oak[a-z0-9_/-]*',
-                                'minecraft:block/pale_oak_planks')
+                        .replace('"bbb:block/beam/pale_oak_top"', '"minecraft:block/stripped_pale_oak_log_top"')
+                        .replace('"bbb:block/beam/pale_oak"', '"minecraft:block/stripped_pale_oak_log"')
+                        .replace('"block/pale_oak_log_top"', '"minecraft:block/pale_oak_log_top"')
+                        .replace('"block/pale_oak_log"', '"minecraft:block/pale_oak_log"')
             }
             def copyPaleOakJson = { String sourceName, String targetName ->
                 byte[] source = requireEntry(sourceName)
@@ -334,6 +354,84 @@ tasks.register('stageBbbResources') {
                 File target = new File(modelRoot, relative.replace('cherry', 'pale_oak'))
                 target.parentFile.mkdirs()
                 Files.writeString(target.toPath(), paleOakText(Files.readString(source.toPath())), StandardCharsets.UTF_8)
+            }
+
+            def decodeImage = { byte[] bytes, String identity ->
+                BufferedImage image = ImageIO.read(new ByteArrayInputStream(bytes))
+                if (image == null) throw new GradleException("Unable to decode ${identity}")
+                image
+            }
+            BufferedImage cherryPlanks = decodeImage(
+                    requireVanillaEntry('assets/minecraft/textures/block/cherry_planks.png'),
+                    'Minecraft cherry_planks.png')
+            BufferedImage paleOakPlanks = decodeImage(
+                    requireVanillaEntry('assets/minecraft/textures/block/pale_oak_planks.png'),
+                    'Minecraft pale_oak_planks.png')
+            if (cherryPlanks.width != paleOakPlanks.width || cherryPlanks.height != paleOakPlanks.height) {
+                throw new GradleException('Minecraft Cherry/Pale Oak plank texture dimensions do not match')
+            }
+            Map<Integer, Integer> paleOakPalette = new LinkedHashMap<>()
+            for (int y = 0; y < cherryPlanks.height; y++) {
+                for (int x = 0; x < cherryPlanks.width; x++) {
+                    int cherryPixel = cherryPlanks.getRGB(x, y)
+                    int paleOakPixel = paleOakPlanks.getRGB(x, y)
+                    if (paleOakPalette.containsKey(cherryPixel) && paleOakPalette[cherryPixel] != paleOakPixel) {
+                        throw new GradleException('Minecraft Pale Oak palette is ambiguous for an audited Cherry color')
+                    }
+                    paleOakPalette[cherryPixel] = paleOakPixel
+                }
+            }
+
+            List<String> paleOakTextureSources = [
+                    'balustrade/cherry_sides.png', 'balustrade/cherry_top.png',
+                    'frame/cherry.png', 'frame/cherry_sticks.png',
+                    'lantern/cherry.png', 'lattice/cherry.png',
+                    'pallet/cherry_pallet.png', 'sanded_planks/cherry.png',
+                    'trim/cherry.png', 'trim/cherry_bottom.png',
+                    'trim/cherry_middle.png', 'trim/cherry_top.png'
+            ]
+            Map<String, Map<String, Integer>> paleOakTextureStats = new LinkedHashMap<>()
+            paleOakTextureSources.each { relative ->
+                String sourceName = "assets/bbb/textures/block/${relative}"
+                String targetRelative = relative.replace('cherry', 'pale_oak')
+                BufferedImage source = decodeImage(requireEntry(sourceName), sourceName)
+                BufferedImage target = new BufferedImage(source.width, source.height, BufferedImage.TYPE_INT_ARGB)
+                int mappedWoodPixels = 0
+                int preservedOpaquePixels = 0
+                int transparentPixels = 0
+                for (int y = 0; y < source.height; y++) {
+                    for (int x = 0; x < source.width; x++) {
+                        int sourcePixel = source.getRGB(x, y)
+                        int alpha = (sourcePixel >>> 24) & 0xFF
+                        if (alpha != 0 && alpha != 255) {
+                            throw new GradleException("Audited BBB texture ${sourceName} contains unexpected partial alpha ${alpha}")
+                        }
+                        Integer replacement = paleOakPalette[sourcePixel]
+                        if (replacement != null) {
+                            target.setRGB(x, y, replacement)
+                            mappedWoodPixels++
+                        } else {
+                            target.setRGB(x, y, sourcePixel)
+                            if (alpha == 0) transparentPixels++ else preservedOpaquePixels++
+                        }
+                    }
+                }
+                if (mappedWoodPixels == 0) {
+                    throw new GradleException("Generated Pale Oak texture ${targetRelative} contains no vanilla-derived wood pixels")
+                }
+                if (relative == 'lantern/cherry.png' && preservedOpaquePixels == 0) {
+                    throw new GradleException('Pale Oak Lantern generation lost its material-independent detail pixels')
+                }
+                ByteArrayOutputStream encoded = new ByteArrayOutputStream()
+                if (!ImageIO.write(target, 'PNG', encoded)) {
+                    throw new GradleException("Unable to encode generated Pale Oak texture ${targetRelative}")
+                }
+                writeBytes("assets/bbb/textures/block/${targetRelative}", encoded.toByteArray())
+                paleOakTextureStats[targetRelative] = [
+                        mapped_wood_pixels: mappedWoodPixels,
+                        preserved_opaque_pixels: preservedOpaquePixels,
+                        transparent_pixels: transparentPixels
+                ]
             }
 
             retainedItems.each { id ->
@@ -502,10 +600,13 @@ tasks.register('stageBbbResources') {
                     retained_items : retainedItems.size(),
                     retained_recipes: recipeCount,
                     retained_recipe_advancements: advancementCount,
+                    pale_oak_texture_source: 'minecraft:block/pale_oak_planks',
+                    pale_oak_generated_textures: paleOakTextureStats,
                     exact_asset_closure_entries: visited.size(),
                     staged_entries : outputRoot.toPath().with { root -> Files.walk(root).withCloseable { stream -> stream.filter { Files.isRegularFile(it) }.count() } }
             ])
         } finally {
+            vanillaZip.close()
             zip.close()
         }
     }
@@ -551,11 +652,11 @@ tasks.register('verifyCuratedResources') {
         int lootTables = fileTree(new File(root, 'data/bbb/loot_table/blocks')).matching { include '*.json' }.files.size()
         int tags = fileTree(new File(root, 'data')).matching { include '**/tags/**/*.json' }.files.size()
         if (blockstates != retainedBlocks.size()) throw new GradleException("Expected ${retainedBlocks.size()} blockstates, found ${blockstates}")
-        if (models <= 1_073) throw new GradleException("Pale Oak model closure was not generated; found ${models} models")
-        if (textures != 234) throw new GradleException("Direct vanilla Pale Oak textures must not expand the staged ARR texture closure; found ${textures}")
+        if (models != 1_133) throw new GradleException("Expected exact 1,133-model dependency closure, found ${models}")
+        if (textures != 246) throw new GradleException("Expected 246 staged texture/sidecar files, found ${textures}")
         if (itemDefinitions != retainedItems.size()) throw new GradleException("Expected ${retainedItems.size()} item definitions, found ${itemDefinitions}")
-        if (recipes <= 211) throw new GradleException("Pale Oak recipe closure was not generated; found ${recipes}")
-        if (advancements <= 131) throw new GradleException("Pale Oak recipe advancement closure was not generated; found ${advancements}")
+        if (recipes != 224) throw new GradleException("Expected 224 curated recipes, found ${recipes}")
+        if (advancements != 140) throw new GradleException("Expected 140 curated recipe advancements, found ${advancements}")
         if (lootTables != retainedBlocks.size()) throw new GradleException("Expected ${retainedBlocks.size()} loot tables, found ${lootTables}")
         if (tags != 44) throw new GradleException("Expected 44 filtered/generated curated tag files, found ${tags}")
         if (!new File(root, 'assets/bbb/icon.png').isFile()) throw new GradleException('Missing staged BBB icon')
@@ -579,24 +680,72 @@ tasks.register('verifyCuratedResources') {
             }
             if (hasTransparency) pngsWithTransparency++
         }
-        if (pngTextures != 230 || pngsWithTransparency != 106) {
-            throw new GradleException("Expected 230 binary-alpha PNGs with 106 transparent sprites; found ${pngTextures}/${pngsWithTransparency}")
+        if (pngTextures != 242 || pngsWithTransparency != 112) {
+            throw new GradleException("Expected 242 binary-alpha PNGs with 112 transparent sprites; found ${pngTextures}/${pngsWithTransparency}")
+        }
+        File vanillaClientJar = minecraftClientJar.get()
+        ZipFile vanillaZip = new ZipFile(vanillaClientJar)
+        Set<String> vanillaEntries = vanillaZip.entries().findAll { !it.directory }.collect { it.name } as Set<String>
+        def validateResourceReference = { String reference, String kind, File owner ->
+            if (reference.startsWith('#')) return
+            int firstColon = reference.indexOf(':')
+            int secondColon = firstColon < 0 ? -1 : reference.indexOf(':', firstColon + 1)
+            if (secondColon >= 0) {
+                throw new GradleException("Generated ${owner} has malformed ${kind} reference ${reference}")
+            }
+            String namespace = firstColon < 0 ? 'minecraft' : reference.substring(0, firstColon)
+            String path = firstColon < 0 ? reference : reference.substring(firstColon + 1)
+            if (namespace == 'bbb') {
+                File expected = new File(root, "assets/bbb/${kind}s/${path}.${kind == 'texture' ? 'png' : 'json'}")
+                if (!expected.isFile()) {
+                    throw new GradleException("Generated ${owner} references missing BBB ${kind} ${reference}")
+                }
+            } else if (namespace == 'minecraft') {
+                String expected = "assets/minecraft/${kind}s/${path}.${kind == 'texture' ? 'png' : 'json'}"
+                if (!vanillaEntries.contains(expected)) {
+                    throw new GradleException("Generated ${owner} references missing Minecraft ${kind} ${reference}")
+                }
+            }
+        }
+        def validateModelValues
+        validateModelValues = { Object value, File owner ->
+            if (value instanceof Map) {
+                value.each { key, nested ->
+                    if (key == 'model' && nested instanceof String) {
+                        validateResourceReference(nested, 'model', owner)
+                    } else {
+                        validateModelValues(nested, owner)
+                    }
+                }
+            } else if (value instanceof Collection) {
+                value.each { validateModelValues(it, owner) }
+            }
         }
         fileTree(new File(root, 'assets/bbb/models')).matching { include '**/*.json' }.files.each { modelFile ->
             Map model = new JsonSlurper().parse(modelFile) as Map
             if (model.containsKey('render_type')) {
                 throw new GradleException("Generated model ${modelFile} contains unsupported/inert 26.2 render_type metadata")
             }
-            if (model.parent instanceof String && model.parent.startsWith('bbb:block/')) {
-                String modelPath = model.parent.substring('bbb:block/'.length())
-                if (!new File(root, "assets/bbb/models/block/${modelPath}.json").isFile()) {
-                    throw new GradleException("Generated model ${modelFile} references missing BBB parent ${model.parent}")
-                }
+            if (model.parent instanceof String) validateResourceReference(model.parent as String, 'model', modelFile)
+            // BBB template models contain authored placeholder defaults that every
+            // concrete child overrides. Validate concrete model bindings here; the
+            // parent chain itself is still required and checked above.
+            boolean templateModel = modelFile.path.replace('\\', '/').contains('/models/block/template/')
+            if (!templateModel && model.textures instanceof Map) {
+                model.textures.values().findAll { it instanceof String }
+                        .each { validateResourceReference(it as String, 'texture', modelFile) }
             }
             if (modelFile.path.contains('pale_oak') && Files.readString(modelFile.toPath()).contains('cherry')) {
                 throw new GradleException("Generated Pale Oak model ${modelFile} retains a Cherry reference")
             }
         }
+        fileTree(new File(root, 'assets/bbb/blockstates')).matching { include '*.json' }.files.each { blockstateFile ->
+            validateModelValues(new JsonSlurper().parse(blockstateFile), blockstateFile)
+        }
+        fileTree(new File(root, 'assets/bbb/items')).matching { include '*.json' }.files.each { itemFile ->
+            validateModelValues(new JsonSlurper().parse(itemFile), itemFile)
+        }
+        vanillaZip.close()
 
         fileTree(new File(root, 'assets/bbb/lang')).matching { include '*.json' }.files.each { languageFile ->
             Map language = new JsonSlurper().parse(languageFile) as Map

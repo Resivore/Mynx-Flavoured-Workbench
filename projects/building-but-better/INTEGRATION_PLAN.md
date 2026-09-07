@@ -41,7 +41,7 @@ This BBB port makes **no** IBF or CNM source changes. It also does not claim tha
 
 ## Pale Oak extension
 
-Pale Oak is a Minecraft 26.2-native extension, not historical `2.0pre4` content. It is a complete eleven-form wood family—balustrade, lattice, wall, beam, beam stairs, beam slab, support, pallet, frame, lantern, and trim—represented by the same explicit metadata as every existing family. Layers and ladders remain excluded. Its generated resource closure uses the retained Cherry geometry/state layouts with Minecraft 26.2 Pale Oak texture/material references, and remains confined to ignored build output.
+Pale Oak is a Minecraft 26.2-native extension, not historical `2.0pre4` content. It is a complete eleven-form wood family—balustrade, lattice, wall, beam, beam stairs, beam slab, support, pallet, frame, lantern, and trim—represented by the same explicit metadata as every existing family. Layers and ladders remain excluded. Its ignored generated resource closure uses the retained Cherry geometry/state layouts, direct Minecraft 26.2 Pale Oak log textures where the model contract permits, and twelve Pale Oak-specific authored sheets generated from the actual vanilla Pale Oak plank palette while preserving BBB transparency and non-wood details.
 
 ### Wooden wall policy
 
@@ -56,5 +56,5 @@ The current BBB source registers every wooden wall, creates its block item, and 
 - Never collapse material variants or infer them by lossy name parsing.
 - Do not reintroduce removed Layer/Ladder behavior as a side effect of integration.
 - Keep upstream ARR resources in the hash-guarded ignored staging pipeline.
-- Preserve the 160-block/161-item curated registry unless scope is explicitly revised.
+- Preserve the 171-block/172-item current curated registry: the historical 160/161 port baseline plus exactly eleven port-native Pale Oak blocks and block items.
 - Treat compilation, fixtures, and JAR generation as non-runtime evidence.

@@ -80,7 +80,7 @@ final class ResourceStagingContractTest {
         try (Stream<Path> files = Files.list(recipes)) {
             recipeFiles = files.filter(path -> path.getFileName().toString().endsWith(".json")).toList();
         }
-        assertTrue(recipeFiles.size() > 211, "Pale Oak recipes must extend the historical curated closure");
+        assertEquals(224, recipeFiles.size());
         for (Path recipe : recipeFiles) {
             assertTrue(resultObject.matcher(Files.readString(recipe)).find(),
                     () -> recipe.getFileName() + " lost the Minecraft 26.2 result object schema");
@@ -118,7 +118,7 @@ final class ResourceStagingContractTest {
                     .filter(path -> path.getFileName().toString().endsWith(".json"))
                     .toList();
         }
-        assertTrue(advancementFiles.size() > 131, "Pale Oak recipe unlocks must extend the historical curated closure");
+        assertEquals(140, advancementFiles.size());
         assertFalse(Files.exists(legacyAdvancements), "Legacy plural advancement directory must not be staged");
 
         Set<String> stagedRecipeIds = new LinkedHashSet<>();
@@ -191,7 +191,7 @@ final class ResourceStagingContractTest {
                     .filter(path -> path.getFileName().toString().endsWith(".png"))
                     .toList();
         }
-        assertEquals(230, pngs.size());
+        assertEquals(242, pngs.size());
         for (Path texture : pngs) {
             BufferedImage image = ImageIO.read(texture.toFile());
             assertTrue(image != null, () -> "Unable to decode " + texture);
@@ -206,7 +206,7 @@ final class ResourceStagingContractTest {
             }
             if (hasTransparency) transparentFiles++;
         }
-        assertEquals(106, transparentFiles,
+        assertEquals(112, transparentFiles,
                 "Minecraft 26.2 derives the section layer from these binary-alpha sprites");
 
         int modelCount = 0;
@@ -218,7 +218,135 @@ final class ResourceStagingContractTest {
                         () -> model + " contains unsupported/inert 26.2 render_type metadata");
             }
         }
-        assertTrue(modelCount > 1_073, "Pale Oak must have an independent generated model closure");
+        assertEquals(1_133, modelCount);
+    }
+
+    @Test
+    void paleOakAuthoredSheetsPreserveUvAlphaAndMaterialIndependentDetails() throws IOException {
+        Path root = PROJECT.resolve("build/generated/bbb-resources/assets/bbb/textures/block");
+        List<String> sources = List.of(
+                "balustrade/cherry_sides.png", "balustrade/cherry_top.png",
+                "frame/cherry.png", "frame/cherry_sticks.png",
+                "lantern/cherry.png", "lattice/cherry.png",
+                "pallet/cherry_pallet.png", "sanded_planks/cherry.png",
+                "trim/cherry.png", "trim/cherry_bottom.png",
+                "trim/cherry_middle.png", "trim/cherry_top.png"
+        );
+
+        for (String sourceName : sources) {
+            String targetName = sourceName.replace("cherry", "pale_oak");
+            BufferedImage source = ImageIO.read(root.resolve(sourceName).toFile());
+            BufferedImage target = ImageIO.read(root.resolve(targetName).toFile());
+            assertTrue(source != null && target != null, () -> "Missing generated sheet " + targetName);
+            assertEquals(source.getWidth(), target.getWidth(), () -> targetName + " changed authored UV width");
+            assertEquals(source.getHeight(), target.getHeight(), () -> targetName + " changed authored UV height");
+
+            int changedOpaque = 0;
+            int preservedOpaque = 0;
+            for (int y = 0; y < source.getHeight(); y++) {
+                for (int x = 0; x < source.getWidth(); x++) {
+                    int sourcePixel = source.getRGB(x, y);
+                    int targetPixel = target.getRGB(x, y);
+                    assertEquals(sourcePixel >>> 24, targetPixel >>> 24,
+                            targetName + " changed alpha at " + x + "," + y);
+                    if ((sourcePixel >>> 24) == 255) {
+                        if (sourcePixel == targetPixel) preservedOpaque++;
+                        else changedOpaque++;
+                    }
+                }
+            }
+            assertTrue(changedOpaque > 0, () -> targetName + " contains no Pale Oak material pixels");
+            if (sourceName.equals("lantern/cherry.png")) {
+                assertEquals(36, preservedOpaque,
+                        "Lantern glow/metal pixels must survive the wood-only palette substitution");
+            }
+        }
+
+        String staging = Files.readString(PROJECT.resolve("build/generated/bbb-resources/bbb-resource-staging.json"));
+        assertTrue(staging.contains("\"pale_oak_texture_source\": \"minecraft:block/pale_oak_planks\""));
+        assertEquals(12, occurrences(staging, "mapped_wood_pixels"));
+
+        Path models = PROJECT.resolve("build/generated/bbb-resources/assets/bbb/models/block");
+        assertTrue(Files.readString(models.resolve("lantern/pale_oak.json"))
+                .contains("bbb:block/lantern/pale_oak"));
+        assertTrue(Files.readString(models.resolve("lattice/pale_oak_middle.json"))
+                .contains("bbb:block/lattice/pale_oak"));
+        assertTrue(Files.readString(models.resolve("frame/pale_oak_inventory.json"))
+                .contains("bbb:block/frame/pale_oak"));
+        assertTrue(Files.readString(models.resolve("pallet/pale_oak_pallet_bottom.json"))
+                .contains("bbb:block/pallet/pale_oak_pallet"));
+        assertTrue(Files.readString(models.resolve("beam/pale_oak_beam.json"))
+                .contains("minecraft:block/stripped_pale_oak_log_top"));
+        assertTrue(Files.readString(models.resolve("lattice/pale_oak_left.json"))
+                .contains("minecraft:block/pale_oak_log_top"));
+        try (Stream<Path> files = Files.walk(PROJECT.resolve("build/generated/bbb-resources"))) {
+            for (Path file : files.filter(Files::isRegularFile)
+                    .filter(path -> path.getFileName().toString().endsWith(".json")).toList()) {
+                assertFalse(Files.readString(file).contains("minecraft:minecraft:"),
+                        () -> file + " contains a malformed duplicated namespace");
+            }
+        }
+    }
+
+    @Test
+    void paleOakHasCompleteFormRecipeLootTagLanguageAndItemClosure() throws IOException {
+        List<String> forms = List.of("balustrade", "lattice", "wall", "beam", "beam_stairs",
+                "beam_slab", "support", "pallet", "frame", "lantern", "trim");
+        Path generated = PROJECT.resolve("build/generated/bbb-resources");
+        Path blockstates = generated.resolve("assets/bbb/blockstates");
+        Path itemModels = generated.resolve("assets/bbb/models/item");
+        Path itemDefinitions = generated.resolve("assets/bbb/items");
+        Path recipes = generated.resolve("data/bbb/recipe");
+        Path loot = generated.resolve("data/bbb/loot_table/blocks");
+
+        for (String form : forms) {
+            String id = "pale_oak_" + form;
+            for (Path file : List.of(blockstates.resolve(id + ".json"), itemModels.resolve(id + ".json"),
+                    itemDefinitions.resolve(id + ".json"), recipes.resolve(id + ".json"),
+                    loot.resolve(id + ".json"))) {
+                assertTrue(Files.isRegularFile(file), () -> "Missing Pale Oak closure file " + file);
+                String json = Files.readString(file);
+                assertFalse(json.contains("cherry"), () -> file + " retains a Cherry reference");
+            }
+        }
+
+        assertFalse(Files.exists(blockstates.resolve("pale_oak_layer.json")));
+        assertFalse(Files.exists(blockstates.resolve("pale_oak_ladder.json")));
+        try (Stream<Path> languages = Files.list(generated.resolve("assets/bbb/lang"))) {
+            for (Path language : languages.filter(path -> path.getFileName().toString().endsWith(".json")).toList()) {
+                String json = Files.readString(language);
+                for (String form : forms) {
+                    assertTrue(json.contains("\"block.bbb.pale_oak_" + form + "\""),
+                            () -> language + " lacks Pale Oak " + form);
+                }
+            }
+        }
+
+        try (Stream<Path> tags = Files.walk(generated.resolve("data"))) {
+            for (Path tag : tags.filter(Files::isRegularFile)
+                    .filter(path -> path.toString().replace('\\', '/').contains("/tags/"))
+                    .filter(path -> path.getFileName().toString().endsWith(".json")).toList()) {
+                String json = Files.readString(tag);
+                for (String form : forms) {
+                    if (json.contains("bbb:cherry_" + form)) {
+                        assertTrue(json.contains("bbb:pale_oak_" + form),
+                                () -> tag + " did not mirror the Cherry tag membership for " + form);
+                    }
+                }
+            }
+        }
+
+        List<String> paleRecipes;
+        try (Stream<Path> files = Files.list(recipes)) {
+            paleRecipes = files.filter(Files::isRegularFile)
+                    .map(path -> path.getFileName().toString())
+                    .filter(name -> name.startsWith("pale_oak_"))
+                    .sorted()
+                    .toList();
+        }
+        assertEquals(13, paleRecipes.size());
+        assertTrue(paleRecipes.contains("pale_oak_planks_from_beam.json"));
+        assertTrue(paleRecipes.contains("pale_oak_planks_from_beam_slab.json"));
     }
 
     @Test
