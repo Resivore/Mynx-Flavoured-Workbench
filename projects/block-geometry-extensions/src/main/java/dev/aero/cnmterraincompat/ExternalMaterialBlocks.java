@@ -32,18 +32,27 @@ public final class ExternalMaterialBlocks {
 
     public static StandardSet create(Block source, Block.Properties slabProperties,
             Block.Properties stairProperties, Block.Properties wallProperties, boolean leaves) {
-        if (leaves) return new StandardSet(
-                new LeafSlab(slabProperties),
-                new LeafStairs(source.defaultBlockState(), stairProperties),
-                new LeafWall(wallProperties));
-        if (source.defaultBlockState().hasProperty(BlockStateProperties.AXIS)) return new StandardSet(
-                new AxisSlab(slabProperties),
-                new AxisStairs(source.defaultBlockState(), stairProperties),
-                // A wall's connection state is its complete placement contract.  It is not a
-                // rotated pillar merely because the material it is made from has an axis.
-                new WallBlock(wallProperties));
-        return new StandardSet(new SlabBlock(slabProperties),
-                new StairBlock(source.defaultBlockState(), stairProperties), new WallBlock(wallProperties));
+        return new StandardSet(createSlab(source, slabProperties, leaves),
+                createStairs(source, stairProperties, leaves), createWall(wallProperties, leaves));
+    }
+
+    public static SlabBlock createSlab(Block source, Block.Properties properties, boolean leaves) {
+        if (leaves) return new LeafSlab(properties);
+        return source.defaultBlockState().hasProperty(BlockStateProperties.AXIS)
+                ? new AxisSlab(properties) : new SlabBlock(properties);
+    }
+
+    public static StairBlock createStairs(Block source, Block.Properties properties, boolean leaves) {
+        if (leaves) return new LeafStairs(source.defaultBlockState(), properties);
+        return source.defaultBlockState().hasProperty(BlockStateProperties.AXIS)
+                ? new AxisStairs(source.defaultBlockState(), properties)
+                : new StairBlock(source.defaultBlockState(), properties);
+    }
+
+    public static WallBlock createWall(Block.Properties properties, boolean leaves) {
+        // A wall's connection state is its complete placement contract. It is not a rotated
+        // pillar merely because the material it is made from has an axis.
+        return leaves ? new LeafWall(properties) : new WallBlock(properties);
     }
 
     public record StandardSet(SlabBlock slab, StairBlock stairs, WallBlock wall) {}

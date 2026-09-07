@@ -1,5 +1,6 @@
 package dev.aero.cnmterraincompat.mixin;
 
+import dev.aero.cnmterraincompat.CanonicalShapeMapAudit;
 import dev.aero.cnmterraincompat.NibaruProviderAdapter;
 import dev.tazer.clutternomore.common.shape_map.ShapeMap;
 import org.spongepowered.asm.mixin.Mixin;
@@ -20,5 +21,6 @@ abstract class ShapeMapOrderMixin {
     @Inject(method = "setMappings", at = @At("TAIL"), require = 1)
     private static void cnmTerrainCompat$orderProviderGeometryRoles(List<?> mappings, boolean logCircular, CallbackInfo ci) {
         NibaruProviderAdapter.applyProviderParentSegmentOrder();
+        CanonicalShapeMapAudit.requireExternalFamilies();
     }
 }

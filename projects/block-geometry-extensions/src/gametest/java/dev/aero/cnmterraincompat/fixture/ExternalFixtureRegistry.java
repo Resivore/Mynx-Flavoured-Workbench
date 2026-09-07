@@ -12,6 +12,8 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.RotatedPillarBlock;
+import net.minecraft.world.level.block.SlabBlock;
+import net.minecraft.world.level.block.StairBlock;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 
 import java.util.LinkedHashMap;
@@ -28,7 +30,9 @@ public final class ExternalFixtureRegistry {
         String[] patterns = "running_bond windmill_weave flagstone crystal_floor".split(" ");
         for (String material : materials) for (String pattern : patterns) {
             String full = material + "_" + pattern;
-            register("mcwpaths", full, Blocks.DEEPSLATE_TILES, false);
+            Block source = register("mcwpaths", full, Blocks.DEEPSLATE_TILES, false);
+            registerSlab("mcwpaths", full + "_slab", source);
+            registerStairs("mcwpaths", full + "_stairs", source);
             // BGE validates that the provider's old Path form remains only reference data.
             register("mcwpaths", full + "_path", Blocks.DEEPSLATE_TILES, false);
         }
@@ -59,8 +63,12 @@ public final class ExternalFixtureRegistry {
     }
 
     public static void registerRibbits() {
-        register("ribbits", "mossy_oak_planks", Blocks.OAK_PLANKS, false);
+        Block source = register("ribbits", "mossy_oak_planks", Blocks.OAK_PLANKS, false);
+        registerSlab("ribbits", "mossy_oak_planks_slab", source);
+        registerStairs("ribbits", "mossy_oak_planks_stairs", source);
         addFire("ribbits", "mossy_oak_planks", 5, 20);
+        addFire("ribbits", "mossy_oak_planks_slab", 5, 20);
+        addFire("ribbits", "mossy_oak_planks_stairs", 5, 20);
     }
 
     private static Block register(String namespace, String path, Block source, boolean axis) {
@@ -68,6 +76,24 @@ public final class ExternalFixtureRegistry {
         BlockBehaviour.Properties properties = BlockBehaviour.Properties.ofFullCopy(source)
                 .setId(ResourceKey.create(Registries.BLOCK, id));
         Block block = axis ? new RotatedPillarBlock(properties) : new Block(properties);
+        return register(namespace, path, block);
+    }
+
+    private static Block registerSlab(String namespace, String path, Block source) {
+        Identifier id = Identifier.fromNamespaceAndPath(namespace, path);
+        return register(namespace, path, new SlabBlock(BlockBehaviour.Properties.ofFullCopy(source)
+                .setId(ResourceKey.create(Registries.BLOCK, id))));
+    }
+
+    private static Block registerStairs(String namespace, String path, Block source) {
+        Identifier id = Identifier.fromNamespaceAndPath(namespace, path);
+        return register(namespace, path, new StairBlock(source.defaultBlockState(),
+                BlockBehaviour.Properties.ofFullCopy(source)
+                        .setId(ResourceKey.create(Registries.BLOCK, id))));
+    }
+
+    private static Block register(String namespace, String path, Block block) {
+        Identifier id = Identifier.fromNamespaceAndPath(namespace, path);
         Registry.register(BuiltInRegistries.BLOCK, ResourceKey.create(Registries.BLOCK, id), block);
         Item.Properties itemProperties = new Item.Properties()
                 .setId(ResourceKey.create(Registries.ITEM, id))

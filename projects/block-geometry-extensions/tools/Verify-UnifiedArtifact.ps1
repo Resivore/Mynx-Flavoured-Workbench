@@ -1,5 +1,5 @@
 param(
-    [string]$UnifiedJar = (Join-Path $PSScriptRoot '..\build\libs\cnm-nibaru-integration-4.2.5-bge.canary61.runtime-fixes+26.2.jar'),
+    [string]$UnifiedJar = (Join-Path $PSScriptRoot '..\build\libs\cnm-nibaru-integration-4.2.6-bge.canary62.family-dedup+26.2.jar'),
     [string]$AcceptedJar = (Join-Path $PSScriptRoot '..\artifacts\cnm-nibaru-integration-4.2.2-bge.canary58.glass-corner-uv+26.2.jar')
 )
 
@@ -84,6 +84,7 @@ function Test-AllowedChangedEntry([string]$Name) {
             $Name -match '^dev/aero/cnmterraincompat/CnmTerrainCompat(?:\$.*)?\.class$' -or
             $Name -match '^dev/aero/cnmterraincompat/CnmTerrainCompatClient(?:\$.*)?\.class$' -or
             $Name -match '^dev/aero/cnmterraincompat/NibaruProviderAdapter(?:\$.*)?\.class$' -or
+            $Name -match '^dev/aero/cnmterraincompat/mixin/ShapeMapOrderMixin(?:\$.*)?\.class$' -or
             $Name -match '^dev/aero/cnmterraincompat/client/BgeGeneratedResources(?:\$.*)?\.class$' -or
             $Name -match '^dev/aero/cnmterraincompat/client/LayerGeneratedResources(?:\$.*)?\.class$' -or
             $Name -match '^dev/aero/cnmterraincompat/client/QuarterGeometryGeneratedResources(?:\$.*)?\.class$' -or
@@ -95,6 +96,7 @@ function Test-AllowedChangedEntry([string]$Name) {
 
 function Test-AllowedNewEntry([string]$Name) {
     return $Name -match '^dev/aero/cnmterraincompat/CnmTerrainCompatClient(?:\$.*)?\.class$' -or
+            $Name -match '^dev/aero/cnmterraincompat/CanonicalShapeMapAudit(?:\$.*)?\.class$' -or
             $Name -match '^dev/aero/cnmterraincompat/ExternalMaterial(?:Blocks|Catalog|Families|GeneratedData)(?:\$.*)?\.class$' -or
             $Name -match '^dev/aero/cnmterraincompat/client/ExternalMaterialGeneratedResources(?:\$.*)?\.class$' -or
             $Name -match '^dev/aero/cnmterraincompat/mixin/(?:MacawsPaths|MynxTrees|Ribbits)InitializationMixin(?:\$.*)?\.class$'
@@ -121,9 +123,9 @@ try {
     $metadataText = Get-EntryText $unifiedMap['fabric.mod.json']
     $metadata = $metadataText | ConvertFrom-Json
     Require ($metadata.id -eq 'cnm_terrain_slabs_compat') 'Unified primary Fabric ID changed'
-    Require ($metadata.version -eq '4.2.5-bge.canary61.runtime-fixes+26.2') 'Unified Fabric version is not exact C61'
-    Require ($metadata.name -eq 'Block Geometry Extensions Canary 61 — Runtime Fixes') `
-            'Unified Fabric display name is not exact C61'
+    Require ($metadata.version -eq '4.2.6-bge.canary62.family-dedup+26.2') 'Unified Fabric version is not exact C62'
+    Require ($metadata.name -eq 'Block Geometry Extensions Canary 62 — Family Dedup') `
+            'Unified Fabric display name is not exact C62'
     Require (@($metadata.provides).Count -eq 1 -and $metadata.provides[0] -eq 'more_slabs_stairs_and_walls') `
             'Unified descriptor must provide exactly the legacy Nibaru ID'
     Require ($metadata.PSObject.Properties.Name -notcontains 'jars') 'Unified descriptor must not declare nested JARs'
@@ -144,7 +146,7 @@ try {
     foreach ($mixin in $expectedMixins) { Require $unifiedMap.ContainsKey($mixin) "Packaged mixin config missing: $mixin" }
     $integrationMixins = Get-EntryText $unifiedMap['cnm_terrain_slabs_compat.mixins.json']
     foreach ($providerHook in @('MacawsPathsInitializationMixin', 'MynxTreesInitializationMixin', 'RibbitsInitializationMixin')) {
-        Require ($integrationMixins -match [regex]::Escape($providerHook)) "C60 provider completion hook is not packaged: $providerHook"
+        Require ($integrationMixins -match [regex]::Escape($providerHook)) "C62 provider completion hook is not packaged: $providerHook"
     }
 
     $missing = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::Ordinal)
@@ -161,21 +163,22 @@ try {
             [void]$changed.Add($name)
         }
     }
-    Require ($missing.Count -eq 0) "C60 lost retained accepted-C58 entries: $(@($missing) -join ', ')"
+    Require ($missing.Count -eq 0) "C62 lost retained accepted-C58 entries: $(@($missing) -join ', ')"
 
     $newEntries = New-StringSet @($unifiedMap.Keys | Where-Object { -not $acceptedMap.ContainsKey($_) })
     $unexpectedChanges = @($changed | Where-Object { -not (Test-AllowedChangedEntry $_) })
     $unexpectedNew = @($newEntries | Where-Object { -not (Test-AllowedNewEntry $_) })
     Require ($unexpectedChanges.Count -eq 0) `
-            "C60 changed entries outside its exact implementation whitelist: $($unexpectedChanges -join ', ')"
+            "C62 changed entries outside its exact implementation whitelist: $($unexpectedChanges -join ', ')"
     Require ($unexpectedNew.Count -eq 0) `
-            "C60 added entries outside its exact external-family class whitelist: $($unexpectedNew -join ', ')"
+            "C62 added entries outside its exact external-family class whitelist: $($unexpectedNew -join ', ')"
 
     foreach ($required in @(
         'fabric.mod.json',
         'cnm_terrain_slabs_compat.mixins.json',
         'dev/aero/cnmterraincompat/CnmTerrainCompat.class',
         'dev/aero/cnmterraincompat/NibaruProviderAdapter.class',
+        'dev/aero/cnmterraincompat/mixin/ShapeMapOrderMixin.class',
         'dev/aero/cnmterraincompat/client/BgeGeneratedResources.class',
         'dev/aero/cnmterraincompat/client/LayerGeneratedResources.class',
         'dev/aero/cnmterraincompat/client/QuarterGeometryGeneratedResources.class',
@@ -183,10 +186,11 @@ try {
         'games/twinhead/moreslabsstairsandwalls/api/material/NativeAxisModelContract.class',
         'games/twinhead/moreslabsstairsandwalls/api/material/NibaruMaterialProfiles.class'
     )) {
-        Require $changed.Contains($required) "Required C60 archive change is absent: $required"
+        Require $changed.Contains($required) "Required C62 archive change is absent: $required"
     }
     foreach ($required in @(
         'dev/aero/cnmterraincompat/ExternalMaterialCatalog.class',
+        'dev/aero/cnmterraincompat/CanonicalShapeMapAudit.class',
         'dev/aero/cnmterraincompat/ExternalMaterialBlocks.class',
         'dev/aero/cnmterraincompat/ExternalMaterialFamilies.class',
         'dev/aero/cnmterraincompat/ExternalMaterialGeneratedData.class',
@@ -195,7 +199,7 @@ try {
         'dev/aero/cnmterraincompat/mixin/MynxTreesInitializationMixin.class',
         'dev/aero/cnmterraincompat/mixin/RibbitsInitializationMixin.class'
     )) {
-        Require $newEntries.Contains($required) "Required C60 external-family class is absent: $required"
+        Require $newEntries.Contains($required) "Required C62 external-family class is absent: $required"
     }
 
     $forbiddenNames = @($unifiedMap.Keys | Where-Object {
@@ -220,10 +224,10 @@ try {
     foreach ($name in @($changed) + @($newEntries)) {
         $bytes = Get-EntryBytes $unifiedMap[$name]
         Require (-not (Test-ContainsBytes $bytes $pngSignature)) `
-                "Changed/new C60 entry embeds raw PNG source bytes: $name"
+                "Changed/new C62 entry embeds raw PNG source bytes: $name"
         $text = [System.Text.Encoding]::UTF8.GetString($bytes)
         Require ($text -notmatch '(?i)data:image/png;base64|iVBORw0KGgo|uv bbmodel(?:\.zip)?|BlockSprite_glass\.png|glass_corner_north_east\.bbmodel|\.bbmodel') `
-                "Changed/new C60 entry embeds a forbidden source name or texture encoding: $name"
+                "Changed/new C62 entry embeds a forbidden source name or texture encoding: $name"
     }
 
     foreach ($path in @(
@@ -259,16 +263,16 @@ try {
         $_ -match '^(?:assets|data)/' -or $_ -match '(?:^|/)pack\.mcmeta$' -or $_ -match '\.mixins\.json$'
     })
     foreach ($name in $resourceEntries) {
-        Require $acceptedMap.ContainsKey($name) "C60 added an unexpected packaged production resource: $name"
+        Require $acceptedMap.ContainsKey($name) "C62 added an unexpected packaged production resource: $name"
         if ($name -ne 'cnm_terrain_slabs_compat.mixins.json') {
             Require ((Get-EntrySha256 $unifiedMap[$name]) -eq (Get-EntrySha256 $acceptedMap[$name])) `
-                    "C60 changed a retained accepted-C58 production resource: $name"
+                    "C62 changed a retained accepted-C58 production resource: $name"
         }
     }
 
     [ordered]@{
         result = 'PASS'
-        c60 = [ordered]@{
+        c62 = [ordered]@{
             filename = [System.IO.Path]::GetFileName($unifiedPath)
             size = (Get-Item -LiteralPath $unifiedPath).Length
             sha256 = Get-FileSha256 $unifiedPath
