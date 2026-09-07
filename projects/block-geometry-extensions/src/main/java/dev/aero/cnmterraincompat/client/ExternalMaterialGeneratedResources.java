@@ -77,6 +77,11 @@ public final class ExternalMaterialGeneratedResources {
             }
 
             if (profile.orientationPolicy() == NibaruMaterialProfile.OrientationPolicy.AXIS_ALIGNED) {
+                // CNM's normal Vertical Slab and Step templates are the established item-preview
+                // contract: their display transforms centre the Vertical Slab and present the Step
+                // horizontally. AxisModelContract only produces placed-state signature models.
+                // Keep that state-model collection out of the item-preview decision.
+                models += writeAxisItemPreviewModels(profile, vertical, step);
                 AxisModelContract.AxisUvPolicy policy = AxisGeneratedResources.policy(
                         manager, profile.canonicalParentId());
                 Map<String, JsonObject> verticalModels =
@@ -84,13 +89,11 @@ public final class ExternalMaterialGeneratedResources {
                 verticalModels.forEach((modelId, model) -> write(modelResource(modelId), model));
                 write(blockState(vertical), AxisModelContract.verticalBlockState(vertical, policy));
                 models += verticalModels.size();
-                verticalItemModel = verticalModels.keySet().iterator().next();
                 Map<String, JsonObject> stepModels =
                         AxisModelContract.stepGeneratedModels(profile, step, policy);
                 stepModels.forEach((modelId, model) -> write(modelResource(modelId), model));
                 write(blockState(step), AxisModelContract.stepBlockState(step, policy));
                 models += stepModels.size();
-                stepItemModel = stepModels.keySet().iterator().next();
             } else {
                 models += writeVertical(profile, vertical);
                 models += writeStep(profile, step);
@@ -228,6 +231,18 @@ public final class ExternalMaterialGeneratedResources {
         write(modelResource(id, "_top"), template("clutternomore:block/templates/step_top" + tint, profile));
         write(modelResource(id, "_double"), template("clutternomore:block/templates/step_double" + tint, profile));
         return 3;
+    }
+
+    /**
+     * Writes only the normal CNM preview models for an axis-aligned late family. These models
+     * intentionally remain absent from the axis-aware placed-state selectors.
+     */
+    private static int writeAxisItemPreviewModels(
+            NibaruMaterialProfile profile, Identifier vertical, Identifier step) {
+        String tint = profile.tintProfile() == TintProfile.NONE ? "" : "_tinted";
+        write(modelResource(vertical), template("clutternomore:block/templates/vertical_slab" + tint, profile));
+        write(modelResource(step), template("clutternomore:block/templates/step" + tint, profile));
+        return 2;
     }
 
     private static JsonObject template(String parent, NibaruMaterialProfile profile) {

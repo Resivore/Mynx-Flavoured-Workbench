@@ -370,6 +370,21 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
         helper.succeed();
     }
 
+    @GameTest(maxTicks = 80)
+    public void axisAlignedExternalItemsReuseNativeCnmPreviewModels(GameTestHelper helper) {
+        ExternalMaterialGeneratedResources.generate(clientFixtureManager());
+        for (String stem : List.of("wisteria", "silver_birch")) {
+            for (String variant : List.of("log", "wood")) {
+                ExternalMaterialFamilies.Binding binding = external("mynx_trees:" + stem + "_" + variant);
+                assertAxisItemPreview(helper, binding, "vertical_slab",
+                        "clutternomore:block/templates/vertical_slab", 24);
+                assertAxisItemPreview(helper, binding, "step",
+                        "clutternomore:block/templates/step", 36);
+            }
+        }
+        helper.succeed();
+    }
+
     @GameTest(maxTicks = 40)
     public void macawPatternAndPlainPathParentsRemainSemanticallyDistinct(GameTestHelper helper) {
         int patterns = 0;
@@ -428,6 +443,27 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
             ExternalMaterialFamilies.Binding binding, String suffix, String parent) {
         helper.assertTrue(wallModel(binding, suffix).get("parent").getAsString().equals(parent),
                 "Unexpected wall model parent for " + binding.spec().id() + suffix);
+    }
+
+    /** Verifies the item-only native preview is not substituted into the axis-aware world map. */
+    private static void assertAxisItemPreview(GameTestHelper helper,
+            ExternalMaterialFamilies.Binding binding, String role, String parent, int selectorCount) {
+        Block block = binding.roles().get(role);
+        Identifier id = BuiltInRegistries.BLOCK.getKey(block);
+        String preview = id.getNamespace() + ":block/" + id.getPath();
+        JsonObject item = generatedClientJson(itemResource(block));
+        helper.assertTrue(item.getAsJsonObject("model").get("model").getAsString().equals(preview),
+                "Axis item did not resolve to the deterministic CNM preview model: " + id);
+        JsonObject previewModel = generatedClientJson(Identifier.fromNamespaceAndPath(id.getNamespace(),
+                "models/block/" + id.getPath() + ".json"));
+        helper.assertTrue(previewModel.get("parent").getAsString().equals(parent),
+                "Axis item did not reuse the established CNM preview template: " + id);
+
+        JsonObject variants = generatedClientJson(blockStateResource(block)).getAsJsonObject("variants");
+        helper.assertTrue(variants.size() == selectorCount
+                        && variants.entrySet().stream().allMatch(entry -> entry.getKey().contains("axis=")
+                                && !entry.getValue().getAsJsonObject().get("model").getAsString().equals(preview)),
+                "Axis world selectors changed or reused the item-only preview: " + id);
     }
 
     private static JsonObject wallModel(ExternalMaterialFamilies.Binding binding, String suffix) {
