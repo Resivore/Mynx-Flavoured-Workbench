@@ -7,6 +7,11 @@ import net.fabricmc.fabric.api.client.rendering.v1.BlockColorRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
 import net.minecraft.client.color.block.BlockTintSource;
 import net.minecraft.client.color.block.BlockTintSources;
+import net.minecraft.client.Minecraft;
+import net.minecraft.core.BlockPos;
+import net.minecraft.client.renderer.block.BlockAndTintGetter;
+import net.minecraft.world.level.block.state.BlockState;
+import games.twinhead.moreslabsstairsandwalls.api.material.NibaruMaterialProfile;
 import net.minecraft.client.renderer.entity.FallingBlockRenderer;
 
 import java.util.List;
@@ -20,13 +25,36 @@ public final class CnmTerrainCompatClient implements ClientModInitializer {
                 List.of(BlockTintSources.grass()),
                 CnmTerrainCompat.GRASS_VERTICAL_SLAB,
                 CnmTerrainCompat.GRASS_SLAB);
-        NibaruProviderAdapter.configureTintRegistrar((tint, block) -> BlockColorRegistry.register(List.of(switch (tint) {
+        NibaruProviderAdapter.configureTintRegistrar((profile, block) -> BlockColorRegistry.register(List.of(tintSource(profile)), block));
+    }
+
+    private static BlockTintSource tintSource(NibaruMaterialProfile profile) {
+        return switch (profile.tintProfile()) {
             case GRASS_BIOME -> BlockTintSources.grass();
             case FOLIAGE_BIOME -> BlockTintSources.foliage();
             case FOLIAGE_SPRUCE -> BlockTintSources.constant(0x619961);
             case FOLIAGE_BIRCH -> BlockTintSources.constant(0x80A755);
+            case SOURCE_PROVIDER -> sourceProvider(profile.canonicalParent().defaultBlockState());
             case NONE -> throw new IllegalArgumentException("NONE tint must not be registered");
-        }), block));
+        };
+    }
+
+    /**
+     * Optional providers own their color semantics.  Resolve their registered source color at
+     * render time so custom world and inventory colors remain exact without linking to provider
+     * implementation classes or embedding a guessed color.
+     */
+    private static BlockTintSource sourceProvider(BlockState source) {
+        return new BlockTintSource() {
+            @Override public int colorInWorld(BlockState state, BlockAndTintGetter level, BlockPos pos) {
+                return Minecraft.getInstance().getBlockColors().getTintSource(source, 0)
+                        .colorInWorld(source, level, pos);
+            }
+
+            @Override public int color(BlockState state) {
+                return Minecraft.getInstance().getBlockColors().getTintSource(source, 0).color(source);
+            }
+        };
     }
 
     private static void registerNativeClientBindings() {

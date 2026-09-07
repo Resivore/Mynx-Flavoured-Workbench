@@ -53,8 +53,8 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
                 "Late provider completion did not register all 64 families: "
                         + ExternalMaterialFamilies.all().size());
         helper.assertTrue(NibaruMaterialProfiles.all().stream().filter(profile -> profile.family() != null).count() == 311
-                        && NibaruMaterialProfiles.all().stream().filter(profile -> profile.family() == null).count() == 64,
-                "External append changed the frozen 311-profile native inventory");
+                        && NibaruMaterialProfiles.all().stream().filter(profile -> profile.family() == null).count() == 59,
+                "External append changed the frozen 311-profile native inventory or duplicated a full parent");
 
         Set<Identifier> actual = new LinkedHashSet<>();
         ExternalMaterialFamilies.all().forEach(binding -> actual.add(binding.spec().id()));
@@ -62,9 +62,9 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
         ExternalMaterialCatalog.specs().forEach(spec -> expected.add(spec.id()));
         helper.assertTrue(actual.equals(expected), "Registered external sources differ from exact allowlist");
         helper.assertTrue(actual.stream().filter(id -> id.getNamespace().equals("mcwpaths"))
-                        .allMatch(id -> isRequestedMacawPath(id.getPath())),
-                "Unrequested Macaw material entered C60 scope");
-        System.out.println("EXTERNAL_C60_INVENTORY|sources=64|mcwpaths=57|mynx_trees=6|ribbits=1|relations=576");
+                        .allMatch(id -> isRequestedMacawFullParent(id)),
+                "Macaw family retained a Path block as its canonical parent");
+        System.out.println("EXTERNAL_C61_INVENTORY|sources=64|mcwpaths=57|mynx_trees=6|ribbits=1|relations=576");
         helper.succeed();
     }
 
@@ -151,9 +151,13 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
                         "Leaf lifecycle state missing from " + BuiltInRegistries.BLOCK.getKey(block));
             }
             if (binding.source().defaultBlockState().hasProperty(BlockStateProperties.AXIS)) {
-                for (Block block : binding.generated()) helper.assertTrue(
-                        block.defaultBlockState().hasProperty(BlockStateProperties.AXIS),
-                        "Log/wood material axis missing from " + BuiltInRegistries.BLOCK.getKey(block));
+                for (String role : List.of("slab", "stairs", "vertical_slab", "step", "corner", "quarter_column", "layer")) {
+                    Block block = binding.roles().get(role);
+                    helper.assertTrue(block.defaultBlockState().hasProperty(BlockStateProperties.AXIS),
+                            "Log/wood material axis missing from " + BuiltInRegistries.BLOCK.getKey(block));
+                }
+                helper.assertTrue(!binding.wall().defaultBlockState().hasProperty(BlockStateProperties.AXIS),
+                        "Wall inherited inappropriate material AXIS state: " + BuiltInRegistries.BLOCK.getKey(binding.wall()));
             }
         }
         ExternalMaterialFamilies.Binding silverLeaves = ExternalMaterialFamilies.fromSource(
@@ -168,6 +172,7 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
     public void lateServerDataResourcesCloseEveryStandardFamily(GameTestHelper helper) {
         int loot = 0;
         for (ExternalMaterialFamilies.Binding binding : ExternalMaterialFamilies.all()) {
+            if (binding.profile().family() != null) continue;
             for (String role : List.of("slab", "stairs", "wall", "vertical_slab", "step")) {
                 Identifier id = BuiltInRegistries.BLOCK.getKey(binding.roles().get(role));
                 JsonObject table = generatedServerJson(Identifier.fromNamespaceAndPath(id.getNamespace(),
@@ -179,9 +184,9 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
         }
         JsonObject walls = generatedServerJson(Identifier.parse("minecraft:tags/block/walls.json"));
         helper.assertTrue(walls.getAsJsonArray("values").size() == 64,
-                "External wall classification does not contain all 64 families");
-        helper.assertTrue(loot == 320, "Expected 320 external standard loot tables, found " + loot);
-        System.out.println("EXTERNAL_C60_SERVER_RESOURCES|standardLoot=320|wallTags=64|materialFamilies=64");
+                "External wall classification does not contain every scoped full-parent family");
+        helper.assertTrue(loot == 295, "Expected 295 external standard loot tables, found " + loot);
+        System.out.println("EXTERNAL_C61_SERVER_RESOURCES|standardLoot=295|wallTags=64|materialFamilies=64");
         helper.succeed();
     }
 
@@ -194,17 +199,18 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
                 QuarterGeometryGeneratedResources.generateExternalForValidation(manager);
         ExternalMaterialGeneratedResources.GenerationSummary standard =
                 ExternalMaterialGeneratedResources.generate(manager);
-        helper.assertTrue(layers.familyCount() == 64
-                        && quarters.cornerFamilyCount() == 64
-                        && quarters.columnFamilyCount() == 64
+        helper.assertTrue(layers.familyCount() == 59
+                        && quarters.cornerFamilyCount() == 59
+                        && quarters.columnFamilyCount() == 59
                         && standard.familyCount() == 64
-                        && standard.blockStateCount() == 320
-                        && standard.itemCount() == 320,
+                        && standard.blockStateCount() == 295
+                        && standard.itemCount() == 295,
                 "External client writers did not process every exact family/role");
 
         int generatedRelations = 0;
         int resolvedModelReferences = 0;
         for (ExternalMaterialFamilies.Binding binding : ExternalMaterialFamilies.all()) {
+            if (binding.profile().family() != null) continue;
             for (Map.Entry<String, Block> role : binding.roles().entrySet()) {
                 if (role.getKey().equals("block")) continue;
                 Identifier block = BuiltInRegistries.BLOCK.getKey(role.getValue());
@@ -225,19 +231,20 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
                 generatedRelations++;
             }
         }
-        helper.assertTrue(generatedRelations == 512 && resolvedModelReferences >= 512,
+        helper.assertTrue(generatedRelations == 472 && resolvedModelReferences >= 472,
                 "External client resource closure mismatch: relations=" + generatedRelations
                         + ", modelReferences=" + resolvedModelReferences);
-        System.out.println("EXTERNAL_C60_CLIENT_RESOURCES|generatedRelations=512|blockstates=512|items=512"
+        System.out.println("EXTERNAL_C61_CLIENT_RESOURCES|generatedRelations=472|blockstates=472|items=472"
                 + "|resolvedModelReferences=" + resolvedModelReferences);
         helper.succeed();
     }
 
-    private static boolean isRequestedMacawPath(String path) {
-        if (Set.of("podzol_path_block", "dirt_path_block", "gravel_path_block",
-                "sand_path_block", "red_sand_path_block").contains(path)) return true;
+    private static boolean isRequestedMacawFullParent(Identifier id) {
+        if (id.getNamespace().equals("minecraft")) return Set.of("podzol", "dirt", "gravel", "sand", "red_sand")
+                .contains(id.getPath());
+        String path = id.getPath();
         return List.of("running_bond", "windmill_weave", "flagstone", "crystal_floor").stream()
-                .anyMatch(pattern -> path.endsWith("_" + pattern + "_path"));
+                .anyMatch(pattern -> path.endsWith("_" + pattern));
     }
 
     private static JsonObject generatedServerJson(Identifier id) {
@@ -305,7 +312,7 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
         json.put(Identifier.parse("mynx_trees:items/silver_birch_leaves.json"),
                 "{\"model\":{\"type\":\"minecraft:model\","
                         + "\"model\":\"mynx_trees:block/silver_birch_leaves\","
-                        + "\"tints\":[{\"type\":\"minecraft:constant\",\"value\":8431445}]}}" );
+                        + "\"tints\":[{\"type\":\"minecraft:constant\",\"value\":-8034015}]}}" );
 
         PackResources pack = (PackResources) Proxy.newProxyInstance(
                 ExternalMaterialFamilyGameTests.class.getClassLoader(),

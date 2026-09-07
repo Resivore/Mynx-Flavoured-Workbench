@@ -38,6 +38,7 @@ public final class ExternalMaterialGeneratedResources {
         int models = 0;
         int items = 0;
         for (ExternalMaterialFamilies.Binding binding : ExternalMaterialFamilies.all()) {
+            if (binding.profile().family() != null) continue;
             NibaruMaterialProfile profile = binding.profile();
             Identifier slab = id(binding.slab());
             Identifier stairs = id(binding.stairs());
@@ -58,7 +59,9 @@ public final class ExternalMaterialGeneratedResources {
                         NativeAxisModelContract.stairs(profile, nativePolicy);
                 write(blockState(stairs), stairResources.blockState());
                 models += writeModels(stairResources.models());
-                models += writeAxisWall(profile, wall);
+                // Walls deliberately retain the normal wall multipart route.  Material-axis
+                // projection applies to the other log/wood geometries, never to wall state.
+                models += writeWall(manager, profile, wall);
                 blockStates += 3;
             } else {
                 models += writeSlab(profile, slab);
@@ -106,9 +109,15 @@ public final class ExternalMaterialGeneratedResources {
         variants.add("type=top", selection(model(id) + "_top"));
         variants.add("type=double", selection(model(id) + "_double"));
         write(blockState(id), variants(variants));
-        write(modelResource(id), template("minecraft:block/slab", profile));
-        write(modelResource(id, "_top"), template("minecraft:block/slab_top", profile));
-        write(modelResource(id, "_double"), template("minecraft:block/cube_bottom_top", profile));
+        if (profile.tintProfile() == TintProfile.NONE) {
+            write(modelResource(id), template("minecraft:block/slab", profile));
+            write(modelResource(id, "_top"), template("minecraft:block/slab_top", profile));
+            write(modelResource(id, "_double"), template("minecraft:block/cube_bottom_top", profile));
+        } else {
+            write(modelResource(id), cuboidModel(profile, List.of(new int[] {0, 0, 0, 16, 8, 16})));
+            write(modelResource(id, "_top"), cuboidModel(profile, List.of(new int[] {0, 8, 0, 16, 16, 16})));
+            write(modelResource(id, "_double"), cuboidModel(profile, List.of(new int[] {0, 0, 0, 16, 16, 16})));
+        }
         return 3;
     }
 
@@ -117,9 +126,19 @@ public final class ExternalMaterialGeneratedResources {
                 Identifier.fromNamespaceAndPath("minecraft", "blockstates/oak_stairs.json"),
                 "minecraft:block/oak_stairs", model(id));
         write(blockState(id), state);
-        write(modelResource(id), template("minecraft:block/stairs", profile));
-        write(modelResource(id, "_inner"), template("minecraft:block/inner_stairs", profile));
-        write(modelResource(id, "_outer"), template("minecraft:block/outer_stairs", profile));
+        if (profile.tintProfile() == TintProfile.NONE) {
+            write(modelResource(id), template("minecraft:block/stairs", profile));
+            write(modelResource(id, "_inner"), template("minecraft:block/inner_stairs", profile));
+            write(modelResource(id, "_outer"), template("minecraft:block/outer_stairs", profile));
+        } else {
+            write(modelResource(id), cuboidModel(profile, List.of(
+                    new int[] {0, 0, 0, 16, 8, 16}, new int[] {0, 8, 8, 16, 16, 16})));
+            write(modelResource(id, "_inner"), cuboidModel(profile, List.of(
+                    new int[] {0, 0, 0, 16, 8, 16}, new int[] {0, 8, 8, 16, 16, 16},
+                    new int[] {8, 8, 0, 16, 16, 8})));
+            write(modelResource(id, "_outer"), cuboidModel(profile, List.of(
+                    new int[] {0, 0, 0, 16, 8, 16}, new int[] {8, 8, 8, 16, 16, 16})));
+        }
         return 3;
     }
 
@@ -128,10 +147,19 @@ public final class ExternalMaterialGeneratedResources {
                 Identifier.fromNamespaceAndPath("minecraft", "blockstates/cobblestone_wall.json"),
                 "minecraft:block/cobblestone_wall", model(id));
         write(blockState(id), state);
-        write(modelResource(id, "_post"), wallTemplate("minecraft:block/template_wall_post", profile));
-        write(modelResource(id, "_side"), wallTemplate("minecraft:block/template_wall_side", profile));
-        write(modelResource(id, "_side_tall"), wallTemplate("minecraft:block/template_wall_side_tall", profile));
-        write(modelResource(id, "_inventory"), wallTemplate("minecraft:block/wall_inventory", profile));
+        if (profile.tintProfile() == TintProfile.NONE) {
+            write(modelResource(id, "_post"), wallTemplate("minecraft:block/template_wall_post", profile));
+            write(modelResource(id, "_side"), wallTemplate("minecraft:block/template_wall_side", profile));
+            write(modelResource(id, "_side_tall"), wallTemplate("minecraft:block/template_wall_side_tall", profile));
+            write(modelResource(id, "_inventory"), wallTemplate("minecraft:block/wall_inventory", profile));
+        } else {
+            write(modelResource(id, "_post"), cuboidModel(profile, List.of(new int[] {4, 0, 4, 12, 16, 12})));
+            write(modelResource(id, "_side"), cuboidModel(profile, List.of(new int[] {5, 0, 0, 11, 14, 11})));
+            write(modelResource(id, "_side_tall"), cuboidModel(profile, List.of(new int[] {5, 0, 0, 11, 16, 11})));
+            write(modelResource(id, "_inventory"), cuboidModel(profile, List.of(
+                    new int[] {4, 0, 4, 12, 16, 12}, new int[] {0, 0, 5, 16, 14, 11},
+                    new int[] {5, 0, 0, 11, 14, 16})));
+        }
         // Vanilla's cobblestone blockstate names its multipart models _post/_side/_side_tall.
         return 4;
     }
@@ -168,79 +196,6 @@ public final class ExternalMaterialGeneratedResources {
         return 3;
     }
 
-    private static int writeAxisWall(NibaruMaterialProfile profile, Identifier id) {
-        JsonArray multipart = new JsonArray();
-        Map<String, JsonObject> models = new LinkedHashMap<>();
-        for (Direction.Axis axis : Direction.Axis.values()) {
-            String axisName = axis.name().toLowerCase(Locale.ROOT);
-            String post = model(id) + "_axis_" + axisName + "_post";
-            models.put(post, cuboidModel(profile, axis, List.of(new int[] {4, 0, 4, 12, 16, 12})));
-            multipart.add(part("axis", axisName, "up", "true", post));
-            for (Direction direction : List.of(Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST)) {
-                String side = direction.getSerializedName();
-                String low = model(id) + "_axis_" + axisName + "_" + side + "_side";
-                String tall = low + "_tall";
-                models.put(low, cuboidModel(profile, axis, List.of(wallSide(direction, 14))));
-                models.put(tall, cuboidModel(profile, axis, List.of(wallSide(direction, 16))));
-                multipart.add(part("axis", axisName, side, "low", low));
-                multipart.add(part("axis", axisName, side, "tall", tall));
-            }
-        }
-        JsonObject state = new JsonObject();
-        state.add("multipart", multipart);
-        write(blockState(id), state);
-        models.forEach((modelId, json) -> write(modelResource(modelId), json));
-        write(modelResource(id, "_inventory"), cuboidModel(profile, Direction.Axis.Y, List.of(
-                new int[] {4, 0, 4, 12, 16, 12}, new int[] {0, 0, 5, 16, 14, 11},
-                new int[] {5, 0, 0, 11, 14, 16})));
-        return models.size() + 1;
-    }
-
-    private static int[] wallSide(Direction direction, int height) {
-        return switch (direction) {
-            case NORTH -> new int[] {5, 0, 0, 11, height, 11};
-            case SOUTH -> new int[] {5, 0, 5, 11, height, 16};
-            case WEST -> new int[] {0, 0, 5, 11, height, 11};
-            case EAST -> new int[] {5, 0, 5, 16, height, 11};
-            default -> throw new IllegalArgumentException("Wall side must be horizontal");
-        };
-    }
-
-    private static JsonObject cuboidModel(NibaruMaterialProfile profile, Direction.Axis materialAxis,
-            List<int[]> cuboids) {
-        JsonObject root = new JsonObject();
-        root.addProperty("parent", "minecraft:block/block");
-        JsonObject textures = textures(profile);
-        root.add("textures", textures);
-        JsonArray elements = new JsonArray();
-        for (int[] bounds : cuboids) {
-            JsonObject element = new JsonObject();
-            element.add("from", numbers(bounds[0], bounds[1], bounds[2]));
-            element.add("to", numbers(bounds[3], bounds[4], bounds[5]));
-            JsonObject faces = new JsonObject();
-            for (Direction face : Direction.values()) {
-                JsonObject encoded = new JsonObject();
-                encoded.addProperty("texture", face.getAxis() == materialAxis ? "#top" : "#side");
-                faces.add(face.getSerializedName(), encoded);
-            }
-            element.add("faces", faces);
-            elements.add(element);
-        }
-        root.add("elements", elements);
-        return root;
-    }
-
-    private static JsonObject part(String firstKey, String firstValue,
-            String secondKey, String secondValue, String model) {
-        JsonObject result = new JsonObject();
-        JsonObject when = new JsonObject();
-        when.addProperty(firstKey, firstValue);
-        when.addProperty(secondKey, secondValue);
-        result.add("when", when);
-        result.add("apply", selection(model));
-        return result;
-    }
-
     private static JsonObject template(String parent, NibaruMaterialProfile profile) {
         JsonObject result = new JsonObject();
         result.addProperty("parent", parent);
@@ -255,6 +210,34 @@ public final class ExternalMaterialGeneratedResources {
         textures.addProperty("wall", texture(profile.textureRoles().side()));
         result.add("textures", textures);
         return result;
+    }
+
+    /** Complete tinted geometry for the standard forms whose vanilla parents have no tint index. */
+    private static JsonObject cuboidModel(NibaruMaterialProfile profile, List<int[]> cuboids) {
+        JsonObject root = new JsonObject();
+        root.addProperty("parent", "minecraft:block/block");
+        root.add("textures", textures(profile));
+        JsonArray elements = new JsonArray();
+        for (int[] bounds : cuboids) {
+            JsonObject element = new JsonObject();
+            element.add("from", numbers(bounds[0], bounds[1], bounds[2]));
+            element.add("to", numbers(bounds[3], bounds[4], bounds[5]));
+            JsonObject faces = new JsonObject();
+            for (Direction face : Direction.values()) {
+                JsonObject encoded = new JsonObject();
+                encoded.addProperty("texture", switch (face) {
+                    case UP -> "#top";
+                    case DOWN -> "#bottom";
+                    default -> "#side";
+                });
+                encoded.addProperty("tintindex", 0);
+                faces.add(face.getSerializedName(), encoded);
+            }
+            element.add("faces", faces);
+            elements.add(element);
+        }
+        root.add("elements", elements);
+        return root;
     }
 
     private static JsonObject textures(NibaruMaterialProfile profile) {
@@ -307,6 +290,7 @@ public final class ExternalMaterialGeneratedResources {
                 QuarterGeometryGeneratedData.bindings(BgeGeometryRole.QUARTER_COLUMN))
             language.addProperty(translation(column.id()), QuarterGeometryGeneratedResources.quarterColumnDisplayName(column.profile()));
         for (ExternalMaterialFamilies.Binding binding : ExternalMaterialFamilies.all()) {
+            if (binding.profile().family() != null) continue;
             for (Map.Entry<String, Block> role : binding.roles().entrySet()) {
                 if (role.getKey().equals("block") || role.getKey().equals("layer")
                         || role.getKey().equals("corner") || role.getKey().equals("quarter_column")) continue;
