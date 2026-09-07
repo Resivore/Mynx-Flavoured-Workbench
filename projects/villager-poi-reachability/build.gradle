@@ -1,0 +1,37 @@
+plugins { id 'net.fabricmc.fabric-loom' version '1.15.5' }
+
+version = project.mod_version
+group = project.maven_group
+base { archivesName = project.archives_base_name }
+repositories { maven { url = 'https://maven.fabricmc.net/' }; mavenCentral() }
+
+dependencies {
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    implementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+    testImplementation platform('org.junit:junit-bom:5.13.4')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+processResources { inputs.property 'version', project.version; filesMatching('fabric.mod.json') { expand version: project.version } }
+tasks.withType(JavaCompile).configureEach { options.release = 25 }
+tasks.withType(org.gradle.api.tasks.bundling.AbstractArchiveTask).configureEach { preserveFileTimestamps = false; reproducibleFileOrder = true }
+test { useJUnitPlatform() }
+
+fabricApi {
+    configureTests {
+        createSourceSet = true
+        modId = 'villager_poi_reachability_gametest'
+        enableGameTests = true
+        enableClientGameTests = false
+        eula = true
+    }
+}
+
+// Florist is a controlled GameTest fixture only; production has no Mynx Flora Trades dependency.
+dependencies.add('gametestRuntimeOnly', files('../mynx-flora-trades/build/libs/mynx-flora-trades-0.1.0+26.2-canary4.jar'))
+dependencies.add('gametestRuntimeOnly', files('../mynx-regions-unexplored/artifacts/mynx-regions-unexplored-private-0.1.0+26.2-canary3.jar'))
+dependencies.add('gametestRuntimeOnly', files('../ribbits-26.2/artifacts/ribbits-private-reconstruction-4.1.6+26.2-mynx-canary17.jar'))
+
+java { withSourcesJar() }
