@@ -78,7 +78,7 @@ final class DiscoveryHistoryStore {
         }
     }
 
-    synchronized void recordCircle(
+    synchronized void recordSquare(
             WorldDimensionKey key,
             int centerChunkX,
             int centerChunkZ,
@@ -89,16 +89,13 @@ final class DiscoveryHistoryStore {
         if (entry == null || entry.failOpen || radius < 0) {
             return;
         }
-        long radiusSquared = (long) radius * radius;
         List<LayerChunk> additions = new ArrayList<>();
         for (int deltaX = -radius; deltaX <= radius; deltaX++) {
             for (int deltaZ = -radius; deltaZ <= radius; deltaZ++) {
-                if ((long) deltaX * deltaX + (long) deltaZ * deltaZ <= radiusSquared) {
-                    additions.add(new LayerChunk(
-                            layer,
-                            ChunkRadius.pack(centerChunkX + deltaX, centerChunkZ + deltaZ)
-                    ));
-                }
+                additions.add(new LayerChunk(
+                        layer,
+                        ChunkRadius.pack(centerChunkX + deltaX, centerChunkZ + deltaZ)
+                ));
             }
         }
         appendNew(entry, additions);

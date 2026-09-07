@@ -29,22 +29,24 @@ class DiscoveryHistoryStoreTest {
     }
 
     @Test
-    void circleEligibilityPersistsWithInclusiveBoundaryAndNegativeCoordinates() {
+    void squareEligibilityPersistsWithInclusiveCornersAndNegativeCoordinates() {
         WorldDimensionKey key = key("world-a", "minecraft:overworld");
         DiscoveryHistoryStore first = store();
         first.prepare(key);
         assertFalse(first.allows(key, -10, 12, SURFACE_LAYER));
-        first.recordCircle(key, -10, 12, 1, SURFACE_LAYER);
+        first.recordSquare(key, -10, 12, 1, SURFACE_LAYER);
 
         assertTrue(first.allows(key, -11, 12, SURFACE_LAYER));
         assertTrue(first.allows(key, -10, 13, SURFACE_LAYER));
-        assertFalse(first.allows(key, -11, 11, SURFACE_LAYER));
+        assertTrue(first.allows(key, -11, 11, SURFACE_LAYER));
+        assertFalse(first.allows(key, -12, 12, SURFACE_LAYER));
 
         DiscoveryHistoryStore reloaded = store();
         reloaded.prepare(key);
         assertTrue(reloaded.allows(key, -11, 12, SURFACE_LAYER));
         assertTrue(reloaded.allows(key, -10, 13, SURFACE_LAYER));
-        assertFalse(reloaded.allows(key, -11, 11, SURFACE_LAYER));
+        assertTrue(reloaded.allows(key, -11, 11, SURFACE_LAYER));
+        assertFalse(reloaded.allows(key, -12, 12, SURFACE_LAYER));
     }
 
     @Test
@@ -100,7 +102,7 @@ class DiscoveryHistoryStoreTest {
         WorldDimensionKey key = key("world-interrupted", "minecraft:overworld");
         DiscoveryHistoryStore first = store();
         first.prepare(key);
-        first.recordCircle(key, 0, 0, 0, SURFACE_LAYER);
+        first.recordSquare(key, 0, 0, 0, SURFACE_LAYER);
         Path history = first.layerHistoryPath(key);
         Path pending = history.resolveSibling(history.getFileName() + ".pending");
         Files.writeString(pending, "simulated interrupted append", StandardCharsets.UTF_8);
@@ -116,7 +118,7 @@ class DiscoveryHistoryStoreTest {
         WorldDimensionKey key = key("world-committed", "minecraft:overworld");
         DiscoveryHistoryStore store = store();
         store.prepare(key);
-        store.recordCircle(key, 4, 4, 1, SURFACE_LAYER);
+        store.recordSquare(key, 4, 4, 1, SURFACE_LAYER);
         Path history = store.layerHistoryPath(key);
         assertFalse(Files.exists(history.resolveSibling(history.getFileName() + ".pending")));
     }
@@ -129,7 +131,7 @@ class DiscoveryHistoryStoreTest {
         ExecutorService executor = Executors.newFixedThreadPool(4);
         for (int i = 0; i < 40; i++) {
             int chunk = i;
-            executor.submit(() -> store.recordCircle(key, chunk, -chunk, 1, SURFACE_LAYER));
+            executor.submit(() -> store.recordSquare(key, chunk, -chunk, 1, SURFACE_LAYER));
             executor.submit(() -> store.recordPacked(key, List.of(ChunkRadius.pack(-chunk, chunk)), -10));
             executor.submit(() -> store.allows(key, chunk, -chunk, SURFACE_LAYER));
         }

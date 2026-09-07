@@ -95,9 +95,9 @@ tasks.register('verifyClientOnlyArtifact') {
             if (metadata.id != 'xaero_discovery_radius'
                     || metadata.version != project.version.toString()
                     || metadata.environment != 'client'
-                    || metadata.depends.xaerominimap != '26.4.2'
-                    || metadata.depends.xaeroworldmap != '1.44.2') {
-                throw new GradleException("Client companion metadata does not match the pinned Canary 2 contract")
+                    || metadata.depends.xaerominimap != '>=26.4.2'
+                    || metadata.depends.xaeroworldmap != '>=1.44.2') {
+                throw new GradleException("Client companion metadata does not match the pinned Canary 3 contract")
             }
             def mixins = readJson('xaero_discovery_radius.mixins.json')
             def expectedMixins = [

@@ -12,15 +12,15 @@
     "legacy_ids": []
   },
   "definition": {
-    "lifecycle": "ACCEPTED",
+    "lifecycle": "ACTIVE",
     "goals": [
-      "Limit new Xaero Minimap and World Map terrain discovery to a configurable chunk-quantized Euclidean circle, defaulting to radius 2, independently of Minecraft render distance.",
+      "Limit new Xaero Minimap and World Map terrain discovery to a configurable chunk-quantized square, defaulting to half-width 2, independently of Minecraft render distance.",
       "Preserve all previously mapped terrain and otherwise preserve Xaero behavior, including normal nearby discovery, Minimap and World Map sharing, waypoints, radar, navigation, map presentation, and unrelated UI behavior.",
       "Apply durable singleplayer eligibility independently to Xaero World Map's exact persistent vertical-layer identity while failing open whenever history integrity cannot be trusted."
     ],
     "scope": [
       "Maintain the client-side Fabric companion for Minecraft 26.2 against exact Xaero Minimap 26.4.2, Xaero World Map 1.44.2, and embedded XaeroLib 1.7.1 references.",
-      "Apply the inclusive chunk-circle predicate dx squared plus dz squared less than or equal to radius squared, configurable from 0 through 32 and defaulting to 2 for a fresh or invalid configuration, across Minimap live terrain reads and World Map live writing without reading or changing Minecraft render distance or widening a tighter native Xaero distance.",
+      "Apply the inclusive chunk-square predicate absolute dx less than or equal to radius and absolute dz less than or equal to radius, configurable from 0 through 32 and defaulting to 2 for a fresh or invalid configuration, across Minimap live terrain reads, World Map live writing, and newly recorded singleplayer eligibility without reading or changing Minecraft render distance or widening a tighter native Xaero distance.",
       "Center both live gates on Xaero's current camera semantics: Minimap uses Minecraft's current camera entity and World Map uses its camera-derived playerChunkX and playerChunkZ fields.",
       "Persist singleplayer eligibility by Xaero World Map caveLayer: Integer.MAX_VALUE for surface, Integer.MIN_VALUE for full or single-depth mode, and signed caveStart shifted right by 4 for ordinary cave layers; gate direct-save reconstruction with the destination tile region's exact caveLayer.",
       "Preserve every valid C1 history entry as read-only wildcard eligibility across all vertical layers, append all new eligibility to a separate dimension-local layer-aware v2 journal, and never rewrite or delete the v1 journal.",
@@ -32,7 +32,7 @@
         "projects/xaero-discovery-radius"
       ],
       "exclusions": [
-        "A successor beyond Canary 2, dependency-version expansion, server-side behavior, or broad redesign of Xaero discovery and map storage.",
+        "A successor beyond Canary 3, dependency-version expansion, server-side behavior, or broad redesign of Xaero discovery and map storage.",
         "Modification, patching, or redistribution of Xaero Minimap, Xaero World Map, XaeroLib, their classes, or their assets; the exact All Rights Reserved binaries remain external references only.",
         "Deleting, rewriting, or concealing existing Xaero map data, rewriting the C1 v1 history, grandfathering every pre-generated Anvil chunk, or fabricating missing historical discovery without durable Xaero cache evidence.",
         "Changing Minecraft render distance, waypoint or radar reach, map navigation, zoom, cache rendering, or unrelated Xaero behavior.",
@@ -45,68 +45,72 @@
         "type": "OTHER",
         "identifier": "minecraft",
         "requirement": ">=26.2 <26.3",
-        "reason": "Target client range declared by Canary 2."
+        "reason": "Target client range declared by Canary 3."
       },
       {
         "type": "MOD",
         "identifier": "fabricloader",
         "requirement": ">=0.19.3",
-        "reason": "Fabric runtime loader floor declared by Canary 2."
+        "reason": "Fabric runtime loader floor declared by Canary 3."
       },
       {
         "type": "MOD",
         "identifier": "fabric-api",
         "requirement": "0.157.0+26.2 (metadata minimum >=0.157.0)",
-        "reason": "Exact compile and static-validation baseline used for Canary 2."
+        "reason": "Exact compile and static-validation baseline used for Canary 3."
       },
       {
         "type": "MOD",
         "identifier": "xaerominimap",
         "requirement": "=26.4.2; SHA-256 69284892d2eb853c9aefa85a4c9b74232c322da00207994c67ab8aeed8a64048",
-        "reason": "Exact All Rights Reserved Minimap binary whose private terrain-fetch and camera contracts are pinned by Canary 2; it is not redistributed."
+        "reason": "Exact All Rights Reserved Minimap binary whose private terrain-fetch and camera contracts are statically checked for Canary 3; it is not redistributed."
       },
       {
         "type": "MOD",
         "identifier": "xaeroworldmap",
         "requirement": "=1.44.2; SHA-256 d55ef45c559ae0adcf66d894c022f61d9d921629b0c885d04aa00424546a2389",
-        "reason": "Exact All Rights Reserved World Map binary whose writer, vertical-layer, direct-save, and cache contracts are pinned by Canary 2; it is not redistributed."
+        "reason": "Exact All Rights Reserved World Map binary whose writer, vertical-layer, direct-save, and cache contracts are statically checked for Canary 3; it is not redistributed."
       },
       {
         "type": "MOD",
         "identifier": "xaerolib",
         "requirement": "=1.7.1 embedded reference; SHA-256 7f4a78dd7e046fea0500fef83b1481d85317c8348d47e947035d7a07efe51065",
-        "reason": "Exact All Rights Reserved compile-only library embedded in the Minimap reference; Canary 2 does not package it."
+        "reason": "Exact All Rights Reserved compile-only library embedded in the Minimap reference; Canary 3 does not package it."
       },
       {
         "type": "TOOL",
         "identifier": "java",
         "requirement": "25",
-        "reason": "Compilation release used for Canary 2."
+        "reason": "Compilation release used for Canary 3."
       },
       {
         "type": "TOOL",
         "identifier": "gradle",
         "requirement": "9.5.1",
-        "reason": "Exact Gradle runtime used for the verified Canary 2 build."
+        "reason": "Exact Gradle runtime used for the verified Canary 3 build."
       },
       {
         "type": "TOOL",
         "identifier": "fabric-loom",
         "requirement": "1.17.19",
-        "reason": "Exact Fabric build plugin pinned by the Canary 2 build configuration."
+        "reason": "Exact Fabric build plugin pinned by the Canary 3 build configuration."
       }
     ]
   },
   "state": {
-    "milestone": "Exact Canary 2 passed user-reported aggregate runtime testing and was atomically promoted into physically verified Stack v6 as the accepted release.",
+    "milestone": "Canary 3 changes future Xaero discovery to an inclusive chunk square while preserving runtime-passed Canary 2 as the accepted baseline.",
     "releases": {
       "current": {
-        "version": "0.1.1-canary2",
+        "version": "0.1.2-canary3",
         "artifact": {
-          "filename": "xaero-discovery-radius-0.1.1-canary2.jar",
-          "sha256": "a7d0125dbe13bbcd5418aac39e0e51a32ea79d508d9dc47f2ebd86526a794c99"
+          "filename": "xaero-discovery-radius-0.1.2-canary3.jar",
+          "sha256": "5524dfa84e35ea5c31263df4705daca3718df7a095f5c544bb731190dcc0cf95"
         },
-        "source_commit": "a8c042c8d5c075c3f3fc9ca019a0b6efe815eaff"
+        "source_commit": "caff6f8a9174487149d064d94d664da1ec2b0a72",
+        "runtime_dependency_policy": {
+          "contract": "CAPABILITY_OR_PROVIDER",
+          "exceptions": []
+        }
       },
       "accepted": {
         "version": "0.1.1-canary2",
@@ -117,22 +121,22 @@
         "source_commit": "a8c042c8d5c075c3f3fc9ca019a0b6efe815eaff"
       },
       "rollback": null,
-      "accepted_current": "CURRENT_IS_ACCEPTED",
+      "accepted_current": "CURRENT_DIFFERS_FROM_ACCEPTED",
       "accepted_rollback": "NO_ROLLBACK"
     },
     "validation": {
       "build": "STATIC_PASS",
-      "deployment": "READY_TO_TEST_VERIFIED",
-      "runtime": "RUNTIME_PASS"
+      "deployment": "NOT_DEPLOYED",
+      "runtime": "RUNTIME_UNTESTED"
     },
     "blocker": null
   },
   "synchronization": {
-    "revision": 3,
-    "activity_at": "2026-08-31T04:36:25Z",
-    "updated_at": "2026-08-31T04:36:25Z",
-    "last_codex_at": "2026-08-31T04:36:25Z",
-    "source_commit": "12d96636943b4ba405c0d96916bbdc74e1434629",
+    "revision": 4,
+    "activity_at": "2026-09-07T21:19:04Z",
+    "updated_at": "2026-09-07T21:19:04Z",
+    "last_codex_at": "2026-09-07T21:19:04Z",
+    "source_commit": "caff6f8a9174487149d064d94d664da1ec2b0a72",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
