@@ -76,7 +76,8 @@ public final class NativeAxisGameTests implements CustomTestMethodInvoker {
         int nonAxisSlabs = 0;
         int nonAxisStairs = 0;
 
-        for (NibaruMaterialProfile profile : NibaruMaterialProfiles.all()) {
+        for (NibaruMaterialProfile profile : NibaruMaterialProfiles.all().stream()
+                .filter(profile -> profile.family() != null).toList()) {
             boolean axis = MaterialAxisSemantics.applies(profile);
             if (axis) actual.add(profile.canonicalParentId());
 
@@ -287,7 +288,8 @@ public final class NativeAxisGameTests implements CustomTestMethodInvoker {
         Map<Identifier, Identifier> expected = expectedStrippingMappings();
         Set<Identifier> actualSources = new LinkedHashSet<>();
         for (NibaruMaterialProfile profile : NibaruMaterialProfiles.all()) {
-            if (profile.capabilities().contains(BehaviorCapability.STRIPPABLE)) {
+            if (profile.family() != null
+                    && profile.capabilities().contains(BehaviorCapability.STRIPPABLE)) {
                 actualSources.add(profile.canonicalParentId());
             }
         }
@@ -352,7 +354,7 @@ public final class NativeAxisGameTests implements CustomTestMethodInvoker {
         assertRuntimeStairGeometry(helper);
         int textureProfiles = 0;
         for (NibaruMaterialProfile profile : NibaruMaterialProfiles.all()) {
-            if (!MaterialAxisSemantics.applies(profile)) continue;
+            if (profile.family() == null || !MaterialAxisSemantics.applies(profile)) continue;
             helper.assertTrue(NativeAxisModelContract.semanticTextures(profile)
                             .equals(AxisModelContract.semanticTextures(profile)),
                     "Provider-native texture roles diverged from the passing Canary 1.38 authority for "

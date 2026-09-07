@@ -253,8 +253,8 @@ public final class LayerResourceGameTests implements CustomTestMethodInvoker {
         JsonObject layerItemTag = generatedServerJson(Identifier.parse(
                 "cnm_terrain_slabs_compat:tags/item/layers.json"));
         helper.assertTrue(!layerTag.get("replace").getAsBoolean()
-                        && layerTag.getAsJsonArray("values").size() == 311
-                        && layerItemTag.getAsJsonArray("values").size() == 311
+                        && layerTag.getAsJsonArray("values").size() == NibaruMaterialProfiles.all().size()
+                        && layerItemTag.getAsJsonArray("values").size() == NibaruMaterialProfiles.all().size()
                         && layerTag.getAsJsonArray("values").asList().stream()
                                 .anyMatch(value -> value.getAsString().equals(stoneLayer.toString())),
                 "BGE Layer block/item classification tags changed or omitted stone");

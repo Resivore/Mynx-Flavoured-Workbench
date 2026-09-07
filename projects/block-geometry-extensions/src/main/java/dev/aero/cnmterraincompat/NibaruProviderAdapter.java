@@ -107,6 +107,10 @@ public final class NibaruProviderAdapter {
     public static int admissionSize(BlockState state) {
         Optional<NibaruMaterialProfile> profile = profile(state.getBlock());
         if (profile.isEmpty()) return state.getProperties().size();
+        // A canonical external source is itself profile-owned but is not a CNM geometry input.
+        // Only actual SlabBlock/StairBlock carriers may enter the two CNM generation branches.
+        if (!(state.getBlock() instanceof SlabBlock) && !(state.getBlock() instanceof StairBlock))
+            return state.getProperties().size();
         DerivedGeometrySupport.Geometry target = state.getBlock() instanceof SlabBlock
                 ? DerivedGeometrySupport.Geometry.VERTICAL_SLAB
                 : DerivedGeometrySupport.Geometry.STEP;
@@ -447,6 +451,11 @@ public final class NibaruProviderAdapter {
     public static void configureTintRegistrar(BiConsumer<TintProfile, Block> registrar) {
         tintRegistrar = registrar;
         TINT_TARGETS.forEach((tint, blocks) -> blocks.forEach(block -> registrar.accept(tint, block)));
+    }
+
+    /** Adds a late-registered standard external form to the same client tint contract. */
+    public static void registerTintTarget(NibaruMaterialProfile profile, Block block) {
+        registerTint(profile, block);
     }
 
     private static void capture(NibaruMaterialProfile profile, BgeGeometryRole geometry, Block block) {

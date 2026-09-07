@@ -1,10 +1,16 @@
 {
   "schemaVersion": 1,
-  "id": "cnm-nibaru-runtime-tests",
+  "id": "zz_bge_external_fixtures",
+  "provides": ["mcwpaths", "mynx_trees", "ribbits"],
   "version": "1.0.0",
   "name": "CNM Nibaru Runtime Tests",
   "environment": "*",
   "entrypoints": {
+    "main": [
+      "com.mcwpaths.kikoz.MacawsPaths",
+      "dev.resivore.mynxtrees.MynxTrees",
+      "com.yungnickyoung.minecraft.ribbits.fabric.RibbitsFabric"
+    ],
     "fabric-gametest": [
       "dev.aero.cnmterraincompat.gametest.LeafSemanticsGameTests",
       "dev.aero.cnmterraincompat.gametest.NativeAxisGameTests",
@@ -13,7 +19,8 @@
       "dev.aero.cnmterraincompat.LayerResourceGameTests",
       "dev.aero.cnmterraincompat.BgeQuarterGeometryGameTests",
       "dev.aero.cnmterraincompat.CornerColumnResourceGameTests",
-      "dev.aero.cnmterraincompat.client.GlassCornerUvResourceGameTests"
+      "dev.aero.cnmterraincompat.client.GlassCornerUvResourceGameTests",
+      "dev.aero.cnmterraincompat.ExternalMaterialFamilyGameTests"
     ]
   },
   "depends": {

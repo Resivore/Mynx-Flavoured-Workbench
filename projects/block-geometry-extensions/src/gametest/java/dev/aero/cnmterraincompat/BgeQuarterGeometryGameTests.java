@@ -56,8 +56,9 @@ public final class BgeQuarterGeometryGameTests implements CustomTestMethodInvoke
     @GameTest(maxTicks = 40)
     public void catalogBindingsAndShapeMapOrderAreExact(GameTestHelper helper) {
         List<NibaruMaterialProfile> profiles = NibaruMaterialProfiles.all();
-        helper.assertTrue(profiles.size() == 311,
-                "Expected 311 canonical material profiles, found " + profiles.size());
+        int expectedProfiles = 311 + ExternalMaterialFamilies.all().size();
+        helper.assertTrue(profiles.size() == expectedProfiles,
+                "Expected " + expectedProfiles + " canonical material profiles, found " + profiles.size());
 
         List<BgeGeometryCatalog.Descriptor> catalog = BgeGeometryCatalog.ordered();
         helper.assertTrue(catalog.stream().map(entry -> entry.key().getPath()).toList().equals(
@@ -138,9 +139,9 @@ public final class BgeQuarterGeometryGameTests implements CustomTestMethodInvoke
         long columnTraits = NibaruProviderAdapter.localMaterialTraits().stream()
                 .filter(trait -> trait.role() == BgeGeometryRole.QUARTER_COLUMN
                         && trait.fuelDivisor() == 4 && columns.contains(trait.derived())).count();
-        helper.assertTrue(corners.size() == 311 && columns.size() == 311
-                        && allQuarterGeometry.size() == 622
-                        && cornerTraits == 311 && columnTraits == 311,
+        helper.assertTrue(corners.size() == expectedProfiles && columns.size() == expectedProfiles
+                        && allQuarterGeometry.size() == expectedProfiles * 2
+                        && cornerTraits == expectedProfiles && columnTraits == expectedProfiles,
                 "Quarter geometry population/trait count mismatch: corners=" + corners.size()
                         + ", columns=" + columns.size() + ", total=" + allQuarterGeometry.size()
                         + ", traits=" + cornerTraits + "/" + columnTraits);

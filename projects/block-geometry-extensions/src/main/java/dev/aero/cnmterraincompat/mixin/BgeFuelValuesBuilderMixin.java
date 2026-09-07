@@ -1,6 +1,7 @@
 package dev.aero.cnmterraincompat.mixin;
 
 import dev.aero.cnmterraincompat.NibaruProviderAdapter;
+import dev.aero.cnmterraincompat.ExternalMaterialFamilies;
 import it.unimi.dsi.fastutil.objects.Object2IntSortedMap;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.entity.FuelValues;
@@ -23,6 +24,11 @@ abstract class BgeFuelValuesBuilderMixin {
         for (NibaruProviderAdapter.LocalMaterialTrait trait
                 : NibaruProviderAdapter.localMaterialTraits()) {
             int inherited = values.getInt(trait.canonicalParent().asItem()) / trait.fuelDivisor();
+            if (inherited > 0) builder.add(trait.derived(), inherited);
+        }
+        for (ExternalMaterialFamilies.StandardFuelTrait trait
+                : ExternalMaterialFamilies.standardFuelTraits()) {
+            int inherited = values.getInt(trait.source().asItem()) / trait.divisor();
             if (inherited > 0) builder.add(trait.derived(), inherited);
         }
     }

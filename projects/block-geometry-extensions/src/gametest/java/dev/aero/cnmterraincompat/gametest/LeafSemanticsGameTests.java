@@ -95,14 +95,14 @@ public final class LeafSemanticsGameTests implements CustomTestMethodInvoker {
                 "Fabric Loader did not resolve the legacy Nibaru alias to the unified BGE container");
         helper.assertTrue(primary.getMetadata().getId().equals("cnm_terrain_slabs_compat"),
                 "Unified container primary identity changed");
-        helper.assertTrue(version.getFriendlyString().equals("4.2.3-bge.canary59.external-materials+26.2"),
+        helper.assertTrue(version.getFriendlyString().equals("4.2.4-bge.canary60.external-families+26.2"),
                 "Unified container version changed: " + version.getFriendlyString());
         try {
             helper.assertTrue(VersionPredicate.parse(">=4.2.0 <4.3.0-").test(version),
                     "Legacy Nibaru dependency range rejected the unified version");
             helper.assertTrue(VersionPredicate.parse(">=0.8.0-bge-canary56-vertical-stairs-catalog").test(version),
                     "Forward BGE dependency range rejected the unified version");
-            helper.assertTrue(VersionPredicate.parse("=4.2.3-bge.canary59.external-materials+26.2").test(version),
+            helper.assertTrue(VersionPredicate.parse("=4.2.4-bge.canary60.external-families+26.2").test(version),
                     "Exact unified dependency rejected the unified version");
             helper.assertTrue(!VersionPredicate.parse("=4.2.0+26.2-port-canary46-bge-layer-contract").test(version),
                     "Exact predecessor Nibaru dependency falsely accepted the unified version");
@@ -127,7 +127,8 @@ public final class LeafSemanticsGameTests implements CustomTestMethodInvoker {
         var names = new java.util.LinkedHashMap<String, String>();
         int providerPaths = 0;
         int ordinaryAliases = 0;
-        for (NibaruMaterialProfile profile : NibaruMaterialProfiles.all()) {
+        for (NibaruMaterialProfile profile : NibaruMaterialProfiles.all().stream()
+                .filter(profile -> profile.family() != null).toList()) {
             for (DerivedGeometrySupport.Geometry geometry : DerivedGeometrySupport.Geometry.values()) {
                 Block block = NibaruProviderAdapter.derived(profile, geometry).orElseThrow();
                 Identifier id = BuiltInRegistries.BLOCK.getKey(block);
@@ -162,7 +163,9 @@ public final class LeafSemanticsGameTests implements CustomTestMethodInvoker {
     @GameTest(maxTicks = 40)
     public void providerProfileInventoryAndLookup(GameTestHelper helper) {
         var profiles = NibaruMaterialProfiles.all();
-        helper.assertTrue(profiles.size() == 311, "Expected 311 Nibaru profiles, found " + profiles.size());
+        int expectedProfiles = 311 + dev.aero.cnmterraincompat.ExternalMaterialFamilies.all().size();
+        helper.assertTrue(profiles.size() == expectedProfiles,
+                "Expected " + expectedProfiles + " profiles, found " + profiles.size());
         var parents = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<Block, Boolean>());
         for (NibaruMaterialProfile profile : profiles) {
             helper.assertTrue(parents.add(profile.canonicalParent()),
@@ -196,7 +199,9 @@ public final class LeafSemanticsGameTests implements CustomTestMethodInvoker {
         long unsupportedBoth = targets(profiles).stream().filter(target -> target.profile.supportFor(target.geometry,
                 NibaruProviderAdapter.ADAPTED_CAPABILITIES, NibaruProviderAdapter.ADAPTED_VISUALS).status()
                 == DerivedGeometrySupport.Status.UNSUPPORTED_BOTH).count();
-        helper.assertTrue(behaviorSupported == 933 && visualSupported == 933 && fullyReady == 933
+        long expectedTargets = expectedProfiles * 3L;
+        helper.assertTrue(behaviorSupported == expectedTargets && visualSupported == expectedTargets
+                        && fullyReady == expectedTargets
                         && unsupportedBehavior == 0 && unsupportedVisual == 0 && unsupportedBoth == 0,
                 "Final-family support matrix changed: behavior=" + behaviorSupported + ", visual=" + visualSupported
                         + ", ready=" + fullyReady + ", unsupported=" + unsupportedBehavior + "/"
@@ -216,6 +221,7 @@ public final class LeafSemanticsGameTests implements CustomTestMethodInvoker {
                 "Material-axis expectation must contain exactly 56 canonical parents: " + expectedParents);
 
         var axisProfiles = NibaruMaterialProfiles.all().stream()
+                .filter(profile -> profile.family() != null)
                 .filter(profile -> profile.canonicalParent().defaultBlockState()
                         .hasProperty(BlockStateProperties.AXIS))
                 .toList();
@@ -270,7 +276,8 @@ public final class LeafSemanticsGameTests implements CustomTestMethodInvoker {
         helper.assertTrue(axisTargets == 168, "Expected 168 axis-aware derived targets, found " + axisTargets);
 
         int nonAxisTargets = 0;
-        for (NibaruMaterialProfile profile : NibaruMaterialProfiles.all()) {
+        for (NibaruMaterialProfile profile : NibaruMaterialProfiles.all().stream()
+                .filter(profile -> profile.family() != null).toList()) {
             if (profile.canonicalParent().defaultBlockState().hasProperty(BlockStateProperties.AXIS)) continue;
             helper.assertTrue(!MaterialAxisState.applies(profile),
                     "MaterialAxisState accepted non-axis parent " + profile.canonicalParentId());
@@ -854,7 +861,8 @@ public final class LeafSemanticsGameTests implements CustomTestMethodInvoker {
 
     @GameTest(maxTicks = 40)
     public void derivedMaterialTagsAndPodzolTransitions(GameTestHelper helper) {
-        var profiles = NibaruMaterialProfiles.all();
+        var profiles = NibaruMaterialProfiles.all().stream()
+                .filter(profile -> profile.family() != null).toList();
         int authoredTagRelations = profiles.stream().mapToInt(p -> p.derivedBlockTags().size()).sum();
         helper.assertTrue(authoredTagRelations > 0, "Provider authored-tag inventory is empty");
         for (NibaruMaterialProfile profile : profiles) {
@@ -1036,7 +1044,8 @@ public final class LeafSemanticsGameTests implements CustomTestMethodInvoker {
 
     @GameTest(maxTicks = 40)
     public void sparseSourcesBindAndOrderExactFamilies(GameTestHelper helper) {
-        var profiles = NibaruMaterialProfiles.all();
+        var profiles = NibaruMaterialProfiles.all().stream()
+                .filter(profile -> profile.family() != null).toList();
         long slabs = profiles.stream().filter(profile -> profile.nativeSlab().isPresent()).count();
         long stairs = profiles.stream().filter(profile -> profile.nativeStair().isPresent()).count();
         long walls = profiles.stream().filter(profile -> profile.nativeWall().isPresent()).count();
@@ -1230,6 +1239,7 @@ public final class LeafSemanticsGameTests implements CustomTestMethodInvoker {
     @GameTest(maxTicks = 40)
     public void allLeafProfilesUseCapabilityAdapter(GameTestHelper helper) {
         var leaves = NibaruMaterialProfiles.all().stream()
+                .filter(profile -> profile.family() != null)
                 .filter(profile -> profile.capabilities().contains(BehaviorCapability.LEAF_LIFECYCLE)).toList();
         helper.assertTrue(leaves.size() == 11, "Expected 11 true leaf-lifecycle profiles, found " + leaves.size());
         NibaruMaterialProfile oak = NibaruMaterialProfiles.fromFamily(ModBlocks.OAK_LEAVES).orElseThrow();
@@ -1786,6 +1796,7 @@ public final class LeafSemanticsGameTests implements CustomTestMethodInvoker {
     @GameTest(maxTicks = 40)
     public void strippableInventoryAndCanonicalDerivedTargets(GameTestHelper helper) {
         var strippable = NibaruMaterialProfiles.all().stream()
+                .filter(profile -> profile.family() != null)
                 .filter(profile -> profile.capabilities().contains(BehaviorCapability.STRIPPABLE)).toList();
         java.util.Set<Identifier> expectedSources = expectedStrippableMaterialAxisParentIds();
         var actualSources = new java.util.LinkedHashSet<Identifier>();

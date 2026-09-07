@@ -110,7 +110,16 @@ public final class NativeAxisModelContract {
 
     public static Map<String, String> semanticTextures(NibaruMaterialProfile profile) {
         requireAxisProfile(profile);
-        return semanticTextures(profile.family());
+        if (profile.family() != null) return semanticTextures(profile.family());
+        NibaruMaterialProfile.TextureRoles roles = profile.textureRoles();
+        String side = texture(roles.side());
+        String end = texture(roles.top());
+        LinkedHashMap<String, String> result = new LinkedHashMap<>();
+        result.put("side", side);
+        result.put("top", end);
+        result.put("bottom", end);
+        result.put("particle", side);
+        return Collections.unmodifiableMap(result);
     }
 
     /**
@@ -194,20 +203,20 @@ public final class NativeAxisModelContract {
         requireAxisProfile(profile);
         Identifier blockId = profile.nativeSlabId().orElseThrow(() ->
                 new IllegalArgumentException("Axis profile has no native slab: " + profile.canonicalParentId()));
-        return slab(profile.family(), blockId, policy);
+        return slab(blockId, policy, semanticTextures(profile));
     }
 
     public static GeneratedBlockResources slab(ModBlocks family, AxisUvPolicy policy) {
         if (!family.hasBlock(ModBlocks.BlockType.SLAB)) {
             throw new IllegalArgumentException("Axis family has no native slab: " + family);
         }
-        return slab(family, family.getId(ModBlocks.BlockType.SLAB), policy);
+        requireAxisFamily(family);
+        return slab(family.getId(ModBlocks.BlockType.SLAB), policy, semanticTextures(family));
     }
 
-    private static GeneratedBlockResources slab(
-            ModBlocks family, Identifier blockId, AxisUvPolicy policy) {
-        requireAxisFamily(family);
-        ResourceBuilder builder = new ResourceBuilder(family, blockId, "minecraft:block/block");
+    private static GeneratedBlockResources slab(Identifier blockId, AxisUvPolicy policy,
+            Map<String, String> textures) {
+        ResourceBuilder builder = new ResourceBuilder(textures, blockId, "minecraft:block/block");
         builder.reserveBase(spec(slabGeometry(SlabType.BOTTOM), Direction.Axis.Y, policy));
         for (SlabType type : SLAB_TYPES) {
             for (Direction.Axis axis : AXES) {
@@ -221,20 +230,20 @@ public final class NativeAxisModelContract {
         requireAxisProfile(profile);
         Identifier blockId = profile.nativeStairId().orElseThrow(() ->
                 new IllegalArgumentException("Axis profile has no native stair: " + profile.canonicalParentId()));
-        return stairs(profile.family(), blockId, policy);
+        return stairs(blockId, policy, semanticTextures(profile));
     }
 
     public static GeneratedBlockResources stairs(ModBlocks family, AxisUvPolicy policy) {
         if (!family.hasBlock(ModBlocks.BlockType.STAIRS)) {
             throw new IllegalArgumentException("Axis family has no native stair: " + family);
         }
-        return stairs(family, family.getId(ModBlocks.BlockType.STAIRS), policy);
+        requireAxisFamily(family);
+        return stairs(family.getId(ModBlocks.BlockType.STAIRS), policy, semanticTextures(family));
     }
 
-    private static GeneratedBlockResources stairs(
-            ModBlocks family, Identifier blockId, AxisUvPolicy policy) {
-        requireAxisFamily(family);
-        ResourceBuilder builder = new ResourceBuilder(family, blockId, "minecraft:block/stairs");
+    private static GeneratedBlockResources stairs(Identifier blockId, AxisUvPolicy policy,
+            Map<String, String> textures) {
+        ResourceBuilder builder = new ResourceBuilder(textures, blockId, "minecraft:block/stairs");
         builder.reserveBase(spec(stairGeometry(Direction.EAST, Half.BOTTOM, StairsShape.STRAIGHT),
                 Direction.Axis.Y, policy));
         for (Direction facing : HORIZONTAL) {
@@ -348,11 +357,11 @@ public final class NativeAxisModelContract {
         return result;
     }
 
-    private static JsonObject model(ModBlocks family, String parent, ModelSpec spec) {
+    private static JsonObject model(Map<String, String> semanticTextures, String parent, ModelSpec spec) {
         JsonObject model = new JsonObject();
         model.addProperty("parent", parent);
         JsonObject textures = new JsonObject();
-        semanticTextures(family).forEach(textures::addProperty);
+        semanticTextures.forEach(textures::addProperty);
         model.add("textures", textures);
         JsonArray elements = new JsonArray();
         for (Cuboid cuboid : spec.geometry().cuboids()) {
@@ -668,15 +677,15 @@ public final class NativeAxisModelContract {
     }
 
     private static final class ResourceBuilder {
-        private final ModBlocks family;
+        private final Map<String, String> textures;
         private final Identifier blockId;
         private final String parent;
         private final Map<ModelSpec, String> ids = new LinkedHashMap<>();
         private final Map<String, JsonObject> models = new LinkedHashMap<>();
         private final Map<String, VariantSelection> selectors = new LinkedHashMap<>();
 
-        private ResourceBuilder(ModBlocks family, Identifier blockId, String parent) {
-            this.family = family;
+        private ResourceBuilder(Map<String, String> textures, Identifier blockId, String parent) {
+            this.textures = textures;
             this.blockId = blockId;
             this.parent = parent;
         }
@@ -698,7 +707,7 @@ public final class NativeAxisModelContract {
         private String put(ModelSpec spec, String modelId) {
             String previous = ids.putIfAbsent(spec, modelId);
             if (previous != null) return previous;
-            JsonObject priorModel = models.putIfAbsent(modelId, model(family, parent, spec));
+            JsonObject priorModel = models.putIfAbsent(modelId, model(textures, parent, spec));
             if (priorModel != null) throw new IllegalStateException("Duplicate native axis model " + modelId);
             return modelId;
         }

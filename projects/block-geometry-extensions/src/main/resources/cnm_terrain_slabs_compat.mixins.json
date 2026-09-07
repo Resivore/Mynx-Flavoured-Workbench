@@ -11,7 +11,10 @@
     "SpreadingSnowyBlockMixin",
     "ShapeMapOrderMixin",
     "ProviderMovementMaterialMixin",
-    "ProviderPointedDripstoneMixin"
+    "ProviderPointedDripstoneMixin",
+    "MacawsPathsInitializationMixin",
+    "MynxTreesInitializationMixin",
+    "RibbitsInitializationMixin"
   ],
   "client": [
     "AssetGeneratorMixin",

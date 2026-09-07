@@ -1,6 +1,6 @@
 param(
-    [string]$UnifiedJar = (Join-Path $PSScriptRoot '..\build\libs\cnm-nibaru-integration-4.2.3-bge.canary59.external-materials+26.2.jar'),
-    [string]$C57Jar = (Join-Path $PSScriptRoot '..\artifacts\cnm-nibaru-integration-4.2.1-bge.canary57.unified+26.2.jar')
+    [string]$UnifiedJar = (Join-Path $PSScriptRoot '..\build\libs\cnm-nibaru-integration-4.2.4-bge.canary60.external-families+26.2.jar'),
+    [string]$AcceptedJar = (Join-Path $PSScriptRoot '..\artifacts\cnm-nibaru-integration-4.2.2-bge.canary58.glass-corner-uv+26.2.jar')
 )
 
 $ErrorActionPreference = 'Stop'
@@ -80,28 +80,34 @@ function Test-ContainsBytes([byte[]]$Bytes, [byte[]]$Needle) {
 
 function Test-AllowedChangedEntry([string]$Name) {
     return $Name -eq 'fabric.mod.json' -or
-            $Name -match '^dev/aero/cnmterraincompat/client/CornerColumnModelProjection(?:\$.*)?\.class$' -or
-            $Name -match '^dev/aero/cnmterraincompat/client/CuboidListModelProjection(?:\$.*)?\.class$' -or
-            $Name -eq 'dev/aero/cnmterraincompat/NibaruProviderAdapter.class' -or
+            $Name -eq 'cnm_terrain_slabs_compat.mixins.json' -or
+            $Name -match '^dev/aero/cnmterraincompat/CnmTerrainCompat(?:\$.*)?\.class$' -or
+            $Name -match '^dev/aero/cnmterraincompat/NibaruProviderAdapter(?:\$.*)?\.class$' -or
+            $Name -match '^dev/aero/cnmterraincompat/client/BgeGeneratedResources(?:\$.*)?\.class$' -or
+            $Name -match '^dev/aero/cnmterraincompat/client/LayerGeneratedResources(?:\$.*)?\.class$' -or
+            $Name -match '^dev/aero/cnmterraincompat/client/QuarterGeometryGeneratedResources(?:\$.*)?\.class$' -or
+            $Name -match '^dev/aero/cnmterraincompat/mixin/BgeFuelValuesBuilderMixin(?:\$.*)?\.class$' -or
+            $Name -match '^games/twinhead/moreslabsstairsandwalls/api/material/NativeAxisModelContract(?:\$.*)?\.class$' -or
             $Name -match '^games/twinhead/moreslabsstairsandwalls/api/material/NibaruMaterialProfiles(?:\$.*)?\.class$'
 }
 
 function Test-AllowedNewEntry([string]$Name) {
-    return $Name -match '^dev/aero/cnmterraincompat/client/AuthoredGlassCornerModel(?:\$.*)?\.class$' -or
-            $Name -match '^dev/aero/cnmterraincompat/ExternalMaterialCatalog(?:\$.*)?\.class$'
+    return $Name -match '^dev/aero/cnmterraincompat/ExternalMaterial(?:Blocks|Catalog|Families|GeneratedData)(?:\$.*)?\.class$' -or
+            $Name -match '^dev/aero/cnmterraincompat/client/ExternalMaterialGeneratedResources(?:\$.*)?\.class$' -or
+            $Name -match '^dev/aero/cnmterraincompat/mixin/(?:MacawsPaths|MynxTrees|Ribbits)InitializationMixin(?:\$.*)?\.class$'
 }
 
 $unifiedPath = (Resolve-Path -LiteralPath $UnifiedJar).Path
-$c57Path = (Resolve-Path -LiteralPath $C57Jar).Path
+$acceptedPath = (Resolve-Path -LiteralPath $AcceptedJar).Path
 
-Require ((Get-FileSha256 $c57Path) -eq '7cd01479531ec26975326b882e0a18406c17de26695b1f4fae29b72edb76cbc2') `
-        'Exact unified BGE C57 predecessor hash mismatch'
+Require ((Get-FileSha256 $acceptedPath) -eq '1a4e4d1cd9c8709720ec84975e70caffb5552ac676537b9bbae42dca96567e87') `
+        'Exact accepted unified BGE C58 boundary hash mismatch'
 
 $unified = [System.IO.Compression.ZipFile]::OpenRead($unifiedPath)
-$c57 = [System.IO.Compression.ZipFile]::OpenRead($c57Path)
+$accepted = [System.IO.Compression.ZipFile]::OpenRead($acceptedPath)
 try {
     $unifiedMap = Get-EntryMap $unified
-    $c57Map = Get-EntryMap $c57
+    $acceptedMap = Get-EntryMap $accepted
 
     $descriptors = @($unifiedMap.Keys | Where-Object { $_ -eq 'fabric.mod.json' -or $_.EndsWith('/fabric.mod.json') })
     Require ($descriptors.Count -eq 1 -and $descriptors[0] -eq 'fabric.mod.json') `
@@ -112,9 +118,9 @@ try {
     $metadataText = Get-EntryText $unifiedMap['fabric.mod.json']
     $metadata = $metadataText | ConvertFrom-Json
     Require ($metadata.id -eq 'cnm_terrain_slabs_compat') 'Unified primary Fabric ID changed'
-    Require ($metadata.version -eq '4.2.3-bge.canary59.external-materials+26.2') 'Unified Fabric version is not exact C59'
-    Require ($metadata.name -eq 'Block Geometry Extensions Canary 59 — External Materials') `
-            'Unified Fabric display name is not exact C59'
+    Require ($metadata.version -eq '4.2.4-bge.canary60.external-families+26.2') 'Unified Fabric version is not exact C60'
+    Require ($metadata.name -eq 'Block Geometry Extensions Canary 60 — External Families') `
+            'Unified Fabric display name is not exact C60'
     Require (@($metadata.provides).Count -eq 1 -and $metadata.provides[0] -eq 'more_slabs_stairs_and_walls') `
             'Unified descriptor must provide exactly the legacy Nibaru ID'
     Require ($metadata.PSObject.Properties.Name -notcontains 'jars') 'Unified descriptor must not declare nested JARs'
@@ -133,53 +139,60 @@ try {
     $actualMixins = New-StringSet @($metadata.mixins)
     Require $actualMixins.SetEquals($expectedMixins) 'Unified mixin configuration set is incomplete or duplicated'
     foreach ($mixin in $expectedMixins) { Require $unifiedMap.ContainsKey($mixin) "Packaged mixin config missing: $mixin" }
+    $integrationMixins = Get-EntryText $unifiedMap['cnm_terrain_slabs_compat.mixins.json']
+    foreach ($providerHook in @('MacawsPathsInitializationMixin', 'MynxTreesInitializationMixin', 'RibbitsInitializationMixin')) {
+        Require ($integrationMixins -match [regex]::Escape($providerHook)) "C60 provider completion hook is not packaged: $providerHook"
+    }
 
     $missing = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::Ordinal)
     $changed = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::Ordinal)
     $identical = 0
-    foreach ($name in $c57Map.Keys) {
+    foreach ($name in $acceptedMap.Keys) {
         if (-not $unifiedMap.ContainsKey($name)) {
             [void]$missing.Add($name)
             continue
         }
-        if ((Get-EntrySha256 $c57Map[$name]) -eq (Get-EntrySha256 $unifiedMap[$name])) {
+        if ((Get-EntrySha256 $acceptedMap[$name]) -eq (Get-EntrySha256 $unifiedMap[$name])) {
             $identical++
         } else {
             [void]$changed.Add($name)
         }
     }
-    Require ($missing.Count -eq 0) "C59 lost retained C57 entries: $(@($missing) -join ', ')"
+    Require ($missing.Count -eq 0) "C60 lost retained accepted-C58 entries: $(@($missing) -join ', ')"
 
-    $newEntries = New-StringSet @($unifiedMap.Keys | Where-Object { -not $c57Map.ContainsKey($_) })
+    $newEntries = New-StringSet @($unifiedMap.Keys | Where-Object { -not $acceptedMap.ContainsKey($_) })
     $unexpectedChanges = @($changed | Where-Object { -not (Test-AllowedChangedEntry $_) })
     $unexpectedNew = @($newEntries | Where-Object { -not (Test-AllowedNewEntry $_) })
     Require ($unexpectedChanges.Count -eq 0) `
-            "C59 changed entries outside the metadata/C58 Corner/C59 external catalog whitelist: $($unexpectedChanges -join ', ')"
+            "C60 changed entries outside its exact implementation whitelist: $($unexpectedChanges -join ', ')"
     Require ($unexpectedNew.Count -eq 0) `
-            "C59 added entries outside the C58 Corner/C59 external catalog class whitelist: $($unexpectedNew -join ', ')"
+            "C60 added entries outside its exact external-family class whitelist: $($unexpectedNew -join ', ')"
 
     foreach ($required in @(
         'fabric.mod.json',
-        'dev/aero/cnmterraincompat/client/CornerColumnModelProjection.class',
-        'dev/aero/cnmterraincompat/client/CuboidListModelProjection.class',
+        'cnm_terrain_slabs_compat.mixins.json',
+        'dev/aero/cnmterraincompat/CnmTerrainCompat.class',
         'dev/aero/cnmterraincompat/NibaruProviderAdapter.class',
+        'dev/aero/cnmterraincompat/client/BgeGeneratedResources.class',
+        'dev/aero/cnmterraincompat/client/LayerGeneratedResources.class',
+        'dev/aero/cnmterraincompat/client/QuarterGeometryGeneratedResources.class',
+        'dev/aero/cnmterraincompat/mixin/BgeFuelValuesBuilderMixin.class',
+        'games/twinhead/moreslabsstairsandwalls/api/material/NativeAxisModelContract.class',
         'games/twinhead/moreslabsstairsandwalls/api/material/NibaruMaterialProfiles.class'
     )) {
-        Require $changed.Contains($required) "Required C59 archive change is absent: $required"
-    }
-    foreach ($required in @(
-        'dev/aero/cnmterraincompat/client/AuthoredGlassCornerModel.class',
-        'dev/aero/cnmterraincompat/client/AuthoredGlassCornerModel$AuthoredElement.class',
-        'dev/aero/cnmterraincompat/client/AuthoredGlassCornerModel$AuthoredFace.class',
-        'dev/aero/cnmterraincompat/client/AuthoredGlassCornerModel$Uv.class'
-    )) {
-        Require $newEntries.Contains($required) "Required retained C58 authored class is absent: $required"
+        Require $changed.Contains($required) "Required C60 archive change is absent: $required"
     }
     foreach ($required in @(
         'dev/aero/cnmterraincompat/ExternalMaterialCatalog.class',
-        'dev/aero/cnmterraincompat/ExternalMaterialCatalog$Spec.class'
+        'dev/aero/cnmterraincompat/ExternalMaterialBlocks.class',
+        'dev/aero/cnmterraincompat/ExternalMaterialFamilies.class',
+        'dev/aero/cnmterraincompat/ExternalMaterialGeneratedData.class',
+        'dev/aero/cnmterraincompat/client/ExternalMaterialGeneratedResources.class',
+        'dev/aero/cnmterraincompat/mixin/MacawsPathsInitializationMixin.class',
+        'dev/aero/cnmterraincompat/mixin/MynxTreesInitializationMixin.class',
+        'dev/aero/cnmterraincompat/mixin/RibbitsInitializationMixin.class'
     )) {
-        Require $newEntries.Contains($required) "Required C59 external catalog class is absent: $required"
+        Require $newEntries.Contains($required) "Required C60 external-family class is absent: $required"
     }
 
     $forbiddenNames = @($unifiedMap.Keys | Where-Object {
@@ -204,10 +217,10 @@ try {
     foreach ($name in @($changed) + @($newEntries)) {
         $bytes = Get-EntryBytes $unifiedMap[$name]
         Require (-not (Test-ContainsBytes $bytes $pngSignature)) `
-                "Changed/new C59 entry embeds raw PNG source bytes: $name"
+                "Changed/new C60 entry embeds raw PNG source bytes: $name"
         $text = [System.Text.Encoding]::UTF8.GetString($bytes)
         Require ($text -notmatch '(?i)data:image/png;base64|iVBORw0KGgo|uv bbmodel(?:\.zip)?|BlockSprite_glass\.png|glass_corner_north_east\.bbmodel|\.bbmodel') `
-                "Changed/new C59 entry embeds a forbidden source name or texture encoding: $name"
+                "Changed/new C60 entry embeds a forbidden source name or texture encoding: $name"
     }
 
     foreach ($path in @(
@@ -216,7 +229,7 @@ try {
         'META-INF/licenses/more-slabs-stairs-and-walls-LGPL-3.0-or-later.txt'
     )) {
         Require $unifiedMap.ContainsKey($path) "Required unified license/provenance entry is missing: $path"
-        Require ((Get-EntrySha256 $unifiedMap[$path]) -eq (Get-EntrySha256 $c57Map[$path])) `
+        Require ((Get-EntrySha256 $unifiedMap[$path]) -eq (Get-EntrySha256 $acceptedMap[$path])) `
                 "Retained unified license/provenance entry changed: $path"
     }
 
@@ -243,14 +256,16 @@ try {
         $_ -match '^(?:assets|data)/' -or $_ -match '(?:^|/)pack\.mcmeta$' -or $_ -match '\.mixins\.json$'
     })
     foreach ($name in $resourceEntries) {
-        Require $c57Map.ContainsKey($name) "C58 added an unexpected production resource: $name"
-        Require ((Get-EntrySha256 $unifiedMap[$name]) -eq (Get-EntrySha256 $c57Map[$name])) `
-                "C58 changed a retained C57 production resource: $name"
+        Require $acceptedMap.ContainsKey($name) "C60 added an unexpected packaged production resource: $name"
+        if ($name -ne 'cnm_terrain_slabs_compat.mixins.json') {
+            Require ((Get-EntrySha256 $unifiedMap[$name]) -eq (Get-EntrySha256 $acceptedMap[$name])) `
+                    "C60 changed a retained accepted-C58 production resource: $name"
+        }
     }
 
     [ordered]@{
         result = 'PASS'
-        c58 = [ordered]@{
+        c60 = [ordered]@{
             filename = [System.IO.Path]::GetFileName($unifiedPath)
             size = (Get-Item -LiteralPath $unifiedPath).Length
             sha256 = Get-FileSha256 $unifiedPath
@@ -258,8 +273,8 @@ try {
             fabric_descriptors = $descriptors.Count
             nested_jars = $nestedJars.Count
         }
-        exact_c57_delta = [ordered]@{
-            predecessor_sha256 = Get-FileSha256 $c57Path
+        exact_accepted_c58_delta = [ordered]@{
+            predecessor_sha256 = Get-FileSha256 $acceptedPath
             byte_identical_entries = $identical
             intentional_changed_entries = $changed.Count
             authored_new_entries = $newEntries.Count
@@ -287,5 +302,5 @@ try {
     } | ConvertTo-Json -Depth 10
 } finally {
     $unified.Dispose()
-    $c57.Dispose()
+    $accepted.Dispose()
 }

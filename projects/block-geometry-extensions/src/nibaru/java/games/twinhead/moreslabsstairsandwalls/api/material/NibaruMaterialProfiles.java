@@ -21,7 +21,6 @@ import games.twinhead.moreslabsstairsandwalls.block.spreadable.SpreadableSlab;
 import games.twinhead.moreslabsstairsandwalls.block.strippable.StrippableGeometry;
 import games.twinhead.moreslabsstairsandwalls.block.terracotta.GlazedTerracottaSlab;
 import games.twinhead.moreslabsstairsandwalls.block.translucent.TranslucentSlab;
-import dev.aero.cnmterraincompat.ExternalMaterialCatalog;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.BlockFamilies;
 import net.minecraft.data.BlockFamily;
@@ -64,6 +63,33 @@ public final class NibaruMaterialProfiles {
 
     public static synchronized void refresh() { inventory = build(); }
 
+    /**
+     * Appends one optional-provider family after that provider has completed its
+     * own registry initialization. Native ordering is never rebuilt or changed.
+     */
+    public static synchronized void registerExternal(NibaruMaterialProfile profile) {
+        Inventory current = inventory();
+        NibaruMaterialProfile existing = current.byBlock.get(profile.canonicalParent());
+        if (existing == profile || (existing != null
+                && existing.canonicalParentId().equals(profile.canonicalParentId()))) return;
+        if (existing != null) throw new IllegalStateException("External material collides with profile: "
+                + profile.canonicalParentId());
+
+        List<NibaruMaterialProfile> profiles = new ArrayList<>(current.profiles);
+        profiles.add(profile);
+        Map<Block, NibaruMaterialProfile> byBlock = new IdentityHashMap<>(current.byBlock);
+        putGeometry(byBlock, profile.canonicalParent(), profile);
+        profile.nativeSlab().ifPresent(block -> putGeometry(byBlock, block, profile));
+        profile.nativeStair().ifPresent(block -> putGeometry(byBlock, block, profile));
+        profile.nativeWall().ifPresent(block -> putGeometry(byBlock, block, profile));
+        profile.effectiveSlabSource().filter(block -> block != profile.nativeSlab().orElse(null))
+                .ifPresent(block -> putGeometry(byBlock, block, profile));
+        profile.effectiveStairSource().filter(block -> block != profile.nativeStair().orElse(null))
+                .ifPresent(block -> putGeometry(byBlock, block, profile));
+        inventory = new Inventory(List.copyOf(profiles), current.byFamily,
+                Collections.unmodifiableMap(byBlock));
+    }
+
     private static Inventory inventory() {
         Inventory result = inventory;
         if (result == null) {
@@ -105,14 +131,6 @@ public final class NibaruMaterialProfiles {
             if (wall != null) putGeometry(byBlock, wall, profile);
             if (effectiveSlab != null && effectiveSlab != slab) putGeometry(byBlock, effectiveSlab, profile);
             if (effectiveStair != null && effectiveStair != stair) putGeometry(byBlock, effectiveStair, profile);
-            profiles.add(profile);
-        }
-        // Optional BGE providers are deliberately appended after the frozen native catalog:
-        // native ordering and every historical identity remain byte-for-byte stable.
-        for (NibaruMaterialProfile profile : ExternalMaterialCatalog.presentProfiles()) {
-            if (byBlock.put(profile.canonicalParent(), profile) != null)
-                throw new IllegalStateException("External material collides with native profile: "
-                        + profile.canonicalParentId());
             profiles.add(profile);
         }
         return new Inventory(List.copyOf(profiles), Collections.unmodifiableMap(byFamily),

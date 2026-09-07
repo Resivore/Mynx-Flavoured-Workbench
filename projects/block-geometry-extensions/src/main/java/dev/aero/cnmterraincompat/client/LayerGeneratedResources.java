@@ -26,7 +26,18 @@ public final class LayerGeneratedResources {
 
     static GenerationSummary generate(ResourceManager manager, boolean writeLanguage) {
         Objects.requireNonNull(manager, "manager");
-        List<LayerGeneratedData.Binding> bindings = LayerGeneratedData.bindings();
+        return generateBindings(manager, writeLanguage, LayerGeneratedData.bindings());
+    }
+
+    /** Exercises the same runtime writer for only the late optional-provider profiles. */
+    public static GenerationSummary generateExternalForValidation(ResourceManager manager) {
+        Objects.requireNonNull(manager, "manager");
+        return generateBindings(manager, false, LayerGeneratedData.bindings().stream()
+                .filter(binding -> binding.profile().family() == null).toList());
+    }
+
+    private static GenerationSummary generateBindings(ResourceManager manager, boolean writeLanguage,
+            List<LayerGeneratedData.Binding> bindings) {
         JsonObject language = new JsonObject();
         language.addProperty("tag.item." + CnmTerrainCompat.MOD_ID + ".layers", "Layers");
 

@@ -3,8 +3,8 @@
   "id": "cnm_terrain_slabs_compat",
   "version": "${version}",
   "provides": ["more_slabs_stairs_and_walls"],
-  "name": "Block Geometry Extensions Canary 59 — External Materials",
-  "description": "Unified BGE candidate containing retained Nibaru geometry plus optional Ribbits, Mynx Trees, and Macaw's Paths material families.",
+  "name": "Block Geometry Extensions Canary 60 — External Families",
+  "description": "Unified BGE candidate containing retained Nibaru geometry plus complete optional Ribbits, Mynx Trees, and Macaw's Paths geometry families.",
   "authors": ["Mynx Workbench", "Nibaru"],
   "environment": "*",
   "entrypoints": {

@@ -24,10 +24,24 @@ public final class QuarterGeometryGeneratedResources {
     /** Generates deterministic resources after all BGE geometry blocks have been registered. */
     public static GenerationSummary generate(ResourceManager manager) {
         Objects.requireNonNull(manager, "manager");
-        List<QuarterGeometryGeneratedData.Binding> corners =
-                QuarterGeometryGeneratedData.bindings(BgeGeometryRole.CORNER);
-        List<QuarterGeometryGeneratedData.Binding> columns =
-                QuarterGeometryGeneratedData.bindings(BgeGeometryRole.QUARTER_COLUMN);
+        return generateBindings(manager,
+                QuarterGeometryGeneratedData.bindings(BgeGeometryRole.CORNER),
+                QuarterGeometryGeneratedData.bindings(BgeGeometryRole.QUARTER_COLUMN), true);
+    }
+
+    /** Exercises the same runtime writers for only the late optional-provider profiles. */
+    public static GenerationSummary generateExternalForValidation(ResourceManager manager) {
+        Objects.requireNonNull(manager, "manager");
+        return generateBindings(manager,
+                QuarterGeometryGeneratedData.bindings(BgeGeometryRole.CORNER).stream()
+                        .filter(binding -> binding.profile().family() == null).toList(),
+                QuarterGeometryGeneratedData.bindings(BgeGeometryRole.QUARTER_COLUMN).stream()
+                        .filter(binding -> binding.profile().family() == null).toList(), false);
+    }
+
+    private static GenerationSummary generateBindings(ResourceManager manager,
+            List<QuarterGeometryGeneratedData.Binding> corners,
+            List<QuarterGeometryGeneratedData.Binding> columns, boolean writeLanguage) {
 
         int modelCount = 0;
         int selectorCount = 0;
@@ -50,7 +64,7 @@ public final class QuarterGeometryGeneratedResources {
 
         // This write intentionally follows Layer generation and replaces that language resource with
         // a superset; DynamicResourcePack keeps one JSON value per exact resource identifier.
-        writeClient(languageResource(), combinedLanguage(corners, columns));
+        if (writeLanguage) writeClient(languageResource(), combinedLanguage(corners, columns));
         return new GenerationSummary(corners.size(), columns.size(), modelCount, selectorCount);
     }
 

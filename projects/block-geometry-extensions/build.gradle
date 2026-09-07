@@ -81,7 +81,9 @@ tasks.register('prepareNibaruLicense') {
 fabricApi {
     configureTests {
         createSourceSet = true
-        modId = "cnm-nibaru-runtime-tests"
+        // Deliberately sorts after cnm_terrain_slabs_compat. Its three provided aliases and
+        // production-named entrypoints reproduce the real optional-provider lifecycle.
+        modId = "zz_bge_external_fixtures"
         enableGameTests = true
         enableClientGameTests = false
         eula = true

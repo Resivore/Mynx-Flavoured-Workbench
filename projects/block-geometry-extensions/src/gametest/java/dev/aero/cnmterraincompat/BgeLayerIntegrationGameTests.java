@@ -180,7 +180,9 @@ public final class BgeLayerIntegrationGameTests implements CustomTestMethodInvok
     @GameTest(maxTicks = 40)
     public void automaticPopulationIsExactNonrecursiveAndOrdered(GameTestHelper helper) {
         var profiles = NibaruMaterialProfiles.all();
-        helper.assertTrue(profiles.size() == 311, "Expected 311 canonical profiles, found " + profiles.size());
+        int expectedProfiles = 311 + ExternalMaterialFamilies.all().size();
+        helper.assertTrue(profiles.size() == expectedProfiles,
+                "Expected " + expectedProfiles + " canonical profiles, found " + profiles.size());
         Set<Block> layers = Collections.newSetFromMap(new IdentityHashMap<>());
         int ordered = 0;
         for (NibaruMaterialProfile profile : profiles) {
@@ -214,7 +216,8 @@ public final class BgeLayerIntegrationGameTests implements CustomTestMethodInvok
 
         var traits = DerivedMaterialTraits.entries().stream()
                 .filter(entry -> entry.geometry() == DerivedGeometrySupport.Geometry.LAYER).toList();
-        helper.assertTrue(layers.size() == 311 && ordered == 311 && traits.size() == 311,
+        helper.assertTrue(layers.size() == expectedProfiles && ordered == expectedProfiles
+                        && traits.size() == expectedProfiles,
                 "Layer population mismatch: blocks=" + layers.size() + ", ordered=" + ordered
                         + ", traits=" + traits.size());
         helper.assertTrue(traits.stream().allMatch(entry -> entry.fuelDivisor() == 4
@@ -292,8 +295,9 @@ public final class BgeLayerIntegrationGameTests implements CustomTestMethodInvok
                 profile.supportFor(DerivedGeometrySupport.Geometry.LAYER,
                         NibaruProviderAdapter.ADAPTED_CAPABILITIES,
                         NibaruProviderAdapter.ADAPTED_VISUALS).supported()).count();
-        helper.assertTrue(supported == 311,
-                "Not every canonical family is eligible for Layer: " + supported + "/311");
+        helper.assertTrue(supported == NibaruMaterialProfiles.all().size(),
+                "Not every canonical family is eligible for Layer: " + supported + "/"
+                        + NibaruMaterialProfiles.all().size());
         helper.succeed();
     }
 

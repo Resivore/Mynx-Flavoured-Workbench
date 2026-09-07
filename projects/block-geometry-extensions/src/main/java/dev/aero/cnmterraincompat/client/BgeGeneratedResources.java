@@ -14,9 +14,12 @@ public final class BgeGeneratedResources {
                 LayerGeneratedResources.generate(manager, false);
         QuarterGeometryGeneratedResources.GenerationSummary quarter =
                 QuarterGeometryGeneratedResources.generate(manager);
-        return new GenerationSummary(layer, quarter);
+        ExternalMaterialGeneratedResources.GenerationSummary external =
+                ExternalMaterialGeneratedResources.generate(manager);
+        return new GenerationSummary(layer, quarter, external);
     }
 
     public record GenerationSummary(LayerGeneratedResources.GenerationSummary layer,
-            QuarterGeometryGeneratedResources.GenerationSummary quarter) {}
+            QuarterGeometryGeneratedResources.GenerationSummary quarter,
+            ExternalMaterialGeneratedResources.GenerationSummary external) {}
 }

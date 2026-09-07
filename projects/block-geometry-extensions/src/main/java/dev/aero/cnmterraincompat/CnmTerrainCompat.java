@@ -90,9 +90,28 @@ public final class CnmTerrainCompat implements ModInitializer {
             register(columnId, NibaruProviderAdapter.createQuarterColumn(
                     profile, geometryProperties(columnId, profile)));
         }
+        ExternalMaterialFamilies.finalizeGeneratedBindings();
         LayerGeneratedData.generate();
         QuarterGeometryGeneratedData.generate();
+        ExternalMaterialGeneratedData.generate();
         bgeGeometryRegistered = true;
+    }
+
+    /**
+     * Completes every exact family only after its optional provider entrypoint
+     * returns. At that point registries remain writable and provider semantics
+     * (including fire and stripping registrations) are observable.
+     */
+    public static synchronized void registerExternalFamilies(String provider,
+            java.util.List<ExternalMaterialCatalog.Spec> specs) {
+        initializeNativeCatalog();
+        registerBgeBase();
+        for (ExternalMaterialCatalog.Spec spec : specs) {
+            if (!spec.id().getNamespace().equals(provider)) {
+                throw new IllegalArgumentException("Cross-provider external material batch: " + spec.id());
+            }
+            ExternalMaterialFamilies.register(spec);
+        }
     }
 
     /** Collision-safe registry identity derived from the typed canonical profile. */
@@ -126,7 +145,7 @@ public final class CnmTerrainCompat implements ModInitializer {
                 .randomTicks();
     }
 
-    private static void register(Identifier id, Block block) {
+    static void register(Identifier id, Block block) {
         Registry.register(BuiltInRegistries.BLOCK, ResourceKey.create(Registries.BLOCK, id), block);
         Item.Properties properties = new Item.Properties()
                 .setId(ResourceKey.create(Registries.ITEM, id))
