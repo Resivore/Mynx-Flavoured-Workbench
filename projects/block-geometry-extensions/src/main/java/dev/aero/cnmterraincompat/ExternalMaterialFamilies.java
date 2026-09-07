@@ -11,15 +11,22 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.SlabBlock;
+import net.minecraft.world.level.block.StairBlock;
+import net.minecraft.world.level.block.WallBlock;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.IdentityHashMap;
+import java.util.LinkedHashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.function.Supplier;
 
 /** Registry authority and exact source-to-nine-role inventory for optional provider families. */
 public final class ExternalMaterialFamilies {
@@ -44,29 +51,28 @@ public final class ExternalMaterialFamilies {
                     + spec.providerReference());
         }
 
-        // Five Macaw soil-path entries correctly root at existing native full-block profiles.
-        // They retain their optional-provider membership, but cannot own duplicate BGE geometry.
-        Optional<NibaruMaterialProfile> nativeProfile = NibaruMaterialProfiles.fromBlock(source);
-        if (nativeProfile.isPresent()) {
-            PENDING.put(spec.id(), Pending.nativeBinding(spec, nativeProfile.orElseThrow(), source));
-            return;
-        }
-
         Identifier slabId = id(spec, "slab");
         Identifier stairsId = id(spec, "stairs");
         Identifier wallId = id(spec, "wall");
-        ExternalMaterialBlocks.StandardSet standard = ExternalMaterialBlocks.create(source,
-                properties(slabId, source), properties(stairsId, source), wallProperties(wallId, source),
-                spec.capabilities().contains(games.twinhead.moreslabsstairsandwalls.api.material.BehaviorCapability.LEAF_LIFECYCLE));
-        CnmTerrainCompat.register(slabId, standard.slab());
-        CnmTerrainCompat.register(stairsId, standard.stairs());
-        CnmTerrainCompat.register(wallId, standard.wall());
+        boolean leaves = spec.capabilities().contains(
+                games.twinhead.moreslabsstairsandwalls.api.material.BehaviorCapability.LEAF_LIFECYCLE);
+        RoleSelection slab = selectStandardRole(spec, "slab", slabId, SlabBlock.class,
+                () -> ExternalMaterialBlocks.createSlab(source, properties(slabId, source), leaves));
+        RoleSelection stairs = selectStandardRole(spec, "stairs", stairsId, StairBlock.class,
+                () -> ExternalMaterialBlocks.createStairs(source, properties(stairsId, source), leaves));
+        RoleSelection wall = selectStandardRole(spec, "wall", wallId, WallBlock.class,
+                () -> ExternalMaterialBlocks.createWall(wallProperties(wallId, source), leaves));
+        Set<String> generatedStandardRoles = new LinkedHashSet<>();
+        if (slab.generated()) generatedStandardRoles.add("slab");
+        if (stairs.generated()) generatedStandardRoles.add("stairs");
+        if (wall.generated()) generatedStandardRoles.add("wall");
 
         NibaruMaterialProfile profile = new NibaruMaterialProfile(
                 ExternalMaterialCatalog.PROFILE_VERSION, null, source, spec.id(),
-                Optional.of(standard.slab()), Optional.of(standard.stairs()), Optional.of(standard.wall()),
-                Optional.of(standard.slab()), Optional.of(standard.stairs()),
-                Optional.of(slabId), Optional.of(stairsId), Optional.of(wallId),
+                Optional.of(slab.block()), Optional.of(stairs.block()), Optional.of(wall.block()),
+                Optional.of(slab.block()), Optional.of(stairs.block()),
+                Optional.of(registeredId(slab.block())), Optional.of(registeredId(stairs.block())),
+                Optional.of(registeredId(wall.block())),
                 spec.blockTags(), spec.capabilities(), spec.visual(),
                 NibaruMaterialProfile.VisualSupport.GENERIC_SUPPORTED, spec.tint(), spec.renderLayer(),
                 spec.orientation(), NibaruMaterialProfile.SurfaceSamplingPolicy.BLOCK_ABSOLUTE,
@@ -75,7 +81,8 @@ public final class ExternalMaterialFamilies {
                 Optional.empty(), Optional.empty(), false, spec.transitions());
         NibaruMaterialProfiles.registerExternal(profile);
 
-        Pending pending = new Pending(spec, profile, source, standard.slab(), standard.stairs(), standard.wall());
+        Pending pending = new Pending(spec, profile, source, slab.block(), stairs.block(), wall.block(),
+                Set.copyOf(generatedStandardRoles));
         PENDING.put(spec.id(), pending);
         registerStandardSemantics(pending);
     }
@@ -91,7 +98,8 @@ public final class ExternalMaterialFamilies {
                     NibaruProviderAdapter.derived(profile, BgeGeometryRole.STEP).orElseThrow(),
                     NibaruProviderAdapter.derived(profile, BgeGeometryRole.CORNER).orElseThrow(),
                     NibaruProviderAdapter.derived(profile, BgeGeometryRole.QUARTER_COLUMN).orElseThrow(),
-                    NibaruProviderAdapter.derived(profile, BgeGeometryRole.LAYER).orElseThrow());
+                    NibaruProviderAdapter.derived(profile, BgeGeometryRole.LAYER).orElseThrow(),
+                    generatedRoles(pending.generatedStandardRoles()));
             BY_SOURCE.put(pending.spec().id(), binding);
             copyFireToAll(binding);
         }
@@ -106,23 +114,29 @@ public final class ExternalMaterialFamilies {
     }
 
     private static void registerStandardSemantics(Pending binding) {
-        for (Block block : List.of(binding.slab(), binding.stairs(), binding.wall())) {
+        for (Block block : binding.generatedStandard()) {
             NibaruProviderAdapter.registerTintTarget(binding.profile(), block);
         }
-        STANDARD_FUEL.put(binding.slab(), new StandardFuelTrait(binding.slab(), binding.source(), 2));
-        STANDARD_FUEL.put(binding.stairs(), new StandardFuelTrait(binding.stairs(), binding.source(), 1));
-        STANDARD_FUEL.put(binding.wall(), new StandardFuelTrait(binding.wall(), binding.source(), 1));
+        if (binding.generatedStandardRoles().contains("slab"))
+            STANDARD_FUEL.put(binding.slab(), new StandardFuelTrait(binding.slab(), binding.source(), 2));
+        if (binding.generatedStandardRoles().contains("stairs"))
+            STANDARD_FUEL.put(binding.stairs(), new StandardFuelTrait(binding.stairs(), binding.source(), 1));
+        if (binding.generatedStandardRoles().contains("wall"))
+            STANDARD_FUEL.put(binding.wall(), new StandardFuelTrait(binding.wall(), binding.source(), 1));
 
         FlammableBlockRegistry.Entry fire = FlammableBlockRegistry.getDefaultInstance().get(binding.source());
-        if (fire != null) for (Block block : List.of(binding.slab(), binding.stairs(), binding.wall()))
+        if (fire != null) for (Block block : binding.generatedStandard())
             FlammableBlockRegistry.getDefaultInstance().add(block, fire.getIgniteOdds(), fire.getBurnOdds());
 
         binding.profile().transition(MaterialTransition.Type.STRIPPED)
                 .flatMap(transition -> NibaruMaterialProfiles.fromFamily(transition.target()))
                 .ifPresent(target -> {
-                    StrippableBlockRegistry.register(binding.slab(), target.nativeSlab().orElseThrow());
-                    StrippableBlockRegistry.register(binding.stairs(), target.nativeStair().orElseThrow());
-                    StrippableBlockRegistry.register(binding.wall(), target.nativeWall().orElseThrow());
+                    if (binding.generatedStandardRoles().contains("slab"))
+                        StrippableBlockRegistry.register(binding.slab(), target.nativeSlab().orElseThrow());
+                    if (binding.generatedStandardRoles().contains("stairs"))
+                        StrippableBlockRegistry.register(binding.stairs(), target.nativeStair().orElseThrow());
+                    if (binding.generatedStandardRoles().contains("wall"))
+                        StrippableBlockRegistry.register(binding.wall(), target.nativeWall().orElseThrow());
                 });
     }
 
@@ -136,6 +150,38 @@ public final class ExternalMaterialFamilies {
     public static Identifier id(Spec spec, String suffix) {
         return Identifier.fromNamespaceAndPath(CnmTerrainCompat.MOD_ID,
                 spec.generatedIdentity().getNamespace() + "/" + spec.generatedIdentity().getPath() + "_" + suffix);
+    }
+
+    private static RoleSelection selectStandardRole(Spec spec, String role, Identifier generatedId,
+            Class<? extends Block> expectedType, Supplier<Block> generated) {
+        Identifier providerId = spec.providerRoles().get(role);
+        if (providerId != null) {
+            Block candidate = BuiltInRegistries.BLOCK.getValue(providerId);
+            if (providerId.equals(BuiltInRegistries.BLOCK.getKey(candidate))) {
+                if (!expectedType.isInstance(candidate)) {
+                    throw new IllegalStateException("Provider role has incompatible block type: "
+                            + providerId + " expected " + expectedType.getSimpleName());
+                }
+                return new RoleSelection(candidate, false);
+            }
+        }
+        Block block = generated.get();
+        CnmTerrainCompat.register(generatedId, block);
+        return new RoleSelection(block, true);
+    }
+
+    private static Identifier registeredId(Block block) {
+        Identifier id = BuiltInRegistries.BLOCK.getKey(block);
+        if (id == null || id.equals(BuiltInRegistries.BLOCK.getDefaultKey())) {
+            throw new IllegalStateException("Unregistered external geometry " + block);
+        }
+        return id;
+    }
+
+    private static Set<String> generatedRoles(Set<String> standard) {
+        LinkedHashSet<String> result = new LinkedHashSet<>(standard);
+        result.addAll(List.of("vertical_slab", "step", "corner", "quarter_column", "layer"));
+        return Set.copyOf(result);
     }
 
     private static BlockBehaviour.Properties properties(Identifier id, Block source) {
@@ -167,9 +213,20 @@ public final class ExternalMaterialFamilies {
 
     public record Binding(Spec spec, NibaruMaterialProfile profile, Block source,
             Block slab, Block stairs, Block wall, Block verticalSlab, Block step,
-            Block corner, Block quarterColumn, Block layer) {
+            Block corner, Block quarterColumn, Block layer, Set<String> generatedRoles) {
+        public Binding { generatedRoles = Set.copyOf(generatedRoles); }
         public List<Block> generated() {
+            List<Block> result = new ArrayList<>();
+            roles().forEach((role, block) -> {
+                if (generatedRoles.contains(role)) result.add(block);
+            });
+            return List.copyOf(result);
+        }
+        public List<Block> canonicalDerived() {
             return List.of(slab, stairs, wall, verticalSlab, step, corner, quarterColumn, layer);
+        }
+        public boolean isGeneratedRole(String role) {
+            return generatedRoles.contains(role);
         }
         public Map<String, Block> roles() {
             LinkedHashMap<String, Block> result = new LinkedHashMap<>();
@@ -187,12 +244,17 @@ public final class ExternalMaterialFamilies {
     }
 
     private record Pending(Spec spec, NibaruMaterialProfile profile, Block source,
-            Block slab, Block stairs, Block wall) {
-        private static Pending nativeBinding(Spec spec, NibaruMaterialProfile profile, Block source) {
-            return new Pending(spec, profile, source, profile.nativeSlab().orElseThrow(),
-                    profile.nativeStair().orElseThrow(), profile.nativeWall().orElseThrow());
+            Block slab, Block stairs, Block wall, Set<String> generatedStandardRoles) {
+        private List<Block> generatedStandard() {
+            List<Block> result = new ArrayList<>();
+            if (generatedStandardRoles.contains("slab")) result.add(slab);
+            if (generatedStandardRoles.contains("stairs")) result.add(stairs);
+            if (generatedStandardRoles.contains("wall")) result.add(wall);
+            return List.copyOf(result);
         }
     }
+
+    private record RoleSelection(Block block, boolean generated) {}
 
     public record StandardFuelTrait(Block derived, Block source, int divisor) {}
 }
