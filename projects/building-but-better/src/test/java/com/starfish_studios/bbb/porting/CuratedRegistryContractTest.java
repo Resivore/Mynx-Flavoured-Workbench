@@ -62,7 +62,7 @@ final class CuratedRegistryContractTest {
         List<String> standaloneItems = stringArray(json, "standalone_items");
 
         assertEquals(List.of("oak", "spruce", "birch", "jungle", "acacia", "dark_oak",
-                "crimson", "warped", "mangrove", "bamboo", "cherry"), woodMaterials);
+                "crimson", "warped", "mangrove", "bamboo", "cherry", "pale_oak"), woodMaterials);
         assertEquals(List.of("balustrade", "lattice", "wall", "beam", "beam_stairs",
                 "beam_slab", "support", "pallet", "frame", "lantern", "trim"), woodForms);
         assertEquals(List.of("stone", "blackstone", "deepslate", "nether_brick", "sandstone",
@@ -75,13 +75,18 @@ final class CuratedRegistryContractTest {
         Set<String> retainedItems = new LinkedHashSet<>(retainedBlocks);
         retainedItems.addAll(standaloneItems);
 
-        assertEquals(160, retainedBlocks.size());
-        assertEquals(161, retainedItems.size());
-        assertEquals(160, integer(json, "expected_retained_block_count"));
-        assertEquals(161, integer(json, "expected_retained_item_count"));
+        assertEquals(171, retainedBlocks.size());
+        assertEquals(172, retainedItems.size());
+        assertEquals(171, integer(json, "expected_retained_block_count"));
+        assertEquals(172, integer(json, "expected_retained_item_count"));
         assertEquals(247, integer(json, "upstream_block_count"));
         assertEquals(243, integer(json, "upstream_item_count"));
-        assertFalse(retainedBlocks.contains("pale_oak_beam"));
+        assertTrue(retainedBlocks.containsAll(Set.of(
+                "pale_oak_balustrade", "pale_oak_lattice", "pale_oak_wall", "pale_oak_beam",
+                "pale_oak_beam_stairs", "pale_oak_beam_slab", "pale_oak_support", "pale_oak_pallet",
+                "pale_oak_frame", "pale_oak_lantern", "pale_oak_trim")));
+        assertFalse(retainedBlocks.contains("pale_oak_layer"));
+        assertFalse(retainedBlocks.contains("pale_oak_ladder"));
         assertTrue(retainedItems.contains("hammer"));
     }
 
@@ -96,8 +101,10 @@ final class CuratedRegistryContractTest {
 
         assertEquals(87, REMOVED_BLOCKS.size());
         assertEquals(82, removedItems.size());
-        assertEquals(247, retainedBlocks.size() + REMOVED_BLOCKS.size());
-        assertEquals(243, retainedBlocks.size() + 1 + removedItems.size());
+        // The historical 2.0pre4 counts reconcile only the original preservation set.
+        // The eleven Pale Oak forms are a separately recorded 26.2 port-native extension.
+        assertEquals(247, retainedBlocks.size() - 11 + REMOVED_BLOCKS.size());
+        assertEquals(243, retainedBlocks.size() - 11 + 1 + removedItems.size());
         assertTrue(disjoint(retainedBlocks, REMOVED_BLOCKS));
         assertTrue(disjoint(retainedBlocks, removedItems));
         assertTrue(removedItems.containsAll(Set.of("bbb", "chisel", "bamboo_mosaic_layer")));

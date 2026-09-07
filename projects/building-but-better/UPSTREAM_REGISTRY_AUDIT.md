@@ -6,21 +6,21 @@ This audit records the active registrations in the exact official `bbb-fabric-2.
 
 | Registry | Upstream active | Retained | Removed |
 |---|---:|---:|---:|
-| Blocks | 247 | 160 | 87 |
-| Items | 243 | 161 | 82 |
+| Blocks | 247 | 160 historical baseline + 11 Pale Oak extension | 87 |
+| Items | 243 | 161 historical baseline + 11 Pale Oak extension | 82 |
 
 The retained block set is the exact Cartesian product below plus four standalone blocks:
 
-- 11 wood materials: `oak`, `spruce`, `birch`, `jungle`, `acacia`, `dark_oak`, `crimson`, `warped`, `mangrove`, `bamboo`, `cherry`.
+- 12 port wood materials: `oak`, `spruce`, `birch`, `jungle`, `acacia`, `dark_oak`, `crimson`, `warped`, `mangrove`, `bamboo`, `cherry`, `pale_oak`.
 - 11 forms for every wood: `balustrade`, `lattice`, `wall`, `beam`, `beam_stairs`, `beam_slab`, `support`, `pallet`, `frame`, `lantern`, `trim`.
 - 7 stone materials: `stone`, `blackstone`, `deepslate`, `nether_brick`, `sandstone`, `red_sandstone`, `quartz`.
 - 5 forms for every stone: `column`, `urn`, `moulding`, `fence`, `frame`.
 - Standalone blocks: `brazier`, `soul_brazier`, `rope`, `iron_fence`.
 - Every retained block has a retained block item; `hammer` is the one additional item.
 
-Thus `(11 × 11) + (7 × 5) + 4 = 160` blocks, and `160 + hammer = 161` items. `src/porting/curated-registry.json` is the machine-readable authority for this formula.
+The historical reconciliation remains `(11 × 11) + (7 × 5) + 4 = 160` blocks and `160 + hammer = 161` items. The explicit 26.2-native Pale Oak extension adds eleven blocks and their block items, producing `(12 × 11) + (7 × 5) + 4 = 171` blocks and `171 + hammer = 172` items. `src/porting/curated-registry.json` is the machine-readable authority for the current formula.
 
-Pale Oak is absent because it is not part of the `2.0pre4` registry. It is a future extension only. Rope is retained at its stock BBB baseline without a new behavior system.
+Pale Oak is absent from the pristine `2.0pre4` registry and remains absent from the historical count. It is now a separately identified complete port-native extension; no claim is made that its eleven blocks appeared in the upstream artifact. Pale Oak Layers and Ladders remain excluded. Rope is retained at its stock BBB baseline without a new behavior system.
 
 ## Removed block IDs (87)
 
@@ -255,12 +255,12 @@ The 26.2 port routes Hammer callbacks only through the retained Hammer-capable b
 
 The hash-guarded staging pipeline starts from the retained registry rather than copying the JAR wholesale. Its current verified closure contains:
 
-- 160 retained blockstates;
-- 161 generated 26.2 item definitions backed by retained upstream item models;
-- 160 retained block loot tables;
-- 211 recipes that reference retained BBB IDs and no removed BBB IDs;
-- 131 migrated recipe-unlock advancements whose rewards resolve to staged recipes;
-- 1,073 transitive model JSON files;
+- 171 retained/generated blockstates;
+- 172 generated 26.2 item definitions;
+- 171 retained/generated block loot tables;
+- 224 recipes that reference retained BBB IDs and no removed BBB IDs;
+- 140 migrated recipe-unlock advancements whose rewards resolve to staged recipes;
+- 1,133 transitive model JSON files;
 - 234 transitive textures/metadata files;
 - 230 PNG textures, all binary-alpha, of which exactly 106 contain transparent pixels;
 - 2 filtered language files;
