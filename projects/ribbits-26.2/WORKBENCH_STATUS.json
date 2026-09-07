@@ -178,15 +178,15 @@
     ]
   },
   "state": {
-    "milestone": "Mynx Canary 16 is the narrow functional successor to Canary 15. Mapped Minecraft Java 26.2 ChunkAccess.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z) returns Heightmap.getFirstAvailable(x & 15, z & 15) - 1, the occupied top surface. Canary 15 external runtime evidence therefore diagnoses the defect: its returned grass-block surface was used as merchant feet, while dirt below was wrongly treated as ground, placing the unchanged AABB inside grass. Canary 16 maps that surface to groundPos and feet to groundPos.above(), then uses corrected feet for body/head, biome, AABB, collision and EVENT spawn while applying build bounds to ground/body/head. Canary 15 diagnostics remain intact. Static/build validation passes; Canary 16 remains ACTIVE / STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED until actual Minecraft testing confirms automatic merchant and Naturalist companion behavior.",
+    "milestone": "Mynx Canary 17 adds persistent external trade-provider choices for Flora Trades, ordinary-only Wandering provider restocking, and Toadstool Heart retention that releases the scheduler lease while preserving companions. Static/build validation passes; Canary 17 remains ACTIVE / STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED.",
     "releases": {
       "current": {
-        "version": "4.1.6+26.2-mynx-canary16",
+        "version": "4.1.6+26.2-mynx-canary17",
         "artifact": {
-          "filename": "ribbits-private-reconstruction-4.1.6+26.2-mynx-canary16.jar",
-          "sha256": "d95a813a3ba55f007786e79ecca2bde18dd64b775048ca24e9f24f9985a5dd81"
+          "filename": "ribbits-private-reconstruction-4.1.6+26.2-mynx-canary17.jar",
+          "sha256": "7024ea6ff0fd03ddcc686e18ff7d228b25766b9a46fc5b293df8c71579d05387"
         },
-        "source_commit": "3b1b25ab88fb5c1803e8f4b3b0a2af2c4b89d17a",
+        "source_commit": "c2e82a5f496e54c9bb914c400223868486c787e2",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
@@ -205,11 +205,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 21,
-    "activity_at": "2026-09-06T22:17:24Z",
-    "updated_at": "2026-09-06T22:17:24Z",
-    "last_codex_at": "2026-09-06T22:17:24Z",
-    "source_commit": "3b1b25ab88fb5c1803e8f4b3b0a2af2c4b89d17a",
+    "revision": 22,
+    "activity_at": "2026-09-07T03:15:00Z",
+    "updated_at": "2026-09-07T03:15:00Z",
+    "last_codex_at": "2026-09-07T03:15:00Z",
+    "source_commit": "c2e82a5f496e54c9bb914c400223868486c787e2",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null

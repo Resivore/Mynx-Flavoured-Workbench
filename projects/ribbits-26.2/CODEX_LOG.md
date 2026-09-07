@@ -209,3 +209,13 @@
 - Artifact: Current unaccepted private `ribbits-private-reconstruction-4.1.6+26.2-mynx-canary16.jar`, 3,371,137 bytes, SHA-256 `d95a813a3ba55f007786e79ecca2bde18dd64b775048ca24e9f24f9985a5dd81`, source `3b1b25ab88fb5c1803e8f4b3b0a2af2c4b89d17a`. Canary 15 remains unchanged at 3,357,264 bytes / SHA-256 `38441ba48ad945899ce4aa0d5f6b437b2612855a2a8b909eb96b9ac24fb4d9ae`; accepted and rollback releases remain empty. Required canonical retention must retain and rehash this ignored private JAR without tracking or redistribution.
 - Result: ACTIVE — `STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED`; narrow correction and static evidence pass, with runtime verification still required.
 - Next state: Retain the exact artifact at the canonical primary checkout, integrate and push revision 21 to current authoritative `main`, publish it through the normal main-only Sheet workflow preserving Notes, then under separately authorized serialized dedicated-Workbench deployment run the Canary 16 procedure above.
+
+## 2026-09-07T03:15:00Z — Build Mynx Ribbits Canary 17 Flora Trades seam
+- Revision: 22
+- Source checkpoint: `c2e82a5f496e54c9bb914c400223868486c787e2`
+- Changes: Added a stable, persisted external Wandering Ribbit trade-provider seam and the Flora Trades Farmer/Wandering provider integration. Toadstool Heart retention now detaches a scheduler-owned merchant by clearing its lease before retaining the merchant and its loaded snail companions. Ordinary provider offers may restock; Naturalist offers retain their NEVER_RESTOCK policy.
+- Build/static: Java 25 / Gradle 9.5.1 private-resource manifest verification and private JAR packaging passed.
+- Runtime: RUNTIME_UNTESTED; no deployment, Test Instance Manager operation, dedicated profile launch, or protected profile access occurred.
+- Artifact: `ribbits-private-reconstruction-4.1.6+26.2-mynx-canary17.jar`; SHA-256 `7024ea6ff0fd03ddcc686e18ff7d228b25766b9a46fc5b293df8c71579d05387`.
+- Result: ACTIVE / STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED.
+- Next state: Retain the exact artifact, publish revision 22 from main through the normal gated Sheet workflow, then run the focused Canary 17 dedicated-Workbench procedure.

@@ -12,7 +12,10 @@ import com.geckolib.util.GeckoLibUtil;
 import com.yungnickyoung.minecraft.ribbits.entity.goal.WanderingRibbitMoveToTargetGoal;
 import com.yungnickyoung.minecraft.ribbits.entity.trade.WanderingRibbitTradeProviders;
 import com.yungnickyoung.minecraft.ribbits.entity.trade.WanderingRibbitTradeSnapshot;
+import com.yungnickyoung.minecraft.ribbits.entity.trade.RibbitRestockPolicy;
+import com.yungnickyoung.minecraft.ribbits.entity.trade.RibbitTradeState;
 import com.yungnickyoung.minecraft.ribbits.module.SoundModule;
+import com.yungnickyoung.minecraft.ribbits.module.ItemModule;
 import com.yungnickyoung.minecraft.ribbits.world.spawn.NaturalistSnailCompanions;
 import com.yungnickyoung.minecraft.ribbits.world.spawn.WanderingRibbitScheduler;
 import net.minecraft.core.BlockPos;
@@ -71,6 +74,11 @@ public final class WanderingRibbitEntity extends AbstractVillager implements Geo
     private net.minecraft.resources.ResourceKey<Level> leaseDimension;
     private boolean naturalistCompanionsInitialized;
     private List<UUID> naturalistCompanionUuids = List.of();
+    @Nullable
+    private BlockPos retainedHome;
+    private long restockDay = RibbitTradeState.UNSET_DAY;
+    private int restocksUsedToday;
+    private long lastRestockGameTime = Long.MIN_VALUE;
 
     public WanderingRibbitEntity(EntityType<? extends WanderingRibbitEntity> entityType, Level level) {
         super(entityType, level);
@@ -107,7 +115,7 @@ public final class WanderingRibbitEntity extends AbstractVillager implements Geo
 
     @Override
     public boolean canRestock() {
-        return false;
+        return true;
     }
 
     @Override
@@ -138,6 +146,19 @@ public final class WanderingRibbitEntity extends AbstractVillager implements Geo
 
     @Override
     public InteractionResult mobInteract(Player player, InteractionHand hand) {
+        if (player.isSecondaryUseActive() && player.getItemInHand(hand).is(ItemModule.TOADSTOOL_HEART.get())) {
+            if (!this.level().isClientSide()) {
+                ServerLevel level = (ServerLevel) this.level();
+                if (this.schedulerManaged && !WanderingRibbitScheduler.detachRetainedMerchant(level, this)) {
+                    return InteractionResult.FAIL;
+                }
+                this.retainedHome = this.blockPosition().immutable();
+                this.wanderTarget = null;
+                this.level().broadcastEntityEvent(this, (byte) 12);
+                if (!player.getAbilities().instabuild) player.getItemInHand(hand).shrink(1);
+            }
+            return InteractionResult.SUCCESS;
+        }
         if (!player.getItemInHand(hand).is(Items.VILLAGER_SPAWN_EGG)
                 && this.isAlive()
                 && !this.isTrading()
@@ -166,6 +187,7 @@ public final class WanderingRibbitEntity extends AbstractVillager implements Geo
         if (schedulerManaged && this.level() instanceof ServerLevel serverLevel) {
             WanderingRibbitScheduler.validateManagedEntity(serverLevel, this);
         }
+        if (this.level() instanceof ServerLevel) this.tickOrdinaryProviderRestocks();
     }
 
     /** Marks this exact inserted entity as the scheduler's tentative lease holder. */
@@ -231,9 +253,28 @@ public final class WanderingRibbitEntity extends AbstractVillager implements Geo
         NaturalistSnailCompanions.discardLoadedManagedCompanions(level, this.getUUID());
     }
 
+    /** Scheduler-owned conversion endpoint; only the scheduler may clear an active lease. */
+    public void becomeRetained(ServerLevel level) {
+        if (!schedulerManaged) return;
+        NaturalistSnailCompanions.retainLoadedCompanions(level, this.getUUID());
+        schedulerManaged = false;
+        leaseGeneration = -1L;
+        leaseExpiry = -1L;
+        leaseDimension = null;
+        naturalistCompanionsInitialized = false;
+        naturalistCompanionUuids = List.of();
+        wanderTarget = null;
+        retainedHome = this.blockPosition().immutable();
+    }
+
+    public boolean isRetained() { return retainedHome != null; }
+
+    @Nullable
+    public BlockPos getRetainedHome() { return retainedHome; }
+
     @Nullable
     public BlockPos getWanderTarget() {
-        return wanderTarget;
+        return retainedHome != null ? retainedHome : wanderTarget;
     }
 
     public void setWanderTarget(@Nullable BlockPos target) {
@@ -258,6 +299,10 @@ public final class WanderingRibbitEntity extends AbstractVillager implements Geo
         output.putLong("WanderingTradeSeed", tradeSeed);
         output.storeNullable("WanderingTradeSnapshot", WanderingRibbitTradeSnapshot.CODEC, tradeSnapshot);
         output.storeNullable("WanderTarget", BlockPos.CODEC, wanderTarget);
+        output.storeNullable("RetainedHome", BlockPos.CODEC, retainedHome);
+        output.putLong("WanderingRestockDay", restockDay);
+        output.putInt("WanderingRestocksUsedToday", restocksUsedToday);
+        output.putLong("WanderingLastRestockGameTime", lastRestockGameTime);
         output.putBoolean("SchedulerManaged", schedulerManaged);
         if (schedulerManaged) {
             output.putLong("LeaseGeneration", leaseGeneration);
@@ -274,6 +319,10 @@ public final class WanderingRibbitEntity extends AbstractVillager implements Geo
         tradeSeed = input.getLongOr("WanderingTradeSeed", UNINITIALIZED_TRADE_SEED);
         tradeSnapshot = input.read("WanderingTradeSnapshot", WanderingRibbitTradeSnapshot.CODEC).orElse(null);
         wanderTarget = input.read("WanderTarget", BlockPos.CODEC).orElse(null);
+        retainedHome = input.read("RetainedHome", BlockPos.CODEC).orElse(null);
+        restockDay = input.getLongOr("WanderingRestockDay", RibbitTradeState.UNSET_DAY);
+        restocksUsedToday = Math.max(0, Math.min(2, input.getIntOr("WanderingRestocksUsedToday", 0)));
+        lastRestockGameTime = input.getLongOr("WanderingLastRestockGameTime", Long.MIN_VALUE);
         schedulerManaged = input.getBooleanOr("SchedulerManaged", false);
         if (schedulerManaged) {
             leaseGeneration = input.getLongOr("LeaseGeneration", -1L);
@@ -323,6 +372,50 @@ public final class WanderingRibbitEntity extends AbstractVillager implements Geo
         if (release && this.level() instanceof ServerLevel serverLevel) {
             WanderingRibbitScheduler.releaseDestroyedLease(serverLevel, this);
         }
+    }
+
+    /** Reuses Ribbits' normal daily cadence, but resets only trustworthy ORDINARY provider ranges. */
+    private void tickOrdinaryProviderRestocks() {
+        long day = Math.floorDiv(this.level().getOverworldClockTime(), 24000L);
+        if (restockDay == RibbitTradeState.UNSET_DAY) {
+            restockDay = day;
+            lastRestockGameTime = this.level().getGameTime();
+            return;
+        }
+        if (RibbitRestockPolicy.beginsFreshDay(restockDay, day)) {
+            restockDay = day;
+            restocksUsedToday = 0;
+            lastRestockGameTime = this.level().getGameTime();
+            resetOrdinaryProviderUses();
+            return;
+        }
+        if (RibbitRestockPolicy.mayOrdinarilyRestock(hasExhaustedOrdinaryProviderOffer(), false,
+                restocksUsedToday, lastRestockGameTime, this.level().getGameTime())) {
+            resetOrdinaryProviderUses();
+            restocksUsedToday++;
+            lastRestockGameTime = this.level().getGameTime();
+        }
+    }
+
+    private boolean hasExhaustedOrdinaryProviderOffer() {
+        return ordinaryOfferIndexes().stream().anyMatch(index -> this.getOffers().get(index).isOutOfStock());
+    }
+
+    private void resetOrdinaryProviderUses() {
+        for (int index : ordinaryOfferIndexes()) this.getOffers().get(index).resetUses();
+    }
+
+    /** Fails closed: malformed persisted provider boundaries never refresh an ambiguous offer. */
+    private List<Integer> ordinaryOfferIndexes() {
+        if (tradeSnapshot == null || tradeSnapshot.totalOfferCount() != this.getOffers().size()) return List.of();
+        java.util.ArrayList<Integer> indexes = new java.util.ArrayList<>();
+        for (WanderingRibbitTradeSnapshot.ProviderRange range : tradeSnapshot.providers()) {
+            if (range.restockPolicy() != WanderingRibbitTradeSnapshot.RestockPolicy.ORDINARY) continue;
+            for (int index = range.firstOffer(); index < range.firstOffer() + range.offerCount(); index++) {
+                indexes.add(index);
+            }
+        }
+        return List.copyOf(indexes);
     }
 
     @Nullable

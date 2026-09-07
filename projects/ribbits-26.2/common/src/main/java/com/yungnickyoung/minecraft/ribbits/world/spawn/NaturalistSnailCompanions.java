@@ -56,6 +56,16 @@ public final class NaturalistSnailCompanions {
         }
     }
 
+    /** Detaches the existing pair from scheduler-only cleanup when its merchant is retained. */
+    public static void retainLoadedCompanions(ServerLevel level, UUID merchantUuid) {
+        String tag = TAG_PREFIX + merchantUuid;
+        for (Entity entity : level.getAllEntities()) {
+            if (entity.getType().builtInRegistryHolder().is(SNAIL) && entity.entityTags().contains(tag)) {
+                entity.removeTag(tag);
+            }
+        }
+    }
+
     /** Cleans only explicitly tagged, loaded former companions; never force-loads chunks. */
     public static void discardLoadedStaleCompanions(ServerLevel level, UUID activeMerchant) {
         for (Entity entity : level.getAllEntities()) {

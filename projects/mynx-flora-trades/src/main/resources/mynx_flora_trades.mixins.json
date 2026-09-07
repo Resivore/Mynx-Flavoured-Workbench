@@ -1,0 +1,8 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "dev.resivore.mynxfloratrades.mixin",
+  "compatibilityLevel": "JAVA_25",
+  "mixins": ["PoiTypeMixin", "PoiTypesMixin", "VillagerProfessionMixin"],
+  "injectors": { "defaultRequire": 1 }
+}
