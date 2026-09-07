@@ -6,6 +6,8 @@ base { archivesName = project.archives_base_name }
 repositories { maven { url = 'https://maven.fabricmc.net/' }; mavenCentral() }
 
 def ribbitsArtifact = file('../ribbits-26.2/artifacts/ribbits-private-reconstruction-4.1.6+26.2-mynx-canary17.jar')
+def regionsUnexploredArtifact = file('../mynx-regions-unexplored/artifacts/' +
+        'mynx-regions-unexplored-private-0.1.0+26.2-canary3.jar')
 
 dependencies {
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
@@ -22,6 +24,19 @@ processResources { inputs.property 'version', project.version; filesMatching('fa
 tasks.withType(JavaCompile).configureEach { options.release = 25 }
 tasks.withType(org.gradle.api.tasks.bundling.AbstractArchiveTask).configureEach { preserveFileTimestamps = false; reproducibleFileOrder = true }
 test { useJUnitPlatform() }
+
+fabricApi {
+    configureTests {
+        createSourceSet = true
+        modId = 'mynx_flora_trades_gametest'
+        enableGameTests = true
+        enableClientGameTests = false
+        eula = true
+    }
+}
+
+// The real accepted flora content is needed to decode the Florist trade registry during GameTest server bootstrap.
+dependencies.add('gametestImplementation', files(regionsUnexploredArtifact))
 
 def productionMinecraftServerJar = new File(gradle.gradleUserHomeDir,
         "caches/fabric-loom/${project.minecraft_version}/minecraft-extracted_server.jar")

@@ -13,10 +13,10 @@ class FloraTradeCatalogTest {
     void farmerChoicesAlwaysSpendOneGlowcapForTheExactFloraStack() {
         List<RibbitExternalTradeOffer> offers = FloraTradeCatalog.farmerOffers();
         assertEquals(4, offers.size());
-        assertFarmer(offers.get(0), 1, "tier_1", 0, "mynx_regions_unexplored:clover", 64);
-        assertFarmer(offers.get(1), 1, "tier_1", 1, "mynx_regions_unexplored:stone_bud", 32);
-        assertFarmer(offers.get(2), 2, "tier_2", 0, "mynx_regions_unexplored:barley", 32);
-        assertFarmer(offers.get(3), 2, "tier_2", 1, "mynx_regions_unexplored:windswept_grass", 32);
+        assertFarmer(offers.get(0), 1, 1, "tier_1", 0, "mynx_regions_unexplored:clover", 64);
+        assertFarmer(offers.get(1), 1, 1, "tier_1", 1, "mynx_regions_unexplored:stone_bud", 32);
+        assertFarmer(offers.get(2), 2, 2, "tier_2", 0, "mynx_regions_unexplored:barley", 32);
+        assertFarmer(offers.get(3), 2, 2, "tier_2", 1, "mynx_regions_unexplored:windswept_grass", 32);
     }
 
     @Test
@@ -29,7 +29,7 @@ class FloraTradeCatalogTest {
         assertWandering(groups.get(1).get(1), "mynx_regions_unexplored:duckweed", 32);
     }
 
-    private static void assertFarmer(RibbitExternalTradeOffer offer, int tier, String selectionKey,
+    private static void assertFarmer(RibbitExternalTradeOffer offer, int tier, int merchantXp, String selectionKey,
                                      int selectionOption, String output, int outputCount) {
         assertEquals("farmer", offer.profession());
         assertEquals(tier, offer.tier());
@@ -38,6 +38,7 @@ class FloraTradeCatalogTest {
         assertNull(offer.second());
         assertEquals(output, offer.result().registryId());
         assertEquals(outputCount, offer.resultCount());
+        assertEquals(merchantXp, offer.merchantXp());
         assertEquals(selectionKey, offer.selectionKey());
         assertEquals(2, offer.selectionOptions());
         assertEquals(selectionOption, offer.selectionOption());
