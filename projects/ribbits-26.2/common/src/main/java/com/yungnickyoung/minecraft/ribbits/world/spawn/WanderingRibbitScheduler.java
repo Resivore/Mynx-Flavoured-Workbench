@@ -174,6 +174,20 @@ public final class WanderingRibbitScheduler {
                 entity.getUUID(), entity.getLeaseDimension(), entity.getLeaseGeneration());
     }
 
+    /** Atomically releases the exact active lease while leaving its merchant and companions alive. */
+    public static boolean detachRetainedMerchant(ServerLevel level, WanderingRibbitEntity entity) {
+        if (!entity.isSchedulerManaged() || entity.getLeaseDimension() == null
+                || !entity.getLeaseDimension().equals(level.dimension())) {
+            return false;
+        }
+        WanderingRibbitSpawnerData data = data(level.getServer());
+        if (!data.clearLeaseIfOwned(entity.getUUID(), level.dimension(), entity.getLeaseGeneration())) {
+            return false;
+        }
+        entity.becomeRetained(level);
+        return true;
+    }
+
     public static WanderingRibbitSpawnerData data(MinecraftServer server) {
         return server.getDataStorage().computeIfAbsent(WanderingRibbitSpawnerData.TYPE);
     }

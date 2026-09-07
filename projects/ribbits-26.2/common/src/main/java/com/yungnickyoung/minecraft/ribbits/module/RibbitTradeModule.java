@@ -5,6 +5,7 @@ import com.yungnickyoung.minecraft.ribbits.entity.RibbitEntity;
 import com.yungnickyoung.minecraft.ribbits.entity.trade.MatchaStackCatalog;
 import com.yungnickyoung.minecraft.ribbits.entity.trade.MatchaStackCatalog.FixedStack;
 import com.yungnickyoung.minecraft.ribbits.entity.trade.RibbitTradeState;
+import com.yungnickyoung.minecraft.ribbits.entity.trade.RibbitExternalTradeOffer;
 import com.yungnickyoung.minecraft.ribbits.entity.trade.StrictMerchantOffer;
 import com.yungnickyoung.minecraft.ribbits.world.loot.RibbitVillageExplorerMap;
 import net.minecraft.core.component.DataComponentExactPredicate;
@@ -25,7 +26,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Objects;
 import java.util.UUID;
+import java.util.TreeMap;
 
 /** Central, declarative trade-profile layer for the Mynx Ribbit economy. */
 public final class RibbitTradeModule {
@@ -141,6 +144,7 @@ public final class RibbitTradeModule {
     private static final StackRef GLOWCAP = StackRef.item("ribbits:glowcap");
     private static final Map<String, TradeProfile> PROFILES = createProfiles();
     private static final List<TradeOfferSpec> ALL_OFFERS = createOffers();
+    private static final Map<Identifier, List<RibbitExternalTradeOffer>> EXTERNAL_OFFERS = new TreeMap<>();
 
     private RibbitTradeModule() {
     }
@@ -417,6 +421,27 @@ public final class RibbitTradeModule {
     public static List<TradeOfferSpec> allOffers() { return ALL_OFFERS; }
     public static Map<String, TradeProfile> profiles() { return PROFILES; }
 
+    /** Registers one additive, stable-ID contribution without coupling Ribbits to its owner. */
+    public static synchronized void registerExternalOffers(Identifier owner,
+                                                            List<RibbitExternalTradeOffer> offers) {
+        Objects.requireNonNull(owner, "owner");
+        List<RibbitExternalTradeOffer> copy = List.copyOf(Objects.requireNonNull(offers, "offers"));
+        if (copy.isEmpty() || EXTERNAL_OFFERS.containsKey(owner)) {
+            throw new IllegalArgumentException("Invalid or duplicate external Ribbit trade contribution " + owner);
+        }
+        java.util.HashSet<String> ids = new java.util.HashSet<>();
+        for (RibbitExternalTradeOffer offer : copy) {
+            if (!ids.add(offer.id())) {
+                throw new IllegalArgumentException("Duplicate external Ribbit offer " + owner + "/" + offer.id());
+            }
+        }
+        EXTERNAL_OFFERS.put(owner, copy);
+    }
+
+    public static synchronized Map<Identifier, List<RibbitExternalTradeOffer>> externalOffers() {
+        return Map.copyOf(EXTERNAL_OFFERS);
+    }
+
     public static TradeProfile profile(RibbitProfession profession) {
         return profile(profession.id().getPath());
     }
@@ -482,6 +507,28 @@ public final class RibbitTradeModule {
                 }
             }
             default -> { }
+        }
+        initializeExternalChoices(ribbit, state, random, profession);
+    }
+
+    private static synchronized void initializeExternalChoices(RibbitEntity ribbit,
+                                                                 RibbitTradeState state,
+                                                                 RandomSource random,
+                                                                 String profession) {
+        Map<String, Integer> counts = new TreeMap<>();
+        for (Map.Entry<Identifier, List<RibbitExternalTradeOffer>> contribution : EXTERNAL_OFFERS.entrySet()) {
+            for (RibbitExternalTradeOffer offer : contribution.getValue()) {
+                if (!profession.equals(offer.profession()) || offer.selectionKey() == null) continue;
+                String key = contribution.getKey() + "/" + offer.selectionKey();
+                Integer previous = counts.putIfAbsent(key, offer.selectionOptions());
+                if (previous != null && previous != offer.selectionOptions()) {
+                    throw new IllegalStateException("Inconsistent external Ribbit choice " + key);
+                }
+            }
+        }
+        for (Map.Entry<String, Integer> choice : counts.entrySet()) {
+            state.externalChoice(choice.getKey(), validOrRoll(state.externalChoice(choice.getKey()),
+                    choice.getValue(), random));
         }
     }
 
@@ -549,6 +596,18 @@ public final class RibbitTradeModule {
         for (TradeOfferSpec spec : ALL_OFFERS) {
             if (spec.profession.equals(profession) && spec.tier <= rank && isSelected(spec, state)) {
                 result.add(spec);
+            }
+        }
+        synchronized (RibbitTradeModule.class) {
+            for (Map.Entry<Identifier, List<RibbitExternalTradeOffer>> contribution : EXTERNAL_OFFERS.entrySet()) {
+                for (RibbitExternalTradeOffer offer : contribution.getValue()) {
+                    if (!profession.equals(offer.profession()) || offer.tier() > rank) continue;
+                    String key = offer.selectionKey() == null ? null
+                            : contribution.getKey() + "/" + offer.selectionKey();
+                    if (key == null || state.externalChoice(key) == offer.selectionOption()) {
+                        result.add(offer.asTemplate(contribution.getKey()));
+                    }
+                }
             }
         }
         return result;

@@ -1,0 +1,6 @@
+{
+  "amount": 8.0,
+  "allow_duplicates": false,
+  "random_sequence": "mynx_flora_trades:trade_set/florist/level_1",
+  "trades": "#mynx_flora_trades:florist/level_1"
+}

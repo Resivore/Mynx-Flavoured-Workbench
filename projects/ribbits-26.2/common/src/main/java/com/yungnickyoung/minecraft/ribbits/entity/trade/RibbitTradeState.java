@@ -3,6 +3,11 @@ package com.yungnickyoung.minecraft.ribbits.entity.trade;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 
+import com.mojang.serialization.Codec;
+
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 /** Persistent per-Ribbit economy state. Missing fields use conservative new-entity defaults. */
 public final class RibbitTradeState {
     public static final long UNSET_DAY = Long.MIN_VALUE;
@@ -26,6 +31,8 @@ public final class RibbitTradeState {
     private int restocksUsedToday;
     private long lastRestockGameTime = Long.MIN_VALUE;
     private int tradeSchema;
+    /** Stable contribution-owned selection IDs; absent entries are rolled once on first materialization. */
+    private final Map<String, Integer> externalChoices = new LinkedHashMap<>();
 
     public void read(ValueInput input, boolean musician) {
         this.rank = input.getIntOr("MynxTradeRank", musician ? 0 : 1);
@@ -50,6 +57,9 @@ public final class RibbitTradeState {
                 Math.min(2, input.getIntOr("MynxRestocksUsedToday", 0)));
         this.lastRestockGameTime = input.getLongOr("MynxLastRestockGameTime", Long.MIN_VALUE);
         this.tradeSchema = input.getIntOr("MynxTradeSchema", 0);
+        this.externalChoices.clear();
+        this.externalChoices.putAll(input.read("MynxExternalTradeChoices",
+                Codec.unboundedMap(Codec.STRING, Codec.INT)).orElse(Map.of()));
     }
 
     public void write(ValueOutput output) {
@@ -74,6 +84,10 @@ public final class RibbitTradeState {
         output.putInt("MynxRestocksUsedToday", this.restocksUsedToday);
         output.putLong("MynxLastRestockGameTime", this.lastRestockGameTime);
         output.putInt("MynxTradeSchema", this.tradeSchema);
+        if (!this.externalChoices.isEmpty()) {
+            output.store("MynxExternalTradeChoices", Codec.unboundedMap(Codec.STRING, Codec.INT),
+                    Map.copyOf(this.externalChoices));
+        }
     }
 
     public int rank() { return this.rank; }
@@ -114,4 +128,11 @@ public final class RibbitTradeState {
     public void lastRestockGameTime(long value) { this.lastRestockGameTime = value; }
     public int tradeSchema() { return this.tradeSchema; }
     public void tradeSchema(int value) { this.tradeSchema = Math.max(0, value); }
+    public int externalChoice(String key) { return this.externalChoices.getOrDefault(key, -1); }
+    public void externalChoice(String key, int value) {
+        if (key == null || key.isBlank() || value < 0) {
+            throw new IllegalArgumentException("Invalid external Ribbit trade choice");
+        }
+        this.externalChoices.put(key, value);
+    }
 }
