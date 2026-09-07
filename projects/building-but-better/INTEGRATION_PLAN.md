@@ -41,7 +41,11 @@ This BBB port makes **no** IBF or CNM source changes. It also does not claim tha
 
 ## Pale Oak extension
 
-Pale Oak is intentionally excluded from the `2.0pre4` preservation set. A future Pale Oak change should be a clearly versioned extension that adds the complete wood family—never a partial or silently inferred subset—and supplies independently licensed/original resources. It must update the curated manifest, registry/resource count expectations, metadata contract, recipes/tags/loot, and runtime matrix together.
+Pale Oak is a Minecraft 26.2-native extension, not historical `2.0pre4` content. It is a complete eleven-form wood family—balustrade, lattice, wall, beam, beam stairs, beam slab, support, pallet, frame, lantern, and trim—represented by the same explicit metadata as every existing family. Layers and ladders remain excluded. Its generated resource closure uses the retained Cherry geometry/state layouts with Minecraft 26.2 Pale Oak texture/material references, and remains confined to ignored build output.
+
+### Wooden wall policy
+
+The current BBB source registers every wooden wall, creates its block item, and includes the items in BBB's creative-tab iteration; it has no separate runtime gate. Pale Oak Wall follows that exact existing treatment. The planned later absorption of BBB wooden walls into Block Geometry Extensions is not implemented here and remains out of scope.
 
 ## Rope baseline
 

@@ -88,23 +88,20 @@ class LayerAwareDiscoveryHistoryStoreTest {
     }
 
     @Test
-    void radiusTwoCircleContainsExactlyThirteenChunksAtNegativeCoordinates() {
-        WorldDimensionKey key = key("world-circle", "minecraft:overworld");
+    void radiusTwoSquareContainsExactlyTwentyFiveChunksAtNegativeCoordinates() {
+        WorldDimensionKey key = key("world-square", "minecraft:overworld");
         DiscoveryHistoryStore store = store();
         store.prepare(key);
-        store.recordCircle(key, -10, -20, 2, -16);
+        store.recordSquare(key, -10, -20, 2, -16);
 
         int allowed = 0;
         for (int deltaX = -2; deltaX <= 2; deltaX++) {
             for (int deltaZ = -2; deltaZ <= 2; deltaZ++) {
-                boolean expected = deltaX * deltaX + deltaZ * deltaZ <= 4;
-                assertEquals(expected, store.allows(key, -10 + deltaX, -20 + deltaZ, -16));
-                if (expected) {
-                    allowed++;
-                }
+                assertTrue(store.allows(key, -10 + deltaX, -20 + deltaZ, -16));
+                allowed++;
             }
         }
-        assertEquals(13, allowed);
+        assertEquals(25, allowed);
         assertFalse(store.allows(key, -10, -20, SURFACE_LAYER));
         assertFalse(store.allows(key, -13, -20, -16));
     }

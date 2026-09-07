@@ -78,7 +78,10 @@ public final class BBBContent {
             new WoodSpec("warped", Blocks.WARPED_PLANKS),
             new WoodSpec("mangrove", Blocks.MANGROVE_PLANKS),
             new WoodSpec("bamboo", Blocks.BAMBOO_PLANKS),
-            new WoodSpec("cherry", Blocks.CHERRY_PLANKS)
+            new WoodSpec("cherry", Blocks.CHERRY_PLANKS),
+            // Pale Oak is a port-native 26.2 extension, not an inferred registry variant.
+            // Its beam properties deliberately use the native stripped-log material.
+            new WoodSpec("pale_oak", Blocks.PALE_OAK_PLANKS, Blocks.STRIPPED_PALE_OAK_LOG)
     );
 
     private static final List<StoneSpec> STONE_SPECS = List.of(
@@ -156,7 +159,7 @@ public final class BBBContent {
             }
         });
 
-        if (MUTABLE_BLOCKS.size() != 160 || MUTABLE_ITEMS.size() != 161) {
+        if (MUTABLE_BLOCKS.size() != 171 || MUTABLE_ITEMS.size() != 172) {
             throw new IllegalStateException("Curated BBB registry drift: blocks=" + MUTABLE_BLOCKS.size()
                     + ", items=" + MUTABLE_ITEMS.size());
         }
@@ -180,7 +183,7 @@ public final class BBBContent {
         Block wall = registerBlock(material + "_wall", properties(source, material + "_wall"), WoodenWallBlock::new);
         family.put("wall", wall);
 
-        Block beam = registerBlock(material + "_beam", properties(Blocks.STRIPPED_OAK_LOG, material + "_beam"),
+        Block beam = registerBlock(material + "_beam", properties(spec.beamMaterial(), material + "_beam"),
                 RotatedPillarBlock::new);
         family.put("beam", beam);
 
@@ -340,7 +343,11 @@ public final class BBBContent {
         }
     }
 
-    private record WoodSpec(String id, Block planks) {}
+    private record WoodSpec(String id, Block planks, Block beamMaterial) {
+        private WoodSpec(String id, Block planks) {
+            this(id, planks, Blocks.STRIPPED_OAK_LOG);
+        }
+    }
 
     private record StoneSpec(String id, Block foundation, Block masonry) {}
 

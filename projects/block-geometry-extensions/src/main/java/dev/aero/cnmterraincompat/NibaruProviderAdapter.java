@@ -72,8 +72,8 @@ public final class NibaruProviderAdapter {
     private static final Map<NibaruMaterialProfile, EnumMap<BgeGeometryRole, Block>> DERIVED =
             new IdentityHashMap<>();
     private static final Map<Block, RuntimeBinding> RUNTIME_BINDINGS = new IdentityHashMap<>();
-    private static final Map<TintProfile, Set<Block>> TINT_TARGETS = new EnumMap<>(TintProfile.class);
-    private static BiConsumer<TintProfile, Block> tintRegistrar;
+    private static final Map<NibaruMaterialProfile, Set<Block>> TINT_TARGETS = new IdentityHashMap<>();
+    private static BiConsumer<NibaruMaterialProfile, Block> tintRegistrar;
 
     private NibaruProviderAdapter() {}
 
@@ -448,9 +448,9 @@ public final class NibaruProviderAdapter {
         return List.copyOf(result);
     }
 
-    public static void configureTintRegistrar(BiConsumer<TintProfile, Block> registrar) {
+    public static void configureTintRegistrar(BiConsumer<NibaruMaterialProfile, Block> registrar) {
         tintRegistrar = registrar;
-        TINT_TARGETS.forEach((tint, blocks) -> blocks.forEach(block -> registrar.accept(tint, block)));
+        TINT_TARGETS.forEach((profile, blocks) -> blocks.forEach(block -> registrar.accept(profile, block)));
     }
 
     /** Adds a late-registered standard external form to the same client tint contract. */
@@ -520,9 +520,9 @@ public final class NibaruProviderAdapter {
 
     private static void registerTint(NibaruMaterialProfile profile, Block block) {
         if (profile.tintProfile() == TintProfile.NONE) return;
-        TINT_TARGETS.computeIfAbsent(profile.tintProfile(), ignored ->
+        TINT_TARGETS.computeIfAbsent(profile, ignored ->
                 Collections.newSetFromMap(new IdentityHashMap<>())).add(block);
-        if (tintRegistrar != null) tintRegistrar.accept(profile.tintProfile(), block);
+        if (tintRegistrar != null) tintRegistrar.accept(profile, block);
     }
 
     public record UnsupportedEntry(Identifier family, Identifier source,

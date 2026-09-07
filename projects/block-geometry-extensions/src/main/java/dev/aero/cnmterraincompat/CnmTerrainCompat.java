@@ -107,7 +107,7 @@ public final class CnmTerrainCompat implements ModInitializer {
         initializeNativeCatalog();
         registerBgeBase();
         for (ExternalMaterialCatalog.Spec spec : specs) {
-            if (!spec.id().getNamespace().equals(provider)) {
+            if (!spec.provider().equals(provider)) {
                 throw new IllegalArgumentException("Cross-provider external material batch: " + spec.id());
             }
             ExternalMaterialFamilies.register(spec);

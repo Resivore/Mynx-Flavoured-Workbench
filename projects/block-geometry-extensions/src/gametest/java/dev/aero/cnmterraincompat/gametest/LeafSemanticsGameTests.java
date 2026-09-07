@@ -95,14 +95,14 @@ public final class LeafSemanticsGameTests implements CustomTestMethodInvoker {
                 "Fabric Loader did not resolve the legacy Nibaru alias to the unified BGE container");
         helper.assertTrue(primary.getMetadata().getId().equals("cnm_terrain_slabs_compat"),
                 "Unified container primary identity changed");
-        helper.assertTrue(version.getFriendlyString().equals("4.2.4-bge.canary60.external-families+26.2"),
+        helper.assertTrue(version.getFriendlyString().equals("4.2.5-bge.canary61.runtime-fixes+26.2"),
                 "Unified container version changed: " + version.getFriendlyString());
         try {
             helper.assertTrue(VersionPredicate.parse(">=4.2.0 <4.3.0-").test(version),
                     "Legacy Nibaru dependency range rejected the unified version");
             helper.assertTrue(VersionPredicate.parse(">=0.8.0-bge-canary56-vertical-stairs-catalog").test(version),
                     "Forward BGE dependency range rejected the unified version");
-            helper.assertTrue(VersionPredicate.parse("=4.2.4-bge.canary60.external-families+26.2").test(version),
+            helper.assertTrue(VersionPredicate.parse("=4.2.5-bge.canary61.runtime-fixes+26.2").test(version),
                     "Exact unified dependency rejected the unified version");
             helper.assertTrue(!VersionPredicate.parse("=4.2.0+26.2-port-canary46-bge-layer-contract").test(version),
                     "Exact predecessor Nibaru dependency falsely accepted the unified version");
@@ -163,7 +163,8 @@ public final class LeafSemanticsGameTests implements CustomTestMethodInvoker {
     @GameTest(maxTicks = 40)
     public void providerProfileInventoryAndLookup(GameTestHelper helper) {
         var profiles = NibaruMaterialProfiles.all();
-        int expectedProfiles = 311 + dev.aero.cnmterraincompat.ExternalMaterialFamilies.all().size();
+        int expectedProfiles = 311 + (int) dev.aero.cnmterraincompat.ExternalMaterialFamilies.all().stream()
+                .filter(binding -> binding.profile().family() == null).count();
         helper.assertTrue(profiles.size() == expectedProfiles,
                 "Expected " + expectedProfiles + " profiles, found " + profiles.size());
         var parents = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<Block, Boolean>());

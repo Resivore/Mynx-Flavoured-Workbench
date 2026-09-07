@@ -24,7 +24,8 @@ final class ImplementationContractTest {
     void beamCompatibilityUsesExplicitMetadataAndBlockState() throws IOException {
         String registry = read("registry/BBBContent.java");
 
-        assertEquals(11, occurrences(registry, "new WoodSpec("));
+        assertEquals(12, occurrences(registry, "new WoodSpec("));
+        assertTrue(registry.contains("new WoodSpec(\"pale_oak\", Blocks.PALE_OAK_PLANKS, Blocks.STRIPPED_PALE_OAK_LOG)"));
         assertTrue(registry.contains("public record BeamFamily("));
         assertTrue(registry.contains("Block sourcePlanks"));
         assertTrue(registry.contains("Block beam"));
@@ -34,6 +35,7 @@ final class ImplementationContractTest {
         assertTrue(registry.contains("new BeamFamily(material, source, beam, beamSlab, beamStairs, wall)"));
         assertTrue(registry.contains("state.getValue(RotatedPillarBlock.AXIS)"));
         assertTrue(registry.contains("state.getValue(FacingSlabBlock.FACING).getAxis()"));
+        assertTrue(registry.contains("MUTABLE_BLOCKS.size() != 171 || MUTABLE_ITEMS.size() != 172"));
 
         assertFalse(Pattern.compile("getPath\\s*\\(").matcher(registry).find());
         assertFalse(Pattern.compile("\\.split\\s*\\(").matcher(registry).find());

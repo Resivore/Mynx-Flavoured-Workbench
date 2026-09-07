@@ -18,7 +18,7 @@
     ]
   },
   "definition": {
-    "lifecycle": "TESTING",
+    "lifecycle": "ACTIVE",
     "goals": [
       "Maintain one Fabric mod, source tree, build, version, and deployable JAR for the absorbed Nibaru native material catalog and all BGE geometry.",
       "Preserve every former Nibaru and BGE registry/resource identity, specialized material behavior, and saved-world reference while CNM remains an unchanged external dependency.",
@@ -28,10 +28,10 @@
     "scope": [
       "Compile the retained `games.twinhead.moreslabsstairsandwalls` source and `more_slabs_stairs_and_walls` resources directly inside BGE with a clear LGPL-covered source and attribution boundary.",
       "Register native slabs, stairs, walls, material profiles, transitions, and client bindings before deriving CNM/BGE geometry through one guarded bootstrap and one root Fabric descriptor.",
-      "Preserve all native material profiles, canonical parents, copied settings, TOP/SIDE/BOTTOM roles, axes, patterns, tint, translucency, transitions, drops, and specialized behaviors.",
+      "Preserve all native material profiles, canonical parents, copied settings, TOP/SIDE/BOTTOM roles, axes, patterns, tint, translucency, transitions, drops, and specialized behaviors; C61 corrects only the external-family wall, tint, and canonical-parent seams demonstrated in C60 runtime testing.",
       "Generate one Layer, Corner, and Quarter Column per supported canonical family while preserving Vertical Slab and Step, deterministic selector order, one-source economy, orientation, waterlogging, collision, and drops.",
-      "Provide primary Fabric ID `cnm_terrain_slabs_compat` and verified legacy alias `more_slabs_stairs_and_walls` from the same mod container and shared version `4.2.4-bge.canary60.external-families+26.2`.",
-      "Preserve C58 native registry/resource identities while adding exactly nine roles for each of 57 Macaw's Paths sources, Ribbits Mossy Oak Planks, and six Mynx Trees log, wood, and leaf sources with live source properties and material semantics."
+      "Provide primary Fabric ID `cnm_terrain_slabs_compat` and verified legacy alias `more_slabs_stairs_and_walls` from the same mod container and shared version `4.2.5-bge.canary61.runtime-fixes+26.2`.",
+      "Preserve C58 native registry/resource identities while adding exactly nine roles for each of 57 Macaw's Paths sources, Ribbits Mossy Oak Planks, and six Mynx Trees log, wood, and leaf sources with live source properties and material semantics; canonical Macaw parents are always full blocks, never Path blocks."
     ],
     "boundaries": {
       "owned_paths": [
@@ -40,7 +40,7 @@
       "exclusions": [
         "Clutter No More source and artifacts remain external and unchanged; its ShapeMap remains the canonical family and switching mechanism.",
         "C58 is limited to the user-authored glass-Corner geometry/UV route; generic glass Quarter Column projection and all non-glass Corner outputs remain C57-equivalent.",
-        "C60 must not add hard provider dependencies, unrequested Macaw's Paths materials, generated short-path artifacts, or changes to accepted C58 identities outside the optional external-family implementation seam.",
+        "C61 must not add hard provider dependencies, unrequested Macaw's Paths materials, generated short-path artifacts, version pins, or changes to accepted C58 identities outside the optional external-family correction seam.",
         "`projects/bge-ctm`, shaders, resource-pack classification, BBB source/assets, and unrelated consumer projects are outside this consolidation.",
         "Accepted BGE C52 and historical standalone Nibaru C45 are preserved as rollback provenance and are not rewritten."
       ]
@@ -50,7 +50,7 @@
         "type": "MOD",
         "identifier": "minecraft",
         "requirement": "~26.2",
-        "reason": "Unified BGE C60 targets Minecraft Java 26.2."
+        "reason": "Unified BGE C61 targets Minecraft Java 26.2."
       },
       {
         "type": "MOD",
@@ -73,16 +73,16 @@
     ]
   },
   "state": {
-    "milestone": "C59 failed because its eager lookup ran before optional-provider block registration and never created the requested external geometry; exact accepted C58 was restored. C60 is now readiness-verified in Slot A with complete nine-role families for exactly 64 external sources and remains runtime untested.",
+    "milestone": "C59 failed because its eager lookup ran before optional-provider block registration and never created the requested external geometry; exact accepted C58 was restored. C60 then received an external Minecraft runtime FAIL: four Mynx log/wood walls used a crossed route, Silver Birch leaves did not preserve provider tint semantics, and Macaw families used Path rather than full-block parents. C61 is the unaccepted controlled-validation successor; it is ACTIVE because Test Slot A deployment is currently refused while the independent Slot B IBF C4 artifact is absent from the dedicated profile.",
     "releases": {
       "current": {
-        "version": "C60 (External Families; embedded 4.2.4-bge.canary60.external-families+26.2)",
-        "embedded_version": "4.2.4-bge.canary60.external-families+26.2",
+        "version": "C61 (Runtime Fixes; embedded 4.2.5-bge.canary61.runtime-fixes+26.2)",
+        "embedded_version": "4.2.5-bge.canary61.runtime-fixes+26.2",
         "artifact": {
-          "filename": "cnm-nibaru-integration-4.2.4-bge.canary60.external-families+26.2.jar",
-          "sha256": "163e9c094bf598d8e3d591917d244f5870adfb5d4007774e0cb8bab02d8dbd9f"
+          "filename": "cnm-nibaru-integration-4.2.5-bge.canary61.runtime-fixes+26.2.jar",
+          "sha256": "241033a28b80d638417cd74caed815b79796f0538ff012e172e9a9b714d3f77d"
         },
-        "source_commit": "91fd9f753f0b33f42f1ead6a65f57219822f2fb1",
+        "source_commit": "e8bcce0f78e1e0235ac4f71c8ec8c6c194605bee",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": [
@@ -91,10 +91,10 @@
               "relationship": "depends",
               "dependency_id": "minecraft",
               "predicate": "~26.2",
-              "reason": "The exact C60 artifact targets the Minecraft 26.2 release and packages Fabric's same-release predicate; this target-specific Minecraft predicate must remain bound to the tested release bytes.",
+              "reason": "The exact C61 artifact targets the Minecraft 26.2 release and packages Fabric's same-release predicate; this target-specific Minecraft predicate must remain bound to the tested release bytes.",
               "regression_evidence": [
-                "Two clean Java 25 builds produced byte-identical C60 JARs with SHA-256 163e9c094bf598d8e3d591917d244f5870adfb5d4007774e0cb8bab02d8dbd9f.",
-                "The C60 GameTest suite passed 96/96 on the Minecraft 26.2 validation baseline, including exact 64-source, 576-relation, property, behavior, and generated-resource contracts."
+                "Java 25 Gradle build produced C61 SHA-256 241033a28b80d638417cd74caed815b79796f0538ff012e172e9a9b714d3f77d.",
+                "The C61 GameTest suite passed 96/96 on the Minecraft 26.2 validation baseline, including exact 64-source, 576-relation, full-parent, normal-wall, provider-tint, property, behavior, and generated-resource contracts."
               ]
             }
           ]
@@ -123,17 +123,17 @@
     },
     "validation": {
       "build": "CONTROLLED_VALIDATION_PASS",
-      "deployment": "READY_TO_TEST_VERIFIED",
+      "deployment": "NOT_DEPLOYED",
       "runtime": "RUNTIME_UNTESTED"
     },
     "blocker": null
   },
   "synchronization": {
-    "revision": 19,
-    "activity_at": "2026-09-07T18:35:28Z",
-    "updated_at": "2026-09-07T18:35:28Z",
-    "last_codex_at": "2026-09-07T18:35:28Z",
-    "source_commit": "91fd9f753f0b33f42f1ead6a65f57219822f2fb1",
+    "revision": 20,
+    "activity_at": "2026-09-07T21:16:00Z",
+    "updated_at": "2026-09-07T21:16:00Z",
+    "last_codex_at": "2026-09-07T21:16:00Z",
+    "source_commit": "e8bcce0f78e1e0235ac4f71c8ec8c6c194605bee",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null

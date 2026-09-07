@@ -1,5 +1,5 @@
 param(
-    [string]$UnifiedJar = (Join-Path $PSScriptRoot '..\build\libs\cnm-nibaru-integration-4.2.4-bge.canary60.external-families+26.2.jar'),
+    [string]$UnifiedJar = (Join-Path $PSScriptRoot '..\build\libs\cnm-nibaru-integration-4.2.5-bge.canary61.runtime-fixes+26.2.jar'),
     [string]$AcceptedJar = (Join-Path $PSScriptRoot '..\artifacts\cnm-nibaru-integration-4.2.2-bge.canary58.glass-corner-uv+26.2.jar')
 )
 
@@ -82,17 +82,20 @@ function Test-AllowedChangedEntry([string]$Name) {
     return $Name -eq 'fabric.mod.json' -or
             $Name -eq 'cnm_terrain_slabs_compat.mixins.json' -or
             $Name -match '^dev/aero/cnmterraincompat/CnmTerrainCompat(?:\$.*)?\.class$' -or
+            $Name -match '^dev/aero/cnmterraincompat/CnmTerrainCompatClient(?:\$.*)?\.class$' -or
             $Name -match '^dev/aero/cnmterraincompat/NibaruProviderAdapter(?:\$.*)?\.class$' -or
             $Name -match '^dev/aero/cnmterraincompat/client/BgeGeneratedResources(?:\$.*)?\.class$' -or
             $Name -match '^dev/aero/cnmterraincompat/client/LayerGeneratedResources(?:\$.*)?\.class$' -or
             $Name -match '^dev/aero/cnmterraincompat/client/QuarterGeometryGeneratedResources(?:\$.*)?\.class$' -or
             $Name -match '^dev/aero/cnmterraincompat/mixin/BgeFuelValuesBuilderMixin(?:\$.*)?\.class$' -or
             $Name -match '^games/twinhead/moreslabsstairsandwalls/api/material/NativeAxisModelContract(?:\$.*)?\.class$' -or
-            $Name -match '^games/twinhead/moreslabsstairsandwalls/api/material/NibaruMaterialProfiles(?:\$.*)?\.class$'
+            $Name -match '^games/twinhead/moreslabsstairsandwalls/api/material/NibaruMaterialProfiles(?:\$.*)?\.class$' -or
+            $Name -match '^games/twinhead/moreslabsstairsandwalls/api/material/TintProfile(?:\$.*)?\.class$'
 }
 
 function Test-AllowedNewEntry([string]$Name) {
-    return $Name -match '^dev/aero/cnmterraincompat/ExternalMaterial(?:Blocks|Catalog|Families|GeneratedData)(?:\$.*)?\.class$' -or
+    return $Name -match '^dev/aero/cnmterraincompat/CnmTerrainCompatClient(?:\$.*)?\.class$' -or
+            $Name -match '^dev/aero/cnmterraincompat/ExternalMaterial(?:Blocks|Catalog|Families|GeneratedData)(?:\$.*)?\.class$' -or
             $Name -match '^dev/aero/cnmterraincompat/client/ExternalMaterialGeneratedResources(?:\$.*)?\.class$' -or
             $Name -match '^dev/aero/cnmterraincompat/mixin/(?:MacawsPaths|MynxTrees|Ribbits)InitializationMixin(?:\$.*)?\.class$'
 }
@@ -118,9 +121,9 @@ try {
     $metadataText = Get-EntryText $unifiedMap['fabric.mod.json']
     $metadata = $metadataText | ConvertFrom-Json
     Require ($metadata.id -eq 'cnm_terrain_slabs_compat') 'Unified primary Fabric ID changed'
-    Require ($metadata.version -eq '4.2.4-bge.canary60.external-families+26.2') 'Unified Fabric version is not exact C60'
-    Require ($metadata.name -eq 'Block Geometry Extensions Canary 60 — External Families') `
-            'Unified Fabric display name is not exact C60'
+    Require ($metadata.version -eq '4.2.5-bge.canary61.runtime-fixes+26.2') 'Unified Fabric version is not exact C61'
+    Require ($metadata.name -eq 'Block Geometry Extensions Canary 61 — Runtime Fixes') `
+            'Unified Fabric display name is not exact C61'
     Require (@($metadata.provides).Count -eq 1 -and $metadata.provides[0] -eq 'more_slabs_stairs_and_walls') `
             'Unified descriptor must provide exactly the legacy Nibaru ID'
     Require ($metadata.PSObject.Properties.Name -notcontains 'jars') 'Unified descriptor must not declare nested JARs'

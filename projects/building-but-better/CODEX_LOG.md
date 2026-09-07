@@ -1,5 +1,15 @@
 # Codex Log
 
+## 2026-09-07T21:56:04Z — Add complete Pale Oak BBB wood family
+- Revision: 2
+- Source checkpoint: `42d53bdaa48d61363418e04080d5b1c398e88cc7`
+- Changes: Added the complete port-native Pale Oak Cartesian family—Balustrade, Lattice, Wall, Beam, Beam Stairs, Beam Slab, Support, Pallet, Frame, Lantern, and Trim—to the authoritative manifest and explicit `WoodFamily`/`BeamFamily` registry metadata. Pale Oak uses `Blocks.PALE_OAK_PLANKS`; its Beam uses `Blocks.STRIPPED_PALE_OAK_LOG`. The generated closure derives only retained Cherry geometry/state/data layouts and directs Pale Oak material references to Minecraft 26.2 Pale Oak textures. No upstream archive content claims Pale Oak, and no Layer, Ladder, or other removed content was restored. Existing walls remain registered with items and included in BBB's creative tab; there is no separate current wall gate, and no BGE change/absorption was implemented.
+- Build/static: Temurin Java `25.0.4.1+1`, Gradle `9.5.1`, and Fabric Loom `1.17.20` ran `gradlew.bat clean check build --console=plain` with the exact validated `bbb-fabric-2.0pre4.jar` input (1,701,505 bytes, SHA-256 `1e7ae114aaec53475133e11c607fc65dce493bba5897eaf0044d53959b508fc0`). `BUILD SUCCESSFUL`: 17/17 focused tests passed with no failures/errors/skips. Resource validation reported 171 blocks, 172 items, 1,133 models, 234 texture/sidecar files (230 PNGs; 106 transparent; binary alpha), 224 recipes, 140 advancements, 171 loot tables, and 44 tags; it rejected missing parents, malformed legacy values, unresolved/removed BBB IDs, and excluded content.
+- Runtime: `STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED`. No Test Instance Manager deployment or Minecraft launch occurred. The user-reported predecessor result cannot be safely recorded because revision 1 has no exact retained artifact identity and current manager state contains no BBB deployment member.
+- Artifact: Local retained ARR-bearing candidate `bbb-fabric-26.2-2.0pre4+26.2-pale-oak-dev.jar`, 1,138,186 bytes, SHA-256 `25976bafae7d0a5ba570b24150310468b72393abcd76e60992850d768330e4b1`. It is ignored/untracked and was not committed, deployed, published, or redistributed.
+- Result: ACTIVE with no blocker; no accepted release or rollback. The status release includes the capability/provider runtime-dependency-policy attestation with no exceptions.
+- Next state: With explicit runtime-canary authorization and a serialized Test Instance Manager transition, deploy this exact retained candidate to one test slot and complete the Pale Oak matrix before promotion.
+
 ## 2026-08-31T05:28:48Z — Migrate Building But Better into Mynx Flavoured Workbench
 - Revision: 1
 - Source checkpoint: `2bf39181383426423bff4b421e5fbdf95869f932`

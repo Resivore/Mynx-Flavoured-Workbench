@@ -6,5 +6,7 @@ public enum TintProfile {
     GRASS_BIOME,
     FOLIAGE_BIOME,
     FOLIAGE_SPRUCE,
-    FOLIAGE_BIRCH
+    FOLIAGE_BIRCH,
+    /** Delegates each derived block to its optional provider's own block-color contract. */
+    SOURCE_PROVIDER
 }

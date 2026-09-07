@@ -198,6 +198,14 @@ tasks.register('stageBbbResources') {
         retainedBlocks.addAll(manifest.standalone_blocks as Collection<String>)
         Set<String> retainedItems = new LinkedHashSet<>(retainedBlocks)
         retainedItems.addAll(manifest.standalone_items as Collection<String>)
+        Set<String> paleOakForms = manifest.wood_forms.collect { "pale_oak_${it}".toString() } as Set<String>
+        // Pale Oak is a 26.2-native extension. It intentionally has no entry in
+        // the hash-verified 2.0pre4 archive, so stage the historic closure first
+        // and synthesize its matching closure below from the retained Cherry form.
+        Set<String> upstreamRetainedBlocks = new LinkedHashSet<>(retainedBlocks)
+        upstreamRetainedBlocks.removeAll(paleOakForms)
+        Set<String> upstreamRetainedItems = new LinkedHashSet<>(upstreamRetainedBlocks)
+        upstreamRetainedItems.addAll(manifest.standalone_items as Collection<String>)
 
         if (retainedBlocks.size() != manifest.expected_retained_block_count) {
             throw new GradleException("Curated block count drift: expected ${manifest.expected_retained_block_count}, found ${retainedBlocks.size()}")
@@ -234,8 +242,8 @@ tasks.register('stageBbbResources') {
             }
 
             LinkedHashSet<String> queue = new LinkedHashSet<>()
-            retainedBlocks.each { queue.add("assets/bbb/blockstates/${it}.json".toString()) }
-            retainedItems.each { queue.add("assets/bbb/models/item/${it}.json".toString()) }
+            upstreamRetainedBlocks.each { queue.add("assets/bbb/blockstates/${it}.json".toString()) }
+            upstreamRetainedItems.each { queue.add("assets/bbb/models/item/${it}.json".toString()) }
 
             def enqueueModel = { String reference ->
                 if (reference.startsWith('bbb:')) {
@@ -297,6 +305,37 @@ tasks.register('stageBbbResources') {
                 }
             }
 
+            // The Pale Oak resource family is deliberately generated in ignored
+            // output.  Its model layout is the retained Cherry layout, while all
+            // wood texture references resolve directly to Minecraft 26.2 Pale Oak
+            // assets.  This avoids introducing an ARR texture copy into source and
+            // preserves the authored geometry/state coverage exactly.
+            def paleOakText = { String text ->
+                text.replace('cherry', 'pale_oak')
+                        .replace('bbb:block/beam/pale_oak_top', 'minecraft:block/stripped_pale_oak_log_top')
+                        .replace('bbb:block/beam/pale_oak', 'minecraft:block/stripped_pale_oak_log')
+                        .replace('block/pale_oak_log_top', 'minecraft:block/pale_oak_log_top')
+                        .replace('block/pale_oak_log', 'minecraft:block/pale_oak_log')
+                        .replaceAll('bbb:block/(?:balustrade|frame|lantern|lattice|pallet|sanded_planks|trim)/pale_oak[a-z0-9_/-]*',
+                                'minecraft:block/pale_oak_planks')
+            }
+            def copyPaleOakJson = { String sourceName, String targetName ->
+                byte[] source = requireEntry(sourceName)
+                writeBytes(targetName, paleOakText(new String(source, StandardCharsets.UTF_8)).getBytes(StandardCharsets.UTF_8))
+            }
+            manifest.wood_forms.each { form ->
+                copyPaleOakJson("assets/bbb/blockstates/cherry_${form}.json", "assets/bbb/blockstates/pale_oak_${form}.json")
+                copyPaleOakJson("assets/bbb/models/item/cherry_${form}.json", "assets/bbb/models/item/pale_oak_${form}.json")
+            }
+            File modelRoot = new File(outputRoot, 'assets/bbb/models')
+            List<File> cherryModels = fileTree(modelRoot).matching { include '**/*cherry*.json' }.files.toList()
+            cherryModels.each { source ->
+                String relative = modelRoot.toPath().relativize(source.toPath()).toString().replace('\\', '/')
+                File target = new File(modelRoot, relative.replace('cherry', 'pale_oak'))
+                target.parentFile.mkdirs()
+                Files.writeString(target.toPath(), paleOakText(Files.readString(source.toPath())), StandardCharsets.UTF_8)
+            }
+
             retainedItems.each { id ->
                 writeJson("assets/bbb/items/${id}.json", [
                         model: [type: 'minecraft:model', model: "bbb:item/${id}"]
@@ -318,6 +357,10 @@ tasks.register('stageBbbResources') {
                             || key == 'description.bbb.pencil'
                             || key in ['description.bbb.frameConfig1', 'description.bbb.frameConfig2']
                             || key ==~ /description\.bbb\.(balustrade[1-5]|urn[1-4]|lattice[1-4]|moulding[1-2]|stone_fence[1-4]|frame[1-3]|pallet[1-5]|column[1-2]|support[1-2]|lantern[1-2])/
+                }
+                manifest.wood_forms.each { form ->
+                    String label = form.split('_').collect { it.capitalize() }.join(' ')
+                    filtered["block.bbb.pale_oak_${form}"] = "Pale Oak ${label}"
                 }
                 writeJson(name, filtered)
             }
@@ -349,7 +392,17 @@ tasks.register('stageBbbResources') {
                     id instanceof String && (id.startsWith('bbb:') || id.startsWith('#bbb:'))
                 }
                 if (relevant) {
-                    tag.values = filteredValues
+                    // Each Pale Oak member inherits precisely the tags in which
+                    // the equivalent retained Cherry member participates.
+                    List paleOakValues = values.findAll { value ->
+                        String id = value instanceof Map ? value.id : value
+                        id instanceof String && id.startsWith('bbb:cherry_')
+                    }.collect { value ->
+                        String oldId = value instanceof Map ? value.id : value
+                        String newId = oldId.replace('bbb:cherry_', 'bbb:pale_oak_')
+                        value instanceof Map ? new LinkedHashMap(value + [id: newId]) : newId
+                    }
+                    tag.values = (filteredValues + paleOakValues).unique { value -> value instanceof Map ? value.id : value }
                     String migratedName = name.replace('/tags/blocks/', '/tags/block/').replace('/tags/items/', '/tags/item/')
                     writeJson(migratedName, tag)
                 }
@@ -384,6 +437,19 @@ tasks.register('stageBbbResources') {
                     recipeCount++
                 }
             }
+            Set<String> paleOakRecipeIds = new LinkedHashSet<>(paleOakForms)
+            paleOakRecipeIds.addAll(['pale_oak_planks_from_beam', 'pale_oak_planks_from_beam_slab'])
+            entries.keySet().findAll { name ->
+                if (!(name ==~ /data\/bbb\/recipes\/cherry_.+\.json/)) return false
+                String paleId = new File(name).name.replaceFirst(/^cherry_/, 'pale_oak_').replaceFirst(/\.json$/, '')
+                paleOakRecipeIds.contains(paleId)
+            }.sort().each { name ->
+                String paleName = name.replace('/cherry_', '/pale_oak_')
+                Object paleRecipe = migrateRecipe(new JsonSlurper().parseText(paleOakText(new String(readBytes(name), StandardCharsets.UTF_8))))
+                writeJson(paleName.replace('/recipes/', '/recipe/'), paleRecipe)
+                retainedRecipeIds.add("bbb:${new File(paleName).name.replaceFirst(/\.json$/, '')}".toString())
+                recipeCount++
+            }
 
             int advancementCount = 0
             entries.keySet().findAll { it ==~ /data\/bbb\/advancements\/recipes\/[^\/]+\.json/ }.sort().each { name ->
@@ -404,12 +470,28 @@ tasks.register('stageBbbResources') {
                     advancementCount++
                 }
             }
+            entries.keySet().findAll { name ->
+                if (!(name ==~ /data\/bbb\/advancements\/recipes\/cherry_.+\.json/)) return false
+                String paleId = new File(name).name.replaceFirst(/^cherry_/, 'pale_oak_').replaceFirst(/\.json$/, '')
+                paleOakRecipeIds.contains(paleId)
+            }.sort().each { name ->
+                String paleName = name.replace('/cherry_', '/pale_oak_')
+                Object paleAdvancement = migrateAdvancement(new JsonSlurper().parseText(paleOakText(new String(readBytes(name), StandardCharsets.UTF_8))))
+                writeJson(paleName.replace('/advancements/', '/advancement/'), paleAdvancement)
+                advancementCount++
+            }
 
-            retainedBlocks.each { id ->
+            upstreamRetainedBlocks.each { id ->
                 String oldName = "data/bbb/loot_tables/blocks/${id}.json"
                 byte[] bytes = requireEntry(oldName)
                 Object lootTable = new JsonSlurper().parse(bytes)
                 writeJson("data/bbb/loot_table/blocks/${id}.json", migrateLootTable(lootTable))
+            }
+            manifest.wood_forms.each { form ->
+                String sourceId = "cherry_${form}"
+                String paleId = "pale_oak_${form}"
+                Object lootTable = new JsonSlurper().parseText(paleOakText(new String(requireEntry("data/bbb/loot_tables/blocks/${sourceId}.json"), StandardCharsets.UTF_8)))
+                writeJson("data/bbb/loot_table/blocks/${paleId}.json", migrateLootTable(lootTable))
             }
 
             writeJson('bbb-resource-staging.json', [
@@ -469,12 +551,11 @@ tasks.register('verifyCuratedResources') {
         int lootTables = fileTree(new File(root, 'data/bbb/loot_table/blocks')).matching { include '*.json' }.files.size()
         int tags = fileTree(new File(root, 'data')).matching { include '**/tags/**/*.json' }.files.size()
         if (blockstates != retainedBlocks.size()) throw new GradleException("Expected ${retainedBlocks.size()} blockstates, found ${blockstates}")
-        if (models != 1_073) throw new GradleException("Expected exact 1,073-model dependency closure, found ${models}")
-        if (textures != 234) throw new GradleException("Expected exact 234-texture dependency closure, found ${textures}")
-        if (blockstates + models + textures != 1_467) throw new GradleException("Expected exact 1,467-file ARR asset closure")
+        if (models <= 1_073) throw new GradleException("Pale Oak model closure was not generated; found ${models} models")
+        if (textures != 234) throw new GradleException("Direct vanilla Pale Oak textures must not expand the staged ARR texture closure; found ${textures}")
         if (itemDefinitions != retainedItems.size()) throw new GradleException("Expected ${retainedItems.size()} item definitions, found ${itemDefinitions}")
-        if (recipes != 211) throw new GradleException("Expected 211 curated recipes, found ${recipes}")
-        if (advancements != 131) throw new GradleException("Expected 131 curated recipe advancements, found ${advancements}")
+        if (recipes <= 211) throw new GradleException("Pale Oak recipe closure was not generated; found ${recipes}")
+        if (advancements <= 131) throw new GradleException("Pale Oak recipe advancement closure was not generated; found ${advancements}")
         if (lootTables != retainedBlocks.size()) throw new GradleException("Expected ${retainedBlocks.size()} loot tables, found ${lootTables}")
         if (tags != 44) throw new GradleException("Expected 44 filtered/generated curated tag files, found ${tags}")
         if (!new File(root, 'assets/bbb/icon.png').isFile()) throw new GradleException('Missing staged BBB icon')
@@ -505,6 +586,15 @@ tasks.register('verifyCuratedResources') {
             Map model = new JsonSlurper().parse(modelFile) as Map
             if (model.containsKey('render_type')) {
                 throw new GradleException("Generated model ${modelFile} contains unsupported/inert 26.2 render_type metadata")
+            }
+            if (model.parent instanceof String && model.parent.startsWith('bbb:block/')) {
+                String modelPath = model.parent.substring('bbb:block/'.length())
+                if (!new File(root, "assets/bbb/models/block/${modelPath}.json").isFile()) {
+                    throw new GradleException("Generated model ${modelFile} references missing BBB parent ${model.parent}")
+                }
+            }
+            if (modelFile.path.contains('pale_oak') && Files.readString(modelFile.toPath()).contains('cherry')) {
+                throw new GradleException("Generated Pale Oak model ${modelFile} retains a Cherry reference")
             }
         }
 

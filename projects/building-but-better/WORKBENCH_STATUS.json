@@ -25,7 +25,7 @@
       "Preserve the retained building families and their original stateful behavior through an explicit, testable registry and resource-closure contract."
     ],
     "scope": [
-      "Maintain exactly 160 retained blocks and 161 retained items: eleven wood families, seven stone families, braziers, rope, iron fence, and the Hammer.",
+      "Maintain exactly 171 retained blocks and 172 retained items: the historical eleven wood families plus the Minecraft 26.2-native complete Pale Oak eleven-form family, seven stone families, braziers, rope, iron fence, and the Hammer.",
       "Preserve the retained rotation, waterlogging, connectivity, collision, lighting, Hammer, lattice-plant, urn, model, texture, tag, language, recipe, advancement, loot, and drop contracts implemented by legacy source 4ddbd2a7b39cb33653f9ddacf9bca0a419cc500d and finalized at legacy branch head 08cba03bc6b19d43a484e7500ca8b366a254e671.",
       "Stage only the exact audited dependency closure from the hash-verified pristine BBB 2.0pre4 input into ignored generated build output."
     ],
@@ -34,7 +34,7 @@
         "projects/building-but-better"
       ],
       "exclusions": [
-        "BBB layers, BBB ladders, the small-stone-block system, Chisel and related removed tools, Pale Oak, and any silently restored registry content.",
+        "BBB layers, BBB ladders (including Pale Oak Layer and Ladder), the small-stone-block system, Chisel and related removed tools, and any silently restored registry content.",
         "Rope enhancements, Inventory Bridge Framework changes, Clutter No More changes, or unrelated compatibility implementation.",
         "Upstream models, textures, recipes, data, translations, loot tables, tags, or other All Rights Reserved resources in tracked source, retained artifacts, or redistributed combined development JARs.",
         "Architectury and MidnightLib dependencies removed by the direct Fabric port.",
@@ -99,12 +99,19 @@
     ]
   },
   "state": {
-    "milestone": "The exact curated Fabric-only source is migrated and Java 25 build/static verification passes; the candidate remains undeployed, runtime untested, unaccepted, and intentionally has no retained ARR-bearing artifact.",
+    "milestone": "The complete eleven-form Minecraft 26.2-native Pale Oak BBB family is built and statically verified; the candidate remains undeployed, runtime untested, unaccepted, and retained locally only because its combined JAR includes staged upstream ARR resources.",
     "releases": {
       "current": {
-        "version": "2.0pre4+26.2-port-dev",
-        "artifact": null,
-        "source_commit": "4ddbd2a7b39cb33653f9ddacf9bca0a419cc500d"
+        "version": "2.0pre4+26.2-pale-oak-dev",
+        "artifact": {
+          "filename": "bbb-fabric-26.2-2.0pre4+26.2-pale-oak-dev.jar",
+          "sha256": "25976bafae7d0a5ba570b24150310468b72393abcd76e60992850d768330e4b1"
+        },
+        "source_commit": "42d53bdaa48d61363418e04080d5b1c398e88cc7",
+        "runtime_dependency_policy": {
+          "contract": "CAPABILITY_OR_PROVIDER",
+          "exceptions": []
+        }
       },
       "accepted": null,
       "rollback": null,
@@ -119,11 +126,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 1,
-    "activity_at": "2026-08-28T20:06:39Z",
-    "updated_at": "2026-08-31T05:28:48Z",
-    "last_codex_at": "2026-08-31T05:28:48Z",
-    "source_commit": "2bf39181383426423bff4b421e5fbdf95869f932",
+    "revision": 2,
+    "activity_at": "2026-09-07T21:56:04Z",
+    "updated_at": "2026-09-07T21:56:04Z",
+    "last_codex_at": "2026-09-07T21:56:04Z",
+    "source_commit": "42d53bdaa48d61363418e04080d5b1c398e88cc7",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null

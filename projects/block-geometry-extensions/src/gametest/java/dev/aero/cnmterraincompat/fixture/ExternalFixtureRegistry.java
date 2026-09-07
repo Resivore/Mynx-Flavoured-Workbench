@@ -27,7 +27,10 @@ public final class ExternalFixtureRegistry {
         String[] materials = "andesite diorite granite sandstone red_sandstone brick stone mossy_stone cobbled_deepslate deepslate mud_brick blackstone dark_prismarine".split(" ");
         String[] patterns = "running_bond windmill_weave flagstone crystal_floor".split(" ");
         for (String material : materials) for (String pattern : patterns) {
-            register("mcwpaths", material + "_" + pattern + "_path", Blocks.DEEPSLATE_TILES, false);
+            String full = material + "_" + pattern;
+            register("mcwpaths", full, Blocks.DEEPSLATE_TILES, false);
+            // BGE validates that the provider's old Path form remains only reference data.
+            register("mcwpaths", full + "_path", Blocks.DEEPSLATE_TILES, false);
         }
         register("mcwpaths", "podzol_path_block", Blocks.PODZOL, false);
         register("mcwpaths", "dirt_path_block", Blocks.DIRT_PATH, false);
