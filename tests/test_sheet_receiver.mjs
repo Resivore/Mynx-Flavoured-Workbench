@@ -307,6 +307,18 @@ test("a larger legitimate forward gap converges directly", () => {
   assert.equal(result.rows[0][headers().indexOf("Revision")], 12);
 });
 
+test("a Sheet row at revision 12 reconciles directly to authoritative revision 15", () => {
+  const first = core.applyToRows(headers(), [], envelope(12, "d".repeat(64)));
+  first.rows[0][headers().indexOf("Notes")] = "Preserve this human note";
+  const current = envelope(15, "e".repeat(64));
+  current.record.milestone = "Authoritative revision 15 after missed deliveries";
+  const result = core.applyToRows(headers(), first.rows, current);
+  assert.equal(result.changed, true);
+  assert.equal(result.rows[0][headers().indexOf("Revision")], 15);
+  assert.equal(result.rows[0][headers().indexOf("Milestone")], current.record.milestone);
+  assert.equal(result.rows[0][headers().indexOf("Notes")], "Preserve this human note");
+});
+
 test("blank stored Revision converges as uncommitted revision zero", () => {
   const first = core.applyToRows(headers(), [], envelope(1, "4".repeat(64)));
   first.rows[0][headers().indexOf("Revision")] = "";

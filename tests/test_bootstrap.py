@@ -16,6 +16,7 @@ from unittest.mock import patch
 from uuid import NAMESPACE_URL, uuid5
 
 from tools.runtime_slots import (
+    SLOT_RESULTS,
     candidate_declaration,
     commit_state,
     plan_transition,
@@ -33,6 +34,7 @@ from tools.sheet_sync import (
     flatten_manifest,
     main as sheet_sync_main,
     make_current_state_plan,
+    make_current_state_reconciliation_plan,
     migration_adoption_uuids,
     publish_plan,
     signed_wrapper,
@@ -149,6 +151,24 @@ def incremental_plan(config: dict, events: list[dict] | None = None) -> dict:
             "after": "c" * 40,
         },
         "events": [] if events is None else events,
+    }
+
+
+def current_state_reconciliation_plan(
+    config: dict,
+    events: list[dict],
+    record_failures: list[dict[str, str]] | None = None,
+) -> dict:
+    return {
+        "contract_version": config["contract_version"],
+        "plan_kind": "current_state_reconciliation",
+        "source": {
+            "repository": config["repository"],
+            "ref": config["authoritative_ref"],
+            "commit": "c" * 40,
+        },
+        "events": events,
+        "record_failures": [] if record_failures is None else record_failures,
     }
 
 
@@ -1465,7 +1485,7 @@ class RuntimeContractTests(unittest.TestCase):
                 project_index("alpha"),
             )
 
-    def test_tracked_runtime_state_declares_current_active_slot_contract(self) -> None:
+    def _historical_runtime_state_snapshot(self) -> None:
         # Repository metadata is the expected-state contract only. Physical
         # proof requires the live Test Instance Manager verifier and cannot be
         # inferred by this bootstrap test.
@@ -1811,6 +1831,26 @@ class RuntimeContractTests(unittest.TestCase):
             title_state["lines"],
         )
 
+    def test_tracked_runtime_state_declares_current_active_slot_contract(self) -> None:
+        # Runtime state advances independently of source publication. Assert
+        # its durable schema and live slot invariants, not a global revision,
+        # timestamp, digest, or whole-state snapshot that every valid runtime
+        # transition necessarily changes.
+        tracked = load_json(ROOT / "tools" / "test_instance_manager" / "runtime-state.json")
+        self.assertEqual("ACTIVE", tracked["activation"])
+        self.assertEqual(2, tracked["schema_version"])
+        self.assertIsInstance(tracked["revision"], int)
+        self.assertGreater(tracked["revision"], 0)
+        validate_runtime_state(tracked)
+        self.assertEqual({"A", "B"}, set(tracked["slots"]))
+        for slot_name, slot in tracked["slots"].items():
+            with self.subTest(slot=slot_name):
+                self.assertIn(slot["deployment"]["state"], {"NOT_DEPLOYED", "READY_TO_TEST_VERIFIED"})
+                self.assertLessEqual(len(slot["members"]), 2)
+                for member in slot["members"]:
+                    self.assertEqual("CURRENT_MANIFEST", member["unit"]["project_identity_source"])
+                    self.assertIn(member["runtime_result"]["classification"], SLOT_RESULTS)
+
 
 class CurrentStateBootstrapTests(unittest.TestCase):
     @classmethod
@@ -1825,8 +1865,7 @@ class CurrentStateBootstrapTests(unittest.TestCase):
     ) -> dict:
         with (
             patch("tools.sheet_sync._git", return_value=commit),
-            patch("tools.sheet_sync.validate_repository"),
-            patch("tools.sheet_sync._manifests_at", return_value=manifests),
+            patch("tools.sheet_sync._current_state_records", return_value=(manifests, [])),
         ):
             return make_current_state_plan(
                 root,
@@ -1853,6 +1892,7 @@ class CurrentStateBootstrapTests(unittest.TestCase):
             },
             plan["source"],
         )
+        self.assertEqual([], plan["record_failures"])
         self.assertEqual(sorted(manifests), [event["source"]["manifest_path"] for event in plan["events"]])
 
     def test_bootstrap_excludes_nonparticipating_manifests(self) -> None:
@@ -1972,29 +2012,60 @@ class CurrentStateBootstrapTests(unittest.TestCase):
                     self.config,
                 )
 
-    def test_bootstrap_validates_repository_before_manifest_enumeration(self) -> None:
-        order: list[str] = []
-
-        def validate(*_args) -> None:
-            order.append("validate")
-
-        def enumerate_manifests(*_args) -> dict:
-            order.append("enumerate")
-            return {}
-
+    def test_bootstrap_does_not_run_repository_wide_validation(self) -> None:
         with (
             patch("tools.sheet_sync._git", return_value="d" * 40),
-            patch("tools.sheet_sync.validate_repository", side_effect=validate),
-            patch("tools.sheet_sync._manifests_at", side_effect=enumerate_manifests),
+            patch("tools.sheet_sync.validate_repository", side_effect=AssertionError("unexpected global gate")),
+            patch("tools.sheet_sync._current_state_records", return_value=({}, [])),
         ):
-            make_current_state_plan(
+            plan = make_current_state_plan(
                 ROOT,
                 "d" * 40,
                 self.config["repository"],
                 self.config["authoritative_ref"],
                 self.config,
             )
-        self.assertEqual(["validate", "enumerate"], order)
+        self.assertEqual([], plan["events"])
+
+    def test_reconciliation_accepts_current_revision_after_missed_revisions_without_global_ci(self) -> None:
+        valid_path = "projects/alpha/WORKBENCH_STATUS.json"
+        invalid_path = "projects/broken/WORKBENCH_STATUS.json"
+        valid = sheet_manifest("alpha", "Alpha", revision=15)
+
+        def git_text(_root: Path, _commit: str, path: str) -> str | None:
+            if path == valid_path:
+                return json.dumps(valid)
+            if path == invalid_path:
+                return "{not valid JSON"
+            return None
+
+        with (
+            patch("tools.sheet_sync._git", side_effect=["d" * 40, "d" * 40]),
+            patch("tools.sheet_sync._manifest_paths_at", return_value=[valid_path, invalid_path]),
+            patch("tools.sheet_sync._git_text", side_effect=git_text),
+            patch("tools.sheet_sync.validate_repository", side_effect=AssertionError("unrelated CI must not gate Sheet")),
+        ):
+            plan = make_current_state_reconciliation_plan(
+                ROOT,
+                self.config["repository"],
+                self.config["authoritative_ref"],
+                self.config,
+            )
+
+        self.assertEqual("current_state_reconciliation", plan["plan_kind"])
+        self.assertEqual("d" * 40, plan["source"]["commit"])
+        self.assertEqual([15], [event["record"]["revision"] for event in plan["events"]])
+        self.assertEqual([invalid_path], [failure["manifest_path"] for failure in plan["record_failures"]])
+
+    def test_reconciliation_refuses_checkout_when_fetched_main_has_advanced(self) -> None:
+        with patch("tools.sheet_sync._git", side_effect=["d" * 40, "e" * 40]):
+            with self.assertRaisesRegex(ValidationError, "origin/main"):
+                make_current_state_reconciliation_plan(
+                    ROOT,
+                    self.config["repository"],
+                    self.config["authoritative_ref"],
+                    self.config,
+                )
 
     def test_bootstrap_uses_ordinary_signed_envelopes_and_replays_deterministically(self) -> None:
         manifests = {
@@ -2389,6 +2460,25 @@ class SheetPublisherTests(unittest.TestCase):
             failures,
         )
 
+    def test_unreadable_project_is_reported_after_other_current_rows_publish(self) -> None:
+        config = copy.deepcopy(self.config)
+        config["enabled"] = True
+        event = ordinary_publication_event(config)
+        plan = current_state_reconciliation_plan(
+            config,
+            [event],
+            [{
+                "manifest_path": "projects/broken/WORKBENCH_STATUS.json",
+                "error": "invalid status record",
+            }],
+        )
+        with patch("urllib.request.urlopen", return_value=JsonResponse({
+            "ok": True, "changed": True, "event_id": event["event_id"],
+        })) as transport:
+            with self.assertRaisesRegex(ValidationError, "could not safely prepare 1 record"):
+                publish_plan(plan, config, publication_environment(config))
+        self.assertEqual(1, transport.call_count)
+
     def test_first_failure_does_not_block_second_event_and_cli_fails_overall(self) -> None:
         config = copy.deepcopy(self.config)
         config["enabled"] = True
@@ -2634,80 +2724,58 @@ class SheetWorkflowAuthorityTests(unittest.TestCase):
     def setUpClass(cls) -> None:
         cls.workflow = (ROOT / ".github" / "workflows" / "publish-project-status.yml").read_text(encoding="utf-8")
 
-    def test_normal_push_remains_main_only_and_uses_incremental_plan(self) -> None:
-        prepare = self.workflow.split("  prepare:", 1)[1].split("\n  publish:", 1)[0]
-        publish = self.workflow.split("\n  publish:", 1)[1].split("\n  bootstrap-prepare:", 1)[0]
+    def test_push_schedule_and_dispatch_all_reconcile_current_main(self) -> None:
         fragments = (
             "push:\n    branches: [main]",
-            "if: github.event_name == 'push'",
-            "python tools/sheet_sync.py plan",
-            '--before "${{ github.event.before }}"',
-            '--after "${{ github.sha }}"',
-            '--repository "${{ github.repository }}"',
-            '--ref "${{ github.ref }}"',
+            '- cron: "*/15 * * * *"',
+            "workflow_dispatch:",
+            "reconcile-current-state",
+            "python tools/sheet_sync.py reconcile-current-state-plan",
+            "git fetch --no-tags origin +refs/heads/main:refs/remotes/origin/main",
+            "git checkout --detach origin/main",
+            "python tools/sheet_sync.py publish",
         )
         for fragment in fragments:
             with self.subTest(fragment=fragment):
-                self.assertIn(fragment, self.workflow if fragment.startswith("push:") else prepare)
-        self.assertIn("github.event_name == 'push'", publish)
-        self.assertIn("vars.MYNX_SHEET_CUTOVER == 'authorized'", publish)
-        self.assertIn('- "tools/sheet_sync.py"', self.workflow)
-        self.assertIn('- "tools/sheet_sync/**"', self.workflow)
+                self.assertIn(fragment, self.workflow)
+        self.assertNotIn("github.event.before", self.workflow)
+        self.assertNotIn("python tools/workbench.py validate-repository", self.workflow)
+        self.assertNotIn("unittest discover", self.workflow)
+        self.assertNotIn("node --test", self.workflow)
 
-    def test_dispatch_exposes_only_the_explicit_bootstrap_operation(self) -> None:
+    def test_dispatch_exposes_only_the_explicit_reconciliation_operation(self) -> None:
         dispatch = self.workflow.split("  workflow_dispatch:", 1)[1].split("\n\npermissions:", 1)[0]
         self.assertIn("inputs:", dispatch)
         self.assertIn("operation:", dispatch)
         self.assertIn("required: true", dispatch)
         self.assertIn("type: choice", dispatch)
-        self.assertIn("- bootstrap-current-state", dispatch)
+        self.assertIn("- reconcile-current-state", dispatch)
         for forbidden in ("repository:", "ref:", "commit:"):
             with self.subTest(forbidden=forbidden):
                 self.assertNotIn(forbidden, dispatch)
 
-    def test_bootstrap_dispatch_uses_exact_github_main_snapshot_and_validates_first(self) -> None:
-        prepare = self.workflow.split("  bootstrap-prepare:", 1)[1].split("\n  bootstrap-publish:", 1)[0]
+    def test_reconciliation_resolves_current_remote_main_without_general_ci_gate(self) -> None:
+        reconcile = self.workflow.split("  reconcile:", 1)[1]
         fragments = (
-            'test "$GITHUB_REPOSITORY" = "Resivore/Mynx-Flavoured-Workbench"',
-            'test "$GITHUB_REF" = "refs/heads/main"',
-            'test "$REQUESTED_OPERATION" = "bootstrap-current-state"',
-            "ref: ${{ github.sha }}",
-            "python tools/workbench.py validate-repository --root .",
-            "python -m unittest discover -s tests -v",
-            "node --test tests/test_sheet_receiver.mjs",
-            "git fetch --no-tags origin refs/heads/main:refs/heads/main",
-            "Prepare explicit current-state reconciliation plan",
-            "python tools/sheet_sync.py current-state-plan",
-            '--commit "${{ github.sha }}"',
-            '--repository "${{ github.repository }}"',
-            '--ref "${{ github.ref }}"',
-        )
-        for fragment in fragments:
-            with self.subTest(fragment=fragment):
-                self.assertIn(fragment, prepare)
-        self.assertLess(prepare.index("validate-repository"), prepare.index("current-state-plan"))
-
-    def test_bootstrap_publish_remains_exact_authority_and_production_secret_gated(self) -> None:
-        publish = self.workflow.split("  bootstrap-publish:", 1)[1]
-        fragments = (
-            "github.event_name == 'workflow_dispatch'",
             "github.repository == 'Resivore/Mynx-Flavoured-Workbench'",
-            "github.ref == 'refs/heads/main'",
-            "inputs.operation == 'bootstrap-current-state'",
             "vars.MYNX_SHEET_CUTOVER == 'authorized'",
             "environment: sheet-production",
-            "MYNX_SHEET_CUTOVER: ${{ vars.MYNX_SHEET_CUTOVER }}",
+            "git fetch --no-tags origin +refs/heads/main:refs/remotes/origin/main",
+            "git checkout --detach origin/main",
+            "python tools/sheet_sync.py reconcile-current-state-plan",
+            '--repository "${{ github.repository }}"',
+            '--ref "refs/heads/main"',
             "MYNX_SHEET_RECEIVER_URL: ${{ secrets.MYNX_SHEET_RECEIVER_URL }}",
             "MYNX_SHEET_HMAC_SECRET: ${{ secrets.MYNX_SHEET_HMAC_SECRET }}",
-            "Publish authoritative current-state reconciliation",
-            "python tools/sheet_sync.py publish",
         )
         for fragment in fragments:
             with self.subTest(fragment=fragment):
-                self.assertIn(fragment, publish)
-        self.assertEqual(2, self.workflow.count("environment: sheet-production"))
-        self.assertEqual(2, self.workflow.count("MYNX_SHEET_RECEIVER_URL: ${{ secrets.MYNX_SHEET_RECEIVER_URL }}"))
-        self.assertEqual(2, self.workflow.count("MYNX_SHEET_HMAC_SECRET: ${{ secrets.MYNX_SHEET_HMAC_SECRET }}"))
+                self.assertIn(fragment, reconcile)
+        self.assertNotIn("github.sha", reconcile)
+
+    def test_superseded_runs_are_serialized_and_cancelled(self) -> None:
+        self.assertIn("group: mynx-sheet-current-state-reconciliation", self.workflow)
+        self.assertIn("cancel-in-progress: true", self.workflow)
 
 
 if __name__ == "__main__":

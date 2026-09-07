@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Prepare and, only after explicit cutover, publish main project revisions."""
+"""Reconcile the Sheet mirror with the current authoritative main state."""
 
 from __future__ import annotations
 
@@ -28,6 +28,7 @@ except ImportError:  # Direct execution from tools/.
 ZERO_COMMIT = "0" * 40
 PLAN_KIND_INCREMENTAL = "incremental"
 PLAN_KIND_CURRENT_STATE_BOOTSTRAP = "current_state_bootstrap"
+PLAN_KIND_CURRENT_STATE_RECONCILIATION = "current_state_reconciliation"
 HUMAN_FIELDS = ["Notes"]
 RECEIVER_RESPONSE_TIMEOUT_SECONDS = 60
 FREEZE_UUID_RE = re.compile(r"^`([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})`$")
@@ -391,6 +392,43 @@ def build_current_state_events(
     return events
 
 
+def _current_state_records(
+    root: Path,
+    commit: str,
+) -> tuple[dict[str, dict[str, Any]], list[dict[str, str]]]:
+    """Read independently-valid current manifests without a repository-wide gate.
+
+    The Sheet is a materialized view, so one malformed project must not keep
+    every other valid project stale.  Duplicate UUIDs are isolated as well:
+    neither ambiguous row is published, while unrelated UUIDs remain eligible.
+    """
+
+    records: dict[str, dict[str, Any]] = {}
+    failures: list[dict[str, str]] = []
+    uuid_paths: dict[str, list[str]] = {}
+    for path in _manifest_paths_at(root, commit):
+        try:
+            text = _git_text(root, commit, path)
+            if text is None:
+                raise ValidationError(f"cannot read {path} at {commit}")
+            manifest = load_json_text(text, f"{commit}:{path}")
+            validate_status(manifest)
+        except (ValidationError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+            failures.append({"manifest_path": path, "error": str(exc)})
+            continue
+        records[path] = manifest
+        uuid_paths.setdefault(manifest["identity"]["uuid"], []).append(path)
+
+    for project_uuid, paths in uuid_paths.items():
+        if len(paths) < 2:
+            continue
+        detail = f"duplicate project UUID {project_uuid} in current authoritative state: {', '.join(sorted(paths))}"
+        for path in paths:
+            records.pop(path, None)
+            failures.append({"manifest_path": path, "error": detail})
+    return records, sorted(failures, key=lambda failure: failure["manifest_path"])
+
+
 def _changed_paths(root: Path, before: str, after: str) -> list[str]:
     if before == ZERO_COMMIT:
         return _git(root, "ls-tree", "-r", "--name-only", after).splitlines()
@@ -484,7 +522,7 @@ def make_current_state_plan(
     ref: str,
     config: dict[str, Any],
 ) -> dict[str, Any]:
-    """Prepare a fresh-Sheet bootstrap from the exact checked-out main commit."""
+    """Prepare a legacy explicit current-state plan from checked-out main."""
 
     _validate_exact_commit(commit, "commit")
     _validate_authoritative_source(repository, ref, config)
@@ -494,8 +532,7 @@ def make_current_state_plan(
     ref_commit = _git(root, "rev-parse", "--verify", f"{ref}^{{commit}}").strip()
     if ref_commit != commit:
         raise ValidationError("current-state bootstrap commit must exactly match the configured authoritative ref")
-    validate_repository(root)
-    current = _manifests_at(root, commit)
+    current, record_failures = _current_state_records(root, commit)
     events = build_current_state_events(
         current,
         repository=repository,
@@ -508,18 +545,60 @@ def make_current_state_plan(
         "plan_kind": PLAN_KIND_CURRENT_STATE_BOOTSTRAP,
         "source": {"repository": repository, "ref": ref, "commit": commit},
         "events": events,
+        "record_failures": record_failures,
+    }
+
+
+def make_current_state_reconciliation_plan(
+    root: Path,
+    repository: str,
+    ref: str,
+    config: dict[str, Any],
+) -> dict[str, Any]:
+    """Build a current-state plan from the actual fetched ``origin/main``.
+
+    Callers must fetch and detach at ``origin/main`` immediately beforehand.
+    Verifying the detached checkout against that remote-tracking ref prevents a
+    delayed workflow from mirroring its event SHA after authoritative main has
+    advanced.
+    """
+
+    _validate_authoritative_source(repository, ref, config)
+    head_commit = _git(root, "rev-parse", "--verify", "HEAD^{commit}").strip()
+    authoritative_commit = _git(root, "rev-parse", "--verify", "origin/main^{commit}").strip()
+    _validate_exact_commit(head_commit, "checked-out reconciliation commit")
+    if head_commit != authoritative_commit:
+        raise ValidationError("checked-out reconciliation commit must exactly match fetched origin/main")
+    current, record_failures = _current_state_records(root, head_commit)
+    events = build_current_state_events(
+        current,
+        repository=repository,
+        ref=ref,
+        publication_commit=head_commit,
+        config=config,
+    )
+    return {
+        "contract_version": config["contract_version"],
+        "plan_kind": PLAN_KIND_CURRENT_STATE_RECONCILIATION,
+        "source": {"repository": repository, "ref": ref, "commit": head_commit},
+        "events": events,
+        "record_failures": record_failures,
     }
 
 
 def _validate_plan(plan: dict[str, Any], config: dict[str, Any]) -> None:
-    if set(plan) != {"contract_version", "plan_kind", "source", "events"}:
+    plan_kind = plan.get("plan_kind") if isinstance(plan, dict) else None
+    expected_plan_keys = {"contract_version", "plan_kind", "source", "events"}
+    if plan_kind in {PLAN_KIND_CURRENT_STATE_BOOTSTRAP, PLAN_KIND_CURRENT_STATE_RECONCILIATION}:
+        expected_plan_keys.add("record_failures")
+    if not isinstance(plan, dict) or set(plan) != expected_plan_keys:
         raise ValidationError("publication plan has unknown or missing keys")
     if plan["contract_version"] != config["contract_version"]:
         raise ValidationError("publication plan contract version mismatch")
-    plan_kind = plan["plan_kind"]
     if not isinstance(plan_kind, str) or plan_kind not in {
         PLAN_KIND_INCREMENTAL,
         PLAN_KIND_CURRENT_STATE_BOOTSTRAP,
+        PLAN_KIND_CURRENT_STATE_RECONCILIATION,
     }:
         raise ValidationError("publication plan kind is invalid")
     source = plan["source"]
@@ -540,6 +619,15 @@ def _validate_plan(plan: dict[str, Any], config: dict[str, Any]) -> None:
         _validate_exact_commit(source["commit"], "publication plan commit")
     if not isinstance(plan["events"], list):
         raise ValidationError("publication plan events must be an array")
+    if plan_kind in {PLAN_KIND_CURRENT_STATE_BOOTSTRAP, PLAN_KIND_CURRENT_STATE_RECONCILIATION}:
+        failures = plan["record_failures"]
+        if not isinstance(failures, list):
+            raise ValidationError("current-state reconciliation record failures must be an array")
+        for failure in failures:
+            if not isinstance(failure, dict) or set(failure) != {"manifest_path", "error"}:
+                raise ValidationError("current-state reconciliation record failure is invalid")
+            if not all(isinstance(failure[key], str) and failure[key] for key in failure):
+                raise ValidationError("current-state reconciliation record failure is invalid")
 
 
 def signed_wrapper(event: dict[str, Any], secret: str) -> bytes:
@@ -674,6 +762,7 @@ def publish_plan(
             failure_logger({key: value for key, value in outcome.items() if key != "ok"})
 
     failures = [outcome for outcome in outcomes if outcome["ok"] is False]
+    record_failures = plan.get("record_failures", [])
     if failures:
         details = "; ".join(
             f"{outcome['event_id']} ({outcome['project_uuid']} R{outcome['revision']}) "
@@ -682,6 +771,13 @@ def publish_plan(
         )
         raise ValidationError(
             f"Sheet publication failed for {len(failures)} of {len(outcomes)} event(s): {details}"
+        )
+    if record_failures:
+        details = "; ".join(
+            f"{failure['manifest_path']}: {failure['error']}" for failure in record_failures
+        )
+        raise ValidationError(
+            f"Sheet reconciliation could not safely prepare {len(record_failures)} record(s): {details}"
         )
     return len(outcomes)
 
@@ -705,6 +801,14 @@ def _build_parser() -> argparse.ArgumentParser:
     current_state_plan.add_argument("--repository", required=True)
     current_state_plan.add_argument("--ref", required=True)
     current_state_plan.add_argument("--output", type=Path, required=True)
+    reconciliation_plan = subparsers.add_parser(
+        "reconcile-current-state-plan",
+        help="prepare a current-state reconciliation from fetched origin/main",
+    )
+    reconciliation_plan.add_argument("--root", type=Path, default=Path("."))
+    reconciliation_plan.add_argument("--repository", required=True)
+    reconciliation_plan.add_argument("--ref", required=True)
+    reconciliation_plan.add_argument("--output", type=Path, required=True)
     publish = subparsers.add_parser("publish", help="publish a prepared plan after every cutover gate passes")
     publish.add_argument("--root", type=Path, default=Path("."))
     publish.add_argument("--plan", type=Path, required=True)
@@ -733,6 +837,14 @@ def main(argv: list[str] | None = None) -> int:
             print(
                 f"Prepared {len(plan['events'])} current-state bootstrap event(s) from exact commit {args.commit}; "
                 "live publication remains separately gated."
+            )
+        elif args.command == "reconcile-current-state-plan":
+            plan = make_current_state_reconciliation_plan(root, args.repository, args.ref, config)
+            args.output.parent.mkdir(parents=True, exist_ok=True)
+            args.output.write_text(json.dumps(plan, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+            print(
+                f"Prepared {len(plan['events'])} current-state reconciliation event(s) from exact commit "
+                f"{plan['source']['commit']}; {len(plan['record_failures'])} record(s) could not be prepared."
             )
         elif args.command == "publish":
             plan = load_json(args.plan)
