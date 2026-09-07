@@ -89,3 +89,13 @@
 - Artifact: Current private `naturalist-2.0.3+26.2-port-canary8.jar`, 11,040,164 bytes, SHA-256 `65e9ff11e94f17011acbac25ee40f42723516fe6b04c78d93662800461317b3d`, embedded source `637ba2f7f5c6916fa1451449f8d4e05b25b75eed`; canonical artifact retention verifies the exact ignored artifact at the primary local checkout without tracking or redistribution. Canary 7 remains unchanged.
 - Result: ACTIVE — `STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED`; accepted and rollback releases remain empty.
 - Next state: Publish revision 12 from authoritative `main` while preserving Sheet Notes. Under separately authorized serialized dedicated-Workbench deployment, use the revised pet-mode procedure in `TESTING.md` before recording any runtime result.
+
+## 2026-09-07T04:02:00Z — Record 2026-09-06 PASS and accept current release
+- Revision: 13
+- Source checkpoint: `274e9b7e36a1c2b53395c725f1fc9f2fed4ad2e0`
+- Changes: Bound the user's explicit user-reported external aggregate PASS to the unchanged exact current release and accepted it as deployment `fe25fb9a-99f2-4156-88ab-965bce44586f` in Stack v27. No Test Slot deployment or slot history was created; Slot A remained empty and Slot B was preserved. No artifact was rebuilt or substituted.
+- Build/static: No build was run; existing recorded static/build evidence is retained. Test Instance Manager preflight and post-transition verification passed for the exact accepted stack and dependency graph.
+- Runtime: User-reported user-reported external aggregate PASS on 2026-09-06 for the exact release. No row-level observations were supplied or inferred.
+- Artifact: Accepted/current `naturalist-2.0.3+26.2-port-canary8.jar`, SHA-256 `65e9ff11e94f17011acbac25ee40f42723516fe6b04c78d93662800461317b3d`, source `637ba2f7f5c6916fa1451449f8d4e05b25b75eed`.
+- Result: ACCEPTED — exact current release is `READY_TO_TEST_VERIFIED` and `RUNTIME_PASS`; no blocker is recorded.
+- Next state: Retain this exact identity for future regression testing; do not transfer this PASS to another artifact, version, hash, or source checkpoint.

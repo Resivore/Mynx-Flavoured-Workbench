@@ -10,7 +10,7 @@
     "legacy_ids": []
   },
   "definition": {
-    "lifecycle": "ACTIVE",
+    "lifecycle": "ACCEPTED",
     "goals": [
       "Keep GrabAndGo 1.0.1 carried-entity rendering functional on Minecraft Java 26.2 by assigning safe identity to its otherwise unassigned client-created synthetic entities before render-state extraction.",
       "Preserve the actual carried Ribbit and other supported entity models across first-person, third-person, shadow, GUI picture-in-picture, shader, and ordinary world renderer passes without suppressing rendering or changing real entity behavior.",
@@ -79,7 +79,7 @@
     ]
   },
   "state": {
-    "milestone": "Canary 3 implements full carried-data migration and guarded authoritative restoration. Root causes: upstream saves COMPOUND but reads STRING (and calls absent 26.2 ValueInput.contains); placement ignores insertion results and can clear or fabricate a default object on error. Java 25 clean offline build, 24 JUnit/ASM tests, sided artifact gate, and production CLIENT/SERVER actual upstream persistence/placement fixtures pass. Original render/cache and Ribbit offsets unchanged. ACTIVE / STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED. User separately reports good alignment/no carry lag and mob disappearance after relog; retained Canary 2 hash verified but installed/tested identity remains unverified, so observations are release-unbound, not acceptance. Live Ribbit/mob/container relog/restart, server and visual/performance rows remain untested.",
+    "milestone": "Exact current 0.1.0-canary3 is ACCEPTED in Workbench Stack v27 after the user's 2026-09-06 user-reported external aggregate PASS. Artifact carry-on-patch-0.1.0-canary3.jar SHA-256 fd888c429d37cbfebd50a00afef0c92ca36f3ec338bc4f006284f31b66d49f90 and source a4d9b5aeef8d667bea94d1ef12b7ea1b5326ee5c were bound exactly; No Test Slot deployment or slot history was created; Slot A remained empty and Slot B was preserved.",
     "releases": {
       "current": {
         "version": "0.1.0-canary3",
@@ -93,24 +93,35 @@
           "exceptions": []
         }
       },
-      "accepted": null,
+      "accepted": {
+        "version": "0.1.0-canary3",
+        "artifact": {
+          "filename": "carry-on-patch-0.1.0-canary3.jar",
+          "sha256": "fd888c429d37cbfebd50a00afef0c92ca36f3ec338bc4f006284f31b66d49f90"
+        },
+        "source_commit": "a4d9b5aeef8d667bea94d1ef12b7ea1b5326ee5c",
+        "runtime_dependency_policy": {
+          "contract": "CAPABILITY_OR_PROVIDER",
+          "exceptions": []
+        }
+      },
       "rollback": null,
-      "accepted_current": "NO_ACCEPTED",
+      "accepted_current": "CURRENT_IS_ACCEPTED",
       "accepted_rollback": "NO_ROLLBACK"
     },
     "validation": {
       "build": "STATIC_PASS",
-      "deployment": "NOT_DEPLOYED",
-      "runtime": "RUNTIME_UNTESTED"
+      "deployment": "READY_TO_TEST_VERIFIED",
+      "runtime": "RUNTIME_PASS"
     },
     "blocker": null
   },
   "synchronization": {
-    "revision": 3,
-    "activity_at": "2026-09-04T23:18:44Z",
-    "updated_at": "2026-09-04T23:18:44Z",
-    "last_codex_at": "2026-09-04T23:18:44Z",
-    "source_commit": "a4d9b5aeef8d667bea94d1ef12b7ea1b5326ee5c",
+    "revision": 4,
+    "activity_at": "2026-09-07T04:02:00Z",
+    "updated_at": "2026-09-07T04:02:00Z",
+    "last_codex_at": "2026-09-07T04:02:00Z",
+    "source_commit": "274e9b7e36a1c2b53395c725f1fc9f2fed4ad2e0",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null

@@ -1,3 +1,11 @@
+# Testing
+
+Exact current release `mynx-trees-private-0.1.0+26.2-canary8.jar` (version `0.1.0+26.2-canary8`, SHA-256 `7505c21dcb4553e79a051272695a352eb2749a9584949882c7683c6d90f6a634`, source `a41446f956d73b7d1418576dc8bfde4c7f6cff15`) is accepted in Workbench Stack v27 after the user's 2026-09-06 user-reported external aggregate PASS. No Test Slot deployment or slot history was created; Slot A remained empty and Slot B was preserved. No row-level observations beyond the reported PASS are inferred.
+
+## Future regression procedure
+
+The retained procedure below is for future regressions of this exact accepted identity or an explicitly identified successor. Any former pre-promotion candidate wording is historical and superseded by this accepted result.
+
 # Mynx Trees — Canary 8 runtime procedure
 
 Current candidate: `0.1.0+26.2-canary8`, `mynx-trees-private-0.1.0+26.2-canary8.jar`. The canonical manifest records its exact SHA-256 and implementation checkpoint. It is ACTIVE, NOT_DEPLOYED, and RUNTIME_UNTESTED. Build/static checks are not Minecraft observations.

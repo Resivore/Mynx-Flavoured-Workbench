@@ -1,3 +1,11 @@
+# Testing
+
+Exact current release `container-slot-reservations-0.1.0-canary15.jar` (version `0.1.0-canary15`, SHA-256 `daf24d25732d4e436d37d3e44305a3d63b67a1ab86b586bc8ec7207b98a8ed1b`, source `f33060e874258c46bde48c2aafd015615adf3ec0`) is accepted in Workbench Stack v27 after the user's 2026-09-06 managed Slot A PASS. Slot A was released after promotion. No row-level observations beyond the reported PASS are inferred.
+
+## Future regression procedure
+
+The retained procedure below is for future regressions of this exact accepted identity or an explicitly identified successor. Any former pre-promotion candidate wording is historical and superseded by this accepted result.
+
 # Container Slot Reservations Canary 15 runtime procedure
 
 **Candidate: `0.1.0-canary15`; controlled validation and deployment are not a runtime pass. Do not promote.**

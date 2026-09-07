@@ -1,5 +1,13 @@
 # Testing
 
+Exact current release `xaero-emf-entity-icon-compat-0.1.0-canary9.jar` (version `0.1.0-canary9`, SHA-256 `184ca0da6d6c055c0ba9b2d0e9fb3bccc3c30da9ea7f700a64792d4d1513551a`, source `6c1b4e0ede3ada8470bc7b4ba54ea8b51f9d2e93`) is accepted in Workbench Stack v27 after the user's 2026-09-06 user-reported external aggregate PASS. No Test Slot deployment or slot history was created; Slot A remained empty and Slot B was preserved. No row-level observations beyond the reported PASS are inferred.
+
+## Future regression procedure
+
+The retained procedure below is for future regressions of this exact accepted identity or an explicitly identified successor. Any former pre-promotion candidate wording is historical and superseded by this accepted result.
+
+# Testing
+
 Current `xaero-emf-entity-icon-compat-0.1.0-canary9.jar` is **ACTIVE /
 STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED**. It is unaccepted and has no
 rollback. Identity: 42,828 bytes, SHA-256

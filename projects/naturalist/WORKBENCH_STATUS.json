@@ -16,7 +16,7 @@
     ]
   },
   "definition": {
-    "lifecycle": "ACTIVE",
+    "lifecycle": "ACCEPTED",
     "goals": [
       "Maintain the selected Naturalist 2.0.3 Fabric gameplay roster on Minecraft Java 26.2.",
       "Retain only animals, variant systems, eggs, Glow Goop, capture net, buckets, Knapsack, music discs, and their required assets/data; use vanilla replacements for retired custom material drops."
@@ -89,7 +89,7 @@
     ]
   },
   "state": {
-    "milestone": "Private Canary 8 completes the narrow fauna-controls companion work: Whistle and plush bear are absent; all retained FollowingPet species cycle FOLLOW, WANDER, and STAY only for their owner using empty-hand secondary use. Naturalist remains optional to Ribbits; when present, its optional provider can add two deterministic one-use fauna offers and scheduler-created Wandering Ribbits can receive two brown-snail companions without any Naturalist class linkage. Java 25 focused static checks pass. Canary 8 is ACTIVE, STATIC_PASS, NOT_DEPLOYED, RUNTIME_UNTESTED. No manager deployment or Minecraft runtime validation occurred; protected 26.1.2 and the Player Instance were not accessed.",
+    "milestone": "Exact current 2.0.3+26.2-port-canary8 is ACCEPTED in Workbench Stack v27 after the user's 2026-09-06 user-reported external aggregate PASS. Artifact naturalist-2.0.3+26.2-port-canary8.jar SHA-256 65e9ff11e94f17011acbac25ee40f42723516fe6b04c78d93662800461317b3d and source 637ba2f7f5c6916fa1451449f8d4e05b25b75eed were bound exactly; No Test Slot deployment or slot history was created; Slot A remained empty and Slot B was preserved.",
     "releases": {
       "current": {
         "version": "2.0.3+26.2-port-canary8",
@@ -103,24 +103,35 @@
           "exceptions": []
         }
       },
-      "accepted": null,
+      "accepted": {
+        "version": "2.0.3+26.2-port-canary8",
+        "artifact": {
+          "filename": "naturalist-2.0.3+26.2-port-canary8.jar",
+          "sha256": "65e9ff11e94f17011acbac25ee40f42723516fe6b04c78d93662800461317b3d"
+        },
+        "source_commit": "637ba2f7f5c6916fa1451449f8d4e05b25b75eed",
+        "runtime_dependency_policy": {
+          "contract": "CAPABILITY_OR_PROVIDER",
+          "exceptions": []
+        }
+      },
       "rollback": null,
-      "accepted_current": "NO_ACCEPTED",
+      "accepted_current": "CURRENT_IS_ACCEPTED",
       "accepted_rollback": "NO_ROLLBACK"
     },
     "validation": {
       "build": "STATIC_PASS",
-      "deployment": "NOT_DEPLOYED",
-      "runtime": "RUNTIME_UNTESTED"
+      "deployment": "READY_TO_TEST_VERIFIED",
+      "runtime": "RUNTIME_PASS"
     },
     "blocker": null
   },
   "synchronization": {
-    "revision": 12,
-    "activity_at": "2026-09-06T04:05:28Z",
-    "updated_at": "2026-09-06T04:05:28Z",
-    "last_codex_at": "2026-09-06T04:05:28Z",
-    "source_commit": "637ba2f7f5c6916fa1451449f8d4e05b25b75eed",
+    "revision": 13,
+    "activity_at": "2026-09-07T04:02:00Z",
+    "updated_at": "2026-09-07T04:02:00Z",
+    "last_codex_at": "2026-09-07T04:02:00Z",
+    "source_commit": "274e9b7e36a1c2b53395c725f1fc9f2fed4ad2e0",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null

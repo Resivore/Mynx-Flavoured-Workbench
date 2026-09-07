@@ -1,5 +1,13 @@
 # Testing
 
+Exact current release `naturalist-2.0.3+26.2-port-canary8.jar` (version `2.0.3+26.2-port-canary8`, SHA-256 `65e9ff11e94f17011acbac25ee40f42723516fe6b04c78d93662800461317b3d`, source `637ba2f7f5c6916fa1451449f8d4e05b25b75eed`) is accepted in Workbench Stack v27 after the user's 2026-09-06 user-reported external aggregate PASS. No Test Slot deployment or slot history was created; Slot A remained empty and Slot B was preserved. No row-level observations beyond the reported PASS are inferred.
+
+## Future regression procedure
+
+The retained procedure below is for future regressions of this exact accepted identity or an explicitly identified successor. Any former pre-promotion candidate wording is historical and superseded by this accepted result.
+
+# Testing
+
 ## Current gate
 
 **PRIVATE CANARY 8 RETAINED — NOT DEPLOYED / RUNTIME UNTESTED**

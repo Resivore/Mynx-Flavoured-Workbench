@@ -1,3 +1,11 @@
+# Testing
+
+Exact current release `mynx-regions-unexplored-private-0.1.0+26.2-canary3.jar` (version `0.1.0+26.2-canary3`, SHA-256 `20460eac76b1712be8d0c6d39b5bcb755f2a7664e51eb70e73ad4ef071fd99a5`, source `b12564572871441efdd6478aecdb434322ada923`) is accepted in Workbench Stack v27 after the user's 2026-09-06 user-reported external aggregate PASS. No Test Slot deployment or slot history was created; Slot A remained empty and Slot B was preserved. No row-level observations beyond the reported PASS are inferred.
+
+## Future regression procedure
+
+The retained procedure below is for future regressions of this exact accepted identity or an explicitly identified successor. Any former pre-promotion candidate wording is historical and superseded by this accepted result.
+
 # Mynx Regions Unexplored — Canary 3 runtime procedure
 
 Current candidate: `0.1.0+26.2-canary3`, `mynx-regions-unexplored-private-0.1.0+26.2-canary3.jar`. The canonical manifest records its exact SHA-256 and implementation checkpoint. It is ACTIVE, NOT_DEPLOYED, and RUNTIME_UNTESTED. Build and package checks are not Minecraft observations. Canary 3 adds sparse, gently drifting vanilla end-rod particles around Mycotoxic Daisy flowers through the client ambient-display tick. The tall plant emits only from its upper half, and the existing potted form participates. Canary 2's Glowleaf display names and planted/potted Daisy block light 14 remain unchanged.

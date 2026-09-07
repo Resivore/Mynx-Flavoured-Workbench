@@ -69,3 +69,13 @@
 - Artifact: New `0.1.0-canary5` / `artifacts/ribbits-xaero-entity-icons-compat-0.1.0-canary5.jar` / 64,544 bytes / SHA-256 `d48d45ec47604250ae45c8f20e03741f9f6613d5ada462cda436ce14876c3413` / source `d272c2dc9650f1c992fdf6b8f8663866dad39a8b`. Previous C4 remains 61,889 bytes / SHA-256 `cc4a690712a37e3fa58e4bff7fce6164285e4a91b8e83ca665ded60c2b0cdc2d` / source `828e17547625875e6bc7a7892c6841f1d8666229`; its actual full source identity is preserved in revision 6 above. Earlier artifacts remain unchanged. Mandatory primary-checkout retention verifies filename, size, SHA-256 and complete-byte equality; no upstream/private assets bundled.
 - Result: ACTIVE / STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED / NO_ACCEPTED / NO_ROLLBACK. Compatible Ribbits updates no longer fail solely because their release identity changed.
 - Next state: Publish distinct revision 7 from authoritative main with Notes preserved. Keep C5 unaccepted pending separately authorized visual evidence; do not modify or deploy to either instance in this task.
+
+## 2026-09-07T04:02:00Z — Record 2026-09-06 PASS and accept current release
+- Revision: 8
+- Source checkpoint: `274e9b7e36a1c2b53395c725f1fc9f2fed4ad2e0`
+- Changes: Bound the user's explicit user-reported external aggregate PASS to the unchanged exact current release and accepted it as deployment `3ff159f8-1bbb-4039-8c06-d219b3e3ab9e` in Stack v27. No Test Slot deployment or slot history was created; Slot A remained empty and Slot B was preserved. No artifact was rebuilt or substituted.
+- Build/static: No build was run; existing recorded static/build evidence is retained. Test Instance Manager preflight and post-transition verification passed for the exact accepted stack and dependency graph.
+- Runtime: User-reported user-reported external aggregate PASS on 2026-09-06 for the exact release. No row-level observations were supplied or inferred.
+- Artifact: Accepted/current `ribbits-xaero-entity-icons-compat-0.1.0-canary5.jar`, SHA-256 `d48d45ec47604250ae45c8f20e03741f9f6613d5ada462cda436ce14876c3413`, source `d272c2dc9650f1c992fdf6b8f8663866dad39a8b`.
+- Result: ACCEPTED — exact current release is `READY_TO_TEST_VERIFIED` and `RUNTIME_PASS`; no blocker is recorded.
+- Next state: Retain this exact identity for future regression testing; do not transfer this PASS to another artifact, version, hash, or source checkpoint.

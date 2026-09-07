@@ -2,16 +2,16 @@
   "$schema": "../../schemas/runtime-state.schema.json",
   "schema_version": 2,
   "activation": "ACTIVE",
-  "revision": 106,
-  "updated_at": "2026-09-06T23:10:00Z",
+  "revision": 109,
+  "updated_at": "2026-09-07T04:02:00Z",
   "accepted_baseline": {
-    "revision": 19,
+    "revision": 27,
     "provenance": {
       "source_repository": "Resivore/Minecraft-26.2-Workbench",
       "source_commit": "f0101f38c446dddaa4226450386402c63597ba7c",
       "source_profile": "matcha-heart-death-mossy-stone",
       "legacy_ledger_sha256": "5f0a26f3d136effeb54e86e3a1ba9d6a98a7252f5adde1c789129461f64c43de",
-      "accepted_artifact_count": 33,
+      "accepted_artifact_count": 39,
       "overlay_order": [
         "937d7ccc-44c9-55cb-8d33-0dc0bff5fe45",
         "9f1c5aa4-09c1-4de3-9921-4b045e8abcd2"
@@ -557,29 +557,29 @@
       },
       {
         "unit": {
-          "deployment_id": "f45b0fc6-d776-4666-8e67-5fe71a9ece2b",
+          "deployment_id": "b4a863db-8f4b-4c45-a99c-b98331f25ffe",
           "project_uuid": "3f28bc98-058b-57a2-967b-81ad8e35f957",
           "project_id": "xaero-entity-icons",
           "project_identity_source": "CURRENT_MANIFEST",
-          "version": "0.1.0-canary3",
-          "source_commit": "2478f021982c5f26e51ff0579fa2f5dad85ed200",
+          "version": "0.1.0-canary9",
+          "source_commit": "6c1b4e0ede3ada8470bc7b4ba54ea8b51f9d2e93",
           "artifacts": [
             {
-              "artifact_id": "1f3e851f-2789-4108-bbec-7fd8fe21bf56",
+              "artifact_id": "3016cb0d-d97f-4cc8-b7f4-67cad2fa2fa1",
               "kind": "MOD",
-              "filename": "xaero-emf-entity-icon-compat-0.1.0-canary3.jar",
-              "sha256": "4f34d743f5fffd8e938c8f5157c630fd85f3b263ac1ae9f96c432cfe51668df2",
+              "filename": "xaero-emf-entity-icon-compat-0.1.0-canary9.jar",
+              "sha256": "184ca0da6d6c055c0ba9b2d0e9fb3bccc3c30da9ea7f700a64792d4d1513551a",
               "ownership_keys": [
                 "mod:xaero_emf_entity_icon_compat"
               ],
               "source": {
                 "type": "REPOSITORY",
-                "path": "projects/xaero-entity-icons/artifacts/xaero-emf-entity-icon-compat-0.1.0-canary3.jar"
+                "path": "projects/xaero-entity-icons/artifacts/xaero-emf-entity-icon-compat-0.1.0-canary9.jar"
               }
             }
           ]
         },
-        "accepted_at": null
+        "accepted_at": "2026-09-07T04:02:00Z"
       },
       {
         "unit": {
@@ -847,29 +847,29 @@
       },
       {
         "unit": {
-          "deployment_id": "8211900d-913c-40f2-9829-68509e0d71fe",
+          "deployment_id": "2f718451-1b67-4ebc-bbfe-ed6a685bf6fb",
           "project_uuid": "3ab36584-8732-554f-840e-28a75c422660",
           "project_id": "container-slot-reservations",
           "project_identity_source": "CURRENT_MANIFEST",
-          "version": "0.1.0-canary4",
-          "source_commit": "d09c3f7153d4e53a36f41fb1ea80d85b4cb2e28f",
+          "version": "0.1.0-canary15",
+          "source_commit": "f33060e874258c46bde48c2aafd015615adf3ec0",
           "artifacts": [
             {
-              "artifact_id": "cc469fa7-e2a5-417e-8e5c-978355f052f3",
+              "artifact_id": "bf64fb59-2421-4743-b6c9-f015ae4e2bd3",
               "kind": "MOD",
-              "filename": "container-slot-reservations-0.1.0-canary4.jar",
-              "sha256": "006f2c01e3502bd19d67e26a53979ccc65d53dde08aa07313094017ca170df65",
+              "filename": "container-slot-reservations-0.1.0-canary15.jar",
+              "sha256": "daf24d25732d4e436d37d3e44305a3d63b67a1ab86b586bc8ec7207b98a8ed1b",
               "ownership_keys": [
                 "mod:container_slot_reservations"
               ],
               "source": {
                 "type": "REPOSITORY",
-                "path": "projects/container-slot-reservations/artifacts/container-slot-reservations-0.1.0-canary4.jar"
+                "path": "projects/container-slot-reservations/artifacts/container-slot-reservations-0.1.0-canary15.jar"
               }
             }
           ]
         },
-        "accepted_at": "2026-09-04T05:22:28Z"
+        "accepted_at": "2026-09-07T04:01:00Z"
       },
       {
         "unit": {
@@ -896,53 +896,167 @@
           ]
         },
         "accepted_at": "2026-09-04T20:16:38Z"
+      },
+      {
+        "unit": {
+          "deployment_id": "3435c2b5-26d0-4a2c-8b3f-d5a9d941dca8",
+          "project_uuid": "1988a317-2307-4d57-9b6e-6c828cbf5f7f",
+          "project_id": "mynx-trees",
+          "project_identity_source": "CURRENT_MANIFEST",
+          "version": "0.1.0+26.2-canary8",
+          "source_commit": "a41446f956d73b7d1418576dc8bfde4c7f6cff15",
+          "artifacts": [
+            {
+              "artifact_id": "32c2341e-e762-4226-b847-6dff0af2ea87",
+              "kind": "MOD",
+              "filename": "mynx-trees-private-0.1.0+26.2-canary8.jar",
+              "sha256": "7505c21dcb4553e79a051272695a352eb2749a9584949882c7683c6d90f6a634",
+              "ownership_keys": [
+                "mod:mynx_trees"
+              ],
+              "source": {
+                "type": "REPOSITORY",
+                "path": "projects/mynx-trees/artifacts/mynx-trees-private-0.1.0+26.2-canary8.jar"
+              }
+            }
+          ]
+        },
+        "accepted_at": "2026-09-07T04:02:00Z"
+      },
+      {
+        "unit": {
+          "deployment_id": "fe25fb9a-99f2-4156-88ab-965bce44586f",
+          "project_uuid": "c92ad4fe-c210-46c4-ba1d-59828d2bcbcd",
+          "project_id": "naturalist",
+          "project_identity_source": "CURRENT_MANIFEST",
+          "version": "2.0.3+26.2-port-canary8",
+          "source_commit": "637ba2f7f5c6916fa1451449f8d4e05b25b75eed",
+          "artifacts": [
+            {
+              "artifact_id": "d87fa18b-3bbf-477a-825a-b943efd1bdb3",
+              "kind": "MOD",
+              "filename": "naturalist-2.0.3+26.2-port-canary8.jar",
+              "sha256": "65e9ff11e94f17011acbac25ee40f42723516fe6b04c78d93662800461317b3d",
+              "ownership_keys": [
+                "mod:naturalist"
+              ],
+              "source": {
+                "type": "REPOSITORY",
+                "path": "projects/naturalist/artifacts/naturalist-2.0.3+26.2-port-canary8.jar"
+              }
+            }
+          ]
+        },
+        "accepted_at": "2026-09-07T04:02:00Z"
+      },
+      {
+        "unit": {
+          "deployment_id": "ddbf34cb-8209-4b87-8f44-fe47ac2442b0",
+          "project_uuid": "4fa0f3c6-988a-42a5-bdcf-8f1be17a3f27",
+          "project_id": "mynx-regions-unexplored",
+          "project_identity_source": "CURRENT_MANIFEST",
+          "version": "0.1.0+26.2-canary3",
+          "source_commit": "b12564572871441efdd6478aecdb434322ada923",
+          "artifacts": [
+            {
+              "artifact_id": "314c6870-70ee-4ae3-81a3-0c92a80585c7",
+              "kind": "MOD",
+              "filename": "mynx-regions-unexplored-private-0.1.0+26.2-canary3.jar",
+              "sha256": "20460eac76b1712be8d0c6d39b5bcb755f2a7664e51eb70e73ad4ef071fd99a5",
+              "ownership_keys": [
+                "mod:mynx_regions_unexplored"
+              ],
+              "source": {
+                "type": "REPOSITORY",
+                "path": "projects/mynx-regions-unexplored/artifacts/mynx-regions-unexplored-private-0.1.0+26.2-canary3.jar"
+              }
+            }
+          ]
+        },
+        "accepted_at": "2026-09-07T04:02:00Z"
+      },
+      {
+        "unit": {
+          "deployment_id": "3ff159f8-1bbb-4039-8c06-d219b3e3ab9e",
+          "project_uuid": "7d2e42bd-c917-43bf-99a8-94edc24c5948",
+          "project_id": "ribbits-xaero-entity-icons-compat",
+          "project_identity_source": "CURRENT_MANIFEST",
+          "version": "0.1.0-canary5",
+          "source_commit": "d272c2dc9650f1c992fdf6b8f8663866dad39a8b",
+          "artifacts": [
+            {
+              "artifact_id": "04e223af-128e-428e-adcd-91a5702e0c37",
+              "kind": "MOD",
+              "filename": "ribbits-xaero-entity-icons-compat-0.1.0-canary5.jar",
+              "sha256": "d48d45ec47604250ae45c8f20e03741f9f6613d5ada462cda436ce14876c3413",
+              "ownership_keys": [
+                "mod:ribbits_xaero_entity_icons_compat"
+              ],
+              "source": {
+                "type": "REPOSITORY",
+                "path": "projects/ribbits-xaero-entity-icons-compat/artifacts/ribbits-xaero-entity-icons-compat-0.1.0-canary5.jar"
+              }
+            }
+          ]
+        },
+        "accepted_at": "2026-09-07T04:02:00Z"
+      },
+      {
+        "unit": {
+          "deployment_id": "e7156f30-572e-4834-bab9-087667814d31",
+          "project_uuid": "4048a9cf-f8c3-4fc0-8c3c-b8f1caebab46",
+          "project_id": "carry-on-patch",
+          "project_identity_source": "CURRENT_MANIFEST",
+          "version": "0.1.0-canary3",
+          "source_commit": "a4d9b5aeef8d667bea94d1ef12b7ea1b5326ee5c",
+          "artifacts": [
+            {
+              "artifact_id": "675c899c-726a-4777-9b4e-cb3f4f009aac",
+              "kind": "MOD",
+              "filename": "carry-on-patch-0.1.0-canary3.jar",
+              "sha256": "fd888c429d37cbfebd50a00afef0c92ca36f3ec338bc4f006284f31b66d49f90",
+              "ownership_keys": [
+                "mod:carry_on_patch"
+              ],
+              "source": {
+                "type": "REPOSITORY",
+                "path": "projects/carry-on-patch/artifacts/carry-on-patch-0.1.0-canary3.jar"
+              }
+            }
+          ]
+        },
+        "accepted_at": "2026-09-07T04:02:00Z"
+      },
+      {
+        "unit": {
+          "deployment_id": "8cb5c700-63c4-4e48-b13b-1236e75ec908",
+          "project_uuid": "97d76c44-7c17-4b36-be84-57525f884e40",
+          "project_id": "yungs-api-26.2",
+          "project_identity_source": "CURRENT_MANIFEST",
+          "version": "26.2-Fabric-6.1.1-compat.2",
+          "source_commit": "f0be1f9c6c1f3e843a0e44791a650df237836537",
+          "artifacts": [
+            {
+              "artifact_id": "a44739a5-0cde-411b-89c2-7f308a26b5d5",
+              "kind": "MOD",
+              "filename": "YungsApi-26.2-Fabric-6.1.1-compat.2.jar",
+              "sha256": "ff22a6b509ba559988d7a9352dc94ac612c4b099517acac7da7c81322d797ed7",
+              "ownership_keys": [
+                "mod:yungsapi"
+              ],
+              "source": {
+                "type": "REPOSITORY",
+                "path": "projects/yungs-api-26.2/artifacts/YungsApi-26.2-Fabric-6.1.1-compat.2.jar"
+              }
+            }
+          ]
+        },
+        "accepted_at": "2026-09-07T04:02:00Z"
       }
     ]
   },
   "slots": {
-    "A": {
-      "members": [
-        {
-          "unit": {
-            "deployment_id": "2f718451-1b67-4ebc-bbfe-ed6a685bf6fb",
-            "project_uuid": "3ab36584-8732-554f-840e-28a75c422660",
-            "project_id": "container-slot-reservations",
-            "project_identity_source": "CURRENT_MANIFEST",
-            "version": "0.1.0-canary15",
-            "source_commit": "f33060e874258c46bde48c2aafd015615adf3ec0",
-            "artifacts": [
-              {
-                "artifact_id": "bf64fb59-2421-4743-b6c9-f015ae4e2bd3",
-                "kind": "MOD",
-                "filename": "container-slot-reservations-0.1.0-canary15.jar",
-                "sha256": "daf24d25732d4e436d37d3e44305a3d63b67a1ab86b586bc8ec7207b98a8ed1b",
-                "ownership_keys": [
-                  "mod:container_slot_reservations"
-                ],
-                "source": {
-                  "type": "REPOSITORY",
-                  "path": "projects/container-slot-reservations/artifacts/container-slot-reservations-0.1.0-canary15.jar"
-                }
-              }
-            ]
-          },
-          "replaces_accepted_deployment_id": "8211900d-913c-40f2-9829-68509e0d71fe",
-          "runtime_result": {
-            "classification": "UNTESTED",
-            "recorded_at": null,
-            "evidence": {
-              "passed": [],
-              "failed": []
-            }
-          }
-        }
-      ],
-      "deployment": {
-        "state": "READY_TO_TEST_VERIFIED",
-        "deployed_at": "2026-09-06T23:10:00Z",
-        "ready_verified_at": "2026-09-06T23:10:00Z"
-      }
-    },
+    "A": null,
     "B": {
       "members": [
         {

@@ -29,3 +29,13 @@
 - Artifact: New private release `0.1.0+26.2-canary3`; `mynx-regions-unexplored-private-0.1.0+26.2-canary3.jar`, 144984 bytes, SHA-256 `20460eac76b1712be8d0c6d39b5bcb755f2a7664e51eb70e73ad4ef071fd99a5`, source `b12564572871441efdd6478aecdb434322ada923`. Canary 1 and Canary 2 remain preserved at their exact prior identities; none of the private artifacts or ARR-derived assets is tracked or redistributed. Canary 3 carries the release-scoped capability/provider dependency attestation with no exceptions.
 - Result: ACTIVE / STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED. Revision 3 is ready for main-only Sheet publication. Only `projects/mynx-regions-unexplored` changed; no runtime instance or unrelated project was modified.
 - Next state: Publish revision 3 from authoritative main, then use a separately authorized managed-slot task and Canary 3 `TESTING.md` before any acceptance decision. Observe sparse end-rod drift from the upper tall half and existing pot, particle-setting throttling/suppression, dedicated-server safety and unchanged light 14, Glowleaf naming, textures, shader movement and gameplay.
+
+## 2026-09-07T04:02:00Z — Record 2026-09-06 PASS and accept current release
+- Revision: 4
+- Source checkpoint: `274e9b7e36a1c2b53395c725f1fc9f2fed4ad2e0`
+- Changes: Bound the user's explicit user-reported external aggregate PASS to the unchanged exact current release and accepted it as deployment `ddbf34cb-8209-4b87-8f44-fe47ac2442b0` in Stack v27. No Test Slot deployment or slot history was created; Slot A remained empty and Slot B was preserved. No artifact was rebuilt or substituted.
+- Build/static: No build was run; existing recorded static/build evidence is retained. Test Instance Manager preflight and post-transition verification passed for the exact accepted stack and dependency graph.
+- Runtime: User-reported user-reported external aggregate PASS on 2026-09-06 for the exact release. No row-level observations were supplied or inferred.
+- Artifact: Accepted/current `mynx-regions-unexplored-private-0.1.0+26.2-canary3.jar`, SHA-256 `20460eac76b1712be8d0c6d39b5bcb755f2a7664e51eb70e73ad4ef071fd99a5`, source `b12564572871441efdd6478aecdb434322ada923`.
+- Result: ACCEPTED — exact current release is `READY_TO_TEST_VERIFIED` and `RUNTIME_PASS`; no blocker is recorded.
+- Next state: Retain this exact identity for future regression testing; do not transfer this PASS to another artifact, version, hash, or source checkpoint.

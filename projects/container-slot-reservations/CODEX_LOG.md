@@ -239,3 +239,13 @@
 - Artifact: C15 `container-slot-reservations-0.1.0-canary15.jar`, embedded `0.1.0-canary15`, 174491 bytes, SHA-256 `daf24d25732d4e436d37d3e44305a3d63b67a1ab86b586bc8ec7207b98a8ed1b`, source `f33060e874258c46bde48c2aafd015615adf3ec0`, runtime dependency policy `CAPABILITY_OR_PROVIDER` with no exceptions. It replaces C14 in Slot A as deployment `2f718451-1b67-4ebc-bbfe-ed6a685bf6fb` / artifact `bf64fb59-2421-4743-b6c9-f015ae4e2bd3`; exact C4 accepted baseline and Slot B/QSN C9 provenance remain unchanged. Required primary-checkout retention reverified the exact ignored bytes without tracking or redistributing them.
 - Result: `TESTING` / `CONTROLLED_VALIDATION_PASS` / `READY_TO_TEST_VERIFIED` / `RUNTIME_UNTESTED` at manager revision 106. No promotion; protected 26.1.2 profile was not accessed.
 - Next state: Publish revision 24 from authoritative main with Notes preserved, then run only the C15 active-resource-pack bezel/reload and preserved extraction runtime procedure.
+
+## 2026-09-07T04:02:00Z — Record 2026-09-06 PASS and accept current release
+- Revision: 25
+- Source checkpoint: `274e9b7e36a1c2b53395c725f1fc9f2fed4ad2e0`
+- Changes: Bound the user's explicit managed Slot A PASS to the unchanged exact current release and accepted it as deployment `2f718451-1b67-4ebc-bbfe-ed6a685bf6fb` in Stack v27. Slot A was released after promotion. No artifact was rebuilt or substituted.
+- Build/static: No build was run; existing recorded static/build evidence is retained. Test Instance Manager preflight and post-transition verification passed for the exact accepted stack and dependency graph.
+- Runtime: User-reported managed Slot A PASS on 2026-09-06 for the exact release. No row-level observations were supplied or inferred.
+- Artifact: Accepted/current `container-slot-reservations-0.1.0-canary15.jar`, SHA-256 `daf24d25732d4e436d37d3e44305a3d63b67a1ab86b586bc8ec7207b98a8ed1b`, source `f33060e874258c46bde48c2aafd015615adf3ec0`.
+- Result: ACCEPTED — exact current release is `READY_TO_TEST_VERIFIED` and `RUNTIME_PASS`; no blocker is recorded.
+- Next state: Retain this exact identity for future regression testing; do not transfer this PASS to another artifact, version, hash, or source checkpoint.

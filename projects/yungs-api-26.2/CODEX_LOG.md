@@ -9,3 +9,13 @@
 - Artifact: Current/unaccepted `YungsApi-26.2-Fabric-6.1.1-compat.2.jar`, version `26.2-Fabric-6.1.1-compat.2`, mod ID `yungsapi`, 1,260,939 bytes, SHA-256 `FF22A6B509BA559988D7A9352DC94AC612C4B099517ACAC7DA7C81322D797ED7`, source `f0be1f9c6c1f3e843a0e44791a650df237836537`; the exact local artifact is ignored, and no accepted or rollback release exists.
 - Result: ACTIVE — exact Compat.2 is `STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED`, unaccepted, and has no project blocker; both occupied Test Slots are an external scheduling constraint. Its release-scoped `CAPABILITY_OR_PROVIDER` dependency policy needs no exceptions because every packaged hard dependency uses a permitted lower-bound predicate.
 - Next state: Wait for one canonical Test Slot to be released through its owning workflow, then use a serialized manager transition to deploy exact Compat.2 only with the exact coordinated Ribbits successor, require both members to reach `READY_TO_TEST_VERIFIED`, and execute the focused fresh-village, repeated-generation, terrain-adaptation, and broader consumer smoke matrix before considering promotion.
+
+## 2026-09-07T04:02:00Z — Record 2026-09-06 PASS and accept current release
+- Revision: 2
+- Source checkpoint: `274e9b7e36a1c2b53395c725f1fc9f2fed4ad2e0`
+- Changes: Bound the user's explicit user-reported external aggregate PASS to the unchanged exact current release and accepted it as deployment `8cb5c700-63c4-4e48-b13b-1236e75ec908` in Stack v27. No Test Slot deployment or slot history was created; Slot A remained empty and Slot B was preserved. No artifact was rebuilt or substituted.
+- Build/static: No build was run; existing recorded static/build evidence is retained. Test Instance Manager preflight and post-transition verification passed for the exact accepted stack and dependency graph.
+- Runtime: User-reported user-reported external aggregate PASS on 2026-09-06 for the exact release. No row-level observations were supplied or inferred.
+- Artifact: Accepted/current `YungsApi-26.2-Fabric-6.1.1-compat.2.jar`, SHA-256 `ff22a6b509ba559988d7a9352dc94ac612c4b099517acac7da7c81322d797ed7`, source `f0be1f9c6c1f3e843a0e44791a650df237836537`.
+- Result: ACCEPTED — exact current release is `READY_TO_TEST_VERIFIED` and `RUNTIME_PASS`; no blocker is recorded.
+- Next state: Retain this exact identity for future regression testing; do not transfer this PASS to another artifact, version, hash, or source checkpoint.

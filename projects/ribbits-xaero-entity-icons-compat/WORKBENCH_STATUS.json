@@ -3,17 +3,17 @@
   "schema_version": 1,
   "identity": {
     "uuid": "7d2e42bd-c917-43bf-99a8-94edc24c5948",
-    "name": "Ribbits × Xaero Entity Icon Compatibility",
+    "name": "Ribbits \u00d7 Xaero Entity Icon Compatibility",
     "project_id": "ribbits-xaero-entity-icons-compat",
     "aliases": [
       "Ribbits Xaero entity icons",
-      "Ribbits × Xaero icons"
+      "Ribbits \u00d7 Xaero icons"
     ],
     "legacy_names": [],
     "legacy_ids": []
   },
   "definition": {
-    "lifecycle": "ACTIVE",
+    "lifecycle": "ACCEPTED",
     "goals": [
       "Provide fail-closed Xaero entity-head icons for Ribbits through a distinct compatibility companion without changing normal Ribbits rendering or the EMF companion behavior.",
       "Maintain an explicitly registered ordinary Ribbit and Wandering Ribbit GeckoLib capture provider; ordinary main/body remains DIRECT-CUBES-ONLY, while Wandering selects only its face core and paired eyes.",
@@ -135,7 +135,7 @@
     ]
   },
   "state": {
-    "milestone": "Canary 5 removes the Ribbits C9 version/size/SHA-256/origin gate so compatible releases, including C10, remain eligible. Required directly linked Ribbits APIs are checked by bytecode signatures without early game classloading; per-capture contracts and all C4 face/size/Wandering/cache behavior remain unchanged. Actual C9/C10 crossed with GeckoLib 5.5.4/5.5.1 pass 78 tests in 17 suites and the production Knot/Mixin harness. Retained successor is 64,544 bytes, runtime untested and unaccepted. User reports icons worked with Ribbits C9 but stopped with C10; this matches the removed gate, but installed companion binary/session identity is unspecified, so no exact-release visual PASS/FAIL is assigned. Prior visual failure identity limits remain in the log. No runtime or instance transition.",
+    "milestone": "Exact current 0.1.0-canary5 is ACCEPTED in Workbench Stack v27 after the user's 2026-09-06 user-reported external aggregate PASS. Artifact ribbits-xaero-entity-icons-compat-0.1.0-canary5.jar SHA-256 d48d45ec47604250ae45c8f20e03741f9f6613d5ada462cda436ce14876c3413 and source d272c2dc9650f1c992fdf6b8f8663866dad39a8b were bound exactly; No Test Slot deployment or slot history was created; Slot A remained empty and Slot B was preserved.",
     "releases": {
       "current": {
         "version": "0.1.0-canary5",
@@ -149,24 +149,35 @@
           "exceptions": []
         }
       },
-      "accepted": null,
+      "accepted": {
+        "version": "0.1.0-canary5",
+        "artifact": {
+          "filename": "ribbits-xaero-entity-icons-compat-0.1.0-canary5.jar",
+          "sha256": "d48d45ec47604250ae45c8f20e03741f9f6613d5ada462cda436ce14876c3413"
+        },
+        "source_commit": "d272c2dc9650f1c992fdf6b8f8663866dad39a8b",
+        "runtime_dependency_policy": {
+          "contract": "CAPABILITY_OR_PROVIDER",
+          "exceptions": []
+        }
+      },
       "rollback": null,
-      "accepted_current": "NO_ACCEPTED",
+      "accepted_current": "CURRENT_IS_ACCEPTED",
       "accepted_rollback": "NO_ROLLBACK"
     },
     "validation": {
       "build": "STATIC_PASS",
-      "deployment": "NOT_DEPLOYED",
-      "runtime": "RUNTIME_UNTESTED"
+      "deployment": "READY_TO_TEST_VERIFIED",
+      "runtime": "RUNTIME_PASS"
     },
     "blocker": null
   },
   "synchronization": {
-    "revision": 7,
-    "activity_at": "2026-09-05T02:51:29Z",
-    "updated_at": "2026-09-05T02:51:29Z",
-    "last_codex_at": "2026-09-05T02:51:29Z",
-    "source_commit": "d272c2dc9650f1c992fdf6b8f8663866dad39a8b",
+    "revision": 8,
+    "activity_at": "2026-09-07T04:02:00Z",
+    "updated_at": "2026-09-07T04:02:00Z",
+    "last_codex_at": "2026-09-07T04:02:00Z",
+    "source_commit": "274e9b7e36a1c2b53395c725f1fc9f2fed4ad2e0",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null

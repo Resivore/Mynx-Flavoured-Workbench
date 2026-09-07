@@ -1,5 +1,13 @@
 # Testing
 
+Exact current release `ribbits-xaero-entity-icons-compat-0.1.0-canary5.jar` (version `0.1.0-canary5`, SHA-256 `d48d45ec47604250ae45c8f20e03741f9f6613d5ada462cda436ce14876c3413`, source `d272c2dc9650f1c992fdf6b8f8663866dad39a8b`) is accepted in Workbench Stack v27 after the user's 2026-09-06 user-reported external aggregate PASS. No Test Slot deployment or slot history was created; Slot A remained empty and Slot B was preserved. No row-level observations beyond the reported PASS are inferred.
+
+## Future regression procedure
+
+The retained procedure below is for future regressions of this exact accepted identity or an explicitly identified successor. Any former pre-promotion candidate wording is historical and superseded by this accepted result.
+
+# Testing
+
 Current `ribbits-xaero-entity-icons-compat-0.1.0-canary5.jar` is **ACTIVE / STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED**.
 It is unaccepted and has no rollback. Identity: 64,544 bytes, SHA-256
 `d48d45ec47604250ae45c8f20e03741f9f6613d5ada462cda436ce14876c3413`; source checkpoint is in WORKBENCH_STATUS.json.

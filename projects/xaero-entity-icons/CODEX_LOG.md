@@ -79,3 +79,13 @@
 - Artifact: `xaero-emf-entity-icon-compat-0.1.0-canary9.jar` / 42,828 bytes / SHA-256 `184ca0da6d6c055c0ba9b2d0e9fb3bccc3c30da9ea7f700a64792d4d1513551a` / implementation source `6c1b4e0ede3ada8470bc7b4ba54ea8b51f9d2e93`. C1-C8 and Diagnostic1 retain exact existing provenance; no private resource, raw log, upstream class body, dependency or ARR asset is packaged.
 - Result: ACTIVE / STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED / NO_ACCEPTED / NO_ROLLBACK.
 - Next state: Under separately authorized Test Instance Manager ownership, manually test the C9 frog, allay and vex matrix in `TESTING.md`; require the absent-path fallback diagnostic sequence and a correctly textured/framed head icon, retain all existing preserve/control rows, and record only exact artifact-bound observations. Do not promote from static evidence.
+
+## 2026-09-07T04:02:00Z — Record 2026-09-06 PASS and accept current release
+- Revision: 9
+- Source checkpoint: `274e9b7e36a1c2b53395c725f1fc9f2fed4ad2e0`
+- Changes: Bound the user's explicit user-reported external aggregate PASS to the unchanged exact current release and accepted it as deployment `b4a863db-8f4b-4c45-a99c-b98331f25ffe` in Stack v27. No Test Slot deployment or slot history was created; Slot A remained empty and Slot B was preserved. No artifact was rebuilt or substituted.
+- Build/static: No build was run; existing recorded static/build evidence is retained. Test Instance Manager preflight and post-transition verification passed for the exact accepted stack and dependency graph.
+- Runtime: User-reported user-reported external aggregate PASS on 2026-09-06 for the exact release. No row-level observations were supplied or inferred.
+- Artifact: Accepted/current `xaero-emf-entity-icon-compat-0.1.0-canary9.jar`, SHA-256 `184ca0da6d6c055c0ba9b2d0e9fb3bccc3c30da9ea7f700a64792d4d1513551a`, source `6c1b4e0ede3ada8470bc7b4ba54ea8b51f9d2e93`.
+- Result: ACCEPTED — exact current release is `READY_TO_TEST_VERIFIED` and `RUNTIME_PASS`; no blocker is recorded.
+- Next state: Retain this exact identity for future regression testing; do not transfer this PASS to another artifact, version, hash, or source checkpoint.

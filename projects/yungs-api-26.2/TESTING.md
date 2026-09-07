@@ -1,5 +1,13 @@
 # Testing
 
+Exact current release `YungsApi-26.2-Fabric-6.1.1-compat.2.jar` (version `26.2-Fabric-6.1.1-compat.2`, SHA-256 `ff22a6b509ba559988d7a9352dc94ac612c4b099517acac7da7c81322d797ed7`, source `f0be1f9c6c1f3e843a0e44791a650df237836537`) is accepted in Workbench Stack v27 after the user's 2026-09-06 user-reported external aggregate PASS. No Test Slot deployment or slot history was created; Slot A remained empty and Slot B was preserved. No row-level observations beyond the reported PASS are inferred.
+
+## Future regression procedure
+
+The retained procedure below is for future regressions of this exact accepted identity or an explicitly identified successor. Any former pre-promotion candidate wording is historical and superseded by this accepted result.
+
+# Testing
+
 Compat.2 is the current unaccepted candidate and is `ACTIVE / STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED`. Manager revision 71 was physically verified, but unrelated current candidates occupied both canonical Test Slots, so no deployment was applied. Wait for a slot-owning workflow to release one; do not displace or combine an unrelated candidate. Use only `YungsApi-26.2-Fabric-6.1.1-compat.2.jar`, 1,260,939 bytes, SHA-256 `FF22A6B509BA559988D7A9352DC94AC612C4B099517ACAC7DA7C81322D797ED7`, from source checkpoint `f0be1f9c6c1f3e843a0e44791a650df237836537`.
 
 Temurin Java 25.0.4.1+1 and the tracked Gradle 9.2.0 wrapper completed `:Fabric:compileJava :Fabric:compileConsumerFixtureJava --offline --no-daemon` and `:Common:clean :Fabric:clean :Fabric:build --offline --no-daemon`. The normal Fabric server fixture completed `:Fabric:runConsumerFixtures --offline --no-daemon`; all five fixture groups passed: automatic registration, JSON randomization, structure-processor codec, jigsaw generation, and terrain adaptation. Terrain-adaptation coverage includes legitimate empty input, independent fresh cursors, representative nonempty carve/bury behavior, 256 repeated evaluations, and a deterministic two-thread overlap against one Beardifier. These are automated build/static results, not Minecraft gameplay or cohort runtime validation.

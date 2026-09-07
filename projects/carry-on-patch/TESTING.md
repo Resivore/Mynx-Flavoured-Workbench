@@ -1,5 +1,13 @@
 # Testing
 
+Exact current release `carry-on-patch-0.1.0-canary3.jar` (version `0.1.0-canary3`, SHA-256 `fd888c429d37cbfebd50a00afef0c92ca36f3ec338bc4f006284f31b66d49f90`, source `a4d9b5aeef8d667bea94d1ef12b7ea1b5326ee5c`) is accepted in Workbench Stack v27 after the user's 2026-09-06 user-reported external aggregate PASS. No Test Slot deployment or slot history was created; Slot A remained empty and Slot B was preserved. No row-level observations beyond the reported PASS are inferred.
+
+## Future regression procedure
+
+The retained procedure below is for future regressions of this exact accepted identity or an explicitly identified successor. Any former pre-promotion candidate wording is historical and superseded by this accepted result.
+
+# Testing
+
 ## Current gate
 
 **STATIC PASS — NOT DEPLOYED — RUNTIME UNTESTED — READY FOR MANAGED RUNTIME TESTING — NOT READY FOR PROMOTION**

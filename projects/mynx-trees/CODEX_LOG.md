@@ -79,3 +79,13 @@
 - Artifact: New `0.1.0+26.2-canary8`, `mynx-trees-private-0.1.0+26.2-canary8.jar`, 83814 bytes, SHA-256 `7505c21dcb4553e79a051272695a352eb2749a9584949882c7683c6d90f6a634`, source `a41446f956d73b7d1418576dc8bfde4c7f6cff15`. Canonical retention verifies complete exact ignored bytes at projects/mynx-trees/artifacts in the primary checkout. Canary 7 remains preserved and was not overwritten; no accepted or rollback release is created.
 - Result: ACTIVE / STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED. Revision 8 is ready for main-only Sheet publication acknowledgement; no runtime slot is consumed.
 - Next state: Integrate and publish revision 8 from current main. Separately authorize dedicated-Workbench deployment only when visual/runtime testing is intended. Compare C8 directly with the supplied target screenshot; if further visual tuning is needed, adjust only `SILVER_BIRCH_SATURATION` in the next Canary unless new evidence indicates otherwise.
+
+## 2026-09-07T04:02:00Z — Record 2026-09-06 PASS and accept current release
+- Revision: 9
+- Source checkpoint: `274e9b7e36a1c2b53395c725f1fc9f2fed4ad2e0`
+- Changes: Bound the user's explicit user-reported external aggregate PASS to the unchanged exact current release and accepted it as deployment `3435c2b5-26d0-4a2c-8b3f-d5a9d941dca8` in Stack v27. No Test Slot deployment or slot history was created; Slot A remained empty and Slot B was preserved. No artifact was rebuilt or substituted.
+- Build/static: No build was run; existing recorded static/build evidence is retained. Test Instance Manager preflight and post-transition verification passed for the exact accepted stack and dependency graph.
+- Runtime: User-reported user-reported external aggregate PASS on 2026-09-06 for the exact release. No row-level observations were supplied or inferred.
+- Artifact: Accepted/current `mynx-trees-private-0.1.0+26.2-canary8.jar`, SHA-256 `7505c21dcb4553e79a051272695a352eb2749a9584949882c7683c6d90f6a634`, source `a41446f956d73b7d1418576dc8bfde4c7f6cff15`.
+- Result: ACCEPTED — exact current release is `READY_TO_TEST_VERIFIED` and `RUNTIME_PASS`; no blocker is recorded.
+- Next state: Retain this exact identity for future regression testing; do not transfer this PASS to another artifact, version, hash, or source checkpoint.

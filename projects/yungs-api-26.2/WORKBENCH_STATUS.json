@@ -14,7 +14,7 @@
     ]
   },
   "definition": {
-    "lifecycle": "ACTIVE",
+    "lifecycle": "ACCEPTED",
     "goals": [
       "Maintain an LGPLv3, Minecraft Java 26.2 Fabric build of YUNG's API for Ribbits and other compatible downstream consumers.",
       "Keep enhanced terrain-adaptation density evaluation safe for empty, repeated, and parallel calls by following the official upstream fresh-iterator correction while preserving nonempty behavior."
@@ -92,7 +92,7 @@
     ]
   },
   "state": {
-    "milestone": "Compat.2 is retained after a Java 25 clean Fabric build and focused consumer-fixture pass, including deterministic empty, nonempty, repeat, and parallel enhanced-beardifier coverage; it remains unaccepted, not deployed, and runtime untested because manager revision 71 has unrelated current candidates in both Test Slots.",
+    "milestone": "Exact current 26.2-Fabric-6.1.1-compat.2 is ACCEPTED in Workbench Stack v27 after the user's 2026-09-06 user-reported external aggregate PASS. Artifact YungsApi-26.2-Fabric-6.1.1-compat.2.jar SHA-256 ff22a6b509ba559988d7a9352dc94ac612c4b099517acac7da7c81322d797ed7 and source f0be1f9c6c1f3e843a0e44791a650df237836537 were bound exactly; No Test Slot deployment or slot history was created; Slot A remained empty and Slot B was preserved.",
     "releases": {
       "current": {
         "version": "26.2-Fabric-6.1.1-compat.2",
@@ -106,24 +106,35 @@
           "exceptions": []
         }
       },
-      "accepted": null,
+      "accepted": {
+        "version": "26.2-Fabric-6.1.1-compat.2",
+        "artifact": {
+          "filename": "YungsApi-26.2-Fabric-6.1.1-compat.2.jar",
+          "sha256": "ff22a6b509ba559988d7a9352dc94ac612c4b099517acac7da7c81322d797ed7"
+        },
+        "source_commit": "f0be1f9c6c1f3e843a0e44791a650df237836537",
+        "runtime_dependency_policy": {
+          "contract": "CAPABILITY_OR_PROVIDER",
+          "exceptions": []
+        }
+      },
       "rollback": null,
-      "accepted_current": "NO_ACCEPTED",
+      "accepted_current": "CURRENT_IS_ACCEPTED",
       "accepted_rollback": "NO_ROLLBACK"
     },
     "validation": {
       "build": "STATIC_PASS",
-      "deployment": "NOT_DEPLOYED",
-      "runtime": "RUNTIME_UNTESTED"
+      "deployment": "READY_TO_TEST_VERIFIED",
+      "runtime": "RUNTIME_PASS"
     },
     "blocker": null
   },
   "synchronization": {
-    "revision": 1,
-    "activity_at": "2026-09-03T05:51:22Z",
-    "updated_at": "2026-09-03T05:51:22Z",
-    "last_codex_at": "2026-09-03T05:51:22Z",
-    "source_commit": "f0be1f9c6c1f3e843a0e44791a650df237836537",
+    "revision": 2,
+    "activity_at": "2026-09-07T04:02:00Z",
+    "updated_at": "2026-09-07T04:02:00Z",
+    "last_codex_at": "2026-09-07T04:02:00Z",
+    "source_commit": "274e9b7e36a1c2b53395c725f1fc9f2fed4ad2e0",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
