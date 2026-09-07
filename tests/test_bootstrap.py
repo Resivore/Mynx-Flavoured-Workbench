@@ -830,7 +830,7 @@ class RuntimeContractTests(unittest.TestCase):
         with self.assertRaisesRegex(ValidationError, "accepted baseline"):
             validate_runtime_state(runtime_state(accepted, upgrade), project_index("alpha", "beta"))
 
-    def test_windows_unsafe_artifact_names_and_time_regression_are_rejected(self) -> None:
+    def test_windows_unsafe_artifact_names_are_rejected_and_clock_skew_preserves_watermark(self) -> None:
         alpha = deployment_unit("alpha", filename="alpha.jar:stream")
         with self.assertRaisesRegex(ValidationError, "Windows-safe"):
             validate_runtime_state(runtime_state(slot_a=candidate(alpha)), project_index("alpha"))
@@ -847,14 +847,15 @@ class RuntimeContractTests(unittest.TestCase):
         with self.assertRaisesRegex(ValidationError, "must be one of: MOD"):
             validate_runtime_state(runtime_state(slot_a=candidate(alpha)), project_index("alpha"))
         state = runtime_state()
-        with self.assertRaisesRegex(ValidationError, "cannot precede"):
-            plan_transition(
-                state,
-                0,
-                {"type": "ASSIGN_SLOT", "candidate": candidate_declaration(deployment_unit("beta"))},
-                "2026-08-29T11:59:59Z",
-                project_index("beta"),
-            )
+        transitioned = plan_transition(
+            state,
+            0,
+            {"type": "ASSIGN_SLOT", "candidate": candidate_declaration(deployment_unit("beta"))},
+            "2026-08-29T11:59:59Z",
+            project_index("beta"),
+        )
+        self.assertEqual(1, transitioned["revision"])
+        self.assertEqual(state["updated_at"], transitioned["updated_at"])
 
     def test_promote_a_preserves_b_in_its_independent_slot(self) -> None:
         base = deployment_unit("base")

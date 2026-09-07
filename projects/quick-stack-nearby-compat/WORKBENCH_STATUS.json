@@ -18,7 +18,7 @@
     ]
   },
   "definition": {
-    "lifecycle": "TESTING",
+    "lifecycle": "ACTIVE",
     "goals": [
       "Keep accepted C8's Inventory Extended player-storage, Clutter No More ShapeMap, vanilla shelf, Inventory Search, and CSR reservation-affinity behavior unchanged.",
       "Admit a normally valid nearby container at QSN's real discovery prefilter when CSR reports an empty physical slot reserved for an exact source item and complete component identity, even when the container has zero physical instances of that item.",
@@ -154,7 +154,7 @@
     ]
   },
   "state": {
-    "milestone": "Exact QSN C9 remains INCONCLUSIVE with the sole supplied user observation: \"Nested shulker routing using an internal CSR reservation worked.\" No other QSN C9 matrix behavior, passed row, source, artifact, runtime evidence, deployment or promotion is inferred or changed. Embedded 0.1.0-canary9; quick-stack-nearby-compat-0.1.0-canary9.jar; 46607 bytes; SHA-256 14a6844b04d9236233c7007ed111a452db659cc5662dca07aa11f33b2cb4ec76; release source a333a4b5fa417cd9d35f6fc2608727828c23f6ea; Slot B deployment 03f7540f-94f0-47c5-b6bd-94f2af232ff4; artifact UUID 8b8abdf9-26a4-407c-bbd6-1623f0a5eeb5; accepted upstream companion and CAPABILITY_OR_PROVIDER attestation unchanged. Retained C9 passed 60 JUnit and 26 GameTests against CSR C11 without rebuilding QSN production; controlled evidence does not extend runtime evidence. Shared manager reference only: revision 100 / Stack v19, state SHA-256 831cca7a8afbd59889cd81cb764cacbcfd3d155fde21192cbc22b4fbe7b43e09, physical inventory SHA-256 aa989e9fe69513f92f319b3a4f58a58846bc8da0d8391f0ac0cf4370cd86aeb0; all 38 files verified after an atomic Slot A-only CSR C11 replacement. Slot B identity, timestamps and result remain exact.",
+    "milestone": "Exact QSN C9 remains INCONCLUSIVE with the sole supplied user observation: \"Nested shulker routing using an internal CSR reservation worked.\" It was removed from Slot B without promotion when IBF C4 was assigned there; C9 is not deployed and C8 is restored as the accepted active release. No other C9 matrix behavior or evidence is inferred. C9 identity remains embedded 0.1.0-canary9, quick-stack-nearby-compat-0.1.0-canary9.jar, SHA-256 14a6844b04d9236233c7007ed111a452db659cc5662dca07aa11f33b2cb4ec76, source a333a4b5fa417cd9d35f6fc2608727828c23f6ea. Manager revision 111 / Stack v27 verified the physical profile after the atomic replacement.",
     "releases": {
       "current": {
         "version": "0.1.0-canary9",
@@ -196,17 +196,17 @@
     },
     "validation": {
       "build": "CONTROLLED_VALIDATION_PASS",
-      "deployment": "READY_TO_TEST_VERIFIED",
+      "deployment": "NOT_DEPLOYED",
       "runtime": "INCONCLUSIVE"
     },
     "blocker": null
   },
   "synchronization": {
-    "revision": 10,
-    "activity_at": "2026-09-05T23:00:00Z",
-    "updated_at": "2026-09-05T23:00:00Z",
-    "last_codex_at": "2026-09-05T23:00:00Z",
-    "source_commit": "c38897a5bfdea34c54b4ade519a44b31fc1cc150",
+    "revision": 11,
+    "activity_at": "2026-09-07T03:57:38.772589Z",
+    "updated_at": "2026-09-07T03:57:38.772589Z",
+    "last_codex_at": "2026-09-07T03:57:38.772589Z",
+    "source_commit": "29ed69c35fe1b34bc8ba99a645593471005a3bdc",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null

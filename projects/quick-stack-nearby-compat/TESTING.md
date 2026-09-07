@@ -1,10 +1,10 @@
-# QSN C9 runtime procedure
+# QSN C9 retained procedure (not currently deployed)
 
-**CONTROLLED VALIDATION PASS — READY_TO_TEST_VERIFIED — RUNTIME INCONCLUSIVE**
+**CONTROLLED VALIDATION PASS — NOT DEPLOYED — RUNTIME INCONCLUSIVE**
 
 User reported only: "Nested shulker routing using an internal CSR reservation worked." No other C9 matrix behavior was reported. This partial success does not justify promotion; remaining cases below still require observation.
 
-Exact candidate: `quick-stack-nearby-compat-0.1.0-canary9.jar`, 46607 bytes, SHA-256 `14a6844b04d9236233c7007ed111a452db659cc5662dca07aa11f33b2cb4ec76`, source `a333a4b5fa417cd9d35f6fc2608727828c23f6ea`. Verified Slot B; deployment `03f7540f-94f0-47c5-b6bd-94f2af232ff4`, artifact `8b8abdf9-26a4-407c-bbd6-1623f0a5eeb5`. Verify canonical manager readiness before the user launches the dedicated 26.2 Workbench.
+Exact candidate: `quick-stack-nearby-compat-0.1.0-canary9.jar`, 46607 bytes, SHA-256 `14a6844b04d9236233c7007ed111a452db659cc5662dca07aa11f33b2cb4ec76`, source `a333a4b5fa417cd9d35f6fc2608727828c23f6ea`. Its former Slot B deployment `03f7540f-94f0-47c5-b6bd-94f2af232ff4` was removed without promotion at manager revision 111; accepted C8 is restored active. Do not execute this procedure or add evidence unless C9 is assigned to a verified test slot again.
 
 1. Put a count-one shulker with a matching physical stack in a nearby chest. QSN must merge internally, then use legal empties; reconcile source, destination and remainder counts.
 2. Test a physically empty shulker with only a matching CSR reservation. Its nested slot qualifies but the outer chest must not receive a nested-only key. An unrelated or component-mismatched reservation establishes no affinity.

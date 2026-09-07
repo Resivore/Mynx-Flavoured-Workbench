@@ -16,7 +16,7 @@
     ]
   },
   "definition": {
-    "lifecycle": "ACTIVE",
+    "lifecycle": "TESTING",
     "goals": [
       "Contribute the exact audited literal block and accessory families to Clutter No More ShapeMap so approved material forms can share one interchangeable storage family.",
       "Preserve Clutter No More as the sole switching, transmutation, recipe-cleanup, and equivalence authority while keeping component patches and source variants exact.",
@@ -129,10 +129,11 @@
     ]
   },
   "state": {
-    "milestone": "C4 adds the accessory-family slice and passes controlled validation; it is runtime untested and not deployed, while accepted C3 remains live.",
+    "milestone": "C4 adds the accessory-family slice, passes controlled validation, and is now the exact runtime-untested Slot B candidate; accepted C3 remains the disabled rollback.",
     "releases": {
       "current": {
         "version": "C4 (0.1.0-canary4)",
+        "embedded_version": "0.1.0-canary4",
         "artifact": {
           "filename": "interchangeable-block-families-0.1.0-canary4.jar",
           "sha256": "8f805d0cc6cf65599c8fab190be2aa023006a9bd990bcdd2bf0c45f62f1a2968"
@@ -160,17 +161,17 @@
     },
     "validation": {
       "build": "CONTROLLED_VALIDATION_PASS",
-      "deployment": "NOT_DEPLOYED",
+      "deployment": "READY_TO_TEST_VERIFIED",
       "runtime": "RUNTIME_UNTESTED"
     },
     "blocker": null
   },
   "synchronization": {
-    "revision": 1,
-    "activity_at": "2026-08-28T18:30:51Z",
-    "updated_at": "2026-08-29T22:42:11Z",
-    "last_codex_at": "2026-08-29T22:42:11Z",
-    "source_commit": "5597f2a8f9a65950b55c501ee2b004b30e8443ae",
+    "revision": 2,
+    "activity_at": "2026-09-07T03:57:38.772589Z",
+    "updated_at": "2026-09-07T03:57:38.772589Z",
+    "last_codex_at": "2026-09-07T03:57:38.772589Z",
+    "source_commit": "29ed69c35fe1b34bc8ba99a645593471005a3bdc",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null

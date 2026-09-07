@@ -2,7 +2,7 @@
   "$schema": "../../schemas/runtime-state.schema.json",
   "schema_version": 2,
   "activation": "ACTIVE",
-  "revision": 110,
+  "revision": 111,
   "updated_at": "2026-09-07T04:02:01Z",
   "accepted_baseline": {
     "revision": 27,
@@ -1103,60 +1103,43 @@
       "members": [
         {
           "unit": {
-            "deployment_id": "03f7540f-94f0-47c5-b6bd-94f2af232ff4",
-            "project_uuid": "ffa96cc6-2989-5465-b158-1659a484366b",
-            "project_id": "quick-stack-nearby-compat",
+            "deployment_id": "573a027d-5579-4a2b-aefd-a4c57a6ee34a",
+            "project_uuid": "ee8a20f8-d0a8-515c-9a74-3b19f238227d",
+            "project_id": "interchangeable-block-families",
             "project_identity_source": "CURRENT_MANIFEST",
-            "version": "0.1.0-canary9",
-            "source_commit": "a333a4b5fa417cd9d35f6fc2608727828c23f6ea",
+            "version": "0.1.0-canary4",
+            "source_commit": "9f5a72fff4e8370cdf031006f6658399550f609f",
             "artifacts": [
               {
-                "artifact_id": "8b8abdf9-26a4-407c-bbd6-1623f0a5eeb5",
+                "artifact_id": "3d2a3524-6242-43b1-b0a8-c3a6e592087e",
                 "kind": "MOD",
-                "filename": "quick-stack-nearby-compat-0.1.0-canary9.jar",
-                "sha256": "14a6844b04d9236233c7007ed111a452db659cc5662dca07aa11f33b2cb4ec76",
+                "filename": "interchangeable-block-families-0.1.0-canary4.jar",
+                "sha256": "8f805d0cc6cf65599c8fab190be2aa023006a9bd990bcdd2bf0c45f62f1a2968",
                 "ownership_keys": [
-                  "mod:quick_stack_nearby_compat"
+                  "mod:interchangeable_block_families"
                 ],
                 "source": {
                   "type": "REPOSITORY",
-                  "path": "projects/quick-stack-nearby-compat/artifacts/quick-stack-nearby-compat-0.1.0-canary9.jar"
+                  "path": "projects/interchangeable-block-families/artifacts/interchangeable-block-families-0.1.0-canary4.jar"
                 }
               }
             ]
           },
-          "replaces_accepted_deployment_id": "30a3d125-ecb6-4a7a-862b-ca2e2c1bbcfe",
+          "replaces_accepted_deployment_id": "fa37956f-2aa4-41d7-8f93-8439f92e89d7",
           "runtime_result": {
-            "classification": "INCONCLUSIVE",
-            "recorded_at": "2026-09-05T06:05:00Z",
+            "classification": "UNTESTED",
+            "recorded_at": null,
             "evidence": {
-              "passed": [
-                "Nested shulker routing using an internal CSR reservation worked."
-              ],
+              "passed": [],
               "failed": []
             }
-          },
-          "accepted_companion_artifacts": [
-            {
-              "artifact_id": "cb31d144-b6c4-41fb-ba44-35d896b228f6",
-              "kind": "MOD",
-              "filename": "quick-stack-nearby-0.4.0.jar",
-              "sha256": "43f1130527f782a291231c682791b4fd3766a20916c691cbdb98f91fdcc47e53",
-              "ownership_keys": [
-                "mod:quick-stack-nearby"
-              ],
-              "source": {
-                "type": "ADOPTED_TARGET",
-                "path": "mods/quick-stack-nearby-0.4.0.jar"
-              }
-            }
-          ]
+          }
         }
       ],
       "deployment": {
         "state": "READY_TO_TEST_VERIFIED",
-        "deployed_at": "2026-09-05T04:27:20Z",
-        "ready_verified_at": "2026-09-05T04:27:20Z"
+        "deployed_at": "2026-09-07T03:57:38.772589Z",
+        "ready_verified_at": "2026-09-07T03:57:38.772589Z"
       }
     }
   }

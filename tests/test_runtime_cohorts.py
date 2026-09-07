@@ -650,6 +650,42 @@ class RuntimeCohortContractTests(unittest.TestCase):
         self.assertEqual(planned["revision"], verified["revision"])
         self.assertEqual("READY_TO_TEST_VERIFIED", verified["slots"]["A"]["deployment"]["state"])
 
+    def test_revision_order_allows_backward_host_clock_without_falsifying_runtime_evidence(self) -> None:
+        """Regression for the revision-110 wall-clock skew recovery.
+
+        The persisted state watermark was 36 minutes ahead of the observed
+        host UTC time.  CAS revision ordering remains authoritative: the next
+        valid result transition succeeds, preserves its real observation time,
+        and retains the prior watermark rather than inventing a future one.
+        """
+
+        alpha = deployment_unit("alpha")
+        state = cohort_state(cohort_member(alpha), ready=True)
+        state["revision"] = 110
+        state["updated_at"] = "2026-09-07T04:02:01Z"
+        observed_at = "2026-09-07T03:25:41Z"
+        validate_runtime_state(state, project_index("alpha"))
+
+        transitioned = plan_transition(
+            state,
+            110,
+            {
+                "type": "RECORD_RESULT",
+                "slot": "A",
+                "classification": "INCONCLUSIVE",
+                "evidence": {"passed": ["observed only"], "failed": []},
+            },
+            observed_at,
+            project_index("alpha"),
+        )
+
+        self.assertEqual(111, transitioned["revision"])
+        self.assertEqual("2026-09-07T04:02:01Z", transitioned["updated_at"])
+        self.assertEqual(
+            observed_at,
+            transitioned["slots"]["A"]["members"][0]["runtime_result"]["recorded_at"],
+        )
+
     def test_single_member_update_preserves_companion_and_other_slot(self) -> None:
         alpha = deployment_unit("alpha", version="Canary 1")
         alpha_v2 = deployment_unit("alpha", version="Canary 2")

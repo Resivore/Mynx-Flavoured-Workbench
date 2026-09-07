@@ -1132,8 +1132,7 @@ def plan_transition(
     if state["revision"] != expected_revision:
         raise ValidationError(f"stale runtime-state revision: expected {expected_revision}, found {state['revision']}")
     transition_at = _timestamp(at, "transition timestamp")
-    if transition_at < _timestamp(state["updated_at"], "$.updated_at"):
-        raise ValidationError("transition timestamp cannot precede current state updated_at")
+    prior_updated_at = _timestamp(state["updated_at"], "$.updated_at")
     if not isinstance(operation, dict) or "type" not in operation:
         raise ValidationError("operation must be an object with type")
     operation_type = _enum(operation["type"], "operation.type", TRANSITIONS)
@@ -1734,7 +1733,12 @@ def plan_transition(
             slots[label] = None
 
     next_state["revision"] += 1
-    next_state["updated_at"] = at
+    # Revision/CAS order is the transition authority.  A host clock can move
+    # backwards relative to a previously persisted wall-clock watermark; that
+    # must not reject an otherwise valid serialized transition or rewrite the
+    # observed evidence time.  Retain the watermark in that case while fields
+    # such as runtime_result.recorded_at keep the actual supplied UTC value.
+    next_state["updated_at"] = state["updated_at"] if transition_at < prior_updated_at else at
     validate_runtime_state(next_state, project_index)
     return next_state
 

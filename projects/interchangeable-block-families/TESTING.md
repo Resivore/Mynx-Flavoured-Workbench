@@ -1,8 +1,8 @@
 # Testing
 
-Test only exact current C4 `interchangeable-block-families-0.1.0-canary4.jar`, 51,171 bytes, SHA-256 `8f805d0cc6cf65599c8fab190be2aa023006a9bd990bcdd2bf0c45f62f1a2968`. C4 remains `NOT_DEPLOYED` and `RUNTIME_UNTESTED`; controlled tests, GameTests, a build, and byte-identical artifact reproduction do not authorize promotion or constitute in-game runtime validation.
+Test only exact current C4 `interchangeable-block-families-0.1.0-canary4.jar`, 51,171 bytes, SHA-256 `8f805d0cc6cf65599c8fab190be2aa023006a9bd990bcdd2bf0c45f62f1a2968`. It occupies dedicated Workbench Slot B as deployment `573a027d-5579-4a2b-aefd-a4c57a6ee34a` / artifact `3d2a3524-6242-43b1-b0a8-c3a6e592087e`, `READY_TO_TEST_VERIFIED` at the observed UTC time `2026-09-07T03:57:38.772589Z`, and remains `RUNTIME_UNTESTED`. Controlled tests, GameTests, a build, and byte-identical artifact reproduction do not authorize promotion or constitute in-game runtime validation.
 
-Exact accepted/live C3 remains the effective rollback: `interchangeable-block-families-0.1.0-canary3.jar`, 47,456 bytes, SHA-256 `d0150aea777dd7837d0c9b4f5cf41ce45f510c60ef416fb7001d06a36a6b0e87`.
+Exact accepted C3 remains the effective disabled rollback: `interchangeable-block-families-0.1.0-canary3.jar`, 47,456 bytes, SHA-256 `d0150aea777dd7837d0c9b4f5cf41ce45f510c60ef416fb7001d06a36a6b0e87`. Manager revision 111 / Stack v27 and physical inventory SHA-256 `dafdb93c1f970c3775571cdfffe84b8d6f95432e3f36dd158c2d376d62f24c84` were post-deployment verified.
 
 ## Current controlled regression coverage
 

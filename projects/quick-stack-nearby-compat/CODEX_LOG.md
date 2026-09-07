@@ -99,3 +99,13 @@
 - Artifact: Unchanged `quick-stack-nearby-compat-0.1.0-canary9.jar`, 46607 bytes, SHA-256 `14a6844b04d9236233c7007ed111a452db659cc5662dca07aa11f33b2cb4ec76`, source `a333a4b5fa417cd9d35f6fc2608727828c23f6ea`; exact accepted `quick-stack-nearby-0.4.0.jar` companion preserved.
 - Result: TESTING / CONTROLLED_VALIDATION_PASS / READY_TO_TEST_VERIFIED / INCONCLUSIVE; shared state refreshed only.
 - Next state: Continue the existing independent QSN C9 runtime matrix after the CSR C11 first gate; do not infer or promote.
+
+## 2026-09-07T03:57:38.772589Z — Clear inconclusive C9 from Slot B for IBF C4
+- Revision: 11
+- Source checkpoint: `29ed69c35fe1b34bc8ba99a645593471005a3bdc`
+- Changes: The serialized manager replacement removed exact C9 from Slot B without promotion and restored accepted C8 plus its accepted upstream companion as active bytes. C9's sole supplied INCONCLUSIVE observation is preserved as historical evidence; no new QSN source, artifact, or runtime evidence was created.
+- Build/static: No QSN production build or artifact rewrite. The manager preflight and post-deployment verification checked the accepted C8 bytes and enabled Fabric graph.
+- Runtime: No client launch. C9 is now `NOT_DEPLOYED`; its prior `INCONCLUSIVE` result remains only the reported observation: "Nested shulker routing using an internal CSR reservation worked." No other row is inferred.
+- Artifact: C9 remains `quick-stack-nearby-compat-0.1.0-canary9.jar`, SHA-256 `14a6844b04d9236233c7007ed111a452db659cc5662dca07aa11f33b2cb4ec76`, source `a333a4b5fa417cd9d35f6fc2608727828c23f6ea`; accepted C8 remains active and unchanged.
+- Result: ACTIVE / CONTROLLED_VALIDATION_PASS / NOT_DEPLOYED / INCONCLUSIVE. Manager revision 111 / Stack v27, state SHA-256 `e1c91ad96695cbdeface9554f33079484b775b674a863aef0892ba5a53edc8f9`, physical inventory SHA-256 `dafdb93c1f970c3775571cdfffe84b8d6f95432e3f36dd158c2d376d62f24c84`; 44 managed files verified. Protected gameplay profile was not accessed.
+- Next state: Keep C8 accepted and active. Reassign C9 only through a new verified manager slot transition before executing its retained matrix or recording new evidence.
