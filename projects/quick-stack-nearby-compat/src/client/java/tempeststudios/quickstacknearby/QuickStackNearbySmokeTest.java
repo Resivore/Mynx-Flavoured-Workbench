@@ -3,15 +3,20 @@ package tempeststudios.quickstacknearby;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.network.chat.Component;
 
 public final class QuickStackNearbySmokeTest {
     private static final String SMOKE_TEST_PROPERTY = "quickstacknearby.smokeTest";
     private static final int PASS_AFTER_TICKS = 20;
+    private static final int INVENTORY_TIMEOUT_TICKS = 400;
 
     private static int ticks;
     private static boolean complete;
     private static boolean screenCompatChecked;
+    private static boolean inventoryOpened;
+    private static boolean controlsVerified;
 
     private QuickStackNearbySmokeTest() {
     }
@@ -38,7 +43,32 @@ public final class QuickStackNearbySmokeTest {
             screenCompatChecked = true;
             System.out.println("QUICKSTACKNEARBY_SCREEN_COMPAT_PASS");
         }
-        if (ticks < PASS_AFTER_TICKS) {
+        if (client.player != null && !inventoryOpened) {
+            ClientScreenCompat.setScreen(client, new InventoryScreen(client.player));
+            inventoryOpened = true;
+            System.out.println("QUICKSTACKNEARBY_INVENTORY_OPENED");
+            return;
+        }
+        Screen current = client.gui == null ? null : client.gui.screen();
+        if (inventoryOpened && !controlsVerified && current instanceof InventoryScreen
+                && QuickStackInventoryControls.hasControls(current)) {
+            if (!QuickStackInventoryControls.openNearbySearchForSmoke(client, current)) {
+                throw new IllegalStateException("Nearby Search control was not active after player inventory injection");
+            }
+            controlsVerified = true;
+            System.out.println("QUICKSTACKNEARBY_INVENTORY_CONTROLS_PASS");
+            return;
+        }
+        if (controlsVerified && current instanceof NearbySearchScreen) {
+            complete = true;
+            System.out.println("QUICKSTACKNEARBY_NEARBY_SEARCH_MODAL_PASS");
+            client.stop();
+            return;
+        }
+        if (ticks >= INVENTORY_TIMEOUT_TICKS && !complete) {
+            throw new IllegalStateException("No active player was available for the inventory-control smoke test");
+        }
+        if (ticks < PASS_AFTER_TICKS || !controlsVerified) {
             return;
         }
 

@@ -27,7 +27,7 @@
       "One-level native-scan nested shulker targets, parent-first ordering, exact physical or optional CSR ItemStack affinity, physical/reserved/ordinary insertion passes, transactional host-only CONTAINER writeback, exact source accounting, connected-barrel persistence and host deduplication. Upstream QSN and public CSR ownership remain unchanged."
     ],
     "scope": [
-      "Current 0.4.0-workbench-canary10 is the integrated Workbench-owned Quick Stack Nearby replacement candidate: upstream QSN source with Inventory Extended live source windows, CSR reservation affinity, CNM ShapeMap affinity, shelf exclusion, one-level nested shulker routing, optional Double Barrels discovery, and bounded server-authoritative live Nearby Search. Inventory Search is source provenance only, not a runtime dependency. Prior Canary descriptions below are retained historical baseline context.",
+      "Current 0.4.0-workbench-canary11 is the integrated Workbench-owned Quick Stack Nearby regression-repair candidate: upstream QSN source with Inventory Extended live source windows, CSR reservation affinity, CNM ShapeMap affinity, shelf exclusion, one-level nested shulker routing, optional Double Barrels discovery, and bounded server-authoritative live Nearby Search. Inventory Search is source provenance only, not a runtime dependency. C10 is retained historical RUNTIME_FAIL evidence only: supplied observations reported failed nested CSR routing and no visible C10-owned Nearby Search entry point; no C10 pass is claimed.",
       "Maintain the production implementation and resources at checkpoint 1f545721658cce803200fa277737052cead79b70 while preserving all accepted C6 behavior and retained C7 insertion behavior outside the failed discovery seam.",
       "Wrap QSN 0.4.0's exact QuickStackMoveEngine.acceptedTypes(Container) call inside scanContainer after native access and validity checks but before nearbyTargets discards an empty accepted-types set, using only CSR's public read-only exact reservation classifier.",
       "Scope the real source container, source window, locks, and keep-count rules around QSN's native quickStack call so reservation-only affinity is derived from movable source items and is restored without leakage after nested or exceptional calls.",
@@ -47,7 +47,7 @@
         "Container Slot Reservations, Carried Container Auto-Routing, Matcha \u00d7 Stack to Nearby Chests Compatibility, Inventory Search, Block Geometry Extensions, Nibaru, Clutter No More, Quick Stack Nearby, and every other nearby-routing or inventory project retain their own identities, source, artifacts, controls, and behavior ownership.",
         "No CSR reservation mutation, persistence, user interface, container-support policy, or classification logic is reimplemented; C8 consumes only CSR's public read-only reservation API when the provider is loaded.",
         "No Stack to Nearby Chests implementation, Matcha-specific QSN adapter, general Inventory Search patch, carried-container routing, nested-container routing, registry-name parsing, fuzzy material equivalence, item conversion, or custom existing-stack merge is owned here.",
-        "C10 packages its LGPL-licensed QSN-derived implementation and required notices, but does not bundle external QSN, CSR, Inventory Search/Core, Inventory Extended, Clutter No More, BGE, Nibaru, Minecraft, or Fabric JARs; Inventory Search v3.4.0 is visual-source provenance only.",
+        "C11 packages its LGPL-licensed QSN-derived implementation and required notices, but does not bundle external QSN, CSR, Inventory Search/Core, Inventory Extended, Clutter No More, BGE, Nibaru, Minecraft, or Fabric JARs; Inventory Search v3.4.0 is visual-source provenance only.",
         "C8 mirrors the exact audited QSN 0.4.0 package-private maximum-stack helper through its current Container#getMaxStackSize delegate because attempted Java-package and Mixin invokers were not runtime-safe; a future QSN helper change requires seam re-audit.",
         "Controlled JUnit and Fabric GameTest results are build/static evidence, not Minecraft gameplay runtime validation.",
         "Lifecycle is ACCEPTED because exact current C8 was promoted into accepted Stack v17 and no longer occupies a Test Slot; C6 is rollback, C4 remains distinct historical passing provenance, and C7's independent failure remains separate.",
@@ -154,16 +154,16 @@
     ]
   },
   "state": {
-    "milestone": "C10 is a controlled-validated, retained-but-not-deployed integrated QSN replacement candidate. C8 remains ACCEPTED. C9 remains retained, NOT_DEPLOYED, and INCONCLUSIVE with the sole supplied observation: \"Nested shulker routing using an internal CSR reservation worked.\" No testing slot or Workbench profile was changed for C10.",
+    "milestone": "C11 is a controlled-validated, retained-but-not-deployed integrated QSN regression-repair candidate. Supplied C10 runtime evidence is RUNTIME_FAIL: nested shulker routing did not route a matching player item into an internal CSR-reserved nested slot, and C10's independent Nearby Search entry point was not visible; no C10 pass is claimed. C8 remains ACCEPTED. C9 remains retained, NOT_DEPLOYED, and INCONCLUSIVE with its exact sole supplied observation unchanged: \"Nested shulker routing using an internal CSR reservation worked.\" No testing slot or Workbench profile was changed for C10 or C11.",
     "releases": {
       "current": {
-        "version": "0.4.0-workbench-canary10",
-        "embedded_version": "0.4.0-workbench-canary10",
+        "version": "0.4.0-workbench-canary11",
+        "embedded_version": "0.4.0-workbench-canary11",
         "artifact": {
-          "filename": "quick-stack-nearby-0.4.0-workbench-canary10.jar",
-          "sha256": "7882491e0d5f0a3bd8f8ab5135ebb900f16f4caa520a693f682c61d09f092dfe"
+          "filename": "quick-stack-nearby-0.4.0-workbench-canary11.jar",
+          "sha256": "47f0931026f28c179bc0f4b7ae461ab4f81413a9eea37fdaf701871bea1d0d9b"
         },
-        "source_commit": "6c121ec5bdbb66f4c8092289d2f665a306fdb290",
+        "source_commit": "0699c64e153acab1331627714d04f9ba6c0e8fd7",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
@@ -202,11 +202,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 12,
-    "activity_at": "2026-09-07T17:46:41.618213Z",
-    "updated_at": "2026-09-07T17:46:41.618213Z",
-    "last_codex_at": "2026-09-07T17:46:41.618213Z",
-    "source_commit": "6c121ec5bdbb66f4c8092289d2f665a306fdb290",
+    "revision": 13,
+    "activity_at": "2026-09-07T23:32:25.325838Z",
+    "updated_at": "2026-09-07T23:32:25.325838Z",
+    "last_codex_at": "2026-09-07T23:32:25.325838Z",
+    "source_commit": "0699c64e153acab1331627714d04f9ba6c0e8fd7",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null

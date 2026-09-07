@@ -62,7 +62,7 @@ public final class QuickStackService {
             QuickStackMoveEngine.SourceRules sourceRules) {
         ServerLevel level = ServerPlayerCompat.serverLevel(player);
         BlockPos center = player.blockPosition();
-        List<ScannedContainer> scannedContainers = new ArrayList<>();
+        List<AdmittedContainer> scannedContainers = new ArrayList<>();
         Set<BlockPos> scannedPositions = new HashSet<>();
         QuickStackServerConfig config = QuickStackServerConfig.getInstance();
         int horizontalRadius = config.horizontalRadius();
@@ -87,20 +87,28 @@ public final class QuickStackService {
             Set<QuickStackMoveEngine.StackKey> acceptedTypes = CsrRoutingCompat.augmentAcceptedTypes(
                     source, firstSourceSlot, exclusiveLastSourceSlot, sourceRules,
                     scannedContainer.container(), scannedContainer.acceptedTypes());
-            if (!acceptedTypes.isEmpty()) {
-                scannedContainers.add(new ScannedContainer(scannedContainer.container(), acceptedTypes,
-                        scannedContainer.positions(), scannedContainer.distance()));
+            List<QuickStackMoveEngine.Target> nestedChildren = NestedRoutingCompat.children(
+                    scannedContainer.container(), player, source, firstSourceSlot, exclusiveLastSourceSlot, sourceRules);
+            // The native outer scan normally discards an empty accepted-types set.  A child-only
+            // match must keep that scan alive, but must never become an affinity of the parent.
+            // C9 used the same temporary union at QSN's discovery seam and removed it again
+            // before the parent target was expanded.
+            if (!acceptedTypes.isEmpty() || !nestedChildren.isEmpty()) {
+                scannedContainers.add(new AdmittedContainer(scannedContainer, acceptedTypes, nestedChildren));
             }
         }
 
-        scannedContainers.sort(Comparator.comparingDouble(ScannedContainer::distance));
+        scannedContainers.sort(Comparator.comparingDouble(candidate -> candidate.scanned().distance()));
 
         List<QuickStackMoveEngine.Target> targets = new ArrayList<>(scannedContainers.size());
-        for (ScannedContainer scannedContainer : scannedContainers) {
-            targets.add(new QuickStackMoveEngine.Target(scannedContainer.container(), scannedContainer.acceptedTypes()));
+        for (AdmittedContainer admitted : scannedContainers) {
+            if (!admitted.parentAcceptedTypes().isEmpty()) {
+                targets.add(new QuickStackMoveEngine.Target(
+                        admitted.scanned().container(), admitted.parentAcceptedTypes()));
+            }
             // C9 ordering is parent first, followed by that parent's physical shulker slots.
-            targets.addAll(NestedRoutingCompat.children(scannedContainer.container(), player, source,
-                    firstSourceSlot, exclusiveLastSourceSlot, sourceRules));
+            // In the child-only case there deliberately is no parent target at all.
+            targets.addAll(admitted.nestedChildren());
         }
         return ShapeMapRoutingCompat.augmentTargets(source, firstSourceSlot, exclusiveLastSourceSlot, sourceRules, targets);
     }
@@ -216,6 +224,13 @@ public final class QuickStackService {
             Set<QuickStackMoveEngine.StackKey> acceptedTypes,
             List<BlockPos> positions,
             double distance
+    ) {
+    }
+
+    private record AdmittedContainer(
+            ScannedContainer scanned,
+            Set<QuickStackMoveEngine.StackKey> parentAcceptedTypes,
+            List<QuickStackMoveEngine.Target> nestedChildren
     ) {
     }
 }

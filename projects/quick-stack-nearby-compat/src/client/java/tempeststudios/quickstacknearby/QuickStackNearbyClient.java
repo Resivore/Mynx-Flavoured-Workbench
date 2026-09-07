@@ -7,6 +7,7 @@ public final class QuickStackNearbyClient implements ClientModInitializer {
     public void onInitializeClient() {
         QuickStackHotkey.register();
         QuickStackClientNetworkingCompat.registerNearbySearchReceivers();
+        QuickStackInventoryControls.register();
         QuickStackNearbySmokeTest.registerIfEnabled();
     }
 }

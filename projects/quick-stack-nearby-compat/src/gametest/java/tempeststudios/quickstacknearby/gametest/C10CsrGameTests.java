@@ -1,6 +1,7 @@
 package tempeststudios.quickstacknearby.gametest;
 
 import dev.resivore.slotreservations.ReservationStore;
+import dev.resivore.slotreservations.ReservationData;
 import dev.resivore.slotreservations.SupportedContainerResolver;
 import net.fabricmc.fabric.api.gametest.v1.CustomTestMethodInvoker;
 import net.fabricmc.fabric.api.gametest.v1.GameTest;
@@ -48,6 +49,28 @@ public final class C10CsrGameTests implements CustomTestMethodInvoker {
         helper.assertTrue(result.itemsMoved() == 70 && barrel.getItem(0).getCount() == 64
                 && barrel.getItem(4).getCount() == 64 && barrel.getItem(1).getCount() == 2,
                 "C10 did not keep physical, matching-reserved, ordinary-empty insertion order");
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void childOnlyNestedReservationAdmitsWithoutGivingTheParentAffinity(GameTestHelper helper) {
+        BarrelBlockEntity barrel = barrel(helper); ServerPlayer player = player(helper);
+        ItemStack exact = named(1, "nested exact");
+        ItemStack host = new ItemStack(Blocks.SHULKER_BOX);
+        ReservationStore.setData(host, ReservationData.EMPTY.with(7, exact));
+        barrel.setItem(0, host);
+        player.getInventory().setItem(9, exact.copyWithCount(12));
+
+        QuickStackMoveEngine.Result result = QuickStackService.quickStack(player);
+        net.minecraft.core.NonNullList<ItemStack> after = net.minecraft.core.NonNullList.withSize(27, ItemStack.EMPTY);
+        host.getOrDefault(DataComponents.CONTAINER, net.minecraft.world.item.component.ItemContainerContents.EMPTY).copyInto(after);
+        helper.assertTrue(result.itemsMoved() == 12 && barrel.getItem(0) == host && barrel.getItem(1).isEmpty()
+                        && after.get(7).getCount() == 12 && ItemStack.isSameItemSameComponents(after.get(7), exact),
+                "a nested CSR-only affinity did not route through its child or leaked to the physical parent");
+
+        player.getInventory().setItem(9, named(4, "different"));
+        helper.assertTrue(QuickStackService.quickStack(player).itemsMoved() == 0 && after.get(7).getCount() == 12,
+                "a mismatched nested CSR reservation was not protected");
         helper.succeed();
     }
 
