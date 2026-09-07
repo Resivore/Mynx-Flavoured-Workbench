@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import net.minecraft.client.model.geom.ModelPart;
 import xaero.hud.minimap.radar.icon.creator.render.form.model.part.ModelPartUtil;
+import xaero.hud.minimap.radar.icon.creator.render.trace.ModelPartRenderTrace;
 import xaero.hud.minimap.radar.icon.creator.render.trace.ModelRenderTrace;
 
 /** Creates a short-lived icon-only ancestry bridge; no live Naturalist part is reparented or changed. */
@@ -37,9 +38,19 @@ public final class NaturalistIconAdapter {
     }
 
     public static ModelPart tracePart(ModelPart adapter) { return TRACE_PARTS.get(adapter); }
-    public static boolean traceExists(ModelRenderTrace trace, ModelPart adapter) {
+
+    /**
+     * Resolves only a bridge created by this class to its original traced part.
+     * A missing, cyclic, or untraced mapping deliberately has no substitute.
+     */
+    public static ModelPartRenderTrace resolveTrace(ModelRenderTrace trace, ModelPart adapter) {
         ModelPart original = tracePart(adapter);
-        return original != null && trace.getModelPartRenderInfo(original) != null;
+        if (original == null || original == adapter || tracePart(original) != null) return null;
+        return trace.getModelPartRenderInfo(original);
+    }
+
+    public static boolean traceExists(ModelRenderTrace trace, ModelPart adapter) {
+        return resolveTrace(trace, adapter) != null;
     }
     private static void copyTransform(ModelPart from, ModelPart to) {
         to.x = from.x; to.y = from.y; to.z = from.z;
