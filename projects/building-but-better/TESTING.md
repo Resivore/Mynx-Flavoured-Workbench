@@ -1,6 +1,6 @@
 # Testing
 
-The current `2.0pre4+26.2-pale-oak-dev` candidate is `ACTIVE` with `STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED`. It adds the port-native eleven-form Pale Oak family. Compilation, focused tests, generated-resource verification, and a local JAR establish only source/build properties; they do not establish Minecraft runtime behavior.
+The current `2.0pre4+26.2-pale-oak-dev.2` candidate is `ACTIVE` with `STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED`. It adds the port-native eleven-form Pale Oak family. Compilation, focused tests, generated-resource verification, and a local JAR establish only source/build properties; they do not establish Minecraft runtime behavior.
 
 No Minecraft client or server was launched for this successor, no artifact was deployed, no Test Slot was assigned, no Test Instance Manager transition was performed, and neither Minecraft profile was changed. The user reported that the prior port “looks good”, but current canonical BBB records identify no exact retained/deployed candidate and `runtime-state.json` has no BBB deployment record; that report therefore cannot safely be bound to a release result.
 
@@ -13,7 +13,7 @@ $env:JAVA_HOME = 'C:\Users\resiv\.gradle\jdks\eclipse_adoptium-25-amd64-windows.
 .\gradlew.bat clean check build --console=plain "-PbbbOriginalJar=C:\Users\resiv\OneDrive\Documents\Minecraft 26.2 Workbench\originals\mods\bbb-fabric-2.0pre4.jar"
 ```
 
-The command completed `BUILD SUCCESSFUL` with 9 executed tasks, Java compilation, and all 17 focused JUnit tests passing with no failures, errors, or skips. It established:
+Two clean runs of the command completed `BUILD SUCCESSFUL` with 9 executed tasks, Java compilation, and all 19 focused JUnit tests passing with no failures, errors, or skips. They established:
 
 1. the exact pristine input guard for `bbb-fabric-2.0pre4.jar`, 1,701,505 bytes, SHA-256 `1E7AE114AAEC53475133E11C607FC65DCE493BBA5897EAF0044D53959B508FC0`, before opening the JAR for staging;
 2. the 171-block/172-item curated registry formula: the historical 160-block/161-item curated baseline plus the explicit eleven-form Pale Oak extension, while retaining the exact disjoint historical 87-block/82-item removal set;
@@ -22,11 +22,12 @@ The command completed `BUILD SUCCESSFUL` with 9 executed tasks, Java compilation
 5. the exact retained Hammer-capable class set and state-property, directional-slab, waterlogging, frame, brazier, and tooltip contracts;
 6. 171 blockstates, 172 Minecraft 26.2 item definitions, 171 block loot tables, 224 recipes, and 140 migrated recipe-unlock advancements under the singular 26.2 paths;
 7. the audited model, texture, tag, language, recipe, advancement, and loot-table closure with no direct removed or unknown `bbb:` ID;
-8. 1,133 generated models, 230 staged PNGs (exactly 106 with transparency), binary alpha only, direct Minecraft 26.2 Pale Oak texture references, and no unsupported retained `render_type` metadata;
-9. the narrow Dark Oak lattice generated-reference correction and retained beam-axis/slab-state contracts;
-10. ARR resources staged only under ignored `build/generated/bbb-resources/`, with no tracked ARR asset/data copy.
+8. 1,133 generated models and 246 texture/sidecar files, including 242 PNGs (exactly 112 with transparency), binary alpha only, resolved Minecraft/BBB model and texture references, and no unsupported retained `render_type` metadata;
+9. twelve Pale Oak-specific authored sheets generated from the actual Minecraft 26.2 Pale Oak plank palette, with original dimensions/UV contracts, transparent pixels, and material-independent lantern detail preserved;
+10. the narrow Dark Oak lattice generated-reference correction and retained beam-axis/slab-state contracts;
+11. ARR resources staged only under ignored `build/generated/bbb-resources/`, with no tracked ARR asset/data copy.
 
-The alpha and closure checks are static evidence; they do not replace the deferred in-game transparency/culling checks. The frozen legacy build records `bbb-fabric-26.2-2.0pre4+26.2-port-dev.jar`, 1,093,037 bytes, SHA-256 `98B9BFF4B9F905841511E87D61DDA820E86E500ECFAE3FA7831F816521B3996D`, with 17/17 tests passing. The current run produced the same filename at 1,093,051 bytes and SHA-256 `96B67E7F2910BF4083993C5A35711E97421B03E990FF41EC294FD953E723473A`; it did not reproduce the frozen ZIP identity. Both JAR identities remain local, ignored, unretained build output because the combined JAR stages upstream ARR resources.
+The alpha and closure checks are static evidence; they do not replace the deferred in-game transparency/culling checks. Both clean builds produced the byte-identical local ARR-bearing candidate `bbb-fabric-26.2-2.0pre4+26.2-pale-oak-dev.2.jar`, 1,144,473 bytes, SHA-256 `8C591183CD820E557189AE0A0F3A9EFF8B2519CD6E29C4C167242DD2CF204DDE`. It remains ignored, local-only, and undistributed.
 
 ## Deferred in-game matrix
 
@@ -55,18 +56,25 @@ Stop and record `RUNTIME_FAIL` for a confirmed BBB defect, or `INCONCLUSIVE` for
 ## Pale Oak successor matrix
 
 1. Launch Minecraft 26.2 Fabric and confirm registry/data loading succeeds.
-2. Confirm the ten user-visible non-wall Pale Oak forms appear wherever their existing BBB equivalents appear; confirm the Pale Oak Wall follows the actual existing BBB wall treatment and was not singled out for a new policy.
-3. Confirm no Pale Oak Layer or Ladder exists.
-4. Inspect Balustrade appearance and all Hammer states, Lattice texture/transparency/connections/waterlogging/plant/berries/shears behavior, and Wall connection/collision behavior.
-5. Inspect Beam on X/Y/Z axes and confirm stripped Pale Oak side grain and end grain remain correctly oriented.
-6. Test Beam Stairs placement, shape, rotations, texture orientation, waterlogging if applicable, collision, drops, and crafting.
-7. Test Beam Slab for all six facings, bottom/top/double states, texture orientation, waterlogging, collision, drops, and crafting.
-8. Test Support placement/Hammer state and Pallet placement/open-board/Hammer states.
-9. Test Frame center cycling, ordinary-attack reset, waterlogging, item targeting, collision, and save/reload persistence.
-10. Test Lantern standing/hanging appearance, lighting, Hammer/use behavior, collision/push reaction, and save/reload persistence.
-11. Test Trim connections and orientation in every relevant direction.
-12. Confirm broad crafting recipes, recipe-book unlocks, mined drops, tags, and representative state persistence.
-13. Inspect for missing models, purple/black textures, incorrect Pale Oak color/UV/end grain, transparency/culling defects, and relevant log errors.
+2. Confirm the ten non-wall Pale Oak forms appear wherever equivalent existing BBB forms appear.
+3. Confirm Pale Oak Wall follows exactly the current treatment of the other BBB wood walls and has not acquired a distinct gate or policy.
+4. Confirm no Pale Oak Layer or Ladder exists.
+5. Inspect Pale Oak Balustrade appearance and all Hammer states.
+6. Inspect Pale Oak Lattice texture, transparency, connectivity, waterlogging, plant placement/removal, berries, and shears behavior.
+7. Inspect Pale Oak Beam on X, Y, and Z axes.
+8. Confirm Beam side grain and end grain remain correctly oriented on every axis.
+9. Inspect Pale Oak Beam Stairs placement, stair shape, rotations, texture orientation, waterlogging if applicable, collision, drops, and crafting.
+10. Inspect Pale Oak Beam Slab for all six facings, bottom/top/double states, texture orientation, waterlogging, collision, drops, and crafting.
+11. Inspect Pale Oak Support placement and Hammer state.
+12. Inspect Pale Oak Pallet placement and every pallet/Hammer state.
+13. Inspect Pale Oak Frame center cycling, ordinary-attack reset, waterlogging, targeting, collision, and save/reload persistence.
+14. Inspect Pale Oak Lantern standing/hanging appearance, lighting, Hammer state, held-item/use behavior, collision/push reaction, and save/reload persistence.
+15. Inspect Pale Oak Trim connections and orientation in every relevant direction.
+16. Confirm crafting recipes and recipe-book unlocks for broad Pale Oak representatives.
+17. Confirm mined drops are correct.
+18. Confirm Pale Oak members participate in the same semantic tags as their Cherry equivalents, including vanilla stair/slab/wall tags.
+19. Save/reload a representative set of stateful Pale Oak blocks and verify state persistence.
+20. Inspect for missing models, purple/black textures, wrong UVs, transparency/culling defects, incorrect wood color, incorrect end-grain texture, or relevant log errors.
 
 Record a confirmed Pale Oak/BBB defect as `RUNTIME_FAIL`, and environment/dependency ambiguity as `INCONCLUSIVE`. Do not promote from a partial matrix.
 

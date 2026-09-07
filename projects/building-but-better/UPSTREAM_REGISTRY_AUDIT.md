@@ -261,12 +261,12 @@ The hash-guarded staging pipeline starts from the retained registry rather than 
 - 224 recipes that reference retained BBB IDs and no removed BBB IDs;
 - 140 migrated recipe-unlock advancements whose rewards resolve to staged recipes;
 - 1,133 transitive model JSON files;
-- 234 transitive textures/metadata files;
-- 230 PNG textures, all binary-alpha, of which exactly 106 contain transparent pixels;
+- 246 transitive/generated textures/metadata files;
+- 242 PNG textures, all binary-alpha, of which exactly 112 contain transparent pixels;
 - 2 filtered language files;
 - 44 filtered/generated tag files, including vanilla block/item slab, stair, and wall integration tags;
-- 2,177 staged files before `bbb-resource-staging.json`, or 2,178 including the report.
+- 2,304 staged files before `bbb-resource-staging.json`, or 2,305 including the report.
 
-The blockstates, models, and textures/sidecars total exactly 1,467 selected ARR dependency paths. The official `dark_oak_lattice` blockstate mistakenly points at Oak left/middle/right geometry; ignored staging output corrects just those three references to the authored Dark Oak models so the material variant remains distinct. Minecraft 26.2 derives section layers from sprite transparency, so the verifier rejects unsupported/inert model `render_type` metadata and instead audits the PNG alpha values. These are static asset checks, not runtime visual validation.
+The historical selected ARR dependency closure remains exactly 1,467 paths. The current blockstates, models, and textures/sidecars total 1,550 files after adding 83 port-native Pale Oak resources: eleven blockstates, sixty model JSON files, and twelve generated authored texture sheets. Those sheets map only colors proven to belong to the actual Minecraft 26.2 Cherry plank palette onto the corresponding Pale Oak palette; transparent pixels and unmatched material-independent details—including the lantern's 36 opaque glow/metal pixels—remain unchanged. The official `dark_oak_lattice` blockstate mistakenly points at Oak left/middle/right geometry; ignored staging output corrects just those three references to the authored Dark Oak models so the material variant remains distinct. Minecraft 26.2 derives section layers from sprite transparency, so the verifier rejects unsupported/inert model `render_type` metadata, malformed or unresolved model/texture references, and partial alpha. These are static asset checks, not runtime visual validation.
 
 One apparent removed-ID residue is intentional: retained Stone Column models reference `textures/block/polished_stone.png` as their shared particle texture. No `polished_stone` block or item is retained. Likewise, model paths containing `_layer1` through `_layer4` for columns and `_layer1`/`_layer2` for pallets are internal model-composition parts, not the removed BBB Layer block family. All generated content remains build output under `build/`, not tracked or redistributable source.
