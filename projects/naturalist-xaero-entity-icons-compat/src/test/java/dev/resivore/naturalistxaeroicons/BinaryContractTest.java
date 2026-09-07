@@ -26,4 +26,15 @@ class BinaryContractTest {
             assertNull(jar.getEntry("xaero/hud/minimap/radar/icon/creator/RadarIconCreator.class"));
         }
     }
+
+    @Test void c3DoesNotRestoreTheConflictingPartPrerendererRedirect() throws Exception {
+        Path root = Path.of(System.getProperty("projectRoot"));
+        String mixins = Files.readString(root.resolve("src/main/resources/naturalist_xaero_entity_icons_compat.mixins.json"));
+        assertFalse(mixins.contains("RadarIconModelPartPrerendererMixin"));
+        assertTrue(mixins.contains("ModelRenderTraceMixin"));
+        assertTrue(mixins.contains("RadarIconModelPartPresentationMixin"));
+        String bridge = Files.readString(root.resolve("src/main/java/dev/resivore/naturalistxaeroicons/NaturalistIconAdapter.java"));
+        assertTrue(bridge.contains("traceSources"));
+        assertFalse(bridge.contains("@Redirect"));
+    }
 }

@@ -13,11 +13,19 @@ import xaero.hud.minimap.radar.icon.creator.render.trace.ModelRenderTrace;
 
 /** Creates a short-lived icon-only ancestry bridge; no live Naturalist part is reparented or changed. */
 public final class NaturalistIconAdapter {
-    private static final Map<ModelPart, ModelPart> TRACE_PARTS =
+    private static final Map<ModelPart, List<ModelPart>> TRACE_PARTS =
             Collections.synchronizedMap(new IdentityHashMap<>());
     private NaturalistIconAdapter() {}
 
     public static ModelPart build(ModelPart modelRoot, ModelPart selected) {
+        return build(modelRoot, selected, new NaturalistModelContracts.Presentation(1.0F, 0.0F, 0.0F, 0.0F));
+    }
+
+    public static ModelPart build(
+            ModelPart modelRoot,
+            ModelPart selected,
+            NaturalistModelContracts.Presentation presentation
+    ) {
         List<Node> path = new ArrayList<>();
         if (!find(modelRoot, "root", selected, path) || path.size() > 16) return null;
         ModelPart branch = selected;
@@ -32,21 +40,32 @@ public final class NaturalistIconAdapter {
             branch = copy;
         }
         ModelPart adapter = new ModelPart(List.of(), Map.of("naturalist_contract", branch));
+        adapter.xScale = presentation.scale();
+        adapter.yScale = presentation.scale();
+        adapter.zScale = presentation.scale();
+        adapter.xRot = presentation.xRotation();
+        adapter.yRot = presentation.yRotation();
+        adapter.zRot = presentation.zRotation();
         adapter.setInitialPose(adapter.storePose());
-        TRACE_PARTS.put(adapter, selected);
+        List<ModelPart> traceSources = new ArrayList<>();
+        for (int i = path.size() - 1; i >= 0; i--) traceSources.add(path.get(i).part());
+        TRACE_PARTS.put(adapter, List.copyOf(traceSources));
         return adapter;
     }
 
-    public static ModelPart tracePart(ModelPart adapter) { return TRACE_PARTS.get(adapter); }
-
     /**
-     * Resolves only a bridge created by this class to its original traced part.
-     * A missing, cyclic, or untraced mapping deliberately has no substitute.
+     * Resolves only a bridge created by this class to one of its explicit contract-path traces.
+     * A missing, cyclic, or untraced path deliberately has no substitute.
      */
     public static ModelPartRenderTrace resolveTrace(ModelRenderTrace trace, ModelPart adapter) {
-        ModelPart original = tracePart(adapter);
-        if (original == null || original == adapter || tracePart(original) != null) return null;
-        return trace.getModelPartRenderInfo(original);
+        List<ModelPart> originals = TRACE_PARTS.get(adapter);
+        if (originals == null) return null;
+        for (ModelPart original : originals) {
+            if (original == adapter || TRACE_PARTS.containsKey(original)) continue;
+            ModelPartRenderTrace resolved = trace.getModelPartRenderInfo(original);
+            if (resolved != null) return resolved;
+        }
+        return null;
     }
 
     public static boolean traceExists(ModelRenderTrace trace, ModelPart adapter) {
