@@ -119,3 +119,13 @@
 - Artifact: Current C59 is `cnm-nibaru-integration-4.2.3-bge.canary59.external-materials+26.2.jar`, 6,041,722 bytes, SHA-256 `7aa074c4d04503a8118dbcaca5e4a2e4c0ded9ec8b9d51dd8ef4cb154a98bd52`, embedded version `4.2.3-bge.canary59.external-materials+26.2`, source checkpoint `4e59f44c924af0dbb5d233e6de6b9c5ca2c7735d`; retention and any later managed deployment must use these exact bytes.
 - Result: `ACTIVE` — C59 is a controlled-validation candidate outside the Test Slots, with C58 still accepted and C52 preserved as historical rollback provenance.
 - Next state: Retain the exact artifact, integrate the canonical record, then inspect the serialized manager for eligible dedicated-Workbench deployment. Run only the focused optional-provider/manual regression procedure before any C59 promotion.
+
+## 2026-09-07T15:42:09Z — Deploy BGE C59 to Slot A
+- Revision: 18
+- Source checkpoint: `4672129049bffd14e0fe3a14ec4ea83cf8d5409c`
+- Changes: Added the release-scoped, C59-bound Minecraft `~26.2` policy attestation required by the packaged root descriptor, with the existing two byte-identical builds and 90/90 Minecraft 26.2 GameTest evidence. Serialized manager revision 114 then assigned exact C59 to Slot A, preserved Slot B / IBF C4 unchanged, and atomically disabled accepted C58 as the BGE rollback.
+- Build/static: Existing C59 validation remains authoritative: two clean Java 25 builds produced exact SHA-256 `7aa074c4d04503a8118dbcaca5e4a2e4c0ded9ec8b9d51dd8ef4cb154a98bd52`, the full GameTest run passed 90/90, and the resource/model/archive checks passed. The manager independently verified the source bytes, root Fabric metadata, policy, enabled dependency graph, and post-write physical inventory.
+- Runtime: No Minecraft runtime launch or gameplay observation occurred for C59. No runtime PASS is claimed.
+- Artifact: Slot A deployment `728c9954-21fa-4f80-bd10-7e72cd366e13`, artifact `9c457020-9259-4a6b-b237-983d51472710`, is `cnm-nibaru-integration-4.2.3-bge.canary59.external-materials+26.2.jar`, SHA-256 `7aa074c4d04503a8118dbcaca5e4a2e4c0ded9ec8b9d51dd8ef4cb154a98bd52`, source checkpoint `4e59f44c924af0dbb5d233e6de6b9c5ca2c7735d`. Accepted C58 remains byte-exact at `mods/cnm-nibaru-integration-4.2.2-bge.canary58.glass-corner-uv+26.2.jar.disabled`.
+- Result: `TESTING / CONTROLLED_VALIDATION_PASS / READY_TO_TEST_VERIFIED / RUNTIME_UNTESTED`. C58 remains the accepted rollback; C59 is not accepted.
+- Next state: Run only the focused C59 optional-provider/manual regression procedure from TESTING.md and record actual independent runtime evidence before any promotion.

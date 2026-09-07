@@ -10,7 +10,7 @@
     "legacy_ids": []
   },
   "definition": {
-    "lifecycle": "TESTING",
+    "lifecycle": "ACCEPTED",
     "goals": [
       "Make the exact Matcha Flavoured 1.12 server-data tree automatically available during Minecraft 26.2 Fabric create-world preparation and normal world reloads.",
       "Preserve all existing Matcha namespaces, identifiers, source bytes, and server-data behavior without moving its client resource-pack assets."
@@ -63,7 +63,7 @@
     ]
   },
   "state": {
-    "milestone": "Canary 2 corrects the Fabric API runtime predicate while preserving the exact Matcha Flavoured 1.12 server data as the ALWAYS_ENABLED Fabric built-in pack matcha_flavoured_data:matcha_flavoured_1_12. It occupies Test Slot A with physical hash/dependency readiness verified; actual Minecraft runtime validation and acceptance remain blocked on launcher app-control availability.",
+    "milestone": "Canary 2 is the first accepted Matcha Flavoured Data release. The exact built-in server-data pack matcha_flavoured_data:matcha_flavoured_1_12 remains ALWAYS_ENABLED; user-reported aggregate PASS applies only to this exact C2 and supplied no individual checklist-row observations.",
     "releases": {
       "current": {
         "version": "0.1.0-canary2",
@@ -77,24 +77,35 @@
           "exceptions": []
         }
       },
-      "accepted": null,
+      "accepted": {
+        "version": "0.1.0-canary2",
+        "artifact": {
+          "filename": "matcha-flavoured-data-0.1.0-canary2.jar",
+          "sha256": "0850c7ff0680cf42436cd2b72055af77970075cf438ff429bdb55723af444639"
+        },
+        "source_commit": "d55a044f750e06e082c39f1aa08d6f62f7070908",
+        "runtime_dependency_policy": {
+          "contract": "CAPABILITY_OR_PROVIDER",
+          "exceptions": []
+        }
+      },
       "rollback": null,
-      "accepted_current": "NO_ACCEPTED",
+      "accepted_current": "CURRENT_IS_ACCEPTED",
       "accepted_rollback": "NO_ROLLBACK"
     },
     "validation": {
       "build": "STATIC_PASS",
       "deployment": "READY_TO_TEST_VERIFIED",
-      "runtime": "RUNTIME_UNTESTED"
+      "runtime": "RUNTIME_PASS"
     },
     "blocker": null
   },
   "synchronization": {
-    "revision": 2,
-    "activity_at": "2026-09-07T04:02:01Z",
-    "updated_at": "2026-09-07T04:02:01Z",
-    "last_codex_at": "2026-09-07T04:02:01Z",
-    "source_commit": "d55a044f750e06e082c39f1aa08d6f62f7070908",
+    "revision": 3,
+    "activity_at": "2026-09-07T15:42:09Z",
+    "updated_at": "2026-09-07T15:42:09Z",
+    "last_codex_at": "2026-09-07T15:42:09Z",
+    "source_commit": "4672129049bffd14e0fe3a14ec4ea83cf8d5409c",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null

@@ -18,7 +18,7 @@
     ]
   },
   "definition": {
-    "lifecycle": "ACTIVE",
+    "lifecycle": "TESTING",
     "goals": [
       "Maintain one Fabric mod, source tree, build, version, and deployable JAR for the absorbed Nibaru native material catalog and all BGE geometry.",
       "Preserve every former Nibaru and BGE registry/resource identity, specialized material behavior, and saved-world reference while CNM remains an unchanged external dependency.",
@@ -73,7 +73,7 @@
     ]
   },
   "state": {
-    "milestone": "C59 is the current controlled-validation candidate: exact C58 registry/resource identities remain preserved, and optional provider lookup admits exactly 62 requested external sources only when their providers and blocks are present. C58 remains accepted rollback until C59 receives its own observed Minecraft runtime result; C59 is not yet deployed to a Test Slot.",
+    "milestone": "C59 is the current Slot A candidate: exact C58 remains the accepted rollback while C59's optional provider lookup admits exactly 62 requested external sources only when their providers and blocks are present. C59 is physically hash/dependency verified and READY_TO_TEST_VERIFIED, but has no observed Minecraft runtime result.",
     "releases": {
       "current": {
         "version": "C59 (External Materials; embedded 4.2.3-bge.canary59.external-materials+26.2)",
@@ -85,7 +85,19 @@
         "source_commit": "4e59f44c924af0dbb5d233e6de6b9c5ca2c7735d",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
-          "exceptions": []
+          "exceptions": [
+            {
+              "consumer_id": "cnm_terrain_slabs_compat",
+              "relationship": "depends",
+              "dependency_id": "minecraft",
+              "predicate": "~26.2",
+              "reason": "The exact C59 artifact targets the Minecraft 26.2 release and packages Fabric's same-release predicate; this target-specific Minecraft predicate must remain bound to the tested release bytes.",
+              "regression_evidence": [
+                "Two clean Java 25 builds produced byte-identical C59 JARs with SHA-256 7aa074c4d04503a8118dbcaca5e4a2e4c0ded9ec8b9d51dd8ef4cb154a98bd52.",
+                "The C59 GameTest run passed 90/90 on the Minecraft 26.2 validation baseline."
+              ]
+            }
+          ]
         }
       },
       "accepted": {
@@ -111,17 +123,17 @@
     },
     "validation": {
       "build": "CONTROLLED_VALIDATION_PASS",
-      "deployment": "NOT_DEPLOYED",
+      "deployment": "READY_TO_TEST_VERIFIED",
       "runtime": "RUNTIME_UNTESTED"
     },
     "blocker": null
   },
   "synchronization": {
-    "revision": 17,
-    "activity_at": "2026-09-07T03:10:37Z",
-    "updated_at": "2026-09-07T03:10:37Z",
-    "last_codex_at": "2026-09-07T03:10:37Z",
-    "source_commit": "4e59f44c924af0dbb5d233e6de6b9c5ca2c7735d",
+    "revision": 18,
+    "activity_at": "2026-09-07T15:42:09Z",
+    "updated_at": "2026-09-07T15:42:09Z",
+    "last_codex_at": "2026-09-07T15:42:09Z",
+    "source_commit": "4672129049bffd14e0fe3a14ec4ea83cf8d5409c",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null

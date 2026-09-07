@@ -19,3 +19,13 @@
 - Artifact: `matcha-flavoured-data-0.1.0-canary2.jar`, 1,586,660 bytes, SHA-256 `0850c7ff0680cf42436cd2b72055af77970075cf438ff429bdb55723af444639`; the canonical artifact-retention workflow copied and byte-verified it at the primary checkout path.
 - Result: TESTING / STATIC_PASS / READY_TO_TEST_VERIFIED / RUNTIME_UNTESTED. This is an infrastructure/app-control blocker, not a mod failure.
 - Next state: Resume the current ready Slot A candidate after app control is available, run the documented matrix against this exact artifact, record only observed evidence, and promote only on PASS.
+
+## 2026-09-07T15:42:09Z — Accept Matcha Flavoured Data Canary 2
+- Revision: 3
+- Source checkpoint: `4672129049bffd14e0fe3a14ec4ea83cf8d5409c`
+- Changes: Manager revision 112 recorded the user's aggregate PASS only for exact Slot A deployment `d2753f9b-6258-48d9-be21-29e8b03f8a66`; manager revision 113 promoted that same C2 as this project's first accepted release and removed the completed Slot A deployment. No rollback was invented.
+- Build/static: Existing C2 Java 25 / Gradle 9.5.1 / Fabric Loom 1.17.19 controlled validation remains authoritative: the root Fabric API predicate, dependency-policy attestation, 2,433 embedded server-data files, pack metadata, and ALWAYS_ENABLED registration were already verified. No source or JAR bytes changed.
+- Runtime: User-reported aggregate `PASS` for exact C2 only. No individual checklist-row observations were supplied or inferred.
+- Artifact: Accepted C2 is `matcha-flavoured-data-0.1.0-canary2.jar`, SHA-256 `0850c7ff0680cf42436cd2b72055af77970075cf438ff429bdb55723af444639`, source checkpoint `d55a044f750e06e082c39f1aa08d6f62f7070908`; it is the project's first accepted release and has no rollback predecessor.
+- Result: `ACCEPTED / STATIC_PASS / READY_TO_TEST_VERIFIED / RUNTIME_PASS`. The exact accepted artifact remains in the baseline; Slot A was cleared before its reassignment.
+- Next state: Preserve the exact accepted C2 identity and aggregate-only evidence. Any successor requires its own identity, validation, deployment, runtime evidence, and promotion decision.
