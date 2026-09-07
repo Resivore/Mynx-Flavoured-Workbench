@@ -124,6 +124,8 @@ def ribbitsReferenceJar = referenceJar(
 def ribbitsRuntimeReferenceJars = providers.gradleProperty('ribbits_runtime_reference_jars')
         .map { value -> value.split(';').collect { path -> file(path) } }
         .orElse([])
+def matchaFoodResourceRoot = providers.gradleProperty('matcha_food_resource_root')
+        .map { path -> file(path) }
 
 dependencies {
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
@@ -212,6 +214,17 @@ loom.runs.named('gameTest') {
     // execution to the IBF suite rather than treating an upstream provider's
     // own GameTest failures as failures of this project.
     vmArg '-Dfabric-api.gametest.filter=interchangeable-block-families-runtime-tests:*'
+}
+
+// Ribbits validates its owned trade recipes at server startup. The optional
+// input is test-only: it mounts the canonical Matcha data dependencies in the
+// GameTest test mod without bundling them in IBF's production artifact.
+tasks.named('processGametestResources') {
+    if (matchaFoodResourceRoot.isPresent()) {
+        from(matchaFoodResourceRoot) {
+            include 'data/**'
+        }
+    }
 }
 
 processResources {

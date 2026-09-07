@@ -15,16 +15,16 @@
   ],
   "depends": {
     "fabricloader": ">=0.19.3",
-    "minecraft": "~26.2",
+    "minecraft": "=26.2",
     "java": ">=25",
     "fabric-api": ">=0.157.0",
-    "clutternomore": "=2.0.7+26.2",
-    "mcwdoors": "=1.1.5",
-    "mcwpaths": "=1.1.1",
-    "auroraslanterns": "=2.1.1+26.2",
-    "ribbits": "=4.1.6+26.2-mynx-canary17",
-    "mcwtrpdoors": "=1.1.5",
-    "mcwwindows": "=2.4.2",
-    "dramaticdoors": "=1.20.1-3.3.3+26.2-workbench-canary7"
+    "clutternomore": ">=2.0.7",
+    "mcwdoors": ">=1.1.5",
+    "mcwpaths": ">=1.1.1",
+    "auroraslanterns": ">=2.1.1",
+    "ribbits": ">=4.1.6",
+    "mcwtrpdoors": ">=1.1.5",
+    "mcwwindows": ">=2.4.2",
+    "dramaticdoors": ">=1.20.1-3.3.3"
   }
 }

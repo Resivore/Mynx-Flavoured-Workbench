@@ -88,6 +88,22 @@ public final class AuditedShapeRuntime {
     }
 
     /**
+     * CNM's recipe cleanup must distinguish an acquisition recipe for an IBF
+     * parent from a recipe which produces one of the parent\'s alternates.
+     * ShapeMap intentionally exposes the parent as the first component member,
+     * so callers which are matching cleanup candidates need this explicit
+     * ownership check rather than treating every component member alike.
+     */
+    public static boolean isAuditedCanonicalParent(Item item) {
+        ResolvedCatalog catalog = resolvedCatalog;
+        if (catalog == null) {
+            return false;
+        }
+        ResolvedFamily family = catalog.byMember().get(item);
+        return family != null && family.members().getFirst() == item;
+    }
+
+    /**
      * True only for non-parent members of the two audited multi-block door
      * categories. Those members must retain their provider-native loot pass
      * because it is the provider state that identifies the one authoritative

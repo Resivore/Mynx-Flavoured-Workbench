@@ -5,6 +5,7 @@
   "mixins": [
     "AuditedDoorPlayerBreakMixin",
     "CnmAuditedDoorLootMixin",
+    "CnmRecipeCleanupCanonicalParentMixin",
     "ItemStackComponentGuardMixin",
     "ShapeMapDisabledModeMixin",
     "ShapeMapIntegrationMixin",

@@ -242,7 +242,10 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
                 "mcwpaths:oak_planks_path",
                 "mcwpaths:stone_running_bond_path",
                 "mcwwindows:oak_log_parapet",
-                "mcwwindows:metal_curtain_rod")) {
+                "mcwwindows:metal_curtain_rod",
+                // A non-IBF CNM alternate remains governed by CNM cleanup;
+                // the canonical-parent guard must not broaden beyond IBF.
+                "minecraft:stone_slab")) {
             helper.assertTrue(!hasRecipe(helper, removed),
                     "CNM retained a new-family non-parent recipe: " + removed);
         }
