@@ -28,4 +28,16 @@ abstract class PoiTypesMixin {
             cir.setReturnValue(Optional.of(FloristRegistry.floristHolder()));
         }
     }
+
+    /**
+     * PoiManager's section scan checks this fast-path before it calls {@code forState}.  Both
+     * lookups must agree or a newly loaded chunk containing only flower pots is never indexed.
+     */
+    @Inject(method = "hasPoi", at = @At("RETURN"), cancellable = true)
+    private static void mynxFloraTrades$scanDynamicFlowerPots(BlockState state,
+                                                                CallbackInfoReturnable<Boolean> cir) {
+        if (!cir.getReturnValue() && FloristRegistry.isFlowerPot(state)) {
+            cir.setReturnValue(true);
+        }
+    }
 }

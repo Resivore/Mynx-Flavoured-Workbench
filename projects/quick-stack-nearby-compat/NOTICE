@@ -1,0 +1,11 @@
+Quick Stack Nearby C10 includes and modifies the upstream Quick Stack Nearby 0.4.0 source,
+from the project release source at tag v0.4.0, commit 49dfdccd6aac4cbc38539a4bcce0d7eef2a9f6e1.
+The upstream source is licensed LGPL-3.0-or-later; its license is packaged as
+LICENSE_quick-stack-nearby and the unmodified upstream GPL notice is retained as
+LICENSE-GPL-3.0_quick-stack-nearby.
+
+NearbySearchScreen was independently implemented for this Workbench candidate. Its
+480x290 modal proportion, 12px padding, row-oriented locations, and query vocabulary
+were visually referenced from Inventory Search v3.4.0 at commit
+8690f802b57af274309c221ba452b4449876e744. No Inventory Search or Inventory Sort
+source, classes, resources, or jars are included in this artifact.

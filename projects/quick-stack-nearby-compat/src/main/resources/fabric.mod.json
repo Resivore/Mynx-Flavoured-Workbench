@@ -1,26 +1,29 @@
 {
   "schemaVersion": 1,
-  "id": "quick_stack_nearby_compat",
+  "id": "quick-stack-nearby",
   "version": "${version}",
-  "name": "Workbench Quick Stack Nearby Compatibility",
-  "description": "Unified Workbench compatibility layer for Quick Stack Nearby; Canary 9 adds one-level nested shulker destinations with exact optional CSR affinity and transactional writeback while retaining existing top-level behavior.",
-  "authors": ["Resivore"],
-  "license": "MIT",
+  "name": "Quick Stack Nearby (Workbench Canary 10)",
+  "description": "Quick Stack Nearby 0.4.0 with Workbench routing compatibility and live Nearby Search.",
+  "authors": ["ThatMasonGuy", "Resivore"],
+  "contact": {
+    "sources": "https://github.com/ThatMasonGuy/minecraft-quick-stack-nearby"
+  },
+  "license": "LGPL-3.0-or-later",
+  "icon": "assets/quick-stack-nearby/icon.jpg",
   "environment": "*",
-  "mixins": [
-    "quick_stack_nearby_compat.mixins.json",
-    "quick_stack_nearby_compat.client.mixins.json"
-  ],
+  "entrypoints": {
+    "main": ["tempeststudios.quickstacknearby.QuickStackNearby"],
+    "client": ["tempeststudios.quickstacknearby.QuickStackNearbyClient"]
+  },
+  "mixins": ["quick-stack-nearby.mixins.json"],
   "depends": {
     "fabricloader": ">=0.19.3",
     "minecraft": "=26.2",
     "java": ">=25",
-    "fabric-api": ">=0.157.0",
-    "quick-stack-nearby": ">=0.4.0"
+    "fabric-api": ">=0.157.0"
   },
   "suggests": {
     "container_slot_reservations": "*",
-    "inventorysearch": "*",
     "inventoryextended": "*",
     "clutternomore": "*",
     "cnm_terrain_slabs_compat": "*",
@@ -29,6 +32,10 @@
   "custom": {
     "workbench:classification": "GENERATED / STATICALLY VALIDATED / RUNTIME UNTESTED",
     "workbench:deployment": "NOT DEPLOYED",
-    "workbench:runtime-slot-owner": "Quick Stack Nearby Compatibility - Canary 9"
+    "workbench:runtime-slot-owner": "Quick Stack Nearby - Workbench Canary 10",
+    "workbench:runtime_dependency_policy": {
+      "contract": "CAPABILITY_OR_PROVIDER",
+      "exceptions": []
+    }
   }
 }
