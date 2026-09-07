@@ -18,18 +18,20 @@
     ]
   },
   "definition": {
-    "lifecycle": "ACCEPTED",
+    "lifecycle": "ACTIVE",
     "goals": [
       "Maintain one Fabric mod, source tree, build, version, and deployable JAR for the absorbed Nibaru native material catalog and all BGE geometry.",
       "Preserve every former Nibaru and BGE registry/resource identity, specialized material behavior, and saved-world reference while CNM remains an unchanged external dependency.",
-      "Expose one deterministic ordered geometry catalog for Vertical Slab, Step, Corner, Quarter Column, and Layer without changing established placement, economy, or material-frame semantics."
+      "Expose one deterministic ordered geometry catalog for Vertical Slab, Step, Corner, Quarter Column, and Layer without changing established placement, economy, or material-frame semantics.",
+      "Offer the exact optional C59 compatibility catalog only when Ribbits, Mynx Trees, or Macaw's Paths supplies the corresponding source block."
     ],
     "scope": [
       "Compile the retained `games.twinhead.moreslabsstairsandwalls` source and `more_slabs_stairs_and_walls` resources directly inside BGE with a clear LGPL-covered source and attribution boundary.",
       "Register native slabs, stairs, walls, material profiles, transitions, and client bindings before deriving CNM/BGE geometry through one guarded bootstrap and one root Fabric descriptor.",
       "Preserve all native material profiles, canonical parents, copied settings, TOP/SIDE/BOTTOM roles, axes, patterns, tint, translucency, transitions, drops, and specialized behaviors.",
       "Generate one Layer, Corner, and Quarter Column per supported canonical family while preserving Vertical Slab and Step, deterministic selector order, one-source economy, orientation, waterlogging, collision, and drops.",
-      "Provide primary Fabric ID `cnm_terrain_slabs_compat` and verified legacy alias `more_slabs_stairs_and_walls` from the same mod container and shared version `4.2.2-bge.canary58.glass-corner-uv+26.2`."
+      "Provide primary Fabric ID `cnm_terrain_slabs_compat` and verified legacy alias `more_slabs_stairs_and_walls` from the same mod container and shared version `4.2.3-bge.canary59.external-materials+26.2`.",
+      "Preserve C58 native registry identities while adding only 52 patterned and 5 soil Macaw's Paths sources, Ribbits Mossy Oak Planks, and four Mynx Trees sources with their verified texture-role semantics."
     ],
     "boundaries": {
       "owned_paths": [
@@ -38,6 +40,7 @@
       "exclusions": [
         "Clutter No More source and artifacts remain external and unchanged; its ShapeMap remains the canonical family and switching mechanism.",
         "C58 is limited to the user-authored glass-Corner geometry/UV route; generic glass Quarter Column projection and all non-glass Corner outputs remain C57-equivalent.",
+        "C59 must not add hard provider dependencies, unrequested Macaw's Paths materials, generated short-path artifacts, or changes to accepted C58 identities.",
         "`projects/bge-ctm`, shaders, resource-pack classification, BBB source/assets, and unrelated consumer projects are outside this consolidation.",
         "Accepted BGE C52 and historical standalone Nibaru C45 are preserved as rollback provenance and are not rewritten."
       ]
@@ -47,7 +50,7 @@
         "type": "MOD",
         "identifier": "minecraft",
         "requirement": "~26.2",
-        "reason": "Unified BGE C58 targets Minecraft Java 26.2."
+        "reason": "Unified BGE C59 targets Minecraft Java 26.2."
       },
       {
         "type": "MOD",
@@ -70,16 +73,20 @@
     ]
   },
   "state": {
-    "milestone": "The user independently reported aggregate runtime PASS for exact BGE C58 in the revision-62 Slot A cohort; no checklist-row result is inferred. Manager revision 63 bound that result only to deployment 128c78b7-a80d-4b3f-8605-6cdf31bbebf1 and artifact 7c990388-34b7-4225-8f14-a0b9b5bfae94, revision 65 removed the completed cohort, and revision 66 atomically promoted exact C58 with exact private Shulker Trowel C10 into accepted Baseline Stack v14. C58 replaced accepted BGE C52 and absorbed historical accepted standalone Nibaru deployment e5eb4fcb-6c49-4ab2-86f9-1605ccd192ab, so the unified BGE artifact is the sole accepted provider of both stable IDs while C52 remains exact rollback provenance. The tested C58 bytes and metadata were not rebuilt, repackaged, or changed; their existing dependency metadata is grandfathered under the universal runtime-dependency policy.",
+    "milestone": "C59 is the current controlled-validation candidate: exact C58 registry/resource identities remain preserved, and optional provider lookup admits exactly 62 requested external sources only when their providers and blocks are present. C58 remains accepted rollback until C59 receives its own observed Minecraft runtime result; C59 is not yet deployed to a Test Slot.",
     "releases": {
       "current": {
-        "version": "C58 (Glass Corner UV; embedded 4.2.2-bge.canary58.glass-corner-uv+26.2)",
-        "embedded_version": "4.2.2-bge.canary58.glass-corner-uv+26.2",
+        "version": "C59 (External Materials; embedded 4.2.3-bge.canary59.external-materials+26.2)",
+        "embedded_version": "4.2.3-bge.canary59.external-materials+26.2",
         "artifact": {
-          "filename": "cnm-nibaru-integration-4.2.2-bge.canary58.glass-corner-uv+26.2.jar",
-          "sha256": "1a4e4d1cd9c8709720ec84975e70caffb5552ac676537b9bbae42dca96567e87"
+          "filename": "cnm-nibaru-integration-4.2.3-bge.canary59.external-materials+26.2.jar",
+          "sha256": "7aa074c4d04503a8118dbcaca5e4a2e4c0ded9ec8b9d51dd8ef4cb154a98bd52"
         },
-        "source_commit": "d1d753a86b21467141bd39a0bcc1270f7827a8d7"
+        "source_commit": "4e59f44c924af0dbb5d233e6de6b9c5ca2c7735d",
+        "runtime_dependency_policy": {
+          "contract": "CAPABILITY_OR_PROVIDER",
+          "exceptions": []
+        }
       },
       "accepted": {
         "version": "C58 (Glass Corner UV; embedded 4.2.2-bge.canary58.glass-corner-uv+26.2)",
@@ -99,22 +106,22 @@
         },
         "source_commit": "2e58d752af44f4b84e10bc5e53a41aea00a177ee"
       },
-      "accepted_current": "CURRENT_IS_ACCEPTED",
+      "accepted_current": "CURRENT_DIFFERS_FROM_ACCEPTED",
       "accepted_rollback": "ROLLBACK_DIFFERS_FROM_ACCEPTED"
     },
     "validation": {
       "build": "CONTROLLED_VALIDATION_PASS",
-      "deployment": "READY_TO_TEST_VERIFIED",
-      "runtime": "RUNTIME_PASS"
+      "deployment": "NOT_DEPLOYED",
+      "runtime": "RUNTIME_UNTESTED"
     },
     "blocker": null
   },
   "synchronization": {
-    "revision": 16,
-    "activity_at": "2026-09-02T17:00:13Z",
-    "updated_at": "2026-09-02T17:00:13Z",
-    "last_codex_at": "2026-09-02T17:00:13Z",
-    "source_commit": "27d9fc0f66fd32bcda8fef80cffd92ec5d964242",
+    "revision": 17,
+    "activity_at": "2026-09-07T03:10:37Z",
+    "updated_at": "2026-09-07T03:10:37Z",
+    "last_codex_at": "2026-09-07T03:10:37Z",
+    "source_commit": "4e59f44c924af0dbb5d233e6de6b9c5ca2c7735d",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null

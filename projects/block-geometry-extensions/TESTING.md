@@ -1,14 +1,14 @@
-# Accepted BGE C58 runtime evidence
+# BGE C59 runtime procedure
 
-Accepted release:
+Current candidate: `cnm-nibaru-integration-4.2.3-bge.canary59.external-materials+26.2.jar`, 6,041,722 bytes, SHA-256 `7aa074c4d04503a8118dbcaca5e4a2e4c0ded9ec8b9d51dd8ef4cb154a98bd52`, embedded version `4.2.3-bge.canary59.external-materials+26.2`, source checkpoint `4e59f44c924af0dbb5d233e6de6b9c5ca2c7735d`.
 
-- BGE C58: `cnm-nibaru-integration-4.2.2-bge.canary58.glass-corner-uv+26.2.jar`, 6,036,614 bytes, SHA-256 `1a4e4d1cd9c8709720ec84975e70caffb5552ac676537b9bbae42dca96567e87`, embedded version `4.2.2-bge.canary58.glass-corner-uv+26.2`.
-- Runtime identity: deployment `128c78b7-a80d-4b3f-8605-6cdf31bbebf1`, artifact `7c990388-34b7-4225-8f14-a0b9b5bfae94`, release source `d1d753a86b21467141bd39a0bcc1270f7827a8d7`.
+C59 has passed controlled validation but is not deployed and has no Minecraft runtime result. C58 remains the accepted rollback: `cnm-nibaru-integration-4.2.2-bge.canary58.glass-corner-uv+26.2.jar`, SHA-256 `1a4e4d1cd9c8709720ec84975e70caffb5552ac676537b9bbae42dca96567e87`.
 
-The user independently reported aggregate `PASS` for this exact BGE member of the verified revision-62 Slot A cohort. The report does not identify individual checklist observations, so no checklist row is inferred as tested or passed. It is not a blanket result for the companion Trowel member, other BGE versions, or future artifacts.
+When the serialized Test Instance Manager has assigned C59 to a dedicated 26.2 Workbench slot, use a profile containing the corresponding optional providers and verify only observed behavior:
 
-Manager revision 63 recorded the exact-member result, revision 65 removed the completed cohort, and revision 66 atomically promoted exact C58 with exact private Shulker Trowel C10 into Baseline Stack v14. C58 replaced accepted BGE C52 and absorbed historical accepted standalone Nibaru deployment `e5eb4fcb-6c49-4ab2-86f9-1605ccd192ab`; the unified accepted artifact now supplies both `cnm_terrain_slabs_compat` and stable alias `more_slabs_stairs_and_walls`. Exact C52 remains the BGE rollback.
+- Ribbits: Mossy Oak Planks BGE geometry is present.
+- Mynx Trees: Wisteria Log and Silver Birch Log retain side/end texture distinction under BGE geometry; Wisteria Wood and Silver Birch Wood use bark on every face.
+- Macaw's Paths: exactly the 13 each Running Bond, Windmill Weave, Flagstone, and Crystal path materials plus the five soil paths are admitted; no other Macaw's Paths source is admitted.
+- Existing C58 BGE families, registry identities, geometry, and accepted Glass Corner behavior remain unchanged.
 
-## Current procedure
-
-No active runtime procedure is required for accepted C58. Preserve its exact bytes, filename, hash, embedded version, release source, accepted identity, and aggregate evidence. Do not reinterpret the aggregate report as row-level evidence, rebuild or repackage the accepted JAR, or apply its result to a successor. Any future release needs its own identity, policy-conforming runtime dependency metadata, validation, deployment, and runtime result.
+Do not mark any row passed without direct observation. GameTests, static validation, artifact inspection, or deployment/readiness verification do not constitute Minecraft runtime PASS. Do not use or modify the protected Matcha Flavoured 26.1.2 profile.
