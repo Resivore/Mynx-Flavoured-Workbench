@@ -3,7 +3,7 @@
   "id": "xaero_discovery_radius",
   "version": "${version}",
   "name": "Xaero Discovery Radius",
-  "description": "Keeps new Xaero terrain discovery within a circular client-configurable chunk radius and preserves Xaero cave layers independently.",
+  "description": "Keeps new Xaero terrain discovery within a square client-configurable chunk radius and preserves Xaero cave layers independently.",
   "authors": ["Resivore compatibility workbench"],
   "license": "MIT",
   "environment": "client",
@@ -15,7 +15,7 @@
     "fabricloader": ">=0.19.3",
     "fabric-api": ">=0.157.0",
     "minecraft": ">=26.2 <26.3",
-    "xaerominimap": "26.4.2",
-    "xaeroworldmap": "1.44.2"
+    "xaerominimap": ">=26.4.2",
+    "xaeroworldmap": ">=1.44.2"
   }
 }

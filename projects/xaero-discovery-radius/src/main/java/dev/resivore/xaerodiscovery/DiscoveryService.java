@@ -31,7 +31,7 @@ public final class DiscoveryService {
                 logger
         );
         logger.info(
-                "Xaero Discovery Radius initialized with a chunk-quantized circular radius of {} chunks",
+                "Xaero Discovery Radius initialized with a chunk-quantized square half-width of {} chunks",
                 config.discoveryRadiusChunks()
         );
     }
@@ -86,7 +86,7 @@ public final class DiscoveryService {
         if (store != null && current != null && server != null && current.server == server) {
             ServerLevel serverLevel = server.getLevel(world.dimension());
             if (serverLevel != null) {
-                store.recordCircle(
+                store.recordSquare(
                         key(serverLevel),
                         centerChunkX,
                         centerChunkZ,
