@@ -29,3 +29,13 @@
 - Artifact: `mynx-flora-trades-0.1.0+26.2-canary3.jar`; 21,222 bytes; SHA-256 `fe08a7da4ef0e24780432f9094ed2aa4b55fd4c7808b6811e8ba4be9e9ebf484`.
 - Result: ACTIVE / STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED.
 - Next state: Retain this exact artifact, publish revision 3 from integrated authoritative main through the gated Sheet workflow, then perform the focused dedicated-Workbench runtime procedure without changing either test cohort.
+
+## 2026-09-07T22:46:39Z — Add Florist Glowcap pot sales in Canary 4
+- Revision: 4
+- Source checkpoint: `e534b3d77417dcc58c54ccee775a70697eeaac86`
+- Changes: Recorded the supplied C3 external/user observation precisely: the Florist claimed its Flower Pot POI and became functional in Minecraft runtime; no unobserved C3 matrix row or aggregate PASS was inferred. C4 prepends `1 ribbits:glowcap -> 4 minecraft:flower_pot` and `1 ribbits:glowcap -> 1 minecraft:decorated_pot` in the authoritative ordered Florist level-1 tag. The eight existing Obol-for-eight-flower, zero-XP offers remain byte-for-byte unchanged. An isolated existing test API fixture supplies compile-only Ribbits symbols only when the ignored private JAR is absent; it is excluded from the production JAR and does not alter the runtime dependency.
+- Build/static: Java 25 / Gradle 9.5.1 unit tests and production Minecraft 26.2 POI-mixin application passed. The established Florist GameTest server fixture could not launch because its ignored retained MRU C3 JAR is unavailable in this checkout; source compilation completed, but that controlled fixture result is not claimed.
+- Runtime: C3 has the limited user-reported observation above. C4 is NOT_DEPLOYED and RUNTIME_UNTESTED; no Test Slot or protected profile was touched.
+- Artifact: `mynx-flora-trades-0.1.0+26.2-canary4.jar`; 21,973 bytes; SHA-256 `58585c2133396d9f173c47391d81e0e6d5f6f549252e3e99f6f9f52ea111e146`.
+- Result: ACTIVE / STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED.
+- Next state: Retain the exact artifact, publish the integrated revision from main through the gated Sheet workflow, and run the focused C4 dedicated-Workbench matrix.
