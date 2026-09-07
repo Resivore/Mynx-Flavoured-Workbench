@@ -21,6 +21,7 @@ import games.twinhead.moreslabsstairsandwalls.block.spreadable.SpreadableSlab;
 import games.twinhead.moreslabsstairsandwalls.block.strippable.StrippableGeometry;
 import games.twinhead.moreslabsstairsandwalls.block.terracotta.GlazedTerracottaSlab;
 import games.twinhead.moreslabsstairsandwalls.block.translucent.TranslucentSlab;
+import dev.aero.cnmterraincompat.ExternalMaterialCatalog;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.BlockFamilies;
 import net.minecraft.data.BlockFamily;
@@ -104,6 +105,14 @@ public final class NibaruMaterialProfiles {
             if (wall != null) putGeometry(byBlock, wall, profile);
             if (effectiveSlab != null && effectiveSlab != slab) putGeometry(byBlock, effectiveSlab, profile);
             if (effectiveStair != null && effectiveStair != stair) putGeometry(byBlock, effectiveStair, profile);
+            profiles.add(profile);
+        }
+        // Optional BGE providers are deliberately appended after the frozen native catalog:
+        // native ordering and every historical identity remain byte-for-byte stable.
+        for (NibaruMaterialProfile profile : ExternalMaterialCatalog.presentProfiles()) {
+            if (byBlock.put(profile.canonicalParent(), profile) != null)
+                throw new IllegalStateException("External material collides with native profile: "
+                        + profile.canonicalParentId());
             profiles.add(profile);
         }
         return new Inventory(List.copyOf(profiles), Collections.unmodifiableMap(byFamily),

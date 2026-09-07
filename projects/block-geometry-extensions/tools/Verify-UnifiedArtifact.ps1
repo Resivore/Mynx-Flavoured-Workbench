@@ -1,5 +1,5 @@
 param(
-    [string]$UnifiedJar = (Join-Path $PSScriptRoot '..\build\libs\cnm-nibaru-integration-4.2.2-bge.canary58.glass-corner-uv+26.2.jar'),
+    [string]$UnifiedJar = (Join-Path $PSScriptRoot '..\build\libs\cnm-nibaru-integration-4.2.3-bge.canary59.external-materials+26.2.jar'),
     [string]$C57Jar = (Join-Path $PSScriptRoot '..\artifacts\cnm-nibaru-integration-4.2.1-bge.canary57.unified+26.2.jar')
 )
 
@@ -81,11 +81,14 @@ function Test-ContainsBytes([byte[]]$Bytes, [byte[]]$Needle) {
 function Test-AllowedChangedEntry([string]$Name) {
     return $Name -eq 'fabric.mod.json' -or
             $Name -match '^dev/aero/cnmterraincompat/client/CornerColumnModelProjection(?:\$.*)?\.class$' -or
-            $Name -match '^dev/aero/cnmterraincompat/client/CuboidListModelProjection(?:\$.*)?\.class$'
+            $Name -match '^dev/aero/cnmterraincompat/client/CuboidListModelProjection(?:\$.*)?\.class$' -or
+            $Name -eq 'dev/aero/cnmterraincompat/NibaruProviderAdapter.class' -or
+            $Name -match '^games/twinhead/moreslabsstairsandwalls/api/material/NibaruMaterialProfiles(?:\$.*)?\.class$'
 }
 
 function Test-AllowedNewEntry([string]$Name) {
-    return $Name -match '^dev/aero/cnmterraincompat/client/AuthoredGlassCornerModel(?:\$.*)?\.class$'
+    return $Name -match '^dev/aero/cnmterraincompat/client/AuthoredGlassCornerModel(?:\$.*)?\.class$' -or
+            $Name -match '^dev/aero/cnmterraincompat/ExternalMaterialCatalog(?:\$.*)?\.class$'
 }
 
 $unifiedPath = (Resolve-Path -LiteralPath $UnifiedJar).Path
@@ -109,9 +112,9 @@ try {
     $metadataText = Get-EntryText $unifiedMap['fabric.mod.json']
     $metadata = $metadataText | ConvertFrom-Json
     Require ($metadata.id -eq 'cnm_terrain_slabs_compat') 'Unified primary Fabric ID changed'
-    Require ($metadata.version -eq '4.2.2-bge.canary58.glass-corner-uv+26.2') 'Unified Fabric version is not exact C58'
-    Require ($metadata.name -eq 'Block Geometry Extensions Canary 58 — Glass Corner UV') `
-            'Unified Fabric display name is not exact C58'
+    Require ($metadata.version -eq '4.2.3-bge.canary59.external-materials+26.2') 'Unified Fabric version is not exact C59'
+    Require ($metadata.name -eq 'Block Geometry Extensions Canary 59 — External Materials') `
+            'Unified Fabric display name is not exact C59'
     Require (@($metadata.provides).Count -eq 1 -and $metadata.provides[0] -eq 'more_slabs_stairs_and_walls') `
             'Unified descriptor must provide exactly the legacy Nibaru ID'
     Require ($metadata.PSObject.Properties.Name -notcontains 'jars') 'Unified descriptor must not declare nested JARs'
@@ -145,22 +148,24 @@ try {
             [void]$changed.Add($name)
         }
     }
-    Require ($missing.Count -eq 0) "C58 lost retained C57 entries: $(@($missing) -join ', ')"
+    Require ($missing.Count -eq 0) "C59 lost retained C57 entries: $(@($missing) -join ', ')"
 
     $newEntries = New-StringSet @($unifiedMap.Keys | Where-Object { -not $c57Map.ContainsKey($_) })
     $unexpectedChanges = @($changed | Where-Object { -not (Test-AllowedChangedEntry $_) })
     $unexpectedNew = @($newEntries | Where-Object { -not (Test-AllowedNewEntry $_) })
     Require ($unexpectedChanges.Count -eq 0) `
-            "C58 changed entries outside the metadata/Corner projection whitelist: $($unexpectedChanges -join ', ')"
+            "C59 changed entries outside the metadata/C58 Corner/C59 external catalog whitelist: $($unexpectedChanges -join ', ')"
     Require ($unexpectedNew.Count -eq 0) `
-            "C58 added entries outside the authored Corner class whitelist: $($unexpectedNew -join ', ')"
+            "C59 added entries outside the C58 Corner/C59 external catalog class whitelist: $($unexpectedNew -join ', ')"
 
     foreach ($required in @(
         'fabric.mod.json',
         'dev/aero/cnmterraincompat/client/CornerColumnModelProjection.class',
-        'dev/aero/cnmterraincompat/client/CuboidListModelProjection.class'
+        'dev/aero/cnmterraincompat/client/CuboidListModelProjection.class',
+        'dev/aero/cnmterraincompat/NibaruProviderAdapter.class',
+        'games/twinhead/moreslabsstairsandwalls/api/material/NibaruMaterialProfiles.class'
     )) {
-        Require $changed.Contains($required) "Required C58 archive change is absent: $required"
+        Require $changed.Contains($required) "Required C59 archive change is absent: $required"
     }
     foreach ($required in @(
         'dev/aero/cnmterraincompat/client/AuthoredGlassCornerModel.class',
@@ -168,7 +173,13 @@ try {
         'dev/aero/cnmterraincompat/client/AuthoredGlassCornerModel$AuthoredFace.class',
         'dev/aero/cnmterraincompat/client/AuthoredGlassCornerModel$Uv.class'
     )) {
-        Require $newEntries.Contains($required) "Required authored C58 class is absent: $required"
+        Require $newEntries.Contains($required) "Required retained C58 authored class is absent: $required"
+    }
+    foreach ($required in @(
+        'dev/aero/cnmterraincompat/ExternalMaterialCatalog.class',
+        'dev/aero/cnmterraincompat/ExternalMaterialCatalog$Spec.class'
+    )) {
+        Require $newEntries.Contains($required) "Required C59 external catalog class is absent: $required"
     }
 
     $forbiddenNames = @($unifiedMap.Keys | Where-Object {
@@ -193,10 +204,10 @@ try {
     foreach ($name in @($changed) + @($newEntries)) {
         $bytes = Get-EntryBytes $unifiedMap[$name]
         Require (-not (Test-ContainsBytes $bytes $pngSignature)) `
-                "Changed/new C58 entry embeds raw PNG source bytes: $name"
+                "Changed/new C59 entry embeds raw PNG source bytes: $name"
         $text = [System.Text.Encoding]::UTF8.GetString($bytes)
         Require ($text -notmatch '(?i)data:image/png;base64|iVBORw0KGgo|uv bbmodel(?:\.zip)?|BlockSprite_glass\.png|glass_corner_north_east\.bbmodel|\.bbmodel') `
-                "Changed/new C58 entry embeds a forbidden source name or texture encoding: $name"
+                "Changed/new C59 entry embeds a forbidden source name or texture encoding: $name"
     }
 
     foreach ($path in @(

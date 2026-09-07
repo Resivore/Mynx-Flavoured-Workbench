@@ -462,7 +462,7 @@ public final class NibaruProviderAdapter {
         CanonicalGeometryRegistry.register(block);
         geometry.legacyGeometry().ifPresent(legacy -> DerivedMaterialTraits.register(
                 block, profile.canonicalParent(), legacy, geometry.fuelDivisor()));
-        if (profile.canonicalParent().defaultBlockState().ignitedByLava()) {
+        if (profile.family() != null && profile.canonicalParent().defaultBlockState().ignitedByLava()) {
             FlammableBlockRegistry.getDefaultInstance().add(block,
                     games.twinhead.moreslabsstairsandwalls.registry.ModRegistry.getBurnChance(profile.family()),
                     games.twinhead.moreslabsstairsandwalls.registry.ModRegistry.getSpreadChance(profile.family()));
