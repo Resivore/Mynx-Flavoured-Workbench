@@ -2,8 +2,8 @@
   "$schema": "../../schemas/runtime-state.schema.json",
   "schema_version": 2,
   "activation": "ACTIVE",
-  "revision": 114,
-  "updated_at": "2026-09-07T15:42:09Z",
+  "revision": 117,
+  "updated_at": "2026-09-07T18:35:28Z",
   "accepted_baseline": {
     "revision": 28,
     "provenance": {
@@ -1086,25 +1086,25 @@
       "members": [
         {
           "unit": {
-            "deployment_id": "728c9954-21fa-4f80-bd10-7e72cd366e13",
+            "deployment_id": "9d34963c-2156-4f19-9f99-98041a0aebe8",
             "project_uuid": "4b2342fc-7bdf-5ba6-9f37-d551109d214c",
             "project_id": "block-geometry-extensions",
             "project_identity_source": "CURRENT_MANIFEST",
-            "version": "4.2.3-bge.canary59.external-materials+26.2",
-            "source_commit": "4e59f44c924af0dbb5d233e6de6b9c5ca2c7735d",
+            "version": "4.2.4-bge.canary60.external-families+26.2",
+            "source_commit": "91fd9f753f0b33f42f1ead6a65f57219822f2fb1",
             "artifacts": [
               {
-                "artifact_id": "9c457020-9259-4a6b-b237-983d51472710",
+                "artifact_id": "408f68a4-7596-44db-ad02-c90920b003dc",
                 "kind": "MOD",
-                "filename": "cnm-nibaru-integration-4.2.3-bge.canary59.external-materials+26.2.jar",
-                "sha256": "7aa074c4d04503a8118dbcaca5e4a2e4c0ded9ec8b9d51dd8ef4cb154a98bd52",
+                "filename": "cnm-nibaru-integration-4.2.4-bge.canary60.external-families+26.2.jar",
+                "sha256": "163e9c094bf598d8e3d591917d244f5870adfb5d4007774e0cb8bab02d8dbd9f",
                 "ownership_keys": [
                   "mod:cnm_terrain_slabs_compat",
                   "mod:more_slabs_stairs_and_walls"
                 ],
                 "source": {
                   "type": "REPOSITORY",
-                  "path": "projects/block-geometry-extensions/artifacts/cnm-nibaru-integration-4.2.3-bge.canary59.external-materials+26.2.jar"
+                  "path": "projects/block-geometry-extensions/artifacts/cnm-nibaru-integration-4.2.4-bge.canary60.external-families+26.2.jar"
                 }
               }
             ]
@@ -1122,8 +1122,8 @@
       ],
       "deployment": {
         "state": "READY_TO_TEST_VERIFIED",
-        "deployed_at": "2026-09-07T15:42:09Z",
-        "ready_verified_at": "2026-09-07T15:42:09Z"
+        "deployed_at": "2026-09-07T18:35:28Z",
+        "ready_verified_at": "2026-09-07T18:35:28Z"
       }
     },
     "B": {
