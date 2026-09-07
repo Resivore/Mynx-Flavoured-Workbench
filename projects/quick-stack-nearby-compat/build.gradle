@@ -12,75 +12,14 @@ base {
 repositories {
     maven { url = 'https://maven.fabricmc.net/' }
     mavenCentral()
-    maven {
-        name = 'Modrinth'
-        url = 'https://api.modrinth.com/maven'
-        content { includeGroup 'maven.modrinth' }
-    }
 }
 
-configurations {
-    qsnReference {
-        canBeConsumed = false
-        canBeResolved = true
-        transitive = false
-    }
-    inventorySearchReference {
-        canBeConsumed = false
-        canBeResolved = true
-        transitive = false
-    }
-    nibaruReference {
-        canBeConsumed = false
-        canBeResolved = true
-        transitive = false
-    }
-    cnmIntegrationReference {
-        canBeConsumed = false
-        canBeResolved = true
-        transitive = false
-    }
-    cnmUpstreamReference {
-        canBeConsumed = false
-        canBeResolved = true
-        transitive = false
-    }
-    csrReference {
-        canBeConsumed = false
-        canBeResolved = true
-        transitive = false
-    }
-}
-
-def localReference = { String propertyName, String filename ->
-    file(providers.gradleProperty(propertyName)
-            .getOrElse("../../originals/mods/${filename}"))
-}
-
-def nibaruReferenceJar = localReference(
-        'nibaruReferenceJar',
-        'more-slabs-stairs-and-walls-4.2.0+26.2-port-canary40-pale-coverage.jar')
-def cnmIntegrationReferenceJar = localReference(
-        'cnmIntegrationReferenceJar',
-        'cnm-nibaru-integration-0.5.46-nibaru-cnm-canary1.36-pale-coverage.jar')
-def cnmUpstreamReferenceJar = localReference(
-        'cnmUpstreamReferenceJar',
-        'clutternomore-2.0.7+26.2-fabric.jar')
-def csrReferenceJar = file(providers.gradleProperty('csrReferenceJar').getOrElse(
-        '../container-slot-reservations/artifacts/container-slot-reservations-0.1.0-canary1.jar'))
-
-tasks.register('verifyLocalReferences') {
-    doLast {
-        [
-                nibaruReferenceJar,
-                cnmIntegrationReferenceJar,
-                cnmUpstreamReferenceJar,
-                csrReferenceJar
-        ].each { reference ->
-            if (!reference.isFile()) {
-                throw new GradleException("Missing exact local reference JAR: ${reference}. " +
-                        'Place it under originals/mods or provide the matching -P...ReferenceJar path.')
-            }
+loom {
+    splitEnvironmentSourceSets()
+    mods {
+        'quick-stack-nearby' {
+            sourceSet sourceSets.main
+            sourceSet sourceSets.client
         }
     }
 }
@@ -90,59 +29,8 @@ dependencies {
     implementation "net.fabricmc:fabric-loader:${project.loader_version}"
     implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
 
-    compileOnly("maven.modrinth:quick-stack-nearby:${project.qsn_maven_version}") {
-        transitive = false
-    }
-    runtimeOnly("maven.modrinth:quick-stack-nearby:${project.qsn_maven_version}") {
-        transitive = false
-    }
-    qsnReference("maven.modrinth:quick-stack-nearby:${project.qsn_maven_version}") {
-        transitive = false
-    }
-    testCompileOnly("maven.modrinth:quick-stack-nearby:${project.qsn_maven_version}") {
-        transitive = false
-    }
-    testRuntimeOnly("maven.modrinth:quick-stack-nearby:${project.qsn_maven_version}") {
-        transitive = false
-    }
-
-    inventorySearchReference("maven.modrinth:${project.inventory_search_maven_project}:${project.inventory_search_maven_version}") {
-        transitive = false
-    }
-
-    compileOnly files(nibaruReferenceJar)
-    compileOnly files(cnmUpstreamReferenceJar)
-    runtimeOnly files(nibaruReferenceJar)
-    runtimeOnly files(cnmIntegrationReferenceJar)
-    runtimeOnly files(cnmUpstreamReferenceJar)
-    nibaruReference files(nibaruReferenceJar)
-    cnmIntegrationReference files(cnmIntegrationReferenceJar)
-    cnmUpstreamReference files(cnmUpstreamReferenceJar)
-
-    compileOnly files(csrReferenceJar)
-    if (!providers.gradleProperty('excludeCsrRuntime').isPresent()) {
-        runtimeOnly files(csrReferenceJar)
-    }
-    csrReference files(csrReferenceJar)
-
-    if (providers.gradleProperty('withDoubleBarrels').isPresent()) {
-        runtimeOnly files('../double-barrels/artifacts/doublebarrels-fabric-26.2-1.0.1+26.2-canary2.jar')
-    }
-
     testImplementation 'org.junit.jupiter:junit-jupiter:5.12.2'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.12.2'
-    testImplementation 'org.ow2.asm:asm:9.10.1'
-    testImplementation 'org.ow2.asm:asm-tree:9.10.1'
-}
-
-fabricApi {
-    configureTests {
-        createSourceSet = true
-        modId = 'quick-stack-nearby-compat-runtime-tests'
-        enableGameTests = true
-        enableClientGameTests = false
-        eula = true
-    }
 }
 
 processResources {
@@ -153,48 +41,22 @@ processResources {
 }
 
 tasks.withType(JavaCompile).configureEach {
-    dependsOn tasks.named('verifyLocalReferences')
     options.release = 25
 }
 
 test {
     useJUnitPlatform()
-    inputs.property 'excludeCsrRuntime', providers.gradleProperty('excludeCsrRuntime').isPresent()
-    inputs.files(
-            configurations.qsnReference,
-            configurations.inventorySearchReference,
-            configurations.nibaruReference,
-            configurations.cnmIntegrationReference,
-            configurations.cnmUpstreamReference,
-            configurations.csrReference
-    )
-    systemProperty 'projectRoot', projectDir.absolutePath
-    systemProperty 'quickStackNearbyCompat.excludeCsrRuntime',
-            providers.gradleProperty('excludeCsrRuntime').isPresent().toString()
-    doFirst {
-        systemProperty 'qsnReferenceJar', configurations.qsnReference.singleFile.absolutePath
-        systemProperty 'inventorySearchReferenceJar', configurations.inventorySearchReference.singleFile.absolutePath
-        systemProperty 'nibaruReferenceJar', configurations.nibaruReference.singleFile.absolutePath
-        systemProperty 'cnmIntegrationReferenceJar', configurations.cnmIntegrationReference.singleFile.absolutePath
-        systemProperty 'cnmUpstreamReferenceJar', configurations.cnmUpstreamReference.singleFile.absolutePath
-        systemProperty 'csrReferenceJar', file('../container-slot-reservations/artifacts/container-slot-reservations-0.1.0-canary1.jar').absolutePath
-        systemProperty 'csrSelectedProviderJar', configurations.csrReference.singleFile.absolutePath
-    }
 }
 
 java {
     withSourcesJar()
 }
 
-// The absence run must not load CSR fixture entrypoints or require its provider.
-tasks.named('processGametestResources') {
-    inputs.property 'excludeCsrRuntime', providers.gradleProperty('excludeCsrRuntime').isPresent()
-    filesMatching('fabric.mod.json') {
-        if (providers.gradleProperty('excludeCsrRuntime').isPresent()) {
-            filter { line -> line.contains('"container_slot_reservations":')
-                    || line.contains('CsrQuickStackIntegrationGameTests')
-                    || line.contains('ReservedNestedGameTests') ? '' : line }
-            filter { line -> line.replace('PhysicalNestedGameTests",', 'PhysicalNestedGameTests"') }
-        }
+jar {
+    from('LICENSE') {
+        rename { "${it}_${project.base.archivesName.get()}" }
+    }
+    from('LICENSE-GPL-3.0') {
+        rename { "${it}_${project.base.archivesName.get()}" }
     }
 }

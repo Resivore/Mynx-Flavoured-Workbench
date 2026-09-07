@@ -8,3 +8,4 @@ build/
 dist/
 runtime-state.local.json
 *.tmp
+/.upstream/
