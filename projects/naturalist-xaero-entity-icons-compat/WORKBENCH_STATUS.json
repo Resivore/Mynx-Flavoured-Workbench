@@ -38,12 +38,12 @@
     ]
   },
   "state": {
-    "milestone": "Canary 1 is a retained static-validated candidate. Both canonical test slots were occupied at manager revision 114, so it was not deployed; no Minecraft runtime evidence exists.",
+    "milestone": "Canary 1 failed at world/session entry during Xaero radar-icon resource reload: its caller-side redirect collided with the accepted Xaero × EMF Canary 9 critical redirect. Canary 2 moves only Naturalist's adapter trace lookup to ModelRenderTrace, is static-validated, and remains undeployed because both canonical slots are occupied at manager revision 117.",
     "releases": {
       "current": {
-        "version": "0.1.0-canary1",
-        "artifact": {"filename": "naturalist-xaero-entity-icons-compat-0.1.0-canary1.jar", "sha256": "df5a2322b4b6c745fd1fe4b846075629869242b9c6ebb61c3480857f3f3c5de2"},
-        "source_commit": "ab199db39ece792fc6b38fa5edf1fe7536e89ba1",
+        "version": "0.1.0-canary2",
+        "artifact": {"filename": "naturalist-xaero-entity-icons-compat-0.1.0-canary2.jar", "sha256": "ff161f6bcbf5cd056a5e27d7cd56091ab5abfa8e69440c76f2f6ce9ba6e86c50"},
+        "source_commit": "e9d0c04ed2ab64b077d1abfb8daaa356c5de895c",
         "runtime_dependency_policy": {"contract": "CAPABILITY_OR_PROVIDER", "exceptions": []}
       },
       "accepted": null,
@@ -55,11 +55,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 1,
-    "activity_at": "2026-09-07T18:00:00Z",
-    "updated_at": "2026-09-07T18:00:00Z",
-    "last_codex_at": "2026-09-07T18:00:00Z",
-    "source_commit": "ab199db39ece792fc6b38fa5edf1fe7536e89ba1",
+    "revision": 2,
+    "activity_at": "2026-09-07T22:34:37Z",
+    "updated_at": "2026-09-07T22:34:37Z",
+    "last_codex_at": "2026-09-07T22:34:37Z",
+    "source_commit": "e9d0c04ed2ab64b077d1abfb8daaa356c5de895c",
     "google_sheet": {"participates": true, "exclusion_reason": null}
   }
 }
