@@ -180,7 +180,8 @@ public final class BgeLayerIntegrationGameTests implements CustomTestMethodInvok
     @GameTest(maxTicks = 40)
     public void automaticPopulationIsExactNonrecursiveAndOrdered(GameTestHelper helper) {
         var profiles = NibaruMaterialProfiles.all();
-        int expectedProfiles = 311 + ExternalMaterialFamilies.all().size();
+        int expectedProfiles = 311 + (int) ExternalMaterialFamilies.all().stream()
+                .filter(binding -> binding.profile().family() == null).count();
         helper.assertTrue(profiles.size() == expectedProfiles,
                 "Expected " + expectedProfiles + " canonical profiles, found " + profiles.size());
         Set<Block> layers = Collections.newSetFromMap(new IdentityHashMap<>());

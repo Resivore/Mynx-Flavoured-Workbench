@@ -1,25 +1,22 @@
-# BGE C60 runtime procedure
+# BGE C61 runtime procedure
 
-Current Slot A candidate: `cnm-nibaru-integration-4.2.4-bge.canary60.external-families+26.2.jar`, 6,089,707 bytes, SHA-256 `163e9c094bf598d8e3d591917d244f5870adfb5d4007774e0cb8bab02d8dbd9f`, embedded version `4.2.4-bge.canary60.external-families+26.2`, source checkpoint `91fd9f753f0b33f42f1ead6a65f57219822f2fb1`, deployment `9d34963c-2156-4f19-9f99-98041a0aebe8`, artifact `408f68a4-7596-44db-ad02-c90920b003dc`. Manager revision 117 reports `READY_TO_TEST_VERIFIED / UNTESTED`; exact C58 remains the accepted disabled rollback.
+Current candidate: `cnm-nibaru-integration-4.2.5-bge.canary61.runtime-fixes+26.2.jar`, SHA-256 `241033a28b80d638417cd74caed815b79796f0538ff012e172e9a9b714d3f77d`, embedded version `4.2.5-bge.canary61.runtime-fixes+26.2`, source checkpoint `e8bcce0f78e1e0235ac4f71c8ec8c6c194605bee`. C61 is not deployed: the Test Instance Manager correctly refuses any Slot A transition until the separate Slot B IBF C4 artifact is restored by its owner. Exact C58 remains the accepted release and C60 remains unaccepted failed provenance.
 
-Use only the dedicated Matcha Flavoured 26.2 Workbench. Do not use or modify the protected Matcha Flavoured 26.1.2 profile.
+Use only the dedicated Matcha Flavoured 26.2 Workbench. Never use or modify the protected Matcha Flavoured 26.1.2 profile.
 
-## Exact source inventory
+## Scope
 
-- Ribbits (1): `ribbits:mossy_oak_planks`.
-- Mynx Trees (6): `mynx_trees:wisteria_log`, `mynx_trees:wisteria_wood`, `mynx_trees:wisteria_leaves`, `mynx_trees:silver_birch_log`, `mynx_trees:silver_birch_wood`, and `mynx_trees:silver_birch_leaves`.
-- Macaw's Paths patterned paths (52): every Cartesian pair of materials `andesite`, `diorite`, `granite`, `sandstone`, `red_sandstone`, `brick`, `stone`, `mossy_stone`, `cobbled_deepslate`, `deepslate`, `mud_brick`, `blackstone`, and `dark_prismarine` with patterns `running_bond`, `windmill_weave`, `flagstone`, and `crystal_floor`, using exact ID `mcwpaths:<material>_<pattern>_path`.
-- Macaw's Paths soil paths (5): `mcwpaths:podzol_path_block`, `mcwpaths:dirt_path_block`, `mcwpaths:gravel_path_block`, `mcwpaths:sand_path_block`, and `mcwpaths:red_sand_path_block`.
+- 64 requested sources, with nine roles each: source Block, Slab, Stairs, Wall, Vertical Slab, Step, Corner, Quarter Column, and Layer.
+- Mynx Trees: Wisteria Log/Wood/Leaves and Silver Birch Log/Wood/Leaves.
+- Ribbits: Mossy Oak Planks.
+- Macaw's Paths: 52 full pattern blocks `mcwpaths:<material>_<pattern>` plus five full canonical parents `minecraft:podzol`, `minecraft:dirt`, `minecraft:gravel`, `minecraft:sand`, and `minecraft:red_sand`. Their provider reference blocks remain Path blocks only for optional-provider completion; no Path block is a BGE canonical parent.
 
 ## Manual checks
 
-1. Confirm each of the 64 sources has one contiguous nine-role family: source Block, Slab, Stairs, Wall, Vertical Slab, Step, Corner, Quarter Column, and Layer. Confirm no other Macaw's Paths source receives BGE geometry.
-2. Place representative members of every role, switch through the family with Clutter No More, break them with the expected tool, and verify collision, waterlogging, drops, orientation, and one-source material economy remain correct.
-3. For all four Macaw's patterns across representative stone, sandstone, deepslate, mud-brick, blackstone, and prismarine materials, verify the live source texture is retained without rotation, substitution, or missing-model texture. Verify the five soil paths retain their distinct source textures and shovel-mining semantics.
-4. Verify Wisteria Log and Silver Birch Log retain side/end distinction on axis-bearing Slab, Stairs, Vertical Slab, Step, Corner, Quarter Column, and Layer forms; rotate each applicable form across X/Y/Z axes and strip it to the correct accepted native stripped family.
-5. Verify Wisteria Wood and Silver Birch Wood use bark on every face under the same orientation and stripping checks.
-6. Verify Wisteria Leaves are untinted and Silver Birch Leaves use birch foliage tint. For both leaf families, check cutout rendering, distance/persistent state, player placement persistence, natural decay/random ticks, water behavior, fire behavior, tags, and drops.
-7. Verify Ribbits Mossy Oak Planks retains its source appearance, axe-mining, fire/fuel behavior, sound, and physical properties through all eight generated forms.
-8. Recheck accepted C58 registry/resource identities and representative native families, including the authored Glass Corner UV/geometry route, for regression.
+1. For Wisteria Log, Wisteria Wood, Silver Birch Log, and Silver Birch Wood, confirm Wall is a normal wall in-world and in inventory: post/side/tall multipart connection behavior, normal solid wall mesh, and normal wall inventory model. It must not be crossed/cross-plane geometry and must have no `AXIS` state.
+2. Confirm those four source families retain `AXIS` on the other seven applicable roles (Slab, Stairs, Vertical Slab, Step, Corner, Quarter Column, Layer), including X/Y/Z rotations, side/end versus bark texture semantics, stripping, fire, fuel, sound, tags, and drops.
+3. Confirm all nine Silver Birch Leaves roles exactly follow the provider's live world tint and inventory tint. Check more than one world position/biome so a constant fallback cannot appear correct accidentally. Wisteria Leaves must remain unchanged and untinted.
+4. For representative Macaw materials and every pattern, verify each BGE role uses the corresponding full-block appearance/properties, not a lowered Path parent. Verify the five soil aliases preserve the native full-parent BGE family and provider tags without duplicate geometry.
+5. Recheck accepted C58 registry/resource identities and representative native families, including Glass Corner UV/geometry, for regression.
 
-Do not mark any row passed without direct observation. GameTests, static validation, archive inspection, reproducible builds, or deployment/readiness verification do not constitute Minecraft runtime PASS. Stop and record `FAIL` or `INCONCLUSIVE` against the exact deployment above if any requested form is missing, any provider adds extra forms, resource/model loading fails, or a material behavior differs from its live source.
+Record only directly observed runtime results. Do not infer PASS from build, GameTests, archive inspection, or readiness verification. Stop and record `FAIL` or `INCONCLUSIVE` for the exact deployed artifact if any expected wall mesh, tint, full-parent semantic, provider family, or accepted C58 behavior differs.

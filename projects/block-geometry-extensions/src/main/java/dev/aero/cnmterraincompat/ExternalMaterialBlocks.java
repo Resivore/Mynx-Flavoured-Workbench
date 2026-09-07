@@ -39,7 +39,9 @@ public final class ExternalMaterialBlocks {
         if (source.defaultBlockState().hasProperty(BlockStateProperties.AXIS)) return new StandardSet(
                 new AxisSlab(slabProperties),
                 new AxisStairs(source.defaultBlockState(), stairProperties),
-                new AxisWall(wallProperties));
+                // A wall's connection state is its complete placement contract.  It is not a
+                // rotated pillar merely because the material it is made from has an axis.
+                new WallBlock(wallProperties));
         return new StandardSet(new SlabBlock(slabProperties),
                 new StairBlock(source.defaultBlockState(), stairProperties), new WallBlock(wallProperties));
     }
@@ -76,29 +78,6 @@ public final class ExternalMaterialBlocks {
 
         AxisStairs(BlockState source, Properties properties) {
             super(source, properties);
-            registerDefaultState(defaultBlockState().setValue(AXIS, Direction.Axis.Y));
-        }
-
-        @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-            super.createBlockStateDefinition(builder);
-            builder.add(AXIS);
-        }
-
-        @Override @Nullable public BlockState getStateForPlacement(BlockPlaceContext context) {
-            BlockState placed = super.getStateForPlacement(context);
-            return placed == null ? null : placed.setValue(AXIS, context.getClickedFace().getAxis());
-        }
-
-        @Override public BlockState rotate(BlockState state, Rotation rotation) {
-            return RotatedPillarBlock.rotatePillar(super.rotate(state, rotation), rotation);
-        }
-    }
-
-    public static final class AxisWall extends WallBlock {
-        public static final EnumProperty<Direction.Axis> AXIS = BlockStateProperties.AXIS;
-
-        AxisWall(Properties properties) {
-            super(properties);
             registerDefaultState(defaultBlockState().setValue(AXIS, Direction.Axis.Y));
         }
 

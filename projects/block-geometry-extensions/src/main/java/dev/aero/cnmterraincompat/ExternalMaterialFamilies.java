@@ -12,6 +12,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.Collections;
 import java.util.IdentityHashMap;
@@ -37,12 +38,25 @@ public final class ExternalMaterialFamilies {
         if (source == null || !spec.id().equals(BuiltInRegistries.BLOCK.getKey(source))) {
             throw new IllegalStateException("Provider completed without required source block " + spec.id());
         }
+        Block reference = BuiltInRegistries.BLOCK.getValue(spec.providerReference());
+        if (reference == null || !spec.providerReference().equals(BuiltInRegistries.BLOCK.getKey(reference))) {
+            throw new IllegalStateException("Provider completed without required Path reference "
+                    + spec.providerReference());
+        }
+
+        // Five Macaw soil-path entries correctly root at existing native full-block profiles.
+        // They retain their optional-provider membership, but cannot own duplicate BGE geometry.
+        Optional<NibaruMaterialProfile> nativeProfile = NibaruMaterialProfiles.fromBlock(source);
+        if (nativeProfile.isPresent()) {
+            PENDING.put(spec.id(), Pending.nativeBinding(spec, nativeProfile.orElseThrow(), source));
+            return;
+        }
 
         Identifier slabId = id(spec, "slab");
         Identifier stairsId = id(spec, "stairs");
         Identifier wallId = id(spec, "wall");
         ExternalMaterialBlocks.StandardSet standard = ExternalMaterialBlocks.create(source,
-                properties(slabId, source), properties(stairsId, source), properties(wallId, source),
+                properties(slabId, source), properties(stairsId, source), wallProperties(wallId, source),
                 spec.capabilities().contains(games.twinhead.moreslabsstairsandwalls.api.material.BehaviorCapability.LEAF_LIFECYCLE));
         CnmTerrainCompat.register(slabId, standard.slab());
         CnmTerrainCompat.register(stairsId, standard.stairs());
@@ -121,11 +135,34 @@ public final class ExternalMaterialFamilies {
 
     public static Identifier id(Spec spec, String suffix) {
         return Identifier.fromNamespaceAndPath(CnmTerrainCompat.MOD_ID,
-                spec.id().getNamespace() + "/" + spec.id().getPath() + "_" + suffix);
+                spec.generatedIdentity().getNamespace() + "/" + spec.generatedIdentity().getPath() + "_" + suffix);
     }
 
     private static BlockBehaviour.Properties properties(Identifier id, Block source) {
         return BlockBehaviour.Properties.ofFullCopy(source).setId(ResourceKey.create(Registries.BLOCK, id));
+    }
+
+    /**
+     * A vanilla wall has no AXIS property.  In particular, copying a rotated-pillar
+     * source would retain its log-state predicate and makes WallBlock construction
+     * query a property it cannot have.  Copy the observable material semantics
+     * without carrying source-only state predicates into the normal wall route.
+     */
+    private static BlockBehaviour.Properties wallProperties(Identifier id, Block source) {
+        BlockState state = source.defaultBlockState();
+        BlockBehaviour.Properties result = BlockBehaviour.Properties.of()
+                .setId(ResourceKey.create(Registries.BLOCK, id))
+                .mapColor(source.defaultMapColor())
+                .strength(source.defaultDestroyTime(), source.getExplosionResistance())
+                .friction(source.getFriction())
+                .speedFactor(source.getSpeedFactor())
+                .jumpFactor(source.getJumpFactor())
+                .sound(state.getSoundType())
+                .lightLevel(ignored -> state.getLightEmission());
+        if (!state.canOcclude()) result.noOcclusion();
+        if (state.requiresCorrectToolForDrops()) result.requiresCorrectToolForDrops();
+        if (state.ignitedByLava()) result.ignitedByLava();
+        return result;
     }
 
     public record Binding(Spec spec, NibaruMaterialProfile profile, Block source,
@@ -150,7 +187,12 @@ public final class ExternalMaterialFamilies {
     }
 
     private record Pending(Spec spec, NibaruMaterialProfile profile, Block source,
-            Block slab, Block stairs, Block wall) {}
+            Block slab, Block stairs, Block wall) {
+        private static Pending nativeBinding(Spec spec, NibaruMaterialProfile profile, Block source) {
+            return new Pending(spec, profile, source, profile.nativeSlab().orElseThrow(),
+                    profile.nativeStair().orElseThrow(), profile.nativeWall().orElseThrow());
+        }
+    }
 
     public record StandardFuelTrait(Block derived, Block source, int divisor) {}
 }
