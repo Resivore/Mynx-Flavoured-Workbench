@@ -6,10 +6,10 @@ import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.ModifyVariable;
 
 import com.fizzware.dramaticdoors.DramaticDoors;
+import com.fizzware.dramaticdoors.compat.AdvancementReloadSupport;
 import com.fizzware.dramaticdoors.compat.DDCompatAdvancement;
 import com.google.gson.JsonObject;
 import com.mojang.serialization.JsonOps;
@@ -28,8 +28,11 @@ public abstract class AdvancementManagerMixin
     @Final
     private HolderLookup.Provider registries;
 
-	@Inject(method = "apply(Ljava/util/Map;Lnet/minecraft/server/packs/resources/ResourceManager;Lnet/minecraft/util/profiling/ProfilerFiller;)V", at = @At("HEAD"))
-    private void interceptApply(Map<Identifier, Advancement> map, ResourceManager manager, ProfilerFiller profiler, CallbackInfo info) {
+	@ModifyVariable(method = "apply(Ljava/util/Map;Lnet/minecraft/server/packs/resources/ResourceManager;Lnet/minecraft/util/profiling/ProfilerFiller;)V", at = @At("HEAD"), argsOnly = true)
+    private Map<Identifier, Advancement> interceptApply(Map<Identifier, Advancement> map) {
+		Map<Identifier, Advancement> mutableMap = AdvancementReloadSupport.copyForGeneratedEntries(
+				map,
+				!DDCompatAdvancement.RECIPE_ADVANCEMENTS.isEmpty());
 		for (JsonObject advancementJson : DDCompatAdvancement.RECIPE_ADVANCEMENTS) {
             Identifier advancementId = Identifier.fromNamespaceAndPath(
                     DramaticDoors.MOD_ID,
@@ -41,7 +44,8 @@ public abstract class AdvancementManagerMixin
             Advancement advancement = Advancement.CODEC
                     .parse(registries.createSerializationContext(JsonOps.INSTANCE), advancementJson)
                     .getOrThrow(error -> new IllegalStateException("Could not decode generated advancement " + advancementId + ": " + error));
-            map.put(advancementId, advancement);
+            mutableMap.put(advancementId, advancement);
         }
+		return mutableMap;
     }
 }

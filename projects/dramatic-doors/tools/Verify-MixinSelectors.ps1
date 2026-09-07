@@ -117,9 +117,14 @@ $sourceText = foreach ($mixin in $expectedMixins) {
 $activeSource = [regex]::Replace(($sourceText -join "`n"), '/\*.*?\*/', '', [System.Text.RegularExpressions.RegexOptions]::Singleline)
 Assert-True (-not [regex]::IsMatch($activeSource, 'require\s*=\s*0')) 'A required injection has been suppressed with require=0.'
 
+$advancementMixinSource = Get-Content -LiteralPath (Join-Path $commonMixinSource 'AdvancementManagerMixin.java') -Raw
+Assert-True ($advancementMixinSource -match '@ModifyVariable\s*\(\s*method\s*=\s*"apply\(Ljava/util/Map;Lnet/minecraft/server/packs/resources/ResourceManager;Lnet/minecraft/util/profiling/ProfilerFiller;\)V"\s*,\s*at\s*=\s*@At\("HEAD"\)\s*,\s*argsOnly\s*=\s*true\s*\)') 'Advancement reload must replace the apply input map at HEAD through an args-only @ModifyVariable.'
+Assert-True ($advancementMixinSource -match 'AdvancementReloadSupport\.copyForGeneratedEntries') 'Advancement reload must use copy-on-write before generated entries are added.'
+Assert-True ($advancementMixinSource -match 'mutableMap\.put\(advancementId, advancement\)') 'Generated recipe advancements must still be added to the replacement map.'
+
 $sourceMethodSelectors = @([regex]::Matches($activeSource, 'method\s*=\s*"([^"]+)"') | ForEach-Object { $_.Groups[1].Value } | Sort-Object)
 $expectedMethodSelectors = @($targets | ForEach-Object { $_.Selector } | Sort-Object)
-Assert-ExactSequence -Actual $sourceMethodSelectors -Expected $expectedMethodSelectors -Label 'Active @Inject method selector inventory'
+Assert-ExactSequence -Actual $sourceMethodSelectors -Expected $expectedMethodSelectors -Label 'Active mixin method selector inventory'
 
 $sourceInvocationSelectors = @([regex]::Matches($activeSource, 'target\s*=\s*"([^"]+)"') | ForEach-Object { $_.Groups[1].Value } | Sort-Object)
 $expectedInvocationSelectors = @($invocationTargets | ForEach-Object { $_.Selector } | Sort-Object)
@@ -202,6 +207,7 @@ if (-not [string]::IsNullOrWhiteSpace($Artifact)) {
             $classEntry = 'com/fizzware/dramaticdoors/mixin/' + $mixin + '.class'
             Assert-True ($entryNames -contains $classEntry) "Built artifact is missing '$classEntry'."
         }
+        Assert-True ($entryNames -contains 'com/fizzware/dramaticdoors/compat/AdvancementReloadSupport.class') 'Built artifact is missing the advancement reload copy-on-write support class.'
         foreach ($configName in @('dramaticdoors.mixins.json', 'dramaticdoors_fabric.mixins.json')) {
             $configEntry = $archive.GetEntry($configName)
             Assert-True ($null -ne $configEntry) "Built artifact is missing '$configName'."
@@ -223,4 +229,4 @@ if (-not [string]::IsNullOrWhiteSpace($Artifact)) {
 }
 
 $minecraftHash = (Get-FileHash -LiteralPath $MinecraftJar -Algorithm SHA256).Hash
-Write-Output "DRAMATIC_DOORS_MIXIN_SELECTORS_26_2_OK: 11 mixins; 20 required injections; 4 invocation selectors; minecraft-sha256=$minecraftHash; artifact=$artifactLabel"
+Write-Output "DRAMATIC_DOORS_MIXIN_SELECTORS_26_2_OK: 11 mixins; 20 required injection selectors; advancement apply copy-on-write verified; 4 invocation selectors; minecraft-sha256=$minecraftHash; artifact=$artifactLabel"
