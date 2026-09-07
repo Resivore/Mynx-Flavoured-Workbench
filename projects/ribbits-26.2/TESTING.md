@@ -1,5 +1,9 @@
 # Testing
 
+## Canary 17 Flora Trades extension — pending
+
+Use only an authorized, serialized Test Slot cohort in the dedicated Matcha Flavoured 26.2 Workbench. Confirm each Farmer keeps exactly one persisted choice from each Flora Trades tier across reloads; each Wandering Ribbit keeps both persisted Flora Trades group choices; the two Flora Trades provider offers restock under ORDINARY policy only; Naturalist offers never restock; and using a Toadstool Heart on a scheduler-owned merchant releases its lease, anchors it at the interaction position, preserves loaded companions, and permits later scheduler replacement. Record exact identities and stop on any lease, persistence, restock, or companion regression.
+
 Mynx Ribbits Canary 16 is the narrow surface-height correction and is `ACTIVE / STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED`. Build/static checks do not establish Minecraft gameplay correctness. Read the exact current artifact filename/SHA-256 and implementation checkpoint in `WORKBENCH_STATUS.json`, and size/build evidence in the revision-21 log entry. Rehash the ignored private JAR before separately authorized deployment. Never deploy the resource-incomplete source-only JAR, and replace rather than install Canary 16 beside another JAR with the same `ribbits` mod ID.
 
 ## Canary 16 Wandering Ribbit surface-height correction — pending
