@@ -5,13 +5,15 @@ group = project.maven_group
 base { archivesName = project.archives_base_name }
 repositories { maven { url = 'https://maven.fabricmc.net/' }; mavenCentral() }
 
+def ribbitsArtifact = file('../ribbits-26.2/artifacts/ribbits-private-reconstruction-4.1.6+26.2-mynx-canary17.jar')
+
 dependencies {
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
     implementation "net.fabricmc:fabric-loader:${project.loader_version}"
     implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
     // The companion sources remain separate projects; only their public integration API is linked.
-    compileOnly files('../ribbits-26.2/build/classes/java/main')
-    testImplementation files('../ribbits-26.2/build/classes/java/main')
+    compileOnly files(ribbitsArtifact)
+    testImplementation files(ribbitsArtifact)
     testImplementation platform('org.junit:junit-bom:5.13.4')
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
@@ -20,4 +22,35 @@ processResources { inputs.property 'version', project.version; filesMatching('fa
 tasks.withType(JavaCompile).configureEach { options.release = 25 }
 tasks.withType(org.gradle.api.tasks.bundling.AbstractArchiveTask).configureEach { preserveFileTimestamps = false; reproducibleFileOrder = true }
 test { useJUnitPlatform() }
+
+def productionMinecraftServerJar = new File(gradle.gradleUserHomeDir,
+        "caches/fabric-loom/${project.minecraft_version}/minecraft-extracted_server.jar")
+tasks.register('productionPoiMixinTest', JavaExec) {
+    group = 'verification'
+    description = 'Applies the packaged Florist POI mixins to production Minecraft 26.2 server classes.'
+    dependsOn tasks.named('testClasses'), tasks.named('jar')
+    def productionJar = tasks.named('jar').flatMap { it.archiveFile }
+    inputs.files(productionJar, productionMinecraftServerJar)
+    mainClass = 'dev.resivore.mynxfloratrades.PoiProductionMixinApplicationHarness'
+    classpath = files({
+        def mainOutput = sourceSets.main.output.files
+        def runtime = configurations.testRuntimeClasspath.files.findAll { candidate ->
+            !mainOutput.contains(candidate) && !candidate.name.startsWith('minecraft-merged-deobf-')
+        }
+        sourceSets.test.output.files.findAll { it.exists() } + runtime +
+                [productionMinecraftServerJar, productionJar.get().asFile]
+    })
+    systemProperty 'fabric.development', 'false'
+    systemProperty 'fabric.unitTest', 'true'
+    systemProperty 'mixin.debug.countInjections', 'true'
+    doFirst {
+        if (!productionMinecraftServerJar.isFile()) {
+            throw new GradleException("Missing production Minecraft 26.2 server JAR: ${productionMinecraftServerJar}")
+        }
+        args = [productionJar.get().asFile.absolutePath]
+        workingDir.mkdirs()
+    }
+    workingDir layout.buildDirectory.dir('production-poi-mixin-test')
+}
+tasks.named('check') { dependsOn tasks.named('productionPoiMixinTest') }
 java { withSourcesJar() }
