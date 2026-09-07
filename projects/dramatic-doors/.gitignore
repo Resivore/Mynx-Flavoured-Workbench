@@ -30,4 +30,7 @@ forge*changelog.txt
 /logs/debug.log
 /logs/latest.log
 
+# Current release artifacts are hash-retained locally; historical tracked bytes remain intact.
+/artifacts/*.jar
+
 .vscode/*
