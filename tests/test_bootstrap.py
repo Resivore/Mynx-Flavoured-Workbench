@@ -2439,6 +2439,14 @@ class SheetPublisherTests(unittest.TestCase):
                     publish_plan(plan, config, environment)
                 transport.assert_not_called()
 
+        with patch("urllib.request.urlopen") as transport:
+            with self.assertRaisesRegex(
+                ValidationError,
+                "authorized GitHub Actions sheet-production environment; local development hosts do not publish",
+            ):
+                publish_plan(plan, enabled, missing_receiver)
+            transport.assert_not_called()
+
     def test_http_200_receiver_rejection_is_not_counted_as_published(self) -> None:
         config = copy.deepcopy(self.config)
         config["enabled"] = True
@@ -2773,6 +2781,11 @@ class SheetWorkflowAuthorityTests(unittest.TestCase):
             with self.subTest(fragment=fragment):
                 self.assertIn(fragment, reconcile)
         self.assertNotIn("github.sha", reconcile)
+
+    def test_live_publication_is_explicitly_delegated_to_sheet_production(self) -> None:
+        self.assertIn("This is the only live publisher", self.workflow)
+        self.assertIn("Local development hosts prepare or", self.workflow)
+        self.assertIn("environment: sheet-production", self.workflow)
 
     def test_superseded_runs_are_serialized_and_cancelled(self) -> None:
         self.assertIn("group: mynx-sheet-current-state-reconciliation", self.workflow)

@@ -28,6 +28,8 @@ concurrency:
 
 jobs:
   reconcile:
+    # This is the only live publisher. Local development hosts prepare or
+    # validate repository state but never need the sheet-production secrets.
     if: >-
       github.repository == 'Resivore/Mynx-Flavoured-Workbench' &&
       (github.event_name != 'workflow_dispatch' || inputs.operation == 'reconcile-current-state') &&

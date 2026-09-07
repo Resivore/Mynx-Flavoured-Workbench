@@ -743,11 +743,17 @@ def publish_plan(
     if config["enabled"] is not True:
         raise ValidationError("Sheet publication is tracked-disabled; cutover has not occurred")
     if environment.get(config["cutover_environment_variable"]) != config["cutover_required_value"]:
-        raise ValidationError("Sheet publication cutover variable is not authorized")
+        raise ValidationError(
+            "Sheet publication cutover variable is not authorized in the authorized publication environment; "
+            "local development hosts do not publish"
+        )
     receiver_url = environment.get(config["receiver_url_environment_variable"])
     hmac_secret = environment.get(config["hmac_environment_variable"])
     if not receiver_url or not hmac_secret:
-        raise ValidationError("Sheet receiver URL and HMAC secret are required after cutover")
+        raise ValidationError(
+            "Sheet receiver URL and HMAC secret are required in the authorized GitHub Actions sheet-production "
+            "environment; local development hosts do not publish"
+        )
     _validate_hmac_secret(hmac_secret)
 
     outcomes: list[dict[str, Any]] = []
@@ -809,7 +815,10 @@ def _build_parser() -> argparse.ArgumentParser:
     reconciliation_plan.add_argument("--repository", required=True)
     reconciliation_plan.add_argument("--ref", required=True)
     reconciliation_plan.add_argument("--output", type=Path, required=True)
-    publish = subparsers.add_parser("publish", help="publish a prepared plan after every cutover gate passes")
+    publish = subparsers.add_parser(
+        "publish",
+        help="publish a prepared plan in the authorized GitHub Actions sheet-production environment",
+    )
     publish.add_argument("--root", type=Path, default=Path("."))
     publish.add_argument("--plan", type=Path, required=True)
     change = subparsers.add_parser("validate-change", help="validate project revision/log protocol between two commits")
