@@ -93,7 +93,7 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
             "mcwpaths:andesite_running_bond",
             "mcwpaths:andesite_running_bond_slab",
             "mcwpaths:andesite_running_bond_stairs",
-            "mcwpaths:andesite_basket_weave_paving",
+            "mcwpaths:andesite_running_bond",
             "mcwpaths:dirt_path_block",
             "mcwwindows:prismarine_parapet",
             "mcwwindows:red_curtain"
@@ -153,14 +153,15 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
     @GameTest(maxTicks = 40)
     public void barsChainsCopperFinishesAndAccessoryMaterialsResolveLiterally(GameTestHelper helper) {
         assertExactShapeSet(helper, "minecraft:iron_bars", List.of(
-                "minecraft:iron_bars", "minecraft:iron_chain"));
+                "minecraft:iron_bars", "minecraft:iron_chain", "auroraslanterns:chandelier/iron"));
         for (String prefix : List.of(
                 "copper", "exposed_copper", "weathered_copper", "oxidized_copper",
                 "waxed_copper", "waxed_exposed_copper", "waxed_weathered_copper",
                 "waxed_oxidized_copper")) {
             assertExactShapeSet(helper, "minecraft:" + prefix + "_bars", List.of(
                     "minecraft:" + prefix + "_bars",
-                    "minecraft:" + prefix + "_chain"));
+                    "minecraft:" + prefix + "_chain",
+                    "auroraslanterns:chandelier/" + prefix));
         }
 
         assertExactShapeSet(helper, "minecraft:oak_button", List.of(
@@ -178,14 +179,28 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
                 "mcwpaths:stone_strewn_rocky_path",
                 "mcwpaths:stone_windmill_weave_path",
                 "mcwpaths:stone_flagstone_path",
-                "mcwpaths:stone_crystal_floor_path"));
+                "mcwpaths:stone_crystal_floor_path",
+                "mcwpaths:cobblestone_diamond_paving",
+                "mcwpaths:cobblestone_basket_weave_paving",
+                "mcwpaths:cobblestone_square_paving",
+                "mcwpaths:cobblestone_honeycomb_paving",
+                "mcwpaths:cobblestone_clover_paving",
+                "mcwpaths:cobblestone_dumble_paving"));
         assertExactShapeSet(helper, "mcwpaths:andesite_running_bond_path", List.of(
                 "mcwpaths:andesite_running_bond_path",
                 "mcwpaths:andesite_strewn_rocky_path",
                 "mcwpaths:andesite_windmill_weave_path",
                 "mcwpaths:andesite_flagstone_path",
                 "mcwpaths:andesite_crystal_floor_path",
-                "mcwwindows:andesite_parapet"));
+                "mcwwindows:andesite_parapet",
+                "mcwpaths:andesite_diamond_paving",
+                "mcwpaths:andesite_basket_weave_paving",
+                "mcwpaths:andesite_square_paving",
+                "mcwpaths:andesite_honeycomb_paving",
+                "mcwpaths:andesite_clover_paving",
+                "mcwpaths:andesite_dumble_paving"));
+        assertExactShapeSet(helper, "ribbits:mossy_oak_planks_fence", List.of(
+                "ribbits:mossy_oak_planks_fence", "ribbits:mossy_oak_planks_fence_gate"));
         assertExactShapeSet(helper, "minecraft:light_weighted_pressure_plate", List.of(
                 "minecraft:light_weighted_pressure_plate",
                 "mcwwindows:golden_curtain_rod"));
@@ -202,9 +217,12 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
         for (String value : List.of(
                 "minecraft:iron_chain",
                 "minecraft:waxed_oxidized_copper_chain",
+                "auroraslanterns:chandelier/waxed_oxidized_copper",
+                "ribbits:mossy_oak_planks_fence_gate",
                 "mcwpaths:oak_planks_path",
                 "mcwwindows:oak_curtain_rod",
-                "mcwpaths:andesite_crystal_floor_path")) {
+                "mcwpaths:andesite_crystal_floor_path",
+                "mcwpaths:andesite_dumble_paving")) {
             helper.assertTrue(!AuditedShapeRuntime.isAuditedAlternateDoor(requiredItem(value)),
                     "New non-door member inherited door-only loot handling: " + value);
         }
@@ -228,16 +246,17 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
             helper.assertTrue(!hasRecipe(helper, removed),
                     "CNM retained a new-family non-parent recipe: " + removed);
         }
-        for (String retained : List.of(
+        List<String> missingCanonicalRecipes = List.of(
                 "minecraft:iron_bars",
                 "minecraft:copper_bars",
                 "minecraft:waxed_copper_bars_from_honeycomb",
                 "minecraft:oak_button",
                 "minecraft:light_weighted_pressure_plate",
-                "mcwpaths:andesite_running_bond_path")) {
-            helper.assertTrue(hasRecipe(helper, retained),
-                    "CNM removed an intended canonical acquisition recipe: " + retained);
-        }
+                "mcwpaths:andesite_running_bond_path").stream()
+                .filter(retained -> !hasRecipe(helper, retained))
+                .toList();
+        helper.assertTrue(missingCanonicalRecipes.isEmpty(),
+                "CNM removed intended canonical acquisition recipes: " + missingCanonicalRecipes);
         helper.succeed();
     }
 
@@ -266,6 +285,8 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
                 "oak-log and oak-plank window materials joined");
         assertSeparate(helper, "minecraft:oak_fence", "minecraft:spruce_fence_gate",
                 "oak and spruce fence/gate materials joined");
+        assertSeparate(helper, "minecraft:oak_fence", "ribbits:mossy_oak_planks_fence",
+                "Ribbits Mossy Oak fence/gate joined vanilla oak");
 
         for (String value : REGISTERED_EXCLUSIONS) {
             Identifier id = id(value);
@@ -562,10 +583,13 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
             List<String> expectedValues
     ) {
         List<Identifier> expected = expectedValues.stream().map(AuditedShapeMapGameTests::id).toList();
-        List<Identifier> actual = ids(ShapeMap.getShapes(requiredItem(parent)));
+        Item parentItem = requiredItem(parent);
+        List<Identifier> actual = ids(ShapeMap.getShapes(parentItem));
         helper.assertTrue(actual.equals(expected),
                 "Exact ShapeMap family changed for " + parent + ": expected=" + expected
                         + ", actual=" + actual);
+        helper.assertTrue(!ShapeMap.isShape(parentItem),
+                "Canonical ShapeMap parent was also registered as an alternate: " + parent);
     }
 
     private static boolean hasRecipe(GameTestHelper helper, String value) {

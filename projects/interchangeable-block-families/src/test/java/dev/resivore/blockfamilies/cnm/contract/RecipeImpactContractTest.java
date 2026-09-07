@@ -17,15 +17,15 @@ class RecipeImpactContractTest {
     void fixedAuditIdentityAndFamilyTotalsAreVersionBound() throws Exception {
         Properties contract = AuditFixtures.contract();
 
-        assertEquals("ibf-cnm-shapemap-2026-08-28-canary4", contract.getProperty("audit.id"));
-        assertEquals("d82d87a73d54c9fbf13a1d190d0cad8082dba2d4",
+        assertEquals("ibf-cnm-shapemap-2026-09-07-canary5", contract.getProperty("audit.id"));
+        assertEquals("b64cdbf8",
                 contract.getProperty("audit.starting_commit"));
         assertEquals("b71932fb4c917edfa2c162600b01a4c1f2983dfe",
                 contract.getProperty("audit.accepted_ibf_commit"));
         assertEquals("26.2", contract.getProperty("minecraft.version"));
-        assertEquals(133, integer(contract, "families.total"));
-        assertEquals(1_120, integer(contract, "members.total"));
-        assertEquals(1_120, integer(contract, "members.unique"));
+        assertEquals(134, integer(contract, "families.total"));
+        assertEquals(1_209, integer(contract, "members.total"));
+        assertEquals(1_209, integer(contract, "members.unique"));
         assertEquals(22, integer(contract, "family.largest"));
 
         for (String key : new String[]{
@@ -33,6 +33,8 @@ class RecipeImpactContractTest {
                 "cnm.jar.sha256",
                 "macaws_doors.sha256",
                 "macaws_paths.sha256",
+                "auroras_lanterns.sha256",
+                "ribbits.sha256",
                 "macaws_trapdoors.sha256",
                 "macaws_windows.sha256",
                 "dramatic_doors.sha256",
@@ -80,7 +82,7 @@ class RecipeImpactContractTest {
                 "three_high_doors", 217,
                 "trapdoors", 195,
                 "windows_and_shutters_plus_accessories", 215,
-                "building_accessories_paths", 65,
+                "building_accessories_paths", 143,
                 "fence_gates", 12,
                 "vanilla_bar_chain_and_accessories", 20
         );
@@ -103,8 +105,8 @@ class RecipeImpactContractTest {
 
         Properties contract = AuditFixtures.contract();
         assertEquals(expectedRemovals, actualRemovals);
-        assertEquals(260 + 217 + 195 + 215 + 65 + 12 + 20, totalRemoved);
-        assertEquals(984, totalRemoved);
+        assertEquals(260 + 217 + 195 + 215 + 143 + 12 + 20, totalRemoved);
+        assertEquals(1_062, totalRemoved);
         assertEquals(integer(contract, "recipe.non_parent_results_removed"), totalRemoved);
         assertEquals(0, dangerousParentRemovals);
         assertEquals(integer(contract, "recipe.dangerous_parent_results_removed"), dangerousParentRemovals);

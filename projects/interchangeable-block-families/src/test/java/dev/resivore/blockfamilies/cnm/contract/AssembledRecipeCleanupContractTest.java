@@ -71,16 +71,16 @@ class AssembledRecipeCleanupContractTest {
 
         Map<String, Long> expectedRemoved = new LinkedHashMap<>();
         expectedRemoved.put("two_high_doors", 260L);
-        expectedRemoved.put("macaws_paths", 65L);
+        expectedRemoved.put("macaws_paths", 143L);
         expectedRemoved.put("trapdoors", 195L);
         expectedRemoved.put("windows_and_shutters", 215L);
         expectedRemoved.put("three_high_doors", 217L);
         expectedRemoved.put("fence_gates", 12L);
         expectedRemoved.put("vanilla_building_accessories", 20L);
         assertEquals(expectedRemoved, removedNonParents);
-        assertEquals(260 + 217 + 195 + 215 + 65 + 12 + 20,
+        assertEquals(260 + 217 + 195 + 215 + 143 + 12 + 20,
                 removedNonParents.values().stream().mapToLong(Long::longValue).sum());
-        assertEquals(984L, removedNonParents.values().stream().mapToLong(Long::longValue).sum());
+        assertEquals(1_062L, removedNonParents.values().stream().mapToLong(Long::longValue).sum());
         assertTrue(dangerousParentRemovals.isEmpty(), dangerousParentRemovals.toString());
         assertTrue(survivingLiteralRewrites.isEmpty(), survivingLiteralRewrites.toString());
     }
@@ -118,7 +118,7 @@ class AssembledRecipeCleanupContractTest {
             }
         }
 
-        assertEquals(136, newRemovedRecipeIds.size(), newRemovedRecipeIds.toString());
+        assertEquals(214, newRemovedRecipeIds.size(), newRemovedRecipeIds.toString());
         assertTrue(newRemovedRecipeIds.containsAll(List.of(
                 "minecraft:iron_chain",
                 "minecraft:copper_chain",

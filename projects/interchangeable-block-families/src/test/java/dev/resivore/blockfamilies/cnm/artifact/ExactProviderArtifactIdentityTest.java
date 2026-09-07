@@ -17,37 +17,46 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 final class ExactProviderArtifactIdentityTest {
-    private static final Map<String, ArtifactContract> CONTRACTS = Map.of(
-            "cnmUpstreamReferenceJar", new ArtifactContract(
+    private static final Map<String, ArtifactContract> CONTRACTS = Map.ofEntries(
+            Map.entry("cnmUpstreamReferenceJar", new ArtifactContract(
                     "41A925E70D5E6E8C098BEA7DC88C44486AED46724E35CB2FA4B1622B2A4DBCCE",
-                    "clutternomore", "2.0.7+26.2"),
-            "macawsDoorsReferenceJar", new ArtifactContract(
+                    "clutternomore", "2.0.7+26.2")),
+            Map.entry("macawsDoorsReferenceJar", new ArtifactContract(
                     "00E431D662489FE4A145F0E471837E1CD2BC9BCCE5ABE3F9F9941230765B2DED",
-                    "mcwdoors", "1.1.5"),
-            "macawsPathsReferenceJar", new ArtifactContract(
+                    "mcwdoors", "1.1.5")),
+            Map.entry("macawsPathsReferenceJar", new ArtifactContract(
                     "39128A12CB64FD61286B631714DA742D7B6EA0FA8D4573C103081D01E4993BC2",
-                    "mcwpaths", "1.1.1"),
-            "macawsTrapdoorsReferenceJar", new ArtifactContract(
+                    "mcwpaths", "1.1.1")),
+            Map.entry("aurorasLanternsReferenceJar", new ArtifactContract(
+                    "E0F8FE41C5ADA5746DE8DB256ECA8D2D6854C08B35FB6C83FAD0EF3D66158A8A",
+                    "auroraslanterns", "2.1.1+26.2")),
+            Map.entry("ribbitsReferenceJar", new ArtifactContract(
+                    "7024EA6FF0FD03DDCC686E18FF7D228B25766B9A46FC5B293DF8C71579D05387",
+                    "ribbits", "4.1.6+26.2-mynx-canary17")),
+            Map.entry("yaclReferenceJar", new ArtifactContract(
+                    "829396C3B3E7D1801AE0E9E2921D0454C5A3078AFDB6C6DDA6B3D1819DFA0E3F",
+                    "yet_another_config_lib_v3", "3.9.6+26.2-fabric")),
+            Map.entry("macawsTrapdoorsReferenceJar", new ArtifactContract(
                     "6411CB0FF6C6CC4312DEED48C3CA69CDBCBAE72E80FF4ED0269F2D0A78ACD32D",
-                    "mcwtrpdoors", "1.1.5"),
-            "macawsWindowsReferenceJar", new ArtifactContract(
+                    "mcwtrpdoors", "1.1.5")),
+            Map.entry("macawsWindowsReferenceJar", new ArtifactContract(
                     "40BA9C55F191F8BD4758293683ED2BCF6D0C76C8F54F9FC8A0DCCABDBCFD36AD",
-                    "mcwwindows", "2.4.2"),
-            "dramaticDoorsReferenceJar", new ArtifactContract(
-                    "1D6B8286C3CC4E657F5326A2E5807081E35F66D13A41E77B3931B647FCDDA4F6",
-                    "dramaticdoors", "1.20.1-3.3.3+26.2-workbench-canary6"),
-            "nibaruReferenceJar", new ArtifactContract(
+                    "mcwwindows", "2.4.2")),
+            Map.entry("dramaticDoorsReferenceJar", new ArtifactContract(
+                    "43C3EFD19619A59A10957B5893ADCE081766F653D8CCCB13F38BFBAACEC2CEFB",
+                    "dramaticdoors", "1.20.1-3.3.3+26.2-workbench-canary7")),
+            Map.entry("nibaruReferenceJar", new ArtifactContract(
                     "0A979A75101076E987A35807F8EB293631FE5E664B252E5DB0AA263D4EEDF07F",
-                    "more_slabs_stairs_and_walls", "4.2.0+26.2-port-canary43-native-directional-material-axis"),
-            "cnmIntegrationReferenceJar", new ArtifactContract(
+                    "more_slabs_stairs_and_walls", "4.2.0+26.2-port-canary43-native-directional-material-axis")),
+            Map.entry("cnmIntegrationReferenceJar", new ArtifactContract(
                     "0E84FB7B8C69E31C3C22A592D0667DB66C2918C8FD9F461BD2C216D377722E69",
-                    "cnm_terrain_slabs_compat", "0.5.49-nibaru-cnm-canary1.39-native-directional-material-axis"),
-            "qsnReferenceJar", new ArtifactContract(
+                    "cnm_terrain_slabs_compat", "0.5.49-nibaru-cnm-canary1.39-native-directional-material-axis")),
+            Map.entry("qsnReferenceJar", new ArtifactContract(
                     "43F1130527F782A291231C682791B4FD3766A20916C691CBDB98F91FDCC47E53",
-                    "quick-stack-nearby", "0.4.0"),
-            "qsnCompatReferenceJar", new ArtifactContract(
+                    "quick-stack-nearby", "0.4.0")),
+            Map.entry("qsnCompatReferenceJar", new ArtifactContract(
                     "C2F4AE3B02A5517AD184998C784C356D90132AEAEE91546C91D03A878BE6CE98",
-                    "quick_stack_nearby_compat", "0.1.0-canary6")
+                    "quick_stack_nearby_compat", "0.1.0-canary6"))
     );
 
     @Test

@@ -40,6 +40,21 @@ configurations {
         canBeResolved = true
         transitive = false
     }
+    aurorasLanternsReference {
+        canBeConsumed = false
+        canBeResolved = true
+        transitive = false
+    }
+    ribbitsReference {
+        canBeConsumed = false
+        canBeResolved = true
+        transitive = false
+    }
+    yaclReference {
+        canBeConsumed = false
+        canBeResolved = true
+        transitive = false
+    }
     macawsTrapdoorsReference {
         canBeConsumed = false
         canBeResolved = true
@@ -87,7 +102,7 @@ def cnmReferenceJar = referenceJar(
         '../../originals/mods/clutternomore-2.0.7+26.2-fabric.jar')
 def dramaticDoorsReferenceJar = referenceJar(
         'dramatic_doors_reference_jar',
-        '../dramatic-doors/artifacts/dramaticdoors-1.20.1-3.3.3+26.2-workbench-canary6.jar')
+        '../dramatic-doors/artifacts/dramaticdoors-1.20.1-3.3.3+26.2-workbench-canary7.jar')
 def nibaruReferenceJar = referenceJar(
         'nibaru_reference_jar',
         '../nibaru/artifacts/more-slabs-stairs-and-walls-4.2.0+26.2-port-canary43-native-directional-material-axis.jar')
@@ -100,6 +115,15 @@ def qsnReferenceJar = referenceJar(
 def qsnCompatReferenceJar = referenceJar(
         'qsn_compat_reference_jar',
         '../../originals/mods/quick-stack-nearby-compat-0.1.0-canary6.jar')
+def aurorasLanternsReferenceJar = referenceJar(
+        'auroras_lanterns_reference_jar',
+        '../../originals/mods/auroraslanterns-2.1.1+26.2.jar')
+def ribbitsReferenceJar = referenceJar(
+        'ribbits_reference_jar',
+        '../ribbits-26.2/artifacts/ribbits-private-reconstruction-4.1.6+26.2-mynx-canary17.jar')
+def ribbitsRuntimeReferenceJars = providers.gradleProperty('ribbits_runtime_reference_jars')
+        .map { value -> value.split(';').collect { path -> file(path) } }
+        .orElse([])
 
 dependencies {
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
@@ -121,6 +145,22 @@ dependencies {
         transitive = false
     }
     macawsPathsReference("maven.modrinth:${project.macaws_paths_project}:${project.macaws_paths_version}") {
+        transitive = false
+    }
+
+    runtimeOnly files(aurorasLanternsReferenceJar)
+    aurorasLanternsReference files(aurorasLanternsReferenceJar)
+
+    runtimeOnly files(ribbitsReferenceJar)
+    ribbitsReference files(ribbitsReferenceJar)
+    runtimeOnly files(ribbitsRuntimeReferenceJars)
+
+    // Ribbits' provider runtime requires YACL. This is test/runtime support only;
+    // it is neither bundled by nor a functional dependency of IBF itself.
+    runtimeOnly("maven.modrinth:1eAoo2KR:cnfPzuFU") {
+        transitive = false
+    }
+    yaclReference("maven.modrinth:1eAoo2KR:cnfPzuFU") {
         transitive = false
     }
 
@@ -167,6 +207,13 @@ fabricApi {
     }
 }
 
+loom.runs.named('gameTest') {
+    // Providers remain loaded so IBF exercises their live registrations. Limit
+    // execution to the IBF suite rather than treating an upstream provider's
+    // own GameTest failures as failures of this project.
+    vmArg '-Dfabric-api.gametest.filter=interchangeable-block-families-runtime-tests:*'
+}
+
 processResources {
     inputs.property 'version', project.version
     filesMatching('fabric.mod.json') {
@@ -184,6 +231,9 @@ test {
             configurations.cnmUpstreamReference,
             configurations.macawsDoorsReference,
             configurations.macawsPathsReference,
+            configurations.aurorasLanternsReference,
+            configurations.ribbitsReference,
+            configurations.yaclReference,
             configurations.macawsTrapdoorsReference,
             configurations.macawsWindowsReference,
             configurations.dramaticDoorsReference,
@@ -197,6 +247,9 @@ test {
         systemProperty 'cnmUpstreamReferenceJar', configurations.cnmUpstreamReference.singleFile.absolutePath
         systemProperty 'macawsDoorsReferenceJar', configurations.macawsDoorsReference.singleFile.absolutePath
         systemProperty 'macawsPathsReferenceJar', configurations.macawsPathsReference.singleFile.absolutePath
+        systemProperty 'aurorasLanternsReferenceJar', configurations.aurorasLanternsReference.singleFile.absolutePath
+        systemProperty 'ribbitsReferenceJar', configurations.ribbitsReference.singleFile.absolutePath
+        systemProperty 'yaclReferenceJar', configurations.yaclReference.singleFile.absolutePath
         systemProperty 'macawsTrapdoorsReferenceJar', configurations.macawsTrapdoorsReference.singleFile.absolutePath
         systemProperty 'macawsWindowsReferenceJar', configurations.macawsWindowsReference.singleFile.absolutePath
         systemProperty 'dramaticDoorsReferenceJar', configurations.dramaticDoorsReference.singleFile.absolutePath

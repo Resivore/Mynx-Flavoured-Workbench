@@ -20,13 +20,13 @@
     "goals": [
       "Contribute the exact audited literal block and accessory families to Clutter No More ShapeMap so approved material forms can share one interchangeable storage family.",
       "Preserve Clutter No More as the sole switching, transmutation, recipe-cleanup, and equivalence authority while keeping component patches and source variants exact.",
-      "Keep exact accepted C3 live as the rollback baseline until current C4 receives separately reported runtime validation and acceptance."
+      "Keep exact accepted C3 live as the rollback baseline; a controlled C5 recipe-cleanup regression must be corrected before any C5 artifact, deployment, or runtime validation."
     ],
     "scope": [
-      "Maintain exact C4 source and artifact identity from legacy implementation checkpoint 9f5a72fff4e8370cdf031006f6658399550f609f: 133 mutually disjoint families, 1,120 unique item IDs, and a 22-member maximum.",
-      "Preserve the accepted 96-family and 944-member C3 catalog byte-for-byte while adding C4's nine exact bar-chain families and 28 literal building-accessory families without suffix, tag, or provider-name inference.",
+      "Preserve the accepted 96-family and 944-member C3 catalog byte-for-byte while extending the C4 133-family/1,120-member catalog to C5's 134 mutually disjoint families, 1,209 unique item IDs, and 22-member maximum without suffix, tag, or provider-name inference.",
+      "Add only C5's nine literal Aurora Lantern chandelier members, the Ribbits Mossy Oak fence/gate family, and the audited Macaw Paths paving members; do not manufacture a C5 artifact while the controlled cleanup regression remains unresolved.",
       "Preserve pre/post ShapeMap collision validation, equal-component-patch equivalence, fail-closed transfer validation, audited alternate-door loot narrowing, recipe cleanup contracts, Quick Stack Nearby affinity, and large-family viewport handling.",
-      "Retain exact current C4 and exact accepted/effective-rollback C3 artifacts; C4 remains generated, controlled-validation-passed, not deployed, and runtime untested, while C3 remains accepted and live."
+      "Retain exact historical C4 and exact accepted/effective-rollback C3 artifacts; C4 remains the independently deployed, runtime-untested Slot B member, C3 remains accepted and live, and C5 has no artifact."
     ],
     "boundaries": {
       "owned_paths": [
@@ -37,7 +37,7 @@
         "Minecraft, Macaw, and Dramatic Doors providers own native blocks, placement, collision, redstone, recipes and costs, drops, copper weathering, waxing, scraping, and lightning behavior; IBF does not normalize or replace those semantics.",
         "Nibaru and Block Geometry Extensions own geometry and material behavior, while Quick Stack Nearby and its compatibility layer only consume Clutter No More affinity; IBF does not modify, duplicate, or bundle those projects.",
         "Partial provider materialization, dynamic discovery, registry-name or tag inference, cross-material or cross-finish collapsing, Macaw paving/full/slab/stair forms, and Building But Better integration are outside the audited C4 contract.",
-        "This migration does not deploy C4, mutate a Test Slot or accepted physical baseline, access either Minecraft profile, or create new in-game runtime evidence.",
+        "C5 does not deploy, mutate a Test Slot or accepted physical baseline, access either Minecraft profile, or create new in-game runtime evidence; the existing C4 Slot B deployment remains independently recorded in revision 2 and TESTING refers only to that immutable project UUID occupancy.",
         "Legacy status READMEs, provenance and audit narratives, historical C1/C2 matrices and binaries, manager records, snapshots, branches, worktrees, and Git history are not imported."
       ]
     },
@@ -93,8 +93,8 @@
       {
         "type": "PROJECT",
         "identifier": "41c327e0-b896-5a02-a30c-62f98b8123ae",
-        "requirement": "Accepted C7 (legacy Canary 6), dramaticdoors-1.20.1-3.3.3+26.2-workbench-canary6.jar SHA-256 1d6b8286c3cc4e657f5326a2e5807081e35f66d13a41e77b3931b647fcdda4f6",
-        "reason": "Exact required Dramatic Doors provider for the audited three-high families."
+        "requirement": "C8 (internal C8 / filename canary7), dramaticdoors-1.20.1-3.3.3+26.2-workbench-canary7.jar SHA-256 43c3efd19619a59a10957b5893adce081766f653d8cccb13f38bfbaacec2cefb",
+        "reason": "Exact required Dramatic Doors provider for the audited three-high families and C5 reload validation."
       },
       {
         "type": "PROJECT",
@@ -129,16 +129,13 @@
     ]
   },
   "state": {
-    "milestone": "C4 adds the accessory-family slice, passes controlled validation, and is now the exact runtime-untested Slot B candidate; accepted C3 remains the disabled rollback.",
+    "milestone": "C5 source adds the Aurora, Ribbits, and paving slice but has no artifact: the full C8 dependency GameTest control leaves the exact canonical minecraft:iron_bars recipe missing only when CNM recipe cleanup is enabled. The older exact C4 remains the independently deployed Slot B member; accepted C3 remains the disabled rollback.",
     "releases": {
       "current": {
-        "version": "C4 (0.1.0-canary4)",
-        "embedded_version": "0.1.0-canary4",
-        "artifact": {
-          "filename": "interchangeable-block-families-0.1.0-canary4.jar",
-          "sha256": "8f805d0cc6cf65599c8fab190be2aa023006a9bd990bcdd2bf0c45f62f1a2968"
-        },
-        "source_commit": "9f5a72fff4e8370cdf031006f6658399550f609f"
+        "version": "C5 source candidate (0.1.0-canary5; artifact withheld)",
+        "embedded_version": "0.1.0-canary5",
+        "artifact": null,
+        "source_commit": "e86b80dd6c6be66d43789679c6563059f26c64bd"
       },
       "accepted": {
         "version": "C3 (0.1.0-canary3)",
@@ -160,18 +157,18 @@
       "accepted_rollback": "ACCEPTED_IS_ROLLBACK"
     },
     "validation": {
-      "build": "CONTROLLED_VALIDATION_PASS",
-      "deployment": "READY_TO_TEST_VERIFIED",
+      "build": "CONTROLLED_VALIDATION_FAIL",
+      "deployment": "NOT_DEPLOYED",
       "runtime": "RUNTIME_UNTESTED"
     },
     "blocker": null
   },
   "synchronization": {
-    "revision": 2,
-    "activity_at": "2026-09-07T03:57:38.772589Z",
-    "updated_at": "2026-09-07T03:57:38.772589Z",
-    "last_codex_at": "2026-09-07T03:57:38.772589Z",
-    "source_commit": "29ed69c35fe1b34bc8ba99a645593471005a3bdc",
+    "revision": 3,
+    "activity_at": "2026-09-07T21:18:28.4948692Z",
+    "updated_at": "2026-09-07T21:18:28.4948692Z",
+    "last_codex_at": "2026-09-07T21:18:28.4948692Z",
+    "source_commit": "e86b80dd6c6be66d43789679c6563059f26c64bd",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
