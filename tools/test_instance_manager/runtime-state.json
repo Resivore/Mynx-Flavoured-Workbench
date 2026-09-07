@@ -2,8 +2,8 @@
   "$schema": "../../schemas/runtime-state.schema.json",
   "schema_version": 2,
   "activation": "ACTIVE",
-  "revision": 109,
-  "updated_at": "2026-09-07T04:02:00Z",
+  "revision": 110,
+  "updated_at": "2026-09-07T04:02:01Z",
   "accepted_baseline": {
     "revision": 27,
     "provenance": {
@@ -1056,7 +1056,49 @@
     ]
   },
   "slots": {
-    "A": null,
+    "A": {
+      "members": [
+        {
+          "unit": {
+            "deployment_id": "d2753f9b-6258-48d9-be21-29e8b03f8a66",
+            "project_uuid": "a0a522b0-bc02-48dc-81de-efc8757171c5",
+            "project_id": "matcha-flavoured-data",
+            "project_identity_source": "CURRENT_MANIFEST",
+            "version": "0.1.0-canary2",
+            "source_commit": "d55a044f750e06e082c39f1aa08d6f62f7070908",
+            "artifacts": [
+              {
+                "artifact_id": "5fd6fed9-7d44-4811-9f3c-acb62824f032",
+                "kind": "MOD",
+                "filename": "matcha-flavoured-data-0.1.0-canary2.jar",
+                "sha256": "0850c7ff0680cf42436cd2b72055af77970075cf438ff429bdb55723af444639",
+                "ownership_keys": [
+                  "mod:matcha_flavoured_data"
+                ],
+                "source": {
+                  "type": "REPOSITORY",
+                  "path": "projects/matcha-flavoured-data/artifacts/matcha-flavoured-data-0.1.0-canary2.jar"
+                }
+              }
+            ]
+          },
+          "replaces_accepted_deployment_id": null,
+          "runtime_result": {
+            "classification": "UNTESTED",
+            "recorded_at": null,
+            "evidence": {
+              "passed": [],
+              "failed": []
+            }
+          }
+        }
+      ],
+      "deployment": {
+        "state": "READY_TO_TEST_VERIFIED",
+        "deployed_at": "2026-09-07T04:02:01Z",
+        "ready_verified_at": "2026-09-07T04:02:01Z"
+      }
+    },
     "B": {
       "members": [
         {

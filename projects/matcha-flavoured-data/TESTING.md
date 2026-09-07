@@ -2,16 +2,17 @@
 
 ## Exact candidate
 
-Canary 1 packages the exact server `data/` tree and exact `pack.mcmeta` from
+Canary 2 packages the exact server `data/` tree and exact `pack.mcmeta` from
 `Matcha_Flavoured_1_12.zip` (12,248,989 bytes, SHA-256
 `6209783021c358044abedabacee471faff5bd4080437d4e3b5e51963f1804248`) as the
 Fabric built-in pack `matcha_flavoured_data:matcha_flavoured_1_12`. It is
 registered with `PackActivationType.ALWAYS_ENABLED`; no client `assets/` are
 in this mod. The original zip remains the separate client resource pack.
 
-This candidate is not deployed and has no runtime result. Use only an
-explicitly allocated Test Slot in the dedicated Matcha Flavoured 26.2
-Workbench. Never access the protected 26.1.2 gameplay instance.
+This exact candidate is deployed in Test Slot A and its artifact hash and
+Fabric dependency graph are `READY_TO_TEST_VERIFIED`; it has no Minecraft
+runtime result. Resume only in the dedicated Matcha Flavoured 26.2 Workbench,
+never the protected 26.1.2 gameplay instance.
 
 ## Required runtime matrix
 
