@@ -20,6 +20,29 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
+
+// A fresh checkout does not carry ignored private Ribbits artifacts.  The committed GameTest API
+// fixture can compile the consumer surface in that case, but is deliberately kept off the main
+// source set and out of the production JAR; runtime still requires the real Ribbits provider.
+if (!ribbitsArtifact.isFile()) {
+    sourceSets {
+        ribbitsApiFixture {
+            java.srcDir 'src/gametest/java'
+            java.include 'com/yungnickyoung/minecraft/ribbits/**'
+        }
+    }
+    configurations.named('ribbitsApiFixtureImplementation') {
+        extendsFrom(configurations.implementation)
+    }
+    sourceSets.ribbitsApiFixture.compileClasspath += sourceSets.main.compileClasspath
+    sourceSets.test.compileClasspath += sourceSets.ribbitsApiFixture.output
+    sourceSets.test.runtimeClasspath += sourceSets.ribbitsApiFixture.output
+    dependencies.add('testRuntimeOnly', files(sourceSets.ribbitsApiFixture.output))
+    tasks.named('compileJava') {
+        dependsOn tasks.named('compileRibbitsApiFixtureJava')
+    }
+    sourceSets.main.compileClasspath += sourceSets.ribbitsApiFixture.output
+}
 processResources { inputs.property 'version', project.version; filesMatching('fabric.mod.json') { expand version: project.version } }
 tasks.withType(JavaCompile).configureEach { options.release = 25 }
 tasks.withType(org.gradle.api.tasks.bundling.AbstractArchiveTask).configureEach { preserveFileTimestamps = false; reproducibleFileOrder = true }
