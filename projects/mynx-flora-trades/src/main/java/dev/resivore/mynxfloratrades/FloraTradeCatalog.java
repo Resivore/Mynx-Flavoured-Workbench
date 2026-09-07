@@ -41,7 +41,7 @@ final class FloraTradeCatalog {
         return new RibbitExternalTradeOffer(offer.id(), "farmer", offer.tier(),
                 new RibbitTradeModule.CostSpec(RibbitTradeModule.StackRef.item(offer.inputId()),
                         offer.inputCount(), false),
-                null, RibbitTradeModule.StackRef.item(offer.outputId()), offer.outputCount(), 16, 0,
+                null, RibbitTradeModule.StackRef.item(offer.outputId()), offer.outputCount(), 16, offer.tier(),
                 offer.selectionKey(), 2, offer.selectionOption());
     }
 
