@@ -20,14 +20,14 @@
   "definition": {
     "lifecycle": "ACTIVE",
     "goals": [
-      "Keep accepted C8's Inventory Extended player-storage, Clutter No More ShapeMap, vanilla shelf, Inventory Search, and CSR reservation-affinity behavior unchanged.",
+      "Keep accepted C8's Inventory Extended player-storage, Clutter No More ShapeMap, vanilla shelf, and CSR reservation-affinity behavior while delivering Workbench-owned live Nearby Search without an Inventory Search runtime dependency.",
       "Admit a normally valid nearby container at QSN's real discovery prefilter when CSR reports an empty physical slot reserved for an exact source item and complete component identity, even when the container has zero physical instances of that item.",
       "Keep Quick Stack Nearby responsible for discovery, target order, existing-stack merges, access and placement checks, capacity, remainders, rules, persistence, packets, and feedback; delegate unchanged when CSR is absent or a target has no reservation-governed empty slot.",
       "Preserve exact prior accepted C6 as rollback and distinct runtime-passed C4 as historical provenance with immutable artifact, source, and evidence boundaries.",
       "One-level native-scan nested shulker targets, parent-first ordering, exact physical or optional CSR ItemStack affinity, physical/reserved/ordinary insertion passes, transactional host-only CONTAINER writeback, exact source accounting, connected-barrel persistence and host deduplication. Upstream QSN and public CSR ownership remain unchanged."
     ],
     "scope": [
-      "Current 0.1.0-canary9: One-level native-scan nested shulker targets, parent-first ordering, exact physical or optional CSR ItemStack affinity, physical/reserved/ordinary insertion passes, transactional host-only CONTAINER writeback, exact source accounting, connected-barrel persistence and host deduplication. Upstream QSN and public CSR ownership remain unchanged. Prior Canary descriptions below are retained historical baseline context.",
+      "Current 0.4.0-workbench-canary10 is the integrated Workbench-owned Quick Stack Nearby replacement candidate: upstream QSN source with Inventory Extended live source windows, CSR reservation affinity, CNM ShapeMap affinity, shelf exclusion, one-level nested shulker routing, optional Double Barrels discovery, and bounded server-authoritative live Nearby Search. Inventory Search is source provenance only, not a runtime dependency. Prior Canary descriptions below are retained historical baseline context.",
       "Maintain the production implementation and resources at checkpoint 1f545721658cce803200fa277737052cead79b70 while preserving all accepted C6 behavior and retained C7 insertion behavior outside the failed discovery seam.",
       "Wrap QSN 0.4.0's exact QuickStackMoveEngine.acceptedTypes(Container) call inside scanContainer after native access and validity checks but before nearbyTargets discards an empty accepted-types set, using only CSR's public read-only exact reservation classifier.",
       "Scope the real source container, source window, locks, and keep-count rules around QSN's native quickStack call so reservation-only affinity is derived from movable source items and is restored without leakage after nested or exceptional calls.",
@@ -47,7 +47,7 @@
         "Container Slot Reservations, Carried Container Auto-Routing, Matcha \u00d7 Stack to Nearby Chests Compatibility, Inventory Search, Block Geometry Extensions, Nibaru, Clutter No More, Quick Stack Nearby, and every other nearby-routing or inventory project retain their own identities, source, artifacts, controls, and behavior ownership.",
         "No CSR reservation mutation, persistence, user interface, container-support policy, or classification logic is reimplemented; C8 consumes only CSR's public read-only reservation API when the provider is loaded.",
         "No Stack to Nearby Chests implementation, Matcha-specific QSN adapter, general Inventory Search patch, carried-container routing, nested-container routing, registry-name parsing, fuzzy material equivalence, item conversion, or custom existing-stack merge is owned here.",
-        "Official QSN, CSR, Inventory Search/Core, Inventory Extended, Clutter No More, BGE, Nibaru, Minecraft, and Fabric classes or JARs are not bundled or redistributed by this project.",
+        "C10 packages its LGPL-licensed QSN-derived implementation and required notices, but does not bundle external QSN, CSR, Inventory Search/Core, Inventory Extended, Clutter No More, BGE, Nibaru, Minecraft, or Fabric JARs; Inventory Search v3.4.0 is visual-source provenance only.",
         "C8 mirrors the exact audited QSN 0.4.0 package-private maximum-stack helper through its current Container#getMaxStackSize delegate because attempted Java-package and Mixin invokers were not runtime-safe; a future QSN helper change requires seam re-audit.",
         "Controlled JUnit and Fabric GameTest results are build/static evidence, not Minecraft gameplay runtime validation.",
         "Lifecycle is ACCEPTED because exact current C8 was promoted into accepted Stack v17 and no longer occupies a Test Slot; C6 is rollback, C4 remains distinct historical passing provenance, and C7's independent failure remains separate.",
@@ -88,8 +88,8 @@
       {
         "type": "MOD",
         "identifier": "inventorysearch",
-        "requirement": "Optional suggests \"*\"; audited 3.4.0 inventory-search-3.4.0.jar, 238,435 bytes, SHA-256 3c5c40a16c93faefe0b19a78f81809d911884a141b80c022830a30a88c63d3d9; embedded inventory-sort-core-3.4.0.jar, 155,502 bytes, SHA-256 0a7c3b6504bba2900b20dbf2a4194adfa34d8dc8f63c1d1a74bcb909e51ae7f2",
-        "reason": "Optional C6 interoperability seam; Inventory Search retains native reservation, classification, and widget lifecycle ownership."
+        "requirement": "Audit-only visual provenance: Inventory Search v3.4.0 source commit 8690f802b57af274309c221ba452b4449876e744; no packaged or declared runtime dependency.",
+        "reason": "C10 independently implements its Nearby Search modal and server-live snapshot; Inventory Search/Core code, classes, resources, and JARs are not shipped."
       },
       {
         "type": "MOD",
@@ -154,16 +154,16 @@
     ]
   },
   "state": {
-    "milestone": "Exact QSN C9 remains INCONCLUSIVE with the sole supplied user observation: \"Nested shulker routing using an internal CSR reservation worked.\" It was removed from Slot B without promotion when IBF C4 was assigned there; C9 is not deployed and C8 is restored as the accepted active release. No other C9 matrix behavior or evidence is inferred. C9 identity remains embedded 0.1.0-canary9, quick-stack-nearby-compat-0.1.0-canary9.jar, SHA-256 14a6844b04d9236233c7007ed111a452db659cc5662dca07aa11f33b2cb4ec76, source a333a4b5fa417cd9d35f6fc2608727828c23f6ea. Manager revision 111 / Stack v27 verified the physical profile after the atomic replacement.",
+    "milestone": "C10 is a controlled-validated, retained-but-not-deployed integrated QSN replacement candidate. C8 remains ACCEPTED. C9 remains retained, NOT_DEPLOYED, and INCONCLUSIVE with the sole supplied observation: \"Nested shulker routing using an internal CSR reservation worked.\" No testing slot or Workbench profile was changed for C10.",
     "releases": {
       "current": {
-        "version": "0.1.0-canary9",
-        "embedded_version": "0.1.0-canary9",
+        "version": "0.4.0-workbench-canary10",
+        "embedded_version": "0.4.0-workbench-canary10",
         "artifact": {
-          "filename": "quick-stack-nearby-compat-0.1.0-canary9.jar",
-          "sha256": "14a6844b04d9236233c7007ed111a452db659cc5662dca07aa11f33b2cb4ec76"
+          "filename": "quick-stack-nearby-0.4.0-workbench-canary10.jar",
+          "sha256": "7882491e0d5f0a3bd8f8ab5135ebb900f16f4caa520a693f682c61d09f092dfe"
         },
-        "source_commit": "a333a4b5fa417cd9d35f6fc2608727828c23f6ea",
+        "source_commit": "6c121ec5bdbb66f4c8092289d2f665a306fdb290",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
@@ -197,16 +197,16 @@
     "validation": {
       "build": "CONTROLLED_VALIDATION_PASS",
       "deployment": "NOT_DEPLOYED",
-      "runtime": "INCONCLUSIVE"
+      "runtime": "RUNTIME_UNTESTED"
     },
     "blocker": null
   },
   "synchronization": {
-    "revision": 11,
-    "activity_at": "2026-09-07T03:57:38.772589Z",
-    "updated_at": "2026-09-07T03:57:38.772589Z",
-    "last_codex_at": "2026-09-07T03:57:38.772589Z",
-    "source_commit": "29ed69c35fe1b34bc8ba99a645593471005a3bdc",
+    "revision": 12,
+    "activity_at": "2026-09-07T17:46:41.618213Z",
+    "updated_at": "2026-09-07T17:46:41.618213Z",
+    "last_codex_at": "2026-09-07T17:46:41.618213Z",
+    "source_commit": "6c121ec5bdbb66f4c8092289d2f665a306fdb290",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
