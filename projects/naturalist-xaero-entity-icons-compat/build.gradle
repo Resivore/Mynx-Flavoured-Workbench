@@ -1,0 +1,77 @@
+import groovy.json.JsonSlurper
+import org.gradle.api.tasks.bundling.AbstractArchiveTask
+
+plugins { id 'net.fabricmc.fabric-loom' version '1.17.19' }
+
+version = project.mod_version
+group = project.maven_group
+base { archivesName = project.archives_base_name }
+
+repositories { maven { url = 'https://maven.fabricmc.net/' }; mavenCentral() }
+
+def requiredFileProperty = { String propertyName, String description ->
+    def supplied = providers.gradleProperty(propertyName).orNull
+    if (supplied == null || supplied.isBlank()) throw new GradleException("Pass -P${propertyName}=<${description}>")
+    def resolved = file(supplied)
+    if (!resolved.isFile()) throw new GradleException("${description} was not found at ${resolved}")
+    resolved
+}
+
+def xaeroJar = requiredFileProperty('xaero_jar', 'Xaero Minimap 26.4.2 JAR')
+def naturalistJar = requiredFileProperty('naturalist_jar', 'Naturalist 2.0.3+26.2-port-canary8 JAR')
+def fabricApiJar = requiredFileProperty('fabric_api_jar', 'Fabric API 0.157.0+26.2 JAR')
+def xaeroLibJar = layout.buildDirectory.file('compile-deps/xaerolib-fabric-26.2-1.7.1.jar')
+
+dependencies {
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    implementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    compileOnly files(xaeroJar, naturalistJar, xaeroLibJar)
+    testImplementation platform('org.junit:junit-bom:5.13.4')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    testImplementation 'org.ow2.asm:asm:9.10.1'
+    testImplementation 'org.ow2.asm:asm-tree:9.10.1'
+    testImplementation files(xaeroJar, naturalistJar, xaeroLibJar)
+}
+
+tasks.register('extractXaeroLib', Copy) {
+    from(zipTree(xaeroJar)) {
+        include 'META-INF/jars/xaerolib-fabric-26.2-1.7.1.jar'
+        eachFile { details -> details.path = 'xaerolib-fabric-26.2-1.7.1.jar' }
+        includeEmptyDirs = false
+    }
+    into(layout.buildDirectory.dir('compile-deps'))
+    doLast { if (!xaeroLibJar.get().asFile.isFile()) throw new GradleException('Xaero 26.4.2 does not contain nested XaeroLib 1.7.1') }
+}
+compileJava.dependsOn tasks.named('extractXaeroLib')
+compileTestJava.dependsOn tasks.named('extractXaeroLib')
+
+processResources { inputs.property 'version', project.version; filesMatching('fabric.mod.json') { expand 'version': project.version } }
+tasks.withType(JavaCompile).configureEach { options.release = 25 }
+tasks.withType(AbstractArchiveTask).configureEach { preserveFileTimestamps = false; reproducibleFileOrder = true }
+
+test {
+    useJUnitPlatform()
+    dependsOn tasks.named('jar')
+    systemProperty 'projectRoot', projectDir.absolutePath
+    systemProperty 'patchJar', tasks.named('jar').get().archiveFile.get().asFile.absolutePath
+    systemProperty 'xaeroJar', xaeroJar.absolutePath
+    systemProperty 'naturalistJar', naturalistJar.absolutePath
+}
+
+tasks.register('verifyClientOnlyArtifact') {
+    dependsOn tasks.named('jar')
+    doLast {
+        def artifact = tasks.named('jar').get().archiveFile.get().asFile
+        def archive = zipTree(artifact)
+        def metadata = new JsonSlurper().parse(archive.matching { include 'fabric.mod.json' }.singleFile)
+        if (metadata.id != 'naturalist_xaero_entity_icons_compat' || metadata.version != project.version || metadata.environment != 'client') throw new GradleException('Unexpected Fabric metadata')
+        if (metadata.suggests?.xaerominimap != '*' || metadata.suggests?.naturalist != '*') throw new GradleException('Compatibility dependencies must remain capability suggestions')
+        def paths = []; archive.visit { if (!it.directory) paths.add(it.relativePath.pathString.replace('\\','/')) }
+        def forbidden = paths.findAll { it.startsWith('net/minecraft/') || it.startsWith('xaero/') || it.startsWith('com/crispytwig/') || it.startsWith('assets/') || it.startsWith('data/') || it.startsWith('META-INF/jars/') || (it.endsWith('.class') && !it.startsWith('dev/resivore/naturalistxaeroicons/')) }
+        if (!forbidden.isEmpty()) throw new GradleException("Forbidden foreign content: ${forbidden.unique().sort()}")
+    }
+}
+tasks.named('check') { dependsOn tasks.named('verifyClientOnlyArtifact') }
+tasks.register('stageCanaryArtifact', Copy) { dependsOn tasks.named('check'); from(tasks.named('jar')); into(layout.projectDirectory.dir('artifacts')) }
+java { withSourcesJar() }
