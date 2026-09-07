@@ -22,14 +22,23 @@ loom {
             sourceSet sourceSets.client
         }
     }
+    runs {
+        client {
+            if (project.hasProperty('qsnClientSmoke')) {
+                vmArg '-Dquickstacknearby.smokeTest=true'
+                vmArg '-Dquickstacknearby.smokeMinecraftProfile=development-client'
+                vmArg '-Dquickstacknearby.smokeReleaseProfile=0.4.0-workbench-canary11'
+            }
+        }
+    }
 }
 
 fabricApi {
     configureTests {
         createSourceSet = true
-        modId = 'quick-stack-nearby-c10-gametests'
+        modId = 'quick-stack-nearby-c11-gametests'
         enableGameTests = true
-        enableClientGameTests = false
+        enableClientGameTests = true
         eula = true
     }
 }

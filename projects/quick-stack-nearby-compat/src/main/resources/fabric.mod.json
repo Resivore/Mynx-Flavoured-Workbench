@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "quick-stack-nearby",
   "version": "${version}",
-  "name": "Quick Stack Nearby (Workbench Canary 10)",
+  "name": "Quick Stack Nearby (Workbench Canary 11)",
   "description": "Quick Stack Nearby 0.4.0 with Workbench routing compatibility and live Nearby Search.",
   "authors": ["ThatMasonGuy", "Resivore"],
   "contact": {
@@ -32,7 +32,7 @@
   "custom": {
     "workbench:classification": "GENERATED / STATICALLY VALIDATED / RUNTIME UNTESTED",
     "workbench:deployment": "NOT DEPLOYED",
-    "workbench:runtime-slot-owner": "Quick Stack Nearby - Workbench Canary 10",
+    "workbench:runtime-slot-owner": "Quick Stack Nearby - Workbench Canary 11",
     "workbench:runtime_dependency_policy": {
       "contract": "CAPABILITY_OR_PROVIDER",
       "exceptions": []

@@ -56,4 +56,20 @@ class C10StaticContractTest {
         assertTrue(screen.contains("Search items, ids, :category, or <components"));
         assertTrue(notice.contains("Inventory Search v3.4.0") && notice.contains("independently implemented"));
     }
+
+    @Test
+    void childOnlyDiscoveryAndInventoryExtendedUiUseTheLiveC11Seams() throws Exception {
+        String service = Files.readString(Path.of("src/main/java/tempeststudios/quickstacknearby/QuickStackService.java"));
+        String controls = Files.readString(Path.of("src/client/java/tempeststudios/quickstacknearby/QuickStackInventoryControls.java"));
+        assertTrue(service.contains("!acceptedTypes.isEmpty() || !nestedChildren.isEmpty()"));
+        assertTrue(service.contains("if (!admitted.parentAcceptedTypes().isEmpty())"));
+        assertTrue(service.contains("targets.addAll(admitted.nestedChildren())"));
+        assertTrue(controls.contains("ScreenEvents.AFTER_INIT.register"));
+        assertTrue(controls.contains("screen instanceof InventoryScreen"));
+        assertTrue(controls.contains("Screens.getWidgets(screen)"));
+        assertTrue(controls.contains("new NearbySearchIconButton"));
+        assertTrue(controls.contains("new NearbySearchScreen(screen)"));
+        assertTrue(controls.contains("openNearbySearchForSmoke"));
+        assertFalse(controls.contains("inventorysearch"));
+    }
 }

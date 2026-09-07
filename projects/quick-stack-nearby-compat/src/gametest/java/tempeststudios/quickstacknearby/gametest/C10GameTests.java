@@ -6,6 +6,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -48,6 +49,50 @@ public final class C10GameTests implements CustomTestMethodInvoker {
         helper.assertTrue(result.itemsMoved() == 12 && after.get(0).getCount() == 64 && after.get(1).getCount() == 8
                 && chest.getItem(0) == host && player.getInventory().getItem(9).isEmpty(),
                 "one-level shulker routing lost its transactional host writeback");
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void childOnlyPhysicalAffinityAdmitsTheOuterScanButNotTheParent(GameTestHelper helper) {
+        ChestBlockEntity chest = chest(helper, new BlockPos(1, 2, 1));
+        ServerPlayer player = player(helper);
+        NonNullList<ItemStack> contents = NonNullList.withSize(27, ItemStack.EMPTY);
+        contents.set(4, new ItemStack(Items.STONE, 60));
+        contents.set(9, new ItemStack(Items.DIRT, 3));
+        ItemStack host = new ItemStack(Blocks.SHULKER_BOX);
+        host.set(DataComponents.CUSTOM_NAME, Component.literal("metadata must survive"));
+        host.set(DataComponents.CONTAINER, ItemContainerContents.fromItems(contents));
+        chest.setItem(0, host);
+        player.getInventory().setItem(9, new ItemStack(Items.STONE, 12));
+
+        QuickStackMoveEngine.Result result = QuickStackService.quickStack(player);
+        NonNullList<ItemStack> after = NonNullList.withSize(27, ItemStack.EMPTY);
+        host.getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY).copyInto(after);
+        helper.assertTrue(result.itemsMoved() == 12 && chest.getItem(0) == host && chest.getItem(1).isEmpty()
+                        && after.get(4).getCount() == 64 && after.get(0).getCount() == 8
+                        && after.get(9).is(Items.DIRT) && host.getHoverName().getString().equals("metadata must survive"),
+                "child-only physical affinity either failed admission, wrote into the parent, or lost host metadata");
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void parentAffinityRemainsBeforeNestedAffinity(GameTestHelper helper) {
+        ChestBlockEntity chest = chest(helper, new BlockPos(1, 2, 1));
+        ServerPlayer player = player(helper);
+        chest.setItem(0, new ItemStack(Items.STONE, 60));
+        NonNullList<ItemStack> contents = NonNullList.withSize(27, ItemStack.EMPTY);
+        contents.set(0, new ItemStack(Items.STONE, 60));
+        ItemStack host = new ItemStack(Blocks.SHULKER_BOX);
+        host.set(DataComponents.CONTAINER, ItemContainerContents.fromItems(contents));
+        chest.setItem(2, host);
+        player.getInventory().setItem(9, new ItemStack(Items.STONE, 10));
+
+        QuickStackMoveEngine.Result result = QuickStackService.quickStack(player);
+        NonNullList<ItemStack> after = NonNullList.withSize(27, ItemStack.EMPTY);
+        host.getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY).copyInto(after);
+        helper.assertTrue(result.itemsMoved() == 10 && chest.getItem(0).getCount() == 64
+                        && chest.getItem(1).getCount() == 6 && after.get(0).getCount() == 60,
+                "nested target was allowed ahead of a matching physical parent target");
         helper.succeed();
     }
 
