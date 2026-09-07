@@ -205,6 +205,9 @@ public final class QuickStackMoveEngine {
     }
 
     private static int insertIntoTarget(ItemStack sourceStack, Container target) {
+        if (target instanceof NestedShulkerTarget nested) {
+            return nested.insert(sourceStack);
+        }
         int moved = insertIntoExistingStacks(sourceStack, target);
         if (!sourceStack.isEmpty()) {
             moved += insertIntoEmptySlots(sourceStack, target);
@@ -238,6 +241,10 @@ public final class QuickStackMoveEngine {
     }
 
     private static int insertIntoEmptySlots(ItemStack sourceStack, Container target) {
+        int reservationMove = CsrRoutingCompat.insertReservedFirst(sourceStack, target);
+        if (reservationMove >= 0) {
+            return reservationMove;
+        }
         int moved = 0;
         for (int slot = 0; slot < target.getContainerSize() && !sourceStack.isEmpty(); slot++) {
             ItemStack targetStack = target.getItem(slot);

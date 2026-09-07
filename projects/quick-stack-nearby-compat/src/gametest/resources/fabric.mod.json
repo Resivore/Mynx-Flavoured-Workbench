@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "id": "quick-stack-nearby-c10-gametests",
+  "version": "1.0.0",
+  "name": "Quick Stack Nearby C10 Controlled GameTests",
+  "environment": "*",
+  "entrypoints": {
+    "fabric-gametest": [
+      "tempeststudios.quickstacknearby.gametest.C10GameTests",
+      "tempeststudios.quickstacknearby.gametest.C10CsrGameTests",
+      "tempeststudios.quickstacknearby.gametest.C10DoubleBarrelGameTests",
+      "tempeststudios.quickstacknearby.C10NearbySearchGameTests"
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=0.19.3",
+    "fabric-api": "*",
+    "container_slot_reservations": "*",
+    "doublebarrels": "*",
+    "minecraft": "=26.2",
+    "quick-stack-nearby": "=0.4.0-workbench-canary10"
+  }
+}

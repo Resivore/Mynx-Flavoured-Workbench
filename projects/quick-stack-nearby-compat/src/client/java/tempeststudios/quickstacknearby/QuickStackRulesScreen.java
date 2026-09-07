@@ -392,7 +392,10 @@ public class QuickStackRulesScreen extends QuickStackRulesScreenBase {
     }
 
     private boolean isTargetSlot(int inventorySlot) {
-        return inventorySlot >= Inventory.getSelectionSize() && inventorySlot < Inventory.INVENTORY_SIZE;
+        // Inventory Extended appends live storage slots to the same backing list.  The editor
+        // and server must therefore share this live boundary rather than the vanilla constant.
+        return inventorySlot >= Inventory.getSelectionSize()
+                && inventorySlot < player.getInventory().getNonEquipmentItems().size();
     }
 
     private ItemStack stackForInventorySlot(int inventorySlot) {

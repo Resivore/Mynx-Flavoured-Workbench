@@ -30,13 +30,24 @@ public final class QuickStackService {
             ServerPlayer player,
             QuickStackMoveEngine.SourceRules sourceRules
     ) {
-        List<QuickStackMoveEngine.Target> targets = nearbyTargets(player);
+        int firstSourceSlot = Inventory.getSelectionSize();
+        // Inventory Extended appends its live storage rows to this list.  Never
+        // freeze the vanilla 36-slot ceiling here: the server inventory is the
+        // authority for both the move and the configured source rules.
+        int exclusiveLastSourceSlot = player.getInventory().getNonEquipmentItems().size();
+        QuickStackMoveEngine.SourceRules effectiveRules = sourceRules == null
+                ? QuickStackMoveEngine.SourceRules.EMPTY
+                : new QuickStackMoveEngine.SourceRules(sourceRules.slotRules().entrySet().stream()
+                .filter(entry -> entry.getKey() >= firstSourceSlot && entry.getKey() < exclusiveLastSourceSlot)
+                .collect(java.util.stream.Collectors.toMap(java.util.Map.Entry::getKey, java.util.Map.Entry::getValue)));
+        List<QuickStackMoveEngine.Target> targets = nearbyTargets(
+                player, player.getInventory(), firstSourceSlot, exclusiveLastSourceSlot, effectiveRules);
         QuickStackMoveEngine.Result result = QuickStackMoveEngine.moveMatchingItems(
                 player.getInventory(),
-                Inventory.getSelectionSize(),
-                Inventory.INVENTORY_SIZE,
+                firstSourceSlot,
+                exclusiveLastSourceSlot,
                 targets,
-                sourceRules
+                effectiveRules
         );
 
         if (result.itemsMoved() > 0) {
@@ -46,7 +57,9 @@ public final class QuickStackService {
         return result;
     }
 
-    private static List<QuickStackMoveEngine.Target> nearbyTargets(ServerPlayer player) {
+    private static List<QuickStackMoveEngine.Target> nearbyTargets(
+            ServerPlayer player, Container source, int firstSourceSlot, int exclusiveLastSourceSlot,
+            QuickStackMoveEngine.SourceRules sourceRules) {
         ServerLevel level = ServerPlayerCompat.serverLevel(player);
         BlockPos center = player.blockPosition();
         List<ScannedContainer> scannedContainers = new ArrayList<>();
@@ -71,8 +84,12 @@ public final class QuickStackService {
                 continue;
             }
             scannedPositions.addAll(scannedContainer.positions());
-            if (!scannedContainer.acceptedTypes().isEmpty()) {
-                scannedContainers.add(scannedContainer);
+            Set<QuickStackMoveEngine.StackKey> acceptedTypes = CsrRoutingCompat.augmentAcceptedTypes(
+                    source, firstSourceSlot, exclusiveLastSourceSlot, sourceRules,
+                    scannedContainer.container(), scannedContainer.acceptedTypes());
+            if (!acceptedTypes.isEmpty()) {
+                scannedContainers.add(new ScannedContainer(scannedContainer.container(), acceptedTypes,
+                        scannedContainer.positions(), scannedContainer.distance()));
             }
         }
 
@@ -81,18 +98,21 @@ public final class QuickStackService {
         List<QuickStackMoveEngine.Target> targets = new ArrayList<>(scannedContainers.size());
         for (ScannedContainer scannedContainer : scannedContainers) {
             targets.add(new QuickStackMoveEngine.Target(scannedContainer.container(), scannedContainer.acceptedTypes()));
+            // C9 ordering is parent first, followed by that parent's physical shulker slots.
+            targets.addAll(NestedRoutingCompat.children(scannedContainer.container(), player, source,
+                    firstSourceSlot, exclusiveLastSourceSlot, sourceRules));
         }
-        return targets;
+        return ShapeMapRoutingCompat.augmentTargets(source, firstSourceSlot, exclusiveLastSourceSlot, sourceRules, targets);
     }
 
-    private static ScannedContainer scanContainer(
+    static ScannedContainer scanContainer(
             ServerLevel level,
             ServerPlayer player,
             BlockPos center,
             BlockPos position
     ) {
         BlockEntity blockEntity = level.getBlockEntity(position);
-        if (!(blockEntity instanceof Container container)) {
+        if (!(blockEntity instanceof Container container) || blockEntity instanceof net.minecraft.world.level.block.entity.ShelfBlockEntity) {
             return null;
         }
 
@@ -116,6 +136,11 @@ public final class QuickStackService {
                     }
                 }
             }
+        }
+        DoubleBarrelCompat.Resolved resolvedBarrel = DoubleBarrelCompat.resolve(level, position, container);
+        if (resolvedBarrel != null) {
+            container = resolvedBarrel.container();
+            positions = resolvedBarrel.positions();
         }
 
         if (!canUseContainer(container, level, positions, player)) {
@@ -186,7 +211,7 @@ public final class QuickStackService {
                 + ".");
     }
 
-    private record ScannedContainer(
+    static record ScannedContainer(
             Container container,
             Set<QuickStackMoveEngine.StackKey> acceptedTypes,
             List<BlockPos> positions,

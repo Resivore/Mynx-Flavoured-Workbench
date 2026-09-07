@@ -26,4 +26,21 @@ public final class QuickStackClientNetworking {
                 QuickStackRuleStore.getInstance().payloadRules()
         ));
     }
+
+    public static boolean requestNearbySearch() {
+        Minecraft client = Minecraft.getInstance();
+        if (client.player == null || !QuickStackClientNetworkingCompat.canSendNearbySearch()) {
+            if (client.player != null) ClientFeedbackCompat.displayClientMessage(client.player,
+                    Component.literal("Nearby Search is not available on this server."));
+            return false;
+        }
+        QuickStackClientNetworkingCompat.requestNearbySearch();
+        return true;
+    }
+
+    public static void targetNearbyContainer(net.minecraft.core.BlockPos position, net.minecraft.world.item.ItemStack stack, String nestedName) {
+        if (position != null && QuickStackClientNetworkingCompat.canSendNearbySearch()) {
+            QuickStackClientNetworkingCompat.targetNearbyContainer(position, stack, nestedName);
+        }
+    }
 }

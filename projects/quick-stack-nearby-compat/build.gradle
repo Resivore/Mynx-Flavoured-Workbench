@@ -24,6 +24,16 @@ loom {
     }
 }
 
+fabricApi {
+    configureTests {
+        createSourceSet = true
+        modId = 'quick-stack-nearby-c10-gametests'
+        enableGameTests = true
+        enableClientGameTests = false
+        eula = true
+    }
+}
+
 dependencies {
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
     implementation "net.fabricmc:fabric-loader:${project.loader_version}"
@@ -31,12 +41,18 @@ dependencies {
 
     testImplementation 'org.junit.jupiter:junit-jupiter:5.12.2'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.12.2'
+    gametestImplementation files('../container-slot-reservations/artifacts/container-slot-reservations-0.1.0-canary4.jar')
+    gametestImplementation files('../double-barrels/artifacts/doublebarrels-fabric-26.2-1.0.1+26.2-canary2.jar')
 }
 
 processResources {
-    inputs.property 'version', project.version
+    def resourceProperties = [version: project.version, mixin_compatibility_level: 'JAVA_25']
+    inputs.properties resourceProperties
     filesMatching('fabric.mod.json') {
-        expand 'version': project.version
+        expand resourceProperties
+    }
+    filesMatching('*.mixins.json') {
+        expand resourceProperties
     }
 }
 
@@ -59,4 +75,5 @@ jar {
     from('LICENSE-GPL-3.0') {
         rename { "${it}_${project.base.archivesName.get()}" }
     }
+    from('NOTICE')
 }

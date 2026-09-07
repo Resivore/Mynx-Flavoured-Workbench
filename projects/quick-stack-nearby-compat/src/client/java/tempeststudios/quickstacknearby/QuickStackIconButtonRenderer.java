@@ -16,6 +16,18 @@ final class QuickStackIconButtonRenderer {
         drawQuickStackIcon(guiGraphics, x, y, hovered);
     }
 
+    static void renderSearch(GuiGraphics guiGraphics, int x, int y, boolean hovered) {
+        drawBeveledBackground(guiGraphics, x, y, SIZE, SIZE, hovered);
+        int color = hovered ? ICON_HOVER_COLOR : ICON_COLOR;
+        // Inventory Search's familiar compact magnifier, rendered in QSN's matching button chrome.
+        fill(guiGraphics, x + 3, y + 3, x + 7, y + 4, color);
+        fill(guiGraphics, x + 2, y + 4, x + 3, y + 7, color);
+        fill(guiGraphics, x + 7, y + 4, x + 8, y + 7, color);
+        fill(guiGraphics, x + 3, y + 7, x + 7, y + 8, color);
+        fill(guiGraphics, x + 7, y + 7, x + 9, y + 9, color);
+        fill(guiGraphics, x + 8, y + 8, x + 10, y + 10, color);
+    }
+
     private static void drawBeveledBackground(GuiGraphics guiGraphics, int x, int y, int width, int height, boolean hovered) {
         fill(guiGraphics, x + 2, y, x + width - 2, y + 1, 0xFF000000);
         fill(guiGraphics, x + 2, y + height - 1, x + width - 2, y + height, 0xFF000000);

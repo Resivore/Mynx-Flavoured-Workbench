@@ -22,20 +22,24 @@ import tempeststudios.quickstacknearby.RecipeBookAwareButtonScreen;
 public abstract class QuickStackInventoryScreenMixin implements RecipeBookAwareButtonScreen, QuickStackRulesButtonScreen {
     @Unique private static final String quickStackNearby$OWNER = "quick-stack-nearby";
     @Unique private static final String quickStackNearby$SLOT = "quick_stack_nearby";
+    @Unique private static final String quickStackNearby$SEARCH_SLOT = "nearby_search";
 
     @Unique private Button quickStackNearby$button;
+    @Unique private Button quickStackNearby$searchButton;
 
     @Inject(method = "init", at = @At("TAIL"))
     private void quickStackNearby$onInit(CallbackInfo ci) {
         AbstractContainerScreen<?> screen = (AbstractContainerScreen<?>) (Object) this;
         if (!(screen instanceof InventoryScreen)) {
             quickStackNearby$button = null;
+            quickStackNearby$searchButton = null;
             return;
         }
 
         Minecraft client = Minecraft.getInstance();
         if (client == null || client.player == null) {
             quickStackNearby$button = null;
+            quickStackNearby$searchButton = null;
             return;
         }
 
@@ -61,6 +65,16 @@ public abstract class QuickStackInventoryScreenMixin implements RecipeBookAwareB
         );
         ((ScreenAccessor) this).invokeAddRenderableWidget(button);
         quickStackNearby$button = button;
+        QuickStackButtonSlotBridge.SlotPlacement searchPlacement = QuickStackButtonSlotBridge.reservePlayerInventorySlot(
+                screen, quickStackNearby$OWNER, quickStackNearby$SEARCH_SLOT);
+        Button search = new tempeststudios.quickstacknearby.NearbySearchIconButton(
+                searchPlacement.x(), searchPlacement.y(), Component.literal("Search live nearby storage."),
+                pressed -> {
+                    ClientScreenCompat.setScreen(client, new tempeststudios.quickstacknearby.NearbySearchScreen(screen));
+                    quickStackNearby$clearFocus(client, screen, pressed);
+                });
+        ((ScreenAccessor) this).invokeAddRenderableWidget(search);
+        quickStackNearby$searchButton = search;
     }
 
     @Inject(method = {"render", "extractRenderState"}, at = @At("HEAD"), require = 0)
@@ -95,6 +109,7 @@ public abstract class QuickStackInventoryScreenMixin implements RecipeBookAwareB
         AbstractContainerScreen<?> screen = (AbstractContainerScreen<?>) (Object) this;
         QuickStackButtonSlotBridge.releaseOwner(screen, quickStackNearby$OWNER);
         quickStackNearby$button = null;
+        quickStackNearby$searchButton = null;
     }
 
     @Unique
@@ -111,6 +126,12 @@ public abstract class QuickStackInventoryScreenMixin implements RecipeBookAwareB
         );
         quickStackNearby$button.setX(placement.x());
         quickStackNearby$button.setY(placement.y());
+        if (quickStackNearby$searchButton != null) {
+            QuickStackButtonSlotBridge.SlotPlacement searchPlacement = QuickStackButtonSlotBridge.reservePlayerInventorySlot(
+                    screen, quickStackNearby$OWNER, quickStackNearby$SEARCH_SLOT);
+            quickStackNearby$searchButton.setX(searchPlacement.x());
+            quickStackNearby$searchButton.setY(searchPlacement.y());
+        }
     }
 
     @Unique
