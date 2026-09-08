@@ -30,11 +30,11 @@
       "Recognize explicitly marked externally owned native filled-map identities for possession-gated Xaero projection without registering, rewriting, classlinking, or supplying the external marker or item artwork."
     ],
     "scope": [
-      "Canonical C10 source for Minecraft Java 26.2 Fabric, narrowly succeeding C9 by exactly doubling only the 17 custom native poi_icons from the immutable originals/assets source artwork while preserving C9's enlarged 16-by-16 item-side artwork, 18 owned products, 17 custom holders, external-native boundary, normalization, and Xaero rendering behavior.",
+      "Canonical C11 source for Minecraft Java 26.2 Fabric, narrowly succeeding failed C10 by nearest-neighbor reframing only the 17 custom native poi_icons from immutable originals/assets source artwork into the standard 8-by-8 decoration canvas, enlarging visible artwork within the fixed logical sprite while preserving C9's enlarged 16-by-16 item-side artwork, 18 owned products, 17 custom holders, external-native boundary, normalization, and Xaero rendering behavior.",
       "The sole 18-row MapMarkerIdentity table, 17 registered map_marker_extension MapDecorationType holders, vanilla minecraft:red_x retention for buried treasure, idempotent map normalization, and immediate MapItemSavedData refresh behavior.",
       "One marker-gated external-native identity for a real minecraft:filled_map with minecraft:map_id and ribbits:ribbit_village_explorer_map=true, admitting only the existing ribbits:ribbit_village holder and passing its ordinary decoration coordinates and live asset through to Xaero.",
       "Optional client-only Xaero integrations, common/server-capable persistent marker identity, bundled fallback marker sprites, and the project-owned 88.0 icon-pack source for 17 opened-map marker sprites plus 18 filled-map item models.",
-      "Exact current C10 retained pair map-marker-extension-0.4.0-canary10.jar and map-marker-extension-icons-0.4.0-canary10.zip, with exact C9 and failed C8 pairs plus accepted Treasure X C4 retained separately as provenance and rollback evidence."
+      "Exact current C11 retained pair map-marker-extension-0.4.0-canary11.jar and map-marker-extension-icons-0.4.0-canary11.zip, with exact failed C10 and C8 pairs, exact C9 pair, and accepted Treasure X C4 retained separately as provenance and rollback evidence."
     ],
     "boundaries": {
       "owned_paths": [
@@ -71,20 +71,20 @@
       {
         "type": "MOD",
         "identifier": "fabric-api",
-        "requirement": "=0.157.0+26.2",
-        "reason": "Fabric APIs used by the common registry, client initialization, and Mixin implementation."
+        "requirement": ">=0.157.0",
+        "reason": "Fabric APIs used by the common registry, client initialization, and Mixin implementation; 0.157.0+26.2 is the controlled validation baseline."
       },
       {
         "type": "MOD",
         "identifier": "xaerominimap",
-        "requirement": "=26.4.2",
-        "reason": "Optional exact client integration target preserved by C8."
+        "requirement": "Optional suggests *; validation baseline 26.4.2",
+        "reason": "Optional client integration target preserved by C8 without pinning compatible runtime successors."
       },
       {
         "type": "MOD",
         "identifier": "xaeroworldmap",
-        "requirement": "=1.44.2",
-        "reason": "Optional exact client integration target preserving C4's accepted presentation geometry and C8's live marker assets."
+        "requirement": "Optional suggests *; validation baseline 1.44.2",
+        "reason": "Optional client integration target preserving C4's accepted presentation geometry and C8's live marker assets without pinning compatible runtime successors."
       },
       {
         "type": "MOD",
@@ -101,15 +101,15 @@
     ]
   },
   "state": {
-    "milestone": "Exact MME C10 is the current development release and retained mod/pack pair after controlled validation of an exact nearest-neighbor 2x expansion of all 17 custom native poi_icons directly from immutable originals/assets artwork. C9 remains its exact retained predecessor, including its dedicated item-side artwork. C8 is an externally user-tested runtime FAIL only for too-small filled-map inventory presentation; its marker identities and selected icons worked, and no other C8 runtime rows are inferred. C10 remains runtime untested, not accepted, and not deployed. Exact legacy Treasure X C4 remains the accepted promoted binary baseline and rollback; its exact binary was not separately runtime-tested, and the genuine focused World Map runtime observation belongs only to C3.",
+    "milestone": "Exact MME C11 is the current development release and retained mod/pack pair after controlled validation of nearest-neighbor artwork reframing for all 17 custom native poi_icons directly from immutable originals/assets artwork into the verified standard 8-by-8 decoration canvas. C10 has scoped external/user runtime FAIL evidence only for Compass Ribbon POI visual scale: all 17 custom icons appeared and their identities/selections functioned, but they remained visibly tiny rather than matching vanilla minecraft:red_x; no unrelated C10 runtime row is inferred. C11 remains runtime untested, not accepted, and not deployed. C9 remains its exact retained predecessor, including its dedicated item-side artwork. C8 is an externally user-tested runtime FAIL only for too-small filled-map inventory presentation; its marker identities and selected icons worked, and no other C8 runtime rows are inferred. Exact legacy Treasure X C4 remains the accepted promoted binary baseline and rollback; its exact binary was not separately runtime-tested, and the genuine focused World Map runtime observation belongs only to C3.",
     "releases": {
       "current": {
-        "version": "C10 (0.4.0-canary10)",
+        "version": "C11 (0.4.0-canary11)",
         "artifact": {
-          "filename": "map-marker-extension-0.4.0-canary10.jar",
-          "sha256": "94f657b7083669f32d8500794eb6dc7283cdc8a331f592b1aeb02adc51b1396c"
+          "filename": "map-marker-extension-0.4.0-canary11.jar",
+          "sha256": "92df3cca27f3d4f6cfcb0ed52ba26874dc5f86eb756601b3a75771cfd7e9cbaf"
         },
-        "source_commit": "e8fd269901ae3c23b74691b7b09b80d56feaace6",
+        "source_commit": "dff852f9a44af75f8e881cf5d7050314c439374d",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
@@ -142,11 +142,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 4,
-    "activity_at": "2026-09-08T05:25:59Z",
-    "updated_at": "2026-09-08T05:25:59Z",
-    "last_codex_at": "2026-09-08T05:25:59Z",
-    "source_commit": "e8fd269901ae3c23b74691b7b09b80d56feaace6",
+    "revision": 5,
+    "activity_at": "2026-09-08T14:55:44Z",
+    "updated_at": "2026-09-08T14:55:44Z",
+    "last_codex_at": "2026-09-08T14:55:44Z",
+    "source_commit": "dff852f9a44af75f8e881cf5d7050314c439374d",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
