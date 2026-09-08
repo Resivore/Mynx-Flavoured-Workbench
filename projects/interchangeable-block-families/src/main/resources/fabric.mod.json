@@ -3,7 +3,7 @@
   "id": "interchangeable_block_families",
   "version": "${version}",
   "name": "Interchangeable Block Families",
-  "description": "Audited Macaw, Aurora's Lanterns, Ribbits, Dramatic Doors, and vanilla material families for Clutter No More ShapeMap.",
+  "description": "Audited Macaw, Aurora's Lanterns, Building But Better, Ribbits, Dramatic Doors, and vanilla material families for Clutter No More ShapeMap.",
   "environment": "*",
   "entrypoints": {
     "main": [
@@ -22,6 +22,7 @@
     "mcwdoors": ">=1.1.5",
     "mcwpaths": ">=1.1.1",
     "auroraslanterns": ">=2.1.1",
+    "bbb": ">=2.0pre4+26.2",
     "ribbits": ">=4.1.6",
     "mcwtrpdoors": ">=1.1.5",
     "mcwwindows": ">=2.4.2",

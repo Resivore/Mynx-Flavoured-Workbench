@@ -20,13 +20,13 @@
     "goals": [
       "Contribute the exact audited literal block and accessory families to Clutter No More ShapeMap so approved material forms can share one interchangeable storage family.",
       "Preserve Clutter No More as the sole switching, transmutation, recipe-cleanup, and equivalence authority while keeping component patches and source variants exact.",
-      "Keep exact accepted C3 live as the rollback baseline while C5 is ready for focused manual runtime validation."
+      "Keep exact accepted C3 live as the rollback baseline while C6 adds the literal Building But Better detail-family compatibility surface and remains runtime-untested."
     ],
     "scope": [
-      "Preserve the accepted 96-family and 944-member C3 catalog byte-for-byte while extending the C4 133-family/1,120-member catalog to C5's 134 mutually disjoint families, 1,209 unique item IDs, and 22-member maximum without suffix, tag, or provider-name inference.",
-      "Add only C5's nine literal Aurora Lantern chandelier members, the Ribbits Mossy Oak fence/gate family, and the audited Macaw Paths paving members; retain C5 only after its narrow canonical-parent cleanup correction passes the full C8 dependency control.",
+      "Preserve the existing literal catalog while extending the canonical Fence/Fence Gate and Iron Bars families in place and adding exactly 19 mutually disjoint BBB detail families, yielding 153 families, 1,317 unique item IDs, and a 22-member maximum without suffix, tag, or provider-name inference.",
+      "Use BBB's current main registry as the provider authority: 12 wood Trim/Balustrade/Support/Pallet families, 12 matching Frame/Lattice fence extensions, seven exact stone Column/Urn/Moulding/Fence/Frame families, and BBB Iron Fence; retain Mossy Oak as its existing real Ribbits fence/gate pair.",
       "Preserve pre/post ShapeMap collision validation, equal-component-patch equivalence, fail-closed transfer validation, audited alternate-door loot narrowing, recipe cleanup contracts, Quick Stack Nearby affinity, and large-family viewport handling.",
-      "Retain exact historical C4 and exact accepted/effective-rollback C3 artifacts; C5 supersedes C4 in Slot B after manager verification while C3 remains accepted rollback provenance."
+      "Retain exact historical C4 and exact accepted/effective-rollback C3 artifacts; C6 can replace only the same-project C4 Slot B member after a serialized manager preflight that also satisfies the BBB provider dependency."
     ],
     "boundaries": {
       "owned_paths": [
@@ -36,8 +36,8 @@
         "Clutter No More owns ShapeMap, selection controls, 1:1 transmuteCopy switching, recipe equivalence and cleanup, and the graph consumed by Quick Stack Nearby; IBF does not add a second registry, switcher, keybind, networking protocol, recipe engine, or storage-equivalence system.",
         "Minecraft, Macaw, and Dramatic Doors providers own native blocks, placement, collision, redstone, recipes and costs, drops, copper weathering, waxing, scraping, and lightning behavior; IBF does not normalize or replace those semantics.",
         "Nibaru and Block Geometry Extensions own geometry and material behavior, while Quick Stack Nearby and its compatibility layer only consume Clutter No More affinity; IBF does not modify, duplicate, or bundle those projects.",
-        "Partial provider materialization, dynamic discovery, registry-name or tag inference, cross-material or cross-finish collapsing, Macaw paving/full/slab/stair forms, and Building But Better integration are outside the audited C4 contract.",
-        "C5 may replace only the same-project C4 Slot B member through the serialized Test Instance Manager workflow; it must not alter Slot A, the accepted baseline, or the protected gameplay profile.",
+        "Partial provider materialization, dynamic discovery, registry-name or tag inference, cross-material or cross-finish collapsing, and Macaw paving/full/slab/stair forms remain outside the audited contract.",
+        "C6 may replace only the same-project C4 Slot B member through the serialized Test Instance Manager workflow; it must not alter Slot A, the accepted baseline, or the protected gameplay profile.",
         "Legacy status READMEs, provenance and audit narratives, historical C1/C2 matrices and binaries, manager records, snapshots, branches, worktrees, and Git history are not imported."
       ]
     },
@@ -71,6 +71,12 @@
         "identifier": "mcwdoors",
         "requirement": "=1.1.5; mcw-doors-1.1.5-mc26.2fabric.jar SHA-256 00e431d662489fe4a145f0e471837e1cd2bc9bcce5abe3f9f9941230765b2ded",
         "reason": "Required provider for the audited ordinary-door families."
+      },
+      {
+        "type": "PROJECT",
+        "identifier": "5d42f47f-b006-4125-840d-dec0d2728afa",
+        "requirement": "BBB provider capability >=2.0pre4+26.2; controlled C6 input bbb-fabric-26.2-2.0pre4+26.2-pale-oak-dev.3.jar SHA-256 d0928b9316e3f6b323151fac73df3be1056aba05b56d4909b419cc15c09fc4d0",
+        "reason": "Owns the literal wood, stone, Frame/Lattice, and Iron Fence IDs added by C6; the exact local controlled-validation bytes are recorded without pinning the packaged runtime dependency."
       },
       {
         "type": "MOD",
@@ -129,16 +135,16 @@
     ]
   },
   "state": {
-    "milestone": "C5 corrects CNM 2.0.7's cleanup interaction by excluding an IBF canonical parent from only CNM's parent-result cleanup match while leaving alternate and non-IBF cleanup untouched. The full exact C8 dependency GameTest passes 18/18; C5 is retained and awaiting Slot B readiness verification, while C3 remains the accepted rollback.",
+    "milestone": "C6 adds the literal current-BBB wood, fence, stone, and iron family extensions. The current C6 artifact is retained and build-validated but cannot replace Slot B until a serialized manager preflight has a compatible BBB provider; the older C4 remains independently deployed in Slot B and C3 remains the accepted rollback.",
     "releases": {
       "current": {
-        "version": "C5 (0.1.0-canary5)",
-        "embedded_version": "0.1.0-canary5",
+        "version": "C6 (0.1.0-canary6)",
+        "embedded_version": "0.1.0-canary6",
         "artifact": {
-          "filename": "interchangeable-block-families-0.1.0-canary5.jar",
-          "sha256": "f9086f493df13142ffceb306caff1231d424ad6cca49f357195f0eccd0f44d0a"
+          "filename": "interchangeable-block-families-0.1.0-canary6.jar",
+          "sha256": "a086f3c3c9cf7524803fe8b9b4693976cb1da5a211e552bb629bed4092b906f6"
         },
-        "source_commit": "e07724cfe756e56b228f85cdaa153e56c29ec75e",
+        "source_commit": "414553afd5872bfdb295c7c2142141069e5cb552",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
@@ -171,11 +177,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 4,
-    "activity_at": "2026-09-07T22:10:38.5106842Z",
-    "updated_at": "2026-09-07T22:10:38.5106842Z",
-    "last_codex_at": "2026-09-07T22:10:38.5106842Z",
-    "source_commit": "e07724cfe756e56b228f85cdaa153e56c29ec75e",
+    "revision": 5,
+    "activity_at": "2026-09-08T01:30:02.3514110Z",
+    "updated_at": "2026-09-08T01:30:02.3514110Z",
+    "last_codex_at": "2026-09-08T01:30:02.3514110Z",
+    "source_commit": "414553afd5872bfdb295c7c2142141069e5cb552",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null

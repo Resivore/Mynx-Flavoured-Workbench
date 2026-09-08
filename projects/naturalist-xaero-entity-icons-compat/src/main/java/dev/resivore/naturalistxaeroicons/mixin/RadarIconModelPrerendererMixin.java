@@ -48,7 +48,8 @@ abstract class RadarIconModelPrerendererMixin {
             ModelPart selected = contract.selected();
             ModelPart adapter = NaturalistIconAdapter.build(
                     model.root(), contract.source(), selected, contract.trace(), contract.contract().presentation(),
-                    contract.contract().neutralizeRootRotation());
+                    contract.contract().neutralizeRootRotation(), contract.contract().path(),
+                    contract.contract().preserveAncestorTransforms());
             if (adapter == null || !NaturalistIconAdapter.traceExists(parameters.mrt, adapter)) return;
             RadarIconModelPrerenderer self = (RadarIconModelPrerenderer) (Object) this;
             VertexConsumer consumer = self.getLayerModelVertexConsumer(
