@@ -1,13 +1,18 @@
 package com.starfish_studios.bbb.porting;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.state.BlockBehaviour;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.lang.reflect.Method;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -97,6 +102,8 @@ final class RopeContractTest {
         assertTrue(rope.contains("hand != InteractionHand.MAIN_HAND"));
         assertTrue(rope.contains("player.isShiftKeyDown()"));
         assertTrue(rope.contains("stack.is(asItem())"));
+        assertTrue(rope.contains("return super.useItemOn(stack, state, level, pos, player, hand, hit)"));
+        assertTrue(rope.contains("return super.useWithoutItem(state, level, pos, player, hit)"));
         assertTrue(rope.contains("return level.isClientSide() ? InteractionResult.SUCCESS : InteractionResult.SUCCESS_SERVER"));
         assertTrue(rope.contains("player.getItemInHand(InteractionHand.MAIN_HAND).isEmpty()"));
         assertTrue(rope.contains("BlockPos bottom = bottomOfColumn(level, clickedPos)"));
@@ -111,7 +118,70 @@ final class RopeContractTest {
         assertFalse(rope.contains("playerDestroy("), "Ordinary mining must retain normal ChainBlock behavior");
     }
 
+    @Test
+    void emptyHandItemUseRetainsMinecraft262TryWithEmptyHandRouting() throws Exception {
+        String rope = read("block/RopeBlock.java");
+
+        // Minecraft 26.2's resolved BlockBehaviour default is
+        // TRY_WITH_EMPTY_HAND. A constructor-free probe keeps this focused
+        // JUnit regression independent of the game registry bootstrap.
+        Method useItemOn = BlockBehaviour.class.getDeclaredMethod("useItemOn", ItemStack.class,
+                net.minecraft.world.level.block.state.BlockState.class,
+                net.minecraft.world.level.Level.class, BlockPos.class,
+                net.minecraft.world.entity.player.Player.class,
+                net.minecraft.world.InteractionHand.class,
+                net.minecraft.world.phys.BlockHitResult.class);
+        useItemOn.setAccessible(true);
+        Class<?> unsafeClass = Class.forName("sun.misc.Unsafe");
+        Field unsafeField = unsafeClass.getDeclaredField("theUnsafe");
+        unsafeField.setAccessible(true);
+        Object unsafe = unsafeField.get(null);
+        BlockBehaviour probe = (BlockBehaviour) unsafeClass.getMethod("allocateInstance", Class.class)
+                .invoke(unsafe, InteractionProbe.class);
+        assertEquals(InteractionResult.TRY_WITH_EMPTY_HAND,
+                useItemOn.invoke(probe, null, null, null, null, null, null, null));
+        assertTrue(rope.contains("return super.useItemOn(stack, state, level, pos, player, hand, hit)"));
+        assertFalse(rope.contains("return InteractionResult.PASS;"),
+                "Rope fallbacks must retain default item-on/empty-hand routing");
+    }
+
+    @Test
+    void payoutAddsHayBaleSoundOnlyAfterVanillaPlacementSucceeds() throws IOException {
+        String rope = read("block/RopeBlock.java");
+
+        assertTrue(rope.contains("if (!ropeItem.place(context).consumesAction())"));
+        assertTrue(rope.contains("Blocks.HAY_BLOCK.defaultBlockState().getSoundType()"));
+        assertTrue(rope.contains("hayBaleSound.getPlaceSound()"));
+        assertTrue(rope.contains("(hayBaleSound.getVolume() + 1.0F) / 2.0F"));
+        assertTrue(rope.contains("hayBaleSound.getPitch() * 0.8F"));
+        assertTrue(rope.indexOf("if (!ropeItem.place(context).consumesAction())")
+                        < rope.indexOf("hayBaleSound.getPlaceSound()"),
+                "A failed payout must emit no Hay Bale placement sound");
+    }
+
     private static String read(String relative) throws IOException {
         return Files.readString(JAVA.resolve(relative));
+    }
+
+    /** Never constructed: Unsafe allocates it only to invoke BlockBehaviour's default method. */
+    private static final class InteractionProbe extends BlockBehaviour {
+        private InteractionProbe() {
+            super(null);
+        }
+
+        @Override
+        protected com.mojang.serialization.MapCodec<? extends net.minecraft.world.level.block.Block> codec() {
+            return null;
+        }
+
+        @Override
+        protected net.minecraft.world.level.block.Block asBlock() {
+            return null;
+        }
+
+        @Override
+        public net.minecraft.world.item.Item asItem() {
+            return null;
+        }
     }
 }

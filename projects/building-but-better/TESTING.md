@@ -1,42 +1,33 @@
 # Testing
 
-The current `2.0pre4+26.2-pale-oak-dev.5` candidate is `ACTIVE` with `STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED`. It retains the C3 Pale Oak corrections and the BBB-owned, state-aware rope mechanic: only `bbb:rope[axis=y]` is climbable; a non-sneaking main-hand rope use pays out exactly one vertical segment from the bottom of the contiguous vertical column; an empty main hand reels in exactly that bottom segment. C5 corrects C4's invalid `LivingEntity` method shadows by accessing the inherited `Entity` methods through the typed target instance. Compilation, focused tests, generated-resource verification, production-Knot Mixin transformation, and the local JAR establish only source/build properties, not a Minecraft runtime pass.
+The current `2.0pre4+26.2-pale-oak-dev.6` candidate is `ACTIVE` with `STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED`. It has not been deployed by the Test Instance Manager, assigned a Test Slot, launched in Minecraft, or accepted. Its combined JAR stages audited upstream ARR resources and is therefore locally retained, ignored, and not redistributed.
 
-The user externally launched a BBB file which identified itself as C4 (`2.0pre4+26.2-pale-oak-dev.4`) and observed a confirmed startup `FAIL`: `LivingEntityRopeClimbMixin` could not shadow `getInBlockState()` on `LivingEntity`. The external log did not establish that the loaded file had the canonical retained C4 SHA-256; it was not deployed by the Test Instance Manager and occupied no slot. No Minecraft client or server was launched for C5, no C5 artifact was deployed, no Test Slot was assigned, no Test Instance Manager transition was performed, and neither Minecraft profile was changed.
+C5 (`2.0pre4+26.2-pale-oak-dev.5`, canonical SHA-256 `b86c90226cb5082aba5329116633705f0bcd5141754ff50f509a5582b4eff7d4`) has user-reported/external manual evidence only: vertical-rope extension passed for the observed interaction; empty-main-hand retraction failed because it did nothing and returned no rope. That manual test neither establishes the external file's exact SHA-256 nor represents a managed deployment or slot result. It must not be read as a complete C5 pass.
+
+C6 keeps the Y-only rope mechanic and normal ChainBlock behavior. For an unhandled `useItemOn`, it delegates to the resolved Minecraft 26.2 superclass, whose default result is `TRY_WITH_EMPTY_HAND`; that allows a non-sneaking empty-main-hand click to reach `useWithoutItem`. Retraction resolves the common contiguous-column bottom, removes exactly one segment, restores water when appropriate, and returns one rope only in Survival. A successful custom extension still delegates placement to `BlockItem.place`; after that success it emits `Blocks.HAY_BLOCK.defaultBlockState().getSoundType().getPlaceSound()` with vanilla BlockItem placement volume `(volume + 1) / 2` and pitch `pitch * 0.8`. Failed extension emits no added Hay Bale sound. Ordinary rope placement remains wool-sounded.
 
 ## Static verification
 
-From this canonical project directory, Temurin Java `25.0.4.1+1`, Gradle `9.5.1`, and Fabric Loom `1.17.20` completed:
+From this project directory, Temurin Java `25.0.4.1+1`, Gradle `9.5.1`, and Fabric Loom `1.17.20` completed:
 
 ```powershell
-$env:JAVA_HOME = 'C:\\Users\\resiv\\.gradle\\jdks\\eclipse_adoptium-25-amd64-windows.2'
-.\\gradlew.bat clean check build --console=plain "-PbbbOriginalJar=C:\\Users\\resiv\\OneDrive\\Documents\\Minecraft 26.2 Workbench\\originals\\mods\\bbb-fabric-2.0pre4.jar"
+$env:JAVA_HOME = 'C:\Users\resiv\.gradle\jdks\eclipse_adoptium-25-amd64-windows.2'
+.\gradlew.bat clean check build verifyProductionMixinContract productionLivingEntityMixinTest --console=plain "-PbbbOriginalJar=C:\Users\resiv\OneDrive\Documents\Minecraft 26.2 Workbench\originals\mods\bbb-fabric-2.0pre4.jar"
 ```
 
-The C5 run was `BUILD SUCCESSFUL` with 11 executed tasks and all 25 focused JUnit tests passing without failures, errors, or skips. The exact pristine input guard verified `bbb-fabric-2.0pre4.jar` at 1,701,505 bytes and SHA-256 `1e7ae114aaec53475133e11c607fc65dce493bba5897eaf0044d53959b508fc0`. Resource validation reported 171 blocks, 172 items, 1,132 models, 248 texture/sidecar files (244 PNGs, 112 transparent, binary alpha), 224 recipes, 140 advancements, 171 loot tables, and 44 tags. The rope contracts cover unchanged registry identity/counts and ChainBlock state/shape inheritance; Y-only climbability; bounded contiguous-column bottom resolution; one-segment vanilla placement with actual replaceability, world-border, permission, collision, water, and non-water-fluid guards; main-hand/no-fallthrough behavior; Creative versus Survival handling; water restoration; non-cascading ordinary breaking; and sneaking bypass. The new regression uses the resolved Minecraft 26.2 class hierarchy to prove `getInBlockState()` and `blockPosition()` belong to `Entity`, while `lastClimbablePos` and `onClimbable()` belong to `LivingEntity`; it rejects inherited-method shadows. The production harness loaded the exact official-namespace C5 JAR through Fabric Knot and successfully transformed `LivingEntity` with `LivingEntityRopeClimbMixin`. `bbb.mixins.json`, `fabric.mod.json`, the mixin class, and the official namespace manifest were inspected in the packaged JAR. The C4 `No refMap loaded` text is incidental for this direct Loom/Fabric configuration: C5 transforms successfully without adding manual refmap metadata. Static/source/build transformation evidence is not Minecraft runtime validation.
+The C6 run was `BUILD SUCCESSFUL` with 27 focused JUnit tests passing. It validated the exact pristine input (`bbb-fabric-2.0pre4.jar`, 1,701,505 bytes, SHA-256 `1e7ae114aaec53475133e11c607fc65dce493bba5897eaf0044d53959b508fc0`), 171 blocks, 172 items, 1,132 models, 248 texture/sidecar files (244 PNGs; 112 transparent), 224 recipes, 140 advancements, 171 loot tables, and 44 tags. The new rope regressions verify the resolved default `TRY_WITH_EMPTY_HAND` contract, BBB's superclass fallback, bounded bottom retraction/Survival/Creative/water/offhand/sneaking/horizontal contracts, successful Hay Bale sound scaling, and failure-before-sound ordering. The packaged official-namespace JAR was inspected and the Fabric Knot production harness successfully transformed `LivingEntity` with `LivingEntityRopeClimbMixin`. This is static/build validation, not runtime validation.
 
-The local ARR-bearing C5 candidate is `bbb-fabric-26.2-2.0pre4+26.2-pale-oak-dev.5.jar`, 1,149,433 bytes, SHA-256 `b86c90226cb5082aba5329116633705f0bcd5141754ff50f509a5582b4eff7d4`. It is ignored, retained locally only, and not redistributed.
+The locally retained C6 artifact is `bbb-fabric-26.2-2.0pre4+26.2-pale-oak-dev.6.jar`, SHA-256 `0d54034725c3e354515c78bcee32ab2cb5ce764a33e0602419e26c78aaef8c5a`.
 
-## Deferred C5 Minecraft rope matrix
+## Required Minecraft runtime matrix
 
-This matrix has not been run. Before testing, obtain explicit Test Instance Manager ownership and perform one verified serialized deployment transition that assigns UUID `5d42f47f-b006-4125-840d-dec0d2728afa` to Test Slot A or B while preserving the other slot. Only that verified assignment may change lifecycle from `ACTIVE` to `TESTING`. Use the exact retained C5 JAR in the dedicated Matcha Flavoured 26.2 Workbench; never access the protected Matcha Flavoured 26.1.2 gameplay profile.
+Obtain explicit Test Instance Manager ownership before touching the dedicated 26.2 Workbench. Never access the protected 26.1.2 gameplay profile. Test the exact retained C6 artifact in one serialized slot transition and record each result independently.
 
-1. Launch/load the exact C5 candidate and confirm no registry, mixin, resource, recipe, advancement, or loot error, specifically confirming `LivingEntity` transforms without BBB Mixin errors.
-2. Climb dry vertical rope and waterlogged vertical rope; verify X- and Z-axis rope are not climbable.
-3. From the top, middle, and bottom of a multi-block vertical column, pay out once and confirm exactly one segment is added at the common bottom on each use.
-4. Verify Survival consumes exactly one rope and Creative consumes none; verify air and representative replaceable foliage succeed using normal placement semantics.
-5. Extend into water and repeatedly through water, verifying every new segment is vertical and waterlogged without draining the column.
-6. Verify a full block, a representative non-replaceable non-full block, lava, and another unsupported fluid block extension; confirm no item loss or accidental side placement when blocked.
-7. With an empty main hand, reel in from top, middle, and bottom; verify only the bottom segment is removed, Survival returns one rope (dropping it safely if inventory is full), and Creative creates no item.
-8. Reel in a waterlogged bottom segment and verify water is restored at its position.
-9. Break a middle rope normally; confirm only that block breaks, its normal drop behavior remains, and the two split contiguous sections operate independently afterward.
-10. Sneak-use rope against rope to confirm normal axis-aware ChainBlock placement remains available; verify offhand processing cannot double-trigger pay-out or reel-in.
-11. Save/reload representative vertical, horizontal, and waterlogged rope states; confirm no unrelated Hammer or BBB behavior changed, including the C3 Pale Oak fixes.
+1. Launch C6 and verify no BBB Mixin, resource, registry, recipe, advancement, or loot failure.
+2. Verify dry and waterlogged Y rope is climbable; X/Z rope is not.
+3. From top, middle, and bottom, use a rope in the non-sneaking main hand; each successful use adds exactly one vertical bottom segment, consumes one Survival rope and no Creative rope, and emits the Hay Bale placement sound once. Verify blocked/full/lava/unsupported-fluid targets add no segment and emit no added Hay Bale placement sound.
+4. From top, middle, and bottom, right-click with an empty non-sneaking main hand; each removes only the common bottom. Verify one Survival return or one safe inventory-full drop, no Creative return, and water restoration for a waterlogged bottom.
+5. Verify offhand cannot produce a second extension or retraction; sneaking retains ordinary axis-aware ChainBlock behavior. Break a middle rope normally and test the split columns independently.
+6. Confirm no regression to Pale Oak, Hammer, ordinary rope placement/breaking/walking, or excluded BBB content.
 
-Stop and record `RUNTIME_FAIL` for a confirmed BBB defect, or `INCONCLUSIVE` for environment/dependency ambiguity. Do not promote from static/build evidence or partially observed runtime checks.
-
-## Current exclusions
-
-- BBB Layers, Ladders (including Pale Oak), small-stone blocks, Chisel, and other removed upstream content remain excluded.
-- No Inventory Bridge Framework or Clutter No More source change is included.
-- C5 does not add rope entities, block entities, persistent column ownership, global ticking, cascade breaking, or a globally climbable rope tag.
+Stop at a confirmed defect with `RUNTIME_FAIL`, or record `INCONCLUSIVE` for environment ambiguity. Do not accept or promote C6 without runtime evidence.

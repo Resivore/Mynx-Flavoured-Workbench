@@ -100,13 +100,13 @@
     ]
   },
   "state": {
-    "milestone": "C4 is externally runtime-failed at Minecraft 26.2 launch: the supplied log identifies BBB version 2.0pre4+26.2-pale-oak-dev.4 and reports LivingEntityRopeClimbMixin failing because getInBlockState() is not declared by LivingEntity. The external launch did not identify its file SHA-256, was not a Test Instance Manager deployment, and consumed no slot. C5 preserves the rope mechanics and corrects that target ownership, is clean-built and production-Mixin transformed, but remains undeployed, runtime untested, unaccepted, and locally retained only because its combined JAR includes staged upstream ARR resources.",
+    "milestone": "C5 has user-reported/external manual runtime evidence against its canonical candidate identity: vertical-rope extension passed for the observed interaction, while empty-main-hand retraction failed because useItemOn returned PASS and did not route to useWithoutItem. The report did not establish an externally loaded SHA-256, was not a Test Instance Manager deployment, and consumed no slot. C6 delegates unhandled rope item-on interactions to the resolved Minecraft 26.2 superclass TRY_WITH_EMPTY_HAND contract and adds a Hay Bale placement sound only after successful custom extension. C6 is clean-built and production-Mixin transformed, but remains undeployed, runtime untested, unaccepted, and locally retained only because its combined JAR includes staged upstream ARR resources.",
     "releases": {
       "current": {
-        "version": "2.0pre4+26.2-pale-oak-dev.5",
+        "version": "2.0pre4+26.2-pale-oak-dev.6",
         "artifact": {
-          "filename": "bbb-fabric-26.2-2.0pre4+26.2-pale-oak-dev.5.jar",
-          "sha256": "b86c90226cb5082aba5329116633705f0bcd5141754ff50f509a5582b4eff7d4"
+          "filename": "bbb-fabric-26.2-2.0pre4+26.2-pale-oak-dev.6.jar",
+          "sha256": "0d54034725c3e354515c78bcee32ab2cb5ce764a33e0602419e26c78aaef8c5a"
         },
         "source_commit": "22aaf2fcddea47a388d2a2ba06228716e7d4e562",
         "runtime_dependency_policy": {
@@ -127,10 +127,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 6,
-    "activity_at": "2026-09-08T04:35:34Z",
-    "updated_at": "2026-09-08T04:35:34Z",
-    "last_codex_at": "2026-09-08T04:35:34Z",
+    "revision": 7,
+    "activity_at": "2026-09-08T05:10:00Z",
+    "updated_at": "2026-09-08T05:10:00Z",
+    "last_codex_at": "2026-09-08T05:10:00Z",
     "source_commit": "22aaf2fcddea47a388d2a2ba06228716e7d4e562",
     "google_sheet": {
       "participates": true,

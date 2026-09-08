@@ -13,6 +13,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.ChainBlock;
+import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
@@ -39,7 +40,9 @@ public final class RopeBlock extends ChainBlock {
                                           Player player, InteractionHand hand, BlockHitResult hit) {
         if (!isVerticalRope(state) || hand != InteractionHand.MAIN_HAND || player.isShiftKeyDown()
                 || !stack.is(asItem())) {
-            return InteractionResult.PASS;
+            // Minecraft 26.2 routes an empty main-hand interaction through
+            // useWithoutItem only when this returns TRY_WITH_EMPTY_HAND.
+            return super.useItemOn(stack, state, level, pos, player, hand, hit);
         }
 
         if (!level.isClientSide()) {
@@ -54,7 +57,7 @@ public final class RopeBlock extends ChainBlock {
                                                Player player, BlockHitResult hit) {
         if (!isVerticalRope(state) || player.isShiftKeyDown()
                 || !player.getItemInHand(InteractionHand.MAIN_HAND).isEmpty()) {
-            return InteractionResult.PASS;
+            return super.useWithoutItem(state, level, pos, player, hit);
         }
 
         if (!level.isClientSide()) {
@@ -83,7 +86,17 @@ public final class RopeBlock extends ChainBlock {
         if (!level.getBlockState(target).canBeReplaced(context) || !(asItem() instanceof BlockItem ropeItem)) {
             return false;
         }
-        return ropeItem.place(context).consumesAction();
+        if (!ropeItem.place(context).consumesAction()) {
+            return false;
+        }
+
+        // Keep RopeBlock's ordinary wool sound unchanged. The custom payout
+        // interaction additionally uses the vanilla Hay Bale placement event
+        // and exact BlockItem placement volume/pitch semantics.
+        SoundType hayBaleSound = Blocks.HAY_BLOCK.defaultBlockState().getSoundType();
+        level.playSound(player, target, hayBaleSound.getPlaceSound(), SoundSource.BLOCKS,
+                (hayBaleSound.getVolume() + 1.0F) / 2.0F, hayBaleSound.getPitch() * 0.8F);
+        return true;
     }
 
     private boolean tryRetract(Level level, BlockPos clickedPos, Player player) {
