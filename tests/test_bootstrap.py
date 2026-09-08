@@ -471,6 +471,16 @@ class StatusContractTests(unittest.TestCase):
         with self.assertRaisesRegex(ValidationError, "append-only"):
             validate_log_append(previous_log, codex_log(after), after)
 
+    def test_codex_log_rejects_noncanonical_entry_bullet(self) -> None:
+        before = planned_manifest("alpha", "Alpha")
+        after = advance_manifest(before)
+        previous_log = codex_log(before)
+        malformed_entry = codex_entry(after, "Advance project").replace(
+            "- Changes:", "- C1 external runtime evidence:", 1
+        )
+        with self.assertRaisesRegex(ValidationError, "unknown C1 external runtime evidence"):
+            validate_log_append(previous_log, previous_log + "\n" + malformed_entry, after)
+
     def test_testing_lifecycle_requires_actual_slot_occupancy(self) -> None:
         manifest = planned_manifest("alpha", "Alpha")
         manifest["definition"]["lifecycle"] = "TESTING"
