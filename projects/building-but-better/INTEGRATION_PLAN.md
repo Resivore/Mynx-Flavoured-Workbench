@@ -47,9 +47,9 @@ Pale Oak is a Minecraft 26.2-native extension, not historical `2.0pre4` content.
 
 The current BBB source registers every wooden wall, creates its block item, and includes the items in BBB's creative-tab iteration; it has no separate runtime gate. Pale Oak Wall follows that exact existing treatment. The planned later absorption of BBB wooden walls into Block Geometry Extensions is not implemented here and remains out of scope.
 
-## Rope baseline
+## Rope mechanic
 
-`bbb:rope` remains the stock retained baseline. Any climbing, chaining, placement, physics, connectivity, or cross-mod behavior enhancement is a separate feature proposal with its own compatibility and runtime analysis.
+`bbb:rope` retains its original registry ID, item, models, recipes, loot, ChainBlock X/Y/Z axis states, waterlogging, shape, and ordinary placement behavior. Its BBB-owned C4 mechanic is deliberately narrow: only a vertical (`axis=y`) rope is climbable. A non-sneaking main-hand use with a rope pays out one vertical segment at the bottom of the clicked contiguous vertical column through Minecraft's normal block-placement path; an empty main hand reels in that same bottom segment. Sneaking bypasses the mechanic and retains ordinary axis-aware rope placement. The feature does not add entities, block entities, ticking, column ownership, cross-mod behavior, or cascade breaking.
 
 ## Compatibility invariants
 

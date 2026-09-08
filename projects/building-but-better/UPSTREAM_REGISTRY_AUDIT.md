@@ -20,7 +20,7 @@ The retained block set is the exact Cartesian product below plus four standalone
 
 The historical reconciliation remains `(11 × 11) + (7 × 5) + 4 = 160` blocks and `160 + hammer = 161` items. The explicit 26.2-native Pale Oak extension adds eleven blocks and their block items, producing `(12 × 11) + (7 × 5) + 4 = 171` blocks and `171 + hammer = 172` items. `src/porting/curated-registry.json` is the machine-readable authority for the current formula.
 
-Pale Oak is absent from the pristine `2.0pre4` registry and remains absent from the historical count. It is now a separately identified complete port-native extension; no claim is made that its eleven blocks appeared in the upstream artifact. Pale Oak Layers and Ladders remain excluded. Rope is retained at its stock BBB baseline without a new behavior system.
+Pale Oak is absent from the pristine `2.0pre4` registry and remains absent from the historical count. It is now a separately identified complete port-native extension; no claim is made that its eleven blocks appeared in the upstream artifact. Pale Oak Layers and Ladders remain excluded. The retained `bbb:rope` registry/item identity remains unchanged; C4 adds a narrow BBB-owned state-aware vertical climbing and one-segment pay-out/reel-in mechanic without changing the curated registry count.
 
 ## Removed block IDs (87)
 

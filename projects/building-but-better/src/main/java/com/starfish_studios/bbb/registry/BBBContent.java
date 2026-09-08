@@ -12,6 +12,7 @@ import com.starfish_studios.bbb.block.IronFenceBlock;
 import com.starfish_studios.bbb.block.LatticeBlock;
 import com.starfish_studios.bbb.block.MouldingBlock;
 import com.starfish_studios.bbb.block.PalletBlock;
+import com.starfish_studios.bbb.block.RopeBlock;
 import com.starfish_studios.bbb.block.StoneFenceBlock;
 import com.starfish_studios.bbb.block.SupportBlock;
 import com.starfish_studios.bbb.block.UrnBlock;
@@ -37,7 +38,6 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.ChainBlock;
 import net.minecraft.world.level.block.RotatedPillarBlock;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.StairBlock;
@@ -140,7 +140,7 @@ public final class BBBContent {
                 .lightLevel(state -> state.getValue(BrazierBlock.LIT) ? 10 : 0)
                 .noOcclusion().pushReaction(PushReaction.DESTROY).strength(1.0F, 1.5F), BrazierBlock::new);
         registerBlock("rope", properties(Blocks.OAK_PLANKS, "rope")
-                .forceSolidOn().strength(0.1F).sound(SoundType.WOOL).noOcclusion(), ChainBlock::new);
+                .forceSolidOn().strength(0.1F).sound(SoundType.WOOL).noOcclusion(), RopeBlock::new);
         registerBlock("iron_fence", properties(Blocks.IRON_BARS, "iron_fence").noOcclusion(), IronFenceBlock::new);
 
         HAMMER = registerItem("hammer", new HammerItem(itemProperties("hammer").durability(256)));
