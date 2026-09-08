@@ -21,7 +21,7 @@ import java.util.Set;
 
 /** Exact, allowlisted external material sources. Provider lookup happens only at provider-entrypoint RETURN. */
 public final class ExternalMaterialCatalog {
-    public static final String PROFILE_VERSION = "bge-c64-bbb-beam-catalog-v1";
+    public static final String PROFILE_VERSION = "bge-c65-bbb-axis-resource-runtime-fix-v1";
     private static final List<Spec> SPECS = specs();
     private static final Set<String> REGISTERED_PROVIDERS = new LinkedHashSet<>();
 
