@@ -50,6 +50,9 @@ tasks.withType(AbstractArchiveTask).configureEach {
 }
 
 def packagedJar = tasks.named('jar').flatMap { it.archiveFile }
+def leashAdapterSource = file(
+    'src/main/java/dev/resivore/polytoneleadrenderingfix/mixin/LeashFeatureRendererMixin.java'
+)
 
 tasks.register('verifyPolytoneLeashFallback') {
     group = 'verification'
@@ -57,6 +60,7 @@ tasks.register('verifyPolytoneLeashFallback') {
     dependsOn tasks.named('jar')
     inputs.file(polytoneReference)
     inputs.file(packagedJar)
+    inputs.file(leashAdapterSource)
 
     doLast {
         if (!polytoneReference.isFile()) {
@@ -104,8 +108,11 @@ tasks.register('verifyPolytoneLeashFallback') {
             def mixinClassEntry = patch.getEntry(
                 'dev/resivore/polytoneleadrenderingfix/mixin/PolytoneRenderTypesMixin.class'
             )
-            if (metadataEntry == null || mixinEntry == null || mixinClassEntry == null) {
-                throw new GradleException("Final artifact ${artifact.name} is missing required metadata or fallback mixin")
+            def leashAdapterClassEntry = patch.getEntry(
+                'dev/resivore/polytoneleadrenderingfix/mixin/LeashFeatureRendererMixin.class'
+            )
+            if (metadataEntry == null || mixinEntry == null || mixinClassEntry == null || leashAdapterClassEntry == null) {
+                throw new GradleException("Final artifact ${artifact.name} is missing required metadata or C2 leash mixins")
             }
 
             def metadata = new JsonSlurper().parse(patch.getInputStream(metadataEntry))
@@ -126,15 +133,48 @@ tasks.register('verifyPolytoneLeashFallback') {
                     throw new GradleException("Final artifact ${artifact.name} is missing fallback injection descriptor ${descriptor}")
                 }
             }
+
+            def leashAdapterClassText = new String(
+                patch.getInputStream(leashAdapterClassEntry).bytes,
+                StandardCharsets.ISO_8859_1
+            )
+            [
+                'LeashFeatureRenderer',
+                'prepare(Lnet/minecraft/client/renderer/feature/LeashFeatureRenderer$Submit;)V',
+                'addVertexPair(Lcom/mojang/blaze3d/vertex/VertexConsumer;Lorg/joml/Matrix4fc;FFFFFFIZLnet/minecraft/client/renderer/entity/state/EntityRenderState$LeashState;)V',
+                'entitySolid',
+                'textures/entity/lead.png'
+            ].each { requiredC2Seam ->
+                if (!leashAdapterClassText.contains(requiredC2Seam)) {
+                    throw new GradleException("Final artifact ${artifact.name} is missing C2 leash seam ${requiredC2Seam}")
+                }
+            }
         } finally {
             patch.close()
+        }
+
+        def adapterSourceText = leashAdapterSource.getText(StandardCharsets.UTF_8.name())
+        [
+            'RenderTypes.entitySolid(VANILLA_LEAD_TEXTURE)',
+            'LightCoordsUtil.pack(blockLight, skyLight)',
+            '0.5F * shade',
+            '0.4F * shade',
+            '0.3F * shade',
+            '0.7F : 1.0F',
+            'setOverlay(OverlayTexture.NO_OVERLAY)',
+            'setLight(packedLight)',
+            'setNormal(0.0F, 1.0F, 0.0F)'
+        ].each { requiredVanillaSemantic ->
+            if (!adapterSourceText.contains(requiredVanillaSemantic)) {
+                throw new GradleException("C2 leash adapter no longer preserves required vanilla semantic ${requiredVanillaSemantic}")
+            }
         }
     }
 }
 
 tasks.register('stageCanaryArtifact', Copy) {
     group = 'distribution'
-    description = 'Stages the exact packaged C1 artifact for canonical local retention.'
+    description = 'Stages the exact packaged C2 artifact for canonical local retention.'
     dependsOn tasks.named('verifyPolytoneLeashFallback')
     from(packagedJar)
     into(layout.projectDirectory.dir('artifacts'))
