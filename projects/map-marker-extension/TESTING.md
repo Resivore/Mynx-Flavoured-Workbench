@@ -4,28 +4,34 @@
 
 **NOT DEPLOYED — RUNTIME UNTESTED — NOT READY FOR PROMOTION**
 
-Exact current C9 is the two-artifact candidate
-`map-marker-extension-0.4.0-canary9.jar` plus
-`map-marker-extension-icons-0.4.0-canary9.zip`. It passed controlled Java 25
+Exact current C10 is the two-artifact candidate
+`map-marker-extension-0.4.0-canary10.jar` plus
+`map-marker-extension-icons-0.4.0-canary10.zip`. It passed controlled Java 25
 build, test, archive, and deterministic-build checks. Those checks do not
 establish Minecraft runtime behavior. This task did not deploy either artifact,
 launch Minecraft, change a Test Slot or accepted baseline, mutate the dedicated
 Workbench, or access the protected gameplay instance.
 
 Treasure X C4 remains the accepted binary baseline and rollback. Do not load C4
-and C9 together. C4 is not a data-safe rollback for a world after C7, C8, or C9 has
+and C10 together. C4 is not a data-safe rollback for a world after C7, C8, C9, or C10 has
 persisted custom map-decoration holder keys; use a disposable or restorable
 world and restore its pre-C7 backup before removing C8.
 
 ## Exact retained evidence
 
-- Current C9 JAR: 58,720 bytes, SHA-256
-  `5281481E599A14175C1D567A0ACF440D91B6EBCA0D6C171673F09D267772201B`,
-  implementation checkpoint `211af5f505eddff29d8adb03ca0ca7db95e58e4b`.
-- Current C9 icon pack: 28,172 bytes, SHA-256
-  `6AD89721C6AE628F2E3995132BCF0FA98F6E7FA43749B0A2695B7DB8A2B97A42`.
-  It contains only the 18 reframed MME item-side assets; all 17 custom native
-  `poi_icons` are byte-identical to their C8 JAR entries.
+- Current C10 JAR: 59,016 bytes, SHA-256
+  `94F657B7083669F32D8500794EB6DC7283CDC8A331F592B1AEB02ADC51B1396C`,
+  implementation checkpoint `e8fd269901ae3c23b74691b7b09b80d56feaace6`.
+- Current C10 icon pack: 28,467 bytes, SHA-256
+  `EE66E2A1022EE4FEFD16F7428C4E71682065752778F658139641354C233ADA29`.
+  It contains the 17 custom native `poi_icons`, each pixel-perfectly doubled
+  from immutable `originals/assets/poi_icons` artwork; all 18 C9 item-side
+  `map_sprites` remain byte-identical to C9.
+- Retained C9 predecessor JAR: 58,720 bytes, SHA-256
+  `5281481E599A14175C1D567A0ACF440D91B6EBCA0D6C171673F09D267772201B`;
+  icon pack: 28,172 bytes, SHA-256
+  `6AD89721C6AE628F2E3995132BCF0FA98F6E7FA43749B0A2695B7DB8A2B97A42`,
+  source `211af5f505eddff29d8adb03ca0ca7db95e58e4b`.
 - Retained C8 predecessor JAR: 58,720 bytes, SHA-256
   `C3DA533B207050855C691584DB6BC3C85B383A9EC8E338737F7986D426668CA2`;
   icon pack: 34,938 bytes, SHA-256
@@ -38,8 +44,8 @@ world and restore its pre-C7 backup before removing C8.
   source `3aac5ff7259a8bbb4bcac2a6147749589ee94bff`, accepted at
   `67a43eb692c6ffb93d3db96db26199a30a0b1510`.
 - Temurin 25.0.4.1+1 and Gradle 9.5.1 offline `clean test build` passed
-  56 tests in 13 suites with zero failures, errors, or skips. Repeated clean
-  builds produced byte-identical C8 JAR and icon-pack output.
+  58 tests in 13 suites with zero failures, errors, or skips. Two clean builds
+  produced byte-identical C10 JAR and icon-pack output.
 - Static inspection of official Compass Ribbon 2.9.0 for 26.2, CurseForge file
   8261473, covered the exact 469,546-byte JAR with SHA-256
   `0F3A03C4ECC8B78420ECDCB4CC126810EA10581694AB808141D7F81B16D59905`.
@@ -51,7 +57,7 @@ world and restore its pre-C7 backup before removing C8.
 ## Next controlled runtime matrix
 
 Run this only under separately authorized deployment ownership in a disposable
-or restorable world after verifying the exact C9 JAR and ZIP hashes above and
+or restorable world after verifying the exact C10 JAR and ZIP hashes above and
 ensuring C7 and every Treasure X C1-C6 artifact are disabled.
 
 1. Launch a client and, where applicable, a server with Minecraft 26.2, Fabric
@@ -65,7 +71,8 @@ ensuring C7 and every Treasure X C1-C6 artifact are disabled.
    good explorer map rather than C8's tiny presentation. Confirm opened-map
    artwork still looks correct, vanilla buried treasure remains
    `minecraft:red_x`, and resource reload reports no missing model or texture.
-3. Confirm all 17 custom identities remain distinct while normalization,
+3. Confirm all 17 custom identities remain distinct and their opened-map icons
+   are visibly crisp at the intended 2x native artwork size, while normalization,
    coordinates, Xaero filtering, Minimap native scale, World Map accepted 2x
    scale, and upright UV correction remain unchanged from C8.
 4. With Ribbits installed, obtain a successful, exact
@@ -93,7 +100,7 @@ ensuring C7 and every Treasure X C1-C6 artifact are disabled.
 9. With exact Compass Ribbon 2.9.0 present, verify its existing generic native
    holder path displays the live `ribbits:ribbit_village` marker. MME must add
    no direct Compass dependency, alternate marker, or copied Ribbits asset.
-10. Save, exit, and reload the disposable world. Confirm both C9's existing
+10. Save, exit, and reload the disposable world. Confirm both C10's existing
    normalized identities and the externally owned Ribbits identity remain
    correct, then restore the pre-C7 world backup before testing the accepted C4
    binary rollback.
