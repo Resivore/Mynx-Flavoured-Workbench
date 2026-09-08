@@ -15,7 +15,7 @@ class NaturalistTraceBridgeTest {
     @Test void naturalistAdapterResolvesItsRecordedOriginalTrace() {
         ModelPart original = part(Map.of());
         ModelPart adapter = NaturalistIconAdapter.build(part(Map.of("selected", original)), original, original, original,
-                presentation(), false, List.of("selected"), true);
+                presentation(), false, false, List.of("selected"), true);
         ModelRenderTrace trace = trace();
         trace.addVisibleModelPart(original, 0xFF123456);
 
@@ -40,7 +40,7 @@ class NaturalistTraceBridgeTest {
     @Test void missingOrUntracedNaturalistMappingsFailClosed() {
         ModelPart original = part(Map.of());
         ModelPart adapter = NaturalistIconAdapter.build(part(Map.of("selected", original)), original, original, original,
-                presentation(), false, List.of("selected"), true);
+                presentation(), false, false, List.of("selected"), true);
         ModelRenderTrace trace = trace();
 
         assertNull(NaturalistIconAdapter.resolveTrace(trace, adapter));
@@ -51,7 +51,7 @@ class NaturalistTraceBridgeTest {
         ModelPart tracedBody = part(Map.of());
         ModelPart originalRoot = part(Map.of("body", tracedBody));
         ModelPart adapter = NaturalistIconAdapter.build(originalRoot, originalRoot, originalRoot, tracedBody,
-                presentation(), false, List.of(), true);
+                presentation(), false, false, List.of(), true);
         ModelRenderTrace trace = trace();
         trace.addVisibleModelPart(tracedBody, 0xFFAABBCC);
 
@@ -65,7 +65,7 @@ class NaturalistTraceBridgeTest {
         root.xRot = .25F; root.yRot = .5F; root.zRot = .75F;
         ModelPart selected = root.getChild("selected");
         ModelPart adapter = NaturalistIconAdapter.build(root, selected, selected, selected,
-                presentation(), true, List.of("selected"), true);
+                presentation(), true, false, List.of("selected"), true);
         ModelPart copiedRoot = adapter.getChild("naturalist_contract");
 
         assertEquals(3.0F, copiedRoot.x);
@@ -80,7 +80,7 @@ class NaturalistTraceBridgeTest {
         ModelPart selected = part(Map.of("feature", part(Map.of())));
         selected.x = 4.0F;
         ModelPart adapter = NaturalistIconAdapter.build(part(Map.of("selected", selected)), selected, selected, selected,
-                presentation(), false, List.of("selected"), false);
+                presentation(), false, false, List.of("selected"), false);
 
         ModelPart detached = adapter.getChild("naturalist_contract");
         assertNotSame(selected, detached);
@@ -93,11 +93,27 @@ class NaturalistTraceBridgeTest {
         NaturalistModelContracts.Presentation framed =
                 new NaturalistModelContracts.Presentation(.21F, 0.0F, 1.5708F, 0.0F, -4.0F);
         ModelPart adapter = NaturalistIconAdapter.build(part(Map.of("selected", selected)), selected, selected, selected,
-                framed, false, List.of("selected"), false);
+                framed, false, false, List.of("selected"), false);
 
         assertEquals(-4.0F, adapter.y);
         assertEquals(0.0F, selected.y);
         assertEquals(.21F, adapter.xScale);
+    }
+
+    @Test void normalizedRootAssemblyDropsOnlyTheCopiedGameplayRootFrame() {
+        ModelPart selected = part(Map.of("body", part(Map.of())));
+        selected.x = 4.0F; selected.y = 24.0F; selected.z = -3.0F;
+        selected.xRot = .2F; selected.yRot = .4F; selected.zRot = .6F;
+        ModelPart adapter = NaturalistIconAdapter.build(selected, selected, selected, selected,
+                presentation(), false, true, List.of(), false);
+        ModelPart normalized = adapter.getChild("naturalist_contract");
+
+        assertEquals(0.0F, normalized.x);
+        assertEquals(0.0F, normalized.y);
+        assertEquals(0.0F, normalized.z);
+        assertEquals(0.0F, normalized.xRot);
+        assertEquals(1.0F, normalized.xScale);
+        assertNotSame(selected.getChild("body"), normalized.getChild("body"));
     }
 
     @Test void bridgeUsesTheClosedContractPathRatherThanTreeDiscovery() throws Exception {

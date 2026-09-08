@@ -27,17 +27,20 @@ class BinaryContractTest {
         }
     }
 
-    @Test void c4DoesNotRestoreTheConflictingPartPrerendererRedirectOrCacheBlankIcons() throws Exception {
+    @Test void c7UsesTheEnclosingNativeCapturePoseWithoutRedirectsOrBlankIcons() throws Exception {
         Path root = Path.of(System.getProperty("projectRoot"));
         String mixins = Files.readString(root.resolve("src/main/resources/naturalist_xaero_entity_icons_compat.mixins.json"));
         assertFalse(mixins.contains("RadarIconModelPartPrerendererMixin"));
         assertTrue(mixins.contains("ModelRenderTraceMixin"));
-        assertTrue(mixins.contains("RadarIconModelPartPresentationMixin"));
+        assertTrue(mixins.contains("RadarIconModelPrerendererMixin"));
         String bridge = Files.readString(root.resolve("src/main/java/dev/resivore/naturalistxaeroicons/NaturalistIconAdapter.java"));
         assertTrue(bridge.contains("traceSources"));
         assertFalse(bridge.contains("@Redirect"));
         String prerenderer = Files.readString(root.resolve("src/main/java/dev/resivore/naturalistxaeroicons/mixin/RadarIconModelPrerendererMixin.java"));
         assertTrue(prerenderer.contains("renderedDest.contains(adapter)"));
         assertFalse(prerenderer.contains("callback.setReturnValue(adapter)"));
+        assertTrue(prerenderer.contains("method = \"renderModel\", at = @At(\"HEAD\")"));
+        assertTrue(prerenderer.contains("pose.pushPose()"));
+        assertTrue(prerenderer.contains("pose.popPose()"));
     }
 }

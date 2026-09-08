@@ -16,7 +16,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import xaero.hud.minimap.radar.icon.creator.render.form.model.RadarIconModelPrerenderer;
 import xaero.lib.client.graphics.XaeroBufferProvider;
 
-/** Runs only after Xaero's ordinary ModelPart path produced no destination. */
+/** Scopes Brown Bear's native capture and runs fallback contracts only after an empty native path. */
 @Mixin(value = RadarIconModelPrerenderer.class, remap = false)
 abstract class RadarIconModelPrerendererMixin {
     @Inject(method = "renderModel", at = @At("HEAD"), require = 1)
@@ -25,6 +25,14 @@ abstract class RadarIconModelPrerendererMixin {
             Entity entity, ModelPart upstreamPart, RadarIconModelPrerenderer.Parameters parameters,
             CallbackInfoReturnable<ModelPart> callback) {
         NaturalistIconPresentation.begin(entity);
+        var presentation = NaturalistIconPresentation.currentNativePresentation();
+        if (presentation != null) {
+            // This is the enclosing native-capture pose, before Xaero renders/caches its selected
+            // ModelPart.  It replaces the C6 late part-render hook, which could be bypassed by
+            // the accepted Xaero × EMF render redirect.
+            pose.pushPose();
+            pose.scale(presentation.scale(), presentation.scale(), presentation.scale());
+        }
     }
 
     @Inject(method = "renderModel", at = @At("RETURN"), require = 1)
@@ -32,6 +40,7 @@ abstract class RadarIconModelPrerendererMixin {
             PoseStack pose, XaeroBufferProvider buffers, EntityRenderState state, Model model,
             Entity entity, ModelPart upstreamPart, RadarIconModelPrerenderer.Parameters parameters,
             CallbackInfoReturnable<ModelPart> callback) {
+        if (NaturalistIconPresentation.currentNativePresentation() != null) pose.popPose();
         NaturalistIconPresentation.end();
     }
 
@@ -48,7 +57,7 @@ abstract class RadarIconModelPrerendererMixin {
             ModelPart selected = contract.selected();
             ModelPart adapter = NaturalistIconAdapter.build(
                     model.root(), contract.source(), selected, contract.trace(), contract.contract().presentation(),
-                    contract.contract().neutralizeRootRotation(), contract.contract().path(),
+                    contract.contract().neutralizeRootRotation(), contract.contract().normalizeSelectedRootTransform(), contract.contract().path(),
                     contract.contract().preserveAncestorTransforms());
             if (adapter == null || !NaturalistIconAdapter.traceExists(parameters.mrt, adapter)) return;
             RadarIconModelPrerenderer self = (RadarIconModelPrerenderer) (Object) this;
