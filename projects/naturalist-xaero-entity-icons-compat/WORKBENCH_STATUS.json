@@ -10,21 +10,21 @@
     "legacy_ids": []
   },
   "definition": {
-    "lifecycle": "ACTIVE",
+    "lifecycle": "BLOCKED",
     "goals": [
       "Provide fail-closed Xaero Minimap radar-icon capture for the 37 Naturalist living entities whose rendered ModelPart hierarchy is not captured by Xaero's native path.",
-      "Preserve Xaero's native successful model and texture capture for Brown Bear, Bird, Butterfly, Catfish, Caterpillar, Crab, Deer, Firefly, Snake, and Snail; C11 applies only a temporary Brown Bear native-capture-path diagnostic without modifying Naturalist, Xaero, EMF, or Ribbits."
+      "Preserve Xaero's native successful model and texture capture for Brown Bear, Bird, Butterfly, Catfish, Caterpillar, Crab, Deer, Firefly, Snake, and Snail; C12 removes the runtime-disproven Brown Bear model-prerender presentation probe and observes only the actual post-cache-miss Xaero creator chain without modifying Naturalist, Xaero, EMF, or Ribbits."
     ],
     "scope": [
       "Use a closed Naturalist entity-id plus exact current model-class contract registry. Each contract selects the live renderer-selected adult, baby, or state model subtree; unknown class, path, trace, or draw failure delegates to Xaero's normal fallback.",
       "After Xaero's native model prerender returns empty, render only the selected head/neck subtree for ordinary headed animals, or an explicit compact-body subtree for the documented non-headed anatomy families. The bridge copies only contract-path ancestor transforms and resolves only an explicit contract trace anchor, selected part, or contract-path ancestor trace; it never mutates or reparents the live Naturalist model.",
-      "Use explicit contract-local scale, rotation, source-audited trace anchor, and only where unavoidable a source-audited direct-cuboid subset for the C4 presentation corrections. Brown Bear remains on Xaero's native capture path with its existing `0.12F` scoped icon pose; C11 adds a temporary 90-degree Z capture-space rotation at `RadarIconModelPrerenderer.renderModel` and read-only Brown-Bear-only path logging. No screen-space offsets are used. Resource reload evicts only the 37 fallback targets."
+      "Use explicit contract-local scale, rotation, source-audited trace anchor, and only where unavoidable a source-audited direct-cuboid subset for the C4 presentation corrections. Brown Bear has no custom fallback contract or presentation transform. C12 logs only its first cache-miss path through Xaero's selected form, renderer texture, model-form and model-part hooks, creator result, and entity-cache insertion. No screen-space offsets are used. Resource reload evicts only the 37 fallback targets."
     ],
     "boundaries": {
       "owned_paths": ["projects/naturalist-xaero-entity-icons-compat"],
       "exclusions": [
         "Naturalist source, artifact, version, controls, gameplay, networking, private assets, and renderer behavior remain owned by projects/naturalist.",
-        "Xaero, XaeroLib, Xaero × EMF, Ribbits × Xaero, vanilla entities, unrelated modded models, normal successful Xaero captures other than Brown Bear's scoped presentation pose, category/visibility settings, and cache entries outside the 37 target Naturalist types plus Brown Bear are not intercepted.",
+        "Xaero, XaeroLib, Xaero × EMF, Ribbits × Xaero, vanilla entities, unrelated modded models, normal successful Xaero captures, category/visibility settings, and cache entries outside the 37 target Naturalist types plus read-only Brown Bear path evidence are not intercepted.",
         "duck_egg and dirt_trail are not mob-icon targets. No static artwork, copied Naturalist or Xaero assets/classes, arbitrary class-name discovery, species-specific screen-space offsets, whole-model fallback for ordinarily headed animals, runtime deployment, or protected-gameplay-instance access is included."
       ]
     },
@@ -38,12 +38,12 @@
     ]
   },
   "state": {
-    "milestone": "Canary 9 is retained USER-REPORTED / EXTERNAL RUNTIME FAIL provenance: `naturalist-xaero-entity-icons-compat-0.1.0-canary9.jar`, embedded `0.1.0-canary9`, SHA-256 `c29601bf5c5a7b185cd54d87bf5681b23f742277fb6bd9b5ec82f426120af60d`, source `1f7ee394ce78cd4a61dee8ac012843fc4acb521b`. Its exact observed result was only that the Brown Bear displayed Xaero icon remained the same oversized size as before, despite regenerating the pre-existing Brown Bear Xaero raster/cache result; no result is inferred for any other entity. C11 is a runtime-unproven effective-render-path diagnostic: it preserves Brown Bear's native Xaero model/texture architecture and unchanged `0.12F` scale, applies a temporary 90-degree Z capture rotation at the current native `RadarIconModelPrerenderer.renderModel` seam, and logs cache result, native-prerender entry/result, and `RadarIconManager#get` final return. Both manager slots remain occupied by unrelated BGE C60 and IBF C4, so C11 is STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED.",
+    "milestone": "C11 is retained USER-REPORTED / EXTERNAL RUNTIME FAIL provenance: `naturalist-xaero-entity-icons-compat-0.1.0-canary11.jar`, embedded `0.1.0-canary11`, SHA-256 `47bf6fa9a9019b972b52e185424c488954af665f94ddbf57ea3856992174306a`, source `309e373a58005acef72d5fd1827f797391dbd3c1`. The supplied visual result was unchanged oversized Brown Bear with normal orientation: its temporary 90-degree Z diagnostic rotation did not appear. Exact supplied C11 path evidence was `canPrerender=true`, initial entity-cache MISS, final non-null XaeroIcon, `nativeHook=false`, `nativeRendered=false`, then entity-cache HIT. No result is inferred for another entity. C12 is a STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED path-evidence candidate, not a sizing fix: it removes the disproven `0.12F`/PoseStack/native-presentation machinery and logs the exact default-form creator, renderer texture, model-form/model-part branch, creator result, and cache insertion needed to identify the remaining effective path. Xaero source audit establishes that no definition resource, sprite, item, static icon, or minimap disk cache exists for naturalist:bear before this branch; the frozen 1337-file message belongs to Xaero Discovery Radius's World Map `.xwmc` manifest and cannot supply a radar XaeroIcon. Both manager slots remain occupied by unrelated BGE C60 and IBF C4.",
     "releases": {
       "current": {
-        "version": "0.1.0-canary11",
-        "artifact": {"filename": "naturalist-xaero-entity-icons-compat-0.1.0-canary11.jar", "sha256": "47bf6fa9a9019b972b52e185424c488954af665f94ddbf57ea3856992174306a"},
-        "source_commit": "309e373a58005acef72d5fd1827f797391dbd3c1",
+        "version": "0.1.0-canary12",
+        "artifact": {"filename": "naturalist-xaero-entity-icons-compat-0.1.0-canary12.jar", "sha256": "78be16149ce6892f25e02047cf50e6f07070b45092b7a55ebd1b9336ce8bb489"},
+        "source_commit": "a3dd8371722a0ae47006a98facc900aa25ad64d8",
         "runtime_dependency_policy": {"contract": "CAPABILITY_OR_PROVIDER", "exceptions": []}
       },
       "accepted": null,
@@ -52,14 +52,18 @@
       "accepted_rollback": "NO_ROLLBACK"
     },
     "validation": {"build": "STATIC_PASS", "deployment": "NOT_DEPLOYED", "runtime": "RUNTIME_UNTESTED"},
-    "blocker": null
+    "blocker": {
+      "summary": "C12 does not claim a Brown Bear sizing correction: runtime C11 proved RadarIconModelPrerenderer.renderModel does not produce the displayed icon, while static Xaero audit reaches DEFAULT_MODEL -> RadarIconCreator#create -> RadarIconModelFormPrerenderer but cannot identify the concrete runtime sub-branch that returns the non-null XaeroIcon without C12's one-time BrownBearPath evidence.",
+      "since": "2026-09-08T14:55:41Z",
+      "next_action": "Collect C12's one-time BrownBearPath cache-MISS-to-HIT evidence, then modify only the evidenced icon-producing branch if it is safe and does not require foreign-asset redistribution."
+    }
   },
   "synchronization": {
-    "revision": 11,
-    "activity_at": "2026-09-08T05:24:57Z",
-    "updated_at": "2026-09-08T05:24:57Z",
-    "last_codex_at": "2026-09-08T05:24:57Z",
-    "source_commit": "309e373a58005acef72d5fd1827f797391dbd3c1",
+    "revision": 12,
+    "activity_at": "2026-09-08T14:55:41Z",
+    "updated_at": "2026-09-08T14:55:41Z",
+    "last_codex_at": "2026-09-08T14:55:41Z",
+    "source_commit": "a3dd8371722a0ae47006a98facc900aa25ad64d8",
     "google_sheet": {"participates": true, "exclusion_reason": null}
   }
 }

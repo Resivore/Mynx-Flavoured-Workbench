@@ -2,7 +2,7 @@
 
 ## Current gate
 
-**C10 NOT DEPLOYED — STATIC PASS — RUNTIME UNTESTED — NOT READY FOR PROMOTION**
+**C12 NOT DEPLOYED — STATIC PASS — RUNTIME UNTESTED — BLOCKED ON EFFECTIVE-PATH EVIDENCE — NOT READY FOR PROMOTION**
 
 Canary 2 is retained failed external-runtime provenance: `naturalist-xaero-entity-icons-compat-0.1.0-canary2.jar`, SHA-256
 `ff161f6bcbf5cd056a5e27d7cd56091ab5abfa8e69440c76f2f6ce9ba6e86c50`, source
@@ -29,14 +29,14 @@ Canary 9 is retained USER-REPORTED / EXTERNAL RUNTIME **FAIL** provenance: `natu
 
 Canary 10 is retained static/unrun predecessor provenance: `naturalist-xaero-entity-icons-compat-0.1.0-canary10.jar`, embedded `0.1.0-canary10`, SHA-256 `9dbc94795b485a8d76cdde876587f98068c25deffc95ef81152b0f373817caaa`, source `4eca6c1defeec412cdd8b97a0aad4abc9d2927c2`. Its cache-refresh hypothesis is not repeated in C11.
 
-## C11 Brown Bear effective-render-path diagnostic checklist
+## C11 retained runtime failure
 
-With exact Naturalist C8, Xaero Minimap 26.4.2, EMF 3.2.6, generic Xaero × EMF C9, and C11, start or join an existing world and request the Brown Bear radar icon. Do not clear or refresh caches for this experiment. Require no redirect conflict, `InjectionError`, transformation failure, or Xaero render-frame crash.
+Exact C11 (`0.1.0-canary11`, `47bf6fa9a9019b972b52e185424c488954af665f94ddbf57ea3856992174306a`) is USER-REPORTED / EXTERNAL RUNTIME FAIL. Brown Bear remained oversized and normally oriented; the temporary 90-degree diagnostic rotation did not appear. The supplied first-request log was `canPrerender=true`, entity-cache MISS, non-null final `XaeroIcon`, `nativeHook=false`, and `nativeRendered=false`, followed by an entity-cache HIT. This specifically disproves the Brown Bear `RadarIconModelPrerenderer.renderModel` presentation path only.
 
-Verify only Brown Bear for this canary. C11 keeps its native Xaero model/texture path and unchanged `0.12F` scale, but applies only a temporary 90-degree Z capture-space rotation. If its displayed radar icon is visibly sideways, the current `RadarIconModelPrerenderer.renderModel` presentation seam controls the displayed pixels. If it remains unchanged, that seam is not the effective displayed Brown Bear path. C11 is not a sizing fix.
+## C12 Brown Bear effective-path evidence checklist
 
-Capture the concise `NaturalistXaero BrownBearDiagnostic` log sequence. `RadarIconEntityCache#get ... HIT/MISS` identifies the initial cache branch; `entered RadarIconModelPrerenderer#renderModel` proves entry into the rotated seam; `renderedDest=nonempty/empty` proves the native prerender result; and `RadarIconManager#get returned final XaeroIcon` records the enclosing final-return path. Verify no competing redirect, `InjectionError` for `xaeroEmf$retryFailedAtActualPrerender`, mixin transformation failure, or Xaero render-frame crash occurs with generic Xaero × EMF C9.
+With exact Naturalist C8, Xaero Minimap 26.4.2, EMF 3.2.6, generic Xaero × EMF C9, and C12, request only `naturalist:bear` until one normal entity-cache MISS occurs, then allow its ordinary cache HIT. Do not clear/invalidate caches solely for this test, and do not change another entity.
 
-Do not retune or classify Clam, Starfish, either Scorpion, Ray, Hedgehog, Bass, Zebra, Giant Isopod, Great White Shark, or any other Naturalist target from this focused Brown Bear test. Record only actual Brown Bear observations with its state/variant, native texture/model result, initial display result, post-reload result, and any compatibility failure.
+Capture the one-time `NaturalistXaero BrownBearPath` sequence: initial entity-cache MISS; `RadarIconCreator#create` form class and renderer texture; `RadarIconModelFormPrerenderer#prerender` trace/texture data; either model-part method reached; non-null creator result; cache write; final manager result; and the later cache HIT. Require no `InjectionError`, mixin transformation failure, Xaero render-frame crash, blank icon, label fallback, or unrelated icon change.
 
-Stop and record exact entity ID, age/state/variant, icon result, texture result, reload result, and any compatibility crash. Do not infer a runtime PASS from a client launch or this static validation.
+C12 deliberately makes no size change. It must not be called a sizing fix or runtime pass. Stop and record the full exact path if the creator/form/model-part sequence differs, if no non-null creator result is reached, or if any runtime fault occurs. The next implementation may only target the evidenced icon-producing branch. Do not retune Clam, Starfish, either Scorpion, Ray, Hedgehog, Bass, Zebra, Giant Isopod, Great White Shark, or another Naturalist entity.
