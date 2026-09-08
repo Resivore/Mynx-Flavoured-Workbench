@@ -3,6 +3,7 @@ package dev.resivore.mapmarkerextension;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import dev.resivore.mapmarkerextension.core.MapMarkerIdentity;
@@ -28,6 +29,9 @@ final class MapMarkerIdentityTest {
     private static final Path RESOURCE_PACK = Path.of(System.getProperty("resourcePackRoot"));
     private static final Path C9_ICON_PACK = PROJECT.resolve(
         "artifacts/map-marker-extension-icons-0.4.0-canary9.zip"
+    );
+    private static final Path C10_ICON_PACK = PROJECT.resolve(
+        "artifacts/map-marker-extension-icons-0.4.0-canary10.zip"
     );
     private static final Path ORIGINALS = Path.of(System.getProperty("originalsRoot"));
     private static final Set<String> EXPECTED_CUSTOM_POI_IDS = Set.of(
@@ -119,8 +123,8 @@ final class MapMarkerIdentityTest {
                 Path bundledMarker = jarNamespace.resolve(
                     "textures/map/decorations/poi_icons/" + identity.id() + ".png"
                 );
-                assertPng(packMarker, 32, 32);
-                assertPng(bundledMarker, 32, 32);
+                assertPng(packMarker, 8, 8);
+                assertPng(bundledMarker, 8, 8);
                 assertArrayEquals(Files.readAllBytes(packMarker), Files.readAllBytes(bundledMarker));
             }
         }
@@ -134,7 +138,7 @@ final class MapMarkerIdentityTest {
     }
 
     @Test
-    void c10PoiIconsAreExactNearestNeighborTwoXFromAuthoritativeOriginals()
+    void c11PoiIconsReframeAuthoritativeArtworkIntoTheNativeRedXCanvas()
         throws IOException {
         Path packNamespace = RESOURCE_PACK.resolve("assets/map_marker_extension");
         Path sourcePoiIcons = ORIGINALS.resolve("assets/poi_icons");
@@ -152,6 +156,12 @@ final class MapMarkerIdentityTest {
         assertEquals(EXPECTED_CUSTOM_POI_IDS, pngBaseNames(packPoiIcons));
         assertEquals(EXPECTED_CUSTOM_POI_IDS, pngBaseNames(bundledPoiIcons));
 
+        BufferedImage redX = loadMinecraftRedX();
+        Bounds redXBounds = bounds(redX);
+        assertEquals(8, redX.getWidth());
+        assertEquals(8, redX.getHeight());
+        assertEquals(new Bounds(0, 0, 7, 7), redXBounds);
+
         for (String id : EXPECTED_CUSTOM_POI_IDS) {
             Path source = sourcePoiIcons.resolve(id + ".png");
             Path packOutput = packPoiIcons.resolve(id + ".png");
@@ -160,16 +170,56 @@ final class MapMarkerIdentityTest {
 
             BufferedImage original = ImageIO.read(source.toFile());
             BufferedImage output = ImageIO.read(packOutput.toFile());
-            assertEquals(original.getWidth() * 2, output.getWidth(), id);
-            assertEquals(original.getHeight() * 2, output.getHeight(), id);
-            for (int y = 0; y < original.getHeight(); y++) {
-                for (int x = 0; x < original.getWidth(); x++) {
-                    int expectedRgba = original.getRGB(x, y);
-                    assertEquals(expectedRgba, output.getRGB(x * 2, y * 2), id + " top-left");
-                    assertEquals(expectedRgba, output.getRGB(x * 2 + 1, y * 2), id + " top-right");
-                    assertEquals(expectedRgba, output.getRGB(x * 2, y * 2 + 1), id + " bottom-left");
-                    assertEquals(expectedRgba, output.getRGB(x * 2 + 1, y * 2 + 1), id + " bottom-right");
+            assertEquals(16, original.getWidth(), id);
+            assertEquals(16, original.getHeight(), id);
+            assertEquals(redX.getWidth(), output.getWidth(), id);
+            assertEquals(redX.getHeight(), output.getHeight(), id);
+            assertImageEquals(reframeArtwork(original, redXBounds), output, id);
+
+            Bounds sourceBounds = bounds(original);
+            Bounds outputBounds = bounds(output);
+            Bounds expectedOutputBounds = bounds(reframeArtwork(original, redXBounds));
+            assertEquals(expectedOutputBounds, outputBounds, id);
+            assertTrue(outputBounds.width() <= redXBounds.width(), id);
+            assertTrue(outputBounds.height() <= redXBounds.height(), id);
+            assertTrue(hasRedXComparableNormalizedFootprint(output, redX), id);
+            assertTrue(
+                normalizedArea(outputBounds, output) > normalizedArea(sourceBounds, original),
+                id + " must enlarge artwork inside the logical sprite canvas"
+            );
+        }
+    }
+
+    @Test
+    void c11VisibleFootprintRejectsTheC10WholeCanvasDoublingMistake() throws IOException {
+        Path sourcePoiIcons = ORIGINALS.resolve("assets/poi_icons");
+        BufferedImage redX = loadMinecraftRedX();
+        assertTrue(Files.isRegularFile(C10_ICON_PACK));
+
+        try (ZipFile c10 = new ZipFile(C10_ICON_PACK.toFile())) {
+            for (String id : EXPECTED_CUSTOM_POI_IDS) {
+                BufferedImage original = ImageIO.read(sourcePoiIcons.resolve(id + ".png").toFile());
+                String entryName = "assets/map_marker_extension/textures/map/decorations/poi_icons/"
+                    + id + ".png";
+                var entry = c10.getEntry(entryName);
+                assertNotNull(entry, entryName);
+                BufferedImage c10Image;
+                try (InputStream input = c10.getInputStream(entry)) {
+                    c10Image = ImageIO.read(input);
                 }
+
+                Bounds originalBounds = bounds(original);
+                Bounds c10Bounds = bounds(c10Image);
+                assertEquals(
+                    normalizedArea(originalBounds, original),
+                    normalizedArea(c10Bounds, c10Image),
+                    0.000001D,
+                    id + " proves C10 preserved the normalized visible footprint"
+                );
+                assertFalse(
+                    hasRedXComparableNormalizedFootprint(c10Image, redX),
+                    id + " must fail when both canvas and artwork are merely doubled"
+                );
             }
         }
     }
@@ -261,6 +311,98 @@ final class MapMarkerIdentityTest {
                 .filter(name -> name.endsWith(".png"))
                 .map(name -> name.substring(0, name.length() - 4))
                 .collect(Collectors.toSet());
+        }
+    }
+
+    private static BufferedImage loadMinecraftRedX() throws IOException {
+        try (InputStream input = MapMarkerIdentityTest.class.getClassLoader().getResourceAsStream(
+            "assets/minecraft/textures/map/decorations/red_x.png"
+        )) {
+            assertNotNull(input, "Missing Minecraft 26.2 red-X decoration sprite");
+            BufferedImage image = ImageIO.read(input);
+            assertNotNull(image, "Unable to decode Minecraft 26.2 red-X decoration sprite");
+            return image;
+        }
+    }
+
+    private static BufferedImage reframeArtwork(BufferedImage source, Bounds target) {
+        Bounds artwork = bounds(source);
+        double scale = Math.min(
+            (double) target.width() / artwork.width(),
+            (double) target.height() / artwork.height()
+        );
+        int outputWidth = Math.min(target.width(), Math.max(1, (int) Math.round(artwork.width() * scale)));
+        int outputHeight = Math.min(target.height(), Math.max(1, (int) Math.round(artwork.height() * scale)));
+        int offsetX = (target.width() - outputWidth) / 2;
+        int offsetY = (target.height() - outputHeight) / 2;
+        BufferedImage output = new BufferedImage(target.width(), target.height(), BufferedImage.TYPE_INT_ARGB);
+        for (int y = 0; y < outputHeight; y++) {
+            int sourceY = artwork.minY() + Math.min(
+                artwork.height() - 1,
+                (int) Math.floor((y + 0.5D) * artwork.height() / outputHeight)
+            );
+            for (int x = 0; x < outputWidth; x++) {
+                int sourceX = artwork.minX() + Math.min(
+                    artwork.width() - 1,
+                    (int) Math.floor((x + 0.5D) * artwork.width() / outputWidth)
+                );
+                output.setRGB(offsetX + x, offsetY + y, source.getRGB(sourceX, sourceY));
+            }
+        }
+        return output;
+    }
+
+    private static Bounds bounds(BufferedImage image) {
+        int minX = image.getWidth();
+        int minY = image.getHeight();
+        int maxX = -1;
+        int maxY = -1;
+        for (int y = 0; y < image.getHeight(); y++) {
+            for (int x = 0; x < image.getWidth(); x++) {
+                if ((image.getRGB(x, y) >>> 24) != 0) {
+                    minX = Math.min(minX, x);
+                    minY = Math.min(minY, y);
+                    maxX = Math.max(maxX, x);
+                    maxY = Math.max(maxY, y);
+                }
+            }
+        }
+        assertTrue(maxX >= 0, "A map-decoration sprite must contain visible artwork");
+        return new Bounds(minX, minY, maxX, maxY);
+    }
+
+    private static boolean hasRedXComparableNormalizedFootprint(
+        BufferedImage candidate,
+        BufferedImage redX
+    ) {
+        Bounds candidateBounds = bounds(candidate);
+        Bounds redXBounds = bounds(redX);
+        return (double) candidateBounds.width() / candidate.getWidth() >= 0.75D
+            && (double) candidateBounds.height() / candidate.getHeight() >= 0.75D
+            && normalizedArea(candidateBounds, candidate) >= normalizedArea(redXBounds, redX) * 0.75D;
+    }
+
+    private static double normalizedArea(Bounds bounds, BufferedImage image) {
+        return (double) bounds.width() * bounds.height() / (image.getWidth() * image.getHeight());
+    }
+
+    private static void assertImageEquals(BufferedImage expected, BufferedImage actual, String id) {
+        assertEquals(expected.getWidth(), actual.getWidth(), id);
+        assertEquals(expected.getHeight(), actual.getHeight(), id);
+        for (int y = 0; y < expected.getHeight(); y++) {
+            for (int x = 0; x < expected.getWidth(); x++) {
+                assertEquals(expected.getRGB(x, y), actual.getRGB(x, y), id + " pixel " + x + "," + y);
+            }
+        }
+    }
+
+    private record Bounds(int minX, int minY, int maxX, int maxY) {
+        int width() {
+            return maxX - minX + 1;
+        }
+
+        int height() {
+            return maxY - minY + 1;
         }
     }
 

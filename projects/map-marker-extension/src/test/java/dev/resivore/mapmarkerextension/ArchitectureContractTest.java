@@ -29,6 +29,11 @@ final class ArchitectureContractTest {
             metadata.indexOf("\"suggests\""));
         assertFalse(depends.contains("xaerominimap"));
         assertFalse(depends.contains("xaeroworldmap"));
+        assertTrue(metadata.contains("\"minecraft\": \"=26.2\""));
+        assertTrue(metadata.contains("\"xaerominimap\": \"*\""));
+        assertTrue(metadata.contains("\"xaeroworldmap\": \"*\""));
+        assertTrue(metadata.contains("\"runtime_dependency_policy\""));
+        assertTrue(metadata.contains("\"contract\": \"CAPABILITY_OR_PROVIDER\""));
     }
 
     @Test
