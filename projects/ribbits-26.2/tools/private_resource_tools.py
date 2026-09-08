@@ -31,16 +31,16 @@ from typing import Any
 EXPECTED_PRISTINE_SHA256 = (
     "4cf86564aed393410fb1dbca3a9ce2425382307655e92bb6b43f3ddcee5bf731"
 )
-CANDIDATE_VERSION = "4.1.6+26.2-mynx-canary18"
-CANDIDATE_CANARY = 18
+CANDIDATE_VERSION = "4.1.6+26.2-mynx-canary19"
+CANDIDATE_CANARY = 19
 PRIVATE_MANIFEST_SCHEMA = "mynx-ribbits-private-resource-manifest/v1"
 PRIVATE_MANIFEST_CLASSIFICATION = (
     "PRIVATE MYNX ASSEMBLY STAGED / NONREDISTRIBUTABLE DONOR ASSETS"
 )
 PRIVATE_ARTIFACT_FILENAME = (
-    "ribbits-private-reconstruction-4.1.6+26.2-mynx-canary18.jar"
+    "ribbits-private-reconstruction-4.1.6+26.2-mynx-canary19.jar"
 )
-SOURCE_ONLY_ARTIFACT_FILENAME = "ribbits-source-only-4.1.6+26.2-mynx-canary18.jar"
+SOURCE_ONLY_ARTIFACT_FILENAME = "ribbits-source-only-4.1.6+26.2-mynx-canary19.jar"
 SOURCE_SAFE_PUBLIC_RESOURCE_PATHS = frozenset(
     {
         "assets/ribbits/items/glowcap.json",
@@ -4852,16 +4852,30 @@ def validate_jar(
                 if class_entry not in name_set:
                     errors.append(f"Entrypoint class missing: {class_name}")
 
-        expected_mixins = ["ribbits.mixins.json", "ribbits.fabric.mixins.json"]
+        expected_mixins = [
+            "ribbits.mixins.json",
+            "ribbits.fabric.mixins.json",
+            {"config": "ribbits.naturalist.mixins.json", "environment": "client"},
+        ]
+        expected_mixin_configs = [
+            "ribbits.mixins.json",
+            "ribbits.fabric.mixins.json",
+            "ribbits.naturalist.mixins.json",
+        ]
         actual_mixins = metadata.get("mixins")
         if actual_mixins != expected_mixins:
             errors.append(f"Mixin config mapping differs: {actual_mixins!r}")
-        for mixin_name in expected_mixins:
+        for mixin_name in expected_mixin_configs:
             mixin_config = archive_json(mixin_name)
             if mixin_config.get("compatibilityLevel") != "JAVA_25":
                 errors.append(f"Unexpected compatibility level in {mixin_name}")
             if "refmap" in mixin_config:
                 errors.append(f"Unexpected refmap remains in {mixin_name}")
+            if mixin_name == "ribbits.naturalist.mixins.json":
+                if mixin_config.get("required") is not False:
+                    errors.append("Naturalist mixin config must remain optional")
+                if mixin_config.get("injectors", {}).get("defaultRequire") != 0:
+                    errors.append("Naturalist mixin config must keep optional injections")
             package = mixin_config.get("package", "")
             for side in ("mixins", "client"):
                 for relative_class in mixin_config.get(side, []):

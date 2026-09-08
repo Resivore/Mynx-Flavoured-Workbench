@@ -1,0 +1,12 @@
+{
+  "required": false,
+  "package": "com.yungnickyoung.minecraft.ribbits.mixin.mixins.client.compat",
+  "compatibilityLevel": "JAVA_25",
+  "client": [
+    "NaturalistSnailLeashMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 0
+  },
+  "minVersion": "0.8"
+}

@@ -33,7 +33,11 @@
   },
   "mixins": [
     "ribbits.mixins.json",
-    "ribbits.fabric.mixins.json"
+    "ribbits.fabric.mixins.json",
+    {
+      "config": "ribbits.naturalist.mixins.json",
+      "environment": "client"
+    }
   ],
   "depends": {
     "fabricloader": "*",
