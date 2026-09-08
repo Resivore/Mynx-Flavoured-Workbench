@@ -12,6 +12,8 @@ class BinaryContractTest {
              JarFile naturalist = new JarFile(Path.of(System.getProperty("naturalistJar")).toFile())) {
             assertNotNull(xaero.getEntry("xaero/hud/minimap/radar/icon/creator/render/form/model/RadarIconModelPrerenderer.class"));
             assertNotNull(xaero.getEntry("xaero/hud/minimap/radar/icon/cache/RadarIconCache.class"));
+            assertNotNull(xaero.getEntry("xaero/hud/minimap/radar/icon/cache/RadarIconEntityCache.class"));
+            assertNotNull(xaero.getEntry("xaero/hud/minimap/radar/icon/RadarIconManager.class"));
             assertNotNull(naturalist.getEntry("com/crispytwig/naturalist/client/renderer/NaturalistMobRenderer.class"));
             assertNotNull(naturalist.getEntry("com/crispytwig/naturalist/client/model/RhinoModel.class"));
             assertNotNull(naturalist.getEntry("com/crispytwig/naturalist/client/model/WhaleBabyModel.class"));
@@ -27,12 +29,13 @@ class BinaryContractTest {
         }
     }
 
-    @Test void c8UsesTheEnclosingNativeCapturePoseWithoutRedirectsOrBlankIcons() throws Exception {
+    @Test void c9UsesTheEnclosingNativeCapturePoseAndExactStaleBearCacheSeam() throws Exception {
         Path root = Path.of(System.getProperty("projectRoot"));
         String mixins = Files.readString(root.resolve("src/main/resources/naturalist_xaero_entity_icons_compat.mixins.json"));
         assertFalse(mixins.contains("RadarIconModelPartPrerendererMixin"));
         assertTrue(mixins.contains("ModelRenderTraceMixin"));
         assertTrue(mixins.contains("RadarIconModelPrerendererMixin"));
+        assertTrue(mixins.contains("RadarIconEntityCacheTypeAccessor"));
         String bridge = Files.readString(root.resolve("src/main/java/dev/resivore/naturalistxaeroicons/NaturalistIconAdapter.java"));
         assertTrue(bridge.contains("traceSources"));
         assertFalse(bridge.contains("@Redirect"));
@@ -43,5 +46,10 @@ class BinaryContractTest {
         assertTrue(prerenderer.contains("method = \"renderModel\", at = @At(\"HEAD\")"));
         assertTrue(prerenderer.contains("pose.pushPose()"));
         assertTrue(prerenderer.contains("pose.popPose()"));
+        String manager = Files.readString(root.resolve("src/main/java/dev/resivore/naturalistxaeroicons/mixin/RadarIconManagerMixin.java"));
+        assertTrue(manager.contains("RadarIconEntityCache;get"));
+        assertTrue(manager.contains("retryCachedNativeBear"));
+        assertTrue(manager.contains("canPrerender"));
+        assertTrue(manager.contains("return null;"));
     }
 }
