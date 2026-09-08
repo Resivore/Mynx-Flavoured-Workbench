@@ -20,7 +20,7 @@
     "goals": [
       "Contribute the exact audited literal block and accessory families to Clutter No More ShapeMap so approved material forms can share one interchangeable storage family.",
       "Preserve Clutter No More as the sole switching, transmutation, recipe-cleanup, and equivalence authority while keeping component patches and source variants exact.",
-      "Keep exact accepted C3 live as the rollback baseline while C6 adds the literal Building But Better detail-family compatibility surface and remains runtime-untested."
+      "Keep exact accepted C3 live as the rollback baseline while C7 preserves the C6 literal Building But Better detail-family compatibility surface, requires BBB without a BBB version restriction, and remains runtime-untested."
     ],
     "scope": [
       "Preserve the existing literal catalog while extending the canonical Fence/Fence Gate and Iron Bars families in place and adding exactly 19 mutually disjoint BBB detail families, yielding 153 families, 1,317 unique item IDs, and a 22-member maximum without suffix, tag, or provider-name inference.",
@@ -37,7 +37,7 @@
         "Minecraft, Macaw, and Dramatic Doors providers own native blocks, placement, collision, redstone, recipes and costs, drops, copper weathering, waxing, scraping, and lightning behavior; IBF does not normalize or replace those semantics.",
         "Nibaru and Block Geometry Extensions own geometry and material behavior, while Quick Stack Nearby and its compatibility layer only consume Clutter No More affinity; IBF does not modify, duplicate, or bundle those projects.",
         "Partial provider materialization, dynamic discovery, registry-name or tag inference, cross-material or cross-finish collapsing, and Macaw paving/full/slab/stair forms remain outside the audited contract.",
-        "C6 may replace only the same-project C4 Slot B member through the serialized Test Instance Manager workflow; it must not alter Slot A, the accepted baseline, or the protected gameplay profile.",
+        "C7 may replace only the same-project C4 Slot B member through the serialized Test Instance Manager workflow; it must not alter Slot A, the accepted baseline, or the protected gameplay profile.",
         "Legacy status READMEs, provenance and audit narratives, historical C1/C2 matrices and binaries, manager records, snapshots, branches, worktrees, and Git history are not imported."
       ]
     },
@@ -75,8 +75,8 @@
       {
         "type": "PROJECT",
         "identifier": "5d42f47f-b006-4125-840d-dec0d2728afa",
-        "requirement": "BBB provider capability >=2.0pre4+26.2; controlled C6 input bbb-fabric-26.2-2.0pre4+26.2-pale-oak-dev.3.jar SHA-256 d0928b9316e3f6b323151fac73df3be1056aba05b56d4909b419cc15c09fc4d0",
-        "reason": "Owns the literal wood, stone, Frame/Lattice, and Iron Fence IDs added by C6; the exact local controlled-validation bytes are recorded without pinning the packaged runtime dependency."
+        "requirement": "BBB provider capability (any installed BBB version); controlled C7 input bbb-fabric-26.2-2.0pre4+26.2-pale-oak-dev.3.jar SHA-256 d0928b9316e3f6b323151fac73df3be1056aba05b56d4909b419cc15c09fc4d0",
+        "reason": "Owns the literal wood, stone, Frame/Lattice, and Iron Fence IDs added by C6; C7 retains BBB as a packaged required dependency while deliberately applying no BBB version predicate. The exact local controlled-validation bytes are recorded separately from the runtime requirement."
       },
       {
         "type": "MOD",
@@ -135,16 +135,16 @@
     ]
   },
   "state": {
-    "milestone": "C6 adds the literal current-BBB wood, fence, stone, and iron family extensions. The current C6 artifact is retained and build-validated but cannot replace Slot B until a serialized manager preflight has a compatible BBB provider; the older C4 remains independently deployed in Slot B and C3 remains the accepted rollback.",
+    "milestone": "C7 is the metadata-only successor to C6: it retains BBB as required while changing only IBF's BBB Fabric predicate to `*`, so compatible BBB release and development-suffix versions are not rejected before IBF initializes. The older C4 remains independently deployed in Slot B and C3 remains the accepted rollback.",
     "releases": {
       "current": {
-        "version": "C6 (0.1.0-canary6)",
-        "embedded_version": "0.1.0-canary6",
+        "version": "C7 (0.1.0-canary7)",
+        "embedded_version": "0.1.0-canary7",
         "artifact": {
-          "filename": "interchangeable-block-families-0.1.0-canary6.jar",
-          "sha256": "a086f3c3c9cf7524803fe8b9b4693976cb1da5a211e552bb629bed4092b906f6"
+          "filename": "interchangeable-block-families-0.1.0-canary7.jar",
+          "sha256": "599660b27db061926a800bd486f25bb1d8511b6b82b8afd2a369e8189c696b7c"
         },
-        "source_commit": "414553afd5872bfdb295c7c2142141069e5cb552",
+        "source_commit": "9ad4600e62808e5e976392a69b495a2fe4b5d47c",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
@@ -177,11 +177,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 5,
-    "activity_at": "2026-09-08T01:30:02.3514110Z",
-    "updated_at": "2026-09-08T01:30:02.3514110Z",
-    "last_codex_at": "2026-09-08T01:30:02.3514110Z",
-    "source_commit": "414553afd5872bfdb295c7c2142141069e5cb552",
+    "revision": 6,
+    "activity_at": "2026-09-08T02:22:33.4982785Z",
+    "updated_at": "2026-09-08T02:22:33.4982785Z",
+    "last_codex_at": "2026-09-08T02:22:33.4982785Z",
+    "source_commit": "9ad4600e62808e5e976392a69b495a2fe4b5d47c",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
