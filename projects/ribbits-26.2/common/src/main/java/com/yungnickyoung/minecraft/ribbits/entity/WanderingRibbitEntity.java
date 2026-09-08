@@ -49,6 +49,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.portal.TeleportTransition;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -318,6 +319,9 @@ public final class WanderingRibbitEntity extends AbstractVillager implements Geo
         super.readAdditionalSaveData(input);
         tradeSeed = input.getLongOr("WanderingTradeSeed", UNINITIALIZED_TRADE_SEED);
         tradeSnapshot = input.read("WanderingTradeSnapshot", WanderingRibbitTradeSnapshot.CODEC).orElse(null);
+        if (tradeSnapshot != null) {
+            tradeSnapshot = WanderingRibbitTradeProviders.migrateC17NativeMenu(this.getOffers(), tradeSnapshot);
+        }
         wanderTarget = input.read("WanderTarget", BlockPos.CODEC).orElse(null);
         retainedHome = input.read("RetainedHome", BlockPos.CODEC).orElse(null);
         restockDay = input.getLongOr("WanderingRestockDay", RibbitTradeState.UNSET_DAY);
@@ -416,6 +420,12 @@ public final class WanderingRibbitEntity extends AbstractVillager implements Geo
             }
         }
         return List.copyOf(indexes);
+    }
+
+    /** The holder end of a companion leash belongs near the merchant's upper torso. */
+    @Override
+    public Vec3 getLeashOffset() {
+        return new Vec3(0.0D, this.getBbHeight() * 0.82D, 0.0D);
     }
 
     @Nullable

@@ -113,6 +113,52 @@ public final class WanderingRibbitTradeProviders {
         return mixed ^ mixed >>> 31;
     }
 
+    /**
+     * Converts only the exact C17 native snapshot layout in place. The retained offer
+     * objects are deliberately moved rather than recreated, preserving their uses and
+     * components and leaving every optional provider choice untouched.
+     */
+    public static WanderingRibbitTradeSnapshot migrateC17NativeMenu(
+            MerchantOffers offers, WanderingRibbitTradeSnapshot snapshot
+    ) {
+        Objects.requireNonNull(offers, "offers");
+        Objects.requireNonNull(snapshot, "snapshot");
+        if (snapshot.totalOfferCount() != offers.size() || snapshot.providers().isEmpty()) return snapshot;
+
+        WanderingRibbitTradeSnapshot.ProviderRange nativeRange = snapshot.providers().getFirst();
+        if (!NATIVE_PROVIDER_ID.equals(nativeRange.id())
+                || nativeRange.schemaVersion() != 3
+                || nativeRange.firstOffer() != 0
+                || nativeRange.offerCount() != 6) {
+            return snapshot;
+        }
+
+        // Snapshot validation guarantees contiguity. Still reject a malformed later range
+        // instead of deleting arbitrary merchant offers from an ambiguous saved entity.
+        int expectedFirst = 6;
+        for (int index = 1; index < snapshot.providers().size(); index++) {
+            WanderingRibbitTradeSnapshot.ProviderRange range = snapshot.providers().get(index);
+            if (range.firstOffer() != expectedFirst) return snapshot;
+            expectedFirst += range.offerCount();
+        }
+        if (expectedFirst != offers.size()) return snapshot;
+
+        offers.remove(4);
+        offers.remove(3);
+        offers.remove(2);
+        List<WanderingRibbitTradeSnapshot.ProviderRange> migrated = new ArrayList<>();
+        migrated.add(new WanderingRibbitTradeSnapshot.ProviderRange(
+                NATIVE_PROVIDER_ID, WanderingRibbitNativeTradeProvider.SCHEMA_VERSION, 0,
+                WanderingRibbitNativeTradeProvider.NATIVE_OFFER_COUNT, nativeRange.restockPolicy()));
+        for (int index = 1; index < snapshot.providers().size(); index++) {
+            WanderingRibbitTradeSnapshot.ProviderRange range = snapshot.providers().get(index);
+            migrated.add(new WanderingRibbitTradeSnapshot.ProviderRange(
+                    range.id(), range.schemaVersion(), range.firstOffer() - 3,
+                    range.offerCount(), range.restockPolicy()));
+        }
+        return new WanderingRibbitTradeSnapshot(snapshot.seed(), migrated);
+    }
+
     private static void registerInternal(WanderingRibbitTradeProvider provider) {
         Identifier id = Objects.requireNonNull(provider.id(), "provider.id");
         if (provider.schemaVersion() < 1) {

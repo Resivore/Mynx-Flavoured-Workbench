@@ -1287,8 +1287,8 @@ class PrivateVillageUtilityTransformTest(unittest.TestCase):
 
 class DonorBoundaryContractTest(unittest.TestCase):
     def test_exact_accounting_contains_only_approved_visual_members_and_outputs(self) -> None:
-        self.assertEqual("4.1.6+26.2-mynx-canary16", tools.CANDIDATE_VERSION)
-        self.assertEqual(16, tools.CANDIDATE_CANARY)
+        self.assertEqual("4.1.6+26.2-mynx-canary18", tools.CANDIDATE_VERSION)
+        self.assertEqual(18, tools.CANDIDATE_CANARY)
         self.assertEqual(
             "mynx-ribbits-private-resource-manifest/v1", tools.PRIVATE_MANIFEST_SCHEMA
         )
@@ -1297,7 +1297,7 @@ class DonorBoundaryContractTest(unittest.TestCase):
             tools.PRIVATE_MANIFEST_CLASSIFICATION,
         )
         self.assertEqual(349, tools.OUTPUT_FILE_COUNT)
-        self.assertEqual(2_739_336, tools.OUTPUT_TOTAL_SIZE)
+        self.assertEqual(2_735_161, tools.OUTPUT_TOTAL_SIZE)
         self.assertEqual(2_563, tools.SORCERER_LOOT_OUTPUT_SIZE)
         self.assertEqual(
             "5b06e06502bf11f661161e89bf34e329d8f23268b7b0104371038c38ad9b378d",
@@ -1322,7 +1322,8 @@ class DonorBoundaryContractTest(unittest.TestCase):
             {"alexsmobs", "minecraft", "ribbits", "trinkets"},
             tools.EXPECTED_PRIVATE_DATA_NAMESPACES,
         )
-        self.assertEqual(30, len(tools.DONOR_DERIVED_OUTPUTS))
+        self.assertEqual(27, len(tools.DONOR_DERIVED_OUTPUTS))
+        self.assertEqual(3, len(tools.USER_AUTHORED_CHUTE_OUTPUTS))
         self.assertEqual(
             13,
             sum(len(spec["members"]) for spec in tools.DONOR_INPUT_SPECS.values()),
@@ -1378,10 +1379,23 @@ class DonorBoundaryContractTest(unittest.TestCase):
 
         with tempfile.TemporaryDirectory() as temp_dir:
             root = Path(temp_dir)
-            records = tools.import_wandering_visual_resources(
+            user_png = tools.encode_rgba_png(32, 32, bytes((12, 34, 56, 255)) * (32 * 32))
+            user_model = {
+                "ambientocclusion": True,
+                "elements": [
+                    {"type": "cube", "export": True, "from": [4.5, 0, 7.75], "to": [5, 22, 8.25],
+                     "faces": {face: {"uv": [0, 0, 1, 1]} for face in ("north", "east", "south", "west", "up", "down")}},
+                    {"type": "cube", "export": True, "from": [0.25, 22, -2.5], "to": [9.25, 22, 8.5],
+                     "faces": {face: {"uv": [20, 30, 11, 19]} for face in ("north", "east", "south", "west", "up", "down")}},
+                ],
+                "display": {},
+            }
+            records, user_records = tools.import_wandering_visual_resources(
                 root,
                 payloads,
                 {"filename": tools.DONOR_INPUT_SPECS["wandering"]["filename"]},
+                user_model,
+                user_png,
             )
             self.assertEqual(
                 tools.WANDERING_DONOR_DERIVED_OUTPUTS,
@@ -1403,20 +1417,17 @@ class DonorBoundaryContractTest(unittest.TestCase):
                 (root / "assets/ribbits/textures/item/chute_leaf.png").read_bytes(),
             )
             self.assertEqual(
-                payloads[texture_member],
+                user_png,
                 (root / "assets/ribbits/textures/item/chute_leaf_open.png").read_bytes(),
             )
             self.assertEqual(
-                (128, 128),
+                (32, 32),
                 tools.png_dimensions(
                     (root / "assets/ribbits/textures/item/chute_leaf_open.png").read_bytes(),
                     "assembled open leaf",
                 ),
             )
-            self.assertEqual(
-                "8e481fa8b4e4458adb52d60ab3123801e612835b65cd362264c00801d84d681a",
-                tools.DONOR_INPUT_SPECS["wandering"]["members"][texture_member]["sha256"],
-            )
+            self.assertEqual(tools.USER_AUTHORED_CHUTE_OUTPUTS, {record["output"] for record in user_records})
             self.assertEqual(
                 {
                     "model": {
@@ -1438,11 +1449,11 @@ class DonorBoundaryContractTest(unittest.TestCase):
                 root / "assets/ribbits/models/item/chute_leaf_open.json"
             )
             self.assertEqual(2, len(open_model["elements"]))
-            self.assertEqual([8.0, 7.0, 7.75], open_model["elements"][0]["from"])
-            self.assertEqual([8.5, 22.0, 8.25], open_model["elements"][0]["to"])
-            self.assertEqual([-0.5, 22.0, -0.5], open_model["elements"][1]["from"])
-            self.assertEqual([16.5, 22.0, 16.5], open_model["elements"][1]["to"])
-            self.assertEqual({"up", "down"}, set(open_model["elements"][1]["faces"]))
+            self.assertEqual([4.5, 0.0, 7.75], open_model["elements"][0]["from"])
+            self.assertEqual([5.0, 22.0, 8.25], open_model["elements"][0]["to"])
+            self.assertEqual([0.25, 22.0, -2.5], open_model["elements"][1]["from"])
+            self.assertEqual([9.25, 22.0, 8.5], open_model["elements"][1]["to"])
+            self.assertEqual({"north", "east", "south", "west", "up", "down"}, set(open_model["elements"][1]["faces"]))
             self.assertTrue(all("cullface" not in face for face in open_model["elements"][1]["faces"].values()))
             self.assertEqual(
                 {

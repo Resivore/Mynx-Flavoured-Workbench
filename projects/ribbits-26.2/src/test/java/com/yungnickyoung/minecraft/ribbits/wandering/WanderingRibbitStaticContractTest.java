@@ -96,7 +96,7 @@ class WanderingRibbitStaticContractTest {
     }
 
     @Test
-    void nativeMenuUsesCanonicalMapModifierOnceAndThreeUniqueCuriosities() throws Exception {
+    void nativeMenuUsesCanonicalMapModifierWithoutCuriosityRandomization() throws Exception {
         String map = read("common/src/main/java/com/yungnickyoung/minecraft/ribbits/entity/trade/WanderingRibbitMapOffer.java");
         assertTrue(map.contains("ribbit_village_explorer_result"));
         assertEquals(1, occurrences(map, "modifier.apply("));
@@ -107,9 +107,11 @@ class WanderingRibbitStaticContractTest {
         assertTrue(nativeProvider.contains("new ItemCost(glowcap, 8)"));
         assertFalse(nativeProvider.contains("new ItemCost(Items.COMPASS, 1)"));
         assertTrue(nativeProvider.contains("new ItemCost(glowcap, 8)"));
-        assertTrue(nativeProvider.contains("SCHEMA_VERSION = 3"));
-        assertTrue(nativeProvider.contains("for (int i = 0; i < 3; i++)"));
-        assertTrue(nativeProvider.contains("pool.set(i, pool.get(selected))"));
+        assertTrue(nativeProvider.contains("SCHEMA_VERSION = 4"));
+        assertTrue(nativeProvider.contains("NATIVE_OFFER_COUNT = 3"));
+        assertFalse(nativeProvider.contains("record Curiosity"));
+        assertFalse(nativeProvider.contains("CURIOSITIES"));
+        assertFalse(nativeProvider.contains("nextInt(pool"));
     }
 
     @Test
@@ -118,6 +120,16 @@ class WanderingRibbitStaticContractTest {
         assertTrue(model.contains("id(\"wandering_ribbit\")"));
         assertTrue(model.contains("id(\"textures/entity/wandering_ribbit.png\")"));
         assertTrue(model.contains("id(\"ribbit\")"));
+    }
+
+    @Test
+    void optionalNaturalistLeashPatchOnlyChangesSnailsHeldByWanderingRibbits() throws Exception {
+        String plugin = read("common/src/main/java/com/yungnickyoung/minecraft/ribbits/mixin/RibbitsMixinPlugin.java");
+        String mixin = read("common/src/main/java/com/yungnickyoung/minecraft/ribbits/mixin/mixins/client/compat/NaturalistSnailLeashMixin.java");
+        assertTrue(plugin.contains("Class.forName(NATURALIST_SNAIL"));
+        assertTrue(plugin.contains("RibbitsMixinPlugin.class.getClassLoader()"));
+        assertTrue(mixin.contains("getLeashHolder() instanceof WanderingRibbitEntity"));
+        assertTrue(mixin.contains("snail.getBbHeight() * 0.28D"));
     }
 
     @Test

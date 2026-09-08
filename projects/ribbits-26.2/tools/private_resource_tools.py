@@ -8,6 +8,7 @@ under an ignored private/test-build directory and never commit or distribute it.
 from __future__ import annotations
 
 import argparse
+import base64
 import copy
 import gzip
 import hashlib
@@ -30,16 +31,16 @@ from typing import Any
 EXPECTED_PRISTINE_SHA256 = (
     "4cf86564aed393410fb1dbca3a9ce2425382307655e92bb6b43f3ddcee5bf731"
 )
-CANDIDATE_VERSION = "4.1.6+26.2-mynx-canary16"
-CANDIDATE_CANARY = 16
+CANDIDATE_VERSION = "4.1.6+26.2-mynx-canary18"
+CANDIDATE_CANARY = 18
 PRIVATE_MANIFEST_SCHEMA = "mynx-ribbits-private-resource-manifest/v1"
 PRIVATE_MANIFEST_CLASSIFICATION = (
     "PRIVATE MYNX ASSEMBLY STAGED / NONREDISTRIBUTABLE DONOR ASSETS"
 )
 PRIVATE_ARTIFACT_FILENAME = (
-    "ribbits-private-reconstruction-4.1.6+26.2-mynx-canary16.jar"
+    "ribbits-private-reconstruction-4.1.6+26.2-mynx-canary18.jar"
 )
-SOURCE_ONLY_ARTIFACT_FILENAME = "ribbits-source-only-4.1.6+26.2-mynx-canary16.jar"
+SOURCE_ONLY_ARTIFACT_FILENAME = "ribbits-source-only-4.1.6+26.2-mynx-canary18.jar"
 SOURCE_SAFE_PUBLIC_RESOURCE_PATHS = frozenset(
     {
         "assets/ribbits/items/glowcap.json",
@@ -143,7 +144,7 @@ REQUIRED_FABRIC_DEPENDENCIES = {
 SOURCE_FILE_COUNT = 287  # 285 assets/data files plus icon.png and logo.png
 OUTPUT_FILE_COUNT = 349
 # Exact deterministic Canary 12 private staging inventory.
-OUTPUT_TOTAL_SIZE = 2_739_336
+OUTPUT_TOTAL_SIZE = 2_735_161
 SOURCE_EXTENSION_COUNTS = {
     ".json": 201,
     ".nbt": 29,
@@ -413,16 +414,33 @@ WANDERING_DONOR_DERIVED_OUTPUTS = frozenset(
         "assets/ribbits/models/item/chute_leaf_closed.json",
         "assets/ribbits/items/chute_leaf_closed.json",
         "assets/ribbits/textures/item/drop_leaf_inventory.png",
-        "assets/ribbits/models/item/chute_leaf_open.json",
-        "assets/ribbits/items/chute_leaf_open.json",
         "assets/ribbits/textures/item/chute_leaf.png",
-        "assets/ribbits/textures/item/chute_leaf_open.png",
     }
 )
 
 DONOR_DERIVED_OUTPUTS = frozenset(
     PROFESSION_DONOR_DERIVED_OUTPUTS | WANDERING_DONOR_DERIVED_OUTPUTS
 )
+USER_AUTHORED_CHUTE_INPUTS = {
+    "bbmodel": {
+        "filename": "chute_leaf_open.bbmodel",
+        "size": 5_953,
+        "sha256": "1d2332100daef279fd9bd1ea442714fe82b572a1662e05f40360cdeaa7680444",
+    },
+    "png": {
+        "filename": "chute_leaf_open.png",
+        "size": 743,
+        "sha256": "c9dcc9db447c84e69306810aaef1818b52525e8df5205432c8eb454743e059b2",
+    },
+}
+USER_AUTHORED_CHUTE_OUTPUTS = frozenset(
+    {
+        "assets/ribbits/models/item/chute_leaf_open.json",
+        "assets/ribbits/items/chute_leaf_open.json",
+        "assets/ribbits/textures/item/chute_leaf_open.png",
+    }
+)
+PRIVATE_ASSEMBLED_DERIVED_OUTPUTS = frozenset(DONOR_DERIVED_OUTPUTS | USER_AUTHORED_CHUTE_OUTPUTS)
 
 VILLAGE_RIBBIT_TEMPLATE_PROFESSIONS = {
     "data/ribbits/structure/ribbits/ribbit_nitwit.nbt": "ribbits:nitwit",
@@ -867,6 +885,62 @@ def require_exact_originals_member_path(
     if path.is_symlink() or not candidate.is_file():
         raise ValidationError(f"{label} must be an existing regular non-symlink file: {candidate}")
     return candidate
+
+
+def load_user_authored_chute_inputs(user_assets_root: Path) -> tuple[dict[str, Any], bytes, list[dict[str, Any]]]:
+    """Load the two C18 inputs exactly, without ever writing beneath originals/."""
+    root = user_assets_root.resolve(strict=True)
+    if not root.is_dir() or root.name.casefold() != "originals":
+        raise ValidationError(f"Originals root must be the resolved originals directory: {root}")
+
+    loaded: dict[str, bytes] = {}
+    paths: dict[str, Path] = {}
+    for key, spec in USER_AUTHORED_CHUTE_INPUTS.items():
+        candidate = root / "assets" / spec["filename"]
+        resolved = candidate.resolve(strict=True)
+        if resolved != candidate or candidate.is_symlink() or not candidate.is_file():
+            raise ValidationError(f"C18 user-authored Chute input must be an exact regular originals/assets file: {candidate}")
+        data = candidate.read_bytes()
+        if len(data) != spec["size"] or sha256_bytes(data) != spec["sha256"]:
+            raise ValidationError(
+                f"C18 user-authored Chute input identity differs for {candidate}: "
+                f"expected {spec['size']} bytes/{spec['sha256']}, got {len(data)}/{sha256_bytes(data)}"
+            )
+        loaded[key] = data
+        paths[key] = candidate
+
+    try:
+        model = json.loads(loaded["bbmodel"].decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise ValidationError("C18 user-authored Chute BBModel is not valid UTF-8 JSON") from exc
+    if not isinstance(model, dict) or model.get("resolution") != {"width": 32, "height": 32}:
+        raise ValidationError("C18 user-authored Chute BBModel texture resolution differs")
+    if png_dimensions(loaded["png"], str(paths["png"])) != (32, 32):
+        raise ValidationError("C18 user-authored Chute PNG is not 32x32")
+    texture = model.get("textures")
+    texture = texture[0] if isinstance(texture, list) and len(texture) == 1 else texture
+    if not isinstance(texture, dict) or not isinstance(texture.get("source"), str):
+        raise ValidationError("C18 user-authored Chute BBModel has no embedded texture")
+    prefix = "data:image/png;base64,"
+    if not texture["source"].startswith(prefix):
+        raise ValidationError("C18 user-authored Chute BBModel embedded texture is not PNG base64")
+    try:
+        embedded = base64.b64decode(texture["source"][len(prefix):], validate=True)
+    except ValueError as exc:
+        raise ValidationError("C18 user-authored Chute BBModel embedded texture is invalid base64") from exc
+    if embedded != loaded["png"]:
+        raise ValidationError("C18 user-authored Chute BBModel embedded PNG differs from the standalone PNG")
+
+    records = [
+        {
+            "logical_path": f"originals/assets/{USER_AUTHORED_CHUTE_INPUTS[key]['filename']}",
+            "size": len(loaded[key]),
+            "sha256": sha256_bytes(loaded[key]),
+            "unchanged_after_assembly": True,
+        }
+        for key in ("bbmodel", "png")
+    ]
+    return model, loaded["png"], records
 
 
 def load_exact_donor(
@@ -2969,7 +3043,9 @@ def import_wandering_visual_resources(
     root: Path,
     members: dict[str, bytes],
     identity: dict[str, Any],
-) -> list[dict[str, Any]]:
+    user_chute_model: dict[str, Any],
+    user_chute_png: bytes,
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     expected_members = DONOR_INPUT_SPECS["wandering"]["members"]
     if set(members) != set(expected_members):
         raise ValidationError("Loaded Wandering Ribbit donor member accounting differs")
@@ -2977,9 +3053,7 @@ def import_wandering_visual_resources(
     archive = identity["filename"]
     model_member = "assets/wandering_ribbit/geo/wandering_ribbit.geo.json"
     texture_member = "assets/wandering_ribbit/textures/entity/wandering_ribbit.png"
-    chute_model_member = "assets/wandering_ribbit/models/custom/umbrella_leaf.json"
     chute_closed_member = "assets/wandering_ribbit/textures/item/umbrella_leaf_item.png"
-    chute_open_member = "assets/wandering_ribbit/textures/item/umbrella_leaf_texture.png"
     records: list[dict[str, Any]] = []
 
     def write_exact(member: str, relative: str, transformation: str) -> None:
@@ -3028,12 +3102,6 @@ def import_wandering_visual_resources(
     (root / "assets/ribbits/textures/item/chute_leaf.png").write_bytes(replacement_bytes)
     records[-1]["sources"] = [{"archive": "tracked-project", "member": "tools/assets/chute_leaf.png"}]
     records[-1]["transformation"] = "exact user-supplied 16x16 PNG replacement; no pixel or byte conversion"
-    write_exact(
-        texture_member,
-        "assets/ribbits/textures/item/chute_leaf_open.png",
-        "exact 128x128 donor entity-texture bytes under the item-atlas-safe Drop Leaf path",
-    )
-
     closed_model_relative = "assets/ribbits/models/item/chute_leaf.json"
     closed_model_path = root / PurePosixPath(closed_model_relative)
     if closed_model_path.exists():
@@ -3071,150 +3139,80 @@ def import_wandering_visual_resources(
     for relative in (closed_back, closed_item, inventory_relative):
         records.append({"output": relative, "sources": [{"archive": "tracked-project", "member": "tools/assets/" + ("drop_leaf_inventory.png" if relative == inventory_relative else "chute_leaf.png")}], "transformation": "separate exact inventory artwork from preserved closed-back presentation"})
 
-    # The donor's rain predicate selects the entity's holding animations. Those
-    # animations reveal the umbrella_leaf bone, whose grip and leaf2 children are
-    # the actual rain shelter. The similarly named custom model is the separate
-    # hand-held item and must not stand in for the entity rain geometry.
-    donor_item_model = load_json_bytes(members[chute_model_member], chute_model_member)
-    if not isinstance(donor_item_model, dict) or "elements" not in donor_item_model:
-        raise ValidationError("Approved Wandering Ribbit held-item model differs")
-
-    source_geometry = load_json_bytes(members[model_member], model_member)
-    geometry = require_geometry_document(source_geometry, PurePosixPath(model_member).name)
-    bones = {bone.get("name"): bone for bone in geometry["bones"]}
-    umbrella = bones.get("umbrella_leaf")
-    grip = bones.get("grip")
-    canopy = bones.get("leaf2")
-    if (
-        not isinstance(umbrella, dict)
-        or umbrella.get("parent") != "left_arm"
-        or not isinstance(grip, dict)
-        or grip.get("parent") != "umbrella_leaf"
-        or not isinstance(canopy, dict)
-        or canopy.get("parent") != "umbrella_leaf"
-        or len(grip.get("cubes", [])) != 1
-        or len(canopy.get("cubes", [])) != 1
-    ):
-        raise ValidationError("Wandering Ribbit rain-leaf bone contract differs")
-
-    grip_cube = grip["cubes"][0]
-    canopy_cube = canopy["cubes"][0]
-    for name, cube in (("grip", grip_cube), ("leaf2", canopy_cube)):
-        if (
-            not isinstance(cube, dict)
-            or not isinstance(cube.get("origin"), list)
-            or len(cube["origin"]) != 3
-            or not isinstance(cube.get("size"), list)
-            or len(cube["size"]) != 3
-            or not isinstance(cube.get("uv"), list)
-            or len(cube["uv"]) != 2
-        ):
-            raise ValidationError(f"Wandering Ribbit {name} cube contract differs")
-
-    canopy_origin = [float(value) for value in canopy_cube["origin"]]
-    canopy_size = [float(value) for value in canopy_cube["size"]]
-    grip_origin = [float(value) for value in grip_cube["origin"]]
-    grip_size = [float(value) for value in grip_cube["size"]]
-    if canopy_size[1] != 0 or min(canopy_size[0], canopy_size[2]) <= 0:
-        raise ValidationError("Wandering Ribbit rain canopy is not the expected horizontal plane")
-    if min(grip_size) <= 0 or grip_size[1] <= max(grip_size[0], grip_size[2]):
-        raise ValidationError("Wandering Ribbit rain grip is not the expected vertical stem")
-
-    # Keep the donor dimensions and relative placement. Center the canopy in
-    # Java item-model space and retain the established deployed canopy height so
-    # ChuteLeafRenderer's back-mounted pose needs no Java workaround.
-    offset = [
-        8.0 - (canopy_origin[0] + canopy_size[0] / 2.0),
-        22.0 - canopy_origin[1],
-        8.0 - (canopy_origin[2] + canopy_size[2] / 2.0),
-    ]
-
-    def translated_bounds(origin: list[float], size: list[float]) -> tuple[list[float], list[float]]:
-        start = [origin[index] + offset[index] for index in range(3)]
-        end = [start[index] + size[index] for index in range(3)]
-        return start, end
-
-    def normalized_uv(values: list[float]) -> list[float]:
-        return [value / 8.0 for value in values]
-
-    grip_from, grip_to = translated_bounds(grip_origin, grip_size)
-    canopy_from, canopy_to = translated_bounds(canopy_origin, canopy_size)
-    grip_u, grip_v = (float(value) for value in grip_cube["uv"])
-    canopy_u, canopy_v = (float(value) for value in canopy_cube["uv"])
-    # GeckoLib box UV uses the donor texture's pixel coordinates. Give every
-    # narrow stem side the same exact donor strip so the half-pixel-wide cube
-    # remains stable in Java's item baker instead of collapsing to zero-width UVs.
-    grip_side_uv = normalized_uv(
-        [grip_u, grip_v, grip_u + 1.0, grip_v + grip_size[1]]
-    )
-    grip_cap_uv = normalized_uv([grip_u, grip_v, grip_u + 1.0, grip_v + 1.0])
-    # For a box-UV cube, DOWN begins at u + z + x and v + z, then spans
-    # +x and -z. This is the populated 17x17 donor leaf region; the paired
-    # UP region is transparent. Bind the populated region to both faces to
-    # preserve the donor artwork while making the zero-thickness leaf visible
-    # from both expected chute viewing sides without cull-face elimination.
-    populated_canopy_uv = normalized_uv(
-        [
-            canopy_u + canopy_size[2] + canopy_size[0],
-            canopy_v + canopy_size[2],
-            canopy_u + canopy_size[2] + canopy_size[0] * 2.0,
-            canopy_v,
-        ]
-    )
-    opposite_canopy_uv = [
-        populated_canopy_uv[0],
-        populated_canopy_uv[3],
-        populated_canopy_uv[2],
-        populated_canopy_uv[1],
-    ]
+    # C18 intentionally does not consult donor umbrella geometry or texture for
+    # the deployed leaf. Convert the supplied Blockbench cubes directly to Java
+    # item-model elements; the supplied model has no rotations that Java's single-
+    # axis element rotation cannot faithfully represent.
+    source_elements = user_chute_model.get("elements")
+    if not isinstance(source_elements, list) or not source_elements:
+        raise ValidationError("C18 user-authored Chute BBModel has no elements")
+    open_elements: list[dict[str, Any]] = []
+    for index, element in enumerate(source_elements):
+        if not isinstance(element, dict) or element.get("type") != "cube" or element.get("export") is False:
+            raise ValidationError(f"C18 user-authored Chute element {index} is not an exported cube")
+        bounds = (element.get("from"), element.get("to"))
+        if any(not isinstance(value, list) or len(value) != 3 for value in bounds):
+            raise ValidationError(f"C18 user-authored Chute element {index} has invalid bounds")
+        faces = element.get("faces")
+        if not isinstance(faces, dict) or not faces:
+            raise ValidationError(f"C18 user-authored Chute element {index} has no faces")
+        converted_faces: dict[str, Any] = {}
+        for direction, face in faces.items():
+            if direction not in {"north", "east", "south", "west", "up", "down"} or not isinstance(face, dict):
+                raise ValidationError(f"C18 user-authored Chute element {index} has invalid face")
+            uv = face.get("uv")
+            if not isinstance(uv, list) or len(uv) != 4:
+                raise ValidationError(f"C18 user-authored Chute element {index} has invalid face UV")
+            converted_faces[direction] = {"uv": [float(value) for value in uv], "texture": "#0"}
+        converted: dict[str, Any] = {
+            "from": [float(value) for value in element["from"]],
+            "to": [float(value) for value in element["to"]],
+            "faces": converted_faces,
+        }
+        if element.get("shade") is False:
+            converted["shade"] = False
+        rotation = element.get("rotation")
+        if rotation is not None:
+            if not isinstance(rotation, list) or len(rotation) != 3 or sum(value != 0 for value in rotation) > 1:
+                raise ValidationError("C18 BBModel uses a rotation Java item models cannot represent faithfully")
+            if any(rotation):
+                axis = ("x", "y", "z")[next(index for index, value in enumerate(rotation) if value != 0)]
+                origin = element.get("origin")
+                if not isinstance(origin, list) or len(origin) != 3:
+                    raise ValidationError("C18 BBModel rotated cube lacks a valid pivot")
+                converted["rotation"] = {"origin": [float(value) for value in origin], "axis": axis,
+                                         "angle": float(next(value for value in rotation if value != 0)),
+                                         "rescale": bool(element.get("rescale", False))}
+        open_elements.append(converted)
+    display = user_chute_model.get("display")
+    if not isinstance(display, dict):
+        raise ValidationError("C18 user-authored Chute BBModel has no display transforms")
     open_model = {
-        "ambientocclusion": False,
-        "textures": {
-            "0": "ribbits:item/chute_leaf_open",
-            "particle": "ribbits:item/chute_leaf_open",
-        },
-        "elements": [
-            {
-                "from": grip_from,
-                "to": grip_to,
-                "faces": {
-                    face: {"uv": copy.deepcopy(grip_side_uv), "texture": "#0"}
-                    for face in ("north", "east", "south", "west")
-                }
-                | {
-                    "up": {"uv": copy.deepcopy(grip_cap_uv), "texture": "#0"},
-                    "down": {"uv": copy.deepcopy(grip_cap_uv), "texture": "#0"},
-                },
-            },
-            {
-                "from": canopy_from,
-                "to": canopy_to,
-                "shade": False,
-                "faces": {
-                    "up": {"uv": opposite_canopy_uv, "texture": "#0"},
-                    "down": {"uv": populated_canopy_uv, "texture": "#0"},
-                },
-            },
-        ],
+        "ambientocclusion": bool(user_chute_model.get("ambientocclusion", True)),
+        "textures": {"0": "ribbits:item/chute_leaf_open", "particle": "ribbits:item/chute_leaf_open"},
+        "elements": open_elements,
+        "display": copy.deepcopy(display),
     }
     open_model_relative = "assets/ribbits/models/item/chute_leaf_open.json"
     open_model_path = root / PurePosixPath(open_model_relative)
     if open_model_path.exists():
         raise ValidationError(f"Refusing to overwrite Wandering donor output: {open_model_path}")
     write_json(open_model_path, open_model)
-    records.append(
+    user_records = [
         {
             "output": open_model_relative,
-            "sources": [
-                {"archive": archive, "member": model_member},
-                {"archive": archive, "member": texture_member},
-            ],
-            "transformation": (
-                "convert only the exact rain-held umbrella_leaf/grip/leaf2 entity bones "
-                "to a centered double-sided Java item model using the exact entity texture"
-            ),
+            "sources": [{"logical_path": "originals/assets/chute_leaf_open.bbmodel"}],
+            "transformation": "deterministic direct Blockbench cube/UV/display conversion; no donor geometry",
         }
-    )
+    ]
+    open_texture_relative = "assets/ribbits/textures/item/chute_leaf_open.png"
+    (root / open_texture_relative).parent.mkdir(parents=True, exist_ok=True)
+    (root / open_texture_relative).write_bytes(user_chute_png)
+    user_records.append({
+        "output": open_texture_relative,
+        "sources": [{"logical_path": "originals/assets/chute_leaf_open.png"}],
+        "transformation": "exact standalone user-authored PNG bytes; no pixel or byte conversion",
+    })
 
     open_item_relative = "assets/ribbits/items/chute_leaf_open.json"
     open_item_path = root / PurePosixPath(open_item_relative)
@@ -3225,11 +3223,11 @@ def import_wandering_visual_resources(
         open_item_path,
         {"model": {"type": "minecraft:model", "model": "ribbits:item/chute_leaf_open"}},
     )
-    records.append(
+    user_records.append(
         {
             "output": open_item_relative,
-            "sources": [{"archive": archive, "member": model_member}],
-            "transformation": "Minecraft 26.2 item-definition bridge for the rain-leaf Chute model",
+            "sources": [{"logical_path": "originals/assets/chute_leaf_open.bbmodel"}],
+            "transformation": "Minecraft 26.2 item-definition bridge for the user-authored open Chute model",
         }
     )
 
@@ -3243,7 +3241,9 @@ def import_wandering_visual_resources(
             f"missing={sorted(WANDERING_DONOR_DERIVED_OUTPUTS - actual_outputs)}, "
             f"extra={sorted(actual_outputs - WANDERING_DONOR_DERIVED_OUTPUTS)}"
         )
-    return records
+    if {record["output"] for record in user_records} != USER_AUTHORED_CHUTE_OUTPUTS:
+        raise ValidationError("C18 user-authored Chute output accounting differs")
+    return records, user_records
 
 
 def migrate_cutout_models(root: Path) -> None:
@@ -3844,6 +3844,8 @@ def build_manifest(
     configured_feature_migration: dict[str, Any],
     donor_identities: dict[str, dict[str, Any]],
     donor_outputs: list[dict[str, Any]],
+    user_chute_inputs: list[dict[str, Any]],
+    user_chute_outputs: list[dict[str, Any]],
     loot_migration: dict[str, Any],
     village_nbt_migration: dict[str, Any],
     village_utility_migration: dict[str, Any],
@@ -3892,6 +3894,14 @@ def build_manifest(
             "derived_outputs": donor_outputs,
             "derived_output_count": len(donor_outputs),
         },
+        "user_authored_external_inputs": {
+            "logical_root": "originals/assets",
+            "private_use_only": True,
+            "inputs": user_chute_inputs,
+            "embedded_png_matches_standalone_png": True,
+            "derived_outputs": user_chute_outputs,
+            "derived_output_count": len(user_chute_outputs),
+        },
         "source_safe_final_item_sprites": final_item_sprite_manifest_records(),
         "migrations": {
             "geckolib_models_moved": 25,
@@ -3933,6 +3943,7 @@ def _assemble_impl(
     pristine: Path,
     minecraft_client: Path,
     originals_root: Path,
+    user_assets_root: Path,
     guard_donor: Path,
     useful_donor: Path,
     wandering_donor: Path,
@@ -3975,6 +3986,7 @@ def _assemble_impl(
         (useful_donor, useful_identity, "Useful donor JAR"),
         (wandering_donor, wandering_identity, "Wandering Ribbit donor JAR"),
     ]
+    user_chute_model, user_chute_png, user_chute_inputs = load_user_authored_chute_inputs(user_assets_root)
 
     output.mkdir(parents=True)
     source_hashes: dict[str, str] = {}
@@ -4055,13 +4067,14 @@ def _assemble_impl(
             )
         configured_feature_migration = migrate_configured_features(output)
         write_item_definitions(output)
-        donor_outputs.extend(
-            import_wandering_visual_resources(
-                output,
-                donor_members["wandering"],
-                donor_identities["wandering"],
-            )
+        wandering_donor_outputs, user_chute_outputs = import_wandering_visual_resources(
+            output,
+            donor_members["wandering"],
+            donor_identities["wandering"],
+            user_chute_model,
+            user_chute_png,
         )
+        donor_outputs.extend(wandering_donor_outputs)
         spawn_egg_substitution = migrate_spawn_egg_models(output, minecraft_client)
 
         output_file_count = len(relative_files(output))
@@ -4083,6 +4096,8 @@ def _assemble_impl(
             configured_feature_migration,
             donor_identities,
             donor_outputs,
+            user_chute_inputs,
+            user_chute_outputs,
             loot_migration,
             village_nbt_migration,
             village_utility_migration,
@@ -4107,6 +4122,7 @@ def assemble(
     pristine: Path,
     minecraft_client: Path,
     originals_root: Path,
+    user_assets_root: Path,
     guard_donor: Path,
     useful_donor: Path,
     wandering_donor: Path,
@@ -4121,6 +4137,7 @@ def assemble(
         pristine,
         minecraft_client,
         originals_root,
+        user_assets_root,
         guard_donor,
         useful_donor,
         wandering_donor,
@@ -4167,6 +4184,7 @@ def validate_pristine_provenance(
     pristine: Path,
     minecraft_client: Path,
     originals_root: Path,
+    user_assets_root: Path,
     guard_donor: Path,
     useful_donor: Path,
     wandering_donor: Path,
@@ -4195,6 +4213,7 @@ def validate_pristine_provenance(
                 pristine,
                 minecraft_client,
                 originals_root,
+                user_assets_root,
                 guard_donor,
                 useful_donor,
                 wandering_donor,
@@ -4236,7 +4255,7 @@ def source_only_donor_violations(names: list[str] | set[str]) -> list[str]:
     violations = nonallowlisted_donor_archive_violations(names)
     for name in sorted(set(names)):
         normalized = safe_zip_name(name).as_posix()
-        if normalized in DONOR_DERIVED_OUTPUTS and normalized not in violations:
+        if normalized in PRIVATE_ASSEMBLED_DERIVED_OUTPUTS and normalized not in violations:
             violations.append(normalized)
     return sorted(violations)
 
@@ -4309,9 +4328,9 @@ def validate_required_fabric_dependencies(metadata: Any, errors: list[str]) -> N
 
 def validate_donor_resource_boundary(root: Path, errors: list[str]) -> None:
     relative = set(relative_files(root))
-    missing = DONOR_DERIVED_OUTPUTS - relative
+    missing = PRIVATE_ASSEMBLED_DERIVED_OUTPUTS - relative
     if missing:
-        errors.append(f"Donor-derived private outputs are missing: {sorted(missing)}")
+        errors.append(f"Private derived outputs are missing: {sorted(missing)}")
         return
     leaked_names = nonallowlisted_donor_archive_violations(relative)
     leaked_names.extend(
@@ -4388,10 +4407,7 @@ def validate_donor_resource_boundary(root: Path, errors: list[str]) -> None:
     wandering_exact_outputs = {
         "assets/ribbits/textures/entity/wandering_ribbit.png": (
             "assets/wandering_ribbit/textures/entity/wandering_ribbit.png"
-        ),
-        "assets/ribbits/textures/item/chute_leaf_open.png": (
-            "assets/wandering_ribbit/textures/entity/wandering_ribbit.png"
-        ),
+        )
     }
     for output, member in wandering_exact_outputs.items():
         path = root / PurePosixPath(output)
@@ -4430,46 +4446,46 @@ def validate_donor_resource_boundary(root: Path, errors: list[str]) -> None:
             "particle": "ribbits:item/chute_leaf_open",
         }:
             errors.append("Open Drop Leaf rain model lacks exact item-atlas-safe texture bindings")
-        if isinstance(open_model, dict) and any(
-            legacy_key in open_model
-            for legacy_key in ("format_version", "credit", "texture_size", "display", "groups")
-        ):
-            errors.append("Open Drop Leaf still contains the legacy held-item model contract")
-        entity_texture = root / "assets/ribbits/textures/entity/wandering_ribbit.png"
         open_texture = root / "assets/ribbits/textures/item/chute_leaf_open.png"
         if not open_texture.is_file():
             errors.append("Open Drop Leaf item-atlas texture reference does not resolve")
-        elif open_texture.read_bytes() != entity_texture.read_bytes():
-            errors.append("Open Drop Leaf item-atlas texture differs from the donor entity texture")
-        elif png_dimensions(open_texture.read_bytes(), str(open_texture)) != (128, 128):
-            errors.append("Open Drop Leaf item-atlas texture is not the exact 128x128 donor atlas")
+        elif (open_texture.stat().st_size != USER_AUTHORED_CHUTE_INPUTS["png"]["size"]
+              or sha256_file(open_texture) != USER_AUTHORED_CHUTE_INPUTS["png"]["sha256"]
+              or png_dimensions(open_texture.read_bytes(), str(open_texture)) != (32, 32)):
+            errors.append("Open Drop Leaf item-atlas texture differs from the exact user-authored 32x32 PNG")
         open_elements = open_model.get("elements") if isinstance(open_model, dict) else None
         if not isinstance(open_elements, list) or len(open_elements) != 2:
-            errors.append("Open Drop Leaf does not contain exactly the donor rain grip and canopy")
+            errors.append("Open Drop Leaf does not contain exactly the two user-authored cubes")
         else:
-            grip_element, canopy_element = open_elements
+            handle_element, canopy_element = open_elements
             if (
-                grip_element.get("from") != [8.0, 7.0, 7.75]
-                or grip_element.get("to") != [8.5, 22.0, 8.25]
-                or set(grip_element.get("faces", {}))
+                handle_element.get("from") != [4.5, 0.0, 7.75]
+                or handle_element.get("to") != [5.0, 22.0, 8.25]
+                or set(handle_element.get("faces", {}))
                 != {"north", "east", "south", "west", "up", "down"}
             ):
-                errors.append("Open Drop Leaf rain grip geometry differs")
+                errors.append("Open Drop Leaf user-authored handle geometry differs")
             if (
-                canopy_element.get("from") != [-0.5, 22.0, -0.5]
-                or canopy_element.get("to") != [16.5, 22.0, 16.5]
-                or canopy_element.get("shade") is not False
-                or set(canopy_element.get("faces", {})) != {"up", "down"}
+                canopy_element.get("from") != [0.25, 22.0, -2.5]
+                or canopy_element.get("to") != [9.25, 22.0, 8.5]
+                or set(canopy_element.get("faces", {})) != {"north", "east", "south", "west", "up", "down"}
                 or canopy_element.get("faces", {}).get("up", {}).get("uv")
-                != [11.875, 5.875, 14.0, 8.0]
+                != [20.0, 30.0, 11.0, 19.0]
                 or canopy_element.get("faces", {}).get("down", {}).get("uv")
-                != [11.875, 8.0, 14.0, 5.875]
+                != [20.0, 19.0, 11.0, 30.0]
                 or any(
-                    face.get("texture") != "#0" or "cullface" in face
+                    face.get("texture") != "#0"
                     for face in canopy_element.get("faces", {}).values()
                 )
             ):
-                errors.append("Open Drop Leaf rain canopy geometry/double-sided contract differs")
+                errors.append("Open Drop Leaf user-authored canopy geometry/UV contract differs")
+        if open_model.get("display") != {
+            "thirdperson_righthand": {"rotation": [-106.53, -30.8, 174.15], "translation": [0, 0.75, 7]},
+            "thirdperson_lefthand": {"rotation": [-106.53, -30.8, 174.15], "translation": [0, 0.75, 7]},
+            "gui": {"rotation": [0, -23, -49.5], "translation": [-2.25, -3, 0], "scale": [1, 0.77, 1]},
+            "fixed": {"rotation": [0, 0, 42.75], "translation": [4, -3.5, 0]},
+        }:
+            errors.append("Open Drop Leaf user-authored display transforms differ")
         open_item = load_json(root / "assets/ribbits/items/chute_leaf_open.json")
         if open_item != {
             "model": {"type": "minecraft:model", "model": "ribbits:item/chute_leaf_open"}
@@ -4665,6 +4681,7 @@ def validation_report(
     pristine: Path,
     minecraft_client: Path,
     originals_root: Path,
+    user_assets_root: Path,
     guard_donor: Path,
     useful_donor: Path,
     wandering_donor: Path,
@@ -4680,6 +4697,7 @@ def validation_report(
         pristine,
         minecraft_client,
         originals_root,
+        user_assets_root,
         guard_donor,
         useful_donor,
         wandering_donor,
@@ -4711,6 +4729,7 @@ def validate_jar(
     jar_path: Path,
     minecraft_client: Path,
     originals_root: Path,
+    user_assets_root: Path,
     guard_donor: Path,
     useful_donor: Path,
     wandering_donor: Path,
@@ -4721,6 +4740,7 @@ def validate_jar(
         pristine,
         minecraft_client,
         originals_root,
+        user_assets_root,
         guard_donor,
         useful_donor,
         wandering_donor,
@@ -4755,10 +4775,10 @@ def validate_jar(
         validate_source_safe_public_resource_boundary(
             archive, staged_private_entries, errors
         )
-        missing_donor_outputs = DONOR_DERIVED_OUTPUTS - name_set
-        if missing_donor_outputs:
+        missing_private_outputs = PRIVATE_ASSEMBLED_DERIVED_OUTPUTS - name_set
+        if missing_private_outputs:
             errors.append(
-                f"Donor-derived private resources omitted from JAR: {sorted(missing_donor_outputs)}"
+                f"Private derived resources omitted from JAR: {sorted(missing_private_outputs)}"
             )
         forbidden_donor_entries = nonallowlisted_donor_archive_violations(name_set)
         if forbidden_donor_entries:
@@ -4928,6 +4948,7 @@ def parse_args() -> argparse.Namespace:
     assemble_parser.add_argument("--pristine", type=Path, required=True)
     assemble_parser.add_argument("--minecraft-client", type=Path, required=True)
     assemble_parser.add_argument("--originals-root", type=Path, required=True)
+    assemble_parser.add_argument("--user-assets-root", type=Path, required=True)
     assemble_parser.add_argument("--guard-donor", type=Path, required=True)
     assemble_parser.add_argument("--useful-donor", type=Path, required=True)
     assemble_parser.add_argument("--wandering-donor", type=Path, required=True)
@@ -4940,6 +4961,7 @@ def parse_args() -> argparse.Namespace:
     tree_parser.add_argument("--pristine", type=Path, required=True)
     tree_parser.add_argument("--minecraft-client", type=Path, required=True)
     tree_parser.add_argument("--originals-root", type=Path, required=True)
+    tree_parser.add_argument("--user-assets-root", type=Path, required=True)
     tree_parser.add_argument("--guard-donor", type=Path, required=True)
     tree_parser.add_argument("--useful-donor", type=Path, required=True)
     tree_parser.add_argument("--wandering-donor", type=Path, required=True)
@@ -4952,6 +4974,7 @@ def parse_args() -> argparse.Namespace:
     jar_parser.add_argument("--jar", type=Path, required=True)
     jar_parser.add_argument("--minecraft-client", type=Path, required=True)
     jar_parser.add_argument("--originals-root", type=Path, required=True)
+    jar_parser.add_argument("--user-assets-root", type=Path, required=True)
     jar_parser.add_argument("--guard-donor", type=Path, required=True)
     jar_parser.add_argument("--useful-donor", type=Path, required=True)
     jar_parser.add_argument("--wandering-donor", type=Path, required=True)
@@ -4967,6 +4990,7 @@ def main() -> int:
                 args.pristine,
                 args.minecraft_client,
                 args.originals_root,
+                args.user_assets_root,
                 args.guard_donor,
                 args.useful_donor,
                 args.wandering_donor,
@@ -4988,6 +5012,7 @@ def main() -> int:
                 args.pristine,
                 args.minecraft_client,
                 args.originals_root,
+                args.user_assets_root,
                 args.guard_donor,
                 args.useful_donor,
                 args.wandering_donor,
@@ -5006,6 +5031,7 @@ def main() -> int:
                 args.jar,
                 args.minecraft_client,
                 args.originals_root,
+                args.user_assets_root,
                 args.guard_donor,
                 args.useful_donor,
                 args.wandering_donor,

@@ -145,19 +145,21 @@ public final class ChuteLeafRenderer implements TrinketRenderer {
 
         poseStack.pushPose();
         TrinketRenderer.translateToFirstPersonArm(poseStack, arm, armSide);
-        poseStack.translate(armSide == HumanoidArm.RIGHT ? -0.30D : 0.30D, -1.15D, 0.35D);
-        poseStack.scale(0.55F, 0.55F, 0.55F);
+        poseStack.translate(armSide == HumanoidArm.RIGHT ? -0.24D : 0.24D, -1.00D, 0.35D);
+        poseStack.scale(0.70F, 0.70F, 0.70F);
         submitModel(openStack(stack), displayContext, player, player.getId(),
                 poseStack, submit, light, 0);
         poseStack.popPose();
     }
 
     static void applyDeployedPose(PoseStack poseStack) {
-        // Do not inherit animated chest pitch or the donor item-frame Z tilt.
-        // Entity model space has Y down; turn item Y up so the canopy stays above its grip.
-        poseStack.translate(0.0D, -0.10D, 0.18D);
+        // The authored open BBModel is not centered on Minecraft's item origin.
+        // Center its canopy without modifying authored cube coordinates or UVs.
+        // Entity model space has Y down, so this is the coordinate conversion—not
+        // a legacy donor-model inversion.
+        poseStack.translate(0.203125D, -0.10D, 0.3125D);
         poseStack.mulPose(Axis.XP.rotationDegrees(180.0F));
-        poseStack.scale(1.2F, 1.2F, 1.2F);
+        poseStack.scale(1.0F, 1.0F, 1.0F);
     }
 
     private static ItemStack closedStack(ItemStack equipped) {
