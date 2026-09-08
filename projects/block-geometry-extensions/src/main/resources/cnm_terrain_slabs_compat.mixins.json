@@ -14,7 +14,8 @@
     "ProviderPointedDripstoneMixin",
     "MacawsPathsInitializationMixin",
     "MynxTreesInitializationMixin",
-    "RibbitsInitializationMixin"
+    "RibbitsInitializationMixin",
+    "BbbInitializationMixin"
   ],
   "client": [
     "AssetGeneratorMixin",

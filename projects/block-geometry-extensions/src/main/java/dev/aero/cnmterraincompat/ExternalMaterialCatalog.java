@@ -21,7 +21,7 @@ import java.util.Set;
 
 /** Exact, allowlisted external material sources. Provider lookup happens only at provider-entrypoint RETURN. */
 public final class ExternalMaterialCatalog {
-    public static final String PROFILE_VERSION = "bge-c62-family-dedup-v1";
+    public static final String PROFILE_VERSION = "bge-c64-bbb-beam-catalog-v1";
     private static final List<Spec> SPECS = specs();
     private static final Set<String> REGISTERED_PROVIDERS = new LinkedHashSet<>();
 
@@ -51,6 +51,7 @@ public final class ExternalMaterialCatalog {
                 // This provider has a live custom color function, not vanilla birch foliage.
                 leaves("mynx_trees:silver_birch_leaves", TintProfile.SOURCE_PROVIDER)));
         result.addAll(pathSpecs());
+        result.addAll(bbbBeamSpecs());
         return List.copyOf(result);
     }
 
@@ -125,6 +126,30 @@ public final class ExternalMaterialCatalog {
         return Map.of(
                 "slab", Identifier.fromNamespaceAndPath(id.getNamespace(), id.getPath() + "_slab"),
                 "stairs", Identifier.fromNamespaceAndPath(id.getNamespace(), id.getPath() + "_stairs"));
+    }
+
+    /**
+     * BBB owns the established beam slab, stair, and thin wooden-wall forms.  BGE consumes
+     * those exact registrations rather than creating parallel standard geometry, then adds its
+     * five axis-aware BGE forms to the beam parent.  The wall is intentionally the BBB wooden
+     * wall: it has connection state but no material AXIS state or BGE thick-post model route.
+     */
+    private static List<Spec> bbbBeamSpecs() {
+        List<Spec> result = new ArrayList<>();
+        for (String material : List.of("oak", "spruce", "birch", "jungle", "acacia", "dark_oak",
+                "crimson", "warped", "mangrove", "bamboo", "cherry", "pale_oak")) {
+            Identifier id = Identifier.fromNamespaceAndPath("bbb", material + "_beam");
+            String texture = "bbb:block/beam/" + material;
+            result.add(new Spec(id, "bbb", id, id, Map.of(
+                    "slab", Identifier.fromNamespaceAndPath("bbb", material + "_beam_slab"),
+                    "stairs", Identifier.fromNamespaceAndPath("bbb", material + "_beam_stairs"),
+                    "wall", Identifier.fromNamespaceAndPath("bbb", material + "_wall")),
+                    VisualProfile.PILLAR, NibaruMaterialProfile.OrientationPolicy.AXIS_ALIGNED,
+                    texture, texture + "_top", texture + "_top", TintProfile.NONE,
+                    NibaruMaterialProfile.RenderLayer.SOLID,
+                    Set.of(BlockTags.MINEABLE_WITH_AXE, BlockTags.LOGS), Set.of(), List.of()));
+        }
+        return List.copyOf(result);
     }
 
     public record Spec(Identifier id, String provider, Identifier providerReference,

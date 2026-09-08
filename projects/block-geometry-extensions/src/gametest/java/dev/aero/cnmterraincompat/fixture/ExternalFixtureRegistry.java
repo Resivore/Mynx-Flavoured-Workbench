@@ -14,6 +14,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.RotatedPillarBlock;
 import net.minecraft.world.level.block.SlabBlock;
 import net.minecraft.world.level.block.StairBlock;
+import net.minecraft.world.level.block.WallBlock;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 
 import java.util.LinkedHashMap;
@@ -69,6 +70,35 @@ public final class ExternalFixtureRegistry {
         addFire("ribbits", "mossy_oak_planks", 5, 20);
         addFire("ribbits", "mossy_oak_planks_slab", 5, 20);
         addFire("ribbits", "mossy_oak_planks_stairs", 5, 20);
+    }
+
+    /** Exact BBB beam parent/standard-form IDs used to exercise the optional completion hook. */
+    public static void registerBuildingButBetter() {
+        for (String material : new String[] {"oak", "spruce", "birch", "jungle", "acacia", "dark_oak",
+                "crimson", "warped", "mangrove", "bamboo", "cherry", "pale_oak"}) {
+            Block beam = register("bbb", material + "_beam", Blocks.STRIPPED_OAK_LOG, true);
+            // BBB's standard forms carry their own horizontal/directional state.  Keep the
+            // fixture's constructor properties state-neutral: copying a pillar's AXIS-backed
+            // properties into vanilla test blocks is rejected by the 26.2 constructors.
+            registerBbbSlab(material, beam);
+            registerBbbStairs(material, beam);
+            register("bbb", material + "_wall", new WallBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_PLANKS)
+                    .setId(ResourceKey.create(Registries.BLOCK,
+                            Identifier.fromNamespaceAndPath("bbb", material + "_wall")))));
+        }
+    }
+
+    private static Block registerBbbSlab(String material, Block beam) {
+        Identifier id = Identifier.fromNamespaceAndPath("bbb", material + "_beam_slab");
+        return register("bbb", id.getPath(), new SlabBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_PLANKS)
+                .setId(ResourceKey.create(Registries.BLOCK, id))));
+    }
+
+    private static Block registerBbbStairs(String material, Block beam) {
+        Identifier id = Identifier.fromNamespaceAndPath("bbb", material + "_beam_stairs");
+        return register("bbb", id.getPath(), new StairBlock(Blocks.OAK_PLANKS.defaultBlockState(),
+                BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_PLANKS)
+                        .setId(ResourceKey.create(Registries.BLOCK, id))));
     }
 
     private static Block register(String namespace, String path, Block source, boolean axis) {

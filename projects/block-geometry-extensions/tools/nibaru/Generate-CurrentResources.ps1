@@ -216,7 +216,14 @@ $allItemModels | Sort-Object BaseName -Unique | ForEach-Object {
     if ($null -ne $itemTint) {
         $definition.model.tints = @($itemTint)
     }
-    $definition | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath (Join-Path $itemDefinitionRoot "$id.json") -Encoding utf8
+    # `Set-Content` can lose this OneDrive worktree's just-created directory between
+    # provider entries. Use the same long-path .NET writer as the archive staging path
+    # and re-establish the narrowly scoped parent immediately before every definition.
+    [System.IO.Directory]::CreateDirectory("\\?\$itemDefinitionRoot") | Out-Null
+    [System.IO.File]::WriteAllText(
+        "\\?\$(Join-Path $itemDefinitionRoot "$id.json")",
+        (($definition | ConvertTo-Json -Depth 10) + [Environment]::NewLine),
+        [System.Text.UTF8Encoding]::new($true))
 }
 
 # Minecraft 26.2 renamed the pillar side texture; keep generated native models aligned
