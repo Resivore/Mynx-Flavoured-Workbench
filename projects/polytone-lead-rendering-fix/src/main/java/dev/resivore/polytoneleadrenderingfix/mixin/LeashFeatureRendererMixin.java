@@ -16,7 +16,7 @@ import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /**
- * C3 keeps Minecraft 26.2's native leash stream: 25 forward and 25 reverse vertex pairs
+ * C4 keeps Minecraft 26.2's native leash stream: 25 forward and 25 reverse vertex pairs
  * in one triangle strip. Only the format is expanded to the entity contract Iris exposes
  * to Complementary. C2 used entitySolid (QUADS) for that same strip and was topologically
  * invalid.
@@ -25,6 +25,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 abstract class LeashFeatureRendererMixin {
     private static final int LEASH_RENDER_STEPS = 24;
     private static final float LEASH_WIDTH = 0.05F;
+    // Polytone's bundled minecraft:textures/entity/lead.png carries the rope's brown material.
+    // Keep the entity route neutral so core/entity does not multiply that material by the old
+    // untextured vanilla leash tint a second time.
+    private static final float TEXTURE_COLOR = 1.0F;
     private static final String PREPARE =
         "prepare(Lnet/minecraft/client/renderer/feature/LeashFeatureRenderer$Submit;)V";
     private static final String ADD_LEASH_VERTEX_PAIR =
@@ -63,11 +67,9 @@ abstract class LeashFeatureRendererMixin {
         int skyLight = (int) Mth.lerp(progress, leashState.startSkyLight, leashState.endSkyLight);
         int packedLight = LightCoordsUtil.pack(blockLight, skyLight);
 
-        // Exact Minecraft 26.2 rope tint and alternating directional-shading factor.
-        float shade = segment % 2 == (reverse ? 1 : 0) ? 0.7F : 1.0F;
-        float red = 0.5F * shade;
-        float green = 0.4F * shade;
-        float blue = 0.3F * shade;
+        // C4: texture owns the brown base color; vertex color is an intentional neutral multiplier.
+        // The old vanilla 0.5/0.4/0.3 tint and alternating 0.7 shade applied to an untextured
+        // POSITION_COLOR_LIGHTMAP leash, but duplicate Polytone's textured material here.
         float xProgress = x * progress;
         float yProgress = leashY(y, progress, leashState.slack);
         float zProgress = z * progress;
@@ -75,11 +77,11 @@ abstract class LeashFeatureRendererMixin {
 
         writeVertex(
             vertexConsumer, matrix, xProgress - xOffset, yProgress + yOffset, zProgress + zOffset,
-            0.0F, progress, red, green, blue, packedLight, normal
+            0.0F, progress, packedLight, normal
         );
         writeVertex(
             vertexConsumer, matrix, xProgress + xOffset, yProgress + LEASH_WIDTH - yOffset, zProgress - zOffset,
-            1.0F, progress, red, green, blue, packedLight, normal
+            1.0F, progress, packedLight, normal
         );
         callbackInfo.cancel();
     }
@@ -133,14 +135,11 @@ abstract class LeashFeatureRendererMixin {
         float z,
         float u,
         float v,
-        float red,
-        float green,
-        float blue,
         int packedLight,
         float[] normal
     ) {
         vertexConsumer.addVertex(matrix, x, y, z)
-            .setColor(red, green, blue, 1.0F)
+            .setColor(TEXTURE_COLOR, TEXTURE_COLOR, TEXTURE_COLOR, 1.0F)
             .setUv(u, v)
             .setOverlay(OverlayTexture.NO_OVERLAY)
             .setLight(packedLight)
