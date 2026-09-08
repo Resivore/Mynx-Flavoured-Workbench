@@ -26,8 +26,28 @@ import org.junit.jupiter.api.Test;
 final class MapMarkerIdentityTest {
     private static final Path PROJECT = Path.of(System.getProperty("projectRoot"));
     private static final Path RESOURCE_PACK = Path.of(System.getProperty("resourcePackRoot"));
-    private static final Path C8_ARTIFACT = PROJECT.resolve(
-        "artifacts/map-marker-extension-0.4.0-canary8.jar"
+    private static final Path C9_ICON_PACK = PROJECT.resolve(
+        "artifacts/map-marker-extension-icons-0.4.0-canary9.zip"
+    );
+    private static final Path ORIGINALS = Path.of(System.getProperty("originalsRoot"));
+    private static final Set<String> EXPECTED_CUSTOM_POI_IDS = Set.of(
+        "abbey",
+        "ancient_city",
+        "buried_mineshaft",
+        "desert_pyramid",
+        "desert_village",
+        "jungle_pyramid",
+        "ocean_monument",
+        "papal_outpost",
+        "plains_village",
+        "savannah_village",
+        "snowy_village",
+        "taiga_village",
+        "trail_ruins",
+        "trial_chamber",
+        "warm_ocean_ruins",
+        "witch_hut",
+        "woodland_mansion"
     );
 
     @Test
@@ -77,7 +97,7 @@ final class MapMarkerIdentityTest {
             Path mapSprite = packNamespace.resolve(
                 "textures/map/decorations/map_sprites/" + identity.id() + ".png"
             );
-            assertPng(mapSprite);
+            assertPng(mapSprite, 16, 16);
             String descriptor = Files.readString(packNamespace.resolve(
                 "items/map_sprites/" + identity.id() + ".json"
             ));
@@ -99,8 +119,8 @@ final class MapMarkerIdentityTest {
                 Path bundledMarker = jarNamespace.resolve(
                     "textures/map/decorations/poi_icons/" + identity.id() + ".png"
                 );
-                assertPng(packMarker);
-                assertPng(bundledMarker);
+                assertPng(packMarker, 32, 32);
+                assertPng(bundledMarker, 32, 32);
                 assertArrayEquals(Files.readAllBytes(packMarker), Files.readAllBytes(bundledMarker));
             }
         }
@@ -114,12 +134,53 @@ final class MapMarkerIdentityTest {
     }
 
     @Test
-    void itemArtworkIsDedicatedAndFillsTheInventoryFrameWithoutChangingNativeMarkers()
+    void c10PoiIconsAreExactNearestNeighborTwoXFromAuthoritativeOriginals()
         throws IOException {
         Path packNamespace = RESOURCE_PACK.resolve("assets/map_marker_extension");
-        assertTrue(Files.isRegularFile(C8_ARTIFACT));
+        Path sourcePoiIcons = ORIGINALS.resolve("assets/poi_icons");
+        Path packPoiIcons = packNamespace.resolve("textures/map/decorations/poi_icons");
+        Path bundledPoiIcons = PROJECT.resolve(
+            "src/main/resources/assets/map_marker_extension/textures/map/decorations/poi_icons"
+        );
+        Set<String> expectedFromIdentities = Arrays.stream(MapMarkerIdentity.values())
+            .filter(MapMarkerIdentity::customDecoration)
+            .map(MapMarkerIdentity::id)
+            .collect(Collectors.toSet());
+        assertEquals(EXPECTED_CUSTOM_POI_IDS, expectedFromIdentities);
+        assertFalse(EXPECTED_CUSTOM_POI_IDS.contains("buried_treasure"));
+        assertEquals(EXPECTED_CUSTOM_POI_IDS, pngBaseNames(sourcePoiIcons));
+        assertEquals(EXPECTED_CUSTOM_POI_IDS, pngBaseNames(packPoiIcons));
+        assertEquals(EXPECTED_CUSTOM_POI_IDS, pngBaseNames(bundledPoiIcons));
 
-        try (ZipFile c8 = new ZipFile(C8_ARTIFACT.toFile())) {
+        for (String id : EXPECTED_CUSTOM_POI_IDS) {
+            Path source = sourcePoiIcons.resolve(id + ".png");
+            Path packOutput = packPoiIcons.resolve(id + ".png");
+            Path bundledOutput = bundledPoiIcons.resolve(id + ".png");
+            assertArrayEquals(Files.readAllBytes(packOutput), Files.readAllBytes(bundledOutput));
+
+            BufferedImage original = ImageIO.read(source.toFile());
+            BufferedImage output = ImageIO.read(packOutput.toFile());
+            assertEquals(original.getWidth() * 2, output.getWidth(), id);
+            assertEquals(original.getHeight() * 2, output.getHeight(), id);
+            for (int y = 0; y < original.getHeight(); y++) {
+                for (int x = 0; x < original.getWidth(); x++) {
+                    int expectedRgba = original.getRGB(x, y);
+                    assertEquals(expectedRgba, output.getRGB(x * 2, y * 2), id + " top-left");
+                    assertEquals(expectedRgba, output.getRGB(x * 2 + 1, y * 2), id + " top-right");
+                    assertEquals(expectedRgba, output.getRGB(x * 2, y * 2 + 1), id + " bottom-left");
+                    assertEquals(expectedRgba, output.getRGB(x * 2 + 1, y * 2 + 1), id + " bottom-right");
+                }
+            }
+        }
+    }
+
+    @Test
+    void c10LeavesAllC9ItemSideMapSpritesByteIdentical()
+        throws IOException {
+        Path packNamespace = RESOURCE_PACK.resolve("assets/map_marker_extension");
+        assertTrue(Files.isRegularFile(C9_ICON_PACK));
+
+        try (ZipFile c9 = new ZipFile(C9_ICON_PACK.toFile())) {
             for (MapMarkerIdentity identity : MapMarkerIdentity.values()) {
                 Path itemSprite = packNamespace.resolve(
                     "textures/map/decorations/map_sprites/" + identity.id() + ".png"
@@ -156,19 +217,10 @@ final class MapMarkerIdentityTest {
                 assertTrue(height >= 10 && height <= 14, "C9 item art is vertically too small");
                 assertTrue(Math.abs((minX + maxX) - 15) <= 1, "C9 item art must remain centered");
                 assertTrue(Math.abs((minY + maxY) - 15) <= 1, "C9 item art must remain centered");
-
-                if (identity.customDecoration()) {
-                    String entryName = "assets/map_marker_extension/textures/map/decorations/poi_icons/"
-                        + identity.id() + ".png";
-                    try (InputStream c8Marker = c8.getInputStream(c8.getEntry(entryName))) {
-                        assertArrayEquals(
-                            c8Marker.readAllBytes(),
-                            Files.readAllBytes(packNamespace.resolve(
-                                "textures/map/decorations/poi_icons/" + identity.id() + ".png"
-                            )),
-                            "C9 must not alter the C8 native marker artwork"
-                        );
-                    }
+                String entryName = "assets/map_marker_extension/textures/map/decorations/map_sprites/"
+                    + identity.id() + ".png";
+                try (InputStream c9Sprite = c9.getInputStream(c9.getEntry(entryName))) {
+                    assertArrayEquals(c9Sprite.readAllBytes(), Files.readAllBytes(itemSprite), identity.id());
                 }
             }
         }
@@ -201,7 +253,18 @@ final class MapMarkerIdentityTest {
         assertFalse(first.filledMapItemAssetId().equals(second.filledMapItemAssetId()));
     }
 
-    private static void assertPng(Path path) throws IOException {
+    private static Set<String> pngBaseNames(Path directory) throws IOException {
+        try (Stream<Path> files = Files.list(directory)) {
+            return files.filter(Files::isRegularFile)
+                .map(Path::getFileName)
+                .map(Path::toString)
+                .filter(name -> name.endsWith(".png"))
+                .map(name -> name.substring(0, name.length() - 4))
+                .collect(Collectors.toSet());
+        }
+    }
+
+    private static void assertPng(Path path, int width, int height) throws IOException {
         assertTrue(Files.isRegularFile(path), path.toString());
         byte[] bytes = Files.readAllBytes(path);
         assertTrue(bytes.length >= 33, path.toString());
@@ -210,8 +273,8 @@ final class MapMarkerIdentityTest {
         ));
         assertEquals("IHDR", new String(bytes, 12, 4, StandardCharsets.US_ASCII));
         ByteBuffer header = ByteBuffer.wrap(bytes).order(ByteOrder.BIG_ENDIAN);
-        assertEquals(16, header.getInt(16), path.toString());
-        assertEquals(16, header.getInt(20), path.toString());
+        assertEquals(width, header.getInt(16), path.toString());
+        assertEquals(height, header.getInt(20), path.toString());
         assertEquals(8, Byte.toUnsignedInt(bytes[24]), path.toString());
         assertEquals(6, Byte.toUnsignedInt(bytes[25]), path.toString());
     }

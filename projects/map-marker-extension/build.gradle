@@ -17,6 +17,9 @@ repositories {
 def originalsRoot = project.hasProperty('originals_dir')
     ? file(project.property('originals_dir'))
     : file('../../originals')
+def authoritativeOriginalsRoot = project.hasProperty('authoritative_originals_dir')
+    ? file(project.property('authoritative_originals_dir'))
+    : originalsRoot
 def xaeroMinimapJar = new File(originalsRoot, 'mods/xaerominimap-fabric-26.2-26.4.2.jar')
 def xaeroWorldMapJar = new File(originalsRoot, 'mods/xaeroworldmap-fabric-26.2-1.44.2.jar')
 
@@ -76,7 +79,7 @@ tasks.withType(JavaCompile).configureEach {
 test {
     useJUnitPlatform()
     systemProperty 'projectRoot', projectDir.absolutePath
-    systemProperty 'originalsRoot', originalsRoot.absolutePath
+    systemProperty 'originalsRoot', authoritativeOriginalsRoot.absolutePath
     systemProperty 'resourcePackRoot', resourcePackSource.absolutePath
 }
 
