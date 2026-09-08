@@ -13,12 +13,12 @@
     "lifecycle": "ACTIVE",
     "goals": [
       "Provide fail-closed Xaero Minimap radar-icon capture for the 37 Naturalist living entities whose rendered ModelPart hierarchy is not captured by Xaero's native path.",
-      "Preserve Xaero's native successful model and texture capture for Brown Bear, Bird, Butterfly, Catfish, Caterpillar, Crab, Deer, Firefly, Snake, and Snail; Brown Bear alone receives a narrow icon-only scale correction without modifying Naturalist, Xaero, EMF, or Ribbits."
+      "Preserve Xaero's native successful model and texture capture for Brown Bear, Bird, Butterfly, Catfish, Caterpillar, Crab, Deer, Firefly, Snake, and Snail; Brown Bear alone receives a narrow icon-cache freshness correction without modifying Naturalist, Xaero, EMF, or Ribbits."
     ],
     "scope": [
       "Use a closed Naturalist entity-id plus exact current model-class contract registry. Each contract selects the live renderer-selected adult, baby, or state model subtree; unknown class, path, trace, or draw failure delegates to Xaero's normal fallback.",
       "After Xaero's native model prerender returns empty, render only the selected head/neck subtree for ordinary headed animals, or an explicit compact-body subtree for the documented non-headed anatomy families. The bridge copies only contract-path ancestor transforms and resolves only an explicit contract trace anchor, selected part, or contract-path ancestor trace; it never mutates or reparents the live Naturalist model.",
-      "Use explicit contract-local scale, rotation, source-audited trace anchor, and only where unavoidable a source-audited direct-cuboid subset for the C4 presentation corrections. Brown Bear remains on Xaero's native capture path and receives only a scoped icon-pose scale; no screen-space offsets are used. Evict the 37 fallback targets plus Brown Bear after resource reload so corrected results are retried."
+      "Use explicit contract-local scale, rotation, source-audited trace anchor, and only where unavoidable a source-audited direct-cuboid subset for the C4 presentation corrections. Brown Bear remains on Xaero's native capture path with its existing scoped icon pose; C9 retries only one pre-existing cached Brown Bear raster at a prerenderable Xaero cache read. No screen-space offsets are used. Evict the 37 fallback targets plus Brown Bear after resource reload so corrected results are retried."
     ],
     "boundaries": {
       "owned_paths": ["projects/naturalist-xaero-entity-icons-compat"],
@@ -38,12 +38,12 @@
     ]
   },
   "state": {
-    "milestone": "Canary 7 is retained USER-REPORTED / EXTERNAL RUNTIME FAIL provenance: `naturalist-xaero-entity-icons-compat-0.1.0-canary7.jar`, embedded `0.1.0-canary7`, SHA-256 `c4f2c6a3658f73a853623356deb94708a082f65265cdeeed9b970c57e9106cb2`, source `871b2f5c987b58d88deca3f3725207813c761d14`. Giant Isopod, Zebra, Great White Shark, Piranha, Bass, Ray, and Hedgehog were good; Clam retained the correct top-down direction but was too large/top-clipped; Jungle Scorpion, Desert Scorpion, and Starfish were label-only. C7 had no Workbench deployment or slot identity: canonical manager revision 117 has unrelated BGE C60 in Slot A and IBF C4 in Slot B. Canary 8 corrects only the authored-root paths for Clam, Starfish, and the independently routed scorpions, lowers Clam's top-down presentation scale, and treats only a nonempty Xaero detector result as success. It is STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED.",
+    "milestone": "Canary 8 is retained USER-REPORTED / EXTERNAL RUNTIME FAIL provenance: `naturalist-xaero-entity-icons-compat-0.1.0-canary8.jar`, embedded `0.1.0-canary8`, SHA-256 `dc26b12fe87d60849fb7a99a0687b70e895ce3d6064dbd0f2ddff69d9f1cbb70`, source `479c36d1b3cd4f5c0839a7ba3aa2d8b0c053dde0`. The user reported the canary wholly failed overall and Brown Bear still too large; no additional entity observations are inferred. C8 had no Workbench deployment or slot identity: canonical manager revision 117 has unrelated BGE C60 in Slot A and IBF C4 in Slot B. Xaero 26.4.2 has a fixed 64x64 native capture/atlas path with no post-raster bounds normalization; its entity/variant cache key does not include this companion's native-presentation revision. Canary 9 preserves the native Brown Bear model/texture capture and unchanged enclosing pose, but retries one pre-existing Brown Bear cached result only when Xaero can prerender it. It is STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED.",
     "releases": {
       "current": {
-        "version": "0.1.0-canary8",
-        "artifact": {"filename": "naturalist-xaero-entity-icons-compat-0.1.0-canary8.jar", "sha256": "dc26b12fe87d60849fb7a99a0687b70e895ce3d6064dbd0f2ddff69d9f1cbb70"},
-        "source_commit": "479c36d1b3cd4f5c0839a7ba3aa2d8b0c053dde0",
+        "version": "0.1.0-canary9",
+        "artifact": {"filename": "naturalist-xaero-entity-icons-compat-0.1.0-canary9.jar", "sha256": "c29601bf5c5a7b185cd54d87bf5681b23f742277fb6bd9b5ec82f426120af60d"},
+        "source_commit": "1f7ee394ce78cd4a61dee8ac012843fc4acb521b",
         "runtime_dependency_policy": {"contract": "CAPABILITY_OR_PROVIDER", "exceptions": []}
       },
       "accepted": null,
@@ -55,11 +55,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 8,
-    "activity_at": "2026-09-08T03:31:31Z",
-    "updated_at": "2026-09-08T03:31:31Z",
-    "last_codex_at": "2026-09-08T03:31:31Z",
-    "source_commit": "479c36d1b3cd4f5c0839a7ba3aa2d8b0c053dde0",
+    "revision": 9,
+    "activity_at": "2026-09-08T04:34:18Z",
+    "updated_at": "2026-09-08T04:34:18Z",
+    "last_codex_at": "2026-09-08T04:34:18Z",
+    "source_commit": "1f7ee394ce78cd4a61dee8ac012843fc4acb521b",
     "google_sheet": {"participates": true, "exclusion_reason": null}
   }
 }

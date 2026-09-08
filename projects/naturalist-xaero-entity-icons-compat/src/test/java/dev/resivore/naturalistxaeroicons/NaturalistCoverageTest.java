@@ -5,6 +5,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.List;
+import net.minecraft.resources.Identifier;
 import org.junit.jupiter.api.Test;
 
 class NaturalistCoverageTest {
@@ -154,6 +155,19 @@ class NaturalistCoverageTest {
             assertFalse(NaturalistModelContracts.isNativePresentationOverrideId(id), id);
         }
         assertEquals(.12F, NaturalistModelContracts.nativePresentationForId("bear").scale());
+    }
+
+    @Test void brownBearCacheRetryTargetsOnlyAStaleNativeBearAtAPrerenderableCall() {
+        BrownBearIconCacheFreshness.resetForTest();
+        assertFalse(BrownBearIconCacheFreshness.retryCachedNativeBear(Identifier.fromNamespaceAndPath("naturalist", "bear"), false));
+        assertFalse(BrownBearIconCacheFreshness.retryCachedNativeBear(Identifier.fromNamespaceAndPath("naturalist", "black_bear"), true));
+        assertFalse(BrownBearIconCacheFreshness.retryCachedNativeBear(Identifier.fromNamespaceAndPath("minecraft", "bear"), true));
+        assertTrue(BrownBearIconCacheFreshness.retryCachedNativeBear(Identifier.fromNamespaceAndPath("naturalist", "bear"), true));
+        assertFalse(BrownBearIconCacheFreshness.retryCachedNativeBear(Identifier.fromNamespaceAndPath("naturalist", "bear"), true));
+
+        BrownBearIconCacheFreshness.resetForTest();
+        BrownBearIconCacheFreshness.resourceReloadEvicted();
+        assertFalse(BrownBearIconCacheFreshness.retryCachedNativeBear(Identifier.fromNamespaceAndPath("naturalist", "bear"), true));
     }
 
     @Test void retainedC2ControlsRemainContractStable() {
