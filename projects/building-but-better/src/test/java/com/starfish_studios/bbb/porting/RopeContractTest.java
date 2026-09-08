@@ -1,11 +1,16 @@
 package com.starfish_studios.bbb.porting;
 
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Optional;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -37,11 +42,34 @@ final class RopeContractTest {
         String mixins = Files.readString(PROJECT.resolve("src/main/resources/bbb.mixins.json"));
 
         assertTrue(rope.contains("public static boolean isVerticalRope"));
-        assertTrue(climbMixin.contains("RopeBlock.isVerticalRope(getInBlockState())"));
-        assertTrue(climbMixin.contains("lastClimbablePos = Optional.of(blockPosition())"));
+        assertTrue(climbMixin.contains("LivingEntity self = (LivingEntity) (Object) this"));
+        assertTrue(climbMixin.contains("RopeBlock.isVerticalRope(self.getInBlockState())"));
+        assertTrue(climbMixin.contains("lastClimbablePos = Optional.of(self.blockPosition())"));
+        assertFalse(climbMixin.contains("@Shadow public abstract BlockState getInBlockState()"));
+        assertFalse(climbMixin.contains("@Shadow public abstract BlockPos blockPosition()"));
         assertFalse(climbMixin.contains("BlockTags.CLIMBABLE"),
                 "A global tag would make horizontal rope climbable too");
         assertTrue(mixins.contains("LivingEntityRopeClimbMixin"));
+    }
+
+    @Test
+    void climbMixinShadowsOnlyTheActualLivingEntityMemberInMinecraft262() throws Exception {
+        String climbMixin = read("mixin/LivingEntityRopeClimbMixin.java");
+
+        // These reflection checks run against the resolved 26.2 development
+        // namespace, preventing a source-only contract from accepting an
+        // inherited Entity method as a LivingEntity @Shadow again.
+        assertEquals(Entity.class, Entity.class.getMethod("getInBlockState").getDeclaringClass());
+        assertEquals(Entity.class, Entity.class.getMethod("blockPosition").getDeclaringClass());
+        assertEquals(LivingEntity.class,
+                LivingEntity.class.getDeclaredMethod("onClimbable").getDeclaringClass());
+        assertEquals(LivingEntity.class,
+                LivingEntity.class.getDeclaredField("lastClimbablePos").getDeclaringClass());
+        assertEquals(Optional.class, LivingEntity.class.getDeclaredField("lastClimbablePos").getType());
+        assertEquals(BlockPos.class, Entity.class.getMethod("blockPosition").getReturnType());
+        assertFalse(climbMixin.contains("@Shadow public abstract"),
+                "Inherited public Entity methods must be called through self, never shadowed on LivingEntity");
+        assertTrue(climbMixin.contains("@Shadow private Optional<BlockPos> lastClimbablePos"));
     }
 
     @Test
