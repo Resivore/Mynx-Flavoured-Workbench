@@ -1,0 +1,149 @@
+import groovy.json.JsonSlurper
+import org.gradle.api.tasks.bundling.AbstractArchiveTask
+import java.nio.charset.StandardCharsets
+import java.util.zip.ZipFile
+
+plugins {
+    id 'net.fabricmc.fabric-loom' version '1.17.19'
+}
+
+version = project.mod_version
+group = project.maven_group
+
+base {
+    archivesName = project.archives_base_name
+}
+
+repositories {
+    maven { url = 'https://maven.fabricmc.net/' }
+    mavenCentral()
+}
+
+def polytoneReference = file(
+    'C:/Users/resiv/AppData/Roaming/ModrinthApp/profiles/Matcha Flavoured 26.2 Workbench/mods/polytone-26.2-6.3.1-fabric.jar'
+)
+
+dependencies {
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    implementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    compileOnly files(polytoneReference)
+
+    // Development-only smoke-test inputs. They are not bundled or declared by this companion.
+    runtimeOnly files(polytoneReference)
+    runtimeOnly 'net.fabricmc.fabric-api:fabric-api:0.157.0+26.2'
+}
+
+processResources {
+    inputs.property 'version', project.version
+    filesMatching('fabric.mod.json') {
+        expand 'version': project.version
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.release = 25
+}
+
+tasks.withType(AbstractArchiveTask).configureEach {
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
+}
+
+def packagedJar = tasks.named('jar').flatMap { it.archiveFile }
+
+tasks.register('verifyPolytoneLeashFallback') {
+    group = 'verification'
+    description = 'Verifies the exact Polytone 26.2 fallback seams and final companion artifact.'
+    dependsOn tasks.named('jar')
+    inputs.file(polytoneReference)
+    inputs.file(packagedJar)
+
+    doLast {
+        if (!polytoneReference.isFile()) {
+            throw new GradleException("Missing exact Polytone validation baseline: ${polytoneReference}")
+        }
+
+        ZipFile polytone = new ZipFile(polytoneReference)
+        try {
+            def requiredPolytoneEntries = [
+                'net/mehvahdjukaar/polytone/PolytoneRenderTypes.class',
+                'net/mehvahdjukaar/polytone/mixins/LeashMixin.class'
+            ]
+            requiredPolytoneEntries.each { entry ->
+                if (polytone.getEntry(entry) == null) {
+                    throw new GradleException("Polytone baseline is missing required leash seam ${entry}")
+                }
+            }
+
+            def renderTypesBytes = polytone.getInputStream(
+                polytone.getEntry('net/mehvahdjukaar/polytone/PolytoneRenderTypes.class')
+            ).bytes
+            def leashMixinBytes = polytone.getInputStream(
+                polytone.getEntry('net/mehvahdjukaar/polytone/mixins/LeashMixin.class')
+            ).bytes
+            def renderTypesText = new String(renderTypesBytes, StandardCharsets.ISO_8859_1)
+            def leashMixinText = new String(leashMixinBytes, StandardCharsets.ISO_8859_1)
+
+            ['getLeashRenderType', 'addLeashVertexPair'].each { methodName ->
+                if (!renderTypesText.contains(methodName) || !leashMixinText.contains(methodName)) {
+                    throw new GradleException("Polytone baseline no longer exposes the required ${methodName} fallback seam")
+                }
+            }
+            if (!leashMixinText.contains('Operation') || !leashMixinText.contains('cancel')) {
+                throw new GradleException('Polytone leash mixin no longer exposes the vanilla RenderType/vertex fallback structure')
+            }
+        } finally {
+            polytone.close()
+        }
+
+        File artifact = packagedJar.get().asFile
+        ZipFile patch = new ZipFile(artifact)
+        try {
+            def metadataEntry = patch.getEntry('fabric.mod.json')
+            def mixinEntry = patch.getEntry('polytone_lead_rendering_fix.mixins.json')
+            def mixinClassEntry = patch.getEntry(
+                'dev/resivore/polytoneleadrenderingfix/mixin/PolytoneRenderTypesMixin.class'
+            )
+            if (metadataEntry == null || mixinEntry == null || mixinClassEntry == null) {
+                throw new GradleException("Final artifact ${artifact.name} is missing required metadata or fallback mixin")
+            }
+
+            def metadata = new JsonSlurper().parse(patch.getInputStream(metadataEntry))
+            if (metadata.id != 'polytone_lead_rendering_fix' || metadata.version != project.version ||
+                    metadata.environment != 'client' || metadata.depends?.polytone != '*') {
+                throw new GradleException("Final artifact ${artifact.name} has an invalid Polytone compatibility contract")
+            }
+
+            def mixinClassText = new String(
+                patch.getInputStream(mixinClassEntry).bytes,
+                StandardCharsets.ISO_8859_1
+            )
+            [
+                'getLeashRenderType()Lnet/minecraft/client/renderer/rendertype/RenderType;',
+                'addLeashVertexPair(Lcom/mojang/blaze3d/vertex/VertexConsumer;Lorg/joml/Matrix4fc;FFFFFFIZLnet/minecraft/client/renderer/entity/state/EntityRenderState$LeashState;)Z'
+            ].each { descriptor ->
+                if (!mixinClassText.contains(descriptor)) {
+                    throw new GradleException("Final artifact ${artifact.name} is missing fallback injection descriptor ${descriptor}")
+                }
+            }
+        } finally {
+            patch.close()
+        }
+    }
+}
+
+tasks.register('stageCanaryArtifact', Copy) {
+    group = 'distribution'
+    description = 'Stages the exact packaged C1 artifact for canonical local retention.'
+    dependsOn tasks.named('verifyPolytoneLeashFallback')
+    from(packagedJar)
+    into(layout.projectDirectory.dir('artifacts'))
+}
+
+tasks.named('check') {
+    dependsOn tasks.named('verifyPolytoneLeashFallback')
+}
+
+java {
+    withSourcesJar()
+}
