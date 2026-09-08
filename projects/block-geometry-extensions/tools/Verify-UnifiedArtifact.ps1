@@ -146,7 +146,7 @@ try {
     foreach ($mixin in $expectedMixins) { Require $unifiedMap.ContainsKey($mixin) "Packaged mixin config missing: $mixin" }
     $integrationMixins = Get-EntryText $unifiedMap['cnm_terrain_slabs_compat.mixins.json']
     foreach ($providerHook in @('MacawsPathsInitializationMixin', 'MynxTreesInitializationMixin', 'RibbitsInitializationMixin')) {
-        Require ($integrationMixins -match [regex]::Escape($providerHook)) "C62 provider completion hook is not packaged: $providerHook"
+        Require ($integrationMixins -match [regex]::Escape($providerHook)) "C63 provider completion hook is not packaged: $providerHook"
     }
 
     $missing = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::Ordinal)
@@ -163,15 +163,15 @@ try {
             [void]$changed.Add($name)
         }
     }
-    Require ($missing.Count -eq 0) "C62 lost retained accepted-C58 entries: $(@($missing) -join ', ')"
+    Require ($missing.Count -eq 0) "C63 lost retained accepted-C58 entries: $(@($missing) -join ', ')"
 
     $newEntries = New-StringSet @($unifiedMap.Keys | Where-Object { -not $acceptedMap.ContainsKey($_) })
     $unexpectedChanges = @($changed | Where-Object { -not (Test-AllowedChangedEntry $_) })
     $unexpectedNew = @($newEntries | Where-Object { -not (Test-AllowedNewEntry $_) })
     Require ($unexpectedChanges.Count -eq 0) `
-            "C62 changed entries outside its exact implementation whitelist: $($unexpectedChanges -join ', ')"
+            "C63 changed entries outside its exact implementation whitelist: $($unexpectedChanges -join ', ')"
     Require ($unexpectedNew.Count -eq 0) `
-            "C62 added entries outside its exact external-family class whitelist: $($unexpectedNew -join ', ')"
+            "C63 added entries outside its exact external-family class whitelist: $($unexpectedNew -join ', ')"
 
     foreach ($required in @(
         'fabric.mod.json',
@@ -186,7 +186,7 @@ try {
         'games/twinhead/moreslabsstairsandwalls/api/material/NativeAxisModelContract.class',
         'games/twinhead/moreslabsstairsandwalls/api/material/NibaruMaterialProfiles.class'
     )) {
-        Require $changed.Contains($required) "Required C62 archive change is absent: $required"
+        Require $changed.Contains($required) "Required C63 archive change is absent: $required"
     }
     foreach ($required in @(
         'dev/aero/cnmterraincompat/ExternalMaterialCatalog.class',
@@ -199,7 +199,7 @@ try {
         'dev/aero/cnmterraincompat/mixin/MynxTreesInitializationMixin.class',
         'dev/aero/cnmterraincompat/mixin/RibbitsInitializationMixin.class'
     )) {
-        Require $newEntries.Contains($required) "Required C62 external-family class is absent: $required"
+        Require $newEntries.Contains($required) "Required C63 external-family class is absent: $required"
     }
 
     $forbiddenNames = @($unifiedMap.Keys | Where-Object {
@@ -224,10 +224,10 @@ try {
     foreach ($name in @($changed) + @($newEntries)) {
         $bytes = Get-EntryBytes $unifiedMap[$name]
         Require (-not (Test-ContainsBytes $bytes $pngSignature)) `
-                "Changed/new C62 entry embeds raw PNG source bytes: $name"
+                "Changed/new C63 entry embeds raw PNG source bytes: $name"
         $text = [System.Text.Encoding]::UTF8.GetString($bytes)
         Require ($text -notmatch '(?i)data:image/png;base64|iVBORw0KGgo|uv bbmodel(?:\.zip)?|BlockSprite_glass\.png|glass_corner_north_east\.bbmodel|\.bbmodel') `
-                "Changed/new C62 entry embeds a forbidden source name or texture encoding: $name"
+                "Changed/new C63 entry embeds a forbidden source name or texture encoding: $name"
     }
 
     foreach ($path in @(
@@ -263,16 +263,16 @@ try {
         $_ -match '^(?:assets|data)/' -or $_ -match '(?:^|/)pack\.mcmeta$' -or $_ -match '\.mixins\.json$'
     })
     foreach ($name in $resourceEntries) {
-        Require $acceptedMap.ContainsKey($name) "C62 added an unexpected packaged production resource: $name"
+        Require $acceptedMap.ContainsKey($name) "C63 added an unexpected packaged production resource: $name"
         if ($name -ne 'cnm_terrain_slabs_compat.mixins.json') {
             Require ((Get-EntrySha256 $unifiedMap[$name]) -eq (Get-EntrySha256 $acceptedMap[$name])) `
-                    "C62 changed a retained accepted-C58 production resource: $name"
+                    "C63 changed a retained accepted-C58 production resource: $name"
         }
     }
 
     [ordered]@{
         result = 'PASS'
-        c62 = [ordered]@{
+        c63 = [ordered]@{
             filename = [System.IO.Path]::GetFileName($unifiedPath)
             size = (Get-Item -LiteralPath $unifiedPath).Length
             sha256 = Get-FileSha256 $unifiedPath
