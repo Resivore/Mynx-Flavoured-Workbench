@@ -2,7 +2,7 @@
 
 ## Current gate
 
-**C9 NOT DEPLOYED — STATIC PASS — RUNTIME UNTESTED — NOT READY FOR PROMOTION**
+**C10 NOT DEPLOYED — STATIC PASS — RUNTIME UNTESTED — NOT READY FOR PROMOTION**
 
 Canary 2 is retained failed external-runtime provenance: `naturalist-xaero-entity-icons-compat-0.1.0-canary2.jar`, SHA-256
 `ff161f6bcbf5cd056a5e27d7cd56091ab5abfa8e69440c76f2f6ce9ba6e86c50`, source
@@ -25,15 +25,17 @@ Canary 7 is retained USER-REPORTED / EXTERNAL RUNTIME **FAIL** provenance: `natu
 
 Canary 8 is retained USER-REPORTED / EXTERNAL RUNTIME **FAIL** provenance: `naturalist-xaero-entity-icons-compat-0.1.0-canary8.jar`, embedded `0.1.0-canary8`, SHA-256 `dc26b12fe87d60849fb7a99a0687b70e895ce3d6064dbd0f2ddff69d9f1cbb70`, source `479c36d1b3cd4f5c0839a7ba3aa2d8b0c053dde0`. The latest user report is that the canary wholly failed overall and Brown Bear remained too large. No other C8 entity result is recorded or inferred. C8 had no manager deployment: canonical manager revision 117 retains unrelated BGE C60 in Slot A and IBF C4 in Slot B.
 
-Canary 9 is `naturalist-xaero-entity-icons-compat-0.1.0-canary9.jar`, embedded `0.1.0-canary9`, SHA-256 `c29601bf5c5a7b185cd54d87bf5681b23f742277fb6bd9b5ec82f426120af60d`, source `1f7ee394ce78cd4a61dee8ac012843fc4acb521b`. A clean offline Java 25 / Loom 1.17.19 `clean check stageCanaryArtifact` build passed focused cache-freshness policy, Xaero binary/source seam, native-capture, trace, archive, and client-only checks. This is static evidence only. C9 is not deployed and remains runtime-untested; do not displace either unrelated cohort.
+Canary 9 is retained user-reported/external runtime **FAIL** provenance: `naturalist-xaero-entity-icons-compat-0.1.0-canary9.jar`, embedded `0.1.0-canary9`, SHA-256 `c29601bf5c5a7b185cd54d87bf5681b23f742277fb6bd9b5ec82f426120af60d`, source `1f7ee394ce78cd4a61dee8ac012843fc4acb521b`. The world loaded and the player joined, then Xaero radar initialization crashed because Naturalist C9 and generic Xaero × EMF C9 both redirected the same `RadarIconEntityCache#get` call. The generic required `xaeroEmf$retryFailedAtActualPrerender` injection was displaced after Naturalist's redirect won; do not classify C9 as runtime-untested or passing.
 
-## C9 Brown Bear runtime checklist
+Canary 10 is `naturalist-xaero-entity-icons-compat-0.1.0-canary10.jar`, embedded `0.1.0-canary10`, SHA-256 `9dbc94795b485a8d76cdde876587f98068c25deffc95ef81152b0f373817caaa`, source `4eca6c1defeec412cdd8b97a0aad4abc9d2927c2`. Offline Java 25 / Loom 1.17.19 `clean check stageCanaryArtifact` passed focused cache freshness, Native Bear behavior, existing Naturalist contracts, Xaero bytecode seams, client-only archive checks, and a production Fabric Knot/Mixin harness using Xaero 26.4.2, EMF 3.2.6, ETF 7.1.1, Naturalist C8, and generic Xaero × EMF C9. It is static evidence only. Both manager slots are occupied by unrelated BGE C60 and IBF C4, so C10 is not deployed and remains runtime-untested.
 
-With exact Naturalist C8, Xaero Minimap, accepted Xaero × EMF C9, and Ribbits × Xaero C5, start or join a world and trigger Xaero resource initialization/reload. Require no redirect conflict, `InjectionError`, transformation failure, or Xaero render-frame crash; this is only the coexistence smoke gate.
+## C10 Brown Bear coexistence runtime checklist
+
+With exact Naturalist C8, Xaero Minimap 26.4.2, EMF 3.2.6, generic Xaero × EMF C9, and C10, start or join an existing world and trigger Xaero resource initialization/reload. Require no redirect conflict, `InjectionError`, transformation failure, or Xaero render-frame crash.
 
 Verify only Brown Bear for this canary: its final displayed Xaero radar icon must be materially smaller, still use Xaero's native Brown Bear model/texture capture rather than a custom fallback or head-only capture, and remain correct after resource reload. The initial cached entry may be retried only once when Xaero can prerender it; no-prerender cache reads remain unchanged. Require no crash, redirect conflict, injection failure, mixin transformation failure, or Xaero render-frame crash.
 
-Verify no competing redirect, `InjectionError`, mixin transformation failure, or Xaero render-frame crash occurs with accepted Xaero × EMF C9. Deliberately malformed/empty capture must leave Xaero's normal fallback available and never cache a blank success.
+Verify no competing redirect, `InjectionError` for `xaeroEmf$retryFailedAtActualPrerender`, mixin transformation failure, or Xaero render-frame crash occurs with generic Xaero × EMF C9. Deliberately malformed/empty capture must leave Xaero's normal fallback available and never cache a blank success.
 
 Do not retune or classify Clam, Starfish, either Scorpion, Ray, Hedgehog, Bass, Zebra, Giant Isopod, Great White Shark, or any other Naturalist target from this focused Brown Bear test. Record only actual Brown Bear observations with its state/variant, native texture/model result, initial display result, post-reload result, and any compatibility failure.
 

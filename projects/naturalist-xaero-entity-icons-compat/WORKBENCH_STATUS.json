@@ -13,12 +13,12 @@
     "lifecycle": "ACTIVE",
     "goals": [
       "Provide fail-closed Xaero Minimap radar-icon capture for the 37 Naturalist living entities whose rendered ModelPart hierarchy is not captured by Xaero's native path.",
-      "Preserve Xaero's native successful model and texture capture for Brown Bear, Bird, Butterfly, Catfish, Caterpillar, Crab, Deer, Firefly, Snake, and Snail; Brown Bear alone receives a narrow icon-cache freshness correction without modifying Naturalist, Xaero, EMF, or Ribbits."
+      "Preserve Xaero's native successful model and texture capture for Brown Bear, Bird, Butterfly, Catfish, Caterpillar, Crab, Deer, Firefly, Snake, and Snail; Brown Bear alone receives a narrow icon-cache freshness correction that composes with the generic Xaero × EMF retry hook without modifying Naturalist, Xaero, EMF, or Ribbits."
     ],
     "scope": [
       "Use a closed Naturalist entity-id plus exact current model-class contract registry. Each contract selects the live renderer-selected adult, baby, or state model subtree; unknown class, path, trace, or draw failure delegates to Xaero's normal fallback.",
       "After Xaero's native model prerender returns empty, render only the selected head/neck subtree for ordinary headed animals, or an explicit compact-body subtree for the documented non-headed anatomy families. The bridge copies only contract-path ancestor transforms and resolves only an explicit contract trace anchor, selected part, or contract-path ancestor trace; it never mutates or reparents the live Naturalist model.",
-      "Use explicit contract-local scale, rotation, source-audited trace anchor, and only where unavoidable a source-audited direct-cuboid subset for the C4 presentation corrections. Brown Bear remains on Xaero's native capture path with its existing scoped icon pose; C9 retries only one pre-existing cached Brown Bear raster at a prerenderable Xaero cache read. No screen-space offsets are used. Evict the 37 fallback targets plus Brown Bear after resource reload so corrected results are retried."
+      "Use explicit contract-local scale, rotation, source-audited trace anchor, and only where unavoidable a source-audited direct-cuboid subset for the C4 presentation corrections. Brown Bear remains on Xaero's native capture path with its existing scoped icon pose; C10 evicts only one pre-existing Brown Bear raster by exact key immediately before Xaero's cache read when it can prerender, leaving the generic Xaero × EMF retry redirect as the sole owner of that invocation. No screen-space offsets are used. Evict the 37 fallback targets plus Brown Bear after resource reload so corrected results are retried."
     ],
     "boundaries": {
       "owned_paths": ["projects/naturalist-xaero-entity-icons-compat"],
@@ -38,12 +38,12 @@
     ]
   },
   "state": {
-    "milestone": "Canary 8 is retained USER-REPORTED / EXTERNAL RUNTIME FAIL provenance: `naturalist-xaero-entity-icons-compat-0.1.0-canary8.jar`, embedded `0.1.0-canary8`, SHA-256 `dc26b12fe87d60849fb7a99a0687b70e895ce3d6064dbd0f2ddff69d9f1cbb70`, source `479c36d1b3cd4f5c0839a7ba3aa2d8b0c053dde0`. The user reported the canary wholly failed overall and Brown Bear still too large; no additional entity observations are inferred. C8 had no Workbench deployment or slot identity: canonical manager revision 117 has unrelated BGE C60 in Slot A and IBF C4 in Slot B. Xaero 26.4.2 has a fixed 64x64 native capture/atlas path with no post-raster bounds normalization; its entity/variant cache key does not include this companion's native-presentation revision. Canary 9 preserves the native Brown Bear model/texture capture and unchanged enclosing pose, but retries one pre-existing Brown Bear cached result only when Xaero can prerender it. It is STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED.",
+    "milestone": "Canary 9 is retained USER-REPORTED / EXTERNAL RUNTIME FAIL provenance: `naturalist-xaero-entity-icons-compat-0.1.0-canary9.jar`, embedded `0.1.0-canary9`, SHA-256 `c29601bf5c5a7b185cd54d87bf5681b23f742277fb6bd9b5ec82f426120af60d`, source `1f7ee394ce78cd4a61dee8ac012843fc4acb521b`. With Xaero Minimap 26.4.2, EMF 3.2.6, Naturalist C8, Naturalist C9, and generic Xaero × EMF C9, the world loaded and the player joined, then Xaero radar initialization crashed because both companions redirected the same `RadarIconEntityCache#get` call. C10 preserves C9's native Brown Bear pose/cache freshness intent but changes only Naturalist: it evicts an exact stale Bear key before the read, so generic C9 retains its required retry redirect. Production Knot/Mixin coexistence passed for the exact relevant dependency stack. Both manager slots remain occupied by unrelated BGE C60 and IBF C4, so C10 is STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED.",
     "releases": {
       "current": {
-        "version": "0.1.0-canary9",
-        "artifact": {"filename": "naturalist-xaero-entity-icons-compat-0.1.0-canary9.jar", "sha256": "c29601bf5c5a7b185cd54d87bf5681b23f742277fb6bd9b5ec82f426120af60d"},
-        "source_commit": "1f7ee394ce78cd4a61dee8ac012843fc4acb521b",
+        "version": "0.1.0-canary10",
+        "artifact": {"filename": "naturalist-xaero-entity-icons-compat-0.1.0-canary10.jar", "sha256": "9dbc94795b485a8d76cdde876587f98068c25deffc95ef81152b0f373817caaa"},
+        "source_commit": "4eca6c1defeec412cdd8b97a0aad4abc9d2927c2",
         "runtime_dependency_policy": {"contract": "CAPABILITY_OR_PROVIDER", "exceptions": []}
       },
       "accepted": null,
@@ -55,11 +55,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 9,
-    "activity_at": "2026-09-08T04:34:18Z",
-    "updated_at": "2026-09-08T04:34:18Z",
-    "last_codex_at": "2026-09-08T04:34:18Z",
-    "source_commit": "1f7ee394ce78cd4a61dee8ac012843fc4acb521b",
+    "revision": 10,
+    "activity_at": "2026-09-08T04:59:44Z",
+    "updated_at": "2026-09-08T04:59:44Z",
+    "last_codex_at": "2026-09-08T04:59:44Z",
+    "source_commit": "4eca6c1defeec412cdd8b97a0aad4abc9d2927c2",
     "google_sheet": {"participates": true, "exclusion_reason": null}
   }
 }
