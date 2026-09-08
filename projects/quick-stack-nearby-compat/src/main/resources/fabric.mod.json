@@ -1,29 +1,26 @@
 {
   "schemaVersion": 1,
-  "id": "quick-stack-nearby",
+  "id": "quick_stack_nearby_compat",
   "version": "${version}",
-  "name": "Quick Stack Nearby (Workbench Canary 11)",
-  "description": "Quick Stack Nearby 0.4.0 with Workbench routing compatibility and live Nearby Search.",
-  "authors": ["ThatMasonGuy", "Resivore"],
-  "contact": {
-    "sources": "https://github.com/ThatMasonGuy/minecraft-quick-stack-nearby"
-  },
-  "license": "LGPL-3.0-or-later",
-  "icon": "assets/quick-stack-nearby/icon.jpg",
+  "name": "Workbench Quick Stack Nearby Compatibility",
+  "description": "Unified Workbench compatibility layer for Quick Stack Nearby; Canary 12 is a C9-derived correction that preserves zero-count nested CSR reservation ownership.",
+  "authors": ["Resivore"],
+  "license": "MIT",
   "environment": "*",
-  "entrypoints": {
-    "main": ["tempeststudios.quickstacknearby.QuickStackNearby"],
-    "client": ["tempeststudios.quickstacknearby.QuickStackNearbyClient"]
-  },
-  "mixins": ["quick-stack-nearby.mixins.json"],
+  "mixins": [
+    "quick_stack_nearby_compat.mixins.json",
+    "quick_stack_nearby_compat.client.mixins.json"
+  ],
   "depends": {
     "fabricloader": ">=0.19.3",
     "minecraft": "=26.2",
     "java": ">=25",
-    "fabric-api": ">=0.157.0"
+    "fabric-api": ">=0.157.0",
+    "quick-stack-nearby": ">=0.4.0"
   },
   "suggests": {
     "container_slot_reservations": "*",
+    "inventorysearch": "*",
     "inventoryextended": "*",
     "clutternomore": "*",
     "cnm_terrain_slabs_compat": "*",
@@ -32,10 +29,6 @@
   "custom": {
     "workbench:classification": "GENERATED / STATICALLY VALIDATED / RUNTIME UNTESTED",
     "workbench:deployment": "NOT DEPLOYED",
-    "workbench:runtime-slot-owner": "Quick Stack Nearby - Workbench Canary 11",
-    "workbench:runtime_dependency_policy": {
-      "contract": "CAPABILITY_OR_PROVIDER",
-      "exceptions": []
-    }
+    "workbench:runtime-slot-owner": "Quick Stack Nearby Compatibility - Canary 12"
   }
 }
