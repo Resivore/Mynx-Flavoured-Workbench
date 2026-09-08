@@ -26,9 +26,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 final class AuditedAccessoryFamiliesTest {
     @Test
-    void ironAndEveryCopperFinishHaveOneExactThreeMemberBarChainFamily() {
+    void ironAndEveryCopperFinishHaveOneExactBarChainFamily() {
         List<ExpectedFamily> expected = List.of(
-                triple("iron", "minecraft:iron_bars", "minecraft:iron_chain", "auroraslanterns:chandelier/iron"),
+                quadruple("iron", "minecraft:iron_bars", "bbb:iron_fence", "minecraft:iron_chain", "auroraslanterns:chandelier/iron"),
                 triple("copper", "minecraft:copper_bars", "minecraft:copper_chain", "auroraslanterns:chandelier/copper"),
                 triple("exposed_copper", "minecraft:exposed_copper_bars",
                         "minecraft:exposed_copper_chain", "auroraslanterns:chandelier/exposed_copper"),
@@ -56,10 +56,9 @@ final class AuditedAccessoryFamiliesTest {
             assertEquals(BAR_CHAIN, actualFamily.category());
             assertEquals(expectedFamily.members(), actualFamily.members());
             assertEquals(expectedFamily.members().getFirst(), actualFamily.canonicalParent());
-            assertEquals(3, actualFamily.members().size());
             assertTrue(members.addAll(actualFamily.members()), actualFamily.key().toString());
         }
-        assertEquals(27, members.size());
+        assertEquals(28, members.size());
 
         for (int first = 1; first < actual.size(); first++) {
             for (int second = first + 1; second < actual.size(); second++) {
@@ -225,8 +224,8 @@ final class AuditedAccessoryFamiliesTest {
                 .toList();
 
         assertEquals(96, legacyFamilies.size());
-        assertEquals(944, legacyFamilies.stream().mapToInt(family -> family.members().size()).sum());
-        assertEquals("BE066C1BF5524C54EBA4558D801142EFBBEED6CCEE651CFA390D7B40D86B17BF",
+        assertEquals(968, legacyFamilies.stream().mapToInt(family -> family.members().size()).sum());
+        assertEquals("F8B115E088749AE24204FB71999CDCFF4BE4867D732C70D2777EE91726D17335",
                 digest(legacyFamilies));
     }
 
@@ -244,6 +243,12 @@ final class AuditedAccessoryFamiliesTest {
     private static ExpectedFamily triple(String keySuffix, String parent, String alternative,
                                          String chandelier) {
         return new ExpectedFamily(keySuffix, List.of(id(parent), id(alternative), id(chandelier)));
+    }
+
+    private static ExpectedFamily quadruple(
+            String keySuffix, String parent, String firstAlternative, String secondAlternative, String chandelier) {
+        return new ExpectedFamily(keySuffix,
+                List.of(id(parent), id(firstAlternative), id(secondAlternative), id(chandelier)));
     }
 
     private static AuditedShapeFamily family(String keySuffix) {

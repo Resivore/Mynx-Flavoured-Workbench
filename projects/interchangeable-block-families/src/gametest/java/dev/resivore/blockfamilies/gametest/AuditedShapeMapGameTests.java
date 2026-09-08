@@ -153,7 +153,7 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
     @GameTest(maxTicks = 40)
     public void barsChainsCopperFinishesAndAccessoryMaterialsResolveLiterally(GameTestHelper helper) {
         assertExactShapeSet(helper, "minecraft:iron_bars", List.of(
-                "minecraft:iron_bars", "minecraft:iron_chain", "auroraslanterns:chandelier/iron"));
+                "minecraft:iron_bars", "bbb:iron_fence", "minecraft:iron_chain", "auroraslanterns:chandelier/iron"));
         for (String prefix : List.of(
                 "copper", "exposed_copper", "weathered_copper", "oxidized_copper",
                 "waxed_copper", "waxed_exposed_copper", "waxed_weathered_copper",
@@ -226,6 +226,32 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
             helper.assertTrue(!AuditedShapeRuntime.isAuditedAlternateDoor(requiredItem(value)),
                     "New non-door member inherited door-only loot handling: " + value);
         }
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void bbbWoodAndStoneFamiliesResolveAsOneLiteralFamilyEach(GameTestHelper helper) {
+        for (String wood : List.of(
+                "oak", "spruce", "birch", "jungle", "acacia", "dark_oak",
+                "crimson", "warped", "mangrove", "bamboo", "cherry", "pale_oak")) {
+            assertExactShapeSet(helper, "bbb:" + wood + "_trim", List.of(
+                    "bbb:" + wood + "_trim", "bbb:" + wood + "_balustrade",
+                    "bbb:" + wood + "_support", "bbb:" + wood + "_pallet"));
+            assertExactShapeSet(helper, "minecraft:" + wood + "_fence", List.of(
+                    "minecraft:" + wood + "_fence", "minecraft:" + wood + "_fence_gate",
+                    "bbb:" + wood + "_frame", "bbb:" + wood + "_lattice"));
+        }
+        assertExactShapeSet(helper, "ribbits:mossy_oak_planks_fence", List.of(
+                "ribbits:mossy_oak_planks_fence", "ribbits:mossy_oak_planks_fence_gate"));
+        for (String stone : List.of(
+                "stone", "blackstone", "deepslate", "nether_brick", "sandstone", "red_sandstone", "quartz")) {
+            assertExactShapeSet(helper, "bbb:" + stone + "_column", List.of(
+                    "bbb:" + stone + "_column", "bbb:" + stone + "_urn",
+                    "bbb:" + stone + "_moulding", "bbb:" + stone + "_fence", "bbb:" + stone + "_frame"));
+        }
+        helper.assertTrue(!BuiltInRegistries.ITEM.containsKey(id("bbb:mossy_oak_frame"))
+                        && !BuiltInRegistries.ITEM.containsKey(id("bbb:mossy_oak_lattice")),
+                "BBB unexpectedly registered excluded Mossy Oak frame/lattice variants");
         helper.succeed();
     }
 

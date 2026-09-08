@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Set;
 
 import static dev.resivore.blockfamilies.cnm.catalog.AuditedShapeFamily.Category.BAR_CHAIN;
+import static dev.resivore.blockfamilies.cnm.catalog.AuditedShapeFamily.Category.BBB_DETAIL;
 import static dev.resivore.blockfamilies.cnm.catalog.AuditedShapeFamily.Category.BUILDING_ACCESSORY;
 import static dev.resivore.blockfamilies.cnm.catalog.AuditedShapeFamily.Category.FENCE_GATE;
 import static dev.resivore.blockfamilies.cnm.catalog.AuditedShapeFamily.Category.THREE_HIGH_DOOR;
@@ -23,8 +24,8 @@ import static dev.resivore.blockfamilies.cnm.catalog.AuditedShapeFamily.Category
  * provider version requires a new audit and a literal catalog change.</p>
  */
 public final class AuditedShapeFamilies {
-    public static final int EXPECTED_FAMILY_COUNT = 134;
-    public static final int EXPECTED_UNIQUE_MEMBER_COUNT = 1_209;
+    public static final int EXPECTED_FAMILY_COUNT = 153;
+    public static final int EXPECTED_UNIQUE_MEMBER_COUNT = 1_317;
     public static final int EXPECTED_LARGEST_FAMILY_SIZE = 22;
 
     private static final String KEY_NAMESPACE = "interchangeable_block_families";
@@ -963,29 +964,29 @@ public final class AuditedShapeFamilies {
 
     private static final List<AuditedShapeFamily> FENCE_GATES = List.of(
             family("cnm/fence_gate/oak", FENCE_GATE, minecraft("oak_fence"),
-                    minecraft("oak_fence_gate")),
+                    minecraft("oak_fence_gate"), bbb("oak_frame"), bbb("oak_lattice")),
             family("cnm/fence_gate/spruce", FENCE_GATE, minecraft("spruce_fence"),
-                    minecraft("spruce_fence_gate")),
+                    minecraft("spruce_fence_gate"), bbb("spruce_frame"), bbb("spruce_lattice")),
             family("cnm/fence_gate/birch", FENCE_GATE, minecraft("birch_fence"),
-                    minecraft("birch_fence_gate")),
+                    minecraft("birch_fence_gate"), bbb("birch_frame"), bbb("birch_lattice")),
             family("cnm/fence_gate/jungle", FENCE_GATE, minecraft("jungle_fence"),
-                    minecraft("jungle_fence_gate")),
+                    minecraft("jungle_fence_gate"), bbb("jungle_frame"), bbb("jungle_lattice")),
             family("cnm/fence_gate/acacia", FENCE_GATE, minecraft("acacia_fence"),
-                    minecraft("acacia_fence_gate")),
+                    minecraft("acacia_fence_gate"), bbb("acacia_frame"), bbb("acacia_lattice")),
             family("cnm/fence_gate/dark_oak", FENCE_GATE, minecraft("dark_oak_fence"),
-                    minecraft("dark_oak_fence_gate")),
+                    minecraft("dark_oak_fence_gate"), bbb("dark_oak_frame"), bbb("dark_oak_lattice")),
             family("cnm/fence_gate/mangrove", FENCE_GATE, minecraft("mangrove_fence"),
-                    minecraft("mangrove_fence_gate")),
+                    minecraft("mangrove_fence_gate"), bbb("mangrove_frame"), bbb("mangrove_lattice")),
             family("cnm/fence_gate/cherry", FENCE_GATE, minecraft("cherry_fence"),
-                    minecraft("cherry_fence_gate")),
+                    minecraft("cherry_fence_gate"), bbb("cherry_frame"), bbb("cherry_lattice")),
             family("cnm/fence_gate/pale_oak", FENCE_GATE, minecraft("pale_oak_fence"),
-                    minecraft("pale_oak_fence_gate")),
+                    minecraft("pale_oak_fence_gate"), bbb("pale_oak_frame"), bbb("pale_oak_lattice")),
             family("cnm/fence_gate/bamboo", FENCE_GATE, minecraft("bamboo_fence"),
-                    minecraft("bamboo_fence_gate")),
+                    minecraft("bamboo_fence_gate"), bbb("bamboo_frame"), bbb("bamboo_lattice")),
             family("cnm/fence_gate/crimson", FENCE_GATE, minecraft("crimson_fence"),
-                    minecraft("crimson_fence_gate")),
+                    minecraft("crimson_fence_gate"), bbb("crimson_frame"), bbb("crimson_lattice")),
             family("cnm/fence_gate/warped", FENCE_GATE, minecraft("warped_fence"),
-                    minecraft("warped_fence_gate")),
+                    minecraft("warped_fence_gate"), bbb("warped_frame"), bbb("warped_lattice")),
             family("cnm/fence_gate/ribbits_mossy_oak_planks", FENCE_GATE,
                     ribbits("mossy_oak_planks_fence"),
                     ribbits("mossy_oak_planks_fence_gate"))
@@ -993,7 +994,7 @@ public final class AuditedShapeFamilies {
 
     private static final List<AuditedShapeFamily> BAR_CHAINS = List.of(
             family("cnm/bar_chain/iron", BAR_CHAIN, minecraft("iron_bars"),
-                    minecraft("iron_chain"), aurorasLanterns("chandelier/iron")),
+                    bbb("iron_fence"), minecraft("iron_chain"), aurorasLanterns("chandelier/iron")),
             family("cnm/bar_chain/copper", BAR_CHAIN, minecraft("copper_bars"),
                     minecraft("copper_chain"), aurorasLanterns("chandelier/copper")),
             family("cnm/bar_chain/exposed_copper", BAR_CHAIN, minecraft("exposed_copper_bars"),
@@ -1016,6 +1017,28 @@ public final class AuditedShapeFamilies {
                     minecraft("waxed_oxidized_copper_bars"),
                     minecraft("waxed_oxidized_copper_chain"),
                     aurorasLanterns("chandelier/waxed_oxidized_copper"))
+    );
+
+    private static final List<AuditedShapeFamily> BBB_DETAILS = List.of(
+            family("cnm/bbb_detail/wood/oak", BBB_DETAIL, bbb("oak_trim"), bbb("oak_balustrade"), bbb("oak_support"), bbb("oak_pallet")),
+            family("cnm/bbb_detail/wood/spruce", BBB_DETAIL, bbb("spruce_trim"), bbb("spruce_balustrade"), bbb("spruce_support"), bbb("spruce_pallet")),
+            family("cnm/bbb_detail/wood/birch", BBB_DETAIL, bbb("birch_trim"), bbb("birch_balustrade"), bbb("birch_support"), bbb("birch_pallet")),
+            family("cnm/bbb_detail/wood/jungle", BBB_DETAIL, bbb("jungle_trim"), bbb("jungle_balustrade"), bbb("jungle_support"), bbb("jungle_pallet")),
+            family("cnm/bbb_detail/wood/acacia", BBB_DETAIL, bbb("acacia_trim"), bbb("acacia_balustrade"), bbb("acacia_support"), bbb("acacia_pallet")),
+            family("cnm/bbb_detail/wood/dark_oak", BBB_DETAIL, bbb("dark_oak_trim"), bbb("dark_oak_balustrade"), bbb("dark_oak_support"), bbb("dark_oak_pallet")),
+            family("cnm/bbb_detail/wood/crimson", BBB_DETAIL, bbb("crimson_trim"), bbb("crimson_balustrade"), bbb("crimson_support"), bbb("crimson_pallet")),
+            family("cnm/bbb_detail/wood/warped", BBB_DETAIL, bbb("warped_trim"), bbb("warped_balustrade"), bbb("warped_support"), bbb("warped_pallet")),
+            family("cnm/bbb_detail/wood/mangrove", BBB_DETAIL, bbb("mangrove_trim"), bbb("mangrove_balustrade"), bbb("mangrove_support"), bbb("mangrove_pallet")),
+            family("cnm/bbb_detail/wood/bamboo", BBB_DETAIL, bbb("bamboo_trim"), bbb("bamboo_balustrade"), bbb("bamboo_support"), bbb("bamboo_pallet")),
+            family("cnm/bbb_detail/wood/cherry", BBB_DETAIL, bbb("cherry_trim"), bbb("cherry_balustrade"), bbb("cherry_support"), bbb("cherry_pallet")),
+            family("cnm/bbb_detail/wood/pale_oak", BBB_DETAIL, bbb("pale_oak_trim"), bbb("pale_oak_balustrade"), bbb("pale_oak_support"), bbb("pale_oak_pallet")),
+            family("cnm/bbb_detail/stone/stone", BBB_DETAIL, bbb("stone_column"), bbb("stone_urn"), bbb("stone_moulding"), bbb("stone_fence"), bbb("stone_frame")),
+            family("cnm/bbb_detail/stone/blackstone", BBB_DETAIL, bbb("blackstone_column"), bbb("blackstone_urn"), bbb("blackstone_moulding"), bbb("blackstone_fence"), bbb("blackstone_frame")),
+            family("cnm/bbb_detail/stone/deepslate", BBB_DETAIL, bbb("deepslate_column"), bbb("deepslate_urn"), bbb("deepslate_moulding"), bbb("deepslate_fence"), bbb("deepslate_frame")),
+            family("cnm/bbb_detail/stone/nether_brick", BBB_DETAIL, bbb("nether_brick_column"), bbb("nether_brick_urn"), bbb("nether_brick_moulding"), bbb("nether_brick_fence"), bbb("nether_brick_frame")),
+            family("cnm/bbb_detail/stone/sandstone", BBB_DETAIL, bbb("sandstone_column"), bbb("sandstone_urn"), bbb("sandstone_moulding"), bbb("sandstone_fence"), bbb("sandstone_frame")),
+            family("cnm/bbb_detail/stone/red_sandstone", BBB_DETAIL, bbb("red_sandstone_column"), bbb("red_sandstone_urn"), bbb("red_sandstone_moulding"), bbb("red_sandstone_fence"), bbb("red_sandstone_frame")),
+            family("cnm/bbb_detail/stone/quartz", BBB_DETAIL, bbb("quartz_column"), bbb("quartz_urn"), bbb("quartz_moulding"), bbb("quartz_fence"), bbb("quartz_frame"))
     );
 
     private static final List<AuditedShapeFamily> BUILDING_ACCESSORIES = List.of(
@@ -1298,6 +1321,7 @@ public final class AuditedShapeFamilies {
             case WINDOW -> WINDOWS;
             case FENCE_GATE -> FENCE_GATES;
             case BAR_CHAIN -> BAR_CHAINS;
+            case BBB_DETAIL -> BBB_DETAILS;
             case BUILDING_ACCESSORY -> BUILDING_ACCESSORIES;
         };
     }
@@ -1350,6 +1374,10 @@ public final class AuditedShapeFamilies {
         return Identifier.fromNamespaceAndPath("auroraslanterns", path);
     }
 
+    private static Identifier bbb(String path) {
+        return Identifier.fromNamespaceAndPath("bbb", path);
+    }
+
     private static Identifier ribbits(String path) {
         return Identifier.fromNamespaceAndPath("ribbits", path);
     }
@@ -1366,6 +1394,7 @@ public final class AuditedShapeFamilies {
         families.addAll(WINDOWS);
         families.addAll(FENCE_GATES);
         families.addAll(BAR_CHAINS);
+        families.addAll(BBB_DETAILS);
         families.addAll(BUILDING_ACCESSORIES);
         return List.copyOf(families);
     }
