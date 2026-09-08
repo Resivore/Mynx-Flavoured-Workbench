@@ -5,6 +5,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.jar.JarFile;
 import org.junit.jupiter.api.Test;
+import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.tree.FieldNode;
+import org.objectweb.asm.tree.MethodInsnNode;
+import org.objectweb.asm.tree.MethodNode;
 
 class BinaryContractTest {
     @Test void exactValidationInputsExposeRequiredXaeroAndNaturalistSeams() throws Exception {
@@ -29,13 +34,13 @@ class BinaryContractTest {
         }
     }
 
-    @Test void c9UsesTheEnclosingNativeCapturePoseAndExactStaleBearCacheSeam() throws Exception {
+    @Test void c10UsesTheEnclosingNativeCapturePoseAndAComposingStaleBearCacheSeam() throws Exception {
         Path root = Path.of(System.getProperty("projectRoot"));
         String mixins = Files.readString(root.resolve("src/main/resources/naturalist_xaero_entity_icons_compat.mixins.json"));
         assertFalse(mixins.contains("RadarIconModelPartPrerendererMixin"));
         assertTrue(mixins.contains("ModelRenderTraceMixin"));
         assertTrue(mixins.contains("RadarIconModelPrerendererMixin"));
-        assertTrue(mixins.contains("RadarIconEntityCacheTypeAccessor"));
+        assertTrue(mixins.contains("RadarIconEntityCacheStorageAccessor"));
         String bridge = Files.readString(root.resolve("src/main/java/dev/resivore/naturalistxaeroicons/NaturalistIconAdapter.java"));
         assertTrue(bridge.contains("traceSources"));
         assertFalse(bridge.contains("@Redirect"));
@@ -50,6 +55,48 @@ class BinaryContractTest {
         assertTrue(manager.contains("RadarIconEntityCache;get"));
         assertTrue(manager.contains("retryCachedNativeBear"));
         assertTrue(manager.contains("canPrerender"));
-        assertTrue(manager.contains("return null;"));
+        assertTrue(manager.contains("storage.remove(key)"));
+        assertTrue(manager.contains("CAPTURE_FAILHARD"));
+        assertFalse(manager.contains("@Redirect"));
+        String genericManager = Files.readString(root.getParent().resolve(
+                "xaero-entity-icons/src/main/java/dev/resivore/xaeroemfcompat/mixin/RadarIconManagerMixin.java"));
+        assertEquals(1, genericManager.split("@Redirect", -1).length - 1);
+        assertTrue(genericManager.contains("xaeroEmf$retryFailedAtActualPrerender"));
+    }
+
+    @Test void xaeroC10CacheSeamLeavesTheGenericRetryCallAvailable() throws Exception {
+        try (JarFile xaero = new JarFile(Path.of(System.getProperty("xaeroJar")).toFile())) {
+            ClassNode cache = readClass(xaero, "xaero/hud/minimap/radar/icon/cache/RadarIconEntityCache.class");
+            assertTrue(cache.fields.stream().map(field -> field.name).anyMatch("storage"::equals));
+
+            ClassNode manager = readClass(xaero, "xaero/hud/minimap/radar/icon/RadarIconManager.class");
+            MethodNode get = manager.methods.stream()
+                    .filter(method -> method.name.equals("get") && method.desc.contains("RadarIconDefinition"))
+                    .findFirst().orElseThrow();
+            int cacheRead = callIndex(get, "xaero/hud/minimap/radar/icon/cache/RadarIconEntityCache", "get");
+            int creator = callIndex(get, "xaero/hud/minimap/radar/icon/creator/RadarIconCreator", "create");
+            assertTrue(cacheRead >= 0 && cacheRead < creator,
+                    "C10's before-read cache eviction must leave Xaero's generic retry call before creation");
+        }
+    }
+
+    private static ClassNode readClass(JarFile jar, String path) throws Exception {
+        var entry = jar.getJarEntry(path);
+        assertNotNull(entry, path);
+        try (var stream = jar.getInputStream(entry)) {
+            ClassNode node = new ClassNode();
+            new ClassReader(stream).accept(node, 0);
+            return node;
+        }
+    }
+
+    private static int callIndex(MethodNode method, String owner, String name) {
+        int index = 0;
+        for (var instruction : method.instructions) {
+            if (instruction instanceof MethodInsnNode call
+                    && call.owner.equals(owner) && call.name.equals(name)) return index;
+            index++;
+        }
+        return -1;
     }
 }

@@ -21,6 +21,16 @@ def xaeroJar = requiredFileProperty('xaero_jar', 'Xaero Minimap 26.4.2 JAR')
 def naturalistJar = requiredFileProperty('naturalist_jar', 'Naturalist 2.0.3+26.2-port-canary8 JAR')
 def fabricApiJar = requiredFileProperty('fabric_api_jar', 'Fabric API 0.157.0+26.2 JAR')
 def xaeroLibJar = layout.buildDirectory.file('compile-deps/xaerolib-fabric-26.2-1.7.1.jar')
+def genericXaeroEmfJar = requiredFileProperty('generic_xaero_emf_jar', 'Xaero × EMF Entity Icons Canary 9 JAR')
+def emfJar = requiredFileProperty('emf_jar', 'Entity Model Features 3.2.6 JAR')
+def etfJar = requiredFileProperty('etf_jar', 'Entity Texture Features 7.1.1 JAR')
+def productionMinecraftClientJar = new File(gradle.gradleUserHomeDir,
+        "caches/fabric-loom/${project.minecraft_version}/minecraft-client.jar")
+def productionMixinWorkingDir = file("$buildDir/production-mixin-test")
+def prepareProductionMixinWorkingDir = tasks.register('prepareProductionMixinWorkingDir') {
+    outputs.dir(productionMixinWorkingDir)
+    doLast { productionMixinWorkingDir.mkdirs() }
+}
 
 dependencies {
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
@@ -59,6 +69,37 @@ test {
     systemProperty 'naturalistJar', naturalistJar.absolutePath
 }
 
+tasks.register('productionMixinTest', JavaExec) {
+    group = 'verification'
+    description = 'Applies Naturalist C10 and generic Xaero × EMF C9 through production Fabric Knot/Mixin without launching Minecraft.'
+    dependsOn tasks.named('testClasses'), tasks.named('jar'), prepareProductionMixinWorkingDir
+    mainClass = 'dev.resivore.naturalistxaeroicons.ProductionMixinApplicationHarness'
+    inputs.files(tasks.named('jar'), xaeroJar, naturalistJar, genericXaeroEmfJar, emfJar, etfJar, fabricApiJar, productionMinecraftClientJar)
+    classpath = files({
+        def mainOutput = sourceSets.main.output.files
+        def runtime = configurations.testRuntimeClasspath.files.findAll { candidate ->
+            !mainOutput.contains(candidate) && !candidate.name.startsWith('minecraft-merged-deobf-') &&
+                    candidate != xaeroJar && candidate != naturalistJar && candidate != xaeroLibJar.get().asFile
+        }
+        sourceSets.test.output.files.findAll { it.exists() } + runtime + [
+                productionMinecraftClientJar, tasks.named('jar').get().archiveFile.get().asFile,
+                xaeroJar, naturalistJar, genericXaeroEmfJar, emfJar, etfJar, fabricApiJar
+        ]
+    })
+    systemProperty 'fabric.development', 'false'
+    systemProperty 'fabric.unitTest', 'true'
+    systemProperty 'fabric.gameJarPath', productionMinecraftClientJar.absolutePath
+    systemProperty 'mixin.debug.countInjections', 'true'
+    doFirst {
+        if (!productionMinecraftClientJar.isFile()) throw new GradleException("Missing ${productionMinecraftClientJar}")
+        def mods = [tasks.named('jar').get().archiveFile.get().asFile,
+                genericXaeroEmfJar, xaeroJar, naturalistJar, emfJar, etfJar, fabricApiJar]
+        systemProperty 'fabric.addMods', mods.collect { it.absolutePath }.join(File.pathSeparator)
+        args = [tasks.named('jar').get().archiveFile.get().asFile.absolutePath, genericXaeroEmfJar.absolutePath, xaeroJar.absolutePath]
+    }
+    workingDir productionMixinWorkingDir
+}
+
 tasks.register('verifyClientOnlyArtifact') {
     dependsOn tasks.named('jar')
     doLast {
@@ -72,6 +113,6 @@ tasks.register('verifyClientOnlyArtifact') {
         if (!forbidden.isEmpty()) throw new GradleException("Forbidden foreign content: ${forbidden.unique().sort()}")
     }
 }
-tasks.named('check') { dependsOn tasks.named('verifyClientOnlyArtifact') }
+tasks.named('check') { dependsOn tasks.named('productionMixinTest'), tasks.named('verifyClientOnlyArtifact') }
 tasks.register('stageCanaryArtifact', Copy) { dependsOn tasks.named('check'); from(tasks.named('jar')); into(layout.projectDirectory.dir('artifacts')) }
 java { withSourcesJar() }

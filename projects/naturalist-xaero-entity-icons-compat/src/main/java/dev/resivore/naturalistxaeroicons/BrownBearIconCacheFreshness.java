@@ -1,6 +1,7 @@
 package dev.resivore.naturalistxaeroicons;
 
 import net.minecraft.resources.Identifier;
+import xaero.common.icon.XaeroIcon;
 
 /**
  * A Canary replacement can leave Xaero's entity/variant cache populated with a raster made
@@ -12,8 +13,8 @@ public final class BrownBearIconCacheFreshness {
 
     private BrownBearIconCacheFreshness() {}
 
-    public static boolean retryCachedNativeBear(Identifier id, boolean canPrerender) {
-        if (!retryPending || !canPrerender || id == null) return false;
+    public static boolean retryCachedNativeBear(Identifier id, XaeroIcon cached, boolean canPrerender) {
+        if (!retryPending || !canPrerender || cached == null || id == null) return false;
         if (!id.getNamespace().equals("naturalist") || !id.getPath().equals("bear")) return false;
         retryPending = false;
         return true;

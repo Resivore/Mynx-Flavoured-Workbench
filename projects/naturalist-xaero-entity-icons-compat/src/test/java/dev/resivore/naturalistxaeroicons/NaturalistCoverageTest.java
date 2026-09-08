@@ -159,15 +159,17 @@ class NaturalistCoverageTest {
 
     @Test void brownBearCacheRetryTargetsOnlyAStaleNativeBearAtAPrerenderableCall() {
         BrownBearIconCacheFreshness.resetForTest();
-        assertFalse(BrownBearIconCacheFreshness.retryCachedNativeBear(Identifier.fromNamespaceAndPath("naturalist", "bear"), false));
-        assertFalse(BrownBearIconCacheFreshness.retryCachedNativeBear(Identifier.fromNamespaceAndPath("naturalist", "black_bear"), true));
-        assertFalse(BrownBearIconCacheFreshness.retryCachedNativeBear(Identifier.fromNamespaceAndPath("minecraft", "bear"), true));
-        assertTrue(BrownBearIconCacheFreshness.retryCachedNativeBear(Identifier.fromNamespaceAndPath("naturalist", "bear"), true));
-        assertFalse(BrownBearIconCacheFreshness.retryCachedNativeBear(Identifier.fromNamespaceAndPath("naturalist", "bear"), true));
+        xaero.common.icon.XaeroIcon cached = new xaero.common.icon.XaeroIcon(null, 0, 0);
+        assertFalse(BrownBearIconCacheFreshness.retryCachedNativeBear(Identifier.fromNamespaceAndPath("naturalist", "bear"), cached, false));
+        assertFalse(BrownBearIconCacheFreshness.retryCachedNativeBear(Identifier.fromNamespaceAndPath("naturalist", "bear"), null, true));
+        assertFalse(BrownBearIconCacheFreshness.retryCachedNativeBear(Identifier.fromNamespaceAndPath("naturalist", "black_bear"), cached, true));
+        assertFalse(BrownBearIconCacheFreshness.retryCachedNativeBear(Identifier.fromNamespaceAndPath("minecraft", "bear"), cached, true));
+        assertTrue(BrownBearIconCacheFreshness.retryCachedNativeBear(Identifier.fromNamespaceAndPath("naturalist", "bear"), cached, true));
+        assertFalse(BrownBearIconCacheFreshness.retryCachedNativeBear(Identifier.fromNamespaceAndPath("naturalist", "bear"), cached, true));
 
         BrownBearIconCacheFreshness.resetForTest();
         BrownBearIconCacheFreshness.resourceReloadEvicted();
-        assertFalse(BrownBearIconCacheFreshness.retryCachedNativeBear(Identifier.fromNamespaceAndPath("naturalist", "bear"), true));
+        assertFalse(BrownBearIconCacheFreshness.retryCachedNativeBear(Identifier.fromNamespaceAndPath("naturalist", "bear"), cached, true));
     }
 
     @Test void retainedC2ControlsRemainContractStable() {
