@@ -31,16 +31,16 @@ from typing import Any
 EXPECTED_PRISTINE_SHA256 = (
     "4cf86564aed393410fb1dbca3a9ce2425382307655e92bb6b43f3ddcee5bf731"
 )
-CANDIDATE_VERSION = "4.1.6+26.2-mynx-canary19"
-CANDIDATE_CANARY = 19
+CANDIDATE_VERSION = "4.1.6+26.2-mynx-canary20"
+CANDIDATE_CANARY = 20
 PRIVATE_MANIFEST_SCHEMA = "mynx-ribbits-private-resource-manifest/v1"
 PRIVATE_MANIFEST_CLASSIFICATION = (
     "PRIVATE MYNX ASSEMBLY STAGED / NONREDISTRIBUTABLE DONOR ASSETS"
 )
 PRIVATE_ARTIFACT_FILENAME = (
-    "ribbits-private-reconstruction-4.1.6+26.2-mynx-canary19.jar"
+    "ribbits-private-reconstruction-4.1.6+26.2-mynx-canary20.jar"
 )
-SOURCE_ONLY_ARTIFACT_FILENAME = "ribbits-source-only-4.1.6+26.2-mynx-canary19.jar"
+SOURCE_ONLY_ARTIFACT_FILENAME = "ribbits-source-only-4.1.6+26.2-mynx-canary20.jar"
 SOURCE_SAFE_PUBLIC_RESOURCE_PATHS = frozenset(
     {
         "assets/ribbits/items/glowcap.json",
@@ -3163,7 +3163,7 @@ def import_wandering_visual_resources(
             uv = face.get("uv")
             if not isinstance(uv, list) or len(uv) != 4:
                 raise ValidationError(f"C18 user-authored Chute element {index} has invalid face UV")
-            converted_faces[direction] = {"uv": [float(value) for value in uv], "texture": "#0"}
+            converted_faces[direction] = {"uv": [float(value) for value in uv], "texture": "#layer0"}
         converted: dict[str, Any] = {
             "from": [float(value) for value in element["from"]],
             "to": [float(value) for value in element["to"]],
@@ -3189,7 +3189,7 @@ def import_wandering_visual_resources(
         raise ValidationError("C18 user-authored Chute BBModel has no display transforms")
     open_model = {
         "ambientocclusion": bool(user_chute_model.get("ambientocclusion", True)),
-        "textures": {"0": "ribbits:item/chute_leaf_open", "particle": "ribbits:item/chute_leaf_open"},
+        "textures": {"layer0": "ribbits:item/chute_leaf_open", "particle": "ribbits:item/chute_leaf_open"},
         "elements": open_elements,
         "display": copy.deepcopy(display),
     }
@@ -4442,7 +4442,7 @@ def validate_donor_resource_boundary(root: Path, errors: list[str]) -> None:
             errors.append(f"Closed Drop Leaf model differs: {closed_model!r}")
         open_model = load_json(root / "assets/ribbits/models/item/chute_leaf_open.json")
         if not isinstance(open_model, dict) or open_model.get("textures") != {
-            "0": "ribbits:item/chute_leaf_open",
+            "layer0": "ribbits:item/chute_leaf_open",
             "particle": "ribbits:item/chute_leaf_open",
         }:
             errors.append("Open Drop Leaf rain model lacks exact item-atlas-safe texture bindings")
@@ -4474,7 +4474,7 @@ def validate_donor_resource_boundary(root: Path, errors: list[str]) -> None:
                 or canopy_element.get("faces", {}).get("down", {}).get("uv")
                 != [20.0, 19.0, 11.0, 30.0]
                 or any(
-                    face.get("texture") != "#0"
+                    face.get("texture") != "#layer0"
                     for face in canopy_element.get("faces", {}).values()
                 )
             ):
@@ -4810,6 +4810,61 @@ def validate_jar(
             except (KeyError, UnicodeDecodeError, json.JSONDecodeError) as exc:
                 errors.append(f"Invalid or missing packaged JSON {name}: {exc}")
                 return {}
+
+        # C20: validate the complete model dependency graph in the *final JAR*,
+        # not only that the staged inputs happened to exist.  The renderer's
+        # ITEM_MODEL component resolves this item-definition ID first, then its
+        # baked model, then every model texture reference.
+        open_item_entry = "assets/ribbits/items/chute_leaf_open.json"
+        open_model_entry = "assets/ribbits/models/item/chute_leaf_open.json"
+        open_texture_entry = "assets/ribbits/textures/item/chute_leaf_open.png"
+        closed_entries = {
+            "assets/ribbits/items/chute_leaf_closed.json",
+            "assets/ribbits/models/item/chute_leaf_closed.json",
+            "assets/ribbits/textures/item/chute_leaf.png",
+        }
+        if not closed_entries.issubset(name_set):
+            errors.append(
+                "Closed Drop Leaf resource chain is incomplete in final JAR: "
+                f"missing={sorted(closed_entries - name_set)}"
+            )
+        open_item = archive_json(open_item_entry)
+        expected_open_item = {
+            "model": {"type": "minecraft:model", "model": "ribbits:item/chute_leaf_open"}
+        }
+        if open_item != expected_open_item:
+            errors.append(f"Open Drop Leaf item definition does not resolve its model: {open_item!r}")
+
+        open_model = archive_json(open_model_entry)
+        if not isinstance(open_model, dict):
+            errors.append("Open Drop Leaf model is not an object")
+        else:
+            textures = open_model.get("textures")
+            expected_textures = {
+                "layer0": "ribbits:item/chute_leaf_open",
+                "particle": "ribbits:item/chute_leaf_open",
+            }
+            if textures != expected_textures:
+                errors.append(f"Open Drop Leaf model has invalid texture bindings: {textures!r}")
+            elements = open_model.get("elements")
+            if not isinstance(elements, list) or not elements:
+                errors.append("Open Drop Leaf model has no parseable elements")
+            else:
+                for index, element in enumerate(elements):
+                    faces = element.get("faces") if isinstance(element, dict) else None
+                    if not isinstance(faces, dict) or not faces:
+                        errors.append(f"Open Drop Leaf model element {index} has no faces")
+                        continue
+                    for direction, face in faces.items():
+                        if not isinstance(face, dict) or face.get("texture") != "#layer0":
+                            errors.append(
+                                "Open Drop Leaf model has a stale or unresolved texture reference: "
+                                f"element={index}, face={direction}, value={face!r}"
+                            )
+            if ".bbmodel" in json.dumps(open_model, sort_keys=True):
+                errors.append("Open Drop Leaf model retains a stale BBModel reference")
+        if open_texture_entry not in name_set:
+            errors.append("Open Drop Leaf model texture is absent from final JAR")
 
         configured_prefix = (
             PurePosixPath(CONFIGURED_FEATURE_MIGRATION_PATHS[0]).parent.as_posix() + "/"

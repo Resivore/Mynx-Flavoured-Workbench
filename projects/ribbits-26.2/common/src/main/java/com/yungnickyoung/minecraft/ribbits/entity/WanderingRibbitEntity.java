@@ -422,10 +422,14 @@ public final class WanderingRibbitEntity extends AbstractVillager implements Geo
         return List.copyOf(indexes);
     }
 
-    /** The holder end of a companion leash belongs near the merchant's upper torso. */
+    /**
+     * Minecraft's 26.2 leash renderer samples a holder through
+     * {@link Entity#getRopeHoldPosition(float)}, not {@code getLeashOffset()}.
+     * Keep the scheduler-created companion leash on the merchant's upper body.
+     */
     @Override
-    public Vec3 getLeashOffset() {
-        return new Vec3(0.0D, this.getBbHeight() * 0.82D, 0.0D);
+    public Vec3 getRopeHoldPosition(float partialTick) {
+        return this.getPosition(partialTick).add(0.0D, this.getBbHeight() * 0.82D, 0.0D);
     }
 
     @Nullable

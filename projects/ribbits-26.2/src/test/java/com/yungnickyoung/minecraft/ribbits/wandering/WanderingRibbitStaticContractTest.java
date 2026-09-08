@@ -162,7 +162,14 @@ class WanderingRibbitStaticContractTest {
         }
 
         assertTrue(mixin.contains("getLeashHolder() instanceof WanderingRibbitEntity"));
-        assertTrue(mixin.contains("new Vec3(0.0D, snail.getBbHeight() * 0.28D, 0.0D)"));
+        assertFalse(mixin.contains("@Inject"));
+        assertTrue(mixin.contains("public Vec3 getLeashOffset()"));
+        assertTrue(mixin.contains("new Vec3(0.0D, snail.getBbHeight() * 0.48D, 0.0D)"));
+
+        String wandering = read("common/src/main/java/com/yungnickyoung/minecraft/ribbits/entity/WanderingRibbitEntity.java");
+        assertFalse(wandering.contains("public Vec3 getLeashOffset()"));
+        assertTrue(wandering.contains("public Vec3 getRopeHoldPosition(float partialTick)"));
+        assertTrue(wandering.contains("this.getPosition(partialTick).add(0.0D, this.getBbHeight() * 0.82D, 0.0D)"));
     }
 
     @Test
