@@ -106,15 +106,17 @@ public final class AxisModelContract {
         AxisSelector x = axisSelector(canonicalParent, blockState, Direction.Axis.X);
         AxisSelector y = axisSelector(canonicalParent, blockState, Direction.Axis.Y);
         AxisSelector z = axisSelector(canonicalParent, blockState, Direction.Axis.Z);
+        // A pillar axis describes an unoriented line: either quarter-turn for X, either
+        // half-turn for Y, and either half-turn for Z is semantically valid. In particular,
+        // BBB's real beam resources use x=90,y=180 for Z (rather than the synthetic fixture's
+        // x=90,y=0). Do not demand one preferred representative of an otherwise valid axis
+        // layout, but retain the fail-loud contract for any transform outside these families.
         boolean vanillaX = x.transforms().stream().allMatch(transform -> transform.x() == 90
-                && (transform.y() == 90 || transform.y() == 270) && transform.z() == 0)
-                && x.transforms().contains(new VariantTransform(90, 90, 0));
+                && (transform.y() == 90 || transform.y() == 270) && transform.z() == 0);
         boolean vanillaY = y.transforms().stream().allMatch(transform -> transform.x() == 0
-                && (transform.y() == 0 || transform.y() == 180) && transform.z() == 0)
-                && y.transforms().contains(VariantTransform.IDENTITY);
+                && (transform.y() == 0 || transform.y() == 180) && transform.z() == 0);
         boolean vanillaZ = z.transforms().stream().allMatch(transform -> transform.x() == 90
-                && (transform.y() == 0 || transform.y() == 180) && transform.z() == 0)
-                && z.transforms().contains(new VariantTransform(90, 0, 0));
+                && (transform.y() == 0 || transform.y() == 180) && transform.z() == 0);
         boolean direct = allIdentity(x) && allIdentity(y) && allIdentity(z);
 
         if (vanillaX && vanillaY && vanillaZ

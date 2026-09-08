@@ -2,6 +2,7 @@ package dev.aero.cnmterraincompat;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import dev.aero.cnmterraincompat.AxisModelContract.AxisUvPolicy;
 import dev.aero.cnmterraincompat.client.ExternalMaterialGeneratedResources;
 import dev.aero.cnmterraincompat.client.LayerGeneratedResources;
 import dev.aero.cnmterraincompat.client.QuarterGeometryGeneratedResources;
@@ -41,7 +42,7 @@ import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-/** Production-lifecycle coverage for C64's exact 76 source / 684 relation contract. */
+/** Production-lifecycle coverage for C65's exact 76 source / 684 relation contract. */
 public final class ExternalMaterialFamilyGameTests implements CustomTestMethodInvoker {
     @GameTest(maxTicks = 40)
     public void exactAllowlistAndProviderCompletionInventory(GameTestHelper helper) {
@@ -67,7 +68,7 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
         helper.assertTrue(actual.stream().filter(id -> id.getNamespace().equals("mcwpaths"))
                         .allMatch(ExternalMaterialFamilyGameTests::isRequestedMacawSource),
                 "Macaw family is outside the 52 full-pattern plus five plain-Path scope");
-        System.out.println("EXTERNAL_C64_INVENTORY|sources=76|mcwpaths=57|mynx_trees=6|ribbits=1|bbb=12|relations=684");
+        System.out.println("EXTERNAL_C65_INVENTORY|sources=76|mcwpaths=57|mynx_trees=6|ribbits=1|bbb=12|relations=684");
         helper.succeed();
     }
 
@@ -113,7 +114,7 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
         }
         CanonicalShapeMapAudit.Report audit = CanonicalShapeMapAudit.inspectExternalFamilies();
         helper.assertTrue(relations == 684 && canonicalDerived.size() == 608 && bgeGenerated.size() == 466,
-                "C64 relation/canonical/generated identity count mismatch: " + relations + "/"
+                "C65 relation/canonical/generated identity count mismatch: " + relations + "/"
                         + canonicalDerived.size() + "/" + bgeGenerated.size());
         helper.assertTrue(audit.variantCount() == 76 && audit.missing().isEmpty()
                         && audit.duplicates().isEmpty(),
@@ -272,6 +273,30 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
         helper.succeed();
     }
 
+    /**
+     * Production BBB 2.0pre4 beam resources use z=x90,y180, not the former test fixture's
+     * z=x90,y0. Keep this structural fixture free of BBB assets while exercising the exact
+     * ResourceManager parsing/classification seam that writes BGE client resources.
+     */
+    @GameTest(maxTicks = 40)
+    public void productionBbbBeamAxisResourcesClassifyThroughClientResourceSeam(GameTestHelper helper) {
+        ResourceManager manager = clientFixtureManager();
+        for (String material : bbbBeamMaterials()) {
+            Identifier parent = Identifier.fromNamespaceAndPath("bbb", material + "_beam");
+            Identifier resource = Identifier.fromNamespaceAndPath("bbb",
+                    "blockstates/" + material + "_beam.json");
+            try (var input = manager.getResource(resource).orElseThrow().open();
+                    var reader = new InputStreamReader(input, StandardCharsets.UTF_8)) {
+                JsonObject blockState = JsonParser.parseReader(reader).getAsJsonObject();
+                helper.assertTrue(AxisModelContract.uvPolicy(parent, blockState) == AxisUvPolicy.STANDARD_ROTATED,
+                        "Production BBB beam axis layout was not accepted: " + parent);
+            } catch (Exception exception) {
+                throw new IllegalStateException("Cannot classify production BBB beam resource " + parent, exception);
+            }
+        }
+        helper.succeed();
+    }
+
     @GameTest(maxTicks = 40)
     public void lateServerDataResourcesCloseEveryStandardFamily(GameTestHelper helper) {
         int loot = 0;
@@ -290,7 +315,7 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
         helper.assertTrue(walls.getAsJsonArray("values").size() == 76,
                 "External wall classification does not contain every scoped full-parent family");
         helper.assertTrue(loot == 238, "Expected 238 BGE-owned external loot tables, found " + loot);
-        System.out.println("EXTERNAL_C64_SERVER_RESOURCES|standardLoot=238|wallTags=76|materialFamilies=76");
+        System.out.println("EXTERNAL_C65_SERVER_RESOURCES|standardLoot=238|wallTags=76|materialFamilies=76");
         helper.succeed();
     }
 
@@ -338,7 +363,7 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
         helper.assertTrue(generatedRelations == 466 && resolvedModelReferences >= 466,
                 "External client resource closure mismatch: relations=" + generatedRelations
                         + ", modelReferences=" + resolvedModelReferences);
-        System.out.println("EXTERNAL_C64_CLIENT_RESOURCES|generatedRelations=466|blockstates=466|items=466"
+        System.out.println("EXTERNAL_C65_CLIENT_RESOURCES|generatedRelations=466|blockstates=466|items=466"
                 + "|resolvedModelReferences=" + resolvedModelReferences);
         helper.succeed();
     }
@@ -595,14 +620,14 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
                             + "\",\"x\":90,\"y\":90},\"axis=y\":{\"model\":\"" + model
                             + "\"},\"axis=z\":{\"model\":\"" + model + "\",\"x\":90}}}");
         }
-        for (String material : List.of("oak", "spruce", "birch", "jungle", "acacia", "dark_oak",
-                "crimson", "warped", "mangrove", "bamboo", "cherry", "pale_oak")) {
+        for (String material : bbbBeamMaterials()) {
             String path = material + "_beam";
             String model = "bbb:block/beam/" + material;
             json.put(Identifier.fromNamespaceAndPath("bbb", "blockstates/" + path + ".json"),
                     "{\"variants\":{\"axis=x\":{\"model\":\"" + model
                             + "\",\"x\":90,\"y\":90},\"axis=y\":{\"model\":\"" + model
-                            + "\"},\"axis=z\":{\"model\":\"" + model + "\",\"x\":90}}}");
+                            + "\"},\"axis=z\":{\"model\":\"" + model
+                            + "\",\"x\":90,\"y\":180}}}");
         }
         json.put(Identifier.parse("mynx_trees:items/silver_birch_leaves.json"),
                 "{\"model\":{\"type\":\"minecraft:model\","
@@ -615,12 +640,12 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
         PackResources pack = (PackResources) Proxy.newProxyInstance(
                 ExternalMaterialFamilyGameTests.class.getClassLoader(),
                 new Class<?>[] {PackResources.class}, (proxy, method, args) -> switch (method.getName()) {
-                    case "packId" -> "bge-c64-client-fixtures";
+                    case "packId" -> "bge-c65-client-fixtures";
                     case "knownPackInfo" -> Optional.empty();
                     case "getNamespaces" -> Set.of("minecraft", "mynx_trees", "bbb");
                     case "listResources", "close" -> null;
                     case "getRootResource", "getResource", "getMetadataSection", "location" -> null;
-                    case "toString" -> "BGE C64 client fixture pack";
+                    case "toString" -> "BGE C65 client fixture pack";
                     case "hashCode" -> System.identityHashCode(proxy);
                     case "equals" -> proxy == args[0];
                     default -> throw new UnsupportedOperationException("Unexpected PackResources call " + method);
@@ -641,11 +666,16 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
                             .collect(java.util.stream.Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
                     case "listResourceStacks" -> Map.of();
                     case "listPacks" -> Stream.of(pack);
-                    case "toString" -> "BGE C64 client fixture manager";
+                    case "toString" -> "BGE C65 client fixture manager";
                     case "hashCode" -> System.identityHashCode(proxy);
                     case "equals" -> proxy == args[0];
                     default -> throw new UnsupportedOperationException("Unexpected ResourceManager call " + method);
                 });
+    }
+
+    private static List<String> bbbBeamMaterials() {
+        return List.of("oak", "spruce", "birch", "jungle", "acacia", "dark_oak",
+                "crimson", "warped", "mangrove", "bamboo", "cherry", "pale_oak");
     }
 
     @Override public void invokeTestMethod(GameTestHelper helper, Method method)
