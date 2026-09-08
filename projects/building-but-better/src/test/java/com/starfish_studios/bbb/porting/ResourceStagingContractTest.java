@@ -8,6 +8,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -191,7 +193,7 @@ final class ResourceStagingContractTest {
                     .filter(path -> path.getFileName().toString().endsWith(".png"))
                     .toList();
         }
-        assertEquals(242, pngs.size());
+        assertEquals(244, pngs.size());
         for (Path texture : pngs) {
             BufferedImage image = ImageIO.read(texture.toFile());
             assertTrue(image != null, () -> "Unable to decode " + texture);
@@ -218,7 +220,7 @@ final class ResourceStagingContractTest {
                         () -> model + " contains unsupported/inert 26.2 render_type metadata");
             }
         }
-        assertEquals(1_133, modelCount);
+        assertEquals(1_132, modelCount);
     }
 
     @Test
@@ -226,6 +228,7 @@ final class ResourceStagingContractTest {
         Path root = PROJECT.resolve("build/generated/bbb-resources/assets/bbb/textures/block");
         List<String> sources = List.of(
                 "balustrade/cherry_sides.png", "balustrade/cherry_top.png",
+                "beam/cherry.png", "beam/cherry_top.png",
                 "frame/cherry.png", "frame/cherry_sticks.png",
                 "lantern/cherry.png", "lattice/cherry.png",
                 "pallet/cherry_pallet.png", "sanded_planks/cherry.png",
@@ -264,7 +267,7 @@ final class ResourceStagingContractTest {
 
         String staging = Files.readString(PROJECT.resolve("build/generated/bbb-resources/bbb-resource-staging.json"));
         assertTrue(staging.contains("\"pale_oak_texture_source\": \"minecraft:block/pale_oak_planks\""));
-        assertEquals(12, occurrences(staging, "mapped_wood_pixels"));
+        assertEquals(14, occurrences(staging, "mapped_wood_pixels"));
 
         Path models = PROJECT.resolve("build/generated/bbb-resources/assets/bbb/models/block");
         assertTrue(Files.readString(models.resolve("lantern/pale_oak.json"))
@@ -275,8 +278,14 @@ final class ResourceStagingContractTest {
                 .contains("bbb:block/frame/pale_oak"));
         assertTrue(Files.readString(models.resolve("pallet/pale_oak_pallet_bottom.json"))
                 .contains("bbb:block/pallet/pale_oak_pallet"));
-        assertTrue(Files.readString(models.resolve("beam/pale_oak_beam.json"))
-                .contains("minecraft:block/stripped_pale_oak_log_top"));
+        for (String model : List.of("beam/pale_oak_beam.json", "beam/pale_oak_beam_stairs.json",
+                "beam/pale_oak_beam_stairs_inner.json", "beam/pale_oak_beam_stairs_outer.json",
+                "beam/pale_oak_beam_slab.json", "beam/pale_oak_beam_slab_top.json")) {
+            String json = Files.readString(models.resolve(model));
+            assertTrue(json.contains("bbb:block/beam/pale_oak"), () -> model + " lost BBB Pale Oak beam artwork");
+            assertFalse(json.contains("minecraft:block/stripped_pale_oak_log"),
+                    () -> model + " must not bind vanilla stripped Pale Oak logs");
+        }
         assertTrue(Files.readString(models.resolve("lattice/pale_oak_left.json"))
                 .contains("minecraft:block/pale_oak_log_top"));
         try (Stream<Path> files = Files.walk(PROJECT.resolve("build/generated/bbb-resources"))) {
@@ -286,6 +295,25 @@ final class ResourceStagingContractTest {
                         () -> file + " contains a malformed duplicated namespace");
             }
         }
+    }
+
+    @Test
+    void paleOakLatticePlacedBlockClosureUsesOnlyValidCanonicalStateAndResources() throws IOException {
+        Path assets = PROJECT.resolve("build/generated/bbb-resources/assets/bbb");
+        Path blockstate = assets.resolve("blockstates/pale_oak_lattice.json");
+        String json = Files.readString(blockstate);
+
+        // This must retain the Cherry lattice plant contract. LatticePlantType has
+        // CHERRY_LEAVES but no PALE_OAK_LEAVES entry, and the plant model is shared.
+        assertTrue(json.contains("\"plant_type\": \"cherry_leaves\""));
+        assertTrue(json.contains("bbb:block/lattice/plants/cherry_leaves"));
+        assertFalse(json.contains("pale_oak_leaves"));
+
+        Set<String> roots = modelReferences(json, "model");
+        assertTrue(roots.contains("bbb:block/lattice/pale_oak_left"));
+        assertTrue(roots.contains("bbb:block/lattice/pale_oak_middle"));
+        assertTrue(roots.contains("bbb:block/lattice/pale_oak_right"));
+        assertBbbModelAndTextureClosure(assets, roots);
     }
 
     @Test
@@ -306,7 +334,10 @@ final class ResourceStagingContractTest {
                     loot.resolve(id + ".json"))) {
                 assertTrue(Files.isRegularFile(file), () -> "Missing Pale Oak closure file " + file);
                 String json = Files.readString(file);
-                assertFalse(json.contains("cherry"), () -> file + " retains a Cherry reference");
+                String materialOnlyJson = file.equals(blockstates.resolve(id + ".json")) && form.equals("lattice")
+                        ? json.replace("cherry_leaves", "")
+                        : json;
+                assertFalse(materialOnlyJson.contains("cherry"), () -> file + " retains a Cherry material reference");
             }
         }
 
@@ -405,6 +436,40 @@ final class ResourceStagingContractTest {
             offset += token.length();
         }
         return result;
+    }
+
+    private static Set<String> modelReferences(String json, String key) {
+        Matcher matcher = Pattern.compile("\\\"" + Pattern.quote(key) + "\\\"\\s*:\\s*\\\"([^\\\"]+)\\\"")
+                .matcher(json);
+        Set<String> references = new LinkedHashSet<>();
+        while (matcher.find()) references.add(matcher.group(1));
+        return references;
+    }
+
+    private static void assertBbbModelAndTextureClosure(Path assets, Set<String> roots) throws IOException {
+        Deque<String> pendingModels = new ArrayDeque<>(roots);
+        Set<String> visitedModels = new LinkedHashSet<>();
+        Pattern bbbReference = Pattern.compile("bbb:block/[a-z0-9_./-]+");
+        while (!pendingModels.isEmpty()) {
+            String reference = pendingModels.removeFirst();
+            if (!reference.startsWith("bbb:")) continue;
+            Path model = assets.resolve("models/" + reference.substring("bbb:".length()) + ".json");
+            assertTrue(Files.isRegularFile(model), () -> "Missing placed-lattice model " + reference);
+            if (!visitedModels.add(reference)) continue;
+
+            String json = Files.readString(model);
+            for (String parent : modelReferences(json, "parent")) {
+                if (parent.startsWith("bbb:")) pendingModels.addLast(parent);
+            }
+            Matcher matcher = bbbReference.matcher(json);
+            while (matcher.find()) {
+                String nested = matcher.group();
+                Path nestedModel = assets.resolve("models/" + nested.substring("bbb:".length()) + ".json");
+                Path texture = assets.resolve("textures/" + nested.substring("bbb:".length()) + ".png");
+                assertTrue(Files.isRegularFile(nestedModel) || Files.isRegularFile(texture),
+                        () -> "Missing placed-lattice model or texture " + nested);
+            }
+        }
     }
 
     private static long recipeFileCount(Path recipes) throws IOException {

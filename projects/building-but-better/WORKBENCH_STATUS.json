@@ -99,15 +99,15 @@
     ]
   },
   "state": {
-    "milestone": "The corrected complete eleven-form Minecraft 26.2-native Pale Oak BBB family is built and statically verified with resolved model/texture closure and generated authored Pale Oak sheets; the candidate remains undeployed, runtime untested, unaccepted, and retained locally only because its combined JAR includes staged upstream ARR resources.",
+    "milestone": "Pale Oak C3 corrects the invalid placed-lattice multipart state/model mapping and restores authored BBB Beam palette generation; C3 is built and statically verified but remains undeployed, runtime untested, unaccepted, and retained locally only because its combined JAR includes staged upstream ARR resources. The externally reported C2 failure is recorded in the append-only log without binding it to an unverified external artifact hash.",
     "releases": {
       "current": {
-        "version": "2.0pre4+26.2-pale-oak-dev.2",
+        "version": "2.0pre4+26.2-pale-oak-dev.3",
         "artifact": {
-          "filename": "bbb-fabric-26.2-2.0pre4+26.2-pale-oak-dev.2.jar",
-          "sha256": "8c591183cd820e557189ae0a0f3a9eff8b2519cd6e29c4c167242dd2cf204dde"
+          "filename": "bbb-fabric-26.2-2.0pre4+26.2-pale-oak-dev.3.jar",
+          "sha256": "d0928b9316e3f6b323151fac73df3be1056aba05b56d4909b419cc15c09fc4d0"
         },
-        "source_commit": "3f1b80a95a9dbf9cc74f1703c2d2476089581802",
+        "source_commit": "c0dbc52b83497c7cbd5a44e7893c8f6b6d64f241",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
@@ -126,11 +126,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 3,
-    "activity_at": "2026-09-07T23:03:06Z",
-    "updated_at": "2026-09-07T23:03:06Z",
-    "last_codex_at": "2026-09-07T23:03:06Z",
-    "source_commit": "3f1b80a95a9dbf9cc74f1703c2d2476089581802",
+    "revision": 4,
+    "activity_at": "2026-09-08T00:28:18Z",
+    "updated_at": "2026-09-08T00:28:18Z",
+    "last_codex_at": "2026-09-08T00:28:18Z",
+    "source_commit": "c0dbc52b83497c7cbd5a44e7893c8f6b6d64f241",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null

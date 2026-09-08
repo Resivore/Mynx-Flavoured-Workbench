@@ -1,8 +1,8 @@
 # Testing
 
-The current `2.0pre4+26.2-pale-oak-dev.2` candidate is `ACTIVE` with `STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED`. It adds the port-native eleven-form Pale Oak family. Compilation, focused tests, generated-resource verification, and a local JAR establish only source/build properties; they do not establish Minecraft runtime behavior.
+The current `2.0pre4+26.2-pale-oak-dev.3` candidate is `ACTIVE` with `STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED`. It adds the port-native eleven-form Pale Oak family and corrects the C2 placed-lattice resource mapping and beam artwork binding. Compilation, focused tests, generated-resource verification, and a local JAR establish only source/build properties; they do not establish Minecraft runtime behavior.
 
-No Minecraft client or server was launched for this successor, no artifact was deployed, no Test Slot was assigned, no Test Instance Manager transition was performed, and neither Minecraft profile was changed. The user reported that the prior port “looks good”, but current canonical BBB records identify no exact retained/deployed candidate and `runtime-state.json` has no BBB deployment record; that report therefore cannot safely be bound to a release result.
+No Minecraft client or server was launched for C3, no artifact was deployed, no Test Slot was assigned, no Test Instance Manager transition was performed, and neither Minecraft profile was changed. The user externally/manual-tested C2 in a normal Minecraft instance and reported a Pale Oak Lattice placed-block failure plus incorrect stripped-log Beam-family visuals. The repository identifies the retained C2 candidate, but cannot prove the external instance used its exact filename/SHA-256; the C2 failure is therefore recorded without claiming an exact tested artifact identity. C3 remains runtime-untested.
 
 ## Static verification
 
@@ -13,7 +13,7 @@ $env:JAVA_HOME = 'C:\Users\resiv\.gradle\jdks\eclipse_adoptium-25-amd64-windows.
 .\gradlew.bat clean check build --console=plain "-PbbbOriginalJar=C:\Users\resiv\OneDrive\Documents\Minecraft 26.2 Workbench\originals\mods\bbb-fabric-2.0pre4.jar"
 ```
 
-Two clean runs of the command completed `BUILD SUCCESSFUL` with 9 executed tasks, Java compilation, and all 19 focused JUnit tests passing with no failures, errors, or skips. They established:
+One clean C3 run of the command completed `BUILD SUCCESSFUL` with 9 executed tasks, Java compilation, and all 20 focused JUnit tests passing with no failures, errors, or skips. It established:
 
 1. the exact pristine input guard for `bbb-fabric-2.0pre4.jar`, 1,701,505 bytes, SHA-256 `1E7AE114AAEC53475133E11C607FC65DCE493BBA5897EAF0044D53959B508FC0`, before opening the JAR for staging;
 2. the 171-block/172-item curated registry formula: the historical 160-block/161-item curated baseline plus the explicit eleven-form Pale Oak extension, while retaining the exact disjoint historical 87-block/82-item removal set;
@@ -22,12 +22,12 @@ Two clean runs of the command completed `BUILD SUCCESSFUL` with 9 executed tasks
 5. the exact retained Hammer-capable class set and state-property, directional-slab, waterlogging, frame, brazier, and tooltip contracts;
 6. 171 blockstates, 172 Minecraft 26.2 item definitions, 171 block loot tables, 224 recipes, and 140 migrated recipe-unlock advancements under the singular 26.2 paths;
 7. the audited model, texture, tag, language, recipe, advancement, and loot-table closure with no direct removed or unknown `bbb:` ID;
-8. 1,133 generated models and 246 texture/sidecar files, including 242 PNGs (exactly 112 with transparency), binary alpha only, resolved Minecraft/BBB model and texture references, and no unsupported retained `render_type` metadata;
-9. twelve Pale Oak-specific authored sheets generated from the actual Minecraft 26.2 Pale Oak plank palette, with original dimensions/UV contracts, transparent pixels, and material-independent lantern detail preserved;
-10. the narrow Dark Oak lattice generated-reference correction and retained beam-axis/slab-state contracts;
+8. 1,132 generated models and 248 texture/sidecar files, including 244 PNGs (exactly 112 with transparency), binary alpha only, resolved Minecraft/BBB model and texture references, and no unsupported retained `render_type` metadata;
+9. fourteen Pale Oak-specific authored sheets generated from the actual Minecraft 26.2 Pale Oak plank palette, with original dimensions/UV contracts, transparent pixels, material-independent lantern detail, and BBB Beam side/end artwork preserved;
+10. the Pale Oak placed-lattice multipart closure: every referenced BBB model/parent/texture exists, and the canonical shared `cherry_leaves` lattice state/model is retained instead of the invalid `pale_oak_leaves` mapping; the narrow Dark Oak lattice generated-reference correction; and retained beam-axis/slab-state contracts;
 11. ARR resources staged only under ignored `build/generated/bbb-resources/`, with no tracked ARR asset/data copy.
 
-The alpha and closure checks are static evidence; they do not replace the deferred in-game transparency/culling checks. Both clean builds produced the byte-identical local ARR-bearing candidate `bbb-fabric-26.2-2.0pre4+26.2-pale-oak-dev.2.jar`, 1,144,473 bytes, SHA-256 `8C591183CD820E557189AE0A0F3A9EFF8B2519CD6E29C4C167242DD2CF204DDE`. It remains ignored, local-only, and undistributed.
+The alpha and closure checks are static evidence; they do not replace the deferred in-game transparency/culling checks. The local ARR-bearing C3 candidate is `bbb-fabric-26.2-2.0pre4+26.2-pale-oak-dev.3.jar`, 1,144,899 bytes, SHA-256 `D0928B9316E3F6B323151FAC73DF3BE1056ABA05B56D4909B419CC15C09FC4D0`. It remains ignored, local-only, and undistributed.
 
 ## Deferred in-game matrix
 

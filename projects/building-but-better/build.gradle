@@ -332,10 +332,14 @@ tasks.register('stageBbbResources') {
             // surfaces point directly at Minecraft 26.2 textures; authored sheets
             // are regenerated below from the actual vanilla Pale Oak palette while
             // preserving transparency and non-wood pixels from the audited BBB sheet.
+            // The lattice's cherry_leaves entry is a shared plant state/model, not
+            // a wood-material binding: LatticePlantType has no pale_oak_leaves
+            // value. Preserve that exact canonical multipart entry instead of
+            // synthesizing an invalid state condition and an unreachable model.
             def paleOakText = { String text ->
                 text.replace('cherry', 'pale_oak')
-                        .replace('"bbb:block/beam/pale_oak_top"', '"minecraft:block/stripped_pale_oak_log_top"')
-                        .replace('"bbb:block/beam/pale_oak"', '"minecraft:block/stripped_pale_oak_log"')
+                        .replace('"plant_type": "pale_oak_leaves"', '"plant_type": "cherry_leaves"')
+                        .replace('"bbb:block/lattice/plants/pale_oak_leaves"', '"bbb:block/lattice/plants/cherry_leaves"')
                         .replace('"block/pale_oak_log_top"', '"minecraft:block/pale_oak_log_top"')
                         .replace('"block/pale_oak_log"', '"minecraft:block/pale_oak_log"')
             }
@@ -348,7 +352,10 @@ tasks.register('stageBbbResources') {
                 copyPaleOakJson("assets/bbb/models/item/cherry_${form}.json", "assets/bbb/models/item/pale_oak_${form}.json")
             }
             File modelRoot = new File(outputRoot, 'assets/bbb/models')
-            List<File> cherryModels = fileTree(modelRoot).matching { include '**/*cherry*.json' }.files.toList()
+            List<File> cherryModels = fileTree(modelRoot).matching { include '**/*cherry*.json' }.files.findAll { source ->
+                String relative = modelRoot.toPath().relativize(source.toPath()).toString().replace('\\', '/')
+                relative != 'block/lattice/plants/cherry_leaves.json'
+            }.toList()
             cherryModels.each { source ->
                 String relative = modelRoot.toPath().relativize(source.toPath()).toString().replace('\\', '/')
                 File target = new File(modelRoot, relative.replace('cherry', 'pale_oak'))
@@ -384,6 +391,7 @@ tasks.register('stageBbbResources') {
 
             List<String> paleOakTextureSources = [
                     'balustrade/cherry_sides.png', 'balustrade/cherry_top.png',
+                    'beam/cherry.png', 'beam/cherry_top.png',
                     'frame/cherry.png', 'frame/cherry_sticks.png',
                     'lantern/cherry.png', 'lattice/cherry.png',
                     'pallet/cherry_pallet.png', 'sanded_planks/cherry.png',
@@ -652,8 +660,8 @@ tasks.register('verifyCuratedResources') {
         int lootTables = fileTree(new File(root, 'data/bbb/loot_table/blocks')).matching { include '*.json' }.files.size()
         int tags = fileTree(new File(root, 'data')).matching { include '**/tags/**/*.json' }.files.size()
         if (blockstates != retainedBlocks.size()) throw new GradleException("Expected ${retainedBlocks.size()} blockstates, found ${blockstates}")
-        if (models != 1_133) throw new GradleException("Expected exact 1,133-model dependency closure, found ${models}")
-        if (textures != 246) throw new GradleException("Expected 246 staged texture/sidecar files, found ${textures}")
+        if (models != 1_132) throw new GradleException("Expected exact 1,132-model dependency closure, found ${models}")
+        if (textures != 248) throw new GradleException("Expected 248 staged texture/sidecar files, found ${textures}")
         if (itemDefinitions != retainedItems.size()) throw new GradleException("Expected ${retainedItems.size()} item definitions, found ${itemDefinitions}")
         if (recipes != 224) throw new GradleException("Expected 224 curated recipes, found ${recipes}")
         if (advancements != 140) throw new GradleException("Expected 140 curated recipe advancements, found ${advancements}")
@@ -680,8 +688,8 @@ tasks.register('verifyCuratedResources') {
             }
             if (hasTransparency) pngsWithTransparency++
         }
-        if (pngTextures != 242 || pngsWithTransparency != 112) {
-            throw new GradleException("Expected 242 binary-alpha PNGs with 112 transparent sprites; found ${pngTextures}/${pngsWithTransparency}")
+        if (pngTextures != 244 || pngsWithTransparency != 112) {
+            throw new GradleException("Expected 244 binary-alpha PNGs with 112 transparent sprites; found ${pngTextures}/${pngsWithTransparency}")
         }
         File vanillaClientJar = minecraftClientJar.get()
         ZipFile vanillaZip = new ZipFile(vanillaClientJar)
