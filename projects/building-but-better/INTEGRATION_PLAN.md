@@ -41,7 +41,7 @@ This BBB port makes **no** IBF or CNM source changes. It also does not claim tha
 
 ## Pale Oak extension
 
-Pale Oak is a Minecraft 26.2-native extension, not historical `2.0pre4` content. It is a complete eleven-form wood family—balustrade, lattice, wall, beam, beam stairs, beam slab, support, pallet, frame, lantern, and trim—represented by the same explicit metadata as every existing family. Layers and ladders remain excluded. Its ignored generated resource closure uses the retained Cherry geometry/state layouts, direct Minecraft 26.2 Pale Oak log textures where the model contract permits, and twelve Pale Oak-specific authored sheets generated from the actual vanilla Pale Oak plank palette while preserving BBB transparency and non-wood details.
+Pale Oak is a Minecraft 26.2-native extension, not historical `2.0pre4` content. It is a complete eleven-form wood family—balustrade, lattice, wall, beam, beam stairs, beam slab, support, pallet, frame, lantern, and trim—represented by the same explicit metadata as every existing family. Layers and ladders remain excluded. Its ignored generated resource closure uses the retained Cherry geometry/state layouts, direct Minecraft 26.2 Pale Oak log textures where the model contract permits, and fourteen Pale Oak-specific authored sheets generated from the actual vanilla Pale Oak plank palette while preserving BBB transparency and non-wood details, including BBB's authored Beam side/end artwork.
 
 ### Wooden wall policy
 
