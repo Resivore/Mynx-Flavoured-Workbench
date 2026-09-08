@@ -14,7 +14,8 @@ import xaero.hud.minimap.radar.icon.creator.render.trace.ModelRenderTrace;
 class NaturalistTraceBridgeTest {
     @Test void naturalistAdapterResolvesItsRecordedOriginalTrace() {
         ModelPart original = part(Map.of());
-        ModelPart adapter = NaturalistIconAdapter.build(part(Map.of("selected", original)), original);
+        ModelPart adapter = NaturalistIconAdapter.build(part(Map.of("selected", original)), original, original, original,
+                presentation(), false, List.of("selected"), true);
         ModelRenderTrace trace = trace();
         trace.addVisibleModelPart(original, 0xFF123456);
 
@@ -38,7 +39,8 @@ class NaturalistTraceBridgeTest {
 
     @Test void missingOrUntracedNaturalistMappingsFailClosed() {
         ModelPart original = part(Map.of());
-        ModelPart adapter = NaturalistIconAdapter.build(part(Map.of("selected", original)), original);
+        ModelPart adapter = NaturalistIconAdapter.build(part(Map.of("selected", original)), original, original, original,
+                presentation(), false, List.of("selected"), true);
         ModelRenderTrace trace = trace();
 
         assertNull(NaturalistIconAdapter.resolveTrace(trace, adapter));
@@ -49,7 +51,7 @@ class NaturalistTraceBridgeTest {
         ModelPart tracedBody = part(Map.of());
         ModelPart originalRoot = part(Map.of("body", tracedBody));
         ModelPart adapter = NaturalistIconAdapter.build(originalRoot, originalRoot, originalRoot, tracedBody,
-                new NaturalistModelContracts.Presentation(1.0F, 0.0F, 0.0F, 0.0F), false);
+                presentation(), false, List.of(), true);
         ModelRenderTrace trace = trace();
         trace.addVisibleModelPart(tracedBody, 0xFFAABBCC);
 
@@ -63,7 +65,7 @@ class NaturalistTraceBridgeTest {
         root.xRot = .25F; root.yRot = .5F; root.zRot = .75F;
         ModelPart selected = root.getChild("selected");
         ModelPart adapter = NaturalistIconAdapter.build(root, selected, selected, selected,
-                new NaturalistModelContracts.Presentation(1.0F, 0.0F, 0.0F, 0.0F), true);
+                presentation(), true, List.of("selected"), true);
         ModelPart copiedRoot = adapter.getChild("naturalist_contract");
 
         assertEquals(3.0F, copiedRoot.x);
@@ -72,6 +74,25 @@ class NaturalistTraceBridgeTest {
         assertEquals(0.0F, copiedRoot.xRot);
         assertEquals(0.0F, copiedRoot.yRot);
         assertEquals(0.0F, copiedRoot.zRot);
+    }
+
+    @Test void detachedContractBuildCopiesOnlyItsExplicitSourceSubtree() {
+        ModelPart selected = part(Map.of("feature", part(Map.of())));
+        selected.x = 4.0F;
+        ModelPart adapter = NaturalistIconAdapter.build(part(Map.of("selected", selected)), selected, selected, selected,
+                presentation(), false, List.of("selected"), false);
+
+        ModelPart detached = adapter.getChild("naturalist_contract");
+        assertNotSame(selected, detached);
+        assertEquals(4.0F, detached.x);
+        assertNotSame(selected.getChild("feature"), detached.getChild("feature"));
+    }
+
+    @Test void bridgeUsesTheClosedContractPathRatherThanTreeDiscovery() throws Exception {
+        Path module = Path.of(System.getProperty("projectRoot"));
+        String source = Files.readString(module.resolve("src/main/java/dev/resivore/naturalistxaeroicons/NaturalistIconAdapter.java"));
+        assertTrue(source.contains("ancestors(modelRoot, source, sourcePath)"));
+        assertFalse(source.contains("private static boolean find("));
     }
 
     @Test void naturalistNoLongerCompetesForC9CallerRedirect() throws Exception {
@@ -96,6 +117,10 @@ class NaturalistTraceBridgeTest {
 
     private static ModelPart part(Map<String, ModelPart> children) {
         return new ModelPart(List.of(), children);
+    }
+
+    private static NaturalistModelContracts.Presentation presentation() {
+        return new NaturalistModelContracts.Presentation(1.0F, 0.0F, 0.0F, 0.0F);
     }
 
     private static ModelRenderTrace trace() {

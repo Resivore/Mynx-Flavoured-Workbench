@@ -1,10 +1,14 @@
-# C5 focused runtime checklist
+# C6 focused runtime checklist
 
-Exact candidate: `interchangeable-block-families-0.1.0-canary5.jar`, embedded version `0.1.0-canary5`, SHA-256 `f9086f493df13142ffceb306caff1231d424ad6cca49f357195f0eccd0f44d0a`.
+Exact candidate: `interchangeable-block-families-0.1.0-canary6.jar`, embedded version `0.1.0-canary6`, SHA-256 `a086f3c3c9cf7524803fe8b9b4693976cb1da5a211e552bb629bed4092b906f6`.
 
-1. In the dedicated Matcha Flavoured 26.2 Workbench only, confirm Iron Bars has its normal crafting recipe and craft it from iron ingots.
-2. Confirm Iron Chain has no independent recipe, then use CNM's selector to switch Iron Bars among Iron Bars, Iron Chain, and Aurora's iron chandelier.
-3. Check one representative copper bars/chain/chandelier family, Mossy Oak fence/fence gate, and an audited Macaw paving family: canonical acquisition remains available and alternates retain CNM cleanup behavior.
-4. Restart/reload the world once and repeat the Iron Bars availability and selector check. Stop and report any missing canonical recipe, restored alternate recipe, selector mismatch, crash, or data-reload error.
+Run only in the dedicated Matcha Flavoured 26.2 Workbench after a serialized Test Instance Manager deployment that includes a compatible BBB provider.
 
-No manual Minecraft result is recorded yet. C5 passed controlled validation only: Java 25 / Gradle 9.5.1 / Loom 1.17.19 JUnit and the exact Dramatic Doors C8 dependency GameTest suite (18/18). C3 remains the accepted rollback.
+1. For Oak and Pale Oak, use CNM's selector in both directions through Trim, Balustrade, Support, and Pallet; repeat one nether wood representative.
+2. Confirm each existing Fence/Fence Gate pair still interchanges, and that its matching BBB Frame and Lattice are now selector members. Check Pale Oak specifically.
+3. Confirm the Ribbits Mossy Oak fence/gate pair still interchanges and has no BBB Frame or Lattice selector member.
+4. For Stone, Blackstone, Deepslate, Nether Brick, Sandstone, Red Sandstone, and Quartz, confirm Column, Urn, Moulding, Fence, and Frame interconvert only within their material family.
+5. Confirm Iron Bars, BBB Iron Fence, Iron Chain, and Aurora Iron Chandelier interconvert; confirm the Iron Bars canonical recipe remains available.
+6. Restart/reload once and repeat one wood, one stone, and the iron family. Stop and report any missing item, canonical recipe removal, duplicate selector/conversion entry, cross-material match, crash, or reload error.
+
+No manual Minecraft result is recorded. C6 passed controlled Java 25 / Gradle 9.5.1 / Loom 1.17.19 focused catalog validation and production archive packaging; this is not runtime evidence. C6 is not deployed: both experimental slots are occupied, Slot B still contains older IBF C4, and the managed profile lacks the BBB provider required to preflight C6. C3 remains the accepted rollback.

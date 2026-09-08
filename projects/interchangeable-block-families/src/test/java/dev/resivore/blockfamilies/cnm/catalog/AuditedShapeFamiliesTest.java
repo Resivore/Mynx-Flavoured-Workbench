@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.Set;
 
 import static dev.resivore.blockfamilies.cnm.catalog.AuditedShapeFamily.Category.BAR_CHAIN;
+import static dev.resivore.blockfamilies.cnm.catalog.AuditedShapeFamily.Category.BBB_DETAIL;
 import static dev.resivore.blockfamilies.cnm.catalog.AuditedShapeFamily.Category.BUILDING_ACCESSORY;
 import static dev.resivore.blockfamilies.cnm.catalog.AuditedShapeFamily.Category.FENCE_GATE;
 import static dev.resivore.blockfamilies.cnm.catalog.AuditedShapeFamily.Category.THREE_HIGH_DOOR;
@@ -28,8 +29,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class AuditedShapeFamiliesTest {
     @Test
     void exposesExactAuditedTotals() {
-        assertEquals(134, AuditedShapeFamilies.families().size());
-        assertEquals(1_209, AuditedShapeFamilies.uniqueMemberCount());
+        assertEquals(153, AuditedShapeFamilies.families().size());
+        assertEquals(1_317, AuditedShapeFamilies.uniqueMemberCount());
         assertEquals(22, AuditedShapeFamilies.largestFamilySize());
         assertEquals(AuditedShapeFamilies.EXPECTED_FAMILY_COUNT, AuditedShapeFamilies.families().size());
         assertEquals(AuditedShapeFamilies.EXPECTED_UNIQUE_MEMBER_COUNT,
@@ -47,14 +48,16 @@ class AuditedShapeFamiliesTest {
                 WINDOW, 46,
                 FENCE_GATE, 13,
                 BAR_CHAIN, 9,
+                BBB_DETAIL, 19,
                 BUILDING_ACCESSORY, 28);
         Map<AuditedShapeFamily.Category, Integer> expectedMembers = Map.of(
                 TWO_HIGH_DOOR, 273,
                 THREE_HIGH_DOOR, 229,
                 TRAPDOOR, 232,
                 WINDOW, 186,
-                FENCE_GATE, 26,
-                BAR_CHAIN, 27,
+                FENCE_GATE, 50,
+                BAR_CHAIN, 28,
+                BBB_DETAIL, 83,
                 BUILDING_ACCESSORY, 236);
 
         for (AuditedShapeFamily.Category category : AuditedShapeFamily.Category.values()) {
@@ -80,8 +83,8 @@ class AuditedShapeFamiliesTest {
             }
         }
 
-        assertEquals(134, keys.size());
-        assertEquals(1_209, members.size());
+        assertEquals(153, keys.size());
+        assertEquals(1_317, members.size());
     }
 
     @Test
@@ -97,6 +100,8 @@ class AuditedShapeFamiliesTest {
                 families.get(96).key());
         assertEquals(id("interchangeable_block_families", "cnm/bar_chain/iron"),
                 families.get(97).key());
+        assertEquals(id("interchangeable_block_families", "cnm/bbb_detail/wood/oak"),
+                families.get(106).key());
         assertEquals(id("interchangeable_block_families", "cnm/building_accessory/dark_prismarine"),
                 families.getLast().key());
 
@@ -121,8 +126,9 @@ class AuditedShapeFamiliesTest {
         assertEquals(Map.of(9, 1L, 20, 11L), sizeDistribution(THREE_HIGH_DOOR));
         assertEquals(Map.of(5, 1L, 18, 1L, 19, 11L), sizeDistribution(TRAPDOOR));
         assertEquals(Map.of(4, 44L, 5, 2L), sizeDistribution(WINDOW));
-        assertEquals(Map.of(2, 13L), sizeDistribution(FENCE_GATE));
-        assertEquals(Map.of(3, 9L), sizeDistribution(BAR_CHAIN));
+        assertEquals(Map.of(2, 1L, 4, 12L), sizeDistribution(FENCE_GATE));
+        assertEquals(Map.of(3, 8L, 4, 1L), sizeDistribution(BAR_CHAIN));
+        assertEquals(Map.of(4, 12L, 5, 7L), sizeDistribution(BBB_DETAIL));
         assertEquals(Map.of(2, 2L, 3, 2L, 7, 11L, 11, 8L, 12, 4L, 13, 1L),
                 sizeDistribution(BUILDING_ACCESSORY));
     }
@@ -229,7 +235,7 @@ class AuditedShapeFamiliesTest {
         String digest = HexFormat.of().withUpperCase().formatHex(
                 MessageDigest.getInstance("SHA-256")
                         .digest(serialization.toString().getBytes(StandardCharsets.UTF_8)));
-        assertEquals("46FA910A483BDDA19EAEE2F4D95F6363AC9F838B4510E5A9525E3A12B818EC53", digest);
+        assertEquals("D656991C5E93F2EE4E24055A0CBB433B1C7F0CFB8FF6E78CEA98185E8C519C26", digest);
     }
 
     private static Map<Integer, Long> sizeDistribution(AuditedShapeFamily.Category category) {

@@ -50,6 +50,11 @@ configurations {
         canBeResolved = true
         transitive = false
     }
+    bbbReference {
+        canBeConsumed = false
+        canBeResolved = true
+        transitive = false
+    }
     yaclReference {
         canBeConsumed = false
         canBeResolved = true
@@ -121,6 +126,9 @@ def aurorasLanternsReferenceJar = referenceJar(
 def ribbitsReferenceJar = referenceJar(
         'ribbits_reference_jar',
         '../ribbits-26.2/artifacts/ribbits-private-reconstruction-4.1.6+26.2-mynx-canary17.jar')
+def bbbReferenceJar = referenceJar(
+        'bbb_reference_jar',
+        '../building-but-better/build/libs/bbb-fabric-26.2-2.0pre4+26.2-pale-oak-dev.3.jar')
 def ribbitsRuntimeReferenceJars = providers.gradleProperty('ribbits_runtime_reference_jars')
         .map { value -> value.split(';').collect { path -> file(path) } }
         .orElse([])
@@ -155,6 +163,10 @@ dependencies {
 
     runtimeOnly files(ribbitsReferenceJar)
     ribbitsReference files(ribbitsReferenceJar)
+
+    // BBB is a provider-only runtime input. It is not bundled in IBF.
+    runtimeOnly files(bbbReferenceJar)
+    bbbReference files(bbbReferenceJar)
     runtimeOnly files(ribbitsRuntimeReferenceJars)
 
     // Ribbits' provider runtime requires YACL. This is test/runtime support only;
@@ -246,6 +258,7 @@ test {
             configurations.macawsPathsReference,
             configurations.aurorasLanternsReference,
             configurations.ribbitsReference,
+            configurations.bbbReference,
             configurations.yaclReference,
             configurations.macawsTrapdoorsReference,
             configurations.macawsWindowsReference,
@@ -262,6 +275,7 @@ test {
         systemProperty 'macawsPathsReferenceJar', configurations.macawsPathsReference.singleFile.absolutePath
         systemProperty 'aurorasLanternsReferenceJar', configurations.aurorasLanternsReference.singleFile.absolutePath
         systemProperty 'ribbitsReferenceJar', configurations.ribbitsReference.singleFile.absolutePath
+        systemProperty 'bbbReferenceJar', configurations.bbbReference.singleFile.absolutePath
         systemProperty 'yaclReferenceJar', configurations.yaclReference.singleFile.absolutePath
         systemProperty 'macawsTrapdoorsReferenceJar', configurations.macawsTrapdoorsReference.singleFile.absolutePath
         systemProperty 'macawsWindowsReferenceJar', configurations.macawsWindowsReference.singleFile.absolutePath

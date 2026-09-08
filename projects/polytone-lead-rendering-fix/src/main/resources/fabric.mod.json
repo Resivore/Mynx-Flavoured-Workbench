@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "id": "polytone_lead_rendering_fix",
+  "version": "${version}",
+  "name": "Polytone Lead Rendering Fix",
+  "description": "Forces Polytone's existing vanilla leash fallback to avoid its custom textured leash renderer.",
+  "authors": ["Resivore"],
+  "license": "MIT",
+  "environment": "client",
+  "mixins": ["polytone_lead_rendering_fix.mixins.json"],
+  "depends": {
+    "fabricloader": ">=0.19.3",
+    "minecraft": "=26.2",
+    "java": ">=25",
+    "polytone": "*"
+  },
+  "custom": {
+    "workbench:classification": "GENERATED / STATICALLY VALIDATED / RUNTIME UNTESTED",
+    "workbench:deployment": "NOT DEPLOYED"
+  }
+}

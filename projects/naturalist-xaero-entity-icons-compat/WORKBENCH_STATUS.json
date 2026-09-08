@@ -38,12 +38,12 @@
     ]
   },
   "state": {
-    "milestone": "Canary 3 is retained user-reported external-runtime FAIL provenance: icons improved for Alligator, Anglerfish, and Clam, but the supplied C3 matrix found malformed/cropped Alligator, Anglerfish, Great White Shark, Boar, Zebra, and both Scorpions; oversized Brown Bear/Tiger; undesired Clam side profile; label-only Ray, Bass, Giant Isopod, Hedgehog, Vulture, Tortoise, Starfish, Lizard, and Mole; and a blank Piranha. Canary 4 corrects only the closed C8 contracts, trace anchors, and presentation paths, is STATIC_PASS, and is not deployed because unrelated BGE C60 and IBF C4 cohorts occupy both canonical slots at manager revision 117.",
+    "milestone": "Canary 4 is retained user-reported external-runtime FAIL provenance: Boar is the C5 regression control; Great White Shark's C4 profile is retained but was oversized/bottom-clipped; Anglerfish was huge and not face-recognizable; Brown Bear remained too large despite the native override; Ray, Bass, Clam, Jellyfish, Giant Isopod, Hedgehog, Zebra, Vulture, Tortoise, Starfish, Lizard, and Mole were label-only; Piranha was blank; and both Scorpions were effectively front-on (with Desert abdomen preservation required). Canary 5 makes only closed C8-contract, detached-capture, compact-source, scale, and deterministic model-space orientation corrections. It is STATIC_PASS and not deployed because unrelated BGE C60 and IBF C4 cohorts occupy both canonical slots at manager revision 117.",
     "releases": {
       "current": {
-        "version": "0.1.0-canary4",
-        "artifact": {"filename": "naturalist-xaero-entity-icons-compat-0.1.0-canary4.jar", "sha256": "9aa6869ed1579655c1639206cd2225119523b3c12423f0bce84c40a0f3658c19"},
-        "source_commit": "10ba9e25956934b740818aa01391775d165c1f98",
+        "version": "0.1.0-canary5",
+        "artifact": {"filename": "naturalist-xaero-entity-icons-compat-0.1.0-canary5.jar", "sha256": "81e5d2283ee54de6436cd9456e372e30ca4389b7bd053ccf264c2561bc545c66"},
+        "source_commit": "653d2698ddfeb5df5cf794002e5314795b6e0627",
         "runtime_dependency_policy": {"contract": "CAPABILITY_OR_PROVIDER", "exceptions": []}
       },
       "accepted": null,
@@ -55,11 +55,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 4,
-    "activity_at": "2026-09-08T00:34:29Z",
-    "updated_at": "2026-09-08T00:34:29Z",
-    "last_codex_at": "2026-09-08T00:34:29Z",
-    "source_commit": "10ba9e25956934b740818aa01391775d165c1f98",
+    "revision": 5,
+    "activity_at": "2026-09-08T01:23:44Z",
+    "updated_at": "2026-09-08T01:23:44Z",
+    "last_codex_at": "2026-09-08T01:23:44Z",
+    "source_commit": "653d2698ddfeb5df5cf794002e5314795b6e0627",
     "google_sheet": {"participates": true, "exclusion_reason": null}
   }
 }
