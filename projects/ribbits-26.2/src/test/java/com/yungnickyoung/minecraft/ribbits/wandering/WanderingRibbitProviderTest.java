@@ -44,12 +44,12 @@ class WanderingRibbitProviderTest {
     @Test
     void snapshotRetainsExactProviderOfferRanges() {
         var nativeRange = new WanderingRibbitTradeSnapshot.ProviderRange(
-                WanderingRibbitTradeProviders.NATIVE_PROVIDER_ID, 2, 0, 6);
+                WanderingRibbitTradeProviders.NATIVE_PROVIDER_ID, 4, 0, 3);
         var matchaRange = new WanderingRibbitTradeSnapshot.ProviderRange(
-                WanderingRibbitTradeProviders.OPTIONAL_MATCHA_COMPASSES_PROVIDER_ID, 1, 6, 3);
+                WanderingRibbitTradeProviders.OPTIONAL_MATCHA_COMPASSES_PROVIDER_ID, 1, 3, 3);
         var snapshot = new WanderingRibbitTradeSnapshot(99L, List.of(nativeRange, matchaRange));
         assertEquals(99L, snapshot.seed());
-        assertEquals(9, snapshot.totalOfferCount());
+        assertEquals(6, snapshot.totalOfferCount());
         assertEquals(nativeRange, snapshot.providers().getFirst());
         assertEquals(matchaRange, snapshot.providers().getLast());
     }

@@ -15,9 +15,9 @@ class WanderingRibbitCompassProviderContractTest {
                         WanderingRibbitTradeProviders.OPTIONAL_MATCHA_COMPASSES_PROVIDER_ID,
                         WanderingRibbitTradeProviders.OPTIONAL_NATURALIST_FAUNA_PROVIDER_ID),
                 providers.stream().map(WanderingRibbitTradeProvider::id).toList());
-        assertEquals(3, providers.get(0).schemaVersion());
+        assertEquals(4, providers.get(0).schemaVersion());
         assertEquals(1, providers.get(1).schemaVersion());
         assertEquals(1, providers.get(2).schemaVersion());
-        assertEquals(6, WanderingRibbitNativeTradeProvider.NATIVE_OFFER_COUNT);
+        assertEquals(3, WanderingRibbitNativeTradeProvider.NATIVE_OFFER_COUNT);
     }
 }

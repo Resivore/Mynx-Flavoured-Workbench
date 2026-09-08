@@ -105,12 +105,12 @@ if (privateResourcesDir != null) {
             if (manifest.schema?.toString() != 'mynx-ribbits-private-resource-manifest/v1' ||
                 manifest.classification?.toString() != 'PRIVATE MYNX ASSEMBLY STAGED / NONREDISTRIBUTABLE DONOR ASSETS' ||
                 manifest.candidate?.version?.toString() != project.mod_version.toString() ||
-                manifest.candidate?.version?.toString() != '4.1.6+26.2-mynx-canary17' ||
-                (manifest.candidate?.canary as int) != 17 ||
+                manifest.candidate?.version?.toString() != '4.1.6+26.2-mynx-canary18' ||
+                (manifest.candidate?.canary as int) != 18 ||
                 manifest.candidate?.private_artifact_filename?.toString() !=
-                    'ribbits-private-reconstruction-4.1.6+26.2-mynx-canary17.jar' ||
+                    'ribbits-private-reconstruction-4.1.6+26.2-mynx-canary18.jar' ||
                 manifest.candidate?.source_only_artifact_filename?.toString() !=
-                    'ribbits-source-only-4.1.6+26.2-mynx-canary17.jar') {
+                    'ribbits-source-only-4.1.6+26.2-mynx-canary18.jar') {
                 throw new GradleException("Private manifest classification is not eligible for private packaging: ${manifest.classification}")
             }
             if ((manifest.blockers as List)) {
@@ -343,10 +343,10 @@ if (privateResourcesDir != null) {
             }
             if ((manifest.pristine.selected_file_count as int) != 287 ||
                 (manifest.output.file_count as int) != 349 ||
-                (manifest.output.total_size as long) != 2739336L ||
+                (manifest.output.total_size as long) != 2735161L ||
                 expectedFiles.size() != 349) {
                 throw new GradleException(
-                    'Private manifest does not preserve the exact 287-input / 349-output / 2,739,336-byte contract'
+                    'Private manifest does not preserve the exact 287-input / 349-output / 2,735,161-byte contract'
                 )
             }
 
@@ -403,18 +403,8 @@ if (privateResourcesDir != null) {
             expectedDerivedSources['assets/ribbits/textures/entity/wandering_ribbit.png'] = [
                 [archive: wanderingArchive, member: wanderingTexture],
             ]
-            expectedDerivedSources['assets/ribbits/models/item/chute_leaf_open.json'] = [
-                [archive: wanderingArchive, member: wanderingModel],
-                [archive: wanderingArchive, member: wanderingTexture],
-            ]
-            expectedDerivedSources['assets/ribbits/items/chute_leaf_open.json'] = [
-                [archive: wanderingArchive, member: wanderingModel],
-            ]
             expectedDerivedSources['assets/ribbits/textures/item/chute_leaf.png'] = [
                 [archive: 'tracked-project', member: 'tools/assets/chute_leaf.png'],
-            ]
-            expectedDerivedSources['assets/ribbits/textures/item/chute_leaf_open.png'] = [
-                [archive: wanderingArchive, member: wanderingTexture],
             ]
             expectedDerivedSources['assets/ribbits/models/item/chute_leaf.json'] = [
                 [archive: 'tracked-project', member: 'tools/assets/drop_leaf_inventory.png'],
@@ -429,8 +419,8 @@ if (privateResourcesDir != null) {
             def actualDerivedByPath = actualDerivedOutputs.collectEntries { record ->
                 [(record.output.toString()): record]
             }
-            if ((donorRecord.derived_output_count as int) != 30 ||
-                actualDerivedOutputs.size() != 30 ||
+            if ((donorRecord.derived_output_count as int) != 27 ||
+                actualDerivedOutputs.size() != 27 ||
                 actualDerivedByPath.keySet() != expectedDerivedSources.keySet()) {
                 throw new GradleException('Private manifest donor-derived output accounting differs')
             }
@@ -441,6 +431,32 @@ if (privateResourcesDir != null) {
                 if (actualSources != expectedSources) {
                     throw new GradleException("Private donor provenance differs for ${outputPath}")
                 }
+            }
+            def userInputs = manifest.user_authored_external_inputs
+            def expectedUserInputs = [
+                [logical_path: 'originals/assets/chute_leaf_open.bbmodel', size: 5953,
+                 sha256: '1d2332100daef279fd9bd1ea442714fe82b572a1662e05f40360cdeaa7680444'],
+                [logical_path: 'originals/assets/chute_leaf_open.png', size: 743,
+                 sha256: 'c9dcc9db447c84e69306810aaef1818b52525e8df5205432c8eb454743e059b2'],
+            ]
+            def expectedUserOutputs = [
+                'assets/ribbits/models/item/chute_leaf_open.json': ['originals/assets/chute_leaf_open.bbmodel'],
+                'assets/ribbits/items/chute_leaf_open.json': ['originals/assets/chute_leaf_open.bbmodel'],
+                'assets/ribbits/textures/item/chute_leaf_open.png': ['originals/assets/chute_leaf_open.png'],
+            ]
+            if (userInputs?.logical_root?.toString() != 'originals/assets' ||
+                userInputs?.embedded_png_matches_standalone_png != true ||
+                (userInputs?.inputs as List).collect { input -> [
+                    logical_path: input.logical_path.toString(), size: input.size as int, sha256: input.sha256.toString()
+                ] } != expectedUserInputs ||
+                (userInputs?.derived_output_count as int) != 3) {
+                throw new GradleException('Private manifest user-authored Chute input identity differs')
+            }
+            def actualUserOutputs = (userInputs.derived_outputs as List).collectEntries { record ->
+                [(record.output.toString()): (record.sources as List).collect { source -> source.logical_path.toString() }]
+            }
+            if (actualUserOutputs != expectedUserOutputs) {
+                throw new GradleException('Private manifest user-authored Chute provenance differs')
             }
 
             def lootMigration = manifest.migrations?.private_loot_tables_repaired
