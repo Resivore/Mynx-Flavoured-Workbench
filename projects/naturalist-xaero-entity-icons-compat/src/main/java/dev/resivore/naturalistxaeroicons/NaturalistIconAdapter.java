@@ -44,6 +44,9 @@ public final class NaturalistIconAdapter {
         adapter.xScale = presentation.scale();
         adapter.yScale = presentation.scale();
         adapter.zScale = presentation.scale();
+        // This is an icon-adapter-local model-space correction; it never changes the live
+        // Naturalist renderer.  Great White uses it to expose its lower profile silhouette.
+        adapter.y = presentation.frameYOffset();
         adapter.xRot = presentation.xRotation();
         adapter.yRot = presentation.yRotation();
         adapter.zRot = presentation.zRotation();
