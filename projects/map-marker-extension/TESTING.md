@@ -4,29 +4,35 @@
 
 **NOT DEPLOYED — RUNTIME UNTESTED — NOT READY FOR PROMOTION**
 
-Exact current C8 is the two-artifact candidate
-`map-marker-extension-0.4.0-canary8.jar` plus
-`map-marker-extension-icons-0.4.0-canary8.zip`. It passed controlled Java 25
+Exact current C9 is the two-artifact candidate
+`map-marker-extension-0.4.0-canary9.jar` plus
+`map-marker-extension-icons-0.4.0-canary9.zip`. It passed controlled Java 25
 build, test, archive, and deterministic-build checks. Those checks do not
 establish Minecraft runtime behavior. This task did not deploy either artifact,
 launch Minecraft, change a Test Slot or accepted baseline, mutate the dedicated
 Workbench, or access the protected gameplay instance.
 
 Treasure X C4 remains the accepted binary baseline and rollback. Do not load C4
-and C8 together. C4 is not a data-safe rollback for a world after C7 or C8 has
+and C9 together. C4 is not a data-safe rollback for a world after C7, C8, or C9 has
 persisted custom map-decoration holder keys; use a disposable or restorable
 world and restore its pre-C7 backup before removing C8.
 
 ## Exact retained evidence
 
-- Current C8 JAR: 58,720 bytes, SHA-256
-  `C3DA533B207050855C691584DB6BC3C85B383A9EC8E338737F7986D426668CA2`,
-  implementation checkpoint `a7ddb6afa6ed9cd620f49a28522c7866fdd35f04`.
-- Current C8 icon pack: 34,938 bytes, SHA-256
+- Current C9 JAR: 58,720 bytes, SHA-256
+  `5281481E599A14175C1D567A0ACF440D91B6EBCA0D6C171673F09D267772201B`,
+  implementation checkpoint `211af5f505eddff29d8adb03ca0ca7db95e58e4b`.
+- Current C9 icon pack: 28,172 bytes, SHA-256
+  `6AD89721C6AE628F2E3995132BCF0FA98F6E7FA43749B0A2695B7DB8A2B97A42`.
+  It contains only the 18 reframed MME item-side assets; all 17 custom native
+  `poi_icons` are byte-identical to their C8 JAR entries.
+- Retained C8 predecessor JAR: 58,720 bytes, SHA-256
+  `C3DA533B207050855C691584DB6BC3C85B383A9EC8E338737F7986D426668CA2`;
+  icon pack: 34,938 bytes, SHA-256
   `E88B18402275139A28A5FC9C1CE860937138D0E665CBD842EDEC5DE6EDA2521C`.
-  Its bytes are identical to C7 because Ribbits continues to own its native
-  marker and item artwork and MME's existing 17 marker and 18 item assets did
-  not change.
+  External user runtime evidence is a `FAIL` only for its too-small filled-map
+  inventory/item presentation. Marker identity and icon selection worked; no
+  other C8 runtime rows are inferred.
 - Accepted/rollback Treasure X C4: 31,465 bytes, SHA-256
   `9D5E5C22873417346247EAD34D87795E3F4AA84EAF0674345D4CA477EF3AE6E7`,
   source `3aac5ff7259a8bbb4bcac2a6147749589ee94bff`, accepted at
@@ -45,7 +51,7 @@ world and restore its pre-C7 backup before removing C8.
 ## Next controlled runtime matrix
 
 Run this only under separately authorized deployment ownership in a disposable
-or restorable world after verifying the exact C8 JAR and ZIP hashes above and
+or restorable world after verifying the exact C9 JAR and ZIP hashes above and
 ensuring C7 and every Treasure X C1-C6 artifact are disabled.
 
 1. Launch a client and, where applicable, a server with Minecraft 26.2, Fabric
@@ -53,37 +59,41 @@ ensuring C7 and every Treasure X C1-C6 artifact are disabled.
    Xaero World Map 1.44.2, and exactly one MME candidate. Confirm clean
    registration, login, resource reload, and shutdown without relevant Mixin,
    registry, atlas, model, or compatibility errors.
-2. Obtain representative maps for all 18 existing MME identities and buried
-   treasure. Confirm all 17 custom identities remain distinct while vanilla
-   buried treasure remains `minecraft:red_x` and existing inventory artwork,
-   normalization, coordinates, Xaero filtering, orientation, and scale remain
-   unchanged from C7.
-3. With Ribbits installed, obtain a successful, exact
+2. Before the larger matrix, obtain representative (preferably all 18) MME
+   exploration maps. Confirm each keeps its distinct selected inventory icon,
+   is crisp, and has an apparent inventory scale comparable to Ribbits' known
+   good explorer map rather than C8's tiny presentation. Confirm opened-map
+   artwork still looks correct, vanilla buried treasure remains
+   `minecraft:red_x`, and resource reload reports no missing model or texture.
+3. Confirm all 17 custom identities remain distinct while normalization,
+   coordinates, Xaero filtering, Minimap native scale, World Map accepted 2x
+   scale, and upright UV correction remain unchanged from C8.
+4. With Ribbits installed, obtain a successful, exact
    `minecraft:filled_map` carrying a real `minecraft:map_id`,
    `ribbits:ribbit_village_explorer_map=true`, and the native
    `ribbits:ribbit_village` decoration. Confirm MME reads the target from the
    ordinary decoration entry and does not replace its holder, coordinates, or
    live Ribbits-owned asset.
-4. Carry that map in each configured inventory/offhand position. Confirm one
+5. Carry that map in each configured inventory/offhand position. Confirm one
    possession-gated ephemeral target appears at the exact location in Xaero
    Minimap and Xaero World Map, then disappears promptly when the map is no
    longer carried. No waypoint or persistent Xaero object may be created.
-5. Confirm the successful Ribbits map retains Ribbits' mushroom-map inventory
+6. Confirm the successful Ribbits map retains Ribbits' mushroom-map inventory
    presentation, its opened map retains the Ribbits marker, and resource reload
    does not cause either the Ribbits or MME filled-map model wrapper to mask the
    other, regardless of initializer order.
-6. Remove MME and confirm the native Ribbits map, opened-map marker, item art,
+7. Remove MME and confirm the native Ribbits map, opened-map marker, item art,
    persistence, copying, synchronization, and item-frame behavior still work.
    Reinstall MME without Ribbits and confirm there is no classlink, registry,
    asset, or startup failure and no Ribbits behavior is contributed.
-7. Confirm a map with only the native Ribbits holder but no exact success marker
+8. Confirm a map with only the native Ribbits holder but no exact success marker
    is not projected by MME. Repeat with a false marker, a missing `map_id`, an
    unrelated marker/type, and the failed Uncharted Ribbit Map; none may become
    a Ribbits target.
-8. With exact Compass Ribbon 2.9.0 present, verify its existing generic native
+9. With exact Compass Ribbon 2.9.0 present, verify its existing generic native
    holder path displays the live `ribbits:ribbit_village` marker. MME must add
    no direct Compass dependency, alternate marker, or copied Ribbits asset.
-9. Save, exit, and reload the disposable world. Confirm both C8's existing
+10. Save, exit, and reload the disposable world. Confirm both C9's existing
    normalized identities and the externally owned Ribbits identity remain
    correct, then restore the pre-C7 world backup before testing the accepted C4
    binary rollback.

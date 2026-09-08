@@ -30,11 +30,11 @@
       "Recognize explicitly marked externally owned native filled-map identities for possession-gated Xaero projection without registering, rewriting, classlinking, or supplying the external marker or item artwork."
     ],
     "scope": [
-      "Canonical C8 source for Minecraft Java 26.2 Fabric, narrowly succeeding reconstructed C7 with an external-native identity boundary while preserving C7's 18 owned products, 17 custom holders, resources, normalization, and Xaero rendering behavior.",
+      "Canonical C9 source for Minecraft Java 26.2 Fabric, narrowly succeeding C8 with dedicated enlarged 16-by-16 item-side artwork while preserving C8's 18 owned products, 17 custom holders, external-native boundary, normalization, and Xaero rendering behavior.",
       "The sole 18-row MapMarkerIdentity table, 17 registered map_marker_extension MapDecorationType holders, vanilla minecraft:red_x retention for buried treasure, idempotent map normalization, and immediate MapItemSavedData refresh behavior.",
       "One marker-gated external-native identity for a real minecraft:filled_map with minecraft:map_id and ribbits:ribbit_village_explorer_map=true, admitting only the existing ribbits:ribbit_village holder and passing its ordinary decoration coordinates and live asset through to Xaero.",
       "Optional client-only Xaero integrations, common/server-capable persistent marker identity, bundled fallback marker sprites, and the project-owned 88.0 icon-pack source for 17 opened-map marker sprites plus 18 filled-map item models.",
-      "Exact current C8 retained pair map-marker-extension-0.4.0-canary8.jar and map-marker-extension-icons-0.4.0-canary8.zip, with exact accepted Treasure X C4 retained separately as the binary rollback baseline."
+      "Exact current C9 retained pair map-marker-extension-0.4.0-canary9.jar and map-marker-extension-icons-0.4.0-canary9.zip, with exact failed C8 pair and accepted Treasure X C4 retained separately as provenance and rollback evidence."
     ],
     "boundaries": {
       "owned_paths": [
@@ -101,15 +101,15 @@
     ]
   },
   "state": {
-    "milestone": "Exact MME C8 is the current development release and retained mod/pack pair after controlled validation of the narrow external-native Ribbits identity path, but it remains runtime untested, not accepted, and not deployed. Exact legacy Treasure X C4 remains the accepted promoted binary baseline and rollback; its exact binary was not separately runtime-tested, and the genuine focused World Map runtime observation belongs only to C3.",
+    "milestone": "Exact MME C9 is the current development release and retained mod/pack pair after controlled validation of dedicated item-side artwork. C8 is an externally user-tested runtime FAIL only for too-small filled-map inventory presentation; its marker identities and selected icons worked, and no other C8 runtime rows are inferred. C9 remains runtime untested, not accepted, and not deployed. Exact legacy Treasure X C4 remains the accepted promoted binary baseline and rollback; its exact binary was not separately runtime-tested, and the genuine focused World Map runtime observation belongs only to C3.",
     "releases": {
       "current": {
-        "version": "C8 (0.4.0-canary8)",
+        "version": "C9 (0.4.0-canary9)",
         "artifact": {
-          "filename": "map-marker-extension-0.4.0-canary8.jar",
-          "sha256": "c3da533b207050855c691584db6bc3c85b383a9ec8e338737f7986d426668ca2"
+          "filename": "map-marker-extension-0.4.0-canary9.jar",
+          "sha256": "5281481e599a14175c1d567a0acf440d91b6ebca0d6c171673f09d267772201b"
         },
-        "source_commit": "a7ddb6afa6ed9cd620f49a28522c7866fdd35f04",
+        "source_commit": "211af5f505eddff29d8adb03ca0ca7db95e58e4b",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
@@ -142,11 +142,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 2,
-    "activity_at": "2026-09-04T18:31:47Z",
-    "updated_at": "2026-09-04T18:31:47Z",
-    "last_codex_at": "2026-09-04T18:31:47Z",
-    "source_commit": "a7ddb6afa6ed9cd620f49a28522c7866fdd35f04",
+    "revision": 3,
+    "activity_at": "2026-09-08T04:42:14Z",
+    "updated_at": "2026-09-08T04:42:14Z",
+    "last_codex_at": "2026-09-08T04:42:14Z",
+    "source_commit": "211af5f505eddff29d8adb03ca0ca7db95e58e4b",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
