@@ -3,7 +3,7 @@
   "id": "polytone_lead_rendering_fix",
   "version": "${version}",
   "name": "Polytone Lead Rendering Fix",
-  "description": "Bypasses Polytone's textured leash path and adapts vanilla leash geometry, color, and light data to Iris's entity-compatible route.",
+  "description": "Bypasses Polytone's textured leash path and supplies its native triangle-strip geometry through an Iris-compatible entity vertex contract.",
   "authors": ["Resivore"],
   "license": "MIT",
   "environment": "client",

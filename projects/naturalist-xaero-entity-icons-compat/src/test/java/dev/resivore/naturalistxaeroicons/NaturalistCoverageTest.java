@@ -79,7 +79,7 @@ class NaturalistCoverageTest {
         }
     }
 
-    @Test void c6GeometryAndPresentationContractsAreExplicit() {
+    @Test void c7GeometryAndPresentationContractsAreExplicit() {
         assertEquals(List.of("body", "neck"), NaturalistModelContracts.contractsForId("alligator").getFirst().path());
         assertEquals(List.of("body", "neck"), NaturalistModelContracts.contractsForId("boar").getFirst().path());
         assertEquals(List.of("body", "neck"), NaturalistModelContracts.contractsForId("boar").getFirst().tracePath());
@@ -104,14 +104,20 @@ class NaturalistCoverageTest {
         assertEquals(0, NaturalistModelContracts.contractsForId("desert_scorpion").getFirst().path().size());
         assertEquals(List.of("body"), NaturalistModelContracts.contractsForId("desert_scorpion").getFirst().tracePath());
         assertEquals(List.of("body"), NaturalistModelContracts.contractsForId("jungle_scorpion").getFirst().tracePath());
-        assertEquals(1.5708F, NaturalistModelContracts.contractsForId("desert_scorpion").getFirst().presentation().xRotation());
-        assertEquals(1.5708F, NaturalistModelContracts.contractsForId("jungle_scorpion").getFirst().presentation().xRotation());
+        var desertScorpion = NaturalistModelContracts.contractsForId("desert_scorpion").getFirst();
+        var jungleScorpion = NaturalistModelContracts.contractsForId("jungle_scorpion").getFirst();
+        assertEquals(1.5708F, desertScorpion.presentation().xRotation());
+        assertEquals(1.5708F, jungleScorpion.presentation().xRotation());
+        assertEquals(List.of("body", "legs"), desertScorpion.drawableChildren());
+        assertEquals(List.of("body", "legs"), jungleScorpion.drawableChildren());
+        assertTrue(desertScorpion.normalizeSelectedRootTransform());
+        assertTrue(jungleScorpion.normalizeSelectedRootTransform());
         assertTrue(NaturalistModelContracts.contractsForId("clam").getFirst().presentation().scale() < 0.5F);
         assertEquals(1.5708F, NaturalistModelContracts.contractsForId("clam").getFirst().presentation().xRotation());
         assertTrue(NaturalistModelContracts.contractsForId("whale").getFirst().presentation().scale() < 0.5F);
     }
 
-    @Test void c6LabelFallbackTargetsHaveExplicitDrawableContractsAndDetachedCapture() {
+    @Test void c7LabelFallbackTargetsHaveExplicitDrawableContractsAndDetachedCapture() {
         Map<String, String> expected = Map.ofEntries(
                 Map.entry("ray", "RayModel:body:body"), Map.entry("bass", "BassModel:body:body"),
                 Map.entry("giant_isopod", "GiantIsopodModel:rolled:rolled"), Map.entry("hedgehog", "HedgehogModel:rolled:rolled"),
@@ -128,6 +134,11 @@ class NaturalistCoverageTest {
         for (String id : expected.keySet()) assertFalse(NaturalistModelContracts.contractsForId(id).getFirst().preserveAncestorTransforms(), id);
         assertEquals(List.of("jaw", "dangly"), NaturalistModelContracts.contractsForId("anglerfish").getFirst().drawableChildren());
         assertFalse(NaturalistModelContracts.contractsForId("piranha").getFirst().preserveAncestorTransforms());
+        assertEquals(List.of("body", "legs"), NaturalistModelContracts.contractsForId("starfish").getFirst().drawableChildren());
+        assertEquals(List.of("top", "bottom", "hinge"), NaturalistModelContracts.contractsForId("clam").getFirst().drawableChildren());
+        for (String id : List.of("starfish", "clam", "desert_scorpion", "jungle_scorpion")) {
+            assertTrue(NaturalistModelContracts.contractsForId(id).getFirst().normalizeSelectedRootTransform(), id);
+        }
     }
 
     @Test void brownBearIsOnlyANativePresentationOverride() {
@@ -137,7 +148,7 @@ class NaturalistCoverageTest {
         for (String id : List.of("bird", "butterfly", "catfish", "caterpillar", "crab", "deer", "firefly", "snake", "snail")) {
             assertFalse(NaturalistModelContracts.isNativePresentationOverrideId(id), id);
         }
-        assertEquals(.20F, NaturalistModelContracts.nativePresentationForId("bear").scale());
+        assertEquals(.12F, NaturalistModelContracts.nativePresentationForId("bear").scale());
     }
 
     @Test void retainedC2ControlsRemainContractStable() {
@@ -149,8 +160,10 @@ class NaturalistCoverageTest {
         assertEquals(.76F, NaturalistModelContracts.contractsForId("tiger").getFirst().presentation().scale());
     }
 
-    @Test void c6TargetedCorrectionsAreScaleOrProfileOnlyWhereSpecified() {
-        assertEquals(.55F, NaturalistModelContracts.contractsForId("ray").getFirst().presentation().scale());
+    @Test void c7TargetedCorrectionsAreScaleOrProfileOnlyWhereSpecified() {
+        assertEquals(.38F, NaturalistModelContracts.contractsForId("ray").getFirst().presentation().scale());
+        assertEquals(.68F, NaturalistModelContracts.contractsForId("hedgehog").getFirst().presentation().scale());
+        assertEquals(.70F, NaturalistModelContracts.contractsForId("hedgehog").get(1).presentation().scale());
         assertEquals(.60F, NaturalistModelContracts.contractsForId("piranha").getFirst().presentation().scale());
         assertEquals(.45F, NaturalistModelContracts.contractsForId("jellyfish").getFirst().presentation().scale());
         assertEquals(.45F, NaturalistModelContracts.contractsForId("giant_isopod").getFirst().presentation().scale());
@@ -162,7 +175,7 @@ class NaturalistCoverageTest {
         assertEquals(List.of("body"), largeBass.tracePath());
     }
 
-    @Test void c6SourceAuditsKeepScorpionAnatomyAndStarfishFallbackNarrow() throws Exception {
+    @Test void c7SourceAuditsKeepScorpionAnatomyAndStarfishFallbackNarrow() throws Exception {
         Path models = Path.of(System.getProperty("projectRoot")).getParent()
                 .resolve("naturalist/common/src/main/java/com/crispytwig/naturalist/client/model");
         String desert = Files.readString(models.resolve("DesertScorpionModel.java"));
@@ -172,6 +185,8 @@ class NaturalistCoverageTest {
         assertTrue(desert.contains("\"tail_1\""));
         for (String name : List.of("body", "arms", "tail", "legs", "leftClaw", "rightClaw")) assertTrue(jungle.contains("\"" + name + "\""), name);
         assertTrue(clam.contains("\"bottom\""));
+        assertTrue(clam.contains("\"top\""));
+        assertTrue(clam.contains("\"hinge\""));
 
         Path module = Path.of(System.getProperty("projectRoot"));
         String contracts = Files.readString(module.resolve("src/main/java/dev/resivore/naturalistxaeroicons/NaturalistModelContracts.java"));

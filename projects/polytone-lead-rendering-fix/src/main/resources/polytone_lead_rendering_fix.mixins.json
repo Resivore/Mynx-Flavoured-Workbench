@@ -3,7 +3,7 @@
   "minVersion": "0.8",
   "package": "dev.resivore.polytoneleadrenderingfix.mixin",
   "compatibilityLevel": "JAVA_25",
-  "client": ["PolytoneRenderTypesMixin", "LeashFeatureRendererMixin"],
+  "client": ["PolytoneRenderTypesMixin", "LeashFeatureRendererMixin", "RenderTypeAccessor"],
   "injectors": {
     "defaultRequire": 1
   }

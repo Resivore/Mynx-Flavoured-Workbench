@@ -24,12 +24,14 @@ public final class NaturalistIconAdapter {
             ModelPart trace,
             NaturalistModelContracts.Presentation presentation,
             boolean neutralizeRootRotation,
+            boolean normalizeSelectedRootTransform,
             List<String> sourcePath,
             boolean preserveAncestorTransforms
     ) {
         List<ModelPart> ancestors = ancestors(modelRoot, source, sourcePath);
         if (ancestors == null) return null;
         ModelPart branch = copySubtree(selected, 0);
+        if (normalizeSelectedRootTransform) clearTransform(branch);
         if (preserveAncestorTransforms) for (int i = ancestors.size() - 2; i >= 0; i--) {
             ModelPart parent = ancestors.get(i);
             String childName = sourcePath.get(i);
@@ -108,5 +110,12 @@ public final class NaturalistIconAdapter {
         to.yRot = neutralizeRotation ? 0.0F : from.yRot;
         to.zRot = neutralizeRotation ? 0.0F : from.zRot;
         to.xScale = from.xScale; to.yScale = from.yScale; to.zScale = from.zScale;
+    }
+    /** Clears only the copied root's gameplay placement; authored child geometry remains intact. */
+    private static void clearTransform(ModelPart part) {
+        part.x = 0.0F; part.y = 0.0F; part.z = 0.0F;
+        part.xRot = 0.0F; part.yRot = 0.0F; part.zRot = 0.0F;
+        part.xScale = 1.0F; part.yScale = 1.0F; part.zScale = 1.0F;
+        part.setInitialPose(part.storePose());
     }
 }

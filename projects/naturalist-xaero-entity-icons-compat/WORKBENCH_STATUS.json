@@ -38,12 +38,12 @@
     ]
   },
   "state": {
-    "milestone": "Canary 5 is retained user-reported/external runtime FAIL provenance: Mole, Vulture, Tortoise, Lizard, Anglerfish, Great White Shark size/profile, Ray geometry, Piranha geometry, Jellyfish geometry, and Giant Isopod rolled/unrolled geometry were good; Great White remained bottom-clipped; Jungle Scorpion was unrecognizable; Desert Scorpion was label-only; Starfish and Clam were label-only; Zebra was nose-only; Bass rendered with an incorrect partial presentation; and Brown Bear, Jellyfish, Giant Isopod, Piranha, and Ray were too large. Canary 6 keeps the closed C8 contracts and successful routes, corrects only explicit drawable trace anchors, profile/framing contracts, or presentation scales, and records the Xaero 26.4.2 item-sprite seam as unavailable rather than cache a false success. It is STATIC_PASS and not deployed because unrelated BGE C60 and IBF C4 cohorts occupy both canonical slots at manager revision 117.",
+    "milestone": "Canary 6 is retained USER-REPORTED / EXTERNAL RUNTIME FAIL provenance: Giant Isopod, Zebra, Great White Shark, Piranha, and Bass were good; Ray, Brown Bear, and Hedgehog were too large; Clam, Starfish, and Desert Scorpion were label-only; and Jungle Scorpion was an unrecognizable tiny horizontal fragment. Canary 7 preserves those good C6 contracts, uses explicit normalized source-backed root assemblies for Clam, Starfish, and the independently audited Scorpion anatomies, and moves Brown Bear's native-only scale to the enclosing Xaero capture pose. It is STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED because unrelated BGE C60 and IBF C4 cohorts occupy both canonical slots at manager revision 117.",
     "releases": {
       "current": {
-        "version": "0.1.0-canary6",
-        "artifact": {"filename": "naturalist-xaero-entity-icons-compat-0.1.0-canary6.jar", "sha256": "abb9e16ef84007dfd2136ea11cd8803c87cd74ab9dbc04edee8a9c8f0a2337f1"},
-        "source_commit": "1b9483c118c2809e86d95fefa857c5e57c8f708c",
+        "version": "0.1.0-canary7",
+        "artifact": {"filename": "naturalist-xaero-entity-icons-compat-0.1.0-canary7.jar", "sha256": "c4f2c6a3658f73a853623356deb94708a082f65265cdeeed9b970c57e9106cb2"},
+        "source_commit": "871b2f5c987b58d88deca3f3725207813c761d14",
         "runtime_dependency_policy": {"contract": "CAPABILITY_OR_PROVIDER", "exceptions": []}
       },
       "accepted": null,
@@ -55,11 +55,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 6,
-    "activity_at": "2026-09-08T02:23:03Z",
-    "updated_at": "2026-09-08T02:23:03Z",
-    "last_codex_at": "2026-09-08T02:23:03Z",
-    "source_commit": "1b9483c118c2809e86d95fefa857c5e57c8f708c",
+    "revision": 7,
+    "activity_at": "2026-09-08T03:07:42Z",
+    "updated_at": "2026-09-08T03:07:42Z",
+    "last_codex_at": "2026-09-08T03:07:42Z",
+    "source_commit": "871b2f5c987b58d88deca3f3725207813c761d14",
     "google_sheet": {"participates": true, "exclusion_reason": null}
   }
 }
