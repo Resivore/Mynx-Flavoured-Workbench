@@ -856,6 +856,80 @@ tasks.named('check') {
     dependsOn tasks.named('verifyCuratedResources')
 }
 
+tasks.register('verifyProductionMixinContract') {
+    group = 'verification'
+    description = 'Inspects the production JAR for the BBB LivingEntity rope mixin contract.'
+    dependsOn tasks.named('jar')
+    doLast {
+        File productionJar = tasks.named('jar').get().archiveFile.get().asFile
+        if (!productionJar.isFile()) {
+            throw new GradleException("Missing remapped production JAR ${productionJar}")
+        }
+        ZipFile zip = new ZipFile(productionJar)
+        try {
+            def requireEntry = { String name ->
+                def entry = zip.getEntry(name)
+                if (entry == null) throw new GradleException("Production JAR is missing ${name}")
+                entry
+            }
+            Map mixins = new JsonSlurper().parse(zip.getInputStream(requireEntry('bbb.mixins.json'))) as Map
+            Map mod = new JsonSlurper().parse(zip.getInputStream(requireEntry('fabric.mod.json'))) as Map
+            if (mixins.required != true || !(mixins.mixins as Collection).contains('LivingEntityRopeClimbMixin')) {
+                throw new GradleException('Production JAR does not package the required LivingEntity rope mixin')
+            }
+            if (!((mod.mixins ?: []) as Collection).contains('bbb.mixins.json')) {
+                throw new GradleException('Production fabric.mod.json does not declare bbb.mixins.json')
+            }
+            requireEntry('com/starfish_studios/bbb/mixin/LivingEntityRopeClimbMixin.class')
+            def manifest = new java.util.jar.Manifest(zip.getInputStream(requireEntry('META-INF/MANIFEST.MF')))
+            if (manifest.mainAttributes.getValue('Fabric-Mapping-Namespace') != 'official') {
+                throw new GradleException('Production BBB JAR is not remapped into the official Minecraft namespace')
+            }
+            println "BBB_PRODUCTION_MIXIN jar=${productionJar.name} mixin=LivingEntityRopeClimbMixin namespace=official"
+        } finally {
+            zip.close()
+        }
+    }
+}
+
+def productionMinecraftServerJar = new File(gradle.gradleUserHomeDir,
+        "caches/fabric-loom/${project.minecraft_version}/minecraft-extracted_server.jar")
+def productionBbbJar = tasks.named('jar').flatMap { it.archiveFile }
+tasks.register('productionLivingEntityMixinTest', JavaExec) {
+    group = 'verification'
+    description = 'Applies BBB\'s packaged rope mixin to the production Minecraft 26.2 server classes.'
+    dependsOn tasks.named('testClasses'), tasks.named('jar')
+    inputs.files(productionBbbJar, productionMinecraftServerJar)
+    mainClass = 'com.starfish_studios.bbb.porting.ProductionLivingEntityMixinHarness'
+    classpath = files({
+        def mainOutput = sourceSets.main.output.files
+        def runtime = configurations.testRuntimeClasspath.files.findAll { candidate ->
+            !mainOutput.contains(candidate) && !candidate.name.startsWith('minecraft-merged-deobf-')
+        }
+        sourceSets.test.output.files.findAll { it.exists() } + runtime + [
+                productionMinecraftServerJar,
+                productionBbbJar.get().asFile
+        ]
+    })
+    systemProperty 'fabric.development', 'false'
+    systemProperty 'fabric.unitTest', 'true'
+    systemProperty 'mixin.debug.verbose', 'true'
+    systemProperty 'mixin.debug.countInjections', 'true'
+    doFirst {
+        if (!productionMinecraftServerJar.isFile()) {
+            throw new GradleException("Missing production Minecraft ${project.minecraft_version} server JAR: ${productionMinecraftServerJar}")
+        }
+        args = [productionBbbJar.get().asFile.absolutePath]
+        workingDir.mkdirs()
+    }
+    workingDir layout.buildDirectory.dir('production-living-entity-mixin-test')
+}
+
+tasks.named('check') {
+    dependsOn tasks.named('verifyProductionMixinContract')
+    dependsOn tasks.named('productionLivingEntityMixinTest')
+}
+
 tasks.withType(Test).configureEach {
     useJUnitPlatform()
 }

@@ -3,7 +3,6 @@ package com.starfish_studios.bbb.mixin;
 import com.starfish_studios.bbb.block.RopeBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.level.block.state.BlockState;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -17,14 +16,14 @@ import java.util.Optional;
 public abstract class LivingEntityRopeClimbMixin {
     @Shadow private Optional<BlockPos> lastClimbablePos;
 
-    @Shadow public abstract BlockState getInBlockState();
-
-    @Shadow public abstract BlockPos blockPosition();
-
     @Inject(method = "onClimbable", at = @At("RETURN"), cancellable = true)
     private void bbb$recognizeVerticalRope(CallbackInfoReturnable<Boolean> cir) {
-        if (!cir.getReturnValue() && RopeBlock.isVerticalRope(getInBlockState())) {
-            lastClimbablePos = Optional.of(blockPosition());
+        // In 26.2 these public methods are declared by Entity, not LivingEntity.
+        // A @Shadow may only resolve a member declared by the mixin target, so use
+        // the actual LivingEntity instance to access inherited public behavior.
+        LivingEntity self = (LivingEntity) (Object) this;
+        if (!cir.getReturnValue() && RopeBlock.isVerticalRope(self.getInBlockState())) {
+            lastClimbablePos = Optional.of(self.blockPosition());
             cir.setReturnValue(true);
         }
     }

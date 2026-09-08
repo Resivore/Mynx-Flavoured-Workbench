@@ -100,15 +100,15 @@
     ]
   },
   "state": {
-    "milestone": "Rope C4 preserves the existing BBB rope ID, item, resources, ChainBlock axis/waterlogging/shape behavior, and curated registry while adding state-aware vertical climbing plus one-segment bottom-column pay-out/reel-in. C4 is built and statically verified but remains undeployed, runtime untested, unaccepted, and retained locally only because its combined JAR includes staged upstream ARR resources. The externally reported C2 failure remains recorded without binding it to an unverified external artifact hash.",
+    "milestone": "C4 is externally runtime-failed at Minecraft 26.2 launch: the supplied log identifies BBB version 2.0pre4+26.2-pale-oak-dev.4 and reports LivingEntityRopeClimbMixin failing because getInBlockState() is not declared by LivingEntity. The external launch did not identify its file SHA-256, was not a Test Instance Manager deployment, and consumed no slot. C5 preserves the rope mechanics and corrects that target ownership, is clean-built and production-Mixin transformed, but remains undeployed, runtime untested, unaccepted, and locally retained only because its combined JAR includes staged upstream ARR resources.",
     "releases": {
       "current": {
-        "version": "2.0pre4+26.2-pale-oak-dev.4",
+        "version": "2.0pre4+26.2-pale-oak-dev.5",
         "artifact": {
-          "filename": "bbb-fabric-26.2-2.0pre4+26.2-pale-oak-dev.4.jar",
-          "sha256": "b67eeb0f4da800e6af46813989efea5170ee48c5b912b4ef7d74d66e052c0786"
+          "filename": "bbb-fabric-26.2-2.0pre4+26.2-pale-oak-dev.5.jar",
+          "sha256": "b86c90226cb5082aba5329116633705f0bcd5141754ff50f509a5582b4eff7d4"
         },
-        "source_commit": "6d6bcb1cffaad8bd05b12f02168093b8c87471ec",
+        "source_commit": "22aaf2fcddea47a388d2a2ba06228716e7d4e562",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
@@ -127,11 +127,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 5,
-    "activity_at": "2026-09-08T03:32:07Z",
-    "updated_at": "2026-09-08T03:32:07Z",
-    "last_codex_at": "2026-09-08T03:32:07Z",
-    "source_commit": "6d6bcb1cffaad8bd05b12f02168093b8c87471ec",
+    "revision": 6,
+    "activity_at": "2026-09-08T04:35:34Z",
+    "updated_at": "2026-09-08T04:35:34Z",
+    "last_codex_at": "2026-09-08T04:35:34Z",
+    "source_commit": "22aaf2fcddea47a388d2a2ba06228716e7d4e562",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null

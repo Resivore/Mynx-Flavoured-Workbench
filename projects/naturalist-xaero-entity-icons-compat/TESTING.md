@@ -2,7 +2,7 @@
 
 ## Current gate
 
-**C8 NOT DEPLOYED — STATIC PASS — RUNTIME UNTESTED — NOT READY FOR PROMOTION**
+**C9 NOT DEPLOYED — STATIC PASS — RUNTIME UNTESTED — NOT READY FOR PROMOTION**
 
 Canary 2 is retained failed external-runtime provenance: `naturalist-xaero-entity-icons-compat-0.1.0-canary2.jar`, SHA-256
 `ff161f6bcbf5cd056a5e27d7cd56091ab5abfa8e69440c76f2f6ce9ba6e86c50`, source
@@ -23,18 +23,18 @@ Canary 6 is retained USER-REPORTED / EXTERNAL RUNTIME **FAIL** provenance: `natu
 
 Canary 7 is retained USER-REPORTED / EXTERNAL RUNTIME **FAIL** provenance: `naturalist-xaero-entity-icons-compat-0.1.0-canary7.jar`, embedded version `0.1.0-canary7`, SHA-256 `c4f2c6a3658f73a853623356deb94708a082f65265cdeeed9b970c57e9106cb2`, source `871b2f5c987b58d88deca3f3725207813c761d14`. Giant Isopod, Zebra, Great White Shark, Piranha, Bass, Ray, and Hedgehog were good. Clam retained the correct top-down direction but was too large and top-clipped; Jungle Scorpion, Desert Scorpion, and Starfish were label-only. C7 was external/user-reported rather than manager-deployed: canonical manager revision 117 retains unrelated BGE C60 in Slot A and IBF C4 in Slot B.
 
-Canary 8 is `naturalist-xaero-entity-icons-compat-0.1.0-canary8.jar`, embedded version `0.1.0-canary8`, SHA-256 `dc26b12fe87d60849fb7a99a0687b70e895ce3d6064dbd0f2ddff69d9f1cbb70`, source `479c36d1b3cd4f5c0839a7ba3aa2d8b0c053dde0`. A clean offline Java 25 / Loom 1.17.19 `clean check stageCanaryArtifact` build passed the focused source, contract, trace, binary, and archive checks. This is static evidence only. C8 is not deployed and remains runtime-untested; do not displace either unrelated cohort.
+Canary 8 is retained USER-REPORTED / EXTERNAL RUNTIME **FAIL** provenance: `naturalist-xaero-entity-icons-compat-0.1.0-canary8.jar`, embedded `0.1.0-canary8`, SHA-256 `dc26b12fe87d60849fb7a99a0687b70e895ce3d6064dbd0f2ddff69d9f1cbb70`, source `479c36d1b3cd4f5c0839a7ba3aa2d8b0c053dde0`. The latest user report is that the canary wholly failed overall and Brown Bear remained too large. No other C8 entity result is recorded or inferred. C8 had no manager deployment: canonical manager revision 117 retains unrelated BGE C60 in Slot A and IBF C4 in Slot B.
 
-## C8 manual runtime checklist
+Canary 9 is `naturalist-xaero-entity-icons-compat-0.1.0-canary9.jar`, embedded `0.1.0-canary9`, SHA-256 `c29601bf5c5a7b185cd54d87bf5681b23f742277fb6bd9b5ec82f426120af60d`, source `1f7ee394ce78cd4a61dee8ac012843fc4acb521b`. A clean offline Java 25 / Loom 1.17.19 `clean check stageCanaryArtifact` build passed focused cache-freshness policy, Xaero binary/source seam, native-capture, trace, archive, and client-only checks. This is static evidence only. C9 is not deployed and remains runtime-untested; do not displace either unrelated cohort.
+
+## C9 Brown Bear runtime checklist
 
 With exact Naturalist C8, Xaero Minimap, accepted Xaero × EMF C9, and Ribbits × Xaero C5, start or join a world and trigger Xaero resource initialization/reload. Require no redirect conflict, `InjectionError`, transformation failure, or Xaero render-frame crash; this is only the coexistence smoke gate.
 
-Verify Giant Isopod (both states), Zebra (adult/baby), Great White Shark, Piranha, Bass (all sizes), Ray, Hedgehog (normal/rolled), Mole, Vulture, Tortoise, Lizard, Anglerfish, Boar, Capybara, and the unchanged native Xaero controls retain their established behavior. Verify Brown Bear remains Xaero-native with its normal texture/model capture and its enclosing native-capture pose; do not compare it to a custom partial capture.
-
-Then verify a visible, recognizable Naturalist-derived icon rather than a generic label/marker for Clam, Starfish, Desert Scorpion, and Jungle Scorpion. Clam must retain its top-down surface direction with all shell geometry inside the frame and no top clipping. Starfish remains a top-down narrow entity-model fallback because Xaero's trace-gated model capture has no usable item-sprite result seam. Each scorpion must be a compact top-down silhouette with central body/abdomen, both claws, legs, and tail; Desert's abdomen and Jungle's complete body must remain visible. No invalid/empty draw may cache a blank success. Repeat the complete matrix after Xaero resource reload.
+Verify only Brown Bear for this canary: its final displayed Xaero radar icon must be materially smaller, still use Xaero's native Brown Bear model/texture capture rather than a custom fallback or head-only capture, and remain correct after resource reload. The initial cached entry may be retried only once when Xaero can prerender it; no-prerender cache reads remain unchanged. Require no crash, redirect conflict, injection failure, mixin transformation failure, or Xaero render-frame crash.
 
 Verify no competing redirect, `InjectionError`, mixin transformation failure, or Xaero render-frame crash occurs with accepted Xaero × EMF C9. Deliberately malformed/empty capture must leave Xaero's normal fallback available and never cache a blank success.
 
-Regression controls: Capybara remains good; Lizard Tail, Black Bear, and Turkey retain their C2 behavior; Bird, Butterfly, Catfish, Caterpillar, Crab, Deer, Firefly, Snake, and Snail remain unmodified native Xaero captures. Confirm Duck Egg and Dirt Trail remain excluded. Re-check all observations after resource reload so neither stale successful nor stale failed cache entries mask the result.
+Do not retune or classify Clam, Starfish, either Scorpion, Ray, Hedgehog, Bass, Zebra, Giant Isopod, Great White Shark, or any other Naturalist target from this focused Brown Bear test. Record only actual Brown Bear observations with its state/variant, native texture/model result, initial display result, post-reload result, and any compatibility failure.
 
 Stop and record exact entity ID, age/state/variant, icon result, texture result, reload result, and any compatibility crash. Do not infer a runtime PASS from a client launch or this static validation.
