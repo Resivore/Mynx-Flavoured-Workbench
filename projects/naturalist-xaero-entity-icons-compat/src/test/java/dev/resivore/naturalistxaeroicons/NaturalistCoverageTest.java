@@ -53,19 +53,71 @@ class NaturalistCoverageTest {
                 for (String segment : contract.path()) {
                     assertTrue(source.contains("\"" + segment + "\""), simpleName + " missing " + segment);
                 }
+                for (String segment : contract.tracePath()) {
+                    assertTrue(source.contains("\"" + segment + "\""), simpleName + " missing trace " + segment);
+                }
             }
         }
     }
 
-    @Test void c3GeometryAndPresentationContractsAreExplicit() {
-        assertEquals(List.of("body", "neck", "snout"), NaturalistModelContracts.contractsForId("alligator").getFirst().path());
-        assertEquals(List.of("body", "neck", "neck_r1"), NaturalistModelContracts.contractsForId("boar").getFirst().path());
+    @Test void rendererSelectedC8VariantsAreExplicitlyCovered() throws Exception {
+        Path renderers = Path.of(System.getProperty("projectRoot")).getParent()
+                .resolve("naturalist/common/src/main/java/com/crispytwig/naturalist/client/renderer");
+        Map<String, List<String>> expectedModels = Map.of(
+                "AlligatorRenderer", List.of("AlligatorModel", "AlligatorBabyModel"),
+                "BoarRenderer", List.of("BoarModel", "BoarBabyModel"),
+                "ZebraRenderer", List.of("ZebraModel", "ZebraBabyModel"),
+                "BassRenderer", List.of("BassModel", "MediumBassModel", "LargeBassModel"),
+                "TortoiseRenderer", List.of("TortoiseModel", "TortoiseBabyModel"),
+                "VultureRenderer", List.of("VultureModel", "VultureBabyModel"));
+        for (var entry : expectedModels.entrySet()) {
+            String source = Files.readString(renderers.resolve(entry.getKey() + ".java"));
+            for (String model : entry.getValue()) assertTrue(source.contains(model), entry.getKey() + " " + model);
+        }
+        for (String id : List.of("alligator", "boar", "zebra", "bass", "tortoise", "vulture")) {
+            assertTrue(NaturalistModelContracts.contractsForId(id).size() >= 2, id);
+        }
+    }
+
+    @Test void c4GeometryAndPresentationContractsAreExplicit() {
+        assertEquals(List.of("body", "neck"), NaturalistModelContracts.contractsForId("alligator").getFirst().path());
+        assertEquals(List.of("body", "neck"), NaturalistModelContracts.contractsForId("boar").getFirst().path());
+        var zebra = NaturalistModelContracts.contractsForId("zebra").getFirst();
+        assertEquals(List.of("body", "neck", "neck_r1"), zebra.path());
+        assertEquals(List.of(2, 3), zebra.cubeIndexes());
+        assertEquals(List.of("body", "neck", "skull2"), NaturalistModelContracts.contractsForId("zebra").get(1).path());
         assertEquals(List.of("body", "neck"), NaturalistModelContracts.contractsForId("komodo_dragon").getFirst().path());
-        assertEquals(List.of("body", "skullRot"), NaturalistModelContracts.contractsForId("great_white_shark").getFirst().path());
-        assertEquals(1.5708F, NaturalistModelContracts.contractsForId("starfish").getFirst().presentation().xRotation());
+        var shark = NaturalistModelContracts.contractsForId("great_white_shark").getFirst();
+        assertEquals(List.of("body"), shark.path());
+        assertTrue(shark.neutralizeRootRotation());
+        assertEquals(1.5708F, shark.presentation().yRotation());
+        var starfish = NaturalistModelContracts.contractsForId("starfish").getFirst();
+        assertEquals(List.of("body"), starfish.tracePath());
+        assertEquals(1.5708F, starfish.presentation().xRotation());
         assertEquals(0, NaturalistModelContracts.contractsForId("desert_scorpion").getFirst().path().size());
+        assertEquals(List.of("body"), NaturalistModelContracts.contractsForId("desert_scorpion").getFirst().tracePath());
+        assertEquals(0.0F, NaturalistModelContracts.contractsForId("desert_scorpion").getFirst().presentation().yRotation());
+        assertEquals(0.0F, NaturalistModelContracts.contractsForId("jungle_scorpion").getFirst().presentation().yRotation());
         assertTrue(NaturalistModelContracts.contractsForId("clam").getFirst().presentation().scale() < 0.5F);
+        assertEquals(1.5708F, NaturalistModelContracts.contractsForId("clam").getFirst().presentation().xRotation());
         assertTrue(NaturalistModelContracts.contractsForId("whale").getFirst().presentation().scale() < 0.5F);
+    }
+
+    @Test void c4LabelFallbackTargetsHaveExplicitExactContractsAndTraceSources() {
+        Map<String, String> expected = Map.of(
+                "ray", "RayModel:body:body", "bass", "BassModel:body:body",
+                "giant_isopod", "GiantIsopodModel:body:body", "hedgehog", "HedgehogModel:rolled:rolled",
+                "vulture", "VultureModel:neck:neck", "tortoise", "TortoiseModel:body/skullRot/neck:body/skullRot/neck",
+                "starfish", "StarfishModel::body", "lizard", "LizardModel:body/skullRot/neck:body/skullRot/neck/neck_r1",
+                "mole", "MoleModel:root/body/skull:root/body/skull", "piranha", "PiranhaModel:body:body");
+        expected.forEach((id, expectedContract) -> assertTrue(NaturalistModelContracts.contractsForId(id).stream().anyMatch(contract -> {
+            String name = contract.modelClass().substring(contract.modelClass().lastIndexOf('.') + 1);
+            return (name + ":" + String.join("/", contract.path()) + ":" + String.join("/", contract.tracePath()))
+                    .equals(expectedContract);
+        }), id));
+        assertEquals(List.of("top"), NaturalistModelContracts.contractsForId("clam").getFirst().tracePath());
+        assertEquals(List.of("body"), NaturalistModelContracts.contractsForId("desert_scorpion").getFirst().tracePath());
+        assertEquals(List.of("body"), NaturalistModelContracts.contractsForId("jungle_scorpion").getFirst().tracePath());
     }
 
     @Test void brownBearIsOnlyANativePresentationOverride() {
@@ -75,6 +127,7 @@ class NaturalistCoverageTest {
         for (String id : List.of("bird", "butterfly", "catfish", "caterpillar", "crab", "deer", "firefly", "snake", "snail")) {
             assertFalse(NaturalistModelContracts.isNativePresentationOverrideId(id), id);
         }
+        assertEquals(.45F, NaturalistModelContracts.nativePresentationForId("bear").scale());
     }
 
     @Test void retainedC2ControlsRemainContractStable() {
@@ -83,5 +136,6 @@ class NaturalistCoverageTest {
         assertEquals(1.0F, NaturalistModelContracts.contractsForId("black_bear").getFirst().presentation().scale());
         assertEquals(1.0F, NaturalistModelContracts.contractsForId("turkey").getFirst().presentation().scale());
         assertEquals(1.0F, NaturalistModelContracts.contractsForId("lizard_tail").getFirst().presentation().scale());
+        assertEquals(.76F, NaturalistModelContracts.contractsForId("tiger").getFirst().presentation().scale());
     }
 }

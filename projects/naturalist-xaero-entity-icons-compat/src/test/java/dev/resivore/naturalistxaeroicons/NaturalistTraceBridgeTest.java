@@ -45,6 +45,35 @@ class NaturalistTraceBridgeTest {
         assertNull(NaturalistIconAdapter.resolveTrace(trace, part(Map.of())));
     }
 
+    @Test void explicitDescendantTraceCanRenderAnExactRootContract() {
+        ModelPart tracedBody = part(Map.of());
+        ModelPart originalRoot = part(Map.of("body", tracedBody));
+        ModelPart adapter = NaturalistIconAdapter.build(originalRoot, originalRoot, originalRoot, tracedBody,
+                new NaturalistModelContracts.Presentation(1.0F, 0.0F, 0.0F, 0.0F), false);
+        ModelRenderTrace trace = trace();
+        trace.addVisibleModelPart(tracedBody, 0xFFAABBCC);
+
+        assertNotNull(adapter);
+        assertSame(tracedBody, NaturalistIconAdapter.resolveTrace(trace, adapter).modelPart);
+    }
+
+    @Test void neutralRootCopyKeepsPositionButDropsOnlyDynamicRotation() {
+        ModelPart root = part(Map.of("selected", part(Map.of())));
+        root.x = 3.0F; root.y = 5.0F; root.z = 7.0F;
+        root.xRot = .25F; root.yRot = .5F; root.zRot = .75F;
+        ModelPart selected = root.getChild("selected");
+        ModelPart adapter = NaturalistIconAdapter.build(root, selected, selected, selected,
+                new NaturalistModelContracts.Presentation(1.0F, 0.0F, 0.0F, 0.0F), true);
+        ModelPart copiedRoot = adapter.getChild("naturalist_contract");
+
+        assertEquals(3.0F, copiedRoot.x);
+        assertEquals(5.0F, copiedRoot.y);
+        assertEquals(7.0F, copiedRoot.z);
+        assertEquals(0.0F, copiedRoot.xRot);
+        assertEquals(0.0F, copiedRoot.yRot);
+        assertEquals(0.0F, copiedRoot.zRot);
+    }
+
     @Test void naturalistNoLongerCompetesForC9CallerRedirect() throws Exception {
         Path module = Path.of(System.getProperty("projectRoot"));
         String config = Files.readString(module.resolve("src/main/resources/naturalist_xaero_entity_icons_compat.mixins.json"));

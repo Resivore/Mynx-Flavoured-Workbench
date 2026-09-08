@@ -27,7 +27,7 @@ class BinaryContractTest {
         }
     }
 
-    @Test void c3DoesNotRestoreTheConflictingPartPrerendererRedirect() throws Exception {
+    @Test void c4DoesNotRestoreTheConflictingPartPrerendererRedirectOrCacheBlankIcons() throws Exception {
         Path root = Path.of(System.getProperty("projectRoot"));
         String mixins = Files.readString(root.resolve("src/main/resources/naturalist_xaero_entity_icons_compat.mixins.json"));
         assertFalse(mixins.contains("RadarIconModelPartPrerendererMixin"));
@@ -36,5 +36,8 @@ class BinaryContractTest {
         String bridge = Files.readString(root.resolve("src/main/java/dev/resivore/naturalistxaeroicons/NaturalistIconAdapter.java"));
         assertTrue(bridge.contains("traceSources"));
         assertFalse(bridge.contains("@Redirect"));
+        String prerenderer = Files.readString(root.resolve("src/main/java/dev/resivore/naturalistxaeroicons/mixin/RadarIconModelPrerendererMixin.java"));
+        assertTrue(prerenderer.contains("renderedDest.contains(adapter)"));
+        assertFalse(prerenderer.contains("callback.setReturnValue(adapter)"));
     }
 }

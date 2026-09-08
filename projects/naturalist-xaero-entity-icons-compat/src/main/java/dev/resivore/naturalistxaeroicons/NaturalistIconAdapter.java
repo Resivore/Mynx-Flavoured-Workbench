@@ -18,22 +18,26 @@ public final class NaturalistIconAdapter {
     private NaturalistIconAdapter() {}
 
     public static ModelPart build(ModelPart modelRoot, ModelPart selected) {
-        return build(modelRoot, selected, new NaturalistModelContracts.Presentation(1.0F, 0.0F, 0.0F, 0.0F));
+        return build(modelRoot, selected, selected, selected,
+                new NaturalistModelContracts.Presentation(1.0F, 0.0F, 0.0F, 0.0F), false);
     }
 
     public static ModelPart build(
             ModelPart modelRoot,
+            ModelPart source,
             ModelPart selected,
-            NaturalistModelContracts.Presentation presentation
+            ModelPart trace,
+            NaturalistModelContracts.Presentation presentation,
+            boolean neutralizeRootRotation
     ) {
         List<Node> path = new ArrayList<>();
-        if (!find(modelRoot, "root", selected, path) || path.size() > 16) return null;
+        if (!find(modelRoot, "root", source, path) || path.size() > 16) return null;
         ModelPart branch = selected;
         for (int i = path.size() - 2; i >= 0; i--) {
             Node parent = path.get(i);
             String childName = path.get(i + 1).name();
             ModelPart copy = new ModelPart(List.of(), Map.of(childName, branch));
-            copyTransform(parent.part(), copy);
+            copyTransform(parent.part(), copy, neutralizeRootRotation && i == 0);
             copy.visible = parent.part().visible;
             copy.skipDraw = parent.part().skipDraw;
             copy.setInitialPose(copy.storePose());
@@ -48,6 +52,8 @@ public final class NaturalistIconAdapter {
         adapter.zRot = presentation.zRotation();
         adapter.setInitialPose(adapter.storePose());
         List<ModelPart> traceSources = new ArrayList<>();
+        traceSources.add(trace);
+        traceSources.add(source);
         for (int i = path.size() - 1; i >= 0; i--) traceSources.add(path.get(i).part());
         TRACE_PARTS.put(adapter, List.copyOf(traceSources));
         return adapter;
@@ -71,9 +77,11 @@ public final class NaturalistIconAdapter {
     public static boolean traceExists(ModelRenderTrace trace, ModelPart adapter) {
         return resolveTrace(trace, adapter) != null;
     }
-    private static void copyTransform(ModelPart from, ModelPart to) {
+    private static void copyTransform(ModelPart from, ModelPart to, boolean neutralizeRotation) {
         to.x = from.x; to.y = from.y; to.z = from.z;
-        to.xRot = from.xRot; to.yRot = from.yRot; to.zRot = from.zRot;
+        to.xRot = neutralizeRotation ? 0.0F : from.xRot;
+        to.yRot = neutralizeRotation ? 0.0F : from.yRot;
+        to.zRot = neutralizeRotation ? 0.0F : from.zRot;
         to.xScale = from.xScale; to.yScale = from.yScale; to.zScale = from.zScale;
     }
     private static boolean find(ModelPart current, String name, ModelPart target, List<Node> out) {

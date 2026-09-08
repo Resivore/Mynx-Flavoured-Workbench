@@ -44,16 +44,20 @@ abstract class RadarIconModelPrerendererMixin {
         try {
             var resolved = NaturalistModelContracts.resolve(entity, model);
             if (resolved.isEmpty()) return;
-            ModelPart selected = resolved.orElseThrow().selected();
+            var contract = resolved.orElseThrow();
+            ModelPart selected = contract.selected();
             ModelPart adapter = NaturalistIconAdapter.build(
-                    model.root(), selected, resolved.orElseThrow().contract().presentation());
+                    model.root(), contract.source(), selected, contract.trace(), contract.contract().presentation(),
+                    contract.contract().neutralizeRootRotation());
             if (adapter == null || !NaturalistIconAdapter.traceExists(parameters.mrt, adapter)) return;
             RadarIconModelPrerenderer self = (RadarIconModelPrerenderer) (Object) this;
             VertexConsumer consumer = self.getLayerModelVertexConsumer(
                     buffers, parameters.textures, parameters.textureAtlasSprite, parameters.mrt);
             self.getPartPrerenderer().renderPart(pose, consumer, adapter, selected, parameters);
             buffers.endBatch();
-            if (!parameters.renderedDest.isEmpty()) callback.setReturnValue(selected);
+            // Xaero adds the exact rendered part only after its bounded vertex detector observed
+            // visible geometry. Never treat another or an empty result as this bridge's success.
+            if (parameters.renderedDest.contains(adapter)) callback.setReturnValue(selected);
         } catch (RuntimeException ignored) {
             // Do not turn a malformed/modded Naturalist tree into a partial icon.
             parameters.renderedDest.clear();
