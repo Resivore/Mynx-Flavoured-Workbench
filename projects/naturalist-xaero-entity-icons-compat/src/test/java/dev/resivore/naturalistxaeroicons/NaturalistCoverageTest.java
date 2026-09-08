@@ -146,30 +146,31 @@ class NaturalistCoverageTest {
         }
     }
 
-    @Test void brownBearIsOnlyANativePresentationOverride() {
+    @Test void brownBearIsOnlyANativeControl() {
         assertTrue(NaturalistModelContracts.isNativeControlId("bear"));
-        assertTrue(NaturalistModelContracts.isNativePresentationOverrideId("bear"));
         assertFalse(NaturalistModelContracts.isTargetId("bear"));
-        for (String id : List.of("bird", "butterfly", "catfish", "caterpillar", "crab", "deer", "firefly", "snake", "snail")) {
-            assertFalse(NaturalistModelContracts.isNativePresentationOverrideId(id), id);
-        }
-        assertEquals(.12F, NaturalistModelContracts.nativePresentationForId("bear").scale());
     }
 
-    @Test void brownBearC11DiagnosticIsNativeOnlyAndDoesNotRetryOrEvictCaches() throws Exception {
+    @Test void brownBearC12PathAuditHasNoPresentationOverrideOrCacheMutation() throws Exception {
         Path module = Path.of(System.getProperty("projectRoot"));
-        String prerenderer = Files.readString(module.resolve(
-                "src/main/java/dev/resivore/naturalistxaeroicons/mixin/RadarIconModelPrerendererMixin.java"));
         String manager = Files.readString(module.resolve(
                 "src/main/java/dev/resivore/naturalistxaeroicons/mixin/RadarIconManagerMixin.java"));
-        assertEquals(.12F, NaturalistModelContracts.nativePresentationForId("bear").scale());
-        assertTrue(prerenderer.contains("Axis.ZP.rotationDegrees(90.0F)"));
-        assertTrue(prerenderer.contains("BrownBearDiagnostic.nativePresentationEntered()"));
-        assertTrue(prerenderer.contains("BrownBearDiagnostic.nativePrerenderReturned"));
-        assertTrue(manager.contains("BrownBearDiagnostic.cacheLookup(storage.containsKey(key))"));
-        assertTrue(manager.contains("BrownBearDiagnostic.requestFinished"));
+        String creator = Files.readString(module.resolve(
+                "src/main/java/dev/resivore/naturalistxaeroicons/mixin/RadarIconCreatorMixin.java"));
+        String form = Files.readString(module.resolve(
+                "src/main/java/dev/resivore/naturalistxaeroicons/mixin/RadarIconModelFormPrerendererMixin.java"));
+        assertTrue(manager.contains("BrownBearPathDiagnostic.cacheLookup(storage.containsKey(key))"));
+        assertTrue(manager.contains("BrownBearPathDiagnostic.requestFinished"));
+        assertTrue(creator.contains("parameters.form"));
+        assertTrue(creator.contains("getTextureLocation"));
+        assertTrue(form.contains("trace.textures"));
+        assertFalse(creator.contains("pose.scale"));
         assertFalse(manager.contains("storage.remove(key)"));
         assertFalse(manager.contains("BrownBearIconCacheFreshness"));
+        assertFalse(Files.exists(module.resolve(
+                "src/main/java/dev/resivore/naturalistxaeroicons/NaturalistIconPresentation.java")));
+        assertFalse(Files.exists(module.resolve(
+                "src/main/java/dev/resivore/naturalistxaeroicons/BrownBearDiagnostic.java")));
         assertFalse(Files.exists(module.resolve(
                 "src/main/java/dev/resivore/naturalistxaeroicons/BrownBearIconCacheFreshness.java")));
     }

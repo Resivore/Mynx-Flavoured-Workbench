@@ -20,8 +20,6 @@ public final class NaturalistModelContracts {
     private static final Map<String, List<Contract>> TARGETS = targets();
     private static final List<String> NATIVE_CONTROLS = List.of(
             "bear", "bird", "butterfly", "catfish", "caterpillar", "crab", "deer", "firefly", "snake", "snail");
-    private static final Map<String, Presentation> NATIVE_PRESENTATION_OVERRIDES =
-            Map.of("bear", new Presentation(0.12F, 0.0F, 0.0F, 0.0F, 0.0F));
 
     private NaturalistModelContracts() {}
 
@@ -38,18 +36,6 @@ public final class NaturalistModelContracts {
                 && NATIVE_CONTROLS.contains(EntityType.getKey(entity.getType()).getPath());
     }
     public static boolean isNativeControlId(String id) { return NATIVE_CONTROLS.contains(id); }
-    public static boolean isNativePresentationOverrideId(String id) {
-        return NATIVE_PRESENTATION_OVERRIDES.containsKey(id);
-    }
-    public static boolean isNativePresentationOverride(Entity entity) {
-        return EntityType.getKey(entity.getType()).getNamespace().equals("naturalist")
-                && isNativePresentationOverrideId(EntityType.getKey(entity.getType()).getPath());
-    }
-    public static Presentation nativePresentation(Entity entity) {
-        return NATIVE_PRESENTATION_OVERRIDES.get(EntityType.getKey(entity.getType()).getPath());
-    }
-    static Presentation nativePresentationForId(String id) { return NATIVE_PRESENTATION_OVERRIDES.get(id); }
-
     public static Optional<ResolvedContract> resolve(Entity entity, Model model) {
         if (!owns(entity) || model == null) return Optional.empty();
         String modelName = model.getClass().getName();

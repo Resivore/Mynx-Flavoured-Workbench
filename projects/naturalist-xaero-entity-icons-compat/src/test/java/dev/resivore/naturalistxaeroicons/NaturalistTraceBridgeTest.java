@@ -123,12 +123,15 @@ class NaturalistTraceBridgeTest {
         assertFalse(source.contains("private static boolean find("));
     }
 
-    @Test void naturalistNoLongerCompetesForC9CallerRedirect() throws Exception {
+    @Test void naturalistC12ObservesModelPartCallsWithoutCompetingForC9sRedirect() throws Exception {
         Path module = Path.of(System.getProperty("projectRoot"));
         String config = Files.readString(module.resolve("src/main/resources/naturalist_xaero_entity_icons_compat.mixins.json"));
         assertTrue(config.contains("ModelRenderTraceMixin"));
-        assertFalse(config.contains("RadarIconModelPartPrerendererMixin"));
-        assertFalse(Files.exists(module.resolve("src/main/java/dev/resivore/naturalistxaeroicons/mixin/RadarIconModelPartPrerendererMixin.java")));
+        assertTrue(config.contains("RadarIconModelPartPrerendererMixin"));
+        String observer = Files.readString(module.resolve(
+                "src/main/java/dev/resivore/naturalistxaeroicons/mixin/RadarIconModelPartPrerendererMixin.java"));
+        assertTrue(observer.contains("@Inject"));
+        assertFalse(observer.contains("@Redirect"));
 
         Path c9 = module.getParent().resolve("xaero-entity-icons/src/main/java/dev/resivore/xaeroemfcompat/mixin/RadarIconModelPartPrerendererMixin.java");
         String c9Source = Files.readString(c9);

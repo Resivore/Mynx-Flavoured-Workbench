@@ -1,6 +1,6 @@
 package dev.resivore.naturalistxaeroicons.mixin;
 
-import dev.resivore.naturalistxaeroicons.BrownBearDiagnostic;
+import dev.resivore.naturalistxaeroicons.BrownBearPathDiagnostic;
 import dev.resivore.naturalistxaeroicons.NaturalistModelContracts;
 import java.util.Map;
 import net.minecraft.world.entity.EntityType;
@@ -29,14 +29,14 @@ abstract class RadarIconManagerMixin {
             Map<EntityType<?>, RadarIconEntityCache> caches = ((RadarIconCacheAccessor) (Object) iconCache).naturalistXaeroIcons$getIconCacheMap();
             caches.keySet().removeIf(type -> EntityType.getKey(type).getNamespace().equals("naturalist")
                     && NaturalistModelContracts.isTargetId(EntityType.getKey(type).getPath()));
-            BrownBearDiagnostic.resourceReloaded();
+            BrownBearPathDiagnostic.resourceReloaded();
         } catch (RuntimeException ignored) { /* reload remains Xaero-owned if the private seam changed */ }
     }
 
     @Inject(
             method = "get(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/entity/EntityType;Lxaero/hud/minimap/radar/icon/definition/RadarIconDefinition;Lnet/minecraft/client/renderer/entity/EntityRenderer;FZZLxaero/hud/minimap/element/render/MinimapElementGraphics;Lcom/mojang/blaze3d/pipeline/RenderTarget;)Lxaero/common/icon/XaeroIcon;",
             at = @At("HEAD"), require = 0)
-    private void naturalistXaeroIcons$startBrownBearDiagnostic(
+    private void naturalistXaeroIcons$startBrownBearPathAudit(
             net.minecraft.world.entity.Entity entity, EntityType<?> type,
             xaero.hud.minimap.radar.icon.definition.RadarIconDefinition definition,
             net.minecraft.client.renderer.entity.EntityRenderer<?, ?> renderer, float partialTick,
@@ -44,7 +44,7 @@ abstract class RadarIconManagerMixin {
             xaero.hud.minimap.element.render.MinimapElementGraphics graphics,
             com.mojang.blaze3d.pipeline.RenderTarget target,
             CallbackInfoReturnable<XaeroIcon> callback) {
-        BrownBearDiagnostic.requestStarted(entity, canPrerender);
+        BrownBearPathDiagnostic.requestStarted(entity, canPrerender);
     }
 
     /** Observes the exact native cache read without changing cache contents or redirect ownership. */
@@ -65,13 +65,13 @@ abstract class RadarIconManagerMixin {
             RadarIconArmor armor, RadarIconEntityCache cache, RadarIconKey key) {
         Map<RadarIconKey, XaeroIcon> storage = ((RadarIconEntityCacheStorageAccessor) (Object) cache)
                 .naturalistXaeroIcons$getStorage();
-        if (BrownBearDiagnostic.isBrownBear(entity)) BrownBearDiagnostic.cacheLookup(storage.containsKey(key));
+        if (BrownBearPathDiagnostic.isBrownBear(entity)) BrownBearPathDiagnostic.cacheLookup(storage.containsKey(key));
     }
 
     @Inject(
             method = "get(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/entity/EntityType;Lxaero/hud/minimap/radar/icon/definition/RadarIconDefinition;Lnet/minecraft/client/renderer/entity/EntityRenderer;FZZLxaero/hud/minimap/element/render/MinimapElementGraphics;Lcom/mojang/blaze3d/pipeline/RenderTarget;)Lxaero/common/icon/XaeroIcon;",
             at = @At("RETURN"), require = 0)
-    private void naturalistXaeroIcons$finishBrownBearDiagnostic(
+    private void naturalistXaeroIcons$finishBrownBearPathAudit(
             net.minecraft.world.entity.Entity entity, EntityType<?> type,
             xaero.hud.minimap.radar.icon.definition.RadarIconDefinition definition,
             net.minecraft.client.renderer.entity.EntityRenderer<?, ?> renderer, float partialTick,
@@ -79,6 +79,6 @@ abstract class RadarIconManagerMixin {
             xaero.hud.minimap.element.render.MinimapElementGraphics graphics,
             com.mojang.blaze3d.pipeline.RenderTarget target,
             CallbackInfoReturnable<XaeroIcon> callback) {
-        BrownBearDiagnostic.requestFinished(callback.getReturnValue());
+        BrownBearPathDiagnostic.requestFinished(callback.getReturnValue());
     }
 }

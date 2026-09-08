@@ -34,10 +34,13 @@ class BinaryContractTest {
         }
     }
 
-    @Test void c11UsesTheEnclosingNativeCapturePoseForOnlyTheBrownBearDiagnostic() throws Exception {
+    @Test void c12AuditsThePostMissCreatorPathWithoutAnyBrownBearPresentationOverride() throws Exception {
         Path root = Path.of(System.getProperty("projectRoot"));
         String mixins = Files.readString(root.resolve("src/main/resources/naturalist_xaero_entity_icons_compat.mixins.json"));
-        assertFalse(mixins.contains("RadarIconModelPartPrerendererMixin"));
+        assertTrue(mixins.contains("RadarIconModelPartPrerendererMixin"));
+        assertTrue(mixins.contains("RadarIconCreatorMixin"));
+        assertTrue(mixins.contains("RadarIconModelFormPrerendererMixin"));
+        assertTrue(mixins.contains("RadarIconEntityCacheMixin"));
         assertTrue(mixins.contains("ModelRenderTraceMixin"));
         assertTrue(mixins.contains("RadarIconModelPrerendererMixin"));
         assertTrue(mixins.contains("RadarIconEntityCacheStorageAccessor"));
@@ -48,16 +51,13 @@ class BinaryContractTest {
         assertTrue(prerenderer.contains("if (!parameters.renderedDest.isEmpty()) callback.setReturnValue(selected)"));
         assertFalse(prerenderer.contains("renderedDest.contains(adapter)"));
         assertFalse(prerenderer.contains("callback.setReturnValue(adapter)"));
-        assertTrue(prerenderer.contains("method = \"renderModel\", at = @At(\"HEAD\")"));
-        assertTrue(prerenderer.contains("pose.pushPose()"));
-        assertTrue(prerenderer.contains("pose.popPose()"));
-        assertTrue(prerenderer.contains("Axis.ZP.rotationDegrees(90.0F)"));
-        assertTrue(prerenderer.contains("BrownBearDiagnostic.nativePresentationEntered"));
-        assertTrue(prerenderer.contains("BrownBearDiagnostic.nativePrerenderReturned"));
+        assertFalse(prerenderer.contains("Axis.ZP.rotationDegrees(90.0F)"));
+        assertFalse(prerenderer.contains("pose.scale("));
+        assertFalse(prerenderer.contains("BrownBearDiagnostic"));
         String manager = Files.readString(root.resolve("src/main/java/dev/resivore/naturalistxaeroicons/mixin/RadarIconManagerMixin.java"));
         assertTrue(manager.contains("RadarIconEntityCache;get"));
-        assertTrue(manager.contains("BrownBearDiagnostic.cacheLookup"));
-        assertTrue(manager.contains("BrownBearDiagnostic.requestFinished"));
+        assertTrue(manager.contains("BrownBearPathDiagnostic.cacheLookup"));
+        assertTrue(manager.contains("BrownBearPathDiagnostic.requestFinished"));
         assertTrue(manager.contains("storage.containsKey(key)"));
         assertTrue(manager.contains("CAPTURE_FAILHARD"));
         assertFalse(manager.contains("storage.remove(key)"));
