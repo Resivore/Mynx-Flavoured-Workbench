@@ -13,18 +13,18 @@
     "lifecycle": "ACTIVE",
     "goals": [
       "Provide fail-closed Xaero Minimap radar-icon capture for the 37 Naturalist living entities whose rendered ModelPart hierarchy is not captured by Xaero's native path.",
-      "Preserve Xaero's native successful capture for Brown Bear, Bird, Butterfly, Catfish, Caterpillar, Crab, Deer, Firefly, Snake, and Snail, without modifying Naturalist, Xaero, EMF, or Ribbits."
+      "Preserve Xaero's native successful model and texture capture for Brown Bear, Bird, Butterfly, Catfish, Caterpillar, Crab, Deer, Firefly, Snake, and Snail; Brown Bear alone receives a narrow icon-only scale correction without modifying Naturalist, Xaero, EMF, or Ribbits."
     ],
     "scope": [
       "Use a closed Naturalist entity-id plus exact current model-class contract registry. Each contract selects the live renderer-selected adult, baby, or state model subtree; unknown class, path, trace, or draw failure delegates to Xaero's normal fallback.",
-      "After Xaero's native model prerender returns empty, render only the selected head/neck subtree for ordinary headed animals, or an explicit compact-body subtree for the documented non-headed anatomy families. The bridge copies ancestor transforms only and never mutates or reparents the live model.",
-      "Evict only the 37 owned target entity cache entries after Xaero resource reload so successful and FAILED results are retried using the current model and texture."
+      "After Xaero's native model prerender returns empty, render only the selected head/neck subtree for ordinary headed animals, or an explicit compact-body subtree for the documented non-headed anatomy families. The bridge copies only contract-path ancestor transforms and resolves only the selected part or its explicit ancestors' recorded trace; it never mutates or reparents the live Naturalist model.",
+      "Use explicit contract-local scale and rotation only for the C3 presentation corrections. Brown Bear remains on Xaero's native capture path and receives only a scoped icon-pose scale; no screen-space offsets are used. Evict the 37 fallback targets plus Brown Bear after resource reload so corrected results are retried."
     ],
     "boundaries": {
       "owned_paths": ["projects/naturalist-xaero-entity-icons-compat"],
       "exclusions": [
         "Naturalist source, artifact, version, controls, gameplay, networking, private assets, and renderer behavior remain owned by projects/naturalist.",
-        "Xaero, XaeroLib, Xaero × EMF, Ribbits × Xaero, vanilla entities, unrelated modded models, normal successful Xaero captures, category/visibility settings, and cache entries outside the 37 target Naturalist types are not intercepted.",
+        "Xaero, XaeroLib, Xaero × EMF, Ribbits × Xaero, vanilla entities, unrelated modded models, normal successful Xaero captures other than Brown Bear's scoped presentation pose, category/visibility settings, and cache entries outside the 37 target Naturalist types plus Brown Bear are not intercepted.",
         "duck_egg and dirt_trail are not mob-icon targets. No static artwork, copied Naturalist or Xaero assets/classes, arbitrary class-name discovery, species-specific screen-space offsets, whole-model fallback for ordinarily headed animals, runtime deployment, or protected-gameplay-instance access is included."
       ]
     },
@@ -38,12 +38,12 @@
     ]
   },
   "state": {
-    "milestone": "Canary 1 failed at world/session entry during Xaero radar-icon resource reload: its caller-side redirect collided with the accepted Xaero × EMF Canary 9 critical redirect. Canary 2 moves only Naturalist's adapter trace lookup to ModelRenderTrace, is static-validated, and remains undeployed because both canonical slots are occupied at manager revision 117.",
+    "milestone": "Canary 2 is retained external-runtime FAIL provenance: its Xaero × EMF C9 coexistence reload/world-entry smoke gate passed, but the supplied Naturalist matrix found twelve generic/missing icons, malformed geometry/orientation, and oversized captures. Canary 3 corrects only the closed C8 contracts and presentation paths, is STATIC_PASS, and is not deployed because unrelated BGE C60 and IBF C4 cohorts occupy both canonical slots at manager revision 117.",
     "releases": {
       "current": {
-        "version": "0.1.0-canary2",
-        "artifact": {"filename": "naturalist-xaero-entity-icons-compat-0.1.0-canary2.jar", "sha256": "ff161f6bcbf5cd056a5e27d7cd56091ab5abfa8e69440c76f2f6ce9ba6e86c50"},
-        "source_commit": "e9d0c04ed2ab64b077d1abfb8daaa356c5de895c",
+        "version": "0.1.0-canary3",
+        "artifact": {"filename": "naturalist-xaero-entity-icons-compat-0.1.0-canary3.jar", "sha256": "510b205ce889ca92f31cf20a0eff078348598e3d6fef3cfeba15dc9363977d7b"},
+        "source_commit": "831297c74ee4829563476b64d75e24d2342148f9",
         "runtime_dependency_policy": {"contract": "CAPABILITY_OR_PROVIDER", "exceptions": []}
       },
       "accepted": null,
@@ -55,11 +55,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 2,
-    "activity_at": "2026-09-07T22:34:37Z",
-    "updated_at": "2026-09-07T22:34:37Z",
-    "last_codex_at": "2026-09-07T22:34:37Z",
-    "source_commit": "e9d0c04ed2ab64b077d1abfb8daaa356c5de895c",
+    "revision": 3,
+    "activity_at": "2026-09-07T23:42:01Z",
+    "updated_at": "2026-09-07T23:42:01Z",
+    "last_codex_at": "2026-09-07T23:42:01Z",
+    "source_commit": "831297c74ee4829563476b64d75e24d2342148f9",
     "google_sheet": {"participates": true, "exclusion_reason": null}
   }
 }

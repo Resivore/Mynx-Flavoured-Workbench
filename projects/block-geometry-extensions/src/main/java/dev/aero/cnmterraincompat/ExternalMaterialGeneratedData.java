@@ -36,10 +36,10 @@ public final class ExternalMaterialGeneratedData {
             addRole(blockTags, itemTags, "clutternomore", "vertical_slabs", roles.get("vertical_slab"));
             addRole(blockTags, itemTags, "clutternomore", "steps", roles.get("step"));
 
-            // Full-parent aliases use existing native BGE geometry. They still need
-            // the optional provider's material tags, but must not replace native loot.
-            if (binding.profile().family() != null) continue;
             for (String role : List.of("slab", "stairs", "wall", "vertical_slab", "step")) {
+                // Provider-native roles retain provider-owned loot and data. BGE publishes only
+                // the roles it actually registered for this exact canonical source variant.
+                if (!binding.isGeneratedRole(role)) continue;
                 Block block = roles.get(role);
                 Identifier id = registeredId(block);
                 DataGenerator.writeServerData(Identifier.fromNamespaceAndPath(id.getNamespace(),

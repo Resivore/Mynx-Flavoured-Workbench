@@ -38,7 +38,6 @@ public final class ExternalMaterialGeneratedResources {
         int models = 0;
         int items = 0;
         for (ExternalMaterialFamilies.Binding binding : ExternalMaterialFamilies.all()) {
-            if (binding.profile().family() != null) continue;
             NibaruMaterialProfile profile = binding.profile();
             Identifier slab = id(binding.slab());
             Identifier stairs = id(binding.stairs());
@@ -48,29 +47,41 @@ public final class ExternalMaterialGeneratedResources {
             String verticalItemModel = model(vertical);
             String stepItemModel = model(step);
 
-            if (profile.orientationPolicy() == NibaruMaterialProfile.OrientationPolicy.AXIS_ALIGNED) {
-                NativeAxisModelContract.AxisUvPolicy nativePolicy = NativeAxisModelContract.AxisUvPolicy.valueOf(
-                        AxisGeneratedResources.policy(manager, profile.canonicalParentId()).name());
-                NativeAxisModelContract.GeneratedBlockResources slabResources =
-                        NativeAxisModelContract.slab(profile, nativePolicy);
-                write(blockState(slab), slabResources.blockState());
-                models += writeModels(slabResources.models());
-                NativeAxisModelContract.GeneratedBlockResources stairResources =
-                        NativeAxisModelContract.stairs(profile, nativePolicy);
-                write(blockState(stairs), stairResources.blockState());
-                models += writeModels(stairResources.models());
-                // Walls deliberately retain the normal wall multipart route.  Material-axis
-                // projection applies to the other log/wood geometries, never to wall state.
+            if (binding.isGeneratedRole("slab")) {
+                if (profile.orientationPolicy() == NibaruMaterialProfile.OrientationPolicy.AXIS_ALIGNED) {
+                    NativeAxisModelContract.AxisUvPolicy nativePolicy = NativeAxisModelContract.AxisUvPolicy.valueOf(
+                            AxisGeneratedResources.policy(manager, profile.canonicalParentId()).name());
+                    NativeAxisModelContract.GeneratedBlockResources resources =
+                            NativeAxisModelContract.slab(profile, nativePolicy);
+                    write(blockState(slab), resources.blockState());
+                    models += writeModels(resources.models());
+                } else models += writeSlab(profile, slab);
+                blockStates++;
+            }
+            if (binding.isGeneratedRole("stairs")) {
+                if (profile.orientationPolicy() == NibaruMaterialProfile.OrientationPolicy.AXIS_ALIGNED) {
+                    NativeAxisModelContract.AxisUvPolicy nativePolicy = NativeAxisModelContract.AxisUvPolicy.valueOf(
+                            AxisGeneratedResources.policy(manager, profile.canonicalParentId()).name());
+                    NativeAxisModelContract.GeneratedBlockResources resources =
+                            NativeAxisModelContract.stairs(profile, nativePolicy);
+                    write(blockState(stairs), resources.blockState());
+                    models += writeModels(resources.models());
+                } else models += writeStairs(manager, profile, stairs);
+                blockStates++;
+            }
+            if (binding.isGeneratedRole("wall")) {
+                // Wall state remains the normal post/low/tall multipart contract. Directional
+                // material faces are expressed by the model templates, never an AXIS property.
                 models += writeWall(manager, profile, wall);
-                blockStates += 3;
-            } else {
-                models += writeSlab(profile, slab);
-                models += writeStairs(manager, profile, stairs);
-                models += writeWall(manager, profile, wall);
-                blockStates += 3;
+                blockStates++;
             }
 
             if (profile.orientationPolicy() == NibaruMaterialProfile.OrientationPolicy.AXIS_ALIGNED) {
+                // CNM's normal Vertical Slab and Step templates are the established item-preview
+                // contract: their display transforms centre the Vertical Slab and present the Step
+                // horizontally. AxisModelContract only produces placed-state signature models.
+                // Keep that state-model collection out of the item-preview decision.
+                models += writeAxisItemPreviewModels(profile, vertical, step);
                 AxisModelContract.AxisUvPolicy policy = AxisGeneratedResources.policy(
                         manager, profile.canonicalParentId());
                 Map<String, JsonObject> verticalModels =
@@ -78,25 +89,32 @@ public final class ExternalMaterialGeneratedResources {
                 verticalModels.forEach((modelId, model) -> write(modelResource(modelId), model));
                 write(blockState(vertical), AxisModelContract.verticalBlockState(vertical, policy));
                 models += verticalModels.size();
-                verticalItemModel = verticalModels.keySet().iterator().next();
                 Map<String, JsonObject> stepModels =
                         AxisModelContract.stepGeneratedModels(profile, step, policy);
                 stepModels.forEach((modelId, model) -> write(modelResource(modelId), model));
                 write(blockState(step), AxisModelContract.stepBlockState(step, policy));
                 models += stepModels.size();
-                stepItemModel = stepModels.keySet().iterator().next();
             } else {
                 models += writeVertical(profile, vertical);
                 models += writeStep(profile, step);
             }
             blockStates += 2;
 
-            write(item(slab), GeneratedItemModelSupport.itemDefinition(manager, profile, model(slab)));
-            write(item(stairs), GeneratedItemModelSupport.itemDefinition(manager, profile, model(stairs)));
-            write(item(wall), GeneratedItemModelSupport.itemDefinition(manager, profile, model(wall) + "_inventory"));
+            if (binding.isGeneratedRole("slab")) {
+                write(item(slab), GeneratedItemModelSupport.itemDefinition(manager, profile, model(slab)));
+                items++;
+            }
+            if (binding.isGeneratedRole("stairs")) {
+                write(item(stairs), GeneratedItemModelSupport.itemDefinition(manager, profile, model(stairs)));
+                items++;
+            }
+            if (binding.isGeneratedRole("wall")) {
+                write(item(wall), GeneratedItemModelSupport.itemDefinition(manager, profile, model(wall) + "_inventory"));
+                items++;
+            }
             write(item(vertical), GeneratedItemModelSupport.itemDefinition(manager, profile, verticalItemModel));
             write(item(step), GeneratedItemModelSupport.itemDefinition(manager, profile, stepItemModel));
-            items += 5;
+            items += 2;
         }
         write(Identifier.fromNamespaceAndPath(CnmTerrainCompat.MOD_ID + "_generated", "lang/en_us.json"),
                 combinedLanguage());
@@ -147,7 +165,26 @@ public final class ExternalMaterialGeneratedResources {
                 Identifier.fromNamespaceAndPath("minecraft", "blockstates/cobblestone_wall.json"),
                 "minecraft:block/cobblestone_wall", model(id));
         write(blockState(id), state);
-        if (profile.tintProfile() == TintProfile.NONE) {
+        if (profile.visualProfile() == games.twinhead.moreslabsstairsandwalls.api.material.VisualProfile.PILLAR) {
+            write(modelResource(id, "_post"), columnWallTemplate(
+                    "more_slabs_stairs_and_walls:block/template_column_wall_post", profile));
+            write(modelResource(id, "_side"), columnWallTemplate(
+                    "more_slabs_stairs_and_walls:block/template_column_wall_side", profile));
+            write(modelResource(id, "_side_tall"), columnWallTemplate(
+                    "more_slabs_stairs_and_walls:block/template_column_wall_side_tall", profile));
+            write(modelResource(id, "_inventory"), columnWallTemplate(
+                    "more_slabs_stairs_and_walls:block/template_column_wall_inventory", profile));
+        } else if (profile.visualProfile()
+                == games.twinhead.moreslabsstairsandwalls.api.material.VisualProfile.LEAVES_CUTOUT_TINTED) {
+            write(modelResource(id, "_post"), leafWallTemplate(
+                    "more_slabs_stairs_and_walls:block/template_leaves_wall_post", profile));
+            write(modelResource(id, "_side"), leafWallTemplate(
+                    "more_slabs_stairs_and_walls:block/template_leaves_wall_side", profile));
+            write(modelResource(id, "_side_tall"), leafWallTemplate(
+                    "more_slabs_stairs_and_walls:block/template_leaves_wall_side_tall", profile));
+            write(modelResource(id, "_inventory"), leafWallTemplate(
+                    "more_slabs_stairs_and_walls:block/template_leaves_wall_inventory", profile));
+        } else if (profile.tintProfile() == TintProfile.NONE) {
             write(modelResource(id, "_post"), wallTemplate("minecraft:block/template_wall_post", profile));
             write(modelResource(id, "_side"), wallTemplate("minecraft:block/template_wall_side", profile));
             write(modelResource(id, "_side_tall"), wallTemplate("minecraft:block/template_wall_side_tall", profile));
@@ -196,6 +233,18 @@ public final class ExternalMaterialGeneratedResources {
         return 3;
     }
 
+    /**
+     * Writes only the normal CNM preview models for an axis-aligned late family. These models
+     * intentionally remain absent from the axis-aware placed-state selectors.
+     */
+    private static int writeAxisItemPreviewModels(
+            NibaruMaterialProfile profile, Identifier vertical, Identifier step) {
+        String tint = profile.tintProfile() == TintProfile.NONE ? "" : "_tinted";
+        write(modelResource(vertical), template("clutternomore:block/templates/vertical_slab" + tint, profile));
+        write(modelResource(step), template("clutternomore:block/templates/step" + tint, profile));
+        return 2;
+    }
+
     private static JsonObject template(String parent, NibaruMaterialProfile profile) {
         JsonObject result = new JsonObject();
         result.addProperty("parent", parent);
@@ -206,6 +255,25 @@ public final class ExternalMaterialGeneratedResources {
     private static JsonObject wallTemplate(String parent, NibaruMaterialProfile profile) {
         JsonObject result = new JsonObject();
         result.addProperty("parent", parent);
+        JsonObject textures = new JsonObject();
+        textures.addProperty("wall", texture(profile.textureRoles().side()));
+        result.add("textures", textures);
+        return result;
+    }
+
+    /** Accepted Oak Log wall route: bark on vertical faces and end grain on horizontal faces. */
+    private static JsonObject columnWallTemplate(String parent, NibaruMaterialProfile profile) {
+        JsonObject result = new JsonObject();
+        result.addProperty("parent", parent);
+        result.add("textures", textures(profile));
+        return result;
+    }
+
+    /** Accepted normal leaf-wall geometry; tint registration remains profile-controlled. */
+    private static JsonObject leafWallTemplate(String parent, NibaruMaterialProfile profile) {
+        JsonObject result = new JsonObject();
+        result.addProperty("parent", parent);
+        result.addProperty("render_type", "cutout_mipped");
         JsonObject textures = new JsonObject();
         textures.addProperty("wall", texture(profile.textureRoles().side()));
         result.add("textures", textures);
@@ -290,10 +358,10 @@ public final class ExternalMaterialGeneratedResources {
                 QuarterGeometryGeneratedData.bindings(BgeGeometryRole.QUARTER_COLUMN))
             language.addProperty(translation(column.id()), QuarterGeometryGeneratedResources.quarterColumnDisplayName(column.profile()));
         for (ExternalMaterialFamilies.Binding binding : ExternalMaterialFamilies.all()) {
-            if (binding.profile().family() != null) continue;
             for (Map.Entry<String, Block> role : binding.roles().entrySet()) {
                 if (role.getKey().equals("block") || role.getKey().equals("layer")
                         || role.getKey().equals("corner") || role.getKey().equals("quarter_column")) continue;
+                if (!binding.isGeneratedRole(role.getKey())) continue;
                 Identifier id = id(role.getValue());
                 language.addProperty(translation(id), AssetGenerator.langName(
                         binding.spec().id().getPath() + "_" + role.getKey()));

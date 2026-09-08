@@ -20,24 +20,15 @@
   "definition": {
     "lifecycle": "ACTIVE",
     "goals": [
-      "Keep accepted C8's Inventory Extended player-storage, Clutter No More ShapeMap, vanilla shelf, and CSR reservation-affinity behavior while delivering Workbench-owned live Nearby Search without an Inventory Search runtime dependency.",
-      "Admit a normally valid nearby container at QSN's real discovery prefilter when CSR reports an empty physical slot reserved for an exact source item and complete component identity, even when the container has zero physical instances of that item.",
-      "Keep Quick Stack Nearby responsible for discovery, target order, existing-stack merges, access and placement checks, capacity, remainders, rules, persistence, packets, and feedback; delegate unchanged when CSR is absent or a target has no reservation-governed empty slot.",
-      "Preserve exact prior accepted C6 as rollback and distinct runtime-passed C4 as historical provenance with immutable artifact, source, and evidence boundaries.",
-      "One-level native-scan nested shulker targets, parent-first ordering, exact physical or optional CSR ItemStack affinity, physical/reserved/ordinary insertion passes, transactional host-only CONTAINER writeback, exact source accounting, connected-barrel persistence and host deduplication. Upstream QSN and public CSR ownership remain unchanged."
+      "Preserve C9's one-level nested shulker routing, source accounting, ordering, capacity, and optional CSR affinity while fixing only reserved zero-count destination eligibility.",
+      "Keep a CSR-reserved nested slot owned by its exact item-and-components reservation even while its physical stack is empty.",
+      "Preserve accepted C8 and rollback C6 provenance separately from retained C9 and rejected C10/C11 historical evidence."
     ],
     "scope": [
-      "Current 0.4.0-workbench-canary10 is the integrated Workbench-owned Quick Stack Nearby replacement candidate: upstream QSN source with Inventory Extended live source windows, CSR reservation affinity, CNM ShapeMap affinity, shelf exclusion, one-level nested shulker routing, optional Double Barrels discovery, and bounded server-authoritative live Nearby Search. Inventory Search is source provenance only, not a runtime dependency. Prior Canary descriptions below are retained historical baseline context.",
-      "Maintain the production implementation and resources at checkpoint 1f545721658cce803200fa277737052cead79b70 while preserving all accepted C6 behavior and retained C7 insertion behavior outside the failed discovery seam.",
-      "Wrap QSN 0.4.0's exact QuickStackMoveEngine.acceptedTypes(Container) call inside scanContainer after native access and validity checks but before nearbyTargets discards an empty accepted-types set, using only CSR's public read-only exact reservation classifier.",
-      "Scope the real source container, source window, locks, and keep-count rules around QSN's native quickStack call so reservation-only affinity is derived from movable source items and is restored without leakage after nested or exceptional calls.",
-      "Preserve existing native target set identity when no new key is needed, avoid duplicate keys and targets, and retain reservation-only targets at their natural raw-discovery and distance-sorted position rather than globally appending them.",
-      "Intercept QSN 0.4.0's exact post-merge empty-slot seam only when an empty slot is governed by a matching or mismatched reservation; insert into matching reserved empties in physical order, then ordinary empties in physical order, while mismatched reserved empties remain protected.",
-      "Preserve exact no-op identity when CSR is absent and delegate QSN's native empty-slot helper for unsupported or wholly unreserved targets.",
-      "Retain C6's Inventory Extended source-window expansion and lock ceiling, Clutter No More ShapeMap affinity and merge delegation, vanilla shelf exclusion, and Inventory Search button/result compatibility.",
-      "Audit exact QSN 0.4.0 and CSR C1 bytecode/API seams, exercise the CSR C1 API floor and paired CSR Canary 4 provider, and keep runtime metadata predicates flexible for compatible providers.",
-      "Retain exact prior accepted C6 as rollback, exact C4 as distinct historical focused-runtime-pass provenance, and failed C5 and C7 results textually rather than as current or rollback artifacts.",
-      "Preserve the exact user-bound C7 RUNTIME_FAIL with no passed rows: its post-discovery target augmentation did not admit a nearby container whose only matching affinity was a reservation and which held zero physical instances of that item."
+      "Current C12 is a C9-derived compatibility-sidecar correction, not a continuation of C10 or C11 implementation or behavior. C10 and C11 remain historical records only.",
+      "On a physically empty nested slot, C12 checks C9's public CSR reservation matcher first: a matching reservation is eligible, a mismatching active reservation is blocked, and only an unreserved empty slot is generic capacity.",
+      "C12 leaves existing physical-stack merging, nested discovery, parent-first ordering, reservation creation and maintenance, container scanning, source rules, transactional writeback, and C9 identity semantics unchanged.",
+      "C12 is retained, ACTIVE, NOT_DEPLOYED, and RUNTIME_UNTESTED. Controlled unit and Fabric GameTest evidence is not Minecraft gameplay runtime evidence."
     ],
     "boundaries": {
       "owned_paths": [
@@ -47,7 +38,7 @@
         "Container Slot Reservations, Carried Container Auto-Routing, Matcha \u00d7 Stack to Nearby Chests Compatibility, Inventory Search, Block Geometry Extensions, Nibaru, Clutter No More, Quick Stack Nearby, and every other nearby-routing or inventory project retain their own identities, source, artifacts, controls, and behavior ownership.",
         "No CSR reservation mutation, persistence, user interface, container-support policy, or classification logic is reimplemented; C8 consumes only CSR's public read-only reservation API when the provider is loaded.",
         "No Stack to Nearby Chests implementation, Matcha-specific QSN adapter, general Inventory Search patch, carried-container routing, nested-container routing, registry-name parsing, fuzzy material equivalence, item conversion, or custom existing-stack merge is owned here.",
-        "C10 packages its LGPL-licensed QSN-derived implementation and required notices, but does not bundle external QSN, CSR, Inventory Search/Core, Inventory Extended, Clutter No More, BGE, Nibaru, Minecraft, or Fabric JARs; Inventory Search v3.4.0 is visual-source provenance only.",
+        "C12 is a C9-derived compatibility-sidecar artifact. It does not carry forward C10/C11's integrated upstream-QSN implementation or behavior, and it does not bundle external QSN, CSR, Inventory Extended, Clutter No More, BGE, Nibaru, Minecraft, or Fabric JARs.",
         "C8 mirrors the exact audited QSN 0.4.0 package-private maximum-stack helper through its current Container#getMaxStackSize delegate because attempted Java-package and Mixin invokers were not runtime-safe; a future QSN helper change requires seam re-audit.",
         "Controlled JUnit and Fabric GameTest results are build/static evidence, not Minecraft gameplay runtime validation.",
         "Lifecycle is ACCEPTED because exact current C8 was promoted into accepted Stack v17 and no longer occupies a Test Slot; C6 is rollback, C4 remains distinct historical passing provenance, and C7's independent failure remains separate.",
@@ -154,16 +145,16 @@
     ]
   },
   "state": {
-    "milestone": "C10 is a controlled-validated, retained-but-not-deployed integrated QSN replacement candidate. C8 remains ACCEPTED. C9 remains retained, NOT_DEPLOYED, and INCONCLUSIVE with the sole supplied observation: \"Nested shulker routing using an internal CSR reservation worked.\" No testing slot or Workbench profile was changed for C10.",
+    "milestone": "C12 is a controlled-validated, retained-but-not-deployed C9-derived correction for the nested reserved-zero-slot overwrite bug. C10/C11 remain rejected historical experiments and are not C12 design input. C8 remains accepted; C9 retains its historical inconclusive observation. No testing slot or Workbench profile changed for C12.",
     "releases": {
       "current": {
-        "version": "0.4.0-workbench-canary10",
-        "embedded_version": "0.4.0-workbench-canary10",
+        "version": "C12 (0.1.0-canary12)",
+        "embedded_version": "0.1.0-canary12",
         "artifact": {
-          "filename": "quick-stack-nearby-0.4.0-workbench-canary10.jar",
-          "sha256": "7882491e0d5f0a3bd8f8ab5135ebb900f16f4caa520a693f682c61d09f092dfe"
+          "filename": "quick-stack-nearby-compat-0.1.0-canary12.jar",
+          "sha256": "68b35bdc407157e103164c9c9705835a253d222e3e8feccf5388b275f411d713"
         },
-        "source_commit": "6c121ec5bdbb66f4c8092289d2f665a306fdb290",
+        "source_commit": "3a74391972ec80ac5eff71375d44dbb5f512f416",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
@@ -202,11 +193,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 12,
-    "activity_at": "2026-09-07T17:46:41.618213Z",
-    "updated_at": "2026-09-07T17:46:41.618213Z",
-    "last_codex_at": "2026-09-07T17:46:41.618213Z",
-    "source_commit": "6c121ec5bdbb66f4c8092289d2f665a306fdb290",
+    "revision": 14,
+    "activity_at": "2026-09-08T00:10:41.833623Z",
+    "updated_at": "2026-09-08T00:10:41.833623Z",
+    "last_codex_at": "2026-09-08T00:10:41.833623Z",
+    "source_commit": "3a74391972ec80ac5eff71375d44dbb5f512f416",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null

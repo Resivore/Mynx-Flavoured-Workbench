@@ -16,11 +16,12 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /** Exact, allowlisted external material sources. Provider lookup happens only at provider-entrypoint RETURN. */
 public final class ExternalMaterialCatalog {
-    public static final String PROFILE_VERSION = "bge-c61-runtime-fixes-v1";
+    public static final String PROFILE_VERSION = "bge-c62-family-dedup-v1";
     private static final List<Spec> SPECS = specs();
     private static final Set<String> REGISTERED_PROVIDERS = new LinkedHashSet<>();
 
@@ -36,7 +37,8 @@ public final class ExternalMaterialCatalog {
 
     public static List<Spec> specs() {
         List<Spec> result = new ArrayList<>(List.of(
-                uniform("ribbits:mossy_oak_planks", Set.of(BlockTags.MINEABLE_WITH_AXE)),
+                uniform("ribbits:mossy_oak_planks", Set.of(BlockTags.MINEABLE_WITH_AXE),
+                        standardRoles("ribbits:mossy_oak_planks")),
                 pillar("mynx_trees:wisteria_log", "mynx_trees:block/wisteria_log",
                         "mynx_trees:block/wisteria_log_top", ModBlocks.PALE_OAK_LOG),
                 pillar("mynx_trees:wisteria_wood", "mynx_trees:block/wisteria_log",
@@ -56,17 +58,19 @@ public final class ExternalMaterialCatalog {
         return (int) SPECS.stream().filter(spec -> spec.provider().equals(provider)).count();
     }
 
-    private static Spec uniform(String id, Set<TagKey<Block>> tags) {
+    private static Spec uniform(String id, Set<TagKey<Block>> tags,
+            Map<String, Identifier> providerRoles) {
         Identifier key = Identifier.parse(id);
         String texture = key.getNamespace() + ":block/" + key.getPath();
-        return new Spec(key, key.getNamespace(), key, key, VisualProfile.UNIFORM, NibaruMaterialProfile.OrientationPolicy.UNIFORM,
+        return new Spec(key, key.getNamespace(), key, key, providerRoles,
+                VisualProfile.UNIFORM, NibaruMaterialProfile.OrientationPolicy.UNIFORM,
                 texture, texture, texture, TintProfile.NONE, NibaruMaterialProfile.RenderLayer.SOLID,
                 tags, Set.of(), List.of());
     }
 
     private static Spec pillar(String id, String side, String end, ModBlocks strippedTarget) {
         Identifier key = Identifier.parse(id);
-        return new Spec(key, key.getNamespace(), key, key, VisualProfile.PILLAR,
+        return new Spec(key, key.getNamespace(), key, key, Map.of(), VisualProfile.PILLAR,
                 NibaruMaterialProfile.OrientationPolicy.AXIS_ALIGNED, side, end, end,
                 TintProfile.NONE, NibaruMaterialProfile.RenderLayer.SOLID,
                 Set.of(BlockTags.MINEABLE_WITH_AXE, BlockTags.LOGS),
@@ -77,7 +81,7 @@ public final class ExternalMaterialCatalog {
     private static Spec leaves(String id, TintProfile tint) {
         Identifier key = Identifier.parse(id);
         String texture = key.getNamespace() + ":block/" + key.getPath();
-        return new Spec(key, key.getNamespace(), key, key, VisualProfile.LEAVES_CUTOUT_TINTED,
+        return new Spec(key, key.getNamespace(), key, key, Map.of(), VisualProfile.LEAVES_CUTOUT_TINTED,
                 NibaruMaterialProfile.OrientationPolicy.UNIFORM, texture, texture, texture,
                 tint, NibaruMaterialProfile.RenderLayer.CUTOUT_MIPPED,
                 Set.of(BlockTags.MINEABLE_WITH_HOE, BlockTags.LEAVES),
@@ -85,9 +89,9 @@ public final class ExternalMaterialCatalog {
     }
 
     /**
-     * Exact Macaw's Paths catalog.  C60 accidentally rooted these families at the lowered Path
-     * blocks.  The Path ID remains an explicit provider reference and generated-ID compatibility
-     * key, while the normal full block is the only canonical BGE/ShapeMap parent.
+     * Exact Macaw's Paths catalog. Patterned families are rooted at the full patterned block and
+     * reuse the provider's exact Slab and Stairs. The five requested plain soil families are
+     * independently rooted at their Macaw Path blocks and generate all eight missing roles.
      */
     private static List<Spec> pathSpecs() {
         List<Spec> result = new ArrayList<>();
@@ -99,24 +103,16 @@ public final class ExternalMaterialCatalog {
             Identifier id = Identifier.fromNamespaceAndPath("mcwpaths", full);
             Identifier reference = Identifier.fromNamespaceAndPath("mcwpaths", path);
             String texture = "mcwpaths:block/" + full;
-            result.add(new Spec(id, "mcwpaths", reference, reference, VisualProfile.UNIFORM,
+            result.add(new Spec(id, "mcwpaths", reference, id, standardRoles(id.toString()),
+                    VisualProfile.UNIFORM,
                     NibaruMaterialProfile.OrientationPolicy.UNIFORM, texture, texture, texture,
                     TintProfile.NONE, NibaruMaterialProfile.RenderLayer.SOLID,
                     Set.of(BlockTags.MINEABLE_WITH_PICKAXE), Set.of(), List.of()));
         }
         for (String path : "podzol_path_block dirt_path_block gravel_path_block sand_path_block red_sand_path_block".split(" ")) {
-            String full = switch (path) {
-                case "podzol_path_block" -> "podzol";
-                case "dirt_path_block" -> "dirt";
-                case "gravel_path_block" -> "gravel";
-                case "sand_path_block" -> "sand";
-                case "red_sand_path_block" -> "red_sand";
-                default -> throw new IllegalArgumentException(path);
-            };
-            Identifier id = Identifier.fromNamespaceAndPath("minecraft", full);
-            Identifier reference = Identifier.fromNamespaceAndPath("mcwpaths", path);
+            Identifier id = Identifier.fromNamespaceAndPath("mcwpaths", path);
             String texture = "mcwpaths:block/" + path.substring(0, path.length() - "_block".length());
-            result.add(new Spec(id, "mcwpaths", reference, reference, VisualProfile.UNIFORM,
+            result.add(new Spec(id, "mcwpaths", id, id, Map.of(), VisualProfile.UNIFORM,
                     NibaruMaterialProfile.OrientationPolicy.UNIFORM, texture, texture, texture,
                     TintProfile.NONE, NibaruMaterialProfile.RenderLayer.SOLID,
                     Set.of(BlockTags.MINEABLE_WITH_SHOVEL), Set.of(), List.of()));
@@ -124,8 +120,15 @@ public final class ExternalMaterialCatalog {
         return List.copyOf(result);
     }
 
+    private static Map<String, Identifier> standardRoles(String source) {
+        Identifier id = Identifier.parse(source);
+        return Map.of(
+                "slab", Identifier.fromNamespaceAndPath(id.getNamespace(), id.getPath() + "_slab"),
+                "stairs", Identifier.fromNamespaceAndPath(id.getNamespace(), id.getPath() + "_stairs"));
+    }
+
     public record Spec(Identifier id, String provider, Identifier providerReference,
-            Identifier generatedIdentity, VisualProfile visual,
+            Identifier generatedIdentity, Map<String, Identifier> providerRoles, VisualProfile visual,
             NibaruMaterialProfile.OrientationPolicy orientation,
             String side, String top, String bottom,
             TintProfile tint, NibaruMaterialProfile.RenderLayer renderLayer,
@@ -134,6 +137,15 @@ public final class ExternalMaterialCatalog {
         public Spec {
             if (!provider.equals(providerReference.getNamespace())) {
                 throw new IllegalArgumentException("Provider reference must be owned by " + provider);
+            }
+            providerRoles = Map.copyOf(providerRoles);
+            for (Map.Entry<String, Identifier> role : providerRoles.entrySet()) {
+                if (!Set.of("slab", "stairs", "wall").contains(role.getKey())) {
+                    throw new IllegalArgumentException("Unsupported provider geometry role " + role.getKey());
+                }
+                if (!provider.equals(role.getValue().getNamespace())) {
+                    throw new IllegalArgumentException("Provider geometry must be owned by " + provider);
+                }
             }
             blockTags = Set.copyOf(blockTags);
             capabilities = Set.copyOf(capabilities);
