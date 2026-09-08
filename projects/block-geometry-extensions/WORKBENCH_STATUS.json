@@ -28,9 +28,9 @@
     "scope": [
       "Compile the retained `games.twinhead.moreslabsstairsandwalls` source and `more_slabs_stairs_and_walls` resources directly inside BGE with a clear LGPL-covered source and attribution boundary.",
       "Register native slabs, stairs, walls, material profiles, transitions, and client bindings before deriving CNM/BGE geometry through one guarded bootstrap and one root Fabric descriptor.",
-      "Preserve all native material profiles, canonical parents, copied settings, TOP/SIDE/BOTTOM roles, axes, patterns, tint, translucency, transitions, drops, and specialized behaviors; C62 corrects only the wall-material, canonical-role duplication, leaf-wall, and plain-Path seams demonstrated by exact C61 runtime evidence.",
+      "Preserve all native material profiles, canonical parents, copied settings, TOP/SIDE/BOTTOM roles, axes, patterns, tint, translucency, transitions, drops, and specialized behaviors; C62 corrects the wall-material, canonical-role duplication, leaf-wall, and plain-Path seams demonstrated by exact C61 runtime evidence, while C63 changes only the external axis-family inventory preview seam.",
       "Generate one Layer, Corner, and Quarter Column per supported canonical family while preserving Vertical Slab and Step, deterministic selector order, one-source economy, orientation, waterlogging, collision, and drops.",
-      "Provide primary Fabric ID `cnm_terrain_slabs_compat` and verified legacy alias `more_slabs_stairs_and_walls` from the same mod container and shared version `4.2.6-bge.canary62.family-dedup+26.2`.",
+      "Provide primary Fabric ID `cnm_terrain_slabs_compat` and verified legacy alias `more_slabs_stairs_and_walls` from the same mod container and shared version `4.2.7-bge.canary63.inventory-preview+26.2`.",
       "Preserve C58 native registry/resource identities while exposing one canonical nine-role family per exact optional source variant: 52 Macaw patterned full blocks, five distinct Macaw soil Path blocks, Ribbits Mossy Oak Planks, and six Mynx Trees log, wood, and leaf sources; provider-native equivalent roles are reused and BGE owns only missing roles."
     ],
     "boundaries": {
@@ -40,7 +40,7 @@
       "exclusions": [
         "Clutter No More source and artifacts remain external and unchanged; its ShapeMap remains the canonical family and switching mechanism.",
         "C58 is limited to the user-authored glass-Corner geometry/UV route; generic glass Quarter Column projection and all non-glass Corner outputs remain C57-equivalent.",
-        "C62 must not add hard provider dependencies, unrequested Macaw's Paths materials, generated short-path artifacts, version pins, or changes to accepted C58 identities outside the optional external-family correction seam.",
+        "C63 must not add hard provider dependencies, unrequested Macaw's Paths materials, generated short-path artifacts, version pins, or changes to accepted C58 identities outside the optional external-family inventory-preview correction seam.",
         "`projects/bge-ctm`, shaders, resource-pack classification, BBB source/assets, and unrelated consumer projects are outside this consolidation.",
         "Accepted BGE C52 and historical standalone Nibaru C45 are preserved as rollback provenance and are not rewritten."
       ]
@@ -50,7 +50,7 @@
         "type": "MOD",
         "identifier": "minecraft",
         "requirement": "~26.2",
-        "reason": "Unified BGE C62 targets Minecraft Java 26.2."
+        "reason": "Unified BGE C63 targets Minecraft Java 26.2."
       },
       {
         "type": "MOD",
@@ -73,16 +73,16 @@
     ]
   },
   "state": {
-    "milestone": "Exact C61 identity was verified against the canonical current record and retained bytes, then bound to the user's external Minecraft runtime FAIL: log walls used bark on exposed upper faces, Macaw patterned and Ribbits Mossy Oak families exposed provider-native plus equivalent BGE roles, Silver Birch Leaves Wall still used the cross-style presentation, and five Macaw soil Path blocks were aliased to vanilla families instead of receiving complete independent families. C62 is the unaccepted controlled-validation successor. Physical verification passed at manager revision 117, but C62 deployment was not applied: a whole-profile transition cannot preserve Slot B's exact IBF C4 because the IBF current manifest is now C5, and changing that separately owned slot is outside this task.",
+    "milestone": "Exact C62 `4.2.6-bge.canary62.family-dedup+26.2`, `cnm-nibaru-integration-4.2.6-bge.canary62.family-dedup+26.2.jar`, SHA-256 `c8d42032166ef2ba6796f3cd61e89698ccca1a4331d90ee1d1f1ba6720cc01ce`, source `cdc0acdcba4d7b8761b035b048578a3a3635079b`, is retained externally runtime-failed provenance: Wisteria and Silver Birch Step inventory items appeared upright/vertical rather than like native Step geometry, and their Vertical Slab inventory items were off-centre. The supplied runtime observation says all other checked C62 behavior appeared correct; it does not imply a C62 runtime PASS. C63 is the untested controlled-validation successor. The manager previously failed closed because preserving separately owned Slot B IBF C4 conflicts with IBF's newer current C5 manifest; no deployment mutation was made.",
     "releases": {
       "current": {
-        "version": "C62 (Family Dedup; embedded 4.2.6-bge.canary62.family-dedup+26.2)",
-        "embedded_version": "4.2.6-bge.canary62.family-dedup+26.2",
+        "version": "C63 (Axis Item Preview; embedded 4.2.7-bge.canary63.inventory-preview+26.2)",
+        "embedded_version": "4.2.7-bge.canary63.inventory-preview+26.2",
         "artifact": {
-          "filename": "cnm-nibaru-integration-4.2.6-bge.canary62.family-dedup+26.2.jar",
-          "sha256": "c8d42032166ef2ba6796f3cd61e89698ccca1a4331d90ee1d1f1ba6720cc01ce"
+          "filename": "cnm-nibaru-integration-4.2.7-bge.canary63.inventory-preview+26.2.jar",
+          "sha256": "9ee7d471e62202d2813492414b3cdd363e4c25eeb05e3a47a63b3451061620ba"
         },
-        "source_commit": "cdc0acdcba4d7b8761b035b048578a3a3635079b",
+        "source_commit": "7b0ecf1d9521c423d06710507d6db2f6b0a21b6b",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": [
@@ -91,10 +91,10 @@
               "relationship": "depends",
               "dependency_id": "minecraft",
               "predicate": "~26.2",
-              "reason": "The exact C62 artifact targets the Minecraft 26.2 release and packages Fabric's same-release predicate; this target-specific Minecraft predicate must remain bound to the tested release bytes.",
+              "reason": "The exact C63 artifact targets the Minecraft 26.2 release and packages Fabric's same-release predicate; this target-specific Minecraft predicate must remain bound to the controlled-validation release bytes.",
               "regression_evidence": [
-                "Java 25 Gradle build produced C62 SHA-256 c8d42032166ef2ba6796f3cd61e89698ccca1a4331d90ee1d1f1ba6720cc01ce.",
-                "The C62 GameTest suite passed 100/100 on the Minecraft 26.2 validation baseline, including exact 64-source, 576-relation, live ShapeMap canonical variant-role uniqueness, provider-role reuse, normal log/leaf wall resources, provider tint, path-source separation, behavior, and generated-resource contracts."
+                "Java 25 clean Gradle build produced C63 SHA-256 9ee7d471e62202d2813492414b3cdd363e4c25eeb05e3a47a63b3451061620ba.",
+                "The C63 GameTest suite passed 101/101 on the Minecraft 26.2 validation baseline, including deterministic native-template Vertical Slab and Step previews for external axis-aligned Log and Wood families while retaining all axis world-state selectors."
               ]
             }
           ]
@@ -129,11 +129,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 21,
-    "activity_at": "2026-09-07T23:04:45Z",
-    "updated_at": "2026-09-07T23:04:45Z",
-    "last_codex_at": "2026-09-07T23:04:45Z",
-    "source_commit": "cdc0acdcba4d7b8761b035b048578a3a3635079b",
+    "revision": 22,
+    "activity_at": "2026-09-07T23:58:14Z",
+    "updated_at": "2026-09-07T23:58:14Z",
+    "last_codex_at": "2026-09-07T23:58:14Z",
+    "source_commit": "7b0ecf1d9521c423d06710507d6db2f6b0a21b6b",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null

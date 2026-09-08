@@ -3,8 +3,8 @@
   "id": "cnm_terrain_slabs_compat",
   "version": "${version}",
   "provides": ["more_slabs_stairs_and_walls"],
-  "name": "Block Geometry Extensions Canary 62 — Family Dedup",
-  "description": "Unified BGE candidate correcting optional provider role ownership, normal wall materials, and Macaw Path families.",
+  "name": "Block Geometry Extensions Canary 63 — Axis Item Preview",
+  "description": "Unified BGE candidate preserving C62 family behavior while restoring native Vertical Slab and Step item presentation.",
   "authors": ["Mynx Workbench", "Nibaru"],
   "environment": "*",
   "entrypoints": {
