@@ -94,11 +94,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 2,
-    "activity_at": "2026-09-08T02:17:31Z",
-    "updated_at": "2026-09-08T02:17:31Z",
-    "last_codex_at": "2026-09-08T02:17:31Z",
-    "source_commit": "eb2093ee22b70549f29e619e168f7ea191a5258b",
+    "revision": 3,
+    "activity_at": "2026-09-08T02:52:43Z",
+    "updated_at": "2026-09-08T02:52:43Z",
+    "last_codex_at": "2026-09-08T02:52:43Z",
+    "source_commit": "3ee4011cae223e653717d1800116a5eb2ebf44fb",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null

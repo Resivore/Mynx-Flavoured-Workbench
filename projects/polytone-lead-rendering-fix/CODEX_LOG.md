@@ -23,3 +23,14 @@
 - Artifact: `polytone-lead-rendering-fix-0.1.0+26.2-canary2.jar`, embedded version `0.1.0+26.2-canary2`, SHA-256 `c3e3e63df63e5671ce1dd5f205813e6a4fc814e06f6f2ffc93bcdb21e63a57d3`, source `eb2093ee22b70549f29e619e168f7ea191a5258b`. Validation baseline remains `polytone-26.2-6.3.1-fabric.jar`, version `26.2-6.3.1`, SHA-256 `50417fb5fd9d304ffd61ca1c96d07b47157ac89f6a6156e47bbd4ea7af58d411`. Runtime dependency policy is CAPABILITY_OR_PROVIDER with no exceptions.
 - Result: ACTIVE / STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED.
 - Next state: Retain C2 canonically, publish revision 2 from authoritative main through the normal Sheet workflow, and perform the focused no-shader and Iris + Complementary visual matrix only after a future authorized serialized test-slot deployment.
+
+## 2026-09-08T02:52:43Z — Normalize Polytone C2 canonical log fields
+
+- Revision: 3
+- Source checkpoint: `3ee4011cae223e653717d1800116a5eb2ebf44fb`
+- Changes: Moved the existing C1 external runtime evidence, technical diagnosis, and C2 implementation text into revision 2's canonical `Changes` field so the record conforms to the compact log contract. No reported observation, diagnosis, artifact, release identity, source identity, lifecycle, deployment state, or runtime result changed.
+- Build/static: Repository validation passes for all 53 manifests, and the focused regression test confirms that a noncanonical entry bullet such as `C1 external runtime evidence` fails closed. No Polytone source or artifact build was run for this record-only repair.
+- Runtime: No Minecraft client/server launch, Test Instance Manager action, slot change, deployment, dedicated Workbench access, or protected Matcha Flavoured 26.1.2 gameplay-profile access occurred. C2 remains `NOT_DEPLOYED` and `RUNTIME_UNTESTED`; C1's existing external FAIL remains historical provenance only.
+- Artifact: Current C2 remains exactly `polytone-lead-rendering-fix-0.1.0+26.2-canary2.jar`, embedded `0.1.0+26.2-canary2`, SHA-256 `c3e3e63df63e5671ce1dd5f205813e6a4fc814e06f6f2ffc93bcdb21e63a57d3`, source `eb2093ee22b70549f29e619e168f7ea191a5258b`; no artifact bytes, accepted release, or rollback changed.
+- Result: ACTIVE / STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED. Revision 3 is a canonical-record repair with no runtime claim or blocker.
+- Next state: Publish revision 3 from authoritative main through the normal Sheet workflow while preserving human-owned Notes; perform the existing focused C2 visual matrix only under separate authorized runtime ownership.
