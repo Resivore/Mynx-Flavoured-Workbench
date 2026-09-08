@@ -6,6 +6,7 @@ __pycache__/
 **/test-builds/private/
 /projects/interchangeable-block-families/artifacts/interchangeable-block-families-0.1.0-canary5.jar
 /projects/interchangeable-block-families/artifacts/interchangeable-block-families-0.1.0-canary6.jar
+/projects/interchangeable-block-families/artifacts/interchangeable-block-families-0.1.0-canary7.jar
 build/
 dist/
 runtime-state.local.json
