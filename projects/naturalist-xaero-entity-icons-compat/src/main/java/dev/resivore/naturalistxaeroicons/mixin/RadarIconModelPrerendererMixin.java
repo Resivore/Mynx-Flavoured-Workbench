@@ -65,9 +65,11 @@ abstract class RadarIconModelPrerendererMixin {
                     buffers, parameters.textures, parameters.textureAtlasSprite, parameters.mrt);
             self.getPartPrerenderer().renderPart(pose, consumer, adapter, selected, parameters);
             buffers.endBatch();
-            // Xaero adds the exact rendered part only after its bounded vertex detector observed
-            // visible geometry. Never treat another or an empty result as this bridge's success.
-            if (parameters.renderedDest.contains(adapter)) callback.setReturnValue(selected);
+            // Xaero's bounded detector records the rendered visible ModelPart, which may be a
+            // drawable child rather than this assembly wrapper. This method starts only after an
+            // empty upstream result, so any nonempty destination here came from this exact
+            // bridge draw. Never treat an empty result as success or cache a blank icon.
+            if (!parameters.renderedDest.isEmpty()) callback.setReturnValue(selected);
         } catch (RuntimeException ignored) {
             // Do not turn a malformed/modded Naturalist tree into a partial icon.
             parameters.renderedDest.clear();

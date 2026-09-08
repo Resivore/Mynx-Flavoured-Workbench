@@ -27,7 +27,7 @@ class BinaryContractTest {
         }
     }
 
-    @Test void c7UsesTheEnclosingNativeCapturePoseWithoutRedirectsOrBlankIcons() throws Exception {
+    @Test void c8UsesTheEnclosingNativeCapturePoseWithoutRedirectsOrBlankIcons() throws Exception {
         Path root = Path.of(System.getProperty("projectRoot"));
         String mixins = Files.readString(root.resolve("src/main/resources/naturalist_xaero_entity_icons_compat.mixins.json"));
         assertFalse(mixins.contains("RadarIconModelPartPrerendererMixin"));
@@ -37,7 +37,8 @@ class BinaryContractTest {
         assertTrue(bridge.contains("traceSources"));
         assertFalse(bridge.contains("@Redirect"));
         String prerenderer = Files.readString(root.resolve("src/main/java/dev/resivore/naturalistxaeroicons/mixin/RadarIconModelPrerendererMixin.java"));
-        assertTrue(prerenderer.contains("renderedDest.contains(adapter)"));
+        assertTrue(prerenderer.contains("if (!parameters.renderedDest.isEmpty()) callback.setReturnValue(selected)"));
+        assertFalse(prerenderer.contains("renderedDest.contains(adapter)"));
         assertFalse(prerenderer.contains("callback.setReturnValue(adapter)"));
         assertTrue(prerenderer.contains("method = \"renderModel\", at = @At(\"HEAD\")"));
         assertTrue(prerenderer.contains("pose.pushPose()"));

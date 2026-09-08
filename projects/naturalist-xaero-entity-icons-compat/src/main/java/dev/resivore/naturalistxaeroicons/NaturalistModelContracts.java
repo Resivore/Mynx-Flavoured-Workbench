@@ -162,13 +162,16 @@ public final class NaturalistModelContracts {
         // naturalist:orange_starfish -> naturalist:block/orange_starfish sprite, but it cannot
         // participate in Xaero's bounded rendered-part detector.  Keep a narrow entity fallback
         // with the real drawable body trace instead of caching a false 2-D success.
-        // These models place visible anatomy below a renderer-positioned root.  Copy only the
-        // source-audited drawable siblings, then normalize that copied root's frame so its y=24
-        // gameplay placement cannot move the icon outside Xaero's capture target.
-        add(map, "starfish", cNormalizedDetachedChildren("StarfishModel", "", "body",
+        // These models place visible anatomy beneath the model wrapper's authored `root` child.
+        // Copy only the source-audited drawable siblings from that child, then normalize the
+        // copied gameplay root so its y=21/24 placement cannot move the icon outside Xaero's
+        // capture target.  The outer model wrapper itself has no drawable body/legs children.
+        add(map, "starfish", cNormalizedDetachedChildren("StarfishModel", "root", "root/body",
                 p(.58F, 1.5708F, 0.0F, 0.0F), List.of("body", "legs")));
-        add(map, "clam", cNormalizedDetachedChildren("ClamModel", "", "bottom",
-                p(.32F, 1.5708F, 0.0F, 0.0F), List.of("top", "bottom", "hinge")));
+        // C7's complete shell assembly had the intended top-down direction but clipped at the
+        // top of the icon.  Keep its top/bottom/hinge silhouette and reduce only icon scale.
+        add(map, "clam", cNormalizedDetachedChildren("ClamModel", "root", "root/bottom",
+                p(.20F, 1.5708F, 0.0F, 0.0F), List.of("top", "bottom", "hinge")));
         add(map, "giant_isopod", cVisibleDetached("GiantIsopodModel", "rolled", p(.45F)), cDetached("GiantIsopodModel", "body", p(.45F)));
         add(map, "jellyfish", cDetached("JellyfishModel", "body", p(.45F)));
         add(map, "whale", c("WhaleModel", "body/skullRot", p(.30F)), c("WhaleBabyModel", "body/skull", p(.60F)));
@@ -176,9 +179,9 @@ public final class NaturalistModelContracts {
         // sibling; Jungle's body owns arms/claws and tail while legs are also a root sibling.
         // Keep separate, source-backed compact assemblies and normalize only their copied root
         // frame.  The drawable body remains the exact trace anchor for Xaero's success detector.
-        add(map, "desert_scorpion", cNormalizedDetachedChildren("DesertScorpionModel", "", "body",
+        add(map, "desert_scorpion", cNormalizedDetachedChildren("DesertScorpionModel", "root", "root/body",
                 p(.34F, 1.5708F, 0.0F, 0.0F), List.of("body", "legs")));
-        add(map, "jungle_scorpion", cNormalizedDetachedChildren("JungleScorpionModel", "", "body",
+        add(map, "jungle_scorpion", cNormalizedDetachedChildren("JungleScorpionModel", "root", "root/body",
                 p(.28F, 1.5708F, 0.0F, 0.0F), List.of("body", "legs")));
         // C5's profile scale is retained.  The negative model-space frame Y correction exposes
         // the lower silhouette without changing the shark's size or side presentation.
