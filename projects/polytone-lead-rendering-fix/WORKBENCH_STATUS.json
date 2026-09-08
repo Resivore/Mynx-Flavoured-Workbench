@@ -12,12 +12,13 @@
   "definition": {
     "lifecycle": "ACTIVE",
     "goals": [
-      "Bypass only Polytone's custom textured leash RenderType and replacement vertices while retaining normal brown Minecraft 26.2 leash color, geometry, and light semantics.",
-      "Route only the leash feature through a complete Iris-compatible entity vertex contract while preserving Minecraft 26.2's native triangle-strip topology, geometry, color, light semantics, and leash-only scope."
+      "Bypass only Polytone's custom textured leash RenderType and replacement vertices while retaining native Minecraft 26.2 leash geometry and light semantics.",
+      "Route only the leash feature through a complete Iris-compatible entity vertex contract while preserving Minecraft 26.2's native triangle-strip topology, geometry, light semantics, and leash-only scope.",
+      "Keep Polytone's established textured-leash material neutral at the vertex stage so its brown texture is not darkened a second time by Minecraft's untextured leash tint."
     ],
     "scope": [
       "Inject at the exact Polytone 26.2-6.3.1-fabric PolytoneRenderTypes fallback helpers, returning null and false so Polytone's custom textured-leash path remains disabled.",
-      "Adapt only Minecraft 26.2 LeashFeatureRenderer's buffer argument and vertex helper to a leash-only ENTITY-format TRIANGLE_STRIP RenderType, preserving the exact 26.2 forward/reverse pair sequence, slack curve, alternating 0.5/0.4/0.3 RGB factors, interpolated packed light, and a segment-derived normal."
+      "Adapt only Minecraft 26.2 LeashFeatureRenderer's buffer argument and vertex helper to a leash-only ENTITY-format TRIANGLE_STRIP RenderType, preserving the exact 26.2 forward/reverse pair sequence, slack curve, interpolated packed light, and a segment-derived normal; C4 intentionally uses a white vertex multiplier and no alternating 0.7 factor because Polytone's bound lead texture supplies the brown material color."
     ],
     "boundaries": {
       "owned_paths": ["projects/polytone-lead-rendering-fix"],
@@ -31,7 +32,7 @@
         "type": "MOD",
         "identifier": "minecraft",
         "requirement": "=26.2",
-        "reason": "Exact target game version whose audited LeashFeatureRenderer supplies C3's triangle-strip geometry, brown RGB, slack, and packed-light semantics."
+        "reason": "Exact target game version whose audited LeashFeatureRenderer supplies C4's triangle-strip geometry, slack, and packed-light semantics."
       },
       {
         "type": "MOD",
@@ -43,7 +44,7 @@
         "type": "MOD",
         "identifier": "polytone",
         "requirement": "Stable provider capability; no version pin.",
-        "reason": "Required client provider owning the compatibility seam. C3 validation baseline: Polytone 26.2-6.3.1, polytone-26.2-6.3.1-fabric.jar, SHA-256 50417fb5fd9d304ffd61ca1c96d07b47157ac89f6a6156e47bbd4ea7af58d411."
+        "reason": "Required client provider owning the compatibility seam. C4 validation baseline: Polytone 26.2-6.3.1, polytone-26.2-6.3.1-fabric.jar, SHA-256 50417fb5fd9d304ffd61ca1c96d07b47157ac89f6a6156e47bbd4ea7af58d411."
       },
       {
         "type": "TOOL",
@@ -55,27 +56,27 @@
         "type": "TOOL",
         "identifier": "gradle",
         "requirement": "=9.5.1",
-        "reason": "Tracked Workbench wrapper used for the clean C3 build and artifact verification."
+        "reason": "Tracked Workbench wrapper used for the clean C4 build and artifact verification."
       },
       {
         "type": "TOOL",
         "identifier": "fabric-loom",
         "requirement": "=1.17.19",
-        "reason": "Fabric build plugin used to compile and package C3."
+        "reason": "Fabric build plugin used to compile and package C4."
       }
     ]
   },
   "state": {
-    "milestone": "User-reported external C2 runtime evidence is FAIL: its entitySolid QUADS route interpreted Minecraft's native triangle-strip pair stream as unrelated quads, producing large black disconnected polygon shards. C3 retains the proven Polytone bypass, uses a leash-only ENTITY-format TRIANGLE_STRIP route, is STATIC_PASS, NOT_DEPLOYED, and RUNTIME_UNTESTED pending the focused visual matrix.",
+    "milestone": "User-reported external C3 runtime evidence is FAIL for exact C3 0.1.0+26.2-canary3 / polytone-lead-rendering-fix-0.1.0+26.2-canary3.jar / c90aef0415345b9432169d590fb03a340a5902e8e5a34a07d90e1aa9b05691c9 / 31fee15e62444c4cbfe762f095d6d4d20f6faeb2: its rope geometry is continuous and correct, brown hue is restored, but it is substantially too dark versus visible fence-attached lead material. It was not Test Instance Manager deployed and consumes no slot. C4 preserves C3's leash-only ENTITY TRIANGLE_STRIP, pair order, sag, normals, and lightmap, while using the exact Polytone lead texture as the base material with a neutral white vertex multiplier and no old untextured 0.7 alternation; C4 is STATIC_PASS, NOT_DEPLOYED, and RUNTIME_UNTESTED pending the focused visual matrix.",
     "releases": {
       "current": {
-        "version": "C3",
-        "embedded_version": "0.1.0+26.2-canary3",
+        "version": "C4",
+        "embedded_version": "0.1.0+26.2-canary4",
         "artifact": {
-          "filename": "polytone-lead-rendering-fix-0.1.0+26.2-canary3.jar",
-          "sha256": "c90aef0415345b9432169d590fb03a340a5902e8e5a34a07d90e1aa9b05691c9"
+          "filename": "polytone-lead-rendering-fix-0.1.0+26.2-canary4.jar",
+          "sha256": "9ba918cb2634f2736b7ca930c840b761b8c76151576e3c7a63b9f62c60055ce1"
         },
-        "source_commit": "31fee15e62444c4cbfe762f095d6d4d20f6faeb2",
+        "source_commit": "ad3407895d37e3919dcf36efa727347358aa19e2",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
@@ -94,11 +95,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 4,
-    "activity_at": "2026-09-08T03:10:53Z",
-    "updated_at": "2026-09-08T03:10:53Z",
-    "last_codex_at": "2026-09-08T03:10:53Z",
-    "source_commit": "31fee15e62444c4cbfe762f095d6d4d20f6faeb2",
+    "revision": 5,
+    "activity_at": "2026-09-08T03:35:28Z",
+    "updated_at": "2026-09-08T03:35:28Z",
+    "last_codex_at": "2026-09-08T03:35:28Z",
+    "source_commit": "ad3407895d37e3919dcf36efa727347358aa19e2",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
