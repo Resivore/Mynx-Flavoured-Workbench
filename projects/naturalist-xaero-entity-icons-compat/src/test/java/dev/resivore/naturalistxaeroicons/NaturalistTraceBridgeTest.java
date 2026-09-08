@@ -88,6 +88,18 @@ class NaturalistTraceBridgeTest {
         assertNotSame(selected.getChild("feature"), detached.getChild("feature"));
     }
 
+    @Test void adapterFrameOffsetIsLocalToTheCopiedIcon() {
+        ModelPart selected = part(Map.of());
+        NaturalistModelContracts.Presentation framed =
+                new NaturalistModelContracts.Presentation(.21F, 0.0F, 1.5708F, 0.0F, -4.0F);
+        ModelPart adapter = NaturalistIconAdapter.build(part(Map.of("selected", selected)), selected, selected, selected,
+                framed, false, List.of("selected"), false);
+
+        assertEquals(-4.0F, adapter.y);
+        assertEquals(0.0F, selected.y);
+        assertEquals(.21F, adapter.xScale);
+    }
+
     @Test void bridgeUsesTheClosedContractPathRatherThanTreeDiscovery() throws Exception {
         Path module = Path.of(System.getProperty("projectRoot"));
         String source = Files.readString(module.resolve("src/main/java/dev/resivore/naturalistxaeroicons/NaturalistIconAdapter.java"));
@@ -120,7 +132,7 @@ class NaturalistTraceBridgeTest {
     }
 
     private static NaturalistModelContracts.Presentation presentation() {
-        return new NaturalistModelContracts.Presentation(1.0F, 0.0F, 0.0F, 0.0F);
+        return new NaturalistModelContracts.Presentation(1.0F, 0.0F, 0.0F, 0.0F, 0.0F);
     }
 
     private static ModelRenderTrace trace() {

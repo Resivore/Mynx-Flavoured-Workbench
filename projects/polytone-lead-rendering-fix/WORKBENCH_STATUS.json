@@ -12,18 +12,18 @@
   "definition": {
     "lifecycle": "ACTIVE",
     "goals": [
-      "Bypass only Polytone's custom textured leash RenderType and replacement leash vertices so Minecraft Java 26.2 uses its normal vanilla leash renderer.",
-      "Preserve Polytone's installed LeashMixin and all unrelated Polytone functionality by forcing its own existing vanilla-fallback values."
+      "Bypass only Polytone's custom textured leash RenderType and replacement vertices while retaining normal brown Minecraft 26.2 leash color, geometry, and light semantics.",
+      "Route only the leash feature through a complete Iris-compatible entity vertex contract without changing leash gameplay, generic entity rendering, Polytone features, Iris, or Complementary."
     ],
     "scope": [
-      "Inject at the exact Polytone 26.2-6.3.1-fabric PolytoneRenderTypes.getLeashRenderType() and addLeashVertexPair(...) helper descriptors, returning null and false respectively.",
-      "Leave Minecraft's EntityRenderer leash implementation, Polytone's JAR and mixins, leash gameplay, Iris, Complementary, resource packs, and unrelated Polytone rendering unmodified."
+      "Inject at the exact Polytone 26.2-6.3.1-fabric PolytoneRenderTypes fallback helpers, returning null and false so Polytone's custom textured-leash path remains disabled.",
+      "Adapt only Minecraft 26.2 LeashFeatureRenderer's buffer argument and vertex helper to vanilla entity RenderType attributes, preserving the exact 26.2 slack curve, alternating 0.5/0.4/0.3 RGB factors, and interpolated packed light."
     ],
     "boundaries": {
       "owned_paths": ["projects/polytone-lead-rendering-fix"],
       "exclusions": [
         "Polytone source, binary, mixins, configurations, shader integration, textures, and every feature other than its custom textured-leash path.",
-        "Vanilla leash mechanics, attachment positions, physics, lighting, behavior, entity rendering beyond the fallback seam, resource packs, Iris, Complementary, test-slot state, and both gameplay profiles."
+        "Vanilla leash mechanics, attachment positions, physics, behavior, EntityRenderer and generic entity rendering, resource packs, Iris, Complementary, test-slot state, and both gameplay profiles."
       ]
     },
     "dependencies": [
@@ -31,7 +31,7 @@
         "type": "MOD",
         "identifier": "minecraft",
         "requirement": "=26.2",
-        "reason": "Exact target game version whose vanilla RenderType.leash and vertex-generation fallback remains reachable through Polytone's audited LeashMixin."
+        "reason": "Exact target game version whose audited LeashFeatureRenderer supplies the C2 geometry, brown RGB, slack, and packed-light semantics."
       },
       {
         "type": "MOD",
@@ -43,7 +43,7 @@
         "type": "MOD",
         "identifier": "polytone",
         "requirement": "Stable provider capability; no version pin.",
-        "reason": "Required client provider owning the compatibility seam. C1 validation baseline: Polytone 26.2-6.3.1, polytone-26.2-6.3.1-fabric.jar, SHA-256 50417fb5fd9d304ffd61ca1c96d07b47157ac89f6a6156e47bbd4ea7af58d411."
+        "reason": "Required client provider owning the compatibility seam. C2 validation baseline: Polytone 26.2-6.3.1, polytone-26.2-6.3.1-fabric.jar, SHA-256 50417fb5fd9d304ffd61ca1c96d07b47157ac89f6a6156e47bbd4ea7af58d411."
       },
       {
         "type": "TOOL",
@@ -55,27 +55,27 @@
         "type": "TOOL",
         "identifier": "gradle",
         "requirement": "=9.5.1",
-        "reason": "Tracked Workbench wrapper used for the clean C1 build and artifact verification."
+        "reason": "Tracked Workbench wrapper used for the clean C2 build and artifact verification."
       },
       {
         "type": "TOOL",
         "identifier": "fabric-loom",
         "requirement": "=1.17.19",
-        "reason": "Fabric build plugin used to compile and package C1."
+        "reason": "Fabric build plugin used to compile and package C2."
       }
     ]
   },
   "state": {
-    "milestone": "Canary 1 forces Polytone's audited vanilla leash fallback through its helper methods. Clean build, artifact/bytecode checks, and a local client Mixin smoke test pass; C1 is ACTIVE, NOT_DEPLOYED, and RUNTIME_UNTESTED pending the focused Minecraft visual matrix.",
+    "milestone": "User-reported C1 external runtime evidence is FAIL: the rainbow/corruption is gone and geometry is visible, but the rope is grayscale/dark gray rather than brown. C2 keeps Polytone's path disabled and adapts only the native leash feature to an Iris-compatible entity-format buffer; C2 is STATIC_PASS, NOT_DEPLOYED, and RUNTIME_UNTESTED pending its focused visual matrix.",
     "releases": {
       "current": {
-        "version": "C1",
-        "embedded_version": "0.1.0+26.2-canary1",
+        "version": "C2",
+        "embedded_version": "0.1.0+26.2-canary2",
         "artifact": {
-          "filename": "polytone-lead-rendering-fix-0.1.0+26.2-canary1.jar",
-          "sha256": "980353b07d27b41bf0b299cc31b827d22498f0f3692e1c7fe321949ac0253714"
+          "filename": "polytone-lead-rendering-fix-0.1.0+26.2-canary2.jar",
+          "sha256": "c3e3e63df63e5671ce1dd5f205813e6a4fc814e06f6f2ffc93bcdb21e63a57d3"
         },
-        "source_commit": "5d43ea9309217040186c9103269cdd7779eacd22",
+        "source_commit": "eb2093ee22b70549f29e619e168f7ea191a5258b",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
@@ -94,11 +94,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 1,
-    "activity_at": "2026-09-08T01:13:00Z",
-    "updated_at": "2026-09-08T01:13:00Z",
-    "last_codex_at": "2026-09-08T01:13:00Z",
-    "source_commit": "5d43ea9309217040186c9103269cdd7779eacd22",
+    "revision": 2,
+    "activity_at": "2026-09-08T02:17:31Z",
+    "updated_at": "2026-09-08T02:17:31Z",
+    "last_codex_at": "2026-09-08T02:17:31Z",
+    "source_commit": "eb2093ee22b70549f29e619e168f7ea191a5258b",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null

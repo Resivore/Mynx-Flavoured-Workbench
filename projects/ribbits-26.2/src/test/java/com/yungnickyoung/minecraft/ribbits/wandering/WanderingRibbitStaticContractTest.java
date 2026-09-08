@@ -123,13 +123,46 @@ class WanderingRibbitStaticContractTest {
     }
 
     @Test
-    void optionalNaturalistLeashPatchOnlyChangesSnailsHeldByWanderingRibbits() throws Exception {
-        String plugin = read("common/src/main/java/com/yungnickyoung/minecraft/ribbits/mixin/RibbitsMixinPlugin.java");
+    void optionalNaturalistLeashPatchNeverProbesNaturalistDuringMixinSelection() throws Exception {
+        String normalConfig = read("common/src/main/resources/ribbits.mixins.json");
+        String optionalConfig = read("common/src/main/resources/ribbits.naturalist.mixins.json");
+        String metadata = read("fabric/src/main/resources/fabric.mod.json");
         String mixin = read("common/src/main/java/com/yungnickyoung/minecraft/ribbits/mixin/mixins/client/compat/NaturalistSnailLeashMixin.java");
-        assertTrue(plugin.contains("Class.forName(NATURALIST_SNAIL"));
-        assertTrue(plugin.contains("RibbitsMixinPlugin.class.getClassLoader()"));
+
+        assertFalse(normalConfig.contains("\"plugin\""));
+        assertFalse(normalConfig.contains("NaturalistSnailLeashMixin"));
+        assertFalse(Files.exists(root.resolve(
+                "common/src/main/java/com/yungnickyoung/minecraft/ribbits/mixin/RibbitsMixinPlugin.java")));
+        assertTrue(optionalConfig.contains("\"required\": false"));
+        assertTrue(optionalConfig.contains("\"package\": \"com.yungnickyoung.minecraft.ribbits.mixin.mixins.client.compat\""));
+        assertTrue(optionalConfig.contains("\"NaturalistSnailLeashMixin\""));
+        assertTrue(optionalConfig.contains("\"defaultRequire\": 0"));
+        assertTrue(metadata.contains("\"config\": \"ribbits.naturalist.mixins.json\""));
+        assertTrue(metadata.contains("\"environment\": \"client\""));
+        assertFalse(metadata.contains("\"naturalist\""));
+        assertTrue(mixin.contains("@Pseudo"));
+        assertTrue(mixin.contains("@Mixin(targets = \"com.crispytwig.naturalist.server.entity.mob.Snail\")"));
+        assertFalse(mixin.contains("import com.crispytwig"));
+
+        try (var sources = Files.walk(root.resolve(
+                "common/src/main/java/com/yungnickyoung/minecraft/ribbits/mixin"))) {
+            String mixinStartupSource = sources
+                    .filter(path -> path.toString().endsWith(".java"))
+                    .map(path -> {
+                        try {
+                            return Files.readString(path);
+                        } catch (java.io.IOException exception) {
+                            throw new java.io.UncheckedIOException(exception);
+                        }
+                    })
+                    .reduce("", String::concat);
+            assertFalse(mixinStartupSource.contains("Class.forName"));
+            assertFalse(mixinStartupSource.contains(".loadClass("));
+            assertFalse(mixinStartupSource.contains("getClassLoader()"));
+        }
+
         assertTrue(mixin.contains("getLeashHolder() instanceof WanderingRibbitEntity"));
-        assertTrue(mixin.contains("snail.getBbHeight() * 0.28D"));
+        assertTrue(mixin.contains("new Vec3(0.0D, snail.getBbHeight() * 0.28D, 0.0D)"));
     }
 
     @Test
