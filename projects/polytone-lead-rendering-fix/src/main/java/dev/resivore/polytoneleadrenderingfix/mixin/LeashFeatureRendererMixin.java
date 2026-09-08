@@ -1,12 +1,11 @@
 package dev.resivore.polytoneleadrenderingfix.mixin;
 
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import dev.resivore.polytoneleadrenderingfix.LeashRenderTypes;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.feature.LeashFeatureRenderer;
 import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.resources.Identifier;
 import net.minecraft.util.LightCoordsUtil;
 import net.minecraft.util.Mth;
 import org.joml.Matrix4fc;
@@ -17,20 +16,13 @@ import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /**
- * Adapts only Minecraft 26.2's leash feature to the entity-format route Iris maps to its
- * entity program. Iris maps the native POSITION_COLOR_LIGHTMAP leash pipeline to its Basic
- * program; Complementary's Basic program consumes a normal that the native leash format
- * cannot carry. The entity route carries the complete attribute contract instead.
- *
- * <p>The geometry, alternating vanilla brown RGB factors, slack curve, and packed-light
- * interpolation below are transcribed from Minecraft 26.2's LeashFeatureRenderer. The
- * additional UV/overlay/normal attributes exist solely because the selected vanilla entity
- * RenderType requires them; this class does not alter leash state or gameplay.</p>
+ * C3 keeps Minecraft 26.2's native leash stream: 25 forward and 25 reverse vertex pairs
+ * in one triangle strip. Only the format is expanded to the entity contract Iris exposes
+ * to Complementary. C2 used entitySolid (QUADS) for that same strip and was topologically
+ * invalid.
  */
 @Mixin(LeashFeatureRenderer.class)
 abstract class LeashFeatureRendererMixin {
-    private static final Identifier VANILLA_LEAD_TEXTURE =
-        Identifier.withDefaultNamespace("textures/entity/lead.png");
     private static final int LEASH_RENDER_STEPS = 24;
     private static final float LEASH_WIDTH = 0.05F;
     private static final String PREPARE =
@@ -47,9 +39,8 @@ abstract class LeashFeatureRendererMixin {
         index = 0,
         require = 1
     )
-    private RenderType polytoneLeadRenderingFix$useEntityCompatibleLeashRoute(RenderType vanillaLeashType) {
-        // This is Minecraft's own entity RenderType and its own lead texture, not Polytone's path.
-        return RenderTypes.entitySolid(VANILLA_LEAD_TEXTURE);
+    private RenderType polytoneLeadRenderingFix$useEntityCompatibleTriangleStrip(RenderType vanillaLeashType) {
+        return LeashRenderTypes.entityCompatibleTriangleStrip();
     }
 
     @Inject(method = ADD_LEASH_VERTEX_PAIR, at = @At("HEAD"), cancellable = true, require = 1)
@@ -80,14 +71,15 @@ abstract class LeashFeatureRendererMixin {
         float xProgress = x * progress;
         float yProgress = leashY(y, progress, leashState.slack);
         float zProgress = z * progress;
+        float[] normal = segmentNormal(x, y, z, xOffset, yOffset, zOffset, progress, leashState.slack);
 
         writeVertex(
             vertexConsumer, matrix, xProgress - xOffset, yProgress + yOffset, zProgress + zOffset,
-            0.0F, progress, red, green, blue, packedLight
+            0.0F, progress, red, green, blue, packedLight, normal
         );
         writeVertex(
             vertexConsumer, matrix, xProgress + xOffset, yProgress + LEASH_WIDTH - yOffset, zProgress - zOffset,
-            1.0F, progress, red, green, blue, packedLight
+            1.0F, progress, red, green, blue, packedLight, normal
         );
         callbackInfo.cancel();
     }
@@ -101,6 +93,38 @@ abstract class LeashFeatureRendererMixin {
             : y - y * (1.0F - progress) * (1.0F - progress);
     }
 
+    /**
+     * Derives a surface normal from the local sag tangent and exact pair cross section,
+     * rather than passing a universal world-up placeholder to the entity shader contract.
+     */
+    private static float[] segmentNormal(
+        float x, float y, float z, float xOffset, float yOffset, float zOffset,
+        float progress, boolean slack
+    ) {
+        float tangentY;
+        if (!slack) {
+            tangentY = y;
+        } else if (y > 0.0F) {
+            tangentY = 2.0F * y * progress;
+        } else {
+            tangentY = 2.0F * y * (1.0F - progress);
+        }
+
+        float acrossX = 2.0F * xOffset;
+        float acrossY = LEASH_WIDTH - 2.0F * yOffset;
+        float acrossZ = -2.0F * zOffset;
+        float normalX = tangentY * acrossZ - z * acrossY;
+        float normalY = z * acrossX - x * acrossZ;
+        float normalZ = x * acrossY - tangentY * acrossX;
+        float lengthSquared = normalX * normalX + normalY * normalY + normalZ * normalZ;
+        if (lengthSquared < 1.0E-8F) {
+            // This only handles a zero-area segment, which has no visible rope surface.
+            return new float[] {0.0F, 0.0F, 1.0F};
+        }
+        float inverseLength = Mth.invSqrt(lengthSquared);
+        return new float[] {normalX * inverseLength, normalY * inverseLength, normalZ * inverseLength};
+    }
+
     private static void writeVertex(
         VertexConsumer vertexConsumer,
         Matrix4fc matrix,
@@ -112,15 +136,14 @@ abstract class LeashFeatureRendererMixin {
         float red,
         float green,
         float blue,
-        int packedLight
+        int packedLight,
+        float[] normal
     ) {
         vertexConsumer.addVertex(matrix, x, y, z)
             .setColor(red, green, blue, 1.0F)
             .setUv(u, v)
             .setOverlay(OverlayTexture.NO_OVERLAY)
             .setLight(packedLight)
-            // Entity-format shaders require a defined normal; this preserves the lightmap as
-            // the leash's primary lighting input while avoiding an invented per-face pattern.
-            .setNormal(0.0F, 1.0F, 0.0F);
+            .setNormal(normal[0], normal[1], normal[2]);
     }
 }

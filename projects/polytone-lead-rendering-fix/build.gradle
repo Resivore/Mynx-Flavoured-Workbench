@@ -22,14 +22,23 @@ repositories {
 def polytoneReference = file(
     'C:/Users/resiv/AppData/Roaming/ModrinthApp/profiles/Matcha Flavoured 26.2 Workbench/mods/polytone-26.2-6.3.1-fabric.jar'
 )
+def irisReference = file(
+    'C:/Users/resiv/AppData/Roaming/ModrinthApp/profiles/Matcha Flavoured 26.2 Workbench/mods/iris-fabric-1.11.2+mc26.2.jar'
+)
+def sodiumReference = file(
+    'C:/Users/resiv/AppData/Roaming/ModrinthApp/profiles/Matcha Flavoured 26.2 Workbench/mods/sodium-fabric-0.9.1+mc26.2.jar'
+)
 
 dependencies {
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
     implementation "net.fabricmc:fabric-loader:${project.loader_version}"
     compileOnly files(polytoneReference)
+    compileOnly files(irisReference)
 
     // Development-only smoke-test inputs. They are not bundled or declared by this companion.
     runtimeOnly files(polytoneReference)
+    runtimeOnly files(irisReference)
+    runtimeOnly files(sodiumReference)
     runtimeOnly 'net.fabricmc.fabric-api:fabric-api:0.157.0+26.2'
 }
 
@@ -53,18 +62,26 @@ def packagedJar = tasks.named('jar').flatMap { it.archiveFile }
 def leashAdapterSource = file(
     'src/main/java/dev/resivore/polytoneleadrenderingfix/mixin/LeashFeatureRendererMixin.java'
 )
+def leashRenderTypesSource = file(
+    'src/main/java/dev/resivore/polytoneleadrenderingfix/LeashRenderTypes.java'
+)
 
 tasks.register('verifyPolytoneLeashFallback') {
     group = 'verification'
     description = 'Verifies the exact Polytone 26.2 fallback seams and final companion artifact.'
     dependsOn tasks.named('jar')
     inputs.file(polytoneReference)
+    inputs.file(irisReference)
     inputs.file(packagedJar)
     inputs.file(leashAdapterSource)
+    inputs.file(leashRenderTypesSource)
 
     doLast {
         if (!polytoneReference.isFile()) {
             throw new GradleException("Missing exact Polytone validation baseline: ${polytoneReference}")
+        }
+        if (!irisReference.isFile()) {
+            throw new GradleException("Missing exact Iris validation baseline: ${irisReference}")
         }
 
         ZipFile polytone = new ZipFile(polytoneReference)
@@ -111,8 +128,12 @@ tasks.register('verifyPolytoneLeashFallback') {
             def leashAdapterClassEntry = patch.getEntry(
                 'dev/resivore/polytoneleadrenderingfix/mixin/LeashFeatureRendererMixin.class'
             )
-            if (metadataEntry == null || mixinEntry == null || mixinClassEntry == null || leashAdapterClassEntry == null) {
-                throw new GradleException("Final artifact ${artifact.name} is missing required metadata or C2 leash mixins")
+            def leashRenderTypesClassEntry = patch.getEntry(
+                'dev/resivore/polytoneleadrenderingfix/LeashRenderTypes.class'
+            )
+            if (metadataEntry == null || mixinEntry == null || mixinClassEntry == null || leashAdapterClassEntry == null ||
+                    leashRenderTypesClassEntry == null) {
+                throw new GradleException("Final artifact ${artifact.name} is missing required metadata or C3 leash mixins")
             }
 
             def metadata = new JsonSlurper().parse(patch.getInputStream(metadataEntry))
@@ -142,11 +163,21 @@ tasks.register('verifyPolytoneLeashFallback') {
                 'LeashFeatureRenderer',
                 'prepare(Lnet/minecraft/client/renderer/feature/LeashFeatureRenderer$Submit;)V',
                 'addVertexPair(Lcom/mojang/blaze3d/vertex/VertexConsumer;Lorg/joml/Matrix4fc;FFFFFFIZLnet/minecraft/client/renderer/entity/state/EntityRenderState$LeashState;)V',
-                'entitySolid',
-                'textures/entity/lead.png'
+                'LeashRenderTypes',
+                'segmentNormal'
             ].each { requiredC2Seam ->
                 if (!leashAdapterClassText.contains(requiredC2Seam)) {
-                    throw new GradleException("Final artifact ${artifact.name} is missing C2 leash seam ${requiredC2Seam}")
+                    throw new GradleException("Final artifact ${artifact.name} is missing C3 leash seam ${requiredC2Seam}")
+                }
+            }
+
+            def leashRenderTypesClassText = new String(
+                patch.getInputStream(leashRenderTypesClassEntry).bytes,
+                StandardCharsets.ISO_8859_1
+            )
+            ['TRIANGLE_STRIP', 'ENTITY', 'ENTITIES_SOLID', 'core/entity', 'Sampler0'].each { requiredRenderTypeSeam ->
+                if (!leashRenderTypesClassText.contains(requiredRenderTypeSeam)) {
+                    throw new GradleException("Final artifact ${artifact.name} is missing C3 RenderType seam ${requiredRenderTypeSeam}")
                 }
             }
         } finally {
@@ -155,7 +186,7 @@ tasks.register('verifyPolytoneLeashFallback') {
 
         def adapterSourceText = leashAdapterSource.getText(StandardCharsets.UTF_8.name())
         [
-            'RenderTypes.entitySolid(VANILLA_LEAD_TEXTURE)',
+            'LeashRenderTypes.entityCompatibleTriangleStrip()',
             'LightCoordsUtil.pack(blockLight, skyLight)',
             '0.5F * shade',
             '0.4F * shade',
@@ -163,11 +194,28 @@ tasks.register('verifyPolytoneLeashFallback') {
             '0.7F : 1.0F',
             'setOverlay(OverlayTexture.NO_OVERLAY)',
             'setLight(packedLight)',
-            'setNormal(0.0F, 1.0F, 0.0F)'
+            'segmentNormal('
         ].each { requiredVanillaSemantic ->
             if (!adapterSourceText.contains(requiredVanillaSemantic)) {
-                throw new GradleException("C2 leash adapter no longer preserves required vanilla semantic ${requiredVanillaSemantic}")
+                throw new GradleException("C3 leash adapter no longer preserves required vanilla semantic ${requiredVanillaSemantic}")
             }
+        }
+        [
+            'PrimitiveTopology.TRIANGLE_STRIP',
+            'DefaultVertexFormat.ENTITY',
+            'IrisPipelines.assignPipeline',
+            'ShaderKey.ENTITIES_SOLID',
+            'withCull(false)',
+            'withTexture("Sampler0", VANILLA_LEAD_TEXTURE)',
+            'useLightmap()',
+            'useOverlay()'
+        ].each { requiredC3Semantic ->
+            if (!leashRenderTypesSource.getText(StandardCharsets.UTF_8.name()).contains(requiredC3Semantic)) {
+                throw new GradleException("C3 leash RenderType is missing required semantic ${requiredC3Semantic}")
+            }
+        }
+        if (adapterSourceText.contains('RenderTypes.entitySolid(') || adapterSourceText.contains('setNormal(0.0F, 1.0F, 0.0F)')) {
+            throw new GradleException('C3 regressed to the failed C2 entitySolid route or universal world-up normal')
         }
     }
 }
