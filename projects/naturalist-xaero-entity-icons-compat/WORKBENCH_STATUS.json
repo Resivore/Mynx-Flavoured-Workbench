@@ -17,8 +17,8 @@
     ],
     "scope": [
       "Use a closed Naturalist entity-id plus exact current model-class contract registry. Each contract selects the live renderer-selected adult, baby, or state model subtree; unknown class, path, trace, or draw failure delegates to Xaero's normal fallback.",
-      "After Xaero's native model prerender returns empty, render only the selected head/neck subtree for ordinary headed animals, or an explicit compact-body subtree for the documented non-headed anatomy families. The bridge copies only contract-path ancestor transforms and resolves only the selected part or its explicit ancestors' recorded trace; it never mutates or reparents the live Naturalist model.",
-      "Use explicit contract-local scale and rotation only for the C3 presentation corrections. Brown Bear remains on Xaero's native capture path and receives only a scoped icon-pose scale; no screen-space offsets are used. Evict the 37 fallback targets plus Brown Bear after resource reload so corrected results are retried."
+      "After Xaero's native model prerender returns empty, render only the selected head/neck subtree for ordinary headed animals, or an explicit compact-body subtree for the documented non-headed anatomy families. The bridge copies only contract-path ancestor transforms and resolves only an explicit contract trace anchor, selected part, or contract-path ancestor trace; it never mutates or reparents the live Naturalist model.",
+      "Use explicit contract-local scale, rotation, source-audited trace anchor, and only where unavoidable a source-audited direct-cuboid subset for the C4 presentation corrections. Brown Bear remains on Xaero's native capture path and receives only a scoped icon-pose scale; no screen-space offsets are used. Evict the 37 fallback targets plus Brown Bear after resource reload so corrected results are retried."
     ],
     "boundaries": {
       "owned_paths": ["projects/naturalist-xaero-entity-icons-compat"],
@@ -38,12 +38,12 @@
     ]
   },
   "state": {
-    "milestone": "Canary 2 is retained external-runtime FAIL provenance: its Xaero × EMF C9 coexistence reload/world-entry smoke gate passed, but the supplied Naturalist matrix found twelve generic/missing icons, malformed geometry/orientation, and oversized captures. Canary 3 corrects only the closed C8 contracts and presentation paths, is STATIC_PASS, and is not deployed because unrelated BGE C60 and IBF C4 cohorts occupy both canonical slots at manager revision 117.",
+    "milestone": "Canary 3 is retained user-reported external-runtime FAIL provenance: icons improved for Alligator, Anglerfish, and Clam, but the supplied C3 matrix found malformed/cropped Alligator, Anglerfish, Great White Shark, Boar, Zebra, and both Scorpions; oversized Brown Bear/Tiger; undesired Clam side profile; label-only Ray, Bass, Giant Isopod, Hedgehog, Vulture, Tortoise, Starfish, Lizard, and Mole; and a blank Piranha. Canary 4 corrects only the closed C8 contracts, trace anchors, and presentation paths, is STATIC_PASS, and is not deployed because unrelated BGE C60 and IBF C4 cohorts occupy both canonical slots at manager revision 117.",
     "releases": {
       "current": {
-        "version": "0.1.0-canary3",
-        "artifact": {"filename": "naturalist-xaero-entity-icons-compat-0.1.0-canary3.jar", "sha256": "510b205ce889ca92f31cf20a0eff078348598e3d6fef3cfeba15dc9363977d7b"},
-        "source_commit": "831297c74ee4829563476b64d75e24d2342148f9",
+        "version": "0.1.0-canary4",
+        "artifact": {"filename": "naturalist-xaero-entity-icons-compat-0.1.0-canary4.jar", "sha256": "9aa6869ed1579655c1639206cd2225119523b3c12423f0bce84c40a0f3658c19"},
+        "source_commit": "10ba9e25956934b740818aa01391775d165c1f98",
         "runtime_dependency_policy": {"contract": "CAPABILITY_OR_PROVIDER", "exceptions": []}
       },
       "accepted": null,
@@ -55,11 +55,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 3,
-    "activity_at": "2026-09-07T23:42:01Z",
-    "updated_at": "2026-09-07T23:42:01Z",
-    "last_codex_at": "2026-09-07T23:42:01Z",
-    "source_commit": "831297c74ee4829563476b64d75e24d2342148f9",
+    "revision": 4,
+    "activity_at": "2026-09-08T00:34:29Z",
+    "updated_at": "2026-09-08T00:34:29Z",
+    "last_codex_at": "2026-09-08T00:34:29Z",
+    "source_commit": "10ba9e25956934b740818aa01391775d165c1f98",
     "google_sheet": {"participates": true, "exclusion_reason": null}
   }
 }
