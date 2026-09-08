@@ -7,33 +7,35 @@ import java.util.Arrays;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.loader.impl.launch.knot.Knot;
 
-/** Applies C10 and the generic C9 against production Xaero without launching Minecraft. */
+/** Applies C11 and the generic C9 against production Xaero without launching Minecraft. */
 public final class ProductionMixinApplicationHarness {
     private ProductionMixinApplicationHarness() {}
 
     public static void main(String[] args) throws Exception {
-        require(args.length == 3, "expected Naturalist C10, generic C9, and Xaero paths");
-        Path naturalistC10 = Path.of(args[0]).toRealPath();
+        require(args.length == 3, "expected Naturalist C11, generic C9, and Xaero paths");
+        Path naturalistC11 = Path.of(args[0]).toRealPath();
         Path genericC9 = Path.of(args[1]).toRealPath();
         Path xaero = Path.of(args[2]).toRealPath();
 
         Knot knot = new Knot(EnvType.CLIENT);
         ClassLoader loader = knot.init(new String[0]);
-        requireResourceFrom(loader, "naturalist_xaero_entity_icons_compat.mixins.json", naturalistC10);
+        requireResourceFrom(loader, "naturalist_xaero_entity_icons_compat.mixins.json", naturalistC11);
         requireResourceFrom(loader, "xaero_emf_entity_icon_compat.mixins.json", genericC9);
 
         Class<?> manager = loadFrom(loader, "xaero.hud.minimap.radar.icon.RadarIconManager", xaero);
-        requireSingleHandler(manager, "naturalistXaeroIcons$evictStaleBrownBearBeforeXaeroEmfRetry");
+        requireSingleHandler(manager, "naturalistXaeroIcons$observeBrownBearCacheBeforeXaeroEmfRetry");
+        requireSingleHandler(manager, "naturalistXaeroIcons$startBrownBearDiagnostic");
+        requireSingleHandler(manager, "naturalistXaeroIcons$finishBrownBearDiagnostic");
         requireSingleHandler(manager, "xaeroEmf$retryFailedAtActualPrerender");
 
         Class<?> cache = loadFrom(loader,
                 "xaero.hud.minimap.radar.icon.cache.RadarIconEntityCache", xaero);
         require(Arrays.stream(cache.getInterfaces()).anyMatch(type -> type.getName().equals(
                         "dev.resivore.naturalistxaeroicons.mixin.RadarIconEntityCacheStorageAccessor")),
-                "C10 exact-key cache accessor did not apply");
+                "C11 read-only cache observer accessor did not apply");
 
         System.out.println("Production Knot/Mixin coexistence passed for "
-                + naturalistC10.getFileName() + " and " + genericC9.getFileName());
+                + naturalistC11.getFileName() + " and " + genericC9.getFileName());
     }
 
     private static Class<?> loadFrom(ClassLoader loader, String className, Path expectedJar) throws Exception {

@@ -2,6 +2,8 @@ package dev.resivore.naturalistxaeroicons.mixin;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.math.Axis;
+import dev.resivore.naturalistxaeroicons.BrownBearDiagnostic;
 import dev.resivore.naturalistxaeroicons.NaturalistIconAdapter;
 import dev.resivore.naturalistxaeroicons.NaturalistIconPresentation;
 import dev.resivore.naturalistxaeroicons.NaturalistModelContracts;
@@ -32,6 +34,10 @@ abstract class RadarIconModelPrerendererMixin {
             // the accepted Xaero × EMF render redirect.
             pose.pushPose();
             pose.scale(presentation.scale(), presentation.scale(), presentation.scale());
+            // C11 is deliberately not a sizing attempt. This must make the final radar raster
+            // visibly sideways if this native capture seam controls the displayed Bear icon.
+            pose.mulPose(Axis.ZP.rotationDegrees(90.0F));
+            BrownBearDiagnostic.nativePresentationEntered();
         }
     }
 
@@ -40,7 +46,10 @@ abstract class RadarIconModelPrerendererMixin {
             PoseStack pose, XaeroBufferProvider buffers, EntityRenderState state, Model model,
             Entity entity, ModelPart upstreamPart, RadarIconModelPrerenderer.Parameters parameters,
             CallbackInfoReturnable<ModelPart> callback) {
-        if (NaturalistIconPresentation.currentNativePresentation() != null) pose.popPose();
+        if (NaturalistIconPresentation.currentNativePresentation() != null) {
+            BrownBearDiagnostic.nativePrerenderReturned(!parameters.renderedDest.isEmpty());
+            pose.popPose();
+        }
         NaturalistIconPresentation.end();
     }
 

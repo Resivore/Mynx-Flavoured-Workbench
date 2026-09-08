@@ -5,7 +5,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.List;
-import net.minecraft.resources.Identifier;
 import org.junit.jupiter.api.Test;
 
 class NaturalistCoverageTest {
@@ -157,19 +156,22 @@ class NaturalistCoverageTest {
         assertEquals(.12F, NaturalistModelContracts.nativePresentationForId("bear").scale());
     }
 
-    @Test void brownBearCacheRetryTargetsOnlyAStaleNativeBearAtAPrerenderableCall() {
-        BrownBearIconCacheFreshness.resetForTest();
-        xaero.common.icon.XaeroIcon cached = new xaero.common.icon.XaeroIcon(null, 0, 0);
-        assertFalse(BrownBearIconCacheFreshness.retryCachedNativeBear(Identifier.fromNamespaceAndPath("naturalist", "bear"), cached, false));
-        assertFalse(BrownBearIconCacheFreshness.retryCachedNativeBear(Identifier.fromNamespaceAndPath("naturalist", "bear"), null, true));
-        assertFalse(BrownBearIconCacheFreshness.retryCachedNativeBear(Identifier.fromNamespaceAndPath("naturalist", "black_bear"), cached, true));
-        assertFalse(BrownBearIconCacheFreshness.retryCachedNativeBear(Identifier.fromNamespaceAndPath("minecraft", "bear"), cached, true));
-        assertTrue(BrownBearIconCacheFreshness.retryCachedNativeBear(Identifier.fromNamespaceAndPath("naturalist", "bear"), cached, true));
-        assertFalse(BrownBearIconCacheFreshness.retryCachedNativeBear(Identifier.fromNamespaceAndPath("naturalist", "bear"), cached, true));
-
-        BrownBearIconCacheFreshness.resetForTest();
-        BrownBearIconCacheFreshness.resourceReloadEvicted();
-        assertFalse(BrownBearIconCacheFreshness.retryCachedNativeBear(Identifier.fromNamespaceAndPath("naturalist", "bear"), cached, true));
+    @Test void brownBearC11DiagnosticIsNativeOnlyAndDoesNotRetryOrEvictCaches() throws Exception {
+        Path module = Path.of(System.getProperty("projectRoot"));
+        String prerenderer = Files.readString(module.resolve(
+                "src/main/java/dev/resivore/naturalistxaeroicons/mixin/RadarIconModelPrerendererMixin.java"));
+        String manager = Files.readString(module.resolve(
+                "src/main/java/dev/resivore/naturalistxaeroicons/mixin/RadarIconManagerMixin.java"));
+        assertEquals(.12F, NaturalistModelContracts.nativePresentationForId("bear").scale());
+        assertTrue(prerenderer.contains("Axis.ZP.rotationDegrees(90.0F)"));
+        assertTrue(prerenderer.contains("BrownBearDiagnostic.nativePresentationEntered()"));
+        assertTrue(prerenderer.contains("BrownBearDiagnostic.nativePrerenderReturned"));
+        assertTrue(manager.contains("BrownBearDiagnostic.cacheLookup(storage.containsKey(key))"));
+        assertTrue(manager.contains("BrownBearDiagnostic.requestFinished"));
+        assertFalse(manager.contains("storage.remove(key)"));
+        assertFalse(manager.contains("BrownBearIconCacheFreshness"));
+        assertFalse(Files.exists(module.resolve(
+                "src/main/java/dev/resivore/naturalistxaeroicons/BrownBearIconCacheFreshness.java")));
     }
 
     @Test void retainedC2ControlsRemainContractStable() {

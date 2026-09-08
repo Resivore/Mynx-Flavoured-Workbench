@@ -7,7 +7,7 @@ import xaero.common.icon.XaeroIcon;
 import xaero.hud.minimap.radar.icon.cache.RadarIconEntityCache;
 import xaero.hud.minimap.radar.icon.cache.id.RadarIconKey;
 
-/** Exposes Xaero's per-entity map only to remove the one stale native Bear raster by exact key. */
+/** Exposes Xaero's per-entity map only to observe the Brown Bear cache result for C11 logging. */
 @Mixin(value = RadarIconEntityCache.class, remap = false)
 interface RadarIconEntityCacheStorageAccessor {
     @Accessor("storage")

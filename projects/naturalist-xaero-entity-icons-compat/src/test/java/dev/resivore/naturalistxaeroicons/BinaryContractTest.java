@@ -34,7 +34,7 @@ class BinaryContractTest {
         }
     }
 
-    @Test void c10UsesTheEnclosingNativeCapturePoseAndAComposingStaleBearCacheSeam() throws Exception {
+    @Test void c11UsesTheEnclosingNativeCapturePoseForOnlyTheBrownBearDiagnostic() throws Exception {
         Path root = Path.of(System.getProperty("projectRoot"));
         String mixins = Files.readString(root.resolve("src/main/resources/naturalist_xaero_entity_icons_compat.mixins.json"));
         assertFalse(mixins.contains("RadarIconModelPartPrerendererMixin"));
@@ -51,12 +51,17 @@ class BinaryContractTest {
         assertTrue(prerenderer.contains("method = \"renderModel\", at = @At(\"HEAD\")"));
         assertTrue(prerenderer.contains("pose.pushPose()"));
         assertTrue(prerenderer.contains("pose.popPose()"));
+        assertTrue(prerenderer.contains("Axis.ZP.rotationDegrees(90.0F)"));
+        assertTrue(prerenderer.contains("BrownBearDiagnostic.nativePresentationEntered"));
+        assertTrue(prerenderer.contains("BrownBearDiagnostic.nativePrerenderReturned"));
         String manager = Files.readString(root.resolve("src/main/java/dev/resivore/naturalistxaeroicons/mixin/RadarIconManagerMixin.java"));
         assertTrue(manager.contains("RadarIconEntityCache;get"));
-        assertTrue(manager.contains("retryCachedNativeBear"));
-        assertTrue(manager.contains("canPrerender"));
-        assertTrue(manager.contains("storage.remove(key)"));
+        assertTrue(manager.contains("BrownBearDiagnostic.cacheLookup"));
+        assertTrue(manager.contains("BrownBearDiagnostic.requestFinished"));
+        assertTrue(manager.contains("storage.containsKey(key)"));
         assertTrue(manager.contains("CAPTURE_FAILHARD"));
+        assertFalse(manager.contains("storage.remove(key)"));
+        assertFalse(manager.contains("BrownBearIconCacheFreshness"));
         assertFalse(manager.contains("@Redirect"));
         String genericManager = Files.readString(root.getParent().resolve(
                 "xaero-entity-icons/src/main/java/dev/resivore/xaeroemfcompat/mixin/RadarIconManagerMixin.java"));
@@ -64,7 +69,7 @@ class BinaryContractTest {
         assertTrue(genericManager.contains("xaeroEmf$retryFailedAtActualPrerender"));
     }
 
-    @Test void xaeroC10CacheSeamLeavesTheGenericRetryCallAvailable() throws Exception {
+    @Test void xaeroC11AuditEstablishesCacheBeforeCreatorAndKeepsGenericRetryAvailable() throws Exception {
         try (JarFile xaero = new JarFile(Path.of(System.getProperty("xaeroJar")).toFile())) {
             ClassNode cache = readClass(xaero, "xaero/hud/minimap/radar/icon/cache/RadarIconEntityCache.class");
             assertTrue(cache.fields.stream().map(field -> field.name).anyMatch("storage"::equals));
@@ -76,7 +81,11 @@ class BinaryContractTest {
             int cacheRead = callIndex(get, "xaero/hud/minimap/radar/icon/cache/RadarIconEntityCache", "get");
             int creator = callIndex(get, "xaero/hud/minimap/radar/icon/creator/RadarIconCreator", "create");
             assertTrue(cacheRead >= 0 && cacheRead < creator,
-                    "C10's before-read cache eviction must leave Xaero's generic retry call before creation");
+                    "Xaero must consult the entity/variant cache before native icon creation");
+
+            assertNotNull(xaero.getEntry("xaero/hud/minimap/radar/icon/creator/RadarIconCreator.class"));
+            assertNotNull(xaero.getEntry("xaero/hud/minimap/radar/icon/creator/render/form/model/part/RadarIconModelPartPrerenderer.class"));
+            assertNotNull(xaero.getEntry("xaero/hud/minimap/radar/icon/creator/render/form/model/RadarIconModelPrerenderer$Parameters.class"));
         }
     }
 

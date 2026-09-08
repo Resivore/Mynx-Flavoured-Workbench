@@ -71,7 +71,7 @@ test {
 
 tasks.register('productionMixinTest', JavaExec) {
     group = 'verification'
-    description = 'Applies Naturalist C10 and generic Xaero × EMF C9 through production Fabric Knot/Mixin without launching Minecraft.'
+    description = 'Applies Naturalist C11 and generic Xaero × EMF C9 through production Fabric Knot/Mixin without launching Minecraft.'
     dependsOn tasks.named('testClasses'), tasks.named('jar'), prepareProductionMixinWorkingDir
     mainClass = 'dev.resivore.naturalistxaeroicons.ProductionMixinApplicationHarness'
     inputs.files(tasks.named('jar'), xaeroJar, naturalistJar, genericXaeroEmfJar, emfJar, etfJar, fabricApiJar, productionMinecraftClientJar)
