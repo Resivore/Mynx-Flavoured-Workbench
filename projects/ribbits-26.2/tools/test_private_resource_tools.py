@@ -1287,8 +1287,8 @@ class PrivateVillageUtilityTransformTest(unittest.TestCase):
 
 class DonorBoundaryContractTest(unittest.TestCase):
     def test_exact_accounting_contains_only_approved_visual_members_and_outputs(self) -> None:
-        self.assertEqual("4.1.6+26.2-mynx-canary20", tools.CANDIDATE_VERSION)
-        self.assertEqual(20, tools.CANDIDATE_CANARY)
+        self.assertEqual("4.1.6+26.2-mynx-canary21", tools.CANDIDATE_VERSION)
+        self.assertEqual(21, tools.CANDIDATE_CANARY)
         self.assertEqual(
             "mynx-ribbits-private-resource-manifest/v1", tools.PRIVATE_MANIFEST_SCHEMA
         )
@@ -1297,7 +1297,7 @@ class DonorBoundaryContractTest(unittest.TestCase):
             tools.PRIVATE_MANIFEST_CLASSIFICATION,
         )
         self.assertEqual(349, tools.OUTPUT_FILE_COUNT)
-        self.assertEqual(2_735_226, tools.OUTPUT_TOTAL_SIZE)
+        self.assertEqual(2_735_214, tools.OUTPUT_TOTAL_SIZE)
         self.assertEqual(2_563, tools.SORCERER_LOOT_OUTPUT_SIZE)
         self.assertEqual(
             "5b06e06502bf11f661161e89bf34e329d8f23268b7b0104371038c38ad9b378d",
@@ -1462,8 +1462,42 @@ class DonorBoundaryContractTest(unittest.TestCase):
                 },
                 open_model["textures"],
             )
+            source_elements = user_model["elements"]
+            for source, generated in zip(source_elements, open_model["elements"], strict=True):
+                self.assertEqual(source["from"], generated["from"])
+                self.assertEqual(source["to"], generated["to"])
+                for direction, source_face in source["faces"].items():
+                    generated_face = generated["faces"][direction]
+                    self.assertEqual("#layer0", generated_face["texture"])
+                    self.assertEqual(
+                        tools.normalize_bbmodel_face_uv(source_face["uv"], (32, 32)),
+                        generated_face["uv"],
+                    )
+            self.assertEqual(
+                [10.0, 15.0, 5.5, 9.5],
+                open_model["elements"][1]["faces"]["up"]["uv"],
+            )
+            # Flipped UV ordering and fractional values are semantic and survive scaling.
+            self.assertEqual(
+                [10.0, 9.5, 5.5, 15.0],
+                tools.normalize_bbmodel_face_uv([20, 19, 11, 30], (32, 32)),
+            )
             self.assertNotIn("ribbits:entity/wandering_ribbit", json.dumps(open_model))
             self.assertFalse((root / "assets/ribbits/geckolib/animations/wandering.json").exists())
+
+    def test_bbmodel_uv_normalization_uses_each_texture_dimension(self) -> None:
+        texture = tools.encode_rgba_png(64, 32, bytes((12, 34, 56, 255)) * (64 * 32))
+        model = {"resolution": {"width": 64, "height": 32}}
+        dimensions = tools.resolve_bbmodel_texture_dimensions(model, texture, "synthetic texture")
+        self.assertEqual((64, 32), dimensions)
+        self.assertEqual(
+            [5.0, 15.0, 2.75, 9.5],
+            tools.normalize_bbmodel_face_uv([20, 30, 11, 19], dimensions),
+        )
+        with self.assertRaisesRegex(tools.ValidationError, "differs from its exact PNG"):
+            tools.resolve_bbmodel_texture_dimensions(
+                {"resolution": {"width": 32, "height": 32}}, texture, "synthetic texture"
+            )
 
     def test_polish_pixels_preserve_artwork_exactly(self) -> None:
         source = Path(tools.__file__).resolve().parents[1] / "common/src/main/resources/assets/ribbits/textures"

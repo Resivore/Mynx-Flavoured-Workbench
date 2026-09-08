@@ -178,15 +178,15 @@
     ]
   },
   "state": {
-    "milestone": "Canary 18 retains the external client-startup RUNTIME_FAIL provenance caused by required-config RibbitsMixinPlugin class probing; Canary 19 removed that startup hazard. Supplied external C19 runtime evidence confirms startup remains successful but records two visual RUNTIME_FAIL findings: closed Chute Leaf is correct while deployed open Chute is black/magenta missing-resource checkerboard, and the Naturalist snail leash renders with its snail endpoint substantially above the snail and its Wandering Ribbit holder endpoint substantially below the Ribbit. Canary 20 standardizes the final open-model texture binding and validates the complete packaged item-definition/model/texture chain; it adds the actual inherited Snail Leashable override and the holder's getRopeHoldPosition override without restoring any optional-class probe. Canary 20 is ACTIVE / STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED because both canonical dedicated slots remain occupied by unrelated cohorts.",
+    "milestone": "Supplied external Canary 20 evidence reconciles as a mixed result: the Naturalist snail leash is visually GOOD, with correct snail and Wandering Ribbit endpoints and a proper visible connection, while the closed/undeployed Chute Leaf remains correct but the deployed/open authored canopy is still a black/magenta missing-texture checkerboard. Canary 21 preserves the C20 leash implementation and C19 optional Naturalist startup safeguards, verifies the immutable 32x32 BBModel/PNG pair, and converts each authored pixel-space UV to Minecraft's 0-16 model UV space using the actual texture dimensions. Canary 21 is ACTIVE / STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED because Slots A and B at manager revision 117 are occupied by unrelated ready-to-test cohorts.",
     "releases": {
       "current": {
-        "version": "4.1.6+26.2-mynx-canary20",
+        "version": "4.1.6+26.2-mynx-canary21",
         "artifact": {
-          "filename": "ribbits-private-reconstruction-4.1.6+26.2-mynx-canary20.jar",
-          "sha256": "16bba88850b3d3b41ff06b41167688f4f02382c1ae5c7496e70d5e4a134ecd40"
+          "filename": "ribbits-private-reconstruction-4.1.6+26.2-mynx-canary21.jar",
+          "sha256": "c66c18571c0c6c45ddfaae52adc76e86177a3d5bc0fa90029bd3a44eabcdeadd"
         },
-        "source_commit": "4966d7167225476e28327f3fc2d2ef58e320c8b8",
+        "source_commit": "8e5e3cc552b4f43493f333e195abd7460baa1eda",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
@@ -205,11 +205,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 25,
-    "activity_at": "2026-09-08T03:15:14Z",
-    "updated_at": "2026-09-08T03:15:14Z",
-    "last_codex_at": "2026-09-08T03:15:14Z",
-    "source_commit": "4966d7167225476e28327f3fc2d2ef58e320c8b8",
+    "revision": 26,
+    "activity_at": "2026-09-08T03:48:12Z",
+    "updated_at": "2026-09-08T03:48:12Z",
+    "last_codex_at": "2026-09-08T03:48:12Z",
+    "source_commit": "8e5e3cc552b4f43493f333e195abd7460baa1eda",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null

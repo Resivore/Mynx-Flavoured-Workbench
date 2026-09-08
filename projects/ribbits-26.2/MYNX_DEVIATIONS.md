@@ -4,6 +4,12 @@ This file records intentional departures from the faithful Minecraft Java 26.2 R
 
 The direct predecessor is runtime-failed Mynx Canary 11: `ribbits-private-reconstruction-4.1.6+26.2-mynx-canary11.jar`, 3,334,222 bytes, SHA-256 `258CA17B5D61C825AFBAF852413C1F44183D2533446BFF297C4B8453AD9CECAA`, source `784b745d6480e076fb94598a3b466cfb98bbec04`. It and earlier private artifacts remain unchanged and unaccepted.
 
+## Canary 21 authored open-Chute UV repair
+
+- The exact user-authored `originals/assets/chute_leaf_open.bbmodel` and `chute_leaf_open.png` remain immutable inputs: 5,953 bytes / SHA-256 `1D2332100DAEF279FD9BD1EA442714FE82B572A1662E05F40360CDEAA7680444` and 743 bytes / SHA-256 `C9DCC9DB447C84E69306810AAEF1818B52525E8DF5205432C8EB454743E059B2`. The BBModel declares 32×32 and its embedded PNG equals the standalone bytes.
+- Direct conversion retains every authored cube, face direction, display transform, ambient-occlusion value, supported rotation/pivot, shade value, and exact output PNG bytes. It now maps each face UV from source texture pixels into Minecraft Java item-model 0–16 space using the actual verified PNG width and height. UV ordering is never sorted: the authored canopy `[20, 30, 11, 19]` becomes `[10.0, 15.0, 5.5, 9.5]`, while its reversed counterpart remains reversed as `[10.0, 9.5, 5.5, 15.0]`.
+- The generated `ribbits:item/chute_leaf_open` resource chain remains item definition → `assets/ribbits/models/item/chute_leaf_open.json` → exact `assets/ribbits/textures/item/chute_leaf_open.png`, with every face using `#layer0`. This is a conversion correction only: no geometry redesign, renderer-pose compensation, donor umbrella fallback, closed Chute change, or Chute mechanics change is introduced.
+
 Current successor `4.1.6+26.2-mynx-canary16` changes only the Wandering Ribbit scheduler's heightmap-result-to-feet conversion. Mapped Minecraft Java 26.2 `ChunkAccess.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z)` returns `Heightmap.getFirstAvailable(x & 15, z & 15) - 1`, the occupied top surface. Canary 16 keeps that result as `groundPos`, uses `groundPos.above()` as feet, and builds the unchanged AABB and `EVENT` spawn at those feet; body/head, hazards, fluids, biome, collision and bounds therefore use their actual positions. Canary 15's bounded diagnostics remain unchanged. Its exact artifact/source identity is in `WORKBENCH_STATUS.json` and the revision-21 log entry. It remains `ACTIVE / STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED`.
 
 ## Canary 12 item-atlas correction

@@ -31,16 +31,16 @@ from typing import Any
 EXPECTED_PRISTINE_SHA256 = (
     "4cf86564aed393410fb1dbca3a9ce2425382307655e92bb6b43f3ddcee5bf731"
 )
-CANDIDATE_VERSION = "4.1.6+26.2-mynx-canary20"
-CANDIDATE_CANARY = 20
+CANDIDATE_VERSION = "4.1.6+26.2-mynx-canary21"
+CANDIDATE_CANARY = 21
 PRIVATE_MANIFEST_SCHEMA = "mynx-ribbits-private-resource-manifest/v1"
 PRIVATE_MANIFEST_CLASSIFICATION = (
     "PRIVATE MYNX ASSEMBLY STAGED / NONREDISTRIBUTABLE DONOR ASSETS"
 )
 PRIVATE_ARTIFACT_FILENAME = (
-    "ribbits-private-reconstruction-4.1.6+26.2-mynx-canary20.jar"
+    "ribbits-private-reconstruction-4.1.6+26.2-mynx-canary21.jar"
 )
-SOURCE_ONLY_ARTIFACT_FILENAME = "ribbits-source-only-4.1.6+26.2-mynx-canary20.jar"
+SOURCE_ONLY_ARTIFACT_FILENAME = "ribbits-source-only-4.1.6+26.2-mynx-canary21.jar"
 SOURCE_SAFE_PUBLIC_RESOURCE_PATHS = frozenset(
     {
         "assets/ribbits/items/glowcap.json",
@@ -143,8 +143,8 @@ REQUIRED_FABRIC_DEPENDENCIES = {
 }
 SOURCE_FILE_COUNT = 287  # 285 assets/data files plus icon.png and logo.png
 OUTPUT_FILE_COUNT = 349
-# Exact deterministic Canary 20 private staging inventory.
-OUTPUT_TOTAL_SIZE = 2_735_226
+# Exact deterministic Canary 21 private staging inventory.
+OUTPUT_TOTAL_SIZE = 2_735_214
 SOURCE_EXTENSION_COUNTS = {
     ".json": 201,
     ".nbt": 29,
@@ -887,6 +887,57 @@ def require_exact_originals_member_path(
     return candidate
 
 
+def declared_bbmodel_texture_dimensions(model: dict[str, Any]) -> tuple[int, int] | None:
+    """Return Blockbench's declared texture pixels, rejecting malformed metadata."""
+    resolution = model.get("resolution")
+    if resolution is None:
+        return None
+    if not isinstance(resolution, dict):
+        raise ValidationError("User-authored Chute BBModel texture resolution is malformed")
+    width, height = resolution.get("width"), resolution.get("height")
+    if (
+        not isinstance(width, int)
+        or isinstance(width, bool)
+        or not isinstance(height, int)
+        or isinstance(height, bool)
+        or width <= 0
+        or height <= 0
+    ):
+        raise ValidationError("User-authored Chute BBModel texture resolution is invalid")
+    return width, height
+
+
+def resolve_bbmodel_texture_dimensions(
+    model: dict[str, Any], png: bytes, label: str
+) -> tuple[int, int]:
+    """Use the exact PNG dimensions and fail closed on conflicting BBModel metadata."""
+    actual = png_dimensions(png, label)
+    declared = declared_bbmodel_texture_dimensions(model)
+    if declared is not None and declared != actual:
+        raise ValidationError(
+            "User-authored Chute BBModel texture resolution differs from its exact PNG: "
+            f"declared={declared}, actual={actual}"
+        )
+    return actual
+
+
+def normalize_bbmodel_face_uv(
+    uv: Any, texture_dimensions: tuple[int, int]
+) -> list[float]:
+    """Convert Blockbench texture-pixel UVs to Minecraft's fixed 0-16 UV space."""
+    if not isinstance(uv, list) or len(uv) != 4 or any(
+        not isinstance(value, (int, float)) or isinstance(value, bool) for value in uv
+    ):
+        raise ValidationError("User-authored Chute BBModel has invalid face UV")
+    width, height = texture_dimensions
+    if width <= 0 or height <= 0:
+        raise ValidationError("User-authored Chute texture dimensions are invalid")
+    u_scale, v_scale = 16.0 / width, 16.0 / height
+    # Preserve the authored order: Minecraft uses reversed pairs for flipped faces.
+    return [float(uv[0]) * u_scale, float(uv[1]) * v_scale,
+            float(uv[2]) * u_scale, float(uv[3]) * v_scale]
+
+
 def load_user_authored_chute_inputs(user_assets_root: Path) -> tuple[dict[str, Any], bytes, list[dict[str, Any]]]:
     """Load the two C18 inputs exactly, without ever writing beneath originals/."""
     root = user_assets_root.resolve(strict=True)
@@ -913,9 +964,9 @@ def load_user_authored_chute_inputs(user_assets_root: Path) -> tuple[dict[str, A
         model = json.loads(loaded["bbmodel"].decode("utf-8"))
     except (UnicodeDecodeError, json.JSONDecodeError) as exc:
         raise ValidationError("C18 user-authored Chute BBModel is not valid UTF-8 JSON") from exc
-    if not isinstance(model, dict) or model.get("resolution") != {"width": 32, "height": 32}:
-        raise ValidationError("C18 user-authored Chute BBModel texture resolution differs")
-    if png_dimensions(loaded["png"], str(paths["png"])) != (32, 32):
+    if not isinstance(model, dict):
+        raise ValidationError("User-authored Chute BBModel root is not an object")
+    if resolve_bbmodel_texture_dimensions(model, loaded["png"], str(paths["png"])) != (32, 32):
         raise ValidationError("C18 user-authored Chute PNG is not 32x32")
     texture = model.get("textures")
     texture = texture[0] if isinstance(texture, list) and len(texture) == 1 else texture
@@ -3142,7 +3193,12 @@ def import_wandering_visual_resources(
     # C18 intentionally does not consult donor umbrella geometry or texture for
     # the deployed leaf. Convert the supplied Blockbench cubes directly to Java
     # item-model elements; the supplied model has no rotations that Java's single-
-    # axis element rotation cannot faithfully represent.
+    # axis element rotation cannot faithfully represent. Blockbench stores face
+    # UVs in source-texture pixels while Java item models always use 0-16 UVs.
+    # Derive each scale from the exact PNG; never assume a particular resolution.
+    texture_dimensions = resolve_bbmodel_texture_dimensions(
+        user_chute_model, user_chute_png, "user-authored Chute PNG"
+    )
     source_elements = user_chute_model.get("elements")
     if not isinstance(source_elements, list) or not source_elements:
         raise ValidationError("C18 user-authored Chute BBModel has no elements")
@@ -3160,10 +3216,15 @@ def import_wandering_visual_resources(
         for direction, face in faces.items():
             if direction not in {"north", "east", "south", "west", "up", "down"} or not isinstance(face, dict):
                 raise ValidationError(f"C18 user-authored Chute element {index} has invalid face")
-            uv = face.get("uv")
-            if not isinstance(uv, list) or len(uv) != 4:
-                raise ValidationError(f"C18 user-authored Chute element {index} has invalid face UV")
-            converted_faces[direction] = {"uv": [float(value) for value in uv], "texture": "#layer0"}
+            try:
+                normalized_uv = normalize_bbmodel_face_uv(
+                    face.get("uv"), texture_dimensions
+                )
+            except ValidationError as exc:
+                raise ValidationError(
+                    f"C18 user-authored Chute element {index} has invalid face UV"
+                ) from exc
+            converted_faces[direction] = {"uv": normalized_uv, "texture": "#layer0"}
         converted: dict[str, Any] = {
             "from": [float(value) for value in element["from"]],
             "to": [float(value) for value in element["to"]],
@@ -3202,7 +3263,7 @@ def import_wandering_visual_resources(
         {
             "output": open_model_relative,
             "sources": [{"logical_path": "originals/assets/chute_leaf_open.bbmodel"}],
-            "transformation": "deterministic direct Blockbench cube/UV/display conversion; no donor geometry",
+            "transformation": "deterministic direct Blockbench cube/display conversion with exact-PNG pixel UVs normalized to Minecraft 0-16 UV space; no donor geometry",
         }
     ]
     open_texture_relative = "assets/ribbits/textures/item/chute_leaf_open.png"
@@ -4202,9 +4263,9 @@ def validate_pristine_provenance(
         )
         return
 
-    with tempfile.TemporaryDirectory(
-        prefix="ribbits-private-validation-", dir=private_root.resolve()
-    ) as temp_dir:
+    # Keep this short: deeply nested Windows worktrees otherwise push some
+    # preserved Ribbits resource paths past MAX_PATH during deterministic replay.
+    with tempfile.TemporaryDirectory(prefix="rv-", dir=private_root.resolve()) as temp_dir:
         temp_root = Path(temp_dir)
         expected_root = temp_root / "resources"
         expected_manifest = temp_root / "manifest.json"
@@ -4458,24 +4519,42 @@ def validate_donor_resource_boundary(root: Path, errors: list[str]) -> None:
             errors.append("Open Drop Leaf does not contain exactly the two user-authored cubes")
         else:
             handle_element, canopy_element = open_elements
+            expected_handle_uvs = {
+                "north": [14.0, 0.0, 14.5, 16.0],
+                "east": [14.5, 0.0, 15.0, 16.0],
+                "south": [15.5, 0.0, 16.0, 16.0],
+                "west": [15.0, 0.0, 15.5, 16.0],
+                "up": [0.0, 8.0, 0.5, 8.5],
+                "down": [0.0, 8.0, 0.5, 8.5],
+            }
+            expected_canopy_uvs = {
+                "north": [7.5, 0.0, 15.0, 0.5],
+                "east": [7.5, 0.5, 15.0, 1.0],
+                "south": [7.5, 1.0, 15.0, 1.5],
+                "west": [7.5, 1.5, 15.0, 2.0],
+                "up": [10.0, 15.0, 5.5, 9.5],
+                "down": [10.0, 9.5, 5.5, 15.0],
+            }
             if (
                 handle_element.get("from") != [4.5, 0.0, 7.75]
                 or handle_element.get("to") != [5.0, 22.0, 8.25]
                 or set(handle_element.get("faces", {}))
                 != {"north", "east", "south", "west", "up", "down"}
+                or any(
+                    face.get("texture") != "#layer0"
+                    or face.get("uv") != expected_handle_uvs[direction]
+                    for direction, face in handle_element.get("faces", {}).items()
+                )
             ):
-                errors.append("Open Drop Leaf user-authored handle geometry differs")
+                errors.append("Open Drop Leaf user-authored handle geometry/UV contract differs")
             if (
                 canopy_element.get("from") != [0.25, 22.0, -2.5]
                 or canopy_element.get("to") != [9.25, 22.0, 8.5]
                 or set(canopy_element.get("faces", {})) != {"north", "east", "south", "west", "up", "down"}
-                or canopy_element.get("faces", {}).get("up", {}).get("uv")
-                != [20.0, 30.0, 11.0, 19.0]
-                or canopy_element.get("faces", {}).get("down", {}).get("uv")
-                != [20.0, 19.0, 11.0, 30.0]
                 or any(
                     face.get("texture") != "#layer0"
-                    for face in canopy_element.get("faces", {}).values()
+                    or face.get("uv") != expected_canopy_uvs[direction]
+                    for direction, face in canopy_element.get("faces", {}).items()
                 )
             ):
                 errors.append("Open Drop Leaf user-authored canopy geometry/UV contract differs")
@@ -4811,7 +4890,7 @@ def validate_jar(
                 errors.append(f"Invalid or missing packaged JSON {name}: {exc}")
                 return {}
 
-        # C20: validate the complete model dependency graph in the *final JAR*,
+        # C21: validate the complete model dependency graph in the *final JAR*,
         # not only that the staged inputs happened to exist.  The renderer's
         # ITEM_MODEL component resolves this item-definition ID first, then its
         # baked model, then every model texture reference.

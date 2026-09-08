@@ -105,12 +105,12 @@ if (privateResourcesDir != null) {
             if (manifest.schema?.toString() != 'mynx-ribbits-private-resource-manifest/v1' ||
                 manifest.classification?.toString() != 'PRIVATE MYNX ASSEMBLY STAGED / NONREDISTRIBUTABLE DONOR ASSETS' ||
                 manifest.candidate?.version?.toString() != project.mod_version.toString() ||
-                manifest.candidate?.version?.toString() != '4.1.6+26.2-mynx-canary20' ||
-                (manifest.candidate?.canary as int) != 20 ||
+                manifest.candidate?.version?.toString() != '4.1.6+26.2-mynx-canary21' ||
+                (manifest.candidate?.canary as int) != 21 ||
                 manifest.candidate?.private_artifact_filename?.toString() !=
-                    'ribbits-private-reconstruction-4.1.6+26.2-mynx-canary20.jar' ||
+                    'ribbits-private-reconstruction-4.1.6+26.2-mynx-canary21.jar' ||
                 manifest.candidate?.source_only_artifact_filename?.toString() !=
-                    'ribbits-source-only-4.1.6+26.2-mynx-canary20.jar') {
+                    'ribbits-source-only-4.1.6+26.2-mynx-canary21.jar') {
                 throw new GradleException("Private manifest classification is not eligible for private packaging: ${manifest.classification}")
             }
             if ((manifest.blockers as List)) {
@@ -343,10 +343,10 @@ if (privateResourcesDir != null) {
             }
             if ((manifest.pristine.selected_file_count as int) != 287 ||
                 (manifest.output.file_count as int) != 349 ||
-                (manifest.output.total_size as long) != 2735226L ||
+                (manifest.output.total_size as long) != 2735214L ||
                 expectedFiles.size() != 349) {
                 throw new GradleException(
-                    'Private manifest does not preserve the exact 287-input / 349-output / 2,735,226-byte contract'
+                    'Private manifest does not preserve the exact 287-input / 349-output / 2,735,214-byte contract'
                 )
             }
 
