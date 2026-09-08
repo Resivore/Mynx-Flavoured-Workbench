@@ -21,7 +21,7 @@ public final class NaturalistModelContracts {
     private static final List<String> NATIVE_CONTROLS = List.of(
             "bear", "bird", "butterfly", "catfish", "caterpillar", "crab", "deer", "firefly", "snake", "snail");
     private static final Map<String, Presentation> NATIVE_PRESENTATION_OVERRIDES =
-            Map.of("bear", new Presentation(0.45F, 0.0F, 0.0F, 0.0F));
+            Map.of("bear", new Presentation(0.35F, 0.0F, 0.0F, 0.0F));
 
     private NaturalistModelContracts() {}
 
@@ -58,7 +58,7 @@ public final class NaturalistModelContracts {
             ModelPart source = follow(model.root(), contract.path());
             ModelPart trace = follow(model.root(), contract.tracePath());
             if (source == null || trace == null || (contract.requiresVisible() && !source.visible)) continue;
-            ModelPart selected = contract.cubeIndexes().isEmpty() ? source : copyDirectCubes(source, contract.cubeIndexes());
+            ModelPart selected = select(source, contract);
             if (selected != null) return Optional.of(new ResolvedContract(contract, source, selected, trace));
         }
         return Optional.empty();
@@ -77,10 +77,34 @@ public final class NaturalistModelContracts {
      * Zebra's adult face shares its authored part with the long neck.  Copying only the two
      * source-audited face cuboids is the narrow alternative to capturing the whole neck/body.
      */
-    private static ModelPart copyDirectCubes(ModelPart source, List<Integer> indexes) {
+    private static ModelPart select(ModelPart source, Contract contract) {
+        if (contract.cubeIndexes().isEmpty() && contract.drawableChildren().isEmpty()) return source;
         List<ModelPart.Cube> cubes = ModelPartUtil.getCubes(source);
-        if (cubes == null || indexes.stream().anyMatch(index -> index < 0 || index >= cubes.size())) return null;
-        ModelPart copy = new ModelPart(indexes.stream().map(cubes::get).toList(), Map.of());
+        if (cubes == null) return null;
+        List<Integer> indexes = contract.cubeIndexes();
+        if (!indexes.isEmpty() && indexes.stream().anyMatch(index -> index < 0 || index >= cubes.size())) return null;
+        Map<String, ModelPart> children = new LinkedHashMap<>();
+        for (String childPath : contract.drawableChildren()) {
+            List<String> segments = path(childPath);
+            if (segments.size() != 1 || !source.hasChild(segments.getFirst())) return null;
+            children.put(segments.getFirst(), copySubtree(source.getChild(segments.getFirst()), 0));
+        }
+        ModelPart copy = new ModelPart(indexes.isEmpty() ? List.copyOf(cubes) : indexes.stream().map(cubes::get).toList(), children);
+        copy.x = source.x; copy.y = source.y; copy.z = source.z;
+        copy.xRot = source.xRot; copy.yRot = source.yRot; copy.zRot = source.zRot;
+        copy.xScale = source.xScale; copy.yScale = source.yScale; copy.zScale = source.zScale;
+        copy.visible = source.visible; copy.skipDraw = source.skipDraw;
+        copy.setInitialPose(copy.storePose());
+        return copy;
+    }
+
+    private static ModelPart copySubtree(ModelPart source, int depth) {
+        if (depth > 16) throw new IllegalArgumentException("Naturalist contract subtree is too deep");
+        Map<String, ModelPart> children = new LinkedHashMap<>();
+        Map<String, ModelPart> sourceChildren = ModelPartUtil.getChildren(source);
+        if (sourceChildren != null) sourceChildren.forEach((name, child) -> children.put(name, copySubtree(child, depth + 1)));
+        List<ModelPart.Cube> cubes = ModelPartUtil.getCubes(source);
+        ModelPart copy = new ModelPart(cubes == null ? List.of() : List.copyOf(cubes), children);
         copy.x = source.x; copy.y = source.y; copy.z = source.z;
         copy.xRot = source.xRot; copy.yRot = source.yRot; copy.zRot = source.zRot;
         copy.xScale = source.xScale; copy.yScale = source.yScale; copy.zScale = source.zScale;
@@ -96,16 +120,16 @@ public final class NaturalistModelContracts {
         add(map, "lion", c("LionModel", "body/neck", p(.68F)), c("LionBabyModel", "body/neck", p(.78F)));
         add(map, "elephant", c("ElephantModel", "body/skullRot/attack/neck", p(.36F)), c("ElephantBabyModel", "body/neck", p(.70F)));
         add(map, "mammoth", c("MammothModel", "body/skullRot/attack/neck", p(.36F)), c("MammothBabyModel", "body/neck", p(.70F)));
-        add(map, "zebra", c("ZebraModel", "body/neck/neck_r1", "body/neck/neck_r1", p(.50F), List.of(2, 3)), c("ZebraBabyModel", "body/neck/skull2", p(.70F)));
+        add(map, "zebra", cDetached("ZebraModel", "body/neck/neck_r1", "body/neck/neck_r1", p(.50F), List.of(2, 3)), cDetached("ZebraBabyModel", "body/neck/skull2", p(.70F)));
         add(map, "giraffe", c("GiraffeModel", "hips/shoulders/body/neck/head", p(.55F)), c("GiraffeBabyModel", "body/neck", p(.75F)));
         add(map, "hippo", c("HippoModel", "body/bone/neck", p(.48F)), c("HippoBabyModel", "body/neck", p(.70F)));
-        add(map, "vulture", c("VultureModel", "neck"), c("VultureBabyModel", "body/neck"));
+        add(map, "vulture", cDetached("VultureModel", "neck"), cDetached("VultureBabyModel", "body/neck"));
         add(map, "boar", c("BoarModel", "body/neck", p(.72F)), c("BoarBabyModel", "body/neck", p(.80F)));
         add(map, "alligator", c("AlligatorModel", "body/neck", p(.58F)), c("AlligatorBabyModel", "body/neck", p(.76F)));
-        add(map, "lizard", c("LizardModel", "body/skullRot/neck", "body/skullRot/neck/neck_r1", p(1.0F)));
-        add(map, "tortoise", c("TortoiseModel", "body/skullRot/neck"), c("TortoiseBabyModel", "body/skullRot/neck"));
+        add(map, "lizard", cDetached("LizardModel", "body/skullRot/neck", "body/skullRot/neck/neck_r1", p(1.0F)));
+        add(map, "tortoise", cDetached("TortoiseModel", "body/skullRot/neck"), cDetached("TortoiseBabyModel", "body/skullRot/neck"));
         add(map, "duck", c("DuckModel", "body/neck", p(.72F, 0.0F, 1.5708F, 0.0F)), c("DuckBabyModel", "body/neck", p(.80F, 0.0F, 1.5708F, 0.0F)));
-        add(map, "mole", c("MoleModel", "root/body/skull"));
+        add(map, "mole", cDetached("MoleModel", "root/body/skull"));
         add(map, "rat", c("RatModel", "body/skull", p(.74F, 0.0F, 1.5708F, 0.0F)));
         add(map, "black_bear", c("BlackBearModel", "body/skullRot/skull"), c("BlackBearBabyModel", "body/skull"));
         add(map, "tiger", c("TigerModel", "body/skullRot/skull", p(.76F)), c("TigerBabyModel", "body/skull", p(.82F)));
@@ -113,23 +137,23 @@ public final class NaturalistModelContracts {
         add(map, "ostrich", c("OstrichModel", "root/body/skull", p(.60F)), c("OstrichBabyModel", "body/skull", p(.76F)));
         add(map, "turkey", c("TurkeyModel", "body/skull"));
         add(map, "capybara", c("CapybaraModel", "body/skull"), c("CapybaraBabyModel", "body/skull"));
-        add(map, "hedgehog", cVisible("HedgehogModel", "rolled", p(.95F)), c("HedgehogModel", "unrolled/body"));
+        add(map, "hedgehog", cVisibleDetached("HedgehogModel", "rolled", p(.95F)), cDetached("HedgehogModel", "unrolled/body"));
         // compact or non-headed anatomies: capture the explicit compact body subtree, never a sibling search
         add(map, "dragonfly", c("DragonflyModel", "", p(.62F)));
-        add(map, "anglerfish", c("AnglerfishModel", "root/body", p(.78F, 0.0F, 1.5708F, 0.0F)));
-        add(map, "ray", c("RayModel", "body"));
+        add(map, "anglerfish", cDetachedChildren("AnglerfishModel", "root/body", p(.38F, 0.0F, 1.5708F, 0.0F), List.of("jaw", "dangly")));
+        add(map, "ray", cDetached("RayModel", "body"));
         add(map, "blobfish", c("BlobfishPinkModel", "", p(.72F)), c("BlobfishGrayModel", "", p(.72F)));
-        add(map, "piranha", c("PiranhaModel", "body", p(.88F, 0.0F, 1.5708F, 0.0F)));
-        add(map, "bass", c("BassModel", "body"), c("MediumBassModel", "body"), c("LargeBassModel", "", "body", p(1.0F)));
+        add(map, "piranha", cDetached("PiranhaModel", "body", p(.88F, 0.0F, 1.5708F, 0.0F)));
+        add(map, "bass", cDetached("BassModel", "body"), cDetached("MediumBassModel", "body"), cDetached("LargeBassModel", "head", "head", p(1.0F)));
         add(map, "lizard_tail", c("LizardTailModel", ""));
-        add(map, "starfish", c("StarfishModel", "", "body", p(.58F, 1.5708F, 0.0F, 0.0F)));
-        add(map, "clam", c("ClamModel", "", "top", p(.32F, 1.5708F, 0.0F, 0.0F)));
-        add(map, "giant_isopod", c("GiantIsopodModel", "body"));
-        add(map, "jellyfish", c("JellyfishModel", "body"));
+        add(map, "starfish", cDetached("StarfishModel", "", "", p(.58F, 1.5708F, 0.0F, 0.0F)));
+        add(map, "clam", cDetached("ClamModel", "", "", p(.32F, 1.5708F, 0.0F, 0.0F)));
+        add(map, "giant_isopod", cVisibleDetached("GiantIsopodModel", "rolled", p(.72F)), cDetached("GiantIsopodModel", "body", p(.72F)));
+        add(map, "jellyfish", cDetached("JellyfishModel", "body", p(.72F)));
         add(map, "whale", c("WhaleModel", "body/skullRot", p(.30F)), c("WhaleBabyModel", "body/skull", p(.60F)));
-        add(map, "desert_scorpion", c("DesertScorpionModel", "", "body", p(.46F)));
-        add(map, "jungle_scorpion", c("JungleScorpionModel", "", "body", p(.50F)));
-        add(map, "great_white_shark", cNeutralRoot("GreatWhiteSharkModel", "body", p(.28F, 0.0F, 1.5708F, 0.0F)));
+        add(map, "desert_scorpion", c("DesertScorpionModel", "", "", p(.40F, 1.5708F, 0.0F, 0.0F)));
+        add(map, "jungle_scorpion", c("JungleScorpionModel", "", "", p(.44F, 1.5708F, 0.0F, 0.0F)));
+        add(map, "great_white_shark", cNeutralRoot("GreatWhiteSharkModel", "body", p(.21F, 0.0F, 1.5708F, 0.0F)));
         return Map.copyOf(map);
     }
 
@@ -142,15 +166,27 @@ public final class NaturalistModelContracts {
     }
     private static Contract c(String simpleName, String slashPath, String slashTracePath, Presentation presentation, List<Integer> cubeIndexes) {
         return new Contract("com.crispytwig.naturalist.client.model." + simpleName,
-                path(slashPath), path(slashTracePath), presentation, cubeIndexes, false, false);
+                path(slashPath), path(slashTracePath), presentation, cubeIndexes, List.of(), false, false, true);
     }
     private static Contract cVisible(String simpleName, String slashPath, Presentation presentation) {
         Contract base = c(simpleName, slashPath, presentation);
-        return new Contract(base.modelClass(), base.path(), base.tracePath(), base.presentation(), base.cubeIndexes(), true, false);
+        return new Contract(base.modelClass(), base.path(), base.tracePath(), base.presentation(), base.cubeIndexes(), base.drawableChildren(), true, false, true);
     }
     private static Contract cNeutralRoot(String simpleName, String slashPath, Presentation presentation) {
         Contract base = c(simpleName, slashPath, presentation);
-        return new Contract(base.modelClass(), base.path(), base.tracePath(), base.presentation(), base.cubeIndexes(), false, true);
+        return new Contract(base.modelClass(), base.path(), base.tracePath(), base.presentation(), base.cubeIndexes(), base.drawableChildren(), false, true, true);
+    }
+    private static Contract cDetached(String simpleName, String slashPath) { return detach(c(simpleName, slashPath)); }
+    private static Contract cDetached(String simpleName, String slashPath, Presentation presentation) { return detach(c(simpleName, slashPath, presentation)); }
+    private static Contract cDetached(String simpleName, String slashPath, String slashTracePath, Presentation presentation) { return detach(c(simpleName, slashPath, slashTracePath, presentation)); }
+    private static Contract cDetached(String simpleName, String slashPath, String slashTracePath, Presentation presentation, List<Integer> cubeIndexes) { return detach(c(simpleName, slashPath, slashTracePath, presentation, cubeIndexes)); }
+    private static Contract cVisibleDetached(String simpleName, String slashPath, Presentation presentation) { return detach(cVisible(simpleName, slashPath, presentation)); }
+    private static Contract cDetachedChildren(String simpleName, String slashPath, Presentation presentation, List<String> drawableChildren) {
+        Contract base = c(simpleName, slashPath, presentation);
+        return new Contract(base.modelClass(), base.path(), base.tracePath(), base.presentation(), base.cubeIndexes(), drawableChildren, false, false, false);
+    }
+    private static Contract detach(Contract base) {
+        return new Contract(base.modelClass(), base.path(), base.tracePath(), base.presentation(), base.cubeIndexes(), base.drawableChildren(), base.requiresVisible(), base.neutralizeRootRotation(), false);
     }
     private static List<String> path(String slashPath) { return slashPath.isEmpty() ? List.of() : List.of(slashPath.split("/")); }
     private static Presentation p(float scale) { return p(scale, 0.0F, 0.0F, 0.0F); }
@@ -160,7 +196,8 @@ public final class NaturalistModelContracts {
     private static void add(Map<String, List<Contract>> map, String id, Contract... contracts) { map.put(id, List.of(contracts)); }
 
     public record Contract(String modelClass, List<String> path, List<String> tracePath, Presentation presentation,
-                           List<Integer> cubeIndexes, boolean requiresVisible, boolean neutralizeRootRotation) {}
+                           List<Integer> cubeIndexes, List<String> drawableChildren, boolean requiresVisible,
+                           boolean neutralizeRootRotation, boolean preserveAncestorTransforms) {}
     /** Explicit icon-only framing metadata; it never offsets a live renderer model. */
     public record Presentation(float scale, float xRotation, float yRotation, float zRotation) {}
     public record ResolvedContract(Contract contract, ModelPart source, ModelPart selected, ModelPart trace) {}

@@ -17,29 +17,26 @@ public final class NaturalistIconAdapter {
             Collections.synchronizedMap(new IdentityHashMap<>());
     private NaturalistIconAdapter() {}
 
-    public static ModelPart build(ModelPart modelRoot, ModelPart selected) {
-        return build(modelRoot, selected, selected, selected,
-                new NaturalistModelContracts.Presentation(1.0F, 0.0F, 0.0F, 0.0F), false);
-    }
-
     public static ModelPart build(
             ModelPart modelRoot,
             ModelPart source,
             ModelPart selected,
             ModelPart trace,
             NaturalistModelContracts.Presentation presentation,
-            boolean neutralizeRootRotation
+            boolean neutralizeRootRotation,
+            List<String> sourcePath,
+            boolean preserveAncestorTransforms
     ) {
-        List<Node> path = new ArrayList<>();
-        if (!find(modelRoot, "root", source, path) || path.size() > 16) return null;
-        ModelPart branch = selected;
-        for (int i = path.size() - 2; i >= 0; i--) {
-            Node parent = path.get(i);
-            String childName = path.get(i + 1).name();
+        List<ModelPart> ancestors = ancestors(modelRoot, source, sourcePath);
+        if (ancestors == null) return null;
+        ModelPart branch = copySubtree(selected, 0);
+        if (preserveAncestorTransforms) for (int i = ancestors.size() - 2; i >= 0; i--) {
+            ModelPart parent = ancestors.get(i);
+            String childName = sourcePath.get(i);
             ModelPart copy = new ModelPart(List.of(), Map.of(childName, branch));
-            copyTransform(parent.part(), copy, neutralizeRootRotation && i == 0);
-            copy.visible = parent.part().visible;
-            copy.skipDraw = parent.part().skipDraw;
+            copyTransform(parent, copy, neutralizeRootRotation && i == 0);
+            copy.visible = parent.visible;
+            copy.skipDraw = parent.skipDraw;
             copy.setInitialPose(copy.storePose());
             branch = copy;
         }
@@ -54,7 +51,7 @@ public final class NaturalistIconAdapter {
         List<ModelPart> traceSources = new ArrayList<>();
         traceSources.add(trace);
         traceSources.add(source);
-        for (int i = path.size() - 1; i >= 0; i--) traceSources.add(path.get(i).part());
+        for (int i = ancestors.size() - 1; i >= 0; i--) traceSources.add(ancestors.get(i));
         TRACE_PARTS.put(adapter, List.copyOf(traceSources));
         return adapter;
     }
@@ -77,6 +74,31 @@ public final class NaturalistIconAdapter {
     public static boolean traceExists(ModelRenderTrace trace, ModelPart adapter) {
         return resolveTrace(trace, adapter) != null;
     }
+    private static List<ModelPart> ancestors(ModelPart root, ModelPart source, List<String> sourcePath) {
+        if (sourcePath.size() > 16) return null;
+        List<ModelPart> result = new ArrayList<>();
+        ModelPart current = root;
+        result.add(current);
+        for (String segment : sourcePath) {
+            if (!current.hasChild(segment)) return null;
+            current = current.getChild(segment);
+            result.add(current);
+        }
+        return current == source ? result : null;
+    }
+    private static ModelPart copySubtree(ModelPart from, int depth) {
+        if (depth > 16) throw new IllegalArgumentException("Naturalist contract subtree is too deep");
+        Map<String, ModelPart> children = new LinkedHashMap<>();
+        Map<String, ModelPart> originalChildren = ModelPartUtil.getChildren(from);
+        if (originalChildren != null) originalChildren.forEach((name, child) -> children.put(name, copySubtree(child, depth + 1)));
+        List<ModelPart.Cube> cubes = ModelPartUtil.getCubes(from);
+        ModelPart copy = new ModelPart(cubes == null ? List.of() : List.copyOf(cubes), children);
+        copyTransform(from, copy, false);
+        copy.visible = from.visible;
+        copy.skipDraw = from.skipDraw;
+        copy.setInitialPose(copy.storePose());
+        return copy;
+    }
     private static void copyTransform(ModelPart from, ModelPart to, boolean neutralizeRotation) {
         to.x = from.x; to.y = from.y; to.z = from.z;
         to.xRot = neutralizeRotation ? 0.0F : from.xRot;
@@ -84,13 +106,4 @@ public final class NaturalistIconAdapter {
         to.zRot = neutralizeRotation ? 0.0F : from.zRot;
         to.xScale = from.xScale; to.yScale = from.yScale; to.zScale = from.zScale;
     }
-    private static boolean find(ModelPart current, String name, ModelPart target, List<Node> out) {
-        out.add(new Node(name, current));
-        if (current == target) return true;
-        Map<String, ModelPart> children = ModelPartUtil.getChildren(current);
-        if (children != null) for (var entry : new LinkedHashMap<>(children).entrySet()) if (find(entry.getValue(), entry.getKey(), target, out)) return true;
-        out.removeLast();
-        return false;
-    }
-    private record Node(String name, ModelPart part) {}
 }
