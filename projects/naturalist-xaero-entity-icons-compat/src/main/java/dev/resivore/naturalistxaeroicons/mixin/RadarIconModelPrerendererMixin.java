@@ -3,6 +3,7 @@ package dev.resivore.naturalistxaeroicons.mixin;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import dev.resivore.naturalistxaeroicons.NaturalistIconAdapter;
+import dev.resivore.naturalistxaeroicons.NaturalistIconPresentation;
 import dev.resivore.naturalistxaeroicons.NaturalistModelContracts;
 import net.minecraft.client.model.Model;
 import net.minecraft.client.model.geom.ModelPart;
@@ -18,6 +19,22 @@ import xaero.lib.client.graphics.XaeroBufferProvider;
 /** Runs only after Xaero's ordinary ModelPart path produced no destination. */
 @Mixin(value = RadarIconModelPrerenderer.class, remap = false)
 abstract class RadarIconModelPrerendererMixin {
+    @Inject(method = "renderModel", at = @At("HEAD"), require = 1)
+    private void naturalistXaeroIcons$beginNativePresentation(
+            PoseStack pose, XaeroBufferProvider buffers, EntityRenderState state, Model model,
+            Entity entity, ModelPart upstreamPart, RadarIconModelPrerenderer.Parameters parameters,
+            CallbackInfoReturnable<ModelPart> callback) {
+        NaturalistIconPresentation.begin(entity);
+    }
+
+    @Inject(method = "renderModel", at = @At("RETURN"), require = 1)
+    private void naturalistXaeroIcons$endNativePresentation(
+            PoseStack pose, XaeroBufferProvider buffers, EntityRenderState state, Model model,
+            Entity entity, ModelPart upstreamPart, RadarIconModelPrerenderer.Parameters parameters,
+            CallbackInfoReturnable<ModelPart> callback) {
+        NaturalistIconPresentation.end();
+    }
+
     @Inject(method = "renderModel", at = @At("RETURN"), cancellable = true, require = 1)
     private void naturalistXaeroIcons$renderContractPart(
             PoseStack pose, XaeroBufferProvider buffers, EntityRenderState state, Model model,
@@ -28,7 +45,8 @@ abstract class RadarIconModelPrerendererMixin {
             var resolved = NaturalistModelContracts.resolve(entity, model);
             if (resolved.isEmpty()) return;
             ModelPart selected = resolved.orElseThrow().selected();
-            ModelPart adapter = NaturalistIconAdapter.build(model.root(), selected);
+            ModelPart adapter = NaturalistIconAdapter.build(
+                    model.root(), selected, resolved.orElseThrow().contract().presentation());
             if (adapter == null || !NaturalistIconAdapter.traceExists(parameters.mrt, adapter)) return;
             RadarIconModelPrerenderer self = (RadarIconModelPrerenderer) (Object) this;
             VertexConsumer consumer = self.getLayerModelVertexConsumer(

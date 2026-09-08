@@ -22,7 +22,8 @@ abstract class RadarIconManagerMixin {
         try {
             Map<EntityType<?>, RadarIconEntityCache> caches = ((RadarIconCacheAccessor) (Object) iconCache).naturalistXaeroIcons$getIconCacheMap();
             caches.keySet().removeIf(type -> EntityType.getKey(type).getNamespace().equals("naturalist")
-                    && NaturalistModelContracts.isTargetId(EntityType.getKey(type).getPath()));
+                    && (NaturalistModelContracts.isTargetId(EntityType.getKey(type).getPath())
+                    || NaturalistModelContracts.isNativePresentationOverrideId(EntityType.getKey(type).getPath())));
         } catch (RuntimeException ignored) { /* reload remains Xaero-owned if the private seam changed */ }
     }
 }
