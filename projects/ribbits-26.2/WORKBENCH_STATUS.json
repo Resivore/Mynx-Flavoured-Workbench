@@ -178,15 +178,15 @@
     ]
   },
   "state": {
-    "milestone": "Canary 18 has retained external client-startup RUNTIME_FAIL provenance: its required-config RibbitsMixinPlugin called Class.forName on Naturalist Snail during Mixin selection, loading the Entity hierarchy too early; Sodium and Simple Copper Pipes were affected downstream, not root causes. Canary 19 keeps the holder-scoped client leash visual correction in a non-required client config with a string @Pseudo target and no optional-class probe. Canary 19 is ACTIVE / STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED because both canonical dedicated slots are occupied by unrelated cohorts.",
+    "milestone": "Canary 18 retains the external client-startup RUNTIME_FAIL provenance caused by required-config RibbitsMixinPlugin class probing; Canary 19 removed that startup hazard. Supplied external C19 runtime evidence confirms startup remains successful but records two visual RUNTIME_FAIL findings: closed Chute Leaf is correct while deployed open Chute is black/magenta missing-resource checkerboard, and the Naturalist snail leash renders with its snail endpoint substantially above the snail and its Wandering Ribbit holder endpoint substantially below the Ribbit. Canary 20 standardizes the final open-model texture binding and validates the complete packaged item-definition/model/texture chain; it adds the actual inherited Snail Leashable override and the holder's getRopeHoldPosition override without restoring any optional-class probe. Canary 20 is ACTIVE / STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED because both canonical dedicated slots remain occupied by unrelated cohorts.",
     "releases": {
       "current": {
-        "version": "4.1.6+26.2-mynx-canary19",
+        "version": "4.1.6+26.2-mynx-canary20",
         "artifact": {
-          "filename": "ribbits-private-reconstruction-4.1.6+26.2-mynx-canary19.jar",
-          "sha256": "678a3753058f926b5f04f20d4398cb5d6099e9fe55ff5c3b533ad7d0be735433"
+          "filename": "ribbits-private-reconstruction-4.1.6+26.2-mynx-canary20.jar",
+          "sha256": "16bba88850b3d3b41ff06b41167688f4f02382c1ae5c7496e70d5e4a134ecd40"
         },
-        "source_commit": "a13f73ab3d72654f77b009a6071bf12b2488dcb4",
+        "source_commit": "4966d7167225476e28327f3fc2d2ef58e320c8b8",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
@@ -205,11 +205,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 24,
-    "activity_at": "2026-09-08T02:32:00Z",
-    "updated_at": "2026-09-08T02:32:00Z",
-    "last_codex_at": "2026-09-08T02:32:00Z",
-    "source_commit": "a13f73ab3d72654f77b009a6071bf12b2488dcb4",
+    "revision": 25,
+    "activity_at": "2026-09-08T03:15:14Z",
+    "updated_at": "2026-09-08T03:15:14Z",
+    "last_codex_at": "2026-09-08T03:15:14Z",
+    "source_commit": "4966d7167225476e28327f3fc2d2ef58e320c8b8",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
