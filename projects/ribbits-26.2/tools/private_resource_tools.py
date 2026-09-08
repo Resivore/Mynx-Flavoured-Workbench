@@ -143,8 +143,8 @@ REQUIRED_FABRIC_DEPENDENCIES = {
 }
 SOURCE_FILE_COUNT = 287  # 285 assets/data files plus icon.png and logo.png
 OUTPUT_FILE_COUNT = 349
-# Exact deterministic Canary 12 private staging inventory.
-OUTPUT_TOTAL_SIZE = 2_735_161
+# Exact deterministic Canary 20 private staging inventory.
+OUTPUT_TOTAL_SIZE = 2_735_226
 SOURCE_EXTENSION_COUNTS = {
     ".json": 201,
     ".nbt": 29,

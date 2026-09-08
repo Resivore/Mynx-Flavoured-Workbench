@@ -343,10 +343,10 @@ if (privateResourcesDir != null) {
             }
             if ((manifest.pristine.selected_file_count as int) != 287 ||
                 (manifest.output.file_count as int) != 349 ||
-                (manifest.output.total_size as long) != 2735161L ||
+                (manifest.output.total_size as long) != 2735226L ||
                 expectedFiles.size() != 349) {
                 throw new GradleException(
-                    'Private manifest does not preserve the exact 287-input / 349-output / 2,735,161-byte contract'
+                    'Private manifest does not preserve the exact 287-input / 349-output / 2,735,226-byte contract'
                 )
             }
 
