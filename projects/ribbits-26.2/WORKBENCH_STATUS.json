@@ -178,15 +178,15 @@
     ]
   },
   "state": {
-    "milestone": "Mynx Canary 17 adds persistent external trade-provider choices for Flora Trades, ordinary-only Wandering provider restocking, and Toadstool Heart retention that releases the scheduler lease while preserving companions. Static/build validation passes; Canary 17 remains ACTIVE / STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED.",
+    "milestone": "Mynx Canary 18 reduces the native Wandering Ribbit menu to Chute, explorer map, and Compass buyback; migrates exact persisted Canary 17 native ranges without rerolling; adopts user-authored open Chute visuals; and adds an optional holder-scoped Naturalist snail leash-render adjustment. Static/build validation passes; Canary 18 remains ACTIVE / STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED.",
     "releases": {
       "current": {
-        "version": "4.1.6+26.2-mynx-canary17",
+        "version": "4.1.6+26.2-mynx-canary18",
         "artifact": {
-          "filename": "ribbits-private-reconstruction-4.1.6+26.2-mynx-canary17.jar",
-          "sha256": "7024ea6ff0fd03ddcc686e18ff7d228b25766b9a46fc5b293df8c71579d05387"
+          "filename": "ribbits-private-reconstruction-4.1.6+26.2-mynx-canary18.jar",
+          "sha256": "4e8285b9d399d7276b452d2e54a374ffdb4ea349e21f560521a865ed3925f8ba"
         },
-        "source_commit": "c2e82a5f496e54c9bb914c400223868486c787e2",
+        "source_commit": "b1301c084982c7f30ffb2b8430b177b87bd9ae7b",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
@@ -205,11 +205,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 22,
-    "activity_at": "2026-09-07T03:15:00Z",
-    "updated_at": "2026-09-07T03:15:00Z",
-    "last_codex_at": "2026-09-07T03:15:00Z",
-    "source_commit": "c2e82a5f496e54c9bb914c400223868486c787e2",
+    "revision": 23,
+    "activity_at": "2026-09-08T01:35:00Z",
+    "updated_at": "2026-09-08T01:35:00Z",
+    "last_codex_at": "2026-09-08T01:35:00Z",
+    "source_commit": "b1301c084982c7f30ffb2b8430b177b87bd9ae7b",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null

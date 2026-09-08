@@ -219,3 +219,13 @@
 - Artifact: `ribbits-private-reconstruction-4.1.6+26.2-mynx-canary17.jar`; SHA-256 `7024ea6ff0fd03ddcc686e18ff7d228b25766b9a46fc5b293df8c71579d05387`.
 - Result: ACTIVE / STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED.
 - Next state: Retain the exact artifact, publish revision 22 from main through the normal gated Sheet workflow, then run the focused Canary 17 dedicated-Workbench procedure.
+
+## 2026-09-08T01:35:00Z — Build Mynx Ribbits Canary 18 native-menu and Chute update
+- Revision: 23
+- Source checkpoint: `b1301c084982c7f30ffb2b8430b177b87bd9ae7b`
+- Changes: Reduced the native menu to Chute, canonical explorer map, and Compass buyback; exact C17 schema-3 menus migrate by retaining indices 0/1/5 and shifting later provider ranges without rerolling or mutating retained offer objects. Replaced only the open Chute visual path with verified user-authored assets and added a client-only optional Naturalist snail leash-origin patch limited to Wandering Ribbit holders.
+- Build/static: Recovered exact authorized Minecraft input (37,396,380 bytes; SHA-256 `200d673e028d27ddb22bd2d365fbcb98b55be4b2043ee52681a8f30812c12cfe`). Private tree validation passed 349 files / 254 strict JSON files; clean private build passed including 42 private-resource tests; final private JAR validation was `STATIC JAR PASS` with no errors/blockers.
+- Runtime: RUNTIME_UNTESTED. Neither occupied Test Slot nor either gameplay profile was changed.
+- Artifact: Current unaccepted private `ribbits-private-reconstruction-4.1.6+26.2-mynx-canary18.jar`, 3,374,520 bytes, SHA-256 `4e8285b9d399d7276b452d2e54a374ffdb4ea349e21f560521a865ed3925f8ba`; canonical ignored artifact retention is required.
+- Result: ACTIVE / STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED.
+- Next state: Publish revision 23 from main through the normal Sheet workflow, then deploy only through a deliberately available serialized dedicated Test Slot.
