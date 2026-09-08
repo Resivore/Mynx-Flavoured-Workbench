@@ -26,6 +26,7 @@
     ],
     "scope": [
       "Maintain exactly 171 retained blocks and 172 retained items: the historical eleven wood families plus the Minecraft 26.2-native complete Pale Oak eleven-form family, seven stone families, braziers, rope, iron fence, and the Hammer.",
+      "Maintain BBB-owned state-aware rope behavior: only vertical bbb:rope is climbable, and its non-sneaking main-hand interaction pays out or reels in exactly one bottom segment of its contiguous vertical column while preserving ordinary ChainBlock placement and breaking.",
       "Preserve the retained rotation, waterlogging, connectivity, collision, lighting, Hammer, lattice-plant, urn, model, texture, tag, language, recipe, advancement, loot, and drop contracts implemented by legacy source 4ddbd2a7b39cb33653f9ddacf9bca0a419cc500d and finalized at legacy branch head 08cba03bc6b19d43a484e7500ca8b366a254e671.",
       "Stage only the exact audited dependency closure from the hash-verified pristine BBB 2.0pre4 input into ignored generated build output."
     ],
@@ -35,7 +36,7 @@
       ],
       "exclusions": [
         "BBB layers, BBB ladders (including Pale Oak Layer and Ladder), the small-stone-block system, Chisel and related removed tools, and any silently restored registry content.",
-        "Rope enhancements, Inventory Bridge Framework changes, Clutter No More changes, or unrelated compatibility implementation.",
+        "Inventory Bridge Framework changes, Clutter No More changes, or unrelated compatibility implementation.",
         "Upstream models, textures, recipes, data, translations, loot tables, tags, or other All Rights Reserved resources in tracked source, retained artifacts, or redistributed combined development JARs.",
         "Architectury and MidnightLib dependencies removed by the direct Fabric port.",
         "Runtime deployment, Test Slot or Test Instance Manager changes, accepted-stack mutation, dedicated Workbench access, and protected gameplay-profile access during this migration."
@@ -99,15 +100,15 @@
     ]
   },
   "state": {
-    "milestone": "Pale Oak C3 corrects the invalid placed-lattice multipart state/model mapping and restores authored BBB Beam palette generation; C3 is built and statically verified but remains undeployed, runtime untested, unaccepted, and retained locally only because its combined JAR includes staged upstream ARR resources. The externally reported C2 failure is recorded in the append-only log without binding it to an unverified external artifact hash.",
+    "milestone": "Rope C4 preserves the existing BBB rope ID, item, resources, ChainBlock axis/waterlogging/shape behavior, and curated registry while adding state-aware vertical climbing plus one-segment bottom-column pay-out/reel-in. C4 is built and statically verified but remains undeployed, runtime untested, unaccepted, and retained locally only because its combined JAR includes staged upstream ARR resources. The externally reported C2 failure remains recorded without binding it to an unverified external artifact hash.",
     "releases": {
       "current": {
-        "version": "2.0pre4+26.2-pale-oak-dev.3",
+        "version": "2.0pre4+26.2-pale-oak-dev.4",
         "artifact": {
-          "filename": "bbb-fabric-26.2-2.0pre4+26.2-pale-oak-dev.3.jar",
-          "sha256": "d0928b9316e3f6b323151fac73df3be1056aba05b56d4909b419cc15c09fc4d0"
+          "filename": "bbb-fabric-26.2-2.0pre4+26.2-pale-oak-dev.4.jar",
+          "sha256": "b67eeb0f4da800e6af46813989efea5170ee48c5b912b4ef7d74d66e052c0786"
         },
-        "source_commit": "c0dbc52b83497c7cbd5a44e7893c8f6b6d64f241",
+        "source_commit": "6d6bcb1cffaad8bd05b12f02168093b8c87471ec",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
@@ -126,11 +127,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 4,
-    "activity_at": "2026-09-08T00:28:18Z",
-    "updated_at": "2026-09-08T00:28:18Z",
-    "last_codex_at": "2026-09-08T00:28:18Z",
-    "source_commit": "c0dbc52b83497c7cbd5a44e7893c8f6b6d64f241",
+    "revision": 5,
+    "activity_at": "2026-09-08T03:32:07Z",
+    "updated_at": "2026-09-08T03:32:07Z",
+    "last_codex_at": "2026-09-08T03:32:07Z",
+    "source_commit": "6d6bcb1cffaad8bd05b12f02168093b8c87471ec",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
