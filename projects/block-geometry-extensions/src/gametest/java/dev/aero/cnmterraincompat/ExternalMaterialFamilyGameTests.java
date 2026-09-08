@@ -41,21 +41,22 @@ import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-/** Production-lifecycle coverage for C62's exact 64 source / 576 relation contract. */
+/** Production-lifecycle coverage for C64's exact 76 source / 684 relation contract. */
 public final class ExternalMaterialFamilyGameTests implements CustomTestMethodInvoker {
     @GameTest(maxTicks = 40)
     public void exactAllowlistAndProviderCompletionInventory(GameTestHelper helper) {
-        helper.assertTrue(ExternalMaterialCatalog.specs().size() == 64,
-                "External source allowlist is not exactly 64");
+        helper.assertTrue(ExternalMaterialCatalog.specs().size() == 76,
+                "External source allowlist is not exactly 76");
         helper.assertTrue(ExternalMaterialCatalog.sourceCount("mcwpaths") == 57
                         && ExternalMaterialCatalog.sourceCount("mynx_trees") == 6
-                        && ExternalMaterialCatalog.sourceCount("ribbits") == 1,
-                "Provider source partition is not 57/6/1");
-        helper.assertTrue(ExternalMaterialFamilies.all().size() == 64,
-                "Late provider completion did not register all 64 families: "
+                        && ExternalMaterialCatalog.sourceCount("ribbits") == 1
+                        && ExternalMaterialCatalog.sourceCount("bbb") == 12,
+                "Provider source partition is not 57/6/1/12");
+        helper.assertTrue(ExternalMaterialFamilies.all().size() == 76,
+                "Late provider completion did not register all 76 families: "
                         + ExternalMaterialFamilies.all().size());
         helper.assertTrue(NibaruMaterialProfiles.all().stream().filter(profile -> profile.family() != null).count() == 311
-                        && NibaruMaterialProfiles.all().stream().filter(profile -> profile.family() == null).count() == 64,
+                        && NibaruMaterialProfiles.all().stream().filter(profile -> profile.family() == null).count() == 76,
                 "External append changed the frozen 311-profile native inventory or lost an external source");
 
         Set<Identifier> actual = new LinkedHashSet<>();
@@ -66,7 +67,7 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
         helper.assertTrue(actual.stream().filter(id -> id.getNamespace().equals("mcwpaths"))
                         .allMatch(ExternalMaterialFamilyGameTests::isRequestedMacawSource),
                 "Macaw family is outside the 52 full-pattern plus five plain-Path scope");
-        System.out.println("EXTERNAL_C62_INVENTORY|sources=64|mcwpaths=57|mynx_trees=6|ribbits=1|relations=576");
+        System.out.println("EXTERNAL_C64_INVENTORY|sources=76|mcwpaths=57|mynx_trees=6|ribbits=1|bbb=12|relations=684");
         helper.succeed();
     }
 
@@ -111,10 +112,10 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
             relations += roles.size();
         }
         CanonicalShapeMapAudit.Report audit = CanonicalShapeMapAudit.inspectExternalFamilies();
-        helper.assertTrue(relations == 576 && canonicalDerived.size() == 512 && bgeGenerated.size() == 406,
-                "C62 relation/canonical/generated identity count mismatch: " + relations + "/"
+        helper.assertTrue(relations == 684 && canonicalDerived.size() == 608 && bgeGenerated.size() == 466,
+                "C64 relation/canonical/generated identity count mismatch: " + relations + "/"
                         + canonicalDerived.size() + "/" + bgeGenerated.size());
-        helper.assertTrue(audit.variantCount() == 64 && audit.missing().isEmpty()
+        helper.assertTrue(audit.variantCount() == 76 && audit.missing().isEmpty()
                         && audit.duplicates().isEmpty(),
                 "Live ShapeMap canonical variant/role audit failed: " + audit);
         helper.succeed();
@@ -135,7 +136,7 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
                 reused++;
             }
         }
-        helper.assertTrue(reused == 106, "Expected 106 reused provider roles, found " + reused);
+        helper.assertTrue(reused == 142, "Expected 142 reused provider roles, found " + reused);
 
         Identifier family = Identifier.parse("mynx_trees:wisteria_log");
         CanonicalShapeMapAudit.CanonicalKey logSlab = new CanonicalShapeMapAudit.CanonicalKey(
@@ -178,45 +179,54 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
     public void liveSourcePropertiesFireTagsLeavesAndAxesPropagate(GameTestHelper helper) {
         for (ExternalMaterialFamilies.Binding binding : ExternalMaterialFamilies.all()) {
             Block source = binding.source();
-            for (Block block : binding.canonicalDerived()) {
-                helper.assertTrue(block.defaultMapColor() == source.defaultMapColor()
-                                && block.defaultDestroyTime() == source.defaultDestroyTime()
-                                && block.getExplosionResistance() == source.getExplosionResistance()
-                                && block.getFriction() == source.getFriction()
-                                && block.getSpeedFactor() == source.getSpeedFactor()
-                                && block.getJumpFactor() == source.getJumpFactor()
-                                && block.defaultBlockState().getLightEmission()
-                                        == source.defaultBlockState().getLightEmission()
-                                && block.defaultBlockState().canOcclude()
-                                        == source.defaultBlockState().canOcclude()
-                                && block.defaultBlockState().requiresCorrectToolForDrops()
-                                        == source.defaultBlockState().requiresCorrectToolForDrops()
-                                && block.defaultBlockState().getSoundType()
-                                        == source.defaultBlockState().getSoundType()
-                                && block.defaultBlockState().ignitedByLava()
-                                        == source.defaultBlockState().ignitedByLava(),
-                        "Live BlockBehaviour.Properties did not propagate to " + BuiltInRegistries.BLOCK.getKey(block));
-                for (var tag : binding.profile().derivedBlockTags()) helper.assertTrue(
-                        block.defaultBlockState().is(tag), "Generated material tag missing: " + tag.location()
-                                + " -> " + BuiltInRegistries.BLOCK.getKey(block));
-            }
+            // BBB owns its directional slab/stair/wall forms.  BGE deliberately derives
+            // later forms from those authoritative provider blocks, so their inherited
+            // construction properties are outside this source-copy assertion.
+            if (!binding.spec().provider().equals("bbb")) {
+                for (Map.Entry<String, Block> role : binding.roles().entrySet()) {
+                    if (!binding.isGeneratedRole(role.getKey())) continue;
+                    Block block = role.getValue();
+                    helper.assertTrue(block.defaultMapColor() == source.defaultMapColor()
+                                    && block.defaultDestroyTime() == source.defaultDestroyTime()
+                                    && block.getExplosionResistance() == source.getExplosionResistance()
+                                    && block.getFriction() == source.getFriction()
+                                    && block.getSpeedFactor() == source.getSpeedFactor()
+                                    && block.getJumpFactor() == source.getJumpFactor()
+                                    && block.defaultBlockState().getLightEmission()
+                                            == source.defaultBlockState().getLightEmission()
+                                    && block.defaultBlockState().canOcclude()
+                                            == source.defaultBlockState().canOcclude()
+                                    && block.defaultBlockState().requiresCorrectToolForDrops()
+                                            == source.defaultBlockState().requiresCorrectToolForDrops()
+                                    && block.defaultBlockState().getSoundType()
+                                            == source.defaultBlockState().getSoundType()
+                                    && block.defaultBlockState().ignitedByLava()
+                                            == source.defaultBlockState().ignitedByLava(),
+                            "Live BlockBehaviour.Properties did not propagate to " + BuiltInRegistries.BLOCK.getKey(block));
+                    for (var tag : binding.profile().derivedBlockTags()) helper.assertTrue(
+                            block.defaultBlockState().is(tag), "Generated material tag missing: " + tag.location()
+                                    + " -> " + BuiltInRegistries.BLOCK.getKey(block));
+                }
 
-            FlammableBlockRegistry.Entry sourceFire = FlammableBlockRegistry.getDefaultInstance().get(source);
-            if (sourceFire != null) for (Block block : binding.canonicalDerived()) {
-                FlammableBlockRegistry.Entry derivedFire = FlammableBlockRegistry.getDefaultInstance().get(block);
-                helper.assertTrue(sourceFire.equals(derivedFire),
-                        "Exact fire odds did not propagate to " + BuiltInRegistries.BLOCK.getKey(block));
-            }
+                FlammableBlockRegistry.Entry sourceFire = FlammableBlockRegistry.getDefaultInstance().get(source);
+                if (sourceFire != null) for (Map.Entry<String, Block> role : binding.roles().entrySet()) {
+                    if (!binding.isGeneratedRole(role.getKey())) continue;
+                    Block block = role.getValue();
+                    FlammableBlockRegistry.Entry derivedFire = FlammableBlockRegistry.getDefaultInstance().get(block);
+                    helper.assertTrue(sourceFire.equals(derivedFire),
+                            "Exact fire odds did not propagate to " + BuiltInRegistries.BLOCK.getKey(block));
+                }
 
-            if (binding.profile().capabilities().contains(BehaviorCapability.LEAF_LIFECYCLE)) {
-                for (Block block : binding.canonicalDerived()) helper.assertTrue(
-                        block instanceof LeafDistanceCarrier
-                                && block.defaultBlockState().hasProperty(BlockStateProperties.DISTANCE)
-                                && block.defaultBlockState().hasProperty(BlockStateProperties.PERSISTENT),
-                        "Leaf lifecycle state missing from " + BuiltInRegistries.BLOCK.getKey(block));
+                if (binding.profile().capabilities().contains(BehaviorCapability.LEAF_LIFECYCLE)) {
+                    for (Block block : binding.canonicalDerived()) helper.assertTrue(
+                            block instanceof LeafDistanceCarrier
+                                    && block.defaultBlockState().hasProperty(BlockStateProperties.DISTANCE)
+                                    && block.defaultBlockState().hasProperty(BlockStateProperties.PERSISTENT),
+                            "Leaf lifecycle state missing from " + BuiltInRegistries.BLOCK.getKey(block));
+                }
             }
             if (binding.source().defaultBlockState().hasProperty(BlockStateProperties.AXIS)) {
-                for (String role : List.of("slab", "stairs", "vertical_slab", "step", "corner", "quarter_column", "layer")) {
+                for (String role : List.of("vertical_slab", "step", "corner", "quarter_column", "layer")) {
                     Block block = binding.roles().get(role);
                     helper.assertTrue(block.defaultBlockState().hasProperty(BlockStateProperties.AXIS),
                             "Log/wood material axis missing from " + BuiltInRegistries.BLOCK.getKey(block));
@@ -230,6 +240,35 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
         helper.assertTrue(silverLeaves.canonicalDerived().stream().allMatch(block ->
                         block.defaultBlockState().is(BlockTags.LEAVES)),
                 "Silver Birch leaf forms are not leaf-tagged");
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void bbbBeamsReuseOnlyAuthoritativeStandardFormsAndKeepAxisAwareBgeForms(GameTestHelper helper) {
+        List<String> materials = List.of("oak", "spruce", "birch", "jungle", "acacia", "dark_oak",
+                "crimson", "warped", "mangrove", "bamboo", "cherry", "pale_oak");
+        for (String material : materials) {
+            ExternalMaterialFamilies.Binding beam = external("bbb:" + material + "_beam");
+            helper.assertTrue(beam.spec().providerRoles().equals(Map.of(
+                            "slab", Identifier.parse("bbb:" + material + "_beam_slab"),
+                            "stairs", Identifier.parse("bbb:" + material + "_beam_stairs"),
+                            "wall", Identifier.parse("bbb:" + material + "_wall"))),
+                    "BBB standard mapping drifted for " + material);
+            for (String role : List.of("slab", "stairs", "wall")) {
+                helper.assertTrue(!beam.isGeneratedRole(role)
+                                && BuiltInRegistries.BLOCK.getKey(beam.roles().get(role))
+                                        .equals(beam.spec().providerRoles().get(role)),
+                        "BGE duplicated the BBB " + role + " for " + material);
+            }
+            helper.assertTrue(!beam.wall().defaultBlockState().hasProperty(BlockStateProperties.AXIS),
+                    "BBB wooden wall received an inappropriate axis state for " + material);
+            for (String role : List.of("vertical_slab", "step", "corner", "quarter_column", "layer")) {
+                Block block = beam.roles().get(role);
+                helper.assertTrue(beam.isGeneratedRole(role)
+                                && block.defaultBlockState().hasProperty(BlockStateProperties.AXIS),
+                        "Axis-aware BGE beam " + role + " missing for " + material);
+            }
+        }
         helper.succeed();
     }
 
@@ -248,15 +287,15 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
             }
         }
         JsonObject walls = generatedServerJson(Identifier.parse("minecraft:tags/block/walls.json"));
-        helper.assertTrue(walls.getAsJsonArray("values").size() == 64,
+        helper.assertTrue(walls.getAsJsonArray("values").size() == 76,
                 "External wall classification does not contain every scoped full-parent family");
-        helper.assertTrue(loot == 214, "Expected 214 BGE-owned external loot tables, found " + loot);
-        System.out.println("EXTERNAL_C62_SERVER_RESOURCES|standardLoot=214|wallTags=64|materialFamilies=64");
+        helper.assertTrue(loot == 238, "Expected 238 BGE-owned external loot tables, found " + loot);
+        System.out.println("EXTERNAL_C64_SERVER_RESOURCES|standardLoot=238|wallTags=76|materialFamilies=76");
         helper.succeed();
     }
 
     @GameTest(maxTicks = 80)
-    public void actualClientWritersCloseAll406BgeOwnedGeometryResources(GameTestHelper helper) {
+    public void actualClientWritersCloseAll430BgeOwnedGeometryResources(GameTestHelper helper) {
         ResourceManager manager = clientFixtureManager();
         LayerGeneratedResources.GenerationSummary layers =
                 LayerGeneratedResources.generateExternalForValidation(manager);
@@ -264,12 +303,12 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
                 QuarterGeometryGeneratedResources.generateExternalForValidation(manager);
         ExternalMaterialGeneratedResources.GenerationSummary standard =
                 ExternalMaterialGeneratedResources.generate(manager);
-        helper.assertTrue(layers.familyCount() == 64
-                        && quarters.cornerFamilyCount() == 64
-                        && quarters.columnFamilyCount() == 64
-                        && standard.familyCount() == 64
-                        && standard.blockStateCount() == 214
-                        && standard.itemCount() == 214,
+        helper.assertTrue(layers.familyCount() == 76
+                        && quarters.cornerFamilyCount() == 76
+                        && quarters.columnFamilyCount() == 76
+                        && standard.familyCount() == 76
+                        && standard.blockStateCount() == 238
+                        && standard.itemCount() == 238,
                 "External client writers did not process every exact family/role");
 
         int generatedRelations = 0;
@@ -296,10 +335,10 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
                 generatedRelations++;
             }
         }
-        helper.assertTrue(generatedRelations == 406 && resolvedModelReferences >= 406,
+        helper.assertTrue(generatedRelations == 466 && resolvedModelReferences >= 466,
                 "External client resource closure mismatch: relations=" + generatedRelations
                         + ", modelReferences=" + resolvedModelReferences);
-        System.out.println("EXTERNAL_C62_CLIENT_RESOURCES|generatedRelations=406|blockstates=406|items=406"
+        System.out.println("EXTERNAL_C64_CLIENT_RESOURCES|generatedRelations=466|blockstates=466|items=466"
                 + "|resolvedModelReferences=" + resolvedModelReferences);
         helper.succeed();
     }
@@ -556,6 +595,15 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
                             + "\",\"x\":90,\"y\":90},\"axis=y\":{\"model\":\"" + model
                             + "\"},\"axis=z\":{\"model\":\"" + model + "\",\"x\":90}}}");
         }
+        for (String material : List.of("oak", "spruce", "birch", "jungle", "acacia", "dark_oak",
+                "crimson", "warped", "mangrove", "bamboo", "cherry", "pale_oak")) {
+            String path = material + "_beam";
+            String model = "bbb:block/beam/" + material;
+            json.put(Identifier.fromNamespaceAndPath("bbb", "blockstates/" + path + ".json"),
+                    "{\"variants\":{\"axis=x\":{\"model\":\"" + model
+                            + "\",\"x\":90,\"y\":90},\"axis=y\":{\"model\":\"" + model
+                            + "\"},\"axis=z\":{\"model\":\"" + model + "\",\"x\":90}}}");
+        }
         json.put(Identifier.parse("mynx_trees:items/silver_birch_leaves.json"),
                 "{\"model\":{\"type\":\"minecraft:model\","
                         + "\"model\":\"mynx_trees:block/silver_birch_leaves\","
@@ -567,12 +615,12 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
         PackResources pack = (PackResources) Proxy.newProxyInstance(
                 ExternalMaterialFamilyGameTests.class.getClassLoader(),
                 new Class<?>[] {PackResources.class}, (proxy, method, args) -> switch (method.getName()) {
-                    case "packId" -> "bge-c62-client-fixtures";
+                    case "packId" -> "bge-c64-client-fixtures";
                     case "knownPackInfo" -> Optional.empty();
-                    case "getNamespaces" -> Set.of("minecraft", "mynx_trees");
+                    case "getNamespaces" -> Set.of("minecraft", "mynx_trees", "bbb");
                     case "listResources", "close" -> null;
                     case "getRootResource", "getResource", "getMetadataSection", "location" -> null;
-                    case "toString" -> "BGE C62 client fixture pack";
+                    case "toString" -> "BGE C64 client fixture pack";
                     case "hashCode" -> System.identityHashCode(proxy);
                     case "equals" -> proxy == args[0];
                     default -> throw new UnsupportedOperationException("Unexpected PackResources call " + method);
@@ -586,14 +634,14 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
                     case "getResource" -> Optional.ofNullable(resources.get((Identifier) args[0]));
                     case "getResourceStack" -> Optional.ofNullable(resources.get((Identifier) args[0]))
                             .map(List::of).orElseGet(List::of);
-                    case "getNamespaces" -> Set.of("minecraft", "mynx_trees");
+                    case "getNamespaces" -> Set.of("minecraft", "mynx_trees", "bbb");
                     case "listResources" -> resources.entrySet().stream()
                             .filter(entry -> entry.getKey().getPath().startsWith((String) args[0]))
                             .filter(entry -> ((Predicate<Identifier>) args[1]).test(entry.getKey()))
                             .collect(java.util.stream.Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
                     case "listResourceStacks" -> Map.of();
                     case "listPacks" -> Stream.of(pack);
-                    case "toString" -> "BGE C62 client fixture manager";
+                    case "toString" -> "BGE C64 client fixture manager";
                     case "hashCode" -> System.identityHashCode(proxy);
                     case "equals" -> proxy == args[0];
                     default -> throw new UnsupportedOperationException("Unexpected ResourceManager call " + method);

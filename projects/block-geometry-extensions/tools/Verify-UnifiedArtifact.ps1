@@ -1,5 +1,5 @@
 param(
-    [string]$UnifiedJar = (Join-Path $PSScriptRoot '..\build\libs\cnm-nibaru-integration-4.2.7-bge.canary63.inventory-preview+26.2.jar'),
+    [string]$UnifiedJar = (Join-Path $PSScriptRoot '..\build\libs\cnm-nibaru-integration-4.2.8-bge.canary64.bbb-beam-catalog+26.2.jar'),
     [string]$AcceptedJar = (Join-Path $PSScriptRoot '..\artifacts\cnm-nibaru-integration-4.2.2-bge.canary58.glass-corner-uv+26.2.jar')
 )
 
@@ -99,7 +99,7 @@ function Test-AllowedNewEntry([string]$Name) {
             $Name -match '^dev/aero/cnmterraincompat/CanonicalShapeMapAudit(?:\$.*)?\.class$' -or
             $Name -match '^dev/aero/cnmterraincompat/ExternalMaterial(?:Blocks|Catalog|Families|GeneratedData)(?:\$.*)?\.class$' -or
             $Name -match '^dev/aero/cnmterraincompat/client/ExternalMaterialGeneratedResources(?:\$.*)?\.class$' -or
-            $Name -match '^dev/aero/cnmterraincompat/mixin/(?:MacawsPaths|MynxTrees|Ribbits)InitializationMixin(?:\$.*)?\.class$'
+            $Name -match '^dev/aero/cnmterraincompat/mixin/(?:MacawsPaths|MynxTrees|Ribbits|Bbb)InitializationMixin(?:\$.*)?\.class$'
 }
 
 $unifiedPath = (Resolve-Path -LiteralPath $UnifiedJar).Path
@@ -123,9 +123,9 @@ try {
     $metadataText = Get-EntryText $unifiedMap['fabric.mod.json']
     $metadata = $metadataText | ConvertFrom-Json
     Require ($metadata.id -eq 'cnm_terrain_slabs_compat') 'Unified primary Fabric ID changed'
-    Require ($metadata.version -eq '4.2.7-bge.canary63.inventory-preview+26.2') 'Unified Fabric version is not exact C63'
-    Require ($metadata.name -eq ('Block Geometry Extensions Canary 63 ' + [char]0x2014 + ' Axis Item Preview')) `
-            'Unified Fabric display name is not exact C63'
+    Require ($metadata.version -eq '4.2.8-bge.canary64.bbb-beam-catalog+26.2') 'Unified Fabric version is not exact C64'
+    Require ($metadata.name -eq ('Block Geometry Extensions Canary 64 ' + [char]0x2014 + ' BBB Beam Catalog')) `
+            'Unified Fabric display name is not exact C64'
     Require (@($metadata.provides).Count -eq 1 -and $metadata.provides[0] -eq 'more_slabs_stairs_and_walls') `
             'Unified descriptor must provide exactly the legacy Nibaru ID'
     Require ($metadata.PSObject.Properties.Name -notcontains 'jars') 'Unified descriptor must not declare nested JARs'
@@ -145,8 +145,8 @@ try {
     Require $actualMixins.SetEquals($expectedMixins) 'Unified mixin configuration set is incomplete or duplicated'
     foreach ($mixin in $expectedMixins) { Require $unifiedMap.ContainsKey($mixin) "Packaged mixin config missing: $mixin" }
     $integrationMixins = Get-EntryText $unifiedMap['cnm_terrain_slabs_compat.mixins.json']
-    foreach ($providerHook in @('MacawsPathsInitializationMixin', 'MynxTreesInitializationMixin', 'RibbitsInitializationMixin')) {
-        Require ($integrationMixins -match [regex]::Escape($providerHook)) "C63 provider completion hook is not packaged: $providerHook"
+    foreach ($providerHook in @('MacawsPathsInitializationMixin', 'MynxTreesInitializationMixin', 'RibbitsInitializationMixin', 'BbbInitializationMixin')) {
+        Require ($integrationMixins -match [regex]::Escape($providerHook)) "C64 provider completion hook is not packaged: $providerHook"
     }
 
     $missing = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::Ordinal)
@@ -197,7 +197,8 @@ try {
         'dev/aero/cnmterraincompat/client/ExternalMaterialGeneratedResources.class',
         'dev/aero/cnmterraincompat/mixin/MacawsPathsInitializationMixin.class',
         'dev/aero/cnmterraincompat/mixin/MynxTreesInitializationMixin.class',
-        'dev/aero/cnmterraincompat/mixin/RibbitsInitializationMixin.class'
+            'dev/aero/cnmterraincompat/mixin/RibbitsInitializationMixin.class',
+            'dev/aero/cnmterraincompat/mixin/BbbInitializationMixin.class'
     )) {
         Require $newEntries.Contains($required) "Required C63 external-family class is absent: $required"
     }
@@ -272,7 +273,7 @@ try {
 
     [ordered]@{
         result = 'PASS'
-        c63 = [ordered]@{
+        c64 = [ordered]@{
             filename = [System.IO.Path]::GetFileName($unifiedPath)
             size = (Get-Item -LiteralPath $unifiedPath).Length
             sha256 = Get-FileSha256 $unifiedPath

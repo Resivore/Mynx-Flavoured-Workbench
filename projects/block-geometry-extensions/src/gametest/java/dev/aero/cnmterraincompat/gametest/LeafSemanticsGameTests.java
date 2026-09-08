@@ -95,14 +95,14 @@ public final class LeafSemanticsGameTests implements CustomTestMethodInvoker {
                 "Fabric Loader did not resolve the legacy Nibaru alias to the unified BGE container");
         helper.assertTrue(primary.getMetadata().getId().equals("cnm_terrain_slabs_compat"),
                 "Unified container primary identity changed");
-        helper.assertTrue(version.getFriendlyString().equals("4.2.7-bge.canary63.inventory-preview+26.2"),
+        helper.assertTrue(version.getFriendlyString().equals("4.2.8-bge.canary64.bbb-beam-catalog+26.2"),
                 "Unified container version changed: " + version.getFriendlyString());
         try {
             helper.assertTrue(VersionPredicate.parse(">=4.2.0 <4.3.0-").test(version),
                     "Legacy Nibaru dependency range rejected the unified version");
             helper.assertTrue(VersionPredicate.parse(">=0.8.0-bge-canary56-vertical-stairs-catalog").test(version),
                     "Forward BGE dependency range rejected the unified version");
-            helper.assertTrue(VersionPredicate.parse("=4.2.7-bge.canary63.inventory-preview+26.2").test(version),
+            helper.assertTrue(VersionPredicate.parse("=4.2.8-bge.canary64.bbb-beam-catalog+26.2").test(version),
                     "Exact unified dependency rejected the unified version");
             helper.assertTrue(!VersionPredicate.parse("=4.2.0+26.2-port-canary46-bge-layer-contract").test(version),
                     "Exact predecessor Nibaru dependency falsely accepted the unified version");
@@ -1142,14 +1142,21 @@ public final class LeafSemanticsGameTests implements CustomTestMethodInvoker {
                 "Pale Oak Planks differs from its Dark Oak counterpart classification");
 
         var plankShapes = ShapeMap.getShapes(Blocks.PALE_OAK_PLANKS.asItem());
-        helper.assertTrue(plankShapes.equals(java.util.List.of(Blocks.PALE_OAK_PLANKS.asItem(),
+        var expectedPlankShapes = new java.util.ArrayList<Item>(java.util.List.of(Blocks.PALE_OAK_PLANKS.asItem(),
                         Blocks.PALE_OAK_SLAB.asItem(), Blocks.PALE_OAK_STAIRS.asItem(),
                         planks.nativeWall().orElseThrow().asItem(),
                         NibaruProviderAdapter.derived(planks, DerivedGeometrySupport.Geometry.VERTICAL_SLAB)
                                 .orElseThrow().asItem(),
                         NibaruProviderAdapter.derived(planks, DerivedGeometrySupport.Geometry.STEP)
                                 .orElseThrow().asItem(),
-                        cornerItem(planks), columnItem(planks), layerItem(planks))),
+                        cornerItem(planks), columnItem(planks), layerItem(planks)));
+        var paleBeam = dev.aero.cnmterraincompat.ExternalMaterialFamilies.fromSource(id("bbb:pale_oak_beam"))
+                .orElseThrow();
+        for (String role : java.util.List.of("block", "slab", "stairs", "wall", "vertical_slab", "step",
+                "corner", "quarter_column", "layer")) {
+            expectedPlankShapes.add(paleBeam.roles().get(role).asItem());
+        }
+        helper.assertTrue(plankShapes.equals(expectedPlankShapes),
                 "Pale Oak Planks ShapeMap order/uniqueness changed: " + ids(plankShapes));
 
         var paleLogShapes = ShapeMap.getShapes(Blocks.PALE_OAK_LOG.asItem());
