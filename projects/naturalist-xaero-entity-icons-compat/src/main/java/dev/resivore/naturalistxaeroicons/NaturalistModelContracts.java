@@ -21,7 +21,7 @@ public final class NaturalistModelContracts {
     private static final List<String> NATIVE_CONTROLS = List.of(
             "bear", "bird", "butterfly", "catfish", "caterpillar", "crab", "deer", "firefly", "snake", "snail");
     private static final Map<String, Presentation> NATIVE_PRESENTATION_OVERRIDES =
-            Map.of("bear", new Presentation(0.20F, 0.0F, 0.0F, 0.0F, 0.0F));
+            Map.of("bear", new Presentation(0.12F, 0.0F, 0.0F, 0.0F, 0.0F));
 
     private NaturalistModelContracts() {}
 
@@ -142,11 +142,13 @@ public final class NaturalistModelContracts {
         add(map, "ostrich", c("OstrichModel", "root/body/skull", p(.60F)), c("OstrichBabyModel", "body/skull", p(.76F)));
         add(map, "turkey", c("TurkeyModel", "body/skull"));
         add(map, "capybara", c("CapybaraModel", "body/skull"), c("CapybaraBabyModel", "body/skull"));
-        add(map, "hedgehog", cVisibleDetached("HedgehogModel", "rolled", p(.95F)), cDetached("HedgehogModel", "unrolled/body"));
+        // Both states use the C6-recognizable authored geometry; only their icon scale changes.
+        add(map, "hedgehog", cVisibleDetached("HedgehogModel", "rolled", p(.68F)),
+                cDetached("HedgehogModel", "unrolled/body", p(.70F)));
         // compact or non-headed anatomies: capture the explicit compact body subtree, never a sibling search
         add(map, "dragonfly", c("DragonflyModel", "", p(.62F)));
         add(map, "anglerfish", cDetachedChildren("AnglerfishModel", "root/body", p(.38F, 0.0F, 1.5708F, 0.0F), List.of("jaw", "dangly")));
-        add(map, "ray", cDetached("RayModel", "body", "body", p(.55F)));
+        add(map, "ray", cDetached("RayModel", "body", "body", p(.38F)));
         add(map, "blobfish", c("BlobfishPinkModel", "", p(.72F)), c("BlobfishGrayModel", "", p(.72F)));
         add(map, "piranha", cDetached("PiranhaModel", "body", p(.60F, 0.0F, 1.5708F, 0.0F)));
         // All three authored Bass models run along Z.  A Y-quarter turn gives Xaero a compact
@@ -160,16 +162,24 @@ public final class NaturalistModelContracts {
         // naturalist:orange_starfish -> naturalist:block/orange_starfish sprite, but it cannot
         // participate in Xaero's bounded rendered-part detector.  Keep a narrow entity fallback
         // with the real drawable body trace instead of caching a false 2-D success.
-        add(map, "starfish", cDetached("StarfishModel", "", "body", p(.58F, 1.5708F, 0.0F, 0.0F)));
-        add(map, "clam", cDetached("ClamModel", "", "bottom", p(.32F, 1.5708F, 0.0F, 0.0F)));
+        // These models place visible anatomy below a renderer-positioned root.  Copy only the
+        // source-audited drawable siblings, then normalize that copied root's frame so its y=24
+        // gameplay placement cannot move the icon outside Xaero's capture target.
+        add(map, "starfish", cNormalizedDetachedChildren("StarfishModel", "", "body",
+                p(.58F, 1.5708F, 0.0F, 0.0F), List.of("body", "legs")));
+        add(map, "clam", cNormalizedDetachedChildren("ClamModel", "", "bottom",
+                p(.32F, 1.5708F, 0.0F, 0.0F), List.of("top", "bottom", "hinge")));
         add(map, "giant_isopod", cVisibleDetached("GiantIsopodModel", "rolled", p(.45F)), cDetached("GiantIsopodModel", "body", p(.45F)));
         add(map, "jellyfish", cDetached("JellyfishModel", "body", p(.45F)));
         add(map, "whale", c("WhaleModel", "body/skullRot", p(.30F)), c("WhaleBabyModel", "body/skull", p(.60F)));
-        // The authored trees differ: Desert tail/claws live below body and legs are root siblings;
-        // Jungle uses body/arms/tail plus root/legs.  Capture each complete root but anchor Xaero's
-        // success detector to its drawable body rather than the empty root.
-        add(map, "desert_scorpion", cDetached("DesertScorpionModel", "", "body", p(.40F, 1.5708F, 0.0F, 0.0F)));
-        add(map, "jungle_scorpion", cDetached("JungleScorpionModel", "", "body", p(.44F, 1.5708F, 0.0F, 0.0F)));
+        // The authored trees differ.  Desert's body owns claws and tail while legs are a root
+        // sibling; Jungle's body owns arms/claws and tail while legs are also a root sibling.
+        // Keep separate, source-backed compact assemblies and normalize only their copied root
+        // frame.  The drawable body remains the exact trace anchor for Xaero's success detector.
+        add(map, "desert_scorpion", cNormalizedDetachedChildren("DesertScorpionModel", "", "body",
+                p(.34F, 1.5708F, 0.0F, 0.0F), List.of("body", "legs")));
+        add(map, "jungle_scorpion", cNormalizedDetachedChildren("JungleScorpionModel", "", "body",
+                p(.28F, 1.5708F, 0.0F, 0.0F), List.of("body", "legs")));
         // C5's profile scale is retained.  The negative model-space frame Y correction exposes
         // the lower silhouette without changing the shark's size or side presentation.
         add(map, "great_white_shark", cNeutralRoot("GreatWhiteSharkModel", "body", p(.21F, 0.0F, 1.5708F, 0.0F, -4.0F)));
@@ -185,15 +195,15 @@ public final class NaturalistModelContracts {
     }
     private static Contract c(String simpleName, String slashPath, String slashTracePath, Presentation presentation, List<Integer> cubeIndexes) {
         return new Contract("com.crispytwig.naturalist.client.model." + simpleName,
-                path(slashPath), path(slashTracePath), presentation, cubeIndexes, List.of(), false, false, true);
+                path(slashPath), path(slashTracePath), presentation, cubeIndexes, List.of(), false, false, false, true);
     }
     private static Contract cVisible(String simpleName, String slashPath, Presentation presentation) {
         Contract base = c(simpleName, slashPath, presentation);
-        return new Contract(base.modelClass(), base.path(), base.tracePath(), base.presentation(), base.cubeIndexes(), base.drawableChildren(), true, false, true);
+        return new Contract(base.modelClass(), base.path(), base.tracePath(), base.presentation(), base.cubeIndexes(), base.drawableChildren(), true, false, false, true);
     }
     private static Contract cNeutralRoot(String simpleName, String slashPath, Presentation presentation) {
         Contract base = c(simpleName, slashPath, presentation);
-        return new Contract(base.modelClass(), base.path(), base.tracePath(), base.presentation(), base.cubeIndexes(), base.drawableChildren(), false, true, true);
+        return new Contract(base.modelClass(), base.path(), base.tracePath(), base.presentation(), base.cubeIndexes(), base.drawableChildren(), false, true, false, true);
     }
     private static Contract cDetached(String simpleName, String slashPath) { return detach(c(simpleName, slashPath)); }
     private static Contract cDetached(String simpleName, String slashPath, Presentation presentation) { return detach(c(simpleName, slashPath, presentation)); }
@@ -205,10 +215,14 @@ public final class NaturalistModelContracts {
     }
     private static Contract cDetachedChildren(String simpleName, String slashPath, String slashTracePath, Presentation presentation, List<String> drawableChildren) {
         Contract base = c(simpleName, slashPath, slashTracePath, presentation);
-        return new Contract(base.modelClass(), base.path(), base.tracePath(), base.presentation(), base.cubeIndexes(), drawableChildren, false, false, false);
+        return new Contract(base.modelClass(), base.path(), base.tracePath(), base.presentation(), base.cubeIndexes(), drawableChildren, false, false, false, false);
+    }
+    private static Contract cNormalizedDetachedChildren(String simpleName, String slashPath, String slashTracePath, Presentation presentation, List<String> drawableChildren) {
+        Contract base = cDetachedChildren(simpleName, slashPath, slashTracePath, presentation, drawableChildren);
+        return new Contract(base.modelClass(), base.path(), base.tracePath(), base.presentation(), base.cubeIndexes(), base.drawableChildren(), base.requiresVisible(), base.neutralizeRootRotation(), true, base.preserveAncestorTransforms());
     }
     private static Contract detach(Contract base) {
-        return new Contract(base.modelClass(), base.path(), base.tracePath(), base.presentation(), base.cubeIndexes(), base.drawableChildren(), base.requiresVisible(), base.neutralizeRootRotation(), false);
+        return new Contract(base.modelClass(), base.path(), base.tracePath(), base.presentation(), base.cubeIndexes(), base.drawableChildren(), base.requiresVisible(), base.neutralizeRootRotation(), base.normalizeSelectedRootTransform(), false);
     }
     private static List<String> path(String slashPath) { return slashPath.isEmpty() ? List.of() : List.of(slashPath.split("/")); }
     private static Presentation p(float scale) { return p(scale, 0.0F, 0.0F, 0.0F, 0.0F); }
@@ -222,7 +236,8 @@ public final class NaturalistModelContracts {
 
     public record Contract(String modelClass, List<String> path, List<String> tracePath, Presentation presentation,
                            List<Integer> cubeIndexes, List<String> drawableChildren, boolean requiresVisible,
-                           boolean neutralizeRootRotation, boolean preserveAncestorTransforms) {}
+                           boolean neutralizeRootRotation, boolean normalizeSelectedRootTransform,
+                           boolean preserveAncestorTransforms) {}
     /** Explicit icon-only presentation metadata; frameYOffset applies only to the copied adapter. */
     public record Presentation(float scale, float xRotation, float yRotation, float zRotation, float frameYOffset) {}
     public record ResolvedContract(Contract contract, ModelPart source, ModelPart selected, ModelPart trace) {}
