@@ -54,8 +54,8 @@
       {
         "type": "MOD",
         "identifier": "fabric-api",
-        "requirement": "=0.157.0+26.2",
-        "reason": "Current key-mapping, client-tick, and screen-lifecycle APIs used by Notebook."
+        "requirement": ">=0.157.0+26.2",
+        "reason": "Minimum Fabric API level for the current key-mapping, client-tick, and screen-lifecycle APIs used by Notebook; the controlled build used 0.157.0+26.2."
       },
       {
         "type": "TOOL",
@@ -78,15 +78,20 @@
     ]
   },
   "state": {
-    "milestone": "Canary 1 is implemented, clean-built, statically verified, and retained as a useful profile-local notebook checkpoint awaiting later explicit Test Slot allocation; the project is ACTIVE, not deployed, and Minecraft runtime untested.",
+    "milestone": "Canary 1 remains an immutable historical artifact with static/build PASS but a user-supplied Minecraft client-initialization FAIL: its normal NotebookScreen class was inside the Mixin-owned dev.resivore.notebook.client package. Current Canary 2 moves the accessor into a dedicated Mixin-only package, renders the supplied Bedrock book artwork without distortion, and is retained for a fresh Minecraft runtime session; Notebook is ACTIVE, not deployed, and occupies neither testing slot.",
     "releases": {
       "current": {
-        "version": "0.1.0-canary1",
+        "version": "0.1.0-canary2",
+        "embedded_version": "0.1.0-canary2",
         "artifact": {
-          "filename": "notebook-0.1.0-canary1.jar",
-          "sha256": "54a601d9693501bbaca8fcf25b07f1aa65671631278d5a3cd9863fcfdf3c82c0"
+          "filename": "notebook-0.1.0-canary2.jar",
+          "sha256": "f3e4a183028b0bb2c1c7482028e5fa521df8f837631f7e0fd664405e4347d1c0"
         },
-        "source_commit": "e25729bf2fc2761269746e20c6ecbad1105e5c80"
+        "source_commit": "ffdb9a18b5a89779e47b0f90ade78ec352a6e0c2",
+        "runtime_dependency_policy": {
+          "contract": "CAPABILITY_OR_PROVIDER",
+          "exceptions": []
+        }
       },
       "accepted": null,
       "rollback": null,
@@ -101,11 +106,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 2,
-    "activity_at": "2026-08-30T22:48:09Z",
-    "updated_at": "2026-08-30T22:48:09Z",
-    "last_codex_at": "2026-08-30T22:48:09Z",
-    "source_commit": "e25729bf2fc2761269746e20c6ecbad1105e5c80",
+    "revision": 3,
+    "activity_at": "2026-09-09T05:00:21Z",
+    "updated_at": "2026-09-09T05:00:21Z",
+    "last_codex_at": "2026-09-09T05:00:21Z",
+    "source_commit": "ffdb9a18b5a89779e47b0f90ade78ec352a6e0c2",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
