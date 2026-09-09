@@ -1,10 +1,10 @@
 # Notebook
 
-Notebook Canary 3 is a client-only Minecraft Java 26.2 Fabric mod for keeping
+Notebook Canary 4 is a client-only Minecraft Java 26.2 Fabric mod for keeping
 small personal notes without an item or server component. It presents a
 responsive two-page journal: the left page is an explicitly ordered note index
-and the right page is either a scrollable reading view or an ordinary multiline
-text editor.
+and the right page is a scrollable reading view that turns directly into its
+ordinary multiline text editor when the user clicks title or body text.
 
 The journal background is the supplied Bedrock book artwork, rendered through
 Minecraft's GUI textured pipeline as the complete aspect-preserving 640×400
@@ -23,9 +23,12 @@ which it could be attached without changing the interaction model.
   utility button. It uses the live container bounds and searches adjacent
   positions to avoid widgets that already exist when the inventory initializes.
 - `+` creates a note, `−` uses a two-click delete confirmation, `R` rescans disk,
-  and dragging index rows persists a user-controlled order.
-- `Edit` exposes a normal title field and multiline text editor. Reading mode
-  wraps only for display; it never writes wrap-created newlines to disk.
+  and dragging index rows persists a user-controlled order. There are no Edit,
+  Done, or Save controls: click visible title/body text to edit at that location,
+  and Escape closes after a successful flush.
+- Reading mode wraps only for display; it never writes wrap-created newlines to
+  disk. Checkbox-box clicks remain reading-mode checkbox actions; clicking their
+  text enters ordinary editing.
 - Lines beginning with `[ ]`, `[x]`, or `[X]` render as clickable checkboxes in
   reading mode. A click changes only the marker in the underlying Markdown.
 - A leading `# ` is rendered as a small heading. No broader rich-text editor is
@@ -64,9 +67,12 @@ rename guessing is not performed. Unsafe or stale metadata entries are ignored,
 and malformed metadata is rebuilt from the still-readable note files.
 
 Writes use a same-directory temporary file followed by atomic replacement when
-the filesystem supports it. Before body replacement or deletion, the three most
-recent prior contents rotate through the note's backup directory. This is a
-small recovery aid, not revision history.
+the filesystem supports it. Dirty title/body edits autosave after roughly 750 ms
+of idle client ticks and always flush before selection, delete, reload, Escape,
+or normal screen exit. One continuous edit session retains one pre-edit body
+backup, then its subsequent autosaves update only the canonical note; the three
+historical backup slots remain useful recovery history rather than a keystroke
+log.
 
 ## Canary boundary
 
@@ -78,7 +84,7 @@ are intentionally deferred until the core notebook has runtime evidence.
 Canary 1's retained artifact is historical runtime-failure evidence: Fabric
 could not load its client entrypoint because its normal screen class shared the
 Mixin-owned client package. A user reports that the repaired Canary 2 opens
-without that client-init crash. Canary 3 preserves that package repair, makes
-the full Bedrock journal texture explicit in the live render path, and adds
-layout/JAR regressions for artwork and the shared text grid. Canary 3 is
+without that client-init crash. Canary 4 preserves that package repair and the
+shared text grid, packages the newly supplied X-less 640×400 book artwork, and
+removes the old dim/procedural backing and Notebook text shadows. Canary 4 is
 build- and static-test verified only until an actual Minecraft session tests it.
