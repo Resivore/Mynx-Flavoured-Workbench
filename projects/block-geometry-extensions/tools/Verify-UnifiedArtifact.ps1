@@ -1,5 +1,5 @@
 param(
-    [string]$UnifiedJar = (Join-Path $PSScriptRoot '..\build\libs\cnm-nibaru-integration-4.2.9-bge.canary65.bbb-axis-resource-runtime-fix+26.2.jar'),
+    [string]$UnifiedJar = (Join-Path $PSScriptRoot '..\build\libs\cnm-nibaru-integration-4.2.10-bge.canary66.quarter-column-continuation+26.2.jar'),
     [string]$AcceptedJar = (Join-Path $PSScriptRoot '..\artifacts\cnm-nibaru-integration-4.2.2-bge.canary58.glass-corner-uv+26.2.jar')
 )
 
@@ -80,6 +80,7 @@ function Test-ContainsBytes([byte[]]$Bytes, [byte[]]$Needle) {
 
 function Test-AllowedChangedEntry([string]$Name) {
     return $Name -eq 'fabric.mod.json' -or
+            $Name -match '^dev/aero/cnmterraincompat/BgeColumnBlock(?:\$.*)?\.class$' -or
             $Name -match '^dev/aero/cnmterraincompat/AxisModelContract(?:\$.*)?\.class$' -or
             $Name -eq 'cnm_terrain_slabs_compat.mixins.json' -or
             $Name -match '^dev/aero/cnmterraincompat/CnmTerrainCompat(?:\$.*)?\.class$' -or
@@ -124,9 +125,9 @@ try {
     $metadataText = Get-EntryText $unifiedMap['fabric.mod.json']
     $metadata = $metadataText | ConvertFrom-Json
     Require ($metadata.id -eq 'cnm_terrain_slabs_compat') 'Unified primary Fabric ID changed'
-    Require ($metadata.version -eq '4.2.9-bge.canary65.bbb-axis-resource-runtime-fix+26.2') 'Unified Fabric version is not exact C65'
-    Require ($metadata.name -eq ('Block Geometry Extensions Canary 65 ' + [char]0x2014 + ' BBB Beam Runtime Fix')) `
-            'Unified Fabric display name is not exact C65'
+    Require ($metadata.version -eq '4.2.10-bge.canary66.quarter-column-continuation+26.2') 'Unified Fabric version is not exact C66'
+    Require ($metadata.name -eq ('Block Geometry Extensions Canary 66 ' + [char]0x2014 + ' Quarter Column Continuation')) `
+            'Unified Fabric display name is not exact C66'
     Require (@($metadata.provides).Count -eq 1 -and $metadata.provides[0] -eq 'more_slabs_stairs_and_walls') `
             'Unified descriptor must provide exactly the legacy Nibaru ID'
     Require ($metadata.PSObject.Properties.Name -notcontains 'jars') 'Unified descriptor must not declare nested JARs'
@@ -147,7 +148,7 @@ try {
     foreach ($mixin in $expectedMixins) { Require $unifiedMap.ContainsKey($mixin) "Packaged mixin config missing: $mixin" }
     $integrationMixins = Get-EntryText $unifiedMap['cnm_terrain_slabs_compat.mixins.json']
     foreach ($providerHook in @('MacawsPathsInitializationMixin', 'MynxTreesInitializationMixin', 'RibbitsInitializationMixin', 'BbbInitializationMixin')) {
-        Require ($integrationMixins -match [regex]::Escape($providerHook)) "C65 provider completion hook is not packaged: $providerHook"
+        Require ($integrationMixins -match [regex]::Escape($providerHook)) "C66 provider completion hook is not packaged: $providerHook"
     }
 
     $missing = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::Ordinal)
@@ -178,6 +179,7 @@ try {
         'fabric.mod.json',
         'cnm_terrain_slabs_compat.mixins.json',
         'dev/aero/cnmterraincompat/CnmTerrainCompat.class',
+        'dev/aero/cnmterraincompat/BgeColumnBlock.class',
         'dev/aero/cnmterraincompat/NibaruProviderAdapter.class',
         'dev/aero/cnmterraincompat/mixin/ShapeMapOrderMixin.class',
         'dev/aero/cnmterraincompat/client/BgeGeneratedResources.class',
@@ -274,7 +276,7 @@ try {
 
     [ordered]@{
         result = 'PASS'
-        c64 = [ordered]@{
+        c66 = [ordered]@{
             filename = [System.IO.Path]::GetFileName($unifiedPath)
             size = (Get-Item -LiteralPath $unifiedPath).Length
             sha256 = Get-FileSha256 $unifiedPath
