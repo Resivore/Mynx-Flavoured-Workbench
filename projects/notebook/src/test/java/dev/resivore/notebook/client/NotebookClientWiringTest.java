@@ -63,6 +63,20 @@ class NotebookClientWiringTest {
     }
 
     @Test
+    void bookArtAndRulesUseTheCurrentGuiAndTextLayoutContracts() throws IOException {
+        String screen = read("src/main/java/dev/resivore/notebook/client/NotebookScreen.java");
+
+        assertTrue(screen.contains("renderBookArtwork(graphics, x, y)"));
+        assertTrue(screen.contains("RenderPipelines.GUI_TEXTURED"));
+        assertTrue(screen.contains("BOOK_TEXTURE_WIDTH"));
+        assertTrue(screen.contains("BOOK_TEXTURE_HEIGHT"));
+        assertTrue(screen.contains("PageTextLayout.forCurrentEditor(layout, font.lineHeight)"));
+        assertTrue(screen.contains("AbstractTextAreaWidget.DEFAULT_TOTAL_PADDING"));
+        assertTrue(screen.contains("bodyEditor.scrollAmount()"));
+        assertFalse(screen.contains("TEXT_LINE_HEIGHT"));
+    }
+
+    @Test
     void modMetadataIsClientOnlyAndUsesTheCurrentTargetStack() throws IOException {
         String metadata = read("src/main/resources/fabric.mod.json");
         String mixins = read("src/main/resources/notebook.client.mixins.json");

@@ -2,6 +2,8 @@ package dev.resivore.notebook.client;
 
 import org.junit.jupiter.api.Test;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -61,6 +63,11 @@ class MixinPackageIsolationTest {
             assertEquals(List.of(mixinClassEntry), mixinClasses);
             assertFalse(screenEntry.startsWith(mixinPackagePath));
             assertFalse(entrypointEntry.startsWith(mixinPackagePath));
+
+            BufferedImage bookArt = ImageIO.read(archive.getInputStream(
+                    archive.getEntry("assets/notebook/textures/gui/notebook_book.png")));
+            assertEquals(640, bookArt.getWidth());
+            assertEquals(400, bookArt.getHeight());
         }
     }
 
