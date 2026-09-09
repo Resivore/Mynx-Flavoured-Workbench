@@ -34,7 +34,7 @@ class BinaryContractTest {
         }
     }
 
-    @Test void c13ScopesTheBrownBearCorrectionToTheEvidencedSpriteCreatorArgument() throws Exception {
+    @Test void c14ScopesTheBrownBearRetuneToTheEvidencedSpriteCreatorArgument() throws Exception {
         Path root = Path.of(System.getProperty("projectRoot"));
         String mixins = Files.readString(root.resolve("src/main/resources/naturalist_xaero_entity_icons_compat.mixins.json"));
         assertTrue(mixins.contains("ModelRenderTraceMixin"));
@@ -60,9 +60,11 @@ class BinaryContractTest {
         assertTrue(manager.contains("BrownBearSpritePresentation.scaleForCurrentRequest"));
         assertFalse(manager.contains("@Redirect"));
         String presentation = Files.readString(root.resolve("src/main/java/dev/resivore/naturalistxaeroicons/BrownBearSpritePresentation.java"));
-        assertTrue(presentation.contains("SCALE = 0.12F"));
+        assertTrue(presentation.contains("\"naturalist:bear\""));
+        assertTrue(presentation.contains("SCALE = 0.42F"));
         assertTrue(presentation.contains("RadarIconSpriteForm"));
         assertTrue(presentation.contains("Math.min(parameters.scale, SCALE)"));
+        assertTrue(presentation.contains("!(parameters.form instanceof RadarIconSpriteForm)"));
         assertFalse(presentation.contains("pose.scale"));
         String genericManager = Files.readString(root.getParent().resolve(
                 "xaero-entity-icons/src/main/java/dev/resivore/xaeroemfcompat/mixin/RadarIconManagerMixin.java"));
