@@ -20,10 +20,7 @@ public final class CarriedContainerAutoRouting implements ModInitializer {
                 if (targetSlot.container == context.player().getInventory()) target = targetSlot.getItem();
             } else if (payload.hand() == 1) target = context.player().getItemInHand(InteractionHand.MAIN_HAND);
             else if (payload.hand() == 2) target = context.player().getItemInHand(InteractionHand.OFF_HAND);
-            if (!RoutingService.isSupported(target)) {
-                context.player().sendOverlayMessage(Component.translatable("text.carried_container_auto_routing.no_target"));
-                return;
-            }
+            if (!RoutingService.isSupported(target)) return;
             boolean locked = !RoutingLock.isLocked(target);
             RoutingLock.setLocked(target, locked);
             menu.broadcastChanges();

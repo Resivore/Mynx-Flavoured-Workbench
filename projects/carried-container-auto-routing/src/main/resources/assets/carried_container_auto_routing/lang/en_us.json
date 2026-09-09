@@ -2,6 +2,5 @@
   "key.carried_container_auto_routing.toggle_lock": "Toggle carried-container routing lock",
   "key.categories.carried_container_auto_routing.routing": "Carried Container Auto-Routing",
   "text.carried_container_auto_routing.locked": "Auto-routing: Locked",
-  "text.carried_container_auto_routing.unlocked": "Auto-routing: Unlocked",
-  "text.carried_container_auto_routing.no_target": "No supported carried container targeted"
+  "text.carried_container_auto_routing.unlocked": "Auto-routing: Unlocked"
 }

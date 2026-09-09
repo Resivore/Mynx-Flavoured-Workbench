@@ -47,10 +47,14 @@ class LockControlStaticTest {
         assertTrue(server.contains("targetSlot.container == context.player().getInventory()"));
         assertTrue(server.contains("RoutingLock.setLocked(target, locked)"));
         assertTrue(server.contains("sendOverlayMessage"));
+        assertTrue(!server.contains("text.carried_container_auto_routing.no_target"));
+        assertTrue(server.contains("text.carried_container_auto_routing.locked"));
+        assertTrue(server.contains("text.carried_container_auto_routing.unlocked"));
         assertTrue(lock.contains("carried_container_auto_routing.locked"));
         assertTrue(language.contains("key.categories.carried_container_auto_routing.routing"));
         assertTrue(language.contains("Auto-routing: Locked"));
         assertTrue(language.contains("Auto-routing: Unlocked"));
+        assertTrue(!language.contains("No supported carried container targeted"));
     }
 
     @Test

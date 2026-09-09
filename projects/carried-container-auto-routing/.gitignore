@@ -3,3 +3,4 @@ build/
 logs/
 run/
 /artifacts/carried-container-auto-routing-0.3.7-csr-reservation-affinity-canary1.jar
+/artifacts/carried-container-auto-routing-0.3.8-silent-no-target-canary1.jar
