@@ -23,7 +23,8 @@
       "Give the lantern slot an order immediately after the built-in legs/belt order so normal Trinkets layout produces lantern-left, leggings-center, and belt-right whenever both additional slots are assigned.",
       "Use Trinkets' native alternating layout, hover/reveal, quick-move, and group-background behavior for Canary 1; with belt order -1024 and lantern order -1023 both assigned, native positioning yields lantern-left, leggings-center, and belt-right, while belt-absent positioning is recorded for a possible successor rather than changed by a custom layout mixin.",
       "Use Trinkets Updated 4.1 data-driven client trinket rendering targeted by the supported-lantern tag and gated to legs/lantern, using the actual ItemStack item-model pipeline attached to the canonical body model part with a simple initial hip transform.",
-      "Rely on LambDynamicLights 4.12.2's native Trinkets scan and item/block-derived luminance for worn world lighting. Exact source analysis shows allEquipped(false) passes the actual Trinkets ItemStack through ItemLightSourceManager and max-merges it into the same tick/update-driven LivingEntity and chunk-rebuild path used by held equipment, while Iris 1.11.2 and Complementary Unbound r5.8.1 can independently add a per-frame, interpolated-eye handheld shader term from main-hand/off-hand uniforms only; do not add a duplicate LDL source or unsupported hand-light bridge.",
+      "Rely on LambDynamicLights 4.12.2's native Trinkets scan and item/block-derived luminance for worn world lighting. Exact source analysis shows allEquipped(false) passes the actual Trinkets ItemStack through ItemLightSourceManager and max-merges it into the same tick/update-driven LivingEntity and chunk-rebuild path used by held equipment; do not add a duplicate LDL source or globally alter LDL.",
+      "For the local player only, Canary 4 adds an Iris 1.11.2+mc26.2 version-gated client mixin at IdMapUniforms$HeldItemSupplier#update. During Iris's secondary/offhand PER_FRAME uniform evaluation alone, it may substitute the actual supported exact legs/lantern Trinkets stack when Iris resolves it brighter than a known real offhand stack. The bridge uses Iris's own item-ID/emission/color evaluation for the chosen actual stack, preserves equal/brighter real-offhand identity, fails closed on absent/unsupported Iris or unresolved provider state, and never changes the real inventory, gameplay hand, packets, server, block/world light, or remote-player uniforms.",
       "Validate survival and creative behavior against Inventory Extended and the accepted Trinkets x Inventory Extended C5 dynamic menu-boundary contract without changing that accepted project."
     ],
     "boundaries": {
@@ -36,7 +37,7 @@
         "Replacement or redesign of Trinkets, consumption of legs/belt for lanterns, custom menu-slot insertion, fixed inventory indices, or changes to the accepted Trinkets x Inventory Extended C5 baseline without a demonstrated dependency.",
         "Any Canary 1 custom inventory GUI/layout mixin or belt-absent positioning override; a narrow successor intervention is allowed only if runtime evidence demonstrates that native positioning is inadequate.",
         "Hard coupling to Matcha Flavoured where the normal item-model and resource-pack pipeline provides generic compatibility.",
-        "Fake placed blocks, server-side environmental light mutation, fake-hand or inventory-state manipulation, private Iris/shader mixins, a global LDL interpolation change, or making an optional client dynamic-light provider a hard architectural dependency.",
+        "Fake placed blocks, server-side environmental light mutation, fake-hand or inventory-state manipulation, a global LDL interpolation change, a second LDL entity source, copied Iris/Complementary code or shader assets, unsupported Iris-version activation, or making an optional client dynamic-light provider a hard architectural dependency.",
         "Deployment, Minecraft launch, Test Slot occupancy, accepted-baseline changes, instance mutation, or any runtime-validation claim during implementation-only Canary work."
       ]
     },
@@ -86,8 +87,8 @@
       {
         "type": "MOD",
         "identifier": "iris",
-        "requirement": "=1.11.2+mc26.2 (optional rendering audit target)",
-        "reason": "Exact release-source checkpoint 20e226b14fd2c3ba192e16ae2c8af4a27987767c supplies PER_FRAME held-item IDs, emission values, and camera-relative interpolated-eye state from main hand and off hand only; no supported arbitrary equipped-stack registration API exists."
+        "requirement": "Optional provider; runtime metadata suggests >=1.11.2, while the private bridge fail-closes unless the loaded version is exactly 1.11.2+mc26.2",
+        "reason": "The locally inspected 1.11.2+mc26.2 JAR and release-source checkpoint 20e226b14fd2c3ba192e16ae2c8af4a27987767c establish the exact IdMapUniforms$HeldItemSupplier#update offhand stack read that supplies per-frame heldItemId2, heldBlockLightValue2, and heldBlockLightColor2."
       },
       {
         "type": "MOD",
@@ -116,15 +117,19 @@
     ]
   },
   "state": {
-    "milestone": "Canary 3 is implemented, clean-built, statically verified, and retained after external Canary 2 feedback reported continued good core wearable behavior, an unwanted palette recolor, and persistently choppier worn light than a held torch. Canary 3 installs the exact user-supplied 16x16 sprite. The expanded source audit proves that held items can combine LDL's tick/update-driven player and chunk-rebuild light with Complementary/Iris's distinct per-frame, interpolated-eye handheld shader term, whereas legs/lantern enters LDL only; because Iris exposes no supported arbitrary equipped-stack hand-light API, no lighting code or speculative bridge was added. An exact A-D shader/LDL runtime matrix remains required. The project remains ACTIVE, not deployed, and formally runtime untested.",
+    "milestone": "Canary 4 is implemented, clean-built, statically verified, and retained after the user confirmed Canary 3 core behavior and identified the remaining local illumination stepping. The explicit successor request supersedes Canary 3's no-private-bridge boundary. On exact Iris 1.11.2+mc26.2 only, a client-only redirect confines substitution to Iris's per-frame secondary hand-uniform supplier: it uses the actual supported legs/lantern stack when Iris resolves it brighter than a known real offhand source, otherwise preserves the real offhand. LDL remains unchanged and no real hand, inventory, packet, world/block light, shader asset, or remote-player state is modified. The new artifact remains ACTIVE, NOT_DEPLOYED, and RUNTIME_UNTESTED; the user feedback is recorded as external runtime finding, not a formal Workbench pass.",
     "releases": {
       "current": {
-        "version": "0.1.0-canary3",
+        "version": "0.1.0-canary4",
         "artifact": {
-          "filename": "wearable-lanterns-0.1.0-canary3.jar",
-          "sha256": "0209e1e01acc412b887a0079089e08fcea70e44343381f5c19e53d39477be65c"
+          "filename": "wearable-lanterns-0.1.0-canary4.jar",
+          "sha256": "bc5abfca0a74d1a5fb4296bb3073abee046e6d358a457c2c67608d91d7546397"
         },
-        "source_commit": "24ab740e6d41ac802b9cc97da51abb0dadaf2595"
+        "source_commit": "418b79282c8c63bb017d6c927149d507e1cc7f01",
+        "runtime_dependency_policy": {
+          "contract": "CAPABILITY_OR_PROVIDER",
+          "exceptions": []
+        }
       },
       "accepted": null,
       "rollback": null,
@@ -139,11 +144,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 4,
-    "activity_at": "2026-08-31T02:39:04Z",
-    "updated_at": "2026-08-31T02:39:04Z",
-    "last_codex_at": "2026-08-31T02:39:04Z",
-    "source_commit": "24ab740e6d41ac802b9cc97da51abb0dadaf2595",
+    "revision": 5,
+    "activity_at": "2026-09-09T05:24:51Z",
+    "updated_at": "2026-09-09T05:24:51Z",
+    "last_codex_at": "2026-09-09T05:24:51Z",
+    "source_commit": "418b79282c8c63bb017d6c927149d507e1cc7f01",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null

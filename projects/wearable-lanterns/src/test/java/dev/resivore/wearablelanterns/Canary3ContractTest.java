@@ -54,15 +54,6 @@ class Canary3ContractTest {
             "................");
 
     @Test
-    void successorVersionIsCanaryThree() throws IOException {
-        Properties properties = new Properties();
-        try (var input = Files.newInputStream(PROJECT_ROOT.resolve("gradle.properties"))) {
-            properties.load(input);
-        }
-        assertEquals("0.1.0-canary3", properties.getProperty("mod_version"));
-    }
-
-    @Test
     void lanternSpriteIsTheExactUserSuppliedPng() throws Exception {
         assertEquals(1_749L, Files.size(LANTERN_SPRITE));
         assertEquals(
@@ -101,16 +92,21 @@ class Canary3ContractTest {
     }
 
     @Test
-    void doesNotAddASecondLambDynamicLightsSource() throws IOException {
+    void preservesTheNoSecondLambDynamicLightsSourceBoundary() throws IOException {
         Path javaRoot = PROJECT_ROOT.resolve("src/main/java");
         List<Path> javaFiles;
         try (Stream<Path> paths = Files.walk(javaRoot)) {
             javaFiles = paths.filter(path -> path.toString().endsWith(".java")).toList();
         }
-        assertEquals(1, javaFiles.size(),
-                "Canary 3 must retain the single universal Trinkets predicate initializer");
-
-        String production = Files.readString(javaFiles.get(0), StandardCharsets.UTF_8);
+        String production = javaFiles.stream()
+                .map(path -> {
+                    try {
+                        return Files.readString(path, StandardCharsets.UTF_8);
+                    } catch (IOException exception) {
+                        throw new IllegalStateException(exception);
+                    }
+                })
+                .reduce("", String::concat);
         assertFalse(production.contains("dev.lambdaurora"));
         assertFalse(production.contains("DynamicLightsInitializer"));
         assertFalse(production.contains("DynamicLightBehavior"));
@@ -123,6 +119,6 @@ class Canary3ContractTest {
         assertEquals(
                 "4.12.2+26.2",
                 metadata.getAsJsonObject("suggests").get("lambdynlights").getAsString());
-        assertFalse(metadata.getAsJsonObject("entrypoints").has("client"));
+        assertFalse(metadata.getAsJsonObject("depends").has("iris"));
     }
 }

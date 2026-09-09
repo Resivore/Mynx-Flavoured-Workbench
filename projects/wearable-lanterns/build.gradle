@@ -29,6 +29,23 @@ dependencies {
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
+loom {
+    splitEnvironmentSourceSets()
+    mods {
+        wearable_lanterns {
+            sourceSet sourceSets.main
+            sourceSet sourceSets.client
+        }
+    }
+}
+
+dependencies {
+    testImplementation sourceSets.client.output
+}
+
+sourceSets.test.compileClasspath += configurations.clientCompileClasspath
+sourceSets.test.runtimeClasspath += configurations.clientRuntimeClasspath
+
 processResources {
     inputs.property 'version', project.version
     filesMatching('fabric.mod.json') {

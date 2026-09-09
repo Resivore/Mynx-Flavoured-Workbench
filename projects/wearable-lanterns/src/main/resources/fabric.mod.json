@@ -12,6 +12,12 @@
       "dev.resivore.wearablelanterns.WearableLanterns"
     ]
   },
+  "mixins": [
+    {
+      "config": "wearable_lanterns.iris.mixins.json",
+      "environment": "client"
+    }
+  ],
   "depends": {
     "fabricloader": ">=0.19.3",
     "fabric-api": "0.157.0+26.2",
@@ -20,10 +26,15 @@
     "trinkets_updated": "4.1.0-beta.3+26.2"
   },
   "suggests": {
-    "lambdynlights": "4.12.2+26.2"
+    "lambdynlights": "4.12.2+26.2",
+    "iris": ">=1.11.2"
   },
   "custom": {
     "workbench:classification": "GENERATED / UNTESTED",
-    "workbench:deployment": "NOT DEPLOYED"
+    "workbench:deployment": "NOT DEPLOYED",
+    "runtime_dependency_policy": {
+      "contract": "CAPABILITY_OR_PROVIDER",
+      "exceptions": []
+    }
   }
 }

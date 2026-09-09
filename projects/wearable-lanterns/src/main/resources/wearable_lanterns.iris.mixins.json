@@ -1,0 +1,13 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "dev.resivore.wearablelanterns.mixin",
+  "compatibilityLevel": "JAVA_25",
+  "plugin": "dev.resivore.wearablelanterns.WearableLanternsIrisMixinPlugin",
+  "client": [
+    "IrisHeldItemSupplierMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
