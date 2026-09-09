@@ -13,12 +13,12 @@
     "lifecycle": "ACTIVE",
     "goals": [
       "Provide fail-closed Xaero Minimap radar-icon capture for the 37 Naturalist living entities whose rendered ModelPart hierarchy is not captured by Xaero's native path.",
-      "Preserve Xaero's native successful model and texture capture for Brown Bear, Bird, Butterfly, Catfish, Caterpillar, Crab, Deer, Firefly, Snake, and Snail; C18 freezes the runtime-passing C15 Brown Bear sprite-form creator scale and adds Clam-only cache-to-render capture diagnostics without modifying Naturalist, Xaero, EMF, or Ribbits."
+      "Preserve Xaero's native successful model and texture capture for Brown Bear, Bird, Butterfly, Catfish, Caterpillar, Crab, Deer, Firefly, Snake, and Snail; C19 freezes the runtime-passing C15 Brown Bear sprite-form creator scale and performs the first post-C7 Clam scale experiment while retaining C18's Clam-only cache-to-render diagnostics without modifying Naturalist, Xaero, EMF, or Ribbits."
     ],
     "scope": [
       "Use a closed Naturalist entity-id plus exact current model-class contract registry. Each contract selects the live renderer-selected adult, baby, or state model subtree; unknown class, path, trace, or draw failure delegates to Xaero's normal fallback.",
       "After Xaero's native model prerender returns empty, render only the selected head/neck subtree for ordinary headed animals, or an explicit compact-body subtree for the documented non-headed anatomy families. The bridge copies only contract-path ancestor transforms and resolves only an explicit contract trace anchor, selected part, or contract-path ancestor trace; it never mutates or reparents the live Naturalist model.",
-      "Use explicit contract-local scale, rotation, source-audited trace anchor, and only where unavoidable a source-audited direct-cuboid subset for the C4 presentation corrections. Brown Bear has no custom fallback contract: C18 preserves C15's immutable-parameter recreation only for its runtime-proven `RadarIconSpriteForm` request, preserving form, variant, model config, debug state, and its `0.65F` sprite scale unchanged. C18 retains C16/C17's Clam model-root source / `bottom` trace route, normalized detached top-bottom-hinge assembly, top-down presentation, and `0.20F` scale; it observes only its cache hit/miss, selected creator form, model-form/model-part path, cache write, native result, contract resolution, trace binding, bridge render destination, caught bridge error, and final manager result. No screen-space offsets are used. Resource reload evicts only the 37 fallback targets and native Brown Bear entries."
+      "Use explicit contract-local scale, rotation, source-audited trace anchor, and only where unavoidable a source-audited direct-cuboid subset for the C4 presentation corrections. Brown Bear has no custom fallback contract: C19 preserves C15's immutable-parameter recreation only for its runtime-proven `RadarIconSpriteForm` request, preserving form, variant, model config, debug state, and its `0.65F` sprite scale unchanged. C18 externally proves the Clam model-root source / `bottom` trace route reaches the model-part renderer yet leaves Xaero's fallback rendered destination empty at `0.20F`. C19 changes only that production Clam presentation scale to `0.30F`, retaining the empty source path, normalized detached top-bottom-hinge assembly, top-down rotation, diagnostics, and empty-destination failure semantics. No screen-space offsets are used. Resource reload evicts only the 37 fallback targets and native Brown Bear entries."
     ],
     "boundaries": {
       "owned_paths": ["projects/naturalist-xaero-entity-icons-compat"],
@@ -38,12 +38,12 @@
     ]
   },
   "state": {
-    "milestone": "C11 remains retained USER-REPORTED / EXTERNAL RUNTIME FAIL provenance: its temporary model-path 90-degree rotation did not appear and Brown Bear remained oversized. C12 remains retained USER-REPORTED / EXTERNAL RUNTIME evidence: its cache miss reached `RadarIconCreator#create` with `RadarIconSpriteForm` and `naturalist:textures/entity/bear/bear.png`, returned/cached a non-null XaeroIcon, then produced a cache hit without reaching C12's model-form/model-part observers. Exact C13 is retained USER-REPORTED / EXTERNAL RUNTIME FAIL provenance: its `0.12F` sprite scale severely over-shrunk an otherwise correct, normally oriented Brown Bear to a tiny brown dot. Exact C14 is retained USER-REPORTED / EXTERNAL RUNTIME FAIL provenance: `naturalist-xaero-entity-icons-compat-0.1.0-canary14.jar` / embedded `0.1.0-canary14` / SHA-256 `01a2348b061237f45df6a015d57693c31d92cf79dd204fb7d2b39b8f3ab6f1ea` / source `6fe8dd0f82cbaa7378b1c00a0e326ca316414ae9`; its `0.42F` native sprite-form Brown Bear was recognizable and correctly oriented but too small. Exact C15 is USER-REPORTED / EXTERNAL RUNTIME mixed evidence: `naturalist-xaero-entity-icons-compat-0.1.0-canary15.jar` / embedded `0.1.0-canary15` / SHA-256 `97f79910675e71610651bd871ac6aad89ccd5e63794350b8c659c44cbbcab7b7` / source `53fec53d07daabdd8315ac9e25a755291832eb75`. Brown Bear PASSed the requested correction at its exact `0.65F` native sprite-form seam: it is recognizable, correctly oriented, neither oversized nor too small, and must remain unchanged. Exact C16 is USER-REPORTED / EXTERNAL RUNTIME FAIL: its restored C7 Clam model-root / `bottom` route remained label-only, so the result is capture-route failure rather than visual-scale evidence. Exact C17 is USER-REPORTED / EXTERNAL RUNTIME FAIL: `naturalist-xaero-entity-icons-compat-0.1.0-canary17.jar` / embedded `0.1.0-canary17` / SHA-256 `e4f3bb9a15cd747ff431a6d5f2edc9575bdb2d38f9ad86102346720d3f0dd418` / source `549dfeae60d83616fadea5a32e6a568fc2fbd5e0`; it loaded as `naturalist_xaero_entity_icons_compat 0.1.0-canary17`, but Clam remained label-only. No C17 scale conclusion—including a proposed `0.28F` value—is valid. Both manager slots remain occupied by unrelated BGE C60 and IBF C4.",
+    "milestone": "Brown Bear remains runtime-proven at its exact native `naturalist:bear` / `RadarIconSpriteForm` / `0.65F` seam and is unchanged. Exact C18 is USER-REPORTED / EXTERNAL RUNTIME FAIL: `naturalist-xaero-entity-icons-compat-0.1.0-canary18.jar` / embedded `0.1.0-canary18` / SHA-256 `2efa70c53e033e000349759dfd7020c43cdcf2fad0320f2569a6d8cc29927ade` / source `64f8e25c18116c03ba978b3d67da500bf96b7b34`; Clam remained label-only. Its cache MISS reached `RadarIconCreator#create` with `RadarIconModelForm` and `naturalist:textures/entity/clam/brown_clam.png`, model-form and `RadarIconModelPartPrerenderer#renderPart`, then `ClamModel`; native rendered parts were zero, the exact empty-source / `bottom` trace / top-bottom-hinge normalized contract resolved, its adapter built and explicitly bound the trace, no exception occurred, but fallback rendering left Xaero's destination empty (`before=0`, `after=0`, neither adapter nor selected recorded). A non-null creator return/cache write is not a Clam model-icon success. C17/C18 retained `0.20F`; neither tested `0.28F` or `0.30F`. Exact C19 changes only Clam to `0.30F` and is STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED because manager revision 117 retains unrelated BGE C60 and IBF C4 in its two slots.",
     "releases": {
       "current": {
-        "version": "0.1.0-canary18",
-        "artifact": {"filename": "naturalist-xaero-entity-icons-compat-0.1.0-canary18.jar", "sha256": "2efa70c53e033e000349759dfd7020c43cdcf2fad0320f2569a6d8cc29927ade"},
-        "source_commit": "64f8e25c18116c03ba978b3d67da500bf96b7b34",
+        "version": "0.1.0-canary19",
+        "artifact": {"filename": "naturalist-xaero-entity-icons-compat-0.1.0-canary19.jar", "sha256": "721e4854971301dd0987c21958a42834c08cf6456386ee88355b6cfc5befb0c1"},
+        "source_commit": "0866b0199860dccc6a368d945f6e1bba38201a79",
         "runtime_dependency_policy": {"contract": "CAPABILITY_OR_PROVIDER", "exceptions": []}
       },
       "accepted": null,
@@ -55,11 +55,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 18,
-    "activity_at": "2026-09-09T05:09:00Z",
-    "updated_at": "2026-09-09T05:09:00Z",
-    "last_codex_at": "2026-09-09T05:09:00Z",
-    "source_commit": "64f8e25c18116c03ba978b3d67da500bf96b7b34",
+    "revision": 19,
+    "activity_at": "2026-09-09T05:28:22Z",
+    "updated_at": "2026-09-09T05:28:22Z",
+    "last_codex_at": "2026-09-09T05:28:22Z",
+    "source_commit": "0866b0199860dccc6a368d945f6e1bba38201a79",
     "google_sheet": {"participates": true, "exclusion_reason": null}
   }
 }
