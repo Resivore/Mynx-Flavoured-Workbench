@@ -162,7 +162,7 @@ class NaturalistCoverageTest {
         assertTrue(manager.contains("\"bear\".equals"));
         assertTrue(presentation.contains("RadarIconSpriteForm"));
         assertTrue(presentation.contains("\"naturalist:bear\""));
-        assertTrue(presentation.contains("SCALE = 0.42F"));
+        assertTrue(presentation.contains("SCALE = 0.65F"));
         assertTrue(presentation.contains("new RadarIconCreator.Parameters"));
         assertTrue(presentation.contains("!(parameters.form instanceof RadarIconSpriteForm)"));
         assertFalse(manager.contains("@Redirect"));
@@ -182,7 +182,7 @@ class NaturalistCoverageTest {
         assertEquals(.76F, NaturalistModelContracts.contractsForId("tiger").getFirst().presentation().scale());
     }
 
-    @Test void c8PreservesWorkingC7ContractsAndNarrowsOnlyTheClamFrame() {
+    @Test void c15PreservesWorkingC7ContractsAndTheUnevaluatedClamCandidate() {
         assertEquals(.38F, NaturalistModelContracts.contractsForId("ray").getFirst().presentation().scale());
         assertEquals(.68F, NaturalistModelContracts.contractsForId("hedgehog").getFirst().presentation().scale());
         assertEquals(.70F, NaturalistModelContracts.contractsForId("hedgehog").get(1).presentation().scale());

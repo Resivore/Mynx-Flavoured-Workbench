@@ -5,9 +5,9 @@ import net.minecraft.world.entity.EntityType;
 import xaero.hud.minimap.radar.icon.creator.RadarIconCreator;
 import xaero.hud.minimap.radar.icon.definition.form.sprite.RadarIconSpriteForm;
 
-/** Applies the C14 retune only to the evidenced native Brown Bear sprite request. */
+/** Applies the C15 retune only to the evidenced native Brown Bear sprite request. */
 public final class BrownBearSpritePresentation {
-    static final float SCALE = 0.42F;
+    static final float SCALE = 0.65F;
     private static final ThreadLocal<Boolean> BROWN_BEAR_REQUEST = ThreadLocal.withInitial(() -> false);
 
     private BrownBearSpritePresentation() {}

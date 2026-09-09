@@ -61,7 +61,7 @@ class BinaryContractTest {
         assertFalse(manager.contains("@Redirect"));
         String presentation = Files.readString(root.resolve("src/main/java/dev/resivore/naturalistxaeroicons/BrownBearSpritePresentation.java"));
         assertTrue(presentation.contains("\"naturalist:bear\""));
-        assertTrue(presentation.contains("SCALE = 0.42F"));
+        assertTrue(presentation.contains("SCALE = 0.65F"));
         assertTrue(presentation.contains("RadarIconSpriteForm"));
         assertTrue(presentation.contains("Math.min(parameters.scale, SCALE)"));
         assertTrue(presentation.contains("!(parameters.form instanceof RadarIconSpriteForm)"));
