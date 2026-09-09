@@ -12,13 +12,13 @@
     ]
   },
   "definition": {
-    "lifecycle": "ACCEPTED",
+    "lifecycle": "ACTIVE",
     "goals": [
       "Maintain the progression-gated one-way return system for Minecraft Java 26.2 Fabric using one shared placed Dragonbound Waystone, an Imbued Void Pearl, and a cooldown-based Dragonbound Staff.",
       "Preserve the accepted server-owned channel, exact-destination safety, persistent anchor, loss protection, recipes, configuration migration, discovery behavior, geometry, and art without expanding into a general waypoint or teleport system."
     ],
     "scope": [
-      "Maintain the exact Canary 5 implementation, build, resources, and tests represented by frozen legacy checkpoint f0101f38c446dddaa4226450386402c63597ba7c and project source checkpoint 690066c7c7159771a244ecd72f201473d95fcb19.",
+      "Maintain the accepted Canary 5 behavior while Canary 6 adds only server-owned vanilla Enderman teleport activation sound and portal-particle feedback to the shared channel lifecycle.",
       "Preserve the 40-tick default channel, 1,200-tick Staff cooldown, exact current recipes, one-click and mouse-release-independent channel lifecycle, exact arrival at blockY + 3/16, recipe-book and JEI discovery seam, and success-only consumption and cooldown behavior.",
       "Retain exact accepted Canary 5 and focused-runtime-passed Canary 4 rollback artifacts together with the Dragonbound-owned Staff art and the separately licensed Matcha Stable Void snapshot and notice."
     ],
@@ -81,15 +81,19 @@
     ]
   },
   "state": {
-    "milestone": "Exact Canary 5 remains the current and accepted client and singleplayer baseline after the user's focused confirmation; dedicated-server validation remains unperformed, no Canary 5 log is claimed, and exact focused-runtime-passed Canary 4 remains the rollback.",
+    "milestone": "Canary 6 adds only shared server-owned Enderman teleport activation sound plus ambient and confirmed-success portal particles. It is statically verified but not deployed or runtime tested; exact Canary 5 remains the accepted baseline and rollback.",
     "releases": {
       "current": {
-        "version": "0.1.0-canary5",
+        "version": "0.1.0-canary6",
         "artifact": {
-          "filename": "dragonbound-waystone-0.1.0-canary5.jar",
-          "sha256": "ff29582cc50f391a3ebb79b5ab1dff2f8fb7abb92363bca46fb8a9608a481ad3"
+          "filename": "dragonbound-waystone-0.1.0-canary6.jar",
+          "sha256": "64d2bf362a6f9d9d3abe9c8190b95f90a3d58e2743ac2981d5aca29585146199"
         },
-        "source_commit": "690066c7c7159771a244ecd72f201473d95fcb19"
+        "source_commit": "8f6c3be39494791cc0e0d38d1083a4c445ddca92",
+        "runtime_dependency_policy": {
+          "contract": "CAPABILITY_OR_PROVIDER",
+          "exceptions": []
+        }
       },
       "accepted": {
         "version": "0.1.0-canary5",
@@ -100,29 +104,29 @@
         "source_commit": "690066c7c7159771a244ecd72f201473d95fcb19"
       },
       "rollback": {
-        "version": "0.1.0-canary4",
+        "version": "0.1.0-canary5",
         "artifact": {
-          "filename": "dragonbound-waystone-0.1.0-canary4.jar",
-          "sha256": "2ea97d762ee646f97954abc6c919ecea2f337b91096894adfc13e5af34982634"
+          "filename": "dragonbound-waystone-0.1.0-canary5.jar",
+          "sha256": "ff29582cc50f391a3ebb79b5ab1dff2f8fb7abb92363bca46fb8a9608a481ad3"
         },
-        "source_commit": "bf3c1f128bf394994e13c66624fbf5129d0fe4b4"
+        "source_commit": "690066c7c7159771a244ecd72f201473d95fcb19"
       },
-      "accepted_current": "CURRENT_IS_ACCEPTED",
-      "accepted_rollback": "ROLLBACK_DIFFERS_FROM_ACCEPTED"
+      "accepted_current": "CURRENT_DIFFERS_FROM_ACCEPTED",
+      "accepted_rollback": "ACCEPTED_IS_ROLLBACK"
     },
     "validation": {
-      "build": "CONTROLLED_VALIDATION_PASS",
-      "deployment": "READY_TO_TEST_VERIFIED",
-      "runtime": "RUNTIME_PASS"
+      "build": "STATIC_PASS",
+      "deployment": "NOT_DEPLOYED",
+      "runtime": "RUNTIME_UNTESTED"
     },
     "blocker": null
   },
   "synchronization": {
-    "revision": 1,
-    "activity_at": "2026-08-22T04:10:59Z",
-    "updated_at": "2026-08-29T21:33:19Z",
-    "last_codex_at": "2026-08-29T21:33:19Z",
-    "source_commit": "f18f7756e0f54da392c12083d160beb28cea2b64",
+    "revision": 2,
+    "activity_at": "2026-09-09T10:06:58Z",
+    "updated_at": "2026-09-09T10:06:58Z",
+    "last_codex_at": "2026-09-09T10:06:58Z",
+    "source_commit": "8f6c3be39494791cc0e0d38d1083a4c445ddca92",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
