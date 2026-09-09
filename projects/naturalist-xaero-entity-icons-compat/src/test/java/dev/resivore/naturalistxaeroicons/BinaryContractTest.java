@@ -34,16 +34,16 @@ class BinaryContractTest {
         }
     }
 
-    @Test void c14ScopesTheBrownBearRetuneToTheEvidencedSpriteCreatorArgument() throws Exception {
+    @Test void c18ScopesTheFrozenBrownBearRetuneAndAddsClamOnlyObservation() throws Exception {
         Path root = Path.of(System.getProperty("projectRoot"));
         String mixins = Files.readString(root.resolve("src/main/resources/naturalist_xaero_entity_icons_compat.mixins.json"));
         assertTrue(mixins.contains("ModelRenderTraceMixin"));
         assertTrue(mixins.contains("RadarIconModelPrerendererMixin"));
-        assertFalse(mixins.contains("RadarIconCreatorMixin"));
-        assertFalse(mixins.contains("RadarIconModelFormPrerendererMixin"));
-        assertFalse(mixins.contains("RadarIconModelPartPrerendererMixin"));
-        assertFalse(mixins.contains("RadarIconEntityCacheMixin"));
-        assertFalse(mixins.contains("RadarIconEntityCacheStorageAccessor"));
+        assertTrue(mixins.contains("RadarIconCreatorMixin"));
+        assertTrue(mixins.contains("RadarIconModelFormPrerendererMixin"));
+        assertTrue(mixins.contains("RadarIconModelPartPrerendererMixin"));
+        assertTrue(mixins.contains("RadarIconEntityCacheMixin"));
+        assertTrue(mixins.contains("RadarIconEntityCacheStorageAccessor"));
         String bridge = Files.readString(root.resolve("src/main/java/dev/resivore/naturalistxaeroicons/NaturalistIconAdapter.java"));
         assertTrue(bridge.contains("traceSources"));
         assertFalse(bridge.contains("@Redirect"));
@@ -58,6 +58,7 @@ class BinaryContractTest {
         assertTrue(manager.contains("@At(\"STORE\")"));
         assertTrue(manager.contains("index = 19"));
         assertTrue(manager.contains("BrownBearSpritePresentation.scaleForCurrentRequest"));
+        assertTrue(manager.contains("observeClamCacheBeforeXaeroEmfRetry"));
         assertFalse(manager.contains("@Redirect"));
         String presentation = Files.readString(root.resolve("src/main/java/dev/resivore/naturalistxaeroicons/BrownBearSpritePresentation.java"));
         assertTrue(presentation.contains("\"naturalist:bear\""));
@@ -66,6 +67,12 @@ class BinaryContractTest {
         assertTrue(presentation.contains("Math.min(parameters.scale, SCALE)"));
         assertTrue(presentation.contains("!(parameters.form instanceof RadarIconSpriteForm)"));
         assertFalse(presentation.contains("pose.scale"));
+        String clamDiagnostic = Files.readString(root.resolve(
+                "src/main/java/dev/resivore/naturalistxaeroicons/ClamCaptureDiagnostic.java"));
+        assertTrue(clamDiagnostic.contains("RadarIconCreator#create form="));
+        assertTrue(clamDiagnostic.contains("RadarIconEntityCache#get initial"));
+        assertFalse(clamDiagnostic.contains("pose.scale"));
+        assertFalse(clamDiagnostic.contains("new XaeroIcon"));
         String genericManager = Files.readString(root.getParent().resolve(
                 "xaero-entity-icons/src/main/java/dev/resivore/xaeroemfcompat/mixin/RadarIconManagerMixin.java"));
         assertEquals(1, genericManager.split("@Redirect", -1).length - 1);

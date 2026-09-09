@@ -3,6 +3,6 @@
   "minVersion": "0.8",
   "package": "dev.resivore.naturalistxaeroicons.mixin",
   "compatibilityLevel": "JAVA_25",
-  "client": ["ModelRenderTraceMixin", "RadarIconCacheAccessor", "RadarIconManagerMixin", "RadarIconModelPrerendererMixin"],
+  "client": ["ModelRenderTraceMixin", "RadarIconCacheAccessor", "RadarIconEntityCacheStorageAccessor", "RadarIconManagerMixin", "RadarIconCreatorMixin", "RadarIconModelFormPrerendererMixin", "RadarIconModelPartPrerendererMixin", "RadarIconEntityCacheMixin", "RadarIconModelPrerendererMixin"],
   "injectors": {"defaultRequire": 1}
 }
