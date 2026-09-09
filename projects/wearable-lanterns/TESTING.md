@@ -1,6 +1,6 @@
 # Testing
 
-Wearable Lanterns Canary 4 (`0.1.0-canary4`) is retained as `wearable-lanterns-0.1.0-canary4.jar`, 13,925 bytes, SHA-256 `bc5abfca0a74d1a5fb4296bb3073abee046e6d358a457c2c67608d91d7546397`, built from source checkpoint `418b79282c8c63bb017d6c927149d507e1cc7f01`. It is `STATIC_PASS`, `NOT_DEPLOYED`, and `RUNTIME_UNTESTED`. The user reports Canary 3's worn lantern works but its direct light looks choppier than an actual held lantern under Iris + Complementary; that is external runtime feedback only, not a Workbench result.
+Wearable Lanterns Canary 5 (`0.1.0-canary5`) is retained as `wearable-lanterns-0.1.0-canary5.jar`, 13,920 bytes, SHA-256 `0d05d2af86dfb8f41e7cb7c0dde75aed681cfb657fa2cb8de4a42f40344dd0e6`, built from source checkpoint `413c2dad2f5acf7285311c31921493ef5650eed5`. It is the policy-compliant metadata-only successor to Canary 4: the Iris bridge behavior is unchanged, while Fabric API/Trinkets/optional-LDL manifest predicates use stable capability/provider forms. It is `STATIC_PASS`, `NOT_DEPLOYED`, and `RUNTIME_UNTESTED`. The user reports Canary 3's worn lantern works but its direct light looks choppier than an actual held lantern under Iris + Complementary; that is external runtime feedback only, not a Workbench result.
 
 ## Required deployment context
 

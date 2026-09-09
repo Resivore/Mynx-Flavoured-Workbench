@@ -8,6 +8,7 @@ __pycache__/
 /projects/interchangeable-block-families/artifacts/interchangeable-block-families-0.1.0-canary6.jar
 /projects/interchangeable-block-families/artifacts/interchangeable-block-families-0.1.0-canary7.jar
 /projects/wearable-lanterns/artifacts/wearable-lanterns-0.1.0-canary4.jar
+/projects/wearable-lanterns/artifacts/wearable-lanterns-0.1.0-canary5.jar
 build/
 dist/
 runtime-state.local.json
