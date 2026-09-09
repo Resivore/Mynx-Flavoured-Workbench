@@ -2,7 +2,7 @@
 
 ## Current gate
 
-**C13 NOT DEPLOYED — STATIC PASS PENDING — RUNTIME UNTESTED — FOCUSED BROWN BEAR SPRITE-SCALE TEST REQUIRED — NOT READY FOR PROMOTION**
+**C14 NOT DEPLOYED — STATIC PASS — RUNTIME UNTESTED — FOCUSED BROWN BEAR SPRITE-SCALE RETUNE REQUIRED — NOT READY FOR PROMOTION**
 
 Canary 2 is retained failed external-runtime provenance: `naturalist-xaero-entity-icons-compat-0.1.0-canary2.jar`, SHA-256
 `ff161f6bcbf5cd056a5e27d7cd56091ab5abfa8e69440c76f2f6ce9ba6e86c50`, source
@@ -37,8 +37,12 @@ Exact C11 (`0.1.0-canary11`, `47bf6fa9a9019b972b52e185424c488954af665f94ddbf57ea
 
 Exact C12 (`0.1.0-canary12`, `78be16149ce6892f25e02047cf50e6f07070b45092b7a55ebd1b9336ce8bb489`) is USER-REPORTED / EXTERNAL RUNTIME evidence. It loaded as `naturalist_xaero_entity_icons_compat 0.1.0-canary12`; Brown Bear remained oversized, as expected because C12 had no size correction. Its focused cache-miss evidence was: `canPrerender=true`; entity-cache MISS; `RadarIconCreator#create` received `xaero.hud.minimap.radar.icon.definition.form.sprite.RadarIconSpriteForm` and `naturalist:textures/entity/bear/bear.png`; creator returned a non-null icon; Xaero cached it; and the following entity-cache HIT returned the non-null cached icon. C12 did not reach either observed model-form or model-part seam. This identifies the native sprite prerenderer, rather than the model prerender bridge, as the effective Brown Bear presentation path.
 
-## C13 focused runtime procedure
+## C13 retained runtime failure
 
-With exact Naturalist C8, Xaero Minimap 26.4.2, EMF 3.2.6, generic Xaero × EMF C9, and C13, reload resources once to evict only the existing 37 fallback targets and the native `naturalist:bear` cache entries. Request a Brown Bear until the first normal cache MISS, then allow an ordinary cache HIT.
+Exact C13 (`0.1.0-canary13`, `1077ee5b564c8f018e2205fcfce0c48c0d01deff57a77f2068d210c5ebfa05aa`, source `6de714a962caf32ee823ffec5f837cf43db07046`) is USER-REPORTED / EXTERNAL RUNTIME **FAIL**. Brown Bear is no longer oversized, but it is extremely small—effectively a tiny brown dot on the minimap. Orientation/presentation otherwise remain intact. This is not icon-generation failure: it runtime-proves that the `naturalist:bear` → `RadarIconCreator#create` → `RadarIconSpriteForm` → Brown-Bear-specific scale → `XaeroIcon` seam controls displayed size. C13's `0.12F` cap is therefore far too small and must not be accepted or described as runtime-passing.
 
-Confirm the Brown Bear is materially smaller and readable, does not become blank or label-only, and remains stable on the cache HIT. Require no `InjectionError`, mixin transformation failure, Xaero render-frame crash, or unrelated icon change. C13 changes only the exact `naturalist:bear` `RadarIconSpriteForm` request by replacing Xaero's immutable creator parameters with the same form/variant/config/debug state and a capped `0.12F` sprite scale. Do not retune Clam, Starfish, either Scorpion, Ray, Hedgehog, Bass, Zebra, Giant Isopod, Great White Shark, or another Naturalist entity.
+## C14 focused runtime procedure
+
+With exact Naturalist C8, Xaero Minimap 26.4.2, EMF 3.2.6, generic Xaero × EMF C9, and C14, reload resources once to evict only the existing 37 fallback targets and the native `naturalist:bear` cache entries. Request a Brown Bear until the first normal cache MISS, then allow an ordinary cache HIT.
+
+Confirm exact C14 loads, Xaero radar resources reload without relevant failure, and Brown Bear produces a normal icon. It must be clearly larger than C13's microscopic result, approximately normal-sized relative to nearby entity icons, and still substantially smaller than the original oversized icon; orientation must remain unchanged and unrelated icons must remain unchanged. Require no `InjectionError`, mixin transformation failure, Xaero render-frame crash, blank/label-only bear, or unrelated icon change. C14 changes only the exact `naturalist:bear` `RadarIconSpriteForm` request by replacing Xaero's immutable creator parameters with the same form/variant/config/debug state and a capped `0.42F` sprite scale. Do not retune Clam, Starfish, either Scorpion, Ray, Hedgehog, Bass, Zebra, Giant Isopod, Great White Shark, or another Naturalist entity. If this value is not visually correct, record that runtime result and stop; do not create C15 without a new user result.
