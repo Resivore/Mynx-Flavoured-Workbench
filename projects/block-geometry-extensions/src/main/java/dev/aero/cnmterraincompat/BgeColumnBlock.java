@@ -175,6 +175,14 @@ public class BgeColumnBlock extends BgeProfiledGeometryBlock
     public BlockState expandedState(BlockState existing, BlockPlaceContext context) {
         if (!existing.is(this) || !context.getItemInHand().is(asItem())) return null;
         Occupancy expanded = expandedOccupancy(existing.getValue(OCCUPANCY), context.getClickedFace());
+        // A continuation target reached through the empty portion of this cell has the same
+        // contextual form as CNM Step's !replacingClickedOnBlock path. The ray first hits the
+        // backing block, then BlockPlaceContext resolves this occupied cell as its relative
+        // target. There is no physical Column surface from which to derive a quadrant face, so
+        // retain the only compatible terminal counterpart of the existing singleton instead.
+        if (expanded == null && !context.replacingClickedOnBlock()) {
+            expanded = oppositeDiagonal(existing.getValue(OCCUPANCY));
+        }
         return expanded == null ? null : existing.setValue(OCCUPANCY, expanded);
     }
 
@@ -189,6 +197,15 @@ public class BgeColumnBlock extends BgeProfiledGeometryBlock
                     ? Occupancy.NE_SW : null;
             case SE -> clickedFace == Direction.WEST || clickedFace == Direction.NORTH
                     ? Occupancy.NW_SE : null;
+            case NW_SE, NE_SW -> null;
+        };
+    }
+
+    @Nullable
+    private static Occupancy oppositeDiagonal(Occupancy occupancy) {
+        return switch (occupancy) {
+            case NW, SE -> Occupancy.NW_SE;
+            case NE, SW -> Occupancy.NE_SW;
             case NW_SE, NE_SW -> null;
         };
     }
