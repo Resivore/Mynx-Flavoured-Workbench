@@ -198,6 +198,24 @@ class NaturalistCoverageTest {
         assertEquals(List.of("body"), largeBass.tracePath());
     }
 
+    @Test void c17ClamDiagnosticPreservesTheC16CaptureContract() throws Exception {
+        var clam = NaturalistModelContracts.contractsForId("clam").getFirst();
+        assertEquals(List.of(), clam.path());
+        assertEquals(List.of("bottom"), clam.tracePath());
+        assertEquals(List.of("top", "bottom", "hinge"), clam.drawableChildren());
+        assertEquals(.20F, clam.presentation().scale());
+        assertEquals(1.5708F, clam.presentation().xRotation());
+
+        Path module = Path.of(System.getProperty("projectRoot"));
+        String diagnostic = Files.readString(module.resolve(
+                "src/main/java/dev/resivore/naturalistxaeroicons/ClamCaptureDiagnostic.java"));
+        assertTrue(diagnostic.contains("naturalist:clam"));
+        assertTrue(diagnostic.contains("native model path returned"));
+        assertTrue(diagnostic.contains("Clam fallback render destination"));
+        assertFalse(diagnostic.contains("pose.scale"));
+        assertFalse(diagnostic.contains("new XaeroIcon"));
+    }
+
     @Test void c8SourceAuditsUseAuthoredRootsForScorpionAndStarfishFallbacks() throws Exception {
         Path models = Path.of(System.getProperty("projectRoot")).getParent()
                 .resolve("naturalist/common/src/main/java/com/crispytwig/naturalist/client/model");

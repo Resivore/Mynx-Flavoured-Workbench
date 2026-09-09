@@ -1,6 +1,7 @@
 package dev.resivore.naturalistxaeroicons.mixin;
 
 import dev.resivore.naturalistxaeroicons.BrownBearSpritePresentation;
+import dev.resivore.naturalistxaeroicons.ClamCaptureDiagnostic;
 import dev.resivore.naturalistxaeroicons.NaturalistModelContracts;
 import java.util.Map;
 import net.minecraft.world.entity.EntityType;
@@ -31,6 +32,7 @@ abstract class RadarIconManagerMixin {
                     && (NaturalistModelContracts.isTargetId(EntityType.getKey(type).getPath())
                     || "bear".equals(EntityType.getKey(type).getPath())));
         } catch (RuntimeException ignored) { /* reload remains Xaero-owned if the private seam changed */ }
+        ClamCaptureDiagnostic.resourceReloaded();
     }
 
     @Inject(
@@ -45,6 +47,7 @@ abstract class RadarIconManagerMixin {
             com.mojang.blaze3d.pipeline.RenderTarget target,
             CallbackInfoReturnable<XaeroIcon> callback) {
         BrownBearSpritePresentation.requestStarted(entity, canPrerender);
+        ClamCaptureDiagnostic.requestStarted(entity, canPrerender);
     }
 
     /**
@@ -75,5 +78,6 @@ abstract class RadarIconManagerMixin {
             com.mojang.blaze3d.pipeline.RenderTarget target,
             CallbackInfoReturnable<XaeroIcon> callback) {
         BrownBearSpritePresentation.requestFinished();
+        ClamCaptureDiagnostic.requestFinished(callback.getReturnValue());
     }
 }

@@ -4,6 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import dev.resivore.naturalistxaeroicons.NaturalistIconAdapter;
 import dev.resivore.naturalistxaeroicons.NaturalistModelContracts;
+import dev.resivore.naturalistxaeroicons.ClamCaptureDiagnostic;
 import net.minecraft.client.model.Model;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
@@ -23,28 +24,47 @@ abstract class RadarIconModelPrerendererMixin {
             PoseStack pose, XaeroBufferProvider buffers, EntityRenderState state, Model model,
             Entity entity, ModelPart upstreamPart, RadarIconModelPrerenderer.Parameters parameters,
             CallbackInfoReturnable<ModelPart> callback) {
-        if (!parameters.renderedDest.isEmpty() || !NaturalistModelContracts.owns(entity)) return;
+        ClamCaptureDiagnostic.nativePathObserved(model, parameters.renderedDest.size());
+        if (!parameters.renderedDest.isEmpty()) {
+            ClamCaptureDiagnostic.fallbackSkipped("native rendered parts");
+            return;
+        }
+        if (!NaturalistModelContracts.owns(entity)) return;
         try {
             var resolved = NaturalistModelContracts.resolve(entity, model);
-            if (resolved.isEmpty()) return;
+            if (resolved.isEmpty()) {
+                ClamCaptureDiagnostic.fallbackSkipped("contract unresolved");
+                return;
+            }
             var contract = resolved.orElseThrow();
+            ClamCaptureDiagnostic.contractResolved(contract.contract());
             ModelPart selected = contract.selected();
             ModelPart adapter = NaturalistIconAdapter.build(
                     model.root(), contract.source(), selected, contract.trace(), contract.contract().presentation(),
                     contract.contract().neutralizeRootRotation(), contract.contract().normalizeSelectedRootTransform(), contract.contract().path(),
                     contract.contract().preserveAncestorTransforms());
-            if (adapter == null || !NaturalistIconAdapter.traceExists(parameters.mrt, adapter)) return;
+            if (adapter == null) {
+                ClamCaptureDiagnostic.fallbackSkipped("adapter build failed");
+                return;
+            }
+            boolean traceExists = NaturalistIconAdapter.traceExists(parameters.mrt, adapter);
+            ClamCaptureDiagnostic.adapterBuilt(traceExists);
+            if (!traceExists) return;
             RadarIconModelPrerenderer self = (RadarIconModelPrerenderer) (Object) this;
             VertexConsumer consumer = self.getLayerModelVertexConsumer(
                     buffers, parameters.textures, parameters.textureAtlasSprite, parameters.mrt);
+            int before = parameters.renderedDest.size();
             self.getPartPrerenderer().renderPart(pose, consumer, adapter, selected, parameters);
             buffers.endBatch();
+            ClamCaptureDiagnostic.fallbackRendered(before, parameters.renderedDest.size(), adapter, selected,
+                    parameters.renderedDest);
             // Xaero's bounded detector records the rendered visible ModelPart, which may be a
             // drawable child rather than this assembly wrapper. This method starts only after an
             // empty upstream result, so any nonempty destination here came from this exact
             // bridge draw. Never treat an empty result as success or cache a blank icon.
             if (!parameters.renderedDest.isEmpty()) callback.setReturnValue(selected);
         } catch (RuntimeException ignored) {
+            ClamCaptureDiagnostic.failed(ignored);
             // Do not turn a malformed/modded Naturalist tree into a partial icon.
             parameters.renderedDest.clear();
             try { buffers.endBatch(); } catch (RuntimeException suppressed) { /* best effort */ }
