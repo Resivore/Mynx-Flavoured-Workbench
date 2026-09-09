@@ -14,14 +14,15 @@
     ]
   },
   "definition": {
-    "lifecycle": "ACCEPTED",
+    "lifecycle": "ACTIVE",
     "goals": [
       "Route acquired items into supported unlocked carried shulkers using exact physical matching contents or matching empty CSR reservations, preserving component identity, effective capacities, counts, and existing global destination order.",
       "Preserve established passive-pickup, external QUICK_MOVE, and player-origin QUICK_MOVE behavior across vanilla and Inventory Extended storage while composing safely with Offhand Shift-Click QoL.",
       "Provide a server-authoritative lock control that excludes selected carriers from automatic routing without altering their other contents or components."
     ],
     "scope": [
-      "Canonical C12 / 0.3.7-csr-reservation-affinity-canary1 for Minecraft Java 26.2 Fabric, implementation checkpoint c373b663c99d7a217fc9147db5007d3f1057678f; deliberate optional CSR affinity expansion beyond accepted C11.",
+      "Canonical C13 / 0.3.8-silent-no-target-canary1 for Minecraft Java 26.2 Fabric, implementation checkpoint cc803affc4dd3b54701288ae358fd8df5655a6ed; narrow lock-control UX successor to accepted C12.",
+      "When a server-resolved routing-lock target is unsupported, return without an overlay message. Preserve server-authoritative supported-target toggles and their existing Locked/Unlocked feedback exactly.",
       "Passive ground pickup and external-container QUICK_MOVE priority through component-identical occupied main hand, qualifying carried containers, occupied hotbar, occupied offhand, compatible ordinary-storage partials, empty hotbar, and empty ordinary storage.",
       "Player-origin QUICK_MOVE routing to a component-identical occupied offhand and qualifying carried containers before returning exact remainder ownership to the active menu's normal algorithm.",
       "Creative and Survival inventory snapshot alignment, source cleanup and menu callbacks, exact remainder accounting, stable carrier order, and persistent per-carrier auto-routing lock state.",
@@ -88,16 +89,16 @@
     ]
   },
   "state": {
-    "milestone": "User-reported aggregate C12 RUNTIME_PASS, no individual checklist observations. Bound to verified main 5344927bbb52f0af74c8a75eecd68745963d7db3 and exact Slot B deployment 98fe1cc9-eeaa-4c07-8b72-17678bc07581 / artifact 2eb193ee-0975-4a2c-a725-c97a721c35b4 at manager 90. RECORD_RESULT revision 91 and PROMOTE_SLOT revision 92 accepted unchanged C12 into Stack 19 and cleared Slot B. Slot A C7 remains exactly UNTESTED; every unrelated accepted unit including Offhand Shift-Click QoL is unchanged. Final state digest 5566aa2deaa5dcefceeab7f040000182d0ea2e28eefa92a152d3a5802dfd5f4f; physical digest 5bac87139a1c525bdeb4fa3c9c324b89d87dc3c27abd6b4767405e0fe066cf92. Exact C11 is rollback; C10 remains historical passing provenance. No rebuild, repackaging or Minecraft launch.",
+    "milestone": "C13 is the narrow silent-no-target successor to accepted C12: an unsupported server-resolved routing-lock target now returns without sending the former overlay, while supported target locking, Locked/Unlocked feedback, tooltips, routing, targeting, hand selection, screens, networking, and lock state remain unchanged. Clean Java 25 unit, Fabric GameTest, and build validation passed; the dedicated Workbench and protected gameplay instance were not accessed. C13 is ACTIVE, NOT_DEPLOYED, and RUNTIME_UNTESTED. Accepted C12, rollback C11, and all unrelated projects remain unchanged.",
     "releases": {
       "current": {
-        "version": "0.3.7-csr-reservation-affinity-canary1",
-        "embedded_version": "0.3.7-csr-reservation-affinity-canary1",
+        "version": "0.3.8-silent-no-target-canary1",
+        "embedded_version": "0.3.8-silent-no-target-canary1",
         "artifact": {
-          "filename": "carried-container-auto-routing-0.3.7-csr-reservation-affinity-canary1.jar",
-          "sha256": "f00b1e6bc64a0e63ac1199d89c08f7510a20d5bbb9a486b40bd97833df522a2f"
+          "filename": "carried-container-auto-routing-0.3.8-silent-no-target-canary1.jar",
+          "sha256": "3d24046afb2f2a3eadfb3ef5f210eed27748d32ac6f31b8145079532551d336e"
         },
-        "source_commit": "c373b663c99d7a217fc9147db5007d3f1057678f",
+        "source_commit": "cc803affc4dd3b54701288ae358fd8df5655a6ed",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
@@ -124,22 +125,22 @@
         },
         "source_commit": "64d63d9bcca268297601af5c9a7537e8d8946812"
       },
-      "accepted_current": "CURRENT_IS_ACCEPTED",
+      "accepted_current": "CURRENT_DIFFERS_FROM_ACCEPTED",
       "accepted_rollback": "ROLLBACK_DIFFERS_FROM_ACCEPTED"
     },
     "validation": {
       "build": "CONTROLLED_VALIDATION_PASS",
-      "deployment": "READY_TO_TEST_VERIFIED",
-      "runtime": "RUNTIME_PASS"
+      "deployment": "NOT_DEPLOYED",
+      "runtime": "RUNTIME_UNTESTED"
     },
     "blocker": null
   },
   "synchronization": {
-    "revision": 3,
-    "activity_at": "2026-09-05T03:43:25Z",
-    "updated_at": "2026-09-05T03:43:25Z",
-    "last_codex_at": "2026-09-05T03:43:25Z",
-    "source_commit": "941a590561d3af5f2479e75d368a4d8973ac8123",
+    "revision": 4,
+    "activity_at": "2026-09-09T15:06:23Z",
+    "updated_at": "2026-09-09T15:06:23Z",
+    "last_codex_at": "2026-09-09T15:06:23Z",
+    "source_commit": "cc803affc4dd3b54701288ae358fd8df5655a6ed",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
