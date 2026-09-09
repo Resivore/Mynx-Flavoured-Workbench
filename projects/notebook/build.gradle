@@ -37,6 +37,7 @@ tasks.withType(JavaCompile).configureEach {
 
 test {
     useJUnitPlatform()
+    dependsOn tasks.named('jar')
 }
 
 java {

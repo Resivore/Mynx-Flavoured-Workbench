@@ -13,6 +13,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.FormattedCharSequence;
 
 import java.io.IOException;
@@ -29,23 +30,17 @@ import java.util.UUID;
  */
 public final class NotebookScreen extends Screen {
     private static final int MAX_BOOK_WIDTH = 520;
-    private static final int MAX_BOOK_HEIGHT = 300;
+    private static final int MAX_BOOK_HEIGHT = 325;
     private static final int MIN_BOOK_WIDTH = 280;
-    private static final int MIN_BOOK_HEIGHT = 190;
+    private static final int MIN_BOOK_HEIGHT = 175;
     private static final int OUTER_MARGIN = 8;
     private static final int PAGE_PADDING = 12;
-    private static final int SPINE_WIDTH = 10;
     private static final int HEADER_HEIGHT = 25;
     private static final int FOOTER_HEIGHT = 26;
     private static final int INDEX_ROW_HEIGHT = 18;
     private static final int TEXT_LINE_HEIGHT = 11;
 
     private static final int COLOR_DIM = 0xB0181410;
-    private static final int COLOR_COVER = 0xFF5B3827;
-    private static final int COLOR_COVER_EDGE = 0xFF2D1B14;
-    private static final int COLOR_PAPER = 0xFFF2E4C2;
-    private static final int COLOR_PAPER_EDGE = 0xFFB89C69;
-    private static final int COLOR_SPINE = 0xFF6F4630;
     private static final int COLOR_INK = 0xFF2A2119;
     private static final int COLOR_MUTED_INK = 0xFF746752;
     private static final int COLOR_RULE = 0x22766B59;
@@ -55,6 +50,8 @@ public final class NotebookScreen extends Screen {
     private static final int COLOR_CHECK = 0xFF43693F;
     private static final int COLOR_ERROR = 0xFFFF8A7A;
     private static final int COLOR_STATUS = 0xFFD9C98F;
+    private static final Identifier BOOK_TEXTURE = Identifier.fromNamespaceAndPath(
+            "notebook", "textures/gui/notebook_book.png");
 
     private final Screen parent;
     private final NotebookStore store;
@@ -411,26 +408,9 @@ public final class NotebookScreen extends Screen {
     private void drawBook(GuiGraphicsExtractor graphics) {
         int x = layout.bookX();
         int y = layout.bookY();
-        int right = x + layout.bookWidth();
-        int bottom = y + layout.bookHeight();
-        int spineLeft = layout.spineLeft();
 
-        graphics.fill(x - 3, y + 3, right + 3, bottom + 4, 0x66000000);
-        graphics.fill(x, y, right, bottom, COLOR_COVER);
-        graphics.outline(x, y, layout.bookWidth(), layout.bookHeight(), COLOR_COVER_EDGE);
-        graphics.fill(layout.pageX(), layout.pageY(), spineLeft, layout.pageBottom(), COLOR_PAPER);
-        graphics.fill(spineLeft + SPINE_WIDTH, layout.pageY(), layout.pageRight(), layout.pageBottom(), COLOR_PAPER);
-        graphics.outline(
-                layout.pageX(), layout.pageY(), layout.leftPageWidth(), layout.pageHeight(), COLOR_PAPER_EDGE);
-        graphics.outline(
-                layout.spineLeft() + SPINE_WIDTH,
-                layout.pageY(),
-                layout.rightPageWidth(),
-                layout.pageHeight(),
-                COLOR_PAPER_EDGE);
-        graphics.fill(spineLeft, layout.pageY(), spineLeft + SPINE_WIDTH, layout.pageBottom(), COLOR_SPINE);
-        graphics.verticalLine(spineLeft + 2, layout.pageY(), layout.pageBottom(), 0x55402018);
-        graphics.verticalLine(spineLeft + SPINE_WIDTH - 3, layout.pageY(), layout.pageBottom(), 0x55D2A978);
+        graphics.fill(x - 3, y + 3, x + layout.bookWidth() + 3, y + layout.bookHeight() + 4, 0x66000000);
+        graphics.blit(BOOK_TEXTURE, x, y, layout.bookWidth(), layout.bookHeight(), 0.0F, 0.0F, 1.0F, 1.0F);
 
         for (int ruleY = layout.bodyTop() + TEXT_LINE_HEIGHT;
                 ruleY < layout.pageBottom() - FOOTER_HEIGHT;
@@ -909,24 +889,29 @@ public final class NotebookScreen extends Screen {
         static BookLayout fit(int screenWidth, int screenHeight) {
             int availableWidth = Math.max(1, screenWidth - OUTER_MARGIN * 2);
             int availableHeight = Math.max(1, screenHeight - OUTER_MARGIN * 2);
-            int bookWidth = Math.min(MAX_BOOK_WIDTH, availableWidth);
-            int bookHeight = Math.min(MAX_BOOK_HEIGHT, availableHeight);
-            if (screenWidth >= MIN_BOOK_WIDTH + OUTER_MARGIN * 2) {
-                bookWidth = Math.max(MIN_BOOK_WIDTH, bookWidth);
+            int maximumWidth = Math.min(MAX_BOOK_WIDTH, availableWidth);
+            int maximumHeight = Math.min(MAX_BOOK_HEIGHT, availableHeight);
+            int bookWidth = maximumWidth;
+            int bookHeight = Math.round(bookWidth * 400.0F / 640.0F);
+            if (bookHeight > maximumHeight) {
+                bookHeight = maximumHeight;
+                bookWidth = Math.round(bookHeight * 640.0F / 400.0F);
             }
-            if (screenHeight >= MIN_BOOK_HEIGHT + OUTER_MARGIN * 2) {
-                bookHeight = Math.max(MIN_BOOK_HEIGHT, bookHeight);
+            if (screenWidth >= MIN_BOOK_WIDTH + OUTER_MARGIN * 2
+                    && screenHeight >= MIN_BOOK_HEIGHT + OUTER_MARGIN * 2) {
+                bookWidth = Math.max(MIN_BOOK_WIDTH, bookWidth);
+                bookHeight = Math.round(bookWidth * 400.0F / 640.0F);
             }
             int bookX = (screenWidth - bookWidth) / 2;
             int bookY = (screenHeight - bookHeight) / 2;
-            int pageX = bookX + 6;
-            int pageY = bookY + 5;
-            int pageRight = bookX + bookWidth - 6;
-            int pageBottom = bookY + bookHeight - 5;
-            int innerWidth = pageRight - pageX - SPINE_WIDTH;
-            int leftWidth = innerWidth / 2;
-            int spineLeft = pageX + leftWidth;
-            int rightWidth = pageRight - (spineLeft + SPINE_WIDTH);
+            int pageX = bookX + Math.max(4, Math.round(bookWidth * 18.0F / 640.0F));
+            int pageY = bookY + Math.max(3, Math.round(bookHeight * 9.0F / 400.0F));
+            int pageRight = bookX + bookWidth - Math.max(4, Math.round(bookWidth * 18.0F / 640.0F));
+            int pageBottom = bookY + bookHeight - Math.max(3, Math.round(bookHeight * 18.0F / 400.0F));
+            int spineLeft = bookX + Math.round(bookWidth * 317.0F / 640.0F);
+            int spineRight = bookX + Math.round(bookWidth * 324.0F / 640.0F);
+            int leftWidth = spineLeft - pageX;
+            int rightWidth = pageRight - spineRight;
             return new BookLayout(
                     bookX, bookY, bookWidth, bookHeight,
                     pageX, pageY, pageRight, pageBottom,
@@ -950,7 +935,7 @@ public final class NotebookScreen extends Screen {
         }
 
         int rightContentX() {
-            return spineLeft + SPINE_WIDTH + PAGE_PADDING;
+            return pageRight - rightPageWidth + PAGE_PADDING;
         }
 
         int rightContentRight() {
@@ -966,7 +951,7 @@ public final class NotebookScreen extends Screen {
         }
 
         int rightPageCenterX() {
-            return spineLeft + SPINE_WIDTH + rightPageWidth / 2;
+            return pageRight - rightPageWidth / 2;
         }
 
         int indexTop() {

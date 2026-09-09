@@ -35,7 +35,7 @@ class NotebookClientWiringTest {
     @Test
     void actualContainerBoundsDriveCompactCollisionAwareButtonPlacement() throws IOException {
         String accessor = read(
-                "src/main/java/dev/resivore/notebook/client/ContainerScreenAccess.java");
+                "src/main/java/dev/resivore/notebook/mixin/client/ContainerScreenAccess.java");
         String client = read("src/main/java/dev/resivore/notebook/NotebookClient.java");
 
         assertTrue(accessor.contains("@Mixin(AbstractContainerScreen.class)"));
@@ -69,7 +69,7 @@ class NotebookClientWiringTest {
 
         assertTrue(metadata.contains("\"environment\": \"client\""));
         assertTrue(metadata.contains("dev.resivore.notebook.NotebookClient"));
-        assertTrue(metadata.contains("\"fabric-api\": \"0.157.0+26.2\""));
+        assertTrue(metadata.contains("\"fabric-api\": \">=0.157.0+26.2\""));
         assertTrue(metadata.contains("\"minecraft\": \"=26.2\""));
         assertTrue(metadata.contains("\"java\": \">=25\""));
         assertTrue(mixins.contains("\"compatibilityLevel\": \"JAVA_25\""));
