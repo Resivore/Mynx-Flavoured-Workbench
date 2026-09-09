@@ -77,6 +77,32 @@ class NotebookClientWiringTest {
     }
 
     @Test
+    void clickToEditAutosaveAndNoShadowContractsRemainExplicit() throws IOException {
+        String screen = read("src/main/java/dev/resivore/notebook/client/NotebookScreen.java");
+        String store = read("src/main/java/dev/resivore/notebook/storage/NotebookStore.java");
+
+        assertFalse(screen.contains("editButton"));
+        assertFalse(screen.contains("screen.notebook.edit"));
+        assertFalse(screen.contains("screen.notebook.done"));
+        assertTrue(screen.contains("beginEditingAt(titleEditor, event, doubleClick)"));
+        assertTrue(screen.contains("beginEditingAt(bodyEditor, event, doubleClick)"));
+        assertTrue(screen.contains("editor.onClick(event, doubleClick)"));
+        assertTrue(screen.indexOf("toggleChecklist(hit.logicalLine())")
+                < screen.indexOf("beginEditingAt(bodyEditor, event, doubleClick)"));
+        assertTrue(screen.contains("AUTOSAVE_DELAY_TICKS"));
+        assertTrue(screen.contains("flushEdits(false)"));
+        assertTrue(screen.contains("if (!editorDirty)"));
+        assertTrue(screen.contains("store.updateBody(selectedId, bodyEditor.getValue(), !sessionBodyBackedUp)"));
+        assertTrue(store.contains("updateBody(UUID id, String body, boolean retainBackup)"));
+        assertFalse(screen.contains("COLOR_DIM"));
+        assertFalse(screen.contains("drawEditPaper"));
+        assertFalse(screen.contains("centeredText("));
+        assertTrue(screen.contains("titleEditor.setTextShadow(false)"));
+        assertTrue(screen.contains(".setTextShadow(false)"));
+        assertTrue(screen.contains("graphics.text(font, text, centerX - font.width(text) / 2, y, color, false)"));
+    }
+
+    @Test
     void modMetadataIsClientOnlyAndUsesTheCurrentTargetStack() throws IOException {
         String metadata = read("src/main/resources/fabric.mod.json");
         String mixins = read("src/main/resources/notebook.client.mixins.json");
