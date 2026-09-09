@@ -154,9 +154,10 @@ public final class NaturalistModelContracts {
         // capture target.  The outer model wrapper itself has no drawable body/legs children.
         add(map, "starfish", cNormalizedDetachedChildren("StarfishModel", "root", "root/body",
                 p(.58F, 1.5708F, 0.0F, 0.0F), List.of("body", "legs")));
-        // C7's complete shell assembly had the intended top-down direction but clipped at the
-        // top of the icon.  Keep its top/bottom/hinge silhouette and reduce only icon scale.
-        add(map, "clam", cNormalizedDetachedChildren("ClamModel", "root", "root/bottom",
+        // C15 proved that C8's `root` / `root/bottom` capture route falls back to a label. C7's
+        // model-root / `bottom` trace is the last runtime-proven icon route; preserve its complete
+        // top/bottom/hinge shell assembly and the C8 evidence-based smaller presentation scale.
+        add(map, "clam", cNormalizedDetachedChildren("ClamModel", "", "bottom",
                 p(.20F, 1.5708F, 0.0F, 0.0F), List.of("top", "bottom", "hinge")));
         add(map, "giant_isopod", cVisibleDetached("GiantIsopodModel", "rolled", p(.45F)), cDetached("GiantIsopodModel", "body", p(.45F)));
         add(map, "jellyfish", cDetached("JellyfishModel", "body", p(.45F)));

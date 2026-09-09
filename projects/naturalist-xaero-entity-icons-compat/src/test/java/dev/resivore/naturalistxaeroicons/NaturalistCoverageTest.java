@@ -79,7 +79,7 @@ class NaturalistCoverageTest {
         }
     }
 
-    @Test void c8GeometryAndPresentationContractsAreExplicit() {
+    @Test void c16ClamRestoresTheRuntimeProvenCaptureRouteWithTheEvidenceBasedScale() {
         assertEquals(List.of("body", "neck"), NaturalistModelContracts.contractsForId("alligator").getFirst().path());
         assertEquals(List.of("body", "neck"), NaturalistModelContracts.contractsForId("boar").getFirst().path());
         assertEquals(List.of("body", "neck"), NaturalistModelContracts.contractsForId("boar").getFirst().tracePath());
@@ -115,20 +115,20 @@ class NaturalistCoverageTest {
         assertTrue(desertScorpion.normalizeSelectedRootTransform());
         assertTrue(jungleScorpion.normalizeSelectedRootTransform());
         var clam = NaturalistModelContracts.contractsForId("clam").getFirst();
-        assertEquals(List.of("root"), clam.path());
-        assertEquals(List.of("root", "bottom"), clam.tracePath());
+        assertEquals(List.of(), clam.path());
+        assertEquals(List.of("bottom"), clam.tracePath());
         assertEquals(.20F, clam.presentation().scale());
         assertEquals(1.5708F, clam.presentation().xRotation());
         assertTrue(NaturalistModelContracts.contractsForId("whale").getFirst().presentation().scale() < 0.5F);
     }
 
-    @Test void c8LabelFallbackTargetsHaveExplicitDrawableContractsAndDetachedCapture() {
+    @Test void c16ClamAndOtherLabelFallbackTargetsHaveExplicitDetachedCaptureContracts() {
         Map<String, String> expected = Map.ofEntries(
                 Map.entry("ray", "RayModel:body:body"), Map.entry("bass", "BassModel:body:body"),
                 Map.entry("giant_isopod", "GiantIsopodModel:rolled:rolled"), Map.entry("hedgehog", "HedgehogModel:rolled:rolled"),
                 Map.entry("vulture", "VultureModel:neck:neck"), Map.entry("tortoise", "TortoiseModel:body/skullRot/neck:body/skullRot/neck"),
                 Map.entry("zebra", "ZebraModel:body/neck:body/neck/neck_r1"), Map.entry("jellyfish", "JellyfishModel:body:body"),
-                Map.entry("starfish", "StarfishModel:root:root/body"), Map.entry("clam", "ClamModel:root:root/bottom"),
+                Map.entry("starfish", "StarfishModel:root:root/body"), Map.entry("clam", "ClamModel::bottom"),
                 Map.entry("lizard", "LizardModel:body/skullRot/neck:body/skullRot/neck/neck_r1"),
                 Map.entry("mole", "MoleModel:root/body/skull:root/body/skull"));
         expected.forEach((id, expectedContract) -> assertTrue(NaturalistModelContracts.contractsForId(id).stream().anyMatch(contract -> {
@@ -182,7 +182,7 @@ class NaturalistCoverageTest {
         assertEquals(.76F, NaturalistModelContracts.contractsForId("tiger").getFirst().presentation().scale());
     }
 
-    @Test void c15PreservesWorkingC7ContractsAndTheUnevaluatedClamCandidate() {
+    @Test void c16PreservesWorkingC7ControlsAndTheEvidenceBasedClamScale() {
         assertEquals(.38F, NaturalistModelContracts.contractsForId("ray").getFirst().presentation().scale());
         assertEquals(.68F, NaturalistModelContracts.contractsForId("hedgehog").getFirst().presentation().scale());
         assertEquals(.70F, NaturalistModelContracts.contractsForId("hedgehog").get(1).presentation().scale());
