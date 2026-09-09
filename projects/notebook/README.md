@@ -1,14 +1,16 @@
 # Notebook
 
-Notebook Canary 2 is a client-only Minecraft Java 26.2 Fabric mod for keeping
+Notebook Canary 3 is a client-only Minecraft Java 26.2 Fabric mod for keeping
 small personal notes without an item or server component. It presents a
 responsive two-page journal: the left page is an explicitly ordered note index
 and the right page is either a scrollable reading view or an ordinary multiline
 text editor.
 
-The journal background is the supplied Bedrock book artwork, rendered as one
-aspect-preserving 640×400 texture with page/content bounds derived from its
-actual page and spine regions. The supplied 16×16 right-arrow sprite is
+The journal background is the supplied Bedrock book artwork, rendered through
+Minecraft's GUI textured pipeline as the complete aspect-preserving 640×400
+texture, with page/content bounds derived from its actual page and spine
+regions. Reading and editing share the live font row height, editor inset, and
+scroll grid, so ruled rows stay with their text while notes scroll. The supplied 16×16 right-arrow sprite is
 packaged beside it for the Notebook visual asset set, but is intentionally not
 rendered: Canary 2 has no existing semantic next-page or next-note control to
 which it could be attached without changing the interaction model.
@@ -75,7 +77,8 @@ are intentionally deferred until the core notebook has runtime evidence.
 
 Canary 1's retained artifact is historical runtime-failure evidence: Fabric
 could not load its client entrypoint because its normal screen class shared the
-Mixin-owned client package. Canary 2 moves the bounds accessor into a dedicated
-Mixin-only package and adds source and packaged-JAR regression checks for that
-boundary. Canary 2 is build- and static-test verified only until an actual
-Minecraft session tests it.
+Mixin-owned client package. A user reports that the repaired Canary 2 opens
+without that client-init crash. Canary 3 preserves that package repair, makes
+the full Bedrock journal texture explicit in the live render path, and adds
+layout/JAR regressions for artwork and the shared text grid. Canary 3 is
+build- and static-test verified only until an actual Minecraft session tests it.

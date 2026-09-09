@@ -123,14 +123,18 @@ class NaturalistTraceBridgeTest {
         assertFalse(source.contains("private static boolean find("));
     }
 
-    @Test void naturalistC13UsesOnlyTheManagerArgumentSeamWithoutCompetingForC9sRedirect() throws Exception {
+    @Test void c18DiagnosticsObserveXaeroSeamsWithoutCompetingForC9sRedirect() throws Exception {
         Path module = Path.of(System.getProperty("projectRoot"));
         String config = Files.readString(module.resolve("src/main/resources/naturalist_xaero_entity_icons_compat.mixins.json"));
         assertTrue(config.contains("ModelRenderTraceMixin"));
-        assertFalse(config.contains("RadarIconModelPartPrerendererMixin"));
+        assertTrue(config.contains("RadarIconCreatorMixin"));
+        assertTrue(config.contains("RadarIconModelFormPrerendererMixin"));
+        assertTrue(config.contains("RadarIconModelPartPrerendererMixin"));
+        assertTrue(config.contains("RadarIconEntityCacheMixin"));
         String manager = Files.readString(module.resolve(
                 "src/main/java/dev/resivore/naturalistxaeroicons/mixin/RadarIconManagerMixin.java"));
         assertTrue(manager.contains("@ModifyVariable"));
+        assertTrue(manager.contains("observeClamCacheBeforeXaeroEmfRetry"));
         assertFalse(manager.contains("@Redirect"));
 
         Path c9 = module.getParent().resolve("xaero-entity-icons/src/main/java/dev/resivore/xaeroemfcompat/mixin/RadarIconModelPartPrerendererMixin.java");

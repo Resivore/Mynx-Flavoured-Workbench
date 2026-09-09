@@ -198,7 +198,7 @@ class NaturalistCoverageTest {
         assertEquals(List.of("body"), largeBass.tracePath());
     }
 
-    @Test void c17ClamDiagnosticPreservesTheC16CaptureContract() throws Exception {
+    @Test void c18ClamDiagnosticPreservesTheC17CaptureContractAndAddsOnlyObservation() throws Exception {
         var clam = NaturalistModelContracts.contractsForId("clam").getFirst();
         assertEquals(List.of(), clam.path());
         assertEquals(List.of("bottom"), clam.tracePath());
@@ -210,6 +210,11 @@ class NaturalistCoverageTest {
         String diagnostic = Files.readString(module.resolve(
                 "src/main/java/dev/resivore/naturalistxaeroicons/ClamCaptureDiagnostic.java"));
         assertTrue(diagnostic.contains("naturalist:clam"));
+        assertTrue(diagnostic.contains("RadarIconEntityCache#get initial"));
+        assertTrue(diagnostic.contains("RadarIconCreator#create form="));
+        assertTrue(diagnostic.contains("RadarIconModelFormPrerenderer#prerender"));
+        assertTrue(diagnostic.contains("modelPartPath"));
+        assertTrue(diagnostic.contains("RadarIconEntityCache#add wrote"));
         assertTrue(diagnostic.contains("native model path returned"));
         assertTrue(diagnostic.contains("Clam fallback render destination"));
         assertFalse(diagnostic.contains("pose.scale"));

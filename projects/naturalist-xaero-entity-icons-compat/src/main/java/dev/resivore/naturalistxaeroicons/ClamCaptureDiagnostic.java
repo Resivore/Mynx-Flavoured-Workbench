@@ -26,6 +26,50 @@ public final class ClamCaptureDiagnostic {
         report("request", "request naturalist:clam; canPrerender=" + canPrerender);
     }
 
+    public static void cacheLookup(boolean hit) {
+        Request request = REQUEST.get();
+        if (request == null) return;
+        request.cacheHit = hit;
+        report("cache-" + hit, "RadarIconEntityCache#get initial " + (hit ? "HIT" : "MISS"));
+    }
+
+    public static void creatorStarted(Entity entity, Object form, Identifier texture) {
+        Request request = REQUEST.get();
+        if (request == null || !isClam(entity) || request.cacheHit) return;
+        request.creatorEntered = true;
+        report("creator", "post-MISS RadarIconCreator#create form=" + className(form)
+                + "; rendererTexture=" + String.valueOf(texture));
+    }
+
+    public static void modelFormStarted(Entity entity, int traces, String textures) {
+        Request request = REQUEST.get();
+        if (request == null || !isClam(entity) || request.cacheHit) return;
+        request.modelFormEntered = true;
+        report("model-form", "post-MISS RadarIconModelFormPrerenderer#prerender traces=" + traces
+                + "; traceTextures=" + textures);
+    }
+
+    public static void modelPartPath(String method) {
+        Request request = REQUEST.get();
+        if (request == null || request.cacheHit) return;
+        request.modelPartPath = true;
+        report("model-part-" + method, "post-MISS " + method + " reached");
+    }
+
+    public static void creatorFinished(Entity entity, XaeroIcon icon) {
+        Request request = REQUEST.get();
+        if (request == null || !isClam(entity) || request.cacheHit) return;
+        request.creatorProduced = icon != null;
+        report("creator-result-" + (icon != null), "RadarIconCreator#create first returned non-null=" + (icon != null));
+    }
+
+    public static void cacheWritten(EntityType<?> type, XaeroIcon icon) {
+        Request request = REQUEST.get();
+        if (request == null || type == null || !"naturalist:clam".equals(EntityType.getKey(type).toString()) || request.cacheHit) return;
+        request.cacheWritten = true;
+        report("cache-write-" + (icon != null), "RadarIconEntityCache#add wrote post-MISS XaeroIcon non-null=" + (icon != null));
+    }
+
     public static void nativePathObserved(Model model, int renderedParts) {
         Request request = REQUEST.get();
         if (request == null) return;
@@ -82,10 +126,15 @@ public final class ClamCaptureDiagnostic {
     public static void requestFinished(XaeroIcon icon) {
         Request request = REQUEST.get();
         if (request == null) return;
-        report("final-" + request.nativeRenderedParts + "-" + request.contractResolved + "-"
+        report("final-" + request.cacheHit + "-" + request.creatorEntered + "-" + request.modelFormEntered
+                        + "-" + request.modelPartPath + "-" + request.creatorProduced + "-" + request.cacheWritten
+                        + "-" + request.nativeRenderedParts + "-" + request.contractResolved + "-"
                         + request.adapterBuilt + "-" + request.traceBound + "-" + request.fallbackRendered
                         + "-" + request.failure + "-" + (icon != null),
-                "manager result non-null=" + (icon != null) + "; nativeObserved=" + request.nativeObserved
+                "manager result non-null=" + (icon != null) + "; cacheHit=" + request.cacheHit
+                        + "; creator=" + request.creatorEntered + "; modelForm=" + request.modelFormEntered
+                        + "; modelPart=" + request.modelPartPath + "; creatorProduced=" + request.creatorProduced
+                        + "; cacheWritten=" + request.cacheWritten + "; nativeObserved=" + request.nativeObserved
                         + "; nativeRenderedParts=" + request.nativeRenderedParts
                         + "; contractResolved=" + request.contractResolved + "; adapterBuilt=" + request.adapterBuilt
                         + "; traceBound=" + request.traceBound + "; fallbackRendered=" + request.fallbackRendered
@@ -100,7 +149,7 @@ public final class ClamCaptureDiagnostic {
         report("reload", "Xaero resource reload observed; one-time Clam capture evidence reset");
     }
 
-    private static boolean isClam(Entity entity) {
+    public static boolean isClam(Entity entity) {
         if (entity == null) return false;
         Identifier id = EntityType.getKey(entity.getType());
         return id != null && "naturalist".equals(id.getNamespace()) && "clam".equals(id.getPath());
@@ -113,6 +162,12 @@ public final class ClamCaptureDiagnostic {
     }
 
     private static final class Request {
+        private boolean cacheHit;
+        private boolean creatorEntered;
+        private boolean modelFormEntered;
+        private boolean modelPartPath;
+        private boolean creatorProduced;
+        private boolean cacheWritten;
         private boolean nativeObserved;
         private int nativeRenderedParts;
         private boolean contractResolved;
