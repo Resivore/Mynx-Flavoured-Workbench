@@ -178,15 +178,15 @@
     ]
   },
   "state": {
-    "milestone": "Supplied external Canary 20 evidence reconciles as a mixed result: the Naturalist snail leash is visually GOOD, with correct snail and Wandering Ribbit endpoints and a proper visible connection, while the closed/undeployed Chute Leaf remains correct but the deployed/open authored canopy is still a black/magenta missing-texture checkerboard. Canary 21 preserves the C20 leash implementation and C19 optional Naturalist startup safeguards, verifies the immutable 32x32 BBModel/PNG pair, and converts each authored pixel-space UV to Minecraft's 0-16 model UV space using the actual texture dimensions. Canary 21 is ACTIVE / STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED because Slots A and B at manager revision 117 are occupied by unrelated ready-to-test cohorts.",
+    "milestone": "Canary 22 fixes the Wandering Ribbit optional Naturalist fauna baby-name packaging seam: its complete assembled private en_us.json now contains trade.ribbits.naturalist_fauna.baby = Baby %s, matching the source-safe language file and preserving the provider's Naturalist entity-name component argument. The private tree and final archive passed deterministic static validation. Canary 22 is ACTIVE / STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED pending a serialized dedicated-Workbench slot and the focused baby-fauna trade check.",
     "releases": {
       "current": {
-        "version": "4.1.6+26.2-mynx-canary21",
+        "version": "4.1.6+26.2-mynx-canary22",
         "artifact": {
-          "filename": "ribbits-private-reconstruction-4.1.6+26.2-mynx-canary21.jar",
-          "sha256": "c66c18571c0c6c45ddfaae52adc76e86177a3d5bc0fa90029bd3a44eabcdeadd"
+          "filename": "ribbits-private-reconstruction-4.1.6+26.2-mynx-canary22.jar",
+          "sha256": "63e39eaefc85158b2fba77cdee4f91946477837b17ad313762aeb579343ed157"
         },
-        "source_commit": "8e5e3cc552b4f43493f333e195abd7460baa1eda",
+        "source_commit": "8b4a5218556cac2be054b3b56fad55dc65f869b8",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
@@ -205,11 +205,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 26,
-    "activity_at": "2026-09-08T03:48:12Z",
-    "updated_at": "2026-09-08T03:48:12Z",
-    "last_codex_at": "2026-09-08T03:48:12Z",
-    "source_commit": "8e5e3cc552b4f43493f333e195abd7460baa1eda",
+    "revision": 27,
+    "activity_at": "2026-09-09T02:35:03Z",
+    "updated_at": "2026-09-09T02:35:03Z",
+    "last_codex_at": "2026-09-09T02:35:03Z",
+    "source_commit": "8b4a5218556cac2be054b3b56fad55dc65f869b8",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
