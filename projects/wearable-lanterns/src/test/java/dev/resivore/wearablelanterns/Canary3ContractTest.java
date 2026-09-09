@@ -117,7 +117,7 @@ class Canary3ContractTest {
                 .getAsJsonObject();
         assertFalse(metadata.getAsJsonObject("depends").has("lambdynlights"));
         assertEquals(
-                "4.12.2+26.2",
+                "*",
                 metadata.getAsJsonObject("suggests").get("lambdynlights").getAsString());
         assertFalse(metadata.getAsJsonObject("depends").has("iris"));
     }

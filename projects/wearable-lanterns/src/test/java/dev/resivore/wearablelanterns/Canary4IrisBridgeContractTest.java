@@ -22,12 +22,12 @@ class Canary4IrisBridgeContractTest {
     private static final Path RESOURCES = PROJECT_ROOT.resolve("src/main/resources");
 
     @Test
-    void successorVersionIsCanaryFour() throws IOException {
+    void successorVersionIsCanaryFive() throws IOException {
         Properties properties = new Properties();
         try (var input = Files.newInputStream(PROJECT_ROOT.resolve("gradle.properties"))) {
             properties.load(input);
         }
-        assertEquals("0.1.0-canary4", properties.getProperty("mod_version"));
+        assertEquals("0.1.0-canary5", properties.getProperty("mod_version"));
     }
 
     @Test
@@ -35,6 +35,10 @@ class Canary4IrisBridgeContractTest {
         JsonObject metadata = JsonParser.parseString(
                 Files.readString(RESOURCES.resolve("fabric.mod.json"), UTF_8)).getAsJsonObject();
         assertFalse(metadata.getAsJsonObject("depends").has("iris"));
+        assertEquals(">=0.157.0", metadata.getAsJsonObject("depends").get("fabric-api").getAsString());
+        assertEquals(">=4.1.0-beta.3", metadata.getAsJsonObject("depends")
+                .get("trinkets_updated").getAsString());
+        assertEquals("*", metadata.getAsJsonObject("suggests").get("lambdynlights").getAsString());
         assertEquals(">=1.11.2", metadata.getAsJsonObject("suggests").get("iris").getAsString());
         assertEquals(
                 "CAPABILITY_OR_PROVIDER",

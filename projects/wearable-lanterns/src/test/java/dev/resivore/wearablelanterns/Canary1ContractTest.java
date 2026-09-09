@@ -125,10 +125,10 @@ class Canary1ContractTest {
     void metadataKeepsDynamicLightingOptional() throws IOException {
         JsonObject metadata = resourceJson("fabric.mod.json");
         JsonObject depends = metadata.getAsJsonObject("depends");
-        assertEquals("4.1.0-beta.3+26.2", depends.get("trinkets_updated").getAsString());
+        assertEquals(">=4.1.0-beta.3", depends.get("trinkets_updated").getAsString());
         assertFalse(depends.has("lambdynlights"));
         assertEquals(
-                "4.12.2+26.2",
+                "*",
                 metadata.getAsJsonObject("suggests").get("lambdynlights").getAsString());
         assertTrue(metadata.has("mixins"));
         assertFalse(depends.has("iris"));
