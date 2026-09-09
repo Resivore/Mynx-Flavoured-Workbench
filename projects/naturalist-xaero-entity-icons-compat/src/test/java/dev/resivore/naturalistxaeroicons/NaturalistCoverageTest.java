@@ -79,7 +79,7 @@ class NaturalistCoverageTest {
         }
     }
 
-    @Test void c19ClamUsesTheExactProductionScaleExperimentWithoutChangingItsCaptureRoute() {
+    @Test void c20ClamUsesTheExactClosedTopShellCaptureContract() {
         assertEquals(List.of("body", "neck"), NaturalistModelContracts.contractsForId("alligator").getFirst().path());
         assertEquals(List.of("body", "neck"), NaturalistModelContracts.contractsForId("boar").getFirst().path());
         assertEquals(List.of("body", "neck"), NaturalistModelContracts.contractsForId("boar").getFirst().tracePath());
@@ -116,9 +116,9 @@ class NaturalistCoverageTest {
         assertTrue(jungleScorpion.normalizeSelectedRootTransform());
         var clam = NaturalistModelContracts.contractsForId("clam").getFirst();
         assertEquals("com.crispytwig.naturalist.client.model.ClamModel", clam.modelClass());
-        assertEquals(List.of(), clam.path());
-        assertEquals(List.of("bottom"), clam.tracePath());
-        assertEquals(List.of("top", "bottom", "hinge"), clam.drawableChildren());
+        assertEquals(List.of("top"), clam.path());
+        assertEquals(List.of("top"), clam.tracePath());
+        assertEquals(List.of(), clam.drawableChildren());
         assertTrue(clam.normalizeSelectedRootTransform());
         assertEquals(.30F, clam.presentation().scale());
         assertEquals(1.5708F, clam.presentation().xRotation());
@@ -134,7 +134,7 @@ class NaturalistCoverageTest {
                 Map.entry("giant_isopod", "GiantIsopodModel:rolled:rolled"), Map.entry("hedgehog", "HedgehogModel:rolled:rolled"),
                 Map.entry("vulture", "VultureModel:neck:neck"), Map.entry("tortoise", "TortoiseModel:body/skullRot/neck:body/skullRot/neck"),
                 Map.entry("zebra", "ZebraModel:body/neck:body/neck/neck_r1"), Map.entry("jellyfish", "JellyfishModel:body:body"),
-                Map.entry("starfish", "StarfishModel:root:root/body"), Map.entry("clam", "ClamModel::bottom"),
+                Map.entry("starfish", "StarfishModel:root:root/body"), Map.entry("clam", "ClamModel:top:top"),
                 Map.entry("lizard", "LizardModel:body/skullRot/neck:body/skullRot/neck/neck_r1"),
                 Map.entry("mole", "MoleModel:root/body/skull:root/body/skull"));
         expected.forEach((id, expectedContract) -> assertTrue(NaturalistModelContracts.contractsForId(id).stream().anyMatch(contract -> {
@@ -146,7 +146,7 @@ class NaturalistCoverageTest {
         assertEquals(List.of("jaw", "dangly"), NaturalistModelContracts.contractsForId("anglerfish").getFirst().drawableChildren());
         assertFalse(NaturalistModelContracts.contractsForId("piranha").getFirst().preserveAncestorTransforms());
         assertEquals(List.of("body", "legs"), NaturalistModelContracts.contractsForId("starfish").getFirst().drawableChildren());
-        assertEquals(List.of("top", "bottom", "hinge"), NaturalistModelContracts.contractsForId("clam").getFirst().drawableChildren());
+        assertEquals(List.of(), NaturalistModelContracts.contractsForId("clam").getFirst().drawableChildren());
         for (String id : List.of("starfish", "clam", "desert_scorpion", "jungle_scorpion")) {
             assertTrue(NaturalistModelContracts.contractsForId(id).getFirst().normalizeSelectedRootTransform(), id);
         }
@@ -188,7 +188,7 @@ class NaturalistCoverageTest {
         assertEquals(.76F, NaturalistModelContracts.contractsForId("tiger").getFirst().presentation().scale());
     }
 
-    @Test void c19PreservesWorkingControlsWhileChangingOnlyTheClamScaleExperiment() {
+    @Test void c20PreservesWorkingControlsWhileChangingOnlyTheClamCaptureSurface() {
         assertEquals(.38F, NaturalistModelContracts.contractsForId("ray").getFirst().presentation().scale());
         assertEquals(.68F, NaturalistModelContracts.contractsForId("hedgehog").getFirst().presentation().scale());
         assertEquals(.70F, NaturalistModelContracts.contractsForId("hedgehog").get(1).presentation().scale());
@@ -204,11 +204,11 @@ class NaturalistCoverageTest {
         assertEquals(List.of("body"), largeBass.tracePath());
     }
 
-    @Test void c19ClamDiagnosticPreservesTheRouteAndReportsTheActualExperimentScale() throws Exception {
+    @Test void c20ClamDiagnosticReportsTheActualTopShellContract() throws Exception {
         var clam = NaturalistModelContracts.contractsForId("clam").getFirst();
-        assertEquals(List.of(), clam.path());
-        assertEquals(List.of("bottom"), clam.tracePath());
-        assertEquals(List.of("top", "bottom", "hinge"), clam.drawableChildren());
+        assertEquals(List.of("top"), clam.path());
+        assertEquals(List.of("top"), clam.tracePath());
+        assertEquals(List.of(), clam.drawableChildren());
         assertEquals(.30F, clam.presentation().scale());
         assertEquals(1.5708F, clam.presentation().xRotation());
 
@@ -223,6 +223,7 @@ class NaturalistCoverageTest {
         assertTrue(diagnostic.contains("RadarIconEntityCache#add wrote"));
         assertTrue(diagnostic.contains("native model path returned"));
         assertTrue(diagnostic.contains("; scale="));
+        assertTrue(diagnostic.contains("frameYOffset="));
         assertTrue(diagnostic.contains("Clam fallback render destination"));
         assertFalse(diagnostic.contains("pose.scale"));
         assertFalse(diagnostic.contains("new XaeroIcon"));

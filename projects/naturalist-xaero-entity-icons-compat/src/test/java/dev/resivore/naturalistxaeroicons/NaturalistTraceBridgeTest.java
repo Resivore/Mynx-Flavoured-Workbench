@@ -123,7 +123,7 @@ class NaturalistTraceBridgeTest {
         assertFalse(source.contains("private static boolean find("));
     }
 
-    @Test void c19DiagnosticsObserveXaeroSeamsWithoutCompetingForC9sRedirect() throws Exception {
+    @Test void c20DiagnosticsObserveXaeroSeamsWithoutCompetingForC9sRedirect() throws Exception {
         Path module = Path.of(System.getProperty("projectRoot"));
         String config = Files.readString(module.resolve("src/main/resources/naturalist_xaero_entity_icons_compat.mixins.json"));
         assertTrue(config.contains("ModelRenderTraceMixin"));

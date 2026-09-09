@@ -34,7 +34,7 @@ class BinaryContractTest {
         }
     }
 
-    @Test void c19ScopesTheFrozenBrownBearControlAndClamOnlyScaleObservation() throws Exception {
+    @Test void c20ScopesTheFrozenBrownBearControlAndClosedTopShellCapture() throws Exception {
         Path root = Path.of(System.getProperty("projectRoot"));
         String mixins = Files.readString(root.resolve("src/main/resources/naturalist_xaero_entity_icons_compat.mixins.json"));
         assertTrue(mixins.contains("ModelRenderTraceMixin"));
@@ -71,6 +71,7 @@ class BinaryContractTest {
                 "src/main/java/dev/resivore/naturalistxaeroicons/ClamCaptureDiagnostic.java"));
         assertTrue(clamDiagnostic.contains("RadarIconCreator#create form="));
         assertTrue(clamDiagnostic.contains("RadarIconEntityCache#get initial"));
+        assertTrue(clamDiagnostic.contains("frameYOffset="));
         assertFalse(clamDiagnostic.contains("pose.scale"));
         assertFalse(clamDiagnostic.contains("new XaeroIcon"));
         String genericManager = Files.readString(root.getParent().resolve(
