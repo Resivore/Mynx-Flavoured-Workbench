@@ -18,12 +18,12 @@
     ],
     "scope": [
       "Provide a configurable client key mapping, defaulting to N from gameplay, plus one compact collision-aware utility button on survival and creative player inventory screens using current Fabric Screen API lifecycle events and live container bounds.",
-      "Present a responsive two-page journal whose left page is a scrollable selectable index with persistent drag-and-drop ordering and whose right page is a vertically scrollable selected note with distinct reading and ordinary-text editing states.",
+      "Present a responsive two-page journal whose left page is a scrollable selectable index with persistent drag-and-drop ordering and whose right page is a vertically scrollable selected note that enters ordinary-text title/body editing directly at a clicked location.",
       "Support create, rename, edit, delete with confirmation, select, scroll, reload, and explicit manual reordering for independently named notes whose stable UUID identity is separate from display title and portable file name.",
       "Render a leading # heading and plain-text checklist markers [ ], [x], and [X] in reading mode; clicking a rendered checkbox changes only the underlying marker while edit mode remains ordinary multiline text.",
       "Store one UTF-8 Markdown file per note under config/notebook/notes, with note-free machine metadata in config/notebook/notebook.json for UUIDs, file associations, selected note, and exact order.",
       "Reconcile files on each Notebook screen open and explicit in-screen reload: retain known identities for known files, reload external body edits, append external valid Markdown files, remove deleted references, treat external renames conservatively as delete-plus-create, and rebuild malformed or stale metadata without guessing content identity.",
-      "Use same-directory temporary writes with atomic replacement where supported and retain three rotating prior-content Markdown backups per stable note UUID before body replacement or deletion.",
+      "Use same-directory temporary writes with atomic replacement where supported, debounced dirty-edit autosaves, forced transition saves, and three rotating prior-content Markdown backups per stable note UUID without consuming backup history for each autosave in one edit session.",
       "Keep stable identity and machine-owned metadata extensible for later note-tab shortcuts and one HUD-pinned note without implementing either feature in Canary 1."
     ],
     "boundaries": {
@@ -78,16 +78,16 @@
     ]
   },
   "state": {
-    "milestone": "Canary 1 remains an immutable historical artifact with static/build PASS but a user-supplied Minecraft client-initialization FAIL: its normal NotebookScreen class was inside the Mixin-owned dev.resivore.notebook.client package. A user then reported that Canary 2 opened without that fatal client-initialization crash; current Canary 3 preserves the Mixin repair, explicitly renders the full supplied 640x400 Bedrock journal texture through the GUI textured pipeline, and derives reading, editing, ruled-row, and scroll geometry from one current-editor text layout. Notebook is ACTIVE, not deployed, and occupies neither testing slot.",
+    "milestone": "Canary 1 remains an immutable historical artifact with static/build PASS but a user-supplied Minecraft client-initialization FAIL: its normal NotebookScreen class was inside the Mixin-owned dev.resivore.notebook.client package. A user then reported that Canary 2 opened without that fatal client-initialization crash; current Canary 4 preserves the Mixin repair, the explicit supplied 640x400 Bedrock journal GUI-texture renderer, and the shared ruled-row/editor geometry while replacing Edit/Done controls with native click-to-edit title/body interaction, debounced atomic autosave plus transition flushes, no-shadow Notebook text paths, and no inherited dim/procedural book backdrop. Notebook is ACTIVE, not deployed, and occupies neither testing slot.",
     "releases": {
       "current": {
-        "version": "0.1.0-canary3",
-        "embedded_version": "0.1.0-canary3",
+        "version": "0.1.0-canary4",
+        "embedded_version": "0.1.0-canary4",
         "artifact": {
-          "filename": "notebook-0.1.0-canary3.jar",
-          "sha256": "a79683020077991197265f904cc3c3dd1f4f58e508d251eb6b91f77bb0f582ae"
+          "filename": "notebook-0.1.0-canary4.jar",
+          "sha256": "93a7cb5781d87bdc371002e28184f2eccf60ad82f71d544c6f3828156940f938"
         },
-        "source_commit": "82452628af79188f4bac91796c9b0bc282ba1e82",
+        "source_commit": "5965d18135e10bf47cc5e9a0abd10717bd79c065",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
@@ -106,11 +106,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 4,
-    "activity_at": "2026-09-09T05:24:42Z",
-    "updated_at": "2026-09-09T05:24:42Z",
-    "last_codex_at": "2026-09-09T05:24:42Z",
-    "source_commit": "82452628af79188f4bac91796c9b0bc282ba1e82",
+    "revision": 5,
+    "activity_at": "2026-09-09T15:05:15Z",
+    "updated_at": "2026-09-09T15:05:15Z",
+    "last_codex_at": "2026-09-09T15:05:15Z",
+    "source_commit": "5965d18135e10bf47cc5e9a0abd10717bd79c065",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null

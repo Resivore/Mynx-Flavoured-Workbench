@@ -41,7 +41,6 @@ public final class NotebookScreen extends Screen {
     private static final int FOOTER_HEIGHT = 26;
     private static final int INDEX_ROW_HEIGHT = 18;
 
-    private static final int COLOR_DIM = 0xB0181410;
     private static final int COLOR_INK = 0xFF2A2119;
     private static final int COLOR_MUTED_INK = 0xFF746752;
     private static final int COLOR_RULE = 0x22766B59;
@@ -53,6 +52,8 @@ public final class NotebookScreen extends Screen {
     private static final int COLOR_STATUS = 0xFFD9C98F;
     private static final int BOOK_TEXTURE_WIDTH = 640;
     private static final int BOOK_TEXTURE_HEIGHT = 400;
+    /** 750 ms at Minecraft's 20 logical client ticks per second. */
+    private static final int AUTOSAVE_DELAY_TICKS = 15;
     private static final Identifier BOOK_TEXTURE = Identifier.fromNamespaceAndPath(
             "notebook", "textures/gui/notebook_book.png");
 
@@ -66,10 +67,12 @@ public final class NotebookScreen extends Screen {
     private PageTextLayout pageText;
     private EditBox titleEditor;
     private MultiLineEditBox bodyEditor;
-    private Button editButton;
     private Button deleteButton;
 
     private boolean editing;
+    private boolean editorDirty;
+    private boolean sessionBodyBackedUp;
+    private boolean refreshingEditors;
     private boolean deleteArmed;
     private int indexScroll;
     private int noteScroll;
@@ -79,6 +82,8 @@ public final class NotebookScreen extends Screen {
     private Component statusMessage;
     private boolean statusIsError;
     private int statusTicks;
+    private long clientTicks;
+    private long lastEditorMutationTick;
 
     public NotebookScreen(Screen parent, NotebookStore store) {
         super(Component.translatable("screen.notebook.title"));
@@ -109,7 +114,9 @@ public final class NotebookScreen extends Screen {
         titleEditor.setMaxLength(180);
         titleEditor.setBordered(false);
         titleEditor.setTextColor(COLOR_INK);
+        titleEditor.setTextShadow(false);
         titleEditor.setHint(Component.translatable("screen.notebook.note_title"));
+        titleEditor.setResponder(ignored -> markEditorsDirty());
         addRenderableWidget(titleEditor);
 
         bodyEditor = MultiLineEditBox.builder()
@@ -126,6 +133,7 @@ public final class NotebookScreen extends Screen {
                         rightWidth,
                         pageText.viewportHeight(),
                         Component.translatable("screen.notebook.note_body"));
+        bodyEditor.setValueListener(ignored -> markEditorsDirty());
         addRenderableWidget(bodyEditor);
 
         int leftFooterY = layout.pageBottom() - 21;
@@ -147,18 +155,6 @@ public final class NotebookScreen extends Screen {
                 layout.leftContentX() + 44,
                 leftFooterY,
                 ignored -> reloadFromDisk()));
-
-        int rightFooterY = layout.pageBottom() - 21;
-        editButton = addRenderableWidget(Button.builder(
-                        Component.translatable("screen.notebook.edit"),
-                        ignored -> toggleEditing())
-                .bounds(layout.rightContentX(), rightFooterY, 52, 18)
-                .build());
-        addRenderableWidget(Button.builder(
-                        Component.translatable("screen.notebook.done"),
-                        ignored -> onClose())
-                .bounds(layout.rightContentRight() - 52, rightFooterY, 52, 18)
-                .build());
 
         refreshSelectionEditors();
         updateWidgetState();
@@ -196,7 +192,7 @@ public final class NotebookScreen extends Screen {
     }
 
     private void reloadFromDisk() {
-        if (editing && !saveEdits()) {
+        if (editing && !flushEdits(true)) {
             return;
         }
         UUID prior = selectedId;
@@ -221,7 +217,7 @@ public final class NotebookScreen extends Screen {
     }
 
     private void createNote() {
-        if (editing && !saveEdits()) {
+        if (editing && !flushEdits(true)) {
             return;
         }
         try {
@@ -242,6 +238,9 @@ public final class NotebookScreen extends Screen {
 
     private void deleteSelected() {
         if (selectedId == null) {
+            return;
+        }
+        if (editing && !flushEdits(true)) {
             return;
         }
         if (!deleteArmed) {
@@ -275,31 +274,35 @@ public final class NotebookScreen extends Screen {
         }
     }
 
-    private void toggleEditing() {
-        if (selectedId == null) {
-            return;
-        }
-        if (editing) {
-            saveEdits();
-        } else {
-            setEditing(true);
-            setInitialFocus(bodyEditor);
-        }
-    }
-
     private void setEditing(boolean value) {
+        boolean beginningSession = value && !editing && selectedId != null;
         editing = value && selectedId != null;
+        if (beginningSession) {
+            editorDirty = false;
+            sessionBodyBackedUp = false;
+        }
         resetDeleteConfirmation();
         refreshSelectionEditors();
         updateWidgetState();
     }
 
-    private boolean saveEdits() {
+    /** Flushes only changed editor values; autosave deliberately remains in edit mode. */
+    private boolean flushEdits(boolean leaveEditing) {
         if (!editing || selectedId == null) {
-            setEditing(false);
+            if (leaveEditing) {
+                setEditing(false);
+            }
             return true;
         }
 
+        if (!editorDirty) {
+            if (leaveEditing) {
+                editing = false;
+                refreshSelectionEditors();
+                updateWidgetState();
+            }
+            return true;
+        }
         String title = titleEditor.getValue().strip();
         if (title.isEmpty()) {
             title = Component.translatable("screen.notebook.new_note").getString();
@@ -307,17 +310,21 @@ public final class NotebookScreen extends Screen {
         try {
             NotebookNote current = store.find(selectedId).orElseThrow();
             if (!current.body().equals(bodyEditor.getValue())) {
-                store.updateBody(selectedId, bodyEditor.getValue());
+                store.updateBody(selectedId, bodyEditor.getValue(), !sessionBodyBackedUp);
+                sessionBodyBackedUp = true;
             }
             if (!current.title().equals(title)) {
                 store.rename(selectedId, title);
             }
             store.select(selectedId);
             notes = store.notes();
-            editing = false;
-            noteScroll = 0;
-            refreshSelectionEditors();
-            updateWidgetState();
+            editorDirty = false;
+            if (leaveEditing) {
+                editing = false;
+                noteScroll = 0;
+                refreshSelectionEditors();
+                updateWidgetState();
+            }
             return true;
         } catch (IOException | RuntimeException exception) {
             showError("screen.notebook.save_error", exception);
@@ -327,10 +334,15 @@ public final class NotebookScreen extends Screen {
 
     private void selectNote(UUID id) {
         if (id.equals(selectedId)) {
+            // An index-row click is still a meaningful focus change: persist
+            // pending text without making the user wait for the debounce.
+            if (editing) {
+                flushEdits(false);
+            }
             resetDeleteConfirmation();
             return;
         }
-        if (editing && !saveEdits()) {
+        if (editing && !flushEdits(true)) {
             return;
         }
         try {
@@ -370,8 +382,13 @@ public final class NotebookScreen extends Screen {
             return;
         }
         NotebookNote selected = selectedNote().orElse(null);
-        titleEditor.setValue(selected == null ? "" : selected.title());
-        bodyEditor.setValue(selected == null ? "" : selected.body());
+        refreshingEditors = true;
+        try {
+            titleEditor.setValue(selected == null ? "" : selected.title());
+            bodyEditor.setValue(selected == null ? "" : selected.body());
+        } finally {
+            refreshingEditors = false;
+        }
     }
 
     private void updateWidgetState() {
@@ -383,9 +400,6 @@ public final class NotebookScreen extends Screen {
         titleEditor.active = editing && hasNote;
         bodyEditor.visible = editing && hasNote;
         bodyEditor.active = editing && hasNote;
-        editButton.active = hasNote;
-        editButton.setMessage(Component.translatable(
-                editing ? "screen.notebook.save" : "screen.notebook.edit"));
         deleteButton.active = hasNote;
     }
 
@@ -399,12 +413,9 @@ public final class NotebookScreen extends Screen {
 
     @Override
     public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
-        graphics.fill(0, 0, width, height, COLOR_DIM);
         drawBook(graphics);
         drawIndex(graphics, mouseX, mouseY);
-        if (editing) {
-            drawEditPaper(graphics);
-        } else {
+        if (!editing) {
             drawReadingPage(graphics, mouseX, mouseY);
         }
         drawStatus(graphics);
@@ -414,7 +425,6 @@ public final class NotebookScreen extends Screen {
         int x = layout.bookX();
         int y = layout.bookY();
 
-        graphics.fill(x - 3, y + 3, x + layout.bookWidth() + 3, y + layout.bookHeight() + 4, 0x66000000);
         renderBookArtwork(graphics, x, y);
 
         int scrollOffset = editing ? editorScrollOffset() : noteScroll;
@@ -448,12 +458,9 @@ public final class NotebookScreen extends Screen {
     }
 
     private void drawIndex(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
-        graphics.centeredText(
-                font,
-                Component.translatable("screen.notebook.index").withStyle(ChatFormatting.BOLD),
-                layout.leftPageCenterX(),
-                layout.pageY() + 10,
-                COLOR_INK);
+        drawCenteredNoShadow(
+                graphics, Component.translatable("screen.notebook.index").withStyle(ChatFormatting.BOLD),
+                layout.leftPageCenterX(), layout.pageY() + 10, COLOR_INK);
 
         int visibleRows = visibleIndexRows();
         int end = Math.min(notes.size(), indexScroll + visibleRows);
@@ -485,7 +492,7 @@ public final class NotebookScreen extends Screen {
             graphics.horizontalLine(gripX, gripX + 5, gripY, COLOR_MUTED_INK);
             graphics.horizontalLine(gripX, gripX + 5, gripY + 3, COLOR_MUTED_INK);
             String title = elide(note.title(), layout.leftContentWidth() - 17);
-            graphics.text(font, title, layout.leftContentX() + 13, rowY + 5, COLOR_INK);
+            graphics.text(font, title, layout.leftContentX() + 13, rowY + 5, COLOR_INK, false);
         }
 
         if (draggedId != null && dragTargetIndex >= 0) {
@@ -514,52 +521,22 @@ public final class NotebookScreen extends Screen {
         graphics.fill(trackX, thumbY, trackX + 2, thumbY + thumbHeight, COLOR_MUTED_INK);
     }
 
-    private void drawEditPaper(GuiGraphicsExtractor graphics) {
-        if (selectedId == null) {
-            return;
-        }
-        graphics.fill(
-                layout.rightContentX() - 2,
-                layout.pageY() + 8,
-                layout.rightContentRight() + 2,
-                layout.pageY() + 31,
-                0x22FFFFFF);
-        graphics.outline(
-                layout.rightContentX() - 2,
-                pageText.viewportTop() - 2,
-                layout.rightContentWidth() + 4,
-                pageText.viewportHeight() + 4,
-                0x55746652);
-    }
-
     private void drawReadingPage(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         checkboxHits.clear();
         Optional<NotebookNote> selected = selectedNote();
         if (selected.isEmpty()) {
-            graphics.centeredText(
-                    font,
-                    Component.translatable("screen.notebook.empty"),
-                    layout.rightPageCenterX(),
-                    layout.pageY() + layout.pageHeight() / 2 - 8,
-                    COLOR_MUTED_INK);
-            graphics.centeredText(
-                    font,
-                    Component.translatable("screen.notebook.empty_hint"),
-                    layout.rightPageCenterX(),
-                    layout.pageY() + layout.pageHeight() / 2 + 5,
-                    COLOR_MUTED_INK);
+            drawCenteredNoShadow(graphics, Component.translatable("screen.notebook.empty"),
+                    layout.rightPageCenterX(), layout.pageY() + layout.pageHeight() / 2 - 8, COLOR_MUTED_INK);
+            drawCenteredNoShadow(graphics, Component.translatable("screen.notebook.empty_hint"),
+                    layout.rightPageCenterX(), layout.pageY() + layout.pageHeight() / 2 + 5, COLOR_MUTED_INK);
             readingHeight = 0;
             return;
         }
 
         NotebookNote note = selected.orElseThrow();
-        graphics.centeredText(
-                font,
-                Component.literal(elide(note.title(), layout.rightContentWidth()))
-                        .withStyle(ChatFormatting.BOLD),
-                layout.rightPageCenterX(),
-                layout.pageY() + 10,
-                COLOR_INK);
+        drawCenteredNoShadow(graphics,
+                Component.literal(elide(note.title(), layout.rightContentWidth())).withStyle(ChatFormatting.BOLD),
+                layout.rightPageCenterX(), layout.pageY() + 10, COLOR_INK);
 
         List<ChecklistParser.Entry> checklist = ChecklistParser.parse(note.body());
         Map<Integer, ChecklistParser.Entry> byLine = new HashMap<>();
@@ -617,7 +594,8 @@ public final class NotebookScreen extends Screen {
                                 visualLine,
                                 textX,
                                 y,
-                                heading ? COLOR_CHECK : COLOR_INK);
+                                heading ? COLOR_CHECK : COLOR_INK,
+                                false);
                     }
                     y += pageText.lineHeight();
                     fullHeight += pageText.lineHeight();
@@ -659,10 +637,7 @@ public final class NotebookScreen extends Screen {
         if (statusMessage == null || statusTicks <= 0) {
             return;
         }
-        graphics.centeredText(
-                font,
-                statusMessage,
-                width / 2,
+        drawCenteredNoShadow(graphics, statusMessage, width / 2,
                 Math.min(height - 10, layout.bookY() + layout.bookHeight() + 3),
                 statusIsError ? COLOR_ERROR : COLOR_STATUS);
     }
@@ -694,8 +669,41 @@ public final class NotebookScreen extends Screen {
                     return true;
                 }
             }
+
+            if (selectedId != null && inside(mouseX, mouseY,
+                    layout.rightContentX(), layout.pageY() + 11,
+                    layout.rightContentWidth(), 18)) {
+                beginEditingAt(titleEditor, event, doubleClick);
+                return true;
+            }
+            if (selectedId != null && inside(mouseX, mouseY,
+                    layout.rightContentX(), pageText.viewportTop(),
+                    layout.rightContentWidth(), pageText.viewportHeight())) {
+                beginEditingAt(bodyEditor, event, doubleClick);
+                return true;
+            }
         }
         return super.mouseClicked(event, doubleClick);
+    }
+
+    /**
+     * Delegates the opening click to Minecraft's native widgets so their own
+     * hit testing places a title/body caret at the clicked character or row.
+     */
+    private void beginEditingAt(EditBox editor, MouseButtonEvent event, boolean doubleClick) {
+        if (!editing) {
+            setEditing(true);
+        }
+        setInitialFocus(editor);
+        editor.onClick(event, doubleClick);
+    }
+
+    private void beginEditingAt(MultiLineEditBox editor, MouseButtonEvent event, boolean doubleClick) {
+        if (!editing) {
+            setEditing(true);
+        }
+        setInitialFocus(editor);
+        editor.onClick(event, doubleClick);
     }
 
     @Override
@@ -773,8 +781,8 @@ public final class NotebookScreen extends Screen {
 
     @Override
     public boolean keyPressed(KeyEvent event) {
-        if (editing && event.isEscape()) {
-            saveEdits();
+        if (event.isEscape()) {
+            onClose();
             return true;
         }
         return super.keyPressed(event);
@@ -783,14 +791,18 @@ public final class NotebookScreen extends Screen {
     @Override
     public void tick() {
         super.tick();
+        clientTicks++;
         if (statusTicks > 0) {
             statusTicks--;
+        }
+        if (editing && editorDirty && clientTicks - lastEditorMutationTick >= AUTOSAVE_DELAY_TICKS) {
+            flushEdits(false);
         }
     }
 
     @Override
     public void onClose() {
-        if (editing && !saveEdits()) {
+        if (editing && !flushEdits(true)) {
             return;
         }
         minecraft.gui.setScreen(parent);
@@ -799,7 +811,7 @@ public final class NotebookScreen extends Screen {
     @Override
     public void removed() {
         if (editing) {
-            saveEdits();
+            flushEdits(false);
         }
         super.removed();
     }
@@ -869,6 +881,19 @@ public final class NotebookScreen extends Screen {
         }
         String suffix = "…";
         return font.plainSubstrByWidth(value, Math.max(0, width - font.width(suffix))) + suffix;
+    }
+
+    private void markEditorsDirty() {
+        if (!refreshingEditors && editing) {
+            editorDirty = true;
+            lastEditorMutationTick = clientTicks;
+        }
+    }
+
+    private void drawCenteredNoShadow(
+            GuiGraphicsExtractor graphics, Component text, int centerX, int y, int color
+    ) {
+        graphics.text(font, text, centerX - font.width(text) / 2, y, color, false);
     }
 
     private void showError(String translationKey, Exception exception) {

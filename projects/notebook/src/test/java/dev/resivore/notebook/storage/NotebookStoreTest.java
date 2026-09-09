@@ -227,6 +227,30 @@ class NotebookStoreTest {
         assertEquals("v2", Files.readString(backups.resolve("previous-3.md"), StandardCharsets.UTF_8));
     }
 
+    @Test
+    void continuousEditSessionAutosavesKeepOnePreSessionBackup() throws IOException {
+        Path root = temporaryDirectory.resolve("notebook");
+        NotebookStore store = new NotebookStore(root);
+        store.rescan();
+        NotebookNote note = store.create("Autosave", "before");
+
+        store.updateBody(note.id(), "first autosave", true);
+        store.updateBody(note.id(), "second autosave", false);
+        store.updateBody(note.id(), "third autosave", false);
+        store.updateBody(note.id(), "third autosave", false);
+
+        Path backups = root.resolve("backups").resolve(note.id().toString());
+        assertEquals("before", Files.readString(backups.resolve("previous-1.md"), StandardCharsets.UTF_8));
+        try (var stream = Files.list(backups)) {
+            assertEquals(1, stream.count());
+        }
+        assertEquals("third autosave", store.find(note.id()).orElseThrow().body());
+
+        store.updateBody(note.id(), "next session", true);
+        assertEquals("third autosave", Files.readString(backups.resolve("previous-1.md"), StandardCharsets.UTF_8));
+        assertEquals("before", Files.readString(backups.resolve("previous-2.md"), StandardCharsets.UTF_8));
+    }
+
     private static List<UUID> ids(List<NotebookNote> notes) {
         return notes.stream().map(NotebookNote::id).toList();
     }

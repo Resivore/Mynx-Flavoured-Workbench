@@ -207,6 +207,16 @@ public final class NotebookStore {
     }
 
     public synchronized NotebookNote updateBody(UUID id, String body) throws IOException {
+        return updateBody(id, body, true);
+    }
+
+    /**
+     * Updates a body through the same atomic write path, optionally retaining a
+     * prior-content backup.  A screen-owned continuous edit session retains one
+     * pre-session backup, then uses {@code retainBackup == false} for its
+     * debounced writes so typing does not consume the three historical slots.
+     */
+    public synchronized NotebookNote updateBody(UUID id, String body, boolean retainBackup) throws IOException {
         Objects.requireNonNull(body, "body");
         int index = requireNoteIndex(id);
         NotebookNote previous = orderedNotes.get(index);
@@ -214,7 +224,9 @@ public final class NotebookStore {
             return previous;
         }
 
-        rotateBackup(previous.id(), previous.body());
+        if (retainBackup) {
+            rotateBackup(previous.id(), previous.body());
+        }
         writeAtomic(notesDirectory.resolve(previous.fileName()), body);
         NotebookNote updated = new NotebookNote(
                 previous.id(), previous.title(), previous.fileName(), body
