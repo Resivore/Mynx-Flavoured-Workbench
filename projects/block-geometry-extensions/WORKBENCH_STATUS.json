@@ -28,9 +28,9 @@
     "scope": [
       "Compile the retained `games.twinhead.moreslabsstairsandwalls` source and `more_slabs_stairs_and_walls` resources directly inside BGE with a clear LGPL-covered source and attribution boundary.",
       "Register native slabs, stairs, walls, material profiles, transitions, and client bindings before deriving CNM/BGE geometry through one guarded bootstrap and one root Fabric descriptor.",
-      "Preserve all native material profiles, canonical parents, copied settings, TOP/SIDE/BOTTOM roles, axes, patterns, tint, translucency, transitions, drops, and specialized behaviors; C62 corrects the wall-material, canonical-role duplication, leaf-wall, and plain-Path seams demonstrated by exact C61 runtime evidence, C63 corrects external axis-family inventory previews, C64 adds the complete BBB beam catalog without duplicating BBB standard forms, and C65 corrects its demonstrated BBB production axis-resource classification failure.",
+      "Preserve all native material profiles, canonical parents, copied settings, TOP/SIDE/BOTTOM roles, axes, patterns, tint, translucency, transitions, drops, and specialized behaviors; C62 corrects the wall-material, canonical-role duplication, leaf-wall, and plain-Path seams demonstrated by exact C61 runtime evidence, C63 corrects external axis-family inventory previews, C64 adds the complete BBB beam catalog without duplicating BBB standard forms, C65 corrects its demonstrated BBB production axis-resource classification failure, and C66 gives compatible Quarter Columns Step-equivalent full-cell continuation targeting without changing their physical geometry.",
       "Generate one Layer, Corner, and Quarter Column per supported canonical family while preserving Vertical Slab and Step, deterministic selector order, one-source economy, orientation, waterlogging, collision, and drops.",
-      "Provide primary Fabric ID `cnm_terrain_slabs_compat` and verified legacy alias `more_slabs_stairs_and_walls` from the same mod container and shared version `4.2.9-bge.canary65.bbb-axis-resource-runtime-fix+26.2`.",
+      "Provide primary Fabric ID `cnm_terrain_slabs_compat` and verified legacy alias `more_slabs_stairs_and_walls` from the same mod container and shared version `4.2.10-bge.canary66.quarter-column-continuation+26.2`.",
       "Preserve C58 native registry/resource identities while exposing one canonical nine-role family per exact optional source variant: 52 Macaw patterned full blocks, five distinct Macaw soil Path blocks, Ribbits Mossy Oak Planks, six Mynx Trees log, wood, and leaf sources, and all 12 BBB beam parents including Pale Oak. BBB retains its slab, stairs, and thin WoodenWallBlock; BGE owns only the five additional axis-aware roles. C65 accepts BBB's real semantically equivalent `axis=z` `x=90,y=180` representation while rejecting unknown transforms and `uvlock`."
     ],
     "boundaries": {
@@ -40,7 +40,7 @@
       "exclusions": [
         "Clutter No More source and artifacts remain external and unchanged; its ShapeMap remains the canonical family and switching mechanism.",
         "C58 is limited to the user-authored glass-Corner geometry/UV route; generic glass Quarter Column projection and all non-glass Corner outputs remain C57-equivalent.",
-        "C65 must not add hard provider dependencies, unrequested provider materials, generated short-path artifacts, version pins, duplicate BBB standard forms, or changes to accepted C58 identities outside the BBB beam axis-resource seam.",
+        "C66 must not add hard provider dependencies, unrequested provider materials, generated short-path artifacts, version pins, duplicate BBB standard forms, or changes to accepted C58 identities outside the Quarter Column continuation-targeting seam; it must preserve existing Column visual, collision, waterlogging, occupancy, orientation, drops, and material behavior.",
         "`projects/bge-ctm`, shaders, resource-pack classification, BBB source/assets, and unrelated consumer projects are outside this consolidation.",
         "Accepted BGE C52 and historical standalone Nibaru C45 are preserved as rollback provenance and are not rewritten."
       ]
@@ -50,7 +50,7 @@
         "type": "MOD",
         "identifier": "minecraft",
         "requirement": "~26.2",
-        "reason": "Unified BGE C65 targets Minecraft Java 26.2."
+        "reason": "Unified BGE C66 targets Minecraft Java 26.2."
       },
       {
         "type": "MOD",
@@ -73,16 +73,16 @@
     ]
   },
   "state": {
-    "milestone": "Exact C62 `4.2.6-bge.canary62.family-dedup+26.2`, `cnm-nibaru-integration-4.2.6-bge.canary62.family-dedup+26.2.jar`, SHA-256 `c8d42032166ef2ba6796f3cd61e89698ccca1a4331d90ee1d1f1ba6720cc01ce`, source `cdc0acdcba4d7b8761b035b048578a3a3635079b`, remains retained external runtime-failed provenance for the supplied Wisteria/Silver Birch inventory observations. Exact C64 `4.2.8-bge.canary64.bbb-beam-catalog+26.2`, `cnm-nibaru-integration-4.2.8-bge.canary64.bbb-beam-catalog+26.2.jar`, SHA-256 `bf3b67676031bb51089a5e5320f299d5638534b61f743d1bfe6d7a0f0d3c1458`, source `330655d657f1b1b081fc9bfa26d21309320bda6f`, is external Minecraft runtime-failed provenance: client launch/resource reload aborts at `bbb:blockstates/warped_beam.json` because C64 rejects BBB's valid `axis=z` `x=90,y=180` layout. C65 is the controlled-validation successor; it retains all twelve BBB nine-role families, BBB's authoritative standard forms/thin walls, and fail-loud rejection for unknown layouts. Its serialized deployment dry run failed closed before reading or mutating the dedicated profile because an unrelated project control log has an invalid unknown C3 implementation entry; C65 therefore remains not deployed and both slots remain untouched.",
+    "milestone": "Exact C62 `4.2.6-bge.canary62.family-dedup+26.2`, `cnm-nibaru-integration-4.2.6-bge.canary62.family-dedup+26.2.jar`, SHA-256 `c8d42032166ef2ba6796f3cd61e89698ccca1a4331d90ee1d1f1ba6720cc01ce`, source `cdc0acdcba4d7b8761b035b048578a3a3635079b`, remains retained external runtime-failed provenance for the supplied Wisteria/Silver Birch inventory observations. Exact C64 `4.2.8-bge.canary64.bbb-beam-catalog+26.2`, `cnm-nibaru-integration-4.2.8-bge.canary64.bbb-beam-catalog+26.2.jar`, SHA-256 `bf3b67676031bb51089a5e5320f299d5638534b61f743d1bfe6d7a0f0d3c1458`, source `330655d657f1b081fc9bfa26d21309320bda6f`, is external Minecraft runtime-failed provenance for the observed BBB client resource-reload abort. C66 inherits C65's complete catalog and BBB resource fix, and adds only the Step-equivalent Quarter Column continuation-targeting path. Its clean validation passed, but it remains not deployed because the earlier serialized C65 dry run failed closed before dedicated-profile access on an unrelated invalid project control log; both slots remain untouched.",
     "releases": {
       "current": {
-        "version": "C65 (BBB Axis-Resource Runtime Fix; embedded 4.2.9-bge.canary65.bbb-axis-resource-runtime-fix+26.2)",
-        "embedded_version": "4.2.9-bge.canary65.bbb-axis-resource-runtime-fix+26.2",
+        "version": "C66 (Quarter Column Continuation; embedded 4.2.10-bge.canary66.quarter-column-continuation+26.2)",
+        "embedded_version": "4.2.10-bge.canary66.quarter-column-continuation+26.2",
         "artifact": {
-          "filename": "cnm-nibaru-integration-4.2.9-bge.canary65.bbb-axis-resource-runtime-fix+26.2.jar",
-          "sha256": "b4b74fbef6a3aaf385a63a718cb87acc915dc46760605351cfbd550ec37568bb"
+          "filename": "cnm-nibaru-integration-4.2.10-bge.canary66.quarter-column-continuation+26.2.jar",
+          "sha256": "02436dd9744fc2dbcc723205b12501cf7c49e2dfde72343480685ccf9498cb9e"
         },
-        "source_commit": "1fe7a09edff14e2dc6f1e34125816494f184f9b8",
+        "source_commit": "fd9d66032d271cf2c419600858985f6380819323",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": [
@@ -91,10 +91,10 @@
               "relationship": "depends",
               "dependency_id": "minecraft",
               "predicate": "~26.2",
-              "reason": "The exact C65 artifact targets the Minecraft 26.2 release and packages Fabric's same-release predicate; this target-specific Minecraft predicate must remain bound to the controlled-validation release bytes.",
+              "reason": "The exact C66 artifact targets the Minecraft 26.2 release and packages Fabric's same-release predicate; this target-specific Minecraft predicate must remain bound to the controlled-validation release bytes.",
               "regression_evidence": [
-                "Two Java 25 clean Gradle builds produced byte-identical C65 SHA-256 b4b74fbef6a3aaf385a63a718cb87acc915dc46760605351cfbd550ec37568bb.",
-                "The C65 GameTest suite passed 103/103 on the Minecraft 26.2 validation baseline, including all 12 BBB production-layout classifications through the ResourceManager seam, provider-role reuse, axis-aware BGE forms, thin no-AXIS BBB walls, Pale Oak, and C63 preview regressions."
+                "A Java 25 clean Gradle build produced C66 SHA-256 02436dd9744fc2dbcc723205b12501cf7c49e2dfde72343480685ccf9498cb9e.",
+                "The C66 GameTest suite passed 104/104 on the Minecraft 26.2 validation baseline, including the new indirect empty-cell Quarter Column continuation context across every singleton occupancy, full/incompatible rejection, one-source economy, and unchanged Step continuation alongside all inherited BBB and C58 regressions."
               ]
             }
           ]
@@ -129,11 +129,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 24,
-    "activity_at": "2026-09-08T02:35:00Z",
-    "updated_at": "2026-09-08T02:35:00Z",
-    "last_codex_at": "2026-09-08T02:35:00Z",
-    "source_commit": "1fe7a09edff14e2dc6f1e34125816494f184f9b8",
+    "revision": 25,
+    "activity_at": "2026-09-09T05:24:27Z",
+    "updated_at": "2026-09-09T05:24:27Z",
+    "last_codex_at": "2026-09-09T05:24:27Z",
+    "source_commit": "fd9d66032d271cf2c419600858985f6380819323",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
