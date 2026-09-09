@@ -1287,8 +1287,8 @@ class PrivateVillageUtilityTransformTest(unittest.TestCase):
 
 class DonorBoundaryContractTest(unittest.TestCase):
     def test_exact_accounting_contains_only_approved_visual_members_and_outputs(self) -> None:
-        self.assertEqual("4.1.6+26.2-mynx-canary21", tools.CANDIDATE_VERSION)
-        self.assertEqual(21, tools.CANDIDATE_CANARY)
+        self.assertEqual("4.1.6+26.2-mynx-canary22", tools.CANDIDATE_VERSION)
+        self.assertEqual(22, tools.CANDIDATE_CANARY)
         self.assertEqual(
             "mynx-ribbits-private-resource-manifest/v1", tools.PRIVATE_MANIFEST_SCHEMA
         )
@@ -1297,7 +1297,7 @@ class DonorBoundaryContractTest(unittest.TestCase):
             tools.PRIVATE_MANIFEST_CLASSIFICATION,
         )
         self.assertEqual(349, tools.OUTPUT_FILE_COUNT)
-        self.assertEqual(2_735_214, tools.OUTPUT_TOTAL_SIZE)
+        self.assertEqual(2_735_266, tools.OUTPUT_TOTAL_SIZE)
         self.assertEqual(2_563, tools.SORCERER_LOOT_OUTPUT_SIZE)
         self.assertEqual(
             "5b06e06502bf11f661161e89bf34e329d8f23268b7b0104371038c38ad9b378d",
@@ -2006,6 +2006,15 @@ class DonorBoundaryContractTest(unittest.TestCase):
         }
         self.assertEqual(30, len(expected_titles))
         self.assertEqual(expected_titles, actual_titles)
+
+    def test_naturalist_baby_translation_is_public_and_private_assembly_contract(self) -> None:
+        public_language = tools.load_json(
+            Path(__file__).resolve().parent.parent
+            / "common/src/publicResources/assets/ribbits/lang/en_us.json"
+        )
+        expected = {"trade.ribbits.naturalist_fauna.baby": "Baby %s"}
+        self.assertEqual(expected, tools.EN_US_NATURALIST_FAUNA_TRANSLATIONS)
+        self.assertEqual(expected, {key: public_language.get(key) for key in expected})
 
 
 if __name__ == "__main__":

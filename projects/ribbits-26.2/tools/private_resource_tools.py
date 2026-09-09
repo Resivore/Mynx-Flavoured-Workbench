@@ -31,16 +31,16 @@ from typing import Any
 EXPECTED_PRISTINE_SHA256 = (
     "4cf86564aed393410fb1dbca3a9ce2425382307655e92bb6b43f3ddcee5bf731"
 )
-CANDIDATE_VERSION = "4.1.6+26.2-mynx-canary21"
-CANDIDATE_CANARY = 21
+CANDIDATE_VERSION = "4.1.6+26.2-mynx-canary22"
+CANDIDATE_CANARY = 22
 PRIVATE_MANIFEST_SCHEMA = "mynx-ribbits-private-resource-manifest/v1"
 PRIVATE_MANIFEST_CLASSIFICATION = (
     "PRIVATE MYNX ASSEMBLY STAGED / NONREDISTRIBUTABLE DONOR ASSETS"
 )
 PRIVATE_ARTIFACT_FILENAME = (
-    "ribbits-private-reconstruction-4.1.6+26.2-mynx-canary21.jar"
+    "ribbits-private-reconstruction-4.1.6+26.2-mynx-canary22.jar"
 )
-SOURCE_ONLY_ARTIFACT_FILENAME = "ribbits-source-only-4.1.6+26.2-mynx-canary21.jar"
+SOURCE_ONLY_ARTIFACT_FILENAME = "ribbits-source-only-4.1.6+26.2-mynx-canary22.jar"
 SOURCE_SAFE_PUBLIC_RESOURCE_PATHS = frozenset(
     {
         "assets/ribbits/items/glowcap.json",
@@ -143,8 +143,8 @@ REQUIRED_FABRIC_DEPENDENCIES = {
 }
 SOURCE_FILE_COUNT = 287  # 285 assets/data files plus icon.png and logo.png
 OUTPUT_FILE_COUNT = 349
-# Exact deterministic Canary 21 private staging inventory.
-OUTPUT_TOTAL_SIZE = 2_735_214
+# Exact deterministic Canary 22 private staging inventory.
+OUTPUT_TOTAL_SIZE = 2_735_266
 SOURCE_EXTENSION_COUNTS = {
     ".json": 201,
     ".nbt": 29,
@@ -780,6 +780,12 @@ PHASE_C_MAP_TRANSLATIONS = {
     "item.ribbits.ribbit_village_explorer_map": "Ribbit Village Explorer Map",
     "item.ribbits.uncharted_ribbit_map": "Uncharted Ribbit Map",
     "item.ribbits.uncharted_ribbit_map.lore": "No Ribbit village could be charted.",
+}
+
+# The Naturalist provider owns the outer presentation key only. Its argument remains
+# Naturalist's entity-name component, so translations of individual fauna stay with Naturalist.
+EN_US_NATURALIST_FAUNA_TRANSLATIONS = {
+    "trade.ribbits.naturalist_fauna.baby": "Baby %s",
 }
 
 EN_US_MYNX_PROFESSION_TRANSLATIONS = {
@@ -2939,6 +2945,13 @@ def migrate_languages(root: Path) -> None:
                     f"Unexpected pre-existing Mynx profession translations: {sorted(overlap)}"
                 )
             values.update(EN_US_MYNX_PROFESSION_TRANSLATIONS)
+            naturalist_overlap = set(values).intersection(EN_US_NATURALIST_FAUNA_TRANSLATIONS)
+            if naturalist_overlap:
+                raise ValidationError(
+                    "Unexpected pre-existing Naturalist fauna translations: "
+                    f"{sorted(naturalist_overlap)}"
+                )
+            values.update(EN_US_NATURALIST_FAUNA_TRANSLATIONS)
 
         write_json(path, values)
 
@@ -3988,6 +4001,9 @@ def build_manifest(
             "en_us_mynx_profession_keys_added_or_changed": len(
                 EN_US_MYNX_PROFESSION_TRANSLATIONS
             ),
+            "en_us_naturalist_fauna_keys_added": len(
+                EN_US_NATURALIST_FAUNA_TRANSLATIONS
+            ),
             "zh_cn_syntax_repairs": 1,
             "spawn_egg_models_migrated": len(SPAWN_EGG_IDS),
             "spawn_egg_textures_added": 1,
@@ -4662,6 +4678,12 @@ def validate_transforms(root: Path, errors: list[str]) -> None:
         if en_values.get(key) != expected:
             errors.append(
                 f"Mynx profession translation differs for {key}: "
+                f"expected {expected!r}, got {en_values.get(key)!r}"
+            )
+    for key, expected in EN_US_NATURALIST_FAUNA_TRANSLATIONS.items():
+        if en_values.get(key) != expected:
+            errors.append(
+                f"Naturalist fauna translation differs for {key}: "
                 f"expected {expected!r}, got {en_values.get(key)!r}"
             )
 
