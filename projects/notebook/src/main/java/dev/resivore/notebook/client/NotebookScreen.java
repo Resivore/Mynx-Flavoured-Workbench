@@ -5,6 +5,7 @@ import dev.resivore.notebook.model.NotebookNote;
 import dev.resivore.notebook.storage.NotebookStore;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.components.AbstractTextAreaWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.MultiLineEditBox;
@@ -12,6 +13,7 @@ import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.FormattedCharSequence;
@@ -38,7 +40,6 @@ public final class NotebookScreen extends Screen {
     private static final int HEADER_HEIGHT = 25;
     private static final int FOOTER_HEIGHT = 26;
     private static final int INDEX_ROW_HEIGHT = 18;
-    private static final int TEXT_LINE_HEIGHT = 11;
 
     private static final int COLOR_DIM = 0xB0181410;
     private static final int COLOR_INK = 0xFF2A2119;
@@ -50,6 +51,8 @@ public final class NotebookScreen extends Screen {
     private static final int COLOR_CHECK = 0xFF43693F;
     private static final int COLOR_ERROR = 0xFFFF8A7A;
     private static final int COLOR_STATUS = 0xFFD9C98F;
+    private static final int BOOK_TEXTURE_WIDTH = 640;
+    private static final int BOOK_TEXTURE_HEIGHT = 400;
     private static final Identifier BOOK_TEXTURE = Identifier.fromNamespaceAndPath(
             "notebook", "textures/gui/notebook_book.png");
 
@@ -60,6 +63,7 @@ public final class NotebookScreen extends Screen {
     private List<NotebookNote> notes = List.of();
     private UUID selectedId;
     private BookLayout layout;
+    private PageTextLayout pageText;
     private EditBox titleEditor;
     private MultiLineEditBox bodyEditor;
     private Button editButton;
@@ -91,6 +95,7 @@ public final class NotebookScreen extends Screen {
     @Override
     protected void init() {
         layout = BookLayout.fit(width, height);
+        pageText = PageTextLayout.forCurrentEditor(layout, font.lineHeight);
 
         int rightX = layout.rightContentX();
         int rightWidth = layout.rightContentWidth();
@@ -109,7 +114,7 @@ public final class NotebookScreen extends Screen {
 
         bodyEditor = MultiLineEditBox.builder()
                 .setX(rightX)
-                .setY(layout.bodyTop())
+                .setY(pageText.viewportTop())
                 .setPlaceholder(Component.translatable("screen.notebook.note_body"))
                 .setTextColor(COLOR_INK)
                 .setCursorColor(COLOR_INK)
@@ -119,7 +124,7 @@ public final class NotebookScreen extends Screen {
                 .build(
                         font,
                         rightWidth,
-                        layout.bodyHeight(),
+                        pageText.viewportHeight(),
                         Component.translatable("screen.notebook.note_body"));
         addRenderableWidget(bodyEditor);
 
@@ -410,16 +415,36 @@ public final class NotebookScreen extends Screen {
         int y = layout.bookY();
 
         graphics.fill(x - 3, y + 3, x + layout.bookWidth() + 3, y + layout.bookHeight() + 4, 0x66000000);
-        graphics.blit(BOOK_TEXTURE, x, y, layout.bookWidth(), layout.bookHeight(), 0.0F, 0.0F, 1.0F, 1.0F);
+        renderBookArtwork(graphics, x, y);
 
-        for (int ruleY = layout.bodyTop() + TEXT_LINE_HEIGHT;
-                ruleY < layout.pageBottom() - FOOTER_HEIGHT;
-                ruleY += TEXT_LINE_HEIGHT) {
-            graphics.horizontalLine(
-                    layout.leftContentX(), layout.leftContentRight(), ruleY, COLOR_RULE);
+        int scrollOffset = editing ? editorScrollOffset() : noteScroll;
+        for (int ruleY = pageText.firstRuleY(scrollOffset);
+                ruleY < pageText.viewportBottom();
+                ruleY += pageText.lineHeight()) {
+            if (ruleY < pageText.viewportTop()) {
+                continue;
+            }
             graphics.horizontalLine(
                     layout.rightContentX(), layout.rightContentRight(), ruleY, COLOR_RULE);
         }
+    }
+
+    /** Renders the complete supplied 640x400 Bedrock journal, never a GUI sprite crop. */
+    private void renderBookArtwork(GuiGraphicsExtractor graphics, int x, int y) {
+        graphics.blit(
+                RenderPipelines.GUI_TEXTURED,
+                BOOK_TEXTURE,
+                x,
+                y,
+                0.0F,
+                0.0F,
+                layout.bookWidth(),
+                layout.bookHeight(),
+                BOOK_TEXTURE_WIDTH,
+                BOOK_TEXTURE_HEIGHT,
+                BOOK_TEXTURE_WIDTH,
+                BOOK_TEXTURE_HEIGHT,
+                -1);
     }
 
     private void drawIndex(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
@@ -501,9 +526,9 @@ public final class NotebookScreen extends Screen {
                 0x22FFFFFF);
         graphics.outline(
                 layout.rightContentX() - 2,
-                layout.bodyTop() - 2,
+                pageText.viewportTop() - 2,
                 layout.rightContentWidth() + 4,
-                layout.bodyHeight() + 4,
+                pageText.viewportHeight() + 4,
                 0x55746652);
     }
 
@@ -543,9 +568,9 @@ public final class NotebookScreen extends Screen {
         }
 
         String[] logicalLines = note.body().split("\\r\\n|\\r|\\n", -1);
-        int contentTop = layout.bodyTop();
-        int contentBottom = contentTop + layout.bodyHeight();
-        int y = contentTop - noteScroll;
+        int contentTop = pageText.viewportTop();
+        int contentBottom = pageText.viewportBottom();
+        int y = pageText.textTop() - noteScroll;
         int fullHeight = 0;
         graphics.enableScissor(
                 layout.rightContentX(), contentTop,
@@ -594,8 +619,8 @@ public final class NotebookScreen extends Screen {
                                 y,
                                 heading ? COLOR_CHECK : COLOR_INK);
                     }
-                    y += TEXT_LINE_HEIGHT;
-                    fullHeight += TEXT_LINE_HEIGHT;
+                    y += pageText.lineHeight();
+                    fullHeight += pageText.lineHeight();
                 }
             }
         } finally {
@@ -616,16 +641,16 @@ public final class NotebookScreen extends Screen {
     }
 
     private void drawReadingScrollbar(GuiGraphicsExtractor graphics) {
-        int viewport = layout.bodyHeight();
+        int viewport = pageText.viewportHeight();
         if (readingHeight <= viewport || readingHeight <= 0) {
             return;
         }
         int trackX = layout.rightContentRight() - 2;
         int thumbHeight = Math.max(10, viewport * viewport / readingHeight);
-        int thumbY = layout.bodyTop()
+        int thumbY = pageText.viewportTop()
                 + (viewport - thumbHeight) * noteScroll / Math.max(1, maxNoteScroll());
         graphics.fill(
-                trackX, layout.bodyTop(), trackX + 2, layout.bodyTop() + viewport,
+                trackX, pageText.viewportTop(), trackX + 2, pageText.viewportBottom(),
                 0x33746652);
         graphics.fill(trackX, thumbY, trackX + 2, thumbY + thumbHeight, COLOR_MUTED_INK);
     }
@@ -735,11 +760,12 @@ public final class NotebookScreen extends Screen {
             return true;
         }
         if (!editing && inside(mouseX, mouseY,
-                layout.rightContentX(), layout.bodyTop(),
-                layout.rightContentWidth(), layout.bodyHeight())) {
+                layout.rightContentX(), pageText.viewportTop(),
+                layout.rightContentWidth(), pageText.viewportHeight())) {
             noteScroll = Math.max(
                     0,
-                    Math.min(maxNoteScroll(), noteScroll - scrollSteps(verticalAmount) * 18));
+                    Math.min(maxNoteScroll(), noteScroll
+                            - scrollSteps(verticalAmount) * pageText.lineHeight() * 2));
             return true;
         }
         return false;
@@ -798,7 +824,16 @@ public final class NotebookScreen extends Screen {
     }
 
     private int maxNoteScroll() {
-        return Math.max(0, readingHeight - layout.bodyHeight());
+        return Math.max(0, readingHeight - pageText.viewportHeight());
+    }
+
+    /**
+     * MultiLineEditBox scrolls its contents independently. Keep the rendered
+     * rules in its exact row coordinate system instead of leaving them fixed
+     * behind the scrolling editor.
+     */
+    private int editorScrollOffset() {
+        return bodyEditor == null ? 0 : (int) bodyEditor.scrollAmount();
     }
 
     private void clampScrolls() {
@@ -870,6 +905,35 @@ public final class NotebookScreen extends Screen {
     private record CheckboxHit(int x, int y, int width, int height, int logicalLine) {
         private boolean contains(int mouseX, int mouseY) {
             return inside(mouseX, mouseY, x, y, width, height);
+        }
+    }
+
+    /**
+     * Shared text geometry for custom reading and Minecraft's multiline editor.
+     * The editor's public default total padding supplies its actual inner inset;
+     * its row height is the live font line height used by the current client.
+     */
+    static record PageTextLayout(
+            int viewportTop,
+            int viewportHeight,
+            int textTop,
+            int lineHeight
+    ) {
+        static PageTextLayout forCurrentEditor(BookLayout book, int fontLineHeight) {
+            int editorInnerInset = AbstractTextAreaWidget.DEFAULT_TOTAL_PADDING / 2;
+            return new PageTextLayout(
+                    book.bodyTop(),
+                    book.bodyHeight(),
+                    book.bodyTop() + editorInnerInset,
+                    fontLineHeight);
+        }
+
+        int viewportBottom() {
+            return viewportTop + viewportHeight;
+        }
+
+        int firstRuleY(int scrollOffset) {
+            return textTop - scrollOffset + lineHeight - 1;
         }
     }
 

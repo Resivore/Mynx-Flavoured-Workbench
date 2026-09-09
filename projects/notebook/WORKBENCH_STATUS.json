@@ -78,16 +78,16 @@
     ]
   },
   "state": {
-    "milestone": "Canary 1 remains an immutable historical artifact with static/build PASS but a user-supplied Minecraft client-initialization FAIL: its normal NotebookScreen class was inside the Mixin-owned dev.resivore.notebook.client package. Current Canary 2 moves the accessor into a dedicated Mixin-only package, renders the supplied Bedrock book artwork without distortion, and is retained for a fresh Minecraft runtime session; Notebook is ACTIVE, not deployed, and occupies neither testing slot.",
+    "milestone": "Canary 1 remains an immutable historical artifact with static/build PASS but a user-supplied Minecraft client-initialization FAIL: its normal NotebookScreen class was inside the Mixin-owned dev.resivore.notebook.client package. A user then reported that Canary 2 opened without that fatal client-initialization crash; current Canary 3 preserves the Mixin repair, explicitly renders the full supplied 640x400 Bedrock journal texture through the GUI textured pipeline, and derives reading, editing, ruled-row, and scroll geometry from one current-editor text layout. Notebook is ACTIVE, not deployed, and occupies neither testing slot.",
     "releases": {
       "current": {
-        "version": "0.1.0-canary2",
-        "embedded_version": "0.1.0-canary2",
+        "version": "0.1.0-canary3",
+        "embedded_version": "0.1.0-canary3",
         "artifact": {
-          "filename": "notebook-0.1.0-canary2.jar",
-          "sha256": "f3e4a183028b0bb2c1c7482028e5fa521df8f837631f7e0fd664405e4347d1c0"
+          "filename": "notebook-0.1.0-canary3.jar",
+          "sha256": "a79683020077991197265f904cc3c3dd1f4f58e508d251eb6b91f77bb0f582ae"
         },
-        "source_commit": "ffdb9a18b5a89779e47b0f90ade78ec352a6e0c2",
+        "source_commit": "82452628af79188f4bac91796c9b0bc282ba1e82",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
@@ -106,11 +106,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 3,
-    "activity_at": "2026-09-09T05:00:21Z",
-    "updated_at": "2026-09-09T05:00:21Z",
-    "last_codex_at": "2026-09-09T05:00:21Z",
-    "source_commit": "ffdb9a18b5a89779e47b0f90ade78ec352a6e0c2",
+    "revision": 4,
+    "activity_at": "2026-09-09T05:24:42Z",
+    "updated_at": "2026-09-09T05:24:42Z",
+    "last_codex_at": "2026-09-09T05:24:42Z",
+    "source_commit": "82452628af79188f4bac91796c9b0bc282ba1e82",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null

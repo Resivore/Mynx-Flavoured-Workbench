@@ -3,6 +3,7 @@ package dev.aero.cnmterraincompat;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.mojang.serialization.JsonOps;
+import dev.tazer.clutternomore.common.blocks.StepBlock;
 import dev.tazer.clutternomore.common.blocks.VerticalSlabBlock;
 import dev.tazer.clutternomore.common.shape_map.ShapeMap;
 import games.twinhead.moreslabsstairsandwalls.api.material.DerivedGeometrySupport;
@@ -25,6 +26,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.ChangeOverTimeBlock;
@@ -37,6 +39,8 @@ import net.minecraft.world.level.block.state.properties.SlabType;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.BooleanOp;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
@@ -350,6 +354,87 @@ public final class BgeQuarterGeometryGameTests implements CustomTestMethodInvoke
                         && oak.mirror(wetColumn, Mirror.FRONT_BACK)
                                 .getValue(BgeColumnBlock.WATERLOGGED),
                 "Quarter geometry did not persist source water across state transforms");
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void columnContinuationUsesTheFullOccupiedCellLikeStep(GameTestHelper helper) {
+        BgeColumnBlock column = column("minecraft:oak_planks");
+        BgeColumnBlock incompatible = column("minecraft:dirt");
+        BlockPos target = new BlockPos(4, 2, 4);
+        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        player.setGameMode(GameType.SURVIVAL);
+
+        helper.setBlock(target, column.defaultBlockState()
+                .setValue(BgeColumnBlock.OCCUPANCY, BgeColumnBlock.Occupancy.NW));
+        ItemStack stack = new ItemStack(column, 2);
+        player.setItemInHand(InteractionHand.MAIN_HAND, stack);
+        BlockPlaceContext emptyCellContext = continuationContext(helper, player, stack, target,
+                Direction.UP, 0.25, 0.75);
+        helper.assertTrue(!emptyCellContext.replacingClickedOnBlock()
+                        && emptyCellContext.getClickedPos().equals(helper.absolutePos(target)),
+                "Empty-cell continuation did not resolve the occupied Quarter Column cell");
+        helper.assertTrue(helper.getBlockState(target).canBeReplaced(emptyCellContext),
+                "Compatible Quarter Column did not accept an indirect empty-cell continuation target");
+        ((BgeBlockItem) column.asItem()).place(emptyCellContext);
+        helper.assertTrue(helper.getBlockState(target).is(column)
+                        && helper.getBlockState(target).getValue(BgeColumnBlock.OCCUPANCY)
+                                == BgeColumnBlock.Occupancy.NW_SE
+                        && stack.getCount() == 2,
+                "Empty-cell continuation did not add the compatible Quarter Column without refunding loss");
+
+        BlockState full = helper.getBlockState(target);
+        BlockPlaceContext fullContext = continuationContext(helper, player, stack, target,
+                Direction.UP, 0.75, 0.25);
+        helper.assertTrue(!full.canBeReplaced(fullContext),
+                "Fully occupied Quarter Column accepted an empty-cell continuation target");
+
+        helper.setBlock(target, column.defaultBlockState()
+                .setValue(BgeColumnBlock.OCCUPANCY, BgeColumnBlock.Occupancy.NE));
+        ItemStack incompatibleStack = new ItemStack(incompatible);
+        player.setItemInHand(InteractionHand.MAIN_HAND, incompatibleStack);
+        BlockPlaceContext incompatibleContext = continuationContext(helper, player, incompatibleStack,
+                target, Direction.UP, 0.75, 0.75);
+        helper.assertTrue(!helper.getBlockState(target).canBeReplaced(incompatibleContext),
+                "Incompatible Quarter Column accepted an indirect continuation target");
+
+        Block step = NibaruProviderAdapter.derived(profile("minecraft:oak_planks"),
+                BgeGeometryRole.STEP).orElseThrow();
+        helper.setBlock(target, step.defaultBlockState().setValue(StepBlock.SLAB_TYPE,
+                SlabType.BOTTOM));
+        ItemStack stepStack = new ItemStack(step);
+        player.setItemInHand(InteractionHand.MAIN_HAND, stepStack);
+        BlockPlaceContext stepContext = continuationContext(helper, player, stepStack, target,
+                Direction.UP, 0.25, 0.75);
+        helper.assertTrue(step.defaultBlockState().canBeReplaced(stepContext)
+                        && step.getStateForPlacement(stepContext).getValue(StepBlock.SLAB_TYPE)
+                                == SlabType.DOUBLE,
+                "Existing Step empty-cell continuation behavior changed");
+
+        int continuedQuadrants = 0;
+        for (BgeColumnBlock.Occupancy singleton : List.of(BgeColumnBlock.Occupancy.NE,
+                BgeColumnBlock.Occupancy.SW, BgeColumnBlock.Occupancy.SE)) {
+            BlockPos quadrantTarget = target.offset(2 + continuedQuadrants * 2, 0, 0);
+            helper.setBlock(quadrantTarget, column.defaultBlockState()
+                    .setValue(BgeColumnBlock.OCCUPANCY, singleton));
+            ItemStack quadrantStack = new ItemStack(column, 2);
+            player.setItemInHand(InteractionHand.MAIN_HAND, quadrantStack);
+            ((BgeBlockItem) column.asItem()).place(continuationContext(helper, player,
+                    quadrantStack, quadrantTarget, Direction.UP, 0.5, 0.5));
+            BgeColumnBlock.Occupancy expected = switch (singleton) {
+                case NE, SW -> BgeColumnBlock.Occupancy.NE_SW;
+                case NW, SE -> BgeColumnBlock.Occupancy.NW_SE;
+                case NW_SE, NE_SW -> throw new IllegalStateException("Expected singleton");
+            };
+            helper.assertTrue(helper.getBlockState(quadrantTarget).is(column)
+                            && helper.getBlockState(quadrantTarget).getValue(BgeColumnBlock.OCCUPANCY)
+                                    == expected
+                            && quadrantStack.getCount() == 2,
+                    "Empty-cell continuation changed the " + singleton + " Quarter Column rule");
+            continuedQuadrants++;
+        }
+        helper.assertTrue(continuedQuadrants == 3,
+                "Expected indirect continuation coverage for the other three initial quadrants");
         helper.succeed();
     }
 
@@ -868,6 +953,17 @@ public final class BgeQuarterGeometryGameTests implements CustomTestMethodInvoke
     private static void placeInto(GameTestHelper helper, ServerPlayer player, ItemStack stack,
             BlockPos target, Direction face) {
         helper.placeAt(player, stack, target.relative(face.getOpposite()), face);
+    }
+
+    private static BlockPlaceContext continuationContext(GameTestHelper helper, ServerPlayer player,
+            ItemStack stack, BlockPos target, Direction face, double localX, double localZ) {
+        BlockPos absoluteTarget = helper.absolutePos(target);
+        BlockPos backing = absoluteTarget.relative(face.getOpposite());
+        helper.setBlock(target.relative(face.getOpposite()), Blocks.STONE);
+        return new BlockPlaceContext(player, InteractionHand.MAIN_HAND, stack,
+                new BlockHitResult(new Vec3(absoluteTarget.getX() + localX,
+                        absoluteTarget.getY() + 0.5, absoluteTarget.getZ() + localZ),
+                        face, backing, false));
     }
 
     private static void assertCanonicalDrop(GameTestHelper helper, ServerPlayer player,
