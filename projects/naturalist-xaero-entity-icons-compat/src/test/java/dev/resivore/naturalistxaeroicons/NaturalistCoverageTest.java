@@ -151,7 +151,7 @@ class NaturalistCoverageTest {
         assertFalse(NaturalistModelContracts.isTargetId("bear"));
     }
 
-    @Test void brownBearC13CorrectsOnlyTheEvidencedSpritePathAndEvictsOnlyItsNativeCacheOnReload() throws Exception {
+    @Test void brownBearC14RetunesOnlyTheEvidencedSpritePathAndEvictsOnlyItsNativeCacheOnReload() throws Exception {
         Path module = Path.of(System.getProperty("projectRoot"));
         String manager = Files.readString(module.resolve(
                 "src/main/java/dev/resivore/naturalistxaeroicons/mixin/RadarIconManagerMixin.java"));
@@ -161,10 +161,14 @@ class NaturalistCoverageTest {
         assertTrue(manager.contains("index = 19"));
         assertTrue(manager.contains("\"bear\".equals"));
         assertTrue(presentation.contains("RadarIconSpriteForm"));
-        assertTrue(presentation.contains("SCALE = 0.12F"));
+        assertTrue(presentation.contains("\"naturalist:bear\""));
+        assertTrue(presentation.contains("SCALE = 0.42F"));
         assertTrue(presentation.contains("new RadarIconCreator.Parameters"));
+        assertTrue(presentation.contains("!(parameters.form instanceof RadarIconSpriteForm)"));
         assertFalse(manager.contains("@Redirect"));
         assertFalse(manager.contains("storage.remove(key)"));
+        assertFalse(manager.contains("@Mixin(value = RadarIconSpriteForm.class"));
+        assertFalse(manager.contains("PoseStack"));
         assertFalse(Files.exists(module.resolve(
                 "src/main/java/dev/resivore/naturalistxaeroicons/BrownBearPathDiagnostic.java")));
     }
