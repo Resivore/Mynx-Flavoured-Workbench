@@ -12,7 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import xaero.common.icon.XaeroIcon;
 
-/** C17 observes the existing Clam bridge without changing its capture contract or Xaero result. */
+/** C19 observes the Clam bridge while the production contract performs its 0.30F scale experiment. */
 public final class ClamCaptureDiagnostic {
     private static final Logger LOGGER = LoggerFactory.getLogger("NaturalistXaero ClamCapture");
     private static final Set<String> REPORTED = ConcurrentHashMap.newKeySet();

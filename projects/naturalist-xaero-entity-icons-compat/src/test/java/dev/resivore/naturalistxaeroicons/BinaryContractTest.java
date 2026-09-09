@@ -34,7 +34,7 @@ class BinaryContractTest {
         }
     }
 
-    @Test void c18ScopesTheFrozenBrownBearRetuneAndAddsClamOnlyObservation() throws Exception {
+    @Test void c19ScopesTheFrozenBrownBearControlAndClamOnlyScaleObservation() throws Exception {
         Path root = Path.of(System.getProperty("projectRoot"));
         String mixins = Files.readString(root.resolve("src/main/resources/naturalist_xaero_entity_icons_compat.mixins.json"));
         assertTrue(mixins.contains("ModelRenderTraceMixin"));

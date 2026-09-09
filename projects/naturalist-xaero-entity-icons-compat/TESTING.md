@@ -2,7 +2,7 @@
 
 ## Current gate
 
-**C18 NOT DEPLOYED — STATIC PASS — RUNTIME UNTESTED — CLAM-ONLY CACHE-TO-RENDER DIAGNOSTIC REQUIRED — NOT READY FOR PROMOTION**
+**C19 NOT DEPLOYED — STATIC PASS — RUNTIME UNTESTED — CLAM-ONLY 0.30F SCALE EXPERIMENT REQUIRED — NOT READY FOR PROMOTION**
 
 Canary 2 is retained failed external-runtime provenance: `naturalist-xaero-entity-icons-compat-0.1.0-canary2.jar`, SHA-256
 `ff161f6bcbf5cd056a5e27d7cd56091ab5abfa8e69440c76f2f6ce9ba6e86c50`, source
@@ -57,8 +57,12 @@ Exact C16 (`naturalist-xaero-entity-icons-compat-0.1.0-canary16.jar`, embedded `
 
 Exact C17 (`naturalist-xaero-entity-icons-compat-0.1.0-canary17.jar`, embedded `0.1.0-canary17`, SHA-256 `e4f3bb9a15cd747ff431a6d5f2edc9575bdb2d38f9ad86102346720d3f0dd418`, source `549dfeae60d83616fadea5a32e6a568fc2fbd5e0`) is USER-REPORTED / EXTERNAL RUNTIME **FAIL**. Its supplied runtime identity confirms `naturalist_xaero_entity_icons_compat 0.1.0-canary17`; Clam nevertheless remained label-only. C17 is diagnostic-only and retained the `0.20F` Clam scale. It did not test `0.28F`, so this result is capture-route failure only and supplies no scale, orientation, clipping, or recognizability conclusion.
 
-## C18 focused runtime procedure
+## C18 reconciled runtime failure
 
-With exact Naturalist C8, Xaero Minimap 26.4.2, EMF 3.2.6, generic Xaero × EMF C9, and exact C18, reload resources once and request only Clam through a normal cache MISS followed by a cache HIT. C18 keeps C17/C16's `ClamModel` source path `""`, trace path `bottom`, normalized detached `top`/`bottom`/`hinge` assembly, top-down orientation, and `0.20F` scale unchanged. Brown Bear remains frozen at its proven native `naturalist:bear` → `RadarIconSpriteForm` `0.65F` path.
+Exact C18 (`naturalist-xaero-entity-icons-compat-0.1.0-canary18.jar`, embedded `0.1.0-canary18`, SHA-256 `2efa70c53e033e000349759dfd7020c43cdcf2fad0320f2569a6d8cc29927ade`, source `64f8e25c18116c03ba978b3d67da500bf96b7b34`) is USER-REPORTED / EXTERNAL RUNTIME **FAIL**. Clam was label-only; no usable model icon appeared. On its cache MISS, Xaero selected `RadarIconModelForm`, used `naturalist:textures/entity/clam/brown_clam.png`, reached model-form prerender, `ClamModel`, and `RadarIconModelPartPrerenderer#renderPart`. The native destination was empty; the exact empty-source / `bottom` trace / normalized detached `top`/`bottom`/`hinge` contract resolved; the adapter built and explicitly bound its trace; and no exception occurred. The fallback draw nevertheless left the destination empty (`before=0`, `after=0`, adapter/selected recorded `false`). A non-null creator return/cache write does not prove a model icon. C18 remained `0.20F`; it did not test `0.28F` or `0.30F`.
 
-Collect the one-time `NaturalistXaero ClamCapture` log sequence: request/canPrerender; initial entity-cache HIT or MISS; on MISS, selected `RadarIconCreator#create` form and texture, creator result, model-form entry, model-part traversal, and cache write; then native rendered-part count/model class, contract source/trace/children/scale, explicit trace binding, bridge render destination before/after plus adapter/selected registration, any caught bridge exception, and final manager icon result. Report only those logs and whether Clam is label-only or a real icon; do not retune based on it. Do not assess or alter Brown Bear, Starfish, either Scorpion, Giant Isopod, Zebra, Great White Shark, Piranha, Bass, Ray, Hedgehog, or another Naturalist entity. Require no relevant `InjectionError`, mixin transformation failure, or Xaero render-frame crash.
+## C19 focused runtime procedure
+
+With exact Naturalist C8, Xaero Minimap 26.4.2, EMF 3.2.6, generic Xaero × EMF C9, and exact C19, reload resources once and request only Clam through a normal cache MISS followed by a cache HIT. C19 changes only Clam presentation scale from `0.20F` to `0.30F`; it retains exact `ClamModel`, source path `""`, trace path `bottom`, normalized detached `top`/`bottom`/`hinge` assembly, top-down X rotation `1.5708F`, zero Y/Z rotation, frame offset, explicit trace binding, bounded detector, and C18 diagnostics. Brown Bear remains frozen at native `naturalist:bear` → `RadarIconSpriteForm` `0.65F`.
+
+Require `NaturalistXaero ClamCapture` to report `scale=0.3`, model-form and model-part entry, and fallback destination before/after with actual adapter/selected flags. Record shell completeness, top-down orientation, size, clipping, and usability. If the destination remains empty or the icon is still top-clipped, record C19 as FAIL with the exact diagnostic and stop; do not alter the detector, reduce scale, create C20, or assess another Naturalist entity. Require no relevant `InjectionError`, mixin transformation failure, or Xaero render-frame crash.
