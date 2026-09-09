@@ -1,4 +1,4 @@
-package dev.resivore.notebook.client;
+package dev.resivore.notebook.mixin.client;
 
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import org.spongepowered.asm.mixin.Mixin;

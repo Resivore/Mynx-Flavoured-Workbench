@@ -1,8 +1,8 @@
 package dev.resivore.notebook;
 
 import com.mojang.blaze3d.platform.InputConstants;
-import dev.resivore.notebook.client.ContainerScreenAccess;
 import dev.resivore.notebook.client.NotebookScreen;
+import dev.resivore.notebook.mixin.client.ContainerScreenAccess;
 import dev.resivore.notebook.storage.NotebookStore;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;

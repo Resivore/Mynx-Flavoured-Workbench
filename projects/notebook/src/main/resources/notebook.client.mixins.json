@@ -1,6 +1,6 @@
 {
   "required": true,
-  "package": "dev.resivore.notebook.client",
+  "package": "dev.resivore.notebook.mixin.client",
   "compatibilityLevel": "JAVA_25",
   "client": [
     "ContainerScreenAccess"

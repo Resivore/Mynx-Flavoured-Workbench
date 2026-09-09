@@ -25,5 +25,6 @@ class NotebookScreenLayoutTest {
         assertTrue(layout.rightContentWidth() >= 90);
         assertTrue(layout.indexHeight() >= 90);
         assertTrue(layout.bodyHeight() >= 90);
+        assertTrue(Math.abs(layout.bookWidth() * 400 - layout.bookHeight() * 640) <= 640);
     }
 }

@@ -1,59 +1,21 @@
 # Testing
 
-Notebook Canary 1 (`0.1.0-canary1`) is implemented, built, and statically
-verified but has not been deployed or runtime-tested. Every case below remains
-pending until the exact retained Canary is assigned through the normal Workbench
-Test Instance Manager workflow.
+Current candidate: `0.1.0-canary2`, retained as `notebook-0.1.0-canary2.jar`, SHA-256 `f3e4a183028b0bb2c1c7482028e5fa521df8f837631f7e0fd664405e4347d1c0`, implementation checkpoint `ffdb9a18b5a89779e47b0f90ade78ec352a6e0c2`. It is `STATIC_PASS`, `NOT_DEPLOYED`, and `RUNTIME_UNTESTED`. Both canonical test slots are occupied by unrelated cohorts; do not change slot ownership for this candidate without a separately authorized serialized manager operation.
 
-## Canary 1 runtime acceptance procedure
+Historical Canary 1 (`0.1.0-canary1`, retained `notebook-0.1.0-canary1.jar`, SHA-256 `54a601d9693501bbaca8fcf25b07f1aa65671631278d5a3cd9863fcfdf3c82c0`, source `e25729bf2fc2761269746e20c6ecbad1105e5c80`) passed compilation and static validation but received a user-supplied Minecraft client-initialization `RUNTIME_FAIL`. Fabric rejected `NotebookScreen` because C1 declared `dev.resivore.notebook.client` as its Mixin package. Do not retest, relabel, or claim a runtime pass for C1.
 
-1. From ordinary gameplay, use the configurable `Open Notebook` key mapping
-   (default `N`) to open and close Notebook. Rebind it through Controls, verify
-   the new binding, and confirm that typing `N` into a Notebook text field does
-   not reopen or close the screen.
-2. Open both the survival player inventory and creative inventory. Confirm one
-   compact `N` utility button appears beside the live inventory bounds, opens
-   Notebook, survives window resize/reinitialization without duplication, and
-   does not overlap Quick Stack Nearby, Inventory Search, recipe-book, effects,
-   or Inventory Extended controls in the cumulative Workbench stack.
-3. Repeat the access and basic navigation checks at representative GUI scales
-   and common window sizes, including a small 320x240-equivalent scaled GUI.
-   Confirm both pages, footer controls, editors, text, clipping, and scrollbars
-   remain usable without leaving the screen.
-4. Create at least four independently named notes, including an empty note, a
-   Unicode/unusual-character note, and a long note containing long wrapped
-   lines and many authored lines. Select, rename, edit, save, reopen, and delete
-   them; confirm no wrap-created filesystem newlines, clipping lockup, stale
-   editor content, or unintended item/inventory interaction.
-5. Drag notes upward and downward in the left index, including while the index
-   is scrolled. Restart the client and confirm the exact manual order and last
-   selected stable note persist rather than changing to alphabetical or recent
-   order.
-6. Author `[ ] unfinished task` and `[x] completed task` lines. In reading mode,
-   click each rendered box and confirm its state changes immediately. Inspect
-   the corresponding Markdown file and confirm only `[ ]`/`[x]` changed; enter
-   edit mode and confirm ordinary plain-text markers remain editable.
-7. With Notebook closed, edit an existing note file externally, create a new
-   valid UTF-8 `.md` file, and delete another. Reopen Notebook and confirm all
-   three changes reconcile. Repeat an edit while Notebook is open and use `R`
-   to rescan. Externally rename a file and confirm the old entry disappears and
-   the new file is conservatively added rather than guessed as the old identity.
-8. Inspect `config/notebook/notebook.json` and `notes/*.md`. Confirm note bodies
-   are normal UTF-8 text with real authored line breaks, metadata contains no
-   body text, file names remain portable/unique, and no temporary write files
-   remain. After several edits and a delete, confirm only `previous-1.md`
-   through `previous-3.md` remain under the stable note UUID's backup directory.
-9. After copying the test profile's Notebook directory aside, introduce stale
-   note references and then malformed JSON in `notebook.json`. Reopen Notebook
-   after each case and confirm readable Markdown notes remain usable and repaired
-   metadata is written without a crash or association with the wrong file.
-10. Change dimensions, die/respawn, leave a world, join another world, and fully
-    restart the client. Confirm the profile-local notebook remains available and
-    unchanged, with no item requirement, server data, cross-player document
-    behavior, or world-save mutation.
+## Canary 2 runtime acceptance procedure
 
-Stop and preserve the exact files and logs on any crash, input lock, note loss or
-duplication, wrong-file association, malformed UTF-8 write, unexpected newline
-insertion, stale checkbox state, ordering reset, duplicate/overlapping inventory
-button, or inventory/item mutation. Compilation, automated tests, JAR inspection,
-and artifact hashing are not Minecraft runtime validation.
+Use only the dedicated Matcha Flavoured 26.2 Workbench after explicit Test Slot ownership. Never use the protected 26.1.2 gameplay profile. Preserve exact logs and files and stop on any crash, classloading/Mixin error, input lock, note loss or duplication, malformed UTF-8 write, unexpected newline insertion, wrong-file association, stale checkbox, ordering reset, duplicate/overlapping inventory button, or inventory/item mutation.
+
+1. Launch the Minecraft 26.2 client successfully with Notebook installed. Confirm Fabric initializes `dev.resivore.notebook.NotebookClient` without the C1 Mixin package/classloading failure, then open and close Notebook with the configurable `Open Notebook` key mapping (default `N`). Rebind it in Controls and confirm typing `N` in an editor does not reopen or close it.
+2. Inspect the supplied Bedrock book artwork at several GUI scales and window sizes, including a 320×240-equivalent scaled GUI. Confirm the two pages, spine, content margins, title, index rows, editors, checkboxes, status text, scrollbars, drag targets, and footer controls remain aligned with the visible pages without stretching or clipping.
+3. Open Notebook, close it, open survival inventory, open it from the compact `N` utility button, resize/reinitialize the inventory, and reopen Notebook. Repeat in creative inventory. Confirm exactly one collision-aware button, no overlap with existing utility controls, and no Mixin/classloading failure.
+4. Create at least four independently named notes, including an empty note, a Unicode/unusual-character note, and a long note with wrapped and many authored lines. Select, rename, edit, save, reopen, and delete them; confirm ordinary Markdown files retain only authored line endings.
+5. Drag notes upward and downward in the left index, including while scrolled. Restart the client and confirm exact manual ordering and selected stable UUID persist rather than sorting alphabetically or by recency.
+6. Author `[ ] unfinished task` and `[x] completed task` lines. In reading mode, click each rendered box and confirm only its Markdown marker changes; enter editing mode and confirm ordinary plain-text markers remain editable.
+7. With Notebook closed, externally edit an existing Markdown file, create a valid UTF-8 `.md`, and delete another. Reopen and confirm reconciliation; repeat an edit while open and use `R`. Externally rename a file and confirm conservative delete-plus-create identity handling.
+8. Inspect `config/notebook/notebook.json` and `notes/*.md`: metadata must not contain note bodies; filenames must remain portable and unique; no temporary writes may remain. After several edits and a delete, only `previous-1.md` through `previous-3.md` may remain per stable-note backup directory.
+9. After copying the profile Notebook directory aside, introduce stale note references and malformed `notebook.json` separately. Reopen each time and confirm readable Markdown notes stay usable and metadata repairs without a wrong association or crash. Change dimensions, die/respawn, leave and join worlds, and restart the client; Notebook must remain profile-local and never mutate world, server, item, or player data.
+
+Builds, source/JAR checks, and synthetic classloading/configuration checks are not Minecraft runtime evidence and cannot make Canary 2 pass or be promoted.
