@@ -34,16 +34,16 @@ class BinaryContractTest {
         }
     }
 
-    @Test void c12AuditsThePostMissCreatorPathWithoutAnyBrownBearPresentationOverride() throws Exception {
+    @Test void c13ScopesTheBrownBearCorrectionToTheEvidencedSpriteCreatorArgument() throws Exception {
         Path root = Path.of(System.getProperty("projectRoot"));
         String mixins = Files.readString(root.resolve("src/main/resources/naturalist_xaero_entity_icons_compat.mixins.json"));
-        assertTrue(mixins.contains("RadarIconModelPartPrerendererMixin"));
-        assertTrue(mixins.contains("RadarIconCreatorMixin"));
-        assertTrue(mixins.contains("RadarIconModelFormPrerendererMixin"));
-        assertTrue(mixins.contains("RadarIconEntityCacheMixin"));
         assertTrue(mixins.contains("ModelRenderTraceMixin"));
         assertTrue(mixins.contains("RadarIconModelPrerendererMixin"));
-        assertTrue(mixins.contains("RadarIconEntityCacheStorageAccessor"));
+        assertFalse(mixins.contains("RadarIconCreatorMixin"));
+        assertFalse(mixins.contains("RadarIconModelFormPrerendererMixin"));
+        assertFalse(mixins.contains("RadarIconModelPartPrerendererMixin"));
+        assertFalse(mixins.contains("RadarIconEntityCacheMixin"));
+        assertFalse(mixins.contains("RadarIconEntityCacheStorageAccessor"));
         String bridge = Files.readString(root.resolve("src/main/java/dev/resivore/naturalistxaeroicons/NaturalistIconAdapter.java"));
         assertTrue(bridge.contains("traceSources"));
         assertFalse(bridge.contains("@Redirect"));
@@ -53,23 +53,24 @@ class BinaryContractTest {
         assertFalse(prerenderer.contains("callback.setReturnValue(adapter)"));
         assertFalse(prerenderer.contains("Axis.ZP.rotationDegrees(90.0F)"));
         assertFalse(prerenderer.contains("pose.scale("));
-        assertFalse(prerenderer.contains("BrownBearDiagnostic"));
         String manager = Files.readString(root.resolve("src/main/java/dev/resivore/naturalistxaeroicons/mixin/RadarIconManagerMixin.java"));
-        assertTrue(manager.contains("RadarIconEntityCache;get"));
-        assertTrue(manager.contains("BrownBearPathDiagnostic.cacheLookup"));
-        assertTrue(manager.contains("BrownBearPathDiagnostic.requestFinished"));
-        assertTrue(manager.contains("storage.containsKey(key)"));
-        assertTrue(manager.contains("CAPTURE_FAILHARD"));
-        assertFalse(manager.contains("storage.remove(key)"));
-        assertFalse(manager.contains("BrownBearIconCacheFreshness"));
+        assertTrue(manager.contains("@ModifyVariable"));
+        assertTrue(manager.contains("@At(\"STORE\")"));
+        assertTrue(manager.contains("index = 19"));
+        assertTrue(manager.contains("BrownBearSpritePresentation.scaleForCurrentRequest"));
         assertFalse(manager.contains("@Redirect"));
+        String presentation = Files.readString(root.resolve("src/main/java/dev/resivore/naturalistxaeroicons/BrownBearSpritePresentation.java"));
+        assertTrue(presentation.contains("SCALE = 0.12F"));
+        assertTrue(presentation.contains("RadarIconSpriteForm"));
+        assertTrue(presentation.contains("Math.min(parameters.scale, SCALE)"));
+        assertFalse(presentation.contains("pose.scale"));
         String genericManager = Files.readString(root.getParent().resolve(
                 "xaero-entity-icons/src/main/java/dev/resivore/xaeroemfcompat/mixin/RadarIconManagerMixin.java"));
         assertEquals(1, genericManager.split("@Redirect", -1).length - 1);
         assertTrue(genericManager.contains("xaeroEmf$retryFailedAtActualPrerender"));
     }
 
-    @Test void xaeroC11AuditEstablishesCacheBeforeCreatorAndKeepsGenericRetryAvailable() throws Exception {
+    @Test void xaeroC13AuditEstablishesCacheBeforeCreatorAndTheSpriteScaleSeam() throws Exception {
         try (JarFile xaero = new JarFile(Path.of(System.getProperty("xaeroJar")).toFile())) {
             ClassNode cache = readClass(xaero, "xaero/hud/minimap/radar/icon/cache/RadarIconEntityCache.class");
             assertTrue(cache.fields.stream().map(field -> field.name).anyMatch("storage"::equals));
@@ -84,6 +85,9 @@ class BinaryContractTest {
                     "Xaero must consult the entity/variant cache before native icon creation");
 
             assertNotNull(xaero.getEntry("xaero/hud/minimap/radar/icon/creator/RadarIconCreator.class"));
+            assertNotNull(xaero.getEntry("xaero/hud/minimap/radar/icon/creator/RadarIconCreator$Parameters.class"));
+            assertNotNull(xaero.getEntry("xaero/hud/minimap/radar/icon/definition/form/sprite/RadarIconSpriteForm.class"));
+            assertNotNull(xaero.getEntry("xaero/hud/minimap/radar/icon/creator/render/form/sprite/RadarIconSpriteFormPrerenderer.class"));
             assertNotNull(xaero.getEntry("xaero/hud/minimap/radar/icon/creator/render/form/model/part/RadarIconModelPartPrerenderer.class"));
             assertNotNull(xaero.getEntry("xaero/hud/minimap/radar/icon/creator/render/form/model/RadarIconModelPrerenderer$Parameters.class"));
         }

@@ -2,7 +2,7 @@
 
 ## Current gate
 
-**C12 NOT DEPLOYED — STATIC PASS — RUNTIME UNTESTED — BLOCKED ON EFFECTIVE-PATH EVIDENCE — NOT READY FOR PROMOTION**
+**C13 NOT DEPLOYED — STATIC PASS PENDING — RUNTIME UNTESTED — FOCUSED BROWN BEAR SPRITE-SCALE TEST REQUIRED — NOT READY FOR PROMOTION**
 
 Canary 2 is retained failed external-runtime provenance: `naturalist-xaero-entity-icons-compat-0.1.0-canary2.jar`, SHA-256
 `ff161f6bcbf5cd056a5e27d7cd56091ab5abfa8e69440c76f2f6ce9ba6e86c50`, source
@@ -33,10 +33,12 @@ Canary 10 is retained static/unrun predecessor provenance: `naturalist-xaero-ent
 
 Exact C11 (`0.1.0-canary11`, `47bf6fa9a9019b972b52e185424c488954af665f94ddbf57ea3856992174306a`) is USER-REPORTED / EXTERNAL RUNTIME FAIL. Brown Bear remained oversized and normally oriented; the temporary 90-degree diagnostic rotation did not appear. The supplied first-request log was `canPrerender=true`, entity-cache MISS, non-null final `XaeroIcon`, `nativeHook=false`, and `nativeRendered=false`, followed by an entity-cache HIT. This specifically disproves the Brown Bear `RadarIconModelPrerenderer.renderModel` presentation path only.
 
-## C12 Brown Bear effective-path evidence checklist
+## C12 reconciled runtime evidence
 
-With exact Naturalist C8, Xaero Minimap 26.4.2, EMF 3.2.6, generic Xaero × EMF C9, and C12, request only `naturalist:bear` until one normal entity-cache MISS occurs, then allow its ordinary cache HIT. Do not clear/invalidate caches solely for this test, and do not change another entity.
+Exact C12 (`0.1.0-canary12`, `78be16149ce6892f25e02047cf50e6f07070b45092b7a55ebd1b9336ce8bb489`) is USER-REPORTED / EXTERNAL RUNTIME evidence. It loaded as `naturalist_xaero_entity_icons_compat 0.1.0-canary12`; Brown Bear remained oversized, as expected because C12 had no size correction. Its focused cache-miss evidence was: `canPrerender=true`; entity-cache MISS; `RadarIconCreator#create` received `xaero.hud.minimap.radar.icon.definition.form.sprite.RadarIconSpriteForm` and `naturalist:textures/entity/bear/bear.png`; creator returned a non-null icon; Xaero cached it; and the following entity-cache HIT returned the non-null cached icon. C12 did not reach either observed model-form or model-part seam. This identifies the native sprite prerenderer, rather than the model prerender bridge, as the effective Brown Bear presentation path.
 
-Capture the one-time `NaturalistXaero BrownBearPath` sequence: initial entity-cache MISS; `RadarIconCreator#create` form class and renderer texture; `RadarIconModelFormPrerenderer#prerender` trace/texture data; either model-part method reached; non-null creator result; cache write; final manager result; and the later cache HIT. Require no `InjectionError`, mixin transformation failure, Xaero render-frame crash, blank icon, label fallback, or unrelated icon change.
+## C13 focused runtime procedure
 
-C12 deliberately makes no size change. It must not be called a sizing fix or runtime pass. Stop and record the full exact path if the creator/form/model-part sequence differs, if no non-null creator result is reached, or if any runtime fault occurs. The next implementation may only target the evidenced icon-producing branch. Do not retune Clam, Starfish, either Scorpion, Ray, Hedgehog, Bass, Zebra, Giant Isopod, Great White Shark, or another Naturalist entity.
+With exact Naturalist C8, Xaero Minimap 26.4.2, EMF 3.2.6, generic Xaero × EMF C9, and C13, reload resources once to evict only the existing 37 fallback targets and the native `naturalist:bear` cache entries. Request a Brown Bear until the first normal cache MISS, then allow an ordinary cache HIT.
+
+Confirm the Brown Bear is materially smaller and readable, does not become blank or label-only, and remains stable on the cache HIT. Require no `InjectionError`, mixin transformation failure, Xaero render-frame crash, or unrelated icon change. C13 changes only the exact `naturalist:bear` `RadarIconSpriteForm` request by replacing Xaero's immutable creator parameters with the same form/variant/config/debug state and a capped `0.12F` sprite scale. Do not retune Clam, Starfish, either Scorpion, Ray, Hedgehog, Bass, Zebra, Giant Isopod, Great White Shark, or another Naturalist entity.

@@ -151,28 +151,22 @@ class NaturalistCoverageTest {
         assertFalse(NaturalistModelContracts.isTargetId("bear"));
     }
 
-    @Test void brownBearC12PathAuditHasNoPresentationOverrideOrCacheMutation() throws Exception {
+    @Test void brownBearC13CorrectsOnlyTheEvidencedSpritePathAndEvictsOnlyItsNativeCacheOnReload() throws Exception {
         Path module = Path.of(System.getProperty("projectRoot"));
         String manager = Files.readString(module.resolve(
                 "src/main/java/dev/resivore/naturalistxaeroicons/mixin/RadarIconManagerMixin.java"));
-        String creator = Files.readString(module.resolve(
-                "src/main/java/dev/resivore/naturalistxaeroicons/mixin/RadarIconCreatorMixin.java"));
-        String form = Files.readString(module.resolve(
-                "src/main/java/dev/resivore/naturalistxaeroicons/mixin/RadarIconModelFormPrerendererMixin.java"));
-        assertTrue(manager.contains("BrownBearPathDiagnostic.cacheLookup(storage.containsKey(key))"));
-        assertTrue(manager.contains("BrownBearPathDiagnostic.requestFinished"));
-        assertTrue(creator.contains("parameters.form"));
-        assertTrue(creator.contains("getTextureLocation"));
-        assertTrue(form.contains("trace.textures"));
-        assertFalse(creator.contains("pose.scale"));
+        String presentation = Files.readString(module.resolve(
+                "src/main/java/dev/resivore/naturalistxaeroicons/BrownBearSpritePresentation.java"));
+        assertTrue(manager.contains("@ModifyVariable"));
+        assertTrue(manager.contains("index = 19"));
+        assertTrue(manager.contains("\"bear\".equals"));
+        assertTrue(presentation.contains("RadarIconSpriteForm"));
+        assertTrue(presentation.contains("SCALE = 0.12F"));
+        assertTrue(presentation.contains("new RadarIconCreator.Parameters"));
+        assertFalse(manager.contains("@Redirect"));
         assertFalse(manager.contains("storage.remove(key)"));
-        assertFalse(manager.contains("BrownBearIconCacheFreshness"));
         assertFalse(Files.exists(module.resolve(
-                "src/main/java/dev/resivore/naturalistxaeroicons/NaturalistIconPresentation.java")));
-        assertFalse(Files.exists(module.resolve(
-                "src/main/java/dev/resivore/naturalistxaeroicons/BrownBearDiagnostic.java")));
-        assertFalse(Files.exists(module.resolve(
-                "src/main/java/dev/resivore/naturalistxaeroicons/BrownBearIconCacheFreshness.java")));
+                "src/main/java/dev/resivore/naturalistxaeroicons/BrownBearPathDiagnostic.java")));
     }
 
     @Test void retainedC2ControlsRemainContractStable() {

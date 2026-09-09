@@ -7,47 +7,29 @@ import java.util.Arrays;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.loader.impl.launch.knot.Knot;
 
-/** Applies C12 and the accepted generic C9 against production Xaero without launching Minecraft. */
+/** Applies C13 and the accepted generic C9 against production Xaero without launching Minecraft. */
 public final class ProductionMixinApplicationHarness {
     private ProductionMixinApplicationHarness() {}
 
     public static void main(String[] args) throws Exception {
-        require(args.length == 3, "expected Naturalist C12, generic C9, and Xaero paths");
-        Path naturalistC12 = Path.of(args[0]).toRealPath();
+        require(args.length == 3, "expected Naturalist C13, generic C9, and Xaero paths");
+        Path naturalistC13 = Path.of(args[0]).toRealPath();
         Path genericC9 = Path.of(args[1]).toRealPath();
         Path xaero = Path.of(args[2]).toRealPath();
 
         Knot knot = new Knot(EnvType.CLIENT);
         ClassLoader loader = knot.init(new String[0]);
-        requireResourceFrom(loader, "naturalist_xaero_entity_icons_compat.mixins.json", naturalistC12);
+        requireResourceFrom(loader, "naturalist_xaero_entity_icons_compat.mixins.json", naturalistC13);
         requireResourceFrom(loader, "xaero_emf_entity_icon_compat.mixins.json", genericC9);
 
         Class<?> manager = loadFrom(loader, "xaero.hud.minimap.radar.icon.RadarIconManager", xaero);
-        requireSingleHandler(manager, "naturalistXaeroIcons$observeBrownBearCacheBeforeXaeroEmfRetry");
-        requireSingleHandler(manager, "naturalistXaeroIcons$startBrownBearPathAudit");
-        requireSingleHandler(manager, "naturalistXaeroIcons$finishBrownBearPathAudit");
+        requireSingleHandler(manager, "naturalistXaeroIcons$startBrownBearSpritePresentation");
+        requireSingleHandler(manager, "naturalistXaeroIcons$scaleBrownBearSprite");
+        requireSingleHandler(manager, "naturalistXaeroIcons$finishBrownBearSpritePresentation");
         requireSingleHandler(manager, "xaeroEmf$retryFailedAtActualPrerender");
 
-        Class<?> cache = loadFrom(loader,
-                "xaero.hud.minimap.radar.icon.cache.RadarIconEntityCache", xaero);
-        require(Arrays.stream(cache.getInterfaces()).anyMatch(type -> type.getName().equals(
-                        "dev.resivore.naturalistxaeroicons.mixin.RadarIconEntityCacheStorageAccessor")),
-                "C12 read-only cache observer accessor did not apply");
-        requireSingleHandler(cache, "naturalistXaeroIcons$observeBrownBearCacheWrite");
-
-        Class<?> creator = loadFrom(loader, "xaero.hud.minimap.radar.icon.creator.RadarIconCreator", xaero);
-        requireSingleHandler(creator, "naturalistXaeroIcons$observeBrownBearCreatorStart");
-        requireSingleHandler(creator, "naturalistXaeroIcons$observeBrownBearCreatorResult");
-        Class<?> modelForm = loadFrom(loader,
-                "xaero.hud.minimap.radar.icon.creator.render.form.model.RadarIconModelFormPrerenderer", xaero);
-        requireSingleHandler(modelForm, "naturalistXaeroIcons$observeBrownBearModelForm");
-        Class<?> part = loadFrom(loader,
-                "xaero.hud.minimap.radar.icon.creator.render.form.model.part.RadarIconModelPartPrerenderer", xaero);
-        requireHandler(part, "naturalistXaeroIcons$observeBrownBearRenderPart");
-        requireSingleHandler(part, "naturalistXaeroIcons$observeBrownBearRenderPartsIterable");
-
         System.out.println("Production Knot/Mixin coexistence passed for "
-                + naturalistC12.getFileName() + " and " + genericC9.getFileName());
+                + naturalistC13.getFileName() + " and " + genericC9.getFileName());
     }
 
     private static Class<?> loadFrom(ClassLoader loader, String className, Path expectedJar) throws Exception {
