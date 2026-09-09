@@ -161,6 +161,16 @@ final class ChannelRulesTest {
         assertFalse(ChannelRules.shouldApplySuccessEffect(false));
     }
 
+    @Test
+    void ambientPortalParticlesAreRateLimitedThroughoutAnActiveChannel() {
+        assertEquals(4, ChannelEffects.AMBIENT_PARTICLE_INTERVAL_TICKS);
+        assertEquals(3, ChannelEffects.AMBIENT_PARTICLE_COUNT);
+        assertTrue(ChannelEffects.shouldEmitAmbientParticles(0L));
+        assertFalse(ChannelEffects.shouldEmitAmbientParticles(1L));
+        assertTrue(ChannelEffects.shouldEmitAmbientParticles(4L));
+        assertFalse(ChannelEffects.shouldEmitAmbientParticles(39L));
+    }
+
     private static boolean validSourceItem(
             ItemStack liveMainHand,
             ItemStack captured

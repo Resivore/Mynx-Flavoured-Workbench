@@ -151,6 +151,7 @@ public final class DragonboundChannelManager {
             return false;
         }
 
+        ChannelEffects.channelStarted(player);
         player.sendOverlayMessage(Component.translatable("message.dragonbound_waystone.channel_started"));
         return true;
     }
@@ -200,10 +201,12 @@ public final class DragonboundChannelManager {
                 cancel(channel, ChannelCancellation.MOVEMENT);
                 continue;
             }
-            if (ChannelRules.completionTickReached(
-                    server.overworld().getGameTime(), channel.completionTick())) {
+            long gameTime = server.overworld().getGameTime();
+            if (ChannelRules.completionTickReached(gameTime, channel.completionTick())) {
                 complete(channel);
+                continue;
             }
+            ChannelEffects.channelTick(player, gameTime);
         }
     }
 
@@ -266,6 +269,8 @@ public final class DragonboundChannelManager {
             return;
         }
 
+        ServerLevel departure = (ServerLevel) player.level();
+        Vec3 departurePosition = player.position();
         ServerPlayer arrived;
         try {
             arrived = player.teleport(new TeleportTransition(
@@ -305,6 +310,7 @@ public final class DragonboundChannelManager {
             return;
         }
 
+        ChannelEffects.successfulTeleport(departure, departurePosition, destination, arrived.position());
         if (channel.source() == ReturnSource.IMBUED_VOID_PEARL) {
             arrivedHeld.shrink(1);
         } else {
