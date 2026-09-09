@@ -2,7 +2,7 @@
 
 ## Current gate
 
-**C14 NOT DEPLOYED — STATIC PASS — RUNTIME UNTESTED — FOCUSED BROWN BEAR SPRITE-SCALE RETUNE REQUIRED — NOT READY FOR PROMOTION**
+**C15 NOT DEPLOYED — STATIC PASS — RUNTIME UNTESTED — FOCUSED BROWN BEAR AND CLAM CHECK REQUIRED — NOT READY FOR PROMOTION**
 
 Canary 2 is retained failed external-runtime provenance: `naturalist-xaero-entity-icons-compat-0.1.0-canary2.jar`, SHA-256
 `ff161f6bcbf5cd056a5e27d7cd56091ab5abfa8e69440c76f2f6ce9ba6e86c50`, source
@@ -41,8 +41,14 @@ Exact C12 (`0.1.0-canary12`, `78be16149ce6892f25e02047cf50e6f07070b45092b7a55ebd
 
 Exact C13 (`0.1.0-canary13`, `1077ee5b564c8f018e2205fcfce0c48c0d01deff57a77f2068d210c5ebfa05aa`, source `6de714a962caf32ee823ffec5f837cf43db07046`) is USER-REPORTED / EXTERNAL RUNTIME **FAIL**. Brown Bear is no longer oversized, but it is extremely small—effectively a tiny brown dot on the minimap. Orientation/presentation otherwise remain intact. This is not icon-generation failure: it runtime-proves that the `naturalist:bear` → `RadarIconCreator#create` → `RadarIconSpriteForm` → Brown-Bear-specific scale → `XaeroIcon` seam controls displayed size. C13's `0.12F` cap is therefore far too small and must not be accepted or described as runtime-passing.
 
-## C14 focused runtime procedure
+## C14 retained runtime failure
 
-With exact Naturalist C8, Xaero Minimap 26.4.2, EMF 3.2.6, generic Xaero × EMF C9, and C14, reload resources once to evict only the existing 37 fallback targets and the native `naturalist:bear` cache entries. Request a Brown Bear until the first normal cache MISS, then allow an ordinary cache HIT.
+Exact C14 (`naturalist-xaero-entity-icons-compat-0.1.0-canary14.jar`, embedded `0.1.0-canary14`, SHA-256 `01a2348b061237f45df6a015d57693c31d92cf79dd204fb7d2b39b8f3ab6f1ea`, source `6fe8dd0f82cbaa7378b1c00a0e326ca316414ae9`) is USER-REPORTED / EXTERNAL RUNTIME **FAIL**. Brown Bear is substantially larger than C13's microscopic brown dot; its correct icon is visible and recognizable, orientation remains correct, and the sprite-path scale intervention is clearly functioning. It is nevertheless noticeably too small compared with nearby normal entity icons. C14 is a final-Brown-Bear-sizing failure and must not be accepted/promoted.
 
-Confirm exact C14 loads, Xaero radar resources reload without relevant failure, and Brown Bear produces a normal icon. It must be clearly larger than C13's microscopic result, approximately normal-sized relative to nearby entity icons, and still substantially smaller than the original oversized icon; orientation must remain unchanged and unrelated icons must remain unchanged. Require no `InjectionError`, mixin transformation failure, Xaero render-frame crash, blank/label-only bear, or unrelated icon change. C14 changes only the exact `naturalist:bear` `RadarIconSpriteForm` request by replacing Xaero's immutable creator parameters with the same form/variant/config/debug state and a capped `0.42F` sprite scale. Do not retune Clam, Starfish, either Scorpion, Ray, Hedgehog, Bass, Zebra, Giant Isopod, Great White Shark, or another Naturalist entity. If this value is not visually correct, record that runtime result and stop; do not create C15 without a new user result.
+## C15 focused runtime procedure
+
+With exact Naturalist C8, Xaero Minimap 26.4.2, EMF 3.2.6, generic Xaero × EMF C9, and exact C15, reload resources once to evict only the existing 37 fallback targets and native `naturalist:bear` cache entries. Request a Brown Bear until the first normal cache MISS, then allow an ordinary cache HIT. Check only Brown Bear and Clam; do not retune or infer results for Starfish, either Scorpion, Giant Isopod, Zebra, Great White Shark, Piranha, Bass, Ray, Hedgehog, or another Naturalist entity.
+
+For Brown Bear, confirm a visible recognizable native icon with unchanged correct orientation and a size approximately normal relative to nearby entity radar icons. C15 changes only the exact `naturalist:bear` `RadarIconSpriteForm` creator parameters: it preserves form, variant, model config, debug state, native sprite-form identity, `naturalist:textures/entity/bear/bear.png`, fail-closed gating, and the absence of model/model-part scaling, PoseStack manipulation, rotation, cropping, offsets, texture replacement, alternate generation, label fallback, and cache sizing. The only numerical change is the capped scale from C14's `0.42F` to `0.65F`.
+
+For Clam, assess the current C8 configuration without declaring its `0.20F` scale either validated or invalid based on C8's overall failure. It is the authored `root` under Naturalist's outer model wrapper, a normalized detached `top`/`bottom`/`hinge` assembly, trace anchor `root/bottom`, and top-down presentation. C7 alone supplied entity-specific evidence: the actual icon had correct top-down orientation but was too large and top-clipped at `0.32F`. Record only C15 Clam observations actually seen. Require no relevant `InjectionError`, mixin transformation failure, Xaero render-frame crash, blank/label-only icon, or unrelated icon change. C15 is not ready for acceptance until both focused results are recorded.
