@@ -112,8 +112,12 @@ class Canary1ContractTest {
         }
 
         try (Stream<Path> paths = Files.walk(RESOURCES)) {
-            assertTrue(paths.noneMatch(path -> path.getFileName().toString().contains("mixins")),
-                    "Canary 1 must not contain inventory or rendering mixins");
+            List<String> mixinResources = paths
+                    .filter(path -> path.getFileName().toString().contains("mixins"))
+                    .map(path -> path.getFileName().toString())
+                    .toList();
+            assertEquals(List.of("wearable_lanterns.iris.mixins.json"), mixinResources,
+                    "Only the narrow optional Iris uniform bridge may add a mixin resource");
         }
     }
 
@@ -126,7 +130,8 @@ class Canary1ContractTest {
         assertEquals(
                 "4.12.2+26.2",
                 metadata.getAsJsonObject("suggests").get("lambdynlights").getAsString());
-        assertFalse(metadata.has("mixins"));
+        assertTrue(metadata.has("mixins"));
+        assertFalse(depends.has("iris"));
     }
 
     @Test
