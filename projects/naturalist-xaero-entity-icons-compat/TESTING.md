@@ -2,7 +2,7 @@
 
 ## Current gate
 
-**C16 NOT DEPLOYED — STATIC PASS — RUNTIME UNTESTED — CLAM-ONLY CAPTURE-ROUTE CHECK REQUIRED — NOT READY FOR PROMOTION**
+**C17 NOT DEPLOYED — STATIC PASS — RUNTIME UNTESTED — CLAM-ONLY CAPTURE DIAGNOSTIC REQUIRED — NOT READY FOR PROMOTION**
 
 Canary 2 is retained failed external-runtime provenance: `naturalist-xaero-entity-icons-compat-0.1.0-canary2.jar`, SHA-256
 `ff161f6bcbf5cd056a5e27d7cd56091ab5abfa8e69440c76f2f6ce9ba6e86c50`, source
@@ -49,8 +49,12 @@ Exact C14 (`naturalist-xaero-entity-icons-compat-0.1.0-canary14.jar`, embedded `
 
 Exact C15 (`naturalist-xaero-entity-icons-compat-0.1.0-canary15.jar`, embedded `0.1.0-canary15`, SHA-256 `97f79910675e71610651bd871ac6aad89ccd5e63794350b8c659c44cbbcab7b7`, source `53fec53d07daabdd8315ac9e25a755291832eb75`) is USER-REPORTED / EXTERNAL RUNTIME mixed evidence, not a full-project pass. Brown Bear **PASSed** the requested correction: at `0.65F`, it is recognizable, correctly oriented, no longer oversized, and no longer too small. Its exact `naturalist:bear` → `RadarIconSpriteForm` → Brown-Bear-specific creator-scale path is frozen for C16. Clam **FAILed** as label-only: Xaero did not produce or accept its model icon; this is capture-route failure, not visual scale evidence.
 
-## C16 focused runtime procedure
+## C16 reconciled runtime failure
 
-With exact Naturalist C8, Xaero Minimap 26.4.2, EMF 3.2.6, generic Xaero × EMF C9, and exact C16, reload resources once and request only Clam through a normal cache MISS followed by an ordinary cache HIT. C16 changes only Clam: it restores C7's runtime-proven model-root source and `bottom` trace capture route, retains the complete normalized detached `top`/`bottom`/`hinge` shell assembly, top-down orientation, and the evidence-based `0.20F` scale. C7 showed this route as a real, recognizable top-down shell icon at `0.32F`, though too large and top-clipped; C15's `root` / `root/bottom` route was label-only.
+Exact C16 (`naturalist-xaero-entity-icons-compat-0.1.0-canary16.jar`, embedded `0.1.0-canary16`, SHA-256 `6928f24ee1a9e453afd2023368021e45412569beee75efa9e77443d881238122`, source `1b2357fad4270f632a93842141aa4ad2723ede16`) is USER-REPORTED / EXTERNAL RUNTIME **FAIL**. Clam remained label-only with no model icon. This disproves only the C16 attempt to recover icon creation by restoring C7's model-root source and `bottom` trace at the smaller `0.20F` scale; it supplies no orientation, recognizability, clipping, or scale result.
 
-Confirm that Clam is a real model icon rather than a label, then record only its observed orientation, recognizability, scale, and clipping. Do not infer a visual result from a label-only fallback. Do not alter or assess Brown Bear, Starfish, Jungle Scorpion, Desert Scorpion, Giant Isopod, Zebra, Great White Shark, Piranha, Bass, Ray, Hedgehog, or any other Naturalist entity. Require no relevant `InjectionError`, mixin transformation failure, or Xaero render-frame crash.
+## C17 focused runtime procedure
+
+With exact Naturalist C8, Xaero Minimap 26.4.2, EMF 3.2.6, generic Xaero × EMF C9, and exact C17, reload resources once and request only Clam through a normal cache MISS followed by a cache HIT. C17 keeps C16's `ClamModel` source path `""`, trace path `bottom`, normalized detached `top`/`bottom`/`hinge` assembly, top-down orientation, and `0.20F` scale unchanged. Brown Bear remains frozen at its proven native `naturalist:bear` → `RadarIconSpriteForm` `0.65F` path.
+
+Collect the one-time `NaturalistXaero ClamCapture` log sequence: request/canPrerender, native rendered-part count/model class, contract source/trace/children/scale, explicit trace binding, bridge render destination before/after plus adapter/selected registration, any caught bridge exception, and final manager icon result. Report only those logs and whether Clam is label-only or a real icon; do not retune based on it. Do not assess or alter Brown Bear, Starfish, either Scorpion, Giant Isopod, Zebra, Great White Shark, Piranha, Bass, Ray, Hedgehog, or another Naturalist entity. Require no relevant `InjectionError`, mixin transformation failure, or Xaero render-frame crash.
