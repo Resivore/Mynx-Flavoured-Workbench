@@ -1,6 +1,0 @@
-{
-  "parent": "minecraft:item/generated",
-  "textures": {
-    "layer0": "map_marker_extension:map/decorations/map_sprites/trial_chamber"
-  }
-}

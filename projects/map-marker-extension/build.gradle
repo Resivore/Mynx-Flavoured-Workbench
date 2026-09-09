@@ -20,6 +20,9 @@ def originalsRoot = project.hasProperty('originals_dir')
 def authoritativeOriginalsRoot = project.hasProperty('authoritative_originals_dir')
     ? file(project.property('authoritative_originals_dir'))
     : originalsRoot
+def historicalArtifactsRoot = project.hasProperty('historical_artifacts_dir')
+    ? file(project.property('historical_artifacts_dir'))
+    : projectDir
 def xaeroMinimapJar = new File(originalsRoot, 'mods/xaerominimap-fabric-26.2-26.4.2.jar')
 def xaeroWorldMapJar = new File(originalsRoot, 'mods/xaeroworldmap-fabric-26.2-1.44.2.jar')
 
@@ -54,24 +57,6 @@ processResources {
     }
 }
 
-def resourcePackSource = file('resourcepack')
-
-tasks.register('buildMapMarkerExtensionResourcePack', Zip) {
-    from(resourcePackSource) {
-        include 'pack.mcmeta'
-        include 'assets/**'
-        includeEmptyDirs = false
-    }
-    destinationDirectory = layout.buildDirectory.dir('resourcepacks')
-    archiveFileName = "map-marker-extension-icons-${project.version}.zip"
-    preserveFileTimestamps = false
-    reproducibleFileOrder = true
-}
-
-tasks.named('build') {
-    dependsOn tasks.named('buildMapMarkerExtensionResourcePack')
-}
-
 tasks.withType(JavaCompile).configureEach {
     options.release = 25
 }
@@ -80,7 +65,15 @@ test {
     useJUnitPlatform()
     systemProperty 'projectRoot', projectDir.absolutePath
     systemProperty 'originalsRoot', authoritativeOriginalsRoot.absolutePath
-    systemProperty 'resourcePackRoot', resourcePackSource.absolutePath
+    systemProperty 'correctedInventoryPack', new File(
+        authoritativeOriginalsRoot,
+        'assets/MME-C11-ribbits-style-inventory-routing.zip'
+    ).absolutePath
+    systemProperty 'historicalArtifactsRoot', historicalArtifactsRoot.absolutePath
+    dependsOn tasks.named('jar')
+    systemProperty 'builtJar', layout.buildDirectory.file(
+        "libs/${project.archives_base_name}-${project.version}.jar"
+    ).get().asFile.absolutePath
 }
 
 java {

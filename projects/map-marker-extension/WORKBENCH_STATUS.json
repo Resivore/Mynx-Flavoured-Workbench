@@ -30,11 +30,11 @@
       "Recognize explicitly marked externally owned native filled-map identities for possession-gated Xaero projection without registering, rewriting, classlinking, or supplying the external marker or item artwork."
     ],
     "scope": [
-      "Canonical C11 source for Minecraft Java 26.2 Fabric, narrowly succeeding failed C10 by nearest-neighbor reframing only the 17 custom native poi_icons from immutable originals/assets source artwork into the standard 8-by-8 decoration canvas, enlarging visible artwork within the fixed logical sprite while preserving C9's enlarged 16-by-16 item-side artwork, 18 owned products, 17 custom holders, external-native boundary, normalization, and Xaero rendering behavior.",
+      "Canonical C12 source for Minecraft Java 26.2 Fabric: a single self-contained JAR that bundles the user-confirmed Ribbits-style filled-map item resource chain for all 18 owned products and preserves C11's nearest-neighbor reframed 8-by-8 POI artwork for the 17 custom holders. The immutable corrected input is originals/assets/MME-C11-ribbits-style-inventory-routing.zip (69,803 bytes, SHA-256 5864BF56D06B481E6B037E72C6E6826A54AE2B100CDA6B72615F8AEC72EC9C54); its 17 POIs are byte-identical to C11. No C12 companion MME resource pack exists by design.",
       "The sole 18-row MapMarkerIdentity table, 17 registered map_marker_extension MapDecorationType holders, vanilla minecraft:red_x retention for buried treasure, idempotent map normalization, and immediate MapItemSavedData refresh behavior.",
       "One marker-gated external-native identity for a real minecraft:filled_map with minecraft:map_id and ribbits:ribbit_village_explorer_map=true, admitting only the existing ribbits:ribbit_village holder and passing its ordinary decoration coordinates and live asset through to Xaero.",
-      "Optional client-only Xaero integrations, common/server-capable persistent marker identity, bundled fallback marker sprites, and the project-owned 88.0 icon-pack source for 17 opened-map marker sprites plus 18 filled-map item models.",
-      "Exact current C11 retained pair map-marker-extension-0.4.0-canary11.jar and map-marker-extension-icons-0.4.0-canary11.zip, with exact failed C10 and C8 pairs, exact C9 pair, and accepted Treasure X C4 retained separately as provenance and rollback evidence."
+      "Optional client-only Xaero integrations, common/server-capable persistent marker identity, 17 bundled opened-map sprites, and 18 bundled filled-map item definitions/models/textures loaded directly from standard Fabric mod resources.",
+      "Exact current C12 single JAR map-marker-extension-0.4.0-canary12.jar, with exact C11, C10, C9, and C8 JAR/resource-pack pairs and accepted Treasure X C4 retained separately as provenance and rollback evidence."
     ],
     "boundaries": {
       "owned_paths": [
@@ -101,15 +101,15 @@
     ]
   },
   "state": {
-    "milestone": "Exact MME C11 is the current development release and retained mod/pack pair after controlled validation of nearest-neighbor artwork reframing for all 17 custom native poi_icons directly from immutable originals/assets artwork into the verified standard 8-by-8 decoration canvas. C10 has scoped external/user runtime FAIL evidence only for Compass Ribbon POI visual scale: all 17 custom icons appeared and their identities/selections functioned, but they remained visibly tiny rather than matching vanilla minecraft:red_x; no unrelated C10 runtime row is inferred. C11 remains runtime untested, not accepted, and not deployed. C9 remains its exact retained predecessor, including its dedicated item-side artwork. C8 is an externally user-tested runtime FAIL only for too-small filled-map inventory presentation; its marker identities and selected icons worked, and no other C8 runtime rows are inferred. Exact legacy Treasure X C4 remains the accepted promoted binary baseline and rollback; its exact binary was not separately runtime-tested, and the genuine focused World Map runtime observation belongs only to C3.",
+    "milestone": "Exact MME C12 is the current development release: one self-contained JAR, with no companion MME resource-pack artifact, that packages the 18 user-confirmed Ribbits-style filled-map item chains and the exact 17 C11 reframed POI icons. The corrected external pack used with C11 has scoped user-reported positive evidence only for filled-map inventory routing; it is not evidence that the retained C11 pair or C12 itself passed a runtime matrix. C12 remains runtime untested, not accepted, and not deployed. C11 remains preserved historical provenance; C10 retains its scoped Compass Ribbon POI-scale FAIL, C9/C8 remain preserved, and Treasure X C4 remains the accepted rollback baseline.",
     "releases": {
       "current": {
-        "version": "C11 (0.4.0-canary11)",
+        "version": "C12 (0.4.0-canary12)",
         "artifact": {
-          "filename": "map-marker-extension-0.4.0-canary11.jar",
-          "sha256": "92df3cca27f3d4f6cfcb0ed52ba26874dc5f86eb756601b3a75771cfd7e9cbaf"
+          "filename": "map-marker-extension-0.4.0-canary12.jar",
+          "sha256": "f5c539b7535149fb936e241f72722a87e0474af855f2a98e6e3cf88c3290243e"
         },
-        "source_commit": "dff852f9a44af75f8e881cf5d7050314c439374d",
+        "source_commit": "87591808b60f7a7fc4ce8dd8b6a6ab8e3e8d12b1",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
@@ -142,11 +142,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 5,
-    "activity_at": "2026-09-08T14:55:44Z",
-    "updated_at": "2026-09-08T14:55:44Z",
-    "last_codex_at": "2026-09-08T14:55:44Z",
-    "source_commit": "dff852f9a44af75f8e881cf5d7050314c439374d",
+    "revision": 6,
+    "activity_at": "2026-09-09T02:35:00Z",
+    "updated_at": "2026-09-09T02:35:00Z",
+    "last_codex_at": "2026-09-09T02:35:00Z",
+    "source_commit": "87591808b60f7a7fc4ce8dd8b6a6ab8e3e8d12b1",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
