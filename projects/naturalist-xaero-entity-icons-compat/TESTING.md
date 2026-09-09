@@ -2,7 +2,7 @@
 
 ## Current gate
 
-**C15 NOT DEPLOYED — STATIC PASS — RUNTIME UNTESTED — FOCUSED BROWN BEAR AND CLAM CHECK REQUIRED — NOT READY FOR PROMOTION**
+**C16 NOT DEPLOYED — STATIC PASS — RUNTIME UNTESTED — CLAM-ONLY CAPTURE-ROUTE CHECK REQUIRED — NOT READY FOR PROMOTION**
 
 Canary 2 is retained failed external-runtime provenance: `naturalist-xaero-entity-icons-compat-0.1.0-canary2.jar`, SHA-256
 `ff161f6bcbf5cd056a5e27d7cd56091ab5abfa8e69440c76f2f6ce9ba6e86c50`, source
@@ -45,10 +45,12 @@ Exact C13 (`0.1.0-canary13`, `1077ee5b564c8f018e2205fcfce0c48c0d01deff57a77f2068
 
 Exact C14 (`naturalist-xaero-entity-icons-compat-0.1.0-canary14.jar`, embedded `0.1.0-canary14`, SHA-256 `01a2348b061237f45df6a015d57693c31d92cf79dd204fb7d2b39b8f3ab6f1ea`, source `6fe8dd0f82cbaa7378b1c00a0e326ca316414ae9`) is USER-REPORTED / EXTERNAL RUNTIME **FAIL**. Brown Bear is substantially larger than C13's microscopic brown dot; its correct icon is visible and recognizable, orientation remains correct, and the sprite-path scale intervention is clearly functioning. It is nevertheless noticeably too small compared with nearby normal entity icons. C14 is a final-Brown-Bear-sizing failure and must not be accepted/promoted.
 
-## C15 focused runtime procedure
+## C15 reconciled runtime result
 
-With exact Naturalist C8, Xaero Minimap 26.4.2, EMF 3.2.6, generic Xaero × EMF C9, and exact C15, reload resources once to evict only the existing 37 fallback targets and native `naturalist:bear` cache entries. Request a Brown Bear until the first normal cache MISS, then allow an ordinary cache HIT. Check only Brown Bear and Clam; do not retune or infer results for Starfish, either Scorpion, Giant Isopod, Zebra, Great White Shark, Piranha, Bass, Ray, Hedgehog, or another Naturalist entity.
+Exact C15 (`naturalist-xaero-entity-icons-compat-0.1.0-canary15.jar`, embedded `0.1.0-canary15`, SHA-256 `97f79910675e71610651bd871ac6aad89ccd5e63794350b8c659c44cbbcab7b7`, source `53fec53d07daabdd8315ac9e25a755291832eb75`) is USER-REPORTED / EXTERNAL RUNTIME mixed evidence, not a full-project pass. Brown Bear **PASSed** the requested correction: at `0.65F`, it is recognizable, correctly oriented, no longer oversized, and no longer too small. Its exact `naturalist:bear` → `RadarIconSpriteForm` → Brown-Bear-specific creator-scale path is frozen for C16. Clam **FAILed** as label-only: Xaero did not produce or accept its model icon; this is capture-route failure, not visual scale evidence.
 
-For Brown Bear, confirm a visible recognizable native icon with unchanged correct orientation and a size approximately normal relative to nearby entity radar icons. C15 changes only the exact `naturalist:bear` `RadarIconSpriteForm` creator parameters: it preserves form, variant, model config, debug state, native sprite-form identity, `naturalist:textures/entity/bear/bear.png`, fail-closed gating, and the absence of model/model-part scaling, PoseStack manipulation, rotation, cropping, offsets, texture replacement, alternate generation, label fallback, and cache sizing. The only numerical change is the capped scale from C14's `0.42F` to `0.65F`.
+## C16 focused runtime procedure
 
-For Clam, assess the current C8 configuration without declaring its `0.20F` scale either validated or invalid based on C8's overall failure. It is the authored `root` under Naturalist's outer model wrapper, a normalized detached `top`/`bottom`/`hinge` assembly, trace anchor `root/bottom`, and top-down presentation. C7 alone supplied entity-specific evidence: the actual icon had correct top-down orientation but was too large and top-clipped at `0.32F`. Record only C15 Clam observations actually seen. Require no relevant `InjectionError`, mixin transformation failure, Xaero render-frame crash, blank/label-only icon, or unrelated icon change. C15 is not ready for acceptance until both focused results are recorded.
+With exact Naturalist C8, Xaero Minimap 26.4.2, EMF 3.2.6, generic Xaero × EMF C9, and exact C16, reload resources once and request only Clam through a normal cache MISS followed by an ordinary cache HIT. C16 changes only Clam: it restores C7's runtime-proven model-root source and `bottom` trace capture route, retains the complete normalized detached `top`/`bottom`/`hinge` shell assembly, top-down orientation, and the evidence-based `0.20F` scale. C7 showed this route as a real, recognizable top-down shell icon at `0.32F`, though too large and top-clipped; C15's `root` / `root/bottom` route was label-only.
+
+Confirm that Clam is a real model icon rather than a label, then record only its observed orientation, recognizability, scale, and clipping. Do not infer a visual result from a label-only fallback. Do not alter or assess Brown Bear, Starfish, Jungle Scorpion, Desert Scorpion, Giant Isopod, Zebra, Great White Shark, Piranha, Bass, Ray, Hedgehog, or any other Naturalist entity. Require no relevant `InjectionError`, mixin transformation failure, or Xaero render-frame crash.
