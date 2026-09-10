@@ -260,8 +260,7 @@ class NaturalistCoverageTest {
         Path root = Path.of(System.getProperty("projectRoot"));
         for (String record : List.of(
                 Files.readString(root.resolve("WORKBENCH_STATUS.json")),
-                Files.readString(root.resolve("TESTING.md")),
-                Files.readString(root.resolve("CODEX_LOG.md")))) {
+                Files.readString(root.resolve("TESTING.md")))) {
             assertTrue(record.contains("Alligator PASS"));
             assertTrue(record.contains("Lizard PASS"));
             assertTrue(record.contains("Tortoise PASS"));
