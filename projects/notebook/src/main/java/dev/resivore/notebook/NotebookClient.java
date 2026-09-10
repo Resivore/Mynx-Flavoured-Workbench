@@ -85,7 +85,7 @@ public final class NotebookClient implements ClientModInitializer {
                 + INVENTORY_BUTTON_GAP;
         boolean survivalInventory = screen instanceof InventoryScreen;
         int preferredY = survivalInventory
-                ? bounds.notebook$getTopPos() + bounds.notebook$getImageHeight() - INVENTORY_BUTTON_SIZE
+                ? bounds.notebook$getTopPos() + bounds.notebook$getImageHeight() - 26
                 : bounds.notebook$getTopPos() + INVENTORY_BUTTON_GAP;
         Position position = findFreeUtilityPosition(
                 widgets,
