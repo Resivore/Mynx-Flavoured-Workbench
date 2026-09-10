@@ -12,7 +12,8 @@ import java.util.Optional;
 
 /** Direct CSR API linkage lives only in this class, loaded after Fabric confirms CSR is present. */
 public final class CsrHeaderBadgeIntegration {
-    static final int LOCKED_WIDTH = 7, UNLOCKED_WIDTH = 10, HEIGHT = 9;
+    static final int LOCKED_WIDTH = 7, LOCKED_HEIGHT = 9;
+    static final int UNLOCKED_WIDTH = 10, UNLOCKED_HEIGHT = 9;
     static final Identifier LOCKED_SPRITE = Identifier.fromNamespaceAndPath(
             "carried_container_auto_routing", "textures/gui/lock_locked.png");
     static final Identifier UNLOCKED_SPRITE = Identifier.fromNamespaceAndPath(
@@ -30,9 +31,10 @@ public final class CsrHeaderBadgeIntegration {
         }
         boolean locked = RoutingLock.isLocked(stack);
         int width = locked ? LOCKED_WIDTH : UNLOCKED_WIDTH;
+        int height = locked ? LOCKED_HEIGHT : UNLOCKED_HEIGHT;
         Identifier sprite = locked ? LOCKED_SPRITE : UNLOCKED_SPRITE;
-        return Optional.of(new ShulkerPanelHeaderDecorations.Decoration(width, HEIGHT,
+        return Optional.of(new ShulkerPanelHeaderDecorations.Decoration(width, height,
                 (graphics, x, y) -> graphics.blit(RenderPipelines.GUI_TEXTURED, sprite, x, y,
-                        0, 0, width, HEIGHT, width, HEIGHT)));
+                        0, 0, width, height, width, height)));
     }
 }

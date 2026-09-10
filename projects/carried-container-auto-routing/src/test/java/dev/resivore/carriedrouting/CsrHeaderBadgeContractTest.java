@@ -7,6 +7,8 @@ import java.awt.image.BufferedImage;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.security.MessageDigest;
+import java.util.HexFormat;
 import java.util.zip.ZipFile;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -16,26 +18,39 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class CsrHeaderBadgeContractTest {
     private static final Path ROOT = Path.of(System.getProperty("projectRoot"));
-    private static final String SOURCE = "assets/carried_container_auto_routing/textures/gui/lock_source.png";
     private static final String LOCKED = "assets/carried_container_auto_routing/textures/gui/lock_locked.png";
     private static final String UNLOCKED = "assets/carried_container_auto_routing/textures/gui/lock_unlocked.png";
+    private static final String OBSOLETE_SOURCE = "assets/carried_container_auto_routing/textures/gui/lock_source.png";
+    private static final String LOCKED_SHA256 = "cde847dba65a29823d62fee4f70fc4c1e83fd40e4fbbc4b81871b9164f11e617";
+    private static final String UNLOCKED_SHA256 = "10a5f3205c311974eea2798e1c97cca248798f12b7156c202c59afbb850fc39c";
 
     @Test
-    void trimmedSpritesPreserveEverySuppliedOpaquePixelAndRenderAtOneToOneScale() throws Exception {
-        BufferedImage source = ImageIO.read(ROOT.resolve("src/main/resources").resolve(SOURCE).toFile());
-        assertNotNull(source); assertEquals(20, source.getWidth()); assertEquals(11, source.getHeight());
-        assertGlyph(source, 0, 1, 7, 9, 29); assertGlyph(source, 10, 1, 10, 9, 29);
-        Path artifact = ROOT.resolve("build/libs/carried-container-auto-routing-0.3.9-csr-header-badge-canary1.jar");
+    void finalSuppliedSpritesArePackagedByteForByteAtNativeDimensions() throws Exception {
+        Path resources = ROOT.resolve("src/main/resources");
+        assertFinalSprite(resources.resolve(LOCKED), 7, 9, LOCKED_SHA256);
+        assertFinalSprite(resources.resolve(UNLOCKED), 10, 9, UNLOCKED_SHA256);
+        assertFalse(Files.exists(resources.resolve(OBSOLETE_SOURCE)));
+
+        Path artifact = ROOT.resolve("build/libs/carried-container-auto-routing-0.3.10-csr-lock-sprite-art-canary1.jar");
         try (ZipFile zip = new ZipFile(artifact.toFile())) {
-            assertFalse(zip.stream().anyMatch(entry -> entry.getName().equals(SOURCE)),
-                    "Only the tightly cropped runtime sprites belong in the artifact");
-            assertTrimmedSprite(zip, LOCKED, source, 0, 1, 7, 9);
-            assertTrimmedSprite(zip, UNLOCKED, source, 10, 1, 10, 9);
+            assertFalse(zip.stream().anyMatch(entry -> entry.getName().equals(OBSOLETE_SOURCE)));
+            assertPackagedSprite(zip, LOCKED, 7, 9, LOCKED_SHA256);
+            assertPackagedSprite(zip, UNLOCKED, 10, 9, UNLOCKED_SHA256);
         }
+    }
+
+    @Test
+    void directResourceBuildAndBadgeUseNativeOneToOneSpriteDimensions() throws Exception {
+        String build = Files.readString(ROOT.resolve("build.gradle"));
         String bridge = Files.readString(ROOT.resolve("src/main/java/dev/resivore/carriedrouting/client/CsrHeaderBadgeIntegration.java"));
-        assertTrue(bridge.contains("LOCKED_WIDTH = 7, UNLOCKED_WIDTH = 10, HEIGHT = 9"));
-        assertTrue(bridge.contains("width, HEIGHT, width, HEIGHT"), "The badge must be a 1:1 unscaled texture blit");
+        assertFalse(build.contains("lock_source.png"));
+        assertFalse(build.contains("getSubimage"));
+        assertFalse(build.contains("ImageIO"));
+        assertTrue(bridge.contains("LOCKED_WIDTH = 7, LOCKED_HEIGHT = 9"));
+        assertTrue(bridge.contains("UNLOCKED_WIDTH = 10, UNLOCKED_HEIGHT = 9"));
+        assertTrue(bridge.contains("width, height, width, height"), "The badge must be a 1:1 unscaled texture blit");
         assertTrue(bridge.contains("instanceof ShulkerBoxBlock"));
+        assertTrue(bridge.contains("RoutingLock.isLocked(stack)"));
         assertFalse(bridge.contains("BundleItem"));
     }
 
@@ -52,24 +67,25 @@ class CsrHeaderBadgeContractTest {
         assertFalse(server.contains("text.carried_container_auto_routing.no_target"));
     }
 
-    private static void assertGlyph(BufferedImage image, int x, int y, int width, int height, int opaque) {
-        int count = 0;
-        for (int yy = 0; yy < image.getHeight(); yy++) for (int xx = 0; xx < image.getWidth(); xx++)
-            if (((image.getRGB(xx, yy) >>> 24) & 0xFF) != 0) count++;
-        // Each side carries the same 29-pixel glyph; scope the count to its bounding rectangle.
-        int local = 0;
-        for (int yy = y; yy < y + height; yy++) for (int xx = x; xx < x + width; xx++)
-            if (((image.getRGB(xx, yy) >>> 24) & 0xFF) != 0) local++;
-        assertEquals(58, count); assertEquals(opaque, local);
+    private static void assertFinalSprite(Path file, int width, int height, String expectedHash) throws Exception {
+        assertTrue(Files.isRegularFile(file));
+        assertEquals(expectedHash, sha256(Files.readAllBytes(file)), file.toString());
+        BufferedImage sprite = ImageIO.read(file.toFile());
+        assertNotNull(sprite); assertEquals(width, sprite.getWidth()); assertEquals(height, sprite.getHeight());
     }
 
-    private static void assertTrimmedSprite(ZipFile zip, String resource, BufferedImage source,
-                                            int sourceX, int sourceY, int width, int height) throws Exception {
-        try (InputStream input = zip.getInputStream(zip.getEntry(resource))) {
-            BufferedImage sprite = ImageIO.read(input);
+    private static void assertPackagedSprite(ZipFile zip, String resource, int width, int height, String expectedHash) throws Exception {
+        var entry = zip.getEntry(resource);
+        assertNotNull(entry, resource);
+        try (InputStream input = zip.getInputStream(entry)) {
+            byte[] bytes = input.readAllBytes();
+            assertEquals(expectedHash, sha256(bytes), resource);
+            BufferedImage sprite = ImageIO.read(new java.io.ByteArrayInputStream(bytes));
             assertNotNull(sprite); assertEquals(width, sprite.getWidth()); assertEquals(height, sprite.getHeight());
-            for (int y = 0; y < height; y++) for (int x = 0; x < width; x++)
-                assertEquals(source.getRGB(sourceX + x, sourceY + y), sprite.getRGB(x, y), resource + " pixel " + x + "," + y);
         }
+    }
+
+    private static String sha256(byte[] bytes) throws Exception {
+        return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(bytes));
     }
 }
