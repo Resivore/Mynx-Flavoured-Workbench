@@ -59,7 +59,7 @@ class NaturalistTraceBridgeTest {
         assertNull(follow.invoke(null, authoredRoot, List.of("root", "body")));
     }
 
-    @Test void c22UsesTheLiveBodyTraceAsCenterWithoutReducingTheSyntheticAssembly() {
+    @Test void c23UsesTheLiveBodyTraceAsCenterWithoutReducingTheSyntheticAssemblies() {
         ModelPart body = part(Map.of());
         ModelPart legs = part(Map.of());
         ModelPart source = part(Map.of("body", body, "legs", legs));
@@ -73,6 +73,15 @@ class NaturalistTraceBridgeTest {
         assertTrue(selectedAssembly.hasChild("legs"));
         assertSame(body, resolved.renderCenter());
         assertNotSame(selectedAssembly, resolved.renderCenter());
+        for (String id : List.of("desert_scorpion", "jungle_scorpion")) {
+            var scorpion = NaturalistModelContracts.contractsForId(id).getFirst();
+            var scorpionResolved = new NaturalistModelContracts.ResolvedContract(scorpion, source, selectedAssembly, body);
+            assertEquals(List.of(), scorpion.path(), id);
+            assertEquals(List.of("body"), scorpion.tracePath(), id);
+            assertTrue(scorpion.useTraceAsRenderCenter(), id);
+            assertSame(body, scorpionResolved.renderCenter(), id);
+            assertNotSame(selectedAssembly, scorpionResolved.renderCenter(), id);
+        }
     }
 
     @Test void explicitDescendantTraceCanRenderAnExactRootContract() {

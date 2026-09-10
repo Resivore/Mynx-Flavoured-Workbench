@@ -114,14 +114,20 @@ tasks.register('verifyClientOnlyArtifact') {
     }
 }
 tasks.named('check') { dependsOn tasks.named('productionMixinTest'), tasks.named('verifyClientOnlyArtifact') }
-tasks.register('verifyCanary22StarfishPresentationContract') {
+tasks.register('verifyCanary23PresentationContracts') {
     doLast {
-        if (project.version != '0.1.0-canary22') return
+        if (project.version != '0.1.0-canary23') return
         def source = file('src/main/java/dev/resivore/naturalistxaeroicons/NaturalistModelContracts.java').getText('UTF-8')
-        def expected = '''add(map, "starfish", cNormalizedDetachedChildrenWithTraceCenter("StarfishModel", "", "body",
-                p(.58F, 1.5708F, 0.0F, 0.0F), List.of("body", "legs")))'''
-        if (!source.contains(expected)) throw new GradleException('Canary 22 requires the exact full-silhouette Starfish contract with its live body center')
+        def required = [
+                '''add(map, "starfish", cNormalizedDetachedChildrenWithTraceCenter("StarfishModel", "", "body",
+                p(.52F, 1.5708F, 0.0F, 0.0F), List.of("body", "legs")))''',
+                '''add(map, "desert_scorpion", cNormalizedDetachedChildrenWithTraceCenter("DesertScorpionModel", "", "body",
+                p(.34F, 1.5708F, 0.0F, 0.0F), List.of("body", "legs")))''',
+                '''add(map, "jungle_scorpion", cNormalizedDetachedChildrenWithTraceCenter("JungleScorpionModel", "", "body",
+                p(.28F, 1.5708F, 0.0F, 0.0F), List.of("body", "legs")))'''
+        ]
+        if (required.any { !source.contains(it) }) throw new GradleException('Canary 23 requires exact Starfish and audited live-body Scorpion contracts')
     }
 }
-tasks.register('stageCanaryArtifact', Copy) { dependsOn tasks.named('check'), tasks.named('verifyCanary22StarfishPresentationContract'); from(tasks.named('jar')); into(layout.projectDirectory.dir('artifacts')) }
+tasks.register('stageCanaryArtifact', Copy) { dependsOn tasks.named('check'), tasks.named('verifyCanary23PresentationContracts'); from(tasks.named('jar')); into(layout.projectDirectory.dir('artifacts')) }
 java { withSourcesJar() }

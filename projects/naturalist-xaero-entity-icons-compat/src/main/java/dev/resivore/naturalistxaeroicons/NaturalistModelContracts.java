@@ -154,7 +154,7 @@ public final class NaturalistModelContracts {
         // children, normalize only that copied wrapper's y=24/yRot=pi placement, and trace its
         // drawable body rather than making a second, nonexistent `root` traversal.
         add(map, "starfish", cNormalizedDetachedChildrenWithTraceCenter("StarfishModel", "", "body",
-                p(.58F, 1.5708F, 0.0F, 0.0F), List.of("body", "legs")));
+                p(.52F, 1.5708F, 0.0F, 0.0F), List.of("body", "legs")));
         // C19 proves that the 0.30F top-down presentation can produce a real icon, but its
         // top/bottom/hinge assembly captures only part of the shell.  Naturalist's authored
         // `top` child contains the complete upper shell surface, so C20 renders and traces only
@@ -164,13 +164,13 @@ public final class NaturalistModelContracts {
         add(map, "giant_isopod", cVisibleDetached("GiantIsopodModel", "rolled", p(.45F)), cDetached("GiantIsopodModel", "body", p(.45F)));
         add(map, "jellyfish", cDetached("JellyfishModel", "body", p(.45F)));
         add(map, "whale", c("WhaleModel", "body/skullRot", p(.30F)), c("WhaleBabyModel", "body/skull", p(.60F)));
-        // The authored trees differ.  Desert's body owns claws and tail while legs are a root
-        // sibling; Jungle's body owns arms/claws and tail while legs are also a root sibling.
-        // Keep separate, source-backed compact assemblies and normalize only their copied root
-        // frame.  The drawable body remains the exact trace anchor for Xaero's success detector.
-        add(map, "desert_scorpion", cNormalizedDetachedChildren("DesertScorpionModel", "root", "root/body",
+        // Both constructors pass root.getChild("root") to EntityModel, so model.root() already
+        // is the authored root: a second `root` hop is invalid. Desert body owns claws/tail and
+        // Jungle body owns arms/claws/tail; legs is a sibling in each. Keep the compact copied
+        // assembly but nominate the live drawable body as both trace and Xaero center.
+        add(map, "desert_scorpion", cNormalizedDetachedChildrenWithTraceCenter("DesertScorpionModel", "", "body",
                 p(.34F, 1.5708F, 0.0F, 0.0F), List.of("body", "legs")));
-        add(map, "jungle_scorpion", cNormalizedDetachedChildren("JungleScorpionModel", "root", "root/body",
+        add(map, "jungle_scorpion", cNormalizedDetachedChildrenWithTraceCenter("JungleScorpionModel", "", "body",
                 p(.28F, 1.5708F, 0.0F, 0.0F), List.of("body", "legs")));
         // C5's profile scale is retained.  The negative model-space frame Y correction exposes
         // the lower silhouette without changing the shark's size or side presentation.

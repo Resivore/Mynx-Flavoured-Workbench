@@ -79,7 +79,7 @@ class NaturalistCoverageTest {
         }
     }
 
-    @Test void c22PreservesTheExactClosedC20ClamContractAndUsesLiveBodyOnlyAsStarfishRenderCenter() {
+    @Test void c23PreservesSolvedContractsAndUsesLiveBodyCentersForStarfishAndScorpions() {
         assertEquals(List.of("body", "neck"), NaturalistModelContracts.contractsForId("alligator").getFirst().path());
         assertEquals(List.of("body", "neck"), NaturalistModelContracts.contractsForId("boar").getFirst().path());
         assertEquals(List.of("body", "neck"), NaturalistModelContracts.contractsForId("boar").getFirst().tracePath());
@@ -105,20 +105,24 @@ class NaturalistCoverageTest {
         assertEquals(List.of("body", "legs"), starfish.drawableChildren());
         assertTrue(starfish.normalizeSelectedRootTransform());
         assertTrue(starfish.useTraceAsRenderCenter());
-        assertEquals(.58F, starfish.presentation().scale());
+        assertEquals(.52F, starfish.presentation().scale());
         assertEquals(1.5708F, starfish.presentation().xRotation());
         var desertScorpion = NaturalistModelContracts.contractsForId("desert_scorpion").getFirst();
         var jungleScorpion = NaturalistModelContracts.contractsForId("jungle_scorpion").getFirst();
-        assertEquals(List.of("root"), desertScorpion.path());
-        assertEquals(List.of("root", "body"), desertScorpion.tracePath());
-        assertEquals(List.of("root"), jungleScorpion.path());
-        assertEquals(List.of("root", "body"), jungleScorpion.tracePath());
+        assertEquals(List.of(), desertScorpion.path());
+        assertEquals(List.of("body"), desertScorpion.tracePath());
+        assertEquals(List.of(), jungleScorpion.path());
+        assertEquals(List.of("body"), jungleScorpion.tracePath());
         assertEquals(1.5708F, desertScorpion.presentation().xRotation());
         assertEquals(1.5708F, jungleScorpion.presentation().xRotation());
         assertEquals(List.of("body", "legs"), desertScorpion.drawableChildren());
         assertEquals(List.of("body", "legs"), jungleScorpion.drawableChildren());
         assertTrue(desertScorpion.normalizeSelectedRootTransform());
         assertTrue(jungleScorpion.normalizeSelectedRootTransform());
+        assertTrue(desertScorpion.useTraceAsRenderCenter());
+        assertTrue(jungleScorpion.useTraceAsRenderCenter());
+        assertEquals(.34F, desertScorpion.presentation().scale());
+        assertEquals(.28F, jungleScorpion.presentation().scale());
         var clam = NaturalistModelContracts.contractsForId("clam").getFirst();
         assertEquals("com.crispytwig.naturalist.client.model.ClamModel", clam.modelClass());
         assertEquals(List.of("top"), clam.path());
@@ -132,7 +136,9 @@ class NaturalistCoverageTest {
         assertEquals(0.0F, clam.presentation().zRotation());
         assertEquals(0.0F, clam.presentation().frameYOffset());
         for (String id : NaturalistModelContracts.targetIds()) {
-            if (!"starfish".equals(id)) assertFalse(NaturalistModelContracts.contractsForId(id).getFirst().useTraceAsRenderCenter(), id);
+            if (!List.of("starfish", "desert_scorpion", "jungle_scorpion").contains(id)) {
+                assertFalse(NaturalistModelContracts.contractsForId(id).getFirst().useTraceAsRenderCenter(), id);
+            }
         }
         assertTrue(NaturalistModelContracts.contractsForId("whale").getFirst().presentation().scale() < 0.5F);
     }
@@ -226,7 +232,7 @@ class NaturalistCoverageTest {
                 "src/main/java/dev/resivore/naturalistxaeroicons/ClamCaptureDiagnostic.java")));
     }
 
-    @Test void c22StarfishSourceAuditProvesModelRootAndCompleteFiveArmAssembly() throws Exception {
+    @Test void c23SourceAuditProvesModelRootsAndCompleteCompactAssemblies() throws Exception {
         Path models = Path.of(System.getProperty("projectRoot")).getParent()
                 .resolve("naturalist/common/src/main/java/com/crispytwig/naturalist/client/model");
         String starfish = Files.readString(models.resolve("StarfishModel.java"));
@@ -240,6 +246,20 @@ class NaturalistCoverageTest {
         for (String arm : List.of("leftArm", "rightArm", "leftLeg", "rightLeg")) {
             assertTrue(starfish.contains("legs.addOrReplaceChild(\"" + arm + "\""), arm);
         }
+        for (String model : List.of("DesertScorpionModel", "JungleScorpionModel")) {
+            String scorpion = Files.readString(models.resolve(model + ".java"));
+            assertTrue(scorpion.contains("super(root.getChild(\"root\"))"), model);
+            assertTrue(scorpion.contains("this.root = root.getChild(\"root\")"), model);
+            assertTrue(scorpion.contains("root.addOrReplaceChild(\"body\""), model);
+            assertTrue(scorpion.contains("root.addOrReplaceChild(\"legs\""), model);
+        }
+        String desert = Files.readString(models.resolve("DesertScorpionModel.java"));
+        assertTrue(desert.contains("body.addOrReplaceChild(\"leftArm\""));
+        assertTrue(desert.contains("body.addOrReplaceChild(\"rightArm\""));
+        assertTrue(desert.contains("body.addOrReplaceChild(\"tail_1\""));
+        String jungle = Files.readString(models.resolve("JungleScorpionModel.java"));
+        assertTrue(jungle.contains("body.addOrReplaceChild(\"tail\""));
+        assertTrue(jungle.contains("body.addOrReplaceChild(\"arms\""));
     }
 
     @Test void c22StarfishDiagnosticReportsTheActualProductionContract() throws Exception {
@@ -258,6 +278,23 @@ class NaturalistCoverageTest {
         assertTrue(diagnostic.contains("renderCenterHasDirectMrt="));
         assertTrue(diagnostic.contains("renderCenterRecorded="));
         assertFalse(diagnostic.contains("naturalist:clam"));
+    }
+
+    @Test void c23ScorpionDiagnosticsAreNarrowAndReportOnlyActualXaeroSeams() throws Exception {
+        Path module = Path.of(System.getProperty("projectRoot"));
+        String diagnostic = Files.readString(module.resolve(
+                "src/main/java/dev/resivore/naturalistxaeroicons/ScorpionCaptureDiagnostic.java"));
+        for (String expected : List.of("naturalist:desert_scorpion", "naturalist:jungle_scorpion",
+                "canPrerender=", "RadarIconCreator#create form=", "rendererTexture=", "exactModelClass=",
+                "selectedGeometry=", "renderCenterIsTrace=", "renderCenterHasDirectMrt=",
+                "explicit trace resolution succeeds=", "adapterRecorded=", "selectedAssemblyRecorded=",
+                "renderCenterRecorded=", "fallback threw", "cache write post-MISS", "manager result")) {
+            assertTrue(diagnostic.contains(expected), expected);
+        }
+        assertFalse(diagnostic.contains("renderedDest.add("));
+        assertFalse(diagnostic.contains("new XaeroIcon"));
+        String contracts = Files.readString(module.resolve("src/main/java/dev/resivore/naturalistxaeroicons/NaturalistModelContracts.java"));
+        assertFalse(contracts.contains("\"root\", \"root/body\""));
     }
 
     @Test void c8SourceAuditsUseAuthoredRootsForScorpionAndStarfishFallbacks() throws Exception {

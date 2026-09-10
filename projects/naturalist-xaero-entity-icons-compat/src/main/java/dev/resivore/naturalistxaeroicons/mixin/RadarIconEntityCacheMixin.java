@@ -1,6 +1,7 @@
 package dev.resivore.naturalistxaeroicons.mixin;
 
 import dev.resivore.naturalistxaeroicons.StarfishCaptureDiagnostic;
+import dev.resivore.naturalistxaeroicons.ScorpionCaptureDiagnostic;
 import net.minecraft.world.entity.EntityType;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -21,5 +22,6 @@ abstract class RadarIconEntityCacheMixin {
     private void naturalistXaeroIcons$observeStarfishCacheWrite(
             RadarIconKey key, XaeroIcon icon, CallbackInfoReturnable<XaeroIcon> callback) {
         StarfishCaptureDiagnostic.cacheWritten(entityType, icon);
+        ScorpionCaptureDiagnostic.cacheWritten(entityType, icon);
     }
 }
