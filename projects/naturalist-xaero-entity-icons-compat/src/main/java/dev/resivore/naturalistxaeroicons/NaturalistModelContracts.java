@@ -113,16 +113,23 @@ public final class NaturalistModelContracts {
                 p(.42F, 0.0F, 1.5708F, 0.0F), List.of("neck_r1", "leftEar", "rightEar")),
                 cDetached("ZebraBabyModel", "body/neck/skull2", "body/neck/skull2", p(.62F, 0.0F, 1.5708F, 0.0F)));
         add(map, "giraffe", c("GiraffeModel", "hips/shoulders/body/neck/head", p(.55F)), c("GiraffeBabyModel", "body/neck", p(.75F)));
-        add(map, "hippo", c("HippoModel", "body/bone/neck", p(.48F)), c("HippoBabyModel", "body/neck", p(.70F)));
+        // C24 keeps the proven head subtree and gives only the adult a conservative size increase.
+        add(map, "hippo", c("HippoModel", "body/bone/neck", p(.52F)), c("HippoBabyModel", "body/neck", p(.70F)));
         add(map, "vulture", cDetached("VultureModel", "neck"), cDetached("VultureBabyModel", "body/neck"));
         add(map, "boar", c("BoarModel", "body/neck", p(.72F)), c("BoarBabyModel", "body/neck", p(.80F)));
-        add(map, "alligator", c("AlligatorModel", "body/neck", p(.58F)), c("AlligatorBabyModel", "body/neck", p(.76F)));
-        add(map, "lizard", cDetached("LizardModel", "body/skullRot/neck", "body/skullRot/neck/neck_r1", p(1.0F)));
-        add(map, "tortoise", cDetached("TortoiseModel", "body/skullRot/neck"), cDetached("TortoiseBabyModel", "body/skullRot/neck"));
+        // Adult neck owns the skull plane plus the snout child.  A restrained source-model yaw
+        // exposes its eye plane without changing its compact head geometry; baby remains proven.
+        add(map, "alligator", c("AlligatorModel", "body/neck", p(.58F, 0.0F, .7854F, 0.0F)), c("AlligatorBabyModel", "body/neck", p(.76F)));
+        // The exact neck subtree is retained; its authored forward axis is rotated into profile.
+        add(map, "lizard", cDetached("LizardModel", "body/skullRot/neck", "body/skullRot/neck/neck_r1", p(1.0F, 0.0F, 1.5708F, 0.0F)));
+        // Preserve both compact head subtrees and use only a model-space profile presentation.
+        add(map, "tortoise", cDetached("TortoiseModel", "body/skullRot/neck", p(1.0F, 0.0F, 1.5708F, 0.0F)), cDetached("TortoiseBabyModel", "body/skullRot/neck", p(1.0F, 0.0F, 1.5708F, 0.0F)));
         add(map, "duck", c("DuckModel", "body/neck", p(.72F, 0.0F, 1.5708F, 0.0F)), c("DuckBabyModel", "body/neck", p(.80F, 0.0F, 1.5708F, 0.0F)));
         add(map, "mole", cDetached("MoleModel", "root/body/skull"));
         add(map, "rat", c("RatModel", "body/skull", p(.74F, 0.0F, 1.5708F, 0.0F)));
-        add(map, "black_bear", c("BlackBearModel", "body/skullRot/skull"), c("BlackBearBabyModel", "body/skull"));
+        // The adult skull contains the lower jaw/snout.  Move only its copied icon frame down
+        // one model unit to retain that lower silhouette; no live model or baby contract changes.
+        add(map, "black_bear", c("BlackBearModel", "body/skullRot/skull", p(1.0F, 0.0F, 0.0F, 0.0F, -1.0F)), c("BlackBearBabyModel", "body/skull"));
         add(map, "tiger", c("TigerModel", "body/skullRot/skull", p(.76F)), c("TigerBabyModel", "body/skull", p(.82F)));
         add(map, "komodo_dragon", c("KomodoDragonModel", "body/neck", p(.68F, 0.0F, 1.5708F, 0.0F)));
         add(map, "ostrich", c("OstrichModel", "root/body/skull", p(.60F)), c("OstrichBabyModel", "body/skull", p(.76F)));
@@ -163,7 +170,8 @@ public final class NaturalistModelContracts {
                 p(.30F, 1.5708F, 0.0F, 0.0F)));
         add(map, "giant_isopod", cVisibleDetached("GiantIsopodModel", "rolled", p(.45F)), cDetached("GiantIsopodModel", "body", p(.45F)));
         add(map, "jellyfish", cDetached("JellyfishModel", "body", p(.45F)));
-        add(map, "whale", c("WhaleModel", "body/skullRot", p(.30F)), c("WhaleBabyModel", "body/skull", p(.60F)));
+        // Retain the renderer-selected compact head branches and present both life stages side-on.
+        add(map, "whale", c("WhaleModel", "body/skullRot", p(.30F, 0.0F, 1.5708F, 0.0F)), c("WhaleBabyModel", "body/skull", p(.60F, 0.0F, 1.5708F, 0.0F)));
         // Both constructors pass root.getChild("root") to EntityModel, so model.root() already
         // is the authored root: a second `root` hop is invalid. Desert body owns claws/tail and
         // Jungle body owns arms/claws/tail; legs is a sibling in each. Keep the compact copied
