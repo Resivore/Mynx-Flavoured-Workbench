@@ -148,17 +148,19 @@ public final class NaturalistModelContracts {
         // naturalist:orange_starfish -> naturalist:block/orange_starfish sprite, but it cannot
         // participate in Xaero's bounded rendered-part detector.  Keep a narrow entity fallback
         // with the real drawable body trace instead of caching a false 2-D success.
-        // These models place visible anatomy beneath the model wrapper's authored `root` child.
-        // Copy only the source-audited drawable siblings from that child, then normalize the
-        // copied gameplay root so its y=21/24 placement cannot move the icon outside Xaero's
-        // capture target.  The outer model wrapper itself has no drawable body/legs children.
-        add(map, "starfish", cNormalizedDetachedChildren("StarfishModel", "root", "root/body",
+        // StarfishModel passes its authored `root` child to EntityModel, therefore model.root()
+        // already is that gameplay-positioning wrapper.  Its drawable body holds the disk and
+        // fifth arm; the four other arms are under its legs sibling.  Copy both exact authored
+        // children, normalize only that copied wrapper's y=24/yRot=pi placement, and trace its
+        // drawable body rather than making a second, nonexistent `root` traversal.
+        add(map, "starfish", cNormalizedDetachedChildren("StarfishModel", "", "body",
                 p(.58F, 1.5708F, 0.0F, 0.0F), List.of("body", "legs")));
-        // C18 proves Xaero reaches this fallback route but records no rendered parts at 0.20F.
-        // C19 isolates the first post-C7 scale experiment: retain the model-root / `bottom` trace,
-        // normalized detached top/bottom/hinge shell assembly, and top-down orientation at 0.30F.
-        add(map, "clam", cNormalizedDetachedChildren("ClamModel", "", "bottom",
-                p(.30F, 1.5708F, 0.0F, 0.0F), List.of("top", "bottom", "hinge")));
+        // C19 proves that the 0.30F top-down presentation can produce a real icon, but its
+        // top/bottom/hinge assembly captures only part of the shell.  Naturalist's authored
+        // `top` child contains the complete upper shell surface, so C20 renders and traces only
+        // that exact child instead of asking Xaero to frame the lower shell or hinge as well.
+        add(map, "clam", cNormalizedDetached("ClamModel", "top", "top",
+                p(.30F, 1.5708F, 0.0F, 0.0F)));
         add(map, "giant_isopod", cVisibleDetached("GiantIsopodModel", "rolled", p(.45F)), cDetached("GiantIsopodModel", "body", p(.45F)));
         add(map, "jellyfish", cDetached("JellyfishModel", "body", p(.45F)));
         add(map, "whale", c("WhaleModel", "body/skullRot", p(.30F)), c("WhaleBabyModel", "body/skull", p(.60F)));
@@ -209,6 +211,10 @@ public final class NaturalistModelContracts {
     }
     private static Contract cNormalizedDetachedChildren(String simpleName, String slashPath, String slashTracePath, Presentation presentation, List<String> drawableChildren) {
         Contract base = cDetachedChildren(simpleName, slashPath, slashTracePath, presentation, drawableChildren);
+        return new Contract(base.modelClass(), base.path(), base.tracePath(), base.presentation(), base.cubeIndexes(), base.drawableChildren(), base.requiresVisible(), base.neutralizeRootRotation(), true, base.preserveAncestorTransforms());
+    }
+    private static Contract cNormalizedDetached(String simpleName, String slashPath, String slashTracePath, Presentation presentation) {
+        Contract base = cDetached(simpleName, slashPath, slashTracePath, presentation);
         return new Contract(base.modelClass(), base.path(), base.tracePath(), base.presentation(), base.cubeIndexes(), base.drawableChildren(), base.requiresVisible(), base.neutralizeRootRotation(), true, base.preserveAncestorTransforms());
     }
     private static Contract detach(Contract base) {
