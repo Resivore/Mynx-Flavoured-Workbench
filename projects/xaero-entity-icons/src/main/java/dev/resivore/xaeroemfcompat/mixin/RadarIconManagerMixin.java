@@ -1,5 +1,6 @@
 package dev.resivore.xaeroemfcompat.mixin;
 import dev.resivore.xaeroemfcompat.IconDiagnostics;
+import dev.resivore.xaeroemfcompat.IconPresentationPolicy;
 import dev.resivore.xaeroemfcompat.EmfIconPartResolver;
 import net.minecraft.client.model.EntityModel;
 import com.mojang.blaze3d.pipeline.RenderTarget;
@@ -11,6 +12,7 @@ import net.minecraft.world.entity.LivingEntity;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import xaero.hud.minimap.radar.icon.RadarIconManager;
 import xaero.hud.minimap.radar.icon.cache.RadarIconCache;
 import xaero.hud.minimap.radar.icon.cache.RadarIconEntityCache;
@@ -40,12 +42,22 @@ abstract class RadarIconManagerMixin {
             EntityRenderer<?,?> renderer, float partialTick, boolean debug,
             boolean showVariant, MinimapElementGraphics graphics, RenderTarget target,
             org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable<XaeroIcon> callback) {
+        IconPresentationPolicy.requestStarted(entity, canPrerender);
         if(entity instanceof LivingEntity && renderer instanceof LivingEntityRenderer<?,?,?> livingRenderer) {
             EntityModel<?> model=livingRenderer.getModel();
             if(EmfIconPartResolver.isSupportedEmfRoot(model.root())) {
                 IconDiagnostics.observe(type);
             }
         }
+    }
+
+    /** C10 adjusts Xaero's immutable per-icon request only for four exact vanilla IDs. */
+    @ModifyVariable(
+            method="get(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/entity/EntityType;Lxaero/hud/minimap/radar/icon/definition/RadarIconDefinition;Lnet/minecraft/client/renderer/entity/EntityRenderer;FZZLxaero/hud/minimap/element/render/MinimapElementGraphics;Lcom/mojang/blaze3d/pipeline/RenderTarget;)Lxaero/common/icon/XaeroIcon;",
+            at=@At("STORE"), index=19, require=1)
+    private xaero.hud.minimap.radar.icon.creator.RadarIconCreator.Parameters xaeroEmf$scaleTargetedPresentation(
+            xaero.hud.minimap.radar.icon.creator.RadarIconCreator.Parameters parameters) {
+        return IconPresentationPolicy.scaleForCurrentRequest(parameters);
     }
 
     /**
@@ -83,13 +95,15 @@ abstract class RadarIconManagerMixin {
             EntityRenderer<?,?> renderer, float partialTick, boolean debug,
             boolean showVariant, MinimapElementGraphics graphics, RenderTarget target,
             org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable<XaeroIcon> callback) {
-        if(!IconDiagnostics.owns(type)) return;
-        IconDiagnostics.context(EntityType.getKey(type).toString());
         try {
-            XaeroIcon icon=callback.getReturnValue();
-            IconDiagnostics.event(icon==null ? "MANAGER_RETURNED_NULL"
-                    : icon==RadarIconManager.FAILED ? "MANAGER_RETURNED_FAILED"
-                    : "MANAGER_RETURNED_ICON", "final");
-        } finally {IconDiagnostics.clearContext();}
+            if(!IconDiagnostics.owns(type)) return;
+            IconDiagnostics.context(EntityType.getKey(type).toString());
+            try {
+                XaeroIcon icon=callback.getReturnValue();
+                IconDiagnostics.event(icon==null ? "MANAGER_RETURNED_NULL"
+                        : icon==RadarIconManager.FAILED ? "MANAGER_RETURNED_FAILED"
+                        : "MANAGER_RETURNED_ICON", "final");
+            } finally {IconDiagnostics.clearContext();}
+        } finally {IconPresentationPolicy.requestFinished();}
     }
 }
