@@ -153,7 +153,7 @@ public final class NaturalistModelContracts {
         // fifth arm; the four other arms are under its legs sibling.  Copy both exact authored
         // children, normalize only that copied wrapper's y=24/yRot=pi placement, and trace its
         // drawable body rather than making a second, nonexistent `root` traversal.
-        add(map, "starfish", cNormalizedDetachedChildren("StarfishModel", "", "body",
+        add(map, "starfish", cNormalizedDetachedChildrenWithTraceCenter("StarfishModel", "", "body",
                 p(.58F, 1.5708F, 0.0F, 0.0F), List.of("body", "legs")));
         // C19 proves that the 0.30F top-down presentation can produce a real icon, but its
         // top/bottom/hinge assembly captures only part of the shell.  Naturalist's authored
@@ -187,15 +187,15 @@ public final class NaturalistModelContracts {
     }
     private static Contract c(String simpleName, String slashPath, String slashTracePath, Presentation presentation, List<Integer> cubeIndexes) {
         return new Contract("com.crispytwig.naturalist.client.model." + simpleName,
-                path(slashPath), path(slashTracePath), presentation, cubeIndexes, List.of(), false, false, false, true);
+                path(slashPath), path(slashTracePath), presentation, cubeIndexes, List.of(), false, false, false, false, true);
     }
     private static Contract cVisible(String simpleName, String slashPath, Presentation presentation) {
         Contract base = c(simpleName, slashPath, presentation);
-        return new Contract(base.modelClass(), base.path(), base.tracePath(), base.presentation(), base.cubeIndexes(), base.drawableChildren(), true, false, false, true);
+        return new Contract(base.modelClass(), base.path(), base.tracePath(), base.presentation(), base.cubeIndexes(), base.drawableChildren(), true, false, false, false, true);
     }
     private static Contract cNeutralRoot(String simpleName, String slashPath, Presentation presentation) {
         Contract base = c(simpleName, slashPath, presentation);
-        return new Contract(base.modelClass(), base.path(), base.tracePath(), base.presentation(), base.cubeIndexes(), base.drawableChildren(), false, true, false, true);
+        return new Contract(base.modelClass(), base.path(), base.tracePath(), base.presentation(), base.cubeIndexes(), base.drawableChildren(), false, true, false, false, true);
     }
     private static Contract cDetached(String simpleName, String slashPath) { return detach(c(simpleName, slashPath)); }
     private static Contract cDetached(String simpleName, String slashPath, Presentation presentation) { return detach(c(simpleName, slashPath, presentation)); }
@@ -207,18 +207,23 @@ public final class NaturalistModelContracts {
     }
     private static Contract cDetachedChildren(String simpleName, String slashPath, String slashTracePath, Presentation presentation, List<String> drawableChildren) {
         Contract base = c(simpleName, slashPath, slashTracePath, presentation);
-        return new Contract(base.modelClass(), base.path(), base.tracePath(), base.presentation(), base.cubeIndexes(), drawableChildren, false, false, false, false);
+        return new Contract(base.modelClass(), base.path(), base.tracePath(), base.presentation(), base.cubeIndexes(), drawableChildren, false, false, false, false, false);
     }
     private static Contract cNormalizedDetachedChildren(String simpleName, String slashPath, String slashTracePath, Presentation presentation, List<String> drawableChildren) {
         Contract base = cDetachedChildren(simpleName, slashPath, slashTracePath, presentation, drawableChildren);
-        return new Contract(base.modelClass(), base.path(), base.tracePath(), base.presentation(), base.cubeIndexes(), base.drawableChildren(), base.requiresVisible(), base.neutralizeRootRotation(), true, base.preserveAncestorTransforms());
+        return new Contract(base.modelClass(), base.path(), base.tracePath(), base.presentation(), base.cubeIndexes(), base.drawableChildren(), base.requiresVisible(), base.neutralizeRootRotation(), true, base.useTraceAsRenderCenter(), base.preserveAncestorTransforms());
+    }
+    /** A copied sibling assembly needs an authored live part for Xaero's direct-cuboid centering. */
+    private static Contract cNormalizedDetachedChildrenWithTraceCenter(String simpleName, String slashPath, String slashTracePath, Presentation presentation, List<String> drawableChildren) {
+        Contract base = cNormalizedDetachedChildren(simpleName, slashPath, slashTracePath, presentation, drawableChildren);
+        return new Contract(base.modelClass(), base.path(), base.tracePath(), base.presentation(), base.cubeIndexes(), base.drawableChildren(), base.requiresVisible(), base.neutralizeRootRotation(), base.normalizeSelectedRootTransform(), true, base.preserveAncestorTransforms());
     }
     private static Contract cNormalizedDetached(String simpleName, String slashPath, String slashTracePath, Presentation presentation) {
         Contract base = cDetached(simpleName, slashPath, slashTracePath, presentation);
-        return new Contract(base.modelClass(), base.path(), base.tracePath(), base.presentation(), base.cubeIndexes(), base.drawableChildren(), base.requiresVisible(), base.neutralizeRootRotation(), true, base.preserveAncestorTransforms());
+        return new Contract(base.modelClass(), base.path(), base.tracePath(), base.presentation(), base.cubeIndexes(), base.drawableChildren(), base.requiresVisible(), base.neutralizeRootRotation(), true, base.useTraceAsRenderCenter(), base.preserveAncestorTransforms());
     }
     private static Contract detach(Contract base) {
-        return new Contract(base.modelClass(), base.path(), base.tracePath(), base.presentation(), base.cubeIndexes(), base.drawableChildren(), base.requiresVisible(), base.neutralizeRootRotation(), base.normalizeSelectedRootTransform(), false);
+        return new Contract(base.modelClass(), base.path(), base.tracePath(), base.presentation(), base.cubeIndexes(), base.drawableChildren(), base.requiresVisible(), base.neutralizeRootRotation(), base.normalizeSelectedRootTransform(), base.useTraceAsRenderCenter(), false);
     }
     private static List<String> path(String slashPath) { return slashPath.isEmpty() ? List.of() : List.of(slashPath.split("/")); }
     private static Presentation p(float scale) { return p(scale, 0.0F, 0.0F, 0.0F, 0.0F); }
@@ -233,8 +238,11 @@ public final class NaturalistModelContracts {
     public record Contract(String modelClass, List<String> path, List<String> tracePath, Presentation presentation,
                            List<Integer> cubeIndexes, List<String> drawableChildren, boolean requiresVisible,
                            boolean neutralizeRootRotation, boolean normalizeSelectedRootTransform,
-                           boolean preserveAncestorTransforms) {}
+                           boolean useTraceAsRenderCenter, boolean preserveAncestorTransforms) {}
     /** Explicit icon-only presentation metadata; frameYOffset applies only to the copied adapter. */
     public record Presentation(float scale, float xRotation, float yRotation, float zRotation, float frameYOffset) {}
-    public record ResolvedContract(Contract contract, ModelPart source, ModelPart selected, ModelPart trace) {}
+    public record ResolvedContract(Contract contract, ModelPart source, ModelPart selected, ModelPart trace) {
+        /** Xaero uses this part's direct cuboid as the render frame center. */
+        public ModelPart renderCenter() { return contract.useTraceAsRenderCenter() ? trace : selected; }
+    }
 }

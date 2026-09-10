@@ -59,6 +59,22 @@ class NaturalistTraceBridgeTest {
         assertNull(follow.invoke(null, authoredRoot, List.of("root", "body")));
     }
 
+    @Test void c22UsesTheLiveBodyTraceAsCenterWithoutReducingTheSyntheticAssembly() {
+        ModelPart body = part(Map.of());
+        ModelPart legs = part(Map.of());
+        ModelPart source = part(Map.of("body", body, "legs", legs));
+        ModelPart selectedAssembly = part(Map.of("body", part(Map.of()), "legs", part(Map.of())));
+        var contract = NaturalistModelContracts.contractsForId("starfish").getFirst();
+        var resolved = new NaturalistModelContracts.ResolvedContract(contract, source, selectedAssembly, body);
+
+        assertTrue(contract.useTraceAsRenderCenter());
+        assertNotSame(source, selectedAssembly);
+        assertTrue(selectedAssembly.hasChild("body"));
+        assertTrue(selectedAssembly.hasChild("legs"));
+        assertSame(body, resolved.renderCenter());
+        assertNotSame(selectedAssembly, resolved.renderCenter());
+    }
+
     @Test void explicitDescendantTraceCanRenderAnExactRootContract() {
         ModelPart tracedBody = part(Map.of());
         ModelPart originalRoot = part(Map.of("body", tracedBody));

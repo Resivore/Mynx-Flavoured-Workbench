@@ -11,6 +11,7 @@ import net.minecraft.world.entity.EntityType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import xaero.common.icon.XaeroIcon;
+import xaero.hud.minimap.radar.icon.creator.render.trace.ModelRenderTrace;
 
 /** C21 records one normal Starfish cache miss and its result without changing Xaero's outcome. */
 public final class StarfishCaptureDiagnostic {
@@ -99,6 +100,20 @@ public final class StarfishCaptureDiagnostic {
                 + "; frameYOffset=" + presentation.frameYOffset());
     }
 
+    public static void renderCenter(NaturalistModelContracts.ResolvedContract contract, ModelPart selected,
+                                    ModelPart renderCenter, ModelRenderTrace mrt) {
+        Request request = REQUEST.get();
+        if (request == null) return;
+        request.selectedSynthetic = selected != contract.source();
+        request.renderCenterIsTrace = renderCenter == contract.trace();
+        request.renderCenterHasDirectMrt = mrt.getModelPartRenderInfo(renderCenter) != null;
+        report("center-" + request.selectedSynthetic + "-" + request.renderCenterIsTrace + "-" + request.renderCenterHasDirectMrt,
+                "Starfish selectedGeometry=" + (request.selectedSynthetic ? "synthetic" : "live")
+                        + "; renderCenter=" + (request.renderCenterIsTrace ? "live Starfish body trace" : "selected assembly")
+                        + "; renderCenterIsTrace=" + request.renderCenterIsTrace
+                        + "; renderCenterHasDirectMrt=" + request.renderCenterHasDirectMrt);
+    }
+
     public static void adapterBuilt(boolean traceExists) {
         Request request = REQUEST.get();
         if (request == null) return;
@@ -107,7 +122,7 @@ public final class StarfishCaptureDiagnostic {
         report("adapter-" + traceExists, "Starfish adapter built; explicit trace bound=" + traceExists);
     }
 
-    public static void fallbackRendered(int before, int after, ModelPart adapter, ModelPart selected,
+    public static void fallbackRendered(int before, int after, ModelPart adapter, ModelPart selected, ModelPart renderCenter,
                                         List<ModelPart> renderedParts) {
         Request request = REQUEST.get();
         if (request == null) return;
@@ -115,7 +130,8 @@ public final class StarfishCaptureDiagnostic {
         request.fallbackRenderedParts = after;
         report("render-" + before + "-" + after, "Starfish fallback render destination before=" + before
                 + "; after=" + after + "; adapterRecorded=" + renderedParts.contains(adapter)
-                + "; selectedRecorded=" + renderedParts.contains(selected));
+                + "; selectedRecorded=" + renderedParts.contains(selected)
+                + "; renderCenterRecorded=" + renderedParts.contains(renderCenter));
     }
 
     public static void failed(RuntimeException error) {
@@ -133,7 +149,8 @@ public final class StarfishCaptureDiagnostic {
                         + "-" + request.modelPartPath + "-" + request.creatorProduced + "-" + request.cacheWritten
                         + "-" + request.nativeRenderedParts + "-" + request.contractResolved + "-"
                         + request.adapterBuilt + "-" + request.traceBound + "-" + request.fallbackRendered
-                        + "-" + request.failure + "-" + (icon != null),
+                        + "-" + request.renderCenterIsTrace + "-" + request.renderCenterHasDirectMrt + "-"
+                        + request.failure + "-" + (icon != null),
                 "manager result non-null=" + (icon != null) + "; cacheHit=" + request.cacheHit
                         + "; creator=" + request.creatorEntered + "; modelForm=" + request.modelFormEntered
                         + "; modelPart=" + request.modelPartPath + "; creatorProduced=" + request.creatorProduced
@@ -142,6 +159,9 @@ public final class StarfishCaptureDiagnostic {
                         + "; contractResolved=" + request.contractResolved + "; adapterBuilt=" + request.adapterBuilt
                         + "; traceBound=" + request.traceBound + "; fallbackRendered=" + request.fallbackRendered
                         + "; fallbackRenderedParts=" + request.fallbackRenderedParts
+                        + "; selectedSynthetic=" + request.selectedSynthetic
+                        + "; renderCenterIsTrace=" + request.renderCenterIsTrace
+                        + "; renderCenterHasDirectMrt=" + request.renderCenterHasDirectMrt
                         + "; skipped=" + request.skipped + "; failure=" + request.failure);
         REQUEST.remove();
     }
@@ -174,6 +194,9 @@ public final class StarfishCaptureDiagnostic {
         private boolean contractResolved;
         private boolean adapterBuilt;
         private boolean traceBound;
+        private boolean selectedSynthetic;
+        private boolean renderCenterIsTrace;
+        private boolean renderCenterHasDirectMrt;
         private boolean fallbackRendered;
         private int fallbackRenderedParts;
         private String skipped;

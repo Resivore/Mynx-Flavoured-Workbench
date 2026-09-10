@@ -34,7 +34,7 @@ class BinaryContractTest {
         }
     }
 
-    @Test void c21ScopesTheFrozenBrownBearControlAndClosedStarfishCapture() throws Exception {
+    @Test void c22ScopesTheFrozenBrownBearControlAndLiveCenterStarfishCapture() throws Exception {
         Path root = Path.of(System.getProperty("projectRoot"));
         String mixins = Files.readString(root.resolve("src/main/resources/naturalist_xaero_entity_icons_compat.mixins.json"));
         assertTrue(mixins.contains("ModelRenderTraceMixin"));
@@ -48,6 +48,8 @@ class BinaryContractTest {
         assertTrue(bridge.contains("traceSources"));
         assertFalse(bridge.contains("@Redirect"));
         String prerenderer = Files.readString(root.resolve("src/main/java/dev/resivore/naturalistxaeroicons/mixin/RadarIconModelPrerendererMixin.java"));
+        assertTrue(prerenderer.contains("ModelPart renderCenter = contract.renderCenter()"));
+        assertTrue(prerenderer.contains("renderPart(pose, consumer, adapter, renderCenter, parameters)"));
         assertTrue(prerenderer.contains("if (!parameters.renderedDest.isEmpty()) callback.setReturnValue(selected)"));
         assertFalse(prerenderer.contains("renderedDest.contains(adapter)"));
         assertFalse(prerenderer.contains("callback.setReturnValue(adapter)"));
@@ -76,8 +78,10 @@ class BinaryContractTest {
         assertTrue(starfishDiagnostic.contains("selectedGeometry="));
         assertTrue(starfishDiagnostic.contains("rotations="));
         assertTrue(starfishDiagnostic.contains("frameYOffset="));
+        assertTrue(starfishDiagnostic.contains("renderCenterHasDirectMrt"));
         assertFalse(starfishDiagnostic.contains("pose.scale"));
         assertFalse(starfishDiagnostic.contains("new XaeroIcon"));
+        assertFalse(prerenderer.contains("renderedDest.add("));
         String genericManager = Files.readString(root.getParent().resolve(
                 "xaero-entity-icons/src/main/java/dev/resivore/xaeroemfcompat/mixin/RadarIconManagerMixin.java"));
         assertEquals(1, genericManager.split("@Redirect", -1).length - 1);

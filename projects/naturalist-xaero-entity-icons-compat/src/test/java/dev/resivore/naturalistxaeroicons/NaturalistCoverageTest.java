@@ -79,7 +79,7 @@ class NaturalistCoverageTest {
         }
     }
 
-    @Test void c21PreservesTheExactClosedC20ClamContractAndCorrectsOnlyStarfishRootResolution() {
+    @Test void c22PreservesTheExactClosedC20ClamContractAndUsesLiveBodyOnlyAsStarfishRenderCenter() {
         assertEquals(List.of("body", "neck"), NaturalistModelContracts.contractsForId("alligator").getFirst().path());
         assertEquals(List.of("body", "neck"), NaturalistModelContracts.contractsForId("boar").getFirst().path());
         assertEquals(List.of("body", "neck"), NaturalistModelContracts.contractsForId("boar").getFirst().tracePath());
@@ -104,6 +104,7 @@ class NaturalistCoverageTest {
         assertEquals(List.of("body"), starfish.tracePath());
         assertEquals(List.of("body", "legs"), starfish.drawableChildren());
         assertTrue(starfish.normalizeSelectedRootTransform());
+        assertTrue(starfish.useTraceAsRenderCenter());
         assertEquals(.58F, starfish.presentation().scale());
         assertEquals(1.5708F, starfish.presentation().xRotation());
         var desertScorpion = NaturalistModelContracts.contractsForId("desert_scorpion").getFirst();
@@ -123,12 +124,16 @@ class NaturalistCoverageTest {
         assertEquals(List.of("top"), clam.path());
         assertEquals(List.of("top"), clam.tracePath());
         assertEquals(List.of(), clam.drawableChildren());
+        assertFalse(clam.useTraceAsRenderCenter());
         assertTrue(clam.normalizeSelectedRootTransform());
         assertEquals(.30F, clam.presentation().scale());
         assertEquals(1.5708F, clam.presentation().xRotation());
         assertEquals(0.0F, clam.presentation().yRotation());
         assertEquals(0.0F, clam.presentation().zRotation());
         assertEquals(0.0F, clam.presentation().frameYOffset());
+        for (String id : NaturalistModelContracts.targetIds()) {
+            if (!"starfish".equals(id)) assertFalse(NaturalistModelContracts.contractsForId(id).getFirst().useTraceAsRenderCenter(), id);
+        }
         assertTrue(NaturalistModelContracts.contractsForId("whale").getFirst().presentation().scale() < 0.5F);
     }
 
@@ -221,7 +226,7 @@ class NaturalistCoverageTest {
                 "src/main/java/dev/resivore/naturalistxaeroicons/ClamCaptureDiagnostic.java")));
     }
 
-    @Test void c21StarfishSourceAuditProvesModelRootAndCompleteFiveArmAssembly() throws Exception {
+    @Test void c22StarfishSourceAuditProvesModelRootAndCompleteFiveArmAssembly() throws Exception {
         Path models = Path.of(System.getProperty("projectRoot")).getParent()
                 .resolve("naturalist/common/src/main/java/com/crispytwig/naturalist/client/model");
         String starfish = Files.readString(models.resolve("StarfishModel.java"));
@@ -237,7 +242,7 @@ class NaturalistCoverageTest {
         }
     }
 
-    @Test void c21StarfishDiagnosticReportsTheActualProductionContract() throws Exception {
+    @Test void c22StarfishDiagnosticReportsTheActualProductionContract() throws Exception {
         Path module = Path.of(System.getProperty("projectRoot"));
         String diagnostic = Files.readString(module.resolve(
                 "src/main/java/dev/resivore/naturalistxaeroicons/StarfishCaptureDiagnostic.java"));
@@ -248,6 +253,10 @@ class NaturalistCoverageTest {
         assertTrue(diagnostic.contains("fallback render destination before="));
         assertTrue(diagnostic.contains("adapterRecorded="));
         assertTrue(diagnostic.contains("selectedRecorded="));
+        assertTrue(diagnostic.contains("live Starfish body trace"));
+        assertTrue(diagnostic.contains("renderCenterIsTrace="));
+        assertTrue(diagnostic.contains("renderCenterHasDirectMrt="));
+        assertTrue(diagnostic.contains("renderCenterRecorded="));
         assertFalse(diagnostic.contains("naturalist:clam"));
     }
 

@@ -54,9 +54,11 @@ abstract class RadarIconModelPrerendererMixin {
             VertexConsumer consumer = self.getLayerModelVertexConsumer(
                     buffers, parameters.textures, parameters.textureAtlasSprite, parameters.mrt);
             int before = parameters.renderedDest.size();
-            self.getPartPrerenderer().renderPart(pose, consumer, adapter, selected, parameters);
+            ModelPart renderCenter = contract.renderCenter();
+            StarfishCaptureDiagnostic.renderCenter(contract, selected, renderCenter, parameters.mrt);
+            self.getPartPrerenderer().renderPart(pose, consumer, adapter, renderCenter, parameters);
             buffers.endBatch();
-            StarfishCaptureDiagnostic.fallbackRendered(before, parameters.renderedDest.size(), adapter, selected,
+            StarfishCaptureDiagnostic.fallbackRendered(before, parameters.renderedDest.size(), adapter, selected, renderCenter,
                     parameters.renderedDest);
             // Xaero's bounded detector records the rendered visible ModelPart, which may be a
             // drawable child rather than this assembly wrapper. This method starts only after an
