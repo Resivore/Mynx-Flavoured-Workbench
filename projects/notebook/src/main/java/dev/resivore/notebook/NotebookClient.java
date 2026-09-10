@@ -33,6 +33,7 @@ public final class NotebookClient implements ClientModInitializer {
     public static final String MOD_ID = "notebook";
     private static final int INVENTORY_BUTTON_SIZE = 18;
     private static final int INVENTORY_BUTTON_GAP = 4;
+    private static final int INVENTORY_BUTTON_STEP = INVENTORY_BUTTON_SIZE + INVENTORY_BUTTON_GAP;
 
     private KeyMapping openKey;
     private NotebookStore store;
@@ -82,14 +83,22 @@ public final class NotebookClient implements ClientModInitializer {
         int preferredX = bounds.notebook$getLeftPos()
                 + bounds.notebook$getImageWidth()
                 + INVENTORY_BUTTON_GAP;
-        int preferredY = bounds.notebook$getTopPos() + INVENTORY_BUTTON_GAP;
+        boolean survivalInventory = screen instanceof InventoryScreen;
+        int preferredY = survivalInventory
+                ? bounds.notebook$getTopPos() + bounds.notebook$getImageHeight() - INVENTORY_BUTTON_SIZE
+                : bounds.notebook$getTopPos() + INVENTORY_BUTTON_GAP;
         Position position = findFreeUtilityPosition(
                 widgets,
                 preferredX,
                 preferredY,
                 bounds.notebook$getLeftPos() - INVENTORY_BUTTON_SIZE - INVENTORY_BUTTON_GAP,
                 scaledWidth,
-                scaledHeight);
+                scaledHeight,
+                survivalInventory ? -INVENTORY_BUTTON_STEP : INVENTORY_BUTTON_STEP);
+
+        if (position == null) {
+            return;
+        }
 
         Button button = Button.builder(Component.literal("N"), ignored -> open(client, screen))
                 .bounds(position.x(), position.y(), INVENTORY_BUTTON_SIZE, INVENTORY_BUTTON_SIZE)
@@ -105,7 +114,8 @@ public final class NotebookClient implements ClientModInitializer {
             int firstY,
             int leftX,
             int screenWidth,
-            int screenHeight
+            int screenHeight,
+            int verticalStep
     ) {
         int[] columns = {rightX, leftX};
         for (int x : columns) {
@@ -113,8 +123,14 @@ public final class NotebookClient implements ClientModInitializer {
                 continue;
             }
             for (int row = 0; row < 9; row++) {
-                int y = firstY + row * (INVENTORY_BUTTON_SIZE + 2);
+                int y = firstY + row * verticalStep;
                 if (y < 2 || y + INVENTORY_BUTTON_SIZE > screenHeight - 2) {
+                    if (verticalStep < 0 && y + INVENTORY_BUTTON_SIZE > screenHeight - 2) {
+                        continue;
+                    }
+                    if (verticalStep > 0 && y < 2) {
+                        continue;
+                    }
                     break;
                 }
                 if (widgets.stream().noneMatch(widget -> overlaps(widget, x, y))) {
@@ -122,9 +138,7 @@ public final class NotebookClient implements ClientModInitializer {
                 }
             }
         }
-        return new Position(
-                Math.max(2, Math.min(screenWidth - INVENTORY_BUTTON_SIZE - 2, rightX)),
-                Math.max(2, Math.min(screenHeight - INVENTORY_BUTTON_SIZE - 2, firstY)));
+        return null;
     }
 
     private static boolean overlaps(AbstractWidget widget, int x, int y) {

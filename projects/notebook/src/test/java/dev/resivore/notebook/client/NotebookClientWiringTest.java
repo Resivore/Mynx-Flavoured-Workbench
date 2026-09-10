@@ -44,9 +44,26 @@ class NotebookClientWiringTest {
         assertTrue(accessor.contains("@Accessor(\"leftPos\")"));
         assertTrue(accessor.contains("@Accessor(\"topPos\")"));
         assertTrue(accessor.contains("@Accessor(\"imageWidth\")"));
+        assertTrue(accessor.contains("@Accessor(\"imageHeight\")"));
         assertTrue(client.contains("widget.getRight()"));
         assertTrue(client.contains("widget.getBottom()"));
         assertTrue(client.contains("INVENTORY_BUTTON_SIZE = 18"));
+    }
+
+    @Test
+    void survivalInventoryUsesTheLowerRightAnchorAndSearchesUpwardWithoutChangingCreative() throws IOException {
+        String client = read("src/main/java/dev/resivore/notebook/NotebookClient.java");
+
+        assertTrue(client.contains("boolean survivalInventory = screen instanceof InventoryScreen"));
+        assertTrue(client.contains("bounds.notebook$getTopPos() + bounds.notebook$getImageHeight() - INVENTORY_BUTTON_SIZE"));
+        assertTrue(client.contains(": bounds.notebook$getTopPos() + INVENTORY_BUTTON_GAP"));
+        assertTrue(client.contains("survivalInventory ? -INVENTORY_BUTTON_STEP : INVENTORY_BUTTON_STEP"));
+        assertTrue(client.contains("INVENTORY_BUTTON_STEP = INVENTORY_BUTTON_SIZE + INVENTORY_BUTTON_GAP"));
+        assertTrue(client.contains("int y = firstY + row * verticalStep"));
+        assertTrue(client.contains("int[] columns = {rightX, leftX}"));
+        assertTrue(client.contains("if (position == null)"));
+        assertTrue(client.contains("return null;"));
+        assertFalse(client.contains("int preferredY = bounds.notebook$getTopPos() + INVENTORY_BUTTON_GAP;"));
     }
 
     @Test

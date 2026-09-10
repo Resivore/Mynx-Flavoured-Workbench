@@ -15,4 +15,7 @@ public interface ContainerScreenAccess {
 
     @Accessor("imageWidth")
     int notebook$getImageWidth();
+
+    @Accessor("imageHeight")
+    int notebook$getImageHeight();
 }
