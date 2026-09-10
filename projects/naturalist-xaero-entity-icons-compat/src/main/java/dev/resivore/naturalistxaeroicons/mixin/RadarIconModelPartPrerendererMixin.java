@@ -3,6 +3,7 @@ package dev.resivore.naturalistxaeroicons.mixin;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import dev.resivore.naturalistxaeroicons.StarfishCaptureDiagnostic;
+import dev.resivore.naturalistxaeroicons.ScorpionCaptureDiagnostic;
 import net.minecraft.client.model.geom.ModelPart;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -19,6 +20,7 @@ abstract class RadarIconModelPartPrerendererMixin {
             PoseStack pose, VertexConsumer consumer, ModelPart part, ModelPart center,
             RadarIconModelPartPrerenderer.Parameters parameters, CallbackInfo callback) {
         StarfishCaptureDiagnostic.modelPartPath("RadarIconModelPartPrerenderer#renderPart");
+        ScorpionCaptureDiagnostic.modelPartPath("RadarIconModelPartPrerenderer#renderPart");
     }
 
     @Inject(method = "renderPartsIterable", at = @At("HEAD"), require = 1)
@@ -26,5 +28,6 @@ abstract class RadarIconModelPartPrerendererMixin {
             Iterable<ModelPart> parts, PoseStack pose, VertexConsumer consumer, ModelPart center,
             RadarIconModelPartPrerenderer.Parameters parameters, CallbackInfoReturnable<ModelPart> callback) {
         StarfishCaptureDiagnostic.modelPartPath("RadarIconModelPartPrerenderer#renderPartsIterable");
+        ScorpionCaptureDiagnostic.modelPartPath("RadarIconModelPartPrerenderer#renderPartsIterable");
     }
 }

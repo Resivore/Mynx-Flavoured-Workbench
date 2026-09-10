@@ -2,6 +2,7 @@ package dev.resivore.naturalistxaeroicons.mixin;
 
 import dev.resivore.naturalistxaeroicons.BrownBearSpritePresentation;
 import dev.resivore.naturalistxaeroicons.StarfishCaptureDiagnostic;
+import dev.resivore.naturalistxaeroicons.ScorpionCaptureDiagnostic;
 import dev.resivore.naturalistxaeroicons.NaturalistModelContracts;
 import java.util.Map;
 import net.minecraft.world.entity.EntityType;
@@ -36,6 +37,7 @@ abstract class RadarIconManagerMixin {
                     || "bear".equals(EntityType.getKey(type).getPath())));
         } catch (RuntimeException ignored) { /* reload remains Xaero-owned if the private seam changed */ }
         StarfishCaptureDiagnostic.resourceReloaded();
+        ScorpionCaptureDiagnostic.resourceReloaded();
     }
 
     @Inject(
@@ -51,6 +53,7 @@ abstract class RadarIconManagerMixin {
             CallbackInfoReturnable<XaeroIcon> callback) {
         BrownBearSpritePresentation.requestStarted(entity, canPrerender);
         StarfishCaptureDiagnostic.requestStarted(entity, canPrerender);
+        ScorpionCaptureDiagnostic.requestStarted(entity, canPrerender);
     }
 
     /** C21 records Xaero's Starfish cache decision without replacing its lookup or retry behavior. */
@@ -71,6 +74,10 @@ abstract class RadarIconManagerMixin {
             RadarIconArmor armor, RadarIconEntityCache cache, RadarIconKey key) {
         if (StarfishCaptureDiagnostic.isStarfish(entity)) {
             StarfishCaptureDiagnostic.cacheLookup(((RadarIconEntityCacheStorageAccessor) (Object) cache)
+                    .naturalistXaeroIcons$getStorage().containsKey(key));
+        }
+        if (ScorpionCaptureDiagnostic.isScorpion(entity)) {
+            ScorpionCaptureDiagnostic.cacheLookup(((RadarIconEntityCacheStorageAccessor) (Object) cache)
                     .naturalistXaeroIcons$getStorage().containsKey(key));
         }
     }
@@ -104,5 +111,6 @@ abstract class RadarIconManagerMixin {
             CallbackInfoReturnable<XaeroIcon> callback) {
         BrownBearSpritePresentation.requestFinished();
         StarfishCaptureDiagnostic.requestFinished(callback.getReturnValue());
+        ScorpionCaptureDiagnostic.requestFinished(entity, callback.getReturnValue());
     }
 }
