@@ -114,9 +114,9 @@ tasks.register('verifyClientOnlyArtifact') {
     }
 }
 tasks.named('check') { dependsOn tasks.named('productionMixinTest'), tasks.named('verifyClientOnlyArtifact') }
-tasks.register('verifyCanary26PresentationContracts') {
+tasks.register('verifyCanary27PresentationContracts') {
     doLast {
-        if (project.version != '0.1.0-canary26') return
+        if (project.version != '0.1.0-canary27') return
         def source = file('src/main/java/dev/resivore/naturalistxaeroicons/NaturalistModelContracts.java').getText('UTF-8')
         def required = [
                 '''add(map, "starfish", cNormalizedDetachedChildrenWithTraceCenter("StarfishModel", "", "body",
@@ -130,10 +130,10 @@ tasks.register('verifyCanary26PresentationContracts') {
                 '''add(map, "tortoise", cDetached("TortoiseModel", "body/skullRot/neck", p(1.0F, 0.0F, 1.5708F, 0.0F)), cDetached("TortoiseBabyModel", "body/skullRot/neck", p(1.0F, 0.0F, 1.5708F, 0.0F)))''',
                 '''add(map, "black_bear", c("BlackBearModel", "body/skullRot/skull", p(1.0F, 0.0F, 0.0F, 0.0F, -2.0F)), c("BlackBearBabyModel", "body/skull"))''',
                 '''add(map, "hippo", c("HippoModel", "body/bone/neck", p(.75F)), c("HippoBabyModel", "body/neck", p(.70F)))''',
-                '''add(map, "whale", c("WhaleModel", "body/skullRot", p(.30F, 0.0F, .7854F, 0.0F)), c("WhaleBabyModel", "body/skull", p(.60F, 0.0F, .7854F, 0.0F)))'''
+                '''add(map, "whale", cWithTraceCenter("WhaleModel", "body/skullRot", "body/skullRot/topJaw", p(.30F, 0.0F, 1.5708F, 0.0F)), c("WhaleBabyModel", "body/skull", p(.60F, 0.0F, .7854F, 0.0F)))'''
         ]
-        if (required.any { !source.contains(it) }) throw new GradleException('Canary 26 requires the exact Hippo increase and frozen Whale/solved-icon controls')
+        if (required.any { !source.contains(it) }) throw new GradleException('Canary 27 requires the exact Whale-only center correction and frozen solved-icon controls')
     }
 }
-tasks.register('stageCanaryArtifact', Copy) { dependsOn tasks.named('check'), tasks.named('verifyCanary26PresentationContracts'); from(tasks.named('jar')); into(layout.projectDirectory.dir('artifacts')) }
+tasks.register('stageCanaryArtifact', Copy) { dependsOn tasks.named('check'), tasks.named('verifyCanary27PresentationContracts'); from(tasks.named('jar')); into(layout.projectDirectory.dir('artifacts')) }
 java { withSourcesJar() }

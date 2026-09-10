@@ -170,12 +170,14 @@ public final class NaturalistModelContracts {
                 p(.30F, 1.5708F, 0.0F, 0.0F)));
         add(map, "giant_isopod", cVisibleDetached("GiantIsopodModel", "rolled", p(.45F)), cDetached("GiantIsopodModel", "body", p(.45F)));
         add(map, "jellyfish", cDetached("JellyfishModel", "body", p(.45F)));
-        // Adult skullRot is the only compact complete face assembly: its cranium owns topJaw and
-        // bottomJaw. Baby skull similarly owns jaw. Both run primarily along authored Z; C24's
-        // exact 90-degree presentation returned Xaero's empty bounded result. C26's anatomy
-        // audit finds no smaller complete face subtree, so it retains the detectable C25
-        // three-quarter projection rather than trading the real icon for a label-only profile.
-        add(map, "whale", c("WhaleModel", "body/skullRot", p(.30F, 0.0F, .7854F, 0.0F)), c("WhaleBabyModel", "body/skull", p(.60F, 0.0F, .7854F, 0.0F)));
+        // C27 keeps skullRot's complete adult face assembly (cranium plus topJaw and bottomJaw),
+        // but anchors Xaero's bounded center on its live, directly drawable topJaw.  Xaero reads
+        // only the center's direct largest cuboid for the frame; the old skullRot center is a
+        // short cranium while topJaw is the source-audited 28x11x42 forward face volume.  This
+        // is deliberately the Starfish-style separation of full copied geometry from a live
+        // trace/center, and is the capture-seam change that makes this otherwise known-bad 90°
+        // projection a distinct experiment. The baby contract is the frozen C26 baseline.
+        add(map, "whale", cWithTraceCenter("WhaleModel", "body/skullRot", "body/skullRot/topJaw", p(.30F, 0.0F, 1.5708F, 0.0F)), c("WhaleBabyModel", "body/skull", p(.60F, 0.0F, .7854F, 0.0F)));
         // Both constructors pass root.getChild("root") to EntityModel, so model.root() already
         // is the authored root: a second `root` hop is invalid. Desert body owns claws/tail and
         // Jungle body owns arms/claws/tail; legs is a sibling in each. Keep the compact copied
@@ -200,6 +202,12 @@ public final class NaturalistModelContracts {
     private static Contract c(String simpleName, String slashPath, String slashTracePath, Presentation presentation, List<Integer> cubeIndexes) {
         return new Contract("com.crispytwig.naturalist.client.model." + simpleName,
                 path(slashPath), path(slashTracePath), presentation, cubeIndexes, List.of(), false, false, false, false, true);
+    }
+    /** Keeps the complete source subtree while using an exact live drawable trace as Xaero's center. */
+    private static Contract cWithTraceCenter(String simpleName, String slashPath, String slashTracePath, Presentation presentation) {
+        Contract base = c(simpleName, slashPath, slashTracePath, presentation);
+        return new Contract(base.modelClass(), base.path(), base.tracePath(), base.presentation(), base.cubeIndexes(), base.drawableChildren(),
+                base.requiresVisible(), base.neutralizeRootRotation(), base.normalizeSelectedRootTransform(), true, base.preserveAncestorTransforms());
     }
     private static Contract cVisible(String simpleName, String slashPath, Presentation presentation) {
         Contract base = c(simpleName, slashPath, presentation);
