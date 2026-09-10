@@ -3,7 +3,7 @@
   "id": "quick_stack_nearby_compat",
   "version": "${version}",
   "name": "Workbench Quick Stack Nearby Compatibility",
-  "description": "Unified Workbench compatibility layer for Quick Stack Nearby; Canary 12 is a C9-derived correction that preserves zero-count nested CSR reservation ownership.",
+  "description": "Unified Workbench compatibility layer for Quick Stack Nearby; Canary 13 keeps C12 routing and gives the survival action a Minecraft-native utility button.",
   "authors": ["Resivore"],
   "license": "MIT",
   "environment": "*",
@@ -29,6 +29,6 @@
   "custom": {
     "workbench:classification": "GENERATED / STATICALLY VALIDATED / RUNTIME UNTESTED",
     "workbench:deployment": "NOT DEPLOYED",
-    "workbench:runtime-slot-owner": "Quick Stack Nearby Compatibility - Canary 12"
+    "workbench:runtime-slot-owner": "Quick Stack Nearby Compatibility - Canary 13"
   }
 }
