@@ -78,16 +78,16 @@
     ]
   },
   "state": {
-    "milestone": "Canary 1 remains an immutable historical artifact with static/build PASS but a user-supplied Minecraft client-initialization FAIL: its normal NotebookScreen class was inside the Mixin-owned dev.resivore.notebook.client package. A user then reported that Canary 2 opened without that fatal client-initialization crash. Current Canary 8 preserves the Mixin repair, supplied 640x400 Bedrock journal GUI-texture renderer, shared ruled-row/editor geometry, native click-to-edit behavior, autosave/forced-save model, shadowless text, unobscured book artwork, and two-stage Escape behavior. Its checked reading-mode checklist box is the supplied exact 8x8 #43693F-on-transparent PNG; its unchecked box remains an 8x8 transparent hollow outline in the live Notebook ink color with no fill. Notebook is ACTIVE, not deployed, and occupies neither testing slot.",
+    "milestone": "Canary 1 remains an immutable historical artifact with static/build PASS but a user-supplied Minecraft client-initialization FAIL: its normal NotebookScreen class was inside the Mixin-owned dev.resivore.notebook.client package. A user then reported that Canary 2 opened without that fatal client-initialization crash. Current Canary 9 preserves the Mixin repair, supplied 640x400 Bedrock journal GUI-texture renderer, shared ruled-row/editor geometry, native click-to-edit behavior, autosave/forced-save model, shadowless text, unobscured book artwork, two-stage Escape behavior, and current checklist sprites. On survival InventoryScreen it places the unchanged 18x18 N button at the live lower-right anchor x=leftPos+imageWidth+4 and y=topPos+imageHeight-18, then searches upward on the right in 22px steps before falling back left; creative retains its existing top anchor. Notebook is ACTIVE, not deployed, and occupies neither testing slot.",
     "releases": {
       "current": {
-        "version": "0.1.0-canary8",
-        "embedded_version": "0.1.0-canary8",
+        "version": "0.1.0-canary9",
+        "embedded_version": "0.1.0-canary9",
         "artifact": {
-          "filename": "notebook-0.1.0-canary8.jar",
-          "sha256": "8789f1416fe16c5640331fd45e901e153348f49f9f54d0186781a1aeda87e4d2"
+          "filename": "notebook-0.1.0-canary9.jar",
+          "sha256": "15a6410af8fb9e22188d9ee56a6cd9d61475a51bd8b36f506c0c06012247f947"
         },
-        "source_commit": "39977159db4050b5a8092a2ffce549179d58aaff",
+        "source_commit": "253f9c8d0cb0df61fe4f40d92158223ac6c2776c",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
@@ -106,11 +106,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 9,
-    "activity_at": "2026-09-10T03:47:45Z",
-    "updated_at": "2026-09-10T03:47:45Z",
-    "last_codex_at": "2026-09-10T03:47:45Z",
-    "source_commit": "39977159db4050b5a8092a2ffce549179d58aaff",
+    "revision": 10,
+    "activity_at": "2026-09-10T04:33:35Z",
+    "updated_at": "2026-09-10T04:33:35Z",
+    "last_codex_at": "2026-09-10T04:33:35Z",
+    "source_commit": "253f9c8d0cb0df61fe4f40d92158223ac6c2776c",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
