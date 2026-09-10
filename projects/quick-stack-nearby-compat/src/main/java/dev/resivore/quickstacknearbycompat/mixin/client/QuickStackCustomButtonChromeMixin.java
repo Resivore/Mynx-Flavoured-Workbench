@@ -2,31 +2,31 @@ package dev.resivore.quickstacknearbycompat.mixin.client;
 
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.gui.components.AbstractButton;
+import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.client.gui.components.WidgetSprites;
+import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.resources.Identifier;
+import net.minecraft.util.ARGB;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import tempeststudios.quickstacknearby.QuickStackIconButton;
 
 /**
- * Reuses Minecraft's own Button sprite, then draws the supplied QSN glyph as crisp logical pixels.
- * Other upstream custom buttons retain their original renderer.
+ * Replays the audited Minecraft 26.2 normal-Button sprite extraction for QSN's icon action only,
+ * then draws the supplied glyph as crisp logical pixels. Other QSN custom buttons retain upstream
+ * rendering.
  */
 @Mixin(targets = "tempeststudios.quickstacknearby.QuickStackCustomButtonBase", remap = false)
 public abstract class QuickStackCustomButtonChromeMixin {
     private static final int WHITE = 0xFFFFFFFF;
     private static final int SHADOW = 0xFF3F3F3F;
-
-    @Shadow
-    protected abstract void extractDefaultSprite(GuiGraphicsExtractor graphics);
-
-    @Shadow
-    public abstract int getX();
-
-    @Shadow
-    public abstract int getY();
+    private static final WidgetSprites NORMAL_BUTTON_SPRITES = new WidgetSprites(
+            Identifier.withDefaultNamespace("widget/button"),
+            Identifier.withDefaultNamespace("widget/button_disabled"),
+            Identifier.withDefaultNamespace("widget/button_highlighted")
+    );
 
     @Inject(
             method = "extractContents(Lnet/minecraft/client/gui/GuiGraphicsExtractor;IIF)V",
@@ -46,8 +46,17 @@ public abstract class QuickStackCustomButtonChromeMixin {
             return;
         }
 
-        extractDefaultSprite(graphics);
-        drawSuppliedGlyph(new GuiGraphics(graphics), getX(), getY());
+        AbstractWidget button = (AbstractWidget) (Object) this;
+        graphics.blitSprite(
+                RenderPipelines.GUI_TEXTURED,
+                NORMAL_BUTTON_SPRITES.get(button.active, button.isHoveredOrFocused()),
+                button.getX(),
+                button.getY(),
+                button.getWidth(),
+                button.getHeight(),
+                ARGB.white(button.getAlpha())
+        );
+        drawSuppliedGlyph(new GuiGraphics(graphics), button.getX(), button.getY());
         callback.cancel();
     }
 
