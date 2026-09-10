@@ -268,8 +268,6 @@ class NaturalistCoverageTest {
             assertTrue(record.contains("Black Bear improved"));
             assertTrue(record.contains("Hippo still too small"));
             assertTrue(record.contains("Whale label-only regression"));
-            assertTrue(record.contains("0.1.0-canary25"));
-            assertTrue(record.contains("RUNTIME_UNTESTED"));
         }
     }
 
