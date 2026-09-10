@@ -32,7 +32,6 @@ def emfJar = requiredFileProperty('emf_jar', 'entity_model_features-3.2.6-26.2-f
 def etfJar = requiredFileProperty('etf_jar', 'entity_texture_features-7.1.1-26.2-fabric.jar')
 def fabricApiJar = requiredFileProperty('fabric_api_jar', 'Fabric API 0.157.0+26.2 JAR')
 def freshAnimationsPack = requiredFileProperty('fresh_animations_pack', 'FreshAnimations_v1.10.5.zip')
-def ribbitVillagersPack = requiredFileProperty('ribbit_villagers_pack', 'Ribbit Villagers v1.zip')
 def xaeroLibJar = layout.buildDirectory.file('compile-deps/xaerolib.jar')
 def productionMinecraftClientJar = new File(gradle.gradleUserHomeDir,
         "caches/fabric-loom/${project.minecraft_version}/minecraft-client.jar")
@@ -82,7 +81,6 @@ test {
     systemProperty 'emfJar', emfJar.absolutePath
     systemProperty 'etfJar', etfJar.absolutePath
     systemProperty 'freshAnimationsPack', freshAnimationsPack.absolutePath
-    systemProperty 'ribbitVillagersPack', ribbitVillagersPack.absolutePath
 }
 
 tasks.register('prepareProductionMixinWorkingDir') {

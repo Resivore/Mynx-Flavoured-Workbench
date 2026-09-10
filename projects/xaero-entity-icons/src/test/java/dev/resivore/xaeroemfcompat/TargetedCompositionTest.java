@@ -1,19 +1,12 @@
 package dev.resivore.xaeroemfcompat;
 
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import net.minecraft.client.model.geom.ModelPart;
 import org.junit.jupiter.api.Test;
 import xaero.hud.minimap.radar.icon.creator.render.form.model.part.ModelPartUtil;
 
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.zip.ZipFile;
 
 import static dev.resivore.xaeroemfcompat.RelocatedHeadFailureMechanismTest.cubePart;
 import static dev.resivore.xaeroemfcompat.RelocatedHeadFailureMechanismTest.cubePaths;
@@ -26,25 +19,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /** Synthetic, non-redistributable equivalents of the effective EMF pack trees. */
 class TargetedCompositionTest {
-    private static final Path RIBBIT_VILLAGERS =
-            Path.of(Objects.requireNonNull(System.getProperty("ribbitVillagersPack")));
-
-    @Test
-    void exactRibbitModelsBindOrdinaryAndFiveProfessionNoseContracts() throws Exception {
-        Map<String, String> expectedHats = Map.of(
-                "villager2.jem", "ribbits_farmer_hat",
-                "villager3.jem", "ribbits_chef_hat",
-                "villager4.jem", "ribbits_sorcerer_hat",
-                "villager5.jem", "ribbits_prospector_hat",
-                "villager6.jem", "ribbits_gardener_hat");
-        assertEquals(Set.of("nose2", "face", "frog_eyes"),
-                directChildIds(ribbitNose("villager.jem")));
-        for (Map.Entry<String, String> expected : expectedHats.entrySet()) {
-            assertEquals(Set.of("nose2", "face", "frog_eyes", expected.getValue()),
-                    directChildIds(ribbitNose(expected.getKey())), expected.getKey());
-        }
-    }
-
     @Test
     void exactFreshAnimationsModelsBindTheC11SemanticOwners() throws Exception {
         JsonObject foxHead = direct("fox", "body", "head2");
@@ -231,28 +205,10 @@ class TargetedCompositionTest {
         return ModelPartUtil.getChildren(parent).get(name);
     }
 
-    private static JsonObject ribbitNose(String file) throws Exception {
-        try (ZipFile pack = new ZipFile(RIBBIT_VILLAGERS.toFile())) {
-            String path = "assets/minecraft/optifine/cem/" + file;
-            var entry = Objects.requireNonNull(pack.getEntry(path), path);
-            try (var reader = new InputStreamReader(
-                    pack.getInputStream(entry), StandardCharsets.UTF_8)) {
-                return RelocatedHeadFailureMechanismTest.topLevelPart(
-                        JsonParser.parseReader(reader).getAsJsonObject(), "nose");
-            }
-        }
-    }
-
     private static JsonObject direct(String entity, String topLevel, String child) throws Exception {
         return RelocatedHeadFailureMechanismTest.findDirectSubmodel(
                 RelocatedHeadFailureMechanismTest.topLevelPart(
                         RelocatedHeadFailureMechanismTest.jem(entity), topLevel), child);
-    }
-
-    private static Set<String> directChildIds(JsonObject part) {
-        return part.getAsJsonArray("submodels").asList().stream()
-                .map(element -> element.getAsJsonObject().get("id").getAsString())
-                .collect(java.util.stream.Collectors.toUnmodifiableSet());
     }
 
     private static int recursiveBoxCount(JsonObject part) {

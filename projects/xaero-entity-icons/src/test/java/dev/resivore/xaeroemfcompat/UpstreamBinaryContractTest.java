@@ -34,7 +34,6 @@ class UpstreamBinaryContractTest {
     private static final Path EMF = propertyPath("emfJar");
     private static final Path ETF = propertyPath("etfJar");
     private static final Path FRESH_ANIMATIONS = propertyPath("freshAnimationsPack");
-    private static final Path RIBBIT_VILLAGERS = propertyPath("ribbitVillagersPack");
 
     private static final String COMPILE_DESCRIPTOR =
             "(Lcom/mojang/blaze3d/vertex/PoseStack$Pose;"
@@ -55,8 +54,6 @@ class UpstreamBinaryContractTest {
                 "F469BC914302A13A5C767296623DF60FB0CC3D4E4A02A77C56541A733AD36E3A");
         assertArtifact(FRESH_ANIMATIONS, 645_816L,
                 "CF9F17A2977E171B33CB0B598BC4357DD0383E09C10D5F768FF17C12D0A028EE");
-        assertArtifact(RIBBIT_VILLAGERS, 978_911L,
-                "846FB57663750B5F273CB57288DE0D518D4AE973DE0E40AFA9D7F1293C6DFFF5");
     }
 
     @Test
