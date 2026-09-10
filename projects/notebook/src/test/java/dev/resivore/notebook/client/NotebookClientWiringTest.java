@@ -2,6 +2,8 @@ package dev.resivore.notebook.client;
 
 import org.junit.jupiter.api.Test;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -103,7 +105,7 @@ class NotebookClientWiringTest {
     }
 
     @Test
-    void checklistUsesSharedRowGeometryWithGreenCompletedBoxAndSeparateTextClick() throws IOException {
+    void checklistUsesExactCheckedSpriteAndLiveInkUncheckedBoxWithoutChangingInteraction() throws IOException {
         String screen = read("src/main/java/dev/resivore/notebook/client/NotebookScreen.java");
 
         assertTrue(screen.contains("CHECKBOX_SIZE = 8"));
@@ -111,22 +113,61 @@ class NotebookClientWiringTest {
         assertTrue(screen.contains("pageText.checkboxY(y, CHECKBOX_SIZE)"));
         assertTrue(screen.contains("CHECKBOX_DRAW_OFFSET + CHECKBOX_SIZE + CHECKBOX_TEXT_GAP"));
         assertTrue(screen.contains("CHECKBOX_SIZE + CHECKBOX_HIT_PADDING * 2"));
-        assertTrue(screen.contains("COLOR_CHECKBOX_INTERIOR = 0xFFF8F7F0"));
-        assertTrue(screen.contains("COLOR_CHECKBOX_CHECKED = 0xFF43693F"));
-        assertTrue(screen.contains("COLOR_CHECK_MARK = 0xFFFFFFFF"));
-        assertTrue(screen.contains("COLOR_CHECKBOX_OUTLINE = COLOR_INK"));
-        assertTrue(screen.contains("checked ? COLOR_CHECKBOX_CHECKED : COLOR_CHECKBOX_INTERIOR"));
-        assertTrue(screen.contains("graphics.outline(x, y, CHECKBOX_SIZE, CHECKBOX_SIZE, COLOR_CHECKBOX_OUTLINE)"));
-        assertTrue(screen.contains("drawCheckMark(graphics, x, y)"));
-        assertTrue(screen.contains("private void drawCheckMark"));
-        assertTrue(screen.contains("graphics.fill(x + 2, y + 4, x + 3, y + 5, COLOR_CHECK_MARK)"));
-        assertTrue(screen.contains("graphics.fill(x + 3, y + 5, x + 4, y + 6, COLOR_CHECK_MARK)"));
-        assertTrue(screen.contains("graphics.fill(x + 4, y + 4, x + 5, y + 5, COLOR_CHECK_MARK)"));
-        assertTrue(screen.contains("graphics.fill(x + 5, y + 3, x + 6, y + 4, COLOR_CHECK_MARK)"));
-        assertFalse(screen.contains("checked ? COLOR_CHECK : COLOR_MUTED_INK"));
-        assertFalse(screen.contains("graphics.fill(x + 2, y + 2, x + 8, y + 8, COLOR_CHECK)"));
+        assertTrue(screen.contains("CHECKED_CHECKBOX_TEXTURE"));
+        assertTrue(screen.contains("textures/gui/notebook_checkbox_checked.png"));
+        assertTrue(screen.contains("graphics.blit("));
+        assertTrue(screen.contains("RenderPipelines.GUI_TEXTURED"));
+        assertTrue(screen.contains("COLOR_INK = 0xFF2A2119"));
+        assertTrue(screen.contains("graphics.outline(x, y, CHECKBOX_SIZE, CHECKBOX_SIZE, COLOR_INK)"));
+        assertFalse(screen.contains("COLOR_CHECKBOX_CHECKED"));
+        assertFalse(screen.contains("COLOR_CHECK_MARK"));
+        assertFalse(screen.contains("COLOR_CHECKBOX_INTERIOR"));
+        assertFalse(screen.contains("COLOR_CHECKBOX_OUTLINE"));
+        assertFalse(screen.contains("drawCheckMark"));
         assertTrue(screen.indexOf("toggleChecklist(hit.logicalLine())")
                 < screen.indexOf("beginEditingAt(bodyEditor, event, doubleClick)"));
+    }
+
+    @Test
+    void checkedCheckboxSpriteIsTheExactSuppliedEightPixelGreenMatrix() throws IOException {
+        BufferedImage sprite = ImageIO.read(ROOT.resolve(
+                "src/main/resources/assets/notebook/textures/gui/notebook_checkbox_checked.png").toFile());
+        String[] expected = {
+                "GGGGGGGG",
+                "G......G",
+                "G....G.G",
+                "G...G..G",
+                "G.G.G..G",
+                "G..G...G",
+                "G......G",
+                "GGGGGGGG"
+        };
+
+        assertTrue(sprite != null);
+        assertTrue(sprite.getWidth() == 8 && sprite.getHeight() == 8);
+        for (int y = 0; y < 8; y++) {
+            for (int x = 0; x < 8; x++) {
+                int expectedPixel = expected[y].charAt(x) == 'G' ? 0xFF43693F : 0x00000000;
+                assertTrue(sprite.getRGB(x, y) == expectedPixel,
+                        "unexpected checked-checkbox pixel at " + x + "," + y);
+            }
+        }
+    }
+
+    @Test
+    void uncheckedCheckboxIsTheEightPixelTransparentLiveInkHollowBox() throws IOException {
+        String screen = read("src/main/java/dev/resivore/notebook/client/NotebookScreen.java");
+        int methodStart = screen.indexOf("private void drawCheckbox");
+        int methodEnd = screen.indexOf("private void drawReadingScrollbar", methodStart);
+        String checkboxMethod = screen.substring(methodStart, methodEnd);
+        int uncheckedStart = checkboxMethod.indexOf(
+                "graphics.outline(x, y, CHECKBOX_SIZE, CHECKBOX_SIZE, COLOR_INK)");
+        String uncheckedPath = checkboxMethod.substring(uncheckedStart);
+
+        assertTrue(methodStart >= 0 && methodEnd > methodStart && uncheckedStart >= 0);
+        assertTrue(checkboxMethod.contains("CHECKBOX_SIZE = 8") || screen.contains("CHECKBOX_SIZE = 8"));
+        assertFalse(uncheckedPath.contains("graphics.fill("));
+        assertFalse(uncheckedPath.contains("0xFF43693F"));
     }
 
     @Test
