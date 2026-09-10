@@ -34,4 +34,16 @@ class FailedIconRetryLifecycleTest {
         assertTrue(IconDiagnostics.retryFailedOnceAtPrerender(
                 "minecraft:sheep", "adult", true, true));
     }
+
+    @Test
+    void c10FailedGoatCanBeRecreatedOnceAfterTheExpectedResourceReload() {
+        IconDiagnostics.reload();
+        assertTrue(IconDiagnostics.retryFailedOnceAtPrerender(
+                "minecraft:goat", "adult", true, true));
+        assertFalse(IconDiagnostics.retryFailedOnceAtPrerender(
+                "minecraft:goat", "adult", true, true));
+        IconDiagnostics.reload();
+        assertTrue(IconDiagnostics.retryFailedOnceAtPrerender(
+                "minecraft:goat", "adult", true, true));
+    }
 }
