@@ -34,7 +34,7 @@ public final class CsrHeaderBadgeIntegration {
         int height = locked ? LOCKED_HEIGHT : UNLOCKED_HEIGHT;
         Identifier sprite = locked ? LOCKED_SPRITE : UNLOCKED_SPRITE;
         return Optional.of(new ShulkerPanelHeaderDecorations.Decoration(width, height,
-                (graphics, x, y) -> graphics.blit(RenderPipelines.GUI_TEXTURED, sprite, x, y,
+                (graphics, x, y) -> graphics.blit(RenderPipelines.GUI_TEXTURED, sprite, x, y + 1,
                         0, 0, width, height, width, height)));
     }
 }
