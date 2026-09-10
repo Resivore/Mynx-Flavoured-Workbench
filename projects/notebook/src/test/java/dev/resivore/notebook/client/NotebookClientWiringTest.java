@@ -103,6 +103,23 @@ class NotebookClientWiringTest {
     }
 
     @Test
+    void checklistUsesSharedRowGeometryWithCompactOutlinedCheckMarkAndSeparateTextClick() throws IOException {
+        String screen = read("src/main/java/dev/resivore/notebook/client/NotebookScreen.java");
+
+        assertTrue(screen.contains("CHECKBOX_SIZE = 8"));
+        assertTrue(screen.contains("pageText.textY(noteScroll, 0)"));
+        assertTrue(screen.contains("pageText.checkboxY(y, CHECKBOX_SIZE)"));
+        assertTrue(screen.contains("CHECKBOX_DRAW_OFFSET + CHECKBOX_SIZE + CHECKBOX_TEXT_GAP"));
+        assertTrue(screen.contains("CHECKBOX_SIZE + CHECKBOX_HIT_PADDING * 2"));
+        assertTrue(screen.contains("drawCheckMark(graphics, x, y)"));
+        assertTrue(screen.contains("graphics.outline(x, y, CHECKBOX_SIZE, CHECKBOX_SIZE"));
+        assertTrue(screen.contains("private void drawCheckMark"));
+        assertFalse(screen.contains("graphics.fill(x + 2, y + 2, x + 8, y + 8, COLOR_CHECK)"));
+        assertTrue(screen.indexOf("toggleChecklist(hit.logicalLine())")
+                < screen.indexOf("beginEditingAt(bodyEditor, event, doubleClick)"));
+    }
+
+    @Test
     void modMetadataIsClientOnlyAndUsesTheCurrentTargetStack() throws IOException {
         String metadata = read("src/main/resources/fabric.mod.json");
         String mixins = read("src/main/resources/notebook.client.mixins.json");

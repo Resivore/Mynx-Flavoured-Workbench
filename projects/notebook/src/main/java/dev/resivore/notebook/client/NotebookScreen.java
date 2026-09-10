@@ -50,6 +50,12 @@ public final class NotebookScreen extends Screen {
     private static final int COLOR_CHECK = 0xFF43693F;
     private static final int COLOR_ERROR = 0xFFFF8A7A;
     private static final int COLOR_STATUS = 0xFFD9C98F;
+    /** A compact glyph that fits inside one live nine-pixel text row. */
+    private static final int CHECKBOX_SIZE = 8;
+    private static final int CHECKBOX_DRAW_OFFSET = 1;
+    private static final int CHECKBOX_TEXT_GAP = 3;
+    /** The visual box stays compact while this small halo keeps it easy to click. */
+    private static final int CHECKBOX_HIT_PADDING = 1;
     private static final int BOOK_TEXTURE_WIDTH = 640;
     private static final int BOOK_TEXTURE_HEIGHT = 400;
     /** 750 ms at Minecraft's 20 logical client ticks per second. */
@@ -547,7 +553,7 @@ public final class NotebookScreen extends Screen {
         String[] logicalLines = note.body().split("\\r\\n|\\r|\\n", -1);
         int contentTop = pageText.viewportTop();
         int contentBottom = pageText.viewportBottom();
-        int y = pageText.textTop() - noteScroll;
+        int y = pageText.textY(noteScroll, 0);
         int fullHeight = 0;
         graphics.enableScissor(
                 layout.rightContentX(), contentTop,
@@ -560,7 +566,9 @@ public final class NotebookScreen extends Screen {
                 String visibleText = entry != null
                         ? entry.text()
                         : heading ? raw.substring(2) : raw;
-                int textX = layout.rightContentX() + (entry != null ? 14 : 0);
+                int textX = layout.rightContentX() + (entry != null
+                        ? CHECKBOX_DRAW_OFFSET + CHECKBOX_SIZE + CHECKBOX_TEXT_GAP
+                        : 0);
                 int wrapWidth = layout.rightContentRight() - textX;
                 Component component = Component.literal(visibleText);
                 if (heading) {
@@ -571,13 +579,21 @@ public final class NotebookScreen extends Screen {
                     wrapped = List.of(FormattedCharSequence.EMPTY);
                 }
 
-                if (entry != null && y + 9 >= contentTop && y < contentBottom) {
-                    int boxX = layout.rightContentX() + 1;
-                    int boxY = y + 1;
+                if (entry != null && y + pageText.lineHeight() >= contentTop && y < contentBottom) {
+                    int boxX = layout.rightContentX() + CHECKBOX_DRAW_OFFSET;
+                    int boxY = pageText.checkboxY(y, CHECKBOX_SIZE);
                     drawCheckbox(graphics, boxX, boxY, entry.checked());
                     checkboxHits.add(new CheckboxHit(
-                            boxX, boxY, 10, 10, lineIndex));
-                    if (inside(mouseX, mouseY, boxX, boxY, 10, 10)) {
+                            boxX - CHECKBOX_HIT_PADDING,
+                            boxY - CHECKBOX_HIT_PADDING,
+                            CHECKBOX_SIZE + CHECKBOX_HIT_PADDING * 2,
+                            CHECKBOX_SIZE + CHECKBOX_HIT_PADDING * 2,
+                            lineIndex));
+                    if (inside(mouseX, mouseY,
+                            boxX - CHECKBOX_HIT_PADDING,
+                            boxY - CHECKBOX_HIT_PADDING,
+                            CHECKBOX_SIZE + CHECKBOX_HIT_PADDING * 2,
+                            CHECKBOX_SIZE + CHECKBOX_HIT_PADDING * 2)) {
                         graphics.setTooltipForNextFrame(
                                 Component.literal(entry.checked()
                                         ? "Mark unfinished"
@@ -610,12 +626,19 @@ public final class NotebookScreen extends Screen {
     }
 
     private void drawCheckbox(GuiGraphicsExtractor graphics, int x, int y, boolean checked) {
-        graphics.fill(x, y, x + 10, y + 10, 0x44FFFFFF);
-        graphics.outline(x, y, 10, 10, checked ? COLOR_CHECK : COLOR_MUTED_INK);
+        graphics.fill(x, y, x + CHECKBOX_SIZE, y + CHECKBOX_SIZE, 0x44FFFFFF);
+        graphics.outline(x, y, CHECKBOX_SIZE, CHECKBOX_SIZE, checked ? COLOR_CHECK : COLOR_MUTED_INK);
         if (checked) {
-            graphics.fill(x + 2, y + 2, x + 8, y + 8, COLOR_CHECK);
-            graphics.fill(x + 4, y + 1, x + 6, y + 9, COLOR_CHECK);
+            drawCheckMark(graphics, x, y);
         }
+    }
+
+    /** Draws a readable two-pixel green tick without filling the ballot box. */
+    private void drawCheckMark(GuiGraphicsExtractor graphics, int x, int y) {
+        graphics.fill(x + 2, y + 4, x + 4, y + 6, COLOR_CHECK);
+        graphics.fill(x + 3, y + 5, x + 5, y + 7, COLOR_CHECK);
+        graphics.fill(x + 4, y + 4, x + 6, y + 6, COLOR_CHECK);
+        graphics.fill(x + 5, y + 3, x + 7, y + 5, COLOR_CHECK);
     }
 
     private void drawReadingScrollbar(GuiGraphicsExtractor graphics) {
@@ -959,6 +982,15 @@ public final class NotebookScreen extends Screen {
 
         int firstRuleY(int scrollOffset) {
             return textTop - scrollOffset + lineHeight - 1;
+        }
+
+        int textY(int scrollOffset, int visualRow) {
+            return textTop - scrollOffset + visualRow * lineHeight;
+        }
+
+        /** Centers a compact ballot box in the same line box that owns the rule. */
+        int checkboxY(int rowTextY, int checkboxSize) {
+            return rowTextY + Math.max(0, (lineHeight - checkboxSize) / 2);
         }
     }
 

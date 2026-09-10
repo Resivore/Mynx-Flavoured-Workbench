@@ -49,4 +49,26 @@ class NotebookScreenLayoutTest {
         assertEquals(text.firstRuleY(0) - lineHeight, text.firstRuleY(lineHeight));
         assertTrue(text.firstRuleY(0) < text.viewportBottom());
     }
+
+    @ParameterizedTest
+    @CsvSource({
+            "320,240",
+            "854,480",
+            "1920,1080"
+    })
+    void checklistGlyphSharesTheCurrentTextRowAndRuleGeometry(int width, int height) {
+        NotebookScreen.BookLayout book = NotebookScreen.BookLayout.fit(width, height);
+        int lineHeight = 9;
+        int checkboxSize = 8;
+        NotebookScreen.PageTextLayout text =
+                NotebookScreen.PageTextLayout.forCurrentEditor(book, lineHeight);
+
+        int rowTextY = text.textY(18, 2);
+        int checkboxY = text.checkboxY(rowTextY, checkboxSize);
+
+        assertEquals(text.textTop() - 18 + lineHeight * 2, rowTextY);
+        assertEquals(rowTextY, checkboxY);
+        assertEquals(rowTextY + lineHeight - 1, text.firstRuleY(0) - 18 + lineHeight * 2);
+        assertTrue(checkboxY + checkboxSize <= rowTextY + lineHeight);
+    }
 }
