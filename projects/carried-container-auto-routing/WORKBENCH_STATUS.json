@@ -21,7 +21,7 @@
       "Provide a server-authoritative lock control that excludes selected carriers from automatic routing without altering their other contents or components."
     ],
     "scope": [
-      "Canonical C14 / 0.3.9-csr-header-badge-canary1 for Minecraft Java 26.2 Fabric, implementation checkpoint d16c664e65c61f9b73d2f710e75069f581ec7239; coordinated CSR-header successor to C13.",
+      "Canonical C15 / 0.3.10-csr-lock-sprite-art-canary1 for Minecraft Java 26.2 Fabric, implementation checkpoint 845e171abb7d0dda7b868645ba1a5aebb110ca02; direct-resource artwork successor to C14 paired with unchanged CSR C16.",
       "When a server-resolved routing-lock target is unsupported, return without an overlay message. Preserve server-authoritative supported-target toggles and their existing Locked/Unlocked feedback exactly.",
       "Passive ground pickup and external-container QUICK_MOVE priority through component-identical occupied main hand, qualifying carried containers, occupied hotbar, occupied offhand, compatible ordinary-storage partials, empty hotbar, and empty ordinary storage.",
       "Player-origin QUICK_MOVE routing to a component-identical occupied offhand and qualifying carried containers before returning exact remainder ownership to the active menu's normal algorithm.",
@@ -30,7 +30,7 @@
       "Read only ContainerSlotReservationsApi.classify(ItemStack,int,ItemStack), isReserved(ItemStack,int), reservationMatches(ItemStack,int,ItemStack), and the client-only ShulkerPanelHeaderDecorations API after FabricLoader confirms CSR is loaded. CSR remains suggests *: direct header API linkage is isolated in a reflection-loaded client bridge, absent/incompatible linkage leaves CCAR fully functional without a badge.",
       "Build one immutable slot/count plan before mutation: compatible occupied stacks in physical order, all matching reserved empties in physical order, then unreserved empties in physical order. Rewrite CONTAINER once and shrink the incoming stack by exactly the accepted total; retain reservations, lock, name, lore, damage, and unrelated components.",
       "Keep accepted bundle class bytes unchanged, global destination and carrier order unchanged, all existing pickup/QUICK_MOVE contexts, offhand/excluded-source behavior, and Stacks Are Stacks effective maximums without a new stack-size implementation.",
-      "When optional CSR is present, expose the existing RoutingLock state for supported shulkers only as a non-clickable 1:1 supplied lock sprite in CSR's header. Bundles remain tooltip-only. The source 20x11 art is verified and cropped during resource processing to locked 7x9 and unlocked 10x9 sprites without changing any pixel."
+      "When optional CSR is present, expose the existing RoutingLock state for supported shulkers only as a non-clickable 1:1 supplied lock sprite in CSR's header. Bundles remain tooltip-only. The immutable user inputs locked.png (7x9, 155 bytes, SHA-256 cde847dba65a29823d62fee4f70fc4c1e83fd40e4fbbc4b81871b9164f11e617, opaque RGBA) and unlocked.png (10x9, 590 bytes, SHA-256 10a5f3205c311974eea2798e1c97cca248798f12b7156c202c59afbb850fc39c, opaque RGBA) are packaged directly under the stable CCAR resource identities with byte-for-byte integrity checks; no crop or generated-art pipeline remains."
     ],
     "boundaries": {
       "owned_paths": [
@@ -90,16 +90,16 @@
     ]
   },
   "state": {
-    "milestone": "C14 is an ACTIVE, non-deployed successor to C13. It preserves C13 silent unsupported-target handling and all existing CCAR behavior, while registering a read-only optional CSR header badge that renders the authoritative existing shulker lock component at one-to-one scale. CSR remains optional and bundles remain tooltip-only. Clean Java 25 unit, GameTest, resource-integrity, and paired CSR-API validation passed; no dedicated Workbench or protected gameplay instance was accessed.",
+    "milestone": "C15 is an ACTIVE, non-deployed successor to C14. It replaces only the optional CCAR shulker-header lock artwork with the two final user-supplied sprites, packaged directly at native one-to-one dimensions; C14's crop/generation pipeline and lock_source.png are removed. It preserves C13 silent unsupported-target handling and all routing, tooltip, lock, optional-CSR, and bundle behavior. CSR C16's existing dynamic decoration layout accepts the 7x9 and 10x9 sprites without a CSR source change. Clean Java 25 unit, GameTest, resource-integrity, artifact, and paired CSR-API validation passed; no dedicated Workbench or protected gameplay instance was accessed.",
     "releases": {
       "current": {
-        "version": "0.3.9-csr-header-badge-canary1",
-        "embedded_version": "0.3.9-csr-header-badge-canary1",
+        "version": "0.3.10-csr-lock-sprite-art-canary1",
+        "embedded_version": "0.3.10-csr-lock-sprite-art-canary1",
         "artifact": {
-          "filename": "carried-container-auto-routing-0.3.9-csr-header-badge-canary1.jar",
-          "sha256": "df46cb6d0e538e692db816958458b03a3d1028b7d23cf0d657e0456496ac72f3"
+          "filename": "carried-container-auto-routing-0.3.10-csr-lock-sprite-art-canary1.jar",
+          "sha256": "152618b58c673a73a9e2360d5a776283ddb0a6db8e801fb1d5465d5c5370d7da"
         },
-        "source_commit": "d16c664e65c61f9b73d2f710e75069f581ec7239",
+        "source_commit": "845e171abb7d0dda7b868645ba1a5aebb110ca02",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
@@ -137,11 +137,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 5,
-    "activity_at": "2026-09-10T02:12:00Z",
-    "updated_at": "2026-09-10T02:12:00Z",
-    "last_codex_at": "2026-09-10T02:12:00Z",
-    "source_commit": "d16c664e65c61f9b73d2f710e75069f581ec7239",
+    "revision": 6,
+    "activity_at": "2026-09-10T03:37:55Z",
+    "updated_at": "2026-09-10T03:37:55Z",
+    "last_codex_at": "2026-09-10T03:37:55Z",
+    "source_commit": "845e171abb7d0dda7b868645ba1a5aebb110ca02",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
