@@ -34,7 +34,7 @@ class BinaryContractTest {
         }
     }
 
-    @Test void c22ScopesTheFrozenBrownBearControlAndLiveCenterStarfishCapture() throws Exception {
+    @Test void c23ScopesTheFrozenControlsAndLiveCenterScorpionCapture() throws Exception {
         Path root = Path.of(System.getProperty("projectRoot"));
         String mixins = Files.readString(root.resolve("src/main/resources/naturalist_xaero_entity_icons_compat.mixins.json"));
         assertTrue(mixins.contains("ModelRenderTraceMixin"));
@@ -61,6 +61,8 @@ class BinaryContractTest {
         assertTrue(manager.contains("index = 19"));
         assertTrue(manager.contains("BrownBearSpritePresentation.scaleForCurrentRequest"));
         assertTrue(manager.contains("observeStarfishCacheBeforeXaeroEmfRetry"));
+        assertTrue(manager.contains("ScorpionCaptureDiagnostic.requestStarted"));
+        assertTrue(manager.contains("ScorpionCaptureDiagnostic.cacheLookup"));
         assertFalse(manager.contains("@Redirect"));
         String presentation = Files.readString(root.resolve("src/main/java/dev/resivore/naturalistxaeroicons/BrownBearSpritePresentation.java"));
         assertTrue(presentation.contains("\"naturalist:bear\""));
@@ -81,6 +83,13 @@ class BinaryContractTest {
         assertTrue(starfishDiagnostic.contains("renderCenterHasDirectMrt"));
         assertFalse(starfishDiagnostic.contains("pose.scale"));
         assertFalse(starfishDiagnostic.contains("new XaeroIcon"));
+        String scorpionDiagnostic = Files.readString(root.resolve(
+                "src/main/java/dev/resivore/naturalistxaeroicons/ScorpionCaptureDiagnostic.java"));
+        assertTrue(scorpionDiagnostic.contains("naturalist:desert_scorpion"));
+        assertTrue(scorpionDiagnostic.contains("naturalist:jungle_scorpion"));
+        assertTrue(scorpionDiagnostic.contains("renderCenterHasDirectMrt"));
+        assertTrue(scorpionDiagnostic.contains("selectedAssemblyRecorded"));
+        assertFalse(scorpionDiagnostic.contains("new XaeroIcon"));
         assertFalse(prerenderer.contains("renderedDest.add("));
         String genericManager = Files.readString(root.getParent().resolve(
                 "xaero-entity-icons/src/main/java/dev/resivore/xaeroemfcompat/mixin/RadarIconManagerMixin.java"));
