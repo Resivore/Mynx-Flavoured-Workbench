@@ -78,16 +78,16 @@
     ]
   },
   "state": {
-    "milestone": "Canary 1 remains an immutable historical artifact with static/build PASS but a user-supplied Minecraft client-initialization FAIL: its normal NotebookScreen class was inside the Mixin-owned dev.resivore.notebook.client package. A user then reported that Canary 2 opened without that fatal client-initialization crash. Current Canary 5 preserves the Mixin repair, explicit supplied 640x400 Bedrock journal GUI-texture renderer, shared ruled-row/editor geometry, native click-to-edit behavior, autosave/forced-save model, shadowless text, and unobscured book artwork. Its reading-mode checklist box is now an 8-pixel outlined ballot box centered from the shared text-row layout with a green tick rather than a filled completed block. Notebook is ACTIVE, not deployed, and occupies neither testing slot.",
+    "milestone": "Canary 1 remains an immutable historical artifact with static/build PASS but a user-supplied Minecraft client-initialization FAIL: its normal NotebookScreen class was inside the Mixin-owned dev.resivore.notebook.client package. A user then reported that Canary 2 opened without that fatal client-initialization crash. Current Canary 6 preserves the Mixin repair, explicit supplied 640x400 Bedrock journal GUI-texture renderer, shared ruled-row/editor geometry, native click-to-edit behavior, autosave/forced-save model, shadowless text, and unobscured book artwork. Its reading-mode checklist boxes remain 8-pixel, row-centered ballot boxes, now with opaque light interiors, a consistent thin dark outline, and a slim four-pixel green check that follows the supplied reference instead of a chunky completed mark. Notebook is ACTIVE, not deployed, and occupies neither testing slot.",
     "releases": {
       "current": {
-        "version": "0.1.0-canary5",
-        "embedded_version": "0.1.0-canary5",
+        "version": "0.1.0-canary6",
+        "embedded_version": "0.1.0-canary6",
         "artifact": {
-          "filename": "notebook-0.1.0-canary5.jar",
-          "sha256": "0ad14ad2ec9afaa9acb4d1300d4cb4c2d2273936b2d0a3d4321a80504956f106"
+          "filename": "notebook-0.1.0-canary6.jar",
+          "sha256": "75ecf26de80d2ecb40f439a2b02f6d765b4efd04a77aaf656ff9ff1ba3b6ce70"
         },
-        "source_commit": "6f297a97e4eea034e19ea4e426680a45095a6c37",
+        "source_commit": "b9bf46b6d35e6820717b27c9967ef25797e2f0cb",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
@@ -106,11 +106,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 6,
-    "activity_at": "2026-09-10T01:59:41Z",
-    "updated_at": "2026-09-10T01:59:41Z",
-    "last_codex_at": "2026-09-10T01:59:41Z",
-    "source_commit": "6f297a97e4eea034e19ea4e426680a45095a6c37",
+    "revision": 7,
+    "activity_at": "2026-09-10T02:20:00Z",
+    "updated_at": "2026-09-10T02:20:00Z",
+    "last_codex_at": "2026-09-10T02:20:00Z",
+    "source_commit": "b9bf46b6d35e6820717b27c9967ef25797e2f0cb",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
