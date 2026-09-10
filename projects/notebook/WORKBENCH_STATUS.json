@@ -78,16 +78,16 @@
     ]
   },
   "state": {
-    "milestone": "Canary 1 remains an immutable historical artifact with static/build PASS but a user-supplied Minecraft client-initialization FAIL: its normal NotebookScreen class was inside the Mixin-owned dev.resivore.notebook.client package. A user then reported that Canary 2 opened without that fatal client-initialization crash. Current Canary 6 preserves the Mixin repair, explicit supplied 640x400 Bedrock journal GUI-texture renderer, shared ruled-row/editor geometry, native click-to-edit behavior, autosave/forced-save model, shadowless text, and unobscured book artwork. Its reading-mode checklist boxes remain 8-pixel, row-centered ballot boxes, now with opaque light interiors, a consistent thin dark outline, and a slim four-pixel green check that follows the supplied reference instead of a chunky completed mark. Notebook is ACTIVE, not deployed, and occupies neither testing slot.",
+    "milestone": "Canary 1 remains an immutable historical artifact with static/build PASS but a user-supplied Minecraft client-initialization FAIL: its normal NotebookScreen class was inside the Mixin-owned dev.resivore.notebook.client package. A user then reported that Canary 2 opened without that fatal client-initialization crash. Current Canary 7 preserves the Mixin repair, explicit supplied 640x400 Bedrock journal GUI-texture renderer, shared ruled-row/editor geometry, native click-to-edit behavior, autosave/forced-save model, shadowless text, and unobscured book artwork. Its reading-mode checklist boxes retain their 8-pixel row-centered geometry; unchecked boxes retain the pale interior and dark outline, while checked boxes are green with a crisp four-pixel white tick. Escape now explicitly saves and leaves editing on its first press while consuming that event; only a second Escape in reading mode closes Notebook. Notebook is ACTIVE, not deployed, and occupies neither testing slot.",
     "releases": {
       "current": {
-        "version": "0.1.0-canary6",
-        "embedded_version": "0.1.0-canary6",
+        "version": "0.1.0-canary7",
+        "embedded_version": "0.1.0-canary7",
         "artifact": {
-          "filename": "notebook-0.1.0-canary6.jar",
-          "sha256": "75ecf26de80d2ecb40f439a2b02f6d765b4efd04a77aaf656ff9ff1ba3b6ce70"
+          "filename": "notebook-0.1.0-canary7.jar",
+          "sha256": "d36a3440df5f99b7d8ac552a33fcd69f8bf26d487860bbc428905691b5760fe4"
         },
-        "source_commit": "b9bf46b6d35e6820717b27c9967ef25797e2f0cb",
+        "source_commit": "a5009c0401cf817679625c8d22ab4abc96021aad",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
@@ -106,11 +106,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 7,
-    "activity_at": "2026-09-10T02:20:00Z",
-    "updated_at": "2026-09-10T02:20:00Z",
-    "last_codex_at": "2026-09-10T02:20:00Z",
-    "source_commit": "b9bf46b6d35e6820717b27c9967ef25797e2f0cb",
+    "revision": 8,
+    "activity_at": "2026-09-10T03:29:35Z",
+    "updated_at": "2026-09-10T03:29:35Z",
+    "last_codex_at": "2026-09-10T03:29:35Z",
+    "source_commit": "a5009c0401cf817679625c8d22ab4abc96021aad",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
