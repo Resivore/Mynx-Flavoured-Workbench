@@ -34,7 +34,7 @@ class BinaryContractTest {
         }
     }
 
-    @Test void c24ScopesTheSixRefinementsAndKeepsTheFailClosedBridge() throws Exception {
+    @Test void c25ScopesTheThreeFollowUpsAndKeepsTheFailClosedBridge() throws Exception {
         Path root = Path.of(System.getProperty("projectRoot"));
         String mixins = Files.readString(root.resolve("src/main/resources/naturalist_xaero_entity_icons_compat.mixins.json"));
         assertTrue(mixins.contains("ModelRenderTraceMixin"));
@@ -56,6 +56,12 @@ class BinaryContractTest {
         assertFalse(prerenderer.contains("renderedDest.add("));
         assertFalse(prerenderer.contains("Axis.ZP.rotationDegrees(90.0F)"));
         assertFalse(prerenderer.contains("pose.scale("));
+        String contracts = Files.readString(root.resolve("src/main/java/dev/resivore/naturalistxaeroicons/NaturalistModelContracts.java"));
+        assertTrue(contracts.contains("p(.60F)), c(\"HippoBabyModel\", \"body/neck\", p(.70F))"));
+        assertTrue(contracts.contains("-2.0F)), c(\"BlackBearBabyModel\", \"body/skull\")"));
+        assertTrue(contracts.contains("\"WhaleModel\", \"body/skullRot\", p(.30F, 0.0F, .7854F, 0.0F)"));
+        assertTrue(contracts.contains("\"WhaleBabyModel\", \"body/skull\", p(.60F, 0.0F, .7854F, 0.0F)"));
+        assertFalse(contracts.contains("\"WhaleModel\", \"body/skullRot\", p(.30F, 0.0F, 1.5708F, 0.0F)"));
         String manager = Files.readString(root.resolve("src/main/java/dev/resivore/naturalistxaeroicons/mixin/RadarIconManagerMixin.java"));
         assertTrue(manager.contains("@ModifyVariable"));
         assertTrue(manager.contains("@At(\"STORE\")"));

@@ -113,8 +113,8 @@ public final class NaturalistModelContracts {
                 p(.42F, 0.0F, 1.5708F, 0.0F), List.of("neck_r1", "leftEar", "rightEar")),
                 cDetached("ZebraBabyModel", "body/neck/skull2", "body/neck/skull2", p(.62F, 0.0F, 1.5708F, 0.0F)));
         add(map, "giraffe", c("GiraffeModel", "hips/shoulders/body/neck/head", p(.55F)), c("GiraffeBabyModel", "body/neck", p(.75F)));
-        // C24 keeps the proven head subtree and gives only the adult a conservative size increase.
-        add(map, "hippo", c("HippoModel", "body/bone/neck", p(.52F)), c("HippoBabyModel", "body/neck", p(.70F)));
+        // C25 retains C24's proven head subtree and gives only the adult the requested clear size increase.
+        add(map, "hippo", c("HippoModel", "body/bone/neck", p(.60F)), c("HippoBabyModel", "body/neck", p(.70F)));
         add(map, "vulture", cDetached("VultureModel", "neck"), cDetached("VultureBabyModel", "body/neck"));
         add(map, "boar", c("BoarModel", "body/neck", p(.72F)), c("BoarBabyModel", "body/neck", p(.80F)));
         // Adult neck owns the skull plane plus the snout child.  A restrained source-model yaw
@@ -127,9 +127,9 @@ public final class NaturalistModelContracts {
         add(map, "duck", c("DuckModel", "body/neck", p(.72F, 0.0F, 1.5708F, 0.0F)), c("DuckBabyModel", "body/neck", p(.80F, 0.0F, 1.5708F, 0.0F)));
         add(map, "mole", cDetached("MoleModel", "root/body/skull"));
         add(map, "rat", c("RatModel", "body/skull", p(.74F, 0.0F, 1.5708F, 0.0F)));
-        // The adult skull contains the lower jaw/snout.  Move only its copied icon frame down
-        // one model unit to retain that lower silhouette; no live model or baby contract changes.
-        add(map, "black_bear", c("BlackBearModel", "body/skullRot/skull", p(1.0F, 0.0F, 0.0F, 0.0F, -1.0F)), c("BlackBearBabyModel", "body/skull"));
+        // The adult skull contains the lower jaw/snout.  C25 moves only its copied icon frame
+        // down one additional model unit to expose slightly more chin; no live model or baby change.
+        add(map, "black_bear", c("BlackBearModel", "body/skullRot/skull", p(1.0F, 0.0F, 0.0F, 0.0F, -2.0F)), c("BlackBearBabyModel", "body/skull"));
         add(map, "tiger", c("TigerModel", "body/skullRot/skull", p(.76F)), c("TigerBabyModel", "body/skull", p(.82F)));
         add(map, "komodo_dragon", c("KomodoDragonModel", "body/neck", p(.68F, 0.0F, 1.5708F, 0.0F)));
         add(map, "ostrich", c("OstrichModel", "root/body/skull", p(.60F)), c("OstrichBabyModel", "body/skull", p(.76F)));
@@ -170,8 +170,10 @@ public final class NaturalistModelContracts {
                 p(.30F, 1.5708F, 0.0F, 0.0F)));
         add(map, "giant_isopod", cVisibleDetached("GiantIsopodModel", "rolled", p(.45F)), cDetached("GiantIsopodModel", "body", p(.45F)));
         add(map, "jellyfish", cDetached("JellyfishModel", "body", p(.45F)));
-        // Retain the renderer-selected compact head branches and present both life stages side-on.
-        add(map, "whale", c("WhaleModel", "body/skullRot", p(.30F, 0.0F, 1.5708F, 0.0F)), c("WhaleBabyModel", "body/skull", p(.60F, 0.0F, 1.5708F, 0.0F)));
+        // Both source-audited head assemblies run primarily along authored Z, with material X/Y
+        // volume. C24's 90-degree presentation regressed to Xaero's empty bounded result; C25
+        // keeps a detectable three-quarter projection rather than retaining that label-only yaw.
+        add(map, "whale", c("WhaleModel", "body/skullRot", p(.30F, 0.0F, .7854F, 0.0F)), c("WhaleBabyModel", "body/skull", p(.60F, 0.0F, .7854F, 0.0F)));
         // Both constructors pass root.getChild("root") to EntityModel, so model.root() already
         // is the authored root: a second `root` hop is invalid. Desert body owns claws/tail and
         // Jungle body owns arms/claws/tail; legs is a sibling in each. Keep the compact copied

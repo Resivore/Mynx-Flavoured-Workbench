@@ -114,9 +114,9 @@ tasks.register('verifyClientOnlyArtifact') {
     }
 }
 tasks.named('check') { dependsOn tasks.named('productionMixinTest'), tasks.named('verifyClientOnlyArtifact') }
-tasks.register('verifyCanary24PresentationContracts') {
+tasks.register('verifyCanary25PresentationContracts') {
     doLast {
-        if (project.version != '0.1.0-canary24') return
+        if (project.version != '0.1.0-canary25') return
         def source = file('src/main/java/dev/resivore/naturalistxaeroicons/NaturalistModelContracts.java').getText('UTF-8')
         def required = [
                 '''add(map, "starfish", cNormalizedDetachedChildrenWithTraceCenter("StarfishModel", "", "body",
@@ -128,12 +128,12 @@ tasks.register('verifyCanary24PresentationContracts') {
                 '''add(map, "alligator", c("AlligatorModel", "body/neck", p(.58F, 0.0F, .7854F, 0.0F)), c("AlligatorBabyModel", "body/neck", p(.76F)))''',
                 '''add(map, "lizard", cDetached("LizardModel", "body/skullRot/neck", "body/skullRot/neck/neck_r1", p(1.0F, 0.0F, 1.5708F, 0.0F)))''',
                 '''add(map, "tortoise", cDetached("TortoiseModel", "body/skullRot/neck", p(1.0F, 0.0F, 1.5708F, 0.0F)), cDetached("TortoiseBabyModel", "body/skullRot/neck", p(1.0F, 0.0F, 1.5708F, 0.0F)))''',
-                '''add(map, "black_bear", c("BlackBearModel", "body/skullRot/skull", p(1.0F, 0.0F, 0.0F, 0.0F, -1.0F)), c("BlackBearBabyModel", "body/skull"))''',
-                '''add(map, "hippo", c("HippoModel", "body/bone/neck", p(.52F)), c("HippoBabyModel", "body/neck", p(.70F)))''',
-                '''add(map, "whale", c("WhaleModel", "body/skullRot", p(.30F, 0.0F, 1.5708F, 0.0F)), c("WhaleBabyModel", "body/skull", p(.60F, 0.0F, 1.5708F, 0.0F)))'''
+                '''add(map, "black_bear", c("BlackBearModel", "body/skullRot/skull", p(1.0F, 0.0F, 0.0F, 0.0F, -2.0F)), c("BlackBearBabyModel", "body/skull"))''',
+                '''add(map, "hippo", c("HippoModel", "body/bone/neck", p(.60F)), c("HippoBabyModel", "body/neck", p(.70F)))''',
+                '''add(map, "whale", c("WhaleModel", "body/skullRot", p(.30F, 0.0F, .7854F, 0.0F)), c("WhaleBabyModel", "body/skull", p(.60F, 0.0F, .7854F, 0.0F)))'''
         ]
-        if (required.any { !source.contains(it) }) throw new GradleException('Canary 24 requires exact C23 controls and six audited presentation contracts')
+        if (required.any { !source.contains(it) }) throw new GradleException('Canary 25 requires exact frozen controls and three audited follow-up contracts')
     }
 }
-tasks.register('stageCanaryArtifact', Copy) { dependsOn tasks.named('check'), tasks.named('verifyCanary24PresentationContracts'); from(tasks.named('jar')); into(layout.projectDirectory.dir('artifacts')) }
+tasks.register('stageCanaryArtifact', Copy) { dependsOn tasks.named('check'), tasks.named('verifyCanary25PresentationContracts'); from(tasks.named('jar')); into(layout.projectDirectory.dir('artifacts')) }
 java { withSourcesJar() }
