@@ -26,11 +26,11 @@
       "Preserve accepted C8 and rollback C6 provenance separately from retained C9 and rejected C10/C11 historical evidence."
     ],
     "scope": [
-      "Current C13 is a C12-derived compatibility-sidecar presentation change, not a continuation of C10 or C11 implementation or behavior. C10 and C11 remain historical records only.",
-      "On a physically empty nested slot, C13 preserves C12's C9 public CSR reservation matcher: a matching reservation is eligible, a mismatching active reservation is blocked, and only an unreserved empty slot is generic capacity.",
-      "C13 leaves existing physical-stack merging, nested discovery, parent-first ordering, reservation creation and maintenance, container scanning, source rules, transactional writeback, and C9 identity semantics unchanged.",
-      "C13 changes only the survival InventoryScreen QSN action: 18x18 Minecraft Button chrome, a crisp user-reference-derived glyph, and the live bottom-right upper utility slot. Controlled unit and Fabric GameTest evidence is not Minecraft gameplay runtime evidence.",
-      "C13 is retained, ACTIVE, NOT_DEPLOYED, and RUNTIME_UNTESTED."
+      "Current C14 is a C12-derived compatibility-sidecar presentation correction, not a continuation of C10 or C11 implementation or behavior. C10 and C11 remain historical records only.",
+      "On a physically empty nested slot, C14 preserves C12's C9 public CSR reservation matcher: a matching reservation is eligible, a mismatching active reservation is blocked, and only an unreserved empty slot is generic capacity.",
+      "C14 leaves existing physical-stack merging, nested discovery, parent-first ordering, reservation creation and maintenance, container scanning, source rules, transactional writeback, and C9 identity semantics unchanged.",
+      "C14 changes only the survival InventoryScreen QSN action: 18x18 Minecraft Button chrome, a crisp user-reference-derived glyph, and the live bottom-right upper utility slot. It replaces C13's invalid `QuickStackCustomButtonBase.extractDefaultSprite(GuiGraphicsExtractor)` shadow with the exact production `extractContents(...)` injection seam and direct Minecraft 26.2 sprite extraction. Controlled unit and Fabric GameTest evidence is not Minecraft gameplay runtime evidence.",
+      "C13 is retained as immutable historical release evidence but is not a viable client artifact: the user-supplied Minecraft 26.2 launch failed before menu initialization because its chrome mixin could not resolve that shadow. C14 is ACTIVE, NOT_DEPLOYED, and RUNTIME_UNTESTED."
     ],
     "boundaries": {
       "owned_paths": [
@@ -40,7 +40,7 @@
         "Container Slot Reservations, Carried Container Auto-Routing, Matcha \u00d7 Stack to Nearby Chests Compatibility, Inventory Search, Block Geometry Extensions, Nibaru, Clutter No More, Quick Stack Nearby, and every other nearby-routing or inventory project retain their own identities, source, artifacts, controls, and behavior ownership.",
         "No CSR reservation mutation, persistence, user interface, container-support policy, or classification logic is reimplemented; C8 consumes only CSR's public read-only reservation API when the provider is loaded.",
         "No Stack to Nearby Chests implementation, Matcha-specific QSN adapter, general Inventory Search patch, carried-container routing, nested-container routing, registry-name parsing, fuzzy material equivalence, item conversion, or custom existing-stack merge is owned here.",
-        "C13 is a C12-derived compatibility-sidecar artifact. It does not carry forward C10/C11's integrated upstream-QSN implementation or behavior, and it does not bundle external QSN, CSR, Inventory Extended, Clutter No More, BGE, Nibaru, Minecraft, or Fabric JARs.",
+        "C14 is a C12-derived compatibility-sidecar artifact. It does not carry forward C10/C11's integrated upstream-QSN implementation or behavior, and it does not bundle external QSN, CSR, Inventory Extended, Clutter No More, BGE, Nibaru, Minecraft, or Fabric JARs.",
         "C8 mirrors the exact audited QSN 0.4.0 package-private maximum-stack helper through its current Container#getMaxStackSize delegate because attempted Java-package and Mixin invokers were not runtime-safe; a future QSN helper change requires seam re-audit.",
         "Controlled JUnit and Fabric GameTest results are build/static evidence, not Minecraft gameplay runtime validation.",
         "Lifecycle is ACCEPTED because exact current C8 was promoted into accepted Stack v17 and no longer occupies a Test Slot; C6 is rollback, C4 remains distinct historical passing provenance, and C7's independent failure remains separate.",
@@ -147,16 +147,16 @@
     ]
   },
   "state": {
-    "milestone": "C13 is a controlled-validated, retained-but-not-deployed C12-derived survival inventory utility-button change. It preserves C12's C9-derived routing correction, including nested CSR reservations, ShapeMap behavior, source accounting, ordering, capacity, and transactional writeback. C10/C11 remain rejected historical experiments; C8 remains accepted and C9 retains its historical inconclusive observation. Revision 16 corrects only the recorded C13 focused-test count from 63 to the verified 64; no release byte, source, deployment, testing slot, or Workbench profile changed.",
+    "milestone": "C14 is a controlled-validated, retained-but-not-deployed C12-derived survival inventory utility-button correction. It preserves C12's C9-derived routing correction, including nested CSR reservations, ShapeMap behavior, source accounting, ordering, capacity, and transactional writeback. C13 remains immutable historical evidence but is rejected as a viable client artifact after the supplied Minecraft 26.2 launch reported `InvalidMixinException` for its nonexistent `QuickStackCustomButtonBase.extractDefaultSprite(GuiGraphicsExtractor)` shadow; no Test Instance Manager deployment is inferred from that report. C8 remains accepted and C6 remains rollback.",
     "releases": {
       "current": {
-        "version": "C13 (0.1.0-canary13)",
-        "embedded_version": "0.1.0-canary13",
+        "version": "C14 (0.1.0-canary14)",
+        "embedded_version": "0.1.0-canary14",
         "artifact": {
-          "filename": "quick-stack-nearby-compat-0.1.0-canary13.jar",
-          "sha256": "46a5c7e373f8b13d37e64ae5f0187f8b66e90b9ee636f598b1686de8bfa5f38a"
+          "filename": "quick-stack-nearby-compat-0.1.0-canary14.jar",
+          "sha256": "f2af07adf68348f5f10abcadcb27ab799967734cca405839c1e8b21d34723361"
         },
-        "source_commit": "e941aa45a5b3640b462e20a4b56ed7229039aa58",
+        "source_commit": "b4622a52fe65abeac2716d6dbcdd8c9618ef864e",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
@@ -195,11 +195,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 16,
-    "activity_at": "2026-09-10T04:50:13.633092Z",
-    "updated_at": "2026-09-10T04:50:13.633092Z",
-    "last_codex_at": "2026-09-10T04:50:13.633092Z",
-    "source_commit": "e941aa45a5b3640b462e20a4b56ed7229039aa58",
+    "revision": 17,
+    "activity_at": "2026-09-10T05:11:37.6763385Z",
+    "updated_at": "2026-09-10T05:11:37.6763385Z",
+    "last_codex_at": "2026-09-10T05:11:37.6763385Z",
+    "source_commit": "b4622a52fe65abeac2716d6dbcdd8c9618ef864e",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
