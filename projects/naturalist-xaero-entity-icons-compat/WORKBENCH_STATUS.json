@@ -38,12 +38,12 @@
     ]
   },
   "state": {
-    "milestone": "Exact C23 is USER-REPORTED / EXTERNAL FOCUSED RUNTIME PASS: `naturalist-xaero-entity-icons-compat-0.1.0-canary23.jar` / embedded `0.1.0-canary23` / 45,991 bytes / SHA-256 `d1deb67227eac2e9de37a5e2f2c00a27b34abaa1cb19a1a38269bd7041a625c1` / source `34e3ec7f4141762f3418e60307c2cc13a09db038`. The user confirms Starfish PASS after the slight size reduction in C23; Desert Scorpion PASS; Jungle Scorpion PASS. C23 retains Starfish's copied `body`+`legs`, live `body` trace/render center, top-down X `1.5708F`, and `0.52F` scale; it retains both Scorpions' copied `body`+`legs`, live `body` trace/render center, top-down X `1.5708F`, and `0.34F` Desert / `0.28F` Jungle scales. These are successful focused outcomes, not unresolved regressions. C20 Clam remains external PASS at exact `top` source/trace and `0.30F`; Brown Bear remains native `naturalist:bear` / `RadarIconSpriteForm` / `0.65F`. Manager revision 117 retains unrelated BGE C60 and IBF C4 in both slots; C23 was externally tested without managed deployment.",
+    "milestone": "Exact C24 is STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED: `naturalist-xaero-entity-icons-compat-0.1.0-canary24.jar` / embedded `0.1.0-canary24` / 46,018 bytes / SHA-256 `fdba10e369d7d7571122ab89fcc2481d4b33b11f650027bd91a78bbf27b18d8f` / source `113e8469894d60e9e52196637194794a65af0d72`. It uses source-backed presentation-only refinements: adult Alligator `body/neck` keeps source/trace/selection and yaws `0.7854F` to expose its eye plane; Lizard, Whale, and Tortoise preserve their compact selected geometry and yaw `1.5708F` into profile; adult Black Bear keeps `body/skullRot/skull` and applies only copied-adapter frame Y `-1.0F`; adult Hippo retains `body/bone/neck` and rises only `0.48F` -> `0.52F`. C23 is retained as USER-REPORTED / EXTERNAL FOCUSED PASS: Starfish PASS after the slight size reduction; Desert Scorpion PASS; Jungle Scorpion PASS. Starfish remains `0.52F`, both Scorpions remain `0.34F` / `0.28F`, C20 Clam remains `top` / `0.30F`, and Brown Bear remains native `naturalist:bear` / `RadarIconSpriteForm` / `0.65F`. Manager revision 117 retains unrelated BGE C60 and IBF C4 in both slots, so C24 is retained for external runtime testing.",
     "releases": {
       "current": {
-        "version": "0.1.0-canary23",
-        "artifact": {"filename": "naturalist-xaero-entity-icons-compat-0.1.0-canary23.jar", "sha256": "d1deb67227eac2e9de37a5e2f2c00a27b34abaa1cb19a1a38269bd7041a625c1"},
-        "source_commit": "34e3ec7f4141762f3418e60307c2cc13a09db038",
+        "version": "0.1.0-canary24",
+        "artifact": {"filename": "naturalist-xaero-entity-icons-compat-0.1.0-canary24.jar", "sha256": "fdba10e369d7d7571122ab89fcc2481d4b33b11f650027bd91a78bbf27b18d8f"},
+        "source_commit": "113e8469894d60e9e52196637194794a65af0d72",
         "runtime_dependency_policy": {"contract": "CAPABILITY_OR_PROVIDER", "exceptions": []}
       },
       "accepted": null,
@@ -51,15 +51,15 @@
       "accepted_current": "NO_ACCEPTED",
       "accepted_rollback": "NO_ROLLBACK"
     },
-    "validation": {"build": "STATIC_PASS", "deployment": "NOT_DEPLOYED", "runtime": "PARTIAL_RUNTIME_PASS"},
+    "validation": {"build": "STATIC_PASS", "deployment": "NOT_DEPLOYED", "runtime": "RUNTIME_UNTESTED"},
     "blocker": null
   },
   "synchronization": {
-    "revision": 24,
-    "activity_at": "2026-09-10T04:15:00Z",
-    "updated_at": "2026-09-10T04:15:00Z",
-    "last_codex_at": "2026-09-10T04:15:00Z",
-    "source_commit": "34e3ec7f4141762f3418e60307c2cc13a09db038",
+    "revision": 25,
+    "activity_at": "2026-09-10T04:15:38Z",
+    "updated_at": "2026-09-10T04:15:38Z",
+    "last_codex_at": "2026-09-10T04:15:38Z",
+    "source_commit": "113e8469894d60e9e52196637194794a65af0d72",
     "google_sheet": {"participates": true, "exclusion_reason": null}
   }
 }
