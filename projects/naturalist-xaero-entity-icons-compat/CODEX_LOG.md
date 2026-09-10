@@ -253,3 +253,13 @@
 - Artifact: `naturalist-xaero-entity-icons-compat-0.1.0-canary23.jar`; embedded `0.1.0-canary23`; 45,991 bytes; SHA-256 `d1deb67227eac2e9de37a5e2f2c00a27b34abaa1cb19a1a38269bd7041a625c1`; source `34e3ec7f4141762f3418e60307c2cc13a09db038`; runtime dependency policy `CAPABILITY_OR_PROVIDER` with no exceptions.
 - Result: ACTIVE / STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED. C22 Starfish PASS, C20 Clam PASS, and Brown Bear's native passing seam are preserved.
 - Next state: Retain exact C23 in the primary checkout, publish revision 23 from authoritative `main`, and collect only the focused C23 external runtime observations; do not create C24 automatically.
+## 2026-09-10T04:15:00Z — Reconcile Naturalist × Xaero Entity Icon Compatibility Canary 23 external runtime results
+
+- Revision: 24
+- Source checkpoint: `34e3ec7f4141762f3418e60307c2cc13a09db038`
+- Changes: Recovered the exact completed C23 bytes and committed contract before recording runtime evidence: `naturalist-xaero-entity-icons-compat-0.1.0-canary23.jar`, embedded `0.1.0-canary23`, 45,991 bytes, SHA-256 `d1deb67227eac2e9de37a5e2f2c00a27b34abaa1cb19a1a38269bd7041a625c1`. The exact production Starfish contract remains normalized copied `body` + `legs`, live `body` trace/render center, top-down X `1.5708F`, zero Y/Z/frame offset, and `0.52F`; Desert and Jungle Scorpion remain normalized copied `body` + `legs`, live `body` trace/render center, top-down X `1.5708F`, zero Y/Z/frame offset, and `0.34F` / `0.28F` respectively. No source/artifact contract was reconstructed or altered.
+- Build/static: C23's committed Java 25 / Loom static evidence remains the completed `clean check stageCanaryArtifact` result recorded in revision 23; this reconciliation made no build-relevant code change.
+- Runtime: USER-REPORTED / EXTERNAL FOCUSED PASS exactly as supplied: Starfish PASS after the slight size reduction; Desert Scorpion PASS; Jungle Scorpion PASS. These are successful focused outcomes, not unresolved failures. No managed deployment occurred, no slot changed, and no protected-profile access occurred.
+- Artifact: C23 is retained unchanged with runtime dependency policy `CAPABILITY_OR_PROVIDER` and no exceptions; archive identity above is reverified.
+- Result: ACTIVE / STATIC_PASS / NOT_DEPLOYED / PARTIAL_RUNTIME_PASS. C23 is not accepted because the evidence is focused rather than a complete release runtime pass.
+- Next state: Integrate this exact C23 reconciliation on authoritative `main`, then create only the requested C24 refinements.
