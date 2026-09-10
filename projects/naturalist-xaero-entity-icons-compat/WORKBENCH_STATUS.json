@@ -38,12 +38,12 @@
     ]
   },
   "state": {
-    "milestone": "Exact C26 is STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED: `naturalist-xaero-entity-icons-compat-0.1.0-canary26.jar` / embedded `0.1.0-canary26` / 46,011 bytes / SHA-256 `17a7ae95b22ea3142a87bc8922bd48dec6b0c8d9b0d8844bcd7ef52fe4285e46` / source `0d1c602e7d58a6e0d421a2125d2f990685045d81` / runtime dependency policy `CAPABILITY_OR_PROVIDER` with no exceptions. C25 USER-REPORTED / EXTERNAL focused runtime evidence is preserved exactly: Black Bear PASS (the C25 improvement is good; freeze unchanged), Hippo still too small (`0.60F` insufficient), and Whale better than C24 with a real icon but requesting a truer profile if that remains detectable. C26 changes only adult Hippo `HippoModel` `body/bone/neck` scale `0.60F` -> `0.75F`; baby Hippo is unchanged. Exact C8 Whale audit confirms adult `body/skullRot` owns the cranium plus `topJaw` and `bottomJaw`, and baby `body/skull` owns `jaw`; these are the only compact complete face assemblies and run long on authored Z. The same complete C24 assemblies at `1.5708F` yielded an empty Xaero destination, so C26 retains the safe real-icon adult/baby source/trace/selected geometry `body/skullRot` / `body/skull`, yaw `0.7854F`, and scales `0.30F` / `0.60F`. Black Bear C25 PASS, Alligator C24 PASS, Lizard C24 PASS, Tortoise C24 PASS, C20 Clam PASS, C23 Starfish PASS, both C23 Scorpions PASS, Brown Bear native sprite PASS, and all other known-good contracts remain unchanged. Manager revision 117 retains unrelated BGE C60 and IBF C4 in both slots, so C26 is retained for external runtime testing.",
+    "milestone": "C26 now has USER-REPORTED / EXTERNAL focused runtime evidence: adult Hippo PASS at exact `0.75F`; that contract is permanently frozen. The supplied exact C26 log confirms the retained C26 identity but has no Whale-specific diagnostic sequence, so no C26 Whale diagnostic outcome is claimed. C27 is STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED: `naturalist-xaero-entity-icons-compat-0.1.0-canary27.jar` / embedded `0.1.0-canary27` / 53,127 bytes / SHA-256 `d9939afc9759a9e5df418b2cfcf0033aa0b9576b9ae7a802a850ba64a5b19615` / source `c4381b1a9bd8c18c9d1c30e2af959c510d645b73` / runtime dependency policy `CAPABILITY_OR_PROVIDER` with no exceptions. C27 changes only adult `naturalist:whale`: it preserves the complete `WhaleModel` `body/skullRot` cranium + `topJaw` + `bottomJaw` geometry at `0.30F`, and uses exact live `body/skullRot/topJaw` as the trace and Xaero render center at Y `1.5708F`. Xaero 26.4.2 requires the rendered adapter itself to resolve an MRT entry and have cubes, but calculates framing from only the separate center part's direct biggest cuboid. C24 used short-cranium `skullRot` for both; C27's 28×11×42 direct `topJaw` center is a distinct source-audited capture correction, not a repeat of that known-bad mechanism. Baby Whale remains exact C26 `WhaleBabyModel` `body/skull` / `0.60F` / Y `0.7854F`. Black Bear C25 PASS, Alligator C24 PASS, Lizard C24 PASS, Tortoise C24 PASS, C20 Clam PASS, C23 Starfish PASS, both C23 Scorpions PASS, Brown Bear native sprite PASS, Hippo C26 PASS at `0.75F`, and every other known-good contract are frozen. Manager revision 117 retains unrelated BGE C60 and IBF C4 in both slots, so C27 is retained for focused external runtime testing.",
     "releases": {
       "current": {
-        "version": "0.1.0-canary26",
-        "artifact": {"filename": "naturalist-xaero-entity-icons-compat-0.1.0-canary26.jar", "sha256": "17a7ae95b22ea3142a87bc8922bd48dec6b0c8d9b0d8844bcd7ef52fe4285e46"},
-        "source_commit": "0d1c602e7d58a6e0d421a2125d2f990685045d81",
+        "version": "0.1.0-canary27",
+        "artifact": {"filename": "naturalist-xaero-entity-icons-compat-0.1.0-canary27.jar", "sha256": "d9939afc9759a9e5df418b2cfcf0033aa0b9576b9ae7a802a850ba64a5b19615"},
+        "source_commit": "c4381b1a9bd8c18c9d1c30e2af959c510d645b73",
         "runtime_dependency_policy": {"contract": "CAPABILITY_OR_PROVIDER", "exceptions": []}
       },
       "accepted": null,
@@ -55,11 +55,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 27,
-    "activity_at": "2026-09-10T14:41:57Z",
-    "updated_at": "2026-09-10T14:41:57Z",
-    "last_codex_at": "2026-09-10T14:41:57Z",
-    "source_commit": "0d1c602e7d58a6e0d421a2125d2f990685045d81",
+    "revision": 28,
+    "activity_at": "2026-09-10T15:09:22Z",
+    "updated_at": "2026-09-10T15:09:22Z",
+    "last_codex_at": "2026-09-10T15:09:22Z",
+    "source_commit": "c4381b1a9bd8c18c9d1c30e2af959c510d645b73",
     "google_sheet": {"participates": true, "exclusion_reason": null}
   }
 }

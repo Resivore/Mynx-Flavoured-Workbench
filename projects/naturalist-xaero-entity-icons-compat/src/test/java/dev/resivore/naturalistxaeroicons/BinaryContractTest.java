@@ -34,7 +34,7 @@ class BinaryContractTest {
         }
     }
 
-    @Test void c26ScopesOnlyHippoAndWhaleAndKeepsTheFailClosedBridge() throws Exception {
+    @Test void c27ScopesOnlyWhaleAndKeepsTheFailClosedBridge() throws Exception {
         Path root = Path.of(System.getProperty("projectRoot"));
         String mixins = Files.readString(root.resolve("src/main/resources/naturalist_xaero_entity_icons_compat.mixins.json"));
         assertTrue(mixins.contains("ModelRenderTraceMixin"));
@@ -60,9 +60,9 @@ class BinaryContractTest {
         assertTrue(contracts.contains("p(.75F)), c(\"HippoBabyModel\", \"body/neck\", p(.70F))"));
         assertFalse(contracts.contains("p(.60F)), c(\"HippoBabyModel\", \"body/neck\", p(.70F))"));
         assertTrue(contracts.contains("-2.0F)), c(\"BlackBearBabyModel\", \"body/skull\")"));
-        assertTrue(contracts.contains("\"WhaleModel\", \"body/skullRot\", p(.30F, 0.0F, .7854F, 0.0F)"));
+        assertTrue(contracts.contains("cWithTraceCenter(\"WhaleModel\", \"body/skullRot\", \"body/skullRot/topJaw\", p(.30F, 0.0F, 1.5708F, 0.0F))"));
         assertTrue(contracts.contains("\"WhaleBabyModel\", \"body/skull\", p(.60F, 0.0F, .7854F, 0.0F)"));
-        assertFalse(contracts.contains("\"WhaleModel\", \"body/skullRot\", p(.30F, 0.0F, 1.5708F, 0.0F)"));
+        assertTrue(contracts.contains("cWithTraceCenter"));
         String manager = Files.readString(root.resolve("src/main/java/dev/resivore/naturalistxaeroicons/mixin/RadarIconManagerMixin.java"));
         assertTrue(manager.contains("@ModifyVariable"));
         assertTrue(manager.contains("@At(\"STORE\")"));
@@ -71,6 +71,8 @@ class BinaryContractTest {
         assertTrue(manager.contains("observeStarfishCacheBeforeXaeroEmfRetry"));
         assertTrue(manager.contains("ScorpionCaptureDiagnostic.requestStarted"));
         assertTrue(manager.contains("ScorpionCaptureDiagnostic.cacheLookup"));
+        assertTrue(manager.contains("WhaleCaptureDiagnostic.requestStarted"));
+        assertTrue(manager.contains("WhaleCaptureDiagnostic.cacheLookup"));
         assertFalse(manager.contains("@Redirect"));
         String presentation = Files.readString(root.resolve("src/main/java/dev/resivore/naturalistxaeroicons/BrownBearSpritePresentation.java"));
         assertTrue(presentation.contains("\"naturalist:bear\""));
@@ -98,6 +100,14 @@ class BinaryContractTest {
         assertTrue(scorpionDiagnostic.contains("renderCenterHasDirectMrt"));
         assertTrue(scorpionDiagnostic.contains("selectedAssemblyRecorded"));
         assertFalse(scorpionDiagnostic.contains("new XaeroIcon"));
+        String whaleDiagnostic = Files.readString(root.resolve(
+                "src/main/java/dev/resivore/naturalistxaeroicons/WhaleCaptureDiagnostic.java"));
+        for (String expected : new String[] {"NaturalistXaero WhaleCapture", "naturalist:whale", "source direct-cube count=",
+                "selected direct-cube count=", "render center identity=", "direct ModelRenderTrace entry=",
+                "adapter trace resolution succeeds=", "fallback rendered destination before=", "cache write result",
+                "final manager result", "topJaw"}) assertTrue(whaleDiagnostic.contains(expected), expected);
+        assertFalse(whaleDiagnostic.contains("renderedDest.add("));
+        assertFalse(whaleDiagnostic.contains("new XaeroIcon"));
         assertFalse(prerenderer.contains("renderedDest.add("));
         String genericManager = Files.readString(root.getParent().resolve(
                 "xaero-entity-icons/src/main/java/dev/resivore/xaeroemfcompat/mixin/RadarIconManagerMixin.java"));

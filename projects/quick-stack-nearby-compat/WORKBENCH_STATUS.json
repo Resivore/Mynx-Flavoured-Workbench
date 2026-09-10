@@ -20,17 +20,17 @@
   "definition": {
     "lifecycle": "ACTIVE",
     "goals": [
-      "Preserve C12's C9-derived nested shulker routing, source accounting, ordering, capacity, and optional CSR affinity while changing only the survival QSN action presentation and placement.",
+      "Preserve C12's C9-derived nested shulker routing, source accounting, ordering, capacity, and optional CSR affinity while making only the survival QSN action placement stable and idempotent.",
       "Keep a CSR-reserved nested slot owned by its exact item-and-components reservation even while its physical stack is empty.",
       "Place the survival QSN action as the upper member of the shared 18px bottom-right utility stack without a Notebook runtime dependency.",
       "Preserve accepted C8 and rollback C6 provenance separately from retained C9 and rejected C10/C11 historical evidence."
     ],
     "scope": [
-      "Current C14 is a C12-derived compatibility-sidecar presentation correction, not a continuation of C10 or C11 implementation or behavior. C10 and C11 remain historical records only.",
-      "On a physically empty nested slot, C14 preserves C12's C9 public CSR reservation matcher: a matching reservation is eligible, a mismatching active reservation is blocked, and only an unreserved empty slot is generic capacity.",
-      "C14 leaves existing physical-stack merging, nested discovery, parent-first ordering, reservation creation and maintenance, container scanning, source rules, transactional writeback, and C9 identity semantics unchanged.",
-      "C14 changes only the survival InventoryScreen QSN action: 18x18 Minecraft Button chrome, a crisp user-reference-derived glyph, and the live bottom-right upper utility slot. It replaces C13's invalid `QuickStackCustomButtonBase.extractDefaultSprite(GuiGraphicsExtractor)` shadow with the exact production `extractContents(...)` injection seam and direct Minecraft 26.2 sprite extraction. Controlled unit and Fabric GameTest evidence is not Minecraft gameplay runtime evidence.",
-      "C13 is retained as immutable historical release evidence but is not a viable client artifact: the user-supplied Minecraft 26.2 launch failed before menu initialization because its chrome mixin could not resolve that shadow. C14 is ACTIVE, NOT_DEPLOYED, and RUNTIME_UNTESTED."
+      "Current C15 is a C12-derived compatibility-sidecar placement-stability correction, not a continuation of C10 or C11 implementation or behavior. C10 and C11 remain historical records only.",
+      "On a physically empty nested slot, C15 preserves C12's C9 public CSR reservation matcher: a matching reservation is eligible, a mismatching active reservation is blocked, and only an unreserved empty slot is generic capacity.",
+      "C15 leaves existing physical-stack merging, nested discovery, parent-first ordering, reservation creation and maintenance, container scanning, source rules, transactional writeback, and C9 identity semantics unchanged.",
+      "C15 changes only the survival InventoryScreen QSN action placement: its existing upstream QuickStackIconButton is explicitly recognized as QSN-owned when the production reservation seam scans Screens.getWidgets(screen), so the action cannot collide with itself. Every unrelated visible widget remains a collision; the C14 18x18 Minecraft Button chrome, crisp glyph, tooltip, primary/right-click callbacks, and exact utility-stack geometry are unchanged. Controlled unit and Fabric GameTest evidence is not Minecraft gameplay runtime evidence.",
+      "C13 is retained as immutable historical release evidence but is not a viable client artifact: the user-supplied Minecraft 26.2 launch failed before menu initialization because its chrome mixin could not resolve that shadow. C14 is immutable historical evidence with a user-reported survival InventoryScreen placement failure: with QSN 0.4.0 loaded, the otherwise correct action alternated frame-to-frame between adjacent 22px utility slots. That report does not assert a Test Instance Manager deployment or managed Workbench transition. C15 is ACTIVE, NOT_DEPLOYED, and RUNTIME_UNTESTED."
     ],
     "boundaries": {
       "owned_paths": [
@@ -40,7 +40,7 @@
         "Container Slot Reservations, Carried Container Auto-Routing, Matcha \u00d7 Stack to Nearby Chests Compatibility, Inventory Search, Block Geometry Extensions, Nibaru, Clutter No More, Quick Stack Nearby, and every other nearby-routing or inventory project retain their own identities, source, artifacts, controls, and behavior ownership.",
         "No CSR reservation mutation, persistence, user interface, container-support policy, or classification logic is reimplemented; C8 consumes only CSR's public read-only reservation API when the provider is loaded.",
         "No Stack to Nearby Chests implementation, Matcha-specific QSN adapter, general Inventory Search patch, carried-container routing, nested-container routing, registry-name parsing, fuzzy material equivalence, item conversion, or custom existing-stack merge is owned here.",
-        "C14 is a C12-derived compatibility-sidecar artifact. It does not carry forward C10/C11's integrated upstream-QSN implementation or behavior, and it does not bundle external QSN, CSR, Inventory Extended, Clutter No More, BGE, Nibaru, Minecraft, or Fabric JARs.",
+        "C15 is a C12-derived compatibility-sidecar artifact. It does not carry forward C10/C11's integrated upstream-QSN implementation or behavior, and it does not bundle external QSN, CSR, Inventory Extended, Clutter No More, BGE, Nibaru, Minecraft, or Fabric JARs.",
         "C8 mirrors the exact audited QSN 0.4.0 package-private maximum-stack helper through its current Container#getMaxStackSize delegate because attempted Java-package and Mixin invokers were not runtime-safe; a future QSN helper change requires seam re-audit.",
         "Controlled JUnit and Fabric GameTest results are build/static evidence, not Minecraft gameplay runtime validation.",
         "Lifecycle is ACCEPTED because exact current C8 was promoted into accepted Stack v17 and no longer occupies a Test Slot; C6 is rollback, C4 remains distinct historical passing provenance, and C7's independent failure remains separate.",
@@ -147,16 +147,16 @@
     ]
   },
   "state": {
-    "milestone": "C14 is a controlled-validated, retained-but-not-deployed C12-derived survival inventory utility-button correction. It preserves C12's C9-derived routing correction, including nested CSR reservations, ShapeMap behavior, source accounting, ordering, capacity, and transactional writeback. C13 remains immutable historical evidence but is rejected as a viable client artifact after the supplied Minecraft 26.2 launch reported `InvalidMixinException` for its nonexistent `QuickStackCustomButtonBase.extractDefaultSprite(GuiGraphicsExtractor)` shadow; no Test Instance Manager deployment is inferred from that report. C8 remains accepted and C6 remains rollback.",
+    "milestone": "C15 is a controlled-validated, retained-but-not-deployed C12-derived survival inventory utility-button placement-stability correction. It preserves C12's C9-derived routing correction, including nested CSR reservations, ShapeMap behavior, source accounting, ordering, capacity, and transactional writeback. C15 recognizes only QSN's exact upstream action widget as owned during the existing reservation scan, preventing self-collision while preserving collisions with unrelated visible widgets. C14 remains immutable historical user-reported failure evidence: with QSN 0.4.0 loaded, its survival action visibly alternated frame-to-frame between adjacent utility slots; no Test Instance Manager deployment is inferred. C8 remains accepted and C6 remains rollback.",
     "releases": {
       "current": {
-        "version": "C14 (0.1.0-canary14)",
-        "embedded_version": "0.1.0-canary14",
+        "version": "C15 (0.1.0-canary15)",
+        "embedded_version": "0.1.0-canary15",
         "artifact": {
-          "filename": "quick-stack-nearby-compat-0.1.0-canary14.jar",
-          "sha256": "f2af07adf68348f5f10abcadcb27ab799967734cca405839c1e8b21d34723361"
+          "filename": "quick-stack-nearby-compat-0.1.0-canary15.jar",
+          "sha256": "7793663dfb5250c2d3b45942f58fc58f5c104b4fbbc519ed07b48a403ba6b83c"
         },
-        "source_commit": "b4622a52fe65abeac2716d6dbcdd8c9618ef864e",
+        "source_commit": "ea011fd58bab1d8292c3d04c1d9701bf651c5bfd",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
@@ -195,11 +195,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 17,
-    "activity_at": "2026-09-10T05:11:37.6763385Z",
-    "updated_at": "2026-09-10T05:11:37.6763385Z",
-    "last_codex_at": "2026-09-10T05:11:37.6763385Z",
-    "source_commit": "b4622a52fe65abeac2716d6dbcdd8c9618ef864e",
+    "revision": 18,
+    "activity_at": "2026-09-10T15:10:20.4955890Z",
+    "updated_at": "2026-09-10T15:10:20.4955890Z",
+    "last_codex_at": "2026-09-10T15:10:20.4955890Z",
+    "source_commit": "ea011fd58bab1d8292c3d04c1d9701bf651c5bfd",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null

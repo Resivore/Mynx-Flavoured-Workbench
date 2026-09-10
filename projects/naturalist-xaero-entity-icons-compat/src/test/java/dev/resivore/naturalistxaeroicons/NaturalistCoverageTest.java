@@ -79,7 +79,7 @@ class NaturalistCoverageTest {
         }
     }
 
-    @Test void c26ReconcilesC25AndChangesOnlyAdultHippo() {
+    @Test void c27FreezesC26HippoAndChangesOnlyTheAdultWhaleCaptureCenter() {
         var alligator = NaturalistModelContracts.contractsForId("alligator").getFirst();
         assertEquals("com.crispytwig.naturalist.client.model.AlligatorModel", alligator.modelClass());
         assertEquals(List.of("body", "neck"), alligator.path());
@@ -104,10 +104,10 @@ class NaturalistCoverageTest {
         var whaleBaby = NaturalistModelContracts.contractsForId("whale").get(1);
         assertEquals("com.crispytwig.naturalist.client.model.WhaleModel", whaleAdult.modelClass());
         assertEquals(List.of("body", "skullRot"), whaleAdult.path());
-        assertEquals(List.of("body", "skullRot"), whaleAdult.tracePath());
+        assertEquals(List.of("body", "skullRot", "topJaw"), whaleAdult.tracePath());
         assertEquals(.30F, whaleAdult.presentation().scale());
-        assertEquals(.7854F, whaleAdult.presentation().yRotation());
-        assertNotEquals(1.5708F, whaleAdult.presentation().yRotation());
+        assertEquals(1.5708F, whaleAdult.presentation().yRotation());
+        assertTrue(whaleAdult.useTraceAsRenderCenter());
         assertTrue(whaleAdult.preserveAncestorTransforms());
         assertEquals("com.crispytwig.naturalist.client.model.WhaleBabyModel", whaleBaby.modelClass());
         assertEquals(List.of("body", "skull"), whaleBaby.path());
@@ -199,14 +199,14 @@ class NaturalistCoverageTest {
         assertEquals(0.0F, clam.presentation().zRotation());
         assertEquals(0.0F, clam.presentation().frameYOffset());
         for (String id : NaturalistModelContracts.targetIds()) {
-            if (!List.of("starfish", "desert_scorpion", "jungle_scorpion").contains(id)) {
+            if (!List.of("starfish", "desert_scorpion", "jungle_scorpion", "whale").contains(id)) {
                 assertFalse(NaturalistModelContracts.contractsForId(id).getFirst().useTraceAsRenderCenter(), id);
             }
         }
         assertEquals(.30F, NaturalistModelContracts.contractsForId("whale").getFirst().presentation().scale());
     }
 
-    @Test void c26SourceAuditBindsHippoAndWhaleToTheirAuthoredAnatomy() throws Exception {
+    @Test void c27SourceAuditBindsHippoAndWhaleToTheirAuthoredAnatomyAndDrawableCenter() throws Exception {
         Path models = Path.of(System.getProperty("projectRoot")).getParent()
                 .resolve("naturalist/common/src/main/java/com/crispytwig/naturalist/client/model");
         String alligator = Files.readString(models.resolve("AlligatorModel.java"));
@@ -241,18 +241,14 @@ class NaturalistCoverageTest {
         assertTrue(hippo.contains("neck.addOrReplaceChild(\"topJaw\""));
     }
 
-    @Test void c23ExternalFocusedPassAndFrozenControlsRemainRecorded() throws Exception {
+    @Test void c27RecordsC26HippoPassWithoutFabricatingWhaleDiagnostics() throws Exception {
         Path root = Path.of(System.getProperty("projectRoot"));
-        String status = Files.readString(root.resolve("WORKBENCH_STATUS.json"));
-        String testing = Files.readString(root.resolve("TESTING.md"));
-        String log = Files.readString(root.resolve("CODEX_LOG.md"));
-        for (String record : List.of(status, testing, log)) {
-            assertTrue(record.contains("Starfish PASS after the slight size reduction"));
-            assertTrue(record.contains("Desert Scorpion PASS"));
-            assertTrue(record.contains("Jungle Scorpion PASS"));
-            assertTrue(record.contains("0.52F"));
-            assertTrue(record.contains("0.34F"));
-            assertTrue(record.contains("0.28F"));
+        for (String record : List.of(Files.readString(root.resolve("WORKBENCH_STATUS.json")),
+                Files.readString(root.resolve("TESTING.md")), Files.readString(root.resolve("CODEX_LOG.md")))) {
+            assertTrue(record.contains("Hippo"));
+            assertTrue(record.contains("PASS"));
+            assertTrue(record.contains("0.75F"));
+            assertTrue(record.contains("no Whale-specific diagnostic sequence"));
         }
         assertTrue(NaturalistModelContracts.isNativeControlId("bear"));
         assertFalse(NaturalistModelContracts.isTargetId("bear"));
@@ -262,7 +258,7 @@ class NaturalistCoverageTest {
         assertEquals(.28F, NaturalistModelContracts.contractsForId("jungle_scorpion").getFirst().presentation().scale());
     }
 
-    @Test void c25FollowUpBaselineIsExplicitBeforeC26Changes() {
+    @Test void c27RetainsTheC26HippoPassBaselineWhileChangingOnlyTheWhaleCaptureSeam() {
         var blackBear = NaturalistModelContracts.contractsForId("black_bear").getFirst();
         var hippo = NaturalistModelContracts.contractsForId("hippo").getFirst();
         var whale = NaturalistModelContracts.contractsForId("whale").getFirst();
@@ -271,7 +267,9 @@ class NaturalistCoverageTest {
         assertEquals(List.of("body", "bone", "neck"), hippo.path());
         assertEquals(List.of("body", "bone", "neck"), hippo.tracePath());
         assertEquals(.70F, NaturalistModelContracts.contractsForId("hippo").get(1).presentation().scale());
-        assertEquals(.7854F, whale.presentation().yRotation(), "C24's label-only quarter turn remains rejected");
+        assertEquals(1.5708F, whale.presentation().yRotation(), "C27's center correction makes this a distinct profile experiment");
+        assertEquals(List.of("body", "skullRot", "topJaw"), whale.tracePath());
+        assertTrue(whale.useTraceAsRenderCenter());
         assertEquals(.30F, whale.presentation().scale());
     }
 

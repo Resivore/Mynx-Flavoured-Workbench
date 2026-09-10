@@ -56,7 +56,11 @@ public final class QsnInventorySearchButtonPlacement {
 
     private static boolean isFree(int x, int y, Iterable<Bounds> occupied) {
         for (Bounds bounds : occupied) {
-            if (bounds.visible()
+            // The upstream QSN action remains in Screens.getWidgets(screen) while its
+            // reservation is recalculated.  It owns this reservation, so it cannot
+            // occupy itself; every other visible widget is still a real collision.
+            if (!bounds.qsnActionWidget()
+                    && bounds.visible()
                     && x < bounds.x() + bounds.width()
                     && x + BUTTON_SIZE > bounds.x()
                     && y < bounds.y() + bounds.height()
@@ -67,7 +71,17 @@ public final class QsnInventorySearchButtonPlacement {
         return true;
     }
 
-    public record Bounds(int x, int y, int width, int height, boolean visible) {
+    public record Bounds(
+            int x,
+            int y,
+            int width,
+            int height,
+            boolean visible,
+            boolean qsnActionWidget
+    ) {
+        public Bounds(int x, int y, int width, int height, boolean visible) {
+            this(x, y, width, height, visible, false);
+        }
     }
 
     public record Position(int x, int y) {

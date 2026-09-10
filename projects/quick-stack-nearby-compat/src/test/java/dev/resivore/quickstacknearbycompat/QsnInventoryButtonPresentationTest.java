@@ -87,6 +87,8 @@ class QsnInventoryButtonPresentationTest {
         assertTrue(placement.contains("screen instanceof InventoryScreen"));
         assertTrue(placement.contains("firstBottomUpFreePosition"));
         assertTrue(placement.contains("Screens.getWidgets(screen)"));
+        assertTrue(placement.contains("widget instanceof QuickStackIconButton"));
+        assertFalse(placement.contains("widget.getWidth() == 18"));
         assertTrue(mixins.contains("QuickStackIconButtonMixin"));
         assertTrue(mixins.contains("QuickStackCustomButtonChromeMixin"));
     }
