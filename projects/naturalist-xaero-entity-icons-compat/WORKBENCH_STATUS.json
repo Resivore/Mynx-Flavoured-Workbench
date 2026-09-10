@@ -38,12 +38,12 @@
     ]
   },
   "state": {
-    "milestone": "Exact C25 is STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED: `naturalist-xaero-entity-icons-compat-0.1.0-canary25.jar` / embedded `0.1.0-canary25` / 46,014 bytes / SHA-256 `334db8e9ec1e3a0f339950f6f48e2aa7312b7a1551e3afd5e182ebae3c2350b8` / source `e2ea69b3a1c4d6333f9e982e9ad33a4c3c300666`. It reconciles C24 USER-REPORTED / EXTERNAL focused runtime evidence while preserving exact C24 identity: Alligator PASS (eye-plane improvement worked; icon is good), Lizard PASS (profile presentation is good), and Tortoise PASS (profile presentation is good). Black Bear improved but needs slightly more lower chin; C25 changes only adult copied-adapter frame Y `-1.0F` -> `-2.0F`. Hippo remained too small at C24 `0.52F`; C25 changes only adult scale to `0.60F`. C24 Whale was a label-only regression at `1.5708F`; C25 preserves adult `WhaleModel` `body/skullRot` / `0.30F` and baby `WhaleBabyModel` `body/skull` / `0.60F`, using audited `0.7854F` three-quarter yaw rather than retaining the failed quarter-turn. C23 remains USER-REPORTED / EXTERNAL FOCUSED PASS: Starfish PASS after the slight size reduction; Desert Scorpion PASS; Jungle Scorpion PASS. Starfish remains `0.52F`, both Scorpions remain `0.34F` / `0.28F`, C20 Clam remains `top` / `0.30F`, and Brown Bear remains native `naturalist:bear` / `RadarIconSpriteForm` / `0.65F`. Manager revision 117 retains unrelated BGE C60 and IBF C4 in both slots, so C25 is retained for external runtime testing.",
+    "milestone": "Exact C26 is STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED: `naturalist-xaero-entity-icons-compat-0.1.0-canary26.jar` / embedded `0.1.0-canary26` / 46,011 bytes / SHA-256 `17a7ae95b22ea3142a87bc8922bd48dec6b0c8d9b0d8844bcd7ef52fe4285e46` / source `0d1c602e7d58a6e0d421a2125d2f990685045d81` / runtime dependency policy `CAPABILITY_OR_PROVIDER` with no exceptions. C25 USER-REPORTED / EXTERNAL focused runtime evidence is preserved exactly: Black Bear PASS (the C25 improvement is good; freeze unchanged), Hippo still too small (`0.60F` insufficient), and Whale better than C24 with a real icon but requesting a truer profile if that remains detectable. C26 changes only adult Hippo `HippoModel` `body/bone/neck` scale `0.60F` -> `0.75F`; baby Hippo is unchanged. Exact C8 Whale audit confirms adult `body/skullRot` owns the cranium plus `topJaw` and `bottomJaw`, and baby `body/skull` owns `jaw`; these are the only compact complete face assemblies and run long on authored Z. The same complete C24 assemblies at `1.5708F` yielded an empty Xaero destination, so C26 retains the safe real-icon adult/baby source/trace/selected geometry `body/skullRot` / `body/skull`, yaw `0.7854F`, and scales `0.30F` / `0.60F`. Black Bear C25 PASS, Alligator C24 PASS, Lizard C24 PASS, Tortoise C24 PASS, C20 Clam PASS, C23 Starfish PASS, both C23 Scorpions PASS, Brown Bear native sprite PASS, and all other known-good contracts remain unchanged. Manager revision 117 retains unrelated BGE C60 and IBF C4 in both slots, so C26 is retained for external runtime testing.",
     "releases": {
       "current": {
-        "version": "0.1.0-canary25",
-        "artifact": {"filename": "naturalist-xaero-entity-icons-compat-0.1.0-canary25.jar", "sha256": "334db8e9ec1e3a0f339950f6f48e2aa7312b7a1551e3afd5e182ebae3c2350b8"},
-        "source_commit": "e2ea69b3a1c4d6333f9e982e9ad33a4c3c300666",
+        "version": "0.1.0-canary26",
+        "artifact": {"filename": "naturalist-xaero-entity-icons-compat-0.1.0-canary26.jar", "sha256": "17a7ae95b22ea3142a87bc8922bd48dec6b0c8d9b0d8844bcd7ef52fe4285e46"},
+        "source_commit": "0d1c602e7d58a6e0d421a2125d2f990685045d81",
         "runtime_dependency_policy": {"contract": "CAPABILITY_OR_PROVIDER", "exceptions": []}
       },
       "accepted": null,
@@ -55,11 +55,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 26,
-    "activity_at": "2026-09-10T04:50:00Z",
-    "updated_at": "2026-09-10T04:50:00Z",
-    "last_codex_at": "2026-09-10T04:50:00Z",
-    "source_commit": "e2ea69b3a1c4d6333f9e982e9ad33a4c3c300666",
+    "revision": 27,
+    "activity_at": "2026-09-10T14:41:57Z",
+    "updated_at": "2026-09-10T14:41:57Z",
+    "last_codex_at": "2026-09-10T14:41:57Z",
+    "source_commit": "0d1c602e7d58a6e0d421a2125d2f990685045d81",
     "google_sheet": {"participates": true, "exclusion_reason": null}
   }
 }
