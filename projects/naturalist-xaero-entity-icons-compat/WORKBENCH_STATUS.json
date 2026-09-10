@@ -13,12 +13,12 @@
     "lifecycle": "ACTIVE",
     "goals": [
       "Provide fail-closed Xaero Minimap radar-icon capture for the 37 Naturalist living entities whose rendered ModelPart hierarchy is not captured by Xaero's native path.",
-      "Preserve Xaero's native successful model and texture capture for Brown Bear, Bird, Butterfly, Catfish, Caterpillar, Crab, Deer, Firefly, Snake, and Snail; C21 records the user's exact C20 Clam PASS, preserves its top-shell contract unchanged, and corrects only Starfish's source-audited model-root traversal without modifying Naturalist, Xaero, EMF, or Ribbits."
+      "Preserve Xaero's native successful model and texture capture for Brown Bear, Bird, Butterfly, Catfish, Caterpillar, Crab, Deer, Firefly, Snake, and Snail; C22 records C21's external Starfish label-only FAIL, preserves the runtime-passing C20 Clam contract unchanged, and changes only Starfish's source-audited Xaero render center without modifying Naturalist, Xaero, EMF, or Ribbits."
     ],
     "scope": [
       "Use a closed Naturalist entity-id plus exact current model-class contract registry. Each contract selects the live renderer-selected adult, baby, or state model subtree; unknown class, path, trace, or draw failure delegates to Xaero's normal fallback.",
       "After Xaero's native model prerender returns empty, render only the selected head/neck subtree for ordinary headed animals, or an explicit compact-body subtree for the documented non-headed anatomy families. The bridge copies only contract-path ancestor transforms and resolves only an explicit contract trace anchor, selected part, or contract-path ancestor trace; it never mutates or reparents the live Naturalist model.",
-      "Use explicit contract-local scale, rotation, source-audited trace anchor, and only where unavoidable a source-audited direct-cuboid subset for the C4 presentation corrections. Brown Bear has no custom fallback contract: C21 preserves C15's immutable-parameter recreation only for its runtime-proven `RadarIconSpriteForm` request, preserving form, variant, model config, debug state, and its `0.65F` sprite scale unchanged. C20 Clam is external/user-reported PASS with its authored `top` source and trace unchanged. C21 corrects only Starfish from an invalid second `root` hop to its actual `model.root()` source, retains the actual drawable `body` trace plus `body`/`legs` assembly, normalizes only the copied gameplay wrapper, and retains top-down `0.58F` presentation. One-time diagnostics are Starfish-only and bounded empty-destination failure semantics remain intact. No screen-space offsets are used. Resource reload evicts only the 37 fallback targets and native Brown Bear entries."
+      "Use explicit contract-local scale, rotation, source-audited trace anchor, and only where unavoidable a source-audited direct-cuboid subset for the C4 presentation corrections. Brown Bear has no custom fallback contract and remains its runtime-proven `RadarIconSpriteForm` request at `0.65F`. C20 Clam is external/user-reported PASS with its authored `top` source and trace unchanged. C22 preserves Starfish's normalized copied `body`/`legs` five-arm assembly, top-down `0.58F` presentation, and live `body` trace, but nominates that live body only as Xaero's direct-cuboid render center; all other contracts retain selected geometry as center. One-time diagnostics are Starfish-only and bounded empty-destination failure semantics remain intact. No screen-space offsets are used. Resource reload evicts only the 37 fallback targets and native Brown Bear entries."
     ],
     "boundaries": {
       "owned_paths": ["projects/naturalist-xaero-entity-icons-compat"],
@@ -38,12 +38,12 @@
     ]
   },
   "state": {
-    "milestone": "Exact C20 is USER-REPORTED / EXTERNAL RUNTIME PASS for the resolved Clam gate: `naturalist-xaero-entity-icons-compat-0.1.0-canary20.jar` / embedded `0.1.0-canary20` / 38,117 bytes / SHA-256 `e4cc28bfc6c9cd6addbf72b30aa632e90c2fc57c0c0c94bfa1bcd4291fb7a62d` / source `31d3b24a03bb0279be154a227a93515880727b70`. The user reports a real Xaero model icon with the full intended top surface in correct top-down presentation. C21 preserves that exact Clam contract unchanged. Brown Bear remains runtime-proven at its exact native `naturalist:bear` / `RadarIconSpriteForm` / `0.65F` seam. C21 corrects Starfish only: `StarfishModel` passes authored `root` into EntityModel, so model.root() is that wrapper; C21 captures its `body` and `legs` children from source `<model root>`, traces drawable `body`, normalizes the copied y=24/yRot=pi gameplay wrapper, and retains 0.58F top-down X rotation. C21 is STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED because authoritative manager revision 117 retains unrelated BGE C60 and IBF C4 in its two slots.",
+    "milestone": "Exact C21 is USER-REPORTED / EXTERNAL RUNTIME FAIL: `naturalist-xaero-entity-icons-compat-0.1.0-canary21.jar` / embedded `0.1.0-canary21` / 38,363 bytes / SHA-256 `3c52dcdd36af4f27e450ce590d150acd38900c0a0d12e8b52eaa4d8ebc4256d0` / source `9d534c4eb864c849238ab65273284ed6d00660ed`. The observed Starfish is label-only; C21's fallback destination stayed empty (`fallbackRenderedParts=0`) with no exception. C22 is STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED: it retains exact `StarfishModel`, source `<model root>`, live `body` trace, normalized copied `body`+`legs` five-arm assembly, `0.58F`, top-down X rotation `1.5708F`, zero Y/Z rotations and frame offset, while using the real live `body` only as Xaero render center after direct Xaero 26.4.2 audit established center's direct-cuboid centering role. C20 Clam remains external PASS at exact `top` source/trace and `0.30F`; Brown Bear remains native `naturalist:bear` / `RadarIconSpriteForm` / `0.65F`. Manager revision 117 retains unrelated BGE C60 and IBF C4 in both slots, so C22 is retained for external runtime testing.",
     "releases": {
       "current": {
-        "version": "0.1.0-canary21",
-        "artifact": {"filename": "naturalist-xaero-entity-icons-compat-0.1.0-canary21.jar", "sha256": "3c52dcdd36af4f27e450ce590d150acd38900c0a0d12e8b52eaa4d8ebc4256d0"},
-        "source_commit": "9d534c4eb864c849238ab65273284ed6d00660ed",
+        "version": "0.1.0-canary22",
+        "artifact": {"filename": "naturalist-xaero-entity-icons-compat-0.1.0-canary22.jar", "sha256": "d9b8b7d564dc6ebd4b95db6e1b773eb010cb55c0769be6eb815ed71dbd938060"},
+        "source_commit": "0a75a2a8bff2f7a508cc1843381f5e4e70262b9d",
         "runtime_dependency_policy": {"contract": "CAPABILITY_OR_PROVIDER", "exceptions": []}
       },
       "accepted": null,
@@ -55,11 +55,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 21,
-    "activity_at": "2026-09-10T01:49:35Z",
-    "updated_at": "2026-09-10T01:49:35Z",
-    "last_codex_at": "2026-09-10T01:49:35Z",
-    "source_commit": "9d534c4eb864c849238ab65273284ed6d00660ed",
+    "revision": 22,
+    "activity_at": "2026-09-10T03:20:50Z",
+    "updated_at": "2026-09-10T03:20:50Z",
+    "last_codex_at": "2026-09-10T03:20:50Z",
+    "source_commit": "0a75a2a8bff2f7a508cc1843381f5e4e70262b9d",
     "google_sheet": {"participates": true, "exclusion_reason": null}
   }
 }
