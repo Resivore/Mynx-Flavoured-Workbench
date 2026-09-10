@@ -8,6 +8,7 @@ import dev.resivore.slotreservations.ShulkerHostFingerprint;
 import dev.resivore.slotreservations.ShulkerHostResolver;
 import dev.resivore.slotreservations.ShulkerSelectionTracker;
 import dev.resivore.slotreservations.SupportedContainerResolver;
+import dev.resivore.slotreservations.api.client.ShulkerPanelHeaderDecorations;
 import dev.resivore.slotreservations.network.ReservationActionPayload;
 import dev.resivore.slotreservations.network.ShulkerHostLocator;
 import dev.resivore.slotreservations.network.ShulkerPanelContentActionPayload;
@@ -125,7 +126,10 @@ public final class ShulkerPanel {
         if (current.getCount() != 1 || !SupportedContainerResolver.isSupportedShulkerItem(current)) return false;
         String currentFingerprint = ShulkerHostFingerprint.of(current, client.player.registryAccess());
         if (!currentFingerprint.equals(binding.fingerprint())) {
-            if (!currentFingerprint.equals(expectedFingerprint)) return false;
+            // The exact screen/menu/Slot/container location remains live above. A server menu
+            // sync (including CCAR's lock component) may legitimately replace that one host.
+            // A pending CSR action still has to resolve to its exact server-issued fingerprint.
+            if (expectedFingerprint != null && !currentFingerprint.equals(expectedFingerprint)) return false;
             binding = binding.withFingerprint(currentFingerprint);
             expectedFingerprint = null;
             ShulkerHostResolver.resolveMenuSlot(client.player, binding.menu(), binding.slot())
@@ -169,8 +173,7 @@ public final class ShulkerPanel {
                 graphics.blit(RenderPipelines.GUI_TEXTURED, SHULKER_TEXTURE, geometry.x(),
                         geometry.y() + ShulkerPanelGeometry.MAIN_HEIGHT, 0, sourceY,
                         ShulkerPanelGeometry.WIDTH, ShulkerPanelGeometry.BOTTOM_FRAME_HEIGHT, 256, 256));
-        graphics.text(Minecraft.getInstance().font, binding.slot().getItem().getHoverName(),
-                geometry.x() + 8, geometry.y() + 6, 0x404040, false);
+        renderHeader(graphics);
         if (hoveredCell >= 0) highlight(graphics, HIGHLIGHT_BACK, hoveredCell);
         List<ShulkerPanelOverlay.SlotOverlay> overlays = ShulkerPanelOverlay.plan(binding.slot().getItem(), contents);
         for (ShulkerPanelOverlay.SlotOverlay overlay : overlays) {
@@ -184,6 +187,29 @@ public final class ShulkerPanel {
                     x + y * ShulkerPanelGeometry.WIDTH);
         }
         if (hoveredCell >= 0) highlight(graphics, HIGHLIGHT_FRONT, hoveredCell);
+    }
+
+    private static void renderHeader(GuiGraphicsExtractor graphics) {
+        ItemStack stack = binding.slot().getItem();
+        Optional<ShulkerPanelHeaderDecorations.Decoration> decoration =
+                ShulkerPanelHeaderDecorations.find(stack);
+        int decorationWidth = decoration.map(ShulkerPanelHeaderDecorations.Decoration::width).orElse(0);
+        Component title = truncateTitle(stack.getHoverName(), geometry.titleWidth(decorationWidth));
+        // Minecraft 26.2 GuiGraphicsExtractor text expects ARGB, including opaque alpha.
+        graphics.text(Minecraft.getInstance().font, title,
+                geometry.x() + ShulkerPanelGeometry.TITLE_X,
+                geometry.y() + ShulkerPanelGeometry.TITLE_Y, 0xFF404040, false);
+        decoration.ifPresent(value -> value.renderer().render(graphics,
+                geometry.headerDecorationX(value.width()), geometry.headerDecorationY(value.height())));
+    }
+
+    private static Component truncateTitle(Component title, int width) {
+        var font = Minecraft.getInstance().font;
+        if (font.width(title) <= width) return title;
+        String ellipsis = "…";
+        int textWidth = Math.max(0, width - font.width(ellipsis));
+        return Component.literal(font.plainSubstrByWidth(title.getString(), textWidth) + ellipsis)
+                .withStyle(title.getStyle());
     }
 
     private static void highlight(GuiGraphicsExtractor graphics, Identifier sprite, int slot) {

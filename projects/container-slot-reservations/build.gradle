@@ -85,6 +85,13 @@ processResources {
     }
 }
 
+tasks.named('processGametestResources') {
+    inputs.property 'version', project.version
+    filesMatching('fabric.mod.json') {
+        expand 'version': project.version
+    }
+}
+
 def verifyOccupiedReservationMarkerArtifact = tasks.register('verifyOccupiedReservationMarkerArtifact') {
     dependsOn tasks.named('jar')
     inputs.file(occupiedMarkerSource)

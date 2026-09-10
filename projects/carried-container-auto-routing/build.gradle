@@ -5,7 +5,7 @@ base { archivesName = project.archives_base_name }
 repositories { maven { url = 'https://maven.fabricmc.net/' } }
 dependencies {
     compileOnly files(providers.gradleProperty('csrApiJar').getOrElse(
-            '../container-slot-reservations/artifacts/container-slot-reservations-0.1.0-canary4.jar'))
+            '../container-slot-reservations/build/libs/container-slot-reservations-0.1.0-canary16.jar'))
     if (providers.gradleProperty('csrRuntimeJar').isPresent()) {
         testImplementation files(providers.gradleProperty('csrRuntimeJar').get())
         runtimeOnly files(providers.gradleProperty('csrRuntimeJar').get())
@@ -16,9 +16,49 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter:5.12.2'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.12.2'
 }
-processResources { inputs.property 'version', project.version; filesMatching('fabric.mod.json') { expand 'version': project.version } }
+def lockSourceResource = 'assets/carried_container_auto_routing/textures/gui/lock_source.png'
+def lockedSpriteResource = 'assets/carried_container_auto_routing/textures/gui/lock_locked.png'
+def unlockedSpriteResource = 'assets/carried_container_auto_routing/textures/gui/lock_unlocked.png'
+def lockSource = layout.projectDirectory.file("src/main/resources/${lockSourceResource}")
+
+processResources {
+    inputs.property 'version', project.version
+    inputs.file(lockSource)
+    exclude lockSourceResource
+    filesMatching('fabric.mod.json') { expand 'version': project.version }
+    doLast {
+        def source = javax.imageio.ImageIO.read(lockSource.asFile)
+        if (source == null || source.width != 20 || source.height != 11) {
+            throw new GradleException('The supplied CCAR lock art must remain a 20x11 PNG')
+        }
+        def bounds = { int fromX, int toX ->
+            def points = []
+            for (int y = 0; y < source.height; y++) for (int x = fromX; x <= toX; x++) {
+                if (((source.getRGB(x, y) >>> 24) & 0xFF) != 0) points << [x, y]
+            }
+            if (points.isEmpty()) throw new GradleException('The supplied CCAR lock art has an empty glyph')
+            int minX = points.collect { it[0] }.min(), maxX = points.collect { it[0] }.max()
+            int minY = points.collect { it[1] }.min(), maxY = points.collect { it[1] }.max()
+            [minX, minY, maxX - minX + 1, maxY - minY + 1, points.size()]
+        }
+        def locked = bounds(0, 9), unlocked = bounds(10, 19)
+        if (locked != [0, 1, 7, 9, 29] || unlocked != [10, 1, 10, 9, 29]) {
+            throw new GradleException("Unexpected supplied CCAR lock-art bounds: locked=${locked}, unlocked=${unlocked}")
+        }
+        def output = destinationDir
+        def writeSprite = { String resource, List<Integer> glyph ->
+            def file = new File(output, resource); file.parentFile.mkdirs()
+            if (!javax.imageio.ImageIO.write(source.getSubimage(glyph[0], glyph[1], glyph[2], glyph[3]), 'png', file)) {
+                throw new GradleException("Unable to encode ${resource}")
+            }
+        }
+        writeSprite(lockedSpriteResource, locked)
+        writeSprite(unlockedSpriteResource, unlocked)
+    }
+}
 tasks.withType(JavaCompile).configureEach { options.release = 25 }
 test {
+    dependsOn tasks.named('jar')
     useJUnitPlatform()
     systemProperty 'projectRoot', projectDir.absolutePath
 }

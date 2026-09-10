@@ -122,6 +122,16 @@ final class ClientAndNetworkContractTest {
     }
 
     @Test
+    void synchronizedSameSlotHostChangesRebindOnlyAfterTheExistingExactLiveChecks() throws IOException {
+        String panel = source("client/ShulkerPanel.java");
+        assertTrue(panel.contains("binding.menu().slots.get(binding.menuSlot()) != binding.slot()"));
+        assertTrue(panel.contains("binding.slot().getContainerSlot() != binding.containerSlot()"));
+        assertTrue(panel.contains("current.getCount() != 1 || !SupportedContainerResolver.isSupportedShulkerItem(current)"));
+        assertTrue(panel.contains("expectedFingerprint != null && !currentFingerprint.equals(expectedFingerprint)"));
+        assertTrue(panel.contains("binding = binding.withFingerprint(currentFingerprint)"));
+    }
+
+    @Test
     void implicitCarriedShulkerSelectionUsesBackmostCellWithoutOverridingAnExplicitSelection() throws IOException {
         String contents = source("ShulkerContents.java");
         String panel = source("client/ShulkerPanel.java");
