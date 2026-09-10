@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
@@ -45,6 +46,17 @@ class NaturalistTraceBridgeTest {
 
         assertNull(NaturalistIconAdapter.resolveTrace(trace, adapter));
         assertNull(NaturalistIconAdapter.resolveTrace(trace, part(Map.of())));
+    }
+
+    @Test void c21StarfishModelRootResolutionFailsClosedOnTheObsoleteSecondRootHop() throws Exception {
+        ModelPart body = part(Map.of());
+        ModelPart authoredRoot = part(Map.of("body", body, "legs", part(Map.of())));
+        Method follow = NaturalistModelContracts.class.getDeclaredMethod("follow", ModelPart.class, List.class);
+        follow.setAccessible(true);
+
+        assertSame(authoredRoot, follow.invoke(null, authoredRoot, List.of()));
+        assertSame(body, follow.invoke(null, authoredRoot, List.of("body")));
+        assertNull(follow.invoke(null, authoredRoot, List.of("root", "body")));
     }
 
     @Test void explicitDescendantTraceCanRenderAnExactRootContract() {
@@ -123,7 +135,7 @@ class NaturalistTraceBridgeTest {
         assertFalse(source.contains("private static boolean find("));
     }
 
-    @Test void c20DiagnosticsObserveXaeroSeamsWithoutCompetingForC9sRedirect() throws Exception {
+    @Test void c21StarfishDiagnosticsObserveXaeroSeamsWithoutCompetingForC9sRedirect() throws Exception {
         Path module = Path.of(System.getProperty("projectRoot"));
         String config = Files.readString(module.resolve("src/main/resources/naturalist_xaero_entity_icons_compat.mixins.json"));
         assertTrue(config.contains("ModelRenderTraceMixin"));
@@ -134,7 +146,7 @@ class NaturalistTraceBridgeTest {
         String manager = Files.readString(module.resolve(
                 "src/main/java/dev/resivore/naturalistxaeroicons/mixin/RadarIconManagerMixin.java"));
         assertTrue(manager.contains("@ModifyVariable"));
-        assertTrue(manager.contains("observeClamCacheBeforeXaeroEmfRetry"));
+        assertTrue(manager.contains("observeStarfishCacheBeforeXaeroEmfRetry"));
         assertFalse(manager.contains("@Redirect"));
 
         Path c9 = module.getParent().resolve("xaero-entity-icons/src/main/java/dev/resivore/xaeroemfcompat/mixin/RadarIconModelPartPrerendererMixin.java");

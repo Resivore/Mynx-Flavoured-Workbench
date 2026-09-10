@@ -79,7 +79,7 @@ class NaturalistCoverageTest {
         }
     }
 
-    @Test void c20ClamUsesTheExactClosedTopShellCaptureContract() {
+    @Test void c21PreservesTheExactClosedC20ClamContractAndCorrectsOnlyStarfishRootResolution() {
         assertEquals(List.of("body", "neck"), NaturalistModelContracts.contractsForId("alligator").getFirst().path());
         assertEquals(List.of("body", "neck"), NaturalistModelContracts.contractsForId("boar").getFirst().path());
         assertEquals(List.of("body", "neck"), NaturalistModelContracts.contractsForId("boar").getFirst().tracePath());
@@ -99,8 +99,12 @@ class NaturalistCoverageTest {
         assertEquals(.21F, shark.presentation().scale());
         assertEquals(-4.0F, shark.presentation().frameYOffset());
         var starfish = NaturalistModelContracts.contractsForId("starfish").getFirst();
-        assertEquals(List.of("root"), starfish.path());
-        assertEquals(List.of("root", "body"), starfish.tracePath());
+        assertEquals("com.crispytwig.naturalist.client.model.StarfishModel", starfish.modelClass());
+        assertEquals(List.of(), starfish.path());
+        assertEquals(List.of("body"), starfish.tracePath());
+        assertEquals(List.of("body", "legs"), starfish.drawableChildren());
+        assertTrue(starfish.normalizeSelectedRootTransform());
+        assertEquals(.58F, starfish.presentation().scale());
         assertEquals(1.5708F, starfish.presentation().xRotation());
         var desertScorpion = NaturalistModelContracts.contractsForId("desert_scorpion").getFirst();
         var jungleScorpion = NaturalistModelContracts.contractsForId("jungle_scorpion").getFirst();
@@ -134,7 +138,7 @@ class NaturalistCoverageTest {
                 Map.entry("giant_isopod", "GiantIsopodModel:rolled:rolled"), Map.entry("hedgehog", "HedgehogModel:rolled:rolled"),
                 Map.entry("vulture", "VultureModel:neck:neck"), Map.entry("tortoise", "TortoiseModel:body/skullRot/neck:body/skullRot/neck"),
                 Map.entry("zebra", "ZebraModel:body/neck:body/neck/neck_r1"), Map.entry("jellyfish", "JellyfishModel:body:body"),
-                Map.entry("starfish", "StarfishModel:root:root/body"), Map.entry("clam", "ClamModel:top:top"),
+                Map.entry("starfish", "StarfishModel::body"), Map.entry("clam", "ClamModel:top:top"),
                 Map.entry("lizard", "LizardModel:body/skullRot/neck:body/skullRot/neck/neck_r1"),
                 Map.entry("mole", "MoleModel:root/body/skull:root/body/skull"));
         expected.forEach((id, expectedContract) -> assertTrue(NaturalistModelContracts.contractsForId(id).stream().anyMatch(contract -> {
@@ -204,7 +208,7 @@ class NaturalistCoverageTest {
         assertEquals(List.of("body"), largeBass.tracePath());
     }
 
-    @Test void c20ClamDiagnosticReportsTheActualTopShellContract() throws Exception {
+    @Test void c20ClamContractRemainsFrozenAfterItsRuntimePass() throws Exception {
         var clam = NaturalistModelContracts.contractsForId("clam").getFirst();
         assertEquals(List.of("top"), clam.path());
         assertEquals(List.of("top"), clam.tracePath());
@@ -213,20 +217,38 @@ class NaturalistCoverageTest {
         assertEquals(1.5708F, clam.presentation().xRotation());
 
         Path module = Path.of(System.getProperty("projectRoot"));
+        assertFalse(Files.exists(module.resolve(
+                "src/main/java/dev/resivore/naturalistxaeroicons/ClamCaptureDiagnostic.java")));
+    }
+
+    @Test void c21StarfishSourceAuditProvesModelRootAndCompleteFiveArmAssembly() throws Exception {
+        Path models = Path.of(System.getProperty("projectRoot")).getParent()
+                .resolve("naturalist/common/src/main/java/com/crispytwig/naturalist/client/model");
+        String starfish = Files.readString(models.resolve("StarfishModel.java"));
+        assertTrue(starfish.contains("super(root.getChild(\"root\"))"));
+        assertTrue(starfish.contains("this.root = root.getChild(\"root\")"));
+        assertTrue(starfish.contains("PartPose.offsetAndRotation(0.0F, 24.0F, 0.0F"));
+        assertTrue(starfish.contains("root.addOrReplaceChild(\"body\""));
+        assertTrue(starfish.contains("body.addOrReplaceChild(\"skull\""));
+        assertTrue(starfish.contains("skull.addOrReplaceChild(\"skull_r1\""));
+        assertTrue(starfish.contains("root.addOrReplaceChild(\"legs\""));
+        for (String arm : List.of("leftArm", "rightArm", "leftLeg", "rightLeg")) {
+            assertTrue(starfish.contains("legs.addOrReplaceChild(\"" + arm + "\""), arm);
+        }
+    }
+
+    @Test void c21StarfishDiagnosticReportsTheActualProductionContract() throws Exception {
+        Path module = Path.of(System.getProperty("projectRoot"));
         String diagnostic = Files.readString(module.resolve(
-                "src/main/java/dev/resivore/naturalistxaeroicons/ClamCaptureDiagnostic.java"));
-        assertTrue(diagnostic.contains("naturalist:clam"));
-        assertTrue(diagnostic.contains("RadarIconEntityCache#get initial"));
-        assertTrue(diagnostic.contains("RadarIconCreator#create form="));
-        assertTrue(diagnostic.contains("RadarIconModelFormPrerenderer#prerender"));
-        assertTrue(diagnostic.contains("modelPartPath"));
-        assertTrue(diagnostic.contains("RadarIconEntityCache#add wrote"));
-        assertTrue(diagnostic.contains("native model path returned"));
-        assertTrue(diagnostic.contains("; scale="));
-        assertTrue(diagnostic.contains("frameYOffset="));
-        assertTrue(diagnostic.contains("Clam fallback render destination"));
-        assertFalse(diagnostic.contains("pose.scale"));
-        assertFalse(diagnostic.contains("new XaeroIcon"));
+                "src/main/java/dev/resivore/naturalistxaeroicons/StarfishCaptureDiagnostic.java"));
+        assertTrue(diagnostic.contains("naturalist:starfish"));
+        assertTrue(diagnostic.contains("<model root>"));
+        assertTrue(diagnostic.contains("selectedGeometry="));
+        assertTrue(diagnostic.contains("rotations="));
+        assertTrue(diagnostic.contains("fallback render destination before="));
+        assertTrue(diagnostic.contains("adapterRecorded="));
+        assertTrue(diagnostic.contains("selectedRecorded="));
+        assertFalse(diagnostic.contains("naturalist:clam"));
     }
 
     @Test void c8SourceAuditsUseAuthoredRootsForScorpionAndStarfishFallbacks() throws Exception {

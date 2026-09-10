@@ -1,7 +1,7 @@
 package dev.resivore.naturalistxaeroicons.mixin;
 
 import dev.resivore.naturalistxaeroicons.BrownBearSpritePresentation;
-import dev.resivore.naturalistxaeroicons.ClamCaptureDiagnostic;
+import dev.resivore.naturalistxaeroicons.StarfishCaptureDiagnostic;
 import dev.resivore.naturalistxaeroicons.NaturalistModelContracts;
 import java.util.Map;
 import net.minecraft.world.entity.EntityType;
@@ -35,7 +35,7 @@ abstract class RadarIconManagerMixin {
                     && (NaturalistModelContracts.isTargetId(EntityType.getKey(type).getPath())
                     || "bear".equals(EntityType.getKey(type).getPath())));
         } catch (RuntimeException ignored) { /* reload remains Xaero-owned if the private seam changed */ }
-        ClamCaptureDiagnostic.resourceReloaded();
+        StarfishCaptureDiagnostic.resourceReloaded();
     }
 
     @Inject(
@@ -50,16 +50,16 @@ abstract class RadarIconManagerMixin {
             com.mojang.blaze3d.pipeline.RenderTarget target,
             CallbackInfoReturnable<XaeroIcon> callback) {
         BrownBearSpritePresentation.requestStarted(entity, canPrerender);
-        ClamCaptureDiagnostic.requestStarted(entity, canPrerender);
+        StarfishCaptureDiagnostic.requestStarted(entity, canPrerender);
     }
 
-    /** C18 records Xaero's cache decision without replacing its lookup or retry behavior. */
+    /** C21 records Xaero's Starfish cache decision without replacing its lookup or retry behavior. */
     @Inject(
             method = "get(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/entity/EntityType;Lxaero/hud/minimap/radar/icon/definition/RadarIconDefinition;Lnet/minecraft/client/renderer/entity/EntityRenderer;FZZLxaero/hud/minimap/element/render/MinimapElementGraphics;Lcom/mojang/blaze3d/pipeline/RenderTarget;)Lxaero/common/icon/XaeroIcon;",
             at = @At(value = "INVOKE", target = "Lxaero/hud/minimap/radar/icon/cache/RadarIconEntityCache;get(Lxaero/hud/minimap/radar/icon/cache/id/RadarIconKey;)Lxaero/common/icon/XaeroIcon;", shift = At.Shift.BEFORE),
             locals = LocalCapture.CAPTURE_FAILHARD,
             require = 1)
-    private void naturalistXaeroIcons$observeClamCacheBeforeXaeroEmfRetry(
+    private void naturalistXaeroIcons$observeStarfishCacheBeforeXaeroEmfRetry(
             net.minecraft.world.entity.Entity entity, EntityType<?> type,
             xaero.hud.minimap.radar.icon.definition.RadarIconDefinition definition,
             net.minecraft.client.renderer.entity.EntityRenderer<?, ?> renderer, float partialTick,
@@ -69,8 +69,8 @@ abstract class RadarIconManagerMixin {
             CallbackInfoReturnable<XaeroIcon> callback,
             net.minecraft.client.renderer.entity.state.EntityRenderState state, Object variant,
             RadarIconArmor armor, RadarIconEntityCache cache, RadarIconKey key) {
-        if (ClamCaptureDiagnostic.isClam(entity)) {
-            ClamCaptureDiagnostic.cacheLookup(((RadarIconEntityCacheStorageAccessor) (Object) cache)
+        if (StarfishCaptureDiagnostic.isStarfish(entity)) {
+            StarfishCaptureDiagnostic.cacheLookup(((RadarIconEntityCacheStorageAccessor) (Object) cache)
                     .naturalistXaeroIcons$getStorage().containsKey(key));
         }
     }
@@ -103,6 +103,6 @@ abstract class RadarIconManagerMixin {
             com.mojang.blaze3d.pipeline.RenderTarget target,
             CallbackInfoReturnable<XaeroIcon> callback) {
         BrownBearSpritePresentation.requestFinished();
-        ClamCaptureDiagnostic.requestFinished(callback.getReturnValue());
+        StarfishCaptureDiagnostic.requestFinished(callback.getReturnValue());
     }
 }
