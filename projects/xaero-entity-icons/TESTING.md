@@ -1,71 +1,55 @@
 # Testing
 
-Exact current release `xaero-emf-entity-icon-compat-0.1.0-canary9.jar` (version `0.1.0-canary9`, SHA-256 `184ca0da6d6c055c0ba9b2d0e9fb3bccc3c30da9ea7f700a64792d4d1513551a`, source `6c1b4e0ede3ada8470bc7b4ba54ea8b51f9d2e93`) is accepted in Workbench Stack v27 after the user's 2026-09-06 user-reported external aggregate PASS. No Test Slot deployment or slot history was created; Slot A remained empty and Slot B was preserved. No row-level observations beyond the reported PASS are inferred.
+Current candidate: `xaero-emf-entity-icon-compat-0.1.0-canary10.jar`, embedded
+version `0.1.0-canary10`, SHA-256
+`488e7e207fbc1e5b03a03cb2893a86520d8f7eb431eaae2eb0f040523be19496`,
+source checkpoint `0aac323c2cd059008731711560b7abf5ba4ba609`.
 
-## Future regression procedure
+Canary 10 is `ACTIVE / STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED`. It is
+not in a Test Slot and no Minecraft launch, managed deployment, cache-reload
+observation, or runtime result was performed for it. Static evidence does not
+establish a visible icon pass.
 
-The retained procedure below is for future regressions of this exact accepted identity or an explicitly identified successor. Any former pre-promotion candidate wording is historical and superseded by this accepted result.
+Accepted baseline: exact C9 remains accepted from the user-reported external
+aggregate PASS of 2026-09-06: `xaero-emf-entity-icon-compat-0.1.0-canary9.jar`,
+SHA-256 `184ca0da6d6c055c0ba9b2d0e9fb3bccc3c30da9ea7f700a64792d4d1513551a`,
+source `6c1b4e0ede3ada8470bc7b4ba54ea8b51f9d2e93`. That historical PASS is not
+rewritten or transferred to C10. C9 is the accepted baseline while C10 awaits
+actual runtime evidence.
 
-# Testing
+## Required runtime procedure
 
-Current `xaero-emf-entity-icon-compat-0.1.0-canary9.jar` is **ACTIVE /
-STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED**. It is unaccepted and has no
-rollback. Identity: 42,828 bytes, SHA-256
-`184ca0da6d6c055c0ba9b2d0e9fb3bccc3c30da9ea7f700a64792d4d1513551a`;
-implementation source checkpoint is `6c1b4e0ede3ada8470bc7b4ba54ea8b51f9d2e93`.
+Use only separately authorized Test Instance Manager ownership. Do not touch
+the protected Matcha Flavoured 26.1.2 gameplay instance. Confirm this effective
+resource-pack precedence before testing:
 
-Two independent Java 25 / Gradle 9.5.1 / Loom 1.17.19 clean offline `check
-jar` builds produced byte-identical C9 files. All 49 tests in nine suites
-passed. The client-only allowlist passed; the 28-entry archive has no duplicate
-or nested-JAR entries, and every ZIP entry was read successfully for the CRC
-scan. No Minecraft game was launched. These are static results, not runtime
-observations.
+1. Ribbit Villagers
+2. Mizuno + Fresh Animations
+3. Fresh Animations 1.10.5 BETA
+4. Matcha Flavoured
 
-## C8 external runtime evidence reconciled for C9
+Clear/recreate Xaero icon cache and reload resources once before the matrix and
+once after it. Verify normal Fresh Animations/EMF world rendering is unchanged.
+Any wrong framing, label-only result, body/limb/tail/harness contamination,
+locked-entity regression, Mixin error, or cache recreation failure is a
+`RUNTIME_FAIL`; incomplete visual evidence is `INCONCLUSIVE`.
 
-Exact C8 is `xaero-emf-entity-icon-compat-0.1.0-canary8.jar`, 42,659 bytes,
-SHA-256 `337adff555afae9fbcedf1c51320595654bfe4f1ab120f8c0dfb7d03bad3aa7c`,
-source checkpoint `8c45f2f9ccdcf12f4403ba3380a32f81f975e077`. The user reports
-that C8 fixed the remaining hatted villagers: farmer, cleric, butcher, and
-mason are all good. No other unreported C8 row is inferred.
-
-Frog, allay, and vex still show Xaero's yellow generic entity marker plus name
-with no rendered head icon. For allay and vex the canonical identity is
-`root/head`; for frog it is `root/body/head`. Each diagnostics sequence reaches
-`MANAGER_RETURNED_NULL`, `MISSING_RETAINED_VANILLA_GEOMETRY`, downstream
-failure, cached failure, and the bounded C7 prerender retry; vex records one
-deferred retry before that prerender retry. Crucially none emitted
-`TRACED_HEAD_FRAME_FALLBACK`.
-
-C8 rejected `followPath(vanillaRoot, canonicalPath) == null` before collecting
-or selecting a traced candidate. Its fallback therefore handled only a retained
-canonical path whose geometry owner was absent, not the observed missing-path
-state. C9 records whether the retained canonical path is found or absent, keeps
-the C8 found-path behavior, and permits the same fallback only after exactly one
-traced semantic head passes existing direct-cube and finite/invertible transform
-checks. It never selects body, wing, arm, leg, sibling, ambiguous, empty, or
-untraced geometry; the C7 cache policy and C8 transformed hatted-villager code
-are unchanged.
-
-## C9 manual runtime matrix
-
-Under separately authorized Test Instance Manager ownership only, install the
-exact C9 hash above, clear/reload relevant Xaero resources, and record effective
-resource-pack order and model identities. **PASS** is only a correctly textured
-and framed minimap head icon. Xaero's yellow generic marker plus name, a blank
-icon, wrong framing or texture, body/wing contamination, or a repeated failed
-retry loop is **FAIL**. Do not promote from this procedure without actual
-observations.
-
-| Cases | Required observation |
+| Case | PASS observation |
 | --- | --- |
-| Fix: frog | `RETAINED_CANONICAL_PATH_ABSENT`, selected traced head, `TRACED_HEAD_NO_RETAINED_PATH_FALLBACK`, nonempty draw, downstream acceptance, cached success, and final manager icon; visually correct head only. |
-| Fix: allay | Same sequence and correct textured/framed head only for canonical `root/head`. |
-| Fix: vex | Same sequence and correct textured/framed head only for canonical `root/head`; retain the existing single bounded retry lifecycle. |
-| Preserve: axolotl; sniffer; iron golem; wolf; bat; parrot; witch; ravager; farmer; cleric; butcher; mason | Existing correctly framed head icons remain correct; hatted villagers retain complete visible transformed nested headwear without body or arms. |
-| Controls: normal villager; sheep; horse; sea turtle; creeper; vanilla non-EMF entity | Preserve ordinary Xaero behavior. |
-| World rendering and reload | Fresh Animations/EMF world rendering remains intact. Reload clears relevant cache state with no persistent retry loop. |
+| Fox | Full recognizable front face/head, snout and ears; no torso, legs or tail. |
+| Goat | Recognizable rendered head, never label-only; no body. |
+| Frog | Upper head and lower jaw/facial portion both visible; no torso, arms, legs, tongue or croak geometry. |
+| Bogged | Front-facing readable face/head with bounded headwear/mushrooms; no body or limbs. |
+| Witch | Face/head and hat both visible, never hat-only; no body, crossed arms or legs. |
+| Ghast; Happy Ghast | Same icon content as C9, approximately 1.50x displayed size; no Happy Ghast harness/rope inclusion. |
+| Bee; Rabbit | Same icon content as C9, approximately 0.75x displayed size. |
+| Florist | Frog-villager head/facial base, frog eyes and gardener hat. |
+| Farmer | Frog-villager head/facial base, frog eyes and farmer hat. |
+| Stonemason | Frog-villager head/facial base, frog eyes and prospector hat. |
+| Cleric | Frog-villager head/facial base, frog eyes and sorcerer hat. |
+| Butcher | Frog-villager head/facial base, frog eyes and chef hat. |
+| Locked controls | Ordinary villager, one unlisted villager profession, allay, vex, axolotl, sniffer, iron golem, wolf, bat, parrot, ravager, sheep, horse, sea turtle and creeper remain on their C9 behavior. |
+| Companion controls | One representative Naturalist Xaero icon from its own matrix and one representative standalone Ribbits Xaero icon from its own matrix remain correct. |
 
-Stop and record `RUNTIME_FAIL` or `INCONCLUSIVE` for any fail condition,
-ordinary-icon regression, EMF/Fresh Animations world-rendering regression,
-Mixin error, or cache behavior outside the bounded lifecycle.
+Record only observations actually seen against this exact C10 identity. Do not
+promote C10 until every required row has actual passing runtime evidence.
