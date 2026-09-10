@@ -249,3 +249,13 @@
 - Artifact: Accepted/current `container-slot-reservations-0.1.0-canary15.jar`, SHA-256 `daf24d25732d4e436d37d3e44305a3d63b67a1ab86b586bc8ec7207b98a8ed1b`, source `f33060e874258c46bde48c2aafd015615adf3ec0`.
 - Result: ACCEPTED — exact current release is `READY_TO_TEST_VERIFIED` and `RUNTIME_PASS`; no blocker is recorded.
 - Next state: Retain this exact identity for future regression testing; do not transfer this PASS to another artifact, version, hash, or source checkpoint.
+
+## 2026-09-10T02:12:00Z — Create CSR Canary 16 header-title and optional-decoration successor
+- Revision: 26
+- Source checkpoint: `d16c664e65c61f9b73d2f710e75069f581ec7239`
+- Changes: C16 restores the missing pinned-panel shulker title by using the bound ItemStack hover/display name with opaque native-style ARGB `0xFF404040` and no shadow. It adds CSR's narrow client-only `ShulkerPanelHeaderDecorations` registration/query/render contract, reserves real header width, truncates long titles with an ellipsis, and preserves all 176x83/27-cell geometry and interactions. Same-slot authoritative menu synchronizations may rebind only after the existing exact screen/menu/Slot/container/count/supported-shulker checks; a pending CSR action still requires its expected fingerprint. No CCAR implementation reference or dependency exists in CSR.
+- Build/static: Clean Java 25 / Gradle 9.5.1 / Loom 1.17.19 `check` passed: all CSR JUnit tests, 28/28 required Fabric GameTests, release artifact checks, marker validation, and the focused title/decoration/synchronized-host contracts. CCAR C14 separately completed clean tests and 7/7 GameTests against this exact CSR API JAR. This is controlled validation, not desktop runtime evidence.
+- Runtime: No Test Instance Manager operation, dedicated Matcha Flavoured 26.2 Workbench launch, external runtime report, or protected 26.1.2 gameplay-profile access occurred. C16 is independently RUNTIME_UNTESTED; C15's exact PASS remains only C15 evidence.
+- Artifact: Current C16 / embedded `0.1.0-canary16`: `container-slot-reservations-0.1.0-canary16.jar`, SHA-256 `34c1f8c5cfca011aca062c55232d2b50ccac2a95f72f8e5a7edec305b5a8c1b2`, source `d16c664e65c61f9b73d2f710e75069f581ec7239`, CAPABILITY_OR_PROVIDER with no exceptions. Accepted C15 and rollback C4 identities are unchanged.
+- Result: ACTIVE / CONTROLLED_VALIDATION_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED.
+- Next state: Retain this exact artifact, publish revision 26 from authoritative main, and deploy only through a serialized Test Instance Manager transition before collecting the focused runtime matrix.

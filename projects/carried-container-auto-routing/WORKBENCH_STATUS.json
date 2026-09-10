@@ -21,15 +21,16 @@
       "Provide a server-authoritative lock control that excludes selected carriers from automatic routing without altering their other contents or components."
     ],
     "scope": [
-      "Canonical C13 / 0.3.8-silent-no-target-canary1 for Minecraft Java 26.2 Fabric, implementation checkpoint cc803affc4dd3b54701288ae358fd8df5655a6ed; narrow lock-control UX successor to accepted C12.",
+      "Canonical C14 / 0.3.9-csr-header-badge-canary1 for Minecraft Java 26.2 Fabric, implementation checkpoint d16c664e65c61f9b73d2f710e75069f581ec7239; coordinated CSR-header successor to C13.",
       "When a server-resolved routing-lock target is unsupported, return without an overlay message. Preserve server-authoritative supported-target toggles and their existing Locked/Unlocked feedback exactly.",
       "Passive ground pickup and external-container QUICK_MOVE priority through component-identical occupied main hand, qualifying carried containers, occupied hotbar, occupied offhand, compatible ordinary-storage partials, empty hotbar, and empty ordinary storage.",
       "Player-origin QUICK_MOVE routing to a component-identical occupied offhand and qualifying carried containers before returning exact remainder ownership to the active menu's normal algorithm.",
       "Creative and Survival inventory snapshot alignment, source cleanup and menu callbacks, exact remainder accounting, stable carrier order, and persistent per-carrier auto-routing lock state.",
       "Only the shared ShulkerDestination changes routing admission: physical component-exact matches seed affinity unless their reservation conflicts; full matching physical stacks retain affinity. Physically empty RESERVED_MATCH slots also seed affinity. Empty unreserved, unrelated, locked, and nesting-prohibited destinations remain ineligible.",
-      "Read only ContainerSlotReservationsApi.classify(ItemStack,int,ItemStack), isReserved(ItemStack,int), and reservationMatches(ItemStack,int,ItemStack), behind FabricLoader optional-mod discovery. Incompatible API linkage or classification fails closed before mutation with a diagnostic. CSR is suggests *, never a hard runtime dependency or nested implementation.",
+      "Read only ContainerSlotReservationsApi.classify(ItemStack,int,ItemStack), isReserved(ItemStack,int), reservationMatches(ItemStack,int,ItemStack), and the client-only ShulkerPanelHeaderDecorations API after FabricLoader confirms CSR is loaded. CSR remains suggests *: direct header API linkage is isolated in a reflection-loaded client bridge, absent/incompatible linkage leaves CCAR fully functional without a badge.",
       "Build one immutable slot/count plan before mutation: compatible occupied stacks in physical order, all matching reserved empties in physical order, then unreserved empties in physical order. Rewrite CONTAINER once and shrink the incoming stack by exactly the accepted total; retain reservations, lock, name, lore, damage, and unrelated components.",
-      "Keep accepted bundle class bytes unchanged, global destination and carrier order unchanged, all existing pickup/QUICK_MOVE contexts, offhand/excluded-source behavior, and Stacks Are Stacks effective maximums without a new stack-size implementation."
+      "Keep accepted bundle class bytes unchanged, global destination and carrier order unchanged, all existing pickup/QUICK_MOVE contexts, offhand/excluded-source behavior, and Stacks Are Stacks effective maximums without a new stack-size implementation.",
+      "When optional CSR is present, expose the existing RoutingLock state for supported shulkers only as a non-clickable 1:1 supplied lock sprite in CSR's header. Bundles remain tooltip-only. The source 20x11 art is verified and cropped during resource processing to locked 7x9 and unlocked 10x9 sprites without changing any pixel."
     ],
     "boundaries": {
       "owned_paths": [
@@ -89,16 +90,16 @@
     ]
   },
   "state": {
-    "milestone": "C13 is the narrow silent-no-target successor to accepted C12: an unsupported server-resolved routing-lock target now returns without sending the former overlay, while supported target locking, Locked/Unlocked feedback, tooltips, routing, targeting, hand selection, screens, networking, and lock state remain unchanged. Clean Java 25 unit, Fabric GameTest, and build validation passed; the dedicated Workbench and protected gameplay instance were not accessed. C13 is ACTIVE, NOT_DEPLOYED, and RUNTIME_UNTESTED. Accepted C12, rollback C11, and all unrelated projects remain unchanged.",
+    "milestone": "C14 is an ACTIVE, non-deployed successor to C13. It preserves C13 silent unsupported-target handling and all existing CCAR behavior, while registering a read-only optional CSR header badge that renders the authoritative existing shulker lock component at one-to-one scale. CSR remains optional and bundles remain tooltip-only. Clean Java 25 unit, GameTest, resource-integrity, and paired CSR-API validation passed; no dedicated Workbench or protected gameplay instance was accessed.",
     "releases": {
       "current": {
-        "version": "0.3.8-silent-no-target-canary1",
-        "embedded_version": "0.3.8-silent-no-target-canary1",
+        "version": "0.3.9-csr-header-badge-canary1",
+        "embedded_version": "0.3.9-csr-header-badge-canary1",
         "artifact": {
-          "filename": "carried-container-auto-routing-0.3.8-silent-no-target-canary1.jar",
-          "sha256": "3d24046afb2f2a3eadfb3ef5f210eed27748d32ac6f31b8145079532551d336e"
+          "filename": "carried-container-auto-routing-0.3.9-csr-header-badge-canary1.jar",
+          "sha256": "df46cb6d0e538e692db816958458b03a3d1028b7d23cf0d657e0456496ac72f3"
         },
-        "source_commit": "cc803affc4dd3b54701288ae358fd8df5655a6ed",
+        "source_commit": "d16c664e65c61f9b73d2f710e75069f581ec7239",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
@@ -136,11 +137,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 4,
-    "activity_at": "2026-09-09T15:06:23Z",
-    "updated_at": "2026-09-09T15:06:23Z",
-    "last_codex_at": "2026-09-09T15:06:23Z",
-    "source_commit": "cc803affc4dd3b54701288ae358fd8df5655a6ed",
+    "revision": 5,
+    "activity_at": "2026-09-10T02:12:00Z",
+    "updated_at": "2026-09-10T02:12:00Z",
+    "last_codex_at": "2026-09-10T02:12:00Z",
+    "source_commit": "d16c664e65c61f9b73d2f710e75069f581ec7239",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null

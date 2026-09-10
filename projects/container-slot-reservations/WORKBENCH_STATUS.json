@@ -14,7 +14,7 @@
     ]
   },
   "definition": {
-    "lifecycle": "ACCEPTED",
+    "lifecycle": "ACTIVE",
     "goals": [
       "Preserve a player's component-exact organization intent after a physical stack leaves an eligible persistent storage or machine slot.",
       "Apply native insertion permission AND exact reservation admission to manual placement, vanilla QUICK_MOVE, hoppers, sided automation, and QSN without changing extraction, destination order, internal processing, or routing ownership.",
@@ -24,7 +24,7 @@
       "Preserve accepted C4 storage reservations, exact ghost/zero/marker visuals, public API compatibility for QSN C9 and CCAR C12, and the centralized empty-shulker template rule without external tooltip integration."
     ],
     "scope": [
-      "Current 0.1.0-canary15 from implementation checkpoint f33060e874258c46bde48c2aafd015615adf3ec0 retains the unchanged 176x77 upper title/grid region and 176x6 bottom-frame composition from the same active minecraft:textures/gui/container/shulker_box.png, but resolves the bottom source during client-resource reload by scanning the final non-transparent row in logical X=0..175. Vanilla resolves Y=160..165; a taller compatibility layout resolves its true Y=214..219; unsupported layouts fail closed by omitting only the bottom blit. It makes every implicit carried-shulker default choose the highest occupied internal slot, preserves a valid explicit selection, retains a capacity-limited selected remainder, and after a full default extraction continues backward through occupied slots. Reservations, component identity, panel grid coordinates, QSN, CCAR, persistence, and GUI assets remain unchanged.",
+      "Current 0.1.0-canary16 from implementation checkpoint d16c664e65c61f9b73d2f710e75069f581ec7239 fixes the previously invisible native-style shulker header by submitting opaque ARGB 0xFF404040 text from the exact ItemStack hover name. It adds a client-only, one-decoration CSR header API, reserves title width and truncates long names, and preserves the 176x83 panel geometry. A same-slot server menu sync may rebind only after the existing exact screen/menu/Slot/container/count/supported-shulker checks, so CCAR lock mutations update a read-only badge without speculative client state.",
       "While CSR owns Slot A and remains TESTING, a finalized current CSR testing successor normally replaces the preceding CSR candidate through one serialized Test Instance Manager Slot A transition; only a concrete manager preimage, dependency, or physical-safety failure may leave that successor retained but not deployed.",
       "Bind one exact count-one shulker host by screen, menu, menu ID, visible slot index, Slot instance, underlying container slot, explicit Creative player-inventory locator where applicable, and complete SHA-256 ItemStack fingerprint; never search for an equal stack.",
       "Render and hit-test one fixed 176x83 native panel with an unchanged 176x77 upper shulker region plus the same runtime texture's 176x6 bottom frame, 27 physical 18x18 cells, right-then-left clamped placement, a narrow deterministic corridor, one grace frame, live contents, vanilla cell highlights, exact existing reservation visuals, and carried-stack-above-panel strata.",
@@ -119,16 +119,16 @@
     ]
   },
   "state": {
-    "milestone": "Exact current 0.1.0-canary15 is ACCEPTED in Workbench Stack v27 after the user's 2026-09-06 managed Slot A PASS. Artifact container-slot-reservations-0.1.0-canary15.jar SHA-256 daf24d25732d4e436d37d3e44305a3d63b67a1ab86b586bc8ec7207b98a8ed1b and source f33060e874258c46bde48c2aafd015615adf3ec0 were bound exactly; Slot A was released after promotion.",
+    "milestone": "C16 is an ACTIVE, non-deployed CSR successor to accepted C15. It restores the native-style shulker item title in the pinned panel and supplies a narrow client-side header-decoration API; it preserves all panel placement, 27-cell interactions, reservations, selection, texture composition, host checks, and non-CCAR startup. Clean Java 25 unit, GameTest, artifact, and integration validation passed; no dedicated Workbench or protected gameplay instance was accessed.",
     "releases": {
       "current": {
-        "version": "0.1.0-canary15",
-        "embedded_version": "0.1.0-canary15",
+        "version": "0.1.0-canary16",
+        "embedded_version": "0.1.0-canary16",
         "artifact": {
-          "filename": "container-slot-reservations-0.1.0-canary15.jar",
-          "sha256": "daf24d25732d4e436d37d3e44305a3d63b67a1ab86b586bc8ec7207b98a8ed1b"
+          "filename": "container-slot-reservations-0.1.0-canary16.jar",
+          "sha256": "34c1f8c5cfca011aca062c55232d2b50ccac2a95f72f8e5a7edec305b5a8c1b2"
         },
-        "source_commit": "f33060e874258c46bde48c2aafd015615adf3ec0",
+        "source_commit": "d16c664e65c61f9b73d2f710e75069f581ec7239",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
@@ -160,22 +160,22 @@
           "exceptions": []
         }
       },
-      "accepted_current": "CURRENT_IS_ACCEPTED",
+      "accepted_current": "CURRENT_DIFFERS_FROM_ACCEPTED",
       "accepted_rollback": "ROLLBACK_DIFFERS_FROM_ACCEPTED"
     },
     "validation": {
       "build": "CONTROLLED_VALIDATION_PASS",
-      "deployment": "READY_TO_TEST_VERIFIED",
-      "runtime": "RUNTIME_PASS"
+      "deployment": "NOT_DEPLOYED",
+      "runtime": "RUNTIME_UNTESTED"
     },
     "blocker": null
   },
   "synchronization": {
-    "revision": 25,
-    "activity_at": "2026-09-07T04:02:00Z",
-    "updated_at": "2026-09-07T04:02:00Z",
-    "last_codex_at": "2026-09-07T04:02:00Z",
-    "source_commit": "274e9b7e36a1c2b53395c725f1fc9f2fed4ad2e0",
+    "revision": 26,
+    "activity_at": "2026-09-10T02:12:00Z",
+    "updated_at": "2026-09-10T02:12:00Z",
+    "last_codex_at": "2026-09-10T02:12:00Z",
+    "source_commit": "d16c664e65c61f9b73d2f710e75069f581ec7239",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
