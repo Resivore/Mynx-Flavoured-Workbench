@@ -10,6 +10,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import tempeststudios.quickstacknearby.QuickStackButtonSlotBridge;
+import tempeststudios.quickstacknearby.QuickStackIconButton;
 import tempeststudios.quickstacknearby.mixin.AbstractContainerScreenAccessor;
 
 @Mixin(value = QuickStackButtonSlotBridge.class, remap = false)
@@ -57,6 +58,12 @@ public abstract class QuickStackButtonSlotBridgeMixin {
 
     private static QsnInventorySearchButtonPlacement.Bounds boundsOf(AbstractWidget widget) {
         return new QsnInventorySearchButtonPlacement.Bounds(
-                widget.getX(), widget.getY(), widget.getWidth(), widget.getHeight(), widget.visible);
+                widget.getX(),
+                widget.getY(),
+                widget.getWidth(),
+                widget.getHeight(),
+                widget.visible,
+                widget instanceof QuickStackIconButton
+        );
     }
 }

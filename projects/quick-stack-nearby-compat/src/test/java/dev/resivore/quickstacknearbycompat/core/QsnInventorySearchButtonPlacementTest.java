@@ -61,6 +61,57 @@ class QsnInventorySearchButtonPlacementTest {
     }
 
     @Test
+    void qsnActionWidgetAtThePreferredSlotDoesNotDisplaceItsOwnReservation() {
+        QsnInventorySearchButtonPlacement.Position position =
+                QsnInventorySearchButtonPlacement.firstBottomUpFreePosition(
+                        LEFT, TOP, IMAGE_WIDTH, IMAGE_HEIGHT, 400, 300,
+                        List.of(new QsnInventorySearchButtonPlacement.Bounds(220, 156, 18, 18, true, true)));
+
+        assertEquals(new QsnInventorySearchButtonPlacement.Position(220, 156), position);
+    }
+
+    @Test
+    void unchangedWidgetStateProducesAnIdempotentQsnReservation() {
+        List<QsnInventorySearchButtonPlacement.Bounds> occupied = List.of(
+                new QsnInventorySearchButtonPlacement.Bounds(220, 156, 18, 18, true, true));
+        QsnInventorySearchButtonPlacement.Position expected =
+                new QsnInventorySearchButtonPlacement.Position(220, 156);
+
+        for (int calculation = 0; calculation < 8; calculation++) {
+            assertEquals(expected, QsnInventorySearchButtonPlacement.firstBottomUpFreePosition(
+                    LEFT, TOP, IMAGE_WIDTH, IMAGE_HEIGHT, 400, 300, occupied));
+        }
+    }
+
+    @Test
+    void qsnActionAlreadyInFallbackSlotCannotCreateAnAlternatingLoop() {
+        List<QsnInventorySearchButtonPlacement.Bounds> occupied = List.of(
+                new QsnInventorySearchButtonPlacement.Bounds(220, 156, 18, 18, true),
+                new QsnInventorySearchButtonPlacement.Bounds(220, 134, 18, 18, true, true));
+        QsnInventorySearchButtonPlacement.Position expected =
+                new QsnInventorySearchButtonPlacement.Position(220, 134);
+
+        for (int calculation = 0; calculation < 8; calculation++) {
+            assertEquals(expected, QsnInventorySearchButtonPlacement.firstBottomUpFreePosition(
+                    LEFT, TOP, IMAGE_WIDTH, IMAGE_HEIGHT, 400, 300, occupied));
+        }
+    }
+
+    @Test
+    void unrelatedCollisionsRemainEffectiveWhileQsnActionIsIgnored() {
+        QsnInventorySearchButtonPlacement.Position position =
+                QsnInventorySearchButtonPlacement.firstBottomUpFreePosition(
+                        LEFT, TOP, IMAGE_WIDTH, IMAGE_HEIGHT, 400, 300,
+                        List.of(
+                                new QsnInventorySearchButtonPlacement.Bounds(220, 156, 18, 18, true),
+                                new QsnInventorySearchButtonPlacement.Bounds(220, 134, 18, 18, true),
+                                new QsnInventorySearchButtonPlacement.Bounds(220, 112, 18, 18, true),
+                                new QsnInventorySearchButtonPlacement.Bounds(220, 90, 18, 18, true, true)));
+
+        assertEquals(new QsnInventorySearchButtonPlacement.Position(220, 90), position);
+    }
+
+    @Test
     void unavailableRightSideKeepsTheExistingUpstreamReservation() {
         assertNull(QsnInventorySearchButtonPlacement.firstBottomUpFreePosition(
                 LEFT, TOP, IMAGE_WIDTH, IMAGE_HEIGHT, 230, 300, List.of()));

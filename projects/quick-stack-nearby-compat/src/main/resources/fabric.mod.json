@@ -3,7 +3,7 @@
   "id": "quick_stack_nearby_compat",
   "version": "${version}",
   "name": "Workbench Quick Stack Nearby Compatibility",
-  "description": "Unified Workbench compatibility layer for Quick Stack Nearby; Canary 14 keeps C12 routing and gives the survival action a Minecraft-native utility button.",
+  "description": "Unified Workbench compatibility layer for Quick Stack Nearby; Canary 15 keeps C12 routing and makes the survival utility button reservation stable.",
   "authors": ["Resivore"],
   "license": "MIT",
   "environment": "*",
@@ -29,6 +29,6 @@
   "custom": {
     "workbench:classification": "GENERATED / STATICALLY VALIDATED / RUNTIME UNTESTED",
     "workbench:deployment": "NOT DEPLOYED",
-    "workbench:runtime-slot-owner": "Quick Stack Nearby Compatibility - Canary 14"
+    "workbench:runtime-slot-owner": "Quick Stack Nearby Compatibility - Canary 15"
   }
 }
