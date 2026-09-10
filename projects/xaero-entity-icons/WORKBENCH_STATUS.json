@@ -20,14 +20,14 @@
   "definition": {
     "lifecycle": "ACTIVE",
     "goals": [
-      "Retain accepted Canary 9 exactly as the user-reported external PASS baseline while reopening the project for the reported current resource-pack regression.",
-      "Repair only the C10 allowlisted Minecraft entities and five exact villager professions through a fail-closed targeted EMF composition policy and a separate Xaero-raster presentation policy.",
-      "Keep every unlisted entity and villager profession on the exact C9 path; retain historical runtime evidence without transferring it to Canary 10."
+      "Retain accepted Canary 9 exactly as the user-reported external PASS baseline and exact Canary 10 as failed historical provenance, including its Bee and Rabbit row-level passes.",
+      "Repair only the C11 allowlisted Minecraft entities and five exact villager professions through verified effective EMF paths, explicit drawable anchors, bounded detached composition, and a separate effective Xaero presentation-stage scale policy.",
+      "Keep every unlisted entity and villager profession on the exact C9 path; do not transfer C9 or C10 runtime evidence to Canary 11."
     ],
     "scope": [
-      "Reuse the existing C9 failed-upstream EMF-to-Xaero seam and canonical-frame adapter without modifying its generic selector; C10 enters only for exact fox, goat, frog, bogged, witch, and the five declared minecraft:villager professions.",
-      "Use only detached icon-only C10 compositions: fox/goat body/head2, frog body/body2 plus head2, bogged headwear, witch body/head2 plus body/hat, and a profession-gated villager nose/frog_eyes/matching-hat plan. Fail closed to C9 if a named structure is absent or untraced.",
-      "Apply 1.50 Xaero raster request scaling only to ghast and happy_ghast and 0.75 only to bee and rabbit; preserve C9 cache/reload ownership and all Naturalist/Ribbits companion boundaries."
+      "Reuse the existing C9 failed-upstream EMF-to-Xaero seam and canonical-frame adapter without modifying its generic selector; C11 enters only for exact fox, goat, frog, bogged, witch, and the five declared minecraft:villager professions.",
+      "Use only detached icon-only C11 compositions on effective trees: fox and goat body/EMF_body/EMF_head2 with goat's drawable EMF_snout trace anchor; frog body/EMF_body/EMF_body2 direct lower-face cubes plus EMF_head2; Bogged hat/EMF_headwear; Witch body/EMF_body transforms with only EMF_head2 and EMF_hat; and profession-gated villager head/nose/EMF_nose direct face base plus EMF_face, EMF_frog_eyes, and the exact matching hat. Preserve required parent transforms without copying their cubes and fail closed to C9 if the contract or explicit drawable trace is absent.",
+      "Preserve Bee and Rabbit's working 0.75 Xaero request-scale path. Apply 1.50 only to ghast and happy_ghast immediately before Xaero's model-form baseScale because Xaero skips Parameters.scale at or above 1.0; never compound both C11 paths. Preserve C9 one-retry-per-variant/resource-generation cache ownership and Naturalist/Ribbits companion boundaries."
     ],
     "boundaries": {
       "owned_paths": [
@@ -118,15 +118,15 @@
     ]
   },
   "state": {
-    "milestone": "Canary 10 is an ACTIVE, statically validated successor for the reported effective resource-pack-stack regressions. Accepted Canary 9 remains the exact user-reported external PASS baseline: xaero-emf-entity-icon-compat-0.1.0-canary9.jar SHA-256 184ca0da6d6c055c0ba9b2d0e9fb3bccc3c30da9ea7f700a64792d4d1513551a, source 6c1b4e0ede3ada8470bc7b4ba54ea8b51f9d2e93. Canary 10 has no deployment, slot occupancy, or runtime observation.",
+    "milestone": "Exact Canary 10 is retained as user-reported external RUNTIME_FAIL: Bee and Rabbit passed their size corrections; Fox was ears-only, Goat label-only, Frog lacked its lower face, Bogged's face was unreadable from a side/back-like view, Witch was hat-only, Ghast and Happy Ghast remained too small, and all five hatted-villager rows showed incoherent geometry. Canary 11 is the ACTIVE, statically validated successor and remains NOT_DEPLOYED / RUNTIME_UNTESTED. Accepted Canary 9 remains unchanged: xaero-emf-entity-icon-compat-0.1.0-canary9.jar SHA-256 184ca0da6d6c055c0ba9b2d0e9fb3bccc3c30da9ea7f700a64792d4d1513551a, source 6c1b4e0ede3ada8470bc7b4ba54ea8b51f9d2e93.",
     "releases": {
       "current": {
-        "version": "0.1.0-canary10",
+        "version": "0.1.0-canary11",
         "artifact": {
-          "filename": "xaero-emf-entity-icon-compat-0.1.0-canary10.jar",
-          "sha256": "488e7e207fbc1e5b03a03cb2893a86520d8f7eb431eaae2eb0f040523be19496"
+          "filename": "xaero-emf-entity-icon-compat-0.1.0-canary11.jar",
+          "sha256": "bc58fdf8c8c3d13deb3d3e303732ad70d873da7103f1b374236b3f028b3b5e82"
         },
-        "source_commit": "0aac323c2cd059008731711560b7abf5ba4ba609",
+        "source_commit": "a82b08423bd572beb67096480aaf38bf411605e6",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
@@ -156,11 +156,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 10,
-    "activity_at": "2026-09-10T05:08:59Z",
-    "updated_at": "2026-09-10T05:08:59Z",
-    "last_codex_at": "2026-09-10T05:08:59Z",
-    "source_commit": "0aac323c2cd059008731711560b7abf5ba4ba609",
+    "revision": 11,
+    "activity_at": "2026-09-10T15:54:05Z",
+    "updated_at": "2026-09-10T15:54:05Z",
+    "last_codex_at": "2026-09-10T15:54:05Z",
+    "source_commit": "a82b08423bd572beb67096480aaf38bf411605e6",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
