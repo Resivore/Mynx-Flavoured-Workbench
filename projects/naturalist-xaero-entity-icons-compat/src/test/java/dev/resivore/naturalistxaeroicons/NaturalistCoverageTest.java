@@ -241,7 +241,15 @@ class NaturalistCoverageTest {
         assertTrue(hippo.contains("neck.addOrReplaceChild(\"topJaw\""));
     }
 
-    @Test void c23ExternalFocusedPassControlsRemainFrozen() {
+    @Test void c27RecordsC26HippoPassWithoutFabricatingWhaleDiagnostics() throws Exception {
+        Path root = Path.of(System.getProperty("projectRoot"));
+        for (String record : List.of(Files.readString(root.resolve("WORKBENCH_STATUS.json")),
+                Files.readString(root.resolve("TESTING.md")), Files.readString(root.resolve("CODEX_LOG.md")))) {
+            assertTrue(record.contains("Hippo"));
+            assertTrue(record.contains("PASS"));
+            assertTrue(record.contains("0.75F"));
+            assertTrue(record.contains("no Whale-specific diagnostic sequence"));
+        }
         assertTrue(NaturalistModelContracts.isNativeControlId("bear"));
         assertFalse(NaturalistModelContracts.isTargetId("bear"));
         assertEquals(.30F, NaturalistModelContracts.contractsForId("clam").getFirst().presentation().scale());
