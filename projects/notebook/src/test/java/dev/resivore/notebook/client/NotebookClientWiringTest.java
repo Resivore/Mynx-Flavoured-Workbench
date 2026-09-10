@@ -55,7 +55,7 @@ class NotebookClientWiringTest {
         String client = read("src/main/java/dev/resivore/notebook/NotebookClient.java");
 
         assertTrue(client.contains("boolean survivalInventory = screen instanceof InventoryScreen"));
-        assertTrue(client.contains("bounds.notebook$getTopPos() + bounds.notebook$getImageHeight() - INVENTORY_BUTTON_SIZE"));
+        assertTrue(client.contains("bounds.notebook$getTopPos() + bounds.notebook$getImageHeight() - 26"));
         assertTrue(client.contains(": bounds.notebook$getTopPos() + INVENTORY_BUTTON_GAP"));
         assertTrue(client.contains("survivalInventory ? -INVENTORY_BUTTON_STEP : INVENTORY_BUTTON_STEP"));
         assertTrue(client.contains("INVENTORY_BUTTON_STEP = INVENTORY_BUTTON_SIZE + INVENTORY_BUTTON_GAP"));
