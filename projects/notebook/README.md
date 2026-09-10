@@ -1,6 +1,6 @@
 # Notebook
 
-Notebook Canary 6 is a client-only Minecraft Java 26.2 Fabric mod for keeping
+Notebook Canary 7 is a client-only Minecraft Java 26.2 Fabric mod for keeping
 small personal notes without an item or server component. It presents a
 responsive two-page journal: the left page is an explicitly ordered note index
 and the right page is a scrollable reading view that turns directly into its
@@ -24,15 +24,16 @@ which it could be attached without changing the interaction model.
   positions to avoid widgets that already exist when the inventory initializes.
 - `+` creates a note, `−` uses a two-click delete confirmation, `R` rescans disk,
   and dragging index rows persists a user-controlled order. There are no Edit,
-  Done, or Save controls: click visible title/body text to edit at that location,
-  and Escape closes after a successful flush.
+  Done, or Save controls: click visible title/body text to edit at that location.
+  The first Escape in edit mode flushes changed text and returns to reading mode
+  without closing Notebook; a second Escape from reading mode closes it.
 - Reading mode wraps only for display; it never writes wrap-created newlines to
   disk. Checkbox-box clicks remain reading-mode checkbox actions; clicking their
   text enters ordinary editing.
 - Lines beginning with `[ ]`, `[x]`, or `[X]` render as compact, ruled-row-aligned
-  ballot boxes in reading mode: an opaque light interior and thin dark outline
-  in both states, plus a slim pixel-clean green tick when complete. A click
-  changes only the marker in the underlying Markdown.
+  ballot boxes in reading mode. Unchecked boxes retain an opaque light interior
+  and thin dark outline; checked boxes use a green fill with a slim pixel-clean
+  white tick. A click changes only the marker in the underlying Markdown.
 - A leading `# ` is rendered as a small heading. No broader rich-text editor is
   implemented.
 
@@ -86,8 +87,8 @@ are intentionally deferred until the core notebook has runtime evidence.
 Canary 1's retained artifact is historical runtime-failure evidence: Fabric
 could not load its client entrypoint because its normal screen class shared the
 Mixin-owned client package. A user reports that the repaired Canary 2 opens
-without that client-init crash. Canary 6 preserves that package repair and the
+without that client-init crash. Canary 7 preserves that package repair and the
 shared text grid, packages the supplied X-less 640×400 book artwork, removes
 the old dim/procedural backing and Notebook text shadows, and refines the
-checklist presentation to match the supplied ballot-box reference. Canary 6 is build- and static-test verified only until
+checklist presentation to match the supplied ballot-box reference. Canary 7 is build- and static-test verified only until
 an actual Minecraft session tests it.
