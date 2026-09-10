@@ -3,6 +3,7 @@ package dev.resivore.xaeroemfcompat.mixin;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import dev.resivore.xaeroemfcompat.EmfIconPartResolver;
+import dev.resivore.xaeroemfcompat.IconTargetPolicy;
 import net.minecraft.client.model.Model;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
@@ -53,7 +54,8 @@ abstract class RadarIconModelPrerendererMixin {
                             model.root(),
                             callbackInfo.getReturnValue(),
                             parameters.mrt,
-                            parameters.config.modelPartsRotationReset
+                            parameters.config.modelPartsRotationReset,
+                            IconTargetPolicy.select(entity)
                     );
             if (resolved.isEmpty()) {
                 return;

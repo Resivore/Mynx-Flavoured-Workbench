@@ -18,24 +18,24 @@
     ]
   },
   "definition": {
-    "lifecycle": "ACCEPTED",
+    "lifecycle": "ACTIVE",
     "goals": [
-      "Repair demonstrated Fresh Animations entity-head failures through the narrow EMF-to-Xaero adapter; retain exact Canary 3 as failed/partial provenance after withdrawal of its aggregate pass.",
-      "Keep the generic EMF-to-Xaero trace and canonical-frame adapter narrow, fail-closed, and free of species-specific offsets, replacement renderers, or new icon behavior.",
-      "Retain exact unsuccessful diagnostic and canary evidence without reclassifying incomplete or failed observations as passes."
+      "Retain accepted Canary 9 exactly as the user-reported external PASS baseline while reopening the project for the reported current resource-pack regression.",
+      "Repair only the C10 allowlisted Minecraft entities and five exact villager professions through a fail-closed targeted EMF composition policy and a separate Xaero-raster presentation policy.",
+      "Keep every unlisted entity and villager profession on the exact C9 path; retain historical runtime evidence without transferring it to Canary 10."
     ],
     "scope": [
-      "Maintain the custom EMF trace bridge and icon-only canonical-frame adapter after ordinary Xaero prerender returns empty; follow bounded recursive head/head_parts identity paths through the retained vanilla root or EMFModelPartVanilla's public retained-root route.",
-      "Follow a unique zero-transform retained geometry owner when the canonical container is empty, or detach direct canonical EMF head geometry into a plain ModelPart with only explicit facial/headwear anchors. The traced detached head itself is renderable even when EMF marks its traversal node skipDraw; named descendants retain their own transforms and visibility. Exclude body siblings, and fail closed on ambiguous, non-finite, singular, untraced, non-head, vanilla or upstream-success paths.",
-      "Retain exact Diagnostic1 and Canary 1 through Canary 7 artifacts. Validate reported entity structures with exact retained C3/C4 provenance alongside sheep, horse, sea turtle and creeper controls. Bound normal Fabric diagnostics, invalidate only observed EMF entity-type successful/failed icon caches on reload, and retry one already-cached FAILED value only after the current LivingEntity renderer is structurally confirmed as an EMF root."
+      "Reuse the existing C9 failed-upstream EMF-to-Xaero seam and canonical-frame adapter without modifying its generic selector; C10 enters only for exact fox, goat, frog, bogged, witch, and the five declared minecraft:villager professions.",
+      "Use only detached icon-only C10 compositions: fox/goat body/head2, frog body/body2 plus head2, bogged headwear, witch body/head2 plus body/hat, and a profession-gated villager nose/frog_eyes/matching-hat plan. Fail closed to C9 if a named structure is absent or untraced.",
+      "Apply 1.50 Xaero raster request scaling only to ghast and happy_ghast and 0.75 only to bee and rabbit; preserve C9 cache/reload ownership and all Naturalist/Ribbits companion boundaries."
     ],
     "boundaries": {
       "owned_paths": [
         "projects/xaero-entity-icons"
       ],
       "exclusions": [
-        "Species-specific screen offsets, broad renderer redesign, whole-body icons, live model mutation, and unsupported claims about unreported cases.",
-        "Changes to upstream Xaero, Fresh Animations, EMF, ETF or other projects except the explicitly owned Ribbits icon companion integration in this reconciliation.",
+        "Broad selector changes, wildcard entity/profession matching, whole-body icons, live model mutation, world-model scaling, and unsupported runtime claims.",
+        "Changes to Naturalist, Ribbits, upstream Xaero, Fresh Animations, EMF, ETF or other projects.",
         "Static mob icons, copied upstream assets or classes, replacement entity rendering, networking, server behavior, and redistribution of Xaero's All Rights Reserved content.",
         "The retired Diagnostic2 source workspace, unretained generated outputs, legacy status narratives, Test Instance Manager state, deployment ledgers, snapshots, and historical administrative matrices.",
         "Runtime deployment, Minecraft launch, either Test Slot, accepted-baseline mutation, map-data changes, and access to the protected gameplay instance during this migration.",
@@ -92,6 +92,12 @@
         "reason": "Exact Fresh Animations JEM structures used by the controlled sheep, horse, sea-turtle, and creeper checks."
       },
       {
+        "type": "RESOURCE_PACK",
+        "identifier": "Ribbit Villagers v1",
+        "requirement": "SHA-256 1040da000ee9e8cdbb8ca3e3bc18815f7207356257fcffb97e6387b3389189ba",
+        "reason": "Highest-priority effective model contract for the five profession-gated villager compositions; read-only structural input, not redistributed."
+      },
+      {
         "type": "TOOL",
         "identifier": "java",
         "requirement": "25",
@@ -112,15 +118,15 @@
     ]
   },
   "state": {
-    "milestone": "Exact current 0.1.0-canary9 is ACCEPTED in Workbench Stack v27 after the user's 2026-09-06 user-reported external aggregate PASS. Artifact xaero-emf-entity-icon-compat-0.1.0-canary9.jar SHA-256 184ca0da6d6c055c0ba9b2d0e9fb3bccc3c30da9ea7f700a64792d4d1513551a and source 6c1b4e0ede3ada8470bc7b4ba54ea8b51f9d2e93 were bound exactly; No Test Slot deployment or slot history was created; Slot A remained empty and Slot B was preserved.",
+    "milestone": "Canary 10 is an ACTIVE, statically validated successor for the reported effective resource-pack-stack regressions. Accepted Canary 9 remains the exact user-reported external PASS baseline: xaero-emf-entity-icon-compat-0.1.0-canary9.jar SHA-256 184ca0da6d6c055c0ba9b2d0e9fb3bccc3c30da9ea7f700a64792d4d1513551a, source 6c1b4e0ede3ada8470bc7b4ba54ea8b51f9d2e93. Canary 10 has no deployment, slot occupancy, or runtime observation.",
     "releases": {
       "current": {
-        "version": "0.1.0-canary9",
+        "version": "0.1.0-canary10",
         "artifact": {
-          "filename": "xaero-emf-entity-icon-compat-0.1.0-canary9.jar",
-          "sha256": "184ca0da6d6c055c0ba9b2d0e9fb3bccc3c30da9ea7f700a64792d4d1513551a"
+          "filename": "xaero-emf-entity-icon-compat-0.1.0-canary10.jar",
+          "sha256": "488e7e207fbc1e5b03a03cb2893a86520d8f7eb431eaae2eb0f040523be19496"
         },
-        "source_commit": "6c1b4e0ede3ada8470bc7b4ba54ea8b51f9d2e93",
+        "source_commit": "0aac323c2cd059008731711560b7abf5ba4ba609",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
@@ -139,22 +145,22 @@
         }
       },
       "rollback": null,
-      "accepted_current": "CURRENT_IS_ACCEPTED",
+      "accepted_current": "CURRENT_DIFFERS_FROM_ACCEPTED",
       "accepted_rollback": "NO_ROLLBACK"
     },
     "validation": {
       "build": "STATIC_PASS",
-      "deployment": "READY_TO_TEST_VERIFIED",
-      "runtime": "RUNTIME_PASS"
+      "deployment": "NOT_DEPLOYED",
+      "runtime": "RUNTIME_UNTESTED"
     },
     "blocker": null
   },
   "synchronization": {
-    "revision": 9,
-    "activity_at": "2026-09-07T04:02:00Z",
-    "updated_at": "2026-09-07T04:02:00Z",
-    "last_codex_at": "2026-09-07T04:02:00Z",
-    "source_commit": "274e9b7e36a1c2b53395c725f1fc9f2fed4ad2e0",
+    "revision": 10,
+    "activity_at": "2026-09-10T05:08:59Z",
+    "updated_at": "2026-09-10T05:08:59Z",
+    "last_codex_at": "2026-09-10T05:08:59Z",
+    "source_commit": "0aac323c2cd059008731711560b7abf5ba4ba609",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null

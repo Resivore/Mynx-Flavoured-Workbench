@@ -93,7 +93,8 @@ class ProductionBytecodeScopeTest {
                 "(Lnet/minecraft/client/model/geom/ModelPart;"
                         + "Lnet/minecraft/client/model/geom/ModelPart;"
                         + "Lxaero/hud/minimap/radar/icon/creator/render/trace/"
-                        + "ModelRenderTrace;Z)Ljava/util/Optional;",
+                        + "ModelRenderTrace;ZLdev/resivore/xaeroemfcompat/"
+                        + "IconTargetPolicy$Selection;)Ljava/util/Optional;",
                 calls.stream().filter(call -> call.owner.equals(
                                 "dev/resivore/xaeroemfcompat/EmfIconPartResolver")
                         && call.name.equals("resolve"))
