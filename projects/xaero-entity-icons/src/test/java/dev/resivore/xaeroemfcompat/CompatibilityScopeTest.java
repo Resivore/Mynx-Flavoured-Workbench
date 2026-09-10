@@ -51,6 +51,9 @@ class CompatibilityScopeTest {
         String xaeroPartMixin = Files.readString(PROJECT.resolve(
                 "src/main/java/dev/resivore/xaeroemfcompat/mixin/"
                         + "RadarIconModelPartPrerendererMixin.java"));
+        String xaeroFormMixin = Files.readString(PROJECT.resolve(
+                "src/main/java/dev/resivore/xaeroemfcompat/mixin/"
+                        + "RadarIconModelFormPrerendererMixin.java"));
         String cacheMixin = Files.readString(PROJECT.resolve(
                 "src/main/java/dev/resivore/xaeroemfcompat/mixin/"
                         + "RadarIconEntityCacheMixin.java"));
@@ -87,6 +90,14 @@ class CompatibilityScopeTest {
         assertTrue(xaeroPartMixin.contains("ModelPart;render("));
         assertTrue(xaeroPartMixin.contains("remap = true"));
         assertTrue(xaeroPartMixin.contains("EmfIconPartResolver.renderAdapter"));
+        assertTrue(xaeroFormMixin.contains(
+                "@Mixin(value = RadarIconModelFormPrerenderer.class, remap = false)"));
+        assertTrue(xaeroFormMixin.contains("RadarIconModelConfig;baseScale:F"));
+        assertTrue(xaeroFormMixin.contains("ordinal = 0"));
+        assertTrue(xaeroFormMixin.contains("shift = At.Shift.BEFORE"));
+        assertTrue(xaeroFormMixin.contains("require = 1"));
+        assertEquals(1, occurrences(xaeroFormMixin,
+                "IconPresentationPolicy.applyUpscaleForCurrentRequest"));
         assertTrue(xaeroMixin.contains("EmfIconPartResolver.isSupportedEmfRoot"));
         assertFalse(cacheMixin.contains("method=\"get\""));
         assertFalse(cacheMixin.contains("setReturnValue"));
@@ -102,6 +113,7 @@ class CompatibilityScopeTest {
         assertEquals(1, occurrences(config, "EMFModelPartMixin"));
         assertEquals(1, occurrences(config, "RadarIconModelPrerendererMixin"));
         assertEquals(1, occurrences(config, "RadarIconModelPartPrerendererMixin"));
+        assertEquals(1, occurrences(config, "RadarIconModelFormPrerendererMixin"));
         assertEquals(1, occurrences(config, "RadarIconEntityCacheMixin"));
         assertEquals(1, occurrences(config, "RadarIconEntityCacheTypeAccessor"));
         assertEquals(1, occurrences(config, "RadarIconManagerMixin"));
@@ -118,6 +130,7 @@ class CompatibilityScopeTest {
         assertTrue(plugin.contains("loader.getModContainer(EMF_MOD_ID)"));
         assertTrue(plugin.contains("CompatibilityActivation.shouldApply(xaeroVersion, emfVersion)"));
         assertTrue(plugin.contains("XAERO_PRERENDER_TARGET"));
+        assertTrue(plugin.contains("XAERO_MODEL_FORM_PRERENDER_TARGET"));
         assertTrue(plugin.contains("XAERO_PART_PRERENDER_TARGET"));
         assertTrue(bridge.contains("XaeroMinimapCore::onEntityIconsModelPartRenderDetection"));
         assertFalse(bridge.contains("EntityRenderTracer"));

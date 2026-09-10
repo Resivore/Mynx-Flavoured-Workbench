@@ -155,6 +155,23 @@ class ProductionBytecodeScopeTest {
     }
 
     @Test
+    void modelFormMixinAppliesOnlyTheScopedPresentationUpscale() throws IOException {
+        ClassNode mixin = readClass(
+                "dev/resivore/xaeroemfcompat/mixin/RadarIconModelFormPrerendererMixin.class");
+        MethodNode handler = mixin.methods.stream()
+                .filter(candidate -> candidate.name.equals("xaeroEmf$applyTargetedUpscale"))
+                .findFirst().orElseThrow();
+        List<MethodInsnNode> calls = methodCalls(handler);
+        assertEquals(1, calls.stream().filter(call -> call.owner.equals(
+                        "dev/resivore/xaeroemfcompat/IconPresentationPolicy")
+                && call.name.equals("applyUpscaleForCurrentRequest")).count());
+        assertEquals(1, calls.stream().filter(call -> call.owner.equals(
+                        "xaero/hud/minimap/element/render/MinimapElementGraphics")
+                && call.name.equals("pose")).count());
+        assertEquals(0, fieldWrites(handler));
+    }
+
+    @Test
     void pluginDelegatesItsOptionalModDecisionToTheTestedActivationPolicy() throws IOException {
         ClassNode plugin = readClass(
                 "dev/resivore/xaeroemfcompat/mixin/XaeroEmfCompatMixinPlugin.class");

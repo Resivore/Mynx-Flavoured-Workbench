@@ -17,6 +17,8 @@ public final class XaeroEmfCompatMixinPlugin implements IMixinConfigPlugin {
     private static final String EMF_TARGET = "traben.entity_model_features.models.parts.EMFModelPart";
     private static final String XAERO_PRERENDER_TARGET =
             "xaero.hud.minimap.radar.icon.creator.render.form.model.RadarIconModelPrerenderer";
+    private static final String XAERO_MODEL_FORM_PRERENDER_TARGET =
+            "xaero.hud.minimap.radar.icon.creator.render.form.model.RadarIconModelFormPrerenderer";
     private static final String XAERO_PART_PRERENDER_TARGET =
             "xaero.hud.minimap.radar.icon.creator.render.form.model.part."
                     + "RadarIconModelPartPrerenderer";
@@ -45,6 +47,7 @@ public final class XaeroEmfCompatMixinPlugin implements IMixinConfigPlugin {
         if (!Set.of(
                 EMF_TARGET,
                 XAERO_PRERENDER_TARGET,
+                XAERO_MODEL_FORM_PRERENDER_TARGET,
                 XAERO_PART_PRERENDER_TARGET,
                 "xaero.hud.minimap.radar.icon.cache.RadarIconCache",
                 "xaero.hud.minimap.radar.icon.creator.RadarIconCreator",

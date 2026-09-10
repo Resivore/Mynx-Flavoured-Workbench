@@ -67,6 +67,7 @@ public final class IconTargetPolicy {
     }
 
     public static float presentationScale(String entityId) {
+        if (entityId == null) return 1.0F;
         return PRESENTATION_SCALES.getOrDefault(entityId, 1.0F);
     }
 

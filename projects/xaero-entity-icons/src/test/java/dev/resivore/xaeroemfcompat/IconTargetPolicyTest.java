@@ -20,8 +20,13 @@ class IconTargetPolicyTest {
             assertEquals(IconTargetPolicy.Composition.VILLAGER, selection.composition());
             assertTrue(selection.expectedHat().startsWith("ribbits_"));
         }
-        for (String id : List.of("minecraft:allay", "minecraft:creeper", "naturalist:bear",
-                "ribbits:ribbit", "other:fox", "minecraft:fox_variant")) {
+        for (String id : List.of(
+                "minecraft:allay", "minecraft:vex", "minecraft:axolotl", "minecraft:sniffer",
+                "minecraft:iron_golem", "minecraft:wolf", "minecraft:bat", "minecraft:parrot",
+                "minecraft:ravager", "minecraft:sheep", "minecraft:horse", "minecraft:turtle",
+                "minecraft:creeper", "minecraft:ghast", "minecraft:happy_ghast",
+                "minecraft:bee", "minecraft:rabbit", "minecraft:camel",
+                "naturalist:bear", "ribbits:ribbit", "other:fox", "minecraft:fox_variant")) {
             assertFalse(IconTargetPolicy.select(id, "minecraft:farmer").isCompositionTarget(), id);
         }
         for (String profession : List.of("minecraft:librarian", "minecraft:armorer",

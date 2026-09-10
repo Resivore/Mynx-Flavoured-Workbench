@@ -56,7 +56,7 @@ public final class EmfIconPartResolver {
     }
 
     /**
-     * Runs C10's exact, fail-closed model contracts before the unchanged C9
+     * Runs C11's exact, fail-closed model contracts before the unchanged C9
      * selector.  A non-target never reaches this branch.
      */
     public static Optional<Resolution> resolve(
@@ -88,7 +88,7 @@ public final class EmfIconPartResolver {
                 root, canonicalHead, vanillaRoot, trace, resetHeadRotation);
     }
 
-    /** C10 plans name only the supplied effective-pack contracts. */
+    /** C11 plans name only the verified effective EMF/Fresh Animations contracts. */
     private static Optional<Resolution> resolveTargeted(
             ModelPart root,
             ModelPart canonicalHead,
@@ -98,8 +98,9 @@ public final class EmfIconPartResolver {
             IconTargetPolicy.Selection target
     ) {
         TargetedPlan plan = switch (target.composition()) {
-            case FOX, GOAT -> wholeSubtreePlan(root, "body", "head2");
-            case BOGGED -> wholeSubtreePlan(root, "headwear");
+            case FOX -> foxPlan(root);
+            case GOAT -> goatPlan(root);
+            case BOGGED -> boggedPlan(root);
             case FROG -> frogPlan(root);
             case WITCH -> witchPlan(root);
             case VILLAGER -> villagerPlan(root, target.expectedHat());
@@ -108,7 +109,7 @@ public final class EmfIconPartResolver {
         if (plan == null || plan.anchor() == null) {
             return reject("TARGETED_EXPECTED_STRUCTURE_ABSENT", target.composition().name());
         }
-        ModelPartRenderTrace renderInfo = firstRenderInfo(trace, plan.source());
+        ModelPartRenderTrace renderInfo = trace.getModelPartRenderInfo(plan.tracedPart());
         if (renderInfo == null) {
             return reject("TARGETED_SUBTREE_UNTRACED", target.composition().name());
         }
@@ -122,16 +123,17 @@ public final class EmfIconPartResolver {
 
         GeometrySelection geometry = new GeometrySelection(
                 plan.source(), plan.path(), new CubeMatch(plan.anchor().cube(), plan.anchor().ownerPath()));
-        ModelPart adapter = buildTargetedAdapter(plan.detached(), geometry, canonicalHead,
-                canonicalCube, resetHeadRotation);
+        ModelPart adapter = buildTargetedAdapter(plan.detached(), plan.tracedPart(), geometry,
+                canonicalHead, canonicalCube, resetHeadRotation);
         if (adapter == null) return reject("TARGETED_INVALID_OR_SINGULAR_TRANSFORM", target.composition().name());
         List<ModelPart.Cube> frameCubes = vanillaGeometry == null
                 ? ModelPartUtil.getCubes(plan.anchor().ownerPath().getLast())
                 : ModelPartUtil.getCubes(vanillaGeometry);
         ModelPart centeringPart = canonicalFrame(canonicalHead, frameCubes);
-        IconDiagnostics.event("TARGETED_RESOLVED_" + target.composition().name(), plan.pathText());
-        return Optional.of(new Resolution(canonicalHead, plan.source(), plan.source(), adapter,
-                centeringPart, renderInfo.color, "targeted", plan.pathText(), plan.pathText()));
+        IconDiagnostics.event("TARGETED_RESOLVED_" + target.composition().name(),
+                plan.pathText() + " anchor=" + plan.anchorPathText());
+        return Optional.of(new Resolution(canonicalHead, plan.tracedPart(), plan.source(), adapter,
+                centeringPart, renderInfo.color, "targeted", plan.anchorPathText(), plan.pathText()));
     }
 
     /** Package-visible synthetic-fixture seam; production enters through {@link #resolve}. */
@@ -141,66 +143,103 @@ public final class EmfIconPartResolver {
         return resolveTargeted(root, canonicalHead, vanillaRoot, trace, resetHeadRotation, target);
     }
 
-    private static TargetedPlan wholeSubtreePlan(ModelPart root, String... names) {
-        List<PathNode> path = namedPath(root, names);
+    private static TargetedPlan foxPlan(ModelPart root) {
+        List<PathNode> path = namedPath(root, "body", "body", "head2");
         if (path == null) return null;
         ModelPart source = path.getLast().part();
-        CubeAnchor anchor = firstCubeAnchor(source, List.of(source));
-        return anchor == null ? null : new TargetedPlan(path, source, detachAll(source), anchor);
+        CubeAnchor anchor = directCubeAnchor(source, List.of(source));
+        return anchor == null ? null : new TargetedPlan(
+                path, source, detachAll(source), source, anchor, pathText(path));
+    }
+
+    private static TargetedPlan goatPlan(ModelPart root) {
+        List<PathNode> path = namedPath(root, "body", "body", "head2");
+        if (path == null) return null;
+        ModelPart source = path.getLast().part();
+        NamedPart snout = namedChildEntry(source, "snout");
+        if (snout == null) return null;
+        CubeAnchor anchor = directCubeAnchor(snout.part(), List.of(source, snout.part()));
+        return anchor == null ? null : new TargetedPlan(
+                path, source, detachAll(source), snout.part(), anchor,
+                pathText(path) + "/" + snout.name());
+    }
+
+    private static TargetedPlan boggedPlan(ModelPart root) {
+        List<PathNode> path = namedPath(root, "hat", "headwear");
+        if (path == null) return null;
+        ModelPart source = path.getLast().part();
+        CubeAnchor anchor = directCubeAnchor(source, List.of(source));
+        return anchor == null ? null : new TargetedPlan(
+                path, source, detachAll(source), source, anchor, pathText(path));
     }
 
     private static TargetedPlan frogPlan(ModelPart root) {
-        List<PathNode> path = namedPath(root, "body", "body2");
+        List<PathNode> path = namedPath(root, "body", "body", "body2");
         if (path == null) return null;
         ModelPart body2 = path.getLast().part();
-        ModelPart head2 = namedChild(body2, "head2");
+        NamedPart head2 = namedChildEntry(body2, "head2");
         if (head2 == null) return null;
-        Map<String, ModelPart> children = Map.of("head2", detachAll(head2));
-        ModelPart detached = detach(body2, children);
-        CubeAnchor anchor = firstCubeAnchor(body2, List.of(body2));
-        return anchor == null ? null : new TargetedPlan(path, body2, detached, anchor);
+        ModelPart detached = detach(body2, true, Map.of(head2.name(), detachAll(head2.part())));
+        CubeAnchor anchor = directCubeAnchor(head2.part(), List.of(body2, head2.part()));
+        return anchor == null ? null : new TargetedPlan(
+                path, body2, detached, head2.part(), anchor,
+                pathText(path) + "/" + head2.name());
     }
 
     private static TargetedPlan witchPlan(ModelPart root) {
-        List<PathNode> path = namedPath(root, "body");
+        List<PathNode> path = namedPath(root, "body", "body");
         if (path == null) return null;
         ModelPart body = path.getLast().part();
-        ModelPart face = namedChild(body, "head2");
-        ModelPart hat = namedChild(body, "hat");
+        NamedPart face = namedChildEntry(body, "head2");
+        NamedPart hat = namedChildEntry(body, "hat");
         if (face == null || hat == null) return null;
-        ModelPart detached = detach(body, Map.of("head2", detachAll(face), "hat", detachAll(hat)));
-        CubeAnchor faceAnchor = firstCubeAnchor(face, List.of(face));
+        ModelPart detached = detach(body, false, Map.of(
+                face.name(), detachAll(face.part()), hat.name(), detachAll(hat.part())));
+        CubeAnchor faceAnchor = directCubeAnchor(face.part(), List.of(body, face.part()));
         if (faceAnchor == null) return null;
-        return new TargetedPlan(path, body, detached,
-                new CubeAnchor(faceAnchor.cube(), prepend(body, faceAnchor.ownerPath())));
+        return new TargetedPlan(path, body, detached, face.part(), faceAnchor,
+                pathText(path) + "/" + face.name());
     }
 
     private static TargetedPlan villagerPlan(ModelPart root, String expectedHat) {
         if (expectedHat == null) return null;
-        List<PathNode> path = namedPath(root, "nose");
+        List<PathNode> path = namedPath(root, "head", "nose", "nose");
         if (path == null) return null;
         ModelPart nose = path.getLast().part();
-        ModelPart eyes = namedChild(nose, "frog_eyes");
-        ModelPart hat = namedChild(nose, expectedHat);
-        if (eyes == null || hat == null) return null;
-        ModelPart detached = detach(nose, Map.of("frog_eyes", detachAll(eyes), expectedHat, detachAll(hat)));
-        CubeAnchor anchor = firstCubeAnchor(nose, List.of(nose));
-        return anchor == null ? null : new TargetedPlan(path, nose, detached, anchor);
+        NamedPart face = namedChildEntry(nose, "face");
+        NamedPart eyes = namedChildEntry(nose, "frog_eyes");
+        NamedPart hat = namedChildEntry(nose, expectedHat);
+        if (face == null || eyes == null || hat == null) return null;
+        ModelPart detached = detach(nose, true, Map.of(
+                face.name(), detachAll(face.part()),
+                eyes.name(), detachAll(eyes.part()),
+                hat.name(), detachAll(hat.part())));
+        CubeAnchor anchor = directCubeAnchor(nose, List.of(nose));
+        return anchor == null ? null : new TargetedPlan(
+                path, nose, detached, nose, anchor, pathText(path));
     }
 
     private static ModelPart buildTargetedAdapter(
             ModelPart detached,
+            ModelPart tracedPart,
             GeometrySelection geometry,
             ModelPart canonicalHead,
             ModelPart.Cube canonicalCuboid,
             boolean resetHeadRotation
     ) {
-        ModelPart adapter = new ModelPart(List.of(), Map.of("targeted", detached));
+        List<PathNode> path = geometry.path();
+        ModelPart branch = detached;
+        for (int index = path.size() - 2; index >= 1; index--) {
+            PathNode ancestor = path.get(index);
+            branch = transformOnlyCopy(ancestor.part(), path.get(index + 1).name(), branch);
+        }
+        ModelPart topBranch = branch;
+        ModelPart adapter = new ModelPart(List.of(), Map.of(path.get(1).name(), topBranch));
         adapter.setPos(canonicalHead.x, canonicalHead.y, canonicalHead.z);
         adapter.setInitialPose(adapter.storePose());
         Matrix4f correction = canonicalCorrection(geometry, canonicalHead, canonicalCuboid, resetHeadRotation);
         if (correction == null) return null;
-        ADAPTERS.put(adapter, new AdapterMetadata(geometry.part(), detached, correction));
+        ADAPTERS.put(adapter, new AdapterMetadata(tracedPart, topBranch, correction));
         return adapter;
     }
 
@@ -209,19 +248,28 @@ public final class EmfIconPartResolver {
         path.add(new PathNode("root", root));
         ModelPart current = root;
         for (String name : names) {
-            current = namedChild(current, name);
-            if (current == null) return null;
-            path.add(new PathNode(name, current));
+            NamedPart child = namedChildEntry(current, name);
+            if (child == null) return null;
+            current = child.part();
+            path.add(new PathNode(child.name(), current));
         }
         return List.copyOf(path);
     }
 
     /** Exact contract name, accepting EMF's implementation prefix only. */
     private static ModelPart namedChild(ModelPart parent, String name) {
+        NamedPart child = namedChildEntry(parent, name);
+        return child == null ? null : child.part();
+    }
+
+    private static NamedPart namedChildEntry(ModelPart parent, String name) {
         Map<String, ModelPart> children = ModelPartUtil.getChildren(parent);
         if (children == null) return null;
         ModelPart exact = children.get(name);
-        return exact != null ? exact : children.get("EMF_" + name);
+        if (exact != null) return new NamedPart(name, exact);
+        String emfName = "EMF_" + name;
+        ModelPart emf = children.get(emfName);
+        return emf == null ? null : new NamedPart(emfName, emf);
     }
 
     private static ModelPart detachAll(ModelPart source) {
@@ -229,11 +277,14 @@ public final class EmfIconPartResolver {
         Map<String, ModelPart> sourceChildren = ModelPartUtil.getChildren(source);
         if (sourceChildren != null) sourceChildren.entrySet().stream().sorted(Map.Entry.comparingByKey())
                 .forEach(entry -> children.put(entry.getKey(), detachAll(entry.getValue())));
-        return detach(source, children);
+        return detach(source, true, children);
     }
 
-    private static ModelPart detach(ModelPart source, Map<String, ModelPart> children) {
-        ModelPart copy = new ModelPart(List.copyOf(ModelPartUtil.getCubes(source)), children);
+    private static ModelPart detach(
+            ModelPart source, boolean includeDirectCubes, Map<String, ModelPart> children) {
+        List<ModelPart.Cube> cubes = includeDirectCubes
+                ? List.copyOf(ModelPartUtil.getCubes(source)) : List.of();
+        ModelPart copy = new ModelPart(cubes, children);
         copyCurrentTransform(source, copy);
         copy.visible = source.visible;
         copy.skipDraw = false;
@@ -241,36 +292,9 @@ public final class EmfIconPartResolver {
         return copy;
     }
 
-    private static CubeAnchor firstCubeAnchor(ModelPart source, List<ModelPart> ownerPath) {
-        List<ModelPart.Cube> cubes = ModelPartUtil.getCubes(source);
-        if (cubes != null && !cubes.isEmpty()) return new CubeAnchor(cubes.getFirst(), ownerPath);
-        Map<String, ModelPart> children = ModelPartUtil.getChildren(source);
-        if (children == null) return null;
-        for (ModelPart child : children.values()) {
-            CubeAnchor found = firstCubeAnchor(child, append(ownerPath, child));
-            if (found != null) return found;
-        }
-        return null;
-    }
-
-    private static ModelPartRenderTrace firstRenderInfo(ModelRenderTrace trace, ModelPart source) {
-        ModelPartRenderTrace direct = trace.getModelPartRenderInfo(source);
-        if (direct != null) return direct;
-        Map<String, ModelPart> children = ModelPartUtil.getChildren(source);
-        if (children == null) return null;
-        for (ModelPart child : children.values()) {
-            ModelPartRenderTrace found = firstRenderInfo(trace, child);
-            if (found != null) return found;
-        }
-        return null;
-    }
-
-    private static List<ModelPart> append(List<ModelPart> path, ModelPart child) {
-        List<ModelPart> copy = new ArrayList<>(path); copy.add(child); return List.copyOf(copy);
-    }
-
-    private static List<ModelPart> prepend(ModelPart parent, List<ModelPart> path) {
-        List<ModelPart> copy = new ArrayList<>(); copy.add(parent); copy.addAll(path); return List.copyOf(copy);
+    private static CubeAnchor directCubeAnchor(ModelPart owner, List<ModelPart> ownerPath) {
+        ModelPart.Cube cube = ModelPartUtil.getBiggestCuboid(owner);
+        return cube == null ? null : new CubeAnchor(cube, List.copyOf(ownerPath));
     }
 
     static Optional<Resolution> resolveRelocatedHead(
@@ -1026,6 +1050,9 @@ public final class EmfIconPartResolver {
     private record PathNode(String name, ModelPart part) {
     }
 
+    private record NamedPart(String name, ModelPart part) {
+    }
+
     private record Node(
             ModelPart part,
             int color,
@@ -1052,7 +1079,9 @@ public final class EmfIconPartResolver {
             List<PathNode> path,
             ModelPart source,
             ModelPart detached,
-            CubeAnchor anchor
+            ModelPart tracedPart,
+            CubeAnchor anchor,
+            String anchorPathText
     ) {
         String pathText() { return EmfIconPartResolver.pathText(path); }
     }

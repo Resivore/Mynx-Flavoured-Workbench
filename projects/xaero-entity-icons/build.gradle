@@ -30,8 +30,13 @@ def xaeroJar = requiredFileProperty('xaero_jar', 'Xaero Minimap 26.4.2')
 def worldMapJar = requiredFileProperty('world_map_jar', 'Xaero World Map 1.44.2')
 def emfJar = requiredFileProperty('emf_jar', 'entity_model_features-3.2.6-26.2-fabric.jar')
 def etfJar = requiredFileProperty('etf_jar', 'entity_texture_features-7.1.1-26.2-fabric.jar')
+def fabricApiJar = requiredFileProperty('fabric_api_jar', 'Fabric API 0.157.0+26.2 JAR')
 def freshAnimationsPack = requiredFileProperty('fresh_animations_pack', 'FreshAnimations_v1.10.5.zip')
+def ribbitVillagersPack = requiredFileProperty('ribbit_villagers_pack', 'Ribbit Villagers v1.zip')
 def xaeroLibJar = layout.buildDirectory.file('compile-deps/xaerolib.jar')
+def productionMinecraftClientJar = new File(gradle.gradleUserHomeDir,
+        "caches/fabric-loom/${project.minecraft_version}/minecraft-client.jar")
+def productionMixinWorkingDir = layout.buildDirectory.dir('production-mixin-test')
 
 dependencies {
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
@@ -77,6 +82,51 @@ test {
     systemProperty 'emfJar', emfJar.absolutePath
     systemProperty 'etfJar', etfJar.absolutePath
     systemProperty 'freshAnimationsPack', freshAnimationsPack.absolutePath
+    systemProperty 'ribbitVillagersPack', ribbitVillagersPack.absolutePath
+}
+
+tasks.register('prepareProductionMixinWorkingDir') {
+    outputs.dir(productionMixinWorkingDir)
+    doLast { productionMixinWorkingDir.get().asFile.mkdirs() }
+}
+
+tasks.register('productionMixinTest', JavaExec) {
+    group = 'verification'
+    description = 'Applies Canary 11 through production Fabric Knot/Mixin without launching Minecraft.'
+    dependsOn tasks.named('testClasses'), tasks.named('jar'),
+            tasks.named('prepareProductionMixinWorkingDir')
+    mainClass = 'dev.resivore.xaeroemfcompat.ProductionMixinApplicationHarness'
+    inputs.files(tasks.named('jar'), xaeroJar, worldMapJar, emfJar, etfJar,
+            fabricApiJar, productionMinecraftClientJar)
+    classpath = files({
+        def mainOutput = sourceSets.main.output.files
+        def runtime = configurations.testRuntimeClasspath.files.findAll { candidate ->
+            !mainOutput.contains(candidate)
+                    && !candidate.name.startsWith('minecraft-merged-deobf-')
+                    && candidate != xaeroJar && candidate != emfJar && candidate != etfJar
+                    && candidate != xaeroLibJar.get().asFile
+        }
+        sourceSets.test.output.files.findAll { it.exists() } + runtime + [
+                productionMinecraftClientJar,
+                tasks.named('jar').get().archiveFile.get().asFile,
+                xaeroJar, worldMapJar, emfJar, etfJar, fabricApiJar,
+                xaeroLibJar.get().asFile
+        ]
+    })
+    systemProperty 'fabric.development', 'false'
+    systemProperty 'fabric.unitTest', 'true'
+    systemProperty 'fabric.gameJarPath', productionMinecraftClientJar.absolutePath
+    systemProperty 'mixin.debug.countInjections', 'true'
+    doFirst {
+        if (!productionMinecraftClientJar.isFile()) {
+            throw new GradleException("Missing ${productionMinecraftClientJar}")
+        }
+        def patchJar = tasks.named('jar').get().archiveFile.get().asFile
+        def mods = [patchJar, xaeroJar, worldMapJar, emfJar, etfJar, fabricApiJar]
+        systemProperty 'fabric.addMods', mods.collect { it.absolutePath }.join(File.pathSeparator)
+        args = [patchJar.absolutePath, xaeroJar.absolutePath, emfJar.absolutePath]
+    }
+    workingDir productionMixinWorkingDir
 }
 
 tasks.register('verifyClientOnlyArtifact') {
@@ -105,7 +155,7 @@ tasks.register('verifyClientOnlyArtifact') {
 }
 
 tasks.named('check') {
-    dependsOn tasks.named('verifyClientOnlyArtifact')
+    dependsOn tasks.named('verifyClientOnlyArtifact'), tasks.named('productionMixinTest')
 }
 
 tasks.register('stageCanaryArtifact', Copy) {

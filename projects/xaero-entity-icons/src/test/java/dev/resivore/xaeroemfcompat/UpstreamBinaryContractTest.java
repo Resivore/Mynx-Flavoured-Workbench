@@ -5,6 +5,7 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.AnnotationNode;
 import org.objectweb.asm.tree.FieldInsnNode;
+import org.objectweb.asm.tree.JumpInsnNode;
 import org.objectweb.asm.tree.LdcInsnNode;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.MethodInsnNode;
@@ -33,6 +34,7 @@ class UpstreamBinaryContractTest {
     private static final Path EMF = propertyPath("emfJar");
     private static final Path ETF = propertyPath("etfJar");
     private static final Path FRESH_ANIMATIONS = propertyPath("freshAnimationsPack");
+    private static final Path RIBBIT_VILLAGERS = propertyPath("ribbitVillagersPack");
 
     private static final String COMPILE_DESCRIPTOR =
             "(Lcom/mojang/blaze3d/vertex/PoseStack$Pose;"
@@ -53,6 +55,8 @@ class UpstreamBinaryContractTest {
                 "F469BC914302A13A5C767296623DF60FB0CC3D4E4A02A77C56541A733AD36E3A");
         assertArtifact(FRESH_ANIMATIONS, 645_816L,
                 "CF9F17A2977E171B33CB0B598BC4357DD0383E09C10D5F768FF17C12D0A028EE");
+        assertArtifact(RIBBIT_VILLAGERS, 978_911L,
+                "846FB57663750B5F273CB57288DE0D518D4AE973DE0E40AFA9D7F1293C6DFFF5");
     }
 
     @Test
@@ -238,6 +242,35 @@ class UpstreamBinaryContractTest {
     }
 
     @Test
+    void xaeroRequestScaleSkipsValuesAtOrAboveOneBeforeBaseScale() throws IOException {
+        ClassNode formPrerenderer = readClass(XAERO,
+                "xaero/hud/minimap/radar/icon/creator/render/form/model/"
+                        + "RadarIconModelFormPrerenderer.class");
+        MethodNode prerender = formPrerenderer.methods.stream()
+                .filter(candidate -> candidate.name.equals("prerender")
+                        && candidate.desc.endsWith(
+                        "Lxaero/hud/minimap/radar/icon/creator/RadarIconCreator$Parameters;)Z"))
+                .findFirst().orElseThrow();
+
+        int requestScale = fieldIndex(prerender,
+                "xaero/hud/minimap/radar/icon/creator/RadarIconCreator$Parameters", "scale");
+        int skipUpscale = opcodeIndexAfter(prerender, Opcodes.IFGE, requestScale);
+        int conditionalPoseScale = callIndexAfter(prerender,
+                "com/mojang/blaze3d/vertex/PoseStack", "scale", skipUpscale);
+        int baseScale = fieldIndex(prerender,
+                "xaero/hud/minimap/radar/icon/definition/form/model/config/RadarIconModelConfig",
+                "baseScale");
+
+        assertTrue(requestScale >= 0);
+        assertTrue(skipUpscale > requestScale);
+        assertTrue(conditionalPoseScale > skipUpscale);
+        assertTrue(baseScale > conditionalPoseScale);
+        JumpInsnNode jump = (JumpInsnNode) prerender.instructions.get(skipUpscale);
+        int skipTarget = prerender.instructions.indexOf(jump.label);
+        assertTrue(skipTarget > conditionalPoseScale && skipTarget < baseScale);
+    }
+
+    @Test
     void worldMapAndEtfDoNotOwnThisEntityIconCompileSeam() throws IOException {
         try (ZipFile worldMap = new ZipFile(WORLD_MAP.toFile())) {
             assertNull(worldMap.getEntry(
@@ -317,6 +350,32 @@ class UpstreamBinaryContractTest {
                 return index;
             }
             index++;
+        }
+        return -1;
+    }
+
+    private static int fieldIndex(MethodNode method, String owner, String name) {
+        int index = 0;
+        for (AbstractInsnNode instruction : method.instructions) {
+            if (instruction instanceof FieldInsnNode field
+                    && field.owner.equals(owner) && field.name.equals(name)) return index;
+            index++;
+        }
+        return -1;
+    }
+
+    private static int opcodeIndexAfter(MethodNode method, int opcode, int after) {
+        for (int index = Math.max(0, after + 1); index < method.instructions.size(); index++) {
+            if (method.instructions.get(index).getOpcode() == opcode) return index;
+        }
+        return -1;
+    }
+
+    private static int callIndexAfter(MethodNode method, String owner, String name, int after) {
+        for (int index = Math.max(0, after + 1); index < method.instructions.size(); index++) {
+            AbstractInsnNode instruction = method.instructions.get(index);
+            if (instruction instanceof MethodInsnNode call
+                    && call.owner.equals(owner) && call.name.equals(name)) return index;
         }
         return -1;
     }

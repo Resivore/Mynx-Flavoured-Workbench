@@ -51,7 +51,7 @@ abstract class RadarIconManagerMixin {
         }
     }
 
-    /** C10 adjusts Xaero's immutable per-icon request only for four exact vanilla IDs. */
+    /** C11 uses Xaero's request scale only for the exact downscale targets. */
     @ModifyVariable(
             method="get(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/entity/EntityType;Lxaero/hud/minimap/radar/icon/definition/RadarIconDefinition;Lnet/minecraft/client/renderer/entity/EntityRenderer;FZZLxaero/hud/minimap/element/render/MinimapElementGraphics;Lcom/mojang/blaze3d/pipeline/RenderTarget;)Lxaero/common/icon/XaeroIcon;",
             at=@At("STORE"), index=19, require=1)
