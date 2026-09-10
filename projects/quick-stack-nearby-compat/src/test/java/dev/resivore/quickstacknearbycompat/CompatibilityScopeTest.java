@@ -50,7 +50,7 @@ class CompatibilityScopeTest {
         try (Stream<Path> paths = Files.walk(sourceRoot)) {
             javaFiles = paths.filter(path -> path.toString().endsWith(".java")).toList();
         }
-        assertEquals(18, javaFiles.size());
+        assertEquals(20, javaFiles.size());
 
         StringBuilder sources = new StringBuilder();
         for (Path javaFile : javaFiles) {
@@ -146,6 +146,8 @@ class CompatibilityScopeTest {
         assertTrue(client.contains("\"QuickStackRuleStoreMixin\""));
         assertTrue(client.contains("\"QuickStackRulesScreenMixin\""));
         assertTrue(client.contains("\"QuickStackButtonSlotBridgeMixin\""));
+        assertTrue(client.contains("\"QuickStackIconButtonMixin\""));
+        assertTrue(client.contains("\"QuickStackCustomButtonChromeMixin\""));
         assertTrue(client.contains("\"InventoryScreenButtonSlotsMixin\""));
         assertFalse(common.contains("QuickStackButtonSlotBridgeMixin"));
         assertFalse(common.contains("InventoryScreenButtonSlotsMixin"));

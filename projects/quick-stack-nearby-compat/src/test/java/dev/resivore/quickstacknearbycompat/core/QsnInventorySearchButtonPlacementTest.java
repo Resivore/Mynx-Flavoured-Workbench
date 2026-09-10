@@ -2,98 +2,79 @@ package dev.resivore.quickstacknearbycompat.core;
 
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class QsnInventorySearchButtonPlacementTest {
-    private static final int BASE_Y = 100;
+    private static final int LEFT = 40;
+    private static final int TOP = 30;
+    private static final int IMAGE_WIDTH = 176;
+    private static final int IMAGE_HEIGHT = 166;
 
     @Test
-    void exactFallbackPlacementMovesByTheMinimumFullButtonHeight() {
-        assertEquals(
-                BASE_Y + 12,
-                QsnInventorySearchButtonPlacement.adjustedY(
-                        BASE_Y,
-                        BASE_Y,
-                        true,
-                        QsnInventorySearchButtonPlacement.QSN_OWNER_ID,
-                        QsnInventorySearchButtonPlacement.QSN_ACTION_SLOT_ID
-                )
-        );
-        assertEquals(12, QsnInventorySearchButtonPlacement.BUTTON_SIZE);
-        assertEquals(
-                QsnInventorySearchButtonPlacement.BUTTON_SIZE,
-                QsnInventorySearchButtonPlacement.VERTICAL_OFFSET
-        );
+    void survivalUtilityStackUsesTheSharedLiveBottomRightGeometry() {
+        assertEquals(18, QsnInventorySearchButtonPlacement.BUTTON_SIZE);
+        assertEquals(4, QsnInventorySearchButtonPlacement.BUTTON_GAP);
+        assertEquals(22, QsnInventorySearchButtonPlacement.QSN_ABOVE_NOTEBOOK_OFFSET);
+        assertEquals(220, QsnInventorySearchButtonPlacement.preferredX(LEFT, IMAGE_WIDTH));
+        assertEquals(178, QsnInventorySearchButtonPlacement.notebookY(TOP, IMAGE_HEIGHT));
+        assertEquals(156, QsnInventorySearchButtonPlacement.preferredY(TOP, IMAGE_HEIGHT));
+        assertEquals(TOP + IMAGE_HEIGHT - 40,
+                QsnInventorySearchButtonPlacement.preferredY(TOP, IMAGE_HEIGHT));
     }
 
     @Test
-    void twelvePixelsIsTheSmallestNonOverlappingVerticalOffset() {
-        assertTrue(overlaps(BASE_Y, BASE_Y + 11, QsnInventorySearchButtonPlacement.BUTTON_SIZE));
-        assertFalse(overlaps(BASE_Y, BASE_Y + 12, QsnInventorySearchButtonPlacement.BUTTON_SIZE));
-    }
+    void preferredQsnSlotAndNotebookLowerSlotHaveExactlyFourPixelsBetweenThem() {
+        int qsnBottom = QsnInventorySearchButtonPlacement.preferredY(TOP, IMAGE_HEIGHT)
+                + QsnInventorySearchButtonPlacement.BUTTON_SIZE;
+        int notebookTop = QsnInventorySearchButtonPlacement.notebookY(TOP, IMAGE_HEIGHT);
 
-    @Test
-    void workingSharedSlotPlacementIsNotDoubleShifted() {
-        int inventorySearchY = BASE_Y;
-        int qsnY = inventorySearchY + QsnInventorySearchButtonPlacement.BUTTON_SIZE + 1;
-
-        assertEquals(BASE_Y + 13, qsnY);
+        assertEquals(QsnInventorySearchButtonPlacement.BUTTON_GAP, notebookTop - qsnBottom);
         assertFalse(overlaps(
-                inventorySearchY,
-                qsnY,
-                QsnInventorySearchButtonPlacement.BUTTON_SIZE
-        ));
-        assertEquals(
-                qsnY,
-                QsnInventorySearchButtonPlacement.adjustedY(
-                        qsnY,
-                        BASE_Y,
-                        true,
-                        QsnInventorySearchButtonPlacement.QSN_OWNER_ID,
-                        QsnInventorySearchButtonPlacement.QSN_ACTION_SLOT_ID
-                )
-        );
+                QsnInventorySearchButtonPlacement.preferredY(TOP, IMAGE_HEIGHT),
+                notebookTop,
+                QsnInventorySearchButtonPlacement.BUTTON_SIZE));
     }
 
     @Test
-    void absentInventorySearchAndUnrelatedReservationsRemainUnchanged() {
-        assertEquals(
-                BASE_Y,
-                QsnInventorySearchButtonPlacement.adjustedY(
-                        BASE_Y,
-                        BASE_Y,
-                        false,
-                        QsnInventorySearchButtonPlacement.QSN_OWNER_ID,
-                        QsnInventorySearchButtonPlacement.QSN_ACTION_SLOT_ID
-                )
-        );
-        assertEquals(
-                BASE_Y,
-                QsnInventorySearchButtonPlacement.adjustedY(
-                        BASE_Y,
-                        BASE_Y,
-                        true,
-                        "another-owner",
-                        QsnInventorySearchButtonPlacement.QSN_ACTION_SLOT_ID
-                )
-        );
-        assertEquals(
-                BASE_Y,
-                QsnInventorySearchButtonPlacement.adjustedY(
-                        BASE_Y,
-                        BASE_Y,
-                        true,
-                        QsnInventorySearchButtonPlacement.QSN_OWNER_ID,
-                        "another-slot"
-                )
-        );
+    void unrelatedWidgetAtThePreferredSlotMovesQsnUpwardWithoutUsingTheNotebookSlot() {
+        QsnInventorySearchButtonPlacement.Position position =
+                QsnInventorySearchButtonPlacement.firstBottomUpFreePosition(
+                        LEFT, TOP, IMAGE_WIDTH, IMAGE_HEIGHT, 400, 300,
+                        List.of(new QsnInventorySearchButtonPlacement.Bounds(220, 156, 18, 18, true)));
+
+        assertEquals(new QsnInventorySearchButtonPlacement.Position(220, 134), position);
     }
 
     @Test
-    void playerInventoryBaseRemainsRelativeToTheScreenGeometry() {
-        assertEquals(57, QsnInventorySearchButtonPlacement.playerInventoryBaseY(20, 120));
+    void invisibleWidgetsDoNotDisplaceTheAuthoritativePreferredSlot() {
+        QsnInventorySearchButtonPlacement.Position position =
+                QsnInventorySearchButtonPlacement.firstBottomUpFreePosition(
+                        LEFT, TOP, IMAGE_WIDTH, IMAGE_HEIGHT, 400, 300,
+                        List.of(new QsnInventorySearchButtonPlacement.Bounds(220, 156, 18, 18, false)));
+
+        assertEquals(new QsnInventorySearchButtonPlacement.Position(220, 156), position);
+    }
+
+    @Test
+    void unavailableRightSideKeepsTheExistingUpstreamReservation() {
+        assertNull(QsnInventorySearchButtonPlacement.firstBottomUpFreePosition(
+                LEFT, TOP, IMAGE_WIDTH, IMAGE_HEIGHT, 230, 300, List.of()));
+    }
+
+    @Test
+    void onlyTheQsnActionReservationReceivesTheSurvivalOverride() {
+        assertTrue(QsnInventorySearchButtonPlacement.isQsnActionReservation(
+                QsnInventorySearchButtonPlacement.QSN_OWNER_ID,
+                QsnInventorySearchButtonPlacement.QSN_ACTION_SLOT_ID));
+        assertFalse(QsnInventorySearchButtonPlacement.isQsnActionReservation(
+                "another-owner", QsnInventorySearchButtonPlacement.QSN_ACTION_SLOT_ID));
+        assertFalse(QsnInventorySearchButtonPlacement.isQsnActionReservation(
+                QsnInventorySearchButtonPlacement.QSN_OWNER_ID, "another-slot"));
     }
 
     private static boolean overlaps(int firstY, int secondY, int size) {
