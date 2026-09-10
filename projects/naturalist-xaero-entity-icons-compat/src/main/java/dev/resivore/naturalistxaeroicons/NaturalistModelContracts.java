@@ -113,8 +113,8 @@ public final class NaturalistModelContracts {
                 p(.42F, 0.0F, 1.5708F, 0.0F), List.of("neck_r1", "leftEar", "rightEar")),
                 cDetached("ZebraBabyModel", "body/neck/skull2", "body/neck/skull2", p(.62F, 0.0F, 1.5708F, 0.0F)));
         add(map, "giraffe", c("GiraffeModel", "hips/shoulders/body/neck/head", p(.55F)), c("GiraffeBabyModel", "body/neck", p(.75F)));
-        // C25 retains C24's proven head subtree and gives only the adult the requested clear size increase.
-        add(map, "hippo", c("HippoModel", "body/bone/neck", p(.60F)), c("HippoBabyModel", "body/neck", p(.70F)));
+        // C26 retains C25's exact head route and gives only the adult the requested 1.25x size increase.
+        add(map, "hippo", c("HippoModel", "body/bone/neck", p(.75F)), c("HippoBabyModel", "body/neck", p(.70F)));
         add(map, "vulture", cDetached("VultureModel", "neck"), cDetached("VultureBabyModel", "body/neck"));
         add(map, "boar", c("BoarModel", "body/neck", p(.72F)), c("BoarBabyModel", "body/neck", p(.80F)));
         // Adult neck owns the skull plane plus the snout child.  A restrained source-model yaw
@@ -170,9 +170,11 @@ public final class NaturalistModelContracts {
                 p(.30F, 1.5708F, 0.0F, 0.0F)));
         add(map, "giant_isopod", cVisibleDetached("GiantIsopodModel", "rolled", p(.45F)), cDetached("GiantIsopodModel", "body", p(.45F)));
         add(map, "jellyfish", cDetached("JellyfishModel", "body", p(.45F)));
-        // Both source-audited head assemblies run primarily along authored Z, with material X/Y
-        // volume. C24's 90-degree presentation regressed to Xaero's empty bounded result; C25
-        // keeps a detectable three-quarter projection rather than retaining that label-only yaw.
+        // Adult skullRot is the only compact complete face assembly: its cranium owns topJaw and
+        // bottomJaw. Baby skull similarly owns jaw. Both run primarily along authored Z; C24's
+        // exact 90-degree presentation returned Xaero's empty bounded result. C26's anatomy
+        // audit finds no smaller complete face subtree, so it retains the detectable C25
+        // three-quarter projection rather than trading the real icon for a label-only profile.
         add(map, "whale", c("WhaleModel", "body/skullRot", p(.30F, 0.0F, .7854F, 0.0F)), c("WhaleBabyModel", "body/skull", p(.60F, 0.0F, .7854F, 0.0F)));
         // Both constructors pass root.getChild("root") to EntityModel, so model.root() already
         // is the authored root: a second `root` hop is invalid. Desert body owns claws/tail and

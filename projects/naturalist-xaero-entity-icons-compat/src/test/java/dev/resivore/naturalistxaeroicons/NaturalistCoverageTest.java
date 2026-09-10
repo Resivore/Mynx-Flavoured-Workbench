@@ -79,7 +79,7 @@ class NaturalistCoverageTest {
         }
     }
 
-    @Test void c25ReconcilesC24AndChangesOnlyBlackBearHippoAndWhale() {
+    @Test void c26ReconcilesC25AndChangesOnlyAdultHippo() {
         var alligator = NaturalistModelContracts.contractsForId("alligator").getFirst();
         assertEquals("com.crispytwig.naturalist.client.model.AlligatorModel", alligator.modelClass());
         assertEquals(List.of("body", "neck"), alligator.path());
@@ -140,7 +140,8 @@ class NaturalistCoverageTest {
         assertEquals("com.crispytwig.naturalist.client.model.HippoModel", hippo.modelClass());
         assertEquals(List.of("body", "bone", "neck"), hippo.path());
         assertEquals(List.of("body", "bone", "neck"), hippo.tracePath());
-        assertEquals(.60F, hippo.presentation().scale());
+        assertEquals(.75F, hippo.presentation().scale());
+        assertNotEquals(.60F, hippo.presentation().scale());
         assertEquals(.70F, NaturalistModelContracts.contractsForId("hippo").get(1).presentation().scale());
 
         assertEquals(List.of("body", "neck"), NaturalistModelContracts.contractsForId("boar").getFirst().path());
@@ -205,7 +206,7 @@ class NaturalistCoverageTest {
         assertEquals(.30F, NaturalistModelContracts.contractsForId("whale").getFirst().presentation().scale());
     }
 
-    @Test void c24SourceAuditBindsTheSixContractsToTheirAuthoredNaturalistAnatomy() throws Exception {
+    @Test void c26SourceAuditBindsHippoAndWhaleToTheirAuthoredAnatomy() throws Exception {
         Path models = Path.of(System.getProperty("projectRoot")).getParent()
                 .resolve("naturalist/common/src/main/java/com/crispytwig/naturalist/client/model");
         String alligator = Files.readString(models.resolve("AlligatorModel.java"));
@@ -216,10 +217,15 @@ class NaturalistCoverageTest {
         assertTrue(lizard.contains("body.addOrReplaceChild(\"skullRot\""));
         assertTrue(lizard.contains("skullRot.addOrReplaceChild(\"neck\""));
         assertTrue(lizard.contains("neck.addOrReplaceChild(\"neck_r1\""));
-        for (String model : List.of("WhaleModel", "WhaleBabyModel")) {
-            String source = Files.readString(models.resolve(model + ".java"));
-            assertTrue(source.contains("body.addOrReplaceChild(\"" + (model.equals("WhaleModel") ? "skullRot" : "skull") + "\""), model);
-        }
+        String adultWhale = Files.readString(models.resolve("WhaleModel.java"));
+        assertTrue(adultWhale.contains("body.addOrReplaceChild(\"skullRot\""));
+        assertTrue(adultWhale.contains("skullRot.addOrReplaceChild(\"topJaw\""));
+        assertTrue(adultWhale.contains("skullRot.addOrReplaceChild(\"bottomJaw\""));
+        assertTrue(adultWhale.contains("addBox(-14.0F, -10.0F, -37.0F, 28.0F, 11.0F, 42.0F"));
+        String babyWhale = Files.readString(models.resolve("WhaleBabyModel.java"));
+        assertTrue(babyWhale.contains("body.addOrReplaceChild(\"skull\""));
+        assertTrue(babyWhale.contains("skull.addOrReplaceChild(\"jaw\""));
+        assertTrue(babyWhale.contains("addBox(-6.0F, -4.0F, -19.0F, 12.0F, 6.0F, 18.0F"));
         for (String model : List.of("TortoiseModel", "TortoiseBabyModel")) {
             String source = Files.readString(models.resolve(model + ".java"));
             assertTrue(source.contains("body.addOrReplaceChild(\"skullRot\""), model);
@@ -256,18 +262,17 @@ class NaturalistCoverageTest {
         assertEquals(.28F, NaturalistModelContracts.contractsForId("jungle_scorpion").getFirst().presentation().scale());
     }
 
-    @Test void c24RuntimeReconciliationAndC25FocusedOutcomeAreRecorded() throws Exception {
-        Path root = Path.of(System.getProperty("projectRoot"));
-        for (String record : List.of(
-                Files.readString(root.resolve("WORKBENCH_STATUS.json")),
-                Files.readString(root.resolve("TESTING.md")))) {
-            assertTrue(record.contains("Alligator PASS"));
-            assertTrue(record.contains("Lizard PASS"));
-            assertTrue(record.contains("Tortoise PASS"));
-            assertTrue(record.contains("Black Bear improved"));
-            assertTrue(record.contains("Hippo still too small"));
-            assertTrue(record.contains("Whale label-only regression"));
-        }
+    @Test void c25FollowUpBaselineIsExplicitBeforeC26Changes() {
+        var blackBear = NaturalistModelContracts.contractsForId("black_bear").getFirst();
+        var hippo = NaturalistModelContracts.contractsForId("hippo").getFirst();
+        var whale = NaturalistModelContracts.contractsForId("whale").getFirst();
+        assertEquals(-2.0F, blackBear.presentation().frameYOffset(), "C25 Black Bear PASS is frozen");
+        assertEquals(.75F, hippo.presentation().scale(), "C26 applies the exact 0.60F × 1.25 change");
+        assertEquals(List.of("body", "bone", "neck"), hippo.path());
+        assertEquals(List.of("body", "bone", "neck"), hippo.tracePath());
+        assertEquals(.70F, NaturalistModelContracts.contractsForId("hippo").get(1).presentation().scale());
+        assertEquals(.7854F, whale.presentation().yRotation(), "C24's label-only quarter turn remains rejected");
+        assertEquals(.30F, whale.presentation().scale());
     }
 
     @Test void c16ClamAndOtherLabelFallbackTargetsHaveExplicitDetachedCaptureContracts() {
