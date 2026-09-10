@@ -3,6 +3,7 @@ package dev.resivore.naturalistxaeroicons.mixin;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import dev.resivore.naturalistxaeroicons.StarfishCaptureDiagnostic;
 import dev.resivore.naturalistxaeroicons.ScorpionCaptureDiagnostic;
+import dev.resivore.naturalistxaeroicons.WhaleCaptureDiagnostic;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
@@ -33,6 +34,7 @@ abstract class RadarIconCreatorMixin {
         }
         StarfishCaptureDiagnostic.creatorStarted(entity, parameters.form, texture);
         ScorpionCaptureDiagnostic.creatorStarted(entity, parameters.form, texture);
+        WhaleCaptureDiagnostic.creatorStarted(entity, parameters.form, texture);
     }
 
     @Inject(method = "create", at = @At("RETURN"), require = 1)
@@ -42,5 +44,6 @@ abstract class RadarIconCreatorMixin {
             CallbackInfoReturnable<XaeroIcon> callback) {
         StarfishCaptureDiagnostic.creatorFinished(entity, callback.getReturnValue());
         ScorpionCaptureDiagnostic.creatorFinished(entity, callback.getReturnValue());
+        WhaleCaptureDiagnostic.creatorFinished(entity, callback.getReturnValue());
     }
 }

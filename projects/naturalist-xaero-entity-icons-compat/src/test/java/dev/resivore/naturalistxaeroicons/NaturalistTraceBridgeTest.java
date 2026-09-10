@@ -84,6 +84,31 @@ class NaturalistTraceBridgeTest {
         }
     }
 
+    @Test void c27UsesTheLiveTopJawCenterWhileKeepingTheCompleteAdultWhaleFaceAssembly() {
+        ModelPart topJaw = part(Map.of());
+        ModelPart bottomJaw = part(Map.of());
+        ModelPart skullRot = part(Map.of("topJaw", topJaw, "bottomJaw", bottomJaw));
+        var contract = NaturalistModelContracts.contractsForId("whale").getFirst();
+        var resolved = new NaturalistModelContracts.ResolvedContract(contract, skullRot, skullRot, topJaw);
+
+        assertEquals(List.of("body", "skullRot"), contract.path());
+        assertEquals(List.of("body", "skullRot", "topJaw"), contract.tracePath());
+        assertTrue(contract.useTraceAsRenderCenter());
+        assertSame(skullRot, resolved.selected());
+        assertTrue(resolved.selected().hasChild("topJaw"));
+        assertTrue(resolved.selected().hasChild("bottomJaw"));
+        assertSame(topJaw, resolved.renderCenter());
+        assertNotSame(resolved.selected(), resolved.renderCenter());
+        assertEquals(.30F, contract.presentation().scale());
+        assertEquals(1.5708F, contract.presentation().yRotation());
+
+        var baby = NaturalistModelContracts.contractsForId("whale").get(1);
+        assertEquals(List.of("body", "skull"), baby.path());
+        assertEquals(List.of("body", "skull"), baby.tracePath());
+        assertEquals(.60F, baby.presentation().scale());
+        assertEquals(.7854F, baby.presentation().yRotation());
+    }
+
     @Test void explicitDescendantTraceCanRenderAnExactRootContract() {
         ModelPart tracedBody = part(Map.of());
         ModelPart originalRoot = part(Map.of("body", tracedBody));
