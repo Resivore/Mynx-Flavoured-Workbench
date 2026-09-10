@@ -1,12 +1,12 @@
 # Testing
 
-Current candidate: `0.1.0-canary9`, retained as `notebook-0.1.0-canary9.jar`, SHA-256 `15a6410af8fb9e22188d9ee56a6cd9d61475a51bd8b36f506c0c06012247f947`, implementation checkpoint `253f9c8d0cb0df61fe4f40d92158223ac6c2776c`. It is `STATIC_PASS`, `NOT_DEPLOYED`, and `RUNTIME_UNTESTED`. Both canonical test slots are occupied by unrelated cohorts; do not change slot ownership for this candidate without a separately authorized serialized manager operation.
+Current candidate: `0.1.0-canary10`, retained as `notebook-0.1.0-canary10.jar`, SHA-256 `de67fe4b50c77d13c07b106bea8f91119d69c92cab52b28985c75d28538a22e4`, implementation checkpoint `7705158c78a1ec8a8571a1b507fee7186a14f621`. It is `STATIC_PASS`, `NOT_DEPLOYED`, and `RUNTIME_UNTESTED`. Both canonical test slots are occupied by unrelated cohorts; do not change slot ownership for this candidate without a separately authorized serialized manager operation.
 
 Historical Canary 1 (`0.1.0-canary1`, retained `notebook-0.1.0-canary1.jar`, SHA-256 `54a601d9693501bbaca8fcf25b07f1aa65671631278d5a3cd9863fcfdf3c82c0`, source `e25729bf2fc2761269746e20c6ecbad1105e5c80`) passed compilation and static validation but received a user-supplied Minecraft client-initialization `RUNTIME_FAIL`. Fabric rejected `NotebookScreen` because C1 declared `dev.resivore.notebook.client` as its Mixin package. Do not retest, relabel, or claim a runtime pass for C1.
 
-The user reports that the repaired Canary 2 opened successfully, which is external evidence that its fatal C1 Mixin/client-initialization failure no longer occurred. The supplied C3 report further says the book artwork and ruled-line alignment looked correct. Those observations are limited and do not establish a full UI/runtime pass or transfer to C9; C9 has not received a managed deployment or direct Minecraft observation.
+The user reports that the repaired Canary 2 opened successfully, which is external evidence that its fatal C1 Mixin/client-initialization failure no longer occurred. The supplied C3 report further says the book artwork and ruled-line alignment looked correct. Those observations are limited and do not establish a full UI/runtime pass or transfer to C10; C10 has not received a managed deployment or direct Minecraft observation.
 
-## Canary 9 runtime acceptance procedure
+## Canary 10 runtime acceptance procedure
 
 Use only the dedicated Matcha Flavoured 26.2 Workbench after explicit Test Slot ownership. Never use the protected 26.1.2 gameplay profile. Preserve exact logs and files and stop on any crash, classloading/Mixin error, input lock, note loss or duplication, malformed UTF-8 write, unexpected newline insertion, wrong-file association, stale checkbox, ordering reset, duplicate/overlapping inventory button, or inventory/item mutation.
 
@@ -18,18 +18,16 @@ Use only the dedicated Matcha Flavoured 26.2 Workbench after explicit Test Slot 
 6. In empty, reading, and editing views, verify that every ruled row crosses the matching text baseline/row. Use a long wrapped note to scroll both the reader and the multiline editor; the rules must move on the same nine-pixel font row grid with no drift.
 7. Run the focused survival-inventory cumulative layout checks, then open Notebook from the compact `N` utility button and repeat after resizing/reinitializing the screen. Confirm exactly one collision-aware button, no overlap with existing utility controls, and no Mixin/classloading failure.
 
-   1. Open survival inventory and confirm `N` appears at bottom-right.
-   2. Confirm its bottom edge aligns with the inventory GUI bottom edge.
-   3. With QSN installed, confirm QSN appears directly above Notebook.
-   4. Confirm the vertical gap between QSN and Notebook is exactly 4px.
-   5. Confirm both controls share the right-side `leftPos + imageWidth + 4` X anchor.
-   6. Confirm both controls remain clickable and both tooltips work.
-   7. Resize or reinitialize the inventory and confirm neither control duplicates.
-   8. Repeat at representative GUI scales and window sizes.
-   9. Repeat with the cumulative Inventory Extended / Inventory Search stack installed; confirm no overlap.
-   10. Confirm the visual `N`, its standard 18x18 Minecraft button chrome, and its action are unchanged.
-   11. Confirm the survival fallback begins at the lower-right slot and moves upward on the right before using the left.
-   12. Open creative inventory and confirm its existing placement is unchanged.
+   1. Open survival inventory and confirm `N` prefers `x = leftPos + imageWidth + 4`, `y = topPos + imageHeight - 26`: it is visibly 8px higher than C9's former `-18` position.
+   2. With QSN installed, confirm QSN prefers `y = topPos + imageHeight - 48`, directly above Notebook's `-26` position.
+   3. Confirm the vertical gap between the 18x18 QSN and Notebook controls is exactly 4px, with no overlap.
+   4. Confirm both controls share the right-side `leftPos + imageWidth + 4` X anchor.
+   5. Confirm both controls remain clickable and both tooltips work.
+   6. Resize or reinitialize the inventory and confirm neither control duplicates.
+   7. Repeat at representative GUI scales and window sizes, including the cumulative Inventory Extended / Inventory Search stack, and confirm collision-aware placement remains safe.
+   8. Confirm the visual `N`, its standard 18x18 Minecraft button chrome, and its action are unchanged.
+   9. Confirm the survival fallback begins at the preferred right slot and moves upward on the right before using the left.
+   10. Open creative inventory and confirm its existing placement is unchanged.
 8. Create at least four independently named notes, including an empty note, a Unicode/unusual-character note, and a long note with wrapped and many authored lines. Select, rename, edit, save, reopen, and delete them; confirm ordinary Markdown files retain only authored line endings.
 9. Drag notes upward and downward in the left index, including while scrolled. Restart the client and confirm exact manual ordering and selected stable UUID persist rather than sorting alphabetically or by recency.
 10. Author `[ ] unfinished task` and `[x] completed task` lines. In reading mode, click each rendered box and confirm only its Markdown marker changes; enter editing mode and confirm ordinary plain-text markers remain editable.
