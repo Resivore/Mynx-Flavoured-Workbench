@@ -193,22 +193,18 @@ final class ArchitectureContractTest {
         String effects = readJava("channel/ChannelEffects.java");
 
         int pendingAdd = manager.indexOf("if (!pending.add(channel))");
-        int activation = manager.indexOf("ChannelEffects.channelStarted(player)");
         int completionTick = manager.indexOf("ChannelRules.completionTickReached(gameTime, channel.completionTick())");
-        int ambient = manager.indexOf("ChannelEffects.channelTick(player, gameTime)");
-        int departureCapture = manager.indexOf("ServerLevel departure = (ServerLevel) player.level()");
         int confirmed = manager.indexOf("ChannelRules.shouldApplySuccessEffect(confirmed)");
         int heldItemConfirmed = manager.indexOf("if (!heldItemConfirmed)");
-        int completionBurst = manager.indexOf("ChannelEffects.successfulTeleport(departure, departurePosition, destination, arrived.position())");
+        int completionBurst = manager.indexOf("ChannelEffects.successfulTeleport(arrived)");
         int pearlConsumption = manager.indexOf("arrivedHeld.shrink(1)");
         int staffCooldown = manager.indexOf("addCooldown(arrivedHeld, channel.staffCooldownTicks())");
 
-        assertTrue(pendingAdd >= 0 && pendingAdd < activation);
-        assertEquals(1, countOccurrences(manager, "ChannelEffects.channelStarted(player)"));
-        assertTrue(completionTick >= 0 && completionTick < ambient);
-        assertTrue(manager.indexOf("continue;", completionTick) < ambient);
-        assertEquals(1, countOccurrences(manager, "ChannelEffects.channelTick(player, gameTime)"));
-        assertTrue(departureCapture >= 0 && departureCapture < confirmed);
+        assertTrue(pendingAdd >= 0);
+        assertTrue(completionTick >= 0);
+        assertFalse(manager.contains("ChannelEffects.channelStarted("));
+        assertFalse(manager.contains("ChannelEffects.channelTick("));
+        assertFalse(manager.contains("ServerLevel departure ="));
         assertTrue(confirmed < heldItemConfirmed && heldItemConfirmed < completionBurst);
         assertTrue(completionBurst < pearlConsumption);
         assertTrue(completionBurst < staffCooldown);
@@ -217,8 +213,11 @@ final class ArchitectureContractTest {
         assertTrue(effects.contains("ParticleTypes.PORTAL"));
         assertTrue(effects.contains("SoundSource.PLAYERS"));
         assertEquals(1, countOccurrences(effects, "playSound("));
-        assertTrue(effects.contains("portalBurst(departureLevel, departurePosition)"));
-        assertTrue(effects.contains("portalBurst(arrivalLevel, arrivalPosition)"));
+        assertTrue(effects.contains("portalBurst(level, position)"));
+        assertFalse(effects.contains("AMBIENT_PARTICLE"));
+        assertFalse(effects.contains("channelStarted("));
+        assertFalse(effects.contains("channelTick("));
+        assertFalse(effects.contains("departure"));
     }
 
     @Test

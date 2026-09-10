@@ -7,57 +7,27 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.phys.Vec3;
 
-/** Server-owned audiovisual feedback for the shared Dragonbound channel lifecycle. */
+/** Server-owned arrival feedback for an already confirmed Dragonbound teleport. */
 final class ChannelEffects {
-    static final int AMBIENT_PARTICLE_INTERVAL_TICKS = 4;
-    static final int AMBIENT_PARTICLE_COUNT = 3;
     static final int SUCCESS_PARTICLE_COUNT = 30;
 
     private ChannelEffects() {
     }
 
-    static void channelStarted(ServerPlayer player) {
-        player.level().playSound(
+    static void successfulTeleport(ServerPlayer player) {
+        ServerLevel level = (ServerLevel) player.level();
+        Vec3 position = player.position();
+        level.playSound(
                 null,
-                player.getX(),
-                player.getY(),
-                player.getZ(),
+                position.x,
+                position.y,
+                position.z,
                 SoundEvents.ENDERMAN_TELEPORT,
                 SoundSource.PLAYERS,
                 1.0F,
                 1.0F
         );
-    }
-
-    static boolean shouldEmitAmbientParticles(long gameTime) {
-        return gameTime % AMBIENT_PARTICLE_INTERVAL_TICKS == 0L;
-    }
-
-    static void channelTick(ServerPlayer player, long gameTime) {
-        if (!shouldEmitAmbientParticles(gameTime)) {
-            return;
-        }
-        ((ServerLevel) player.level()).sendParticles(
-                ParticleTypes.PORTAL,
-                player.getX(),
-                player.getY() + player.getBbHeight() * 0.5D,
-                player.getZ(),
-                AMBIENT_PARTICLE_COUNT,
-                0.35D,
-                0.70D,
-                0.35D,
-                0.02D
-        );
-    }
-
-    static void successfulTeleport(
-            ServerLevel departureLevel,
-            Vec3 departurePosition,
-            ServerLevel arrivalLevel,
-            Vec3 arrivalPosition
-    ) {
-        portalBurst(departureLevel, departurePosition);
-        portalBurst(arrivalLevel, arrivalPosition);
+        portalBurst(level, position);
     }
 
     private static void portalBurst(ServerLevel level, Vec3 position) {
