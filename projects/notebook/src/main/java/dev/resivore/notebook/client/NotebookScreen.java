@@ -48,6 +48,10 @@ public final class NotebookScreen extends Screen {
     private static final int COLOR_SELECTED_EDGE = 0xFF58734C;
     private static final int COLOR_HOVER = 0x227B6A52;
     private static final int COLOR_CHECK = 0xFF43693F;
+    /** Opaque paper keeps the small ballot box legible over the book artwork. */
+    private static final int COLOR_CHECKBOX_INTERIOR = 0xFFF8F7F0;
+    /** The box outline stays dark in both states; completion is conveyed by the tick. */
+    private static final int COLOR_CHECKBOX_OUTLINE = COLOR_INK;
     private static final int COLOR_ERROR = 0xFFFF8A7A;
     private static final int COLOR_STATUS = 0xFFD9C98F;
     /** A compact glyph that fits inside one live nine-pixel text row. */
@@ -626,19 +630,19 @@ public final class NotebookScreen extends Screen {
     }
 
     private void drawCheckbox(GuiGraphicsExtractor graphics, int x, int y, boolean checked) {
-        graphics.fill(x, y, x + CHECKBOX_SIZE, y + CHECKBOX_SIZE, 0x44FFFFFF);
-        graphics.outline(x, y, CHECKBOX_SIZE, CHECKBOX_SIZE, checked ? COLOR_CHECK : COLOR_MUTED_INK);
+        graphics.fill(x, y, x + CHECKBOX_SIZE, y + CHECKBOX_SIZE, COLOR_CHECKBOX_INTERIOR);
+        graphics.outline(x, y, CHECKBOX_SIZE, CHECKBOX_SIZE, COLOR_CHECKBOX_OUTLINE);
         if (checked) {
             drawCheckMark(graphics, x, y);
         }
     }
 
-    /** Draws a readable two-pixel green tick without filling the ballot box. */
+    /** Draws a thin, one-pixel green tick, matching the compact ballot-box reference. */
     private void drawCheckMark(GuiGraphicsExtractor graphics, int x, int y) {
-        graphics.fill(x + 2, y + 4, x + 4, y + 6, COLOR_CHECK);
-        graphics.fill(x + 3, y + 5, x + 5, y + 7, COLOR_CHECK);
-        graphics.fill(x + 4, y + 4, x + 6, y + 6, COLOR_CHECK);
-        graphics.fill(x + 5, y + 3, x + 7, y + 5, COLOR_CHECK);
+        graphics.fill(x + 2, y + 4, x + 3, y + 5, COLOR_CHECK);
+        graphics.fill(x + 3, y + 5, x + 4, y + 6, COLOR_CHECK);
+        graphics.fill(x + 4, y + 4, x + 5, y + 5, COLOR_CHECK);
+        graphics.fill(x + 5, y + 3, x + 6, y + 4, COLOR_CHECK);
     }
 
     private void drawReadingScrollbar(GuiGraphicsExtractor graphics) {

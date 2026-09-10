@@ -103,7 +103,7 @@ class NotebookClientWiringTest {
     }
 
     @Test
-    void checklistUsesSharedRowGeometryWithCompactOutlinedCheckMarkAndSeparateTextClick() throws IOException {
+    void checklistUsesSharedRowGeometryWithReferenceStyleBallotBoxAndSeparateTextClick() throws IOException {
         String screen = read("src/main/java/dev/resivore/notebook/client/NotebookScreen.java");
 
         assertTrue(screen.contains("CHECKBOX_SIZE = 8"));
@@ -111,9 +111,17 @@ class NotebookClientWiringTest {
         assertTrue(screen.contains("pageText.checkboxY(y, CHECKBOX_SIZE)"));
         assertTrue(screen.contains("CHECKBOX_DRAW_OFFSET + CHECKBOX_SIZE + CHECKBOX_TEXT_GAP"));
         assertTrue(screen.contains("CHECKBOX_SIZE + CHECKBOX_HIT_PADDING * 2"));
+        assertTrue(screen.contains("COLOR_CHECKBOX_INTERIOR = 0xFFF8F7F0"));
+        assertTrue(screen.contains("COLOR_CHECKBOX_OUTLINE = COLOR_INK"));
+        assertTrue(screen.contains("graphics.fill(x, y, x + CHECKBOX_SIZE, y + CHECKBOX_SIZE, COLOR_CHECKBOX_INTERIOR)"));
+        assertTrue(screen.contains("graphics.outline(x, y, CHECKBOX_SIZE, CHECKBOX_SIZE, COLOR_CHECKBOX_OUTLINE)"));
         assertTrue(screen.contains("drawCheckMark(graphics, x, y)"));
-        assertTrue(screen.contains("graphics.outline(x, y, CHECKBOX_SIZE, CHECKBOX_SIZE"));
         assertTrue(screen.contains("private void drawCheckMark"));
+        assertTrue(screen.contains("graphics.fill(x + 2, y + 4, x + 3, y + 5, COLOR_CHECK)"));
+        assertTrue(screen.contains("graphics.fill(x + 3, y + 5, x + 4, y + 6, COLOR_CHECK)"));
+        assertTrue(screen.contains("graphics.fill(x + 4, y + 4, x + 5, y + 5, COLOR_CHECK)"));
+        assertTrue(screen.contains("graphics.fill(x + 5, y + 3, x + 6, y + 4, COLOR_CHECK)"));
+        assertFalse(screen.contains("checked ? COLOR_CHECK : COLOR_MUTED_INK"));
         assertFalse(screen.contains("graphics.fill(x + 2, y + 2, x + 8, y + 8, COLOR_CHECK)"));
         assertTrue(screen.indexOf("toggleChecklist(hit.logicalLine())")
                 < screen.indexOf("beginEditingAt(bodyEditor, event, doubleClick)"));
