@@ -2,7 +2,7 @@ package dev.resivore.naturalistxaeroicons.mixin;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import dev.resivore.naturalistxaeroicons.ClamCaptureDiagnostic;
+import dev.resivore.naturalistxaeroicons.StarfishCaptureDiagnostic;
 import net.minecraft.client.model.geom.ModelPart;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -15,16 +15,16 @@ import xaero.hud.minimap.radar.icon.creator.render.form.model.part.RadarIconMode
 @Mixin(value = RadarIconModelPartPrerenderer.class, remap = false)
 abstract class RadarIconModelPartPrerendererMixin {
     @Inject(method = "renderPart", at = @At("HEAD"), require = 1)
-    private void naturalistXaeroIcons$observeClamRenderPart(
+    private void naturalistXaeroIcons$observeStarfishRenderPart(
             PoseStack pose, VertexConsumer consumer, ModelPart part, ModelPart center,
             RadarIconModelPartPrerenderer.Parameters parameters, CallbackInfo callback) {
-        ClamCaptureDiagnostic.modelPartPath("RadarIconModelPartPrerenderer#renderPart");
+        StarfishCaptureDiagnostic.modelPartPath("RadarIconModelPartPrerenderer#renderPart");
     }
 
     @Inject(method = "renderPartsIterable", at = @At("HEAD"), require = 1)
-    private void naturalistXaeroIcons$observeClamRenderPartsIterable(
+    private void naturalistXaeroIcons$observeStarfishRenderPartsIterable(
             Iterable<ModelPart> parts, PoseStack pose, VertexConsumer consumer, ModelPart center,
             RadarIconModelPartPrerenderer.Parameters parameters, CallbackInfoReturnable<ModelPart> callback) {
-        ClamCaptureDiagnostic.modelPartPath("RadarIconModelPartPrerenderer#renderPartsIterable");
+        StarfishCaptureDiagnostic.modelPartPath("RadarIconModelPartPrerenderer#renderPartsIterable");
     }
 }

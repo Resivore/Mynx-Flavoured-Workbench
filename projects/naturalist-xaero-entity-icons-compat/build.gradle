@@ -114,14 +114,14 @@ tasks.register('verifyClientOnlyArtifact') {
     }
 }
 tasks.named('check') { dependsOn tasks.named('productionMixinTest'), tasks.named('verifyClientOnlyArtifact') }
-tasks.register('verifyCanary19ClamPresentationContract') {
+tasks.register('verifyCanary21StarfishPresentationContract') {
     doLast {
-        if (project.version != '0.1.0-canary19') return
+        if (project.version != '0.1.0-canary21') return
         def source = file('src/main/java/dev/resivore/naturalistxaeroicons/NaturalistModelContracts.java').getText('UTF-8')
-        def expected = '''add(map, "clam", cNormalizedDetachedChildren("ClamModel", "", "bottom",
-                p(.30F, 1.5708F, 0.0F, 0.0F), List.of("top", "bottom", "hinge")))'''
-        if (!source.contains(expected)) throw new GradleException('Canary 19 requires the exact production Clam 0.30F contract')
+        def expected = '''add(map, "starfish", cNormalizedDetachedChildren("StarfishModel", "", "body",
+                p(.58F, 1.5708F, 0.0F, 0.0F), List.of("body", "legs")))'''
+        if (!source.contains(expected)) throw new GradleException('Canary 21 requires the exact production Starfish whole-silhouette contract')
     }
 }
-tasks.register('stageCanaryArtifact', Copy) { dependsOn tasks.named('check'), tasks.named('verifyCanary19ClamPresentationContract'); from(tasks.named('jar')); into(layout.projectDirectory.dir('artifacts')) }
+tasks.register('stageCanaryArtifact', Copy) { dependsOn tasks.named('check'), tasks.named('verifyCanary21StarfishPresentationContract'); from(tasks.named('jar')); into(layout.projectDirectory.dir('artifacts')) }
 java { withSourcesJar() }

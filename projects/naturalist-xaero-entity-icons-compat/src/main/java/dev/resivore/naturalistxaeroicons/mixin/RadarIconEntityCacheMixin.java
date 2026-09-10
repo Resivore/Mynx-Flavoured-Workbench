@@ -1,6 +1,6 @@
 package dev.resivore.naturalistxaeroicons.mixin;
 
-import dev.resivore.naturalistxaeroicons.ClamCaptureDiagnostic;
+import dev.resivore.naturalistxaeroicons.StarfishCaptureDiagnostic;
 import net.minecraft.world.entity.EntityType;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -18,8 +18,8 @@ abstract class RadarIconEntityCacheMixin {
     @Shadow @Final private EntityType<?> entityType;
 
     @Inject(method = "add", at = @At("RETURN"), require = 1)
-    private void naturalistXaeroIcons$observeClamCacheWrite(
+    private void naturalistXaeroIcons$observeStarfishCacheWrite(
             RadarIconKey key, XaeroIcon icon, CallbackInfoReturnable<XaeroIcon> callback) {
-        ClamCaptureDiagnostic.cacheWritten(entityType, icon);
+        StarfishCaptureDiagnostic.cacheWritten(entityType, icon);
     }
 }
