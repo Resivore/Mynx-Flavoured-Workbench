@@ -153,3 +153,14 @@
 - Artifact: `quick-stack-nearby-compat-0.1.0-canary13.jar`; embedded `0.1.0-canary13`; 52,780 bytes; SHA-256 `46a5c7e373f8b13d37e64ae5f0187f8b66e90b9ee636f598b1686de8bfa5f38a`; source `e941aa45a5b3640b462e20a4b56ed7229039aa58`; runtime dependency policy `CAPABILITY_OR_PROVIDER` with no exceptions. Accepted C8 and rollback C6 provenance remain exact and unchanged; C12 remains the direct retained predecessor.
 - Result: ACTIVE / CONTROLLED_VALIDATION_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED. The exact ignored artifact is retained by `artifact_retention.py`; no blocker is asserted.
 - Next state: Publish the integrated main revision, then assign C13 only through a verified Test Instance Manager transition before collecting the C13 runtime procedure, including cumulative Notebook, Inventory Search, and Inventory Extended UI observations.
+
+## 2026-09-10T04:50:13.633092Z — Correct QSN C13 controlled-test evidence count
+
+- Revision: 16
+- Source checkpoint: `e941aa45a5b3640b462e20a4b56ed7229039aa58`
+- Changes: Corrected the C13 log's clean focused JUnit/static count from 63 to the verified 64. No C13 source, resource, artifact, dependency, deployment, runtime result, accepted/rollback provenance, or testing procedure changed.
+- Build/static: The existing clean C13 `test build` result remains 64/64 focused JUnit/static tests and 31/31 required Fabric GameTests against CSR C1; the standard and `-PexcludeCsrRuntime=true` unit suites remain passing. Repository validation passed after this metadata-only correction.
+- Runtime: Unchanged: NOT_DEPLOYED / RUNTIME_UNTESTED. No Minecraft client launch, Test Instance Manager operation, or user runtime evidence occurred.
+- Artifact: Unchanged `quick-stack-nearby-compat-0.1.0-canary13.jar`, embedded `0.1.0-canary13`, 52,780 bytes, SHA-256 `46a5c7e373f8b13d37e64ae5f0187f8b66e90b9ee636f598b1686de8bfa5f38a`, source `e941aa45a5b3640b462e20a4b56ed7229039aa58`; retained bytes were reverified without replacement.
+- Result: ACTIVE / CONTROLLED_VALIDATION_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED. No blocker is asserted.
+- Next state: Publish revision 16 from integrated `main`, then assign the unchanged C13 candidate only through a verified Test Instance Manager transition before collecting the current runtime procedure.

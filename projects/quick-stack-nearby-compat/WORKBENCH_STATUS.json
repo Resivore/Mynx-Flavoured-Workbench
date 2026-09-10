@@ -147,7 +147,7 @@
     ]
   },
   "state": {
-    "milestone": "C13 is a controlled-validated, retained-but-not-deployed C12-derived survival inventory utility-button change. It preserves C12's C9-derived routing correction, including nested CSR reservations, ShapeMap behavior, source accounting, ordering, capacity, and transactional writeback. C10/C11 remain rejected historical experiments; C8 remains accepted and C9 retains its historical inconclusive observation. No testing slot or Workbench profile changed for C13.",
+    "milestone": "C13 is a controlled-validated, retained-but-not-deployed C12-derived survival inventory utility-button change. It preserves C12's C9-derived routing correction, including nested CSR reservations, ShapeMap behavior, source accounting, ordering, capacity, and transactional writeback. C10/C11 remain rejected historical experiments; C8 remains accepted and C9 retains its historical inconclusive observation. Revision 16 corrects only the recorded C13 focused-test count from 63 to the verified 64; no release byte, source, deployment, testing slot, or Workbench profile changed.",
     "releases": {
       "current": {
         "version": "C13 (0.1.0-canary13)",
@@ -195,10 +195,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 15,
-    "activity_at": "2026-09-10T04:42:22.758151Z",
-    "updated_at": "2026-09-10T04:42:22.758151Z",
-    "last_codex_at": "2026-09-10T04:42:22.758151Z",
+    "revision": 16,
+    "activity_at": "2026-09-10T04:50:13.633092Z",
+    "updated_at": "2026-09-10T04:50:13.633092Z",
+    "last_codex_at": "2026-09-10T04:50:13.633092Z",
     "source_commit": "e941aa45a5b3640b462e20a4b56ed7229039aa58",
     "google_sheet": {
       "participates": true,
