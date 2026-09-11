@@ -1,4 +1,4 @@
-"""Build C2 from declarative resources and the immutable audited upstream JAR."""
+"""Build C3 from declarative resources and the immutable audited upstream JAR."""
 from __future__ import annotations
 
 import hashlib
@@ -9,7 +9,7 @@ import zipfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-OUTPUT = ROOT / "artifacts/inventory-particles-matcha-compat-c2.zip"
+OUTPUT = ROOT / "artifacts/inventory-particles-matcha-compat-c3.zip"
 CUSTOM_MODELS = {"minecraft:green_curry", "minecraft:ramen", "minecraft:heart_container"}
 OVERRIDES = (
     "assets/inventory_particles/iparticles/vanilla/generic/sand/dirt_sand.json",
@@ -48,7 +48,10 @@ def village_map_predicate() -> dict:
             "this_type": "object",
             "next": {
                 "this_name": "ribbits:ribbit_village_explorer_map",
-                "this_type": "number",
+                # NbtNodeType.CODEC in the exact audited 2.6.0 JAR accepts
+                # `int`, not the invented `number`. Its INT branch accepts
+                # NumericTag (including Ribbits' boolean ByteTag) via asInt.
+                "this_type": "int",
                 "check_value": "1",
             },
         },
