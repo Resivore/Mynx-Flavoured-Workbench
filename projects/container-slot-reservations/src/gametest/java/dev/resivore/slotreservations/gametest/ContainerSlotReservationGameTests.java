@@ -73,6 +73,7 @@ import net.minecraft.world.level.storage.TagValueOutput;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public final class ContainerSlotReservationGameTests implements CustomTestMethodInvoker {
     @GameTest(maxTicks = 40)
@@ -357,6 +358,8 @@ public final class ContainerSlotReservationGameTests implements CustomTestMethod
         Component customName = Component.literal("Component round-trip fixture");
         ItemStack itemOrigin = new ItemStack(Blocks.SHULKER_BOX);
         itemOrigin.set(DataComponents.CUSTOM_NAME, customName);
+        UUID portableIdentity = UUID.randomUUID();
+        itemOrigin.set(ModComponents.PORTABLE_CONTAINER_ID, portableIdentity);
         original.applyComponentsFromItemStack(itemOrigin);
 
         ItemStack reserved = identity(Items.RABBIT_STEW, 1, "ramen", "Ramen");
@@ -368,7 +371,8 @@ public final class ContainerSlotReservationGameTests implements CustomTestMethod
         ItemStack dropped = new ItemStack(Blocks.SHULKER_BOX);
         dropped.applyComponents(collected);
         helper.assertTrue(ReservationStore.getData(dropped).matches(5, reserved)
-                        && customName.equals(dropped.get(DataComponents.CUSTOM_NAME)),
+                        && customName.equals(dropped.get(DataComponents.CUSTOM_NAME))
+                        && portableIdentity.equals(dropped.get(ModComponents.PORTABLE_CONTAINER_ID)),
                 "collectComponents did not preserve the reservation and unrelated custom name on the item");
 
         ShulkerBoxBlockEntity restored = new ShulkerBoxBlockEntity(
@@ -377,7 +381,8 @@ public final class ContainerSlotReservationGameTests implements CustomTestMethod
         helper.assertTrue(ReservationStore.getData(restored).matches(5, reserved)
                         && ItemStack.isSameItemSameComponents(restored.getItem(4), physical)
                         && restored.getItem(4).getCount() == physical.getCount()
-                        && customName.equals(restored.getCustomName()),
+                        && customName.equals(restored.getCustomName())
+                        && portableIdentity.equals(restored.components().get(ModComponents.PORTABLE_CONTAINER_ID)),
                 "applyComponentsFromItemStack did not restore reservation, contents, and unrelated name");
         helper.assertTrue(dropped.has(ModComponents.RESERVATIONS),
                 "The retained shulker item lacks the registered reservation component");
@@ -464,6 +469,8 @@ public final class ContainerSlotReservationGameTests implements CustomTestMethod
         ItemStack itemOrigin = new ItemStack(shulkerBlock);
         itemOrigin.set(DataComponents.CUSTOM_NAME, customName);
         itemOrigin.set(DataComponents.RARITY, Rarity.EPIC);
+        UUID portableIdentity = UUID.randomUUID();
+        itemOrigin.set(ModComponents.PORTABLE_CONTAINER_ID, portableIdentity);
         shulker.applyComponentsFromItemStack(itemOrigin);
         ItemStack reserved = identity(Items.RABBIT_STEW, 1, "ramen", "Ramen");
         ItemStack physical = identity(Items.POISONOUS_POTATO, 4, "green_curry", "Green Curry");
@@ -483,7 +490,8 @@ public final class ContainerSlotReservationGameTests implements CustomTestMethod
                 .orElseThrow();
         helper.assertTrue(ReservationStore.getData(drop).matches(5, reserved)
                         && customName.equals(drop.get(DataComponents.CUSTOM_NAME))
-                        && drop.getOrDefault(DataComponents.RARITY, Rarity.COMMON) == Rarity.EPIC,
+                        && drop.getOrDefault(DataComponents.RARITY, Rarity.COMMON) == Rarity.EPIC
+                        && portableIdentity.equals(drop.get(ModComponents.PORTABLE_CONTAINER_ID)),
                 "Actual shulker loot did not retain reservation, name, and unrelated rarity components");
 
         ShulkerBoxBlockEntity restored = new ShulkerBoxBlockEntity(
@@ -493,7 +501,8 @@ public final class ContainerSlotReservationGameTests implements CustomTestMethod
                         && ItemStack.isSameItemSameComponents(restored.getItem(4), physical)
                         && restored.getItem(4).getCount() == physical.getCount()
                         && customName.equals(restored.getCustomName())
-                        && restored.components().getOrDefault(DataComponents.RARITY, Rarity.COMMON) == Rarity.EPIC,
+                        && restored.components().getOrDefault(DataComponents.RARITY, Rarity.COMMON) == Rarity.EPIC
+                        && portableIdentity.equals(restored.components().get(ModComponents.PORTABLE_CONTAINER_ID)),
                 "The actual retained shulker drop did not restore reservation, contents, name, and rarity");
         helper.succeed();
     }

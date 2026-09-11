@@ -1,8 +1,6 @@
 package dev.resivore.slotreservations;
 
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.component.ItemContainerContents;
 
 /** Creation policy only: historical templates remain readable and explicitly clearable. */
 public final class ReservationTemplateEligibility {
@@ -10,9 +8,12 @@ public final class ReservationTemplateEligibility {
 
     public static boolean allows(ItemStack template) {
         if (template.isEmpty()) return false;
-        if (!SupportedContainerResolver.isSupportedShulkerItem(template)) return true;
-        return template.getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY)
-                .nonEmptyItemCopyStream().findAny().isEmpty()
-                && ReservationStore.getData(template).isEmpty();
+        // Specific portable containers are represented by a reservation identity, never a copied
+        // component template.  Empty portable containers intentionally remain generic, including
+        // when a dormant CSR identity is present on the actual item.
+        if (PortableContainerIdentity.familyOf(template).isEmpty()) return true;
+        if (!PortableContainerIdentity.isEmpty(template)) return false;
+        return !SupportedContainerResolver.isSupportedShulkerItem(template)
+                || ReservationStore.getData(template).isEmpty();
     }
 }

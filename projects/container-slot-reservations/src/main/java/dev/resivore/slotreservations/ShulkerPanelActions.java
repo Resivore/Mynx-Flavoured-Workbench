@@ -79,6 +79,14 @@ public final class ShulkerPanelActions {
         if (transition.outcome() == ReservationTransition.Outcome.REJECTED) return false;
         if (!transition.changed()) return true;
         ItemStack changed = host.stack().copy();
+        if (action.source() == ReservationActionPayload.Source.SLOT_STACK) {
+            var contents = ShulkerContents.copy(changed);
+            ItemStack changedPhysical = contents.get(action.internalSlot());
+            transition.attachIdentity(changedPhysical);
+            ShulkerContents.replace(changed, contents);
+        } else if (action.source() == ReservationActionPayload.Source.CARRIED_STACK) {
+            transition.attachIdentity(carried);
+        }
         ReservationStore.setData(changed, transition.data());
         int selected = selectedForHost(player, host);
         commit(player, host, changed, carried, selected, action.host());

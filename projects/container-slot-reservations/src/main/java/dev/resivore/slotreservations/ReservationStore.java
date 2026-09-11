@@ -97,9 +97,8 @@ public final class ReservationStore {
     public static boolean reservationAllows(SupportedContainerResolver.ResolvedSlot slot, ItemStack incoming) {
         Objects.requireNonNull(slot, "slot");
         Objects.requireNonNull(incoming, "incoming");
-        return get(slot)
-                .map(template -> !incoming.isEmpty()
-                        && ItemStack.isSameItemSameComponents(template, incoming))
+        return getData(slot).getEntry(slot.localSlot())
+                .map(entry -> !incoming.isEmpty() && entry.matches(incoming))
                 .orElse(true);
     }
 }

@@ -115,6 +115,13 @@ public final class ReservationNetworking {
 
         if (transition == null || transition.outcome() == ReservationTransition.Outcome.REJECTED) return false;
         if (!transition.changed()) return true;
+        if (payload.source() == ReservationActionPayload.Source.SLOT_STACK) {
+            transition.attachIdentity(physical);
+            target.resolvedSlot().owner().setChanged();
+        } else if (payload.source() == ReservationActionPayload.Source.CARRIED_STACK) {
+            transition.attachIdentity(carried);
+            target.menu().setCarried(carried);
+        }
         ReservationStore.setOwnerData(target.resolvedSlot().owner(), transition.data());
         if (transition.outcome() == ReservationTransition.Outcome.CLEARED) {
             player.sendOverlayMessage(Component.translatable(

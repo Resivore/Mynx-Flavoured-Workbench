@@ -38,16 +38,24 @@ class TemplateEligibilityTest {
             assertFalse(result.data().matches(0, different));
         }
     }
-    @Test void contentsReservationsAndBothRejectCreationAndReplacement() {
+    @Test void nestedReservationDataStillRejectsGenericTemplatesWhileFilledShulkersBecomeSpecific() {
         for (int kind = 1; kind <= 3; kind++) {
             var invalid = new ItemStack(Blocks.SHULKER_BOX);
             if ((kind & 1) != 0) invalid.set(DataComponents.CONTAINER, ItemContainerContents.fromItems(List.of(new ItemStack(Items.STONE))));
             if ((kind & 2) != 0) ReservationStore.setData(invalid, ReservationData.EMPTY.with(26, new ItemStack(Items.STONE)));
             var existing = ReservationData.EMPTY.with(0, new ItemStack(Items.STONE));
-            assertFalse(ReservationTemplateEligibility.allows(invalid));
-            assertEquals(ReservationTransition.Outcome.REJECTED, ReservationTransition.fromOccupied(existing, 0, invalid).outcome());
-            assertEquals(ReservationTransition.Outcome.REJECTED, ReservationTransition.fromCursor(existing, 0, invalid).outcome());
-            assertSame(existing, ReservationTransition.fromCursor(existing, 0, invalid).data());
+            if ((kind & 1) != 0) {
+                var occupied = ReservationTransition.fromOccupied(existing, 0, invalid);
+                var cursor = ReservationTransition.fromCursor(existing, 0, invalid);
+                assertEquals(ReservationTransition.Outcome.SET, occupied.outcome());
+                assertEquals(ReservationTransition.Outcome.SET, cursor.outcome());
+                assertTrue(occupied.data().getEntry(0).orElseThrow().specific());
+            } else {
+                assertFalse(ReservationTemplateEligibility.allows(invalid));
+                assertEquals(ReservationTransition.Outcome.REJECTED, ReservationTransition.fromOccupied(existing, 0, invalid).outcome());
+                assertEquals(ReservationTransition.Outcome.REJECTED, ReservationTransition.fromCursor(existing, 0, invalid).outcome());
+                assertSame(existing, ReservationTransition.fromCursor(existing, 0, invalid).data());
+            }
         }
     }
     @Test void historicalInvalidIdentityRemainsVisibleAndToggleClearable() {

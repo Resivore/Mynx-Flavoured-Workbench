@@ -3,8 +3,10 @@ package dev.resivore.slotreservations;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.Objects;
+import java.util.Optional;
+import java.util.UUID;
 
-/** Pure server-side transition logic; it never mutates either physical input stack. */
+/** Server-side reservation transition planning. Identity attachment is explicit and authoritative. */
 final class ReservationTransition {
     private ReservationTransition() {
     }
@@ -18,6 +20,11 @@ final class ReservationTransition {
             return new Result(current.without(slot), Outcome.CLEARED);
         }
 
+        if (PortableContainerIdentity.familyOf(physical).isPresent() && !PortableContainerIdentity.isEmpty(physical)) {
+            if (physical.getCount() != 1) return new Result(current, Outcome.REJECTED);
+            UUID identity = PortableContainerIdentity.get(physical).orElseGet(UUID::randomUUID);
+            return new Result(current.withSpecific(slot, physical, identity), Outcome.SET, Optional.of(identity));
+        }
         if (!ReservationTemplateEligibility.allows(physical)) return new Result(current, Outcome.REJECTED);
         return new Result(current.with(slot, physical), Outcome.SET);
     }
@@ -27,6 +34,12 @@ final class ReservationTransition {
         Objects.requireNonNull(cursor, "cursor");
         if (cursor.isEmpty()) throw new IllegalArgumentException("Cursor transition requires a carried stack");
 
+        if (PortableContainerIdentity.familyOf(cursor).isPresent() && !PortableContainerIdentity.isEmpty(cursor)) {
+            if (cursor.getCount() != 1) return new Result(current, Outcome.REJECTED);
+            UUID identity = PortableContainerIdentity.get(cursor).orElseGet(UUID::randomUUID);
+            ReservationData changed = current.withSpecific(slot, cursor, identity);
+            return new Result(changed, changed == current ? Outcome.UNCHANGED : Outcome.SET, Optional.of(identity));
+        }
         if (!ReservationTemplateEligibility.allows(cursor)) return new Result(current, Outcome.REJECTED);
         ReservationData changed = current.with(slot, cursor);
         return new Result(changed, changed == current ? Outcome.UNCHANGED : Outcome.SET);
@@ -45,14 +58,29 @@ final class ReservationTransition {
         CLEARED
     }
 
-    record Result(ReservationData data, Outcome outcome) {
+    record Result(ReservationData data, Outcome outcome, Optional<UUID> identityToAttach) {
+        Result(ReservationData data, Outcome outcome) {
+            this(data, outcome, Optional.empty());
+        }
         Result {
             Objects.requireNonNull(data, "data");
             Objects.requireNonNull(outcome, "outcome");
+            Objects.requireNonNull(identityToAttach, "identityToAttach");
         }
 
         boolean changed() {
             return outcome == Outcome.SET || outcome == Outcome.CLEARED;
+        }
+
+        void attachIdentity(ItemStack physical) {
+            identityToAttach.ifPresent(identity -> {
+                if (physical.getCount() != 1 || PortableContainerIdentity.familyOf(physical).isEmpty()) {
+                    throw new IllegalArgumentException("Identity assignment target changed before commit");
+                }
+                UUID existing = physical.get(ModComponents.PORTABLE_CONTAINER_ID);
+                if (existing == null) physical.set(ModComponents.PORTABLE_CONTAINER_ID, identity);
+                else if (!existing.equals(identity)) throw new IllegalStateException("Physical portable-container identity changed before commit");
+            });
         }
     }
 }

@@ -20,7 +20,7 @@ public final class ContainerSlotReservationsApi {
 
     public static Optional<Reservation> getReservation(Container container, int slot) {
         return SupportedContainerResolver.resolve(container, slot)
-                .flatMap(ReservationStore::get)
+                .flatMap(resolved -> ReservationStore.getData(resolved).getEntry(resolved.localSlot()))
                 .map(Reservation::new);
     }
 
@@ -62,7 +62,7 @@ public final class ContainerSlotReservationsApi {
         if (!SupportedContainerResolver.isSupportedShulkerItem(shulker) || !validSlot(slot)) {
             return Optional.empty();
         }
-        return ReservationStore.getData(shulker).get(slot).map(Reservation::new);
+        return ReservationStore.getData(shulker).getEntry(slot).map(Reservation::new);
     }
 
     public static boolean isReserved(ItemStack shulker, int slot) {
@@ -115,9 +115,9 @@ public final class ContainerSlotReservationsApi {
             return ReservationSlotClass.NON_WRITABLE;
         }
 
-        Optional<ItemStack> reservation = data.get(slot);
+        Optional<ReservationData.Entry> reservation = data.getEntry(slot);
         if (reservation.isPresent()
-                && !ItemStack.isSameItemSameComponents(reservation.orElseThrow(), incoming)) {
+                && !reservation.orElseThrow().matches(incoming)) {
             return ReservationSlotClass.RESERVED_OTHER;
         }
 

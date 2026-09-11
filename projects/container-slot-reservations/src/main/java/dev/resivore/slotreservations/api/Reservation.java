@@ -2,12 +2,18 @@ package dev.resivore.slotreservations.api;
 
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemStackTemplate;
+import dev.resivore.slotreservations.PortableContainerIdentity;
+import dev.resivore.slotreservations.ReservationData;
 
 import java.util.Objects;
+import java.util.Optional;
+import java.util.UUID;
 
 /** A defensive public view of one exact component-aware reservation identity. */
 public final class Reservation {
     private final ItemStackTemplate template;
+    private final Optional<PortableContainerIdentity.Family> family;
+    private final Optional<UUID> identity;
 
     public Reservation(ItemStack template) {
         Objects.requireNonNull(template, "template");
@@ -15,6 +21,15 @@ public final class Reservation {
             throw new IllegalArgumentException("A reservation template must be non-empty");
         }
         this.template = ItemStackTemplate.fromNonEmptyStack(template).withCount(1);
+        this.family = Optional.empty();
+        this.identity = Optional.empty();
+    }
+
+    public Reservation(ReservationData.Entry entry) {
+        Objects.requireNonNull(entry, "entry");
+        this.template = entry.template().withCount(1);
+        this.family = entry.family();
+        this.identity = entry.identity();
     }
 
     /** Returns a fresh count-one stack. Mutating it cannot mutate reservation state. */
@@ -24,18 +39,25 @@ public final class Reservation {
 
     public boolean matches(ItemStack incoming) {
         Objects.requireNonNull(incoming, "incoming");
-        return !incoming.isEmpty() && ItemStack.isSameItemSameComponents(template.create(), incoming);
+        return !incoming.isEmpty() && (family.isPresent()
+                ? PortableContainerIdentity.matches(family.orElseThrow(), identity.orElseThrow(), incoming)
+                : PortableContainerIdentity.genericEmptyMatches(template.create(), incoming)
+                || ItemStack.isSameItemSameComponents(template.create(), incoming));
     }
 
     @Override
     public boolean equals(Object other) {
-        return this == other || other instanceof Reservation reservation
-                && ItemStack.isSameItemSameComponents(template.create(), reservation.template.create());
+        if (this == other) return true;
+        if (!(other instanceof Reservation reservation)) return false;
+        if (family.isPresent() || reservation.family.isPresent()) {
+            return family.equals(reservation.family) && identity.equals(reservation.identity);
+        }
+        return ItemStack.isSameItemSameComponents(template.create(), reservation.template.create());
     }
 
     @Override
     public int hashCode() {
-        return ItemStack.hashItemAndComponents(template.create());
+        return family.isPresent() ? Objects.hash(family, identity) : ItemStack.hashItemAndComponents(template.create());
     }
 
     @Override

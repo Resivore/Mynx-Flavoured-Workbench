@@ -16,7 +16,8 @@ final class ShulkerReservationDrops {
             BlockEntity blockEntity = context.getOptionalParameter(LootContextParams.BLOCK_ENTITY);
             if (!(blockEntity instanceof ShulkerBoxBlockEntity shulker)
                     || SupportedContainerResolver.resolve(shulker, 0).isEmpty()
-                    || ReservationStore.getData(shulker).isEmpty()) {
+                    || ReservationStore.getData(shulker).isEmpty()
+                    && shulker.components().get(ModComponents.PORTABLE_CONTAINER_ID) == null) {
                 return;
             }
 
