@@ -18,7 +18,7 @@
       "Preserve the accepted server-owned channel, exact-destination safety, persistent anchor, loss protection, recipes, configuration migration, discovery behavior, geometry, and art without expanding into a general waypoint or teleport system."
     ],
     "scope": [
-      "Maintain the accepted Canary 5 behavior while Canary 11 preserves Canary 9's corrected four-pixel Waystone base side UVs and changes only Canary 10's shared player-targeted first-person foreground companion from an eye/look-relative cloud to a ground-origin vanilla portal launch for the existing valid-channel and successful-arrival effects.",
+      "Maintain the accepted Canary 5 behavior while Canary 12 preserves Canary 9's corrected four-pixel Waystone base side UVs and changes only Canary 11's shared player-targeted first-person ground-origin foreground companion from vanilla portal to vanilla reverse portal for the existing valid-channel and successful-arrival effects.",
       "Preserve the 40-tick default channel, 1,200-tick Staff cooldown, exact current recipes, one-click and mouse-release-independent channel lifecycle, exact arrival at the visible Waystone top, recipe-book and JEI discovery seam, and success-only consumption and cooldown behavior.",
       "Retain exact accepted Canary 5 and focused-runtime-passed Canary 4 rollback artifacts together with the Dragonbound-owned Staff art and the separately licensed Matcha Stable Void snapshot and notice."
     ],
@@ -81,16 +81,16 @@
     ]
   },
   "state": {
-    "milestone": "Canary 10 substantially improved first-person particle density but user feedback says the shared player-targeted foreground effect appears around/in front of the camera or from above rather than originating at the ground; this is not a Canary 10 runtime PASS. For primarily solo play, Canary 11 keeps that 3-to-8 channel ramp and 24-particle confirmed-arrival count but uses per-particle, ServerPlayer-targeted count-zero vanilla portal packets from the current feet position plus Y 0.05, with a shallow ground spread and explicit upward launch vectors. Body-centered C8/C9/C10 effects and all teleport behavior remain frozen. It is statically verified, not deployed, and requires its own focused first-person runtime test. Exact Canary 5 remains the accepted baseline and rollback.",
+    "milestone": "User runtime feedback records a focused Canary 11 runtime FAIL: its player-targeted particles retain the desired feet-level ground origin, but ordinary vanilla PortalParticle visibly falls despite C11's explicit positive-Y count-zero packet motion. This is not a full C11 runtime PASS and does not change unrelated behavior. For primarily solo play, Canary 12 retains the C11 3-to-8 channel ramp, 24-particle confirmed-arrival count, feet plus Y 0.05 shallow ground layout, per-particle ServerPlayer-targeted count-zero packets, and all body-centered ordinary portal effects, but changes only the targeted particle type to vanilla reverse portal with positive Y 0.06-0.12 and horizontal drift within plus or minus 0.035. It is statically verified, not deployed, and requires its own focused first-person runtime test. Exact Canary 5 remains the accepted baseline and rollback.",
     "releases": {
       "current": {
-        "version": "0.1.0-canary11",
+        "version": "0.1.0-canary12",
         "artifact": {
-          "filename": "dragonbound-waystone-0.1.0-canary11.jar",
-          "sha256": "c49af303beef109d9cdfd1444894552ae8c6cd65d419057e9bafdb691c67c23e"
+          "filename": "dragonbound-waystone-0.1.0-canary12.jar",
+          "sha256": "6f621b16652baf9caad89ba923b8792ebc0ba08706a9f507fd17aabfc3121ad6"
         },
-        "embedded_version": "0.1.0-canary11",
-        "source_commit": "9a530a8214507685a69ce6216f60f6750490840f",
+        "embedded_version": "0.1.0-canary12",
+        "source_commit": "8d47abc38bd811376524f74d885cc47ab6b85e59",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
@@ -123,11 +123,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 7,
-    "activity_at": "2026-09-11T17:57:35Z",
-    "updated_at": "2026-09-11T17:57:35Z",
-    "last_codex_at": "2026-09-11T17:57:35Z",
-    "source_commit": "9a530a8214507685a69ce6216f60f6750490840f",
+    "revision": 8,
+    "activity_at": "2026-09-11T21:03:12Z",
+    "updated_at": "2026-09-11T21:03:12Z",
+    "last_codex_at": "2026-09-11T21:03:12Z",
+    "source_commit": "8d47abc38bd811376524f74d885cc47ab6b85e59",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
