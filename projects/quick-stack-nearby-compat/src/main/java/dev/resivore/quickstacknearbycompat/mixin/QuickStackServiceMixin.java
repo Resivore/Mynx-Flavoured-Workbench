@@ -8,6 +8,7 @@ import dev.resivore.quickstacknearbycompat.core.CarriedContainerSources;
 import dev.resivore.quickstacknearbycompat.core.PlayerStorageSlots;
 import dev.resivore.quickstacknearbycompat.core.PopulatedShulkerOuterProtection;
 import dev.resivore.quickstacknearbycompat.core.QsnDestinationExclusions;
+import dev.resivore.quickstacknearbycompat.core.ReservationOnlyOuterCarriers;
 import dev.resivore.quickstacknearbycompat.core.ShapeMapTargetAffinity;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
@@ -40,15 +41,16 @@ public abstract class QuickStackServiceMixin {
                 .snapshotLooseRules(inventory, sourceRules);
         QuickStackMoveEngine.SourceRules effectiveRules = new QuickStackMoveEngine.SourceRules(
                 PlayerStorageSlots.filterRuleMap(looseRules.slotRules(), window));
-        return CarriedContainerSources.scoped(player, sourceRules, () ->
-                CsrQuickStackIntegration.withDiscoverySource(
-                        inventory,
-                        window.firstInclusive(),
-                        window.endExclusive(),
-                        effectiveRules,
-                        () -> dev.resivore.quickstacknearbycompat.core.NestedShulkerDiscovery.scoped(
-                                () -> original.call(player, looseRules))
-                ));
+        return ReservationOnlyOuterCarriers.scoped(inventory, window, sourceRules, () ->
+                CarriedContainerSources.scoped(player, sourceRules, () ->
+                        CsrQuickStackIntegration.withDiscoverySource(
+                                inventory,
+                                window.firstInclusive(),
+                                window.endExclusive(),
+                                effectiveRules,
+                                () -> dev.resivore.quickstacknearbycompat.core.NestedShulkerDiscovery.scoped(
+                                        () -> original.call(player, looseRules))
+                        )));
     }
 
     @WrapOperation(
@@ -113,12 +115,19 @@ public abstract class QuickStackServiceMixin {
                         PlayerStorageSlots.filterRuleMap(sourceRules.slotRules(), window));
         List<QuickStackMoveEngine.Target> augmented = ShapeMapTargetAffinity.augmentTargets(
                 source, firstSourceSlot, window.endExclusive(), targets, effectiveRules);
+        // C18 owns only this pre-loose, CSR-matching return phase. The original loose overlay
+        // remains in force below, and returned carriers are explicitly retired from C16 drain.
+        QuickStackMoveEngine.Result homes = ReservationOnlyOuterCarriers.returnMatchingHomes(augmented);
         QuickStackMoveEngine.Result loose = original.call(
                 source, firstSourceSlot, window.endExclusive(), augmented, effectiveRules);
         QuickStackMoveEngine.Result carried = CarriedContainerSources.drain(augmented);
+        int inheritedTargetTouches = loose.targetContainersTouched() + carried.targetContainersTouched();
         return new QuickStackMoveEngine.Result(
-                loose.itemsMoved() + carried.itemsMoved(),
-                loose.sourceStacksTouched() + carried.sourceStacksTouched(),
-                loose.targetContainersTouched() + carried.targetContainersTouched());
+                homes.itemsMoved() + loose.itemsMoved() + carried.itemsMoved(),
+                homes.sourceStacksTouched() + loose.sourceStacksTouched() + carried.sourceStacksTouched(),
+                homes.itemsMoved() > 0
+                        ? ReservationOnlyOuterCarriers.targetContainersTouchedAfterHomeReturn(
+                                homes.targetContainersTouched() + inheritedTargetTouches)
+                        : inheritedTargetTouches);
     }
 }

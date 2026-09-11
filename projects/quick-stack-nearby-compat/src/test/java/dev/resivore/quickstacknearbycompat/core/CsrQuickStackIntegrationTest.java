@@ -311,6 +311,27 @@ class CsrQuickStackIntegrationTest {
     }
 
     @Test
+    void matchingOnlyInsertionNeverFallsThroughToAnOrdinaryEmptySlot() {
+        ItemStack moving = new ItemStack(Items.COBBLESTONE, 1);
+        SimpleContainer target = new SimpleContainer(3);
+
+        int moved = CsrQuickStackIntegration.insertIntoMatchingReservationsOnly(
+                moving,
+                target,
+                (container, slot, incoming) -> slot == 1
+                        ? CsrReservationResolver.SlotClass.MATCHING_RESERVATION
+                        : CsrReservationResolver.SlotClass.ORDINARY_EMPTY,
+                CsrReservationResolver.SlotClass.MATCHING_RESERVATION
+        );
+
+        assertEquals(1, moved);
+        assertTrue(moving.isEmpty());
+        assertTrue(target.getItem(0).isEmpty());
+        assertEquals(1, target.getItem(1).getCount());
+        assertTrue(target.getItem(2).isEmpty());
+    }
+
+    @Test
     void everyInsertionUsesTheTargetsNativePerStackCapacity() {
         ItemStack moving = new ItemStack(Items.COBBLESTONE, 20);
         SimpleContainer target = new CappedContainer(4, 7);

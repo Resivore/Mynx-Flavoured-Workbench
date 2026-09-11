@@ -159,6 +159,10 @@ public final class CsrQuickStackIntegration {
                 normalizedRules(sourceRules)
         );
         sourceStacks.addAll(CarriedContainerSources.discoveryStacks());
+        // C18 deliberately exposes protected populated shulkers only to CSR's public
+        // reservation classifier at this raw discovery seam. They remain absent from the native
+        // movable source list and from every non-CSR affinity path.
+        sourceStacks.addAll(ReservationOnlyOuterCarriers.discoveryStacks());
         if (sourceStacks.isEmpty()) {
             return nativeAcceptedTypes;
         }
@@ -282,6 +286,34 @@ public final class CsrQuickStackIntegration {
             );
         }
         return moved;
+    }
+
+    /**
+     * C18's no-fallback insertion path. Unlike normal QSN insertion, this may never use an
+     * ordinary empty slot after a matching reservation fails or is unavailable.
+     */
+    static int insertIntoMatchingReservationOnly(ItemStack sourceStack, Container target) {
+        if (!CsrReservationResolver.isAvailable()) {
+            return 0;
+        }
+        return insertIntoMatchingReservationsOnly(
+                sourceStack,
+                target,
+                CsrReservationResolver::classify,
+                CsrReservationResolver.SlotClass.MATCHING_RESERVATION
+        );
+    }
+
+    /**
+     * Testable form of C18's matching-only pass. The production entry point above supplies
+     * CSR's public classifier; this helper deliberately has no ordinary-empty fallback.
+     */
+    static int insertIntoMatchingReservationsOnly(
+            ItemStack sourceStack,
+            Container target,
+            SlotClassifier classifier,
+            CsrReservationResolver.SlotClass passClass) {
+        return insertPass(sourceStack, target, classifier, passClass);
     }
 
     private static int insertPass(
