@@ -21,6 +21,7 @@
     "lifecycle": "ACTIVE",
     "goals": [
       "Preserve C12's C9-derived nested shulker routing, source accounting, ordering, capacity, and optional CSR affinity while making only the survival QSN action placement stable and idempotent.",
+      "Keep a physically populated carried vanilla shulker out of every ordinary QSN loose-source discovery and movement path for its entire action while preserving C16 direct-content draining under the real user rules.",
       "Keep a CSR-reserved nested slot owned by its exact item-and-components reservation even while its physical stack is empty.",
       "Place the survival QSN action as the upper member of the shared 18px bottom-right utility stack without a Notebook runtime dependency.",
       "Preserve accepted C8 and rollback C6 provenance separately from retained C9 and rejected C10/C11 historical evidence."
@@ -30,7 +31,8 @@
       "On a physically empty nested slot, C15 preserves C12's C9 public CSR reservation matcher: a matching reservation is eligible, a mismatching active reservation is blocked, and only an unreserved empty slot is generic capacity.",
       "C15 leaves existing physical-stack merging, nested discovery, parent-first ordering, reservation creation and maintenance, container scanning, source rules, transactional writeback, and C9 identity semantics unchanged.",
       "C15 changes only the survival InventoryScreen QSN action placement: its existing upstream QuickStackIconButton is explicitly recognized as QSN-owned when the production reservation seam scans Screens.getWidgets(screen), so the action cannot collide with itself. Every unrelated visible widget remains a collision; the C14 18x18 Minecraft Button chrome, crisp glyph, tooltip, primary/right-click callbacks, and exact utility-stack geometry are unchanged. Controlled unit and Fabric GameTest evidence is not Minecraft gameplay runtime evidence.",
-      "C13 is retained as immutable historical release evidence but is not a viable client artifact: the user-supplied Minecraft 26.2 launch failed before menu initialization because its chrome mixin could not resolve that shadow. C14 is immutable historical evidence with a user-reported survival InventoryScreen placement failure: with QSN 0.4.0 loaded, the otherwise correct action alternated frame-to-frame between adjacent 22px utility slots. That report does not assert a Test Instance Manager deployment or managed Workbench transition. C15 is ACTIVE, NOT_DEPLOYED, and RUNTIME_UNTESTED."
+      "C13 is retained as immutable historical release evidence but is not a viable client artifact: the user-supplied Minecraft 26.2 launch failed before menu initialization because its chrome mixin could not resolve that shadow. C14 is immutable historical evidence with a user-reported survival InventoryScreen placement failure: with QSN 0.4.0 loaded, the otherwise correct action alternated frame-to-frame between adjacent 22px utility slots. That report does not assert a Test Instance Manager deployment or managed Workbench transition. C15 is ACTIVE, NOT_DEPLOYED, and RUNTIME_UNTESTED.",
+      "C17 is a narrow C16 successor. At QSN action start it recognizes vanilla BlockItem -> ShulkerBoxBlock carriers with at least one non-empty physical DataComponents.CONTAINER slot, overlays a transient locked SourceRules entry only for native loose discovery/movement, and keeps C16's carried source snapshot on the original user rules. Thus a carrier drained empty this press stays put until the next press; physically empty shulkers remain native QSN items. C16 user-reported/external feedback confirmed carried-source draining worked but reported that a populated matching carrier could be moved as an ordinary outer item. Neither feedback nor C17 controlled validation implies a Test Instance Manager deployment or promotion."
     ],
     "boundaries": {
       "owned_paths": [
@@ -147,16 +149,16 @@
     ]
   },
   "state": {
-    "milestone": "C16 is a controlled-validated, retained-but-not-deployed C15-derived carried-container source expansion. It preserves QSN's loose-source priority and target engine, then drains direct contents of eligible carried vanilla shulkers and bundles in physical inventory order with offhand last. CCAR's live public RoutingLock query excludes locked carriers completely; absent CCAR is unlocked-by-default and a loaded but un-linkable provider fails closed. C8 remains accepted and C6 remains rollback.",
+    "milestone": "C17 is a controlled-validated, retained-but-not-deployed C16 correction. It snapshots populated vanilla shulker carrier slots at QSN action start and blocks only their outer loose-source admission for that action, while C16 continues draining direct contents through the original user source rules. C16 user feedback is external runtime evidence of working carried draining plus the populated-outer movement defect; it did not establish a managed deployment. C8 remains accepted and C6 remains rollback.",
     "releases": {
       "current": {
-        "version": "C16 (0.1.0-canary16)",
-        "embedded_version": "0.1.0-canary16",
+        "version": "C17 (0.1.0-canary17)",
+        "embedded_version": "0.1.0-canary17",
         "artifact": {
-          "filename": "quick-stack-nearby-compat-0.1.0-canary16.jar",
-          "sha256": "2dde3e5b18cd167ba2f743275eb892d50ba849f8213baa0fe5931b7d31aac792"
+          "filename": "quick-stack-nearby-compat-0.1.0-canary17.jar",
+          "sha256": "9c133eee74922dfc0b0ac2624f3b02ef47e602fb87bcf2b995d1049e08d07bd9"
         },
-        "source_commit": "5cd8b43ddad12b868faf5bab0e144c22d300b85b",
+        "source_commit": "d4764be8a4e715b60e1276f28dae99c471a56d37",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
@@ -195,11 +197,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 19,
-    "activity_at": "2026-09-11T15:46:30Z",
-    "updated_at": "2026-09-11T15:46:30Z",
-    "last_codex_at": "2026-09-11T15:46:30Z",
-    "source_commit": "5cd8b43ddad12b868faf5bab0e144c22d300b85b",
+    "revision": 20,
+    "activity_at": "2026-09-11T16:28:53Z",
+    "updated_at": "2026-09-11T16:28:53Z",
+    "last_codex_at": "2026-09-11T16:28:53Z",
+    "source_commit": "d4764be8a4e715b60e1276f28dae99c471a56d37",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
