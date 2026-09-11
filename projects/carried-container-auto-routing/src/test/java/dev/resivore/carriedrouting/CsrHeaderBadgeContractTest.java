@@ -38,7 +38,7 @@ class CsrHeaderBadgeContractTest {
         assertFinalSprite(resources.resolve(UNLOCKED), UNLOCKED_SHA256, UNLOCKED_MASK, 61);
         assertFalse(Files.exists(resources.resolve(OBSOLETE_SOURCE)));
 
-        Path artifact = ROOT.resolve("build/libs/carried-container-auto-routing-0.3.11-transparent-lock-sprites-canary1.jar");
+        Path artifact = ROOT.resolve("build/libs/carried-container-auto-routing-0.3.12-routed-pickup-audio-canary1.jar");
         try (ZipFile zip = new ZipFile(artifact.toFile())) {
             assertFalse(zip.stream().anyMatch(entry -> entry.getName().equals(OBSOLETE_SOURCE)));
             assertPackagedSprite(zip, LOCKED, LOCKED_SHA256, LOCKED_MASK, 34);

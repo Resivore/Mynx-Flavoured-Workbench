@@ -21,7 +21,7 @@
       "Provide a server-authoritative lock control that excludes selected carriers from automatic routing without altering their other contents or components."
     ],
     "scope": [
-      "Canonical C16 / 0.3.11-transparent-lock-sprites-canary1 for Minecraft Java 26.2 Fabric, implementation checkpoint 9c5ea267f49812385b981a5ab04b73061b029974; transparent-art and one-pixel vertical-offset successor to C15 paired with unchanged CSR C16.",
+      "Canonical C17 / 0.3.12-routed-pickup-audio-canary1 for Minecraft Java 26.2 Fabric, implementation checkpoint c9ed10647c2944a2b0a86146a99ddf2299b8e4e8; narrow audiovisual-feedback successor to C16 paired with unchanged CSR C16.",
       "When a server-resolved routing-lock target is unsupported, return without an overlay message. Preserve server-authoritative supported-target toggles and their existing Locked/Unlocked feedback exactly.",
       "Passive ground pickup and external-container QUICK_MOVE priority through component-identical occupied main hand, qualifying carried containers, occupied hotbar, occupied offhand, compatible ordinary-storage partials, empty hotbar, and empty ordinary storage.",
       "Player-origin QUICK_MOVE routing to a component-identical occupied offhand and qualifying carried containers before returning exact remainder ownership to the active menu's normal algorithm.",
@@ -31,6 +31,7 @@
       "Build one immutable slot/count plan before mutation: compatible occupied stacks in physical order, all matching reserved empties in physical order, then unreserved empties in physical order. Rewrite CONTAINER once and shrink the incoming stack by exactly the accepted total; retain reservations, lock, name, lore, damage, and unrelated components.",
       "Keep accepted bundle class bytes unchanged, global destination and carrier order unchanged, all existing pickup/QUICK_MOVE contexts, offhand/excluded-source behavior, and Stacks Are Stacks effective maximums without a new stack-size implementation.",
       "When optional CSR is present, expose the existing RoutingLock state for supported shulkers only as a non-clickable 1:1 supplied lock sprite in CSR's header. Bundles remain tooltip-only. C16 derives its direct resources from C15's immutable supplied locked.png (7x9, 155 bytes, SHA-256 cde847dba65a29823d62fee4f70fc4c1e83fd40e4fbbc4b81871b9164f11e617, opaque RGBA) and unlocked.png (10x9, 590 bytes, SHA-256 10a5f3205c311974eea2798e1c97cca248798f12b7156c202c59afbb850fc39c, opaque RGBA): only exact opaque #FFFFFFFF pixels become #00000000, producing locked SHA-256 bbe0d7393b626c1bc2d6b7d9f938888d4a99ae130eb90ecd2cb5711a909e226d and unlocked SHA-256 a87026fa1ab3a82cf76cd0dd5a68cf79fa49ef2e0fbfed27964ad18c7d48c656. Direct package integrity checks prove the 29 non-white opaque pixels and all dimensions remain exact; no crop or generated-art pipeline remains."
+      ,"For a WORLD_PICKUP only, mark the one vanilla take-item packet when actual carried shulker or bundle insertion moved one or more items. The client consumes that one-shot entity ID at ClientPacketListener.handleTakeItemEntity and multiplies vanilla's already-randomized ITEM_PICKUP pitch by 0.80 while preserving its normal 0.2 volume, particle, animation, statistics, and all ordinary pickup audio. QUICK_MOVE and nonaccepting, locked, full, or nonqualifying carriers never signal the cue."
     ],
     "boundaries": {
       "owned_paths": [
@@ -90,16 +91,16 @@
     ]
   },
   "state": {
-    "milestone": "C16 is an ACTIVE, non-deployed successor to C15. It changes only the optional CCAR shulker-header visuals: 34 locked and 61 unlocked exact opaque-white pixels become transparent, and the 1:1 badge blit moves down exactly one GUI pixel. It preserves the 7x9 and 10x9 canvases, 29 non-white opaque pixels per sprite, C13 silent unsupported-target handling, and all routing, tooltip, lock, optional-CSR, and bundle behavior. CSR C16's existing dynamic decoration layout accepts the refined badge without a CSR source change. Clean Java 25 unit, GameTest, resource-integrity, artifact, and paired CSR-API validation passed; no dedicated Workbench or protected gameplay instance was accessed.",
+    "milestone": "C17 is an ACTIVE, non-deployed audiovisual-feedback successor to C16. Only actual WORLD_PICKUP insertion into qualifying unlocked carried shulkers or bundles marks its ItemEntity for a one-shot client cue. Before vanilla's Player.take packet, the server sends that entity ID to the picking client; the client consumes it only at vanilla ClientPacketListener.handleTakeItemEntity and scales the already-randomized ITEM_PICKUP pitch by 0.80, preserving vanilla's normal 0.2 volume and every other pickup effect. No marker is emitted for ordinary inventory movement, locked/full/nonqualifying carriers, or QUICK_MOVE. Clean Java 25 unit, GameTest, resource-integrity, artifact, and paired CSR-API validation passed; no dedicated Workbench or protected gameplay instance was accessed.",
     "releases": {
       "current": {
-        "version": "0.3.11-transparent-lock-sprites-canary1",
-        "embedded_version": "0.3.11-transparent-lock-sprites-canary1",
+        "version": "0.3.12-routed-pickup-audio-canary1",
+        "embedded_version": "0.3.12-routed-pickup-audio-canary1",
         "artifact": {
-          "filename": "carried-container-auto-routing-0.3.11-transparent-lock-sprites-canary1.jar",
-          "sha256": "a06a68eabd2495a8e313eed19adc25bd99a959cd095e2c193f3dee88488a104c"
+          "filename": "carried-container-auto-routing-0.3.12-routed-pickup-audio-canary1.jar",
+          "sha256": "43a72f37161c5de8d8ae308d552aefe4a7a7c0f5acb3cdc8b59889cc7807af09"
         },
-        "source_commit": "9c5ea267f49812385b981a5ab04b73061b029974",
+        "source_commit": "c9ed10647c2944a2b0a86146a99ddf2299b8e4e8",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
@@ -137,11 +138,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 7,
-    "activity_at": "2026-09-10T03:49:31Z",
-    "updated_at": "2026-09-10T03:49:31Z",
-    "last_codex_at": "2026-09-10T03:49:31Z",
-    "source_commit": "9c5ea267f49812385b981a5ab04b73061b029974",
+    "revision": 8,
+    "activity_at": "2026-09-11T15:47:43Z",
+    "updated_at": "2026-09-11T15:47:43Z",
+    "last_codex_at": "2026-09-11T15:47:43Z",
+    "source_commit": "c9ed10647c2944a2b0a86146a99ddf2299b8e4e8",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null

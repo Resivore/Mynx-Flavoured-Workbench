@@ -8,6 +8,7 @@
     "ItemEntityMixin"
   ],
   "client": [
+    "client.ClientPacketListenerMixin",
     "AbstractContainerScreenAccessor",
     "CreativeModeItemPickerMenuMixin",
     "CreativeModeInventoryScreenMixin",
