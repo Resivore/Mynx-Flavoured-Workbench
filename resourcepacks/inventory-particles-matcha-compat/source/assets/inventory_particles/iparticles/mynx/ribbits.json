@@ -1,0 +1,12 @@
+{
+  "life_time": 75,
+  "animation_type": "random_static",
+  "animation_speed": 1.0,
+  "size": {"width": 8, "height": 8},
+  "textures": ["ribbits:glowcap", "ribbits:toadstool_heart", "ribbits:ribbit_village_explorer_map"],
+  "holders": [
+    {"name":"ribbits_glowcap","item":"ribbits:glowcap","spawn_count":[0,1],"spawn_frequency":[15,35],"speed_coefficient":0.12,"color":"#FFFFFFFF","nbt_conditions_match":"any","nbt_conditions":[]},
+    {"name":"ribbits_toadstool_heart","item":"ribbits:toadstool_heart","spawn_count":[0,1],"spawn_frequency":[14,30],"speed_coefficient":0.14,"color":"#FFFFFFFF","nbt_conditions_match":"any","nbt_conditions":[]},
+    {"name":"ribbits_village_map","item":"ribbits:ribbit_village_explorer_map","spawn_count":[0,1],"spawn_frequency":[20,45],"speed_coefficient":0.10,"color":"#FFFFFFFF","nbt_conditions_match":"any","nbt_conditions":[]}
+  ]
+}
