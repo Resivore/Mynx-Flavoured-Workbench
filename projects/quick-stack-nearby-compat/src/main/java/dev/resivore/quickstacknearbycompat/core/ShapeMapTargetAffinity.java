@@ -35,6 +35,9 @@ public final class ShapeMapTargetAffinity {
             }
             sourceKeys.add(new SourceKey(stack, QuickStackMoveEngine.StackKey.of(stack)));
         }
+        for (ItemStack stack : CarriedContainerSources.discoveryStacks()) {
+            if (!stack.isEmpty()) sourceKeys.add(new SourceKey(stack, QuickStackMoveEngine.StackKey.of(stack)));
+        }
         if (sourceKeys.isEmpty()) {
             return targets;
         }

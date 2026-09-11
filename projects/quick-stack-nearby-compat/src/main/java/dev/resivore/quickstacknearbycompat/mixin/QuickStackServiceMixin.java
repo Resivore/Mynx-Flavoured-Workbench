@@ -4,6 +4,7 @@ import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import dev.resivore.quickstacknearbycompat.core.CsrQuickStackIntegration;
+import dev.resivore.quickstacknearbycompat.core.CarriedContainerSources;
 import dev.resivore.quickstacknearbycompat.core.PlayerStorageSlots;
 import dev.resivore.quickstacknearbycompat.core.QsnDestinationExclusions;
 import dev.resivore.quickstacknearbycompat.core.ShapeMapTargetAffinity;
@@ -13,9 +14,7 @@ import net.minecraft.world.entity.player.Inventory;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.ModifyArgs;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
 import tempeststudios.quickstacknearby.QuickStackMoveEngine;
 import tempeststudios.quickstacknearby.QuickStackService;
 
@@ -38,13 +37,15 @@ public abstract class QuickStackServiceMixin {
                 : new QuickStackMoveEngine.SourceRules(
                         PlayerStorageSlots.filterRuleMap(sourceRules.slotRules(), window)
                 );
-        return CsrQuickStackIntegration.withDiscoverySource(
-                inventory,
-                window.firstInclusive(),
-                window.endExclusive(),
-                effectiveRules,
-                () -> dev.resivore.quickstacknearbycompat.core.NestedShulkerDiscovery.scoped(() -> original.call(player, sourceRules))
-        );
+        return CarriedContainerSources.scoped(player, sourceRules, () ->
+                CsrQuickStackIntegration.withDiscoverySource(
+                        inventory,
+                        window.firstInclusive(),
+                        window.endExclusive(),
+                        effectiveRules,
+                        () -> dev.resivore.quickstacknearbycompat.core.NestedShulkerDiscovery.scoped(
+                                () -> original.call(player, sourceRules))
+                ));
     }
 
     @WrapOperation(
@@ -85,7 +86,7 @@ public abstract class QuickStackServiceMixin {
         }
     }
 
-    @ModifyArgs(
+    @WrapOperation(
             method = "quickStack(Lnet/minecraft/server/level/ServerPlayer;Ltempeststudios/quickstacknearby/QuickStackMoveEngine$SourceRules;)Ltempeststudios/quickstacknearby/QuickStackMoveEngine$Result;",
             at = @At(
                     value = "INVOKE",
@@ -95,31 +96,26 @@ public abstract class QuickStackServiceMixin {
             require = 1,
             remap = false
     )
-    private static void quickStackNearbyCompat$useLiveStorageBoundary(Args args) {
-        Container source = args.get(0);
+    private static QuickStackMoveEngine.Result quickStackNearbyCompat$useLiveStorageBoundary(
+            Container source, int firstSourceSlot, int exclusiveLastSourceSlot,
+            List<QuickStackMoveEngine.Target> targets, QuickStackMoveEngine.SourceRules sourceRules,
+            Operation<QuickStackMoveEngine.Result> original) {
         if (!(source instanceof Inventory inventory)) {
-            return;
+            return original.call(source, firstSourceSlot, exclusiveLastSourceSlot, targets, sourceRules);
         }
-
         PlayerStorageSlots.Window window = PlayerStorageSlots.liveWindow(inventory);
-        args.set(2, window.endExclusive());
-
-        QuickStackMoveEngine.SourceRules sourceRules = args.get(4);
-        if (sourceRules != null) {
-            args.set(4, new QuickStackMoveEngine.SourceRules(
-                    PlayerStorageSlots.filterRuleMap(sourceRules.slotRules(), window)
-            ));
-        }
-
-        int firstSourceSlot = args.get(1);
-        int exclusiveLastSourceSlot = args.get(2);
-        List<QuickStackMoveEngine.Target> targets = args.get(3);
-        args.set(3, ShapeMapTargetAffinity.augmentTargets(
-                source,
-                firstSourceSlot,
-                exclusiveLastSourceSlot,
-                targets,
-                args.get(4)
-        ));
+        QuickStackMoveEngine.SourceRules effectiveRules = sourceRules == null
+                ? QuickStackMoveEngine.SourceRules.EMPTY
+                : new QuickStackMoveEngine.SourceRules(
+                        PlayerStorageSlots.filterRuleMap(sourceRules.slotRules(), window));
+        List<QuickStackMoveEngine.Target> augmented = ShapeMapTargetAffinity.augmentTargets(
+                source, firstSourceSlot, window.endExclusive(), targets, effectiveRules);
+        QuickStackMoveEngine.Result loose = original.call(
+                source, firstSourceSlot, window.endExclusive(), augmented, effectiveRules);
+        QuickStackMoveEngine.Result carried = CarriedContainerSources.drain(augmented);
+        return new QuickStackMoveEngine.Result(
+                loose.itemsMoved() + carried.itemsMoved(),
+                loose.sourceStacksTouched() + carried.sourceStacksTouched(),
+                loose.targetContainersTouched() + carried.targetContainersTouched());
     }
 }

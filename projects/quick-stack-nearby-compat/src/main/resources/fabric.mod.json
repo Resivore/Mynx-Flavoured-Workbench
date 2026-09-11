@@ -3,7 +3,7 @@
   "id": "quick_stack_nearby_compat",
   "version": "${version}",
   "name": "Workbench Quick Stack Nearby Compatibility",
-  "description": "Unified Workbench compatibility layer for Quick Stack Nearby; Canary 15 keeps C12 routing and makes the survival utility button reservation stable.",
+  "description": "Unified Workbench compatibility layer for Quick Stack Nearby; Canary 16 adds lock-aware carried shulker and bundle sources.",
   "authors": ["Resivore"],
   "license": "MIT",
   "environment": "*",
@@ -24,11 +24,12 @@
     "inventoryextended": "*",
     "clutternomore": "*",
     "cnm_terrain_slabs_compat": "*",
-    "more_slabs_stairs_and_walls": "*"
+    "more_slabs_stairs_and_walls": "*",
+    "carried_container_auto_routing": "*"
   },
   "custom": {
     "workbench:classification": "GENERATED / STATICALLY VALIDATED / RUNTIME UNTESTED",
     "workbench:deployment": "NOT DEPLOYED",
-    "workbench:runtime-slot-owner": "Quick Stack Nearby Compatibility - Canary 15"
+    "workbench:runtime-slot-owner": "Quick Stack Nearby Compatibility - Canary 16"
   }
 }

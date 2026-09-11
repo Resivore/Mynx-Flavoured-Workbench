@@ -50,7 +50,7 @@ class CompatibilityScopeTest {
         try (Stream<Path> paths = Files.walk(sourceRoot)) {
             javaFiles = paths.filter(path -> path.toString().endsWith(".java")).toList();
         }
-        assertEquals(20, javaFiles.size());
+        assertEquals(22, javaFiles.size());
 
         StringBuilder sources = new StringBuilder();
         for (Path javaFile : javaFiles) {

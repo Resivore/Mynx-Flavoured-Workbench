@@ -158,6 +158,7 @@ public final class CsrQuickStackIntegration {
                 exclusiveLastSourceSlot,
                 normalizedRules(sourceRules)
         );
+        sourceStacks.addAll(CarriedContainerSources.discoveryStacks());
         if (sourceStacks.isEmpty()) {
             return nativeAcceptedTypes;
         }
@@ -191,8 +192,11 @@ public final class CsrQuickStackIntegration {
 
     static List<ItemStack> activeSourceStacks() {
         DiscoveryRequest request = ACTIVE_DISCOVERY.get();
-        return request == null ? List.of() : movableSourceStacks(request.source(), request.firstSourceSlot(),
+        if (request == null) return CarriedContainerSources.discoveryStacks();
+        List<ItemStack> stacks = movableSourceStacks(request.source(), request.firstSourceSlot(),
                 request.exclusiveLastSourceSlot(), request.sourceRules());
+        stacks.addAll(CarriedContainerSources.discoveryStacks());
+        return stacks;
     }
     private static List<ItemStack> movableSourceStacks(
             Container source,
