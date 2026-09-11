@@ -18,7 +18,7 @@
       "Preserve the accepted server-owned channel, exact-destination safety, persistent anchor, loss protection, recipes, configuration migration, discovery behavior, geometry, and art without expanding into a general waypoint or teleport system."
     ],
     "scope": [
-      "Maintain the accepted Canary 5 behavior while Canary 8 adds server-owned ramped portal particles only for valid pending channels, preserves Canary 7's success-only arrival feedback, and gives accepted Staff activation one ordinary server-broadcast main-hand swing.",
+      "Maintain the accepted Canary 5 behavior while Canary 9 corrects only the four-pixel Waystone base side UVs and adds a small player-targeted first-person foreground companion to Canary 8's valid-channel and successful-arrival portal effects.",
       "Preserve the 40-tick default channel, 1,200-tick Staff cooldown, exact current recipes, one-click and mouse-release-independent channel lifecycle, exact arrival at the visible Waystone top, recipe-book and JEI discovery seam, and success-only consumption and cooldown behavior.",
       "Retain exact accepted Canary 5 and focused-runtime-passed Canary 4 rollback artifacts together with the Dragonbound-owned Staff art and the separately licensed Matcha Stable Void snapshot and notice."
     ],
@@ -81,15 +81,16 @@
     ]
   },
   "state": {
-    "milestone": "User feedback confirms Canary 7's successful-arrival particles should be preserved, without establishing a full Canary 7 runtime PASS. Canary 8 adds modest ramped portal particles during accepted valid channels, a Staff-only ordinary main-hand swing, and a four-pixel Waystone base with its plate moved up two pixels; it is statically verified, not deployed, and requires its own runtime test. Exact Canary 5 remains the accepted baseline and rollback.",
+    "milestone": "User feedback on Canary 8 confirms its four-pixel base geometry and third-person portal effects look good, while its base side UVs remain sized for two pixels and its channel/success portal effects are barely visible in first person; this is not a full Canary 8 runtime PASS. Canary 9 corrects those four side UVs and adds a modest player-targeted eye-forward portal companion while preserving Canary 8's body-centered effects and all behavior. It is statically verified, not deployed, and requires its own focused runtime test. Exact Canary 5 remains the accepted baseline and rollback.",
     "releases": {
       "current": {
-        "version": "0.1.0-canary8",
+        "version": "0.1.0-canary9",
         "artifact": {
-          "filename": "dragonbound-waystone-0.1.0-canary8.jar",
-          "sha256": "6e909e4a2bf9a0739bd6b24efac5e23dfec095707cda0fc1635b88eb82774c7e"
+          "filename": "dragonbound-waystone-0.1.0-canary9.jar",
+          "sha256": "9635c870959c7ed2fb84758de47079c3f986cf3ddd9aae80417efd59a1a4341b"
         },
-        "source_commit": "bfe7f4e4ca3aea36b556e65909ac49fc45b281ea",
+        "embedded_version": "0.1.0-canary9",
+        "source_commit": "dfb9c87b0d60c60af85a94d428a3a829469912ed",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
@@ -122,11 +123,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 4,
-    "activity_at": "2026-09-11T16:02:19Z",
-    "updated_at": "2026-09-11T16:02:19Z",
-    "last_codex_at": "2026-09-11T16:02:19Z",
-    "source_commit": "bfe7f4e4ca3aea36b556e65909ac49fc45b281ea",
+    "revision": 5,
+    "activity_at": "2026-09-11T16:37:55Z",
+    "updated_at": "2026-09-11T16:37:55Z",
+    "last_codex_at": "2026-09-11T16:37:55Z",
+    "source_commit": "dfb9c87b0d60c60af85a94d428a3a829469912ed",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
