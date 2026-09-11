@@ -3,26 +3,27 @@ package dev.resivore.inventorysortercsrcompat.core;
 import dev.resivore.slotreservations.api.ContainerSlotReservationsApi;
 import net.minecraft.world.Container;
 import net.minecraft.world.inventory.Slot;
-import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.level.block.ShulkerBoxBlock;
 
 /** The one compatibility predicate shared by the server sorter and client fallback planner. */
 public final class FixedSortSlots {
     private FixedSortSlots() {}
 
-    public static boolean isFixed(Container container, int localSlot, ItemStack stack) {
-        return ContainerSlotReservationsApi.isReserved(container, localSlot) || isPortableContainer(stack);
+    /** A physical slot is fixed exclusively when CSR says that exact owner/local slot is reserved. */
+    public static boolean isFixed(Container container, int localSlot) {
+        return ContainerSlotReservationsApi.isReserved(container, localSlot);
     }
 
     public static boolean isFixed(Slot slot) {
-        return isFixed(slot.container, slot.getContainerSlot(), slot.getItem());
+        return isFixed(slot.container, slot.getContainerSlot());
     }
 
-    public static boolean isPortableContainer(ItemStack stack) {
-        return stack.is(Items.BUNDLE)
-                || stack.getItem() instanceof BlockItem blockItem
-                && blockItem.getBlock() instanceof ShulkerBoxBlock;
+    /**
+     * Inventory Sorter's optional content-insertion pass has bundle targets only.  This is not a
+     * fixed-slot predicate: an outer bundle remains an ordinary movable ItemStack.
+     */
+    public static boolean isBundle(ItemStack stack) {
+        return stack.is(Items.BUNDLE);
     }
 }

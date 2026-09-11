@@ -3,7 +3,7 @@
   "id": "inventory_sorter_csr_compat",
   "version": "${version}",
   "name": "Inventory Sorter CSR Compatibility",
-  "description": "Masks CSR reservations, bundles, and shulker boxes from Inventory Sorter operations.",
+  "description": "Keeps CSR-reserved slots fixed while sorting portable containers as outer ItemStacks.",
   "authors": ["Resivore"],
   "license": "MIT",
   "environment": "*",
@@ -26,6 +26,6 @@
     },
     "workbench:classification": "GENERATED / STATICALLY VALIDATED / RUNTIME UNTESTED",
     "workbench:deployment": "NOT DEPLOYED",
-    "workbench:runtime-slot-owner": "Inventory Sorter CSR Compatibility - Canary 1"
+    "workbench:runtime-slot-owner": "Inventory Sorter CSR Compatibility - Canary 2"
   }
 }

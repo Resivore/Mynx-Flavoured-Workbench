@@ -27,20 +27,24 @@ public final class MaskedServerSort {
         List<ItemStack> original = ContainerStacks.get(container, firstSlot, slotCount);
         List<Integer> movableIndices = new ArrayList<>(slotCount);
         List<ItemStack> movableStacks = new ArrayList<>(slotCount);
+        boolean hasBundle = false;
         for (int relative = 0; relative < original.size(); relative++) {
             int localSlot = firstSlot + relative;
             ItemStack physical = container.getItem(localSlot);
-            if (!FixedSortSlots.isFixed(container, localSlot, physical)) {
+            hasBundle |= FixedSortSlots.isBundle(physical);
+            if (!FixedSortSlots.isFixed(container, localSlot)) {
                 movableIndices.add(localSlot);
                 movableStacks.add(original.get(relative));
             }
         }
-        if (movableIndices.size() == original.size()) return false;
+        boolean suppressBundleInsertion = sortIntoBundles && hasBundle;
+        if (movableIndices.size() == original.size() && !suppressBundleInsertion) return false;
 
-        // Any bundle in the range is a fixed obstacle.  The upstream optional bundle-insertion
-        // pass therefore receives only movable stacks and can never inspect or mutate it.
+        // Keep Inventory Sorter's normal layout and merging rules.  Only its optional
+        // bundle-content insertion pass is disabled; bundles themselves stay in the movable pool.
         List<ItemStack> sorted = SortedInventoryLayout.from(
-                movableStacks, sortType, languageCode, priorityRules, sortIntoBundles).stacks();
+                movableStacks, sortType, languageCode, priorityRules,
+                suppressBundleInsertion ? false : sortIntoBundles).stacks();
         boolean changed = false;
         for (int i = 0; i < movableIndices.size(); i++) {
             ItemStack before = container.getItem(movableIndices.get(i));

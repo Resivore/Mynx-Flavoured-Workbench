@@ -1,14 +1,16 @@
-# Inventory Sorter CSR Compatibility — Canary 1
+# Inventory Sorter CSR Compatibility — Canary 2
 
 Use only the dedicated Matcha Flavoured 26.2 Workbench through a serialized Test Instance Manager transition. Do not access the protected 26.1.2 profile.
 
-Open a chest supported by Inventory Sorter and run its usual sort action. Confirm each case with an ordinary no-special-slots control first:
+For each case, first use an ordinary no-reservation inventory as a control. CSR-reserved *physical slots* are fixed; every unreserved outer shulker box and bundle is sortable under Inventory Sorter's normal ItemStack ordering.
 
-- An empty CSR-reserved chest slot stays empty while ordinary stacks on both sides sort.
-- A CSR-reserved stack (including adjacent compatible stack counts) remains component- and count-exact and does not merge.
-- A bundle and a shulker box stay in their original slots; verify a named shulker with contents still has its exact name and contents.
-- Several distributed reserved/bundle/shulker slots remain fixed while ordinary slots sort around them, including with empty space available.
-- If the sorter supports the player inventory, sort it with a bundle and a shulker in the main inventory; both stay fixed.
-- If supported, repeat on a double chest and verify reservations map to the actual physical half/local slot.
+- Sort an unreserved empty and then filled shulker placed at an obviously unsorted position. It must move normally while its exact contents, custom name, dye/type, and every component remain intact.
+- Sort an unreserved empty and then filled bundle. The outer bundle must move normally; its exact contents, name, variant/components, and any CSR-owned identity data must remain intact.
+- Put a partially filled bundle beside loose compatible stacks, sort, and confirm the loose stacks remain outer inventory stacks. The bundle contents must neither increase nor be extracted/reordered.
+- Repeat with several bundles and with mixed bundles/shulkers. All unreserved outer containers may reorder; none may receive, lose, merge, or reconstruct contents.
+- Reserve a physical slot holding an ordinary stack, a shulker, and a bundle in separate trials. Sort each time: the exact reserved slot and full stack must remain unchanged; it must not receive merges or be workspace. Also verify an empty reserved slot remains empty.
+- Use a mixed layout of ordinary stacks, a movable bundle, a CSR-reserved slot, a movable shulker, and ordinary stacks. Only the reserved slot may remain fixed. Repeat with distributed reservations and, if supported, a double container to verify physical-half/local-slot mapping.
+- In the player main inventory, sort with shulkers only: normal Inventory Sorter sorting must occur. Then sort with one and several bundles: outer bundles and shulkers must sort normally, while no loose item is inserted into any bundle.
+- If the matching CSR specific-container-identity canary is available, verify unreserved identity-bearing shulkers/bundles move while retaining their complete identity/components. Then place each in its correctly reserved slot and confirm that slot remains untouched.
 
-Stop and record `FAIL` if a fixed slot changes, accepts a merge, is used as workspace, or a portable container's contents/components change. Record only observed results; a successful build or GameTest is not desktop runtime evidence.
+Stop and record `FAIL` if any CSR-reserved slot changes, if a portable container’s components or contents change, or if sorting inserts loose items into a bundle. Record only observed desktop runtime results; build, GameTests, and launch evidence are not desktop runtime evidence.
