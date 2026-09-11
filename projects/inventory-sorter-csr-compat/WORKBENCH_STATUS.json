@@ -1,0 +1,136 @@
+{
+  "$schema": "../../schemas/workbench-status.schema.json",
+  "schema_version": 1,
+  "identity": {
+    "uuid": "ce3609d2-8841-4a36-bc95-18f65fe94e72",
+    "name": "Inventory Sorter CSR Compatibility",
+    "project_id": "inventory-sorter-csr-compat",
+    "aliases": [
+      "Inventory Sorter × Container Slot Reservations Compatibility",
+      "Inventory Sorter CSR Compat"
+    ],
+    "legacy_names": [],
+    "legacy_ids": []
+  },
+  "definition": {
+    "lifecycle": "ACTIVE",
+    "goals": [
+      "Make CSR-reserved physical slots immutable to Inventory Sorter while preserving its normal order and stack behavior for all movable slots.",
+      "Treat occupied vanilla bundles and every vanilla shulker-box item as fixed sort obstacles without inspecting or mutating their contents or components.",
+      "Apply the same mask to Inventory Sorter's authoritative server sort, client fallback click plan, and player bundle-insertion route."
+    ],
+    "scope": [
+      "Canary 1 intercepts only Inventory Sorter 3.0.0's ContainerInventorySorter whole-range layout/writeback seam and ClientFallbackSortPlanBuilder fallback-click seam.",
+      "CSR detection calls ContainerSlotReservationsApi.isReserved on the exact Slot container and Slot#getContainerSlot local index; CSR resolves supported physical owners, including double-container mappings.",
+      "A masked range compacts only movable slots through Inventory Sorter's own SortedInventoryLayout, writes or clicks only their original physical/menu slots, and never uses fixed slots as workspace.",
+      "When a fixed slot exists, the incompatible optional bundle-target insertion pass is bypassed because it would inspect or mutate a bundle; ordinary no-fixed-slot behavior remains fully upstream.",
+      "The player's special upstream sort-into-bundles branch is replaced only when it contains a bundle or shulker, using the ordinary masked player sort instead."
+    ],
+    "boundaries": {
+      "owned_paths": [
+        "projects/inventory-sorter-csr-compat"
+      ],
+      "exclusions": [
+        "Does not modify, bundle, redistribute, or copy source/resources from Inventory Sorter or Container Slot Reservations.",
+        "Does not change CSR reservation data, insertion admission, hopper, QUICK_MOVE, QSN, CCAR, manual interaction, comparator rules, or supported-owner policy.",
+        "Does not intercept broad vanilla inventory APIs; it acts only inside audited Inventory Sorter sort entrypoints.",
+        "Exact Inventory Sorter and CSR JAR versions are controlled-validation and bytecode-contract baselines, not exact runtime dependency pins."
+      ]
+    },
+    "dependencies": [
+      {
+        "type": "MOD",
+        "identifier": "minecraft",
+        "requirement": "=26.2",
+        "reason": "Exact target Minecraft release."
+      },
+      {
+        "type": "MOD",
+        "identifier": "fabricloader",
+        "requirement": ">=0.19.3",
+        "reason": "Declared Fabric Loader capability floor."
+      },
+      {
+        "type": "MOD",
+        "identifier": "fabric-api",
+        "requirement": ">=0.157.0; controlled build 0.157.0+26.2",
+        "reason": "Declared API capability floor and exact controlled-build provider."
+      },
+      {
+        "type": "MOD",
+        "identifier": "inventorysorter",
+        "requirement": "Runtime depends \"*\"; audited inventorysorter-fabric-3.0.0+mc26.2.jar, Fabric ID inventorysorter, embedded 3.0.0, 3,777,884 bytes, SHA-256 935100251e9aa5ba3f279dc5ac02f4426f568838986c9ea86cd1b198393a8708",
+        "reason": "Dedicated bridge patches its exact audited server layout/writeback and client fallback planner; a bytecode contract test fails closed if either seam changes."
+      },
+      {
+        "type": "PROJECT",
+        "identifier": "3ab36584-8732-554f-840e-28a75c422660",
+        "requirement": "Runtime depends container_slot_reservations \"*\"; controlled API baseline C16 container-slot-reservations-0.1.0-canary16.jar, 179,562 bytes, SHA-256 34c1f8c5cfca011aca062c55232d2b50ccac2a95f72f8e5a7edec305b5a8c1b2, source d16c664e65c61f9b73d2f710e75069f581ec7239",
+        "reason": "Uses CSR's stable direct read-only isReserved(Container, localSlot) query boundary only."
+      },
+      {
+        "type": "MOD",
+        "identifier": "cloth-config",
+        "requirement": ">=26.2.155 as required by Inventory Sorter; controlled GameTest provider 26.2.155",
+        "reason": "Required transitively by the exact audited Inventory Sorter artifact."
+      },
+      {
+        "type": "TOOL",
+        "identifier": "java",
+        "requirement": "=25",
+        "reason": "Exact compilation and controlled validation runtime."
+      },
+      {
+        "type": "TOOL",
+        "identifier": "gradle",
+        "requirement": "=9.5.1",
+        "reason": "Exact controlled build tool."
+      },
+      {
+        "type": "TOOL",
+        "identifier": "fabric-loom",
+        "requirement": "=1.17.19",
+        "reason": "Exact Fabric build plugin."
+      }
+    ]
+  },
+  "state": {
+    "milestone": "Canary 1 is retained after controlled validation. It is not deployed and has no desktop Minecraft runtime evidence.",
+    "releases": {
+      "current": {
+        "version": "C1 (0.1.0-canary1)",
+        "embedded_version": "0.1.0-canary1",
+        "artifact": {
+          "filename": "inventory-sorter-csr-compat-0.1.0-canary1.jar",
+          "sha256": "286fe324bef67201d9f420a6755b80a82afe2058dafdb63b906fe4d6ba89d371"
+        },
+        "source_commit": "456b4ce85a1fb0b362a7ab7852bd126d392bb4a4",
+        "runtime_dependency_policy": {
+          "contract": "CAPABILITY_OR_PROVIDER",
+          "exceptions": []
+        }
+      },
+      "accepted": null,
+      "rollback": null,
+      "accepted_current": "NO_ACCEPTED",
+      "accepted_rollback": "NO_ROLLBACK"
+    },
+    "validation": {
+      "build": "CONTROLLED_VALIDATION_PASS",
+      "deployment": "NOT_DEPLOYED",
+      "runtime": "RUNTIME_UNTESTED"
+    },
+    "blocker": null
+  },
+  "synchronization": {
+    "revision": 1,
+    "activity_at": "2026-09-11T16:21:00Z",
+    "updated_at": "2026-09-11T16:21:00Z",
+    "last_codex_at": "2026-09-11T16:21:00Z",
+    "source_commit": "456b4ce85a1fb0b362a7ab7852bd126d392bb4a4",
+    "google_sheet": {
+      "participates": true,
+      "exclusion_reason": null
+    }
+  }
+}

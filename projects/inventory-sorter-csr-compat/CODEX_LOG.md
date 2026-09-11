@@ -1,0 +1,12 @@
+# Codex Log
+
+## 2026-09-11T16:21:00Z — Create Inventory Sorter CSR Compatibility Canary 1
+
+- Revision: 1
+- Source checkpoint: `456b4ce85a1fb0b362a7ab7852bd126d392bb4a4`
+- Changes: Added a narrow Fabric bridge for exact Inventory Sorter 3.0.0. Its authoritative server whole-range snapshot/layout/writeback path compacts only movable physical slots through Inventory Sorter's own `SortedInventoryLayout`; CSR-reserved slots and occupied vanilla bundle/shulker-box slots are never read as movable input or written as output. The fallback click planner compacts the same exact `Slot.container`/`Slot#getContainerSlot` mapped slots, so generated clicks never address a fixed menu slot. The distinct player sort-into-bundles entrypoint falls back to the masked ordinary player sort only when a bundle or shulker is present, preventing any bundle-target mutation. No CSR implementation, reservation data, or upstream JAR was modified. Immutable sorter provenance: `inventorysorter-fabric-3.0.0+mc26.2.jar`, Fabric ID `inventorysorter`, embedded `3.0.0`, 3,777,884 bytes, SHA-256 `935100251e9aa5ba3f279dc5ac02f4426f568838986c9ea86cd1b198393a8708`; CSR C16 baseline is `container-slot-reservations-0.1.0-canary16.jar`, 179,562 bytes, SHA-256 `34c1f8c5cfca011aca062c55232d2b50ccac2a95f72f8e5a7edec305b5a8c1b2`, source `d16c664e65c61f9b73d2f710e75069f581ec7239`.
+- Build/static: Clean Java 25 / Gradle 9.5.1 / Loom 1.17.19 `check --offline --no-daemon` passed. JUnit verifies the exact upstream JAR byte hash, Fabric metadata, and audited server/fallback method calls; five headless Fabric GameTests passed: unchanged no-special output, empty and occupied CSR reservations with no merge, exact named bundle/shulker component preservation, and distributed fixed slots with sortable ordinary space. These are controlled results, not desktop runtime evidence.
+- Artifact: `inventory-sorter-csr-compat-0.1.0-canary1.jar`, embedded `0.1.0-canary1`, 10,722 bytes, SHA-256 `286fe324bef67201d9f420a6755b80a82afe2058dafdb63b906fe4d6ba89d371`, source `456b4ce85a1fb0b362a7ab7852bd126d392bb4a4`, runtime dependency policy `CAPABILITY_OR_PROVIDER` with no exceptions.
+- Runtime: Not deployed; `RUNTIME_UNTESTED`. No Test Instance Manager operation or protected gameplay-profile access occurred.
+- Result: `ACTIVE` / `CONTROLLED_VALIDATION_PASS` / `NOT_DEPLOYED` / `RUNTIME_UNTESTED`.
+- Next state: Retain the exact ignored artifact, integrate authoritative main, then use only a serialized dedicated-workbench transition if a free compatible testing slot exists.
