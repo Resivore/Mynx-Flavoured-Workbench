@@ -121,12 +121,13 @@ public abstract class QuickStackServiceMixin {
         QuickStackMoveEngine.Result loose = original.call(
                 source, firstSourceSlot, window.endExclusive(), augmented, effectiveRules);
         QuickStackMoveEngine.Result carried = CarriedContainerSources.drain(augmented);
+        int inheritedTargetTouches = loose.targetContainersTouched() + carried.targetContainersTouched();
         return new QuickStackMoveEngine.Result(
                 homes.itemsMoved() + loose.itemsMoved() + carried.itemsMoved(),
                 homes.sourceStacksTouched() + loose.sourceStacksTouched() + carried.sourceStacksTouched(),
-                ReservationOnlyOuterCarriers.targetContainersTouched(
-                        homes.targetContainersTouched()
-                                + loose.targetContainersTouched()
-                                + carried.targetContainersTouched()));
+                homes.itemsMoved() > 0
+                        ? ReservationOnlyOuterCarriers.targetContainersTouchedAfterHomeReturn(
+                                homes.targetContainersTouched() + inheritedTargetTouches)
+                        : inheritedTargetTouches);
     }
 }

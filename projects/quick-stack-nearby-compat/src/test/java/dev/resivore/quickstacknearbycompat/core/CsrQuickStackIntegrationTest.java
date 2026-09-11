@@ -315,7 +315,7 @@ class CsrQuickStackIntegrationTest {
         ItemStack moving = new ItemStack(Items.COBBLESTONE, 1);
         SimpleContainer target = new SimpleContainer(3);
 
-        int moved = CsrQuickStackIntegration.insertPass(
+        int moved = CsrQuickStackIntegration.insertIntoMatchingReservationsOnly(
                 moving,
                 target,
                 (container, slot, incoming) -> slot == 1

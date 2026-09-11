@@ -296,7 +296,7 @@ public final class CsrQuickStackIntegration {
         if (!CsrReservationResolver.isAvailable()) {
             return 0;
         }
-        return insertPass(
+        return insertIntoMatchingReservationsOnly(
                 sourceStack,
                 target,
                 CsrReservationResolver::classify,
@@ -304,7 +304,19 @@ public final class CsrQuickStackIntegration {
         );
     }
 
-    static int insertPass(
+    /**
+     * Testable form of C18's matching-only pass. The production entry point above supplies
+     * CSR's public classifier; this helper deliberately has no ordinary-empty fallback.
+     */
+    static int insertIntoMatchingReservationsOnly(
+            ItemStack sourceStack,
+            Container target,
+            SlotClassifier classifier,
+            CsrReservationResolver.SlotClass passClass) {
+        return insertPass(sourceStack, target, classifier, passClass);
+    }
+
+    private static int insertPass(
             ItemStack sourceStack,
             Container target,
             SlotClassifier classifier,

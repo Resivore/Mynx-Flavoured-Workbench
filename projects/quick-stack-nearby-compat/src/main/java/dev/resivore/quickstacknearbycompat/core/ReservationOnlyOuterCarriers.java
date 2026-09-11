@@ -112,8 +112,11 @@ public final class ReservationOnlyOuterCarriers {
         }
     }
 
-    /** The full action's unique target count, including any C18 return and later QSN phases. */
-    public static int targetContainersTouched(int fallback) {
+    /**
+     * The full action's unique target count once C18 has actually returned a carrier. Actions
+     * without a return must preserve C17's existing loose-plus-carried accounting verbatim.
+     */
+    public static int targetContainersTouchedAfterHomeReturn(int fallback) {
         Scope scope = ACTIVE.get();
         return scope == null ? fallback : scope.touchedTargets().size();
     }
