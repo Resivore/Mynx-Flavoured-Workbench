@@ -84,24 +84,24 @@ class NaturalistTraceBridgeTest {
         }
     }
 
-    @Test void c28UsesTheLiveTopJawCenterWhileKeepingTheCompleteAdultWhaleFaceAssembly() {
+    @Test void c29RestoresTheReadableAdultWhaleAssemblyTraceAndCenter() {
         ModelPart topJaw = part(Map.of());
         ModelPart bottomJaw = part(Map.of());
         ModelPart skullRot = part(Map.of("topJaw", topJaw, "bottomJaw", bottomJaw));
         var contract = NaturalistModelContracts.contractsForId("whale").getFirst();
-        var resolved = new NaturalistModelContracts.ResolvedContract(contract, skullRot, skullRot, topJaw);
+        var resolved = new NaturalistModelContracts.ResolvedContract(contract, skullRot, skullRot, skullRot);
 
         assertEquals(List.of("body", "skullRot"), contract.path());
-        assertEquals(List.of("body", "skullRot", "topJaw"), contract.tracePath());
-        assertTrue(contract.useTraceAsRenderCenter());
+        assertEquals(List.of("body", "skullRot"), contract.tracePath());
+        assertFalse(contract.useTraceAsRenderCenter());
         assertSame(skullRot, resolved.selected());
         assertTrue(resolved.selected().hasChild("topJaw"));
         assertTrue(resolved.selected().hasChild("bottomJaw"));
-        assertSame(topJaw, resolved.renderCenter());
-        assertNotSame(resolved.selected(), resolved.renderCenter());
+        assertSame(skullRot, resolved.trace());
+        assertSame(resolved.selected(), resolved.renderCenter());
         assertEquals(.30F, contract.presentation().scale());
         assertEquals(0.0F, contract.presentation().xRotation());
-        assertEquals(1.5708F, contract.presentation().yRotation());
+        assertEquals(.7854F, contract.presentation().yRotation());
         assertEquals(0.0F, contract.presentation().zRotation());
         assertEquals(0.0F, contract.presentation().frameYOffset());
 

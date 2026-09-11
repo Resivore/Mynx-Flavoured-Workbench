@@ -170,14 +170,16 @@ public final class NaturalistModelContracts {
                 p(.30F, 1.5708F, 0.0F, 0.0F)));
         add(map, "giant_isopod", cVisibleDetached("GiantIsopodModel", "rolled", p(.45F)), cDetached("GiantIsopodModel", "body", p(.45F)));
         add(map, "jellyfish", cDetached("JellyfishModel", "body", p(.45F)));
-        // The proven adult profile keeps skullRot's complete face assembly (cranium plus topJaw
-        // and bottomJaw), but anchors Xaero's bounded center on its live, directly drawable topJaw. Xaero reads
-        // only the center's direct largest cuboid for the frame; the old skullRot center is a
-        // short cranium while topJaw is the source-audited 28x11x42 forward face volume.  This
-        // is deliberately the Starfish-style separation of full copied geometry from a live
-        // trace/center. Unlike C24's failed skullRot-centered frame, this exact live topJaw center
-        // produced the C27 90-degree profile capture. The baby contract is the frozen C26 baseline.
-        add(map, "whale", cWithTraceCenter("WhaleModel", "body/skullRot", "body/skullRot/topJaw", p(.30F, 0.0F, 1.5708F, 0.0F)), c("WhaleBabyModel", "body/skull", p(.60F, 0.0F, .7854F, 0.0F)));
+        // C28 proved that a live topJaw trace/center can make the exact 90-degree fallback render,
+        // but Xaero 26.4.2 centers from the unrotated main part's position plus only its direct
+        // cuboid Y/Z midpoint. It does not rotate that center with the adapter yaw or use the
+        // cuboid X midpoint. The Whale head is authored long on Z, so the quarter turn maps the
+        // full face far across icon X while the topJaw center cannot recenter it; runtime showed
+        // only a narrow unreadable sliver. Every exact live head part has x=0, and skullRot at the
+        // same quarter turn was C24's label-only failure. C29 therefore restores the last readable,
+        // real-icon C25/C26 contract: complete skullRot face, its own live trace/center, and a
+        // three-quarter yaw. The baby contract remains the frozen C26 baseline.
+        add(map, "whale", c("WhaleModel", "body/skullRot", p(.30F, 0.0F, .7854F, 0.0F)), c("WhaleBabyModel", "body/skull", p(.60F, 0.0F, .7854F, 0.0F)));
         // Both constructors pass root.getChild("root") to EntityModel, so model.root() already
         // is the authored root: a second `root` hop is invalid. Desert body owns claws/tail and
         // Jungle body owns arms/claws/tail; legs is a sibling in each. Keep the compact copied

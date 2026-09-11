@@ -7,9 +7,11 @@ import java.util.jar.JarFile;
 import org.junit.jupiter.api.Test;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.tree.FieldInsnNode;
 import org.objectweb.asm.tree.FieldNode;
 import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
+import org.objectweb.asm.tree.VarInsnNode;
 
 class BinaryContractTest {
     @Test void exactValidationInputsExposeRequiredXaeroAndNaturalistSeams() throws Exception {
@@ -35,7 +37,7 @@ class BinaryContractTest {
         }
     }
 
-    @Test void c28KeepsTheProvenWhaleBridgeAndRemovesOnlyItsTemporaryDiagnostic() throws Exception {
+    @Test void c29RestoresTheReadableWhaleContractWithoutWeakeningTheBridge() throws Exception {
         Path root = Path.of(System.getProperty("projectRoot"));
         String mixins = Files.readString(root.resolve("src/main/resources/naturalist_xaero_entity_icons_compat.mixins.json"));
         assertTrue(mixins.contains("ModelRenderTraceMixin"));
@@ -61,7 +63,8 @@ class BinaryContractTest {
         assertTrue(contracts.contains("p(.75F)), c(\"HippoBabyModel\", \"body/neck\", p(.70F))"));
         assertFalse(contracts.contains("p(.60F)), c(\"HippoBabyModel\", \"body/neck\", p(.70F))"));
         assertTrue(contracts.contains("-2.0F)), c(\"BlackBearBabyModel\", \"body/skull\")"));
-        assertTrue(contracts.contains("cWithTraceCenter(\"WhaleModel\", \"body/skullRot\", \"body/skullRot/topJaw\", p(.30F, 0.0F, 1.5708F, 0.0F))"));
+        assertTrue(contracts.contains("c(\"WhaleModel\", \"body/skullRot\", p(.30F, 0.0F, .7854F, 0.0F))"));
+        assertFalse(contracts.contains("cWithTraceCenter(\"WhaleModel\""));
         assertTrue(contracts.contains("\"WhaleBabyModel\", \"body/skull\", p(.60F, 0.0F, .7854F, 0.0F)"));
         assertTrue(contracts.contains("cWithTraceCenter"));
         String manager = Files.readString(root.resolve("src/main/java/dev/resivore/naturalistxaeroicons/mixin/RadarIconManagerMixin.java"));
@@ -115,6 +118,55 @@ class BinaryContractTest {
                 "xaero-entity-icons/src/main/java/dev/resivore/xaeroemfcompat/mixin/RadarIconManagerMixin.java"));
         assertEquals(1, genericManager.split("@Redirect", -1).length - 1);
         assertTrue(genericManager.contains("xaeroEmf$retryFailedAtActualPrerender"));
+    }
+
+    @Test void xaero2642CentersFromTheUnrotatedMainPartAndNeverItsCuboidXMidpoint() throws Exception {
+        try (JarFile xaero = new JarFile(Path.of(System.getProperty("xaeroJar")).toFile())) {
+            ClassNode node = readClass(xaero,
+                    "xaero/hud/minimap/radar/icon/creator/render/form/model/part/RadarIconModelPartPrerenderer.class");
+            MethodNode renderPart = node.methods.stream()
+                    .filter(method -> method.name.equals("renderPart") && method.desc.contains("ModelPart;Lnet/minecraft/client/model/geom/ModelPart;"))
+                    .findFirst().orElseThrow();
+
+            MethodInsnNode biggestCuboid = null;
+            int mrtLookups = 0;
+            for (var instruction : renderPart.instructions) {
+                if (instruction instanceof MethodInsnNode call
+                        && call.owner.equals("xaero/hud/minimap/radar/icon/creator/render/trace/ModelRenderTrace")
+                        && call.name.equals("getModelPartRenderInfo")) {
+                    mrtLookups++;
+                    assertTrue(call.getPrevious() instanceof VarInsnNode load && load.var == 3,
+                            "Xaero validates MRT on the rendered part, not the separate main-part center");
+                }
+                if (instruction instanceof MethodInsnNode call
+                        && call.owner.equals("xaero/hud/minimap/radar/icon/creator/render/form/model/part/ModelPartUtil")
+                        && call.name.equals("getBiggestCuboid")) biggestCuboid = call;
+            }
+            assertEquals(1, mrtLookups);
+            assertNotNull(biggestCuboid);
+            assertTrue(biggestCuboid.getPrevious() instanceof VarInsnNode load && load.var == 4,
+                    "Xaero must derive the frame from the separate main-part argument");
+
+            int minX = 0, maxX = 0, minY = 0, maxY = 0, minZ = 0, maxZ = 0;
+            for (var instruction : renderPart.instructions) {
+                if (!(instruction instanceof FieldInsnNode field)
+                        || !field.owner.equals("net/minecraft/client/model/geom/ModelPart$Cube")) continue;
+                switch (field.name) {
+                    case "minX" -> minX++;
+                    case "maxX" -> maxX++;
+                    case "minY" -> minY++;
+                    case "maxY" -> maxY++;
+                    case "minZ" -> minZ++;
+                    case "maxZ" -> maxZ++;
+                }
+            }
+            assertEquals(0, minX);
+            assertEquals(0, maxX);
+            assertEquals(1, minY);
+            assertEquals(1, maxY);
+            assertEquals(1, minZ);
+            assertEquals(1, maxZ);
+        }
     }
 
     @Test void xaeroC13AuditEstablishesCacheBeforeCreatorAndTheSpriteScaleSeam() throws Exception {
