@@ -21,7 +21,7 @@
     "lifecycle": "ACTIVE",
     "goals": [
       "Preserve C12's C9-derived nested shulker routing, source accounting, ordering, capacity, and optional CSR affinity while making only the survival QSN action placement stable and idempotent.",
-      "Keep a physically populated carried vanilla shulker out of every ordinary QSN loose-source discovery and movement path for its entire action while preserving C16 direct-content draining under the real user rules.",
+      "Keep a physically populated carried vanilla shulker out of ordinary QSN loose movement while allowing only a CSR public RESERVED_MATCH home return that precedes C16 direct-content draining under the real user rules.",
       "Keep a CSR-reserved nested slot owned by its exact item-and-components reservation even while its physical stack is empty.",
       "Place the survival QSN action as the upper member of the shared 18px bottom-right utility stack without a Notebook runtime dependency.",
       "Preserve accepted C8 and rollback C6 provenance separately from retained C9 and rejected C10/C11 historical evidence."
@@ -32,7 +32,8 @@
       "C15 leaves existing physical-stack merging, nested discovery, parent-first ordering, reservation creation and maintenance, container scanning, source rules, transactional writeback, and C9 identity semantics unchanged.",
       "C15 changes only the survival InventoryScreen QSN action placement: its existing upstream QuickStackIconButton is explicitly recognized as QSN-owned when the production reservation seam scans Screens.getWidgets(screen), so the action cannot collide with itself. Every unrelated visible widget remains a collision; the C14 18x18 Minecraft Button chrome, crisp glyph, tooltip, primary/right-click callbacks, and exact utility-stack geometry are unchanged. Controlled unit and Fabric GameTest evidence is not Minecraft gameplay runtime evidence.",
       "C13 is retained as immutable historical release evidence but is not a viable client artifact: the user-supplied Minecraft 26.2 launch failed before menu initialization because its chrome mixin could not resolve that shadow. C14 is immutable historical evidence with a user-reported survival InventoryScreen placement failure: with QSN 0.4.0 loaded, the otherwise correct action alternated frame-to-frame between adjacent 22px utility slots. That report does not assert a Test Instance Manager deployment or managed Workbench transition. C15 is ACTIVE, NOT_DEPLOYED, and RUNTIME_UNTESTED.",
-      "C17 is a narrow C16 successor. At QSN action start it recognizes vanilla BlockItem -> ShulkerBoxBlock carriers with at least one non-empty physical DataComponents.CONTAINER slot, overlays a transient locked SourceRules entry only for native loose discovery/movement, and keeps C16's carried source snapshot on the original user rules. Thus a carrier drained empty this press stays put until the next press; physically empty shulkers remain native QSN items. C16 user-reported/external feedback confirmed carried-source draining worked but reported that a populated matching carrier could be moved as an ordinary outer item. Neither feedback nor C17 controlled validation implies a Test Instance Manager deployment or promotion."
+      "C17 is a narrow C16 successor. At QSN action start it recognizes vanilla BlockItem -> ShulkerBoxBlock carriers with at least one non-empty physical DataComponents.CONTAINER slot, overlays a transient locked SourceRules entry only for native loose discovery/movement, and keeps C16's carried source snapshot on the original user rules. Thus a carrier drained empty this press stays put until the next press; physically empty shulkers remain native QSN items. C16 user-reported/external feedback confirmed carried-source draining worked but reported that a populated matching carrier could be moved as an ordinary outer item. Neither feedback nor C17 controlled validation implies a Test Instance Manager deployment or promotion.",
+      "C18 preserves C17's populated-shulker outer lock, but makes each eligible count-one protected carrier a reservation-only CSR affinity candidate during QSN's existing raw nearby-target scan. After QSN has established that target list, C18 searches it and each physical slot in the existing order, moving the whole carrier only to the first physically empty slot for which CSR's public classify API reports RESERVED_MATCH and native admission succeeds. It never falls through to ordinary empty capacity. A successful return explicitly retires that carrier's action-start C16 snapshot before the drain phase, preserving every component and content. QSN neither reads nor interprets CSR portable-container identity internals; CSR C17 is the exact paired controlled-validation provider."
     ],
     "boundaries": {
       "owned_paths": [
@@ -77,8 +78,8 @@
       {
         "type": "PROJECT",
         "identifier": "3ab36584-8732-554f-840e-28a75c422660",
-        "requirement": "Optional suggests \"*\"; API floor C1 container-slot-reservations-0.1.0-canary1.jar, 63,388 bytes, SHA-256 4e7f0a470a387be76189d0a5e1ae8c614d17ec8b24a6774b400838cc234c4532; paired validation C4 container-slot-reservations-0.1.0-canary4.jar, 111,335 bytes, SHA-256 006f2c01e3502bd19d67e26a53979ccc65d53dde08aa07313094017ca170df65, source d09c3f7153d4e53a36f41fb1ea80d85b4cb2e28f",
-        "reason": "Optional public reservation classifier consumed for exact target affinity and empty-slot ordering; absence and unsupported containers fail closed to native QSN behavior."
+        "requirement": "Optional suggests \"*\"; API floor C1 container-slot-reservations-0.1.0-canary1.jar, 63,388 bytes, SHA-256 4e7f0a470a387be76189d0a5e1ae8c614d17ec8b24a6774b400838cc234c4532; C18 paired validation C17 container-slot-reservations-0.1.0-canary17.jar, 190,491 bytes, SHA-256 5ae4d65b70b8f8d2ed07d9b33724ae9a1b7048518bb5a4ba6ef72fadbf0f4b82, source 34f0104c561ff93c12999fc7b14a57d3d8643114",
+        "reason": "Optional public reservation classifier consumed for exact target affinity, empty-slot ordering, and C18's matching-home-only return; absence and unsupported containers fail closed to native QSN/C17 behavior."
       },
       {
         "type": "MOD",
@@ -149,16 +150,16 @@
     ]
   },
   "state": {
-    "milestone": "C17 is a controlled-validated, retained-but-not-deployed C16 correction. It snapshots populated vanilla shulker carrier slots at QSN action start and blocks only their outer loose-source admission for that action, while C16 continues draining direct contents through the original user source rules. C16 user feedback is external runtime evidence of working carried draining plus the populated-outer movement defect; it did not establish a managed deployment. C8 remains accepted and C6 remains rollback.",
+    "milestone": "C18 is a controlled-validated, retained-but-not-deployed C17 successor. It preserves C17's ordinary populated-shulker outer protection, adds only CSR public RESERVED_MATCH reservation-only discovery and whole-carrier home return, and retires a successfully returned carrier from C16 draining. Unmatched, blocked, user-locked, kept, bundle, and CSR-absent cases retain C17/C16 behavior. C8 remains accepted and C6 remains rollback.",
     "releases": {
       "current": {
-        "version": "C17 (0.1.0-canary17)",
-        "embedded_version": "0.1.0-canary17",
+        "version": "C18 (0.1.0-canary18)",
+        "embedded_version": "0.1.0-canary18",
         "artifact": {
-          "filename": "quick-stack-nearby-compat-0.1.0-canary17.jar",
-          "sha256": "9c133eee74922dfc0b0ac2624f3b02ef47e602fb87bcf2b995d1049e08d07bd9"
+          "filename": "quick-stack-nearby-compat-0.1.0-canary18.jar",
+          "sha256": "cb9144de133ac2dd9db20925b1275200213fcf57b36f9b5d530a6b02ac905554"
         },
-        "source_commit": "d4764be8a4e715b60e1276f28dae99c471a56d37",
+        "source_commit": "009e455b91df0cdea1bd1489097d8a0ce2359ade",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
@@ -197,11 +198,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 20,
-    "activity_at": "2026-09-11T16:28:53Z",
-    "updated_at": "2026-09-11T16:28:53Z",
-    "last_codex_at": "2026-09-11T16:28:53Z",
-    "source_commit": "d4764be8a4e715b60e1276f28dae99c471a56d37",
+    "revision": 21,
+    "activity_at": "2026-09-11T18:06:35Z",
+    "updated_at": "2026-09-11T18:06:35Z",
+    "last_codex_at": "2026-09-11T18:06:35Z",
+    "source_commit": "009e455b91df0cdea1bd1489097d8a0ce2359ade",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
