@@ -112,7 +112,7 @@ class NaturalistCoverageTest {
         assertEquals(0.0F, whaleAdult.presentation().xRotation());
         assertEquals(1.1781F, whaleAdult.presentation().yRotation());
         assertEquals(0.0F, whaleAdult.presentation().zRotation());
-        assertEquals(0.0F, whaleAdult.presentation().frameYOffset());
+        assertEquals(-1.0F, whaleAdult.presentation().frameYOffset());
         assertEquals(List.of(), whaleAdult.cubeIndexes());
         assertEquals(List.of("skullRot"), whaleAdult.drawableChildren());
         assertTrue(whaleAdult.useTraceAsRenderCenter());
@@ -275,7 +275,7 @@ class NaturalistCoverageTest {
         assertEquals(.28F, NaturalistModelContracts.contractsForId("jungle_scorpion").getFirst().presentation().scale());
     }
 
-    @Test void c32ReconcilesC31AndChangesOnlyTheAdultWhaleScale() throws Exception {
+    @Test void c33ReconcilesC32AndChangesOnlyTheAdultWhaleFrameOffset() throws Exception {
         var blackBear = NaturalistModelContracts.contractsForId("black_bear").getFirst();
         var hippo = NaturalistModelContracts.contractsForId("hippo").getFirst();
         var whale = NaturalistModelContracts.contractsForId("whale").getFirst();
@@ -284,17 +284,18 @@ class NaturalistCoverageTest {
         assertEquals(List.of("body", "bone", "neck"), hippo.path());
         assertEquals(List.of("body", "bone", "neck"), hippo.tracePath());
         assertEquals(.70F, NaturalistModelContracts.contractsForId("hippo").get(1).presentation().scale());
-        assertEquals(1.1781F, whale.presentation().yRotation(), "C32 preserves C31's readable near-side profile");
+        assertEquals(1.1781F, whale.presentation().yRotation(), "C33 preserves C32's readable near-side profile");
         assertEquals(List.of("body"), whale.tracePath());
         assertTrue(whale.useTraceAsRenderCenter());
         assertEquals(.18F, whale.presentation().scale());
+        assertEquals(-1.0F, whale.presentation().frameYOffset(), "C33 changes only the copied frame offset to reveal the lower body");
         assertEquals(List.of("skullRot"), whale.drawableChildren());
         Path root = Path.of(System.getProperty("projectRoot"));
         for (String record : List.of(Files.readString(root.resolve("WORKBENCH_STATUS.json")),
                 Files.readString(root.resolve("TESTING.md")), Files.readString(root.resolve("CODEX_LOG.md")))) {
-            assertTrue(record.contains("C31"));
-            assertTrue(record.contains("almost correct"));
-            assertTrue(record.contains("nose and chest"));
+            assertTrue(record.contains("C32"));
+            assertTrue(record.contains("nose"));
+            assertTrue(record.contains("bottom"));
             assertTrue(record.contains("not label-only"));
         }
     }

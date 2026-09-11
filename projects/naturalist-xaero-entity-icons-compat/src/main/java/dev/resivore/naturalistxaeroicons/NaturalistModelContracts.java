@@ -170,17 +170,19 @@ public final class NaturalistModelContracts {
                 p(.30F, 1.5708F, 0.0F, 0.0F)));
         add(map, "giant_isopod", cVisibleDetached("GiantIsopodModel", "rolled", p(.45F)), cDetached("GiantIsopodModel", "body", p(.45F)));
         add(map, "jellyfish", cDetached("JellyfishModel", "body", p(.45F)));
-        // C32 retains C31's complete adult skullRot face (cranium plus topJaw and bottomJaw), and
+        // C33 retains C32's complete adult skullRot face (cranium plus topJaw and bottomJaw), and
         // adds only body's direct torso cuboid.  The distant tail/tail2/fluke and both root-level
         // fins are deliberately omitted: this is the smallest audited head-plus-body silhouette,
         // rather than a tiny full Whale.  The copied selection is detached, while the exact live
         // drawable body remains the trace and Xaero frame center.  Its approximately 113-unit
-        // head-to-torso extent is reduced only from .20F to .18F so C31's near-side-profile
-        // silhouette can fit its nose and chest within Xaero's frame. Its C31 67.5-degree
-        // model-space yaw, live trace/center, and zero X/Z/frame offset remain unchanged.
+        // head-to-torso extent remains at C32's .18F so its near-side-profile silhouette keeps
+        // the now-correct nose fit.  C33 changes only this copied adapter's frame Y to -1.0F:
+        // the smallest existing source-backed frame correction direction, lifting the composition
+        // to reveal a little more lower torso/chest without touching model geometry or scale.
+        // Its C31 67.5-degree model-space yaw and live trace/center remain unchanged.
         // Baby Whale stays on the C29 safe fallback unchanged.
         add(map, "whale", cDetachedChildrenWithTraceCenter("WhaleModel", "body", "body",
-                p(.18F, 0.0F, 1.1781F, 0.0F), List.of("skullRot")),
+                p(.18F, 0.0F, 1.1781F, 0.0F, -1.0F), List.of("skullRot")),
                 c("WhaleBabyModel", "body/skull", p(.60F, 0.0F, .7854F, 0.0F)));
         // Both constructors pass root.getChild("root") to EntityModel, so model.root() already
         // is the authored root: a second `root` hop is invalid. Desert body owns claws/tail and
