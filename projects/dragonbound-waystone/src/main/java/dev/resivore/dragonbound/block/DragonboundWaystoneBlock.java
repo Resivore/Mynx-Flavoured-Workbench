@@ -26,12 +26,12 @@ import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 
 /**
- * Fixed 16x3x16 return anchor. This deliberately is not a {@code SlabBlock} and therefore has no
+ * Fixed 16x4x16 return anchor. This deliberately is not a {@code SlabBlock} and therefore has no
  * slab type, merge, or waterlogging state.
  */
 public final class DragonboundWaystoneBlock extends BaseEntityBlock {
     public static final float EXPLOSION_RESISTANCE = 3_600_000.0F;
-    public static final double HEIGHT_PIXELS = 3.0D;
+    public static final double HEIGHT_PIXELS = 4.0D;
     public static final double HEIGHT_BLOCKS = HEIGHT_PIXELS / 16.0D;
     public static final VoxelShape SHAPE = box(0.0D, 0.0D, 0.0D, 16.0D, HEIGHT_PIXELS, 16.0D);
     public static final MapCodec<DragonboundWaystoneBlock> CODEC = simpleCodec(properties ->

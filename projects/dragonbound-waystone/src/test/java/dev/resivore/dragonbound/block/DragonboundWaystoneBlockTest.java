@@ -27,17 +27,17 @@ final class DragonboundWaystoneBlockTest {
     }
 
     @Test
-    void shapeIsExactlyThreePixelsTall() {
+    void shapeIsExactlyFourPixelsTall() {
         AABB bounds = DragonboundWaystoneBlock.SHAPE.bounds();
 
         assertEquals(0.0D, bounds.minX);
         assertEquals(0.0D, bounds.minY);
         assertEquals(0.0D, bounds.minZ);
         assertEquals(1.0D, bounds.maxX);
-        assertEquals(3.0D / 16.0D, bounds.maxY);
+        assertEquals(4.0D / 16.0D, bounds.maxY);
         assertEquals(1.0D, bounds.maxZ);
-        assertEquals(3.0D, DragonboundWaystoneBlock.HEIGHT_PIXELS);
-        assertEquals(3.0D / 16.0D, DragonboundWaystoneBlock.HEIGHT_BLOCKS);
+        assertEquals(4.0D, DragonboundWaystoneBlock.HEIGHT_PIXELS);
+        assertEquals(4.0D / 16.0D, DragonboundWaystoneBlock.HEIGHT_BLOCKS);
     }
 
     @Test
@@ -102,25 +102,25 @@ final class DragonboundWaystoneBlockTest {
         var elements = model.getAsJsonArray("elements");
         assertEquals(4, elements.size());
         assertCuboid(elements.get(0).getAsJsonObject(),
-                List.of(0, 0, 0), List.of(16, 2, 16),
+                List.of(0, 0, 0), List.of(16, 4, 16),
                 List.of(
                         List.of(0, 14, 16, 16), List.of(0, 14, 16, 16),
                         List.of(0, 14, 16, 16), List.of(0, 14, 16, 16),
                         List.of(0, 0, 16, 16), List.of(0, 0, 16, 16)));
         assertCuboid(elements.get(1).getAsJsonObject(),
-                List.of(2, 2, 3), List.of(14, 3, 13),
+                List.of(2, 4, 3), List.of(14, 5, 13),
                 List.of(
                         List.of(2, 13, 14, 14), List.of(3, 2, 13, 3),
                         List.of(2, 12, 14, 13), List.of(3, 3, 13, 4),
                         List.of(2, 3, 14, 13), List.of(2, 3, 14, 13)));
         assertCuboid(elements.get(2).getAsJsonObject(),
-                List.of(3, 2, 13), List.of(13, 3, 14),
+                List.of(3, 4, 13), List.of(13, 5, 14),
                 List.of(
                         List.of(3, 13, 13, 14), List.of(13, 13, 14, 14),
                         List.of(3, 13, 13, 14), List.of(2, 13, 3, 14),
                         List.of(3, 13, 13, 14), List.of(3, 13, 13, 14)));
         assertCuboid(elements.get(3).getAsJsonObject(),
-                List.of(3, 2, 2), List.of(13, 3, 3),
+                List.of(3, 4, 2), List.of(13, 5, 3),
                 List.of(
                         List.of(3, 13, 13, 14), List.of(13, 13, 14, 14),
                         List.of(3, 13, 13, 14), List.of(2, 13, 3, 14),

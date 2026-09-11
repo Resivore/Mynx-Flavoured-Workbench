@@ -14,7 +14,7 @@ final class DestinationRulesTest {
         Vec3 destination = DestinationRules.exactTopCenter(new BlockPos(-13, 72, 8));
 
         assertEquals(-12.5D, destination.x);
-        assertEquals(72.0D + 3.0D / 16.0D, destination.y);
+        assertEquals(72.0D + 4.0D / 16.0D, destination.y);
         assertEquals(8.5D, destination.z);
     }
 

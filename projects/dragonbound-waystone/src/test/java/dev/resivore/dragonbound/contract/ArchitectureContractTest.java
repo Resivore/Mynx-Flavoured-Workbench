@@ -194,6 +194,8 @@ final class ArchitectureContractTest {
 
         int pendingAdd = manager.indexOf("if (!pending.add(channel))");
         int completionTick = manager.indexOf("ChannelRules.completionTickReached(gameTime, channel.completionTick())");
+        int channelStart = manager.indexOf("ChannelEffects.channelStarted(player, config.channelTicks())");
+        int channelTick = manager.indexOf("ChannelEffects.channelTick(player, gameTime - channel.startTick(), config.channelTicks())");
         int confirmed = manager.indexOf("ChannelRules.shouldApplySuccessEffect(confirmed)");
         int heldItemConfirmed = manager.indexOf("if (!heldItemConfirmed)");
         int completionBurst = manager.indexOf("ChannelEffects.successfulTeleport(arrived)");
@@ -201,9 +203,9 @@ final class ArchitectureContractTest {
         int staffCooldown = manager.indexOf("addCooldown(arrivedHeld, channel.staffCooldownTicks())");
 
         assertTrue(pendingAdd >= 0);
+        assertTrue(pendingAdd < channelStart);
         assertTrue(completionTick >= 0);
-        assertFalse(manager.contains("ChannelEffects.channelStarted("));
-        assertFalse(manager.contains("ChannelEffects.channelTick("));
+        assertTrue(channelTick > completionTick);
         assertFalse(manager.contains("ServerLevel departure ="));
         assertTrue(confirmed < heldItemConfirmed && heldItemConfirmed < completionBurst);
         assertTrue(completionBurst < pearlConsumption);
@@ -214,10 +216,23 @@ final class ArchitectureContractTest {
         assertTrue(effects.contains("SoundSource.PLAYERS"));
         assertEquals(1, countOccurrences(effects, "playSound("));
         assertTrue(effects.contains("portalBurst(level, position)"));
-        assertFalse(effects.contains("AMBIENT_PARTICLE"));
-        assertFalse(effects.contains("channelStarted("));
-        assertFalse(effects.contains("channelTick("));
+        assertTrue(effects.contains("CHANNEL_PARTICLES_AT_START = 1"));
+        assertTrue(effects.contains("CHANNEL_PARTICLES_AT_COMPLETION = 4"));
+        assertTrue(effects.contains("channelParticleCount(elapsedTicks, channelTicks)"));
         assertFalse(effects.contains("departure"));
+    }
+
+    @Test
+    void staffSwingIsServerOnlyAndOccursOnlyAfterAcceptedStaffChannelCreation() throws IOException {
+        String manager = readJava("channel/DragonboundChannelManager.java");
+        String item = readJava("channel/DragonboundReturnItem.java");
+        int pendingAdd = manager.indexOf("if (!pending.add(channel))");
+        int staffCheck = manager.indexOf("if (source == ReturnSource.DRAGONBOUND_STAFF)");
+        int swing = manager.indexOf("player.swing(InteractionHand.MAIN_HAND, true)");
+
+        assertTrue(pendingAdd < staffCheck && staffCheck < swing);
+        assertFalse(item.contains("swing("));
+        assertFalse(item.contains("startUsingItem"));
     }
 
     @Test

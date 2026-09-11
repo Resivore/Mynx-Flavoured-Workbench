@@ -11,6 +11,7 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -151,6 +152,10 @@ public final class DragonboundChannelManager {
             return false;
         }
 
+        ChannelEffects.channelStarted(player, config.channelTicks());
+        if (source == ReturnSource.DRAGONBOUND_STAFF) {
+            player.swing(InteractionHand.MAIN_HAND, true);
+        }
         player.sendOverlayMessage(Component.translatable("message.dragonbound_waystone.channel_started"));
         return true;
     }
@@ -205,6 +210,7 @@ public final class DragonboundChannelManager {
                 complete(channel);
                 continue;
             }
+            ChannelEffects.channelTick(player, gameTime - channel.startTick(), config.channelTicks());
         }
     }
 
