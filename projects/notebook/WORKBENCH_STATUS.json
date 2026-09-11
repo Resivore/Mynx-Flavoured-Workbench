@@ -78,16 +78,16 @@
     ]
   },
   "state": {
-    "milestone": "Canary 1 remains an immutable historical artifact with static/build PASS but a user-supplied Minecraft client-initialization FAIL: its normal NotebookScreen class was inside the Mixin-owned dev.resivore.notebook.client package. A user then reported that Canary 2 opened without that fatal client-initialization crash. Current Canary 10 preserves the Mixin repair, supplied 640x400 Bedrock journal GUI-texture renderer, shared ruled-row/editor geometry, native click-to-edit behavior, autosave/forced-save model, shadowless text, unobscured book artwork, two-stage Escape behavior, and current checklist sprites. On survival InventoryScreen it places the unchanged 18x18 N button at the live right anchor x=leftPos+imageWidth+4 and preferred y=topPos+imageHeight-26, exactly 8px above C9; it searches upward on the right in 22px steps before falling back left, preserving the four-pixel QSN stack gap at its corresponding y=topPos+imageHeight-48 anchor. Creative retains its existing top anchor. Notebook is ACTIVE, not deployed, and occupies neither testing slot.",
+    "milestone": "Canary 1 remains an immutable historical artifact with static/build PASS but a user-supplied Minecraft client-initialization FAIL: its normal NotebookScreen class was inside the Mixin-owned dev.resivore.notebook.client package. A user then reported that Canary 2 opened without that fatal client-initialization crash. Current Canary 11 preserves the Mixin repair, supplied 640x400 Bedrock journal GUI-texture renderer, shared ruled-row/editor geometry, native click-to-edit behavior, autosave/forced-save model, shadowless text, unobscured book artwork, two-stage Escape behavior, and current checklist sprites. A user reported that C10's otherwise correct survival placement did not follow a live recipe-book open/close bounds shift; this scoped external FAIL establishes no broader C10 runtime result. C11 moves the existing survival 18x18 N widget when those live bounds change, excluding itself from collision search, while retaining the right anchor x=leftPos+imageWidth+4, preferred y=topPos+imageHeight-26, upward-right-first search, left fallback, and the four-pixel QSN stack relationship. It also moves only the index grip down one pixel and title origin right four pixels with the matching elision budget. Creative retains its existing top anchor. Notebook is ACTIVE, not deployed, and occupies neither testing slot.",
     "releases": {
       "current": {
-        "version": "0.1.0-canary10",
-        "embedded_version": "0.1.0-canary10",
+        "version": "0.1.0-canary11",
+        "embedded_version": "0.1.0-canary11",
         "artifact": {
-          "filename": "notebook-0.1.0-canary10.jar",
-          "sha256": "de67fe4b50c77d13c07b106bea8f91119d69c92cab52b28985c75d28538a22e4"
+          "filename": "notebook-0.1.0-canary11.jar",
+          "sha256": "c3b9b7248f0bc16f027fc5cbd4d918fcab045ff58c2ac67dd31e169743361b7f"
         },
-        "source_commit": "7705158c78a1ec8a8571a1b507fee7186a14f621",
+        "source_commit": "685e9c137bff75dcab3c0e54e5107ac3273240d7",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
@@ -106,11 +106,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 11,
-    "activity_at": "2026-09-10T05:06:29Z",
-    "updated_at": "2026-09-10T05:06:29Z",
-    "last_codex_at": "2026-09-10T05:06:29Z",
-    "source_commit": "7705158c78a1ec8a8571a1b507fee7186a14f621",
+    "revision": 12,
+    "activity_at": "2026-09-11T15:36:31Z",
+    "updated_at": "2026-09-11T15:36:31Z",
+    "last_codex_at": "2026-09-11T15:36:31Z",
+    "source_commit": "685e9c137bff75dcab3c0e54e5107ac3273240d7",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
