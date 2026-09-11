@@ -108,7 +108,7 @@ class NaturalistCoverageTest {
         assertEquals("com.crispytwig.naturalist.client.model.WhaleModel", whaleAdult.modelClass());
         assertEquals(List.of("body"), whaleAdult.path());
         assertEquals(List.of("body"), whaleAdult.tracePath());
-        assertEquals(.20F, whaleAdult.presentation().scale());
+        assertEquals(.18F, whaleAdult.presentation().scale());
         assertEquals(0.0F, whaleAdult.presentation().xRotation());
         assertEquals(1.1781F, whaleAdult.presentation().yRotation());
         assertEquals(0.0F, whaleAdult.presentation().zRotation());
@@ -215,7 +215,7 @@ class NaturalistCoverageTest {
                 assertFalse(NaturalistModelContracts.contractsForId(id).getFirst().useTraceAsRenderCenter(), id);
             }
         }
-        assertEquals(.20F, NaturalistModelContracts.contractsForId("whale").getFirst().presentation().scale());
+        assertEquals(.18F, NaturalistModelContracts.contractsForId("whale").getFirst().presentation().scale());
     }
 
     @Test void c31SourceAuditBindsTheWhaleTorsoHeadAssemblyAndFrozenControls() throws Exception {
@@ -275,7 +275,7 @@ class NaturalistCoverageTest {
         assertEquals(.28F, NaturalistModelContracts.contractsForId("jungle_scorpion").getFirst().presentation().scale());
     }
 
-    @Test void c31ReconcilesC30AndChangesOnlyTheAdultWhaleYaw() throws Exception {
+    @Test void c32ReconcilesC31AndChangesOnlyTheAdultWhaleScale() throws Exception {
         var blackBear = NaturalistModelContracts.contractsForId("black_bear").getFirst();
         var hippo = NaturalistModelContracts.contractsForId("hippo").getFirst();
         var whale = NaturalistModelContracts.contractsForId("whale").getFirst();
@@ -284,18 +284,18 @@ class NaturalistCoverageTest {
         assertEquals(List.of("body", "bone", "neck"), hippo.path());
         assertEquals(List.of("body", "bone", "neck"), hippo.tracePath());
         assertEquals(.70F, NaturalistModelContracts.contractsForId("hippo").get(1).presentation().scale());
-        assertEquals(1.1781F, whale.presentation().yRotation(), "C31 advances C30's readable assembly toward profile");
+        assertEquals(1.1781F, whale.presentation().yRotation(), "C32 preserves C31's readable near-side profile");
         assertEquals(List.of("body"), whale.tracePath());
         assertTrue(whale.useTraceAsRenderCenter());
-        assertEquals(.20F, whale.presentation().scale());
+        assertEquals(.18F, whale.presentation().scale());
         assertEquals(List.of("skullRot"), whale.drawableChildren());
         Path root = Path.of(System.getProperty("projectRoot"));
         for (String record : List.of(Files.readString(root.resolve("WORKBENCH_STATUS.json")),
                 Files.readString(root.resolve("TESTING.md")), Files.readString(root.resolve("CODEX_LOG.md")))) {
-            assertTrue(record.contains("C30"));
-            assertTrue(record.contains("more recognizable"));
-            assertTrue(record.contains("angled"));
-            assertTrue(record.contains("not a label-only or sliver regression"));
+            assertTrue(record.contains("C31"));
+            assertTrue(record.contains("almost correct"));
+            assertTrue(record.contains("nose and chest"));
+            assertTrue(record.contains("not label-only"));
         }
     }
 

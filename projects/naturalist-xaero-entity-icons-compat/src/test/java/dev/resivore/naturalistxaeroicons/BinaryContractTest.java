@@ -37,7 +37,7 @@ class BinaryContractTest {
         }
     }
 
-    @Test void c31UsesTheAuditedC30WhaleAssemblyWithOnlyItsYawRefined() throws Exception {
+    @Test void c32UsesTheAuditedC31WhaleAssemblyWithOnlyItsScaleReduced() throws Exception {
         Path root = Path.of(System.getProperty("projectRoot"));
         String mixins = Files.readString(root.resolve("src/main/resources/naturalist_xaero_entity_icons_compat.mixins.json"));
         assertTrue(mixins.contains("ModelRenderTraceMixin"));
@@ -64,7 +64,7 @@ class BinaryContractTest {
         assertFalse(contracts.contains("p(.60F)), c(\"HippoBabyModel\", \"body/neck\", p(.70F))"));
         assertTrue(contracts.contains("-2.0F)), c(\"BlackBearBabyModel\", \"body/skull\")"));
         assertTrue(contracts.contains("cDetachedChildrenWithTraceCenter(\"WhaleModel\", \"body\", \"body\","));
-        assertTrue(contracts.contains("p(.20F, 0.0F, 1.1781F, 0.0F), List.of(\"skullRot\"))"));
+        assertTrue(contracts.contains("p(.18F, 0.0F, 1.1781F, 0.0F), List.of(\"skullRot\"))"));
         assertTrue(contracts.contains("\"WhaleBabyModel\", \"body/skull\", p(.60F, 0.0F, .7854F, 0.0F)"));
         assertTrue(contracts.contains("cWithTraceCenter"));
         String manager = Files.readString(root.resolve("src/main/java/dev/resivore/naturalistxaeroicons/mixin/RadarIconManagerMixin.java"));
