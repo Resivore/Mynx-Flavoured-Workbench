@@ -1,12 +1,12 @@
 # Testing
 
-Current candidate: `0.1.0-canary10`, retained as `notebook-0.1.0-canary10.jar`, SHA-256 `de67fe4b50c77d13c07b106bea8f91119d69c92cab52b28985c75d28538a22e4`, implementation checkpoint `7705158c78a1ec8a8571a1b507fee7186a14f621`. It is `STATIC_PASS`, `NOT_DEPLOYED`, and `RUNTIME_UNTESTED`. Both canonical test slots are occupied by unrelated cohorts; do not change slot ownership for this candidate without a separately authorized serialized manager operation.
+Current candidate: `0.1.0-canary11`, retained as `notebook-0.1.0-canary11.jar`, SHA-256 `c3b9b7248f0bc16f027fc5cbd4d918fcab045ff58c2ac67dd31e169743361b7f`, implementation checkpoint `685e9c137bff75dcab3c0e54e5107ac3273240d7`. It is `STATIC_PASS`, `NOT_DEPLOYED`, and `RUNTIME_UNTESTED`. Both canonical test slots are occupied by unrelated cohorts; do not change slot ownership for this candidate without a separately authorized serialized manager operation.
 
 Historical Canary 1 (`0.1.0-canary1`, retained `notebook-0.1.0-canary1.jar`, SHA-256 `54a601d9693501bbaca8fcf25b07f1aa65671631278d5a3cd9863fcfdf3c82c0`, source `e25729bf2fc2761269746e20c6ecbad1105e5c80`) passed compilation and static validation but received a user-supplied Minecraft client-initialization `RUNTIME_FAIL`. Fabric rejected `NotebookScreen` because C1 declared `dev.resivore.notebook.client` as its Mixin package. Do not retest, relabel, or claim a runtime pass for C1.
 
-The user reports that the repaired Canary 2 opened successfully, which is external evidence that its fatal C1 Mixin/client-initialization failure no longer occurred. The supplied C3 report further says the book artwork and ruled-line alignment looked correct. Those observations are limited and do not establish a full UI/runtime pass or transfer to C10; C10 has not received a managed deployment or direct Minecraft observation.
+The user reports that the repaired Canary 2 opened successfully, which is external evidence that its fatal C1 Mixin/client-initialization failure no longer occurred. The supplied C3 report further says the book artwork and ruled-line alignment looked correct. Those observations are limited and do not establish a full UI/runtime pass. The user also reported the scoped C10 failure that its survival N button stayed at its old position when the already-open inventory's recipe book shifted the live bounds; no broader C10 matrix result is inferred.
 
-## Canary 10 runtime acceptance procedure
+## Canary 11 runtime acceptance procedure
 
 Use only the dedicated Matcha Flavoured 26.2 Workbench after explicit Test Slot ownership. Never use the protected 26.1.2 gameplay profile. Preserve exact logs and files and stop on any crash, classloading/Mixin error, input lock, note loss or duplication, malformed UTF-8 write, unexpected newline insertion, wrong-file association, stale checkbox, ordering reset, duplicate/overlapping inventory button, or inventory/item mutation.
 
@@ -23,11 +23,13 @@ Use only the dedicated Matcha Flavoured 26.2 Workbench after explicit Test Slot 
    3. Confirm the vertical gap between the 18x18 QSN and Notebook controls is exactly 4px, with no overlap.
    4. Confirm both controls share the right-side `leftPos + imageWidth + 4` X anchor.
    5. Confirm both controls remain clickable and both tooltips work.
-   6. Resize or reinitialize the inventory and confirm neither control duplicates.
-   7. Repeat at representative GUI scales and window sizes, including the cumulative Inventory Extended / Inventory Search stack, and confirm collision-aware placement remains safe.
-   8. Confirm the visual `N`, its standard 18x18 Minecraft button chrome, and its action are unchanged.
-   9. Confirm the survival fallback begins at the preferred right slot and moves upward on the right before using the left.
-   10. Open creative inventory and confirm its existing placement is unchanged.
+   6. Open the recipe book without closing the survival inventory: both controls must immediately follow the new live inventory bounds while preserving their matching X anchor and four-pixel gap. Close it again and confirm both immediately return.
+   7. Repeat recipe-book open/close several times, then repeat after inventory reinit/window resize and at representative GUI scales: no duplicate, stale-position control, jitter, drift, or self-collision is acceptable.
+   8. Repeat standalone without QSN, then with the cumulative Inventory Extended / Inventory Search stack, and confirm collision-aware placement remains safe.
+   9. Confirm the visual `N`, its standard 18x18 Minecraft button chrome, tooltip, and action are unchanged.
+   10. Confirm the survival fallback begins at the preferred right slot and moves upward on the right before using the left.
+   11. Open creative inventory and confirm its existing placement is unchanged.
+   12. Inspect the index: each two-line grip is exactly one pixel lower and each title begins four pixels farther right, while row geometry, title baseline, drag behavior, and right-side clipping remain unchanged.
 8. Create at least four independently named notes, including an empty note, a Unicode/unusual-character note, and a long note with wrapped and many authored lines. Select, rename, edit, save, reopen, and delete them; confirm ordinary Markdown files retain only authored line endings.
 9. Drag notes upward and downward in the left index, including while scrolled. Restart the client and confirm exact manual ordering and selected stable UUID persist rather than sorting alphabetically or by recency.
 10. Author `[ ] unfinished task` and `[x] completed task` lines. In reading mode, click each rendered box and confirm only its Markdown marker changes; enter editing mode and confirm ordinary plain-text markers remain editable.
@@ -35,4 +37,4 @@ Use only the dedicated Matcha Flavoured 26.2 Workbench after explicit Test Slot 
 12. Inspect `config/notebook/notebook.json` and `notes/*.md`: metadata must not contain note bodies; filenames must remain portable and unique; no temporary writes may remain. After several edits and a delete, only `previous-1.md` through `previous-3.md` may remain per stable-note backup directory.
 13. After copying the profile Notebook directory aside, introduce stale note references and malformed `notebook.json` separately. Reopen each time and confirm readable Markdown notes stay usable and metadata repairs without a wrong association or crash. Change dimensions, die/respawn, leave and join worlds, and restart the client; Notebook must remain profile-local and never mutate world, server, item, or player data.
 
-Builds, source/JAR checks, and synthetic classloading/configuration checks are not Minecraft runtime evidence and cannot make Canary 9 pass or be promoted.
+Builds, source/JAR checks, and synthetic classloading/configuration checks are not Minecraft runtime evidence and cannot make Canary 11 pass or be promoted.
