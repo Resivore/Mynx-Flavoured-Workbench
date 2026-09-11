@@ -103,7 +103,7 @@ public final class EmfIconPartResolver {
             case BOGGED -> boggedPlan(root);
             case FROG -> frogPlan(root);
             case WITCH -> witchPlan(root);
-            case VILLAGER -> villagerPlan(root, target.expectedHat());
+            case VILLAGER -> villagerPlan(root, target);
             case NONE -> null;
         };
         if (plan == null || plan.anchor() == null) {
@@ -201,19 +201,32 @@ public final class EmfIconPartResolver {
                 pathText(path) + "/" + face.name());
     }
 
-    private static TargetedPlan villagerPlan(ModelPart root, String expectedHat) {
-        if (expectedHat == null) return null;
+    private static TargetedPlan villagerPlan(ModelPart root, IconTargetPolicy.Selection target) {
+        if (target.expectedHat() == null) return null;
         List<PathNode> path = namedPath(root, "head", "nose", "nose");
         if (path == null) return null;
         ModelPart nose = path.getLast().part();
         NamedPart face = namedChildEntry(nose, "face");
         NamedPart eyes = namedChildEntry(nose, "frog_eyes");
-        NamedPart hat = namedChildEntry(nose, expectedHat);
-        if (face == null || eyes == null || hat == null) return null;
-        ModelPart detached = detach(nose, true, Map.of(
-                face.name(), detachAll(face.part()),
-                eyes.name(), detachAll(eyes.part()),
-                hat.name(), detachAll(hat.part())));
+        if (face == null || eyes == null) return null;
+        Map<String, ModelPart> detachedChildren;
+        if (target.suppressProfessionHat()) {
+            // C12 intentionally keeps the targeted face/head composition for
+            // these exact professions while omitting their malformed hat
+            // subtree.  This is a successful policy result, not a missing-hat
+            // contract failure or a reason to fall back to C9.
+            detachedChildren = Map.of(
+                    face.name(), detachAll(face.part()),
+                    eyes.name(), detachAll(eyes.part()));
+        } else {
+            NamedPart hat = namedChildEntry(nose, target.expectedHat());
+            if (hat == null) return null;
+            detachedChildren = Map.of(
+                    face.name(), detachAll(face.part()),
+                    eyes.name(), detachAll(eyes.part()),
+                    hat.name(), detachAll(hat.part()));
+        }
+        ModelPart detached = detach(nose, true, detachedChildren);
         CubeAnchor anchor = directCubeAnchor(nose, List.of(nose));
         return anchor == null ? null : new TargetedPlan(
                 path, nose, detached, nose, anchor, pathText(path));

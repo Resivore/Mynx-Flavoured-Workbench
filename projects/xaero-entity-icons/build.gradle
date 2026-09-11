@@ -90,7 +90,7 @@ tasks.register('prepareProductionMixinWorkingDir') {
 
 tasks.register('productionMixinTest', JavaExec) {
     group = 'verification'
-    description = 'Applies Canary 11 through production Fabric Knot/Mixin without launching Minecraft.'
+    description = 'Applies Canary 12 through production Fabric Knot/Mixin without launching Minecraft.'
     dependsOn tasks.named('testClasses'), tasks.named('jar'),
             tasks.named('prepareProductionMixinWorkingDir')
     mainClass = 'dev.resivore.xaeroemfcompat.ProductionMixinApplicationHarness'

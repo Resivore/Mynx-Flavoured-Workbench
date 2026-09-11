@@ -21,6 +21,9 @@ public final class IconTargetPolicy {
     public record Selection(Composition composition, String profession, String expectedHat) {
         static final Selection NONE = new Selection(Composition.NONE, null, null);
         boolean isCompositionTarget() { return composition != Composition.NONE; }
+        boolean suppressProfessionHat() {
+            return profession != null && SUPPRESSED_VILLAGER_HATS.contains(profession);
+        }
     }
 
     private static final Map<String, String> VILLAGER_HATS = Map.of(
@@ -29,6 +32,11 @@ public final class IconTargetPolicy {
             "minecraft:butcher", "ribbits_chef_hat",
             "minecraft:cleric", "ribbits_sorcerer_hat",
             "minecraft:mason", "ribbits_prospector_hat");
+    private static final Set<String> SUPPRESSED_VILLAGER_HATS = Set.of(
+            "mynx_flora_trades:florist",
+            "minecraft:farmer",
+            "minecraft:cleric",
+            "minecraft:mason");
     private static final Map<String, Composition> ENTITY_COMPOSITIONS = Map.of(
             "minecraft:fox", Composition.FOX,
             "minecraft:goat", Composition.GOAT,

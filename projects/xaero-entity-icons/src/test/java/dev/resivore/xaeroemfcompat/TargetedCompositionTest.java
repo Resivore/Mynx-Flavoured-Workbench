@@ -166,15 +166,21 @@ class TargetedCompositionTest {
     }
 
     @Test
-    void eachProfessionUsesNoseFaceEyesAndOnlyItsExactHat() {
-        for (String profession : IconTargetPolicy.targetedVillagerProfessions()) {
+    void fourExactProfessionsUseNoseFaceAndEyesButOmitTheirHatSubtrees() {
+        Map<String, String> suppressed = Map.of(
+                "mynx_flora_trades:florist", "ribbits_gardener_hat",
+                "minecraft:farmer", "ribbits_farmer_hat",
+                "minecraft:cleric", "ribbits_sorcerer_hat",
+                "minecraft:mason", "ribbits_prospector_hat");
+        for (var entry : suppressed.entrySet()) {
+            String profession = entry.getKey();
             var selection = IconTargetPolicy.select("minecraft:villager", profession);
             ModelPart face = emptyPart(Map.of("EMF_mouth", cubePart(Map.of()),
                     "EMF_brows", cubePart(Map.of())));
             ModelPart nose = cubePart(Map.of(
                     "EMF_face", face,
                     "EMF_frog_eyes", cubePart(Map.of()),
-                    "EMF_" + selection.expectedHat(),
+                    "EMF_" + entry.getValue(),
                     emptyPart(Map.of("hat_cube", cubePart(Map.of()))),
                     "EMF_wrong_hat", cubePart(Map.of()),
                     "EMF_nose2", cubePart(Map.of())));
@@ -188,10 +194,38 @@ class TargetedCompositionTest {
             assertEquals("root/head/nose/EMF_nose", result.geometryPath(), profession);
             assertTrue(paths.stream().anyMatch(path -> path.contains("EMF_face")), profession);
             assertTrue(paths.stream().anyMatch(path -> path.contains("EMF_frog_eyes")), profession);
-            assertTrue(paths.stream().anyMatch(path -> path.contains(selection.expectedHat())), profession);
-            assertFalse(paths.stream().anyMatch(path -> path.contains("wrong_hat")
+            assertTrue(paths.stream().anyMatch(path -> path.endsWith("/EMF_nose")), profession);
+            assertFalse(paths.stream().anyMatch(path -> path.contains(entry.getValue())
+                    || path.contains("hat_cube") || path.contains("wrong_hat")
                     || path.contains("nose2") || path.contains("body") || path.contains("arms")), profession);
         }
+    }
+
+    @Test
+    void butcherRetainsTheExactC11NoseFaceEyesAndChefHatPath() {
+        String profession = "minecraft:butcher";
+        var selection = IconTargetPolicy.select("minecraft:villager", profession);
+        ModelPart face = emptyPart(Map.of("EMF_mouth", cubePart(Map.of()),
+                "EMF_brows", cubePart(Map.of())));
+        ModelPart nose = cubePart(Map.of(
+                "EMF_face", face,
+                "EMF_frog_eyes", cubePart(Map.of()),
+                "EMF_ribbits_chef_hat", emptyPart(Map.of("hat_cube", cubePart(Map.of()))),
+                "EMF_wrong_hat", cubePart(Map.of()),
+                "EMF_nose2", cubePart(Map.of())));
+        ModelPart canonical = emptyPart(Map.of(
+                "nose", emptyPart(Map.of("EMF_nose", nose))));
+        ModelPart root = emptyPart(Map.of(
+                "head", canonical, "body", cubePart(Map.of()), "arms", cubePart(Map.of())));
+
+        var result = resolve(root, canonical, nose, selection);
+        List<String> paths = cubePaths(result.renderAdapter());
+        assertEquals("root/head/nose/EMF_nose", result.geometryPath());
+        assertTrue(paths.stream().anyMatch(path -> path.contains("EMF_face")));
+        assertTrue(paths.stream().anyMatch(path -> path.contains("EMF_frog_eyes")));
+        assertTrue(paths.stream().anyMatch(path -> path.contains("ribbits_chef_hat")));
+        assertFalse(paths.stream().anyMatch(path -> path.contains("wrong_hat")
+                || path.contains("nose2") || path.contains("body") || path.contains("arms")));
     }
 
     private static ModelPart bodyRoot(ModelPart canonical, ModelPart customBody) {
