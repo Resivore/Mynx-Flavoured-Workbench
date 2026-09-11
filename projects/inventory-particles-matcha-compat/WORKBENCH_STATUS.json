@@ -1,0 +1,67 @@
+{
+  "$schema": "../../schemas/workbench-status.schema.json",
+  "schema_version": 1,
+  "identity": {
+    "uuid": "b9b72ddd-49a5-4ff2-bdfa-c10c4a6be6e4",
+    "name": "Inventory Particles Matcha Compatibility",
+    "project_id": "inventory-particles-matcha-compat",
+    "aliases": ["Inventory Particles Matcha Compat"],
+    "legacy_names": ["Inventory Particles Matcha Compatibility Resource Pack"],
+    "legacy_ids": []
+  },
+  "definition": {
+    "lifecycle": "ACTIVE",
+    "goals": [
+      "Make Inventory Particles correctly render the six selected Matcha component-backed and Ribbits stack identities without changing Inventory Particles, Matcha Flavoured, or Ribbits.",
+      "Provide exclusive stack-aware spawner dispatch for only those exact target stacks while leaving all non-target Inventory Particles behavior untouched."
+    ],
+    "scope": [
+      "C4 is a narrow client-side Fabric compatibility mod. It marks its six data-defined Inventory Particles spawners during config linking and, immediately before a spawner runs, suppresses every nonmatching spawner only for an exact target stack.",
+      "The exact targets are minecraft:poisonous_potato with minecraft:item_model minecraft:green_curry, minecraft:ramen, or minecraft:heart_container; ribbits:glowcap; ribbits:toadstool_heart; and minecraft:filled_map with both minecraft:map_id and minecraft:custom_data.ribbits:ribbit_village_explorer_map=true.",
+      "C4 retains five standalone replacement particle definitions and no longer overlays Inventory Particles dirt_sand, potion, fallback-family, or other upstream JSON resources."
+    ],
+    "boundaries": {
+      "owned_paths": ["projects/inventory-particles-matcha-compat"],
+      "exclusions": [
+        "Modifying, redistributing, or forking Inventory Particles, Matcha Flavoured, Ribbits, their artwork, their registries, their renderers, or their resource definitions.",
+        "Any resource-pack overlay, global Inventory Particles disablement, generic poisonous-potato/filled-map/Ribbits-item matching, unrelated automatic-family behavior, or creative-tab change.",
+        "Runtime deployment, Test Instance Manager mutation, Test Slot assignment, dedicated-Workbench mutation, or access to the protected Matcha Flavoured 26.1.2 gameplay instance during this static C4 implementation."
+      ]
+    },
+    "dependencies": [
+      {"type":"MOD","identifier":"minecraft","requirement":"=26.2","reason":"Exact Minecraft target of C4's component and Mixin descriptors."},
+      {"type":"MOD","identifier":"fabricloader","requirement":">=0.19.3","reason":"Minimum Fabric Loader declared by the client companion."},
+      {"type":"MOD","identifier":"inventory_particles","requirement":">=2.6.0+26.2+fabric","reason":"Required client compatibility target. C4's production validation baseline is the immutable 2.6.0+26.2+fabric artifact below; optional Mixin injections use require=0 so an unavailable audited seam leaves the companion inert instead of crashing rendering."},
+      {"type":"PROJECT","identifier":"2a650718-ec62-568f-8dff-71258a4d6f3f","requirement":"Current main stack-definition baseline","reason":"Authoritative source of ribbits:glowcap, ribbits:toadstool_heart, and the successful filled-map + map_id + custom-data explorer-map identity. No Ribbits version pin is a runtime condition of C4."},
+      {"type":"DATA_PACK","identifier":"Matcha_Flavoured_1_12.zip","requirement":"12,248,989 bytes; SHA-256 6209783021c358044abedabacee471faff5bd4080437d4e3b5e51963f1804248","reason":"Immutable authoritative source for the Green Curry, Ramen, and Crystal Heart poisonous-potato item-model identities."},
+      {"type":"OTHER","identifier":"InventoryParticles-2.6.0+26.2+fabric.jar","requirement":"1,783,277 bytes; SHA-256 b44d808e673805eea4949591abcb3325faa1abf8b9321266d06533ea5a34c802","reason":"Exact immutable production target inspected by C4. Build tests bind the hash and the ParticleHolder.createSpawner, ParticlesConfigsManager.reload, ParticleSpawner, and all four renderer spawn-call seams to this artifact."},
+      {"type":"TOOL","identifier":"java","requirement":"25","reason":"Minecraft 26.2 compilation and focused-test toolchain."},
+      {"type":"TOOL","identifier":"fabric-loom","requirement":"1.17.19","reason":"Pinned Fabric build plugin for the C4 JAR."}
+    ]
+  },
+  "state": {
+    "milestone": "C1 was a resource-pack prototype with user-reported functional RUNTIME_FAIL. C2 was a resource-pack prototype with RESOURCE_RELOAD_FAIL after invalid this_type:number predicates. C3 passed reload (450/450 particle configs, 20/20 families, VANILLA and MODDED linking) but user-reported functional RUNTIME_FAIL: Green Curry still leaked poisonous-potato/default behavior, Glowcap had no intended replacement, and the Ribbit Village Explorer Map remained gray/sand-like; no unreported target is claimed to have passed. C4 is the first Fabric implementation, ACTIVE / STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED, and occupies no test slot.",
+    "releases": {
+      "current": {
+        "version": "0.1.0-canary4",
+        "artifact": {"filename":"inventory-particles-matcha-compat-0.1.0-canary4.jar","sha256":"e48c4821f8bead5da78205052bf3d1d20db98cccefd5004750a19d54858c1c8b"},
+        "source_commit": "63e9b84116c718db92bbeb289933538e75cb28c2",
+        "runtime_dependency_policy": {"contract":"CAPABILITY_OR_PROVIDER","exceptions":[]}
+      },
+      "accepted": null,
+      "rollback": null,
+      "accepted_current": "NO_ACCEPTED",
+      "accepted_rollback": "NO_ROLLBACK"
+    },
+    "validation": {"build":"STATIC_PASS","deployment":"NOT_DEPLOYED","runtime":"RUNTIME_UNTESTED"},
+    "blocker": null
+  },
+  "synchronization": {
+    "revision": 4,
+    "activity_at": "2026-09-11T18:07:41Z",
+    "updated_at": "2026-09-11T18:07:41Z",
+    "last_codex_at": "2026-09-11T18:07:41Z",
+    "source_commit": "63e9b84116c718db92bbeb289933538e75cb28c2",
+    "google_sheet": {"participates":true,"exclusion_reason":null}
+  }
+}
