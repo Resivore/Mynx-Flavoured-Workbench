@@ -38,12 +38,12 @@
     ]
   },
   "state": {
-    "milestone": "Exact C28 technical/capture PASS but visual FAIL provenance remains `naturalist-xaero-entity-icons-compat-0.1.0-canary28.jar` / SHA-256 `3dec7da889191bc9ab6965373e2d70c30225e0dbe62f27f8a5de559279ff8b90` / `body/skullRot/topJaw` vertical sliver. Exact C31 USER-REPORTED / EXTERNAL runtime evidence is preserved: `naturalist-xaero-entity-icons-compat-0.1.0-canary31.jar` / embedded `0.1.0-canary31` / 51,831 bytes / SHA-256 `e2e1e0c42f52fe4f5d17d7904ae95c012b2ba21f4a8cf42f0d84521af0ce9fa3` / source `791392670ea656aaa8b3e58429e69aef853ea3a1`. Its adult Whale is almost correct, more side-on and readable, not label-only and not the old narrow sliver; only a little of the nose and chest remains cropped, and it is not accepted. C32 preserves the exact C31 adult `WhaleModel` detached body direct torso cube plus copied `skullRot` cranium/topJaw/bottomJaw, live `body` trace/render center, Y `1.1781F`, and zero X/Z/frame offsets, changing only adult scale `0.20F` -> `0.18F` to fit the existing readable silhouette. Baby Whale stays exact C31 `WhaleBabyModel` `body/skull` / `0.60F` / Y `0.7854F`. Hippo adult PASS at `0.75F` and every solved non-Whale contract remain frozen. Manager revision 117 retains unrelated BGE C60 and IBF C4 in both slots, so C32 is NOT_DEPLOYED / RUNTIME_UNTESTED.",
+    "milestone": "Exact C32 USER-REPORTED / EXTERNAL runtime evidence is preserved: `naturalist-xaero-entity-icons-compat-0.1.0-canary32.jar` / embedded `0.1.0-canary32` / 51,833 bytes / SHA-256 `58b089b7602087ab840c8ea5f6bca5d7f27ca3d011ba348f7e985b6b461e2bbf` / source `1269a232559aa6b550e90bbf6e6614dc4bc63ce1`. Its adult Whale is very close to final: the nose fits properly, its real icon remains readable and side-profiled, it is not label-only or the old sliver failure, and only slight bottom clipping/insufficient lower-body visibility remains; it is not accepted. C33 preserves C32's exact adult `WhaleModel` detached body direct torso cube plus copied `skullRot` cranium/topJaw/bottomJaw, live `body` trace/render center, scale `0.18F`, X `0.0F`, Y `1.1781F`, Z `0.0F`, changing only copied-adapter frame Y `0.0F` -> `-1.0F` to reveal a little more lower torso/chest. Baby Whale stays exact `WhaleBabyModel` `body/skull` / `0.60F` / Y `0.7854F`; Hippo adult PASS at `0.75F` and every solved non-Whale contract are frozen. Manager revision 117 retains unrelated BGE C60 and IBF C4 in both slots, so C33 is NOT_DEPLOYED / RUNTIME_UNTESTED.",
     "releases": {
       "current": {
-        "version": "0.1.0-canary32",
-        "artifact": {"filename": "naturalist-xaero-entity-icons-compat-0.1.0-canary32.jar", "sha256": "58b089b7602087ab840c8ea5f6bca5d7f27ca3d011ba348f7e985b6b461e2bbf"},
-        "source_commit": "1269a232559aa6b550e90bbf6e6614dc4bc63ce1",
+        "version": "0.1.0-canary33",
+        "artifact": {"filename": "naturalist-xaero-entity-icons-compat-0.1.0-canary33.jar", "sha256": "115ac913647f5bbfce33d54f2c9ab29e2ca829104b4c4ce9913fb443f520cbe0"},
+        "source_commit": "63a4d968f2f76ed7a78cced8fdd0a08279362ca7",
         "runtime_dependency_policy": {"contract": "CAPABILITY_OR_PROVIDER", "exceptions": []}
       },
       "accepted": null,
@@ -55,11 +55,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 33,
-    "activity_at": "2026-09-11T06:00:00Z",
-    "updated_at": "2026-09-11T06:00:00Z",
-    "last_codex_at": "2026-09-11T06:00:00Z",
-    "source_commit": "1269a232559aa6b550e90bbf6e6614dc4bc63ce1",
+    "revision": 34,
+    "activity_at": "2026-09-11T15:58:31Z",
+    "updated_at": "2026-09-11T15:58:31Z",
+    "last_codex_at": "2026-09-11T15:58:31Z",
+    "source_commit": "63a4d968f2f76ed7a78cced8fdd0a08279362ca7",
     "google_sheet": {"participates": true, "exclusion_reason": null}
   }
 }

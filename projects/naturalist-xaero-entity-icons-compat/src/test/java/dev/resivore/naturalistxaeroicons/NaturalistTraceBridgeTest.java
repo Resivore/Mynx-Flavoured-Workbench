@@ -84,7 +84,7 @@ class NaturalistTraceBridgeTest {
         }
     }
 
-    @Test void c32ChangesOnlyAdultWhaleScaleWhileKeepingC31sLiveBodyCenterAndAssembly() {
+    @Test void c33ChangesOnlyAdultWhaleFrameOffsetWhileKeepingC32sLiveBodyCenterAndAssembly() {
         ModelPart skullRot = part(Map.of("topJaw", part(Map.of()), "bottomJaw", part(Map.of())));
         ModelPart body = part(Map.of("skullRot", skullRot));
         ModelPart selected = part(Map.of("skullRot", part(Map.of())));
@@ -102,7 +102,7 @@ class NaturalistTraceBridgeTest {
         assertEquals(0.0F, contract.presentation().xRotation());
         assertEquals(1.1781F, contract.presentation().yRotation());
         assertEquals(0.0F, contract.presentation().zRotation());
-        assertEquals(0.0F, contract.presentation().frameYOffset());
+        assertEquals(-1.0F, contract.presentation().frameYOffset());
 
         var baby = NaturalistModelContracts.contractsForId("whale").get(1);
         assertEquals(List.of("body", "skull"), baby.path());
