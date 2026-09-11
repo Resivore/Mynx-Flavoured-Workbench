@@ -1,8 +1,11 @@
 package dev.resivore.naturalistxaeroicons;
 
 import static org.junit.jupiter.api.Assertions.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.security.MessageDigest;
+import java.util.HexFormat;
 import java.util.Map;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -79,7 +82,7 @@ class NaturalistCoverageTest {
         }
     }
 
-    @Test void c27FreezesC26HippoAndChangesOnlyTheAdultWhaleCaptureCenter() {
+    @Test void c28FreezesEveryProvenPresentationIncludingTheAdultWhaleCaptureCenter() {
         var alligator = NaturalistModelContracts.contractsForId("alligator").getFirst();
         assertEquals("com.crispytwig.naturalist.client.model.AlligatorModel", alligator.modelClass());
         assertEquals(List.of("body", "neck"), alligator.path());
@@ -106,15 +109,24 @@ class NaturalistCoverageTest {
         assertEquals(List.of("body", "skullRot"), whaleAdult.path());
         assertEquals(List.of("body", "skullRot", "topJaw"), whaleAdult.tracePath());
         assertEquals(.30F, whaleAdult.presentation().scale());
+        assertEquals(0.0F, whaleAdult.presentation().xRotation());
         assertEquals(1.5708F, whaleAdult.presentation().yRotation());
+        assertEquals(0.0F, whaleAdult.presentation().zRotation());
+        assertEquals(0.0F, whaleAdult.presentation().frameYOffset());
+        assertEquals(List.of(), whaleAdult.cubeIndexes());
+        assertEquals(List.of(), whaleAdult.drawableChildren());
         assertTrue(whaleAdult.useTraceAsRenderCenter());
         assertTrue(whaleAdult.preserveAncestorTransforms());
         assertEquals("com.crispytwig.naturalist.client.model.WhaleBabyModel", whaleBaby.modelClass());
         assertEquals(List.of("body", "skull"), whaleBaby.path());
         assertEquals(List.of("body", "skull"), whaleBaby.tracePath());
         assertEquals(.60F, whaleBaby.presentation().scale());
+        assertEquals(0.0F, whaleBaby.presentation().xRotation());
         assertEquals(.7854F, whaleBaby.presentation().yRotation());
+        assertEquals(0.0F, whaleBaby.presentation().zRotation());
+        assertEquals(0.0F, whaleBaby.presentation().frameYOffset());
         assertNotEquals(1.5708F, whaleBaby.presentation().yRotation());
+        assertFalse(whaleBaby.useTraceAsRenderCenter());
         assertTrue(whaleBaby.preserveAncestorTransforms());
 
         for (var tortoise : NaturalistModelContracts.contractsForId("tortoise")) {
@@ -206,7 +218,7 @@ class NaturalistCoverageTest {
         assertEquals(.30F, NaturalistModelContracts.contractsForId("whale").getFirst().presentation().scale());
     }
 
-    @Test void c27SourceAuditBindsHippoAndWhaleToTheirAuthoredAnatomyAndDrawableCenter() throws Exception {
+    @Test void c28SourceAuditBindsHippoAndWhaleToTheirAuthoredAnatomyAndDrawableCenter() throws Exception {
         Path models = Path.of(System.getProperty("projectRoot")).getParent()
                 .resolve("naturalist/common/src/main/java/com/crispytwig/naturalist/client/model");
         String alligator = Files.readString(models.resolve("AlligatorModel.java"));
@@ -241,14 +253,15 @@ class NaturalistCoverageTest {
         assertTrue(hippo.contains("neck.addOrReplaceChild(\"topJaw\""));
     }
 
-    @Test void c27RecordsC26HippoPassWithoutFabricatingWhaleDiagnostics() throws Exception {
+    @Test void c28RecordsTheExactC27TechnicalCapturePassWithoutInventingVisualAcceptance() throws Exception {
         Path root = Path.of(System.getProperty("projectRoot"));
         for (String record : List.of(Files.readString(root.resolve("WORKBENCH_STATUS.json")),
                 Files.readString(root.resolve("TESTING.md")), Files.readString(root.resolve("CODEX_LOG.md")))) {
-            assertTrue(record.contains("Hippo"));
-            assertTrue(record.contains("PASS"));
-            assertTrue(record.contains("0.75F"));
-            assertTrue(record.contains("no Whale-specific diagnostic sequence"));
+            assertTrue(record.contains("C27"));
+            assertTrue(record.contains("technical/capture PASS"));
+            assertTrue(record.contains("d9939afc9759a9e5df418b2cfcf0033aa0b9576b9ae7a802a850ba64a5b19615"));
+            assertTrue(record.contains("body/skullRot/topJaw"));
+            assertTrue(record.contains("visual acceptance"));
         }
         assertTrue(NaturalistModelContracts.isNativeControlId("bear"));
         assertFalse(NaturalistModelContracts.isTargetId("bear"));
@@ -258,19 +271,32 @@ class NaturalistCoverageTest {
         assertEquals(.28F, NaturalistModelContracts.contractsForId("jungle_scorpion").getFirst().presentation().scale());
     }
 
-    @Test void c27RetainsTheC26HippoPassBaselineWhileChangingOnlyTheWhaleCaptureSeam() {
+    @Test void c28RetainsHippoAndTheProvenWhaleCaptureSeamWithoutRetuningEither() {
         var blackBear = NaturalistModelContracts.contractsForId("black_bear").getFirst();
         var hippo = NaturalistModelContracts.contractsForId("hippo").getFirst();
         var whale = NaturalistModelContracts.contractsForId("whale").getFirst();
         assertEquals(-2.0F, blackBear.presentation().frameYOffset(), "C25 Black Bear PASS is frozen");
-        assertEquals(.75F, hippo.presentation().scale(), "C26 applies the exact 0.60F × 1.25 change");
+        assertEquals(.75F, hippo.presentation().scale(), "C26 Hippo PASS is frozen");
         assertEquals(List.of("body", "bone", "neck"), hippo.path());
         assertEquals(List.of("body", "bone", "neck"), hippo.tracePath());
         assertEquals(.70F, NaturalistModelContracts.contractsForId("hippo").get(1).presentation().scale());
-        assertEquals(1.5708F, whale.presentation().yRotation(), "C27's center correction makes this a distinct profile experiment");
+        assertEquals(1.5708F, whale.presentation().yRotation(), "C27's proven topJaw center preserves the full profile");
         assertEquals(List.of("body", "skullRot", "topJaw"), whale.tracePath());
         assertTrue(whale.useTraceAsRenderCenter());
         assertEquals(.30F, whale.presentation().scale());
+    }
+
+    @Test void c28FreezesTheCompleteC27EntityContractRegistry() throws Exception {
+        StringBuilder snapshot = new StringBuilder();
+        for (String id : NaturalistModelContracts.targetIds()) {
+            snapshot.append(id).append('=');
+            for (var contract : NaturalistModelContracts.contractsForId(id)) snapshot.append(contract).append(';');
+            snapshot.append('\n');
+        }
+        String fingerprint = HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256")
+                .digest(snapshot.toString().getBytes(StandardCharsets.UTF_8)));
+        assertEquals("a5e0f5a4440d0a472d01e1297ba0f1f7b81b8a5c8af988ec3adf116a165c5f6a", fingerprint,
+                "Any entity contract change requires explicit runtime-backed review");
     }
 
     @Test void c16ClamAndOtherLabelFallbackTargetsHaveExplicitDetachedCaptureContracts() {

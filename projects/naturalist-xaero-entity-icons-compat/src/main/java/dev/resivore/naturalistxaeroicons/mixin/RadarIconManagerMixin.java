@@ -3,7 +3,6 @@ package dev.resivore.naturalistxaeroicons.mixin;
 import dev.resivore.naturalistxaeroicons.BrownBearSpritePresentation;
 import dev.resivore.naturalistxaeroicons.StarfishCaptureDiagnostic;
 import dev.resivore.naturalistxaeroicons.ScorpionCaptureDiagnostic;
-import dev.resivore.naturalistxaeroicons.WhaleCaptureDiagnostic;
 import dev.resivore.naturalistxaeroicons.NaturalistModelContracts;
 import java.util.Map;
 import net.minecraft.world.entity.EntityType;
@@ -39,7 +38,6 @@ abstract class RadarIconManagerMixin {
         } catch (RuntimeException ignored) { /* reload remains Xaero-owned if the private seam changed */ }
         StarfishCaptureDiagnostic.resourceReloaded();
         ScorpionCaptureDiagnostic.resourceReloaded();
-        WhaleCaptureDiagnostic.resourceReloaded();
     }
 
     @Inject(
@@ -56,7 +54,6 @@ abstract class RadarIconManagerMixin {
         BrownBearSpritePresentation.requestStarted(entity, canPrerender);
         StarfishCaptureDiagnostic.requestStarted(entity, canPrerender);
         ScorpionCaptureDiagnostic.requestStarted(entity, canPrerender);
-        WhaleCaptureDiagnostic.requestStarted(entity, canPrerender);
     }
 
     /** C21 records Xaero's Starfish cache decision without replacing its lookup or retry behavior. */
@@ -81,10 +78,6 @@ abstract class RadarIconManagerMixin {
         }
         if (ScorpionCaptureDiagnostic.isScorpion(entity)) {
             ScorpionCaptureDiagnostic.cacheLookup(((RadarIconEntityCacheStorageAccessor) (Object) cache)
-                    .naturalistXaeroIcons$getStorage().containsKey(key));
-        }
-        if (WhaleCaptureDiagnostic.isAdultWhale(entity)) {
-            WhaleCaptureDiagnostic.cacheLookup(((RadarIconEntityCacheStorageAccessor) (Object) cache)
                     .naturalistXaeroIcons$getStorage().containsKey(key));
         }
     }
@@ -119,6 +112,5 @@ abstract class RadarIconManagerMixin {
         BrownBearSpritePresentation.requestFinished();
         StarfishCaptureDiagnostic.requestFinished(callback.getReturnValue());
         ScorpionCaptureDiagnostic.requestFinished(entity, callback.getReturnValue());
-        WhaleCaptureDiagnostic.requestFinished(entity, callback.getReturnValue());
     }
 }
