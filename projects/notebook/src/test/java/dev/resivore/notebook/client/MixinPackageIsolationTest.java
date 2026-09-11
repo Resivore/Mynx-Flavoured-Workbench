@@ -21,9 +21,10 @@ class MixinPackageIsolationTest {
     private static final Path ROOT = Path.of(System.getProperty("user.dir"));
     private static final String MIXIN_PACKAGE = "dev.resivore.notebook.mixin.client";
     private static final String MIXIN_CLASS = "ContainerScreenAccess";
+    private static final String LIVE_BOUNDS_MIXIN_CLASS = "InventoryScreenButtonPositionMixin";
 
     @Test
-    void sourceMixinPackageContainsOnlyTheDedicatedAccessor() throws IOException {
+    void sourceMixinPackageContainsOnlyDedicatedMixins() throws IOException {
         String configuration = read("src/main/resources/notebook.client.mixins.json");
         String accessor = read("src/main/java/dev/resivore/notebook/mixin/client/ContainerScreenAccess.java");
         String screen = read("src/main/java/dev/resivore/notebook/client/NotebookScreen.java");
@@ -31,6 +32,7 @@ class MixinPackageIsolationTest {
 
         assertTrue(configuration.contains("\"package\": \"" + MIXIN_PACKAGE + "\""));
         assertTrue(configuration.contains("\"" + MIXIN_CLASS + "\""));
+        assertTrue(configuration.contains("\"" + LIVE_BOUNDS_MIXIN_CLASS + "\""));
         assertTrue(accessor.startsWith("package " + MIXIN_PACKAGE + ";"));
         assertTrue(accessor.contains("@Mixin(AbstractContainerScreen.class)"));
         assertTrue(screen.startsWith("package dev.resivore.notebook.client;"));
@@ -43,6 +45,7 @@ class MixinPackageIsolationTest {
     void packagedJarResolvesMixinClassesWithoutOwningNormalClientClasses() throws IOException {
         Path jar = findPackagedJar();
         String mixinClassEntry = MIXIN_PACKAGE.replace('.', '/') + "/" + MIXIN_CLASS + ".class";
+        String liveBoundsMixinClassEntry = MIXIN_PACKAGE.replace('.', '/') + "/" + LIVE_BOUNDS_MIXIN_CLASS + ".class";
         String screenEntry = "dev/resivore/notebook/client/NotebookScreen.class";
         String entrypointEntry = "dev/resivore/notebook/NotebookClient.class";
         String mixinPackagePath = MIXIN_PACKAGE.replace('.', '/') + "/";
@@ -60,7 +63,7 @@ class MixinPackageIsolationTest {
                     .map(entry -> entry.getName())
                     .filter(name -> name.startsWith(mixinPackagePath) && name.endsWith(".class"))
                     .toList();
-            assertEquals(List.of(mixinClassEntry), mixinClasses);
+            assertEquals(List.of(mixinClassEntry, liveBoundsMixinClassEntry), mixinClasses);
             assertFalse(screenEntry.startsWith(mixinPackagePath));
             assertFalse(entrypointEntry.startsWith(mixinPackagePath));
 

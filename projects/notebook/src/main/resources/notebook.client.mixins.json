@@ -3,7 +3,8 @@
   "package": "dev.resivore.notebook.mixin.client",
   "compatibilityLevel": "JAVA_25",
   "client": [
-    "ContainerScreenAccess"
+    "ContainerScreenAccess",
+    "InventoryScreenButtonPositionMixin"
   ],
   "injectors": {
     "defaultRequire": 1

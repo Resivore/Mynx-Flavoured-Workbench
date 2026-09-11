@@ -35,12 +35,15 @@ public final class NotebookClient implements ClientModInitializer {
     private static final int INVENTORY_BUTTON_GAP = 4;
     private static final int INVENTORY_BUTTON_STEP = INVENTORY_BUTTON_SIZE + INVENTORY_BUTTON_GAP;
 
+    private static NotebookClient activeClient;
+
     private KeyMapping openKey;
     private NotebookStore store;
     private final Map<Screen, WeakReference<AbstractWidget>> inventoryButtons = new WeakHashMap<>();
 
     @Override
     public void onInitializeClient() {
+        activeClient = this;
         Path notebookRoot = FabricLoader.getInstance().getConfigDir().resolve("notebook");
         store = new NotebookStore(notebookRoot);
 
@@ -89,6 +92,7 @@ public final class NotebookClient implements ClientModInitializer {
                 : bounds.notebook$getTopPos() + INVENTORY_BUTTON_GAP;
         Position position = findFreeUtilityPosition(
                 widgets,
+                null,
                 preferredX,
                 preferredY,
                 bounds.notebook$getLeftPos() - INVENTORY_BUTTON_SIZE - INVENTORY_BUTTON_GAP,
@@ -110,6 +114,7 @@ public final class NotebookClient implements ClientModInitializer {
 
     private static Position findFreeUtilityPosition(
             List<AbstractWidget> widgets,
+            AbstractWidget ignoredWidget,
             int rightX,
             int firstY,
             int leftX,
@@ -133,7 +138,7 @@ public final class NotebookClient implements ClientModInitializer {
                     }
                     break;
                 }
-                if (widgets.stream().noneMatch(widget -> overlaps(widget, x, y))) {
+                if (widgets.stream().noneMatch(widget -> widget != ignoredWidget && overlaps(widget, x, y))) {
                     return new Position(x, y);
                 }
             }
@@ -147,6 +152,34 @@ public final class NotebookClient implements ClientModInitializer {
                 && x + INVENTORY_BUTTON_SIZE + 2 > widget.getX()
                 && y < widget.getBottom() + 2
                 && y + INVENTORY_BUTTON_SIZE + 2 > widget.getY();
+    }
+
+    /** Called by the survival screen after the recipe book has updated its live bounds. */
+    public static void refreshSurvivalInventoryButton(InventoryScreen screen) {
+        if (activeClient != null) {
+            activeClient.repositionSurvivalInventoryButton(screen);
+        }
+    }
+
+    private void repositionSurvivalInventoryButton(InventoryScreen screen) {
+        WeakReference<AbstractWidget> reference = inventoryButtons.get(screen);
+        AbstractWidget button = reference == null ? null : reference.get();
+        if (button == null || !(screen instanceof ContainerScreenAccess bounds)) {
+            return;
+        }
+
+        Position position = findFreeUtilityPosition(
+                Screens.getWidgets(screen),
+                button,
+                bounds.notebook$getLeftPos() + bounds.notebook$getImageWidth() + INVENTORY_BUTTON_GAP,
+                bounds.notebook$getTopPos() + bounds.notebook$getImageHeight() - 26,
+                bounds.notebook$getLeftPos() - INVENTORY_BUTTON_STEP,
+                screen.width,
+                screen.height,
+                -INVENTORY_BUTTON_STEP);
+        if (position != null && (button.getX() != position.x() || button.getY() != position.y())) {
+            button.setPosition(position.x(), position.y());
+        }
     }
 
     private void open(Minecraft client, Screen parent) {

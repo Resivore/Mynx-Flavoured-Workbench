@@ -24,6 +24,7 @@ class NotebookClientWiringTest {
         assertTrue(client.contains("openKey.consumeClick()"));
         assertTrue(client.contains("client.gui.screen()"));
         assertTrue(client.contains("ScreenEvents.AFTER_INIT.register"));
+        assertTrue(client.contains("refreshSurvivalInventoryButton"));
         assertTrue(client.contains("Screens.getWidgets(screen)"));
         assertTrue(client.contains("screen instanceof InventoryScreen"));
         assertTrue(client.contains("screen instanceof CreativeModeInventoryScreen"));
@@ -67,6 +68,25 @@ class NotebookClientWiringTest {
     }
 
     @Test
+    void liveSurvivalBoundsChangesMoveTheExistingButtonWithoutSelfCollisionOrRebuild() throws IOException {
+        String client = read("src/main/java/dev/resivore/notebook/NotebookClient.java");
+        String mixins = read("src/main/resources/notebook.client.mixins.json");
+        String liveBoundsMixin = read(
+                "src/main/java/dev/resivore/notebook/mixin/client/InventoryScreenButtonPositionMixin.java");
+
+        assertTrue(mixins.contains("InventoryScreenButtonPositionMixin"));
+        assertTrue(liveBoundsMixin.contains("@Mixin(InventoryScreen.class)"));
+        assertTrue(liveBoundsMixin.contains("@Inject(method = \"extractBackground\", at = @At(\"HEAD\"), require = 1)"));
+        assertTrue(liveBoundsMixin.contains("NotebookClient.refreshSurvivalInventoryButton"));
+        assertTrue(client.contains("repositionSurvivalInventoryButton"));
+        assertTrue(client.contains("bounds.notebook$getTopPos() + bounds.notebook$getImageHeight() - 26"));
+        assertTrue(client.contains("widget != ignoredWidget && overlaps(widget, x, y)"));
+        assertTrue(client.contains("button.setPosition(position.x(), position.y())"));
+        assertFalse(client.contains("widgets.remove(button)"));
+        assertFalse(client.contains("new WeakReference<>(button)" + "\n                .bounds"));
+    }
+
+    @Test
     void readingEditingAndFilesystemWrappingContractsRemainSeparated() throws IOException {
         String screen = read("src/main/java/dev/resivore/notebook/client/NotebookScreen.java");
 
@@ -93,6 +113,17 @@ class NotebookClientWiringTest {
         assertTrue(screen.contains("AbstractTextAreaWidget.DEFAULT_TOTAL_PADDING"));
         assertTrue(screen.contains("bodyEditor.scrollAmount()"));
         assertFalse(screen.contains("TEXT_LINE_HEIGHT"));
+    }
+
+    @Test
+    void indexVisualOffsetsPreserveRowAndBaselineGeometry() throws IOException {
+        String screen = read("src/main/java/dev/resivore/notebook/client/NotebookScreen.java");
+
+        assertTrue(screen.contains("int gripY = rowY + 7"));
+        assertTrue(screen.contains("elide(note.title(), layout.leftContentWidth() - 21)"));
+        assertTrue(screen.contains("layout.leftContentX() + 17, rowY + 5"));
+        assertFalse(screen.contains("int gripY = rowY + 6"));
+        assertFalse(screen.contains("layout.leftContentWidth() - 17"));
     }
 
     @Test

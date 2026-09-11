@@ -497,11 +497,11 @@ public final class NotebookScreen extends Screen {
             }
 
             int gripX = layout.leftContentX() + 4;
-            int gripY = rowY + 6;
+            int gripY = rowY + 7;
             graphics.horizontalLine(gripX, gripX + 5, gripY, COLOR_MUTED_INK);
             graphics.horizontalLine(gripX, gripX + 5, gripY + 3, COLOR_MUTED_INK);
-            String title = elide(note.title(), layout.leftContentWidth() - 17);
-            graphics.text(font, title, layout.leftContentX() + 13, rowY + 5, COLOR_INK, false);
+            String title = elide(note.title(), layout.leftContentWidth() - 21);
+            graphics.text(font, title, layout.leftContentX() + 17, rowY + 5, COLOR_INK, false);
         }
 
         if (draggedId != null && dragTargetIndex >= 0) {
