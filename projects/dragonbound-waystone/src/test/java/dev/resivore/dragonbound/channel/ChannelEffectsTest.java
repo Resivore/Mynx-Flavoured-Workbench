@@ -80,17 +80,22 @@ final class ChannelEffectsTest {
     }
 
     @Test
-    void explicitPortalMotionHasAPositiveFirstTickRiseInEveryPortalLifetime() {
-        Vec3 motion = ChannelEffects.foregroundPortalMotion(0.02D, 0.08D, -0.02D);
+    void explicitReversePortalMotionIsBoundedAndRisesThroughoutItsExactLifetime() {
+        Vec3 motion = ChannelEffects.foregroundReversePortalMotion(0.02D, 0.06D, -0.02D);
 
         assertEquals(0.02D, motion.x, 1.0E-10D);
-        assertEquals(0.08D, motion.y, 1.0E-10D);
+        assertEquals(0.06D, motion.y, 1.0E-10D);
         assertEquals(-0.02D, motion.z, 1.0E-10D);
-        for (int lifetime = 40; lifetime <= 49; lifetime++) {
-            assertTrue(ChannelEffects.portalFirstTickVerticalRise(
-                    ChannelEffects.FOREGROUND_MOTION_VERTICAL_MIN, lifetime) > 0.0D);
-            assertTrue(ChannelEffects.portalFirstTickVerticalRise(
-                    ChannelEffects.FOREGROUND_MOTION_VERTICAL_MAX, lifetime) > 0.0D);
+        assertEquals(0.035D, ChannelEffects.FOREGROUND_MOTION_HORIZONTAL_MAX);
+        assertEquals(0.06D, ChannelEffects.FOREGROUND_MOTION_VERTICAL_MIN);
+        assertEquals(0.12D, ChannelEffects.FOREGROUND_MOTION_VERTICAL_MAX);
+        for (int lifetime = 60; lifetime <= 61; lifetime++) {
+            for (int age = 1; age < lifetime; age++) {
+                assertTrue(ChannelEffects.reversePortalVerticalStep(
+                        ChannelEffects.FOREGROUND_MOTION_VERTICAL_MIN, age, lifetime) > 0.0D);
+                assertTrue(ChannelEffects.reversePortalVerticalStep(
+                        ChannelEffects.FOREGROUND_MOTION_VERTICAL_MAX, age, lifetime) > 0.0D);
+            }
         }
     }
 

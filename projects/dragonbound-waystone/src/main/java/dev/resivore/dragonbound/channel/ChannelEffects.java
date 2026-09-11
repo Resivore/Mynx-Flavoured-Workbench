@@ -21,8 +21,8 @@ final class ChannelEffects {
     static final double FOREGROUND_CHANNEL_VERTICAL_SPREAD = 0.05D;
     static final double FOREGROUND_SUCCESS_VERTICAL_SPREAD = 0.05D;
     static final double FOREGROUND_MOTION_HORIZONTAL_MAX = 0.035D;
-    static final double FOREGROUND_MOTION_VERTICAL_MIN = 0.08D;
-    static final double FOREGROUND_MOTION_VERTICAL_MAX = 0.18D;
+    static final double FOREGROUND_MOTION_VERTICAL_MIN = 0.06D;
+    static final double FOREGROUND_MOTION_VERTICAL_MAX = 0.12D;
 
     private ChannelEffects() {
     }
@@ -80,21 +80,20 @@ final class ChannelEffects {
         return groundOrigin.add(horizontalX, verticalOffset, horizontalZ);
     }
 
-    static Vec3 foregroundPortalMotion(double horizontalX, double verticalY, double horizontalZ) {
+    static Vec3 foregroundReversePortalMotion(double horizontalX, double verticalY, double horizontalZ) {
         return new Vec3(horizontalX, verticalY, horizontalZ);
     }
 
     /**
-     * The 26.2 {@code PortalParticle} evaluates its first client tick as
-     * {@code yStart + velocityY * (1 - age / lifetime)^2 + (1 - age / lifetime)}.
-     * A positive explicit Y vector therefore launches a particle upward from its low packet
-     * origin; normal count packets cannot guarantee that because they Gaussian-randomize all
-     * velocity axes. This helper keeps the exact packet-vector behavior unit-testable.
+     * Minecraft 26.2's {@code ReversePortalParticle} factory receives the count-zero packet's
+     * motion values unchanged when packet speed is {@code 1.0}. Its live tick increments age and
+     * adds {@code motionY * age / lifetime}; unlike {@code PortalParticle}, it does not add the
+     * portal-specific vertical interpolation term or apply gravity. Positive packet Y therefore
+     * produces a strictly upward step for every live tick. Its 60--61 tick lifetime yields a
+     * cumulative vertical rise of roughly 1.77--3.60 blocks for this canary's 0.06--0.12 range.
      */
-    static double portalFirstTickVerticalRise(double verticalMotion, int lifetime) {
-        double progress = 1.0D / lifetime;
-        double remaining = 1.0D - progress;
-        return verticalMotion * remaining * remaining + remaining;
+    static double reversePortalVerticalStep(double verticalMotion, int age, int lifetime) {
+        return verticalMotion * age / lifetime;
     }
 
     private static int rampedParticleCount(long elapsedTicks, int channelTicks, int start, int completion) {
@@ -120,7 +119,7 @@ final class ChannelEffects {
                 0.35D,
                 0.04D
         );
-        targetedRisingPortalParticles(
+        targetedRisingReversePortalParticles(
                 player,
                 level,
                 foregroundChannelParticleCount(elapsedTicks, channelTicks),
@@ -144,7 +143,7 @@ final class ChannelEffects {
     }
 
     private static void foregroundPortalBurst(ServerPlayer player, ServerLevel level) {
-        targetedRisingPortalParticles(
+        targetedRisingReversePortalParticles(
                 player,
                 level,
                 FOREGROUND_SUCCESS_PARTICLE_COUNT,
@@ -153,8 +152,8 @@ final class ChannelEffects {
         );
     }
 
-    /** Sends count-zero packets so each targeted Portal particle has a deliberate upward launch. */
-    private static void targetedRisingPortalParticles(
+    /** Sends count-zero packets so each targeted reverse-portal particle has a deliberate upward launch. */
+    private static void targetedRisingReversePortalParticles(
             ServerPlayer player,
             ServerLevel level,
             int count,
@@ -169,7 +168,7 @@ final class ChannelEffects {
                     Math.cos(angle) * radius,
                     centeredRandom(level, verticalSpread),
                     Math.sin(angle) * radius);
-            Vec3 motion = foregroundPortalMotion(
+            Vec3 motion = foregroundReversePortalMotion(
                     centeredRandom(level, FOREGROUND_MOTION_HORIZONTAL_MAX),
                     FOREGROUND_MOTION_VERTICAL_MIN
                             + level.getRandom().nextDouble()
@@ -177,7 +176,7 @@ final class ChannelEffects {
                     centeredRandom(level, FOREGROUND_MOTION_HORIZONTAL_MAX));
             level.sendParticles(
                     player,
-                    ParticleTypes.PORTAL,
+                    ParticleTypes.REVERSE_PORTAL,
                     false,
                     false,
                     start.x,

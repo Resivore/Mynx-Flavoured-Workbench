@@ -213,6 +213,7 @@ final class ArchitectureContractTest {
 
         assertTrue(effects.contains("SoundEvents.ENDERMAN_TELEPORT"));
         assertTrue(effects.contains("ParticleTypes.PORTAL"));
+        assertTrue(effects.contains("ParticleTypes.REVERSE_PORTAL"));
         assertTrue(effects.contains("SoundSource.PLAYERS"));
         assertEquals(1, countOccurrences(effects, "playSound("));
         assertTrue(effects.contains("portalBurst(level, position)"));
@@ -225,14 +226,19 @@ final class ArchitectureContractTest {
         assertTrue(effects.contains("FOREGROUND_GROUND_OFFSET = 0.05D"));
         assertTrue(effects.contains("FOREGROUND_CHANNEL_HORIZONTAL_RADIUS = 0.65D"));
         assertTrue(effects.contains("FOREGROUND_SUCCESS_HORIZONTAL_RADIUS = 0.75D"));
-        assertTrue(effects.contains("FOREGROUND_MOTION_VERTICAL_MIN = 0.08D"));
+        assertTrue(effects.contains("FOREGROUND_MOTION_VERTICAL_MIN = 0.06D"));
+        assertTrue(effects.contains("FOREGROUND_MOTION_VERTICAL_MAX = 0.12D"));
         assertTrue(effects.contains("foregroundChannelParticleCount(elapsedTicks, channelTicks)"));
         assertTrue(effects.contains("foregroundGroundOrigin(player.position())"));
-        assertTrue(effects.contains("targetedRisingPortalParticles("));
+        assertTrue(effects.contains("targetedRisingReversePortalParticles("));
+        assertEquals(2, countOccurrences(effects, "ParticleTypes.PORTAL"));
+        assertEquals(1, countOccurrences(effects, "ParticleTypes.REVERSE_PORTAL"));
         assertTrue(effects.contains("0,\n                    motion.x,"));
         assertEquals(1, countOccurrences(effects, "level.sendParticles(\n                    player,"));
         assertFalse(effects.contains("getEyePosition"));
         assertFalse(effects.contains("getLookAngle"));
+        assertFalse(effects.contains("portalFirstTickVerticalRise"));
+        assertFalse(effects.contains("PortalParticle evaluates its first client tick"));
         assertFalse(effects.contains("departure"));
     }
 
