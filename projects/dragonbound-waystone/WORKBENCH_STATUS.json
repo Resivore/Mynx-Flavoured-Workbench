@@ -18,8 +18,8 @@
       "Preserve the accepted server-owned channel, exact-destination safety, persistent anchor, loss protection, recipes, configuration migration, discovery behavior, geometry, and art without expanding into a general waypoint or teleport system."
     ],
     "scope": [
-      "Maintain the accepted Canary 5 behavior while Canary 7 corrects Canary 6's audiovisual timing: shared server-owned vanilla Enderman teleport sound and portal particles occur only after a positively confirmed successful arrival.",
-      "Preserve the 40-tick default channel, 1,200-tick Staff cooldown, exact current recipes, one-click and mouse-release-independent channel lifecycle, exact arrival at blockY + 3/16, recipe-book and JEI discovery seam, and success-only consumption and cooldown behavior.",
+      "Maintain the accepted Canary 5 behavior while Canary 8 adds server-owned ramped portal particles only for valid pending channels, preserves Canary 7's success-only arrival feedback, and gives accepted Staff activation one ordinary server-broadcast main-hand swing.",
+      "Preserve the 40-tick default channel, 1,200-tick Staff cooldown, exact current recipes, one-click and mouse-release-independent channel lifecycle, exact arrival at the visible Waystone top, recipe-book and JEI discovery seam, and success-only consumption and cooldown behavior.",
       "Retain exact accepted Canary 5 and focused-runtime-passed Canary 4 rollback artifacts together with the Dragonbound-owned Staff art and the separately licensed Matcha Stable Void snapshot and notice."
     ],
     "boundaries": {
@@ -81,15 +81,15 @@
     ]
   },
   "state": {
-    "milestone": "User runtime testing found Canary 6's audiovisual timing FAIL: its Enderman sound played at channel activation and portal particles appeared during the lead-up, while no failure of the underlying channel or teleport mechanics was reported. Canary 7 moves the same shared server-owned sound and one portal burst to the positively confirmed arrival path only; it is statically verified, not deployed, and requires its own runtime test. Exact Canary 5 remains the accepted baseline and rollback.",
+    "milestone": "User feedback confirms Canary 7's successful-arrival particles should be preserved, without establishing a full Canary 7 runtime PASS. Canary 8 adds modest ramped portal particles during accepted valid channels, a Staff-only ordinary main-hand swing, and a four-pixel Waystone base with its plate moved up two pixels; it is statically verified, not deployed, and requires its own runtime test. Exact Canary 5 remains the accepted baseline and rollback.",
     "releases": {
       "current": {
-        "version": "0.1.0-canary7",
+        "version": "0.1.0-canary8",
         "artifact": {
-          "filename": "dragonbound-waystone-0.1.0-canary7.jar",
-          "sha256": "8fe2fcdbe021c89ca9bb88714c14293a388e8427acc2b91225db14b4d9b28c0b"
+          "filename": "dragonbound-waystone-0.1.0-canary8.jar",
+          "sha256": "6e909e4a2bf9a0739bd6b24efac5e23dfec095707cda0fc1635b88eb82774c7e"
         },
-        "source_commit": "c9ef49dce25aa97be0f49555085c197debc744d9",
+        "source_commit": "bfe7f4e4ca3aea36b556e65909ac49fc45b281ea",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
@@ -122,11 +122,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 3,
-    "activity_at": "2026-09-10T01:31:56Z",
-    "updated_at": "2026-09-10T01:31:56Z",
-    "last_codex_at": "2026-09-10T01:31:56Z",
-    "source_commit": "c9ef49dce25aa97be0f49555085c197debc744d9",
+    "revision": 4,
+    "activity_at": "2026-09-11T16:02:19Z",
+    "updated_at": "2026-09-11T16:02:19Z",
+    "last_codex_at": "2026-09-11T16:02:19Z",
+    "source_commit": "bfe7f4e4ca3aea36b556e65909ac49fc45b281ea",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
