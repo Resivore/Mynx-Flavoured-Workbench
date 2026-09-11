@@ -38,12 +38,12 @@
     ]
   },
   "state": {
-    "milestone": "Exact C29 USER-REPORTED / EXTERNAL adult Whale evidence is preserved: `naturalist-xaero-entity-icons-compat-0.1.0-canary29.jar` / embedded `0.1.0-canary29` / 46,056 bytes / SHA-256 `0250978ca37d939b8870f0899408c1399729531951ab7280de1db32e5aaebd6d` / source `0ac65bb31b4f32a70d4fac03657d071bf86b3bb1`. C29 is a major visual improvement over C28: its narrow vertical sliver is gone and it renders a real side-biased head with dark blue upper head and pale underside/lower jaw; it is recognizably an animal head, but remains too generic/blocky to identify clearly as a Whale at Xaero radar scale and is not accepted. C30 changes adult Whale only to an audited detached compact assembly: live `WhaleModel` `body` direct torso cube plus exact copied `skullRot` child (cranium, topJaw, bottomJaw), while tail/tail2/fluke/bone/rightFin/leftFin are omitted. It uses live `body` as trace and render center, scale `0.20F`, Y `0.7854F`, zero X/Z/frame offset; Baby Whale retains C29 `body/skull` / `0.60F` / Y `0.7854F`. C30 adds bounded adult-Whale-only diagnostics and preserves empty-destination failure, native fallback, Xaero × EMF coexistence, Hippo adult PASS at `0.75F`, and every other solved contract unchanged. C30 is `naturalist-xaero-entity-icons-compat-0.1.0-canary30.jar` / embedded `0.1.0-canary30` / 51,820 bytes / SHA-256 `9a311efbba0e70456c0f813374270ff7246fba906813d42752980bfde1a0ac0f` / source `dd21d26faa7cd76e7c4747fa29b18f9d1b76b1bb` / runtime dependency policy `CAPABILITY_OR_PROVIDER` with no exceptions. Manager revision 117 retains unrelated BGE C60 and IBF C4 in both slots, so C30 is NOT_DEPLOYED / RUNTIME_UNTESTED.",
+    "milestone": "Exact C28 technical/capture PASS but visual FAIL provenance remains `naturalist-xaero-entity-icons-compat-0.1.0-canary28.jar` / SHA-256 `3dec7da889191bc9ab6965373e2d70c30225e0dbe62f27f8a5de559279ff8b90` / `body/skullRot/topJaw` vertical sliver. Exact C30 USER-REPORTED / EXTERNAL runtime evidence is preserved: `naturalist-xaero-entity-icons-compat-0.1.0-canary30.jar` / embedded `0.1.0-canary30` / 51,820 bytes / SHA-256 `9a311efbba0e70456c0f813374270ff7246fba906813d42752980bfde1a0ac0f` / source `dd21d26faa7cd76e7c4747fa29b18f9d1b76b1bb`. C30's adult Whale is more recognizable than before, is not a label-only or sliver regression, but remains visibly angled/three-quarter rather than the desired clear side profile; it is not accepted. C31 retains the exact C30 adult `WhaleModel` `body` direct torso cube plus copied `skullRot` (cranium, topJaw, bottomJaw), live `body` trace/render center, scale `0.20F`, and zero X/Z/frame offset, changing only Y rotation `0.7854F` -> `1.1781F`; Baby Whale remains exact C30 `body/skull` / `0.60F` / Y `0.7854F`. Hippo adult PASS at `0.75F` and every solved non-Whale contract remain frozen. Manager revision 117 retains unrelated BGE C60 and IBF C4 in both slots, so C31 is NOT_DEPLOYED / RUNTIME_UNTESTED.",
     "releases": {
       "current": {
-        "version": "0.1.0-canary30",
-        "artifact": {"filename": "naturalist-xaero-entity-icons-compat-0.1.0-canary30.jar", "sha256": "9a311efbba0e70456c0f813374270ff7246fba906813d42752980bfde1a0ac0f"},
-        "source_commit": "dd21d26faa7cd76e7c4747fa29b18f9d1b76b1bb",
+        "version": "0.1.0-canary31",
+        "artifact": {"filename": "naturalist-xaero-entity-icons-compat-0.1.0-canary31.jar", "sha256": "e2e1e0c42f52fe4f5d17d7904ae95c012b2ba21f4a8cf42f0d84521af0ce9fa3"},
+        "source_commit": "791392670ea656aaa8b3e58429e69aef853ea3a1",
         "runtime_dependency_policy": {"contract": "CAPABILITY_OR_PROVIDER", "exceptions": []}
       },
       "accepted": null,
@@ -55,11 +55,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 31,
-    "activity_at": "2026-09-11T02:48:17Z",
-    "updated_at": "2026-09-11T02:48:17Z",
-    "last_codex_at": "2026-09-11T02:48:17Z",
-    "source_commit": "dd21d26faa7cd76e7c4747fa29b18f9d1b76b1bb",
+    "revision": 32,
+    "activity_at": "2026-09-11T04:15:00Z",
+    "updated_at": "2026-09-11T04:15:00Z",
+    "last_codex_at": "2026-09-11T04:15:00Z",
+    "source_commit": "791392670ea656aaa8b3e58429e69aef853ea3a1",
     "google_sheet": {"participates": true, "exclusion_reason": null}
   }
 }
