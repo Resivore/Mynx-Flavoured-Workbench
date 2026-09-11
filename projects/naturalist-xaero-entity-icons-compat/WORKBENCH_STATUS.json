@@ -38,12 +38,12 @@
     ]
   },
   "state": {
-    "milestone": "C26 now has USER-REPORTED / EXTERNAL focused runtime evidence: adult Hippo PASS at exact `0.75F`; that contract is permanently frozen. The supplied exact C26 log confirms the retained C26 identity but has no Whale-specific diagnostic sequence, so no C26 Whale diagnostic outcome is claimed. C27 is STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED: `naturalist-xaero-entity-icons-compat-0.1.0-canary27.jar` / embedded `0.1.0-canary27` / 53,127 bytes / SHA-256 `d9939afc9759a9e5df418b2cfcf0033aa0b9576b9ae7a802a850ba64a5b19615` / source `c4381b1a9bd8c18c9d1c30e2af959c510d645b73` / runtime dependency policy `CAPABILITY_OR_PROVIDER` with no exceptions. C27 changes only adult `naturalist:whale`: it preserves the complete `WhaleModel` `body/skullRot` cranium + `topJaw` + `bottomJaw` geometry at `0.30F`, and uses exact live `body/skullRot/topJaw` as the trace and Xaero render center at Y `1.5708F`. Xaero 26.4.2 requires the rendered adapter itself to resolve an MRT entry and have cubes, but calculates framing from only the separate center part's direct biggest cuboid. C24 used short-cranium `skullRot` for both; C27's 28×11×42 direct `topJaw` center is a distinct source-audited capture correction, not a repeat of that known-bad mechanism. Baby Whale remains exact C26 `WhaleBabyModel` `body/skull` / `0.60F` / Y `0.7854F`. Black Bear C25 PASS, Alligator C24 PASS, Lizard C24 PASS, Tortoise C24 PASS, C20 Clam PASS, C23 Starfish PASS, both C23 Scorpions PASS, Brown Bear native sprite PASS, Hippo C26 PASS at `0.75F`, and every other known-good contract are frozen. Manager revision 117 retains unrelated BGE C60 and IBF C4 in both slots, so C27 is retained for focused external runtime testing.",
+    "milestone": "C27 now has USER-REPORTED / EXTERNAL technical/capture PASS evidence for the adult Whale mechanism. Exact retained C27 identity is `naturalist-xaero-entity-icons-compat-0.1.0-canary27.jar` / embedded `0.1.0-canary27` / 53,127 bytes / SHA-256 `d9939afc9759a9e5df418b2cfcf0033aa0b9576b9ae7a802a850ba64a5b19615` / source `c4381b1a9bd8c18c9d1c30e2af959c510d645b73`. The supplied Minecraft 26.2 log proves the exact adult `naturalist:whale` / `WhaleModel` / complete `body/skullRot` source / live `body/skullRot/topJaw` trace and render center / `0.30F` / Y `1.5708F` / zero X, Z, and frame offset contract resolved, reached the real fallback draw, changed destination `0` to `1`, produced a non-null icon and cache write, then returned a cache HIT. This proves a real model icon at the intended full-profile orientation; visual acceptance of complete face visibility and cropping is not inferred from logging alone. C28 is the cleanup production candidate: `naturalist-xaero-entity-icons-compat-0.1.0-canary28.jar` / embedded `0.1.0-canary28` / 46,075 bytes / SHA-256 `3dec7da889191bc9ab6965373e2d70c30225e0dbe62f27f8a5de559279ff8b90` / source `7c2a53d6e8c2db62ff9c5abda3ccfe46f937ecce` / runtime dependency policy `CAPABILITY_OR_PROVIDER` with no exceptions. C28 deletes only C27's temporary WhaleCaptureDiagnostic and its calls from the existing creator, entity-cache, manager, model-form, model-part, and model-prerenderer observation mixins; it preserves the exact successful adult Whale source/trace/render-center/pose, Baby Whale, fail-closed bridge and cache behavior, Hippo C26 PASS at `0.75F`, and every other solved entity contract. The complete C27 contract registry is fingerprint-locked. Manager revision 117 still retains unrelated BGE C60 and IBF C4 in both slots, so C28 is NOT_DEPLOYED / RUNTIME_UNTESTED and requires the small final external Whale plus Hippo regression before visual acceptance or promotion.",
     "releases": {
       "current": {
-        "version": "0.1.0-canary27",
-        "artifact": {"filename": "naturalist-xaero-entity-icons-compat-0.1.0-canary27.jar", "sha256": "d9939afc9759a9e5df418b2cfcf0033aa0b9576b9ae7a802a850ba64a5b19615"},
-        "source_commit": "c4381b1a9bd8c18c9d1c30e2af959c510d645b73",
+        "version": "0.1.0-canary28",
+        "artifact": {"filename": "naturalist-xaero-entity-icons-compat-0.1.0-canary28.jar", "sha256": "3dec7da889191bc9ab6965373e2d70c30225e0dbe62f27f8a5de559279ff8b90"},
+        "source_commit": "7c2a53d6e8c2db62ff9c5abda3ccfe46f937ecce",
         "runtime_dependency_policy": {"contract": "CAPABILITY_OR_PROVIDER", "exceptions": []}
       },
       "accepted": null,
@@ -55,11 +55,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 28,
-    "activity_at": "2026-09-10T15:09:22Z",
-    "updated_at": "2026-09-10T15:09:22Z",
-    "last_codex_at": "2026-09-10T15:09:22Z",
-    "source_commit": "c4381b1a9bd8c18c9d1c30e2af959c510d645b73",
+    "revision": 29,
+    "activity_at": "2026-09-11T01:18:08Z",
+    "updated_at": "2026-09-11T01:18:08Z",
+    "last_codex_at": "2026-09-11T01:18:08Z",
+    "source_commit": "7c2a53d6e8c2db62ff9c5abda3ccfe46f937ecce",
     "google_sheet": {"participates": true, "exclusion_reason": null}
   }
 }
