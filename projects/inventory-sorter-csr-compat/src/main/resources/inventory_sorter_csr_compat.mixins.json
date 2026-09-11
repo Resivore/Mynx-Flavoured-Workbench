@@ -1,0 +1,12 @@
+{
+  "required": true,
+  "package": "dev.resivore.inventorysortercsrcompat.mixin",
+  "compatibilityLevel": "JAVA_25",
+  "mixins": [
+    "ContainerInventorySorterMixin",
+    "PlayerInventorySorterMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

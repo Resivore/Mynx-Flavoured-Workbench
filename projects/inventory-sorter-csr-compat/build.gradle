@@ -1,0 +1,146 @@
+plugins {
+    id 'net.fabricmc.fabric-loom' version '1.17.19'
+}
+
+version = project.mod_version
+group = project.maven_group
+
+base {
+    archivesName = project.archives_base_name
+}
+
+repositories {
+    maven { url = 'https://maven.fabricmc.net/' }
+    maven { url = 'https://maven.shedaniel.me/' }
+    mavenCentral()
+}
+
+configurations {
+    inventorySorterReference {
+        canBeConsumed = false
+        canBeResolved = true
+        transitive = false
+    }
+    csrReference {
+        canBeConsumed = false
+        canBeResolved = true
+        transitive = false
+    }
+}
+
+def repositoryRoot = projectDir.toPath().resolve('../..').normalize().toFile()
+def gitMetadata = repositoryRoot.toPath().resolve('.git')
+def worktreeGitDir = java.nio.file.Files.isDirectory(gitMetadata)
+        ? gitMetadata
+        : java.nio.file.Path.of(java.nio.file.Files.readString(gitMetadata).trim().substring('gitdir: '.length()))
+def commonGitDirFile = worktreeGitDir.resolve('commondir')
+def commonGitDir = java.nio.file.Files.exists(commonGitDirFile)
+        ? worktreeGitDir.resolve(java.nio.file.Files.readString(commonGitDirFile).trim()).normalize()
+        : worktreeGitDir
+def primaryRepositoryRoot = commonGitDir.parent.toFile()
+def inventorySorterReferenceJar = new File(primaryRepositoryRoot,
+        'originals/mods/inventorysorter-fabric-3.0.0+mc26.2.jar')
+def csrReferenceJar = new File(primaryRepositoryRoot,
+        'projects/container-slot-reservations/artifacts/container-slot-reservations-0.1.0-canary16.jar')
+
+tasks.register('verifyLocalReferences') {
+    doLast {
+        [inventorySorterReferenceJar, csrReferenceJar].each { reference ->
+            if (!reference.isFile()) {
+                throw new GradleException("Missing exact local reference JAR: ${reference}")
+            }
+        }
+    }
+}
+
+dependencies {
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    implementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+
+    compileOnly files(inventorySorterReferenceJar)
+    runtimeOnly files(inventorySorterReferenceJar)
+    runtimeOnly 'me.shedaniel.cloth:cloth-config-fabric:26.2.155'
+    inventorySorterReference files(inventorySorterReferenceJar)
+
+    compileOnly files(csrReferenceJar)
+    runtimeOnly files(csrReferenceJar)
+    csrReference files(csrReferenceJar)
+
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.12.2'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.12.2'
+    testImplementation 'org.ow2.asm:asm:9.10.1'
+    testImplementation 'org.ow2.asm:asm-tree:9.10.1'
+}
+
+fabricApi {
+    configureTests {
+        createSourceSet = true
+        modId = 'inventory-sorter-csr-compat-runtime-tests'
+        enableGameTests = true
+        enableClientGameTests = false
+        eula = true
+    }
+}
+
+processResources {
+    inputs.property 'version', project.version
+    filesMatching('fabric.mod.json') {
+        expand 'version': project.version
+    }
+}
+
+tasks.named('processGametestResources') {
+    inputs.property 'version', project.version
+    filesMatching('fabric.mod.json') {
+        expand 'version': project.version
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    dependsOn tasks.named('verifyLocalReferences')
+    options.release = 25
+}
+
+test {
+    useJUnitPlatform()
+    inputs.files(configurations.inventorySorterReference, configurations.csrReference)
+    systemProperty 'projectRoot', projectDir.absolutePath
+    doFirst {
+        systemProperty 'inventorySorterReferenceJar', configurations.inventorySorterReference.singleFile.absolutePath
+        systemProperty 'csrReferenceJar', configurations.csrReference.singleFile.absolutePath
+    }
+}
+
+tasks.register('verifyReleaseArtifact') {
+    dependsOn tasks.named('jar')
+    inputs.file(tasks.named('jar').flatMap { it.archiveFile })
+    doLast {
+        def artifact = tasks.named('jar').get().archiveFile.get().asFile
+        if (artifact.name != "inventory-sorter-csr-compat-${project.version}.jar") {
+            throw new GradleException("Unexpected release filename: ${artifact.name}")
+        }
+        def archive = new java.util.zip.ZipFile(artifact)
+        try {
+            def entries = archive.entries().toList()
+            if (entries.any { it.name.endsWith('.jar') }) {
+                throw new GradleException('Compat release must not bundle upstream JARs')
+            }
+            def metadata = new groovy.json.JsonSlurper().parse(
+                    archive.getInputStream(archive.getEntry('fabric.mod.json')))
+            if (metadata.id != 'inventory_sorter_csr_compat' || metadata.version != project.version.toString()) {
+                throw new GradleException('Release Fabric identity does not match Canary metadata')
+            }
+        } finally {
+            archive.close()
+        }
+    }
+}
+
+tasks.named('check') {
+    dependsOn tasks.named('verifyReleaseArtifact')
+}
+
+java {
+    withSourcesJar()
+}
