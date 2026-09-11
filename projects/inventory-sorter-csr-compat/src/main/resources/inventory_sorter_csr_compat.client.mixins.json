@@ -1,0 +1,11 @@
+{
+  "required": true,
+  "package": "dev.resivore.inventorysortercsrcompat.mixin.client",
+  "compatibilityLevel": "JAVA_25",
+  "client": [
+    "ClientFallbackSortPlanBuilderMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

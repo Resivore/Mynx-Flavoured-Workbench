@@ -34,9 +34,13 @@ public final class QuarterGeometryGeneratedResources {
         Objects.requireNonNull(manager, "manager");
         return generateBindings(manager,
                 QuarterGeometryGeneratedData.bindings(BgeGeometryRole.CORNER).stream()
-                        .filter(binding -> binding.profile().family() == null).toList(),
+                        .filter(binding -> isLateExternal(binding.profile())).toList(),
                 QuarterGeometryGeneratedData.bindings(BgeGeometryRole.QUARTER_COLUMN).stream()
-                        .filter(binding -> binding.profile().family() == null).toList(), false);
+                        .filter(binding -> isLateExternal(binding.profile())).toList(), false);
+    }
+
+    private static boolean isLateExternal(NibaruMaterialProfile profile) {
+        return profile.family() == null && !profile.canonicalParentId().getNamespace().equals("minecraft");
     }
 
     private static GenerationSummary generateBindings(ResourceManager manager,

@@ -1,13 +1,12 @@
-# BGE C66 runtime procedure
+# BGE C67 runtime procedure
 
-Current candidate: `cnm-nibaru-integration-4.2.10-bge.canary66.quarter-column-continuation+26.2.jar`, SHA-256 `02436dd9744fc2dbcc723205b12501cf7c49e2dfde72343480685ccf9498cb9e`, embedded version `4.2.10-bge.canary66.quarter-column-continuation+26.2`, source checkpoint `fd9d66032d271cf2c419600858985f6380819323`. Exact C58 remains accepted; C62 and C64 remain external runtime-failed provenance.
+Current candidate: `cnm-nibaru-integration-4.2.11-bge.canary67.vanilla-family-coverage+26.2.jar`, SHA-256 `a7ddde452aa4c80f1d001ec3797e35747672acd6cb925aca750e1bb5f698b168`, embedded version `4.2.11-bge.canary67.vanilla-family-coverage+26.2`, source checkpoint `c516ffa118405a1c67d5fe9c9f3cf21bded77d98`. Exact C58 remains accepted; C62 and C64 remain external runtime-failed provenance.
 
-C66 is `NOT_DEPLOYED` and `RUNTIME_UNTESTED`; its clean build, archive validation, and 104/104 GameTests are not Minecraft runtime evidence. The project remains `TESTING` only because its immutable UUID is assigned to an older Slot A cohort; that does not deploy or ready C66. The earlier serialized C65 deployment dry run failed closed before profile access because an unrelated project control log has an invalid unknown C3 implementation entry, so do not retry until repository control validation is repaired. Use only the dedicated Matcha Flavoured 26.2 Workbench. Never use or modify the protected Matcha Flavoured 26.1.2 profile.
+C67 is `NOT_DEPLOYED` and `RUNTIME_UNTESTED`. Its clean Java 25 build, archive checks, and 106/106 Minecraft 26.2 GameTests are static evidence only. The project lifecycle remains `TESTING` solely because its immutable UUID is assigned to an older Slot A cohort; that does not deploy or ready C67. Use only the dedicated Matcha Flavoured 26.2 Workbench. Never use or modify the protected Matcha Flavoured 26.1.2 profile.
 
 ## Manual checks
 
-1. Place one compatible Quarter Column. Hold a second of that exact type, aim at an empty portion of the same occupied cell without intersecting its geometry, and place. Confirm the matching terminal quarter is added in that same cell with no second source-block debit.
-2. Repeat from representative initial quadrants and attempt another placement after the cell reaches its allowed terminal occupancy. Confirm existing quadrant selection remains authoritative and a full cell does not change or consume an item.
-3. Attempt the empty-cell continuation with an incompatible Quarter Column. Confirm it does not merge or consume an item. Confirm normal placement into an empty/replacement target is unchanged.
-4. Recheck ordinary compatible Step continuation through an empty portion of its occupied cell; it must still combine exactly as before.
-5. With BBB present, confirm a representative BGE Step and Quarter Column retain the C65 axis texture/orientation behavior, and the client reaches a title/world screen without a `bbb:blockstates/warped_beam.json` resource-reload failure. Record `PASS`, `FAIL`, or `INCONCLUSIVE` only from actual Minecraft observation.
+1. Confirm End Stone Bricks exposes its existing vanilla Slab, Stairs, and Wall plus exactly one BGE Layer, Corner, and Quarter Column. Check inventory models, world models/textures, placement/orientation, waterlogging, culling, and that no missing-model, missing-texture, registry-collision, or relevant exception occurs.
+2. Repeat that full BGE trio check for Cobblestone, Polished Deepslate or Tuff Bricks, Nether Bricks or Prismarine, and Cinnabar or Sulfur. Confirm the source standard forms remain provider-owned and only BGE’s Layer/Corner/Quarter Column are new.
+3. Recheck an existing MSSW-derived family and an optional-provider family. Confirm their Vertical Slab and Step behavior, BGE forms, placement, waterlogging, and generated resources remain unchanged.
+4. Exercise Layer, Corner, and Quarter Column placement/orientation and neighbor-aware culling for a newly admitted family; confirm the established one-source-per-blockspace economy and normal drops. Record only observed `PASS`, `FAIL`, or `INCONCLUSIVE` evidence.
