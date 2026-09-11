@@ -84,7 +84,7 @@ class NaturalistTraceBridgeTest {
         }
     }
 
-    @Test void c30UsesLiveBodyTraceCenterForItsDetachedAdultWhaleAssembly() {
+    @Test void c31ChangesOnlyAdultWhaleYawWhileKeepingC30sLiveBodyCenterAndAssembly() {
         ModelPart skullRot = part(Map.of("topJaw", part(Map.of()), "bottomJaw", part(Map.of())));
         ModelPart body = part(Map.of("skullRot", skullRot));
         ModelPart selected = part(Map.of("skullRot", part(Map.of())));
@@ -100,7 +100,7 @@ class NaturalistTraceBridgeTest {
         assertNotSame(resolved.selected(), resolved.renderCenter());
         assertEquals(.20F, contract.presentation().scale());
         assertEquals(0.0F, contract.presentation().xRotation());
-        assertEquals(.7854F, contract.presentation().yRotation());
+        assertEquals(1.1781F, contract.presentation().yRotation());
         assertEquals(0.0F, contract.presentation().zRotation());
         assertEquals(0.0F, contract.presentation().frameYOffset());
 

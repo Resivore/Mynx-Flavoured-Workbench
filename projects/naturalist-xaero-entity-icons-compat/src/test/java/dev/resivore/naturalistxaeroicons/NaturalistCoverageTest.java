@@ -110,7 +110,7 @@ class NaturalistCoverageTest {
         assertEquals(List.of("body"), whaleAdult.tracePath());
         assertEquals(.20F, whaleAdult.presentation().scale());
         assertEquals(0.0F, whaleAdult.presentation().xRotation());
-        assertEquals(.7854F, whaleAdult.presentation().yRotation());
+        assertEquals(1.1781F, whaleAdult.presentation().yRotation());
         assertEquals(0.0F, whaleAdult.presentation().zRotation());
         assertEquals(0.0F, whaleAdult.presentation().frameYOffset());
         assertEquals(List.of(), whaleAdult.cubeIndexes());
@@ -218,7 +218,7 @@ class NaturalistCoverageTest {
         assertEquals(.20F, NaturalistModelContracts.contractsForId("whale").getFirst().presentation().scale());
     }
 
-    @Test void c30SourceAuditBindsTheWhaleTorsoHeadAssemblyAndFrozenControls() throws Exception {
+    @Test void c31SourceAuditBindsTheWhaleTorsoHeadAssemblyAndFrozenControls() throws Exception {
         Path models = Path.of(System.getProperty("projectRoot")).getParent()
                 .resolve("naturalist/common/src/main/java/com/crispytwig/naturalist/client/model");
         String alligator = Files.readString(models.resolve("AlligatorModel.java"));
@@ -275,7 +275,7 @@ class NaturalistCoverageTest {
         assertEquals(.28F, NaturalistModelContracts.contractsForId("jungle_scorpion").getFirst().presentation().scale());
     }
 
-    @Test void c30RetainsHippoAndChangesOnlyTheAdultWhalePresentation() {
+    @Test void c31ReconcilesC30AndChangesOnlyTheAdultWhaleYaw() throws Exception {
         var blackBear = NaturalistModelContracts.contractsForId("black_bear").getFirst();
         var hippo = NaturalistModelContracts.contractsForId("hippo").getFirst();
         var whale = NaturalistModelContracts.contractsForId("whale").getFirst();
@@ -284,14 +284,22 @@ class NaturalistCoverageTest {
         assertEquals(List.of("body", "bone", "neck"), hippo.path());
         assertEquals(List.of("body", "bone", "neck"), hippo.tracePath());
         assertEquals(.70F, NaturalistModelContracts.contractsForId("hippo").get(1).presentation().scale());
-        assertEquals(.7854F, whale.presentation().yRotation(), "C30 keeps the side-biased source-backed view");
+        assertEquals(1.1781F, whale.presentation().yRotation(), "C31 advances C30's readable assembly toward profile");
         assertEquals(List.of("body"), whale.tracePath());
         assertTrue(whale.useTraceAsRenderCenter());
         assertEquals(.20F, whale.presentation().scale());
         assertEquals(List.of("skullRot"), whale.drawableChildren());
+        Path root = Path.of(System.getProperty("projectRoot"));
+        for (String record : List.of(Files.readString(root.resolve("WORKBENCH_STATUS.json")),
+                Files.readString(root.resolve("TESTING.md")), Files.readString(root.resolve("CODEX_LOG.md")))) {
+            assertTrue(record.contains("C30"));
+            assertTrue(record.contains("more recognizable"));
+            assertTrue(record.contains("angled"));
+            assertTrue(record.contains("not a label-only or sliver regression"));
+        }
     }
 
-    @Test void c30FreezesEveryNonWhaleEntityContract() throws Exception {
+    @Test void c31FreezesEveryNonWhaleEntityContract() throws Exception {
         StringBuilder snapshot = new StringBuilder();
         for (String id : NaturalistModelContracts.targetIds()) {
             if (id.equals("whale")) continue;

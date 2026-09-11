@@ -2,7 +2,11 @@
 
 ## Current gate
 
-**C30 NOT DEPLOYED — STATIC PASS — RUNTIME UNTESTED — FOCUSED ADULT WHALE EXTERNAL TEST REQUIRED — NOT READY FOR PROMOTION**
+**C31 NOT DEPLOYED — STATIC PASS — RUNTIME UNTESTED — FOCUSED ADULT WHALE EXTERNAL TEST REQUIRED — NOT READY FOR PROMOTION**
+
+Exact C30 is USER-REPORTED / EXTERNAL runtime evidence: `naturalist-xaero-entity-icons-compat-0.1.0-canary30.jar`, embedded `0.1.0-canary30`, 51,820 bytes, SHA-256 `9a311efbba0e70456c0f813374270ff7246fba906813d42752980bfde1a0ac0f`, source `dd21d26faa7cd76e7c4747fa29b18f9d1b76b1bb`. The adult Whale is more recognizable than before and is not a label-only or sliver regression, but it remains visibly angled/three-quarter rather than the desired clearer side profile; it is not accepted. C31 preserves C30's compact torso-plus-complete-head geometry, live `body` trace/render center, `0.20F` scale, and zero X/Z/frame offset, changing only adult Y rotation from `0.7854F` to `1.1781F`. Baby Whale stays exact C30 `body/skull` / `0.60F` / Y `0.7854F`; Hippo remains PASS at `0.75F`. C28 remains technical/capture PASS but visual FAIL due to its narrow vertical sliver.
+
+Exact C31 is `naturalist-xaero-entity-icons-compat-0.1.0-canary31.jar`, embedded `0.1.0-canary31`, 51,831 bytes, SHA-256 `e2e1e0c42f52fe4f5d17d7904ae95c012b2ba21f4a8cf42f0d84521af0ce9fa3`, source `791392670ea656aaa8b3e58429e69aef853ea3a1`. Clean Java 25 / Loom 1.17.19 validation passed 38 focused tests, client-only archive inspection, and Fabric/Knot coexistence with Xaero Minimap 26.4.2, Naturalist C8, EMF/ETF, Fabric API, and Xaero × EMF C9. Static evidence is not runtime acceptance. Both authoritative manager slots remain occupied by unrelated cohorts, so C31 is not deployed.
 
 Exact C20 Clam is USER-REPORTED / EXTERNAL RUNTIME **PASS**: `naturalist-xaero-entity-icons-compat-0.1.0-canary20.jar`, embedded `0.1.0-canary20`, 38,117 bytes, SHA-256 `e4cc28bfc6c9cd6addbf72b30aa632e90c2fc57c0c0c94bfa1bcd4291fb7a62d`, source `31d3b24a03bb0279be154a227a93515880727b70`. The reported result is a real Xaero model icon showing the full intended top surface with correct top-down presentation. C21 preserves that Clam implementation exactly. Brown Bear remains the unchanged runtime-proven native `naturalist:bear` → `RadarIconSpriteForm` path at `0.65F`.
 
