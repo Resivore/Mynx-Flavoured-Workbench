@@ -14,7 +14,19 @@ public final class RoutingService {
 
     public static int routeIncomingStack(Player player, ItemStack incoming, RoutingContext context,
                                          int excludedInventorySlot, boolean excludeOffhand) {
-        if ((context == RoutingContext.WORLD_PICKUP && player.level().isClientSide()) || incoming.isEmpty()) return 0;
+        return routeIncomingStackWithResult(player, incoming, context, excludedInventorySlot, excludeOffhand)
+                .totalItemsMoved();
+    }
+
+    /**
+     * Keeps the established total-moved result while separately reporting the portion that
+     * actually entered carried containers. WORLD_PICKUP audio uses only the latter.
+     */
+    public static RoutingResult routeIncomingStackWithResult(Player player, ItemStack incoming, RoutingContext context,
+                                                              int excludedInventorySlot, boolean excludeOffhand) {
+        if ((context == RoutingContext.WORLD_PICKUP && player.level().isClientSide()) || incoming.isEmpty()) {
+            return RoutingResult.NONE;
+        }
         int before = incoming.getCount();
         Inventory inventory = player.getInventory();
 
@@ -22,7 +34,9 @@ public final class RoutingService {
         mergeInventorySlot(inventory, incoming, selected, excludedInventorySlot);
 
         // Existing matching destinations always precede ordinary empty slots.
+        int beforeCarriedContainers = incoming.getCount();
         routeCarriedContainers(player, inventory, incoming, excludedInventorySlot, excludeOffhand);
+        int carriedContainerItemsMoved = beforeCarriedContainers - incoming.getCount();
 
         mergeInventoryRange(inventory, incoming, 0,
                 Math.min(Inventory.SELECTION_SIZE, inventory.getNonEquipmentItems().size()),
@@ -32,7 +46,7 @@ public final class RoutingService {
 
         routeOrdinaryInventoryFallbacks(inventory, incoming, context, excludedInventorySlot);
         if (before != incoming.getCount()) inventory.setChanged();
-        return before - incoming.getCount();
+        return new RoutingResult(before - incoming.getCount(), carriedContainerItemsMoved);
     }
 
     static void routeOrdinaryInventoryFallbacks(
@@ -165,6 +179,13 @@ public final class RoutingService {
     }
 
     public static boolean isSupported(ItemStack stack) { return destination(stack) != null; }
+
+    public record RoutingResult(int totalItemsMoved, int carriedContainerItemsMoved) {
+        public static final RoutingResult NONE = new RoutingResult(0, 0);
+
+        public boolean routedToCarriedContainer() { return carriedContainerItemsMoved > 0; }
+    }
+
     private static RoutingDestination destination(ItemStack stack) {
         if (stack.getItem() instanceof BundleItem) return new BundleDestination(stack);
         if (stack.getItem() instanceof net.minecraft.world.item.BlockItem blockItem && blockItem.getBlock() instanceof ShulkerBoxBlock) return new ShulkerDestination(stack);

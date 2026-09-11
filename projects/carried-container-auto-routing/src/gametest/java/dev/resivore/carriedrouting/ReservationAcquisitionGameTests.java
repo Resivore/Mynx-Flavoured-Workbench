@@ -14,6 +14,7 @@ import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.ItemContainerContents;
+import net.minecraft.world.item.component.BundleContents;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Blocks;
 
@@ -41,6 +42,21 @@ public class ReservationAcquisitionGameTests {
         var contents = NonNullList.withSize(27, ItemStack.EMPTY);
         carrier.getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY).copyInto(contents);
         return contents.get(slot).getCount();
+    }
+    private static ItemStack bundleCarrier() {
+        ItemStack bundle = new ItemStack(Items.BUNDLE);
+        BundleContents.Mutable contents = new BundleContents.Mutable(BundleContents.EMPTY);
+        contents.tryInsert(new ItemStack(Items.STONE));
+        bundle.set(DataComponents.BUNDLE_CONTENTS, contents.toImmutable());
+        return bundle;
+    }
+    private static ItemStack partialCarrier() {
+        ItemStack carrier = new ItemStack(Blocks.SHULKER_BOX);
+        var contents = NonNullList.withSize(27, ItemStack.EMPTY);
+        for (int i = 0; i < contents.size(); i++) contents.set(i, new ItemStack(Items.DIRT, 64));
+        contents.set(0, new ItemStack(Items.STONE, 63));
+        carrier.set(DataComponents.CONTAINER, ItemContainerContents.fromItems(contents));
+        return carrier;
     }
     private static void check(GameTestHelper helper, ItemStack carrier, int acquired) {
         helper.assertTrue(count(carrier, 26) == acquired + (csr() ? 0 : 1),
@@ -118,6 +134,45 @@ public class ReservationAcquisitionGameTests {
         RoutingLock.setLocked(carrier, false);
         RoutingService.routePlayerOriginSpecialDestinations(player, incoming, -1, false);
         check(helper, carrier, 12);
+        helper.succeed();
+    }
+    @GameTest public void worldPickupAudioAccountingOnlyMarksActualCarriedInsertion(GameTestHelper helper) {
+        ServerPlayer player = (ServerPlayer) helper.makeMockServerPlayer(GameType.SURVIVAL);
+        ItemStack first = carrier(), second = carrier();
+        player.getInventory().setItem(9, first);
+        player.getInventory().setItem(10, second);
+        RoutingService.RoutingResult split = RoutingService.routeIncomingStackWithResult(
+                player, new ItemStack(Items.STONE, 64), RoutingContext.WORLD_PICKUP, -1, false
+        );
+        helper.assertTrue(split.routedToCarriedContainer() && split.carriedContainerItemsMoved() == 64,
+                "Multiple carriers must produce one positive carried-routing audio decision");
+
+        ServerPlayer bundlePlayer = (ServerPlayer) helper.makeMockServerPlayer(GameType.SURVIVAL);
+        bundlePlayer.getInventory().setItem(9, bundleCarrier());
+        RoutingService.RoutingResult bundle = RoutingService.routeIncomingStackWithResult(
+                bundlePlayer, new ItemStack(Items.STONE, 4), RoutingContext.WORLD_PICKUP, -1, false
+        );
+        helper.assertTrue(bundle.routedToCarriedContainer() && bundle.carriedContainerItemsMoved() == 4,
+                "A qualifying bundle insertion must request the routed-pickup cue");
+
+        ServerPlayer lockedPlayer = (ServerPlayer) helper.makeMockServerPlayer(GameType.SURVIVAL);
+        ItemStack locked = carrier(); RoutingLock.setLocked(locked, true);
+        lockedPlayer.getInventory().setItem(9, locked);
+        RoutingService.RoutingResult lockedResult = RoutingService.routeIncomingStackWithResult(
+                lockedPlayer, new ItemStack(Items.STONE, 4), RoutingContext.WORLD_PICKUP, -1, false
+        );
+        helper.assertTrue(!lockedResult.routedToCarriedContainer(),
+                "A locked carrier must retain normal vanilla pickup audio");
+
+        ServerPlayer partialPlayer = (ServerPlayer) helper.makeMockServerPlayer(GameType.SURVIVAL);
+        partialPlayer.getInventory().setItem(9, partialCarrier());
+        RoutingService.RoutingResult partial = RoutingService.routeIncomingStackWithResult(
+                partialPlayer, new ItemStack(Items.STONE, 64), RoutingContext.WORLD_PICKUP, -1, false
+        );
+        helper.assertTrue(partial.routedToCarriedContainer()
+                        && partial.carriedContainerItemsMoved() == 1
+                        && partial.totalItemsMoved() == 64,
+                "Partial carried routing plus ordinary-inventory remainder must retain one positive cue decision");
         helper.succeed();
     }
 }

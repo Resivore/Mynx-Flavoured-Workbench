@@ -3,6 +3,7 @@ package dev.resivore.carriedrouting.client;
 import com.mojang.blaze3d.platform.InputConstants;
 import dev.resivore.carriedrouting.RoutingLock;
 import dev.resivore.carriedrouting.RoutingService;
+import dev.resivore.carriedrouting.RoutedPickupSoundPayload;
 import dev.resivore.carriedrouting.ToggleLockPayload;
 import dev.resivore.carriedrouting.mixin.AbstractContainerScreenAccessor;
 import net.fabricmc.api.ClientModInitializer;
@@ -26,6 +27,9 @@ import org.slf4j.LoggerFactory;
 public final class CarriedContainerAutoRoutingClient implements ClientModInitializer {
     private static KeyMapping toggle;
     @Override public void onInitializeClient() {
+        ClientPlayNetworking.registerGlobalReceiver(RoutedPickupSoundPayload.TYPE, (payload, context) ->
+                context.client().execute(() -> RoutedPickupSoundState.mark(payload.itemEntityId()))
+        );
         KeyMapping.Category category = KeyMapping.Category.register(Identifier.fromNamespaceAndPath("carried_container_auto_routing", "routing"));
         toggle = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.carried_container_auto_routing.toggle_lock", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_R, category));
         ClientTickEvents.END_CLIENT_TICK.register(client -> { while (toggle.consumeClick()) sendTarget(client); });
