@@ -12,22 +12,22 @@
   "definition": {
     "lifecycle": "ACTIVE",
     "goals": ["Make Inventory Particles agree with representative Matcha component-backed items and Ribbits item visuals without changing either upstream project."],
-    "scope": ["C2 is a resource-pack-only Inventory Particles overlay: it guards all four upstream poisonous-potato holders for three exact Matcha item-model components, adds component-specific replacements, isolates public Ribbits particle textures, and narrows only the automatic fallback paths that would otherwise accumulate on the three exact Ribbits targets."],
+    "scope": ["C3 is a resource-pack-only Inventory Particles overlay: it guards all four upstream poisonous-potato holders for three exact Matcha item-model components, adds component-specific replacements, isolates public Ribbits particle textures, and narrowly excludes only the automatic fallback paths that would otherwise accumulate on the three exact Ribbits targets."],
     "boundaries": {
       "owned_paths": ["resourcepacks/inventory-particles-matcha-compat"],
       "exclusions": ["Inventory Particles, Matcha Flavoured, Ribbits, trinkets-inventory-extended-compat, unrelated automatic family behavior, and protected/private artwork remain independently owned and unmodified."]
     },
     "dependencies": [
-      {"type":"MOD","identifier":"inventory_particles","requirement":">=2.6.0+26.2+fabric","reason":"C2 targets the audited client resource loader, its serialized-stack predicate format, and its separate literal/family fallback resource loaders."},
+      {"type":"MOD","identifier":"inventory_particles","requirement":">=2.6.0+26.2+fabric","reason":"C3 targets the audited client resource loader, its serialized-stack predicate format, its separate literal/family fallback resource loaders, and its exact NbtNode codec."},
       {"type":"MOD","identifier":"ribbits","requirement":">=4.1.6+26.2","reason":"Provides the three exact public item identities rendered as C1 particle textures."},
       {"type":"DATA_PACK","identifier":"Matcha_Flavoured_1_12.zip","requirement":"SHA-256 6209783021c358044abedabacee471faff5bd4080437d4e3b5e51963f1804248","reason":"Authoritative source for the three Matcha poisonous-potato component identities."},
       {"type":"OTHER","identifier":"InventoryParticles-2.6.0+26.2+fabric.jar","requirement":"1,783,277 bytes; SHA-256 b44d808e673805eea4949591abcb3325faa1abf8b9321266d06533ea5a34c802","reason":"Immutable exact artifact audited and deterministically used only to preserve its two overridden JSON resources."}
     ]
   },
   "state": {
-    "milestone": "C1 is retained as user-reported external partial RUNTIME_FAIL: Green Curry still leaked poisonous-potato particles, Glowcap had no visible particle, and the Ribbit Village Explorer Map showed gray/sand-like particles; Ramen and Crystal Heart were not tested, and no result was supplied for Toadstool Heart. C2 is the current pure resource-pack canary, ACTIVE / STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED; no test slot is occupied.",
+    "milestone": "C1 remains the user-reported external partial RUNTIME_FAIL: Green Curry leaked poisonous-potato particles, Glowcap had no visible particle, and the Ribbit Village Explorer Map showed gray/sand-like particles; Ramen and Crystal Heart were not tested, and no result was supplied for Toadstool Heart. C2 is retained as RUNTIME_FAIL / RESOURCE_RELOAD_FAIL: Inventory Particles rejected its two this_type:number predicates, then failed to find the fallback family and Minecraft removed the selected resource packs. C3 is the current corrected canary, ACTIVE / STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED; it occupies no test slot.",
     "releases": {
-      "current": {"version":"c2","artifact":{"filename":"inventory-particles-matcha-compat-c2.zip","sha256":"c694566d81ab0c4c387af1f69501663e3b33d96cad5ea562555a7f0ba7ff2880"},"source_commit":"cb3a34b058f2a8fbe8b07a72443ed6de366ce3d1","runtime_dependency_policy":{"contract":"CAPABILITY_OR_PROVIDER","exceptions":[]}},
+      "current": {"version":"c3","artifact":{"filename":"inventory-particles-matcha-compat-c3.zip","sha256":"67a8f34f2aff909b4485d63d6da5f1c530dcc76ce23098a77a215773bef33122"},"source_commit":"46c15de4140b88c58ded0dc7db5315237ac2271f","runtime_dependency_policy":{"contract":"CAPABILITY_OR_PROVIDER","exceptions":[]}},
       "accepted": null,
       "rollback": null,
       "accepted_current": "NO_ACCEPTED",
@@ -37,11 +37,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 2,
-    "activity_at": "2026-09-11T16:57:39Z",
-    "updated_at": "2026-09-11T16:57:39Z",
-    "last_codex_at": "2026-09-11T16:57:39Z",
-    "source_commit": "cb3a34b058f2a8fbe8b07a72443ed6de366ce3d1",
+    "revision": 3,
+    "activity_at": "2026-09-11T17:20:18Z",
+    "updated_at": "2026-09-11T17:20:18Z",
+    "last_codex_at": "2026-09-11T17:20:18Z",
+    "source_commit": "46c15de4140b88c58ded0dc7db5315237ac2271f",
     "google_sheet": {"participates": true,"exclusion_reason": null}
   }
 }
