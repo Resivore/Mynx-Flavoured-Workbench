@@ -20,14 +20,14 @@
   "definition": {
     "lifecycle": "ACTIVE",
     "goals": [
-      "Retain accepted Canary 9 exactly as the user-reported external PASS baseline and exact Canary 10 as failed historical provenance, including its Bee and Rabbit row-level passes.",
-      "Repair only the C11 allowlisted Minecraft entities and five exact villager professions through verified effective EMF paths, explicit drawable anchors, bounded detached composition, and a separate effective Xaero presentation-stage scale policy.",
-      "Keep every unlisted entity and villager profession on the exact C9 path; do not transfer C9 or C10 runtime evidence to Canary 11."
+      "Retain accepted Canary 9 exactly as the user-reported external PASS baseline and exact Canary 11 as failed historical provenance, including all ten supplied row-level passes.",
+      "For Canary 12 only, retain C11's targeted frog-villager face/head composition while suppressing the profession-hat subtree for exactly florist, farmer, cleric, and mason.",
+      "Freeze every other C11 icon path and policy, including Butcher, while every unlisted entity and villager profession retains the exact C9 path; do not transfer predecessor runtime evidence to Canary 12."
     ],
     "scope": [
-      "Reuse the existing C9 failed-upstream EMF-to-Xaero seam and canonical-frame adapter without modifying its generic selector; C11 enters only for exact fox, goat, frog, bogged, witch, and the five declared minecraft:villager professions.",
-      "Use only detached icon-only C11 compositions on effective trees: fox and goat body/EMF_body/EMF_head2 with goat's drawable EMF_snout trace anchor; frog body/EMF_body/EMF_body2 direct lower-face cubes plus EMF_head2; Bogged hat/EMF_headwear; Witch body/EMF_body transforms with only EMF_head2 and EMF_hat; and profession-gated villager head/nose/EMF_nose direct face base plus EMF_face, EMF_frog_eyes, and the exact matching hat. Preserve required parent transforms without copying their cubes and fail closed to C9 if the contract or explicit drawable trace is absent.",
-      "Preserve Bee and Rabbit's working 0.75 Xaero request-scale path. Apply 1.50 only to ghast and happy_ghast immediately before Xaero's model-form baseScale because Xaero skips Parameters.scale at or above 1.0; never compound both C11 paths. Preserve C9 one-retry-per-variant/resource-generation cache ownership and Naturalist/Ribbits companion boundaries."
+      "Reuse the existing C9 failed-upstream EMF-to-Xaero seam and canonical-frame adapter without modifying its generic selector; preserve C11 unchanged for exact fox, goat, frog, bogged, and witch, and preserve the same five exact villager eligibility and effective-path contracts before C12's bounded suppression decision.",
+      "For mynx_flora_trades:florist, minecraft:farmer, minecraft:cleric, and minecraft:mason only, keep the targeted head/nose/EMF_nose direct face base plus EMF_face and EMF_frog_eyes while intentionally excluding the mapped profession-hat subtree. Keep minecraft:butcher on C11's exact composition, including its mapped chef-hat subtree; never broaden profession matching or fall back merely because an allowlisted hat is intentionally omitted.",
+      "Preserve Bee and Rabbit's working 0.75 Xaero request-scale path and ghast/happy_ghast's 1.50 effective presentation-stage scale exactly. Preserve C9 one-retry-per-variant/resource-generation cache ownership, every other C11 composition, and Naturalist/Ribbits companion boundaries."
     ],
     "boundaries": {
       "owned_paths": [
@@ -118,15 +118,15 @@
     ]
   },
   "state": {
-    "milestone": "Exact Canary 10 is retained as user-reported external RUNTIME_FAIL: Bee and Rabbit passed their size corrections; Fox was ears-only, Goat label-only, Frog lacked its lower face, Bogged's face was unreadable from a side/back-like view, Witch was hat-only, Ghast and Happy Ghast remained too small, and all five hatted-villager rows showed incoherent geometry. Canary 11 is the ACTIVE, statically validated successor and remains NOT_DEPLOYED / RUNTIME_UNTESTED. Accepted Canary 9 remains unchanged: xaero-emf-entity-icon-compat-0.1.0-canary9.jar SHA-256 184ca0da6d6c055c0ba9b2d0e9fb3bccc3c30da9ea7f700a64792d4d1513551a, source 6c1b4e0ede3ada8470bc7b4ba54ea8b51f9d2e93.",
+    "milestone": "Exact Canary 11 is retained as user-reported external RUNTIME_FAIL solely because Florist, Farmer, Cleric, and Mason/Stonemason showed malformed profession headwear; Fox, Goat, Frog, Bogged, Witch, Ghast, Happy Ghast, Bee, Rabbit, and Butcher were explicitly reported visually good, with Butcher correct despite its underlying chef hat being effectively invisible. Canary 12 intentionally suppresses only those four failing hat subtrees and is ACTIVE / STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED. Accepted Canary 9 remains unchanged: xaero-emf-entity-icon-compat-0.1.0-canary9.jar SHA-256 184ca0da6d6c055c0ba9b2d0e9fb3bccc3c30da9ea7f700a64792d4d1513551a, source 6c1b4e0ede3ada8470bc7b4ba54ea8b51f9d2e93.",
     "releases": {
       "current": {
-        "version": "0.1.0-canary11",
+        "version": "0.1.0-canary12",
         "artifact": {
-          "filename": "xaero-emf-entity-icon-compat-0.1.0-canary11.jar",
-          "sha256": "bc58fdf8c8c3d13deb3d3e303732ad70d873da7103f1b374236b3f028b3b5e82"
+          "filename": "xaero-emf-entity-icon-compat-0.1.0-canary12.jar",
+          "sha256": "dcf65d6e97007c03bf490b27189f76ee88b882d1b59d4b88315093dea10180bc"
         },
-        "source_commit": "a82b08423bd572beb67096480aaf38bf411605e6",
+        "source_commit": "1bf0761f94eaf9442abc40f37f0e479509059b2f",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
@@ -156,11 +156,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 11,
-    "activity_at": "2026-09-10T15:54:05Z",
-    "updated_at": "2026-09-10T15:54:05Z",
-    "last_codex_at": "2026-09-10T15:54:05Z",
-    "source_commit": "a82b08423bd572beb67096480aaf38bf411605e6",
+    "revision": 12,
+    "activity_at": "2026-09-11T01:19:51Z",
+    "updated_at": "2026-09-11T01:19:51Z",
+    "last_codex_at": "2026-09-11T01:19:51Z",
+    "source_commit": "1bf0761f94eaf9442abc40f37f0e479509059b2f",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
