@@ -3,8 +3,8 @@
   "id": "cnm_terrain_slabs_compat",
   "version": "${version}",
   "provides": ["more_slabs_stairs_and_walls"],
-  "name": "Block Geometry Extensions Canary 66 — Quarter Column Continuation",
-  "description": "Unified BGE candidate giving compatible Quarter Columns the same full-cell continuation targeting as existing Steps while preserving their physical geometry and material behavior.",
+  "name": "Block Geometry Extensions Canary 67 — Vanilla Family Coverage",
+  "description": "Unified BGE candidate that adds Layer, Corner, and Quarter Column coverage for every structurally eligible vanilla slab, stair, and wall family.",
   "authors": ["Mynx Workbench", "Nibaru"],
   "environment": "*",
   "entrypoints": {

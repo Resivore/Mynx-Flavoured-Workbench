@@ -60,8 +60,11 @@ public final class BgeQuarterGeometryGameTests implements CustomTestMethodInvoke
     @GameTest(maxTicks = 40)
     public void catalogBindingsAndShapeMapOrderAreExact(GameTestHelper helper) {
         List<NibaruMaterialProfile> profiles = NibaruMaterialProfiles.all();
-        int expectedProfiles = 311 + (int) ExternalMaterialFamilies.all().stream()
-                .filter(binding -> binding.profile().family() == null).count();
+        int expectedProfiles = 311 + (int) NibaruMaterialProfiles.eligibleVanillaFamilies().stream()
+                .filter(family -> NibaruMaterialProfiles.fromBlock(family.parent()).orElseThrow().family() == null)
+                .count() + (int) ExternalMaterialFamilies.all().stream()
+                .filter(binding -> binding.profile().family() == null
+                        && !binding.profile().canonicalParentId().getNamespace().equals("minecraft")).count();
         helper.assertTrue(profiles.size() == expectedProfiles,
                 "Expected " + expectedProfiles + " canonical material profiles, found " + profiles.size());
 

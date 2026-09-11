@@ -33,7 +33,11 @@ public final class LayerGeneratedResources {
     public static GenerationSummary generateExternalForValidation(ResourceManager manager) {
         Objects.requireNonNull(manager, "manager");
         return generateBindings(manager, false, LayerGeneratedData.bindings().stream()
-                .filter(binding -> binding.profile().family() == null).toList());
+                .filter(binding -> isLateExternal(binding.profile())).toList());
+    }
+
+    private static boolean isLateExternal(NibaruMaterialProfile profile) {
+        return profile.family() == null && !profile.canonicalParentId().getNamespace().equals("minecraft");
     }
 
     private static GenerationSummary generateBindings(ResourceManager manager, boolean writeLanguage,

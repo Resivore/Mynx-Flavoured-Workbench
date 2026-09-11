@@ -57,8 +57,9 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
                 "Late provider completion did not register all 76 families: "
                         + ExternalMaterialFamilies.all().size());
         helper.assertTrue(NibaruMaterialProfiles.all().stream().filter(profile -> profile.family() != null).count() == 311
-                        && NibaruMaterialProfiles.all().stream().filter(profile -> profile.family() == null).count() == 76,
-                "External append changed the frozen 311-profile native inventory or lost an external source");
+                        && NibaruMaterialProfiles.all().stream().filter(profile -> profile.family() == null
+                                && !profile.canonicalParentId().getNamespace().equals("minecraft")).count() == 76,
+                "External append changed the frozen native inventory or lost an external source");
 
         Set<Identifier> actual = new LinkedHashSet<>();
         ExternalMaterialFamilies.all().forEach(binding -> actual.add(binding.spec().id()));
