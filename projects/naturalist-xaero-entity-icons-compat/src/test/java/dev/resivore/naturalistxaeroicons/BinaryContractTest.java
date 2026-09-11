@@ -29,12 +29,13 @@ class BinaryContractTest {
         try (JarFile jar = new JarFile(Path.of(System.getProperty("patchJar")).toFile())) {
             assertNotNull(jar.getEntry("fabric.mod.json"));
             assertNotNull(jar.getEntry("dev/resivore/naturalistxaeroicons/NaturalistModelContracts.class"));
+            assertNull(jar.getEntry("dev/resivore/naturalistxaeroicons/WhaleCaptureDiagnostic.class"));
             assertNull(jar.getEntry("com/crispytwig/naturalist/client/model/RhinoModel.class"));
             assertNull(jar.getEntry("xaero/hud/minimap/radar/icon/creator/RadarIconCreator.class"));
         }
     }
 
-    @Test void c27ScopesOnlyWhaleAndKeepsTheFailClosedBridge() throws Exception {
+    @Test void c28KeepsTheProvenWhaleBridgeAndRemovesOnlyItsTemporaryDiagnostic() throws Exception {
         Path root = Path.of(System.getProperty("projectRoot"));
         String mixins = Files.readString(root.resolve("src/main/resources/naturalist_xaero_entity_icons_compat.mixins.json"));
         assertTrue(mixins.contains("ModelRenderTraceMixin"));
@@ -71,8 +72,7 @@ class BinaryContractTest {
         assertTrue(manager.contains("observeStarfishCacheBeforeXaeroEmfRetry"));
         assertTrue(manager.contains("ScorpionCaptureDiagnostic.requestStarted"));
         assertTrue(manager.contains("ScorpionCaptureDiagnostic.cacheLookup"));
-        assertTrue(manager.contains("WhaleCaptureDiagnostic.requestStarted"));
-        assertTrue(manager.contains("WhaleCaptureDiagnostic.cacheLookup"));
+        assertFalse(manager.contains("WhaleCaptureDiagnostic"));
         assertFalse(manager.contains("@Redirect"));
         String presentation = Files.readString(root.resolve("src/main/java/dev/resivore/naturalistxaeroicons/BrownBearSpritePresentation.java"));
         assertTrue(presentation.contains("\"naturalist:bear\""));
@@ -100,14 +100,16 @@ class BinaryContractTest {
         assertTrue(scorpionDiagnostic.contains("renderCenterHasDirectMrt"));
         assertTrue(scorpionDiagnostic.contains("selectedAssemblyRecorded"));
         assertFalse(scorpionDiagnostic.contains("new XaeroIcon"));
-        String whaleDiagnostic = Files.readString(root.resolve(
-                "src/main/java/dev/resivore/naturalistxaeroicons/WhaleCaptureDiagnostic.java"));
-        for (String expected : new String[] {"NaturalistXaero WhaleCapture", "naturalist:whale", "source direct-cube count=",
-                "selected direct-cube count=", "render center identity=", "direct ModelRenderTrace entry=",
-                "adapter trace resolution succeeds=", "fallback rendered destination before=", "cache write result",
-                "final manager result", "topJaw"}) assertTrue(whaleDiagnostic.contains(expected), expected);
-        assertFalse(whaleDiagnostic.contains("renderedDest.add("));
-        assertFalse(whaleDiagnostic.contains("new XaeroIcon"));
+        assertFalse(Files.exists(root.resolve(
+                "src/main/java/dev/resivore/naturalistxaeroicons/WhaleCaptureDiagnostic.java")));
+        for (String source : new String[] {
+                "mixin/RadarIconCreatorMixin.java", "mixin/RadarIconEntityCacheMixin.java",
+                "mixin/RadarIconManagerMixin.java", "mixin/RadarIconModelFormPrerendererMixin.java",
+                "mixin/RadarIconModelPartPrerendererMixin.java", "mixin/RadarIconModelPrerendererMixin.java"}) {
+            String productionSource = Files.readString(root.resolve("src/main/java/dev/resivore/naturalistxaeroicons").resolve(source));
+            assertFalse(productionSource.contains("WhaleCaptureDiagnostic"), source);
+            assertFalse(productionSource.contains("NaturalistXaero WhaleCapture"), source);
+        }
         assertFalse(prerenderer.contains("renderedDest.add("));
         String genericManager = Files.readString(root.getParent().resolve(
                 "xaero-entity-icons/src/main/java/dev/resivore/xaeroemfcompat/mixin/RadarIconManagerMixin.java"));

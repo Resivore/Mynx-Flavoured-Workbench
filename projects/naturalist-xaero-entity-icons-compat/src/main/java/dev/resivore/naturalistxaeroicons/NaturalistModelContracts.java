@@ -170,13 +170,13 @@ public final class NaturalistModelContracts {
                 p(.30F, 1.5708F, 0.0F, 0.0F)));
         add(map, "giant_isopod", cVisibleDetached("GiantIsopodModel", "rolled", p(.45F)), cDetached("GiantIsopodModel", "body", p(.45F)));
         add(map, "jellyfish", cDetached("JellyfishModel", "body", p(.45F)));
-        // C27 keeps skullRot's complete adult face assembly (cranium plus topJaw and bottomJaw),
-        // but anchors Xaero's bounded center on its live, directly drawable topJaw.  Xaero reads
+        // The proven adult profile keeps skullRot's complete face assembly (cranium plus topJaw
+        // and bottomJaw), but anchors Xaero's bounded center on its live, directly drawable topJaw. Xaero reads
         // only the center's direct largest cuboid for the frame; the old skullRot center is a
         // short cranium while topJaw is the source-audited 28x11x42 forward face volume.  This
         // is deliberately the Starfish-style separation of full copied geometry from a live
-        // trace/center, and is the capture-seam change that makes this otherwise known-bad 90°
-        // projection a distinct experiment. The baby contract is the frozen C26 baseline.
+        // trace/center. Unlike C24's failed skullRot-centered frame, this exact live topJaw center
+        // produced the C27 90-degree profile capture. The baby contract is the frozen C26 baseline.
         add(map, "whale", cWithTraceCenter("WhaleModel", "body/skullRot", "body/skullRot/topJaw", p(.30F, 0.0F, 1.5708F, 0.0F)), c("WhaleBabyModel", "body/skull", p(.60F, 0.0F, .7854F, 0.0F)));
         // Both constructors pass root.getChild("root") to EntityModel, so model.root() already
         // is the authored root: a second `root` hop is invalid. Desert body owns claws/tail and

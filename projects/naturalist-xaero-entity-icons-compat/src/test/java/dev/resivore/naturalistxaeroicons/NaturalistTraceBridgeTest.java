@@ -84,7 +84,7 @@ class NaturalistTraceBridgeTest {
         }
     }
 
-    @Test void c27UsesTheLiveTopJawCenterWhileKeepingTheCompleteAdultWhaleFaceAssembly() {
+    @Test void c28UsesTheLiveTopJawCenterWhileKeepingTheCompleteAdultWhaleFaceAssembly() {
         ModelPart topJaw = part(Map.of());
         ModelPart bottomJaw = part(Map.of());
         ModelPart skullRot = part(Map.of("topJaw", topJaw, "bottomJaw", bottomJaw));
@@ -100,7 +100,10 @@ class NaturalistTraceBridgeTest {
         assertSame(topJaw, resolved.renderCenter());
         assertNotSame(resolved.selected(), resolved.renderCenter());
         assertEquals(.30F, contract.presentation().scale());
+        assertEquals(0.0F, contract.presentation().xRotation());
         assertEquals(1.5708F, contract.presentation().yRotation());
+        assertEquals(0.0F, contract.presentation().zRotation());
+        assertEquals(0.0F, contract.presentation().frameYOffset());
 
         var baby = NaturalistModelContracts.contractsForId("whale").get(1);
         assertEquals(List.of("body", "skull"), baby.path());

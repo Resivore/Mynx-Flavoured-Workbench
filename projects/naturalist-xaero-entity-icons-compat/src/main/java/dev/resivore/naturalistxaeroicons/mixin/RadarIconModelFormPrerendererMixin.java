@@ -2,7 +2,6 @@ package dev.resivore.naturalistxaeroicons.mixin;
 
 import dev.resivore.naturalistxaeroicons.StarfishCaptureDiagnostic;
 import dev.resivore.naturalistxaeroicons.ScorpionCaptureDiagnostic;
-import dev.resivore.naturalistxaeroicons.WhaleCaptureDiagnostic;
 import java.util.List;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.renderer.entity.EntityRenderer;
@@ -29,6 +28,5 @@ abstract class RadarIconModelFormPrerendererMixin {
                 .map(trace -> String.valueOf(trace.textures)).distinct().limit(4).toList().toString();
         StarfishCaptureDiagnostic.modelFormStarted(entity, traces == null ? -1 : traces.size(), textures);
         ScorpionCaptureDiagnostic.modelFormStarted(entity, traces == null ? -1 : traces.size(), textures);
-        WhaleCaptureDiagnostic.modelFormStarted(entity, traces == null ? -1 : traces.size(), textures);
     }
 }
