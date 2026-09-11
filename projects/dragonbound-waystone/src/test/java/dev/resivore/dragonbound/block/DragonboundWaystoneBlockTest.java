@@ -104,8 +104,8 @@ final class DragonboundWaystoneBlockTest {
         assertCuboid(elements.get(0).getAsJsonObject(),
                 List.of(0, 0, 0), List.of(16, 4, 16),
                 List.of(
-                        List.of(0, 14, 16, 16), List.of(0, 14, 16, 16),
-                        List.of(0, 14, 16, 16), List.of(0, 14, 16, 16),
+                        List.of(0, 12, 16, 16), List.of(0, 12, 16, 16),
+                        List.of(0, 12, 16, 16), List.of(0, 12, 16, 16),
                         List.of(0, 0, 16, 16), List.of(0, 0, 16, 16)));
         assertCuboid(elements.get(1).getAsJsonObject(),
                 List.of(2, 4, 3), List.of(14, 5, 13),
