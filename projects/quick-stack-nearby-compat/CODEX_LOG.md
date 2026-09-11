@@ -198,3 +198,14 @@
 - Artifact: `quick-stack-nearby-compat-0.1.0-canary16.jar`, 61,709 bytes, SHA-256 `2dde3e5b18cd167ba2f743275eb892d50ba849f8213baa0fe5931b7d31aac792`, source `5cd8b43ddad12b868faf5bab0e144c22d300b85b`; runtime dependency policy `CAPABILITY_OR_PROVIDER` with no exceptions.
 - Result: ACTIVE / CONTROLLED_VALIDATION_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED.
 - Next state: Publish revision 19 from integrated main, then assign C16 only through a verified manager transition before collecting the expanded carried-source runtime procedure.
+
+## 2026-09-11T16:28:53Z — Produce QSN C17 populated-carrier outer-source protection
+
+- Revision: 20
+- Source checkpoint: `d4764be8a4e715b60e1276f28dae99c471a56d37`
+- Changes: Recorded the supplied C16 user-reported/external feedback faithfully: direct carried-shulker draining worked, but a populated matching shulker could be moved as an ordinary outer QSN item. C17 snapshots each vanilla BlockItem -> ShulkerBoxBlock carrier with a non-empty physical `DataComponents.CONTAINER` at action start and overlays a transient locked `SourceRules` entry only for native loose discovery/movement, including CSR and ShapeMap source affinity. C16's `CarriedContainerSources` receives the original user rules, so an unlocked carrier still drains; CCAR locks and user QSN locks still exclude internal draining. Empty shulkers and bundles retain native/C16 behavior. Focused Fabric GameTests cover the stackable identical 32+32 nested-shulker case, no same-press outer move, next-press empty eligibility, empty baseline, partial remainder, user-lock behavior, and CSR outer-negative/internal-positive routing.
+- Build/static: Java 25, Gradle 9.5.1, and Fabric Loom 1.17.19 clean `test runGameTest build` passed 71 focused JUnit/static checks and 36/36 required Fabric GameTests against exact QSN 0.4.0, CSR C1, CNM 2.0.7+26.2, BGE C1.36, and Nibaru C40. Controlled checks are not Minecraft gameplay runtime evidence.
+- Runtime: C16 feedback is user-reported/external only: carried-source behavior functioned, and populated outer shulkers could be moved undesirably. C17 is NOT_DEPLOYED / RUNTIME_UNTESTED. No Test Instance Manager transition, dedicated Workbench profile access, Minecraft client launch, promotion, or protected 26.1.2 profile access occurred.
+- Artifact: `quick-stack-nearby-compat-0.1.0-canary17.jar`; embedded `0.1.0-canary17`; 64,151 bytes; SHA-256 `9c133eee74922dfc0b0ac2624f3b02ef47e602fb87bcf2b995d1049e08d07bd9`; source `d4764be8a4e715b60e1276f28dae99c471a56d37`; runtime dependency policy `CAPABILITY_OR_PROVIDER` with no exceptions.
+- Result: ACTIVE / CONTROLLED_VALIDATION_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED. The exact ignored C17 artifact requires canonical local retention; no blocker is asserted.
+- Next state: Publish revision 20 from integrated main, then assign C17 only through a verified manager transition before collecting the focused C17 runtime procedure.

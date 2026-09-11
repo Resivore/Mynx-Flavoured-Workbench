@@ -6,6 +6,7 @@ import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import dev.resivore.quickstacknearbycompat.core.CsrQuickStackIntegration;
 import dev.resivore.quickstacknearbycompat.core.CarriedContainerSources;
 import dev.resivore.quickstacknearbycompat.core.PlayerStorageSlots;
+import dev.resivore.quickstacknearbycompat.core.PopulatedShulkerOuterProtection;
 import dev.resivore.quickstacknearbycompat.core.QsnDestinationExclusions;
 import dev.resivore.quickstacknearbycompat.core.ShapeMapTargetAffinity;
 import net.minecraft.server.level.ServerPlayer;
@@ -32,11 +33,13 @@ public abstract class QuickStackServiceMixin {
             Operation<QuickStackMoveEngine.Result> original) {
         Inventory inventory = player.getInventory();
         PlayerStorageSlots.Window window = PlayerStorageSlots.liveWindow(inventory);
-        QuickStackMoveEngine.SourceRules effectiveRules = sourceRules == null
-                ? QuickStackMoveEngine.SourceRules.EMPTY
-                : new QuickStackMoveEngine.SourceRules(
-                        PlayerStorageSlots.filterRuleMap(sourceRules.slotRules(), window)
-                );
+        // Snapshot populated shulkers before native QSN discovers loose source affinity.  Pass
+        // this overlay through the whole native action so an emptied carrier cannot become a
+        // loose source until the next button press; CarriedContainerSources keeps sourceRules.
+        QuickStackMoveEngine.SourceRules looseRules = PopulatedShulkerOuterProtection
+                .snapshotLooseRules(inventory, sourceRules);
+        QuickStackMoveEngine.SourceRules effectiveRules = new QuickStackMoveEngine.SourceRules(
+                PlayerStorageSlots.filterRuleMap(looseRules.slotRules(), window));
         return CarriedContainerSources.scoped(player, sourceRules, () ->
                 CsrQuickStackIntegration.withDiscoverySource(
                         inventory,
@@ -44,7 +47,7 @@ public abstract class QuickStackServiceMixin {
                         window.endExclusive(),
                         effectiveRules,
                         () -> dev.resivore.quickstacknearbycompat.core.NestedShulkerDiscovery.scoped(
-                                () -> original.call(player, sourceRules))
+                                () -> original.call(player, looseRules))
                 ));
     }
 

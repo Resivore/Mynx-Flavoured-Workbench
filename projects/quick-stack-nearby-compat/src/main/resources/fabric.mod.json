@@ -3,7 +3,7 @@
   "id": "quick_stack_nearby_compat",
   "version": "${version}",
   "name": "Workbench Quick Stack Nearby Compatibility",
-  "description": "Unified Workbench compatibility layer for Quick Stack Nearby; Canary 16 adds lock-aware carried shulker and bundle sources.",
+  "description": "Unified Workbench compatibility layer for Quick Stack Nearby; Canary 17 protects populated carried shulkers as outer loose sources while retaining C16 internal draining.",
   "authors": ["Resivore"],
   "license": "MIT",
   "environment": "*",
@@ -30,6 +30,6 @@
   "custom": {
     "workbench:classification": "GENERATED / STATICALLY VALIDATED / RUNTIME UNTESTED",
     "workbench:deployment": "NOT DEPLOYED",
-    "workbench:runtime-slot-owner": "Quick Stack Nearby Compatibility - Canary 16"
+    "workbench:runtime-slot-owner": "Quick Stack Nearby Compatibility - Canary 17"
   }
 }
