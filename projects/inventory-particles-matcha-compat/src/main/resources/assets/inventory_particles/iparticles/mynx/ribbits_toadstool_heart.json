@@ -1,0 +1,10 @@
+{
+  "life_time": 75,
+  "animation_type": "random_static",
+  "animation_speed": 1.0,
+  "size": {"width": 8, "height": 8},
+  "textures": ["ribbits:item/toadstool_heart.png"],
+  "holders": [
+    {"name":"mynx_ipmc_toadstool_heart","item":"ribbits:toadstool_heart","spawn_count":[0,1],"spawn_frequency":[14,30],"speed_coefficient":0.14,"color":"#FFFFFFFF","nbt_conditions_match":"any","nbt_conditions":[]}
+  ]
+}

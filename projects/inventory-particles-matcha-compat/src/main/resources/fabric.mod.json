@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "id": "inventory_particles_matcha_compat",
+  "version": "${version}",
+  "name": "Inventory Particles Matcha Compatibility",
+  "description": "Exclusive stack-aware Inventory Particles dispatch for exact Matcha and Ribbits identities.",
+  "authors": ["Resivore"],
+  "license": "MIT",
+  "environment": "client",
+  "mixins": ["inventory_particles_matcha_compat.mixins.json"],
+  "depends": {
+    "fabricloader": ">=0.19.3",
+    "minecraft": "=26.2",
+    "java": ">=25",
+    "inventory_particles": ">=2.6.0+26.2+fabric"
+  },
+  "custom": {
+    "runtime_dependency_policy": {
+      "contract": "CAPABILITY_OR_PROVIDER",
+      "exceptions": []
+    },
+    "workbench:classification": "GENERATED / STATICALLY VALIDATED / RUNTIME UNTESTED",
+    "workbench:deployment": "NOT DEPLOYED"
+  }
+}

@@ -1,8 +1,0 @@
-{
-  "life_time": 70,
-  "animation_type": "random_static",
-  "animation_speed": 1.0,
-  "size": {"width": 8, "height": 8},
-  "textures": ["minecraft:heart_pottery_sherd"],
-  "holders": [{"name":"matcha_crystal_heart","item":"minecraft:poisonous_potato","spawn_count":[0,1],"spawn_frequency":[12,28],"speed_coefficient":0.16,"color":"#FFFF4F69","nbt_conditions_match":"all","nbt_conditions":[{"this_name":"components","this_type":"object","next":{"this_name":"minecraft:item_model","this_type":"string","check_value":"minecraft:heart_container"}}]}]
-}

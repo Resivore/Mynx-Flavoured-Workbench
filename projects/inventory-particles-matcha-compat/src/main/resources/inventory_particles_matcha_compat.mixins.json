@@ -1,0 +1,13 @@
+{
+  "required": false,
+  "package": "dev.resivore.inventoryparticlesmatchacompat.mixin",
+  "compatibilityLevel": "JAVA_25",
+  "client": [
+    "ParticleHolderCompatMarkerMixin",
+    "ParticleSpawnerExclusiveDispatchMixin",
+    "ParticlesConfigsManagerReloadMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 0
+  }
+}

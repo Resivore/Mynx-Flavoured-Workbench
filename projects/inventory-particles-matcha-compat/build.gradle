@@ -1,0 +1,175 @@
+import groovy.json.JsonSlurper
+import java.nio.charset.StandardCharsets
+import java.security.MessageDigest
+import java.util.zip.ZipFile
+import org.gradle.api.tasks.bundling.AbstractArchiveTask
+
+plugins {
+    id 'net.fabricmc.fabric-loom' version '1.17.19'
+}
+
+version = project.mod_version
+group = project.maven_group
+
+base {
+    archivesName = project.archives_base_name
+}
+
+repositories {
+    maven { url = 'https://maven.fabricmc.net/' }
+    mavenCentral()
+}
+
+def repositoryRoot = projectDir.toPath().resolve('../..').normalize().toFile()
+def gitMetadata = repositoryRoot.toPath().resolve('.git')
+def worktreeGitDir = java.nio.file.Files.isDirectory(gitMetadata)
+        ? gitMetadata
+        : java.nio.file.Path.of(java.nio.file.Files.readString(gitMetadata).trim().substring('gitdir: '.length()))
+def commonGitDirFile = worktreeGitDir.resolve('commondir')
+def commonGitDir = java.nio.file.Files.exists(commonGitDirFile)
+        ? worktreeGitDir.resolve(java.nio.file.Files.readString(commonGitDirFile).trim()).normalize()
+        : worktreeGitDir
+def primaryRepositoryRoot = commonGitDir.parent.toFile()
+def inventoryParticlesReferenceJar = new File(primaryRepositoryRoot,
+        'originals/mods/InventoryParticles-2.6.0+26.2+fabric.jar')
+def expectedInventoryParticlesSha256 = 'b44d808e673805eea4949591abcb3325faa1abf8b9321266d06533ea5a34c802'
+
+configurations {
+    inventoryParticlesReference {
+        canBeConsumed = false
+        canBeResolved = true
+        transitive = false
+    }
+}
+
+tasks.register('verifyLocalReferences') {
+    inputs.file(inventoryParticlesReferenceJar)
+    doLast {
+        if (!inventoryParticlesReferenceJar.isFile()) {
+            throw new GradleException("Missing exact Inventory Particles reference JAR: ${inventoryParticlesReferenceJar}")
+        }
+        if (inventoryParticlesReferenceJar.length() != 1_783_277L) {
+            throw new GradleException("Unexpected Inventory Particles reference size: ${inventoryParticlesReferenceJar.length()}")
+        }
+        String digest = MessageDigest.getInstance('SHA-256').digest(inventoryParticlesReferenceJar.bytes)
+                .encodeHex().toString()
+        if (digest != expectedInventoryParticlesSha256) {
+            throw new GradleException("Unexpected Inventory Particles reference SHA-256: ${digest}")
+        }
+    }
+}
+
+dependencies {
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    implementation "net.fabricmc:fabric-loader:${project.loader_version}"
+
+    // C4 compiles against, develops with, and structurally validates the one exact audited target.
+    compileOnly files(inventoryParticlesReferenceJar)
+    runtimeOnly files(inventoryParticlesReferenceJar)
+    inventoryParticlesReference files(inventoryParticlesReferenceJar)
+
+    testImplementation files(inventoryParticlesReferenceJar)
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.12.2'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.12.2'
+    testImplementation 'org.ow2.asm:asm:9.10.1'
+    testImplementation 'org.ow2.asm:asm-tree:9.10.1'
+}
+
+processResources {
+    inputs.property 'version', project.version
+    filesMatching('fabric.mod.json') {
+        expand 'version': project.version
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    dependsOn tasks.named('verifyLocalReferences')
+    options.release = 25
+}
+
+tasks.withType(AbstractArchiveTask).configureEach {
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
+}
+
+test {
+    useJUnitPlatform()
+    dependsOn tasks.named('verifyLocalReferences')
+    inputs.files(configurations.inventoryParticlesReference)
+    systemProperty 'projectRoot', projectDir.absolutePath
+    doFirst {
+        systemProperty 'inventoryParticlesReferenceJar', configurations.inventoryParticlesReference.singleFile.absolutePath
+    }
+}
+
+def packagedJar = tasks.named('jar').flatMap { it.archiveFile }
+
+tasks.register('verifyReleaseArtifact') {
+    group = 'verification'
+    description = 'Verifies C4 metadata, data-driven definitions, and no legacy upstream-resource overlays.'
+    dependsOn tasks.named('jar')
+    inputs.file(packagedJar)
+    doLast {
+        File artifact = packagedJar.get().asFile
+        if (artifact.name != "inventory-particles-matcha-compat-${project.version}.jar") {
+            throw new GradleException("Unexpected release filename: ${artifact.name}")
+        }
+        ZipFile archive = new ZipFile(artifact)
+        try {
+            def entries = archive.entries().toList()
+            if (entries.any { it.name.endsWith('.jar') }) {
+                throw new GradleException('C4 must not bundle Inventory Particles or any upstream JAR')
+            }
+            def metadata = new JsonSlurper().parse(archive.getInputStream(archive.getEntry('fabric.mod.json')))
+            if (metadata.id != 'inventory_particles_matcha_compat' || metadata.version != project.version ||
+                    metadata.environment != 'client' || metadata.depends?.inventory_particles != '>=2.6.0+26.2+fabric') {
+                throw new GradleException('Release Fabric metadata does not preserve the C4 client compatibility contract')
+            }
+            if (metadata.custom?.runtime_dependency_policy?.contract != 'CAPABILITY_OR_PROVIDER' ||
+                    metadata.custom.runtime_dependency_policy.exceptions != []) {
+                throw new GradleException('Release runtime dependency-policy attestation is missing or changed')
+            }
+            def required = [
+                'inventory_particles_matcha_compat.mixins.json',
+                'dev/resivore/inventoryparticlesmatchacompat/ExclusiveParticleDispatch.class',
+                'dev/resivore/inventoryparticlesmatchacompat/ExclusiveParticleTarget.class',
+                'dev/resivore/inventoryparticlesmatchacompat/mixin/ParticleHolderCompatMarkerMixin.class',
+                'dev/resivore/inventoryparticlesmatchacompat/mixin/ParticleSpawnerExclusiveDispatchMixin.class',
+                'dev/resivore/inventoryparticlesmatchacompat/mixin/ParticlesConfigsManagerReloadMixin.class',
+                'assets/inventory_particles/iparticles/mynx/matcha_components.json',
+                'assets/inventory_particles/iparticles/mynx/matcha_crystal_heart.json',
+                'assets/inventory_particles/iparticles/mynx/ribbits_glowcap.json',
+                'assets/inventory_particles/iparticles/mynx/ribbits_toadstool_heart.json',
+                'assets/inventory_particles/iparticles/mynx/ribbits_village_map.json'
+            ]
+            required.each { entry ->
+                if (archive.getEntry(entry) == null) {
+                    throw new GradleException("C4 artifact is missing ${entry}")
+                }
+            }
+            if (entries.any { it.name.startsWith('assets/inventory_particles/iparticles/vanilla/') ||
+                    it.name == 'assets/inventory_particles/ifamilies/fallback/standard.json' ||
+                    it.name == 'pack.mcmeta' }) {
+                throw new GradleException('C4 must not retain C1-C3 Inventory Particles JSON overrides or a resource-pack manifest')
+            }
+        } finally {
+            archive.close()
+        }
+    }
+}
+
+tasks.register('stageCanaryArtifact', Copy) {
+    group = 'distribution'
+    description = 'Stages the exact ignored C4 JAR for canonical local retention.'
+    dependsOn tasks.named('verifyReleaseArtifact')
+    from(packagedJar)
+    into(layout.projectDirectory.dir('artifacts'))
+}
+
+tasks.named('check') {
+    dependsOn tasks.named('verifyReleaseArtifact')
+}
+
+java {
+    withSourcesJar()
+}
