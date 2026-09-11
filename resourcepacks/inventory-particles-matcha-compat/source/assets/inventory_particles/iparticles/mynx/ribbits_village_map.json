@@ -1,0 +1,8 @@
+{
+  "life_time": 75,
+  "animation_type": "random_static",
+  "animation_speed": 1.0,
+  "size": {"width": 8, "height": 8},
+  "textures": ["ribbits:item/ribbit_village_explorer_map.png"],
+  "holders": [{"name":"ribbits_village_map","item":"minecraft:filled_map","spawn_count":[0,1],"spawn_frequency":[20,45],"speed_coefficient":0.10,"color":"#FFFFFFFF","nbt_conditions_match":"all","nbt_conditions":[{"this_name":"components","this_type":"object","next":{"this_name":"minecraft:custom_data","this_type":"object","next":{"this_name":"ribbits:ribbit_village_explorer_map","this_type":"number","check_value":"1"}}}]}]
+}

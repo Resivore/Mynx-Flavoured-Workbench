@@ -39,12 +39,37 @@ class InventorySorterArtifactContractTest {
                     && hasCall(serverSort, "net/kyrptonaught/inventorysorter/sort/SortedInventoryLayout", "from")
                     && hasCall(serverSort, "net/kyrptonaught/inventorysorter/inventory/container/ContainerStacks", "set"));
 
+            MethodNode playerSort = method(archive,
+                    "net/kyrptonaught/inventorysorter/inventory/PlayerInventorySorter.class",
+                    "sort", "(Lnet/minecraft/server/level/ServerPlayer;Lnet/kyrptonaught/inventorysorter/network/SortSettings;Ljava/lang/String;)V");
+            assertTrue(hasCall(playerSort, "net/kyrptonaught/inventorysorter/sort/bundle/BundleInsertionLayoutPass", "apply")
+                    && hasCall(playerSort, "net/kyrptonaught/inventorysorter/inventory/ContainerInventorySorter", "sort"));
+
             MethodNode fallback = method(archive,
                     "net/kyrptonaught/inventorysorter/client/sort/plan/ClientFallbackSortPlanBuilder.class",
                     "build", "(Lnet/kyrptonaught/inventorysorter/client/sort/ClientSortScope;Lnet/kyrptonaught/inventorysorter/sort/SortType;Ljava/lang/String;Ljava/util/List;ZZ)Ljava/util/Optional;");
             assertTrue(hasCall(fallback, "net/kyrptonaught/inventorysorter/client/sort/ClientSortScope", "slots")
                     && hasCall(fallback, "net/kyrptonaught/inventorysorter/client/sort/plan/ClientSortClickPlanner", "plan"));
         }
+    }
+
+    @Test
+    void c2FixedSlotAndBundleBypassBoundariesStayNarrow() throws Exception {
+        Path root = Path.of(System.getProperty("projectRoot"));
+        String fixedSlots = Files.readString(root.resolve(
+                "src/main/java/dev/resivore/inventorysortercsrcompat/core/FixedSortSlots.java"));
+        String playerMixin = Files.readString(root.resolve(
+                "src/main/java/dev/resivore/inventorysortercsrcompat/mixin/PlayerInventorySorterMixin.java"));
+        String clientFallback = Files.readString(root.resolve(
+                "src/main/java/dev/resivore/inventorysortercsrcompat/core/MaskedClientFallbackSort.java"));
+
+        assertTrue(fixedSlots.contains("return ContainerSlotReservationsApi.isReserved(container, localSlot);")
+                && !fixedSlots.contains("ShulkerBoxBlock")
+                && !fixedSlots.contains("||"));
+        assertTrue(playerMixin.contains("FixedSortSlots.isBundle(inventory.getItem(slot))")
+                && playerMixin.contains("settings.sortPriorityRules(), false)"));
+        assertTrue(clientFallback.contains("if (!hasFixedSlot && !hasBundle) return null;")
+                && clientFallback.contains("SortedInventoryLayout.from("));
     }
 
     private static MethodNode method(JarFile archive, String entry, String name, String descriptor) throws Exception {

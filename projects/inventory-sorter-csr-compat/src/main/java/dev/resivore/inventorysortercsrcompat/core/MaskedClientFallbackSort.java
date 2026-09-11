@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-/** Builds upstream click plans from a compact list that excludes every fixed menu slot. */
+/** Builds ordinary upstream click plans while excluding CSR-fixed slots and bundle insertion. */
 public final class MaskedClientFallbackSort {
     private MaskedClientFallbackSort() {}
 
@@ -25,10 +25,13 @@ public final class MaskedClientFallbackSort {
             List<SortPriorityRuleSetting> priorityRules
     ) {
         List<ClientSortScope.ScopedSlot> movable = new ArrayList<>(scope.slots().size());
+        boolean hasBundle = false;
         for (ClientSortScope.ScopedSlot scopedSlot : scope.slots()) {
+            hasBundle |= FixedSortSlots.isBundle(scopedSlot.slot().getItem());
             if (!FixedSortSlots.isFixed(scopedSlot.slot())) movable.add(scopedSlot);
         }
-        if (movable.size() == scope.slots().size()) return null;
+        boolean hasFixedSlot = movable.size() != scope.slots().size();
+        if (!hasFixedSlot && !hasBundle) return null;
 
         List<ItemStack> before = new ArrayList<>(movable.size());
         List<SlotState> states = new ArrayList<>(movable.size());
@@ -37,8 +40,8 @@ public final class MaskedClientFallbackSort {
             before.add(stack);
             states.add(new SlotState(scopedSlot.menuSlotIndex(), stack.copy()));
         }
-        // Do not invoke upstream bundle-target insertion for a masked sort: every bundle is a
-        // fixed obstacle, including potential external target bundles in this screen scope.
+        // The fallback uses the same ordinary layout as upstream's no-bundle mode.  It never
+        // produces bundle-target clicks, but includes every unreserved bundle as a movable stack.
         List<ItemStack> sorted = SortedInventoryLayout.from(
                 before, sortType, languageCode, priorityRules).stacks();
         return clickPlanner.plan(states, sorted);

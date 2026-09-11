@@ -16,15 +16,15 @@
     "lifecycle": "ACTIVE",
     "goals": [
       "Make CSR-reserved physical slots immutable to Inventory Sorter while preserving its normal order and stack behavior for all movable slots.",
-      "Treat occupied vanilla bundles and every vanilla shulker-box item as fixed sort obstacles without inspecting or mutating their contents or components.",
-      "Apply the same mask to Inventory Sorter's authoritative server sort, client fallback click plan, and player bundle-insertion route."
+      "Sort every unreserved shulker box and bundle as an ordinary outer ItemStack without inspecting, reconstructing, or mutating portable-container contents or components.",
+      "Suppress Inventory Sorter's optional sort-into-bundles content-insertion pass while preserving ordinary server, client fallback, and player inventory sorting."
     ],
     "scope": [
-      "Canary 1 intercepts only Inventory Sorter 3.0.0's ContainerInventorySorter whole-range layout/writeback seam and ClientFallbackSortPlanBuilder fallback-click seam.",
+      "Canary 2 intercepts only Inventory Sorter 3.0.0's ContainerInventorySorter whole-range layout/writeback seam, ClientFallbackSortPlanBuilder fallback-click seam, and PlayerInventorySorter bundle-insertion entrypoint.",
       "CSR detection calls ContainerSlotReservationsApi.isReserved on the exact Slot container and Slot#getContainerSlot local index; CSR resolves supported physical owners, including double-container mappings.",
-      "A masked range compacts only movable slots through Inventory Sorter's own SortedInventoryLayout, writes or clicks only their original physical/menu slots, and never uses fixed slots as workspace.",
-      "When a fixed slot exists, the incompatible optional bundle-target insertion pass is bypassed because it would inspect or mutate a bundle; ordinary no-fixed-slot behavior remains fully upstream.",
-      "The player's special upstream sort-into-bundles branch is replaced only when it contains a bundle or shulker, using the ordinary masked player sort instead."
+      "A masked range compacts only non-reserved slots through Inventory Sorter's own SortedInventoryLayout, writes or clicks only their original physical/menu slots, and never uses a CSR-reserved slot as workspace.",
+      "A bundle triggers only the narrow ordinary-layout bypass that removes Inventory Sorter's bundle-target content insertion; the outer bundle remains in the movable pool on server and client fallback paths.",
+      "The player's special upstream sort-into-bundles branch is replaced only when its main inventory contains a bundle; a shulker alone keeps the upstream player path."
     ],
     "boundaries": {
       "owned_paths": [
@@ -95,16 +95,16 @@
     ]
   },
   "state": {
-    "milestone": "Canary 1 is retained after controlled validation. It is not deployed and has no desktop Minecraft runtime evidence.",
+    "milestone": "Canary 2 is retained after controlled validation. CSR-reserved physical slots remain fixed; unreserved outer shulkers and bundles are sortable, and Inventory Sorter's bundle-content insertion pass is suppressed. It is not deployed and has no desktop Minecraft runtime evidence.",
     "releases": {
       "current": {
-        "version": "C1 (0.1.0-canary1)",
-        "embedded_version": "0.1.0-canary1",
+        "version": "C2 (0.1.0-canary2)",
+        "embedded_version": "0.1.0-canary2",
         "artifact": {
-          "filename": "inventory-sorter-csr-compat-0.1.0-canary1.jar",
-          "sha256": "286fe324bef67201d9f420a6755b80a82afe2058dafdb63b906fe4d6ba89d371"
+          "filename": "inventory-sorter-csr-compat-0.1.0-canary2.jar",
+          "sha256": "e5a7481301a163c23fbd1a59abeb6a1e9efcfde7572b24d16f3c904e75b43da7"
         },
-        "source_commit": "456b4ce85a1fb0b362a7ab7852bd126d392bb4a4",
+        "source_commit": "3802f3d331141a531ab4d673f41882aecf84646c",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
@@ -123,11 +123,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 1,
-    "activity_at": "2026-09-11T16:21:00Z",
-    "updated_at": "2026-09-11T16:21:00Z",
-    "last_codex_at": "2026-09-11T16:21:00Z",
-    "source_commit": "456b4ce85a1fb0b362a7ab7852bd126d392bb4a4",
+    "revision": 2,
+    "activity_at": "2026-09-11T17:14:00Z",
+    "updated_at": "2026-09-11T17:14:00Z",
+    "last_codex_at": "2026-09-11T17:14:00Z",
+    "source_commit": "3802f3d331141a531ab4d673f41882aecf84646c",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null

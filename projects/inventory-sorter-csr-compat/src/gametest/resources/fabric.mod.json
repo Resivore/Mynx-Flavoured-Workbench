@@ -13,7 +13,7 @@
     "fabricloader": ">=0.19.3",
     "fabric-api": "*",
     "minecraft": "26.2",
-    "inventory_sorter_csr_compat": "=0.1.0-canary1",
+    "inventory_sorter_csr_compat": "=0.1.0-canary2",
     "inventorysorter": "*",
     "container_slot_reservations": "*"
   }

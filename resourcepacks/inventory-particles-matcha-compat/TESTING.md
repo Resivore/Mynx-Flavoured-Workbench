@@ -1,15 +1,28 @@
 # Testing
 
-C1 is ACTIVE, not deployed, and runtime untested. Install `inventory-particles-matcha-compat-c1.zip` above Inventory Particles, Matcha, and Ribbits resources in the dedicated Matcha Flavoured 26.2 Workbench only; use `/reload` (or restart) and wait for Inventory Particles to finish its client reload/linking pass before inspecting slots.
+C2 is ACTIVE, not deployed, and runtime untested. Install `inventory-particles-matcha-compat-c2.zip` above Inventory Particles, Matcha, and Ribbits resources in the dedicated Matcha Flavoured 26.2 Workbench only; run `/reload` (or restart) and wait for Inventory Particles to finish its client reload/linking pass. Do not use the protected 26.1.2 gameplay instance.
 
-| Item/stack | Registry ID | Distinguishing stack data | Current rule/problem | C1 rule | Status |
-| --- | --- | --- | --- | --- | --- |
-| Ordinary poisonous potato | `minecraft:poisonous_potato` | no `minecraft:item_model` among C1 values | built-in poison + sand | unchanged built-in poison + sand | implemented guard |
-| Green Curry | `minecraft:poisonous_potato` | `minecraft:item_model=minecraft:green_curry` | poison + sand leak from backing ID | green-tinted bowl particle | implemented |
-| Ramen | `minecraft:poisonous_potato` | `minecraft:item_model=minecraft:ramen` | poison + sand leak from backing ID | golden bowl particle | implemented |
-| Crystal Heart | `minecraft:poisonous_potato` | `minecraft:item_model=minecraft:heart_container` | poison + sand leak from backing ID | red heart-sherd particle | implemented |
-| Glowcap | `ribbits:glowcap` | none | automatic family/fallback can be generic | own default-item texture | implemented |
-| Toadstool Heart | `ribbits:toadstool_heart` | none | automatic family/fallback can be generic | own default-item texture | implemented |
-| Ribbit Village Explorer Map | `ribbits:ribbit_village_explorer_map` | none | automatic family/fallback can be generic | own default-item texture | implemented |
+## Exact stack acquisition
 
-Check each listed C1 item, then an unaffected vanilla item and an unrelated modded item that previously received an automatic Inventory Particles family rule. Stop and report any missing particle, retained green poison/sand on a C1 Matcha stack, wrong item texture, or an ordinary poisonous potato losing its normal behavior. Food variants beyond Green Curry/Ramen are intentionally deferred until their visual choices are reviewed.
+- Green Curry canonical: run `/recipe give @s food:green_curry`, then smelt a `minecraft:zombified_piglin_spawn_egg`; the authoritative `food:green_curry` recipe creates the canonical `minecraft:poisonous_potato` stack. Particle-only surrogate: `/give @s minecraft:poisonous_potato[minecraft:item_model="minecraft:green_curry"]`.
+- Ramen canonical: run `/recipe give @s food:ramen`, then smelt a `minecraft:wither_skeleton_spawn_egg`; the authoritative `food:ramen` recipe creates the canonical `minecraft:poisonous_potato` stack. Particle-only surrogate: `/give @s minecraft:poisonous_potato[minecraft:item_model="minecraft:ramen"]`.
+- Crystal Heart canonical: `/loot give @s loot minecraft:kleis_items/crystal_heart`. Particle-only surrogate: `/give @s minecraft:poisonous_potato[minecraft:item_model="minecraft:heart_container"]`.
+- Glowcap: `/give @s ribbits:glowcap`; Toadstool Heart: `/give @s ribbits:toadstool_heart`. Obtain the Ribbit Village Explorer Map from its canonical Wandering Ribbit search/offer so it carries both `minecraft:map_id` and custom-data marker `ribbits:ribbit_village_explorer_map=true`.
+
+The three surrogates deliberately contain only the component C2 matches; they are not complete gameplay-equivalent Matcha stacks.
+
+## C2 checklist
+
+| Stack | Expected C2 behavior |
+| --- | --- |
+| Ordinary `minecraft:poisonous_potato` | Unchanged upstream poison and sand behavior. |
+| Green Curry | Green-tinted bowl particle only; no poisonous-potato poison/sand leak. |
+| Ramen | Golden bowl particle only; no poisonous-potato poison/sand leak. |
+| Crystal Heart | Red heart-sherd-style particle only; no poisonous-potato poison/sand leak. |
+| Glowcap | Visible Glowcap texture only. |
+| Toadstool Heart | Isolated Toadstool Heart texture only. C1 supplied no runtime result; record the observed C2 result. |
+| Ribbit Village Explorer Map | Its own map texture only; no gray/sand/fallback particle. |
+| Unaffected vanilla item, e.g. `/give @s minecraft:diamond` | Existing behavior unchanged. |
+| Unrelated automatic/family item, e.g. `/give @s ribbits:swamp_daisy` | Inventory Particles' normal automatic/family behavior remains available. |
+
+Report each row independently. Stop and report any missing particle, retained poisonous-potato particle, wrong Ribbits texture, or regression on the ordinary potato/controls. C1 is already user-reported partial RUNTIME_FAIL: Green Curry, Glowcap, and Village Explorer Map failed; Ramen and Crystal Heart were not tested; Toadstool Heart received no reported result.
