@@ -147,16 +147,16 @@
     ]
   },
   "state": {
-    "milestone": "C15 is a controlled-validated, retained-but-not-deployed C12-derived survival inventory utility-button placement-stability correction. It preserves C12's C9-derived routing correction, including nested CSR reservations, ShapeMap behavior, source accounting, ordering, capacity, and transactional writeback. C15 recognizes only QSN's exact upstream action widget as owned during the existing reservation scan, preventing self-collision while preserving collisions with unrelated visible widgets. C14 remains immutable historical user-reported failure evidence: with QSN 0.4.0 loaded, its survival action visibly alternated frame-to-frame between adjacent utility slots; no Test Instance Manager deployment is inferred. C8 remains accepted and C6 remains rollback.",
+    "milestone": "C16 is a controlled-validated, retained-but-not-deployed C15-derived carried-container source expansion. It preserves QSN's loose-source priority and target engine, then drains direct contents of eligible carried vanilla shulkers and bundles in physical inventory order with offhand last. CCAR's live public RoutingLock query excludes locked carriers completely; absent CCAR is unlocked-by-default and a loaded but un-linkable provider fails closed. C8 remains accepted and C6 remains rollback.",
     "releases": {
       "current": {
-        "version": "C15 (0.1.0-canary15)",
-        "embedded_version": "0.1.0-canary15",
+        "version": "C16 (0.1.0-canary16)",
+        "embedded_version": "0.1.0-canary16",
         "artifact": {
-          "filename": "quick-stack-nearby-compat-0.1.0-canary15.jar",
-          "sha256": "7793663dfb5250c2d3b45942f58fc58f5c104b4fbbc519ed07b48a403ba6b83c"
+          "filename": "quick-stack-nearby-compat-0.1.0-canary16.jar",
+          "sha256": "2dde3e5b18cd167ba2f743275eb892d50ba849f8213baa0fe5931b7d31aac792"
         },
-        "source_commit": "ea011fd58bab1d8292c3d04c1d9701bf651c5bfd",
+        "source_commit": "5cd8b43ddad12b868faf5bab0e144c22d300b85b",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
@@ -195,11 +195,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 18,
-    "activity_at": "2026-09-10T15:10:20.4955890Z",
-    "updated_at": "2026-09-10T15:10:20.4955890Z",
-    "last_codex_at": "2026-09-10T15:10:20.4955890Z",
-    "source_commit": "ea011fd58bab1d8292c3d04c1d9701bf651c5bfd",
+    "revision": 19,
+    "activity_at": "2026-09-11T15:46:30Z",
+    "updated_at": "2026-09-11T15:46:30Z",
+    "last_codex_at": "2026-09-11T15:46:30Z",
+    "source_commit": "5cd8b43ddad12b868faf5bab0e144c22d300b85b",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null

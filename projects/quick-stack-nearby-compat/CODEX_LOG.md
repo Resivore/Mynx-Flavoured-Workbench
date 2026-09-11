@@ -1,5 +1,6 @@
 # Codex Log
 
+
 ## 2026-08-29T22:46:04Z — Migrate frozen Quick Stack Nearby Compatibility C6 into Mynx Flavoured Workbench
 - Revision: 1
 - Source checkpoint: `1ecb3473873256eef0a46f6b12db26828c22e1f8`
@@ -186,3 +187,14 @@
 - Artifact: `quick-stack-nearby-compat-0.1.0-canary15.jar`; embedded `0.1.0-canary15`; 53,484 bytes; SHA-256 `7793663dfb5250c2d3b45942f58fc58f5c104b4fbbc519ed07b48a403ba6b83c`; source `ea011fd58bab1d8292c3d04c1d9701bf651c5bfd`; exact QSN dependency `quick-stack-nearby-0.4.0.jar`, 159,918 bytes, SHA-256 `43f1130527f782a291231c682791b4fd3766a20916c691cbdb98f91fdcc47e53`; runtime dependency policy `CAPABILITY_OR_PROVIDER` with no exceptions. C14 bytes, accepted C8, and rollback C6 identities/bytes remain unchanged.
 - Result: ACTIVE / CONTROLLED_VALIDATION_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED. The exact ignored C15 artifact requires canonical local retention; no blocker is asserted.
 - Next state: Publish revision 18 from integrated `main`, then assign C15 only through a verified Test Instance Manager transition before collecting the focused stability and C9/C12 routing runtime matrix.
+
+## 2026-09-11T15:46:30Z — Produce QSN C16 carried-container sources
+
+- Revision: 19
+- Source checkpoint: `5cd8b43ddad12b868faf5bab0e144c22d300b85b`
+- Changes: C16 preserves C15's button behavior and QSN's native loose-inventory source phase, target discovery, ordering, and insertion engine. It adds a deterministic second source phase for direct contents of vanilla shulker-box items and bundles in every `getNonEquipmentItems()` slot, then offhand. It augments existing CSR and ShapeMap affinity discovery with eligible nested contents; locked CCAR carriers cannot seed affinity or drain. The narrow reflection bridge consumes only CCAR's public `RoutingLock.isLocked(ItemStack)` API: absent CCAR is unlocked-by-default, while a loaded but un-linkable provider logs once and fails closed only for carried draining. Outer stacks retain unrelated components; shulker physical slots and bundle content order are rewritten only after moves.
+- Build/static: Java 25, Gradle 9.5.1, Loom 1.17.19 clean `test` passed 69 focused checks. Clean `build` passed and all 31 existing required Fabric GameTests completed. Controlled checks are not gameplay runtime evidence.
+- Runtime: NOT_DEPLOYED / RUNTIME_UNTESTED. No Test Instance Manager transition, dedicated Workbench profile access, or protected 26.1.2 profile access occurred.
+- Artifact: `quick-stack-nearby-compat-0.1.0-canary16.jar`, 61,709 bytes, SHA-256 `2dde3e5b18cd167ba2f743275eb892d50ba849f8213baa0fe5931b7d31aac792`, source `5cd8b43ddad12b868faf5bab0e144c22d300b85b`; runtime dependency policy `CAPABILITY_OR_PROVIDER` with no exceptions.
+- Result: ACTIVE / CONTROLLED_VALIDATION_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED.
+- Next state: Publish revision 19 from integrated main, then assign C16 only through a verified manager transition before collecting the expanded carried-source runtime procedure.
