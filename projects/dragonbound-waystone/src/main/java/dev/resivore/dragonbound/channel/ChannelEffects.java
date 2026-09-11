@@ -15,8 +15,14 @@ final class ChannelEffects {
     static final int CHANNEL_PARTICLES_AT_COMPLETION = 4;
     static final int FOREGROUND_CHANNEL_PARTICLES_AT_START = 3;
     static final int FOREGROUND_CHANNEL_PARTICLES_AT_COMPLETION = 8;
-    static final double FOREGROUND_FORWARD_OFFSET = 0.55D;
-    static final double FOREGROUND_VERTICAL_OFFSET = -0.15D;
+    static final double FOREGROUND_GROUND_OFFSET = 0.05D;
+    static final double FOREGROUND_CHANNEL_HORIZONTAL_RADIUS = 0.65D;
+    static final double FOREGROUND_SUCCESS_HORIZONTAL_RADIUS = 0.75D;
+    static final double FOREGROUND_CHANNEL_VERTICAL_SPREAD = 0.05D;
+    static final double FOREGROUND_SUCCESS_VERTICAL_SPREAD = 0.05D;
+    static final double FOREGROUND_MOTION_HORIZONTAL_MAX = 0.035D;
+    static final double FOREGROUND_MOTION_VERTICAL_MIN = 0.08D;
+    static final double FOREGROUND_MOTION_VERTICAL_MAX = 0.18D;
 
     private ChannelEffects() {
     }
@@ -66,9 +72,29 @@ final class ChannelEffects {
                 FOREGROUND_CHANNEL_PARTICLES_AT_COMPLETION);
     }
 
-    static Vec3 foregroundOrigin(Vec3 eyePosition, Vec3 lookVector) {
-        return eyePosition.add(lookVector.normalize().scale(FOREGROUND_FORWARD_OFFSET))
-                .add(0.0D, FOREGROUND_VERTICAL_OFFSET, 0.0D);
+    static Vec3 foregroundGroundOrigin(Vec3 playerPosition) {
+        return playerPosition.add(0.0D, FOREGROUND_GROUND_OFFSET, 0.0D);
+    }
+
+    static Vec3 foregroundParticleStart(Vec3 groundOrigin, double horizontalX, double verticalOffset, double horizontalZ) {
+        return groundOrigin.add(horizontalX, verticalOffset, horizontalZ);
+    }
+
+    static Vec3 foregroundPortalMotion(double horizontalX, double verticalY, double horizontalZ) {
+        return new Vec3(horizontalX, verticalY, horizontalZ);
+    }
+
+    /**
+     * The 26.2 {@code PortalParticle} evaluates its first client tick as
+     * {@code yStart + velocityY * (1 - age / lifetime)^2 + (1 - age / lifetime)}.
+     * A positive explicit Y vector therefore launches a particle upward from its low packet
+     * origin; normal count packets cannot guarantee that because they Gaussian-randomize all
+     * velocity axes. This helper keeps the exact packet-vector behavior unit-testable.
+     */
+    static double portalFirstTickVerticalRise(double verticalMotion, int lifetime) {
+        double progress = 1.0D / lifetime;
+        double remaining = 1.0D - progress;
+        return verticalMotion * remaining * remaining + remaining;
     }
 
     private static int rampedParticleCount(long elapsedTicks, int channelTicks, int start, int completion) {
@@ -94,20 +120,12 @@ final class ChannelEffects {
                 0.35D,
                 0.04D
         );
-        Vec3 foreground = foregroundOrigin(player.getEyePosition(), player.getLookAngle());
-        level.sendParticles(
+        targetedRisingPortalParticles(
                 player,
-                ParticleTypes.PORTAL,
-                false,
-                false,
-                foreground.x,
-                foreground.y,
-                foreground.z,
+                level,
                 foregroundChannelParticleCount(elapsedTicks, channelTicks),
-                0.50D,
-                0.35D,
-                0.50D,
-                0.04D
+                FOREGROUND_CHANNEL_HORIZONTAL_RADIUS,
+                FOREGROUND_CHANNEL_VERTICAL_SPREAD
         );
     }
 
@@ -126,20 +144,55 @@ final class ChannelEffects {
     }
 
     private static void foregroundPortalBurst(ServerPlayer player, ServerLevel level) {
-        Vec3 foreground = foregroundOrigin(player.getEyePosition(), player.getLookAngle());
-        level.sendParticles(
+        targetedRisingPortalParticles(
                 player,
-                ParticleTypes.PORTAL,
-                false,
-                false,
-                foreground.x,
-                foreground.y,
-                foreground.z,
+                level,
                 FOREGROUND_SUCCESS_PARTICLE_COUNT,
-                0.60D,
-                0.45D,
-                0.60D,
-                0.08D
+                FOREGROUND_SUCCESS_HORIZONTAL_RADIUS,
+                FOREGROUND_SUCCESS_VERTICAL_SPREAD
         );
+    }
+
+    /** Sends count-zero packets so each targeted Portal particle has a deliberate upward launch. */
+    private static void targetedRisingPortalParticles(
+            ServerPlayer player,
+            ServerLevel level,
+            int count,
+            double horizontalRadius,
+            double verticalSpread) {
+        Vec3 groundOrigin = foregroundGroundOrigin(player.position());
+        for (int index = 0; index < count; index++) {
+            double angle = level.getRandom().nextDouble() * (2.0D * Math.PI);
+            double radius = Math.sqrt(level.getRandom().nextDouble()) * horizontalRadius;
+            Vec3 start = foregroundParticleStart(
+                    groundOrigin,
+                    Math.cos(angle) * radius,
+                    centeredRandom(level, verticalSpread),
+                    Math.sin(angle) * radius);
+            Vec3 motion = foregroundPortalMotion(
+                    centeredRandom(level, FOREGROUND_MOTION_HORIZONTAL_MAX),
+                    FOREGROUND_MOTION_VERTICAL_MIN
+                            + level.getRandom().nextDouble()
+                            * (FOREGROUND_MOTION_VERTICAL_MAX - FOREGROUND_MOTION_VERTICAL_MIN),
+                    centeredRandom(level, FOREGROUND_MOTION_HORIZONTAL_MAX));
+            level.sendParticles(
+                    player,
+                    ParticleTypes.PORTAL,
+                    false,
+                    false,
+                    start.x,
+                    start.y,
+                    start.z,
+                    0,
+                    motion.x,
+                    motion.y,
+                    motion.z,
+                    1.0D
+            );
+        }
+    }
+
+    private static double centeredRandom(ServerLevel level, double maximumMagnitude) {
+        return (level.getRandom().nextDouble() * 2.0D - 1.0D) * maximumMagnitude;
     }
 }
