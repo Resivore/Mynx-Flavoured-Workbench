@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "id": "item_pickup_audio_diagnostic",
+  "version": "${version}",
+  "name": "Item Pickup Audio Diagnostic",
+  "description": "Temporary, behavior-neutral trace points for the vanilla item-pickup sound path.",
+  "authors": ["Resivore"],
+  "license": "MIT",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "dev.resivore.pickupaudiodiag.PickupAudioDiagnosticClient"
+    ]
+  },
+  "mixins": [
+    "item_pickup_audio_diagnostic.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.19.3",
+    "minecraft": "=26.2",
+    "java": ">=25"
+  },
+  "custom": {
+    "runtime_dependency_policy": {
+      "contract": "CAPABILITY_OR_PROVIDER",
+      "exceptions": []
+    },
+    "workbench:classification": "DIAGNOSTIC / STATICALLY VALIDATED / RUNTIME UNTESTED",
+    "workbench:deployment": "NOT DEPLOYED"
+  }
+}

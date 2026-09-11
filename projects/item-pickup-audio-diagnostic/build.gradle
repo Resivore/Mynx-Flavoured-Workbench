@@ -1,0 +1,114 @@
+import groovy.json.JsonSlurper
+import java.util.zip.ZipFile
+import org.gradle.api.tasks.bundling.AbstractArchiveTask
+
+plugins {
+    id 'net.fabricmc.fabric-loom' version '1.17-SNAPSHOT'
+}
+
+version = project.mod_version
+group = project.maven_group
+
+base {
+    archivesName = project.archives_base_name
+}
+
+repositories {
+    maven { url = 'https://maven.fabricmc.net/' }
+    mavenCentral()
+}
+
+dependencies {
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    implementation "net.fabricmc:fabric-loader:${project.loader_version}"
+
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.12.2'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.12.2'
+}
+
+processResources {
+    inputs.property 'version', project.version
+    filesMatching('fabric.mod.json') {
+        expand 'version': project.version
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.release = 25
+}
+
+tasks.withType(AbstractArchiveTask).configureEach {
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
+}
+
+test {
+    dependsOn tasks.named('jar')
+    useJUnitPlatform()
+    systemProperty 'projectRoot', projectDir.absolutePath
+}
+
+def packagedJar = tasks.named('jar').flatMap { it.archiveFile }
+
+tasks.register('verifyReleaseArtifact') {
+    group = 'verification'
+    description = 'Verifies that the diagnostic JAR contains only its own client utility and metadata.'
+    dependsOn tasks.named('jar')
+    inputs.file(packagedJar)
+    doLast {
+        File artifact = packagedJar.get().asFile
+        String expectedName = "item-pickup-audio-diagnostic-${project.version}.jar"
+        if (artifact.name != expectedName) {
+            throw new GradleException("Unexpected diagnostic artifact filename: ${artifact.name}")
+        }
+
+        ZipFile archive = new ZipFile(artifact)
+        try {
+            def entries = archive.entries().toList()
+            def names = entries.collect { it.name } as Set
+            def metadata = new JsonSlurper().parse(archive.getInputStream(archive.getEntry('fabric.mod.json')))
+            if (metadata.id != 'item_pickup_audio_diagnostic' || metadata.version != project.version ||
+                    metadata.environment != 'client') {
+                throw new GradleException('Diagnostic Fabric metadata drifted from its client-only identity')
+            }
+            if (metadata.custom?.runtime_dependency_policy?.contract != 'CAPABILITY_OR_PROVIDER' ||
+                    metadata.custom.runtime_dependency_policy.exceptions != []) {
+                throw new GradleException('Diagnostic runtime dependency-policy attestation is absent or changed')
+            }
+            def required = [
+                    'fabric.mod.json',
+                    'item_pickup_audio_diagnostic.mixins.json',
+                    'dev/resivore/pickupaudiodiag/PickupAudioDiagnosticClient.class',
+                    'dev/resivore/pickupaudiodiag/PickupAudioDiag.class',
+                    'dev/resivore/pickupaudiodiag/mixin/ClientPacketListenerMixin.class',
+                    'dev/resivore/pickupaudiodiag/mixin/ClientLevelMixin.class',
+                    'dev/resivore/pickupaudiodiag/mixin/SoundManagerMixin.class',
+                    'dev/resivore/pickupaudiodiag/mixin/SoundEngineMixin.class'
+            ]
+            required.each { entry ->
+                if (!names.contains(entry)) {
+                    throw new GradleException("Diagnostic artifact is missing ${entry}")
+                }
+            }
+            if (entries.any { !it.directory && it.name.endsWith('.jar') } ||
+                    entries.any { !it.directory && it.name.startsWith('dev/resivore/carriedrouting/') } ||
+                    entries.any { !it.directory && it.name.startsWith('dev/resivore/') && !it.name.startsWith('dev/resivore/pickupaudiodiag/') }) {
+                throw new GradleException('Diagnostic artifact contains a foreign or nested implementation')
+            }
+        } finally {
+            archive.close()
+        }
+    }
+}
+
+tasks.register('stageCanaryArtifact', Copy) {
+    group = 'distribution'
+    description = 'Stages the exact ignored diagnostic JAR for canonical local retention.'
+    dependsOn tasks.named('verifyReleaseArtifact')
+    from(packagedJar)
+    into(layout.projectDirectory.dir('artifacts'))
+}
+
+tasks.named('check') {
+    dependsOn tasks.named('verifyReleaseArtifact')
+}
