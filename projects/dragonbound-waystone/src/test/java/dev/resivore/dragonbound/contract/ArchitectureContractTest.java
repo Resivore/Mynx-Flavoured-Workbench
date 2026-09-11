@@ -219,6 +219,16 @@ final class ArchitectureContractTest {
         assertTrue(effects.contains("CHANNEL_PARTICLES_AT_START = 1"));
         assertTrue(effects.contains("CHANNEL_PARTICLES_AT_COMPLETION = 4"));
         assertTrue(effects.contains("channelParticleCount(elapsedTicks, channelTicks)"));
+        assertTrue(effects.contains("FOREGROUND_CHANNEL_PARTICLES_AT_START = 3"));
+        assertTrue(effects.contains("FOREGROUND_CHANNEL_PARTICLES_AT_COMPLETION = 8"));
+        assertTrue(effects.contains("FOREGROUND_SUCCESS_PARTICLE_COUNT = 24"));
+        assertTrue(effects.contains("FOREGROUND_FORWARD_OFFSET = 0.55D"));
+        assertTrue(effects.contains("FOREGROUND_VERTICAL_OFFSET = -0.15D"));
+        assertTrue(effects.contains("foregroundChannelParticleCount(elapsedTicks, channelTicks)"));
+        assertTrue(effects.contains("level.sendParticles(\n                player,"));
+        assertEquals(2, countOccurrences(effects, "level.sendParticles(\n                player,"));
+        assertTrue(effects.contains("0.50D,\n                0.35D,\n                0.50D"));
+        assertTrue(effects.contains("0.60D,\n                0.45D,\n                0.60D"));
         assertFalse(effects.contains("departure"));
     }
 

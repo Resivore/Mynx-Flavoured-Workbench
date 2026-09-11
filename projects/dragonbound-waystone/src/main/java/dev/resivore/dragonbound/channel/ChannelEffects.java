@@ -10,12 +10,12 @@ import net.minecraft.world.phys.Vec3;
 /** Server-owned visual feedback for valid Dragonbound channels and confirmed arrivals. */
 final class ChannelEffects {
     static final int SUCCESS_PARTICLE_COUNT = 30;
-    static final int FOREGROUND_SUCCESS_PARTICLE_COUNT = 8;
+    static final int FOREGROUND_SUCCESS_PARTICLE_COUNT = 24;
     static final int CHANNEL_PARTICLES_AT_START = 1;
     static final int CHANNEL_PARTICLES_AT_COMPLETION = 4;
-    static final int FOREGROUND_CHANNEL_PARTICLES_AT_START = 1;
-    static final int FOREGROUND_CHANNEL_PARTICLES_AT_COMPLETION = 2;
-    static final double FOREGROUND_FORWARD_OFFSET = 0.70D;
+    static final int FOREGROUND_CHANNEL_PARTICLES_AT_START = 3;
+    static final int FOREGROUND_CHANNEL_PARTICLES_AT_COMPLETION = 8;
+    static final double FOREGROUND_FORWARD_OFFSET = 0.55D;
     static final double FOREGROUND_VERTICAL_OFFSET = -0.15D;
 
     private ChannelEffects() {
@@ -104,9 +104,9 @@ final class ChannelEffects {
                 foreground.y,
                 foreground.z,
                 foregroundChannelParticleCount(elapsedTicks, channelTicks),
-                0.22D,
-                0.14D,
-                0.22D,
+                0.50D,
+                0.35D,
+                0.50D,
                 0.04D
         );
     }
@@ -136,9 +136,9 @@ final class ChannelEffects {
                 foreground.y,
                 foreground.z,
                 FOREGROUND_SUCCESS_PARTICLE_COUNT,
-                0.24D,
-                0.16D,
-                0.24D,
+                0.60D,
+                0.45D,
+                0.60D,
                 0.08D
         );
     }

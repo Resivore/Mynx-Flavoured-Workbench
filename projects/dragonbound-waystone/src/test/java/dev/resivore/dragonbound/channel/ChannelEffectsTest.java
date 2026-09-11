@@ -35,28 +35,31 @@ final class ChannelEffectsTest {
         Vec3 eye = new Vec3(10.0D, 64.0D, -4.0D);
         Vec3 foreground = ChannelEffects.foregroundOrigin(eye, new Vec3(3.0D, 0.0D, 4.0D));
 
-        assertEquals(10.42D, foreground.x, 1.0E-10D);
+        assertEquals(10.33D, foreground.x, 1.0E-10D);
         assertEquals(63.85D, foreground.y, 1.0E-10D);
-        assertEquals(-3.44D, foreground.z, 1.0E-10D);
-        assertTrue(ChannelEffects.FOREGROUND_FORWARD_OFFSET >= 0.6D);
-        assertTrue(ChannelEffects.FOREGROUND_FORWARD_OFFSET <= 0.8D);
-        assertTrue(ChannelEffects.FOREGROUND_VERTICAL_OFFSET < 0.0D);
+        assertEquals(-3.56D, foreground.z, 1.0E-10D);
+        assertEquals(0.55D, ChannelEffects.FOREGROUND_FORWARD_OFFSET);
+        assertEquals(-0.15D, ChannelEffects.FOREGROUND_VERTICAL_OFFSET);
     }
 
     @Test
-    void foregroundChannelDensityIsModestBoundedAndRampsWithTheBodyStream() {
-        assertEquals(1, ChannelEffects.foregroundChannelParticleCount(0, 40));
+    void foregroundChannelDensityIsStrongBoundedAndRampsWithTheBodyStream() {
+        assertEquals(3, ChannelEffects.foregroundChannelParticleCount(0, 40));
         assertTrue(ChannelEffects.foregroundChannelParticleCount(39, 40)
                 > ChannelEffects.foregroundChannelParticleCount(0, 40));
-        assertEquals(2, ChannelEffects.foregroundChannelParticleCount(39, 40));
-        assertTrue(ChannelEffects.FOREGROUND_SUCCESS_PARTICLE_COUNT > 0);
-        assertTrue(ChannelEffects.FOREGROUND_SUCCESS_PARTICLE_COUNT < ChannelEffects.SUCCESS_PARTICLE_COUNT);
+        assertEquals(8, ChannelEffects.foregroundChannelParticleCount(39, 40));
+        assertEquals(24, ChannelEffects.FOREGROUND_SUCCESS_PARTICLE_COUNT);
 
-        for (long elapsed : new long[] {-20L, 0L, 20L, 39L, 60L}) {
-            int count = ChannelEffects.foregroundChannelParticleCount(elapsed, 40);
-            assertTrue(count >= ChannelEffects.FOREGROUND_CHANNEL_PARTICLES_AT_START);
-            assertTrue(count <= ChannelEffects.FOREGROUND_CHANNEL_PARTICLES_AT_COMPLETION);
+        for (int duration : new int[] {2, 7, 40, 137}) {
+            assertEquals(3, ChannelEffects.foregroundChannelParticleCount(0, duration));
+            assertEquals(8, ChannelEffects.foregroundChannelParticleCount(duration - 1L, duration));
+            for (long elapsed : new long[] {-20L, 0L, duration / 2L, duration - 1L, duration + 20L}) {
+                int count = ChannelEffects.foregroundChannelParticleCount(elapsed, duration);
+                assertTrue(count >= ChannelEffects.FOREGROUND_CHANNEL_PARTICLES_AT_START);
+                assertTrue(count <= ChannelEffects.FOREGROUND_CHANNEL_PARTICLES_AT_COMPLETION);
+            }
         }
+        assertEquals(3, ChannelEffects.foregroundChannelParticleCount(0, 1));
     }
 
     @Test
