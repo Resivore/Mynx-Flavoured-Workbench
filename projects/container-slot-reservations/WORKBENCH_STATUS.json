@@ -21,10 +21,10 @@
       "Resolve every eligible logical menu slot to one stable block-owned or player-owned reservation holder, its physical local slot, physical stack, real slot count, and native admission result.",
       "Expose a CSR-owned pinned 27-cell shulker panel with exact-slot viewing, reservation editing, insertion, extraction, persistent transient selection, and fail-closed host identity.",
       "Own recognized native secondary-click shulker transfers while preserving vanilla behavior for unrelated clicks, exact reservation ordering, effective capacities, callbacks, and conserved counts.",
-      "Preserve accepted C4 storage reservations, exact ghost/zero/marker visuals, public API compatibility for QSN C9 and CCAR C12, and the centralized empty-shulker template rule without external tooltip integration."
+      "Preserve accepted C4 storage reservations, exact ghost/zero/marker visuals, public API compatibility for QSN C9 and CCAR C12, component-exact ordinary-item reservations, generic empty portable-container templates, and server-owned specific portable-container identities without external tooltip integration."
     ],
     "scope": [
-      "Current 0.1.0-canary16 from implementation checkpoint d16c664e65c61f9b73d2f710e75069f581ec7239 fixes the previously invisible native-style shulker header by submitting opaque ARGB 0xFF404040 text from the exact ItemStack hover name. It adds a client-only, one-decoration CSR header API, reserves title width and truncates long names, and preserves the 176x83 panel geometry. A same-slot server menu sync may rebind only after the existing exact screen/menu/Slot/container/count/supported-shulker checks, so CCAR lock mutations update a read-only badge without speculative client state.",
+      "Current 0.1.0-canary17 from implementation checkpoint 34f0104c561ff93c12999fc7b14a57d3d8643114 adds two portable-container reservation modes. Empty shulkers and bundles remain generic component templates and never receive a CSR identity, including an empty item with a dormant old CSR identity. A non-empty count-one shulker or bundle instead receives one server-owned persistent UUID component and stores only its portable family plus UUID in format-2 reservation data. Specific admission ignores mutable contents, custom names, and legitimate same-family dyes; ordinary items remain component-exact. Identity-free display templates prevent CSR UI/snapshot copies from becoming physical duplicates. The established narrow shulker block-to-item component round trip now preserves the identity as well as shulker reservation data.",
       "While CSR owns Slot A and remains TESTING, a finalized current CSR testing successor normally replaces the preceding CSR candidate through one serialized Test Instance Manager Slot A transition; only a concrete manager preimage, dependency, or physical-safety failure may leave that successor retained but not deployed.",
       "Bind one exact count-one shulker host by screen, menu, menu ID, visible slot index, Slot instance, underlying container slot, explicit Creative player-inventory locator where applicable, and complete SHA-256 ItemStack fingerprint; never search for an equal stack.",
       "Render and hit-test one fixed 176x83 native panel with an unchanged 176x77 upper shulker region plus the same runtime texture's 176x6 bottom frame, 27 physical 18x18 cells, right-then-left clamped placement, a narrow deterministic corridor, one grace frame, live contents, vanilla cell highlights, exact existing reservation visuals, and carried-stack-above-panel strata.",
@@ -32,7 +32,7 @@
       "Use one shared deterministic planner for native secondary-click quick insertion and exact-cell panel transfers: occupied compatible merges, matching reserved empties, then unreserved empties; deny nesting, mismatches, full/nonwritable targets, fake slots, and multi-count hosts.",
       "Derive all panel reservation templates and content transactions from live server state; payloads carry only menu/locator/index/action/fingerprint authority, preserve unrelated components and ReservationData, update real owners once, and broadcast legitimate shared viewers.",
       "Remove every CSR production/build/test dependency on Easy Shulker Boxes, Item Interactions, PuzzlesLib, external tooltip lifecycle, @Pseudo fuzs targets, and nested candidate filtering. C9 and earlier external-tooltip work remains historical provenance in CODEX_LOG.md.",
-      "Store sparse format-1 count-one ItemStackTemplate reservations per stable physical owner; requested block entities use only their real local slot range, vanilla and Double Barrels doubles retain two independent 27-slot owners, and the player Ender inventory is one player-owned 27-slot holder.",
+      "Store sparse format-2 reservations per stable physical owner with explicit format-1 migration. Template entries retain count-one ItemStackTemplate behavior; specific portable-container entries retain an identity-free display template plus family and UUID. Requested block entities use only their real local slot range, vanilla and Double Barrels doubles retain two independent 27-slot owners, and the player Ender inventory is one player-owned 27-slot holder.",
       "Support exact vanilla chest and trapped-chest families, barrel, undyed and all 16 dyed shulkers, dispenser, dropper, hopper, furnace, blast furnace, smoker, brewing stand, crafter, and PlayerEnderChestContainer.",
       "Recognize ordinary and all eight unwaxed/waxed copper chest states through the authoritative predicate blockEntity.getType() == BlockEntityTypes.CHEST && BlockEntityTypes.CHEST.isValid(blockEntity.getBlockState()); single and permitted double forms keep exact physical-half ownership across oxidation, scraping, waxing, and unwaxing.",
       "Preserve vanilla chest CompoundContainer ownership mapping and associate the exact optional Double Barrels 54-slot wrapper with its proven main and partner BarrelBlockEntity owners; combined slots 0-26 map to main local 0-26 and 27-53 to partner local 0-26.",
@@ -119,16 +119,16 @@
     ]
   },
   "state": {
-    "milestone": "C16 is an ACTIVE, non-deployed CSR successor to accepted C15. It restores the native-style shulker item title in the pinned panel and supplies a narrow client-side header-decoration API; it preserves all panel placement, 27-cell interactions, reservations, selection, texture composition, host checks, and non-CCAR startup. Clean Java 25 unit, GameTest, artifact, and integration validation passed; no dedicated Workbench or protected gameplay instance was accessed.",
+    "milestone": "C17 is an ACTIVE, non-deployed CSR successor to accepted C15. It adds server-owned persistent identity reservations for non-empty count-one shulkers and bundles while preserving generic empty portable-container and ordinary component-exact behavior, all existing panel/API seams, and the narrow shulker block-to-item persistence path. Clean Java 25 unit, headless Fabric GameTest, and artifact validation passed; no dedicated Workbench or protected gameplay instance was accessed.",
     "releases": {
       "current": {
-        "version": "0.1.0-canary16",
-        "embedded_version": "0.1.0-canary16",
+        "version": "0.1.0-canary17",
+        "embedded_version": "0.1.0-canary17",
         "artifact": {
-          "filename": "container-slot-reservations-0.1.0-canary16.jar",
-          "sha256": "34c1f8c5cfca011aca062c55232d2b50ccac2a95f72f8e5a7edec305b5a8c1b2"
+          "filename": "container-slot-reservations-0.1.0-canary17.jar",
+          "sha256": "5ae4d65b70b8f8d2ed07d9b33724ae9a1b7048518bb5a4ba6ef72fadbf0f4b82"
         },
-        "source_commit": "d16c664e65c61f9b73d2f710e75069f581ec7239",
+        "source_commit": "34f0104c561ff93c12999fc7b14a57d3d8643114",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
@@ -171,11 +171,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 26,
-    "activity_at": "2026-09-10T02:12:00Z",
-    "updated_at": "2026-09-10T02:12:00Z",
-    "last_codex_at": "2026-09-10T02:12:00Z",
-    "source_commit": "d16c664e65c61f9b73d2f710e75069f581ec7239",
+    "revision": 27,
+    "activity_at": "2026-09-11T17:15:00Z",
+    "updated_at": "2026-09-11T17:15:00Z",
+    "last_codex_at": "2026-09-11T17:15:00Z",
+    "source_commit": "34f0104c561ff93c12999fc7b14a57d3d8643114",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
