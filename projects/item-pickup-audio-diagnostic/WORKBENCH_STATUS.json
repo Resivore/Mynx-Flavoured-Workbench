@@ -1,0 +1,93 @@
+{
+  "$schema": "../../schemas/workbench-status.schema.json",
+  "schema_version": 1,
+  "identity": {
+    "uuid": "786620d5-4731-425c-a599-83b4dcd9920b",
+    "name": "Item Pickup Audio Diagnostic",
+    "project_id": "item-pickup-audio-diagnostic",
+    "aliases": [
+      "PickupAudioDiag"
+    ],
+    "legacy_names": [],
+    "legacy_ids": []
+  },
+  "definition": {
+    "lifecycle": "ACTIVE",
+    "goals": [
+      "Collect behavior-neutral evidence showing where minecraft:entity.item.pickup stops during one ordinary real-world item pickup on Minecraft Java 26.2 Fabric."
+    ],
+    "scope": [
+      "Client-only observation of the exact 26.2 ClientPacketListener take-item handler, ClientLevel local-sound API, SoundManager play facade, and SoundEngine play path for minecraft:entity.item.pickup only.",
+      "Correlate a normal take-item packet through synchronous local sound processing when that association is exact, then log SoundEngine entry, first vanilla instruction, post-resolution sample fields, and natural PlayResult return."
+    ],
+    "boundaries": {
+      "owned_paths": [
+        "projects/item-pickup-audio-diagnostic"
+      ],
+      "exclusions": [
+        "No CCAR source, artifact, routed-pickup marker, packet, inventory, item entity, particle, animation, statistic, routing, resource-pack, Minecraft setting, or unrelated project change.",
+        "No sound replay, suppression, cancellation, delay, argument modification, volume/pitch adjustment, configuration, persistent save data, or non-pickup per-sound logging.",
+        "No Test Instance Manager transition, Minecraft launch, dedicated Workbench mutation, or protected Matcha Flavoured 26.1.2 gameplay-profile access is implied by this static release."
+      ]
+    },
+    "dependencies": [
+      {
+        "type": "MOD",
+        "identifier": "minecraft",
+        "requirement": "=26.2",
+        "reason": "Exact mapped target for the observed client packet and sound-method signatures."
+      },
+      {
+        "type": "MOD",
+        "identifier": "fabricloader",
+        "requirement": ">=0.19.3",
+        "reason": "Loads the standalone client-only diagnostic utility."
+      },
+      {
+        "type": "TOOL",
+        "identifier": "java",
+        "requirement": ">=25",
+        "reason": "Minecraft Java 26.2 compilation and runtime baseline."
+      }
+    ]
+  },
+  "state": {
+    "milestone": "Canary 1 is a standalone, client-only, behavior-neutral diagnostic artifact. It records only minecraft:entity.item.pickup from take-item packet receipt through the real 26.2 local sound, manager, and engine path, including an engine post-HEAD boundary and resolved sample fields. Clean Java 25 static validation passed; it is not deployed and has no runtime evidence.",
+    "releases": {
+      "current": {
+        "version": "0.1.0-canary1",
+        "embedded_version": "0.1.0-canary1",
+        "artifact": {
+          "filename": "item-pickup-audio-diagnostic-0.1.0-canary1.jar",
+          "sha256": "fc67ec7816ab91e941b9df99f54a254705dea8adb07da7c50d8795190d46b094"
+        },
+        "source_commit": "56b3ccd9f9a98bf2ad082405ce917cc32a1c463f",
+        "runtime_dependency_policy": {
+          "contract": "CAPABILITY_OR_PROVIDER",
+          "exceptions": []
+        }
+      },
+      "accepted": null,
+      "rollback": null,
+      "accepted_current": "NO_ACCEPTED",
+      "accepted_rollback": "NO_ROLLBACK"
+    },
+    "validation": {
+      "build": "CONTROLLED_VALIDATION_PASS",
+      "deployment": "NOT_DEPLOYED",
+      "runtime": "RUNTIME_UNTESTED"
+    },
+    "blocker": null
+  },
+  "synchronization": {
+    "revision": 1,
+    "activity_at": "2026-09-11T21:24:43Z",
+    "updated_at": "2026-09-11T21:24:43Z",
+    "last_codex_at": "2026-09-11T21:24:43Z",
+    "source_commit": "56b3ccd9f9a98bf2ad082405ce917cc32a1c463f",
+    "google_sheet": {
+      "participates": true,
+      "exclusion_reason": null
+    }
+  }
+}
