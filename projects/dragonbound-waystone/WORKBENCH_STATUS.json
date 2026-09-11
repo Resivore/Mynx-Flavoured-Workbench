@@ -18,7 +18,7 @@
       "Preserve the accepted server-owned channel, exact-destination safety, persistent anchor, loss protection, recipes, configuration migration, discovery behavior, geometry, and art without expanding into a general waypoint or teleport system."
     ],
     "scope": [
-      "Maintain the accepted Canary 5 behavior while Canary 10 preserves Canary 9's corrected four-pixel Waystone base side UVs and substantially increases only the shared player-targeted first-person foreground companion to Canary 8's valid-channel and successful-arrival portal effects.",
+      "Maintain the accepted Canary 5 behavior while Canary 11 preserves Canary 9's corrected four-pixel Waystone base side UVs and changes only Canary 10's shared player-targeted first-person foreground companion from an eye/look-relative cloud to a ground-origin vanilla portal launch for the existing valid-channel and successful-arrival effects.",
       "Preserve the 40-tick default channel, 1,200-tick Staff cooldown, exact current recipes, one-click and mouse-release-independent channel lifecycle, exact arrival at the visible Waystone top, recipe-book and JEI discovery seam, and success-only consumption and cooldown behavior.",
       "Retain exact accepted Canary 5 and focused-runtime-passed Canary 4 rollback artifacts together with the Dragonbound-owned Staff art and the separately licensed Matcha Stable Void snapshot and notice."
     ],
@@ -81,16 +81,16 @@
     ]
   },
   "state": {
-    "milestone": "Canary 9 preserved the corrected four-pixel Waystone base side UVs and established the correct player-targeted eye-forward foreground architecture, but user feedback says its channel and confirmed-arrival particles remain too subtle in first person; this is not a Canary 9 runtime PASS. For primarily solo play, Canary 10 deliberately increases only that shared first-person foreground density and radius while preserving every body-centered C8/C9 effect and all behavior. It is statically verified, not deployed, and requires its own focused runtime test. Exact Canary 5 remains the accepted baseline and rollback.",
+    "milestone": "Canary 10 substantially improved first-person particle density but user feedback says the shared player-targeted foreground effect appears around/in front of the camera or from above rather than originating at the ground; this is not a Canary 10 runtime PASS. For primarily solo play, Canary 11 keeps that 3-to-8 channel ramp and 24-particle confirmed-arrival count but uses per-particle, ServerPlayer-targeted count-zero vanilla portal packets from the current feet position plus Y 0.05, with a shallow ground spread and explicit upward launch vectors. Body-centered C8/C9/C10 effects and all teleport behavior remain frozen. It is statically verified, not deployed, and requires its own focused first-person runtime test. Exact Canary 5 remains the accepted baseline and rollback.",
     "releases": {
       "current": {
-        "version": "0.1.0-canary10",
+        "version": "0.1.0-canary11",
         "artifact": {
-          "filename": "dragonbound-waystone-0.1.0-canary10.jar",
-          "sha256": "593f7c722218bed7536445432fa903563bd3aa90781fcbecce1f7647afef0dbd"
+          "filename": "dragonbound-waystone-0.1.0-canary11.jar",
+          "sha256": "c49af303beef109d9cdfd1444894552ae8c6cd65d419057e9bafdb691c67c23e"
         },
-        "embedded_version": "0.1.0-canary10",
-        "source_commit": "5d8b3a044894fcfdc7faebe89d16896ba8220316",
+        "embedded_version": "0.1.0-canary11",
+        "source_commit": "9a530a8214507685a69ce6216f60f6750490840f",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
@@ -123,11 +123,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 6,
-    "activity_at": "2026-09-11T17:24:06Z",
-    "updated_at": "2026-09-11T17:24:06Z",
-    "last_codex_at": "2026-09-11T17:24:06Z",
-    "source_commit": "5d8b3a044894fcfdc7faebe89d16896ba8220316",
+    "revision": 7,
+    "activity_at": "2026-09-11T17:57:35Z",
+    "updated_at": "2026-09-11T17:57:35Z",
+    "last_codex_at": "2026-09-11T17:57:35Z",
+    "source_commit": "9a530a8214507685a69ce6216f60f6750490840f",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
