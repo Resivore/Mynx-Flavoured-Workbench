@@ -31,15 +31,14 @@ final class ChannelEffectsTest {
     }
 
     @Test
-    void foregroundOriginUsesNormalizedLookDirectionAheadOfAndBelowTheEye() {
-        Vec3 eye = new Vec3(10.0D, 64.0D, -4.0D);
-        Vec3 foreground = ChannelEffects.foregroundOrigin(eye, new Vec3(3.0D, 0.0D, 4.0D));
+    void foregroundGroundOriginUsesOnlyPlayerFeetPosition() {
+        Vec3 playerPosition = new Vec3(10.0D, 64.0D, -4.0D);
+        Vec3 foreground = ChannelEffects.foregroundGroundOrigin(playerPosition);
 
-        assertEquals(10.33D, foreground.x, 1.0E-10D);
-        assertEquals(63.85D, foreground.y, 1.0E-10D);
-        assertEquals(-3.56D, foreground.z, 1.0E-10D);
-        assertEquals(0.55D, ChannelEffects.FOREGROUND_FORWARD_OFFSET);
-        assertEquals(-0.15D, ChannelEffects.FOREGROUND_VERTICAL_OFFSET);
+        assertEquals(10.0D, foreground.x, 1.0E-10D);
+        assertEquals(64.05D, foreground.y, 1.0E-10D);
+        assertEquals(-4.0D, foreground.z, 1.0E-10D);
+        assertEquals(0.05D, ChannelEffects.FOREGROUND_GROUND_OFFSET);
     }
 
     @Test
@@ -60,6 +59,39 @@ final class ChannelEffectsTest {
             }
         }
         assertEquals(3, ChannelEffects.foregroundChannelParticleCount(0, 1));
+    }
+
+    @Test
+    void targetedForegroundStartsStayNearGroundAndWithinTheirConfiguredRadius() {
+        Vec3 ground = ChannelEffects.foregroundGroundOrigin(new Vec3(10.0D, 64.0D, -4.0D));
+        Vec3 channelStart = ChannelEffects.foregroundParticleStart(ground, 0.65D, -0.05D, -0.65D);
+        Vec3 successStart = ChannelEffects.foregroundParticleStart(ground, -0.75D, 0.05D, 0.75D);
+
+        assertEquals(10.65D, channelStart.x, 1.0E-10D);
+        assertEquals(64.0D, channelStart.y, 1.0E-10D);
+        assertEquals(-4.65D, channelStart.z, 1.0E-10D);
+        assertEquals(9.25D, successStart.x, 1.0E-10D);
+        assertEquals(64.10D, successStart.y, 1.0E-10D);
+        assertEquals(-3.25D, successStart.z, 1.0E-10D);
+        assertEquals(0.65D, ChannelEffects.FOREGROUND_CHANNEL_HORIZONTAL_RADIUS);
+        assertEquals(0.75D, ChannelEffects.FOREGROUND_SUCCESS_HORIZONTAL_RADIUS);
+        assertEquals(0.05D, ChannelEffects.FOREGROUND_CHANNEL_VERTICAL_SPREAD);
+        assertEquals(0.05D, ChannelEffects.FOREGROUND_SUCCESS_VERTICAL_SPREAD);
+    }
+
+    @Test
+    void explicitPortalMotionHasAPositiveFirstTickRiseInEveryPortalLifetime() {
+        Vec3 motion = ChannelEffects.foregroundPortalMotion(0.02D, 0.08D, -0.02D);
+
+        assertEquals(0.02D, motion.x, 1.0E-10D);
+        assertEquals(0.08D, motion.y, 1.0E-10D);
+        assertEquals(-0.02D, motion.z, 1.0E-10D);
+        for (int lifetime = 40; lifetime <= 49; lifetime++) {
+            assertTrue(ChannelEffects.portalFirstTickVerticalRise(
+                    ChannelEffects.FOREGROUND_MOTION_VERTICAL_MIN, lifetime) > 0.0D);
+            assertTrue(ChannelEffects.portalFirstTickVerticalRise(
+                    ChannelEffects.FOREGROUND_MOTION_VERTICAL_MAX, lifetime) > 0.0D);
+        }
     }
 
     @Test

@@ -222,13 +222,17 @@ final class ArchitectureContractTest {
         assertTrue(effects.contains("FOREGROUND_CHANNEL_PARTICLES_AT_START = 3"));
         assertTrue(effects.contains("FOREGROUND_CHANNEL_PARTICLES_AT_COMPLETION = 8"));
         assertTrue(effects.contains("FOREGROUND_SUCCESS_PARTICLE_COUNT = 24"));
-        assertTrue(effects.contains("FOREGROUND_FORWARD_OFFSET = 0.55D"));
-        assertTrue(effects.contains("FOREGROUND_VERTICAL_OFFSET = -0.15D"));
+        assertTrue(effects.contains("FOREGROUND_GROUND_OFFSET = 0.05D"));
+        assertTrue(effects.contains("FOREGROUND_CHANNEL_HORIZONTAL_RADIUS = 0.65D"));
+        assertTrue(effects.contains("FOREGROUND_SUCCESS_HORIZONTAL_RADIUS = 0.75D"));
+        assertTrue(effects.contains("FOREGROUND_MOTION_VERTICAL_MIN = 0.08D"));
         assertTrue(effects.contains("foregroundChannelParticleCount(elapsedTicks, channelTicks)"));
-        assertTrue(effects.contains("level.sendParticles(\n                player,"));
-        assertEquals(2, countOccurrences(effects, "level.sendParticles(\n                player,"));
-        assertTrue(effects.contains("0.50D,\n                0.35D,\n                0.50D"));
-        assertTrue(effects.contains("0.60D,\n                0.45D,\n                0.60D"));
+        assertTrue(effects.contains("foregroundGroundOrigin(player.position())"));
+        assertTrue(effects.contains("targetedRisingPortalParticles("));
+        assertTrue(effects.contains("0,\n                    motion.x,"));
+        assertEquals(1, countOccurrences(effects, "level.sendParticles(\n                    player,"));
+        assertFalse(effects.contains("getEyePosition"));
+        assertFalse(effects.contains("getLookAngle"));
         assertFalse(effects.contains("departure"));
     }
 
