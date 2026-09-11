@@ -31,13 +31,13 @@ class BinaryContractTest {
         try (JarFile jar = new JarFile(Path.of(System.getProperty("patchJar")).toFile())) {
             assertNotNull(jar.getEntry("fabric.mod.json"));
             assertNotNull(jar.getEntry("dev/resivore/naturalistxaeroicons/NaturalistModelContracts.class"));
-            assertNull(jar.getEntry("dev/resivore/naturalistxaeroicons/WhaleCaptureDiagnostic.class"));
+            assertNotNull(jar.getEntry("dev/resivore/naturalistxaeroicons/WhaleCaptureDiagnostic.class"));
             assertNull(jar.getEntry("com/crispytwig/naturalist/client/model/RhinoModel.class"));
             assertNull(jar.getEntry("xaero/hud/minimap/radar/icon/creator/RadarIconCreator.class"));
         }
     }
 
-    @Test void c29RestoresTheReadableWhaleContractWithoutWeakeningTheBridge() throws Exception {
+    @Test void c30UsesTheAuditedDetachedWhaleBodyAndHeadWithoutWeakeningTheBridge() throws Exception {
         Path root = Path.of(System.getProperty("projectRoot"));
         String mixins = Files.readString(root.resolve("src/main/resources/naturalist_xaero_entity_icons_compat.mixins.json"));
         assertTrue(mixins.contains("ModelRenderTraceMixin"));
@@ -63,8 +63,8 @@ class BinaryContractTest {
         assertTrue(contracts.contains("p(.75F)), c(\"HippoBabyModel\", \"body/neck\", p(.70F))"));
         assertFalse(contracts.contains("p(.60F)), c(\"HippoBabyModel\", \"body/neck\", p(.70F))"));
         assertTrue(contracts.contains("-2.0F)), c(\"BlackBearBabyModel\", \"body/skull\")"));
-        assertTrue(contracts.contains("c(\"WhaleModel\", \"body/skullRot\", p(.30F, 0.0F, .7854F, 0.0F))"));
-        assertFalse(contracts.contains("cWithTraceCenter(\"WhaleModel\""));
+        assertTrue(contracts.contains("cDetachedChildrenWithTraceCenter(\"WhaleModel\", \"body\", \"body\","));
+        assertTrue(contracts.contains("p(.20F, 0.0F, .7854F, 0.0F), List.of(\"skullRot\"))"));
         assertTrue(contracts.contains("\"WhaleBabyModel\", \"body/skull\", p(.60F, 0.0F, .7854F, 0.0F)"));
         assertTrue(contracts.contains("cWithTraceCenter"));
         String manager = Files.readString(root.resolve("src/main/java/dev/resivore/naturalistxaeroicons/mixin/RadarIconManagerMixin.java"));
@@ -75,7 +75,7 @@ class BinaryContractTest {
         assertTrue(manager.contains("observeStarfishCacheBeforeXaeroEmfRetry"));
         assertTrue(manager.contains("ScorpionCaptureDiagnostic.requestStarted"));
         assertTrue(manager.contains("ScorpionCaptureDiagnostic.cacheLookup"));
-        assertFalse(manager.contains("WhaleCaptureDiagnostic"));
+        assertTrue(manager.contains("WhaleCaptureDiagnostic"));
         assertFalse(manager.contains("@Redirect"));
         String presentation = Files.readString(root.resolve("src/main/java/dev/resivore/naturalistxaeroicons/BrownBearSpritePresentation.java"));
         assertTrue(presentation.contains("\"naturalist:bear\""));
@@ -103,15 +103,14 @@ class BinaryContractTest {
         assertTrue(scorpionDiagnostic.contains("renderCenterHasDirectMrt"));
         assertTrue(scorpionDiagnostic.contains("selectedAssemblyRecorded"));
         assertFalse(scorpionDiagnostic.contains("new XaeroIcon"));
-        assertFalse(Files.exists(root.resolve(
+        assertTrue(Files.exists(root.resolve(
                 "src/main/java/dev/resivore/naturalistxaeroicons/WhaleCaptureDiagnostic.java")));
         for (String source : new String[] {
                 "mixin/RadarIconCreatorMixin.java", "mixin/RadarIconEntityCacheMixin.java",
                 "mixin/RadarIconManagerMixin.java", "mixin/RadarIconModelFormPrerendererMixin.java",
                 "mixin/RadarIconModelPartPrerendererMixin.java", "mixin/RadarIconModelPrerendererMixin.java"}) {
             String productionSource = Files.readString(root.resolve("src/main/java/dev/resivore/naturalistxaeroicons").resolve(source));
-            assertFalse(productionSource.contains("WhaleCaptureDiagnostic"), source);
-            assertFalse(productionSource.contains("NaturalistXaero WhaleCapture"), source);
+            assertTrue(productionSource.contains("WhaleCaptureDiagnostic"), source);
         }
         assertFalse(prerenderer.contains("renderedDest.add("));
         String genericManager = Files.readString(root.getParent().resolve(

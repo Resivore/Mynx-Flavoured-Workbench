@@ -170,16 +170,16 @@ public final class NaturalistModelContracts {
                 p(.30F, 1.5708F, 0.0F, 0.0F)));
         add(map, "giant_isopod", cVisibleDetached("GiantIsopodModel", "rolled", p(.45F)), cDetached("GiantIsopodModel", "body", p(.45F)));
         add(map, "jellyfish", cDetached("JellyfishModel", "body", p(.45F)));
-        // C28 proved that a live topJaw trace/center can make the exact 90-degree fallback render,
-        // but Xaero 26.4.2 centers from the unrotated main part's position plus only its direct
-        // cuboid Y/Z midpoint. It does not rotate that center with the adapter yaw or use the
-        // cuboid X midpoint. The Whale head is authored long on Z, so the quarter turn maps the
-        // full face far across icon X while the topJaw center cannot recenter it; runtime showed
-        // only a narrow unreadable sliver. Every exact live head part has x=0, and skullRot at the
-        // same quarter turn was C24's label-only failure. C29 therefore restores the last readable,
-        // real-icon C25/C26 contract: complete skullRot face, its own live trace/center, and a
-        // three-quarter yaw. The baby contract remains the frozen C26 baseline.
-        add(map, "whale", c("WhaleModel", "body/skullRot", p(.30F, 0.0F, .7854F, 0.0F)), c("WhaleBabyModel", "body/skull", p(.60F, 0.0F, .7854F, 0.0F)));
+        // C30 keeps the complete adult skullRot face (cranium plus topJaw and bottomJaw), and
+        // adds only body's direct torso cuboid.  The distant tail/tail2/fluke and both root-level
+        // fins are deliberately omitted: this is the smallest audited head-plus-body silhouette,
+        // rather than a tiny full Whale.  The copied selection is detached, while the exact live
+        // drawable body remains the trace and Xaero frame center.  Its approximately 113-unit
+        // head-to-torso extent at 45 degrees uses .20F, comparable to C29 head-only framing.
+        // Baby Whale stays on the C29 safe fallback unchanged.
+        add(map, "whale", cDetachedChildrenWithTraceCenter("WhaleModel", "body", "body",
+                p(.20F, 0.0F, .7854F, 0.0F), List.of("skullRot")),
+                c("WhaleBabyModel", "body/skull", p(.60F, 0.0F, .7854F, 0.0F)));
         // Both constructors pass root.getChild("root") to EntityModel, so model.root() already
         // is the authored root: a second `root` hop is invalid. Desert body owns claws/tail and
         // Jungle body owns arms/claws/tail; legs is a sibling in each. Keep the compact copied
@@ -230,6 +230,13 @@ public final class NaturalistModelContracts {
     private static Contract cDetachedChildren(String simpleName, String slashPath, String slashTracePath, Presentation presentation, List<String> drawableChildren) {
         Contract base = c(simpleName, slashPath, slashTracePath, presentation);
         return new Contract(base.modelClass(), base.path(), base.tracePath(), base.presentation(), base.cubeIndexes(), drawableChildren, false, false, false, false, false);
+    }
+    /** A detached direct-cube-plus-child assembly still needs a live cubed trace/frame center. */
+    private static Contract cDetachedChildrenWithTraceCenter(String simpleName, String slashPath, String slashTracePath,
+                                                               Presentation presentation, List<String> drawableChildren) {
+        Contract base = cDetachedChildren(simpleName, slashPath, slashTracePath, presentation, drawableChildren);
+        return new Contract(base.modelClass(), base.path(), base.tracePath(), base.presentation(), base.cubeIndexes(), base.drawableChildren(),
+                base.requiresVisible(), base.neutralizeRootRotation(), base.normalizeSelectedRootTransform(), true, base.preserveAncestorTransforms());
     }
     private static Contract cNormalizedDetachedChildren(String simpleName, String slashPath, String slashTracePath, Presentation presentation, List<String> drawableChildren) {
         Contract base = cDetachedChildren(simpleName, slashPath, slashTracePath, presentation, drawableChildren);

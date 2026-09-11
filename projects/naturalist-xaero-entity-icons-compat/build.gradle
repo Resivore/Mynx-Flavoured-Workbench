@@ -114,9 +114,9 @@ tasks.register('verifyClientOnlyArtifact') {
     }
 }
 tasks.named('check') { dependsOn tasks.named('productionMixinTest'), tasks.named('verifyClientOnlyArtifact') }
-tasks.register('verifyCanary29PresentationContracts') {
+tasks.register('verifyCanary30PresentationContracts') {
     doLast {
-        if (project.version != '0.1.0-canary29') return
+        if (project.version != '0.1.0-canary30') return
         def source = file('src/main/java/dev/resivore/naturalistxaeroicons/NaturalistModelContracts.java').getText('UTF-8')
         def required = [
                 '''add(map, "starfish", cNormalizedDetachedChildrenWithTraceCenter("StarfishModel", "", "body",
@@ -130,14 +130,16 @@ tasks.register('verifyCanary29PresentationContracts') {
                 '''add(map, "tortoise", cDetached("TortoiseModel", "body/skullRot/neck", p(1.0F, 0.0F, 1.5708F, 0.0F)), cDetached("TortoiseBabyModel", "body/skullRot/neck", p(1.0F, 0.0F, 1.5708F, 0.0F)))''',
                 '''add(map, "black_bear", c("BlackBearModel", "body/skullRot/skull", p(1.0F, 0.0F, 0.0F, 0.0F, -2.0F)), c("BlackBearBabyModel", "body/skull"))''',
                 '''add(map, "hippo", c("HippoModel", "body/bone/neck", p(.75F)), c("HippoBabyModel", "body/neck", p(.70F)))''',
-                '''add(map, "whale", c("WhaleModel", "body/skullRot", p(.30F, 0.0F, .7854F, 0.0F)), c("WhaleBabyModel", "body/skull", p(.60F, 0.0F, .7854F, 0.0F)))'''
+                '''add(map, "whale", cDetachedChildrenWithTraceCenter("WhaleModel", "body", "body",
+                p(.20F, 0.0F, .7854F, 0.0F), List.of("skullRot")),
+                c("WhaleBabyModel", "body/skull", p(.60F, 0.0F, .7854F, 0.0F)))'''
         ]
-        if (required.any { !source.contains(it) }) throw new GradleException('Canary 29 requires the readable Whale fallback and frozen solved-icon controls')
+        if (required.any { !source.contains(it) }) throw new GradleException('Canary 30 requires the compact audited Whale assembly and frozen solved-icon controls')
         def mainSources = fileTree('src/main/java') { include '**/*.java' }.files.collect { it.getText('UTF-8') }.join('\n')
-        if (mainSources.contains('WhaleCaptureDiagnostic') || mainSources.contains('NaturalistXaero WhaleCapture')) {
-            throw new GradleException('Canary 29 must not retain the temporary Canary 27 Whale diagnostic')
+        if (!mainSources.contains('WhaleCaptureDiagnostic') || !mainSources.contains('NaturalistXaero WhaleCapture')) {
+            throw new GradleException('Canary 30 requires its bounded adult-Whale diagnostic')
         }
     }
 }
-tasks.register('stageCanaryArtifact', Copy) { dependsOn tasks.named('check'), tasks.named('verifyCanary29PresentationContracts'); from(tasks.named('jar')); into(layout.projectDirectory.dir('artifacts')) }
+tasks.register('stageCanaryArtifact', Copy) { dependsOn tasks.named('check'), tasks.named('verifyCanary30PresentationContracts'); from(tasks.named('jar')); into(layout.projectDirectory.dir('artifacts')) }
 java { withSourcesJar() }
