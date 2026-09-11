@@ -1,5 +1,5 @@
 param(
-    [string]$UnifiedJar = (Join-Path $PSScriptRoot '..\build\libs\cnm-nibaru-integration-4.2.10-bge.canary66.quarter-column-continuation+26.2.jar'),
+    [string]$UnifiedJar = (Join-Path $PSScriptRoot '..\build\libs\cnm-nibaru-integration-4.2.11-bge.canary67.vanilla-family-coverage+26.2.jar'),
     [string]$AcceptedJar = (Join-Path $PSScriptRoot '..\artifacts\cnm-nibaru-integration-4.2.2-bge.canary58.glass-corner-uv+26.2.jar')
 )
 
@@ -97,7 +97,8 @@ function Test-AllowedChangedEntry([string]$Name) {
 }
 
 function Test-AllowedNewEntry([string]$Name) {
-    return $Name -match '^dev/aero/cnmterraincompat/CnmTerrainCompatClient(?:\$.*)?\.class$' -or
+    return $Name -match '^games/twinhead/moreslabsstairsandwalls/api/material/NibaruMaterialProfiles\$VanillaFamily\.class$' -or
+            $Name -match '^dev/aero/cnmterraincompat/CnmTerrainCompatClient(?:\$.*)?\.class$' -or
             $Name -match '^dev/aero/cnmterraincompat/CanonicalShapeMapAudit(?:\$.*)?\.class$' -or
             $Name -match '^dev/aero/cnmterraincompat/ExternalMaterial(?:Blocks|Catalog|Families|GeneratedData)(?:\$.*)?\.class$' -or
             $Name -match '^dev/aero/cnmterraincompat/client/ExternalMaterialGeneratedResources(?:\$.*)?\.class$' -or
@@ -125,9 +126,9 @@ try {
     $metadataText = Get-EntryText $unifiedMap['fabric.mod.json']
     $metadata = $metadataText | ConvertFrom-Json
     Require ($metadata.id -eq 'cnm_terrain_slabs_compat') 'Unified primary Fabric ID changed'
-    Require ($metadata.version -eq '4.2.10-bge.canary66.quarter-column-continuation+26.2') 'Unified Fabric version is not exact C66'
-    Require ($metadata.name -eq ('Block Geometry Extensions Canary 66 ' + [char]0x2014 + ' Quarter Column Continuation')) `
-            'Unified Fabric display name is not exact C66'
+    Require ($metadata.version -eq '4.2.11-bge.canary67.vanilla-family-coverage+26.2') 'Unified Fabric version is not exact C67'
+    Require ($metadata.name -eq ('Block Geometry Extensions Canary 67 ' + [char]0x2014 + ' Vanilla Family Coverage')) `
+            'Unified Fabric display name is not exact C67'
     Require (@($metadata.provides).Count -eq 1 -and $metadata.provides[0] -eq 'more_slabs_stairs_and_walls') `
             'Unified descriptor must provide exactly the legacy Nibaru ID'
     Require ($metadata.PSObject.Properties.Name -notcontains 'jars') 'Unified descriptor must not declare nested JARs'

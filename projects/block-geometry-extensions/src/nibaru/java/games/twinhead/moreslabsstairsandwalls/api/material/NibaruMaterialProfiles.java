@@ -28,7 +28,10 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.LeavesBlock;
+import net.minecraft.world.level.block.SlabBlock;
+import net.minecraft.world.level.block.StairBlock;
 import net.minecraft.world.level.block.WeatheringCopper;
+import net.minecraft.world.level.block.WallBlock;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -42,7 +45,7 @@ import java.util.Set;
 
 /** Immutable public view of Nibaru's authoritative ModBlocks material catalog. */
 public final class NibaruMaterialProfiles {
-    public static final String PROFILE_VERSION = "canary40-pale-coverage-v1";
+    public static final String PROFILE_VERSION = "canary67-vanilla-family-coverage-v1";
     private static final Map<ModBlocks, Block> EXACT_VANILLA_SLAB_SOURCES = Map.of(
             ModBlocks.SMOOTH_STONE, Blocks.SMOOTH_STONE_SLAB);
     private static volatile Inventory inventory;
@@ -59,6 +62,21 @@ public final class NibaruMaterialProfiles {
     public static Optional<NibaruMaterialProfile> fromId(Identifier id) {
         Block block = BuiltInRegistries.BLOCK.getValue(id);
         return block == null ? Optional.empty() : fromBlock(block);
+    }
+
+    /**
+     * The complete current-26.2 vanilla family set eligible for BGE's three
+     * additional geometries.  Eligibility is intentionally structural: a
+     * canonical Minecraft BlockFamily must own all of its slab, stair, and
+     * wall forms.  This is independent of whether MSSW had to create those
+     * forms, and keeps future vanilla additions from silently becoming gaps.
+     */
+    public static List<VanillaFamily> eligibleVanillaFamilies() {
+        return BlockFamilies.getAllFamilies()
+                .map(NibaruMaterialProfiles::vanillaFamily)
+                .flatMap(Optional::stream)
+                .sorted(java.util.Comparator.comparing(family -> family.id().toString()))
+                .toList();
     }
 
     public static synchronized void refresh() { inventory = build(); }
@@ -133,8 +151,54 @@ public final class NibaruMaterialProfiles {
             if (effectiveStair != null && effectiveStair != stair) putGeometry(byBlock, effectiveStair, profile);
             profiles.add(profile);
         }
+        for (VanillaFamily family : eligibleVanillaFamilies()) {
+            if (byBlock.containsKey(family.parent())) continue;
+            NibaruMaterialProfile profile = vanillaProfile(family);
+            putGeometry(byBlock, family.parent(), profile);
+            putGeometry(byBlock, family.slab(), profile);
+            putGeometry(byBlock, family.stairs(), profile);
+            putGeometry(byBlock, family.wall(), profile);
+            profiles.add(profile);
+        }
         return new Inventory(List.copyOf(profiles), Collections.unmodifiableMap(byFamily),
                 Collections.unmodifiableMap(byBlock));
+    }
+
+    private static Optional<VanillaFamily> vanillaFamily(BlockFamily family) {
+        Block parent = family.getBaseBlock();
+        Identifier id = BuiltInRegistries.BLOCK.getKey(parent);
+        if (id == null || !id.getNamespace().equals("minecraft")) return Optional.empty();
+        Block slab = family.get(BlockFamily.Variant.SLAB);
+        Block stairs = family.get(BlockFamily.Variant.STAIRS);
+        Block wall = family.get(BlockFamily.Variant.WALL);
+        if (!(slab instanceof SlabBlock) || !(stairs instanceof StairBlock) || !(wall instanceof WallBlock)) {
+            return Optional.empty();
+        }
+        return Optional.of(new VanillaFamily(parent, id, slab, stairs, wall));
+    }
+
+    /** Builds a generic profile from actual vanilla registrations, never guessed paths or names. */
+    private static NibaruMaterialProfile vanillaProfile(VanillaFamily family) {
+        String texture = family.id().getPath();
+        return new NibaruMaterialProfile(PROFILE_VERSION, null, family.parent(), family.id(),
+                Optional.of(family.slab()), Optional.of(family.stairs()), Optional.of(family.wall()),
+                Optional.of(family.slab()), Optional.of(family.stairs()),
+                Optional.of(registeredId(family.slab())), Optional.of(registeredId(family.stairs())),
+                Optional.of(registeredId(family.wall())), Set.of(), Set.of(), VisualProfile.UNIFORM,
+                NibaruMaterialProfile.VisualSupport.GENERIC_SUPPORTED, TintProfile.NONE,
+                NibaruMaterialProfile.RenderLayer.SOLID, NibaruMaterialProfile.OrientationPolicy.UNIFORM,
+                NibaruMaterialProfile.SurfaceSamplingPolicy.BLOCK_ABSOLUTE,
+                NibaruMaterialProfile.DoubleFormPolicy.COMPOSE_SEMANTIC_SURFACES,
+                new NibaruMaterialProfile.TextureRoles(texture, texture, texture, "", texture),
+                Optional.empty(), Optional.empty(), false, List.of());
+    }
+
+    private static Identifier registeredId(Block block) {
+        Identifier id = BuiltInRegistries.BLOCK.getKey(block);
+        if (id == null || id.equals(BuiltInRegistries.BLOCK.getDefaultKey())) {
+            throw new IllegalStateException("Unregistered vanilla family geometry: " + block);
+        }
+        return id;
     }
 
     private static void putGeometry(Map<Block, NibaruMaterialProfile> map, Block block, NibaruMaterialProfile profile) {
@@ -399,4 +463,7 @@ public final class NibaruMaterialProfiles {
     private record Inventory(List<NibaruMaterialProfile> profiles,
             Map<ModBlocks, NibaruMaterialProfile> byFamily,
             Map<Block, NibaruMaterialProfile> byBlock) {}
+
+    /** Exact block identities supplied by a current vanilla full geometry family. */
+    public record VanillaFamily(Block parent, Identifier id, Block slab, Block stairs, Block wall) {}
 }

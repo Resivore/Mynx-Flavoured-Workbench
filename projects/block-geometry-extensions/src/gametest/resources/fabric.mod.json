@@ -19,6 +19,7 @@
       "dev.aero.cnmterraincompat.BgeLayerIntegrationGameTests",
       "dev.aero.cnmterraincompat.LayerResourceGameTests",
       "dev.aero.cnmterraincompat.BgeQuarterGeometryGameTests",
+      "dev.aero.cnmterraincompat.VanillaFamilyCoverageGameTests",
       "dev.aero.cnmterraincompat.CornerColumnResourceGameTests",
       "dev.aero.cnmterraincompat.client.GlassCornerUvResourceGameTests",
       "dev.aero.cnmterraincompat.ExternalMaterialFamilyGameTests"
