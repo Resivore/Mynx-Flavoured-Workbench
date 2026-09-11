@@ -14,7 +14,10 @@ import net.minecraft.world.level.block.ShulkerBoxBlock;
 import tempeststudios.quickstacknearby.QuickStackMoveEngine;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Supplier;
 
 /**
@@ -22,33 +25,44 @@ import java.util.function.Supplier;
  * a source adapter: QSN still owns target order, acceptance, insertion, and source accounting.
  */
 public final class CarriedContainerSources {
-    private static final ThreadLocal<List<CarrierSource>> ACTIVE = new ThreadLocal<>();
+    private static final ThreadLocal<Scope> ACTIVE = new ThreadLocal<>();
 
     private CarriedContainerSources() {}
 
     public static <T> T scoped(net.minecraft.server.level.ServerPlayer player,
             QuickStackMoveEngine.SourceRules rules, Supplier<T> action) {
-        List<CarrierSource> previous = ACTIVE.get();
-        ACTIVE.set(snapshot(player, rules));
+        Scope previous = ACTIVE.get();
+        ACTIVE.set(new Scope(snapshot(player, rules)));
         try { return action.get(); }
         finally { if (previous == null) ACTIVE.remove(); else ACTIVE.set(previous); }
     }
 
     public static List<ItemStack> discoveryStacks() {
-        List<CarrierSource> sources = ACTIVE.get();
-        if (sources == null || sources.isEmpty()) return List.of();
+        Scope scope = ACTIVE.get();
+        if (scope == null || scope.sources().isEmpty()) return List.of();
         List<ItemStack> result = new ArrayList<>();
-        for (CarrierSource source : sources) result.addAll(source.contents());
+        for (CarrierSource source : scope.sources()) result.addAll(source.contents());
         return result;
     }
 
+    /** Explicitly prevents a pre-return snapshot from mutating a carrier that C18 already moved. */
+    static void skipReturnedCarrier(ItemStack carrier) {
+        Scope scope = ACTIVE.get();
+        if (scope != null) {
+            scope.returnedCarriers().add(carrier);
+        }
+    }
+
     public static QuickStackMoveEngine.Result drain(List<QuickStackMoveEngine.Target> targets) {
-        List<CarrierSource> sources = ACTIVE.get();
-        if (sources == null || sources.isEmpty() || targets == null || targets.isEmpty()) {
+        Scope scope = ACTIVE.get();
+        if (scope == null || scope.sources().isEmpty() || targets == null || targets.isEmpty()) {
             return QuickStackMoveEngine.Result.empty();
         }
         int moved = 0, touched = 0, targetTouches = 0;
-        for (CarrierSource source : sources) {
+        for (CarrierSource source : scope.sources()) {
+            if (scope.returnedCarriers().contains(source.carrier())) {
+                continue;
+            }
             QuickStackMoveEngine.Result result = QuickStackMoveEngine.moveMatchingItems(
                     source.view(), 0, source.view().getContainerSize(), targets, QuickStackMoveEngine.SourceRules.EMPTY);
             if (result.itemsMoved() > 0) {
@@ -91,6 +105,12 @@ public final class CarriedContainerSources {
     }
 
     private enum Kind { SHULKER, BUNDLE }
+
+    private record Scope(List<CarrierSource> sources, Set<ItemStack> returnedCarriers) {
+        private Scope(List<CarrierSource> sources) {
+            this(sources, Collections.newSetFromMap(new IdentityHashMap<>()));
+        }
+    }
 
     private record CarrierSource(ItemStack carrier, Kind kind, SimpleContainer view) {
         static CarrierSource shulker(ItemStack carrier) {

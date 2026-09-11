@@ -2,6 +2,8 @@ package dev.resivore.quickstacknearbycompat.gametest;
 
 import dev.resivore.slotreservations.ReservationStore;
 import dev.resivore.slotreservations.SupportedContainerResolver;
+import dev.resivore.slotreservations.api.ContainerSlotReservationsApi;
+import dev.resivore.slotreservations.api.ReservationSlotClass;
 import net.fabricmc.fabric.api.gametest.v1.CustomTestMethodInvoker;
 import net.fabricmc.fabric.api.gametest.v1.GameTest;
 import net.minecraft.core.BlockPos;
@@ -120,8 +122,124 @@ public final class PopulatedShulkerSourceGameTests implements CustomTestMethodIn
         helper.succeed();
     }
 
+    @GameTest(maxTicks = 40)
+    public void c18SpecificHomeReturnsChangedCarrierBeforeAnyContentDrain(GameTestHelper helper) {
+        requireSpecificCsrC17(helper);
+        BarrelBlockEntity home = barrel(helper);
+        ChestBlockEntity ordinaryContentsTarget = chest(helper, new BlockPos(2, 2, 1));
+        ServerPlayer player = player(helper);
+        ItemStack original = stackableShulker(2);
+        original.set(DataComponents.CUSTOM_NAME, net.minecraft.network.chat.Component.literal("before reservation"));
+        home.setItem(4, original);
+        reserveSpecificOccupied(home, 4, original);
+
+        ItemStack carrier = home.removeItemNoUpdate(4);
+        setContents(carrier, new ItemStack(Items.STONE, 7), new ItemStack(Items.DIAMOND, 3));
+        carrier.set(DataComponents.CUSTOM_NAME, net.minecraft.network.chat.Component.literal("changed after reservation"));
+        ItemStack expected = carrier.copy();
+        ordinaryContentsTarget.setItem(0, new ItemStack(Items.STONE, 32));
+        player.getInventory().setItem(9, carrier);
+
+        helper.assertTrue(QuickStackMoveEngine.acceptedTypes(home).isEmpty()
+                        && ContainerSlotReservationsApi.classify(home, 4, carrier)
+                        == ReservationSlotClass.RESERVED_MATCH,
+                "The C18 fixture did not use an empty CSR C17 specific-reservation-only target");
+        QuickStackMoveEngine.Result result = QuickStackService.quickStack(player);
+
+        helper.assertTrue(result.itemsMoved() == 1
+                        && result.sourceStacksTouched() == 1
+                        && result.targetContainersTouched() == 1
+                        && player.getInventory().getItem(9).isEmpty()
+                        && ItemStack.matches(expected, home.getItem(4))
+                        && ordinaryContentsTarget.getItem(0).getCount() == 32,
+                "C18 did not return the changed specific carrier intact before its contents could drain");
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void c18LookalikeAndUserLockedCarrierCannotUseSpecificHome(GameTestHelper helper) {
+        requireSpecificCsrC17(helper);
+        BarrelBlockEntity home = barrel(helper);
+        ServerPlayer player = player(helper);
+        ItemStack reserved = stackableShulker(5);
+        reserved.set(DataComponents.CUSTOM_NAME, net.minecraft.network.chat.Component.literal("same visible shulker"));
+        home.setItem(3, reserved);
+        reserveSpecificOccupied(home, 3, reserved);
+        ItemStack identified = home.removeItemNoUpdate(3);
+        ItemStack lookalike = stackableShulker(5);
+        lookalike.set(DataComponents.CUSTOM_NAME, net.minecraft.network.chat.Component.literal("same visible shulker"));
+        player.getInventory().setItem(9, lookalike);
+
+        helper.assertTrue(ContainerSlotReservationsApi.classify(home, 3, lookalike)
+                        == ReservationSlotClass.RESERVED_OTHER,
+                "The C18 negative fixture unexpectedly matched CSR's specific home");
+        QuickStackMoveEngine.Result lookalikeResult = QuickStackService.quickStack(player);
+        helper.assertTrue(lookalikeResult.itemsMoved() == 0 && home.getItem(3).isEmpty()
+                        && player.getInventory().getItem(9) == lookalike,
+                "A CSR-specific lookalike entered the reserved home");
+
+        player.getInventory().setItem(9, identified);
+        QuickStackMoveEngine.Result lockedResult = QuickStackService.quickStack(player,
+                new QuickStackMoveEngine.SourceRules(Map.of(9, new QuickStackMoveEngine.SlotRule(true, 0))));
+        helper.assertTrue(lockedResult.itemsMoved() == 0 && home.getItem(3).isEmpty()
+                        && player.getInventory().getItem(9) == identified,
+                "C18 ignored a user source lock for an otherwise matching carrier");
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void c18EmptyIdentifiedShulkerStillUsesNormalLooseCsrPath(GameTestHelper helper) {
+        requireSpecificCsrC17(helper);
+        BarrelBlockEntity home = barrel(helper);
+        ServerPlayer player = player(helper);
+        ItemStack reserved = stackableShulker(1);
+        home.setItem(2, reserved);
+        reserveSpecificOccupied(home, 2, reserved);
+        ItemStack emptied = home.removeItemNoUpdate(2);
+        emptied.set(DataComponents.CONTAINER, ItemContainerContents.EMPTY);
+        ItemStack expected = emptied.copy();
+        player.getInventory().setItem(9, emptied);
+
+        helper.assertTrue(!isPhysicallyPopulated(emptied)
+                        && ContainerSlotReservationsApi.classify(home, 2, emptied)
+                        == ReservationSlotClass.RESERVED_MATCH,
+                "The empty identified-shulker regression fixture is not a normal CSR match");
+        QuickStackMoveEngine.Result result = QuickStackService.quickStack(player);
+        helper.assertTrue(result.itemsMoved() == 1 && player.getInventory().getItem(9).isEmpty()
+                        && home.getItem(2).getCount() == 1
+                        && ItemStack.matches(expected, home.getItem(2)),
+                "An empty identity-bearing shulker no longer returned through normal QSN/CSR routing");
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void c18HomeAndLooseMoveUseConservedUniqueResultAccounting(GameTestHelper helper) {
+        requireSpecificCsrC17(helper);
+        BarrelBlockEntity home = barrel(helper);
+        ChestBlockEntity looseTarget = chest(helper, new BlockPos(2, 2, 1));
+        ServerPlayer player = player(helper);
+        ItemStack reserved = stackableShulker(4);
+        home.setItem(1, reserved);
+        reserveSpecificOccupied(home, 1, reserved);
+        ItemStack carrier = home.removeItemNoUpdate(1);
+        looseTarget.setItem(0, new ItemStack(Items.COBBLESTONE, 50));
+        player.getInventory().setItem(9, carrier);
+        player.getInventory().setItem(10, new ItemStack(Items.COBBLESTONE, 20));
+
+        QuickStackMoveEngine.Result result = QuickStackService.quickStack(player);
+        helper.assertTrue(result.itemsMoved() == 21 && result.sourceStacksTouched() == 2
+                        && result.targetContainersTouched() == 2 && home.getItem(1).getCount() == 1
+                        && looseTarget.getItem(0).getCount() == 64
+                        && looseTarget.getItem(1).getCount() == 6,
+                "C18 did not aggregate returned carriers and ordinary loose movement like QSN results");
+        helper.succeed();
+    }
+
     private static ChestBlockEntity chest(GameTestHelper helper) {
-        BlockPos position = new BlockPos(1, 2, 1);
+        return chest(helper, new BlockPos(1, 2, 1));
+    }
+
+    private static ChestBlockEntity chest(GameTestHelper helper, BlockPos position) {
         helper.setBlock(position, Blocks.CHEST);
         return helper.getBlockEntity(position, ChestBlockEntity.class);
     }
@@ -152,6 +270,56 @@ public final class PopulatedShulkerSourceGameTests implements CustomTestMethodIn
         NonNullList<ItemStack> contents = NonNullList.withSize(27, ItemStack.EMPTY);
         shulker.getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY).copyInto(contents);
         return contents.stream().filter(stack -> stack.is(Items.OAK_PLANKS)).mapToInt(ItemStack::getCount).sum();
+    }
+
+    private static boolean isPhysicallyPopulated(ItemStack shulker) {
+        return planks(shulker) > 0 || shulker.getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY)
+                .nonEmptyItemCopyStream().findAny().isPresent();
+    }
+
+    private static void setContents(ItemStack shulker, ItemStack... contents) {
+        NonNullList<ItemStack> physical = NonNullList.withSize(27, ItemStack.EMPTY);
+        for (int index = 0; index < contents.length; index++) {
+            physical.set(index, contents[index]);
+        }
+        shulker.set(DataComponents.CONTAINER, ItemContainerContents.fromItems(physical));
+    }
+
+    /**
+     * Test setup only: exercise CSR C17's real occupied-slot transition without allowing QSN
+     * production code to reference its portable-container implementation or data component.
+     */
+    private static void reserveSpecificOccupied(BarrelBlockEntity owner, int slot, ItemStack physical) {
+        try {
+            Class<?> dataType = Class.forName("dev.resivore.slotreservations.ReservationData");
+            Class<?> transitionType = Class.forName("dev.resivore.slotreservations.ReservationTransition");
+            Class<?> storeType = Class.forName("dev.resivore.slotreservations.ReservationStore");
+            Object current = storeType.getMethod("getData", net.minecraft.world.level.block.entity.BlockEntity.class)
+                    .invoke(null, owner);
+            Method transition = transitionType.getDeclaredMethod("fromOccupied", dataType, int.class, ItemStack.class);
+            transition.setAccessible(true);
+            Object result = transition.invoke(null, current, slot, physical);
+            Method data = result.getClass().getDeclaredMethod("data");
+            Method attachIdentity = result.getClass().getDeclaredMethod("attachIdentity", ItemStack.class);
+            data.setAccessible(true);
+            attachIdentity.setAccessible(true);
+            storeType.getMethod("setOwnerData", net.minecraft.world.Container.class, dataType)
+                    .invoke(null, owner, data.invoke(result));
+            attachIdentity.invoke(result, physical);
+        } catch (ReflectiveOperationException failure) {
+            throw new AssertionError("CSR C17 specific-reservation fixture is unavailable", failure);
+        }
+    }
+
+    private static void requireSpecificCsrC17(GameTestHelper helper) {
+        try {
+            Class<?> transition = Class.forName("dev.resivore.slotreservations.ReservationTransition");
+            helper.assertTrue(transition.getDeclaredMethod("fromOccupied", Class.forName(
+                            "dev.resivore.slotreservations.ReservationData"), int.class, ItemStack.class) != null,
+                    "CSR C17 specific portable-container transition is required for C18 integration coverage");
+        } catch (ReflectiveOperationException failure) {
+            throw new AssertionError("CSR C17 specific portable-container transition is required", failure);
+        }
     }
 
     private static void fillRemainingSlots(ItemStack shulker) {

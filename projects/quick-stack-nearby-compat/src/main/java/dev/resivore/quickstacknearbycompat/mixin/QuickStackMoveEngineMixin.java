@@ -1,6 +1,7 @@
 package dev.resivore.quickstacknearbycompat.mixin;
 
 import dev.resivore.quickstacknearbycompat.core.CsrQuickStackIntegration;
+import dev.resivore.quickstacknearbycompat.core.ReservationOnlyOuterCarriers;
 import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
 import org.spongepowered.asm.mixin.Mixin;
@@ -17,8 +18,11 @@ public abstract class QuickStackMoveEngineMixin {
             at = @At("HEAD"), cancellable = true, require = 1, remap = false)
     private static void quickStackNearbyCompat$commitNested(ItemStack source, Container target,
             CallbackInfoReturnable<Integer> callback) {
-        if (target instanceof dev.resivore.quickstacknearbycompat.core.NestedShulkerTarget nested)
-            callback.setReturnValue(nested.insert(source));
+        if (target instanceof dev.resivore.quickstacknearbycompat.core.NestedShulkerTarget nested) {
+            int inserted = nested.insert(source);
+            ReservationOnlyOuterCarriers.recordQsnTarget(target, inserted);
+            callback.setReturnValue(inserted);
+        }
     }
 
     @Inject(
@@ -36,5 +40,19 @@ public abstract class QuickStackMoveEngineMixin {
         if (moved.isPresent()) {
             callback.setReturnValue(moved.getAsInt());
         }
+    }
+
+    @Inject(
+            method = "insertIntoTarget(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/Container;)I",
+            at = @At("RETURN"),
+            require = 1,
+            remap = false
+    )
+    private static void quickStackNearbyCompat$recordActionTarget(
+            ItemStack source,
+            Container target,
+            CallbackInfoReturnable<Integer> callback
+    ) {
+        ReservationOnlyOuterCarriers.recordQsnTarget(target, callback.getReturnValue());
     }
 }
