@@ -1,0 +1,148 @@
+{
+  "$schema": "../../schemas/workbench-status.schema.json",
+  "schema_version": 1,
+  "identity": {
+    "uuid": "4fcf330a-9726-4b76-b7ac-b75d5e662883",
+    "name": "Macaw's Trapdoors / MoreCulling Compatibility",
+    "project_id": "macaws-trapdoors-moreculling-compat",
+    "aliases": [
+      "Macaw MoreCulling Compat"
+    ],
+    "legacy_names": [],
+    "legacy_ids": []
+  },
+  "definition": {
+    "lifecycle": "ACTIVE",
+    "goals": [
+      "Prevent exactly the Macaw's Trapdoors 1.1.5 ranch and bark families from culling neighboring solid faces through their intentionally open or transparent model regions under MoreCulling 1.8.1.",
+      "Preserve every Macaw registry identity, model, texture, blockstate property, placement and interaction behavior while leaving all unrelated trapdoors and MoreCulling behavior unchanged.",
+      "Remain compatible with the existing Interchangeable Block Families literal catalog without changing IBF membership or equivalence."
+    ],
+    "scope": [
+      "Use MoreCulling 1.8.1's supported per-block MoreBlockCulling API to disable neighbor-face culling against a hard-coded set of 23 audited mcwtrpdoors registry IDs.",
+      "Cover all 11 registered ranch variants and all 12 registered bark variants in mcw-trapdoors-1.1.5-mc26.2fabric.jar; Bamboo contributes bark only because that provider does not register a bamboo_ranch_trapdoor block.",
+      "Fail closed on exact Macaw's Trapdoors 1.1.5 and MoreCulling 1.8.1 provider versions and verify the controlled provider bytes and API signatures during every build."
+    ],
+    "boundaries": {
+      "owned_paths": [
+        "projects/macaws-trapdoors-moreculling-compat"
+      ],
+      "exclusions": [
+        "No Macaw or MoreCulling JAR edits, bundled provider code/assets, model or resource overrides, registry or item ID changes, blockstate/property changes, geometry changes, textures, recipes, loot, sounds, collision, placement, interaction, opening, redstone, or broad trapdoor discovery.",
+        "No changes to Interchangeable Block Families, other projects, unrelated Macaw trapdoors, unrelated MoreCulling culling decisions, or any file under originals/.",
+        "The protected Matcha Flavoured 26.1.2 gameplay instance is permanently out of scope; runtime deployment and validation may use only the serialized Test Instance Manager and dedicated Matcha Flavoured 26.2 Workbench."
+      ]
+    },
+    "dependencies": [
+      {
+        "type": "MOD",
+        "identifier": "minecraft",
+        "requirement": "=26.2",
+        "reason": "Exact game target for the Fabric client patch and controlled runtime profile."
+      },
+      {
+        "type": "MOD",
+        "identifier": "fabricloader",
+        "requirement": ">=0.19.3",
+        "reason": "Loads the client-only compatibility entrypoint and supplies exact provider metadata checks."
+      },
+      {
+        "type": "MOD",
+        "identifier": "fabric-api",
+        "requirement": ">=0.157.0; controlled build 0.157.0+26.2",
+        "reason": "Provides the first-client-tick lifecycle event used after MoreCulling initializes its per-block flags."
+      },
+      {
+        "type": "MOD",
+        "identifier": "mcwtrpdoors",
+        "requirement": "=1.1.5; Modrinth n2fvCDlM:guJEg4jK; mcw-trapdoors-1.1.5-mc26.2fabric.jar SHA-256 6411cb0ff6c6cc4312deed48c3ca69cdbcbae72e80ff4ed0269f2d0a78acd32d",
+        "reason": "Exact audited owner of the literal 23 ranch/bark registry IDs. The supplied expected digest contained a one-nibble typo; both the dedicated profile and official Modrinth artifact measure to the recorded digest."
+      },
+      {
+        "type": "MOD",
+        "identifier": "moreculling",
+        "requirement": "=1.8.1; Modrinth 51shyZVL:D5oVCouK; moreculling-fabric-26.2-1.8.1.jar SHA-256 ea04505496e4d35a8c94199884b6fafa69057efe50f2096d2988c11163d49122",
+        "reason": "Exact dedicated-profile provider exposing MoreBlockCulling.moreculling$setCanCull(boolean); upstream Macaw issue #438 remains open on this provider generation."
+      },
+      {
+        "type": "PROJECT",
+        "identifier": "ee8a20f8-d0a8-515c-9a74-3b19f238227d",
+        "requirement": "Optional coexistence with current Interchangeable Block Families; no catalog or runtime dependency added",
+        "reason": "IBF already names all 23 exact mcwtrpdoors ranch/bark identities and must remain unchanged."
+      },
+      {
+        "type": "TOOL",
+        "identifier": "java",
+        "requirement": "=25",
+        "reason": "Compilation release and Minecraft 26.2 runtime level."
+      },
+      {
+        "type": "TOOL",
+        "identifier": "gradle",
+        "requirement": "=9.5.1 with Fabric Loom 1.17.19",
+        "reason": "Controlled reproducible build and artifact-verification baseline."
+      }
+    ]
+  },
+  "state": {
+    "milestone": "Canary 1 is a client-only, code-only compatibility artifact using MoreCulling's supported per-block API for exactly 23 Macaw ranch/bark IDs. Two clean Java 25 builds were byte-identical and 5/5 provider, scope, API, IBF, and artifact contract tests passed; it is not yet deployed or runtime-tested.",
+    "releases": {
+      "current": {
+        "version": "0.1.0-canary1",
+        "embedded_version": "0.1.0-canary1",
+        "artifact": {
+          "filename": "macaws-trapdoors-moreculling-compat-0.1.0-canary1.jar",
+          "sha256": "d6ffd125e082978b594ca01c075bb706ddf7f5696dee1e7d15e357cbbfdb4af5"
+        },
+        "source_commit": "c5afce9f367d341e770be0ce89e198e44044074e",
+        "runtime_dependency_policy": {
+          "contract": "CAPABILITY_OR_PROVIDER",
+          "exceptions": [
+            {
+              "consumer_id": "macaws_trapdoors_moreculling_compat",
+              "relationship": "depends",
+              "dependency_id": "mcwtrpdoors",
+              "predicate": "=1.1.5",
+              "reason": "The literal 23-block patch set is audited against Macaw's Trapdoors 1.1.5 and must fail closed if that provider registry changes.",
+              "regression_evidence": [
+                "Audited mcw-trapdoors-1.1.5-mc26.2fabric.jar SHA-256 6411cb0ff6c6cc4312deed48c3ca69cdbcbae72e80ff4ed0269f2d0a78acd32d registers the exact ranch and bark identifiers patched by this release."
+              ]
+            },
+            {
+              "consumer_id": "macaws_trapdoors_moreculling_compat",
+              "relationship": "depends",
+              "dependency_id": "moreculling",
+              "predicate": "=1.8.1",
+              "reason": "The compatibility calls the MoreBlockCulling per-block culling API verified in MoreCulling 1.8.1 and must not assume an unvalidated future contract.",
+              "regression_evidence": [
+                "The dedicated 26.2 profile uses moreculling-fabric-26.2-1.8.1.jar SHA-256 ea04505496e4d35a8c94199884b6fafa69057efe50f2096d2988c11163d49122 while upstream issue #438 remains open for Macaw trapdoors."
+              ]
+            }
+          ]
+        }
+      },
+      "accepted": null,
+      "rollback": null,
+      "accepted_current": "NO_ACCEPTED",
+      "accepted_rollback": "NO_ROLLBACK"
+    },
+    "validation": {
+      "build": "CONTROLLED_VALIDATION_PASS",
+      "deployment": "NOT_DEPLOYED",
+      "runtime": "RUNTIME_UNTESTED"
+    },
+    "blocker": null
+  },
+  "synchronization": {
+    "revision": 1,
+    "activity_at": "2026-09-12T16:36:53Z",
+    "updated_at": "2026-09-12T16:36:53Z",
+    "last_codex_at": "2026-09-12T16:36:53Z",
+    "source_commit": "c5afce9f367d341e770be0ce89e198e44044074e",
+    "google_sheet": {
+      "participates": true,
+      "exclusion_reason": null
+    }
+  }
+}
+
