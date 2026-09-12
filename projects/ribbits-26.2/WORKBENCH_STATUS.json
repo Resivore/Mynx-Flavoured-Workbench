@@ -178,15 +178,15 @@
     ]
   },
   "state": {
-    "milestone": "Canary 22 fixes the Wandering Ribbit optional Naturalist fauna baby-name packaging seam: its complete assembled private en_us.json now contains trade.ribbits.naturalist_fauna.baby = Baby %s, matching the source-safe language file and preserving the provider's Naturalist entity-name component argument. The private tree and final archive passed deterministic static validation. Canary 22 is ACTIVE / STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED pending a serialized dedicated-Workbench slot and the focused baby-fauna trade check.",
+    "milestone": "Canary 23 lowers cumulative profession thresholds to 0/5/15/30/50 without changing offer XP, reconciles saved ranks upward without reducing saved XP, preserves the Benzene and Opal promotion gates, and lazily materializes only newly eligible current-schema tiers. Naturalist's two selected fauna offers are independently server-enforced one-use entitlements: an exhausted offer rejects stale payment completion, survives serialization/reload, and remains excluded from ordinary restocks. Canary 23 is ACTIVE / STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED pending a serialized dedicated-Workbench slot and the focused economy and fauna transaction procedure.",
     "releases": {
       "current": {
-        "version": "4.1.6+26.2-mynx-canary22",
+        "version": "4.1.6+26.2-mynx-canary23",
         "artifact": {
-          "filename": "ribbits-private-reconstruction-4.1.6+26.2-mynx-canary22.jar",
-          "sha256": "63e39eaefc85158b2fba77cdee4f91946477837b17ad313762aeb579343ed157"
+          "filename": "ribbits-private-reconstruction-4.1.6+26.2-mynx-canary23.jar",
+          "sha256": "fb261aa143089f4e3c3b899bbe3280a702c7a9c1c6481404baa043d7688bf363"
         },
-        "source_commit": "8b4a5218556cac2be054b3b56fad55dc65f869b8",
+        "source_commit": "d3298b252f21e728d5a31c410d6bb388d679e844",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
@@ -205,11 +205,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 27,
-    "activity_at": "2026-09-09T02:35:03Z",
-    "updated_at": "2026-09-09T02:35:03Z",
-    "last_codex_at": "2026-09-09T02:35:03Z",
-    "source_commit": "8b4a5218556cac2be054b3b56fad55dc65f869b8",
+    "revision": 28,
+    "activity_at": "2026-09-12T03:36:43Z",
+    "updated_at": "2026-09-12T03:36:43Z",
+    "last_codex_at": "2026-09-12T03:36:43Z",
+    "source_commit": "d3298b252f21e728d5a31c410d6bb388d679e844",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
