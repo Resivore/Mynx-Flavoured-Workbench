@@ -24,7 +24,7 @@
       "Preserve accepted C4 storage reservations, exact ghost/zero/marker visuals, public API compatibility for QSN C9 and CCAR C12, component-exact ordinary-item reservations, generic empty portable-container templates, and server-owned specific portable-container identities without external tooltip integration."
     ],
     "scope": [
-      "Current 0.1.0-canary18 from implementation checkpoint 9e74a9363616e8ce0be1de098e788fc08044c8d7 keeps the C17 portable-container identity model and adds host-centered shulker-panel UX. Its server-authoritative panel quick move resolves the exact host fingerprint, then plans against the actual active player-inventory slots in the current menu without a fixed 36-slot assumption. The optional header-decoration provider contract now lets a provider own clicks on its own visual without adding a CSR dependency on that provider.",
+      "Current 0.1.0-canary19 from implementation checkpoint 804f3fe61bbc216d9d33df8d90326f9f1fc0e929 retains C18's host-centered shulker-panel geometry and immediate host-or-panel lifetime exactly. It corrects the server-authoritative PRIMARY cursor publication for a Creative player inventory: Minecraft 26.2 applies ordinary ContainerSynchronizer cursor packets in normal menus but deliberately ignores ClientboundSetCursorItemPacket while CreativeModeInventoryScreen is open, so C19 sends the native full menu-content state only for that exact Creative inventory menu; all other menus retain incremental broadcastChanges. CSR fingerprint metadata follows the authoritative menu/cursor state and safely acknowledges an already-synchronized host. The optional header-decoration provider contract remains independent of CCAR.",
       "While CSR owns Slot A and remains TESTING, a finalized current CSR testing successor normally replaces the preceding CSR candidate through one serialized Test Instance Manager Slot A transition; only a concrete manager preimage, dependency, or physical-safety failure may leave that successor retained but not deployed.",
       "Bind one exact count-one shulker host by screen, menu, menu ID, visible slot index, Slot instance, underlying container slot, explicit Creative player-inventory locator where applicable, and complete SHA-256 ItemStack fingerprint; never search for an equal stack.",
       "Render and hit-test one fixed 176x83 native panel with an unchanged 176x77 upper shulker region plus the same runtime texture's 176x6 bottom frame, 27 physical 18x18 cells, and bottom-left-at-host-center placement clamped only to the viewport. It remains open only while the pointer is over the host or panel; there is no side rail, corridor, grace frame, or pointer-capture lifetime. Right-button drag acts once per newly entered panel cell, preserving native secondary-click transfer semantics and exact reservation rendering.",
@@ -119,16 +119,16 @@
     ]
   },
   "state": {
-    "milestone": "C18 is an ACTIVE, non-deployed CSR successor to accepted C15. It replaces side-pinned/corridor panel placement with clamped host-centered geometry and immediate host-or-panel lifetime, adds exact server-authoritative Shift+left panel quick move into live player inventory slots, and provides a backwards-compatible optional interactive header-decoration seam. Right-drag dispatches one actual secondary transfer per entered cell rather than swallowing motion. Clean Java 25 unit, headless Fabric GameTest, and artifact validation passed; no dedicated Workbench or protected gameplay instance was accessed.",
+    "milestone": "C19 is an ACTIVE, non-deployed CSR successor to accepted C15. It preserves C18's user-observed-good host-centered panel placement and fixes the Creative inventory path where Minecraft 26.2 ignores the ordinary clientbound cursor packet, leaving the real server cursor invisible despite a successful panel transaction. C19 uses native full-content menu synchronization only for that Creative inventory case, keeps incremental synchronization elsewhere, and sends CSR fingerprint metadata after native state. Exact C18 external runtime evidence is narrow: placement was observed good; ordinary PRIMARY panel pickup failed with an invisible/desynchronized cursor stack that the second click reinserted. No Shift-click, RMB drag, reservations, or CCAR lock result is inferred. Clean Java 25 unit, headless Fabric GameTest, and artifact validation passed; no dedicated Workbench or protected gameplay instance was accessed.",
     "releases": {
       "current": {
-        "version": "0.1.0-canary18",
-        "embedded_version": "0.1.0-canary18",
+        "version": "0.1.0-canary19",
+        "embedded_version": "0.1.0-canary19",
         "artifact": {
-          "filename": "container-slot-reservations-0.1.0-canary18.jar",
-          "sha256": "90d5ebbed363376494a001dcd5235e2d217da1a63f8e4928d870da5be062b1d7"
+          "filename": "container-slot-reservations-0.1.0-canary19.jar",
+          "sha256": "f93068f86d0da76e93d754a9c04cd5999fc72b31f39681fc65dbdb09b2443aeb"
         },
-        "source_commit": "9e74a9363616e8ce0be1de098e788fc08044c8d7",
+        "source_commit": "804f3fe61bbc216d9d33df8d90326f9f1fc0e929",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
@@ -171,11 +171,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 28,
-    "activity_at": "2026-09-12T03:23:42Z",
-    "updated_at": "2026-09-12T03:23:42Z",
-    "last_codex_at": "2026-09-12T03:23:42Z",
-    "source_commit": "9e74a9363616e8ce0be1de098e788fc08044c8d7",
+    "revision": 29,
+    "activity_at": "2026-09-12T03:54:34Z",
+    "updated_at": "2026-09-12T03:54:34Z",
+    "last_codex_at": "2026-09-12T03:54:34Z",
+    "source_commit": "804f3fe61bbc216d9d33df8d90326f9f1fc0e929",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
