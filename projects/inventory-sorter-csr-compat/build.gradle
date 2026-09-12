@@ -41,7 +41,7 @@ def primaryRepositoryRoot = commonGitDir.parent.toFile()
 def inventorySorterReferenceJar = new File(primaryRepositoryRoot,
         'originals/mods/inventorysorter-fabric-3.0.0+mc26.2.jar')
 def csrReferenceJar = new File(primaryRepositoryRoot,
-        'projects/container-slot-reservations/artifacts/container-slot-reservations-0.1.0-canary16.jar')
+        'projects/container-slot-reservations/artifacts/container-slot-reservations-0.1.0-canary19.jar')
 
 tasks.register('verifyLocalReferences') {
     doLast {
@@ -60,11 +60,15 @@ dependencies {
 
     compileOnly files(inventorySorterReferenceJar)
     runtimeOnly files(inventorySorterReferenceJar)
+    testCompileOnly files(inventorySorterReferenceJar)
+    testRuntimeOnly files(inventorySorterReferenceJar)
     runtimeOnly 'me.shedaniel.cloth:cloth-config-fabric:26.2.155'
     inventorySorterReference files(inventorySorterReferenceJar)
 
     compileOnly files(csrReferenceJar)
     runtimeOnly files(csrReferenceJar)
+    testCompileOnly files(csrReferenceJar)
+    testRuntimeOnly files(csrReferenceJar)
     csrReference files(csrReferenceJar)
 
     testImplementation 'org.junit.jupiter:junit-jupiter:5.12.2'

@@ -4,6 +4,7 @@ import net.kyrptonaught.inventorysorter.inventory.container.ContainerStacks;
 import net.kyrptonaught.inventorysorter.network.SortPriorityRuleSetting;
 import net.kyrptonaught.inventorysorter.sort.SortedInventoryLayout;
 import net.kyrptonaught.inventorysorter.sort.SortType;
+import dev.resivore.slotreservations.api.ContainerSlotReservationsApi;
 import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
 
@@ -25,16 +26,39 @@ public final class MaskedServerSort {
             boolean sortIntoBundles
     ) {
         List<ItemStack> original = ContainerStacks.get(container, firstSlot, slotCount);
+        List<ReservationFillPlan.SlotAccess> fillSlots = new ArrayList<>(original.size());
+        for (int relative = 0; relative < original.size(); relative++) {
+            int localSlot = firstSlot + relative;
+            fillSlots.add(new ReservationFillPlan.SlotAccess() {
+                @Override public ItemStack stack() { return container.getItem(localSlot); }
+                @Override public boolean reserved() { return FixedSortSlots.isFixed(container, localSlot); }
+                @Override public boolean mayInsert(ItemStack incoming) {
+                    return ContainerSlotReservationsApi.mayInsert(container, localSlot, incoming);
+                }
+                @Override public int maxStackSize(ItemStack incoming) {
+                    return container.getMaxStackSize(incoming);
+                }
+            });
+        }
+        ReservationFillPlan.Result filled = ReservationFillPlan.plan(fillSlots);
+        for (int relative = 0; relative < filled.stacks().size(); relative++) {
+            int localSlot = firstSlot + relative;
+            ItemStack afterFill = filled.stacks().get(relative);
+            if (!ItemStack.matches(container.getItem(localSlot), afterFill)) {
+                container.setItem(localSlot, afterFill);
+            }
+        }
+
         List<Integer> movableIndices = new ArrayList<>(slotCount);
         List<ItemStack> movableStacks = new ArrayList<>(slotCount);
         boolean hasBundle = false;
-        for (int relative = 0; relative < original.size(); relative++) {
+        for (int relative = 0; relative < filled.stacks().size(); relative++) {
             int localSlot = firstSlot + relative;
-            ItemStack physical = container.getItem(localSlot);
+            ItemStack physical = filled.stacks().get(relative);
             hasBundle |= FixedSortSlots.isBundle(physical);
             if (!FixedSortSlots.isFixed(container, localSlot)) {
                 movableIndices.add(localSlot);
-                movableStacks.add(original.get(relative));
+                movableStacks.add(physical);
             }
         }
         boolean suppressBundleInsertion = sortIntoBundles && hasBundle;
@@ -45,7 +69,7 @@ public final class MaskedServerSort {
         List<ItemStack> sorted = SortedInventoryLayout.from(
                 movableStacks, sortType, languageCode, priorityRules,
                 suppressBundleInsertion ? false : sortIntoBundles).stacks();
-        boolean changed = false;
+        boolean changed = filled.changed();
         for (int i = 0; i < movableIndices.size(); i++) {
             ItemStack before = container.getItem(movableIndices.get(i));
             ItemStack after = sorted.get(i);

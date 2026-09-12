@@ -20,6 +20,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class InventorySorterArtifactContractTest {
     private static final String SHA256 = "935100251E9AA5BA3F279DC5AC02F4426F568838986C9EA86CD1B198393A8708";
     private static final long SIZE = 3_777_884L;
+    private static final String CSR_SHA256 = "F93068F86D0DA76E93D754A9C04CD5999FC72B31F39681FC65DBDB09B2443AEB";
+    private static final long CSR_SIZE = 202_884L;
 
     @Test
     void exactInventorySorterArtifactAndBothMaskedSeamsRemainPresent() throws Exception {
@@ -54,7 +56,25 @@ class InventorySorterArtifactContractTest {
     }
 
     @Test
-    void c2FixedSlotAndBundleBypassBoundariesStayNarrow() throws Exception {
+    void exactCsrArtifactExposesIdentityAwareAdmissionBoundary() throws Exception {
+        Path jar = Path.of(System.getProperty("csrReferenceJar"));
+        assertEquals(CSR_SIZE, Files.size(jar));
+        assertEquals(CSR_SHA256, HexFormat.of().withUpperCase().formatHex(
+                MessageDigest.getInstance("SHA-256").digest(Files.readAllBytes(jar))));
+
+        try (JarFile archive = new JarFile(jar.toFile())) {
+            assertNotNull(archive.getEntry("dev/resivore/slotreservations/api/ContainerSlotReservationsApi.class"));
+            assertNotNull(archive.getEntry("dev/resivore/slotreservations/PortableContainerIdentity.class"));
+            MethodNode mayInsert = method(archive,
+                    "dev/resivore/slotreservations/api/ContainerSlotReservationsApi.class",
+                    "mayInsert", "(Lnet/minecraft/world/Container;ILnet/minecraft/world/item/ItemStack;)Z");
+            assertTrue(hasCall(mayInsert,
+                    "dev/resivore/slotreservations/api/ContainerSlotReservationsApi", "classify"));
+        }
+    }
+
+    @Test
+    void c3ReservationFillAndBundleBypassBoundariesStayNarrow() throws Exception {
         Path root = Path.of(System.getProperty("projectRoot"));
         String fixedSlots = Files.readString(root.resolve(
                 "src/main/java/dev/resivore/inventorysortercsrcompat/core/FixedSortSlots.java"));
@@ -62,6 +82,8 @@ class InventorySorterArtifactContractTest {
                 "src/main/java/dev/resivore/inventorysortercsrcompat/mixin/PlayerInventorySorterMixin.java"));
         String clientFallback = Files.readString(root.resolve(
                 "src/main/java/dev/resivore/inventorysortercsrcompat/core/MaskedClientFallbackSort.java"));
+        String serverSort = Files.readString(root.resolve(
+                "src/main/java/dev/resivore/inventorysortercsrcompat/core/MaskedServerSort.java"));
 
         assertTrue(fixedSlots.contains("return ContainerSlotReservationsApi.isReserved(container, localSlot);")
                 && !fixedSlots.contains("ShulkerBoxBlock")
@@ -69,7 +91,14 @@ class InventorySorterArtifactContractTest {
         assertTrue(playerMixin.contains("FixedSortSlots.isBundle(inventory.getItem(slot))")
                 && playerMixin.contains("settings.sortPriorityRules(), false)"));
         assertTrue(clientFallback.contains("if (!hasFixedSlot && !hasBundle) return null;")
+                && clientFallback.contains("ReservationFillPlan.plan(fillSlots)")
+                && clientFallback.contains("ContainerSlotReservationsApi.mayInsert(")
+                && clientFallback.contains("clicks.addAll(sortedClicks.orElseThrow())")
                 && clientFallback.contains("SortedInventoryLayout.from("));
+        assertTrue(serverSort.contains("ReservationFillPlan.plan(fillSlots)")
+                && serverSort.contains("ContainerSlotReservationsApi.mayInsert(container, localSlot, incoming)")
+                && serverSort.indexOf("ReservationFillPlan.plan(fillSlots)")
+                < serverSort.indexOf("SortedInventoryLayout.from("));
     }
 
     private static MethodNode method(JarFile archive, String entry, String name, String descriptor) throws Exception {
