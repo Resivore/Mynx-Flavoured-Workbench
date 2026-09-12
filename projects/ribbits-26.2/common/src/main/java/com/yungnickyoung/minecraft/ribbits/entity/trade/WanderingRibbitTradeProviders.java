@@ -159,6 +159,60 @@ public final class WanderingRibbitTradeProviders {
         return new WanderingRibbitTradeSnapshot(snapshot.seed(), migrated);
     }
 
+    /**
+     * Reattaches the server-only one-shot transaction guard after the ordinary MerchantOffer
+     * codec has decoded a persisted Naturalist fauna range.  The exact range shape is required so
+     * malformed snapshots and unrelated optional providers remain untouched.
+     */
+    public static void restoreNaturalistFaunaOneShotOffers(
+            MerchantOffers offers, WanderingRibbitTradeSnapshot snapshot
+    ) {
+        Objects.requireNonNull(offers, "offers");
+        Objects.requireNonNull(snapshot, "snapshot");
+        if (snapshot.totalOfferCount() != offers.size()) return;
+
+        WanderingRibbitTradeSnapshot.ProviderRange range = snapshot.providers().stream()
+                .filter(candidate -> OPTIONAL_NATURALIST_FAUNA_PROVIDER_ID.equals(candidate.id()))
+                .findFirst().orElse(null);
+        if (range == null
+                || range.schemaVersion() != WanderingRibbitNaturalistFaunaTradeProvider.SCHEMA_VERSION
+                || range.offerCount() != WanderingRibbitNaturalistFaunaTradeProvider.OFFER_COUNT
+                || range.restockPolicy() != WanderingRibbitTradeSnapshot.RestockPolicy.NEVER_RESTOCK) {
+            return;
+        }
+        for (int index = range.firstOffer(); index < range.firstOffer() + range.offerCount(); index++) {
+            if (offers.get(index).getMaxUses() != 1) return;
+        }
+        for (int index = range.firstOffer(); index < range.firstOffer() + range.offerCount(); index++) {
+            offers.set(index, WanderingRibbitOneShotOffer.restore(offers.get(index)));
+        }
+    }
+
+    /** Shared range calculation used by Wandering Ribbit's ordinary restock cadence. */
+    public static List<Integer> ordinaryOfferIndexes(
+            MerchantOffers offers, WanderingRibbitTradeSnapshot snapshot
+    ) {
+        Objects.requireNonNull(offers, "offers");
+        if (snapshot == null || snapshot.totalOfferCount() != offers.size()) return List.of();
+        List<Integer> indexes = new ArrayList<>();
+        for (WanderingRibbitTradeSnapshot.ProviderRange range : snapshot.providers()) {
+            if (range.restockPolicy() != WanderingRibbitTradeSnapshot.RestockPolicy.ORDINARY) continue;
+            for (int index = range.firstOffer(); index < range.firstOffer() + range.offerCount(); index++) {
+                indexes.add(index);
+            }
+        }
+        return List.copyOf(indexes);
+    }
+
+    /** Resets only exact persisted ranges whose provider explicitly permits ordinary restocking. */
+    public static void resetOrdinaryProviderUses(
+            MerchantOffers offers, WanderingRibbitTradeSnapshot snapshot
+    ) {
+        for (int index : ordinaryOfferIndexes(offers, snapshot)) {
+            offers.get(index).resetUses();
+        }
+    }
+
     private static void registerInternal(WanderingRibbitTradeProvider provider) {
         Identifier id = Objects.requireNonNull(provider.id(), "provider.id");
         if (provider.schemaVersion() < 1) {

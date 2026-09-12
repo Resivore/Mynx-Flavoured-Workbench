@@ -199,7 +199,7 @@ class RibbitTradeModuleContractTest {
 
     @Test
     void allRankNamesThresholdsAndMaximumTiersAreExact() {
-        assertArrayEquals(new int[]{0, 10, 30, 60, 100}, RibbitTradeModule.XP_THRESHOLDS);
+        assertArrayEquals(new int[]{0, 5, 15, 30, 50}, RibbitTradeModule.XP_THRESHOLDS);
         assertProfile("gardener", 2, "Sprout Tender", "Toadstool Keeper");
         assertProfile("farmer", 3, "Vine Puller", "Root Wrangler", "Mudfield Steward");
         assertProfile("fisherman", 5, "Pond Forager", "Coral Keeper", "Amphibian Attendant",
@@ -218,7 +218,7 @@ class RibbitTradeModuleContractTest {
     }
 
     @Test
-    void rankProgressionHonorsOrdinaryThresholdsAndBothItemGates() {
+    void rankProgressionUsesFiveTradesPerTierHonorsGatesAndPreservesEarnedXp() {
         for (String profession : List.of("gardener", "farmer", "merchant", "chef", "prospector", "guard")) {
             TradeProfile profile = RibbitTradeModule.profile(profession);
             RibbitTradeState state = new RibbitTradeState();
@@ -228,16 +228,68 @@ class RibbitTradeModuleContractTest {
             }
         }
 
+        TradeProfile chef = RibbitTradeModule.profile("chef");
+        RibbitTradeState ordinary = new RibbitTradeState();
+        int xp = 0;
+        for (int trade = 0; trade < 5; trade++) xp += 1;
+        assertEquals(2, RibbitTradeModule.rankForXp(chef, ordinary, xp),
+                "five tier-one trades unlock rank two");
+        for (int trade = 0; trade < 5; trade++) xp += 2;
+        assertEquals(3, RibbitTradeModule.rankForXp(chef, ordinary, xp),
+                "five tier-two trades unlock rank three");
+        for (int trade = 0; trade < 5; trade++) xp += 3;
+        assertEquals(4, RibbitTradeModule.rankForXp(chef, ordinary, xp),
+                "five tier-three trades unlock rank four");
+        for (int trade = 0; trade < 5; trade++) xp += 4;
+        assertEquals(5, RibbitTradeModule.rankForXp(chef, ordinary, xp),
+                "five tier-four trades unlock rank five");
+
+        assertEquals(2, RibbitTradeModule.rankForXp(RibbitTradeModule.profile("gardener"),
+                new RibbitTradeState(), 50), "lower-rank professions stop at their own maximum");
+        assertEquals(3, RibbitTradeModule.rankForXp(RibbitTradeModule.profile("farmer"),
+                new RibbitTradeState(), 50), "three-tier professions stop at rank three");
+
         RibbitTradeState sorcerer = new RibbitTradeState();
-        assertEquals(1, RibbitTradeModule.rankForXp(RibbitTradeModule.profile("sorcerer"), sorcerer, 100));
+        assertEquals(1, RibbitTradeModule.rankForXp(RibbitTradeModule.profile("sorcerer"), sorcerer, 50));
         sorcerer.sorcererBenzeneGate(true);
-        assertEquals(4, RibbitTradeModule.rankForXp(RibbitTradeModule.profile("sorcerer"), sorcerer, 100));
+        RibbitTradeModule.normalizePersistentState(RibbitTradeModule.profile("sorcerer"), sorcerer);
+        assertEquals(2, sorcerer.rank(), "Benzene promotion reaches rank two");
+        assertEquals(5, sorcerer.xp(), "Benzene promotion uses the new rank-two floor");
+        assertEquals(4, RibbitTradeModule.rankForXp(RibbitTradeModule.profile("sorcerer"), sorcerer, 50));
 
         RibbitTradeState fisherman = new RibbitTradeState();
-        assertEquals(4, RibbitTradeModule.rankForXp(RibbitTradeModule.profile("fisherman"), fisherman, 100));
+        assertEquals(4, RibbitTradeModule.rankForXp(RibbitTradeModule.profile("fisherman"), fisherman, 50));
         fisherman.fishermanOpalGate(true);
-        assertEquals(5, RibbitTradeModule.rankForXp(RibbitTradeModule.profile("fisherman"), fisherman, 100));
-        assertEquals(0, RibbitTradeModule.rankForXp(RibbitTradeModule.profile("nitwit"), new RibbitTradeState(), 100));
+        RibbitTradeModule.normalizePersistentState(RibbitTradeModule.profile("fisherman"), fisherman);
+        assertEquals(5, fisherman.rank(), "Opal promotion reaches rank five");
+        assertEquals(50, fisherman.xp(), "Opal promotion uses the new rank-five floor");
+        assertEquals(5, RibbitTradeModule.rankForXp(RibbitTradeModule.profile("fisherman"), fisherman, 50));
+        assertEquals(0, RibbitTradeModule.rankForXp(RibbitTradeModule.profile("nitwit"), new RibbitTradeState(), 50));
+
+        RibbitTradeState savedLowerThreshold = new RibbitTradeState();
+        savedLowerThreshold.rank(1);
+        savedLowerThreshold.xp(8);
+        RibbitTradeModule.normalizePersistentState(RibbitTradeModule.profile("gardener"), savedLowerThreshold);
+        assertEquals(2, savedLowerThreshold.rank(), "saved earned XP unlocks its newly eligible tier");
+        assertEquals(8, savedLowerThreshold.xp(), "saved XP is never discarded by a lowered threshold");
+
+        RibbitTradeState savedMaximum = new RibbitTradeState();
+        savedMaximum.rank(5);
+        savedMaximum.xp(100);
+        RibbitTradeModule.normalizePersistentState(chef, savedMaximum);
+        assertEquals(5, savedMaximum.rank());
+        assertEquals(100, savedMaximum.xp(), "a former maximum XP value is preserved");
+
+        RibbitTradeState ui = new RibbitTradeState();
+        ui.rank(1);
+        ui.xp(4);
+        assertEquals(8, RibbitTradeModule.uiXpFor(ui, chef));
+        ui.rank(2);
+        ui.xp(5);
+        assertEquals(10, RibbitTradeModule.uiXpFor(ui, chef));
+        ui.rank(3);
+        ui.xp(15);
+        assertEquals(70, RibbitTradeModule.uiXpFor(ui, chef));
     }
 
     @Test

@@ -32,7 +32,7 @@ import java.util.TreeMap;
 
 /** Central, declarative trade-profile layer for the Mynx Ribbit economy. */
 public final class RibbitTradeModule {
-    public static final int[] XP_THRESHOLDS = {0, 10, 30, 60, 100};
+    public static final int[] XP_THRESHOLDS = {0, 5, 15, 30, 50};
     public static final float FIXED_PRICE_MULTIPLIER = 0.0F;
     public static final int CURRENT_TRADE_SCHEMA = 1;
 
@@ -462,14 +462,22 @@ public final class RibbitTradeModule {
     }
 
     public static void normalizePersistentState(RibbitEntity ribbit) {
-        RibbitTradeState state = ribbit.getTradeState();
         TradeProfile profile = profile(ribbit.getRibbitData().getProfession());
+        normalizePersistentState(profile, ribbit.getTradeState());
+    }
+
+    /**
+     * Reconciles persisted rank data against the current schedule without erasing earned XP.
+     * Lowered thresholds may unlock a tier immediately; special-gate caps remain authoritative.
+     */
+    public static void normalizePersistentState(TradeProfile profile, RibbitTradeState state) {
         if (!profile.tiered()) {
             state.rank(0);
             state.xp(0);
             return;
         }
         int rank = Math.max(1, Math.min(state.rank(), profile.maxTier));
+        rank = Math.max(rank, rankForXp(profile, state, state.xp()));
         if ("sorcerer".equals(profile.profession)) {
             rank = state.sorcererBenzeneGate() ? Math.max(rank, 2) : 1;
         }
@@ -477,9 +485,8 @@ public final class RibbitTradeModule {
             rank = state.fishermanOpalGate() ? Math.max(rank, 5) : Math.min(rank, 4);
         }
         state.rank(rank);
-        int maxXp = XP_THRESHOLDS[profile.maxTier - 1];
         int xpFloor = XP_THRESHOLDS[Math.max(0, rank - 1)];
-        state.xp(Math.max(xpFloor, Math.min(state.xp(), maxXp)));
+        state.xp(Math.max(xpFloor, state.xp()));
     }
 
     public static void initializePersistentChoices(RibbitEntity ribbit) {
@@ -587,6 +594,39 @@ public final class RibbitTradeModule {
                 ribbit.getMutableOffers().add(spec.create(ribbit.level()));
             }
         }
+    }
+
+    /**
+     * Lazily appends only newly unlocked tiers for a saved current-schema Ribbit.  It never
+     * rebuilds the existing inventory, so offer uses, demand, special prices, Chef menus, gates,
+     * and persistent selections remain intact.
+     */
+    public static void appendMissingUnlockedTiers(RibbitEntity ribbit, MerchantOffers offers) {
+        TradeProfile profile = profile(ribbit.getRibbitData().getProfession());
+        if (!profile.tiered() || ribbit.getTradeState().tradeSchema() != CURRENT_TRADE_SCHEMA) return;
+
+        initializePersistentChoices(ribbit);
+        int targetRank = ribbit.getTradeState().rank();
+        for (int materializedRank = 1; materializedRank < targetRank; materializedRank++) {
+            if (!offersMatchSelectedSpecs(ribbit, offers, materializedRank)) continue;
+            for (int tier = materializedRank + 1; tier <= targetRank; tier++) {
+                addUnlockedTier(ribbit, tier);
+            }
+            return;
+        }
+    }
+
+    private static boolean offersMatchSelectedSpecs(
+            RibbitEntity ribbit, MerchantOffers offers, int rank
+    ) {
+        List<TradeOfferSpec> specs = selectedSpecs(ribbit, rank);
+        if (offers.size() != specs.size()) return false;
+        for (int index = 0; index < specs.size(); index++) {
+            if (!sameOfferShape(offers.get(index), specs.get(index).create(ribbit.level()))) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private static List<TradeOfferSpec> selectedSpecs(RibbitEntity ribbit, int rank) {

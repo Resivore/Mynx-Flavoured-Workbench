@@ -727,6 +727,7 @@ public class RibbitEntity extends AgeableMob implements
             this.offers = new MerchantOffers();
             RibbitTradeModule.updateTrades(this);
         } else {
+            RibbitTradeModule.appendMissingUnlockedTiers(this, this.offers);
             RibbitTradeModule.ensurePhaseCRedemptionOffer(this, this.offers);
             RibbitTradeModule.restoreStrictComponentMatching(this, this.offers);
         }

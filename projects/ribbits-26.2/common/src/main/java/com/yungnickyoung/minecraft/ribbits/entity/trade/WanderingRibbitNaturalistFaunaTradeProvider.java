@@ -22,7 +22,7 @@ import java.util.List;
  */
 final class WanderingRibbitNaturalistFaunaTradeProvider implements WanderingRibbitTradeProvider {
     static final int OFFER_COUNT = 2;
-    private static final int SCHEMA_VERSION = 1;
+    static final int SCHEMA_VERSION = 1;
     private static final Identifier GLOWCAP = RibbitsCommon.id("glowcap");
     private static final List<Fauna> FAUNA = List.of(
             bucket("bass_bucket", 4, "bass", "bass_medium", "bass_large"),
@@ -75,9 +75,12 @@ final class WanderingRibbitNaturalistFaunaTradeProvider implements WanderingRibb
             resolved.set(selected, resolved.get(index));
             pool.set(index, chosenFauna);
             resolved.set(index, chosenStack);
-            offers.add(new MerchantOffer(new ItemCost(glowcap, chosenFauna.price()), chosenStack,
-                    1, 0, 0.0F));
+            offers.add(faunaOffer(glowcap, chosenFauna.price(), chosenStack));
         }
+    }
+
+    static MerchantOffer faunaOffer(Item glowcap, int price, ItemStack chosenStack) {
+        return new WanderingRibbitOneShotOffer(new ItemCost(glowcap, price), chosenStack);
     }
 
     static List<Fauna> fauna() {

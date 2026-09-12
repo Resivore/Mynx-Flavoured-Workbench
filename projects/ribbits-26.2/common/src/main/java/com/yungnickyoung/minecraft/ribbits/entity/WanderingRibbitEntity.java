@@ -321,6 +321,7 @@ public final class WanderingRibbitEntity extends AbstractVillager implements Geo
         tradeSnapshot = input.read("WanderingTradeSnapshot", WanderingRibbitTradeSnapshot.CODEC).orElse(null);
         if (tradeSnapshot != null) {
             tradeSnapshot = WanderingRibbitTradeProviders.migrateC17NativeMenu(this.getOffers(), tradeSnapshot);
+            WanderingRibbitTradeProviders.restoreNaturalistFaunaOneShotOffers(this.getOffers(), tradeSnapshot);
         }
         wanderTarget = input.read("WanderTarget", BlockPos.CODEC).orElse(null);
         retainedHome = input.read("RetainedHome", BlockPos.CODEC).orElse(null);
@@ -402,24 +403,12 @@ public final class WanderingRibbitEntity extends AbstractVillager implements Geo
     }
 
     private boolean hasExhaustedOrdinaryProviderOffer() {
-        return ordinaryOfferIndexes().stream().anyMatch(index -> this.getOffers().get(index).isOutOfStock());
+        return WanderingRibbitTradeProviders.ordinaryOfferIndexes(this.getOffers(), tradeSnapshot).stream()
+                .anyMatch(index -> this.getOffers().get(index).isOutOfStock());
     }
 
     private void resetOrdinaryProviderUses() {
-        for (int index : ordinaryOfferIndexes()) this.getOffers().get(index).resetUses();
-    }
-
-    /** Fails closed: malformed persisted provider boundaries never refresh an ambiguous offer. */
-    private List<Integer> ordinaryOfferIndexes() {
-        if (tradeSnapshot == null || tradeSnapshot.totalOfferCount() != this.getOffers().size()) return List.of();
-        java.util.ArrayList<Integer> indexes = new java.util.ArrayList<>();
-        for (WanderingRibbitTradeSnapshot.ProviderRange range : tradeSnapshot.providers()) {
-            if (range.restockPolicy() != WanderingRibbitTradeSnapshot.RestockPolicy.ORDINARY) continue;
-            for (int index = range.firstOffer(); index < range.firstOffer() + range.offerCount(); index++) {
-                indexes.add(index);
-            }
-        }
-        return List.copyOf(indexes);
+        WanderingRibbitTradeProviders.resetOrdinaryProviderUses(this.getOffers(), tradeSnapshot);
     }
 
     /**
