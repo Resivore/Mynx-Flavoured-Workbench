@@ -87,6 +87,67 @@ public final class LayerResourceGameTests implements CustomTestMethodInvoker {
     }
 
     @GameTest(maxTicks = 40)
+    public void axisLayerUvPreservesOneToOneTexelDensity(GameTestHelper helper) {
+        NibaruMaterialProfile log = profile("minecraft:oak_log");
+        LayerModelProjection.Projection projection = LayerModelProjection.project(log, SHAPE, false);
+        int checkedFaces = 0;
+
+        for (Direction facing : Direction.values()) {
+            for (int layers = 1; layers <= 4; layers++) {
+                LayerModelProjection.Bounds bounds = LayerModelProjection.bounds(facing, layers);
+                for (Direction.Axis materialAxis : Direction.Axis.values()) {
+                    String key = "facing=" + facing.getSerializedName() + ",layers=" + layers
+                            + ",axis=" + axisName(materialAxis);
+                    JsonObject element = selected(projection, key).getAsJsonArray("elements")
+                            .get(0).getAsJsonObject();
+                    assertBounds(helper, element, bounds, key);
+                    JsonObject faces = element.getAsJsonObject("faces");
+
+                    for (Direction face : Direction.values()) {
+                        JsonObject encoded = faces.getAsJsonObject(face.getSerializedName());
+                        int expectedRotation = expectedAxisRotation(face, materialAxis);
+                        int actualRotation = encoded.has("rotation")
+                                ? encoded.get("rotation").getAsInt() : 0;
+                        String expectedTexture = face.getAxis() == materialAxis ? "#top" : "#side";
+                        helper.assertTrue(encoded.get("texture").getAsString().equals(expectedTexture)
+                                        && actualRotation == expectedRotation,
+                                "Axis Layer lost texture role/grain orientation for " + key + "/" + face
+                                        + ": " + encoded);
+
+                        helper.assertTrue(encoded.has("uv"),
+                                "Axis Layer face relies on implicit UV for " + key + "/" + face);
+                        JsonArray expectedUv = expectedUv(face, bounds, expectedRotation);
+                        JsonArray actualUv = encoded.getAsJsonArray("uv");
+                        helper.assertTrue(actualUv.equals(expectedUv),
+                                "Axis Layer UV rectangle does not follow its rotated face frame for "
+                                        + key + "/" + face + ": expected=" + expectedUv
+                                        + ", actual=" + actualUv);
+
+                        int physicalWidth = faceWidth(face, bounds);
+                        int physicalHeight = faceHeight(face, bounds);
+                        int sampledWidth = Math.abs(actualUv.get(2).getAsInt()
+                                - actualUv.get(0).getAsInt());
+                        int sampledHeight = Math.abs(actualUv.get(3).getAsInt()
+                                - actualUv.get(1).getAsInt());
+                        boolean quarterTurn = expectedRotation == 90 || expectedRotation == 270;
+                        helper.assertTrue(sampledWidth == (quarterTurn ? physicalHeight : physicalWidth)
+                                        && sampledHeight == (quarterTurn ? physicalWidth : physicalHeight),
+                                "Axis Layer texel density is not 1:1 for " + key + "/" + face
+                                        + ": physical=" + physicalWidth + "x" + physicalHeight
+                                        + ", uv=" + sampledWidth + "x" + sampledHeight
+                                        + ", rotation=" + expectedRotation);
+                        checkedFaces++;
+                    }
+                }
+            }
+        }
+
+        helper.assertTrue(checkedFaces == 6 * 4 * 3 * 6,
+                "Axis Layer UV matrix did not cover every state/face: " + checkedFaces);
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
     public void typedTexturesTintAndSpecialVisuals(GameTestHelper helper) {
         NibaruMaterialProfile podzol = profile("minecraft:podzol");
         JsonObject podzolModel = LayerModelProjection.cuboidModel(
@@ -311,6 +372,66 @@ public final class LayerResourceGameTests implements CustomTestMethodInvoker {
 
     private static JsonObject firstFaces(JsonObject model) {
         return model.getAsJsonArray("elements").get(0).getAsJsonObject().getAsJsonObject("faces");
+    }
+
+    private static void assertBounds(GameTestHelper helper, JsonObject element,
+            LayerModelProjection.Bounds bounds, String key) {
+        JsonArray from = element.getAsJsonArray("from");
+        JsonArray to = element.getAsJsonArray("to");
+        helper.assertTrue(from.equals(numbers(bounds.x0(), bounds.y0(), bounds.z0()))
+                        && to.equals(numbers(bounds.x1(), bounds.y1(), bounds.z1())),
+                "Axis Layer geometry changed for " + key + ": from=" + from + ", to=" + to);
+    }
+
+    private static JsonArray expectedUv(Direction face, LayerModelProjection.Bounds bounds,
+            int rotation) {
+        JsonArray ordinary = switch (face) {
+            case DOWN -> numbers(bounds.x0(), 16 - bounds.z1(), bounds.x1(), 16 - bounds.z0());
+            case UP -> numbers(bounds.x0(), bounds.z0(), bounds.x1(), bounds.z1());
+            case NORTH -> numbers(16 - bounds.x1(), 16 - bounds.y1(),
+                    16 - bounds.x0(), 16 - bounds.y0());
+            case SOUTH -> numbers(bounds.x0(), 16 - bounds.y1(), bounds.x1(), 16 - bounds.y0());
+            case WEST -> numbers(bounds.z0(), 16 - bounds.y1(), bounds.z1(), 16 - bounds.y0());
+            case EAST -> numbers(16 - bounds.z1(), 16 - bounds.y1(),
+                    16 - bounds.z0(), 16 - bounds.y0());
+        };
+        if (rotation == 0 || rotation == 180) return ordinary;
+        return numbers(ordinary.get(1).getAsInt(), ordinary.get(0).getAsInt(),
+                ordinary.get(3).getAsInt(), ordinary.get(2).getAsInt());
+    }
+
+    private static int faceWidth(Direction face, LayerModelProjection.Bounds bounds) {
+        return switch (face.getAxis()) {
+            case X -> bounds.z1() - bounds.z0();
+            case Y, Z -> bounds.x1() - bounds.x0();
+        };
+    }
+
+    private static int faceHeight(Direction face, LayerModelProjection.Bounds bounds) {
+        return face.getAxis() == Direction.Axis.Y
+                ? bounds.z1() - bounds.z0() : bounds.y1() - bounds.y0();
+    }
+
+    private static int expectedAxisRotation(Direction face, Direction.Axis materialAxis) {
+        return switch (materialAxis) {
+            case X -> face.getAxis() == Direction.Axis.X ? 0 : 90;
+            case Y -> 0;
+            case Z -> face.getAxis() == Direction.Axis.X ? 90 : 0;
+        };
+    }
+
+    private static String axisName(Direction.Axis axis) {
+        return switch (axis) {
+            case X -> "x";
+            case Y -> "y";
+            case Z -> "z";
+        };
+    }
+
+    private static JsonArray numbers(Number... values) {
+        JsonArray result = new JsonArray();
+        for (Number value : values) result.add(value);
+        return result;
     }
 
     private static boolean close(double left, double right) {
