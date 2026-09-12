@@ -1,12 +1,15 @@
-# BGE C67 runtime procedure
+# BGE C68 runtime procedure
 
-Current candidate: `cnm-nibaru-integration-4.2.11-bge.canary67.vanilla-family-coverage+26.2.jar`, SHA-256 `a7ddde452aa4c80f1d001ec3797e35747672acd6cb925aca750e1bb5f698b168`, embedded version `4.2.11-bge.canary67.vanilla-family-coverage+26.2`, source checkpoint `c516ffa118405a1c67d5fe9c9f3cf21bded77d98`. Exact C58 remains accepted; C62 and C64 remain external runtime-failed provenance.
+Current candidate: `cnm-nibaru-integration-4.2.12-bge.canary68.layer-axis-uv+26.2.jar`, SHA-256 `823cfe9f9fcc32c1cf73e1ddfdfc6489efda0753df64679723df56204a4bf732`, embedded version `4.2.12-bge.canary68.layer-axis-uv+26.2`, source checkpoint `9bc80ee2538a39b9fa15606611dc050a1cf6bff2`. Exact C58 remains accepted; C62 and C64 remain external runtime-failed provenance.
 
-C67 is `NOT_DEPLOYED` and `RUNTIME_UNTESTED`. Its clean Java 25 build, archive checks, and 106/106 Minecraft 26.2 GameTests are static evidence only. The project lifecycle remains `TESTING` solely because its immutable UUID is assigned to an older Slot A cohort; that does not deploy or ready C67. Use only the dedicated Matcha Flavoured 26.2 Workbench. Never use or modify the protected Matcha Flavoured 26.1.2 profile.
+C68 is `NOT_DEPLOYED` and `RUNTIME_UNTESTED`. Its clean Java 25 build, archive checks, and 107/107 Minecraft 26.2 GameTests are static evidence only. The project lifecycle remains `TESTING` solely because its immutable UUID is assigned to an older Slot A cohort; that does not deploy or ready C68. Use only the dedicated Matcha Flavoured 26.2 Workbench. Never use or modify the protected Matcha Flavoured 26.1.2 profile.
 
 ## Manual checks
 
-1. Confirm End Stone Bricks exposes its existing vanilla Slab, Stairs, and Wall plus exactly one BGE Layer, Corner, and Quarter Column. Check inventory models, world models/textures, placement/orientation, waterlogging, culling, and that no missing-model, missing-texture, registry-collision, or relevant exception occurs.
-2. Repeat that full BGE trio check for Cobblestone, Polished Deepslate or Tuff Bricks, Nether Bricks or Prismarine, and Cinnabar or Sulfur. Confirm the source standard forms remain provider-owned and only BGE’s Layer/Corner/Quarter Column are new.
-3. Recheck an existing MSSW-derived family and an optional-provider family. Confirm their Vertical Slab and Step behavior, BGE forms, placement, waterlogging, and generated resources remain unchanged.
-4. Exercise Layer, Corner, and Quarter Column placement/orientation and neighbor-aware culling for a newly admitted family; confirm the established one-source-per-blockspace economy and normal drops. Record only observed `PASS`, `FAIL`, or `INCONCLUSIVE` evidence.
+1. Place an Oak Log Layer at one-layer thickness and inspect every exposed edge.
+2. Repeat at two and three layers; optionally confirm the four-layer full block remains normal.
+3. Rotate/place the Layer on different block faces, covering all six placement facings.
+4. Test material axes X, Y, and Z if obtainable through the normal BGE interaction/state system.
+5. Confirm bark grain is neither stretched nor compressed on any thin face.
+6. Confirm end-grain faces still use the end texture and remain correctly oriented.
+7. Confirm an ordinary non-axis material such as Oak Planks appears unchanged. Record only actually observed `PASS`, `FAIL`, or `INCONCLUSIVE` evidence.
