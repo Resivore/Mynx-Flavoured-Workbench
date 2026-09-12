@@ -179,6 +179,25 @@ final class ShulkerPanelRenderLifecycleTest {
     }
 
     @Test
+    void realCursorStratumFollowsTheVisiblePanelStratum() throws Exception {
+        InjectionSpec spec = injectionSpec(C12);
+        byte[] transformed = transform(classBytes(BASE), spec);
+        MethodShape carried = method(transformed, "extractCarriedItem", CARRIED);
+        int panelHook = indexOf(carried.calls, call -> call.owner.equals(PROBE) && call.name.equals("mark"));
+        int vanillaCursorStratum = indexOf(carried.calls, call -> call.owner.equals(
+                "net/minecraft/client/gui/GuiGraphicsExtractor")
+                && call.name.equals("nextStratum") && call.descriptor.equals("()V"));
+        assertTrue(panelHook >= 0 && vanillaCursorStratum > panelHook,
+                "The exact 26.2 carried-item path must create its cursor stratum after CSR's head hook");
+
+        MethodShape panelRender = method(jarBytes(C12, PANEL + ".class"), "render",
+                "(" + GFX + "Lnet/minecraft/core/NonNullList;)V");
+        assertEquals(1, panelRender.count(callOwned("net/minecraft/client/gui/GuiGraphicsExtractor",
+                "nextStratum", "()V")),
+                "The panel must reserve one visible stratum before vanilla submits the real cursor item");
+    }
+
+    @Test
     void acceptedInventoryExtendedSlotsUseTheSameSingleCommonHook() throws Exception {
         RenderLifecycle transformedC12 = transformedLifecycle(injectionSpec(C12));
         Host extendedOrdinaryStorage = eligibleHost(53);
@@ -507,6 +526,13 @@ final class ShulkerPanelRenderLifecycleTest {
     private static Predicate<Call> callOwned(String owner, String name, String descriptor) {
         return call -> call.owner.equals(owner) && call.name.equals(name)
                 && (descriptor == null || call.descriptor.equals(descriptor));
+    }
+
+    private static int indexOf(List<Call> calls, Predicate<Call> predicate) {
+        for (int index = 0; index < calls.size(); index++) {
+            if (predicate.test(calls.get(index))) return index;
+        }
+        return -1;
     }
 
     private static byte[] classBytes(String internalName) throws IOException {
