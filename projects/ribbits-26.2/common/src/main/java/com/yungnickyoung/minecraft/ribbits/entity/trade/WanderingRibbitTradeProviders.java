@@ -188,6 +188,43 @@ public final class WanderingRibbitTradeProviders {
         }
     }
 
+    /**
+     * Authorizes result removal for the exact active offer object owned by this persisted merchant.
+     * Naturalist fauna ranges are one-shot even when a stale menu result survives long enough to
+     * reach a second server click; ordinary provider offers retain vanilla behavior.
+     */
+    public static boolean mayTakeMerchantResult(
+            MerchantOffers offers,
+            WanderingRibbitTradeSnapshot snapshot,
+            MerchantOffer activeOffer
+    ) {
+        Objects.requireNonNull(offers, "offers");
+        if (activeOffer == null) return false;
+
+        int activeIndex = -1;
+        for (int index = 0; index < offers.size(); index++) {
+            if (offers.get(index) == activeOffer) {
+                activeIndex = index;
+                break;
+            }
+        }
+        if (activeIndex < 0) return false;
+        if (snapshot == null || snapshot.totalOfferCount() != offers.size()) return true;
+
+        WanderingRibbitTradeSnapshot.ProviderRange range = snapshot.providers().stream()
+                .filter(candidate -> OPTIONAL_NATURALIST_FAUNA_PROVIDER_ID.equals(candidate.id()))
+                .findFirst().orElse(null);
+        if (range == null
+                || range.schemaVersion() != WanderingRibbitNaturalistFaunaTradeProvider.SCHEMA_VERSION
+                || range.offerCount() != WanderingRibbitNaturalistFaunaTradeProvider.OFFER_COUNT
+                || range.restockPolicy() != WanderingRibbitTradeSnapshot.RestockPolicy.NEVER_RESTOCK) {
+            return true;
+        }
+        boolean fauna = activeIndex >= range.firstOffer()
+                && activeIndex < range.firstOffer() + range.offerCount();
+        return !fauna || (activeOffer.getUses() == 0 && !activeOffer.isOutOfStock());
+    }
+
     /** Shared range calculation used by Wandering Ribbit's ordinary restock cadence. */
     public static List<Integer> ordinaryOfferIndexes(
             MerchantOffers offers, WanderingRibbitTradeSnapshot snapshot

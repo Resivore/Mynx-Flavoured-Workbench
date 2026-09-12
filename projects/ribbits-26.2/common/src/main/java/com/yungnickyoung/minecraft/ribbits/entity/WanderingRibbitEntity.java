@@ -12,6 +12,7 @@ import com.geckolib.util.GeckoLibUtil;
 import com.yungnickyoung.minecraft.ribbits.entity.goal.WanderingRibbitMoveToTargetGoal;
 import com.yungnickyoung.minecraft.ribbits.entity.trade.WanderingRibbitTradeProviders;
 import com.yungnickyoung.minecraft.ribbits.entity.trade.WanderingRibbitTradeSnapshot;
+import com.yungnickyoung.minecraft.ribbits.entity.trade.WanderingRibbitMerchantMenu;
 import com.yungnickyoung.minecraft.ribbits.entity.trade.RibbitRestockPolicy;
 import com.yungnickyoung.minecraft.ribbits.entity.trade.RibbitTradeState;
 import com.yungnickyoung.minecraft.ribbits.module.SoundModule;
@@ -26,6 +27,7 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.Entity;
@@ -53,6 +55,7 @@ import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.OptionalInt;
 import java.util.UUID;
 
 /** A dedicated profession-free, non-restocking Ribbit merchant. */
@@ -180,6 +183,31 @@ public final class WanderingRibbitEntity extends AbstractVillager implements Geo
             return InteractionResult.SUCCESS;
         }
         return super.mobInteract(player, hand);
+    }
+
+    /** Uses the native merchant screen with a Wandering-Ribbit-only server result-slot guard. */
+    @Override
+    public void openTradingScreen(Player player, Component title, int merchantLevel) {
+        OptionalInt containerId = player.openMenu(new SimpleMenuProvider(
+                (id, inventory, menuPlayer) -> new WanderingRibbitMerchantMenu(id, inventory, this),
+                title
+        ));
+        if (containerId.isPresent()) {
+            var currentOffers = this.getOffers();
+            if (!currentOffers.isEmpty()) {
+                player.sendMerchantOffers(
+                        containerId.getAsInt(), currentOffers, merchantLevel, this.getVillagerXp(),
+                        this.showProgressBar(), this.canRestock()
+                );
+            }
+        }
+    }
+
+    /** Called by the server result slot before any result item is transferred to the player. */
+    public boolean mayTakeMerchantResult(@Nullable MerchantOffer activeOffer) {
+        return WanderingRibbitTradeProviders.mayTakeMerchantResult(
+                this.getOffers(), this.tradeSnapshot, activeOffer
+        );
     }
 
     @Override
