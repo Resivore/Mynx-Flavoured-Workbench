@@ -2,8 +2,8 @@
   "$schema": "../../schemas/runtime-state.schema.json",
   "schema_version": 2,
   "activation": "ACTIVE",
-  "revision": 117,
-  "updated_at": "2026-09-07T18:35:28Z",
+  "revision": 120,
+  "updated_at": "2026-09-12T16:50:00Z",
   "accepted_baseline": {
     "revision": 28,
     "provenance": {
@@ -1161,12 +1161,46 @@
               "failed": []
             }
           }
+        },
+        {
+          "unit": {
+            "deployment_id": "5581e060-ad94-459f-beea-31837424f6b9",
+            "project_uuid": "4fcf330a-9726-4b76-b7ac-b75d5e662883",
+            "project_id": "macaws-trapdoors-moreculling-compat",
+            "project_identity_source": "CURRENT_MANIFEST",
+            "version": "0.1.0-canary1",
+            "source_commit": "c5afce9f367d341e770be0ce89e198e44044074e",
+            "artifacts": [
+              {
+                "artifact_id": "fe4b558a-3900-4147-b2a8-23552a427f8b",
+                "kind": "MOD",
+                "filename": "macaws-trapdoors-moreculling-compat-0.1.0-canary1.jar",
+                "sha256": "d6ffd125e082978b594ca01c075bb706ddf7f5696dee1e7d15e357cbbfdb4af5",
+                "ownership_keys": [
+                  "mod:macaws_trapdoors_moreculling_compat"
+                ],
+                "source": {
+                  "type": "REPOSITORY",
+                  "path": "projects/macaws-trapdoors-moreculling-compat/artifacts/macaws-trapdoors-moreculling-compat-0.1.0-canary1.jar"
+                }
+              }
+            ]
+          },
+          "replaces_accepted_deployment_id": null,
+          "runtime_result": {
+            "classification": "UNTESTED",
+            "recorded_at": null,
+            "evidence": {
+              "passed": [],
+              "failed": []
+            }
+          }
         }
       ],
       "deployment": {
         "state": "READY_TO_TEST_VERIFIED",
-        "deployed_at": "2026-09-07T03:57:38.772589Z",
-        "ready_verified_at": "2026-09-07T03:57:38.772589Z"
+        "deployed_at": "2026-09-12T16:49:00Z",
+        "ready_verified_at": "2026-09-12T16:50:00Z"
       }
     }
   }

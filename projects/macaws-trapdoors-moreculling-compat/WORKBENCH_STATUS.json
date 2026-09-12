@@ -12,7 +12,7 @@
     "legacy_ids": []
   },
   "definition": {
-    "lifecycle": "ACTIVE",
+    "lifecycle": "TESTING",
     "goals": [
       "Prevent exactly the Macaw's Trapdoors 1.1.5 ranch and bark families from culling neighboring solid faces through their intentionally open or transparent model regions under MoreCulling 1.8.1.",
       "Preserve every Macaw registry identity, model, texture, blockstate property, placement and interaction behavior while leaving all unrelated trapdoors and MoreCulling behavior unchanged.",
@@ -85,7 +85,7 @@
     ]
   },
   "state": {
-    "milestone": "Canary 1 is a client-only, code-only compatibility artifact using MoreCulling's supported per-block API for exactly 23 Macaw ranch/bark IDs. Two clean Java 25 builds were byte-identical and 5/5 provider, scope, API, IBF, and artifact contract tests passed; it is not yet deployed or runtime-tested.",
+    "milestone": "Exact Canary 1 is physically verified in dedicated Workbench Test Slot B beside unchanged IBF Canary 4. Its 23-ID code-only compatibility scope and artifact bytes are unchanged; Minecraft runtime behavior remains untested.",
     "releases": {
       "current": {
         "version": "0.1.0-canary1",
@@ -128,16 +128,16 @@
     },
     "validation": {
       "build": "CONTROLLED_VALIDATION_PASS",
-      "deployment": "NOT_DEPLOYED",
+      "deployment": "READY_TO_TEST_VERIFIED",
       "runtime": "RUNTIME_UNTESTED"
     },
     "blocker": null
   },
   "synchronization": {
-    "revision": 1,
-    "activity_at": "2026-09-12T16:36:53Z",
-    "updated_at": "2026-09-12T16:36:53Z",
-    "last_codex_at": "2026-09-12T16:36:53Z",
+    "revision": 2,
+    "activity_at": "2026-09-12T16:50:00Z",
+    "updated_at": "2026-09-12T16:50:00Z",
+    "last_codex_at": "2026-09-12T16:50:00Z",
     "source_commit": "c5afce9f367d341e770be0ce89e198e44044074e",
     "google_sheet": {
       "participates": true,
