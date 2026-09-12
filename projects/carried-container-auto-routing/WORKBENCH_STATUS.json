@@ -22,7 +22,7 @@
       "Extend Survival Pick Block only after vanilla ordinary-inventory failure, retrieving the exact matching physical stack from an unlocked carried shulker and atomically re-homing the displaced hotbar stack without changing Creative behavior, routing locks, or CSR reservations."
     ],
     "scope": [
-      "Canonical 0.3.15-shulker-pick-block-canary1 for Minecraft Java 26.2 Fabric, implementation checkpoint dbb8f82a260affff8884dd47628169bb4eb1be7a; server-authoritative Survival Pick Block successor validated with optional CSR Canary 19.",
+      "Canonical 0.3.15-shulker-pick-block-canary1 for Minecraft Java 26.2 Fabric, implementation checkpoint dbb8f82aeee2c0f3357f93867c517e05d43ed5a5; server-authoritative Survival Pick Block successor validated with optional CSR Canary 19.",
       "Minecraft 26.2 ServerGamePacketListenerImpl.tryPickItem remains the sole block/entity Pick Block authority. Vanilla Inventory.findSlotMatchingItem runs first with ItemStack.isSameItemSameComponents; existing hotbar selection or Inventory.pickSlot behavior wins unchanged. Only a Survival/Adventure NOT_FOUND result enters CCAR, while Creative, spectator, and client-side calls remain vanilla-owned.",
       "CCAR searches only supported unlocked carried shulkers in its established physical ordinary-inventory order followed by offhand, and each shulker's physical slots 0 through 26. Bundles, unsupported carriers, locked hosts, and recursive nested-container contents are excluded. The entire physical matching source stack moves, matching vanilla Inventory.pickSlot quantity semantics, and Inventory.getSuitableHotbarSlot selects the destination.",
       "Before mutation, Pick Block snapshots the complete live ordinary-storage list, offhand, selected slot, source host/slot/stack, displaced stack, every compatible-partial allocation, optional first empty ordinary slot, and exact-source-slot fallback. A second exact count-and-component validation precedes the first live write; stale state or an incomplete legal destination aborts without mutation.",
@@ -107,7 +107,7 @@
           "filename": "carried-container-auto-routing-0.3.15-shulker-pick-block-canary1.jar",
           "sha256": "340b3cd2bfcb977c00cc06071893f9627ba0c32b26325d381a62922000561b3c"
         },
-        "source_commit": "dbb8f82a260affff8884dd47628169bb4eb1be7a",
+        "source_commit": "dbb8f82aeee2c0f3357f93867c517e05d43ed5a5",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
@@ -145,11 +145,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 11,
-    "activity_at": "2026-09-12T04:12:09Z",
-    "updated_at": "2026-09-12T04:12:09Z",
-    "last_codex_at": "2026-09-12T04:12:09Z",
-    "source_commit": "dbb8f82a260affff8884dd47628169bb4eb1be7a",
+    "revision": 12,
+    "activity_at": "2026-09-12T04:21:06Z",
+    "updated_at": "2026-09-12T04:21:06Z",
+    "last_codex_at": "2026-09-12T04:21:06Z",
+    "source_commit": "dbb8f82aeee2c0f3357f93867c517e05d43ed5a5",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null

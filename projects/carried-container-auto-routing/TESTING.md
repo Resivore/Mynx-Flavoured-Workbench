@@ -2,7 +2,7 @@
 
 **ACTIVE — CONTROLLED VALIDATION PASS — NOT DEPLOYED — RUNTIME UNTESTED**
 
-Current CCAR is `carried-container-auto-routing-0.3.15-shulker-pick-block-canary1.jar`, SHA-256 `340b3cd2bfcb977c00cc06071893f9627ba0c32b26325d381a62922000561b3c`, source `dbb8f82a260affff8884dd47628169bb4eb1be7a`; pair it with CSR Canary 19. Test only under explicit Test Instance Manager ownership in the dedicated Matcha Flavoured 26.2 Workbench. Never open or alter the protected Matcha Flavoured 26.1.2 profile.
+Current CCAR is `carried-container-auto-routing-0.3.15-shulker-pick-block-canary1.jar`, SHA-256 `340b3cd2bfcb977c00cc06071893f9627ba0c32b26325d381a62922000561b3c`, source `dbb8f82aeee2c0f3357f93867c517e05d43ed5a5`; pair it with CSR Canary 19. Test only under explicit Test Instance Manager ownership in the dedicated Matcha Flavoured 26.2 Workbench. Never open or alter the protected Matcha Flavoured 26.1.2 profile.
 
 1. In Survival, Pick Block an item already in the selected hotbar, another hotbar slot, and ordinary storage. Confirm vanilla selection/swap behavior is unchanged and every carried shulker remains byte-for-byte unchanged.
 2. Remove all ordinary matches and place differently sized exact-component source stacks in multiple unlocked carried shulkers and physical slots. Confirm the first CCAR carrier and lowest physical matching slot win, the entire source stack moves, and vanilla's suitable empty/non-enchanted hotbar choice is preserved.
