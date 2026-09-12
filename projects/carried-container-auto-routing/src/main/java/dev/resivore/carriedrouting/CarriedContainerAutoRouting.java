@@ -13,6 +13,10 @@ public final class CarriedContainerAutoRouting implements ModInitializer {
     @Override public void onInitialize() {
         PayloadTypeRegistry.serverboundPlay().register(ToggleLockPayload.TYPE, ToggleLockPayload.CODEC);
         PayloadTypeRegistry.clientboundPlay().register(RoutedPickupSoundPayload.TYPE, RoutedPickupSoundPayload.CODEC);
+        PayloadTypeRegistry.clientboundPlay().register(
+                RoutedPickupSoundFallbackPayload.TYPE,
+                RoutedPickupSoundFallbackPayload.CODEC
+        );
         ServerPlayNetworking.registerGlobalReceiver(ToggleLockPayload.TYPE, (payload, context) -> context.server().execute(() -> {
             ItemStack target = ItemStack.EMPTY;
             AbstractContainerMenu menu = context.player().containerMenu;

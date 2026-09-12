@@ -6,6 +6,10 @@
   "description": "Routes incoming items through main hand, hotbar, and offhand before ordinary inventory.",
   "authors": ["Resivore"],
   "environment": "*",
+  "entrypoints": {
+    "main": ["dev.resivore.offhandqol.OffhandShiftClickQol"],
+    "client": ["dev.resivore.offhandqol.client.OffhandShiftClickQolClient"]
+  },
   "mixins": ["offhand_shift_click_qol.mixins.json"],
   "depends": {
     "fabricloader": ">=0.19.3",

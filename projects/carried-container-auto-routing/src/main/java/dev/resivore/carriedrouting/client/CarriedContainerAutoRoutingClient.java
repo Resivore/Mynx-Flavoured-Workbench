@@ -3,6 +3,7 @@ package dev.resivore.carriedrouting.client;
 import com.mojang.blaze3d.platform.InputConstants;
 import dev.resivore.carriedrouting.RoutingLock;
 import dev.resivore.carriedrouting.RoutingService;
+import dev.resivore.carriedrouting.RoutedPickupSoundFallbackPayload;
 import dev.resivore.carriedrouting.RoutedPickupSoundPayload;
 import dev.resivore.carriedrouting.ToggleLockPayload;
 import dev.resivore.carriedrouting.mixin.AbstractContainerScreenAccessor;
@@ -19,6 +20,8 @@ import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import org.lwjgl.glfw.GLFW;
@@ -30,6 +33,9 @@ public final class CarriedContainerAutoRoutingClient implements ClientModInitial
         ClientPlayNetworking.registerGlobalReceiver(RoutedPickupSoundPayload.TYPE, (payload, context) ->
                 context.client().execute(() -> RoutedPickupSoundState.mark(payload.itemEntityId()))
         );
+        ClientPlayNetworking.registerGlobalReceiver(RoutedPickupSoundFallbackPayload.TYPE, (payload, context) ->
+                context.client().execute(() -> playFallbackPickupSound(context.client(), payload))
+        );
         KeyMapping.Category category = KeyMapping.Category.register(Identifier.fromNamespaceAndPath("carried_container_auto_routing", "routing"));
         toggle = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.carried_container_auto_routing.toggle_lock", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_R, category));
         ClientTickEvents.END_CLIENT_TICK.register(client -> { while (toggle.consumeClick()) sendTarget(client); });
@@ -38,6 +44,16 @@ public final class CarriedContainerAutoRoutingClient implements ClientModInitial
                     ? "text.carried_container_auto_routing.locked" : "text.carried_container_auto_routing.unlocked").withStyle(ChatFormatting.DARK_GRAY));
         });
         registerCsrHeaderBadgeWhenAvailable();
+    }
+
+    private static void playFallbackPickupSound(Minecraft client, RoutedPickupSoundFallbackPayload payload) {
+        if (client.level == null) return;
+        float pitch = RoutedPickupSoundState.vanillaPickupPitch(client.level.getRandom());
+        if (payload.lowerPitch()) pitch *= RoutedPickupSoundState.PITCH_MULTIPLIER;
+        client.level.playLocalSound(
+                payload.x(), payload.y(), payload.z(), SoundEvents.ITEM_PICKUP, SoundSource.PLAYERS,
+                0.2F, pitch, false
+        );
     }
 
     private static void registerCsrHeaderBadgeWhenAvailable() {
