@@ -53,4 +53,3 @@ incomplete orientations/angles, ambiguous lighting, missing IBF availability,
 startup/resource errors, or inability to bind observations to the exact managed
 deployment. Do not infer a runtime pass from compilation, provider/API checks,
 manager readiness, or startup alone.
-
