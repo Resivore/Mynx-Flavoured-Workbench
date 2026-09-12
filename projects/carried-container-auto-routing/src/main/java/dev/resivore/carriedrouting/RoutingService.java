@@ -109,14 +109,12 @@ public final class RoutingService {
             int excludedInventorySlot,
             boolean excludeOffhand
     ) {
-        // Preserve the already-runtime-passing stable physical inventory order.
-        for (int i = 0; i < inventory.getNonEquipmentItems().size() && !incoming.isEmpty(); i++) {
-            if (i == excludedInventorySlot) continue;
-            RoutingDestination destination = destination(inventory.getItem(i));
-            if (destination != null && destination.qualifies(incoming)) destination.insert(incoming);
-        }
-        if (!excludeOffhand && !incoming.isEmpty()) {
-            RoutingDestination destination = destination(player.getOffhandItem());
+        // Shared with Pick Block: physical ordinary slots first, then offhand.
+        for (CarriedContainerOrder.Host host : CarriedContainerOrder.hosts(
+                inventory.getNonEquipmentItems().size(), excludedInventorySlot, excludeOffhand)) {
+            if (incoming.isEmpty()) return;
+            ItemStack carrier = host.offhand() ? player.getOffhandItem() : inventory.getItem(host.inventorySlot());
+            RoutingDestination destination = destination(carrier);
             if (destination != null && destination.qualifies(incoming)) destination.insert(incoming);
         }
     }
@@ -180,6 +178,11 @@ public final class RoutingService {
 
     public static boolean isSupported(ItemStack stack) { return destination(stack) != null; }
 
+    static boolean isSupportedShulker(ItemStack stack) {
+        return stack.getItem() instanceof net.minecraft.world.item.BlockItem blockItem
+                && blockItem.getBlock() instanceof ShulkerBoxBlock;
+    }
+
     public record RoutingResult(int totalItemsMoved, int carriedContainerItemsMoved) {
         public static final RoutingResult NONE = new RoutingResult(0, 0);
 
@@ -188,7 +191,7 @@ public final class RoutingService {
 
     private static RoutingDestination destination(ItemStack stack) {
         if (stack.getItem() instanceof BundleItem) return new BundleDestination(stack);
-        if (stack.getItem() instanceof net.minecraft.world.item.BlockItem blockItem && blockItem.getBlock() instanceof ShulkerBoxBlock) return new ShulkerDestination(stack);
+        if (isSupportedShulker(stack)) return new ShulkerDestination(stack);
         return null;
     }
 }
