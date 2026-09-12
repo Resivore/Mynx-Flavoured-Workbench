@@ -5,7 +5,7 @@ base { archivesName = project.archives_base_name }
 repositories { maven { url = 'https://maven.fabricmc.net/' } }
 dependencies {
     compileOnly files(providers.gradleProperty('csrApiJar').getOrElse(
-            '../container-slot-reservations/build/libs/container-slot-reservations-0.1.0-canary16.jar'))
+            '../container-slot-reservations/build/libs/container-slot-reservations-0.1.0-canary18.jar'))
     if (providers.gradleProperty('csrRuntimeJar').isPresent()) {
         testImplementation files(providers.gradleProperty('csrRuntimeJar').get())
         runtimeOnly files(providers.gradleProperty('csrRuntimeJar').get())

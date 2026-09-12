@@ -41,6 +41,7 @@ public final class ShulkerPanel {
     private static ShulkerPanelGeometry geometry;
     private static int hoveredCell = -1;
     private static final ShulkerPanelState STATE = new ShulkerPanelState();
+    private static final SecondaryDrag SECONDARY_DRAG = new SecondaryDrag();
     private static String expectedFingerprint;
     private static int lastSentSelection = Integer.MIN_VALUE;
 
@@ -53,8 +54,7 @@ public final class ShulkerPanel {
         Candidate candidate = eligible(screen, hoveredSlot, leftPos, topPos);
         boolean insideOwnedArea = binding != null && geometry != null
                 && (geometry.bounds().contains(mouseX, mouseY)
-                || binding.hostBounds().contains(mouseX, mouseY)
-                || geometry.corridorContains(binding.hostBounds(), mouseX, mouseY));
+                || binding.hostBounds().contains(mouseX, mouseY));
 
         if (binding == null) {
             if (candidate == null) return;
@@ -65,11 +65,9 @@ public final class ShulkerPanel {
             close(true); return;
         }
 
-        geometry = ShulkerPanelGeometry.place(graphics.guiWidth(), graphics.guiHeight(),
-                leftPos, imageWidth, binding.hostBounds());
+        geometry = ShulkerPanelGeometry.place(graphics.guiWidth(), graphics.guiHeight(), binding.hostBounds());
         boolean retained = binding.hostBounds().contains(mouseX, mouseY)
-                || geometry.bounds().contains(mouseX, mouseY)
-                || geometry.corridorContains(binding.hostBounds(), mouseX, mouseY);
+                || geometry.bounds().contains(mouseX, mouseY);
         if (!STATE.retain(retained)) { close(false); return; }
 
         hoveredCell = geometry.slot(mouseX, mouseY);
@@ -191,8 +189,10 @@ public final class ShulkerPanel {
 
     private static void renderHeader(GuiGraphicsExtractor graphics) {
         ItemStack stack = binding.slot().getItem();
+        Optional<ShulkerPanelHeaderDecorations.ResolvedDecoration> resolved =
+                ShulkerPanelHeaderDecorations.resolve(stack);
         Optional<ShulkerPanelHeaderDecorations.Decoration> decoration =
-                ShulkerPanelHeaderDecorations.find(stack);
+                resolved.map(ShulkerPanelHeaderDecorations.ResolvedDecoration::decoration);
         int decorationWidth = decoration.map(ShulkerPanelHeaderDecorations.Decoration::width).orElse(0);
         Component title = truncateTitle(stack.getHoverName(), geometry.titleWidth(decorationWidth));
         // Minecraft 26.2 GuiGraphicsExtractor text expects ARGB, including opaque alpha.
@@ -237,37 +237,70 @@ public final class ShulkerPanel {
                 && (hovered == binding.slot() || geometry.bounds().contains(mouseX, mouseY));
     }
 
-    public static boolean click(double mouseX, double mouseY, int button, boolean standardClick) {
+    public static boolean click(double mouseX, double mouseY, int button, boolean standardClick,
+                                boolean shiftPrimary) {
         if (binding == null || geometry == null || !geometry.bounds().contains(mouseX, mouseY)) return false;
-        STATE.capturePointer();
+        if (button == 0 && standardClick && clickHeaderDecoration(mouseX, mouseY)) return true;
         int slot = geometry.slot(mouseX, mouseY);
-        if (standardClick && slot >= 0 && (button == 0 || button == 1)
-                && ClientPlayNetworking.canSend(ShulkerPanelContentActionPayload.TYPE)) {
-            ClientPlayNetworking.send(new ShulkerPanelContentActionPayload(binding.menuId(), binding.locator(), slot,
-                    button == 0 ? ShulkerPanelContentActionPayload.Click.PRIMARY
-                            : ShulkerPanelContentActionPayload.Click.SECONDARY,
-                    binding.fingerprint()));
+        if (slot >= 0) {
+            if (shiftPrimary) sendContent(slot, ShulkerPanelContentActionPayload.Click.QUICK_MOVE);
+            else if (standardClick && (button == 0 || button == 1)) {
+                if (button == 1) SECONDARY_DRAG.begin(slot);
+                sendContent(slot, button == 0 ? ShulkerPanelContentActionPayload.Click.PRIMARY
+                        : ShulkerPanelContentActionPayload.Click.SECONDARY);
+            }
+        } else if (button == 1) {
+            SECONDARY_DRAG.reset();
         }
         return true;
+    }
+
+    private static boolean clickHeaderDecoration(double mouseX, double mouseY) {
+        ItemStack stack = binding.slot().getItem();
+        Optional<ShulkerPanelHeaderDecorations.ResolvedDecoration> resolved =
+                ShulkerPanelHeaderDecorations.resolve(stack);
+        if (resolved.isEmpty()) return false;
+        ShulkerPanelHeaderDecorations.Decoration decoration = resolved.orElseThrow().decoration();
+        // Renderers receive a header-aligned origin. The supplied CCAR art starts one pixel below it.
+        ShulkerPanelGeometry.Rect bounds = new ShulkerPanelGeometry.Rect(
+                geometry.headerDecorationX(decoration.width()),
+                geometry.headerDecorationY(decoration.height()) + 1,
+                decoration.width(), decoration.height());
+        if (!bounds.contains(mouseX, mouseY)) return false;
+        return resolved.orElseThrow().interaction().map(interaction -> interaction.handler().click(
+                new ShulkerPanelHeaderDecorations.ClickContext(binding.menuId(), binding.menuSlot())
+        )).orElse(false);
+    }
+
+    private static void sendContent(int slot, ShulkerPanelContentActionPayload.Click click) {
+        if (ClientPlayNetworking.canSend(ShulkerPanelContentActionPayload.TYPE)) {
+            ClientPlayNetworking.send(new ShulkerPanelContentActionPayload(binding.menuId(), binding.locator(), slot,
+                    click, binding.fingerprint()));
+        }
     }
 
     public static boolean ownsHoveredCell() {
         return binding != null && geometry != null && hoveredCell >= 0;
     }
 
-    public static boolean drag(double mouseX, double mouseY) {
-        return STATE.ownsDrag(binding != null && geometry != null && geometry.bounds().contains(mouseX, mouseY));
+    public static boolean drag(double mouseX, double mouseY, int button) {
+        boolean insidePanel = binding != null && geometry != null && geometry.bounds().contains(mouseX, mouseY);
+        if (!STATE.ownsDrag(insidePanel)) return false;
+        if (button == 1) {
+            int slot = geometry.slot(mouseX, mouseY);
+            if (SECONDARY_DRAG.enter(slot)) sendContent(slot, ShulkerPanelContentActionPayload.Click.SECONDARY);
+        }
+        return true;
     }
 
     public static boolean release(double mouseX, double mouseY) {
-        return STATE.releasePointer(binding != null && geometry != null
-                && geometry.bounds().contains(mouseX, mouseY));
+        SECONDARY_DRAG.reset();
+        return STATE.releasePointer(binding != null && geometry != null && geometry.bounds().contains(mouseX, mouseY));
     }
 
     public static boolean scroll(double mouseX, double mouseY, double vertical) {
         if (binding == null || geometry == null || !(geometry.bounds().contains(mouseX, mouseY)
-                || binding.hostBounds().contains(mouseX, mouseY)
-                || geometry.corridorContains(binding.hostBounds(), mouseX, mouseY))) return false;
+                || binding.hostBounds().contains(mouseX, mouseY))) return false;
         NonNullList<ItemStack> contents = ShulkerContents.copy(binding.slot().getItem());
         int selected = selectedIndex();
         if (selected < 0) selected = ShulkerContents.lastOccupied(contents);
@@ -326,7 +359,7 @@ public final class ShulkerPanel {
             Minecraft client = Minecraft.getInstance();
             if (client.player != null) ShulkerSelectionTracker.clear(client.player);
         }
-        binding = null; geometry = null; hoveredCell = -1;
+        binding = null; geometry = null; hoveredCell = -1; SECONDARY_DRAG.reset();
         STATE.close(); expectedFingerprint = null; lastSentSelection = Integer.MIN_VALUE;
     }
 
@@ -339,5 +372,24 @@ public final class ShulkerPanel {
         Binding withFingerprint(String changed) {
             return new Binding(screen, menu, menuId, menuSlot, slot, containerSlot, locator, changed, hostBounds);
         }
+    }
+
+    /** Emits once when a right-button drag enters a cell, never once per mouse-drag event. */
+    static final class SecondaryDrag {
+        private int currentSlot = -1;
+
+        void begin(int slot) { currentSlot = slot; }
+
+        boolean enter(int slot) {
+            if (slot < 0) {
+                currentSlot = -1;
+                return false;
+            }
+            if (slot == currentSlot) return false;
+            currentSlot = slot;
+            return true;
+        }
+
+        void reset() { currentSlot = -1; }
     }
 }

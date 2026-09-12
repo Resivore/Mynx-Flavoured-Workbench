@@ -11,6 +11,7 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.inventory.ChestMenu;
 import net.minecraft.world.inventory.ContainerInput;
+import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.ItemContainerContents;
@@ -134,6 +135,27 @@ public class ReservationAcquisitionGameTests {
         RoutingLock.setLocked(carrier, false);
         RoutingService.routePlayerOriginSpecialDestinations(player, incoming, -1, false);
         check(helper, carrier, 12);
+        helper.succeed();
+    }
+    @GameTest public void headerLockTargetsOnlyTheExactLiveActiveMenuSlot(GameTestHelper helper) {
+        ServerPlayer player = (ServerPlayer) helper.makeMockServerPlayer(GameType.SURVIVAL);
+        SimpleContainer chest = new SimpleContainer(27);
+        ItemStack carrier = carrier();
+        chest.setItem(0, carrier);
+        ChestMenu menu = ChestMenu.threeRows(17, player.getInventory(), chest);
+        player.containerMenu = menu;
+        helper.assertTrue(CarriedContainerAutoRouting.resolveActiveMenuSlot(player, menu.containerId, 0)
+                        .map(Slot::getItem).orElse(ItemStack.EMPTY) == carrier,
+                "The CCAR badge target did not resolve the exact server menu stack");
+        helper.assertTrue(CarriedContainerAutoRouting.resolveActiveMenuSlot(player, menu.containerId + 1, 0).isEmpty(),
+                "A stale menu id was accepted");
+        helper.assertTrue(CarriedContainerAutoRouting.resolveActiveMenuSlot(player, menu.containerId, -1).isEmpty(),
+                "A malformed menu index was accepted");
+        menu.slots.set(0, new Slot(chest, 0, 0, 0) {
+            @Override public boolean isFake() { return true; }
+        });
+        helper.assertTrue(CarriedContainerAutoRouting.resolveActiveMenuSlot(player, menu.containerId, 0).isEmpty(),
+                "A fake result-style menu slot was accepted");
         helper.succeed();
     }
     @GameTest public void worldPickupAudioAccountingOnlyMarksActualCarriedInsertion(GameTestHelper helper) {

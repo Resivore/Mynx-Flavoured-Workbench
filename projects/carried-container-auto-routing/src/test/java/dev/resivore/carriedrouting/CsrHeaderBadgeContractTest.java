@@ -63,6 +63,7 @@ class CsrHeaderBadgeContractTest {
         assertTrue(bridge.contains("sprite, x, y + 1,"), "The badge must move down by exactly one GUI pixel");
         assertTrue(bridge.contains("width, height, width, height"), "The badge must remain a 1:1 unscaled texture blit");
         assertTrue(bridge.contains("instanceof ShulkerBoxBlock"));
+        assertTrue(bridge.contains("RoutingService.isSupported(stack)"));
         assertTrue(bridge.contains("RoutingLock.isLocked(stack)"));
         assertFalse(bridge.contains("BundleItem"));
     }
@@ -76,6 +77,8 @@ class CsrHeaderBadgeContractTest {
         assertTrue(client.contains("Class.forName(\"dev.resivore.carriedrouting.client.CsrHeaderBadgeIntegration\")"));
         assertFalse(client.contains("ShulkerPanelHeaderDecorations"));
         assertTrue(bridge.contains("RoutingLock.isLocked(stack)"));
+        assertTrue(bridge.contains("Optional<ShulkerPanelHeaderDecorations.Interaction> interaction"));
+        assertTrue(bridge.contains("ClientPlayNetworking.send(new ToggleLockPayload(context.menuId(), context.menuSlot(), 0))"));
         assertTrue(client.contains("ItemTooltipCallback.EVENT.register"));
         assertFalse(server.contains("text.carried_container_auto_routing.no_target"));
     }

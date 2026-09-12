@@ -10,7 +10,7 @@ import net.minecraft.resources.Identifier;
 public record ShulkerPanelContentActionPayload(int menuId, ShulkerHostLocator host, int internalSlot,
                                                Click click, String hostFingerprint)
         implements CustomPacketPayload {
-    public enum Click { PRIMARY, SECONDARY }
+    public enum Click { PRIMARY, SECONDARY, QUICK_MOVE }
     public static final Type<ShulkerPanelContentActionPayload> TYPE = new Type<>(
             Identifier.fromNamespaceAndPath(ContainerSlotReservations.MOD_ID, "shulker_panel_content"));
     public static final StreamCodec<FriendlyByteBuf, ShulkerPanelContentActionPayload> CODEC =

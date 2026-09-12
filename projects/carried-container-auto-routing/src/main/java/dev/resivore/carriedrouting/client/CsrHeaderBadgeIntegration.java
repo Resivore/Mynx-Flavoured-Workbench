@@ -1,7 +1,10 @@
 package dev.resivore.carriedrouting.client;
 
 import dev.resivore.carriedrouting.RoutingLock;
+import dev.resivore.carriedrouting.RoutingService;
+import dev.resivore.carriedrouting.ToggleLockPayload;
 import dev.resivore.slotreservations.api.client.ShulkerPanelHeaderDecorations;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.BlockItem;
@@ -22,11 +25,25 @@ public final class CsrHeaderBadgeIntegration {
     private CsrHeaderBadgeIntegration() {}
 
     public static void register() {
-        ShulkerPanelHeaderDecorations.register(CsrHeaderBadgeIntegration::decoration);
+        ShulkerPanelHeaderDecorations.register(new ShulkerPanelHeaderDecorations.Provider() {
+            @Override public Optional<ShulkerPanelHeaderDecorations.Decoration> decoration(ItemStack stack) {
+                return CsrHeaderBadgeIntegration.decoration(stack);
+            }
+
+            @Override public Optional<ShulkerPanelHeaderDecorations.Interaction> interaction(ItemStack stack) {
+                if (decoration(stack).isEmpty()) return Optional.empty();
+                return Optional.of(new ShulkerPanelHeaderDecorations.Interaction(context -> {
+                    if (!ClientPlayNetworking.canSend(ToggleLockPayload.TYPE)) return false;
+                    ClientPlayNetworking.send(new ToggleLockPayload(context.menuId(), context.menuSlot(), 0));
+                    return true;
+                }));
+            }
+        });
     }
 
     static Optional<ShulkerPanelHeaderDecorations.Decoration> decoration(ItemStack stack) {
-        if (!(stack.getItem() instanceof BlockItem item) || !(item.getBlock() instanceof ShulkerBoxBlock)) {
+        if (!(stack.getItem() instanceof BlockItem item) || !(item.getBlock() instanceof ShulkerBoxBlock)
+                || !RoutingService.isSupported(stack)) {
             return Optional.empty();
         }
         boolean locked = RoutingLock.isLocked(stack);

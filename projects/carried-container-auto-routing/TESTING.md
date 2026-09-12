@@ -2,16 +2,10 @@
 
 **ACTIVE — CONTROLLED VALIDATION PASS — NOT DEPLOYED — RUNTIME UNTESTED**
 
-Test only under explicit Test Instance Manager ownership in the dedicated Matcha Flavoured 26.2 Workbench. Never open or alter the protected Matcha Flavoured 26.1.2 gameplay profile. CCAR C18 is `carried-container-auto-routing-0.3.13-routed-pickup-audio-fallback-canary1.jar` (SHA-256 `7c04136c0f2e852e209dc8130424a04f8db6ffc22dd7b482ff64971d7bd80c4c`, source `5aa03f560824b1944d634e91a6dcf04a479250f7`); pair it with Offhand C8 `offhand-shift-click-qol-0.3.4-routed-pickup-audio-fallback-canary1.jar` (SHA-256 `7ca386bea50eb2ece489da4cccc262a13d45b82171042f39efaea0a91e73e357`).
+Current CCAR is `carried-container-auto-routing-0.3.14-csr-panel-lock-canary1.jar`, SHA-256 `c0ab59fe9158982d60a66a92d1248009f13b646e5f76c4460127ffe65af93638`, source `9e74a9363616e8ce0be1de098e788fc08044c8d7`; pair it with CSR C18. Test only under explicit Test Instance Manager ownership in the dedicated Matcha Flavoured 26.2 Workbench. Never open or alter the protected Matcha Flavoured 26.1.2 profile.
 
-1. Fully custom-handle an ordinary ground pickup. Expect exactly one normal-volume `entity.item.pickup` pop with natural vanilla pitch variation.
-2. Repeat into ordinary selected-main-hand, hotbar, offhand, and inventory destinations. Expect exactly one normal pop per `ItemEntity.playerTouch`, never one per destination or moved segment.
-3. Fully route matching items into an unlocked qualifying carried shulker and then a bundle. Expect exactly one normal-volume pop using the same natural variation at a clearly lower `0.80` pitch multiplier.
-4. Partially route a matching stack into a carried container while vanilla handles the remainder. Expect exactly one lower-pitched pop, never a second normal fallback.
-5. With locked, full, or nonqualifying carriers, verify unchanged routing and one ordinary vanilla pop only when the item is otherwise acquired. With a full inventory and no acquisition, expect no pop.
-6. Perform rapid repeated pickups and multi-carrier splits. Expect one cue per pickup event, with no double cues, loss, duplication, or source/remainder drift.
-7. Recheck exact counts, carrier contents, CSR reservations, locks, components, effective capacity, Inventory Extended slots, main-hand/hotbar/offhand priority, pickup delay, and save/reload behavior.
-8. Run CCAR and Offhand C8 together. Offhand must yield its ground-pickup path and CCAR must be the sole cue owner.
-9. Run Offhand C8 without CCAR using its project procedure; its routing must remain behavior-equivalent except for the restored normal local pickup audio.
-
-Stop and preserve exact logs/world state on any missing, doubled, fixed-pitch, wrong-volume, or wrong-pitch cue; any routing order, item-count, carrier, reservation, lock, menu, QUICK_MOVE, Inventory Extended, duplication/loss, or startup regression. Do not infer runtime PASS from this document, a build, or GameTests.
+1. Hover a supported carried shulker in the CSR panel. Confirm the supplied unlocked/locked sprite retains its exact art and dimensions, appears in the header rather than on a bundle, and its hitbox matches the visible sprite.
+2. Left-click the unlocked badge, wait for ordinary server menu synchronization, confirm the exact host becomes locked and its sprite changes. Click again to unlock and confirm both the exact target and visual update. A badge click must not execute a panel-cell action behind it.
+3. Verify the existing keyboard control still toggles a normal player-inventory target. Verify the badge on a shulker in another legitimate active non-fake menu slot only toggles that exact server stack; stale menu IDs, invalid indices, fake/result slots, or unsupported targets must make no change.
+4. For each resulting state, test automatic routing with matching items: unlocked carriers accept per existing order, locked carriers do not. Recheck carrier contents, CSR reservations, effective capacities, Inventory Extended slots, and save/reload; bundles remain tooltip-only.
+5. Recheck C18's pickup-audio matrix: ordinary custom and carried routing each have one appropriate cue, vanilla-take paths do not double, and no cue is emitted for no acquisition, QUICK_MOVE, locked/full/nonqualifying carriers. Stop on any lock-target, routing, audio, count, component, UI, or startup regression; record only observed runtime evidence.

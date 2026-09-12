@@ -304,6 +304,67 @@ public final class ShulkerPanelGameTests implements CustomTestMethodInvoker {
         helper.succeed();
     }
 
+    @GameTest(maxTicks = 40)
+    public void panelQuickMoveUsesLivePlayerSlotsAndConservesExactRemainders(GameTestHelper helper) {
+        BlockPos position = new BlockPos(1, 2, 1);
+        helper.setBlock(position, Blocks.CHEST);
+        ChestBlockEntity chest = helper.getBlockEntity(position, ChestBlockEntity.class);
+        ServerPlayer player = player(helper);
+        player.containerMenu = ChestMenu.threeRows(13, player.getInventory(), chest);
+
+        ItemStack host = new ItemStack(Blocks.SHULKER_BOX);
+        var contents = net.minecraft.core.NonNullList.withSize(ReservationData.SLOT_COUNT, ItemStack.EMPTY);
+        contents.set(0, new ItemStack(Items.STONE, 5));
+        ShulkerContents.replace(host, contents);
+        ReservationStore.setData(host, ReservationData.EMPTY.with(0, new ItemStack(Items.DIRT)));
+        chest.setItem(0, host);
+        Slot firstPlayerSlot = player.containerMenu.getSlot(27);
+        var full = new ShulkerPanelContentActionPayload(player.containerMenu.containerId,
+                ShulkerHostLocator.menuSlot(0), 0, ShulkerPanelContentActionPayload.Click.QUICK_MOVE,
+                fingerprint(player, 0));
+        helper.assertTrue(ShulkerPanelActions.handleContent(player, full), "Full quick move was rejected");
+        helper.assertTrue(firstPlayerSlot.getItem().is(Items.STONE) && firstPlayerSlot.getItem().getCount() == 5,
+                "Quick move did not use the live player-inventory menu slot");
+        helper.assertTrue(ShulkerContents.copy(chest.getItem(0)).get(0).isEmpty(),
+                "Full quick move retained source contents");
+        helper.assertTrue(ReservationStore.getData(chest.getItem(0)).matches(0, new ItemStack(Items.DIRT)),
+                "Quick move cleared the source reservation");
+
+        for (Slot slot : player.containerMenu.slots) {
+            if (slot.container == player.getInventory()) slot.set(new ItemStack(Items.DIAMOND, 64));
+        }
+        firstPlayerSlot.set(new ItemStack(Items.STONE, 62));
+        host = new ItemStack(Blocks.SHULKER_BOX);
+        contents = net.minecraft.core.NonNullList.withSize(ReservationData.SLOT_COUNT, ItemStack.EMPTY);
+        contents.set(0, new ItemStack(Items.STONE, 5));
+        ShulkerContents.replace(host, contents);
+        chest.setItem(0, host);
+        int before = firstPlayerSlot.getItem().getCount() + ShulkerContents.copy(host).get(0).getCount();
+        var partial = new ShulkerPanelContentActionPayload(player.containerMenu.containerId,
+                ShulkerHostLocator.menuSlot(0), 0, ShulkerPanelContentActionPayload.Click.QUICK_MOVE,
+                fingerprint(player, 0));
+        helper.assertTrue(ShulkerPanelActions.handleContent(player, partial), "Partial quick move was rejected");
+        int remainder = ShulkerContents.copy(chest.getItem(0)).get(0).getCount();
+        helper.assertTrue(firstPlayerSlot.getItem().getCount() == 64 && remainder == 3,
+                "Partial quick move did not retain the exact source remainder");
+        helper.assertTrue(before == firstPlayerSlot.getItem().getCount() + remainder,
+                "Partial quick move did not conserve the total item count");
+
+        host = new ItemStack(Blocks.SHULKER_BOX);
+        contents = net.minecraft.core.NonNullList.withSize(ReservationData.SLOT_COUNT, ItemStack.EMPTY);
+        contents.set(0, new ItemStack(Items.STONE, 5));
+        ShulkerContents.replace(host, contents);
+        chest.setItem(0, host);
+        var blocked = new ShulkerPanelContentActionPayload(player.containerMenu.containerId,
+                ShulkerHostLocator.menuSlot(0), 0, ShulkerPanelContentActionPayload.Click.QUICK_MOVE,
+                fingerprint(player, 0));
+        helper.assertTrue(!ShulkerPanelActions.handleContent(player, blocked),
+                "Full player inventory mutated a panel source");
+        helper.assertTrue(ShulkerContents.copy(chest.getItem(0)).get(0).getCount() == 5,
+                "No-op quick move changed source contents");
+        helper.succeed();
+    }
+
     @Override
     public void invokeTestMethod(GameTestHelper helper, Method method) throws ReflectiveOperationException {
         method.invoke(this, helper);

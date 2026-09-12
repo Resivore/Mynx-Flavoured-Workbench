@@ -10,7 +10,7 @@ final class ShulkerPanelGeometryTest {
     private static final ShulkerPanelGeometry.Rect HOST = new ShulkerPanelGeometry.Rect(100, 80, 18, 18);
 
     @Test void everyCellMapsToItsExactPhysicalIndex() {
-        var geometry = new ShulkerPanelGeometry(10, 20, true);
+        var geometry = new ShulkerPanelGeometry(10, 20);
         for (int slot = 0; slot < 27; slot++) {
             var bounds = geometry.cellBounds(slot);
             assertEquals(slot, geometry.slot(bounds.x() + 0.5, bounds.y() + 0.5));
@@ -24,20 +24,20 @@ final class ShulkerPanelGeometryTest {
         assertThrows(IndexOutOfBoundsException.class, () -> geometry.cellBounds(27));
     }
 
-    @Test void placementPrefersRightThenLeftAndClampsAtAllViewportEdges() {
-        var right = ShulkerPanelGeometry.place(500, 300, 40, 176, HOST);
-        assertTrue(right.rightSide());
-        assertEquals(218, right.x());
-        var left = ShulkerPanelGeometry.place(390, 300, 200, 176, HOST);
-        assertFalse(left.rightSide());
-        assertEquals(22, left.x());
-        var top = ShulkerPanelGeometry.place(500, 60, 40, 176,
+    @Test void placementUsesTheHostCenterAsItsBottomLeftAndClampsAtAllViewportEdges() {
+        var nominal = ShulkerPanelGeometry.place(500, 300, HOST);
+        assertEquals(109, nominal.x());
+        assertEquals(6, nominal.y());
+        var top = ShulkerPanelGeometry.place(500, 60,
                 new ShulkerPanelGeometry.Rect(100, -30, 18, 18));
         assertEquals(0, top.y());
-        var bottom = ShulkerPanelGeometry.place(500, 120, 40, 176,
+        var bottom = ShulkerPanelGeometry.place(500, 120,
                 new ShulkerPanelGeometry.Rect(100, 200, 18, 18));
         assertEquals(37, bottom.y());
-        var tiny = ShulkerPanelGeometry.place(100, 50, 20, 176, HOST);
+        var right = ShulkerPanelGeometry.place(500, 300,
+                new ShulkerPanelGeometry.Rect(490, 80, 18, 18));
+        assertEquals(324, right.x());
+        var tiny = ShulkerPanelGeometry.place(100, 50, HOST);
         assertEquals(0, tiny.x());
         assertEquals(0, tiny.y());
         assertEquals(176, tiny.bounds().width());
@@ -47,12 +47,11 @@ final class ShulkerPanelGeometryTest {
                 "The selected region is only the six-pixel bottom bezel, never a slot row");
     }
 
-    @Test void resizeRecomputesPlacementAndCorridorIsNarrowAndContinuous() {
-        var large = ShulkerPanelGeometry.place(600, 400, 100, 176, HOST);
-        var resized = ShulkerPanelGeometry.place(300, 180, 100, 176, HOST);
+    @Test void resizeRecomputesOnlyTheNecessaryHostCenteredClamp() {
+        var edgeHost = new ShulkerPanelGeometry.Rect(200, 160, 18, 18);
+        var large = ShulkerPanelGeometry.place(600, 400, edgeHost);
+        var resized = ShulkerPanelGeometry.place(300, 180, edgeHost);
         assertNotEquals(large.x(), resized.x());
-        assertTrue(large.corridorContains(HOST, 119, 89));
-        assertFalse(large.corridorContains(HOST, 150, 130));
         assertTrue(large.bounds().contains(large.x(), large.y()));
         assertFalse(large.bounds().contains(large.x() + 176, large.y() + 82));
         assertEquals(26, large.slot(large.cellBounds(26).x() + 0.5, large.cellBounds(26).y() + 0.5),
