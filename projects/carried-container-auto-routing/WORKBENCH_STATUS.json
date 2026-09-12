@@ -18,10 +18,16 @@
     "goals": [
       "Route acquired items into supported unlocked carried shulkers using exact physical matching contents or matching empty CSR reservations, preserving component identity, effective capacities, counts, and existing global destination order.",
       "Preserve established passive-pickup, external QUICK_MOVE, and player-origin QUICK_MOVE behavior across vanilla and Inventory Extended storage while composing safely with Offhand Shift-Click QoL.",
-      "Provide a server-authoritative lock control that excludes selected carriers from automatic routing without altering their other contents or components."
+      "Provide a server-authoritative lock control that excludes selected carriers from automatic routing without altering their other contents or components.",
+      "Extend Survival Pick Block only after vanilla ordinary-inventory failure, retrieving the exact matching physical stack from an unlocked carried shulker and atomically re-homing the displaced hotbar stack without changing Creative behavior, routing locks, or CSR reservations."
     ],
     "scope": [
-      "Canonical 0.3.14-csr-panel-lock-canary1 for Minecraft Java 26.2 Fabric, implementation checkpoint 9e74a9363616e8ce0be1de098e788fc08044c8d7; narrow CSR-panel lock successor paired with CSR C18.",
+      "Canonical 0.3.15-shulker-pick-block-canary1 for Minecraft Java 26.2 Fabric, implementation checkpoint dbb8f82a260affff8884dd47628169bb4eb1be7a; server-authoritative Survival Pick Block successor validated with optional CSR Canary 19.",
+      "Minecraft 26.2 ServerGamePacketListenerImpl.tryPickItem remains the sole block/entity Pick Block authority. Vanilla Inventory.findSlotMatchingItem runs first with ItemStack.isSameItemSameComponents; existing hotbar selection or Inventory.pickSlot behavior wins unchanged. Only a Survival/Adventure NOT_FOUND result enters CCAR, while Creative, spectator, and client-side calls remain vanilla-owned.",
+      "CCAR searches only supported unlocked carried shulkers in its established physical ordinary-inventory order followed by offhand, and each shulker's physical slots 0 through 26. Bundles, unsupported carriers, locked hosts, and recursive nested-container contents are excluded. The entire physical matching source stack moves, matching vanilla Inventory.pickSlot quantity semantics, and Inventory.getSuitableHotbarSlot selects the destination.",
+      "Before mutation, Pick Block snapshots the complete live ordinary-storage list, offhand, selected slot, source host/slot/stack, displaced stack, every compatible-partial allocation, optional first empty ordinary slot, and exact-source-slot fallback. A second exact count-and-component validation precedes the first live write; stale state or an incomplete legal destination aborts without mutation.",
+      "Displacement planning preserves CCAR's compatible-destination priority after the selected slot: unlocked carried-shulker partials in shared carrier/physical order, remaining hotbar partials, occupied matching offhand, and complete live ordinary-storage partials. It respects component identity, effective maxima, nesting, routing locks, native admission, and CSR admission, and never establishes empty-slot shulker affinity.",
+      "After compatible partials, the first empty live ordinary-inventory slot in vanilla index order receives any remainder. Only when no such slot exists may the exact physical shulker source slot receive the remainder, and only if native/CSR admission and effective capacity permit it; a conflicting source reservation therefore fails the entire planned transaction atomically.",
       "When a server-resolved routing-lock target is unsupported, return without an overlay message. Preserve server-authoritative supported-target toggles and their existing Locked/Unlocked feedback exactly.",
       "Passive ground pickup and external-container QUICK_MOVE priority through component-identical occupied main hand, qualifying carried containers, occupied hotbar, occupied offhand, compatible ordinary-storage partials, empty hotbar, and empty ordinary storage.",
       "Player-origin QUICK_MOVE routing to a component-identical occupied offhand and qualifying carried containers before returning exact remainder ownership to the active menu's normal algorithm.",
@@ -40,6 +46,7 @@
       "exclusions": [
         "Equipment, Trinkets, trash, and foreign menu slots remain excluded.",
         "No generic automatic backpack: an empty unreserved shulker or a nonmatching reservation cannot establish affinity; locked carriers and forbidden nesting remain denied.",
+        "Pick Block is not a sorter or generic extractor: it does not search bundles, recurse into nested containers, create arbitrary empty-shulker affinity, bypass reservations, or alter Creative Pick Block.",
         "No internal CSR persistence access, reservation mutation, fake stacks, runtime CSR pin, foreign classes, or nested CSR/upstream JAR.",
         "No modifications to bundles, global destination/carrier order, accepted C11/rollback C10 bytes, QSN C8, SAS C2, Easy Shulker Boxes, Item Interactions, or other project implementations.",
         "No successor runtime pass/promotion inferred from controlled tests; no dedicated Minecraft launch or protected gameplay-profile access."
@@ -85,22 +92,22 @@
       {
         "type": "MOD",
         "identifier": "container_slot_reservations",
-        "requirement": "Optional suggests *; validation baselines accepted 0.1.0-canary4 and exact 0.1.0-canary7",
-        "reason": "Read-only carried-shulker classification and reservation affinity; optional provider class references are isolated behind FabricLoader discovery."
+        "requirement": "Optional suggests *; current controlled validation baseline 0.1.0-canary19",
+        "reason": "Read-only carried-shulker classification, reservation affinity, and displaced-item admission; optional provider class references are isolated behind FabricLoader discovery."
       }
     ]
   },
   "state": {
-    "milestone": "0.3.14-csr-panel-lock-canary1 is an ACTIVE, non-deployed paired successor to CSR C18. It turns the existing optional CSR header sprite into a provider-owned ToggleLockPayload button and narrowly extends server validation to exact current legitimate active menu slots rather than player-inventory slots only. Keyboard lock control, bundle tooltip-only behavior, routing, pickup audio, and optional CSR absence remain unchanged. Clean Java 25 unit, GameTest, resource-integrity, artifact, and paired CSR-API validation passed; no dedicated Workbench or protected gameplay instance was accessed.",
+    "milestone": "0.3.15-shulker-pick-block-canary1 is an ACTIVE, non-deployed Survival Pick Block successor. Vanilla ordinary inventory remains first; after a miss, the shared server block/entity Pick Block path can atomically exchange the full exact-component source stack from the first unlocked carried shulker into vanilla's suitable hotbar slot. Displacement exhausts legal compatible partials, then the first empty live ordinary slot, then only the exact source shulker slot when native and CSR admission permit. Full inventory/offhand snapshots make stale state, illegal reservation fallback, or incomplete capacity fail before mutation. Bundles, nesting, Creative, lock/reservation data, pickup/QUICK_MOVE/audio/UI behavior, and optional CSR absence remain unchanged. Clean Java 25 unit, GameTest, artifact, optional-absence, and CSR Canary 19 validation passed; no dedicated Workbench or protected gameplay instance was accessed.",
     "releases": {
       "current": {
-        "version": "0.3.14-csr-panel-lock-canary1",
-        "embedded_version": "0.3.14-csr-panel-lock-canary1",
+        "version": "0.3.15-shulker-pick-block-canary1",
+        "embedded_version": "0.3.15-shulker-pick-block-canary1",
         "artifact": {
-          "filename": "carried-container-auto-routing-0.3.14-csr-panel-lock-canary1.jar",
-          "sha256": "c0ab59fe9158982d60a66a92d1248009f13b646e5f76c4460127ffe65af93638"
+          "filename": "carried-container-auto-routing-0.3.15-shulker-pick-block-canary1.jar",
+          "sha256": "340b3cd2bfcb977c00cc06071893f9627ba0c32b26325d381a62922000561b3c"
         },
-        "source_commit": "9e74a9363616e8ce0be1de098e788fc08044c8d7",
+        "source_commit": "dbb8f82a260affff8884dd47628169bb4eb1be7a",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
@@ -138,11 +145,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 10,
-    "activity_at": "2026-09-12T03:23:42Z",
-    "updated_at": "2026-09-12T03:23:42Z",
-    "last_codex_at": "2026-09-12T03:23:42Z",
-    "source_commit": "9e74a9363616e8ce0be1de098e788fc08044c8d7",
+    "revision": 11,
+    "activity_at": "2026-09-12T04:12:09Z",
+    "updated_at": "2026-09-12T04:12:09Z",
+    "last_codex_at": "2026-09-12T04:12:09Z",
+    "source_commit": "dbb8f82a260affff8884dd47628169bb4eb1be7a",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
