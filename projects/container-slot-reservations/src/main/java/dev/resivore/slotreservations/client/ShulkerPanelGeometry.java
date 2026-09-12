@@ -1,6 +1,6 @@
 package dev.resivore.slotreservations.client;
 
-public record ShulkerPanelGeometry(int x, int y, boolean rightSide) {
+public record ShulkerPanelGeometry(int x, int y) {
     public static final int WIDTH = 176;
     /** The existing top/title/grid portion of the vanilla shulker screen. */
     public static final int MAIN_HEIGHT = 77;
@@ -10,18 +10,14 @@ public record ShulkerPanelGeometry(int x, int y, boolean rightSide) {
     public static final int GRID_X = 7, GRID_Y = 17, CELL = 18, COLUMNS = 9, ROWS = 3;
     /** Native shulker-screen title positioning and its matching small header insets. */
     public static final int TITLE_X = 8, TITLE_Y = 6, HEADER_RIGHT_INSET = 8, HEADER_GAP = 4;
-    private static final int GAP = 2;
-
-    public static ShulkerPanelGeometry place(int viewportWidth, int viewportHeight,
-                                             int screenLeft, int screenWidth,
-                                             Rect host) {
-        int right = screenLeft + screenWidth + GAP;
-        int left = screenLeft - WIDTH - GAP;
-        boolean useRight = right + WIDTH <= viewportWidth || left < 0;
-        int rawX = useRight ? right : left;
-        int x = clamp(rawX, 0, Math.max(0, viewportWidth - WIDTH));
-        int y = clamp(host.y() - GRID_Y, 0, Math.max(0, viewportHeight - HEIGHT));
-        return new ShulkerPanelGeometry(x, y, useRight);
+    public static ShulkerPanelGeometry place(int viewportWidth, int viewportHeight, Rect host) {
+        // The panel's bottom-left corner belongs at the center of its actual host slot.
+        // Clamping is deliberately the only placement adjustment; it never reverts to a
+        // screen-edge side rail.
+        int x = clamp(host.x() + host.width() / 2, 0, Math.max(0, viewportWidth - WIDTH));
+        int y = clamp(host.y() + host.height() / 2 - HEIGHT, 0,
+                Math.max(0, viewportHeight - HEIGHT));
+        return new ShulkerPanelGeometry(x, y);
     }
 
     public Rect bounds() { return new Rect(x, y, WIDTH, HEIGHT); }
@@ -50,19 +46,6 @@ public record ShulkerPanelGeometry(int x, int y, boolean rightSide) {
         double dx = mouseX - x - GRID_X, dy = mouseY - y - GRID_Y;
         if (dx < 0 || dy < 0 || dx >= COLUMNS * CELL || dy >= ROWS * CELL) return -1;
         return (int) (dy / CELL) * COLUMNS + (int) (dx / CELL);
-    }
-
-    public boolean corridorContains(Rect host, double mouseX, double mouseY) {
-        double ax = rightSide ? host.right() : host.x();
-        double ay = host.y() + host.height() / 2.0;
-        double bx = rightSide ? x : x + WIDTH;
-        double by = Math.max(y + 3, Math.min(y + HEIGHT - 3, ay));
-        double vx = bx - ax, vy = by - ay;
-        double lengthSquared = vx * vx + vy * vy;
-        if (lengthSquared == 0) return false;
-        double t = Math.max(0, Math.min(1, ((mouseX - ax) * vx + (mouseY - ay) * vy) / lengthSquared));
-        double dx = mouseX - (ax + t * vx), dy = mouseY - (ay + t * vy);
-        return dx * dx + dy * dy <= 16.0;
     }
 
     private static int clamp(int value, int min, int max) {

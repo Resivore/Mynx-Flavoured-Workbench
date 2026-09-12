@@ -149,17 +149,26 @@ final class ClientAndNetworkContractTest {
     }
 
     @Test
-    void panelInputOwnsCoveredCoordinatesAndRejectsUnsupportedGestures() throws IOException {
+    void panelInputOwnsCoveredCoordinatesSupportsQuickMoveAndDeduplicatedSecondaryDrag() throws IOException {
         String screen = source("mixin/client/AbstractContainerScreenMixin.java");
         String panel = source("client/ShulkerPanel.java");
+        String quickMove = source("ShulkerPanelQuickMove.java");
         assertTrue(screen.contains("!doubleClick && !event.hasShiftDown()"));
         assertTrue(screen.contains("!event.hasControlDown() && !event.hasAltDown()"));
+        assertTrue(screen.contains("boolean shiftPrimary"));
         assertTrue(screen.contains("checkHotbarKeyPressed"));
         assertTrue(screen.contains("ShulkerPanel.ownsHoveredCell()"));
-        assertTrue(panel.contains("STATE.capturePointer()"));
         assertTrue(panel.contains("STATE.ownsDrag("));
         assertTrue(panel.contains("STATE.releasePointer("));
-        assertTrue(panel.contains("if (standardClick && slot >= 0"));
+        assertTrue(panel.contains("Click.QUICK_MOVE"));
+        assertTrue(panel.contains("SECONDARY_DRAG.enter(slot)"));
+        assertTrue(panel.contains("if (button == 1) SECONDARY_DRAG.begin(slot)"));
+        assertFalse(panel.contains("corridorContains"));
+        assertTrue(quickMove.contains("host.menu().slots"));
+        assertTrue(quickMove.contains("candidate.container != player.getInventory()"));
+        assertTrue(quickMove.contains("candidate == host.slot()"));
+        assertTrue(quickMove.contains("ShulkerHostResolver.writableTarget"));
+        assertFalse(quickMove.contains("36"));
         assertTrue(panel.contains("return true;"), "Owned panel bounds must consume no-op input");
     }
 

@@ -133,7 +133,7 @@ final class ClientRenderingContractTest {
         assertTrue(panel.contains("0xFF404040"), "Minecraft 26.2 text colors require an opaque ARGB alpha");
         assertFalse(panel.contains("0x404040,"));
         assertTrue(panel.contains("false);"), "The native shulker title must not acquire a shadow");
-        assertTrue(panel.contains("ShulkerPanelHeaderDecorations.find(stack)"));
+        assertTrue(panel.contains("ShulkerPanelHeaderDecorations.resolve(stack)"));
         assertTrue(panel.contains("geometry.titleWidth(decorationWidth)"));
         assertTrue(panel.contains("geometry.headerDecorationX(value.width())"));
         assertTrue(panel.contains("truncateTitle("));
@@ -146,6 +146,8 @@ final class ClientRenderingContractTest {
         String decorations = Files.readString(ROOT.resolve("src/main/java/dev/resivore/slotreservations/api/client/ShulkerPanelHeaderDecorations.java"));
         assertTrue(decorations.contains("Optional<Decoration> decoration(ItemStack stack)"));
         assertTrue(decorations.contains("void render(GuiGraphicsExtractor graphics, int x, int y)"));
+        assertTrue(decorations.contains("default Optional<Interaction> interaction(ItemStack stack)"));
+        assertTrue(decorations.contains("record ClickContext(int menuId, int menuSlot)"));
         assertFalse(decorations.contains("carriedrouting"));
         assertTrue(screen.contains("ShulkerPanel.updateAndRender("));
         assertTrue(screen.contains("ShulkerPanel.extractTooltip("));

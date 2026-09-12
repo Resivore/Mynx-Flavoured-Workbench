@@ -596,7 +596,7 @@ final class ShulkerPanelRenderLifecycleTest {
             ShulkerPanelGeometry.Rect hostBounds = new ShulkerPanelGeometry.Rect(
                     100 + host.slot.x - 1, 40 + host.slot.y - 1, 18, 18);
             if (!hostBounds.contains(host.mouseX, host.mouseY)) return;
-            ShulkerPanelGeometry geometry = ShulkerPanelGeometry.place(480, 300, 100, 176, hostBounds);
+            ShulkerPanelGeometry geometry = ShulkerPanelGeometry.place(480, 300, hostBounds);
             List<ItemStack> contents = ShulkerContents.copy(host.slot.getItem());
             List<ShulkerPanelOverlay.SlotOverlay> overlays = new ArrayList<>();
             for (int index = 0; index < contents.size(); index++) {

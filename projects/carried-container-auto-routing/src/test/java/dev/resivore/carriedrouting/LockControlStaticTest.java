@@ -44,7 +44,10 @@ class LockControlStaticTest {
         assertTrue(client.contains("ClientPlayNetworking.send(new ToggleLockPayload"));
         assertTrue(client.contains("RoutingService.isSupported(main) ? 1 : 2"));
         assertTrue(server.contains("ServerPlayNetworking.registerGlobalReceiver"));
-        assertTrue(server.contains("targetSlot.container == context.player().getInventory()"));
+        assertTrue(server.contains("resolveActiveMenuSlot(context.player(), payload.menuId()"));
+        assertTrue(server.contains("!targetSlot.isActive() || targetSlot.isFake()"));
+        assertTrue(server.contains("!targetSlot.mayPickup(player) || !targetSlot.allowModification(player)"));
+        assertTrue(server.contains("targetSlot.container.stillValid(player)"));
         assertTrue(server.contains("RoutingLock.setLocked(target, locked)"));
         assertTrue(server.contains("sendOverlayMessage"));
         assertTrue(!server.contains("text.carried_container_auto_routing.no_target"));

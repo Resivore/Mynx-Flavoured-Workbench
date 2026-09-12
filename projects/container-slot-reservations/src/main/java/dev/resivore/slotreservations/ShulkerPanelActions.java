@@ -20,6 +20,9 @@ public final class ShulkerPanelActions {
         var resolved = ShulkerHostResolver.resolve(player, action.menuId(), action.host(), action.hostFingerprint());
         if (resolved.isEmpty()) return false;
         ShulkerHostResolver.ResolvedHost host = resolved.orElseThrow();
+        if (action.click() == ShulkerPanelContentActionPayload.Click.QUICK_MOVE) {
+            return handleQuickMove(player, host, action);
+        }
         ItemStack carried = host.menu().getCarried();
         ItemStack changedHost;
         ItemStack changedCarried;
@@ -44,6 +47,23 @@ public final class ShulkerPanelActions {
             if (selected < 0) selected = ShulkerContents.firstOccupied(plan.contents());
         }
         commit(player, host, changedHost, changedCarried, selected, action.host());
+        return true;
+    }
+
+    private static boolean handleQuickMove(ServerPlayer player, ShulkerHostResolver.ResolvedHost host,
+                                           ShulkerPanelContentActionPayload action) {
+        ShulkerPanelQuickMove.Plan plan = ShulkerPanelQuickMove.plan(player, host, action.internalSlot());
+        if (plan.moved() == 0) return false;
+        for (ShulkerPanelQuickMove.Move move : plan.moves()) {
+            move.target().setByPlayer(move.after(), move.before());
+            move.target().setChanged();
+            move.target().container.setChanged();
+        }
+        int selected = selectedForHost(player, host);
+        if (selected == action.internalSlot() && plan.contents().get(selected).isEmpty()) {
+            selected = ShulkerContents.nextOccupied(plan.contents(), selected);
+        }
+        commit(player, host, plan.shulker(), host.menu().getCarried(), selected, action.host());
         return true;
     }
 
