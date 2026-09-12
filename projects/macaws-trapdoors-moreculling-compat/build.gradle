@@ -1,0 +1,182 @@
+import groovy.json.JsonSlurper
+import java.security.MessageDigest
+import java.util.zip.ZipFile
+import org.gradle.api.tasks.bundling.AbstractArchiveTask
+
+plugins {
+    id 'net.fabricmc.fabric-loom' version '1.17.19'
+}
+
+version = project.mod_version
+group = project.maven_group
+
+base {
+    archivesName = project.archives_base_name
+}
+
+repositories {
+    maven { url = 'https://maven.fabricmc.net/' }
+    maven { url = 'https://api.modrinth.com/maven' }
+    mavenCentral()
+}
+
+def macawsCoordinate = "maven.modrinth:${project.macaws_trapdoors_project}:${project.macaws_trapdoors_version}"
+def moreCullingCoordinate = "maven.modrinth:${project.moreculling_project}:${project.moreculling_version}"
+def expectedMacawsSha256 = '6411cb0ff6c6cc4312deed48c3ca69cdbcbae72e80ff4ed0269f2d0a78acd32d'
+def expectedMoreCullingSha256 = 'ea04505496e4d35a8c94199884b6fafa69057efe50f2096d2988c11163d49122'
+
+configurations {
+    macawsTrapdoorsReference {
+        canBeConsumed = false
+        canBeResolved = true
+        transitive = false
+    }
+    moreCullingReference {
+        canBeConsumed = false
+        canBeResolved = true
+        transitive = false
+    }
+}
+
+dependencies {
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    implementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+
+    compileOnly(moreCullingCoordinate) {
+        transitive = false
+    }
+    macawsTrapdoorsReference(macawsCoordinate) {
+        transitive = false
+    }
+    moreCullingReference(moreCullingCoordinate) {
+        transitive = false
+    }
+
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.12.2'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.12.2'
+    testImplementation 'org.ow2.asm:asm:9.10.1'
+}
+
+def sha256 = { File file ->
+    MessageDigest digest = MessageDigest.getInstance('SHA-256')
+    file.withInputStream { input ->
+        byte[] buffer = new byte[64 * 1024]
+        for (int read; (read = input.read(buffer)) >= 0;) {
+            if (read > 0) {
+                digest.update(buffer, 0, read)
+            }
+        }
+    }
+    digest.digest().encodeHex().toString()
+}
+
+tasks.register('verifyControlledProviders') {
+    group = 'verification'
+    description = 'Verifies the exact audited Macaw 1.1.5 and MoreCulling 1.8.1 provider bytes.'
+    inputs.files(configurations.macawsTrapdoorsReference, configurations.moreCullingReference)
+    doLast {
+        File macaws = configurations.macawsTrapdoorsReference.singleFile
+        File moreCulling = configurations.moreCullingReference.singleFile
+        if (sha256(macaws) != expectedMacawsSha256) {
+            throw new GradleException("Macaw's Trapdoors provider SHA-256 drifted: ${sha256(macaws)}")
+        }
+        if (sha256(moreCulling) != expectedMoreCullingSha256) {
+            throw new GradleException("MoreCulling provider SHA-256 drifted: ${sha256(moreCulling)}")
+        }
+    }
+}
+
+processResources {
+    inputs.property 'version', project.version
+    filesMatching('fabric.mod.json') {
+        expand 'version': project.version
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    dependsOn tasks.named('verifyControlledProviders')
+    options.release = 25
+}
+
+tasks.withType(AbstractArchiveTask).configureEach {
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
+}
+
+test {
+    useJUnitPlatform()
+    dependsOn tasks.named('verifyControlledProviders')
+    inputs.files(configurations.macawsTrapdoorsReference, configurations.moreCullingReference)
+    systemProperty 'projectRoot', projectDir.absolutePath
+    systemProperty 'workbenchRoot', projectDir.toPath().resolve('../..').normalize().toString()
+    doFirst {
+        systemProperty 'macawsTrapdoorsReferenceJar', configurations.macawsTrapdoorsReference.singleFile.absolutePath
+        systemProperty 'moreCullingReferenceJar', configurations.moreCullingReference.singleFile.absolutePath
+    }
+}
+
+def packagedJar = tasks.named('jar').flatMap { it.archiveFile }
+
+tasks.register('verifyReleaseArtifact') {
+    group = 'verification'
+    description = 'Verifies the client-only narrow compatibility artifact and its fail-closed provider policy.'
+    dependsOn tasks.named('jar')
+    inputs.file(packagedJar)
+    doLast {
+        File artifact = packagedJar.get().asFile
+        if (artifact.name != "macaws-trapdoors-moreculling-compat-${project.version}.jar") {
+            throw new GradleException("Unexpected release filename: ${artifact.name}")
+        }
+        ZipFile archive = new ZipFile(artifact)
+        try {
+            def entries = archive.entries().toList()
+            if (entries.any { it.name.endsWith('.jar') }) {
+                throw new GradleException('Compatibility artifact must not bundle provider JARs')
+            }
+            def metadata = new JsonSlurper().parse(archive.getInputStream(archive.getEntry('fabric.mod.json')))
+            if (metadata.id != 'macaws_trapdoors_moreculling_compat' ||
+                    metadata.version != project.version || metadata.environment != 'client' ||
+                    metadata.depends?.mcwtrpdoors != '=1.1.5' ||
+                    metadata.depends?.moreculling != '=1.8.1' ||
+                    metadata.depends?.minecraft != '=26.2') {
+                throw new GradleException('Release metadata no longer fails closed on the audited providers')
+            }
+            def exceptions = metadata.custom?.runtime_dependency_policy?.exceptions
+            if (metadata.custom?.runtime_dependency_policy?.contract != 'CAPABILITY_OR_PROVIDER' ||
+                    !(exceptions instanceof List) || exceptions.size() != 2) {
+                throw new GradleException('Release runtime dependency-policy attestation is missing or changed')
+            }
+            def required = [
+                'fabric.mod.json',
+                'dev/resivore/macawsmoreculling/MacawsTrapdoorsMoreCullingCompat.class'
+            ]
+            required.each { entry ->
+                if (archive.getEntry(entry) == null) {
+                    throw new GradleException("Compatibility artifact is missing ${entry}")
+                }
+            }
+            if (entries.any { it.name.startsWith('assets/mcwtrpdoors/') || it.name.startsWith('data/mcwtrpdoors/') }) {
+                throw new GradleException("Compatibility artifact must not redistribute Macaw's assets or data")
+            }
+        } finally {
+            archive.close()
+        }
+    }
+}
+
+tasks.register('stageCanaryArtifact', Copy) {
+    group = 'distribution'
+    description = 'Stages the exact ignored Canary 1 JAR for canonical local retention.'
+    dependsOn tasks.named('verifyReleaseArtifact')
+    from(packagedJar)
+    into(layout.projectDirectory.dir('artifacts'))
+}
+
+tasks.named('check') {
+    dependsOn tasks.named('verifyReleaseArtifact')
+}
+
+java {
+    withSourcesJar()
+}

@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "id": "macaws_trapdoors_moreculling_compat",
+  "version": "${version}",
+  "name": "Macaw's Trapdoors / MoreCulling Compatibility",
+  "description": "Prevents the exact Macaw ranch and bark trapdoors from culling neighboring solid faces through their intended openings.",
+  "authors": ["Resivore"],
+  "license": "MIT",
+  "environment": "client",
+  "entrypoints": {
+    "client": ["dev.resivore.macawsmoreculling.MacawsTrapdoorsMoreCullingCompat"]
+  },
+  "depends": {
+    "fabricloader": ">=0.19.3",
+    "fabric-api": ">=0.157.0",
+    "minecraft": "=26.2",
+    "java": ">=25",
+    "mcwtrpdoors": "=1.1.5",
+    "moreculling": "=1.8.1"
+  },
+  "custom": {
+    "runtime_dependency_policy": {
+      "contract": "CAPABILITY_OR_PROVIDER",
+      "exceptions": [
+        {
+          "consumer_id": "macaws_trapdoors_moreculling_compat",
+          "relationship": "depends",
+          "dependency_id": "mcwtrpdoors",
+          "predicate": "=1.1.5",
+          "reason": "The literal 23-block patch set is audited against Macaw's Trapdoors 1.1.5 and must fail closed if that provider registry changes.",
+          "regression_evidence": [
+            "Audited mcw-trapdoors-1.1.5-mc26.2fabric.jar SHA-256 6411cb0ff6c6cc4312deed48c3ca69cdbcbae72e80ff4ed0269f2d0a78acd32d registers the exact ranch and bark identifiers patched by this release."
+          ]
+        },
+        {
+          "consumer_id": "macaws_trapdoors_moreculling_compat",
+          "relationship": "depends",
+          "dependency_id": "moreculling",
+          "predicate": "=1.8.1",
+          "reason": "The compatibility calls the MoreBlockCulling per-block culling API verified in MoreCulling 1.8.1 and must not assume an unvalidated future contract.",
+          "regression_evidence": [
+            "The dedicated 26.2 profile uses moreculling-fabric-26.2-1.8.1.jar SHA-256 ea04505496e4d35a8c94199884b6fafa69057efe50f2096d2988c11163d49122 while upstream issue #438 remains open for Macaw trapdoors."
+          ]
+        }
+      ]
+    },
+    "workbench:classification": "GENERATED / STATICALLY VALIDATED / RUNTIME UNTESTED",
+    "workbench:deployment": "NOT DEPLOYED"
+  }
+}
