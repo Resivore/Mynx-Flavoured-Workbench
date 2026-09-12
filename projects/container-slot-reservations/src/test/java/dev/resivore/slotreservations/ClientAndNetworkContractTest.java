@@ -95,7 +95,12 @@ final class ClientAndNetworkContractTest {
         assertTrue(resolver.contains("!slot.mayPickup(player) || !slot.mayPlace(stack)"));
         assertTrue(actions.contains("ShulkerTransferPlanner.planExactInsertion("));
         assertTrue(actions.contains("ShulkerTransferPlanner.planExtraction("));
-        assertTrue(actions.contains("host.menu().broadcastChanges()"));
+        assertTrue(actions.contains("synchronizeCommittedMenu(player, host.menu())"));
+        assertTrue(actions.contains("player.hasInfiniteMaterials() && menu == player.inventoryMenu"));
+        assertTrue(actions.contains("menu.broadcastFullState()"));
+        assertTrue(actions.contains("menu.broadcastChanges()"));
+        assertTrue(actions.contains("synchronizeCommittedMenu(player, host.menu());\n        // The vanilla menu packet"),
+                "CSR metadata must follow the authoritative menu/carried synchronization");
         assertTrue(actions.contains("candidate.owner() == changed.owner()"),
                 "Shared compound-container viewers must synchronize by physical owner identity");
         assertTrue(tracker.contains("private static final Map<Player, Selection> SELECTIONS"));

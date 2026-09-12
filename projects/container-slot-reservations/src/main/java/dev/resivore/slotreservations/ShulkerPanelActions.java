@@ -126,17 +126,35 @@ public final class ShulkerPanelActions {
                                ItemStack changedHost, ItemStack changedCarried, int selected,
                                dev.resivore.slotreservations.network.ShulkerHostLocator locator) {
         String fingerprint = ShulkerHostFingerprint.of(changedHost, player.registryAccess());
-        if (ServerPlayNetworking.canSend(player, ShulkerPanelSyncPayload.TYPE)) {
-            ServerPlayNetworking.send(player, new ShulkerPanelSyncPayload(
-                    host.menu().containerId, locator, fingerprint, selected));
-        }
         host.slot().set(changedHost);
         host.slot().setChanged();
         host.slot().container.setChanged();
         host.menu().setCarried(changedCarried);
         ShulkerSelectionTracker.rebind(player, host, fingerprint, selected);
-        host.menu().broadcastChanges();
+        synchronizeCommittedMenu(player, host.menu());
+        // The vanilla menu packet(s) carry both the changed host and its real cursor state.
+        // Send CSR's fingerprint metadata afterwards so it cannot make a live same-slot host
+        // look stale before the authoritative menu state reaches the client.
+        if (ServerPlayNetworking.canSend(player, ShulkerPanelSyncPayload.TYPE)) {
+            ServerPlayNetworking.send(player, new ShulkerPanelSyncPayload(
+                    host.menu().containerId, locator, fingerprint, selected));
+        }
         syncSharedViewers(player, host.slot());
+    }
+
+    /**
+     * In 26.2, the normal synchronizer carries cursor changes in
+     * ClientboundSetCursorItemPacket. ClientPacketListener deliberately ignores that packet
+     * while CreativeModeInventoryScreen is open. The native full-content packet is the smallest
+     * server-authoritative menu sync which Creative applies to its real carried stack, so use it
+     * only for that inventory-menu case. Every ordinary menu keeps the incremental path.
+     */
+    private static void synchronizeCommittedMenu(ServerPlayer player, AbstractContainerMenu menu) {
+        if (player.hasInfiniteMaterials() && menu == player.inventoryMenu) {
+            menu.broadcastFullState();
+        } else {
+            menu.broadcastChanges();
+        }
     }
 
     static void syncSharedViewers(ServerPlayer actor, Slot changedSlot) {

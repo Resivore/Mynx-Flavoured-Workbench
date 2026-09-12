@@ -335,7 +335,11 @@ public final class ShulkerPanel {
 
     public static void acceptSync(ShulkerPanelSyncPayload payload) {
         if (binding != null && payload.menuId() == binding.menuId() && payload.host().equals(binding.locator())) {
-            expectedFingerprint = payload.hostFingerprint();
+            // The native host-slot update may have arrived before this optional CSR metadata.
+            // Treat an already-current fingerprint as acknowledged rather than leaving it as a
+            // stale expectation for the next legitimate same-slot menu synchronization.
+            expectedFingerprint = binding.fingerprint().equals(payload.hostFingerprint())
+                    ? null : payload.hostFingerprint();
             lastSentSelection = payload.selectedSlot();
         }
     }
