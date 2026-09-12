@@ -15,14 +15,16 @@
   "definition": {
     "lifecycle": "ACTIVE",
     "goals": [
-      "Make CSR-reserved physical slots immutable to Inventory Sorter while preserving its normal order and stack behavior for all movable slots.",
+      "Fill CSR-reserved physical slots only from reservation-valid unreserved donors, then keep every reservation anchored outside Inventory Sorter's ordinary workspace while preserving normal order and stack behavior for all remaining movable slots.",
       "Sort every unreserved shulker box and bundle as an ordinary outer ItemStack without inspecting, reconstructing, or mutating portable-container contents or components.",
       "Suppress Inventory Sorter's optional sort-into-bundles content-insertion pass while preserving ordinary server, client fallback, and player inventory sorting."
     ],
     "scope": [
-      "Canary 2 intercepts only Inventory Sorter 3.0.0's ContainerInventorySorter whole-range layout/writeback seam, ClientFallbackSortPlanBuilder fallback-click seam, and PlayerInventorySorter bundle-insertion entrypoint.",
-      "CSR detection calls ContainerSlotReservationsApi.isReserved on the exact Slot container and Slot#getContainerSlot local index; CSR resolves supported physical owners, including double-container mappings.",
-      "A masked range compacts only non-reserved slots through Inventory Sorter's own SortedInventoryLayout, writes or clicks only their original physical/menu slots, and never uses a CSR-reserved slot as workspace.",
+      "Canary 3 intercepts only Inventory Sorter 3.0.0's ContainerInventorySorter whole-range layout/writeback seam, ClientFallbackSortPlanBuilder fallback-click seam, and PlayerInventorySorter bundle-insertion entrypoint.",
+      "Before layout, one shared deterministic planner visits reservation targets and unreserved donors in physical slot order. It requires CSR's exact ContainerSlotReservationsApi.mayInsert admission, ordinary ItemStack component-compatible merging for occupied targets, and effective container/menu capacity; wrong/full occupants remain untouched and reserved slots are never donors.",
+      "CSR detection and admission use the exact Container or Slot.container plus Slot#getContainerSlot local index; CSR resolves supported physical owners, component-exact templates, specific portable-container identities, native writability, and double-container mappings.",
+      "After reservation fill, a masked range compacts only non-reserved slots through Inventory Sorter's own SortedInventoryLayout, writes or clicks only their original physical/menu slots, and never uses a CSR-reserved slot as general workspace.",
+      "Client fallback emits only explicit donor-to-reservation pickup sequences for planned fills, restores donor remainders, then invokes Inventory Sorter's click planner with only the simulated post-fill unreserved slots.",
       "A bundle triggers only the narrow ordinary-layout bypass that removes Inventory Sorter's bundle-target content insertion; the outer bundle remains in the movable pool on server and client fallback paths.",
       "The player's special upstream sort-into-bundles branch is replaced only when its main inventory contains a bundle; a shulker alone keeps the upstream player path."
     ],
@@ -65,8 +67,8 @@
       {
         "type": "PROJECT",
         "identifier": "3ab36584-8732-554f-840e-28a75c422660",
-        "requirement": "Runtime depends container_slot_reservations \"*\"; controlled API baseline C16 container-slot-reservations-0.1.0-canary16.jar, 179,562 bytes, SHA-256 34c1f8c5cfca011aca062c55232d2b50ccac2a95f72f8e5a7edec305b5a8c1b2, source d16c664e65c61f9b73d2f710e75069f581ec7239",
-        "reason": "Uses CSR's stable direct read-only isReserved(Container, localSlot) query boundary only."
+        "requirement": "Runtime depends container_slot_reservations \"*\"; controlled identity-aware API baseline C19 container-slot-reservations-0.1.0-canary19.jar, 202,884 bytes, SHA-256 f93068f86d0da76e93d754a9c04cd5999fc72b31f39681fc65dbdb09b2443aeb, source 804f3fe61bbc216d9d33df8d90326f9f1fc0e929",
+        "reason": "Uses CSR's stable direct isReserved(Container, localSlot) and canonical mayInsert(Container, localSlot, ItemStack) query boundaries, including component-exact and specific portable-container identity admission."
       },
       {
         "type": "MOD",
@@ -95,16 +97,16 @@
     ]
   },
   "state": {
-    "milestone": "Canary 2 is retained after controlled validation. CSR-reserved physical slots remain fixed; unreserved outer shulkers and bundles are sortable, and Inventory Sorter's bundle-content insertion pass is suppressed. It is not deployed and has no desktop Minecraft runtime evidence.",
+    "milestone": "Canary 3 is retained after controlled validation. Matching unreserved stacks fill eligible empty or partial CSR reservations in deterministic physical order before every reservation is frozen outside Inventory Sorter's normal movable layout. Wrong/full occupants and reserved donors remain anchored; unreserved outer shulkers and bundles remain sortable; specific CSR identities are honored; and bundle-content insertion remains suppressed. C3 is not deployed and has no desktop Minecraft runtime evidence.",
     "releases": {
       "current": {
-        "version": "C2 (0.1.0-canary2)",
-        "embedded_version": "0.1.0-canary2",
+        "version": "C3 (0.1.0-canary3)",
+        "embedded_version": "0.1.0-canary3",
         "artifact": {
-          "filename": "inventory-sorter-csr-compat-0.1.0-canary2.jar",
-          "sha256": "e5a7481301a163c23fbd1a59abeb6a1e9efcfde7572b24d16f3c904e75b43da7"
+          "filename": "inventory-sorter-csr-compat-0.1.0-canary3.jar",
+          "sha256": "7eca4e86faaa83211432300a658413f7662a9f642df8074d2e4ebf3bb0af3074"
         },
-        "source_commit": "3802f3d331141a531ab4d673f41882aecf84646c",
+        "source_commit": "21b4e4a0eb734c79d1b23202de61d490febb4069",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
@@ -123,11 +125,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 2,
-    "activity_at": "2026-09-11T17:14:00Z",
-    "updated_at": "2026-09-11T17:14:00Z",
-    "last_codex_at": "2026-09-11T17:14:00Z",
-    "source_commit": "3802f3d331141a531ab4d673f41882aecf84646c",
+    "revision": 3,
+    "activity_at": "2026-09-12T04:35:32Z",
+    "updated_at": "2026-09-12T04:35:32Z",
+    "last_codex_at": "2026-09-12T04:35:32Z",
+    "source_commit": "21b4e4a0eb734c79d1b23202de61d490febb4069",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
