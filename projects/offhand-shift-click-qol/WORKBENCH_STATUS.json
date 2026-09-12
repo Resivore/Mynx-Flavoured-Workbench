@@ -14,13 +14,13 @@
     ]
   },
   "definition": {
-    "lifecycle": "ACCEPTED",
+    "lifecycle": "ACTIVE",
     "goals": [
-      "Preserve the accepted C7 shift-click and incoming-item routing behavior for Minecraft Java 26.2 without changing priorities or adding features.",
+      "Preserve the accepted C7 shift-click and incoming-item routing behavior for Minecraft Java 26.2 without changing priorities, while adding only the missing standalone custom-ground-pickup audio fallback in C8.",
       "Retain composable coexistence with Carried Container Auto-Routing and the accepted safeguards for exact remainders, live source stacks, Inventory Extended sizing, and foreign-slot exclusion."
     ],
     "scope": [
-      "Without Carried Container Auto-Routing, preserve the standalone ground-pickup and external QUICK_MOVE order: matching selected main hand, matching occupied physical hotbar, matching occupied offhand, empty physical hotbar, then remaining ordinary inventory.",
+      "Without Carried Container Auto-Routing, preserve the standalone ground-pickup and external QUICK_MOVE order: matching selected main hand, matching occupied physical hotbar, matching occupied offhand, empty physical hotbar, then remaining ordinary inventory. C8 compares the actual incoming count around that unchanged ground-pickup call and sends one collector-only normal vanilla-style local pickup sound only if custom movement occurred and vanilla Player.take did not.",
       "When Carried is loaded, preserve Offhand's single-delegation compatibility seam: yield ground pickup to Carried and delegate external/player-origin QUICK_MOVE through Carried's public API, while the counterpart owns its full carrier and ordinary-inventory hierarchy and the menu receives the exact player-origin remainder.",
       "Keep standalone ordinary routing limited to the player's real non-equipment Inventory slots, require component-identical merges, exclude the clicked source, and retain menu-owned cleanup and callbacks."
     ],
@@ -33,7 +33,7 @@
         "Source, controls, artifacts, or behavior owned by Carried Container Auto-Routing, Inventory Extended, Trinkets, or any other inventory project.",
         "Routing into equipment, Trinkets, trash, or foreign slots, and replacement of menu-owned cleanup, callbacks, or ordinary destination behavior.",
         "Standalone or exhaustive runtime claims beyond the preserved focused paired C7 plus Carried 0.3.4 evidence.",
-        "Runtime deployment, Minecraft launch, accepted-baseline changes, Test Slot changes, Test Instance Manager changes, and access to either physical gameplay profile during this migration."
+        "Runtime deployment, Minecraft launch, accepted-baseline changes, Test Slot changes, Test Instance Manager changes, fake take-item packets, or access to either physical gameplay profile during this successor."
       ]
     },
     "dependencies": [
@@ -88,15 +88,20 @@
     ]
   },
   "state": {
-    "milestone": "C7 passed the focused paired runtime scope with Carried Container Auto-Routing 0.3.4 and remains the accepted release; standalone and exhaustive validation are not claimed.",
+    "milestone": "C8 is an ACTIVE, non-deployed sound-only successor to accepted C7. When CCAR is absent, actual standalone custom WORLD pickup movement that does not reach vanilla Player.take sends one local normal-pitch Minecraft 26.2 ITEM_PICKUP fallback at the captured item position; a reached vanilla take or no accepted movement sends nothing. When CCAR is loaded, Offhand continues yielding its ground-pickup seam and emits no cue. C7 remains the exact accepted and rollback release; C8 has no runtime claim.",
     "releases": {
       "current": {
-        "version": "0.3.3-acquisition-priority-fix-canary",
+        "version": "0.3.4-routed-pickup-audio-fallback-canary1",
+        "embedded_version": "0.3.4-routed-pickup-audio-fallback-canary1",
         "artifact": {
-          "filename": "offhand-shift-click-qol-0.3.3-acquisition-priority-fix-canary.jar",
-          "sha256": "d0c2ebe7cd2d1a6dcbe2654dbee42dd9f5dce4fd710ea3748f3d15dad6f2b04a"
+          "filename": "offhand-shift-click-qol-0.3.4-routed-pickup-audio-fallback-canary1.jar",
+          "sha256": "7ca386bea50eb2ece489da4cccc262a13d45b82171042f39efaea0a91e73e357"
         },
-        "source_commit": "3274dc915f49f6aecda6130added09d6742837bd"
+        "source_commit": "5aa03f560824b1944d634e91a6dcf04a479250f7",
+        "runtime_dependency_policy": {
+          "contract": "CAPABILITY_OR_PROVIDER",
+          "exceptions": []
+        }
       },
       "accepted": {
         "version": "0.3.3-acquisition-priority-fix-canary",
@@ -114,22 +119,22 @@
         },
         "source_commit": "3274dc915f49f6aecda6130added09d6742837bd"
       },
-      "accepted_current": "CURRENT_IS_ACCEPTED",
-      "accepted_rollback": "ACCEPTED_IS_ROLLBACK"
+    "accepted_current": "CURRENT_DIFFERS_FROM_ACCEPTED",
+    "accepted_rollback": "ACCEPTED_IS_ROLLBACK"
     },
     "validation": {
-      "build": "STATIC_PASS",
-      "deployment": "READY_TO_TEST_VERIFIED",
-      "runtime": "RUNTIME_PASS"
+      "build": "CONTROLLED_VALIDATION_PASS",
+      "deployment": "NOT_DEPLOYED",
+      "runtime": "RUNTIME_UNTESTED"
     },
     "blocker": null
   },
   "synchronization": {
-    "revision": 1,
-    "activity_at": "2026-08-20T15:16:00Z",
-    "updated_at": "2026-08-29T21:38:23Z",
-    "last_codex_at": "2026-08-29T21:38:23Z",
-    "source_commit": "d75e4f00421c52a5abec3d4286e83fc18875ebc5",
+    "revision": 2,
+    "activity_at": "2026-09-12T00:23:27Z",
+    "updated_at": "2026-09-12T00:23:27Z",
+    "last_codex_at": "2026-09-12T00:23:27Z",
+    "source_commit": "5aa03f560824b1944d634e91a6dcf04a479250f7",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
