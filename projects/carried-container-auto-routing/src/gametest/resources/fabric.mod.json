@@ -4,6 +4,11 @@
   "version": "1.0.0",
   "name": "Carried Routing Controlled Fixtures",
   "environment": "*",
-  "entrypoints": { "fabric-gametest": ["dev.resivore.carriedrouting.ReservationAcquisitionGameTests"] },
+  "entrypoints": {
+    "fabric-gametest": [
+      "dev.resivore.carriedrouting.ReservationAcquisitionGameTests",
+      "dev.resivore.carriedrouting.PickBlockRoutingGameTests"
+    ]
+  },
   "depends": { "carried_container_auto_routing": "*", "fabric-gametest-api-v1": "*" }
 }

@@ -3,7 +3,7 @@
   "id": "carried_container_auto_routing",
   "version": "${version}",
   "name": "Carried Container Auto-Routing",
-  "description": "Routes newly acquired matching items into carried shulker boxes and bundles.",
+  "description": "Routes newly acquired matching items into carried containers and extends Survival Pick Block to unlocked carried shulkers.",
   "environment": "*",
   "entrypoints": {
     "main": ["dev.resivore.carriedrouting.CarriedContainerAutoRouting"],
