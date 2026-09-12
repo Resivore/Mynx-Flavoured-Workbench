@@ -214,6 +214,7 @@ public final class LayerModelProjection {
             JsonObject encoded = new JsonObject();
             encoded.addProperty("texture", bottomOnly ? "#bottom" : textureRole(face, materialAxis));
             int rotation = faceRotation(face, materialAxis);
+            if (materialAxis != null) encoded.add("uv", axisUv(face, bounds, rotation));
             if (rotation != 0) encoded.addProperty("rotation", rotation);
             if (!bottomOnly && tintBaseFace(profile, face)) encoded.addProperty("tintindex", 0);
             if (cullBoundary && bounds.onBoundary(face)) {
@@ -375,6 +376,25 @@ public final class LayerModelProjection {
             case EAST -> numbers(16 - bounds.z1(), 16 - bounds.y1(),
                     16 - bounds.z0(), 16 - bounds.y0());
         };
+    }
+
+    /**
+     * Keeps axis-material texture sampling one-to-one after the face rotation is applied.
+     *
+     * <p>A quarter-turn exchanges the physical axes mapped to texture U and V. Minecraft's
+     * implicit face UV keeps the unrotated rectangle spans, which distorts rectangular Layer
+     * faces. Transposing the block-absolute face rectangle gives the rotated mapping the physical
+     * height as its U span and the physical width as its V span while retaining the accepted
+     * pillar-grain rotation.</p>
+     */
+    private static JsonArray axisUv(Direction face, Bounds bounds, int rotation) {
+        JsonArray uv = defaultUv(face, bounds);
+        if (rotation == 0 || rotation == 180) return uv;
+        if (rotation != 90 && rotation != 270) {
+            throw new IllegalArgumentException("Unsupported axis-material face rotation: " + rotation);
+        }
+        return numbers(uv.get(1).getAsNumber(), uv.get(0).getAsNumber(),
+                uv.get(3).getAsNumber(), uv.get(2).getAsNumber());
     }
 
     private static JsonObject element(Bounds bounds) {
