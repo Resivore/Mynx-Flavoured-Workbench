@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "id": "villager_work_routines",
+  "version": "${version}",
+  "name": "Villager Work Routines",
+  "description": "Claimed-workplace villager activity with owned sheep wool and fish output.",
+  "authors": ["Resivore"],
+  "license": "All-Rights-Reserved",
+  "environment": "*",
+  "entrypoints": {
+    "main": ["dev.resivore.villagerwork.VillagerWorkRoutines"],
+    "client": ["dev.resivore.villagerwork.client.VillagerWorkRoutinesClient"]
+  },
+  "mixins": ["villager_work_routines.mixins.json"],
+  "depends": {
+    "minecraft": "=26.2",
+    "fabricloader": ">=0.19.3",
+    "fabric-api": ">=0.157.0",
+    "java": ">=25"
+  },
+  "custom": { "runtime_dependency_policy": { "contract": "CAPABILITY_OR_PROVIDER", "exceptions": [] } }
+}
