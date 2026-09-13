@@ -1,0 +1,103 @@
+{
+  "$schema": "../../schemas/workbench-status.schema.json",
+  "schema_version": 1,
+  "identity": {
+    "uuid": "1f7b4c28-008c-4b3f-91e5-f1d16b638afb",
+    "name": "Mynx Matcha Trade Tweaks",
+    "project_id": "mynx-matcha-trade-tweaks",
+    "aliases": [],
+    "legacy_names": [],
+    "legacy_ids": []
+  },
+  "definition": {
+    "lifecycle": "ACTIVE",
+    "goals": [
+      "Apply the 129 actionable Edited Matcha Trades rows as a narrow higher-priority Minecraft Java 26.2 Fabric datapack overlay."
+    ],
+    "scope": [
+      "Override 124 individual Matcha villager trades, remove four explicit non-filler offers through five minimal membership/pool overrides, and add one Leatherworker Master offer."
+    ],
+    "boundaries": {
+      "owned_paths": ["projects/mynx-matcha-trade-tweaks"],
+      "exclusions": [
+        "Accepted Matcha source data, originals, unchanged Matcha trade resources, unrelated datapacks, the user's design spreadsheet, and the protected gameplay instance."
+      ]
+    },
+    "dependencies": [
+      {
+        "type": "MOD",
+        "identifier": "minecraft",
+        "requirement": "=26.2",
+        "reason": "Targeted villager trade loading and registry baseline."
+      },
+      {
+        "type": "MOD",
+        "identifier": "fabricloader",
+        "requirement": ">=0.19.3",
+        "reason": "Fabric 26.2 loader floor."
+      },
+      {
+        "type": "MOD",
+        "identifier": "fabric-api",
+        "requirement": ">=0.157.0",
+        "reason": "Built-in datapack registration."
+      },
+      {
+        "type": "MOD",
+        "identifier": "matcha_flavoured_data",
+        "requirement": "*",
+        "reason": "Accepted underlying Matcha trade data provider."
+      },
+      {
+        "type": "MOD",
+        "identifier": "copper_pipe",
+        "requirement": "*",
+        "reason": "Stable Simple Copper Pipes provider alias for pipe and fitting items."
+      },
+      {
+        "type": "MOD",
+        "identifier": "copperhopper",
+        "requirement": "*",
+        "reason": "Copper hopper result provider."
+      }
+    ]
+  },
+  "state": {
+    "milestone": "Canary 1 implements the sheet's 124 trade changes, four effective removals, and one added Leatherworker Master trade. Java 25/Gradle 9.5.1 build and the 129-row static contract passed. The ignored JAR is retained for dedicated Minecraft runtime testing; no Test Slot deployment or runtime observation occurred.",
+    "releases": {
+      "current": {
+        "version": "0.1.0+26.2-canary1",
+        "artifact": {
+          "filename": "mynx-matcha-trade-tweaks-0.1.0+26.2-canary1.jar",
+          "sha256": "f0cd947b19a2fd6b242cc1ef5133a39367384eddb27daaa0edfe0ce8435cca9b"
+        },
+        "source_commit": "2144aa1111b310bbfc5bd8dc87613c8dae494201",
+        "runtime_dependency_policy": {
+          "contract": "CAPABILITY_OR_PROVIDER",
+          "exceptions": []
+        }
+      },
+      "accepted": null,
+      "rollback": null,
+      "accepted_current": "NO_ACCEPTED",
+      "accepted_rollback": "NO_ROLLBACK"
+    },
+    "validation": {
+      "build": "STATIC_PASS",
+      "deployment": "NOT_DEPLOYED",
+      "runtime": "RUNTIME_UNTESTED"
+    },
+    "blocker": null
+  },
+  "synchronization": {
+    "revision": 1,
+    "activity_at": "2026-09-13T20:59:13Z",
+    "updated_at": "2026-09-13T20:59:13Z",
+    "last_codex_at": "2026-09-13T20:59:13Z",
+    "source_commit": "2144aa1111b310bbfc5bd8dc87613c8dae494201",
+    "google_sheet": {
+      "participates": true,
+      "exclusion_reason": null
+    }
+  }
+}
