@@ -1,0 +1,64 @@
+{
+  "$schema": "../../schemas/workbench-status.schema.json",
+  "schema_version": 1,
+  "identity": {
+    "uuid": "9b9d5a98-36f5-4fce-853e-70730cad6d5f",
+    "name": "Villager Work Routines",
+    "project_id": "villager-work-routines",
+    "aliases": [],
+    "legacy_names": [],
+    "legacy_ids": []
+  },
+  "definition": {
+    "lifecycle": "ACTIVE",
+    "goals": [
+      "Add believable claimed-workplace activity while limiting Canary 1 resource-changing behavior to shepherd sheep shearing and fisherman fish catches.",
+      "Preserve output ownership and bounded storage without altering Matcha professions, trades, villager models, or vanilla global social behavior."
+    ],
+    "scope": [
+      "Server-owned shepherd shearing of reachable adult regrown sheep, exact shear-output capture, and wool insertion only into face-adjacent barrels at the claimed loom.",
+      "Server-owned fisherman fish-only loot from a visible bounded cast/retrieve cycle, with output insertion only into the claimed job-site barrel.",
+      "Claimed-workstation look, hand swing, and restrained vanilla work sound for ten other professions; temporary shears/rod and an isolated fishing-float renderer."
+    ],
+    "boundaries": {
+      "owned_paths": ["projects/villager-work-routines"],
+      "exclusions": [
+        "Livestock slaughter, breeding, ranching, and simulated workstation economies.",
+        "Matcha behavior or resource-pack/model/texture/renderer changes to villagers; the fishing-float renderer is isolated to its own entity.",
+        "Global villager brain, social memory, schedule, trading, profession, or fence-gate changes; nearby item vacuum and nearest-container fallback.",
+        "Protected Matcha Flavoured 26.1.2 profile access and unowned runtime deployment."
+      ]
+    },
+    "dependencies": [
+      {"type": "MOD", "identifier": "minecraft", "requirement": "=26.2", "reason": "Exact game target and inspected sheep/villager/fishing APIs."},
+      {"type": "MOD", "identifier": "fabricloader", "requirement": ">=0.19.3", "reason": "Fabric Loader runtime floor."},
+      {"type": "MOD", "identifier": "fabric-api", "requirement": ">=0.157.0", "reason": "Fabric client entity renderer registration."},
+      {"type": "TOOL", "identifier": "Java", "requirement": ">=25", "reason": "Minecraft 26.2 bytecode target."}
+    ]
+  },
+  "state": {
+    "milestone": "Canary 1 implementation and four focused storage tests pass a clean Java 25/Fabric build. Artifact is retained locally; both Test Slots are occupied by other projects, so this candidate is NOT_DEPLOYED and RUNTIME_UNTESTED.",
+    "releases": {
+      "current": {
+        "version": "0.1.0-canary1",
+        "artifact": {"filename": "villager-work-routines-0.1.0-canary1.jar", "sha256": "af0b3ba222a8b5e9fc51ef4373ef27f4210d0dfd2ced62e32c550cc1e2eb4526"},
+        "source_commit": "123214fb32f5374cab3ee61637bb3ab5dfbbcacc",
+        "runtime_dependency_policy": {"contract": "CAPABILITY_OR_PROVIDER", "exceptions": []}
+      },
+      "accepted": null,
+      "rollback": null,
+      "accepted_current": "NO_ACCEPTED",
+      "accepted_rollback": "NO_ROLLBACK"
+    },
+    "validation": {"build": "STATIC_PASS", "deployment": "NOT_DEPLOYED", "runtime": "RUNTIME_UNTESTED"},
+    "blocker": null
+  },
+  "synchronization": {
+    "revision": 1,
+    "activity_at": "2026-09-13T14:44:24Z",
+    "updated_at": "2026-09-13T14:44:24Z",
+    "last_codex_at": "2026-09-13T14:44:24Z",
+    "source_commit": "123214fb32f5374cab3ee61637bb3ab5dfbbcacc",
+    "google_sheet": {"participates": true, "exclusion_reason": null}
+  }
+}
