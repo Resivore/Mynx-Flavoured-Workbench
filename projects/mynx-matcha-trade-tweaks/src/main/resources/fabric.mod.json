@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "id": "mynx_matcha_trade_tweaks",
+  "version": "${version}",
+  "name": "Mynx Matcha Trade Tweaks",
+  "description": "Narrow higher-priority villager trade adjustments over the preserved Matcha Flavoured 1.12 data pack.",
+  "authors": ["Resivore compatibility workbench"],
+  "license": "MIT",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "dev.resivore.mynxmatchatradetweaks.MynxMatchaTradeTweaks"
+    ]
+  },
+  "mixins": [
+    "mynx_matcha_trade_tweaks.mixins.json"
+  ],
+  "depends": {
+    "minecraft": "=26.2",
+    "fabricloader": ">=0.19.3",
+    "fabric-api": ">=0.157.0",
+    "java": ">=25",
+    "matcha_flavoured_data": "*",
+    "copper_pipe": "*",
+    "copperhopper": "*"
+  },
+  "custom": {
+    "runtime_dependency_policy": {
+      "contract": "CAPABILITY_OR_PROVIDER",
+      "exceptions": []
+    }
+  }
+}
