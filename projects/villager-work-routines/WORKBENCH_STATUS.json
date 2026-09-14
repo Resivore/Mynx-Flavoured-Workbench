@@ -37,12 +37,12 @@
     ]
   },
   "state": {
-    "milestone": "User-reported external Canary 1 runtime FAIL: shepherd generated and deposited 3 wool but sheared from an implausible position without visible shears or action; fisherman at an ordinary village shore stayed at its claimed barrel with no travel, cast, catch, or deposit. Canary 2 corrects interaction positions and shoreline search, passes a clean Java 25/Fabric build and eight focused tests, and is NOT_DEPLOYED / RUNTIME_UNTESTED pending a user-managed game trial.",
+    "milestone": "User-reported external Canary 2 Shepherd runtime FAIL: three adult shearable sheep were found with output capacity and valid interaction positions, but all three failed navigation selection (noValidInteraction=0, noPath=3, selected=none); eligibility also rapidly alternated eligible/cancelled. No Fisherman result was supplied for this trial. Canary 3 accepts only safe, in-range, clear-line vanilla path endpoints and diagnoses precise eligibility transitions; it passes a clean Java 25/Fabric build and 11 focused tests and awaits a user-managed runtime trial.",
     "releases": {
       "current": {
-        "version": "0.1.0-canary2",
-        "artifact": {"filename": "villager-work-routines-0.1.0-canary2.jar", "sha256": "f6435fdc293b17ba03c1c98d0fac7f82b6bcc9ae7280a87ea927a7f8ac9313ce"},
-        "source_commit": "65e92c427a2d102e854e4c50f0aa151ced541b5b",
+        "version": "0.1.0-canary3",
+        "artifact": {"filename": "villager-work-routines-0.1.0-canary3.jar", "sha256": "7ee0fc48b9e871bff2b7258b42071a9e5d5a4bf4c1728ed04fd857a0beeab9bd"},
+        "source_commit": "29eda30684a28957b47b29f7ac8b89e980d9bdd2",
         "runtime_dependency_policy": {"contract": "CAPABILITY_OR_PROVIDER", "exceptions": []}
       },
       "accepted": null,
@@ -54,11 +54,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 2,
-    "activity_at": "2026-09-14T08:28:48Z",
-    "updated_at": "2026-09-14T08:28:48Z",
-    "last_codex_at": "2026-09-14T08:28:48Z",
-    "source_commit": "65e92c427a2d102e854e4c50f0aa151ced541b5b",
+    "revision": 3,
+    "activity_at": "2026-09-14T09:38:53Z",
+    "updated_at": "2026-09-14T09:38:53Z",
+    "last_codex_at": "2026-09-14T09:38:53Z",
+    "source_commit": "29eda30684a28957b47b29f7ac8b89e980d9bdd2",
     "google_sheet": {"participates": true, "exclusion_reason": null}
   }
 }
