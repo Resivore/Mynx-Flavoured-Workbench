@@ -37,22 +37,28 @@ abstract class VillagerMixin implements OwnedOutput {
     @Inject(method = "addAdditionalSaveData", at = @At("TAIL"))
     private void villagerWork$saveOutput(ValueOutput output, CallbackInfo ci) {
         villagerWork$output.storeAsItemList(output.list("VillagerWorkOwnedOutput", ItemStack.CODEC));
+        WorkCoordinator.saveGateExit((Villager)(Object)this, output);
     }
 
     @Inject(method = "readAdditionalSaveData", at = @At("TAIL"))
     private void villagerWork$loadOutput(ValueInput input, CallbackInfo ci) {
         input.list("VillagerWorkOwnedOutput", ItemStack.CODEC).ifPresent(villagerWork$output::fromItemList);
         WorkCoordinator.clearProp((Villager)(Object)this);
+        WorkCoordinator.loadGateExit((Villager)(Object)this, input);
     }
 
     @Inject(method = "die", at = @At("HEAD"))
     private void villagerWork$dropRealOutput(DamageSource source, CallbackInfo ci) {
+        WorkCoordinator.releaseGate((Villager)(Object)this);
         villagerWork$releaseRealOutput();
     }
 
     @Inject(method = "thunderHit", at = @At("HEAD"))
     private void villagerWork$lightningConversion(ServerLevel level, LightningBolt bolt, CallbackInfo ci) {
-        if (level.getDifficulty() != Difficulty.PEACEFUL) villagerWork$releaseRealOutput();
+        if (level.getDifficulty() != Difficulty.PEACEFUL) {
+            WorkCoordinator.releaseGate((Villager)(Object)this);
+            villagerWork$releaseRealOutput();
+        }
     }
 
     @Unique private void villagerWork$releaseRealOutput() {

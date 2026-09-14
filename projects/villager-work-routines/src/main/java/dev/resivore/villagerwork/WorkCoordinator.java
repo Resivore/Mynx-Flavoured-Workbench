@@ -15,6 +15,7 @@ import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.village.poi.PoiType;
 import net.minecraft.world.entity.ai.village.poi.PoiTypes;
 import net.minecraft.world.entity.animal.sheep.Sheep;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.npc.villager.Villager;
 import net.minecraft.world.entity.npc.villager.VillagerProfession;
 import net.minecraft.world.entity.schedule.Activity;
@@ -24,6 +25,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.FenceGateBlock;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.entity.BarrelBlockEntity;
 import net.minecraft.world.level.pathfinder.Path;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
@@ -34,13 +37,19 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.level.ClipContext;
+import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.ArrayDeque;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.WeakHashMap;
 
 /** A bounded server-side overlay that runs only during vanilla WORK activity. */
@@ -52,6 +61,9 @@ public final class WorkCoordinator {
     private static final int FISH_RADIUS = 8;
     private static final int TELEGRAPH_TICKS = 14;
     private static final int NAVIGATION_TIMEOUT = 160;
+    private static final int GATE_SEARCH_RADIUS = SHEEP_RADIUS + 4;
+    private static final int GATE_FLOOD_LIMIT = 1200;
+    private static final int GATE_CROSS_TIMEOUT = 100;
     private static final int SCAN_LOG_INTERVAL = 200;
 
     private WorkCoordinator() {}
@@ -60,7 +72,15 @@ public final class WorkCoordinator {
         ResourceKey<VillagerProfession> profession = villager.getVillagerData().profession().unwrapKey().orElse(null);
         Profile profile = profile(profession);
         State state = STATES.get(villager);
-        if (profile == null) { if (state != null) cancel(villager, state, "profession changed"); return; }
+        if (state != null && state.pendingExit != null) restorePendingExit(villager, level, state);
+        if (profile == null) {
+            if (state != null) {
+                if (state.eligible || state.sheep != null || state.bank != null || state.prop != null)
+                    cancel(villager, state, "profession changed");
+                cleanupGateExit(villager, level, state);
+            }
+            return;
+        }
         if (state == null) { state = new State(); STATES.put(villager, state); }
         if (state.eligible && state.profession != profession) cancel(villager, state, "profession changed");
         SiteCheck siteCheck = claimedSite(villager, level, profile);
@@ -76,7 +96,9 @@ public final class WorkCoordinator {
         if (!villager.getBrain().isActive(Activity.WORK)) interruptions.add("vanilla WORK activity inactive");
         if (siteCheck.reason() != null) interruptions.add(siteCheck.reason());
         if (!interruptions.isEmpty()) {
-            cancel(villager, state, String.join("; ", interruptions));
+            if (state.eligible || state.sheep != null || state.bank != null || state.prop != null)
+                cancel(villager, state, String.join("; ", interruptions));
+            cleanupGateExit(villager, level, state);
             return;
         }
         BlockPos site = siteCheck.site();
@@ -121,23 +143,35 @@ public final class WorkCoordinator {
 
     private static void shepherd(Villager villager, ServerLevel level, BlockPos loom, State state) {
         SimpleContainer owned = ((OwnedOutput)villager).villagerWork$ownedOutput();
-        if (villager.tickCount % 20 == 0 && containsWool(owned)) depositWool(villager, level, loom, owned, state);
+        if (state.gateRoute != null && state.gateRoute.stage == GateRouteRules.Stage.CANCELLED) {
+            retryGateRestoration(villager, level, state);
+            return;
+        }
         if (state.clearPropAt != 0) {
             if (villager.tickCount < state.clearPropAt) return;
             clearProp(villager);
             state.clearPropAt = 0;
         }
-        if (containsWool(owned) && villager.distanceToSqr(Vec3.atCenterOf(loom)) > 4 * 4) {
-            clearSheep(villager, state, "returning to loom with wool");
-            if (villager.tickCount % 20 == 0) moveNearSite(villager, level, loom, 0.6);
+        if (state.gateRoute != null && isGateExitStage(state.gateRoute.stage)
+                && tickGateReturn(villager, level, loom, state)) return;
+        if (containsWool(owned)) {
+            if (state.gateRoute == null && villager.tickCount % 20 == 0)
+                depositWool(villager, level, loom, owned, state);
+            if (villager.distanceToSqr(Vec3.atCenterOf(loom)) > 4 * 4) {
+                if (villager.tickCount % 20 == 0) moveNearSite(villager, level, loom, 0.6);
+                return;
+            }
+            if (villager.tickCount % 20 == 0) depositWool(villager, level, loom, owned, state);
             return;
         }
         Sheep target = state.sheep;
         if (target != null && (!target.isAlive() || target.isBaby() || !target.readyForShearing()
-                || target.distanceToSqr(Vec3.atCenterOf(loom)) > 16 * 16 || target.distanceToSqr(villager) > 18 * 18)) {
+                || target.distanceToSqr(Vec3.atCenterOf(loom)) > 16 * 16
+                || (state.gateRoute == null && target.distanceToSqr(villager) > 18 * 18))) {
             clearSheep(villager, state, "selected sheep no longer eligible or local");
             target = null;
         }
+        if (state.gateRoute != null && isGateExitStage(state.gateRoute.stage)) return;
         if (target == null && villager.tickCount >= state.cooldown
                 && (villager.tickCount + villager.getId()) % SCAN_INTERVAL == 0) {
             List<Sheep> sheep = level.getEntitiesOfClass(Sheep.class,
@@ -168,7 +202,7 @@ public final class WorkCoordinator {
                         break;
                     }
                     SheepPathAttempt attempt = trySheepPath(villager, candidate, position, level);
-                    if (describeAttempts || attempt.accepted()) attempts.add(attempt.summary());
+                    attempts.add(attempt.summary());
                     if (!attempt.accepted()) continue;
                     state.sheep = candidate;
                     state.sheepRequested = position;
@@ -181,6 +215,19 @@ public final class WorkCoordinator {
                             candidate.getId(), candidate.getUUID(), candidate.blockPosition(), position,
                             attempt.endpoint(), attempt.canReach(), attempt.moveAccepted());
                     break;
+                }
+                if (target == null) {
+                    GateRoute route = findGateRoute(villager, level, loom, candidate, positions, attempts, describeAttempts);
+                    if (route != null) {
+                        state.sheep = candidate;
+                        state.sheepRequested = route.interaction;
+                        state.sheepTarget = route.interaction;
+                        state.gateRoute = route;
+                        state.navigationDeadline = villager.tickCount + NAVIGATION_TIMEOUT;
+                        target = candidate;
+                        log(villager, "target sheep selected id={} uuid={} sheepPos={} interaction={} via gate={}",
+                                candidate.getId(), candidate.getUUID(), candidate.blockPosition(), route.interaction, route.gate);
+                    }
                 }
                 if (describeAttempts || target == candidate)
                     log(villager, "sheep route sheepId={} sheepPos={} interactionPositions={} attempts={}",
@@ -201,6 +248,7 @@ public final class WorkCoordinator {
             return;
         }
         villager.getLookControl().setLookAt(target);
+        if (state.gateRoute != null && tickGateEntry(villager, level, state)) return;
         if (villager.tickCount > state.navigationDeadline && state.shearAt == 0) {
             clearSheep(villager, state, "interaction navigation timed out");
             return;
@@ -210,7 +258,22 @@ public final class WorkCoordinator {
             if (villager.tickCount % 20 == 0) {
                 SheepPathAttempt attempt = trySheepPath(villager, target, state.sheepRequested, level);
                 if (!attempt.accepted()) {
-                    clearSheep(villager, state, "interaction path lost: " + attempt.summary());
+                    if (state.gateRoute != null) {
+                        boolean recovered = false;
+                        for (BlockPos position : sheepPositions(target, villager, level)) {
+                            SheepPathAttempt revised = trySheepPath(villager, target, position, level);
+                            if (!revised.accepted()) continue;
+                            state.sheepRequested = position;
+                            state.sheepTarget = revised.endpoint();
+                            state.customNavigation = true;
+                            state.customPath = revised.path();
+                            log(villager, "known sheep id={} moved; recomputed interaction={} endpoint={} without gate rescan",
+                                    target.getId(), position, revised.endpoint());
+                            recovered = true;
+                            break;
+                        }
+                        if (!recovered) clearSheep(villager, state, "target sheep moved out of local validity: " + attempt.summary());
+                    } else clearSheep(villager, state, "interaction path lost: " + attempt.summary());
                 } else {
                     state.sheepTarget = attempt.endpoint();
                     state.customNavigation = true;
@@ -222,6 +285,8 @@ public final class WorkCoordinator {
         double finalDistance = Math.sqrt(villager.distanceToSqr(target));
         boolean finalClearLine = clearShearLine(level, villager.position().add(0, 0.9, 0), target);
         stopCustomNavigation(villager, state);
+        if (state.gateRoute != null && state.gateRoute.stage == GateRouteRules.Stage.APPROACH_SHEEP)
+            state.gateRoute.stage = GateRouteRules.advance(state.gateRoute.stage, true);
         if (state.shearAt == 0) {
             if (!showProp(villager, state, Items.SHEARS)) { clearSheep(villager, state, "main hand occupied; shears cannot be shown"); return; }
             state.shearAt = villager.tickCount + TELEGRAPH_TICKS;
@@ -245,13 +310,502 @@ public final class WorkCoordinator {
         villager.swing(InteractionHand.MAIN_HAND);
         int before = woolCount(owned);
         ShearCapture.shear(target, level, owned);
-        log(villager, "shear captured wool count={} ownedTotal={}", woolCount(owned) - before, woolCount(owned));
+        log(villager, "wool captured from exact shear count={} ownedTotal={}", woolCount(owned) - before, woolCount(owned));
+        if (state.gateRoute != null) {
+            state.gateRoute.stage = GateRouteRules.advance(GateRouteRules.Stage.SHEAR, true);
+            state.gateRoute.deadline = villager.tickCount + NAVIGATION_TIMEOUT;
+            log(villager, "returning to gate with wool gate={} sheepId={}", state.gateRoute.gate, target.getId());
+        } else log(villager, "returning to loom with wool loom={}", loom);
         state.sheep = null;
         state.sheepRequested = null;
         state.sheepTarget = null;
         state.shearAt = 0;
         state.cooldown = villager.tickCount + 60;
         state.clearPropAt = villager.tickCount + 5;
+    }
+
+    /** The closed gate is never made pathfindable globally: only its two real sides are explored. */
+    private static GateRoute findGateRoute(Villager villager, ServerLevel level, BlockPos loom,
+                                           Sheep sheep, List<BlockPos> positions, List<String> directAttempts,
+                                           boolean describeAttempts) {
+        log(villager, "direct route blocked sheepId={} sheepPos={} interactionPoints={} attempts={}; gate search started barrierToSheep={}",
+                sheep.getId(), sheep.blockPosition(), positions, directAttempts,
+                directAttempts.stream().anyMatch(attempt -> attempt.contains("barrierToSheep=true")));
+        List<GateRouteRules.Candidate> choices = new ArrayList<>();
+        List<String> examined = new ArrayList<>();
+        int count = 0;
+        BlockPos low = loom.offset(-GATE_SEARCH_RADIUS, -4, -GATE_SEARCH_RADIUS);
+        BlockPos high = loom.offset(GATE_SEARCH_RADIUS, 4, GATE_SEARCH_RADIUS);
+        for (BlockPos mutable : BlockPos.betweenClosed(low, high)) {
+            BlockPos gate = mutable.immutable();
+            if (!level.hasChunkAt(gate)) continue;
+            BlockState gateState = level.getBlockState(gate);
+            if (!(gateState.getBlock() instanceof FenceGateBlock)) continue;
+            count++;
+            Direction facing = gateState.getValue(FenceGateBlock.FACING);
+            BlockPos a = gate.relative(facing);
+            BlockPos b = gate.relative(facing.getOpposite());
+            if (!gatePassageHasRoom(level, villager, gate)) {
+                examined.add(gate + ":unsafe/unloaded passage");
+                continue;
+            }
+            for (int side = 0; side < 2; side++) {
+                BlockPos near = side == 0 ? a : b;
+                BlockPos far = side == 0 ? b : a;
+                if (!standingIsClear(level, villager, near)) {
+                    examined.add(gate + ":invalid near side=" + near);
+                    continue;
+                }
+                if (!standingIsClear(level, villager, far)) {
+                    examined.add(gate + ":invalid far side=" + far);
+                    continue;
+                }
+                Path nearPath = villager.getNavigation().createPath(near, 0);
+                boolean nearReachable = atBlock(villager, near) || exactEndpoint(nearPath, near);
+                if (!nearReachable) {
+                    examined.add(gate + ":no reachable near side=" + near + " endpoint=" + pathEndpoint(nearPath));
+                    continue;
+                }
+                for (BlockPos interaction : positions) {
+                    int farCost = walkingDistance(level, villager, far, interaction, loom);
+                    boolean connects = farCost >= 0;
+                    if (!connects) continue;
+                    double nearCost = nearPath == null ? 0 : nearPath.getNodeCount();
+                    choices.add(new GateRouteRules.Candidate(gate, near, far, interaction,
+                            nearCost, farCost, true, true));
+                }
+                if (choices.stream().noneMatch(choice -> choice.gate().equals(gate) && choice.near().equals(near)))
+                    examined.add(gate + ":far side does not connect to sheep=" + sheep.getId() + " side=" + far);
+            }
+        }
+        GateRouteRules.Candidate selected = GateRouteRules.select(false, choices).orElse(null);
+        if (selected == null) {
+            if (describeAttempts || count > 0)
+                log(villager, "gate search rejected sheepId={} gatesExamined={} reasons={} result=no relevant gate exists",
+                        sheep.getId(), count, examined);
+            return null;
+        }
+        BlockState state = level.getBlockState(selected.gate());
+        GateRoute route = new GateRoute(selected, loom, state.getBlock(), state.getValue(FenceGateBlock.FACING),
+                state.getValue(FenceGateBlock.OPEN), villager.tickCount + NAVIGATION_TIMEOUT);
+        log(villager, "gate route selected sheepId={} sheepPos={} interaction={} gate={} facing={} initialOpen={} near={} far={} nearPathCost={} verifiedFarPathCost={} gatesExamined={} rejected={}",
+                sheep.getId(), sheep.blockPosition(), route.interaction, route.gate, route.facing,
+                route.initiallyOpen, route.near, route.far, selected.approachCost(), selected.sheepCost(), count, examined);
+        return route;
+    }
+
+    private static int walkingDistance(ServerLevel level, Villager villager, BlockPos start,
+                                       BlockPos target, BlockPos loom) {
+        if (!standingIsClear(level, villager, start) || !standingIsClear(level, villager, target)) return -1;
+        ArrayDeque<BlockPos> queue = new ArrayDeque<>();
+        Set<BlockPos> seen = new HashSet<>();
+        queue.add(start);
+        seen.add(start);
+        int distance = 0;
+        while (!queue.isEmpty() && seen.size() <= GATE_FLOOD_LIMIT) {
+            int breadth = queue.size();
+            for (int i = 0; i < breadth; i++) {
+                BlockPos current = queue.removeFirst();
+                if (current.equals(target)) return distance;
+                for (Direction direction : Direction.Plane.HORIZONTAL) {
+                        BlockPos next = current.relative(direction);
+                        if (Math.abs(next.getX() - loom.getX()) > GATE_SEARCH_RADIUS
+                                || Math.abs(next.getZ() - loom.getZ()) > GATE_SEARCH_RADIUS
+                                || Math.abs(next.getY() - loom.getY()) > 4 || seen.contains(next)) continue;
+                        if (!standingIsClear(level, villager, next)) continue;
+                        seen.add(next);
+                        queue.addLast(next);
+                }
+            }
+            distance++;
+        }
+        return -1;
+    }
+
+    private static boolean tickGateEntry(Villager villager, ServerLevel level, State state) {
+        GateRoute route = state.gateRoute;
+        if (route == null || route.stage == GateRouteRules.Stage.APPROACH_SHEEP
+                || route.stage == GateRouteRules.Stage.SHEAR || isGateExitStage(route.stage)) return false;
+        if (!sameGate(level, route)) { clearSheep(villager, state, "gate changed/disappeared during entry"); return true; }
+        if (villager.tickCount > route.deadline && route.stage != GateRouteRules.Stage.CLOSE_ENTRY) {
+            clearSheep(villager, state, "gate entry navigation/crossing timeout"); return true;
+        }
+        if (route.stage == GateRouteRules.Stage.APPROACH_ENTRY) {
+            if (atBlock(villager, route.near)) {
+                stopCustomNavigation(villager, state);
+                route.stage = GateRouteRules.advance(route.stage, true);
+                log(villager, "arrived at gate={} near={} sheepId={}", route.gate, route.near, state.sheep.getId());
+            } else {
+                if (route.lastPathAt == 0 || villager.tickCount - route.lastPathAt >= 20) {
+                    if (!startGatePath(villager, state, route.near)) {
+                        clearSheep(villager, state, "no reachable near side after gate selection gate=" + route.gate);
+                        return true;
+                    }
+                    route.lastPathAt = villager.tickCount;
+                    if (!route.approachLogged) {
+                        log(villager, "approaching gate={} near={} sheepId={}", route.gate, route.near, state.sheep.getId());
+                        route.approachLogged = true;
+                    }
+                }
+                return true;
+            }
+        }
+        if (route.stage == GateRouteRules.Stage.OPEN_ENTRY) {
+            if (!atBlock(villager, route.near) || villager.distanceToSqr(Vec3.atCenterOf(route.gate)) > 2.5 * 2.5) {
+                clearSheep(villager, state, "moved out of gate interaction range before entry");
+                return true;
+            }
+            if (!openGate(villager, level, route, "entry")) {
+                clearSheep(villager, state, "gate could not be opened for entry");
+                return true;
+            }
+            route.stage = GateRouteRules.advance(route.stage, true);
+            route.deadline = villager.tickCount + GATE_CROSS_TIMEOUT;
+            route.lastPathAt = villager.tickCount;
+            if (!startGatePath(villager, state, route.far)) {
+                clearSheep(villager, state, "opened gate but no post-open path to far side=" + route.far);
+                return true;
+            }
+            log(villager, "crossing gate={} toward far={} sheepId={}", route.gate, route.far, state.sheep.getId());
+            return true;
+        }
+        if (route.stage == GateRouteRules.Stage.CROSS_ENTRY) {
+            if (!level.getBlockState(route.gate).getValue(FenceGateBlock.OPEN)) {
+                route.ownsOpen = false;
+                clearSheep(villager, state, "gate closed externally before entry crossing");
+                return true;
+            }
+            if (crossedTo(villager, route.far, route.gate)) {
+                stopCustomNavigation(villager, state);
+                route.stage = GateRouteRules.advance(route.stage, true);
+                route.deadline = villager.tickCount + 40;
+                log(villager, "gate crossed inward gate={} far={}", route.gate, route.far);
+            } else {
+                if (villager.tickCount - route.lastPathAt >= 20) {
+                    if (!startGatePath(villager, state, route.far)) {
+                        clearSheep(villager, state, "opened gate but post-open path lost");
+                        return true;
+                    }
+                    route.lastPathAt = villager.tickCount;
+                }
+                return true;
+            }
+        }
+        if (route.stage == GateRouteRules.Stage.CLOSE_ENTRY) {
+            if (!finishGateClosure(villager, level, route, false)) return true;
+            route.stage = GateRouteRules.advance(route.stage, true);
+            route.deadline = villager.tickCount + NAVIGATION_TIMEOUT;
+            state.navigationDeadline = route.deadline;
+            log(villager, "continuing to target sheep id={} interaction={} after gate={}",
+                    state.sheep.getId(), route.interaction, route.gate);
+        }
+        return route.stage != GateRouteRules.Stage.APPROACH_SHEEP;
+    }
+
+    private static boolean tickGateReturn(Villager villager, ServerLevel level, BlockPos loom, State state) {
+        GateRoute route = state.gateRoute;
+        if (route == null) return false;
+        if (!sameGate(level, route)) {
+            log(villager, "gate changed/disappeared during exit gate={}; no forced passage", route.gate);
+            state.gateRoute = null;
+            return false;
+        }
+        if (villager.tickCount > route.deadline && route.stage != GateRouteRules.Stage.CLOSE_EXIT) {
+            log(villager, "gate exit navigation/crossing timeout gate={} stage={}", route.gate, route.stage);
+            safeRestoreGate(villager, level, route, "exit timeout");
+            if (isOnFarSide(villager, route)) {
+                route.stage = GateRouteRules.Stage.APPROACH_EXIT;
+                route.deadline = villager.tickCount + NAVIGATION_TIMEOUT;
+                route.lastPathAt = 0;
+                return true;
+            }
+            state.gateRoute = null;
+            return false;
+        }
+        if (route.stage == GateRouteRules.Stage.APPROACH_EXIT) {
+            if (atBlock(villager, route.far)) {
+                stopCustomNavigation(villager, state);
+                route.stage = GateRouteRules.advance(route.stage, true);
+                log(villager, "arrived at exit gate={} inside={}", route.gate, route.far);
+            } else {
+                if (route.lastPathAt == 0 || villager.tickCount - route.lastPathAt >= 20) {
+                    if (!startGatePath(villager, state, route.far)) {
+                        log(villager, "no path to known exit gate={} inside={}", route.gate, route.far);
+                        route.lastPathAt = villager.tickCount;
+                        return true;
+                    }
+                    route.lastPathAt = villager.tickCount;
+                    if (!route.exitLogged) {
+                        log(villager, "returning to gate with wool={} gate={} inside={}",
+                                containsWool(((OwnedOutput)villager).villagerWork$ownedOutput()), route.gate, route.far);
+                        route.exitLogged = true;
+                    }
+                }
+                return true;
+            }
+        }
+        if (route.stage == GateRouteRules.Stage.OPEN_EXIT) {
+            if (!atBlock(villager, route.far) || villager.distanceToSqr(Vec3.atCenterOf(route.gate)) > 2.5 * 2.5) {
+                log(villager, "exit gate interaction range lost gate={}", route.gate);
+                route.stage = GateRouteRules.Stage.APPROACH_EXIT;
+                route.lastPathAt = 0;
+                return true;
+            }
+            if (route.externalHold && !level.getBlockState(route.gate).getValue(FenceGateBlock.OPEN))
+                return true; // Another actor repeatedly closed it; wait for that actor to open it.
+            if (!openGate(villager, level, route, "exit")) {
+                log(villager, "gate could not be opened for exit gate={}", route.gate);
+                route.stage = GateRouteRules.Stage.APPROACH_EXIT;
+                route.lastPathAt = 0;
+                return true;
+            }
+            route.stage = GateRouteRules.advance(route.stage, true);
+            route.deadline = villager.tickCount + GATE_CROSS_TIMEOUT;
+            route.lastPathAt = villager.tickCount;
+            if (!startGatePath(villager, state, route.near)) {
+                log(villager, "opened gate but no post-open exit path gate={} outside={}", route.gate, route.near);
+                return true;
+            }
+            return true;
+        }
+        if (route.stage == GateRouteRules.Stage.CROSS_EXIT) {
+            if (!level.getBlockState(route.gate).getValue(FenceGateBlock.OPEN)) {
+                route.ownsOpen = false;
+                route.externalChanges++;
+                route.externalHold = route.externalChanges >= 2;
+                route.stage = GateRouteRules.Stage.APPROACH_EXIT;
+                route.deadline = villager.tickCount + NAVIGATION_TIMEOUT;
+                route.lastPathAt = 0;
+                log(villager, "gate closed externally before outward crossing gate={} changes={} holdUntilExternallyOpened={}",
+                        route.gate, route.externalChanges, route.externalHold);
+                return true;
+            }
+            if (crossedTo(villager, route.near, route.gate)) {
+                stopCustomNavigation(villager, state);
+                route.stage = GateRouteRules.advance(route.stage, true);
+                route.deadline = villager.tickCount + 40;
+                log(villager, "crossed gate outward gate={} outside={}", route.gate, route.near);
+            } else {
+                if (villager.tickCount - route.lastPathAt >= 20) {
+                    if (!startGatePath(villager, state, route.near)) {
+                        log(villager, "post-open exit path lost gate={}", route.gate);
+                        route.lastPathAt = villager.tickCount;
+                        return true;
+                    }
+                    route.lastPathAt = villager.tickCount;
+                }
+                return true;
+            }
+        }
+        if (route.stage == GateRouteRules.Stage.CLOSE_EXIT) {
+            if (!finishGateClosure(villager, level, route, true)) return true;
+            route.stage = GateRouteRules.advance(route.stage, true);
+            log(villager, "returning to loom={} after gate exit={}", loom, route.gate);
+            state.gateRoute = null;
+        }
+        return false;
+    }
+
+    private static boolean isGateExitStage(GateRouteRules.Stage stage) {
+        return stage == GateRouteRules.Stage.APPROACH_EXIT || stage == GateRouteRules.Stage.OPEN_EXIT
+                || stage == GateRouteRules.Stage.CROSS_EXIT || stage == GateRouteRules.Stage.CLOSE_EXIT;
+    }
+
+    private static void cleanupGateExit(Villager villager, ServerLevel level, State state) {
+        if (state.gateRoute != null && state.gateRoute.stage == GateRouteRules.Stage.CANCELLED) {
+            retryGateRestoration(villager, level, state);
+            return;
+        }
+        if (state.gateRoute == null || !isGateExitStage(state.gateRoute.stage) || !villager.isAlive()
+                || villager.isSleeping() || villager.isTrading()
+                || villager.getBrain().hasMemoryValue(MemoryModuleType.BREED_TARGET)) return;
+        // Finishing an already-started gate crossing is safety cleanup, not new work or a new sheep scan.
+        tickGateReturn(villager, level, state.gateRoute.loom, state);
+    }
+
+    /** Save only an exit obligation; target sheep and synthetic props never survive a reload. */
+    public static void saveGateExit(Villager villager, ValueOutput output) {
+        State state = STATES.get(villager);
+        if (state == null || state.gateRoute == null || !(villager.level() instanceof ServerLevel level)) return;
+        GateRoute route = state.gateRoute;
+        if (!isOnFarSide(villager, route) && !villager.getBoundingBox().intersects(new AABB(route.gate))) {
+            safeRestoreGate(villager, level, route, "saving outside pen");
+            if (!route.ownsOpen) return;
+            route.stage = GateRouteRules.Stage.CANCELLED;
+        }
+        output.putLong("VillagerWorkExitGate", route.gate.asLong());
+        output.putLong("VillagerWorkExitNear", route.near.asLong());
+        output.putLong("VillagerWorkExitFar", route.far.asLong());
+        output.putLong("VillagerWorkExitLoom", route.loom.asLong());
+        output.putString("VillagerWorkExitFacing", route.facing.name());
+        output.putBoolean("VillagerWorkExitInitiallyOpen", route.initiallyOpen);
+        output.putBoolean("VillagerWorkExitOwnsOpen", route.ownsOpen);
+        output.putBoolean("VillagerWorkExitRestoreOnly", route.stage == GateRouteRules.Stage.CANCELLED
+                || !isOnFarSide(villager, route));
+    }
+
+    public static void loadGateExit(Villager villager, ValueInput input) {
+        var gate = input.getLong("VillagerWorkExitGate");
+        if (gate.isEmpty()) return;
+        String facingName = input.getStringOr("VillagerWorkExitFacing", "");
+        Direction facing;
+        try { facing = Direction.valueOf(facingName); }
+        catch (IllegalArgumentException exception) { return; }
+        State state = STATES.computeIfAbsent(villager, ignored -> new State());
+        state.pendingExit = new PendingExit(BlockPos.of(gate.get()),
+                BlockPos.of(input.getLongOr("VillagerWorkExitNear", gate.get())),
+                BlockPos.of(input.getLongOr("VillagerWorkExitFar", gate.get())),
+                BlockPos.of(input.getLongOr("VillagerWorkExitLoom", gate.get())), facing,
+                input.getBooleanOr("VillagerWorkExitInitiallyOpen", false),
+                input.getBooleanOr("VillagerWorkExitOwnsOpen", false),
+                input.getBooleanOr("VillagerWorkExitRestoreOnly", false));
+    }
+
+    private static void restorePendingExit(Villager villager, ServerLevel level, State state) {
+        PendingExit saved = state.pendingExit;
+        if (!level.hasChunkAt(saved.gate)) return;
+        state.pendingExit = null;
+        BlockState blockState = level.getBlockState(saved.gate);
+        if (!(blockState.getBlock() instanceof FenceGateBlock)
+                || blockState.getValue(FenceGateBlock.FACING) != saved.facing
+                || !saved.near.equals(saved.gate.relative(saved.facing))
+                && !saved.near.equals(saved.gate.relative(saved.facing.getOpposite()))
+                || !saved.far.equals(saved.gate.relative(saved.facing))
+                && !saved.far.equals(saved.gate.relative(saved.facing.getOpposite()))
+                || saved.near.equals(saved.far)) {
+            log(villager, "saved gate exit discarded: gate changed or sides invalid gate={}", saved.gate);
+            return;
+        }
+        GateRouteRules.Candidate candidate = new GateRouteRules.Candidate(saved.gate, saved.near,
+                saved.far, saved.far, 0, 0, true, true);
+        GateRoute route = new GateRoute(candidate, saved.loom, blockState.getBlock(), saved.facing,
+                saved.initiallyOpen, villager.tickCount + NAVIGATION_TIMEOUT);
+        route.ownsOpen = saved.ownsOpen;
+        route.stage = saved.restoreOnly || !isOnFarSide(villager, route)
+                ? GateRouteRules.Stage.CANCELLED : GateRouteRules.Stage.APPROACH_EXIT;
+        if (route.stage == GateRouteRules.Stage.CANCELLED && !route.ownsOpen) return;
+        if (route.stage == GateRouteRules.Stage.CANCELLED) {
+            route.lastPathAt = villager.tickCount - 20;
+            state.gateRoute = route;
+            retryGateRestoration(villager, level, state);
+            return;
+        }
+        state.gateRoute = route;
+        log(villager, "resumed saved gate exit gate={} inside={} outside={} ownedOpen={}",
+                route.gate, route.far, route.near, route.ownsOpen);
+    }
+
+    public static void releaseGate(Villager villager) {
+        State state = STATES.get(villager);
+        if (state == null) return;
+        if (state.gateRoute != null && villager.level() instanceof ServerLevel level)
+            safeRestoreGate(villager, level, state.gateRoute, "villager removed/converted");
+        state.gateRoute = null;
+        state.pendingExit = null;
+        stopCustomNavigation(villager, state);
+        clearProp(villager);
+    }
+
+    private static boolean startGatePath(Villager villager, State state, BlockPos goal) {
+        if (atBlock(villager, goal)) return true;
+        Path path = villager.getNavigation().createPath(goal, 0);
+        if (!exactEndpoint(path, goal) || !villager.getNavigation().moveTo(path, 0.6)) return false;
+        state.customNavigation = true;
+        state.customPath = path;
+        return true;
+    }
+
+    private static boolean exactEndpoint(Path path, BlockPos goal) {
+        return path != null && path.getNodeCount() > 0 && goal.equals(path.getEndNode().asBlockPos());
+    }
+
+    private static BlockPos pathEndpoint(Path path) {
+        return path == null || path.getNodeCount() == 0 ? null : path.getEndNode().asBlockPos();
+    }
+
+    private static boolean atBlock(Villager villager, BlockPos feet) {
+        return villager.blockPosition().equals(feet)
+                && villager.distanceToSqr(Vec3.atBottomCenterOf(feet)) <= 1.2 * 1.2;
+    }
+
+    private static boolean crossedTo(Villager villager, BlockPos destination, BlockPos gate) {
+        return atBlock(villager, destination) && !villager.getBoundingBox().intersects(new AABB(gate));
+    }
+
+    private static boolean gatePassageHasRoom(ServerLevel level, Villager villager, BlockPos gate) {
+        if (!level.hasChunkAt(gate) || !level.hasChunkAt(gate.above()) || !level.hasChunkAt(gate.below())) return false;
+        return level.getBlockState(gate).getBlock() instanceof FenceGateBlock
+                && level.getBlockState(gate.above()).getCollisionShape(level, gate.above()).isEmpty()
+                && level.getFluidState(gate).isEmpty() && level.getFluidState(gate.above()).isEmpty()
+                && level.getBlockState(gate.below()).isFaceSturdy(level, gate.below(), Direction.UP);
+    }
+
+    private static boolean sameGate(ServerLevel level, GateRoute route) {
+        return level.hasChunkAt(route.gate) && level.getBlockState(route.gate).getBlock() == route.block
+                && level.getBlockState(route.gate).getValue(FenceGateBlock.FACING) == route.facing;
+    }
+
+    private static boolean openGate(Villager villager, ServerLevel level, GateRoute route, String phase) {
+        if (!sameGate(level, route)) return false;
+        BlockState before = level.getBlockState(route.gate);
+        if (before.getValue(FenceGateBlock.OPEN)) {
+            log(villager, "gate already open for {} gate={}; routineOwned={}", phase, route.gate, route.ownsOpen);
+            return true;
+        }
+        if (!level.setBlock(route.gate, before.setValue(FenceGateBlock.OPEN, true), 2)) return false;
+        route.ownsOpen = GateRouteRules.ownsOpenTransition(route.initiallyOpen, true);
+        level.playSound(null, route.gate, SoundEvents.FENCE_GATE_OPEN, SoundSource.BLOCKS, 1.0F, 1.0F);
+        level.gameEvent(villager, GameEvent.BLOCK_OPEN, route.gate);
+        log(villager, "opened gate for {} gate={} routineOwned={}", phase, route.gate, route.ownsOpen);
+        return true;
+    }
+
+    private static boolean finishGateClosure(Villager villager, ServerLevel level, GateRoute route, boolean exit) {
+        if (!route.ownsOpen) return true;
+        if (!sameGate(level, route)) {
+            log(villager, "gate closure unsafe: gate changed/disappeared gate={}", route.gate);
+            route.ownsOpen = false;
+            return true;
+        }
+        BlockState before = level.getBlockState(route.gate);
+        boolean powered = before.getValue(FenceGateBlock.POWERED) || level.hasNeighborSignal(route.gate);
+        boolean passageClear = level.getEntitiesOfClass(Entity.class, new AABB(route.gate), Entity::isAlive).isEmpty();
+        boolean physicallyCleared = !villager.getBoundingBox().intersects(new AABB(route.gate));
+        boolean mayClose = GateRouteRules.mayClose(route.ownsOpen, true,
+                before.getValue(FenceGateBlock.OPEN), false, powered, passageClear, physicallyCleared);
+        if (!mayClose) {
+            if (powered || !before.getValue(FenceGateBlock.OPEN)
+                    || (route.stage != GateRouteRules.Stage.CANCELLED && villager.tickCount > route.deadline)) {
+                log(villager, "gate closure unsafe gate={} powered={} passageClear={} physicallyCleared={} open={} phase={}",
+                        route.gate, powered, passageClear, physicallyCleared,
+                        before.getValue(FenceGateBlock.OPEN), exit ? "exit" : "entry");
+                route.ownsOpen = false;
+                return true;
+            }
+            return false;
+        }
+        if (level.setBlock(route.gate, before.setValue(FenceGateBlock.OPEN, false), 2)) {
+            level.playSound(null, route.gate, SoundEvents.FENCE_GATE_CLOSE, SoundSource.BLOCKS, 1.0F, 1.0F);
+            level.gameEvent(villager, GameEvent.BLOCK_CLOSE, route.gate);
+            log(villager, "closed gate after {} gate={}", exit ? "exit" : "entry", route.gate);
+        } else log(villager, "gate closure failed setBlock gate={}", route.gate);
+        route.ownsOpen = false;
+        return true;
+    }
+
+    private static void safeRestoreGate(Villager villager, ServerLevel level, GateRoute route, String reason) {
+        if (!route.ownsOpen) return;
+        log(villager, "safe gate restoration requested gate={} reason={}", route.gate, reason);
+        finishGateClosure(villager, level, route, false);
+    }
+
+    private static void retryGateRestoration(Villager villager, ServerLevel level, State state) {
+        GateRoute route = state.gateRoute;
+        if (route == null || route.stage != GateRouteRules.Stage.CANCELLED) return;
+        if (!route.ownsOpen || !sameGate(level, route)) { state.gateRoute = null; return; }
+        if (villager.tickCount - route.lastPathAt < 20) return;
+        route.lastPathAt = villager.tickCount;
+        if (finishGateClosure(villager, level, route, false)) state.gateRoute = null;
     }
 
     private static List<BlockPos> sheepPositions(Sheep sheep, Villager villager, ServerLevel level) {
@@ -349,12 +903,35 @@ public final class WorkCoordinator {
         if (state.sheep != null) log(villager, "shepherd cancelled sheep id={} interaction={}: {}",
                 state.sheep.getId(), state.sheepTarget, reason);
         stopCustomNavigation(villager, state);
+        if (state.gateRoute != null) {
+            GateRoute route = state.gateRoute;
+            if (villager.level() instanceof ServerLevel level)
+                safeRestoreGate(villager, level, route, reason);
+            if (isOnFarSide(villager, route) && sameGate((ServerLevel)villager.level(), route)) {
+                route.stage = GateRouteRules.Stage.APPROACH_EXIT;
+                route.deadline = villager.tickCount + NAVIGATION_TIMEOUT;
+                route.lastPathAt = 0;
+                log(villager, "selected sheep invalid inside pen; returning through known gate={} reason={}",
+                        route.gate, reason);
+            } else if (route.ownsOpen) {
+                route.stage = GateRouteRules.cancel(route.stage);
+                route.lastPathAt = villager.tickCount - 20;
+                log(villager, "gate restoration pending until passage clears gate={} reason={}", route.gate, reason);
+            } else state.gateRoute = null;
+        }
         state.sheep = null;
         state.sheepRequested = null;
         state.sheepTarget = null;
         state.shearAt = 0;
         state.clearPropAt = 0;
         clearProp(villager);
+    }
+
+    private static boolean isOnFarSide(Villager villager, GateRoute route) {
+        Vec3 center = Vec3.atCenterOf(route.gate);
+        Vec3 far = Vec3.atCenterOf(route.far).subtract(center);
+        Vec3 position = villager.position().subtract(center);
+        return position.x * far.x + position.z * far.z > 0.55;
     }
 
     private static int woolCount(SimpleContainer owned) {
@@ -697,6 +1274,18 @@ public final class WorkCoordinator {
                     interactionTarget(villager));
         if (state.floatEntity != null) state.floatEntity.discard();
         stopCustomNavigation(villager, state);
+        if (state.gateRoute != null && villager.level() instanceof ServerLevel level) {
+            GateRoute route = state.gateRoute;
+            safeRestoreGate(villager, level, route, reason);
+            if (villager.isAlive() && sameGate(level, route) && isOnFarSide(villager, route)) {
+                route.stage = GateRouteRules.Stage.APPROACH_EXIT;
+                route.deadline = villager.tickCount + NAVIGATION_TIMEOUT;
+                route.lastPathAt = 0;
+            } else if (route.ownsOpen && sameGate(level, route)) {
+                route.stage = GateRouteRules.cancel(route.stage);
+                route.lastPathAt = villager.tickCount - 20;
+            } else state.gateRoute = null;
+        }
         state.floatEntity = null;
         state.water = null;
         state.bank = null;
@@ -735,10 +1324,46 @@ public final class WorkCoordinator {
 
     private record Profile(ResourceKey<PoiType> poi, Block block) {}
     private record SiteCheck(BlockPos site, String reason) {}
+    private record PendingExit(BlockPos gate, BlockPos near, BlockPos far, BlockPos loom,
+                               Direction facing, boolean initiallyOpen, boolean ownsOpen,
+                               boolean restoreOnly) {}
+    private static final class GateRoute {
+        final BlockPos gate;
+        final BlockPos near;
+        final BlockPos far;
+        final BlockPos interaction;
+        final BlockPos loom;
+        final Block block;
+        final Direction facing;
+        final boolean initiallyOpen;
+        GateRouteRules.Stage stage = GateRouteRules.Stage.APPROACH_ENTRY;
+        int deadline;
+        int lastPathAt;
+        boolean ownsOpen;
+        boolean approachLogged;
+        boolean exitLogged;
+        int externalChanges;
+        boolean externalHold;
+
+        GateRoute(GateRouteRules.Candidate candidate, BlockPos loom, Block block, Direction facing,
+                  boolean initiallyOpen, int deadline) {
+            this.gate = candidate.gate();
+            this.near = candidate.near();
+            this.far = candidate.far();
+            this.interaction = candidate.interaction();
+            this.loom = loom;
+            this.block = block;
+            this.facing = facing;
+            this.initiallyOpen = initiallyOpen;
+            this.deadline = deadline;
+        }
+    }
     private static final class State {
         Sheep sheep;
         BlockPos sheepRequested;
         BlockPos sheepTarget;
+        GateRoute gateRoute;
+        PendingExit pendingExit;
         BlockPos bank;
         BlockPos water;
         BlockPos site;
