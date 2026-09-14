@@ -37,12 +37,12 @@
     ]
   },
   "state": {
-    "milestone": "User-reported external Canary 2 Shepherd runtime FAIL: three adult shearable sheep were found with output capacity and valid interaction positions, but all three failed navigation selection (noValidInteraction=0, noPath=3, selected=none); eligibility also rapidly alternated eligible/cancelled. No Fisherman result was supplied for this trial. Canary 3 accepts only safe, in-range, clear-line vanilla path endpoints and diagnoses precise eligibility transitions; it passes a clean Java 25/Fabric build and 11 focused tests and awaits a user-managed runtime trial.",
+    "milestone": "User-reported external Canary 3 Shepherd runtime FAIL: three eligible adult sheep and valid interaction positions were detected, but every vanilla path ended 2–3 blocks short at the closed sheep-pen boundary (canReach=false, endpointOutsideTolerance, barrierToSheep=true); no sheep was selected or sheared. No Fisherman verdict was supplied. Canary 4 adds target-driven, bounded Shepherd-only fence-gate entry and exit for a previously detected sheep, with guarded gate ownership, safe closure, and persisted exit/restoration obligations. A clean Java 25/Fabric build and 19 focused tests pass; Minecraft runtime behavior awaits a user-managed trial.",
     "releases": {
       "current": {
-        "version": "0.1.0-canary3",
-        "artifact": {"filename": "villager-work-routines-0.1.0-canary3.jar", "sha256": "7ee0fc48b9e871bff2b7258b42071a9e5d5a4bf4c1728ed04fd857a0beeab9bd"},
-        "source_commit": "29eda30684a28957b47b29f7ac8b89e980d9bdd2",
+        "version": "0.1.0-canary4",
+        "artifact": {"filename": "villager-work-routines-0.1.0-canary4.jar", "sha256": "c7ff8c6194f389e71ce3cfb52a15d62d261156bdf9f00501e092294be7dc7c70"},
+        "source_commit": "9e0edfe95b1959b2256a1255767509a50d8e60d2",
         "runtime_dependency_policy": {"contract": "CAPABILITY_OR_PROVIDER", "exceptions": []}
       },
       "accepted": null,
@@ -54,11 +54,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 3,
-    "activity_at": "2026-09-14T09:38:53Z",
-    "updated_at": "2026-09-14T09:38:53Z",
-    "last_codex_at": "2026-09-14T09:38:53Z",
-    "source_commit": "29eda30684a28957b47b29f7ac8b89e980d9bdd2",
+    "revision": 4,
+    "activity_at": "2026-09-14T15:25:44Z",
+    "updated_at": "2026-09-14T15:25:44Z",
+    "last_codex_at": "2026-09-14T15:25:44Z",
+    "source_commit": "9e0edfe95b1959b2256a1255767509a50d8e60d2",
     "google_sheet": {"participates": true, "exclusion_reason": null}
   }
 }
