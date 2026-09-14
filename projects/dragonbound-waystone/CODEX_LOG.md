@@ -79,3 +79,14 @@
 - Artifact: Current Canary 12 `dragonbound-waystone-0.1.0-canary12.jar` embeds `0.1.0-canary12`, is 63,354 bytes at SHA-256 `6F621B16652BAF9CAAD89BA923B8792EBC0BA08706A9F507FD17AABFC3121AD6`, was produced from source checkpoint `8d47abc38bd811376524f74d885cc47ab6b85e59`, and is retained at the canonical project artifact path. Exact Canary 5 remains the accepted baseline and rollback.
 - Result: ACTIVE — Canary 12 is a narrow statically verified successor pending explicit dedicated-Workbench first-person runtime testing; it occupies no Test Slot.
 - Next state: Under explicit dedicated 26.2 Workbench slot ownership, test Pearl and Staff in first person for feet-origin reverse-portal particles that visibly and continuously travel upward through the camera region, then confirm the stronger successful-arrival burst, frozen body portal stream, and success-only lifecycle feedback. Preserve Canary 5 as accepted rollback until an observed result supports a further transition.
+
+## 2026-09-14T08:09:29Z — Owner-directed lifecycle acceptance
+
+- Revision: 9
+- Source checkpoint: `f511f435c623883c5ee1474e9227acb73fb2df68`
+- Changes: Changed lifecycle from ACTIVE to ACCEPTED and bound the unchanged exact current release as accepted by project-owner direction; historical testing records remain intact.
+- Build/static: Preserved the existing STATIC_PASS classification; no build or artifact substitution was performed.
+- Runtime: No Minecraft runtime testing was performed by Codex for this administrative transition. The project owner's external/gameplay testing authorized acceptance, but no new PASS or other runtime result was recorded or inferred; the existing RUNTIME_UNTESTED classification is unchanged.
+- Artifact: Current release identity is unchanged: version 0.1.0-canary12, filename dragonbound-waystone-0.1.0-canary12.jar, SHA-256 6f621b16652baf9caad89ba923b8792ebc0ba08706a9f507fd17aabfc3121ad6, source 8d47abc38bd811376524f74d885cc47ab6b85e59.
+- Result: ACCEPTED — owner-directed acceptance without fabricated runtime evidence.
+- Next state: Preserve the accepted release and historical evidence. A future successor may use TESTING while awaiting or receiving user runtime validation; no Workbench slot or profile allocation is required.

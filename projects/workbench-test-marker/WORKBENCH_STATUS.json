@@ -12,7 +12,7 @@
     ]
   },
   "definition": {
-    "lifecycle": "ACTIVE",
+    "lifecycle": "ACCEPTED",
     "goals": [
       "Show the canonical accepted Stack version and both independent test-slot identities on the dedicated Workbench title screen before a world is entered."
     ],
@@ -58,7 +58,7 @@
     ]
   },
   "state": {
-    "milestone": "Marker 0.2.0 is generated, statically verified, and physically readiness-verified in the dedicated Workbench. The manager atomically replaced exact marker 0.1.1, installed 0.2.0, and synchronized the projection to canonical state revision 15 with Stack v1, Matcha Death Rebalance Canary 9, and Mossy Stone Canary 4. The title screen itself remains runtime untested because Minecraft was not launched.",
+    "milestone": "The exact current release is ACCEPTED by owner direction following the user's external/gameplay testing. Existing build, deployment, and runtime classifications are preserved; this administrative transition infers no new runtime result.",
     "releases": {
       "current": {
         "version": "0.2.0",
@@ -68,9 +68,16 @@
         },
         "source_commit": "f789b290f72c508a563797b0c543125bc9c468c1"
       },
-      "accepted": null,
+      "accepted": {
+        "version": "0.2.0",
+        "artifact": {
+          "filename": "workbench-test-marker-0.2.0.jar",
+          "sha256": "9147664302721976461dbbc1064260fc4309575182a8b050458d0446eafec6a6"
+        },
+        "source_commit": "f789b290f72c508a563797b0c543125bc9c468c1"
+      },
       "rollback": null,
-      "accepted_current": "NO_ACCEPTED",
+      "accepted_current": "CURRENT_IS_ACCEPTED",
       "accepted_rollback": "NO_ROLLBACK"
     },
     "validation": {
@@ -81,11 +88,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 2,
-    "activity_at": "2026-08-30T07:24:50Z",
-    "updated_at": "2026-08-30T07:24:50Z",
-    "last_codex_at": "2026-08-30T07:24:50Z",
-    "source_commit": "714d20eb4f9bdfd6696780f0d926f0240241e7be",
+    "revision": 3,
+    "activity_at": "2026-09-14T08:09:29Z",
+    "updated_at": "2026-09-14T08:09:29Z",
+    "last_codex_at": "2026-09-14T08:09:29Z",
+    "source_commit": "f511f435c623883c5ee1474e9227acb73fb2df68",
     "google_sheet": {
       "participates": false,
       "exclusion_reason": "Dedicated Workbench-only internal title infrastructure has no independent human project-status row; canonical display state is manager-owned."

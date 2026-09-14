@@ -19,3 +19,14 @@
 - Artifact: Current exact artifact remains `macaws-trapdoors-moreculling-compat-0.1.0-canary1.jar`, 5,294 bytes, SHA-256 `d6ffd125e082978b594ca01c075bb706ddf7f5696dee1e7d15e357cbbfdb4af5`; dedicated deployed bytes rehashed identically. Version, provider gates, runtime dependency policy, and source checkpoint are unchanged; no accepted or rollback release exists.
 - Result: TESTING — CONTROLLED_VALIDATION_PASS / READY_TO_TEST_VERIFIED / RUNTIME_UNTESTED; no blocker.
 - Next state: Launch only the dedicated Matcha Flavoured 26.2 Workbench, execute the current ranch/bark rendering, interaction, unrelated-trapdoor, and IBF coexistence matrix, then record only the behavior actually observed for this exact deployment.
+
+## 2026-09-14T08:09:29Z — Owner-directed lifecycle acceptance
+
+- Revision: 3
+- Source checkpoint: `f511f435c623883c5ee1474e9227acb73fb2df68`
+- Changes: Changed lifecycle from TESTING to ACCEPTED and bound the unchanged exact current release as accepted by project-owner direction; historical testing records remain intact.
+- Build/static: Preserved the existing CONTROLLED_VALIDATION_PASS classification; no build or artifact substitution was performed.
+- Runtime: No Minecraft runtime testing was performed by Codex for this administrative transition. The project owner's external/gameplay testing authorized acceptance, but no new PASS or other runtime result was recorded or inferred; the existing RUNTIME_UNTESTED classification is unchanged.
+- Artifact: Current release identity is unchanged: version 0.1.0-canary1, filename macaws-trapdoors-moreculling-compat-0.1.0-canary1.jar, SHA-256 d6ffd125e082978b594ca01c075bb706ddf7f5696dee1e7d15e357cbbfdb4af5, source c5afce9f367d341e770be0ce89e198e44044074e.
+- Result: ACCEPTED — owner-directed acceptance without fabricated runtime evidence.
+- Next state: Preserve the accepted release and historical evidence. A future successor may use TESTING while awaiting or receiving user runtime validation; no Workbench slot or profile allocation is required.

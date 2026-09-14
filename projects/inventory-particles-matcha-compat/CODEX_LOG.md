@@ -39,3 +39,14 @@
 - Artifact: `inventory-particles-matcha-compat-0.1.0-canary4.jar`; embedded version `0.1.0-canary4`; SHA-256 `e48c4821f8bead5da78205052bf3d1d20db98cccefd5004750a19d54858c1c8b`. Exact audited Inventory Particles validation baseline: `InventoryParticles-2.6.0+26.2+fabric.jar`, 1,783,277 bytes, SHA-256 `b44d808e673805eea4949591abcb3325faa1abf8b9321266d06533ea5a34c802`.
 - Result: ACTIVE / STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED.
 - Next state: retain this exact ignored JAR in the primary checkout, integrate revision 4 to current `main`, validate repository `main`, push, and verify the main-only UUID-keyed Sheet workflow before performing the C4 dedicated-26.2 runtime matrix.
+
+## 2026-09-14T08:09:29Z — Owner-directed lifecycle acceptance
+
+- Revision: 5
+- Source checkpoint: `f511f435c623883c5ee1474e9227acb73fb2df68`
+- Changes: Changed lifecycle from ACTIVE to ACCEPTED and bound the unchanged exact current release as accepted by project-owner direction; historical testing records remain intact.
+- Build/static: Preserved the existing STATIC_PASS classification; no build or artifact substitution was performed.
+- Runtime: No Minecraft runtime testing was performed by Codex for this administrative transition. The project owner's external/gameplay testing authorized acceptance, but no new PASS or other runtime result was recorded or inferred; the existing RUNTIME_UNTESTED classification is unchanged.
+- Artifact: Current release identity is unchanged: version 0.1.0-canary4, filename inventory-particles-matcha-compat-0.1.0-canary4.jar, SHA-256 e48c4821f8bead5da78205052bf3d1d20db98cccefd5004750a19d54858c1c8b, source 63e9b84116c718db92bbeb289933538e75cb28c2.
+- Result: ACCEPTED — owner-directed acceptance without fabricated runtime evidence.
+- Next state: Preserve the accepted release and historical evidence. A future successor may use TESTING while awaiting or receiving user runtime validation; no Workbench slot or profile allocation is required.

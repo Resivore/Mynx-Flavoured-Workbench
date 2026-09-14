@@ -10,6 +10,6 @@ Every official project—including one whose lifecycle is only `PLANNED`—has a
 - `TESTING.md` for the current useful runtime procedure;
 - `CODEX_LOG.md` for concise append-only task history.
 
-Runtime testing uses one accepted baseline plus two independent experimental slots, A and B. Physical deployment to the one dedicated Workbench is serialized, while each slot retains its own project identity and result.
+`TESTING` is a supported lifecycle for projects awaiting, undergoing, or receiving user runtime validation. It is independent of any Minecraft profile, testing slot, deployment, or capacity reservation; Codex does not inspect or manipulate a dedicated testing Workbench.
 
 This repository begins with clean history. [Minecraft-26.2-Workbench](https://github.com/Resivore/Minecraft-26.2-Workbench) remains the historical archive and frozen import source; its Git and deployment history are intentionally not reproduced here. See `MIGRATION_FREEZE.md` for exact source checkpoints.

@@ -59,3 +59,14 @@
 - Artifact: Current retained ignored artifact is `interchangeable-block-families-0.1.0-canary7.jar`, 55,422 bytes, SHA-256 `599660b27db061926a800bd486f25bb1d8511b6b82b8afd2a369e8189c696b7c`, built from source checkpoint `9ad4600e62808e5e976392a69b495a2fe4b5d47c`. C3 remains the accepted rollback.
 - Result: TESTING / CONTROLLED_VALIDATION_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED. The full-suite fixture failure is recorded separately above and no Minecraft runtime outcome is inferred.
 - Next state: Under explicit runtime ownership, atomically replace only IBF's existing Slot B member with exact C7 while preserving Slot A, confirm Fabric accepts the installed BBB provider and proceeds past dependency resolution, then complete the focused manual checklist before any promotion.
+
+## 2026-09-14T08:09:29Z — Owner-directed lifecycle acceptance
+
+- Revision: 7
+- Source checkpoint: `f511f435c623883c5ee1474e9227acb73fb2df68`
+- Changes: Changed lifecycle from TESTING to ACCEPTED and bound the unchanged exact current release as accepted by project-owner direction; historical testing records remain intact.
+- Build/static: Preserved the existing CONTROLLED_VALIDATION_PASS classification; no build or artifact substitution was performed.
+- Runtime: No Minecraft runtime testing was performed by Codex for this administrative transition. The project owner's external/gameplay testing authorized acceptance, but no new PASS or other runtime result was recorded or inferred; the existing RUNTIME_UNTESTED classification is unchanged.
+- Artifact: Current release identity is unchanged: version C7 (0.1.0-canary7), filename interchangeable-block-families-0.1.0-canary7.jar, SHA-256 599660b27db061926a800bd486f25bb1d8511b6b82b8afd2a369e8189c696b7c, source 9ad4600e62808e5e976392a69b495a2fe4b5d47c.
+- Result: ACCEPTED — owner-directed acceptance without fabricated runtime evidence.
+- Next state: Preserve the accepted release and historical evidence. A future successor may use TESTING while awaiting or receiving user runtime validation; no Workbench slot or profile allocation is required.

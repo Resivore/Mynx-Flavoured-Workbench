@@ -18,7 +18,7 @@
     ]
   },
   "definition": {
-    "lifecycle": "ACTIVE",
+    "lifecycle": "ACCEPTED",
     "goals": [
       "Preserve C12's C9-derived nested shulker routing, source accounting, ordering, capacity, and optional CSR affinity while making only the survival QSN action placement stable and idempotent.",
       "Keep a physically populated carried vanilla shulker out of ordinary QSN loose movement while allowing only a CSR public RESERVED_MATCH home return that precedes C16 direct-content draining under the real user rules.",
@@ -40,7 +40,7 @@
         "projects/quick-stack-nearby-compat"
       ],
       "exclusions": [
-        "Container Slot Reservations, Carried Container Auto-Routing, Matcha \u00d7 Stack to Nearby Chests Compatibility, Inventory Search, Block Geometry Extensions, Nibaru, Clutter No More, Quick Stack Nearby, and every other nearby-routing or inventory project retain their own identities, source, artifacts, controls, and behavior ownership.",
+        "Container Slot Reservations, Carried Container Auto-Routing, Matcha × Stack to Nearby Chests Compatibility, Inventory Search, Block Geometry Extensions, Nibaru, Clutter No More, Quick Stack Nearby, and every other nearby-routing or inventory project retain their own identities, source, artifacts, controls, and behavior ownership.",
         "No CSR reservation mutation, persistence, user interface, container-support policy, or classification logic is reimplemented; C8 consumes only CSR's public read-only reservation API when the provider is loaded.",
         "No Stack to Nearby Chests implementation, Matcha-specific QSN adapter, general Inventory Search patch, carried-container routing, nested-container routing, registry-name parsing, fuzzy material equivalence, item conversion, or custom existing-stack merge is owned here.",
         "C15 is a C12-derived compatibility-sidecar artifact. It does not carry forward C10/C11's integrated upstream-QSN implementation or behavior, and it does not bundle external QSN, CSR, Inventory Extended, Clutter No More, BGE, Nibaru, Minecraft, or Fabric JARs.",
@@ -150,7 +150,7 @@
     ]
   },
   "state": {
-    "milestone": "C18 is a controlled-validated, retained-but-not-deployed C17 successor. It preserves C17's ordinary populated-shulker outer protection, adds only CSR public RESERVED_MATCH reservation-only discovery and whole-carrier home return, and retires a successfully returned carrier from C16 draining. Unmatched, blocked, user-locked, kept, bundle, and CSR-absent cases retain C17/C16 behavior. C8 remains accepted and C6 remains rollback.",
+    "milestone": "The exact current release is ACCEPTED by owner direction following the user's external/gameplay testing. Existing build, deployment, and runtime classifications are preserved; this administrative transition infers no new runtime result.",
     "releases": {
       "current": {
         "version": "C18 (0.1.0-canary18)",
@@ -166,13 +166,13 @@
         }
       },
       "accepted": {
-        "version": "C8 (0.1.0-canary8)",
-        "embedded_version": "0.1.0-canary8",
+        "version": "C18 (0.1.0-canary18)",
+        "embedded_version": "0.1.0-canary18",
         "artifact": {
-          "filename": "quick-stack-nearby-compat-0.1.0-canary8.jar",
-          "sha256": "e6aaf43d881f31202931c40b6f40762f2e2dab1f2ae8d0ce5fd7f213ec0cbba5"
+          "filename": "quick-stack-nearby-compat-0.1.0-canary18.jar",
+          "sha256": "cb9144de133ac2dd9db20925b1275200213fcf57b36f9b5d530a6b02ac905554"
         },
-        "source_commit": "1f545721658cce803200fa277737052cead79b70",
+        "source_commit": "009e455b91df0cdea1bd1489097d8a0ce2359ade",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
@@ -187,7 +187,7 @@
         },
         "source_commit": "3c8cc5917da9fd016e57a969955fa7c6e3b08661"
       },
-      "accepted_current": "CURRENT_DIFFERS_FROM_ACCEPTED",
+      "accepted_current": "CURRENT_IS_ACCEPTED",
       "accepted_rollback": "ROLLBACK_DIFFERS_FROM_ACCEPTED"
     },
     "validation": {
@@ -198,11 +198,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 21,
-    "activity_at": "2026-09-11T18:06:35Z",
-    "updated_at": "2026-09-11T18:06:35Z",
-    "last_codex_at": "2026-09-11T18:06:35Z",
-    "source_commit": "009e455b91df0cdea1bd1489097d8a0ce2359ade",
+    "revision": 22,
+    "activity_at": "2026-09-14T08:09:29Z",
+    "updated_at": "2026-09-14T08:09:29Z",
+    "last_codex_at": "2026-09-14T08:09:29Z",
+    "source_commit": "f511f435c623883c5ee1474e9227acb73fb2df68",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null

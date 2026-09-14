@@ -16,7 +16,7 @@
     ]
   },
   "definition": {
-    "lifecycle": "TESTING",
+    "lifecycle": "ACCEPTED",
     "goals": [
       "Contribute the exact audited literal block and accessory families to Clutter No More ShapeMap so approved material forms can share one interchangeable storage family.",
       "Preserve Clutter No More as the sole switching, transmutation, recipe-cleanup, and equivalence authority while keeping component patches and source variants exact.",
@@ -135,7 +135,7 @@
     ]
   },
   "state": {
-    "milestone": "C7 is the metadata-only successor to C6: it retains BBB as required while changing only IBF's BBB Fabric predicate to `*`, so compatible BBB release and development-suffix versions are not rejected before IBF initializes. The older C4 remains independently deployed in Slot B and C3 remains the accepted rollback.",
+    "milestone": "The exact current release is ACCEPTED by owner direction following the user's external/gameplay testing. Existing build, deployment, and runtime classifications are preserved; this administrative transition infers no new runtime result.",
     "releases": {
       "current": {
         "version": "C7 (0.1.0-canary7)",
@@ -151,12 +151,17 @@
         }
       },
       "accepted": {
-        "version": "C3 (0.1.0-canary3)",
+        "version": "C7 (0.1.0-canary7)",
+        "embedded_version": "0.1.0-canary7",
         "artifact": {
-          "filename": "interchangeable-block-families-0.1.0-canary3.jar",
-          "sha256": "d0150aea777dd7837d0c9b4f5cf41ce45f510c60ef416fb7001d06a36a6b0e87"
+          "filename": "interchangeable-block-families-0.1.0-canary7.jar",
+          "sha256": "599660b27db061926a800bd486f25bb1d8511b6b82b8afd2a369e8189c696b7c"
         },
-        "source_commit": "34796a9af6b2da235c3ff9d0e3338f8e6af0e137"
+        "source_commit": "9ad4600e62808e5e976392a69b495a2fe4b5d47c",
+        "runtime_dependency_policy": {
+          "contract": "CAPABILITY_OR_PROVIDER",
+          "exceptions": []
+        }
       },
       "rollback": {
         "version": "C3 (0.1.0-canary3)",
@@ -166,8 +171,8 @@
         },
         "source_commit": "34796a9af6b2da235c3ff9d0e3338f8e6af0e137"
       },
-      "accepted_current": "CURRENT_DIFFERS_FROM_ACCEPTED",
-      "accepted_rollback": "ACCEPTED_IS_ROLLBACK"
+      "accepted_current": "CURRENT_IS_ACCEPTED",
+      "accepted_rollback": "ROLLBACK_DIFFERS_FROM_ACCEPTED"
     },
     "validation": {
       "build": "CONTROLLED_VALIDATION_PASS",
@@ -177,11 +182,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 6,
-    "activity_at": "2026-09-08T02:22:33.4982785Z",
-    "updated_at": "2026-09-08T02:22:33.4982785Z",
-    "last_codex_at": "2026-09-08T02:22:33.4982785Z",
-    "source_commit": "9ad4600e62808e5e976392a69b495a2fe4b5d47c",
+    "revision": 7,
+    "activity_at": "2026-09-14T08:09:29Z",
+    "updated_at": "2026-09-14T08:09:29Z",
+    "last_codex_at": "2026-09-14T08:09:29Z",
+    "source_commit": "f511f435c623883c5ee1474e9227acb73fb2df68",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null

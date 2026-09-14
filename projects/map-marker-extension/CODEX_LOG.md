@@ -59,3 +59,14 @@
 - Artifact: Current/unaccepted C12 is the single retained `map-marker-extension-0.4.0-canary12.jar`, 118,016 bytes, SHA-256 `F5C539B7535149FB936E241F72722A87E0474AF855F2A98E6E3CF88C3290243E`, from source `87591808b60f7a7fc4ce8dd8b6a6ab8e3e8d12b1`. No C12 icon-pack ZIP exists by design. Exact C11 pair (`92DF3CCA27F3D4F6CFCB0ED52BA26874DC5F86EB756601B3A75771CFD7E9CBAF`; `A277BAF8AA3A12740EAD9CA0D721CDE98D013FBD45FE38F647921E1964598866`), failed C10 pair, C9 pair, C8 pair, and accepted Treasure X C4 remain preserved.
 - Result: ACTIVE — C12 is `CONTROLLED_VALIDATION_PASS`, `NOT_DEPLOYED`, `RUNTIME_UNTESTED`, and `CURRENT_DIFFERS_FROM_ACCEPTED`; C11's scoped external corrected-pack inventory observation is recorded without promotion or inference.
 - Next state: Publish revision 6 from authoritative `main` through the canonical Sheet workflow while preserving human-owned `Notes`; under separately authorized runtime ownership, deploy only the exact C12 JAR with no MME resource pack and execute `TESTING.md` before considering promotion.
+
+## 2026-09-14T08:09:29Z — Owner-directed lifecycle acceptance
+
+- Revision: 7
+- Source checkpoint: `f511f435c623883c5ee1474e9227acb73fb2df68`
+- Changes: Changed lifecycle from ACTIVE to ACCEPTED and bound the unchanged exact current release as accepted by project-owner direction; historical testing records remain intact.
+- Build/static: Preserved the existing CONTROLLED_VALIDATION_PASS classification; no build or artifact substitution was performed.
+- Runtime: No Minecraft runtime testing was performed by Codex for this administrative transition. The project owner's external/gameplay testing authorized acceptance, but no new PASS or other runtime result was recorded or inferred; the existing RUNTIME_UNTESTED classification is unchanged.
+- Artifact: Current release identity is unchanged: version C12 (0.4.0-canary12), filename map-marker-extension-0.4.0-canary12.jar, SHA-256 f5c539b7535149fb936e241f72722a87e0474af855f2a98e6e3cf88c3290243e, source 87591808b60f7a7fc4ce8dd8b6a6ab8e3e8d12b1.
+- Result: ACCEPTED — owner-directed acceptance without fabricated runtime evidence.
+- Next state: Preserve the accepted release and historical evidence. A future successor may use TESTING while awaiting or receiving user runtime validation; no Workbench slot or profile allocation is required.

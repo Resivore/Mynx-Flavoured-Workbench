@@ -13,7 +13,7 @@
     "legacy_ids": []
   },
   "definition": {
-    "lifecycle": "ACTIVE",
+    "lifecycle": "ACCEPTED",
     "goals": [
       "Fill CSR-reserved physical slots only from reservation-valid unreserved donors, then keep every reservation anchored outside Inventory Sorter's ordinary workspace while preserving normal order and stack behavior for all remaining movable slots.",
       "Sort every unreserved shulker box and bundle as an ordinary outer ItemStack without inspecting, reconstructing, or mutating portable-container contents or components.",
@@ -97,7 +97,7 @@
     ]
   },
   "state": {
-    "milestone": "Canary 3 is retained after controlled validation. Matching unreserved stacks fill eligible empty or partial CSR reservations in deterministic physical order before every reservation is frozen outside Inventory Sorter's normal movable layout. Wrong/full occupants and reserved donors remain anchored; unreserved outer shulkers and bundles remain sortable; specific CSR identities are honored; and bundle-content insertion remains suppressed. C3 is not deployed and has no desktop Minecraft runtime evidence.",
+    "milestone": "The exact current release is ACCEPTED by owner direction following the user's external/gameplay testing. Existing build, deployment, and runtime classifications are preserved; this administrative transition infers no new runtime result.",
     "releases": {
       "current": {
         "version": "C3 (0.1.0-canary3)",
@@ -112,9 +112,21 @@
           "exceptions": []
         }
       },
-      "accepted": null,
+      "accepted": {
+        "version": "C3 (0.1.0-canary3)",
+        "embedded_version": "0.1.0-canary3",
+        "artifact": {
+          "filename": "inventory-sorter-csr-compat-0.1.0-canary3.jar",
+          "sha256": "7eca4e86faaa83211432300a658413f7662a9f642df8074d2e4ebf3bb0af3074"
+        },
+        "source_commit": "21b4e4a0eb734c79d1b23202de61d490febb4069",
+        "runtime_dependency_policy": {
+          "contract": "CAPABILITY_OR_PROVIDER",
+          "exceptions": []
+        }
+      },
       "rollback": null,
-      "accepted_current": "NO_ACCEPTED",
+      "accepted_current": "CURRENT_IS_ACCEPTED",
       "accepted_rollback": "NO_ROLLBACK"
     },
     "validation": {
@@ -125,11 +137,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 3,
-    "activity_at": "2026-09-12T04:35:32Z",
-    "updated_at": "2026-09-12T04:35:32Z",
-    "last_codex_at": "2026-09-12T04:35:32Z",
-    "source_commit": "21b4e4a0eb734c79d1b23202de61d490febb4069",
+    "revision": 4,
+    "activity_at": "2026-09-14T08:09:29Z",
+    "updated_at": "2026-09-14T08:09:29Z",
+    "last_codex_at": "2026-09-14T08:09:29Z",
+    "source_commit": "f511f435c623883c5ee1474e9227acb73fb2df68",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null

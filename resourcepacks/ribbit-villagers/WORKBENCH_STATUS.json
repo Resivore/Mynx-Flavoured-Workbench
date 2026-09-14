@@ -1,8 +1,88 @@
 {
   "$schema": "../../schemas/workbench-status.schema.json",
   "schema_version": 1,
-  "identity": {"uuid":"71ae25e0-3ebe-4108-a17e-931ba98b8dea","name":"Ribbit Villagers Florist Private Successor","project_id":"ribbit-villagers","aliases":[],"legacy_names":["Ribbit Villagers"],"legacy_ids":[]},
-  "definition": {"lifecycle":"ACTIVE","goals":["Privately route the existing reserved Florist visual variant without redistributing protected source artwork."],"scope":["Deterministic private successor archive with model 6 and Florist outfit activation only."],"boundaries":{"owned_paths":["resourcepacks/ribbit-villagers"],"exclusions":["The exact donor archive beneath originals/assets is immutable, ignored, and never committed or redistributed."]},"dependencies":[{"type":"RESOURCE_PACK","identifier":"Ribbit Villagers v1.zip","requirement":null,"reason":"Exact private source archive."}]},
-  "state": {"milestone":"Private Florist successor v2 activates reserved model 6 and its matching outfit. STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED.","releases":{"current":{"version":"2","artifact":{"filename":"ribbit-villagers-florist-private-v2.zip","sha256":"331ee9d0857aded60f7720ee7b32bdec3e339e5f4cc7300f6c61f7926b7b0453"},"source_commit":"18ec89dcfbc627a6adc003dc9d735788cdd2013a","runtime_dependency_policy":{"contract":"CAPABILITY_OR_PROVIDER","exceptions":[]}},"accepted":null,"rollback":null,"accepted_current":"NO_ACCEPTED","accepted_rollback":"NO_ROLLBACK"},"validation":{"build":"STATIC_PASS","deployment":"NOT_DEPLOYED","runtime":"RUNTIME_UNTESTED"},"blocker":null},
-  "synchronization":{"revision":1,"activity_at":"2026-09-07T03:15:00Z","updated_at":"2026-09-07T03:15:00Z","last_codex_at":"2026-09-07T03:15:00Z","source_commit":"18ec89dcfbc627a6adc003dc9d735788cdd2013a","google_sheet":{"participates":true,"exclusion_reason":null}}
+  "identity": {
+    "uuid": "71ae25e0-3ebe-4108-a17e-931ba98b8dea",
+    "name": "Ribbit Villagers Florist Private Successor",
+    "project_id": "ribbit-villagers",
+    "aliases": [],
+    "legacy_names": [
+      "Ribbit Villagers"
+    ],
+    "legacy_ids": []
+  },
+  "definition": {
+    "lifecycle": "ACCEPTED",
+    "goals": [
+      "Privately route the existing reserved Florist visual variant without redistributing protected source artwork."
+    ],
+    "scope": [
+      "Deterministic private successor archive with model 6 and Florist outfit activation only."
+    ],
+    "boundaries": {
+      "owned_paths": [
+        "resourcepacks/ribbit-villagers"
+      ],
+      "exclusions": [
+        "The exact donor archive beneath originals/assets is immutable, ignored, and never committed or redistributed."
+      ]
+    },
+    "dependencies": [
+      {
+        "type": "RESOURCE_PACK",
+        "identifier": "Ribbit Villagers v1.zip",
+        "requirement": null,
+        "reason": "Exact private source archive."
+      }
+    ]
+  },
+  "state": {
+    "milestone": "The exact current release is ACCEPTED by owner direction following the user's external/gameplay testing. Existing build, deployment, and runtime classifications are preserved; this administrative transition infers no new runtime result.",
+    "releases": {
+      "current": {
+        "version": "2",
+        "artifact": {
+          "filename": "ribbit-villagers-florist-private-v2.zip",
+          "sha256": "331ee9d0857aded60f7720ee7b32bdec3e339e5f4cc7300f6c61f7926b7b0453"
+        },
+        "source_commit": "18ec89dcfbc627a6adc003dc9d735788cdd2013a",
+        "runtime_dependency_policy": {
+          "contract": "CAPABILITY_OR_PROVIDER",
+          "exceptions": []
+        }
+      },
+      "accepted": {
+        "version": "2",
+        "artifact": {
+          "filename": "ribbit-villagers-florist-private-v2.zip",
+          "sha256": "331ee9d0857aded60f7720ee7b32bdec3e339e5f4cc7300f6c61f7926b7b0453"
+        },
+        "source_commit": "18ec89dcfbc627a6adc003dc9d735788cdd2013a",
+        "runtime_dependency_policy": {
+          "contract": "CAPABILITY_OR_PROVIDER",
+          "exceptions": []
+        }
+      },
+      "rollback": null,
+      "accepted_current": "CURRENT_IS_ACCEPTED",
+      "accepted_rollback": "NO_ROLLBACK"
+    },
+    "validation": {
+      "build": "STATIC_PASS",
+      "deployment": "NOT_DEPLOYED",
+      "runtime": "RUNTIME_UNTESTED"
+    },
+    "blocker": null
+  },
+  "synchronization": {
+    "revision": 2,
+    "activity_at": "2026-09-14T08:09:29Z",
+    "updated_at": "2026-09-14T08:09:29Z",
+    "last_codex_at": "2026-09-14T08:09:29Z",
+    "source_commit": "f511f435c623883c5ee1474e9227acb73fb2df68",
+    "google_sheet": {
+      "participates": true,
+      "exclusion_reason": null
+    }
+  }
 }

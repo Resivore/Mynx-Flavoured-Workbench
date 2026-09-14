@@ -39,3 +39,14 @@
 - Artifact: Current and unaccepted Canary 3 is `xaero-discovery-radius-0.1.2-canary3.jar`, 34,474 bytes, SHA-256 `5524dfa84e35ea5c31263df4705daca3718df7a095f5c544bb731190dcc0cf95`, from source checkpoint `caff6f8a9174487149d064d94d664da1ec2b0a72`; the historical Canary 1 and accepted Canary 2 artifacts remain untouched.
 - Result: ACTIVE — Canary 3 is `STATIC_PASS`, `NOT_DEPLOYED`, and `RUNTIME_UNTESTED` with no formal blocker. Canary 2 remains accepted and is not reclassified.
 - Next state: Under explicit runtime ownership, test the exact Canary 3 artifact with the square-focused procedure in a disposable 26.2 Workbench world; record only observed runtime evidence before any deployment or acceptance transition.
+
+## 2026-09-14T08:09:29Z — Owner-directed lifecycle acceptance
+
+- Revision: 5
+- Source checkpoint: `f511f435c623883c5ee1474e9227acb73fb2df68`
+- Changes: Changed lifecycle from ACTIVE to ACCEPTED and bound the unchanged exact current release as accepted by project-owner direction; historical testing records remain intact.
+- Build/static: Preserved the existing STATIC_PASS classification; no build or artifact substitution was performed.
+- Runtime: No Minecraft runtime testing was performed by Codex for this administrative transition. The project owner's external/gameplay testing authorized acceptance, but no new PASS or other runtime result was recorded or inferred; the existing RUNTIME_UNTESTED classification is unchanged.
+- Artifact: Current release identity is unchanged: version 0.1.2-canary3, filename xaero-discovery-radius-0.1.2-canary3.jar, SHA-256 5524dfa84e35ea5c31263df4705daca3718df7a095f5c544bb731190dcc0cf95, source caff6f8a9174487149d064d94d664da1ec2b0a72.
+- Result: ACCEPTED — owner-directed acceptance without fabricated runtime evidence.
+- Next state: Preserve the accepted release and historical evidence. A future successor may use TESTING while awaiting or receiving user runtime validation; no Workbench slot or profile allocation is required.

@@ -219,3 +219,14 @@
 - Artifact: C68 is `cnm-nibaru-integration-4.2.12-bge.canary68.layer-axis-uv+26.2.jar`, 6,109,112 bytes, SHA-256 `823cfe9f9fcc32c1cf73e1ddfdfc6489efda0753df64679723df56204a4bf732`, embedded version `4.2.12-bge.canary68.layer-axis-uv+26.2`, source checkpoint `9bc80ee2538a39b9fa15606611dc050a1cf6bff2`; canonical local retention copied and verified the exact bytes in the primary checkout.
 - Result: `TESTING / CONTROLLED_VALIDATION_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED` — the immutable BGE UUID remains in an older Slot A cohort, but C68 itself is neither deployed nor readiness-verified. Exact accepted C58 and C52 rollback provenance remain unchanged.
 - Next state: Deploy exact C68 only through one serialized Test Instance Manager transition that preserves Slot B, verify readiness, then execute the focused axis-oriented wood Layer checklist before any promotion.
+
+## 2026-09-14T08:09:29Z — Owner-directed lifecycle acceptance
+
+- Revision: 28
+- Source checkpoint: `f511f435c623883c5ee1474e9227acb73fb2df68`
+- Changes: Changed lifecycle from TESTING to ACCEPTED and bound the unchanged exact current release as accepted by project-owner direction; historical testing records remain intact.
+- Build/static: Preserved the existing CONTROLLED_VALIDATION_PASS classification; no build or artifact substitution was performed.
+- Runtime: No Minecraft runtime testing was performed by Codex for this administrative transition. The project owner's external/gameplay testing authorized acceptance, but no new PASS or other runtime result was recorded or inferred; the existing RUNTIME_UNTESTED classification is unchanged.
+- Artifact: Current release identity is unchanged: version C68 (Layer Axis UV; embedded 4.2.12-bge.canary68.layer-axis-uv+26.2), filename cnm-nibaru-integration-4.2.12-bge.canary68.layer-axis-uv+26.2.jar, SHA-256 823cfe9f9fcc32c1cf73e1ddfdfc6489efda0753df64679723df56204a4bf732, source 9bc80ee2538a39b9fa15606611dc050a1cf6bff2.
+- Result: ACCEPTED — owner-directed acceptance without fabricated runtime evidence.
+- Next state: Preserve the accepted release and historical evidence. A future successor may use TESTING while awaiting or receiving user runtime validation; no Workbench slot or profile allocation is required.

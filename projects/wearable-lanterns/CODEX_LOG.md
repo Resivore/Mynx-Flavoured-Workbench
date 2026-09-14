@@ -59,3 +59,14 @@
 - Artifact: Retained exact `wearable-lanterns-0.1.0-canary5.jar`, 13,920 bytes, SHA-256 `0d05d2af86dfb8f41e7cb7c0dde75aed681cfb657fa2cb8de4a42f40344dd0e6`, built from source checkpoint `413c2dad2f5acf7285311c31921493ef5650eed5`; `CAPABILITY_OR_PROVIDER`, no exceptions. C4 remains retained historical provenance.
 - Result: ACTIVE — `STATIC_PASS` / `NOT_DEPLOYED` / `RUNTIME_UNTESTED`; no accepted release, rollback, blocker, or slot occupancy.
 - Next state: Deploy exact Canary 5 only through a later authorized Test Instance Manager transition and execute the existing focused Iris + Complementary A-D procedure.
+
+## 2026-09-14T08:09:29Z — Owner-directed lifecycle acceptance
+
+- Revision: 7
+- Source checkpoint: `f511f435c623883c5ee1474e9227acb73fb2df68`
+- Changes: Changed lifecycle from ACTIVE to ACCEPTED and bound the unchanged exact current release as accepted by project-owner direction; historical testing records remain intact.
+- Build/static: Preserved the existing STATIC_PASS classification; no build or artifact substitution was performed.
+- Runtime: No Minecraft runtime testing was performed by Codex for this administrative transition. The project owner's external/gameplay testing authorized acceptance, but no new PASS or other runtime result was recorded or inferred; the existing RUNTIME_UNTESTED classification is unchanged.
+- Artifact: Current release identity is unchanged: version 0.1.0-canary5, filename wearable-lanterns-0.1.0-canary5.jar, SHA-256 0d05d2af86dfb8f41e7cb7c0dde75aed681cfb657fa2cb8de4a42f40344dd0e6, source 413c2dad2f5acf7285311c31921493ef5650eed5.
+- Result: ACCEPTED — owner-directed acceptance without fabricated runtime evidence.
+- Next state: Preserve the accepted release and historical evidence. A future successor may use TESTING while awaiting or receiving user runtime validation; no Workbench slot or profile allocation is required.

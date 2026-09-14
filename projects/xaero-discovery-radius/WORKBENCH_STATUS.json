@@ -12,7 +12,7 @@
     "legacy_ids": []
   },
   "definition": {
-    "lifecycle": "ACTIVE",
+    "lifecycle": "ACCEPTED",
     "goals": [
       "Limit new Xaero Minimap and World Map terrain discovery to a configurable chunk-quantized square, defaulting to half-width 2, independently of Minecraft render distance.",
       "Preserve all previously mapped terrain and otherwise preserve Xaero behavior, including normal nearby discovery, Minimap and World Map sharing, waypoints, radar, navigation, map presentation, and unrelated UI behavior.",
@@ -98,7 +98,7 @@
     ]
   },
   "state": {
-    "milestone": "Canary 3 changes future Xaero discovery to an inclusive chunk square while preserving runtime-passed Canary 2 as the accepted baseline.",
+    "milestone": "The exact current release is ACCEPTED by owner direction following the user's external/gameplay testing. Existing build, deployment, and runtime classifications are preserved; this administrative transition infers no new runtime result.",
     "releases": {
       "current": {
         "version": "0.1.2-canary3",
@@ -113,15 +113,19 @@
         }
       },
       "accepted": {
-        "version": "0.1.1-canary2",
+        "version": "0.1.2-canary3",
         "artifact": {
-          "filename": "xaero-discovery-radius-0.1.1-canary2.jar",
-          "sha256": "a7d0125dbe13bbcd5418aac39e0e51a32ea79d508d9dc47f2ebd86526a794c99"
+          "filename": "xaero-discovery-radius-0.1.2-canary3.jar",
+          "sha256": "5524dfa84e35ea5c31263df4705daca3718df7a095f5c544bb731190dcc0cf95"
         },
-        "source_commit": "a8c042c8d5c075c3f3fc9ca019a0b6efe815eaff"
+        "source_commit": "caff6f8a9174487149d064d94d664da1ec2b0a72",
+        "runtime_dependency_policy": {
+          "contract": "CAPABILITY_OR_PROVIDER",
+          "exceptions": []
+        }
       },
       "rollback": null,
-      "accepted_current": "CURRENT_DIFFERS_FROM_ACCEPTED",
+      "accepted_current": "CURRENT_IS_ACCEPTED",
       "accepted_rollback": "NO_ROLLBACK"
     },
     "validation": {
@@ -132,11 +136,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 4,
-    "activity_at": "2026-09-07T21:19:04Z",
-    "updated_at": "2026-09-07T21:19:04Z",
-    "last_codex_at": "2026-09-07T21:19:04Z",
-    "source_commit": "caff6f8a9174487149d064d94d664da1ec2b0a72",
+    "revision": 5,
+    "activity_at": "2026-09-14T08:09:29Z",
+    "updated_at": "2026-09-14T08:09:29Z",
+    "last_codex_at": "2026-09-14T08:09:29Z",
+    "source_commit": "f511f435c623883c5ee1474e9227acb73fb2df68",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null

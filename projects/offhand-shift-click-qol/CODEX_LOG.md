@@ -19,3 +19,14 @@
 - Artifact: Current C8 / embedded `0.3.4-routed-pickup-audio-fallback-canary1` is `offhand-shift-click-qol-0.3.4-routed-pickup-audio-fallback-canary1.jar`, 15,496 bytes, SHA-256 `7ca386bea50eb2ece489da4cccc262a13d45b82171042f39efaea0a91e73e357`, source `5aa03f560824b1944d634e91a6dcf04a479250f7`, CAPABILITY_OR_PROVIDER with no exceptions. Accepted and rollback C7 remain `offhand-shift-click-qol-0.3.3-acquisition-priority-fix-canary.jar` at SHA-256 `d0c2ebe7cd2d1a6dcbe2654dbee42dd9f5dce4fd710ea3748f3d15dad6f2b04a`.
 - Result: ACTIVE — CONTROLLED_VALIDATION_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED; no blocker.
 - Next state: Retain these exact bytes, publish revision 2 from authoritative main, and deploy only through a serialized Test Instance Manager transition before recording the paired and standalone pickup-audio runtime matrix.
+
+## 2026-09-14T08:09:29Z — Owner-directed lifecycle acceptance
+
+- Revision: 3
+- Source checkpoint: `f511f435c623883c5ee1474e9227acb73fb2df68`
+- Changes: Changed lifecycle from ACTIVE to ACCEPTED and bound the unchanged exact current release as accepted by project-owner direction; historical testing records remain intact.
+- Build/static: Preserved the existing CONTROLLED_VALIDATION_PASS classification; no build or artifact substitution was performed.
+- Runtime: No Minecraft runtime testing was performed by Codex for this administrative transition. The project owner's external/gameplay testing authorized acceptance, but no new PASS or other runtime result was recorded or inferred; the existing RUNTIME_UNTESTED classification is unchanged.
+- Artifact: Current release identity is unchanged: version 0.3.4-routed-pickup-audio-fallback-canary1, filename offhand-shift-click-qol-0.3.4-routed-pickup-audio-fallback-canary1.jar, SHA-256 7ca386bea50eb2ece489da4cccc262a13d45b82171042f39efaea0a91e73e357, source 5aa03f560824b1944d634e91a6dcf04a479250f7.
+- Result: ACCEPTED — owner-directed acceptance without fabricated runtime evidence.
+- Next state: Preserve the accepted release and historical evidence. A future successor may use TESTING while awaiting or receiving user runtime validation; no Workbench slot or profile allocation is required.

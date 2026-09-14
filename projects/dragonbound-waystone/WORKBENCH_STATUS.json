@@ -12,7 +12,7 @@
     ]
   },
   "definition": {
-    "lifecycle": "ACTIVE",
+    "lifecycle": "ACCEPTED",
     "goals": [
       "Maintain the progression-gated one-way return system for Minecraft Java 26.2 Fabric using one shared placed Dragonbound Waystone, an Imbued Void Pearl, and a cooldown-based Dragonbound Staff.",
       "Preserve the accepted server-owned channel, exact-destination safety, persistent anchor, loss protection, recipes, configuration migration, discovery behavior, geometry, and art without expanding into a general waypoint or teleport system."
@@ -81,7 +81,7 @@
     ]
   },
   "state": {
-    "milestone": "User runtime feedback records a focused Canary 11 runtime FAIL: its player-targeted particles retain the desired feet-level ground origin, but ordinary vanilla PortalParticle visibly falls despite C11's explicit positive-Y count-zero packet motion. This is not a full C11 runtime PASS and does not change unrelated behavior. For primarily solo play, Canary 12 retains the C11 3-to-8 channel ramp, 24-particle confirmed-arrival count, feet plus Y 0.05 shallow ground layout, per-particle ServerPlayer-targeted count-zero packets, and all body-centered ordinary portal effects, but changes only the targeted particle type to vanilla reverse portal with positive Y 0.06-0.12 and horizontal drift within plus or minus 0.035. It is statically verified, not deployed, and requires its own focused first-person runtime test. Exact Canary 5 remains the accepted baseline and rollback.",
+    "milestone": "The exact current release is ACCEPTED by owner direction following the user's external/gameplay testing. Existing build, deployment, and runtime classifications are preserved; this administrative transition infers no new runtime result.",
     "releases": {
       "current": {
         "version": "0.1.0-canary12",
@@ -97,12 +97,17 @@
         }
       },
       "accepted": {
-        "version": "0.1.0-canary5",
+        "version": "0.1.0-canary12",
         "artifact": {
-          "filename": "dragonbound-waystone-0.1.0-canary5.jar",
-          "sha256": "ff29582cc50f391a3ebb79b5ab1dff2f8fb7abb92363bca46fb8a9608a481ad3"
+          "filename": "dragonbound-waystone-0.1.0-canary12.jar",
+          "sha256": "6f621b16652baf9caad89ba923b8792ebc0ba08706a9f507fd17aabfc3121ad6"
         },
-        "source_commit": "690066c7c7159771a244ecd72f201473d95fcb19"
+        "embedded_version": "0.1.0-canary12",
+        "source_commit": "8d47abc38bd811376524f74d885cc47ab6b85e59",
+        "runtime_dependency_policy": {
+          "contract": "CAPABILITY_OR_PROVIDER",
+          "exceptions": []
+        }
       },
       "rollback": {
         "version": "0.1.0-canary5",
@@ -112,8 +117,8 @@
         },
         "source_commit": "690066c7c7159771a244ecd72f201473d95fcb19"
       },
-      "accepted_current": "CURRENT_DIFFERS_FROM_ACCEPTED",
-      "accepted_rollback": "ACCEPTED_IS_ROLLBACK"
+      "accepted_current": "CURRENT_IS_ACCEPTED",
+      "accepted_rollback": "ROLLBACK_DIFFERS_FROM_ACCEPTED"
     },
     "validation": {
       "build": "STATIC_PASS",
@@ -123,11 +128,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 8,
-    "activity_at": "2026-09-11T21:03:12Z",
-    "updated_at": "2026-09-11T21:03:12Z",
-    "last_codex_at": "2026-09-11T21:03:12Z",
-    "source_commit": "8d47abc38bd811376524f74d885cc47ab6b85e59",
+    "revision": 9,
+    "activity_at": "2026-09-14T08:09:29Z",
+    "updated_at": "2026-09-14T08:09:29Z",
+    "last_codex_at": "2026-09-14T08:09:29Z",
+    "source_commit": "f511f435c623883c5ee1474e9227acb73fb2df68",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null

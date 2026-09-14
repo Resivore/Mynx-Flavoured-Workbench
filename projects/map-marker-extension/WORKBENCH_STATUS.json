@@ -22,7 +22,7 @@
     ]
   },
   "definition": {
-    "lifecycle": "ACTIVE",
+    "lifecycle": "ACCEPTED",
     "goals": [
       "Preserve distinct native map-marker identities for Matcha structure maps across vanilla opened maps, carried-map item presentation, and optional compatible map viewers without collapsing formerly shared decoration groups.",
       "Expose possession-gated, ephemeral carried-map targets to Xaero Minimap and Xaero World Map while preserving exact coordinates, dimensions, deduplication, lifecycle, upright orientation, and accepted positive 2x World Map scale.",
@@ -101,7 +101,7 @@
     ]
   },
   "state": {
-    "milestone": "Exact MME C12 is the current development release: one self-contained JAR, with no companion MME resource-pack artifact, that packages the 18 user-confirmed Ribbits-style filled-map item chains and the exact 17 C11 reframed POI icons. The corrected external pack used with C11 has scoped user-reported positive evidence only for filled-map inventory routing; it is not evidence that the retained C11 pair or C12 itself passed a runtime matrix. C12 remains runtime untested, not accepted, and not deployed. C11 remains preserved historical provenance; C10 retains its scoped Compass Ribbon POI-scale FAIL, C9/C8 remain preserved, and Treasure X C4 remains the accepted rollback baseline.",
+    "milestone": "The exact current release is ACCEPTED by owner direction following the user's external/gameplay testing. Existing build, deployment, and runtime classifications are preserved; this administrative transition infers no new runtime result.",
     "releases": {
       "current": {
         "version": "C12 (0.4.0-canary12)",
@@ -116,12 +116,16 @@
         }
       },
       "accepted": {
-        "version": "Treasure X C4 (0.2.0-canary4)",
+        "version": "C12 (0.4.0-canary12)",
         "artifact": {
-          "filename": "treasure-x-xaero-0.2.0-canary4.jar",
-          "sha256": "9d5e5c22873417346247ead34d87795e3f4aa84eaf0674345d4ca477ef3ae6e7"
+          "filename": "map-marker-extension-0.4.0-canary12.jar",
+          "sha256": "f5c539b7535149fb936e241f72722a87e0474af855f2a98e6e3cf88c3290243e"
         },
-        "source_commit": "3aac5ff7259a8bbb4bcac2a6147749589ee94bff"
+        "source_commit": "87591808b60f7a7fc4ce8dd8b6a6ab8e3e8d12b1",
+        "runtime_dependency_policy": {
+          "contract": "CAPABILITY_OR_PROVIDER",
+          "exceptions": []
+        }
       },
       "rollback": {
         "version": "Treasure X C4 (0.2.0-canary4)",
@@ -131,8 +135,8 @@
         },
         "source_commit": "3aac5ff7259a8bbb4bcac2a6147749589ee94bff"
       },
-      "accepted_current": "CURRENT_DIFFERS_FROM_ACCEPTED",
-      "accepted_rollback": "ACCEPTED_IS_ROLLBACK"
+      "accepted_current": "CURRENT_IS_ACCEPTED",
+      "accepted_rollback": "ROLLBACK_DIFFERS_FROM_ACCEPTED"
     },
     "validation": {
       "build": "CONTROLLED_VALIDATION_PASS",
@@ -142,11 +146,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 6,
-    "activity_at": "2026-09-09T02:35:00Z",
-    "updated_at": "2026-09-09T02:35:00Z",
-    "last_codex_at": "2026-09-09T02:35:00Z",
-    "source_commit": "87591808b60f7a7fc4ce8dd8b6a6ab8e3e8d12b1",
+    "revision": 7,
+    "activity_at": "2026-09-14T08:09:29Z",
+    "updated_at": "2026-09-14T08:09:29Z",
+    "last_codex_at": "2026-09-14T08:09:29Z",
+    "source_commit": "f511f435c623883c5ee1474e9227acb73fb2df68",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null

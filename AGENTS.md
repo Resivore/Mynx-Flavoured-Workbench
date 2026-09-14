@@ -46,38 +46,26 @@ Every project task advances the manifest revision exactly once, updates synchron
 - Runtime metadata normally depends on a stable Fabric mod ID, `provides` alias, or other capability without pinning the exact version used during development. Exact Gradle, build, fixture, and test inputs may remain pinned for reproducibility, but record them separately as validation baselines in the project log or structured validation metadata; they are not runtime requirements by default.
 - Minecraft may remain exactly targeted to `26.2`. Fabric Loader, Fabric API, Java, and other runtime providers may declare a genuine minimum floor. Do not place exact Canary versions, semantic build metadata, arbitrary version-family ceilings, or speculative upper bounds in `depends`, `recommends`, or `suggests` merely because those versions were tested.
 - An exact pin or upper bound outside the Minecraft exception is allowed only for a demonstrated incompatibility. The current release's `runtime_dependency_policy.exceptions` must bind the exact consumer ID, relationship, dependency ID, and predicate, and must record both the reason and concrete regression evidence.
-- Every new or changed current artifact must carry the release-scoped `runtime_dependency_policy` attestation. The Test Instance Manager enforces it across the packaged root `fabric.mod.json` and every declared nested Fabric JAR. An unchanged release without the field is grandfathered; promotion or evidence updates do not require repackaging, and the next real successor must adopt the policy.
+- Every new or changed current artifact must carry the release-scoped `runtime_dependency_policy` attestation. An unchanged release without the field is grandfathered; promotion or evidence updates do not require repackaging, and the next real successor must adopt the policy.
 - Stable provider aliases are compatibility contracts. A compatible future provider must not be rejected only because its version is newer, and replacing a standalone provider with a unified JAR remains valid when the unified JAR declares the stable alias in `provides`.
 
 ## Runtime model
 
-The physical runtime profile is an accepted baseline plus exactly two independent experimental slots, A and B. An occupied slot is one atomic testing cohort containing one or more current-manifest project members. Every member retains its own project/deployment UUIDs, version, artifact identity, source checkpoint, accepted-predecessor replacement, dependency overrides, and independent `UNTESTED`, `PASS`, `FAIL`, or `INCONCLUSIVE` result; only the slot identity, physical deployment state, deployment timestamp, ready-verification timestamp, and filesystem transaction are shared. Never collapse member results into a slot aggregate or attribute one member's artifacts/evidence to another.
-
-A cohort assignment, update, deployment, verification, clear, promotion, or physical replacement is atomic. No committed or physical state may contain only part of the requested cohort. Replacing one member while retaining companions is allowed only when the exact resulting enabled Fabric dependency graph remains satisfied. Existing single-project slots are one-member cohorts.
+Runtime validation is user-directed and independent for every project. Codex must not inspect, track, reserve, populate, clear, or swap any Minecraft testing profile as part of normal project work. A deployment value in a historical status record is evidence only; it is not an active profile-control requirement.
 
 ### External user runtime evidence
 
-- An explicit user-reported `PASS`, `FAIL`, or `INCONCLUSIVE` may bind to a current canonical candidate without a Test Instance Manager deployment only when current authoritative `main` uniquely identifies the exact release version, filename, SHA-256, and source checkpoint. Ambiguous or drifted identity fails closed.
-- Record such evidence in the project's `WORKBENCH_STATUS.json` and `CODEX_LOG.md` explicitly as user-reported/external runtime evidence. Record only the classification and observations the user actually supplied; never invent row-level observations. Keep deployment truthful (`NOT_DEPLOYED` when no managed deployment exists), and do not use lifecycle `TESTING` unless the project UUID currently occupies a canonical test slot.
-- Recording external evidence alone makes no Test Instance Manager transition; `FAIL` and `INCONCLUSIVE` therefore never consume a slot. To promote an externally tested `PASS`, use `PROMOTE_USER_PASSED_BATCH`; it preserves both slots and may either add the project or replace its accepted predecessor only through that predecessor's exact `replaces_accepted_deployment_id`.
-- When a passing successor replaces an accepted release, preserve the predecessor as rollback/provenance in the project controls where applicable. This does not change the manager's target-local `retained_rollbacks` semantics: target-local retention remains explicit and independently validated.
-- The existing managed-slot assignment, readiness, result-recording, and promotion workflow remains unchanged.
+- An explicit user-reported `PASS`, `FAIL`, or `INCONCLUSIVE` may bind to a current canonical candidate when authoritative `main` uniquely identifies the exact release version, filename, SHA-256, and source checkpoint. Ambiguous or drifted identity fails closed.
+- Record such evidence in the project's `WORKBENCH_STATUS.json` and `CODEX_LOG.md` explicitly as user-reported/external runtime evidence. Record only the classification and observations the user actually supplied; never invent row-level observations. Keep historical deployment values truthful, but do not use them as a lifecycle prerequisite.
+- When a passing successor replaces an accepted release, preserve the predecessor as rollback/provenance in the project controls where applicable.
 
 ### `TESTING` lifecycle invariant
 
-- `TESTING` means one thing only: the project's immutable UUID is a member of the cohort currently occupying Test Slot A or Test Slot B in canonical `tools/test_instance_manager/runtime-state.json` after a verified serialized Test Instance Manager deployment transition.
-- A build or static pass, retained Canary, useful `TESTING.md`, readiness for runtime testing, queued next step, or wait for a free slot never implies `TESTING`. A ready candidate outside both slots normally remains `ACTIVE` unless another lifecycle is independently appropriate.
-- Member runtime result is independent of lifecycle and of every companion's result. An occupied project remains `TESTING` while its own result is `UNTESTED`, `PASS`, `FAIL`, or `INCONCLUSIVE`.
-- Assigning a project UUID to either slot must set its lifecycle to `TESTING`. Removing it from its last occupied slot must set the appropriate resulting lifecycle, normally `ACTIVE` for an unaccepted development candidate; promotion/removal must derive lifecycle from the remaining current state.
-- Accepted-release provenance is independent of current candidate occupancy. A project may have an accepted release and lifecycle `TESTING` when a newer/current candidate for the same UUID occupies a test slot.
-- Repository-current release identity is independent of slot occupancy identity. Canonical status and manager verification must explicitly say whether the exact current release is deployed; an older member in a slot never permits the newer repository candidate to claim `DEPLOYED` or `READY_TO_TEST_VERIFIED`.
+- `TESTING` means the project is awaiting, undergoing, or receiving user runtime validation. It does not imply a profile, slot, deployment, capacity reservation, or any physical filesystem action.
+- A build or static pass, retained Canary, useful `TESTING.md`, readiness for runtime testing, or a runtime result does not by itself require a lifecycle change; record the state that accurately reflects the owner's validation process.
+- Runtime results remain independent of lifecycle. An accepted release may have historical untested or partial evidence, and a successor may remain `TESTING` while its validation is pending.
 
-Only one Test Instance Manager operation may mutate the dedicated Workbench at a time. Transitions must be serialized and atomic; modifying one cohort must preserve the other slot exactly. Concurrent development, builds, and static validation remain allowed.
-
-- Dedicated test instance: `C:\Users\resiv\AppData\Roaming\ModrinthApp\profiles\Matcha Flavoured 26.2 Workbench`
-- Protected gameplay instance: `C:\Users\resiv\AppData\Roaming\ModrinthApp\profiles\Matcha Flavoured 26.1.2`
-
-The protected gameplay instance is permanently off-limits. A runtime task must explicitly own deployment before touching the dedicated instance.
+The protected Matcha Flavoured 26.1.2 gameplay instance remains permanently off-limits. The retired Matcha Flavoured 26.2 Workbench profile must not be inspected or manipulated by Codex.
 
 ## Sheet synchronization
 

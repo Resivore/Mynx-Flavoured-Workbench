@@ -32,3 +32,14 @@
 - Runtime: Not deployed; `RUNTIME_UNTESTED`. No Test Instance Manager transition, Minecraft desktop launch, dedicated-profile mutation, or protected gameplay-profile access occurred.
 - Result: `ACTIVE` / `CONTROLLED_VALIDATION_PASS` / `NOT_DEPLOYED` / `RUNTIME_UNTESTED`.
 - Next state: Retain the exact ignored artifact, integrate authoritative main, verify the main-only Sheet reconciliation workflow, then use only a serialized dedicated-workbench transition for Minecraft desktop validation if a compatible test slot is deliberately assigned.
+
+## 2026-09-14T08:09:29Z — Owner-directed lifecycle acceptance
+
+- Revision: 4
+- Source checkpoint: `f511f435c623883c5ee1474e9227acb73fb2df68`
+- Changes: Changed lifecycle from ACTIVE to ACCEPTED and bound the unchanged exact current release as accepted by project-owner direction; historical testing records remain intact.
+- Build/static: Preserved the existing CONTROLLED_VALIDATION_PASS classification; no build or artifact substitution was performed.
+- Runtime: No Minecraft runtime testing was performed by Codex for this administrative transition. The project owner's external/gameplay testing authorized acceptance, but no new PASS or other runtime result was recorded or inferred; the existing RUNTIME_UNTESTED classification is unchanged.
+- Artifact: Current release identity is unchanged: version C3 (0.1.0-canary3), filename inventory-sorter-csr-compat-0.1.0-canary3.jar, SHA-256 7eca4e86faaa83211432300a658413f7662a9f642df8074d2e4ebf3bb0af3074, source 21b4e4a0eb734c79d1b23202de61d490febb4069.
+- Result: ACCEPTED — owner-directed acceptance without fabricated runtime evidence.
+- Next state: Preserve the accepted release and historical evidence. A future successor may use TESTING while awaiting or receiving user runtime validation; no Workbench slot or profile allocation is required.

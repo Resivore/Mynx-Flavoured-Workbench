@@ -1,7 +1,110 @@
 {
-  "$schema": "../../schemas/workbench-status.schema.json", "schema_version": 1,
-  "identity": {"uuid":"a8917eab-4a89-4af0-8aa7-13b12049dd8a","name":"Mynx Flora Trades","project_id":"mynx-flora-trades","aliases":[],"legacy_names":[],"legacy_ids":[]},
-  "definition": {"lifecycle":"ACTIVE","goals":["Integrate the authoritative Mynx Regions Unexplored flora with vanilla Florist and Ribbit trade systems without duplicating flora."],"scope":["One-level Florist, persistent Farmer and Wandering flora buybacks, and private Florist visual routing."],"boundaries":{"owned_paths":["projects/mynx-flora-trades"],"exclusions":["No flora registration, Regions Unexplored behavioral change, public redistribution of Ribbit Villagers artwork, or runtime deployment."]},"dependencies":[{"type":"MOD","identifier":"minecraft","requirement":"=26.2","reason":"Target runtime."},{"type":"MOD","identifier":"fabricloader","requirement":">=0.19.3","reason":"Fabric baseline."},{"type":"MOD","identifier":"fabric-api","requirement":">=0.157.0","reason":"Fabric integration baseline."},{"type":"MOD","identifier":"mynx_regions_unexplored","requirement":">=0.1.0","reason":"Authoritative flora registry."},{"type":"MOD","identifier":"ribbits","requirement":">=4.1.6","reason":"Ribbit trade provider and contribution APIs."}]},
-  "state":{"milestone":"Canary 3 has limited user-reported external runtime evidence: a Florist claimed its Flower Pot POI and became functional; unobserved C3 matrix rows remain unclassified. Canary 4 prepends two Glowcap pot sales while preserving the eight flower offers; it is STATIC_PASS, NOT_DEPLOYED, and RUNTIME_UNTESTED.","releases":{"current":{"version":"0.1.0+26.2-canary4","artifact":{"filename":"mynx-flora-trades-0.1.0+26.2-canary4.jar","sha256":"58585c2133396d9f173c47391d81e0e6d5f6f549252e3e99f6f9f52ea111e146"},"source_commit":"e534b3d77417dcc58c54ccee775a70697eeaac86","runtime_dependency_policy":{"contract":"CAPABILITY_OR_PROVIDER","exceptions":[]}},"accepted":null,"rollback":null,"accepted_current":"NO_ACCEPTED","accepted_rollback":"NO_ROLLBACK"},"validation":{"build":"STATIC_PASS","deployment":"NOT_DEPLOYED","runtime":"RUNTIME_UNTESTED"},"blocker":null},
-  "synchronization":{"revision":4,"activity_at":"2026-09-07T22:46:39Z","updated_at":"2026-09-07T22:46:39Z","last_codex_at":"2026-09-07T22:46:39Z","source_commit":"e534b3d77417dcc58c54ccee775a70697eeaac86","google_sheet":{"participates":true,"exclusion_reason":null}}
+  "$schema": "../../schemas/workbench-status.schema.json",
+  "schema_version": 1,
+  "identity": {
+    "uuid": "a8917eab-4a89-4af0-8aa7-13b12049dd8a",
+    "name": "Mynx Flora Trades",
+    "project_id": "mynx-flora-trades",
+    "aliases": [],
+    "legacy_names": [],
+    "legacy_ids": []
+  },
+  "definition": {
+    "lifecycle": "ACCEPTED",
+    "goals": [
+      "Integrate the authoritative Mynx Regions Unexplored flora with vanilla Florist and Ribbit trade systems without duplicating flora."
+    ],
+    "scope": [
+      "One-level Florist, persistent Farmer and Wandering flora buybacks, and private Florist visual routing."
+    ],
+    "boundaries": {
+      "owned_paths": [
+        "projects/mynx-flora-trades"
+      ],
+      "exclusions": [
+        "No flora registration, Regions Unexplored behavioral change, public redistribution of Ribbit Villagers artwork, or runtime deployment."
+      ]
+    },
+    "dependencies": [
+      {
+        "type": "MOD",
+        "identifier": "minecraft",
+        "requirement": "=26.2",
+        "reason": "Target runtime."
+      },
+      {
+        "type": "MOD",
+        "identifier": "fabricloader",
+        "requirement": ">=0.19.3",
+        "reason": "Fabric baseline."
+      },
+      {
+        "type": "MOD",
+        "identifier": "fabric-api",
+        "requirement": ">=0.157.0",
+        "reason": "Fabric integration baseline."
+      },
+      {
+        "type": "MOD",
+        "identifier": "mynx_regions_unexplored",
+        "requirement": ">=0.1.0",
+        "reason": "Authoritative flora registry."
+      },
+      {
+        "type": "MOD",
+        "identifier": "ribbits",
+        "requirement": ">=4.1.6",
+        "reason": "Ribbit trade provider and contribution APIs."
+      }
+    ]
+  },
+  "state": {
+    "milestone": "The exact current release is ACCEPTED by owner direction following the user's external/gameplay testing. Existing build, deployment, and runtime classifications are preserved; this administrative transition infers no new runtime result.",
+    "releases": {
+      "current": {
+        "version": "0.1.0+26.2-canary4",
+        "artifact": {
+          "filename": "mynx-flora-trades-0.1.0+26.2-canary4.jar",
+          "sha256": "58585c2133396d9f173c47391d81e0e6d5f6f549252e3e99f6f9f52ea111e146"
+        },
+        "source_commit": "e534b3d77417dcc58c54ccee775a70697eeaac86",
+        "runtime_dependency_policy": {
+          "contract": "CAPABILITY_OR_PROVIDER",
+          "exceptions": []
+        }
+      },
+      "accepted": {
+        "version": "0.1.0+26.2-canary4",
+        "artifact": {
+          "filename": "mynx-flora-trades-0.1.0+26.2-canary4.jar",
+          "sha256": "58585c2133396d9f173c47391d81e0e6d5f6f549252e3e99f6f9f52ea111e146"
+        },
+        "source_commit": "e534b3d77417dcc58c54ccee775a70697eeaac86",
+        "runtime_dependency_policy": {
+          "contract": "CAPABILITY_OR_PROVIDER",
+          "exceptions": []
+        }
+      },
+      "rollback": null,
+      "accepted_current": "CURRENT_IS_ACCEPTED",
+      "accepted_rollback": "NO_ROLLBACK"
+    },
+    "validation": {
+      "build": "STATIC_PASS",
+      "deployment": "NOT_DEPLOYED",
+      "runtime": "RUNTIME_UNTESTED"
+    },
+    "blocker": null
+  },
+  "synchronization": {
+    "revision": 5,
+    "activity_at": "2026-09-14T08:09:29Z",
+    "updated_at": "2026-09-14T08:09:29Z",
+    "last_codex_at": "2026-09-14T08:09:29Z",
+    "source_commit": "f511f435c623883c5ee1474e9227acb73fb2df68",
+    "google_sheet": {
+      "participates": true,
+      "exclusion_reason": null
+    }
+  }
 }

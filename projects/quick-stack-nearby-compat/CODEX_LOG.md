@@ -220,3 +220,14 @@
 - Artifact: `quick-stack-nearby-compat-0.1.0-canary18.jar`; embedded `0.1.0-canary18`; 72,102 bytes; SHA-256 `cb9144de133ac2dd9db20925b1275200213fcf57b36f9b5d530a6b02ac905554`; source `009e455b91df0cdea1bd1489097d8a0ce2359ade`; 40 project-owned classes, no foreign classes, and no nested JARs; runtime dependency policy `CAPABILITY_OR_PROVIDER` with no exceptions. Exact paired CSR C17 is `container-slot-reservations-0.1.0-canary17.jar`, 190,491 bytes, SHA-256 `5ae4d65b70b8f8d2ed07d9b33724ae9a1b7048518bb5a4ba6ef72fadbf0f4b82`, source `34f0104c561ff93c12999fc7b14a57d3d8643114`. Accepted C8 and rollback C6 identities remain unchanged.
 - Result: ACTIVE / CONTROLLED_VALIDATION_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED. The exact ignored C18 artifact requires canonical local retention; no runtime blocker beyond occupied testing slots is asserted.
 - Next state: Retain the exact current C18 artifact, integrate revision 21 into current `main`, verify the GitHub Actions Sheet reconciliation, then deploy only through a valid serialized dedicated-Workbench transition before recording runtime observations.
+
+## 2026-09-14T08:09:29Z — Owner-directed lifecycle acceptance
+
+- Revision: 22
+- Source checkpoint: `f511f435c623883c5ee1474e9227acb73fb2df68`
+- Changes: Changed lifecycle from ACTIVE to ACCEPTED and bound the unchanged exact current release as accepted by project-owner direction; historical testing records remain intact.
+- Build/static: Preserved the existing CONTROLLED_VALIDATION_PASS classification; no build or artifact substitution was performed.
+- Runtime: No Minecraft runtime testing was performed by Codex for this administrative transition. The project owner's external/gameplay testing authorized acceptance, but no new PASS or other runtime result was recorded or inferred; the existing RUNTIME_UNTESTED classification is unchanged.
+- Artifact: Current release identity is unchanged: version C18 (0.1.0-canary18), filename quick-stack-nearby-compat-0.1.0-canary18.jar, SHA-256 cb9144de133ac2dd9db20925b1275200213fcf57b36f9b5d530a6b02ac905554, source 009e455b91df0cdea1bd1489097d8a0ce2359ade.
+- Result: ACCEPTED — owner-directed acceptance without fabricated runtime evidence.
+- Next state: Preserve the accepted release and historical evidence. A future successor may use TESTING while awaiting or receiving user runtime validation; no Workbench slot or profile allocation is required.
