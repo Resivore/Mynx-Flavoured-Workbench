@@ -37,12 +37,12 @@
     ]
   },
   "state": {
-    "milestone": "Canary 1 implementation and four focused storage tests pass a clean Java 25/Fabric build. Artifact is retained locally; both Test Slots are occupied by other projects, so this candidate is NOT_DEPLOYED and RUNTIME_UNTESTED.",
+    "milestone": "User-reported external Canary 1 runtime FAIL: shepherd generated and deposited 3 wool but sheared from an implausible position without visible shears or action; fisherman at an ordinary village shore stayed at its claimed barrel with no travel, cast, catch, or deposit. Canary 2 corrects interaction positions and shoreline search, passes a clean Java 25/Fabric build and eight focused tests, and is NOT_DEPLOYED / RUNTIME_UNTESTED pending a user-managed game trial.",
     "releases": {
       "current": {
-        "version": "0.1.0-canary1",
-        "artifact": {"filename": "villager-work-routines-0.1.0-canary1.jar", "sha256": "af0b3ba222a8b5e9fc51ef4373ef27f4210d0dfd2ced62e32c550cc1e2eb4526"},
-        "source_commit": "123214fb32f5374cab3ee61637bb3ab5dfbbcacc",
+        "version": "0.1.0-canary2",
+        "artifact": {"filename": "villager-work-routines-0.1.0-canary2.jar", "sha256": "f6435fdc293b17ba03c1c98d0fac7f82b6bcc9ae7280a87ea927a7f8ac9313ce"},
+        "source_commit": "65e92c427a2d102e854e4c50f0aa151ced541b5b",
         "runtime_dependency_policy": {"contract": "CAPABILITY_OR_PROVIDER", "exceptions": []}
       },
       "accepted": null,
@@ -54,11 +54,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 1,
-    "activity_at": "2026-09-13T14:44:24Z",
-    "updated_at": "2026-09-13T14:44:24Z",
-    "last_codex_at": "2026-09-13T14:44:24Z",
-    "source_commit": "123214fb32f5374cab3ee61637bb3ab5dfbbcacc",
+    "revision": 2,
+    "activity_at": "2026-09-14T08:28:48Z",
+    "updated_at": "2026-09-14T08:28:48Z",
+    "last_codex_at": "2026-09-14T08:28:48Z",
+    "source_commit": "65e92c427a2d102e854e4c50f0aa151ced541b5b",
     "google_sheet": {"participates": true, "exclusion_reason": null}
   }
 }
