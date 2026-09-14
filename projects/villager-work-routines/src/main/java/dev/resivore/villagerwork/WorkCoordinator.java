@@ -62,37 +62,61 @@ public final class WorkCoordinator {
         State state = STATES.get(villager);
         if (profile == null) { if (state != null) cancel(villager, state, "profession changed"); return; }
         if (state == null) { state = new State(); STATES.put(villager, state); }
-        BlockPos site = claimedSite(villager, level, profile);
-        if (site == null || villager.isBaby() || !villager.isAlive() || villager.isTrading() || villager.isSleeping()
-                || !villager.getBrain().isActive(Activity.WORK)
-                || villager.getBrain().hasMemoryValue(MemoryModuleType.INTERACTION_TARGET)
-                || villager.getBrain().hasMemoryValue(MemoryModuleType.BREED_TARGET)) {
-            cancel(villager, state, site == null ? "claim or workstation unavailable" : "WORK eligibility interrupted");
+        if (state.eligible && state.profession != profession) cancel(villager, state, "profession changed");
+        SiteCheck siteCheck = claimedSite(villager, level, profile);
+        List<String> interruptions = new ArrayList<>();
+        if (!villager.isAlive()) interruptions.add("villager dead");
+        if (villager.isBaby()) interruptions.add("villager is a baby");
+        if (villager.isSleeping()) interruptions.add("villager sleeping");
+        if (villager.isTrading()) interruptions.add("villager trading with player");
+        if (villager.getBrain().hasMemoryValue(MemoryModuleType.BREED_TARGET)) interruptions.add("breed target present");
+        if (profession != VillagerProfession.SHEPHERD && profession != VillagerProfession.FISHERMAN
+                && villager.getBrain().hasMemoryValue(MemoryModuleType.INTERACTION_TARGET))
+            interruptions.add("interaction target present during ambient work");
+        if (!villager.getBrain().isActive(Activity.WORK)) interruptions.add("vanilla WORK activity inactive");
+        if (siteCheck.reason() != null) interruptions.add(siteCheck.reason());
+        if (!interruptions.isEmpty()) {
+            cancel(villager, state, String.join("; ", interruptions));
             return;
         }
-        if (state.eligible && state.profession != profession) cancel(villager, state, "profession changed");
+        BlockPos site = siteCheck.site();
         if ((profession == VillagerProfession.SHEPHERD || profession == VillagerProfession.FISHERMAN)
                 && (!state.eligible || !site.equals(state.site))) {
-            if (state.eligible) cancel(villager, state, "claimed site changed");
+            if (state.eligible) cancel(villager, state, "claimed site changed from " + state.site + " to " + site);
             state.eligible = true;
             state.site = site;
             state.profession = profession;
-            log(villager, "custom WORK eligible; claimed site={}", site);
+            log(villager, "custom WORK eligible; claimed site={} interactionTarget={} (non-blocking)",
+                    site, interactionTarget(villager));
         }
         if (profession == VillagerProfession.SHEPHERD) shepherd(villager, level, site, state);
         else if (profession == VillagerProfession.FISHERMAN) fisherman(villager, level, site, state);
         else ambient(villager, site, state);
     }
 
-    private static BlockPos claimedSite(Villager villager, ServerLevel level, Profile profile) {
-        if (profile == null) return null;
+    private static SiteCheck claimedSite(Villager villager, ServerLevel level, Profile profile) {
         GlobalPos claim = villager.getBrain().getMemory(MemoryModuleType.JOB_SITE).orElse(null);
-        if (claim == null || !claim.dimension().equals(level.dimension())) return null;
+        if (claim == null) return new SiteCheck(null, "claimed job site absent");
+        if (!claim.dimension().equals(level.dimension()))
+            return new SiteCheck(null, "claimed job site in wrong dimension: " + claim.dimension());
         BlockPos site = claim.pos();
-        if (site.distSqr(villager.blockPosition()) > 24 * 24 || !level.hasChunkAt(site)) return null;
-        if (!level.getBlockState(site).is(profile.block)) return null;
-        if (!level.getPoiManager().getType(site).map(type -> type.is(profile.poi)).orElse(false)) return null;
-        return site;
+        if (site.distSqr(villager.blockPosition()) > 24 * 24)
+            return new SiteCheck(null, "claimed job site out of range: " + site);
+        if (!level.hasChunkAt(site)) return new SiteCheck(null, "claimed job site chunk unavailable: " + site);
+        if (!level.getBlockState(site).is(profile.block))
+            return new SiteCheck(null, "workstation block mismatch at " + site + ": expected " + profile.block
+                    + ", found " + level.getBlockState(site).getBlock());
+        if (!level.getPoiManager().getType(site).map(type -> type.is(profile.poi)).orElse(false))
+            return new SiteCheck(null, "workstation POI mismatch at " + site + ": expected " + profile.poi
+                    + ", found " + level.getPoiManager().getType(site).orElse(null));
+        return new SiteCheck(site, null);
+    }
+
+    private static String interactionTarget(Villager villager) {
+        // Vanilla's 26.2 WORK package sets this memory when looking at a nearby player.
+        // The memory alone does not mean the villager is trading or should abandon work.
+        return villager.getBrain().getMemory(MemoryModuleType.INTERACTION_TARGET)
+                .map(target -> target.getType() + "#" + target.getId()).orElse("none");
     }
 
     private static void shepherd(Villager villager, ServerLevel level, BlockPos loom, State state) {
@@ -121,6 +145,7 @@ public final class WorkCoordinator {
             sheep.sort(Comparator.comparingDouble((Sheep candidate) -> villager.distanceToSqr(candidate))
                     .thenComparingInt(Sheep::getId));
             int baby = 0, notShearable = 0, noCapacity = 0, noInteraction = 0, noPath = 0, examined = 0;
+            boolean describeAttempts = villager.tickCount >= state.nextScanLog;
             for (Sheep candidate : sheep) {
                 examined++;
                 if (candidate.isBaby()) { baby++; continue; }
@@ -129,20 +154,37 @@ public final class WorkCoordinator {
                 if (!OutputStorage.fits(owned, new ItemStack(woolFor(candidate.getColor())), 3)) { noCapacity++; continue; }
                 List<BlockPos> positions = sheepPositions(candidate, villager, level);
                 if (positions.isEmpty()) { noInteraction++; continue; }
+                List<String> attempts = new ArrayList<>();
                 for (BlockPos position : positions) {
-                    Path path = villager.getNavigation().createPath(position, 0);
-                    if (path == null || !path.canReach() || !position.equals(path.getTarget())) continue;
-                    if (!villager.getNavigation().moveTo(path, 0.6)) continue;
+                    if (validSheepInteraction(villager, candidate, position, level)) {
+                        state.sheep = candidate;
+                        state.sheepRequested = position;
+                        state.sheepTarget = position;
+                        state.navigationDeadline = villager.tickCount + NAVIGATION_TIMEOUT;
+                        target = candidate;
+                        attempts.add("requested=" + position + " reason=alreadyPhysicallyArrived");
+                        log(villager, "selected sheep id={} uuid={} at {} requested={} endpoint={} already physically arrived; navigation unnecessary",
+                                candidate.getId(), candidate.getUUID(), candidate.blockPosition(), position, position);
+                        break;
+                    }
+                    SheepPathAttempt attempt = trySheepPath(villager, candidate, position, level);
+                    if (describeAttempts || attempt.accepted()) attempts.add(attempt.summary());
+                    if (!attempt.accepted()) continue;
                     state.sheep = candidate;
-                    state.sheepTarget = position;
+                    state.sheepRequested = position;
+                    state.sheepTarget = attempt.endpoint();
                     state.navigationDeadline = villager.tickCount + NAVIGATION_TIMEOUT;
                     state.customNavigation = true;
-                    state.customPath = path;
+                    state.customPath = attempt.path();
                     target = candidate;
-                    log(villager, "selected sheep id={} uuid={} at {} interaction={} path reachable; navigation started",
-                            candidate.getId(), candidate.getUUID(), candidate.blockPosition(), position);
+                    log(villager, "selected sheep id={} uuid={} at {} requested={} endpoint={} canReach={} navigation started moveTo={}",
+                            candidate.getId(), candidate.getUUID(), candidate.blockPosition(), position,
+                            attempt.endpoint(), attempt.canReach(), attempt.moveAccepted());
                     break;
                 }
+                if (describeAttempts || target == candidate)
+                    log(villager, "sheep route sheepId={} sheepPos={} interactionPositions={} attempts={}",
+                            candidate.getId(), candidate.blockPosition(), positions.size(), attempts);
                 if (target != null) break;
                 noPath++;
             }
@@ -166,20 +208,26 @@ public final class WorkCoordinator {
         if (!validSheepInteraction(villager, target, state.sheepTarget, level)) {
             if (state.shearAt != 0) { clearSheep(villager, state, "interaction became blocked or invalid during action"); return; }
             if (villager.tickCount % 20 == 0) {
-                Path path = villager.getNavigation().createPath(state.sheepTarget, 0);
-                if (path == null || !path.canReach() || !state.sheepTarget.equals(path.getTarget())
-                        || !villager.getNavigation().moveTo(path, 0.6)) {
-                    clearSheep(villager, state, "interaction path lost");
-                } else state.customPath = path;
+                SheepPathAttempt attempt = trySheepPath(villager, target, state.sheepRequested, level);
+                if (!attempt.accepted()) {
+                    clearSheep(villager, state, "interaction path lost: " + attempt.summary());
+                } else {
+                    state.sheepTarget = attempt.endpoint();
+                    state.customNavigation = true;
+                    state.customPath = attempt.path();
+                }
             }
             return;
         }
+        double finalDistance = Math.sqrt(villager.distanceToSqr(target));
+        boolean finalClearLine = clearShearLine(level, villager.position().add(0, 0.9, 0), target);
         stopCustomNavigation(villager, state);
         if (state.shearAt == 0) {
             if (!showProp(villager, state, Items.SHEARS)) { clearSheep(villager, state, "main hand occupied; shears cannot be shown"); return; }
             state.shearAt = villager.tickCount + TELEGRAPH_TICKS;
-            log(villager, "arrived at sheep id={} interaction={}; shears equipped, action begins; shearAt={}",
-                    target.getId(), state.sheepTarget, state.shearAt);
+            log(villager, "arrived at sheep id={} requested={} endpoint={} villagerPos={} sheepDistance={} clearLine={}; shears telegraph started shearAt={}",
+                    target.getId(), state.sheepRequested, state.sheepTarget, villager.position(),
+                    finalDistance, finalClearLine, state.shearAt);
             return;
         }
         boolean shearsWereCleared = state.prop == null;
@@ -199,6 +247,7 @@ public final class WorkCoordinator {
         ShearCapture.shear(target, level, owned);
         log(villager, "shear captured wool count={} ownedTotal={}", woolCount(owned) - before, woolCount(owned));
         state.sheep = null;
+        state.sheepRequested = null;
         state.sheepTarget = null;
         state.shearAt = 0;
         state.cooldown = villager.tickCount + 60;
@@ -221,6 +270,55 @@ public final class WorkCoordinator {
         return positions;
     }
 
+    private static SheepPathAttempt trySheepPath(Villager villager, Sheep sheep,
+                                                  BlockPos requested, ServerLevel level) {
+        Path path = villager.getNavigation().createPath(requested, 0);
+        if (path == null) return new SheepPathAttempt(null, requested, null, null, null, null, "pathNull");
+        BlockPos reportedTarget = path.getTarget();
+        boolean canReach = path.canReach();
+        BlockPos endpoint = path.getNodeCount() == 0 ? null : path.getEndNode().asBlockPos();
+        if (endpoint == null)
+            return new SheepPathAttempt(path, requested, reportedTarget, null, canReach, null, "emptyPath");
+        boolean endpointLineClear = clearShearLine(level,
+                Vec3.atBottomCenterOf(endpoint).add(0, 0.9, 0), sheep);
+        // A partial vanilla path can end at a usable neighboring node. The endpoint, not the
+        // reported target, is what the villager can actually approach. World checks below still
+        // require a safe standing block and a clear shear line from that exact endpoint.
+        if (!SheepPathEndpoint.nearRequested(requested, endpoint))
+            return new SheepPathAttempt(path, requested, reportedTarget, endpoint, canReach, null,
+                    "endpointOutsideTolerance; barrierToSheep=" + !endpointLineClear);
+        if (!standingIsClear(level, villager, endpoint))
+            return new SheepPathAttempt(path, requested, reportedTarget, endpoint, canReach, null,
+                    "endpointNotWalkable");
+        if (Vec3.atCenterOf(endpoint).distanceToSqr(sheep.position()) > 2.4 * 2.4)
+            return new SheepPathAttempt(path, requested, reportedTarget, endpoint, canReach, null,
+                    "endpointTooFarFromSheep");
+        if (!endpointLineClear)
+            return new SheepPathAttempt(path, requested, reportedTarget, endpoint, canReach, null,
+                    "endpointShearLineBlocked; barrierToSheep=true");
+        boolean moved = villager.getNavigation().moveTo(path, 0.6);
+        return new SheepPathAttempt(path, requested, reportedTarget, endpoint, canReach, moved,
+                moved ? "accepted" : "moveToRejected");
+    }
+
+    private record SheepPathAttempt(Path path, BlockPos requested, BlockPos reportedTarget,
+                                    BlockPos endpoint, Boolean canReach, Boolean moveAccepted, String reason) {
+        boolean accepted() { return "accepted".equals(reason); }
+
+        String summary() {
+            String requestedToTarget = reportedTarget == null ? "n/a"
+                    : String.format("%.2f", Math.sqrt(requested.distSqr(reportedTarget)));
+            String requestedToEndpoint = endpoint == null ? "n/a"
+                    : String.format("%.2f", Math.sqrt(requested.distSqr(endpoint)));
+            return "requested=" + requested + " createPath=" + (path == null ? "null" : "present")
+                    + " pathNull=" + (path == null) + " canReach=" + canReach
+                    + " reportedTarget=" + reportedTarget + " endpoint=" + endpoint
+                    + " targetDelta=" + requestedToTarget + " endpointDelta=" + requestedToEndpoint
+                    + " nodes=" + (path == null ? 0 : path.getNodeCount())
+                    + " moveTo=" + moveAccepted + " reason=" + reason;
+        }
+    }
+
     private static boolean standingIsClear(ServerLevel level, Villager villager, BlockPos feet) {
         if (!level.hasChunkAt(feet) || !level.hasChunkAt(feet.above()) || !level.hasChunkAt(feet.below())) return false;
         if (!level.getBlockState(feet).getCollisionShape(level, feet).isEmpty()
@@ -239,7 +337,9 @@ public final class WorkCoordinator {
     }
 
     private static boolean validSheepInteraction(Villager villager, Sheep sheep, BlockPos feet, ServerLevel level) {
-        return feet != null && villager.blockPosition().equals(feet) && standingIsClear(level, villager, feet)
+        return feet != null && sheep.readyForShearing()
+                && standingIsClear(level, villager, feet)
+                && standingIsClear(level, villager, villager.blockPosition())
                 && villager.distanceToSqr(Vec3.atBottomCenterOf(feet)) <= 1.3 * 1.3
                 && villager.distanceToSqr(sheep) <= 2.4 * 2.4
                 && clearShearLine(level, villager.position().add(0, 0.9, 0), sheep);
@@ -250,6 +350,7 @@ public final class WorkCoordinator {
                 state.sheep.getId(), state.sheepTarget, reason);
         stopCustomNavigation(villager, state);
         state.sheep = null;
+        state.sheepRequested = null;
         state.sheepTarget = null;
         state.shearAt = 0;
         state.clearPropAt = 0;
@@ -590,15 +691,17 @@ public final class WorkCoordinator {
 
     private static void cancel(Villager villager, State state, String reason) {
         if (state.eligible || state.sheep != null || state.bank != null || state.floatEntity != null)
-            log(villager, "custom WORK cancelled: {} site={} sheep={} bank={} water={} float={}",
+            log(villager, "custom WORK cancelled: {} site={} sheep={} bank={} water={} float={} interactionTarget={}",
                     reason, state.site, state.sheep == null ? "none" : state.sheep.getId(), state.bank,
-                    state.water, state.floatEntity == null ? "none" : state.floatEntity.getId());
+                    state.water, state.floatEntity == null ? "none" : state.floatEntity.getId(),
+                    interactionTarget(villager));
         if (state.floatEntity != null) state.floatEntity.discard();
         stopCustomNavigation(villager, state);
         state.floatEntity = null;
         state.water = null;
         state.bank = null;
         state.sheep = null;
+        state.sheepRequested = null;
         state.sheepTarget = null;
         state.shearAt = 0;
         state.clearPropAt = 0;
@@ -631,8 +734,10 @@ public final class WorkCoordinator {
     }
 
     private record Profile(ResourceKey<PoiType> poi, Block block) {}
+    private record SiteCheck(BlockPos site, String reason) {}
     private static final class State {
         Sheep sheep;
+        BlockPos sheepRequested;
         BlockPos sheepTarget;
         BlockPos bank;
         BlockPos water;
