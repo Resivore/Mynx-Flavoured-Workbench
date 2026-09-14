@@ -1,18 +1,98 @@
 {
   "$schema": "../../schemas/workbench-status.schema.json",
   "schema_version": 1,
-  "identity": {"uuid":"2702d54e-aab2-467f-8769-4eb28da0aba9","name":"Villager POI Reachability","project_id":"villager-poi-reachability","aliases":[],"legacy_names":[],"legacy_ids":[]},
+  "identity": {
+    "uuid": "2702d54e-aab2-467f-8769-4eb28da0aba9",
+    "name": "Villager POI Reachability",
+    "project_id": "villager-poi-reachability",
+    "aliases": [],
+    "legacy_names": [],
+    "legacy_ids": []
+  },
   "definition": {
-    "lifecycle":"ACTIVE",
-    "goals":["Allow villagers to acquire ordinary job-site POIs one block above an actually reachable adjacent standing position."],
-    "scope":["A villager-only AcquirePoi job-site reachability fallback that preserves real POI positions, vanilla reservation, and normal profession assignment."],
-    "boundaries":{"owned_paths":["projects/villager-poi-reachability"],"exclusions":["POI registration, profession registration, fake/downshifted POIs, HOME/MEETING behavior, universal navigation changes, runtime deployment, and protected-profile access."]},
-    "dependencies":[{"type":"MOD","identifier":"minecraft","requirement":"=26.2","reason":"Target runtime and inspected AcquirePoi boundary."},{"type":"MOD","identifier":"fabricloader","requirement":">=0.19.3","reason":"Fabric baseline."},{"type":"MOD","identifier":"fabric-api","requirement":">=0.157.0","reason":"Fabric GameTest baseline."}]
+    "lifecycle": "ACCEPTED",
+    "goals": [
+      "Allow villagers to acquire ordinary job-site POIs one block above an actually reachable adjacent standing position."
+    ],
+    "scope": [
+      "A villager-only AcquirePoi job-site reachability fallback that preserves real POI positions, vanilla reservation, and normal profession assignment."
+    ],
+    "boundaries": {
+      "owned_paths": [
+        "projects/villager-poi-reachability"
+      ],
+      "exclusions": [
+        "POI registration, profession registration, fake/downshifted POIs, HOME/MEETING behavior, universal navigation changes, runtime deployment, and protected-profile access."
+      ]
+    },
+    "dependencies": [
+      {
+        "type": "MOD",
+        "identifier": "minecraft",
+        "requirement": "=26.2",
+        "reason": "Target runtime and inspected AcquirePoi boundary."
+      },
+      {
+        "type": "MOD",
+        "identifier": "fabricloader",
+        "requirement": ">=0.19.3",
+        "reason": "Fabric baseline."
+      },
+      {
+        "type": "MOD",
+        "identifier": "fabric-api",
+        "requirement": ">=0.157.0",
+        "reason": "Fabric GameTest baseline."
+      }
+    ]
   },
   "state": {
-    "milestone":"Canary 1 implements a narrow villager job-site fallback after vanilla AcquirePoi path failure. Controlled vanilla GameTests passed for raised Cleric/Composter, normal-height control, two-block and sealed negatives, reservation capacity, and real-POI release; the Florist fixture awaits unavailable ignored C4/Ribbits/MRU local artifacts. Candidate remains NOT_DEPLOYED and RUNTIME_UNTESTED.",
-    "releases":{"current":{"version":"0.1.0+26.2-canary1","artifact":{"filename":"villager-poi-reachability-0.1.0+26.2-canary1.jar","sha256":"b7342e3c0833d08139482263ea454575e94ba24338aa8b23c330db348dbb6848"},"source_commit":"e534b3d77417dcc58c54ccee775a70697eeaac86","runtime_dependency_policy":{"contract":"CAPABILITY_OR_PROVIDER","exceptions":[]}},"accepted":null,"rollback":null,"accepted_current":"NO_ACCEPTED","accepted_rollback":"NO_ROLLBACK"},
-    "validation":{"build":"STATIC_PASS","deployment":"NOT_DEPLOYED","runtime":"RUNTIME_UNTESTED"},"blocker":null
+    "milestone": "The exact current release is ACCEPTED by owner direction following the user's external/gameplay testing. Existing build, deployment, and runtime classifications are preserved; this administrative transition infers no new runtime result.",
+    "releases": {
+      "current": {
+        "version": "0.1.0+26.2-canary1",
+        "artifact": {
+          "filename": "villager-poi-reachability-0.1.0+26.2-canary1.jar",
+          "sha256": "b7342e3c0833d08139482263ea454575e94ba24338aa8b23c330db348dbb6848"
+        },
+        "source_commit": "e534b3d77417dcc58c54ccee775a70697eeaac86",
+        "runtime_dependency_policy": {
+          "contract": "CAPABILITY_OR_PROVIDER",
+          "exceptions": []
+        }
+      },
+      "accepted": {
+        "version": "0.1.0+26.2-canary1",
+        "artifact": {
+          "filename": "villager-poi-reachability-0.1.0+26.2-canary1.jar",
+          "sha256": "b7342e3c0833d08139482263ea454575e94ba24338aa8b23c330db348dbb6848"
+        },
+        "source_commit": "e534b3d77417dcc58c54ccee775a70697eeaac86",
+        "runtime_dependency_policy": {
+          "contract": "CAPABILITY_OR_PROVIDER",
+          "exceptions": []
+        }
+      },
+      "rollback": null,
+      "accepted_current": "CURRENT_IS_ACCEPTED",
+      "accepted_rollback": "NO_ROLLBACK"
+    },
+    "validation": {
+      "build": "STATIC_PASS",
+      "deployment": "NOT_DEPLOYED",
+      "runtime": "RUNTIME_UNTESTED"
+    },
+    "blocker": null
   },
-  "synchronization":{"revision":1,"activity_at":"2026-09-07T22:46:39Z","updated_at":"2026-09-07T22:46:39Z","last_codex_at":"2026-09-07T22:46:39Z","source_commit":"e534b3d77417dcc58c54ccee775a70697eeaac86","google_sheet":{"participates":true,"exclusion_reason":null}}
+  "synchronization": {
+    "revision": 2,
+    "activity_at": "2026-09-14T08:09:29Z",
+    "updated_at": "2026-09-14T08:09:29Z",
+    "last_codex_at": "2026-09-14T08:09:29Z",
+    "source_commit": "f511f435c623883c5ee1474e9227acb73fb2df68",
+    "google_sheet": {
+      "participates": true,
+      "exclusion_reason": null
+    }
+  }
 }

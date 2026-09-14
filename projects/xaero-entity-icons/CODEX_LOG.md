@@ -119,3 +119,14 @@
 - Artifact: `xaero-emf-entity-icon-compat-0.1.0-canary12.jar` / embedded `0.1.0-canary12` / 59,166 bytes / SHA-256 `dcf65d6e97007c03bf490b27189f76ee88b882d1b59d4b88315093dea10180bc` / implementation source `1bf0761f94eaf9442abc40f37f0e479509059b2f`. The release-scoped runtime dependency policy remains `CAPABILITY_OR_PROVIDER` with no exceptions. Canonical local artifact retention atomically copied the ignored artifact to the primary checkout and verified the exact destination hash and complete bytes.
 - Result: ACTIVE / STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED / CURRENT_DIFFERS_FROM_ACCEPTED / NO_ROLLBACK. C11 remains failed provenance and exact accepted C9 remains unchanged.
 - Next state: Under separately authorized Test Instance Manager ownership, run the C12 matrix in `TESTING.md`. Require clean hatless Florist/Farmer/Cleric/Mason heads, preserve Butcher's exact C11 appearance without requiring a visible chef hat, and treat any other C11 icon change as a regression. Do not promote without exact artifact-bound runtime evidence.
+
+## 2026-09-14T08:09:29Z — Owner-directed lifecycle acceptance
+
+- Revision: 13
+- Source checkpoint: `f511f435c623883c5ee1474e9227acb73fb2df68`
+- Changes: Changed lifecycle from ACTIVE to ACCEPTED and bound the unchanged exact current release as accepted by project-owner direction; historical testing records remain intact.
+- Build/static: Preserved the existing STATIC_PASS classification; no build or artifact substitution was performed.
+- Runtime: No Minecraft runtime testing was performed by Codex for this administrative transition. The project owner's external/gameplay testing authorized acceptance, but no new PASS or other runtime result was recorded or inferred; the existing RUNTIME_UNTESTED classification is unchanged.
+- Artifact: Current release identity is unchanged: version 0.1.0-canary12, filename xaero-emf-entity-icon-compat-0.1.0-canary12.jar, SHA-256 dcf65d6e97007c03bf490b27189f76ee88b882d1b59d4b88315093dea10180bc, source 1bf0761f94eaf9442abc40f37f0e479509059b2f.
+- Result: ACCEPTED — owner-directed acceptance without fabricated runtime evidence.
+- Next state: Preserve the accepted release and historical evidence. A future successor may use TESTING while awaiting or receiving user runtime validation; no Workbench slot or profile allocation is required.

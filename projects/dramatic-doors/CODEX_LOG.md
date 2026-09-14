@@ -19,3 +19,14 @@
 - Artifact: Current C8 / legacy Canary 7 is Git-ignored and hash-retained at the canonical project artifact path as `dramaticdoors-1.20.1-3.3.3+26.2-workbench-canary7.jar`, embedded version `1.20.1-3.3.3+26.2-workbench-canary7`, 13,178,466 bytes, SHA-256 `43c3efd19619a59a10957b5893adce081766f653d8cccb13f38bfbaacec2cefb`, from source checkpoint `3ef0bea8d24f62272f078c8af0186a428b5d4634`; the retention tool copied and verified the exact bytes in the primary checkout, and its `CAPABILITY_OR_PROVIDER` runtime dependency policy has no exceptions. Exact accepted C7 / legacy Canary 6 remains preserved as `dramaticdoors-1.20.1-3.3.3+26.2-workbench-canary6.jar`, SHA-256 `1d6b8286c3cc4e657f5326a2e5807081e35f66d13a41e77b3931b647fcdda4f6`, source `47774864918b4c1b1088ba0bca21565304d4c131`.
 - Result: ACTIVE — C8 is a controlled-validated successor, retained for the IBF C5 dependency-chain rerun. C7 remains the accepted historical release; neither a Test Slot nor a protected gameplay instance was touched.
 - Next state: Use exact C8 for the IBF C5 full dependency-chain rerun. Promote only after the resulting exact-artifact runtime evidence supports it.
+
+## 2026-09-14T08:09:29Z — Owner-directed lifecycle acceptance
+
+- Revision: 3
+- Source checkpoint: `f511f435c623883c5ee1474e9227acb73fb2df68`
+- Changes: Changed lifecycle from ACTIVE to ACCEPTED and bound the unchanged exact current release as accepted by project-owner direction; historical testing records remain intact.
+- Build/static: Preserved the existing CONTROLLED_VALIDATION_PASS classification; no build or artifact substitution was performed.
+- Runtime: No Minecraft runtime testing was performed by Codex for this administrative transition. The project owner's external/gameplay testing authorized acceptance, but no new PASS or other runtime result was recorded or inferred; the existing PARTIAL_RUNTIME_PASS classification is unchanged.
+- Artifact: Current release identity is unchanged: version C8 (legacy Canary 7), filename dramaticdoors-1.20.1-3.3.3+26.2-workbench-canary7.jar, SHA-256 43c3efd19619a59a10957b5893adce081766f653d8cccb13f38bfbaacec2cefb, source 3ef0bea8d24f62272f078c8af0186a428b5d4634.
+- Result: ACCEPTED — owner-directed acceptance without fabricated runtime evidence.
+- Next state: Preserve the accepted release and historical evidence. A future successor may use TESTING while awaiting or receiving user runtime validation; no Workbench slot or profile allocation is required.

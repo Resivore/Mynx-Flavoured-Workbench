@@ -14,7 +14,7 @@
     ]
   },
   "definition": {
-    "lifecycle": "ACTIVE",
+    "lifecycle": "ACCEPTED",
     "goals": [
       "Route acquired items into supported unlocked carried shulkers using exact physical matching contents or matching empty CSR reservations, preserving component identity, effective capacities, counts, and existing global destination order.",
       "Preserve established passive-pickup, external QUICK_MOVE, and player-origin QUICK_MOVE behavior across vanilla and Inventory Extended storage while composing safely with Offhand Shift-Click QoL.",
@@ -36,8 +36,8 @@
       "Read only ContainerSlotReservationsApi.classify(ItemStack,int,ItemStack), isReserved(ItemStack,int), reservationMatches(ItemStack,int,ItemStack), and the client-only ShulkerPanelHeaderDecorations API after FabricLoader confirms CSR is loaded. CSR remains suggests *: direct header API linkage is isolated in a reflection-loaded client bridge, absent/incompatible linkage leaves CCAR fully functional without a badge.",
       "Build one immutable slot/count plan before mutation: compatible occupied stacks in physical order, all matching reserved empties in physical order, then unreserved empties in physical order. Rewrite CONTAINER once and shrink the incoming stack by exactly the accepted total; retain reservations, lock, name, lore, damage, and unrelated components.",
       "Keep accepted bundle class bytes unchanged, global destination and carrier order unchanged, all existing pickup/QUICK_MOVE contexts, offhand/excluded-source behavior, and Stacks Are Stacks effective maximums without a new stack-size implementation.",
-      "When optional CSR is present, expose the existing RoutingLock state for supported shulkers only as a clickable 1:1 supplied lock sprite in CSR's header. CCAR owns its optional provider action and sends ToggleLockPayload for the exact bound live menu slot; CSR never links to CCAR or mutates RoutingLock. The server accepts only current, active, non-fake, modifiable legitimate menu slots, then resolves the supported carrier from that exact server stack. Bundles remain tooltip-only. C16 derives its direct resources from C15's immutable supplied locked.png (7x9, 155 bytes, SHA-256 cde847dba65a29823d62fee4f70fc4c1e83fd40e4fbbc4b81871b9164f11e617, opaque RGBA) and unlocked.png (10x9, 590 bytes, SHA-256 10a5f3205c311974eea2798e1c97cca248798f12b7156c202c59afbb850fc39c, opaque RGBA): only exact opaque #FFFFFFFF pixels become #00000000, producing locked SHA-256 bbe0d7393b626c1bc2d6b7d9f938888d4a99ae130eb90ecd2cb5711a909e226d and unlocked SHA-256 a87026fa1ab3a82cf76cd0dd5a68cf79fa49ef2e0fbfed27964ad18c7d48c656. Direct package integrity checks prove the 29 non-white opaque pixels and all dimensions remain exact; no crop or generated-art pipeline remains."
-      ,"For a WORLD_PICKUP only, C18 compares the actual incoming count around the established routing call, records actual carried shulker or bundle insertion separately, and marks when vanilla reaches Player.take. A missing vanilla take sends exactly one collector-only local ITEM_PICKUP sound at the captured item position; normal custom movement uses the Minecraft 26.2 random pitch and carried movement uses that pitch times 0.80. A reached vanilla take retains C17's one-shot entity-ID marker and no fallback. QUICK_MOVE and nonaccepting, locked, full, or nonqualifying carriers never signal either cue."
+      "When optional CSR is present, expose the existing RoutingLock state for supported shulkers only as a clickable 1:1 supplied lock sprite in CSR's header. CCAR owns its optional provider action and sends ToggleLockPayload for the exact bound live menu slot; CSR never links to CCAR or mutates RoutingLock. The server accepts only current, active, non-fake, modifiable legitimate menu slots, then resolves the supported carrier from that exact server stack. Bundles remain tooltip-only. C16 derives its direct resources from C15's immutable supplied locked.png (7x9, 155 bytes, SHA-256 cde847dba65a29823d62fee4f70fc4c1e83fd40e4fbbc4b81871b9164f11e617, opaque RGBA) and unlocked.png (10x9, 590 bytes, SHA-256 10a5f3205c311974eea2798e1c97cca248798f12b7156c202c59afbb850fc39c, opaque RGBA): only exact opaque #FFFFFFFF pixels become #00000000, producing locked SHA-256 bbe0d7393b626c1bc2d6b7d9f938888d4a99ae130eb90ecd2cb5711a909e226d and unlocked SHA-256 a87026fa1ab3a82cf76cd0dd5a68cf79fa49ef2e0fbfed27964ad18c7d48c656. Direct package integrity checks prove the 29 non-white opaque pixels and all dimensions remain exact; no crop or generated-art pipeline remains.",
+      "For a WORLD_PICKUP only, C18 compares the actual incoming count around the established routing call, records actual carried shulker or bundle insertion separately, and marks when vanilla reaches Player.take. A missing vanilla take sends exactly one collector-only local ITEM_PICKUP sound at the captured item position; normal custom movement uses the Minecraft 26.2 random pitch and carried movement uses that pitch times 0.80. A reached vanilla take retains C17's one-shot entity-ID marker and no fallback. QUICK_MOVE and nonaccepting, locked, full, or nonqualifying carriers never signal either cue."
     ],
     "boundaries": {
       "owned_paths": [
@@ -98,7 +98,7 @@
     ]
   },
   "state": {
-    "milestone": "0.3.15-shulker-pick-block-canary1 is an ACTIVE, non-deployed Survival Pick Block successor. Vanilla ordinary inventory remains first; after a miss, the shared server block/entity Pick Block path can atomically exchange the full exact-component source stack from the first unlocked carried shulker into vanilla's suitable hotbar slot. Displacement exhausts legal compatible partials, then the first empty live ordinary slot, then only the exact source shulker slot when native and CSR admission permit. Full inventory/offhand snapshots make stale state, illegal reservation fallback, or incomplete capacity fail before mutation. Bundles, nesting, Creative, lock/reservation data, pickup/QUICK_MOVE/audio/UI behavior, and optional CSR absence remain unchanged. Clean Java 25 unit, GameTest, artifact, optional-absence, and CSR Canary 19 validation passed; no dedicated Workbench or protected gameplay instance was accessed.",
+    "milestone": "The exact current release is ACCEPTED by owner direction following the user's external/gameplay testing. Existing build, deployment, and runtime classifications are preserved; this administrative transition infers no new runtime result.",
     "releases": {
       "current": {
         "version": "0.3.15-shulker-pick-block-canary1",
@@ -114,13 +114,13 @@
         }
       },
       "accepted": {
-        "version": "0.3.7-csr-reservation-affinity-canary1",
-        "embedded_version": "0.3.7-csr-reservation-affinity-canary1",
+        "version": "0.3.15-shulker-pick-block-canary1",
+        "embedded_version": "0.3.15-shulker-pick-block-canary1",
         "artifact": {
-          "filename": "carried-container-auto-routing-0.3.7-csr-reservation-affinity-canary1.jar",
-          "sha256": "f00b1e6bc64a0e63ac1199d89c08f7510a20d5bbb9a486b40bd97833df522a2f"
+          "filename": "carried-container-auto-routing-0.3.15-shulker-pick-block-canary1.jar",
+          "sha256": "340b3cd2bfcb977c00cc06071893f9627ba0c32b26325d381a62922000561b3c"
         },
-        "source_commit": "c373b663c99d7a217fc9147db5007d3f1057678f",
+        "source_commit": "dbb8f82aeee2c0f3357f93867c517e05d43ed5a5",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
@@ -134,7 +134,7 @@
         },
         "source_commit": "64d63d9bcca268297601af5c9a7537e8d8946812"
       },
-      "accepted_current": "CURRENT_DIFFERS_FROM_ACCEPTED",
+      "accepted_current": "CURRENT_IS_ACCEPTED",
       "accepted_rollback": "ROLLBACK_DIFFERS_FROM_ACCEPTED"
     },
     "validation": {
@@ -145,11 +145,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 12,
-    "activity_at": "2026-09-12T04:21:06Z",
-    "updated_at": "2026-09-12T04:21:06Z",
-    "last_codex_at": "2026-09-12T04:21:06Z",
-    "source_commit": "dbb8f82aeee2c0f3357f93867c517e05d43ed5a5",
+    "revision": 13,
+    "activity_at": "2026-09-14T08:09:29Z",
+    "updated_at": "2026-09-14T08:09:29Z",
+    "last_codex_at": "2026-09-14T08:09:29Z",
+    "source_commit": "f511f435c623883c5ee1474e9227acb73fb2df68",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null

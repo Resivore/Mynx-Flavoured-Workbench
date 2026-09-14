@@ -14,7 +14,7 @@
     ]
   },
   "definition": {
-    "lifecycle": "ACTIVE",
+    "lifecycle": "ACCEPTED",
     "goals": [
       "Preserve the accepted C7 shift-click and incoming-item routing behavior for Minecraft Java 26.2 without changing priorities, while adding only the missing standalone custom-ground-pickup audio fallback in C8.",
       "Retain composable coexistence with Carried Container Auto-Routing and the accepted safeguards for exact remainders, live source stacks, Inventory Extended sizing, and foreign-slot exclusion."
@@ -88,7 +88,7 @@
     ]
   },
   "state": {
-    "milestone": "C8 is an ACTIVE, non-deployed sound-only successor to accepted C7. When CCAR is absent, actual standalone custom WORLD pickup movement that does not reach vanilla Player.take sends one local normal-pitch Minecraft 26.2 ITEM_PICKUP fallback at the captured item position; a reached vanilla take or no accepted movement sends nothing. When CCAR is loaded, Offhand continues yielding its ground-pickup seam and emits no cue. C7 remains the exact accepted and rollback release; C8 has no runtime claim.",
+    "milestone": "The exact current release is ACCEPTED by owner direction following the user's external/gameplay testing. Existing build, deployment, and runtime classifications are preserved; this administrative transition infers no new runtime result.",
     "releases": {
       "current": {
         "version": "0.3.4-routed-pickup-audio-fallback-canary1",
@@ -104,12 +104,17 @@
         }
       },
       "accepted": {
-        "version": "0.3.3-acquisition-priority-fix-canary",
+        "version": "0.3.4-routed-pickup-audio-fallback-canary1",
+        "embedded_version": "0.3.4-routed-pickup-audio-fallback-canary1",
         "artifact": {
-          "filename": "offhand-shift-click-qol-0.3.3-acquisition-priority-fix-canary.jar",
-          "sha256": "d0c2ebe7cd2d1a6dcbe2654dbee42dd9f5dce4fd710ea3748f3d15dad6f2b04a"
+          "filename": "offhand-shift-click-qol-0.3.4-routed-pickup-audio-fallback-canary1.jar",
+          "sha256": "7ca386bea50eb2ece489da4cccc262a13d45b82171042f39efaea0a91e73e357"
         },
-        "source_commit": "3274dc915f49f6aecda6130added09d6742837bd"
+        "source_commit": "5aa03f560824b1944d634e91a6dcf04a479250f7",
+        "runtime_dependency_policy": {
+          "contract": "CAPABILITY_OR_PROVIDER",
+          "exceptions": []
+        }
       },
       "rollback": {
         "version": "0.3.3-acquisition-priority-fix-canary",
@@ -119,8 +124,8 @@
         },
         "source_commit": "3274dc915f49f6aecda6130added09d6742837bd"
       },
-    "accepted_current": "CURRENT_DIFFERS_FROM_ACCEPTED",
-    "accepted_rollback": "ACCEPTED_IS_ROLLBACK"
+      "accepted_current": "CURRENT_IS_ACCEPTED",
+      "accepted_rollback": "ROLLBACK_DIFFERS_FROM_ACCEPTED"
     },
     "validation": {
       "build": "CONTROLLED_VALIDATION_PASS",
@@ -130,11 +135,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 2,
-    "activity_at": "2026-09-12T00:23:27Z",
-    "updated_at": "2026-09-12T00:23:27Z",
-    "last_codex_at": "2026-09-12T00:23:27Z",
-    "source_commit": "5aa03f560824b1944d634e91a6dcf04a479250f7",
+    "revision": 3,
+    "activity_at": "2026-09-14T08:09:29Z",
+    "updated_at": "2026-09-14T08:09:29Z",
+    "last_codex_at": "2026-09-14T08:09:29Z",
+    "source_commit": "f511f435c623883c5ee1474e9227acb73fb2df68",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null

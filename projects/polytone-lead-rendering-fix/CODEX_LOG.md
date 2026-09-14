@@ -56,3 +56,14 @@
 - Artifact: `polytone-lead-rendering-fix-0.1.0+26.2-canary4.jar`, embedded `0.1.0+26.2-canary4`, SHA-256 `9ba918cb2634f2736b7ca930c840b761b8c76151576e3c7a63b9f62c60055ce1`, source `ad3407895d37e3919dcf36efa727347358aa19e2`; C1, C2, and C3 identities remain preserved historical provenance. Runtime dependency policy remains CAPABILITY_OR_PROVIDER with no exceptions.
 - Result: ACTIVE / STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED. C3 external FAIL is recorded; C4 has no runtime claim or blocker.
 - Next state: Canonically retain C4, publish revision 5 from authoritative main through the normal Sheet workflow while preserving human-owned Notes, and perform TESTING.md's fence-material visual matrix only through future authorized runtime ownership.
+
+## 2026-09-14T08:09:29Z — Owner-directed lifecycle acceptance
+
+- Revision: 6
+- Source checkpoint: `f511f435c623883c5ee1474e9227acb73fb2df68`
+- Changes: Changed lifecycle from ACTIVE to ACCEPTED and bound the unchanged exact current release as accepted by project-owner direction; historical testing records remain intact.
+- Build/static: Preserved the existing STATIC_PASS classification; no build or artifact substitution was performed.
+- Runtime: No Minecraft runtime testing was performed by Codex for this administrative transition. The project owner's external/gameplay testing authorized acceptance, but no new PASS or other runtime result was recorded or inferred; the existing RUNTIME_UNTESTED classification is unchanged.
+- Artifact: Current release identity is unchanged: version C4, filename polytone-lead-rendering-fix-0.1.0+26.2-canary4.jar, SHA-256 9ba918cb2634f2736b7ca930c840b761b8c76151576e3c7a63b9f62c60055ce1, source ad3407895d37e3919dcf36efa727347358aa19e2.
+- Result: ACCEPTED — owner-directed acceptance without fabricated runtime evidence.
+- Next state: Preserve the accepted release and historical evidence. A future successor may use TESTING while awaiting or receiving user runtime validation; no Workbench slot or profile allocation is required.

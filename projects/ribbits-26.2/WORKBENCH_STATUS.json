@@ -14,7 +14,7 @@
     ]
   },
   "definition": {
-    "lifecycle": "ACTIVE",
+    "lifecycle": "ACCEPTED",
     "goals": [
       "Maintain a private Minecraft Java 26.2 downstream Ribbits build for the fixed Mynx and Matcha stack, preserving upstream behavior except for individually documented intentional Mynx deviations.",
       "Maintain the user-approved tiered Glowcap trade economy, persistent profession progression and daily restocking, exact cross-stack item contracts, and Toadstool Heart home-setting behavior without converting Ribbits into vanilla Villagers.",
@@ -178,7 +178,7 @@
     ]
   },
   "state": {
-    "milestone": "Canary 23 is retained as an external RUNTIME_FAIL: one selected Wandering Ribbit Naturalist baby/bucket fauna offer remained purchasable more than once instead of allowing exactly one successful purchase per independently selected offer. Canary 24 moves the exact persisted ribbits:optional_naturalist_fauna one-shot authorization to the server MerchantMenu result boundary, before any result stack can reach the cursor or inventory; normal click, shift-click, and rapid/stale result paths reject an already-used fauna offer while preserving both offers' independent state, all serialized offer fields, ordinary offer behavior and restocking, provider order, prices, and the existing economy/progression contracts. Canary 24 is ACTIVE / STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED pending the focused dedicated-Workbench transaction and persistence procedure.",
+    "milestone": "The exact current release is ACCEPTED by owner direction following the user's external/gameplay testing. Existing build, deployment, and runtime classifications are preserved; this administrative transition infers no new runtime result.",
     "releases": {
       "current": {
         "version": "4.1.6+26.2-mynx-canary24",
@@ -192,9 +192,20 @@
           "exceptions": []
         }
       },
-      "accepted": null,
+      "accepted": {
+        "version": "4.1.6+26.2-mynx-canary24",
+        "artifact": {
+          "filename": "ribbits-private-reconstruction-4.1.6+26.2-mynx-canary24.jar",
+          "sha256": "e2c62bd1ab3884d4e1bd0c583801774af0fc2f2b54d9483eecc2fbb7dd6e2657"
+        },
+        "source_commit": "66a55c4270c082ee2c06888b6ece2a1d0d5a09fa",
+        "runtime_dependency_policy": {
+          "contract": "CAPABILITY_OR_PROVIDER",
+          "exceptions": []
+        }
+      },
       "rollback": null,
-      "accepted_current": "NO_ACCEPTED",
+      "accepted_current": "CURRENT_IS_ACCEPTED",
       "accepted_rollback": "NO_ROLLBACK"
     },
     "validation": {
@@ -205,11 +216,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 29,
-    "activity_at": "2026-09-12T16:36:44Z",
-    "updated_at": "2026-09-12T16:36:44Z",
-    "last_codex_at": "2026-09-12T16:36:44Z",
-    "source_commit": "66a55c4270c082ee2c06888b6ece2a1d0d5a09fa",
+    "revision": 30,
+    "activity_at": "2026-09-14T08:09:29Z",
+    "updated_at": "2026-09-14T08:09:29Z",
+    "last_codex_at": "2026-09-14T08:09:29Z",
+    "source_commit": "f511f435c623883c5ee1474e9227acb73fb2df68",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null

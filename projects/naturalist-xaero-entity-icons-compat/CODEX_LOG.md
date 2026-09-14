@@ -384,3 +384,14 @@
 - Artifact: `naturalist-xaero-entity-icons-compat-0.1.0-canary34.jar`; embedded `0.1.0-canary34`; 51,843 bytes; SHA-256 `5c8c2b955cb2ac6219dcb3199de7956dd3efe02460579d634e0da242e4241fb8`; source `a58c4869af6f860a76279e2f38a9b86bd319e661`; runtime dependency policy `CAPABILITY_OR_PROVIDER` with no exceptions.
 - Result: ACTIVE / STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED.
 - Next state: Retain exact C34 bytes in the primary checkout, publish revision 35 from authoritative `main`, and collect only the focused external adult-Whale visual result. If the tiny frame polish does not improve bottom-border balance without a readability, nose, or border regression, preserve exact C33 as the rollback and do not create C35 automatically.
+
+## 2026-09-14T08:09:29Z — Owner-directed lifecycle acceptance
+
+- Revision: 36
+- Source checkpoint: `f511f435c623883c5ee1474e9227acb73fb2df68`
+- Changes: Changed lifecycle from ACTIVE to ACCEPTED and bound the unchanged exact current release as accepted by project-owner direction; historical testing records remain intact.
+- Build/static: Preserved the existing STATIC_PASS classification; no build or artifact substitution was performed.
+- Runtime: No Minecraft runtime testing was performed by Codex for this administrative transition. The project owner's external/gameplay testing authorized acceptance, but no new PASS or other runtime result was recorded or inferred; the existing RUNTIME_UNTESTED classification is unchanged.
+- Artifact: Current release identity is unchanged: version 0.1.0-canary34, filename naturalist-xaero-entity-icons-compat-0.1.0-canary34.jar, SHA-256 5c8c2b955cb2ac6219dcb3199de7956dd3efe02460579d634e0da242e4241fb8, source a58c4869af6f860a76279e2f38a9b86bd319e661.
+- Result: ACCEPTED — owner-directed acceptance without fabricated runtime evidence.
+- Next state: Preserve the accepted release and historical evidence. A future successor may use TESTING while awaiting or receiving user runtime validation; no Workbench slot or profile allocation is required.

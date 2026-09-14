@@ -18,7 +18,7 @@
     ]
   },
   "definition": {
-    "lifecycle": "TESTING",
+    "lifecycle": "ACCEPTED",
     "goals": [
       "Maintain one Fabric mod, source tree, build, version, and deployable JAR for the absorbed Nibaru native material catalog and all BGE geometry.",
       "Preserve every former Nibaru and BGE registry/resource identity, specialized material behavior, and saved-world reference while CNM remains an unchanged external dependency.",
@@ -73,7 +73,7 @@
     ]
   },
   "state": {
-    "milestone": "Exact C62 `4.2.6-bge.canary62.family-dedup+26.2`, `cnm-nibaru-integration-4.2.6-bge.canary62.family-dedup+26.2.jar`, SHA-256 `c8d42032166ef2ba6796f3cd61e89698ccca1a4331d90ee1d1f1ba6720cc01ce`, source `cdc0acdcba4d7b8761b035b048578a3a3635079b`, remains retained external runtime-failed provenance for the supplied Wisteria/Silver Birch inventory observations. Exact C64 `4.2.8-bge.canary64.bbb-beam-catalog+26.2`, `cnm-nibaru-integration-4.2.8-bge.canary64.bbb-beam-catalog+26.2.jar`, SHA-256 `bf3b67676031bb51089a5e5320f299d5638534b61f743d1bfe6d7a0f0d3c1458`, source `330655d657f1b081fc9bfa26d21309320bda6f`, is external runtime-failed provenance for the observed BBB client resource-reload abort. C68 inherits C67's complete catalog and gives normal axis-material Layer faces explicit block-absolute UV rectangles, transposing the rectangle for quarter-turn rotations so 4/8/12px faces retain one-to-one texel density; it is not deployed and remains runtime untested.",
+    "milestone": "The exact current release is ACCEPTED by owner direction following the user's external/gameplay testing. Existing build, deployment, and runtime classifications are preserved; this administrative transition infers no new runtime result.",
     "releases": {
       "current": {
         "version": "C68 (Layer Axis UV; embedded 4.2.12-bge.canary68.layer-axis-uv+26.2)",
@@ -101,13 +101,29 @@
         }
       },
       "accepted": {
-        "version": "C58 (Glass Corner UV; embedded 4.2.2-bge.canary58.glass-corner-uv+26.2)",
-        "embedded_version": "4.2.2-bge.canary58.glass-corner-uv+26.2",
+        "version": "C68 (Layer Axis UV; embedded 4.2.12-bge.canary68.layer-axis-uv+26.2)",
+        "embedded_version": "4.2.12-bge.canary68.layer-axis-uv+26.2",
         "artifact": {
-          "filename": "cnm-nibaru-integration-4.2.2-bge.canary58.glass-corner-uv+26.2.jar",
-          "sha256": "1a4e4d1cd9c8709720ec84975e70caffb5552ac676537b9bbae42dca96567e87"
+          "filename": "cnm-nibaru-integration-4.2.12-bge.canary68.layer-axis-uv+26.2.jar",
+          "sha256": "823cfe9f9fcc32c1cf73e1ddfdfc6489efda0753df64679723df56204a4bf732"
         },
-        "source_commit": "d1d753a86b21467141bd39a0bcc1270f7827a8d7"
+        "source_commit": "9bc80ee2538a39b9fa15606611dc050a1cf6bff2",
+        "runtime_dependency_policy": {
+          "contract": "CAPABILITY_OR_PROVIDER",
+          "exceptions": [
+            {
+              "consumer_id": "cnm_terrain_slabs_compat",
+              "relationship": "depends",
+              "dependency_id": "minecraft",
+              "predicate": "~26.2",
+              "reason": "The exact C68 artifact targets the Minecraft 26.2 release and packages Fabric's same-release predicate; this target-specific Minecraft predicate must remain bound to the controlled-validation release bytes.",
+              "regression_evidence": [
+                "A Java 25 clean Gradle build produced C68 SHA-256 823cfe9f9fcc32c1cf73e1ddfdfc6489efda0753df64679723df56204a4bf732.",
+                "The C68 GameTest suite passed 107/107 on the Minecraft 26.2 validation baseline, including every six-facing, four-layer-count, three-material-axis Layer combination and all 432 face-level UV, texture-role, rotation, and geometry assertions."
+              ]
+            }
+          ]
+        }
       },
       "rollback": {
         "version": "C52 (legacy Integration 1.39)",
@@ -118,7 +134,7 @@
         },
         "source_commit": "2e58d752af44f4b84e10bc5e53a41aea00a177ee"
       },
-      "accepted_current": "CURRENT_DIFFERS_FROM_ACCEPTED",
+      "accepted_current": "CURRENT_IS_ACCEPTED",
       "accepted_rollback": "ROLLBACK_DIFFERS_FROM_ACCEPTED"
     },
     "validation": {
@@ -129,11 +145,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 27,
-    "activity_at": "2026-09-12T16:19:42Z",
-    "updated_at": "2026-09-12T16:19:42Z",
-    "last_codex_at": "2026-09-12T16:19:42Z",
-    "source_commit": "9bc80ee2538a39b9fa15606611dc050a1cf6bff2",
+    "revision": 28,
+    "activity_at": "2026-09-14T08:09:29Z",
+    "updated_at": "2026-09-14T08:09:29Z",
+    "last_codex_at": "2026-09-14T08:09:29Z",
+    "source_commit": "f511f435c623883c5ee1474e9227acb73fb2df68",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null

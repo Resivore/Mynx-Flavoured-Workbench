@@ -10,7 +10,7 @@
     "legacy_ids": []
   },
   "definition": {
-    "lifecycle": "ACTIVE",
+    "lifecycle": "ACCEPTED",
     "goals": [
       "Provide a lightweight, polished, Minecraft-native personal notebook for Minecraft Java 26.2 Fabric without requiring an item or server component.",
       "Keep canonical user-authored notes pleasant to inspect and edit outside Minecraft as ordinary UTF-8 Markdown files with real authored line breaks.",
@@ -78,7 +78,7 @@
     ]
   },
   "state": {
-    "milestone": "Canary 1 remains an immutable historical artifact with static/build PASS but a user-supplied Minecraft client-initialization FAIL: its normal NotebookScreen class was inside the Mixin-owned dev.resivore.notebook.client package. A user then reported that Canary 2 opened without that fatal client-initialization crash. Current Canary 11 preserves the Mixin repair, supplied 640x400 Bedrock journal GUI-texture renderer, shared ruled-row/editor geometry, native click-to-edit behavior, autosave/forced-save model, shadowless text, unobscured book artwork, two-stage Escape behavior, and current checklist sprites. A user reported that C10's otherwise correct survival placement did not follow a live recipe-book open/close bounds shift; this scoped external FAIL establishes no broader C10 runtime result. C11 moves the existing survival 18x18 N widget when those live bounds change, excluding itself from collision search, while retaining the right anchor x=leftPos+imageWidth+4, preferred y=topPos+imageHeight-26, upward-right-first search, left fallback, and the four-pixel QSN stack relationship. It also moves only the index grip down one pixel and title origin right four pixels with the matching elision budget. Creative retains its existing top anchor. Notebook is ACTIVE, not deployed, and occupies neither testing slot.",
+    "milestone": "The exact current release is ACCEPTED by owner direction following the user's external/gameplay testing. Existing build, deployment, and runtime classifications are preserved; this administrative transition infers no new runtime result.",
     "releases": {
       "current": {
         "version": "0.1.0-canary11",
@@ -93,9 +93,21 @@
           "exceptions": []
         }
       },
-      "accepted": null,
+      "accepted": {
+        "version": "0.1.0-canary11",
+        "embedded_version": "0.1.0-canary11",
+        "artifact": {
+          "filename": "notebook-0.1.0-canary11.jar",
+          "sha256": "c3b9b7248f0bc16f027fc5cbd4d918fcab045ff58c2ac67dd31e169743361b7f"
+        },
+        "source_commit": "685e9c137bff75dcab3c0e54e5107ac3273240d7",
+        "runtime_dependency_policy": {
+          "contract": "CAPABILITY_OR_PROVIDER",
+          "exceptions": []
+        }
+      },
       "rollback": null,
-      "accepted_current": "NO_ACCEPTED",
+      "accepted_current": "CURRENT_IS_ACCEPTED",
       "accepted_rollback": "NO_ROLLBACK"
     },
     "validation": {
@@ -106,11 +118,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 12,
-    "activity_at": "2026-09-11T15:36:31Z",
-    "updated_at": "2026-09-11T15:36:31Z",
-    "last_codex_at": "2026-09-11T15:36:31Z",
-    "source_commit": "685e9c137bff75dcab3c0e54e5107ac3273240d7",
+    "revision": 13,
+    "activity_at": "2026-09-14T08:09:29Z",
+    "updated_at": "2026-09-14T08:09:29Z",
+    "last_codex_at": "2026-09-14T08:09:29Z",
+    "source_commit": "f511f435c623883c5ee1474e9227acb73fb2df68",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null

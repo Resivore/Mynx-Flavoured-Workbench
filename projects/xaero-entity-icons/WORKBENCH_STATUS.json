@@ -3,7 +3,7 @@
   "schema_version": 1,
   "identity": {
     "uuid": "3f28bc98-058b-57a2-967b-81ad8e35f957",
-    "name": "Xaero Minimap \u00d7 EMF Entity Icon Compatibility",
+    "name": "Xaero Minimap × EMF Entity Icon Compatibility",
     "project_id": "xaero-entity-icons",
     "aliases": [
       "Xaero entity icons",
@@ -18,7 +18,7 @@
     ]
   },
   "definition": {
-    "lifecycle": "ACTIVE",
+    "lifecycle": "ACCEPTED",
     "goals": [
       "Retain accepted Canary 9 exactly as the user-reported external PASS baseline and exact Canary 11 as failed historical provenance, including all ten supplied row-level passes.",
       "For Canary 12 only, retain C11's targeted frog-villager face/head composition while suppressing the profession-hat subtree for exactly florist, farmer, cleric, and mason.",
@@ -118,7 +118,7 @@
     ]
   },
   "state": {
-    "milestone": "Exact Canary 11 is retained as user-reported external RUNTIME_FAIL solely because Florist, Farmer, Cleric, and Mason/Stonemason showed malformed profession headwear; Fox, Goat, Frog, Bogged, Witch, Ghast, Happy Ghast, Bee, Rabbit, and Butcher were explicitly reported visually good, with Butcher correct despite its underlying chef hat being effectively invisible. Canary 12 intentionally suppresses only those four failing hat subtrees and is ACTIVE / STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED. Accepted Canary 9 remains unchanged: xaero-emf-entity-icon-compat-0.1.0-canary9.jar SHA-256 184ca0da6d6c055c0ba9b2d0e9fb3bccc3c30da9ea7f700a64792d4d1513551a, source 6c1b4e0ede3ada8470bc7b4ba54ea8b51f9d2e93.",
+    "milestone": "The exact current release is ACCEPTED by owner direction following the user's external/gameplay testing. Existing build, deployment, and runtime classifications are preserved; this administrative transition infers no new runtime result.",
     "releases": {
       "current": {
         "version": "0.1.0-canary12",
@@ -133,19 +133,19 @@
         }
       },
       "accepted": {
-        "version": "0.1.0-canary9",
+        "version": "0.1.0-canary12",
         "artifact": {
-          "filename": "xaero-emf-entity-icon-compat-0.1.0-canary9.jar",
-          "sha256": "184ca0da6d6c055c0ba9b2d0e9fb3bccc3c30da9ea7f700a64792d4d1513551a"
+          "filename": "xaero-emf-entity-icon-compat-0.1.0-canary12.jar",
+          "sha256": "dcf65d6e97007c03bf490b27189f76ee88b882d1b59d4b88315093dea10180bc"
         },
-        "source_commit": "6c1b4e0ede3ada8470bc7b4ba54ea8b51f9d2e93",
+        "source_commit": "1bf0761f94eaf9442abc40f37f0e479509059b2f",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
         }
       },
       "rollback": null,
-      "accepted_current": "CURRENT_DIFFERS_FROM_ACCEPTED",
+      "accepted_current": "CURRENT_IS_ACCEPTED",
       "accepted_rollback": "NO_ROLLBACK"
     },
     "validation": {
@@ -156,11 +156,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 12,
-    "activity_at": "2026-09-11T01:19:51Z",
-    "updated_at": "2026-09-11T01:19:51Z",
-    "last_codex_at": "2026-09-11T01:19:51Z",
-    "source_commit": "1bf0761f94eaf9442abc40f37f0e479509059b2f",
+    "revision": 13,
+    "activity_at": "2026-09-14T08:09:29Z",
+    "updated_at": "2026-09-14T08:09:29Z",
+    "last_codex_at": "2026-09-14T08:09:29Z",
+    "source_commit": "f511f435c623883c5ee1474e9227acb73fb2df68",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null

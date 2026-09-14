@@ -12,7 +12,7 @@
     "legacy_ids": []
   },
   "definition": {
-    "lifecycle": "ACTIVE",
+    "lifecycle": "ACCEPTED",
     "goals": [
       "Collect behavior-neutral evidence showing where minecraft:entity.item.pickup stops during one ordinary real-world item pickup on Minecraft Java 26.2 Fabric."
     ],
@@ -52,7 +52,7 @@
     ]
   },
   "state": {
-    "milestone": "Canary 1 is a standalone, client-only, behavior-neutral diagnostic artifact. It records only minecraft:entity.item.pickup from take-item packet receipt through the real 26.2 local sound, manager, and engine path, including an engine post-HEAD boundary and resolved sample fields. Clean Java 25 static validation passed; it is not deployed and has no runtime evidence.",
+    "milestone": "The exact current release is ACCEPTED by owner direction following the user's external/gameplay testing. Existing build, deployment, and runtime classifications are preserved; this administrative transition infers no new runtime result.",
     "releases": {
       "current": {
         "version": "0.1.0-canary1",
@@ -67,9 +67,21 @@
           "exceptions": []
         }
       },
-      "accepted": null,
+      "accepted": {
+        "version": "0.1.0-canary1",
+        "embedded_version": "0.1.0-canary1",
+        "artifact": {
+          "filename": "item-pickup-audio-diagnostic-0.1.0-canary1.jar",
+          "sha256": "fc67ec7816ab91e941b9df99f54a254705dea8adb07da7c50d8795190d46b094"
+        },
+        "source_commit": "56b3ccd9f9a98bf2ad082405ce917cc32a1c463f",
+        "runtime_dependency_policy": {
+          "contract": "CAPABILITY_OR_PROVIDER",
+          "exceptions": []
+        }
+      },
       "rollback": null,
-      "accepted_current": "NO_ACCEPTED",
+      "accepted_current": "CURRENT_IS_ACCEPTED",
       "accepted_rollback": "NO_ROLLBACK"
     },
     "validation": {
@@ -80,11 +92,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 1,
-    "activity_at": "2026-09-11T21:24:43Z",
-    "updated_at": "2026-09-11T21:24:43Z",
-    "last_codex_at": "2026-09-11T21:24:43Z",
-    "source_commit": "56b3ccd9f9a98bf2ad082405ce917cc32a1c463f",
+    "revision": 2,
+    "activity_at": "2026-09-14T08:09:29Z",
+    "updated_at": "2026-09-14T08:09:29Z",
+    "last_codex_at": "2026-09-14T08:09:29Z",
+    "source_commit": "f511f435c623883c5ee1474e9227acb73fb2df68",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null

@@ -5,12 +5,14 @@
     "uuid": "04d9a8db-0aac-48a8-be17-393334df57ac",
     "name": "Polytone Lead Rendering Fix",
     "project_id": "polytone-lead-rendering-fix",
-    "aliases": ["Polytone leash fallback"],
+    "aliases": [
+      "Polytone leash fallback"
+    ],
     "legacy_names": [],
     "legacy_ids": []
   },
   "definition": {
-    "lifecycle": "ACTIVE",
+    "lifecycle": "ACCEPTED",
     "goals": [
       "Bypass only Polytone's custom textured leash RenderType and replacement vertices while retaining native Minecraft 26.2 leash geometry and light semantics.",
       "Route only the leash feature through a complete Iris-compatible entity vertex contract while preserving Minecraft 26.2's native triangle-strip topology, geometry, light semantics, and leash-only scope.",
@@ -21,7 +23,9 @@
       "Adapt only Minecraft 26.2 LeashFeatureRenderer's buffer argument and vertex helper to a leash-only ENTITY-format TRIANGLE_STRIP RenderType, preserving the exact 26.2 forward/reverse pair sequence, slack curve, interpolated packed light, and a segment-derived normal; C4 intentionally uses a white vertex multiplier and no alternating 0.7 factor because Polytone's bound lead texture supplies the brown material color."
     ],
     "boundaries": {
-      "owned_paths": ["projects/polytone-lead-rendering-fix"],
+      "owned_paths": [
+        "projects/polytone-lead-rendering-fix"
+      ],
       "exclusions": [
         "Polytone source, binary, mixins, configurations, shader integration, textures, and every feature other than its custom textured-leash path.",
         "Vanilla leash mechanics, attachment positions, physics, behavior, EntityRenderer and generic entity rendering, resource packs, Iris, Complementary, test-slot state, and both gameplay profiles."
@@ -67,7 +71,7 @@
     ]
   },
   "state": {
-    "milestone": "User-reported external C3 runtime evidence is FAIL for exact C3 0.1.0+26.2-canary3 / polytone-lead-rendering-fix-0.1.0+26.2-canary3.jar / c90aef0415345b9432169d590fb03a340a5902e8e5a34a07d90e1aa9b05691c9 / 31fee15e62444c4cbfe762f095d6d4d20f6faeb2: its rope geometry is continuous and correct, brown hue is restored, but it is substantially too dark versus visible fence-attached lead material. It was not Test Instance Manager deployed and consumes no slot. C4 preserves C3's leash-only ENTITY TRIANGLE_STRIP, pair order, sag, normals, and lightmap, while using the exact Polytone lead texture as the base material with a neutral white vertex multiplier and no old untextured 0.7 alternation; C4 is STATIC_PASS, NOT_DEPLOYED, and RUNTIME_UNTESTED pending the focused visual matrix.",
+    "milestone": "The exact current release is ACCEPTED by owner direction following the user's external/gameplay testing. Existing build, deployment, and runtime classifications are preserved; this administrative transition infers no new runtime result.",
     "releases": {
       "current": {
         "version": "C4",
@@ -82,9 +86,21 @@
           "exceptions": []
         }
       },
-      "accepted": null,
+      "accepted": {
+        "version": "C4",
+        "embedded_version": "0.1.0+26.2-canary4",
+        "artifact": {
+          "filename": "polytone-lead-rendering-fix-0.1.0+26.2-canary4.jar",
+          "sha256": "9ba918cb2634f2736b7ca930c840b761b8c76151576e3c7a63b9f62c60055ce1"
+        },
+        "source_commit": "ad3407895d37e3919dcf36efa727347358aa19e2",
+        "runtime_dependency_policy": {
+          "contract": "CAPABILITY_OR_PROVIDER",
+          "exceptions": []
+        }
+      },
       "rollback": null,
-      "accepted_current": "NO_ACCEPTED",
+      "accepted_current": "CURRENT_IS_ACCEPTED",
       "accepted_rollback": "NO_ROLLBACK"
     },
     "validation": {
@@ -95,11 +111,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 5,
-    "activity_at": "2026-09-08T03:35:28Z",
-    "updated_at": "2026-09-08T03:35:28Z",
-    "last_codex_at": "2026-09-08T03:35:28Z",
-    "source_commit": "ad3407895d37e3919dcf36efa727347358aa19e2",
+    "revision": 6,
+    "activity_at": "2026-09-14T08:09:29Z",
+    "updated_at": "2026-09-14T08:09:29Z",
+    "last_codex_at": "2026-09-14T08:09:29Z",
+    "source_commit": "f511f435c623883c5ee1474e9227acb73fb2df68",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null

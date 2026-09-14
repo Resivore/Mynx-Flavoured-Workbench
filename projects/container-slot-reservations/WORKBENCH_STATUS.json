@@ -14,7 +14,7 @@
     ]
   },
   "definition": {
-    "lifecycle": "ACTIVE",
+    "lifecycle": "ACCEPTED",
     "goals": [
       "Preserve a player's component-exact organization intent after a physical stack leaves an eligible persistent storage or machine slot.",
       "Apply native insertion permission AND exact reservation admission to manual placement, vanilla QUICK_MOVE, hoppers, sided automation, and QSN without changing extraction, destination order, internal processing, or routing ownership.",
@@ -119,7 +119,7 @@
     ]
   },
   "state": {
-    "milestone": "C19 is an ACTIVE, non-deployed CSR successor to accepted C15. It preserves C18's user-observed-good host-centered panel placement and fixes the Creative inventory path where Minecraft 26.2 ignores the ordinary clientbound cursor packet, leaving the real server cursor invisible despite a successful panel transaction. C19 uses native full-content menu synchronization only for that Creative inventory case, keeps incremental synchronization elsewhere, and sends CSR fingerprint metadata after native state. Exact C18 external runtime evidence is narrow: placement was observed good; ordinary PRIMARY panel pickup failed with an invisible/desynchronized cursor stack that the second click reinserted. No Shift-click, RMB drag, reservations, or CCAR lock result is inferred. Clean Java 25 unit, headless Fabric GameTest, and artifact validation passed; no dedicated Workbench or protected gameplay instance was accessed.",
+    "milestone": "The exact current release is ACCEPTED by owner direction following the user's external/gameplay testing. Existing build, deployment, and runtime classifications are preserved; this administrative transition infers no new runtime result.",
     "releases": {
       "current": {
         "version": "0.1.0-canary19",
@@ -135,13 +135,13 @@
         }
       },
       "accepted": {
-        "version": "0.1.0-canary15",
-        "embedded_version": "0.1.0-canary15",
+        "version": "0.1.0-canary19",
+        "embedded_version": "0.1.0-canary19",
         "artifact": {
-          "filename": "container-slot-reservations-0.1.0-canary15.jar",
-          "sha256": "daf24d25732d4e436d37d3e44305a3d63b67a1ab86b586bc8ec7207b98a8ed1b"
+          "filename": "container-slot-reservations-0.1.0-canary19.jar",
+          "sha256": "f93068f86d0da76e93d754a9c04cd5999fc72b31f39681fc65dbdb09b2443aeb"
         },
-        "source_commit": "f33060e874258c46bde48c2aafd015615adf3ec0",
+        "source_commit": "804f3fe61bbc216d9d33df8d90326f9f1fc0e929",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
@@ -160,7 +160,7 @@
           "exceptions": []
         }
       },
-      "accepted_current": "CURRENT_DIFFERS_FROM_ACCEPTED",
+      "accepted_current": "CURRENT_IS_ACCEPTED",
       "accepted_rollback": "ROLLBACK_DIFFERS_FROM_ACCEPTED"
     },
     "validation": {
@@ -171,11 +171,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 29,
-    "activity_at": "2026-09-12T03:54:34Z",
-    "updated_at": "2026-09-12T03:54:34Z",
-    "last_codex_at": "2026-09-12T03:54:34Z",
-    "source_commit": "804f3fe61bbc216d9d33df8d90326f9f1fc0e929",
+    "revision": 30,
+    "activity_at": "2026-09-14T08:09:29Z",
+    "updated_at": "2026-09-14T08:09:29Z",
+    "last_codex_at": "2026-09-14T08:09:29Z",
+    "source_commit": "f511f435c623883c5ee1474e9227acb73fb2df68",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null

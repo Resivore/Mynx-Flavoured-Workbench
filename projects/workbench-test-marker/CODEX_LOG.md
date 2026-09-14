@@ -19,3 +19,14 @@
 - Artifact: Unchanged exact `workbench-test-marker-0.2.0.jar`, 9,543 bytes, SHA-256 `9147664302721976461dbbc1064260fc4309575182a8b050458d0446eafec6a6`, release source `f789b290f72c508a563797b0c543125bc9c468c1`.
 - Result: `ACTIVE` — Marker 0.2.0 remains manager-owned dedicated-Workbench title infrastructure and does not occupy Test Slot A or B.
 - Next state: Preserve the manager-owned marker/projection contract; change lifecycle to `TESTING` only if this project UUID itself is assigned to a canonical test slot.
+
+## 2026-09-14T08:09:29Z — Owner-directed lifecycle acceptance
+
+- Revision: 3
+- Source checkpoint: `f511f435c623883c5ee1474e9227acb73fb2df68`
+- Changes: Changed lifecycle from ACTIVE to ACCEPTED and bound the unchanged exact current release as accepted by project-owner direction; historical testing records remain intact.
+- Build/static: Preserved the existing STATIC_PASS classification; no build or artifact substitution was performed.
+- Runtime: No Minecraft runtime testing was performed by Codex for this administrative transition. The project owner's external/gameplay testing authorized acceptance, but no new PASS or other runtime result was recorded or inferred; the existing RUNTIME_UNTESTED classification is unchanged.
+- Artifact: Current release identity is unchanged: version 0.2.0, filename workbench-test-marker-0.2.0.jar, SHA-256 9147664302721976461dbbc1064260fc4309575182a8b050458d0446eafec6a6, source f789b290f72c508a563797b0c543125bc9c468c1.
+- Result: ACCEPTED — owner-directed acceptance without fabricated runtime evidence.
+- Next state: Preserve the accepted release and historical evidence. A future successor may use TESTING while awaiting or receiving user runtime validation; no Workbench slot or profile allocation is required.

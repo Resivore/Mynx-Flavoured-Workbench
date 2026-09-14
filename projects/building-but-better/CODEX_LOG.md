@@ -69,3 +69,14 @@
 - Artifact: Produced local-only `bbb-fabric-26.2-2.0pre4+26.2-pale-oak-dev.6.jar`, SHA-256 `0d54034725c3e354515c78bcee32ab2cb5ce764a33e0602419e26c78aaef8c5a`, source checkpoint `22aaf2fcddea47a388d2a2ba06228716e7d4e562`. The combined ARR-bearing JAR is ignored, retained locally only, and was not deployed, published, or redistributed.
 - Result: ACTIVE with no blocker, no accepted release, and no rollback. The runtime dependency policy remains capability/provider with no exceptions.
 - Next state: With explicit serialized Test Instance Manager ownership, deploy the exact retained C6 JAR into one test slot and complete the current rope runtime matrix before any promotion.
+
+## 2026-09-14T08:09:29Z — Owner-directed lifecycle acceptance
+
+- Revision: 8
+- Source checkpoint: `f511f435c623883c5ee1474e9227acb73fb2df68`
+- Changes: Changed lifecycle from ACTIVE to ACCEPTED and bound the unchanged exact current release as accepted by project-owner direction; historical testing records remain intact.
+- Build/static: Preserved the existing STATIC_PASS classification; no build or artifact substitution was performed.
+- Runtime: No Minecraft runtime testing was performed by Codex for this administrative transition. The project owner's external/gameplay testing authorized acceptance, but no new PASS or other runtime result was recorded or inferred; the existing RUNTIME_UNTESTED classification is unchanged.
+- Artifact: Current release identity is unchanged: version 2.0pre4+26.2-pale-oak-dev.6, filename bbb-fabric-26.2-2.0pre4+26.2-pale-oak-dev.6.jar, SHA-256 0d54034725c3e354515c78bcee32ab2cb5ce764a33e0602419e26c78aaef8c5a, source 22aaf2fcddea47a388d2a2ba06228716e7d4e562.
+- Result: ACCEPTED — owner-directed acceptance without fabricated runtime evidence.
+- Next state: Preserve the accepted release and historical evidence. A future successor may use TESTING while awaiting or receiving user runtime validation; no Workbench slot or profile allocation is required.

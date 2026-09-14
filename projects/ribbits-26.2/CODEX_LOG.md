@@ -289,3 +289,14 @@
 - Artifact: Current unaccepted private `ribbits-private-reconstruction-4.1.6+26.2-mynx-canary24.jar`, 3,365,141 bytes, SHA-256 `E2C62BD1AB3884D4E1BD0C583801774AF0FC2F2B54D9483EECC2FBB7DD6E2657`, from the source checkpoint above. Canary 23 remains unchanged at 3,361,499 bytes / SHA-256 `FB261AA143089F4E3C3B899BBE3280A702C7A9C1C6481404BAA043D7688BF363`. Canonical ignored-artifact retention atomically copied and byte-verified the exact C24 bytes at the same artifact path in the primary checkout without tracking or redistribution.
 - Result: ACTIVE / STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED.
 - Next state: Validate and integrate revision 29 to current authoritative `main`, push it, let the main-only Sheet workflow reconcile while preserving Notes, then use a deliberately available serialized Test Instance Manager slot for the focused C24 procedure before any runtime PASS claim.
+
+## 2026-09-14T08:09:29Z — Owner-directed lifecycle acceptance
+
+- Revision: 30
+- Source checkpoint: `f511f435c623883c5ee1474e9227acb73fb2df68`
+- Changes: Changed lifecycle from ACTIVE to ACCEPTED and bound the unchanged exact current release as accepted by project-owner direction; historical testing records remain intact.
+- Build/static: Preserved the existing STATIC_PASS classification; no build or artifact substitution was performed.
+- Runtime: No Minecraft runtime testing was performed by Codex for this administrative transition. The project owner's external/gameplay testing authorized acceptance, but no new PASS or other runtime result was recorded or inferred; the existing RUNTIME_UNTESTED classification is unchanged.
+- Artifact: Current release identity is unchanged: version 4.1.6+26.2-mynx-canary24, filename ribbits-private-reconstruction-4.1.6+26.2-mynx-canary24.jar, SHA-256 e2c62bd1ab3884d4e1bd0c583801774af0fc2f2b54d9483eecc2fbb7dd6e2657, source 66a55c4270c082ee2c06888b6ece2a1d0d5a09fa.
+- Result: ACCEPTED — owner-directed acceptance without fabricated runtime evidence.
+- Next state: Preserve the accepted release and historical evidence. A future successor may use TESTING while awaiting or receiving user runtime validation; no Workbench slot or profile allocation is required.

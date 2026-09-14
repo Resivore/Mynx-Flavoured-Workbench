@@ -9,3 +9,14 @@
 - Artifact: Current embedded `0.1.0-canary1`: `item-pickup-audio-diagnostic-0.1.0-canary1.jar`, 13,392 bytes, SHA-256 `fc67ec7816ab91e941b9df99f54a254705dea8adb07da7c50d8795190d46b094`, source `56b3ccd9f9a98bf2ad082405ce917cc32a1c463f`, CAPABILITY_OR_PROVIDER with no exceptions. The ignored artifact was staged for canonical local retention.
 - Result: ACTIVE — CONTROLLED_VALIDATION_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED; no blocker.
 - Next state: Retain the exact artifact; deploy only through a supported non-evicting dedicated-Workbench transaction, then collect the single ordinary-pickup trace before diagnosing or changing any sound behavior.
+
+## 2026-09-14T08:09:29Z — Owner-directed lifecycle acceptance
+
+- Revision: 2
+- Source checkpoint: `f511f435c623883c5ee1474e9227acb73fb2df68`
+- Changes: Changed lifecycle from ACTIVE to ACCEPTED and bound the unchanged exact current release as accepted by project-owner direction; historical testing records remain intact.
+- Build/static: Preserved the existing CONTROLLED_VALIDATION_PASS classification; no build or artifact substitution was performed.
+- Runtime: No Minecraft runtime testing was performed by Codex for this administrative transition. The project owner's external/gameplay testing authorized acceptance, but no new PASS or other runtime result was recorded or inferred; the existing RUNTIME_UNTESTED classification is unchanged.
+- Artifact: Current release identity is unchanged: version 0.1.0-canary1, filename item-pickup-audio-diagnostic-0.1.0-canary1.jar, SHA-256 fc67ec7816ab91e941b9df99f54a254705dea8adb07da7c50d8795190d46b094, source 56b3ccd9f9a98bf2ad082405ce917cc32a1c463f.
+- Result: ACCEPTED — owner-directed acceptance without fabricated runtime evidence.
+- Next state: Preserve the accepted release and historical evidence. A future successor may use TESTING while awaiting or receiving user runtime validation; no Workbench slot or profile allocation is required.

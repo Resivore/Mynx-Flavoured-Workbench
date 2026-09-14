@@ -10,7 +10,7 @@
     "legacy_ids": []
   },
   "definition": {
-    "lifecycle": "ACTIVE",
+    "lifecycle": "ACCEPTED",
     "goals": [
       "Provide clean standalone wearable-lantern functionality for Minecraft Java 26.2 Fabric.",
       "Add a dedicated amount-one Trinkets lantern slot independent of legs/belt and position it immediately left of the vanilla leggings slot while preserving the belt independently on the right.",
@@ -117,7 +117,7 @@
     ]
   },
   "state": {
-    "milestone": "Canary 5 is the metadata-only successor to retained Canary 4: it preserves every bridge class/resource and behavior byte-for-byte except the packaged version/manifest runtime predicates, replacing inherited exact Fabric API, Trinkets, and optional LDL pins with capability/provider predicates required by the release-scoped policy. The Iris bridge remains exact-version fail-closed at runtime and the explicit user finding remains external feedback, not a Workbench pass. The project remains ACTIVE, NOT_DEPLOYED, and RUNTIME_UNTESTED.",
+    "milestone": "The exact current release is ACCEPTED by owner direction following the user's external/gameplay testing. Existing build, deployment, and runtime classifications are preserved; this administrative transition infers no new runtime result.",
     "releases": {
       "current": {
         "version": "0.1.0-canary5",
@@ -131,9 +131,20 @@
           "exceptions": []
         }
       },
-      "accepted": null,
+      "accepted": {
+        "version": "0.1.0-canary5",
+        "artifact": {
+          "filename": "wearable-lanterns-0.1.0-canary5.jar",
+          "sha256": "0d05d2af86dfb8f41e7cb7c0dde75aed681cfb657fa2cb8de4a42f40344dd0e6"
+        },
+        "source_commit": "413c2dad2f5acf7285311c31921493ef5650eed5",
+        "runtime_dependency_policy": {
+          "contract": "CAPABILITY_OR_PROVIDER",
+          "exceptions": []
+        }
+      },
       "rollback": null,
-      "accepted_current": "NO_ACCEPTED",
+      "accepted_current": "CURRENT_IS_ACCEPTED",
       "accepted_rollback": "NO_ROLLBACK"
     },
     "validation": {
@@ -144,11 +155,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 6,
-    "activity_at": "2026-09-09T05:38:00Z",
-    "updated_at": "2026-09-09T05:38:00Z",
-    "last_codex_at": "2026-09-09T05:38:00Z",
-    "source_commit": "413c2dad2f5acf7285311c31921493ef5650eed5",
+    "revision": 7,
+    "activity_at": "2026-09-14T08:09:29Z",
+    "updated_at": "2026-09-14T08:09:29Z",
+    "last_codex_at": "2026-09-14T08:09:29Z",
+    "source_commit": "f511f435c623883c5ee1474e9227acb73fb2df68",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null

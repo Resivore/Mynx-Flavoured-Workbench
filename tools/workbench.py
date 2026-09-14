@@ -625,103 +625,6 @@ def load_repository_statuses(root: Path) -> dict[str, tuple[Path, dict[str, Any]
     return statuses
 
 
-def validate_testing_slot_lifecycles(
-    statuses: dict[str, tuple[Path, dict[str, Any]]],
-    runtime_state: dict[str, Any],
-) -> None:
-    """Enforce the repository-only TESTING lifecycle/runtime-slot invariant by UUID."""
-    occupied_slots: dict[str, tuple[str, dict[str, Any], dict[str, Any]]] = {}
-    for slot_name in ("A", "B"):
-        slot = runtime_state["slots"][slot_name]
-        if slot is None:
-            continue
-        members = slot["members"] if "members" in slot else [slot]
-        for member in members:
-            project_uuid = member["unit"]["project_uuid"]
-            if project_uuid in occupied_slots:
-                raise ValidationError(
-                    f"runtime state project UUID {project_uuid} occupies more than one slot/cohort position"
-                )
-            occupied_slots[project_uuid] = (slot_name, member, slot["deployment"])
-    for project_uuid, (path, manifest) in statuses.items():
-        lifecycle = manifest["definition"]["lifecycle"]
-        occupancy = occupied_slots.get(project_uuid)
-        if lifecycle == "TESTING" and occupancy is None:
-            raise ValidationError(
-                f"{path}: lifecycle TESTING requires project UUID {project_uuid} to occupy Test Slot A or B"
-            )
-        if occupancy is not None and lifecycle != "TESTING":
-            slot_name = occupancy[0]
-            raise ValidationError(
-                f"{path}: project UUID {project_uuid} occupies Test Slot {slot_name} "
-                f"but lifecycle is {lifecycle}; it must be TESTING"
-            )
-        if occupancy is None:
-            continue
-        slot_name, member, deployment = occupancy
-        current = manifest["state"]["releases"]["current"]
-        if current is None or current["artifact"] is None:
-            continue
-        comparison = current_release_deployment_comparison(manifest, runtime_state)
-        claimed_deployment = manifest["state"]["validation"]["deployment"]
-        if comparison == "OLDER_RELEASE_DEPLOYED" and claimed_deployment != "NOT_DEPLOYED":
-            raise ValidationError(
-                f"{path}: current release is not the exact member physically occupying Test Slot {slot_name}; "
-                f"the current release must remain NOT_DEPLOYED (slot member is "
-                f"{member['unit']['project_id']}@{member['unit']['version']})"
-            )
-        if comparison == "CURRENT_RELEASE_NOT_DEPLOYED" and claimed_deployment != "NOT_DEPLOYED":
-            raise ValidationError(
-                f"{path}: current release occupies Test Slot {slot_name}, but the shared cohort is "
-                "NOT_DEPLOYED; the current release must remain NOT_DEPLOYED"
-            )
-        if comparison == "CURRENT_RELEASE_DEPLOYED" and claimed_deployment != deployment["state"]:
-            raise ValidationError(
-                f"{path}: current release matches Test Slot {slot_name}, so deployment must equal "
-                f"the shared cohort state {deployment['state']}"
-            )
-
-
-def _release_matches_runtime_unit(release: dict[str, Any] | None, unit: dict[str, Any]) -> bool:
-    if release is None or release.get("artifact") is None:
-        return False
-    artifact = release["artifact"]
-    packaged_version = release.get("embedded_version", release.get("version"))
-    return (
-        packaged_version == unit.get("version")
-        and release.get("source_commit") == unit.get("source_commit")
-        and any(
-            candidate.get("filename") == artifact.get("filename")
-            and candidate.get("sha256") == artifact.get("sha256")
-            for candidate in unit.get("artifacts", [])
-        )
-    )
-
-
-def current_release_deployment_comparison(
-    manifest: dict[str, Any],
-    runtime_state: dict[str, Any],
-) -> str:
-    """Compare one repository current release with its exact managed slot member."""
-
-    project_uuid = manifest["identity"]["uuid"]
-    current = manifest["state"]["releases"]["current"]
-    for slot_name in ("A", "B"):
-        slot = runtime_state["slots"][slot_name]
-        if slot is None:
-            continue
-        members = slot["members"] if "members" in slot else [slot]
-        for member in members:
-            if member["unit"]["project_uuid"] != project_uuid:
-                continue
-            if slot["deployment"]["state"] == "NOT_DEPLOYED":
-                return "CURRENT_RELEASE_NOT_DEPLOYED"
-            if _release_matches_runtime_unit(current, member["unit"]):
-                return "CURRENT_RELEASE_DEPLOYED"
-            return "OLDER_RELEASE_DEPLOYED"
-    return "CURRENT_RELEASE_NOT_DEPLOYED"
-
-
 def _validate_publication_config(path: Path) -> None:
     config = load_json(path)
     keys = {
@@ -751,55 +654,6 @@ def _validate_publication_config(path: Path) -> None:
         _nonblank(config[field], f"{path}.{field}")
 
 
-def _validate_test_instance_manager_config(path: Path) -> None:
-    config = load_json(path)
-    keys = {
-        "schema_version",
-        "repository_root",
-        "runtime_state",
-        "dedicated_profile",
-        "protected_profile",
-        "mods_directory",
-        "ledger_file",
-        "lock_file",
-        "title_display",
-    }
-    _object(config, str(path), keys)
-    if config["schema_version"] != 3:
-        raise ValidationError(f"{path}: schema_version must be 3")
-    expected = {
-        "repository_root": "../..",
-        "runtime_state": "tools/test_instance_manager/runtime-state.json",
-        "dedicated_profile": r"C:\Users\resiv\AppData\Roaming\ModrinthApp\profiles\Matcha Flavoured 26.2 Workbench",
-        "protected_profile": r"C:\Users\resiv\AppData\Roaming\ModrinthApp\profiles\Matcha Flavoured 26.1.2",
-        "mods_directory": "mods",
-        "ledger_file": ".mynx-runtime-v2-ledger.json",
-        "lock_file": ".mynx-runtime-v2.lock",
-    }
-    for field, expected_value in expected.items():
-        actual = _nonblank(config[field], f"{path}.{field}")
-        if actual != expected_value:
-            raise ValidationError(f"{path}.{field}: must be {expected_value!r}")
-    expected_title_display = {
-        "projection_file": ".mynx-runtime-v2-title.json",
-        "marker": {
-            "filename": "workbench-test-marker-0.2.0.jar",
-            "sha256": "9147664302721976461dbbc1064260fc4309575182a8b050458d0446eafec6a6",
-            "mod_id": "workbench_test_marker",
-            "source": "projects/workbench-test-marker/artifacts/workbench-test-marker-0.2.0.jar",
-        },
-        "predecessors": [
-            {
-                "filename": "workbench-test-marker-0.1.1.jar",
-                "sha256": "b53ed459b89f4fe7ce053ff9142d145b33164149d468745b4836bc69a842426b",
-                "mod_id": "workbench_test_marker",
-            }
-        ],
-    }
-    if config["title_display"] != expected_title_display:
-        raise ValidationError(f"{path}.title_display: must preserve the exact manager-owned title infrastructure")
-
-
 def validate_repository(root: Path) -> dict[str, tuple[Path, dict[str, Any]]]:
     root = root.resolve()
     required = [
@@ -808,44 +662,26 @@ def validate_repository(root: Path) -> dict[str, tuple[Path, dict[str, Any]]]:
         "MIGRATION_FREEZE.md",
         "projects",
         "schemas/workbench-status.schema.json",
-        "schemas/runtime-state.schema.json",
         "tools/workbench.py",
         "tools/artifact_retention.py",
-        "tools/runtime_slots.py",
         "tools/sheet_sync.py",
         "tools/sheet_sync/publication.json",
         "tools/sheet_sync/receiver/Core.gs",
         "tools/sheet_sync/receiver/Code.gs",
-        "tools/test_instance_manager/config.json",
-        "tools/test_instance_manager/manager.py",
-        "tools/test_instance_manager/runtime-state.json",
         ".github/workflows/validate.yml",
         ".github/workflows/publish-project-status.yml",
     ]
     missing = [relative for relative in required if not (root / relative).exists()]
     if missing:
         raise ValidationError(f"required bootstrap layout is incomplete: {', '.join(missing)}")
-    for schema_name in ("workbench-status.schema.json", "runtime-state.schema.json"):
+    for schema_name in ("workbench-status.schema.json",):
         schema = load_json(root / "schemas" / schema_name)
         if schema.get("$schema") != "https://json-schema.org/draft/2020-12/schema":
             raise ValidationError(f"schemas/{schema_name}: must declare JSON Schema Draft 2020-12")
         if schema.get("additionalProperties") is not False:
             raise ValidationError(f"schemas/{schema_name}: root must reject additional properties")
     _validate_publication_config(root / "tools" / "sheet_sync" / "publication.json")
-    _validate_test_instance_manager_config(root / "tools" / "test_instance_manager" / "config.json")
     statuses = load_repository_statuses(root)
-    try:
-        from .runtime_slots import validate_runtime_state
-    except ImportError:  # Direct execution from tools/.
-        from runtime_slots import validate_runtime_state  # type: ignore
-
-    runtime_state = load_json(root / "tools" / "test_instance_manager" / "runtime-state.json")
-    project_index = {
-        project_uuid: manifest["identity"]["project_id"]
-        for project_uuid, (_, manifest) in statuses.items()
-    }
-    validate_runtime_state(runtime_state, project_index=project_index)
-    validate_testing_slot_lifecycles(statuses, runtime_state)
     return statuses
 
 

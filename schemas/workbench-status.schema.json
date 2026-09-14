@@ -27,7 +27,7 @@
       "required": ["lifecycle", "goals", "scope", "boundaries", "dependencies"],
       "properties": {
         "lifecycle": {
-          "description": "Project lifecycle. TESTING means, and only means, that this project's immutable UUID currently occupies Test Slot A or Test Slot B in the canonical runtime state; build, artifact, procedure, readiness, runtime result, and accepted-release metadata do not independently imply or prevent TESTING.",
+          "description": "Project lifecycle. TESTING means the project is awaiting, undergoing, or receiving user runtime validation. It is independent of any Minecraft profile, testing slot, deployment, or capacity reservation; build, artifact, procedure, readiness, runtime result, and accepted-release metadata do not independently imply or prevent TESTING.",
           "enum": ["PLANNED", "ACTIVE", "BLOCKED", "TESTING", "ACCEPTED", "PARKED"]
         },
         "goals": { "$ref": "#/$defs/nonemptyTextList" },

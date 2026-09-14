@@ -5,12 +5,15 @@
     "uuid": "65e3eebd-a8d1-4fb5-87c6-af12ac4c9b40",
     "name": "Naturalist × Xaero Entity Icon Compatibility",
     "project_id": "naturalist-xaero-entity-icons-compat",
-    "aliases": ["Naturalist Xaero entity icons", "Naturalist × Xaero icons"],
+    "aliases": [
+      "Naturalist Xaero entity icons",
+      "Naturalist × Xaero icons"
+    ],
     "legacy_names": [],
     "legacy_ids": []
   },
   "definition": {
-    "lifecycle": "ACTIVE",
+    "lifecycle": "ACCEPTED",
     "goals": [
       "Provide fail-closed Xaero Minimap radar-icon capture for the 37 Naturalist living entities whose rendered ModelPart hierarchy is not captured by Xaero's native path.",
       "Preserve Xaero's native successful model and texture capture for Brown Bear, Bird, Butterfly, Catfish, Caterpillar, Crab, Deer, Firefly, Snake, and Snail; C22 is external/user-reported Starfish PASS with its complete five-arm live-body-center mechanism retained by C23, which only reduces that scale and source-audits the two Scorpion live-body-center contracts without modifying Naturalist, Xaero, EMF, or Ribbits."
@@ -21,7 +24,9 @@
       "Use explicit contract-local scale, rotation, source-audited trace anchor, and only where unavoidable a source-audited direct-cuboid subset for the C4 presentation corrections. Brown Bear has no custom fallback contract and remains its runtime-proven `RadarIconSpriteForm` request at `0.65F`. C20 Clam is external/user-reported PASS with its authored `top` source and trace unchanged. C23 retains Starfish's normalized copied `body`/`legs` five-arm assembly, top-down orientation, live `body` trace, and live-body direct-cuboid render center while changing only scale from `0.58F` to `0.52F`. Exact C8 audit confirms both Scorpion `model.root()` values are the authored root; C23 selects normalized copied `body`/`legs` and uses the live `body` for both trace and Xaero render center at existing scales. One-time diagnostics are bounded to Starfish or the two Scorpions and empty-destination failure semantics remain intact. No screen-space offsets are used. Resource reload evicts only the 37 fallback targets and native Brown Bear entries."
     ],
     "boundaries": {
-      "owned_paths": ["projects/naturalist-xaero-entity-icons-compat"],
+      "owned_paths": [
+        "projects/naturalist-xaero-entity-icons-compat"
+      ],
       "exclusions": [
         "Naturalist source, artifact, version, controls, gameplay, networking, private assets, and renderer behavior remain owned by projects/naturalist.",
         "Xaero, XaeroLib, Xaero × EMF, Ribbits × Xaero, vanilla entities, unrelated modded models, normal successful Xaero captures, category/visibility settings, and cache entries outside the 37 target Naturalist types plus native Brown Bear resource-reload entries are not intercepted.",
@@ -29,37 +34,91 @@
       ]
     },
     "dependencies": [
-      {"type": "MOD", "identifier": "minecraft", "requirement": "=26.2", "reason": "Exact target game version."},
-      {"type": "MOD", "identifier": "fabricloader", "requirement": ">=0.19.3", "reason": "Client companion loader floor."},
-      {"type": "MOD", "identifier": "xaerominimap", "requirement": "Capability suggestion; audited validation baseline 26.4.2 with nested XaeroLib 1.7.1.", "reason": "Owns the icon lifecycle and ModelPart prerender seams."},
-      {"type": "PROJECT", "identifier": "c92ad4fe-c210-46c4-ba1d-59828d2bcbcd", "requirement": "Naturalist provider capability; validation baseline 2.0.3+26.2-port-canary8 / naturalist-2.0.3+26.2-port-canary8.jar / SHA-256 65e9ff11e94f17011acbac25ee40f42723516fe6b04c78d93662800461317b3d.", "reason": "Supplies the explicit client renderer/model contracts; no release pin is declared in runtime metadata."},
-      {"type": "TOOL", "identifier": "java", "requirement": "25", "reason": "Compilation and contract-test toolchain."},
-      {"type": "TOOL", "identifier": "fabric-loom", "requirement": "1.17.19", "reason": "Fabric build plugin validation baseline."}
+      {
+        "type": "MOD",
+        "identifier": "minecraft",
+        "requirement": "=26.2",
+        "reason": "Exact target game version."
+      },
+      {
+        "type": "MOD",
+        "identifier": "fabricloader",
+        "requirement": ">=0.19.3",
+        "reason": "Client companion loader floor."
+      },
+      {
+        "type": "MOD",
+        "identifier": "xaerominimap",
+        "requirement": "Capability suggestion; audited validation baseline 26.4.2 with nested XaeroLib 1.7.1.",
+        "reason": "Owns the icon lifecycle and ModelPart prerender seams."
+      },
+      {
+        "type": "PROJECT",
+        "identifier": "c92ad4fe-c210-46c4-ba1d-59828d2bcbcd",
+        "requirement": "Naturalist provider capability; validation baseline 2.0.3+26.2-port-canary8 / naturalist-2.0.3+26.2-port-canary8.jar / SHA-256 65e9ff11e94f17011acbac25ee40f42723516fe6b04c78d93662800461317b3d.",
+        "reason": "Supplies the explicit client renderer/model contracts; no release pin is declared in runtime metadata."
+      },
+      {
+        "type": "TOOL",
+        "identifier": "java",
+        "requirement": "25",
+        "reason": "Compilation and contract-test toolchain."
+      },
+      {
+        "type": "TOOL",
+        "identifier": "fabric-loom",
+        "requirement": "1.17.19",
+        "reason": "Fabric build plugin validation baseline."
+      }
     ]
   },
   "state": {
-    "milestone": "Exact C33 USER-REPORTED / EXTERNAL runtime evidence is preserved: `naturalist-xaero-entity-icons-compat-0.1.0-canary33.jar` / embedded `0.1.0-canary33` / 51,845 bytes / SHA-256 `115ac913647f5bbfce33d54f2c9ab29e2ca829104b4c4ce9913fb443f520cbe0` / source `63a4d968f2f76ed7a78cced8fdd0a08279362ca7`. Its adult Whale is effectively correct: it is a readable side-profiled real model icon, its nose framing is correct, it is not label-only or the old sliver failure, and only a tiny bottom-edge padding shortfall remains; it is not accepted. C34 preserves C33's exact adult `WhaleModel` detached body direct torso cube plus copied `skullRot` cranium/topJaw/bottomJaw, live `body` trace/render center, scale `0.18F`, X `0.0F`, Y `1.1781F`, and Z `0.0F`, changing only copied-adapter frame Y `-1.0F` -> `-1.5F` to add a little more bottom border space. Baby Whale stays exact `WhaleBabyModel` `body/skull` / `0.60F` / Y `0.7854F`; Hippo adult PASS at `0.75F` and every solved non-Whale contract are frozen. Manager revision 117 retains unrelated BGE C60 and IBF C4 in both slots, so C34 is NOT_DEPLOYED / RUNTIME_UNTESTED.",
+    "milestone": "The exact current release is ACCEPTED by owner direction following the user's external/gameplay testing. Existing build, deployment, and runtime classifications are preserved; this administrative transition infers no new runtime result.",
     "releases": {
       "current": {
         "version": "0.1.0-canary34",
-        "artifact": {"filename": "naturalist-xaero-entity-icons-compat-0.1.0-canary34.jar", "sha256": "5c8c2b955cb2ac6219dcb3199de7956dd3efe02460579d634e0da242e4241fb8"},
+        "artifact": {
+          "filename": "naturalist-xaero-entity-icons-compat-0.1.0-canary34.jar",
+          "sha256": "5c8c2b955cb2ac6219dcb3199de7956dd3efe02460579d634e0da242e4241fb8"
+        },
         "source_commit": "a58c4869af6f860a76279e2f38a9b86bd319e661",
-        "runtime_dependency_policy": {"contract": "CAPABILITY_OR_PROVIDER", "exceptions": []}
+        "runtime_dependency_policy": {
+          "contract": "CAPABILITY_OR_PROVIDER",
+          "exceptions": []
+        }
       },
-      "accepted": null,
+      "accepted": {
+        "version": "0.1.0-canary34",
+        "artifact": {
+          "filename": "naturalist-xaero-entity-icons-compat-0.1.0-canary34.jar",
+          "sha256": "5c8c2b955cb2ac6219dcb3199de7956dd3efe02460579d634e0da242e4241fb8"
+        },
+        "source_commit": "a58c4869af6f860a76279e2f38a9b86bd319e661",
+        "runtime_dependency_policy": {
+          "contract": "CAPABILITY_OR_PROVIDER",
+          "exceptions": []
+        }
+      },
       "rollback": null,
-      "accepted_current": "NO_ACCEPTED",
+      "accepted_current": "CURRENT_IS_ACCEPTED",
       "accepted_rollback": "NO_ROLLBACK"
     },
-    "validation": {"build": "STATIC_PASS", "deployment": "NOT_DEPLOYED", "runtime": "RUNTIME_UNTESTED"},
+    "validation": {
+      "build": "STATIC_PASS",
+      "deployment": "NOT_DEPLOYED",
+      "runtime": "RUNTIME_UNTESTED"
+    },
     "blocker": null
   },
   "synchronization": {
-    "revision": 35,
-    "activity_at": "2026-09-11T16:21:25Z",
-    "updated_at": "2026-09-11T16:21:25Z",
-    "last_codex_at": "2026-09-11T16:21:25Z",
-    "source_commit": "a58c4869af6f860a76279e2f38a9b86bd319e661",
-    "google_sheet": {"participates": true, "exclusion_reason": null}
+    "revision": 36,
+    "activity_at": "2026-09-14T08:09:29Z",
+    "updated_at": "2026-09-14T08:09:29Z",
+    "last_codex_at": "2026-09-14T08:09:29Z",
+    "source_commit": "f511f435c623883c5ee1474e9227acb73fb2df68",
+    "google_sheet": {
+      "participates": true,
+      "exclusion_reason": null
+    }
   }
 }

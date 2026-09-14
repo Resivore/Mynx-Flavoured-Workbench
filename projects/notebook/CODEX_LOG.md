@@ -119,3 +119,14 @@
 - Artifact: Historical C1 through C10 identities remain unchanged. Current unaccepted C11 is retained as `notebook-0.1.0-canary11.jar`, embedded version `0.1.0-canary11`, 55,309 bytes, SHA-256 `c3b9b7248f0bc16f027fc5cbd4d918fcab045ff58c2ac67dd31e169743361b7f`, source `685e9c137bff75dcab3c0e54e5107ac3273240d7`.
 - Result: `ACTIVE` — current C11 is `STATIC_PASS`, `NOT_DEPLOYED`, and `RUNTIME_UNTESTED`, with no accepted release, rollback, project blocker, or Test Slot occupancy.
 - Next state: Under separately authorized serialized Test Instance Manager ownership, deploy only this exact C11 artifact and run the dedicated survival recipe-book open/close/repeat/reinit/scale matrix, standalone and QSN/Inventory Search/Inventory Extended cumulative checks, unchanged creative check, and exact index-offset visual check before recording runtime evidence or considering promotion.
+
+## 2026-09-14T08:09:29Z — Owner-directed lifecycle acceptance
+
+- Revision: 13
+- Source checkpoint: `f511f435c623883c5ee1474e9227acb73fb2df68`
+- Changes: Changed lifecycle from ACTIVE to ACCEPTED and bound the unchanged exact current release as accepted by project-owner direction; historical testing records remain intact.
+- Build/static: Preserved the existing STATIC_PASS classification; no build or artifact substitution was performed.
+- Runtime: No Minecraft runtime testing was performed by Codex for this administrative transition. The project owner's external/gameplay testing authorized acceptance, but no new PASS or other runtime result was recorded or inferred; the existing RUNTIME_UNTESTED classification is unchanged.
+- Artifact: Current release identity is unchanged: version 0.1.0-canary11, filename notebook-0.1.0-canary11.jar, SHA-256 c3b9b7248f0bc16f027fc5cbd4d918fcab045ff58c2ac67dd31e169743361b7f, source 685e9c137bff75dcab3c0e54e5107ac3273240d7.
+- Result: ACCEPTED — owner-directed acceptance without fabricated runtime evidence.
+- Next state: Preserve the accepted release and historical evidence. A future successor may use TESTING while awaiting or receiving user runtime validation; no Workbench slot or profile allocation is required.

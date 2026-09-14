@@ -289,3 +289,14 @@
 - Artifact: `container-slot-reservations-0.1.0-canary19.jar`, embedded `0.1.0-canary19`, 202884 bytes, SHA-256 `f93068f86d0da76e93d754a9c04cd5999fc72b31f39681fc65dbdb09b2443aeb`, source `804f3fe61bbc216d9d33df8d90326f9f1fc0e929`, runtime dependency policy `CAPABILITY_OR_PROVIDER` with no exceptions. Accepted C15 and rollback C4 identities are unchanged.
 - Result: ACTIVE / CONTROLLED_VALIDATION_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED. No blocker is recorded.
 - Next state: Retain the exact ignored C19 bytes in the primary checkout, integrate current main, publish revision 29 with Sheet Notes preserved, and deploy only through a serialized Test Instance Manager transition before collecting the focused C19 runtime procedure.
+
+## 2026-09-14T08:09:29Z — Owner-directed lifecycle acceptance
+
+- Revision: 30
+- Source checkpoint: `f511f435c623883c5ee1474e9227acb73fb2df68`
+- Changes: Changed lifecycle from ACTIVE to ACCEPTED and bound the unchanged exact current release as accepted by project-owner direction; historical testing records remain intact.
+- Build/static: Preserved the existing CONTROLLED_VALIDATION_PASS classification; no build or artifact substitution was performed.
+- Runtime: No Minecraft runtime testing was performed by Codex for this administrative transition. The project owner's external/gameplay testing authorized acceptance, but no new PASS or other runtime result was recorded or inferred; the existing RUNTIME_UNTESTED classification is unchanged.
+- Artifact: Current release identity is unchanged: version 0.1.0-canary19, filename container-slot-reservations-0.1.0-canary19.jar, SHA-256 f93068f86d0da76e93d754a9c04cd5999fc72b31f39681fc65dbdb09b2443aeb, source 804f3fe61bbc216d9d33df8d90326f9f1fc0e929.
+- Result: ACCEPTED — owner-directed acceptance without fabricated runtime evidence.
+- Next state: Preserve the accepted release and historical evidence. A future successor may use TESTING while awaiting or receiving user runtime validation; no Workbench slot or profile allocation is required.
