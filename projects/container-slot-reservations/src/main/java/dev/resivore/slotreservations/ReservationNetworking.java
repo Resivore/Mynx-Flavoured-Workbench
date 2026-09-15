@@ -4,6 +4,7 @@ import dev.resivore.slotreservations.network.ReservationActionPayload;
 import dev.resivore.slotreservations.network.ReservationSnapshotPayload;
 import dev.resivore.slotreservations.network.ReservationSnapshotRequestPayload;
 import dev.resivore.slotreservations.network.ShulkerPanelContentActionPayload;
+import dev.resivore.slotreservations.network.ShulkerPanelMenuQuickMovePayload;
 import dev.resivore.slotreservations.network.ShulkerPanelReservationActionPayload;
 import dev.resivore.slotreservations.network.ShulkerPanelSyncPayload;
 import dev.resivore.slotreservations.network.ShulkerSelectionPayload;
@@ -40,6 +41,8 @@ public final class ReservationNetworking {
                 ShulkerPanelReservationActionPayload.CODEC);
         PayloadTypeRegistry.serverboundPlay().register(ShulkerPanelContentActionPayload.TYPE,
                 ShulkerPanelContentActionPayload.CODEC);
+        PayloadTypeRegistry.serverboundPlay().register(ShulkerPanelMenuQuickMovePayload.TYPE,
+                ShulkerPanelMenuQuickMovePayload.CODEC);
         PayloadTypeRegistry.serverboundPlay().register(ShulkerSelectionPayload.TYPE,
                 ShulkerSelectionPayload.CODEC);
         PayloadTypeRegistry.clientboundPlay().register(ShulkerPanelSyncPayload.TYPE,
@@ -59,6 +62,8 @@ public final class ReservationNetworking {
                 context.server().execute(() -> ShulkerPanelActions.handleReservation(context.player(), payload)));
         ServerPlayNetworking.registerGlobalReceiver(ShulkerPanelContentActionPayload.TYPE, (payload, context) ->
                 context.server().execute(() -> ShulkerPanelActions.handleContent(context.player(), payload)));
+        ServerPlayNetworking.registerGlobalReceiver(ShulkerPanelMenuQuickMovePayload.TYPE, (payload, context) ->
+                context.server().execute(() -> ShulkerPanelActions.handleMenuQuickMove(context.player(), payload)));
         ServerPlayNetworking.registerGlobalReceiver(ShulkerSelectionPayload.TYPE, (payload, context) ->
                 context.server().execute(() -> handleSelection(context.player(), payload)));
         ServerPlayConnectionEvents.DISCONNECT.register((handler, server) ->

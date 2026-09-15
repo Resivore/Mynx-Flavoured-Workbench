@@ -167,7 +167,9 @@ final class ClientAndNetworkContractTest {
         assertTrue(panel.contains("STATE.releasePointer("));
         assertTrue(panel.contains("Click.QUICK_MOVE"));
         assertTrue(panel.contains("SECONDARY_DRAG.enter(slot)"));
-        assertTrue(panel.contains("if (button == 1) SECONDARY_DRAG.begin(slot)"));
+        assertTrue(panel.contains("SECONDARY_DRAG.begin(slot)"));
+        assertTrue(panel.contains("MouseTweaksCompatibility.ownsRightDrag()"),
+                "The optional provider must own supported panel drags without a second CSR drag state");
         assertFalse(panel.contains("corridorContains"));
         assertTrue(quickMove.contains("host.menu().slots"));
         assertTrue(quickMove.contains("candidate.container != player.getInventory()"));
