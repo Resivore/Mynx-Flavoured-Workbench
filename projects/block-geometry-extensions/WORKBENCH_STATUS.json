@@ -18,7 +18,7 @@
     ]
   },
   "definition": {
-    "lifecycle": "ACCEPTED",
+    "lifecycle": "ACTIVE",
     "goals": [
       "Maintain one Fabric mod, source tree, build, version, and deployable JAR for the absorbed Nibaru native material catalog and all BGE geometry.",
       "Preserve every former Nibaru and BGE registry/resource identity, specialized material behavior, and saved-world reference while CNM remains an unchanged external dependency.",
@@ -28,10 +28,10 @@
     "scope": [
       "Compile the retained `games.twinhead.moreslabsstairsandwalls` source and `more_slabs_stairs_and_walls` resources directly inside BGE with a clear LGPL-covered source and attribution boundary.",
       "Register native slabs, stairs, walls, material profiles, transitions, and client bindings before deriving CNM/BGE geometry through one guarded bootstrap and one root Fabric descriptor.",
-      "Preserve all native material profiles, canonical parents, copied settings, TOP/SIDE/BOTTOM roles, axes, patterns, tint, translucency, transitions, drops, and specialized behaviors; C62 corrects the wall-material, canonical-role duplication, leaf-wall, and plain-Path seams demonstrated by exact C61 runtime evidence, C63 corrects external axis-family inventory previews, C64 adds the complete BBB beam catalog without duplicating BBB standard forms, C65 corrects its demonstrated BBB production axis-resource classification failure, C66 gives compatible Quarter Columns Step-equivalent full-cell continuation targeting without changing their physical geometry, and C68 preserves one-to-one texel density for axis-material Layer faces without changing their geometry or grain orientation.",
+      "Preserve all native material profiles, canonical parents, copied settings, TOP/SIDE/BOTTOM roles, axes, patterns, tint, translucency, transitions, drops, and specialized behaviors; C62 corrects the wall-material, canonical-role duplication, leaf-wall, and plain-Path seams demonstrated by exact C61 runtime evidence, C63 corrects external axis-family inventory previews, C64 adds the complete BBB beam catalog, C65 corrects its demonstrated BBB production axis-resource classification failure, C66 gives compatible Quarter Columns Step-equivalent full-cell continuation targeting without changing their physical geometry, C68 preserves one-to-one texel density for axis-material Layer faces without changing their geometry or grain orientation, and C69 restores independent material axes to the canonical BBB Beam Slab and Beam Stair.",
       "Generate one Layer, Corner, and Quarter Column per supported canonical family while preserving Vertical Slab and Step, deterministic selector order, one-source economy, orientation, waterlogging, collision, and drops.",
       "Provide primary Fabric ID `cnm_terrain_slabs_compat` and verified legacy alias `more_slabs_stairs_and_walls` from the same mod container and shared version `4.2.12-bge.canary68.layer-axis-uv+26.2`.",
-      "Preserve C58 native registry/resource identities while exposing one canonical nine-role family per exact optional source variant: 52 Macaw patterned full blocks, five distinct Macaw soil Path blocks, Ribbits Mossy Oak Planks, six Mynx Trees log, wood, and leaf sources, and all 12 BBB beam parents including Pale Oak. BBB retains its slab, stairs, and thin WoodenWallBlock; BGE owns only the five additional axis-aware roles. C65 accepts BBB's real semantically equivalent `axis=z` `x=90,y=180` representation while rejecting unknown transforms and `uvlock`."
+      "Preserve C58 native registry/resource identities while exposing one canonical nine-role family per exact optional source variant: 52 Macaw patterned full blocks, five distinct Macaw soil Path blocks, Ribbits Mossy Oak Planks, six Mynx Trees log, wood, and leaf sources, and all 12 BBB beam parents including Pale Oak. BBB's original slab and stair registrations remain untouched, but their provider state is geometry-only and cannot carry an independent material AXIS; C69 therefore gives BGE canonical AxisSlab and AxisStairs forms, retains BBB's ordinary thin WoodenWallBlock as the canonical wall, and keeps the five other BGE axis-aware roles. C65 accepts BBB's real semantically equivalent `axis=z` `x=90,y=180` representation while rejecting unknown transforms and `uvlock`."
     ],
     "boundaries": {
       "owned_paths": [
@@ -50,7 +50,7 @@
         "type": "MOD",
         "identifier": "minecraft",
         "requirement": "~26.2",
-        "reason": "Unified BGE C68 targets Minecraft Java 26.2."
+        "reason": "Unified BGE C69 targets Minecraft Java 26.2."
       },
       {
         "type": "MOD",
@@ -73,16 +73,16 @@
     ]
   },
   "state": {
-    "milestone": "The exact current release is ACCEPTED by owner direction following the user's external/gameplay testing. Existing build, deployment, and runtime classifications are preserved; this administrative transition infers no new runtime result.",
+    "milestone": "C69 is the controlled-validated successor to accepted C68. BBB's original Beam Slab and Beam Stair state definitions encode slab/stair geometry but expose no independent material AXIS, so C69 preserves those provider registrations unchanged while making BGE AxisSlab and AxisStairs the canonical forms for all 12 BBB beams. BBB's ordinary thin WoodenWallBlock remains the sole canonical wall. C69 is not deployed and has no Minecraft gameplay-runtime result; C68 remains accepted provenance.",
     "releases": {
       "current": {
-        "version": "C68 (Layer Axis UV; embedded 4.2.12-bge.canary68.layer-axis-uv+26.2)",
-        "embedded_version": "4.2.12-bge.canary68.layer-axis-uv+26.2",
+        "version": "C69 (BBB Beam Standard Axis; embedded 4.2.13-bge.canary69.bbb-beam-standard-axis+26.2)",
+        "embedded_version": "4.2.13-bge.canary69.bbb-beam-standard-axis+26.2",
         "artifact": {
-          "filename": "cnm-nibaru-integration-4.2.12-bge.canary68.layer-axis-uv+26.2.jar",
-          "sha256": "823cfe9f9fcc32c1cf73e1ddfdfc6489efda0753df64679723df56204a4bf732"
+          "filename": "cnm-nibaru-integration-4.2.13-bge.canary69.bbb-beam-standard-axis+26.2.jar",
+          "sha256": "202eecc72f77745617b0d34ebfb7c58d3369300aeb12e8300309ae1fad39ec52"
         },
-        "source_commit": "9bc80ee2538a39b9fa15606611dc050a1cf6bff2",
+        "source_commit": "f798f4179a079baa235717674f32b88ecb27689f",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": [
@@ -91,10 +91,10 @@
               "relationship": "depends",
               "dependency_id": "minecraft",
               "predicate": "~26.2",
-              "reason": "The exact C68 artifact targets the Minecraft 26.2 release and packages Fabric's same-release predicate; this target-specific Minecraft predicate must remain bound to the controlled-validation release bytes.",
+              "reason": "The exact C69 artifact targets the Minecraft 26.2 release and packages Fabric's same-release predicate; this target-specific Minecraft predicate must remain bound to the controlled-validation release bytes.",
               "regression_evidence": [
-                "A Java 25 clean Gradle build produced C68 SHA-256 823cfe9f9fcc32c1cf73e1ddfdfc6489efda0753df64679723df56204a4bf732.",
-                "The C68 GameTest suite passed 107/107 on the Minecraft 26.2 validation baseline, including every six-facing, four-layer-count, three-material-axis Layer combination and all 432 face-level UV, texture-role, rotation, and geometry assertions."
+                "A Java 25 clean Gradle build produced C69 SHA-256 202eecc72f77745617b0d34ebfb7c58d3369300aeb12e8300309ae1fad39ec52.",
+                "The C69 GameTest suite passed 107/107 on the Minecraft 26.2 validation baseline, including all 12 BBB Beam materials; 108 independent material-axis/slab-state combinations; 1,440 independent material-axis/stair-state combinations; texture selector contracts; rotation, mirror, placement, combination, codec, and neighbor-shape checks; and the no-AXIS ordinary BBB wall contract."
               ]
             }
           ]
@@ -134,7 +134,7 @@
         },
         "source_commit": "2e58d752af44f4b84e10bc5e53a41aea00a177ee"
       },
-      "accepted_current": "CURRENT_IS_ACCEPTED",
+      "accepted_current": "CURRENT_DIFFERS_FROM_ACCEPTED",
       "accepted_rollback": "ROLLBACK_DIFFERS_FROM_ACCEPTED"
     },
     "validation": {
@@ -145,11 +145,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 28,
-    "activity_at": "2026-09-14T08:09:29Z",
-    "updated_at": "2026-09-14T08:09:29Z",
-    "last_codex_at": "2026-09-14T08:09:29Z",
-    "source_commit": "f511f435c623883c5ee1474e9227acb73fb2df68",
+    "revision": 29,
+    "activity_at": "2026-09-15T14:38:03Z",
+    "updated_at": "2026-09-15T14:38:03Z",
+    "last_codex_at": "2026-09-15T14:38:03Z",
+    "source_commit": "f798f4179a079baa235717674f32b88ecb27689f",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
