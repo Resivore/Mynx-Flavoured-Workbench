@@ -18,7 +18,8 @@
     "scope": [
       "Server-owned shepherd shearing of reachable adult regrown sheep, exact shear-output capture, and wool insertion only into face-adjacent barrels at the claimed loom.",
       "Server-owned fisherman fish-only loot from a visible bounded cast/retrieve cycle, with output insertion only into the claimed job-site barrel.",
-      "Claimed-workstation look, hand swing, and restrained vanilla work sound for ten other professions; temporary shears/rod and an isolated fishing-float renderer."
+      "Claimed-workstation look, hand swing, and restrained vanilla work sound for ten other professions; temporary shears/rod and an isolated fishing-float renderer.",
+      "Transient world-aware, owner-scoped path blocking for Sheep, Cow, Pig, Chicken, and Rabbit only while an active VWR task owns the physical open transition of a fence gate."
     ],
     "boundaries": {
       "owned_paths": ["projects/villager-work-routines"],
@@ -37,12 +38,12 @@
     ]
   },
   "state": {
-    "milestone": "User-reported external Canary 3 Shepherd runtime FAIL: three eligible adult sheep and valid interaction positions were detected, but every vanilla path ended 2–3 blocks short at the closed sheep-pen boundary (canReach=false, endpointOutsideTolerance, barrierToSheep=true); no sheep was selected or sheared. No Fisherman verdict was supplied. Canary 4 adds target-driven, bounded Shepherd-only fence-gate entry and exit for a previously detected sheep, with guarded gate ownership, safe closure, and persisted exit/restoration obligations. A clean Java 25/Fabric build and 19 focused tests pass; Minecraft runtime behavior awaits a user-managed trial.",
+    "milestone": "User-reported external Canary 4 Shepherd runtime FAIL / partial functional success: target sheep discovery, direct-path failure, target-driven correct-gate selection, approach, open, inward crossing, close, known-target continuation, and observed outward crossing/closure worked, and Canary 1 through-fence shearing did not recur. Actual shearing was unreliable because normal hand occupancy, synthetic-stack replacement, and small sheep movement cancelled the action; no reliable completed shear cycle occurred, and sheep could escape through the Shepherd-opened gate. No Fisherman verdict was supplied. Canary 5 preserves that route system, adds a reversible semantic temporary-hand transaction, closer same-target shearing recovery, and owner-scoped virtual closed-gate path classification for the five specified livestock. A clean Java 25/Fabric build and 44 focused tests pass; Canary 5 Minecraft runtime behavior awaits a user-managed trial.",
     "releases": {
       "current": {
-        "version": "0.1.0-canary4",
-        "artifact": {"filename": "villager-work-routines-0.1.0-canary4.jar", "sha256": "c7ff8c6194f389e71ce3cfb52a15d62d261156bdf9f00501e092294be7dc7c70"},
-        "source_commit": "9e0edfe95b1959b2256a1255767509a50d8e60d2",
+        "version": "0.1.0-canary5",
+        "artifact": {"filename": "villager-work-routines-0.1.0-canary5.jar", "sha256": "5b4dc754abf4729297220a958333f2d12a9c47e396e2e0a4da6c41ca687920ec"},
+        "source_commit": "0b893ba16d938fa8abc7e43723f6f947630d2e1c",
         "runtime_dependency_policy": {"contract": "CAPABILITY_OR_PROVIDER", "exceptions": []}
       },
       "accepted": null,
@@ -54,11 +55,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 4,
-    "activity_at": "2026-09-14T15:25:44Z",
-    "updated_at": "2026-09-14T15:25:44Z",
-    "last_codex_at": "2026-09-14T15:25:44Z",
-    "source_commit": "9e0edfe95b1959b2256a1255767509a50d8e60d2",
+    "revision": 5,
+    "activity_at": "2026-09-15T02:13:19Z",
+    "updated_at": "2026-09-15T02:13:19Z",
+    "last_codex_at": "2026-09-15T02:13:19Z",
+    "source_commit": "0b893ba16d938fa8abc7e43723f6f947630d2e1c",
     "google_sheet": {"participates": true, "exclusion_reason": null}
   }
 }
