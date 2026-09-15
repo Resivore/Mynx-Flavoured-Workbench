@@ -1,15 +1,13 @@
-# BGE C68 runtime procedure
+# BGE C69 runtime procedure
 
-Current candidate: `cnm-nibaru-integration-4.2.12-bge.canary68.layer-axis-uv+26.2.jar`, SHA-256 `823cfe9f9fcc32c1cf73e1ddfdfc6489efda0753df64679723df56204a4bf732`, embedded version `4.2.12-bge.canary68.layer-axis-uv+26.2`, source checkpoint `9bc80ee2538a39b9fa15606611dc050a1cf6bff2`. Exact C58 remains accepted; C62 and C64 remain external runtime-failed provenance.
+Current candidate: `cnm-nibaru-integration-4.2.13-bge.canary69.bbb-beam-standard-axis+26.2.jar`, SHA-256 `202eecc72f77745617b0d34ebfb7c58d3369300aeb12e8300309ae1fad39ec52`, embedded version `4.2.13-bge.canary69.bbb-beam-standard-axis+26.2`, source checkpoint `f798f4179a079baa235717674f32b88ecb27689f`. C68 remains the accepted release.
 
-C68 is `NOT_DEPLOYED` and `RUNTIME_UNTESTED`. Its clean Java 25 build, archive checks, and 107/107 Minecraft 26.2 GameTests are static evidence only. The project lifecycle remains `TESTING` solely because its immutable UUID is assigned to an older Slot A cohort; that does not deploy or ready C68. Use only the dedicated Matcha Flavoured 26.2 Workbench. Never use or modify the protected Matcha Flavoured 26.1.2 profile.
+C69 is `NOT_DEPLOYED` and `RUNTIME_UNTESTED`; its Java 25 build, archive checks, and 107/107 Minecraft 26.2 GameTests are controlled validation, not gameplay evidence. Use only the dedicated Matcha Flavoured 26.2 Workbench. Never use or modify the protected Matcha Flavoured 26.1.2 profile.
 
 ## Manual checks
 
-1. Place an Oak Log Layer at one-layer thickness and inspect every exposed edge.
-2. Repeat at two and three layers; optionally confirm the four-layer full block remains normal.
-3. Rotate/place the Layer on different block faces, covering all six placement facings.
-4. Test material axes X, Y, and Z if obtainable through the normal BGE interaction/state system.
-5. Confirm bark grain is neither stretched nor compressed on any thin face.
-6. Confirm end-grain faces still use the end texture and remain correctly oriented.
-7. Confirm an ordinary non-axis material such as Oak Planks appears unchanged. Record only actually observed `PASS`, `FAIL`, or `INCONCLUSIVE` evidence.
+1. With BBB present, test all 12 Beam materials. Confirm the canonical BGE Beam Slab and Beam Stair entries are used; BBB's original slab and stair entries remain available and unchanged.
+2. For Beam Slabs, place bottom, top, and double forms from each of the six clicked faces. Confirm X, Y, and Z material grain axes are independent of slab type, survive compatible stacking, and retain BBB's side and end-grain textures.
+3. For Beam Stairs, exercise four horizontal facings, top and bottom halves, and straight, inner, and outer neighbor shapes. Confirm material grain axes remain independent through placement, rotation, mirroring, and neighbor resolution.
+4. Confirm Beam Walls remain BBB's normal thin connected WoodenWallBlock, with no material `AXIS` state and no axis-model behavior.
+5. Check an existing C68 Layer and an ordinary non-axis material for an obvious regression. Record only actually observed `PASS`, `FAIL`, or `INCONCLUSIVE` evidence.
