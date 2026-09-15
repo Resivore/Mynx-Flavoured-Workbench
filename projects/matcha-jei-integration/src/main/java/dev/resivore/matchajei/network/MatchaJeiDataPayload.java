@@ -1,6 +1,7 @@
 package dev.resivore.matchajei.network;
 
 import dev.resivore.matchajei.data.MatchaDisplayData;
+import dev.resivore.matchajei.data.MatchaExactCatalog;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
@@ -14,7 +15,7 @@ public record MatchaJeiDataPayload(
         String revision,
         List<MatchaDisplayData.Trade> trades,
         List<MatchaDisplayData.Acquisition> acquisitions,
-        List<ItemStack> ingredients
+        List<ItemStack> catalog
 ) implements CustomPacketPayload {
     public static final int MAX_PAYLOAD_BYTES = 2 * 1024 * 1024;
     private static final int MAX_ENTRIES = 4096;
@@ -29,7 +30,7 @@ public record MatchaJeiDataPayload(
         revision = revision == null ? "" : revision;
         trades = List.copyOf(trades);
         acquisitions = List.copyOf(acquisitions);
-        ingredients = ingredients.stream().map(ItemStack::copy).toList();
+        catalog = MatchaExactCatalog.normalizeAndDeduplicate(catalog);
     }
 
     @Override
@@ -41,15 +42,15 @@ public record MatchaJeiDataPayload(
         buffer.writeUtf(payload.revision, 128);
         writeList(buffer, payload.trades, MatchaJeiDataPayload::encodeTrade);
         writeList(buffer, payload.acquisitions, MatchaJeiDataPayload::encodeAcquisition);
-        writeList(buffer, payload.ingredients, ItemStack.STREAM_CODEC::encode);
+        writeList(buffer, payload.catalog, ItemStack.STREAM_CODEC::encode);
     }
 
     private static MatchaJeiDataPayload decode(RegistryFriendlyByteBuf buffer) {
         String revision = buffer.readUtf(128);
         List<MatchaDisplayData.Trade> trades = readList(buffer, MatchaJeiDataPayload::decodeTrade);
         List<MatchaDisplayData.Acquisition> acquisitions = readList(buffer, MatchaJeiDataPayload::decodeAcquisition);
-        List<ItemStack> ingredients = readList(buffer, ItemStack.STREAM_CODEC::decode);
-        return new MatchaJeiDataPayload(revision, trades, acquisitions, ingredients);
+        List<ItemStack> catalog = readList(buffer, ItemStack.STREAM_CODEC::decode);
+        return new MatchaJeiDataPayload(revision, trades, acquisitions, catalog);
     }
 
     private static void encodeTrade(RegistryFriendlyByteBuf buffer, MatchaDisplayData.Trade trade) {

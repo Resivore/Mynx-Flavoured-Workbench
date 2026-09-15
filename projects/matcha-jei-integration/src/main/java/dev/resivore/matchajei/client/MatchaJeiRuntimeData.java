@@ -6,6 +6,8 @@ import mezz.jei.api.constants.VanillaTypes;
 import mezz.jei.api.ingredients.IIngredientHelper;
 import mezz.jei.api.ingredients.IIngredientType;
 import mezz.jei.api.ingredients.subtypes.UidContext;
+import mezz.jei.api.recipe.RecipeIngredientRole;
+import mezz.jei.api.recipe.types.IRecipeType;
 import mezz.jei.api.runtime.IJeiRuntime;
 import net.minecraft.world.item.ItemStack;
 
@@ -18,6 +20,8 @@ import java.util.Set;
 
 final class MatchaJeiRuntimeData {
     private static final Map<String, InstalledData> ARCHIVE = new HashMap<>();
+    private static final java.util.function.Consumer<MatchaJeiDataPayload> DATA_LISTENER =
+            MatchaJeiRuntimeData::apply;
     private static IJeiRuntime runtime;
     private static ActiveData active;
 
@@ -28,12 +32,12 @@ final class MatchaJeiRuntimeData {
         runtime = jeiRuntime;
         ARCHIVE.clear();
         active = null;
-        MatchaClientData.setListener(MatchaJeiRuntimeData::apply);
+        MatchaClientData.addListener(DATA_LISTENER);
         apply(MatchaClientData.current());
     }
 
     static void onRuntimeUnavailable() {
-        MatchaClientData.setListener(null);
+        MatchaClientData.removeListener(DATA_LISTENER);
         runtime = null;
         ARCHIVE.clear();
         active = null;
@@ -76,7 +80,7 @@ final class MatchaJeiRuntimeData {
                     payload.revision(),
                     payload.trades(),
                     payload.acquisitions(),
-                    payload.ingredients().stream().map(ItemStack::copy).toList()
+                    payload.catalog().stream().map(ItemStack::copy).toList()
             );
             if (!installed.trades().isEmpty()) {
                 runtime.getRecipeManager().addRecipes(MatchaJeiPlugin.MATCHA_VILLAGER_TRADES, installed.trades());
@@ -93,7 +97,7 @@ final class MatchaJeiRuntimeData {
                 runtime.getRecipeManager().unhideRecipes(MatchaJeiPlugin.MATCHA_ACQUISITIONS, installed.acquisitions());
             }
         }
-        active = new ActiveData(installed, addNewIngredients(installed.ingredients()));
+        active = new ActiveData(installed, addNewIngredients(installed.catalog()));
     }
 
     private static IntroducedIngredients addNewIngredients(List<ItemStack> candidates) {
@@ -129,11 +133,35 @@ final class MatchaJeiRuntimeData {
         return List.copyOf(introduced);
     }
 
+    /**
+     * The exact-stack bridge asks JEI's own vanilla category lookup for the
+     * existing recipe. No companion recipe object is created or registered.
+     */
+    static <T> List<T> findVanillaRecipes(
+            IRecipeType<T> recipeType,
+            RecipeIngredientRole role,
+            ItemStack exactStack
+    ) {
+        IJeiRuntime currentRuntime = runtime;
+        if (currentRuntime == null) {
+            return List.of();
+        }
+        var focus = currentRuntime.getJeiHelpers().getFocusFactory().createFocus(
+                role,
+                VanillaTypes.ITEM_STACK,
+                exactStack.copyWithCount(1)
+        );
+        return currentRuntime.getRecipeManager().createRecipeLookup(recipeType)
+                .limitFocus(List.of(focus))
+                .get()
+                .toList();
+    }
+
     private record InstalledData(
             String revision,
             List<MatchaDisplayData.Trade> trades,
             List<MatchaDisplayData.Acquisition> acquisitions,
-            List<ItemStack> ingredients
+            List<ItemStack> catalog
     ) {
     }
 

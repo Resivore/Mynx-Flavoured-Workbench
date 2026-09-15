@@ -1222,6 +1222,11 @@ try {
     $scannerPath = Join-Path $projectRoot 'src\main\java\dev\resivore\matchajei\server\MatchaDataScanner.java'
     $runtimeDataPath = Join-Path $projectRoot 'src\main\java\dev\resivore\matchajei\client\MatchaJeiRuntimeData.java'
     $exactIngredientPath = Join-Path $projectRoot 'src\main\java\dev\resivore\matchajei\client\MatchaExactIngredient.java'
+    $exactRecipeBridgePath = Join-Path $projectRoot 'src\main\java\dev\resivore\matchajei\client\MatchaExactRecipeBridge.java'
+    $exactCatalogPath = Join-Path $projectRoot 'src\main\java\dev\resivore\matchajei\data\MatchaExactCatalog.java'
+    $creativeCatalogPath = Join-Path $projectRoot 'src\main\java\dev\resivore\matchajei\client\MatchaCreativeCatalog.java'
+    $clientDataPath = Join-Path $projectRoot 'src\main\java\dev\resivore\matchajei\client\MatchaClientData.java'
+    $payloadPath = Join-Path $projectRoot 'src\main\java\dev\resivore\matchajei\network\MatchaJeiDataPayload.java'
     $initializerPath = Join-Path $projectRoot 'src\main\java\dev\resivore\matchajei\MatchaJeiIntegration.java'
     $acquisitionCategoryPath = Join-Path $projectRoot 'src\main\java\dev\resivore\matchajei\client\category\MatchaAcquisitionCategory.java'
     $tradeCategoryPath = Join-Path $projectRoot 'src\main\java\dev\resivore\matchajei\client\category\MatchaVillagerTradeCategory.java'
@@ -1230,17 +1235,27 @@ try {
     $scannerSource = Get-Content -LiteralPath $scannerPath -Raw -Encoding UTF8
     $runtimeDataSource = Get-Content -LiteralPath $runtimeDataPath -Raw -Encoding UTF8
     $exactIngredientSource = Get-Content -LiteralPath $exactIngredientPath -Raw -Encoding UTF8
+    $exactRecipeBridgeSource = Get-Content -LiteralPath $exactRecipeBridgePath -Raw -Encoding UTF8
+    $exactCatalogSource = Get-Content -LiteralPath $exactCatalogPath -Raw -Encoding UTF8
+    $creativeCatalogSource = Get-Content -LiteralPath $creativeCatalogPath -Raw -Encoding UTF8
+    $clientDataSource = Get-Content -LiteralPath $clientDataPath -Raw -Encoding UTF8
+    $payloadSource = Get-Content -LiteralPath $payloadPath -Raw -Encoding UTF8
     $initializerSource = Get-Content -LiteralPath $initializerPath -Raw -Encoding UTF8
     $acquisitionCategorySource = Get-Content -LiteralPath $acquisitionCategoryPath -Raw -Encoding UTF8
     $tradeCategorySource = Get-Content -LiteralPath $tradeCategoryPath -Raw -Encoding UTF8
 
-    foreach ($recipeType in 'CRAFTING', 'STONECUTTING', 'SMELTING', 'SMOKING', 'BLASTING', 'CAMPFIRE_COOKING', 'SMITHING') {
-        Assert-Matches $pluginSource "collect\s*\(\s*runtime\s*,\s*RecipeTypes\.$recipeType\s*,\s*outputs\s*\)" "Accepted $recipeType recipe-output collection is missing."
-    }
-    Assert-Matches $pluginSource 'MatchaNamespaces\.contains\s*\(' 'Accepted recipe-output collector no longer filters through MatchaNamespaces.'
-    Assert-Matches $pluginSource 'getIngredients\s*\(\s*RecipeIngredientRole\.OUTPUT\s*\)' 'Accepted recipe-output collector no longer reads JEI-owned recipe outputs.'
-    Assert-Matches $pluginSource '!\s*stack\.getComponentsPatch\(\)\.isEmpty\(\)' 'Accepted recipe-output collector no longer preserves the component-bearing-only baseline.'
-    Assert-Matches $pluginSource 'addIngredientsAtRuntime\s*\(\s*VanillaTypes\.ITEM_STACK\s*,\s*outputs\s*\)' 'Accepted 315-output runtime ingredient collector is missing.'
+    Assert-Matches $scannerSource 'server\.getRecipeManager\(\)\.getRecipes\(\)' 'Effective recipe discovery is not reading the resolved server recipe manager.'
+    Assert-Matches $scannerSource 'SlotDisplayContext\.REGISTRIES' 'Effective recipe discovery is not using the supported 26.2 recipe-display context.'
+    Assert-Matches $scannerSource 'display\.result\(\)\.resolveForStacks\(displayContext\)' 'Effective recipe discovery is not resolving display outputs.'
+    Assert-Matches $scannerSource 'MatchaExactCatalog\.selectRecipeOutputs\(rawFallbacks, resolvedOutputs\)' 'Resolved recipe outputs do not supersede raw Matcha JSON fallbacks.'
+    Assert-Matches $scannerSource 'filter\(identity -> isComponentStack\(identity\.stack\(\)\)\).*?addCatalogEntry\(catalog, identity\)' 'Component-bearing effective recipe outputs are not added to the shared catalog.'
+    Assert-Matches $scannerSource 'revisionOf\(recipes, state\.trades, lootTables, effectiveRecipeOutputs\)' 'The synchronized catalog revision ignores effective outputs.'
+    Assert-Matches $scannerSource 'effectiveRecipeOutputs\.entrySet\(\)' 'The synchronized catalog revision does not fingerprint effective full-stack outputs.'
+    Assert-Matches $exactCatalogSource 'known but non-representable recipe deliberately' 'A known unrepresentable resolved recipe could incorrectly revive its stale raw output.'
+    Assert-Matches $exactCatalogSource 'ItemStack\.isSameItemSameComponents' 'Shared catalog deduplication no longer uses full component identity.'
+    Assert-Matches $payloadSource 'List<ItemStack> catalog' 'The synchronized payload no longer carries the shared exact catalog.'
+    Assert-Matches $runtimeDataSource 'payload\.catalog\(\)' 'JEI runtime data is not consuming the shared catalog.'
+    Assert-True ($pluginSource -cnotmatch 'addIngredientsAtRuntime\s*\(\s*VanillaTypes\.ITEM_STACK\s*,\s*outputs\s*\)') 'C3 client-side raw recipe-output injection must not coexist with the resolved catalog.'
 
     Assert-True (-not [regex]::IsMatch(
             $javaSources,
@@ -1292,7 +1307,7 @@ try {
     Assert-Matches $initializerSource 'START_DATA_PACK_RELOAD\.register.*?invalidateReloadable' 'Reloadable recipe/loot data is not invalidated independently of the startup trade snapshot.'
 
     Assert-Matches $scannerSource 'document\.json\(\)\.get\s*\(\s*"result"\s*\)' 'Recipe subtraction is not limited to actual recipe result stacks.'
-    Assert-Matches $scannerSource 'stack\.copyWithCount\s*\(\s*1\s*\)' 'Canonical exact identities are not count-normalized.'
+    Assert-Matches $exactCatalogSource 'stack\.copyWithCount\s*\(\s*1\s*\)' 'Canonical exact identities are not count-normalized.'
     Assert-Matches $scannerSource 'return\s+!recipeIdentities\.contains\s*\(\s*identity\.key\(\)\s*\)' 'Non-recipe subtraction is not comparing canonical full-stack identities.'
     Assert-True ($scannerSource -cnotmatch 'DataComponents\.ITEM_MODEL') 'Runtime non-recipe subtraction must not collapse full stacks to item_model.'
     Assert-Matches $scannerSource 'hasNonEmptyArray\s*\(\s*json\s*,\s*"given_item_modifiers"\s*\).*?return\s*;.*?parseTemplate\s*\(\s*json\.get\s*\(\s*"wants"' 'Contextual map modifiers are not rejected before any inexact ingredient can leak.'
@@ -1311,6 +1326,9 @@ try {
     Assert-True ($pluginSource -cnotmatch 'visibleSlot\.add\s*\(\s*MatchaExactIngredient\.TYPE') 'An exact wrapper became the visible slot ingredient and would break ordinary vanilla recipe navigation.'
     Assert-Matches $pluginSource 'addInvisibleIngredients\s*\(\s*role\s*\).*?MatchaExactIngredient\.TYPE' 'Visible vanilla slots are not linked to exact JEI-owned-base identities.'
     Assert-Matches $pluginSource 'createFocusLink\s*\(\s*visibleSlot\s*,\s*exactIngredient\s*\)' 'Exact and visible ingredient focus navigation is not linked.'
+    Assert-Matches $pluginSource 'registration\.addRecipeManagerPlugin\s*\(\s*new\s+MatchaExactRecipeBridge' 'Exact Matcha recipe outputs are not bridged back to JEI vanilla recipe categories.'
+    Assert-Matches $exactRecipeBridgeSource 'MatchaJeiRuntimeData\.findVanillaRecipes\(' 'Exact recipe output navigation does not delegate to existing vanilla recipes.'
+    Assert-Matches $runtimeDataSource 'VanillaTypes\.ITEM_STACK.*?createRecipeLookup\(recipeType\)' "Exact recipe output navigation does not query JEI's real vanilla recipe category."
     Assert-Matches $runtimeDataSource '!\s*MatchaJeiPlugin\.usesJeiOwnedSubtype\s*\(' 'Vanilla runtime ingredients are not partitioned away from JEI-owned subtype bases.'
     Assert-Matches $runtimeDataSource '\.filter\s*\(\s*MatchaJeiPlugin::usesJeiOwnedSubtype\s*\)' 'JEI-owned-base candidates are not positively selected for the exact bridge.'
     Assert-Matches $runtimeDataSource 'MatchaExactIngredient\.TYPE\s*,\s*exactCandidates' 'JEI-owned-base exact ingredients are not added through the dedicated type.'
@@ -1324,13 +1342,19 @@ try {
     Assert-Matches $scannerSource 'displayed at full durability, but acquired durability, chance, and conditions vary' 'Variable-durability loot is not qualified accurately.'
     Assert-Matches $acquisitionCategorySource '160\s*,\s*76' 'Acquisition category height no longer accommodates the longest current wrapped provenance label.'
     Assert-Matches $acquisitionCategorySource 'textWithWordWrap\s*\(' 'Acquisition provenance is not rendered with bounded wrapping.'
+    Assert-Matches $creativeCatalogSource 'CreativeModeTabEvents\.modifyOutputEvent\(CreativeModeTabs\.SEARCH\)' 'Creative Search does not expose the shared Matcha catalog.'
+    Assert-Matches $creativeCatalogSource 'MatchaClientData\.current\(\)\.catalog\(\)' 'Creative Search is not sourcing exact stacks from the shared catalog.'
+    Assert-Matches $creativeCatalogSource 'CreativeModeTabs\.tryRebuildTabContents\(' 'Creative Search is not rebuilt after catalog synchronization.'
+    Assert-Matches $creativeCatalogSource 'CreativeModeTabs\.searchTab\(\)\.buildContents\(parameters\)' 'Creative Search does not replace stale entries when vanilla rebuild parameters are unchanged.'
+    Assert-Matches $clientDataSource 'addListener\(' 'Creative and JEI cannot independently receive synchronized catalog changes.'
+    Assert-True ($creativeCatalogSource -cnotmatch 'mezz\.jei') 'Creative catalog support must not classload JEI API types.'
     Assert-True (-not [regex]::IsMatch(
             $javaSources,
             '(?:getNamespace\s*\(\s*\)\s*\.equals\s*\(\s*"(?:minecraft|main)"|"(?:minecraft|main)"\s*\.equals\s*\([^)]*getNamespace\s*\()',
             [Text.RegularExpressions.RegexOptions]::Singleline
         )) 'A minecraft/main namespace shortcut was found; those namespaces also contain unrelated vanilla resources.'
 
-    Write-Output 'NON_RECIPE_DISCOVERY_OK: recipes=1076 component_outputs=315 trades=290 trade_models=145 nonrecipe_models=112 (57/45/10) exact_trades=175 acquisitions=249 exact_ingredients=240 (61/149/30; 19 exact-bridge/221 vanilla)'
+    Write-Output 'MATCHA_C4_CATALOG_OK: recipes=1076 raw_component_outputs=315 trades=290 trade_models=145 nonrecipe_models=112 (57/45/10) exact_trades=175 acquisitions=249 preserved_nonrecipe_identities=240 (61/149/30; 19 exact-bridge/221 vanilla); resolved outputs and Creative Search are verified structurally.'
 } finally {
     if ($null -ne $zip) {
         $zip.Dispose()

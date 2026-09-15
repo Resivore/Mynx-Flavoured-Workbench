@@ -8,6 +8,7 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 public final class MatchaJeiClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
+        MatchaCreativeCatalog.initialize();
         ClientPlayNetworking.registerGlobalReceiver(MatchaJeiDataPayload.TYPE, (payload, context) ->
                 context.client().execute(() -> MatchaClientData.publish(payload))
         );

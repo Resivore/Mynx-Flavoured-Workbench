@@ -7,6 +7,7 @@ import com.google.gson.JsonParser;
 import com.mojang.serialization.JsonOps;
 import dev.resivore.matchajei.MatchaNamespaces;
 import dev.resivore.matchajei.data.MatchaDisplayData;
+import dev.resivore.matchajei.data.MatchaExactCatalog;
 import dev.resivore.matchajei.network.MatchaJeiDataPayload;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.Registries;
@@ -21,8 +22,12 @@ import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.entity.npc.villager.VillagerProfession;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemStackTemplate;
+import net.minecraft.util.context.ContextMap;
 import net.minecraft.world.item.trading.TradeSet;
 import net.minecraft.world.item.trading.TradeSets;
+import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.item.crafting.display.SlotDisplayContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -114,26 +119,35 @@ public final class MatchaDataScanner {
         if (recipes.isEmpty() && state.trades.isEmpty() && lootTables.isEmpty()) {
             return MatchaJeiDataPayload.EMPTY;
         }
-        RegistryOps<JsonElement> registryOps = RegistryOps.create(JsonOps.INSTANCE, registryProvider(server));
-        Set<String> recipeIdentities = collectRecipeIdentities(recipes.values(), registryOps);
+        HolderLookup.Provider registries = registryProvider(server);
+        RegistryOps<JsonElement> registryOps = RegistryOps.create(JsonOps.INSTANCE, registries);
+        Map<Identifier, StackIdentity> effectiveRecipeOutputs = collectEffectiveRecipeOutputs(
+                server, recipes, registries, registryOps
+        );
+        Set<String> recipeIdentities = effectiveRecipeOutputs.values().stream()
+                .map(StackIdentity::key)
+                .collect(java.util.stream.Collectors.toUnmodifiableSet());
 
-        LinkedHashMap<String, ItemStack> ingredients = new LinkedHashMap<>();
+        LinkedHashMap<String, ItemStack> catalog = new LinkedHashMap<>();
+        effectiveRecipeOutputs.values().stream()
+                .filter(identity -> isComponentStack(identity.stack()))
+                .forEach(identity -> addCatalogEntry(catalog, identity));
         List<MatchaDisplayData.Trade> tradeDisplays = scanTrades(
-                state.trades, state.assignments, recipeIdentities, registryOps, ingredients
+                state.trades, state.assignments, recipeIdentities, registryOps, catalog
         );
         List<MatchaDisplayData.Acquisition> acquisitions = scanLoot(
-                lootTables, recipeIdentities, registryOps, ingredients
+                lootTables, recipeIdentities, registryOps, catalog
         );
-        String revision = revisionOf(recipes, state.trades, lootTables);
+        String revision = revisionOf(recipes, state.trades, lootTables, effectiveRecipeOutputs);
         LOGGER.info(
-                "Prepared Matcha non-recipe JEI data {}: {} trades, {} acquisitions, {} exact ingredients",
-                revision.substring(0, 12), tradeDisplays.size(), acquisitions.size(), ingredients.size()
+                "Prepared Matcha exact catalog {}: {} resolved recipe outputs, {} trades, {} acquisitions, {} entries",
+                revision.substring(0, 12), effectiveRecipeOutputs.size(), tradeDisplays.size(), acquisitions.size(), catalog.size()
         );
         return new MatchaJeiDataPayload(
                 revision,
                 tradeDisplays,
                 acquisitions,
-                new ArrayList<>(ingredients.values())
+                new ArrayList<>(catalog.values())
         );
     }
 
@@ -262,17 +276,62 @@ public final class MatchaDataScanner {
         return Map.copyOf(documents);
     }
 
-    private static Set<String> collectRecipeIdentities(
-            Iterable<ResourceDocument> documents,
+    private static Map<Identifier, StackIdentity> collectEffectiveRecipeOutputs(
+            MinecraftServer server,
+            Map<Identifier, ResourceDocument> documents,
+            HolderLookup.Provider registries,
             RegistryOps<JsonElement> registryOps
     ) {
-        LinkedHashSet<String> identities = new LinkedHashSet<>();
-        for (ResourceDocument document : documents) {
-            parseTemplate(document.json().get("result"), registryOps)
-                    .map(StackIdentity::key)
-                    .ifPresent(identities::add);
-        }
-        return Set.copyOf(identities);
+        LinkedHashMap<Identifier, ItemStack> rawFallbacks = new LinkedHashMap<>();
+        documents.values().stream().sorted(Comparator.comparing(ResourceDocument::id)).forEach(document ->
+                rawFallbacks.put(
+                        document.id(),
+                        parseTemplate(document.json().get("result"), registryOps)
+                                .map(StackIdentity::stack)
+                                .orElse(ItemStack.EMPTY)
+                )
+        );
+
+        Set<Identifier> matchaRecipeIds = rawFallbacks.keySet();
+        Map<Identifier, RecipeHolder<?>> resolvedRecipes = server.getRecipeManager().getRecipes().stream()
+                .filter(holder -> matchaRecipeIds.contains(holder.id().identifier()))
+                .collect(java.util.stream.Collectors.toMap(
+                        holder -> holder.id().identifier(),
+                        holder -> holder,
+                        (first, ignored) -> first,
+                        LinkedHashMap::new
+                ));
+        ContextMap displayContext = new ContextMap.Builder()
+                .withParameter(SlotDisplayContext.REGISTRIES, registries)
+                .create(SlotDisplayContext.CONTEXT);
+        LinkedHashMap<Identifier, Optional<ItemStack>> resolvedOutputs = new LinkedHashMap<>();
+        rawFallbacks.keySet().stream().sorted().forEach(id -> {
+            RecipeHolder<?> holder = resolvedRecipes.get(id);
+            if (holder != null) {
+                resolvedOutputs.put(id, staticallyRepresentableOutput(holder.value(), displayContext));
+            }
+        });
+
+        LinkedHashMap<Identifier, StackIdentity> effective = new LinkedHashMap<>();
+        MatchaExactCatalog.selectRecipeOutputs(rawFallbacks, resolvedOutputs).entrySet().stream()
+                .sorted(Map.Entry.comparingByKey())
+                .forEach(entry -> canonicalStack(entry.getValue(), registryOps)
+                        .ifPresent(key -> effective.put(entry.getKey(), new StackIdentity(key, entry.getValue()))));
+        return Map.copyOf(effective);
+    }
+
+    /**
+     * Recipe displays are the stable 26.2 view of a resolved recipe result.
+     * Multiple possible outputs are intentionally skipped rather than guessed.
+     */
+    private static Optional<ItemStack> staticallyRepresentableOutput(Recipe<?> recipe, ContextMap displayContext) {
+        List<ItemStack> candidates = recipe.display().stream()
+                .flatMap(display -> display.result().resolveForStacks(displayContext).stream())
+                .filter(stack -> !stack.isEmpty())
+                .map(MatchaExactCatalog::normalize)
+                .toList();
+        List<ItemStack> exactOutputs = MatchaExactCatalog.normalizeAndDeduplicate(candidates);
+        return exactOutputs.size() == 1 ? Optional.of(exactOutputs.getFirst()) : Optional.empty();
     }
 
     private static List<MatchaDisplayData.Trade> scanTrades(
@@ -280,7 +339,7 @@ public final class MatchaDataScanner {
             Map<Identifier, ProfessionLevel> assignments,
             Set<String> recipeIdentities,
             RegistryOps<JsonElement> registryOps,
-            Map<String, ItemStack> ingredients
+            Map<String, ItemStack> catalog
     ) {
         List<MatchaDisplayData.Trade> displays = new ArrayList<>();
         documents.values().stream().sorted(Comparator.comparing(ResourceDocument::id)).forEach(document -> {
@@ -297,13 +356,13 @@ public final class MatchaDataScanner {
             }
             first.filter(identity -> isComponentStack(identity.stack()))
                     .filter(identity -> isNonRecipeIdentity(identity, recipeIdentities))
-                    .ifPresent(identity -> addIngredient(ingredients, identity));
+                    .ifPresent(identity -> addCatalogEntry(catalog, identity));
             second.filter(identity -> isComponentStack(identity.stack()))
                     .filter(identity -> isNonRecipeIdentity(identity, recipeIdentities))
-                    .ifPresent(identity -> addIngredient(ingredients, identity));
+                    .ifPresent(identity -> addCatalogEntry(catalog, identity));
             output.filter(identity -> isComponentStack(identity.stack()))
                     .filter(identity -> isNonRecipeIdentity(identity, recipeIdentities))
-                    .ifPresent(identity -> addIngredient(ingredients, identity));
+                    .ifPresent(identity -> addCatalogEntry(catalog, identity));
 
             ItemStack secondStack = second.map(StackIdentity::stack).orElse(ItemStack.EMPTY);
             if (!isComponentStack(first.get().stack())
@@ -337,7 +396,7 @@ public final class MatchaDataScanner {
             Map<Identifier, ResourceDocument> documents,
             Set<String> recipeIdentities,
             RegistryOps<JsonElement> registryOps,
-            Map<String, ItemStack> ingredients
+            Map<String, ItemStack> catalog
     ) {
         Map<Identifier, LootNode> nodes = new LinkedHashMap<>();
         Set<Identifier> referenced = new HashSet<>();
@@ -355,7 +414,7 @@ public final class MatchaDataScanner {
                         .filter(identity -> isNonRecipeIdentity(identity, recipeIdentities))
                         .sorted(Comparator.comparing(StackIdentity::key))
                         .forEach(identity -> {
-                            addIngredient(ingredients, identity);
+                            addCatalogEntry(catalog, identity);
                             displays.add(new MatchaDisplayData.Acquisition(
                                     source,
                                     shortHash(source + "\n" + identity.key()),
@@ -581,8 +640,8 @@ public final class MatchaDataScanner {
                 .map(JsonElement::toString);
     }
 
-    private static void addIngredient(Map<String, ItemStack> ingredients, StackIdentity identity) {
-        ingredients.putIfAbsent(identity.key(), identity.stack().copyWithCount(1));
+    private static void addCatalogEntry(Map<String, ItemStack> catalog, StackIdentity identity) {
+        catalog.putIfAbsent(identity.key(), MatchaExactCatalog.normalize(identity.stack()));
     }
 
     private static boolean isComponentStack(ItemStack stack) {
@@ -672,7 +731,8 @@ public final class MatchaDataScanner {
     private static String revisionOf(
             Map<Identifier, ResourceDocument> recipes,
             Map<Identifier, ResourceDocument> trades,
-            Map<Identifier, ResourceDocument> lootTables
+            Map<Identifier, ResourceDocument> lootTables,
+            Map<Identifier, StackIdentity> effectiveRecipeOutputs
     ) {
         MessageDigest digest = sha256();
         List<Map<Identifier, ResourceDocument>> groups = List.of(recipes, trades, lootTables);
@@ -684,6 +744,15 @@ public final class MatchaDataScanner {
                 digest.update((byte) 0);
             });
         }
+        // Compatibility mods may preserve the source recipe ID while replacing
+        // the resolved output. Include the resolved full-stack identity so the
+        // client can retire stale JEI and Creative entries after a reload.
+        effectiveRecipeOutputs.entrySet().stream().sorted(Map.Entry.comparingByKey()).forEach(entry -> {
+            digest.update(entry.getKey().toString().getBytes(StandardCharsets.UTF_8));
+            digest.update((byte) 0);
+            digest.update(entry.getValue().key().getBytes(StandardCharsets.UTF_8));
+            digest.update((byte) 0);
+        });
         return hex(digest.digest());
     }
 
