@@ -2,6 +2,7 @@ package dev.aero.cnmterraincompat;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.mojang.serialization.JsonOps;
 import dev.aero.cnmterraincompat.AxisModelContract.AxisUvPolicy;
 import dev.aero.cnmterraincompat.client.ExternalMaterialGeneratedResources;
 import dev.aero.cnmterraincompat.client.LayerGeneratedResources;
@@ -9,30 +10,49 @@ import dev.aero.cnmterraincompat.client.QuarterGeometryGeneratedResources;
 import dev.tazer.clutternomore.ClutterNoMore;
 import dev.tazer.clutternomore.common.shape_map.ShapeMap;
 import games.twinhead.moreslabsstairsandwalls.api.material.BehaviorCapability;
+import games.twinhead.moreslabsstairsandwalls.api.material.NativeAxisModelContract;
 import games.twinhead.moreslabsstairsandwalls.api.material.NibaruMaterialProfiles;
 import games.twinhead.moreslabsstairsandwalls.block.leaves.LeafDistanceCarrier;
 import net.fabricmc.fabric.api.gametest.v1.CustomTestMethodInvoker;
 import net.fabricmc.fabric.api.gametest.v1.GameTest;
 import net.fabricmc.fabric.api.registry.FlammableBlockRegistry;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.resources.Identifier;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.packs.PackResources;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.tags.BlockTags;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.Mirror;
+import net.minecraft.world.level.block.Rotation;
+import net.minecraft.world.level.block.SlabBlock;
+import net.minecraft.world.level.block.StairBlock;
 import net.minecraft.world.level.block.WallBlock;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.Half;
+import net.minecraft.world.level.block.state.properties.SlabType;
+import net.minecraft.world.level.block.state.properties.StairsShape;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.Vec3;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -42,7 +62,7 @@ import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-/** Production-lifecycle coverage for C65's exact 76 source / 684 relation contract. */
+/** Production-lifecycle coverage for C69's exact 76 source / 684 relation contract. */
 public final class ExternalMaterialFamilyGameTests implements CustomTestMethodInvoker {
     @GameTest(maxTicks = 40)
     public void exactAllowlistAndProviderCompletionInventory(GameTestHelper helper) {
@@ -69,7 +89,7 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
         helper.assertTrue(actual.stream().filter(id -> id.getNamespace().equals("mcwpaths"))
                         .allMatch(ExternalMaterialFamilyGameTests::isRequestedMacawSource),
                 "Macaw family is outside the 52 full-pattern plus five plain-Path scope");
-        System.out.println("EXTERNAL_C65_INVENTORY|sources=76|mcwpaths=57|mynx_trees=6|ribbits=1|bbb=12|relations=684");
+        System.out.println("EXTERNAL_C69_INVENTORY|sources=76|mcwpaths=57|mynx_trees=6|ribbits=1|bbb=12|relations=684");
         helper.succeed();
     }
 
@@ -83,7 +103,7 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
     }
 
     @GameTest(maxTicks = 40)
-    public void everySourceHasExactOrderedNineRoleShapeMapFamily(GameTestHelper helper) {
+    public void everySourceHasExactCanonicalNineRoleShapeMapFamily(GameTestHelper helper) {
         int relations = 0;
         Set<Block> canonicalDerived = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
         Set<Block> bgeGenerated = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
@@ -106,16 +126,15 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
 
             List<Item> component = ShapeMap.getShapes(binding.source().asItem());
             List<Item> expected = roles.values().stream().map(Block::asItem).toList();
-            int sourceIndex = component.indexOf(binding.source().asItem());
-            boolean exactSegment = sourceIndex >= 0 && sourceIndex + expected.size() <= component.size()
-                    && component.subList(sourceIndex, sourceIndex + expected.size()).equals(expected);
-            helper.assertTrue(exactSegment, "ShapeMap relation lacks the exact ordered nine-role segment for "
+            boolean exactMembership = expected.stream().allMatch(item ->
+                    java.util.Collections.frequency(component, item) == 1);
+            helper.assertTrue(exactMembership, "ShapeMap relation lacks exact canonical nine-role membership for "
                     + binding.spec().id() + ": " + component.stream().map(BuiltInRegistries.ITEM::getKey).toList());
             relations += roles.size();
         }
         CanonicalShapeMapAudit.Report audit = CanonicalShapeMapAudit.inspectExternalFamilies();
-        helper.assertTrue(relations == 684 && canonicalDerived.size() == 608 && bgeGenerated.size() == 466,
-                "C65 relation/canonical/generated identity count mismatch: " + relations + "/"
+        helper.assertTrue(relations == 684 && canonicalDerived.size() == 608 && bgeGenerated.size() == 490,
+                "C69 relation/canonical/generated identity count mismatch: " + relations + "/"
                         + canonicalDerived.size() + "/" + bgeGenerated.size());
         helper.assertTrue(audit.variantCount() == 76 && audit.missing().isEmpty()
                         && audit.duplicates().isEmpty(),
@@ -138,7 +157,7 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
                 reused++;
             }
         }
-        helper.assertTrue(reused == 142, "Expected 142 reused provider roles, found " + reused);
+        helper.assertTrue(reused == 118, "Expected 118 reused provider roles, found " + reused);
 
         Identifier family = Identifier.parse("mynx_trees:wisteria_log");
         CanonicalShapeMapAudit.CanonicalKey logSlab = new CanonicalShapeMapAudit.CanonicalKey(
@@ -245,32 +264,58 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
         helper.succeed();
     }
 
-    @GameTest(maxTicks = 40)
-    public void bbbBeamsReuseOnlyAuthoritativeStandardFormsAndKeepAxisAwareBgeForms(GameTestHelper helper) {
-        List<String> materials = List.of("oak", "spruce", "birch", "jungle", "acacia", "dark_oak",
-                "crimson", "warped", "mangrove", "bamboo", "cherry", "pale_oak");
-        for (String material : materials) {
+    @GameTest(maxTicks = 80)
+    public void bbbBeamCanonicalSlabsAndStairsHaveIndependentMaterialAxes(GameTestHelper helper)
+            throws ReflectiveOperationException {
+        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        BlockPos target = new BlockPos(2, 1, 2);
+        int slabStates = 0;
+        int stairStates = 0;
+        for (String material : bbbBeamMaterials()) {
             ExternalMaterialFamilies.Binding beam = external("bbb:" + material + "_beam");
-            helper.assertTrue(beam.spec().providerRoles().equals(Map.of(
-                            "slab", Identifier.parse("bbb:" + material + "_beam_slab"),
-                            "stairs", Identifier.parse("bbb:" + material + "_beam_stairs"),
-                            "wall", Identifier.parse("bbb:" + material + "_wall"))),
-                    "BBB standard mapping drifted for " + material);
-            for (String role : List.of("slab", "stairs", "wall")) {
-                helper.assertTrue(!beam.isGeneratedRole(role)
-                                && BuiltInRegistries.BLOCK.getKey(beam.roles().get(role))
-                                        .equals(beam.spec().providerRoles().get(role)),
-                        "BGE duplicated the BBB " + role + " for " + material);
-            }
-            helper.assertTrue(!beam.wall().defaultBlockState().hasProperty(BlockStateProperties.AXIS),
-                    "BBB wooden wall received an inappropriate axis state for " + material);
-            for (String role : List.of("vertical_slab", "step", "corner", "quarter_column", "layer")) {
+            Identifier providerSlab = Identifier.parse("bbb:" + material + "_beam_slab");
+            Identifier providerStairs = Identifier.parse("bbb:" + material + "_beam_stairs");
+            Identifier providerWall = Identifier.parse("bbb:" + material + "_wall");
+            helper.assertTrue(beam.spec().providerRoles().equals(Map.of("wall", providerWall)),
+                    "BBB Beam Slab/Stair must not be selected as a canonical provider role: " + material);
+            helper.assertTrue(beam.isGeneratedRole("slab") && beam.isGeneratedRole("stairs")
+                            && !beam.isGeneratedRole("wall")
+                            && BuiltInRegistries.BLOCK.getKey(beam.slab())
+                                    .equals(ExternalMaterialFamilies.id(beam.spec(), "slab"))
+                            && BuiltInRegistries.BLOCK.getKey(beam.stairs())
+                                    .equals(ExternalMaterialFamilies.id(beam.spec(), "stairs"))
+                            && BuiltInRegistries.BLOCK.getKey(beam.wall()).equals(providerWall),
+                    "BBB Beam canonical ownership drifted for " + material);
+            helper.assertTrue(!BuiltInRegistries.BLOCK.getValue(providerSlab).defaultBlockState()
+                            .hasProperty(BlockStateProperties.AXIS)
+                            && !BuiltInRegistries.BLOCK.getValue(providerStairs).defaultBlockState()
+                                    .hasProperty(BlockStateProperties.AXIS),
+                    "Provider BBB Beam standard forms unexpectedly gained an independent AXIS: " + material);
+            helper.assertTrue(beam.wall() instanceof WallBlock
+                            && !beam.wall().defaultBlockState().hasProperty(BlockStateProperties.AXIS),
+                    "BBB Beam Wall must remain the provider-owned no-AXIS WallBlock: " + material);
+            for (String role : List.of("slab", "stairs", "vertical_slab", "step", "corner",
+                    "quarter_column", "layer")) {
                 Block block = beam.roles().get(role);
-                helper.assertTrue(beam.isGeneratedRole(role)
-                                && block.defaultBlockState().hasProperty(BlockStateProperties.AXIS),
+                helper.assertTrue(block.defaultBlockState().hasProperty(BlockStateProperties.AXIS),
                         "Axis-aware BGE beam " + role + " missing for " + material);
             }
+
+            SlabBlock slab = (SlabBlock) beam.slab();
+            StairBlock stairs = (StairBlock) beam.stairs();
+            assertBbbSlabStateContract(helper, slab, material, target, player);
+            assertBbbStairStateContract(helper, stairs, material);
+            assertBbbAxisModelContract(helper, beam, material);
+            slabStates += Direction.Axis.values().length * SlabType.values().length;
+            stairStates += Direction.Axis.values().length * 4 * Half.values().length
+                    * StairsShape.values().length;
         }
+        assertBbbStairNeighborResolutionRetainsAxis(helper,
+                (StairBlock) external("bbb:oak_beam").stairs(), target);
+        helper.assertTrue(slabStates == 108 && stairStates == 1440,
+                "BBB Beam independent-state matrix changed: slabs=" + slabStates + " stairs=" + stairStates);
+        System.out.println("BBB_C69_STANDARD_AXIS|materials=12|slabStates=108|stairStates=1440"
+                + "|wallAxis=absent|shapeMap=roundtrip");
         helper.succeed();
     }
 
@@ -315,13 +360,13 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
         JsonObject walls = generatedServerJson(Identifier.parse("minecraft:tags/block/walls.json"));
         helper.assertTrue(walls.getAsJsonArray("values").size() == 76,
                 "External wall classification does not contain every scoped full-parent family");
-        helper.assertTrue(loot == 238, "Expected 238 BGE-owned external loot tables, found " + loot);
-        System.out.println("EXTERNAL_C65_SERVER_RESOURCES|standardLoot=238|wallTags=76|materialFamilies=76");
+        helper.assertTrue(loot == 262, "Expected 262 BGE-owned external loot tables, found " + loot);
+        System.out.println("EXTERNAL_C69_SERVER_RESOURCES|standardLoot=262|wallTags=76|materialFamilies=76");
         helper.succeed();
     }
 
     @GameTest(maxTicks = 80)
-    public void actualClientWritersCloseAll430BgeOwnedGeometryResources(GameTestHelper helper) {
+    public void actualClientWritersCloseAll490BgeOwnedGeometryResources(GameTestHelper helper) {
         ResourceManager manager = clientFixtureManager();
         LayerGeneratedResources.GenerationSummary layers =
                 LayerGeneratedResources.generateExternalForValidation(manager);
@@ -333,8 +378,8 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
                         && quarters.cornerFamilyCount() == 76
                         && quarters.columnFamilyCount() == 76
                         && standard.familyCount() == 76
-                        && standard.blockStateCount() == 238
-                        && standard.itemCount() == 238,
+                        && standard.blockStateCount() == 262
+                        && standard.itemCount() == 262,
                 "External client writers did not process every exact family/role");
 
         int generatedRelations = 0;
@@ -361,10 +406,10 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
                 generatedRelations++;
             }
         }
-        helper.assertTrue(generatedRelations == 466 && resolvedModelReferences >= 466,
+        helper.assertTrue(generatedRelations == 490 && resolvedModelReferences >= 490,
                 "External client resource closure mismatch: relations=" + generatedRelations
                         + ", modelReferences=" + resolvedModelReferences);
-        System.out.println("EXTERNAL_C65_CLIENT_RESOURCES|generatedRelations=466|blockstates=466|items=466"
+        System.out.println("EXTERNAL_C69_CLIENT_RESOURCES|generatedRelations=490|blockstates=490|items=490"
                 + "|resolvedModelReferences=" + resolvedModelReferences);
         helper.succeed();
     }
@@ -492,6 +537,215 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
 
     private static ExternalMaterialFamilies.Binding external(String id) {
         return ExternalMaterialFamilies.fromSource(Identifier.parse(id)).orElseThrow();
+    }
+
+    private static void assertBbbSlabStateContract(GameTestHelper helper, SlabBlock slab,
+            String material, BlockPos target, ServerPlayer player) {
+        for (Direction.Axis axis : Direction.Axis.values()) {
+            for (SlabType type : SlabType.values()) {
+                BlockState state = slab.defaultBlockState()
+                        .setValue(BlockStateProperties.AXIS, axis)
+                        .setValue(SlabBlock.TYPE, type)
+                        .setValue(BlockStateProperties.WATERLOGGED, true);
+                helper.assertTrue(state.getValue(BlockStateProperties.AXIS) == axis
+                                && state.getValue(SlabBlock.TYPE) == type
+                                && state.getValue(BlockStateProperties.WATERLOGGED),
+                        "BBB Beam Slab geometry and material axis are not independent: " + material
+                                + " type=" + type + " axis=" + axis);
+                assertCodecRoundTrip(helper, state, material + " slab " + type + "/" + axis);
+                BlockState rotated = state.rotate(Rotation.CLOCKWISE_90);
+                helper.assertTrue(rotated.getValue(BlockStateProperties.AXIS) == rotatedAxis(axis)
+                                && rotated.getValue(SlabBlock.TYPE) == type
+                                && rotated.getValue(BlockStateProperties.WATERLOGGED),
+                        "BBB Beam Slab rotation changed geometry instead of only rotating material axis: "
+                                + material + " type=" + type + " axis=" + axis);
+                BlockState mirrored = state.mirror(Mirror.FRONT_BACK);
+                helper.assertTrue(mirrored.getValue(BlockStateProperties.AXIS) == axis
+                                && mirrored.getValue(SlabBlock.TYPE) == type
+                                && mirrored.getValue(BlockStateProperties.WATERLOGGED),
+                        "BBB Beam Slab mirror changed material axis or geometry state: " + material
+                                + " type=" + type + " axis=" + axis);
+            }
+        }
+
+        ItemStack stack = new ItemStack(slab);
+        player.setItemInHand(InteractionHand.MAIN_HAND, stack);
+        for (Direction face : Direction.values()) {
+            for (double localY : List.of(0.25, 0.75)) {
+                helper.setBlock(target, Blocks.AIR);
+                BlockState placed = slab.getStateForPlacement(
+                        placementContext(helper, player, stack, target, face, localY));
+                SlabType expectedType = face == Direction.DOWN ||
+                        (face.getAxis().isHorizontal() && localY > 0.5)
+                        ? SlabType.TOP : SlabType.BOTTOM;
+                helper.assertTrue(placed != null
+                                && placed.getValue(BlockStateProperties.AXIS) == face.getAxis()
+                                && placed.getValue(SlabBlock.TYPE) == expectedType,
+                        "BBB Beam Slab placement did not preserve independent face axis/type: " + material
+                                + " face=" + face + " y=" + localY);
+            }
+        }
+        for (Direction.Axis retained : Direction.Axis.values()) {
+            helper.setBlock(target, slab.defaultBlockState()
+                    .setValue(BlockStateProperties.AXIS, retained)
+                    .setValue(SlabBlock.TYPE, SlabType.BOTTOM));
+            BlockState combined = slab.getStateForPlacement(
+                    placementContext(helper, player, stack, target, Direction.EAST, 0.75));
+            helper.assertTrue(combined != null && combined.getValue(SlabBlock.TYPE) == SlabType.DOUBLE
+                            && combined.getValue(BlockStateProperties.AXIS) == retained,
+                    "Compatible BBB Beam Slab combination reset its material axis: " + material
+                            + " retained=" + retained);
+        }
+    }
+
+    private static void assertBbbStairStateContract(GameTestHelper helper, StairBlock stairs,
+            String material) {
+        for (Direction.Axis axis : Direction.Axis.values()) {
+            for (Direction facing : List.of(Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST)) {
+                for (Half half : Half.values()) {
+                    for (StairsShape shape : StairsShape.values()) {
+                        BlockState state = stairs.defaultBlockState()
+                                .setValue(BlockStateProperties.AXIS, axis)
+                                .setValue(StairBlock.FACING, facing)
+                                .setValue(StairBlock.HALF, half)
+                                .setValue(StairBlock.SHAPE, shape)
+                                .setValue(BlockStateProperties.WATERLOGGED, true);
+                        helper.assertTrue(state.getValue(BlockStateProperties.AXIS) == axis
+                                        && state.getValue(StairBlock.FACING) == facing
+                                        && state.getValue(StairBlock.HALF) == half
+                                        && state.getValue(StairBlock.SHAPE) == shape
+                                        && state.getValue(BlockStateProperties.WATERLOGGED),
+                                "BBB Beam Stair geometry and material axis are not independent: " + material
+                                        + " " + facing + "/" + half + "/" + shape + "/" + axis);
+                        assertCodecRoundTrip(helper, state, material + " stair " + facing + "/" + half
+                                + "/" + shape + "/" + axis);
+                        BlockState rotated = state.rotate(Rotation.CLOCKWISE_90);
+                        helper.assertTrue(rotated.getValue(BlockStateProperties.AXIS) == rotatedAxis(axis)
+                                        && rotated.getValue(StairBlock.FACING)
+                                                == Rotation.CLOCKWISE_90.rotate(facing)
+                                        && rotated.getValue(StairBlock.HALF) == half
+                                        && rotated.getValue(StairBlock.SHAPE) == shape
+                                        && rotated.getValue(BlockStateProperties.WATERLOGGED),
+                                "BBB Beam Stair rotation corrupted independent state: " + material
+                                        + " " + facing + "/" + half + "/" + shape + "/" + axis);
+                        BlockState mirrored = state.mirror(Mirror.LEFT_RIGHT);
+                        helper.assertTrue(mirrored.getValue(BlockStateProperties.AXIS) == axis
+                                        && mirrored.getValue(StairBlock.FACING)
+                                                == Mirror.LEFT_RIGHT.mirror(facing)
+                                        && mirrored.getValue(StairBlock.HALF) == half
+                                        && mirrored.getValue(BlockStateProperties.WATERLOGGED),
+                                "BBB Beam Stair mirror corrupted independent state: " + material
+                                        + " " + facing + "/" + half + "/" + shape + "/" + axis);
+                    }
+                }
+            }
+        }
+    }
+
+    private static void assertBbbAxisModelContract(GameTestHelper helper,
+            ExternalMaterialFamilies.Binding beam, String material) {
+        NativeAxisModelContract.GeneratedBlockResources slab = NativeAxisModelContract.slab(
+                beam.profile(), NativeAxisModelContract.AxisUvPolicy.STANDARD_ROTATED);
+        NativeAxisModelContract.GeneratedBlockResources stairs = NativeAxisModelContract.stairs(
+                beam.profile(), NativeAxisModelContract.AxisUvPolicy.STANDARD_ROTATED);
+        for (NativeAxisModelContract.GeneratedBlockResources resources : List.of(slab, stairs)) {
+            helper.assertTrue(resources.selectors().values().stream().allMatch(selection ->
+                            resources.models().containsKey(selection.model()))
+                            && resources.models().values().stream().allMatch(model -> {
+                                JsonObject textures = model.getAsJsonObject("textures");
+                                return textures.get("side").getAsString().equals("bbb:block/beam/" + material)
+                                        && textures.get("top").getAsString().equals(
+                                                "bbb:block/beam/" + material + "_top")
+                                        && textures.get("bottom").getAsString().equals(
+                                                "bbb:block/beam/" + material + "_top");
+                            }),
+                    "BBB Beam generated model lost semantic side/end-grain texture roles: " + material);
+        }
+        helper.assertTrue(slab.selectors().size() == 9 && stairs.selectors().size() == 120,
+                "BBB Beam axis model selector matrix changed: " + material + " slabs="
+                        + slab.selectors().size() + " stairs=" + stairs.selectors().size());
+        List<Item> component = ShapeMap.getShapes(beam.source().asItem());
+        helper.assertTrue(java.util.Collections.frequency(component, beam.slab().asItem()) == 1
+                        && java.util.Collections.frequency(component, beam.stairs().asItem()) == 1
+                        && ShapeMap.getParent(beam.slab().asItem())
+                                == ShapeMap.getParent(beam.source().asItem())
+                        && ShapeMap.getParent(beam.stairs().asItem())
+                                == ShapeMap.getParent(beam.source().asItem()),
+                "BBB Beam ShapeMap did not round-trip BGE-owned canonical slab/stair: " + material);
+    }
+
+    private static void assertBbbStairNeighborResolutionRetainsAxis(GameTestHelper helper,
+            StairBlock stairs, BlockPos target) throws ReflectiveOperationException {
+        int shapeChanges = 0;
+        BlockState current = stairs.defaultBlockState()
+                .setValue(BlockStateProperties.AXIS, Direction.Axis.Z)
+                .setValue(StairBlock.FACING, Direction.NORTH)
+                .setValue(StairBlock.HALF, Half.BOTTOM)
+                .setValue(StairBlock.SHAPE, StairsShape.STRAIGHT);
+        for (Direction direction : List.of(Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST)) {
+            for (Direction facing : List.of(Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST)) {
+                for (Direction clear : List.of(Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST)) {
+                    helper.setBlock(target.relative(clear), Blocks.AIR);
+                }
+                helper.setBlock(target, current);
+                BlockPos neighbor = target.relative(direction);
+                BlockState neighborState = stairs.defaultBlockState()
+                        .setValue(BlockStateProperties.AXIS, Direction.Axis.X)
+                        .setValue(StairBlock.FACING, facing)
+                        .setValue(StairBlock.HALF, Half.BOTTOM)
+                        .setValue(StairBlock.SHAPE, StairsShape.STRAIGHT);
+                helper.setBlock(neighbor, neighborState);
+                BlockState updated = invokeStairUpdateShape(stairs, current, helper, target,
+                        direction, neighbor, neighborState);
+                helper.assertTrue(updated.getValue(BlockStateProperties.AXIS) == Direction.Axis.Z,
+                        "BBB Beam Stair neighbor shape update lost the existing material axis: "
+                                + direction + "/" + facing);
+                if (updated.getValue(StairBlock.SHAPE) != StairsShape.STRAIGHT) shapeChanges++;
+            }
+        }
+        helper.assertTrue(shapeChanges > 0,
+                "BBB Beam Stair neighbor matrix never exercised normal corner resolution");
+    }
+
+    private static BlockPlaceContext placementContext(GameTestHelper helper, ServerPlayer player,
+            ItemStack stack, BlockPos target, Direction face, double localY) {
+        BlockPos absolute = helper.absolutePos(target);
+        return new BlockPlaceContext(player, InteractionHand.MAIN_HAND, stack,
+                new BlockHitResult(new Vec3(absolute.getX() + 0.5, absolute.getY() + localY,
+                        absolute.getZ() + 0.5), face, absolute, false));
+    }
+
+    private static BlockState invokeStairUpdateShape(StairBlock stairs, BlockState state,
+            GameTestHelper helper, BlockPos pos, Direction direction, BlockPos neighborPos,
+            BlockState neighborState) throws ReflectiveOperationException {
+        Method update = null;
+        for (Class<?> type = stairs.getClass(); type != null && update == null; type = type.getSuperclass()) {
+            update = Arrays.stream(type.getDeclaredMethods()).filter(method ->
+                            method.getName().equals("updateShape") && method.getParameterCount() == 8
+                                    && method.getParameterTypes()[0] == BlockState.class)
+                    .findFirst().orElse(null);
+        }
+        if (update == null) throw new NoSuchMethodException("BBB Beam Stair updateShape");
+        update.setAccessible(true);
+        return (BlockState) update.invoke(stairs, state, helper.getLevel(), helper.getLevel(),
+                helper.absolutePos(pos), direction, helper.absolutePos(neighborPos), neighborState,
+                RandomSource.create(0x4242425F433639L));
+    }
+
+    private static Direction.Axis rotatedAxis(Direction.Axis axis) {
+        return switch (axis) {
+            case X -> Direction.Axis.Z;
+            case Y -> Direction.Axis.Y;
+            case Z -> Direction.Axis.X;
+        };
+    }
+
+    private static void assertCodecRoundTrip(GameTestHelper helper, BlockState state, String label) {
+        var encoded = BlockState.CODEC.encodeStart(JsonOps.INSTANCE, state).result()
+                .orElseThrow(() -> new IllegalStateException("BlockState.CODEC could not encode " + label));
+        BlockState decoded = BlockState.CODEC.parse(JsonOps.INSTANCE, encoded).result()
+                .orElseThrow(() -> new IllegalStateException("BlockState.CODEC could not decode " + label));
+        helper.assertTrue(decoded.equals(state), "BlockState.CODEC changed " + label + ": " + encoded);
     }
 
     private static void assertNormalWallState(GameTestHelper helper,
@@ -641,12 +895,12 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
         PackResources pack = (PackResources) Proxy.newProxyInstance(
                 ExternalMaterialFamilyGameTests.class.getClassLoader(),
                 new Class<?>[] {PackResources.class}, (proxy, method, args) -> switch (method.getName()) {
-                    case "packId" -> "bge-c65-client-fixtures";
+                    case "packId" -> "bge-c69-client-fixtures";
                     case "knownPackInfo" -> Optional.empty();
                     case "getNamespaces" -> Set.of("minecraft", "mynx_trees", "bbb");
                     case "listResources", "close" -> null;
                     case "getRootResource", "getResource", "getMetadataSection", "location" -> null;
-                    case "toString" -> "BGE C65 client fixture pack";
+                    case "toString" -> "BGE C69 client fixture pack";
                     case "hashCode" -> System.identityHashCode(proxy);
                     case "equals" -> proxy == args[0];
                     default -> throw new UnsupportedOperationException("Unexpected PackResources call " + method);
@@ -667,7 +921,7 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
                             .collect(java.util.stream.Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
                     case "listResourceStacks" -> Map.of();
                     case "listPacks" -> Stream.of(pack);
-                    case "toString" -> "BGE C65 client fixture manager";
+                    case "toString" -> "BGE C69 client fixture manager";
                     case "hashCode" -> System.identityHashCode(proxy);
                     case "equals" -> proxy == args[0];
                     default -> throw new UnsupportedOperationException("Unexpected ResourceManager call " + method);

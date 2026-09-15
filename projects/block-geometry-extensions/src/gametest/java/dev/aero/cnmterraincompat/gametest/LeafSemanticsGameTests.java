@@ -95,14 +95,14 @@ public final class LeafSemanticsGameTests implements CustomTestMethodInvoker {
                 "Fabric Loader did not resolve the legacy Nibaru alias to the unified BGE container");
         helper.assertTrue(primary.getMetadata().getId().equals("cnm_terrain_slabs_compat"),
                 "Unified container primary identity changed");
-        helper.assertTrue(version.getFriendlyString().equals("4.2.12-bge.canary68.layer-axis-uv+26.2"),
+        helper.assertTrue(version.getFriendlyString().equals("4.2.13-bge.canary69.bbb-beam-standard-axis+26.2"),
                 "Unified container version changed: " + version.getFriendlyString());
         try {
             helper.assertTrue(VersionPredicate.parse(">=4.2.0 <4.3.0-").test(version),
                     "Legacy Nibaru dependency range rejected the unified version");
             helper.assertTrue(VersionPredicate.parse(">=0.8.0-bge-canary56-vertical-stairs-catalog").test(version),
                     "Forward BGE dependency range rejected the unified version");
-            helper.assertTrue(VersionPredicate.parse("=4.2.12-bge.canary68.layer-axis-uv+26.2").test(version),
+            helper.assertTrue(VersionPredicate.parse("=4.2.13-bge.canary69.bbb-beam-standard-axis+26.2").test(version),
                     "Exact unified dependency rejected the unified version");
             helper.assertTrue(!VersionPredicate.parse("=4.2.0+26.2-port-canary46-bge-layer-contract").test(version),
                     "Exact predecessor Nibaru dependency falsely accepted the unified version");
@@ -1159,8 +1159,19 @@ public final class LeafSemanticsGameTests implements CustomTestMethodInvoker {
                 "corner", "quarter_column", "layer")) {
             expectedPlankShapes.add(paleBeam.roles().get(role).asItem());
         }
-        helper.assertTrue(plankShapes.equals(expectedPlankShapes),
-                "Pale Oak Planks ShapeMap order/uniqueness changed: " + ids(plankShapes));
+        for (Item canonical : expectedPlankShapes) {
+            helper.assertTrue(java.util.Collections.frequency(plankShapes, canonical) == 1,
+                    "Pale Oak Planks lost or duplicated canonical shape "
+                            + BuiltInRegistries.ITEM.getKey(canonical) + ": " + ids(plankShapes));
+        }
+        Item bbbOriginalSlab = BuiltInRegistries.ITEM.getValue(id("bbb:pale_oak_beam_slab"));
+        Item bbbOriginalStairs = BuiltInRegistries.ITEM.getValue(id("bbb:pale_oak_beam_stairs"));
+        helper.assertTrue(bbbOriginalSlab != null && bbbOriginalStairs != null
+                        && bbbOriginalSlab != paleBeam.slab().asItem()
+                        && bbbOriginalStairs != paleBeam.stairs().asItem()
+                        && java.util.Collections.frequency(plankShapes, bbbOriginalSlab) == 1
+                        && java.util.Collections.frequency(plankShapes, bbbOriginalStairs) == 1,
+                "BBB originals must remain distinct non-canonical Pale Oak Beam forms: " + ids(plankShapes));
 
         var paleLogShapes = ShapeMap.getShapes(Blocks.PALE_OAK_LOG.asItem());
         NibaruMaterialProfile paleLog = NibaruMaterialProfiles.fromFamily(ModBlocks.PALE_OAK_LOG).orElseThrow();
