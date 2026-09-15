@@ -70,6 +70,27 @@ class GateRouteRulesTest {
         assertFalse(GateRouteRules.mayClose(owned, false, true, false, false, true, true));
     }
 
+    @Test void ownedOpenGateRetainsProtectionUntilSafeLastOwnerClose() {
+        assertEquals(GateRouteRules.ClosurePlan.WAIT_FOR_CLEARANCE,
+                GateRouteRules.planClosure(true, true, true, false, false,
+                        false, true, false));
+        assertEquals(GateRouteRules.ClosurePlan.WAIT_FOR_CLEARANCE,
+                GateRouteRules.planClosure(true, true, true, false, false,
+                        true, false, false));
+        assertEquals(GateRouteRules.ClosurePlan.RELEASE_SHARED,
+                GateRouteRules.planClosure(true, true, true, false, false,
+                        true, true, true));
+        assertEquals(GateRouteRules.ClosurePlan.ATTEMPT_CLOSE,
+                GateRouteRules.planClosure(true, true, true, false, false,
+                        true, true, false));
+        assertEquals(GateRouteRules.ClosurePlan.RELEASE_EXTERNAL,
+                GateRouteRules.planClosure(true, true, true, false, true,
+                        true, true, false));
+        assertEquals(GateRouteRules.ClosurePlan.RELEASE_EXTERNAL,
+                GateRouteRules.planClosure(true, true, false, false, false,
+                        true, true, false));
+    }
+
     @Test void entryAndExitRequireMilestonesAndCancellationStopsProgress() {
         var stage = GateRouteRules.Stage.APPROACH_ENTRY;
         assertEquals(stage, GateRouteRules.advance(stage, false));

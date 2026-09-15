@@ -54,8 +54,32 @@ final class GateRouteRules {
     static boolean mayClose(boolean ownedOpen, boolean sameGate, boolean stillOpen,
                             boolean externallyChanged, boolean powered,
                             boolean passageClear, boolean physicallyCleared) {
-        return ownedOpen && sameGate && stillOpen && !externallyChanged && !powered
-                && passageClear && physicallyCleared;
+        return planClosure(ownedOpen, sameGate, stillOpen, externallyChanged, powered,
+                passageClear, physicallyCleared, false) == ClosurePlan.ATTEMPT_CLOSE;
+    }
+
+    enum ClosurePlan {
+        COMPLETE_UNOWNED,
+        RELEASE_EXTERNAL,
+        RELEASE_SHARED,
+        WAIT_FOR_CLEARANCE,
+        ATTEMPT_CLOSE
+    }
+
+    /**
+     * An owned, still-open gate never becomes complete merely because closing is delayed.
+     * Shared owners keep the physical gate open; the last owner performs the safe close.
+     */
+    static ClosurePlan planClosure(boolean ownedOpen, boolean sameGate, boolean stillOpen,
+                                   boolean externallyChanged, boolean powered,
+                                   boolean passageClear, boolean physicallyCleared,
+                                   boolean otherOwners) {
+        if (!ownedOpen) return ClosurePlan.COMPLETE_UNOWNED;
+        if (!sameGate || !stillOpen || externallyChanged || powered)
+            return ClosurePlan.RELEASE_EXTERNAL;
+        if (otherOwners) return ClosurePlan.RELEASE_SHARED;
+        if (!passageClear || !physicallyCleared) return ClosurePlan.WAIT_FOR_CLEARANCE;
+        return ClosurePlan.ATTEMPT_CLOSE;
     }
 
     enum Stage {

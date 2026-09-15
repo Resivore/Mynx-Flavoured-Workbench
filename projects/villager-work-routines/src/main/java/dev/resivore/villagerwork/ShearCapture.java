@@ -14,11 +14,14 @@ public final class ShearCapture {
 
     private ShearCapture() {}
 
-    public static void shear(Sheep sheep, ServerLevel level, SimpleContainer ownedOutput) {
+    /** Returns true only when the synchronous call actually changed a ready sheep to not ready. */
+    public static boolean shear(Sheep sheep, ServerLevel level, SimpleContainer ownedOutput) {
+        boolean readyBefore = sheep.readyForShearing();
         Scope previous = ACTIVE.get();
         ACTIVE.set(new Scope(sheep, ownedOutput));
         try { sheep.shear(level, net.minecraft.sounds.SoundSource.NEUTRAL, new ItemStack(net.minecraft.world.item.Items.SHEARS)); }
         finally { if (previous == null) ACTIVE.remove(); else ACTIVE.set(previous); }
+        return readyBefore && !sheep.readyForShearing();
     }
 
     public static BiConsumer<ServerLevel, ItemStack> wrap(Sheep sheep, BiConsumer<ServerLevel, ItemStack> vanilla) {
