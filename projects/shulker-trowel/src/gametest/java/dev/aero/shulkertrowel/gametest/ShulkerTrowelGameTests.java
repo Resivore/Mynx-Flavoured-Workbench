@@ -17,14 +17,18 @@ import net.fabricmc.fabric.api.gametest.v1.GameTest;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -32,6 +36,8 @@ import net.minecraft.world.level.block.WeatheringCopper;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.SlabType;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.Vec3;
 
 import java.lang.reflect.Method;
 import java.util.LinkedHashMap;
@@ -178,6 +184,73 @@ public final class ShulkerTrowelGameTests implements CustomTestMethodInvoker {
                 "Full mode did not place the exact non-profile BlockItem");
         helper.assertTrue(ShulkerPaletteContents.read(player.getOffhandItem()).get(0).getCount() == 2,
                 "Successful Full placement did not consume exactly one original slot item");
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void offhandShulkersNeverPlaceWhileMainHandAndOtherBlockItemsRemainVanilla(
+            GameTestHelper helper
+    ) {
+        ServerPlayer player = survivalPlayer(helper);
+        BlockPos ordinarySupport = new BlockPos(2, 1, 2);
+        BlockPos chestSupport = new BlockPos(4, 1, 2);
+        helper.setBlock(ordinarySupport, Blocks.STONE);
+        helper.setBlock(chestSupport, Blocks.CHEST);
+
+        ItemStack filled = shulker(new ItemStack(Blocks.OAK_PLANKS, 5));
+        filled.set(DataComponents.CUSTOM_NAME, Component.literal("live palette"));
+        ItemStack filledBefore = filled.copy();
+        player.setItemInHand(InteractionHand.OFF_HAND, filled);
+        InteractionResult ordinary = useHandBlockItem(
+                helper, player, InteractionHand.OFF_HAND, ordinarySupport, Direction.UP);
+        helper.assertTrue(!ordinary.consumesAction()
+                        && helper.getBlockState(ordinarySupport.above()).isAir()
+                        && ItemStack.isSameItemSameComponents(player.getOffhandItem(), filledBefore)
+                        && player.getOffhandItem().getCount() == filledBefore.getCount(),
+                "Ordinary offhand shulker placement changed the world or live palette stack");
+
+        player.setShiftKeyDown(true);
+        InteractionResult crouched = useHandBlockItem(
+                helper, player, InteractionHand.OFF_HAND, ordinarySupport, Direction.UP);
+        helper.assertTrue(!crouched.consumesAction()
+                        && helper.getBlockState(ordinarySupport.above()).isAir()
+                        && ItemStack.isSameItemSameComponents(player.getOffhandItem(), filledBefore),
+                "Crouching bypassed the offhand palette reservation");
+
+        InteractionResult interactable = useHandBlockItem(
+                helper, player, InteractionHand.OFF_HAND, chestSupport, Direction.UP);
+        player.setShiftKeyDown(false);
+        helper.assertTrue(!interactable.consumesAction()
+                        && helper.getBlockState(chestSupport.above()).isAir()
+                        && ItemStack.isSameItemSameComponents(player.getOffhandItem(), filledBefore),
+                "An interactable target bypassed the offhand palette reservation");
+
+        ItemStack dyed = new ItemStack(Blocks.DYED_SHULKER_BOX.red());
+        ItemStack dyedBefore = dyed.copy();
+        player.setItemInHand(InteractionHand.OFF_HAND, dyed);
+        InteractionResult dyedResult = useHandBlockItem(
+                helper, player, InteractionHand.OFF_HAND, ordinarySupport, Direction.UP);
+        helper.assertTrue(!dyedResult.consumesAction()
+                        && helper.getBlockState(ordinarySupport.above()).isAir()
+                        && ItemStack.isSameItemSameComponents(player.getOffhandItem(), dyedBefore),
+                "A dyed offhand shulker bypassed the global reservation");
+
+        ItemStack mainHandShulker = filledBefore.copy();
+        player.setItemInHand(InteractionHand.MAIN_HAND, mainHandShulker);
+        InteractionResult mainHand = useHandBlockItem(
+                helper, player, InteractionHand.MAIN_HAND, ordinarySupport, Direction.UP);
+        helper.assertTrue(mainHand.consumesAction()
+                        && helper.getBlockState(ordinarySupport.above()).is(Blocks.SHULKER_BOX),
+                "Main-hand vanilla shulker placement was blocked");
+
+        BlockPos dirtSupport = new BlockPos(6, 1, 2);
+        helper.setBlock(dirtSupport, Blocks.STONE);
+        player.setItemInHand(InteractionHand.OFF_HAND, new ItemStack(Blocks.DIRT));
+        InteractionResult unrelated = useHandBlockItem(
+                helper, player, InteractionHand.OFF_HAND, dirtSupport, Direction.UP);
+        helper.assertTrue(unrelated.consumesAction()
+                        && helper.getBlockState(dirtSupport.above()).is(Blocks.DIRT),
+                "An unrelated offhand BlockItem was blocked");
         helper.succeed();
     }
 
@@ -471,6 +544,15 @@ public final class ShulkerTrowelGameTests implements CustomTestMethodInvoker {
     private static void placeInto(GameTestHelper helper, ServerPlayer player,
             BlockPos target, Direction face) {
         helper.placeAt(player, player.getMainHandItem(), target.relative(face.getOpposite()), face);
+    }
+
+    private static InteractionResult useHandBlockItem(GameTestHelper helper, ServerPlayer player,
+            InteractionHand hand, BlockPos clicked, Direction face) {
+        ItemStack held = player.getItemInHand(hand);
+        BlockPos absolute = helper.absolutePos(clicked);
+        BlockHitResult hit = new BlockHitResult(
+                Vec3.atCenterOf(absolute).add(0.0, 0.5, 0.0), face, absolute, false);
+        return ((BlockItem) held.getItem()).useOn(new UseOnContext(player, hand, hit));
     }
 
     private static NonNullList<ItemStack> palette(ItemStack... stacks) {

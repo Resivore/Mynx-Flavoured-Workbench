@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.jar.JarFile;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -109,9 +110,15 @@ class Canary2ResourceContractTest {
     }
 
     @Test
-    void mixinOnlyRoutesTheCanonicalSoundExclusionArgument() throws IOException {
+    void mixinsKeepTheCanonicalSoundRouteAndAddOnlyTheTwoNarrowCompatibilitySeams() throws IOException {
         String source = Files.readString(PROJECT_ROOT.resolve(
                 "src/main/java/dev/aero/shulkertrowel/mixin/BlockItemPlacementSoundMixin.java"
+        ));
+        String offhand = Files.readString(PROJECT_ROOT.resolve(
+                "src/main/java/dev/aero/shulkertrowel/mixin/OffhandShulkerPlacementMixin.java"
+        ));
+        String quickRightClick = Files.readString(PROJECT_ROOT.resolve(
+                "src/main/java/dev/aero/shulkertrowel/mixin/QuickRightClickShulkerCompatibilityMixin.java"
         ));
         JsonObject mixins = json("src/main/resources/shulker_trowel.mixins.json");
 
@@ -121,11 +128,45 @@ class Canary2ResourceContractTest {
         assertTrue(source.contains("Level;playSound("));
         assertTrue(source.contains("PlacementSoundBroadcastScope.routeExcludedSource"));
         assertFalse(source.contains(".playSound("));
-        assertEquals(1, mixins.getAsJsonArray("mixins").size());
-        assertEquals(
-                "BlockItemPlacementSoundMixin",
-                mixins.getAsJsonArray("mixins").get(0).getAsString()
-        );
+        assertTrue(offhand.contains("@Inject(method = \"place\", at = @At(\"HEAD\")"));
+        assertTrue(offhand.contains("OffhandShulkerPlacementPolicy.blocks"));
+        assertTrue(offhand.contains("InteractionResult.FAIL"));
+        assertTrue(quickRightClick.contains("@Pseudo"));
+        assertTrue(quickRightClick.contains("QuickEvent"));
+        assertTrue(quickRightClick.contains("ShulkerBoxBlock"));
+        assertTrue(quickRightClick.contains("InteractionResult.PASS"));
+        assertEquals("dev.aero.shulkertrowel.mixin.ShulkerTrowelMixinPlugin",
+                mixins.get("plugin").getAsString());
+        assertEquals(List.of(
+                        "BlockItemPlacementSoundMixin",
+                        "OffhandShulkerPlacementMixin",
+                        "QuickRightClickShulkerCompatibilityMixin"),
+                mixins.getAsJsonArray("mixins").asList().stream()
+                        .map(element -> element.getAsString()).toList());
+        assertFalse(Files.readString(PROJECT_ROOT.resolve("build.gradle"))
+                .contains("shulker-trowel-0.1.0-canary3.jar"));
+    }
+
+    @Test
+    void packagedMixinMetadataMatchesTheCurrentCompatibilitySource() throws IOException {
+        Path candidate = PROJECT_ROOT.resolve("build/libs/shulker-trowel-0.1.0-canary10.jar");
+        if (!Files.isRegularFile(candidate)) return;
+        try (JarFile jar = new JarFile(candidate.toFile())) {
+            var entry = jar.getJarEntry("shulker_trowel.mixins.json");
+            assertTrue(entry != null, "Candidate is missing mixin metadata");
+            try (var input = jar.getInputStream(entry)) {
+                JsonObject packaged = JsonParser.parseString(new String(input.readAllBytes()))
+                        .getAsJsonObject();
+                assertEquals("dev.aero.shulkertrowel.mixin.ShulkerTrowelMixinPlugin",
+                        packaged.get("plugin").getAsString());
+                assertTrue(packaged.getAsJsonArray("mixins").asList().stream()
+                        .anyMatch(element -> element.getAsString()
+                                .equals("OffhandShulkerPlacementMixin")));
+                assertTrue(packaged.getAsJsonArray("mixins").asList().stream()
+                        .anyMatch(element -> element.getAsString()
+                                .equals("QuickRightClickShulkerCompatibilityMixin")));
+            }
+        }
     }
 
     private static JsonObject json(String relativePath) throws IOException {

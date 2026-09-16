@@ -113,16 +113,17 @@ class Canary3GeometryArchitectureTest {
     }
 
     @Test
-    void metadataRequiresTheProvenUnifiedBgeCompatibilityLineWithoutStandaloneNibaru() throws Exception {
+    void metadataUsesProviderFloorsWithoutCanaryPinsOrSpeculativeUpperBounds() throws Exception {
         JsonObject metadata = JsonParser.parseString(Files.readString(
                 PROJECT_ROOT.resolve("src/main/resources/fabric.mod.json")
         )).getAsJsonObject();
         JsonObject depends = metadata.getAsJsonObject("depends");
 
-        assertEquals("=2.0.7+26.2", depends.get("clutternomore").getAsString());
+        assertEquals(">=2.0.7+26.2", depends.get("clutternomore").getAsString());
         assertFalse(depends.has("more_slabs_stairs_and_walls"));
         String bgeRange = depends.get("cnm_terrain_slabs_compat").getAsString();
-        assertEquals(">=4.2.1-bge.canary57.unified+26.2 <4.3.0-", bgeRange);
+        assertEquals(">=4.2.1-bge.canary57.unified+26.2", bgeRange);
+        assertEquals("*", metadata.getAsJsonObject("suggests").get("quickrightclick").getAsString());
 
         VersionPredicate bgePredicate = VersionPredicate.parse(bgeRange);
         assertTrue(bgePredicate.test(Version.parse(
@@ -134,9 +135,9 @@ class Canary3GeometryArchitectureTest {
         assertFalse(bgePredicate.test(Version.parse(
                 "0.8.0-bge-canary56-vertical-stairs-catalog")));
         assertFalse(bgePredicate.test(Version.parse("4.2.0")));
-        assertFalse(bgePredicate.test(Version.parse("4.3.0")));
-        assertFalse(bgePredicate.test(Version.parse(
-                "4.3.0-bge.canary100.breaking+26.2")));
+        assertTrue(bgePredicate.test(Version.parse("4.3.0")));
+        assertTrue(bgePredicate.test(Version.parse(
+                "4.3.0-bge.canary100.compatible+26.2")));
     }
 
     @Test
@@ -153,7 +154,7 @@ class Canary3GeometryArchitectureTest {
         assertFalse(build.contains("more-slabs-stairs-and-walls-"));
         assertFalse(build.contains("canary43-native-directional-material-axis.jar"));
         assertFalse(build.contains("0.5.49-nibaru-cnm-canary1.39-native-directional-material-axis.jar"));
-        assertEquals("=0.1.0-canary9", runtimeDepends.get("shulker_trowel").getAsString());
+        assertEquals("=0.1.0-canary10", runtimeDepends.get("shulker_trowel").getAsString());
         assertEquals(
                 ">=4.2.1-bge.canary57.unified+26.2 <4.3.0-",
                 runtimeDepends.get("cnm_terrain_slabs_compat").getAsString()

@@ -1,9 +1,12 @@
 {
   "required": true,
   "package": "dev.aero.shulkertrowel.mixin",
+  "plugin": "dev.aero.shulkertrowel.mixin.ShulkerTrowelMixinPlugin",
   "compatibilityLevel": "JAVA_25",
   "mixins": [
-    "BlockItemPlacementSoundMixin"
+    "BlockItemPlacementSoundMixin",
+    "OffhandShulkerPlacementMixin",
+    "QuickRightClickShulkerCompatibilityMixin"
   ],
   "client": [
     "client.ClutterNoMoreClientInputMixin",
