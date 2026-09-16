@@ -13,8 +13,8 @@ class FishingRodPoseTest {
 
         assertTrue(south.isFinite());
         assertTrue(east.isFinite());
-        assertTrue(south.z() > 20.8, "yaw zero faces south/+Z");
-        assertTrue(east.x() > 10.8, "yaw -90 faces east/+X");
+        assertTrue(south.z() > 21.0, "yaw zero places the tip forward of the crossed arms");
+        assertTrue(east.x() > 11.0, "yaw -90 places the tip forward of the crossed arms");
         assertEquals(65.82, south.y(), 0.000001);
     }
 

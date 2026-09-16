@@ -10,6 +10,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Blocks;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -72,5 +73,18 @@ class OutputStorageTest {
         assertEquals(64, second.getItem(1).getCount());
         assertEquals(1, first.getItem(0).getCount());
         assertTrue(first.getItem(1).isEmpty());
+    }
+
+    @Test void acceptedContainerCallbackNamesOnlyBarrelsThatActuallyReceivedWool() {
+        SimpleContainer first = new SimpleContainer(1);
+        SimpleContainer second = new SimpleContainer(1);
+        second.setItem(0, new ItemStack(Blocks.WOOL.white(), 63));
+        List<net.minecraft.world.Container> accepted = new ArrayList<>();
+
+        assertEquals(2, OutputStorage.insertAcross(List.of(first, second),
+                new ItemStack(Blocks.WOOL.white(), 2), 2, (container, moved) -> accepted.add(container)));
+
+        assertEquals(List.of(second, first), accepted,
+                "the matching barrel is reported before the later empty-slot transfer");
     }
 }

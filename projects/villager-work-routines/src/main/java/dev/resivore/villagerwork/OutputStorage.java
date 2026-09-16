@@ -3,6 +3,7 @@ package dev.resivore.villagerwork;
 import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
 import java.util.List;
+import java.util.function.BiConsumer;
 
 /** Only inserts: matching component-identical stacks first, then permitted empty slots. */
 public final class OutputStorage {
@@ -30,11 +31,21 @@ public final class OutputStorage {
 
     /** All matching stacks across eligible containers precede any empty slot; input order breaks ties. */
     public static int insertAcross(List<? extends Container> containers, ItemStack source, int requested) {
+        return insertAcross(containers, source, requested, (container, moved) -> {});
+    }
+
+    /**
+     * Inserts with the same matching-stack-before-empty-slot ordering as {@link #insertAcross(List,
+     * ItemStack, int)}, reporting each container that actually accepted items.
+     */
+    public static int insertAcross(List<? extends Container> containers, ItemStack source, int requested,
+                                   BiConsumer<Container, Integer> accepted) {
         if (source.isEmpty() || requested <= 0) return 0;
         int remaining = Math.min(requested, source.getCount());
         for (boolean emptyOnly : new boolean[] {false, true}) {
             for (Container container : containers) {
                 int moved = insertPass(container, source, remaining, emptyOnly);
+                if (moved > 0) accepted.accept(container, moved);
                 remaining -= moved;
                 if (remaining == 0) return Math.min(requested, source.getCount());
             }

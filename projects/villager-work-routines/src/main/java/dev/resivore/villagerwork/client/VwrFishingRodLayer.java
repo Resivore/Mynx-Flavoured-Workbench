@@ -45,7 +45,7 @@ public final class VwrFishingRodLayer extends RenderLayer<VillagerRenderState, V
         // charge of its body. The forward/upward tilt agrees with FishingRodPose.tip.
         getParentModel().translateToArms(state, poseStack);
         // Advance the grip far enough that the stick emerges just beyond the crossed arms.
-        poseStack.translate(0.0F, 0.08F, -0.44F);
+        poseStack.translate(0.0F, 0.08F, -0.62F);
         poseStack.mulPose(Axis.XP.rotationDegrees(-58.0F));
         poseStack.mulPose(Axis.YP.rotationDegrees(12.0F));
         poseStack.mulPose(Axis.ZP.rotationDegrees(-12.0F));

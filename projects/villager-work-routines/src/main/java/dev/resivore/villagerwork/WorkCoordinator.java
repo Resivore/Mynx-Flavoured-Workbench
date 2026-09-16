@@ -261,6 +261,12 @@ public final class WorkCoordinator {
             clearSheep(villager, state, "no safe wool output capacity");
             return;
         }
+        // Show the tool as soon as this is a viable sheep transaction, including the approach
+        // and gate crossing, rather than making it appear only for the final telegraph.
+        if (!showProp(villager, state, Items.SHEARS)) {
+            clearSheep(villager, state, "temporary shears prop overlay failure while approaching sheep");
+            return;
+        }
         villager.getLookControl().setLookAt(target);
         if (state.gateRoute != null && tickGateEntry(villager, level, state)) return;
         double sheepDistance = Math.sqrt(villager.distanceToSqr(target));
@@ -1206,14 +1212,20 @@ public final class WorkCoordinator {
             if (!(level.getBlockEntity(pos) instanceof BarrelBlockEntity barrel) || barrel.getLootTable() != null) continue;
             barrels.add(barrel);
         }
+        Set<BarrelBlockEntity> depositedInto = new LinkedHashSet<>();
         // Ordered directions make ties deterministic; matching stacks win before any empty slot.
         for (int i = 0; i < owned.getContainerSize(); i++) {
             ItemStack stack = owned.getItem(i);
             if (stack.isEmpty() || !stack.is(net.minecraft.tags.ItemTags.WOOL)) continue;
-            int moved = OutputStorage.insertAcross(barrels, stack, stack.getCount());
+            int moved = OutputStorage.insertAcross(barrels, stack, stack.getCount(), (container, accepted) -> {
+                if (container instanceof BarrelBlockEntity barrel) depositedInto.add(barrel);
+            });
             if (moved > 0) owned.removeItem(i, moved);
         }
         int deposited = before - woolCount(owned);
+        if (deposited > 0)
+            for (BarrelBlockEntity barrel : depositedInto)
+                presentWoolDeposit(villager, level, barrel.getBlockPos());
         if (deposited > 0 || villager.tickCount >= state.nextDepositLog) {
             log(villager, "wool deposit loom={} adjacentBarrels={} barrelPositions={} attempted={} inserted={} retained={}",
                     loom, barrels.size(), barrels.stream().map(BarrelBlockEntity::getBlockPos).toList(),
@@ -1472,7 +1484,19 @@ public final class WorkCoordinator {
         villager.getLookControl().setLookAt(Vec3.atCenterOf(barrel));
         villager.swing(InteractionHand.MAIN_HAND);
         level.playSound(null, barrel, SoundEvents.BARREL_OPEN, SoundSource.BLOCKS, 0.75f, 1.0f);
-        level.sendParticles(ParticleTypes.HAPPY_VILLAGER, barrel.getX() + 0.5, barrel.getY() + 0.7,
+        level.playSound(null, barrel, SoundEvents.COD_FLOP, SoundSource.BLOCKS, 0.75f, 1.0f);
+        level.sendParticles(ParticleTypes.GLOW_SQUID_INK, barrel.getX() + 0.5, barrel.getY() + 0.7,
+                barrel.getZ() + 0.5, 5, 0.22, 0.20, 0.22, 0.01);
+        level.gameEvent(villager, GameEvent.BLOCK_OPEN, barrel);
+    }
+
+    /** Mirrors the Fisherman's successful-transfer feedback for each barrel that accepted wool. */
+    private static void presentWoolDeposit(Villager villager, ServerLevel level, BlockPos barrel) {
+        villager.getLookControl().setLookAt(Vec3.atCenterOf(barrel));
+        villager.swing(InteractionHand.MAIN_HAND);
+        level.playSound(null, barrel, SoundEvents.BARREL_OPEN, SoundSource.BLOCKS, 0.75f, 1.0f);
+        level.playSound(null, barrel, SoundEvents.WOOL_PLACE, SoundSource.BLOCKS, 0.75f, 1.0f);
+        level.sendParticles(ParticleTypes.END_ROD, barrel.getX() + 0.5, barrel.getY() + 0.7,
                 barrel.getZ() + 0.5, 5, 0.22, 0.20, 0.22, 0.01);
         level.gameEvent(villager, GameEvent.BLOCK_OPEN, barrel);
     }

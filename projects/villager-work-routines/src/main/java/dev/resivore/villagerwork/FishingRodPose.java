@@ -6,7 +6,9 @@ package dev.resivore.villagerwork;
  * villager model while the rod and line still agree on a stable physical direction.
  */
 public final class FishingRodPose {
-    private static final double TIP_FORWARD = 1.10;
+    // Keep this in step with VwrFishingRodLayer's further-forward grip transform.  The visible
+    // line should originate at the stick's real outer end, not at the villager's arm plane.
+    private static final double TIP_FORWARD = 1.28;
     private static final double TIP_RIGHT = 0.10;
     private static final double TIP_HEIGHT = 1.82;
 
