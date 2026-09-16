@@ -4,6 +4,8 @@ Mynx Flavoured Workbench is the authoritative Minecraft Java 26.2 Fabric workspa
 
 `main` is the only durable source of truth. Bounded work happens on temporary branches or worktrees, then a coherent checkpoint is reconciled and integrated into `main`. Different projects may be developed and statically validated concurrently without sharing project ownership.
 
+After a successful integration, reconcile the normal primary checkout as part of completion: if it is clean, fast-forward it to current `origin/main`; if it is dirty, first classify and preserve any legitimate work in an appropriate branch, worktree, or local recovery location. Do not leave the primary checkout on a task branch or silently behind `main`; confirm it is clean, current, and contains any newly tracked artifacts before reporting reconciliation complete.
+
 Every official project—including one whose lifecycle is only `PLANNED`—has an immutable UUID and a directory under `projects/` or `resourcepacks/`. Its canonical controls are:
 
 - `WORKBENCH_STATUS.json` for structured identity, scope, current state, evidence, artifact provenance, and synchronization;
