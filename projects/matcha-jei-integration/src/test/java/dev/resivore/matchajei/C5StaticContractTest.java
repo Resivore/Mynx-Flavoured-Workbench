@@ -7,7 +7,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import org.junit.jupiter.api.Test;
 
-class C4StaticContractTest {
+class C5StaticContractTest {
     @Test
     void resolvedRecipeCatalogAndRevisionStayAuthoritative() throws Exception {
         String scanner = source("server/MatchaDataScanner.java");
@@ -47,14 +47,21 @@ class C4StaticContractTest {
     @Test
     void creativeSearchUsesOnlyTheSharedCatalogWithoutJeiClassloading() throws Exception {
         String creative = source("client/MatchaCreativeCatalog.java");
+        String entries = source("client/MatchaCreativeSearchEntries.java");
         String clientData = source("client/MatchaClientData.java");
 
-        assertTrue(creative.contains("CreativeModeTabEvents.modifyOutputEvent(CreativeModeTabs.SEARCH)"));
+        assertTrue(creative.contains("CreativeModeTabEvents.modifyOutputEvent(CreativeModeTabs.INGREDIENTS)"));
+        assertTrue(creative.contains("CreativeModeTab.TabVisibility.SEARCH_TAB_ONLY"));
         assertTrue(creative.contains("MatchaClientData.current().catalog()"));
-        assertTrue(creative.contains("CreativeModeTabs.tryRebuildTabContents("));
-        assertTrue(creative.contains("CreativeModeTabs.searchTab().buildContents(parameters)"));
-        assertTrue(creative.contains("client.level.enabledFeatures()"));
+        assertTrue(creative.contains("CreativeModeTabs.searchTab().getDisplayItems()"));
+        assertTrue(creative.contains("MatchaCreativeSearchEntries.replaceOwned("));
+        assertTrue(entries.contains("ItemStack.isSameItemSameComponents(existing, contribution)"));
+        assertTrue(entries.contains("searchContents.removeIf(ownedEntries::contains)"));
+        assertFalse(creative.contains("CreativeModeTabs.tryRebuildTabContents("));
+        assertFalse(creative.contains("CreativeModeTabs.searchTab().buildContents("));
+        assertFalse(creative.contains("getDisplayItems().clear("));
         assertFalse(creative.contains("mezz.jei"));
+        assertFalse(entries.contains("mezz.jei"));
         assertFalse(clientData.contains("mezz.jei"));
     }
 

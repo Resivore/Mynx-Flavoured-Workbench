@@ -5,7 +5,11 @@ import net.fabricmc.fabric.api.creativetab.v1.CreativeModeTabEvents;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.CreativeModeTabs;
+import net.minecraft.world.item.ItemStack;
 
+import java.util.Collections;
+import java.util.IdentityHashMap;
+import java.util.Set;
 import java.util.function.Consumer;
 
 /**
@@ -13,7 +17,10 @@ import java.util.function.Consumer;
  * tab. This client-only path intentionally has no JEI API dependency.
  */
 final class MatchaCreativeCatalog {
-    private static final Consumer<MatchaJeiDataPayload> DATA_LISTENER = payload -> rebuildSearchTab();
+    private static final Set<ItemStack> OWNED_SEARCH_ENTRIES =
+            Collections.newSetFromMap(new IdentityHashMap<>());
+    private static final Consumer<MatchaJeiDataPayload> DATA_LISTENER = payload ->
+            replaceActiveSearchEntries(payload);
     private static boolean initialized;
 
     private MatchaCreativeCatalog() {
@@ -24,28 +31,32 @@ final class MatchaCreativeCatalog {
             return;
         }
         initialized = true;
-        CreativeModeTabEvents.modifyOutputEvent(CreativeModeTabs.SEARCH).register(output ->
-                MatchaClientData.current().catalog().forEach(stack -> output.accept(stack.copyWithCount(1)))
-        );
+        CreativeModeTabEvents.modifyOutputEvent(CreativeModeTabs.INGREDIENTS).register(output -> {
+            // Search is derived from every ordinary tab's search-only entries.
+            // Contributing through Ingredients lets future vanilla/Fabric tab
+            // rebuilds include Matcha without displaying the stacks there.
+            MatchaCreativeSearchEntries.retainActiveOwnership(
+                    CreativeModeTabs.searchTab().getDisplayItems(),
+                    OWNED_SEARCH_ENTRIES
+            );
+            MatchaClientData.current().catalog().forEach(stack -> {
+                ItemStack contribution = stack.copyWithCount(1);
+                MatchaCreativeSearchEntries.rememberOwned(contribution, OWNED_SEARCH_ENTRIES);
+                output.accept(contribution, CreativeModeTab.TabVisibility.SEARCH_TAB_ONLY);
+            });
+        });
         MatchaClientData.addListener(DATA_LISTENER);
     }
 
-    private static void rebuildSearchTab() {
+    private static void replaceActiveSearchEntries(MatchaJeiDataPayload payload) {
         Minecraft client = Minecraft.getInstance();
         if (client.level == null || client.player == null) {
             return;
         }
-        CreativeModeTab.ItemDisplayParameters parameters = new CreativeModeTab.ItemDisplayParameters(
-                client.level.enabledFeatures(),
-                client.player.canUseGameMasterBlocks(),
-                client.level.registryAccess()
+        MatchaCreativeSearchEntries.replaceOwned(
+                CreativeModeTabs.searchTab().getDisplayItems(),
+                OWNED_SEARCH_ENTRIES,
+                payload.catalog()
         );
-        if (!CreativeModeTabs.tryRebuildTabContents(
-                parameters.enabledFeatures(), parameters.hasPermissions(), parameters.holders())) {
-            // Vanilla's cached all-tabs rebuild is intentionally a no-op when
-            // its parameters are unchanged. Payload revisions are additional
-            // data, so rebuild Search directly to replace stale exact stacks.
-            CreativeModeTabs.searchTab().buildContents(parameters);
-        }
     }
 }

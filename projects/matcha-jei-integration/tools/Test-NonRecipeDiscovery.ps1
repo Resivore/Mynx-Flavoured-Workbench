@@ -1225,6 +1225,7 @@ try {
     $exactRecipeBridgePath = Join-Path $projectRoot 'src\main\java\dev\resivore\matchajei\client\MatchaExactRecipeBridge.java'
     $exactCatalogPath = Join-Path $projectRoot 'src\main\java\dev\resivore\matchajei\data\MatchaExactCatalog.java'
     $creativeCatalogPath = Join-Path $projectRoot 'src\main\java\dev\resivore\matchajei\client\MatchaCreativeCatalog.java'
+    $creativeSearchEntriesPath = Join-Path $projectRoot 'src\main\java\dev\resivore\matchajei\client\MatchaCreativeSearchEntries.java'
     $clientDataPath = Join-Path $projectRoot 'src\main\java\dev\resivore\matchajei\client\MatchaClientData.java'
     $payloadPath = Join-Path $projectRoot 'src\main\java\dev\resivore\matchajei\network\MatchaJeiDataPayload.java'
     $initializerPath = Join-Path $projectRoot 'src\main\java\dev\resivore\matchajei\MatchaJeiIntegration.java'
@@ -1238,6 +1239,7 @@ try {
     $exactRecipeBridgeSource = Get-Content -LiteralPath $exactRecipeBridgePath -Raw -Encoding UTF8
     $exactCatalogSource = Get-Content -LiteralPath $exactCatalogPath -Raw -Encoding UTF8
     $creativeCatalogSource = Get-Content -LiteralPath $creativeCatalogPath -Raw -Encoding UTF8
+    $creativeSearchEntriesSource = Get-Content -LiteralPath $creativeSearchEntriesPath -Raw -Encoding UTF8
     $clientDataSource = Get-Content -LiteralPath $clientDataPath -Raw -Encoding UTF8
     $payloadSource = Get-Content -LiteralPath $payloadPath -Raw -Encoding UTF8
     $initializerSource = Get-Content -LiteralPath $initializerPath -Raw -Encoding UTF8
@@ -1342,10 +1344,14 @@ try {
     Assert-Matches $scannerSource 'displayed at full durability, but acquired durability, chance, and conditions vary' 'Variable-durability loot is not qualified accurately.'
     Assert-Matches $acquisitionCategorySource '160\s*,\s*76' 'Acquisition category height no longer accommodates the longest current wrapped provenance label.'
     Assert-Matches $acquisitionCategorySource 'textWithWordWrap\s*\(' 'Acquisition provenance is not rendered with bounded wrapping.'
-    Assert-Matches $creativeCatalogSource 'CreativeModeTabEvents\.modifyOutputEvent\(CreativeModeTabs\.SEARCH\)' 'Creative Search does not expose the shared Matcha catalog.'
+    Assert-Matches $creativeCatalogSource 'CreativeModeTabEvents\.modifyOutputEvent\(CreativeModeTabs\.INGREDIENTS\)' 'Creative Search does not expose the shared Matcha catalog through an ordinary tab rebuild.'
+    Assert-Matches $creativeCatalogSource 'CreativeModeTab\.TabVisibility\.SEARCH_TAB_ONLY' 'Matcha entries are not scoped to Creative Search.'
     Assert-Matches $creativeCatalogSource 'MatchaClientData\.current\(\)\.catalog\(\)' 'Creative Search is not sourcing exact stacks from the shared catalog.'
-    Assert-Matches $creativeCatalogSource 'CreativeModeTabs\.tryRebuildTabContents\(' 'Creative Search is not rebuilt after catalog synchronization.'
-    Assert-Matches $creativeCatalogSource 'CreativeModeTabs\.searchTab\(\)\.buildContents\(parameters\)' 'Creative Search does not replace stale entries when vanilla rebuild parameters are unchanged.'
+    Assert-Matches $creativeCatalogSource 'MatchaCreativeSearchEntries\.replaceOwned\(' 'Payload synchronization does not replace only Matcha-owned Search entries.'
+    Assert-Matches $creativeSearchEntriesSource 'searchContents\.removeIf\(ownedEntries::contains\)' 'Payload synchronization does not remove prior Matcha-owned entries by object identity.'
+    Assert-Matches $creativeSearchEntriesSource 'ItemStack\.isSameItemSameComponents\(existing, contribution\)' 'Creative Search contribution no longer deduplicates exact component identity.'
+    Assert-True (-not $creativeCatalogSource.Contains('CreativeModeTabs.tryRebuildTabContents(')) 'Matcha still requests a global Creative tab rebuild.'
+    Assert-True (-not $creativeCatalogSource.Contains('CreativeModeTabs.searchTab().buildContents(')) 'Matcha still directly rebuilds global Creative Search.'
     Assert-Matches $clientDataSource 'addListener\(' 'Creative and JEI cannot independently receive synchronized catalog changes.'
     Assert-True ($creativeCatalogSource -cnotmatch 'mezz\.jei') 'Creative catalog support must not classload JEI API types.'
     Assert-True (-not [regex]::IsMatch(
@@ -1354,7 +1360,7 @@ try {
             [Text.RegularExpressions.RegexOptions]::Singleline
         )) 'A minecraft/main namespace shortcut was found; those namespaces also contain unrelated vanilla resources.'
 
-    Write-Output 'MATCHA_C4_CATALOG_OK: recipes=1076 raw_component_outputs=315 trades=290 trade_models=145 nonrecipe_models=112 (57/45/10) exact_trades=175 acquisitions=249 preserved_nonrecipe_identities=240 (61/149/30; 19 exact-bridge/221 vanilla); resolved outputs and Creative Search are verified structurally.'
+    Write-Output 'MATCHA_C5_CATALOG_OK: recipes=1076 raw_component_outputs=315 trades=290 trade_models=145 nonrecipe_models=112 (57/45/10) exact_trades=175 acquisitions=249 preserved_nonrecipe_identities=240 (61/149/30; 19 exact-bridge/221 vanilla); resolved outputs and additive Creative Search are verified structurally.'
 } finally {
     if ($null -ne $zip) {
         $zip.Dispose()
