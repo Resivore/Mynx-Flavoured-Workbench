@@ -1,6 +1,6 @@
 {
   "$schema": "../../schemas/workbench-status.schema.json",
-  "schema_version": 1,
+  "schema_version": 2,
   "identity": {
     "uuid": "58086966-05a1-4237-9f4f-ffca6c05da87",
     "name": "Stacks Are Stacks — Container Fixes",
@@ -123,7 +123,8 @@
               ]
             }
           ]
-        }
+        },
+        "summary": "Keeps eligible normally non-stackable counts intact across container and item-template reconstruction paths."
       },
       "accepted": {
         "version": "0.1.0-canary2",
@@ -147,7 +148,8 @@
               ]
             }
           ]
-        }
+        },
+        "summary": "Keeps eligible normally non-stackable counts intact across container and item-template reconstruction paths."
       },
       "rollback": null,
       "accepted_current": "CURRENT_IS_ACCEPTED",
@@ -155,7 +157,6 @@
     },
     "validation": {
       "build": "CONTROLLED_VALIDATION_PASS",
-      "deployment": "READY_TO_TEST_VERIFIED",
       "runtime": "RUNTIME_PASS"
     },
     "blocker": null
@@ -165,10 +166,6 @@
     "activity_at": "2026-09-04T20:20:20Z",
     "updated_at": "2026-09-04T20:20:20Z",
     "last_codex_at": "2026-09-04T20:20:20Z",
-    "source_commit": "6a1a284b0410bcce77467756e5046ed76117aa80",
-    "google_sheet": {
-      "participates": true,
-      "exclusion_reason": null
-    }
+    "source_commit": "6a1a284b0410bcce77467756e5046ed76117aa80"
   }
 }

@@ -1,6 +1,6 @@
 {
   "$schema": "../../schemas/workbench-status.schema.json",
-  "schema_version": 1,
+  "schema_version": 2,
   "identity": {
     "uuid": "4b2342fc-7bdf-5ba6-9f37-d551109d214c",
     "name": "Block Geometry Extensions (BGE)",
@@ -98,7 +98,8 @@
               ]
             }
           ]
-        }
+        },
+        "summary": "Restores minecraft:stone_slab as Stone's exact effective horizontal geometry source without a duplicate slab."
       },
       "accepted": {
         "version": "C70 (Stone Native Slab; embedded 4.2.14-bge.canary70.stone-native-slab+26.2)",
@@ -123,7 +124,8 @@
               ]
             }
           ]
-        }
+        },
+        "summary": "Restores minecraft:stone_slab as Stone's exact effective horizontal geometry source without a duplicate slab."
       },
       "rollback": {
         "version": "C69 (BBB Beam Standard Axis; embedded 4.2.13-bge.canary69.bbb-beam-standard-axis+26.2)",
@@ -155,7 +157,6 @@
     },
     "validation": {
       "build": "CONTROLLED_VALIDATION_PASS",
-      "deployment": "NOT_DEPLOYED",
       "runtime": "RUNTIME_UNTESTED"
     },
     "blocker": null
@@ -165,10 +166,6 @@
     "activity_at": "2026-09-16T15:08:47Z",
     "updated_at": "2026-09-16T15:08:47Z",
     "last_codex_at": "2026-09-16T15:08:47Z",
-    "source_commit": "b137377b6f54fd7e5cc6d621f815d09187a30912",
-    "google_sheet": {
-      "participates": true,
-      "exclusion_reason": null
-    }
+    "source_commit": "b137377b6f54fd7e5cc6d621f815d09187a30912"
   }
 }

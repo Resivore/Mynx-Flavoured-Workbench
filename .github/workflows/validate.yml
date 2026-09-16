@@ -21,19 +21,3 @@ jobs:
         run: |
           python tools/workbench.py validate-repository --root .
           python -m unittest discover -s tests -v
-      - name: Validate project revision protocol for pull request
-        if: github.event_name == 'pull_request'
-        run: >-
-          python tools/sheet_sync.py validate-change
-          --root .
-          --before "${{ github.event.pull_request.base.sha }}"
-          --after "${{ github.event.pull_request.head.sha }}"
-      - name: Validate project revision protocol for main push
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        run: >-
-          python tools/sheet_sync.py validate-change
-          --root .
-          --before "${{ github.event.before }}"
-          --after "${{ github.sha }}"
-      - name: Validate Sheet receiver contract
-        run: node --test tests/test_sheet_receiver.mjs

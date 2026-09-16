@@ -1,6 +1,6 @@
 {
   "$schema": "../../schemas/workbench-status.schema.json",
-  "schema_version": 1,
+  "schema_version": 2,
   "identity": {
     "uuid": "3ef3a962-1caa-4384-b524-7ebff348774f",
     "name": "Ribbits × Matcha Integration",
@@ -83,7 +83,6 @@
     },
     "validation": {
       "build": "NOT_RUN",
-      "deployment": "NOT_DEPLOYED",
       "runtime": "RUNTIME_UNTESTED"
     },
     "blocker": null
@@ -93,10 +92,6 @@
     "activity_at": "2026-09-03T19:24:19Z",
     "updated_at": "2026-09-03T19:24:19Z",
     "last_codex_at": "2026-09-03T19:24:19Z",
-    "source_commit": "11d67260a05b414ff17ced7649313980a3b1c511",
-    "google_sheet": {
-      "participates": true,
-      "exclusion_reason": null
-    }
+    "source_commit": "11d67260a05b414ff17ced7649313980a3b1c511"
   }
 }

@@ -1,6 +1,6 @@
 {
   "$schema": "../../schemas/workbench-status.schema.json",
-  "schema_version": 1,
+  "schema_version": 2,
   "identity": {
     "uuid": "3ab36584-8732-554f-840e-28a75c422660",
     "name": "Container Slot Reservations",
@@ -139,7 +139,8 @@
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
-        }
+        },
+        "summary": "Corrects optional Mouse Tweaks RMB-drag behavior for reserved container slots."
       },
       "accepted": {
         "version": "0.1.0-canary19",
@@ -172,7 +173,6 @@
     },
     "validation": {
       "build": "CONTROLLED_VALIDATION_PASS",
-      "deployment": "NOT_DEPLOYED",
       "runtime": "RUNTIME_UNTESTED"
     },
     "blocker": null
@@ -182,10 +182,6 @@
     "activity_at": "2026-09-16T15:11:55Z",
     "updated_at": "2026-09-16T15:11:55Z",
     "last_codex_at": "2026-09-16T15:11:55Z",
-    "source_commit": "b137377b6f54fd7e5cc6d621f815d09187a30912",
-    "google_sheet": {
-      "participates": true,
-      "exclusion_reason": null
-    }
+    "source_commit": "b137377b6f54fd7e5cc6d621f815d09187a30912"
   }
 }

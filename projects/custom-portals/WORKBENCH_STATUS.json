@@ -1,6 +1,6 @@
 {
   "$schema": "../../schemas/workbench-status.schema.json",
-  "schema_version": 1,
+  "schema_version": 2,
   "identity": {
     "uuid": "26065ff3-182f-5314-a5f6-976d6ffd394a",
     "name": "Custom Portals 26.2",
@@ -105,7 +105,8 @@
           "filename": "custom-portals-26.2-4.0.0+26.2-port-canary2.jar",
           "sha256": "13fd0e76748fcc3ef963bcc2f4a820d5fc2d473a90ad5d5988cbe0129c2be148"
         },
-        "source_commit": "604720aa69f96e4628535722a015a5bf1726e0ea"
+        "source_commit": "604720aa69f96e4628535722a015a5bf1726e0ea",
+        "summary": "Provides arbitrary-frame, arbitrary-size colored portals for Minecraft 26.2 Fabric."
       },
       "accepted": {
         "version": "4.0.0+26.2-port-canary2",
@@ -113,7 +114,8 @@
           "filename": "custom-portals-26.2-4.0.0+26.2-port-canary2.jar",
           "sha256": "13fd0e76748fcc3ef963bcc2f4a820d5fc2d473a90ad5d5988cbe0129c2be148"
         },
-        "source_commit": "604720aa69f96e4628535722a015a5bf1726e0ea"
+        "source_commit": "604720aa69f96e4628535722a015a5bf1726e0ea",
+        "summary": "Provides arbitrary-frame, arbitrary-size colored portals for Minecraft 26.2 Fabric."
       },
       "rollback": null,
       "accepted_current": "CURRENT_IS_ACCEPTED",
@@ -121,7 +123,6 @@
     },
     "validation": {
       "build": "STATIC_PASS",
-      "deployment": "READY_TO_TEST_VERIFIED",
       "runtime": "RUNTIME_PASS"
     },
     "blocker": null
@@ -131,10 +132,6 @@
     "activity_at": "2026-08-22T20:19:06Z",
     "updated_at": "2026-08-29T20:58:36Z",
     "last_codex_at": "2026-08-29T20:58:36Z",
-    "source_commit": "60e9898c425921778202048ec35b1a843e3ccff0",
-    "google_sheet": {
-      "participates": true,
-      "exclusion_reason": null
-    }
+    "source_commit": "60e9898c425921778202048ec35b1a843e3ccff0"
   }
 }

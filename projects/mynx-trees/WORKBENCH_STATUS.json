@@ -1,6 +1,6 @@
 {
   "$schema": "../../schemas/workbench-status.schema.json",
-  "schema_version": 1,
+  "schema_version": 2,
   "identity": {
     "uuid": "1988a317-2307-4d57-9b6e-6c828cbf5f7f",
     "name": "Mynx Trees",
@@ -73,7 +73,8 @@
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
-        }
+        },
+        "summary": "Provides Silver Birch, Wisteria, and Sweet Violets as separate Minecraft 26.2 Fabric content."
       },
       "accepted": {
         "version": "0.1.0+26.2-canary8",
@@ -85,7 +86,8 @@
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
-        }
+        },
+        "summary": "Provides Silver Birch, Wisteria, and Sweet Violets as separate Minecraft 26.2 Fabric content."
       },
       "rollback": null,
       "accepted_current": "CURRENT_IS_ACCEPTED",
@@ -93,7 +95,6 @@
     },
     "validation": {
       "build": "STATIC_PASS",
-      "deployment": "READY_TO_TEST_VERIFIED",
       "runtime": "RUNTIME_PASS"
     },
     "blocker": null
@@ -103,10 +104,6 @@
     "activity_at": "2026-09-07T04:02:00Z",
     "updated_at": "2026-09-07T04:02:00Z",
     "last_codex_at": "2026-09-07T04:02:00Z",
-    "source_commit": "274e9b7e36a1c2b53395c725f1fc9f2fed4ad2e0",
-    "google_sheet": {
-      "participates": true,
-      "exclusion_reason": null
-    }
+    "source_commit": "274e9b7e36a1c2b53395c725f1fc9f2fed4ad2e0"
   }
 }

@@ -1,6 +1,6 @@
 {
   "$schema": "../../schemas/workbench-status.schema.json",
-  "schema_version": 1,
+  "schema_version": 2,
   "identity": {
     "uuid": "786620d5-4731-425c-a599-83b4dcd9920b",
     "name": "Item Pickup Audio Diagnostic",
@@ -65,7 +65,8 @@
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
-        }
+        },
+        "summary": "Collects behavior-neutral evidence for where ordinary item-pickup audio stops."
       },
       "accepted": {
         "version": "0.1.0-canary1",
@@ -78,7 +79,8 @@
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
-        }
+        },
+        "summary": "Collects behavior-neutral evidence for where ordinary item-pickup audio stops."
       },
       "rollback": null,
       "accepted_current": "CURRENT_IS_ACCEPTED",
@@ -86,7 +88,6 @@
     },
     "validation": {
       "build": "CONTROLLED_VALIDATION_PASS",
-      "deployment": "NOT_DEPLOYED",
       "runtime": "RUNTIME_UNTESTED"
     },
     "blocker": null
@@ -96,10 +97,6 @@
     "activity_at": "2026-09-14T08:09:29Z",
     "updated_at": "2026-09-14T08:09:29Z",
     "last_codex_at": "2026-09-14T08:09:29Z",
-    "source_commit": "f511f435c623883c5ee1474e9227acb73fb2df68",
-    "google_sheet": {
-      "participates": true,
-      "exclusion_reason": null
-    }
+    "source_commit": "f511f435c623883c5ee1474e9227acb73fb2df68"
   }
 }

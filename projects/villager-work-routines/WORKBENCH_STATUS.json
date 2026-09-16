@@ -1,6 +1,6 @@
 {
   "$schema": "../../schemas/workbench-status.schema.json",
-  "schema_version": 1,
+  "schema_version": 2,
   "identity": {
     "uuid": "9b9d5a98-36f5-4fce-853e-70730cad6d5f",
     "name": "Villager Work Routines",
@@ -22,7 +22,9 @@
       "Transient world-aware, owner-scoped path blocking for Sheep, Cow, Pig, Chicken, and Rabbit only while an active VWR task owns the physical open transition of a fence gate."
     ],
     "boundaries": {
-      "owned_paths": ["projects/villager-work-routines"],
+      "owned_paths": [
+        "projects/villager-work-routines"
+      ],
       "exclusions": [
         "Livestock slaughter, breeding, ranching, and simulated workstation economies.",
         "Matcha behavior or resource-pack/model/texture/renderer changes to villagers; the fishing-float renderer is isolated to its own entity.",
@@ -31,10 +33,30 @@
       ]
     },
     "dependencies": [
-      {"type": "MOD", "identifier": "minecraft", "requirement": "=26.2", "reason": "Exact game target and inspected sheep/villager/fishing APIs."},
-      {"type": "MOD", "identifier": "fabricloader", "requirement": ">=0.19.3", "reason": "Fabric Loader runtime floor."},
-      {"type": "MOD", "identifier": "fabric-api", "requirement": ">=0.157.0", "reason": "Fabric client entity renderer registration."},
-      {"type": "TOOL", "identifier": "Java", "requirement": ">=25", "reason": "Minecraft 26.2 bytecode target."}
+      {
+        "type": "MOD",
+        "identifier": "minecraft",
+        "requirement": "=26.2",
+        "reason": "Exact game target and inspected sheep/villager/fishing APIs."
+      },
+      {
+        "type": "MOD",
+        "identifier": "fabricloader",
+        "requirement": ">=0.19.3",
+        "reason": "Fabric Loader runtime floor."
+      },
+      {
+        "type": "MOD",
+        "identifier": "fabric-api",
+        "requirement": ">=0.157.0",
+        "reason": "Fabric client entity renderer registration."
+      },
+      {
+        "type": "TOOL",
+        "identifier": "Java",
+        "requirement": ">=25",
+        "reason": "Minecraft 26.2 bytecode target."
+      }
     ]
   },
   "state": {
@@ -42,16 +64,26 @@
     "releases": {
       "current": {
         "version": "0.1.0-canary12",
-        "artifact": {"filename": "villager-work-routines-0.1.0-canary12.jar", "sha256": "4c2fdf89bc258a55f6b5910066e31239e2e4341bf28cb353cd9661873f6610d2"},
+        "artifact": {
+          "filename": "villager-work-routines-0.1.0-canary12.jar",
+          "sha256": "4c2fdf89bc258a55f6b5910066e31239e2e4341bf28cb353cd9661873f6610d2"
+        },
         "source_commit": "adcc6a90e92f2cea27c32292d371106e5531ceb3",
-        "runtime_dependency_policy": {"contract": "CAPABILITY_OR_PROVIDER", "exceptions": []}
+        "runtime_dependency_policy": {
+          "contract": "CAPABILITY_OR_PROVIDER",
+          "exceptions": []
+        },
+        "summary": "Improves claimed workplace activity while retaining focused shepherd and fisherman behavior."
       },
       "accepted": null,
       "rollback": null,
       "accepted_current": "NO_ACCEPTED",
       "accepted_rollback": "NO_ROLLBACK"
     },
-    "validation": {"build": "STATIC_PASS", "deployment": "NOT_DEPLOYED", "runtime": "RUNTIME_UNTESTED"},
+    "validation": {
+      "build": "STATIC_PASS",
+      "runtime": "RUNTIME_UNTESTED"
+    },
     "blocker": null
   },
   "synchronization": {
@@ -59,7 +91,6 @@
     "activity_at": "2026-09-16T06:45:30Z",
     "updated_at": "2026-09-16T06:45:30Z",
     "last_codex_at": "2026-09-16T06:45:30Z",
-    "source_commit": "adcc6a90e92f2cea27c32292d371106e5531ceb3",
-    "google_sheet": {"participates": true, "exclusion_reason": null}
+    "source_commit": "adcc6a90e92f2cea27c32292d371106e5531ceb3"
   }
 }

@@ -1,6 +1,6 @@
 {
   "$schema": "../../schemas/workbench-status.schema.json",
-  "schema_version": 1,
+  "schema_version": 2,
   "identity": {
     "uuid": "5d42f47f-b006-4125-840d-dec0d2728afa",
     "name": "Building But Better 26.2",
@@ -112,7 +112,8 @@
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
-        }
+        },
+        "summary": "Maintains the curated Fabric port of Building But Better for Minecraft 26.2."
       },
       "accepted": {
         "version": "2.0pre4+26.2-pale-oak-dev.6",
@@ -124,7 +125,8 @@
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
-        }
+        },
+        "summary": "Maintains the curated Fabric port of Building But Better for Minecraft 26.2."
       },
       "rollback": null,
       "accepted_current": "CURRENT_IS_ACCEPTED",
@@ -132,7 +134,6 @@
     },
     "validation": {
       "build": "STATIC_PASS",
-      "deployment": "NOT_DEPLOYED",
       "runtime": "RUNTIME_UNTESTED"
     },
     "blocker": null
@@ -142,10 +143,6 @@
     "activity_at": "2026-09-14T08:09:29Z",
     "updated_at": "2026-09-14T08:09:29Z",
     "last_codex_at": "2026-09-14T08:09:29Z",
-    "source_commit": "f511f435c623883c5ee1474e9227acb73fb2df68",
-    "google_sheet": {
-      "participates": true,
-      "exclusion_reason": null
-    }
+    "source_commit": "f511f435c623883c5ee1474e9227acb73fb2df68"
   }
 }

@@ -1,6 +1,6 @@
 {
   "$schema": "../../schemas/workbench-status.schema.json",
-  "schema_version": 1,
+  "schema_version": 2,
   "identity": {
     "uuid": "b41da80e-9928-568b-b8ef-ee2175ed2285",
     "name": "Radial Slot Cycler",
@@ -97,7 +97,8 @@
           "filename": "radial-slot-cycler-0.1.0-canary2-private.jar",
           "sha256": "3fe7e539eaafda97ab5a5a301544b25563f896fee354b729607074f404bdbc21"
         },
-        "source_commit": "afd63c35df9d24756ddd53fbfaa7f05cc72a987f"
+        "source_commit": "afd63c35df9d24756ddd53fbfaa7f05cc72a987f",
+        "summary": "Provides a server-authoritative same-column radial selector for hotbar and inventory slots."
       },
       "accepted": {
         "version": "0.1.0-canary2-private",
@@ -105,7 +106,8 @@
           "filename": "radial-slot-cycler-0.1.0-canary2-private.jar",
           "sha256": "3fe7e539eaafda97ab5a5a301544b25563f896fee354b729607074f404bdbc21"
         },
-        "source_commit": "afd63c35df9d24756ddd53fbfaa7f05cc72a987f"
+        "source_commit": "afd63c35df9d24756ddd53fbfaa7f05cc72a987f",
+        "summary": "Provides a server-authoritative same-column radial selector for hotbar and inventory slots."
       },
       "rollback": {
         "version": "0.1.0-canary1",
@@ -120,7 +122,6 @@
     },
     "validation": {
       "build": "CONTROLLED_VALIDATION_PASS",
-      "deployment": "READY_TO_TEST_VERIFIED",
       "runtime": "RUNTIME_PASS"
     },
     "blocker": null
@@ -130,10 +131,6 @@
     "activity_at": "2026-08-25T07:43:26Z",
     "updated_at": "2026-08-29T22:31:11Z",
     "last_codex_at": "2026-08-29T22:31:11Z",
-    "source_commit": "2b93f7de3cb5ab059d1744d36870e86bae081ca5",
-    "google_sheet": {
-      "participates": true,
-      "exclusion_reason": null
-    }
+    "source_commit": "2b93f7de3cb5ab059d1744d36870e86bae081ca5"
   }
 }

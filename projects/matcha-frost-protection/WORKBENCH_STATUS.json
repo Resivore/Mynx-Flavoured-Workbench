@@ -1,6 +1,6 @@
 {
   "$schema": "../../schemas/workbench-status.schema.json",
-  "schema_version": 1,
+  "schema_version": 2,
   "identity": {
     "uuid": "850b2838-7f90-4685-8ba6-3ec282693003",
     "name": "Matcha Frost Protection",
@@ -82,7 +82,8 @@
           "filename": "matcha-frost-protection-0.1.0-canary2.jar",
           "sha256": "88ae708cbf2a9b1f5fe3b322579c3e7b507c7e0420cadb40aca796dba5b4a742"
         },
-        "source_commit": "0d3d6650355a38758ff23227b34bc9bda5826d68"
+        "source_commit": "0d3d6650355a38758ff23227b34bc9bda5826d68",
+        "summary": "Makes Frost Protection armor reproduce leather-boots powdered-snow traversal and freezing protection."
       },
       "accepted": {
         "version": "0.1.0-canary2",
@@ -90,7 +91,8 @@
           "filename": "matcha-frost-protection-0.1.0-canary2.jar",
           "sha256": "88ae708cbf2a9b1f5fe3b322579c3e7b507c7e0420cadb40aca796dba5b4a742"
         },
-        "source_commit": "0d3d6650355a38758ff23227b34bc9bda5826d68"
+        "source_commit": "0d3d6650355a38758ff23227b34bc9bda5826d68",
+        "summary": "Makes Frost Protection armor reproduce leather-boots powdered-snow traversal and freezing protection."
       },
       "rollback": null,
       "accepted_current": "CURRENT_IS_ACCEPTED",
@@ -98,7 +100,6 @@
     },
     "validation": {
       "build": "STATIC_PASS",
-      "deployment": "READY_TO_TEST_VERIFIED",
       "runtime": "RUNTIME_PASS"
     },
     "blocker": null
@@ -108,10 +109,6 @@
     "activity_at": "2026-09-01T02:35:20Z",
     "updated_at": "2026-09-01T02:35:20Z",
     "last_codex_at": "2026-09-01T02:35:20Z",
-    "source_commit": "e405fbcf4900788f1c4bee2df68a130f72bfc239",
-    "google_sheet": {
-      "participates": true,
-      "exclusion_reason": null
-    }
+    "source_commit": "e405fbcf4900788f1c4bee2df68a130f72bfc239"
   }
 }

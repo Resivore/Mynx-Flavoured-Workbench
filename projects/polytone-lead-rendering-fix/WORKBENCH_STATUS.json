@@ -1,6 +1,6 @@
 {
   "$schema": "../../schemas/workbench-status.schema.json",
-  "schema_version": 1,
+  "schema_version": 2,
   "identity": {
     "uuid": "04d9a8db-0aac-48a8-be17-393334df57ac",
     "name": "Polytone Lead Rendering Fix",
@@ -84,7 +84,8 @@
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
-        }
+        },
+        "summary": "Uses native Minecraft leash geometry while bypassing only Polytone's custom leash rendering path."
       },
       "accepted": {
         "version": "C4",
@@ -97,7 +98,8 @@
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
-        }
+        },
+        "summary": "Uses native Minecraft leash geometry while bypassing only Polytone's custom leash rendering path."
       },
       "rollback": null,
       "accepted_current": "CURRENT_IS_ACCEPTED",
@@ -105,7 +107,6 @@
     },
     "validation": {
       "build": "STATIC_PASS",
-      "deployment": "NOT_DEPLOYED",
       "runtime": "RUNTIME_UNTESTED"
     },
     "blocker": null
@@ -115,10 +116,6 @@
     "activity_at": "2026-09-14T08:09:29Z",
     "updated_at": "2026-09-14T08:09:29Z",
     "last_codex_at": "2026-09-14T08:09:29Z",
-    "source_commit": "f511f435c623883c5ee1474e9227acb73fb2df68",
-    "google_sheet": {
-      "participates": true,
-      "exclusion_reason": null
-    }
+    "source_commit": "f511f435c623883c5ee1474e9227acb73fb2df68"
   }
 }

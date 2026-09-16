@@ -1,6 +1,6 @@
 {
   "$schema": "../../schemas/workbench-status.schema.json",
-  "schema_version": 1,
+  "schema_version": 2,
   "identity": {
     "uuid": "fcb7d036-c756-5114-abe1-01c4331e7ea8",
     "name": "Carried Container Auto-Routing",
@@ -111,7 +111,8 @@
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
-        }
+        },
+        "summary": "Routes eligible pickups into matching unlocked carried shulkers while preserving exact item identity and capacity."
       },
       "accepted": {
         "version": "0.3.15-shulker-pick-block-canary1",
@@ -124,7 +125,8 @@
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
-        }
+        },
+        "summary": "Routes eligible pickups into matching unlocked carried shulkers while preserving exact item identity and capacity."
       },
       "rollback": {
         "version": "C11 (legacy 0.3.6-external-quick-move-priority-fix-canary)",
@@ -139,7 +141,6 @@
     },
     "validation": {
       "build": "CONTROLLED_VALIDATION_PASS",
-      "deployment": "NOT_DEPLOYED",
       "runtime": "RUNTIME_UNTESTED"
     },
     "blocker": null
@@ -149,10 +150,6 @@
     "activity_at": "2026-09-14T08:09:29Z",
     "updated_at": "2026-09-14T08:09:29Z",
     "last_codex_at": "2026-09-14T08:09:29Z",
-    "source_commit": "f511f435c623883c5ee1474e9227acb73fb2df68",
-    "google_sheet": {
-      "participates": true,
-      "exclusion_reason": null
-    }
+    "source_commit": "f511f435c623883c5ee1474e9227acb73fb2df68"
   }
 }

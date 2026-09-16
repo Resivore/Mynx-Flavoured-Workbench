@@ -1,6 +1,6 @@
 {
   "$schema": "../../schemas/workbench-status.schema.json",
-  "schema_version": 1,
+  "schema_version": 2,
   "identity": {
     "uuid": "680476b9-5336-5422-a575-779f2efd1eff",
     "name": "Nibaru 26.2 Port",
@@ -60,7 +60,8 @@
           "filename": "more-slabs-stairs-and-walls-4.2.0+26.2-port-canary46-bge-layer-contract.jar",
           "sha256": "3281d110f062db62e721d838a35ce915ca73dd41af098a013b52952561ceae7d"
         },
-        "source_commit": "6e9b04ec3947f2514f90775bfeefb599242a4596"
+        "source_commit": "6e9b04ec3947f2514f90775bfeefb599242a4596",
+        "summary": "Preserves Nibaru identity and historical artifacts after active maintenance moved into BGE."
       },
       "accepted": {
         "version": "C45 (legacy Canary 43)",
@@ -85,7 +86,6 @@
     },
     "validation": {
       "build": "CONTROLLED_VALIDATION_PASS",
-      "deployment": "NOT_DEPLOYED",
       "runtime": "RUNTIME_UNTESTED"
     },
     "blocker": null
@@ -95,10 +95,6 @@
     "activity_at": "2026-09-02T17:00:13Z",
     "updated_at": "2026-09-02T17:00:13Z",
     "last_codex_at": "2026-09-02T17:00:13Z",
-    "source_commit": "27d9fc0f66fd32bcda8fef80cffd92ec5d964242",
-    "google_sheet": {
-      "participates": true,
-      "exclusion_reason": null
-    }
+    "source_commit": "27d9fc0f66fd32bcda8fef80cffd92ec5d964242"
   }
 }

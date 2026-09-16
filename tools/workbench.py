@@ -20,7 +20,7 @@ if __name__ == "__main__":
 
 
 STATUS_SCHEMA_REF = "../../schemas/workbench-status.schema.json"
-LIFECYCLES = {"PLANNED", "ACTIVE", "BLOCKED", "TESTING", "ACCEPTED", "PARKED"}
+LIFECYCLES = {"PLANNED", "ACTIVE", "BLOCKED", "ACCEPTED", "PARKED"}
 BUILD_STATES = {
     "NOT_RUN",
     "GENERATED",
@@ -30,7 +30,6 @@ BUILD_STATES = {
     "CONTROLLED_VALIDATION_FAIL",
     "INCONCLUSIVE",
 }
-DEPLOYMENT_STATES = {"NOT_DEPLOYED", "DEPLOYED", "READY_TO_TEST_VERIFIED", "DEPLOYMENT_FAILED"}
 RUNTIME_STATES = {"RUNTIME_UNTESTED", "PARTIAL_RUNTIME_PASS", "RUNTIME_PASS", "RUNTIME_FAIL", "INCONCLUSIVE"}
 DEPENDENCY_TYPES = {"PROJECT", "MOD", "RESOURCE_PACK", "DATA_PACK", "TOOL", "SERVICE", "OTHER"}
 ACCEPTED_CURRENT_STATES = {"NO_ACCEPTED", "CURRENT_IS_ACCEPTED", "CURRENT_DIFFERS_FROM_ACCEPTED"}
@@ -256,7 +255,7 @@ def _release(value: Any, path: str) -> dict[str, Any] | None:
     if not isinstance(value, dict):
         _fail(path, "must be an object")
     required = {"version", "artifact", "source_commit"}
-    allowed = required | {"embedded_version", "runtime_dependency_policy"}
+    allowed = required | {"embedded_version", "summary", "runtime_dependency_policy"}
     missing = sorted(required - set(value))
     extra = sorted(set(value) - allowed)
     if missing:
@@ -266,6 +265,10 @@ def _release(value: Any, path: str) -> dict[str, Any] | None:
     _nonblank(value["version"], f"{path}.version")
     if "embedded_version" in value:
         _nonblank(value["embedded_version"], f"{path}.embedded_version")
+    if "summary" in value:
+        summary = _nonblank(value["summary"], f"{path}.summary")
+        if "\n" in summary or "\r" in summary:
+            _fail(f"{path}.summary", "must be one concise line")
     if value["artifact"] is not None:
         _artifact(value["artifact"], f"{path}.artifact")
     _commit(value["source_commit"], f"{path}.source_commit")
@@ -302,8 +305,8 @@ def validate_status(data: dict[str, Any], project_directory: Path | None = None)
     root = _object(data, "$", {"$schema", "schema_version", "identity", "definition", "state", "synchronization"})
     if root["$schema"] != STATUS_SCHEMA_REF:
         _fail("$.$schema", f"must equal {STATUS_SCHEMA_REF}")
-    if root["schema_version"] != 1:
-        _fail("$.schema_version", "must equal 1")
+    if root["schema_version"] != 2:
+        _fail("$.schema_version", "must equal 2")
 
     identity = _object(root["identity"], "$.identity", {"uuid", "name", "project_id", "aliases", "legacy_names", "legacy_ids"})
     project_uuid = _uuid(identity["uuid"], "$.identity.uuid")
@@ -367,9 +370,8 @@ def validate_status(data: dict[str, Any], project_directory: Path | None = None)
     if lifecycle == "ACCEPTED" and accepted_current != "CURRENT_IS_ACCEPTED":
         _fail("$.definition.lifecycle", "ACCEPTED requires CURRENT_IS_ACCEPTED")
 
-    validation = _object(state["validation"], "$.state.validation", {"build", "deployment", "runtime"})
+    validation = _object(state["validation"], "$.state.validation", {"build", "runtime"})
     _enum(validation["build"], "$.state.validation.build", BUILD_STATES)
-    _enum(validation["deployment"], "$.state.validation.deployment", DEPLOYMENT_STATES)
     _enum(validation["runtime"], "$.state.validation.runtime", RUNTIME_STATES)
 
     blocker = state["blocker"]
@@ -384,7 +386,7 @@ def validate_status(data: dict[str, Any], project_directory: Path | None = None)
     synchronization = _object(
         root["synchronization"],
         "$.synchronization",
-        {"revision", "activity_at", "updated_at", "last_codex_at", "source_commit", "google_sheet"},
+        {"revision", "activity_at", "updated_at", "last_codex_at", "source_commit"},
     )
     _integer(synchronization["revision"], "$.synchronization.revision", 1)
     activity_at = _timestamp(synchronization["activity_at"], "$.synchronization.activity_at")
@@ -395,13 +397,6 @@ def validate_status(data: dict[str, Any], project_directory: Path | None = None)
     if last_codex_at > updated_at:
         _fail("$.synchronization", "last_codex_at cannot be later than updated_at")
     _commit(synchronization["source_commit"], "$.synchronization.source_commit")
-    sheet = _object(synchronization["google_sheet"], "$.synchronization.google_sheet", {"participates", "exclusion_reason"})
-    if not isinstance(sheet["participates"], bool):
-        _fail("$.synchronization.google_sheet.participates", "must be boolean")
-    if sheet["exclusion_reason"] is not None:
-        _nonblank(sheet["exclusion_reason"], "$.synchronization.google_sheet.exclusion_reason")
-    if sheet["participates"] == (sheet["exclusion_reason"] is not None):
-        _fail("$.synchronization.google_sheet", "participation requires no exclusion reason; exclusion requires a reason")
 
     if project_directory is not None:
         project_directory = Path(project_directory)
@@ -457,6 +452,11 @@ def validate_status_transition(previous: dict[str, Any], current: dict[str, Any]
                 "$.state.releases.current.runtime_dependency_policy",
                 "is required whenever the exact current artifact identity changes",
             )
+        if _release_identity(before_release) != _release_identity(after_release) and "summary" not in after_release:
+            _fail(
+                "$.state.releases.current.summary",
+                "is required whenever the exact current artifact identity changes",
+            )
         if (
             before_release is not None
             and "runtime_dependency_policy" in before_release
@@ -472,7 +472,6 @@ def validate_status_transition(previous: dict[str, Any], current: dict[str, Any]
     externally_recordable_results = {"RUNTIME_PASS", "RUNTIME_FAIL", "INCONCLUSIVE"}
     if (
         before_validation["runtime"] != after_validation["runtime"]
-        and after_validation["deployment"] == "NOT_DEPLOYED"
         and after_validation["runtime"] in externally_recordable_results
     ):
         before_release = previous["state"]["releases"]["current"]
@@ -625,35 +624,6 @@ def load_repository_statuses(root: Path) -> dict[str, tuple[Path, dict[str, Any]
     return statuses
 
 
-def _validate_publication_config(path: Path) -> None:
-    config = load_json(path)
-    keys = {
-        "config_version",
-        "enabled",
-        "repository",
-        "authoritative_ref",
-        "contract_version",
-        "cutover_environment_variable",
-        "cutover_required_value",
-        "receiver_url_environment_variable",
-        "hmac_environment_variable",
-        "sheet_preserves",
-    }
-    _object(config, str(path), keys)
-    if config["config_version"] != 1 or config["contract_version"] != 1:
-        raise ValidationError(f"{path}: unsupported config or contract version")
-    if not isinstance(config["enabled"], bool):
-        raise ValidationError(f"{path}: enabled must be boolean")
-    if config["repository"] != "Resivore/Mynx-Flavoured-Workbench":
-        raise ValidationError(f"{path}: repository guard is incorrect")
-    if config["authoritative_ref"] != "refs/heads/main":
-        raise ValidationError(f"{path}: authoritative ref must be refs/heads/main")
-    if config["sheet_preserves"] != ["Notes"]:
-        raise ValidationError(f"{path}: Notes must be the sole human-owned Sheet field")
-    for field in keys - {"config_version", "contract_version", "enabled", "sheet_preserves"}:
-        _nonblank(config[field], f"{path}.{field}")
-
-
 def validate_repository(root: Path) -> dict[str, tuple[Path, dict[str, Any]]]:
     root = root.resolve()
     required = [
@@ -664,12 +634,7 @@ def validate_repository(root: Path) -> dict[str, tuple[Path, dict[str, Any]]]:
         "schemas/workbench-status.schema.json",
         "tools/workbench.py",
         "tools/artifact_retention.py",
-        "tools/sheet_sync.py",
-        "tools/sheet_sync/publication.json",
-        "tools/sheet_sync/receiver/Core.gs",
-        "tools/sheet_sync/receiver/Code.gs",
         ".github/workflows/validate.yml",
-        ".github/workflows/publish-project-status.yml",
     ]
     missing = [relative for relative in required if not (root / relative).exists()]
     if missing:
@@ -680,7 +645,6 @@ def validate_repository(root: Path) -> dict[str, tuple[Path, dict[str, Any]]]:
             raise ValidationError(f"schemas/{schema_name}: must declare JSON Schema Draft 2020-12")
         if schema.get("additionalProperties") is not False:
             raise ValidationError(f"schemas/{schema_name}: root must reject additional properties")
-    _validate_publication_config(root / "tools" / "sheet_sync" / "publication.json")
     statuses = load_repository_statuses(root)
     return statuses
 

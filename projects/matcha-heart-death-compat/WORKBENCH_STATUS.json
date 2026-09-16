@@ -1,6 +1,6 @@
 {
   "$schema": "../../schemas/workbench-status.schema.json",
-  "schema_version": 1,
+  "schema_version": 2,
   "identity": {
     "uuid": "937d7ccc-44c9-55cb-8d33-0dc0bff5fe45",
     "name": "Matcha Death Rebalance",
@@ -93,7 +93,8 @@
           "filename": "matcha-heart-death-compat-0.1.10-canary11.jar",
           "sha256": "a0570179f85d32ec6740d9136ad50890b9c797500661cd2ed2325da5b6b1e4a9"
         },
-        "source_commit": "8a0002235c6b0921f4d7f6a4cbf73b18ccc421a3"
+        "source_commit": "8a0002235c6b0921f4d7f6a4cbf73b18ccc421a3",
+        "summary": "Keeps Matcha Crystal Heart progression as deliberate main-hand use rather than inventory consumption."
       },
       "accepted": {
         "version": "0.1.10-canary11",
@@ -101,7 +102,8 @@
           "filename": "matcha-heart-death-compat-0.1.10-canary11.jar",
           "sha256": "a0570179f85d32ec6740d9136ad50890b9c797500661cd2ed2325da5b6b1e4a9"
         },
-        "source_commit": "8a0002235c6b0921f4d7f6a4cbf73b18ccc421a3"
+        "source_commit": "8a0002235c6b0921f4d7f6a4cbf73b18ccc421a3",
+        "summary": "Keeps Matcha Crystal Heart progression as deliberate main-hand use rather than inventory consumption."
       },
       "rollback": {
         "version": "0.1.7-canary8",
@@ -116,7 +118,6 @@
     },
     "validation": {
       "build": "STATIC_PASS",
-      "deployment": "READY_TO_TEST_VERIFIED",
       "runtime": "RUNTIME_UNTESTED"
     },
     "blocker": null
@@ -126,10 +127,6 @@
     "activity_at": "2026-09-01T03:24:52Z",
     "updated_at": "2026-09-01T03:24:52Z",
     "last_codex_at": "2026-09-01T03:24:52Z",
-    "source_commit": "cedb14dbc15f336d5b2ef853218f07e2d2650a17",
-    "google_sheet": {
-      "participates": true,
-      "exclusion_reason": null
-    }
+    "source_commit": "cedb14dbc15f336d5b2ef853218f07e2d2650a17"
   }
 }

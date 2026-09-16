@@ -1,6 +1,6 @@
 {
   "$schema": "../../schemas/workbench-status.schema.json",
-  "schema_version": 1,
+  "schema_version": 2,
   "identity": {
     "uuid": "2a650718-ec62-568f-8dff-71258a4d6f3f",
     "name": "Mynx Ribbits 26.2",
@@ -190,7 +190,8 @@
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
-        }
+        },
+        "summary": "Maintains the private Mynx downstream Ribbits build with documented intentional deviations."
       },
       "accepted": {
         "version": "4.1.6+26.2-mynx-canary24",
@@ -202,7 +203,8 @@
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
-        }
+        },
+        "summary": "Maintains the private Mynx downstream Ribbits build with documented intentional deviations."
       },
       "rollback": null,
       "accepted_current": "CURRENT_IS_ACCEPTED",
@@ -210,7 +212,6 @@
     },
     "validation": {
       "build": "STATIC_PASS",
-      "deployment": "NOT_DEPLOYED",
       "runtime": "RUNTIME_UNTESTED"
     },
     "blocker": null
@@ -220,10 +221,6 @@
     "activity_at": "2026-09-14T08:09:29Z",
     "updated_at": "2026-09-14T08:09:29Z",
     "last_codex_at": "2026-09-14T08:09:29Z",
-    "source_commit": "f511f435c623883c5ee1474e9227acb73fb2df68",
-    "google_sheet": {
-      "participates": true,
-      "exclusion_reason": null
-    }
+    "source_commit": "f511f435c623883c5ee1474e9227acb73fb2df68"
   }
 }

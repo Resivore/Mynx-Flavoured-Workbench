@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate the local, self-contained Mynx Workbench project dashboard."""
+"""Generate the local, self-contained Mynx dashboard."""
 
 from __future__ import annotations
 
@@ -46,11 +46,12 @@ DASHBOARD_ICON_NAMES = frozenset(
         "sort-up",
         "sort-down",
         "chevron-down",
+        "chevron-right",
         "arrow-clockwise",
     }
 )
 SERVER_STATES = {"CURRENT", "OUTDATED", "NOT_DEPLOYED"}
-LIFECYCLE_ORDER = ("ACTIVE", "PLANNED", "ACCEPTED", "TESTING", "BLOCKED", "PARKED")
+LIFECYCLE_ORDER = ("ACTIVE", "PLANNED", "ACCEPTED", "BLOCKED", "PARKED")
 LIFECYCLE_PRIORITY = {lifecycle: index for index, lifecycle in enumerate(LIFECYCLE_ORDER)}
 # Presentation-only labels for legacy/nonstandard canonical versions.  Each
 # record is pinned to the complete current release identity, so a successor
@@ -102,6 +103,7 @@ class DashboardProject:
     jar_note: str
     server_status: str
     deployed_release: dict[str, Any] | None
+    current_summary: str | None = None
     current_canary: int | None = None
 
 
@@ -417,6 +419,7 @@ def build_project_records(
                 jar_note=jar_note,
                 server_status=server_status,
                 deployed_release=deployed_release,
+                current_summary=None if current is None else current.get("summary"),
                 current_canary=canary_number_for_release(project_uuid, current),
             )
         )
@@ -502,6 +505,7 @@ def _project_payload(project: DashboardProject) -> dict[str, Any]:
         "deployedVersion": deployed_version,
         "deployedVersionDisplay": display_canary_version(deployed_version),
         "deployedCanary": deployed_canary,
+        "summary": project.current_summary,
     }
 
 
@@ -637,7 +641,7 @@ HTML_TEMPLATE = r'''<!doctype html>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="dark">
   <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; connect-src 'none'; font-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
-  <title>Mynx Workbench</title>
+  <title>Mynx Dashboard</title>
   <link rel="icon" type="image/svg+xml" href="__DASHBOARD_FAVICON_DATA_URL__">
   <style>
     :root {
@@ -655,7 +659,6 @@ HTML_TEMPLATE = r'''<!doctype html>
       --active: #e4b75c;
       --planned: #71a9dc;
       --accepted: #70bb89;
-      --testing: #a88bd8;
       --blocked: #db7474;
       --parked: #909a96;
       --current: #70bb89;
@@ -814,7 +817,6 @@ HTML_TEMPLATE = r'''<!doctype html>
     .chip[data-lifecycle="ACTIVE"][aria-selected="true"] { border-color: color-mix(in srgb, var(--active) 55%, transparent); }
     .chip[data-lifecycle="PLANNED"][aria-selected="true"] { border-color: color-mix(in srgb, var(--planned) 55%, transparent); }
     .chip[data-lifecycle="ACCEPTED"][aria-selected="true"] { border-color: color-mix(in srgb, var(--accepted) 55%, transparent); }
-    .chip[data-lifecycle="TESTING"][aria-selected="true"] { border-color: color-mix(in srgb, var(--testing) 55%, transparent); }
     .chip[data-lifecycle="BLOCKED"][aria-selected="true"] { border-color: color-mix(in srgb, var(--blocked) 55%, transparent); }
     .chip[data-lifecycle="PARKED"][aria-selected="true"] { border-color: color-mix(in srgb, var(--parked) 55%, transparent); }
 
@@ -885,7 +887,14 @@ HTML_TEMPLATE = r'''<!doctype html>
       vertical-align: middle;
     }
     tbody tr.project-row:hover td { background: rgba(123, 171, 140, 0.055); }
-    .project-name { overflow: hidden; color: var(--text); font-weight: 650; text-overflow: ellipsis; white-space: nowrap; }
+    .project-name { overflow: hidden; padding-left: 10px; color: var(--text); font-weight: 650; text-overflow: ellipsis; white-space: nowrap; }
+    .project-toggle { display: inline-flex; align-items: center; max-width: 100%; padding: 0; border: 0; background: transparent; color: inherit; font: inherit; font-weight: inherit; text-align: left; }
+    .project-toggle:hover { color: var(--accent); }
+    .project-chevron { width: 0.76rem; height: 0.76rem; margin-right: 8px; color: var(--muted); transition: transform 120ms ease; }
+    .project-toggle[aria-expanded="true"] .project-chevron { transform: rotate(90deg); }
+    .release-detail td { height: auto; padding: 0 14px 11px 37px; border-bottom: 1px solid rgba(149, 194, 168, 0.09); color: #b5c4bb; font-size: 0.81rem; line-height: 1.4; }
+    .release-detail .release-summary { display: block; max-width: 74rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .release-detail .release-summary-version { color: #d3ded7; font-weight: 650; }
     .version-value { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .date-value { color: #c3d0c8; font-variant-numeric: tabular-nums; white-space: nowrap; }
     .muted { color: #687a71; }
@@ -918,7 +927,6 @@ HTML_TEMPLATE = r'''<!doctype html>
     .life-ACTIVE { --group-color: var(--active); }
     .life-PLANNED { --group-color: var(--planned); }
     .life-ACCEPTED { --group-color: var(--accepted); }
-    .life-TESTING { --group-color: var(--testing); }
     .life-BLOCKED { --group-color: var(--blocked); }
     .life-PARKED { --group-color: var(--parked); }
 
@@ -992,7 +1000,7 @@ HTML_TEMPLATE = r'''<!doctype html>
     <header class="masthead">
       <div>
         <p class="eyebrow">Project Tracker</p>
-        <h1>Mynx Workbench</h1>
+        <h1>mynx dashboard</h1>
       </div>
       <div class="masthead-meta">
         <span>Last generated <time id="generated-at"></time></span>
@@ -1000,7 +1008,7 @@ HTML_TEMPLATE = r'''<!doctype html>
       </div>
     </header>
 
-    <section class="workspace" aria-label="Mynx Workbench projects">
+    <section class="workspace" aria-label="Mynx dashboard projects">
       <div class="controls">
         <div class="control-row">
           <div class="search-wrap">
@@ -1030,7 +1038,6 @@ HTML_TEMPLATE = r'''<!doctype html>
             <button class="chip" type="button" role="tab" data-lifecycle="ACTIVE" aria-selected="false">Active <span class="chip-count">0</span></button>
             <button class="chip" type="button" role="tab" data-lifecycle="PLANNED" aria-selected="false">Planned <span class="chip-count">0</span></button>
             <button class="chip" type="button" role="tab" data-lifecycle="ACCEPTED" aria-selected="false">Accepted <span class="chip-count">0</span></button>
-            <button class="chip" type="button" role="tab" data-lifecycle="TESTING" aria-selected="false">Testing <span class="chip-count">0</span></button>
             <button class="chip" type="button" role="tab" data-lifecycle="BLOCKED" aria-selected="false">Blocked <span class="chip-count">0</span></button>
             <button class="chip" type="button" role="tab" data-lifecycle="PARKED" aria-selected="false">Parked <span class="chip-count">0</span></button>
           </div>
@@ -1044,7 +1051,7 @@ HTML_TEMPLATE = r'''<!doctype html>
 
       <div id="table-region" class="table-scroll">
         <table>
-          <caption class="sr-only">Canonical Mynx Workbench project status</caption>
+          <caption class="sr-only">Canonical Mynx dashboard project status</caption>
           <colgroup>
             <col class="project"><col class="lifecycle"><col class="version"><col class="jar"><col class="server">
           </colgroup>
@@ -1080,13 +1087,13 @@ HTML_TEMPLATE = r'''<!doctype html>
       "use strict";
       const data = JSON.parse(document.getElementById("dashboard-data").textContent);
       const projects = data.projects.map((project, defaultIndex) => ({ ...project, defaultIndex }));
-      const lifecycleOrder = ["ACTIVE", "PLANNED", "ACCEPTED", "TESTING", "BLOCKED", "PARKED"];
-      const lifecycleLabels = { ACTIVE: "Active", PLANNED: "Planned", ACCEPTED: "Accepted", TESTING: "Testing", BLOCKED: "Blocked", PARKED: "Parked" };
+      const lifecycleOrder = ["ACTIVE", "PLANNED", "ACCEPTED", "BLOCKED", "PARKED"];
+      const lifecycleLabels = { ACTIVE: "Active", PLANNED: "Planned", ACCEPTED: "Accepted", BLOCKED: "Blocked", PARKED: "Parked" };
       const serverRank = { CURRENT: 0, OUTDATED: 1, NOT_DEPLOYED: 2 };
       const sortLabels = { name: "Project", lifecycle: "Lifecycle", version: "Version", jar: "Last JAR Edit", server: "On Server" };
       const bootstrapIcons = JSON.parse(document.getElementById("bootstrap-icon-data").textContent);
       const SVG_NS = "http://www.w3.org/2000/svg";
-      const state = { lifecycle: "ALL", server: "ALL", search: "", sortKey: "default", sortDirection: "asc", collapsed: new Set() };
+      const state = { lifecycle: "ALL", server: "ALL", search: "", sortKey: "default", sortDirection: "asc", collapsed: new Set(), expanded: null };
 
       const rowsElement = document.getElementById("project-rows");
       const tableRegion = document.getElementById("table-region");
@@ -1189,8 +1196,17 @@ HTML_TEMPLATE = r'''<!doctype html>
         row.dataset.lifecycle = lifecycle;
         if (state.collapsed.has(lifecycle)) row.hidden = true;
 
-        const nameCell = element("td", "project-name", project.name);
-        nameCell.title = project.name;
+        const nameCell = element("td", "project-name");
+        const toggle = element("button", "project-toggle");
+        toggle.type = "button";
+        toggle.dataset.expand = project.uuid;
+        toggle.setAttribute("aria-expanded", String(state.expanded === project.uuid));
+        toggle.setAttribute("aria-controls", `release-detail-${project.uuid}`);
+        toggle.title = project.name;
+        toggle.appendChild(icon("chevron-right"));
+        toggle.lastChild.classList.add("project-chevron");
+        toggle.appendChild(document.createTextNode(project.name));
+        nameCell.appendChild(toggle);
         row.appendChild(nameCell);
 
         const lifecycleCell = element("td", "lifecycle-value");
@@ -1217,6 +1233,22 @@ HTML_TEMPLATE = r'''<!doctype html>
         const serverCell = element("td", "server-value");
         serverCell.appendChild(serverPill(project));
         row.appendChild(serverCell);
+        return row;
+      }
+
+      function releaseDetailRow(project, lifecycle) {
+        const row = element("tr", "release-detail");
+        row.id = `release-detail-${project.uuid}`;
+        row.dataset.lifecycle = lifecycle;
+        if (state.collapsed.has(lifecycle)) row.hidden = true;
+        const cell = document.createElement("td");
+        cell.colSpan = 5;
+        const line = element("span", "release-summary");
+        const version = project.versionDisplay || project.version || "Current release";
+        line.appendChild(element("span", "release-summary-version", `${version} — `));
+        line.appendChild(document.createTextNode(project.summary || "Current release details are not recorded yet."));
+        cell.appendChild(line);
+        row.appendChild(cell);
         return row;
       }
 
@@ -1277,7 +1309,10 @@ HTML_TEMPLATE = r'''<!doctype html>
           const group = visible.filter(project => project.lifecycle === lifecycle).sort(projectComparator);
           if (!group.length) continue;
           rowsElement.appendChild(groupRow(lifecycle, group.length));
-          for (const project of group) rowsElement.appendChild(projectRow(project, lifecycle));
+          for (const project of group) {
+            rowsElement.appendChild(projectRow(project, lifecycle));
+            if (state.expanded === project.uuid) rowsElement.appendChild(releaseDetailRow(project, lifecycle));
+          }
         }
 
         const isEmpty = visible.length === 0;
@@ -1333,11 +1368,21 @@ HTML_TEMPLATE = r'''<!doctype html>
       });
       rowsElement.addEventListener("click", event => {
         const button = event.target.closest("[data-collapse]");
-        if (!button) return;
-        const lifecycle = button.dataset.collapse;
-        if (state.collapsed.has(lifecycle)) state.collapsed.delete(lifecycle);
-        else state.collapsed.add(lifecycle);
-        render(lifecycle);
+        if (button) {
+          const lifecycle = button.dataset.collapse;
+          if (state.collapsed.has(lifecycle)) state.collapsed.delete(lifecycle);
+          else {
+            state.collapsed.add(lifecycle);
+            if (state.expanded && projects.find(project => project.uuid === state.expanded)?.lifecycle === lifecycle) state.expanded = null;
+          }
+          render(lifecycle);
+          return;
+        }
+        const projectButton = event.target.closest("[data-expand]");
+        if (!projectButton) return;
+        const uuid = projectButton.dataset.expand;
+        state.expanded = state.expanded === uuid ? null : uuid;
+        render();
       });
       document.getElementById("clear-filters").addEventListener("click", () => {
         state.lifecycle = "ALL";

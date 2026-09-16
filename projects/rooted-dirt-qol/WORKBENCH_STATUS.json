@@ -1,6 +1,6 @@
 {
   "$schema": "../../schemas/workbench-status.schema.json",
-  "schema_version": 1,
+  "schema_version": 2,
   "identity": {
     "uuid": "6b8b6166-fd59-4e4e-ab1d-d1140cdbfab8",
     "name": "Rooted Dirt QoL",
@@ -79,7 +79,8 @@
           "filename": "rooted-dirt-qol-0.1.0-canary1.jar",
           "sha256": "3642f55e0cef611f2dd56478b8aaf2491fd81d370023a04ca71e6852b37307ee"
         },
-        "source_commit": "46e66c9c9bb5701153edc017a969b24e1176dffc"
+        "source_commit": "46e66c9c9bb5701153edc017a969b24e1176dffc",
+        "summary": "Adds one shapeless Dirt and Hanging Roots recipe for Rooted Dirt."
       },
       "accepted": {
         "version": "0.1.0-canary1",
@@ -87,7 +88,8 @@
           "filename": "rooted-dirt-qol-0.1.0-canary1.jar",
           "sha256": "3642f55e0cef611f2dd56478b8aaf2491fd81d370023a04ca71e6852b37307ee"
         },
-        "source_commit": "46e66c9c9bb5701153edc017a969b24e1176dffc"
+        "source_commit": "46e66c9c9bb5701153edc017a969b24e1176dffc",
+        "summary": "Adds one shapeless Dirt and Hanging Roots recipe for Rooted Dirt."
       },
       "rollback": {
         "version": "107.1",
@@ -102,7 +104,6 @@
     },
     "validation": {
       "build": "STATIC_PASS",
-      "deployment": "READY_TO_TEST_VERIFIED",
       "runtime": "RUNTIME_PASS"
     },
     "blocker": null
@@ -112,10 +113,6 @@
     "activity_at": "2026-08-31T04:36:25Z",
     "updated_at": "2026-08-31T04:36:25Z",
     "last_codex_at": "2026-08-31T04:36:25Z",
-    "source_commit": "12d96636943b4ba405c0d96916bbdc74e1434629",
-    "google_sheet": {
-      "participates": true,
-      "exclusion_reason": null
-    }
+    "source_commit": "12d96636943b4ba405c0d96916bbdc74e1434629"
   }
 }

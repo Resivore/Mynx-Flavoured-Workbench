@@ -1,11 +1,13 @@
 {
   "$schema": "../../schemas/workbench-status.schema.json",
-  "schema_version": 1,
+  "schema_version": 2,
   "identity": {
     "uuid": "a0a522b0-bc02-48dc-81de-efc8757171c5",
     "name": "Matcha Flavoured Data",
     "project_id": "matcha-flavoured-data",
-    "aliases": ["Matcha server data"],
+    "aliases": [
+      "Matcha server data"
+    ],
     "legacy_names": [],
     "legacy_ids": []
   },
@@ -21,7 +23,9 @@
       "Statically verify byte identity, all original namespaces and minecraft overrides, Frost Protection and Ribbits contracts, packaged-JAR contents, and exact-legacy-pack coexistence semantics."
     ],
     "boundaries": {
-      "owned_paths": ["projects/matcha-flavoured-data"],
+      "owned_paths": [
+        "projects/matcha-flavoured-data"
+      ],
       "exclusions": [
         "Any Matcha data rewrite, namespace rename, recipe/effect/loot/advancement/worldgen rebalance, Java recreation, or alteration of the immutable originals archive.",
         "Matcha client assets, textures, models, sounds, UI, and any replacement for the existing Matcha client resource pack.",
@@ -75,7 +79,8 @@
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
-        }
+        },
+        "summary": "Makes the Matcha Flavoured 1.12 server-data pack available during world preparation and reloads."
       },
       "accepted": {
         "version": "0.1.0-canary2",
@@ -87,7 +92,8 @@
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
-        }
+        },
+        "summary": "Makes the Matcha Flavoured 1.12 server-data pack available during world preparation and reloads."
       },
       "rollback": null,
       "accepted_current": "CURRENT_IS_ACCEPTED",
@@ -95,7 +101,6 @@
     },
     "validation": {
       "build": "STATIC_PASS",
-      "deployment": "READY_TO_TEST_VERIFIED",
       "runtime": "RUNTIME_PASS"
     },
     "blocker": null
@@ -105,10 +110,6 @@
     "activity_at": "2026-09-07T15:42:09Z",
     "updated_at": "2026-09-07T15:42:09Z",
     "last_codex_at": "2026-09-07T15:42:09Z",
-    "source_commit": "4672129049bffd14e0fe3a14ec4ea83cf8d5409c",
-    "google_sheet": {
-      "participates": true,
-      "exclusion_reason": null
-    }
+    "source_commit": "4672129049bffd14e0fe3a14ec4ea83cf8d5409c"
   }
 }

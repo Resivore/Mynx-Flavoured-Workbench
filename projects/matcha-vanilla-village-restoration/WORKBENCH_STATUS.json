@@ -1,6 +1,6 @@
 {
   "$schema": "../../schemas/workbench-status.schema.json",
-  "schema_version": 1,
+  "schema_version": 2,
   "identity": {
     "uuid": "dda2c3b4-5099-4842-a755-29e964cd2192",
     "name": "Matcha Vanilla Village Restoration",
@@ -80,7 +80,8 @@
           "filename": "matcha-vanilla-village-restoration-0.2.0-canary2.jar",
           "sha256": "5d5164a89881239400cd2b6776b9b54177b699e2a16a1c97b761cde06e7d8bcd"
         },
-        "source_commit": "ee6070995b036128e6a7d281a6c67ae3f74b9284"
+        "source_commit": "ee6070995b036128e6a7d281a6c67ae3f74b9284",
+        "summary": "Restores normal biome-specific vanilla village composition while preserving Matcha's village rules."
       },
       "accepted": {
         "version": "0.2.0-canary2",
@@ -88,7 +89,8 @@
           "filename": "matcha-vanilla-village-restoration-0.2.0-canary2.jar",
           "sha256": "5d5164a89881239400cd2b6776b9b54177b699e2a16a1c97b761cde06e7d8bcd"
         },
-        "source_commit": "ee6070995b036128e6a7d281a6c67ae3f74b9284"
+        "source_commit": "ee6070995b036128e6a7d281a6c67ae3f74b9284",
+        "summary": "Restores normal biome-specific vanilla village composition while preserving Matcha's village rules."
       },
       "rollback": null,
       "accepted_current": "CURRENT_IS_ACCEPTED",
@@ -96,7 +98,6 @@
     },
     "validation": {
       "build": "STATIC_PASS",
-      "deployment": "READY_TO_TEST_VERIFIED",
       "runtime": "RUNTIME_PASS"
     },
     "blocker": null
@@ -106,10 +107,6 @@
     "activity_at": "2026-09-01T02:35:20Z",
     "updated_at": "2026-09-01T02:35:20Z",
     "last_codex_at": "2026-09-01T02:35:20Z",
-    "source_commit": "e405fbcf4900788f1c4bee2df68a130f72bfc239",
-    "google_sheet": {
-      "participates": true,
-      "exclusion_reason": null
-    }
+    "source_commit": "e405fbcf4900788f1c4bee2df68a130f72bfc239"
   }
 }

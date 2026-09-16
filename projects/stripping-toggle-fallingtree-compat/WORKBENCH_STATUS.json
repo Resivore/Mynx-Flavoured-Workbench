@@ -1,6 +1,6 @@
 {
   "$schema": "../../schemas/workbench-status.schema.json",
-  "schema_version": 1,
+  "schema_version": 2,
   "identity": {
     "uuid": "9b4cd3fb-8ae6-58c7-8b88-9b0878c6333e",
     "name": "StrippingToggle × FallingTree Compatibility",
@@ -98,7 +98,8 @@
           "filename": "strippingtoggle-fallingtree-compat-0.1.1-canary2.jar",
           "sha256": "d948c23db8b6c73e764f96422d8359afb85ba39689352e512fd7b4aa91644846"
         },
-        "source_commit": "8abd994b09a50879d0ae871d763f8c47248cc0f8"
+        "source_commit": "8abd994b09a50879d0ae871d763f8c47248cc0f8",
+        "summary": "Uses StrippingToggle's client state as FallingTree's supported master activation control."
       },
       "accepted": {
         "version": "0.1.1-canary2",
@@ -106,7 +107,8 @@
           "filename": "strippingtoggle-fallingtree-compat-0.1.1-canary2.jar",
           "sha256": "d948c23db8b6c73e764f96422d8359afb85ba39689352e512fd7b4aa91644846"
         },
-        "source_commit": "8abd994b09a50879d0ae871d763f8c47248cc0f8"
+        "source_commit": "8abd994b09a50879d0ae871d763f8c47248cc0f8",
+        "summary": "Uses StrippingToggle's client state as FallingTree's supported master activation control."
       },
       "rollback": null,
       "accepted_current": "CURRENT_IS_ACCEPTED",
@@ -114,7 +116,6 @@
     },
     "validation": {
       "build": "STATIC_PASS",
-      "deployment": "READY_TO_TEST_VERIFIED",
       "runtime": "PARTIAL_RUNTIME_PASS"
     },
     "blocker": null
@@ -124,10 +125,6 @@
     "activity_at": "2026-08-22T06:23:53Z",
     "updated_at": "2026-08-29T22:38:34Z",
     "last_codex_at": "2026-08-29T22:38:34Z",
-    "source_commit": "ff63d39329bbb92a86223655adf2bff5de0589d7",
-    "google_sheet": {
-      "participates": true,
-      "exclusion_reason": null
-    }
+    "source_commit": "ff63d39329bbb92a86223655adf2bff5de0589d7"
   }
 }

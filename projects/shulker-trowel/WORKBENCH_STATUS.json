@@ -1,6 +1,6 @@
 {
   "$schema": "../../schemas/workbench-status.schema.json",
-  "schema_version": 1,
+  "schema_version": 2,
   "identity": {
     "uuid": "e28154da-0649-5da7-b6d5-3bff2891719e",
     "name": "Shulker Trowel",
@@ -97,7 +97,8 @@
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
-        }
+        },
+        "summary": "Provides a server-authoritative trowel that draws building materials from the actual offhand shulker."
       },
       "accepted": {
         "version": "C11 (Private Canary 10; embedded 0.1.0-canary10)",
@@ -110,7 +111,8 @@
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
-        }
+        },
+        "summary": "Provides a server-authoritative trowel that draws building materials from the actual offhand shulker."
       },
       "rollback": {
         "version": "C10 (Private Canary 9; embedded 0.1.0-canary9)",
@@ -126,7 +128,6 @@
     },
     "validation": {
       "build": "CONTROLLED_VALIDATION_PASS",
-      "deployment": "NOT_DEPLOYED",
       "runtime": "RUNTIME_PASS"
     },
     "blocker": null
@@ -136,10 +137,6 @@
     "activity_at": "2026-09-16T04:00:00Z",
     "updated_at": "2026-09-16T04:00:00Z",
     "last_codex_at": "2026-09-16T04:00:00Z",
-    "source_commit": "9622ba0f0298f585b75a8c4c209133b0aa2db8ed",
-    "google_sheet": {
-      "participates": true,
-      "exclusion_reason": null
-    }
+    "source_commit": "9622ba0f0298f585b75a8c4c209133b0aa2db8ed"
   }
 }

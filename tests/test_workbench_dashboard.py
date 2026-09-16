@@ -7,6 +7,7 @@ import os
 import re
 import tempfile
 import unittest
+from dataclasses import replace
 from datetime import datetime, timezone
 from html.parser import HTMLParser
 from pathlib import Path
@@ -44,7 +45,7 @@ def write_project(
     accepted = copy.deepcopy(current) if lifecycle == "ACCEPTED" else None
     manifest: dict[str, object] = {
         "$schema": "../../schemas/workbench-status.schema.json",
-        "schema_version": 1,
+        "schema_version": 2,
         "identity": {
             "uuid": project_uuid,
             "name": name,
@@ -69,7 +70,7 @@ def write_project(
                 "accepted_current": "CURRENT_IS_ACCEPTED" if lifecycle == "ACCEPTED" else "NO_ACCEPTED",
                 "accepted_rollback": "NO_ROLLBACK",
             },
-            "validation": {"build": "NOT_RUN", "deployment": "NOT_DEPLOYED", "runtime": "RUNTIME_UNTESTED"},
+            "validation": {"build": "NOT_RUN", "runtime": "RUNTIME_UNTESTED"},
             "blocker": (
                 {"summary": "Fixture blocker.", "since": FIXED_TIME, "next_action": "Resume the fixture."}
                 if lifecycle == "BLOCKED"
@@ -82,7 +83,6 @@ def write_project(
             "updated_at": FIXED_TIME,
             "last_codex_at": FIXED_TIME,
             "source_commit": SOURCE_COMMIT,
-            "google_sheet": {"participates": True, "exclusion_reason": None},
         },
     }
     (directory / "WORKBENCH_STATUS.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
@@ -331,6 +331,17 @@ class WorkbenchDashboardTests(unittest.TestCase):
         payload = json.loads(match.group(1))  # type: ignore[union-attr]
         self.assertEqual(payload["projects"][0]["name"], hostile)
 
+    def test_release_summary_is_escaped_and_available_for_expandable_rows(self) -> None:
+        hostile = "Keeps <exact> data & avoids </script> injection."
+        project = model("Alpha", "ACTIVE")
+        project = replace(project, current_summary=hostile, current_version="C1")
+        html = dashboard.render_dashboard([project])
+        self.assertNotIn("</script> injection", html)
+        payload = json.loads(re.search(r'<script type="application/json" id="dashboard-data">(.*?)</script>', html, re.DOTALL).group(1))  # type: ignore[union-attr]
+        self.assertEqual(payload["projects"][0]["summary"], hostile)
+        self.assertIn("toggle.dataset.expand = project.uuid", html)
+        self.assertIn("release-detail", html)
+
     def test_data_and_html_order_are_deterministic(self) -> None:
         alpha = model("Alpha", "ACTIVE")
         beta = model("Beta", "PLANNED")
@@ -416,6 +427,17 @@ class WorkbenchDashboardTests(unittest.TestCase):
         html = dashboard.render_dashboard(records, generated_at=datetime(2026, 9, 16, 5, 10, tzinfo=timezone.utc))
         payload = json.loads(re.search(r'<script type="application/json" id="dashboard-data">(.*?)</script>', html, re.DOTALL).group(1))  # type: ignore[union-attr]
         self.assertFalse(any(project["lifecycle"] == "TESTING" for project in payload["projects"]))
+        self.assertEqual(len(payload["projects"]), len(records))
+        self.assertIn("<title>Mynx Dashboard</title>", html)
+        self.assertIn("<h1>mynx dashboard</h1>", html)
+        self.assertNotIn('data-lifecycle="TESTING"', html)
+        accepted_with_artifacts = [
+            manifest for manifest in all_manifests
+            if manifest["definition"]["lifecycle"] == "ACCEPTED"
+            and manifest["state"]["releases"]["current"]
+            and manifest["state"]["releases"]["current"]["artifact"]
+        ]
+        self.assertTrue(all(manifest["identity"]["uuid"] in server_state for manifest in accepted_with_artifacts))
 
     def test_bootstrap_icons_are_inlined_from_the_vendored_sprite(self) -> None:
         html = dashboard.render_dashboard([model("Alpha", "ACTIVE")])

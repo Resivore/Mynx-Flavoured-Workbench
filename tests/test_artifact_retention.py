@@ -24,7 +24,7 @@ def sha256(content: bytes) -> str:
 def manifest(container: str, project_id: str, filename: str, artifact_hash: str) -> dict:
     return {
         "$schema": "../../schemas/workbench-status.schema.json",
-        "schema_version": 1,
+        "schema_version": 2,
         "identity": {
             "uuid": "9c9592a8-8692-48c5-9127-715825ce9c47",
             "name": "Private Retention Fixture",
@@ -58,7 +58,6 @@ def manifest(container: str, project_id: str, filename: str, artifact_hash: str)
             },
             "validation": {
                 "build": "STATIC_PASS",
-                "deployment": "NOT_DEPLOYED",
                 "runtime": "RUNTIME_UNTESTED",
             },
             "blocker": None,
@@ -69,7 +68,6 @@ def manifest(container: str, project_id: str, filename: str, artifact_hash: str)
             "updated_at": TIMESTAMP,
             "last_codex_at": TIMESTAMP,
             "source_commit": "b" * 40,
-            "google_sheet": {"participates": False, "exclusion_reason": "Temporary test fixture."},
         },
     }
 

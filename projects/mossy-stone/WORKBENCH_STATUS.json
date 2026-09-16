@@ -1,6 +1,6 @@
 {
   "$schema": "../../schemas/workbench-status.schema.json",
-  "schema_version": 1,
+  "schema_version": 2,
   "identity": {
     "uuid": "9f1c5aa4-09c1-4de3-9921-4b045e8abcd2",
     "name": "Mossy Stone",
@@ -107,7 +107,8 @@
           "filename": "mossy-stone-0.4.0-canary4.jar",
           "sha256": "b0e7be5651d622789b848ba1a48073af8078ba4d834e34c1255ec9ce72042f14"
         },
-        "source_commit": "f789b290f72c508a563797b0c543125bc9c468c1"
+        "source_commit": "f789b290f72c508a563797b0c543125bc9c468c1",
+        "summary": "Provides a standalone Stone-like mossy stone family without a Regions Unexplored dependency."
       },
       "accepted": {
         "version": "0.4.0-canary4",
@@ -115,7 +116,8 @@
           "filename": "mossy-stone-0.4.0-canary4.jar",
           "sha256": "b0e7be5651d622789b848ba1a48073af8078ba4d834e34c1255ec9ce72042f14"
         },
-        "source_commit": "f789b290f72c508a563797b0c543125bc9c468c1"
+        "source_commit": "f789b290f72c508a563797b0c543125bc9c468c1",
+        "summary": "Provides a standalone Stone-like mossy stone family without a Regions Unexplored dependency."
       },
       "rollback": null,
       "accepted_current": "CURRENT_IS_ACCEPTED",
@@ -123,7 +125,6 @@
     },
     "validation": {
       "build": "STATIC_PASS",
-      "deployment": "READY_TO_TEST_VERIFIED",
       "runtime": "RUNTIME_PASS"
     },
     "blocker": null
@@ -133,10 +134,6 @@
     "activity_at": "2026-08-30T06:51:06Z",
     "updated_at": "2026-08-30T06:51:06Z",
     "last_codex_at": "2026-08-30T06:51:06Z",
-    "source_commit": "8fdfaaf4eddfb4b379ce5d50266f2c40a5294480",
-    "google_sheet": {
-      "participates": true,
-      "exclusion_reason": null
-    }
+    "source_commit": "8fdfaaf4eddfb4b379ce5d50266f2c40a5294480"
   }
 }

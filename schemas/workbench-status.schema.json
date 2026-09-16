@@ -7,7 +7,7 @@
   "required": ["$schema", "schema_version", "identity", "definition", "state", "synchronization"],
   "properties": {
     "$schema": { "const": "../../schemas/workbench-status.schema.json" },
-    "schema_version": { "const": 1 },
+    "schema_version": { "const": 2 },
     "identity": {
       "type": "object",
       "additionalProperties": false,
@@ -27,8 +27,8 @@
       "required": ["lifecycle", "goals", "scope", "boundaries", "dependencies"],
       "properties": {
         "lifecycle": {
-          "description": "Project lifecycle. TESTING means the project is awaiting, undergoing, or receiving user runtime validation. It is independent of any Minecraft profile, testing slot, deployment, or capacity reservation; build, artifact, procedure, readiness, runtime result, and accepted-release metadata do not independently imply or prevent TESTING.",
-          "enum": ["PLANNED", "ACTIVE", "BLOCKED", "TESTING", "ACCEPTED", "PARKED"]
+          "description": "Project lifecycle. Runtime testing is user-directed evidence and does not independently change lifecycle.",
+          "enum": ["PLANNED", "ACTIVE", "BLOCKED", "ACCEPTED", "PARKED"]
         },
         "goals": { "$ref": "#/$defs/nonemptyTextList" },
         "scope": { "$ref": "#/$defs/nonemptyTextList" },
@@ -68,10 +68,9 @@
         "validation": {
           "type": "object",
           "additionalProperties": false,
-          "required": ["build", "deployment", "runtime"],
+          "required": ["build", "runtime"],
           "properties": {
             "build": { "enum": ["NOT_RUN", "GENERATED", "STATIC_PASS", "STATIC_FAIL", "CONTROLLED_VALIDATION_PASS", "CONTROLLED_VALIDATION_FAIL", "INCONCLUSIVE"] },
-            "deployment": { "enum": ["NOT_DEPLOYED", "DEPLOYED", "READY_TO_TEST_VERIFIED", "DEPLOYMENT_FAILED"] },
             "runtime": { "enum": ["RUNTIME_UNTESTED", "PARTIAL_RUNTIME_PASS", "RUNTIME_PASS", "RUNTIME_FAIL", "INCONCLUSIVE"] }
           }
         },
@@ -95,22 +94,13 @@
     "synchronization": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["revision", "activity_at", "updated_at", "last_codex_at", "source_commit", "google_sheet"],
+      "required": ["revision", "activity_at", "updated_at", "last_codex_at", "source_commit"],
       "properties": {
         "revision": { "type": "integer", "minimum": 1 },
         "activity_at": { "type": "string", "format": "date-time" },
         "updated_at": { "type": "string", "format": "date-time" },
         "last_codex_at": { "type": "string", "format": "date-time" },
-        "source_commit": { "$ref": "#/$defs/commit" },
-        "google_sheet": {
-          "type": "object",
-          "additionalProperties": false,
-          "required": ["participates", "exclusion_reason"],
-          "properties": {
-            "participates": { "type": "boolean" },
-            "exclusion_reason": { "anyOf": [{ "type": "null" }, { "$ref": "#/$defs/nonblank" }] }
-          }
-        }
+        "source_commit": { "$ref": "#/$defs/commit" }
       }
     }
   },
@@ -133,11 +123,6 @@
       "if": { "properties": { "state": { "properties": { "releases": { "properties": { "accepted_rollback": { "const": "NO_ROLLBACK" } } } } } } },
       "then": { "properties": { "state": { "properties": { "releases": { "properties": { "rollback": { "type": "null" } } } } } } },
       "else": { "properties": { "state": { "properties": { "releases": { "properties": { "accepted": { "type": "object" }, "rollback": { "type": "object" } } } } } } }
-    },
-    {
-      "if": { "properties": { "synchronization": { "properties": { "google_sheet": { "properties": { "participates": { "const": true } } } } } } },
-      "then": { "properties": { "synchronization": { "properties": { "google_sheet": { "properties": { "exclusion_reason": { "type": "null" } } } } } } },
-      "else": { "properties": { "synchronization": { "properties": { "google_sheet": { "properties": { "exclusion_reason": { "type": "string", "minLength": 1 } } } } } } }
     }
   ],
   "$defs": {
@@ -172,6 +157,10 @@
         "version": { "$ref": "#/$defs/nonblank" },
         "embedded_version": {
           "description": "Exact packaged release version used for runtime-unit binding when the human-facing version is a logical label.",
+          "$ref": "#/$defs/nonblank"
+        },
+        "summary": {
+          "description": "Optional concise human-facing one-sentence description of the current release for the local dashboard.",
           "$ref": "#/$defs/nonblank"
         },
         "artifact": { "anyOf": [{ "type": "null" }, { "$ref": "#/$defs/artifact" }] },

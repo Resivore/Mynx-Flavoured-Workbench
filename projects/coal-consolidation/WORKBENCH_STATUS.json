@@ -1,6 +1,6 @@
 {
   "$schema": "../../schemas/workbench-status.schema.json",
-  "schema_version": 1,
+  "schema_version": 2,
   "identity": {
     "uuid": "2371b6eb-a4fb-4f1e-8203-580b82ce846b",
     "name": "Coal Consolidation",
@@ -98,7 +98,8 @@
           "filename": "coal-consolidation-0.1.2-canary3.jar",
           "sha256": "f1d36dfad276927d527cc911d92f47ee979ef7600479f950c76ed25dd18eb871"
         },
-        "source_commit": "d2ad841f6a8edfbc765ec681d803b193e5d1f7ad"
+        "source_commit": "d2ad841f6a8edfbc765ec681d803b193e5d1f7ad",
+        "summary": "Converts intended Matcha charcoal cooking into coal while preserving recipe inputs, timing, and experience."
       },
       "accepted": {
         "version": "0.1.2-canary3",
@@ -106,7 +107,8 @@
           "filename": "coal-consolidation-0.1.2-canary3.jar",
           "sha256": "f1d36dfad276927d527cc911d92f47ee979ef7600479f950c76ed25dd18eb871"
         },
-        "source_commit": "d2ad841f6a8edfbc765ec681d803b193e5d1f7ad"
+        "source_commit": "d2ad841f6a8edfbc765ec681d803b193e5d1f7ad",
+        "summary": "Converts intended Matcha charcoal cooking into coal while preserving recipe inputs, timing, and experience."
       },
       "rollback": null,
       "accepted_current": "CURRENT_IS_ACCEPTED",
@@ -114,7 +116,6 @@
     },
     "validation": {
       "build": "STATIC_PASS",
-      "deployment": "READY_TO_TEST_VERIFIED",
       "runtime": "RUNTIME_PASS"
     },
     "blocker": null
@@ -124,10 +125,6 @@
     "activity_at": "2026-08-31T04:36:25Z",
     "updated_at": "2026-08-31T04:36:25Z",
     "last_codex_at": "2026-08-31T04:36:25Z",
-    "source_commit": "12d96636943b4ba405c0d96916bbdc74e1434629",
-    "google_sheet": {
-      "participates": true,
-      "exclusion_reason": null
-    }
+    "source_commit": "12d96636943b4ba405c0d96916bbdc74e1434629"
   }
 }

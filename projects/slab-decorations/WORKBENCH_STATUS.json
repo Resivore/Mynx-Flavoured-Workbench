@@ -1,6 +1,6 @@
 {
   "$schema": "../../schemas/workbench-status.schema.json",
-  "schema_version": 1,
+  "schema_version": 2,
   "identity": {
     "uuid": "62e67860-8a3b-50a7-9c48-9878c01d899d",
     "name": "Slab Decorations",
@@ -121,7 +121,8 @@
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
-        }
+        },
+        "summary": "Fixes client render offsets and native BGE slab compatibility for directional foliage on horizontal slabs."
       },
       "accepted": null,
       "rollback": null,
@@ -130,7 +131,6 @@
     },
     "validation": {
       "build": "CONTROLLED_VALIDATION_PASS",
-      "deployment": "NOT_DEPLOYED",
       "runtime": "RUNTIME_UNTESTED"
     },
     "blocker": null
@@ -140,10 +140,6 @@
     "activity_at": "2026-09-16T15:08:47Z",
     "updated_at": "2026-09-16T15:08:47Z",
     "last_codex_at": "2026-09-16T15:08:47Z",
-    "source_commit": "b137377b6f54fd7e5cc6d621f815d09187a30912",
-    "google_sheet": {
-      "participates": true,
-      "exclusion_reason": null
-    }
+    "source_commit": "b137377b6f54fd7e5cc6d621f815d09187a30912"
   }
 }

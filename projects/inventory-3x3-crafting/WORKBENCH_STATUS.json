@@ -1,6 +1,6 @@
 {
   "$schema": "../../schemas/workbench-status.schema.json",
-  "schema_version": 1,
+  "schema_version": 2,
   "identity": {
     "uuid": "357cd94a-4ab2-54c9-ac6c-4049fea08bb9",
     "name": "Inherent 3×3 Inventory Crafting",
@@ -95,7 +95,8 @@
           "filename": "inherent-3x3-inventory-crafting-0.1.0-canary4.jar",
           "sha256": "6e797291dd6c68f5afe65f91177ad2653f7c4a99e10bd20e078fafd7aaf6cb33"
         },
-        "source_commit": "34e8de533e804ab4993b7502d7c5afbec6ebc8ca"
+        "source_commit": "34e8de533e804ab4993b7502d7c5afbec6ebc8ca",
+        "summary": "Replaces survival inventory crafting with a permanent server-authoritative 3×3 matrix."
       },
       "accepted": {
         "version": "0.1.0-canary4",
@@ -103,7 +104,8 @@
           "filename": "inherent-3x3-inventory-crafting-0.1.0-canary4.jar",
           "sha256": "6e797291dd6c68f5afe65f91177ad2653f7c4a99e10bd20e078fafd7aaf6cb33"
         },
-        "source_commit": "34e8de533e804ab4993b7502d7c5afbec6ebc8ca"
+        "source_commit": "34e8de533e804ab4993b7502d7c5afbec6ebc8ca",
+        "summary": "Replaces survival inventory crafting with a permanent server-authoritative 3×3 matrix."
       },
       "rollback": {
         "version": "0.1.0-canary3",
@@ -118,7 +120,6 @@
     },
     "validation": {
       "build": "STATIC_PASS",
-      "deployment": "DEPLOYED",
       "runtime": "PARTIAL_RUNTIME_PASS"
     },
     "blocker": null
@@ -128,10 +129,6 @@
     "activity_at": "2026-08-22T04:10:59Z",
     "updated_at": "2026-08-29T21:03:10Z",
     "last_codex_at": "2026-08-29T21:03:10Z",
-    "source_commit": "fffc670b17cba190dfaba780ae444668aa9c1f78",
-    "google_sheet": {
-      "participates": true,
-      "exclusion_reason": null
-    }
+    "source_commit": "fffc670b17cba190dfaba780ae444668aa9c1f78"
   }
 }

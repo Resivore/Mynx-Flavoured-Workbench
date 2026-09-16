@@ -1,6 +1,6 @@
 {
   "$schema": "../../schemas/workbench-status.schema.json",
-  "schema_version": 1,
+  "schema_version": 2,
   "identity": {
     "uuid": "4fa0f3c6-988a-42a5-bdcf-8f1be17a3f27",
     "name": "Mynx Regions Unexplored",
@@ -70,7 +70,8 @@
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
-        }
+        },
+        "summary": "Repairs clover biome tinting for both beds and stems while retaining original textures."
       },
       "accepted": {
         "version": "0.1.0+26.2-canary3",
@@ -90,7 +91,6 @@
     },
     "validation": {
       "build": "STATIC_PASS",
-      "deployment": "NOT_DEPLOYED",
       "runtime": "RUNTIME_UNTESTED"
     },
     "blocker": null
@@ -100,10 +100,6 @@
     "activity_at": "2026-09-16T15:08:47Z",
     "updated_at": "2026-09-16T15:08:47Z",
     "last_codex_at": "2026-09-16T15:08:47Z",
-    "source_commit": "b137377b6f54fd7e5cc6d621f815d09187a30912",
-    "google_sheet": {
-      "participates": true,
-      "exclusion_reason": null
-    }
+    "source_commit": "b137377b6f54fd7e5cc6d621f815d09187a30912"
   }
 }

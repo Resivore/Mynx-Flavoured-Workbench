@@ -1,6 +1,6 @@
 {
   "$schema": "../../schemas/workbench-status.schema.json",
-  "schema_version": 1,
+  "schema_version": 2,
   "identity": {
     "uuid": "1f7b4c28-008c-4b3f-91e5-f1d16b638afb",
     "name": "Mynx Matcha Trade Tweaks",
@@ -18,7 +18,9 @@
       "Override 124 individual Matcha villager trades, remove four explicit non-filler offers through five minimal membership/pool overrides, and add one Leatherworker Master offer."
     ],
     "boundaries": {
-      "owned_paths": ["projects/mynx-matcha-trade-tweaks"],
+      "owned_paths": [
+        "projects/mynx-matcha-trade-tweaks"
+      ],
       "exclusions": [
         "Accepted Matcha source data, originals, unchanged Matcha trade resources, unrelated datapacks, the user's design spreadsheet, and the protected gameplay instance."
       ]
@@ -75,7 +77,8 @@
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
-        }
+        },
+        "summary": "Applies the actionable Matcha trade edits as a narrow higher-priority datapack overlay."
       },
       "accepted": null,
       "rollback": null,
@@ -84,7 +87,6 @@
     },
     "validation": {
       "build": "STATIC_PASS",
-      "deployment": "NOT_DEPLOYED",
       "runtime": "RUNTIME_UNTESTED"
     },
     "blocker": null
@@ -94,10 +96,6 @@
     "activity_at": "2026-09-13T20:59:13Z",
     "updated_at": "2026-09-13T20:59:13Z",
     "last_codex_at": "2026-09-13T20:59:13Z",
-    "source_commit": "2144aa1111b310bbfc5bd8dc87613c8dae494201",
-    "google_sheet": {
-      "participates": true,
-      "exclusion_reason": null
-    }
+    "source_commit": "2144aa1111b310bbfc5bd8dc87613c8dae494201"
   }
 }

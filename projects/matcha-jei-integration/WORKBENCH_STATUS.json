@@ -1,6 +1,6 @@
 {
   "$schema": "../../schemas/workbench-status.schema.json",
-  "schema_version": 1,
+  "schema_version": 2,
   "identity": {
     "uuid": "4d983099-3bfc-5df1-9788-32683ddfc6db",
     "name": "Matcha Flavoured × JEI Integration",
@@ -96,7 +96,8 @@
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
-        }
+        },
+        "summary": "Exposes exact Matcha recipe and item identities in JEI without duplicating vanilla recipe ownership."
       },
       "accepted": {
         "version": "C3 (legacy 0.2.0-nonrecipe-discovery-canary1)",
@@ -119,7 +120,6 @@
     },
     "validation": {
       "build": "STATIC_PASS",
-      "deployment": "NOT_DEPLOYED",
       "runtime": "RUNTIME_UNTESTED"
     },
     "blocker": null
@@ -129,10 +129,6 @@
     "activity_at": "2026-09-16T15:03:28Z",
     "updated_at": "2026-09-16T15:03:28Z",
     "last_codex_at": "2026-09-16T15:03:28Z",
-    "source_commit": "e016421530f1f1b47ff43632fb69cd73d56f5bbd",
-    "google_sheet": {
-      "participates": true,
-      "exclusion_reason": null
-    }
+    "source_commit": "e016421530f1f1b47ff43632fb69cd73d56f5bbd"
   }
 }

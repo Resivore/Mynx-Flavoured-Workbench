@@ -1,6 +1,6 @@
 {
   "$schema": "../../schemas/workbench-status.schema.json",
-  "schema_version": 1,
+  "schema_version": 2,
   "identity": {
     "uuid": "4048a9cf-f8c3-4fc0-8c3c-b8f1caebab46",
     "name": "Carry On Patch",
@@ -91,7 +91,8 @@
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
-        }
+        },
+        "summary": "Assigns safe identity to Carry On synthetic client entities before render-state extraction."
       },
       "accepted": {
         "version": "0.1.0-canary3",
@@ -103,7 +104,8 @@
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
-        }
+        },
+        "summary": "Assigns safe identity to Carry On synthetic client entities before render-state extraction."
       },
       "rollback": null,
       "accepted_current": "CURRENT_IS_ACCEPTED",
@@ -111,7 +113,6 @@
     },
     "validation": {
       "build": "STATIC_PASS",
-      "deployment": "READY_TO_TEST_VERIFIED",
       "runtime": "RUNTIME_PASS"
     },
     "blocker": null
@@ -121,10 +122,6 @@
     "activity_at": "2026-09-07T04:02:00Z",
     "updated_at": "2026-09-07T04:02:00Z",
     "last_codex_at": "2026-09-07T04:02:00Z",
-    "source_commit": "274e9b7e36a1c2b53395c725f1fc9f2fed4ad2e0",
-    "google_sheet": {
-      "participates": true,
-      "exclusion_reason": null
-    }
+    "source_commit": "274e9b7e36a1c2b53395c725f1fc9f2fed4ad2e0"
   }
 }

@@ -1,6 +1,6 @@
 {
   "$schema": "../../schemas/workbench-status.schema.json",
-  "schema_version": 1,
+  "schema_version": 2,
   "identity": {
     "uuid": "cada1b33-d1d8-5ef1-845b-9c6224ff114a",
     "name": "Map Marker Extensions (MME)",
@@ -113,7 +113,8 @@
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
-        }
+        },
+        "summary": "Preserves distinct Matcha structure-map marker identities across vanilla maps and compatible viewers."
       },
       "accepted": {
         "version": "C12 (0.4.0-canary12)",
@@ -125,7 +126,8 @@
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
-        }
+        },
+        "summary": "Preserves distinct Matcha structure-map marker identities across vanilla maps and compatible viewers."
       },
       "rollback": {
         "version": "Treasure X C4 (0.2.0-canary4)",
@@ -140,7 +142,6 @@
     },
     "validation": {
       "build": "CONTROLLED_VALIDATION_PASS",
-      "deployment": "NOT_DEPLOYED",
       "runtime": "RUNTIME_UNTESTED"
     },
     "blocker": null
@@ -150,10 +151,6 @@
     "activity_at": "2026-09-14T08:09:29Z",
     "updated_at": "2026-09-14T08:09:29Z",
     "last_codex_at": "2026-09-14T08:09:29Z",
-    "source_commit": "f511f435c623883c5ee1474e9227acb73fb2df68",
-    "google_sheet": {
-      "participates": true,
-      "exclusion_reason": null
-    }
+    "source_commit": "f511f435c623883c5ee1474e9227acb73fb2df68"
   }
 }

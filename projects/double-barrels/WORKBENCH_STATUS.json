@@ -1,6 +1,6 @@
 {
   "$schema": "../../schemas/workbench-status.schema.json",
-  "schema_version": 1,
+  "schema_version": 2,
   "identity": {
     "uuid": "d2fdf877-314a-539c-a5df-bd26ba8b6e6c",
     "name": "Double Barrels 26.2",
@@ -91,7 +91,8 @@
           "filename": "doublebarrels-fabric-26.2-1.0.1+26.2-canary2.jar",
           "sha256": "b2119e05c508880c7977551091515f0076dd3cdc2733e51340ac813925b553c0"
         },
-        "source_commit": "3f4d9b53c0c38f20717f1b6b1bd83ac543bd6864"
+        "source_commit": "3f4d9b53c0c38f20717f1b6b1bd83ac543bd6864",
+        "summary": "Preserves the Double Barrel Fabric port's intended Minecraft 26.2 behavior."
       },
       "accepted": {
         "version": "1.0.1+26.2-canary2",
@@ -99,7 +100,8 @@
           "filename": "doublebarrels-fabric-26.2-1.0.1+26.2-canary2.jar",
           "sha256": "b2119e05c508880c7977551091515f0076dd3cdc2733e51340ac813925b553c0"
         },
-        "source_commit": "3f4d9b53c0c38f20717f1b6b1bd83ac543bd6864"
+        "source_commit": "3f4d9b53c0c38f20717f1b6b1bd83ac543bd6864",
+        "summary": "Preserves the Double Barrel Fabric port's intended Minecraft 26.2 behavior."
       },
       "rollback": {
         "version": "1.0.1+26.2-canary2",
@@ -107,14 +109,14 @@
           "filename": "doublebarrels-fabric-26.2-1.0.1+26.2-canary2.jar",
           "sha256": "b2119e05c508880c7977551091515f0076dd3cdc2733e51340ac813925b553c0"
         },
-        "source_commit": "3f4d9b53c0c38f20717f1b6b1bd83ac543bd6864"
+        "source_commit": "3f4d9b53c0c38f20717f1b6b1bd83ac543bd6864",
+        "summary": "Preserves the Double Barrel Fabric port's intended Minecraft 26.2 behavior."
       },
       "accepted_current": "CURRENT_IS_ACCEPTED",
       "accepted_rollback": "ACCEPTED_IS_ROLLBACK"
     },
     "validation": {
       "build": "STATIC_PASS",
-      "deployment": "READY_TO_TEST_VERIFIED",
       "runtime": "PARTIAL_RUNTIME_PASS"
     },
     "blocker": null
@@ -124,10 +126,6 @@
     "activity_at": "2026-08-22T18:54:34Z",
     "updated_at": "2026-08-29T20:59:56Z",
     "last_codex_at": "2026-08-29T20:59:56Z",
-    "source_commit": "d86d4983ce93b37bb10b3fcf6ccfb6d83c0460f0",
-    "google_sheet": {
-      "participates": true,
-      "exclusion_reason": null
-    }
+    "source_commit": "d86d4983ce93b37bb10b3fcf6ccfb6d83c0460f0"
   }
 }

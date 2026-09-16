@@ -1,11 +1,32 @@
 {
   "schema_version": 2,
   "projects": {
-    "4b2342fc-7bdf-5ba6-9f37-d551109d214c": {
-      "version": "C70 (Stone Native Slab; embedded 4.2.14-bge.canary70.stone-native-slab+26.2)",
+    "04d9a8db-0aac-48a8-be17-393334df57ac": {
+      "version": "C4",
       "artifact": {
-        "filename": "cnm-nibaru-integration-4.2.14-bge.canary70.stone-native-slab+26.2.jar",
-        "sha256": "d304552e29e76c4165675415215439ac2d73b5a6ebc4abc9787f0fa1124cf266"
+        "filename": "polytone-lead-rendering-fix-0.1.0+26.2-canary4.jar",
+        "sha256": "9ba918cb2634f2736b7ca930c840b761b8c76151576e3c7a63b9f62c60055ce1"
+      }
+    },
+    "0b54727d-db44-57dd-aa66-424ce93bb0c3": {
+      "version": "0.2.1",
+      "artifact": {
+        "filename": "matcha-noxious-redstone-0.2.1+mc26.2.jar",
+        "sha256": "31e6f1fae99bfc787ed91fabc33e8b7cf258f1deda4dbe0f000e693eae3d7c3d"
+      }
+    },
+    "1988a317-2307-4d57-9b6e-6c828cbf5f7f": {
+      "version": "0.1.0+26.2-canary8",
+      "artifact": {
+        "filename": "mynx-trees-private-0.1.0+26.2-canary8.jar",
+        "sha256": "7505c21dcb4553e79a051272695a352eb2749a9584949882c7683c6d90f6a634"
+      }
+    },
+    "19c2de9e-c363-54c7-98ee-96f3fccc439b": {
+      "version": "0.5.0-canary5",
+      "artifact": {
+        "filename": "trinkets-inventory-extended-compat-0.5.0-canary5.jar",
+        "sha256": "76c8c735219ceebfc7ec9a7b103e4cd4f027e43b2489cbc71f8b025b103efa6c"
       }
     },
     "1f7b4c28-008c-4b3f-91e5-f1d16b638afb": {
@@ -13,6 +34,307 @@
       "artifact": {
         "filename": "mynx-matcha-trade-tweaks-0.1.0+26.2-canary1.jar",
         "sha256": "f0cd947b19a2fd6b242cc1ef5133a39367384eddb27daaa0edfe0ce8435cca9b"
+      }
+    },
+    "2371b6eb-a4fb-4f1e-8203-580b82ce846b": {
+      "version": "0.1.2-canary3",
+      "artifact": {
+        "filename": "coal-consolidation-0.1.2-canary3.jar",
+        "sha256": "f1d36dfad276927d527cc911d92f47ee979ef7600479f950c76ed25dd18eb871"
+      }
+    },
+    "26065ff3-182f-5314-a5f6-976d6ffd394a": {
+      "version": "4.0.0+26.2-port-canary2",
+      "artifact": {
+        "filename": "custom-portals-26.2-4.0.0+26.2-port-canary2.jar",
+        "sha256": "13fd0e76748fcc3ef963bcc2f4a820d5fc2d473a90ad5d5988cbe0129c2be148"
+      }
+    },
+    "2702d54e-aab2-467f-8769-4eb28da0aba9": {
+      "version": "0.1.0+26.2-canary1",
+      "artifact": {
+        "filename": "villager-poi-reachability-0.1.0+26.2-canary1.jar",
+        "sha256": "b7342e3c0833d08139482263ea454575e94ba24338aa8b23c330db348dbb6848"
+      }
+    },
+    "28c84ead-5e0a-57b5-942c-1ee58b02cadb": {
+      "version": "0.1.0-canary12",
+      "artifact": {
+        "filename": "dragonbound-waystone-0.1.0-canary12.jar",
+        "sha256": "6f621b16652baf9caad89ba923b8792ebc0ba08706a9f507fd17aabfc3121ad6"
+      }
+    },
+    "2a650718-ec62-568f-8dff-71258a4d6f3f": {
+      "version": "4.1.6+26.2-mynx-canary24",
+      "artifact": {
+        "filename": "ribbits-private-reconstruction-4.1.6+26.2-mynx-canary24.jar",
+        "sha256": "e2c62bd1ab3884d4e1bd0c583801774af0fc2f2b54d9483eecc2fbb7dd6e2657"
+      }
+    },
+    "2dc7b47a-f3b4-5fbe-a1fa-53e4f0aaa446": {
+      "version": "C3",
+      "artifact": {
+        "filename": "sweet-berry-horse-immunity-0.1.0-canary3.jar",
+        "sha256": "ab947253c5a6bc1910f05367ca9cc5ed7b5388f1d343b4889605d7b15a10060b"
+      }
+    },
+    "357cd94a-4ab2-54c9-ac6c-4049fea08bb9": {
+      "version": "0.1.0-canary4",
+      "artifact": {
+        "filename": "inherent-3x3-inventory-crafting-0.1.0-canary4.jar",
+        "sha256": "6e797291dd6c68f5afe65f91177ad2653f7c4a99e10bd20e078fafd7aaf6cb33"
+      }
+    },
+    "3f28bc98-058b-57a2-967b-81ad8e35f957": {
+      "version": "0.1.0-canary12",
+      "artifact": {
+        "filename": "xaero-emf-entity-icon-compat-0.1.0-canary12.jar",
+        "sha256": "dcf65d6e97007c03bf490b27189f76ee88b882d1b59d4b88315093dea10180bc"
+      }
+    },
+    "4048a9cf-f8c3-4fc0-8c3c-b8f1caebab46": {
+      "version": "0.1.0-canary3",
+      "artifact": {
+        "filename": "carry-on-patch-0.1.0-canary3.jar",
+        "sha256": "fd888c429d37cbfebd50a00afef0c92ca36f3ec338bc4f006284f31b66d49f90"
+      }
+    },
+    "41c327e0-b896-5a02-a30c-62f98b8123ae": {
+      "version": "C8 (legacy Canary 7)",
+      "artifact": {
+        "filename": "dramaticdoors-1.20.1-3.3.3+26.2-workbench-canary7.jar",
+        "sha256": "43c3efd19619a59a10957b5893adce081766f653d8cccb13f38bfbaacec2cefb"
+      }
+    },
+    "4b2342fc-7bdf-5ba6-9f37-d551109d214c": {
+      "version": "C70 (Stone Native Slab; embedded 4.2.14-bge.canary70.stone-native-slab+26.2)",
+      "artifact": {
+        "filename": "cnm-nibaru-integration-4.2.14-bge.canary70.stone-native-slab+26.2.jar",
+        "sha256": "d304552e29e76c4165675415215439ac2d73b5a6ebc4abc9787f0fa1124cf266"
+      }
+    },
+    "4fcf330a-9726-4b76-b7ac-b75d5e662883": {
+      "version": "0.1.0-canary1",
+      "artifact": {
+        "filename": "macaws-trapdoors-moreculling-compat-0.1.0-canary1.jar",
+        "sha256": "d6ffd125e082978b594ca01c075bb706ddf7f5696dee1e7d15e357cbbfdb4af5"
+      }
+    },
+    "58086966-05a1-4237-9f4f-ffca6c05da87": {
+      "version": "0.1.0-canary2",
+      "artifact": {
+        "filename": "stacks-are-stacks-container-fixes-0.1.0-canary2.jar",
+        "sha256": "7c294ce614ccc6f889dde7db5b5bd474b74dc8b6a6c8e62faefd44e5811896f2"
+      }
+    },
+    "5d42f47f-b006-4125-840d-dec0d2728afa": {
+      "version": "2.0pre4+26.2-pale-oak-dev.6",
+      "artifact": {
+        "filename": "bbb-fabric-26.2-2.0pre4+26.2-pale-oak-dev.6.jar",
+        "sha256": "0d54034725c3e354515c78bcee32ab2cb5ce764a33e0602419e26c78aaef8c5a"
+      }
+    },
+    "65e3eebd-a8d1-4fb5-87c6-af12ac4c9b40": {
+      "version": "0.1.0-canary34",
+      "artifact": {
+        "filename": "naturalist-xaero-entity-icons-compat-0.1.0-canary34.jar",
+        "sha256": "5c8c2b955cb2ac6219dcb3199de7956dd3efe02460579d634e0da242e4241fb8"
+      }
+    },
+    "6b8b6166-fd59-4e4e-ab1d-d1140cdbfab8": {
+      "version": "0.1.0-canary1",
+      "artifact": {
+        "filename": "rooted-dirt-qol-0.1.0-canary1.jar",
+        "sha256": "3642f55e0cef611f2dd56478b8aaf2491fd81d370023a04ca71e6852b37307ee"
+      }
+    },
+    "6cb36c64-0780-5343-9fef-66cbb686cfc2": {
+      "version": "0.2.0",
+      "artifact": {
+        "filename": "workbench-test-marker-0.2.0.jar",
+        "sha256": "9147664302721976461dbbc1064260fc4309575182a8b050458d0446eafec6a6"
+      }
+    },
+    "71ae25e0-3ebe-4108-a17e-931ba98b8dea": {
+      "version": "2",
+      "artifact": {
+        "filename": "ribbit-villagers-florist-private-v2.zip",
+        "sha256": "331ee9d0857aded60f7720ee7b32bdec3e339e5f4cc7300f6c61f7926b7b0453"
+      }
+    },
+    "786620d5-4731-425c-a599-83b4dcd9920b": {
+      "version": "0.1.0-canary1",
+      "artifact": {
+        "filename": "item-pickup-audio-diagnostic-0.1.0-canary1.jar",
+        "sha256": "fc67ec7816ab91e941b9df99f54a254705dea8adb07da7c50d8795190d46b094"
+      }
+    },
+    "7ad81f01-e236-5b65-836f-f4440a869a5a": {
+      "version": "C1 (legacy Alpha 1; 0.1.0-alpha1)",
+      "artifact": {
+        "filename": "wool-soundproof-chests-0.1.0-alpha1.jar",
+        "sha256": "e8f0d10dff823e97a4f4ab39029bf7a71b13501f2294544c55e38f7e1ca9d020"
+      }
+    },
+    "7d2e42bd-c917-43bf-99a8-94edc24c5948": {
+      "version": "0.1.0-canary5",
+      "artifact": {
+        "filename": "ribbits-xaero-entity-icons-compat-0.1.0-canary5.jar",
+        "sha256": "d48d45ec47604250ae45c8f20e03741f9f6613d5ada462cda436ce14876c3413"
+      }
+    },
+    "850b2838-7f90-4685-8ba6-3ec282693003": {
+      "version": "0.1.0-canary2",
+      "artifact": {
+        "filename": "matcha-frost-protection-0.1.0-canary2.jar",
+        "sha256": "88ae708cbf2a9b1f5fe3b322579c3e7b507c7e0420cadb40aca796dba5b4a742"
+      }
+    },
+    "8ff207a2-9049-4519-ad3f-3100a80abcc2": {
+      "version": "0.1.2-canary3",
+      "artifact": {
+        "filename": "xaero-discovery-radius-0.1.2-canary3.jar",
+        "sha256": "5524dfa84e35ea5c31263df4705daca3718df7a095f5c544bb731190dcc0cf95"
+      }
+    },
+    "9009daaf-90e8-5827-9f03-90566460f908": {
+      "version": "0.3.4-routed-pickup-audio-fallback-canary1",
+      "artifact": {
+        "filename": "offhand-shift-click-qol-0.3.4-routed-pickup-audio-fallback-canary1.jar",
+        "sha256": "7ca386bea50eb2ece489da4cccc262a13d45b82171042f39efaea0a91e73e357"
+      }
+    },
+    "937d7ccc-44c9-55cb-8d33-0dc0bff5fe45": {
+      "version": "0.1.10-canary11",
+      "artifact": {
+        "filename": "matcha-heart-death-compat-0.1.10-canary11.jar",
+        "sha256": "a0570179f85d32ec6740d9136ad50890b9c797500661cd2ed2325da5b6b1e4a9"
+      }
+    },
+    "97d76c44-7c17-4b36-be84-57525f884e40": {
+      "version": "26.2-Fabric-6.1.1-compat.2",
+      "artifact": {
+        "filename": "YungsApi-26.2-Fabric-6.1.1-compat.2.jar",
+        "sha256": "ff22a6b509ba559988d7a9352dc94ac612c4b099517acac7da7c81322d797ed7"
+      }
+    },
+    "9b4cd3fb-8ae6-58c7-8b88-9b0878c6333e": {
+      "version": "0.1.1-canary2",
+      "artifact": {
+        "filename": "strippingtoggle-fallingtree-compat-0.1.1-canary2.jar",
+        "sha256": "d948c23db8b6c73e764f96422d8359afb85ba39689352e512fd7b4aa91644846"
+      }
+    },
+    "9f1c5aa4-09c1-4de3-9921-4b045e8abcd2": {
+      "version": "0.4.0-canary4",
+      "artifact": {
+        "filename": "mossy-stone-0.4.0-canary4.jar",
+        "sha256": "b0e7be5651d622789b848ba1a48073af8078ba4d834e34c1255ec9ce72042f14"
+      }
+    },
+    "a0a522b0-bc02-48dc-81de-efc8757171c5": {
+      "version": "0.1.0-canary2",
+      "artifact": {
+        "filename": "matcha-flavoured-data-0.1.0-canary2.jar",
+        "sha256": "0850c7ff0680cf42436cd2b72055af77970075cf438ff429bdb55723af444639"
+      }
+    },
+    "a8917eab-4a89-4af0-8aa7-13b12049dd8a": {
+      "version": "0.1.0+26.2-canary4",
+      "artifact": {
+        "filename": "mynx-flora-trades-0.1.0+26.2-canary4.jar",
+        "sha256": "58585c2133396d9f173c47391d81e0e6d5f6f549252e3e99f6f9f52ea111e146"
+      }
+    },
+    "b41da80e-9928-568b-b8ef-ee2175ed2285": {
+      "version": "0.1.0-canary2-private",
+      "artifact": {
+        "filename": "radial-slot-cycler-0.1.0-canary2-private.jar",
+        "sha256": "3fe7e539eaafda97ab5a5a301544b25563f896fee354b729607074f404bdbc21"
+      }
+    },
+    "b9b72ddd-49a5-4ff2-bdfa-c10c4a6be6e4": {
+      "version": "0.1.0-canary4",
+      "artifact": {
+        "filename": "inventory-particles-matcha-compat-0.1.0-canary4.jar",
+        "sha256": "e48c4821f8bead5da78205052bf3d1d20db98cccefd5004750a19d54858c1c8b"
+      }
+    },
+    "c92ad4fe-c210-46c4-ba1d-59828d2bcbcd": {
+      "version": "2.0.3+26.2-port-canary8",
+      "artifact": {
+        "filename": "naturalist-2.0.3+26.2-port-canary8.jar",
+        "sha256": "65e9ff11e94f17011acbac25ee40f42723516fe6b04c78d93662800461317b3d"
+      }
+    },
+    "cada1b33-d1d8-5ef1-845b-9c6224ff114a": {
+      "version": "C12 (0.4.0-canary12)",
+      "artifact": {
+        "filename": "map-marker-extension-0.4.0-canary12.jar",
+        "sha256": "f5c539b7535149fb936e241f72722a87e0474af855f2a98e6e3cf88c3290243e"
+      }
+    },
+    "ce3609d2-8841-4a36-bc95-18f65fe94e72": {
+      "version": "C3 (0.1.0-canary3)",
+      "artifact": {
+        "filename": "inventory-sorter-csr-compat-0.1.0-canary3.jar",
+        "sha256": "7eca4e86faaa83211432300a658413f7662a9f642df8074d2e4ebf3bb0af3074"
+      }
+    },
+    "d2fdf877-314a-539c-a5df-bd26ba8b6e6c": {
+      "version": "1.0.1+26.2-canary2",
+      "artifact": {
+        "filename": "doublebarrels-fabric-26.2-1.0.1+26.2-canary2.jar",
+        "sha256": "b2119e05c508880c7977551091515f0076dd3cdc2733e51340ac813925b553c0"
+      }
+    },
+    "d364e2bb-536a-4987-8044-6c0daae16470": {
+      "version": "0.1.0-canary5",
+      "artifact": {
+        "filename": "wearable-lanterns-0.1.0-canary5.jar",
+        "sha256": "0d05d2af86dfb8f41e7cb7c0dde75aed681cfb657fa2cb8de4a42f40344dd0e6"
+      }
+    },
+    "dda2c3b4-5099-4842-a755-29e964cd2192": {
+      "version": "0.2.0-canary2",
+      "artifact": {
+        "filename": "matcha-vanilla-village-restoration-0.2.0-canary2.jar",
+        "sha256": "5d5164a89881239400cd2b6776b9b54177b699e2a16a1c97b761cde06e7d8bcd"
+      }
+    },
+    "e28154da-0649-5da7-b6d5-3bff2891719e": {
+      "version": "C11 (Private Canary 10; embedded 0.1.0-canary10)",
+      "artifact": {
+        "filename": "shulker-trowel-0.1.0-canary10-private.jar",
+        "sha256": "e286d0ab90fcf4aa5d59b5250ef6a6bf8bf52266143d85c749915d53ad11f57a"
+      }
+    },
+    "ecd785d2-4112-4ad2-9eae-1458e19b704e": {
+      "version": "0.1.0-canary11",
+      "artifact": {
+        "filename": "notebook-0.1.0-canary11.jar",
+        "sha256": "c3b9b7248f0bc16f027fc5cbd4d918fcab045ff58c2ac67dd31e169743361b7f"
+      }
+    },
+    "ee8a20f8-d0a8-515c-9a74-3b19f238227d": {
+      "version": "C7 (0.1.0-canary7)",
+      "artifact": {
+        "filename": "interchangeable-block-families-0.1.0-canary7.jar",
+        "sha256": "599660b27db061926a800bd486f25bb1d8511b6b82b8afd2a369e8189c696b7c"
+      }
+    },
+    "fcb7d036-c756-5114-abe1-01c4331e7ea8": {
+      "version": "0.3.15-shulker-pick-block-canary1",
+      "artifact": {
+        "filename": "carried-container-auto-routing-0.3.15-shulker-pick-block-canary1.jar",
+        "sha256": "340b3cd2bfcb977c00cc06071893f9627ba0c32b26325d381a62922000561b3c"
+      }
+    },
+    "ffa96cc6-2989-5465-b158-1659a484366b": {
+      "version": "C18 (0.1.0-canary18)",
+      "artifact": {
+        "filename": "quick-stack-nearby-compat-0.1.0-canary18.jar",
+        "sha256": "cb9144de133ac2dd9db20925b1275200213fcf57b36f9b5d530a6b02ac905554"
       }
     }
   }

@@ -1,6 +1,6 @@
 {
   "$schema": "../../schemas/workbench-status.schema.json",
-  "schema_version": 1,
+  "schema_version": 2,
   "identity": {
     "uuid": "4ad00b52-881c-5d50-92b2-1191f74c7ef4",
     "name": "BedrockIfy × Nemo's Bonemeal Compatibility",
@@ -89,7 +89,8 @@
           "filename": "bedrockify-nemos-bonemeal-compat-0.1.0-canary1.jar",
           "sha256": "2720dafff71ef2779f08905899bc9d55bcb7db80811020492de47f977c669273"
         },
-        "source_commit": "8275d36b2eb1af451103e9722862346c6fb02e29"
+        "source_commit": "8275d36b2eb1af451103e9722862346c6fb02e29",
+        "summary": "Makes Nemo's single-flower bonemeal behavior deterministic when BedrockIfy touches the same flower methods."
       },
       "accepted": null,
       "rollback": null,
@@ -98,7 +99,6 @@
     },
     "validation": {
       "build": "STATIC_PASS",
-      "deployment": "NOT_DEPLOYED",
       "runtime": "RUNTIME_UNTESTED"
     },
     "blocker": null
@@ -108,10 +108,6 @@
     "activity_at": "2026-08-28T22:52:51Z",
     "updated_at": "2026-08-29T22:19:26Z",
     "last_codex_at": "2026-08-29T22:19:26Z",
-    "source_commit": "f8cfc380e75b8fa45034a61049916b90db78748f",
-    "google_sheet": {
-      "participates": true,
-      "exclusion_reason": null
-    }
+    "source_commit": "f8cfc380e75b8fa45034a61049916b90db78748f"
   }
 }

@@ -1,6 +1,6 @@
 {
   "$schema": "../../schemas/workbench-status.schema.json",
-  "schema_version": 1,
+  "schema_version": 2,
   "identity": {
     "uuid": "19c2de9e-c363-54c7-98ee-96f3fccc439b",
     "name": "Trinkets × Inventory Extended",
@@ -104,7 +104,8 @@
           "filename": "trinkets-inventory-extended-compat-0.5.0-canary5.jar",
           "sha256": "76c8c735219ceebfc7ec9a7b103e4cd4f027e43b2489cbc71f8b025b103efa6c"
         },
-        "source_commit": "e79bd083b671dd6dbd8c1c73d50971b599365cd3"
+        "source_commit": "e79bd083b671dd6dbd8c1c73d50971b599365cd3",
+        "summary": "Preserves the compatibility contract between Inventory Extended and Trinkets Updated."
       },
       "accepted": {
         "version": "0.5.0-canary5",
@@ -112,7 +113,8 @@
           "filename": "trinkets-inventory-extended-compat-0.5.0-canary5.jar",
           "sha256": "76c8c735219ceebfc7ec9a7b103e4cd4f027e43b2489cbc71f8b025b103efa6c"
         },
-        "source_commit": "e79bd083b671dd6dbd8c1c73d50971b599365cd3"
+        "source_commit": "e79bd083b671dd6dbd8c1c73d50971b599365cd3",
+        "summary": "Preserves the compatibility contract between Inventory Extended and Trinkets Updated."
       },
       "rollback": null,
       "accepted_current": "CURRENT_IS_ACCEPTED",
@@ -120,7 +122,6 @@
     },
     "validation": {
       "build": "STATIC_PASS",
-      "deployment": "READY_TO_TEST_VERIFIED",
       "runtime": "RUNTIME_PASS"
     },
     "blocker": null
@@ -130,10 +131,6 @@
     "activity_at": "2026-08-29T22:02:12Z",
     "updated_at": "2026-08-29T22:02:12Z",
     "last_codex_at": "2026-08-29T22:02:12Z",
-    "source_commit": "950666593764be195a56099c401d99d0dbd99c08",
-    "google_sheet": {
-      "participates": true,
-      "exclusion_reason": null
-    }
+    "source_commit": "950666593764be195a56099c401d99d0dbd99c08"
   }
 }

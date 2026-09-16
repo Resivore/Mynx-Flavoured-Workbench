@@ -1,6 +1,6 @@
 {
   "$schema": "../../schemas/workbench-status.schema.json",
-  "schema_version": 1,
+  "schema_version": 2,
   "identity": {
     "uuid": "c92ad4fe-c210-46c4-ba1d-59828d2bcbcd",
     "name": "Naturalist 26.2 Port",
@@ -101,7 +101,8 @@
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
-        }
+        },
+        "summary": "Maintains the selected Naturalist gameplay roster for Minecraft 26.2 Fabric."
       },
       "accepted": {
         "version": "2.0.3+26.2-port-canary8",
@@ -113,7 +114,8 @@
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
-        }
+        },
+        "summary": "Maintains the selected Naturalist gameplay roster for Minecraft 26.2 Fabric."
       },
       "rollback": null,
       "accepted_current": "CURRENT_IS_ACCEPTED",
@@ -121,7 +123,6 @@
     },
     "validation": {
       "build": "STATIC_PASS",
-      "deployment": "READY_TO_TEST_VERIFIED",
       "runtime": "RUNTIME_PASS"
     },
     "blocker": null
@@ -131,10 +132,6 @@
     "activity_at": "2026-09-07T04:02:00Z",
     "updated_at": "2026-09-07T04:02:00Z",
     "last_codex_at": "2026-09-07T04:02:00Z",
-    "source_commit": "274e9b7e36a1c2b53395c725f1fc9f2fed4ad2e0",
-    "google_sheet": {
-      "participates": true,
-      "exclusion_reason": null
-    }
+    "source_commit": "274e9b7e36a1c2b53395c725f1fc9f2fed4ad2e0"
   }
 }

@@ -1,6 +1,6 @@
 {
   "$schema": "../../schemas/workbench-status.schema.json",
-  "schema_version": 1,
+  "schema_version": 2,
   "identity": {
     "uuid": "6cb36c64-0780-5343-9fef-66cbb686cfc2",
     "name": "Workbench Test Marker",
@@ -66,7 +66,8 @@
           "filename": "workbench-test-marker-0.2.0.jar",
           "sha256": "9147664302721976461dbbc1064260fc4309575182a8b050458d0446eafec6a6"
         },
-        "source_commit": "f789b290f72c508a563797b0c543125bc9c468c1"
+        "source_commit": "f789b290f72c508a563797b0c543125bc9c468c1",
+        "summary": "Shows the canonical accepted stack version on the retired Workbench title screen."
       },
       "accepted": {
         "version": "0.2.0",
@@ -74,7 +75,8 @@
           "filename": "workbench-test-marker-0.2.0.jar",
           "sha256": "9147664302721976461dbbc1064260fc4309575182a8b050458d0446eafec6a6"
         },
-        "source_commit": "f789b290f72c508a563797b0c543125bc9c468c1"
+        "source_commit": "f789b290f72c508a563797b0c543125bc9c468c1",
+        "summary": "Shows the canonical accepted stack version on the retired Workbench title screen."
       },
       "rollback": null,
       "accepted_current": "CURRENT_IS_ACCEPTED",
@@ -82,7 +84,6 @@
     },
     "validation": {
       "build": "STATIC_PASS",
-      "deployment": "READY_TO_TEST_VERIFIED",
       "runtime": "RUNTIME_UNTESTED"
     },
     "blocker": null
@@ -92,10 +93,6 @@
     "activity_at": "2026-09-14T08:09:29Z",
     "updated_at": "2026-09-14T08:09:29Z",
     "last_codex_at": "2026-09-14T08:09:29Z",
-    "source_commit": "f511f435c623883c5ee1474e9227acb73fb2df68",
-    "google_sheet": {
-      "participates": false,
-      "exclusion_reason": "Dedicated Workbench-only internal title infrastructure has no independent human project-status row; canonical display state is manager-owned."
-    }
+    "source_commit": "f511f435c623883c5ee1474e9227acb73fb2df68"
   }
 }

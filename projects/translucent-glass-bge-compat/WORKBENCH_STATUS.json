@@ -1,6 +1,6 @@
 {
   "$schema": "../../schemas/workbench-status.schema.json",
-  "schema_version": 1,
+  "schema_version": 2,
   "identity": {
     "uuid": "9a8ccdea-f984-51af-a14f-6b26b4824e01",
     "name": "Translucent Glass × BGE Compatibility",
@@ -84,7 +84,6 @@
     },
     "validation": {
       "build": "NOT_RUN",
-      "deployment": "NOT_DEPLOYED",
       "runtime": "RUNTIME_UNTESTED"
     },
     "blocker": null
@@ -94,10 +93,6 @@
     "activity_at": "2026-08-30T22:45:24Z",
     "updated_at": "2026-08-30T22:45:24Z",
     "last_codex_at": "2026-08-30T22:45:24Z",
-    "source_commit": "f4f0f8d018a7a11b141f091f46e50290b776deb2",
-    "google_sheet": {
-      "participates": true,
-      "exclusion_reason": null
-    }
+    "source_commit": "f4f0f8d018a7a11b141f091f46e50290b776deb2"
   }
 }

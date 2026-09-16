@@ -1,6 +1,6 @@
 {
   "$schema": "../../schemas/workbench-status.schema.json",
-  "schema_version": 1,
+  "schema_version": 2,
   "identity": {
     "uuid": "2dc7b47a-f3b4-5fbe-a1fa-53e4f0aaa446",
     "name": "Horse Immunities",
@@ -59,7 +59,8 @@
           "filename": "sweet-berry-horse-immunity-0.1.0-canary3.jar",
           "sha256": "ab947253c5a6bc1910f05367ca9cc5ed7b5388f1d343b4889605d7b15a10060b"
         },
-        "source_commit": "f0b8b66cc657bfd6303475fab75f385f06748782"
+        "source_commit": "f0b8b66cc657bfd6303475fab75f385f06748782",
+        "summary": "Protects ordinary Horses and their direct riders from sweet-berry-bush damage."
       },
       "accepted": {
         "version": "C3",
@@ -67,7 +68,8 @@
           "filename": "sweet-berry-horse-immunity-0.1.0-canary3.jar",
           "sha256": "ab947253c5a6bc1910f05367ca9cc5ed7b5388f1d343b4889605d7b15a10060b"
         },
-        "source_commit": "f0b8b66cc657bfd6303475fab75f385f06748782"
+        "source_commit": "f0b8b66cc657bfd6303475fab75f385f06748782",
+        "summary": "Protects ordinary Horses and their direct riders from sweet-berry-bush damage."
       },
       "rollback": {
         "version": "C2",
@@ -82,7 +84,6 @@
     },
     "validation": {
       "build": "STATIC_PASS",
-      "deployment": "READY_TO_TEST_VERIFIED",
       "runtime": "RUNTIME_PASS"
     },
     "blocker": null
@@ -92,10 +93,6 @@
     "activity_at": "2026-09-01T02:35:20Z",
     "updated_at": "2026-09-01T02:35:20Z",
     "last_codex_at": "2026-09-01T02:35:20Z",
-    "source_commit": "e405fbcf4900788f1c4bee2df68a130f72bfc239",
-    "google_sheet": {
-      "participates": true,
-      "exclusion_reason": null
-    }
+    "source_commit": "e405fbcf4900788f1c4bee2df68a130f72bfc239"
   }
 }
