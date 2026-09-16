@@ -1,6 +1,8 @@
 package dev.resivore.mynxregions;
 
 import static org.junit.jupiter.api.Assertions.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -14,5 +16,12 @@ class ShaderMaterialAliasesTest {
         assertEquals(77, ids.getInt("explicit"));
         ShaderMaterialAliases.inheritUnmapped(ids, List.of("unknown"), value -> "missing");
         assertFalse(ids.containsKey("unknown"));
+    }
+
+    @Test void cloverRegistersGrassTintForBothModelTintIndices() throws Exception {
+        var client = Files.readString(Path.of(System.getProperty("projectRoot"),
+                "src/client/java/dev/resivore/mynxregions/MynxRegionsUnexploredClient.java"));
+        assertTrue(client.contains("List.of(BlockTintSources.grass(), BlockTintSources.grass())"));
+        assertTrue(client.contains("MynxRegionsUnexplored.CLOVER"));
     }
 }

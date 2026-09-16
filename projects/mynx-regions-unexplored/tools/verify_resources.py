@@ -84,6 +84,17 @@ class Contract(unittest.TestCase):
                 for child in value: walk(child)
         for path in (OUT / f"assets/{NS}").rglob("*.json"): walk(json.loads(path.read_text()))
 
+    def test_clover_preserves_both_grass_tint_indices(self):
+        client = (ROOT / "src/client/java/dev/resivore/mynxregions/MynxRegionsUnexploredClient.java").read_text(encoding="utf-8")
+        self.assertIn("List.of(BlockTintSources.grass(), BlockTintSources.grass())", client)
+        self.assertIn("MynxRegionsUnexplored.CLOVER", client)
+        with zipfile.ZipFile(RU) as source:
+            for number in range(1, 5):
+                model = json.loads(source.read(f"assets/regions_unexplored/models/block/clover_{number}.json"))
+                stem_faces = [face for element in model["elements"] for face in element["faces"].values() if face["texture"] == "#stem"]
+                self.assertTrue(stem_faces)
+                self.assertEqual({1}, {face["tintindex"] for face in stem_faces})
+
     def test_loot_and_growth_contracts(self):
         stone = self.read(f"data/{NS}/loot_table/blocks/stone_bud.json")
         text = json.dumps(stone)
