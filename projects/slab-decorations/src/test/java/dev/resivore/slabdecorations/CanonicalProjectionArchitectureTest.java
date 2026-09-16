@@ -34,11 +34,40 @@ final class CanonicalProjectionArchitectureTest {
                 "BigDripleafBlock",
                 "BigDripleafStemBlock",
                 "MossyCarpetBlock",
-                "CarpetBlock"
+                "CarpetBlock",
+                "HangingRootsBlock",
+                "SporeBlossomBlock",
+                "HangingMossBlock",
+                "GrowingPlantBlock",
+                "GrowingPlantBlockAccessor"
         }) {
             assertTrue(bytecode.contains(structuralContract),
                     () -> "missing structural family contract " + structuralContract);
         }
+    }
+
+    @Test
+    void directionalAttachmentUsesGenericDownwardContractsWithoutRuProductionCoupling()
+            throws IOException {
+        String eligibility = classFile(PlantFamilyEligibility.class);
+        String surface = classFile(NibaruHorizontalSurface.class);
+        String commonMixins = resource("/slab_decorations.mixins.json");
+        String metadata = resource("/fabric.mod.json");
+
+        assertTrue(eligibility.contains("DOWNWARD_GROWING_COLUMN")
+                        && eligibility.contains("CEILING_FOLIAGE"),
+                "directional structural families are absent");
+        assertTrue(surface.contains("AttachmentOrientation")
+                        && surface.contains("CEILING_TOP_OFFSET")
+                        && surface.contains("slabDecorations$invokeGetHeadBlock")
+                        && surface.contains("slabDecorations$invokeGetBodyBlock"),
+                "surface resolution does not use the generic exact head/body attachment contract");
+        assertTrue(commonMixins.contains("GrowingPlantBlockAccessor"),
+                "generic growing-plant accessor is not registered");
+        assertFalse(eligibility.contains("mynx_regions_unexplored")
+                        || surface.contains("mynx_regions_unexplored")
+                        || metadata.contains("mynx_regions_unexplored"),
+                "RU compatibility must not become an ID exception or production dependency");
     }
 
     @Test
@@ -79,6 +108,8 @@ final class CanonicalProjectionArchitectureTest {
                 "global canSurvive projection seam is not registered");
         assertTrue(commonMixins.contains("BlockStateBaseShapeMixin"),
                 "outline/collision alignment seam is not registered");
+        assertTrue(commonMixins.contains("GrowingPlantBlockAccessor"),
+                "generic growing-column contract seam is not registered");
         assertTrue(clientMixins.contains("EntityPickMixin"),
                 "shifted targeting seam is not registered");
         assertTrue(clientMixins.contains("LevelRendererDestroyOverlayMixin"),

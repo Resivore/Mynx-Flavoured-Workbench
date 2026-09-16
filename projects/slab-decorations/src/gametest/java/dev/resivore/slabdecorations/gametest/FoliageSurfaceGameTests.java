@@ -18,15 +18,23 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityTypes;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.BoneMealItem;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.BonemealableBlock;
+import net.minecraft.world.level.block.CaveVines;
 import net.minecraft.world.level.block.DoublePlantBlock;
+import net.minecraft.world.level.block.GrowingPlantHeadBlock;
+import net.minecraft.world.level.block.HangingMossBlock;
 import net.minecraft.world.level.block.MossyCarpetBlock;
 import net.minecraft.world.level.block.NetherWartBlock;
 import net.minecraft.world.level.block.SweetBerryBushBlock;
@@ -71,6 +79,20 @@ public final class FoliageSurfaceGameTests implements CustomTestMethodInvoker {
                 PlantFamilyEligibility.Family.SURFACE_FOLIAGE);
         assertFamily(helper, Blocks.PALE_MOSS_CARPET.defaultBlockState(),
                 PlantFamilyEligibility.Family.SURFACE_FOLIAGE);
+        assertFamily(helper, Blocks.HANGING_ROOTS.defaultBlockState(),
+                PlantFamilyEligibility.Family.CEILING_FOLIAGE);
+        assertFamily(helper, Blocks.SPORE_BLOSSOM.defaultBlockState(),
+                PlantFamilyEligibility.Family.CEILING_FOLIAGE);
+        assertFamily(helper, Blocks.PALE_HANGING_MOSS.defaultBlockState(),
+                PlantFamilyEligibility.Family.HANGING_MOSS_COLUMN);
+        assertFamily(helper, Blocks.CAVE_VINES.defaultBlockState(),
+                PlantFamilyEligibility.Family.DOWNWARD_GROWING_COLUMN);
+        assertFamily(helper, Blocks.CAVE_VINES_PLANT.defaultBlockState(),
+                PlantFamilyEligibility.Family.DOWNWARD_GROWING_COLUMN);
+        assertFamily(helper, Blocks.WEEPING_VINES.defaultBlockState(),
+                PlantFamilyEligibility.Family.DOWNWARD_GROWING_COLUMN);
+        assertFamily(helper, Blocks.WEEPING_VINES_PLANT.defaultBlockState(),
+                PlantFamilyEligibility.Family.DOWNWARD_GROWING_COLUMN);
 
         for (Block excluded : List.of(
                 Blocks.WHEAT,
@@ -82,7 +104,16 @@ public final class FoliageSurfaceGameTests implements CustomTestMethodInvoker {
                 Blocks.CARPET.white(),
                 Blocks.RAIL,
                 Blocks.REDSTONE_WIRE,
-                Blocks.TORCH)) {
+                Blocks.TORCH,
+                Blocks.TWISTING_VINES,
+                Blocks.TWISTING_VINES_PLANT,
+                Blocks.KELP,
+                Blocks.KELP_PLANT,
+                Blocks.VINE,
+                Blocks.GLOW_LICHEN,
+                Blocks.IRON_CHAIN,
+                Blocks.LANTERN,
+                Blocks.POINTED_DRIPSTONE)) {
             helper.assertTrue(PlantFamilyEligibility.family(excluded.defaultBlockState()).isEmpty(),
                     "non-foliage or unsupported lifecycle family entered projection: " + excluded);
         }
@@ -97,6 +128,271 @@ public final class FoliageSurfaceGameTests implements CustomTestMethodInvoker {
         helper.assertTrue(discovered.equals(EnumSet.allOf(PlantFamilyEligibility.Family.class)),
                 "registry-driven structural discovery did not exercise every root/segment family: "
                         + discovered);
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 60)
+    public void hangingRootsAndSporeBlossomUseCanonicalCeilingSupportAndDirectionalGeometry(
+            GameTestHelper helper) {
+        BlockPos support = helper.absolutePos(new BlockPos(2, 6, 2));
+
+        for (Block plant : List.of(Blocks.HANGING_ROOTS, Blocks.SPORE_BLOSSOM)) {
+            assertCeilingCanonicalParity(helper, support, plant.defaultBlockState(), Blocks.CALCITE, true);
+            assertCeilingCanonicalParity(helper, support, plant.defaultBlockState(), Blocks.OAK_LEAVES, false);
+            assertCeilingGeometryMatrix(helper, support, plant.defaultBlockState(),
+                    plant.toString());
+        }
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 80)
+    public void hangingItemsPlaceNaturallyAgainstNativeTopSlabUndersides(GameTestHelper helper) {
+        List<CeilingPlacementCase> cases = List.of(
+                new CeilingPlacementCase(Items.HANGING_ROOTS, Blocks.HANGING_ROOTS),
+                new CeilingPlacementCase(Items.SPORE_BLOSSOM, Blocks.SPORE_BLOSSOM),
+                new CeilingPlacementCase(Items.GLOW_BERRIES, Blocks.CAVE_VINES),
+                new CeilingPlacementCase(Items.WEEPING_VINES, Blocks.WEEPING_VINES));
+
+        for (int index = 0; index < cases.size(); index++) {
+            CeilingPlacementCase testCase = cases.get(index);
+            BlockPos support = helper.absolutePos(new BlockPos(1 + index * 2, 6, 2));
+            placeAgainstNativeSlabUnderside(helper, support, testCase.item(), testCase.placed());
+        }
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 120)
+    public void caveVinesGrowAsOneCeilingAnchoredColumnAndKeepBerryHarvesting(
+            GameTestHelper helper) {
+        var level = helper.getLevel();
+        BlockPos support = helper.absolutePos(new BlockPos(3, 7, 3));
+        BlockPos anchor = support.below();
+        clearHangingColumn(level, support, 8);
+        level.setBlock(support, slab(Blocks.CALCITE, SlabType.TOP), 2);
+        level.setBlock(anchor, Blocks.CAVE_VINES.defaultBlockState()
+                .setValue(GrowingPlantHeadBlock.AGE, 0), 2);
+
+        helper.assertTrue(level.getBlockState(anchor).canSurvive(level, anchor),
+                "cave-vines head did not survive beneath canonical-valid calcite slab");
+        List<BlockPos> segments = randomGrowDownward(level, anchor,
+                Blocks.CAVE_VINES, Blocks.CAVE_VINES_PLANT, 3, 0xC505A11L);
+        helper.assertTrue(level.getBlockState(segments.getFirst()).is(Blocks.CAVE_VINES_PLANT)
+                        && level.getBlockState(segments.getLast()).is(Blocks.CAVE_VINES),
+                "cave-vines growth did not preserve vanilla body/head conversion");
+
+        Entity geometryProbe = helper.spawn(EntityTypes.PIG, new BlockPos(0, 1, 0));
+        assertCeilingProjectedGeometry(helper, support, Blocks.CALCITE, segments,
+                geometryProbe, "cave-vines column");
+
+        BlockPos head = segments.getLast();
+        BlockState berries = level.getBlockState(head).setValue(CaveVines.BERRIES, true);
+        level.setBlock(head, berries, 2);
+        helper.assertTrue(berries.getLightEmission() > 0,
+                "berry-bearing cave-vines head lost vanilla light emission");
+        var player = helper.makeMockPlayer(GameType.SURVIVAL);
+        BlockHitResult berryHit = new BlockHitResult(
+                Vec3.atCenterOf(head), Direction.DOWN, head, false);
+        InteractionResult harvested = berries.useWithoutItem(level, player, berryHit);
+        BlockState harvestedState = level.getBlockState(head);
+        helper.assertTrue(harvested.consumesAction()
+                        && harvestedState.is(Blocks.CAVE_VINES)
+                        && !harvestedState.getValue(CaveVines.BERRIES)
+                        && harvestedState.getLightEmission() == 0
+                        && helper.getEntities(EntityTypes.ITEM).stream()
+                        .anyMatch(entity -> entity.getItem().is(Items.GLOW_BERRIES)),
+                "glow-berry harvesting did not preserve state, light, and item behavior");
+
+        level.setBlockAndUpdate(support, Blocks.AIR.defaultBlockState());
+        helper.succeedWhen(() -> {
+            for (BlockPos segment : segments) {
+                helper.assertTrue(level.getBlockState(segment).isAir(),
+                        "cave-vines support removal left a segment at " + segment);
+            }
+        });
+    }
+
+    @GameTest(maxTicks = 140)
+    public void weepingVinesRetainRandomBonemealAndMaximumAgeLifecycleOnCeilingSlabs(
+            GameTestHelper helper) {
+        var level = helper.getLevel();
+        BlockPos support = helper.absolutePos(new BlockPos(2, 8, 2));
+        BlockPos anchor = support.below();
+        clearHangingColumn(level, support, 10);
+        level.setBlock(support, slab(Blocks.CALCITE, SlabType.TOP), 2);
+        level.setBlock(anchor, Blocks.WEEPING_VINES.defaultBlockState()
+                .setValue(GrowingPlantHeadBlock.AGE, 0), 2);
+
+        List<BlockPos> randomlyGrown = randomGrowDownward(level, anchor,
+                Blocks.WEEPING_VINES, Blocks.WEEPING_VINES_PLANT, 3, 0xC505B22L);
+        helper.assertTrue(level.getBlockState(randomlyGrown.getFirst()).is(Blocks.WEEPING_VINES_PLANT)
+                        && level.getBlockState(randomlyGrown.getLast()).is(Blocks.WEEPING_VINES),
+                "weeping-vines random growth did not preserve body/head lifecycle");
+
+        BlockPos oldHead = randomlyGrown.getLast();
+        ItemStack boneMeal = new ItemStack(Items.BONE_MEAL, 2);
+        helper.assertTrue(BoneMealItem.growCrop(boneMeal, level, oldHead)
+                        && boneMeal.getCount() == 1,
+                "weeping-vines head lost ordinary bonemeal growth");
+        List<BlockPos> segments = downwardColumn(level, anchor,
+                Blocks.WEEPING_VINES, Blocks.WEEPING_VINES_PLANT);
+        helper.assertTrue(segments.size() > randomlyGrown.size()
+                        && level.getBlockState(oldHead).is(Blocks.WEEPING_VINES_PLANT)
+                        && level.getBlockState(segments.getLast()).is(Blocks.WEEPING_VINES),
+                "weeping-vines bonemeal did not extend downward with one terminal head");
+
+        Entity geometryProbe = helper.spawn(EntityTypes.PIG, new BlockPos(0, 1, 0));
+        assertCeilingProjectedGeometry(helper, support, Blocks.CALCITE, segments,
+                geometryProbe, "weeping-vines column");
+
+        BlockPos maxSupport = helper.absolutePos(new BlockPos(7, 8, 2));
+        BlockPos maxHead = maxSupport.below();
+        clearHangingColumn(level, maxSupport, 5);
+        level.setBlock(maxSupport, slab(Blocks.CALCITE, SlabType.TOP), 2);
+        BlockState maximum = Blocks.WEEPING_VINES.defaultBlockState()
+                .setValue(GrowingPlantHeadBlock.AGE, GrowingPlantHeadBlock.MAX_AGE);
+        level.setBlock(maxHead, maximum, 2);
+        RandomSource maxRandom = RandomSource.create(0xC505C33L);
+        for (int attempt = 0; attempt < 64; attempt++) {
+            level.getBlockState(maxHead).randomTick(level, maxHead, maxRandom);
+        }
+        helper.assertTrue(level.getBlockState(maxHead).equals(maximum)
+                        && !level.getBlockState(maxHead).isRandomlyTicking()
+                        && level.getBlockState(maxHead.below()).isAir(),
+                "maximum-age weeping-vines head grew beyond vanilla limits");
+
+        level.setBlockAndUpdate(support, Blocks.AIR.defaultBlockState());
+        level.setBlockAndUpdate(maxSupport, Blocks.AIR.defaultBlockState());
+        helper.succeedWhen(() -> {
+            for (BlockPos segment : segments) {
+                helper.assertTrue(level.getBlockState(segment).isAir(),
+                        "weeping-vines support removal left a segment at " + segment);
+            }
+            helper.assertTrue(level.getBlockState(maxHead).isAir(),
+                    "maximum-age weeping-vines head survived support removal");
+        });
+    }
+
+    @GameTest(maxTicks = 100)
+    public void paleHangingMossExtendsItsSameBlockColumnFromTheProjectedCeiling(
+            GameTestHelper helper) {
+        var level = helper.getLevel();
+        BlockPos support = helper.absolutePos(new BlockPos(3, 7, 3));
+        BlockPos anchor = support.below();
+        clearHangingColumn(level, support, 7);
+        level.setBlock(support, slab(Blocks.CALCITE, SlabType.TOP), 2);
+        level.setBlock(anchor, Blocks.PALE_HANGING_MOSS.defaultBlockState(), 2);
+
+        ItemStack boneMeal = new ItemStack(Items.BONE_MEAL, 2);
+        helper.assertTrue(BoneMealItem.growCrop(boneMeal, level, anchor)
+                        && boneMeal.getCount() == 1,
+                "pale hanging moss did not retain ordinary downward bonemeal growth");
+        List<BlockPos> segments = sameBlockColumn(level, anchor, Blocks.PALE_HANGING_MOSS);
+        helper.assertTrue(segments.size() > 1
+                        && !level.getBlockState(segments.getFirst()).getValue(HangingMossBlock.TIP)
+                        && level.getBlockState(segments.getLast()).getValue(HangingMossBlock.TIP),
+                "pale hanging moss did not preserve base/tip column state");
+        for (BlockPos segment : segments) {
+            BlockState state = level.getBlockState(segment);
+            helper.assertTrue(state.canSurvive(level, segment)
+                            && NibaruHorizontalSurface.visibleOffset(state, level, segment)
+                            == NibaruHorizontalSurface.CEILING_TOP_OFFSET,
+                    "pale hanging moss segment did not share its ceiling anchor: " + segment);
+        }
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 80)
+    public void ceilingSupportRemovalCleansSingleBlockFoliageNormally(GameTestHelper helper) {
+        var level = helper.getLevel();
+        List<RootedFixture> fixtures = new ArrayList<>();
+        int x = 2;
+        for (Block plant : List.of(Blocks.HANGING_ROOTS, Blocks.SPORE_BLOSSOM)) {
+            BlockPos support = helper.absolutePos(new BlockPos(x, 6, 2));
+            BlockPos foliage = support.below();
+            level.setBlock(support, slab(Blocks.CALCITE, SlabType.TOP), 2);
+            level.setBlock(foliage, plant.defaultBlockState(), 2);
+            helper.assertTrue(level.getBlockState(foliage).canSurvive(level, foliage),
+                    plant + " could not survive before ceiling support removal");
+            fixtures.add(new RootedFixture(support, List.of(foliage)));
+            x += 3;
+        }
+        for (RootedFixture fixture : fixtures) {
+            level.setBlockAndUpdate(fixture.support(), Blocks.AIR.defaultBlockState());
+        }
+        helper.succeedWhen(() -> {
+            for (RootedFixture fixture : fixtures) {
+                helper.assertTrue(level.getBlockState(fixture.segments().getFirst()).isAir(),
+                        "single-block ceiling foliage survived support removal at "
+                                + fixture.segments().getFirst());
+            }
+        });
+    }
+
+    @GameTest(maxTicks = 60)
+    public void ceilingProjectionRejectsWaterloggedForeignAndNonHorizontalGeometry(
+            GameTestHelper helper) {
+        var level = helper.getLevel();
+        BlockPos support = helper.absolutePos(new BlockPos(3, 6, 3));
+        BlockPos plant = support.below();
+        BlockState roots = Blocks.HANGING_ROOTS.defaultBlockState();
+
+        BlockState waterlogged = slab(Blocks.CALCITE, SlabType.TOP)
+                .setValue(BlockStateProperties.WATERLOGGED, true);
+        level.setBlock(support, waterlogged, Block.UPDATE_SKIP_ALL_SIDEEFFECTS);
+        level.setBlock(plant, roots, Block.UPDATE_SKIP_ALL_SIDEEFFECTS);
+        helper.assertTrue(NibaruHorizontalSurface.candidate(roots, level, plant).isPresent()
+                        && NibaruHorizontalSurface.supporting(roots, level, plant).isEmpty()
+                        && !roots.canSurvive(level, plant)
+                        && NibaruHorizontalSurface.visibleOffset(roots, level, plant) == 0.0D,
+                "waterlogged ceiling slab entered usable hanging-foliage projection");
+
+        List<BlockState> excluded = new ArrayList<>();
+        excluded.add(Blocks.STONE_SLAB.defaultBlockState()
+                .setValue(BlockStateProperties.SLAB_TYPE, SlabType.TOP));
+        NibaruMaterialProfile calcite = profile(Blocks.CALCITE);
+        excluded.add(calcite.nativeStair().orElseThrow().defaultBlockState());
+        excluded.add(calcite.nativeWall().orElseThrow().defaultBlockState());
+        for (DerivedGeometrySupport.Geometry geometry : DerivedGeometrySupport.Geometry.values()) {
+            DerivedMaterialTraits.equivalent(Blocks.CALCITE, geometry)
+                    .map(Block::defaultBlockState)
+                    .ifPresent(excluded::add);
+        }
+
+        for (BlockState geometry : excluded) {
+            level.setBlock(support, geometry, Block.UPDATE_SKIP_ALL_SIDEEFFECTS);
+            level.setBlock(plant, roots, Block.UPDATE_SKIP_ALL_SIDEEFFECTS);
+            helper.assertTrue(CanonicalSurvivalProjection.evaluate(roots, level, plant).isEmpty()
+                            && NibaruHorizontalSurface.candidate(roots, level, plant).isEmpty()
+                            && NibaruHorizontalSurface.supporting(roots, level, plant).isEmpty()
+                            && NibaruHorizontalSurface.visibleOffset(roots, level, plant) == 0.0D,
+                    "foreign or non-horizontal ceiling geometry entered projection: " + geometry);
+        }
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void positivelyShiftedCeilingRayReturnsTheLogicalHangingPlant(GameTestHelper helper) {
+        BlockPos support = helper.absolutePos(new BlockPos(2, 5, 2));
+        BlockPos plant = support.below();
+        var level = helper.getLevel();
+        level.setBlockAndUpdate(support, slab(Blocks.CALCITE, SlabType.TOP));
+        level.setBlockAndUpdate(plant, Blocks.HANGING_ROOTS.defaultBlockState());
+
+        BlockState plantState = level.getBlockState(plant);
+        AABB visibleShape = plantState.getShape(level, plant).bounds();
+        double visibleY = plant.getY() + (visibleShape.minY + visibleShape.maxY) / 2.0D;
+        double visibleZ = plant.getZ() + (visibleShape.minZ + visibleShape.maxZ) / 2.0D;
+        Vec3 from = new Vec3(support.getX() + 0.05D, visibleY, visibleZ);
+        Vec3 to = new Vec3(support.getX() + 0.95D, visibleY, visibleZ);
+        BlockHitResult vanillaMiss = BlockHitResult.miss(to, Direction.EAST, BlockPos.containing(to));
+        HitResult preferred = SlabPlantRaycast.preferShiftedPlant(level, from, to, vanillaMiss);
+
+        helper.assertTrue(preferred instanceof BlockHitResult hit
+                        && hit.getType() == HitResult.Type.BLOCK
+                        && hit.getBlockPos().equals(plant)
+                        && NibaruHorizontalSurface.visibleOffset(plantState, level, plant)
+                        == NibaruHorizontalSurface.CEILING_TOP_OFFSET,
+                "positive-offset ray did not select the hanging plant's logical block");
         helper.succeed();
     }
 
@@ -797,6 +1093,255 @@ public final class FoliageSurfaceGameTests implements CustomTestMethodInvoker {
         });
     }
 
+    private static void assertCeilingCanonicalParity(
+            GameTestHelper helper,
+            BlockPos support,
+            BlockState plantState,
+            Block parent,
+            boolean expected) {
+        var level = helper.getLevel();
+        BlockPos plant = support.below();
+        clearHangingColumn(level, support, 5);
+        level.setBlock(support, parent.defaultBlockState(), Block.UPDATE_SKIP_ALL_SIDEEFFECTS);
+        level.setBlock(plant, plantState, Block.UPDATE_SKIP_ALL_SIDEEFFECTS);
+        boolean canonical = plantState.canSurvive(level, plant);
+        helper.assertTrue(canonical == expected,
+                "canonical ceiling fixture expectation drifted for " + plantState + " under "
+                        + parent + ": got " + canonical);
+
+        BlockState exactSlab = slab(parent, SlabType.TOP);
+        level.setBlock(support, exactSlab, Block.UPDATE_SKIP_ALL_SIDEEFFECTS);
+        level.setBlock(plant, plantState, Block.UPDATE_SKIP_ALL_SIDEEFFECTS);
+        boolean projected = plantState.canSurvive(level, plant);
+        Optional<Boolean> directProjection = CanonicalSurvivalProjection.evaluate(
+                plantState, level, plant);
+        helper.assertTrue(projected == canonical
+                        && directProjection.equals(Optional.of(canonical)),
+                plantState + " ceiling-slab survival did not delegate to canonical " + parent
+                        + ": full=" + canonical + ", slab=" + projected
+                        + ", direct=" + directProjection);
+        helper.assertTrue(NibaruHorizontalSurface.candidate(plantState, level, plant).isPresent()
+                        && NibaruHorizontalSurface.supporting(plantState, level, plant).isPresent()
+                        == canonical
+                        && NibaruHorizontalSurface.visibleOffset(plantState, level, plant)
+                        == (canonical ? NibaruHorizontalSurface.CEILING_TOP_OFFSET : 0.0D),
+                plantState + " usable ceiling surface did not follow projected canonical result");
+        helper.assertTrue(level.getBlockState(support).equals(exactSlab)
+                        && level.getBlockState(plant).equals(plantState)
+                        && !CanonicalSurvivalProjection.isEvaluating(),
+                "ceiling parity evaluation mutated state or leaked its recursion guard");
+    }
+
+    private static void assertCeilingGeometryMatrix(
+            GameTestHelper helper,
+            BlockPos support,
+            BlockState plantState,
+            String label) {
+        var level = helper.getLevel();
+        BlockPos plant = support.below();
+        clearHangingColumn(level, support, 5);
+        level.setBlock(support, Blocks.CALCITE.defaultBlockState(), Block.UPDATE_SKIP_ALL_SIDEEFFECTS);
+        level.setBlock(plant, plantState, Block.UPDATE_SKIP_ALL_SIDEEFFECTS);
+        helper.assertTrue(plantState.canSurvive(level, plant),
+                label + " canonical calcite geometry control cannot survive");
+        Entity geometryProbe = helper.spawn(EntityTypes.PIG, new BlockPos(0, 1, 0));
+        SegmentGeometry control = captureGeometry(plantState, level, plant, geometryProbe);
+
+        for (SlabType type : SlabType.values()) {
+            level.setBlock(support, slab(Blocks.CALCITE, type), Block.UPDATE_SKIP_ALL_SIDEEFFECTS);
+            level.setBlock(plant, plantState, Block.UPDATE_SKIP_ALL_SIDEEFFECTS);
+            BlockState actual = level.getBlockState(plant);
+            double expectedOffset = type == SlabType.TOP
+                    ? NibaruHorizontalSurface.CEILING_TOP_OFFSET
+                    : 0.0D;
+            NibaruHorizontalSurface.Surface surface = NibaruHorizontalSurface
+                    .supporting(actual, level, plant).orElseThrow();
+            helper.assertTrue(actual.canSurvive(level, plant)
+                            && surface.orientation()
+                            == NibaruHorizontalSurface.AttachmentOrientation.CEILING
+                            && close(surface.height(), type == SlabType.TOP ? 0.5D : 0.0D)
+                            && close(surface.offset(), expectedOffset)
+                            && close(NibaruHorizontalSurface.visibleOffset(actual, level, plant),
+                            expectedOffset),
+                    label + " directional surface matrix mismatch for " + type);
+            assertAllGeometryShifted(helper, actual, level, plant, geometryProbe, control,
+                    expectedOffset, label + " " + type);
+        }
+    }
+
+    private static void placeAgainstNativeSlabUnderside(
+            GameTestHelper helper,
+            BlockPos support,
+            Item item,
+            Block expectedBlock) {
+        var level = helper.getLevel();
+        BlockPos plant = support.below();
+        clearHangingColumn(level, support, 5);
+        level.setBlock(support, slab(Blocks.CALCITE, SlabType.TOP), 2);
+        var player = helper.makeMockPlayer(GameType.SURVIVAL);
+        ItemStack held = new ItemStack(item, 2);
+        player.setItemInHand(InteractionHand.MAIN_HAND, held);
+        BlockHitResult underside = new BlockHitResult(
+                new Vec3(support.getX() + 0.5D, support.getY(), support.getZ() + 0.5D),
+                Direction.DOWN, support, false);
+        InteractionResult result = held.useOn(
+                new UseOnContext(player, InteractionHand.MAIN_HAND, underside));
+        BlockState placed = level.getBlockState(plant);
+        helper.assertTrue(result.consumesAction()
+                        && placed.is(expectedBlock)
+                        && placed.canSurvive(level, plant)
+                        && held.getCount() == 1
+                        && NibaruHorizontalSurface.visibleOffset(placed, level, plant)
+                        == NibaruHorizontalSurface.CEILING_TOP_OFFSET,
+                item + " did not place " + expectedBlock
+                        + " naturally against a native top-slab underside; result=" + result
+                        + ", placed=" + placed + ", remaining=" + held.getCount());
+        player.discard();
+    }
+
+    private static List<BlockPos> randomGrowDownward(
+            net.minecraft.server.level.ServerLevel level,
+            BlockPos anchor,
+            Block headBlock,
+            Block bodyBlock,
+            int minimumSegments,
+            long seed) {
+        RandomSource random = RandomSource.create(seed);
+        for (int attempt = 0; attempt < 4096; attempt++) {
+            List<BlockPos> segments = downwardColumn(level, anchor, headBlock, bodyBlock);
+            if (segments.size() >= minimumSegments) return segments;
+            if (segments.isEmpty()) break;
+            BlockPos head = segments.getLast();
+            BlockState headState = level.getBlockState(head);
+            if (!headState.is(headBlock)) break;
+            headState.randomTick(level, head, random);
+        }
+        throw new AssertionError(headBlock + " did not grow a " + minimumSegments
+                + "-segment downward column from " + anchor);
+    }
+
+    private static List<BlockPos> downwardColumn(
+            net.minecraft.server.level.ServerLevel level,
+            BlockPos anchor,
+            Block headBlock,
+            Block bodyBlock) {
+        List<BlockPos> segments = new ArrayList<>();
+        BlockPos cursor = anchor;
+        for (int distance = 0; distance < 32 && !level.isOutsideBuildHeight(cursor); distance++) {
+            BlockState state = level.getBlockState(cursor);
+            if (!state.is(headBlock) && !state.is(bodyBlock)) break;
+            segments.add(cursor);
+            if (state.is(headBlock)) break;
+            cursor = cursor.below();
+        }
+        return List.copyOf(segments);
+    }
+
+    private static List<BlockPos> sameBlockColumn(
+            net.minecraft.server.level.ServerLevel level,
+            BlockPos anchor,
+            Block block) {
+        List<BlockPos> segments = new ArrayList<>();
+        BlockPos cursor = anchor;
+        for (int distance = 0; distance < 32 && !level.isOutsideBuildHeight(cursor); distance++) {
+            if (!level.getBlockState(cursor).is(block)) break;
+            segments.add(cursor);
+            cursor = cursor.below();
+        }
+        return List.copyOf(segments);
+    }
+
+    private static void assertCeilingProjectedGeometry(
+            GameTestHelper helper,
+            BlockPos support,
+            Block canonicalParent,
+            List<BlockPos> segments,
+            Entity geometryProbe,
+            String label) {
+        var level = helper.getLevel();
+        level.setBlock(support, canonicalParent.defaultBlockState(),
+                Block.UPDATE_SKIP_ALL_SIDEEFFECTS);
+        List<SegmentGeometry> controls = new ArrayList<>();
+        for (BlockPos segment : segments) {
+            BlockState state = level.getBlockState(segment);
+            helper.assertTrue(state.canSurvive(level, segment),
+                    label + " canonical control cannot survive at " + segment + ": " + state);
+            controls.add(captureGeometry(state, level, segment, geometryProbe));
+        }
+
+        level.setBlock(support, slab(canonicalParent, SlabType.TOP),
+                Block.UPDATE_SKIP_ALL_SIDEEFFECTS);
+        for (int index = 0; index < segments.size(); index++) {
+            BlockPos segment = segments.get(index);
+            BlockState state = level.getBlockState(segment);
+            NibaruHorizontalSurface.Surface surface = NibaruHorizontalSurface
+                    .supporting(state, level, segment).orElseThrow();
+            helper.assertTrue(state.canSurvive(level, segment)
+                            && surface.supportPos().equals(support)
+                            && surface.orientation()
+                            == NibaruHorizontalSurface.AttachmentOrientation.CEILING
+                            && NibaruHorizontalSurface.visibleOffset(state, level, segment)
+                            == NibaruHorizontalSurface.CEILING_TOP_OFFSET,
+                    label + " segment lost its shared top anchor/offset at " + segment);
+            assertAllGeometryShifted(helper, state, level, segment, geometryProbe,
+                    controls.get(index), NibaruHorizontalSurface.CEILING_TOP_OFFSET,
+                    label + " at " + segment);
+        }
+    }
+
+    private static SegmentGeometry captureGeometry(
+            BlockState state,
+            net.minecraft.server.level.ServerLevel level,
+            BlockPos pos,
+            Entity geometryProbe) {
+        return new SegmentGeometry(
+                state,
+                state.getShape(level, pos),
+                state.getCollisionShape(level, pos),
+                state.getCollisionShape(level, pos, CollisionContext.empty()),
+                state.getVisualShape(level, pos, CollisionContext.empty()),
+                state.getInteractionShape(level, pos),
+                state.getEntityInsideCollisionShape(level, pos, geometryProbe));
+    }
+
+    private static void assertAllGeometryShifted(
+            GameTestHelper helper,
+            BlockState state,
+            net.minecraft.server.level.ServerLevel level,
+            BlockPos pos,
+            Entity geometryProbe,
+            SegmentGeometry control,
+            double offset,
+            String label) {
+        assertShapeShifted(helper, state.getShape(level, pos), control.outline(), offset,
+                label + " outline");
+        assertShapeShifted(helper, state.getCollisionShape(level, pos), control.cachedCollision(),
+                offset, label + " cached collision");
+        assertShapeShifted(helper,
+                state.getCollisionShape(level, pos, CollisionContext.empty()),
+                control.contextCollision(), offset, label + " contextual collision");
+        assertShapeShifted(helper,
+                state.getVisualShape(level, pos, CollisionContext.empty()),
+                control.visualShape(), offset, label + " visual shape");
+        assertShapeShifted(helper, state.getInteractionShape(level, pos),
+                control.interactionShape(), offset, label + " interaction shape");
+        assertShapeShifted(helper,
+                state.getEntityInsideCollisionShape(level, pos, geometryProbe),
+                control.entityInsideShape(), offset, label + " entity-inside collision");
+    }
+
+    private static void clearHangingColumn(
+            net.minecraft.server.level.ServerLevel level,
+            BlockPos support,
+            int depth) {
+        for (int dy = depth; dy >= 0; dy--) {
+            BlockPos pos = support.below(dy);
+            if (!level.isOutsideBuildHeight(pos)) {
+                level.setBlock(pos, Blocks.AIR.defaultBlockState(), 2);
+            }
+        }
+    }
+
     private static void assertFamily(
             GameTestHelper helper,
             BlockState state,
@@ -1226,6 +1771,9 @@ public final class FoliageSurfaceGameTests implements CustomTestMethodInvoker {
     }
 
     private record PlantSupportCase(BlockState plant, Block parent, boolean expected) {
+    }
+
+    private record CeilingPlacementCase(Item item, Block placed) {
     }
 
     private record RootedFixture(BlockPos support, List<BlockPos> segments) {

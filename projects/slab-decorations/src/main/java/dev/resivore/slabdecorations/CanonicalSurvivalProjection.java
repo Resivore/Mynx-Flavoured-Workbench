@@ -49,11 +49,11 @@ public final class CanonicalSurvivalProjection {
         try {
             LevelReader projected = new CanonicalSupportLevelReader(
                     environment, blockView, surface.supportPos(), surface.canonicalParentState());
-            NibaruHorizontalSurface.Root root = surface.root();
+            NibaruHorizontalSurface.Attachment attachment = surface.attachment();
 
-            // The root owns the substrate decision for every connected segment.
-            if (!root.state().canSurvive(projected, root.pos())) return false;
-            if (root.pos().equals(pos)) return true;
+            // The root/anchor owns the support decision for every connected segment.
+            if (!attachment.state().canSurvive(projected, attachment.pos())) return false;
+            if (attachment.pos().equals(pos)) return true;
 
             // Preserve the current segment's remaining vanilla neighbour/state requirements too.
             return state.canSurvive(projected, pos);

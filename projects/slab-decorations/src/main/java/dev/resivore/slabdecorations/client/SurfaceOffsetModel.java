@@ -67,7 +67,8 @@ public final class SurfaceOffsetModel implements BlockStateModel {
             BlockPos pos,
             BlockState state,
             RandomSource random) {
-        // Geometry depends on the block below, so do not share a context-free cached key.
+        // Geometry depends on the resolved support/anchor column, so do not share a
+        // context-free cached key.
         return null;
     }
 
