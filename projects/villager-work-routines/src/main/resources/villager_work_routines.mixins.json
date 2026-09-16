@@ -5,8 +5,7 @@
   "mixins": ["VillagerMixin", "SheepMixin", "WalkNodeEvaluatorMixin"],
   "client": [
     "client.VillagerRenderStateMixin",
-    "client.VillagerRendererMixin",
-    "client.CrossedArmsItemLayerMixin"
+    "client.VillagerRendererMixin"
   ],
   "injectors": { "defaultRequire": 1 }
 }

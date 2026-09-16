@@ -1,6 +1,5 @@
 package dev.resivore.villagerwork.mixin.client;
 
-import dev.resivore.villagerwork.VillagerWorkRoutines;
 import dev.resivore.villagerwork.client.VwrFishingRodPresentation;
 import net.minecraft.client.renderer.entity.VillagerRenderer;
 import net.minecraft.client.renderer.entity.state.VillagerRenderState;
@@ -18,7 +17,5 @@ abstract class VillagerRendererMixin {
                                                       float partialTick, CallbackInfo ci) {
         VwrFishingRodPresentation presentation = (VwrFishingRodPresentation)(Object)state;
         presentation.villagerWork$setEntityId(villager.getId());
-        presentation.villagerWork$setRenderFishingRod(VillagerWorkRoutines.isFishingRodPresentation(
-                villager.getMainHandItem()));
     }
 }

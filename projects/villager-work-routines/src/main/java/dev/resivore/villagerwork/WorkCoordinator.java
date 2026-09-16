@@ -1218,7 +1218,7 @@ public final class WorkCoordinator {
             if (state.floatEntity.isRemoved() || state.water == null || !level.hasChunkAt(state.water)
                     || !openWater(level, state.water)) { cancel(villager, state, "float lost or water vanished"); return; }
             state.fishingPhase = FishingRodLifecycle.Phase.FLOAT_ACTIVE;
-            if (!showProp(villager, state, Items.FISHING_ROD)) { cancel(villager, state, "rod cannot remain equipped"); return; }
+            holdFishingPosition(villager);
             villager.getLookControl().setLookAt(Vec3.atCenterOf(state.water));
             if (villager.tickCount >= state.catchAt) {
                 state.fishingPhase = FishingRodLifecycle.Phase.RETRIEVING;
@@ -1241,7 +1241,6 @@ public final class WorkCoordinator {
                 state.rodAt = 0;
                 state.cooldown = villager.tickCount + 100;
                 state.fishingPhase = FishingRodLifecycle.afterRetrieve(containsFish(owned));
-                clearProp(villager);
             }
             return;
         }
@@ -1285,8 +1284,7 @@ public final class WorkCoordinator {
                 // the rod telegraph. Keep the same vetted bank/water pair and retry the telegraph.
                 state.rodAt = 0;
                 state.navigationDeadline = villager.tickCount + NAVIGATION_TIMEOUT;
-                clearProp(villager);
-                log(villager, "moved slightly away from bank={} before cast; repositioning and restarting rod telegraph",
+                log(villager, "moved slightly away from bank={} before cast; repositioning and restarting cast telegraph",
                         state.bank);
             }
             if (villager.tickCount % 20 == 0) {
@@ -1299,18 +1297,12 @@ public final class WorkCoordinator {
             return;
         }
         stopCustomNavigation(villager, state);
+        holdFishingPosition(villager);
         villager.getLookControl().setLookAt(Vec3.atCenterOf(state.water));
-        boolean rodWasCleared = state.rodAt != 0 && state.propSlot.current() == null;
-        if (!showProp(villager, state, Items.FISHING_ROD)) { cancel(villager, state, "main hand occupied; rod cannot be shown"); return; }
-        if (rodWasCleared) {
-            state.rodAt = villager.tickCount + 8;
-            log(villager, "rod restored after save/interruption; cast phase restarted castAt={}", state.rodAt);
-            return;
-        }
         if (state.rodAt == 0) {
             state.fishingPhase = FishingRodLifecycle.Phase.CAST_TELEGRAPH;
             state.rodAt = villager.tickCount + 8;
-            log(villager, "arrived bank={} facing water={}; rod equipped, castAt={}", state.bank, state.water, state.rodAt);
+            log(villager, "arrived bank={} facing water={}; cast telegraph begins castAt={}", state.bank, state.water, state.rodAt);
             return;
         }
         if (villager.tickCount < state.rodAt) return;
@@ -1499,6 +1491,14 @@ public final class WorkCoordinator {
             Path path = villager.getNavigation().createPath(pos, 0);
             if (path != null && path.canReach() && villager.getNavigation().moveTo(path, speed)) return;
         }
+    }
+
+    /** A live bobber is the Fisherman's committed action: do not let ambient navigation wander it. */
+    private static void holdFishingPosition(Villager villager) {
+        villager.getNavigation().stop();
+        Vec3 velocity = villager.getDeltaMovement();
+        if (velocity.x != 0.0 || velocity.z != 0.0)
+            villager.setDeltaMovement(0.0, velocity.y, 0.0);
     }
 
     private static boolean showProp(Villager villager, State state, Item item) {
