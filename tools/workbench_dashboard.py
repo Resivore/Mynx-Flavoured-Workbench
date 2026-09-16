@@ -29,11 +29,12 @@ ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_OUTPUT = "WORKBENCH_DASHBOARD.html"
 SERVER_STATE_FILENAME = "WORKBENCH_SERVER_STATE.json"
 BOOTSTRAP_SPRITE = ROOT / "third_party" / "bootstrap-icons" / "bootstrap-icons.svg"
-BOOTSTRAP_PREFIX = "bi-"
 DASHBOARD_FAVICON_SVG = (
-    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">'
-    '<path fill="#70bb89" d="M27.5 4.5C16.8 5.1 8.2 10 5.6 18.8c-1.5 5.1 1.4 8.7 6.2 8.7 '
-    '8.7 0 14.5-8.5 15.7-23Zm-18.1 19c3.7-6.3 8.8-10.7 15.3-14.3-5.4 4.5-9.4 9.4-11.8 15.5z"/>'
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">'
+    '<path fill="#0c2118" stroke="#9bc5aa" stroke-width="2" stroke-linejoin="round" d="M8 25h27v11H8zM11 36h23v5H11z"/>'
+    '<path fill="none" stroke="#9bc5aa" stroke-width="2" stroke-linejoin="round" d="M35 27h7v8h-7"/>'
+    '<path fill="#70bb89" stroke="#9bc5aa" stroke-width="1.5" stroke-linejoin="round" d="M23 23C24 12 32 7 42 9c-2 10-8 16-19 14Z"/>'
+    '<path fill="none" stroke="#0c2118" stroke-width="2" stroke-linecap="round" d="m21 25 9-10"/>'
     '</svg>'
 )
 DASHBOARD_FAVICON_DATA_URL = "data:image/svg+xml," + quote(DASHBOARD_FAVICON_SVG, safe="")
@@ -457,42 +458,34 @@ def _project_payload(project: DashboardProject) -> dict[str, Any]:
     }
 
 
-def _namespace_bootstrap_sprite(sprite: str) -> str:
-    """Prefix vendored sprite IDs so SVG fragments cannot target page DOM IDs."""
+def _bootstrap_icon_geometries(sprite: str) -> dict[str, dict[str, str]]:
+    """Extract the required Bootstrap symbol geometry for direct inline use.
 
-    defined_ids = set(re.findall(r'\bid="([^"]+)"', sprite))
-    symbol_ids = set(re.findall(r'<symbol\b[^>]*\bid="([^"]+)"', sprite))
-    missing = sorted(DASHBOARD_ICON_NAMES - symbol_ids)
+    The vendored sprite remains the authoritative artwork, but the generated
+    dashboard deliberately does not use SVG fragment references.  Browsers can
+    otherwise fail to paint ``<use>`` targets in a local file when the source
+    sprite is hidden or the dynamically inserted reference is resolved late.
+    """
+
+    symbols: dict[str, dict[str, str]] = {}
+    for match in re.finditer(r"<symbol\b(?P<attributes>[^>]*)>(?P<body>.*?)</symbol>", sprite, re.DOTALL):
+        attributes = match.group("attributes")
+        name = re.search(r'\bid="([^"]+)"', attributes)
+        view_box = re.search(r'\bviewBox="([^"]+)"', attributes)
+        if name is not None and view_box is not None and name.group(1) in DASHBOARD_ICON_NAMES:
+            symbols[name.group(1)] = {"viewBox": view_box.group(1), "body": match.group("body")}
+    missing = sorted(DASHBOARD_ICON_NAMES - set(symbols))
     if missing:
         raise DashboardError(
             "Bootstrap Icons sprite is missing dashboard icon symbols: " + ", ".join(missing)
         )
+    return symbols
 
-    def prefixed(match: re.Match[str]) -> str:
-        return f'{match.group(1)}{BOOTSTRAP_PREFIX}{match.group(2)}{match.group(3)}'
 
-    # Keep the upstream asset immutable.  Both defined IDs and internal
-    # fragment references are rewritten in the generated local document.
-    namespaced = re.sub(r'(\bid=")([^"]+)(")', prefixed, sprite)
-    namespaced = re.sub(
-        r'((?:xlink:)?href\s*=\s*["\'])#([^"\']+)(["\'])',
-        lambda match: (
-            f"{match.group(1)}#{BOOTSTRAP_PREFIX}{match.group(2)}{match.group(3)}"
-            if match.group(2) in defined_ids
-            else match.group(0)
-        ),
-        namespaced,
-    )
-    namespaced = re.sub(
-        r'url\(\s*#([^)\s]+)\s*\)',
-        lambda match: (
-            f"url(#{BOOTSTRAP_PREFIX}{match.group(1)})"
-            if match.group(1) in defined_ids
-            else match.group(0)
-        ),
-        namespaced,
-    )
-    return namespaced.replace("<svg ", '<svg class="icon-sprite" aria-hidden="true" ', 1)
+def _inline_bootstrap_icon(icon: Mapping[str, str], class_name: str = "bi") -> str:
+    """Render a self-contained SVG from geometry extracted from Bootstrap."""
+
+    return f'<svg class="{class_name}" aria-hidden="true" viewBox="{icon["viewBox"]}">{icon["body"]}</svg>'
 
 
 def render_dashboard(
@@ -512,11 +505,16 @@ def render_dashboard(
         sprite = BOOTSTRAP_SPRITE.read_text(encoding="utf-8")
     except OSError as exc:
         raise DashboardError(f"Bootstrap Icons sprite is unavailable: {BOOTSTRAP_SPRITE}") from exc
-    sprite = _namespace_bootstrap_sprite(sprite)
+    icons = _bootstrap_icon_geometries(sprite)
     return (
         HTML_TEMPLATE.replace("__DASHBOARD_DATA__", _json_for_html(payload))
-        .replace("__BOOTSTRAP_ICONS__", sprite)
+        .replace("__BOOTSTRAP_ICON_DATA__", _json_for_html(icons))
         .replace("__DASHBOARD_FAVICON_DATA_URL__", DASHBOARD_FAVICON_DATA_URL)
+        .replace("__ICON_SEARCH__", _inline_bootstrap_icon(icons["search"], "bi search-icon"))
+        .replace("__ICON_X_LG__", _inline_bootstrap_icon(icons["x-lg"]))
+        .replace("__ICON_CHEVRON_DOWN__", _inline_bootstrap_icon(icons["chevron-down"], "bi select-chevron"))
+        .replace("__ICON_ARROW_CLOCKWISE__", _inline_bootstrap_icon(icons["arrow-clockwise"]))
+        .replace("__ICON_ARROW_DOWN_UP__", _inline_bootstrap_icon(icons["arrow-down-up"]))
     )
 
 
@@ -789,11 +787,11 @@ HTML_TEMPLATE = r'''<!doctype html>
 
     .table-scroll { overflow-x: auto; scrollbar-gutter: stable; }
     table { width: 100%; min-width: 790px; border-collapse: separate; border-spacing: 0; table-layout: fixed; }
-    col.project { width: 39%; }
-    col.lifecycle { width: 14%; }
-    col.version { width: 19%; }
-    col.jar { width: 19%; }
-    col.server { width: 9%; }
+    col.project { width: 42%; }
+    col.lifecycle { width: 13%; }
+    col.version { width: 10%; }
+    col.jar { width: 16%; }
+    col.server { width: 19%; }
     thead th {
       position: sticky;
       top: 0;
@@ -824,6 +822,8 @@ HTML_TEMPLATE = r'''<!doctype html>
       text-align: left;
       text-transform: inherit;
     }
+    thead th:not(:first-child), tbody td:not(:first-child) { text-align: center; }
+    thead th:not(:first-child) .sort-button { justify-content: center; text-align: center; }
     .bi { display: inline-block; width: 1em; height: 1em; fill: currentColor; flex: 0 0 auto; }
     .sort-indicator { display: inline-flex; align-items: center; justify-content: center; width: 1em; height: 1em; color: #668075; font-size: 0.85rem; }
     th[aria-sort="ascending"] .sort-indicator,
@@ -916,8 +916,6 @@ HTML_TEMPLATE = r'''<!doctype html>
     .empty button { padding: 8px 12px; border: 1px solid var(--line-strong); border-radius: 8px; background: #112a1e; color: var(--text); }
     [hidden] { display: none !important; }
     .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
-    .icon-sprite { position: absolute; width: 0; height: 0; overflow: hidden; }
-
     @media (max-width: 760px) {
       .shell { width: min(100% - 20px, 1500px); padding-top: 18px; }
       .masthead { align-items: flex-start; margin-bottom: 16px; }
@@ -943,7 +941,6 @@ HTML_TEMPLATE = r'''<!doctype html>
   </style>
 </head>
 <body>
-  __BOOTSTRAP_ICONS__
   <main class="shell">
     <header class="masthead">
       <div>
@@ -961,9 +958,9 @@ HTML_TEMPLATE = r'''<!doctype html>
         <div class="control-row">
           <div class="search-wrap">
             <label class="sr-only" for="search">Search projects</label>
-            <svg class="bi search-icon" aria-hidden="true"><use href="#bi-search"></use></svg>
+            __ICON_SEARCH__
             <input id="search" type="search" autocomplete="off" placeholder="Search projects" spellcheck="false">
-            <button id="clear-search" type="button" aria-label="Clear project search" title="Clear project search" hidden><svg class="bi" aria-hidden="true"><use href="#bi-x-lg"></use></svg></button>
+            <button id="clear-search" type="button" aria-label="Clear project search" title="Clear project search" hidden>__ICON_X_LG__</button>
           </div>
           <label class="select-wrap" for="server-filter">
             <span>On server</span>
@@ -974,10 +971,10 @@ HTML_TEMPLATE = r'''<!doctype html>
                 <option value="OUTDATED">Outdated</option>
                 <option value="NOT_DEPLOYED">Not deployed</option>
               </select>
-              <svg class="bi select-chevron" aria-hidden="true"><use href="#bi-chevron-down"></use></svg>
+              __ICON_CHEVRON_DOWN__
             </span>
           </label>
-          <button id="reset-order" class="order-button" type="button" title="Restore Workbench order" disabled><svg class="bi" aria-hidden="true"><use href="#bi-arrow-clockwise"></use></svg> Workbench order</button>
+          <button id="reset-order" class="order-button" type="button" title="Restore Workbench order" disabled>__ICON_ARROW_CLOCKWISE__ Workbench order</button>
         </div>
         <div class="control-row filter-row">
           <span class="filter-label">Lifecycle</span>
@@ -1006,11 +1003,11 @@ HTML_TEMPLATE = r'''<!doctype html>
           </colgroup>
           <thead>
             <tr>
-              <th scope="col" data-sort-header="name"><button class="sort-button" type="button" data-sort="name">Project <span class="sort-indicator" aria-hidden="true"><svg class="bi"><use href="#bi-arrow-down-up"></use></svg></span></button></th>
-              <th scope="col" data-sort-header="lifecycle"><button class="sort-button" type="button" data-sort="lifecycle">Lifecycle <span class="sort-indicator" aria-hidden="true"><svg class="bi"><use href="#bi-arrow-down-up"></use></svg></span></button></th>
-              <th scope="col" data-sort-header="version"><button class="sort-button" type="button" data-sort="version">Current Version <span class="sort-indicator" aria-hidden="true"><svg class="bi"><use href="#bi-arrow-down-up"></use></svg></span></button></th>
-              <th scope="col" data-sort-header="jar"><button class="sort-button" type="button" data-sort="jar">Last JAR Edit <span class="sort-indicator" aria-hidden="true"><svg class="bi"><use href="#bi-arrow-down-up"></use></svg></span></button></th>
-              <th scope="col" data-sort-header="server"><button class="sort-button" type="button" data-sort="server">On Server <span class="sort-indicator" aria-hidden="true"><svg class="bi"><use href="#bi-arrow-down-up"></use></svg></span></button></th>
+              <th scope="col" data-sort-header="name"><button class="sort-button" type="button" data-sort="name">Project <span class="sort-indicator" aria-hidden="true">__ICON_ARROW_DOWN_UP__</span></button></th>
+              <th scope="col" data-sort-header="lifecycle"><button class="sort-button" type="button" data-sort="lifecycle">Lifecycle <span class="sort-indicator" aria-hidden="true">__ICON_ARROW_DOWN_UP__</span></button></th>
+              <th scope="col" data-sort-header="version"><button class="sort-button" type="button" data-sort="version">Version <span class="sort-indicator" aria-hidden="true">__ICON_ARROW_DOWN_UP__</span></button></th>
+              <th scope="col" data-sort-header="jar"><button class="sort-button" type="button" data-sort="jar">Last JAR Edit <span class="sort-indicator" aria-hidden="true">__ICON_ARROW_DOWN_UP__</span></button></th>
+              <th scope="col" data-sort-header="server"><button class="sort-button" type="button" data-sort="server">On Server <span class="sort-indicator" aria-hidden="true">__ICON_ARROW_DOWN_UP__</span></button></th>
             </tr>
           </thead>
           <tbody id="project-rows"></tbody>
@@ -1030,6 +1027,7 @@ HTML_TEMPLATE = r'''<!doctype html>
   </main>
 
   <script type="application/json" id="dashboard-data">__DASHBOARD_DATA__</script>
+  <script type="application/json" id="bootstrap-icon-data">__BOOTSTRAP_ICON_DATA__</script>
   <script>
     (() => {
       "use strict";
@@ -1038,7 +1036,8 @@ HTML_TEMPLATE = r'''<!doctype html>
       const lifecycleOrder = ["ACTIVE", "PLANNED", "ACCEPTED", "TESTING", "BLOCKED", "PARKED"];
       const lifecycleLabels = { ACTIVE: "Active", PLANNED: "Planned", ACCEPTED: "Accepted", TESTING: "Testing", BLOCKED: "Blocked", PARKED: "Parked" };
       const serverRank = { CURRENT: 0, OUTDATED: 1, NOT_DEPLOYED: 2 };
-      const sortLabels = { name: "Project", lifecycle: "Lifecycle", version: "Current Version", jar: "Last JAR Edit", server: "On Server" };
+      const sortLabels = { name: "Project", lifecycle: "Lifecycle", version: "Version", jar: "Last JAR Edit", server: "On Server" };
+      const bootstrapIcons = JSON.parse(document.getElementById("bootstrap-icon-data").textContent);
       const state = { lifecycle: "ALL", server: "ALL", search: "", sortKey: "default", sortDirection: "asc", collapsed: new Set() };
 
       const rowsElement = document.getElementById("project-rows");
@@ -1076,9 +1075,9 @@ HTML_TEMPLATE = r'''<!doctype html>
       function icon(name) {
         const svg = element("svg", "bi");
         svg.setAttribute("aria-hidden", "true");
-        const use = document.createElementNS("http://www.w3.org/2000/svg", "use");
-        use.setAttribute("href", `#bi-${name}`);
-        svg.appendChild(use);
+        const definition = bootstrapIcons[name];
+        svg.setAttribute("viewBox", definition.viewBox);
+        svg.innerHTML = definition.body;
         return svg;
       }
 
@@ -1145,7 +1144,7 @@ HTML_TEMPLATE = r'''<!doctype html>
         nameCell.title = project.name;
         row.appendChild(nameCell);
 
-        const lifecycleCell = element("td");
+        const lifecycleCell = element("td", "lifecycle-value");
         lifecycleCell.appendChild(lifecyclePill(project.lifecycle));
         row.appendChild(lifecycleCell);
 
@@ -1166,7 +1165,7 @@ HTML_TEMPLATE = r'''<!doctype html>
         }
         row.appendChild(jarCell);
 
-        const serverCell = element("td");
+        const serverCell = element("td", "server-value");
         serverCell.appendChild(serverPill(project));
         row.appendChild(serverCell);
         return row;

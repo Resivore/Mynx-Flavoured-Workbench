@@ -392,25 +392,25 @@ class WorkbenchDashboardTests(unittest.TestCase):
                 )["versionDisplay"])
         self.assertEqual(observed_non_canary, non_canary_project_ids)
 
-    def test_bootstrap_sprite_is_namespaced_and_icon_controls_are_labeled(self) -> None:
+    def test_bootstrap_icons_are_inlined_from_the_vendored_sprite(self) -> None:
         html = dashboard.render_dashboard([model("Alpha", "ACTIVE")])
-        self.assertIn('class="icon-sprite"', html)
         self.assertIn('id="search"', html)
-        self.assertIn('href="#bi-arrow-down-up"', html)
-        self.assertIn('id="bi-search"', html)
-        self.assertIn('href="#bi-chevron-down"', html)
         self.assertIn('aria-label="Clear project search"', html)
         self.assertIn('title="Clear project search"', html)
-        sprite, page = html.split("</svg>", 1)
-        sprite_ids = set(re.findall(r'<symbol\b[^>]*\bid="([^"]+)"', sprite))
-        page_ids = set(re.findall(r'\bid="([^"]+)"', page))
-        self.assertTrue(all(symbol_id.startswith("bi-") for symbol_id in sprite_ids))
-        self.assertFalse(sprite_ids & page_ids)
-        self.assertFalse(re.search(r'<use\b[^>]*\bhref="#(?!bi-)', html))
+        self.assertNotIn("<use", html)
+        self.assertNotIn("icon-sprite", html)
+        icons = json.loads(re.search(r'<script type="application/json" id="bootstrap-icon-data">(.*?)</script>', html).group(1))  # type: ignore[union-attr]
         for name in dashboard.DASHBOARD_ICON_NAMES:
-            self.assertIn(f'id="bi-{name}"', html)
+            self.assertIn(name, icons)
+            self.assertIn("viewBox", icons[name])
+            self.assertIn("<path", icons[name]["body"])
+        self.assertGreaterEqual(html.count('viewBox="0 0 16 16"'), 9)
+        self.assertIn('col.project { width: 42%; }', html)
+        self.assertIn('col.server { width: 19%; }', html)
+        self.assertIn('thead th:not(:first-child) .sort-button { justify-content: center;', html)
+        self.assertIn('>Version <span class="sort-indicator"', html)
 
-    def test_generated_dashboard_embeds_a_leaf_only_svg_favicon(self) -> None:
+    def test_generated_dashboard_embeds_full_cup_and_leaf_svg_favicon(self) -> None:
         html = dashboard.render_dashboard([model("Alpha", "ACTIVE")])
         match = re.search(r'<link rel="icon" type="image/svg\+xml" href="([^"]+)">', html)
         self.assertIsNotNone(match)
@@ -419,8 +419,10 @@ class WorkbenchDashboardTests(unittest.TestCase):
         favicon = unquote(href.removeprefix("data:image/svg+xml,"))
         self.assertEqual(favicon, dashboard.DASHBOARD_FAVICON_SVG)
         self.assertIn('fill="#70bb89"', favicon)
+        self.assertIn('fill="#0c2118"', favicon)
+        self.assertIn('stroke="#9bc5aa"', favicon)
         self.assertNotIn("class=", favicon)
-        self.assertEqual(favicon.count("<path "), 1)
+        self.assertEqual(favicon.count("<path "), 4)
 
     def test_server_pill_labels_keep_versions_only_for_outdated_canaries(self) -> None:
         deployed = {"version": "C10 (Private Canary 9)", "artifact": None}
