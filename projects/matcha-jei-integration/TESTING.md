@@ -1,6 +1,6 @@
 # Testing
 
-Current C4 candidate: `matcha-jei-integration-0.3.0-effective-catalog-canary4.jar`, 77,686 bytes, SHA-256 `b2a071b4b9b329fa10ccdfd1a4fddd3808a529f0985ce56f70c98861bedcf8dd`, source checkpoint `af145152f4519969d0f53cece9970c1d11614b36`. It is `STATIC_PASS`, `NOT_DEPLOYED`, and `RUNTIME_UNTESTED`: no managed deployment, Minecraft launch, or user runtime report has been recorded for this exact release.
+Current C4 candidate: `matcha-jei-integration-0.3.0-effective-catalog-canary4.jar`, 77,686 bytes, SHA-256 `b2a071b4b9b329fa10ccdfd1a4fddd3808a529f0985ce56f70c98861bedcf8dd`, source checkpoint `af145152e425834f55ba279d9509abf51fc17e7c`. It is `STATIC_PASS`, `NOT_DEPLOYED`, and `RUNTIME_UNTESTED`: no managed deployment, Minecraft launch, or user runtime report has been recorded for this exact release.
 
 The accepted baseline remains exact C3 `matcha-jei-integration-0.2.0-nonrecipe-discovery-canary1.jar`, SHA-256 `1e4941e2353c1696505f243e86eb58f0239dd1144d544897370b021f6748a455`. Its user-reported external aggregate `PASS` is historical evidence for C3 only; it is not C4 evidence. Exact C2 `matcha-jei-integration-0.1.1-subtype-registration-fix-canary.jar`, SHA-256 `4ef3ddde44ec06e2ee852dd64f5f5d1cf25c1f4f908282f854e9f49b2d5fb60d`, remains repository/control rollback provenance and is not a target-local retained rollback.
 

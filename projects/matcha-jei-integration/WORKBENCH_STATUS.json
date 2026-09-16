@@ -92,7 +92,7 @@
           "filename": "matcha-jei-integration-0.3.0-effective-catalog-canary4.jar",
           "sha256": "b2a071b4b9b329fa10ccdfd1a4fddd3808a529f0985ce56f70c98861bedcf8dd"
         },
-        "source_commit": "af145152f4519969d0f53cece9970c1d11614b36",
+        "source_commit": "af145152e425834f55ba279d9509abf51fc17e7c",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
@@ -125,11 +125,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 3,
-    "activity_at": "2026-09-15T14:52:30Z",
-    "updated_at": "2026-09-15T14:52:30Z",
-    "last_codex_at": "2026-09-15T14:52:30Z",
-    "source_commit": "af145152f4519969d0f53cece9970c1d11614b36",
+    "revision": 4,
+    "activity_at": "2026-09-16T01:31:22Z",
+    "updated_at": "2026-09-16T01:31:22Z",
+    "last_codex_at": "2026-09-16T01:31:22Z",
+    "source_commit": "af145152e425834f55ba279d9509abf51fc17e7c",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
