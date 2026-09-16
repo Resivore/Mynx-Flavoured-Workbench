@@ -49,3 +49,13 @@
 - Artifact: New private release `0.1.0+26.2-canary4`; `mynx-regions-unexplored-private-0.1.0+26.2-canary4.jar`, 145008 bytes, SHA-256 `8f81b38e74832e8c4b8ad2a70b68dea39d38c82b231cf17982a0a6ad93f163b6`, source `fb900d06b4a65b09f6458db8ec00e3c54c558db5`. Canary 3 remains the accepted provenance/rollback release at its unchanged exact identity. Canary 4 carries the release-scoped capability/provider dependency attestation with no exceptions.
 - Result: TESTING / STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED. Revision 5 is ready for main-only Sheet publication after canonical local artifact retention. Only `projects/mynx-regions-unexplored` changed; no original asset, runtime instance or unrelated plant was modified.
 - Next state: Verify Canary 4 in Minecraft: Clover leaf beds and stems must both receive the same dynamic grass biome tint across amounts and facings, while original geometry, flowers/leaves, inventory appearance and non-Clover plants remain unchanged. Do not transfer Canary 3's prior runtime PASS to Canary 4.
+
+## 2026-09-16T15:08:47Z — Set Mynx Regions Unexplored active by owner direction
+- Revision: 6
+- Source checkpoint: `b137377b6f54fd7e5cc6d621f815d09187a30912`
+- Changes: Changed only the canonical lifecycle from TESTING to ACTIVE and corrected the milestone wording. Current Canary 4, accepted Canary 3 provenance, technical facts, and validation classifications are unchanged.
+- Build/static: No build was run; existing static/build evidence is preserved.
+- Runtime: No runtime result was added or inferred. Canary 4 remains RUNTIME_UNTESTED and NOT_DEPLOYED.
+- Artifact: Unchanged current `mynx-regions-unexplored-private-0.1.0+26.2-canary4.jar`, SHA-256 `8f81b38e74832e8c4b8ad2a70b68dea39d38c82b231cf17982a0a6ad93f163b6`; accepted Canary 3 remains preserved.
+- Result: ACTIVE / STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED.
+- Next state: Keep the focused Canary 4 runtime procedure available and record only explicit future evidence.

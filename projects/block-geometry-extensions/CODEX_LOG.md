@@ -262,3 +262,13 @@
 - Artifact: C70 `cnm-nibaru-integration-4.2.14-bge.canary70.stone-native-slab+26.2.jar`, 6,109,089 bytes, SHA-256 `d304552e29e76c4165675415215439ac2d73b5a6ebc4abc9787f0fa1124cf266`.
 - Result: TESTING — controlled-validation successor awaiting focused runtime confirmation.
 - Next state: Verify exact C70 Stone-slab placement parity in Minecraft before acceptance; do not infer it from controlled GameTests.
+
+## 2026-09-16T15:08:47Z — Accept exact BGE C70 by owner direction
+- Revision: 32
+- Source checkpoint: `b137377b6f54fd7e5cc6d621f815d09187a30912`
+- Changes: Changed lifecycle from TESTING to ACCEPTED and promoted the unchanged exact C70 current release to accepted. Former accepted C69 is retained as exact rollback/predecessor provenance; existing C68 historical provenance remains in prior canonical log entries. No source, artifact, filename, embedded version, or hash changed.
+- Build/static: No build was run; C70 retains its recorded CONTROLLED_VALIDATION_PASS and 108/108 controlled GameTests.
+- Runtime: No runtime PASS was supplied or inferred. C70 remains RUNTIME_UNTESTED; historical C69 user-reported PASS remains bound only to C69.
+- Artifact: Accepted/current C70 `cnm-nibaru-integration-4.2.14-bge.canary70.stone-native-slab+26.2.jar`, SHA-256 `d304552e29e76c4165675415215439ac2d73b5a6ebc4abc9787f0fa1124cf266`; rollback/predecessor C69 remains `cnm-nibaru-integration-4.2.13-bge.canary69.bbb-beam-standard-axis+26.2.jar`, SHA-256 `202eecc72f77745617b0d34ebfb7c58d3369300aeb12e8300309ae1fad39ec52`.
+- Result: ACCEPTED / CONTROLLED_VALIDATION_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED by explicit owner direction.
+- Next state: Preserve exact C70 and C69 identities and record only explicit future runtime evidence.

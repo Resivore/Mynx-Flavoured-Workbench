@@ -1,6 +1,6 @@
 # Testing
 
-C6 (`0.1.0-canary6`) is the exact current candidate: `slab-decorations-0.1.0-canary6.jar`, 51,315 bytes, SHA-256 `289330c35e79469d147bc8243f6ff69cb2e2f673e65055e6297219bb24219863`, source checkpoint `b589e1e52825e94a41fec2932c14c5a4ba07d791`. It is `TESTING / CONTROLLED_VALIDATION_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED` and unaccepted. C5 remains the failed predecessor: `0.1.0-canary5`, `slab-decorations-0.1.0-canary5.jar`, SHA-256 `8de706eb59bdafd5c594f5375be6485b9edb7b30b2b2017b2c8eaa44129fe480`, source checkpoint `b589e1e52825e94a41fec2932c14c5a4ba07d791`.
+C6 (`0.1.0-canary6`) is the exact current candidate: `slab-decorations-0.1.0-canary6.jar`, 51,315 bytes, SHA-256 `289330c35e79469d147bc8243f6ff69cb2e2f673e65055e6297219bb24219863`, source checkpoint `b589e1e52825e94a41fec2932c14c5a4ba07d791`. It is `ACTIVE / CONTROLLED_VALIDATION_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED` and unaccepted. C5 remains the failed predecessor: `0.1.0-canary5`, `slab-decorations-0.1.0-canary5.jar`, SHA-256 `8de706eb59bdafd5c594f5375be6485b9edb7b30b2b2017b2c8eaa44129fe480`, source checkpoint `b589e1e52825e94a41fec2932c14c5a4ba07d791`.
 
 C6 uses BGE C70's exact Stone profile source (`minecraft:stone_slab`) and the optional Sodium `LevelSlice` client snapshot bridge. Automated validation did not render a Minecraft client or load RU; its Java 25 build passed 5 focused JUnit tests and 30 headless server GameTests. The temporary, hash-verified Terrain Slabs comparison input was not retained in `originals/`.
 

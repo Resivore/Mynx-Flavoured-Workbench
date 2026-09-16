@@ -12,7 +12,7 @@
     ]
   },
   "definition": {
-    "lifecycle": "TESTING",
+    "lifecycle": "ACTIVE",
     "goals": [
       "Give structurally eligible dry upward- and ceiling-supported foliage directional canonical-parent placement and survival parity on exact native horizontal Nibaru slabs while preserving vanilla block/state identity, lifecycle, growth, harvesting, cleanup, and coherent half-height geometry.",
       "Delegate bonemeal on exact dry bottom native Nibaru slabs for canonical Grass Block, Moss Block, and Pale Moss Block through the corresponding Minecraft 26.2 substrate implementation without broadening material or geometry ownership."
@@ -108,7 +108,7 @@
     ]
   },
   "state": {
-    "milestone": "C6 is the focused C5 runtime-fix successor. Its optional Sodium LevelSlice snapshot bridge supplies the owning ClientLevel to the same read-only render offset projection used by vanilla RenderSectionRegion snapshots, while BGE C70 explicitly assigns minecraft:stone_slab to Stone's profile and C6 accepts that exact effective source only when no native BGE slab exists. C5 user-reported failures are preserved: RU Tassel/Clover appeared about 0.5 high, ceiling foliage about 0.5 low, and Cave Vines/RU Dropleaf placed under full Stone but not its slab; no broader RU claim is inferred. Java 25 controlled validation passed 5/5 JUnit tests and 30 server GameTests, but client rendering, RU fixture behavior, and real save/reload remain untested. C6 is TESTING, NOT_DEPLOYED, RUNTIME_UNTESTED, and unaccepted.",
+    "milestone": "C6 is the focused C5 runtime-fix successor. Its optional Sodium LevelSlice snapshot bridge supplies the owning ClientLevel to the same read-only render offset projection used by vanilla RenderSectionRegion snapshots, while BGE C70 explicitly assigns minecraft:stone_slab to Stone's profile and C6 accepts that exact effective source only when no native BGE slab exists. C5 user-reported failures are preserved: RU Tassel/Clover appeared about 0.5 high, ceiling foliage about 0.5 low, and Cave Vines/RU Dropleaf placed under full Stone but not its slab; no broader RU claim is inferred. Java 25 controlled validation passed 5/5 JUnit tests and 30 server GameTests, but client rendering, RU fixture behavior, and real save/reload remain untested. C6 is ACTIVE, NOT_DEPLOYED, RUNTIME_UNTESTED, and unaccepted.",
     "releases": {
       "current": {
         "version": "0.1.0-canary6",
@@ -136,11 +136,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 6,
-    "activity_at": "2026-09-16T06:51:57Z",
-    "updated_at": "2026-09-16T06:51:57Z",
-    "last_codex_at": "2026-09-16T06:51:57Z",
-    "source_commit": "b589e1e52825e94a41fec2932c14c5a4ba07d791",
+    "revision": 7,
+    "activity_at": "2026-09-16T15:08:47Z",
+    "updated_at": "2026-09-16T15:08:47Z",
+    "last_codex_at": "2026-09-16T15:08:47Z",
+    "source_commit": "b137377b6f54fd7e5cc6d621f815d09187a30912",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null

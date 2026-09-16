@@ -244,7 +244,7 @@ class WorkbenchDashboardTests(unittest.TestCase):
             self.assertIsNone(record.jar_mtime_ns)
             self.assertIn("not a JAR", record.jar_note)
 
-    def test_server_release_states_and_accepted_current_rule(self) -> None:
+    def test_server_release_states_require_exact_deployed_identity(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             current = write_project(root, "current", "Current", current=release("canary7", "current.jar", "1" * 64))
@@ -259,7 +259,7 @@ class WorkbenchDashboardTests(unittest.TestCase):
                 },
             )
             states = {record.name: record.server_status for record in records}
-            self.assertEqual(states, {"Current": "CURRENT", "Outdated": "OUTDATED", "Absent": "NOT_DEPLOYED", "Accepted": "CURRENT"})
+            self.assertEqual(states, {"Current": "CURRENT", "Outdated": "OUTDATED", "Absent": "NOT_DEPLOYED", "Accepted": "NOT_DEPLOYED"})
 
     def test_new_current_release_makes_preserved_deployment_outdated_by_version_or_sha(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
@@ -352,45 +352,70 @@ class WorkbenchDashboardTests(unittest.TestCase):
     def test_current_release_canary_uses_embedded_version_then_artifact_filename(self) -> None:
         embedded = release("release label", "unrelated.jar")
         embedded["embedded_version"] = "0.1.0-canary12"
-        self.assertEqual(dashboard.canary_number_for_release(embedded), 12)
+        self.assertEqual(dashboard.canary_number_for_release("ordinary", embedded), 12)
         filename = release("release label", "project-0.1.0-canary13.jar")
-        self.assertEqual(dashboard.canary_number_for_release(filename), 13)
+        self.assertEqual(dashboard.canary_number_for_release("ordinary", filename), 13)
 
-    def test_current_main_canary_artifacts_resolve_to_compact_canary_labels(self) -> None:
-        statuses = dashboard.load_repository_statuses(Path(__file__).resolve().parents[1])
-        non_canary_project_ids = {
-            "building-but-better",
-            "matcha-noxious-redstone",
-            "ribbit-villagers",
-            "workbench-test-marker",
-            "yungs-api-26.2",
+    def test_current_main_legacy_canary_display_overrides_are_exactly_bound(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        expected = {
+            "building-but-better": "C8",
+            "yungs-api-26.2": "C2",
+            "workbench-test-marker": "C2",
+            "matcha-noxious-redstone": "C3",
+            "ribbit-villagers": "C2",
         }
-        observed_non_canary: set[str] = set()
-        for _, (_, manifest) in statuses.items():
+        manifests = [
+            dashboard.load_json(root / "projects" / project_id / "WORKBENCH_STATUS.json")
+            for project_id in expected
+            if project_id != "ribbit-villagers"
+        ]
+        manifests.append(dashboard.load_json(root / "resourcepacks" / "ribbit-villagers" / "WORKBENCH_STATUS.json"))
+        for manifest in manifests:
             current = manifest["state"]["releases"]["current"]
-            if current is None or current["artifact"] is None:
-                continue
-            project_id = manifest["identity"]["project_id"]
-            number = dashboard.canary_number_for_release(current)
-            if number is None:
-                observed_non_canary.add(project_id)
-            else:
-                self.assertEqual(f"C{number}", dashboard._project_payload(
-                    dashboard.DashboardProject(
-                        uuid=manifest["identity"]["uuid"],
-                        project_id=project_id,
-                        name=manifest["identity"]["name"],
-                        lifecycle=manifest["definition"]["lifecycle"],
-                        current_version=current["version"],
-                        jar_mtime_ns=None,
-                        jar_mtime_iso=None,
-                        jar_note="Fixture.",
-                        server_status="NOT_DEPLOYED",
-                        deployed_release=None,
-                        current_canary=number,
-                    )
-                )["versionDisplay"])
-        self.assertEqual(observed_non_canary, non_canary_project_ids)
+            number = dashboard.canary_number_for_release(manifest["identity"]["uuid"], current)
+            self.assertEqual(f"C{number}", expected[manifest["identity"]["project_id"]])
+
+    def test_changed_override_identity_requires_a_new_override_or_canary(self) -> None:
+        uuid = "5d42f47f-b006-4125-840d-dec0d2728afa"
+        stale = release("2.0pre4+26.2-pale-oak-dev.7", "bbb.jar", "f" * 64)
+        with self.assertRaisesRegex(dashboard.DashboardError, "override no longer matches"):
+            dashboard.canary_number_for_release(uuid, stale)
+        successor = release("C9", "bbb.jar", "f" * 64)
+        self.assertEqual(dashboard.canary_number_for_release(uuid, successor), 9)
+
+    def test_current_main_lifecycles_server_identity_and_no_testing_group(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        paths = [
+            root / "projects" / project_id / "WORKBENCH_STATUS.json"
+            for project_id in ("mynx-regions-unexplored", "slab-decorations", "block-geometry-extensions")
+        ]
+        statuses = {
+            manifest["identity"]["uuid"]: (path, manifest)
+            for path in paths
+            for manifest in [dashboard.load_json(path)]
+        }
+        server_state = dashboard.load_json(root / dashboard.SERVER_STATE_FILENAME)["projects"]
+        records = dashboard.build_project_records(statuses, server_state)
+        by_id = {record.project_id: record for record in records}
+        self.assertEqual(by_id["mynx-regions-unexplored"].lifecycle, "ACTIVE")
+        self.assertEqual(by_id["slab-decorations"].lifecycle, "ACTIVE")
+        bge = by_id["block-geometry-extensions"]
+        self.assertEqual(bge.lifecycle, "ACCEPTED")
+        self.assertEqual(bge.current_version, "C70 (Stone Native Slab; embedded 4.2.14-bge.canary70.stone-native-slab+26.2)")
+        self.assertEqual(bge.server_status, "CURRENT")
+        self.assertEqual(bge.deployed_release, dashboard.canonical_release_identity(
+            statuses[bge.uuid][1]["state"]["releases"]["current"]
+        ))
+        all_manifests = [
+            dashboard.load_json(path)
+            for container in ("projects", "resourcepacks")
+            for path in (root / container).glob("*/WORKBENCH_STATUS.json")
+        ]
+        self.assertFalse(any(manifest["definition"]["lifecycle"] == "TESTING" for manifest in all_manifests))
+        html = dashboard.render_dashboard(records, generated_at=datetime(2026, 9, 16, 5, 10, tzinfo=timezone.utc))
+        payload = json.loads(re.search(r'<script type="application/json" id="dashboard-data">(.*?)</script>', html, re.DOTALL).group(1))  # type: ignore[union-attr]
+        self.assertFalse(any(project["lifecycle"] == "TESTING" for project in payload["projects"]))
 
     def test_bootstrap_icons_are_inlined_from_the_vendored_sprite(self) -> None:
         html = dashboard.render_dashboard([model("Alpha", "ACTIVE")])
@@ -409,6 +434,7 @@ class WorkbenchDashboardTests(unittest.TestCase):
         self.assertIn('col.server { width: 19%; }', html)
         self.assertIn('thead th:not(:first-child) .sort-button { justify-content: center;', html)
         self.assertIn('>Version <span class="sort-indicator"', html)
+        self.assertIn('.group-chevron { width: 10px; margin-right: 10px;', html)
 
     def test_dynamic_icons_use_svg_namespace_aware_construction(self) -> None:
         source = (Path(__file__).resolve().parents[1] / "tools" / "workbench_dashboard.py").read_text(encoding="utf-8")

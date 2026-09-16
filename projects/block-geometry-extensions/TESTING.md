@@ -1,8 +1,8 @@
-# BGE C69 accepted runtime evidence and regression procedure
+# BGE C70 accepted release and regression procedure
 
-Exact accepted C69: `cnm-nibaru-integration-4.2.13-bge.canary69.bbb-beam-standard-axis+26.2.jar`, SHA-256 `202eecc72f77745617b0d34ebfb7c58d3369300aeb12e8300309ae1fad39ec52`, embedded version `4.2.13-bge.canary69.bbb-beam-standard-axis+26.2`, source checkpoint `f798f4179a079baa235717674f32b88ecb27689f`. The user explicitly reported an aggregate Minecraft runtime **PASS** and accepted this exact identity. No row-level observations were supplied, so none are inferred. This evidence is external/user-reported: no managed deployment, Test Slot operation, profile access, or Minecraft launch by Codex is claimed; deployment remains `NOT_DEPLOYED`. C68 is now the rollback/previous-known-good release.
+Exact accepted C70: `cnm-nibaru-integration-4.2.14-bge.canary70.stone-native-slab+26.2.jar`, SHA-256 `d304552e29e76c4165675415215439ac2d73b5a6ebc4abc9787f0fa1124cf266`, embedded version `4.2.14-bge.canary70.stone-native-slab+26.2`, source checkpoint `f798f4179a079baa235717674f32b88ecb27689f`. It is accepted by explicit owner direction with its existing 108/108 controlled GameTests; no runtime PASS is supplied or inferred, and deployment remains `NOT_DEPLOYED`. C69 is the exact rollback/predecessor provenance release; its historical user-reported aggregate PASS remains bound to C69 only.
 
-C69 retains its Java 25 build, archive checks, and 107/107 Minecraft 26.2 GameTests as controlled validation, separate from the reported gameplay PASS. Use only the dedicated Matcha Flavoured 26.2 Workbench for future regression testing. Never use or modify the protected Matcha Flavoured 26.1.2 profile.
+Use only the dedicated Matcha Flavoured 26.2 Workbench for future regression testing. Never use or modify the protected Matcha Flavoured 26.1.2 profile.
 
 ## Manual checks
 

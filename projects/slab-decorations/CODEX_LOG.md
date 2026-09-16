@@ -59,3 +59,13 @@
 - Artifact: Current/unaccepted C6 is `slab-decorations-0.1.0-canary6.jar`, 51,315 bytes, SHA-256 `289330c35e79469d147bc8243f6ff69cb2e2f673e65055e6297219bb24219863`, source checkpoint `b589e1e52825e94a41fec2932c14c5a4ba07d791`; C5 remains the exact failed predecessor.
 - Result: TESTING — controlled validation passed; focused Minecraft client/runtime matrix remains required.
 - Next state: Run the C6 runtime matrix in `TESTING.md` and record only exact observed outcomes.
+
+## 2026-09-16T15:08:47Z — Set Slab Decorations active by owner direction
+- Revision: 7
+- Source checkpoint: `b137377b6f54fd7e5cc6d621f815d09187a30912`
+- Changes: Changed only the canonical lifecycle from TESTING to ACTIVE and corrected current milestone/testing wording. Current unaccepted C6, predecessor facts, and validation classifications are unchanged.
+- Build/static: No build was run; existing controlled-validation evidence is preserved.
+- Runtime: No runtime result was added or inferred. C6 remains RUNTIME_UNTESTED and NOT_DEPLOYED.
+- Artifact: Unchanged current `slab-decorations-0.1.0-canary6.jar`, SHA-256 `289330c35e79469d147bc8243f6ff69cb2e2f673e65055e6297219bb24219863`.
+- Result: ACTIVE / CONTROLLED_VALIDATION_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED.
+- Next state: Keep the focused C6 runtime procedure available and record only exact observed outcomes.

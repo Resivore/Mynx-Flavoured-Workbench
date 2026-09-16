@@ -1,6 +1,13 @@
 {
   "schema_version": 2,
   "projects": {
+    "4b2342fc-7bdf-5ba6-9f37-d551109d214c": {
+      "version": "C70 (Stone Native Slab; embedded 4.2.14-bge.canary70.stone-native-slab+26.2)",
+      "artifact": {
+        "filename": "cnm-nibaru-integration-4.2.14-bge.canary70.stone-native-slab+26.2.jar",
+        "sha256": "d304552e29e76c4165675415215439ac2d73b5a6ebc4abc9787f0fa1124cf266"
+      }
+    },
     "1f7b4c28-008c-4b3f-91e5-f1d16b638afb": {
       "version": "0.1.0+26.2-canary1",
       "artifact": {

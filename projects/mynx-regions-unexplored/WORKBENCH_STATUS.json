@@ -10,7 +10,7 @@
     "legacy_ids": []
   },
   "definition": {
-    "lifecycle": "TESTING",
+    "lifecycle": "ACTIVE",
     "goals": [
       "Preserve sixteen selected Regions Unexplored plants as focused Minecraft Java 26.2 Fabric content without a runtime dependency on Regions Unexplored.",
       "Retain reference gameplay, assets and practical shader movement where target APIs permit, with narrow compatibility repairs and explicit 26.2 additions."
@@ -58,7 +58,7 @@
     ]
   },
   "state": {
-    "milestone": "Current 0.1.0+26.2-canary4 is awaiting runtime confirmation of the clover tint-index repair. It retains the exact original RU grayscale clover textures and applies biome grass tint to both the bed (index 0) and stems (index 1). Accepted Canary 3 remains the exact rollback/provenance release; no deployment or profile operation was performed for Canary 4.",
+    "milestone": "Current 0.1.0+26.2-canary4 is ACTIVE while runtime confirmation of the clover tint-index repair remains pending. It retains the exact original RU grayscale clover textures and applies biome grass tint to both the bed (index 0) and stems (index 1). Accepted Canary 3 remains the exact rollback/provenance release; no deployment or profile operation was performed for Canary 4.",
     "releases": {
       "current": {
         "version": "0.1.0+26.2-canary4",
@@ -96,11 +96,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 5,
-    "activity_at": "2026-09-16T14:49:14Z",
-    "updated_at": "2026-09-16T14:49:14Z",
-    "last_codex_at": "2026-09-16T14:49:14Z",
-    "source_commit": "fb900d06b4a65b09f6458db8ec00e3c54c558db5",
+    "revision": 6,
+    "activity_at": "2026-09-16T15:08:47Z",
+    "updated_at": "2026-09-16T15:08:47Z",
+    "last_codex_at": "2026-09-16T15:08:47Z",
+    "source_commit": "b137377b6f54fd7e5cc6d621f815d09187a30912",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null

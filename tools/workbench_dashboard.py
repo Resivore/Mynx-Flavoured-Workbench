@@ -52,6 +52,36 @@ DASHBOARD_ICON_NAMES = frozenset(
 SERVER_STATES = {"CURRENT", "OUTDATED", "NOT_DEPLOYED"}
 LIFECYCLE_ORDER = ("ACTIVE", "PLANNED", "ACCEPTED", "TESTING", "BLOCKED", "PARKED")
 LIFECYCLE_PRIORITY = {lifecycle: index for index, lifecycle in enumerate(LIFECYCLE_ORDER)}
+# Presentation-only labels for legacy/nonstandard canonical versions.  Each
+# record is pinned to the complete current release identity, so a successor
+# cannot inherit a plausible-looking but stale Canary number.
+CANARY_DISPLAY_OVERRIDES: dict[str, dict[str, str | int]] = {
+    "5d42f47f-b006-4125-840d-dec0d2728afa": {
+        "version": "2.0pre4+26.2-pale-oak-dev.6",
+        "sha256": "0d54034725c3e354515c78bcee32ab2cb5ce764a33e0602419e26c78aaef8c5a",
+        "canary": 8,
+    },
+    "97d76c44-7c17-4b36-be84-57525f884e40": {
+        "version": "26.2-Fabric-6.1.1-compat.2",
+        "sha256": "ff22a6b509ba559988d7a9352dc94ac612c4b099517acac7da7c81322d797ed7",
+        "canary": 2,
+    },
+    "6cb36c64-0780-5343-9fef-66cbb686cfc2": {
+        "version": "0.2.0",
+        "sha256": "9147664302721976461dbbc1064260fc4309575182a8b050458d0446eafec6a6",
+        "canary": 2,
+    },
+    "0b54727d-db44-57dd-aa66-424ce93bb0c3": {
+        "version": "0.2.1",
+        "sha256": "31e6f1fae99bfc787ed91fabc33e8b7cf258f1deda4dbe0f000e693eae3d7c3d",
+        "canary": 3,
+    },
+    "71ae25e0-3ebe-4108-a17e-931ba98b8dea": {
+        "version": "2",
+        "sha256": "331ee9d0857aded60f7720ee7b32bdec3e339e5f4cc7300f6c61f7926b7b0453",
+        "canary": 2,
+    },
+}
 CHUNK_SIZE = 1024 * 1024
 WINDOWS_REPARSE_POINT = 0x400
 
@@ -125,14 +155,33 @@ def canary_number(version: str | None) -> int | None:
     return resolve_canary_number(version)
 
 
-def canary_number_for_release(current_release: Mapping[str, Any] | None) -> int | None:
-    """Resolve a current release's visible Canary without altering its identity."""
+def canary_number_for_release(
+    project_uuid: str,
+    current_release: Mapping[str, Any] | None,
+) -> int | None:
+    """Resolve a release's visible Canary, with guarded legacy overrides.
+
+    A changed bound release first gets the ordinary parser.  If that cannot
+    determine a Canary, fail instead of retaining the old display mapping.
+    """
 
     if current_release is None:
         return None
     artifact = current_release.get("artifact")
     filename = artifact.get("filename") if isinstance(artifact, Mapping) else None
-    return resolve_canary_number(current_release.get("version"), current_release.get("embedded_version"), filename)
+    ordinary = resolve_canary_number(current_release.get("version"), current_release.get("embedded_version"), filename)
+    if ordinary is not None:
+        return ordinary
+    override = CANARY_DISPLAY_OVERRIDES.get(project_uuid)
+    if override is None:
+        return None
+    checksum = artifact.get("sha256") if isinstance(artifact, Mapping) else None
+    if current_release.get("version") == override["version"] and checksum == override["sha256"]:
+        return int(override["canary"])
+    raise DashboardError(
+        f"{project_uuid}: Canary display override no longer matches the current release; "
+        "add a new bounded override or use a canonical Canary version"
+    )
 
 
 def server_pill_label(server_status: str, deployed_release: Mapping[str, Any] | None) -> str:
@@ -350,9 +399,7 @@ def build_project_records(
         deployed_release = server_state.get(project_uuid)
         if deployed_release is not None:
             deployed_release = _release_identity(deployed_release, f"server state for {project_uuid}")
-        if lifecycle == "ACCEPTED" and current_identity is not None:
-            server_status = "CURRENT"
-        elif deployed_release is None:
+        if deployed_release is None:
             server_status = "NOT_DEPLOYED"
         elif deployed_release == current_identity:
             server_status = "CURRENT"
@@ -370,7 +417,7 @@ def build_project_records(
                 jar_note=jar_note,
                 server_status=server_status,
                 deployed_release=deployed_release,
-                current_canary=canary_number_for_release(current),
+                current_canary=canary_number_for_release(project_uuid, current),
             )
         )
     return sort_projects_default(projects)
@@ -865,7 +912,7 @@ HTML_TEMPLATE = r'''<!doctype html>
       text-align: left;
     }
     .group-button:hover { background: rgba(255, 255, 255, 0.025); }
-    .group-chevron { width: 18px; color: var(--muted); font-size: 0.9rem; transform: rotate(0deg); }
+    .group-chevron { width: 10px; margin-right: 10px; color: var(--muted); font-size: 0.9rem; transform: rotate(0deg); }
     .group-button[aria-expanded="false"] .group-chevron { transform: rotate(-90deg); }
     .group-count { margin-left: 9px; color: var(--muted); font-weight: 600; letter-spacing: 0; text-transform: none; }
     .life-ACTIVE { --group-color: var(--active); }
