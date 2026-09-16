@@ -1207,6 +1207,7 @@ public final class WorkCoordinator {
             if (barrel != null && containsFish(owned)) {
                 int attempted = fishCount(owned);
                 int inserted = deposit(owned, barrel, false);
+                if (inserted > 0) presentFishDeposit(villager, level, site);
                 if (inserted > 0 || villager.tickCount >= state.nextDepositLog) {
                     log(villager, "fish deposit claimedBarrel={} attempted={} inserted={} retained={}",
                             site, attempted, inserted, fishCount(owned));
@@ -1442,6 +1443,16 @@ public final class WorkCoordinator {
         for (int i = 0; i < owned.getContainerSize(); i++)
             if (isFish(owned.getItem(i))) count += owned.getItem(i).getCount();
         return count;
+    }
+
+    /** Gives a successful claimed-barrel transfer one compact, server-authoritative interaction cue. */
+    private static void presentFishDeposit(Villager villager, ServerLevel level, BlockPos barrel) {
+        villager.getLookControl().setLookAt(Vec3.atCenterOf(barrel));
+        villager.swing(InteractionHand.MAIN_HAND);
+        level.playSound(null, barrel, SoundEvents.BARREL_OPEN, SoundSource.BLOCKS, 0.75f, 1.0f);
+        level.sendParticles(ParticleTypes.HAPPY_VILLAGER, barrel.getX() + 0.5, barrel.getY() + 0.7,
+                barrel.getZ() + 0.5, 5, 0.22, 0.20, 0.22, 0.01);
+        level.gameEvent(villager, GameEvent.BLOCK_OPEN, barrel);
     }
 
     private static void ambient(Villager villager, BlockPos site, State state) {

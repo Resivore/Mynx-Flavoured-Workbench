@@ -15,7 +15,7 @@ class FishingRodPoseTest {
         assertTrue(east.isFinite());
         assertTrue(south.z() > 20.8, "yaw zero faces south/+Z");
         assertTrue(east.x() > 10.8, "yaw -90 faces east/+X");
-        assertEquals(65.58, south.y(), 0.000001);
+        assertEquals(65.82, south.y(), 0.000001);
     }
 
     @Test void invalidInputsNeverProduceAUsableLineOrigin() {

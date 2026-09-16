@@ -10,6 +10,8 @@ import java.util.List;
 public final class FishingLineGeometry {
     public static final int SEGMENT_COUNT = 16;
     private static final float MIN_NORMAL_LENGTH_SQUARED = 1.0e-8f;
+    /** The top surface of the 0.25-block square bobber sprite. */
+    private static final float BOBBER_ATTACHMENT_HEIGHT = 0.125f;
 
     private FishingLineGeometry() {}
 
@@ -29,6 +31,9 @@ public final class FishingLineGeometry {
      */
     public static List<Segment> segments(float endX, float endY, float endZ) {
         if (!Float.isFinite(endX) || !Float.isFinite(endY) || !Float.isFinite(endZ)) return List.of();
+        float endpointLengthSquared = endX * endX + endY * endY + endZ * endZ;
+        if (!Float.isFinite(endpointLengthSquared) || endpointLengthSquared <= MIN_NORMAL_LENGTH_SQUARED)
+            return List.of();
 
         List<Segment> result = new ArrayList<>(SEGMENT_COUNT);
         for (int index = 0; index < SEGMENT_COUNT; index++) {
@@ -54,7 +59,8 @@ public final class FishingLineGeometry {
 
     private static Point pointAt(float endX, float endY, float endZ, float fraction) {
         return new Point(endX * fraction,
-                endY * (fraction * fraction + fraction) * 0.5f + 0.25f,
+                BOBBER_ATTACHMENT_HEIGHT + (endY - BOBBER_ATTACHMENT_HEIGHT)
+                        * (fraction * fraction + fraction) * 0.5f,
                 endZ * fraction);
     }
 }

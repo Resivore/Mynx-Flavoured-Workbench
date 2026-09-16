@@ -12,8 +12,8 @@ class FishingLineGeometryTest {
         List<FishingLineGeometry.Segment> segments = FishingLineGeometry.segments(4.0f, 2.0f, -3.0f);
 
         assertEquals(FishingLineGeometry.SEGMENT_COUNT, segments.size());
-        assertPoint(segments.getFirst().start().position(), 0.0f, 0.25f, 0.0f);
-        assertPoint(segments.getLast().end().position(), 4.0f, 2.25f, -3.0f);
+        assertPoint(segments.getFirst().start().position(), 0.0f, 0.125f, 0.0f);
+        assertPoint(segments.getLast().end().position(), 4.0f, 2.0f, -3.0f);
         assertFinite(segments);
     }
 

@@ -6,9 +6,9 @@ package dev.resivore.villagerwork;
  * villager model while the rod and line still agree on a stable physical direction.
  */
 public final class FishingRodPose {
-    private static final double TIP_FORWARD = 0.96;
+    private static final double TIP_FORWARD = 1.10;
     private static final double TIP_RIGHT = 0.10;
-    private static final double TIP_HEIGHT = 1.58;
+    private static final double TIP_HEIGHT = 1.82;
 
     private FishingRodPose() {}
 
