@@ -11,7 +11,7 @@
   },
   "minecraft_baseline": {
     "version": "26.2",
-    "sha256": "f26880408f8c2404630293322fe5f5984e0a66409e31374ec51d29490660c1b4"
+    "sha256": "e29fddd54a12fdbb7a0ccc899ad7ce6b5167f5cbcef7c305ee3069ed7a4cc1ef"
   },
   "shader_reference": {
     "iris": "iris-fabric-1.11.2+mc26.2.jar",
