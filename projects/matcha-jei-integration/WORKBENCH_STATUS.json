@@ -24,7 +24,7 @@
       "Preserve the accepted C2 baseline: seven JEI vanilla recipe categories, ten audited Matcha recipe namespaces, 315 exact component-bearing output ingredients, and idempotent server-side recipe awards.",
       "Maintain C3's data-driven Matcha Villager Trades and Matcha Acquisition categories with 175 supported trade pages, 249 conservative acquisition pages, and 240 exact non-recipe identities.",
       "Retain the exact JEI 30.18.0.144 subtype boundary: skip all 14 JEI-owned base interpreters, use the companion-owned exact-stack bridge for 19 identities, and keep the accepted component-manifest path for the other 221.",
-      "For C4, resolve owned recipe IDs through the loaded recipe manager before catalog publication so compatibility replacements such as Blessing of Demeter remain authoritative, and rebuild Creative Search directly when vanilla's cached tab parameters would otherwise retain stale contents."
+      "Preserve C4's effective post-resolution recipe catalog so compatibility replacements such as Blessing of Demeter remain authoritative, while C5 contributes exact Matcha stacks additively and idempotently without rebuilding or clearing global Creative Search."
     ],
     "boundaries": {
       "owned_paths": [
@@ -32,7 +32,7 @@
       ],
       "exclusions": [
         "JEI patches, replacement of JEI-owned subtype interpreters, duplicate or fake vanilla recipes, and fabricated recipes for non-recipe mechanics.",
-        "Inventory, menu, slot, quick-move, general creative-validation, Trinkets, Inventory Extended, Offhand, or Carried behavior changes; C4 only contributes synchronized exact stacks to Creative Search.",
+        "Inventory, menu, slot, quick-move, general creative-validation, Trinkets, Inventory Extended, Offhand, or Carried behavior changes; C5 only contributes and replaces its own synchronized exact stacks in Creative Search.",
         "Contextual exploration-map trades, unsupported identity-changing loot functions, exact loot odds, and live villager demand, reputation, or exhaustion state.",
         "A dedicated-server-without-JEI validation claim; that runtime gate remains explicitly unperformed."
       ]
@@ -54,7 +54,7 @@
         "type": "MOD",
         "identifier": "fabric-api",
         "requirement": "0.157.0+26.2",
-        "reason": "Exact Fabric API used by the current C4 build."
+        "reason": "Exact Fabric API used by the current C5 build."
       },
       {
         "type": "DATA_PACK",
@@ -66,7 +66,7 @@
         "type": "MOD",
         "identifier": "jei",
         "requirement": "30.18.0.144 compile/test baseline (SHA-256 20bc7f0ebe5f36f84c8c4d571469968be54a6e1989b4e85a736136dc41ea8fe2); packaged metadata recommends >=30.18.0",
-        "reason": "The stable optional JEI client capability remains unpinned at runtime; the exact compile/test baseline preserves C4's audited vanilla categories and subtype boundary."
+        "reason": "The stable optional JEI client capability remains unpinned at runtime; the exact compile/test baseline preserves C5's audited vanilla categories and subtype boundary."
       },
       {
         "type": "TOOL",
@@ -83,16 +83,16 @@
     ]
   },
   "state": {
-    "milestone": "C4 is an unaccepted static-pass successor with a shared effective exact catalog for JEI and Creative Search. The user-reported external aggregate runtime PASS remains bound only to exact accepted C3 in Stack v10; C2 remains rollback/provenance, and the dedicated-server-without-JEI gate remains unperformed.",
+    "milestone": "Exact C4 has a user-reported external runtime FAIL: while C4 was active, global Creative Search became severely incomplete and could not find Crafting Table; the same Polymer duplicate-tab errors were present but nonfatal without C4. C5 preserves C4's effective catalog and JEI behavior while replacing only Matcha-owned exact Search entries without a global rebuild. C5 is static-pass and runtime-untested; accepted C3's external PASS remains bound only to C3, C2 remains rollback/provenance, and the dedicated-server-without-JEI gate remains unperformed.",
     "releases": {
       "current": {
-        "version": "C4 (0.3.0-effective-catalog-canary4)",
-        "embedded_version": "0.3.0-effective-catalog-canary4",
+        "version": "C5 (0.3.1-safe-search-canary5)",
+        "embedded_version": "0.3.1-safe-search-canary5",
         "artifact": {
-          "filename": "matcha-jei-integration-0.3.0-effective-catalog-canary4.jar",
-          "sha256": "b2a071b4b9b329fa10ccdfd1a4fddd3808a529f0985ce56f70c98861bedcf8dd"
+          "filename": "matcha-jei-integration-0.3.1-safe-search-canary5.jar",
+          "sha256": "70b46cb64610b883d0981514672e49a1c700062bad18800dc51e409f579a9e4b"
         },
-        "source_commit": "af145152e425834f55ba279d9509abf51fc17e7c",
+        "source_commit": "1924b7aeccbc3e561d91cd4b4447cb3277d5a67e",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
@@ -125,11 +125,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 4,
-    "activity_at": "2026-09-16T01:31:22Z",
-    "updated_at": "2026-09-16T01:31:22Z",
-    "last_codex_at": "2026-09-16T01:31:22Z",
-    "source_commit": "af145152e425834f55ba279d9509abf51fc17e7c",
+    "revision": 5,
+    "activity_at": "2026-09-16T02:50:46Z",
+    "updated_at": "2026-09-16T02:50:46Z",
+    "last_codex_at": "2026-09-16T02:50:46Z",
+    "source_commit": "1924b7aeccbc3e561d91cd4b4447cb3277d5a67e",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
