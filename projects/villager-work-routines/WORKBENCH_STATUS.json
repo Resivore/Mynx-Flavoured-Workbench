@@ -38,12 +38,12 @@
     ]
   },
   "state": {
-    "milestone": "C7 has user-reported external startup FAIL evidence for exact `0.1.0-canary7`, `villager-work-routines-0.1.0-canary7.jar`, SHA-256 `2ea2f9f9e2e44e357af8fad1643c76ff83958a290c8e7213ea932e4923561f4f`, source `a1c0d7c4dd5e7515179da3474269e2db7c800829`: its new `VillagerRendererMixin` could not apply because it shadowed `addLayer(RenderLayer)` as though declared on `VillagerRenderer`; the actual 26.2 declaration is inherited from `LivingEntityRenderer`. Startup therefore prevented meaningful C7 Fisherman runtime validation. This does not invalidate the retained C5 Shepherd PASS or C6's successful Fisherman cycle portions. C8 retains the C7 state extraction, isolated rod presentation, and all Fisherman lifecycle fixes, while registering the villager-only rod layer through Fabric Rendering v1's `LivingEntityRenderLayerRegistrationCallback`; clean static validation and the mapped-hierarchy regression test pass. C8 runtime validation remains user-managed.",
+    "milestone": "C7 has user-reported external startup FAIL evidence for exact `0.1.0-canary7`, `villager-work-routines-0.1.0-canary7.jar`, SHA-256 `2ea2f9f9e2e44e357af8fad1643c76ff83958a290c8e7213ea932e4923561f4f`, source `a1c0d7c4dd5e7515179da3474269e2db7c800829`: its new `VillagerRendererMixin` could not apply because it shadowed `addLayer(RenderLayer)` as though declared on `VillagerRenderer`; the actual 26.2 declaration is inherited from `LivingEntityRenderer`. Startup therefore prevented meaningful C7 Fisherman runtime validation. This does not invalidate the retained C5 Shepherd PASS or C6's successful Fisherman cycle portions. C8 user-reported external runtime evidence confirms the Fisherman otherwise functions, but is an overall FAIL for the exact C8 artifact because its fishing rod was generally invisible, appeared upside down only for one frame after leaving pause, and the villager wandered while its line was cast. C9 replaces transient fishing-rod equipment with a bobber-owned custom stick presentation and holds a Fisherman at its selected bank for the live-cast interval. C9 runtime validation remains user-managed.",
     "releases": {
       "current": {
-        "version": "0.1.0-canary8",
-        "artifact": {"filename": "villager-work-routines-0.1.0-canary8.jar", "sha256": "afac65daa62f29b2f47e9fd6d0bba4e52697e58e90149b0cb243e2d4aabcb424"},
-        "source_commit": "e56a9486219f6a52254a8e138b595bfabb6a37f5",
+        "version": "0.1.0-canary9",
+        "artifact": {"filename": "villager-work-routines-0.1.0-canary9.jar", "sha256": "8644d7f630da5fa1be96d5923994271f4dc5a0581254f8ec1ee83ddb564efa0c"},
+        "source_commit": "e2a4a6802698727d59110ead51b9b333df3c82da",
         "runtime_dependency_policy": {"contract": "CAPABILITY_OR_PROVIDER", "exceptions": []}
       },
       "accepted": null,
@@ -55,11 +55,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 8,
-    "activity_at": "2026-09-16T03:01:36Z",
-    "updated_at": "2026-09-16T03:01:36Z",
-    "last_codex_at": "2026-09-16T03:01:36Z",
-    "source_commit": "e56a9486219f6a52254a8e138b595bfabb6a37f5",
+    "revision": 9,
+    "activity_at": "2026-09-16T03:23:30Z",
+    "updated_at": "2026-09-16T03:23:30Z",
+    "last_codex_at": "2026-09-16T03:23:30Z",
+    "source_commit": "e2a4a6802698727d59110ead51b9b333df3c82da",
     "google_sheet": {"participates": true, "exclusion_reason": null}
   }
 }
