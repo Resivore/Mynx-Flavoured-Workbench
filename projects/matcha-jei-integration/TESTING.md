@@ -1,6 +1,6 @@
 # Testing
 
-Current C6 candidate: `matcha-jei-integration-0.3.2-canonical-food-discovery-canary6.jar`. It is `STATIC_PASS`, `NOT_DEPLOYED`, and `RUNTIME_UNTESTED`: no managed deployment, Minecraft launch, or user runtime result has been recorded for this exact release. Its exact byte size, SHA-256, and source checkpoint are recorded in the canonical status and task log.
+Current C6 candidate: `matcha-jei-integration-0.3.2-canonical-food-discovery-canary6.jar`, 83,567 bytes, SHA-256 `5a0cd106589513b59faa6daeceb03133da71f22051356a33767342ab2ade088e`, source checkpoint `e016421530f1f1b47ff43632fb69cd73d56f5bbd`. It is `STATIC_PASS`, `NOT_DEPLOYED`, and `RUNTIME_UNTESTED`: no managed deployment, Minecraft launch, or user runtime result has been recorded for this exact release.
 
 Exact predecessor C4 `matcha-jei-integration-0.3.0-effective-catalog-canary4.jar`, SHA-256 `b2a071b4b9b329fa10ccdfd1a4fddd3808a529f0985ce56f70c98861bedcf8dd`, source `af145152e425834f55ba279d9509abf51fc17e7c`, has a user-reported external runtime `FAIL`: with C4 active, global Creative Search was severely incomplete and could not find ordinary vanilla items including Crafting Table. That result belongs only to C4. C5 was a safe-search successor and remains `RUNTIME_UNTESTED`; this C6 request is not evidence that C5 failed.
 

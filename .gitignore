@@ -12,6 +12,7 @@ __pycache__/
 /projects/dragonbound-waystone/artifacts/dragonbound-waystone-0.1.0-canary10.jar
 /projects/dragonbound-waystone/artifacts/dragonbound-waystone-0.1.0-canary11.jar
 /projects/dragonbound-waystone/artifacts/dragonbound-waystone-0.1.0-canary12.jar
+/projects/matcha-jei-integration/artifacts/matcha-jei-integration-0.3.2-canonical-food-discovery-canary6.jar
 build/
 dist/
 runtime-state.local.json
