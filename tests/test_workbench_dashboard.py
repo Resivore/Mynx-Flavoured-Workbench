@@ -410,6 +410,17 @@ class WorkbenchDashboardTests(unittest.TestCase):
         self.assertIn('thead th:not(:first-child) .sort-button { justify-content: center;', html)
         self.assertIn('>Version <span class="sort-indicator"', html)
 
+    def test_dynamic_icons_use_svg_namespace_aware_construction(self) -> None:
+        source = (Path(__file__).resolve().parents[1] / "tools" / "workbench_dashboard.py").read_text(encoding="utf-8")
+        icon_helper = re.search(r"function icon\(name\) \{(?P<body>.*?)\n      \}", source, re.DOTALL)
+        self.assertIsNotNone(icon_helper)
+        helper = icon_helper.group("body")  # type: ignore[union-attr]
+        self.assertIn('const SVG_NS = "http://www.w3.org/2000/svg";', source)
+        self.assertIn('document.createElementNS(SVG_NS, "svg")', helper)
+        self.assertIn('svg.setAttribute("class", "bi")', helper)
+        self.assertIn("svg.innerHTML = definition.body", helper)
+        self.assertNotIn('element("svg"', helper)
+
     def test_generated_dashboard_embeds_full_cup_and_leaf_svg_favicon(self) -> None:
         html = dashboard.render_dashboard([model("Alpha", "ACTIVE")])
         match = re.search(r'<link rel="icon" type="image/svg\+xml" href="([^"]+)">', html)
@@ -418,9 +429,10 @@ class WorkbenchDashboardTests(unittest.TestCase):
         self.assertTrue(href.startswith("data:image/svg+xml,"))
         favicon = unquote(href.removeprefix("data:image/svg+xml,"))
         self.assertEqual(favicon, dashboard.DASHBOARD_FAVICON_SVG)
+        self.assertIn('fill="#edf4ef" d="M8 25h27v11H8zM11 36h23v5H11z"', favicon)
+        self.assertIn('fill="#edf4ef" d="M35 27h7v8h-7"', favicon)
         self.assertIn('fill="#70bb89"', favicon)
-        self.assertIn('fill="#0c2118"', favicon)
-        self.assertIn('stroke="#9bc5aa"', favicon)
+        self.assertNotIn('fill="#0c2118"', favicon)
         self.assertNotIn("class=", favicon)
         self.assertEqual(favicon.count("<path "), 4)
 

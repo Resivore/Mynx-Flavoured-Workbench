@@ -31,8 +31,8 @@ SERVER_STATE_FILENAME = "WORKBENCH_SERVER_STATE.json"
 BOOTSTRAP_SPRITE = ROOT / "third_party" / "bootstrap-icons" / "bootstrap-icons.svg"
 DASHBOARD_FAVICON_SVG = (
     '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">'
-    '<path fill="#0c2118" stroke="#9bc5aa" stroke-width="2" stroke-linejoin="round" d="M8 25h27v11H8zM11 36h23v5H11z"/>'
-    '<path fill="none" stroke="#9bc5aa" stroke-width="2" stroke-linejoin="round" d="M35 27h7v8h-7"/>'
+    '<path fill="#edf4ef" d="M8 25h27v11H8zM11 36h23v5H11z"/>'
+    '<path fill="#edf4ef" d="M35 27h7v8h-7"/>'
     '<path fill="#70bb89" stroke="#9bc5aa" stroke-width="1.5" stroke-linejoin="round" d="M23 23C24 12 32 7 42 9c-2 10-8 16-19 14Z"/>'
     '<path fill="none" stroke="#0c2118" stroke-width="2" stroke-linecap="round" d="m21 25 9-10"/>'
     '</svg>'
@@ -1038,6 +1038,7 @@ HTML_TEMPLATE = r'''<!doctype html>
       const serverRank = { CURRENT: 0, OUTDATED: 1, NOT_DEPLOYED: 2 };
       const sortLabels = { name: "Project", lifecycle: "Lifecycle", version: "Version", jar: "Last JAR Edit", server: "On Server" };
       const bootstrapIcons = JSON.parse(document.getElementById("bootstrap-icon-data").textContent);
+      const SVG_NS = "http://www.w3.org/2000/svg";
       const state = { lifecycle: "ALL", server: "ALL", search: "", sortKey: "default", sortDirection: "asc", collapsed: new Set() };
 
       const rowsElement = document.getElementById("project-rows");
@@ -1073,7 +1074,8 @@ HTML_TEMPLATE = r'''<!doctype html>
       }
 
       function icon(name) {
-        const svg = element("svg", "bi");
+        const svg = document.createElementNS(SVG_NS, "svg");
+        svg.setAttribute("class", "bi");
         svg.setAttribute("aria-hidden", "true");
         const definition = bootstrapIcons[name];
         svg.setAttribute("viewBox", definition.viewBox);
