@@ -24,10 +24,11 @@
       "Preserve accepted C4 storage reservations, exact ghost/zero/marker visuals, public API compatibility for QSN C9 and CCAR C12, component-exact ordinary-item reservations, generic empty portable-container templates, and server-owned specific portable-container identities without external tooltip integration."
     ],
     "scope": [
-      "Current 0.1.0-canary20 from implementation checkpoint ad41843e1095b77427bd4debfbc71d396b320b39 preserves C19's host-centered geometry, immediate host-or-panel lifetime, Creative carried-cursor synchronization, and independent header-decoration provider. It adds a narrow optional Mouse Tweaks bridge: the exact inspected MouseTweaks-fabric-mc26.2-2.31.jar (127,531 bytes, SHA-256 4592eff38a2e7af3487688e888a637a8cbd4767b46662df94d993a889102effe; mod id mousetweaks, version 2.31; no source commit embedded) exposes IMTModGuiContainer3Ex. When that provider is present, 27 transient read-only client virtual Slots participate in its supported handler API while every content mutation remains CSR's fingerprint-bound server transaction. The release neither packages the API declaration nor gains a Mouse Tweaks runtime dependency; its absent-provider path retains normal CSR input.",
+      "Current 0.1.0-canary21 from implementation checkpoint b137377b6f54fd7e5cc6d621f815d09187a30912 preserves C19's host-centered geometry, Creative carried-cursor synchronization, and independent header-decoration provider. It narrows the optional Mouse Tweaks 2.31 IMTModGuiContainer3Ex bridge to a press-time RHS latch: an occupied initial target selects COLLECTION_SOURCE, while an empty initial target with a carried stack selects DEPOSIT, and later hovered cells never reclassify that gesture. Consecutive CSR virtual actions use only copy-only shared-planner projections to send F0→F1→F2 predecessor fingerprints; actual host contents and cursor mutations remain server-authoritative. Appended SECONDARY_DEPOSIT remains deposit-only after an exhausted cursor, rejected reservation/full/nested targets leave the projection unchanged, and a post-panel native boundary resumes only after the real cursor matches the projection, otherwise failing closed. The release neither packages the API declaration nor gains a Mouse Tweaks runtime dependency; its absent-provider path retains normal CSR input.",
       "While CSR owns Slot A and remains TESTING, a finalized current CSR testing successor normally replaces the preceding CSR candidate through one serialized Test Instance Manager Slot A transition; only a concrete manager preimage, dependency, or physical-safety failure may leave that successor retained but not deployed.",
       "Bind one exact count-one shulker host by screen, menu, menu ID, visible slot index, Slot instance, underlying container slot, explicit Creative player-inventory locator where applicable, and complete SHA-256 ItemStack fingerprint; never search for an equal stack.",
-      "Render and hit-test one fixed 176x83 native panel with an unchanged 176x77 upper shulker region plus the same runtime texture's 176x6 bottom frame, 27 physical 18x18 cells, and bottom-left-at-host-center placement clamped only to the viewport. It remains open only while the pointer is over the host or panel; there is no side rail, corridor, grace frame, or pointer-capture lifetime. Without Mouse Tweaks, right-button drag acts once per newly entered panel cell. With its exact C20 compatibility provider enabled, Mouse Tweaks owns supported LMB/RMB/shift-drag gestures through the transient virtual cells, including transitions to ordinary menu Slots, and CSR consumes only covered coordinates to prevent an independent native drag; Mouse Tweaks wheel transfer wins only when it reports consumption, otherwise CSR selection scrolling remains.",
+      "Render and hit-test one fixed 176x83 native panel with an unchanged 176x77 upper shulker region plus the same runtime texture's 176x6 bottom frame, 27 physical 18x18 cells, and bottom-left-at-host-center placement clamped only to the viewport. It retains C20's host-or-panel lifetime except that an already-open panel remains available while the exact optional Mouse Tweaks RHS deposit bridge has a carried cursor or a latched gesture, enabling ordinary-slot→panel deposit; it closes again on release/cancel, stale binding, or the normal no-bridge path. Without Mouse Tweaks, right-button drag acts once per newly entered panel cell. With C21's exact optional provider enabled, Mouse Tweaks owns supported LMB/RMB/shift-drag gestures through transient virtual cells, including applicable ordinary-menu transitions, and CSR consumes only covered coordinates to prevent an independent native drag; Mouse Tweaks wheel transfer wins only when it reports consumption, otherwise CSR selection scrolling remains.",
+      "The user supplied narrow external C20 evidence: shulker contents RMB-dragged into empty ordinary inventory slots worked (PASS limited to that direction); inventory/cursor RMB-dragged into empty CSR shulker-panel cells did not work (FAIL limited to that direction). No LMB, shift-drag, wheel, reservation, or other C20 matrix result is inferred.",
       "Keep pointer hover separate from server-authoritative per-player transient selection; select and cycle only occupied cells, migrate only through the exact server-observed host-slot-to-cursor pickup, and clear on stale identity, menu close, or disconnect.",
       "Use one shared deterministic planner for native secondary-click quick insertion and exact-cell panel transfers: occupied compatible merges, matching reserved empties, then unreserved empties; deny nesting, mismatches, full/nonwritable targets, fake slots, and multi-count hosts.",
       "Derive all panel reservation templates and content transactions from live server state; payloads carry only menu/locator/index/action/fingerprint authority, preserve unrelated components and ReservationData, update real owners once, and broadcast legitimate shared viewers.",
@@ -120,21 +121,21 @@
         "type": "OTHER",
         "identifier": "mousetweaks-api-reference",
         "requirement": "Exact local upstream inspection target MouseTweaks-fabric-mc26.2-2.31.jar, 127531 bytes, SHA-256 4592eff38a2e7af3487688e888a637a8cbd4767b46662df94d993a889102effe, Fabric mod id mousetweaks version 2.31; no upstream source commit is embedded in the artifact.",
-        "reason": "C20 bytecode-contract baseline for the optional IMTModGuiContainer3Ex seam, Mouse Tweaks input hooks, virtual Slot lookup, drag behavior, and wheel dispatch. It is not bundled, redistributed, or a CSR runtime dependency."
+        "reason": "C20/C21 bytecode-contract baseline for the optional IMTModGuiContainer3Ex seam, Mouse Tweaks input hooks, virtual Slot lookup, drag behavior, and wheel dispatch. It is not bundled, redistributed, or a CSR runtime dependency."
       }
     ]
   },
   "state": {
-    "milestone": "Canary 20 is an ACTIVE successor to accepted Canary 19 for optional Mouse Tweaks 2.31 carried-shulker-panel compatibility. Controlled validation is complete; no managed deployment or runtime result is inferred.",
+    "milestone": "Canary 21 is an ACTIVE successor to accepted Canary 19 for the optional Mouse Tweaks 2.31 RMB-drag correction. Controlled validation is complete; no managed deployment or C21 runtime result is inferred.",
     "releases": {
       "current": {
-        "version": "0.1.0-canary20",
-        "embedded_version": "0.1.0-canary20",
+        "version": "0.1.0-canary21",
+        "embedded_version": "0.1.0-canary21",
         "artifact": {
-          "filename": "container-slot-reservations-0.1.0-canary20.jar",
-          "sha256": "2da8356af2fa878f25bb1de424b87fd26e73d3a236ba7e52acef4f8a8249bdaa"
+          "filename": "container-slot-reservations-0.1.0-canary21.jar",
+          "sha256": "8eeab0e1ed2c6c6c4747615b471fb78a8c708c9455b2c8798709a394ab4cc13c"
         },
-        "source_commit": "ad41843e1095b77427bd4debfbc71d396b320b39",
+        "source_commit": "b137377b6f54fd7e5cc6d621f815d09187a30912",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
@@ -177,11 +178,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 31,
-    "activity_at": "2026-09-15T14:28:22Z",
-    "updated_at": "2026-09-15T14:28:22Z",
-    "last_codex_at": "2026-09-15T14:28:22Z",
-    "source_commit": "ad41843e1095b77427bd4debfbc71d396b320b39",
+    "revision": 32,
+    "activity_at": "2026-09-16T15:11:55Z",
+    "updated_at": "2026-09-16T15:11:55Z",
+    "last_codex_at": "2026-09-16T15:11:55Z",
+    "source_commit": "b137377b6f54fd7e5cc6d621f815d09187a30912",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null

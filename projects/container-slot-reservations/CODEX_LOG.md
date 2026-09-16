@@ -311,3 +311,14 @@
 - Artifact: `container-slot-reservations-0.1.0-canary20.jar`, embedded `0.1.0-canary20`, 214,374 bytes, SHA-256 `2da8356af2fa878f25bb1de424b87fd26e73d3a236ba7e52acef4f8a8249bdaa`, source `ad41843e1095b77427bd4debfbc71d396b320b39`, runtime dependency policy `CAPABILITY_OR_PROVIDER` with no exceptions.
 - Result: ACTIVE / CONTROLLED_VALIDATION_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED. No blocker is recorded.
 - Next state: Retain the exact C20 artifact in the primary checkout, integrate current main, publish revision 31 with Sheet Notes preserved, and collect only the focused C20 runtime matrix under explicit Test Instance Manager ownership before acceptance.
+
+## 2026-09-16T15:11:55Z — Create CSR Canary 21 Mouse Tweaks RMB mode-latching successor
+
+- Revision: 32
+- Source checkpoint: `b137377b6f54fd7e5cc6d621f815d09187a30912`
+- Changes: C21 fixes C20's stale F0/F0 virtual-cell burst with a copy-only shared-planner host/cursor/fingerprint chain, adds explicit SECONDARY_DEPOSIT so a latched deposit cannot become extraction when its cursor drains, and latches COLLECTION_SOURCE from an occupied initial RHS target or DEPOSIT from an empty carried initial target without hover reclassification. The optional bridge retains an already-open panel only for a carried/latched Mouse Tweaks RHS deposit path, preserves absent/disabled fallback behavior, and fails closed after divergent native cursor boundaries; no real client shulker contents are mutated.
+- Build/static: Java 25, Gradle 9.5.1, and Loom 1.17.19 completed offline `clean test runGameTest build`: 105/105 JUnit tests, 32/32 headless Fabric GameTests, marker/release-artifact verification, and `git diff --check` passed. Expected Windows performance-counter and absent development `server.properties` warnings did not prevent completion; these are controlled results, not desktop Minecraft runtime evidence.
+- Runtime: The user's post-C20 external report is historical only: shulker-content→empty-ordinary-inventory RMB drag PASS and inventory/cursor→empty-panel RMB drag FAIL, each limited to that direction; no other C20 row is inferred. C21 received no runtime result and remains NOT_DEPLOYED/RUNTIME_UNTESTED; no Minecraft profile was managed or inspected.
+- Artifact: `container-slot-reservations-0.1.0-canary21.jar`, embedded `0.1.0-canary21`, 220172 bytes, SHA-256 `8eeab0e1ed2c6c6c4747615b471fb78a8c708c9455b2c8798709a394ab4cc13c`, source `b137377b6f54fd7e5cc6d621f815d09187a30912`, runtime dependency policy `CAPABILITY_OR_PROVIDER` with no exceptions.
+- Result: ACTIVE / CONTROLLED_VALIDATION_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED. No blocker is recorded.
+- Next state: Retain the exact ignored C21 artifact in the primary checkout, integrate and push main revision 32 for Sheet reconciliation with Notes preserved, then await only the focused user-directed C21 runtime matrix.
