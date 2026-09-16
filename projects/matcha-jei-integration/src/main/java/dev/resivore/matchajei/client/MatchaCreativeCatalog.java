@@ -19,6 +19,8 @@ import java.util.function.Consumer;
 final class MatchaCreativeCatalog {
     private static final Set<ItemStack> OWNED_SEARCH_ENTRIES =
             Collections.newSetFromMap(new IdentityHashMap<>());
+    private static final Set<ItemStack> SUPPRESSED_DEFAULT_SEARCH_ENTRIES =
+            Collections.newSetFromMap(new IdentityHashMap<>());
     private static final Consumer<MatchaJeiDataPayload> DATA_LISTENER = payload ->
             replaceActiveSearchEntries(payload);
     private static boolean initialized;
@@ -39,6 +41,10 @@ final class MatchaCreativeCatalog {
                     CreativeModeTabs.searchTab().getDisplayItems(),
                     OWNED_SEARCH_ENTRIES
             );
+            MatchaCreativeSearchEntries.retainActiveOwnership(
+                    CreativeModeTabs.searchTab().getDisplayItems(),
+                    SUPPRESSED_DEFAULT_SEARCH_ENTRIES
+            );
             MatchaClientData.current().catalog().forEach(stack -> {
                 ItemStack contribution = stack.copyWithCount(1);
                 MatchaCreativeSearchEntries.rememberOwned(contribution, OWNED_SEARCH_ENTRIES);
@@ -56,6 +62,7 @@ final class MatchaCreativeCatalog {
         MatchaCreativeSearchEntries.replaceOwned(
                 CreativeModeTabs.searchTab().getDisplayItems(),
                 OWNED_SEARCH_ENTRIES,
+                SUPPRESSED_DEFAULT_SEARCH_ENTRIES,
                 payload.catalog()
         );
     }

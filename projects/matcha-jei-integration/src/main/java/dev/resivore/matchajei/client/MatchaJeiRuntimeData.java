@@ -68,6 +68,9 @@ final class MatchaJeiRuntimeData {
                         introduced.exact()
                 );
             }
+            if (!introduced.suppressedVanilla().isEmpty()) {
+                addNewIngredients(VanillaTypes.ITEM_STACK, introduced.suppressedVanilla());
+            }
             active = null;
         }
         if (payload.revision().isEmpty()) {
@@ -109,10 +112,37 @@ final class MatchaJeiRuntimeData {
                 .filter(MatchaJeiPlugin::usesJeiOwnedSubtype)
                 .map(candidate -> MatchaExactIngredient.of(candidate.copyWithCount(1)))
                 .toList();
+        List<ItemStack> suppressedVanilla = removeCanonicalFoodDefaults(candidates);
         return new IntroducedIngredients(
                 addNewIngredients(VanillaTypes.ITEM_STACK, vanillaCandidates),
-                addNewIngredients(MatchaExactIngredient.TYPE, exactCandidates)
+                addNewIngredients(MatchaExactIngredient.TYPE, exactCandidates),
+                suppressedVanilla
         );
+    }
+
+    /**
+     * JEI owns its ordinary ingredient list. We only temporarily remove the
+     * exact default food identities selected by the shared C6 predicate, and
+     * retain them for restoration before a changed catalog is installed.
+     */
+    private static List<ItemStack> removeCanonicalFoodDefaults(List<ItemStack> catalog) {
+        List<ItemStack> defaults = MatchaCanonicalFoodReplacements.defaultsFor(catalog);
+        if (defaults.isEmpty()) {
+            return List.of();
+        }
+        var manager = runtime.getIngredientManager();
+        IIngredientHelper<ItemStack> helper = manager.getIngredientHelper(VanillaTypes.ITEM_STACK);
+        Set<Object> knownUids = manager.getAllIngredients(VanillaTypes.ITEM_STACK).stream()
+                .map(ingredient -> helper.getUid(ingredient, UidContext.Ingredient))
+                .collect(java.util.stream.Collectors.toCollection(LinkedHashSet::new));
+        List<ItemStack> present = defaults.stream()
+                .filter(defaultStack -> knownUids.contains(helper.getUid(defaultStack, UidContext.Ingredient)))
+                .map(ItemStack::copy)
+                .toList();
+        if (!present.isEmpty()) {
+            manager.removeIngredientsAtRuntime(VanillaTypes.ITEM_STACK, present);
+        }
+        return present;
     }
 
     private static <T> List<T> addNewIngredients(IIngredientType<T> type, List<T> candidates) {
@@ -167,7 +197,8 @@ final class MatchaJeiRuntimeData {
 
     private record IntroducedIngredients(
             List<ItemStack> vanilla,
-            List<MatchaExactIngredient> exact
+            List<MatchaExactIngredient> exact,
+            List<ItemStack> suppressedVanilla
     ) {
     }
 

@@ -43,7 +43,7 @@ class MatchaCreativeSearchEntriesTest {
         Set<ItemStack> owned = identitySet();
         owned.add(oldMatcha);
 
-        MatchaCreativeSearchEntries.replaceOwned(searchContents, owned, List.of(replacement));
+        MatchaCreativeSearchEntries.replaceOwned(searchContents, owned, identitySet(), List.of(replacement));
 
         assertSame(craftingTable, searchContents.get(0));
         assertSame(unrelated, searchContents.get(1));
@@ -63,8 +63,8 @@ class MatchaCreativeSearchEntriesTest {
         List<ItemStack> searchContents = new ArrayList<>(List.of(vanilla));
         Set<ItemStack> owned = identitySet();
 
-        MatchaCreativeSearchEntries.replaceOwned(searchContents, owned, List.of(exact, exact.copy()));
-        MatchaCreativeSearchEntries.replaceOwned(searchContents, owned, List.of(exact, exact.copy()));
+        MatchaCreativeSearchEntries.replaceOwned(searchContents, owned, identitySet(), List.of(exact, exact.copy()));
+        MatchaCreativeSearchEntries.replaceOwned(searchContents, owned, identitySet(), List.of(exact, exact.copy()));
 
         assertEquals(2, searchContents.size());
         assertSame(vanilla, searchContents.getFirst());
@@ -83,8 +83,8 @@ class MatchaCreativeSearchEntriesTest {
         List<ItemStack> searchContents = new ArrayList<>(List.of(foreignExact));
         Set<ItemStack> owned = identitySet();
 
-        MatchaCreativeSearchEntries.replaceOwned(searchContents, owned, List.of(foreignExact.copy()));
-        MatchaCreativeSearchEntries.replaceOwned(searchContents, owned, List.of(foreignExact.copy()));
+        MatchaCreativeSearchEntries.replaceOwned(searchContents, owned, identitySet(), List.of(foreignExact.copy()));
+        MatchaCreativeSearchEntries.replaceOwned(searchContents, owned, identitySet(), List.of(foreignExact.copy()));
 
         assertEquals(1, searchContents.size());
         assertSame(foreignExact, searchContents.getFirst());
@@ -119,7 +119,7 @@ class MatchaCreativeSearchEntriesTest {
         Set<ItemStack> owned = identitySet();
         owned.add(oldMatcha);
 
-        MatchaCreativeSearchEntries.replaceOwned(searchContents, owned, List.of(replacement));
+        MatchaCreativeSearchEntries.replaceOwned(searchContents, owned, identitySet(), List.of(replacement));
 
         assertEquals(2, searchContents.size());
         assertTrue(searchContents.stream().anyMatch(stack -> stack == vanilla));

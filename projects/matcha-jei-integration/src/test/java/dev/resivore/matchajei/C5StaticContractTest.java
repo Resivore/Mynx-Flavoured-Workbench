@@ -55,14 +55,32 @@ class C5StaticContractTest {
         assertTrue(creative.contains("MatchaClientData.current().catalog()"));
         assertTrue(creative.contains("CreativeModeTabs.searchTab().getDisplayItems()"));
         assertTrue(creative.contains("MatchaCreativeSearchEntries.replaceOwned("));
+        assertTrue(creative.contains("SUPPRESSED_DEFAULT_SEARCH_ENTRIES"));
         assertTrue(entries.contains("ItemStack.isSameItemSameComponents(existing, contribution)"));
         assertTrue(entries.contains("searchContents.removeIf(ownedEntries::contains)"));
+        assertTrue(entries.contains("MatchaCanonicalFoodReplacements.defaultsFor(catalogEntries)"));
+        assertTrue(entries.contains("restoreSuppressed(searchContents, suppressedDefaultEntries)"));
         assertFalse(creative.contains("CreativeModeTabs.tryRebuildTabContents("));
         assertFalse(creative.contains("CreativeModeTabs.searchTab().buildContents("));
         assertFalse(creative.contains("getDisplayItems().clear("));
         assertFalse(creative.contains("mezz.jei"));
         assertFalse(entries.contains("mezz.jei"));
         assertFalse(clientData.contains("mezz.jei"));
+    }
+
+    @Test
+    void c6FoodSuppressionUsesActualFoodAndConsumableComponentsAndRestoresJeiDefaults() throws Exception {
+        String replacements = source("client/MatchaCanonicalFoodReplacements.java");
+        String runtime = source("client/MatchaJeiRuntimeData.java");
+
+        assertTrue(replacements.contains("DataComponents.FOOD"));
+        assertTrue(replacements.contains("DataComponents.CONSUMABLE"));
+        assertTrue(replacements.contains("onConsumeEffects().isEmpty()"));
+        assertTrue(replacements.contains("stack.getItem().components().has(DataComponents.FOOD)"));
+        assertTrue(replacements.contains("DataComponents.ITEM_MODEL"));
+        assertTrue(runtime.contains("removeCanonicalFoodDefaults(candidates)"));
+        assertTrue(runtime.contains("removeIngredientsAtRuntime(VanillaTypes.ITEM_STACK, present)"));
+        assertTrue(runtime.contains("addNewIngredients(VanillaTypes.ITEM_STACK, introduced.suppressedVanilla())"));
     }
 
     @Test
