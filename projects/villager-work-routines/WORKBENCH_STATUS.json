@@ -38,12 +38,12 @@
     ]
   },
   "state": {
-    "milestone": "User-reported external Canary 5 runtime evidence is feature-specific: Shepherd is PASS after repeated full target/gate/blocker/shear/exact-wool/claimed-barrel cycles, while Fisherman is FAIL solely because the client crashed immediately after its first successful VWR float spawn in FishingFloatRenderer custom line submission with Missing elements in vertex; water/bank selection, navigation, rod presentation, and casting worked, while retrieve/deposit remain unvalidated. Canary 6 preserves Shepherd and Fisherman server behavior, mirrors Minecraft 26.2's complete fishing-line vertex contract inside the isolated float renderer, and makes a small same-bank cast-telegraph recovery for ordinary steering nudges. A clean Java 25/Fabric build and 46 focused tests pass; C6 runtime validation remains user-managed.",
+    "milestone": "User-reported external Canary 6 evidence is feature-specific: Shepherd retains Canary 5 runtime PASS. Fisherman C6 is an overall FAIL / substantial partial success for exact `0.1.0-canary6`, `villager-work-routines-0.1.0-canary6.jar`, SHA-256 `366a4d7ed3d9f7c28a4055e2efdf981f07c77f32b7bfd6c72c1c9458c4d25f99`, source `69ae70bd8412ac169a972985c328771dd8bc16d8`: the former line-vertex crash was fixed and a full water/bank/navigation/cast/visible-bobber-and-line/retrieve/salmon/owned-output/claimed-barrel-deposit cycle succeeded, but later repeated rod-overlay churn led to a server NPE in `WorkCoordinator.showProp` after `state.prop` became null. C7 replaces mutable prop dereferences with identity-checked transactions, preserves one action over save suspension/resume, avoids equivalent-data profession cleanup, uses a single isolated vanilla fishing-rod item presentation at crossed arms, and anchors the existing 26.2-complete line renderer at its deterministic rod tip. A clean Java 25/Fabric build and 54 focused tests pass; C7 runtime validation remains user-managed.",
     "releases": {
       "current": {
-        "version": "0.1.0-canary6",
-        "artifact": {"filename": "villager-work-routines-0.1.0-canary6.jar", "sha256": "366a4d7ed3d9f7c28a4055e2efdf981f07c77f32b7bfd6c72c1c9458c4d25f99"},
-        "source_commit": "69ae70bd8412ac169a972985c328771dd8bc16d8",
+        "version": "0.1.0-canary7",
+        "artifact": {"filename": "villager-work-routines-0.1.0-canary7.jar", "sha256": "2ea2f9f9e2e44e357af8fad1643c76ff83958a290c8e7213ea932e4923561f4f"},
+        "source_commit": "a1c0d7c4dd5e7515179da3474269e2db7c800829",
         "runtime_dependency_policy": {"contract": "CAPABILITY_OR_PROVIDER", "exceptions": []}
       },
       "accepted": null,
@@ -55,11 +55,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 6,
-    "activity_at": "2026-09-15T15:07:12Z",
-    "updated_at": "2026-09-15T15:07:12Z",
-    "last_codex_at": "2026-09-15T15:07:12Z",
-    "source_commit": "69ae70bd8412ac169a972985c328771dd8bc16d8",
+    "revision": 7,
+    "activity_at": "2026-09-16T02:13:26Z",
+    "updated_at": "2026-09-16T02:13:26Z",
+    "last_codex_at": "2026-09-16T02:13:26Z",
+    "source_commit": "a1c0d7c4dd5e7515179da3474269e2db7c800829",
     "google_sheet": {"participates": true, "exclusion_reason": null}
   }
 }
