@@ -1,14 +1,37 @@
-# Accepted Shulker Trowel C10 runtime evidence
+# Shulker Trowel C11 runtime procedure — not deployed
 
-Accepted release:
+**CONTROLLED_VALIDATION_PASS — NOT_DEPLOYED — RUNTIME_UNTESTED**
 
-- Shulker Trowel C10 / Private Canary 9: `shulker-trowel-0.1.0-canary9-private.jar`, 44,738 bytes, SHA-256 `b78679eaf6eaf6f7ff75a32ffae024e45515de3af38bf2ed92ac8727a5138df8`, embedded version `0.1.0-canary9`.
-- Runtime identity: deployment `3f15446c-95c2-405b-b1e5-e78de5f5f638`, artifact `efbc5761-9899-4a3c-ae5d-7640b8a3022b`, release source `844bccbb6f9efdfb36749c719d1fb396f71b626f`.
+Exact candidate: private `shulker-trowel-0.1.0-canary10-private.jar`, 50,375 bytes, SHA-256 `e286d0ab90fcf4aa5d59b5250ef6a6bf8bf52266143d85c749915d53ad11f57a`, embedded version `0.1.0-canary10`, source `adfa2dee4426fed91d4ad224136cd16b318ce2ec`. Exact C10 / Private Canary 9 remains the accepted aggregate-PASS release and C5 remains its rollback. C11 needs a verified serialized Test Instance Manager deployment in the dedicated Matcha Flavoured 26.2 Workbench before runtime evidence is recorded. Do not access the protected Matcha Flavoured 26.1.2 profile.
 
-The user independently reported aggregate `PASS` for this exact Trowel member of the verified revision-62 Slot A cohort. The report does not identify individual checklist observations, so no checklist row is inferred as tested or passed. It is not a blanket result for the companion BGE member, other Trowel versions, or future artifacts.
+## A. Offhand shulker placement
 
-Manager revision 64 recorded the exact-member result, revision 65 removed the completed cohort, and revision 66 atomically promoted exact private C10 with exact BGE C58 into Baseline Stack v14. Exact private C5/Private Canary 4 remains the retained rollback.
+1. Put an empty vanilla shulker in OFF_HAND and right-click a normal placement surface. Nothing places.
+2. Crouch and repeat. Nothing places.
+3. Repeat with a filled shulker and a dyed shulker. Confirm the stack count, contents, custom name, and components are unchanged; there is no placement sound, particle, block entity, advancement, or placement statistic.
 
-## Current procedure
+## B. Target interactions
 
-No active runtime procedure is required for accepted C10. Preserve its exact bytes, filename, hash, embedded version, release source, accepted identity, private status, and aggregate evidence. The runnable JAR and authorized sprite remain local, ignored, untracked, non-redistributable, and must not be extracted, published, replaced, rebuilt, or repackaged. Do not reinterpret the aggregate report as row-level evidence or apply it to a successor. Any future release needs its own identity, policy-conforming runtime dependency metadata, validation, deployment, and runtime result.
+1. With an offhand shulker, right-click a chest or barrel, then crouch-right-click it.
+2. Test a replaceable target and another ordinary placement-valid surface.
+3. Confirm the offhand shulker never places. Record ordinary target-interaction behavior exactly as observed; this candidate does not claim to change it.
+
+## C. Main-hand control
+
+1. Move the same filled/named shulker to MAIN_HAND and place it normally, including while crouching.
+2. Confirm its contents and custom data survive placement and normal breaking/pickup remains vanilla.
+
+## D. Quick Right-Click 1.9
+
+1. Install exact `quickrightclick-26.2.0-1.9.jar` (mod ID `quickrightclick`, version `1.9`, SHA-256 `87e77365919532bd38a004235c58e1220bbcbae680d8a3d27ed2ce2ddbd7831b`).
+2. Hold a shulker in MAIN_HAND and OFF_HAND in turn, then trigger its former quick-right-click path. Confirm no Quick Right-Click shulker UI/temporary world behavior occurs.
+3. Verify Quick Right-Click still works for at least a bed and one non-shulker table/chest feature.
+4. Repeat the normal C11 offhand-placement checks. The optional compatibility seam must be inert when Quick Right-Click is absent.
+
+## E. CSR and Shulker Trowel
+
+1. Confirm CSR's carried-shulker tooltip/interface is unchanged.
+2. Hold the Trowel in MAIN_HAND and a material palette shulker in OFF_HAND. Place several materials and geometries, including a crouched build where applicable.
+3. Confirm material selection and Survival consumption still use the actual offhand `DataComponents.CONTAINER`, while that palette shulker itself never places.
+
+Automated checks and a successful launch are not runtime PASS. Record only observed Minecraft behavior against this exact C11 identity.

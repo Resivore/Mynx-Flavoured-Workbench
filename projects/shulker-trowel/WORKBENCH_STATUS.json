@@ -12,16 +12,18 @@
     ]
   },
   "definition": {
-    "lifecycle": "ACCEPTED",
+    "lifecycle": "ACTIVE",
     "goals": [
       "Provide a server-authoritative trowel that draws eligible building materials by quantity from the actual offhand shulker and delegates placement through the resolved BlockItem's normal placement path.",
       "Keep Full Block, Slab, Stair, and Wall Trowel-owned while discovering extended modes from the unified BGE catalog without a separate Nibaru artifact or dependency.",
-      "Preserve saved/network identities 0 through 6 while separating selector order from persistence, using exact resolved geometry items, and preserving material identity, consumption, sound, state, and fail-closed semantics."
+      "Preserve saved/network identities 0 through 6 while separating selector order from persistence, using exact resolved geometry items, and preserving material identity, consumption, sound, state, and fail-closed semantics.",
+      "Reserve every offhand ShulkerBoxBlock from the canonical BlockItem placement path and, when the exact optional Quick Right-Click 1.9 binary is present, delegate only its shulker quick-interaction branch back to normal interaction."
     ],
     "scope": [
       "Canonical C10 dependency-compatible source for Minecraft 26.2 Fabric, retaining accepted behavior and stable IDs 0 through 6 for Full Block, Slab, Stair, Wall, Vertical Slab, Step, and Layer, with Corner ID 7 and Quarter Column ID 8.",
       "The narrow CNM 2.0.7 overlay and input seam plus the proven unified BGE compatibility line from exact C57 through C58 and later compatible 4.2.x successors, with selector order Full Block, Slab, Stair, Wall, Vertical Slab, Step, Corner, Quarter Column, Layer independent from saved/network identity.",
       "Use each descriptor's actual resolved geometry item for display and normal BlockItem placement, retain selected identity when a material geometry is unavailable, and admit future BGE catalog descriptors without a new hard-coded Trowel geometry name.",
+      "Canonical C11 / Private Canary 10 reserves a live offhand shulker palette globally without changing main-hand vanilla shulker placement, trowel palette access, or any non-shulker Quick Right-Click feature.",
       "The private runnable-asset boundary in which only the separately authorized Jake's Build Tools sprite is added to externally retained, non-redistributable private artifacts."
     ],
     "boundaries": {
@@ -31,6 +33,7 @@
       "exclusions": [
         "Protected Jake's Build Tools bytes, the authorized sprite, exact accepted private C10/Private Canary 9, predecessor C9 candidates, and retained rollback private C5 runnable JAR are not tracked or redistributed.",
         "CNM and unified BGE remain external dependency owners; this project does not bundle them or replace their canonical material and geometry systems.",
+        "Quick Right-Click, CSR, CCAR, CNM, BGE, and vanilla item interaction retain ownership of their own source, configuration, and behavior. C11 neither changes their bytes nor carries Quick Right-Click or JBT code/resources.",
         "Registry-name parsing, parallel family tables, variant collapsing, and unrelated block mutation behavior.",
         "Rebuilding, repackaging, metadata mutation, tracking, or redistribution of exact accepted private C10; mutation of retained private C5 rollback provenance; unrelated runtime-slot changes; and protected gameplay-profile access."
       ]
@@ -57,14 +60,20 @@
       {
         "type": "MOD",
         "identifier": "clutternomore",
-        "requirement": "=2.0.7+26.2",
-        "reason": "Owns the established shape input, overlay, and canonical delegated placement behavior reused by the trowel."
+        "requirement": ">=2.0.7+26.2",
+        "reason": "Owns the established shape input, overlay, and canonical delegated placement behavior reused by the trowel; C11 declares the genuine API floor while retaining 2.0.7 as its exact validation baseline."
       },
       {
         "type": "PROJECT",
         "identifier": "4b2342fc-7bdf-5ba6-9f37-d551109d214c",
-        "requirement": ">=4.2.1-bge.canary57.unified+26.2 <4.3.0-",
-        "reason": "The current candidate resolves retained native material APIs and Vertical Slab, Step, Corner, Quarter Column, and Layer descriptors from the proven unified BGE 4.2 compatibility line, including exact C57 and C58 while rejecting pre-unified and unproven 4.3 releases."
+        "requirement": ">=4.2.1-bge.canary57.unified+26.2",
+        "reason": "The current candidate resolves retained native material APIs and Vertical Slab, Step, Corner, Quarter Column, and Layer descriptors from the unified BGE provider; exact C58 remains the controlled-validation baseline without a speculative runtime upper bound."
+      },
+      {
+        "type": "MOD",
+        "identifier": "quickrightclick",
+        "requirement": "Optional suggests \"*\"; exact audited reference quickrightclick-26.2.0-1.9.jar, mod ID quickrightclick, version 1.9, SHA-256 87e77365919532bd38a004235c58e1220bbcbae680d8a3d27ed2ce2ddbd7831b",
+        "reason": "C11 is fully functional without it. The optional seam activates only for the exact audited 1.9 metadata and delegates solely its ShulkerBoxBlock quick decision to normal interaction."
       },
       {
         "type": "OTHER",
@@ -75,16 +84,20 @@
     ]
   },
   "state": {
-    "milestone": "The user independently reported aggregate runtime PASS for exact private Trowel C10/Private Canary 9 in the revision-62 Slot A cohort; no checklist-row result is inferred. Manager revision 64 bound that result only to deployment 3f15446c-95c2-405b-b1e5-e78de5f5f638 and artifact efbc5761-9899-4a3c-ae5d-7640b8a3022b, revision 65 removed the completed cohort, and revision 66 atomically promoted exact C10 with exact BGE C58 into accepted Baseline Stack v14. Exact private C5 is retained as rollback provenance. The C10 JAR remains local, ignored, untracked, and non-redistributable; its tested bytes and metadata were not rebuilt, repackaged, or changed, and its existing bounded dependency metadata is grandfathered under the universal runtime-dependency policy.",
+    "milestone": "Exact private C10/Private Canary 9 remains accepted aggregate-PASS provenance and exact private C5 remains its rollback. C11/Private Canary 10 is the separate active successor: it globally reserves offhand shulker placement and disables only exact optional Quick Right-Click 1.9 shulker handling. C11 completed controlled validation, is retained locally, has not been deployed, and has no runtime result.",
     "releases": {
       "current": {
-        "version": "C10 (Private Canary 9; embedded 0.1.0-canary9)",
-        "embedded_version": "0.1.0-canary9",
+        "version": "C11 (Private Canary 10; embedded 0.1.0-canary10)",
+        "embedded_version": "0.1.0-canary10",
         "artifact": {
-          "filename": "shulker-trowel-0.1.0-canary9-private.jar",
-          "sha256": "b78679eaf6eaf6f7ff75a32ffae024e45515de3af38bf2ed92ac8727a5138df8"
+          "filename": "shulker-trowel-0.1.0-canary10-private.jar",
+          "sha256": "e286d0ab90fcf4aa5d59b5250ef6a6bf8bf52266143d85c749915d53ad11f57a"
         },
-        "source_commit": "844bccbb6f9efdfb36749c719d1fb396f71b626f"
+        "source_commit": "adfa2dee4426fed91d4ad224136cd16b318ce2ec",
+        "runtime_dependency_policy": {
+          "contract": "CAPABILITY_OR_PROVIDER",
+          "exceptions": []
+        }
       },
       "accepted": {
         "version": "C10 (Private Canary 9; embedded 0.1.0-canary9)",
@@ -104,22 +117,22 @@
         },
         "source_commit": "069bc055356c5a46218acfb846c97acc0c0c4789"
       },
-      "accepted_current": "CURRENT_IS_ACCEPTED",
+      "accepted_current": "CURRENT_DIFFERS_FROM_ACCEPTED",
       "accepted_rollback": "ROLLBACK_DIFFERS_FROM_ACCEPTED"
     },
     "validation": {
       "build": "CONTROLLED_VALIDATION_PASS",
-      "deployment": "READY_TO_TEST_VERIFIED",
-      "runtime": "RUNTIME_PASS"
+      "deployment": "NOT_DEPLOYED",
+      "runtime": "RUNTIME_UNTESTED"
     },
     "blocker": null
   },
   "synchronization": {
-    "revision": 7,
-    "activity_at": "2026-09-02T17:00:13Z",
-    "updated_at": "2026-09-02T17:00:13Z",
-    "last_codex_at": "2026-09-02T17:00:13Z",
-    "source_commit": "27d9fc0f66fd32bcda8fef80cffd92ec5d964242",
+    "revision": 8,
+    "activity_at": "2026-09-16T01:50:05Z",
+    "updated_at": "2026-09-16T01:50:05Z",
+    "last_codex_at": "2026-09-16T01:50:05Z",
+    "source_commit": "adfa2dee4426fed91d4ad224136cd16b318ce2ec",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null

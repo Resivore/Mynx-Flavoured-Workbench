@@ -129,3 +129,65 @@ The sprite and exact private C5/C2 runnable JARs remain private,
 non-redistributable external identities. They are not tracked here, and a
 freshly assembled or rebuilt equivalent must never replace their recorded
 tested identities.
+
+## C11 offhand palette reservation
+
+`OffhandShulkerPlacementMixin` injects at the HEAD of Minecraft 26.2's
+canonical `BlockItem.place(BlockPlaceContext)`. It returns `FAIL` only when
+the placement context is `InteractionHand.OFF_HAND` and the actual block is a
+`ShulkerBoxBlock`. This covers ordinary vanilla block-item placement before
+the placement path can consume a stack, update components, create a block or
+block entity, emit sound/particles, or award successful-placement effects.
+The same mixin applies on client and server: the client does not predict a
+one-tick placement and the server is final authority.
+
+The rule deliberately examines the Minecraft block type rather than a color
+list or registry names. Main-hand shulkers are outside the predicate, as are
+all unrelated offhand `BlockItem`s. A Trowel placement remains a main-hand
+`BlockPlaceContext`; its source palette remains the live offhand
+`DataComponents.CONTAINER` and is not itself a placement stack.
+
+## Optional Quick Right-Click 1.9 seam
+
+The immutable reference is `originals/mods/quickrightclick-26.2.0-1.9.jar`,
+125,653 bytes, SHA-256
+`87e77365919532bd38a004235c58e1220bbcbae680d8a3d27ed2ce2ddbd7831b`.
+Its `fabric.mod.json` identifies mod ID `quickrightclick`, version `1.9`.
+The exact Fabric implementation has these relevant binary seams:
+
+- `com.natamus.quickrightclick_common_fabric.config.ConfigHandler` exposes the
+  native `enableQuickShulkerBoxes` toggle, defaulting to enabled.
+- `QuickEvent.onItemClick(Player, Level, InteractionHand)` recognizes a held
+  `BlockItem`, branches on `ShulkerBoxBlock`, and calls
+  `features.ShulkerBoxFeature.init`.
+- `ShulkerBoxFeature.init` begins with the native toggle, then implements the
+  portable temporary-shulker behavior. Its companion shulker block-entity
+  mixin restores the held stack after that interface closes.
+
+There is no repository-tracked pack configuration path that can reproduce the
+native toggle when an instance is recreated, so C11 does not depend on a
+per-instance user config. Instead, `ShulkerTrowelMixinPlugin` enables its
+`@Pseudo` `QuickRightClickShulkerCompatibilityMixin` only when Fabric Loader
+reports exactly mod ID `quickrightclick` and version `1.9`. At the audited
+`QuickEvent.onItemClick` HEAD it returns normal `InteractionResult.PASS` only
+for held `ShulkerBoxBlock`s. QRC then has no special shulker behavior while
+Minecraft retains ordinary interaction processing. Bed, cartography table,
+crafting/smithing table, ender chest, grindstone, and stonecutter branches are
+never intercepted. If the mod is absent or its metadata changes, the optional
+mixin is not applied; C11 has no QRC class linkage or hard dependency.
+
+The artifact carries no Quick Right-Click classes, resources, or nested JARs.
+The focused binary contract test records the exact JAR identity and entry
+points without copying upstream implementation.
+
+## C11 private artifact boundary
+
+The local-only C11 artifact starts from the tracked clean
+`shulker-trowel-0.1.0-canary10.jar` and adds only the separately authorized
+`assets/jbt/textures/item/iron_trowel.png` as
+`assets/shulker_trowel/textures/item/trowel.png`. The source and packaged
+sprite are exactly 346 bytes with SHA-256
+`D754DBAB87A0FE923016268F0CDDC4A785B022A1184837F9C3CA2BE6732F7789`.
+No `assets/jbt/` entry, JBT class, Quick Right-Click class, or nested JAR is
+present. The private C11 JAR is ignored, locally retained only, and is never
+tracked or redistributed.
