@@ -31,7 +31,9 @@ abstract class VillagerMixin implements OwnedOutput {
 
     @Inject(method = "addAdditionalSaveData", at = @At("HEAD"))
     private void villagerWork$clearPropBeforeSave(ValueOutput output, CallbackInfo ci) {
-        WorkCoordinator.clearProp((Villager)(Object)this);
+        // Serialization must never persist a VWR synthetic stack, but a live cast keeps its
+        // transaction identity in memory so the next server tick can reapply the same overlay.
+        WorkCoordinator.suspendPropForSave((Villager)(Object)this);
     }
 
     @Inject(method = "addAdditionalSaveData", at = @At("TAIL"))
@@ -74,6 +76,10 @@ abstract class VillagerMixin implements OwnedOutput {
 
     @Inject(method = "setVillagerData", at = @At("HEAD"))
     private void villagerWork$professionChanged(VillagerData data, CallbackInfo ci) {
-        WorkCoordinator.clearProp((Villager)(Object)this);
+        Villager villager = (Villager)(Object)this;
+        // Vanilla may replace equivalent VillagerData while updating unrelated fields.  Only a
+        // real profession transition ends a shared VWR prop transaction.
+        if (!villager.getVillagerData().profession().equals(data.profession()))
+            WorkCoordinator.clearProp(villager);
     }
 }

@@ -106,6 +106,21 @@ final class TemporaryHandProp {
     }
 
     /**
+     * Re-applies a presentation which was deliberately removed for entity serialization.  If the
+     * restored legitimate hand state changed while it was absent, use normal reconciliation so
+     * that change is still preserved rather than overwritten.
+     */
+    Reconcile resume(ItemStack currentStack, float currentDropChance) {
+        Objects.requireNonNull(currentStack, "currentStack");
+        HandState expected = restorationState;
+        if (ItemStack.matches(expected.stack(), currentStack)
+                && Float.compare(expected.dropChance(), currentDropChance) == 0)
+            return new Reconcile(ReconcileKind.SUSPENDED_PRESENTATION_REAPPLIED,
+                    true, overlay(), expected.copy());
+        return reconcile(currentStack, currentDropChance);
+    }
+
+    /**
      * Restores only over this transaction's marked presentation. An unobserved external hand
      * change and its drop chance are left untouched.
      */
@@ -129,7 +144,7 @@ final class TemporaryHandProp {
                 : new HandState(stack, dropChance);
     }
 
-    private static boolean hasVwrMarker(ItemStack stack) {
+    static boolean hasVwrMarker(ItemStack stack) {
         CompoundTag marker = marker(stack);
         return marker != null && marker.getBooleanOr(VWR_MARKER, false);
     }
@@ -143,6 +158,7 @@ final class TemporaryHandProp {
     enum ReconcileKind {
         PRESENTATION_INTACT,
         SYNTHETIC_DROP_CHANCE_CORRECTED,
+        SUSPENDED_PRESENTATION_REAPPLIED,
         EXTERNAL_REPLACEMENT_REBASED,
         EXTERNAL_CLEAR_REBASED,
         FOREIGN_VWR_PRESENTATION
@@ -179,4 +195,48 @@ final class TemporaryHandProp {
                      Overlay overlay, HandState restorationState) {}
 
     record Restore(RestoreKind kind, boolean applyRestoration, HandState handState) {}
+
+    /**
+     * A server-thread slot which gives cleanup an identity check.  A cleanup that began for an
+     * older action can therefore never clear a transaction installed after it.
+     */
+    static final class Slot {
+        private TemporaryHandProp current;
+        private boolean suspended;
+
+        TemporaryHandProp current() { return current; }
+
+        TemporaryHandProp beginIfAbsent(UUID ownerId, UUID actionId, Item intendedItem,
+                                        ItemStack originalStack, float originalDropChance) {
+            if (current == null) {
+                current = TemporaryHandProp.begin(ownerId, actionId, intendedItem,
+                        originalStack, originalDropChance);
+                suspended = false;
+            }
+            return current;
+        }
+
+        boolean isCurrent(TemporaryHandProp prop) { return current == prop; }
+
+        boolean suspendIfCurrent(TemporaryHandProp prop) {
+            if (current != prop) return false;
+            suspended = true;
+            return true;
+        }
+
+        boolean isSuspended(TemporaryHandProp prop) { return current == prop && suspended; }
+
+        boolean resumeIfCurrent(TemporaryHandProp prop) {
+            if (current != prop) return false;
+            suspended = false;
+            return true;
+        }
+
+        boolean clearIfCurrent(TemporaryHandProp prop) {
+            if (current != prop) return false;
+            current = null;
+            suspended = false;
+            return true;
+        }
+    }
 }

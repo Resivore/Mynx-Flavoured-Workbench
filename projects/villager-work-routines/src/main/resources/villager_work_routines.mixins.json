@@ -3,5 +3,10 @@
   "package": "dev.resivore.villagerwork.mixin",
   "compatibilityLevel": "JAVA_25",
   "mixins": ["VillagerMixin", "SheepMixin", "WalkNodeEvaluatorMixin"],
+  "client": [
+    "client.VillagerRenderStateMixin",
+    "client.VillagerRendererMixin",
+    "client.CrossedArmsItemLayerMixin"
+  ],
   "injectors": { "defaultRequire": 1 }
 }

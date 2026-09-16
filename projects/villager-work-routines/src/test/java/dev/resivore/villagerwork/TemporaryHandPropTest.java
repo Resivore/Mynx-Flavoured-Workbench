@@ -212,6 +212,67 @@ class TemporaryHandPropTest {
         assertEquals(0.61F, finalRestore.handState().dropChance());
     }
 
+    @Test void slotCreatesOnceAndRetainsTheSameActionForAnIntactFishingCycle() {
+        TemporaryHandProp.Slot slot = new TemporaryHandProp.Slot();
+        TemporaryHandProp first = slot.beginIfAbsent(OWNER, ACTION, Items.FISHING_ROD, ItemStack.EMPTY, 0.2F);
+        TemporaryHandProp retained = slot.beginIfAbsent(OWNER,
+                UUID.fromString("00000000-0000-0000-0000-000000000047"), Items.FISHING_ROD,
+                new ItemStack(Items.DIAMOND), 0.8F);
+
+        assertTrue(slot.isCurrent(first));
+        assertEquals(ACTION, first.actionId());
+        assertTrue(first == retained, "normal ticks must retain one action transaction");
+    }
+
+    @Test void saveSuspensionRestoresTheSameActionWithoutRebasingOrSyntheticPersistence() {
+        TemporaryHandProp.Slot slot = new TemporaryHandProp.Slot();
+        ItemStack original = named(Items.EMERALD, 2, "real hand state");
+        TemporaryHandProp prop = slot.beginIfAbsent(OWNER, ACTION, Items.FISHING_ROD, original, 0.35F);
+        TemporaryHandProp.Overlay shown = prop.overlay();
+
+        TemporaryHandProp.Restore saveCleanup = prop.restore(shown.stack(), shown.dropChance());
+        assertTrue(saveCleanup.applyRestoration());
+        assertTrue(ItemStack.matches(original, saveCleanup.handState().stack()));
+        assertTrue(slot.suspendIfCurrent(prop));
+        assertTrue(slot.isSuspended(prop));
+
+        TemporaryHandProp.Reconcile resume = prop.resume(saveCleanup.handState().stack(),
+                saveCleanup.handState().dropChance());
+        assertEquals(TemporaryHandProp.ReconcileKind.SUSPENDED_PRESENTATION_REAPPLIED, resume.kind());
+        assertEquals(ACTION, prop.actionId());
+        assertEquals(0, prop.rebaseCount());
+        assertTrue(prop.owns(resume.overlay().stack()));
+        assertTrue(slot.resumeIfCurrent(prop));
+        assertFalse(slot.isSuspended(prop));
+    }
+
+    @Test void suspendedExternalReplacementIsRebasedBeforeTheOriginalActionIsReapplied() {
+        TemporaryHandProp prop = TemporaryHandProp.begin(OWNER, ACTION, Items.FISHING_ROD,
+                new ItemStack(Items.EMERALD), 0.2F);
+        ItemStack replacement = named(Items.DIAMOND, 3, "save-time replacement");
+
+        TemporaryHandProp.Reconcile resume = prop.resume(replacement, 0.71F);
+
+        assertEquals(TemporaryHandProp.ReconcileKind.EXTERNAL_REPLACEMENT_REBASED, resume.kind());
+        assertEquals(ACTION, prop.actionId());
+        assertTrue(ItemStack.matches(replacement, prop.restorationState().stack()));
+        assertTrue(prop.owns(resume.overlay().stack()));
+    }
+
+    @Test void staleAndDoubleCleanupCannotClearANewerTransaction() {
+        TemporaryHandProp.Slot slot = new TemporaryHandProp.Slot();
+        TemporaryHandProp first = slot.beginIfAbsent(OWNER, ACTION, Items.SHEARS, ItemStack.EMPTY, 0.1F);
+        assertTrue(slot.clearIfCurrent(first));
+        assertFalse(slot.clearIfCurrent(first), "double cleanup is harmless");
+
+        TemporaryHandProp newer = slot.beginIfAbsent(OWNER,
+                UUID.fromString("00000000-0000-0000-0000-000000000048"), Items.FISHING_ROD,
+                new ItemStack(Items.EMERALD), 0.3F);
+        assertFalse(slot.clearIfCurrent(first), "a stale cleanup may not clobber a newer action");
+        assertTrue(slot.isCurrent(newer));
+        assertTrue(newer.owns(newer.overlay().stack()));
+    }
+
     private static ItemStack named(net.minecraft.world.item.Item item, int count, String name) {
         ItemStack stack = new ItemStack(item, count);
         stack.set(DataComponents.CUSTOM_NAME, Component.literal(name));

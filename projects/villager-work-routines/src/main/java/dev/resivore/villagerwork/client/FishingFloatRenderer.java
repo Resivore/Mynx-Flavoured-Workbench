@@ -4,6 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import dev.resivore.villagerwork.FishingFloat;
 import dev.resivore.villagerwork.FishingLineGeometry;
+import dev.resivore.villagerwork.FishingRodPose;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.EntityRenderer;
@@ -13,6 +14,7 @@ import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.Identifier;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.npc.villager.Villager;
 import net.minecraft.world.phys.Vec3;
@@ -29,9 +31,15 @@ public final class FishingFloatRenderer extends EntityRenderer<FishingFloat, Fis
         super.extractRenderState(entity, state, partialTick);
         Entity owner = entity.owner();
         if (owner instanceof Villager villager) {
-            // A semantic eye/held-rod approximation avoids assuming vanilla arm geometry.
-            Vec3 hand = villager.getEyePosition(partialTick).add(0, -0.45, 0);
-            state.line = hand.subtract(entity.getPosition(partialTick));
+            // Keep the line attached to the same deterministic tip used by the isolated
+            // crossed-arms rod layer without assuming vanilla/player arm geometry.
+            Vec3 villagerPosition = villager.getPosition(partialTick);
+            float yaw = Mth.rotLerp(partialTick, villager.yBodyRotO, villager.yBodyRot);
+            FishingRodPose.Point tip = FishingRodPose.tip(villagerPosition.x, villagerPosition.y,
+                    villagerPosition.z, yaw);
+            state.line = tip.isFinite()
+                    ? new Vec3(tip.x(), tip.y(), tip.z()).subtract(entity.getPosition(partialTick))
+                    : null;
         } else state.line = null;
     }
 

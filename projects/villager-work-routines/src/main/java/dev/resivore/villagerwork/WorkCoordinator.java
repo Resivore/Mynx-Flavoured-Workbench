@@ -80,7 +80,7 @@ public final class WorkCoordinator {
         if (state != null && state.pendingExit != null) restorePendingExit(villager, level, state);
         if (profile == null) {
             if (state != null) {
-                if (state.eligible || state.sheep != null || state.bank != null || state.prop != null)
+                if (state.eligible || state.sheep != null || state.bank != null || state.propSlot.current() != null)
                     cancel(villager, state, "profession changed");
                 cleanupGateExit(villager, level, state);
             }
@@ -101,7 +101,7 @@ public final class WorkCoordinator {
         if (!villager.getBrain().isActive(Activity.WORK)) interruptions.add("vanilla WORK activity inactive");
         if (siteCheck.reason() != null) interruptions.add(siteCheck.reason());
         if (!interruptions.isEmpty()) {
-            if (state.eligible || state.sheep != null || state.bank != null || state.prop != null)
+            if (state.eligible || state.sheep != null || state.bank != null || state.propSlot.current() != null)
                 cancel(villager, state, String.join("; ", interruptions));
             cleanupGateExit(villager, level, state);
             return;
@@ -310,7 +310,7 @@ public final class WorkCoordinator {
             return;
         }
 
-        boolean shearsOverlayMissing = state.prop == null;
+        boolean shearsOverlayMissing = state.propSlot.current() == null;
         if (!showProp(villager, state, Items.SHEARS)) {
             clearSheep(villager, state, "true external hand conflict or prop overlay failure during telegraph");
             return;
@@ -1217,9 +1217,11 @@ public final class WorkCoordinator {
         if (state.floatEntity != null) {
             if (state.floatEntity.isRemoved() || state.water == null || !level.hasChunkAt(state.water)
                     || !openWater(level, state.water)) { cancel(villager, state, "float lost or water vanished"); return; }
+            state.fishingPhase = FishingRodLifecycle.Phase.FLOAT_ACTIVE;
             if (!showProp(villager, state, Items.FISHING_ROD)) { cancel(villager, state, "rod cannot remain equipped"); return; }
             villager.getLookControl().setLookAt(Vec3.atCenterOf(state.water));
             if (villager.tickCount >= state.catchAt) {
+                state.fishingPhase = FishingRodLifecycle.Phase.RETRIEVING;
                 log(villager, "retrieve float={} water={} scheduledAt={}", state.floatEntity.getId(), state.water, state.catchAt);
                 villager.swing(InteractionHand.MAIN_HAND);
                 level.sendParticles(ParticleTypes.SPLASH, state.floatEntity.getX(), state.floatEntity.getY(),
@@ -1238,11 +1240,13 @@ public final class WorkCoordinator {
                 state.bank = null;
                 state.rodAt = 0;
                 state.cooldown = villager.tickCount + 100;
+                state.fishingPhase = FishingRodLifecycle.afterRetrieve(containsFish(owned));
                 clearProp(villager);
             }
             return;
         }
         if (containsFish(owned)) {
+            state.fishingPhase = FishingRodLifecycle.Phase.RETURNING_TO_BARREL;
             if (villager.distanceToSqr(Vec3.atCenterOf(site)) > 3 * 3 && villager.tickCount % 20 == 0) {
                 if (state.nextReturnLog <= villager.tickCount) {
                     log(villager, "returning with fish={} to claimed barrel={}", fishCount(owned), site);
@@ -1262,7 +1266,10 @@ public final class WorkCoordinator {
         }
         if (state.bank == null && (villager.tickCount + villager.getId()) % SCAN_INTERVAL == 0)
             locateWater(villager, level, site, state);
-        if (state.bank == null) return;
+        if (state.bank == null) {
+            state.fishingPhase = FishingRodLifecycle.Phase.IDLE;
+            return;
+        }
         if (!openWater(level, state.water) || !standingIsClear(level, villager, state.bank)) {
             cancel(villager, state, "selected water or bank became invalid");
             return;
@@ -1272,6 +1279,7 @@ public final class WorkCoordinator {
             return;
         }
         if (villager.distanceToSqr(Vec3.atBottomCenterOf(state.bank)) > 1.1 * 1.1) {
+            state.fishingPhase = FishingRodLifecycle.Phase.NAVIGATING_TO_BANK;
             if (state.rodAt != 0) {
                 // Ordinary villager steering can nudge a valid Fisherman off the exact bank after
                 // the rod telegraph. Keep the same vetted bank/water pair and retry the telegraph.
@@ -1292,7 +1300,7 @@ public final class WorkCoordinator {
         }
         stopCustomNavigation(villager, state);
         villager.getLookControl().setLookAt(Vec3.atCenterOf(state.water));
-        boolean rodWasCleared = state.rodAt != 0 && state.prop == null;
+        boolean rodWasCleared = state.rodAt != 0 && state.propSlot.current() == null;
         if (!showProp(villager, state, Items.FISHING_ROD)) { cancel(villager, state, "main hand occupied; rod cannot be shown"); return; }
         if (rodWasCleared) {
             state.rodAt = villager.tickCount + 8;
@@ -1300,12 +1308,14 @@ public final class WorkCoordinator {
             return;
         }
         if (state.rodAt == 0) {
+            state.fishingPhase = FishingRodLifecycle.Phase.CAST_TELEGRAPH;
             state.rodAt = villager.tickCount + 8;
             log(villager, "arrived bank={} facing water={}; rod equipped, castAt={}", state.bank, state.water, state.rodAt);
             return;
         }
         if (villager.tickCount < state.rodAt) return;
         villager.swing(InteractionHand.MAIN_HAND);
+        state.fishingPhase = FishingRodLifecycle.Phase.FLOAT_ACTIVE;
         FishingFloat bobber = new FishingFloat(level, villager, state.water);
         if (level.addFreshEntity(bobber)) {
             state.floatEntity = bobber;
@@ -1363,6 +1373,7 @@ public final class WorkCoordinator {
             state.navigationDeadline = villager.tickCount + NAVIGATION_TIMEOUT;
             state.customNavigation = true;
             state.customPath = path;
+            state.fishingPhase = FishingRodLifecycle.Phase.NAVIGATING_TO_BANK;
             log(villager, "selected water={} bank={} path reachable; navigation started", state.water, state.bank);
             break;
         }
@@ -1491,27 +1502,42 @@ public final class WorkCoordinator {
     }
 
     private static boolean showProp(Villager villager, State state, Item item) {
-        if (state.prop != null && state.prop.intendedItem() != item) clearProp(villager);
+        // Keep a stable transaction reference for this entire invocation.  setItemInHand may run
+        // vanilla callbacks which can clear/suspend the state, so never dereference the mutable
+        // slot again after changing equipment.
+        TemporaryHandProp prop = state.propSlot.current();
+        if (prop != null && prop.intendedItem() != item) {
+            clearProp(villager, state, prop);
+            prop = state.propSlot.current();
+            if (prop != null && prop.intendedItem() != item) return false;
+        }
         ItemStack held = villager.getItemInHand(InteractionHand.MAIN_HAND);
         float dropChance = villager.getDropChances().byEquipment(EquipmentSlot.MAINHAND);
-        if (state.prop == null) {
-            state.prop = TemporaryHandProp.begin(villager.getUUID(), UUID.randomUUID(), item, held, dropChance);
-            TemporaryHandProp.Overlay overlay = state.prop.overlay();
+        if (prop == null) {
+            prop = state.propSlot.beginIfAbsent(villager.getUUID(), UUID.randomUUID(), item, held, dropChance);
+            if (prop.intendedItem() != item) return false;
+            TemporaryHandProp.Overlay overlay = prop.overlay();
             applyHandState(villager, overlay.stack(), overlay.dropChance());
             log(villager, "synthetic {} overlay started; original main-hand state preserved stack={} dropChance={} action={}",
-                    propName(item), state.prop.originalState().stack(), state.prop.originalState().dropChance(),
-                    state.prop.actionId());
-            return state.prop.owns(villager.getItemInHand(InteractionHand.MAIN_HAND));
+                    propName(item), prop.originalState().stack(), prop.originalState().dropChance(), prop.actionId());
+            return state.propSlot.isCurrent(prop) && (state.propSlot.isSuspended(prop)
+                    || prop.owns(villager.getItemInHand(InteractionHand.MAIN_HAND)));
         }
 
-        TemporaryHandProp.Reconcile reconcile = state.prop.reconcile(held, dropChance);
+        boolean wasSuspended = state.propSlot.isSuspended(prop);
+        TemporaryHandProp.Reconcile reconcile = wasSuspended
+                ? prop.resume(held, dropChance)
+                : prop.reconcile(held, dropChance);
         if (reconcile.kind() == TemporaryHandProp.ReconcileKind.FOREIGN_VWR_PRESENTATION) {
             log(villager, "foreign/stale VWR hand presentation quarantined before synthetic {} overlay stack={}",
                     propName(item), held);
         }
-        if (reconcile.applyOverlay()) {
+        if (reconcile.applyOverlay() && state.propSlot.isCurrent(prop)) {
             applyHandState(villager, reconcile.overlay().stack(), reconcile.overlay().dropChance());
-            if ((reconcile.kind() == TemporaryHandProp.ReconcileKind.EXTERNAL_CLEAR_REBASED
+            if (wasSuspended && state.propSlot.resumeIfCurrent(prop)) {
+                log(villager, "synthetic {} overlay restored after save interruption action={}",
+                        propName(item), prop.actionId());
+            } else if ((reconcile.kind() == TemporaryHandProp.ReconcileKind.EXTERNAL_CLEAR_REBASED
                     || reconcile.kind() == TemporaryHandProp.ReconcileKind.EXTERNAL_REPLACEMENT_REBASED)
                     && villager.tickCount >= state.nextPropConflictLog) {
                 log(villager, "synthetic {} unexpectedly replaced/cleared kind={}; latest legitimate main-hand state preserved stack={} dropChance={}; overlay reapplied",
@@ -1520,23 +1546,47 @@ public final class WorkCoordinator {
                 state.nextPropConflictLog = villager.tickCount + 100;
             }
         }
-        return state.prop.owns(villager.getItemInHand(InteractionHand.MAIN_HAND));
+        return state.propSlot.isCurrent(prop) && (state.propSlot.isSuspended(prop)
+                || prop.owns(villager.getItemInHand(InteractionHand.MAIN_HAND)));
     }
 
     public static void clearProp(Villager villager) {
         State state = STATES.get(villager);
-        if (state == null || state.prop == null) return;
+        if (state == null) return;
+        clearProp(villager, state, state.propSlot.current());
+    }
+
+    /** Removes the synthetic stack before serialization but retains its action identity in RAM. */
+    public static void suspendPropForSave(Villager villager) {
+        State state = STATES.get(villager);
+        if (state == null) return;
+        TemporaryHandProp prop = state.propSlot.current();
+        if (prop == null || state.propSlot.isSuspended(prop)) return;
         ItemStack held = villager.getItemInHand(InteractionHand.MAIN_HAND);
         float dropChance = villager.getDropChances().byEquipment(EquipmentSlot.MAINHAND);
-        TemporaryHandProp.Restore restore = state.prop.restore(held, dropChance);
-        String name = propName(state.prop.intendedItem());
-        if (restore.applyRestoration())
+        TemporaryHandProp.Restore restore = prop.restore(held, dropChance);
+        if (restore.applyRestoration() && state.propSlot.isCurrent(prop))
             applyHandState(villager, restore.handState().stack(), restore.handState().dropChance());
-        log(villager, "synthetic {} overlay cleanup result={} restorationApplied={} mainHand={} dropChance={}",
-                name, restore.kind(), restore.applyRestoration(),
+        if (state.propSlot.suspendIfCurrent(prop)) {
+            log(villager, "synthetic {} overlay suspended for save action={} cleanup={} restorationApplied={} mainHand={} dropChance={}",
+                    propName(prop.intendedItem()), prop.actionId(), restore.kind(), restore.applyRestoration(),
+                    villager.getItemInHand(InteractionHand.MAIN_HAND),
+                    villager.getDropChances().byEquipment(EquipmentSlot.MAINHAND));
+        }
+    }
+
+    private static void clearProp(Villager villager, State state, TemporaryHandProp prop) {
+        if (prop == null || !state.propSlot.isCurrent(prop)) return;
+        ItemStack held = villager.getItemInHand(InteractionHand.MAIN_HAND);
+        float dropChance = villager.getDropChances().byEquipment(EquipmentSlot.MAINHAND);
+        TemporaryHandProp.Restore restore = prop.restore(held, dropChance);
+        if (restore.applyRestoration() && state.propSlot.isCurrent(prop))
+            applyHandState(villager, restore.handState().stack(), restore.handState().dropChance());
+        if (!state.propSlot.clearIfCurrent(prop)) return;
+        log(villager, "synthetic {} overlay cleanup result={} restorationApplied={} mainHand={} dropChance={} action={}",
+                propName(prop.intendedItem()), restore.kind(), restore.applyRestoration(),
                 villager.getItemInHand(InteractionHand.MAIN_HAND),
-                villager.getDropChances().byEquipment(EquipmentSlot.MAINHAND));
-        state.prop = null;
+                villager.getDropChances().byEquipment(EquipmentSlot.MAINHAND), prop.actionId());
     }
 
     private static void applyHandState(Villager villager, ItemStack stack, float dropChance) {
@@ -1580,6 +1630,7 @@ public final class WorkCoordinator {
         state.telegraphRestarts = 0;
         state.nextSheepPathAt = 0;
         state.rodAt = 0;
+        state.fishingPhase = FishingRodLifecycle.Phase.CANCELLED;
         state.eligible = false;
         state.site = null;
         state.profession = null;
@@ -1678,7 +1729,8 @@ public final class WorkCoordinator {
         int nextRepositionLog;
         int cooldown;
         int telegraphRestarts;
-        TemporaryHandProp prop;
+        FishingRodLifecycle.Phase fishingPhase = FishingRodLifecycle.Phase.IDLE;
+        final TemporaryHandProp.Slot propSlot = new TemporaryHandProp.Slot();
         int nextPropConflictLog;
         boolean eligible;
         boolean repositioningSheep;
