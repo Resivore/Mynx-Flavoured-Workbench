@@ -119,4 +119,39 @@ class GateRouteRulesTest {
         assertEquals(GateRouteRules.Stage.CANCELLED,
                 GateRouteRules.advance(GateRouteRules.Stage.CANCELLED, true));
     }
+
+    @Test void collisionAwareSideClassificationHasNoPartialCrossingGap() {
+        assertEquals(GateRouteRules.GateSide.FAR,
+                GateRouteRules.classifyGateSide(false, 0.45));
+        assertEquals(GateRouteRules.GateSide.NEAR,
+                GateRouteRules.classifyGateSide(false, -0.45));
+        assertEquals(GateRouteRules.GateSide.PASSAGE,
+                GateRouteRules.classifyGateSide(true, 3.0));
+        assertEquals(GateRouteRules.GateSide.PASSAGE,
+                GateRouteRules.classifyGateSide(true, -3.0));
+        assertEquals(GateRouteRules.GateSide.PASSAGE,
+                GateRouteRules.classifyGateSide(false, 0.0));
+        assertEquals(GateRouteRules.GateSide.PASSAGE,
+                GateRouteRules.classifyGateSide(false, Double.NaN));
+    }
+
+    @Test void crossingMilestoneAcceptsAnyClearPointOnExpectedSide() {
+        assertTrue(GateRouteRules.reachedSide(GateRouteRules.GateSide.FAR,
+                GateRouteRules.GateSide.FAR));
+        assertTrue(GateRouteRules.reachedSide(GateRouteRules.GateSide.NEAR,
+                GateRouteRules.GateSide.NEAR));
+        assertFalse(GateRouteRules.reachedSide(GateRouteRules.GateSide.PASSAGE,
+                GateRouteRules.GateSide.NEAR));
+        assertFalse(GateRouteRules.reachedSide(GateRouteRules.GateSide.FAR,
+                GateRouteRules.GateSide.NEAR));
+    }
+
+    @Test void exitTimeoutPreservesRouteUntilOutsideIsProven() {
+        assertEquals(GateRouteRules.Stage.CLOSE_EXIT,
+                GateRouteRules.recoverExitTimeout(GateRouteRules.GateSide.NEAR));
+        assertEquals(GateRouteRules.Stage.APPROACH_EXIT,
+                GateRouteRules.recoverExitTimeout(GateRouteRules.GateSide.FAR));
+        assertEquals(GateRouteRules.Stage.CROSS_EXIT,
+                GateRouteRules.recoverExitTimeout(GateRouteRules.GateSide.PASSAGE));
+    }
 }

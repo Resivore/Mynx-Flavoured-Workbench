@@ -88,6 +88,32 @@ final class GateRouteRules {
         RETURN_TO_LOOM, CANCELLED
     }
 
+    /**
+     * Physical side of a gate, measured against the collision shape the closed gate would have.
+     * PASSAGE is deliberately neither side: a villager in that thin transition must retain its
+     * crossing obligation rather than letting timeout cleanup close the gate around or behind it.
+     */
+    enum GateSide { NEAR, FAR, PASSAGE }
+
+    static GateSide classifyGateSide(boolean intersectsClosedGate, double projectionTowardFar) {
+        if (intersectsClosedGate || !Double.isFinite(projectionTowardFar)
+                || projectionTowardFar == 0.0) return GateSide.PASSAGE;
+        return projectionTowardFar > 0.0 ? GateSide.FAR : GateSide.NEAR;
+    }
+
+    static boolean reachedSide(GateSide current, GateSide expected) {
+        return expected != GateSide.PASSAGE && current == expected;
+    }
+
+    /** A timed-out exit is never complete until the villager is demonstrably clear outside. */
+    static Stage recoverExitTimeout(GateSide side) {
+        return switch (side) {
+            case NEAR -> Stage.CLOSE_EXIT;
+            case FAR -> Stage.APPROACH_EXIT;
+            case PASSAGE -> Stage.CROSS_EXIT;
+        };
+    }
+
     /** The caller supplies a verified physical milestone; false never skips a stage. */
     static Stage advance(Stage stage, boolean milestoneReached) {
         if (!milestoneReached) return stage;
