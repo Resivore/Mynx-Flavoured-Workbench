@@ -1,21 +1,16 @@
 package dev.resivore.matchajei.client;
 
-import dev.resivore.matchajei.MatchaNamespaces;
 import dev.resivore.matchajei.client.category.MatchaAcquisitionCategory;
 import dev.resivore.matchajei.client.category.MatchaVillagerTradeCategory;
 import dev.resivore.matchajei.data.MatchaDisplayData;
 import mezz.jei.api.IModPlugin;
 import mezz.jei.api.JeiPlugin;
-import mezz.jei.api.constants.RecipeTypes;
-import mezz.jei.api.constants.VanillaTypes;
 import mezz.jei.api.gui.builder.IIngredientAcceptor;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
-import mezz.jei.api.ingredients.ITypedIngredient;
 import mezz.jei.api.recipe.RecipeIngredientRole;
-import mezz.jei.api.recipe.category.IRecipeCategory;
-import mezz.jei.api.recipe.types.IRecipeHolderType;
 import mezz.jei.api.recipe.types.IRecipeType;
 import mezz.jei.api.registration.IModIngredientRegistration;
+import mezz.jei.api.registration.IAdvancedRegistration;
 import mezz.jei.api.registration.IRecipeCategoryRegistration;
 import mezz.jei.api.registration.ISubtypeRegistration;
 import mezz.jei.api.runtime.IJeiRuntime;
@@ -23,10 +18,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.Recipe;
-import net.minecraft.world.item.crafting.RecipeHolder;
 
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -95,16 +87,12 @@ public final class MatchaJeiPlugin implements IModPlugin {
     }
 
     @Override
+    public void registerAdvanced(IAdvancedRegistration registration) {
+        registration.addRecipeManagerPlugin(new MatchaExactRecipeBridge());
+    }
+
+    @Override
     public void onRuntimeAvailable(IJeiRuntime runtime) {
-        Set<ItemStack> outputs = new LinkedHashSet<>();
-        collect(runtime, RecipeTypes.CRAFTING, outputs);
-        collect(runtime, RecipeTypes.STONECUTTING, outputs);
-        collect(runtime, RecipeTypes.SMELTING, outputs);
-        collect(runtime, RecipeTypes.SMOKING, outputs);
-        collect(runtime, RecipeTypes.BLASTING, outputs);
-        collect(runtime, RecipeTypes.CAMPFIRE_COOKING, outputs);
-        collect(runtime, RecipeTypes.SMITHING, outputs);
-        runtime.getIngredientManager().addIngredientsAtRuntime(VanillaTypes.ITEM_STACK, outputs);
         MatchaJeiRuntimeData.onRuntimeAvailable(runtime);
     }
 
@@ -132,20 +120,4 @@ public final class MatchaJeiPlugin implements IModPlugin {
         return JEI_OWNED_SUBTYPE_ITEMS.contains(BuiltInRegistries.ITEM.getKey(stack.getItem()));
     }
 
-    private static <T extends Recipe<?>> void collect(
-            IJeiRuntime runtime,
-            IRecipeHolderType<T> recipeType,
-            Set<ItemStack> outputs
-    ) {
-        IRecipeCategory<RecipeHolder<T>> category = runtime.getRecipeManager().getRecipeCategory(recipeType);
-        runtime.getRecipeManager().createRecipeLookup(recipeType).includeHidden().get()
-                .filter(holder -> MatchaNamespaces.contains(holder.id().identifier().getNamespace()))
-                .forEach(holder -> runtime.getRecipeManager().getRecipeIngredients(category, holder)
-                        .getIngredients(RecipeIngredientRole.OUTPUT).stream()
-                        .map(ITypedIngredient::getItemStack)
-                        .flatMap(java.util.Optional::stream)
-                        .filter(stack -> !stack.getComponentsPatch().isEmpty())
-                        .map(ItemStack::copy)
-                        .forEach(outputs::add));
-    }
 }

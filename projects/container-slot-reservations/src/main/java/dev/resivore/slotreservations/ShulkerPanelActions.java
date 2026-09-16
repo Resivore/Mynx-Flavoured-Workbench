@@ -2,6 +2,7 @@ package dev.resivore.slotreservations;
 
 import dev.resivore.slotreservations.network.ReservationActionPayload;
 import dev.resivore.slotreservations.network.ShulkerPanelContentActionPayload;
+import dev.resivore.slotreservations.network.ShulkerPanelMenuQuickMovePayload;
 import dev.resivore.slotreservations.network.ShulkerPanelReservationActionPayload;
 import dev.resivore.slotreservations.network.ShulkerPanelSyncPayload;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
@@ -63,6 +64,35 @@ public final class ShulkerPanelActions {
         if (selected == action.internalSlot() && plan.contents().get(selected).isEmpty()) {
             selected = ShulkerContents.nextOccupied(plan.contents(), selected);
         }
+        commit(player, host, plan.shulker(), host.menu().getCarried(), selected, action.host());
+        return true;
+    }
+
+    /**
+     * Mouse Tweaks sees virtual panel cells as the non-player inventory. Its
+     * shift-drag from a player slot therefore arrives here rather than through
+     * vanilla's menu routing, which cannot see those transient cells.
+     */
+    public static boolean handleMenuQuickMove(ServerPlayer player, ShulkerPanelMenuQuickMovePayload action) {
+        if (action.sourceMenuSlot() < 0) return false;
+        var resolved = ShulkerHostResolver.resolve(player, action.menuId(), action.host(), action.hostFingerprint());
+        if (resolved.isEmpty()) return false;
+        ShulkerHostResolver.ResolvedHost host = resolved.orElseThrow();
+        if (action.sourceMenuSlot() >= host.menu().slots.size()) return false;
+        Slot source = host.menu().slots.get(action.sourceMenuSlot());
+        if (source == host.slot() || source.index != action.sourceMenuSlot()
+                || source.container != player.getInventory()
+                || !ShulkerHostResolver.removableSource(player, source)) return false;
+        ItemStack before = source.getItem().copy();
+        ShulkerTransferPlanner.Insertion plan = ShulkerTransferPlanner.planInsertion(host.stack(), before);
+        if (plan.moved() == 0) return false;
+        ItemStack remainder = before.copy();
+        remainder.shrink(plan.moved());
+        source.setByPlayer(remainder, before);
+        source.setChanged();
+        source.container.setChanged();
+        int selected = selectedForHost(player, host);
+        if (selected < 0) selected = ShulkerContents.firstOccupied(plan.contents());
         commit(player, host, plan.shulker(), host.menu().getCarried(), selected, action.host());
         return true;
     }

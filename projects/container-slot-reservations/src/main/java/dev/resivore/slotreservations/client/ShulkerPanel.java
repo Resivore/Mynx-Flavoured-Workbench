@@ -12,6 +12,7 @@ import dev.resivore.slotreservations.api.client.ShulkerPanelHeaderDecorations;
 import dev.resivore.slotreservations.network.ReservationActionPayload;
 import dev.resivore.slotreservations.network.ShulkerHostLocator;
 import dev.resivore.slotreservations.network.ShulkerPanelContentActionPayload;
+import dev.resivore.slotreservations.network.ShulkerPanelMenuQuickMovePayload;
 import dev.resivore.slotreservations.network.ShulkerPanelReservationActionPayload;
 import dev.resivore.slotreservations.network.ShulkerPanelSyncPayload;
 import dev.resivore.slotreservations.network.ShulkerSelectionPayload;
@@ -26,9 +27,12 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.SimpleContainer;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -42,8 +46,15 @@ public final class ShulkerPanel {
     private static int hoveredCell = -1;
     private static final ShulkerPanelState STATE = new ShulkerPanelState();
     private static final SecondaryDrag SECONDARY_DRAG = new SecondaryDrag();
+    /** Client-only slots exposed through Mouse Tweaks' extension API; never menu ownership. */
+    private static final SimpleContainer MOUSE_TWEAKS_VIRTUAL_CONTAINER =
+            new SimpleContainer(ReservationData.SLOT_COUNT);
+    private static VirtualSlot[] mouseTweaksSlots = new VirtualSlot[ReservationData.SLOT_COUNT];
+    private static int mouseTweaksLeft = Integer.MIN_VALUE;
+    private static int mouseTweaksTop = Integer.MIN_VALUE;
     private static String expectedFingerprint;
     private static int lastSentSelection = Integer.MIN_VALUE;
+    private static int mouseTweaksInitialSecondarySlot = -1;
 
     private ShulkerPanel() {}
 
@@ -66,6 +77,7 @@ public final class ShulkerPanel {
         }
 
         geometry = ShulkerPanelGeometry.place(graphics.guiWidth(), graphics.guiHeight(), binding.hostBounds());
+        positionMouseTweaksSlots(leftPos, topPos);
         boolean retained = binding.hostBounds().contains(mouseX, mouseY)
                 || geometry.bounds().contains(mouseX, mouseY);
         if (!STATE.retain(retained)) { close(false); return; }
@@ -245,7 +257,10 @@ public final class ShulkerPanel {
         if (slot >= 0) {
             if (shiftPrimary) sendContent(slot, ShulkerPanelContentActionPayload.Click.QUICK_MOVE);
             else if (standardClick && (button == 0 || button == 1)) {
-                if (button == 1) SECONDARY_DRAG.begin(slot);
+                if (button == 1) {
+                    SECONDARY_DRAG.begin(slot);
+                    if (MouseTweaksCompatibility.isActive()) mouseTweaksInitialSecondarySlot = slot;
+                }
                 sendContent(slot, button == 0 ? ShulkerPanelContentActionPayload.Click.PRIMARY
                         : ShulkerPanelContentActionPayload.Click.SECONDARY);
             }
@@ -286,6 +301,10 @@ public final class ShulkerPanel {
     public static boolean drag(double mouseX, double mouseY, int button) {
         boolean insidePanel = binding != null && geometry != null && geometry.bounds().contains(mouseX, mouseY);
         if (!STATE.ownsDrag(insidePanel)) return false;
+        // Mouse Tweaks observes this drag before the screen's own handler and calls the
+        // virtual slot API. CSR still consumes covered coordinates so vanilla cannot treat
+        // them as a host/underlay drag, but it never starts a second drag state machine.
+        if (button != 1 || MouseTweaksCompatibility.ownsRightDrag()) return true;
         if (button == 1) {
             int slot = geometry.slot(mouseX, mouseY);
             if (SECONDARY_DRAG.enter(slot)) sendContent(slot, ShulkerPanelContentActionPayload.Click.SECONDARY);
@@ -295,12 +314,17 @@ public final class ShulkerPanel {
 
     public static boolean release(double mouseX, double mouseY) {
         SECONDARY_DRAG.reset();
+        mouseTweaksInitialSecondarySlot = -1;
         return STATE.releasePointer(binding != null && geometry != null && geometry.bounds().contains(mouseX, mouseY));
     }
 
     public static boolean scroll(double mouseX, double mouseY, double vertical) {
         if (binding == null || geometry == null || !(geometry.bounds().contains(mouseX, mouseY)
                 || binding.hostBounds().contains(mouseX, mouseY))) return false;
+        // Fabric invokes Mouse Tweaks' own scroll listener after the screen returns. Ask it
+        // first here so a consumed transfer wins; cancelling then prevents a duplicate call.
+        if (geometry.bounds().contains(mouseX, mouseY)
+                && MouseTweaksCompatibility.consumeWheel(binding.screen(), mouseX, mouseY, vertical)) return true;
         NonNullList<ItemStack> contents = ShulkerContents.copy(binding.slot().getItem());
         int selected = selectedIndex();
         if (selected < 0) selected = ShulkerContents.lastOccupied(contents);
@@ -364,6 +388,7 @@ public final class ShulkerPanel {
             if (client.player != null) ShulkerSelectionTracker.clear(client.player);
         }
         binding = null; geometry = null; hoveredCell = -1; SECONDARY_DRAG.reset();
+        mouseTweaksInitialSecondarySlot = -1;
         STATE.close(); expectedFingerprint = null; lastSentSelection = Integer.MIN_VALUE;
     }
 
@@ -375,6 +400,98 @@ public final class ShulkerPanel {
                            String fingerprint, ShulkerPanelGeometry.Rect hostBounds) {
         Binding withFingerprint(String changed) {
             return new Binding(screen, menu, menuId, menuSlot, slot, containerSlot, locator, changed, hostBounds);
+        }
+    }
+
+    /** Returns native menu slots plus the live transient panel region for Mouse Tweaks only. */
+    public static List<Slot> mouseTweaksSlots(List<Slot> menuSlots) {
+        if (binding == null || geometry == null) return menuSlots;
+        List<Slot> slots = new ArrayList<>(menuSlots.size() + mouseTweaksSlots.length);
+        slots.addAll(menuSlots);
+        for (VirtualSlot slot : mouseTweaksSlots) slots.add(slot);
+        return List.copyOf(slots);
+    }
+
+    /** Gives Mouse Tweaks priority over the covered panel grid but never over ordinary menu slots. */
+    public static Slot mouseTweaksSlotAt(double mouseX, double mouseY) {
+        if (binding == null || geometry == null) return null;
+        int slot = geometry.slot(mouseX, mouseY);
+        return slot < 0 ? null : mouseTweaksSlots[slot];
+    }
+
+    /** Routes Mouse Tweaks' supported API click back into existing fingerprint-bound CSR actions. */
+    public static boolean mouseTweaksClick(Slot target, int button, ContainerInput input) {
+        if (!(target instanceof VirtualSlot virtual) || binding == null) return false;
+        int slot = virtual.cell();
+        if (input == ContainerInput.QUICK_MOVE) {
+            sendContent(slot, ShulkerPanelContentActionPayload.Click.QUICK_MOVE);
+            return true;
+        }
+        if (input != ContainerInput.PICKUP || (button != 0 && button != 1)) return true;
+        // CSR already performed the initial ordinary right click. Mouse Tweaks revisits its
+        // origin when the pointer first leaves it; suppress only that one duplicate action.
+        if (button == 1 && mouseTweaksInitialSecondarySlot == slot) {
+            mouseTweaksInitialSecondarySlot = -1;
+            return true;
+        }
+        sendContent(slot, button == 0 ? ShulkerPanelContentActionPayload.Click.PRIMARY
+                : ShulkerPanelContentActionPayload.Click.SECONDARY);
+        return true;
+    }
+
+    /**
+     * Lets a Mouse Tweaks shift-drag from a real player-inventory slot target the virtual
+     * region. Vanilla quick move cannot see this panel, so the server performs the exact
+     * reservation-aware insertion after resolving the live menu source and host fingerprint.
+     */
+    public static boolean mouseTweaksQuickMoveFromMenuSlot(Slot source) {
+        if (binding == null || source == null || source == binding.slot() || source.isFake()
+                || !source.isActive() || binding.menu().slots.indexOf(source) != source.index) return false;
+        if (!ClientPlayNetworking.canSend(ShulkerPanelMenuQuickMovePayload.TYPE)) return false;
+        ClientPlayNetworking.send(new ShulkerPanelMenuQuickMovePayload(binding.menuId(), binding.locator(),
+                source.index, binding.fingerprint()));
+        return true;
+    }
+
+    private static void positionMouseTweaksSlots(int leftPos, int topPos) {
+        if (mouseTweaksLeft == leftPos && mouseTweaksTop == topPos) return;
+        VirtualSlot[] positioned = new VirtualSlot[ReservationData.SLOT_COUNT];
+        for (int cell = 0; cell < positioned.length; cell++) {
+            positioned[cell] = new VirtualSlot(cell, geometry.itemX(cell) - leftPos,
+                    geometry.itemY(cell) - topPos);
+        }
+        mouseTweaksSlots = positioned;
+        mouseTweaksLeft = leftPos;
+        mouseTweaksTop = topPos;
+    }
+
+    /** Transient read-only view; all mutations continue through CSR server payloads. */
+    private static final class VirtualSlot extends Slot {
+        private final int cell;
+
+        private VirtualSlot(int cell, int x, int y) {
+            super(MOUSE_TWEAKS_VIRTUAL_CONTAINER, -(cell + 1), x, y);
+            this.cell = cell;
+        }
+
+        private int cell() { return cell; }
+
+        @Override public ItemStack getItem() {
+            if (binding == null) return ItemStack.EMPTY;
+            return ShulkerContents.copy(binding.slot().getItem()).get(cell).copy();
+        }
+
+        @Override public boolean mayPlace(ItemStack stack) {
+            if (binding == null || stack.isEmpty() || !stack.getItem().canFitInsideContainerItems()) return false;
+            return switch (dev.resivore.slotreservations.api.ContainerSlotReservationsApi
+                    .classify(binding.slot().getItem(), cell, stack)) {
+                case OCCUPIED_COMPATIBLE, RESERVED_MATCH, UNRESERVED_EMPTY -> true;
+                default -> false;
+            };
+        }
+
+        @Override public int getMaxStackSize(ItemStack stack) {
+            return stack.getMaxStackSize();
         }
     }
 

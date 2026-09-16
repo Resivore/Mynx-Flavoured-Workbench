@@ -3,7 +3,7 @@
   "id": "matcha_jei_integration",
   "version": "${version}",
   "name": "Matcha Flavoured JEI Integration",
-  "description": "Exposes Matcha component recipes, villager trades, and loot acquisition sources to JEI while unlocking loaded Matcha recipes in the vanilla recipe book.",
+  "description": "Synchronizes exact Matcha recipe, trade, and acquisition identities to JEI and Creative Search while unlocking loaded Matcha recipes in the vanilla recipe book.",
   "authors": ["Resivore"],
   "license": "All-Rights-Reserved",
   "environment": "*",
@@ -19,6 +19,6 @@
     "java": ">=25"
   },
   "recommends": {
-    "jei": "30.18.0.144"
+    "jei": ">=30.18.0"
   }
 }

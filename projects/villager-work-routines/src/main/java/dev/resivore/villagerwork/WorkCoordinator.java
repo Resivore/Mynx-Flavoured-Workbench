@@ -1271,9 +1271,16 @@ public final class WorkCoordinator {
             cancel(villager, state, "bank navigation timed out");
             return;
         }
-        if (!villager.blockPosition().equals(state.bank)
-                || villager.distanceToSqr(Vec3.atBottomCenterOf(state.bank)) > 1.1 * 1.1) {
-            if (state.rodAt != 0) { cancel(villager, state, "moved away from bank before cast"); return; }
+        if (villager.distanceToSqr(Vec3.atBottomCenterOf(state.bank)) > 1.1 * 1.1) {
+            if (state.rodAt != 0) {
+                // Ordinary villager steering can nudge a valid Fisherman off the exact bank after
+                // the rod telegraph. Keep the same vetted bank/water pair and retry the telegraph.
+                state.rodAt = 0;
+                state.navigationDeadline = villager.tickCount + NAVIGATION_TIMEOUT;
+                clearProp(villager);
+                log(villager, "moved slightly away from bank={} before cast; repositioning and restarting rod telegraph",
+                        state.bank);
+            }
             if (villager.tickCount % 20 == 0) {
                 Path path = villager.getNavigation().createPath(state.bank, 0);
                 if (path == null || !path.canReach() || !state.bank.equals(path.getTarget())

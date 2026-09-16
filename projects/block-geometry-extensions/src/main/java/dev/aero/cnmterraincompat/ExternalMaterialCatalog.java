@@ -21,7 +21,7 @@ import java.util.Set;
 
 /** Exact, allowlisted external material sources. Provider lookup happens only at provider-entrypoint RETURN. */
 public final class ExternalMaterialCatalog {
-    public static final String PROFILE_VERSION = "bge-c65-bbb-axis-resource-runtime-fix-v1";
+    public static final String PROFILE_VERSION = "bge-c69-bbb-beam-standard-axis-v1";
     private static final List<Spec> SPECS = specs();
     private static final Set<String> REGISTERED_PROVIDERS = new LinkedHashSet<>();
 
@@ -129,10 +129,11 @@ public final class ExternalMaterialCatalog {
     }
 
     /**
-     * BBB owns the established beam slab, stair, and thin wooden-wall forms.  BGE consumes
-     * those exact registrations rather than creating parallel standard geometry, then adds its
-     * five axis-aware BGE forms to the beam parent.  The wall is intentionally the BBB wooden
-     * wall: it has connection state but no material AXIS state or BGE thick-post model route.
+     * BBB's beam parent is directional, but its provider slab is keyed by {@code facing,type}
+     * and its provider stair only by normal stair geometry. Neither can retain an independent
+     * material {@code AXIS}. BGE therefore owns the canonical axis-aware slab and stair while
+     * BBB retains its ordinary thin wooden wall. The wall's connection-state contract deliberately
+     * has no material axis and must not take the BGE pillar/thick-post route.
      */
     private static List<Spec> bbbBeamSpecs() {
         List<Spec> result = new ArrayList<>();
@@ -141,8 +142,6 @@ public final class ExternalMaterialCatalog {
             Identifier id = Identifier.fromNamespaceAndPath("bbb", material + "_beam");
             String texture = "bbb:block/beam/" + material;
             result.add(new Spec(id, "bbb", id, id, Map.of(
-                    "slab", Identifier.fromNamespaceAndPath("bbb", material + "_beam_slab"),
-                    "stairs", Identifier.fromNamespaceAndPath("bbb", material + "_beam_stairs"),
                     "wall", Identifier.fromNamespaceAndPath("bbb", material + "_wall")),
                     VisualProfile.PILLAR, NibaruMaterialProfile.OrientationPolicy.AXIS_ALIGNED,
                     texture, texture + "_top", texture + "_top", TintProfile.NONE,

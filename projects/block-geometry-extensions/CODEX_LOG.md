@@ -230,3 +230,14 @@
 - Artifact: Current release identity is unchanged: version C68 (Layer Axis UV; embedded 4.2.12-bge.canary68.layer-axis-uv+26.2), filename cnm-nibaru-integration-4.2.12-bge.canary68.layer-axis-uv+26.2.jar, SHA-256 823cfe9f9fcc32c1cf73e1ddfdfc6489efda0753df64679723df56204a4bf732, source 9bc80ee2538a39b9fa15606611dc050a1cf6bff2.
 - Result: ACCEPTED — owner-directed acceptance without fabricated runtime evidence.
 - Next state: Preserve the accepted release and historical evidence. A future successor may use TESTING while awaiting or receiving user runtime validation; no Workbench slot or profile allocation is required.
+
+## 2026-09-15T14:38:03Z — Build BGE C69 BBB Beam Standard Axis
+
+- Revision: 29
+- Source checkpoint: `f798f4179a079baa235717674f32b88ecb27689f`
+- Changes: Inspected BBB 2.0pre4's authoritative Beam Slab and Beam Stair state resources: they encode `facing,type` and `facing,half,shape` geometry respectively but no independent material `AXIS`. Left every BBB original registration and texture asset untouched; changed only canonical BGE ownership so BGE AxisSlab and AxisStairs serve all 12 Beam families while BBB's ordinary thin WoodenWallBlock remains the canonical no-AXIS wall. Added exhaustive state, placement, combination, codec, rotation, mirror, neighbor-shape, ShapeMap, and BBB side/end-grain texture-contract GameTest coverage.
+- Build/static: Java 25 clean Gradle build passed; focused Minecraft 26.2 controlled GameTests passed 107/107, including 108 slab and 1,440 stair independent material-axis state combinations across all 12 materials. The material-profile architecture script, unified artifact verifier, `git diff --check`, and repository validation passed. These checks are not Minecraft gameplay-runtime evidence.
+- Runtime: No profile was modified and Minecraft gameplay was not run. C69 is `NOT_DEPLOYED` and `RUNTIME_UNTESTED`; C68's accepted status and provenance are not transferred to C69.
+- Artifact: Current C69 is `cnm-nibaru-integration-4.2.13-bge.canary69.bbb-beam-standard-axis+26.2.jar`, 6,109,068 bytes, SHA-256 `202eecc72f77745617b0d34ebfb7c58d3369300aeb12e8300309ae1fad39ec52`, source checkpoint `f798f4179a079baa235717674f32b88ecb27689f`; exact C68 remains accepted.
+- Result: `ACTIVE` — controlled-validated successor awaiting the focused manual checklist; no Test Instance Manager state or profile was changed.
+- Next state: Retain the exact ignored C69 artifact, keep C68 as accepted rollback/provenance, and record only explicit runtime evidence after the dedicated 26.2 checklist.

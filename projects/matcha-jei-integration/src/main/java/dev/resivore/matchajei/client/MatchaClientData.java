@@ -2,13 +2,14 @@ package dev.resivore.matchajei.client;
 
 import dev.resivore.matchajei.network.MatchaJeiDataPayload;
 
+import java.util.LinkedHashSet;
 import java.util.Objects;
+import java.util.Set;
 import java.util.function.Consumer;
 
 public final class MatchaClientData {
     private static MatchaJeiDataPayload current = MatchaJeiDataPayload.EMPTY;
-    private static Consumer<MatchaJeiDataPayload> listener = payload -> {
-    };
+    private static final Set<Consumer<MatchaJeiDataPayload>> listeners = new LinkedHashSet<>();
 
     private MatchaClientData() {
     }
@@ -19,11 +20,14 @@ public final class MatchaClientData {
 
     public static void publish(MatchaJeiDataPayload payload) {
         current = Objects.requireNonNull(payload, "payload");
-        listener.accept(current);
+        listeners.forEach(listener -> listener.accept(current));
     }
 
-    public static void setListener(Consumer<MatchaJeiDataPayload> newListener) {
-        listener = newListener == null ? payload -> {
-        } : newListener;
+    public static void addListener(Consumer<MatchaJeiDataPayload> listener) {
+        listeners.add(Objects.requireNonNull(listener, "listener"));
+    }
+
+    public static void removeListener(Consumer<MatchaJeiDataPayload> listener) {
+        listeners.remove(listener);
     }
 }

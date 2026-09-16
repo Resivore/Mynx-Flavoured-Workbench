@@ -14,15 +14,17 @@
     ]
   },
   "definition": {
-    "lifecycle": "ACCEPTED",
+    "lifecycle": "ACTIVE",
     "goals": [
       "Expose exact component-bearing Matcha Flavoured recipe and non-recipe identities through JEI without duplicating JEI's vanilla recipe ownership.",
+      "Build a shared exact catalog from effective, post-resolution Matcha recipe outputs and conservative C3 non-recipe identities for both JEI and Creative Search.",
       "Keep Matcha recipe knowledge idempotent and server-owned while JEI remains an optional client integration."
     ],
     "scope": [
       "Preserve the accepted C2 baseline: seven JEI vanilla recipe categories, ten audited Matcha recipe namespaces, 315 exact component-bearing output ingredients, and idempotent server-side recipe awards.",
       "Maintain C3's data-driven Matcha Villager Trades and Matcha Acquisition categories with 175 supported trade pages, 249 conservative acquisition pages, and 240 exact non-recipe identities.",
-      "Retain the exact JEI 30.18.0.144 subtype boundary: skip all 14 JEI-owned base interpreters, use the companion-owned exact-stack bridge for 19 identities, and keep the accepted component-manifest path for the other 221."
+      "Retain the exact JEI 30.18.0.144 subtype boundary: skip all 14 JEI-owned base interpreters, use the companion-owned exact-stack bridge for 19 identities, and keep the accepted component-manifest path for the other 221.",
+      "For C4, resolve owned recipe IDs through the loaded recipe manager before catalog publication so compatibility replacements such as Blessing of Demeter remain authoritative, and rebuild Creative Search directly when vanilla's cached tab parameters would otherwise retain stale contents."
     ],
     "boundaries": {
       "owned_paths": [
@@ -30,7 +32,7 @@
       ],
       "exclusions": [
         "JEI patches, replacement of JEI-owned subtype interpreters, duplicate or fake vanilla recipes, and fabricated recipes for non-recipe mechanics.",
-        "Inventory, menu, slot, quick-move, creative-validation, Trinkets, Inventory Extended, Offhand, or Carried behavior changes.",
+        "Inventory, menu, slot, quick-move, general creative-validation, Trinkets, Inventory Extended, Offhand, or Carried behavior changes; C4 only contributes synchronized exact stacks to Creative Search.",
         "Contextual exploration-map trades, unsupported identity-changing loot functions, exact loot odds, and live villager demand, reputation, or exhaustion state.",
         "A dedicated-server-without-JEI validation claim; that runtime gate remains explicitly unperformed."
       ]
@@ -52,7 +54,7 @@
         "type": "MOD",
         "identifier": "fabric-api",
         "requirement": "0.157.0+26.2",
-        "reason": "Exact Fabric API used by the current C3 build."
+        "reason": "Exact Fabric API used by the current C4 build."
       },
       {
         "type": "DATA_PACK",
@@ -63,8 +65,8 @@
       {
         "type": "MOD",
         "identifier": "jei",
-        "requirement": "30.18.0.144 (recommended client; SHA-256 20bc7f0ebe5f36f84c8c4d571469968be54a6e1989b4e85a736136dc41ea8fe2)",
-        "reason": "Exact compile and runtime API surface whose vanilla categories and subtype ownership are preserved; JEI is not a dedicated-server requirement."
+        "requirement": "30.18.0.144 compile/test baseline (SHA-256 20bc7f0ebe5f36f84c8c4d571469968be54a6e1989b4e85a736136dc41ea8fe2); packaged metadata recommends >=30.18.0",
+        "reason": "The stable optional JEI client capability remains unpinned at runtime; the exact compile/test baseline preserves C4's audited vanilla categories and subtype boundary."
       },
       {
         "type": "TOOL",
@@ -81,15 +83,20 @@
     ]
   },
   "state": {
-    "milestone": "User-reported external aggregate runtime PASS is bound to exact C3; C3 is accepted in Stack v10 with no Test Slot deployment or slot history, C2 is retained as rollback/provenance, and the dedicated-server-without-JEI gate remains unperformed.",
+    "milestone": "C4 is an unaccepted static-pass successor with a shared effective exact catalog for JEI and Creative Search. The user-reported external aggregate runtime PASS remains bound only to exact accepted C3 in Stack v10; C2 remains rollback/provenance, and the dedicated-server-without-JEI gate remains unperformed.",
     "releases": {
       "current": {
-        "version": "C3 (legacy 0.2.0-nonrecipe-discovery-canary1)",
+        "version": "C4 (0.3.0-effective-catalog-canary4)",
+        "embedded_version": "0.3.0-effective-catalog-canary4",
         "artifact": {
-          "filename": "matcha-jei-integration-0.2.0-nonrecipe-discovery-canary1.jar",
-          "sha256": "1e4941e2353c1696505f243e86eb58f0239dd1144d544897370b021f6748a455"
+          "filename": "matcha-jei-integration-0.3.0-effective-catalog-canary4.jar",
+          "sha256": "b2a071b4b9b329fa10ccdfd1a4fddd3808a529f0985ce56f70c98861bedcf8dd"
         },
-        "source_commit": "d7879b2d78c2bcf3d26efe2af0ecc5eaafd9e02b"
+        "source_commit": "af145152e425834f55ba279d9509abf51fc17e7c",
+        "runtime_dependency_policy": {
+          "contract": "CAPABILITY_OR_PROVIDER",
+          "exceptions": []
+        }
       },
       "accepted": {
         "version": "C3 (legacy 0.2.0-nonrecipe-discovery-canary1)",
@@ -107,22 +114,22 @@
         },
         "source_commit": "b26c1b62d2f33bbea9c0d99e07d6d373baa1dd48"
       },
-      "accepted_current": "CURRENT_IS_ACCEPTED",
+      "accepted_current": "CURRENT_DIFFERS_FROM_ACCEPTED",
       "accepted_rollback": "ROLLBACK_DIFFERS_FROM_ACCEPTED"
     },
     "validation": {
       "build": "STATIC_PASS",
-      "deployment": "READY_TO_TEST_VERIFIED",
-      "runtime": "RUNTIME_PASS"
+      "deployment": "NOT_DEPLOYED",
+      "runtime": "RUNTIME_UNTESTED"
     },
     "blocker": null
   },
   "synchronization": {
-    "revision": 2,
-    "activity_at": "2026-09-01T02:35:20Z",
-    "updated_at": "2026-09-01T02:35:20Z",
-    "last_codex_at": "2026-09-01T02:35:20Z",
-    "source_commit": "e405fbcf4900788f1c4bee2df68a130f72bfc239",
+    "revision": 4,
+    "activity_at": "2026-09-16T01:31:22Z",
+    "updated_at": "2026-09-16T01:31:22Z",
+    "last_codex_at": "2026-09-16T01:31:22Z",
+    "source_commit": "af145152e425834f55ba279d9509abf51fc17e7c",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
