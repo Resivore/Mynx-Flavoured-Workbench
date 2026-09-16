@@ -12,7 +12,7 @@
     ]
   },
   "definition": {
-    "lifecycle": "ACTIVE",
+    "lifecycle": "ACCEPTED",
     "goals": [
       "Provide a server-authoritative trowel that draws eligible building materials by quantity from the actual offhand shulker and delegates placement through the resolved BlockItem's normal placement path.",
       "Keep Full Block, Slab, Stair, and Wall Trowel-owned while discovering extended modes from the unified BGE catalog without a separate Nibaru artifact or dependency.",
@@ -84,7 +84,7 @@
     ]
   },
   "state": {
-    "milestone": "Exact private C10/Private Canary 9 remains accepted aggregate-PASS provenance and exact private C5 remains its rollback. C11/Private Canary 10 is the separate active successor: it globally reserves offhand shulker placement and disables only exact optional Quick Right-Click 1.9 shulker handling. C11 completed controlled validation, is retained locally, has not been deployed, and has no runtime result.",
+    "milestone": "The exact private C11/Private Canary 10 release is ACCEPTED following the user's explicit external Minecraft runtime PASS. Its established controlled-validation evidence is retained, and it remains NOT_DEPLOYED because this user-reported evidence did not involve a managed deployment. Exact C10/Private Canary 9 is retained as the prior known-good rollback/provenance release.",
     "releases": {
       "current": {
         "version": "C11 (Private Canary 10; embedded 0.1.0-canary10)",
@@ -100,6 +100,19 @@
         }
       },
       "accepted": {
+        "version": "C11 (Private Canary 10; embedded 0.1.0-canary10)",
+        "embedded_version": "0.1.0-canary10",
+        "artifact": {
+          "filename": "shulker-trowel-0.1.0-canary10-private.jar",
+          "sha256": "e286d0ab90fcf4aa5d59b5250ef6a6bf8bf52266143d85c749915d53ad11f57a"
+        },
+        "source_commit": "adfa2dee4426fed91d4ad224136cd16b318ce2ec",
+        "runtime_dependency_policy": {
+          "contract": "CAPABILITY_OR_PROVIDER",
+          "exceptions": []
+        }
+      },
+      "rollback": {
         "version": "C10 (Private Canary 9; embedded 0.1.0-canary9)",
         "embedded_version": "0.1.0-canary9",
         "artifact": {
@@ -108,31 +121,22 @@
         },
         "source_commit": "844bccbb6f9efdfb36749c719d1fb396f71b626f"
       },
-      "rollback": {
-        "version": "C5 (legacy Private Canary 4; embedded 0.1.0-canary4)",
-        "embedded_version": "0.1.0-canary4",
-        "artifact": {
-          "filename": "shulker-trowel-0.1.0-canary4-private.jar",
-          "sha256": "73c012c08ca5567e795711cf11c8eaac625528e7350309114467129394f0afba"
-        },
-        "source_commit": "069bc055356c5a46218acfb846c97acc0c0c4789"
-      },
-      "accepted_current": "CURRENT_DIFFERS_FROM_ACCEPTED",
+      "accepted_current": "CURRENT_IS_ACCEPTED",
       "accepted_rollback": "ROLLBACK_DIFFERS_FROM_ACCEPTED"
     },
     "validation": {
       "build": "CONTROLLED_VALIDATION_PASS",
       "deployment": "NOT_DEPLOYED",
-      "runtime": "RUNTIME_UNTESTED"
+      "runtime": "RUNTIME_PASS"
     },
     "blocker": null
   },
   "synchronization": {
-    "revision": 8,
-    "activity_at": "2026-09-16T01:50:05Z",
-    "updated_at": "2026-09-16T01:50:05Z",
-    "last_codex_at": "2026-09-16T01:50:05Z",
-    "source_commit": "adfa2dee4426fed91d4ad224136cd16b318ce2ec",
+    "revision": 9,
+    "activity_at": "2026-09-16T04:00:00Z",
+    "updated_at": "2026-09-16T04:00:00Z",
+    "last_codex_at": "2026-09-16T04:00:00Z",
+    "source_commit": "9622ba0f0298f585b75a8c4c209133b0aa2db8ed",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null

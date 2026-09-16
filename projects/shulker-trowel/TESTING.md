@@ -1,8 +1,8 @@
-# Shulker Trowel C11 runtime procedure — not deployed
+# Shulker Trowel C11 accepted runtime evidence and regression procedure
 
-**CONTROLLED_VALIDATION_PASS — NOT_DEPLOYED — RUNTIME_UNTESTED**
+**ACCEPTED — CONTROLLED_VALIDATION_PASS — NOT_DEPLOYED — USER-REPORTED EXTERNAL RUNTIME_PASS**
 
-Exact candidate: private `shulker-trowel-0.1.0-canary10-private.jar`, 50,375 bytes, SHA-256 `e286d0ab90fcf4aa5d59b5250ef6a6bf8bf52266143d85c749915d53ad11f57a`, embedded version `0.1.0-canary10`, source `adfa2dee4426fed91d4ad224136cd16b318ce2ec`. Exact C10 / Private Canary 9 remains the accepted aggregate-PASS release and C5 remains its rollback. C11 needs a verified serialized Test Instance Manager deployment in the dedicated Matcha Flavoured 26.2 Workbench before runtime evidence is recorded. Do not access the protected Matcha Flavoured 26.1.2 profile.
+Exact accepted private C11: `shulker-trowel-0.1.0-canary10-private.jar`, 50,375 bytes, SHA-256 `e286d0ab90fcf4aa5d59b5250ef6a6bf8bf52266143d85c749915d53ad11f57a`, embedded version `0.1.0-canary10`, source `adfa2dee4426fed91d4ad224136cd16b318ce2ec`. The user explicitly reported an aggregate Minecraft runtime **PASS** and accepted this exact identity. No row-level observations were supplied, so none are inferred. This evidence is external/user-reported: no managed deployment, Test Slot operation, profile access, or Minecraft launch by Codex is claimed; deployment remains `NOT_DEPLOYED`. Exact C10 / Private Canary 9 is now the rollback/previous-known-good release. Do not access the protected Matcha Flavoured 26.1.2 profile.
 
 ## A. Offhand shulker placement
 
@@ -34,4 +34,4 @@ Exact candidate: private `shulker-trowel-0.1.0-canary10-private.jar`, 50,375 byt
 2. Hold the Trowel in MAIN_HAND and a material palette shulker in OFF_HAND. Place several materials and geometries, including a crouched build where applicable.
 3. Confirm material selection and Survival consumption still use the actual offhand `DataComponents.CONTAINER`, while that palette shulker itself never places.
 
-Automated checks and a successful launch are not runtime PASS. Record only observed Minecraft behavior against this exact C11 identity.
+Retain this procedure for a future regression test of this exact accepted identity or an explicitly identified successor. Automated checks and a successful launch are not runtime PASS. Record only observed Minecraft behavior against the tested exact identity.

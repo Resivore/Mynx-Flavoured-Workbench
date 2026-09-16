@@ -241,3 +241,14 @@
 - Artifact: Current C69 is `cnm-nibaru-integration-4.2.13-bge.canary69.bbb-beam-standard-axis+26.2.jar`, 6,109,068 bytes, SHA-256 `202eecc72f77745617b0d34ebfb7c58d3369300aeb12e8300309ae1fad39ec52`, source checkpoint `f798f4179a079baa235717674f32b88ecb27689f`; exact C68 remains accepted.
 - Result: `ACTIVE` — controlled-validated successor awaiting the focused manual checklist; no Test Instance Manager state or profile was changed.
 - Next state: Retain the exact ignored C69 artifact, keep C68 as accepted rollback/provenance, and record only explicit runtime evidence after the dedicated 26.2 checklist.
+
+## 2026-09-16T04:00:00Z — Record exact BGE C69 user-reported PASS and acceptance
+
+- Revision: 30
+- Source checkpoint: `9622ba0f0298f585b75a8c4c209133b0aa2db8ed`
+- Changes: Recorded the user's explicit external aggregate Minecraft runtime `PASS` and acceptance only for exact BGE C69. Current and accepted now bind the unchanged C69 candidate; prior accepted C68 is the rollback/previous-known-good provenance release. Historical C52 and standalone-Nibaru provenance remain untouched. No source behavior, artifact byte, filename, version, or deployment state was changed.
+- Build/static: No rebuild, repackaging, metadata mutation, or artifact substitution was performed. C69 retains its existing CONTROLLED_VALIDATION_PASS evidence, including the documented Java 25 build and 107/107 controlled GameTests; the canonical-record update is validated separately.
+- Runtime: User-reported external aggregate `PASS` for exact C69 `4.2.13-bge.canary69.bbb-beam-standard-axis+26.2`, artifact `cnm-nibaru-integration-4.2.13-bge.canary69.bbb-beam-standard-axis+26.2.jar`, SHA-256 `202eecc72f77745617b0d34ebfb7c58d3369300aeb12e8300309ae1fad39ec52`, source `f798f4179a079baa235717674f32b88ecb27689f`. No checklist-row observations were supplied or inferred. Codex did not deploy, launch, inspect, or modify either Minecraft profile or Test Slot; C69 truthfully remains NOT_DEPLOYED.
+- Artifact: Accepted/current C69 remains the ignored, untracked `cnm-nibaru-integration-4.2.13-bge.canary69.bbb-beam-standard-axis+26.2.jar`, 6,109,068 bytes, SHA-256 `202eecc72f77745617b0d34ebfb7c58d3369300aeb12e8300309ae1fad39ec52`, embedded version `4.2.13-bge.canary69.bbb-beam-standard-axis+26.2`, source `f798f4179a079baa235717674f32b88ecb27689f`. Rollback/previous-known-good C68 remains `cnm-nibaru-integration-4.2.12-bge.canary68.layer-axis-uv+26.2.jar`, SHA-256 `823cfe9f9fcc32c1cf73e1ddfdfc6489efda0753df64679723df56204a4bf732`, embedded version `4.2.12-bge.canary68.layer-axis-uv+26.2`, source `9bc80ee2538a39b9fa15606611dc050a1cf6bff2`.
+- Result: ACCEPTED — C69 is CONTROLLED_VALIDATION_PASS / NOT_DEPLOYED / RUNTIME_PASS from exact user-reported external evidence, with no blocker.
+- Next state: Preserve exact C69 bytes, C68 rollback provenance, and the aggregate-only external evidence. Any successor requires its own exact validation and runtime result.

@@ -18,7 +18,7 @@
     ]
   },
   "definition": {
-    "lifecycle": "ACTIVE",
+    "lifecycle": "ACCEPTED",
     "goals": [
       "Maintain one Fabric mod, source tree, build, version, and deployable JAR for the absorbed Nibaru native material catalog and all BGE geometry.",
       "Preserve every former Nibaru and BGE registry/resource identity, specialized material behavior, and saved-world reference while CNM remains an unchanged external dependency.",
@@ -73,7 +73,7 @@
     ]
   },
   "state": {
-    "milestone": "C69 is the controlled-validated successor to accepted C68. BBB's original Beam Slab and Beam Stair state definitions encode slab/stair geometry but expose no independent material AXIS, so C69 preserves those provider registrations unchanged while making BGE AxisSlab and AxisStairs the canonical forms for all 12 BBB beams. BBB's ordinary thin WoodenWallBlock remains the sole canonical wall. C69 is not deployed and has no Minecraft gameplay-runtime result; C68 remains accepted provenance.",
+    "milestone": "The exact C69 BBB Beam Standard Axis release is ACCEPTED following the user's explicit external Minecraft runtime PASS. Its controlled-validation evidence is retained, and it remains NOT_DEPLOYED because this user-reported evidence did not involve a managed deployment. C68 remains the prior known-good rollback/provenance release.",
     "releases": {
       "current": {
         "version": "C69 (BBB Beam Standard Axis; embedded 4.2.13-bge.canary69.bbb-beam-standard-axis+26.2)",
@@ -101,6 +101,31 @@
         }
       },
       "accepted": {
+        "version": "C69 (BBB Beam Standard Axis; embedded 4.2.13-bge.canary69.bbb-beam-standard-axis+26.2)",
+        "embedded_version": "4.2.13-bge.canary69.bbb-beam-standard-axis+26.2",
+        "artifact": {
+          "filename": "cnm-nibaru-integration-4.2.13-bge.canary69.bbb-beam-standard-axis+26.2.jar",
+          "sha256": "202eecc72f77745617b0d34ebfb7c58d3369300aeb12e8300309ae1fad39ec52"
+        },
+        "source_commit": "f798f4179a079baa235717674f32b88ecb27689f",
+        "runtime_dependency_policy": {
+          "contract": "CAPABILITY_OR_PROVIDER",
+          "exceptions": [
+            {
+              "consumer_id": "cnm_terrain_slabs_compat",
+              "relationship": "depends",
+              "dependency_id": "minecraft",
+              "predicate": "~26.2",
+              "reason": "The exact C69 artifact targets the Minecraft 26.2 release and packages Fabric's same-release predicate; this target-specific Minecraft predicate must remain bound to the controlled-validation release bytes.",
+              "regression_evidence": [
+                "A Java 25 clean Gradle build produced C69 SHA-256 202eecc72f77745617b0d34ebfb7c58d3369300aeb12e8300309ae1fad39ec52.",
+                "The C69 GameTest suite passed 107/107 on the Minecraft 26.2 validation baseline, including all 12 BBB Beam materials; 108 independent material-axis/slab-state combinations; 1,440 independent material-axis/stair-state combinations; texture selector contracts; rotation, mirror, placement, combination, codec, and neighbor-shape checks; and the no-AXIS ordinary BBB wall contract."
+              ]
+            }
+          ]
+        }
+      },
+      "rollback": {
         "version": "C68 (Layer Axis UV; embedded 4.2.12-bge.canary68.layer-axis-uv+26.2)",
         "embedded_version": "4.2.12-bge.canary68.layer-axis-uv+26.2",
         "artifact": {
@@ -125,31 +150,22 @@
           ]
         }
       },
-      "rollback": {
-        "version": "C52 (legacy Integration 1.39)",
-        "embedded_version": "0.5.49-nibaru-cnm-canary1.39-native-directional-material-axis",
-        "artifact": {
-          "filename": "cnm-nibaru-integration-0.5.49-nibaru-cnm-canary1.39-native-directional-material-axis.jar",
-          "sha256": "0e84fb7b8c69e31c3c22a592d0667db66c2918c8fd9f461bd2c216d377722e69"
-        },
-        "source_commit": "2e58d752af44f4b84e10bc5e53a41aea00a177ee"
-      },
-      "accepted_current": "CURRENT_DIFFERS_FROM_ACCEPTED",
+      "accepted_current": "CURRENT_IS_ACCEPTED",
       "accepted_rollback": "ROLLBACK_DIFFERS_FROM_ACCEPTED"
     },
     "validation": {
       "build": "CONTROLLED_VALIDATION_PASS",
       "deployment": "NOT_DEPLOYED",
-      "runtime": "RUNTIME_UNTESTED"
+      "runtime": "RUNTIME_PASS"
     },
     "blocker": null
   },
   "synchronization": {
-    "revision": 29,
-    "activity_at": "2026-09-15T14:38:03Z",
-    "updated_at": "2026-09-15T14:38:03Z",
-    "last_codex_at": "2026-09-15T14:38:03Z",
-    "source_commit": "f798f4179a079baa235717674f32b88ecb27689f",
+    "revision": 30,
+    "activity_at": "2026-09-16T04:00:00Z",
+    "updated_at": "2026-09-16T04:00:00Z",
+    "last_codex_at": "2026-09-16T04:00:00Z",
+    "source_commit": "9622ba0f0298f585b75a8c4c209133b0aa2db8ed",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
