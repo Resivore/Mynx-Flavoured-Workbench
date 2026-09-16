@@ -125,7 +125,8 @@ def model(name: str, lifecycle: str, *, mtime_ns: int | None = None, project_uui
         jar_mtime_ns=mtime_ns,
         jar_mtime_iso=None if mtime_ns is None else "2026-09-16T05:10:00.000000Z",
         jar_note="Fixture.",
-        server_status="UNKNOWN",
+        server_status="NOT_DEPLOYED",
+        deployed_release=None,
     )
 
 
@@ -242,37 +243,51 @@ class WorkbenchDashboardTests(unittest.TestCase):
             self.assertIsNone(record.jar_mtime_ns)
             self.assertIn("not a JAR", record.jar_note)
 
-    def test_server_yes_no_unknown_and_missing_entry(self) -> None:
+    def test_server_release_states_and_accepted_current_rule(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
-            yes = write_project(root, "yes", "Yes")
-            no = write_project(root, "no", "No")
-            unknown = write_project(root, "unknown", "Unknown")
-            missing = write_project(root, "missing", "Missing")
+            current = write_project(root, "current", "Current", current=release("canary7", "current.jar", "1" * 64))
+            outdated = write_project(root, "outdated", "Outdated", current=release("canary8", "outdated.jar", "2" * 64))
+            absent = write_project(root, "absent", "Absent", current=release("1.0.0", "absent.jar", "3" * 64))
+            accepted = write_project(root, "accepted", "Accepted", lifecycle="ACCEPTED", current=release("canary9", "accepted.jar", "4" * 64))
             records = dashboard.build_project_records(
-                statuses_for(yes, no, unknown, missing),
-                {yes[0]: "YES", no[0]: "NO", unknown[0]: "UNKNOWN"},
+                statuses_for(current, outdated, absent, accepted),
+                {
+                    current[0]: dashboard.canonical_release_identity(current[2]["state"]["releases"]["current"]),  # type: ignore[arg-type,index]
+                    outdated[0]: dashboard.canonical_release_identity(release("canary7", "outdated.jar", "2" * 64)),
+                },
             )
             states = {record.name: record.server_status for record in records}
-            self.assertEqual(states, {"Yes": "YES", "No": "NO", "Unknown": "UNKNOWN", "Missing": "UNKNOWN"})
+            self.assertEqual(states, {"Current": "CURRENT", "Outdated": "OUTDATED", "Absent": "NOT_DEPLOYED", "Accepted": "CURRENT"})
+
+    def test_new_current_release_makes_preserved_deployment_outdated_by_version_or_sha(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            item = write_project(Path(temporary), "fern", "Fern", current=release("canary8", "fern.jar", "b" * 64))
+            prior = {"version": "canary7", "artifact": {"filename": "fern.jar", "sha256": "a" * 64}}
+            record = dashboard.build_project_records(statuses_for(item), {item[0]: prior})[0]
+            self.assertEqual(record.server_status, "OUTDATED")
+            same_version_old_hash = {"version": "canary8", "artifact": {"filename": "fern.jar", "sha256": "a" * 64}}
+            record = dashboard.build_project_records(statuses_for(item), {item[0]: same_version_old_hash})[0]
+            self.assertEqual(record.server_status, "OUTDATED")
 
     def test_server_cli_persists_uuid_and_regenerates_dashboard(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
-            item = write_project(root, "fern", "Fern Project")
+            item = write_project(root, "fern", "Fern Project", current=release("canary1", "fern.jar", "a" * 64))
 
-            result = dashboard.main(["--root", str(root), "server", "fern", "yes"])
+            result = dashboard.main(["--root", str(root), "server", "fern", "current"])
 
             self.assertEqual(result, 0)
             saved = json.loads((root / dashboard.SERVER_STATE_FILENAME).read_text(encoding="utf-8"))
-            self.assertEqual(saved["projects"], {item[0]: "YES"})
+            self.assertEqual(saved["schema_version"], 2)
+            self.assertEqual(saved["projects"], {item[0]: {"version": "canary1", "artifact": {"filename": "fern.jar", "sha256": "a" * 64}}})
             self.assertNotIn("fern", saved["projects"])
             self.assertTrue((root / dashboard.DEFAULT_OUTPUT).is_file())
 
-            result = dashboard.main(["--root", str(root), "server", "Fern Project", "unknown"])
+            result = dashboard.main(["--root", str(root), "server", "Fern Project", "no"])
             self.assertEqual(result, 0)
             saved = json.loads((root / dashboard.SERVER_STATE_FILENAME).read_text(encoding="utf-8"))
-            self.assertEqual(saved["projects"], {item[0]: "UNKNOWN"})
+            self.assertEqual(saved["projects"], {})
 
     def test_open_regenerates_local_file_without_creating_server_state(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
@@ -290,15 +305,15 @@ class WorkbenchDashboardTests(unittest.TestCase):
 
     def test_uuid_keyed_server_state_survives_display_rename(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
-            item = write_project(Path(temporary), "fern", "Old Name")
+            item = write_project(Path(temporary), "fern", "Old Name", current=release("1.0.0"))
             renamed = copy.deepcopy(item[2])
             renamed["identity"]["name"] = "New Name"  # type: ignore[index]
             records = dashboard.build_project_records(
                 {item[0]: (item[1] / "WORKBENCH_STATUS.json", renamed)},
-                {item[0]: "YES"},
+                {item[0]: {"version": "1.0.0", "artifact": None}},
             )
             self.assertEqual(records[0].name, "New Name")
-            self.assertEqual(records[0].server_status, "YES")
+            self.assertEqual(records[0].server_status, "CURRENT")
 
     def test_hostile_project_name_is_safely_embedded_and_round_trips(self) -> None:
         hostile = "A </script><img src=x onerror=alert(1)> & \" ' \u2028 \u2029"
@@ -324,6 +339,20 @@ class WorkbenchDashboardTests(unittest.TestCase):
         self.assertEqual(first, second)
         self.assertLess(first.index(alpha.uuid), first.index(beta.uuid))
 
+    def test_canary_display_is_conservative_and_numeric(self) -> None:
+        self.assertEqual(dashboard.display_canary_version("canary1"), "C1")
+        self.assertEqual(dashboard.display_canary_version("0.1.0-canary12"), "C12")
+        self.assertEqual(dashboard.display_canary_version("release candidate"), "release candidate")
+        self.assertLess(dashboard.canary_number("C2") or 0, dashboard.canary_number("C10") or 0)
+
+    def test_bootstrap_sprite_is_embedded_and_icon_controls_are_labeled(self) -> None:
+        html = dashboard.render_dashboard([model("Alpha", "ACTIVE")])
+        self.assertIn('class="icon-sprite"', html)
+        self.assertIn('id="search"', html)
+        self.assertIn('href="#arrow-down-up"', html)
+        self.assertIn('aria-label="Clear project search"', html)
+        self.assertIn('title="Clear project search"', html)
+
     def test_generated_page_has_no_runtime_network_dependencies(self) -> None:
         html = dashboard.render_dashboard(
             [model("Alpha", "ACTIVE")],
@@ -331,8 +360,6 @@ class WorkbenchDashboardTests(unittest.TestCase):
         )
         lowered = html.casefold()
         for forbidden in (
-            "http://",
-            "https://",
             "@import",
             "fetch(",
             "xmlhttprequest",
@@ -341,6 +368,8 @@ class WorkbenchDashboardTests(unittest.TestCase):
             "sendbeacon",
         ):
             self.assertNotIn(forbidden, lowered)
+        self.assertNotIn('href="http', lowered)
+        self.assertNotIn('src="http', lowered)
         self.assertIn("connect-src 'none'", html)
 
 

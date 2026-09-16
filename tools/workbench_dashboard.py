@@ -7,6 +7,7 @@ import argparse
 import hashlib
 import json
 import os
+import re
 import stat
 import sys
 import unicodedata
@@ -26,7 +27,8 @@ except ImportError:  # Direct execution from tools/.
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_OUTPUT = "WORKBENCH_DASHBOARD.html"
 SERVER_STATE_FILENAME = "WORKBENCH_SERVER_STATE.json"
-SERVER_STATES = {"YES", "NO", "UNKNOWN"}
+BOOTSTRAP_SPRITE = ROOT / "third_party" / "bootstrap-icons" / "bootstrap-icons.svg"
+SERVER_STATES = {"CURRENT", "OUTDATED", "NOT_DEPLOYED"}
 LIFECYCLE_ORDER = ("ACTIVE", "PLANNED", "ACCEPTED", "TESTING", "BLOCKED", "PARKED")
 LIFECYCLE_PRIORITY = {lifecycle: index for index, lifecycle in enumerate(LIFECYCLE_ORDER)}
 CHUNK_SIZE = 1024 * 1024
@@ -48,6 +50,57 @@ class DashboardProject:
     jar_mtime_iso: str | None
     jar_note: str
     server_status: str
+    deployed_release: dict[str, Any] | None
+
+
+def display_canary_version(version: str | None) -> str | None:
+    """Return a compact display label only for one unambiguous Canary integer."""
+
+    if version is None:
+        return None
+    matches = re.findall(r"(?i)(?<![a-z0-9])canary[._ -]?(\d+)(?!\d)", version)
+    if len(matches) == 1 and version.casefold().count("canary") == 1:
+        return f"C{int(matches[0])}"
+    return version
+
+
+def canary_number(version: str | None) -> int | None:
+    displayed = display_canary_version(version)
+    if displayed and displayed.startswith("C") and displayed[1:].isdigit():
+        return int(displayed[1:])
+    return None
+
+
+def _release_identity(value: Mapping[str, Any], path: str) -> dict[str, Any]:
+    """Validate and copy the durable release/artifact identity for server state."""
+
+    expected = {"version", "artifact"}
+    if set(value) != expected:
+        raise DashboardError(f"{path}: must contain exactly version and artifact")
+    version = value["version"]
+    if not isinstance(version, str) or not version or version != version.strip():
+        raise DashboardError(f"{path}.version: must be a non-empty trimmed string")
+    artifact = value["artifact"]
+    if artifact is None:
+        return {"version": version, "artifact": None}
+    if not isinstance(artifact, Mapping) or set(artifact) != {"filename", "sha256"}:
+        raise DashboardError(f"{path}.artifact: must contain exactly filename and sha256")
+    filename = artifact["filename"]
+    checksum = artifact["sha256"]
+    if not isinstance(filename, str) or not filename or filename != filename.strip():
+        raise DashboardError(f"{path}.artifact.filename: must be a non-empty trimmed string")
+    if not isinstance(checksum, str) or not re.fullmatch(r"[0-9a-f]{64}", checksum):
+        raise DashboardError(f"{path}.artifact.sha256: must be a lowercase SHA-256 hex digest")
+    return {"version": version, "artifact": {"filename": filename, "sha256": checksum}}
+
+
+def canonical_release_identity(current_release: Mapping[str, Any] | None) -> dict[str, Any] | None:
+    if current_release is None:
+        return None
+    return _release_identity(
+        {"version": current_release["version"], "artifact": current_release["artifact"]},
+        "current release",
+    )
 
 
 def _normalized_token(value: str) -> str:
@@ -66,8 +119,8 @@ def _canonical_uuid(value: str, path: str) -> str:
     return value
 
 
-def load_server_state(root: Path, known_uuids: Iterable[str]) -> dict[str, str]:
-    """Load the separate human-owned server-host state; missing entries are UNKNOWN."""
+def load_server_state(root: Path, known_uuids: Iterable[str]) -> dict[str, dict[str, Any]]:
+    """Load human-owned deployed-release records; an absent record means not deployed."""
 
     path = root / SERVER_STATE_FILENAME
     if not path.is_file():
@@ -80,23 +133,21 @@ def load_server_state(root: Path, known_uuids: Iterable[str]) -> dict[str, str]:
         raise DashboardError(f"{path}: missing keys: {', '.join(missing)}")
     if extra:
         raise DashboardError(f"{path}: unknown keys: {', '.join(extra)}")
-    if data["schema_version"] != 1:
-        raise DashboardError(f"{path}.schema_version: must equal 1")
+    if data["schema_version"] != 2:
+        raise DashboardError(f"{path}.schema_version: must equal 2")
     projects = data["projects"]
     if not isinstance(projects, dict):
         raise DashboardError(f"{path}.projects: must be an object keyed by project UUID")
 
     known = set(known_uuids)
-    result: dict[str, str] = {}
+    result: dict[str, dict[str, Any]] = {}
     for project_uuid, value in projects.items():
         checked_uuid = _canonical_uuid(project_uuid, f"{path}.projects key")
         if checked_uuid not in known:
             raise DashboardError(f"{path}.projects: unknown project UUID {checked_uuid}")
-        if value not in SERVER_STATES:
-            raise DashboardError(
-                f"{path}.projects.{checked_uuid}: must be one of {', '.join(sorted(SERVER_STATES))}"
-            )
-        result[checked_uuid] = value
+        if not isinstance(value, Mapping):
+            raise DashboardError(f"{path}.projects.{checked_uuid}: must be a deployed release object")
+        result[checked_uuid] = _release_identity(value, f"{path}.projects.{checked_uuid}")
     return result
 
 
@@ -113,15 +164,12 @@ def _atomic_write_text(path: Path, content: str) -> None:
             pass
 
 
-def write_server_state(root: Path, projects: Mapping[str, str]) -> None:
-    ordered: dict[str, str] = {}
+def write_server_state(root: Path, projects: Mapping[str, Mapping[str, Any]]) -> None:
+    ordered: dict[str, dict[str, Any]] = {}
     for project_uuid in sorted(projects):
         _canonical_uuid(project_uuid, "server state project UUID")
-        value = projects[project_uuid]
-        if value not in SERVER_STATES:
-            raise DashboardError(f"server state for {project_uuid}: invalid value {value!r}")
-        ordered[project_uuid] = value
-    payload = {"schema_version": 1, "projects": ordered}
+        ordered[project_uuid] = _release_identity(projects[project_uuid], f"server state for {project_uuid}")
+    payload = {"schema_version": 2, "projects": ordered}
     _atomic_write_text(
         root / SERVER_STATE_FILENAME,
         json.dumps(payload, indent=2, ensure_ascii=False) + "\n",
@@ -212,7 +260,7 @@ def sort_projects_default(projects: Iterable[DashboardProject]) -> list[Dashboar
 
 def build_project_records(
     statuses: Mapping[str, tuple[Path, dict[str, Any]]],
-    server_state: Mapping[str, str],
+    server_state: Mapping[str, Mapping[str, Any]],
 ) -> list[DashboardProject]:
     projects: list[DashboardProject] = []
     for project_uuid, (manifest_path, manifest) in statuses.items():
@@ -222,9 +270,18 @@ def build_project_records(
             raise DashboardError(f"{manifest_path}: unsupported dashboard lifecycle {lifecycle!r}")
         current = manifest["state"]["releases"]["current"]
         version, mtime_ns, mtime_iso, jar_note = _jar_details(manifest_path.parent, current)
-        server_status = server_state.get(project_uuid, "UNKNOWN")
-        if server_status not in SERVER_STATES:
-            raise DashboardError(f"server state for {project_uuid}: invalid value {server_status!r}")
+        current_identity = canonical_release_identity(current)
+        deployed_release = server_state.get(project_uuid)
+        if deployed_release is not None:
+            deployed_release = _release_identity(deployed_release, f"server state for {project_uuid}")
+        if lifecycle == "ACCEPTED" and current_identity is not None:
+            server_status = "CURRENT"
+        elif deployed_release is None:
+            server_status = "NOT_DEPLOYED"
+        elif deployed_release == current_identity:
+            server_status = "CURRENT"
+        else:
+            server_status = "OUTDATED"
         projects.append(
             DashboardProject(
                 uuid=project_uuid,
@@ -236,6 +293,7 @@ def build_project_records(
                 jar_mtime_iso=mtime_iso,
                 jar_note=jar_note,
                 server_status=server_status,
+                deployed_release=deployed_release,
             )
         )
     return sort_projects_default(projects)
@@ -297,16 +355,21 @@ def _json_for_html(value: Any) -> str:
 
 
 def _project_payload(project: DashboardProject) -> dict[str, Any]:
+    deployed_version = None if project.deployed_release is None else project.deployed_release["version"]
     return {
         "uuid": project.uuid,
         "projectId": project.project_id,
         "name": project.name,
         "lifecycle": project.lifecycle,
         "version": project.current_version,
+        "versionDisplay": display_canary_version(project.current_version),
+        "versionCanary": canary_number(project.current_version),
         "jarMtimeMs": None if project.jar_mtime_ns is None else project.jar_mtime_ns // 1_000_000,
         "jarMtimeIso": project.jar_mtime_iso,
         "jarNote": project.jar_note,
         "server": project.server_status,
+        "deployedVersion": deployed_version,
+        "deployedVersionDisplay": display_canary_version(deployed_version),
     }
 
 
@@ -323,7 +386,15 @@ def render_dashboard(
         "generatedAt": generated_iso,
         "projects": [_project_payload(project) for project in ordered],
     }
-    return HTML_TEMPLATE.replace("__DASHBOARD_DATA__", _json_for_html(payload))
+    try:
+        sprite = BOOTSTRAP_SPRITE.read_text(encoding="utf-8")
+    except OSError as exc:
+        raise DashboardError(f"Bootstrap Icons sprite is unavailable: {BOOTSTRAP_SPRITE}") from exc
+    sprite = sprite.replace("<svg ", '<svg class="icon-sprite" aria-hidden="true" ', 1)
+    return (
+        HTML_TEMPLATE.replace("__DASHBOARD_DATA__", _json_for_html(payload))
+        .replace("__BOOTSTRAP_ICONS__", sprite)
+    )
 
 
 def generate_dashboard(
@@ -350,7 +421,7 @@ def _build_parser() -> argparse.ArgumentParser:
     subparsers = parser.add_subparsers(dest="command")
     server = subparsers.add_parser("server", help="set human-owned real-server implementation state")
     server.add_argument("project", help="project UUID, ID, name, alias, or legacy identity")
-    server.add_argument("status", type=str.lower, choices=("yes", "no", "unknown"))
+    server.add_argument("status", type=str.lower, choices=("current", "no", "yes"))
     return parser
 
 
@@ -364,12 +435,20 @@ def main(argv: list[str] | None = None) -> int:
             statuses = load_repository_statuses(root)
             project_uuid, manifest = resolve_project(args.project, statuses)
             server_state = load_server_state(root, statuses)
-            server_state[project_uuid] = args.status.upper()
+            if args.status in {"current", "yes"}:
+                current = canonical_release_identity(manifest["state"]["releases"]["current"])
+                if current is None:
+                    raise DashboardError(f"{manifest['identity']['name']} has no current release to record")
+                server_state[project_uuid] = current
+                description = "CURRENT"
+            else:
+                server_state.pop(project_uuid, None)
+                description = "NOT DEPLOYED"
             projects = build_project_records(statuses, server_state)
             html = render_dashboard(projects)
             write_server_state(root, server_state)
             _atomic_write_text(output, html)
-            print(f"Set {manifest['identity']['name']} to {args.status.upper()} and regenerated {output}")
+            print(f"Set {manifest['identity']['name']} to {description} and regenerated {output}")
         else:
             projects = generate_dashboard(root, output)
             print(f"Generated {output} with {len(projects)} projects")
@@ -410,9 +489,9 @@ HTML_TEMPLATE = r'''<!doctype html>
       --testing: #a88bd8;
       --blocked: #db7474;
       --parked: #909a96;
-      --yes: #70bb89;
-      --no: #df7676;
-      --unknown: #87938e;
+      --current: #70bb89;
+      --outdated: #e4b75c;
+      --not-deployed: #c97373;
       --radius: 13px;
       --shadow: 0 22px 70px rgba(0, 0, 0, 0.32);
     }
@@ -426,7 +505,7 @@ HTML_TEMPLATE = r'''<!doctype html>
         radial-gradient(circle at 12% -10%, rgba(52, 106, 75, 0.19), transparent 34rem),
         linear-gradient(180deg, var(--bg) 0%, var(--bg-deep) 100%);
       color: var(--text);
-      font: 16px/1.45 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font: 16px/1.45 "Aptos", "Segoe UI", system-ui, sans-serif;
     }
 
     button, input, select { font: inherit; }
@@ -456,7 +535,9 @@ HTML_TEMPLATE = r'''<!doctype html>
     h1 {
       margin: 0;
       font: 600 clamp(2rem, 4vw, 3.05rem)/1.04 Georgia, "Times New Roman", serif;
-      letter-spacing: -0.035em;
+      font-style: italic;
+      letter-spacing: 0.01em;
+      text-transform: lowercase;
     }
     .masthead-meta { display: grid; justify-items: end; gap: 5px; color: var(--muted); font-size: 0.82rem; }
     .phrase { color: #799185; font-family: Georgia, "Times New Roman", serif; font-style: italic; letter-spacing: 0.03em; }
@@ -472,27 +553,14 @@ HTML_TEMPLATE = r'''<!doctype html>
     .control-row { display: flex; align-items: center; gap: 12px; }
     .control-row + .control-row { margin-top: 13px; }
     .search-wrap { position: relative; flex: 1 1 360px; min-width: 220px; }
-    .search-wrap::before {
-      content: "";
+    .search-icon {
       position: absolute;
       left: 14px;
       top: 50%;
-      width: 8px;
-      height: 8px;
-      border: 1.5px solid var(--muted);
-      border-radius: 50%;
-      transform: translateY(-62%);
-      pointer-events: none;
-    }
-    .search-wrap::after {
-      content: "";
-      position: absolute;
-      left: 22px;
-      top: calc(50% + 4px);
-      width: 5px;
-      height: 1.5px;
-      background: var(--muted);
-      transform: rotate(45deg);
+      width: 15px;
+      height: 15px;
+      color: var(--muted);
+      transform: translateY(-50%);
       pointer-events: none;
     }
     #search {
@@ -616,6 +684,7 @@ HTML_TEMPLATE = r'''<!doctype html>
       text-align: left;
       text-transform: inherit;
     }
+    .bi { display: inline-block; width: 1em; height: 1em; fill: currentColor; flex: 0 0 auto; }
     .sort-indicator { color: #668075; font-size: 0.85rem; }
     th[aria-sort="ascending"] .sort-indicator,
     th[aria-sort="descending"] .sort-indicator { color: var(--accent); }
@@ -689,9 +758,9 @@ HTML_TEMPLATE = r'''<!doctype html>
       border-radius: 50%;
       background: currentColor;
     }
-    .server-YES { --pill-color: var(--yes); }
-    .server-NO { --pill-color: var(--no); }
-    .server-UNKNOWN { --pill-color: var(--unknown); }
+    .server-CURRENT { --pill-color: var(--current); }
+    .server-OUTDATED { --pill-color: var(--outdated); }
+    .server-NOT_DEPLOYED { --pill-color: var(--not-deployed); }
 
     .empty {
       display: grid;
@@ -706,6 +775,7 @@ HTML_TEMPLATE = r'''<!doctype html>
     .empty button { padding: 8px 12px; border: 1px solid var(--line-strong); border-radius: 8px; background: #112a1e; color: var(--text); }
     [hidden] { display: none !important; }
     .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+    .icon-sprite { position: absolute; width: 0; height: 0; overflow: hidden; }
 
     @media (max-width: 760px) {
       .shell { width: min(100% - 20px, 1500px); padding-top: 18px; }
@@ -732,6 +802,7 @@ HTML_TEMPLATE = r'''<!doctype html>
   </style>
 </head>
 <body>
+  __BOOTSTRAP_ICONS__
   <main class="shell">
     <header class="masthead">
       <div>
@@ -749,19 +820,20 @@ HTML_TEMPLATE = r'''<!doctype html>
         <div class="control-row">
           <div class="search-wrap">
             <label class="sr-only" for="search">Search projects</label>
+            <svg class="bi search-icon" aria-hidden="true"><use href="#search"></use></svg>
             <input id="search" type="search" autocomplete="off" placeholder="Search projects" spellcheck="false">
-            <button id="clear-search" type="button" aria-label="Clear project search" hidden>×</button>
+            <button id="clear-search" type="button" aria-label="Clear project search" title="Clear project search" hidden><svg class="bi" aria-hidden="true"><use href="#x-lg"></use></svg></button>
           </div>
           <label class="select-wrap" for="server-filter">
             <span>On server</span>
             <select id="server-filter">
               <option value="ALL">All</option>
-              <option value="YES">On server</option>
-              <option value="NO">Not on server</option>
-              <option value="UNKNOWN">Unknown</option>
+              <option value="CURRENT">Current</option>
+              <option value="OUTDATED">Outdated</option>
+              <option value="NOT_DEPLOYED">Not deployed</option>
             </select>
           </label>
-          <button id="reset-order" class="order-button" type="button" disabled>Workbench order</button>
+          <button id="reset-order" class="order-button" type="button" title="Restore Workbench order" disabled><svg class="bi" aria-hidden="true"><use href="#arrow-clockwise"></use></svg> Workbench order</button>
         </div>
         <div class="control-row filter-row">
           <span class="filter-label">Lifecycle</span>
@@ -790,11 +862,11 @@ HTML_TEMPLATE = r'''<!doctype html>
           </colgroup>
           <thead>
             <tr>
-              <th scope="col" data-sort-header="name"><button class="sort-button" type="button" data-sort="name">Project <span class="sort-indicator">↕</span></button></th>
-              <th scope="col" data-sort-header="lifecycle"><button class="sort-button" type="button" data-sort="lifecycle">Lifecycle <span class="sort-indicator">↕</span></button></th>
-              <th scope="col" data-sort-header="version"><button class="sort-button" type="button" data-sort="version">Current Version <span class="sort-indicator">↕</span></button></th>
-              <th scope="col" data-sort-header="jar"><button class="sort-button" type="button" data-sort="jar">Last JAR Edit <span class="sort-indicator">↕</span></button></th>
-              <th scope="col" data-sort-header="server"><button class="sort-button" type="button" data-sort="server">On Server <span class="sort-indicator">↕</span></button></th>
+              <th scope="col" data-sort-header="name"><button class="sort-button" type="button" data-sort="name">Project <span class="sort-indicator" aria-hidden="true"><svg class="bi"><use href="#arrow-down-up"></use></svg></span></button></th>
+              <th scope="col" data-sort-header="lifecycle"><button class="sort-button" type="button" data-sort="lifecycle">Lifecycle <span class="sort-indicator" aria-hidden="true"><svg class="bi"><use href="#arrow-down-up"></use></svg></span></button></th>
+              <th scope="col" data-sort-header="version"><button class="sort-button" type="button" data-sort="version">Current Version <span class="sort-indicator" aria-hidden="true"><svg class="bi"><use href="#arrow-down-up"></use></svg></span></button></th>
+              <th scope="col" data-sort-header="jar"><button class="sort-button" type="button" data-sort="jar">Last JAR Edit <span class="sort-indicator" aria-hidden="true"><svg class="bi"><use href="#arrow-down-up"></use></svg></span></button></th>
+              <th scope="col" data-sort-header="server"><button class="sort-button" type="button" data-sort="server">On Server <span class="sort-indicator" aria-hidden="true"><svg class="bi"><use href="#arrow-down-up"></use></svg></span></button></th>
             </tr>
           </thead>
           <tbody id="project-rows"></tbody>
@@ -821,8 +893,8 @@ HTML_TEMPLATE = r'''<!doctype html>
       const projects = data.projects.map((project, defaultIndex) => ({ ...project, defaultIndex }));
       const lifecycleOrder = ["ACTIVE", "PLANNED", "ACCEPTED", "TESTING", "BLOCKED", "PARKED"];
       const lifecycleLabels = { ACTIVE: "Active", PLANNED: "Planned", ACCEPTED: "Accepted", TESTING: "Testing", BLOCKED: "Blocked", PARKED: "Parked" };
-      const serverLabels = { YES: "Yes", NO: "No", UNKNOWN: "Unknown" };
-      const serverRank = { YES: 0, NO: 1, UNKNOWN: 2 };
+      const serverLabels = { CURRENT: "current", OUTDATED: "outdated", NOT_DEPLOYED: "not deployed" };
+      const serverRank = { CURRENT: 0, OUTDATED: 1, NOT_DEPLOYED: 2 };
       const sortLabels = { name: "Project", lifecycle: "Lifecycle", version: "Current Version", jar: "Last JAR Edit", server: "On Server" };
       const state = { lifecycle: "ALL", server: "ALL", search: "", sortKey: "default", sortDirection: "asc", collapsed: new Set() };
 
@@ -858,6 +930,15 @@ HTML_TEMPLATE = r'''<!doctype html>
         return node;
       }
 
+      function icon(name) {
+        const svg = element("svg", "bi");
+        svg.setAttribute("aria-hidden", "true");
+        const use = document.createElementNS("http://www.w3.org/2000/svg", "use");
+        use.setAttribute("href", `#${name}`);
+        svg.appendChild(use);
+        return svg;
+      }
+
       function baseFilteredProjects() {
         const needle = state.search.toLocaleLowerCase();
         return projects.filter(project => {
@@ -883,7 +964,10 @@ HTML_TEMPLATE = r'''<!doctype html>
         if (state.sortKey === "name") {
           result = direction * left.name.localeCompare(right.name, undefined, { sensitivity: "base", numeric: true });
         } else if (state.sortKey === "version") {
-          result = compareNullable(left.version, right.version, direction, (a, b) => a.localeCompare(b, undefined, { sensitivity: "base", numeric: true }));
+          result = compareNullable(left.version, right.version, direction, (a, b) => {
+            if (left.versionCanary !== null && right.versionCanary !== null) return left.versionCanary - right.versionCanary;
+            return a.localeCompare(b, undefined, { sensitivity: "base", numeric: true });
+          });
         } else if (state.sortKey === "jar") {
           result = compareNullable(left.jarMtimeMs, right.jarMtimeMs, direction, (a, b) => a - b);
         } else if (state.sortKey === "server") {
@@ -898,13 +982,18 @@ HTML_TEMPLATE = r'''<!doctype html>
       }
 
       function lifecyclePill(lifecycle) {
-        const pill = element("span", `pill life-${lifecycle}`, lifecycleLabels[lifecycle]);
+        const pill = element("span", `pill life-${lifecycle}`, lifecycleLabels[lifecycle].toLocaleLowerCase());
         pill.style.setProperty("--pill-color", `var(--${lifecycle.toLocaleLowerCase()})`);
         return pill;
       }
 
-      function serverPill(server) {
-        return element("span", `pill status-pill server-${server}`, serverLabels[server]);
+      function serverPill(project) {
+        const label = project.server === "NOT_DEPLOYED"
+          ? serverLabels[project.server]
+          : `${serverLabels[project.server]} · ${project.deployedVersionDisplay}`;
+        const pill = element("span", `pill status-pill server-${project.server}`, label);
+        if (project.deployedVersion) pill.title = project.deployedVersion;
+        return pill;
       }
 
       function projectRow(project, lifecycle) {
@@ -920,7 +1009,9 @@ HTML_TEMPLATE = r'''<!doctype html>
         lifecycleCell.appendChild(lifecyclePill(project.lifecycle));
         row.appendChild(lifecycleCell);
 
-        row.appendChild(element("td", project.version === null ? "version-value muted" : "version-value", project.version ?? "—"));
+        const versionCell = element("td", project.version === null ? "version-value muted" : "version-value", project.versionDisplay ?? "—");
+        if (project.version) versionCell.title = project.version;
+        row.appendChild(versionCell);
 
         const jarCell = element("td", "date-value");
         if (project.jarMtimeMs === null) {
@@ -936,7 +1027,7 @@ HTML_TEMPLATE = r'''<!doctype html>
         row.appendChild(jarCell);
 
         const serverCell = element("td");
-        serverCell.appendChild(serverPill(project.server));
+        serverCell.appendChild(serverPill(project));
         row.appendChild(serverCell);
         return row;
       }
@@ -950,7 +1041,9 @@ HTML_TEMPLATE = r'''<!doctype html>
         button.type = "button";
         button.dataset.collapse = lifecycle;
         button.setAttribute("aria-expanded", String(!state.collapsed.has(lifecycle)));
-        button.appendChild(element("span", "group-chevron", "⌄"));
+        const chevron = icon("chevron-down");
+        chevron.classList.add("group-chevron");
+        button.appendChild(chevron);
         button.appendChild(document.createTextNode(lifecycle));
         button.appendChild(element("span", "group-count", `${count} ${count === 1 ? "project" : "projects"}`));
         heading.appendChild(button);
@@ -974,10 +1067,10 @@ HTML_TEMPLATE = r'''<!doctype html>
           const indicator = heading.querySelector(".sort-indicator");
           if (key === state.sortKey) {
             heading.setAttribute("aria-sort", state.sortDirection === "asc" ? "ascending" : "descending");
-            indicator.textContent = state.sortDirection === "asc" ? "↑" : "↓";
+            indicator.replaceChildren(icon(state.sortDirection === "asc" ? "sort-up" : "sort-down"));
           } else {
             heading.removeAttribute("aria-sort");
-            indicator.textContent = "↕";
+            indicator.replaceChildren(icon("arrow-down-up"));
           }
         }
         resetOrder.disabled = state.sortKey === "default";
