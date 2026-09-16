@@ -5,7 +5,8 @@
   "client": [
     "EntityPickMixin",
     "LevelRendererDestroyOverlayMixin",
-    "RenderSectionRegionAccessor"
+    "RenderSectionRegionAccessor",
+    "SodiumLevelSliceAccessor"
   ],
   "injectors": {
     "defaultRequire": 1

@@ -2,6 +2,7 @@ package dev.resivore.slabdecorations.client;
 
 import dev.resivore.slabdecorations.NibaruHorizontalSurface;
 import dev.resivore.slabdecorations.mixin.client.RenderSectionRegionAccessor;
+import dev.resivore.slabdecorations.mixin.client.SodiumLevelSliceAccessor;
 import net.fabricmc.fabric.api.client.renderer.v1.Renderer;
 import net.fabricmc.fabric.api.client.renderer.v1.mesh.MutableMesh;
 import net.fabricmc.fabric.api.client.renderer.v1.mesh.QuadEmitter;
@@ -37,6 +38,13 @@ public final class SurfaceOffsetModel implements BlockStateModel {
             Predicate<@Nullable Direction> cullTest) {
         double offset;
         if (level instanceof RenderSectionRegionAccessor snapshot) {
+            offset = NibaruHorizontalSurface.visibleOffset(
+                    state, level, snapshot.slabDecorations$getLevel(), pos);
+        } else if (level instanceof SodiumLevelSliceAccessor snapshot) {
+            // Sodium compiles terrain through a BlockAndTintGetter snapshot rather than the
+            // vanilla RenderSectionRegion.  Its immutable block data remains the authoritative
+            // view, while its owning ClientLevel supplies the LevelReader services required by
+            // the same read-only canonical-survival projection.
             offset = NibaruHorizontalSurface.visibleOffset(
                     state, level, snapshot.slabDecorations$getLevel(), pos);
         } else if (!(level instanceof LevelReader)) {

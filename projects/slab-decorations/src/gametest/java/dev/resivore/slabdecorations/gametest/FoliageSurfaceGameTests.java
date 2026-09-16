@@ -161,6 +161,52 @@ public final class FoliageSurfaceGameTests implements CustomTestMethodInvoker {
         helper.succeed();
     }
 
+    @GameTest(maxTicks = 100)
+    public void canonicalFullBlockAndNativeSlabCeilingItemPlacementStayInParity(
+            GameTestHelper helper) {
+        NibaruMaterialProfile stone = NibaruMaterialProfiles.fromBlock(Blocks.STONE_SLAB).orElseThrow();
+        helper.assertTrue(BuiltInRegistries.BLOCK.getKey(Blocks.STONE_SLAB).toString()
+                        .equals("minecraft:stone_slab")
+                        && stone.canonicalParent() == Blocks.STONE
+                        && stone.nativeSlab().isEmpty()
+                        && stone.effectiveSlabSource().orElse(null) == Blocks.STONE_SLAB,
+                "the exact vanilla Stone slab did not resolve to the Stone profile horizontal source");
+
+        List<CeilingPlacementParityCase> cases = List.of(
+                new CeilingPlacementParityCase(Items.GLOW_BERRIES, Blocks.CAVE_VINES, Blocks.STONE),
+                new CeilingPlacementParityCase(Items.WEEPING_VINES, Blocks.WEEPING_VINES, Blocks.CALCITE),
+                new CeilingPlacementParityCase(Items.HANGING_ROOTS, Blocks.HANGING_ROOTS, Blocks.CALCITE),
+                new CeilingPlacementParityCase(Items.SPORE_BLOSSOM, Blocks.SPORE_BLOSSOM, Blocks.CALCITE));
+        for (int index = 0; index < cases.size(); index++) {
+            CeilingPlacementParityCase testCase = cases.get(index);
+            BlockPos fullSupport = helper.absolutePos(new BlockPos(1 + index * 4, 7, 2));
+            BlockPos slabSupport = fullSupport.offset(0, 0, 2);
+            ItemPlacement full = placeAgainstUnderside(helper, fullSupport,
+                    testCase.canonicalParent().defaultBlockState(), testCase.item());
+            ItemPlacement slab = placeAgainstUnderside(helper, slabSupport,
+                    slab(testCase.canonicalParent(), SlabType.TOP), testCase.item());
+            boolean fullSucceeded = full.result().consumesAction();
+            boolean slabSucceeded = slab.result().consumesAction();
+            helper.assertTrue(fullSucceeded == slabSucceeded,
+                    testCase.item() + " slab item placement diverged from its canonical full block: full="
+                            + full + ", slab=" + slab);
+            if (fullSucceeded) {
+                BlockPos fullPlant = fullSupport.below();
+                BlockPos slabPlant = slabSupport.below();
+                helper.assertTrue(full.placed().is(testCase.placed())
+                                && slab.placed().is(testCase.placed())
+                                && full.placed().canSurvive(helper.getLevel(), fullPlant)
+                                && slab.placed().canSurvive(helper.getLevel(), slabPlant)
+                                && NibaruHorizontalSurface.visibleOffset(full.placed(), helper.getLevel(), fullPlant)
+                                == 0.0D
+                                && NibaruHorizontalSurface.visibleOffset(slab.placed(), helper.getLevel(), slabPlant)
+                                == NibaruHorizontalSurface.CEILING_TOP_OFFSET,
+                        testCase.item() + " successful full/slab placements did not preserve survival and offset");
+            }
+        }
+        helper.succeed();
+    }
+
     @GameTest(maxTicks = 120)
     public void caveVinesGrowAsOneCeilingAnchoredColumnAndKeepBerryHarvesting(
             GameTestHelper helper) {
@@ -347,7 +393,7 @@ public final class FoliageSurfaceGameTests implements CustomTestMethodInvoker {
                 "waterlogged ceiling slab entered usable hanging-foliage projection");
 
         List<BlockState> excluded = new ArrayList<>();
-        excluded.add(Blocks.STONE_SLAB.defaultBlockState()
+        excluded.add(Blocks.PETRIFIED_OAK_SLAB.defaultBlockState()
                 .setValue(BlockStateProperties.SLAB_TYPE, SlabType.TOP));
         NibaruMaterialProfile calcite = profile(Blocks.CALCITE);
         excluded.add(calcite.nativeStair().orElseThrow().defaultBlockState());
@@ -691,7 +737,7 @@ public final class FoliageSurfaceGameTests implements CustomTestMethodInvoker {
         NibaruMaterialProfile grass = profile(Blocks.GRASS_BLOCK);
         excludedGeometry.add(grass.nativeStair().orElseThrow().defaultBlockState());
         excludedGeometry.add(grass.nativeWall().orElseThrow().defaultBlockState());
-        excludedGeometry.add(Blocks.STONE_SLAB.defaultBlockState());
+        excludedGeometry.add(Blocks.PETRIFIED_OAK_SLAB.defaultBlockState());
 
         for (BlockState geometry : excludedGeometry) {
             level.setBlock(support, geometry, 2);
@@ -1174,10 +1220,29 @@ public final class FoliageSurfaceGameTests implements CustomTestMethodInvoker {
             BlockPos support,
             Item item,
             Block expectedBlock) {
+        BlockPos plant = support.below();
+        ItemPlacement placement = placeAgainstUnderside(helper, support,
+                slab(Blocks.CALCITE, SlabType.TOP), item);
+        BlockState placed = placement.placed();
+        helper.assertTrue(placement.result().consumesAction()
+                        && placed.is(expectedBlock)
+                        && placed.canSurvive(helper.getLevel(), plant)
+                        && placement.remaining() == 1
+                        && NibaruHorizontalSurface.visibleOffset(placed, helper.getLevel(), plant)
+                        == NibaruHorizontalSurface.CEILING_TOP_OFFSET,
+                item + " did not place " + expectedBlock
+                        + " naturally against a native top-slab underside; placement=" + placement);
+    }
+
+    private static ItemPlacement placeAgainstUnderside(
+            GameTestHelper helper,
+            BlockPos support,
+            BlockState supportState,
+            Item item) {
         var level = helper.getLevel();
         BlockPos plant = support.below();
         clearHangingColumn(level, support, 5);
-        level.setBlock(support, slab(Blocks.CALCITE, SlabType.TOP), 2);
+        level.setBlock(support, supportState, 2);
         var player = helper.makeMockPlayer(GameType.SURVIVAL);
         ItemStack held = new ItemStack(item, 2);
         player.setItemInHand(InteractionHand.MAIN_HAND, held);
@@ -1187,16 +1252,9 @@ public final class FoliageSurfaceGameTests implements CustomTestMethodInvoker {
         InteractionResult result = held.useOn(
                 new UseOnContext(player, InteractionHand.MAIN_HAND, underside));
         BlockState placed = level.getBlockState(plant);
-        helper.assertTrue(result.consumesAction()
-                        && placed.is(expectedBlock)
-                        && placed.canSurvive(level, plant)
-                        && held.getCount() == 1
-                        && NibaruHorizontalSurface.visibleOffset(placed, level, plant)
-                        == NibaruHorizontalSurface.CEILING_TOP_OFFSET,
-                item + " did not place " + expectedBlock
-                        + " naturally against a native top-slab underside; result=" + result
-                        + ", placed=" + placed + ", remaining=" + held.getCount());
+        ItemPlacement placement = new ItemPlacement(result, placed, held.getCount());
         player.discard();
+        return placement;
     }
 
     private static List<BlockPos> randomGrowDownward(
@@ -1742,7 +1800,7 @@ public final class FoliageSurfaceGameTests implements CustomTestMethodInvoker {
             return state;
         }
         NibaruMaterialProfile profile = NibaruMaterialProfiles.fromBlock(state.getBlock()).orElse(null);
-        if (profile == null || profile.nativeSlab().orElse(null) != state.getBlock()) return state;
+        if (profile == null || exactHorizontalSlab(profile) != state.getBlock()) return state;
         return profile.canonicalParent().withPropertiesOf(state);
     }
 
@@ -1776,6 +1834,12 @@ public final class FoliageSurfaceGameTests implements CustomTestMethodInvoker {
     private record CeilingPlacementCase(Item item, Block placed) {
     }
 
+    private record CeilingPlacementParityCase(Item item, Block placed, Block canonicalParent) {
+    }
+
+    private record ItemPlacement(InteractionResult result, BlockState placed, int remaining) {
+    }
+
     private record RootedFixture(BlockPos support, List<BlockPos> segments) {
     }
 
@@ -1801,7 +1865,7 @@ public final class FoliageSurfaceGameTests implements CustomTestMethodInvoker {
     }
 
     private static BlockState slab(Block canonicalParent, SlabType type) {
-        BlockState state = profile(canonicalParent).nativeSlab().orElseThrow().defaultBlockState();
+        BlockState state = exactHorizontalSlab(profile(canonicalParent)).defaultBlockState();
         state = state.setValue(BlockStateProperties.SLAB_TYPE, type);
         if (state.hasProperty(BlockStateProperties.SNOWY)) {
             state = state.setValue(BlockStateProperties.SNOWY, false);
@@ -1815,6 +1879,10 @@ public final class FoliageSurfaceGameTests implements CustomTestMethodInvoker {
             throw new AssertionError("profile did not retain canonical block identity for " + canonicalParent);
         }
         return profile;
+    }
+
+    private static Block exactHorizontalSlab(NibaruMaterialProfile profile) {
+        return profile.nativeSlab().orElseGet(() -> profile.effectiveSlabSource().orElseThrow());
     }
 
     private static boolean close(double first, double second) {

@@ -72,6 +72,16 @@ public final class VanillaFamilyCoverageGameTests implements CustomTestMethodInv
         helper.succeed();
     }
 
+    @GameTest(maxTicks = 40)
+    public void stoneUsesItsExactVanillaSlabAsTheProfileHorizontalSource(GameTestHelper helper) {
+        NibaruMaterialProfile profile = NibaruMaterialProfiles.fromBlock(Blocks.STONE_SLAB).orElseThrow();
+        helper.assertTrue(profile.canonicalParent() == Blocks.STONE
+                        && profile.nativeSlab().isEmpty()
+                        && profile.effectiveSlabSource().orElseThrow() == Blocks.STONE_SLAB,
+                "Stone must retain its registered vanilla slab as its exact profile horizontal source");
+        helper.succeed();
+    }
+
     private static void assertBgeTrio(GameTestHelper helper, NibaruMaterialProfile profile) {
         Map<BgeGeometryRole, Block> expected = Map.of(
                 BgeGeometryRole.LAYER, NibaruProviderAdapter.derived(profile, BgeGeometryRole.LAYER).orElseThrow(),

@@ -100,7 +100,7 @@ final class CanonicalProjectionArchitectureTest {
     }
 
     @Test
-    void interactionAndRenderingSeamsRemainRegistered() throws IOException {
+    void interactionAndRenderingSeamsRemainRegistered() throws Exception {
         String commonMixins = resource("/slab_decorations.mixins.json");
         String clientMixins = resource("/slab_decorations.client.mixins.json");
 
@@ -114,6 +114,17 @@ final class CanonicalProjectionArchitectureTest {
                 "shifted targeting seam is not registered");
         assertTrue(clientMixins.contains("LevelRendererDestroyOverlayMixin"),
                 "shifted breaking-overlay seam is not registered");
+        assertTrue(clientMixins.contains("RenderSectionRegionAccessor")
+                        && clientMixins.contains("SodiumLevelSliceAccessor"),
+                "vanilla and Sodium terrain snapshot bridges must both remain registered");
+
+        String model = classFile(Class.forName(
+                "dev.resivore.slabdecorations.client.SurfaceOffsetModel", false,
+                CanonicalProjectionArchitectureTest.class.getClassLoader()));
+        assertTrue(model.contains("RenderSectionRegionAccessor")
+                        && model.contains("SodiumLevelSliceAccessor")
+                        && model.contains("visibleOffset"),
+                "model translation must resolve both terrain snapshot families through the shared offset");
     }
 
     private static String classFile(Class<?> type) throws IOException {

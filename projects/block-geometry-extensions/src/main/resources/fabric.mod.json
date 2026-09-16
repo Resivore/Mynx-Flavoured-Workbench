@@ -3,8 +3,8 @@
   "id": "cnm_terrain_slabs_compat",
   "version": "${version}",
   "provides": ["more_slabs_stairs_and_walls"],
-  "name": "Block Geometry Extensions Canary 69 — BBB Beam Standard Axis",
-  "description": "Unified BGE candidate restoring independent material axes to canonical BBB Beam Slabs and Beam Stairs while retaining BBB's ordinary thin walls.",
+  "name": "Block Geometry Extensions Canary 70 — Stone Native Slab",
+  "description": "Unified BGE candidate restoring the exact vanilla Stone slab as the canonical Stone profile horizontal source without creating a duplicate material block.",
   "authors": ["Mynx Workbench", "Nibaru"],
   "environment": "*",
   "entrypoints": {

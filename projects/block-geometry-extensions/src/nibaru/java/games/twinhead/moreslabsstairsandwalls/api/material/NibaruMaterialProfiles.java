@@ -47,7 +47,10 @@ import java.util.Set;
 public final class NibaruMaterialProfiles {
     public static final String PROFILE_VERSION = "canary67-vanilla-family-coverage-v1";
     private static final Map<ModBlocks, Block> EXACT_VANILLA_SLAB_SOURCES = Map.of(
-            ModBlocks.SMOOTH_STONE, Blocks.SMOOTH_STONE_SLAB);
+            ModBlocks.SMOOTH_STONE, Blocks.SMOOTH_STONE_SLAB,
+            // Stone intentionally has no duplicate BGE slab registration. Its existing vanilla
+            // slab is nevertheless the exact horizontal material form for the Stone profile.
+            ModBlocks.STONE, Blocks.STONE_SLAB);
     private static volatile Inventory inventory;
 
     private NibaruMaterialProfiles() {}

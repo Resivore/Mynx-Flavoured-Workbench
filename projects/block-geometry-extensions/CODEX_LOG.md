@@ -252,3 +252,13 @@
 - Artifact: Accepted/current C69 remains the ignored, untracked `cnm-nibaru-integration-4.2.13-bge.canary69.bbb-beam-standard-axis+26.2.jar`, 6,109,068 bytes, SHA-256 `202eecc72f77745617b0d34ebfb7c58d3369300aeb12e8300309ae1fad39ec52`, embedded version `4.2.13-bge.canary69.bbb-beam-standard-axis+26.2`, source `f798f4179a079baa235717674f32b88ecb27689f`. Rollback/previous-known-good C68 remains `cnm-nibaru-integration-4.2.12-bge.canary68.layer-axis-uv+26.2.jar`, SHA-256 `823cfe9f9fcc32c1cf73e1ddfdfc6489efda0753df64679723df56204a4bf732`, embedded version `4.2.12-bge.canary68.layer-axis-uv+26.2`, source `9bc80ee2538a39b9fa15606611dc050a1cf6bff2`.
 - Result: ACCEPTED — C69 is CONTROLLED_VALIDATION_PASS / NOT_DEPLOYED / RUNTIME_PASS from exact user-reported external evidence, with no blocker.
 - Next state: Preserve exact C69 bytes, C68 rollback provenance, and the aggregate-only external evidence. Any successor requires its own exact validation and runtime result.
+
+## 2026-09-16T06:51:57Z — Create BGE C70 Stone profile horizontal-source correction
+- Revision: 31
+- Source checkpoint: `f798f4179a079baa235717674f32b88ecb27689f`
+- Changes: Added only `minecraft:stone_slab` as Stone's explicit effective slab source in the BGE material profile catalog. Stone retains no duplicate BGE-native slab; the profile ownership now exposes the exact existing vanilla horizontal form needed by canonical consumers.
+- Build/static: Java 25 clean build passed 108/108 Minecraft 26.2 GameTests, including the exact Stone effective-source regression. No Minecraft gameplay validation occurred.
+- Runtime: NOT_DEPLOYED / RUNTIME_UNTESTED; C69's user-reported acceptance is preserved as accepted provenance.
+- Artifact: C70 `cnm-nibaru-integration-4.2.14-bge.canary70.stone-native-slab+26.2.jar`, 6,109,089 bytes, SHA-256 `d304552e29e76c4165675415215439ac2d73b5a6ebc4abc9787f0fa1124cf266`.
+- Result: TESTING — controlled-validation successor awaiting focused runtime confirmation.
+- Next state: Verify exact C70 Stone-slab placement parity in Minecraft before acceptance; do not infer it from controlled GameTests.

@@ -19,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 final class ReferenceArtifactContractTest {
     private static final String BGE_SHA256 =
-            "1A4E4D1CD9C8709720EC84975E70CAFFB5552AC676537B9BBAE42DCA96567E87";
+            "D304552E29E76C4165675415215439AC2D73B5A6EBC4ABC9787F0FA1124CF266";
     private static final String CNM_UPSTREAM_SHA256 =
             "41A925E70D5E6E8C098BEA7DC88C44486AED46724E35CB2FA4B1622B2A4DBCCE";
     private static final String TERRAIN_SLABS_SHA256 =
@@ -31,7 +31,7 @@ final class ReferenceArtifactContractTest {
         Path upstream = reference("cnmUpstreamReferenceJar");
         Path terrainSlabs = reference("terrainSlabsReferenceJar");
 
-        assertEquals(BGE_SHA256, sha256(bge), "BGE C58 validation baseline drifted");
+        assertEquals(BGE_SHA256, sha256(bge), "BGE C70 validation baseline drifted");
         assertEquals(CNM_UPSTREAM_SHA256, sha256(upstream), "pristine CNM dependency drifted");
         assertEquals(TERRAIN_SLABS_SHA256, sha256(terrainSlabs), "pristine Terrain Slabs reference drifted");
 
@@ -81,17 +81,17 @@ final class ReferenceArtifactContractTest {
     private static void assertBgeProviderIdentity(Path jarPath) throws IOException {
         try (JarFile jar = new JarFile(jarPath.toFile())) {
             var metadataEntry = jar.getJarEntry("fabric.mod.json");
-            assertNotNull(metadataEntry, "BGE C58 is missing its root fabric.mod.json");
+            assertNotNull(metadataEntry, "BGE C70 is missing its root fabric.mod.json");
             String metadata;
             try (InputStream input = jar.getInputStream(metadataEntry)) {
                 metadata = new String(input.readAllBytes(), StandardCharsets.UTF_8);
             }
             assertTrue(metadata.contains("\"id\": \"cnm_terrain_slabs_compat\""),
-                    "BGE C58 primary provider identity drifted");
-            assertTrue(metadata.contains("\"version\": \"4.2.2-bge.canary58.glass-corner-uv+26.2\""),
-                    "BGE C58 embedded version drifted");
+                    "BGE C70 primary provider identity drifted");
+            assertTrue(metadata.contains("\"version\": \"4.2.14-bge.canary70.stone-native-slab+26.2\""),
+                    "BGE C70 embedded version drifted");
             assertTrue(metadata.contains("\"provides\": [\"more_slabs_stairs_and_walls\"]"),
-                    "BGE C58 no longer provides the stable Nibaru identity");
+                    "BGE C70 no longer provides the stable Nibaru identity");
         }
     }
 }

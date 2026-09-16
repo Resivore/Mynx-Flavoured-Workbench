@@ -43,7 +43,9 @@ public final class NibaruHorizontalSurface {
         }
 
         NibaruMaterialProfile profile = NibaruMaterialProfiles.fromBlock(supportState.getBlock()).orElse(null);
-        if (profile == null || profile.nativeSlab().orElse(null) != supportState.getBlock()) {
+        Block exactHorizontalSource = profile == null ? null : profile.nativeSlab()
+                .orElseGet(() -> profile.effectiveSlabSource().orElse(null));
+        if (exactHorizontalSource != supportState.getBlock()) {
             return Optional.empty();
         }
 

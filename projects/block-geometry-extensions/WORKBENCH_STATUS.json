@@ -18,7 +18,7 @@
     ]
   },
   "definition": {
-    "lifecycle": "ACCEPTED",
+    "lifecycle": "TESTING",
     "goals": [
       "Maintain one Fabric mod, source tree, build, version, and deployable JAR for the absorbed Nibaru native material catalog and all BGE geometry.",
       "Preserve every former Nibaru and BGE registry/resource identity, specialized material behavior, and saved-world reference while CNM remains an unchanged external dependency.",
@@ -73,14 +73,14 @@
     ]
   },
   "state": {
-    "milestone": "The exact C69 BBB Beam Standard Axis release is ACCEPTED following the user's explicit external Minecraft runtime PASS. Its controlled-validation evidence is retained, and it remains NOT_DEPLOYED because this user-reported evidence did not involve a managed deployment. C68 remains the prior known-good rollback/provenance release.",
+    "milestone": "C70 narrowly restores minecraft:stone_slab as the exact effective horizontal source of the Stone profile, without registering a duplicate slab. It passed 108 controlled GameTests and awaits runtime validation; accepted C69 remains the prior accepted release and C68 remains rollback provenance.",
     "releases": {
       "current": {
-        "version": "C69 (BBB Beam Standard Axis; embedded 4.2.13-bge.canary69.bbb-beam-standard-axis+26.2)",
-        "embedded_version": "4.2.13-bge.canary69.bbb-beam-standard-axis+26.2",
+        "version": "C70 (Stone Native Slab; embedded 4.2.14-bge.canary70.stone-native-slab+26.2)",
+        "embedded_version": "4.2.14-bge.canary70.stone-native-slab+26.2",
         "artifact": {
-          "filename": "cnm-nibaru-integration-4.2.13-bge.canary69.bbb-beam-standard-axis+26.2.jar",
-          "sha256": "202eecc72f77745617b0d34ebfb7c58d3369300aeb12e8300309ae1fad39ec52"
+          "filename": "cnm-nibaru-integration-4.2.14-bge.canary70.stone-native-slab+26.2.jar",
+          "sha256": "d304552e29e76c4165675415215439ac2d73b5a6ebc4abc9787f0fa1124cf266"
         },
         "source_commit": "f798f4179a079baa235717674f32b88ecb27689f",
         "runtime_dependency_policy": {
@@ -91,10 +91,10 @@
               "relationship": "depends",
               "dependency_id": "minecraft",
               "predicate": "~26.2",
-              "reason": "The exact C69 artifact targets the Minecraft 26.2 release and packages Fabric's same-release predicate; this target-specific Minecraft predicate must remain bound to the controlled-validation release bytes.",
+              "reason": "The exact C70 artifact targets the Minecraft 26.2 release and packages Fabric's same-release predicate; this target-specific Minecraft predicate must remain bound to the controlled-validation release bytes.",
               "regression_evidence": [
-                "A Java 25 clean Gradle build produced C69 SHA-256 202eecc72f77745617b0d34ebfb7c58d3369300aeb12e8300309ae1fad39ec52.",
-                "The C69 GameTest suite passed 107/107 on the Minecraft 26.2 validation baseline, including all 12 BBB Beam materials; 108 independent material-axis/slab-state combinations; 1,440 independent material-axis/stair-state combinations; texture selector contracts; rotation, mirror, placement, combination, codec, and neighbor-shape checks; and the no-AXIS ordinary BBB wall contract."
+                "A Java 25 clean Gradle build produced C70 SHA-256 d304552e29e76c4165675415215439ac2d73b5a6ebc4abc9787f0fa1124cf266.",
+                "The C70 GameTest suite passed 108/108 on the Minecraft 26.2 validation baseline, including exact Stone profile horizontal-source coverage."
               ]
             }
           ]
@@ -150,22 +150,22 @@
           ]
         }
       },
-      "accepted_current": "CURRENT_IS_ACCEPTED",
+      "accepted_current": "CURRENT_DIFFERS_FROM_ACCEPTED",
       "accepted_rollback": "ROLLBACK_DIFFERS_FROM_ACCEPTED"
     },
     "validation": {
       "build": "CONTROLLED_VALIDATION_PASS",
       "deployment": "NOT_DEPLOYED",
-      "runtime": "RUNTIME_PASS"
+      "runtime": "RUNTIME_UNTESTED"
     },
     "blocker": null
   },
   "synchronization": {
-    "revision": 30,
-    "activity_at": "2026-09-16T04:00:00Z",
-    "updated_at": "2026-09-16T04:00:00Z",
-    "last_codex_at": "2026-09-16T04:00:00Z",
-    "source_commit": "9622ba0f0298f585b75a8c4c209133b0aa2db8ed",
+    "revision": 31,
+    "activity_at": "2026-09-16T06:51:57Z",
+    "updated_at": "2026-09-16T06:51:57Z",
+    "last_codex_at": "2026-09-16T06:51:57Z",
+    "source_commit": "f798f4179a079baa235717674f32b88ecb27689f",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
