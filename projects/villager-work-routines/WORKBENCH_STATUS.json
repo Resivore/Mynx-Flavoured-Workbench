@@ -38,12 +38,12 @@
     ]
   },
   "state": {
-    "milestone": "C10 user-reported external diagnostic evidence binds to exact `0.1.0-canary10`, `villager-work-routines-0.1.0-canary10.jar`, SHA-256 `f311a96737a91f12872a64b8133f09b50ac4c24614a1dac427d142c281a58c65`, source `52eb2004d63ab0bafb0787d96ad4b89fca02a4e1`. The Fisherman looked better and the supplied log records 47 complete result/deposit cycles without retained output, but it does not establish the required visual checks or a PASS. The Shepherd completed nine shears but only eight outward crossings/deposits: its ninth `CROSS_EXIT` timed out, timeout restoration closed the gate without a confirmed outward crossing, two captured wool remained owned, and the villager later lost its loom claim. Because the log explicitly remained under tick sprint rather than the required 20 TPS, C10 is INCONCLUSIVE as an acceptance trial, while still exposing a concrete gate-boundary liveness defect. C11 replaces mismatched exact-block and coarse far-side predicates with one collision-aware NEAR/FAR/PASSAGE classifier, preserves exit cleanup across timeout, cancellation, save/load, and loom-memory loss, and awaits user-managed normal-rate runtime validation. The historical C5 Shepherd PASS remains preserved.",
+    "milestone": "C10 user-reported external diagnostic evidence binds to exact `0.1.0-canary10`, `villager-work-routines-0.1.0-canary10.jar`, SHA-256 `f311a96737a91f12872a64b8133f09b50ac4c24614a1dac427d142c281a58c65`, source `52eb2004d63ab0bafb0787d96ad4b89fca02a4e1`. The Fisherman looked better and the supplied log records 47 complete result/deposit cycles without retained output, but it does not establish the required visual checks or a PASS. The Shepherd completed nine shears but only eight outward crossings/deposits: its ninth `CROSS_EXIT` timed out, timeout restoration closed the gate without a confirmed outward crossing, two captured wool remained owned, and the villager later lost its loom claim. Because the log explicitly remained under tick sprint rather than the required 20 TPS, C10 is INCONCLUSIVE as an acceptance trial, while still exposing a concrete gate-boundary liveness defect. C11 replaces mismatched exact-block and coarse far-side predicates with one collision-aware NEAR/FAR/PASSAGE classifier, preserves exit cleanup across timeout, cancellation, save/load, and loom-memory loss. C12 further advances the crossed-arms Fisherman stick and its shared line tip, equips viable Shepherd targets during approach rather than only the close telegraph, and adds successful-only barrel interaction, profession-specific particles, and item-placement sounds. C12 awaits user-managed normal-rate runtime validation. The historical C5 Shepherd PASS remains preserved.",
     "releases": {
       "current": {
-        "version": "0.1.0-canary11",
-        "artifact": {"filename": "villager-work-routines-0.1.0-canary11.jar", "sha256": "e3771ef6e616d8c5ee8c466f5ed64cf447c87096ac17773e6cdddc75b99ad658"},
-        "source_commit": "92aac1d7fcfe6c017a1e2412cc8cd3880b5ba102",
+        "version": "0.1.0-canary12",
+        "artifact": {"filename": "villager-work-routines-0.1.0-canary12.jar", "sha256": "4c2fdf89bc258a55f6b5910066e31239e2e4341bf28cb353cd9661873f6610d2"},
+        "source_commit": "adcc6a90e92f2cea27c32292d371106e5531ceb3",
         "runtime_dependency_policy": {"contract": "CAPABILITY_OR_PROVIDER", "exceptions": []}
       },
       "accepted": null,
@@ -55,11 +55,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 11,
-    "activity_at": "2026-09-16T05:49:11Z",
-    "updated_at": "2026-09-16T05:49:11Z",
-    "last_codex_at": "2026-09-16T05:49:11Z",
-    "source_commit": "92aac1d7fcfe6c017a1e2412cc8cd3880b5ba102",
+    "revision": 12,
+    "activity_at": "2026-09-16T06:45:30Z",
+    "updated_at": "2026-09-16T06:45:30Z",
+    "last_codex_at": "2026-09-16T06:45:30Z",
+    "source_commit": "adcc6a90e92f2cea27c32292d371106e5531ceb3",
     "google_sheet": {"participates": true, "exclusion_reason": null}
   }
 }
