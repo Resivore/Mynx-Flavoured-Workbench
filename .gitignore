@@ -15,6 +15,7 @@ __pycache__/
 build/
 dist/
 runtime-state.local.json
+/WORKBENCH_DASHBOARD.html
 *.tmp
 /.upstream/
 /.tooling/
