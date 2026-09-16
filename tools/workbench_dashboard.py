@@ -16,6 +16,7 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Iterable, Mapping
+from urllib.parse import quote
 from uuid import UUID
 
 try:
@@ -29,6 +30,13 @@ DEFAULT_OUTPUT = "WORKBENCH_DASHBOARD.html"
 SERVER_STATE_FILENAME = "WORKBENCH_SERVER_STATE.json"
 BOOTSTRAP_SPRITE = ROOT / "third_party" / "bootstrap-icons" / "bootstrap-icons.svg"
 BOOTSTRAP_PREFIX = "bi-"
+DASHBOARD_FAVICON_SVG = (
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">'
+    '<path fill="#70bb89" d="M27.5 4.5C16.8 5.1 8.2 10 5.6 18.8c-1.5 5.1 1.4 8.7 6.2 8.7 '
+    '8.7 0 14.5-8.5 15.7-23Zm-18.1 19c3.7-6.3 8.8-10.7 15.3-14.3-5.4 4.5-9.4 9.4-11.8 15.5z"/>'
+    '</svg>'
+)
+DASHBOARD_FAVICON_DATA_URL = "data:image/svg+xml," + quote(DASHBOARD_FAVICON_SVG, safe="")
 DASHBOARD_ICON_NAMES = frozenset(
     {
         "search",
@@ -508,6 +516,7 @@ def render_dashboard(
     return (
         HTML_TEMPLATE.replace("__DASHBOARD_DATA__", _json_for_html(payload))
         .replace("__BOOTSTRAP_ICONS__", sprite)
+        .replace("__DASHBOARD_FAVICON_DATA_URL__", DASHBOARD_FAVICON_DATA_URL)
     )
 
 
@@ -584,6 +593,7 @@ HTML_TEMPLATE = r'''<!doctype html>
   <meta name="color-scheme" content="dark">
   <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; connect-src 'none'; font-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
   <title>Mynx Workbench</title>
+  <link rel="icon" type="image/svg+xml" href="__DASHBOARD_FAVICON_DATA_URL__">
   <style>
     :root {
       color-scheme: dark;

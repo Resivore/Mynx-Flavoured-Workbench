@@ -10,6 +10,7 @@ import unittest
 from datetime import datetime, timezone
 from html.parser import HTMLParser
 from pathlib import Path
+from urllib.parse import unquote
 from unittest import mock
 from uuid import NAMESPACE_URL, uuid5
 
@@ -408,6 +409,18 @@ class WorkbenchDashboardTests(unittest.TestCase):
         self.assertFalse(re.search(r'<use\b[^>]*\bhref="#(?!bi-)', html))
         for name in dashboard.DASHBOARD_ICON_NAMES:
             self.assertIn(f'id="bi-{name}"', html)
+
+    def test_generated_dashboard_embeds_a_leaf_only_svg_favicon(self) -> None:
+        html = dashboard.render_dashboard([model("Alpha", "ACTIVE")])
+        match = re.search(r'<link rel="icon" type="image/svg\+xml" href="([^"]+)">', html)
+        self.assertIsNotNone(match)
+        href = match.group(1)  # type: ignore[union-attr]
+        self.assertTrue(href.startswith("data:image/svg+xml,"))
+        favicon = unquote(href.removeprefix("data:image/svg+xml,"))
+        self.assertEqual(favicon, dashboard.DASHBOARD_FAVICON_SVG)
+        self.assertIn('fill="#70bb89"', favicon)
+        self.assertNotIn("class=", favicon)
+        self.assertEqual(favicon.count("<path "), 1)
 
     def test_server_pill_labels_keep_versions_only_for_outdated_canaries(self) -> None:
         deployed = {"version": "C10 (Private Canary 9)", "artifact": None}
