@@ -42,8 +42,14 @@ final class MouseTweaksCompatibilityContractTest {
             assertTrue(apiMethods.contains("MT_clickSlot(Lnet/minecraft/world/inventory/Slot;ILnet/minecraft/world/inventory/ContainerInput;)V"));
             assertTrue(apiMethods.contains("MT_disableRMBDraggingFunctionality()Z"));
             Set<String> mainMethods = methods(archive, "yalter/mousetweaks/Main.class");
+            Set<String> mainFields = fields(archive, "yalter/mousetweaks/Main.class");
+            assertTrue(mainMethods.contains("onMouseClicked(Lnet/minecraft/client/gui/screens/Screen;DDLyalter/mousetweaks/MouseButton;)Z"));
             assertTrue(mainMethods.contains("onMouseDrag(Lnet/minecraft/client/gui/screens/Screen;DDLyalter/mousetweaks/MouseButton;)Z"));
+            assertTrue(mainMethods.contains("onMouseReleased(Lnet/minecraft/client/gui/screens/Screen;DDLyalter/mousetweaks/MouseButton;)Z"));
             assertTrue(mainMethods.contains("onMouseScrolled(Lnet/minecraft/client/gui/screens/Screen;DDD)Z"));
+            assertTrue(mainFields.contains("oldSelectedSlot:Lnet/minecraft/world/inventory/Slot;"));
+            assertTrue(mainFields.contains("canDoRMBDrag:Z"));
+            assertTrue(mainFields.contains("rmbTweakLeftOriginalSlot:Z"));
         }
     }
 
@@ -53,19 +59,39 @@ final class MouseTweaksCompatibilityContractTest {
         String mixin = source("mixin/client/MouseTweaksContainerScreenMixin.java");
         String plugin = source("mixin/client/MouseTweaksMixinPlugin.java");
         String wheel = source("client/MouseTweaksCompatibility.java");
+        String gesture = source("client/MouseTweaksRmbGesture.java");
+        String screen = source("mixin/client/AbstractContainerScreenMixin.java");
         String actions = source("ShulkerPanelActions.java");
+        String content = source("network/ShulkerPanelContentActionPayload.java");
         String payload = source("network/ShulkerPanelMenuQuickMovePayload.java");
 
         assertTrue(panel.contains("MOUSE_TWEAKS_VIRTUAL_CONTAINER"));
         assertTrue(panel.contains("Transient read-only view"));
-        assertTrue(panel.contains("mouseTweaksInitialSecondarySlot"));
+        assertTrue(panel.contains("beginMouseTweaksRightGesture"));
+        assertTrue(panel.contains("MOUSE_TWEAKS_RMB_GESTURE"));
+        assertTrue(panel.contains("mouseTweaksShadowFingerprint"));
+        assertTrue(panel.contains("ShulkerTransferPlanner.planExactInsertion"));
+        assertTrue(panel.contains("SECONDARY_DEPOSIT"));
+        assertTrue(panel.contains("mouseTweaksDepositBridge"),
+                "An already-open panel must remain available for ordinary-slot -> panel deposit gestures");
+        assertTrue(panel.contains("ItemStack.matches(mouseTweaksShadowCarried, binding.menu().getCarried())"),
+                "A native boundary may resume a projected panel chain only after cursor convergence");
         assertTrue(panel.contains("mouseTweaksQuickMoveFromMenuSlot"));
         assertTrue(panel.contains("MouseTweaksCompatibility.consumeWheel"));
         assertTrue(mixin.contains("implements IMTModGuiContainer3Ex"));
         assertTrue(mixin.contains("ContainerInput.QUICK_MOVE"));
+        assertTrue(mixin.contains("mouseTweaksNativeClick"));
+        assertTrue(screen.contains("beginMouseTweaksRightGesture"));
+        assertTrue(gesture.contains("COLLECTION_SOURCE"));
+        assertTrue(gesture.contains("DEPOSIT"));
+        assertTrue(gesture.contains("enterPanelCell"));
+        assertTrue(gesture.contains("reset()"));
         assertTrue(plugin.contains("isModLoaded(\"mousetweaks\")"));
         assertTrue(wheel.contains("Class.forName(\"yalter.mousetweaks.Main\", false"));
         assertTrue(actions.contains("handleMenuQuickMove"));
+        assertTrue(actions.contains("SECONDARY_DEPOSIT"));
+        assertTrue(content.contains("PRIMARY, SECONDARY, QUICK_MOVE, SECONDARY_DEPOSIT"),
+                "C21 must append its wire action without renumbering accepted C20 actions");
         assertTrue(actions.contains("ShulkerTransferPlanner.planInsertion(host.stack(), before)"));
         assertTrue(actions.contains("ShulkerHostResolver.removableSource(player, source)"));
         assertTrue(payload.contains("String hostFingerprint"));
@@ -97,6 +123,21 @@ final class MouseTweaksCompatibilityContractTest {
             }, ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES | ClassReader.SKIP_CODE);
         }
         return methods;
+    }
+
+    private static Set<String> fields(JarFile archive, String entryName) throws IOException {
+        Set<String> fields = new HashSet<>();
+        try (var stream = archive.getInputStream(archive.getJarEntry(entryName))) {
+            new ClassReader(stream).accept(new ClassVisitor(Opcodes.ASM9) {
+                @Override public org.objectweb.asm.FieldVisitor visitField(int access, String name,
+                                                                            String descriptor, String signature,
+                                                                            Object value) {
+                    fields.add(name + ":" + descriptor);
+                    return null;
+                }
+            }, ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES | ClassReader.SKIP_CODE);
+        }
+        return fields;
     }
 
     private static String sha256(Path path) throws Exception {

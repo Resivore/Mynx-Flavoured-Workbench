@@ -10,7 +10,8 @@ import net.minecraft.resources.Identifier;
 public record ShulkerPanelContentActionPayload(int menuId, ShulkerHostLocator host, int internalSlot,
                                                Click click, String hostFingerprint)
         implements CustomPacketPayload {
-    public enum Click { PRIMARY, SECONDARY, QUICK_MOVE }
+    /** Appended C21 deposit action preserves the established wire IDs for C20 clicks. */
+    public enum Click { PRIMARY, SECONDARY, QUICK_MOVE, SECONDARY_DEPOSIT }
     public static final Type<ShulkerPanelContentActionPayload> TYPE = new Type<>(
             Identifier.fromNamespaceAndPath(ContainerSlotReservations.MOD_ID, "shulker_panel_content"));
     public static final StreamCodec<FriendlyByteBuf, ShulkerPanelContentActionPayload> CODEC =

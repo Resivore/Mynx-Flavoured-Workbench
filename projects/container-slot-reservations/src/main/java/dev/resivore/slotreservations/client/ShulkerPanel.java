@@ -7,6 +7,7 @@ import dev.resivore.slotreservations.ShulkerContents;
 import dev.resivore.slotreservations.ShulkerHostFingerprint;
 import dev.resivore.slotreservations.ShulkerHostResolver;
 import dev.resivore.slotreservations.ShulkerSelectionTracker;
+import dev.resivore.slotreservations.ShulkerTransferPlanner;
 import dev.resivore.slotreservations.SupportedContainerResolver;
 import dev.resivore.slotreservations.api.client.ShulkerPanelHeaderDecorations;
 import dev.resivore.slotreservations.network.ReservationActionPayload;
@@ -54,7 +55,11 @@ public final class ShulkerPanel {
     private static int mouseTweaksTop = Integer.MIN_VALUE;
     private static String expectedFingerprint;
     private static int lastSentSelection = Integer.MIN_VALUE;
-    private static int mouseTweaksInitialSecondarySlot = -1;
+    /** Press-time Mouse Tweaks semantics plus copy-only projected content/cursor state. */
+    private static final MouseTweaksRmbGesture MOUSE_TWEAKS_RMB_GESTURE = new MouseTweaksRmbGesture();
+    private static ItemStack mouseTweaksShadowHost = ItemStack.EMPTY;
+    private static ItemStack mouseTweaksShadowCarried = ItemStack.EMPTY;
+    private static String mouseTweaksShadowFingerprint;
 
     private ShulkerPanel() {}
 
@@ -78,8 +83,14 @@ public final class ShulkerPanel {
 
         geometry = ShulkerPanelGeometry.place(graphics.guiWidth(), graphics.guiHeight(), binding.hostBounds());
         positionMouseTweaksSlots(leftPos, topPos);
+        // C20 keeps its immediate host-or-panel lifetime. The only C21 extension is the
+        // optional Mouse Tweaks deposit bridge: a carried stack keeps an already-open
+        // panel available while its ordinary-slot source moves into the virtual region,
+        // and an active RHS gesture retains it until that gesture is released or cancelled.
+        boolean mouseTweaksDepositBridge = MouseTweaksCompatibility.ownsRightDrag()
+                && (!binding.menu().getCarried().isEmpty() || MOUSE_TWEAKS_RMB_GESTURE.isActive());
         boolean retained = binding.hostBounds().contains(mouseX, mouseY)
-                || geometry.bounds().contains(mouseX, mouseY);
+                || geometry.bounds().contains(mouseX, mouseY) || mouseTweaksDepositBridge;
         if (!STATE.retain(retained)) { close(false); return; }
 
         hoveredCell = geometry.slot(mouseX, mouseY);
@@ -120,6 +131,7 @@ public final class ShulkerPanel {
         geometry = null;
         hoveredCell = -1;
         STATE.open();
+        resetMouseTweaksRightGesture();
         expectedFingerprint = null;
         lastSentSelection = Integer.MIN_VALUE;
         ensureSelection(ShulkerContents.copy(candidate.slot().getItem()));
@@ -249,6 +261,37 @@ public final class ShulkerPanel {
                 && (hovered == binding.slot() || geometry.bounds().contains(mouseX, mouseY));
     }
 
+    /**
+     * Observes (but never consumes) the initial RMB press for every menu coordinate.
+     * Mouse Tweaks' Fabric event has already captured the same press; this records the
+     * CSR-side mode before the screen body can alter a cursor or virtual-cell state.
+     */
+    public static void beginMouseTweaksRightGesture(AbstractContainerScreen<?> screen, Slot nativeTarget,
+                                                     double mouseX, double mouseY) {
+        resetMouseTweaksRightGesture();
+        if (!MouseTweaksCompatibility.ownsRightDrag() || binding == null || geometry == null
+                || binding.screen() != screen || binding.menu() != screen.getMenu()) return;
+
+        Slot panelTarget = mouseTweaksSlotAt(mouseX, mouseY);
+        Slot target = panelTarget != null ? panelTarget : nativeTarget;
+        if (target == null || !target.isActive() || target.isFake()) return;
+        ItemStack carried = binding.menu().getCarried();
+        MouseTweaksRmbGesture.Mode mode = MouseTweaksRmbGesture.selectMode(
+                !target.getItem().isEmpty(), !carried.isEmpty());
+        if (mode == MouseTweaksRmbGesture.Mode.INACTIVE) return;
+
+        boolean panelOrigin = target instanceof VirtualSlot;
+        int panelCell = panelOrigin ? ((VirtualSlot) target).cell() : -1;
+        // Exact Mouse Tweaks 2.31 arms only with a nonempty pre-click cursor.
+        MOUSE_TWEAKS_RMB_GESTURE.begin(mode,
+                panelOrigin ? MouseTweaksRmbGesture.OriginRegion.PANEL
+                        : MouseTweaksRmbGesture.OriginRegion.MENU,
+                panelCell, !carried.isEmpty());
+        mouseTweaksShadowHost = binding.slot().getItem().copy();
+        mouseTweaksShadowCarried = carried.copy();
+        mouseTweaksShadowFingerprint = binding.fingerprint();
+    }
+
     public static boolean click(double mouseX, double mouseY, int button, boolean standardClick,
                                 boolean shiftPrimary) {
         if (binding == null || geometry == null || !geometry.bounds().contains(mouseX, mouseY)) return false;
@@ -259,7 +302,16 @@ public final class ShulkerPanel {
             else if (standardClick && (button == 0 || button == 1)) {
                 if (button == 1) {
                     SECONDARY_DRAG.begin(slot);
-                    if (MouseTweaksCompatibility.isActive()) mouseTweaksInitialSecondarySlot = slot;
+                    // Replace vanilla's deferred first RMB placement when this was the
+                    // press-time virtual origin. Mouse Tweaks will revisit it when leaving;
+                    // the latched gesture de-duplicates that one replay by cell identity.
+                    if (MOUSE_TWEAKS_RMB_GESTURE.isActive()
+                            && MOUSE_TWEAKS_RMB_GESTURE.originRegion()
+                            == MouseTweaksRmbGesture.OriginRegion.PANEL
+                            && MOUSE_TWEAKS_RMB_GESTURE.originPanelCell() == slot) {
+                        dispatchMouseTweaksSecondary(slot);
+                        return true;
+                    }
                 }
                 sendContent(slot, button == 0 ? ShulkerPanelContentActionPayload.Click.PRIMARY
                         : ShulkerPanelContentActionPayload.Click.SECONDARY);
@@ -287,11 +339,92 @@ public final class ShulkerPanel {
         )).orElse(false);
     }
 
-    private static void sendContent(int slot, ShulkerPanelContentActionPayload.Click click) {
-        if (ClientPlayNetworking.canSend(ShulkerPanelContentActionPayload.TYPE)) {
-            ClientPlayNetworking.send(new ShulkerPanelContentActionPayload(binding.menuId(), binding.locator(), slot,
-                    click, binding.fingerprint()));
+    private static boolean sendContent(int slot, ShulkerPanelContentActionPayload.Click click) {
+        return binding != null && ClientPlayNetworking.canSend(ShulkerPanelContentActionPayload.TYPE)
+                && sendContent(slot, click, binding.fingerprint());
+    }
+
+    private static boolean sendContent(int slot, ShulkerPanelContentActionPayload.Click click,
+                                       String fingerprint) {
+        if (binding == null || fingerprint == null
+                || !ClientPlayNetworking.canSend(ShulkerPanelContentActionPayload.TYPE)) return false;
+        ClientPlayNetworking.send(new ShulkerPanelContentActionPayload(binding.menuId(), binding.locator(), slot,
+                click, fingerprint));
+        return true;
+    }
+
+    /**
+     * Projects a secondary virtual-cell action on copies only, then sends the
+     * pre-action fingerprint from that projection. Consecutive packets therefore
+     * carry F0, F1, F2 rather than C20's stale F0 burst, while the server still
+     * independently resolves, plans, and commits every real mutation.
+     */
+    private static void dispatchMouseTweaksSecondary(int slot) {
+        if (!MOUSE_TWEAKS_RMB_GESTURE.enterPanelCell(slot) || binding == null
+                || mouseTweaksShadowFingerprint == null) return;
+
+        if (MOUSE_TWEAKS_RMB_GESTURE.takeShadowNeedsLiveCarried()) {
+            // Before the first ordinary-menu -> panel transition, use the latest
+            // client cursor snapshot. After a projected panel action, however, CSR has
+            // no authority to predict an arbitrary native menu click. Resume only if
+            // native synchronization has already converged on our projected cursor;
+            // otherwise fail closed rather than splice two incompatible transactions.
+            if (!MOUSE_TWEAKS_RMB_GESTURE.hasDispatchedPanelAction()) {
+                mouseTweaksShadowHost = binding.slot().getItem().copy();
+                mouseTweaksShadowFingerprint = binding.fingerprint();
+                mouseTweaksShadowCarried = binding.menu().getCarried().copy();
+            } else if (!ItemStack.matches(mouseTweaksShadowCarried, binding.menu().getCarried())) {
+                resetMouseTweaksRightGesture();
+                return;
+            }
         }
+
+        ItemStack changedHost;
+        ItemStack changedCarried;
+        ShulkerPanelContentActionPayload.Click click;
+        if (MOUSE_TWEAKS_RMB_GESTURE.mode() == MouseTweaksRmbGesture.Mode.DEPOSIT) {
+            // Deposit is explicit: an exhausted cursor must not turn a later occupied
+            // cell into a collection/extraction just because it is currently occupied.
+            if (mouseTweaksShadowCarried.isEmpty()) return;
+            ShulkerTransferPlanner.Insertion plan = ShulkerTransferPlanner.planExactInsertion(
+                    mouseTweaksShadowHost, mouseTweaksShadowCarried, slot, true);
+            if (plan.moved() == 0) return;
+            changedHost = plan.shulker();
+            changedCarried = plan.remainder();
+            click = ShulkerPanelContentActionPayload.Click.SECONDARY_DEPOSIT;
+        } else if (mouseTweaksShadowCarried.isEmpty()) {
+            ShulkerTransferPlanner.Extraction plan = ShulkerTransferPlanner.planExtraction(
+                    mouseTweaksShadowHost, slot, true, Integer.MAX_VALUE);
+            if (plan.moved() == 0) return;
+            changedHost = plan.shulker();
+            changedCarried = plan.extracted();
+            click = ShulkerPanelContentActionPayload.Click.SECONDARY;
+        } else {
+            // Preserve C20's generic collection/source path once it has a carried
+            // stack; no later occupied/empty hover is allowed to alter the latch.
+            ShulkerTransferPlanner.Insertion plan = ShulkerTransferPlanner.planExactInsertion(
+                    mouseTweaksShadowHost, mouseTweaksShadowCarried, slot, true);
+            if (plan.moved() == 0) return;
+            changedHost = plan.shulker();
+            changedCarried = plan.remainder();
+            click = ShulkerPanelContentActionPayload.Click.SECONDARY;
+        }
+
+        Minecraft client = Minecraft.getInstance();
+        if (client.player == null) return;
+        String nextFingerprint = ShulkerHostFingerprint.of(changedHost, client.player.registryAccess());
+        if (!sendContent(slot, click, mouseTweaksShadowFingerprint)) return;
+        mouseTweaksShadowHost = changedHost;
+        mouseTweaksShadowCarried = changedCarried;
+        mouseTweaksShadowFingerprint = nextFingerprint;
+        MOUSE_TWEAKS_RMB_GESTURE.markPanelActionDispatched();
+    }
+
+    private static void resetMouseTweaksRightGesture() {
+        MOUSE_TWEAKS_RMB_GESTURE.reset();
+        mouseTweaksShadowHost = ItemStack.EMPTY;
+        mouseTweaksShadowCarried = ItemStack.EMPTY;
+        mouseTweaksShadowFingerprint = null;
     }
 
     public static boolean ownsHoveredCell() {
@@ -300,21 +433,37 @@ public final class ShulkerPanel {
 
     public static boolean drag(double mouseX, double mouseY, int button) {
         boolean insidePanel = binding != null && geometry != null && geometry.bounds().contains(mouseX, mouseY);
+        if (button == 1 && !insidePanel) {
+            MOUSE_TWEAKS_RMB_GESTURE.leavePanelCell();
+            SECONDARY_DRAG.enter(-1);
+        }
         if (!STATE.ownsDrag(insidePanel)) return false;
-        // Mouse Tweaks observes this drag before the screen's own handler and calls the
-        // virtual slot API. CSR still consumes covered coordinates so vanilla cannot treat
-        // them as a host/underlay drag, but it never starts a second drag state machine.
-        if (button != 1 || MouseTweaksCompatibility.ownsRightDrag()) return true;
+        if (button != 1) return true;
+        // Mouse Tweaks observes this drag before the screen's own handler. It is armed by
+        // 2.31 only when the press began with a carried stack; an empty-cursor collection
+        // origin must retain CSR's established once-per-entered-cell fallback instead of
+        // being swallowed merely because the optional tweak is enabled in configuration.
+        if (MOUSE_TWEAKS_RMB_GESTURE.upstreamArmed()) return true;
         if (button == 1) {
             int slot = geometry.slot(mouseX, mouseY);
-            if (SECONDARY_DRAG.enter(slot)) sendContent(slot, ShulkerPanelContentActionPayload.Click.SECONDARY);
+            if (slot < 0) {
+                MOUSE_TWEAKS_RMB_GESTURE.leavePanelCell();
+                SECONDARY_DRAG.enter(-1);
+                return true;
+            }
+            if (SECONDARY_DRAG.enter(slot)) {
+                if (MOUSE_TWEAKS_RMB_GESTURE.isActive()) dispatchMouseTweaksSecondary(slot);
+                else sendContent(slot, ShulkerPanelContentActionPayload.Click.SECONDARY);
+            }
         }
         return true;
     }
 
-    public static boolean release(double mouseX, double mouseY) {
-        SECONDARY_DRAG.reset();
-        mouseTweaksInitialSecondarySlot = -1;
+    public static boolean release(double mouseX, double mouseY, int button) {
+        if (button == 1) {
+            SECONDARY_DRAG.reset();
+            resetMouseTweaksRightGesture();
+        }
         return STATE.releasePointer(binding != null && geometry != null && geometry.bounds().contains(mouseX, mouseY));
     }
 
@@ -388,7 +537,7 @@ public final class ShulkerPanel {
             if (client.player != null) ShulkerSelectionTracker.clear(client.player);
         }
         binding = null; geometry = null; hoveredCell = -1; SECONDARY_DRAG.reset();
-        mouseTweaksInitialSecondarySlot = -1;
+        resetMouseTweaksRightGesture();
         STATE.close(); expectedFingerprint = null; lastSentSelection = Integer.MIN_VALUE;
     }
 
@@ -428,15 +577,28 @@ public final class ShulkerPanel {
             return true;
         }
         if (input != ContainerInput.PICKUP || (button != 0 && button != 1)) return true;
-        // CSR already performed the initial ordinary right click. Mouse Tweaks revisits its
-        // origin when the pointer first leaves it; suppress only that one duplicate action.
-        if (button == 1 && mouseTweaksInitialSecondarySlot == slot) {
-            mouseTweaksInitialSecondarySlot = -1;
+        if (button == 1 && MOUSE_TWEAKS_RMB_GESTURE.isActive()) {
+            dispatchMouseTweaksSecondary(slot);
             return true;
         }
         sendContent(slot, button == 0 ? ShulkerPanelContentActionPayload.Click.PRIMARY
                 : ShulkerPanelContentActionPayload.Click.SECONDARY);
         return true;
+    }
+
+    /** Native Mouse Tweaks actions form a cursor-sync boundary for the projected panel chain. */
+    public static void mouseTweaksNativeClick(Slot target, int button, ContainerInput input) {
+        if (target != null && !(target instanceof VirtualSlot) && button == 1
+                && input == ContainerInput.PICKUP) {
+            // A native click on the bound host can alter the very fingerprint backing the
+            // projected CSR chain, so no cross-boundary projection remains safe.
+            if (binding != null && target == binding.slot()) {
+                resetMouseTweaksRightGesture();
+                return;
+            }
+            MOUSE_TWEAKS_RMB_GESTURE.leavePanelCell();
+            MOUSE_TWEAKS_RMB_GESTURE.markNativeBoundary();
+        }
     }
 
     /**

@@ -28,8 +28,9 @@ public final class ShulkerPanelActions {
         ItemStack changedHost;
         ItemStack changedCarried;
         int selected = selectedForHost(player, host);
+        boolean depositOnly = action.click() == ShulkerPanelContentActionPayload.Click.SECONDARY_DEPOSIT;
 
-        if (carried.isEmpty()) {
+        if (carried.isEmpty() && !depositOnly) {
             ShulkerTransferPlanner.Extraction plan = ShulkerTransferPlanner.planExtraction(
                     host.stack(), action.internalSlot(),
                     action.click() == ShulkerPanelContentActionPayload.Click.SECONDARY,
@@ -39,9 +40,13 @@ public final class ShulkerPanelActions {
             changedCarried = plan.extracted();
             if (selected == action.internalSlot()) selected = ShulkerContents.nextOccupied(plan.contents(), selected);
         } else {
+            // A C21 RMB deposit gesture stays a deposit even after its cursor has
+            // drained. In that state an empty cursor is a no-op, never an extraction.
+            if (carried.isEmpty()) return false;
             ShulkerTransferPlanner.Insertion plan = ShulkerTransferPlanner.planExactInsertion(
                     host.stack(), carried, action.internalSlot(),
-                    action.click() == ShulkerPanelContentActionPayload.Click.SECONDARY);
+                    action.click() == ShulkerPanelContentActionPayload.Click.SECONDARY
+                            || depositOnly);
             if (plan.moved() == 0) return false;
             changedHost = plan.shulker();
             changedCarried = plan.remainder();

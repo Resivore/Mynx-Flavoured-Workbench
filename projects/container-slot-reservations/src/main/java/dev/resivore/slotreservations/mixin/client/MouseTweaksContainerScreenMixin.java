@@ -73,6 +73,7 @@ abstract class MouseTweaksContainerScreenMixin implements IMTModGuiContainer3Ex 
     public void MT_clickSlot(Slot slot, int button, ContainerInput input) {
         if (ShulkerPanel.mouseTweaksClick(slot, button, input)) return;
         if (input == ContainerInput.QUICK_MOVE && ShulkerPanel.mouseTweaksQuickMoveFromMenuSlot(slot)) return;
+        ShulkerPanel.mouseTweaksNativeClick(slot, button, input);
         ((ContainerScreenMouseAccess) this).containerSlotReservations$clickSlot(slot, slot.index, button, input);
     }
 }

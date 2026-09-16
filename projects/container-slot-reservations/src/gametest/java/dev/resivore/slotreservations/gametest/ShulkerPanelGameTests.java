@@ -54,6 +54,13 @@ public final class ShulkerPanelGameTests implements CustomTestMethodInvoker {
                 ShulkerPanelContentActionPayload.Click.PRIMARY, fingerprint);
     }
 
+    private static ShulkerPanelContentActionPayload secondaryDepositAction(
+            ServerPlayer player, ShulkerHostLocator host, int internalSlot, String fingerprint
+    ) {
+        return new ShulkerPanelContentActionPayload(player.containerMenu.containerId, host, internalSlot,
+                ShulkerPanelContentActionPayload.Click.SECONDARY_DEPOSIT, fingerprint);
+    }
+
     private static ItemStack namedStone(int count) {
         ItemStack stack = new ItemStack(Items.STONE, count);
         stack.set(DataComponents.CUSTOM_NAME, Component.literal("Synchronizer exact stack"));
@@ -211,6 +218,99 @@ public final class ShulkerPanelGameTests implements CustomTestMethodInvoker {
                 "Secondary extraction changed the wrong physical count");
         helper.assertTrue(player.containerMenu.getCarried().getHoverName().getString().equals("Exact"),
                 "Extracted stack lost exact components");
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void mouseTweaksDepositProjectionChainsFingerprintsAndSkipsRejectedCells(GameTestHelper helper) {
+        BlockPos position = new BlockPos(1, 2, 1);
+        helper.setBlock(position, Blocks.CHEST);
+        ChestBlockEntity chest = helper.getBlockEntity(position, ChestBlockEntity.class);
+        ServerPlayer player = player(helper);
+        player.containerMenu = ChestMenu.threeRows(81, player.getInventory(), chest);
+        ShulkerHostLocator locator = ShulkerHostLocator.menuSlot(0);
+        ItemStack host = panelHost();
+        var initialContents = ShulkerContents.copy(host);
+        initialContents.set(6, new ItemStack(Items.STONE, 64));
+        ShulkerContents.replace(host, initialContents);
+        ReservationStore.setData(host, ReservationData.EMPTY
+                .with(3, new ItemStack(Items.DIRT))
+                .with(5, new ItemStack(Items.STONE)));
+        chest.setItem(0, host);
+        player.containerMenu.setCarried(new ItemStack(Items.STONE, 16));
+
+        // C20's F0/F0 burst would reject the second entry. C21's copy-only projection
+        // instead sends the exact predecessor fingerprint for every independently
+        // server-planned one-item insertion.
+        String f0 = fingerprint(player, 0);
+        helper.assertTrue(ShulkerPanelActions.handleContent(player,
+                        secondaryDepositAction(player, locator, 0, f0)),
+                "First projected deposit was rejected");
+        String f1 = fingerprint(player, 0);
+        helper.assertTrue(!f0.equals(f1), "First deposit did not advance the host fingerprint");
+        helper.assertTrue(ShulkerPanelActions.handleContent(player,
+                        secondaryDepositAction(player, locator, 1, f1)),
+                "Second projected deposit was rejected");
+        String f2 = fingerprint(player, 0);
+        helper.assertTrue(ShulkerPanelActions.handleContent(player,
+                        secondaryDepositAction(player, locator, 2, f2)),
+                "Third projected deposit was rejected");
+
+        // A mismatching reservation is a safe no-op. Its unchanged fingerprint remains
+        // usable by the next eligible virtual cell rather than corrupting the gesture.
+        String beforeMismatch = fingerprint(player, 0);
+        helper.assertTrue(!ShulkerPanelActions.handleContent(player,
+                        secondaryDepositAction(player, locator, 3, beforeMismatch)),
+                "Mismatching reservation accepted a Mouse Tweaks deposit");
+        helper.assertTrue(beforeMismatch.equals(fingerprint(player, 0)),
+                "Rejected mismatch advanced the host fingerprint");
+        helper.assertTrue(!ShulkerPanelActions.handleContent(player,
+                        secondaryDepositAction(player, locator, 6, beforeMismatch)),
+                "A full compatible cell accepted a Mouse Tweaks deposit");
+        helper.assertTrue(beforeMismatch.equals(fingerprint(player, 0)),
+                "Rejected full cell advanced the host fingerprint");
+        helper.assertTrue(ShulkerPanelActions.handleContent(player,
+                        secondaryDepositAction(player, locator, 5, beforeMismatch)),
+                "Matching reservation did not accept the continuing gesture");
+
+        // Nested containers are likewise no-ops, and their unchanged predecessor remains
+        // valid for a later ordinary eligible target in the same logical gesture.
+        String afterMatching = fingerprint(player, 0);
+        player.containerMenu.setCarried(new ItemStack(Blocks.SHULKER_BOX));
+        helper.assertTrue(!ShulkerPanelActions.handleContent(player,
+                        secondaryDepositAction(player, locator, 7, afterMatching)),
+                "Nested shulker accepted a Mouse Tweaks deposit");
+        helper.assertTrue(afterMatching.equals(fingerprint(player, 0)),
+                "Rejected nested shulker advanced the host fingerprint");
+        player.containerMenu.setCarried(new ItemStack(Items.STONE, 12));
+        helper.assertTrue(ShulkerPanelActions.handleContent(player,
+                        secondaryDepositAction(player, locator, 7, afterMatching)),
+                "Eligible target did not continue after a rejected nested shulker");
+
+        var contents = ShulkerContents.copy(chest.getItem(0));
+        helper.assertTrue(contents.get(0).getCount() == 1 && contents.get(1).getCount() == 1
+                        && contents.get(2).getCount() == 1 && contents.get(3).isEmpty()
+                        && contents.get(5).getCount() == 1 && contents.get(6).getCount() == 64
+                        && contents.get(7).getCount() == 1,
+                "Projected deposits landed in an unexpected panel cell");
+        helper.assertTrue(player.containerMenu.getCarried().getCount() == 11,
+                "Projected five-cell deposit did not conserve the carried count");
+
+        // Deposit-only actions never reinterpret an exhausted cursor as extraction.
+        player.containerMenu.setCarried(ItemStack.EMPTY);
+        String exhausted = fingerprint(player, 0);
+        helper.assertTrue(!ShulkerPanelActions.handleContent(player,
+                        secondaryDepositAction(player, locator, 0, exhausted)),
+                "Exhausted deposit mode extracted from an occupied virtual cell");
+        helper.assertTrue(ShulkerContents.copy(chest.getItem(0)).get(0).getCount() == 1
+                        && player.containerMenu.getCarried().isEmpty(),
+                "Exhausted deposit mode changed panel contents or recreated a cursor stack");
+
+        // An external stale predecessor still fails closed even though the C21 projected
+        // chain itself advances F0 -> F1 -> F2.
+        helper.assertTrue(!ShulkerPanelActions.handleContent(player,
+                        secondaryDepositAction(player, locator, 6, f0)),
+                "Stale projected predecessor mutated the current host");
         helper.succeed();
     }
 

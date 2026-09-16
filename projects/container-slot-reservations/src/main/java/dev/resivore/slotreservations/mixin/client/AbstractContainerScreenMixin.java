@@ -107,6 +107,12 @@ abstract class AbstractContainerScreenMixin implements ReservationScreenAccess {
                 && !event.hasControlDown() && !event.hasAltDown();
         boolean shiftPrimary = !doubleClick && event.hasShiftDown() && !event.hasControlDown()
                 && !event.hasAltDown() && event.button() == 0;
+        if (standardClick && event.button() == 1) {
+            Slot nativeTarget = ((ContainerScreenMouseAccess) this)
+                    .containerSlotReservations$slotAt(event.x(), event.y());
+            ShulkerPanel.beginMouseTweaksRightGesture((AbstractContainerScreen<?>) (Object) this,
+                    nativeTarget, event.x(), event.y());
+        }
         if (ShulkerPanel.click(event.x(), event.y(), event.button(), standardClick, shiftPrimary)) {
             callbackInfo.setReturnValue(true);
         }
@@ -127,7 +133,7 @@ abstract class AbstractContainerScreenMixin implements ReservationScreenAccess {
     @Inject(method = "mouseReleased", at = @At("HEAD"), cancellable = true)
     private void containerSlotReservations$panelRelease(MouseButtonEvent event,
                                                          CallbackInfoReturnable<Boolean> callbackInfo) {
-        if (ShulkerPanel.release(event.x(), event.y())) callbackInfo.setReturnValue(true);
+        if (ShulkerPanel.release(event.x(), event.y(), event.button())) callbackInfo.setReturnValue(true);
     }
 
     @Inject(method = "mouseScrolled", at = @At("HEAD"), cancellable = true)
