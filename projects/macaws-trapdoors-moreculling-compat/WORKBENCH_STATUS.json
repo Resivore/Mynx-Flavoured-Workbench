@@ -94,6 +94,7 @@
           "filename": "macaws-trapdoors-moreculling-compat-0.1.0-canary1.jar",
           "sha256": "d6ffd125e082978b594ca01c075bb706ddf7f5696dee1e7d15e357cbbfdb4af5"
         },
+        "built_at": "2026-09-12T16:39:03.3315677Z",
         "source_commit": "c5afce9f367d341e770be0ce89e198e44044074e",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
@@ -129,6 +130,7 @@
           "filename": "macaws-trapdoors-moreculling-compat-0.1.0-canary1.jar",
           "sha256": "d6ffd125e082978b594ca01c075bb706ddf7f5696dee1e7d15e357cbbfdb4af5"
         },
+        "built_at": "2026-09-12T16:39:03.3315677Z",
         "source_commit": "c5afce9f367d341e770be0ce89e198e44044074e",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",

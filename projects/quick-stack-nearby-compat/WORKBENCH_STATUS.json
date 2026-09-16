@@ -159,6 +159,7 @@
           "filename": "quick-stack-nearby-compat-0.1.0-canary18.jar",
           "sha256": "cb9144de133ac2dd9db20925b1275200213fcf57b36f9b5d530a6b02ac905554"
         },
+        "built_at": "2026-09-11T18:08:17.8847946Z",
         "source_commit": "009e455b91df0cdea1bd1489097d8a0ce2359ade",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
@@ -173,6 +174,7 @@
           "filename": "quick-stack-nearby-compat-0.1.0-canary18.jar",
           "sha256": "cb9144de133ac2dd9db20925b1275200213fcf57b36f9b5d530a6b02ac905554"
         },
+        "built_at": "2026-09-11T18:08:17.8847946Z",
         "source_commit": "009e455b91df0cdea1bd1489097d8a0ce2359ade",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",

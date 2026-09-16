@@ -109,6 +109,7 @@
           "filename": "map-marker-extension-0.4.0-canary12.jar",
           "sha256": "f5c539b7535149fb936e241f72722a87e0474af855f2a98e6e3cf88c3290243e"
         },
+        "built_at": "2026-09-09T02:35:51.8528315Z",
         "source_commit": "87591808b60f7a7fc4ce8dd8b6a6ab8e3e8d12b1",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
@@ -122,6 +123,7 @@
           "filename": "map-marker-extension-0.4.0-canary12.jar",
           "sha256": "f5c539b7535149fb936e241f72722a87e0474af855f2a98e6e3cf88c3290243e"
         },
+        "built_at": "2026-09-09T02:35:51.8528315Z",
         "source_commit": "87591808b60f7a7fc4ce8dd8b6a6ab8e3e8d12b1",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",

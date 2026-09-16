@@ -93,6 +93,7 @@
           "filename": "shulker-trowel-0.1.0-canary10-private.jar",
           "sha256": "e286d0ab90fcf4aa5d59b5250ef6a6bf8bf52266143d85c749915d53ad11f57a"
         },
+        "built_at": "2026-09-16T01:54:25.5562878Z",
         "source_commit": "adfa2dee4426fed91d4ad224136cd16b318ce2ec",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
@@ -107,6 +108,7 @@
           "filename": "shulker-trowel-0.1.0-canary10-private.jar",
           "sha256": "e286d0ab90fcf4aa5d59b5250ef6a6bf8bf52266143d85c749915d53ad11f57a"
         },
+        "built_at": "2026-09-16T01:54:25.5562878Z",
         "source_commit": "adfa2dee4426fed91d4ad224136cd16b318ce2ec",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",

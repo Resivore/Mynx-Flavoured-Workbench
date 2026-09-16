@@ -69,6 +69,7 @@
           "filename": "mynx-trees-private-0.1.0+26.2-canary8.jar",
           "sha256": "7505c21dcb4553e79a051272695a352eb2749a9584949882c7683c6d90f6a634"
         },
+        "built_at": "2026-09-06T23:04:54.4120375Z",
         "source_commit": "a41446f956d73b7d1418576dc8bfde4c7f6cff15",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
@@ -82,6 +83,7 @@
           "filename": "mynx-trees-private-0.1.0+26.2-canary8.jar",
           "sha256": "7505c21dcb4553e79a051272695a352eb2749a9584949882c7683c6d90f6a634"
         },
+        "built_at": "2026-09-06T23:04:54.4120375Z",
         "source_commit": "a41446f956d73b7d1418576dc8bfde4c7f6cff15",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",

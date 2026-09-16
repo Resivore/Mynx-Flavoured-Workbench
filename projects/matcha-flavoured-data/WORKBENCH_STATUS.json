@@ -75,6 +75,7 @@
           "filename": "matcha-flavoured-data-0.1.0-canary2.jar",
           "sha256": "0850c7ff0680cf42436cd2b72055af77970075cf438ff429bdb55723af444639"
         },
+        "built_at": "2026-09-07T01:29:12.4389646Z",
         "source_commit": "d55a044f750e06e082c39f1aa08d6f62f7070908",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
@@ -88,6 +89,7 @@
           "filename": "matcha-flavoured-data-0.1.0-canary2.jar",
           "sha256": "0850c7ff0680cf42436cd2b72055af77970075cf438ff429bdb55723af444639"
         },
+        "built_at": "2026-09-07T01:29:12.4389646Z",
         "source_commit": "d55a044f750e06e082c39f1aa08d6f62f7070908",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",

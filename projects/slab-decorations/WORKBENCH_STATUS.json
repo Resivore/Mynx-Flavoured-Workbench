@@ -117,6 +117,7 @@
           "filename": "slab-decorations-0.1.0-canary6.jar",
           "sha256": "289330c35e79469d147bc8243f6ff69cb2e2f673e65055e6297219bb24219863"
         },
+        "built_at": "2026-09-16T06:51:25.1985131Z",
         "source_commit": "b589e1e52825e94a41fec2932c14c5a4ba07d791",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",

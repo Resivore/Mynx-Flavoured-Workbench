@@ -98,6 +98,7 @@
           "filename": "strippingtoggle-fallingtree-compat-0.1.1-canary2.jar",
           "sha256": "d948c23db8b6c73e764f96422d8359afb85ba39689352e512fd7b4aa91644846"
         },
+        "built_at": "2026-08-29T22:42:59.7085327Z",
         "source_commit": "8abd994b09a50879d0ae871d763f8c47248cc0f8",
         "summary": "Uses StrippingToggle's client state as FallingTree's supported master activation control."
       },
@@ -107,6 +108,7 @@
           "filename": "strippingtoggle-fallingtree-compat-0.1.1-canary2.jar",
           "sha256": "d948c23db8b6c73e764f96422d8359afb85ba39689352e512fd7b4aa91644846"
         },
+        "built_at": "2026-08-29T22:42:59.7085327Z",
         "source_commit": "8abd994b09a50879d0ae871d763f8c47248cc0f8",
         "summary": "Uses StrippingToggle's client state as FallingTree's supported master activation control."
       },

@@ -89,6 +89,7 @@
           "filename": "bedrockify-nemos-bonemeal-compat-0.1.0-canary1.jar",
           "sha256": "2720dafff71ef2779f08905899bc9d55bcb7db80811020492de47f977c669273"
         },
+        "built_at": "2026-08-29T22:27:15.7345957Z",
         "source_commit": "8275d36b2eb1af451103e9722862346c6fb02e29",
         "summary": "Makes Nemo's single-flower bonemeal behavior deterministic when BedrockIfy touches the same flower methods."
       },

@@ -4,11 +4,13 @@
 from __future__ import annotations
 
 import argparse
+import calendar
 import hashlib
 import json
 import os
 import re
 import stat
+import subprocess
 import sys
 import unicodedata
 import webbrowser
@@ -51,6 +53,8 @@ DASHBOARD_ICON_NAMES = frozenset(
     }
 )
 SERVER_STATES = {"CURRENT", "OUTDATED", "NOT_DEPLOYED"}
+SOURCE_COMMIT_RE = re.compile(r"^[0-9a-f]{40}$")
+RFC3339_UTC_RE = re.compile(r"^(?P<whole>\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})(?:\.(?P<fraction>\d{1,9}))?Z$")
 LIFECYCLE_ORDER = ("ACTIVE", "PLANNED", "ACCEPTED", "BLOCKED", "PARKED")
 LIFECYCLE_PRIORITY = {lifecycle: index for index, lifecycle in enumerate(LIFECYCLE_ORDER)}
 # Presentation-only labels for legacy/nonstandard canonical versions.  Each
@@ -340,6 +344,22 @@ def _exact_artifact_path(project_directory: Path, filename: str) -> Path | None:
     return Path(matches[0].path)
 
 
+def _built_at_timestamp(value: Any, path: str) -> tuple[int, str]:
+    """Return a canonical UTC timestamp as integer nanoseconds for dashboard order."""
+
+    if not isinstance(value, str):
+        raise DashboardError(f"{path}: must be an RFC 3339 UTC timestamp ending in Z")
+    match = RFC3339_UTC_RE.fullmatch(value)
+    if match is None:
+        raise DashboardError(f"{path}: must be an RFC 3339 UTC timestamp ending in Z")
+    try:
+        parsed = datetime.fromisoformat(match.group("whole") + "+00:00")
+    except ValueError as exc:
+        raise DashboardError(f"{path}: invalid timestamp") from exc
+    fraction = (match.group("fraction") or "").ljust(9, "0")
+    return calendar.timegm(parsed.utctimetuple()) * 1_000_000_000 + int(fraction or "0"), value
+
+
 def _jar_details(
     project_directory: Path,
     current_release: Mapping[str, Any] | None,
@@ -355,16 +375,26 @@ def _jar_details(
     if not filename.casefold().endswith(".jar"):
         return version, None, None, "The current artifact is not a JAR."
 
+    built_at = current_release.get("built_at")
+    canonical_timestamp = None if built_at is None else _built_at_timestamp(built_at, "current release.built_at")
     artifact_path = _exact_artifact_path(project_directory, filename)
     if artifact_path is None:
+        if canonical_timestamp is not None:
+            return version, *canonical_timestamp, "Canonical build timestamp; the exact current JAR is not retained locally."
         return version, None, None, "The exact current JAR is not retained locally."
     fingerprint = _sha256_and_mtime(artifact_path)
     if fingerprint is None:
+        if canonical_timestamp is not None:
+            return version, *canonical_timestamp, "Canonical build timestamp; the exact current JAR is unavailable or changed while being read."
         return version, None, None, "The exact current JAR is unavailable or changed while being read."
     actual_hash, mtime_ns = fingerprint
     if actual_hash != artifact["sha256"]:
+        if canonical_timestamp is not None:
+            return version, *canonical_timestamp, "Canonical build timestamp; the retained JAR does not match the canonical SHA-256."
         return version, None, None, "The retained JAR does not match the canonical SHA-256."
 
+    if canonical_timestamp is not None:
+        return version, *canonical_timestamp, f"Canonical build timestamp; verified current JAR: {filename}"
     timestamp = datetime.fromtimestamp(mtime_ns / 1_000_000_000, tz=timezone.utc)
     timestamp_iso = timestamp.isoformat(timespec="microseconds").replace("+00:00", "Z")
     return version, mtime_ns, timestamp_iso, f"Verified current JAR: {filename}"
@@ -509,6 +539,38 @@ def _project_payload(project: DashboardProject) -> dict[str, Any]:
     }
 
 
+def _source_commit(value: str | None) -> str | None:
+    if value is None:
+        return None
+    if not SOURCE_COMMIT_RE.fullmatch(value):
+        raise DashboardError("source commit must be an exact lowercase 40-hex commit")
+    return value
+
+
+def _source_label(value: str | None) -> str | None:
+    if value is None:
+        return None
+    if not isinstance(value, str) or not value or value != value.strip() or "\n" in value or "\r" in value:
+        raise DashboardError("source label must be a nonblank single line")
+    return value
+
+
+def resolve_source_commit(root: Path) -> str | None:
+    """Resolve local HEAD without assigning it a branch name."""
+
+    try:
+        result = subprocess.run(
+            ["git", "-C", str(root), "rev-parse", "HEAD"],
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+    except OSError:
+        return None
+    candidate = result.stdout.strip()
+    return candidate if result.returncode == 0 and SOURCE_COMMIT_RE.fullmatch(candidate) else None
+
+
 def _bootstrap_icon_geometries(sprite: str) -> dict[str, dict[str, str]]:
     """Extract the required Bootstrap symbol geometry for direct inline use.
 
@@ -542,14 +604,22 @@ def _inline_bootstrap_icon(icon: Mapping[str, str], class_name: str = "bi") -> s
 def render_dashboard(
     projects: Iterable[DashboardProject],
     generated_at: datetime | None = None,
+    *,
+    source_commit: str | None = None,
+    source_label: str | None = None,
 ) -> str:
     ordered = sort_projects_default(projects)
     generated = generated_at or datetime.now(timezone.utc)
     if generated.tzinfo is None:
         raise DashboardError("generated_at must be timezone-aware")
     generated_iso = generated.astimezone(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
+    source = _source_commit(source_commit)
+    label = _source_label(source_label)
+    if label is not None and source is None:
+        raise DashboardError("source label requires a source commit")
     payload = {
         "generatedAt": generated_iso,
+        "source": None if source is None else {"commit": source, "label": label},
         "projects": [_project_payload(project) for project in ordered],
     }
     try:
@@ -574,9 +644,16 @@ def generate_dashboard(
     output: Path,
     *,
     generated_at: datetime | None = None,
+    source_commit: str | None = None,
+    source_label: str | None = None,
 ) -> list[DashboardProject]:
     _, projects = discover_projects(root)
-    html = render_dashboard(projects, generated_at=generated_at)
+    html = render_dashboard(
+        projects,
+        generated_at=generated_at,
+        source_commit=resolve_source_commit(root) if source_commit is None else source_commit,
+        source_label=source_label,
+    )
     _atomic_write_text(output, html)
     return projects
 
@@ -590,6 +667,8 @@ def _build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--root", type=Path, default=ROOT, help="Workbench repository root")
     parser.add_argument("--output", type=Path, default=Path(DEFAULT_OUTPUT), help="generated HTML path")
     parser.add_argument("--open", action="store_true", help="open the regenerated dashboard in the default browser")
+    parser.add_argument("--source-commit", help="exact checked-out source commit for generated dashboard provenance")
+    parser.add_argument("--source-label", help="optional source label, such as main, displayed with --source-commit")
     subparsers = parser.add_subparsers(dest="command")
     server = subparsers.add_parser("server", help="set human-owned real-server implementation state")
     server.add_argument("project", help="project UUID, ID, name, alias, or legacy identity")
@@ -617,12 +696,21 @@ def main(argv: list[str] | None = None) -> int:
                 server_state.pop(project_uuid, None)
                 description = "NOT DEPLOYED"
             projects = build_project_records(statuses, server_state)
-            html = render_dashboard(projects)
+            html = render_dashboard(
+                projects,
+                source_commit=resolve_source_commit(root) if args.source_commit is None else args.source_commit,
+                source_label=args.source_label,
+            )
             write_server_state(root, server_state)
             _atomic_write_text(output, html)
             print(f"Set {manifest['identity']['name']} to {description} and regenerated {output}")
         else:
-            projects = generate_dashboard(root, output)
+            projects = generate_dashboard(
+                root,
+                output,
+                source_commit=args.source_commit,
+                source_label=args.source_label,
+            )
             print(f"Generated {output} with {len(projects)} projects")
         if args.open:
             opened = webbrowser.open(output.as_uri(), new=2)
@@ -1003,7 +1091,7 @@ HTML_TEMPLATE = r'''<!doctype html>
         <h1>mynx dashboard</h1>
       </div>
       <div class="masthead-meta">
-        <span>Last generated <time id="generated-at"></time></span>
+        <span><span id="source-provenance" hidden></span><span id="generated-prefix">Last generated </span><time id="generated-at"></time></span>
         <span class="phrase">small changes · a quieter world</span>
       </div>
     </header>
@@ -1116,9 +1204,17 @@ HTML_TEMPLATE = r'''<!doctype html>
 
       const generatedDate = new Date(data.generatedAt);
       const generatedElement = document.getElementById("generated-at");
+      const sourceProvenance = document.getElementById("source-provenance");
+      const generatedPrefix = document.getElementById("generated-prefix");
       generatedElement.dateTime = data.generatedAt;
       generatedElement.title = data.generatedAt;
       generatedElement.textContent = formatLocalDate(generatedDate.getTime());
+      if (data.source) {
+        sourceProvenance.hidden = false;
+        sourceProvenance.title = data.source.commit;
+        sourceProvenance.textContent = `${data.source.label || "source"} · ${data.source.commit.slice(0, 7)} · `;
+        generatedPrefix.textContent = "generated ";
+      }
 
       function element(tag, className, text) {
         const node = document.createElement(tag);

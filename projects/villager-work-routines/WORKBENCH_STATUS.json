@@ -68,6 +68,7 @@
           "filename": "villager-work-routines-0.1.0-canary12.jar",
           "sha256": "4c2fdf89bc258a55f6b5910066e31239e2e4341bf28cb353cd9661873f6610d2"
         },
+        "built_at": "2026-09-16T06:44:45.1188009Z",
         "source_commit": "adcc6a90e92f2cea27c32292d371106e5531ceb3",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",

@@ -97,6 +97,7 @@
           "filename": "naturalist-2.0.3+26.2-port-canary8.jar",
           "sha256": "65e9ff11e94f17011acbac25ee40f42723516fe6b04c78d93662800461317b3d"
         },
+        "built_at": "2026-09-06T03:54:43.3216927Z",
         "source_commit": "637ba2f7f5c6916fa1451449f8d4e05b25b75eed",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
@@ -110,6 +111,7 @@
           "filename": "naturalist-2.0.3+26.2-port-canary8.jar",
           "sha256": "65e9ff11e94f17011acbac25ee40f42723516fe6b04c78d93662800461317b3d"
         },
+        "built_at": "2026-09-06T03:54:43.3216927Z",
         "source_commit": "637ba2f7f5c6916fa1451449f8d4e05b25b75eed",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",

@@ -143,6 +143,7 @@
           "filename": "ribbits-xaero-entity-icons-compat-0.1.0-canary5.jar",
           "sha256": "d48d45ec47604250ae45c8f20e03741f9f6613d5ada462cda436ce14876c3413"
         },
+        "built_at": "2026-09-05T02:51:29.9503680Z",
         "source_commit": "d272c2dc9650f1c992fdf6b8f8663866dad39a8b",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
@@ -156,6 +157,7 @@
           "filename": "ribbits-xaero-entity-icons-compat-0.1.0-canary5.jar",
           "sha256": "d48d45ec47604250ae45c8f20e03741f9f6613d5ada462cda436ce14876c3413"
         },
+        "built_at": "2026-09-05T02:51:29.9503680Z",
         "source_commit": "d272c2dc9650f1c992fdf6b8f8663866dad39a8b",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",

@@ -108,6 +108,7 @@
           "filename": "bbb-fabric-26.2-2.0pre4+26.2-pale-oak-dev.6.jar",
           "sha256": "0d54034725c3e354515c78bcee32ab2cb5ce764a33e0602419e26c78aaef8c5a"
         },
+        "built_at": "2026-09-08T05:09:02.7766733Z",
         "source_commit": "22aaf2fcddea47a388d2a2ba06228716e7d4e562",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
@@ -121,6 +122,7 @@
           "filename": "bbb-fabric-26.2-2.0pre4+26.2-pale-oak-dev.6.jar",
           "sha256": "0d54034725c3e354515c78bcee32ab2cb5ce764a33e0602419e26c78aaef8c5a"
         },
+        "built_at": "2026-09-08T05:09:02.7766733Z",
         "source_commit": "22aaf2fcddea47a388d2a2ba06228716e7d4e562",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",

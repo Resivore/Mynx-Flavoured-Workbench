@@ -82,6 +82,7 @@
           "filename": "cnm-nibaru-integration-4.2.14-bge.canary70.stone-native-slab+26.2.jar",
           "sha256": "d304552e29e76c4165675415215439ac2d73b5a6ebc4abc9787f0fa1124cf266"
         },
+        "built_at": "2026-09-16T06:48:51.4580617Z",
         "source_commit": "f798f4179a079baa235717674f32b88ecb27689f",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
@@ -108,6 +109,7 @@
           "filename": "cnm-nibaru-integration-4.2.14-bge.canary70.stone-native-slab+26.2.jar",
           "sha256": "d304552e29e76c4165675415215439ac2d73b5a6ebc4abc9787f0fa1124cf266"
         },
+        "built_at": "2026-09-16T06:48:51.4580617Z",
         "source_commit": "f798f4179a079baa235717674f32b88ecb27689f",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",

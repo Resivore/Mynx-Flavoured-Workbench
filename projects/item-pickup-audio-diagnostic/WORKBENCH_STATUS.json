@@ -61,6 +61,7 @@
           "filename": "item-pickup-audio-diagnostic-0.1.0-canary1.jar",
           "sha256": "fc67ec7816ab91e941b9df99f54a254705dea8adb07da7c50d8795190d46b094"
         },
+        "built_at": "2026-09-11T21:25:15.3429789Z",
         "source_commit": "56b3ccd9f9a98bf2ad082405ce917cc32a1c463f",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
@@ -75,6 +76,7 @@
           "filename": "item-pickup-audio-diagnostic-0.1.0-canary1.jar",
           "sha256": "fc67ec7816ab91e941b9df99f54a254705dea8adb07da7c50d8795190d46b094"
         },
+        "built_at": "2026-09-11T21:25:15.3429789Z",
         "source_commit": "56b3ccd9f9a98bf2ad082405ce917cc32a1c463f",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",

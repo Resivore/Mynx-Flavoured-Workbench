@@ -81,6 +81,7 @@
           "filename": "naturalist-xaero-entity-icons-compat-0.1.0-canary34.jar",
           "sha256": "5c8c2b955cb2ac6219dcb3199de7956dd3efe02460579d634e0da242e4241fb8"
         },
+        "built_at": "2026-09-11T16:25:25.8170527Z",
         "source_commit": "a58c4869af6f860a76279e2f38a9b86bd319e661",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
@@ -94,6 +95,7 @@
           "filename": "naturalist-xaero-entity-icons-compat-0.1.0-canary34.jar",
           "sha256": "5c8c2b955cb2ac6219dcb3199de7956dd3efe02460579d634e0da242e4241fb8"
         },
+        "built_at": "2026-09-11T16:25:25.8170527Z",
         "source_commit": "a58c4869af6f860a76279e2f38a9b86bd319e661",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",

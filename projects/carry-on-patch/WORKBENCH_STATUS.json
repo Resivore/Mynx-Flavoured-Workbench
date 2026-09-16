@@ -87,6 +87,7 @@
           "filename": "carry-on-patch-0.1.0-canary3.jar",
           "sha256": "fd888c429d37cbfebd50a00afef0c92ca36f3ec338bc4f006284f31b66d49f90"
         },
+        "built_at": "2026-09-04T23:18:59.0240206Z",
         "source_commit": "a4d9b5aeef8d667bea94d1ef12b7ea1b5326ee5c",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
@@ -100,6 +101,7 @@
           "filename": "carry-on-patch-0.1.0-canary3.jar",
           "sha256": "fd888c429d37cbfebd50a00afef0c92ca36f3ec338bc4f006284f31b66d49f90"
         },
+        "built_at": "2026-09-04T23:18:59.0240206Z",
         "source_commit": "a4d9b5aeef8d667bea94d1ef12b7ea1b5326ee5c",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",

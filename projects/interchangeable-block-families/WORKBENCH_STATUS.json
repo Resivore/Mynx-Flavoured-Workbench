@@ -144,6 +144,7 @@
           "filename": "interchangeable-block-families-0.1.0-canary7.jar",
           "sha256": "599660b27db061926a800bd486f25bb1d8511b6b82b8afd2a369e8189c696b7c"
         },
+        "built_at": "2026-09-08T02:24:46.9713030Z",
         "source_commit": "9ad4600e62808e5e976392a69b495a2fe4b5d47c",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
@@ -158,6 +159,7 @@
           "filename": "interchangeable-block-families-0.1.0-canary7.jar",
           "sha256": "599660b27db061926a800bd486f25bb1d8511b6b82b8afd2a369e8189c696b7c"
         },
+        "built_at": "2026-09-08T02:24:46.9713030Z",
         "source_commit": "9ad4600e62808e5e976392a69b495a2fe4b5d47c",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",

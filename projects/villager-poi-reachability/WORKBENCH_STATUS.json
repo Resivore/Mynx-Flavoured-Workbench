@@ -55,6 +55,7 @@
           "filename": "villager-poi-reachability-0.1.0+26.2-canary1.jar",
           "sha256": "b7342e3c0833d08139482263ea454575e94ba24338aa8b23c330db348dbb6848"
         },
+        "built_at": "2026-09-07T22:49:48.0134888Z",
         "source_commit": "e534b3d77417dcc58c54ccee775a70697eeaac86",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
@@ -68,6 +69,7 @@
           "filename": "villager-poi-reachability-0.1.0+26.2-canary1.jar",
           "sha256": "b7342e3c0833d08139482263ea454575e94ba24338aa8b23c330db348dbb6848"
         },
+        "built_at": "2026-09-07T22:49:48.0134888Z",
         "source_commit": "e534b3d77417dcc58c54ccee775a70697eeaac86",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",

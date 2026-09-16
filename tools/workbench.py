@@ -255,7 +255,7 @@ def _release(value: Any, path: str) -> dict[str, Any] | None:
     if not isinstance(value, dict):
         _fail(path, "must be an object")
     required = {"version", "artifact", "source_commit"}
-    allowed = required | {"embedded_version", "summary", "runtime_dependency_policy"}
+    allowed = required | {"embedded_version", "summary", "built_at", "runtime_dependency_policy"}
     missing = sorted(required - set(value))
     extra = sorted(set(value) - allowed)
     if missing:
@@ -269,6 +269,8 @@ def _release(value: Any, path: str) -> dict[str, Any] | None:
         summary = _nonblank(value["summary"], f"{path}.summary")
         if "\n" in summary or "\r" in summary:
             _fail(f"{path}.summary", "must be one concise line")
+    if "built_at" in value:
+        _timestamp(value["built_at"], f"{path}.built_at")
     if value["artifact"] is not None:
         _artifact(value["artifact"], f"{path}.artifact")
     _commit(value["source_commit"], f"{path}.source_commit")
@@ -279,13 +281,13 @@ def _release(value: Any, path: str) -> dict[str, Any] | None:
     return value
 
 
-def _release_identity(value: dict[str, Any] | None) -> tuple[Any, Any, Any, Any] | None:
+def _release_identity(value: dict[str, Any] | None) -> tuple[Any, Any, Any] | None:
     """Return the pre-existing artifact identity used for grandfathering.
 
-    ``embedded_version`` is additive evidence which binds a logical release
-    label to the packaged Fabric version.  Adding that truthful evidence does
-    not create new bytes and therefore must not turn a historical artifact into
-    a newly built candidate which requires a dependency-policy attestation.
+    ``embedded_version``, ``built_at``, and the source checkpoint are additive
+    provenance/evidence. Adding truthful metadata does not create new artifact
+    bytes and therefore must not turn a historical artifact into a newly built
+    candidate which requires release-artifact metadata.
     """
 
     if value is None:
@@ -295,7 +297,6 @@ def _release_identity(value: dict[str, Any] | None) -> tuple[Any, Any, Any, Any]
         value["version"],
         None if artifact is None else artifact["filename"],
         None if artifact is None else artifact["sha256"],
-        value["source_commit"],
     )
 
 
@@ -447,14 +448,20 @@ def validate_status_transition(previous: dict[str, Any], current: dict[str, Any]
     after_release = current["state"]["releases"]["current"]
     if after_release is not None and after_release["artifact"] is not None:
         policy_present = "runtime_dependency_policy" in after_release
-        if _release_identity(before_release) != _release_identity(after_release) and not policy_present:
+        artifact_changed = _release_identity(before_release) != _release_identity(after_release)
+        if artifact_changed and not policy_present:
             _fail(
                 "$.state.releases.current.runtime_dependency_policy",
                 "is required whenever the exact current artifact identity changes",
             )
-        if _release_identity(before_release) != _release_identity(after_release) and "summary" not in after_release:
+        if artifact_changed and "summary" not in after_release:
             _fail(
                 "$.state.releases.current.summary",
+                "is required whenever the exact current artifact identity changes",
+            )
+        if artifact_changed and "built_at" not in after_release:
+            _fail(
+                "$.state.releases.current.built_at",
                 "is required whenever the exact current artifact identity changes",
             )
         if (

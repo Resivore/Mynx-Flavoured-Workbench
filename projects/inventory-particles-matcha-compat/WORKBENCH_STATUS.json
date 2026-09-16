@@ -94,6 +94,7 @@
           "filename": "inventory-particles-matcha-compat-0.1.0-canary4.jar",
           "sha256": "e48c4821f8bead5da78205052bf3d1d20db98cccefd5004750a19d54858c1c8b"
         },
+        "built_at": "2026-09-11T18:11:02.9488154Z",
         "source_commit": "63e9b84116c718db92bbeb289933538e75cb28c2",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
@@ -107,6 +108,7 @@
           "filename": "inventory-particles-matcha-compat-0.1.0-canary4.jar",
           "sha256": "e48c4821f8bead5da78205052bf3d1d20db98cccefd5004750a19d54858c1c8b"
         },
+        "built_at": "2026-09-11T18:11:02.9488154Z",
         "source_commit": "63e9b84116c718db92bbeb289933538e75cb28c2",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",

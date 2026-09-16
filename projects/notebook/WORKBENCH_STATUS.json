@@ -87,6 +87,7 @@
           "filename": "notebook-0.1.0-canary11.jar",
           "sha256": "c3b9b7248f0bc16f027fc5cbd4d918fcab045ff58c2ac67dd31e169743361b7f"
         },
+        "built_at": "2026-09-11T15:35:49.7172491Z",
         "source_commit": "685e9c137bff75dcab3c0e54e5107ac3273240d7",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
@@ -101,6 +102,7 @@
           "filename": "notebook-0.1.0-canary11.jar",
           "sha256": "c3b9b7248f0bc16f027fc5cbd4d918fcab045ff58c2ac67dd31e169743361b7f"
         },
+        "built_at": "2026-09-11T15:35:49.7172491Z",
         "source_commit": "685e9c137bff75dcab3c0e54e5107ac3273240d7",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",

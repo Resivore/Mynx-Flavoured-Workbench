@@ -66,6 +66,7 @@
           "filename": "mynx-regions-unexplored-private-0.1.0+26.2-canary4.jar",
           "sha256": "8f81b38e74832e8c4b8ad2a70b68dea39d38c82b231cf17982a0a6ad93f163b6"
         },
+        "built_at": "2026-09-16T14:48:38.4065417Z",
         "source_commit": "fb900d06b4a65b09f6458db8ec00e3c54c558db5",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",

@@ -181,6 +181,32 @@ class WorkbenchDashboardTests(unittest.TestCase):
 
             self.assertEqual([record.name for record in records], ["New", "Old"])
 
+    def test_canonical_built_at_renders_without_a_retained_jar_and_drives_recency(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            old_release = release("old", "old.jar", "a" * 64)
+            old_release["built_at"] = "2026-09-16T05:10:00Z"
+            new_release = release("new", "new.jar", "b" * 64)
+            new_release["built_at"] = "2026-09-16T05:11:00.123456789Z"
+            old = write_project(root, "old", "Old", current=old_release)
+            new = write_project(root, "new", "New", current=new_release)
+
+            records = dashboard.build_project_records(statuses_for(old, new), {})
+
+            self.assertEqual([record.name for record in records], ["New", "Old"])
+            self.assertEqual(records[0].jar_mtime_iso, "2026-09-16T05:11:00.123456789Z")
+            self.assertIn("Canonical build timestamp", records[0].jar_note)
+            self.assertIn("not retained locally", records[0].jar_note)
+
+    def test_built_at_does_not_change_server_current_comparison(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            current = release("C1", "current.jar", "a" * 64)
+            current["built_at"] = "2026-09-16T05:10:00Z"
+            item = write_project(Path(temporary), "current", "Current", current=current)
+            deployed = {"version": "C1", "artifact": {"filename": "current.jar", "sha256": "a" * 64}}
+            record = dashboard.build_project_records(statuses_for(item), {item[0]: deployed})[0]
+            self.assertEqual(record.server_status, "CURRENT")
+
     def test_untimestamped_projects_follow_timestamped_and_use_name_tiebreaker(self) -> None:
         projects = [
             model("Zulu", "ACTIVE"),
@@ -225,6 +251,15 @@ class WorkbenchDashboardTests(unittest.TestCase):
             record = dashboard.build_project_records(statuses_for(item), {})[0]
 
             self.assertIsNone(record.jar_mtime_ns)
+            self.assertIn("SHA-256", record.jar_note)
+
+    def test_unverified_local_bytes_are_not_used_when_built_at_is_absent(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            item = write_project(root, "wrong", "Wrong", current=release("C1", "wrong.jar", "0" * 64))
+            make_artifact(item[1], "wrong.jar", b"different", 1_800_000_000_000_000_000)
+            record = dashboard.build_project_records(statuses_for(item), {})[0]
+            self.assertIsNone(record.jar_mtime_iso)
             self.assertIn("SHA-256", record.jar_note)
 
     def test_non_jar_current_artifact_is_unavailable_but_keeps_version(self) -> None:
@@ -350,6 +385,34 @@ class WorkbenchDashboardTests(unittest.TestCase):
         second = dashboard.render_dashboard([alpha, beta], generated_at=generated_at)
         self.assertEqual(first, second)
         self.assertLess(first.index(alpha.uuid), first.index(beta.uuid))
+
+    def test_source_commit_is_safe_machine_readable_masthead_metadata(self) -> None:
+        commit = "c" * 40
+        html = dashboard.render_dashboard([model("Alpha", "ACTIVE")], source_commit=commit, source_label="main")
+        payload = json.loads(re.search(r'<script type="application/json" id="dashboard-data">(.*?)</script>', html, re.DOTALL).group(1))  # type: ignore[union-attr]
+        self.assertEqual(payload["source"], {"commit": commit, "label": "main"})
+        self.assertIn('id="source-provenance"', html)
+        self.assertIn('sourceProvenance.title = data.source.commit', html)
+        self.assertIn('data.source.commit.slice(0, 7)', html)
+
+    def test_malformed_source_commit_fails_closed(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            write_project(root, "alpha", "Alpha")
+            self.assertEqual(dashboard.main(["--root", str(root), "--source-commit", "not-a-commit"]), 1)
+
+    def test_pages_output_is_self_contained_and_has_no_local_paths(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            write_project(root, "alpha", "Alpha")
+            output = root / "_site" / "index.html"
+            projects = dashboard.generate_dashboard(root, output, source_commit="d" * 40, source_label="main")
+            html = output.read_text(encoding="utf-8")
+            self.assertEqual(len(projects), 1)
+            self.assertTrue(output.is_file())
+            self.assertNotIn(str(root), html)
+            self.assertNotIn("C:\\\\Users\\\\", html)
+            self.assertIn('"commit":"' + "d" * 40 + '"', html)
 
     def test_canary_display_is_conservative_and_numeric(self) -> None:
         self.assertEqual(dashboard.display_canary_version("C11"), "C11")

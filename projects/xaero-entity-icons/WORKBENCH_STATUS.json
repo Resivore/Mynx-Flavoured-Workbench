@@ -126,6 +126,7 @@
           "filename": "xaero-emf-entity-icon-compat-0.1.0-canary12.jar",
           "sha256": "dcf65d6e97007c03bf490b27189f76ee88b882d1b59d4b88315093dea10180bc"
         },
+        "built_at": "2026-09-11T01:23:28.4362329Z",
         "source_commit": "1bf0761f94eaf9442abc40f37f0e479509059b2f",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
@@ -139,6 +140,7 @@
           "filename": "xaero-emf-entity-icon-compat-0.1.0-canary12.jar",
           "sha256": "dcf65d6e97007c03bf490b27189f76ee88b882d1b59d4b88315093dea10180bc"
         },
+        "built_at": "2026-09-11T01:23:28.4362329Z",
         "source_commit": "1bf0761f94eaf9442abc40f37f0e479509059b2f",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",

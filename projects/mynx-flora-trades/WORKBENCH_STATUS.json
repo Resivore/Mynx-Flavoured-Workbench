@@ -67,6 +67,7 @@
           "filename": "mynx-flora-trades-0.1.0+26.2-canary4.jar",
           "sha256": "58585c2133396d9f173c47391d81e0e6d5f6f549252e3e99f6f9f52ea111e146"
         },
+        "built_at": "2026-09-07T22:49:47.4449022Z",
         "source_commit": "e534b3d77417dcc58c54ccee775a70697eeaac86",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
@@ -80,6 +81,7 @@
           "filename": "mynx-flora-trades-0.1.0+26.2-canary4.jar",
           "sha256": "58585c2133396d9f173c47391d81e0e6d5f6f549252e3e99f6f9f52ea111e146"
         },
+        "built_at": "2026-09-07T22:49:47.4449022Z",
         "source_commit": "e534b3d77417dcc58c54ccee775a70697eeaac86",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",

@@ -98,6 +98,7 @@
           "filename": "coal-consolidation-0.1.2-canary3.jar",
           "sha256": "f1d36dfad276927d527cc911d92f47ee979ef7600479f950c76ed25dd18eb871"
         },
+        "built_at": "2026-08-31T01:09:14.2498795Z",
         "source_commit": "d2ad841f6a8edfbc765ec681d803b193e5d1f7ad",
         "summary": "Converts intended Matcha charcoal cooking into coal while preserving recipe inputs, timing, and experience."
       },
@@ -107,6 +108,7 @@
           "filename": "coal-consolidation-0.1.2-canary3.jar",
           "sha256": "f1d36dfad276927d527cc911d92f47ee979ef7600479f950c76ed25dd18eb871"
         },
+        "built_at": "2026-08-31T01:09:14.2498795Z",
         "source_commit": "d2ad841f6a8edfbc765ec681d803b193e5d1f7ad",
         "summary": "Converts intended Matcha charcoal cooking into coal while preserving recipe inputs, timing, and experience."
       },

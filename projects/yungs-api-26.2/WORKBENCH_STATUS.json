@@ -100,6 +100,7 @@
           "filename": "YungsApi-26.2-Fabric-6.1.1-compat.2.jar",
           "sha256": "ff22a6b509ba559988d7a9352dc94ac612c4b099517acac7da7c81322d797ed7"
         },
+        "built_at": "2026-09-03T05:45:19.0649330Z",
         "source_commit": "f0be1f9c6c1f3e843a0e44791a650df237836537",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
@@ -113,6 +114,7 @@
           "filename": "YungsApi-26.2-Fabric-6.1.1-compat.2.jar",
           "sha256": "ff22a6b509ba559988d7a9352dc94ac612c4b099517acac7da7c81322d797ed7"
         },
+        "built_at": "2026-09-03T05:45:19.0649330Z",
         "source_commit": "f0be1f9c6c1f3e843a0e44791a650df237836537",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",

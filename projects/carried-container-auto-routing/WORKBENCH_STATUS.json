@@ -107,6 +107,7 @@
           "filename": "carried-container-auto-routing-0.3.15-shulker-pick-block-canary1.jar",
           "sha256": "340b3cd2bfcb977c00cc06071893f9627ba0c32b26325d381a62922000561b3c"
         },
+        "built_at": "2026-09-12T04:16:17.1422936Z",
         "source_commit": "dbb8f82aeee2c0f3357f93867c517e05d43ed5a5",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
@@ -121,6 +122,7 @@
           "filename": "carried-container-auto-routing-0.3.15-shulker-pick-block-canary1.jar",
           "sha256": "340b3cd2bfcb977c00cc06071893f9627ba0c32b26325d381a62922000561b3c"
         },
+        "built_at": "2026-09-12T04:16:17.1422936Z",
         "source_commit": "dbb8f82aeee2c0f3357f93867c517e05d43ed5a5",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",

@@ -89,6 +89,7 @@
           "filename": "dragonbound-waystone-0.1.0-canary12.jar",
           "sha256": "6f621b16652baf9caad89ba923b8792ebc0ba08706a9f507fd17aabfc3121ad6"
         },
+        "built_at": "2026-09-11T21:06:29.5248874Z",
         "embedded_version": "0.1.0-canary12",
         "source_commit": "8d47abc38bd811376524f74d885cc47ab6b85e59",
         "runtime_dependency_policy": {
@@ -103,6 +104,7 @@
           "filename": "dragonbound-waystone-0.1.0-canary12.jar",
           "sha256": "6f621b16652baf9caad89ba923b8792ebc0ba08706a9f507fd17aabfc3121ad6"
         },
+        "built_at": "2026-09-11T21:06:29.5248874Z",
         "embedded_version": "0.1.0-canary12",
         "source_commit": "8d47abc38bd811376524f74d885cc47ab6b85e59",
         "runtime_dependency_policy": {

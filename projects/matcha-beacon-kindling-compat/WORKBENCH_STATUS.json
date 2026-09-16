@@ -90,6 +90,7 @@
           "filename": "matcha-beacon-kindling-compat-0.1.0-canary1.jar",
           "sha256": "b343dd5f000913731a9e256126f18adf085c7e364645ce9f9940692d693e1e0e"
         },
+        "built_at": "2026-08-29T22:24:37.7138810Z",
         "source_commit": "7375e0d10a4cba7e0dfc2204ba8628cedbe0cbf4",
         "summary": "Coordinates Matcha Beacon Kindling trader identity while preserving Matcha-owned content and behavior."
       },

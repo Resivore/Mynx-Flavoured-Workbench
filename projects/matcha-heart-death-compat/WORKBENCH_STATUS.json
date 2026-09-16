@@ -93,6 +93,7 @@
           "filename": "matcha-heart-death-compat-0.1.10-canary11.jar",
           "sha256": "a0570179f85d32ec6740d9136ad50890b9c797500661cd2ed2325da5b6b1e4a9"
         },
+        "built_at": "2026-09-01T02:16:52.0902258Z",
         "source_commit": "8a0002235c6b0921f4d7f6a4cbf73b18ccc421a3",
         "summary": "Keeps Matcha Crystal Heart progression as deliberate main-hand use rather than inventory consumption."
       },
@@ -102,6 +103,7 @@
           "filename": "matcha-heart-death-compat-0.1.10-canary11.jar",
           "sha256": "a0570179f85d32ec6740d9136ad50890b9c797500661cd2ed2325da5b6b1e4a9"
         },
+        "built_at": "2026-09-01T02:16:52.0902258Z",
         "source_commit": "8a0002235c6b0921f4d7f6a4cbf73b18ccc421a3",
         "summary": "Keeps Matcha Crystal Heart progression as deliberate main-hand use rather than inventory consumption."
       },

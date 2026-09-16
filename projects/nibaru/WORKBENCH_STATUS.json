@@ -60,6 +60,7 @@
           "filename": "more-slabs-stairs-and-walls-4.2.0+26.2-port-canary46-bge-layer-contract.jar",
           "sha256": "3281d110f062db62e721d838a35ce915ca73dd41af098a013b52952561ceae7d"
         },
+        "built_at": "2026-08-29T17:25:12.4667611Z",
         "source_commit": "6e9b04ec3947f2514f90775bfeefb599242a4596",
         "summary": "Preserves Nibaru identity and historical artifacts after active maintenance moved into BGE."
       },

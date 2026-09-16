@@ -95,6 +95,7 @@
           "filename": "inherent-3x3-inventory-crafting-0.1.0-canary4.jar",
           "sha256": "6e797291dd6c68f5afe65f91177ad2653f7c4a99e10bd20e078fafd7aaf6cb33"
         },
+        "built_at": "2026-08-29T21:24:41.5135390Z",
         "source_commit": "34e8de533e804ab4993b7502d7c5afbec6ebc8ca",
         "summary": "Replaces survival inventory crafting with a permanent server-authoritative 3×3 matrix."
       },
@@ -104,6 +105,7 @@
           "filename": "inherent-3x3-inventory-crafting-0.1.0-canary4.jar",
           "sha256": "6e797291dd6c68f5afe65f91177ad2653f7c4a99e10bd20e078fafd7aaf6cb33"
         },
+        "built_at": "2026-08-29T21:24:41.5135390Z",
         "source_commit": "34e8de533e804ab4993b7502d7c5afbec6ebc8ca",
         "summary": "Replaces survival inventory crafting with a permanent server-authoritative 3×3 matrix."
       },

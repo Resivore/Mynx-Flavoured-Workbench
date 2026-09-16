@@ -66,6 +66,7 @@
           "filename": "workbench-test-marker-0.2.0.jar",
           "sha256": "9147664302721976461dbbc1064260fc4309575182a8b050458d0446eafec6a6"
         },
+        "built_at": "2026-08-30T05:52:03.4591585Z",
         "source_commit": "f789b290f72c508a563797b0c543125bc9c468c1",
         "summary": "Shows the canonical accepted stack version on the retired Workbench title screen."
       },
@@ -75,6 +76,7 @@
           "filename": "workbench-test-marker-0.2.0.jar",
           "sha256": "9147664302721976461dbbc1064260fc4309575182a8b050458d0446eafec6a6"
         },
+        "built_at": "2026-08-30T05:52:03.4591585Z",
         "source_commit": "f789b290f72c508a563797b0c543125bc9c468c1",
         "summary": "Shows the canonical accepted stack version on the retired Workbench title screen."
       },

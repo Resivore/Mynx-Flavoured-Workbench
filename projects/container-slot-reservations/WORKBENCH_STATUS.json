@@ -135,6 +135,7 @@
           "filename": "container-slot-reservations-0.1.0-canary21.jar",
           "sha256": "8eeab0e1ed2c6c6c4747615b471fb78a8c708c9455b2c8798709a394ab4cc13c"
         },
+        "built_at": "2026-09-16T15:09:04.0111705Z",
         "source_commit": "b137377b6f54fd7e5cc6d621f815d09187a30912",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",

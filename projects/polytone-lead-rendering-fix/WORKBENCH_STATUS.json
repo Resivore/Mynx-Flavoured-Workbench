@@ -80,6 +80,7 @@
           "filename": "polytone-lead-rendering-fix-0.1.0+26.2-canary4.jar",
           "sha256": "9ba918cb2634f2736b7ca930c840b761b8c76151576e3c7a63b9f62c60055ce1"
         },
+        "built_at": "2026-09-08T03:34:01.6767568Z",
         "source_commit": "ad3407895d37e3919dcf36efa727347358aa19e2",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
@@ -94,6 +95,7 @@
           "filename": "polytone-lead-rendering-fix-0.1.0+26.2-canary4.jar",
           "sha256": "9ba918cb2634f2736b7ca930c840b761b8c76151576e3c7a63b9f62c60055ce1"
         },
+        "built_at": "2026-09-08T03:34:01.6767568Z",
         "source_commit": "ad3407895d37e3919dcf36efa727347358aa19e2",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",

@@ -107,6 +107,7 @@
           "filename": "mossy-stone-0.4.0-canary4.jar",
           "sha256": "b0e7be5651d622789b848ba1a48073af8078ba4d834e34c1255ec9ce72042f14"
         },
+        "built_at": "2026-08-30T05:52:03.4551598Z",
         "source_commit": "f789b290f72c508a563797b0c543125bc9c468c1",
         "summary": "Provides a standalone Stone-like mossy stone family without a Regions Unexplored dependency."
       },
@@ -116,6 +117,7 @@
           "filename": "mossy-stone-0.4.0-canary4.jar",
           "sha256": "b0e7be5651d622789b848ba1a48073af8078ba4d834e34c1255ec9ce72042f14"
         },
+        "built_at": "2026-08-30T05:52:03.4551598Z",
         "source_commit": "f789b290f72c508a563797b0c543125bc9c468c1",
         "summary": "Provides a standalone Stone-like mossy stone family without a Regions Unexplored dependency."
       },

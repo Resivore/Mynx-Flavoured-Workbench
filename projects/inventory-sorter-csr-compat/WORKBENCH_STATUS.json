@@ -106,6 +106,7 @@
           "filename": "inventory-sorter-csr-compat-0.1.0-canary3.jar",
           "sha256": "7eca4e86faaa83211432300a658413f7662a9f642df8074d2e4ebf3bb0af3074"
         },
+        "built_at": "2026-09-12T04:38:18.1379352Z",
         "source_commit": "21b4e4a0eb734c79d1b23202de61d490febb4069",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
@@ -120,6 +121,7 @@
           "filename": "inventory-sorter-csr-compat-0.1.0-canary3.jar",
           "sha256": "7eca4e86faaa83211432300a658413f7662a9f642df8074d2e4ebf3bb0af3074"
         },
+        "built_at": "2026-09-12T04:38:18.1379352Z",
         "source_commit": "21b4e4a0eb734c79d1b23202de61d490febb4069",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",

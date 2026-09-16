@@ -92,6 +92,7 @@
           "filename": "matcha-jei-integration-0.3.2-canonical-food-discovery-canary6.jar",
           "sha256": "5a0cd106589513b59faa6daeceb03133da71f22051356a33767342ab2ade088e"
         },
+        "built_at": "2026-09-16T15:03:11.5092616Z",
         "source_commit": "e016421530f1f1b47ff43632fb69cd73d56f5bbd",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
