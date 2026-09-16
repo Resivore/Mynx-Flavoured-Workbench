@@ -14,14 +14,15 @@
   "definition": {
     "lifecycle": "ACTIVE",
     "goals": [
-      "Give structurally eligible dry upward-supported foliage canonical-parent placement and survival parity on exact native horizontal Nibaru slabs while preserving vanilla block/state identity, lifecycle, growth, harvesting, cleanup, and coherent half-height geometry.",
+      "Give structurally eligible dry upward- and ceiling-supported foliage directional canonical-parent placement and survival parity on exact native horizontal Nibaru slabs while preserving vanilla block/state identity, lifecycle, growth, harvesting, cleanup, and coherent half-height geometry.",
       "Delegate bonemeal on exact dry bottom native Nibaru slabs for canonical Grass Block, Moss Block, and Pale Moss Block through the corresponding Minecraft 26.2 substrate implementation without broadening material or geometry ownership."
     ],
     "scope": [
-      "Maintain C4 as the canonical-parent successor to C3: resolve an exact BGE-owned native horizontal slab, substitute only its support position with the profile's canonical parent in a read-only LevelReader projection, and let the plant state's ordinary Minecraft canSurvive result make the permission decision.",
-      "Classify behavior structurally through VegetationBlock, DoublePlantBlock, BigDripleaf head/stem, MossyCarpetBlock, and non-wool CarpetBlock contracts; root adapters cover single states, double-height companions, arbitrary big-dripleaf head/stem columns, and moss-carpet base/topper segments without a registry-ID permission table.",
-      "Align accepted bottom-slab models, outlines, targeting, cached/context collision, visual, interaction, entity-inside, breaking-overlay, and shape-derived particle geometry by exactly -0.5 Y while leaving top/double slabs and ordinary full-block behavior unshifted.",
-      "Preserve exact C3 as historical predecessor provenance and preserve its bounded Grass Block, Moss Block, and Pale Moss Block substrate-bonemeal behavior, including exact item consumption, native-slab restoration/reconciliation, generated vegetation positioning, and lowered-azalea safety.",
+      "Maintain C5 as the directional canonical-parent successor to C4: resolve an exact BGE-owned native horizontal slab, substitute only the support below an upward root or above a ceiling anchor with the profile's canonical parent in a read-only LevelReader projection, and let ordinary Minecraft canSurvive make the permission decision.",
+      "Classify behavior structurally through the retained upward-family contracts, concrete Minecraft 26.2 HangingRootsBlock and SporeBlossomBlock contracts, HangingMossBlock, and generic downward GrowingPlantBlock head/body pairs with Direction.DOWN; exact connected-column resolution lets compatible modded plants such as Mynx × Regions Unexplored dropleaf inherit the generic contract without a registry-ID exception or production dependency.",
+      "Resolve every downward-growing head/body or hanging-moss segment to one actual top anchor, preserve the real neighboring column, project only the anchor's support above, and apply one coherent directional offset without shifted persisted positions or replacement blocks.",
+      "Align accepted ceiling foliage under top slabs by exactly +0.5 Y and accepted upward foliage over bottom slabs by exactly -0.5 Y across models, outlines, targeting, cached/context collision, visual, interaction, entity-inside, breaking-overlay, and shape-derived particle geometry; bottom/double ceiling supports and top/double upward supports remain unshifted.",
+      "Preserve exact C4 as historical predecessor provenance and preserve the bounded Grass Block, Moss Block, and Pale Moss Block substrate-bonemeal behavior inherited from C3, including exact item consumption, native-slab restoration/reconciliation, generated vegetation positioning, and lowered-azalea safety.",
       "Use exact unified BGE C58, CNM 2.0.7, Terrain Slabs 3.3.2, Java 25, Gradle 9.5.1, Loom 1.17.19, and Fabric API 0.157.0+26.2 only as controlled build/test or read-only comparison baselines; runtime dependency eligibility remains capability/provider-based."
     ],
     "boundaries": {
@@ -31,10 +32,10 @@
       "exclusions": [
         "Crop/farmland families, ordinary and attached stems, saplings, giant-fungus starters, lily pads, and fluid-dependent or aquatic plants fail closed through behavior-class boundaries; PitcherCropBlock is included in the crop boundary because its farmland lifecycle is a DoublePlantBlock rather than a CropBlock.",
         "Bottom-slab mushroom and azalea bonemeal transformation into larger structures fails closed because the generated structure cannot preserve equivalent half-height geometry; ordinary small-mushroom spread and accepted azalea decoration remain supported.",
-        "Vertical slabs, CNM Steps, layers, stairs, walls, columns, vanilla or foreign slabs, side-mounted and hanging plants, rails, redstone components, pressure plates, torches, machinery, and arbitrary decorations receive no projected behavior.",
+        "Vertical slabs, CNM Steps, layers, stairs, walls, columns, vanilla or foreign slabs, side-mounted plants, glow lichen, rails, redstone components, pressure plates, torches, lanterns, chains, pointed dripstone, machinery, arbitrary decorations, upward-growing vine columns, and aquatic growing plants receive no new ceiling projection.",
         "The read-only projection supports ordinary BlockGetter and LevelReader placement/survival contracts. Raw ChunkAccess inspection is delegated and arbitrary custom placement systems that bypass those world-view accessors are not claimed compatible.",
-        "Unified Block Geometry Extensions retains canonical material/native-slab ownership; this project adds no duplicate plant blocks, persisted offset property, registry-name parser, competing material table, or standalone Nibaru dependency.",
-        "No Test Slot, Test Instance Manager state, accepted stack, Minecraft profile, deployment, gameplay runtime result, or promotion is changed by C4 controlled validation; the protected gameplay instance remains off-limits."
+        "Unified Block Geometry Extensions retains canonical material/native-slab ownership; this project adds no duplicate plant blocks, persisted offset property, registry-name parser, competing material table, standalone Nibaru dependency, or hard Mynx × Regions Unexplored dependency.",
+        "No Test Slot, Test Instance Manager state, accepted stack, Minecraft profile, deployment, gameplay runtime result, or promotion is changed by C5 controlled validation; the protected gameplay instance remains off-limits."
       ]
     },
     "dependencies": [
@@ -48,13 +49,13 @@
         "type": "MOD",
         "identifier": "fabricloader",
         "requirement": ">=0.19.3",
-        "reason": "Fabric runtime loader floor declared by the C4 artifact."
+        "reason": "Fabric runtime loader floor declared by the C5 artifact."
       },
       {
         "type": "MOD",
         "identifier": "fabric-api",
         "requirement": ">=0.157.0",
-        "reason": "Fabric API, Renderer API, and GameTest API floor declared by C4; 0.157.0+26.2 was the exact controlled-validation baseline."
+        "reason": "Fabric API, Renderer API, and GameTest API floor declared by C5; 0.157.0+26.2 was the exact controlled-validation baseline."
       },
       {
         "type": "PROJECT",
@@ -66,7 +67,7 @@
         "type": "MOD",
         "identifier": "more_slabs_stairs_and_walls",
         "requirement": "*",
-        "reason": "Stable Fabric capability/provider ID required for canonical material profiles and native slab ownership; C4 deliberately does not pin a BGE Canary."
+        "reason": "Stable Fabric capability/provider ID required for canonical material profiles and native slab ownership; C5 deliberately does not pin a BGE Canary."
       },
       {
         "type": "MOD",
@@ -90,33 +91,33 @@
         "type": "TOOL",
         "identifier": "java",
         "requirement": "25",
-        "reason": "Exact compilation and controlled GameTest baseline required by Minecraft 26.2; C4 metadata declares the genuine Java 25 floor."
+        "reason": "Exact compilation and controlled GameTest baseline required by Minecraft 26.2; C5 metadata declares the genuine Java 25 floor."
       },
       {
         "type": "TOOL",
         "identifier": "gradle",
         "requirement": "9.5.1",
-        "reason": "Exact build-tool baseline used for C4 controlled validation."
+        "reason": "Exact build-tool baseline used for C5 controlled validation."
       },
       {
         "type": "TOOL",
         "identifier": "fabric-loom",
         "requirement": "1.17.19",
-        "reason": "Exact Fabric build-plugin baseline used for C4 controlled validation."
+        "reason": "Exact Fabric build-plugin baseline used for C5 controlled validation."
       }
     ]
   },
   "state": {
-    "milestone": "C4 replaces the C3 species/substrate permission tables with canonical-parent projected vanilla survival for structural foliage families. A clean Java 25 build passed 4/4 focused JUnit tests and all 21 implemented headless server Fabric GameTests against exact unified BGE C58, CNM 2.0.7, and Terrain Slabs 3.3.2 baselines; artifact inspection and runtime-dependency policy validation also passed. Reload automation covered BlockState codec round-trip plus in-memory remove/reinsert rather than real chunk/world save-reload, and client rendering/mixins were statically inspected rather than executed. C4 remains ACTIVE, NOT_DEPLOYED, independently RUNTIME_UNTESTED, and unaccepted.",
+    "milestone": "C5 generalizes C4's one-position canonical-parent projection into directional upward and ceiling attachment resolution. Hanging Roots, Spore Blossom, pale hanging moss, and generic Direction.DOWN GrowingPlantBlock head/body columns now inherit canonical survival, natural placement, connected-anchor cleanup, and coherent +0.5 Y top-slab geometry while all C4 upward behavior remains intact. A clean Java 25 build passed 5/5 focused JUnit tests and all 29 required headless server Fabric GameTests against exact unified BGE C58, CNM 2.0.7, and Terrain Slabs 3.3.2 baselines; artifact and dependency inspection also passed. The Mynx × Regions Unexplored dropleaf source structurally matches the generic contract but was not loaded as a private test dependency. Client rendering, real particles, real save/chunk/world reload, and gameplay remain untested. C5 remains ACTIVE, NOT_DEPLOYED, independently RUNTIME_UNTESTED, and unaccepted.",
     "releases": {
       "current": {
-        "version": "0.1.0-canary4",
-        "embedded_version": "0.1.0-canary4",
+        "version": "0.1.0-canary5",
+        "embedded_version": "0.1.0-canary5",
         "artifact": {
-          "filename": "slab-decorations-0.1.0-canary4.jar",
-          "sha256": "f571f211f4b94909a6ded64ec8b97b87ea05b08f982a83bacf2ede6bb12960fe"
+          "filename": "slab-decorations-0.1.0-canary5.jar",
+          "sha256": "8de706eb59bdafd5c594f5375be6485b9edb7b30b2b2017b2c8eaa44129fe480"
         },
-        "source_commit": "c15b21e47a736ccf090825df8e3de0afa29db717",
+        "source_commit": "b589e1e52825e94a41fec2932c14c5a4ba07d791",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
@@ -135,11 +136,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 4,
-    "activity_at": "2026-09-03T04:55:30Z",
-    "updated_at": "2026-09-03T04:55:30Z",
-    "last_codex_at": "2026-09-03T04:55:30Z",
-    "source_commit": "c15b21e47a736ccf090825df8e3de0afa29db717",
+    "revision": 5,
+    "activity_at": "2026-09-16T04:49:47Z",
+    "updated_at": "2026-09-16T04:49:47Z",
+    "last_codex_at": "2026-09-16T04:49:47Z",
+    "source_commit": "b589e1e52825e94a41fec2932c14c5a4ba07d791",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
