@@ -28,6 +28,18 @@ ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_OUTPUT = "WORKBENCH_DASHBOARD.html"
 SERVER_STATE_FILENAME = "WORKBENCH_SERVER_STATE.json"
 BOOTSTRAP_SPRITE = ROOT / "third_party" / "bootstrap-icons" / "bootstrap-icons.svg"
+BOOTSTRAP_PREFIX = "bi-"
+DASHBOARD_ICON_NAMES = frozenset(
+    {
+        "search",
+        "x-lg",
+        "arrow-down-up",
+        "sort-up",
+        "sort-down",
+        "chevron-down",
+        "arrow-clockwise",
+    }
+)
 SERVER_STATES = {"CURRENT", "OUTDATED", "NOT_DEPLOYED"}
 LIFECYCLE_ORDER = ("ACTIVE", "PLANNED", "ACCEPTED", "TESTING", "BLOCKED", "PARKED")
 LIFECYCLE_PRIORITY = {lifecycle: index for index, lifecycle in enumerate(LIFECYCLE_ORDER)}
@@ -51,24 +63,79 @@ class DashboardProject:
     jar_note: str
     server_status: str
     deployed_release: dict[str, Any] | None
+    current_canary: int | None = None
+
+
+def _canary_number_in_text(value: str | None) -> int | None:
+    """Find the public Canary ordinal in one release-identity text field.
+
+    A leading/public ``C11`` is deliberately considered before any verbose
+    Canary spelling.  This keeps provenance such as ``Private Canary 10`` or
+    an embedded artifact version from replacing the human-facing C11.
+    """
+
+    if not value:
+        return None
+    public_portion = value.split("(", 1)[0]
+    public = re.search(r"(?i)(?<![a-z0-9])c[._ -]?(\d+)(?!\d)", public_portion)
+    if public:
+        return int(public.group(1))
+    canary = re.search(r"(?i)(?<![a-z0-9])canary[._ -]?(\d+)(?!\d)", value)
+    if canary:
+        return int(canary.group(1))
+    return None
+
+
+def resolve_canary_number(
+    version: str | None,
+    embedded_version: str | None = None,
+    artifact_filename: str | None = None,
+) -> int | None:
+    """Resolve the display-only Canary ordinal from current release identity.
+
+    The canonical human-facing version always has priority.  Embedded version
+    and filename are deterministic fallbacks for releases whose canonical
+    spelling does not carry the ordinal itself.
+    """
+
+    for value in (version, embedded_version, artifact_filename):
+        number = _canary_number_in_text(value)
+        if number is not None:
+            return number
+    return None
 
 
 def display_canary_version(version: str | None) -> str | None:
-    """Return a compact display label only for one unambiguous Canary integer."""
+    """Return a compact Canary label when the version carries an ordinal."""
 
-    if version is None:
-        return None
-    matches = re.findall(r"(?i)(?<![a-z0-9])canary[._ -]?(\d+)(?!\d)", version)
-    if len(matches) == 1 and version.casefold().count("canary") == 1:
-        return f"C{int(matches[0])}"
-    return version
+    number = resolve_canary_number(version)
+    return version if number is None else f"C{number}"
 
 
 def canary_number(version: str | None) -> int | None:
-    displayed = display_canary_version(version)
-    if displayed and displayed.startswith("C") and displayed[1:].isdigit():
-        return int(displayed[1:])
-    return None
+    return resolve_canary_number(version)
+
+
+def canary_number_for_release(current_release: Mapping[str, Any] | None) -> int | None:
+    """Resolve a current release's visible Canary without altering its identity."""
+
+    if current_release is None:
+        return None
+    artifact = current_release.get("artifact")
+    filename = artifact.get("filename") if isinstance(artifact, Mapping) else None
+    return resolve_canary_number(current_release.get("version"), current_release.get("embedded_version"), filename)
+
+
+def server_pill_label(server_status: str, deployed_release: Mapping[str, Any] | None) -> str:
+    """Return the intentionally compact, release-aware server-state label."""
+
+    if server_status not in SERVER_STATES:
+        raise DashboardError(f"unsupported dashboard server status {server_status!r}")
+    if server_status != "OUTDATED":
+        return server_status.replace("_", " ")
+    deployed_version = None if deployed_release is None else deployed_release.get("version")
+    deployed_canary = canary_number(deployed_version)
+    return "OUTDATED" if deployed_canary is None else f"OUTDATED · C{deployed_canary}"
 
 
 def _release_identity(value: Mapping[str, Any], path: str) -> dict[str, Any]:
@@ -294,6 +361,7 @@ def build_project_records(
                 jar_note=jar_note,
                 server_status=server_status,
                 deployed_release=deployed_release,
+                current_canary=canary_number_for_release(current),
             )
         )
     return sort_projects_default(projects)
@@ -356,21 +424,67 @@ def _json_for_html(value: Any) -> str:
 
 def _project_payload(project: DashboardProject) -> dict[str, Any]:
     deployed_version = None if project.deployed_release is None else project.deployed_release["version"]
+    current_canary = project.current_canary
+    deployed_canary = canary_number(deployed_version)
     return {
         "uuid": project.uuid,
         "projectId": project.project_id,
         "name": project.name,
         "lifecycle": project.lifecycle,
         "version": project.current_version,
-        "versionDisplay": display_canary_version(project.current_version),
-        "versionCanary": canary_number(project.current_version),
+        "versionDisplay": (
+            f"C{current_canary}"
+            if current_canary is not None
+            else project.current_version
+        ),
+        "versionCanary": current_canary,
         "jarMtimeMs": None if project.jar_mtime_ns is None else project.jar_mtime_ns // 1_000_000,
         "jarMtimeIso": project.jar_mtime_iso,
         "jarNote": project.jar_note,
         "server": project.server_status,
+        "serverDisplay": server_pill_label(project.server_status, project.deployed_release),
         "deployedVersion": deployed_version,
         "deployedVersionDisplay": display_canary_version(deployed_version),
+        "deployedCanary": deployed_canary,
     }
+
+
+def _namespace_bootstrap_sprite(sprite: str) -> str:
+    """Prefix vendored sprite IDs so SVG fragments cannot target page DOM IDs."""
+
+    defined_ids = set(re.findall(r'\bid="([^"]+)"', sprite))
+    symbol_ids = set(re.findall(r'<symbol\b[^>]*\bid="([^"]+)"', sprite))
+    missing = sorted(DASHBOARD_ICON_NAMES - symbol_ids)
+    if missing:
+        raise DashboardError(
+            "Bootstrap Icons sprite is missing dashboard icon symbols: " + ", ".join(missing)
+        )
+
+    def prefixed(match: re.Match[str]) -> str:
+        return f'{match.group(1)}{BOOTSTRAP_PREFIX}{match.group(2)}{match.group(3)}'
+
+    # Keep the upstream asset immutable.  Both defined IDs and internal
+    # fragment references are rewritten in the generated local document.
+    namespaced = re.sub(r'(\bid=")([^"]+)(")', prefixed, sprite)
+    namespaced = re.sub(
+        r'((?:xlink:)?href\s*=\s*["\'])#([^"\']+)(["\'])',
+        lambda match: (
+            f"{match.group(1)}#{BOOTSTRAP_PREFIX}{match.group(2)}{match.group(3)}"
+            if match.group(2) in defined_ids
+            else match.group(0)
+        ),
+        namespaced,
+    )
+    namespaced = re.sub(
+        r'url\(\s*#([^)\s]+)\s*\)',
+        lambda match: (
+            f"url(#{BOOTSTRAP_PREFIX}{match.group(1)})"
+            if match.group(1) in defined_ids
+            else match.group(0)
+        ),
+        namespaced,
+    )
+    return namespaced.replace("<svg ", '<svg class="icon-sprite" aria-hidden="true" ', 1)
 
 
 def render_dashboard(
@@ -390,7 +504,7 @@ def render_dashboard(
         sprite = BOOTSTRAP_SPRITE.read_text(encoding="utf-8")
     except OSError as exc:
         raise DashboardError(f"Bootstrap Icons sprite is unavailable: {BOOTSTRAP_SPRITE}") from exc
-    sprite = sprite.replace("<svg ", '<svg class="icon-sprite" aria-hidden="true" ', 1)
+    sprite = _namespace_bootstrap_sprite(sprite)
     return (
         HTML_TEMPLATE.replace("__DASHBOARD_DATA__", _json_for_html(payload))
         .replace("__BOOTSTRAP_ICONS__", sprite)
@@ -557,8 +671,8 @@ HTML_TEMPLATE = r'''<!doctype html>
       position: absolute;
       left: 14px;
       top: 50%;
-      width: 15px;
-      height: 15px;
+      width: 16px;
+      height: 16px;
       color: var(--muted);
       transform: translateY(-50%);
       pointer-events: none;
@@ -566,7 +680,7 @@ HTML_TEMPLATE = r'''<!doctype html>
     #search {
       width: 100%;
       height: 42px;
-      padding: 0 42px 0 37px;
+      padding: 0 42px 0 40px;
       border: 1px solid var(--line-strong);
       border-radius: 9px;
       background: rgba(3, 12, 8, 0.72);
@@ -587,15 +701,31 @@ HTML_TEMPLATE = r'''<!doctype html>
     }
     #clear-search:hover { background: rgba(255, 255, 255, 0.06); color: var(--text); }
     .select-wrap { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 0.86rem; white-space: nowrap; }
-    select {
+    .select-control { position: relative; display: inline-flex; }
+    .select-control select {
       height: 42px;
-      padding: 0 34px 0 11px;
+      padding: 0 40px 0 11px;
       border: 1px solid var(--line-strong);
       border-radius: 9px;
       background: #0a1a13;
       color: var(--text);
+      appearance: none;
+    }
+    .select-chevron {
+      position: absolute;
+      top: 50%;
+      right: 13px;
+      width: 0.85rem;
+      height: 0.85rem;
+      color: var(--muted);
+      pointer-events: none;
+      transform: translateY(-50%);
     }
     .order-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
       height: 42px;
       padding: 0 13px;
       border: 1px solid var(--line-strong);
@@ -685,7 +815,7 @@ HTML_TEMPLATE = r'''<!doctype html>
       text-transform: inherit;
     }
     .bi { display: inline-block; width: 1em; height: 1em; fill: currentColor; flex: 0 0 auto; }
-    .sort-indicator { color: #668075; font-size: 0.85rem; }
+    .sort-indicator { display: inline-flex; align-items: center; justify-content: center; width: 1em; height: 1em; color: #668075; font-size: 0.85rem; }
     th[aria-sort="ascending"] .sort-indicator,
     th[aria-sort="descending"] .sort-indicator { color: var(--accent); }
 
@@ -739,16 +869,17 @@ HTML_TEMPLATE = r'''<!doctype html>
       display: inline-flex;
       align-items: center;
       min-height: 25px;
-      padding: 2px 8px;
+      padding: 6px 12px;
       border: 1px solid color-mix(in srgb, var(--pill-color) 42%, transparent);
       border-radius: 999px;
       background: color-mix(in srgb, var(--pill-color) 10%, transparent);
       color: var(--pill-color);
-      font-size: 0.73rem;
-      font-weight: 800;
+      font-size: 0.65rem;
+      font-weight: 600;
       letter-spacing: 0.045em;
       line-height: 1;
       white-space: nowrap;
+      text-transform: uppercase;
     }
     .status-pill::before {
       content: "";
@@ -820,20 +951,23 @@ HTML_TEMPLATE = r'''<!doctype html>
         <div class="control-row">
           <div class="search-wrap">
             <label class="sr-only" for="search">Search projects</label>
-            <svg class="bi search-icon" aria-hidden="true"><use href="#search"></use></svg>
+            <svg class="bi search-icon" aria-hidden="true"><use href="#bi-search"></use></svg>
             <input id="search" type="search" autocomplete="off" placeholder="Search projects" spellcheck="false">
-            <button id="clear-search" type="button" aria-label="Clear project search" title="Clear project search" hidden><svg class="bi" aria-hidden="true"><use href="#x-lg"></use></svg></button>
+            <button id="clear-search" type="button" aria-label="Clear project search" title="Clear project search" hidden><svg class="bi" aria-hidden="true"><use href="#bi-x-lg"></use></svg></button>
           </div>
           <label class="select-wrap" for="server-filter">
             <span>On server</span>
-            <select id="server-filter">
-              <option value="ALL">All</option>
-              <option value="CURRENT">Current</option>
-              <option value="OUTDATED">Outdated</option>
-              <option value="NOT_DEPLOYED">Not deployed</option>
-            </select>
+            <span class="select-control">
+              <select id="server-filter">
+                <option value="ALL">All</option>
+                <option value="CURRENT">Current</option>
+                <option value="OUTDATED">Outdated</option>
+                <option value="NOT_DEPLOYED">Not deployed</option>
+              </select>
+              <svg class="bi select-chevron" aria-hidden="true"><use href="#bi-chevron-down"></use></svg>
+            </span>
           </label>
-          <button id="reset-order" class="order-button" type="button" title="Restore Workbench order" disabled><svg class="bi" aria-hidden="true"><use href="#arrow-clockwise"></use></svg> Workbench order</button>
+          <button id="reset-order" class="order-button" type="button" title="Restore Workbench order" disabled><svg class="bi" aria-hidden="true"><use href="#bi-arrow-clockwise"></use></svg> Workbench order</button>
         </div>
         <div class="control-row filter-row">
           <span class="filter-label">Lifecycle</span>
@@ -862,11 +996,11 @@ HTML_TEMPLATE = r'''<!doctype html>
           </colgroup>
           <thead>
             <tr>
-              <th scope="col" data-sort-header="name"><button class="sort-button" type="button" data-sort="name">Project <span class="sort-indicator" aria-hidden="true"><svg class="bi"><use href="#arrow-down-up"></use></svg></span></button></th>
-              <th scope="col" data-sort-header="lifecycle"><button class="sort-button" type="button" data-sort="lifecycle">Lifecycle <span class="sort-indicator" aria-hidden="true"><svg class="bi"><use href="#arrow-down-up"></use></svg></span></button></th>
-              <th scope="col" data-sort-header="version"><button class="sort-button" type="button" data-sort="version">Current Version <span class="sort-indicator" aria-hidden="true"><svg class="bi"><use href="#arrow-down-up"></use></svg></span></button></th>
-              <th scope="col" data-sort-header="jar"><button class="sort-button" type="button" data-sort="jar">Last JAR Edit <span class="sort-indicator" aria-hidden="true"><svg class="bi"><use href="#arrow-down-up"></use></svg></span></button></th>
-              <th scope="col" data-sort-header="server"><button class="sort-button" type="button" data-sort="server">On Server <span class="sort-indicator" aria-hidden="true"><svg class="bi"><use href="#arrow-down-up"></use></svg></span></button></th>
+              <th scope="col" data-sort-header="name"><button class="sort-button" type="button" data-sort="name">Project <span class="sort-indicator" aria-hidden="true"><svg class="bi"><use href="#bi-arrow-down-up"></use></svg></span></button></th>
+              <th scope="col" data-sort-header="lifecycle"><button class="sort-button" type="button" data-sort="lifecycle">Lifecycle <span class="sort-indicator" aria-hidden="true"><svg class="bi"><use href="#bi-arrow-down-up"></use></svg></span></button></th>
+              <th scope="col" data-sort-header="version"><button class="sort-button" type="button" data-sort="version">Current Version <span class="sort-indicator" aria-hidden="true"><svg class="bi"><use href="#bi-arrow-down-up"></use></svg></span></button></th>
+              <th scope="col" data-sort-header="jar"><button class="sort-button" type="button" data-sort="jar">Last JAR Edit <span class="sort-indicator" aria-hidden="true"><svg class="bi"><use href="#bi-arrow-down-up"></use></svg></span></button></th>
+              <th scope="col" data-sort-header="server"><button class="sort-button" type="button" data-sort="server">On Server <span class="sort-indicator" aria-hidden="true"><svg class="bi"><use href="#bi-arrow-down-up"></use></svg></span></button></th>
             </tr>
           </thead>
           <tbody id="project-rows"></tbody>
@@ -893,7 +1027,6 @@ HTML_TEMPLATE = r'''<!doctype html>
       const projects = data.projects.map((project, defaultIndex) => ({ ...project, defaultIndex }));
       const lifecycleOrder = ["ACTIVE", "PLANNED", "ACCEPTED", "TESTING", "BLOCKED", "PARKED"];
       const lifecycleLabels = { ACTIVE: "Active", PLANNED: "Planned", ACCEPTED: "Accepted", TESTING: "Testing", BLOCKED: "Blocked", PARKED: "Parked" };
-      const serverLabels = { CURRENT: "current", OUTDATED: "outdated", NOT_DEPLOYED: "not deployed" };
       const serverRank = { CURRENT: 0, OUTDATED: 1, NOT_DEPLOYED: 2 };
       const sortLabels = { name: "Project", lifecycle: "Lifecycle", version: "Current Version", jar: "Last JAR Edit", server: "On Server" };
       const state = { lifecycle: "ALL", server: "ALL", search: "", sortKey: "default", sortDirection: "asc", collapsed: new Set() };
@@ -934,7 +1067,7 @@ HTML_TEMPLATE = r'''<!doctype html>
         const svg = element("svg", "bi");
         svg.setAttribute("aria-hidden", "true");
         const use = document.createElementNS("http://www.w3.org/2000/svg", "use");
-        use.setAttribute("href", `#${name}`);
+        use.setAttribute("href", `#bi-${name}`);
         svg.appendChild(use);
         return svg;
       }
@@ -988,10 +1121,7 @@ HTML_TEMPLATE = r'''<!doctype html>
       }
 
       function serverPill(project) {
-        const label = project.server === "NOT_DEPLOYED"
-          ? serverLabels[project.server]
-          : `${serverLabels[project.server]} · ${project.deployedVersionDisplay}`;
-        const pill = element("span", `pill status-pill server-${project.server}`, label);
+        const pill = element("span", `pill status-pill server-${project.server}`, project.serverDisplay);
         if (project.deployedVersion) pill.title = project.deployedVersion;
         return pill;
       }

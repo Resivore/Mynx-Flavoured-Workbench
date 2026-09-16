@@ -340,18 +340,81 @@ class WorkbenchDashboardTests(unittest.TestCase):
         self.assertLess(first.index(alpha.uuid), first.index(beta.uuid))
 
     def test_canary_display_is_conservative_and_numeric(self) -> None:
+        self.assertEqual(dashboard.display_canary_version("C11"), "C11")
         self.assertEqual(dashboard.display_canary_version("canary1"), "C1")
         self.assertEqual(dashboard.display_canary_version("0.1.0-canary12"), "C12")
+        self.assertEqual(dashboard.display_canary_version("C11 (Private Canary 10)"), "C11")
+        self.assertEqual(dashboard.resolve_canary_number("C11 (Private Canary 10; embedded 0.1.0-canary10)"), 11)
         self.assertEqual(dashboard.display_canary_version("release candidate"), "release candidate")
         self.assertLess(dashboard.canary_number("C2") or 0, dashboard.canary_number("C10") or 0)
 
-    def test_bootstrap_sprite_is_embedded_and_icon_controls_are_labeled(self) -> None:
+    def test_current_release_canary_uses_embedded_version_then_artifact_filename(self) -> None:
+        embedded = release("release label", "unrelated.jar")
+        embedded["embedded_version"] = "0.1.0-canary12"
+        self.assertEqual(dashboard.canary_number_for_release(embedded), 12)
+        filename = release("release label", "project-0.1.0-canary13.jar")
+        self.assertEqual(dashboard.canary_number_for_release(filename), 13)
+
+    def test_current_main_canary_artifacts_resolve_to_compact_canary_labels(self) -> None:
+        statuses = dashboard.load_repository_statuses(Path(__file__).resolve().parents[1])
+        non_canary_project_ids = {
+            "building-but-better",
+            "matcha-noxious-redstone",
+            "ribbit-villagers",
+            "workbench-test-marker",
+            "yungs-api-26.2",
+        }
+        observed_non_canary: set[str] = set()
+        for _, (_, manifest) in statuses.items():
+            current = manifest["state"]["releases"]["current"]
+            if current is None or current["artifact"] is None:
+                continue
+            project_id = manifest["identity"]["project_id"]
+            number = dashboard.canary_number_for_release(current)
+            if number is None:
+                observed_non_canary.add(project_id)
+            else:
+                self.assertEqual(f"C{number}", dashboard._project_payload(
+                    dashboard.DashboardProject(
+                        uuid=manifest["identity"]["uuid"],
+                        project_id=project_id,
+                        name=manifest["identity"]["name"],
+                        lifecycle=manifest["definition"]["lifecycle"],
+                        current_version=current["version"],
+                        jar_mtime_ns=None,
+                        jar_mtime_iso=None,
+                        jar_note="Fixture.",
+                        server_status="NOT_DEPLOYED",
+                        deployed_release=None,
+                        current_canary=number,
+                    )
+                )["versionDisplay"])
+        self.assertEqual(observed_non_canary, non_canary_project_ids)
+
+    def test_bootstrap_sprite_is_namespaced_and_icon_controls_are_labeled(self) -> None:
         html = dashboard.render_dashboard([model("Alpha", "ACTIVE")])
         self.assertIn('class="icon-sprite"', html)
         self.assertIn('id="search"', html)
-        self.assertIn('href="#arrow-down-up"', html)
+        self.assertIn('href="#bi-arrow-down-up"', html)
+        self.assertIn('id="bi-search"', html)
+        self.assertIn('href="#bi-chevron-down"', html)
         self.assertIn('aria-label="Clear project search"', html)
         self.assertIn('title="Clear project search"', html)
+        sprite, page = html.split("</svg>", 1)
+        sprite_ids = set(re.findall(r'<symbol\b[^>]*\bid="([^"]+)"', sprite))
+        page_ids = set(re.findall(r'\bid="([^"]+)"', page))
+        self.assertTrue(all(symbol_id.startswith("bi-") for symbol_id in sprite_ids))
+        self.assertFalse(sprite_ids & page_ids)
+        self.assertFalse(re.search(r'<use\b[^>]*\bhref="#(?!bi-)', html))
+        for name in dashboard.DASHBOARD_ICON_NAMES:
+            self.assertIn(f'id="bi-{name}"', html)
+
+    def test_server_pill_labels_keep_versions_only_for_outdated_canaries(self) -> None:
+        deployed = {"version": "C10 (Private Canary 9)", "artifact": None}
+        self.assertEqual(dashboard.server_pill_label("CURRENT", deployed), "CURRENT")
+        self.assertEqual(dashboard.server_pill_label("OUTDATED", deployed), "OUTDATED · C10")
+        self.assertEqual(dashboard.server_pill_label("NOT_DEPLOYED", deployed), "NOT DEPLOYED")
+        self.assertEqual(dashboard.server_pill_label("OUTDATED", {"version": "1.0.0", "artifact": None}), "OUTDATED")
 
     def test_generated_page_has_no_runtime_network_dependencies(self) -> None:
         html = dashboard.render_dashboard(
