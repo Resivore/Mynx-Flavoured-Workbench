@@ -1,23 +1,22 @@
 # Testing
 
-Candidate `villager-work-routines-0.1.0-canary7.jar` is a user-managed Minecraft runtime trial. Before testing, verify its version, filename, SHA-256, and source checkpoint against `WORKBENCH_STATUS.json`. Use the frog-villager resource pack, do not install the Real Working Villagers reference JAR, and retain relevant `[VillagerWorkRoutines]` logs. A static build/test pass is not runtime evidence.
+Candidate `villager-work-routines-0.1.0-canary8.jar` is a user-managed Minecraft Java 26.2/Fabric runtime trial. Before testing, verify its version, filename, SHA-256, and source checkpoint against `WORKBENCH_STATUS.json`. Use the normal frog-villager resource pack, do not install the Real Working Villagers reference JAR, and retain relevant `[VillagerWorkRoutines]` logs. A static build/test pass is not runtime evidence.
 
-## Recorded Canary 6 runtime evidence
+## Recorded Canary 7 startup evidence
 
-- **Shepherd — PASS retained from C5.** Repeated full target/gate/blocker/shear/exact-wool/loom-adjacent-barrel cycles passed.
-- **Fisherman — FAIL / substantial partial success.** For exact C6 identity `0.1.0-canary6`, `villager-work-routines-0.1.0-canary6.jar`, SHA-256 `366a4d7ed3d9f7c28a4055e2efdf981f07c77f32b7bfd6c72c1c9458c4d25f99`, source `69ae70bd8412ac169a972985c328771dd8bc16d8`, the old `Missing elements in vertex` crash was fixed. A Fisherman claimed barrel `BlockPos{x=294, y=63, z=517}`, selected water/bank, navigated, cast, rendered the bobber and line, retrieved a salmon, retained it in VWR-owned output, then deposited `attempted=1 inserted=1 retained=0` to that claimed barrel. C6 later churned synthetic rod overlays and crashed the integrated server with `state.prop == null` in `WorkCoordinator.showProp`; the rod was not a convincing stable held visual. This is not a failure of the completed gameplay cycle.
+Canary 7 is a user-reported external runtime **FAIL** for exact identity `0.1.0-canary7`, `villager-work-routines-0.1.0-canary7.jar`, SHA-256 `2ea2f9f9e2e44e357af8fad1643c76ff83958a290c8e7213ea932e4923561f4f`, source `a1c0d7c4dd5e7515179da3474269e2db7c800829`. During client startup, `villager_work_routines.mixins.json:client.VillagerRendererMixin` failed with `InvalidMixinException`: its `@Shadow addLayer(RenderLayer)` was not located on target `VillagerRenderer`. This caused the later `EntityRenderers` and resource-reload failures and resource-pack rollback. The startup failure prevented meaningful C7 Fisherman validation; it does not replace the retained C5 Shepherd PASS or C6's successful Fisherman cycle observations.
 
-## Canary 7 Fisherman trial
+## Canary 8 client-start and Fisherman trial
 
 Run visual and behavioral checks at normal **20 TPS**. Accelerated ticks may reach vanilla WORK time only; restore 20 TPS before navigation, casting, rendering, retrieval, or observation.
 
-1. **Full cycle:** Give a Fisherman its own genuinely claimed barrel, valid bounded open source water, and a safe adjacent bank. Confirm water/bank selection, bank navigation, one clear fishing-rod-shaped item at the crossed hands, cast, bobber, a line from approximately the rod tip to bobber, wait, retrieve/swing/splash, one fish-only result, owned-output capture, return, and deposit only to the claimed barrel.
-2. **Watch the rod:** From close range, observe before/during/after cast. The rod must be unmistakably rod-shaped, move with the villager, appear once only, remain stable through the live float, and not float separately or remain after retrieval.
-3. **Save during float:** While the bobber is live, cause an ordinary world save/pause if practical. There must be no crash, duplicate rod, durable synthetic rod in villager equipment, reset catch timing, or lost float ownership. Logs should show one action ID suspended/restored, rather than a new transaction every normal tick.
-4. **Several cycles and interruption:** Observe several casts, then let WORK end or interrupt an active float. Each cast should have one rod transaction; float, rod, and line must clean up once on interruption and the legitimate hand state must be preserved. No prop NPE, overlay flicker/churn, memory/render accumulation, arbitrary storage, dropped-item intermediary, or resource deletion is allowed.
+1. Start Minecraft and reach the main menu / normal client initialization. There must be no VWR mixin or `EntityRenderers` failure.
+2. Confirm resource packs remain enabled; no VWR-caused resource-pack rollback may occur.
+3. Enter a world with the normal frog-villager resource pack.
+4. Confirm ordinary villagers render normally.
+5. Give a Fisherman its own genuinely claimed barrel, valid bounded open source water, and a safe adjacent bank. Observe a cycle and confirm exactly one recognizable fishing rod at crossed hands, that it follows the villager, the bobber renders, the line runs approximately from rod tip to bobber, no generic crossed-arms duplicate appears, and the rod disappears after retrieval or interruption.
+6. Complete at least one Fisherman catch/deposit cycle: water/bank selection, navigation, cast, wait, retrieve/swing/splash, one fish-only result, owned-output capture, return, and deposit only to the claimed barrel.
+7. While the bobber is live, cause an ordinary world save/pause if practical. The action must retain one transaction identity over save suspension/resume, with no crash, duplicate/stale rod, durable synthetic equipment, lost float ownership, reset catch timing, or hand-state corruption. Then observe several cycles and an interruption; float, rod, and line must clean up once.
+8. Perform one Shepherd regression cycle if practical. Its existing target/gate/blocker/shear/exact-wool/loom-adjacent-barrel behavior must remain intact.
 
-## Shepherd regression
-
-Perform one ordinary gated sheep cycle if practical. Existing Shepherd PASS behavior must remain: visible shears, direct-route-first/target-driven gate ownership, Sheep/Cow/Pig/Chicken/Rabbit-only transient blocker, correct entry/exit/closure, real close-range shear, exact wool capture, and loom-adjacent barrel deposit. A shared prop regression is a C7 FAIL.
-
-Record **FAIL** or **INCONCLUSIVE** for any prop NPE, server/client crash, incomplete-line vertex error, missing/stale bobber/line/rod, duplicate rod, unstable rod transaction, invalid water/bank safety, non-fish output, arbitrary storage, lost legitimate hand state, or Shepherd/gate regression. Do not mark C7 Fisherman PASS until a user actually observes a complete cycle.
+Record **FAIL** for any startup/client crash, mixin application failure, `EntityRenderers` failure, VWR-caused resource-pack rollback, missing/duplicate/stale rod, fishing regression, prop NPE, line-geometry crash, legitimate-hand-state corruption, or Shepherd regression. Record **INCONCLUSIVE** only with the observed limiting condition. Do not mark C8 Fisherman PASS until a user observes the complete cycle.

@@ -38,12 +38,12 @@
     ]
   },
   "state": {
-    "milestone": "User-reported external Canary 6 evidence is feature-specific: Shepherd retains Canary 5 runtime PASS. Fisherman C6 is an overall FAIL / substantial partial success for exact `0.1.0-canary6`, `villager-work-routines-0.1.0-canary6.jar`, SHA-256 `366a4d7ed3d9f7c28a4055e2efdf981f07c77f32b7bfd6c72c1c9458c4d25f99`, source `69ae70bd8412ac169a972985c328771dd8bc16d8`: the former line-vertex crash was fixed and a full water/bank/navigation/cast/visible-bobber-and-line/retrieve/salmon/owned-output/claimed-barrel-deposit cycle succeeded, but later repeated rod-overlay churn led to a server NPE in `WorkCoordinator.showProp` after `state.prop` became null. C7 replaces mutable prop dereferences with identity-checked transactions, preserves one action over save suspension/resume, avoids equivalent-data profession cleanup, uses a single isolated vanilla fishing-rod item presentation at crossed arms, and anchors the existing 26.2-complete line renderer at its deterministic rod tip. A clean Java 25/Fabric build and 54 focused tests pass; C7 runtime validation remains user-managed.",
+    "milestone": "C7 has user-reported external startup FAIL evidence for exact `0.1.0-canary7`, `villager-work-routines-0.1.0-canary7.jar`, SHA-256 `2ea2f9f9e2e44e357af8fad1643c76ff83958a290c8e7213ea932e4923561f4f`, source `a1c0d7c4dd5e7515179da3474269e2db7c800829`: its new `VillagerRendererMixin` could not apply because it shadowed `addLayer(RenderLayer)` as though declared on `VillagerRenderer`; the actual 26.2 declaration is inherited from `LivingEntityRenderer`. Startup therefore prevented meaningful C7 Fisherman runtime validation. This does not invalidate the retained C5 Shepherd PASS or C6's successful Fisherman cycle portions. C8 retains the C7 state extraction, isolated rod presentation, and all Fisherman lifecycle fixes, while registering the villager-only rod layer through Fabric Rendering v1's `LivingEntityRenderLayerRegistrationCallback`; clean static validation and the mapped-hierarchy regression test pass. C8 runtime validation remains user-managed.",
     "releases": {
       "current": {
-        "version": "0.1.0-canary7",
-        "artifact": {"filename": "villager-work-routines-0.1.0-canary7.jar", "sha256": "2ea2f9f9e2e44e357af8fad1643c76ff83958a290c8e7213ea932e4923561f4f"},
-        "source_commit": "a1c0d7c4dd5e7515179da3474269e2db7c800829",
+        "version": "0.1.0-canary8",
+        "artifact": {"filename": "villager-work-routines-0.1.0-canary8.jar", "sha256": "afac65daa62f29b2f47e9fd6d0bba4e52697e58e90149b0cb243e2d4aabcb424"},
+        "source_commit": "e56a9486219f6a52254a8e138b595bfabb6a37f5",
         "runtime_dependency_policy": {"contract": "CAPABILITY_OR_PROVIDER", "exceptions": []}
       },
       "accepted": null,
@@ -55,11 +55,11 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 7,
-    "activity_at": "2026-09-16T02:13:26Z",
-    "updated_at": "2026-09-16T02:13:26Z",
-    "last_codex_at": "2026-09-16T02:13:26Z",
-    "source_commit": "a1c0d7c4dd5e7515179da3474269e2db7c800829",
+    "revision": 8,
+    "activity_at": "2026-09-16T03:01:36Z",
+    "updated_at": "2026-09-16T03:01:36Z",
+    "last_codex_at": "2026-09-16T03:01:36Z",
+    "source_commit": "e56a9486219f6a52254a8e138b595bfabb6a37f5",
     "google_sheet": {"participates": true, "exclusion_reason": null}
   }
 }
