@@ -10,7 +10,7 @@
     "legacy_ids": []
   },
   "definition": {
-    "lifecycle": "ACCEPTED",
+    "lifecycle": "TESTING",
     "goals": [
       "Preserve sixteen selected Regions Unexplored plants as focused Minecraft Java 26.2 Fabric content without a runtime dependency on Regions Unexplored.",
       "Retain reference gameplay, assets and practical shader movement where target APIs permit, with narrow compatibility repairs and explicit 26.2 additions."
@@ -58,15 +58,15 @@
     ]
   },
   "state": {
-    "milestone": "Exact current 0.1.0+26.2-canary3 is ACCEPTED in Workbench Stack v27 after the user's 2026-09-06 user-reported external aggregate PASS. Artifact mynx-regions-unexplored-private-0.1.0+26.2-canary3.jar SHA-256 20460eac76b1712be8d0c6d39b5bcb755f2a7664e51eb70e73ad4ef071fd99a5 and source b12564572871441efdd6478aecdb434322ada923 were bound exactly; No Test Slot deployment or slot history was created; Slot A remained empty and Slot B was preserved.",
+    "milestone": "Current 0.1.0+26.2-canary4 is awaiting runtime confirmation of the clover tint-index repair. It retains the exact original RU grayscale clover textures and applies biome grass tint to both the bed (index 0) and stems (index 1). Accepted Canary 3 remains the exact rollback/provenance release; no deployment or profile operation was performed for Canary 4.",
     "releases": {
       "current": {
-        "version": "0.1.0+26.2-canary3",
+        "version": "0.1.0+26.2-canary4",
         "artifact": {
-          "filename": "mynx-regions-unexplored-private-0.1.0+26.2-canary3.jar",
-          "sha256": "20460eac76b1712be8d0c6d39b5bcb755f2a7664e51eb70e73ad4ef071fd99a5"
+          "filename": "mynx-regions-unexplored-private-0.1.0+26.2-canary4.jar",
+          "sha256": "8f81b38e74832e8c4b8ad2a70b68dea39d38c82b231cf17982a0a6ad93f163b6"
         },
-        "source_commit": "b12564572871441efdd6478aecdb434322ada923",
+        "source_commit": "fb900d06b4a65b09f6458db8ec00e3c54c558db5",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
@@ -85,22 +85,22 @@
         }
       },
       "rollback": null,
-      "accepted_current": "CURRENT_IS_ACCEPTED",
+      "accepted_current": "CURRENT_DIFFERS_FROM_ACCEPTED",
       "accepted_rollback": "NO_ROLLBACK"
     },
     "validation": {
       "build": "STATIC_PASS",
-      "deployment": "READY_TO_TEST_VERIFIED",
-      "runtime": "RUNTIME_PASS"
+      "deployment": "NOT_DEPLOYED",
+      "runtime": "RUNTIME_UNTESTED"
     },
     "blocker": null
   },
   "synchronization": {
-    "revision": 4,
-    "activity_at": "2026-09-07T04:02:00Z",
-    "updated_at": "2026-09-07T04:02:00Z",
-    "last_codex_at": "2026-09-07T04:02:00Z",
-    "source_commit": "274e9b7e36a1c2b53395c725f1fc9f2fed4ad2e0",
+    "revision": 5,
+    "activity_at": "2026-09-16T14:49:14Z",
+    "updated_at": "2026-09-16T14:49:14Z",
+    "last_codex_at": "2026-09-16T14:49:14Z",
+    "source_commit": "fb900d06b4a65b09f6458db8ec00e3c54c558db5",
     "google_sheet": {
       "participates": true,
       "exclusion_reason": null
