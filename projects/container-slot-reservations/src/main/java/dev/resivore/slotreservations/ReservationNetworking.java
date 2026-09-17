@@ -61,7 +61,13 @@ public final class ReservationNetworking {
         ServerPlayNetworking.registerGlobalReceiver(ShulkerPanelReservationActionPayload.TYPE, (payload, context) ->
                 context.server().execute(() -> ShulkerPanelActions.handleReservation(context.player(), payload)));
         ServerPlayNetworking.registerGlobalReceiver(ShulkerPanelContentActionPayload.TYPE, (payload, context) ->
-                context.server().execute(() -> ShulkerPanelActions.handleContent(context.player(), payload)));
+                context.server().execute(() -> {
+                    MouseTweaksTrace.event(13, "Server received content payload",
+                            "player=" + context.player().getGameProfile().name()
+                                    + ", menu=" + payload.menuId() + ", cell=" + payload.internalSlot()
+                                    + ", click=" + payload.click());
+                    ShulkerPanelActions.handleContent(context.player(), payload);
+                }));
         ServerPlayNetworking.registerGlobalReceiver(ShulkerPanelMenuQuickMovePayload.TYPE, (payload, context) ->
                 context.server().execute(() -> ShulkerPanelActions.handleMenuQuickMove(context.player(), payload)));
         ServerPlayNetworking.registerGlobalReceiver(ShulkerSelectionPayload.TYPE, (payload, context) ->

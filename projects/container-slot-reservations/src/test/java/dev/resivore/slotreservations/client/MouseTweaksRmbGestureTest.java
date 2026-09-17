@@ -11,12 +11,11 @@ final class MouseTweaksRmbGestureTest {
     @Test void occupiedPressLatchesCollectionEvenAfterAnEmptyCellIsEntered() {
         var gesture = new MouseTweaksRmbGesture();
         gesture.begin(MouseTweaksRmbGesture.selectMode(true, false),
-                MouseTweaksRmbGesture.OriginRegion.PANEL, 3, false);
+                MouseTweaksRmbGesture.OriginRegion.PANEL, 3);
 
         assertEquals(MouseTweaksRmbGesture.Mode.COLLECTION_SOURCE, gesture.mode());
         assertEquals(MouseTweaksRmbGesture.OriginRegion.PANEL, gesture.originRegion());
         assertEquals(3, gesture.originPanelCell());
-        assertFalse(gesture.upstreamArmed(), "Empty-cursor source mode is CSR fallback, not MT RHS");
         assertTrue(gesture.enterPanelCell(3), "The direct panel press owns the initial source cell");
         assertFalse(gesture.enterPanelCell(3), "MT's first origin replay must not duplicate the direct press");
         assertTrue(gesture.enterPanelCell(4), "Entering a later empty cell is one distinct event");
@@ -31,11 +30,10 @@ final class MouseTweaksRmbGestureTest {
     @Test void emptyPressWithCarriedStackLatchesDepositAcrossOccupiedCellsAndMenuBoundary() {
         var gesture = new MouseTweaksRmbGesture();
         gesture.begin(MouseTweaksRmbGesture.selectMode(false, true),
-                MouseTweaksRmbGesture.OriginRegion.MENU, -1, true);
+                MouseTweaksRmbGesture.OriginRegion.MENU, -1);
 
         assertEquals(MouseTweaksRmbGesture.Mode.DEPOSIT, gesture.mode());
         assertEquals(MouseTweaksRmbGesture.OriginRegion.MENU, gesture.originRegion());
-        assertTrue(gesture.upstreamArmed());
         assertTrue(gesture.takeShadowNeedsLiveCarried(),
                 "Ordinary-menu origins re-sample the cursor before the first panel destination");
         assertTrue(gesture.enterPanelCell(7));
@@ -51,7 +49,7 @@ final class MouseTweaksRmbGestureTest {
     @Test void virtualTraversalMatchesMouseTweaksIdentityDeduplicationAndReentry() {
         var gesture = new MouseTweaksRmbGesture();
         gesture.begin(MouseTweaksRmbGesture.Mode.DEPOSIT,
-                MouseTweaksRmbGesture.OriginRegion.PANEL, 1, true);
+                MouseTweaksRmbGesture.OriginRegion.PANEL, 1);
 
         assertTrue(gesture.enterPanelCell(1));
         assertFalse(gesture.enterPanelCell(1), "Stationary drag events do not spam the same cell");
@@ -62,10 +60,21 @@ final class MouseTweaksRmbGestureTest {
         assertTrue(gesture.enterPanelCell(1), "Leaving to an ordinary/null slot permits later re-entry");
     }
 
+    @Test void providerAndPostUpstreamFallbackShareOneCellIdentityHandshake() {
+        var gesture = new MouseTweaksRmbGesture();
+        gesture.begin(MouseTweaksRmbGesture.Mode.DEPOSIT,
+                MouseTweaksRmbGesture.OriginRegion.MENU, -1);
+
+        assertTrue(gesture.enterPanelCell(6), "The provider may own the destination first");
+        assertFalse(gesture.enterPanelCell(6),
+                "The later screen-drag fallback must not duplicate a provider-owned action");
+        assertTrue(gesture.enterPanelCell(7), "A new destination remains actionable");
+    }
+
     @Test void releaseCloseOrStaleCancellationResetsEveryModeAndProjectionFlag() {
         var gesture = new MouseTweaksRmbGesture();
         gesture.begin(MouseTweaksRmbGesture.Mode.DEPOSIT,
-                MouseTweaksRmbGesture.OriginRegion.PANEL, 9, true);
+                MouseTweaksRmbGesture.OriginRegion.PANEL, 9);
         gesture.markNativeBoundary();
         gesture.markPanelActionDispatched();
         gesture.reset();
@@ -74,7 +83,6 @@ final class MouseTweaksRmbGestureTest {
         assertEquals(MouseTweaksRmbGesture.Mode.INACTIVE, gesture.mode());
         assertEquals(MouseTweaksRmbGesture.OriginRegion.NONE, gesture.originRegion());
         assertEquals(-1, gesture.originPanelCell());
-        assertFalse(gesture.upstreamArmed());
         assertFalse(gesture.takeShadowNeedsLiveCarried());
         assertFalse(gesture.hasDispatchedPanelAction());
         assertFalse(gesture.enterPanelCell(9));

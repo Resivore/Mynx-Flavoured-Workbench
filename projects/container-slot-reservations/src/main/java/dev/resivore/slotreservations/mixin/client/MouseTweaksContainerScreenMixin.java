@@ -1,5 +1,6 @@
 package dev.resivore.slotreservations.mixin.client;
 
+import dev.resivore.slotreservations.MouseTweaksTrace;
 import dev.resivore.slotreservations.client.ShulkerPanel;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.world.inventory.ContainerInput;
@@ -28,6 +29,8 @@ abstract class MouseTweaksContainerScreenMixin implements IMTModGuiContainer3Ex 
 
     @Override
     public boolean MT_isMouseTweaksDisabled() {
+        MouseTweaksTrace.event(2, "Mouse Tweaks extended provider selected",
+                "IMTModGuiContainer3Ex is active for this screen");
         return false;
     }
 
@@ -44,9 +47,15 @@ abstract class MouseTweaksContainerScreenMixin implements IMTModGuiContainer3Ex 
 
     @Override
     public Slot MT_getSlotUnderMouse(double mouseX, double mouseY) {
+        MouseTweaksTrace.event(6, "Mouse Tweaks requested slot under pointer",
+                "x=" + mouseX + ", y=" + mouseY);
         Slot panelSlot = ShulkerPanel.mouseTweaksSlotAt(mouseX, mouseY);
-        return panelSlot != null ? panelSlot
+        Slot resolved = panelSlot != null ? panelSlot
                 : ((ContainerScreenMouseAccess) this).containerSlotReservations$slotAt(mouseX, mouseY);
+        MouseTweaksTrace.event(7, "Provider slot resolved",
+                "kind=" + (panelSlot != null ? "csr-virtual" : resolved == null ? "none" : "native")
+                        + ", cell=" + ShulkerPanel.mouseTweaksPanelCell(resolved));
+        return resolved;
     }
 
     @Override
@@ -71,6 +80,10 @@ abstract class MouseTweaksContainerScreenMixin implements IMTModGuiContainer3Ex 
 
     @Override
     public void MT_clickSlot(Slot slot, int button, ContainerInput input) {
+        MouseTweaksTrace.event(9, "Mouse Tweaks invoked slot action",
+                "kind=" + (ShulkerPanel.mouseTweaksPanelCell(slot) >= 0 ? "csr-virtual" : "native")
+                        + ", cell=" + ShulkerPanel.mouseTweaksPanelCell(slot)
+                        + ", button=" + button + ", input=" + input);
         if (ShulkerPanel.mouseTweaksClick(slot, button, input)) return;
         if (input == ContainerInput.QUICK_MOVE && ShulkerPanel.mouseTweaksQuickMoveFromMenuSlot(slot)) return;
         ShulkerPanel.mouseTweaksNativeClick(slot, button, input);

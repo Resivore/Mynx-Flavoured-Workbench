@@ -1,5 +1,6 @@
 package dev.resivore.slotreservations;
 
+import dev.resivore.slotreservations.api.ContainerSlotReservationsApi;
 import dev.resivore.slotreservations.network.ReservationActionPayload;
 import dev.resivore.slotreservations.network.ShulkerPanelContentActionPayload;
 import dev.resivore.slotreservations.network.ShulkerPanelMenuQuickMovePayload;
@@ -17,10 +18,16 @@ public final class ShulkerPanelActions {
 
     public static boolean handleContent(ServerPlayer player, ShulkerPanelContentActionPayload action) {
         if (action.click() == null || action.internalSlot() < 0
-                || action.internalSlot() >= ReservationData.SLOT_COUNT) return false;
+                || action.internalSlot() >= ReservationData.SLOT_COUNT) {
+            return rejectContent(14, action, "invalid click or cell");
+        }
         var resolved = ShulkerHostResolver.resolve(player, action.menuId(), action.host(), action.hostFingerprint());
-        if (resolved.isEmpty()) return false;
+        if (resolved.isEmpty()) return rejectContent(14, action,
+                "menu/host/locator/fingerprint validation failed");
         ShulkerHostResolver.ResolvedHost host = resolved.orElseThrow();
+        MouseTweaksTrace.event(14, "Host and fingerprint accepted",
+                "menu=" + action.menuId() + ", cell=" + action.internalSlot()
+                        + ", fingerprint=" + action.hostFingerprint());
         if (action.click() == ShulkerPanelContentActionPayload.Click.QUICK_MOVE) {
             return handleQuickMove(player, host, action);
         }
@@ -35,25 +42,44 @@ public final class ShulkerPanelActions {
                     host.stack(), action.internalSlot(),
                     action.click() == ShulkerPanelContentActionPayload.Click.SECONDARY,
                     Integer.MAX_VALUE);
-            if (plan.moved() == 0) return false;
+            MouseTweaksTrace.event(16, "Extraction planner result",
+                    "cell=" + action.internalSlot() + ", moved=" + plan.moved());
+            if (plan.moved() == 0) return rejectContent(17, action, "extraction planner rejected");
             changedHost = plan.shulker();
             changedCarried = plan.extracted();
             if (selected == action.internalSlot()) selected = ShulkerContents.nextOccupied(plan.contents(), selected);
         } else {
-            // A C21 RMB deposit gesture stays a deposit even after its cursor has
+            // An RMB deposit gesture stays a deposit even after its cursor has
             // drained. In that state an empty cursor is a no-op, never an extraction.
-            if (carried.isEmpty()) return false;
+            if (carried.isEmpty()) return rejectContent(15, action, "deposit cursor is empty");
+            var admission = ContainerSlotReservationsApi.classify(
+                    host.stack(), action.internalSlot(), carried);
+            MouseTweaksTrace.event(15, "Reservation/native insertion result",
+                    "cell=" + action.internalSlot() + ", class=" + admission
+                            + ", carried=" + carried.getCount());
             ShulkerTransferPlanner.Insertion plan = ShulkerTransferPlanner.planExactInsertion(
                     host.stack(), carried, action.internalSlot(),
                     action.click() == ShulkerPanelContentActionPayload.Click.SECONDARY
                             || depositOnly);
-            if (plan.moved() == 0) return false;
+            MouseTweaksTrace.event(16, "Insertion planner result",
+                    "cell=" + action.internalSlot() + ", moved=" + plan.moved()
+                            + ", remainder=" + plan.remainder().getCount());
+            if (plan.moved() == 0) return rejectContent(17, action,
+                    "reservation/native/capacity planner rejected");
             changedHost = plan.shulker();
             changedCarried = plan.remainder();
             if (selected < 0) selected = ShulkerContents.firstOccupied(plan.contents());
         }
         commit(player, host, changedHost, changedCarried, selected, action.host());
+        MouseTweaksTrace.event(17, "Mutation committed",
+                "cell=" + action.internalSlot() + ", carried=" + changedCarried.getCount());
         return true;
+    }
+
+    private static boolean rejectContent(int stage, ShulkerPanelContentActionPayload action, String reason) {
+        MouseTweaksTrace.event(stage, "Content transaction rejected",
+                "menu=" + action.menuId() + ", cell=" + action.internalSlot() + ", reason=" + reason);
+        return false;
     }
 
     private static boolean handleQuickMove(ServerPlayer player, ShulkerHostResolver.ResolvedHost host,
@@ -175,6 +201,9 @@ public final class ShulkerPanelActions {
                     host.menu().containerId, locator, fingerprint, selected));
         }
         syncSharedViewers(player, host.slot());
+        MouseTweaksTrace.event(18, "Authoritative host/cursor sync returned",
+                "menu=" + host.menu().containerId + ", fingerprint=" + fingerprint
+                        + ", carried=" + changedCarried.getCount());
     }
 
     /**

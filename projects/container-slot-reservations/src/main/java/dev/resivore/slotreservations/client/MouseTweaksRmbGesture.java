@@ -22,7 +22,6 @@ final class MouseTweaksRmbGesture {
     private OriginRegion originRegion = OriginRegion.NONE;
     private int originPanelCell = -1;
     private int lastPanelCell = -1;
-    private boolean upstreamArmed;
     private boolean shadowNeedsLiveCarried;
     private boolean dispatchedPanelAction;
 
@@ -31,14 +30,12 @@ final class MouseTweaksRmbGesture {
         return carrying ? Mode.DEPOSIT : Mode.INACTIVE;
     }
 
-    void begin(Mode selectedMode, OriginRegion selectedOrigin, int selectedPanelCell,
-               boolean selectedUpstreamArmed) {
+    void begin(Mode selectedMode, OriginRegion selectedOrigin, int selectedPanelCell) {
         reset();
         if (selectedMode == Mode.INACTIVE) return;
         mode = selectedMode;
         originRegion = selectedOrigin;
         originPanelCell = selectedOrigin == OriginRegion.PANEL ? selectedPanelCell : -1;
-        upstreamArmed = selectedUpstreamArmed;
         // A native menu-origin action may alter the server cursor before CSR first sees a panel cell.
         shadowNeedsLiveCarried = selectedOrigin == OriginRegion.MENU;
     }
@@ -57,10 +54,6 @@ final class MouseTweaksRmbGesture {
 
     int originPanelCell() {
         return originPanelCell;
-    }
-
-    boolean upstreamArmed() {
-        return upstreamArmed;
     }
 
     /**
@@ -101,7 +94,6 @@ final class MouseTweaksRmbGesture {
         originRegion = OriginRegion.NONE;
         originPanelCell = -1;
         lastPanelCell = -1;
-        upstreamArmed = false;
         shadowNeedsLiveCarried = false;
         dispatchedPanelAction = false;
     }

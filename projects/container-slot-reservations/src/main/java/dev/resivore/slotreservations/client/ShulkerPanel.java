@@ -1,5 +1,6 @@
 package dev.resivore.slotreservations.client;
 
+import dev.resivore.slotreservations.MouseTweaksTrace;
 import dev.resivore.slotreservations.ReservationData;
 import dev.resivore.slotreservations.ReservationStore;
 import dev.resivore.slotreservations.ReservationTemplateEligibility;
@@ -60,6 +61,8 @@ public final class ShulkerPanel {
     private static ItemStack mouseTweaksShadowHost = ItemStack.EMPTY;
     private static ItemStack mouseTweaksShadowCarried = ItemStack.EMPTY;
     private static String mouseTweaksShadowFingerprint;
+    /** One pre-press bridge, armed only when a carried cursor opens this panel. */
+    private static boolean mouseTweaksPreGestureRetention;
 
     private ShulkerPanel() {}
 
@@ -83,12 +86,11 @@ public final class ShulkerPanel {
 
         geometry = ShulkerPanelGeometry.place(graphics.guiWidth(), graphics.guiHeight(), binding.hostBounds());
         positionMouseTweaksSlots(leftPos, topPos);
-        // C20 keeps its immediate host-or-panel lifetime. The only C21 extension is the
-        // optional Mouse Tweaks deposit bridge: a carried stack keeps an already-open
-        // panel available while its ordinary-slot source moves into the virtual region,
-        // and an active RHS gesture retains it until that gesture is released or cancelled.
+        // Keep one carried-cursor approach from the newly opened host to an ordinary
+        // press origin, then retain only the active gesture. Release/cancel restores the
+        // normal immediate host-or-panel lifetime even if items remain on the cursor.
         boolean mouseTweaksDepositBridge = MouseTweaksCompatibility.ownsRightDrag()
-                && (!binding.menu().getCarried().isEmpty() || MOUSE_TWEAKS_RMB_GESTURE.isActive());
+                && (mouseTweaksPreGestureRetention || MOUSE_TWEAKS_RMB_GESTURE.isActive());
         boolean retained = binding.hostBounds().contains(mouseX, mouseY)
                 || geometry.bounds().contains(mouseX, mouseY) || mouseTweaksDepositBridge;
         if (!STATE.retain(retained)) { close(false); return; }
@@ -132,6 +134,8 @@ public final class ShulkerPanel {
         hoveredCell = -1;
         STATE.open();
         resetMouseTweaksRightGesture();
+        mouseTweaksPreGestureRetention = MouseTweaksCompatibility.ownsRightDrag()
+                && !candidate.menu().getCarried().isEmpty();
         expectedFingerprint = null;
         lastSentSelection = Integer.MIN_VALUE;
         ensureSelection(ShulkerContents.copy(candidate.slot().getItem()));
@@ -270,23 +274,39 @@ public final class ShulkerPanel {
                                                      double mouseX, double mouseY) {
         resetMouseTweaksRightGesture();
         if (!MouseTweaksCompatibility.ownsRightDrag() || binding == null || geometry == null
-                || binding.screen() != screen || binding.menu() != screen.getMenu()) return;
+                || binding.screen() != screen || binding.menu() != screen.getMenu()) {
+            MouseTweaksTrace.event(2, "CSR compatibility hook declined",
+                    "enabled=" + MouseTweaksCompatibility.ownsRightDrag()
+                            + ", bound=" + (binding != null) + ", geometry=" + (geometry != null));
+            return;
+        }
+        MouseTweaksTrace.event(2, "CSR compatibility hook observed", "active binding confirmed");
 
         Slot panelTarget = mouseTweaksSlotAt(mouseX, mouseY);
         Slot target = panelTarget != null ? panelTarget : nativeTarget;
-        if (target == null || !target.isActive() || target.isFake()) return;
+        if (target == null || !target.isActive() || target.isFake()) {
+            MouseTweaksTrace.event(3, "Initial slot unresolved",
+                    target == null ? "no slot" : "inactive-or-fake slot");
+            return;
+        }
         ItemStack carried = binding.menu().getCarried();
+        MouseTweaksTrace.event(3, "Initial slot resolved",
+                "region=" + (target instanceof VirtualSlot ? "panel" : "menu")
+                        + ", occupied=" + !target.getItem().isEmpty());
         MouseTweaksRmbGesture.Mode mode = MouseTweaksRmbGesture.selectMode(
                 !target.getItem().isEmpty(), !carried.isEmpty());
+        MouseTweaksTrace.event(4, "Gesture mode selected", mode.name());
+        MouseTweaksTrace.event(5, "Initial carried stack",
+                "empty=" + carried.isEmpty() + ", item=" + carried.getItem() + ", count=" + carried.getCount());
         if (mode == MouseTweaksRmbGesture.Mode.INACTIVE) return;
 
         boolean panelOrigin = target instanceof VirtualSlot;
         int panelCell = panelOrigin ? ((VirtualSlot) target).cell() : -1;
-        // Exact Mouse Tweaks 2.31 arms only with a nonempty pre-click cursor.
         MOUSE_TWEAKS_RMB_GESTURE.begin(mode,
                 panelOrigin ? MouseTweaksRmbGesture.OriginRegion.PANEL
                         : MouseTweaksRmbGesture.OriginRegion.MENU,
-                panelCell, !carried.isEmpty());
+                panelCell);
+        mouseTweaksPreGestureRetention = false;
         mouseTweaksShadowHost = binding.slot().getItem().copy();
         mouseTweaksShadowCarried = carried.copy();
         mouseTweaksShadowFingerprint = binding.fingerprint();
@@ -348,6 +368,8 @@ public final class ShulkerPanel {
                                        String fingerprint) {
         if (binding == null || fingerprint == null
                 || !ClientPlayNetworking.canSend(ShulkerPanelContentActionPayload.TYPE)) return false;
+        MouseTweaksTrace.event(12, "Content payload sent",
+                "cell=" + slot + ", click=" + click + ", fingerprint=" + fingerprint);
         ClientPlayNetworking.send(new ShulkerPanelContentActionPayload(binding.menuId(), binding.locator(), slot,
                 click, fingerprint));
         return true;
@@ -412,6 +434,10 @@ public final class ShulkerPanel {
 
         Minecraft client = Minecraft.getInstance();
         if (client.player == null) return;
+        MouseTweaksTrace.event(11, "Content transaction created",
+                "cell=" + slot + ", mode=" + MOUSE_TWEAKS_RMB_GESTURE.mode()
+                        + ", click=" + click + ", cursor=" + mouseTweaksShadowCarried.getCount()
+                        + "->" + changedCarried.getCount());
         String nextFingerprint = ShulkerHostFingerprint.of(changedHost, client.player.registryAccess());
         if (!sendContent(slot, click, mouseTweaksShadowFingerprint)) return;
         mouseTweaksShadowHost = changedHost;
@@ -439,22 +465,21 @@ public final class ShulkerPanel {
         }
         if (!STATE.ownsDrag(insidePanel)) return false;
         if (button != 1) return true;
-        // Mouse Tweaks observes this drag before the screen's own handler. It is armed by
-        // 2.31 only when the press began with a carried stack; an empty-cursor collection
-        // origin must retain CSR's established once-per-entered-cell fallback instead of
-        // being swallowed merely because the optional tweak is enabled in configuration.
-        if (MOUSE_TWEAKS_RMB_GESTURE.upstreamArmed()) return true;
-        if (button == 1) {
-            int slot = geometry.slot(mouseX, mouseY);
-            if (slot < 0) {
-                MOUSE_TWEAKS_RMB_GESTURE.leavePanelCell();
-                SECONDARY_DRAG.enter(-1);
-                return true;
-            }
-            if (SECONDARY_DRAG.enter(slot)) {
-                if (MOUSE_TWEAKS_RMB_GESTURE.isActive()) dispatchMouseTweaksSecondary(slot);
-                else sendContent(slot, ShulkerPanelContentActionPayload.Click.SECONDARY);
-            }
+        int slot = geometry.slot(mouseX, mouseY);
+        if (slot < 0) {
+            MOUSE_TWEAKS_RMB_GESTURE.leavePanelCell();
+            SECONDARY_DRAG.enter(-1);
+            return true;
+        }
+        if (MOUSE_TWEAKS_RMB_GESTURE.isActive()) {
+            // Mouse Tweaks 2.31 runs before this screen method. If its provider already
+            // delivered MT_clickSlot, the gesture's cell-identity latch makes this a no-op.
+            // If it did not, this is the one server-authoritative fallback action C21 lacked.
+            MouseTweaksTrace.event(8, "Cursor entered CSR virtual cell",
+                    "cell=" + slot + ", post-upstream fallback offered");
+            dispatchMouseTweaksSecondary(slot);
+        } else if (SECONDARY_DRAG.enter(slot)) {
+            sendContent(slot, ShulkerPanelContentActionPayload.Click.SECONDARY);
         }
         return true;
     }
@@ -462,9 +487,16 @@ public final class ShulkerPanel {
     public static boolean release(double mouseX, double mouseY, int button) {
         if (button == 1) {
             SECONDARY_DRAG.reset();
-            resetMouseTweaksRightGesture();
+            endMouseTweaksRightGesture();
         }
         return STATE.releasePointer(binding != null && geometry != null && geometry.bounds().contains(mouseX, mouseY));
+    }
+
+    /** Clears the optional handoff even when another input listener prevents the screen release body. */
+    public static void endMouseTweaksRightGesture() {
+        resetMouseTweaksRightGesture();
+        mouseTweaksPreGestureRetention = false;
+        MouseTweaksTrace.event(4, "Gesture reset", "RMB release/cancel observed");
     }
 
     public static boolean scroll(double mouseX, double mouseY, double vertical) {
@@ -538,6 +570,7 @@ public final class ShulkerPanel {
         }
         binding = null; geometry = null; hoveredCell = -1; SECONDARY_DRAG.reset();
         resetMouseTweaksRightGesture();
+        mouseTweaksPreGestureRetention = false;
         STATE.close(); expectedFingerprint = null; lastSentSelection = Integer.MIN_VALUE;
     }
 
@@ -568,10 +601,17 @@ public final class ShulkerPanel {
         return slot < 0 ? null : mouseTweaksSlots[slot];
     }
 
+    /** Returns the CSR cell for a transient provider slot, or -1 for a native/null slot. */
+    public static int mouseTweaksPanelCell(Slot slot) {
+        return slot instanceof VirtualSlot virtual ? virtual.cell() : -1;
+    }
+
     /** Routes Mouse Tweaks' supported API click back into existing fingerprint-bound CSR actions. */
     public static boolean mouseTweaksClick(Slot target, int button, ContainerInput input) {
         if (!(target instanceof VirtualSlot virtual) || binding == null) return false;
         int slot = virtual.cell();
+        MouseTweaksTrace.event(10, "CSR received provider invocation",
+                "cell=" + slot + ", button=" + button + ", input=" + input);
         if (input == ContainerInput.QUICK_MOVE) {
             sendContent(slot, ShulkerPanelContentActionPayload.Click.QUICK_MOVE);
             return true;
