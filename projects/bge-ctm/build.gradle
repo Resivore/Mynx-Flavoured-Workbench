@@ -1,0 +1,194 @@
+import groovy.json.JsonSlurper
+import java.security.MessageDigest
+import java.util.zip.ZipFile
+import org.gradle.api.tasks.bundling.AbstractArchiveTask
+
+plugins {
+    id 'net.fabricmc.fabric-loom' version '1.17.19'
+}
+
+version = project.mod_version
+group = project.maven_group
+
+base {
+    archivesName = project.archives_base_name
+}
+
+repositories {
+    maven { url = 'https://maven.fabricmc.net/' }
+    mavenCentral()
+}
+
+configurations {
+    bgeReference {
+        canBeConsumed = false
+        canBeResolved = true
+        transitive = false
+    }
+    cnmReference {
+        canBeConsumed = false
+        canBeResolved = true
+        transitive = false
+    }
+}
+
+def workbenchRoot = rootProject.projectDir.parentFile.parentFile
+def bgeReferenceJar = new File(workbenchRoot,
+        'projects/block-geometry-extensions/artifacts/' +
+                'cnm-nibaru-integration-4.2.14-bge.canary70.stone-native-slab+26.2.jar')
+def cnmReferenceJar = new File(workbenchRoot,
+        'originals/mods/clutternomore-2.0.7+26.2-fabric.jar')
+def expectedBgeSha256 = 'd304552e29e76c4165675415215439ac2d73b5a6ebc4abc9787f0fa1124cf266'
+def expectedCnmSha256 = '41a925e70d5e6e8c098bea7dc88c44486aed46724e35cb2fa4b1622b2a4dbcce'
+
+dependencies {
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    implementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+
+    compileOnly files(bgeReferenceJar)
+    runtimeOnly files(bgeReferenceJar)
+    compileOnly files(cnmReferenceJar)
+    runtimeOnly files(cnmReferenceJar)
+
+    bgeReference files(bgeReferenceJar)
+    cnmReference files(cnmReferenceJar)
+
+    testImplementation platform('org.junit:junit-bom:5.13.4')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+fabricApi {
+    configureTests {
+        createSourceSet = true
+        modId = 'bge_ctm_gametest'
+        enableGameTests = true
+        enableClientGameTests = false
+        eula = true
+    }
+}
+
+def sha256 = { File file ->
+    MessageDigest digest = MessageDigest.getInstance('SHA-256')
+    file.withInputStream { input ->
+        byte[] buffer = new byte[64 * 1024]
+        for (int read; (read = input.read(buffer)) >= 0;) {
+            if (read > 0) digest.update(buffer, 0, read)
+        }
+    }
+    digest.digest().encodeHex().toString()
+}
+
+tasks.register('verifyControlledProviders') {
+    group = 'verification'
+    description = 'Verifies the exact authoritative BGE C70 and Clutter No More build inputs.'
+    inputs.files(configurations.bgeReference, configurations.cnmReference)
+    doLast {
+        File bge = configurations.bgeReference.singleFile
+        File cnm = configurations.cnmReference.singleFile
+        if (sha256(bge) != expectedBgeSha256) {
+            throw new GradleException("BGE C70 reference SHA-256 drifted: ${sha256(bge)}")
+        }
+        if (sha256(cnm) != expectedCnmSha256) {
+            throw new GradleException("Clutter No More reference SHA-256 drifted: ${sha256(cnm)}")
+        }
+    }
+}
+
+processResources {
+    inputs.property 'version', project.version
+    filesMatching('fabric.mod.json') {
+        expand 'version': project.version
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    dependsOn tasks.named('verifyControlledProviders')
+    options.release = 25
+}
+
+tasks.withType(AbstractArchiveTask).configureEach {
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
+}
+
+test {
+    useJUnitPlatform()
+    dependsOn tasks.named('verifyControlledProviders')
+}
+
+def packagedJar = tasks.named('jar').flatMap { it.archiveFile }
+
+tasks.register('verifyReleaseArtifact') {
+    group = 'verification'
+    description = 'Verifies the bounded appearance bridge artifact and its no-assets boundary.'
+    dependsOn tasks.named('jar')
+    inputs.file(packagedJar)
+    doLast {
+        File artifact = packagedJar.get().asFile
+        if (artifact.name != "bge-ctm-${project.version}.jar") {
+            throw new GradleException("Unexpected release filename: ${artifact.name}")
+        }
+        ZipFile archive = new ZipFile(artifact)
+        try {
+            def entries = archive.entries().toList()
+            def metadata = new JsonSlurper().parse(
+                    archive.getInputStream(archive.getEntry('fabric.mod.json')))
+            if (metadata.id != 'bge_ctm' || metadata.version != project.version ||
+                    metadata.depends?.minecraft != '~26.2' ||
+                    metadata.depends?.cnm_terrain_slabs_compat !=
+                            '>=4.2.14-bge.canary70.stone-native-slab+26.2' ||
+                    metadata.suggests?.continuity != '*') {
+                throw new GradleException('Release metadata no longer describes the bounded BGE/Continuity bridge')
+            }
+            def policy = metadata.custom?.runtime_dependency_policy
+            if (policy?.contract != 'CAPABILITY_OR_PROVIDER' ||
+                    !(policy.exceptions instanceof List) || policy.exceptions.size() != 1 ||
+                    policy.exceptions[0]?.dependency_id != 'minecraft') {
+                throw new GradleException('Release runtime dependency-policy attestation is missing or changed')
+            }
+            [
+                    'fabric.mod.json',
+                    'bge_ctm.mixins.json',
+                    'dev/resivore/bgectm/CanonicalAppearanceResolver.class',
+                    'dev/resivore/bgectm/mixin/BgeDerivedBlockAppearanceMixin.class'
+            ].each { entry ->
+                if (archive.getEntry(entry) == null) {
+                    throw new GradleException("Compatibility artifact is missing ${entry}")
+                }
+            }
+            byte[] resolverBytes = archive.getInputStream(archive.getEntry(
+                    'dev/resivore/bgectm/CanonicalAppearanceResolver.class')).readAllBytes()
+            String resolverConstants = new String(resolverBytes, java.nio.charset.StandardCharsets.ISO_8859_1)
+            if (resolverConstants.contains('BuiltInRegistries') ||
+                    resolverConstants.contains('net/minecraft/resources/Identifier')) {
+                throw new GradleException('Canonical resolver must not infer material identity from registry IDs')
+            }
+            if (entries.any { it.name.endsWith('.jar') ||
+                    it.name.contains('/optifine/ctm/') ||
+                    it.name.startsWith('assets/minecraft/') ||
+                    it.name.startsWith('assets/continuity/') }) {
+                throw new GradleException('Compatibility artifact must not bundle providers or CTM assets')
+            }
+        } finally {
+            archive.close()
+        }
+    }
+}
+
+tasks.register('stageCanaryArtifact', Copy) {
+    group = 'distribution'
+    description = 'Stages the exact ignored Canary 1 JAR for canonical local retention.'
+    dependsOn tasks.named('verifyReleaseArtifact')
+    from(packagedJar)
+    into(layout.projectDirectory.dir('artifacts'))
+}
+
+tasks.named('check') {
+    dependsOn tasks.named('verifyReleaseArtifact')
+}
+
+java {
+    withSourcesJar()
+}

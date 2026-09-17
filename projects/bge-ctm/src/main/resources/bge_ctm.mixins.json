@@ -1,0 +1,11 @@
+{
+  "required": true,
+  "package": "dev.resivore.bgectm.mixin",
+  "compatibilityLevel": "JAVA_25",
+  "mixins": [
+    "BgeDerivedBlockAppearanceMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
