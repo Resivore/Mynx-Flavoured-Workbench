@@ -14,10 +14,10 @@ public final class FishingRodPose {
      */
     public static final float STICK_VERTICAL_TRANSLATION = 0.35F;
     /** Keep this in step with the render layer: a less-negative value pulls the stick inward. */
-    public static final float STICK_FORWARD_TRANSLATION = -0.54F;
+    public static final float STICK_FORWARD_TRANSLATION = -0.46F;
     // Keep this in step with VwrFishingRodLayer's lower, more-inward grip transform.  The visible
     // line should originate at the stick's real outer end, not at the villager's arm plane.
-    private static final double TIP_FORWARD = 1.37;
+    private static final double TIP_FORWARD = 1.29;
     private static final double TIP_RIGHT = 0.10;
     private static final double TIP_HEIGHT = 1.51;
 
