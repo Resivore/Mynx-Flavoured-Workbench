@@ -24,11 +24,11 @@
       "Preserve accepted C4 storage reservations, exact ghost/zero/marker visuals, public API compatibility for QSN C9 and CCAR C12, component-exact ordinary-item reservations, generic empty portable-container templates, and server-owned specific portable-container identities without external tooltip integration."
     ],
     "scope": [
-      "Current 0.1.0-canary22 from implementation checkpoint c873d63c539eaa27e01914ff1037f850ef8f6c30 preserves C19's host-centered geometry, Creative carried-cursor synchronization, independent header-decoration provider, and C21's press-time DEPOSIT/COLLECTION_SOURCE semantics plus server-authoritative projected fingerprint chain. Exact Mouse Tweaks 2.31 bytecode proves that its Fabric RMB press listener precedes the screen click, an empty initial slot with a carried stack arms RMB, its provider lookup/action runs before the wrapped Screen.mouseDragged call, and onMouseDrag always permits that screen call. C21 nevertheless treated configuration/cursor eligibility as proof that the provider had acted and suppressed CSR's later screen fallback; this proven handoff defect could turn any missed provider selection, lookup, or action into a silent no-op, although the trace-free C21 evidence cannot identify which upstream substage was missed in gameplay. C22 removes the inferred suppression and offers the existing server-authoritative deposit once after upstream processing; the shared virtual-cell identity latch makes the later offer a no-op when the provider already dispatched. After a projected panel action, its two-phase native wrapper permits only a proven Mouse Tweaks place-one action, applies the observed relative cursor delta without replacing the projected host/fingerprint or copying a stale live cursor, suppresses further native RMB when the projection is exhausted, and keeps unsafe gestures owned but blocked until physical release so DEPOSIT cannot fall through into extraction. Opt-in -Dcontainer_slot_reservations.debugMouseTweaks=true tracing covers the RMB press, provider selection/lookup/action, CSR transaction, payload, server validation/planning/mutation, and returned authoritative sync without logging by default. The release neither packages the API declaration nor gains a Mouse Tweaks runtime dependency; its absent/disabled-provider path retains normal CSR input.",
+      "Current 0.1.0-canary23 from implementation checkpoint 7dc06e2ceaaa38e863ddbe0dc60a40684ba36638 corrects C20-C22's subject reversal. The exact cursor subject is one supported shulker; the initial ordinary player-inventory slot latches SHULKER_TO_INVENTORY when empty or INVENTORY_TO_SHULKER when occupied until physical RMB release or cancellation. C23 preserves Mouse Tweaks 2.31's native empty-slot outbound path and intercepts its exact ordinary-slot callback only for occupied-source collection. Per-slot projected remainders and an F0-to-F1-to-F2 carried-shulker fingerprint chain prevent duplicate or stale bursts across mixed slots and exact re-entry semantics. Each inbound action identifies the current menu, exact visible and physical player slot, carried-shulker predecessor, and source fingerprint; the server re-resolves both live sides, uses the shared whole-shulker planner, commits the source remainder and carried shulker with callbacks, and synchronizes authoritative state, including Creative full-state handling.",
       "While CSR owns Slot A and remains TESTING, a finalized current CSR testing successor normally replaces the preceding CSR candidate through one serialized Test Instance Manager Slot A transition; only a concrete manager preimage, dependency, or physical-safety failure may leave that successor retained but not deployed.",
       "Bind one exact count-one shulker host by screen, menu, menu ID, visible slot index, Slot instance, underlying container slot, explicit Creative player-inventory locator where applicable, and complete SHA-256 ItemStack fingerprint; never search for an equal stack.",
-      "Render and hit-test one fixed 176x83 native panel with an unchanged 176x77 upper shulker region plus the same runtime texture's 176x6 bottom frame, 27 physical 18x18 cells, and bottom-left-at-host-center placement clamped only to the viewport. It retains C20's host-or-panel lifetime plus only one carried-cursor approach bridge when the panel first opens and the active Mouse Tweaks gesture lifetime, enabling ordinary-slot→panel deposit without remaining sticky merely because the cursor is still nonempty; release/cancel, stale binding, or the normal no-bridge path restores immediate lifetime. Without Mouse Tweaks or with its RMB tweak disabled, CSR right-button drag acts once per newly entered panel cell. With the exact optional provider enabled, Mouse Tweaks owns supported LMB/RMB/shift-drag gestures through transient virtual cells, including applicable ordinary-menu transitions, and CSR consumes only covered coordinates to prevent an independent native drag; Mouse Tweaks wheel transfer wins only when it reports consumption, otherwise CSR selection scrolling remains.",
-      "Canary 21 is RUNTIME FAIL for its sole acceptance goal: the sole Canary 21 target still failed in gameplay—a carried-stack / ordinary-inventory RMB Mouse Tweaks drag did not successfully deposit items into CSR shulker-panel cells. Preserve separately only the observed working direction that shulker contents RMB-dragged into empty ordinary inventory slots worked. No LMB, shift-drag, wheel, reservation, or other Mouse Tweaks result is inferred. The supplied runtime log also showed MoreMouseTweaks 2.103.0+26.2 loaded, but its exact artifact was absent from originals/mods; no evidence attributes the no-op to it, and that absence did not block the exact Mouse Tweaks diagnosis.",
+      "Render and hit-test one fixed 176x83 native panel with an unchanged 176x77 upper shulker region plus the same runtime texture's 176x6 bottom frame, 27 physical 18x18 cells, and bottom-left-at-host-center placement clamped only to the viewport. C23 removes the C20-C22 virtual Mouse Tweaks provider, ordinary-item-cursor approach bridge and projections, cursor and host shadows, special panel retention and native-boundary workarounds, SECONDARY_DEPOSIT, and obsolete diagnostics. Its RMB drag targets only ordinary physical player inventory and hotbar slots while exactly one supported shulker is on the cursor. Ordinary non-shulker cursors retain normal vanilla and Mouse Tweaks behavior. Established panel viewing, reservation editing, single-click transfer, shift-click, selection, tooltip, CCAR header integration, immediate host-or-panel lifetime, and Creative synchronization remain intact.",
+      "Canonical correction: C20-C22 interpreted the requested inverse RMB drag as ordinary item carried by cursor to CSR virtual shulker-panel cells. The requested interaction has always been shulker itself carried by cursor, RMB across occupied ordinary player-inventory slots, and whole source-stack collection into that carried shulker. User runtime evidence establishes that this actual INVENTORY_TO_SHULKER direction remained nonfunctional through C22; the opposite carried-shulker to empty ordinary-inventory direction is confirmed working and is C23's preservation baseline. Historical C20-C22 records remain unchanged and no unrelated runtime result is inferred. MoreMouseTweaks remains unproven material and its absent exact artifact is not a blocker.",
       "Keep pointer hover separate from server-authoritative per-player transient selection; select and cycle only occupied cells, migrate only through the exact server-observed host-slot-to-cursor pickup, and clear on stale identity, menu close, or disconnect.",
       "Use one shared deterministic planner for native secondary-click quick insertion and exact-cell panel transfers: occupied compatible merges, matching reserved empties, then unreserved empties; deny nesting, mismatches, full/nonwritable targets, fake slots, and multi-count hosts.",
       "Derive all panel reservation templates and content transactions from live server state; payloads carry only menu/locator/index/action/fingerprint authority, preserve unrelated components and ReservationData, update real owners once, and broadcast legitimate shared viewers.",
@@ -121,27 +121,27 @@
         "type": "OTHER",
         "identifier": "mousetweaks-api-reference",
         "requirement": "Exact local upstream inspection target MouseTweaks-fabric-mc26.2-2.31.jar, 75,872 bytes, SHA-256 4592eff38a2e7af3487688e888a637a8cbd4767b46662df94d993a889102effe, Fabric mod id mousetweaks version 2.31; no upstream source commit is embedded in the artifact.",
-        "reason": "C20-C22 bytecode-contract baseline for the optional IMTModGuiContainer3Ex seam, Fabric press ordering, provider lookup/action, wrapped screen-drag ordering, virtual Slot eligibility, and wheel dispatch. It is not bundled, redistributed, or a CSR runtime dependency."
+        "reason": "Exact C23 test-only bytecode contract for Mouse Tweaks 2.31 Fabric press ordering, native ordinary-slot RMB entry and re-entry, origin replay, blank-slot identity reset, occupied-target compatibility rejection, and wrapped screen-drag ordering. C23 uses a gated classloading-safe helper mixin only when Mouse Tweaks is installed; the reference is not bundled, redistributed, or a CSR runtime dependency."
       }
     ]
   },
   "state": {
-    "milestone": "Canary 22 is an ACTIVE focused successor to failed Canary 21 for the optional Mouse Tweaks 2.31 carried-stack RMB-deposit ownership handoff. C21's sole acceptance goal is recorded RUNTIME FAIL; C22 controlled validation is complete, but C22 is not deployed and remains RUNTIME_UNTESTED.",
+    "milestone": "Canary 23 is an ACTIVE corrective scope successor to Canary 22: it removes the unwanted ordinary-item-cursor-to-virtual-panel Mouse Tweaks bridge, implements authoritative ordinary-player-slot-to-cursor-held-shulker collection, and preserves the confirmed working cursor-held-shulker-to-empty-inventory direction. Controlled validation passed; C23 is NOT_DEPLOYED and RUNTIME_UNTESTED.",
     "releases": {
       "current": {
-        "version": "0.1.0-canary22",
-        "embedded_version": "0.1.0-canary22",
+        "version": "0.1.0-canary23",
+        "embedded_version": "0.1.0-canary23",
         "artifact": {
-          "filename": "container-slot-reservations-0.1.0-canary22.jar",
-          "sha256": "38a066399355b261b50177c212295618a0e649f9a74619b14c422857d74203f3"
+          "filename": "container-slot-reservations-0.1.0-canary23.jar",
+          "sha256": "f9267195829174d7555947aae118aba846ace47517e362a3d05ba21b6a119ac5"
         },
-        "built_at": "2026-09-17T04:15:03.163Z",
-        "source_commit": "c873d63c539eaa27e01914ff1037f850ef8f6c30",
+        "built_at": "2026-09-17T06:19:05.572Z",
+        "source_commit": "7dc06e2ceaaa38e863ddbe0dc60a40684ba36638",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
         },
-        "summary": "Repairs the Mouse Tweaks RMB-deposit handoff with a de-duplicated fallback, safe relative native-cursor projection, fail-closed mode ownership, and gated end-to-end diagnostics."
+        "summary": "Corrects the Mouse Tweaks RMB scope to collect whole ordinary player-inventory source stacks into the exact cursor-held shulker while preserving native shulker-to-empty-inventory distribution."
       },
       "accepted": {
         "version": "0.1.0-canary19",
@@ -179,10 +179,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 33,
-    "activity_at": "2026-09-17T04:16:07Z",
-    "updated_at": "2026-09-17T04:16:07Z",
-    "last_codex_at": "2026-09-17T04:16:07Z",
-    "source_commit": "c873d63c539eaa27e01914ff1037f850ef8f6c30"
+    "revision": 34,
+    "activity_at": "2026-09-17T06:20:47Z",
+    "updated_at": "2026-09-17T06:20:47Z",
+    "last_codex_at": "2026-09-17T06:20:47Z",
+    "source_commit": "7dc06e2ceaaa38e863ddbe0dc60a40684ba36638"
   }
 }
