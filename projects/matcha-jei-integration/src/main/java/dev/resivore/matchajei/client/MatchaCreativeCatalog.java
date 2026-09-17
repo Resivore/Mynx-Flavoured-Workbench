@@ -2,6 +2,7 @@ package dev.resivore.matchajei.client;
 
 import dev.resivore.matchajei.network.MatchaJeiDataPayload;
 import net.fabricmc.fabric.api.creativetab.v1.CreativeModeTabEvents;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.CreativeModeTabs;
@@ -21,8 +22,8 @@ final class MatchaCreativeCatalog {
             Collections.newSetFromMap(new IdentityHashMap<>());
     private static final Set<ItemStack> SUPPRESSED_DEFAULT_SEARCH_ENTRIES =
             Collections.newSetFromMap(new IdentityHashMap<>());
-    private static final Consumer<MatchaJeiDataPayload> DATA_LISTENER = payload ->
-            replaceActiveSearchEntries(payload);
+    private static final Consumer<MatchaJeiDataPayload> DATA_LISTENER = payload -> pendingPayload = payload;
+    private static MatchaJeiDataPayload pendingPayload;
     private static boolean initialized;
 
     private MatchaCreativeCatalog() {
@@ -33,6 +34,15 @@ final class MatchaCreativeCatalog {
             return;
         }
         initialized = true;
+        // Vanilla constructs the global Search tab from each category's
+        // search-only entries. Removing a default only from the already-built
+        // global collection is therefore temporary: the next tab rebuild puts
+        // it back. Filter the actual category sources before vanilla indexes
+        // them, while leaving ordinary category display contents untouched.
+        CreativeModeTabEvents.MODIFY_OUTPUT_ALL.register((tab, output) -> {
+            MatchaCreativeSearchEntries.suppressCanonicalDefaults(
+                    output.getSearchTabStacks(), MatchaClientData.current().catalog());
+        });
         CreativeModeTabEvents.modifyOutputEvent(CreativeModeTabs.INGREDIENTS).register(output -> {
             // Search is derived from every ordinary tab's search-only entries.
             // Contributing through Ingredients lets future vanilla/Fabric tab
@@ -52,10 +62,20 @@ final class MatchaCreativeCatalog {
             });
         });
         MatchaClientData.addListener(DATA_LISTENER);
+        ClientTickEvents.END_CLIENT_TICK.register(MatchaCreativeCatalog::applyPendingSearchReplacement);
     }
 
-    private static void replaceActiveSearchEntries(MatchaJeiDataPayload payload) {
-        Minecraft client = Minecraft.getInstance();
+    /**
+     * Custom payloads may arrive before the play client has installed its
+     * level and player. C6 returned at that point and never retried, leaving
+     * the pre-indexed vanilla default in Search while a later tab build added
+     * the Matcha stack. Apply once at the first safe client tick instead.
+     */
+    private static void applyPendingSearchReplacement(Minecraft client) {
+        MatchaJeiDataPayload payload = pendingPayload;
+        if (payload == null) {
+            return;
+        }
         if (client.level == null || client.player == null) {
             return;
         }
@@ -65,5 +85,6 @@ final class MatchaCreativeCatalog {
                 SUPPRESSED_DEFAULT_SEARCH_ENTRIES,
                 payload.catalog()
         );
+        pendingPayload = null;
     }
 }

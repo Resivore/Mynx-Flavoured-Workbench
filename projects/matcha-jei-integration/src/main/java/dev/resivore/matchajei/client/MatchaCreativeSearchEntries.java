@@ -51,6 +51,21 @@ final class MatchaCreativeSearchEntries {
         }
     }
 
+    /**
+     * Applies the same canonical-default rule to a category's source entries
+     * before vanilla builds the global Search tab from them.
+     */
+    static void suppressCanonicalDefaults(
+            Collection<ItemStack> categorySearchEntries,
+            Iterable<ItemStack> catalog
+    ) {
+        List<ItemStack> defaults = MatchaCanonicalFoodReplacements.defaultsFor(catalog);
+        if (!defaults.isEmpty()) {
+            categorySearchEntries.removeIf(candidate ->
+                    MatchaCanonicalFoodReplacements.isPlainDefaultReplacement(candidate, defaults));
+        }
+    }
+
     private static void restoreSuppressed(
             Collection<ItemStack> searchContents,
             Set<ItemStack> suppressedDefaultEntries

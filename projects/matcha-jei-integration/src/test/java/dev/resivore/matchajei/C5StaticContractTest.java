@@ -51,6 +51,8 @@ class C5StaticContractTest {
         String clientData = source("client/MatchaClientData.java");
 
         assertTrue(creative.contains("CreativeModeTabEvents.modifyOutputEvent(CreativeModeTabs.INGREDIENTS)"));
+        assertTrue(creative.contains("CreativeModeTabEvents.MODIFY_OUTPUT_ALL"));
+        assertTrue(creative.contains("ClientTickEvents.END_CLIENT_TICK"));
         assertTrue(creative.contains("CreativeModeTab.TabVisibility.SEARCH_TAB_ONLY"));
         assertTrue(creative.contains("MatchaClientData.current().catalog()"));
         assertTrue(creative.contains("CreativeModeTabs.searchTab().getDisplayItems()"));
@@ -59,6 +61,7 @@ class C5StaticContractTest {
         assertTrue(entries.contains("ItemStack.isSameItemSameComponents(existing, contribution)"));
         assertTrue(entries.contains("searchContents.removeIf(ownedEntries::contains)"));
         assertTrue(entries.contains("MatchaCanonicalFoodReplacements.defaultsFor(catalogEntries)"));
+        assertTrue(entries.contains("suppressCanonicalDefaults("));
         assertTrue(entries.contains("restoreSuppressed(searchContents, suppressedDefaultEntries)"));
         assertFalse(creative.contains("CreativeModeTabs.tryRebuildTabContents("));
         assertFalse(creative.contains("CreativeModeTabs.searchTab().buildContents("));
