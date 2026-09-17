@@ -15,7 +15,7 @@ class FishingRodPoseTest {
         assertTrue(east.isFinite());
         assertTrue(south.z() > 21.0, "yaw zero places the tip forward of the crossed arms");
         assertTrue(east.x() > 11.0, "yaw -90 places the tip forward of the crossed arms");
-        assertEquals(65.82, south.y(), 0.000001);
+        assertEquals(65.60, south.y(), 0.000001);
     }
 
     @Test void invalidInputsNeverProduceAUsableLineOrigin() {

@@ -14,6 +14,7 @@ public final class VillagerWorkRoutinesClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         EntityRendererRegistry.register(VillagerWorkRoutines.FISHING_FLOAT, FishingFloatRenderer::new);
+        EntityRendererRegistry.register(VillagerWorkRoutines.SHEARING_TOOL_MARKER, ShearingToolMarkerRenderer::new);
         LivingEntityRenderLayerRegistrationCallback.EVENT.register(
                 (entityType, entityRenderer, registrationHelper, context) -> {
                     if (entityType != EntityTypes.VILLAGER || !(entityRenderer instanceof VillagerRenderer villagerRenderer)) {

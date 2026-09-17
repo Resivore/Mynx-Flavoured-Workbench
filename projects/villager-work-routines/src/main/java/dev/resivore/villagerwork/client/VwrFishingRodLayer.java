@@ -14,6 +14,7 @@ import net.minecraft.world.entity.npc.villager.Villager;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import dev.resivore.villagerwork.FishingFloat;
+import dev.resivore.villagerwork.ShearingToolMarker;
 import net.minecraft.world.item.Items;
 
 /**
@@ -38,14 +39,22 @@ public final class VwrFishingRodLayer extends RenderLayer<VillagerRenderState, V
         if (Minecraft.getInstance().level == null) return;
         Entity entity = Minecraft.getInstance().level.getEntity(presentation.villagerWork$entityId());
         if (!(entity instanceof Villager villager)) return;
-        if (!hasLiveFloat(villager)) return;
+        boolean fishing = hasLiveFloat(villager);
+        boolean shearing = hasLiveShears(villager);
+        if (!fishing && !shearing) return;
 
         poseStack.pushPose();
         // This follows the active villager model's arms, so resource-pack geometry remains in
-        // charge of its body. The forward/upward tilt agrees with FishingRodPose.tip.
+        // charge of its body. The forward/downward fishing pose agrees with FishingRodPose.tip.
         getParentModel().translateToArms(state, poseStack);
-        // Advance the grip far enough that the stick emerges just beyond the crossed arms.
-        poseStack.translate(0.0F, 0.08F, -0.62F);
+        if (fishing) submitFishingStick(villager, poseStack, collector, light);
+        if (shearing) submitShears(villager, poseStack, collector, light);
+        poseStack.popPose();
+    }
+
+    private void submitFishingStick(Villager villager, PoseStack poseStack, SubmitNodeCollector collector, int light) {
+        poseStack.pushPose();
+        poseStack.translate(0.0F, -0.10F, -0.62F);
         poseStack.mulPose(Axis.XP.rotationDegrees(-58.0F));
         poseStack.mulPose(Axis.YP.rotationDegrees(12.0F));
         poseStack.mulPose(Axis.ZP.rotationDegrees(-12.0F));
@@ -55,8 +64,24 @@ public final class VwrFishingRodLayer extends RenderLayer<VillagerRenderState, V
         poseStack.popPose();
     }
 
+    private void submitShears(Villager villager, PoseStack poseStack, SubmitNodeCollector collector, int light) {
+        poseStack.pushPose();
+        poseStack.translate(0.0F, 0.02F, -0.30F);
+        poseStack.mulPose(Axis.XP.rotationDegrees(-58.0F));
+        poseStack.mulPose(Axis.YP.rotationDegrees(10.0F));
+        poseStack.scale(1.12F, 1.12F, 1.12F);
+        itemRenderer.renderItem(villager, new ItemStack(Items.SHEARS),
+                ItemDisplayContext.THIRD_PERSON_RIGHT_HAND, poseStack, collector, light);
+        poseStack.popPose();
+    }
+
     private static boolean hasLiveFloat(Villager villager) {
         return !villager.level().getEntitiesOfClass(FishingFloat.class,
                 villager.getBoundingBox().inflate(18.0), floatEntity -> floatEntity.owner() == villager).isEmpty();
+    }
+
+    private static boolean hasLiveShears(Villager villager) {
+        return !villager.level().getEntitiesOfClass(ShearingToolMarker.class,
+                villager.getBoundingBox().inflate(18.0), marker -> marker.owner() == villager).isEmpty();
     }
 }

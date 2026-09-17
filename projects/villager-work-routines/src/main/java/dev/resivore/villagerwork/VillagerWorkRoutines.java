@@ -19,6 +19,13 @@ public final class VillagerWorkRoutines implements ModInitializer {
             EntityType.Builder.<FishingFloat>of(FishingFloat::new, MobCategory.MISC)
                     .sized(0.25f, 0.25f).noSummon().clientTrackingRange(8)
                     .build(ResourceKey.create(Registries.ENTITY_TYPE, FLOAT_ID)));
+    public static final Identifier SHEARING_TOOL_MARKER_ID =
+            Identifier.fromNamespaceAndPath("villager_work_routines", "shearing_tool_marker");
+    public static final EntityType<ShearingToolMarker> SHEARING_TOOL_MARKER = Registry.register(
+            BuiltInRegistries.ENTITY_TYPE, SHEARING_TOOL_MARKER_ID,
+            EntityType.Builder.<ShearingToolMarker>of(ShearingToolMarker::new, MobCategory.MISC)
+                    .sized(0.01f, 0.01f).noSummon().clientTrackingRange(8)
+                    .build(ResourceKey.create(Registries.ENTITY_TYPE, SHEARING_TOOL_MARKER_ID)));
 
     @Override public void onInitialize() {
         ServerLevelEvents.UNLOAD.register((server, level) ->

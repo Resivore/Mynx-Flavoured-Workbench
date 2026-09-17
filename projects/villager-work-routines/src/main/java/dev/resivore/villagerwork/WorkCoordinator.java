@@ -263,8 +263,8 @@ public final class WorkCoordinator {
         }
         // Show the tool as soon as this is a viable sheep transaction, including the approach
         // and gate crossing, rather than making it appear only for the final telegraph.
-        if (!showProp(villager, state, Items.SHEARS)) {
-            clearSheep(villager, state, "temporary shears prop overlay failure while approaching sheep");
+        if (!showShears(villager, level, state)) {
+            clearSheep(villager, state, "shears presentation marker spawn failed while approaching sheep");
             return;
         }
         villager.getLookControl().setLookAt(target);
@@ -303,8 +303,8 @@ public final class WorkCoordinator {
             stopCustomNavigation(villager, state);
             if (state.gateRoute != null && state.gateRoute.stage == GateRouteRules.Stage.APPROACH_SHEEP)
                 state.gateRoute.stage = GateRouteRules.advance(state.gateRoute.stage, true);
-            if (!showProp(villager, state, Items.SHEARS)) {
-                clearSheep(villager, state, "temporary shears prop overlay failure");
+            if (!showShears(villager, level, state)) {
+                clearSheep(villager, state, "shears presentation marker spawn failed");
                 return;
             }
             state.shearAt = villager.tickCount + TELEGRAPH_TICKS;
@@ -316,15 +316,15 @@ public final class WorkCoordinator {
             return;
         }
 
-        boolean shearsOverlayMissing = state.propSlot.current() == null;
-        if (!showProp(villager, state, Items.SHEARS)) {
-            clearSheep(villager, state, "true external hand conflict or prop overlay failure during telegraph");
+        boolean shearsMarkerMissing = state.shearingTool == null || state.shearingTool.isRemoved();
+        if (!showShears(villager, level, state)) {
+            clearSheep(villager, state, "shears presentation marker spawn failed during telegraph");
             return;
         }
-        if (shearsOverlayMissing) {
+        if (shearsMarkerMissing) {
             state.telegraphRestarts++;
             state.shearAt = villager.tickCount + TELEGRAPH_TICKS;
-            log(villager, "synthetic shears overlay restored after save/interruption; same-target telegraph restarted shearAt={}",
+            log(villager, "shears presentation marker restored; same-target telegraph restarted shearAt={}",
                     state.shearAt);
             return;
         }
@@ -1558,6 +1558,18 @@ public final class WorkCoordinator {
             villager.setDeltaMovement(0.0, velocity.y, 0.0);
     }
 
+    /** Keeps Shepherd visuals synchronized without occupying or serializing a real equipment slot. */
+    private static boolean showShears(Villager villager, ServerLevel level, State state) {
+        ShearingToolMarker current = state.shearingTool;
+        if (current != null && !current.isRemoved() && current.owner() == villager) return true;
+        if (current != null && !current.isRemoved()) current.discard();
+        ShearingToolMarker marker = new ShearingToolMarker(level, villager);
+        if (!level.addFreshEntity(marker)) return false;
+        state.shearingTool = marker;
+        log(villager, "shears presentation marker spawned id={}", marker.getId());
+        return true;
+    }
+
     private static boolean showProp(Villager villager, State state, Item item) {
         // Keep a stable transaction reference for this entire invocation.  setItemInHand may run
         // vanilla callbacks which can clear/suspend the state, so never dereference the mutable
@@ -1633,6 +1645,7 @@ public final class WorkCoordinator {
     }
 
     private static void clearProp(Villager villager, State state, TemporaryHandProp prop) {
+        clearShearingTool(state);
         if (prop == null || !state.propSlot.isCurrent(prop)) return;
         ItemStack held = villager.getItemInHand(InteractionHand.MAIN_HAND);
         float dropChance = villager.getDropChances().byEquipment(EquipmentSlot.MAINHAND);
@@ -1644,6 +1657,11 @@ public final class WorkCoordinator {
                 propName(prop.intendedItem()), restore.kind(), restore.applyRestoration(),
                 villager.getItemInHand(InteractionHand.MAIN_HAND),
                 villager.getDropChances().byEquipment(EquipmentSlot.MAINHAND), prop.actionId());
+    }
+
+    private static void clearShearingTool(State state) {
+        if (state.shearingTool != null && !state.shearingTool.isRemoved()) state.shearingTool.discard();
+        state.shearingTool = null;
     }
 
     private static void applyHandState(Villager villager, ItemStack stack, float dropChance) {
@@ -1662,6 +1680,7 @@ public final class WorkCoordinator {
                     state.water, state.floatEntity == null ? "none" : state.floatEntity.getId(),
                     interactionTarget(villager));
         if (state.floatEntity != null) state.floatEntity.discard();
+        clearShearingTool(state);
         stopCustomNavigation(villager, state);
         if (state.gateRoute != null && villager.level() instanceof ServerLevel level) {
             GateRoute route = state.gateRoute;
@@ -1778,6 +1797,7 @@ public final class WorkCoordinator {
         BlockPos site;
         ResourceKey<VillagerProfession> profession;
         FishingFloat floatEntity;
+        ShearingToolMarker shearingTool;
         int catchAt;
         int shearAt;
         int clearPropAt;
