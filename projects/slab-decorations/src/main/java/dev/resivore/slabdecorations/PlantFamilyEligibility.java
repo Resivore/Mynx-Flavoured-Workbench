@@ -3,24 +3,32 @@ package dev.resivore.slabdecorations;
 import dev.resivore.slabdecorations.mixin.GrowingPlantBlockAccessor;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.AttachedStemBlock;
+import net.minecraft.world.level.block.BambooSaplingBlock;
+import net.minecraft.world.level.block.BambooStalkBlock;
+import net.minecraft.world.level.block.BaseCoralPlantTypeBlock;
+import net.minecraft.world.level.block.BaseCoralWallFanBlock;
 import net.minecraft.world.level.block.BigDripleafBlock;
 import net.minecraft.world.level.block.BigDripleafStemBlock;
 import net.minecraft.world.level.block.CarpetBlock;
-import net.minecraft.world.level.block.CropBlock;
+import net.minecraft.world.level.block.CactusBlock;
+import net.minecraft.world.level.block.CactusFlowerBlock;
+import net.minecraft.world.level.block.ChorusFlowerBlock;
+import net.minecraft.world.level.block.ChorusPlantBlock;
+import net.minecraft.world.level.block.CocoaBlock;
 import net.minecraft.world.level.block.DoublePlantBlock;
 import net.minecraft.world.level.block.GrowingPlantBlock;
 import net.minecraft.world.level.block.HangingMossBlock;
 import net.minecraft.world.level.block.HangingRootsBlock;
-import net.minecraft.world.level.block.LiquidBlockContainer;
 import net.minecraft.world.level.block.LilyPadBlock;
 import net.minecraft.world.level.block.MossyCarpetBlock;
-import net.minecraft.world.level.block.NetherFungusBlock;
-import net.minecraft.world.level.block.PitcherCropBlock;
+import net.minecraft.world.level.block.MultifaceBlock;
 import net.minecraft.world.level.block.SaplingBlock;
 import net.minecraft.world.level.block.SmallDripleafBlock;
 import net.minecraft.world.level.block.SporeBlossomBlock;
 import net.minecraft.world.level.block.StemBlock;
+import net.minecraft.world.level.block.SugarCaneBlock;
 import net.minecraft.world.level.block.VegetationBlock;
+import net.minecraft.world.level.block.VineBlock;
 import net.minecraft.world.level.block.WoolCarpetBlock;
 import net.minecraft.world.level.block.state.BlockState;
 
@@ -40,6 +48,22 @@ public final class PlantFamilyEligibility {
     public static Optional<Family> family(BlockState state) {
         var block = state.getBlock();
 
+        // The exclusion boundary is deliberately structural and small. Everything below this
+        // block is classified only by how its vertical root/anchor can be resolved; vanilla
+        // canonical-parent survival remains the actual permission decision.
+        if (block instanceof SaplingBlock
+                || block instanceof StemBlock
+                || block instanceof AttachedStemBlock
+                || block instanceof ChorusPlantBlock
+                || block instanceof ChorusFlowerBlock
+                || block instanceof LilyPadBlock
+                || block instanceof VineBlock
+                || block instanceof MultifaceBlock
+                || block instanceof CocoaBlock
+                || block instanceof BaseCoralWallFanBlock) {
+            return Optional.empty();
+        }
+
         // Minecraft 26.2 has no shared hanging-foliage superclass for these two single-block
         // decorations. Their concrete classes are still behavior contracts, not registry IDs.
         if (block instanceof HangingRootsBlock || block instanceof SporeBlossomBlock) {
@@ -51,16 +75,31 @@ public final class PlantFamilyEligibility {
             return Optional.of(Family.HANGING_MOSS_COLUMN);
         }
 
-        // Generic downward-growing head/body columns cover cave vines, weeping vines, and
-        // compatible modded implementations. Upward and aquatic growing plants deliberately fail
-        // closed instead of being inferred from IDs.
+        // Generic head/body columns cover upward, downward, terrestrial, aquatic, and compatible
+        // modded implementations. Direction determines the physical root/anchor and offset.
         if (block instanceof GrowingPlantBlock) {
-            if (block instanceof LiquidBlockContainer) return Optional.empty();
-            if (block instanceof GrowingPlantBlockAccessor accessor
-                    && accessor.slabDecorations$getGrowthDirection() == Direction.DOWN) {
-                return Optional.of(Family.DOWNWARD_GROWING_COLUMN);
+            if (block instanceof GrowingPlantBlockAccessor accessor) {
+                Direction direction = accessor.slabDecorations$getGrowthDirection();
+                if (direction == Direction.UP) {
+                    return Optional.of(Family.UPWARD_GROWING_COLUMN);
+                }
+                if (direction == Direction.DOWN) {
+                    return Optional.of(Family.DOWNWARD_GROWING_COLUMN);
+                }
             }
             return Optional.empty();
+        }
+
+        if (block instanceof SugarCaneBlock) {
+            return Optional.of(Family.SUGAR_CANE_COLUMN);
+        }
+
+        if (block instanceof BambooSaplingBlock || block instanceof BambooStalkBlock) {
+            return Optional.of(Family.BAMBOO_COLUMN);
+        }
+
+        if (block instanceof CactusBlock || block instanceof CactusFlowerBlock) {
+            return Optional.of(Family.CACTUS_COLUMN);
         }
 
         // These two dripleaf implementations do not extend VegetationBlock, but share one rooted
@@ -69,9 +108,7 @@ public final class PlantFamilyEligibility {
             return Optional.of(Family.DRIPLEAF_COLUMN);
         }
 
-        // Small dripleaf is both a double plant and a liquid container. Its dry, upward-supported
-        // state is deliberately handled before the aquatic-family exclusion below.
-        if (block instanceof SmallDripleafBlock) {
+        if (block instanceof SmallDripleafBlock || block instanceof DoublePlantBlock) {
             return Optional.of(Family.DOUBLE_HEIGHT_VEGETATION);
         }
 
@@ -80,28 +117,15 @@ public final class PlantFamilyEligibility {
             return Optional.of(Family.SURFACE_FOLIAGE);
         }
 
-        if (!(block instanceof VegetationBlock)) {
-            return Optional.empty();
+        // Floor coral plants/fans are not VegetationBlock subclasses, but their vanilla contract
+        // is still one upward-facing substrate. Wall fans were excluded above.
+        if (block instanceof BaseCoralPlantTypeBlock) {
+            return Optional.of(Family.UPWARD_VEGETATION);
         }
 
-        // Fail closed for behavior families whose ordinary lifecycle depends on farmland, a side
-        // attachment, fluid occupancy, or a tree/giant-fungus substrate transformation. This is a
-        // class/tag boundary, not a list of permitted or forbidden species IDs.
-        if (block instanceof CropBlock
-                || block instanceof PitcherCropBlock
-                || block instanceof StemBlock
-                || block instanceof AttachedStemBlock
-                || block instanceof SaplingBlock
-                || block instanceof NetherFungusBlock
-                || block instanceof LilyPadBlock
-                || block instanceof LiquidBlockContainer) {
-            return Optional.empty();
-        }
-
-        if (block instanceof DoublePlantBlock) {
-            return Optional.of(Family.DOUBLE_HEIGHT_VEGETATION);
-        }
-        return Optional.of(Family.UPWARD_VEGETATION);
+        return block instanceof VegetationBlock
+                ? Optional.of(Family.UPWARD_VEGETATION)
+                : Optional.empty();
     }
 
     public static boolean isEligible(BlockState state) {
@@ -114,7 +138,11 @@ public final class PlantFamilyEligibility {
         DRIPLEAF_COLUMN,
         SURFACE_FOLIAGE,
         CEILING_FOLIAGE,
+        UPWARD_GROWING_COLUMN,
         DOWNWARD_GROWING_COLUMN,
+        SUGAR_CANE_COLUMN,
+        BAMBOO_COLUMN,
+        CACTUS_COLUMN,
         HANGING_MOSS_COLUMN
     }
 }

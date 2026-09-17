@@ -36,22 +36,7 @@ public final class SurfaceOffsetModel implements BlockStateModel {
             BlockState state,
             RandomSource random,
             Predicate<@Nullable Direction> cullTest) {
-        double offset;
-        if (level instanceof RenderSectionRegionAccessor snapshot) {
-            offset = NibaruHorizontalSurface.visibleOffset(
-                    state, level, snapshot.slabDecorations$getLevel(), pos);
-        } else if (level instanceof SodiumLevelSliceAccessor snapshot) {
-            // Sodium compiles terrain through a BlockAndTintGetter snapshot rather than the
-            // vanilla RenderSectionRegion.  Its immutable block data remains the authoritative
-            // view, while its owning ClientLevel supplies the LevelReader services required by
-            // the same read-only canonical-survival projection.
-            offset = NibaruHorizontalSurface.visibleOffset(
-                    state, level, snapshot.slabDecorations$getLevel(), pos);
-        } else if (!(level instanceof LevelReader)) {
-            offset = 0.0D;
-        } else {
-            offset = NibaruHorizontalSurface.visibleOffset(state, level, pos);
-        }
+        double offset = visibleOffset(level, pos, state);
         if (offset == 0.0D) {
             wrapped.emitQuads(output, level, pos, state, random, cullTest);
             return;
@@ -69,15 +54,38 @@ public final class SurfaceOffsetModel implements BlockStateModel {
         });
     }
 
+    private static double visibleOffset(
+            BlockAndTintGetter level,
+            BlockPos pos,
+            BlockState state) {
+        if (level instanceof RenderSectionRegionAccessor snapshot) {
+            return NibaruHorizontalSurface.visibleOffset(
+                    state, level, snapshot.slabDecorations$getLevel(), pos);
+        }
+        if (level instanceof SodiumLevelSliceAccessor snapshot) {
+            // Sodium compiles terrain through a BlockAndTintGetter snapshot rather than the
+            // vanilla RenderSectionRegion.  Its immutable block data remains the authoritative
+            // view, while its owning ClientLevel supplies the LevelReader services required by
+            // the same read-only canonical-survival projection.
+            return NibaruHorizontalSurface.visibleOffset(
+                    state, level, snapshot.slabDecorations$getLevel(), pos);
+        }
+        return level instanceof LevelReader
+                ? NibaruHorizontalSurface.visibleOffset(state, level, pos)
+                : 0.0D;
+    }
+
     @Override
     public @Nullable Object createGeometryKey(
             BlockAndTintGetter level,
             BlockPos pos,
             BlockState state,
             RandomSource random) {
-        // Geometry depends on the resolved support/anchor column, so do not share a
-        // context-free cached key.
-        return null;
+        // Preserve ordinary renderer caching for the globally wrapped, unshifted majority.
+        // Shifted geometry still depends on its resolved support/anchor and remains uncached.
+        return visibleOffset(level, pos, state) == 0.0D
+                ? wrapped.createGeometryKey(level, pos, state, random)
+                : null;
     }
 
     @Override

@@ -1,0 +1,603 @@
+package dev.resivore.slabdecorations.gametest;
+
+import dev.resivore.slabdecorations.CanonicalSurvivalProjection;
+import dev.resivore.slabdecorations.NibaruHorizontalSurface;
+import dev.resivore.slabdecorations.PlantFamilyEligibility;
+import games.twinhead.moreslabsstairsandwalls.api.material.NibaruMaterialProfile;
+import games.twinhead.moreslabsstairsandwalls.api.material.NibaruMaterialProfiles;
+import net.fabricmc.fabric.api.gametest.v1.CustomTestMethodInvoker;
+import net.fabricmc.fabric.api.gametest.v1.GameTest;
+import net.minecraft.core.BlockPos;
+import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.GameType;
+import net.minecraft.world.level.block.AttachedStemBlock;
+import net.minecraft.world.level.block.BambooStalkBlock;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.BonemealableBlock;
+import net.minecraft.world.level.block.CropBlock;
+import net.minecraft.world.level.block.PitcherCropBlock;
+import net.minecraft.world.level.block.SaplingBlock;
+import net.minecraft.world.level.block.SlabBlock;
+import net.minecraft.world.level.block.StemBlock;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BambooLeaves;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
+import net.minecraft.world.level.block.state.properties.SlabType;
+import net.minecraft.world.level.material.FluidState;
+import net.minecraft.world.level.material.Fluids;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.Vec3;
+
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
+
+/** Systemic canonical-parent/root-resolution regressions for the post-C7 architecture. */
+public final class SystemicSurfaceGameTests implements CustomTestMethodInvoker {
+    @GameTest(maxTicks = 80)
+    public void acceptanceAlwaysSuppliesTheDirectionalNonzeroOffset(GameTestHelper helper) {
+        var level = helper.getLevel();
+        BlockPos support = helper.absolutePos(new BlockPos(2, 2, 2));
+
+        setColumn(level, support, slab(Blocks.GRASS_BLOCK, SlabType.BOTTOM),
+                List.of(Blocks.DANDELION.defaultBlockState()));
+        assertAcceptedOffset(helper, support.above(), support,
+                NibaruHorizontalSurface.BOTTOM_OFFSET, "upward flower");
+
+        clearVertical(level, support, 4, 4);
+        setColumn(level, support, slab(Blocks.CALCITE, SlabType.TOP), List.of());
+        BlockPos hanging = support.below();
+        level.setBlock(hanging, Blocks.HANGING_ROOTS.defaultBlockState(),
+                Block.UPDATE_SKIP_ALL_SIDEEFFECTS);
+        assertAcceptedOffset(helper, hanging, support,
+                NibaruHorizontalSurface.CEILING_TOP_OFFSET, "ceiling roots");
+
+        clearVertical(level, support, 4, 4);
+        setColumn(level, support, slab(Blocks.SAND, SlabType.BOTTOM),
+                List.of(Blocks.CACTUS.defaultBlockState()));
+        assertAcceptedOffset(helper, support.above(), support,
+                NibaruHorizontalSurface.BOTTOM_OFFSET, "plain-Block rooted cactus");
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 80)
+    public void sixSegmentCaveVinesUseOwningLevelBeyondBoundedRenderView(GameTestHelper helper) {
+        var level = helper.getLevel();
+        BlockPos support = helper.absolutePos(new BlockPos(3, 8, 3));
+        clearVertical(level, support, 8, 1);
+        level.setBlock(support, slab(Blocks.CALCITE, SlabType.TOP),
+                Block.UPDATE_SKIP_ALL_SIDEEFFECTS);
+
+        List<BlockPos> segments = new ArrayList<>();
+        for (int depth = 1; depth <= 6; depth++) {
+            BlockPos segment = support.below(depth);
+            BlockState state = depth == 6
+                    ? Blocks.CAVE_VINES.defaultBlockState()
+                    : Blocks.CAVE_VINES_PLANT.defaultBlockState();
+            level.setBlock(segment, state, Block.UPDATE_SKIP_ALL_SIDEEFFECTS);
+            segments.add(segment);
+        }
+
+        for (BlockPos segment : segments) {
+            assertBoundedOffset(helper, segment, support,
+                    NibaruHorizontalSurface.CEILING_TOP_OFFSET,
+                    "six-segment cave-vines column");
+        }
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 100)
+    public void longUpwardGrowingSugarCaneAndCactusColumnsShareOneRoot(GameTestHelper helper) {
+        var level = helper.getLevel();
+
+        BlockPos twistingSupport = helper.absolutePos(new BlockPos(2, 1, 2));
+        clearVertical(level, twistingSupport, 1, 8);
+        level.setBlock(twistingSupport, slab(Blocks.NETHERRACK, SlabType.BOTTOM),
+                Block.UPDATE_SKIP_ALL_SIDEEFFECTS);
+        for (int height = 1; height <= 6; height++) {
+            BlockPos segment = twistingSupport.above(height);
+            level.setBlock(segment, height == 6
+                            ? Blocks.TWISTING_VINES.defaultBlockState()
+                            : Blocks.TWISTING_VINES_PLANT.defaultBlockState(),
+                    Block.UPDATE_SKIP_ALL_SIDEEFFECTS);
+        }
+        assertUpwardColumn(helper, twistingSupport, 6, "twisting vines");
+
+        BlockPos caneSupport = helper.absolutePos(new BlockPos(6, 1, 2));
+        clearVertical(level, caneSupport, 1, 8);
+        level.setBlock(caneSupport, slab(Blocks.SAND, SlabType.BOTTOM),
+                Block.UPDATE_SKIP_ALL_SIDEEFFECTS);
+        level.setBlock(caneSupport.east(), Blocks.WATER.defaultBlockState(),
+                Block.UPDATE_SKIP_ALL_SIDEEFFECTS);
+        for (int height = 1; height <= 6; height++) {
+            level.setBlock(caneSupport.above(height), Blocks.SUGAR_CANE.defaultBlockState(),
+                    Block.UPDATE_SKIP_ALL_SIDEEFFECTS);
+        }
+        assertUpwardColumn(helper, caneSupport, 6, "sugar cane");
+
+        BlockPos cactusSupport = helper.absolutePos(new BlockPos(10, 1, 2));
+        clearVertical(level, cactusSupport, 1, 8);
+        level.setBlock(cactusSupport, slab(Blocks.SAND, SlabType.BOTTOM),
+                Block.UPDATE_SKIP_ALL_SIDEEFFECTS);
+        for (int height = 1; height <= 6; height++) {
+            level.setBlock(cactusSupport.above(height), height == 6
+                            ? Blocks.CACTUS_FLOWER.defaultBlockState()
+                            : Blocks.CACTUS.defaultBlockState(),
+                    Block.UPDATE_SKIP_ALL_SIDEEFFECTS);
+        }
+        assertUpwardColumn(helper, cactusSupport, 6, "cactus with terminal flower");
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 100)
+    public void bambooSaplingTransitionAndMixedMatureStatesShareOneRoot(GameTestHelper helper) {
+        var level = helper.getLevel();
+        BlockPos support = helper.absolutePos(new BlockPos(3, 1, 3));
+        BlockPos root = support.above();
+        clearVertical(level, support, 1, 9);
+        level.setBlock(support, slab(Blocks.DIRT, SlabType.BOTTOM),
+                Block.UPDATE_SKIP_ALL_SIDEEFFECTS);
+        Player player = helper.makeMockPlayer(GameType.SURVIVAL);
+        ItemStack bambooItem = new ItemStack(Items.BAMBOO);
+        player.setItemInHand(InteractionHand.MAIN_HAND, bambooItem);
+        InteractionResult placement = bambooItem.useOn(new UseOnContext(
+                player, InteractionHand.MAIN_HAND,
+                new BlockHitResult(Vec3.atCenterOf(support), net.minecraft.core.Direction.UP,
+                        support, false)));
+        helper.assertTrue(placement.consumesAction()
+                        && level.getBlockState(root).is(Blocks.BAMBOO_SAPLING),
+                "Bamboo item placement did not create its initial sapling state on a canonical-valid slab");
+        player.discard();
+        assertAcceptedOffset(helper, root, support, NibaruHorizontalSurface.BOTTOM_OFFSET,
+                "bamboo sapling");
+
+        BlockState sapling = level.getBlockState(root);
+        ((BonemealableBlock) Blocks.BAMBOO_SAPLING).performBonemeal(
+                level, RandomSource.create(0xB4AB00L), root, sapling);
+        helper.assertTrue(level.getBlockState(root).is(Blocks.BAMBOO),
+                "bamboo sapling did not retain its vanilla transition to a stalk");
+        assertAcceptedOffset(helper, root, support, NibaruHorizontalSurface.BOTTOM_OFFSET,
+                "transitioned bamboo root");
+
+        clearVertical(level, root, 0, 8);
+        for (int height = 0; height < 6; height++) {
+            BambooLeaves leaves = height < 3 ? BambooLeaves.NONE
+                    : height < 5 ? BambooLeaves.SMALL : BambooLeaves.LARGE;
+            BlockState stalk = Blocks.BAMBOO.defaultBlockState()
+                    .setValue(BambooStalkBlock.AGE, height % 2)
+                    .setValue(BambooStalkBlock.STAGE, height == 5 ? 1 : 0)
+                    .setValue(BambooStalkBlock.LEAVES, leaves);
+            level.setBlock(root.above(height), stalk, Block.UPDATE_SKIP_ALL_SIDEEFFECTS);
+        }
+        for (int height = 0; height < 6; height++) {
+            assertBoundedOffset(helper, root.above(height), support,
+                    NibaruHorizontalSurface.BOTTOM_OFFSET, "mixed-state bamboo column");
+        }
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 80)
+    public void directSurvivalStateToleratesNeighborUpdatesAndCleansAfterSupportRemoval(
+            GameTestHelper helper) {
+        var level = helper.getLevel();
+        BlockPos support = helper.absolutePos(new BlockPos(3, 6, 3));
+        BlockPos plant = support.below();
+        BlockPos neighbor = plant.east();
+        clearVertical(level, support, 4, 2);
+        level.setBlockAndUpdate(support, slab(Blocks.CALCITE, SlabType.TOP));
+        level.setBlockAndUpdate(plant, Blocks.HANGING_ROOTS.defaultBlockState());
+        assertAcceptedOffset(helper, plant, support,
+                NibaruHorizontalSurface.CEILING_TOP_OFFSET, "neighbor-updated hanging roots");
+
+        level.setBlockAndUpdate(neighbor, Blocks.STONE.defaultBlockState());
+        level.setBlockAndUpdate(neighbor, Blocks.AIR.defaultBlockState());
+        helper.assertTrue(level.getBlockState(plant).is(Blocks.HANGING_ROOTS)
+                        && level.getBlockState(plant).canSurvive(level, plant),
+                "accepted direct-survival state removed itself during an unrelated neighbor update");
+        assertAcceptedOffset(helper, plant, support,
+                NibaruHorizontalSurface.CEILING_TOP_OFFSET, "post-neighbor-update hanging roots");
+
+        level.setBlockAndUpdate(support, Blocks.AIR.defaultBlockState());
+        helper.succeedWhen(() -> helper.assertTrue(level.getBlockState(plant).isAir(),
+                "hanging roots survived removal of their resolved slab support"));
+    }
+
+    @GameTest(maxTicks = 100)
+    public void cropsAndPitcherUseExternalFarmlandCanonicalParent(GameTestHelper helper) {
+        var level = helper.getLevel();
+        BlockPos support = helper.absolutePos(new BlockPos(3, 1, 3));
+        BlockPos crop = support.above();
+        SystemicFixtureInitializer.ensureFarmlandProfile();
+        BlockState farmlandSlab = SystemicFixtureInitializer.FARMLAND_SLAB.defaultBlockState()
+                .setValue(BlockStateProperties.SLAB_TYPE, SlabType.BOTTOM);
+
+        helper.assertTrue(NibaruMaterialProfiles.fromBlock(SystemicFixtureInitializer.FARMLAND_SLAB)
+                        .map(NibaruMaterialProfile::canonicalParent)
+                        .orElse(null) == Blocks.FARMLAND,
+                "test-only Farmland slab did not retain its explicit canonical parent");
+
+        for (BlockState wheat : List.of(
+                Blocks.WHEAT.defaultBlockState(),
+                Blocks.WHEAT.defaultBlockState().setValue(CropBlock.AGE, CropBlock.MAX_AGE))) {
+            assertFullParentAndSlabParity(helper, support, crop, wheat,
+                    Blocks.FARMLAND.defaultBlockState(), farmlandSlab,
+                    NibaruHorizontalSurface.BOTTOM_OFFSET, "wheat age state");
+        }
+
+        BlockState youngPitcher = Blocks.PITCHER_CROP.defaultBlockState()
+                .setValue(PitcherCropBlock.AGE, 0)
+                .setValue(PitcherCropBlock.HALF, DoubleBlockHalf.LOWER);
+        assertFullParentAndSlabParity(helper, support, crop, youngPitcher,
+                Blocks.FARMLAND.defaultBlockState(), farmlandSlab,
+                NibaruHorizontalSurface.BOTTOM_OFFSET, "young pitcher crop");
+
+        clearVertical(level, support, 1, 4);
+        level.setBlock(support, farmlandSlab, Block.UPDATE_SKIP_ALL_SIDEEFFECTS);
+        BlockState matureLower = Blocks.PITCHER_CROP.defaultBlockState()
+                .setValue(PitcherCropBlock.AGE, PitcherCropBlock.MAX_AGE)
+                .setValue(PitcherCropBlock.HALF, DoubleBlockHalf.LOWER);
+        BlockState matureUpper = matureLower.setValue(PitcherCropBlock.HALF, DoubleBlockHalf.UPPER);
+        level.setBlock(crop, matureLower, Block.UPDATE_SKIP_ALL_SIDEEFFECTS);
+        level.setBlock(crop.above(), matureUpper, Block.UPDATE_SKIP_ALL_SIDEEFFECTS);
+        assertAcceptedOffset(helper, crop, support, NibaruHorizontalSurface.BOTTOM_OFFSET,
+                "mature pitcher lower half");
+        assertAcceptedOffset(helper, crop.above(), support, NibaruHorizontalSurface.BOTTOM_OFFSET,
+                "mature pitcher upper half");
+
+        BlockState glassSlab = slab(Blocks.GLASS, SlabType.BOTTOM);
+        level.setBlock(support, glassSlab, Block.UPDATE_SKIP_ALL_SIDEEFFECTS);
+        helper.assertTrue(NibaruHorizontalSurface.supporting(matureLower, level, crop).isEmpty()
+                        && NibaruHorizontalSurface.supporting(matureUpper, level, crop.above()).isEmpty()
+                        && NibaruHorizontalSurface.visibleOffset(matureLower, level, crop) == 0.0D
+                        && NibaruHorizontalSurface.visibleOffset(matureUpper, level, crop.above()) == 0.0D,
+                "canonical-rejecting glass granted Pitcher Crop an offset");
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 80)
+    public void fungiPlacementAndTransformationBoundaryStaySeparate(GameTestHelper helper) {
+        BlockPos support = helper.absolutePos(new BlockPos(3, 1, 3));
+        BlockPos fungus = support.above();
+
+        for (FungusCase testCase : List.of(
+                new FungusCase(Blocks.CRIMSON_FUNGUS, Blocks.CRIMSON_NYLIUM),
+                new FungusCase(Blocks.WARPED_FUNGUS, Blocks.WARPED_NYLIUM))) {
+            var level = helper.getLevel();
+            clearVertical(level, support, 1, 3);
+            level.setBlock(support, slab(testCase.parent(), SlabType.BOTTOM),
+                    Block.UPDATE_SKIP_ALL_SIDEEFFECTS);
+            level.setBlock(fungus, testCase.fungus().defaultBlockState(),
+                    Block.UPDATE_SKIP_ALL_SIDEEFFECTS);
+            assertAcceptedOffset(helper, fungus, support, NibaruHorizontalSurface.BOTTOM_OFFSET,
+                    testCase.fungus() + " small decoration");
+            BonemealableBlock bonemealable = (BonemealableBlock) testCase.fungus();
+            helper.assertFalse(bonemealable.isValidBonemealTarget(
+                            level, fungus, level.getBlockState(fungus)),
+                    testCase.fungus() + " entered deferred huge-fungus generation");
+
+            level.setBlock(support, slab(Blocks.GLASS, SlabType.BOTTOM),
+                    Block.UPDATE_SKIP_ALL_SIDEEFFECTS);
+            BlockState state = level.getBlockState(fungus);
+            helper.assertTrue(NibaruHorizontalSurface.supporting(state, level, fungus).isEmpty()
+                            && NibaruHorizontalSurface.visibleOffset(state, level, fungus) == 0.0D,
+                    testCase.fungus() + " ignored canonical invalid support");
+        }
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 120)
+    public void aquaticFloorPlantsUseRealWaterAndWaterloggedCanonicalSlabs(GameTestHelper helper) {
+        var level = helper.getLevel();
+        BlockPos support = helper.absolutePos(new BlockPos(3, 1, 3));
+        BlockState wetStoneSlab = slab(Blocks.STONE, SlabType.BOTTOM)
+                .setValue(BlockStateProperties.WATERLOGGED, true);
+
+        clearVertical(level, support, 1, 9);
+        level.setBlock(support, wetStoneSlab, Block.UPDATE_SKIP_ALL_SIDEEFFECTS);
+        for (int height = 1; height <= 6; height++) {
+            level.setBlock(support.above(height), height == 6
+                            ? Blocks.KELP.defaultBlockState()
+                            : Blocks.KELP_PLANT.defaultBlockState(),
+                    Block.UPDATE_SKIP_ALL_SIDEEFFECTS);
+        }
+        for (int height = 1; height <= 6; height++) {
+            BlockPos segment = support.above(height);
+            helper.assertTrue(level.getFluidState(segment).is(Fluids.WATER),
+                    "kelp fixture lost real water occupancy at " + segment);
+            assertBoundedOffset(helper, segment, support,
+                    NibaruHorizontalSurface.BOTTOM_OFFSET, "kelp head/body column");
+        }
+
+        clearVertical(level, support, 1, 9);
+        level.setBlock(support, wetStoneSlab, Block.UPDATE_SKIP_ALL_SIDEEFFECTS);
+        BlockPos plant = support.above();
+        level.setBlock(plant, Blocks.SEAGRASS.defaultBlockState(),
+                Block.UPDATE_SKIP_ALL_SIDEEFFECTS);
+        assertWetAccepted(helper, plant, support, "seagrass");
+
+        clearVertical(level, plant, 0, 3);
+        BlockState tallLower = Blocks.TALL_SEAGRASS.defaultBlockState()
+                .setValue(BlockStateProperties.DOUBLE_BLOCK_HALF, DoubleBlockHalf.LOWER);
+        BlockState tallUpper = tallLower.setValue(
+                BlockStateProperties.DOUBLE_BLOCK_HALF, DoubleBlockHalf.UPPER);
+        level.setBlock(plant, tallLower, Block.UPDATE_SKIP_ALL_SIDEEFFECTS);
+        level.setBlock(plant.above(), tallUpper, Block.UPDATE_SKIP_ALL_SIDEEFFECTS);
+        assertWetAccepted(helper, plant, support, "tall seagrass lower");
+        assertWetAccepted(helper, plant.above(), support, "tall seagrass upper");
+
+        for (AquaticCase testCase : List.of(
+                new AquaticCase(Blocks.SEA_PICKLE.defaultBlockState()
+                        .setValue(BlockStateProperties.WATERLOGGED, true), "sea pickle"),
+                new AquaticCase(Blocks.TUBE_CORAL.defaultBlockState()
+                        .setValue(BlockStateProperties.WATERLOGGED, true), "floor coral plant"),
+                new AquaticCase(Blocks.TUBE_CORAL_FAN.defaultBlockState()
+                        .setValue(BlockStateProperties.WATERLOGGED, true), "floor coral fan"))) {
+            clearVertical(level, plant, 0, 3);
+            level.setBlock(plant, testCase.state(), Block.UPDATE_SKIP_ALL_SIDEEFFECTS);
+            assertWetAccepted(helper, plant, support, testCase.label());
+        }
+
+        // Real item placement distinguishes fluid parity from merely forcing an aquatic state.
+        clearVertical(level, plant, 0, 3);
+        Player player = helper.makeMockPlayer(GameType.SURVIVAL);
+        ItemStack drySeagrass = new ItemStack(Items.SEAGRASS);
+        player.setItemInHand(InteractionHand.MAIN_HAND, drySeagrass);
+        InteractionResult dryResult = drySeagrass.useOn(new UseOnContext(
+                player, InteractionHand.MAIN_HAND,
+                new BlockHitResult(Vec3.atCenterOf(support), net.minecraft.core.Direction.UP,
+                        support, false)));
+        helper.assertTrue(!dryResult.consumesAction() && level.getBlockState(plant).isAir(),
+                "seagrass item placement ignored a missing water cell");
+
+        level.setBlock(plant, Blocks.WATER.defaultBlockState(), Block.UPDATE_SKIP_ALL_SIDEEFFECTS);
+        ItemStack wetSeagrass = new ItemStack(Items.SEAGRASS);
+        player.setItemInHand(InteractionHand.MAIN_HAND, wetSeagrass);
+        InteractionResult wetResult = wetSeagrass.useOn(new UseOnContext(
+                player, InteractionHand.MAIN_HAND,
+                new BlockHitResult(Vec3.atCenterOf(support), net.minecraft.core.Direction.UP,
+                        support, false)));
+        helper.assertTrue(wetResult.consumesAction() && level.getBlockState(plant).is(Blocks.SEAGRASS),
+                "seagrass item placement rejected the real submerged canonical slab context");
+        assertWetAccepted(helper, plant, support, "item-placed seagrass");
+        player.discard();
+
+        clearVertical(level, support, 1, 3);
+        BlockState wetMagmaSlab = slab(Blocks.MAGMA_BLOCK, SlabType.BOTTOM)
+                .setValue(BlockStateProperties.WATERLOGGED, true);
+        level.setBlock(support, wetMagmaSlab, Block.UPDATE_SKIP_ALL_SIDEEFFECTS);
+        level.setBlock(plant, Blocks.KELP.defaultBlockState(), Block.UPDATE_SKIP_ALL_SIDEEFFECTS);
+        BlockState rejectedKelp = level.getBlockState(plant);
+        helper.assertTrue(NibaruHorizontalSurface.supporting(rejectedKelp, level, plant).isEmpty()
+                        && NibaruHorizontalSurface.visibleOffset(rejectedKelp, level, plant) == 0.0D,
+                "kelp ignored its canonical magma-substrate rejection");
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 60)
+    public void explicitBlacklistNeverProducesAHorizontalAttachment(GameTestHelper helper) {
+        var level = helper.getLevel();
+        BlockPos support = helper.absolutePos(new BlockPos(3, 2, 3));
+        BlockPos plant = support.above();
+        level.setBlock(support, slab(Blocks.GRASS_BLOCK, SlabType.BOTTOM),
+                Block.UPDATE_SKIP_ALL_SIDEEFFECTS);
+
+        List<Block> representatives = List.of(
+                Blocks.OAK_SAPLING,
+                Blocks.MANGROVE_PROPAGULE,
+                Blocks.PUMPKIN_STEM,
+                Blocks.ATTACHED_PUMPKIN_STEM,
+                Blocks.MELON_STEM,
+                Blocks.ATTACHED_MELON_STEM,
+                Blocks.CHORUS_FLOWER,
+                Blocks.CHORUS_PLANT,
+                Blocks.LILY_PAD,
+                Blocks.VINE,
+                Blocks.GLOW_LICHEN,
+                Blocks.COCOA,
+                Blocks.TUBE_CORAL_WALL_FAN);
+        for (Block block : representatives) {
+            BlockState state = block.defaultBlockState();
+            level.setBlock(plant, state, Block.UPDATE_SKIP_ALL_SIDEEFFECTS);
+            helper.assertTrue(!PlantFamilyEligibility.isEligible(state)
+                            && NibaruHorizontalSurface.candidate(state, level, plant).isEmpty()
+                            && NibaruHorizontalSurface.supporting(state, level, plant).isEmpty()
+                            && NibaruHorizontalSurface.visibleOffset(state, level, plant) == 0.0D,
+                    "explicitly blacklisted state entered a horizontal surface: " + state);
+        }
+
+        for (Block block : net.minecraft.core.registries.BuiltInRegistries.BLOCK) {
+            if (!(block instanceof SaplingBlock)
+                    && !(block instanceof StemBlock)
+                    && !(block instanceof AttachedStemBlock)) {
+                continue;
+            }
+            helper.assertFalse(PlantFamilyEligibility.isEligible(block.defaultBlockState()),
+                    "structural tree/stem blacklist missed " + block);
+        }
+        helper.succeed();
+    }
+
+    private static void assertFullParentAndSlabParity(
+            GameTestHelper helper,
+            BlockPos support,
+            BlockPos plant,
+            BlockState state,
+            BlockState canonicalParent,
+            BlockState slab,
+            double expectedOffset,
+            String label) {
+        var level = helper.getLevel();
+        clearVertical(level, support, 1, 4);
+        level.setBlock(support, canonicalParent, Block.UPDATE_SKIP_ALL_SIDEEFFECTS);
+        level.setBlock(plant, state, Block.UPDATE_SKIP_ALL_SIDEEFFECTS);
+        helper.assertTrue(state.canSurvive(level, plant),
+                label + " canonical full-parent fixture is not valid");
+
+        level.setBlock(support, slab, Block.UPDATE_SKIP_ALL_SIDEEFFECTS);
+        level.setBlock(plant, state, Block.UPDATE_SKIP_ALL_SIDEEFFECTS);
+        helper.assertTrue(state.canSurvive(level, plant)
+                        && CanonicalSurvivalProjection.evaluate(state, level, plant).equals(java.util.Optional.of(true)),
+                label + " did not preserve canonical-parent survival");
+        assertAcceptedOffset(helper, plant, support, expectedOffset, label);
+    }
+
+    private static void assertUpwardColumn(
+            GameTestHelper helper,
+            BlockPos support,
+            int height,
+            String label) {
+        for (int dy = 1; dy <= height; dy++) {
+            assertBoundedOffset(helper, support.above(dy), support,
+                    NibaruHorizontalSurface.BOTTOM_OFFSET, label);
+        }
+    }
+
+    private static void assertWetAccepted(
+            GameTestHelper helper,
+            BlockPos plant,
+            BlockPos support,
+            String label) {
+        helper.assertTrue(helper.getLevel().getFluidState(plant).is(Fluids.WATER),
+                label + " fixture is not actually water-occupied");
+        assertAcceptedOffset(helper, plant, support, NibaruHorizontalSurface.BOTTOM_OFFSET, label);
+    }
+
+    private static void assertAcceptedOffset(
+            GameTestHelper helper,
+            BlockPos plant,
+            BlockPos expectedSupport,
+            double expectedOffset,
+            String label) {
+        var level = helper.getLevel();
+        BlockState state = level.getBlockState(plant);
+        NibaruHorizontalSurface.Surface surface = NibaruHorizontalSurface
+                .supporting(state, level, plant).orElse(null);
+        double visibleOffset = NibaruHorizontalSurface.visibleOffset(state, level, plant);
+        helper.assertTrue(surface != null
+                        && surface.supportPos().equals(expectedSupport)
+                        && surface.offset() == expectedOffset
+                        && visibleOffset == expectedOffset
+                        && visibleOffset != 0.0D,
+                label + " acceptance and directional translation diverged: state=" + state
+                        + ", surface=" + surface + ", visibleOffset=" + visibleOffset);
+    }
+
+    private static void assertBoundedOffset(
+            GameTestHelper helper,
+            BlockPos plant,
+            BlockPos expectedSupport,
+            double expectedOffset,
+            String label) {
+        var level = helper.getLevel();
+        BlockState state = level.getBlockState(plant);
+        BlockGetter bounded = new BoundedBlockGetter(level, plant, 0);
+        NibaruHorizontalSurface.Surface surface = NibaruHorizontalSurface
+                .supporting(state, bounded, level, plant).orElse(null);
+        double visibleOffset = NibaruHorizontalSurface.visibleOffset(state, bounded, level, plant);
+        helper.assertTrue(surface != null
+                        && surface.supportPos().equals(expectedSupport)
+                        && surface.offset() == expectedOffset
+                        && visibleOffset == expectedOffset
+                        && visibleOffset != 0.0D,
+                label + " lost its nonlocal root through a bounded render view at " + plant
+                        + ": state=" + state + ", surface=" + surface
+                        + ", visibleOffset=" + visibleOffset);
+    }
+
+    private static void setColumn(
+            net.minecraft.server.level.ServerLevel level,
+            BlockPos support,
+            BlockState supportState,
+            List<BlockState> states) {
+        clearVertical(level, support, 2, Math.max(4, states.size() + 1));
+        level.setBlock(support, supportState, Block.UPDATE_SKIP_ALL_SIDEEFFECTS);
+        for (int index = 0; index < states.size(); index++) {
+            level.setBlock(support.above(index + 1), states.get(index),
+                    Block.UPDATE_SKIP_ALL_SIDEEFFECTS);
+        }
+    }
+
+    private static void clearVertical(
+            net.minecraft.server.level.ServerLevel level,
+            BlockPos origin,
+            int below,
+            int above) {
+        for (int dy = -below; dy <= above; dy++) {
+            BlockPos pos = origin.above(dy);
+            if (!level.isOutsideBuildHeight(pos)) {
+                level.setBlock(pos, Blocks.AIR.defaultBlockState(),
+                        Block.UPDATE_SKIP_ALL_SIDEEFFECTS);
+            }
+        }
+    }
+
+    private static BlockState slab(Block canonicalParent, SlabType type) {
+        NibaruMaterialProfile profile = NibaruMaterialProfiles.fromBlock(canonicalParent)
+                .orElseThrow(() -> new AssertionError(
+                        "missing BGE fixture profile for " + canonicalParent));
+        Block exact = profile.nativeSlab()
+                .orElseGet(() -> profile.effectiveSlabSource().orElseThrow());
+        if (!(exact instanceof SlabBlock)) {
+            throw new AssertionError("profile does not expose a horizontal slab: " + profile);
+        }
+        return exact.defaultBlockState().setValue(BlockStateProperties.SLAB_TYPE, type);
+    }
+
+    private record BoundedBlockGetter(
+            BlockGetter delegate,
+            BlockPos center,
+            int radius) implements BlockGetter {
+        private boolean contains(BlockPos pos) {
+            return Math.abs(pos.getX() - center.getX()) <= radius
+                    && Math.abs(pos.getY() - center.getY()) <= radius
+                    && Math.abs(pos.getZ() - center.getZ()) <= radius;
+        }
+
+        @Override
+        public BlockEntity getBlockEntity(BlockPos pos) {
+            return contains(pos) ? delegate.getBlockEntity(pos) : null;
+        }
+
+        @Override
+        public BlockState getBlockState(BlockPos pos) {
+            return contains(pos) ? delegate.getBlockState(pos) : Blocks.AIR.defaultBlockState();
+        }
+
+        @Override
+        public FluidState getFluidState(BlockPos pos) {
+            return contains(pos) ? delegate.getFluidState(pos) : Fluids.EMPTY.defaultFluidState();
+        }
+
+        @Override
+        public int getHeight() {
+            return delegate.getHeight();
+        }
+
+        @Override
+        public int getMinY() {
+            return delegate.getMinY();
+        }
+    }
+
+    private record FungusCase(Block fungus, Block parent) {
+    }
+
+    private record AquaticCase(BlockState state, String label) {
+    }
+
+    @Override
+    public void invokeTestMethod(GameTestHelper helper, Method method) throws ReflectiveOperationException {
+        method.invoke(this, helper);
+    }
+}

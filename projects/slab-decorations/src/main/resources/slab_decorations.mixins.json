@@ -4,11 +4,14 @@
   "compatibilityLevel": "JAVA_25",
   "mixins": [
     "AzaleaBonemealMixin",
+    "BambooPlacementMixin",
     "BoneMealItemMixin",
     "BlockStateBaseSurvivalMixin",
     "BlockStateBaseShapeMixin",
     "GrowingPlantBlockAccessor",
-    "MushroomBonemealMixin"
+    "HangingMossSurvivalMixin",
+    "MushroomBonemealMixin",
+    "NetherFungusBonemealMixin"
   ],
   "injectors": {
     "defaultRequire": 1

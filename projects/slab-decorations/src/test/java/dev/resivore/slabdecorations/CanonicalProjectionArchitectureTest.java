@@ -39,29 +39,57 @@ final class CanonicalProjectionArchitectureTest {
                 "SporeBlossomBlock",
                 "HangingMossBlock",
                 "GrowingPlantBlock",
-                "GrowingPlantBlockAccessor"
+                "GrowingPlantBlockAccessor",
+                "SugarCaneBlock",
+                "BambooSaplingBlock",
+                "BambooStalkBlock",
+                "CactusBlock",
+                "CactusFlowerBlock",
+                "BaseCoralPlantTypeBlock"
         }) {
             assertTrue(bytecode.contains(structuralContract),
                     () -> "missing structural family contract " + structuralContract);
         }
+
+        for (String excludedContract : new String[]{
+                "SaplingBlock",
+                "StemBlock",
+                "AttachedStemBlock",
+                "ChorusPlantBlock",
+                "ChorusFlowerBlock",
+                "LilyPadBlock",
+                "VineBlock",
+                "MultifaceBlock",
+                "CocoaBlock",
+                "BaseCoralWallFanBlock"
+        }) {
+            assertTrue(bytecode.contains(excludedContract),
+                    () -> "missing explicit structural blacklist contract " + excludedContract);
+        }
     }
 
     @Test
-    void directionalAttachmentUsesGenericDownwardContractsWithoutRuProductionCoupling()
+    void directionalAttachmentUsesBidirectionalAndRootColumnContractsWithoutIdCoupling()
             throws IOException {
         String eligibility = classFile(PlantFamilyEligibility.class);
         String surface = classFile(NibaruHorizontalSurface.class);
         String commonMixins = resource("/slab_decorations.mixins.json");
         String metadata = resource("/fabric.mod.json");
 
-        assertTrue(eligibility.contains("DOWNWARD_GROWING_COLUMN")
+        assertTrue(eligibility.contains("UPWARD_GROWING_COLUMN")
+                        && eligibility.contains("DOWNWARD_GROWING_COLUMN")
+                        && eligibility.contains("SUGAR_CANE_COLUMN")
+                        && eligibility.contains("BAMBOO_COLUMN")
+                        && eligibility.contains("CACTUS_COLUMN")
                         && eligibility.contains("CEILING_FOLIAGE"),
                 "directional structural families are absent");
         assertTrue(surface.contains("AttachmentOrientation")
                         && surface.contains("CEILING_TOP_OFFSET")
                         && surface.contains("slabDecorations$invokeGetHeadBlock")
-                        && surface.contains("slabDecorations$invokeGetBodyBlock"),
-                "surface resolution does not use the generic exact head/body attachment contract");
+                        && surface.contains("slabDecorations$invokeGetBodyBlock")
+                        && surface.contains("upwardColumnAttachment")
+                        && surface.contains("growthDirection"),
+                "surface resolution does not share generic directional/root attachment contracts");
         assertTrue(commonMixins.contains("GrowingPlantBlockAccessor"),
                 "generic growing-plant accessor is not registered");
         assertFalse(eligibility.contains("mynx_regions_unexplored")
@@ -110,6 +138,9 @@ final class CanonicalProjectionArchitectureTest {
                 "outline/collision alignment seam is not registered");
         assertTrue(commonMixins.contains("GrowingPlantBlockAccessor"),
                 "generic growing-column contract seam is not registered");
+        assertTrue(commonMixins.contains("BambooPlacementMixin")
+                        && commonMixins.contains("NetherFungusBonemealMixin"),
+                "bamboo lifecycle or deferred huge-fungus boundary seam is not registered");
         assertTrue(clientMixins.contains("EntityPickMixin"),
                 "shifted targeting seam is not registered");
         assertTrue(clientMixins.contains("LevelRendererDestroyOverlayMixin"),
@@ -128,9 +159,12 @@ final class CanonicalProjectionArchitectureTest {
                         && model.contains("SodiumLevelSliceAccessor")
                         && model.contains("visibleOffset"),
                 "model translation must resolve both terrain snapshot families through the shared offset");
-        assertTrue(client.contains("WRAP_LAST_PHASE"),
+        assertTrue(client.contains("WRAP_LAST_PHASE")
+                        && client.contains("SurfaceOffsetModel"),
                 "state-selected model variants, including cave-vine berry models, must be wrapped after"
                         + " any specialized renderer wrapper is installed");
+        assertFalse(client.contains("PlantFamilyEligibility") || client.contains("isEligible"),
+                "client model wrapping must not maintain an independent eligibility/species gate");
     }
 
     private static String classFile(Class<?> type) throws IOException {

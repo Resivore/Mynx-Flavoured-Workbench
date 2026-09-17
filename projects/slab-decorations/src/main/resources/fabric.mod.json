@@ -3,7 +3,7 @@
   "id": "slab_decorations",
   "version": "${version}",
   "name": "Workbench Slab Decorations",
-  "description": "Directional canonical-parent foliage parity and bounded substrate bonemeal for BGE native horizontal slabs.",
+  "description": "Systemic canonical-parent vegetation attachment and directional surface translation for BGE native horizontal slabs.",
   "authors": ["Resivore"],
   "license": "MIT",
   "environment": "*",
@@ -30,6 +30,6 @@
   "custom": {
     "workbench:classification": "GENERATED / STATICALLY VALIDATED / RUNTIME UNTESTED",
     "workbench:deployment": "NOT DEPLOYED",
-    "workbench:runtime-slot-owner": "Slab Decorations Foliage — Canary 7"
+    "workbench:runtime-slot-owner": "Slab Decorations — Canary 8"
   }
 }

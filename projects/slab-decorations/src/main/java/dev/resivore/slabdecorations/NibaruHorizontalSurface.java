@@ -7,14 +7,18 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.block.BambooSaplingBlock;
+import net.minecraft.world.level.block.BambooStalkBlock;
 import net.minecraft.world.level.block.BigDripleafBlock;
 import net.minecraft.world.level.block.BigDripleafStemBlock;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.CactusBlock;
+import net.minecraft.world.level.block.CactusFlowerBlock;
 import net.minecraft.world.level.block.GrowingPlantBlock;
 import net.minecraft.world.level.block.HangingMossBlock;
-import net.minecraft.world.level.block.LiquidBlockContainer;
 import net.minecraft.world.level.block.MossyCarpetBlock;
 import net.minecraft.world.level.block.SlabBlock;
+import net.minecraft.world.level.block.SugarCaneBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
@@ -59,7 +63,7 @@ public final class NibaruHorizontalSurface {
      */
     public static Optional<Surface> supporting(BlockState plantState, BlockGetter level, BlockPos plantPos) {
         Surface surface = candidate(plantState, level, plantPos).orElse(null);
-        if (surface == null || surface.waterlogged()) return Optional.empty();
+        if (surface == null) return Optional.empty();
         if (!(level instanceof LevelReader reader)
                 || !CanonicalSurvivalProjection.evaluate(plantState, reader, plantPos, surface)) {
             return Optional.empty();
@@ -67,16 +71,19 @@ public final class NibaruHorizontalSurface {
         return Optional.of(surface);
     }
 
-    /** Uses a render snapshot for block data and its ClientLevel only for LevelReader services. */
+    /**
+     * Seeds resolution with the immutable state currently being rendered, then uses the owning
+     * level for every nonlocal root, anchor, support, and projected-survival read. Render terrain
+     * snapshots are intentionally bounded and cannot authoritatively resolve long columns.
+     */
     public static Optional<Surface> supporting(
             BlockState plantState,
             BlockGetter blockView,
             LevelReader environment,
             BlockPos plantPos) {
-        Surface surface = candidate(plantState, blockView, plantPos).orElse(null);
-        if (surface == null || surface.waterlogged()) return Optional.empty();
-        return CanonicalSurvivalProjection.evaluate(
-                plantState, environment, blockView, plantPos, surface)
+        Surface surface = candidate(plantState, environment, plantPos).orElse(null);
+        if (surface == null) return Optional.empty();
+        return CanonicalSurvivalProjection.evaluate(plantState, environment, plantPos, surface)
                 ? Optional.of(surface)
                 : Optional.empty();
     }
@@ -115,7 +122,11 @@ public final class NibaruHorizontalSurface {
             case DRIPLEAF_COLUMN -> dripleafAttachment(state, level, pos);
             case CEILING_FOLIAGE -> Optional.of(
                     new Attachment(pos, state, AttachmentOrientation.CEILING));
-            case DOWNWARD_GROWING_COLUMN -> downwardGrowingAttachment(state, level, pos);
+            case UPWARD_GROWING_COLUMN, DOWNWARD_GROWING_COLUMN ->
+                    growingPlantAttachment(state, level, pos);
+            case SUGAR_CANE_COLUMN -> sugarCaneAttachment(state, level, pos);
+            case BAMBOO_COLUMN -> bambooAttachment(state, level, pos);
+            case CACTUS_COLUMN -> cactusAttachment(state, level, pos);
             case HANGING_MOSS_COLUMN -> hangingMossAttachment(state, level, pos);
         };
     }
@@ -184,7 +195,59 @@ public final class NibaruHorizontalSurface {
         return Optional.of(new Attachment(rootPos, rootState, AttachmentOrientation.UPWARD));
     }
 
-    private static Optional<Attachment> downwardGrowingAttachment(
+    private static Optional<Attachment> sugarCaneAttachment(
+            BlockState state,
+            BlockGetter level,
+            BlockPos pos) {
+        if (!(state.getBlock() instanceof SugarCaneBlock)) return Optional.empty();
+        return upwardColumnAttachment(state, level, pos,
+                candidate -> candidate.getBlock() instanceof SugarCaneBlock);
+    }
+
+    private static Optional<Attachment> bambooAttachment(
+            BlockState state,
+            BlockGetter level,
+            BlockPos pos) {
+        if (!isBamboo(state)) return Optional.empty();
+        return upwardColumnAttachment(state, level, pos, NibaruHorizontalSurface::isBamboo);
+    }
+
+    private static boolean isBamboo(BlockState state) {
+        return state.getBlock() instanceof BambooSaplingBlock
+                || state.getBlock() instanceof BambooStalkBlock;
+    }
+
+    private static Optional<Attachment> cactusAttachment(
+            BlockState state,
+            BlockGetter level,
+            BlockPos pos) {
+        if (!isCactus(state)) return Optional.empty();
+        return upwardColumnAttachment(state, level, pos, NibaruHorizontalSurface::isCactus);
+    }
+
+    private static boolean isCactus(BlockState state) {
+        return state.getBlock() instanceof CactusBlock
+                || state.getBlock() instanceof CactusFlowerBlock;
+    }
+
+    private static Optional<Attachment> upwardColumnAttachment(
+            BlockState state,
+            BlockGetter level,
+            BlockPos pos,
+            java.util.function.Predicate<BlockState> member) {
+        BlockPos rootPos = pos;
+        BlockState rootState = state;
+        while (!level.isOutsideBuildHeight(rootPos.getY() - 1)) {
+            BlockPos belowPos = rootPos.below();
+            BlockState below = level.getBlockState(belowPos);
+            if (!member.test(below)) break;
+            rootPos = belowPos;
+            rootState = below;
+        }
+        return Optional.of(new Attachment(rootPos, rootState, AttachmentOrientation.UPWARD));
+    }
+
+    private static Optional<Attachment> growingPlantAttachment(
             BlockState state,
             BlockGetter level,
             BlockPos pos) {
@@ -193,23 +256,29 @@ public final class NibaruHorizontalSurface {
 
         BlockPos anchorPos = pos;
         BlockState anchorState = state;
-        while (!level.isOutsideBuildHeight(anchorPos.getY() + 1)) {
-            BlockPos abovePos = anchorPos.above();
-            BlockState above = level.getBlockState(abovePos);
-            GrowingPlantContract aboveContract = growingPlantContract(above).orElse(null);
-            if (aboveContract == null || !contract.equals(aboveContract)
-                    || !contract.contains(above)) break;
-            anchorPos = abovePos;
-            anchorState = above;
+        Direction towardAnchor = contract.growthDirection().getOpposite();
+        while (!level.isOutsideBuildHeight(anchorPos.relative(towardAnchor).getY())) {
+            BlockPos nextPos = anchorPos.relative(towardAnchor);
+            BlockState next = level.getBlockState(nextPos);
+            GrowingPlantContract nextContract = growingPlantContract(next).orElse(null);
+            if (nextContract == null || !contract.equals(nextContract)
+                    || !contract.contains(next)) break;
+            anchorPos = nextPos;
+            anchorState = next;
         }
-        return Optional.of(new Attachment(anchorPos, anchorState, AttachmentOrientation.CEILING));
+        AttachmentOrientation orientation = contract.growthDirection() == Direction.UP
+                ? AttachmentOrientation.UPWARD
+                : AttachmentOrientation.CEILING;
+        return Optional.of(new Attachment(anchorPos, anchorState, orientation));
     }
 
     private static Optional<GrowingPlantContract> growingPlantContract(BlockState state) {
         if (!(state.getBlock() instanceof GrowingPlantBlock)
-                || state.getBlock() instanceof LiquidBlockContainer
-                || !(state.getBlock() instanceof GrowingPlantBlockAccessor accessor)
-                || accessor.slabDecorations$getGrowthDirection() != Direction.DOWN) {
+                || !(state.getBlock() instanceof GrowingPlantBlockAccessor accessor)) {
+            return Optional.empty();
+        }
+        Direction growthDirection = accessor.slabDecorations$getGrowthDirection();
+        if (growthDirection != Direction.UP && growthDirection != Direction.DOWN) {
             return Optional.empty();
         }
         Block head = accessor.slabDecorations$invokeGetHeadBlock();
@@ -217,7 +286,7 @@ public final class NibaruHorizontalSurface {
         if (head == null || body == null || (!state.is(head) && !state.is(body))) {
             return Optional.empty();
         }
-        return Optional.of(new GrowingPlantContract(head, body));
+        return Optional.of(new GrowingPlantContract(head, body, growthDirection));
     }
 
     private static Optional<Attachment> hangingMossAttachment(
@@ -243,7 +312,7 @@ public final class NibaruHorizontalSurface {
         }
     }
 
-    private record GrowingPlantContract(Block head, Block body) {
+    private record GrowingPlantContract(Block head, Block body, Direction growthDirection) {
         boolean contains(BlockState state) {
             return state.is(head) || state.is(body);
         }

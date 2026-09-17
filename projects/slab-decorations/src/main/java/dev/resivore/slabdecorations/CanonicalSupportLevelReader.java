@@ -7,7 +7,6 @@ import net.minecraft.world.attribute.EnvironmentAttributeReader;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.level.BlockGetter;
-import net.minecraft.world.level.BlockAndLightGetter;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeManager;
@@ -33,45 +32,51 @@ import java.util.List;
  */
 final class CanonicalSupportLevelReader implements LevelReader {
     private final LevelReader delegate;
-    private final BlockGetter blockView;
+    private final BlockPos currentPos;
+    private final BlockState currentState;
     private final BlockPos supportPos;
     private final BlockState canonicalState;
 
     CanonicalSupportLevelReader(LevelReader delegate, BlockPos supportPos, BlockState canonicalState) {
-        this(delegate, delegate, supportPos, canonicalState);
+        this(delegate, null, null, supportPos, canonicalState);
     }
 
     CanonicalSupportLevelReader(
             LevelReader delegate,
-            BlockGetter blockView,
+            BlockPos currentPos,
+            BlockState currentState,
             BlockPos supportPos,
             BlockState canonicalState) {
         this.delegate = delegate;
-        this.blockView = blockView;
+        this.currentPos = currentPos == null ? null : currentPos.immutable();
+        this.currentState = currentState;
         this.supportPos = supportPos.immutable();
         this.canonicalState = canonicalState;
     }
 
     @Override
     public BlockState getBlockState(BlockPos pos) {
-        return supportPos.equals(pos) ? canonicalState : blockView.getBlockState(pos);
+        if (supportPos.equals(pos)) return canonicalState;
+        return currentPos != null && currentPos.equals(pos)
+                ? currentState
+                : delegate.getBlockState(pos);
     }
 
     @Override
     public FluidState getFluidState(BlockPos pos) {
-        return blockView.getFluidState(pos);
+        return currentPos != null && currentPos.equals(pos)
+                ? currentState.getFluidState()
+                : delegate.getFluidState(pos);
     }
 
     @Override
     public BlockEntity getBlockEntity(BlockPos pos) {
-        return blockView.getBlockEntity(pos);
+        return delegate.getBlockEntity(pos);
     }
 
     @Override
     public LevelLightEngine getLightEngine() {
-        return blockView instanceof BlockAndLightGetter lightView
-                ? lightView.getLightEngine()
-                : delegate.getLightEngine();
+        return delegate.getLightEngine();
     }
 
     @Override
@@ -155,12 +160,12 @@ final class CanonicalSupportLevelReader implements LevelReader {
 
     @Override
     public int getHeight() {
-        return blockView.getHeight();
+        return delegate.getHeight();
     }
 
     @Override
     public int getMinY() {
-        return blockView.getMinY();
+        return delegate.getMinY();
     }
 
     private record ProjectedBlockGetter(

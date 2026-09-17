@@ -60,7 +60,7 @@ public final class FoliageSurfaceGameTests implements CustomTestMethodInvoker {
     private static final double EPSILON = 1.0E-7D;
 
     @GameTest(maxTicks = 40)
-    public void structuralFamiliesAreDiscoveredWithoutARegistryPermissionList(GameTestHelper helper) {
+    public void structuralFamiliesAndExplicitBlacklistNeedNoRegistryPermissionList(GameTestHelper helper) {
         assertFamily(helper, Blocks.DANDELION.defaultBlockState(),
                 PlantFamilyEligibility.Family.UPWARD_VEGETATION);
         assertFamily(helper, Blocks.RED_MUSHROOM.defaultBlockState(),
@@ -93,24 +93,59 @@ public final class FoliageSurfaceGameTests implements CustomTestMethodInvoker {
                 PlantFamilyEligibility.Family.DOWNWARD_GROWING_COLUMN);
         assertFamily(helper, Blocks.WEEPING_VINES_PLANT.defaultBlockState(),
                 PlantFamilyEligibility.Family.DOWNWARD_GROWING_COLUMN);
+        assertFamily(helper, Blocks.TWISTING_VINES.defaultBlockState(),
+                PlantFamilyEligibility.Family.UPWARD_GROWING_COLUMN);
+        assertFamily(helper, Blocks.TWISTING_VINES_PLANT.defaultBlockState(),
+                PlantFamilyEligibility.Family.UPWARD_GROWING_COLUMN);
+        assertFamily(helper, Blocks.KELP.defaultBlockState(),
+                PlantFamilyEligibility.Family.UPWARD_GROWING_COLUMN);
+        assertFamily(helper, Blocks.KELP_PLANT.defaultBlockState(),
+                PlantFamilyEligibility.Family.UPWARD_GROWING_COLUMN);
+        assertFamily(helper, Blocks.SUGAR_CANE.defaultBlockState(),
+                PlantFamilyEligibility.Family.SUGAR_CANE_COLUMN);
+        assertFamily(helper, Blocks.BAMBOO_SAPLING.defaultBlockState(),
+                PlantFamilyEligibility.Family.BAMBOO_COLUMN);
+        assertFamily(helper, Blocks.BAMBOO.defaultBlockState(),
+                PlantFamilyEligibility.Family.BAMBOO_COLUMN);
+        assertFamily(helper, Blocks.CACTUS.defaultBlockState(),
+                PlantFamilyEligibility.Family.CACTUS_COLUMN);
+        assertFamily(helper, Blocks.CACTUS_FLOWER.defaultBlockState(),
+                PlantFamilyEligibility.Family.CACTUS_COLUMN);
+        assertFamily(helper, Blocks.WHEAT.defaultBlockState(),
+                PlantFamilyEligibility.Family.UPWARD_VEGETATION);
+        assertFamily(helper, Blocks.PITCHER_CROP.defaultBlockState(),
+                PlantFamilyEligibility.Family.DOUBLE_HEIGHT_VEGETATION);
+        assertFamily(helper, Blocks.CRIMSON_FUNGUS.defaultBlockState(),
+                PlantFamilyEligibility.Family.UPWARD_VEGETATION);
+        assertFamily(helper, Blocks.SEAGRASS.defaultBlockState(),
+                PlantFamilyEligibility.Family.UPWARD_VEGETATION);
+        assertFamily(helper, Blocks.TALL_SEAGRASS.defaultBlockState(),
+                PlantFamilyEligibility.Family.DOUBLE_HEIGHT_VEGETATION);
+        assertFamily(helper, Blocks.SEA_PICKLE.defaultBlockState(),
+                PlantFamilyEligibility.Family.UPWARD_VEGETATION);
+        assertFamily(helper, Blocks.TUBE_CORAL.defaultBlockState(),
+                PlantFamilyEligibility.Family.UPWARD_VEGETATION);
+        assertFamily(helper, Blocks.TUBE_CORAL_FAN.defaultBlockState(),
+                PlantFamilyEligibility.Family.UPWARD_VEGETATION);
 
         for (Block excluded : List.of(
-                Blocks.WHEAT,
-                Blocks.PITCHER_CROP,
                 Blocks.OAK_SAPLING,
-                Blocks.CRIMSON_FUNGUS,
-                Blocks.SEAGRASS,
+                Blocks.MANGROVE_PROPAGULE,
+                Blocks.PUMPKIN_STEM,
+                Blocks.ATTACHED_PUMPKIN_STEM,
+                Blocks.MELON_STEM,
+                Blocks.ATTACHED_MELON_STEM,
+                Blocks.CHORUS_FLOWER,
+                Blocks.CHORUS_PLANT,
                 Blocks.LILY_PAD,
+                Blocks.VINE,
+                Blocks.GLOW_LICHEN,
+                Blocks.COCOA,
+                Blocks.TUBE_CORAL_WALL_FAN,
                 Blocks.CARPET.white(),
                 Blocks.RAIL,
                 Blocks.REDSTONE_WIRE,
                 Blocks.TORCH,
-                Blocks.TWISTING_VINES,
-                Blocks.TWISTING_VINES_PLANT,
-                Blocks.KELP,
-                Blocks.KELP_PLANT,
-                Blocks.VINE,
-                Blocks.GLOW_LICHEN,
                 Blocks.IRON_CHAIN,
                 Blocks.LANTERN,
                 Blocks.POINTED_DRIPSTONE)) {
@@ -375,7 +410,7 @@ public final class FoliageSurfaceGameTests implements CustomTestMethodInvoker {
     }
 
     @GameTest(maxTicks = 60)
-    public void ceilingProjectionRejectsWaterloggedForeignAndNonHorizontalGeometry(
+    public void ceilingProjectionUsesContextualFluidAndRejectsForeignNonHorizontalGeometry(
             GameTestHelper helper) {
         var level = helper.getLevel();
         BlockPos support = helper.absolutePos(new BlockPos(3, 6, 3));
@@ -387,10 +422,11 @@ public final class FoliageSurfaceGameTests implements CustomTestMethodInvoker {
         level.setBlock(support, waterlogged, Block.UPDATE_SKIP_ALL_SIDEEFFECTS);
         level.setBlock(plant, roots, Block.UPDATE_SKIP_ALL_SIDEEFFECTS);
         helper.assertTrue(NibaruHorizontalSurface.candidate(roots, level, plant).isPresent()
-                        && NibaruHorizontalSurface.supporting(roots, level, plant).isEmpty()
-                        && !roots.canSurvive(level, plant)
-                        && NibaruHorizontalSurface.visibleOffset(roots, level, plant) == 0.0D,
-                "waterlogged ceiling slab entered usable hanging-foliage projection");
+                        && NibaruHorizontalSurface.supporting(roots, level, plant).isPresent()
+                        && roots.canSurvive(level, plant)
+                        && NibaruHorizontalSurface.visibleOffset(roots, level, plant)
+                        == NibaruHorizontalSurface.CEILING_TOP_OFFSET,
+                "canonical-valid hanging roots were rejected solely because the slab was waterlogged");
 
         List<BlockState> excluded = new ArrayList<>();
         excluded.add(Blocks.PETRIFIED_OAK_SLAB.defaultBlockState()
@@ -682,7 +718,7 @@ public final class FoliageSurfaceGameTests implements CustomTestMethodInvoker {
     }
 
     @GameTest(maxTicks = 40)
-    public void waterloggedExcludedGeometryAndFullBlocksRemainOutsideProjection(GameTestHelper helper) {
+    public void contextualFluidExcludedGeometryAndFullBlocksRemainIsolated(GameTestHelper helper) {
         BlockPos support = helper.absolutePos(new BlockPos(1, 1, 1));
         BlockPos plant = support.above();
         var level = helper.getLevel();
@@ -712,12 +748,13 @@ public final class FoliageSurfaceGameTests implements CustomTestMethodInvoker {
                 .setValue(BlockStateProperties.WATERLOGGED, true);
         level.setBlock(support, waterlogged, 2);
         level.setBlock(plant, flower, 2);
-        helper.assertFalse(flower.canSurvive(level, plant),
-                "terrestrial foliage survived over a waterlogged bottom slab");
+        helper.assertTrue(flower.canSurvive(level, plant),
+                "canonical-valid foliage was rejected solely because its support slab was waterlogged");
         helper.assertTrue(NibaruHorizontalSurface.candidate(flower, level, plant).isPresent()
-                        && NibaruHorizontalSurface.supporting(flower, level, plant).isEmpty()
-                        && NibaruHorizontalSurface.visibleOffset(flower, level, plant) == 0.0D,
-                "waterlogged candidate entered usable or shifted surface geometry");
+                        && NibaruHorizontalSurface.supporting(flower, level, plant).isPresent()
+                        && NibaruHorizontalSurface.visibleOffset(flower, level, plant)
+                        == NibaruHorizontalSurface.BOTTOM_OFFSET,
+                "contextual canonical parity and waterlogged surface alignment diverged");
 
         List<BlockState> excludedGeometry = new ArrayList<>();
         for (DerivedGeometrySupport.Geometry geometry : DerivedGeometrySupport.Geometry.values()) {
@@ -1019,8 +1056,8 @@ public final class FoliageSurfaceGameTests implements CustomTestMethodInvoker {
                         .equals(Optional.of(true)),
                 "valid projection failed after a preceding rejection");
         helper.assertTrue(CanonicalSurvivalProjection.evaluate(
-                        Blocks.WHEAT.defaultBlockState(), level, plant).isEmpty(),
-                "excluded crop unexpectedly opened a projection");
+                        Blocks.OAK_SAPLING.defaultBlockState(), level, plant).isEmpty(),
+                "explicitly deferred sapling unexpectedly opened a projection");
         helper.assertFalse(CanonicalSurvivalProjection.isEvaluating(),
                 "projection recursion guard leaked after a non-candidate evaluation");
         helper.assertTrue(level.getBlockState(support).equals(validSupport)

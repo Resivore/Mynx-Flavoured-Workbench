@@ -1,7 +1,6 @@
 package dev.resivore.slabdecorations;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.state.BlockState;
 
@@ -20,8 +19,7 @@ public final class CanonicalSurvivalProjection {
         NibaruHorizontalSurface.Surface surface =
                 NibaruHorizontalSurface.candidate(state, level, pos).orElse(null);
         if (surface == null) return Optional.empty();
-        if (surface.waterlogged()) return Optional.of(false);
-        return Optional.of(evaluate(state, level, level, pos, surface));
+        return Optional.of(evaluate(state, level, pos, surface));
     }
 
     static boolean evaluate(
@@ -29,26 +27,16 @@ public final class CanonicalSurvivalProjection {
             LevelReader level,
             BlockPos pos,
             NibaruHorizontalSurface.Surface surface) {
-        return evaluate(state, level, level, pos, surface);
-    }
-
-    static boolean evaluate(
-            BlockState state,
-            LevelReader environment,
-            BlockGetter blockView,
-            BlockPos pos,
-            NibaruHorizontalSurface.Surface surface) {
-        if (surface.waterlogged()) return false;
         if (isEvaluating()) {
             // Re-entry is only expected through BlockState.canSurvive. Let the caller's vanilla
             // invocation continue rather than opening a nested projection.
-            return state.canSurvive(environment, pos);
+            return state.canSurvive(level, pos);
         }
 
         enter();
         try {
             LevelReader projected = new CanonicalSupportLevelReader(
-                    environment, blockView, surface.supportPos(), surface.canonicalParentState());
+                    level, pos, state, surface.supportPos(), surface.canonicalParentState());
             NibaruHorizontalSurface.Attachment attachment = surface.attachment();
 
             // The root/anchor owns the support decision for every connected segment.
