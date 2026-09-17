@@ -34,22 +34,25 @@ final class CanonicalSupportLevelReader implements LevelReader {
     private final LevelReader delegate;
     private final BlockPos currentPos;
     private final BlockState currentState;
+    private final FluidState currentFluidState;
     private final BlockPos supportPos;
     private final BlockState canonicalState;
 
     CanonicalSupportLevelReader(LevelReader delegate, BlockPos supportPos, BlockState canonicalState) {
-        this(delegate, null, null, supportPos, canonicalState);
+        this(delegate, null, null, null, supportPos, canonicalState);
     }
 
     CanonicalSupportLevelReader(
             LevelReader delegate,
             BlockPos currentPos,
             BlockState currentState,
+            FluidState currentFluidState,
             BlockPos supportPos,
             BlockState canonicalState) {
         this.delegate = delegate;
         this.currentPos = currentPos == null ? null : currentPos.immutable();
         this.currentState = currentState;
+        this.currentFluidState = currentFluidState;
         this.supportPos = supportPos.immutable();
         this.canonicalState = canonicalState;
     }
@@ -65,7 +68,7 @@ final class CanonicalSupportLevelReader implements LevelReader {
     @Override
     public FluidState getFluidState(BlockPos pos) {
         return currentPos != null && currentPos.equals(pos)
-                ? currentState.getFluidState()
+                ? currentFluidState
                 : delegate.getFluidState(pos);
     }
 

@@ -213,6 +213,38 @@ public final class SystemicSurfaceGameTests implements CustomTestMethodInvoker {
                 "hanging roots survived removal of their resolved slab support"));
     }
 
+    @GameTest(maxTicks = 60)
+    public void hypotheticalSubmergedSporeBlossomRetainsRealFluidRejection(
+            GameTestHelper helper) {
+        var level = helper.getLevel();
+        BlockPos support = helper.absolutePos(new BlockPos(3, 6, 3));
+        BlockPos plant = support.below();
+        BlockState hypothetical = Blocks.SPORE_BLOSSOM.defaultBlockState();
+
+        level.setBlock(support, slab(Blocks.CALCITE, SlabType.TOP),
+                Block.UPDATE_SKIP_ALL_SIDEEFFECTS);
+        level.setBlock(plant, Blocks.WATER.defaultBlockState(),
+                Block.UPDATE_SKIP_ALL_SIDEEFFECTS);
+
+        helper.assertTrue(level.getBlockState(plant).is(Blocks.WATER)
+                        && level.getFluidState(plant).is(Fluids.WATER)
+                        && level.getFluidState(plant).isSource(),
+                "hypothetical placement fixture did not retain its replaced source water");
+        helper.assertTrue(PlantFamilyEligibility.isEligible(hypothetical)
+                        && NibaruHorizontalSurface.candidate(hypothetical, level, plant).isPresent(),
+                "canonical-valid Calcite top slab did not produce a Spore Blossom candidate");
+        helper.assertTrue(CanonicalSurvivalProjection.evaluate(hypothetical, level, plant)
+                        .equals(java.util.Optional.of(false))
+                        && !hypothetical.canSurvive(level, plant)
+                        && NibaruHorizontalSurface.supporting(hypothetical, level, plant).isEmpty()
+                        && NibaruHorizontalSurface.visibleOffset(hypothetical, level, plant) == 0.0D,
+                "candidate-state projection hid the real water replaced by a hypothetical"
+                        + " terrestrial Spore Blossom placement");
+        helper.assertTrue(level.getBlockState(plant).is(Blocks.WATER),
+                "read-only hypothetical projection mutated the real water cell");
+        helper.succeed();
+    }
+
     @GameTest(maxTicks = 100)
     public void cropsAndPitcherUseExternalFarmlandCanonicalParent(GameTestHelper helper) {
         var level = helper.getLevel();

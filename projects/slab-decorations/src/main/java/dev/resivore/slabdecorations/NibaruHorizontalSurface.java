@@ -83,7 +83,8 @@ public final class NibaruHorizontalSurface {
             BlockPos plantPos) {
         Surface surface = candidate(plantState, environment, plantPos).orElse(null);
         if (surface == null) return Optional.empty();
-        return CanonicalSurvivalProjection.evaluate(plantState, environment, plantPos, surface)
+        return CanonicalSurvivalProjection.evaluate(
+                        plantState, environment, blockView, plantPos, surface)
                 ? Optional.of(surface)
                 : Optional.empty();
     }

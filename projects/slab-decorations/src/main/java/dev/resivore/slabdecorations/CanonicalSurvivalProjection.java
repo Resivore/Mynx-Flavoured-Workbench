@@ -1,6 +1,7 @@
 package dev.resivore.slabdecorations;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.state.BlockState;
 
@@ -27,16 +28,26 @@ public final class CanonicalSurvivalProjection {
             LevelReader level,
             BlockPos pos,
             NibaruHorizontalSurface.Surface surface) {
+        return evaluate(state, level, level, pos, surface);
+    }
+
+    static boolean evaluate(
+            BlockState state,
+            LevelReader environment,
+            BlockGetter currentView,
+            BlockPos pos,
+            NibaruHorizontalSurface.Surface surface) {
         if (isEvaluating()) {
             // Re-entry is only expected through BlockState.canSurvive. Let the caller's vanilla
             // invocation continue rather than opening a nested projection.
-            return state.canSurvive(level, pos);
+            return state.canSurvive(environment, pos);
         }
 
         enter();
         try {
             LevelReader projected = new CanonicalSupportLevelReader(
-                    level, pos, state, surface.supportPos(), surface.canonicalParentState());
+                    environment, pos, currentView.getBlockState(pos), currentView.getFluidState(pos),
+                    surface.supportPos(), surface.canonicalParentState());
             NibaruHorizontalSurface.Attachment attachment = surface.attachment();
 
             // The root/anchor owns the support decision for every connected segment.
