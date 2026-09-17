@@ -5,6 +5,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -116,6 +117,7 @@ public final class WorkCoordinator {
             log(villager, "custom WORK eligible; claimed site={} interactionTarget={} (non-blocking)",
                     site, interactionTarget(villager));
         }
+        dispatchDelayedWoolDepositFeedback(villager, level, state);
         if (profession == VillagerProfession.SHEPHERD) shepherd(villager, level, site, state);
         else if (profession == VillagerProfession.FISHERMAN) fisherman(villager, level, site, state);
         else ambient(villager, site, state);
@@ -1225,7 +1227,9 @@ public final class WorkCoordinator {
         int deposited = before - woolCount(owned);
         if (deposited > 0)
             for (BarrelBlockEntity barrel : depositedInto)
-                presentWoolDeposit(villager, level, barrel.getBlockPos());
+                presentWoolInteraction(villager, level, barrel.getBlockPos());
+        state.woolDepositFeedback.scheduleIfSuccessful(deposited,
+                depositedInto.stream().map(BarrelBlockEntity::getBlockPos).toList(), villager.tickCount);
         if (deposited > 0 || villager.tickCount >= state.nextDepositLog) {
             log(villager, "wool deposit loom={} adjacentBarrels={} barrelPositions={} attempted={} inserted={} retained={}",
                     loom, barrels.size(), barrels.stream().map(BarrelBlockEntity::getBlockPos).toList(),
@@ -1490,15 +1494,30 @@ public final class WorkCoordinator {
         level.gameEvent(villager, GameEvent.BLOCK_OPEN, barrel);
     }
 
-    /** Mirrors the Fisherman's successful-transfer feedback for each barrel that accepted wool. */
-    private static void presentWoolDeposit(Villager villager, ServerLevel level, BlockPos barrel) {
+    /** The immediate interaction cue is distinct from the later, successful wool-entering cue. */
+    private static void presentWoolInteraction(Villager villager, ServerLevel level, BlockPos barrel) {
         villager.getLookControl().setLookAt(Vec3.atCenterOf(barrel));
         villager.swing(InteractionHand.MAIN_HAND);
         level.playSound(null, barrel, SoundEvents.BARREL_OPEN, SoundSource.BLOCKS, 0.75f, 1.0f);
-        level.playSound(null, barrel, SoundEvents.WOOL_PLACE, SoundSource.BLOCKS, 0.75f, 1.0f);
-        level.sendParticles(ParticleTypes.END_ROD, barrel.getX() + 0.5, barrel.getY() + 0.7,
-                barrel.getZ() + 0.5, 5, 0.22, 0.20, 0.22, 0.01);
         level.gameEvent(villager, GameEvent.BLOCK_OPEN, barrel);
+    }
+
+    /**
+     * The ordinary broadcast sender used in C13 may omit distant-but-observing multiplayer
+     * clients. Send the modest END_ROD packet directly with forced/override-limiter delivery so
+     * normal observers in this level receive the actual-success cue at the same delayed moment as
+     * the wool placement sound.
+     */
+    private static void presentWoolDepositMoment(ServerLevel level, BlockPos barrel) {
+        level.playSound(null, barrel, SoundEvents.WOOL_PLACE, SoundSource.BLOCKS, 0.75f, 1.0f);
+        for (ServerPlayer player : level.players())
+            level.sendParticles(player, ParticleTypes.END_ROD, true, true, barrel.getX() + 0.5, barrel.getY() + 0.85,
+                    barrel.getZ() + 0.5, 7, 0.18, 0.20, 0.18, 0.01);
+    }
+
+    private static void dispatchDelayedWoolDepositFeedback(Villager villager, ServerLevel level, State state) {
+        for (BlockPos barrel : state.woolDepositFeedback.pollDue(villager.tickCount))
+            presentWoolDepositMoment(level, barrel);
     }
 
     private static void ambient(Villager villager, BlockPos site, State state) {
@@ -1711,6 +1730,7 @@ public final class WorkCoordinator {
         state.nextSheepPathAt = 0;
         state.rodAt = 0;
         state.fishingPhase = FishingRodLifecycle.Phase.CANCELLED;
+        state.woolDepositFeedback.cancel();
         state.eligible = false;
         state.site = null;
         state.profession = null;
@@ -1812,6 +1832,7 @@ public final class WorkCoordinator {
         int telegraphRestarts;
         FishingRodLifecycle.Phase fishingPhase = FishingRodLifecycle.Phase.IDLE;
         final TemporaryHandProp.Slot propSlot = new TemporaryHandProp.Slot();
+        final SuccessfulWoolDepositFeedback woolDepositFeedback = new SuccessfulWoolDepositFeedback();
         int nextPropConflictLog;
         boolean eligible;
         boolean repositioningSheep;

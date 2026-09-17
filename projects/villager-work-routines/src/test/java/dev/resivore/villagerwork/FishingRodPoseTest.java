@@ -7,6 +7,12 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class FishingRodPoseTest {
+    @Test void correctedStickTranslationReversesC13sEffectiveDirectionByTwoTimesItsAttempt() {
+        assertEquals(0.26F, FishingRodPose.STICK_VERTICAL_TRANSLATION, 0.000001F);
+        assertEquals(0.36F, FishingRodPose.STICK_VERTICAL_TRANSLATION - -0.10F, 0.000001F,
+                "C13's -0.10 transform raised the stick in runtime; +0.26 lowers it instead");
+    }
+
     @Test void rodTipFacesTheVillagerBodyDirectionAndStaysFinite() {
         FishingRodPose.Point south = FishingRodPose.tip(10.0, 64.0, 20.0, 0.0F);
         FishingRodPose.Point east = FishingRodPose.tip(10.0, 64.0, 20.0, -90.0F);

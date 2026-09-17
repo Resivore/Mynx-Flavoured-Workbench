@@ -14,6 +14,7 @@ import net.minecraft.world.entity.npc.villager.Villager;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import dev.resivore.villagerwork.FishingFloat;
+import dev.resivore.villagerwork.FishingRodPose;
 import dev.resivore.villagerwork.ShearingToolMarker;
 import net.minecraft.world.item.Items;
 
@@ -54,7 +55,7 @@ public final class VwrFishingRodLayer extends RenderLayer<VillagerRenderState, V
 
     private void submitFishingStick(Villager villager, PoseStack poseStack, SubmitNodeCollector collector, int light) {
         poseStack.pushPose();
-        poseStack.translate(0.0F, -0.10F, -0.62F);
+        poseStack.translate(0.0F, FishingRodPose.STICK_VERTICAL_TRANSLATION, -0.62F);
         poseStack.mulPose(Axis.XP.rotationDegrees(-58.0F));
         poseStack.mulPose(Axis.YP.rotationDegrees(12.0F));
         poseStack.mulPose(Axis.ZP.rotationDegrees(-12.0F));

@@ -6,6 +6,12 @@ package dev.resivore.villagerwork;
  * villager model while the rod and line still agree on a stable physical direction.
  */
 public final class FishingRodPose {
+    /**
+     * `translateToArms` uses a model-local vertical axis whose effective screen direction was
+     * established by C13 runtime evidence: changing +0.08 to -0.10 visibly raised the stick.
+     * Move +0.36 from C13's value to lower it substantially without changing its rotation.
+     */
+    public static final float STICK_VERTICAL_TRANSLATION = 0.26F;
     // Keep this in step with VwrFishingRodLayer's further-forward grip transform.  The visible
     // line should originate at the stick's real outer end, not at the villager's arm plane.
     private static final double TIP_FORWARD = 1.45;
