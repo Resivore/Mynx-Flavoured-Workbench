@@ -30,6 +30,6 @@
   "custom": {
     "workbench:classification": "GENERATED / STATICALLY VALIDATED / RUNTIME UNTESTED",
     "workbench:deployment": "NOT DEPLOYED",
-    "workbench:runtime-slot-owner": "Slab Decorations — Canary 8"
+    "workbench:runtime-slot-owner": "Slab Decorations — Canary 9"
   }
 }

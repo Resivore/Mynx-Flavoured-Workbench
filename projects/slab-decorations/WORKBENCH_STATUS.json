@@ -14,11 +14,13 @@
   "definition": {
     "lifecycle": "ACTIVE",
     "goals": [
-      "Give vertically supported vegetation canonical-parent vanilla placement, survival, lifecycle, and fluid-context parity on exact native horizontal Nibaru slabs, with one structurally resolved root or anchor and one automatic directional half-block representation offset for the complete connected plant.",
+      "Give vertically supported vegetation and approved horizontal-surface decorations canonical-parent vanilla placement, survival, lifecycle, and fluid-context parity on exact native horizontal Nibaru slabs, with one structurally resolved root or anchor and one automatic directional half-block representation offset.",
       "Delegate bonemeal on exact dry bottom native Nibaru slabs for canonical Grass Block, Moss Block, and Pale Moss Block through the corresponding Minecraft 26.2 substrate implementation without broadening material or geometry ownership."
     ],
     "scope": [
-      "Default to canonical-parent vanilla permission for structurally vertical vegetation rather than a species allowlist: ordinary vegetation, double plants and crops, small fungi and azalea, floor carpets and coral, generic upward and downward GrowingPlantBlock columns, and compatible modded implementations inherit support when their own projected vanilla behavior accepts the canonical parent.",
+      "Default to canonical-parent vanilla permission for structurally vertical vegetation rather than a species allowlist: ordinary vegetation, saplings and planted propagules, double plants and crops, small fungi and azalea, floor carpets and coral, generic upward and downward GrowingPlantBlock columns, and compatible modded implementations inherit support when their own projected vanilla behavior accepts the canonical parent.",
+      "Use one surface resolver for vanilla/compatible floor and ceiling lanterns, standing signs, ceiling hanging signs, and non-redstone floor torches; block model, shape, targeting and interaction geometry consume the same directional result as survival.",
+      "Run vanilla tree, giant-mushroom, huge-fungus, and azalea structure generation through a narrow canonical-parent transaction: restore exact slab support on failure; after success only eligible bottom supports directly below generated ground-contact continuation blocks are consumed, while top/double supports are restored.",
       "Use structural root and lifecycle adapters for double plants, dripleaf, Sugar Cane, bamboo sapling/stalk transitions, cactus and Cactus Flower, pale hanging moss, Hanging Roots, Spore Blossom, and aquatic floor vegetation including kelp, seagrass, tall seagrass, sea pickles, and floor coral; every connected column resolves one physical root or anchor and shares one offset.",
       "Resolve nonlocal roots, anchors, supports, neighbors, and projected survival from the full owning level even when a bounded client render snapshot supplies the current block state, so long connected columns do not lose their attachment outside the snapshot bounds.",
       "Preserve the plant cell and support's real fluid states in the projected world view instead of applying a global waterlogged rejection, allowing canonical aquatic behavior only where the corresponding vanilla fluid and substrate context accepts it.",
@@ -31,12 +33,12 @@
         "projects/slab-decorations"
       ],
       "exclusions": [
-        "The explicit structural blacklist is limited to all saplings including propagules, pumpkin and melon stems plus attached stems, Chorus Plant and Chorus Flower, Lily Pad, regular Vine, multiface attachments including Glow Lichen, Cocoa, and side- or wall-mounted aquatic/coral attachments; these receive no horizontal-slab attachment or offset.",
-        "Sapling placement and tree generation remain deferred. Small mushrooms, crimson/warped fungi, azalea, and flowering azalea retain ordinary projected placement and survival, but giant-mushroom, huge-fungus, and azalea-tree bonemeal transformations are deferred when the plant is lowered over a bottom slab because the generated structure cannot preserve equivalent half-height geometry.",
-        "Vertical slabs, CNM Steps, layers, stairs, walls, columns, vanilla or foreign slabs, rails, redstone components, pressure plates, torches, lanterns, chains, pointed dripstone, machinery, and arbitrary non-vegetation decorations remain outside horizontal-slab projection ownership.",
+        "The explicit structural blacklist is limited to pumpkin and melon stems plus attached stems, Chorus Plant and Chorus Flower, Lily Pad, regular Vine, multiface attachments including Glow Lichen, Cocoa, wall signs, wall hanging signs, wall torches, redstone torches, chains, and side- or wall-mounted aquatic/coral attachments; these receive no horizontal-slab attachment or offset.",
+        "Generation never shifts persisted tree, mushroom, fungus, or azalea feature coordinates. It consumes only a matching bottom-slab ground-contact continuation after a successful ordinary vanilla feature; top/double slab supports are preserved.",
+        "Vertical slabs, CNM Steps, layers, stairs, walls, columns, vanilla or foreign slabs, rails, redstone components, pressure plates, chains, pointed dripstone, machinery, and arbitrary non-vegetation decorations remain outside horizontal-slab projection ownership.",
         "The read-only projection supports ordinary BlockGetter and LevelReader placement/survival contracts. Raw ChunkAccess inspection is delegated and arbitrary custom placement systems that bypass those world-view accessors are not claimed compatible.",
         "Unified Block Geometry Extensions retains canonical material/native-slab ownership; this project adds no duplicate plant blocks, persisted offset property, registry-name parser, competing material table, standalone Nibaru dependency, or hard Mynx × Regions Unexplored dependency.",
-        "No Test Slot, accepted stack, Minecraft profile, deployment, gameplay runtime result, or promotion is changed by Canary 8 controlled validation; the protected gameplay instance remains off-limits."
+        "No Test Slot, accepted stack, Minecraft profile, deployment, gameplay runtime result, or promotion is changed by Canary 9 controlled validation; the protected gameplay instance remains off-limits."
       ]
     },
     "dependencies": [
@@ -109,22 +111,22 @@
     ]
   },
   "state": {
-    "milestone": "C8 is the systemic canonical-parent vegetation successor to C7. The corrected C7 predecessor evidence is a bounded-render-view failure to resolve the shared root of long connected columns, together with incomplete family eligibility for Sugar Cane, bamboo, and kelp; it is not a berry-specific cave-vine failure. C8 resolves nonlocal attachments from the owning level, defaults eligible vertical vegetation to its projected vanilla canonical-parent behavior, preserves real fluid context, and guarantees every accepted attachment the exact directional offset. Java 25 controlled validation passed 5/5 JUnit tests and 40/40 headless server GameTests, but those tests did not execute client rendering or real save/reload. C8 is ACTIVE, NOT_DEPLOYED, RUNTIME_UNTESTED, and unaccepted.",
+    "milestone": "C9 succeeds exact C8. The user reports aggregate positive actual-gameplay observation for exact C8, with no individual matrix-row PASS claims inferred and no acceptance directed. C9 adds transactional canonical-parent structure growth and shared surface attachments for lanterns, signs, and non-redstone floor torches. Java 25 controlled validation passed 5/5 JUnit tests and 41/41 headless server GameTests, which did not execute client sign rendering or real save/reload. C9 is ACTIVE, NOT_DEPLOYED, RUNTIME_UNTESTED, and unaccepted.",
     "releases": {
       "current": {
-        "version": "0.1.0-canary8",
-        "embedded_version": "0.1.0-canary8",
+        "version": "0.1.0-canary9",
+        "embedded_version": "0.1.0-canary9",
         "artifact": {
-          "filename": "slab-decorations-0.1.0-canary8.jar",
-          "sha256": "d329312b15aa3b42e9b62fec853df54be396051c6ea63895a19cd27a2871b4b4"
+          "filename": "slab-decorations-0.1.0-canary9.jar",
+          "sha256": "52bad1dae4e19f2c224fcc2d361ad30159fe4150308dce1f4547fd6f5c97c93c"
         },
-        "built_at": "2026-09-17T03:32:39.7590580Z",
-        "source_commit": "18dd227287c1a9e0fc95501fac200ef0ff869ed9",
+        "built_at": "2026-09-17T05:23:21.4167545Z",
+        "source_commit": "d01aefd4e0d848973ddc4331c546191ac2150d40",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
         },
-        "summary": "Generalizes canonical-parent vegetation attachment so accepted vertical families share exact directional translation, nonlocal root resolution, and vanilla fluid context."
+        "summary": "Adds transactional vanilla structure growth and shared slab attachments for lanterns, signs, and floor torches without persisted offsets."
       },
       "accepted": null,
       "rollback": null,
@@ -138,10 +140,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 9,
-    "activity_at": "2026-09-17T03:32:39.7590580Z",
-    "updated_at": "2026-09-17T03:32:39.7590580Z",
-    "last_codex_at": "2026-09-17T03:32:39.7590580Z",
-    "source_commit": "18dd227287c1a9e0fc95501fac200ef0ff869ed9"
+    "revision": 10,
+    "activity_at": "2026-09-17T05:23:21.4167545Z",
+    "updated_at": "2026-09-17T05:23:21.4167545Z",
+    "last_codex_at": "2026-09-17T05:23:21.4167545Z",
+    "source_commit": "d01aefd4e0d848973ddc4331c546191ac2150d40"
   }
 }
