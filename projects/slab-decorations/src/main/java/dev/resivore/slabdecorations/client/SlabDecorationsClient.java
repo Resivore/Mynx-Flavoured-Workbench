@@ -9,7 +9,10 @@ public final class SlabDecorationsClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         ModelLoadingPlugin.register(pluginContext ->
-                pluginContext.modifyBlockModelAfterBake().register(ModelModifier.WRAP_PHASE, (model, bakeContext) ->
+                // Cave-vine berries select their own lit blockstate model.  Register last so any
+                // later wrapper that specializes that luminous variant is itself wrapped and both
+                // variants retain the identical world-relative surface translation.
+                pluginContext.modifyBlockModelAfterBake().register(ModelModifier.WRAP_LAST_PHASE, (model, bakeContext) ->
                         PlantFamilyEligibility.isEligible(bakeContext.state())
                                 ? new SurfaceOffsetModel(model)
                                 : model));

@@ -121,10 +121,16 @@ final class CanonicalProjectionArchitectureTest {
         String model = classFile(Class.forName(
                 "dev.resivore.slabdecorations.client.SurfaceOffsetModel", false,
                 CanonicalProjectionArchitectureTest.class.getClassLoader()));
+        String client = classFile(Class.forName(
+                "dev.resivore.slabdecorations.client.SlabDecorationsClient", false,
+                CanonicalProjectionArchitectureTest.class.getClassLoader()));
         assertTrue(model.contains("RenderSectionRegionAccessor")
                         && model.contains("SodiumLevelSliceAccessor")
                         && model.contains("visibleOffset"),
                 "model translation must resolve both terrain snapshot families through the shared offset");
+        assertTrue(client.contains("WRAP_LAST_PHASE"),
+                "state-selected model variants, including cave-vine berry models, must be wrapped after"
+                        + " any specialized renderer wrapper is installed");
     }
 
     private static String classFile(Class<?> type) throws IOException {

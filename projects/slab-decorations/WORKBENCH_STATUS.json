@@ -18,7 +18,7 @@
       "Delegate bonemeal on exact dry bottom native Nibaru slabs for canonical Grass Block, Moss Block, and Pale Moss Block through the corresponding Minecraft 26.2 substrate implementation without broadening material or geometry ownership."
     ],
     "scope": [
-      "Maintain C6 as the directional canonical-parent successor to C5: resolve exact BGE native or explicitly profile-owned effective horizontal slabs, substitute only the support below an upward root or above a ceiling anchor with the profile's canonical parent in a read-only LevelReader projection, and let ordinary Minecraft canSurvive make the permission decision.",
+      "Maintain C7 as the focused C6 runtime-fix successor: retain the existing directional canonical-parent projection and its established offsets, but register the final block-model wrapper after any state-specific model specialization so cave-vine berry variants inherit the same slab-relative translation as ordinary cave-vine variants.",
       "Classify behavior structurally through the retained upward-family contracts, concrete Minecraft 26.2 HangingRootsBlock and SporeBlossomBlock contracts, HangingMossBlock, and generic downward GrowingPlantBlock head/body pairs with Direction.DOWN; exact connected-column resolution lets compatible modded plants such as Mynx × Regions Unexplored dropleaf inherit the generic contract without a registry-ID exception or production dependency.",
       "Resolve every downward-growing head/body or hanging-moss segment to one actual top anchor, preserve the real neighboring column, project only the anchor's support above, and apply one coherent directional offset without shifted persisted positions or replacement blocks.",
       "Align accepted ceiling foliage under top slabs by exactly +0.5 Y and accepted upward foliage over bottom slabs by exactly -0.5 Y across models, outlines, targeting, cached/context collision, visual, interaction, entity-inside, breaking-overlay, and shape-derived particle geometry; bottom/double ceiling supports and top/double upward supports remain unshifted.",
@@ -108,22 +108,22 @@
     ]
   },
   "state": {
-    "milestone": "C6 is the focused C5 runtime-fix successor. Its optional Sodium LevelSlice snapshot bridge supplies the owning ClientLevel to the same read-only render offset projection used by vanilla RenderSectionRegion snapshots, while BGE C70 explicitly assigns minecraft:stone_slab to Stone's profile and C6 accepts that exact effective source only when no native BGE slab exists. C5 user-reported failures are preserved: RU Tassel/Clover appeared about 0.5 high, ceiling foliage about 0.5 low, and Cave Vines/RU Dropleaf placed under full Stone but not its slab; no broader RU claim is inferred. Java 25 controlled validation passed 5/5 JUnit tests and 30 server GameTests, but client rendering, RU fixture behavior, and real save/reload remain untested. C6 is ACTIVE, NOT_DEPLOYED, RUNTIME_UNTESTED, and unaccepted.",
+    "milestone": "C7 is the narrow C6 runtime-fix successor. Exact C6 runtime evidence is preserved: cave vines grew from Stone slabs and ordinary non-berry segments held the intended slab-relative position, but the berry-bearing visual introduced an apparent 0.5-block vertical gap/displacement. Vanilla assets select distinct berries=true lit model variants for cave-vine head and plant states; C7 keeps the same offset computation and registers its model wrapper in Fabric's final wrapping phase so a later state-specific luminous-model specialization cannot bypass it. Java 25 controlled validation passed 5/5 JUnit tests and 30 server GameTests; client rendering and real save/reload remain untested for C7. C7 is ACTIVE, NOT_DEPLOYED, RUNTIME_UNTESTED, and unaccepted.",
     "releases": {
       "current": {
-        "version": "0.1.0-canary6",
-        "embedded_version": "0.1.0-canary6",
+        "version": "0.1.0-canary7",
+        "embedded_version": "0.1.0-canary7",
         "artifact": {
-          "filename": "slab-decorations-0.1.0-canary6.jar",
-          "sha256": "289330c35e79469d147bc8243f6ff69cb2e2f673e65055e6297219bb24219863"
+          "filename": "slab-decorations-0.1.0-canary7.jar",
+          "sha256": "b4e6bd4891f85906009911a699c8359fc2b52e690dc9b7ef70e30a1ed88272ff"
         },
-        "built_at": "2026-09-16T06:51:25.1985131Z",
-        "source_commit": "b589e1e52825e94a41fec2932c14c5a4ba07d791",
+        "built_at": "2026-09-17T02:16:40.8260848Z",
+        "source_commit": "36ee39bed00507a1632155ac3813842aba49f145",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
         },
-        "summary": "Fixes client render offsets and native BGE slab compatibility for directional foliage on horizontal slabs."
+        "summary": "Keeps cave-vine slab-relative translation stable across ordinary and glow-berry model variants."
       },
       "accepted": null,
       "rollback": null,
@@ -137,10 +137,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 7,
-    "activity_at": "2026-09-16T15:08:47Z",
-    "updated_at": "2026-09-16T15:08:47Z",
-    "last_codex_at": "2026-09-16T15:08:47Z",
-    "source_commit": "b137377b6f54fd7e5cc6d621f815d09187a30912"
+    "revision": 8,
+    "activity_at": "2026-09-17T02:16:40.8260848Z",
+    "updated_at": "2026-09-17T02:16:40.8260848Z",
+    "last_codex_at": "2026-09-17T02:16:40.8260848Z",
+    "source_commit": "36ee39bed00507a1632155ac3813842aba49f145"
   }
 }
