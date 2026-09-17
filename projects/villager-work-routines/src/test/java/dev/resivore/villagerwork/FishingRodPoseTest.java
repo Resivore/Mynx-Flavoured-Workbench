@@ -7,13 +7,17 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class FishingRodPoseTest {
-    @Test void refinedStickTranslationKeepsC15sLowerPoseAndMovesFurtherInward() {
+    @Test void c17RestoresTheC15ArmLocalBaselineAndUsesAnUnrotatedBodySpaceInwardOffset() {
         assertEquals(0.35F, FishingRodPose.STICK_VERTICAL_TRANSLATION, 0.000001F);
         assertEquals(0.09F, FishingRodPose.STICK_VERTICAL_TRANSLATION - 0.26F, 0.000001F,
                 "C14's positive direction lowered the stick, so C15 must continue positively");
-        assertEquals(-0.46F, FishingRodPose.STICK_FORWARD_TRANSLATION, 0.000001F);
-        assertEquals(0.08F, FishingRodPose.STICK_FORWARD_TRANSLATION - -0.54F, 0.000001F,
-                "C16 pulls the visible stick one more small step inward without changing its lower pose");
+        assertEquals(-0.54F, FishingRodPose.STICK_ARM_LOCAL_DEPTH_TRANSLATION, 0.000001F,
+                "C16's failed -0.46 arm-local-Z experiment must not remain");
+        assertEquals(0.0F, FishingRodPose.C17_INWARD_BODY_OFFSET.x(), 0.000001F);
+        assertEquals(0.0F, FishingRodPose.C17_INWARD_BODY_OFFSET.y(), 0.000001F,
+                "the body-space inward adjustment must not intentionally alter rod height");
+        assertEquals(0.08F, FishingRodPose.C17_INWARD_BODY_OFFSET.z(), 0.000001F);
+        assertTrue(FishingRodPose.C17_INWARD_BODY_OFFSET.hasNoVerticalComponent());
     }
 
     @Test void rodTipFacesTheVillagerBodyDirectionAndStaysFinite() {
@@ -23,11 +27,13 @@ class FishingRodPoseTest {
         assertTrue(south.isFinite());
         assertTrue(east.isFinite());
         assertEquals(21.29, south.z(), 0.000001,
-                "the shared line origin moves further inward with the visible stick");
+                "the shared line origin follows the corrected physical body-space inward movement");
         assertEquals(11.29, east.x(), 0.000001,
-                "the shared line origin moves further inward with the visible stick");
+                "the shared line origin follows the corrected physical body-space inward movement");
+        assertEquals(0.08, FishingRodPose.C15_TIP_FORWARD - (south.z() - 20.0), 0.000001,
+                "the line tip must move inward by exactly the rod's body-space correction");
         assertEquals(65.51, south.y(), 0.000001,
-                "the shared line origin lowers with the visible stick");
+                "the shared line origin keeps C15's visible height");
     }
 
     @Test void invalidInputsNeverProduceAUsableLineOrigin() {

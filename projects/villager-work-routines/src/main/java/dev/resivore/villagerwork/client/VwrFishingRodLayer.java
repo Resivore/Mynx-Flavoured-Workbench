@@ -44,19 +44,29 @@ public final class VwrFishingRodLayer extends RenderLayer<VillagerRenderState, V
         boolean shearing = hasLiveShears(villager);
         if (!fishing && !shearing) return;
 
-        poseStack.pushPose();
-        // This follows the active villager model's arms, so resource-pack geometry remains in
-        // charge of its body. The forward/downward fishing pose agrees with FishingRodPose.tip.
-        getParentModel().translateToArms(state, poseStack);
-        if (fishing) submitFishingStick(villager, poseStack, collector, light);
-        if (shearing) submitShears(villager, poseStack, collector, light);
-        poseStack.popPose();
+        if (fishing) {
+            poseStack.pushPose();
+            // Apply C17's physical inward correction in the unrotated body basis.  Applying it
+            // after translateToArms would use the pitched arms basis and repeat C16's downward
+            // local-Z result instead of moving the rod toward the torso.
+            FishingRodPose.BodySpaceOffset inward = FishingRodPose.C17_INWARD_BODY_OFFSET;
+            poseStack.translate(inward.x(), inward.y(), inward.z());
+            getParentModel().translateToArms(state, poseStack);
+            submitFishingStick(villager, poseStack, collector, light);
+            poseStack.popPose();
+        }
+        if (shearing) {
+            poseStack.pushPose();
+            getParentModel().translateToArms(state, poseStack);
+            submitShears(villager, poseStack, collector, light);
+            poseStack.popPose();
+        }
     }
 
     private void submitFishingStick(Villager villager, PoseStack poseStack, SubmitNodeCollector collector, int light) {
         poseStack.pushPose();
         poseStack.translate(0.0F, FishingRodPose.STICK_VERTICAL_TRANSLATION,
-                FishingRodPose.STICK_FORWARD_TRANSLATION);
+                FishingRodPose.STICK_ARM_LOCAL_DEPTH_TRANSLATION);
         poseStack.mulPose(Axis.XP.rotationDegrees(-58.0F));
         poseStack.mulPose(Axis.YP.rotationDegrees(12.0F));
         poseStack.mulPose(Axis.ZP.rotationDegrees(-12.0F));

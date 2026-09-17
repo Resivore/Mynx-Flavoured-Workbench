@@ -13,11 +13,32 @@ public final class FishingRodPose {
      * deliberately narrow +0.09 refinement without changing its rotation.
      */
     public static final float STICK_VERTICAL_TRANSLATION = 0.35F;
-    /** Keep this in step with the render layer: a less-negative value pulls the stick inward. */
-    public static final float STICK_FORWARD_TRANSLATION = -0.46F;
-    // Keep this in step with VwrFishingRodLayer's lower, more-inward grip transform.  The visible
-    // line should originate at the stick's real outer end, not at the villager's arm plane.
-    private static final double TIP_FORWARD = 1.29;
+    /**
+     * C15's arm-local depth translation.  C16's -0.46 experiment is deliberately not retained:
+     * runtime evidence showed its +0.08 local-Z delta moved the rod down rather than inward.
+     */
+    public static final float STICK_ARM_LOCAL_DEPTH_TRANSLATION = -0.54F;
+
+    /**
+     * The small C17 physical correction, expressed before {@code VillagerModel.translateToArms}.
+     * In the unrotated villager model basis, positive Z is back toward the torso from the
+     * forward-held rod.  Keeping Y at zero prevents the arms' -0.75-radian pitch from turning
+     * this inward adjustment into the vertical movement seen in C16.
+     */
+    public static final BodySpaceOffset C17_INWARD_BODY_OFFSET = new BodySpaceOffset(0.0F, 0.0F, 0.08F);
+
+    /** A displacement in the unrotated villager body/model basis. */
+    public record BodySpaceOffset(float x, float y, float z) {
+        public boolean hasNoVerticalComponent() {
+            return y == 0.0F;
+        }
+    }
+
+    // The line origin starts from C15's verified approximation, then follows the same body-space
+    // inward movement as the rendered rod.  Positive model Z toward the torso reduces its
+    // outward body-yaw distance without changing height.
+    static final double C15_TIP_FORWARD = 1.37;
+    static final double TIP_FORWARD = C15_TIP_FORWARD - C17_INWARD_BODY_OFFSET.z();
     private static final double TIP_RIGHT = 0.10;
     private static final double TIP_HEIGHT = 1.51;
 
