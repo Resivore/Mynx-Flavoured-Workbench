@@ -3,6 +3,17 @@ __pycache__/
 .pytest_cache/
 .venv/
 /originals/
+# Public-safety boundaries: credentials, private inputs, and retained release
+# bytes belong only in local working state. Existing tracked history is not
+# affected by these rules.
+/.env
+/.env.*
+/secrets/
+/credentials/
+/private/
+/server-config/
+/deployment-snapshots/
+/projects/*/artifacts/
 **/test-builds/private/
 /projects/interchangeable-block-families/artifacts/interchangeable-block-families-0.1.0-canary5.jar
 /projects/interchangeable-block-families/artifacts/interchangeable-block-families-0.1.0-canary6.jar
