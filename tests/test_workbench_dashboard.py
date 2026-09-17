@@ -517,7 +517,12 @@ class WorkbenchDashboardTests(unittest.TestCase):
         self.assertGreaterEqual(html.count('viewBox="0 0 16 16"'), 9)
         self.assertIn('col.project { width: 42%; }', html)
         self.assertIn('col.server { width: 19%; }', html)
+        self.assertIn('col.jar { width: 18%; }', html)
+        self.assertIn('col.server { width: 20%; }', html)
         self.assertIn('thead th:not(:first-child) .sort-button { justify-content: center;', html)
+        self.assertIn('.date-value time { display: inline-grid; justify-items: center;', html)
+        self.assertIn('const formatted = formatLocalDateParts(project.jarMtimeMs);', html)
+        self.assertIn('time.append(datePart, timePart);', html)
         self.assertIn('>Version <span class="sort-indicator"', html)
         self.assertIn('.group-chevron { width: 10px; margin-right: 10px;', html)
 

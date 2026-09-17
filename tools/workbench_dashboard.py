@@ -985,6 +985,7 @@ HTML_TEMPLATE = r'''<!doctype html>
     .release-detail .release-summary-version { color: #d3ded7; font-weight: 650; }
     .version-value { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .date-value { color: #c3d0c8; font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .date-value .date-part::after { content: " "; }
     .muted { color: #687a71; }
 
     .group-row th {
@@ -1076,6 +1077,20 @@ HTML_TEMPLATE = r'''<!doctype html>
       .masthead-meta { margin-top: 10px; }
       .controls { padding: 13px 12px; }
       .results-bar { padding: 0 12px; }
+      /* Keep the final two columns distinct while retaining the compact mobile table. */
+      col.project { width: 39%; }
+      col.lifecycle { width: 13%; }
+      col.version { width: 10%; }
+      col.jar { width: 18%; }
+      col.server { width: 20%; }
+      thead th { padding-inline: 8px; }
+      tbody td { padding-inline: 10px; }
+      thead th:not(:first-child) .sort-button { gap: 3px; }
+      .sort-indicator { font-size: 0.75rem; }
+      .date-value time { display: inline-grid; justify-items: center; line-height: 1.2; }
+      .date-value .date-part,
+      .date-value .time-part { display: block; white-space: nowrap; }
+      .date-value .date-part::after { content: none; }
     }
     @media (prefers-reduced-motion: no-preference) {
       button, input, select, tbody td { transition: border-color 120ms ease, background-color 120ms ease, color 120ms ease; }
@@ -1196,10 +1211,15 @@ HTML_TEMPLATE = r'''<!doctype html>
       const liveRegion = document.getElementById("live-region");
 
       function formatLocalDate(milliseconds) {
+        const { datePart, timePart } = formatLocalDateParts(milliseconds);
+        return `${datePart} ${timePart}`;
+      }
+
+      function formatLocalDateParts(milliseconds) {
         const date = new Date(milliseconds);
         const datePart = date.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
         const timePart = date.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
-        return `${datePart} ${timePart}`;
+        return { datePart, timePart };
       }
 
       const generatedDate = new Date(data.generatedAt);
@@ -1319,9 +1339,16 @@ HTML_TEMPLATE = r'''<!doctype html>
           unavailable.title = project.jarNote;
           jarCell.appendChild(unavailable);
         } else {
-          const time = element("time", "", formatLocalDate(project.jarMtimeMs));
+          const formatted = formatLocalDateParts(project.jarMtimeMs);
+          const time = element("time");
           time.dateTime = project.jarMtimeIso;
           time.title = `${project.jarMtimeIso} · ${project.jarNote}`;
+          time.setAttribute("aria-label", `${formatted.datePart} ${formatted.timePart}`);
+          const datePart = element("span", "date-part", formatted.datePart);
+          const timePart = element("span", "time-part", formatted.timePart);
+          datePart.setAttribute("aria-hidden", "true");
+          timePart.setAttribute("aria-hidden", "true");
+          time.append(datePart, timePart);
           jarCell.appendChild(time);
         }
         row.appendChild(jarCell);
