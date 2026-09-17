@@ -24,7 +24,7 @@
       "Preserve accepted C4 storage reservations, exact ghost/zero/marker visuals, public API compatibility for QSN C9 and CCAR C12, component-exact ordinary-item reservations, generic empty portable-container templates, and server-owned specific portable-container identities without external tooltip integration."
     ],
     "scope": [
-      "Current 0.1.0-canary22 from implementation checkpoint 57a4d3a59bb5758df137ef871a4873a2759b4b8b preserves C19's host-centered geometry, Creative carried-cursor synchronization, independent header-decoration provider, and C21's press-time DEPOSIT/COLLECTION_SOURCE semantics plus server-authoritative projected fingerprint chain. Exact Mouse Tweaks 2.31 bytecode proves that its Fabric RMB press listener precedes the screen click, an empty initial slot with a carried stack arms RMB, its provider lookup/action runs before the wrapped Screen.mouseDragged call, and onMouseDrag always permits that screen call. C21 nevertheless treated configuration/cursor eligibility as proof that the provider had acted and suppressed CSR's later screen fallback; when the effective provider action was not delivered, that ownership handoff produced the observed silent no-op. C22 removes the inferred suppression and offers the existing server-authoritative deposit once after upstream processing; the shared virtual-cell identity latch makes the later offer a no-op when the provider already dispatched. Opt-in -Dcontainer_slot_reservations.debugMouseTweaks=true tracing covers the RMB press, provider selection/lookup/action, CSR transaction, payload, server validation/planning/mutation, and sync without logging by default. The release neither packages the API declaration nor gains a Mouse Tweaks runtime dependency; its absent/disabled-provider path retains normal CSR input.",
+      "Current 0.1.0-canary22 from implementation checkpoint c873d63c539eaa27e01914ff1037f850ef8f6c30 preserves C19's host-centered geometry, Creative carried-cursor synchronization, independent header-decoration provider, and C21's press-time DEPOSIT/COLLECTION_SOURCE semantics plus server-authoritative projected fingerprint chain. Exact Mouse Tweaks 2.31 bytecode proves that its Fabric RMB press listener precedes the screen click, an empty initial slot with a carried stack arms RMB, its provider lookup/action runs before the wrapped Screen.mouseDragged call, and onMouseDrag always permits that screen call. C21 nevertheless treated configuration/cursor eligibility as proof that the provider had acted and suppressed CSR's later screen fallback; this proven handoff defect could turn any missed provider selection, lookup, or action into a silent no-op, although the trace-free C21 evidence cannot identify which upstream substage was missed in gameplay. C22 removes the inferred suppression and offers the existing server-authoritative deposit once after upstream processing; the shared virtual-cell identity latch makes the later offer a no-op when the provider already dispatched. After a projected panel action, its two-phase native wrapper permits only a proven Mouse Tweaks place-one action, applies the observed relative cursor delta without replacing the projected host/fingerprint or copying a stale live cursor, suppresses further native RMB when the projection is exhausted, and keeps unsafe gestures owned but blocked until physical release so DEPOSIT cannot fall through into extraction. Opt-in -Dcontainer_slot_reservations.debugMouseTweaks=true tracing covers the RMB press, provider selection/lookup/action, CSR transaction, payload, server validation/planning/mutation, and returned authoritative sync without logging by default. The release neither packages the API declaration nor gains a Mouse Tweaks runtime dependency; its absent/disabled-provider path retains normal CSR input.",
       "While CSR owns Slot A and remains TESTING, a finalized current CSR testing successor normally replaces the preceding CSR candidate through one serialized Test Instance Manager Slot A transition; only a concrete manager preimage, dependency, or physical-safety failure may leave that successor retained but not deployed.",
       "Bind one exact count-one shulker host by screen, menu, menu ID, visible slot index, Slot instance, underlying container slot, explicit Creative player-inventory locator where applicable, and complete SHA-256 ItemStack fingerprint; never search for an equal stack.",
       "Render and hit-test one fixed 176x83 native panel with an unchanged 176x77 upper shulker region plus the same runtime texture's 176x6 bottom frame, 27 physical 18x18 cells, and bottom-left-at-host-center placement clamped only to the viewport. It retains C20's host-or-panel lifetime plus only one carried-cursor approach bridge when the panel first opens and the active Mouse Tweaks gesture lifetime, enabling ordinary-slot→panel deposit without remaining sticky merely because the cursor is still nonempty; release/cancel, stale binding, or the normal no-bridge path restores immediate lifetime. Without Mouse Tweaks or with its RMB tweak disabled, CSR right-button drag acts once per newly entered panel cell. With the exact optional provider enabled, Mouse Tweaks owns supported LMB/RMB/shift-drag gestures through transient virtual cells, including applicable ordinary-menu transitions, and CSR consumes only covered coordinates to prevent an independent native drag; Mouse Tweaks wheel transfer wins only when it reports consumption, otherwise CSR selection scrolling remains.",
@@ -133,15 +133,15 @@
         "embedded_version": "0.1.0-canary22",
         "artifact": {
           "filename": "container-slot-reservations-0.1.0-canary22.jar",
-          "sha256": "e63cde1a5aa03b7d25382271278a22fbb64dad6fef80d9f9566bc48a69c01cc7"
+          "sha256": "38a066399355b261b50177c212295618a0e649f9a74619b14c422857d74203f3"
         },
-        "built_at": "2026-09-17T03:31:52.504Z",
-        "source_commit": "57a4d3a59bb5758df137ef871a4873a2759b4b8b",
+        "built_at": "2026-09-17T04:15:03.163Z",
+        "source_commit": "c873d63c539eaa27e01914ff1037f850ef8f6c30",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
         },
-        "summary": "Repairs the Mouse Tweaks RMB-deposit ownership handoff with a de-duplicated post-provider fallback and gated end-to-end diagnostics."
+        "summary": "Repairs the Mouse Tweaks RMB-deposit handoff with a de-duplicated fallback, safe relative native-cursor projection, fail-closed mode ownership, and gated end-to-end diagnostics."
       },
       "accepted": {
         "version": "0.1.0-canary19",
@@ -180,9 +180,9 @@
   },
   "synchronization": {
     "revision": 33,
-    "activity_at": "2026-09-17T03:32:55Z",
-    "updated_at": "2026-09-17T03:32:55Z",
-    "last_codex_at": "2026-09-17T03:32:55Z",
-    "source_commit": "57a4d3a59bb5758df137ef871a4873a2759b4b8b"
+    "activity_at": "2026-09-17T04:16:07Z",
+    "updated_at": "2026-09-17T04:16:07Z",
+    "last_codex_at": "2026-09-17T04:16:07Z",
+    "source_commit": "c873d63c539eaa27e01914ff1037f850ef8f6c30"
   }
 }
