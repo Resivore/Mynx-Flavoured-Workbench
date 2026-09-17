@@ -751,7 +751,7 @@ HTML_TEMPLATE = r'''<!doctype html>
       --parked: #909a96;
       --current: #70bb89;
       --outdated: #e4b75c;
-      --not-deployed: #c97373;
+      --not-deployed: var(--parked);
       --radius: 13px;
       --shadow: 0 22px 70px rgba(0, 0, 0, 0.32);
     }
@@ -980,7 +980,7 @@ HTML_TEMPLATE = r'''<!doctype html>
     .project-toggle:hover { color: var(--accent); }
     .project-chevron { width: 0.76rem; height: 0.76rem; margin-right: 8px; color: var(--muted); transition: transform 120ms ease; }
     .project-toggle[aria-expanded="true"] .project-chevron { transform: rotate(90deg); }
-    .release-detail td { height: auto; padding: 0 14px 11px 37px; border-bottom: 1px solid rgba(149, 194, 168, 0.09); color: #b5c4bb; font-size: 0.81rem; line-height: 1.4; }
+    .release-detail td { height: auto; padding: 10px 50px; border-bottom: 1px solid rgba(149, 194, 168, 0.09); color: #b5c4bb; font-size: 0.69em; line-height: 1.4; }
     .release-detail .release-summary { display: block; max-width: 74rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .release-detail .release-summary-version { color: #d3ded7; font-weight: 650; }
     .version-value { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
