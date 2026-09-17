@@ -60,21 +60,21 @@
     ]
   },
   "state": {
-    "milestone": "C10 user-reported external diagnostic evidence binds to exact `0.1.0-canary10`, `villager-work-routines-0.1.0-canary10.jar`, SHA-256 `f311a96737a91f12872a64b8133f09b50ac4c24614a1dac427d142c281a58c65`, source `52eb2004d63ab0bafb0787d96ad4b89fca02a4e1`. The Fisherman looked better and the supplied log records 47 complete result/deposit cycles without retained output, but it does not establish the required visual checks or a PASS. The Shepherd completed nine shears but only eight outward crossings/deposits: its ninth `CROSS_EXIT` timed out, timeout restoration closed the gate without a confirmed outward crossing, two captured wool remained owned, and the villager later lost its loom claim. Because the log explicitly remained under tick sprint rather than the required 20 TPS, C10 is INCONCLUSIVE as an acceptance trial, while still exposing a concrete gate-boundary liveness defect. C11 replaces mismatched exact-block and coarse far-side predicates with one collision-aware NEAR/FAR/PASSAGE classifier, preserves exit cleanup across timeout, cancellation, save/load, and loom-memory loss. C12 further advances the crossed-arms Fisherman stick and its shared line tip, equips viable Shepherd targets during approach rather than only the close telegraph, and adds successful-only barrel interaction, profession-specific particles, and item-placement sounds. C12 user-reported external feedback identifies a stick that should sit lower, a line that should run farther outward and lower, and Shepherd shears that are not visible. C13 moves the Fishing stick down, advances/lowers its shared line endpoint, and uses a synchronized non-equipment marker to render Shepherd shears independently of client-side hand-item serialization. Exact C13 runtime feedback shows its documented 0.18 stick translation visibly moved the stick upward, the line remains far from the visible tip, end-rod particles are not visible on successful Shepherd deposits, and wool-place audio overlaps the barrel interaction. C14 reverses the renderer-local stick correction by 0.36 from C13 while preserving its line endpoint, and separates successful Shepherd transfer feedback into immediate barrel interaction followed six ticks later by forced END_ROD delivery and wool-place audio. Exact C14 runtime feedback establishes the visible line-to-stick relationship, rotations, line shape, cast, float, and presentation as good; the stick still needs a small additional lower/inward refinement, Fisherman barrel-open and cod-flop remain too close, and the Shepherd six-tick delayed feedback is good. C15 continues the proven positive renderer-local lowering direction by 0.09, moves the render and shared line tip modestly inward together, and gives only a positive Fisherman claimed-barrel transfer an independently cancellable six-tick delayed `COD_FLOP` at 0.90 volume. C16 keeps C15's lower pose, rotations, line shape, cast/float presentation, Fisherman six-tick delayed deposit audio, and frozen Shepherd feedback, while translating the visible stick and shared line-tip approximation a further small matched step inward toward the crossed arms. The historical C5 Shepherd PASS remains preserved.",
+    "milestone": "C10 user-reported external diagnostic evidence binds to exact `0.1.0-canary10`, `villager-work-routines-0.1.0-canary10.jar`, SHA-256 `f311a96737a91f12872a64b8133f09b50ac4c24614a1dac427d142c281a58c65`, source `52eb2004d63ab0bafb0787d96ad4b89fca02a4e1`. The Fisherman looked better and the supplied log records 47 complete result/deposit cycles without retained output, but it does not establish the required visual checks or a PASS. The Shepherd completed nine shears but only eight outward crossings/deposits: its ninth `CROSS_EXIT` timed out, timeout restoration closed the gate without a confirmed outward crossing, two captured wool remained owned, and the villager later lost its loom claim. Because the log explicitly remained under tick sprint rather than the required 20 TPS, C10 is INCONCLUSIVE as an acceptance trial, while still exposing a concrete gate-boundary liveness defect. C11 replaces mismatched exact-block and coarse far-side predicates with one collision-aware NEAR/FAR/PASSAGE classifier, preserves exit cleanup across timeout, cancellation, save/load, and loom-memory loss. C12 further advances the crossed-arms Fisherman stick and its shared line tip, equips viable Shepherd targets during approach rather than only the close telegraph, and adds successful-only barrel interaction, profession-specific particles, and item-placement sounds. C12 user-reported external feedback identifies a stick that should sit lower, a line that should run farther outward and lower, and Shepherd shears that are not visible. C13 moves the Fishing stick down, advances/lowers its shared line endpoint, and uses a synchronized non-equipment marker to render Shepherd shears independently of client-side hand-item serialization. Exact C13 runtime feedback shows its documented 0.18 stick translation visibly moved the stick upward, the line remains far from the visible tip, end-rod particles are not visible on successful Shepherd deposits, and wool-place audio overlaps the barrel interaction. C14 reverses the renderer-local stick correction by 0.36 from C13 while preserving its line endpoint, and separates successful Shepherd transfer feedback into immediate barrel interaction followed six ticks later by forced END_ROD delivery and wool-place audio. Exact C14 runtime feedback establishes the visible line-to-stick relationship, rotations, line shape, cast, float, and presentation as good; the stick still needs a small additional lower/inward refinement, Fisherman barrel-open and cod-flop remain too close, and the Shepherd six-tick delayed feedback is good. C15 continues the proven positive renderer-local lowering direction by 0.09, moves the render and shared line tip modestly inward together, and gives only a positive Fisherman claimed-barrel transfer an independently cancellable six-tick delayed `COD_FLOP` at 0.90 volume. C16 kept C15's lower pose, rotations, line shape, cast/float presentation, Fisherman six-tick delayed deposit audio, and frozen Shepherd feedback, but its `-0.54 -> -0.46` arm-local-Z experiment visibly moved the rod down instead of inward; that local-axis interpretation is rejected by exact runtime feedback. C17 restores the C15 arm-local pose and moves the rod roughly 0.08 blocks toward the torso in unrotated body/model space before the pitched arms transform, preserving height while deriving the shared line-tip movement from that same physical offset. The historical C5 Shepherd PASS remains preserved.",
     "releases": {
       "current": {
-        "version": "0.1.0-canary16",
+        "version": "0.1.0-canary17",
         "artifact": {
-          "filename": "villager-work-routines-0.1.0-canary16.jar",
-          "sha256": "347ae8c6abb35a16d9db1b58e05a24727f634e308592df0e6b773772c7e0e0cc"
+          "filename": "villager-work-routines-0.1.0-canary17.jar",
+          "sha256": "7d8eef1905358db54986ba36adfde6bda52413c7e9626845dced284d71f68634"
         },
-        "built_at": "2026-09-17T05:25:47.7162841Z",
-        "source_commit": "b40c7d44146e23a73b3fc0a02bb8f97dcfa7275f",
+        "built_at": "2026-09-17T05:43:12.9791357Z",
+        "source_commit": "49954ad7fede3810d059556f7a27977fd74c8243",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
         },
-        "summary": "Moves the connected Fisherman rod and line tip one more small step inward."
+        "summary": "Restores C15's arm pose, then moves the connected rod and line tip inward in body/model space."
       },
       "accepted": null,
       "rollback": null,
@@ -88,10 +88,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 16,
-    "activity_at": "2026-09-17T05:25:47Z",
-    "updated_at": "2026-09-17T05:25:47Z",
-    "last_codex_at": "2026-09-17T05:25:47Z",
-    "source_commit": "b40c7d44146e23a73b3fc0a02bb8f97dcfa7275f"
+    "revision": 17,
+    "activity_at": "2026-09-17T05:43:12Z",
+    "updated_at": "2026-09-17T05:43:12Z",
+    "last_codex_at": "2026-09-17T05:43:12Z",
+    "source_commit": "49954ad7fede3810d059556f7a27977fd74c8243"
   }
 }
