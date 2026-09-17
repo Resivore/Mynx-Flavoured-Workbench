@@ -1,6 +1,5 @@
 {
   "required": true,
-  "plugin": "dev.resivore.slotreservations.mixin.client.MouseTweaksMixinPlugin",
   "refmap": "container_slot_reservations.refmap.json",
   "package": "dev.resivore.slotreservations.mixin.client",
   "compatibilityLevel": "JAVA_25",
