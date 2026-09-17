@@ -99,7 +99,9 @@ final class ClientAndNetworkContractTest {
         assertTrue(actions.contains("player.hasInfiniteMaterials() && menu == player.inventoryMenu"));
         assertTrue(actions.contains("menu.broadcastFullState()"));
         assertTrue(actions.contains("menu.broadcastChanges()"));
-        assertTrue(actions.contains("synchronizeCommittedMenu(player, host.menu());\n        // The vanilla menu packet"),
+        int authoritativeSync = actions.indexOf("synchronizeCommittedMenu(player, host.menu())");
+        int metadataSync = actions.indexOf("ServerPlayNetworking.send(player, new ShulkerPanelSyncPayload");
+        assertTrue(authoritativeSync >= 0 && metadataSync > authoritativeSync,
                 "CSR metadata must follow the authoritative menu/carried synchronization");
         assertTrue(actions.contains("candidate.owner() == changed.owner()"),
                 "Shared compound-container viewers must synchronize by physical owner identity");

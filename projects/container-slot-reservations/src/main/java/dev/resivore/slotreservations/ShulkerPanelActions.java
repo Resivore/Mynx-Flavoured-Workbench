@@ -52,11 +52,13 @@ public final class ShulkerPanelActions {
             // An RMB deposit gesture stays a deposit even after its cursor has
             // drained. In that state an empty cursor is a no-op, never an extraction.
             if (carried.isEmpty()) return rejectContent(15, action, "deposit cursor is empty");
-            var admission = ContainerSlotReservationsApi.classify(
-                    host.stack(), action.internalSlot(), carried);
-            MouseTweaksTrace.event(15, "Reservation/native insertion result",
-                    "cell=" + action.internalSlot() + ", class=" + admission
-                            + ", carried=" + carried.getCount());
+            if (MouseTweaksTrace.enabled()) {
+                var admission = ContainerSlotReservationsApi.classify(
+                        host.stack(), action.internalSlot(), carried);
+                MouseTweaksTrace.event(15, "Reservation/native insertion result",
+                        "cell=" + action.internalSlot() + ", class=" + admission
+                                + ", carried=" + carried.getCount());
+            }
             ShulkerTransferPlanner.Insertion plan = ShulkerTransferPlanner.planExactInsertion(
                     host.stack(), carried, action.internalSlot(),
                     action.click() == ShulkerPanelContentActionPayload.Click.SECONDARY
@@ -71,8 +73,6 @@ public final class ShulkerPanelActions {
             if (selected < 0) selected = ShulkerContents.firstOccupied(plan.contents());
         }
         commit(player, host, changedHost, changedCarried, selected, action.host());
-        MouseTweaksTrace.event(17, "Mutation committed",
-                "cell=" + action.internalSlot() + ", carried=" + changedCarried.getCount());
         return true;
     }
 
@@ -193,6 +193,9 @@ public final class ShulkerPanelActions {
         host.menu().setCarried(changedCarried);
         ShulkerSelectionTracker.rebind(player, host, fingerprint, selected);
         synchronizeCommittedMenu(player, host.menu());
+        MouseTweaksTrace.event(17, "Mutation committed",
+                "menu=" + host.menu().containerId + ", fingerprint=" + fingerprint
+                        + ", carried=" + changedCarried.getCount());
         // The vanilla menu packet(s) carry both the changed host and its real cursor state.
         // Send CSR's fingerprint metadata afterwards so it cannot make a live same-slot host
         // look stale before the authoritative menu state reaches the client.
@@ -201,9 +204,6 @@ public final class ShulkerPanelActions {
                     host.menu().containerId, locator, fingerprint, selected));
         }
         syncSharedViewers(player, host.slot());
-        MouseTweaksTrace.event(18, "Authoritative host/cursor sync returned",
-                "menu=" + host.menu().containerId + ", fingerprint=" + fingerprint
-                        + ", carried=" + changedCarried.getCount());
     }
 
     /**

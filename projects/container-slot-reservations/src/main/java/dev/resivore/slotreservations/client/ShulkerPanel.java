@@ -31,8 +31,10 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.BundleItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.SimpleContainer;
+import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -84,13 +86,22 @@ public final class ShulkerPanel {
             close(true); return;
         }
 
+        // A cancellable Fabric release callback may be short-circuited by an earlier
+        // listener. The physical button state is the final release/cancel backstop.
+        if (MOUSE_TWEAKS_RMB_GESTURE.isActive()
+                && GLFW.glfwGetMouseButton(client.getWindow().handle(), GLFW.GLFW_MOUSE_BUTTON_RIGHT)
+                == GLFW.GLFW_RELEASE) {
+            endMouseTweaksRightGesture();
+        }
         geometry = ShulkerPanelGeometry.place(graphics.guiWidth(), graphics.guiHeight(), binding.hostBounds());
         positionMouseTweaksSlots(leftPos, topPos);
         // Keep one carried-cursor approach from the newly opened host to an ordinary
         // press origin, then retain only the active gesture. Release/cancel restores the
         // normal immediate host-or-panel lifetime even if items remain on the cursor.
+        boolean carrying = !binding.menu().getCarried().isEmpty();
+        if (!carrying) mouseTweaksPreGestureRetention = false;
         boolean mouseTweaksDepositBridge = MouseTweaksCompatibility.ownsRightDrag()
-                && (mouseTweaksPreGestureRetention || MOUSE_TWEAKS_RMB_GESTURE.isActive());
+                && MOUSE_TWEAKS_RMB_GESTURE.retainPanel(mouseTweaksPreGestureRetention, carrying);
         boolean retained = binding.hostBounds().contains(mouseX, mouseY)
                 || geometry.bounds().contains(mouseX, mouseY) || mouseTweaksDepositBridge;
         if (!STATE.retain(retained)) { close(false); return; }
@@ -329,7 +340,7 @@ public final class ShulkerPanel {
                             && MOUSE_TWEAKS_RMB_GESTURE.originRegion()
                             == MouseTweaksRmbGesture.OriginRegion.PANEL
                             && MOUSE_TWEAKS_RMB_GESTURE.originPanelCell() == slot) {
-                        dispatchMouseTweaksSecondary(slot);
+                        dispatchMouseTweaksSecondary(slot, "panel-press");
                         return true;
                     }
                 }
@@ -381,24 +392,20 @@ public final class ShulkerPanel {
      * carry F0, F1, F2 rather than C20's stale F0 burst, while the server still
      * independently resolves, plans, and commits every real mutation.
      */
-    private static void dispatchMouseTweaksSecondary(int slot) {
+    private static void dispatchMouseTweaksSecondary(int slot, String route) {
         if (!MOUSE_TWEAKS_RMB_GESTURE.enterPanelCell(slot) || binding == null
                 || mouseTweaksShadowFingerprint == null) return;
+        MouseTweaksTrace.event(8, "CSR virtual cell claimed",
+                "cell=" + slot + ", route=" + route);
 
         if (MOUSE_TWEAKS_RMB_GESTURE.takeShadowNeedsLiveCarried()) {
-            // Before the first ordinary-menu -> panel transition, use the latest
-            // client cursor snapshot. After a projected panel action, however, CSR has
-            // no authority to predict an arbitrary native menu click. Resume only if
-            // native synchronization has already converged on our projected cursor;
-            // otherwise fail closed rather than splice two incompatible transactions.
-            if (!MOUSE_TWEAKS_RMB_GESTURE.hasDispatchedPanelAction()) {
-                mouseTweaksShadowHost = binding.slot().getItem().copy();
-                mouseTweaksShadowFingerprint = binding.fingerprint();
-                mouseTweaksShadowCarried = binding.menu().getCarried().copy();
-            } else if (!ItemStack.matches(mouseTweaksShadowCarried, binding.menu().getCarried())) {
-                resetMouseTweaksRightGesture();
-                return;
-            }
+            // Before the first ordinary-menu -> panel transition, use the latest live
+            // host and cursor after Mouse Tweaks' native origin action. Once any panel
+            // payload has been sent, native clicks are integrated only as relative deltas
+            // by afterMouseTweaksNativeClick and this absolute sample is never armed again.
+            mouseTweaksShadowHost = binding.slot().getItem().copy();
+            mouseTweaksShadowFingerprint = binding.fingerprint();
+            mouseTweaksShadowCarried = binding.menu().getCarried().copy();
         }
 
         ItemStack changedHost;
@@ -453,6 +460,13 @@ public final class ShulkerPanel {
         mouseTweaksShadowFingerprint = null;
     }
 
+    private static void blockMouseTweaksRightGesture() {
+        MOUSE_TWEAKS_RMB_GESTURE.blockUntilRelease();
+        mouseTweaksShadowHost = ItemStack.EMPTY;
+        mouseTweaksShadowCarried = ItemStack.EMPTY;
+        mouseTweaksShadowFingerprint = null;
+    }
+
     public static boolean ownsHoveredCell() {
         return binding != null && geometry != null && hoveredCell >= 0;
     }
@@ -475,9 +489,7 @@ public final class ShulkerPanel {
             // Mouse Tweaks 2.31 runs before this screen method. If its provider already
             // delivered MT_clickSlot, the gesture's cell-identity latch makes this a no-op.
             // If it did not, this is the one server-authoritative fallback action C21 lacked.
-            MouseTweaksTrace.event(8, "Cursor entered CSR virtual cell",
-                    "cell=" + slot + ", post-upstream fallback offered");
-            dispatchMouseTweaksSecondary(slot);
+            dispatchMouseTweaksSecondary(slot, "post-upstream-screen-fallback");
         } else if (SECONDARY_DRAG.enter(slot)) {
             sendContent(slot, ShulkerPanelContentActionPayload.Click.SECONDARY);
         }
@@ -492,7 +504,7 @@ public final class ShulkerPanel {
         return STATE.releasePointer(binding != null && geometry != null && geometry.bounds().contains(mouseX, mouseY));
     }
 
-    /** Clears the optional handoff even when another input listener prevents the screen release body. */
+    /** Clears the optional handoff from the screen/observer release paths. */
     public static void endMouseTweaksRightGesture() {
         resetMouseTweaksRightGesture();
         mouseTweaksPreGestureRetention = false;
@@ -539,7 +551,14 @@ public final class ShulkerPanel {
     }
 
     public static void acceptSync(ShulkerPanelSyncPayload payload) {
-        if (binding != null && payload.menuId() == binding.menuId() && payload.host().equals(binding.locator())) {
+        boolean acceptedBinding = binding != null && payload.menuId() == binding.menuId()
+                && payload.host().equals(binding.locator());
+        MouseTweaksTrace.event(18, "Authoritative host/cursor sync received",
+                "menu=" + payload.menuId() + ", fingerprint=" + payload.hostFingerprint()
+                        + ", acceptedBinding=" + acceptedBinding
+                        + ", carried=" + (binding == null ? "unbound"
+                        : binding.menu().getCarried().getCount()));
+        if (acceptedBinding) {
             // The native host-slot update may have arrived before this optional CSR metadata.
             // Treat an already-current fingerprint as acknowledged rather than leaving it as a
             // stale expectation for the next legitimate same-slot menu synchronization.
@@ -618,7 +637,7 @@ public final class ShulkerPanel {
         }
         if (input != ContainerInput.PICKUP || (button != 0 && button != 1)) return true;
         if (button == 1 && MOUSE_TWEAKS_RMB_GESTURE.isActive()) {
-            dispatchMouseTweaksSecondary(slot);
+            dispatchMouseTweaksSecondary(slot, "mouse-tweaks-provider");
             return true;
         }
         sendContent(slot, button == 0 ? ShulkerPanelContentActionPayload.Click.PRIMARY
@@ -626,19 +645,105 @@ public final class ShulkerPanel {
         return true;
     }
 
-    /** Native Mouse Tweaks actions form a cursor-sync boundary for the projected panel chain. */
-    public static void mouseTweaksNativeClick(Slot target, int button, ContainerInput input) {
-        if (target != null && !(target instanceof VirtualSlot) && button == 1
-                && input == ContainerInput.PICKUP) {
-            // A native click on the bound host can alter the very fingerprint backing the
-            // projected CSR chain, so no cross-boundary projection remains safe.
-            if (binding != null && target == binding.slot()) {
-                resetMouseTweaksRightGesture();
-                return;
-            }
-            MOUSE_TWEAKS_RMB_GESTURE.leavePanelCell();
-            MOUSE_TWEAKS_RMB_GESTURE.markNativeBoundary();
+    /** Opaque two-phase plan used only around Mouse Tweaks' synchronous native invoker. */
+    public static final class NativeClickPlan {
+        private final boolean invoke;
+        private final boolean project;
+        private final AbstractContainerMenu menu;
+        private final ItemStack liveBefore;
+        private final ItemStack shadowBefore;
+
+        private NativeClickPlan(boolean invoke, boolean project, AbstractContainerMenu menu,
+                                ItemStack liveBefore, ItemStack shadowBefore) {
+            this.invoke = invoke;
+            this.project = project;
+            this.menu = menu;
+            this.liveBefore = liveBefore;
+            this.shadowBefore = shadowBefore;
         }
+
+        public boolean invoke() { return invoke; }
+    }
+
+    /**
+     * Validates a native Mouse Tweaks action against the latched mode before it reaches
+     * the menu. After the first panel payload, only a provable place-one action may run.
+     */
+    public static NativeClickPlan beforeMouseTweaksNativeClick(
+            Slot target, int button, ContainerInput input) {
+        NativeClickPlan passThrough = new NativeClickPlan(true, false, null, null, null);
+        if (target == null || target instanceof VirtualSlot || button != 1
+                || input != ContainerInput.PICKUP) return passThrough;
+        MOUSE_TWEAKS_RMB_GESTURE.leavePanelCell();
+        if (!MOUSE_TWEAKS_RMB_GESTURE.isActive() || binding == null) return passThrough;
+        if (MOUSE_TWEAKS_RMB_GESTURE.isBlockedUntilRelease()) {
+            MouseTweaksTrace.event(10, "Native RMB action suppressed",
+                    "gesture is blocked until release");
+            return new NativeClickPlan(false, false, null, null, null);
+        }
+
+        boolean boundHost = target == binding.slot()
+                || (target.container == binding.slot().container
+                && target.getContainerSlot() == binding.containerSlot());
+        if (boundHost) {
+            boolean pendingProjection = MOUSE_TWEAKS_RMB_GESTURE.hasDispatchedPanelAction();
+            blockMouseTweaksRightGesture();
+            MouseTweaksTrace.event(10, pendingProjection ? "Projected host click suppressed"
+                    : "Native host click blocked gesture until release", "slot=" + target.index);
+            return new NativeClickPlan(!pendingProjection, false, null, null, null);
+        }
+
+        // Before the first panel action, Mouse Tweaks' native origin remains authoritative
+        // client prediction. The first panel entry samples its resulting live cursor once.
+        if (!MOUSE_TWEAKS_RMB_GESTURE.hasDispatchedPanelAction()) {
+            MOUSE_TWEAKS_RMB_GESTURE.markUnprojectedNativeBoundary();
+            return passThrough;
+        }
+
+        ItemStack liveBefore = binding.menu().getCarried().copy();
+        if (mouseTweaksShadowCarried.isEmpty()) {
+            MouseTweaksTrace.event(10, "Native RMB action suppressed",
+                    "projected cursor exhausted; live=" + liveBefore.getCount());
+            return new NativeClickPlan(false, false, null, null, null);
+        }
+        if (!MouseTweaksRmbGesture.canProjectNativePlaceOne(
+                mouseTweaksShadowCarried, liveBefore, target)) {
+            int projectedBefore = mouseTweaksShadowCarried.getCount();
+            boolean identityUnsafe = liveBefore.isEmpty()
+                    || liveBefore.getItem() instanceof BundleItem
+                    || !ItemStack.isSameItemSameComponents(mouseTweaksShadowCarried, liveBefore)
+                    || liveBefore.getCount() < mouseTweaksShadowCarried.getCount();
+            if (identityUnsafe) blockMouseTweaksRightGesture();
+            MouseTweaksTrace.event(10, "Native RMB action suppressed",
+                    "unsafe projection; slot=" + target.index + ", live=" + liveBefore.getCount()
+                            + ", projected=" + projectedBefore + ", blocked=" + identityUnsafe);
+            return new NativeClickPlan(false, false, null, null, null);
+        }
+        MouseTweaksTrace.event(10, "Native RMB place-one allowed",
+                "slot=" + target.index + ", live=" + liveBefore.getCount()
+                        + ", projected=" + mouseTweaksShadowCarried.getCount());
+        return new NativeClickPlan(true, true, binding.menu(), liveBefore,
+                mouseTweaksShadowCarried.copy());
+    }
+
+    /** Applies a successful native click's relative cursor delta without absolute rebasing. */
+    public static void afterMouseTweaksNativeClick(NativeClickPlan plan, boolean completed) {
+        if (plan == null || !plan.project) return;
+        boolean current = completed && binding != null && binding.menu() == plan.menu
+                && MOUSE_TWEAKS_RMB_GESTURE.isActive()
+                && ItemStack.matches(mouseTweaksShadowCarried, plan.shadowBefore);
+        ItemStack liveAfter = current ? plan.menu.getCarried().copy() : ItemStack.EMPTY;
+        if (!current || !MouseTweaksRmbGesture.applyNativeCursorDelta(
+                mouseTweaksShadowCarried, plan.liveBefore, liveAfter)) {
+            MouseTweaksTrace.event(11, "Native cursor delta rejected",
+                    "completed=" + completed + ", current=" + current);
+            blockMouseTweaksRightGesture();
+            return;
+        }
+        MouseTweaksTrace.event(11, "Native cursor delta projected",
+                "live=" + plan.liveBefore.getCount() + "->" + liveAfter.getCount()
+                        + ", projected=" + plan.shadowBefore.getCount() + "->"
+                        + mouseTweaksShadowCarried.getCount());
     }
 
     /**

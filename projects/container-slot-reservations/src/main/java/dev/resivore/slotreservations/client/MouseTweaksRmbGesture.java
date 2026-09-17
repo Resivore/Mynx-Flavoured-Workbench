@@ -1,5 +1,9 @@
 package dev.resivore.slotreservations.client;
 
+import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.BundleItem;
+import net.minecraft.world.item.ItemStack;
+
 /**
  * Client-only latch for one Mouse Tweaks right-button gesture. It deliberately
  * records the press-time classification instead of deriving a new meaning from
@@ -24,10 +28,46 @@ final class MouseTweaksRmbGesture {
     private int lastPanelCell = -1;
     private boolean shadowNeedsLiveCarried;
     private boolean dispatchedPanelAction;
+    private boolean blockedUntilRelease;
 
     static Mode selectMode(boolean occupied, boolean carrying) {
         if (occupied) return Mode.COLLECTION_SOURCE;
         return carrying ? Mode.DEPOSIT : Mode.INACTIVE;
+    }
+
+    /** True only when a native RMB action can be modelled as a one-item placement. */
+    static boolean canProjectNativePlaceOne(ItemStack projectedCarried, ItemStack liveCarried, Slot target) {
+        if (projectedCarried.isEmpty() || liveCarried.isEmpty()
+                || liveCarried.getItem() instanceof BundleItem
+                || !ItemStack.isSameItemSameComponents(projectedCarried, liveCarried)
+                || liveCarried.getCount() < projectedCarried.getCount()
+                || target == null || target.isFake() || !target.isActive()
+                || !target.mayPlace(liveCarried)) return false;
+        ItemStack existing = target.getItem();
+        if (!existing.isEmpty() && !ItemStack.isSameItemSameComponents(existing, liveCarried)) {
+            return false;
+        }
+        int capacity = Math.min(target.getMaxStackSize(liveCarried), liveCarried.getMaxStackSize());
+        return existing.getCount() < capacity;
+    }
+
+    /**
+     * Applies only the relative cursor delta observed across the synchronous native click.
+     * The projected cursor is never replaced with the potentially stale live cursor.
+     */
+    static boolean applyNativeCursorDelta(ItemStack projectedCarried,
+                                          ItemStack liveBefore, ItemStack liveAfter) {
+        if (ItemStack.matches(liveBefore, liveAfter)) return true;
+        if (projectedCarried.isEmpty() || liveBefore.isEmpty()
+                || !ItemStack.isSameItemSameComponents(projectedCarried, liveBefore)) return false;
+        if (liveAfter.isEmpty()) {
+            if (liveBefore.getCount() != 1) return false;
+        } else if (!ItemStack.isSameItemSameComponents(liveBefore, liveAfter)
+                || liveBefore.getCount() - liveAfter.getCount() != 1) {
+            return false;
+        }
+        projectedCarried.shrink(1);
+        return true;
     }
 
     void begin(Mode selectedMode, OriginRegion selectedOrigin, int selectedPanelCell) {
@@ -42,6 +82,15 @@ final class MouseTweaksRmbGesture {
 
     boolean isActive() {
         return mode != Mode.INACTIVE;
+    }
+
+    boolean isBlockedUntilRelease() {
+        return blockedUntilRelease;
+    }
+
+    /** Retains only the carried approach bridge or a gesture which is actually active. */
+    boolean retainPanel(boolean preGestureRetention, boolean carrying) {
+        return isActive() || (preGestureRetention && carrying);
     }
 
     Mode mode() {
@@ -62,7 +111,7 @@ final class MouseTweaksRmbGesture {
      * intentionally suppressed; a later re-entry remains a new action.
      */
     boolean enterPanelCell(int cell) {
-        if (!isActive() || cell < 0 || cell == lastPanelCell) return false;
+        if (!isActive() || blockedUntilRelease || cell < 0 || cell == lastPanelCell) return false;
         lastPanelCell = cell;
         return true;
     }
@@ -71,8 +120,16 @@ final class MouseTweaksRmbGesture {
         if (isActive()) lastPanelCell = -1;
     }
 
-    void markNativeBoundary() {
-        if (isActive()) shadowNeedsLiveCarried = true;
+    void markUnprojectedNativeBoundary() {
+        if (isActive() && !blockedUntilRelease && !dispatchedPanelAction) shadowNeedsLiveCarried = true;
+    }
+
+    /** Retains gesture ownership while making every later held-RMB action a no-op. */
+    void blockUntilRelease() {
+        if (!isActive()) return;
+        blockedUntilRelease = true;
+        shadowNeedsLiveCarried = false;
+        lastPanelCell = -1;
     }
 
     boolean takeShadowNeedsLiveCarried() {
@@ -96,5 +153,6 @@ final class MouseTweaksRmbGesture {
         lastPanelCell = -1;
         shadowNeedsLiveCarried = false;
         dispatchedPanelAction = false;
+        blockedUntilRelease = false;
     }
 }
