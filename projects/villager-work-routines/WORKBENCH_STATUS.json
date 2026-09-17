@@ -60,21 +60,21 @@
     ]
   },
   "state": {
-    "milestone": "C10 user-reported external diagnostic evidence binds to exact `0.1.0-canary10`, `villager-work-routines-0.1.0-canary10.jar`, SHA-256 `f311a96737a91f12872a64b8133f09b50ac4c24614a1dac427d142c281a58c65`, source `52eb2004d63ab0bafb0787d96ad4b89fca02a4e1`. The Fisherman looked better and the supplied log records 47 complete result/deposit cycles without retained output, but it does not establish the required visual checks or a PASS. The Shepherd completed nine shears but only eight outward crossings/deposits: its ninth `CROSS_EXIT` timed out, timeout restoration closed the gate without a confirmed outward crossing, two captured wool remained owned, and the villager later lost its loom claim. Because the log explicitly remained under tick sprint rather than the required 20 TPS, C10 is INCONCLUSIVE as an acceptance trial, while still exposing a concrete gate-boundary liveness defect. C11 replaces mismatched exact-block and coarse far-side predicates with one collision-aware NEAR/FAR/PASSAGE classifier, preserves exit cleanup across timeout, cancellation, save/load, and loom-memory loss. C12 further advances the crossed-arms Fisherman stick and its shared line tip, equips viable Shepherd targets during approach rather than only the close telegraph, and adds successful-only barrel interaction, profession-specific particles, and item-placement sounds. C12 awaits user-managed normal-rate runtime validation. The historical C5 Shepherd PASS remains preserved.",
+    "milestone": "C10 user-reported external diagnostic evidence binds to exact `0.1.0-canary10`, `villager-work-routines-0.1.0-canary10.jar`, SHA-256 `f311a96737a91f12872a64b8133f09b50ac4c24614a1dac427d142c281a58c65`, source `52eb2004d63ab0bafb0787d96ad4b89fca02a4e1`. The Fisherman looked better and the supplied log records 47 complete result/deposit cycles without retained output, but it does not establish the required visual checks or a PASS. The Shepherd completed nine shears but only eight outward crossings/deposits: its ninth `CROSS_EXIT` timed out, timeout restoration closed the gate without a confirmed outward crossing, two captured wool remained owned, and the villager later lost its loom claim. Because the log explicitly remained under tick sprint rather than the required 20 TPS, C10 is INCONCLUSIVE as an acceptance trial, while still exposing a concrete gate-boundary liveness defect. C11 replaces mismatched exact-block and coarse far-side predicates with one collision-aware NEAR/FAR/PASSAGE classifier, preserves exit cleanup across timeout, cancellation, save/load, and loom-memory loss. C12 further advances the crossed-arms Fisherman stick and its shared line tip, equips viable Shepherd targets during approach rather than only the close telegraph, and adds successful-only barrel interaction, profession-specific particles, and item-placement sounds. C12 user-reported external feedback identifies a stick that should sit lower, a line that should run farther outward and lower, and Shepherd shears that are not visible. C13 moves the Fishing stick down, advances/lowers its shared line endpoint, and uses a synchronized non-equipment marker to render Shepherd shears independently of client-side hand-item serialization. C13 awaits user-managed normal-rate runtime validation. The historical C5 Shepherd PASS remains preserved.",
     "releases": {
       "current": {
-        "version": "0.1.0-canary12",
+        "version": "0.1.0-canary13",
         "artifact": {
-          "filename": "villager-work-routines-0.1.0-canary12.jar",
-          "sha256": "4c2fdf89bc258a55f6b5910066e31239e2e4341bf28cb353cd9661873f6610d2"
+          "filename": "villager-work-routines-0.1.0-canary13.jar",
+          "sha256": "b8948988f3b6a550be14aa8ee0468fcb00bedc70b8622cd473b0e145ad276c09"
         },
-        "built_at": "2026-09-16T06:44:45.1188009Z",
-        "source_commit": "adcc6a90e92f2cea27c32292d371106e5531ceb3",
+        "built_at": "2026-09-17T02:07:21.5925420Z",
+        "source_commit": "e4d26eaec24b4a10d53b77c983db3b2dc7a3809a",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
         },
-        "summary": "Improves claimed workplace activity while retaining focused shepherd and fisherman behavior."
+        "summary": "Stabilizes Shepherd shears and refines the Fisherman stick and line pose."
       },
       "accepted": null,
       "rollback": null,
@@ -88,10 +88,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 12,
-    "activity_at": "2026-09-16T06:45:30Z",
-    "updated_at": "2026-09-16T06:45:30Z",
-    "last_codex_at": "2026-09-16T06:45:30Z",
-    "source_commit": "adcc6a90e92f2cea27c32292d371106e5531ceb3"
+    "revision": 13,
+    "activity_at": "2026-09-17T02:07:21Z",
+    "updated_at": "2026-09-17T02:07:21Z",
+    "last_codex_at": "2026-09-17T02:07:21Z",
+    "source_commit": "e4d26eaec24b4a10d53b77c983db3b2dc7a3809a"
   }
 }
