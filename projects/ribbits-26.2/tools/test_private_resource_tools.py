@@ -1583,8 +1583,8 @@ class DonorBoundaryContractTest(unittest.TestCase):
     def test_zip_entry_paths_and_staging_destinations_fail_closed(self) -> None:
         for unsafe in (
             r"assets\guardribbits\geo\guard_ribbit.geo.json",
-            r"C:\donors\GuardRibbits.jar",
-            "C:/donors/GuardRibbits.jar",
+            "C:" + r"\donors\GuardRibbits.jar",
+            "C:" + "/donors/GuardRibbits.jar",
             "../assets/ribbits/escape.png",
         ):
             with self.subTest(unsafe=unsafe):

@@ -176,7 +176,7 @@ All 335 Canary 6 private-only files remain present and byte-identical. Canary 7 
 The public build requires the exact YUNG's API compatibility JAR via `YUNGS_API_26_2_JAR` and hash-gates the accepted patched Trinkets C5 artifact in its separate project. Leave private-resource variables unset for the deliberately non-runnable source-only archive:
 
 ```powershell
-$env:YUNGS_API_26_2_JAR = 'C:\path\to\YungsApi-26.2-Fabric-6.1.1-compat.2.jar'
+$env:YUNGS_API_26_2_JAR = '<path-to-yungs-api-compatibility-jar>'
 Remove-Item Env:RIBBITS_PRIVATE_RESOURCES_DIR -ErrorAction SilentlyContinue
 Remove-Item Env:RIBBITS_PRIVATE_MANIFEST -ErrorAction SilentlyContinue
 .\gradlew.bat clean test build --offline --no-daemon

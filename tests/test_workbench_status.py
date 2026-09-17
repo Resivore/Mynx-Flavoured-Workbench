@@ -4,7 +4,14 @@ import copy
 import unittest
 from pathlib import Path
 
-from tools.workbench import _release_identity, load_json, validate_repository, validate_status, validate_status_transition
+from tools.workbench import (
+    _release_identity,
+    load_json,
+    validate_public_text,
+    validate_repository,
+    validate_status,
+    validate_status_transition,
+)
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -100,6 +107,27 @@ class WorkbenchStatusTests(unittest.TestCase):
         enriched["built_at"] = "2026-09-16T05:10:00Z"
         enriched["summary"] = "Updated presentation only."
         self.assertEqual(_release_identity(release), _release_identity(enriched))
+
+    def test_public_control_text_rejects_local_paths_without_rejecting_urls_or_relative_paths(self) -> None:
+        for value in (
+            r"C:\Users\alice\AppData\Roaming\profile",
+            r"D:/worktrees/project/build/libs/mod.jar",
+            "/home/alice/worktrees/project",
+            "/Users/alice/worktrees/project",
+            r"Use \Users\alice\AppData\Local\Temp",
+        ):
+            with self.subTest(value=value):
+                with self.assertRaisesRegex(ValueError, "absolute/local filesystem path"):
+                    validate_public_text(value, "fixture")
+
+        for value in (
+            "https://example.invalid/Users/alice",
+            "projects/example/artifacts/example.jar",
+            "minecraft:oak_planks",
+            "net.fabricmc:fabric-loader:0.16.0",
+        ):
+            with self.subTest(value=value):
+                validate_public_text(value, "fixture")
 
 
 if __name__ == "__main__":

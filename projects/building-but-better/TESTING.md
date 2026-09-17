@@ -11,8 +11,8 @@ C6 keeps the Y-only rope mechanic and normal ChainBlock behavior. For an unhandl
 From this project directory, Temurin Java `25.0.4.1+1`, Gradle `9.5.1`, and Fabric Loom `1.17.20` completed:
 
 ```powershell
-$env:JAVA_HOME = 'C:\Users\resiv\.gradle\jdks\eclipse_adoptium-25-amd64-windows.2'
-.\gradlew.bat clean check build verifyProductionMixinContract productionLivingEntityMixinTest --console=plain "-PbbbOriginalJar=C:\Users\resiv\OneDrive\Documents\Minecraft 26.2 Workbench\originals\mods\bbb-fabric-2.0pre4.jar"
+$env:JAVA_HOME = '<temurin-java-25-home>'
+.\gradlew.bat clean check build verifyProductionMixinContract productionLivingEntityMixinTest --console=plain "-PbbbOriginalJar=originals/mods/bbb-fabric-2.0pre4.jar"
 ```
 
 The C6 run was `BUILD SUCCESSFUL` with 27 focused JUnit tests passing. It validated the exact pristine input (`bbb-fabric-2.0pre4.jar`, 1,701,505 bytes, SHA-256 `1e7ae114aaec53475133e11c607fc65dce493bba5897eaf0044d53959b508fc0`), 171 blocks, 172 items, 1,132 models, 248 texture/sidecar files (244 PNGs; 112 transparent), 224 recipes, 140 advancements, 171 loot tables, and 44 tags. The new rope regressions verify the resolved default `TRY_WITH_EMPTY_HAND` contract, BBB's superclass fallback, bounded bottom retraction/Survival/Creative/water/offhand/sneaking/horizontal contracts, successful Hay Bale sound scaling, and failure-before-sound ordering. The packaged official-namespace JAR was inspected and the Fabric Knot production harness successfully transformed `LivingEntity` with `LivingEntityRopeClimbMixin`. This is static/build validation, not runtime validation.

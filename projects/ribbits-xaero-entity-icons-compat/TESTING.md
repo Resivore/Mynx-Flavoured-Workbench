@@ -73,8 +73,8 @@ currently installed files.
 
 ## Profile boundaries
 
-- Dedicated managed test target: `C:\Users\resiv\AppData\Roaming\ModrinthApp\profiles\Matcha Flavoured 26.2 Workbench`. Deployment requires separate serialized manager ownership.
-- External/manual evidence only: `C:\Users\resiv\AppData\Roaming\ModrinthApp\profiles\Matcha 26.2 Player Instance`. Read-only logs, archived logs, crash reports, config and installed-mod metadata/hash inspection are authorized. It may be in active use. Never modify files, deploy, launch/stop/restart/control the game or launcher, acquire exclusive locks, or enroll it in the manager. Capture only necessary evidence outside the profile with source/time and live/stability labels; skip or retry locked/changing files without interrupting gameplay. Never commit/publish raw private evidence.
+- Dedicated managed test target: the local Matcha Flavoured 26.2 Workbench profile. Deployment requires separate serialized manager ownership.
+- External/manual evidence only: the local Matcha 26.2 Player Instance profile. Read-only logs, archived logs, crash reports, config and installed-mod metadata/hash inspection are authorized. It may be in active use. Never modify files, deploy, launch/stop/restart/control the game or launcher, acquire exclusive locks, or enroll it in the manager. Capture only necessary evidence outside the profile with source/time and live/stability labels; skip or retry locked/changing files without interrupting gameplay. Never commit/publish raw private evidence.
 - Protected `Matcha Flavoured 26.1.2` gameplay instance: permanently off-limits, including reads.
 
 ## Future combined runtime procedure

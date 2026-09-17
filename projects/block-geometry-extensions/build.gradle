@@ -47,7 +47,10 @@ tasks.register('generateNibaruBaseResources', Exec) {
     inputs.dir layout.projectDirectory.dir('src/main/resources')
     outputs.dir generatedNibaruResources
     doFirst {
-        def systemRoot = System.getenv('SystemRoot') ?: 'C:\\Windows'
+        def systemRoot = System.getenv('SystemRoot') ?: System.getenv('WINDIR')
+        if (!systemRoot) {
+            throw new GradleException('Windows system-root environment variable is required to run the resource generator.')
+        }
         commandLine new File(systemRoot, 'System32/WindowsPowerShell/v1.0/powershell.exe'),
                 '-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', generator.asFile,
                 '-PristineJar', pristineNibaruJar.asFile,

@@ -216,7 +216,7 @@ $allItemModels | Sort-Object BaseName -Unique | ForEach-Object {
     if ($null -ne $itemTint) {
         $definition.model.tints = @($itemTint)
     }
-    # `Set-Content` can lose this OneDrive worktree's just-created directory between
+    # `Set-Content` can lose this synchronized worktree's just-created directory between
     # provider entries. Use the same long-path .NET writer as the archive staging path
     # and re-establish the narrowly scoped parent immediately before every definition.
     [System.IO.Directory]::CreateDirectory("\\?\$itemDefinitionRoot") | Out-Null

@@ -49,6 +49,11 @@ WINDOWS_RESERVED_RE = re.compile(r"^(?:con|prn|aux|nul|com[1-9]|lpt[1-9])(?:\.|$
 LOG_HEADING_RE = re.compile(r"^## (?P<timestamp>\S+) — (?P<summary>\S(?:.*\S)?)$", re.MULTILINE)
 LOG_BULLET_RE = re.compile(r"^- (?P<label>[^:\n]+): (?P<value>\S(?:.*\S)?)$", re.MULTILINE)
 LOG_FIELDS = {"Revision", "Source checkpoint", "Changes", "Build/static", "Runtime", "Artifact", "Result", "Next state"}
+LOCAL_PATH_LEAK_RE = re.compile(
+    r"(?<![A-Za-z0-9])(?:[A-Za-z]:[\\/]|\\Users\\[^\\/\s<>]+|/(?:home|Users)/[^/\s<>]+(?:/|$))",
+    re.IGNORECASE,
+)
+PUBLIC_TEXT_ROOT_FILES = ("AGENTS.md", "README.md", "MIGRATION_FREEZE.md", "WORKBENCH_SERVER_STATE.json")
 
 
 class ValidationError(ValueError):
@@ -57,6 +62,14 @@ class ValidationError(ValueError):
 
 def _fail(path: str, message: str) -> None:
     raise ValidationError(f"{path}: {message}")
+
+
+def validate_public_text(text: str, path: str) -> None:
+    """Reject machine-specific absolute paths in canonical public-facing text."""
+
+    match = LOCAL_PATH_LEAK_RE.search(text)
+    if match:
+        _fail(path, "contains a machine-specific absolute/local filesystem path")
 
 
 def _reject_duplicate_keys(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
@@ -590,8 +603,10 @@ def load_repository_statuses(root: Path) -> dict[str, tuple[Path, dict[str, Any]
             path = directory / control
             if not path.is_file():
                 raise ValidationError(f"{directory}: missing required control file {control}")
-            if control != "WORKBENCH_STATUS.json" and not path.read_text(encoding="utf-8").strip():
+            text = path.read_text(encoding="utf-8")
+            if control != "WORKBENCH_STATUS.json" and not text.strip():
                 raise ValidationError(f"{path}: control file must not be empty")
+            validate_public_text(text, str(path))
         manifest_path = directory / "WORKBENCH_STATUS.json"
         manifest = load_json(manifest_path)
         validate_status(manifest, directory)
@@ -652,6 +667,9 @@ def validate_repository(root: Path) -> dict[str, tuple[Path, dict[str, Any]]]:
             raise ValidationError(f"schemas/{schema_name}: must declare JSON Schema Draft 2020-12")
         if schema.get("additionalProperties") is not False:
             raise ValidationError(f"schemas/{schema_name}: root must reject additional properties")
+    for relative in PUBLIC_TEXT_ROOT_FILES:
+        path = root / relative
+        validate_public_text(path.read_text(encoding="utf-8"), str(path))
     statuses = load_repository_statuses(root)
     return statuses
 
