@@ -21,7 +21,8 @@ final class MatchaCreativeSearchEntries {
             Collection<ItemStack> searchContents,
             Set<ItemStack> ownedEntries,
             Set<ItemStack> suppressedDefaultEntries,
-            Iterable<ItemStack> catalog
+            Iterable<ItemStack> catalog,
+            Iterable<ItemStack> canonicalDefaults
     ) {
         List<ItemStack> catalogEntries = new java.util.ArrayList<>();
         catalog.forEach(catalogEntries::add);
@@ -29,12 +30,11 @@ final class MatchaCreativeSearchEntries {
         searchContents.removeIf(ownedEntries::contains);
         ownedEntries.clear();
 
-        List<ItemStack> canonicalDefaults = MatchaCanonicalFoodReplacements.defaultsFor(catalogEntries);
         searchContents.removeIf(candidate -> {
-            if (!MatchaCanonicalFoodReplacements.isPlainDefaultReplacement(candidate, canonicalDefaults)) {
+            if (!isCanonicalDefault(candidate, canonicalDefaults)) {
                 return false;
             }
-            suppressedDefaultEntries.add(candidate);
+            rememberSuppressed(candidate, suppressedDefaultEntries);
             return true;
         });
 
@@ -57,13 +57,16 @@ final class MatchaCreativeSearchEntries {
      */
     static void suppressCanonicalDefaults(
             Collection<ItemStack> categorySearchEntries,
-            Iterable<ItemStack> catalog
+            Iterable<ItemStack> canonicalDefaults,
+            Set<ItemStack> suppressedDefaultEntries
     ) {
-        List<ItemStack> defaults = MatchaCanonicalFoodReplacements.defaultsFor(catalog);
-        if (!defaults.isEmpty()) {
-            categorySearchEntries.removeIf(candidate ->
-                    MatchaCanonicalFoodReplacements.isPlainDefaultReplacement(candidate, defaults));
-        }
+        categorySearchEntries.removeIf(candidate -> {
+            if (!isCanonicalDefault(candidate, canonicalDefaults)) {
+                return false;
+            }
+            rememberSuppressed(candidate, suppressedDefaultEntries);
+            return true;
+        });
     }
 
     private static void restoreSuppressed(
@@ -78,6 +81,25 @@ final class MatchaCreativeSearchEntries {
             }
         }
         suppressedDefaultEntries.clear();
+    }
+
+    private static void rememberSuppressed(
+            ItemStack candidate,
+            Set<ItemStack> suppressedDefaultEntries
+    ) {
+        boolean alreadyRemembered = suppressedDefaultEntries.stream().anyMatch(existing ->
+                ItemStack.isSameItemSameComponents(existing, candidate));
+        if (!alreadyRemembered) {
+            suppressedDefaultEntries.add(candidate);
+        }
+    }
+
+    private static boolean isCanonicalDefault(ItemStack candidate, Iterable<ItemStack> canonicalDefaults) {
+        if (candidate == null || candidate.isEmpty()) {
+            return false;
+        }
+        return java.util.stream.StreamSupport.stream(canonicalDefaults.spliterator(), false)
+                .anyMatch(defaultStack -> ItemStack.isSameItemSameComponents(candidate, defaultStack));
     }
 
     static void rememberOwned(ItemStack contribution, Set<ItemStack> ownedEntries) {

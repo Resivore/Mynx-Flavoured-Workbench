@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import dev.resivore.matchajei.network.MatchaJeiDataPayload;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.LinkedHashMap;
@@ -82,6 +83,27 @@ class MatchaExactCatalogTest {
         assertTrue(recipe.contains("\"minecraft:item_name\""));
         assertTrue(recipe.contains("\"minecraft:lore\""));
         assertTrue(recipe.contains("\"minecraft:item_model\": \"minecraft:blessing_demeter\""));
+    }
+
+    @Test
+    void synchronizedCatalogAndCanonicalDefaultsRemainExactAndCountNormalized() {
+        ItemStack catalogStack = namedBook("Canonical", "Health");
+        catalogStack.setCount(12);
+        ItemStack defaultStack = new ItemStack(Items.ENCHANTED_BOOK);
+        defaultStack.setCount(4);
+
+        MatchaJeiDataPayload payload = new MatchaJeiDataPayload(
+                "revision", List.of(), List.of(),
+                List.of(catalogStack, catalogStack.copy()),
+                List.of(defaultStack, defaultStack.copy())
+        );
+
+        assertEquals(1, payload.catalog().size());
+        assertEquals(1, payload.canonicalDefaults().size());
+        assertEquals(1, payload.catalog().getFirst().getCount());
+        assertEquals(1, payload.canonicalDefaults().getFirst().getCount());
+        assertTrue(ItemStack.isSameItemSameComponents(catalogStack, payload.catalog().getFirst()));
+        assertTrue(ItemStack.isSameItemSameComponents(defaultStack, payload.canonicalDefaults().getFirst()));
     }
 
     private static ItemStack namedBook(String name, String lore) {

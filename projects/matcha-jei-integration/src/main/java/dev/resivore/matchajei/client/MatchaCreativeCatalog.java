@@ -41,7 +41,10 @@ final class MatchaCreativeCatalog {
         // them, while leaving ordinary category display contents untouched.
         CreativeModeTabEvents.MODIFY_OUTPUT_ALL.register((tab, output) -> {
             MatchaCreativeSearchEntries.suppressCanonicalDefaults(
-                    output.getSearchTabStacks(), MatchaClientData.current().catalog());
+                    output.getSearchTabStacks(),
+                    MatchaClientData.current().canonicalDefaults(),
+                    SUPPRESSED_DEFAULT_SEARCH_ENTRIES
+            );
         });
         CreativeModeTabEvents.modifyOutputEvent(CreativeModeTabs.INGREDIENTS).register(output -> {
             // Search is derived from every ordinary tab's search-only entries.
@@ -50,10 +53,6 @@ final class MatchaCreativeCatalog {
             MatchaCreativeSearchEntries.retainActiveOwnership(
                     CreativeModeTabs.searchTab().getDisplayItems(),
                     OWNED_SEARCH_ENTRIES
-            );
-            MatchaCreativeSearchEntries.retainActiveOwnership(
-                    CreativeModeTabs.searchTab().getDisplayItems(),
-                    SUPPRESSED_DEFAULT_SEARCH_ENTRIES
             );
             MatchaClientData.current().catalog().forEach(stack -> {
                 ItemStack contribution = stack.copyWithCount(1);
@@ -83,7 +82,8 @@ final class MatchaCreativeCatalog {
                 CreativeModeTabs.searchTab().getDisplayItems(),
                 OWNED_SEARCH_ENTRIES,
                 SUPPRESSED_DEFAULT_SEARCH_ENTRIES,
-                payload.catalog()
+                payload.catalog(),
+                payload.canonicalDefaults()
         );
         pendingPayload = null;
     }
