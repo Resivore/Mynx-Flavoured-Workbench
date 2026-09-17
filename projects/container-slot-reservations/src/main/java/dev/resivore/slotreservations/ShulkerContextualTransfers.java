@@ -1,6 +1,7 @@
 package dev.resivore.slotreservations;
 
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ClickAction;
 import net.minecraft.world.inventory.Slot;
@@ -33,11 +34,11 @@ public final class ShulkerContextualTransfers {
         return false;
     }
 
-    private static void insertFromSlot(Player player, AbstractContainerMenu menu, Slot source, ItemStack shulker) {
-        if (!ShulkerHostResolver.removableSource(player, source)) return;
-        ItemStack incoming = source.getItem();
+    static boolean insertFromSlot(Player player, AbstractContainerMenu menu, Slot source, ItemStack shulker) {
+        if (!ShulkerHostResolver.removableSource(player, source)) return false;
+        ItemStack incoming = source.getItem().copy();
         ShulkerTransferPlanner.Insertion plan = ShulkerTransferPlanner.planInsertion(shulker, incoming);
-        if (plan.moved() == 0) return;
+        if (plan.moved() == 0) return false;
         menu.setCarried(plan.shulker());
         source.setByPlayer(plan.remainder(), incoming);
         source.onTake(player, incoming.copyWithCount(plan.moved()));
@@ -46,7 +47,8 @@ public final class ShulkerContextualTransfers {
         String fingerprint = ShulkerHostFingerprint.of(plan.shulker(), player.registryAccess());
         ShulkerSelectionTracker.rebindCarried(player, menu, fingerprint,
                 selectedAfterMutation(player, plan.contents()));
-        menu.broadcastChanges();
+        synchronizeCommittedMenu(player, menu);
+        return true;
     }
 
     private static void insertFromCursor(Player player, AbstractContainerMenu menu, Slot hostSlot, ItemStack carried) {
@@ -61,7 +63,7 @@ public final class ShulkerContextualTransfers {
         menu.setCarried(plan.remainder());
         String fingerprint = ShulkerHostFingerprint.of(plan.shulker(), player.registryAccess());
         ShulkerSelectionTracker.rebind(player, host, fingerprint, selectedAfterMutation(player, plan.contents()));
-        menu.broadcastChanges();
+        synchronizeCommittedMenu(player, menu);
     }
 
     private static void extractSelected(Player player, AbstractContainerMenu menu, Slot target, ItemStack shulker) {
@@ -86,7 +88,17 @@ public final class ShulkerContextualTransfers {
                 : selection.internalSlot();
         String fingerprint = ShulkerHostFingerprint.of(plan.shulker(), player.registryAccess());
         ShulkerSelectionTracker.rebindCarried(player, menu, fingerprint, selected);
-        menu.broadcastChanges();
+        synchronizeCommittedMenu(player, menu);
+    }
+
+    /** Creative ignores the normal cursor packet while its inventory facade is open. */
+    static void synchronizeCommittedMenu(Player player, AbstractContainerMenu menu) {
+        if (player instanceof ServerPlayer serverPlayer
+                && serverPlayer.hasInfiniteMaterials() && menu == serverPlayer.inventoryMenu) {
+            menu.broadcastFullState();
+        } else {
+            menu.broadcastChanges();
+        }
     }
 
     private static int selectedAfterMutation(Player player, java.util.List<ItemStack> contents) {

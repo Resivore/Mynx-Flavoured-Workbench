@@ -7,7 +7,7 @@
   "client": [
     "AbstractContainerScreenMixin",
     "ContainerScreenMouseAccess",
-    "MouseTweaksContainerScreenMixin",
+    "MouseTweaksMainMixin",
     "GuiGraphicsExtractorGhostMixin",
     "GuiItemRenderStateGhostMixin",
     "GuiRendererGhostMixin",

@@ -2,13 +2,13 @@ package dev.resivore.slotreservations.client;
 
 import com.mojang.blaze3d.platform.InputConstants;
 import dev.resivore.slotreservations.ContainerSlotReservations;
-import dev.resivore.slotreservations.MouseTweaksTrace;
 import dev.resivore.slotreservations.network.ReservationActionPayload;
 import dev.resivore.slotreservations.network.ReservationSnapshotPayload;
 import dev.resivore.slotreservations.network.ReservationSnapshotRequestPayload;
 import dev.resivore.slotreservations.network.ShulkerPanelSyncPayload;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
@@ -32,7 +32,7 @@ public final class ContainerSlotReservationsClient implements ClientModInitializ
     @Override
     public void onInitializeClient() {
         GhostItemRenderPipeline.initialize();
-        registerMouseTweaksPressTrace();
+        registerCarriedShulkerGestureLifecycle();
         ResourceManagerHelper.get(PackType.CLIENT_RESOURCES).registerReloadListener(
                 new SimpleSynchronousResourceReloadListener() {
                     @Override
@@ -61,23 +61,16 @@ public final class ContainerSlotReservationsClient implements ClientModInitializ
                 context.client().execute(() -> ShulkerPanel.acceptSync(payload)));
 
         ClientTickEvents.END_CLIENT_TICK.register(ContainerSlotReservationsClient::requestSnapshotForNewScreen);
+        ClientTickEvents.END_CLIENT_TICK.register(CarriedShulkerMouseTweaks::maintain);
+        ClientPlayConnectionEvents.DISCONNECT.register((handler, client) ->
+                CarriedShulkerMouseTweaks.reset());
     }
 
-    /** Observes the same pre-screen Fabric press seam used by exact Mouse Tweaks 2.31. */
-    private static void registerMouseTweaksPressTrace() {
+    /** Release backstop if another screen listener short-circuits the screen method. */
+    private static void registerCarriedShulkerGestureLifecycle() {
         ScreenEvents.BEFORE_INIT.register((client, screen, scaledWidth, scaledHeight) -> {
-            ScreenMouseEvents.allowMouseClick(screen).register((_screen, event) -> {
-                if (event.button() == 1 && MouseTweaksCompatibility.isActive()) {
-                    MouseTweaksTrace.event(1, "Fabric RMB press observed",
-                            "screen=" + screen.getClass().getName()
-                                    + ", x=" + event.x() + ", y=" + event.y());
-                }
-                return true;
-            });
             ScreenMouseEvents.allowMouseRelease(screen).register((_screen, event) -> {
-                if (event.button() == 1 && MouseTweaksCompatibility.isActive()) {
-                    ShulkerPanel.endMouseTweaksRightGesture();
-                }
+                if (event.button() == 1) CarriedShulkerMouseTweaks.reset();
                 return true;
             });
         });

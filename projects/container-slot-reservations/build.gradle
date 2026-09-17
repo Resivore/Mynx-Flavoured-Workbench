@@ -22,25 +22,6 @@ configurations {
     }
 }
 
-// Mouse Tweaks exposes a small client API but is deliberately not a CSR runtime
-// dependency. This source set supplies only its public ABI declaration to javac;
-// its class is never merged into the released CSR JAR. The optional mixin is
-// applied only when the real mousetweaks mod is present.
-sourceSets {
-    mouseTweaksApiCompile {
-        java.srcDir('src/mouseTweaksApiCompile/java')
-        // The ABI itself mentions Minecraft's Slot and ContainerInput types.
-        compileClasspath += sourceSets.main.compileClasspath
-    }
-    main {
-        compileClasspath += sourceSets.mouseTweaksApiCompile.output
-    }
-}
-
-tasks.named('compileJava') {
-    dependsOn tasks.named('compileMouseTweaksApiCompileJava')
-}
-
 def repositoryRoot = projectDir.toPath().resolve('../..').normalize().toFile()
 def occupiedMarkerResource =
         'assets/container_slot_reservations/textures/gui/sprites/occupied_reservation_marker.png'

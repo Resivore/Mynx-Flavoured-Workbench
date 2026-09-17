@@ -1,5 +1,6 @@
 package dev.resivore.slotreservations.gametest;
 
+import dev.resivore.slotreservations.CarriedShulkerInventoryActions;
 import dev.resivore.slotreservations.ReservationData;
 import dev.resivore.slotreservations.ReservationStore;
 import dev.resivore.slotreservations.ShulkerContents;
@@ -7,6 +8,7 @@ import dev.resivore.slotreservations.ShulkerHostFingerprint;
 import dev.resivore.slotreservations.ShulkerPanelActions;
 import dev.resivore.slotreservations.ShulkerHostResolver;
 import dev.resivore.slotreservations.ShulkerSelectionTracker;
+import dev.resivore.slotreservations.network.CarriedShulkerInventoryActionPayload;
 import dev.resivore.slotreservations.network.ReservationActionPayload;
 import dev.resivore.slotreservations.network.ShulkerHostLocator;
 import dev.resivore.slotreservations.network.ShulkerPanelContentActionPayload;
@@ -54,11 +56,16 @@ public final class ShulkerPanelGameTests implements CustomTestMethodInvoker {
                 ShulkerPanelContentActionPayload.Click.PRIMARY, fingerprint);
     }
 
-    private static ShulkerPanelContentActionPayload secondaryDepositAction(
-            ServerPlayer player, ShulkerHostLocator host, int internalSlot, String fingerprint
+    private static CarriedShulkerInventoryActionPayload carriedInsertionAction(
+            ServerPlayer player, int menuSlot, String carriedFingerprint
     ) {
-        return new ShulkerPanelContentActionPayload(player.containerMenu.containerId, host, internalSlot,
-                ShulkerPanelContentActionPayload.Click.SECONDARY_DEPOSIT, fingerprint);
+        Slot source = player.containerMenu.getSlot(menuSlot);
+        return new CarriedShulkerInventoryActionPayload(
+                player.containerMenu.containerId,
+                menuSlot,
+                source.getContainerSlot(),
+                carriedFingerprint,
+                ShulkerHostFingerprint.of(source.getItem(), player.registryAccess()));
     }
 
     private static ItemStack namedStone(int count) {
@@ -222,95 +229,246 @@ public final class ShulkerPanelGameTests implements CustomTestMethodInvoker {
     }
 
     @GameTest(maxTicks = 40)
-    public void mouseTweaksDepositProjectionChainsFingerprintsAndSkipsRejectedCells(GameTestHelper helper) {
+    public void carriedShulkerInventoryActionsChainFingerprintsAcrossDifferentSourceTypes(
+            GameTestHelper helper
+    ) {
         BlockPos position = new BlockPos(1, 2, 1);
         helper.setBlock(position, Blocks.CHEST);
         ChestBlockEntity chest = helper.getBlockEntity(position, ChestBlockEntity.class);
         ServerPlayer player = player(helper);
         player.containerMenu = ChestMenu.threeRows(81, player.getInventory(), chest);
-        ShulkerHostLocator locator = ShulkerHostLocator.menuSlot(0);
+        player.containerMenu.setCarried(panelHost());
+
+        int[] menuSlots = {27, 28, 29, 30};
+        ItemStack[] sources = {
+                new ItemStack(Items.COBBLESTONE, 64),
+                new ItemStack(Items.OAK_LOG, 32),
+                new ItemStack(Items.BREAD, 12),
+                new ItemStack(Items.DIRT, 20)
+        };
+        for (int index = 0; index < menuSlots.length; index++) {
+            player.containerMenu.getSlot(menuSlots[index]).set(sources[index].copy());
+        }
+
+        String predecessor = ShulkerHostFingerprint.of(
+                player.containerMenu.getCarried(), player.registryAccess());
+        CarriedShulkerInventoryActionPayload first = null;
+        for (int index = 0; index < menuSlots.length; index++) {
+            CarriedShulkerInventoryActionPayload action = carriedInsertionAction(
+                    player, menuSlots[index], predecessor);
+            if (index == 0) first = action;
+            helper.assertTrue(CarriedShulkerInventoryActions.handle(player, action),
+                    "A distinct source type was rejected from the fingerprint chain");
+            helper.assertTrue(player.containerMenu.getSlot(menuSlots[index]).getItem().isEmpty(),
+                    "A fully accepted source stack retained an unexpected remainder");
+            String successor = ShulkerHostFingerprint.of(
+                    player.containerMenu.getCarried(), player.registryAccess());
+            helper.assertTrue(!predecessor.equals(successor),
+                    "A successful source action did not advance the cursor-shulker fingerprint");
+            predecessor = successor;
+        }
+
+        List<ItemStack> contents = ShulkerContents.copy(player.containerMenu.getCarried());
+        for (int index = 0; index < sources.length; index++) {
+            helper.assertTrue(ItemStack.isSameItemSameComponents(contents.get(index), sources[index])
+                            && contents.get(index).getCount() == sources[index].getCount(),
+                    "A chained source stack landed in the wrong internal destination");
+        }
+
+        ItemStack chained = player.containerMenu.getCarried().copy();
+        helper.assertTrue(first != null && !CarriedShulkerInventoryActions.handle(player, first),
+                "A stale F0 action was accepted after the cursor advanced to F4");
+        helper.assertTrue(ItemStack.matches(chained, player.containerMenu.getCarried()),
+                "A stale cursor predecessor changed the carried shulker");
+
+        player.containerMenu.getSlot(31).set(new ItemStack(Items.STONE, 5));
+        CarriedShulkerInventoryActionPayload staleSource = carriedInsertionAction(
+                player, 31, predecessor);
+        player.containerMenu.getSlot(31).set(new ItemStack(Items.DIAMOND, 5));
+        ItemStack beforeStaleSource = player.containerMenu.getCarried().copy();
+        helper.assertTrue(!CarriedShulkerInventoryActions.handle(player, staleSource),
+                "A replaced source stack passed its component-exact fingerprint check");
+        helper.assertTrue(player.containerMenu.getSlot(31).getItem().is(Items.DIAMOND)
+                        && player.containerMenu.getSlot(31).getItem().getCount() == 5
+                        && ItemStack.matches(beforeStaleSource, player.containerMenu.getCarried()),
+                "A stale source action mutated its slot or cursor shulker");
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void carriedShulkerInventoryActionsUseWholePlannerAndConservePartialRemainders(
+            GameTestHelper helper
+    ) {
+        BlockPos position = new BlockPos(1, 2, 1);
+        helper.setBlock(position, Blocks.CHEST);
+        ChestBlockEntity chest = helper.getBlockEntity(position, ChestBlockEntity.class);
+        ServerPlayer player = player(helper);
+        player.containerMenu = ChestMenu.threeRows(82, player.getInventory(), chest);
+
         ItemStack host = panelHost();
-        var initialContents = ShulkerContents.copy(host);
-        initialContents.set(6, new ItemStack(Items.STONE, 64));
-        ShulkerContents.replace(host, initialContents);
+        var contents = ShulkerContents.copy(host);
+        contents.set(5, new ItemStack(Items.STONE, 63));
+        ShulkerContents.replace(host, contents);
         ReservationStore.setData(host, ReservationData.EMPTY
-                .with(3, new ItemStack(Items.DIRT))
-                .with(5, new ItemStack(Items.STONE)));
-        chest.setItem(0, host);
-        player.containerMenu.setCarried(new ItemStack(Items.STONE, 16));
+                .with(8, new ItemStack(Items.DIRT))
+                .with(20, new ItemStack(Items.STONE)));
+        player.containerMenu.setCarried(host);
+        player.containerMenu.getSlot(27).set(new ItemStack(Items.STONE, 4));
+        String predecessor = ShulkerHostFingerprint.of(host, player.registryAccess());
+        helper.assertTrue(CarriedShulkerInventoryActions.handle(player,
+                        carriedInsertionAction(player, 27, predecessor)),
+                "Whole-shulker reservation-aware insertion was rejected");
+        contents = ShulkerContents.copy(player.containerMenu.getCarried());
+        helper.assertTrue(contents.get(5).getCount() == 64
+                        && contents.get(20).getCount() == 3
+                        && contents.get(8).isEmpty() && contents.get(0).isEmpty(),
+                "Insertion did not prioritize merge then matching reservation while skipping a mismatch");
 
-        // C20's F0/F0 burst would reject the second entry. C21's copy-only projection
-        // instead sends the exact predecessor fingerprint for every independently
-        // server-planned one-item insertion.
-        String f0 = fingerprint(player, 0);
-        helper.assertTrue(ShulkerPanelActions.handleContent(player,
-                        secondaryDepositAction(player, locator, 0, f0)),
-                "First projected deposit was rejected");
-        String f1 = fingerprint(player, 0);
-        helper.assertTrue(!f0.equals(f1), "First deposit did not advance the host fingerprint");
-        helper.assertTrue(ShulkerPanelActions.handleContent(player,
-                        secondaryDepositAction(player, locator, 1, f1)),
-                "Second projected deposit was rejected");
-        String f2 = fingerprint(player, 0);
-        helper.assertTrue(ShulkerPanelActions.handleContent(player,
-                        secondaryDepositAction(player, locator, 2, f2)),
-                "Third projected deposit was rejected");
+        host = panelHost();
+        contents = ShulkerContents.copy(host);
+        for (int slot = 0; slot < ReservationData.SLOT_COUNT; slot++) {
+            contents.set(slot, new ItemStack(Items.DIAMOND, 64));
+        }
+        contents.set(0, new ItemStack(Items.STONE, 47));
+        ShulkerContents.replace(host, contents);
+        player.containerMenu.setCarried(host);
 
-        // A mismatching reservation is a safe no-op. Its unchanged fingerprint remains
-        // usable by the next eligible virtual cell rather than corrupting the gesture.
-        String beforeMismatch = fingerprint(player, 0);
-        helper.assertTrue(!ShulkerPanelActions.handleContent(player,
-                        secondaryDepositAction(player, locator, 3, beforeMismatch)),
-                "Mismatching reservation accepted a Mouse Tweaks deposit");
-        helper.assertTrue(beforeMismatch.equals(fingerprint(player, 0)),
-                "Rejected mismatch advanced the host fingerprint");
-        helper.assertTrue(!ShulkerPanelActions.handleContent(player,
-                        secondaryDepositAction(player, locator, 6, beforeMismatch)),
-                "A full compatible cell accepted a Mouse Tweaks deposit");
-        helper.assertTrue(beforeMismatch.equals(fingerprint(player, 0)),
-                "Rejected full cell advanced the host fingerprint");
-        helper.assertTrue(ShulkerPanelActions.handleContent(player,
-                        secondaryDepositAction(player, locator, 5, beforeMismatch)),
-                "Matching reservation did not accept the continuing gesture");
+        boolean[] callback = {false};
+        int[] callbackCount = {-1};
+        Slot trackingSource = new Slot(player.getInventory(), 9, 0, 0) {
+            @Override
+            public void onTake(net.minecraft.world.entity.player.Player callbackPlayer, ItemStack taken) {
+                callback[0] = true;
+                callbackCount[0] = taken.getCount();
+                super.onTake(callbackPlayer, taken);
+            }
+        };
+        trackingSource.index = 27;
+        player.containerMenu.slots.set(27, trackingSource);
+        player.getInventory().setItem(9, new ItemStack(Items.STONE, 64));
+        predecessor = ShulkerHostFingerprint.of(host, player.registryAccess());
+        helper.assertTrue(CarriedShulkerInventoryActions.handle(player,
+                        carriedInsertionAction(player, 27, predecessor)),
+                "Capacity-limited insertion was rejected");
+        helper.assertTrue(player.containerMenu.getSlot(27).getItem().getCount() == 47
+                        && ShulkerContents.copy(player.containerMenu.getCarried()).get(0).getCount() == 64
+                        && callback[0] && callbackCount[0] == 17,
+                "Partial insertion did not conserve 17 moved / 47 remaining or fire the source callback");
 
-        // Nested containers are likewise no-ops, and their unchanged predecessor remains
-        // valid for a later ordinary eligible target in the same logical gesture.
-        String afterMatching = fingerprint(player, 0);
-        player.containerMenu.setCarried(new ItemStack(Blocks.SHULKER_BOX));
-        helper.assertTrue(!ShulkerPanelActions.handleContent(player,
-                        secondaryDepositAction(player, locator, 7, afterMatching)),
-                "Nested shulker accepted a Mouse Tweaks deposit");
-        helper.assertTrue(afterMatching.equals(fingerprint(player, 0)),
-                "Rejected nested shulker advanced the host fingerprint");
-        player.containerMenu.setCarried(new ItemStack(Items.STONE, 12));
-        helper.assertTrue(ShulkerPanelActions.handleContent(player,
-                        secondaryDepositAction(player, locator, 7, afterMatching)),
-                "Eligible target did not continue after a rejected nested shulker");
+        host = panelHost();
+        contents = ShulkerContents.copy(host);
+        for (int slot = 0; slot < ReservationData.SLOT_COUNT; slot++) {
+            contents.set(slot, new ItemStack(Items.DIAMOND, 64));
+        }
+        contents.set(0, new ItemStack(Items.DIRT, 63));
+        ShulkerContents.replace(host, contents);
+        player.containerMenu.setCarried(host);
+        player.containerMenu.getSlot(27).set(new ItemStack(Items.BREAD, 5));
+        predecessor = ShulkerHostFingerprint.of(host, player.registryAccess());
+        CarriedShulkerInventoryActionPayload noCapacity = carriedInsertionAction(player, 27, predecessor);
+        helper.assertTrue(!CarriedShulkerInventoryActions.handle(player, noCapacity),
+                "A source with no compatible capacity reported a mutation");
+        helper.assertTrue(player.containerMenu.getSlot(27).getItem().getCount() == 5
+                        && predecessor.equals(ShulkerHostFingerprint.of(
+                        player.containerMenu.getCarried(), player.registryAccess())),
+                "A no-capacity source changed its slot or cursor fingerprint");
+        player.containerMenu.getSlot(28).set(new ItemStack(Items.DIRT, 2));
+        helper.assertTrue(CarriedShulkerInventoryActions.handle(player,
+                        carriedInsertionAction(player, 28, predecessor)),
+                "A later compatible source did not continue after a no-capacity no-op");
+        helper.assertTrue(player.containerMenu.getSlot(28).getItem().getCount() == 1
+                        && ShulkerContents.copy(player.containerMenu.getCarried()).get(0).getCount() == 64,
+                "The later source did not preserve its exact one-item remainder");
 
-        var contents = ShulkerContents.copy(chest.getItem(0));
-        helper.assertTrue(contents.get(0).getCount() == 1 && contents.get(1).getCount() == 1
-                        && contents.get(2).getCount() == 1 && contents.get(3).isEmpty()
-                        && contents.get(5).getCount() == 1 && contents.get(6).getCount() == 64
-                        && contents.get(7).getCount() == 1,
-                "Projected deposits landed in an unexpected panel cell");
-        helper.assertTrue(player.containerMenu.getCarried().getCount() == 11,
-                "Projected five-cell deposit did not conserve the carried count");
+        player.containerMenu.setCarried(panelHost());
+        player.containerMenu.getSlot(27).set(new ItemStack(Blocks.SHULKER_BOX));
+        predecessor = ShulkerHostFingerprint.of(
+                player.containerMenu.getCarried(), player.registryAccess());
+        helper.assertTrue(!CarriedShulkerInventoryActions.handle(player,
+                        carriedInsertionAction(player, 27, predecessor)),
+                "Nested shulker insertion was accepted");
+        helper.assertTrue(player.containerMenu.getSlot(27).getItem().is(Blocks.SHULKER_BOX.asItem())
+                        && predecessor.equals(ShulkerHostFingerprint.of(
+                        player.containerMenu.getCarried(), player.registryAccess())),
+                "Nesting rejection changed its source or cursor shulker");
+        player.containerMenu.getSlot(28).set(new ItemStack(Items.STONE, 3));
+        helper.assertTrue(CarriedShulkerInventoryActions.handle(player,
+                        carriedInsertionAction(player, 28, predecessor)),
+                "A later valid source did not continue after nesting rejection");
+        helper.succeed();
+    }
 
-        // Deposit-only actions never reinterpret an exhausted cursor as extraction.
-        player.containerMenu.setCarried(ItemStack.EMPTY);
-        String exhausted = fingerprint(player, 0);
-        helper.assertTrue(!ShulkerPanelActions.handleContent(player,
-                        secondaryDepositAction(player, locator, 0, exhausted)),
-                "Exhausted deposit mode extracted from an occupied virtual cell");
-        helper.assertTrue(ShulkerContents.copy(chest.getItem(0)).get(0).getCount() == 1
-                        && player.containerMenu.getCarried().isEmpty(),
-                "Exhausted deposit mode changed panel contents or recreated a cursor stack");
+    @GameTest(maxTicks = 40)
+    public void carriedShulkerInventoryActionsRejectInvalidOrNonPlayerCoordinates(
+            GameTestHelper helper
+    ) {
+        BlockPos position = new BlockPos(1, 2, 1);
+        helper.setBlock(position, Blocks.CHEST);
+        ChestBlockEntity chest = helper.getBlockEntity(position, ChestBlockEntity.class);
+        ServerPlayer player = player(helper);
+        player.containerMenu = ChestMenu.threeRows(83, player.getInventory(), chest);
+        ItemStack carried = panelHost();
+        player.containerMenu.setCarried(carried);
+        chest.setItem(0, new ItemStack(Items.STONE, 4));
+        player.containerMenu.getSlot(27).set(new ItemStack(Items.DIRT, 4));
+        String carriedFingerprint = ShulkerHostFingerprint.of(carried, player.registryAccess());
 
-        // An external stale predecessor still fails closed even though the C21 projected
-        // chain itself advances F0 -> F1 -> F2.
-        helper.assertTrue(!ShulkerPanelActions.handleContent(player,
-                        secondaryDepositAction(player, locator, 6, f0)),
-                "Stale projected predecessor mutated the current host");
+        var nonPlayer = new CarriedShulkerInventoryActionPayload(
+                player.containerMenu.containerId, 0, 9, carriedFingerprint,
+                ShulkerHostFingerprint.of(chest.getItem(0), player.registryAccess()));
+        helper.assertTrue(!CarriedShulkerInventoryActions.handle(player, nonPlayer),
+                "A storage-container source was broadened into the carried-shulker gesture");
+
+        CarriedShulkerInventoryActionPayload valid = carriedInsertionAction(player, 27, carriedFingerprint);
+        var wrongPhysical = new CarriedShulkerInventoryActionPayload(
+                valid.menuId(), valid.menuSlot(), 36, valid.carriedFingerprint(), valid.sourceFingerprint());
+        var wrongMenuSlot = new CarriedShulkerInventoryActionPayload(
+                valid.menuId(), 28, valid.physicalPlayerSlot(),
+                valid.carriedFingerprint(), valid.sourceFingerprint());
+        var staleMenu = new CarriedShulkerInventoryActionPayload(
+                valid.menuId() + 1, valid.menuSlot(), valid.physicalPlayerSlot(),
+                valid.carriedFingerprint(), valid.sourceFingerprint());
+        helper.assertTrue(!CarriedShulkerInventoryActions.handle(player, wrongPhysical)
+                        && !CarriedShulkerInventoryActions.handle(player, wrongMenuSlot)
+                        && !CarriedShulkerInventoryActions.handle(player, staleMenu),
+                "An invalid physical, visible, or menu coordinate passed authority validation");
+        helper.assertTrue(chest.getItem(0).getCount() == 4
+                        && player.containerMenu.getSlot(27).getItem().getCount() == 4
+                        && ItemStack.matches(carried, player.containerMenu.getCarried()),
+                "A rejected coordinate mutated storage, player source, or cursor");
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void creativeCarriedShulkerInventoryActionUsesPhysicalSlotAndFullStateSync(
+            GameTestHelper helper
+    ) {
+        ServerPlayer player = player(helper);
+        player.getAbilities().instabuild = true;
+        player.containerMenu = player.inventoryMenu;
+        int physicalPlayerSlot = 9;
+        player.getInventory().setItem(physicalPlayerSlot, new ItemStack(Items.STONE, 6));
+        ItemStack host = panelHost();
+        player.containerMenu.setCarried(host);
+        RecordingSynchronizer synchronizer = new RecordingSynchronizer();
+        player.containerMenu.setSynchronizer(synchronizer);
+        synchronizer.clear();
+
+        ItemStack source = player.getInventory().getItem(physicalPlayerSlot);
+        var action = new CarriedShulkerInventoryActionPayload(
+                player.containerMenu.containerId,
+                -1,
+                physicalPlayerSlot,
+                ShulkerHostFingerprint.of(host, player.registryAccess()),
+                ShulkerHostFingerprint.of(source, player.registryAccess()));
+        helper.assertTrue(CarriedShulkerInventoryActions.handle(player, action),
+                "Creative physical player-slot fallback rejected a valid source");
+        helper.assertTrue(player.getInventory().getItem(physicalPlayerSlot).isEmpty()
+                        && ShulkerContents.copy(player.containerMenu.getCarried()).get(0).getCount() == 6
+                        && synchronizer.carriedChanges.isEmpty()
+                        && synchronizer.fullStateCarries.size() == 1
+                        && ShulkerContents.copy(synchronizer.fullStateCarries.getFirst()).get(0).getCount() == 6,
+                "Creative collection did not use the authoritative full-state cursor synchronization");
         helper.succeed();
     }
 

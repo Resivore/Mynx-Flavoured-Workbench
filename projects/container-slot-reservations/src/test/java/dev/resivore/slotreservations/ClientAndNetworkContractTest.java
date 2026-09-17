@@ -77,6 +77,7 @@ final class ClientAndNetworkContractTest {
         String selection = source("network/ShulkerSelectionPayload.java");
         String resolver = source("ShulkerHostResolver.java");
         String actions = source("ShulkerPanelActions.java");
+        String transfers = source("ShulkerContextualTransfers.java");
         String tracker = source("ShulkerSelectionTracker.java");
 
         for (String payload : List.of(content, reservation, selection)) {
@@ -96,9 +97,10 @@ final class ClientAndNetworkContractTest {
         assertTrue(actions.contains("ShulkerTransferPlanner.planExactInsertion("));
         assertTrue(actions.contains("ShulkerTransferPlanner.planExtraction("));
         assertTrue(actions.contains("synchronizeCommittedMenu(player, host.menu())"));
-        assertTrue(actions.contains("player.hasInfiniteMaterials() && menu == player.inventoryMenu"));
-        assertTrue(actions.contains("menu.broadcastFullState()"));
-        assertTrue(actions.contains("menu.broadcastChanges()"));
+        assertTrue(transfers.contains(
+                "serverPlayer.hasInfiniteMaterials() && menu == serverPlayer.inventoryMenu"));
+        assertTrue(transfers.contains("menu.broadcastFullState()"));
+        assertTrue(transfers.contains("menu.broadcastChanges()"));
         int authoritativeSync = actions.indexOf("synchronizeCommittedMenu(player, host.menu())");
         int metadataSync = actions.indexOf("ServerPlayNetworking.send(player, new ShulkerPanelSyncPayload");
         assertTrue(authoritativeSync >= 0 && metadataSync > authoritativeSync,
@@ -156,7 +158,7 @@ final class ClientAndNetworkContractTest {
     }
 
     @Test
-    void panelInputOwnsCoveredCoordinatesSupportsQuickMoveAndDeduplicatedSecondaryDrag() throws IOException {
+    void panelInputOwnsCoveredCoordinatesSupportsQuickMoveAndKeepsItsEstablishedSecondaryDrag() throws IOException {
         String screen = source("mixin/client/AbstractContainerScreenMixin.java");
         String panel = source("client/ShulkerPanel.java");
         String quickMove = source("ShulkerPanelQuickMove.java");
@@ -170,8 +172,10 @@ final class ClientAndNetworkContractTest {
         assertTrue(panel.contains("Click.QUICK_MOVE"));
         assertTrue(panel.contains("SECONDARY_DRAG.enter(slot)"));
         assertTrue(panel.contains("SECONDARY_DRAG.begin(slot)"));
-        assertTrue(panel.contains("MouseTweaksCompatibility.ownsRightDrag()"),
-                "The optional provider must own supported panel drags without a second CSR drag state");
+        assertFalse(panel.contains("MouseTweaksCompatibility"),
+                "Mouse Tweaks integration now targets only native ordinary player slots");
+        assertFalse(panel.contains("SECONDARY_DEPOSIT"),
+                "The retired ordinary-cursor to virtual-panel RMB bridge must not return");
         assertFalse(panel.contains("corridorContains"));
         assertTrue(quickMove.contains("host.menu().slots"));
         assertTrue(quickMove.contains("candidate.container != player.getInventory()"));

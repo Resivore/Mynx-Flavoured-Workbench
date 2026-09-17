@@ -1,7 +1,7 @@
 package dev.resivore.slotreservations;
 
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Assumptions;
+import org.junit.jupiter.api.Test;
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
@@ -26,56 +26,38 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/** Bytecode/source contract for the exact Mouse Tweaks 2.31 handoff used through C22. */
+/** Exact upstream and packaged-bridge contracts for the Canary 23 Mouse Tweaks correction. */
 final class MouseTweaksCompatibilityContractTest {
     private static final Path ROOT = Path.of(System.getProperty("projectRoot"));
+    private static final String MAIN = "yalter/mousetweaks/Main";
+    private static final String RMB_HELPER_DESCRIPTOR =
+            "(Lnet/minecraft/world/inventory/Slot;Lnet/minecraft/world/item/ItemStack;)V";
     private static final String TARGET_SHA256 =
             "4592eff38a2e7af3487688e888a637a8cbd4767b46662df94d993a889102effe";
 
     @Test
-    void exactMouseTweaks231ExposesTheCustomContainerSeamUsedByTheBridge() throws Exception {
+    void exactMouseTweaks231RetainsTheObservedCompatibilityGateAndDragTraversal() throws Exception {
         String configured = System.getProperty("mouseTweaksReferenceJar");
         Assumptions.assumeTrue(configured != null && Files.isRegularFile(Path.of(configured)),
                 "The local optional Mouse Tweaks reference is unavailable on this host");
         Path jar = Path.of(configured);
         assertEquals(TARGET_SHA256, sha256(jar));
         assertEquals(75_872L, Files.size(jar),
-                "The canonical Mouse Tweaks identity must include the verified file length");
+                "The canonical Mouse Tweaks identity includes its verified byte length");
 
         try (JarFile archive = new JarFile(jar.toFile())) {
-            assertTrue(archive.stream().anyMatch(entry -> entry.getName().equals(
-                    "yalter/mousetweaks/api/IMTModGuiContainer3Ex.class")));
-            Set<String> apiMethods = methods(archive, "yalter/mousetweaks/api/IMTModGuiContainer3Ex.class");
-            assertTrue(apiMethods.contains("MT_getSlots()Ljava/util/List;"));
-            assertTrue(apiMethods.contains("MT_getSlotUnderMouse(DD)Lnet/minecraft/world/inventory/Slot;"));
-            assertTrue(apiMethods.contains("MT_clickSlot(Lnet/minecraft/world/inventory/Slot;ILnet/minecraft/world/inventory/ContainerInput;)V"));
-            assertTrue(apiMethods.contains("MT_disableRMBDraggingFunctionality()Z"));
-            Set<String> mainMethods = methods(archive, "yalter/mousetweaks/Main.class");
-            Set<String> mainFields = fields(archive, "yalter/mousetweaks/Main.class");
-            assertTrue(mainMethods.contains("onMouseClicked(Lnet/minecraft/client/gui/screens/Screen;DDLyalter/mousetweaks/MouseButton;)Z"));
-            assertTrue(mainMethods.contains("onMouseDrag(Lnet/minecraft/client/gui/screens/Screen;DDLyalter/mousetweaks/MouseButton;)Z"));
-            assertTrue(mainMethods.contains("onMouseReleased(Lnet/minecraft/client/gui/screens/Screen;DDLyalter/mousetweaks/MouseButton;)Z"));
-            assertTrue(mainMethods.contains("onMouseScrolled(Lnet/minecraft/client/gui/screens/Screen;DDD)Z"));
-            assertTrue(mainFields.contains("oldSelectedSlot:Lnet/minecraft/world/inventory/Slot;"));
-            assertTrue(mainFields.contains("canDoRMBDrag:Z"));
-            assertTrue(mainFields.contains("rmbTweakLeftOriginalSlot:Z"));
-            assertRmbPressArmingContract(archive);
-            assertExtendedHandlerPrecedesGenericHandler(archive);
+            Set<String> methods = methods(archive, MAIN + ".class");
+            Set<String> fields = fields(archive, MAIN + ".class");
+            assertTrue(methods.contains("rmbTweakMaybeClickSlot" + RMB_HELPER_DESCRIPTOR));
+            assertTrue(methods.contains("onMouseDrag(Lnet/minecraft/client/gui/screens/Screen;DDLyalter/mousetweaks/MouseButton;)Z"));
+            assertTrue(fields.contains("oldSelectedSlot:Lnet/minecraft/world/inventory/Slot;"));
+            assertTrue(fields.contains("canDoRMBDrag:Z"));
+            assertTrue(fields.contains("rmbTweakLeftOriginalSlot:Z"));
 
-            List<String> dragCalls = methodCalls(archive, "yalter/mousetweaks/Main.class", "onMouseDrag");
-            assertTrue(dragCalls.contains(
-                    "yalter/mousetweaks/IGuiScreenHandler.getSlotUnderMouse(DD)Lnet/minecraft/world/inventory/Slot;"));
-            assertTrue(dragCalls.contains(
-                    "yalter/mousetweaks/IGuiScreenHandler.disableRMBDraggingFunctionality()Z"));
-            assertTrue(dragCalls.contains(
-                    "yalter/mousetweaks/Main.rmbTweakMaybeClickSlot(Lnet/minecraft/world/inventory/Slot;Lnet/minecraft/world/item/ItemStack;)V"));
-            assertEquals(Set.of(0), directBooleanReturns(
-                            archive, "yalter/mousetweaks/Main.class", "onMouseDrag"),
-                    "The post-upstream Screen.mouseDragged fallback relies on exact 2.31 always returning false");
-            List<String> helperCalls = methodCalls(
-                    archive, "yalter/mousetweaks/Main.class", "rmbTweakMaybeClickSlot");
-            assertTrue(helperCalls.contains(
-                    "yalter/mousetweaks/IGuiScreenHandler.clickSlot(Lnet/minecraft/world/inventory/Slot;Lyalter/mousetweaks/MouseButton;Z)V"));
+            assertOccupiedCompatibilityGatePrecedesClick(archive);
+            assertSameIdentityReturnsBeforeAnyDragAction(archive);
+            assertOriginThenCurrentHelperOrder(archive);
+            assertRmbPressArmingContract(archive);
 
             List<String> fabricDragCalls = methodCalls(archive,
                     "yalter/mousetweaks/fabric/mixin/MixinMouseHandler.class", "onMouseDragged");
@@ -84,266 +66,307 @@ final class MouseTweaksCompatibilityContractTest {
             int screen = fabricDragCalls.indexOf(
                     "com/llamalad7/mixinextras/injector/wrapoperation/Operation.call([Ljava/lang/Object;)Ljava/lang/Object;");
             assertTrue(upstream >= 0 && screen > upstream,
-                    "Exact 2.31 must run Mouse Tweaks before the wrapped Screen.mouseDragged fallback");
+                    "Mouse Tweaks must run before the wrapped Screen.mouseDragged fallback");
         }
     }
 
     @Test
-    void packagedOptionalMixinCarriesTheExactExtendedProviderContract() throws IOException {
+    void packagedOptionalMainMixinIsPseudoGatedAndShipsNoMouseTweaksClasses() throws IOException {
         Path artifact = Path.of(System.getProperty("canary12Artifact"));
         try (JarFile archive = new JarFile(artifact.toFile())) {
-            String mixinEntry = "dev/resivore/slotreservations/mixin/client/"
-                    + "MouseTweaksContainerScreenMixin.class";
+            String mixinEntry = "dev/resivore/slotreservations/mixin/client/MouseTweaksMainMixin.class";
             CompiledClassShape mixin = classShape(archive, mixinEntry);
-            assertTrue(mixin.interfaces().contains("yalter/mousetweaks/api/IMTModGuiContainer3Ex"),
-                    "The packaged screen mixin must add Mouse Tweaks' real extended-provider interface");
+            assertTrue(mixin.interfaces().isEmpty(),
+                    "The helper injection must not implement or package Mouse Tweaks' provider API");
             assertTrue(mixin.annotations().contains("Lorg/spongepowered/asm/mixin/Pseudo;"));
             assertTrue(mixin.annotations().contains("Lorg/spongepowered/asm/mixin/Mixin;"));
-            assertEquals(Set.of("net/minecraft/client/gui/screens/inventory/AbstractContainerScreen"),
-                    mixin.mixinTargets());
+            assertEquals(Set.of(MAIN), mixin.mixinTargets());
 
-            Set<String> providerMethods = Set.of(
-                    "MT_isMouseTweaksDisabled()Z",
-                    "MT_isWheelTweakDisabled()Z",
-                    "MT_getSlots()Ljava/util/List;",
-                    "MT_getSlotUnderMouse(DD)Lnet/minecraft/world/inventory/Slot;",
-                    "MT_isCraftingOutput(Lnet/minecraft/world/inventory/Slot;)Z",
-                    "MT_isIgnored(Lnet/minecraft/world/inventory/Slot;)Z",
-                    "MT_disableRMBDraggingFunctionality()Z",
-                    "MT_clickSlot(Lnet/minecraft/world/inventory/Slot;ILnet/minecraft/world/inventory/ContainerInput;)V"
-            );
-            for (String method : providerMethods) {
-                Integer access = mixin.methods().get(method);
-                assertTrue(access != null && (access & Opcodes.ACC_PUBLIC) != 0,
-                        "Packaged mixin is missing public provider method " + method);
-            }
+            String beforeDescriptor = RMB_HELPER_DESCRIPTOR.substring(0,
+                    RMB_HELPER_DESCRIPTOR.length() - 2)
+                    + "Lorg/spongepowered/asm/mixin/injection/callback/CallbackInfo;)V";
+            assertTrue(mixin.methods().containsKey(
+                    "containerSlotReservations$beforeNativeRmbSlotEntry" + beforeDescriptor));
+            assertTrue(mixin.methods().containsKey(
+                    "containerSlotReservations$afterNativeRmbSlotEntry" + beforeDescriptor));
+            String dragObserverDescriptor =
+                    "(Lorg/spongepowered/asm/mixin/injection/callback/CallbackInfoReturnable;)V";
+            assertTrue(mixin.methods().containsKey(
+                    "containerSlotReservations$observeNativeRmbSlotIdentity" + dragObserverDescriptor));
 
-            List<Instruction> click = methodInstructions(archive, mixinEntry, "MT_clickSlot",
-                    "(Lnet/minecraft/world/inventory/Slot;ILnet/minecraft/world/inventory/ContainerInput;)V");
-            String panelOwner = "dev/resivore/slotreservations/client/ShulkerPanel";
-            int before = methodIndex(click, panelOwner, "beforeMouseTweaksNativeClick",
-                    "(Lnet/minecraft/world/inventory/Slot;ILnet/minecraft/world/inventory/ContainerInput;)"
-                            + "Ldev/resivore/slotreservations/client/ShulkerPanel$NativeClickPlan;", 0);
-            int invoke = methodIndex(click,
-                    "dev/resivore/slotreservations/client/ShulkerPanel$NativeClickPlan",
-                    "invoke", "()Z", before + 1);
-            int allowedJump = nextExecutable(click, invoke + 1);
-            assertEquals(Opcodes.IFNE, click.get(allowedJump).opcode(),
-                    "A false native-click plan must return before the invoker");
-            int suppressedReturn = nextExecutable(click, allowedJump + 1);
-            assertEquals(Opcodes.RETURN, click.get(suppressedReturn).opcode());
-            int allowedTarget = jumpTargetIndex(click, allowedJump);
-            int nativeInvoker = methodIndex(click,
-                    "dev/resivore/slotreservations/mixin/client/ContainerScreenMouseAccess",
-                    "containerSlotReservations$clickSlot",
-                    "(Lnet/minecraft/world/inventory/Slot;IILnet/minecraft/world/inventory/ContainerInput;)V",
-                    allowedTarget);
-            int afterNormal = methodIndex(click, panelOwner, "afterMouseTweaksNativeClick",
-                    "(Ldev/resivore/slotreservations/client/ShulkerPanel$NativeClickPlan;Z)V",
-                    nativeInvoker + 1);
-            int afterExceptional = methodIndex(click, panelOwner, "afterMouseTweaksNativeClick",
-                    "(Ldev/resivore/slotreservations/client/ShulkerPanel$NativeClickPlan;Z)V",
-                    afterNormal + 1);
-            int rethrow = opcodeIndex(click, Opcodes.ATHROW, afterExceptional + 1);
-            assertTrue(before >= 0 && invoke > before && allowedTarget > suppressedReturn
-                            && nativeInvoker >= allowedTarget && afterNormal > nativeInvoker
-                            && afterExceptional > afterNormal && rethrow > afterExceptional,
-                    "Packaged provider must guard the native invoker and run its post hook on normal and exceptional exits");
+            List<Instruction> before = methodInstructions(archive, mixinEntry,
+                    "containerSlotReservations$beforeNativeRmbSlotEntry", beforeDescriptor);
+            int decision = methodIndex(before,
+                    "dev/resivore/slotreservations/client/CarriedShulkerMouseTweaks",
+                    "beforeMouseTweaksSlot", "(Lnet/minecraft/world/inventory/Slot;)Z", 0);
+            int conditional = nextExecutable(before, decision + 1);
+            int cancel = methodIndex(before,
+                    "org/spongepowered/asm/mixin/injection/callback/CallbackInfo",
+                    "cancel", "()V", conditional + 1);
+            assertEquals(Opcodes.IFEQ, before.get(conditional).opcode());
+            assertTrue(decision >= 0 && cancel > conditional,
+                    "The HEAD hook must cancel only coordinator-owned helper entries");
 
-            String pluginEntry = "dev/resivore/slotreservations/mixin/client/MouseTweaksMixinPlugin.class";
-            List<Instruction> plugin = methodInstructions(archive, pluginEntry, "shouldApplyMixin",
-                    "(Ljava/lang/String;Ljava/lang/String;)Z");
-            int optionalName = ldcIndex(plugin,
-                    "dev.resivore.slotreservations.mixin.client.MouseTweaksContainerScreenMixin", 0);
-            int nameMatch = methodIndex(plugin, "java/lang/String", "equals", "(Ljava/lang/Object;)Z",
-                    optionalName + 1);
-            int loader = methodIndex(plugin, "net/fabricmc/loader/api/FabricLoader", "getInstance",
-                    "()Lnet/fabricmc/loader/api/FabricLoader;", nameMatch + 1);
-            int modId = ldcIndex(plugin, "mousetweaks", loader + 1);
-            int loaded = methodIndex(plugin, "net/fabricmc/loader/api/FabricLoader", "isModLoaded",
-                    "(Ljava/lang/String;)Z", modId + 1);
-            assertTrue(optionalName >= 0 && nameMatch > optionalName && loader > nameMatch
-                            && modId > loader && loaded > modId,
-                    "The packaged mixin plugin must gate exactly the optional provider on mod id mousetweaks");
-            int nonOptionalJump = nextExecutable(plugin, nameMatch + 1);
-            int missingProviderJump = nextExecutable(plugin, loaded + 1);
-            assertEquals(Opcodes.IFEQ, plugin.get(nonOptionalJump).opcode(),
-                    "A different mixin name must bypass the optional-mod check");
-            assertEquals(Opcodes.IFEQ, plugin.get(missingProviderJump).opcode(),
-                    "The optional provider must be rejected when Mouse Tweaks is not loaded");
-            int accepted = jumpTargetIndex(plugin, nonOptionalJump);
-            int rejected = jumpTargetIndex(plugin, missingProviderJump);
-            assertEquals(Opcodes.ICONST_1, plugin.get(nextExecutable(plugin, accepted + 1)).opcode(),
-                    "Non-optional mixins must remain applicable");
-            assertEquals(Opcodes.ICONST_0, plugin.get(nextExecutable(plugin, rejected + 1)).opcode(),
-                    "The Mouse Tweaks provider must be inapplicable when the mod is absent");
-            assertEquals(Opcodes.ICONST_1,
-                    plugin.get(nextExecutable(plugin, missingProviderJump + 1)).opcode(),
-                    "A loaded Mouse Tweaks provider must make the optional mixin applicable");
+            List<Instruction> after = methodInstructions(archive, mixinEntry,
+                    "containerSlotReservations$afterNativeRmbSlotEntry", beforeDescriptor);
+            assertTrue(methodIndex(after,
+                    "dev/resivore/slotreservations/client/CarriedShulkerMouseTweaks",
+                    "afterMouseTweaksSlot", "(Lnet/minecraft/world/inventory/Slot;)V", 0) >= 0,
+                    "The RETURN hook must validate and advance the native outbound result");
 
-            assertFalse(archive.stream().anyMatch(entry -> entry.getName().startsWith("yalter/mousetweaks/")),
-                    "The applicability contract must use the provider's API rather than bundling its stub");
+            List<Instruction> dragObserver = methodInstructions(archive, mixinEntry,
+                    "containerSlotReservations$observeNativeRmbSlotIdentity", dragObserverDescriptor);
+            assertTrue(methodIndex(dragObserver,
+                    "dev/resivore/slotreservations/client/CarriedShulkerMouseTweaks",
+                    "observeMouseTweaksDrag", "(Lnet/minecraft/world/inventory/Slot;)V", 0) >= 0,
+                    "The full drag RETURN hook must expose Mouse Tweaks' null-slot boundary");
+
+            assertFalse(archive.stream().anyMatch(entry ->
+                            entry.getName().startsWith("yalter/mousetweaks/")),
+                    "The release must remain safe when Mouse Tweaks is absent");
+            assertFalse(archive.stream().anyMatch(entry -> entry.getName().endsWith(
+                            "MouseTweaksContainerScreenMixin.class")),
+                    "The retired virtual-provider bridge must not ship");
         }
+
+        String plugin = source("mixin/client/MouseTweaksMixinPlugin.java");
+        String mixinJson = Files.readString(ROOT.resolve(
+                "src/main/resources/container_slot_reservations.client.mixins.json"));
+        assertTrue(plugin.contains(
+                "dev.resivore.slotreservations.mixin.client.MouseTweaksMainMixin"));
+        assertTrue(plugin.contains("isModLoaded(\"mousetweaks\")"));
+        assertTrue(mixinJson.contains("\"MouseTweaksMainMixin\""));
+        assertFalse(mixinJson.contains("MouseTweaksContainerScreenMixin"));
     }
 
     @Test
-    void bridgeIsOptionalTransientAndRoutesMutationsThroughExistingAuthority() throws IOException {
-        String panel = source("client/ShulkerPanel.java");
-        String mixin = source("mixin/client/MouseTweaksContainerScreenMixin.java");
-        String plugin = source("mixin/client/MouseTweaksMixinPlugin.java");
-        String wheel = source("client/MouseTweaksCompatibility.java");
-        String client = source("client/ContainerSlotReservationsClient.java");
-        String gesture = source("client/MouseTweaksRmbGesture.java");
+    void canary23LatchesOneOfThreeModesAndChainsInboundFingerprints() throws IOException {
+        String gesture = source("client/CarriedShulkerRmbGesture.java");
+        String coordinator = source("client/CarriedShulkerMouseTweaks.java");
+        String compatibility = source("client/MouseTweaksCompatibility.java");
+        String mixin = source("mixin/client/MouseTweaksMainMixin.java");
         String screen = source("mixin/client/AbstractContainerScreenMixin.java");
-        String actions = source("ShulkerPanelActions.java");
+        String payload = source("network/CarriedShulkerInventoryActionPayload.java");
+        String actions = source("CarriedShulkerInventoryActions.java");
         String networking = source("ReservationNetworking.java");
-        String trace = source("MouseTweaksTrace.java");
-        String content = source("network/ShulkerPanelContentActionPayload.java");
-        String payload = source("network/ShulkerPanelMenuQuickMovePayload.java");
+        String allMainJava = allMainJava();
 
-        assertTrue(panel.contains("MOUSE_TWEAKS_VIRTUAL_CONTAINER"));
-        assertTrue(panel.contains("Transient read-only view"));
-        assertTrue(panel.contains("beginMouseTweaksRightGesture"));
-        assertTrue(panel.contains("MOUSE_TWEAKS_RMB_GESTURE"));
-        assertTrue(panel.contains("mouseTweaksShadowFingerprint"));
-        assertTrue(panel.contains("ShulkerTransferPlanner.planExactInsertion"));
-        assertTrue(panel.contains("SECONDARY_DEPOSIT"));
-        assertFalse(panel.contains("if (MOUSE_TWEAKS_RMB_GESTURE.upstreamArmed()) return true"),
-                "Configuration eligibility must not suppress fallback without an observed provider action");
-        assertTrue(panel.contains("dispatchMouseTweaksSecondary(slot, \"post-upstream-screen-fallback\")"));
-        assertTrue(panel.contains("dispatchMouseTweaksSecondary(slot, \"mouse-tweaks-provider\")"));
-        int sharedClaim = panel.indexOf("if (!MOUSE_TWEAKS_RMB_GESTURE.enterPanelCell(slot)");
-        int claimedTrace = panel.indexOf("MouseTweaksTrace.event(8, \"CSR virtual cell claimed\"", sharedClaim);
-        assertTrue(sharedClaim >= 0 && claimedTrace > sharedClaim,
-                "Provider and post-upstream fallback must share one cell-identity claim before stage 8");
-        assertTrue(gesture.contains("cell == lastPanelCell"),
-                "The shared claim must deduplicate provider and fallback actions for the same cell");
-        assertTrue(panel.contains("mouseTweaksDepositBridge"),
-                "An already-open panel must remain available for ordinary-slot -> panel deposit gestures");
-        assertTrue(panel.contains("mouseTweaksPreGestureRetention"));
-        assertTrue(panel.contains("if (!carrying) mouseTweaksPreGestureRetention = false;"));
-        assertTrue(panel.contains("retainPanel(mouseTweaksPreGestureRetention, carrying)"));
-        assertTrue(panel.contains("GLFW.glfwGetMouseButton"));
-        assertTrue(panel.contains("== GLFW.GLFW_RELEASE"),
-                "Physical RMB state must backstop a short-circuited release callback");
-        assertFalse(panel.contains("!binding.menu().getCarried().isEmpty() || MOUSE_TWEAKS_RMB_GESTURE.isActive()"),
-                "A remaining cursor stack must not keep the panel sticky after release");
-        int liveRebaseStart = panel.indexOf("if (MOUSE_TWEAKS_RMB_GESTURE.takeShadowNeedsLiveCarried())");
-        int liveRebaseEnd = panel.indexOf("ItemStack changedHost;", liveRebaseStart);
-        assertTrue(liveRebaseStart >= 0 && liveRebaseEnd > liveRebaseStart);
-        String liveRebase = panel.substring(liveRebaseStart, liveRebaseEnd);
-        assertEquals(1, occurrences(liveRebase, "mouseTweaksShadowHost ="),
-                "Only the first menu-origin boundary may refresh the projected host");
-        assertEquals(1, occurrences(liveRebase, "mouseTweaksShadowFingerprint ="),
-                "Only the first menu-origin boundary may refresh the projected fingerprint");
-        assertEquals(1, occurrences(liveRebase, "mouseTweaksShadowCarried ="),
-                "No post-panel native action may replace the projection with a stale live cursor");
-        assertTrue(panel.contains("beforeMouseTweaksNativeClick"));
-        assertTrue(panel.contains("afterMouseTweaksNativeClick"));
-        assertTrue(panel.contains("canProjectNativePlaceOne"));
-        assertTrue(panel.contains("applyNativeCursorDelta"));
-        assertTrue(panel.contains("projected cursor exhausted"));
-        assertTrue(gesture.contains("blockedUntilRelease"));
-        assertTrue(panel.contains("isBlockedUntilRelease()"));
-        assertTrue(panel.contains("blockMouseTweaksRightGesture()"));
-        int providerStart = panel.indexOf("public static boolean mouseTweaksClick");
-        int providerEnd = panel.indexOf("public static final class NativeClickPlan", providerStart);
-        String provider = panel.substring(providerStart, providerEnd);
-        assertTrue(provider.contains("MOUSE_TWEAKS_RMB_GESTURE.isActive()"));
-        assertTrue(provider.contains("dispatchMouseTweaksSecondary"));
-        assertTrue(provider.indexOf("return true;", provider.indexOf("dispatchMouseTweaksSecondary")) >= 0,
-                "A blocked active gesture must remain provider-owned instead of falling through");
-        int dragStart = panel.indexOf("public static boolean drag");
-        int dragEnd = panel.indexOf("public static boolean release", dragStart);
-        String drag = panel.substring(dragStart, dragEnd);
-        assertTrue(drag.contains("if (MOUSE_TWEAKS_RMB_GESTURE.isActive())"));
-        assertTrue(drag.contains("dispatchMouseTweaksSecondary"));
-        assertTrue(drag.lastIndexOf("return true;") > drag.indexOf("dispatchMouseTweaksSecondary"),
-                "The screen fallback must consume a blocked held-RMB gesture");
-        assertTrue(panel.contains("target.container == binding.slot().container"),
-                "A physical alias of the bound host must not bypass the projected-host guard");
-        int beforeNative = mixin.indexOf("beforeMouseTweaksNativeClick");
-        int suppressNative = mixin.indexOf("if (!plan.invoke()) return;", beforeNative);
-        int nativeInvoker = mixin.indexOf("containerSlotReservations$clickSlot", suppressNative);
-        int afterNative = mixin.indexOf("afterMouseTweaksNativeClick", nativeInvoker);
-        assertTrue(beforeNative >= 0 && suppressNative > beforeNative && nativeInvoker > suppressNative
-                        && afterNative > nativeInvoker,
-                "The guarded before/native/after sequence is part of the Mouse Tweaks compatibility contract");
-        int beforeMethod = panel.indexOf("public static NativeClickPlan beforeMouseTweaksNativeClick");
-        int afterMethod = panel.indexOf("public static void afterMouseTweaksNativeClick", beforeMethod);
-        int nextMethod = panel.indexOf("public static boolean mouseTweaksQuickMoveFromMenuSlot", afterMethod);
-        String nativeProjection = panel.substring(beforeMethod, nextMethod);
-        assertTrue(nativeProjection.contains("markUnprojectedNativeBoundary()"));
-        assertFalse(nativeProjection.contains("mouseTweaksShadowHost ="));
-        assertFalse(nativeProjection.contains("mouseTweaksShadowFingerprint ="),
-                "Native place-one projection must preserve the projected predecessor host/fingerprint");
-        assertTrue(panel.contains("mouseTweaksQuickMoveFromMenuSlot"));
-        assertTrue(panel.contains("MouseTweaksCompatibility.consumeWheel"));
-        assertTrue(mixin.contains("implements IMTModGuiContainer3Ex"));
-        assertTrue(mixin.contains("Mouse Tweaks extended provider selected"));
-        assertTrue(mixin.contains("Mouse Tweaks requested slot under pointer"));
-        assertTrue(mixin.contains("Mouse Tweaks invoked slot action"));
-        assertTrue(mixin.contains("ContainerInput.QUICK_MOVE"));
-        assertTrue(mixin.contains("beforeMouseTweaksNativeClick"));
-        assertTrue(screen.contains("beginMouseTweaksRightGesture"));
-        assertTrue(client.contains("ScreenMouseEvents.allowMouseClick(screen)"));
-        assertTrue(client.contains("ScreenMouseEvents.allowMouseRelease(screen)"));
-        assertTrue(client.contains("Fabric RMB press observed"));
-        assertTrue(client.contains("ShulkerPanel.endMouseTweaksRightGesture()"));
-        assertTrue(gesture.contains("COLLECTION_SOURCE"));
-        assertTrue(gesture.contains("DEPOSIT"));
-        assertTrue(gesture.contains("enterPanelCell"));
-        assertTrue(gesture.contains("reset()"));
-        assertFalse(gesture.contains("upstreamArmed"));
-        assertTrue(plugin.contains("isModLoaded(\"mousetweaks\")"));
-        assertTrue(wheel.contains("Class.forName(\"yalter.mousetweaks.Main\", false"));
-        assertTrue(actions.contains("handleMenuQuickMove"));
-        assertTrue(actions.contains("SECONDARY_DEPOSIT"));
-        assertTrue(content.contains("PRIMARY, SECONDARY, QUICK_MOVE, SECONDARY_DEPOSIT"),
-                "C21 must append its wire action without renumbering accepted C20 actions");
-        assertTrue(actions.contains("ShulkerTransferPlanner.planInsertion(host.stack(), before)"));
-        assertTrue(actions.contains("ShulkerHostResolver.removableSource(player, source)"));
-        assertTrue(trace.contains("container_slot_reservations.debugMouseTweaks"));
-        assertTrue(trace.contains("if (enabled())"), "Finished Canary tracing must be disabled by default");
-        assertTrue(networking.contains("Server received content payload"));
-        assertTrue(actions.contains("Host and fingerprint accepted"));
-        assertTrue(actions.contains("Reservation/native insertion result"));
-        assertTrue(actions.contains("Insertion planner result"));
-        assertTrue(actions.contains("Mutation committed"));
-        int authoritativeSync = actions.indexOf("synchronizeCommittedMenu(player, host.menu());");
-        int committedTrace = actions.indexOf("MouseTweaksTrace.event(17, \"Mutation committed\"",
-                authoritativeSync);
-        assertTrue(authoritativeSync >= 0 && committedTrace > authoritativeSync,
-                "The server must synchronize its host/cursor mutation before reporting commit");
-        assertTrue(actions.contains("menu.broadcastFullState()"));
-        assertTrue(actions.contains("menu.broadcastChanges()"));
-        assertFalse(actions.contains("MouseTweaksTrace.event(18"),
-                "Stage 18 is a client receipt, not a server send");
-        assertTrue(panel.contains("MouseTweaksTrace.event(18, \"Authoritative host/cursor sync received\""));
-        assertTrue(panel.contains("acceptedBinding="));
-        assertTrue(payload.contains("String hostFingerprint"));
+        String modes = between(gesture, "enum Mode {", "}");
+        assertTrue(modes.contains("INACTIVE"));
+        assertTrue(modes.contains("SHULKER_TO_INVENTORY"));
+        assertTrue(modes.contains("INVENTORY_TO_SHULKER"));
+        assertEquals(3, modes.split(",").length,
+                "The gesture state must remain the explicit inactive/two-direction model");
+        assertTrue(gesture.contains("initialSlotOccupied ? Mode.INVENTORY_TO_SHULKER : Mode.SHULKER_TO_INVENTORY"));
+        assertTrue(gesture.contains("slot.equals(currentSlot)"),
+                "Consecutive identity repeats must be deduplicated without suppressing later re-entry");
+        assertTrue(gesture.contains("creativePhysicalPlayerSlot"));
+        assertTrue(gesture.contains("creativeCoordinate >= 36 && creativeCoordinate <= 44"));
+        assertTrue(gesture.contains("validLiveFingerprints"));
+
+        assertTrue(coordinator.contains("ShulkerTransferPlanner.planInsertion("),
+                "Inbound actions must project the whole-shulker planner, never one-item clicks");
+        assertTrue(coordinator.contains("!MouseTweaksCompatibility.ownsRightDrag()"));
+        assertTrue(coordinator.contains("carried.getCount() != 1"));
+        assertTrue(coordinator.contains("!SupportedContainerResolver.isSupportedShulkerItem(carried)"),
+                "An ordinary non-shulker cursor must never activate CSR's special gesture");
+        assertTrue(coordinator.contains("new CarriedShulkerInventoryActionPayload("));
+        assertTrue(coordinator.contains("GESTURE.projectedFingerprint()"));
+        assertTrue(coordinator.contains("GESTURE.projectedSource("),
+                "Repeated rapid entries must plan from each slot's projected predecessor");
+        assertTrue(coordinator.contains("sourceFingerprint"));
+        assertTrue(coordinator.contains("GESTURE.advance("));
+        assertTrue(coordinator.contains("GESTURE.advanceSource("));
+        assertTrue(coordinator.contains("target.container != player.getInventory()"));
+        assertTrue(coordinator.contains("physical >= ORDINARY_PLAYER_SLOT_COUNT"));
+        assertTrue(coordinator.contains("candidateScreen instanceof CreativeModeInventoryScreen;"),
+                "Every Creative tab must use physical-slot authority, not only the inventory tab");
+        assertTrue(coordinator.contains("GESTURE.observe("),
+                "Mouse Tweaks' blank-area transition must update consecutive slot identity");
+        assertTrue(coordinator.contains("if (target.hasItem()) dispatchInventoryToShulker"));
+        assertTrue(coordinator.contains("if (target.hasItem() || !ItemStack.matches("),
+                "The outbound latch must preserve only the proven empty-slot native path");
+        String begin = between(coordinator, "public static boolean begin(",
+                "/**\n     * Runs at HEAD of Mouse Tweaks");
+        assertTrue(begin.contains("nativeOutboundSlot = target;"));
+        assertTrue(begin.contains("planExpectedNativeResult(client.player, target, carried);"),
+                "The native empty-origin press must project its synchronous F0 -> F1 result");
+
+        assertTrue(payload.contains("int menuId"));
+        assertTrue(payload.contains("int menuSlot"));
+        assertTrue(payload.contains("int physicalPlayerSlot"));
+        assertTrue(payload.contains("String carriedFingerprint"));
+        assertTrue(payload.contains("String sourceFingerprint"));
         assertFalse(payload.contains("ItemStack"));
         assertFalse(payload.contains("ItemStackTemplate"));
+
+        assertTrue(actions.contains("physicalPlayerSlot < 0"));
+        assertTrue(actions.contains("physicalPlayerSlot >= Inventory.INVENTORY_SIZE"));
+        assertTrue(actions.contains("menuSlot != -1 || menu != player.inventoryMenu"),
+                "Only the Creative client facade may resolve by physical slot alone");
+        assertTrue(actions.contains("action.carriedFingerprint()"));
+        assertTrue(actions.contains("action.sourceFingerprint()"));
+        assertTrue(actions.contains("ShulkerContextualTransfers.insertFromSlot("));
+        assertTrue(networking.contains("CarriedShulkerInventoryActionPayload.TYPE"));
+        assertTrue(networking.contains("CarriedShulkerInventoryActions.handle("));
+        assertTrue(compatibility.contains("isModLoaded(MOD_ID)"));
+        assertTrue(compatibility.contains("getField(\"rmbTweak\").getBoolean(config)"),
+                "A disabled Mouse Tweaks RMB tweak must leave the optional gesture inactive");
+
+        assertTrue(mixin.contains("method = \"rmbTweakMaybeClickSlot\""));
+        assertTrue(mixin.contains("method = \"onMouseDrag\""));
+        assertTrue(mixin.contains("oldSelectedSlot"));
+        assertTrue(mixin.contains("at = @At(\"HEAD\")"));
+        assertTrue(mixin.contains("at = @At(\"RETURN\")"));
+        assertTrue(screen.contains("CarriedShulkerMouseTweaks.begin("));
+        assertTrue(screen.contains("CarriedShulkerMouseTweaks.afterInitialNativePress()"),
+                "The screen-click RETURN hook must accept the verified native origin result");
+        assertTrue(screen.contains("CarriedShulkerMouseTweaks.reset()"));
+
+        for (String retired : List.of(
+                "MouseTweaksRmbGesture",
+                "MouseTweaksContainerScreenMixin",
+                "IMTModGuiContainer3Ex",
+                "MOUSE_TWEAKS_VIRTUAL_CONTAINER",
+                "mouseTweaksShadowFingerprint",
+                "SECONDARY_DEPOSIT",
+                "ShulkerPanelMenuQuickMovePayload")) {
+            assertFalse(allMainJava.contains(retired),
+                    "Canary 23 must remove the retired C20-C22 bridge: " + retired);
+        }
     }
 
-    @Test
-    void releaseArtifactDoesNotShipAMouseTweaksApiStub() throws IOException {
-        Path artifact = Path.of(System.getProperty("canary12Artifact"));
-        try (JarFile archive = new JarFile(artifact.toFile())) {
-            assertFalse(archive.stream().anyMatch(entry -> entry.getName().startsWith("yalter/mousetweaks/")));
-        }
+    private static void assertOccupiedCompatibilityGatePrecedesClick(JarFile archive)
+            throws IOException {
+        List<Instruction> code = methodInstructions(
+                archive, MAIN + ".class", "rmbTweakMaybeClickSlot", RMB_HELPER_DESCRIPTOR);
+        int bundle = typeIndex(code, Opcodes.INSTANCEOF,
+                "net/minecraft/world/item/BundleItem", 0);
+        int bundleBypass = nextExecutable(code, bundle + 1);
+        int targetStack = methodIndex(code, "net/minecraft/world/inventory/Slot",
+                "getItem", "()Lnet/minecraft/world/item/ItemStack;", bundleBypass + 1);
+        int compatible = methodIndex(code, MAIN, "areStacksCompatible",
+                "(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/ItemStack;)Z",
+                targetStack + 1);
+        int compatibilityBranch = nextExecutable(code, compatible + 1);
+        int incompatibleReturn = nextExecutable(code, compatibilityBranch + 1);
+        int count = methodIndex(code, "net/minecraft/world/item/ItemStack",
+                "getCount", "()I", jumpTargetIndex(code, compatibilityBranch));
+        int capacity = methodIndex(code, "net/minecraft/world/inventory/Slot",
+                "getMaxStackSize", "(Lnet/minecraft/world/item/ItemStack;)I", count + 1);
+        int click = methodIndex(code, "yalter/mousetweaks/IGuiScreenHandler",
+                "clickSlot",
+                "(Lnet/minecraft/world/inventory/Slot;Lyalter/mousetweaks/MouseButton;Z)V",
+                capacity + 1);
+
+        assertEquals(Opcodes.IFNE, code.get(bundleBypass).opcode(),
+                "Bundles alone bypass the ordinary stack compatibility gate");
+        assertEquals(Opcodes.IFNE, code.get(compatibilityBranch).opcode());
+        assertEquals(Opcodes.RETURN, code.get(incompatibleReturn).opcode(),
+                "An incompatible occupied target returns before Mouse Tweaks invokes a click");
+        assertTrue(bundle >= 0 && targetStack > bundleBypass && compatible > targetStack
+                        && count > incompatibleReturn && capacity > count && click > capacity,
+                "The exact helper must retain compatibility and capacity guards before clickSlot");
+    }
+
+    private static void assertSameIdentityReturnsBeforeAnyDragAction(JarFile archive)
+            throws IOException {
+        List<Instruction> code = dragInstructions(archive);
+        int lookup = methodIndex(code, "yalter/mousetweaks/IGuiScreenHandler",
+                "getSlotUnderMouse", "(DD)Lnet/minecraft/world/inventory/Slot;", 0);
+        int sameSlotLoad = fieldIndex(code, Opcodes.GETSTATIC, MAIN, "oldSelectedSlot",
+                "Lnet/minecraft/world/inventory/Slot;", lookup + 1);
+        int identityBranch = nextExecutable(code, sameSlotLoad + 1);
+        int falseConstant = nextExecutable(code, identityBranch + 1);
+        int falseReturn = nextExecutable(code, falseConstant + 1);
+        int carried = methodIndex(code, "net/minecraft/world/inventory/AbstractContainerMenu",
+                "getCarried", "()Lnet/minecraft/world/item/ItemStack;",
+                jumpTargetIndex(code, identityBranch));
+
+        assertEquals(Opcodes.IF_ACMPNE, code.get(identityBranch).opcode(),
+                "Mouse Tweaks must deduplicate by Slot object identity");
+        assertEquals(Opcodes.ICONST_0, code.get(falseConstant).opcode());
+        assertEquals(Opcodes.IRETURN, code.get(falseReturn).opcode());
+        assertTrue(lookup >= 0 && sameSlotLoad > lookup && carried > falseReturn,
+                "Same-slot identity must return before cursor capture or helper execution");
+    }
+
+    private static void assertOriginThenCurrentHelperOrder(JarFile archive) throws IOException {
+        List<Instruction> code = dragInstructions(archive);
+        List<Integer> helperCalls = methodIndices(code, MAIN, "rmbTweakMaybeClickSlot",
+                RMB_HELPER_DESCRIPTOR);
+        assertEquals(2, helperCalls.size(),
+                "Exact 2.31 must expose one origin replay and one current-slot helper call");
+        int origin = helperCalls.get(0);
+        int current = helperCalls.get(1);
+        int oldSlotLoad = fieldIndex(code, Opcodes.GETSTATIC, MAIN, "oldSelectedSlot",
+                "Lnet/minecraft/world/inventory/Slot;", 0);
+        int enteredSlotStore = fieldIndex(code, Opcodes.PUTSTATIC, MAIN, "oldSelectedSlot",
+                "Lnet/minecraft/world/inventory/Slot;", origin + 1);
+        int leftOriginStore = fieldIndex(code, Opcodes.PUTSTATIC, MAIN,
+                "rmbTweakLeftOriginalSlot", "Z", 0);
+        int disableVanillaDrag = methodIndex(code, "yalter/mousetweaks/IGuiScreenHandler",
+                "disableRMBDraggingFunctionality", "()Z", leftOriginStore + 1);
+
+        assertTrue(oldSlotLoad >= 0 && leftOriginStore > oldSlotLoad
+                        && disableVanillaDrag > leftOriginStore && origin > disableVanillaDrag
+                        && enteredSlotStore > origin && current > enteredSlotStore,
+                "The first transition must replay the origin, store the entered slot, then visit it");
+    }
+
+    private static void assertRmbPressArmingContract(JarFile archive) throws IOException {
+        List<Instruction> code = methodInstructions(
+                archive, MAIN + ".class", "onMouseClicked",
+                "(Lnet/minecraft/client/gui/screens/Screen;DDLyalter/mousetweaks/MouseButton;)Z");
+        int slotLookup = methodIndex(code, "yalter/mousetweaks/IGuiScreenHandler",
+                "getSlotUnderMouse", "(DD)Lnet/minecraft/world/inventory/Slot;", 0);
+        int slotStore = fieldIndex(code, Opcodes.PUTSTATIC, MAIN, "oldSelectedSlot",
+                "Lnet/minecraft/world/inventory/Slot;", slotLookup + 1);
+        int carried = methodIndex(code, "net/minecraft/world/inventory/AbstractContainerMenu",
+                "getCarried", "()Lnet/minecraft/world/item/ItemStack;", slotStore + 1);
+        int empty = methodIndex(code, "net/minecraft/world/item/ItemStack",
+                "isEmpty", "()Z", carried + 1);
+        int enabled = fieldIndex(code, Opcodes.GETFIELD,
+                "yalter/mousetweaks/Config", "rmbTweak", "Z", empty + 1);
+        int arm = fieldIndex(code, Opcodes.PUTSTATIC, MAIN, "canDoRMBDrag", "Z", enabled + 1);
+        int leaveOriginal = fieldIndex(code, Opcodes.PUTSTATIC, MAIN,
+                "rmbTweakLeftOriginalSlot", "Z", arm + 1);
+        assertTrue(slotLookup >= 0 && slotStore > slotLookup && carried > slotStore
+                        && empty > carried && enabled > empty && arm > enabled
+                        && leaveOriginal > arm,
+                "A nonempty cursor with RMB tweak enabled must arm from the captured origin slot");
+        assertEquals(Opcodes.ICONST_1, code.get(previousExecutable(code, arm - 1)).opcode());
+        assertEquals(Opcodes.ICONST_0,
+                code.get(previousExecutable(code, leaveOriginal - 1)).opcode());
+    }
+
+    private static List<Instruction> dragInstructions(JarFile archive) throws IOException {
+        return methodInstructions(archive, MAIN + ".class", "onMouseDrag",
+                "(Lnet/minecraft/client/gui/screens/Screen;DDLyalter/mousetweaks/MouseButton;)Z");
     }
 
     private static String source(String relative) throws IOException {
-        return Files.readString(ROOT.resolve("src/main/java/dev/resivore/slotreservations").resolve(relative));
+        return Files.readString(ROOT.resolve("src/main/java/dev/resivore/slotreservations")
+                .resolve(relative));
     }
 
-    private static int occurrences(String value, String needle) {
-        int count = 0;
-        for (int offset = 0; (offset = value.indexOf(needle, offset)) >= 0; offset += needle.length()) {
-            count++;
+    private static String allMainJava() throws IOException {
+        Path root = ROOT.resolve("src/main/java");
+        StringBuilder combined = new StringBuilder();
+        try (var paths = Files.walk(root)) {
+            for (Path path : paths.filter(value -> value.toString().endsWith(".java")).toList()) {
+                combined.append(Files.readString(path)).append('\n');
+            }
         }
-        return count;
+        return combined.toString();
+    }
+
+    private static String between(String text, String startMarker, String endMarker) {
+        int start = text.indexOf(startMarker);
+        assertTrue(start >= 0, "Missing source-contract marker: " + startMarker);
+        int end = text.indexOf(endMarker, start + startMarker.length());
+        assertTrue(end >= 0, "Missing source-contract marker: " + endMarker);
+        return text.substring(start + startMarker.length(), end);
     }
 
     private static Set<String> methods(JarFile archive, String entryName) throws IOException {
@@ -364,9 +387,8 @@ final class MouseTweaksCompatibilityContractTest {
         Set<String> fields = new HashSet<>();
         try (var stream = archive.getInputStream(archive.getJarEntry(entryName))) {
             new ClassReader(stream).accept(new ClassVisitor(Opcodes.ASM9) {
-                @Override public org.objectweb.asm.FieldVisitor visitField(int access, String name,
-                                                                            String descriptor, String signature,
-                                                                            Object value) {
+                @Override public org.objectweb.asm.FieldVisitor visitField(
+                        int access, String name, String descriptor, String signature, Object value) {
                     fields.add(name + ":" + descriptor);
                     return null;
                 }
@@ -395,135 +417,8 @@ final class MouseTweaksCompatibilityContractTest {
         return List.copyOf(calls);
     }
 
-    private static Set<Integer> directBooleanReturns(JarFile archive, String entryName,
-                                                     String selectedMethod) throws IOException {
-        Set<Integer> values = new HashSet<>();
-        try (var stream = archive.getInputStream(archive.getJarEntry(entryName))) {
-            new ClassReader(stream).accept(new ClassVisitor(Opcodes.ASM9) {
-                @Override public MethodVisitor visitMethod(int access, String name, String descriptor,
-                                                           String signature, String[] exceptions) {
-                    if (!name.equals(selectedMethod)) return null;
-                    return new MethodVisitor(Opcodes.ASM9) {
-                        private int previousOpcode = -1;
-
-                        @Override public void visitInsn(int opcode) {
-                            if (opcode == Opcodes.IRETURN) {
-                                assertTrue(previousOpcode == Opcodes.ICONST_0
-                                                || previousOpcode == Opcodes.ICONST_1,
-                                        "Expected an exact direct boolean return in " + selectedMethod);
-                                values.add(previousOpcode == Opcodes.ICONST_1 ? 1 : 0);
-                            }
-                            previousOpcode = opcode;
-                        }
-
-                        @Override public void visitVarInsn(int opcode, int varIndex) { previousOpcode = -1; }
-                        @Override public void visitFieldInsn(int opcode, String owner, String name,
-                                                             String descriptor) { previousOpcode = -1; }
-                        @Override public void visitMethodInsn(int opcode, String owner, String name,
-                                                              String descriptor, boolean isInterface) {
-                            previousOpcode = -1;
-                        }
-                        @Override public void visitJumpInsn(int opcode, org.objectweb.asm.Label label) {
-                            previousOpcode = -1;
-                        }
-                        @Override public void visitLdcInsn(Object value) { previousOpcode = -1; }
-                    };
-                }
-            }, ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
-        }
-        return Set.copyOf(values);
-    }
-
-    private static void assertRmbPressArmingContract(JarFile archive) throws IOException {
-        String main = "yalter/mousetweaks/Main";
-        List<Instruction> code = methodInstructions(
-                archive, main + ".class", "onMouseClicked",
-                "(Lnet/minecraft/client/gui/screens/Screen;DDLyalter/mousetweaks/MouseButton;)Z");
-
-        int slotLookup = methodIndex(code, "yalter/mousetweaks/IGuiScreenHandler",
-                "getSlotUnderMouse", "(DD)Lnet/minecraft/world/inventory/Slot;", 0);
-        int slotStore = fieldIndex(code, Opcodes.PUTSTATIC, main, "oldSelectedSlot",
-                "Lnet/minecraft/world/inventory/Slot;", slotLookup + 1);
-        int carried = methodIndex(code, "net/minecraft/world/inventory/AbstractContainerMenu",
-                "getCarried", "()Lnet/minecraft/world/item/ItemStack;", slotStore + 1);
-        int right = fieldIndex(code, Opcodes.GETSTATIC, "yalter/mousetweaks/MouseButton", "RIGHT",
-                "Lyalter/mousetweaks/MouseButton;", carried + 1);
-        int rightExit = opcodeIndex(code, Opcodes.IF_ACMPNE, right + 1);
-        int carriedEmpty = methodIndex(code, "net/minecraft/world/item/ItemStack", "isEmpty", "()Z",
-                rightExit + 1);
-        assertTrue(slotLookup >= 0 && slotStore > slotLookup && carried > slotStore
-                        && right > carried && rightExit > right && carriedEmpty > rightExit,
-                "Exact 2.31 must snapshot the pointed slot, then gate RMB arming on its carried stack");
-
-        int nonEmpty = assertFalseReturnFallthrough(code, carriedEmpty, Opcodes.IFEQ,
-                "An empty carried stack must reject RMB-drag arming");
-        int enabled = fieldIndex(code, Opcodes.GETFIELD, "yalter/mousetweaks/Config", "rmbTweak", "Z",
-                nonEmpty + 1);
-        assertTrue(enabled > nonEmpty,
-                "The nonempty-carried path must then consult the RMB-tweak configuration");
-        int enabledPath = assertFalseReturnFallthrough(code, enabled, Opcodes.IFNE,
-                "Disabled RMB tweaks must reject RMB-drag arming");
-        int arm = fieldIndex(code, Opcodes.PUTSTATIC, main, "canDoRMBDrag", "Z", enabledPath + 1);
-        int leaveOriginal = fieldIndex(code, Opcodes.PUTSTATIC, main, "rmbTweakLeftOriginalSlot", "Z",
-                arm + 1);
-        assertTrue(arm > enabledPath && leaveOriginal > arm,
-                "A nonempty carried stack with RMB tweaks enabled must arm the drag and reset its origin flag");
-        assertEquals(Opcodes.ICONST_1, code.get(previousExecutable(code, arm - 1)).opcode(),
-                "canDoRMBDrag must be set true");
-        assertEquals(Opcodes.ICONST_0, code.get(previousExecutable(code, leaveOriginal - 1)).opcode(),
-                "rmbTweakLeftOriginalSlot must be reset false");
-        assertTrue(jumpTargetIndex(code, rightExit) > leaveOriginal,
-                "Both arming writes must remain inside the RIGHT-button branch");
-
-        assertFalse(code.stream().anyMatch(instruction ->
-                        "net/minecraft/world/inventory/Slot".equals(instruction.owner())),
-                "RMB press arming must not query the initially hovered Slot's contents or capacity");
-        assertFalse(code.stream().anyMatch(instruction -> instruction.kind() == InstructionKind.FIELD
-                        && instruction.opcode() == Opcodes.GETSTATIC
-                        && main.equals(instruction.owner())
-                        && "oldSelectedSlot".equals(instruction.name())),
-                "The stored origin slot must not gate RMB press arming");
-    }
-
-    private static void assertExtendedHandlerPrecedesGenericHandler(JarFile archive) throws IOException {
-        List<Instruction> code = methodInstructions(
-                archive, "yalter/mousetweaks/Main.class", "findHandler",
-                "(Lnet/minecraft/client/gui/screens/Screen;)Lyalter/mousetweaks/IGuiScreenHandler;");
-        String api = "yalter/mousetweaks/api/IMTModGuiContainer3Ex";
-        String extendedHandler = "yalter/mousetweaks/handlers/IMTModGuiContainer3ExHandler";
-        String genericScreen = "net/minecraft/client/gui/screens/inventory/AbstractContainerScreen";
-        String genericHandler = "yalter/mousetweaks/handlers/GuiContainerHandler";
-
-        int extendedCheck = typeIndex(code, Opcodes.INSTANCEOF, api, 0);
-        assertTrue(extendedCheck >= 0, "findHandler must test the extended provider interface");
-        assertFalse(code.subList(0, extendedCheck).stream()
-                        .anyMatch(instruction -> instruction.opcode() == Opcodes.INSTANCEOF),
-                "The extended provider must be findHandler's first type test");
-        int extendedMiss = nextExecutable(code, extendedCheck + 1);
-        assertEquals(Opcodes.IFEQ, code.get(extendedMiss).opcode());
-        int afterExtendedBranch = jumpTargetIndex(code, extendedMiss);
-        int extendedNew = typeIndex(code, Opcodes.NEW, extendedHandler, extendedMiss + 1);
-        int extendedCast = typeIndex(code, Opcodes.CHECKCAST, api, extendedNew + 1);
-        int extendedConstructor = methodIndex(code, extendedHandler, "<init>",
-                "(Lyalter/mousetweaks/api/IMTModGuiContainer3Ex;)V", extendedCast + 1);
-        int extendedReturn = opcodeIndex(code, Opcodes.ARETURN, extendedConstructor + 1);
-        assertTrue(extendedNew > extendedMiss && extendedCast > extendedNew
-                        && extendedConstructor > extendedCast && extendedReturn > extendedConstructor
-                        && extendedReturn < afterExtendedBranch,
-                "The extended type test must construct and return IMTModGuiContainer3ExHandler");
-
-        int genericCheck = typeIndex(code, Opcodes.INSTANCEOF, genericScreen, afterExtendedBranch + 1);
-        int genericNew = typeIndex(code, Opcodes.NEW, genericHandler, genericCheck + 1);
-        int genericCast = typeIndex(code, Opcodes.CHECKCAST, genericScreen, genericNew + 1);
-        int genericConstructor = methodIndex(code, genericHandler, "<init>",
-                "(Lnet/minecraft/client/gui/screens/inventory/AbstractContainerScreen;)V", genericCast + 1);
-        int genericReturn = opcodeIndex(code, Opcodes.ARETURN, genericConstructor + 1);
-        assertTrue(genericCheck > extendedReturn && genericNew > genericCheck && genericCast > genericNew
-                        && genericConstructor > genericCast && genericReturn > genericConstructor,
-                "Generic AbstractContainerScreen handling must occur only after the extended-provider return");
-    }
-
-    private static CompiledClassShape classShape(JarFile archive, String entryName) throws IOException {
+    private static CompiledClassShape classShape(JarFile archive, String entryName)
+            throws IOException {
         var entry = archive.getJarEntry(entryName);
         assertTrue(entry != null, "Missing packaged class " + entryName);
         Set<String> interfaces = new HashSet<>();
@@ -534,9 +429,7 @@ final class MouseTweaksCompatibilityContractTest {
             new ClassReader(stream).accept(new ClassVisitor(Opcodes.ASM9) {
                 @Override public void visit(int version, int access, String name, String signature,
                                             String superName, String[] implementedInterfaces) {
-                    if (implementedInterfaces != null) {
-                        interfaces.addAll(List.of(implementedInterfaces));
-                    }
+                    if (implementedInterfaces != null) interfaces.addAll(List.of(implementedInterfaces));
                 }
 
                 @Override public AnnotationVisitor visitAnnotation(String descriptor, boolean visible) {
@@ -569,9 +462,9 @@ final class MouseTweaksCompatibilityContractTest {
                 Set.copyOf(mixinTargets), Map.copyOf(methods));
     }
 
-    private static List<Instruction> methodInstructions(JarFile archive, String entryName,
-                                                        String selectedMethod,
-                                                        String selectedDescriptor) throws IOException {
+    private static List<Instruction> methodInstructions(
+            JarFile archive, String entryName, String selectedMethod, String selectedDescriptor)
+            throws IOException {
         var entry = archive.getJarEntry(entryName);
         assertTrue(entry != null, "Missing class " + entryName);
         List<Instruction> instructions = new ArrayList<>();
@@ -615,13 +508,6 @@ final class MouseTweaksCompatibilityContractTest {
                                     owner, name, descriptor, isInterface));
                         }
 
-                        @Override public void visitInvokeDynamicInsn(String name, String descriptor,
-                                                                     org.objectweb.asm.Handle bootstrapMethodHandle,
-                                                                     Object... bootstrapMethodArguments) {
-                            instructions.add(new Instruction(InstructionKind.INVOKEDYNAMIC,
-                                    Opcodes.INVOKEDYNAMIC, null, name, descriptor, null));
-                        }
-
                         @Override public void visitJumpInsn(int opcode, Label label) {
                             instructions.add(new Instruction(InstructionKind.JUMP, opcode,
                                     null, null, null, label));
@@ -636,31 +522,25 @@ final class MouseTweaksCompatibilityContractTest {
                             instructions.add(new Instruction(InstructionKind.LDC, Opcodes.LDC,
                                     null, null, null, value));
                         }
-
-                        @Override public void visitIincInsn(int varIndex, int increment) {
-                            instructions.add(new Instruction(InstructionKind.IINC, Opcodes.IINC,
-                                    null, null, null, List.of(varIndex, increment)));
-                        }
                     };
                 }
             }, ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
         }
-        assertTrue(found[0], "Missing method " + selectedMethod + selectedDescriptor + " in " + entryName);
+        assertTrue(found[0], "Missing method " + selectedMethod + selectedDescriptor
+                + " in " + entryName);
         return List.copyOf(instructions);
     }
 
-    private static int assertFalseReturnFallthrough(List<Instruction> code, int predicate,
-                                                    int expectedJump,
-                                                    String message) {
-        int jump = nextExecutable(code, predicate + 1);
-        assertEquals(expectedJump, code.get(jump).opcode(), message);
-        int falseConstant = nextExecutable(code, jump + 1);
-        int falseReturn = nextExecutable(code, falseConstant + 1);
-        assertEquals(Opcodes.ICONST_0, code.get(falseConstant).opcode(), message);
-        assertEquals(Opcodes.IRETURN, code.get(falseReturn).opcode(), message);
-        int target = jumpTargetIndex(code, jump);
-        assertTrue(target > falseReturn, message);
-        return target;
+    private static List<Integer> methodIndices(List<Instruction> code, String owner, String name,
+                                               String descriptor) {
+        List<Integer> indices = new ArrayList<>();
+        for (int index = 0; index < code.size(); index++) {
+            Instruction instruction = code.get(index);
+            if (instruction.kind() == InstructionKind.METHOD
+                    && owner.equals(instruction.owner()) && name.equals(instruction.name())
+                    && descriptor.equals(instruction.descriptor())) indices.add(index);
+        }
+        return List.copyOf(indices);
     }
 
     private static int methodIndex(List<Instruction> code, String owner, String name,
@@ -668,8 +548,7 @@ final class MouseTweaksCompatibilityContractTest {
         for (int index = Math.max(0, start); index < code.size(); index++) {
             Instruction instruction = code.get(index);
             if (instruction.kind() == InstructionKind.METHOD
-                    && owner.equals(instruction.owner())
-                    && name.equals(instruction.name())
+                    && owner.equals(instruction.owner()) && name.equals(instruction.name())
                     && descriptor.equals(instruction.descriptor())) return index;
         }
         return -1;
@@ -680,8 +559,7 @@ final class MouseTweaksCompatibilityContractTest {
         for (int index = Math.max(0, start); index < code.size(); index++) {
             Instruction instruction = code.get(index);
             if (instruction.kind() == InstructionKind.FIELD && instruction.opcode() == opcode
-                    && owner.equals(instruction.owner())
-                    && name.equals(instruction.name())
+                    && owner.equals(instruction.owner()) && name.equals(instruction.name())
                     && descriptor.equals(instruction.descriptor())) return index;
         }
         return -1;
@@ -692,21 +570,6 @@ final class MouseTweaksCompatibilityContractTest {
             Instruction instruction = code.get(index);
             if (instruction.kind() == InstructionKind.TYPE && instruction.opcode() == opcode
                     && type.equals(instruction.owner())) return index;
-        }
-        return -1;
-    }
-
-    private static int ldcIndex(List<Instruction> code, Object value, int start) {
-        for (int index = Math.max(0, start); index < code.size(); index++) {
-            Instruction instruction = code.get(index);
-            if (instruction.kind() == InstructionKind.LDC && value.equals(instruction.operand())) return index;
-        }
-        return -1;
-    }
-
-    private static int opcodeIndex(List<Instruction> code, int opcode, int start) {
-        for (int index = Math.max(0, start); index < code.size(); index++) {
-            if (code.get(index).opcode() == opcode) return index;
         }
         return -1;
     }
@@ -735,9 +598,7 @@ final class MouseTweaksCompatibilityContractTest {
         throw new AssertionError("Missing jump target label for instruction " + jumpIndex);
     }
 
-    private enum InstructionKind {
-        INSN, INT, VAR, TYPE, FIELD, METHOD, INVOKEDYNAMIC, JUMP, LABEL, LDC, IINC
-    }
+    private enum InstructionKind { INSN, INT, VAR, TYPE, FIELD, METHOD, JUMP, LABEL, LDC }
 
     private record Instruction(InstructionKind kind, int opcode, String owner, String name,
                                String descriptor, Object operand) {}

@@ -3,8 +3,8 @@ package dev.resivore.slotreservations;
 import dev.resivore.slotreservations.network.ReservationActionPayload;
 import dev.resivore.slotreservations.network.ReservationSnapshotPayload;
 import dev.resivore.slotreservations.network.ReservationSnapshotRequestPayload;
+import dev.resivore.slotreservations.network.CarriedShulkerInventoryActionPayload;
 import dev.resivore.slotreservations.network.ShulkerPanelContentActionPayload;
-import dev.resivore.slotreservations.network.ShulkerPanelMenuQuickMovePayload;
 import dev.resivore.slotreservations.network.ShulkerPanelReservationActionPayload;
 import dev.resivore.slotreservations.network.ShulkerPanelSyncPayload;
 import dev.resivore.slotreservations.network.ShulkerSelectionPayload;
@@ -37,12 +37,12 @@ public final class ReservationNetworking {
     }
 
     public static void register() {
+        PayloadTypeRegistry.serverboundPlay().register(CarriedShulkerInventoryActionPayload.TYPE,
+                CarriedShulkerInventoryActionPayload.CODEC);
         PayloadTypeRegistry.serverboundPlay().register(ShulkerPanelReservationActionPayload.TYPE,
                 ShulkerPanelReservationActionPayload.CODEC);
         PayloadTypeRegistry.serverboundPlay().register(ShulkerPanelContentActionPayload.TYPE,
                 ShulkerPanelContentActionPayload.CODEC);
-        PayloadTypeRegistry.serverboundPlay().register(ShulkerPanelMenuQuickMovePayload.TYPE,
-                ShulkerPanelMenuQuickMovePayload.CODEC);
         PayloadTypeRegistry.serverboundPlay().register(ShulkerSelectionPayload.TYPE,
                 ShulkerSelectionPayload.CODEC);
         PayloadTypeRegistry.clientboundPlay().register(ShulkerPanelSyncPayload.TYPE,
@@ -56,20 +56,15 @@ public final class ReservationNetworking {
 
         ServerPlayNetworking.registerGlobalReceiver(ReservationActionPayload.TYPE, (payload, context) ->
                 context.server().execute(() -> handleAction(context.player(), payload)));
+        ServerPlayNetworking.registerGlobalReceiver(CarriedShulkerInventoryActionPayload.TYPE,
+                (payload, context) -> context.server().execute(() ->
+                        CarriedShulkerInventoryActions.handle(context.player(), payload)));
         ServerPlayNetworking.registerGlobalReceiver(ReservationSnapshotRequestPayload.TYPE, (payload, context) ->
                 context.server().execute(() -> handleSnapshotRequest(context.player(), payload)));
         ServerPlayNetworking.registerGlobalReceiver(ShulkerPanelReservationActionPayload.TYPE, (payload, context) ->
                 context.server().execute(() -> ShulkerPanelActions.handleReservation(context.player(), payload)));
         ServerPlayNetworking.registerGlobalReceiver(ShulkerPanelContentActionPayload.TYPE, (payload, context) ->
-                context.server().execute(() -> {
-                    MouseTweaksTrace.event(13, "Server received content payload",
-                            "player=" + context.player().getGameProfile().name()
-                                    + ", menu=" + payload.menuId() + ", cell=" + payload.internalSlot()
-                                    + ", click=" + payload.click());
-                    ShulkerPanelActions.handleContent(context.player(), payload);
-                }));
-        ServerPlayNetworking.registerGlobalReceiver(ShulkerPanelMenuQuickMovePayload.TYPE, (payload, context) ->
-                context.server().execute(() -> ShulkerPanelActions.handleMenuQuickMove(context.player(), payload)));
+                context.server().execute(() -> ShulkerPanelActions.handleContent(context.player(), payload)));
         ServerPlayNetworking.registerGlobalReceiver(ShulkerSelectionPayload.TYPE, (payload, context) ->
                 context.server().execute(() -> handleSelection(context.player(), payload)));
         ServerPlayConnectionEvents.DISCONNECT.register((handler, server) ->

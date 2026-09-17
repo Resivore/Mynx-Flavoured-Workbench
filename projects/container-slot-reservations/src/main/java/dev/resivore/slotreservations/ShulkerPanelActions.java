@@ -1,15 +1,12 @@
 package dev.resivore.slotreservations;
 
-import dev.resivore.slotreservations.api.ContainerSlotReservationsApi;
 import dev.resivore.slotreservations.network.ReservationActionPayload;
 import dev.resivore.slotreservations.network.ShulkerPanelContentActionPayload;
-import dev.resivore.slotreservations.network.ShulkerPanelMenuQuickMovePayload;
 import dev.resivore.slotreservations.network.ShulkerPanelReservationActionPayload;
 import dev.resivore.slotreservations.network.ShulkerPanelSyncPayload;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 
@@ -19,15 +16,11 @@ public final class ShulkerPanelActions {
     public static boolean handleContent(ServerPlayer player, ShulkerPanelContentActionPayload action) {
         if (action.click() == null || action.internalSlot() < 0
                 || action.internalSlot() >= ReservationData.SLOT_COUNT) {
-            return rejectContent(14, action, "invalid click or cell");
+            return false;
         }
         var resolved = ShulkerHostResolver.resolve(player, action.menuId(), action.host(), action.hostFingerprint());
-        if (resolved.isEmpty()) return rejectContent(14, action,
-                "menu/host/locator/fingerprint validation failed");
+        if (resolved.isEmpty()) return false;
         ShulkerHostResolver.ResolvedHost host = resolved.orElseThrow();
-        MouseTweaksTrace.event(14, "Host and fingerprint accepted",
-                "menu=" + action.menuId() + ", cell=" + action.internalSlot()
-                        + ", fingerprint=" + action.hostFingerprint());
         if (action.click() == ShulkerPanelContentActionPayload.Click.QUICK_MOVE) {
             return handleQuickMove(player, host, action);
         }
@@ -35,51 +28,27 @@ public final class ShulkerPanelActions {
         ItemStack changedHost;
         ItemStack changedCarried;
         int selected = selectedForHost(player, host);
-        boolean depositOnly = action.click() == ShulkerPanelContentActionPayload.Click.SECONDARY_DEPOSIT;
 
-        if (carried.isEmpty() && !depositOnly) {
+        if (carried.isEmpty()) {
             ShulkerTransferPlanner.Extraction plan = ShulkerTransferPlanner.planExtraction(
                     host.stack(), action.internalSlot(),
                     action.click() == ShulkerPanelContentActionPayload.Click.SECONDARY,
                     Integer.MAX_VALUE);
-            MouseTweaksTrace.event(16, "Extraction planner result",
-                    "cell=" + action.internalSlot() + ", moved=" + plan.moved());
-            if (plan.moved() == 0) return rejectContent(17, action, "extraction planner rejected");
+            if (plan.moved() == 0) return false;
             changedHost = plan.shulker();
             changedCarried = plan.extracted();
             if (selected == action.internalSlot()) selected = ShulkerContents.nextOccupied(plan.contents(), selected);
         } else {
-            // An RMB deposit gesture stays a deposit even after its cursor has
-            // drained. In that state an empty cursor is a no-op, never an extraction.
-            if (carried.isEmpty()) return rejectContent(15, action, "deposit cursor is empty");
-            if (MouseTweaksTrace.enabled()) {
-                var admission = ContainerSlotReservationsApi.classify(
-                        host.stack(), action.internalSlot(), carried);
-                MouseTweaksTrace.event(15, "Reservation/native insertion result",
-                        "cell=" + action.internalSlot() + ", class=" + admission
-                                + ", carried=" + carried.getCount());
-            }
             ShulkerTransferPlanner.Insertion plan = ShulkerTransferPlanner.planExactInsertion(
                     host.stack(), carried, action.internalSlot(),
-                    action.click() == ShulkerPanelContentActionPayload.Click.SECONDARY
-                            || depositOnly);
-            MouseTweaksTrace.event(16, "Insertion planner result",
-                    "cell=" + action.internalSlot() + ", moved=" + plan.moved()
-                            + ", remainder=" + plan.remainder().getCount());
-            if (plan.moved() == 0) return rejectContent(17, action,
-                    "reservation/native/capacity planner rejected");
+                    action.click() == ShulkerPanelContentActionPayload.Click.SECONDARY);
+            if (plan.moved() == 0) return false;
             changedHost = plan.shulker();
             changedCarried = plan.remainder();
             if (selected < 0) selected = ShulkerContents.firstOccupied(plan.contents());
         }
         commit(player, host, changedHost, changedCarried, selected, action.host());
         return true;
-    }
-
-    private static boolean rejectContent(int stage, ShulkerPanelContentActionPayload action, String reason) {
-        MouseTweaksTrace.event(stage, "Content transaction rejected",
-                "menu=" + action.menuId() + ", cell=" + action.internalSlot() + ", reason=" + reason);
-        return false;
     }
 
     private static boolean handleQuickMove(ServerPlayer player, ShulkerHostResolver.ResolvedHost host,
@@ -95,35 +64,6 @@ public final class ShulkerPanelActions {
         if (selected == action.internalSlot() && plan.contents().get(selected).isEmpty()) {
             selected = ShulkerContents.nextOccupied(plan.contents(), selected);
         }
-        commit(player, host, plan.shulker(), host.menu().getCarried(), selected, action.host());
-        return true;
-    }
-
-    /**
-     * Mouse Tweaks sees virtual panel cells as the non-player inventory. Its
-     * shift-drag from a player slot therefore arrives here rather than through
-     * vanilla's menu routing, which cannot see those transient cells.
-     */
-    public static boolean handleMenuQuickMove(ServerPlayer player, ShulkerPanelMenuQuickMovePayload action) {
-        if (action.sourceMenuSlot() < 0) return false;
-        var resolved = ShulkerHostResolver.resolve(player, action.menuId(), action.host(), action.hostFingerprint());
-        if (resolved.isEmpty()) return false;
-        ShulkerHostResolver.ResolvedHost host = resolved.orElseThrow();
-        if (action.sourceMenuSlot() >= host.menu().slots.size()) return false;
-        Slot source = host.menu().slots.get(action.sourceMenuSlot());
-        if (source == host.slot() || source.index != action.sourceMenuSlot()
-                || source.container != player.getInventory()
-                || !ShulkerHostResolver.removableSource(player, source)) return false;
-        ItemStack before = source.getItem().copy();
-        ShulkerTransferPlanner.Insertion plan = ShulkerTransferPlanner.planInsertion(host.stack(), before);
-        if (plan.moved() == 0) return false;
-        ItemStack remainder = before.copy();
-        remainder.shrink(plan.moved());
-        source.setByPlayer(remainder, before);
-        source.setChanged();
-        source.container.setChanged();
-        int selected = selectedForHost(player, host);
-        if (selected < 0) selected = ShulkerContents.firstOccupied(plan.contents());
         commit(player, host, plan.shulker(), host.menu().getCarried(), selected, action.host());
         return true;
     }
@@ -192,10 +132,7 @@ public final class ShulkerPanelActions {
         host.slot().container.setChanged();
         host.menu().setCarried(changedCarried);
         ShulkerSelectionTracker.rebind(player, host, fingerprint, selected);
-        synchronizeCommittedMenu(player, host.menu());
-        MouseTweaksTrace.event(17, "Mutation committed",
-                "menu=" + host.menu().containerId + ", fingerprint=" + fingerprint
-                        + ", carried=" + changedCarried.getCount());
+        ShulkerContextualTransfers.synchronizeCommittedMenu(player, host.menu());
         // The vanilla menu packet(s) carry both the changed host and its real cursor state.
         // Send CSR's fingerprint metadata afterwards so it cannot make a live same-slot host
         // look stale before the authoritative menu state reaches the client.
@@ -204,21 +141,6 @@ public final class ShulkerPanelActions {
                     host.menu().containerId, locator, fingerprint, selected));
         }
         syncSharedViewers(player, host.slot());
-    }
-
-    /**
-     * In 26.2, the normal synchronizer carries cursor changes in
-     * ClientboundSetCursorItemPacket. ClientPacketListener deliberately ignores that packet
-     * while CreativeModeInventoryScreen is open. The native full-content packet is the smallest
-     * server-authoritative menu sync which Creative applies to its real carried stack, so use it
-     * only for that inventory-menu case. Every ordinary menu keeps the incremental path.
-     */
-    private static void synchronizeCommittedMenu(ServerPlayer player, AbstractContainerMenu menu) {
-        if (player.hasInfiniteMaterials() && menu == player.inventoryMenu) {
-            menu.broadcastFullState();
-        } else {
-            menu.broadcastChanges();
-        }
     }
 
     static void syncSharedViewers(ServerPlayer actor, Slot changedSlot) {

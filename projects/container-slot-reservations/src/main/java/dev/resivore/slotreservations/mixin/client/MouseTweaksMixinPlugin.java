@@ -8,10 +8,10 @@ import org.spongepowered.asm.mixin.extensibility.IMixinInfo;
 import java.util.List;
 import java.util.Set;
 
-/** Keeps the Mouse Tweaks API mixin completely absent when its provider is not installed. */
+/** Keeps the exact optional Mouse Tweaks helper mixin absent when the mod is not installed. */
 public final class MouseTweaksMixinPlugin implements IMixinConfigPlugin {
     private static final String OPTIONAL_MIXIN =
-            "dev.resivore.slotreservations.mixin.client.MouseTweaksContainerScreenMixin";
+            "dev.resivore.slotreservations.mixin.client.MouseTweaksMainMixin";
 
     @Override public void onLoad(String mixinPackage) {}
     @Override public String getRefMapperConfig() { return null; }
