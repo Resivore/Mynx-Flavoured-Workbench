@@ -55,7 +55,8 @@ public final class VwrFishingRodLayer extends RenderLayer<VillagerRenderState, V
 
     private void submitFishingStick(Villager villager, PoseStack poseStack, SubmitNodeCollector collector, int light) {
         poseStack.pushPose();
-        poseStack.translate(0.0F, FishingRodPose.STICK_VERTICAL_TRANSLATION, -0.62F);
+        poseStack.translate(0.0F, FishingRodPose.STICK_VERTICAL_TRANSLATION,
+                FishingRodPose.STICK_FORWARD_TRANSLATION);
         poseStack.mulPose(Axis.XP.rotationDegrees(-58.0F));
         poseStack.mulPose(Axis.YP.rotationDegrees(12.0F));
         poseStack.mulPose(Axis.ZP.rotationDegrees(-12.0F));

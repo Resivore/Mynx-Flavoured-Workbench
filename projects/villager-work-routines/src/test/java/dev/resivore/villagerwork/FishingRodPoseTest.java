@@ -7,10 +7,11 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class FishingRodPoseTest {
-    @Test void correctedStickTranslationReversesC13sEffectiveDirectionByTwoTimesItsAttempt() {
-        assertEquals(0.26F, FishingRodPose.STICK_VERTICAL_TRANSLATION, 0.000001F);
-        assertEquals(0.36F, FishingRodPose.STICK_VERTICAL_TRANSLATION - -0.10F, 0.000001F,
-                "C13's -0.10 transform raised the stick in runtime; +0.26 lowers it instead");
+    @Test void refinedStickTranslationContinuesC14sRuntimeProvenLoweringDirection() {
+        assertEquals(0.35F, FishingRodPose.STICK_VERTICAL_TRANSLATION, 0.000001F);
+        assertEquals(0.09F, FishingRodPose.STICK_VERTICAL_TRANSLATION - 0.26F, 0.000001F,
+                "C14's positive direction lowered the stick, so C15 must continue positively");
+        assertEquals(-0.54F, FishingRodPose.STICK_FORWARD_TRANSLATION, 0.000001F);
     }
 
     @Test void rodTipFacesTheVillagerBodyDirectionAndStaysFinite() {
@@ -19,9 +20,12 @@ class FishingRodPoseTest {
 
         assertTrue(south.isFinite());
         assertTrue(east.isFinite());
-        assertTrue(south.z() > 21.0, "yaw zero places the tip forward of the crossed arms");
-        assertTrue(east.x() > 11.0, "yaw -90 places the tip forward of the crossed arms");
-        assertEquals(65.60, south.y(), 0.000001);
+        assertEquals(21.37, south.z(), 0.000001,
+                "the shared line origin moves inward with the visible stick");
+        assertEquals(11.37, east.x(), 0.000001,
+                "the shared line origin moves inward with the visible stick");
+        assertEquals(65.51, south.y(), 0.000001,
+                "the shared line origin lowers with the visible stick");
     }
 
     @Test void invalidInputsNeverProduceAUsableLineOrigin() {

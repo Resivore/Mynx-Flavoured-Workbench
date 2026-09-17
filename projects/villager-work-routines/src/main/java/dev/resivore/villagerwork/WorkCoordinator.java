@@ -117,7 +117,7 @@ public final class WorkCoordinator {
             log(villager, "custom WORK eligible; claimed site={} interactionTarget={} (non-blocking)",
                     site, interactionTarget(villager));
         }
-        dispatchDelayedWoolDepositFeedback(villager, level, state);
+        dispatchDelayedDepositFeedback(villager, level, state);
         if (profession == VillagerProfession.SHEPHERD) shepherd(villager, level, site, state);
         else if (profession == VillagerProfession.FISHERMAN) fisherman(villager, level, site, state);
         else ambient(villager, site, state);
@@ -1245,7 +1245,10 @@ public final class WorkCoordinator {
             if (barrel != null && containsFish(owned)) {
                 int attempted = fishCount(owned);
                 int inserted = deposit(owned, barrel, false);
-                if (inserted > 0) presentFishDeposit(villager, level, site);
+                if (inserted > 0) {
+                    presentFishDeposit(villager, level, site);
+                    state.fishDepositFeedback.scheduleIfSuccessful(inserted, site, villager.tickCount);
+                }
                 if (inserted > 0 || villager.tickCount >= state.nextDepositLog) {
                     log(villager, "fish deposit claimedBarrel={} attempted={} inserted={} retained={}",
                             site, attempted, inserted, fishCount(owned));
@@ -1488,7 +1491,6 @@ public final class WorkCoordinator {
         villager.getLookControl().setLookAt(Vec3.atCenterOf(barrel));
         villager.swing(InteractionHand.MAIN_HAND);
         level.playSound(null, barrel, SoundEvents.BARREL_OPEN, SoundSource.BLOCKS, 0.75f, 1.0f);
-        level.playSound(null, barrel, SoundEvents.COD_FLOP, SoundSource.BLOCKS, 0.75f, 1.0f);
         level.sendParticles(ParticleTypes.GLOW_SQUID_INK, barrel.getX() + 0.5, barrel.getY() + 0.7,
                 barrel.getZ() + 0.5, 5, 0.22, 0.20, 0.22, 0.01);
         level.gameEvent(villager, GameEvent.BLOCK_OPEN, barrel);
@@ -1515,9 +1517,13 @@ public final class WorkCoordinator {
                     barrel.getZ() + 0.5, 7, 0.18, 0.20, 0.18, 0.01);
     }
 
-    private static void dispatchDelayedWoolDepositFeedback(Villager villager, ServerLevel level, State state) {
+    private static void dispatchDelayedDepositFeedback(Villager villager, ServerLevel level, State state) {
         for (BlockPos barrel : state.woolDepositFeedback.pollDue(villager.tickCount))
             presentWoolDepositMoment(level, barrel);
+        BlockPos fishBarrel = state.fishDepositFeedback.pollDue(villager.tickCount);
+        if (fishBarrel != null)
+            level.playSound(null, fishBarrel, SoundEvents.COD_FLOP, SoundSource.BLOCKS,
+                    SuccessfulFishDepositFeedback.COD_FLOP_VOLUME, 1.0f);
     }
 
     private static void ambient(Villager villager, BlockPos site, State state) {
@@ -1731,6 +1737,7 @@ public final class WorkCoordinator {
         state.rodAt = 0;
         state.fishingPhase = FishingRodLifecycle.Phase.CANCELLED;
         state.woolDepositFeedback.cancel();
+        state.fishDepositFeedback.cancel();
         state.eligible = false;
         state.site = null;
         state.profession = null;
@@ -1833,6 +1840,7 @@ public final class WorkCoordinator {
         FishingRodLifecycle.Phase fishingPhase = FishingRodLifecycle.Phase.IDLE;
         final TemporaryHandProp.Slot propSlot = new TemporaryHandProp.Slot();
         final SuccessfulWoolDepositFeedback woolDepositFeedback = new SuccessfulWoolDepositFeedback();
+        final SuccessfulFishDepositFeedback fishDepositFeedback = new SuccessfulFishDepositFeedback();
         int nextPropConflictLog;
         boolean eligible;
         boolean repositioningSheep;

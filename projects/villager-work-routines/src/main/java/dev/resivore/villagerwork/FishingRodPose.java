@@ -9,14 +9,17 @@ public final class FishingRodPose {
     /**
      * `translateToArms` uses a model-local vertical axis whose effective screen direction was
      * established by C13 runtime evidence: changing +0.08 to -0.10 visibly raised the stick.
-     * Move +0.36 from C13's value to lower it substantially without changing its rotation.
+     * C14's +0.26 value visibly lowered the stick.  Continue in that proven direction by a
+     * deliberately narrow +0.09 refinement without changing its rotation.
      */
-    public static final float STICK_VERTICAL_TRANSLATION = 0.26F;
-    // Keep this in step with VwrFishingRodLayer's further-forward grip transform.  The visible
+    public static final float STICK_VERTICAL_TRANSLATION = 0.35F;
+    /** Keep this in step with the render layer: a less-negative value pulls the stick inward. */
+    public static final float STICK_FORWARD_TRANSLATION = -0.54F;
+    // Keep this in step with VwrFishingRodLayer's lower, more-inward grip transform.  The visible
     // line should originate at the stick's real outer end, not at the villager's arm plane.
-    private static final double TIP_FORWARD = 1.45;
+    private static final double TIP_FORWARD = 1.37;
     private static final double TIP_RIGHT = 0.10;
-    private static final double TIP_HEIGHT = 1.60;
+    private static final double TIP_HEIGHT = 1.51;
 
     private FishingRodPose() {}
 
