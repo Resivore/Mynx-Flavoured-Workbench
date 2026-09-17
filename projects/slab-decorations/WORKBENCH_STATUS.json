@@ -14,15 +14,16 @@
   "definition": {
     "lifecycle": "ACTIVE",
     "goals": [
-      "Give structurally eligible dry upward- and ceiling-supported foliage directional canonical-parent placement and survival parity on exact native horizontal Nibaru slabs while preserving vanilla block/state identity, lifecycle, growth, harvesting, cleanup, and coherent half-height geometry.",
+      "Give vertically supported vegetation canonical-parent vanilla placement, survival, lifecycle, and fluid-context parity on exact native horizontal Nibaru slabs, with one structurally resolved root or anchor and one automatic directional half-block representation offset for the complete connected plant.",
       "Delegate bonemeal on exact dry bottom native Nibaru slabs for canonical Grass Block, Moss Block, and Pale Moss Block through the corresponding Minecraft 26.2 substrate implementation without broadening material or geometry ownership."
     ],
     "scope": [
-      "Maintain C7 as the focused C6 runtime-fix successor: retain the existing directional canonical-parent projection and its established offsets, but register the final block-model wrapper after any state-specific model specialization so cave-vine berry variants inherit the same slab-relative translation as ordinary cave-vine variants.",
-      "Classify behavior structurally through the retained upward-family contracts, concrete Minecraft 26.2 HangingRootsBlock and SporeBlossomBlock contracts, HangingMossBlock, and generic downward GrowingPlantBlock head/body pairs with Direction.DOWN; exact connected-column resolution lets compatible modded plants such as Mynx × Regions Unexplored dropleaf inherit the generic contract without a registry-ID exception or production dependency.",
-      "Resolve every downward-growing head/body or hanging-moss segment to one actual top anchor, preserve the real neighboring column, project only the anchor's support above, and apply one coherent directional offset without shifted persisted positions or replacement blocks.",
-      "Align accepted ceiling foliage under top slabs by exactly +0.5 Y and accepted upward foliage over bottom slabs by exactly -0.5 Y across models, outlines, targeting, cached/context collision, visual, interaction, entity-inside, breaking-overlay, and shape-derived particle geometry; bottom/double ceiling supports and top/double upward supports remain unshifted.",
-      "Preserve exact C4 as historical predecessor provenance and preserve the bounded Grass Block, Moss Block, and Pale Moss Block substrate-bonemeal behavior inherited from C3, including exact item consumption, native-slab restoration/reconciliation, generated vegetation positioning, and lowered-azalea safety.",
+      "Default to canonical-parent vanilla permission for structurally vertical vegetation rather than a species allowlist: ordinary vegetation, double plants and crops, small fungi and azalea, floor carpets and coral, generic upward and downward GrowingPlantBlock columns, and compatible modded implementations inherit support when their own projected vanilla behavior accepts the canonical parent.",
+      "Use structural root and lifecycle adapters for double plants, dripleaf, Sugar Cane, bamboo sapling/stalk transitions, cactus and Cactus Flower, pale hanging moss, Hanging Roots, Spore Blossom, and aquatic floor vegetation including kelp, seagrass, tall seagrass, sea pickles, and floor coral; every connected column resolves one physical root or anchor and shares one offset.",
+      "Resolve nonlocal roots, anchors, supports, neighbors, and projected survival from the full owning level even when a bounded client render snapshot supplies the current block state, so long connected columns do not lose their attachment outside the snapshot bounds.",
+      "Preserve the plant cell and support's real fluid states in the projected world view instead of applying a global waterlogged rejection, allowing canonical aquatic behavior only where the corresponding vanilla fluid and substrate context accepts it.",
+      "Align accepted ceiling foliage under top slabs by exactly +0.5 Y and accepted upward foliage over bottom slabs by exactly -0.5 Y across shared model, outline, targeting, cached/context collision, visual, interaction, entity-inside, breaking-overlay, and shape-derived particle geometry; bottom/double ceiling supports and top/double upward supports remain unshifted.",
+      "Preserve historical release provenance and the bounded Grass Block, Moss Block, and Pale Moss Block substrate-bonemeal behavior inherited from C3, including exact item consumption, native-slab restoration/reconciliation, generated vegetation positioning, and lowered-azalea safety.",
       "Use exact unified BGE C70, CNM 2.0.7, Terrain Slabs 3.3.2, Java 25, Gradle 9.5.1, Loom 1.17.19, and Fabric API 0.157.0+26.2 only as controlled build/test or read-only comparison baselines; runtime dependency eligibility remains capability/provider-based."
     ],
     "boundaries": {
@@ -30,12 +31,12 @@
         "projects/slab-decorations"
       ],
       "exclusions": [
-        "Crop/farmland families, ordinary and attached stems, saplings, giant-fungus starters, lily pads, and fluid-dependent or aquatic plants fail closed through behavior-class boundaries; PitcherCropBlock is included in the crop boundary because its farmland lifecycle is a DoublePlantBlock rather than a CropBlock.",
-        "Bottom-slab mushroom and azalea bonemeal transformation into larger structures fails closed because the generated structure cannot preserve equivalent half-height geometry; ordinary small-mushroom spread and accepted azalea decoration remain supported.",
-        "Vertical slabs, CNM Steps, layers, stairs, walls, columns, vanilla or foreign slabs, side-mounted plants, glow lichen, rails, redstone components, pressure plates, torches, lanterns, chains, pointed dripstone, machinery, arbitrary decorations, upward-growing vine columns, and aquatic growing plants receive no new ceiling projection.",
+        "The explicit structural blacklist is limited to all saplings including propagules, pumpkin and melon stems plus attached stems, Chorus Plant and Chorus Flower, Lily Pad, regular Vine, multiface attachments including Glow Lichen, Cocoa, and side- or wall-mounted aquatic/coral attachments; these receive no horizontal-slab attachment or offset.",
+        "Sapling placement and tree generation remain deferred. Small mushrooms, crimson/warped fungi, azalea, and flowering azalea retain ordinary projected placement and survival, but giant-mushroom, huge-fungus, and azalea-tree bonemeal transformations are deferred when the plant is lowered over a bottom slab because the generated structure cannot preserve equivalent half-height geometry.",
+        "Vertical slabs, CNM Steps, layers, stairs, walls, columns, vanilla or foreign slabs, rails, redstone components, pressure plates, torches, lanterns, chains, pointed dripstone, machinery, and arbitrary non-vegetation decorations remain outside horizontal-slab projection ownership.",
         "The read-only projection supports ordinary BlockGetter and LevelReader placement/survival contracts. Raw ChunkAccess inspection is delegated and arbitrary custom placement systems that bypass those world-view accessors are not claimed compatible.",
         "Unified Block Geometry Extensions retains canonical material/native-slab ownership; this project adds no duplicate plant blocks, persisted offset property, registry-name parser, competing material table, standalone Nibaru dependency, or hard Mynx × Regions Unexplored dependency.",
-        "No Test Slot, Test Instance Manager state, accepted stack, Minecraft profile, deployment, gameplay runtime result, or promotion is changed by C5 controlled validation; the protected gameplay instance remains off-limits."
+        "No Test Slot, accepted stack, Minecraft profile, deployment, gameplay runtime result, or promotion is changed by Canary 8 controlled validation; the protected gameplay instance remains off-limits."
       ]
     },
     "dependencies": [
@@ -49,25 +50,25 @@
         "type": "MOD",
         "identifier": "fabricloader",
         "requirement": ">=0.19.3",
-        "reason": "Fabric runtime loader floor declared by the C5 artifact."
+        "reason": "Fabric runtime loader floor declared by the Canary 8 artifact."
       },
       {
         "type": "MOD",
         "identifier": "fabric-api",
         "requirement": ">=0.157.0",
-        "reason": "Fabric API, Renderer API, and GameTest API floor declared by C5; 0.157.0+26.2 was the exact controlled-validation baseline."
+        "reason": "Fabric API, Renderer API, and GameTest API floor declared by Canary 8; 0.157.0+26.2 was the exact controlled-validation baseline."
       },
       {
         "type": "PROJECT",
         "identifier": "4b2342fc-7bdf-5ba6-9f37-d551109d214c",
         "requirement": "compatible provider of more_slabs_stairs_and_walls",
-        "reason": "Unified BGE provides the canonical material-profile and exact native-slab capability used at runtime; C58 was only the controlled compile/test baseline."
+        "reason": "Unified BGE provides the canonical material-profile and exact native-slab capability used at runtime; C70 was the exact controlled compile/test baseline."
       },
       {
         "type": "MOD",
         "identifier": "more_slabs_stairs_and_walls",
         "requirement": "*",
-        "reason": "Stable Fabric capability/provider ID required for canonical material profiles and native slab ownership; C5 deliberately does not pin a BGE Canary."
+        "reason": "Stable Fabric capability/provider ID required for canonical material profiles and native slab ownership; Canary 8 deliberately does not pin a BGE Canary."
       },
       {
         "type": "MOD",
@@ -79,7 +80,7 @@
         "type": "MOD",
         "identifier": "cnm_terrain_slabs_compat",
         "requirement": "* (optional suggestion)",
-        "reason": "Flexible optional primary BGE identity; it is not a second hard dependency and unified BGE C58 supplied it during controlled validation."
+        "reason": "Flexible optional primary BGE identity; it is not a second hard dependency and unified BGE C70 supplied it during controlled validation."
       },
       {
         "type": "OTHER",
@@ -91,39 +92,39 @@
         "type": "TOOL",
         "identifier": "java",
         "requirement": "25",
-        "reason": "Exact compilation and controlled GameTest baseline required by Minecraft 26.2; C5 metadata declares the genuine Java 25 floor."
+        "reason": "Exact compilation and controlled GameTest baseline required by Minecraft 26.2; Canary 8 metadata declares the genuine Java 25 floor."
       },
       {
         "type": "TOOL",
         "identifier": "gradle",
         "requirement": "9.5.1",
-        "reason": "Exact build-tool baseline used for C5 controlled validation."
+        "reason": "Exact build-tool baseline used for Canary 8 controlled validation."
       },
       {
         "type": "TOOL",
         "identifier": "fabric-loom",
         "requirement": "1.17.19",
-        "reason": "Exact Fabric build-plugin baseline used for C5 controlled validation."
+        "reason": "Exact Fabric build-plugin baseline used for Canary 8 controlled validation."
       }
     ]
   },
   "state": {
-    "milestone": "C7 is the narrow C6 runtime-fix successor. Exact C6 runtime evidence is preserved: cave vines grew from Stone slabs and ordinary non-berry segments held the intended slab-relative position, but the berry-bearing visual introduced an apparent 0.5-block vertical gap/displacement. Vanilla assets select distinct berries=true lit model variants for cave-vine head and plant states; C7 keeps the same offset computation and registers its model wrapper in Fabric's final wrapping phase so a later state-specific luminous-model specialization cannot bypass it. Java 25 controlled validation passed 5/5 JUnit tests and 30 server GameTests; client rendering and real save/reload remain untested for C7. C7 is ACTIVE, NOT_DEPLOYED, RUNTIME_UNTESTED, and unaccepted.",
+    "milestone": "C8 is the systemic canonical-parent vegetation successor to C7. The corrected C7 predecessor evidence is a bounded-render-view failure to resolve the shared root of long connected columns, together with incomplete family eligibility for Sugar Cane, bamboo, and kelp; it is not a berry-specific cave-vine failure. C8 resolves nonlocal attachments from the owning level, defaults eligible vertical vegetation to its projected vanilla canonical-parent behavior, preserves real fluid context, and guarantees every accepted attachment the exact directional offset. Java 25 controlled validation passed 5/5 JUnit tests and 40/40 headless server GameTests, but those tests did not execute client rendering or real save/reload. C8 is ACTIVE, NOT_DEPLOYED, RUNTIME_UNTESTED, and unaccepted.",
     "releases": {
       "current": {
-        "version": "0.1.0-canary7",
-        "embedded_version": "0.1.0-canary7",
+        "version": "0.1.0-canary8",
+        "embedded_version": "0.1.0-canary8",
         "artifact": {
-          "filename": "slab-decorations-0.1.0-canary7.jar",
-          "sha256": "b4e6bd4891f85906009911a699c8359fc2b52e690dc9b7ef70e30a1ed88272ff"
+          "filename": "slab-decorations-0.1.0-canary8.jar",
+          "sha256": "d329312b15aa3b42e9b62fec853df54be396051c6ea63895a19cd27a2871b4b4"
         },
-        "built_at": "2026-09-17T02:16:40.8260848Z",
-        "source_commit": "36ee39bed00507a1632155ac3813842aba49f145",
+        "built_at": "2026-09-17T03:32:39.7590580Z",
+        "source_commit": "18dd227287c1a9e0fc95501fac200ef0ff869ed9",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
         },
-        "summary": "Keeps cave-vine slab-relative translation stable across ordinary and glow-berry model variants."
+        "summary": "Generalizes canonical-parent vegetation attachment so accepted vertical families share exact directional translation, nonlocal root resolution, and vanilla fluid context."
       },
       "accepted": null,
       "rollback": null,
@@ -137,10 +138,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 8,
-    "activity_at": "2026-09-17T02:16:40.8260848Z",
-    "updated_at": "2026-09-17T02:16:40.8260848Z",
-    "last_codex_at": "2026-09-17T02:16:40.8260848Z",
-    "source_commit": "36ee39bed00507a1632155ac3813842aba49f145"
+    "revision": 9,
+    "activity_at": "2026-09-17T03:32:39.7590580Z",
+    "updated_at": "2026-09-17T03:32:39.7590580Z",
+    "last_codex_at": "2026-09-17T03:32:39.7590580Z",
+    "source_commit": "18dd227287c1a9e0fc95501fac200ef0ff869ed9"
   }
 }
