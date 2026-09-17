@@ -24,7 +24,7 @@
       "Preserve the accepted C2 baseline: seven JEI vanilla recipe categories, ten audited Matcha recipe namespaces, 315 exact component-bearing output ingredients, and idempotent server-side recipe awards.",
       "Maintain C3's data-driven Matcha Villager Trades and Matcha Acquisition categories with 175 supported trade pages, 249 conservative acquisition pages, and 240 exact non-recipe identities.",
       "Retain the exact JEI 30.18.0.144 subtype boundary: skip all 14 JEI-owned base interpreters, use the companion-owned exact-stack bridge for 19 identities, and keep the accepted component-manifest path for the other 221.",
-      "Preserve C4's effective post-resolution recipe catalog so compatibility replacements such as Blessing of Demeter remain authoritative. C7 contributes exact Matcha stacks additively and idempotently without rebuilding or clearing global Creative Search, while suppressing only the plain default food identities canonically replaced by a synchronized Matcha effect-bearing ordinary-food stack."
+      "Preserve C4's effective post-resolution recipe catalog so compatibility replacements such as Blessing of Demeter remain authoritative. C8 retains source provenance through a shared conservative food canonicalizer, contributes the resulting exact Matcha stacks additively and idempotently without rebuilding or clearing global Creative Search, and synchronizes the exact plain defaults superseded by authoritative health-bearing Matcha foods."
     ],
     "boundaries": {
       "owned_paths": [
@@ -32,7 +32,7 @@
       ],
       "exclusions": [
         "JEI patches, replacement of JEI-owned subtype interpreters, duplicate or fake vanilla recipes, and fabricated recipes for non-recipe mechanics.",
-        "Inventory, menu, slot, quick-move, general creative-validation, Trinkets, Inventory Extended, Offhand, or Carried behavior changes; C7 contributes exact Matcha stacks and only tracks/restores narrowly matched plain default food discovery identities in Creative Search and optional JEI.",
+        "Inventory, menu, slot, quick-move, general creative-validation, Trinkets, Inventory Extended, Offhand, or Carried behavior changes; C8 contributes exact Matcha stacks and only tracks/restores narrowly matched plain default food discovery identities in Creative Search and optional JEI.",
         "Contextual exploration-map trades, unsupported identity-changing loot functions, exact loot odds, and live villager demand, reputation, or exhaustion state.",
         "A dedicated-server-without-JEI validation claim; that runtime gate remains explicitly unperformed."
       ]
@@ -54,7 +54,7 @@
         "type": "MOD",
         "identifier": "fabric-api",
         "requirement": "0.157.0+26.2",
-        "reason": "Exact Fabric API used by the current C7 build."
+        "reason": "Exact Fabric API used by the current C8 build."
       },
       {
         "type": "DATA_PACK",
@@ -66,7 +66,7 @@
         "type": "MOD",
         "identifier": "jei",
         "requirement": "30.18.0.144 compile/test baseline (SHA-256 20bc7f0ebe5f36f84c8c4d571469968be54a6e1989b4e85a736136dc41ea8fe2); packaged metadata recommends >=30.18.0",
-        "reason": "The stable optional JEI client capability remains unpinned at runtime; the exact compile/test baseline preserves C7's audited vanilla categories and subtype boundary."
+        "reason": "The stable optional JEI client capability remains unpinned at runtime; the exact compile/test baseline preserves C8's audited vanilla categories and subtype boundary."
       },
       {
         "type": "TOOL",
@@ -83,22 +83,22 @@
     ]
   },
   "state": {
-    "milestone": "Exact C4 has a user-reported external runtime FAIL for incomplete global Creative Search. Exact C6 now also has a user-reported external runtime FAIL: Creative/JEI exposed both the plain/default and Matcha-aware variants of affected foods, including minecraft:glow_berries and Matcha's Glow Berry Mash on minecraft:rotten_flesh. C7 preserves C4's effective catalog and C5's no-global-rebuild safety architecture. It selects canonical replacements only from synchronized Matcha catalog stacks on ordinary food bases whose patched minecraft:consumable has effects, including effect-only glow berries, preserves custom-model and unrelated component variants, filters category Search sources before vanilla indexes them, and retries payload reconciliation once the play client is ready. C7 is static-pass and runtime-untested; C5 is not classified as failed. Accepted C3's external PASS remains bound only to C3, C2 remains rollback/provenance, and the dedicated-server-without-JEI gate remains unperformed.",
+    "milestone": "Exact C7 has a user-reported external runtime FAIL for an incomplete generalized duplicate-elimination contract: its Glow Berries and Glow Berry Mash fix worked, but Braised Mushroom still appeared twice in discovery, once with Matcha's intended health benefits and once plain. The failure does not reclassify the successful Glow fix. Frozen-data reconstruction found that Braised Mushroom is an effect-bearing effective recipe output on the non-food minecraft:rabbit_foot carrier, which C7's intrinsic-food gate could not select, while source provenance had already been flattened. The complete generated catalog audit found 522 exact identities, eight multi-identity health-food families, seven with one authoritative effective recipe identity over stale trade/loot identities, and one ambiguous non-recipe family that must remain distinct; C8 retains provenance through a shared conservative canonicalizer and exposes 515 exact catalog identities. It also synchronizes demonstrated default-presentation replacements, including non-food recipe carriers, while preserving custom models, names, stack mechanics, potions, unrelated components, ambiguous families, C4 effective output authority, C5 safe additive Search behavior, C3 surfaces, and JEI ownership. C8 is STATIC_PASS and RUNTIME_UNTESTED. Exact C4's separate Search failure and accepted C3's external PASS remain release-bound; C2 remains rollback/provenance, and the dedicated-server-without-JEI gate remains unperformed.",
     "releases": {
       "current": {
-        "version": "C7 (0.3.3-canonical-food-replacement-canary7)",
-        "embedded_version": "0.3.3-canonical-food-replacement-canary7",
+        "version": "C8 (0.3.4-canonical-food-catalog-canary8)",
+        "embedded_version": "0.3.4-canonical-food-catalog-canary8",
         "artifact": {
-          "filename": "matcha-jei-integration-0.3.3-canonical-food-replacement-canary7.jar",
-          "sha256": "7849dea6733e36667ae62044a5ba6956559dc96c85db2f3db30154a5b1f1a25c"
+          "filename": "matcha-jei-integration-0.3.4-canonical-food-catalog-canary8.jar",
+          "sha256": "d92ade2de4c095089838323a5116e6dcb6b053046111a3ed6370c75c7dafc34f"
         },
-        "built_at": "2026-09-17T02:20:01.5359451Z",
-        "source_commit": "e016421530f1f1b47ff43632fb69cd73d56f5bbd",
+        "built_at": "2026-09-17T06:06:33.7794164Z",
+        "source_commit": "1b474782d0b308a7f47ea69f5b7294926ec99af8",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
         },
-        "summary": "Keeps one Matcha-aware representative for effect-bearing ordinary foods in Creative Search and JEI."
+        "summary": "Uses source-aware canonical food families so Creative Search and JEI expose the authoritative Matcha health identity without collapsing legitimate variants."
       },
       "accepted": {
         "version": "C3 (legacy 0.2.0-nonrecipe-discovery-canary1)",
@@ -126,10 +126,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 7,
-    "activity_at": "2026-09-17T02:21:33Z",
-    "updated_at": "2026-09-17T02:21:33Z",
-    "last_codex_at": "2026-09-17T02:21:33Z",
-    "source_commit": "e016421530f1f1b47ff43632fb69cd73d56f5bbd"
+    "revision": 8,
+    "activity_at": "2026-09-17T06:07:13Z",
+    "updated_at": "2026-09-17T06:07:13Z",
+    "last_codex_at": "2026-09-17T06:07:13Z",
+    "source_commit": "1b474782d0b308a7f47ea69f5b7294926ec99af8"
   }
 }
