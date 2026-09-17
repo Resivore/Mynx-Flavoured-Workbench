@@ -13,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/** Deterministic direction, identity, and projected-authority state for one physical RMB gesture. */
+/** Deterministic entry, identity, and projected-authority state for C24's inbound RMB gesture. */
 final class CarriedShulkerRmbGestureTest {
     private static final CarriedShulkerRmbGesture.SlotKey SLOT_A =
             new CarriedShulkerRmbGesture.SlotKey(12, 3);
@@ -30,12 +30,7 @@ final class CarriedShulkerRmbGestureTest {
     }
 
     @Test
-    void initialSlotOccupancySelectsAndLatchesExactlyOneDirection() {
-        assertEquals(CarriedShulkerRmbGesture.Mode.SHULKER_TO_INVENTORY,
-                CarriedShulkerRmbGesture.selectMode(false));
-        assertEquals(CarriedShulkerRmbGesture.Mode.INVENTORY_TO_SHULKER,
-                CarriedShulkerRmbGesture.selectMode(true));
-
+    void occupiedOriginActivatesOnlyInboundOwnershipAndDeduplicatesIt() {
         var gesture = new CarriedShulkerRmbGesture();
         gesture.begin(CarriedShulkerRmbGesture.Mode.INVENTORY_TO_SHULKER,
                 SLOT_A, shulker(), "cursor-0");
@@ -45,11 +40,6 @@ final class CarriedShulkerRmbGestureTest {
         assertEquals(CarriedShulkerRmbGesture.Mode.INVENTORY_TO_SHULKER, gesture.mode(),
                 "A later slot never reclassifies the press-time direction");
 
-        gesture.begin(CarriedShulkerRmbGesture.Mode.SHULKER_TO_INVENTORY,
-                null, shulker(), "cursor-outbound");
-        assertEquals(CarriedShulkerRmbGesture.Mode.SHULKER_TO_INVENTORY, gesture.mode());
-        assertTrue(gesture.enter(SLOT_A),
-                "Mouse Tweaks' first outbound origin replay claims the initially empty slot");
     }
 
     @Test
@@ -66,7 +56,7 @@ final class CarriedShulkerRmbGestureTest {
         assertTrue(gesture.enter(SLOT_A), "A -> B -> A is a distinct Mouse Tweaks entry");
         assertStack(gesture.projectedSource(SLOT_A, original), Items.COBBLESTONE, 7);
 
-        gesture.observe(null);
+        gesture.leaveSlotSurface();
         assertTrue(gesture.enter(SLOT_A), "A null boundary permits the same slot to be re-entered");
         assertStack(gesture.projectedSource(SLOT_A, original), Items.COBBLESTONE, 7);
         assertEquals(CarriedShulkerRmbGesture.Mode.INVENTORY_TO_SHULKER, gesture.mode());
@@ -132,19 +122,6 @@ final class CarriedShulkerRmbGestureTest {
                 "An in-flight server sync may still expose a known predecessor");
         assertTrue(gesture.acceptsLiveFingerprint("cursor-1"));
         assertFalse(gesture.acceptsLiveFingerprint(null));
-    }
-
-    @Test
-    void outboundNativeOriginCanAdvanceBeforeTheFirstMouseTweaksDragEntry() {
-        var gesture = new CarriedShulkerRmbGesture();
-        gesture.begin(CarriedShulkerRmbGesture.Mode.SHULKER_TO_INVENTORY,
-                null, shulker(), "cursor-f0");
-
-        gesture.advance(shulker(), "cursor-f1");
-        assertTrue(gesture.acceptsLiveFingerprint("cursor-f1"));
-        assertTrue(gesture.enter(SLOT_A),
-                "The initial native extraction must advance F0 -> F1 without claiming the origin entry");
-        assertEquals(CarriedShulkerRmbGesture.Mode.SHULKER_TO_INVENTORY, gesture.mode());
     }
 
     @Test

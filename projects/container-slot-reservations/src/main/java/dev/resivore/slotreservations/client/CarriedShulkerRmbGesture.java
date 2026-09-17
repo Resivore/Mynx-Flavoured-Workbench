@@ -8,14 +8,13 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * State for one physical RMB gesture whose subject is the exact shulker carried
- * by the cursor. The initial ordinary player slot selects the direction once;
- * later hovered slots never reclassify it.
+ * State for CSR's physical RMB collection gesture. Its only owned direction is
+ * inventory-to-the exact shulker carried by the cursor; empty-origin outbound
+ * dragging remains entirely on the established native/Mouse Tweaks path.
  */
 final class CarriedShulkerRmbGesture {
     enum Mode {
         INACTIVE,
-        SHULKER_TO_INVENTORY,
         INVENTORY_TO_SHULKER
     }
 
@@ -27,10 +26,6 @@ final class CarriedShulkerRmbGesture {
     private String projectedFingerprint;
     private final Set<String> validLiveFingerprints = new LinkedHashSet<>();
     private final Map<SlotKey, ItemStack> projectedSources = new HashMap<>();
-
-    static Mode selectMode(boolean initialSlotOccupied) {
-        return initialSlotOccupied ? Mode.INVENTORY_TO_SHULKER : Mode.SHULKER_TO_INVENTORY;
-    }
 
     /**
      * Maps Creative's two player-slot presentations back to the server's physical inventory.
@@ -49,7 +44,7 @@ final class CarriedShulkerRmbGesture {
     void begin(Mode selectedMode, SlotKey initialSlot, ItemStack carriedShulker,
                String carriedFingerprint) {
         reset();
-        if (selectedMode == null || selectedMode == Mode.INACTIVE
+        if (selectedMode != Mode.INVENTORY_TO_SHULKER
                 || carriedShulker.isEmpty() || carriedFingerprint == null) return;
         mode = selectedMode;
         currentSlot = initialSlot;
@@ -65,9 +60,9 @@ final class CarriedShulkerRmbGesture {
         return true;
     }
 
-    /** Observes Mouse Tweaks' selected-slot identity even when its helper is not invoked. */
-    void observe(SlotKey slot) {
-        if (isActive()) currentSlot = slot;
+    /** Leaving the ordinary player-slot surface permits a later re-entry. */
+    void leaveSlotSurface() {
+        if (isActive()) currentSlot = null;
     }
 
     void advance(ItemStack changedShulker, String changedFingerprint) {

@@ -61,16 +61,16 @@ public final class ContainerSlotReservationsClient implements ClientModInitializ
                 context.client().execute(() -> ShulkerPanel.acceptSync(payload)));
 
         ClientTickEvents.END_CLIENT_TICK.register(ContainerSlotReservationsClient::requestSnapshotForNewScreen);
-        ClientTickEvents.END_CLIENT_TICK.register(CarriedShulkerMouseTweaks::maintain);
+        ClientTickEvents.END_CLIENT_TICK.register(CarriedShulkerRmbCollector::maintain);
         ClientPlayConnectionEvents.DISCONNECT.register((handler, client) ->
-                CarriedShulkerMouseTweaks.reset());
+                CarriedShulkerRmbCollector.reset());
     }
 
     /** Release backstop if another screen listener short-circuits the screen method. */
     private static void registerCarriedShulkerGestureLifecycle() {
         ScreenEvents.BEFORE_INIT.register((client, screen, scaledWidth, scaledHeight) -> {
             ScreenMouseEvents.allowMouseRelease(screen).register((_screen, event) -> {
-                if (event.button() == 1) CarriedShulkerMouseTweaks.reset();
+                if (event.button() == 1) CarriedShulkerRmbCollector.reset();
                 return true;
             });
         });

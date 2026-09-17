@@ -1,6 +1,6 @@
 package dev.resivore.slotreservations.mixin.client;
 
-import dev.resivore.slotreservations.client.CarriedShulkerMouseTweaks;
+import dev.resivore.slotreservations.client.CarriedShulkerRmbCollector;
 import dev.resivore.slotreservations.client.ClientReservationState;
 import dev.resivore.slotreservations.client.ReservationVisualRenderer;
 import dev.resivore.slotreservations.client.ReservationScreenAccess;
@@ -112,7 +112,7 @@ abstract class AbstractContainerScreenMixin implements ReservationScreenAccess {
                 && !ShulkerPanel.containsPanel(event.x(), event.y())) {
             Slot nativeTarget = ((ContainerScreenMouseAccess) this)
                     .containerSlotReservations$slotAt(event.x(), event.y());
-            if (CarriedShulkerMouseTweaks.begin((AbstractContainerScreen<?>) (Object) this, nativeTarget)) {
+            if (CarriedShulkerRmbCollector.begin((AbstractContainerScreen<?>) (Object) this, nativeTarget)) {
                 callbackInfo.setReturnValue(true);
                 return;
             }
@@ -120,13 +120,6 @@ abstract class AbstractContainerScreenMixin implements ReservationScreenAccess {
         if (ShulkerPanel.click(event.x(), event.y(), event.button(), standardClick, shiftPrimary)) {
             callbackInfo.setReturnValue(true);
         }
-    }
-
-    @Inject(method = "mouseClicked", at = @At("RETURN"))
-    private void containerSlotReservations$finishCarriedShulkerNativePress(
-            MouseButtonEvent event, boolean doubleClick,
-            CallbackInfoReturnable<Boolean> callbackInfo) {
-        if (event.button() == 1) CarriedShulkerMouseTweaks.afterInitialNativePress();
     }
 
     @Inject(method = "checkHotbarKeyPressed", at = @At("HEAD"), cancellable = true)
@@ -138,13 +131,18 @@ abstract class AbstractContainerScreenMixin implements ReservationScreenAccess {
     @Inject(method = "mouseDragged", at = @At("HEAD"), cancellable = true)
     private void containerSlotReservations$panelDrag(MouseButtonEvent event, double dragX, double dragY,
                                                       CallbackInfoReturnable<Boolean> callbackInfo) {
+        if (event.button() == 1 && CarriedShulkerRmbCollector.drag(
+                (AbstractContainerScreen<?>) (Object) this, event.x(), event.y())) {
+            callbackInfo.setReturnValue(true);
+            return;
+        }
         if (ShulkerPanel.drag(event.x(), event.y(), event.button())) callbackInfo.setReturnValue(true);
     }
 
     @Inject(method = "mouseReleased", at = @At("HEAD"), cancellable = true)
     private void containerSlotReservations$panelRelease(MouseButtonEvent event,
                                                          CallbackInfoReturnable<Boolean> callbackInfo) {
-        if (event.button() == 1) CarriedShulkerMouseTweaks.reset();
+        if (event.button() == 1) CarriedShulkerRmbCollector.reset();
         if (ShulkerPanel.release(event.x(), event.y(), event.button())) callbackInfo.setReturnValue(true);
     }
 
@@ -157,7 +155,7 @@ abstract class AbstractContainerScreenMixin implements ReservationScreenAccess {
 
     @Inject(method = "removed", at = @At("HEAD"))
     private void containerSlotReservations$closePanel(CallbackInfo callbackInfo) {
-        CarriedShulkerMouseTweaks.reset();
+        CarriedShulkerRmbCollector.reset();
         ShulkerPanel.closeScreen((AbstractContainerScreen<?>) (Object) this);
     }
 }
