@@ -14,17 +14,17 @@
     "legacy_ids": []
   },
   "definition": {
-    "lifecycle": "PLANNED",
+    "lifecycle": "ACTIVE",
     "goals": [
       "Make Block Geometry Extensions geometries participate in Continuity connected-texture behavior when their canonical source or material-family semantics call for connection.",
       "Preserve source-material identity and support applicable BGE-owned geometries consistently without duplicating BGE's canonical geometry ownership, material-family registry, or source-block mappings."
     ],
     "scope": [
-      "Identify how Continuity discovers and groups connectable blocks in the Minecraft Java 26.2 Fabric environment.",
-      "Determine a clean architecture for BGE-generated or BGE-owned geometries to inherit or participate in appropriate CTM relationships through canonical material identity.",
-      "Support applicable BGE geometries consistently, including representative vertical slabs, steps, layers, and other BGE-owned shapes, rather than introducing one-off fixes per shape.",
-      "Preserve semantically appropriate source-block-to-BGE and BGE-to-BGE adjacency while honoring orientation, state, and intentional CTM-exclusion distinctions.",
-      "Preserve vanilla and non-BGE Continuity behavior while evaluating a future Fabric compatibility layer, generated CTM metadata or assets, runtime integration, or an evidence-supported combination."
+      "Provide one centralized Fabric block-appearance bridge for eligible BGE-owned geometry without generating material- or geometry-specific CTM rules.",
+      "Consume BGE's typed runtime binding and canonical parent as the sole derived-to-material authority rather than inferring families from registry identifiers.",
+      "Project only explicitly equivalent canonical material state while keeping geometry form, orientation, waterlogging, and unknown properties out of the canonical appearance.",
+      "Apply a fail-closed geometry and visual eligibility policy that can broaden or tighten without per-material rules.",
+      "Preserve vanilla, non-BGE, Continuity, BGE, Matcha, and resource-pack behavior outside the bounded appearance bridge."
     ],
     "boundaries": {
       "owned_paths": [
@@ -42,49 +42,85 @@
       {
         "type": "PROJECT",
         "identifier": "4b2342fc-7bdf-5ba6-9f37-d551109d214c",
-        "requirement": null,
-        "reason": "Block Geometry Extensions is the canonical owner of the geometries and material relationships that this compatibility project will consume."
+        "requirement": ">=4.2.14-bge.canary70.stone-native-slab+26.2",
+        "reason": "Block Geometry Extensions owns the typed runtime binding, geometry roles, and canonical material relationships consumed directly by Canary 1; C70 is the first controlled compatibility baseline for this API seam."
       },
       {
         "type": "MOD",
         "identifier": "continuity",
         "requirement": null,
-        "reason": "Continuity is the target connected-texture runtime and implementation for the current Workbench stack."
+        "reason": "Continuity is the optional target connected-texture consumer of Fabric block appearance; the bridge does not patch or bundle it."
       },
       {
         "type": "MOD",
         "identifier": "minecraft",
-        "requirement": "=26.2",
-        "reason": "Target game version for the planned Fabric compatibility work."
+        "requirement": "~26.2",
+        "reason": "The appearance and block-state method descriptors are compiled and controlled against Minecraft Java 26.2."
       },
       {
         "type": "MOD",
         "identifier": "fabricloader",
-        "requirement": null,
-        "reason": "Target runtime loader for the planned compatibility layer; no implementation-specific loader constraint has been selected."
+        "requirement": ">=0.19.3",
+        "reason": "Fabric runtime loader and Mixin host declared by Canary 1."
+      },
+      {
+        "type": "MOD",
+        "identifier": "fabric-api",
+        "requirement": ">=0.156.0",
+        "reason": "Provides the Fabric block appearance and controlled GameTest APIs used by Canary 1; 0.156.0+26.2 is the exact validation baseline."
+      },
+      {
+        "type": "MOD",
+        "identifier": "clutternomore",
+        "requirement": ">=2.0.7",
+        "reason": "Owns the Vertical Slab and Step base classes targeted by the centralized appearance mixin; 2.0.7+26.2 is the exact controlled baseline."
       }
     ]
   },
   "state": {
-    "milestone": "Architecture audit complete at main checkpoint 777d9ece: Continuity consumes Fabric block appearance for rule selection and connections, while BGE's typed derived-to-canonical material mapping is not exposed through that API. The preferred next step is a centralized canonical appearance-state bridge with explicit state projection and conservative partial-geometry eligibility; no implementation artifact or runtime evidence exists yet.",
+    "milestone": "Canary 1 implements the audited typed canonical-appearance bridge for full four-Layers and double Vertical Slabs, passes controlled state/eligibility GameTests and artifact checks, and remains runtime untested pending the manual Continuity matrix.",
     "releases": {
-      "current": null,
+      "current": {
+        "version": "0.1.0-canary1",
+        "artifact": {
+          "filename": "bge-ctm-0.1.0-canary1.jar",
+          "sha256": "936d8c3d59e02bd76d649f5eab5cce7d0472a5c0548b65b93f2fc6c2bce0f5b6"
+        },
+        "built_at": "2026-09-17T18:57:53.6287474Z",
+        "source_commit": "d07552ee22f4663b50bfb8d84b9a6756df8a3c33",
+        "runtime_dependency_policy": {
+          "contract": "CAPABILITY_OR_PROVIDER",
+          "exceptions": [
+            {
+              "consumer_id": "bge_ctm",
+              "relationship": "depends",
+              "dependency_id": "minecraft",
+              "predicate": "~26.2",
+              "reason": "The appearance bridge is compiled against the Minecraft 26.2 block-state and Fabric appearance method descriptors and must remain on the controlled target release.",
+              "regression_evidence": [
+                "Canary 1 compiles and its focused headless GameTests execute against Minecraft 26.2 and Fabric API 0.156.0+26.2."
+              ]
+            }
+          ]
+        },
+        "summary": "Projects eligible full-volume BGE Layer and Vertical Slab states onto typed canonical material appearances with explicit state mapping."
+      },
       "accepted": null,
       "rollback": null,
       "accepted_current": "NO_ACCEPTED",
       "accepted_rollback": "NO_ROLLBACK"
     },
     "validation": {
-      "build": "NOT_RUN",
+      "build": "CONTROLLED_VALIDATION_PASS",
       "runtime": "RUNTIME_UNTESTED"
     },
     "blocker": null
   },
   "synchronization": {
-    "revision": 2,
-    "activity_at": "2026-08-30T20:50:07Z",
-    "updated_at": "2026-08-30T20:50:07Z",
-    "last_codex_at": "2026-08-30T20:50:07Z",
-    "source_commit": "777d9ece7f38bc6c323f57d12ff83d7cd31ebc59"
+    "revision": 3,
+    "activity_at": "2026-09-17T18:58:45.2512715Z",
+    "updated_at": "2026-09-17T18:58:45.2512715Z",
+    "last_codex_at": "2026-09-17T18:58:45.2512715Z",
+    "source_commit": "d07552ee22f4663b50bfb8d84b9a6756df8a3c33"
   }
 }
