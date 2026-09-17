@@ -15,7 +15,8 @@ public record MatchaJeiDataPayload(
         String revision,
         List<MatchaDisplayData.Trade> trades,
         List<MatchaDisplayData.Acquisition> acquisitions,
-        List<ItemStack> catalog
+        List<ItemStack> catalog,
+        List<ItemStack> canonicalDefaults
 ) implements CustomPacketPayload {
     public static final int MAX_PAYLOAD_BYTES = 2 * 1024 * 1024;
     private static final int MAX_ENTRIES = 4096;
@@ -24,13 +25,15 @@ public record MatchaJeiDataPayload(
     );
     public static final StreamCodec<RegistryFriendlyByteBuf, MatchaJeiDataPayload> STREAM_CODEC =
             StreamCodec.of(MatchaJeiDataPayload::encode, MatchaJeiDataPayload::decode);
-    public static final MatchaJeiDataPayload EMPTY = new MatchaJeiDataPayload("", List.of(), List.of(), List.of());
+    public static final MatchaJeiDataPayload EMPTY = new MatchaJeiDataPayload(
+            "", List.of(), List.of(), List.of(), List.of());
 
     public MatchaJeiDataPayload {
         revision = revision == null ? "" : revision;
         trades = List.copyOf(trades);
         acquisitions = List.copyOf(acquisitions);
         catalog = MatchaExactCatalog.normalizeAndDeduplicate(catalog);
+        canonicalDefaults = MatchaExactCatalog.normalizeAndDeduplicate(canonicalDefaults);
     }
 
     @Override
@@ -43,6 +46,7 @@ public record MatchaJeiDataPayload(
         writeList(buffer, payload.trades, MatchaJeiDataPayload::encodeTrade);
         writeList(buffer, payload.acquisitions, MatchaJeiDataPayload::encodeAcquisition);
         writeList(buffer, payload.catalog, ItemStack.STREAM_CODEC::encode);
+        writeList(buffer, payload.canonicalDefaults, ItemStack.STREAM_CODEC::encode);
     }
 
     private static MatchaJeiDataPayload decode(RegistryFriendlyByteBuf buffer) {
@@ -50,7 +54,8 @@ public record MatchaJeiDataPayload(
         List<MatchaDisplayData.Trade> trades = readList(buffer, MatchaJeiDataPayload::decodeTrade);
         List<MatchaDisplayData.Acquisition> acquisitions = readList(buffer, MatchaJeiDataPayload::decodeAcquisition);
         List<ItemStack> catalog = readList(buffer, ItemStack.STREAM_CODEC::decode);
-        return new MatchaJeiDataPayload(revision, trades, acquisitions, catalog);
+        List<ItemStack> canonicalDefaults = readList(buffer, ItemStack.STREAM_CODEC::decode);
+        return new MatchaJeiDataPayload(revision, trades, acquisitions, catalog, canonicalDefaults);
     }
 
     private static void encodeTrade(RegistryFriendlyByteBuf buffer, MatchaDisplayData.Trade trade) {

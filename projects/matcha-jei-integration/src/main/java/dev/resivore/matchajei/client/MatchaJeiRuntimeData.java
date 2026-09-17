@@ -83,7 +83,8 @@ final class MatchaJeiRuntimeData {
                     payload.revision(),
                     payload.trades(),
                     payload.acquisitions(),
-                    payload.catalog().stream().map(ItemStack::copy).toList()
+                    payload.catalog().stream().map(ItemStack::copy).toList(),
+                    payload.canonicalDefaults().stream().map(ItemStack::copy).toList()
             );
             if (!installed.trades().isEmpty()) {
                 runtime.getRecipeManager().addRecipes(MatchaJeiPlugin.MATCHA_VILLAGER_TRADES, installed.trades());
@@ -100,10 +101,14 @@ final class MatchaJeiRuntimeData {
                 runtime.getRecipeManager().unhideRecipes(MatchaJeiPlugin.MATCHA_ACQUISITIONS, installed.acquisitions());
             }
         }
-        active = new ActiveData(installed, addNewIngredients(installed.catalog()));
+        active = new ActiveData(installed, addNewIngredients(
+                installed.catalog(), installed.canonicalDefaults()));
     }
 
-    private static IntroducedIngredients addNewIngredients(List<ItemStack> candidates) {
+    private static IntroducedIngredients addNewIngredients(
+            List<ItemStack> candidates,
+            List<ItemStack> canonicalDefaults
+    ) {
         List<ItemStack> vanillaCandidates = candidates.stream()
                 .filter(candidate -> !MatchaJeiPlugin.usesJeiOwnedSubtype(candidate))
                 .map(candidate -> candidate.copyWithCount(1))
@@ -112,7 +117,7 @@ final class MatchaJeiRuntimeData {
                 .filter(MatchaJeiPlugin::usesJeiOwnedSubtype)
                 .map(candidate -> MatchaExactIngredient.of(candidate.copyWithCount(1)))
                 .toList();
-        List<ItemStack> suppressedVanilla = removeCanonicalFoodDefaults(candidates);
+        List<ItemStack> suppressedVanilla = removeCanonicalFoodDefaults(canonicalDefaults);
         return new IntroducedIngredients(
                 addNewIngredients(VanillaTypes.ITEM_STACK, vanillaCandidates),
                 addNewIngredients(MatchaExactIngredient.TYPE, exactCandidates),
@@ -122,12 +127,12 @@ final class MatchaJeiRuntimeData {
 
     /**
      * JEI owns its ordinary ingredient list. We only temporarily remove the
-     * exact default food identities selected by the shared C6 predicate, and
+     * exact default food identities selected by the server's shared catalog
+     * canonicalization, and
      * retain them for restoration before a changed catalog is installed.
      */
-    private static List<ItemStack> removeCanonicalFoodDefaults(List<ItemStack> catalog) {
-        List<ItemStack> defaults = MatchaCanonicalFoodReplacements.defaultsFor(catalog);
-        if (defaults.isEmpty()) {
+    private static List<ItemStack> removeCanonicalFoodDefaults(List<ItemStack> canonicalDefaults) {
+        if (canonicalDefaults.isEmpty()) {
             return List.of();
         }
         var manager = runtime.getIngredientManager();
@@ -135,7 +140,7 @@ final class MatchaJeiRuntimeData {
         Set<Object> knownUids = manager.getAllIngredients(VanillaTypes.ITEM_STACK).stream()
                 .map(ingredient -> helper.getUid(ingredient, UidContext.Ingredient))
                 .collect(java.util.stream.Collectors.toCollection(LinkedHashSet::new));
-        List<ItemStack> present = defaults.stream()
+        List<ItemStack> present = canonicalDefaults.stream()
                 .filter(defaultStack -> knownUids.contains(helper.getUid(defaultStack, UidContext.Ingredient)))
                 .map(ItemStack::copy)
                 .toList();
@@ -191,7 +196,8 @@ final class MatchaJeiRuntimeData {
             String revision,
             List<MatchaDisplayData.Trade> trades,
             List<MatchaDisplayData.Acquisition> acquisitions,
-            List<ItemStack> catalog
+            List<ItemStack> catalog,
+            List<ItemStack> canonicalDefaults
     ) {
     }
 

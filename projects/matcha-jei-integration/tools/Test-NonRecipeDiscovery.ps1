@@ -235,6 +235,54 @@ function Get-FixtureStackKey {
     return Get-SemanticDigest $normalized
 }
 
+function Test-FixtureHealthFood {
+    param(
+        [Parameter(Mandatory)]
+        [Collections.IDictionary] $Stack
+    )
+
+    $components = $Stack['components']
+    if ($components -isnot [Collections.IDictionary]) {
+        return $false
+    }
+    $consumable = $components['minecraft:consumable']
+    return $consumable -is [Collections.IDictionary] -and
+        @($consumable['on_consume_effects']).Count -gt 0
+}
+
+function Get-FixtureFoodFamilyKey {
+    param(
+        [Parameter(Mandatory)]
+        [Collections.IDictionary] $Stack
+    )
+
+    $itemId = Normalize-Identifier ([string] $Stack['id'])
+    $identityComponents = [ordered] @{}
+    $components = $Stack['components']
+    if ($components -is [Collections.IDictionary]) {
+        foreach ($componentId in @($components.Keys | Sort-Object)) {
+            if ($componentId -cin @(
+                    'minecraft:food',
+                    'minecraft:consumable',
+                    'minecraft:lore'
+                )) {
+                continue
+            }
+            $value = $components[$componentId]
+            if ($componentId -ceq 'minecraft:item_model' -and
+                $value -is [string] -and
+                (Normalize-Identifier $value) -ceq $itemId) {
+                continue
+            }
+            $identityComponents[$componentId] = $value
+        }
+    }
+    return Get-SemanticDigest ([ordered] @{
+            id = $itemId
+            identity_components = $identityComponents
+        })
+}
+
 function Get-JsonArrayValues {
     param(
         [Parameter(Mandatory)]
@@ -1131,6 +1179,66 @@ try {
     Assert-Equal $fixtureLootOnlyKeys.Count 30 'Exact loot-only ingredient identity count'
     Assert-Equal $fixtureIngredientUnion.Count 240 'Exact non-recipe ingredient union count'
 
+    # Reconstruct the complete generated exact catalog and audit food families
+    # structurally. Recipe identity is provenance, not a food-name allowlist.
+    $fixtureComponentRecipeKeys = New-OrdinalSet
+    foreach ($key in $fixtureRecipeKeys) {
+        if (-not $fixtureStacksByKey.ContainsKey($key)) {
+            continue
+        }
+        $components = $fixtureStacksByKey[$key]['components']
+        if ($components -is [Collections.IDictionary] -and $components.Count -gt 0) {
+            [void] $fixtureComponentRecipeKeys.Add($key)
+        }
+    }
+    $fixtureCatalogKeys = Copy-OrdinalSet $fixtureComponentRecipeKeys
+    $fixtureCatalogKeys.UnionWith($fixtureIngredientUnion)
+    Assert-Equal $fixtureCatalogKeys.Count 522 'Pre-canonicalization exact catalog identity count'
+
+    $richFoodFamilies = [Collections.Generic.Dictionary[string, object]]::new([StringComparer]::Ordinal)
+    foreach ($key in $fixtureCatalogKeys) {
+        $stack = [Collections.IDictionary] $fixtureStacksByKey[$key]
+        if (-not (Test-FixtureHealthFood $stack)) {
+            continue
+        }
+        $familyKey = Get-FixtureFoodFamilyKey $stack
+        if (-not $richFoodFamilies.ContainsKey($familyKey)) {
+            $richFoodFamilies.Add($familyKey, (New-OrdinalSet))
+        }
+        [void] $richFoodFamilies[$familyKey].Add($key)
+    }
+
+    $multiIdentityFoodFamilies = @(
+        $richFoodFamilies.GetEnumerator() | Where-Object { $_.Value.Count -gt 1 }
+    )
+    Assert-Equal $multiIdentityFoodFamilies.Count 8 'Multi-identity health-food family count'
+    $canonicalCatalogKeys = Copy-OrdinalSet $fixtureCatalogKeys
+    $authoritativeFamilyCount = 0
+    $ambiguousFamilyCount = 0
+    foreach ($family in $multiIdentityFoodFamilies) {
+        $recipeMembers = @($family.Value | Where-Object { $fixtureComponentRecipeKeys.Contains($_) })
+        if ($recipeMembers.Count -eq 1) {
+            $authoritativeFamilyCount++
+            $recipeKey = $recipeMembers[0]
+            foreach ($member in $family.Value) {
+                if ($member -cne $recipeKey) {
+                    [void] $canonicalCatalogKeys.Remove($member)
+                }
+            }
+            Assert-True $canonicalCatalogKeys.Contains($recipeKey) `
+                'Canonical food family lost its effective recipe identity.'
+        } else {
+            $ambiguousFamilyCount++
+            foreach ($member in $family.Value) {
+                Assert-True $canonicalCatalogKeys.Contains($member) `
+                    'Ambiguous non-recipe food identity was collapsed.'
+            }
+        }
+    }
+    Assert-Equal $authoritativeFamilyCount 7 'Unique authoritative recipe food-family count'
+    Assert-Equal $ambiguousFamilyCount 1 'Ambiguous no-recipe food-family count'
+    Assert-Equal $canonicalCatalogKeys.Count 515 'Canonicalized exact catalog identity count'
+
     $jeiOwnedBaseIds = New-OrdinalSet
     foreach ($base in @(
             'minecraft:tipped_arrow',
@@ -1224,6 +1332,7 @@ try {
     $exactIngredientPath = Join-Path $projectRoot 'src\main\java\dev\resivore\matchajei\client\MatchaExactIngredient.java'
     $exactRecipeBridgePath = Join-Path $projectRoot 'src\main\java\dev\resivore\matchajei\client\MatchaExactRecipeBridge.java'
     $exactCatalogPath = Join-Path $projectRoot 'src\main\java\dev\resivore\matchajei\data\MatchaExactCatalog.java'
+    $foodCatalogPath = Join-Path $projectRoot 'src\main\java\dev\resivore\matchajei\data\MatchaFoodDiscoveryCatalog.java'
     $creativeCatalogPath = Join-Path $projectRoot 'src\main\java\dev\resivore\matchajei\client\MatchaCreativeCatalog.java'
     $creativeSearchEntriesPath = Join-Path $projectRoot 'src\main\java\dev\resivore\matchajei\client\MatchaCreativeSearchEntries.java'
     $clientDataPath = Join-Path $projectRoot 'src\main\java\dev\resivore\matchajei\client\MatchaClientData.java'
@@ -1238,6 +1347,7 @@ try {
     $exactIngredientSource = Get-Content -LiteralPath $exactIngredientPath -Raw -Encoding UTF8
     $exactRecipeBridgeSource = Get-Content -LiteralPath $exactRecipeBridgePath -Raw -Encoding UTF8
     $exactCatalogSource = Get-Content -LiteralPath $exactCatalogPath -Raw -Encoding UTF8
+    $foodCatalogSource = Get-Content -LiteralPath $foodCatalogPath -Raw -Encoding UTF8
     $creativeCatalogSource = Get-Content -LiteralPath $creativeCatalogPath -Raw -Encoding UTF8
     $creativeSearchEntriesSource = Get-Content -LiteralPath $creativeSearchEntriesPath -Raw -Encoding UTF8
     $clientDataSource = Get-Content -LiteralPath $clientDataPath -Raw -Encoding UTF8
@@ -1250,13 +1360,19 @@ try {
     Assert-Matches $scannerSource 'SlotDisplayContext\.REGISTRIES' 'Effective recipe discovery is not using the supported 26.2 recipe-display context.'
     Assert-Matches $scannerSource 'display\.result\(\)\.resolveForStacks\(displayContext\)' 'Effective recipe discovery is not resolving display outputs.'
     Assert-Matches $scannerSource 'MatchaExactCatalog\.selectRecipeOutputs\(rawFallbacks, resolvedOutputs\)' 'Resolved recipe outputs do not supersede raw Matcha JSON fallbacks.'
-    Assert-Matches $scannerSource 'filter\(identity -> isComponentStack\(identity\.stack\(\)\)\).*?addCatalogEntry\(catalog, identity\)' 'Component-bearing effective recipe outputs are not added to the shared catalog.'
+    Assert-Matches $scannerSource 'filter\(identity -> isComponentStack\(identity\.stack\(\)\)\).*?Source\.EFFECTIVE_RECIPE' 'Component-bearing effective recipe outputs are not provenance-tagged in the shared catalog.'
+    Assert-Matches $scannerSource 'MatchaFoodDiscoveryCatalog\.canonicalize\(catalog\.values\(\)\)' 'The generated catalog bypasses shared food canonicalization.'
+    Assert-Matches $foodCatalogSource 'SOURCE_VARIANT_COMPONENTS' 'Source-precedence food families no longer isolate the health payload.'
+    Assert-Matches $foodCatalogSource 'DEFAULT_ENRICHMENT_COMPONENTS' 'Default-equivalence food families no longer isolate audited food mechanics.'
+    Assert-Matches $foodCatalogSource 'members\.size\(\) == 1' 'Ambiguous recipe food families could be collapsed.'
     Assert-Matches $scannerSource 'revisionOf\(recipes, state\.trades, lootTables, effectiveRecipeOutputs\)' 'The synchronized catalog revision ignores effective outputs.'
     Assert-Matches $scannerSource 'effectiveRecipeOutputs\.entrySet\(\)' 'The synchronized catalog revision does not fingerprint effective full-stack outputs.'
     Assert-Matches $exactCatalogSource 'known but non-representable recipe deliberately' 'A known unrepresentable resolved recipe could incorrectly revive its stale raw output.'
     Assert-Matches $exactCatalogSource 'ItemStack\.isSameItemSameComponents' 'Shared catalog deduplication no longer uses full component identity.'
     Assert-Matches $payloadSource 'List<ItemStack> catalog' 'The synchronized payload no longer carries the shared exact catalog.'
+    Assert-Matches $payloadSource 'List<ItemStack> canonicalDefaults' 'The synchronized payload no longer carries canonical default identities.'
     Assert-Matches $runtimeDataSource 'payload\.catalog\(\)' 'JEI runtime data is not consuming the shared catalog.'
+    Assert-Matches $runtimeDataSource 'payload\.canonicalDefaults\(\)' 'JEI runtime data is not consuming shared canonical defaults.'
     Assert-True ($pluginSource -cnotmatch 'addIngredientsAtRuntime\s*\(\s*VanillaTypes\.ITEM_STACK\s*,\s*outputs\s*\)') 'C3 client-side raw recipe-output injection must not coexist with the resolved catalog.'
 
     Assert-True (-not [regex]::IsMatch(
@@ -1347,6 +1463,7 @@ try {
     Assert-Matches $creativeCatalogSource 'CreativeModeTabEvents\.modifyOutputEvent\(CreativeModeTabs\.INGREDIENTS\)' 'Creative Search does not expose the shared Matcha catalog through an ordinary tab rebuild.'
     Assert-Matches $creativeCatalogSource 'CreativeModeTab\.TabVisibility\.SEARCH_TAB_ONLY' 'Matcha entries are not scoped to Creative Search.'
     Assert-Matches $creativeCatalogSource 'MatchaClientData\.current\(\)\.catalog\(\)' 'Creative Search is not sourcing exact stacks from the shared catalog.'
+    Assert-Matches $creativeCatalogSource 'MatchaClientData\.current\(\)\.canonicalDefaults\(\)' 'Creative Search is not sourcing shared canonical defaults.'
     Assert-Matches $creativeCatalogSource 'MatchaCreativeSearchEntries\.replaceOwned\(' 'Payload synchronization does not replace only Matcha-owned Search entries.'
     Assert-Matches $creativeSearchEntriesSource 'searchContents\.removeIf\(ownedEntries::contains\)' 'Payload synchronization does not remove prior Matcha-owned entries by object identity.'
     Assert-Matches $creativeSearchEntriesSource 'ItemStack\.isSameItemSameComponents\(existing, contribution\)' 'Creative Search contribution no longer deduplicates exact component identity.'
@@ -1360,7 +1477,7 @@ try {
             [Text.RegularExpressions.RegexOptions]::Singleline
         )) 'A minecraft/main namespace shortcut was found; those namespaces also contain unrelated vanilla resources.'
 
-    Write-Output 'MATCHA_C5_CATALOG_OK: recipes=1076 raw_component_outputs=315 trades=290 trade_models=145 nonrecipe_models=112 (57/45/10) exact_trades=175 acquisitions=249 preserved_nonrecipe_identities=240 (61/149/30; 19 exact-bridge/221 vanilla); resolved outputs and additive Creative Search are verified structurally.'
+    Write-Output 'MATCHA_C8_CATALOG_OK: recipes=1076 raw_component_outputs=315 trades=290 trade_models=145 nonrecipe_models=112 (57/45/10) exact_trades=175 acquisitions=249 preserved_nonrecipe_identities=240 (61/149/30; 19 exact-bridge/221 vanilla); exact catalog 522->515 across 7 authoritative recipe families with 1 ambiguous family retained; resolved outputs and additive Creative Search are verified structurally.'
 } finally {
     if ($null -ne $zip) {
         $zip.Dispose()

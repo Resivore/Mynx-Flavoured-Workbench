@@ -8,6 +8,7 @@ import com.mojang.serialization.JsonOps;
 import dev.resivore.matchajei.MatchaNamespaces;
 import dev.resivore.matchajei.data.MatchaDisplayData;
 import dev.resivore.matchajei.data.MatchaExactCatalog;
+import dev.resivore.matchajei.data.MatchaFoodDiscoveryCatalog;
 import dev.resivore.matchajei.network.MatchaJeiDataPayload;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.Registries;
@@ -128,26 +129,30 @@ public final class MatchaDataScanner {
                 .map(StackIdentity::key)
                 .collect(java.util.stream.Collectors.toUnmodifiableSet());
 
-        LinkedHashMap<String, ItemStack> catalog = new LinkedHashMap<>();
+        LinkedHashMap<String, MatchaFoodDiscoveryCatalog.Candidate> catalog = new LinkedHashMap<>();
         effectiveRecipeOutputs.values().stream()
                 .filter(identity -> isComponentStack(identity.stack()))
-                .forEach(identity -> addCatalogEntry(catalog, identity));
+                .forEach(identity -> addCatalogEntry(
+                        catalog, identity, MatchaFoodDiscoveryCatalog.Source.EFFECTIVE_RECIPE));
         List<MatchaDisplayData.Trade> tradeDisplays = scanTrades(
                 state.trades, state.assignments, recipeIdentities, registryOps, catalog
         );
         List<MatchaDisplayData.Acquisition> acquisitions = scanLoot(
                 lootTables, recipeIdentities, registryOps, catalog
         );
+        MatchaFoodDiscoveryCatalog.Result discovery = MatchaFoodDiscoveryCatalog.canonicalize(catalog.values());
         String revision = revisionOf(recipes, state.trades, lootTables, effectiveRecipeOutputs);
         LOGGER.info(
                 "Prepared Matcha exact catalog {}: {} resolved recipe outputs, {} trades, {} acquisitions, {} entries",
-                revision.substring(0, 12), effectiveRecipeOutputs.size(), tradeDisplays.size(), acquisitions.size(), catalog.size()
+                revision.substring(0, 12), effectiveRecipeOutputs.size(), tradeDisplays.size(), acquisitions.size(),
+                discovery.catalog().size()
         );
         return new MatchaJeiDataPayload(
                 revision,
                 tradeDisplays,
                 acquisitions,
-                new ArrayList<>(catalog.values())
+                discovery.catalog(),
+                discovery.canonicalDefaults()
         );
     }
 
@@ -339,7 +344,7 @@ public final class MatchaDataScanner {
             Map<Identifier, ProfessionLevel> assignments,
             Set<String> recipeIdentities,
             RegistryOps<JsonElement> registryOps,
-            Map<String, ItemStack> catalog
+            Map<String, MatchaFoodDiscoveryCatalog.Candidate> catalog
     ) {
         List<MatchaDisplayData.Trade> displays = new ArrayList<>();
         documents.values().stream().sorted(Comparator.comparing(ResourceDocument::id)).forEach(document -> {
@@ -356,13 +361,16 @@ public final class MatchaDataScanner {
             }
             first.filter(identity -> isComponentStack(identity.stack()))
                     .filter(identity -> isNonRecipeIdentity(identity, recipeIdentities))
-                    .ifPresent(identity -> addCatalogEntry(catalog, identity));
+                    .ifPresent(identity -> addCatalogEntry(
+                            catalog, identity, MatchaFoodDiscoveryCatalog.Source.NON_RECIPE));
             second.filter(identity -> isComponentStack(identity.stack()))
                     .filter(identity -> isNonRecipeIdentity(identity, recipeIdentities))
-                    .ifPresent(identity -> addCatalogEntry(catalog, identity));
+                    .ifPresent(identity -> addCatalogEntry(
+                            catalog, identity, MatchaFoodDiscoveryCatalog.Source.NON_RECIPE));
             output.filter(identity -> isComponentStack(identity.stack()))
                     .filter(identity -> isNonRecipeIdentity(identity, recipeIdentities))
-                    .ifPresent(identity -> addCatalogEntry(catalog, identity));
+                    .ifPresent(identity -> addCatalogEntry(
+                            catalog, identity, MatchaFoodDiscoveryCatalog.Source.NON_RECIPE));
 
             ItemStack secondStack = second.map(StackIdentity::stack).orElse(ItemStack.EMPTY);
             if (!isComponentStack(first.get().stack())
@@ -396,7 +404,7 @@ public final class MatchaDataScanner {
             Map<Identifier, ResourceDocument> documents,
             Set<String> recipeIdentities,
             RegistryOps<JsonElement> registryOps,
-            Map<String, ItemStack> catalog
+            Map<String, MatchaFoodDiscoveryCatalog.Candidate> catalog
     ) {
         Map<Identifier, LootNode> nodes = new LinkedHashMap<>();
         Set<Identifier> referenced = new HashSet<>();
@@ -414,7 +422,7 @@ public final class MatchaDataScanner {
                         .filter(identity -> isNonRecipeIdentity(identity, recipeIdentities))
                         .sorted(Comparator.comparing(StackIdentity::key))
                         .forEach(identity -> {
-                            addCatalogEntry(catalog, identity);
+                            addCatalogEntry(catalog, identity, MatchaFoodDiscoveryCatalog.Source.NON_RECIPE);
                             displays.add(new MatchaDisplayData.Acquisition(
                                     source,
                                     shortHash(source + "\n" + identity.key()),
@@ -640,8 +648,18 @@ public final class MatchaDataScanner {
                 .map(JsonElement::toString);
     }
 
-    private static void addCatalogEntry(Map<String, ItemStack> catalog, StackIdentity identity) {
-        catalog.putIfAbsent(identity.key(), MatchaExactCatalog.normalize(identity.stack()));
+    private static void addCatalogEntry(
+            Map<String, MatchaFoodDiscoveryCatalog.Candidate> catalog,
+            StackIdentity identity,
+            MatchaFoodDiscoveryCatalog.Source source
+    ) {
+        catalog.merge(
+                identity.key(),
+                new MatchaFoodDiscoveryCatalog.Candidate(identity.stack(), source),
+                (existing, incoming) -> existing.source() == MatchaFoodDiscoveryCatalog.Source.EFFECTIVE_RECIPE
+                        ? existing
+                        : incoming
+        );
     }
 
     private static boolean isComponentStack(ItemStack stack) {
