@@ -23,6 +23,12 @@ import net.minecraft.world.level.block.LilyPadBlock;
 import net.minecraft.world.level.block.MossyCarpetBlock;
 import net.minecraft.world.level.block.MultifaceBlock;
 import net.minecraft.world.level.block.SaplingBlock;
+import net.minecraft.world.level.block.MangrovePropaguleBlock;
+import net.minecraft.world.level.block.LanternBlock;
+import net.minecraft.world.level.block.StandingSignBlock;
+import net.minecraft.world.level.block.CeilingHangingSignBlock;
+import net.minecraft.world.level.block.TorchBlock;
+import net.minecraft.world.level.block.RedstoneTorchBlock;
 import net.minecraft.world.level.block.SmallDripleafBlock;
 import net.minecraft.world.level.block.SporeBlossomBlock;
 import net.minecraft.world.level.block.StemBlock;
@@ -51,7 +57,7 @@ public final class PlantFamilyEligibility {
         // The exclusion boundary is deliberately structural and small. Everything below this
         // block is classified only by how its vertical root/anchor can be resolved; vanilla
         // canonical-parent survival remains the actual permission decision.
-        if (block instanceof SaplingBlock
+        if (block instanceof StemBlock
                 || block instanceof StemBlock
                 || block instanceof AttachedStemBlock
                 || block instanceof ChorusPlantBlock
@@ -63,6 +69,15 @@ public final class PlantFamilyEligibility {
                 || block instanceof BaseCoralWallFanBlock) {
             return Optional.empty();
         }
+
+        // A planted propagule is a sapling; hanging propagules deliberately retain vanilla's
+        // leaf-attached lifecycle and must never acquire a floor attachment.
+        if (block instanceof MangrovePropaguleBlock
+                && state.hasProperty(MangrovePropaguleBlock.HANGING)
+                && state.getValue(MangrovePropaguleBlock.HANGING)) {
+            return Optional.empty();
+        }
+        if (block instanceof SaplingBlock) return Optional.of(Family.UPWARD_VEGETATION);
 
         // Minecraft 26.2 has no shared hanging-foliage superclass for these two single-block
         // decorations. Their concrete classes are still behavior contracts, not registry IDs.
@@ -123,6 +138,18 @@ public final class PlantFamilyEligibility {
             return Optional.of(Family.UPWARD_VEGETATION);
         }
 
+        // These are behaviour contracts shared by all vanilla wood variants. LanternBlock also
+        // covers BBB's WoodenLanternBlock and Aurora's AmethystLanternBlock without linking either
+        // optional mod. Ribbits is deliberately handled by its confirmed HANGING state contract.
+        if (block instanceof LanternBlock || OptionalSurfaceAdapters.isRibbitsSwampLantern(state)) {
+            return Optional.of(Family.LANTERN);
+        }
+        if (block instanceof StandingSignBlock) return Optional.of(Family.STANDING_SIGN);
+        if (block instanceof CeilingHangingSignBlock) return Optional.of(Family.CEILING_HANGING_SIGN);
+        if (block instanceof TorchBlock && !(block instanceof RedstoneTorchBlock)) {
+            return Optional.of(Family.FLOOR_TORCH);
+        }
+
         return block instanceof VegetationBlock
                 ? Optional.of(Family.UPWARD_VEGETATION)
                 : Optional.empty();
@@ -143,6 +170,10 @@ public final class PlantFamilyEligibility {
         SUGAR_CANE_COLUMN,
         BAMBOO_COLUMN,
         CACTUS_COLUMN,
-        HANGING_MOSS_COLUMN
+        HANGING_MOSS_COLUMN,
+        LANTERN,
+        STANDING_SIGN,
+        CEILING_HANGING_SIGN,
+        FLOOR_TORCH
     }
 }

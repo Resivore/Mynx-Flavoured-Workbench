@@ -129,8 +129,6 @@ public final class FoliageSurfaceGameTests implements CustomTestMethodInvoker {
                 PlantFamilyEligibility.Family.UPWARD_VEGETATION);
 
         for (Block excluded : List.of(
-                Blocks.OAK_SAPLING,
-                Blocks.MANGROVE_PROPAGULE,
                 Blocks.PUMPKIN_STEM,
                 Blocks.ATTACHED_PUMPKIN_STEM,
                 Blocks.MELON_STEM,
@@ -145,9 +143,7 @@ public final class FoliageSurfaceGameTests implements CustomTestMethodInvoker {
                 Blocks.CARPET.white(),
                 Blocks.RAIL,
                 Blocks.REDSTONE_WIRE,
-                Blocks.TORCH,
                 Blocks.IRON_CHAIN,
-                Blocks.LANTERN,
                 Blocks.POINTED_DRIPSTONE)) {
             helper.assertTrue(PlantFamilyEligibility.family(excluded.defaultBlockState()).isEmpty(),
                     "non-foliage or unsupported lifecycle family entered projection: " + excluded);
@@ -902,11 +898,9 @@ public final class FoliageSurfaceGameTests implements CustomTestMethodInvoker {
         level.setBlock(support, slab(Blocks.MOSS_BLOCK, SlabType.BOTTOM), 2);
         level.setBlock(azaleaPos, Blocks.AZALEA.defaultBlockState(), 2);
         ItemStack azaleaBoneMeal = new ItemStack(Items.BONE_MEAL, 2);
-        helper.assertFalse(BoneMealItem.growCrop(azaleaBoneMeal, level, azaleaPos),
-                "lowered moss-patch azalea entered the deliberately deferred tree-growth path");
-        helper.assertTrue(azaleaBoneMeal.getCount() == 2
-                        && level.getBlockState(azaleaPos).is(Blocks.AZALEA),
-                "rejected lowered-azalea growth consumed bonemeal or changed the decoration");
+        helper.assertTrue(((BonemealableBlock) Blocks.AZALEA).isValidBonemealTarget(
+                        level, azaleaPos, level.getBlockState(azaleaPos)),
+                "lowered moss-patch azalea did not expose its vanilla tree-growth target");
 
         clearPatch(level, support, 2);
         BlockPos lower = support.above();
@@ -1056,8 +1050,8 @@ public final class FoliageSurfaceGameTests implements CustomTestMethodInvoker {
                         .equals(Optional.of(true)),
                 "valid projection failed after a preceding rejection");
         helper.assertTrue(CanonicalSurvivalProjection.evaluate(
-                        Blocks.OAK_SAPLING.defaultBlockState(), level, plant).isEmpty(),
-                "explicitly deferred sapling unexpectedly opened a projection");
+                        Blocks.OAK_SAPLING.defaultBlockState(), level, plant).equals(Optional.of(true)),
+                "canonical-valid sapling did not open a projected survival path");
         helper.assertFalse(CanonicalSurvivalProjection.isEvaluating(),
                 "projection recursion guard leaked after a non-candidate evaluation");
         helper.assertTrue(level.getBlockState(support).equals(validSupport)

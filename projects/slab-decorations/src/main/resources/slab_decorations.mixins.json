@@ -11,7 +11,8 @@
     "GrowingPlantBlockAccessor",
     "HangingMossSurvivalMixin",
     "MushroomBonemealMixin",
-    "NetherFungusBonemealMixin"
+    "NetherFungusBonemealMixin",
+    "SaplingGrowthMixin"
   ],
   "injectors": {
     "defaultRequire": 1

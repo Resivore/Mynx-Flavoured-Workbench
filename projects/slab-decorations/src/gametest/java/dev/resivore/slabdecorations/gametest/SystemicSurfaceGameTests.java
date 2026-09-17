@@ -298,7 +298,7 @@ public final class SystemicSurfaceGameTests implements CustomTestMethodInvoker {
     }
 
     @GameTest(maxTicks = 80)
-    public void fungiPlacementAndTransformationBoundaryStaySeparate(GameTestHelper helper) {
+    public void fungiPlacementAndTransformationUsesCanonicalParent(GameTestHelper helper) {
         BlockPos support = helper.absolutePos(new BlockPos(3, 1, 3));
         BlockPos fungus = support.above();
 
@@ -314,9 +314,9 @@ public final class SystemicSurfaceGameTests implements CustomTestMethodInvoker {
             assertAcceptedOffset(helper, fungus, support, NibaruHorizontalSurface.BOTTOM_OFFSET,
                     testCase.fungus() + " small decoration");
             BonemealableBlock bonemealable = (BonemealableBlock) testCase.fungus();
-            helper.assertFalse(bonemealable.isValidBonemealTarget(
+            helper.assertTrue(bonemealable.isValidBonemealTarget(
                             level, fungus, level.getBlockState(fungus)),
-                    testCase.fungus() + " entered deferred huge-fungus generation");
+                    testCase.fungus() + " did not expose vanilla huge-fungus growth on canonical nylium");
 
             level.setBlock(support, slab(Blocks.GLASS, SlabType.BOTTOM),
                     Block.UPDATE_SKIP_ALL_SIDEEFFECTS);
@@ -417,6 +417,35 @@ public final class SystemicSurfaceGameTests implements CustomTestMethodInvoker {
     }
 
     @GameTest(maxTicks = 60)
+    public void lanternSignsAndFloorTorchesShareTheSurfaceResolver(GameTestHelper helper) {
+        var level = helper.getLevel();
+        BlockPos floor = helper.absolutePos(new BlockPos(3, 2, 3));
+        BlockPos ceiling = helper.absolutePos(new BlockPos(7, 4, 3));
+        level.setBlock(floor, slab(Blocks.STONE, SlabType.BOTTOM), Block.UPDATE_SKIP_ALL_SIDEEFFECTS);
+        level.setBlock(ceiling, slab(Blocks.STONE, SlabType.TOP), Block.UPDATE_SKIP_ALL_SIDEEFFECTS);
+
+        for (BlockState state : List.of(Blocks.LANTERN.defaultBlockState(),
+                Blocks.SOUL_LANTERN.defaultBlockState(), Blocks.TORCH.defaultBlockState(),
+                Blocks.SOUL_TORCH.defaultBlockState(), Blocks.OAK_SIGN.defaultBlockState())) {
+            BlockPos pos = floor.above();
+            level.setBlock(pos, state, Block.UPDATE_SKIP_ALL_SIDEEFFECTS);
+            assertAcceptedOffset(helper, pos, floor, NibaruHorizontalSurface.BOTTOM_OFFSET,
+                    "floor decoration " + state.getBlock());
+        }
+
+        for (BlockState state : List.of(
+                Blocks.LANTERN.defaultBlockState().setValue(BlockStateProperties.HANGING, true),
+                Blocks.SOUL_LANTERN.defaultBlockState().setValue(BlockStateProperties.HANGING, true),
+                Blocks.OAK_HANGING_SIGN.defaultBlockState())) {
+            BlockPos pos = ceiling.below();
+            level.setBlock(pos, state, Block.UPDATE_SKIP_ALL_SIDEEFFECTS);
+            assertAcceptedOffset(helper, pos, ceiling, NibaruHorizontalSurface.CEILING_TOP_OFFSET,
+                    "ceiling decoration " + state.getBlock());
+        }
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 60)
     public void explicitBlacklistNeverProducesAHorizontalAttachment(GameTestHelper helper) {
         var level = helper.getLevel();
         BlockPos support = helper.absolutePos(new BlockPos(3, 2, 3));
@@ -425,8 +454,6 @@ public final class SystemicSurfaceGameTests implements CustomTestMethodInvoker {
                 Block.UPDATE_SKIP_ALL_SIDEEFFECTS);
 
         List<Block> representatives = List.of(
-                Blocks.OAK_SAPLING,
-                Blocks.MANGROVE_PROPAGULE,
                 Blocks.PUMPKIN_STEM,
                 Blocks.ATTACHED_PUMPKIN_STEM,
                 Blocks.MELON_STEM,
@@ -449,8 +476,7 @@ public final class SystemicSurfaceGameTests implements CustomTestMethodInvoker {
         }
 
         for (Block block : net.minecraft.core.registries.BuiltInRegistries.BLOCK) {
-            if (!(block instanceof SaplingBlock)
-                    && !(block instanceof StemBlock)
+            if (!(block instanceof StemBlock)
                     && !(block instanceof AttachedStemBlock)) {
                 continue;
             }

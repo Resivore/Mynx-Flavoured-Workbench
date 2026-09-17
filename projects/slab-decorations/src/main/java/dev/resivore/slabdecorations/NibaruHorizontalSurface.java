@@ -18,6 +18,7 @@ import net.minecraft.world.level.block.GrowingPlantBlock;
 import net.minecraft.world.level.block.HangingMossBlock;
 import net.minecraft.world.level.block.MossyCarpetBlock;
 import net.minecraft.world.level.block.SlabBlock;
+import net.minecraft.world.level.block.LanternBlock;
 import net.minecraft.world.level.block.SugarCaneBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -129,6 +130,13 @@ public final class NibaruHorizontalSurface {
             case BAMBOO_COLUMN -> bambooAttachment(state, level, pos);
             case CACTUS_COLUMN -> cactusAttachment(state, level, pos);
             case HANGING_MOSS_COLUMN -> hangingMossAttachment(state, level, pos);
+            case LANTERN -> Optional.of(new Attachment(pos, state,
+                    state.hasProperty(LanternBlock.HANGING) && state.getValue(LanternBlock.HANGING)
+                            ? AttachmentOrientation.CEILING : AttachmentOrientation.UPWARD));
+            case STANDING_SIGN, FLOOR_TORCH -> Optional.of(
+                    new Attachment(pos, state, AttachmentOrientation.UPWARD));
+            case CEILING_HANGING_SIGN -> Optional.of(
+                    new Attachment(pos, state, AttachmentOrientation.CEILING));
         };
     }
 

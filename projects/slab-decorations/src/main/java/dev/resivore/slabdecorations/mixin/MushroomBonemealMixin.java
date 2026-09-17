@@ -1,30 +1,23 @@
 package dev.resivore.slabdecorations.mixin;
 
-import dev.resivore.slabdecorations.NibaruHorizontalSurface;
+import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import dev.resivore.slabdecorations.StructureGrowthTransaction;
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.LevelReader;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.MushroomBlock;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.properties.SlabType;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-/** Prevents a half-block-lowered mushroom from producing a misaligned giant structure. */
+/** Runs the vanilla giant-mushroom feature against a transactionally projected parent. */
 @Mixin(MushroomBlock.class)
 public abstract class MushroomBonemealMixin {
-    @Inject(method = "isValidBonemealTarget", at = @At("HEAD"), cancellable = true)
-    private void slabDecorations$rejectGiantGrowthFromLoweredMushroom(
-            LevelReader level,
-            BlockPos pos,
-            BlockState state,
-            CallbackInfoReturnable<Boolean> cir) {
-        if (!(state.getBlock() instanceof MushroomBlock)) return;
-        NibaruHorizontalSurface.Surface surface =
-                NibaruHorizontalSurface.supporting(state, level, pos).orElse(null);
-        if (surface != null && surface.type() == SlabType.BOTTOM) {
-            cir.setReturnValue(false);
-        }
+    @WrapMethod(method = "growMushroom")
+    private boolean slabDecorations$growAgainstCanonicalParent(
+            ServerLevel level, BlockPos pos, BlockState state, RandomSource random,
+            Operation<Boolean> original) {
+        return StructureGrowthTransaction.run(level, pos, state,
+                () -> original.call(level, pos, state, random));
     }
 }
