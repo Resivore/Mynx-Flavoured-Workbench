@@ -43,13 +43,13 @@
         "type": "PROJECT",
         "identifier": "4b2342fc-7bdf-5ba6-9f37-d551109d214c",
         "requirement": ">=4.2.14-bge.canary70.stone-native-slab+26.2",
-        "reason": "Block Geometry Extensions owns the typed runtime binding, geometry roles, canonical material identity, and exact effective slab source consumed by Canary 5; C70 is the exact controlled validation baseline while the runtime contract remains compatible-range."
+        "reason": "Block Geometry Extensions owns the typed runtime binding, geometry roles, canonical material identity, and exact effective slab source consumed by Canary 6; C71 is the exact controlled validation baseline while the runtime contract remains compatible-range."
       },
       {
         "type": "MOD",
         "identifier": "continuity",
         "requirement": "=3.0.1+26.2",
-        "reason": "Canary 5 decorates the exact Continuity 3.0.1+26.2 regular connection predicate, processor-slice, and quad seams, and redirects only StandardOverlayQuadProcessor's source-full-collision gate before retaining Continuity's native canonical semantic checks and final real-contact veto; required mixins and the controlled input hash fail closed on an incompatible implementation."
+        "reason": "Canary 6 decorates the exact Continuity 3.0.1+26.2 regular, processor-slice, quad-context, Standard Overlay semantic/contact, and processQuadInner emitOverlayQuad seams; required mixins and the controlled input hash fail closed on an incompatible implementation."
       },
       {
         "type": "MOD",
@@ -78,16 +78,16 @@
     ]
   },
   "state": {
-    "milestone": "Canary 5 supersedes exact Canary 4 `0.4.0-canary4` (`2406c186314aad429a610e3083e193da762a4d0da0f688b8d7dc820e8cd42b8d`). Owner runtime evidence for exact C4 is recorded without an aggregate verdict: ordinary slab regular CTM still did not visually connect; the tested podzol was one `more_slabs_stairs_and_walls:podzol_slab[type=double,waterlogged=false]`, recognized as ORDINARY_SLAB, but its appearance was its own slab with UNMAPPABLE_CANONICAL_STATE; full podzol reached successful native FINAL_OVERLAY semantics, while the double podzol slab reached CONNECT_BLOCKS_REJECT because Continuity saw the slab appearance; `nativeFull=true`, so this was not the partial-source collision gate. C4's global 200-record cap was exhausted almost entirely by approximately 198 OVERLAY records, leaving only one APPEARANCE and no REGULAR records; C4 also returned on upstream regular rejection before logging it. C5 makes canonical SNOWY projection depend on the canonical state's actual property, adds category-bounded diagnostics and a narrow exact Continuity processor-slice rule-selection record, and retains C4 managed partial-source promotion. Minecraft-client visual behavior remains untested.",
+    "milestone": "Canary 6 supersedes exact Canary 5. Owner runtime evidence for exact C5 is recorded without an aggregate failure: the supplied ordinary bottom-slab UP case reached positive Standard Overlay semantic/contact evaluation (`CONNECT`, `FINAL_OVERLAY`) with captured receiver plane16=8, then visually emitted at the full-block upper plane rather than y=0.5. C6 preserves C5 semantic/contact selection and redirects only the exact StandardOverlayQuadProcessor processQuadInner emitOverlayQuad callsite so a managed receiver uses the captured physical plane, in-plane bounds, and cropped canonical overlay UV domain. Ordinary regular slab CTM remains runtime-unproven and separate from this overlay-emission repair.",
     "releases": {
       "current": {
-        "version": "0.5.0-canary5",
+        "version": "0.6.0-canary6",
         "artifact": {
-          "filename": "bge-ctm-0.5.0-canary5.jar",
-          "sha256": "395e8c66ba9bb09bedf7d1d48922c4ca92dd07d45a6cabe5395a1bf7dc244088"
+          "filename": "bge-ctm-0.6.0-canary6.jar",
+          "sha256": "d01a04be0480282445f743803461ee8666142ed4b3346b16a9c86b940b0ab262"
         },
-        "built_at": "2026-09-18T03:43:32.2328434Z",
-        "source_commit": "3ba69fb7d45a17dcada788f175a47ffef3e7c517",
+        "built_at": "2026-09-18T04:17:22.2441689Z",
+        "source_commit": "753662aeba14d19da6932e7e94dd955f4e11f159",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": [
@@ -98,7 +98,7 @@
               "predicate": "~26.2",
               "reason": "The appearance bridge is compiled against the Minecraft 26.2 block-state and Fabric appearance method descriptors and must remain on the controlled target release.",
               "regression_evidence": [
-                "Canary 5 compiles and its focused headless GameTests execute against Minecraft 26.2 and Fabric API 0.156.0+26.2."
+                "Canary 6 cleanly compiles and its focused headless GameTests execute against Minecraft 26.2 and Fabric API 0.156.0+26.2 with exact BGE C71."
               ]
             },
             {
@@ -106,14 +106,14 @@
               "relationship": "depends",
               "dependency_id": "continuity",
               "predicate": "=3.0.1+26.2",
-              "reason": "Canary 5 injects exact Continuity 3.0.1+26.2 regular predicate, processor-slice, and quad seams plus the StandardOverlayQuadProcessor source-full-collision and final-decision seams; required mixins and the controlled input hash fail closed rather than guessing across an incompatible implementation.",
+              "reason": "Canary 6 injects exact Continuity 3.0.1+26.2 regular predicate, processor-slice, quad context, StandardOverlayQuadProcessor source-full-collision/final-decision, and processQuadInner QuadUtil.emitOverlayQuad seams; required mixins and the controlled input hash fail closed rather than guessing across an incompatible implementation.",
               "regression_evidence": [
-                "The exact Continuity 3.0.1+26.2 input is SHA-256 controlled, compiles against regular, quad-context, source-full-collision, and final Standard Overlay seams, and is verified as required client mixin targets."
+                "The exact Continuity 3.0.1+26.2 input is SHA-256 controlled, compiles against regular, quad-context, source-full-collision, final Standard Overlay, and processQuadInner emitOverlayQuad seams, and is verified as required client mixin targets."
               ]
             }
           ]
         },
-        "summary": "Projects canonical SNOWY for podzol, mycelium, grass, and any current/future BGE canonical parent carrying that property; adds independent managed diagnostics while Continuity retains CTM semantics and real coplanar contact remains authoritative."
+        "summary": "Projects accepted Standard Overlay quads onto the exact managed receiver surface with cropped canonical UVs, while retaining Continuity's semantic/rule decisions and C5 contact vetoes."
       },
       "accepted": null,
       "rollback": null,
@@ -122,15 +122,15 @@
     },
     "validation": {
       "build": "CONTROLLED_VALIDATION_PASS",
-      "runtime": "RUNTIME_UNTESTED"
+      "runtime": "PARTIAL_RUNTIME_PASS"
     },
     "blocker": null
   },
   "synchronization": {
-    "revision": 7,
-    "activity_at": "2026-09-18T03:43:32.2328434Z",
-    "updated_at": "2026-09-18T03:43:32.2328434Z",
-    "last_codex_at": "2026-09-18T03:43:32.2328434Z",
-    "source_commit": "3ba69fb7d45a17dcada788f175a47ffef3e7c517"
+    "revision": 8,
+    "activity_at": "2026-09-18T04:17:22.2441689Z",
+    "updated_at": "2026-09-18T04:17:22.2441689Z",
+    "last_codex_at": "2026-09-18T04:17:22.2441689Z",
+    "source_commit": "753662aeba14d19da6932e7e94dd955f4e11f159"
   }
 }

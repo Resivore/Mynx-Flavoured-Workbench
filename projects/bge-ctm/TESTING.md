@@ -1,52 +1,42 @@
 # Testing
 
-Canary 5 is `ACTIVE / RUNTIME_UNTESTED`. Controlled tests prove canonical appearance,
-Continuity seam compatibility, bounded diagnostics, and contact decisions; they do not prove
-Minecraft-client visual output. Use Minecraft Java 26.2, Fabric Loader 0.19.3+, Continuity
-`3.0.1+26.2` exactly, and a BGE build satisfying the declared range. Disable shaders. Do not
-generate a large test area: C5 preserves independent diagnostic budgets specifically so these
-small arrangements remain useful.
+Canary 6 is `ACTIVE / PARTIAL_RUNTIME_PASS`: exact C5 owner evidence established a positive
+Standard Overlay semantic/contact result for one ordinary bottom-slab receiver, but its emitted
+quad floated at y=1 instead of the captured y=0.5 surface. C6 has controlled geometry coverage;
+it has not yet received Minecraft-client visual validation. Use Minecraft Java 26.2, Fabric Loader
+0.19.3+, Continuity `3.0.1+26.2` exactly, and a BGE build satisfying the declared range. Disable
+shaders. Do not create a large test area.
 
-At startup capture `[BGE-CTM DIAG] STARTUP`. It reports independent defaults:
-`appearanceCap=100`, `regularCap=200`, `ruleSelectionCap=100`, `overlayCap=100`, and
-`overlayBaselineCap=10`. Each category deduplicates and suppresses independently. Set any cap
-with `-Dbge_ctm.diagnostics.<name>=N` (clamped to 1–300), or disable all diagnostics with
-`-Dbge_ctm.diagnostics.disable=true`.
+At startup retain `[BGE-CTM DIAG] STARTUP`. C6 adds the independent managed-only
+`overlayEmitCap=100` (set with `-Dbge_ctm.diagnostics.overlayEmitCap=N`, clamped 1–300) alongside
+the existing APPEARANCE, REGULAR, RULE_SELECTION, OVERLAY, and OVERLAY_BASELINE budgets. It does
+not consume their caps.
 
-## Test A — regular clear-glass CTM
+## A. Exact displaced-overlay reproduction
 
-Place only these side-by-side `UP`-face controls, then stop and save `latest.log`:
+Use the same known-valid canonical inducing/source relationship from the supplied C5 case with a
+bottom ordinary receiver slab. Inspect its `UP` surface.
 
-1. full clear glass ↔ full clear glass;
-2. top clear-glass slab ↔ top clear-glass slab;
-3. top clear-glass slab ↔ full clear glass;
-4. top clear-glass slab ↔ bottom clear-glass slab (negative).
+Expected C6 result: the overlay lies on the slab top at y=0.5, not at y=1. Capture the positive
+`OVERLAY` line and the matching line shaped like:
 
-For #2 and #3, provide managed `RULE_SELECTION` and `REGULAR` lines. `RULE_SELECTION
-reason=NO_PROCESSOR` means no matching Continuity processor was selected for that emitted sprite;
-`PROCESSOR_SELECTED` plus `REGULAR reason=UPSTREAM_REJECT` means a selected rule/predicate
-rejected it; `FINAL_CONNECT` or `STATE_FALLBACK_CONTACT_OK` is a controlled geometry allowance,
-not visual proof. The negative must remain `NON_COPLANAR`/`FINAL_VETO` when it reaches contact.
+`[BGE-CTM DIAG] event=OVERLAY_EMIT receiver=... face=UP captured=QuadSurface[normal=UP, plane16=8, ...] emitted=face=UP,plane16=8,u=0..16,v=0..16,... path=PROJECTED reason=EMIT_MATCH_RECEIVER`
 
-## Test B — proven podzol double-slab case
+## B. Slab side faces
 
-Use the same directional arrangement for all three sources: full grass receiver, full podzol
-baseline, then `more_slabs_stairs_and_walls:podzol_slab[type=double,waterlogged=false]`.
+Use a terrain relationship that produces a Standard Overlay on a slab side. Check one bottom and
+one top slab. The bottom overlay must occupy only Y 0..8; the top overlay must occupy only Y 8..16.
+Their texture must be the corresponding canonical half, not a vertically compressed full sprite.
+Retain `OVERLAY_EMIT` lines showing the captured/emitted bounds and UV values.
 
-Capture the corresponding `APPEARANCE` and managed `OVERLAY` lines. The double slab must report
-`carrier=ORDINARY_SLAB`, canonical `minecraft:podzol[snowy=...]`, and `reason=PROJECTED`; it must
-not report `UNMAPPABLE_CANONICAL_STATE`. If the full-podzol baseline has `FINAL_OVERLAY`, the
-double slab should reach equivalent native semantic evaluation (`nativeFull=true`) before the
-existing real-contact decision. Supply any `CONNECT_BLOCKS_REJECT`, `NATIVE_SEMANTIC_REJECT`, or
-final reason verbatim.
+## C. Layer and Vertical Slab
 
-## Test C — managed partial source
+Check one supported Layer boundary face and one recessed Layer face, then one supported single
+Vertical Slab face. Each overlay must occupy only the actual captured surface region and plane.
+For a capture missing on simple cuboids, C6 may report `STATE_DERIVED_PROJECTED`; complex/rim
+topology must instead veto with `SURFACE_CAPTURE_MISSING` or `SURFACE_UNSUPPORTED` rather than
+draw a full-block overlay.
 
-Only after Test B, repeat its known-positive directional relationship with a podzol `TOP` slab,
-then a `BOTTOM` slab (and optionally one Layer). Capture `OVERLAY` lines. A supported partial
-source may show `PARTIAL_SOURCE_PROMOTED`, but it must still pass native semantics and coplanar
-contact; this confirms C4's partial-source promotion remains bounded. The bottom/recessed control
-must not be inferred positive merely because its canonical appearance is podzol.
-
-Send the visual result, exact states/positions/face, shader and pack state, and all relevant
-`[BGE-CTM DIAG]` lines. Do not report an aggregate pass/fail in place of those observations.
+Send the visual result, exact block states/positions/face, shader and pack state, and relevant
+`[BGE-CTM DIAG]` lines. Regular CTM across ordinary slabs remains a separate unproven runtime
+question; do not infer its result from these Standard Overlay checks.
