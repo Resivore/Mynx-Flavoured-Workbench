@@ -4,6 +4,8 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.level.block.state.BlockState;
+import dev.resivore.bgectm.SurfaceContactResolver.QuadSurface;
+import dev.resivore.bgectm.continuity.OverlayEmissionGeometry;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,9 +19,11 @@ public final class BgeCtmDiagnostics {
     private static final int RULE_SELECTION_CAP = configuredCap("ruleSelectionCap", 100);
     private static final int OVERLAY_CAP = configuredCap("overlayCap", 100);
     private static final int OVERLAY_BASELINE_CAP = configuredCap("overlayBaselineCap", 10);
+    private static final int OVERLAY_EMIT_CAP = configuredCap("overlayEmitCap", 100);
     private static final boolean ENABLED = !Boolean.getBoolean("bge_ctm.diagnostics.disable");
     private static final DiagnosticBudgets BUDGETS = new DiagnosticBudgets(
-            APPEARANCE_CAP, REGULAR_CAP, RULE_SELECTION_CAP, OVERLAY_CAP, OVERLAY_BASELINE_CAP);
+            APPEARANCE_CAP, REGULAR_CAP, RULE_SELECTION_CAP, OVERLAY_CAP, OVERLAY_BASELINE_CAP,
+            OVERLAY_EMIT_CAP);
 
     private BgeCtmDiagnostics() {}
 
@@ -35,6 +39,7 @@ public final class BgeCtmDiagnostics {
                 + " appearanceCap=" + APPEARANCE_CAP + " regularCap=" + REGULAR_CAP
                 + " ruleSelectionCap=" + RULE_SELECTION_CAP + " overlayCap=" + OVERLAY_CAP
                 + " overlayBaselineCap=" + OVERLAY_BASELINE_CAP
+                + " overlayEmitCap=" + OVERLAY_EMIT_CAP
                 + " enabled=" + ENABLED, PREFIX);
     }
 
@@ -96,6 +101,26 @@ public final class BgeCtmDiagnostics {
                 + " geometry=" + geometryDecision + " result=" + result + " reason=" + reason);
     }
 
+    /** Emits only for a BGE-managed receiver; full unrelated overlays never consume this budget. */
+    public static void overlayEmit(BlockState receiver, net.minecraft.core.Direction face,
+            @Nullable QuadSurface captured, @Nullable OverlayEmissionGeometry.Projection emitted,
+            String path, String reason) {
+        if (!managed(receiver)) return;
+        String signature = "OVERLAY_EMIT|" + stateKey(receiver) + '|' + face + '|'
+                + captured + '|' + path + '|' + reason;
+        String emittedDescription = emitted == null ? "none" : "face=" + emitted.surface().normal()
+                + ",plane16=" + emitted.surface().plane16() + ",u=" + emitted.surface().uMin16()
+                + ".." + emitted.surface().uMax16() + ",v=" + emitted.surface().vMin16()
+                + ".." + emitted.surface().vMax16() + ",square=" + emitted.left() + ','
+                + emitted.bottom() + ',' + emitted.right() + ',' + emitted.top() + ','
+                + emitted.depth() + ",uv0=" + emitted.uvU(0) + ',' + emitted.uvV(0)
+                + ",uv2=" + emitted.uvU(2) + ',' + emitted.uvV(2);
+        info(DiagnosticBudgets.Category.OVERLAY_EMIT, signature,
+                "event=OVERLAY_EMIT receiver=" + display(receiver) + " face=" + face
+                        + " captured=" + captured + " emitted=" + emittedDescription
+                        + " path=" + path + " reason=" + reason);
+    }
+
     public static String display(BlockState state) {
         if (state == null) return "null";
         return BuiltInRegistries.BLOCK.getKey(state.getBlock()) + state.toString();
@@ -146,6 +171,7 @@ public final class BgeCtmDiagnostics {
             case RULE_SELECTION -> RULE_SELECTION_CAP;
             case OVERLAY -> OVERLAY_CAP;
             case OVERLAY_BASELINE -> OVERLAY_BASELINE_CAP;
+            case OVERLAY_EMIT -> OVERLAY_EMIT_CAP;
         };
     }
 

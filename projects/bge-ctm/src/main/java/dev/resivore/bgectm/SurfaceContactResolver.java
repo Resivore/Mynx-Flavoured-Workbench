@@ -99,6 +99,24 @@ public final class SurfaceContactResolver {
                 : Optional.empty();
     }
 
+    /**
+     * Reconstructs a block-local receiver surface only for an unambiguous single-cuboid carrier.
+     * Complex glass-edge topology intentionally has no state-only fallback: C6 can use its exact
+     * captured quad, but never guesses a whole-face overlay from its block state.
+     */
+    public static Optional<QuadSurface> describeLocalForOverlay(BlockState state, Direction face) {
+        Objects.requireNonNull(state, "state");
+        Objects.requireNonNull(face, "face");
+        Endpoint endpoint = endpoint(state);
+        if (!endpoint.supported() || !fallbackSafe(endpoint)) return Optional.empty();
+        Cuboid cuboid = cuboid(endpoint, state);
+        Direction.Axis[] axes = inPlaneAxes(face.getAxis());
+        int plane = face.getAxisDirection() == Direction.AxisDirection.POSITIVE
+                ? cuboid.max(face.getAxis()) : cuboid.min(face.getAxis());
+        return Optional.of(new QuadSurface(face, plane, axes[0], cuboid.min(axes[0]),
+                cuboid.max(axes[0]), axes[1], cuboid.min(axes[1]), cuboid.max(axes[1])));
+    }
+
     /** Exact descriptor comparison, including face normal, plane, and relevant boundary. */
     public static boolean meetAlongEvaluatedBoundary(
             SurfaceDescriptor source, SurfaceDescriptor other) {

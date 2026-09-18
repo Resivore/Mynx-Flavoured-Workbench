@@ -5,6 +5,7 @@
   "client": [
     "ContinuityConnectionPredicateFactoryMixin",
     "ContinuityOverlayContactMixin",
+    "ContinuityOverlayEmissionMixin",
     "ContinuityQuadContextMixin"
   ],
   "injectors": {

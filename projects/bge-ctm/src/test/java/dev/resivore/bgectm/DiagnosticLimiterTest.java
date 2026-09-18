@@ -18,7 +18,7 @@ final class DiagnosticLimiterTest {
 
     @Test
     void categoriesHaveIndependentDeduplicationCapsAndSuppressionNotices() {
-        DiagnosticBudgets budgets = new DiagnosticBudgets(1, 2, 1, 1, 1);
+        DiagnosticBudgets budgets = new DiagnosticBudgets(1, 2, 1, 1, 1, 1);
         assertEquals(DiagnosticLimiter.Admission.ACCEPTED,
                 budgets.admit(DiagnosticBudgets.Category.OVERLAY, "overlay-a"));
         assertEquals(DiagnosticLimiter.Admission.SUPPRESS_NOTICE,
@@ -38,5 +38,7 @@ final class DiagnosticLimiterTest {
                 budgets.admit(DiagnosticBudgets.Category.REGULAR, "regular-c"));
         assertEquals(DiagnosticLimiter.Admission.ACCEPTED,
                 budgets.admit(DiagnosticBudgets.Category.APPEARANCE, "appearance-a"));
+        assertEquals(DiagnosticLimiter.Admission.ACCEPTED,
+                budgets.admit(DiagnosticBudgets.Category.OVERLAY_EMIT, "emit-a"));
     }
 }

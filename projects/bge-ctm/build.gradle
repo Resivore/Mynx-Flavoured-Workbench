@@ -127,7 +127,8 @@ tasks.register('verifyControlledProviders') {
                     'me/pepperbell/continuity/client/properties/BasicConnectingCtmProperties.class':
                             ['getConnectionPredicate'],
                     'me/pepperbell/continuity/client/processor/overlay/StandardOverlayQuadProcessor.class':
-                            ['appliesOverlay', 'shouldConnect', 'isCollisionShapeFullBlock',
+                            ['appliesOverlay', 'processQuadInner', 'shouldConnect', 'isCollisionShapeFullBlock',
+                             'emitOverlayQuad',
                              '(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/client/renderer/block/BlockAndTintGetter;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/core/Direction;Lnet/minecraft/client/renderer/texture/TextureAtlasSprite;)Z'],
                     'me/pepperbell/continuity/client/processor/overlay/OverlayProcessingPredicate.class':
                             ['shouldProcessQuad', 'isQuadUnitSquare'],
@@ -202,6 +203,7 @@ tasks.register('verifyReleaseArtifact') {
                     (clientMixins.client as Set) != ([
                             'ContinuityConnectionPredicateFactoryMixin',
                             'ContinuityOverlayContactMixin',
+                            'ContinuityOverlayEmissionMixin',
                             'ContinuityQuadContextMixin'] as Set)) {
                 throw new GradleException('Required exact Continuity mixin boundary changed')
             }
@@ -227,10 +229,13 @@ tasks.register('verifyReleaseArtifact') {
                     'dev/resivore/bgectm/continuity/OverlayContactFilter.class',
                     'dev/resivore/bgectm/continuity/OverlaySourceEligibility.class',
                     'dev/resivore/bgectm/continuity/OverlayAttemptContext.class',
+                    'dev/resivore/bgectm/continuity/OverlayEmissionGeometry.class',
+                    'dev/resivore/bgectm/continuity/OverlayEmissionController.class',
                     'dev/resivore/bgectm/client/BgeCtmClient.class',
                     'dev/resivore/bgectm/mixin/BgeDerivedBlockAppearanceMixin.class',
                     'dev/resivore/bgectm/mixin/ContinuityConnectionPredicateFactoryMixin.class',
                     'dev/resivore/bgectm/mixin/ContinuityOverlayContactMixin.class',
+                    'dev/resivore/bgectm/mixin/ContinuityOverlayEmissionMixin.class',
                     'dev/resivore/bgectm/mixin/ContinuityQuadContextMixin.class'
             ].each { entry ->
                 if (archive.getEntry(entry) == null) {
@@ -258,7 +263,7 @@ tasks.register('verifyReleaseArtifact') {
 
 tasks.register('stageCanaryArtifact', Copy) {
     group = 'distribution'
-    description = 'Stages the exact ignored Canary 5 JAR for canonical local retention.'
+    description = 'Stages the exact ignored Canary 6 JAR for canonical local retention.'
     dependsOn tasks.named('verifyReleaseArtifact')
     from(packagedJar)
     into(layout.projectDirectory.dir('artifacts'))

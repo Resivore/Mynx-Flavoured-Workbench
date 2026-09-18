@@ -147,6 +147,27 @@ public final class CanonicalAppearanceGameTests implements CustomTestMethodInvok
     }
 
     @GameTest(maxTicks = 40)
+    public void overlayEmissionFallbackDescribesOnlySafeSimpleReceiverSurfaces(GameTestHelper helper) {
+        BlockState bottom = slabState(Blocks.GRASS_BLOCK, SlabType.BOTTOM);
+        BlockState top = slabState(Blocks.GRASS_BLOCK, SlabType.TOP);
+        BlockState doubled = slabState(Blocks.GRASS_BLOCK, SlabType.DOUBLE);
+        BlockState layer = layerState(Blocks.GRASS_BLOCK, Direction.UP, 2);
+        BlockState vertical = verticalState(Blocks.GRASS_BLOCK, Direction.EAST, false);
+
+        assertLocalSurface(helper, bottom, Direction.UP, 8, 0, 16, 0, 16);
+        assertLocalSurface(helper, bottom, Direction.NORTH, 0, 0, 16, 0, 8);
+        assertLocalSurface(helper, top, Direction.NORTH, 0, 0, 16, 8, 16);
+        assertLocalSurface(helper, doubled, Direction.UP, 16, 0, 16, 0, 16);
+        assertLocalSurface(helper, layer, Direction.UP, 8, 0, 16, 0, 16);
+        assertLocalSurface(helper, vertical, Direction.UP, 16, 8, 16, 0, 16);
+
+        BlockState step = derived(Blocks.GRASS_BLOCK, BgeGeometryRole.STEP).defaultBlockState();
+        helper.assertTrue(SurfaceContactResolver.describeLocalForOverlay(step, Direction.UP).isEmpty(),
+                "Complex Step topology unexpectedly received a state-derived overlay surface");
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
     public void canaryFourPartialSourceGateAndRegularFallbackStayBounded(GameTestHelper helper) {
         BlockState top = slabState(Blocks.STONE, SlabType.TOP);
         BlockState bottom = slabState(Blocks.STONE, SlabType.BOTTOM);
@@ -469,6 +490,15 @@ public final class CanonicalAppearanceGameTests implements CustomTestMethodInvok
         helper.assertTrue(actual == expected,
                 "Expected " + expected + " for " + source + " -> " + other
                         + " on " + face + ", got " + actual);
+    }
+
+    private static void assertLocalSurface(GameTestHelper helper, BlockState state, Direction face,
+            int plane, int uMin, int uMax, int vMin, int vMax) {
+        QuadSurface actual = SurfaceContactResolver.describeLocalForOverlay(state, face).orElseThrow();
+        helper.assertTrue(actual.normal() == face && actual.plane16() == plane
+                        && actual.uMin16() == uMin && actual.uMax16() == uMax
+                        && actual.vMin16() == vMin && actual.vMax16() == vMax,
+                "Unexpected state-derived overlay surface for " + state + " on " + face + ": " + actual);
     }
 
     private static void assertPolicy(GameTestHelper helper, BlockState state, Policy expected) {

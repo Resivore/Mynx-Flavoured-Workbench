@@ -61,7 +61,7 @@ abstract class ContinuityQuadContextMixin {
             QuadProcessor processor, MutableQuadView quad, TextureAtlasSprite sprite,
             BlockAndTintGetter level, BlockPos pos, BlockState appearanceState, BlockState state,
             RandomSource random, int pass, QuadProcessor.ProcessingContext context) {
-        try (ContinuityQuadContext.Scope ignored = ContinuityQuadContext.push(quad)) {
+        try (ContinuityQuadContext.Scope ignored = ContinuityQuadContext.push(quad, state, pos)) {
             return processor.processQuad(quad, sprite, level, pos, appearanceState, state,
                     random, pass, context);
         }

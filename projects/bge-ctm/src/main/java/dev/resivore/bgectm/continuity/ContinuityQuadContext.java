@@ -2,7 +2,9 @@ package dev.resivore.bgectm.continuity;
 
 import dev.resivore.bgectm.SurfaceContactResolver.QuadSurface;
 import net.fabricmc.fabric.api.client.renderer.v1.mesh.MutableQuadView;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 
 /** Thread-confined snapshot of the exact quad currently being processed by Continuity. */
@@ -13,13 +15,13 @@ public final class ContinuityQuadContext {
 
     private ContinuityQuadContext() {}
 
-    public static Scope push(MutableQuadView quad) {
+    public static Scope push(MutableQuadView quad, BlockState receiverState, BlockPos receiverPos) {
         Capture previous = CURRENT.get();
         Capture next;
         try {
-            next = new Capture(snapshot(quad));
+            next = new Capture(snapshot(quad), receiverState, receiverPos.immutable());
         } catch (IllegalArgumentException exception) {
-            next = new Capture(null);
+            next = new Capture(null, receiverState, receiverPos.immutable());
         }
         CURRENT.set(next);
         return () -> {
@@ -92,7 +94,12 @@ public final class ContinuityQuadContext {
         };
     }
 
-    public record Capture(@Nullable QuadSurface surface) {
+    public record Capture(@Nullable QuadSurface surface, @Nullable BlockState receiverState,
+            @Nullable BlockPos receiverPos) {
+        public Capture(@Nullable QuadSurface surface) {
+            this(surface, null, null);
+        }
+
         public boolean valid() {
             return surface != null;
         }
