@@ -4,6 +4,7 @@ import dev.resivore.slotreservations.network.ReservationActionPayload;
 import dev.resivore.slotreservations.network.ReservationSnapshotPayload;
 import dev.resivore.slotreservations.network.ReservationSnapshotRequestPayload;
 import dev.resivore.slotreservations.network.CarriedShulkerInventoryActionPayload;
+import dev.resivore.slotreservations.network.CreativeCarriedShulkerSyncPayload;
 import dev.resivore.slotreservations.network.ShulkerPanelContentActionPayload;
 import dev.resivore.slotreservations.network.ShulkerPanelReservationActionPayload;
 import dev.resivore.slotreservations.network.ShulkerPanelSyncPayload;
@@ -47,6 +48,8 @@ public final class ReservationNetworking {
                 ShulkerSelectionPayload.CODEC);
         PayloadTypeRegistry.clientboundPlay().register(ShulkerPanelSyncPayload.TYPE,
                 ShulkerPanelSyncPayload.CODEC);
+        PayloadTypeRegistry.clientboundPlay().register(CreativeCarriedShulkerSyncPayload.TYPE,
+                CreativeCarriedShulkerSyncPayload.CODEC);
         PayloadTypeRegistry.serverboundPlay().register(
                 ReservationActionPayload.TYPE, ReservationActionPayload.CODEC);
         PayloadTypeRegistry.serverboundPlay().register(
@@ -57,11 +60,8 @@ public final class ReservationNetworking {
         ServerPlayNetworking.registerGlobalReceiver(ReservationActionPayload.TYPE, (payload, context) ->
                 context.server().execute(() -> handleAction(context.player(), payload)));
         ServerPlayNetworking.registerGlobalReceiver(CarriedShulkerInventoryActionPayload.TYPE,
-                (payload, context) -> {
-                    CarriedShulkerRmbTrace.server("SERVER_PACKET_RECEIVED", "receiver=global scheduling=true menuId="
-                            + payload.menuId() + " sourceMenuSlot=" + payload.menuSlot());
-                    context.server().execute(() -> CarriedShulkerInventoryActions.handle(context.player(), payload));
-                });
+                (payload, context) -> context.server().execute(
+                        () -> CarriedShulkerInventoryActions.handle(context.player(), payload)));
         ServerPlayNetworking.registerGlobalReceiver(ReservationSnapshotRequestPayload.TYPE, (payload, context) ->
                 context.server().execute(() -> handleSnapshotRequest(context.player(), payload)));
         ServerPlayNetworking.registerGlobalReceiver(ShulkerPanelReservationActionPayload.TYPE, (payload, context) ->

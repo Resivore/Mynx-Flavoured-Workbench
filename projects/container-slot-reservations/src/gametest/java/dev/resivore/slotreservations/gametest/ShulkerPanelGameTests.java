@@ -448,8 +448,12 @@ public final class ShulkerPanelGameTests implements CustomTestMethodInvoker {
         player.containerMenu = player.inventoryMenu;
         int physicalPlayerSlot = 9;
         player.getInventory().setItem(physicalPlayerSlot, new ItemStack(Items.STONE, 6));
+        int secondPhysicalPlayerSlot = 10;
+        player.getInventory().setItem(secondPhysicalPlayerSlot, new ItemStack(Items.DIRT, 5));
         ItemStack host = panelHost();
-        player.containerMenu.setCarried(host);
+        // Minecraft 26.2 Creative renders this cursor only in the client inventory facade.
+        // Deliberately retain the observed empty server InventoryMenu cursor.
+        player.containerMenu.setCarried(ItemStack.EMPTY);
         RecordingSynchronizer synchronizer = new RecordingSynchronizer();
         player.containerMenu.setSynchronizer(synchronizer);
         synchronizer.clear();
@@ -460,15 +464,44 @@ public final class ShulkerPanelGameTests implements CustomTestMethodInvoker {
                 -1,
                 physicalPlayerSlot,
                 ShulkerHostFingerprint.of(host, player.registryAccess()),
-                ShulkerHostFingerprint.of(source, player.registryAccess()));
+                ShulkerHostFingerprint.of(source, player.registryAccess()),
+                host);
         helper.assertTrue(CarriedShulkerInventoryActions.handle(player, action),
                 "Creative physical player-slot fallback rejected a valid source");
+        ItemStack first = player.containerMenu.getCarried().copy();
+        ItemStack secondSource = player.getInventory().getItem(secondPhysicalPlayerSlot);
+        var secondAction = new CarriedShulkerInventoryActionPayload(
+                player.containerMenu.containerId, -1, secondPhysicalPlayerSlot,
+                ShulkerHostFingerprint.of(first, player.registryAccess()),
+                ShulkerHostFingerprint.of(secondSource, player.registryAccess()), first);
+        helper.assertTrue(CarriedShulkerInventoryActions.handle(player, secondAction),
+                "The second Creative transfer did not accept the F1 predecessor");
+        ItemStack second = player.containerMenu.getCarried().copy();
+
+        int stalePhysicalPlayerSlot = 11;
+        player.getInventory().setItem(stalePhysicalPlayerSlot, new ItemStack(Items.COBBLESTONE, 4));
+        ItemStack staleSource = player.getInventory().getItem(stalePhysicalPlayerSlot).copy();
+        var stalePredecessor = new CarriedShulkerInventoryActionPayload(
+                player.containerMenu.containerId, -1, stalePhysicalPlayerSlot,
+                ShulkerHostFingerprint.of(first, player.registryAccess()),
+                ShulkerHostFingerprint.of(staleSource, player.registryAccess()), first);
+        player.getInventory().setItem(stalePhysicalPlayerSlot, new ItemStack(Items.GRANITE, 4));
+        var staleSourceFingerprint = new CarriedShulkerInventoryActionPayload(
+                player.containerMenu.containerId, -1, stalePhysicalPlayerSlot,
+                ShulkerHostFingerprint.of(second, player.registryAccess()),
+                ShulkerHostFingerprint.of(staleSource, player.registryAccess()), second);
+        helper.assertTrue(!CarriedShulkerInventoryActions.handle(player, stalePredecessor)
+                        && !CarriedShulkerInventoryActions.handle(player, staleSourceFingerprint),
+                "Creative stale predecessor or source state did not fail closed");
         helper.assertTrue(player.getInventory().getItem(physicalPlayerSlot).isEmpty()
+                        && player.getInventory().getItem(secondPhysicalPlayerSlot).isEmpty()
+                        && player.getInventory().getItem(stalePhysicalPlayerSlot).is(Items.GRANITE)
                         && ShulkerContents.copy(player.containerMenu.getCarried()).get(0).getCount() == 6
+                        && ShulkerContents.copy(player.containerMenu.getCarried()).get(1).getCount() == 5
                         && synchronizer.carriedChanges.isEmpty()
-                        && synchronizer.fullStateCarries.size() == 1
-                        && ShulkerContents.copy(synchronizer.fullStateCarries.getFirst()).get(0).getCount() == 6,
-                "Creative collection did not use the authoritative full-state cursor synchronization");
+                        && synchronizer.fullStateCarries.size() == 2
+                        && ShulkerContents.copy(synchronizer.fullStateCarries.getLast()).get(1).getCount() == 5,
+                "Creative collection did not preserve its F0 -> F1 -> F2 authority chain and full-state sync");
         helper.succeed();
     }
 
