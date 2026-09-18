@@ -1842,7 +1842,7 @@ class DonorBoundaryContractTest(unittest.TestCase):
             tools.PRIVATE_MANIFEST_CLASSIFICATION,
         )
         self.assertEqual(363, tools.OUTPUT_FILE_COUNT)
-        self.assertEqual(2_780_499, tools.OUTPUT_TOTAL_SIZE)
+        self.assertEqual(2_780_713, tools.OUTPUT_TOTAL_SIZE)
         self.assertEqual(2_563, tools.SORCERER_LOOT_OUTPUT_SIZE)
         self.assertEqual(
             "5b06e06502bf11f661161e89bf34e329d8f23268b7b0104371038c38ad9b378d",

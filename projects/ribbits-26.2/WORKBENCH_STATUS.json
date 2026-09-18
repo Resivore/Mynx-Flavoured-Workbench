@@ -187,21 +187,21 @@
     ]
   },
   "state": {
-    "milestone": "Canary 26 replaces all four small-brown crossed/flat models with exact volumetric Matcha-donor geometry, adds the exact vanilla 26.2 0.4 huge-growth roll before same-color patch fallback, crosses vanilla brown/red huge shapes with the existing red/brown Ribbits materials, and gives each future Ribbit-village toadstool an independent deterministic 0.5 red/brown choice across both embedded-template and decoration paths. The user observed Canary 25 brown bonemeal spreading functioning and its smaller brown variants rendering as undesired flat/crossed planes beside Matcha's volumetric red models; no aggregate Canary 25 runtime classification is inferred. Canary 26 is ACTIVE / STATIC_PASS / RUNTIME_UNTESTED; Canary 24 remains the exact accepted release.",
+    "milestone": "Canary 27 replaces the small-brown item and block textures with the approved 14-by-14 keyed item sprite and matching 64-by-64 Matcha atlas, retains Canary 26's volumetric, same-color huge-growth, and future-only village behavior, and changes Gardener tier 1 to persistently select three of five independent red/brown mushroom, daisy, lily-pad, and small-dripleaf exchanges. Canary 27 is ACTIVE / STATIC_PASS / RUNTIME_UNTESTED; Canary 24 remains the exact accepted release.",
     "releases": {
       "current": {
-        "version": "4.1.6+26.2-mynx-canary26",
-        "artifact": {
-          "filename": "ribbits-private-reconstruction-4.1.6+26.2-mynx-canary26.jar",
-          "sha256": "3d43040596d667be633fdfd2981baa5a02e826887521c6792041e023e71f0bc0"
-        },
-        "built_at": "2026-09-18T04:24:36.9115268Z",
-        "source_commit": "e7f26ceb6f78c5293e74a649827d2691e38527d8",
+      "version": "4.1.6+26.2-mynx-canary27",
+      "artifact": {
+        "filename": "ribbits-private-reconstruction-4.1.6+26.2-mynx-canary27.jar",
+        "sha256": "088c4b7e88c432d6275395e29273597cf42575f59350fe8b4f48c46e6df7f9fd"
+      },
+      "built_at": "2026-09-18T05:47:40.8628936Z",
+      "source_commit": "9fe0bf18b3799e749fdf736a3b330d5bee8e23e2",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
         },
-        "summary": "Restores volumetric small-brown models, adds same-color bonemeal huge growth, and gives future Ribbit villages deterministic red/brown toadstool variation without ordinary biome generation or retrofit."
+      "summary": "Uses the approved brown small-toadstool visuals and persistent Gardener tier-1 trio while retaining C26's future-only growth and village boundaries."
       },
       "accepted": {
         "version": "4.1.6+26.2-mynx-canary24",
@@ -228,10 +228,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 32,
-    "activity_at": "2026-09-18T04:28:08Z",
-    "updated_at": "2026-09-18T04:28:08Z",
-    "last_codex_at": "2026-09-18T04:28:08Z",
-    "source_commit": "e7f26ceb6f78c5293e74a649827d2691e38527d8"
+    "revision": 33,
+    "activity_at": "2026-09-18T05:47:47Z",
+    "updated_at": "2026-09-18T05:47:47Z",
+    "last_codex_at": "2026-09-18T05:47:47Z",
+    "source_commit": "9fe0bf18b3799e749fdf736a3b330d5bee8e23e2"
   }
 }

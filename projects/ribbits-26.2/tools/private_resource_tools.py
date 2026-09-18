@@ -145,7 +145,7 @@ SOURCE_FILE_COUNT = 287  # 285 assets/data files plus icon.png and logo.png
 OUTPUT_FILE_COUNT = 363
 # Exact deterministic Canary 27 private staging inventory. This is finalized
 # only after two independent assemblies produce the same per-file identities.
-OUTPUT_TOTAL_SIZE = 2_780_499
+OUTPUT_TOTAL_SIZE = 2_780_713
 SOURCE_EXTENSION_COUNTS = {
     ".json": 201,
     ".nbt": 29,
