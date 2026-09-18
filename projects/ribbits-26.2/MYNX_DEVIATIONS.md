@@ -4,6 +4,32 @@ This file records intentional departures from the faithful Minecraft Java 26.2 R
 
 The direct predecessor is runtime-failed Mynx Canary 11: `ribbits-private-reconstruction-4.1.6+26.2-mynx-canary11.jar`, 3,334,222 bytes, SHA-256 `258CA17B5D61C825AFBAF852413C1F44183D2533446BFF297C4B8453AD9CECAA`, source `784b745d6480e076fb94598a3b466cfb98bbec04`. It and earlier private artifacts remain unchanged and unaccepted.
 
+## Canary 25 small brown toadstool
+
+- `ribbits:small_brown_toadstool` is a new identity and does not reuse or alter the existing huge `ribbits:brown_toadstool`. It is registered as the same small `ToadstoolBlock` plant class as `ribbits:toadstool`, retaining the 16×8 selection shape, vegetation placement contract, no collision, instant breaking, ordinary self-drop and pick-block behavior, default block-item stacking, one Creative entry, and 0.65 compostability. Its constructor selects only the dedicated `ribbits:small_brown_toadstool_patch`; the existing red patch remains unchanged.
+- The brown configured and placed patch resources exist only for bonemeal parity. Production Java references are confined to block registration, Creative presentation, composting, and the placed-feature key. Exact resource-scope validation finds no structure reference across all 29 private NBT templates and no biome, village, structure, trade, recipe, Toadstool Heart, or other economy acquisition path.
+- The authoritative immutable donor is `originals/assets/Matcha-Overlays-v37.zip`, 2,616,259 bytes, SHA-256 `2642DCEA338100F469DF905B212423683E83AE7C683C7B9FABFBD2195A2FE802`. Only `assets/ribbits/textures/item/toadstool.png` — 538 bytes, SHA-256 `46AACAE3545D1053E30EEA2DF160620395342E01545B21DF73825F860E9D3E00`, 16×16 RGBA — and `assets/ribbits/textures/block/brown_toadstool.png` — 368 bytes, SHA-256 `D0E76ECC0003F5236111C8FCFCA304FD90A1F0D3B999DBF4978D1F78382FDA16`, 16×16 RGBA — are read. The archive and both approved members are hash-guarded and the archive is rehashed after assembly; no donor archive or unrelated member enters either JAR.
+- The item output starts from the exact donor small-toadstool sprite. Its alpha mask remains 105 transparent / 151 opaque pixels; all 108 cap pixels are recolored, comprising all 84 red/orange pixels and all 24 light cap-spot pixels, while all 43 stem pixels and every transparent pixel remain unchanged. The full six-color donor brown texture is fingerprinted; the output uses its four dominant shading anchors rather than a flat invented color. Final `assets/ribbits/textures/item/small_brown_toadstool.png` is 266 bytes / SHA-256 `F043C4D964F9B40893BB5B49DD3CF507A5E3CEE7D3356CAF241CF6BCBE54D170`.
+- The placed atlas starts from exact pristine `assets/ribbits/textures/block/toadstool.png`, 2,108 bytes / SHA-256 `8D2DB80F27F9C0480574CBEFE49592305BB0B5B81D7011FE6C931BE15A97235C`, and clones all four native small-toadstool models without geometry, UV, positioning, or structure changes. All 960 cap pixels, including 575 red/orange and 385 light spot pixels, are recolored through the donor-derived palette; all 307 stem pixels and the 2,829-transparent / 1,267-opaque alpha contract remain unchanged. Final `assets/ribbits/textures/block/small_brown_toadstool.png` is 878 bytes / SHA-256 `D060DF947F5A6F61FF3E8D525F46144582F947151D2E169CF5AFC781E310E762`.
+- The donor brown member is deliberately distinct from pristine/native huge-brown `assets/ribbits/textures/block/brown_toadstool.png`, 220 bytes / SHA-256 `3F27824C414632E5CD1B81E6A9D27038A04FDFE7689E654D687F681BE5193BF5`. Canary 25 preserves that texture and the other five native huge-brown blockstate/model/item/loot resources byte-for-byte; the external resource pack may independently override the huge block at runtime, but the mod does not.
+
+| Derived private output | Bytes | SHA-256 |
+| --- | ---: | --- |
+| `assets/ribbits/blockstates/small_brown_toadstool.json` | 1,427 | `FD6B4F9F76C754EE7F08B1AC302BB3F9A518B2643371CAEF81AD78915CBC9D92` |
+| `assets/ribbits/items/small_brown_toadstool.json` | 102 | `7F1543D8EB4E37E48D91EEF8271AE29F61BB09328AC37A1B3638DFE2091614D5` |
+| `assets/ribbits/models/block/small_brown_toadstool.json` | 2,991 | `98B39C8CEBB47CCF4943AC5386E125C182E001B764BB45A1BFF6FAFEFBAC0A2F` |
+| `assets/ribbits/models/block/small_brown_toadstool_2.json` | 8,464 | `A81A704E5BEAC5884AF335B7723A18DA4402401D012C2C61D5FEA8578C0616D2` |
+| `assets/ribbits/models/block/small_brown_toadstool_3.json` | 8,446 | `1884D2B195AF5F4E8E8AC5EE41449F165482457C8171BCC8E1405F5AF045592A` |
+| `assets/ribbits/models/block/small_brown_toadstool_4.json` | 8,400 | `20AAF3F07852FD845F59414D95883B4BDF7AD5E3E8373D3782044681F86C6DC7` |
+| `assets/ribbits/models/item/small_brown_toadstool.json` | 115 | `B146A4A228E8D30687E3AE536FDBAE9963DCA960AC300EEEC3F7E1BC8F03C9E7` |
+| `assets/ribbits/textures/block/small_brown_toadstool.png` | 878 | `D060DF947F5A6F61FF3E8D525F46144582F947151D2E169CF5AFC781E310E762` |
+| `assets/ribbits/textures/item/small_brown_toadstool.png` | 266 | `F043C4D964F9B40893BB5B49DD3CF507A5E3CEE7D3356CAF241CF6BCBE54D170` |
+| `data/ribbits/loot_table/blocks/small_brown_toadstool.json` | 346 | `7AEE168AB69F4A20CC30B6463D8B5B4F53F3C0E005A06941F2F3CCADC818CF0E` |
+| `data/ribbits/worldgen/configured_feature/small_brown_toadstool_patch.json` | 1,152 | `5BC4FE997E36002C54D6944C2587881D84DC8CDB6121FA73B4DB890D1D4F9F35` |
+| `data/ribbits/worldgen/placed_feature/small_brown_toadstool_patch.json` | 74 | `70409FADABC3AD2A91BFCDC2D9E7227D3D7B527BBA3C6E992D5F76823F81BD16` |
+
+The deterministic Canary 25 private tree contains 361 files, including 264 strict JSON documents, totaling 2,768,074 bytes. The source-only archive remains deliberately resource-incomplete and contains neither transformed outputs nor the donor archive.
+
 ## Canary 21 authored open-Chute UV repair
 
 - The exact user-authored `originals/assets/chute_leaf_open.bbmodel` and `chute_leaf_open.png` remain immutable inputs: 5,953 bytes / SHA-256 `1D2332100DAEF279FD9BD1EA442714FE82B572A1662E05F40360CDEAA7680444` and 743 bytes / SHA-256 `C9DCC9DB447C84E69306810AAEF1818B52525E8DF5205432C8EB454743E059B2`. The BBModel declares 32×32 and its embedded PNG equals the standalone bytes.

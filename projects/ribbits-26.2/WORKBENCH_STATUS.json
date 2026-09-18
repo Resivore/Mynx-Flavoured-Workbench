@@ -14,7 +14,7 @@
     ]
   },
   "definition": {
-    "lifecycle": "ACCEPTED",
+    "lifecycle": "ACTIVE",
     "goals": [
       "Maintain a private Minecraft Java 26.2 downstream Ribbits build for the fixed Mynx and Matcha stack, preserving upstream behavior except for individually documented intentional Mynx deviations.",
       "Maintain the user-approved tiered Glowcap trade economy, persistent profession progression and daily restocking, exact cross-stack item contracts, and Toadstool Heart home-setting behavior without converting Ribbits into vanilla Villagers.",
@@ -37,8 +37,9 @@
       "Maintain scheduler-only Naturalist snail companionship as an optional reflective bridge: exactly two brown tagged snails are created once for an automatically materialized Wandering Ribbit, leashed to it, persisted by UUID, and removed or cleaned up with the lease; command- and egg-created merchants remain companion-free and no Naturalist class is linked by Ribbits.",
       "Maintain ribbits:chute_leaf as a stack-one noncraftable nondurable item using only data/trinkets/tags/item/chest/cape.json, a monotonic physical-jump request and owner acknowledgement protocol, a server-owned pending/deployed state machine, and a narrow terminal-descent cap of -0.10 blocks per tick.",
       "Maintain native map-decoration type ribbits:ribbit_village, exact success custom-data marker ribbits:ribbit_village_explorer_map=true, ordinary filled-map/map-id/decorations synchronization, and user-authored marker cropped without resampling to the native 8-by-8 atlas canvas and successful filled-map item artwork under the Ribbits namespace.",
-      "Preserve the private resource assembler, exact pristine, Minecraft, dependency, three-donor, output, and archive identities, and the authorized shared green ten-egg derivation contract including the Wandering Ribbit egg.",
-      "Display Drop Leaf while preserving ribbits:chute_leaf registry/save identity; use the exact latest 16x16 inventory PNG independently from the earlier closed-back sprite through a render-only auxiliary chute_leaf_closed model, derive only the deployed open model from the donor Wandering Ribbit entity's rain-held umbrella_leaf/grip/leaf2 geometry, and expose the exact 128x128 donor entity PNG through an item-atlas-safe Ribbits texture path while preserving renderer attachment, first-person presentation, activation, and movement behavior."
+      "Preserve the private resource assembler; exact pristine, Minecraft, dependency, output, and archive identities; all three existing mod donors; the authoritative Matcha overlay recolor donor; and the authorized shared green ten-egg derivation contract including the Wandering Ribbit egg.",
+      "Display Drop Leaf while preserving ribbits:chute_leaf registry/save identity; use the exact latest 16x16 inventory PNG independently from the earlier closed-back sprite through a render-only auxiliary chute_leaf_closed model, derive only the deployed open model from the donor Wandering Ribbit entity's rain-held umbrella_leaf/grip/leaf2 geometry, and expose the exact 128x128 donor entity PNG through an item-atlas-safe Ribbits texture path while preserving renderer attachment, first-person presentation, activation, and movement behavior.",
+      "Maintain ribbits:small_brown_toadstool as a distinct small-plant counterpart to ribbits:toadstool with the same placement, shape, ordinary drop and pick-block, default stacking, Creative exposure, and 0.65 compost behavior; a dedicated brown-only bonemeal patch; exact private donor-derived item and block visuals; and no change to the existing small red or huge red/brown toadstool identities and resources."
     ],
     "boundaries": {
       "owned_paths": [
@@ -51,7 +52,8 @@
         "Canary 8 adds no chest/back assignment or eligibility, Trinkets all-tag, new slot/group definition, vanilla glider or equippable component, Elytra tag, second inventory implementation, Elytra wings renderer, flight, steering, lift, pose, durability, or firework behavior; accepted Inventory Extended, Trinkets, their companion, Traveler Toolbelt, and Elytra-support artifacts remain separate and unchanged.",
         "No Wandering forest camp, donor scheduler/trades/code/AI/sounds/world generation, vanilla Wandering Trader replacement or suppression, trader llama, automatic Sorcerer replacement, existing-hut or village retrofit, saved-Witch conversion, global Witch suppression, asynchronous map search, custom map item or GUI, direct failed-map fallback, generalized old-offer migration, home-dimension redesign, Fortune Blessing, Silver Bullion, or Adamant/Netherite economy additions are introduced.",
         "Ribbits has no dependency on Map Marker Extensions or Compass Ribbon, contributes no custom map HUD or side-channel destination, and does not modify either project; Map Marker Extensions owns only its optional carried-target projection and Compass Ribbon consumes the standard native decoration path.",
-        "No substitute private inputs, deployment, Test Instance Manager mutation, gameplay-profile access, or Minecraft runtime claim from source, build, static, codec, tree, or archive evidence."
+        "No substitute private inputs, deployment, Test Instance Manager mutation, gameplay-profile access, or Minecraft runtime claim from source, build, static, codec, tree, or archive evidence.",
+        "Canary 25 adds no ordinary natural generation, biome, village, or structure placement, trades, recipes, Toadstool Heart participation, or other economy. Matcha-Overlays-v37.zip contributes only two hash-guarded private visual inputs for ribbits:small_brown_toadstool; it is never bundled and never replaces native ribbits:brown_toadstool resources."
       ]
     },
     "dependencies": [
@@ -174,25 +176,31 @@
         "identifier": "Matcha_Flavoured_1_12.zip",
         "requirement": "12,248,989 bytes; SHA-256 6209783021c358044abedabacee471faff5bd4080437d4e3b5e51963f1804248",
         "reason": "Immutable exact Minecraft 26.2 Matcha data/component reference used to audit and fingerprint the named recipe-result stacks, Opal, equipment, placeholder Crystal Heart model, effects, durations, rarities, glint, component-aware trade contracts, and the Copper/Golden recipe plus Titanium loot-entry compass identities; never bundled or modified."
+      },
+      {
+        "type": "OTHER",
+        "identifier": "Matcha-Overlays-v37.zip",
+        "requirement": "2,616,259 bytes; SHA-256 2642dcea338100f469df905b212423683e83ae7c683c7b9fabfbd2195a2fe802",
+        "reason": "Immutable user-supplied resource-pack donor beneath originals/assets; only assets/ribbits/textures/item/toadstool.png and assets/ribbits/textures/block/brown_toadstool.png are approved private visual inputs for Canary 25's new ribbits:small_brown_toadstool. The pack is rehashed after assembly, is never modified or bundled, and does not replace native ribbits:brown_toadstool resources."
       }
     ]
   },
   "state": {
-    "milestone": "The exact current release is ACCEPTED by owner direction following the user's external/gameplay testing. Existing build, deployment, and runtime classifications are preserved; this administrative transition infers no new runtime result.",
+    "milestone": "Canary 25 adds the distinct small vegetation block and item ribbits:small_brown_toadstool as the brown visual counterpart to ribbits:toadstool while preserving the existing small red and huge red/brown identities and resources. It retains the small toadstool's placement, shape, ordinary drop and pick-block, default stacking, Creative exposure, and 0.65 compostability; bonemeal delegates only to ribbits:small_brown_toadstool_patch, whose private configured and placed resources are absent from ordinary generation. Exact immutable Matcha-Overlays-v37.zip inputs supply the small-toadstool silhouette and stem plus the custom brown cap palette through deterministic private assembly, while all six native huge-brown resources remain byte-identical. Canary 25 is ACTIVE / STATIC_PASS / RUNTIME_UNTESTED; Canary 24 remains the exact accepted release.",
     "releases": {
       "current": {
-        "version": "4.1.6+26.2-mynx-canary24",
+        "version": "4.1.6+26.2-mynx-canary25",
         "artifact": {
-          "filename": "ribbits-private-reconstruction-4.1.6+26.2-mynx-canary24.jar",
-          "sha256": "e2c62bd1ab3884d4e1bd0c583801774af0fc2f2b54d9483eecc2fbb7dd6e2657"
+          "filename": "ribbits-private-reconstruction-4.1.6+26.2-mynx-canary25.jar",
+          "sha256": "00ff8af7a86d8ea9a0580905e6592e31e362937895d66d5b0aca702247fa6064"
         },
-        "built_at": "2026-09-12T16:39:40.5443404Z",
-        "source_commit": "66a55c4270c082ee2c06888b6ece2a1d0d5a09fa",
+        "built_at": "2026-09-18T02:51:32.2159711Z",
+        "source_commit": "64e57751e5b2bdb157458d952a8595b804f6db14",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
         },
-        "summary": "Maintains the private Mynx downstream Ribbits build with documented intentional deviations."
+        "summary": "Adds the distinct ribbits:small_brown_toadstool with donor-derived brown cap visuals, native small-toadstool behavior, and a brown-only bonemeal patch while preserving every existing toadstool identity and native huge-brown resource."
       },
       "accepted": {
         "version": "4.1.6+26.2-mynx-canary24",
@@ -209,7 +217,7 @@
         "summary": "Maintains the private Mynx downstream Ribbits build with documented intentional deviations."
       },
       "rollback": null,
-      "accepted_current": "CURRENT_IS_ACCEPTED",
+      "accepted_current": "CURRENT_DIFFERS_FROM_ACCEPTED",
       "accepted_rollback": "NO_ROLLBACK"
     },
     "validation": {
@@ -219,10 +227,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 30,
-    "activity_at": "2026-09-14T08:09:29Z",
-    "updated_at": "2026-09-14T08:09:29Z",
-    "last_codex_at": "2026-09-14T08:09:29Z",
-    "source_commit": "f511f435c623883c5ee1474e9227acb73fb2df68"
+    "revision": 31,
+    "activity_at": "2026-09-18T02:55:40Z",
+    "updated_at": "2026-09-18T02:55:40Z",
+    "last_codex_at": "2026-09-18T02:55:40Z",
+    "source_commit": "64e57751e5b2bdb157458d952a8595b804f6db14"
   }
 }
