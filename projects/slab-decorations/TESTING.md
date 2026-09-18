@@ -1,24 +1,33 @@
 # Testing
 
-C9 (`0.1.0-canary9`) is the exact current candidate: `slab-decorations-0.1.0-canary9.jar`, 64,887 bytes, SHA-256 `52bad1dae4e19f2c224fcc2d361ad30159fe4150308dce1f4547fd6f5c97c93c`, built `2026-09-17T05:23:21.4167545Z`, source checkpoint `d01aefd4e0d848973ddc4331c546191ac2150d40`. It is `ACTIVE / CONTROLLED_VALIDATION_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED` and unaccepted. C8 is the exact predecessor; the user reports it looked good in actual gameplay as one aggregate positive observation, without individual matrix-row PASS claims or acceptance.
+C10 (`0.1.0-canary10`) is the exact current candidate: `slab-decorations-0.1.0-canary10.jar`, 66,578 bytes, SHA-256 `7a8b36c7d4cea2b248e4a275a56678f802d380e172cefc751c6c0b25519bc790`, built `2026-09-18T05:21:19.3721845Z`, from source checkpoint `0c4ee9ae02174ce6f0c4e64d85d25cadb03a28ea`. It is `ACTIVE / CONTROLLED_VALIDATION_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED` and is not accepted. C9 is its exact predecessor.
 
-C9 retains C8's systemic canonical-parent vegetation path and adds one transactional structure-growth path: only candidate support slabs are temporarily represented as their canonical parents, every support is restored on failure, and a successful bottom-slab feature extends only an actual lowest generated trunk/stem/root continuation into its matching support. The generated structure is never globally translated. The same authoritative resolver now covers floor/ceiling lanterns, standing/ceiling hanging signs, and non-redstone floor torches; sea pickles and floor coral retain C8's real-water path.
+## Automated evidence
 
-Java 25 controlled validation completed a clean build with 5/5 focused JUnit tests and 41/41 headless Fabric GameTests. Artifact inspection confirmed embedded C9 metadata, Java class major 69, the required mixins, no nested JARs, and byte-identical build/retained artifact hashes. These automated checks did not execute Minecraft client model or block-entity rendering, overlays, particles, or real save/chunk/world reload; they are not gameplay runtime evidence.
+Using Java 25, the offline Gradle command below passed from a clean project output directory:
 
-## Runtime matrix
+```powershell
+gradle clean test runGameTest build --offline --no-daemon -Pterrain_slabs_reference_jar=<verified Terrain Slabs 3.3.2 reference JAR>
+```
 
-Use exact native horizontal slabs exposed by the installed BGE material profiles. If a canonical material has no matching slab profile, record that row as unavailable rather than substituting another material.
+- JUnit: 5/5 passed. The architecture checks confirm the exact C72 BGE Farmland Slab public identity and canonical `minecraft:farmland` projection, normal-profile behavior remains intact, and the optional Ribbits mixin is pseudo/remap-free with no hard production dependency.
+- Fabric GameTests: 44/44 passed against the installed BGE C72 artifact (`4.2.16-bge.canary72.farmland-slab-low-water+26.2`, SHA-256 `f9f892fcdf3f78879ef19dd8cd6bf398de40b84f1a579d6cef8781f1313188f7`).
+- The C10 crop tests use ordinary item placement for wheat, carrots, potatoes, beetroot, torchflower, and pitcher crops on BGE Farmland Slab BOTTOM/TOP/DOUBLE states. They verify canonical farmland survival, exact BOTTOM `-0.5 Y` projection and unshifted TOP/DOUBLE projection, crop growth, vanilla bonemeal, mature wheat drops, and BGE hydration/lifecycle behavior.
+- The same GameTests reject pumpkin and melon stem families, including attached stems; ordinary stem-item use leaves the item stack and slab unchanged.
+- Transaction tests verify that only the exact optional `ribbits:toadstool_stem` identity is a structural continuation: a successful BOTTOM transaction replaces its ground-contact slab with the generated exact stem state, while TOP/DOUBLE preserve their slab. Failed transactions restore the exact original slab and source state.
 
-1. Place representative ordinary vegetation, carpets, small fungi/azalea, double plants, and crops on their canonically valid bottom slabs. Accepted roots and both halves of a double plant must remain valid and render, outline, target, collide, interact, break, and emit shape-derived particles exactly `-0.5 Y`; top or double slabs remain unshifted.
-2. Place Hanging Roots and Spore Blossom under canonically valid top slabs. They must remain valid and use exactly `+0.5 Y`; bottom or double supports remain unshifted. Exercise a normal neighbor update, then remove support and verify vanilla cleanup.
-3. Grow at least six connected segments of Cave Vines, Weeping Vines, and Twisting Vines, including head/body transitions and Cave Vine berry growth/harvest. Every segment must share the physical root or anchor and one exact directional offset with no accumulated or distant-segment gap.
-4. Exercise long Sugar Cane, bamboo sapling-to-stalk growth, cactus including a terminal Cactus Flower, dripleaf, and pale hanging moss. Verify placement, growth or transition where vanilla permits it, support cleanup, and one coherent root-relative offset for the full column.
-5. Grow 1x1 and 2x2 trees, planted mangrove propagules/root footprints, red/brown giant mushrooms, crimson/warped huge fungi, and azalea/flowering-azalea trees from valid bottom slabs. Verify only actual ground-contact supports become matching generated continuation blocks, the structure is not shifted, failed generation restores exact slabs, and top/double supports remain slabs. Hanging propagules remain isolated.
-6. In real water, exercise kelp head/body growth, seagrass, tall seagrass, sea pickles, and floor coral plants/fans on waterlogged canonically valid bottom slabs. Accepted aquatic plants must use exactly `-0.5 Y`; dry, wrong-fluid, and wrong-substrate cases must retain vanilla rejection. Confirm the slab's real water context is not globally rejected.
-7. Exercise floor and ceiling vanilla/Soul lanterns, BBB Wooden Lanterns, Ribbits swamp lanterns, Aurora's Amethyst Lantern, standing signs, ceiling hanging signs (including a vanilla chain if allowed), Torch, and Soul Torch. Verify model/block-entity render, text, particles, shapes, targeting, waterlogging, support cleanup and no wall/redstone-torch inclusion.
-8. Recheck unsupported, water or fluid mismatches, foreign/vanilla slabs without BGE ownership, vertical slabs, stairs, walls, layers, and other non-horizontal geometry. No rejected state may receive a nonzero translation.
-9. Repeat representative upward, ceiling, long-column, and aquatic rows with Sodium enabled if applicable. Inspect the rendered model, outline, targeting, breaking overlay, particles, and interaction against the same physical attachment; the headless GameTests do not validate these client paths.
-10. Save, leave the area, reload the chunk/world, and repeat support updates for representative single, double, growing-column, and aquatic plants. State identity, lifecycle, attachment, cleanup, and exact directional representation must survive reload without persisted offset properties or replacement blocks.
+The optional mixin wraps Ribbits' shared private huge-growth placement seam on `ToadstoolBlock`; therefore both `ribbits:toadstool` (red) and `ribbits:small_brown_toadstool` (brown) retain Ribbits' own 0.4 roll, configured-feature selection, and spread fallback. The C10 code does not special-case their ordinary vegetation placement: their inherited `VegetationBlock` machinery continues to provide BOTTOM projection and unshifted TOP/DOUBLE placement.
 
-Stop and record only observed `PASS`, `FAIL`, or `INCONCLUSIVE` behavior for this exact C9 identity. Do not infer acceptance or any C9 runtime result from the controlled test suite.
+## Runtime verification still required
+
+No Minecraft testing profile, client, save/reload, or actual full Ribbits dependency stack was launched for C10. The following observations remain user-directed runtime evidence:
+
+1. Place each small toadstool on an eligible BGE Farmland Slab BOTTOM state; confirm its visual, collision/outline, and targeting projection is exactly `-0.5 Y`. Repeat on TOP and DOUBLE and confirm no translation.
+2. Bonemeal each color repeatedly on BOTTOM until the huge-growth roll succeeds. Confirm red uses Ribbits' red huge feature and brown uses its brown huge feature; when the generated exact stem contacts the support, only that BOTTOM slab becomes the generated `ribbits:toadstool_stem` state.
+3. Repeat successful huge growth on TOP and DOUBLE; confirm the original support slab survives unchanged and the structure is not globally translated.
+4. Force or find a failed huge-generation site for each color. Confirm the exact support slab and Ribbits source/fallback behavior are restored, with no canonical full block, missing support, or partial feature left behind.
+5. Confirm a missed 0.4 huge-growth roll still follows Ribbits' ordinary same-color spreading path for both colors.
+6. Check vanilla red and brown mushroom huge growth from BGE slabs remains unchanged, and repeat the Ribbits checks with Ribbits absent to confirm the optional mixin is inert.
+7. Exercise crop placement, growth, bonemeal, harvest, and moisture transitions for all six ordinary crop families on BOTTOM/TOP/DOUBLE BGE Farmland Slabs in a normal client session; include a reload to confirm persistence and visual behavior.
+
+Record only observed outcomes against this exact artifact identity in `WORKBENCH_STATUS.json`; runtime results alone do not change lifecycle or acceptance.

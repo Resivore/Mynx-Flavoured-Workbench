@@ -20,13 +20,13 @@
     "scope": [
       "Default to canonical-parent vanilla permission for structurally vertical vegetation rather than a species allowlist: ordinary vegetation, saplings and planted propagules, double plants and crops, small fungi and azalea, floor carpets and coral, generic upward and downward GrowingPlantBlock columns, and compatible modded implementations inherit support when their own projected vanilla behavior accepts the canonical parent.",
       "Use one surface resolver for vanilla/compatible floor and ceiling lanterns, standing signs, ceiling hanging signs, and non-redstone floor torches; block model, shape, targeting and interaction geometry consume the same directional result as survival.",
-      "Run vanilla tree, giant-mushroom, huge-fungus, and azalea structure generation through a narrow canonical-parent transaction: restore exact slab support on failure; after success only eligible bottom supports directly below generated ground-contact continuation blocks are consumed, while top/double supports are restored.",
+      "Run vanilla tree, giant-mushroom, huge-fungus, azalea, and optional Ribbits huge-toadstool generation through a narrow canonical-parent transaction: restore exact slab support on failure; after success only eligible bottom supports directly below generated ground-contact continuation blocks are consumed, while top/double supports are restored.",
       "Use structural root and lifecycle adapters for double plants, dripleaf, Sugar Cane, bamboo sapling/stalk transitions, cactus and Cactus Flower, pale hanging moss, Hanging Roots, Spore Blossom, and aquatic floor vegetation including kelp, seagrass, tall seagrass, sea pickles, and floor coral; every connected column resolves one physical root or anchor and shares one offset.",
       "Resolve nonlocal roots, anchors, supports, neighbors, and projected survival from the full owning level even when a bounded client render snapshot supplies the current block state, so long connected columns do not lose their attachment outside the snapshot bounds.",
       "Preserve the plant cell and support's real fluid states in the projected world view instead of applying a global waterlogged rejection, allowing canonical aquatic behavior only where the corresponding vanilla fluid and substrate context accepts it.",
       "Align accepted ceiling foliage under top slabs by exactly +0.5 Y and accepted upward foliage over bottom slabs by exactly -0.5 Y across shared model, outline, targeting, cached/context collision, visual, interaction, entity-inside, breaking-overlay, and shape-derived particle geometry; bottom/double ceiling supports and top/double upward supports remain unshifted.",
       "Preserve historical release provenance and the bounded Grass Block, Moss Block, and Pale Moss Block substrate-bonemeal behavior inherited from C3, including exact item consumption, native-slab restoration/reconciliation, generated vegetation positioning, and lowered-azalea safety.",
-      "Use exact unified BGE C70, CNM 2.0.7, Terrain Slabs 3.3.2, Java 25, Gradle 9.5.1, Loom 1.17.19, and Fabric API 0.157.0+26.2 only as controlled build/test or read-only comparison baselines; runtime dependency eligibility remains capability/provider-based."
+      "Use exact unified BGE C72, CNM 2.0.7, Terrain Slabs 3.3.2, Java 25, Gradle 9.5.1, Loom 1.17.19, and Fabric API 0.157.0+26.2 only as controlled build/test or read-only comparison baselines; runtime dependency eligibility remains capability/provider-based."
     ],
     "boundaries": {
       "owned_paths": [
@@ -38,7 +38,7 @@
         "Vertical slabs, CNM Steps, layers, stairs, walls, columns, vanilla or foreign slabs, rails, redstone components, pressure plates, chains, pointed dripstone, machinery, and arbitrary non-vegetation decorations remain outside horizontal-slab projection ownership.",
         "The read-only projection supports ordinary BlockGetter and LevelReader placement/survival contracts. Raw ChunkAccess inspection is delegated and arbitrary custom placement systems that bypass those world-view accessors are not claimed compatible.",
         "Unified Block Geometry Extensions retains canonical material/native-slab ownership; this project adds no duplicate plant blocks, persisted offset property, registry-name parser, competing material table, standalone Nibaru dependency, or hard Mynx × Regions Unexplored dependency.",
-        "No Test Slot, accepted stack, Minecraft profile, deployment, gameplay runtime result, or promotion is changed by Canary 9 controlled validation; the protected gameplay instance remains off-limits."
+        "No Test Slot, accepted stack, Minecraft profile, deployment, gameplay runtime result, or promotion is changed by Canary 10 controlled validation; the protected gameplay instance remains off-limits."
       ]
     },
     "dependencies": [
@@ -64,7 +64,7 @@
         "type": "PROJECT",
         "identifier": "4b2342fc-7bdf-5ba6-9f37-d551109d214c",
         "requirement": "compatible provider of more_slabs_stairs_and_walls",
-        "reason": "Unified BGE provides the canonical material-profile and exact native-slab capability used at runtime; C70 was the exact controlled compile/test baseline."
+        "reason": "Unified BGE provides the canonical material-profile and exact native-slab capability used at runtime; C72 was the exact controlled compile/test baseline."
       },
       {
         "type": "MOD",
@@ -82,7 +82,13 @@
         "type": "MOD",
         "identifier": "cnm_terrain_slabs_compat",
         "requirement": "* (optional suggestion)",
-        "reason": "Flexible optional primary BGE identity; it is not a second hard dependency and unified BGE C70 supplied it during controlled validation."
+        "reason": "Flexible optional primary BGE identity; it is not a second hard dependency and unified BGE C72 supplied it during controlled validation."
+      },
+      {
+        "type": "MOD",
+        "identifier": "ribbits",
+        "requirement": "* (optional suggestion)",
+        "reason": "Optional private huge-toadstool feature seam; production linkage remains absent and the ordinary no-Ribbits path is unchanged."
       },
       {
         "type": "OTHER",
@@ -111,22 +117,22 @@
     ]
   },
   "state": {
-    "milestone": "C9 succeeds exact C8. The user reports aggregate positive actual-gameplay observation for exact C8, with no individual matrix-row PASS claims inferred and no acceptance directed. C9 adds transactional canonical-parent structure growth and shared surface attachments for lanterns, signs, and non-redstone floor torches. Java 25 controlled validation passed 5/5 JUnit tests and 41/41 headless server GameTests, which did not execute client sign rendering or real save/reload. C9 is ACTIVE, NOT_DEPLOYED, RUNTIME_UNTESTED, and unaccepted.",
+    "milestone": "C10 succeeds exact C9. It recognizes only BGE C72's documented canonical Farmland Slab outside profile ownership, projects it as vanilla Farmland, and uses the shared upward resolver so ordinary farmland crops retain normal placement, survival, lifecycle, and BOTTOM -0.5 / TOP-DOUBLE 0 representation while pumpkin/melon stems remain structurally excluded. C10 also adds an optional private Ribbits huge-toadstool transaction seam and exact toadstool-stem continuation identity without a production Ribbits dependency. Java 25 controlled validation passed 5/5 JUnit tests and 44/44 headless server GameTests; neither suite ran a client renderer, real save/reload, or a complete Ribbits runtime dependency stack. C10 is ACTIVE, NOT_DEPLOYED, RUNTIME_UNTESTED, and unaccepted.",
     "releases": {
       "current": {
-        "version": "0.1.0-canary9",
-        "embedded_version": "0.1.0-canary9",
+        "version": "0.1.0-canary10",
+        "embedded_version": "0.1.0-canary10",
         "artifact": {
-          "filename": "slab-decorations-0.1.0-canary9.jar",
-          "sha256": "52bad1dae4e19f2c224fcc2d361ad30159fe4150308dce1f4547fd6f5c97c93c"
+          "filename": "slab-decorations-0.1.0-canary10.jar",
+          "sha256": "7a8b36c7d4cea2b248e4a275a56678f802d380e172cefc751c6c0b25519bc790"
         },
-        "built_at": "2026-09-17T05:23:21.4167545Z",
-        "source_commit": "d01aefd4e0d848973ddc4331c546191ac2150d40",
+        "built_at": "2026-09-18T05:21:19.3721845Z",
+        "source_commit": "0c4ee9ae02174ce6f0c4e64d85d25cadb03a28ea",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
         },
-        "summary": "Adds transactional vanilla structure growth and shared slab attachments for lanterns, signs, and floor torches without persisted offsets."
+        "summary": "Adds BGE Farmland Slab crop projection and optional Ribbits huge-toadstool transactions without persisted offsets."
       },
       "accepted": null,
       "rollback": null,
@@ -140,10 +146,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 10,
-    "activity_at": "2026-09-17T05:23:21.4167545Z",
-    "updated_at": "2026-09-17T05:23:21.4167545Z",
-    "last_codex_at": "2026-09-17T05:23:21.4167545Z",
-    "source_commit": "d01aefd4e0d848973ddc4331c546191ac2150d40"
+    "revision": 11,
+    "activity_at": "2026-09-18T05:21:19.3721845Z",
+    "updated_at": "2026-09-18T05:21:19.3721845Z",
+    "last_codex_at": "2026-09-18T05:21:19.3721845Z",
+    "source_commit": "0c4ee9ae02174ce6f0c4e64d85d25cadb03a28ea"
   }
 }
