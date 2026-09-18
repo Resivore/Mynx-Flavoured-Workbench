@@ -44,6 +44,19 @@ public final class SurfaceContactResolver {
         return inspectOverlay(receiver, receiverPos, source, sourcePos, face, null);
     }
 
+    /**
+     * Exact positive Standard Overlay contact, including every receiver-local patch induced by
+     * the contributing neighbor. The footprint is reflected across each contacted block-cell
+     * boundary and intersected with the rendered receiver patch; no geometry family is inferred.
+     */
+    public static OverlayContribution inspectOverlayContribution(BlockState receiver,
+            BlockPos receiverPos, BlockState source, BlockPos sourcePos, Direction face,
+            QuadSurface receiverQuad) {
+        ContactInspection inspection = inspectSurfaceContact(receiver, receiverPos, source,
+                sourcePos, face, receiverQuad, true);
+        return new OverlayContribution(inspection.decision(), inspection.footprints());
+    }
+
     /** State-only fallback is safe only when every face has at most one exposed patch. */
     public static boolean stateDerivedFallbackSafe(BlockState source, BlockState other) {
         Endpoint sourceEndpoint = endpoint(source);
@@ -111,38 +124,57 @@ public final class SurfaceContactResolver {
 
     private static Decision inspectSurfaces(BlockState source, BlockPos sourcePos,
             BlockState other, BlockPos otherPos, Direction face, QuadSurface sourceQuad) {
+        return inspectSurfaceContact(source, sourcePos, other, otherPos, face,
+                sourceQuad, false).decision();
+    }
+
+    private static ContactInspection inspectSurfaceContact(BlockState source, BlockPos sourcePos,
+            BlockState other, BlockPos otherPos, Direction face, QuadSurface sourceQuad,
+            boolean collectFootprints) {
         Endpoint sourceEndpoint = endpoint(source);
         Endpoint otherEndpoint = endpoint(other);
         if (!sourceEndpoint.participates() && !otherEndpoint.participates()) {
-            return Decision.BYPASS_UNRELATED;
+            return ContactInspection.decision(Decision.BYPASS_UNRELATED);
         }
         if (!sourceEndpoint.supported() || !otherEndpoint.supported()) {
-            return Decision.UNSUPPORTED_GEOMETRY;
+            return ContactInspection.decision(Decision.UNSUPPORTED_GEOMETRY);
         }
         if (sourceQuad != null && sourceQuad.normal() != face) {
-            return Decision.INVALID_QUAD_SURFACE;
+            return ContactInspection.decision(Decision.INVALID_QUAD_SURFACE);
         }
 
         List<SurfaceDescriptor> sourceSurfaces = sourceQuad == null
                 ? descriptors(sourceEndpoint, sourcePos, face)
                 : descriptors(sourceEndpoint, sourcePos, sourceQuad);
         if (sourceSurfaces.isEmpty()) {
-            return sourceQuad == null ? Decision.NO_BOUNDARY_CONTACT : Decision.INVALID_QUAD_SURFACE;
+            return ContactInspection.decision(sourceQuad == null
+                    ? Decision.NO_BOUNDARY_CONTACT : Decision.INVALID_QUAD_SURFACE);
         }
         List<SurfaceDescriptor> otherSurfaces = descriptors(otherEndpoint, otherPos, face);
-        if (otherSurfaces.isEmpty()) return Decision.NO_BOUNDARY_CONTACT;
+        if (otherSurfaces.isEmpty()) {
+            return ContactInspection.decision(Decision.NO_BOUNDARY_CONTACT);
+        }
 
         boolean compatiblePlane = false;
+        List<QuadSurface> footprints = new ArrayList<>();
         for (SurfaceDescriptor sourceSurface : sourceSurfaces) {
             for (SurfaceDescriptor otherSurface : otherSurfaces) {
                 if (!planesCompatible(sourceSurface, otherSurface)) continue;
                 compatiblePlane = true;
                 if (meetAlongEvaluatedBoundary(sourceSurface, otherSurface)) {
-                    return Decision.CONNECT;
+                    if (!collectFootprints) {
+                        return ContactInspection.decision(Decision.CONNECT);
+                    }
+                    projectContactFootprint(sourceSurface, otherSurface)
+                            .ifPresent(footprints::add);
                 }
             }
         }
-        return compatiblePlane ? Decision.NO_BOUNDARY_CONTACT : Decision.NON_COPLANAR;
+        if (!footprints.isEmpty()) {
+            return new ContactInspection(Decision.CONNECT, List.copyOf(footprints));
+        }
+        return ContactInspection.decision(
+                compatiblePlane ? Decision.NO_BOUNDARY_CONTACT : Decision.NON_COPLANAR);
     }
 
     /** Face and typed-plane compatibility, kept separate from in-plane contact. */
@@ -178,6 +210,57 @@ public final class SurfaceContactResolver {
         }
         return meets(source.uBounds(), other.uBounds(), u)
                 && meets(source.vBounds(), other.vBounds(), v);
+    }
+
+    /**
+     * Projects one contacting inducing patch onto the receiver cell. Along an axis shared by the
+     * two block positions the inducing extent is reflected inward across the contacted cell edge;
+     * along an aligned axis the real world-space intersection is used.
+     */
+    public static Optional<QuadSurface> projectContactFootprint(SurfaceDescriptor receiver,
+            SurfaceDescriptor inducing) {
+        Objects.requireNonNull(receiver, "receiver");
+        Objects.requireNonNull(inducing, "inducing");
+        if (!meetAlongEvaluatedBoundary(receiver, inducing)) return Optional.empty();
+        Optional<Interval> u = projectedInterval(receiver, inducing, receiver.uAxis());
+        Optional<Interval> v = projectedInterval(receiver, inducing, receiver.vAxis());
+        if (u.isEmpty() || v.isEmpty()) return Optional.empty();
+
+        long normalOrigin = (long) coordinate(receiver.blockPos(), receiver.normal().getAxis())
+                * BLOCK_UNITS;
+        long uOrigin = (long) coordinate(receiver.blockPos(), receiver.uAxis()) * BLOCK_UNITS;
+        long vOrigin = (long) coordinate(receiver.blockPos(), receiver.vAxis()) * BLOCK_UNITS;
+        return Optional.of(new QuadSurface(receiver.normal(),
+                Math.toIntExact(receiver.plane16() - normalOrigin), receiver.uAxis(),
+                Math.toIntExact(u.get().min16() - uOrigin),
+                Math.toIntExact(u.get().max16() - uOrigin), receiver.vAxis(),
+                Math.toIntExact(v.get().min16() - vOrigin),
+                Math.toIntExact(v.get().max16() - vOrigin)));
+    }
+
+    private static Optional<Interval> projectedInterval(SurfaceDescriptor receiver,
+            SurfaceDescriptor inducing, Direction.Axis axis) {
+        Interval receiverBounds = axis == receiver.uAxis()
+                ? receiver.uBounds() : receiver.vBounds();
+        Interval inducingBounds = axis == inducing.uAxis()
+                ? inducing.uBounds() : inducing.vBounds();
+        int delta = coordinate(inducing.blockPos(), axis)
+                - coordinate(receiver.blockPos(), axis);
+        long min;
+        long max;
+        if (delta == 0) {
+            min = Math.max(receiverBounds.min16(), inducingBounds.min16());
+            max = Math.min(receiverBounds.max16(), inducingBounds.max16());
+        } else if (Math.abs(delta) == 1) {
+            long boundary = delta > 0 ? receiverBounds.max16() : receiverBounds.min16();
+            long reflectedMin = 2 * boundary - inducingBounds.max16();
+            long reflectedMax = 2 * boundary - inducingBounds.min16();
+            min = Math.max(receiverBounds.min16(), reflectedMin);
+            max = Math.min(receiverBounds.max16(), reflectedMax);
+        } else {
+            return Optional.empty();
+        }
+        return min < max ? Optional.of(new Interval(min, max)) : Optional.empty();
     }
 
     private static List<SurfaceDescriptor> descriptors(Endpoint endpoint, BlockPos pos,
@@ -363,6 +446,28 @@ public final class SurfaceContactResolver {
             Objects.requireNonNull(presentation, "presentation");
             Objects.requireNonNull(canonicalFace, "canonicalFace");
             Objects.requireNonNull(planeRelation, "planeRelation");
+        }
+    }
+
+    /** A contact decision and its unmerged, contributor-specific receiver footprints. */
+    public record OverlayContribution(Decision decision, List<QuadSurface> footprints) {
+        public OverlayContribution {
+            Objects.requireNonNull(decision, "decision");
+            footprints = List.copyOf(Objects.requireNonNull(footprints, "footprints"));
+            if (decision != Decision.CONNECT && !footprints.isEmpty()) {
+                throw new IllegalArgumentException("Only positive contact may carry footprints");
+            }
+        }
+    }
+
+    private record ContactInspection(Decision decision, List<QuadSurface> footprints) {
+        private ContactInspection {
+            Objects.requireNonNull(decision, "decision");
+            footprints = List.copyOf(Objects.requireNonNull(footprints, "footprints"));
+        }
+
+        private static ContactInspection decision(Decision decision) {
+            return new ContactInspection(decision, List.of());
         }
     }
 }

@@ -2,6 +2,7 @@ package dev.resivore.bgectm.continuity;
 
 import dev.resivore.bgectm.SurfaceContactResolver;
 import dev.resivore.bgectm.SurfaceContactResolver.Decision;
+import dev.resivore.bgectm.SurfaceContactResolver.OverlayContribution;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.state.BlockState;
@@ -42,9 +43,12 @@ public final class OverlayContactFilter {
                 && SurfaceContactResolver.stateDerivedFallbackSafe(receiverState, inducingState)) {
             return true;
         }
-        return retainAfterUpstream(true, stateDecision, capture,
-                () -> SurfaceContactResolver.inspectOverlay(
-                        receiverState, receiverPos, inducingState, inducingPos,
-                        face, capture.surface()));
+        if (stateDecision == Decision.BYPASS_UNRELATED) return true;
+        if (stateDecision != Decision.CONNECT || capture == null || !capture.valid()) return false;
+        OverlayContribution contribution = SurfaceContactResolver.inspectOverlayContribution(
+                receiverState, receiverPos, inducingState, inducingPos, face, capture.surface());
+        if (contribution.decision() != Decision.CONNECT) return false;
+        capture.addOverlayContributions(contribution.footprints());
+        return true;
     }
 }

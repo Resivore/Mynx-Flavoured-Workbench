@@ -67,6 +67,8 @@ dependencies {
 
     compileOnly files(bgeReferenceJar)
     runtimeOnly files(bgeReferenceJar)
+    testCompileOnly files(bgeReferenceJar)
+    testRuntimeOnly files(bgeReferenceJar)
     compileOnly files(cnmReferenceJar)
     runtimeOnly files(cnmReferenceJar)
 
@@ -234,6 +236,7 @@ tasks.register('verifyReleaseArtifact') {
                     'dev/resivore/bgectm/continuity/OverlaySourceEligibility.class',
                     'dev/resivore/bgectm/continuity/OverlayAttemptContext.class',
                     'dev/resivore/bgectm/continuity/OverlayEmissionGeometry.class',
+                    'dev/resivore/bgectm/continuity/OverlayFootprintPlan.class',
                     'dev/resivore/bgectm/continuity/OverlayEmissionController.class',
                     'dev/resivore/bgectm/continuity/OverlayProcessingEligibility.class',
                     'dev/resivore/bgectm/client/BgeCtmClient.class',
@@ -269,7 +272,7 @@ tasks.register('verifyReleaseArtifact') {
 
 tasks.register('stageCanaryArtifact', Copy) {
     group = 'distribution'
-    description = 'Stages the exact ignored Canary 9 JAR for canonical local retention.'
+    description = 'Stages the exact ignored Canary 10 JAR for canonical local retention.'
     dependsOn tasks.named('verifyReleaseArtifact')
     from(packagedJar)
     into(layout.projectDirectory.dir('artifacts'))

@@ -7,6 +7,10 @@ import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+
 /** Thread-confined snapshot of the exact quad currently being processed by Continuity. */
 public final class ContinuityQuadContext {
     private static final int VERTEX_COUNT = 4;
@@ -94,14 +98,50 @@ public final class ContinuityQuadContext {
         };
     }
 
-    public record Capture(@Nullable QuadSurface surface, @Nullable BlockState receiverState,
-            @Nullable BlockPos receiverPos) {
+    public static final class Capture {
+        @Nullable private final QuadSurface surface;
+        @Nullable private final BlockState receiverState;
+        @Nullable private final BlockPos receiverPos;
+        private final List<QuadSurface> overlayContributions = new ArrayList<>();
+
+        public Capture(@Nullable QuadSurface surface, @Nullable BlockState receiverState,
+                @Nullable BlockPos receiverPos) {
+            this.surface = surface;
+            this.receiverState = receiverState;
+            this.receiverPos = receiverPos == null ? null : receiverPos.immutable();
+        }
+
         public Capture(@Nullable QuadSurface surface) {
             this(surface, null, null);
         }
 
+        @Nullable
+        public QuadSurface surface() {
+            return surface;
+        }
+
+        @Nullable
+        public BlockState receiverState() {
+            return receiverState;
+        }
+
+        @Nullable
+        public BlockPos receiverPos() {
+            return receiverPos;
+        }
+
         public boolean valid() {
             return surface != null;
+        }
+
+        public void addOverlayContributions(List<QuadSurface> footprints) {
+            for (QuadSurface footprint : Objects.requireNonNull(footprints, "footprints")) {
+                overlayContributions.add(Objects.requireNonNull(footprint, "footprint"));
+            }
+        }
+
+        public List<QuadSurface> overlayContributions() {
+            return List.copyOf(overlayContributions);
         }
     }
 

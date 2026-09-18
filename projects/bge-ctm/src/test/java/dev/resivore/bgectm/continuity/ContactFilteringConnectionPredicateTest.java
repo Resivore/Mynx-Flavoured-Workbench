@@ -108,6 +108,8 @@ final class ContactFilteringConnectionPredicateTest {
                     exactEvaluations.incrementAndGet();
                     return Decision.CONNECT;
                 }), "Geometry must not turn a canonically inapplicable overlay into a match");
+        assertTrue(validCapture.overlayContributions().isEmpty(),
+                "The generic semantic-negative path must not manufacture contribution geometry");
         assertEquals(1, exactEvaluations.get(),
                 "An upstream overlay rejection must not evaluate geometry");
         assertFalse(OverlayContactFilter.retainAfterUpstream(
