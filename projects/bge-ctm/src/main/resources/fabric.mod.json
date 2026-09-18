@@ -23,7 +23,7 @@
     "minecraft": "~26.2",
     "java": ">=25",
     "clutternomore": ">=2.0.7",
-    "cnm_terrain_slabs_compat": ">=4.2.18-bge.canary74.surface-semantics+26.2",
+    "cnm_terrain_slabs_compat": ">=4.2.19-bge.canary75.surface-semantics+26.2",
     "continuity": "=3.0.1+26.2"
   },
   "custom": {
@@ -37,7 +37,7 @@
           "predicate": "~26.2",
           "reason": "The appearance bridge is compiled against the Minecraft 26.2 block-state and Fabric appearance method descriptors and must remain on the controlled target release.",
           "regression_evidence": [
-            "Canary 8 compiles and its focused headless GameTests execute against Minecraft 26.2 and Fabric API 0.156.0+26.2 with exact BGE C74."
+            "Canary 8 compiles and its focused headless GameTests execute against Minecraft 26.2 and Fabric API 0.156.0+26.2 with exact BGE C75."
           ]
         },
         {
