@@ -49,7 +49,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 
-/** Runtime contracts for the one horizontal Farmland Slab introduced in Canary 71. */
+/** Runtime contracts for the C71 Farmland Slab plus C72's lower-water hydration extension. */
 public final class FarmlandSlabGameTests implements CustomTestMethodInvoker {
     @GameTest(maxTicks = 40)
     public void actualHoeRegistryHasExactDynamicBgeParity(GameTestHelper helper) {
@@ -289,18 +289,69 @@ public final class FarmlandSlabGameTests implements CustomTestMethodInvoker {
         ServerLevel level = helper.getLevel();
         WeatherSnapshot weather = WeatherSnapshot.capture(level);
         BlockPos pos = new BlockPos(5, 2, 5);
-        BlockPos boundaryWater = pos.offset(-4, 1, 0);
         try {
             helper.setBiome(Biomes.PLAINS);
             forceDry(level);
 
-            helper.setBlock(pos, farmland(SlabType.BOTTOM, 0));
-            helper.setBlock(boundaryWater, Blocks.WATER);
-            helper.randomTick(pos);
-            helper.assertTrue(helper.getBlockState(pos).getValue(FarmlandSlabBlock.MOISTURE) == 7,
-                    "Water at the inclusive four-block/y+1 boundary did not hydrate to seven");
+            for (SlabType type : SlabType.values()) {
+                BlockPos directlyBelow = pos.offset(0, -1, 0);
+                BlockPos lowerBoundary = pos.offset(4, -1, 0);
+                BlockPos lowerOutsideBoundary = pos.offset(5, -1, 0);
+                BlockPos twoBelow = pos.offset(0, -2, 0);
 
-            helper.setBlock(boundaryWater, Blocks.AIR);
+                helper.setBlock(pos, farmland(type, 0));
+                helper.setBlock(directlyBelow, Blocks.WATER);
+                helper.randomTick(pos);
+                helper.assertTrue(helper.getBlockState(pos).getValue(FarmlandSlabBlock.MOISTURE) == 7,
+                        "Water directly one block below did not hydrate " + type + " Farmland Slab");
+                helper.setBlock(directlyBelow, Blocks.AIR);
+
+                helper.setBlock(pos, farmland(type, 0));
+                helper.setBlock(lowerBoundary, Blocks.WATER);
+                helper.randomTick(pos);
+                helper.assertTrue(helper.getBlockState(pos).getValue(FarmlandSlabBlock.MOISTURE) == 7,
+                        "Water at the inclusive four-block/y-1 boundary did not hydrate " + type);
+                helper.setBlock(lowerBoundary, Blocks.AIR);
+
+                helper.setBlock(pos, farmland(type, 1));
+                helper.setBlock(lowerOutsideBoundary, Blocks.WATER);
+                helper.randomTick(pos);
+                helper.assertTrue(helper.getBlockState(pos).getValue(FarmlandSlabBlock.MOISTURE) == 0,
+                        "Water five blocks horizontally away at y-1 hydrated " + type);
+                helper.setBlock(lowerOutsideBoundary, Blocks.AIR);
+
+                helper.setBlock(pos, farmland(type, 1));
+                helper.setBlock(twoBelow, Blocks.WATER);
+                helper.randomTick(pos);
+                helper.assertTrue(helper.getBlockState(pos).getValue(FarmlandSlabBlock.MOISTURE) == 0,
+                        "Water two blocks below hydrated " + type);
+                helper.setBlock(twoBelow, Blocks.AIR);
+
+                for (int waterY : List.of(0, 1)) {
+                    BlockPos existingLevelWater = pos.offset(1, waterY, 0);
+                    helper.setBlock(pos, farmland(type, 0));
+                    helper.setBlock(existingLevelWater, Blocks.WATER);
+                    helper.randomTick(pos);
+                    helper.assertTrue(helper.getBlockState(pos).getValue(FarmlandSlabBlock.MOISTURE) == 7,
+                            "Existing y" + (waterY == 0 ? "" : "+1")
+                                    + " water did not hydrate " + type);
+                    helper.setBlock(existingLevelWater, Blocks.AIR);
+                }
+
+                helper.setBlock(pos, farmland(type, 7));
+                helper.setBlock(directlyBelow, Blocks.WATER);
+                helper.randomTick(pos);
+                helper.setBlock(directlyBelow, Blocks.AIR);
+                helper.randomTick(pos);
+                helper.assertTrue(helper.getBlockState(pos).is(CnmTerrainCompat.FARMLAND_SLAB)
+                                && helper.getBlockState(pos).getValue(FarmlandSlabBlock.MOISTURE) == 6,
+                        "Removing qualifying lower water did not restore normal drying for " + type);
+                helper.setBlock(pos, farmland(type, 0));
+                helper.randomTick(pos);
+                assertDirt(helper, pos, type,
+                        "Removing qualifying lower water did not restore reversion for " + type);
+            }
+
             helper.setBlock(pos, farmland(SlabType.TOP, 0));
             forceRain(level);
             helper.assertTrue(level.isRainingAt(helper.absolutePos(pos).above()),

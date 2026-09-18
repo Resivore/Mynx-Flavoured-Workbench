@@ -124,7 +124,7 @@ public final class FarmlandSlabBlock extends Block {
     }
 
     private static boolean isNearWater(LevelReader level, BlockPos pos) {
-        for (BlockPos nearby : BlockPos.betweenClosed(pos.offset(-4, 0, -4), pos.offset(4, 1, 4))) {
+        for (BlockPos nearby : BlockPos.betweenClosed(pos.offset(-4, -1, -4), pos.offset(4, 1, 4))) {
             if (level.getFluidState(nearby).is(FluidTags.WATER)) return true;
         }
         return false;
