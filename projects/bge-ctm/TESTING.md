@@ -2,9 +2,9 @@
 
 Current candidate: `bge-ctm-0.8.0-canary8.jar`
 
-- SHA-256: `368933843ebafa6f153b86fb4dc96663912aa0b58000411fc2818fee6f8edb56`
-- Source checkpoint: `ee8a4353bdf094a5570f3823d949cdb22ff02342`
-- Use Minecraft Java 26.2, Fabric Loader 0.19.3+, exact Continuity `3.0.1+26.2`, and BGE `>=4.2.18-bge.canary74.surface-semantics+26.2` (exact C74 is the controlled baseline).
+- SHA-256: `cb3124ba2324898c17c6ce9774c88dee83633e219f45d6850815dd3f70c872ae`
+- Source checkpoint: `ce936549fc8e0a1e0f16146a68988bc0f56d54b8`
+- Use Minecraft Java 26.2, Fabric Loader 0.19.3+, exact Continuity `3.0.1+26.2`, and BGE `>=4.2.19-bge.canary75.surface-semantics+26.2` (exact C75 is the controlled baseline).
 - Lifecycle/evidence: `ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED`.
 
 Diagnostics are off by default. Enable bounded diagnostics only after a failed row with `-Dbge_ctm.diagnostics=true`; `-Dbge_ctm.diagnostics.disable=true` remains an explicit override. The 21/21 headless GameTests and 12/12 unit tests do not execute or visually validate the real client-only Continuity processor/model path.
@@ -51,4 +51,4 @@ Repeat the positive relationships above under Standard Overlay. Overlay uses the
 2. Native Stairs and Walls intentionally remain fail-closed in this canary because their rendered inner/outer and post/arm topology is contextual. Record them only as limitation controls.
 3. Confirm an unbound registry-name decoy and risky excluded visual profile remain unchanged.
 
-After any failure, retain the relevant bounded `APPEARANCE`, `RULE_SELECTION`, `REGULAR`, `OVERLAY`, and `OVERLAY_EMIT` lines together with exact physical states, positions, evaluated face, resource-pack order, and shader state. Record only observed rows and the exact C8/BGE C74 hashes; manual testing does not accept the project automatically.
+After any failure, retain the relevant bounded `APPEARANCE`, `RULE_SELECTION`, `REGULAR`, `OVERLAY`, and `OVERLAY_EMIT` lines together with exact physical states, positions, evaluated face, resource-pack order, and shader state. Record only observed rows and the exact C8/BGE C75 hashes; manual testing does not accept the project automatically.

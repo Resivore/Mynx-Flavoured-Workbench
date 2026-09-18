@@ -42,8 +42,8 @@
       {
         "type": "PROJECT",
         "identifier": "4b2342fc-7bdf-5ba6-9f37-d551109d214c",
-        "requirement": ">=4.2.18-bge.canary74.surface-semantics+26.2",
-        "reason": "BGE C74 owns the authoritative canonical binding, state projection, canonical material-face semantics, exposed patch geometry and typed terrain-height relation consumed generically by Canary 8; exact C74 is the controlled validation baseline."
+        "requirement": ">=4.2.19-bge.canary75.surface-semantics+26.2",
+        "reason": "BGE C75 owns the authoritative canonical binding, state projection, canonical material-face semantics, exposed patch geometry and typed terrain-height relation consumed generically by Canary 8; exact C75 is the controlled validation baseline."
       },
       {
         "type": "MOD",
@@ -78,16 +78,16 @@
     ]
   },
   "state": {
-    "milestone": "Canary 8 consumes BGE C74's canonical binding and exposed surface patches without geometry-class algorithms or material-ID rules. Ordinary CTM and Standard Overlay now share corresponding-face, compatible-plane and in-plane contact semantics; the only 1/16 tolerance is BGE's typed terrain inset. Binding-driven appearance reaches special Farmland Slab and future valid bindings without a carrier-class list. Steps, Corners and Quarter Columns use deterministic multi-patch data; contextual native Stairs/Walls remain explicit fail-closed limitations. Exact C7 owner evidence is limited to three observations: placement lag was resolved, grass/Farmland Slab overlay still did not work, and CTM/overlay appeared on slab top faces but not corresponding side faces. No aggregate C7 result is inferred, and C8 remains runtime-untested.",
+    "milestone": "Canary 8 consumes BGE C75's canonical binding and exposed surface patches without geometry-class algorithms or material-ID rules. Ordinary CTM and Standard Overlay now share corresponding-face, compatible-plane and in-plane contact semantics; the only 1/16 tolerance is BGE's typed terrain inset. Binding-driven appearance reaches special Farmland Slab and future valid bindings without a carrier-class list. Steps, Corners and Quarter Columns use deterministic multi-patch data; contextual native Stairs/Walls remain explicit fail-closed limitations. Exact C7 owner evidence is limited to three observations: placement lag was resolved, grass/Farmland Slab overlay still did not work, and CTM/overlay appeared on slab top faces but not corresponding side faces. No aggregate C7 result is inferred, and C8 remains runtime-untested.",
     "releases": {
       "current": {
         "version": "0.8.0-canary8",
         "artifact": {
           "filename": "bge-ctm-0.8.0-canary8.jar",
-          "sha256": "368933843ebafa6f153b86fb4dc96663912aa0b58000411fc2818fee6f8edb56"
+          "sha256": "cb3124ba2324898c17c6ce9774c88dee83633e219f45d6850815dd3f70c872ae"
         },
-        "built_at": "2026-09-18T15:48:38.8336326Z",
-        "source_commit": "ee8a4353bdf094a5570f3823d949cdb22ff02342",
+        "built_at": "2026-09-18T16:01:08.2205168Z",
+        "source_commit": "ce936549fc8e0a1e0f16146a68988bc0f56d54b8",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": [
@@ -98,7 +98,7 @@
               "predicate": "~26.2",
               "reason": "The appearance bridge is compiled against the Minecraft 26.2 block-state and Fabric appearance method descriptors and must remain on the controlled target release.",
               "regression_evidence": [
-                "Canary 8 cleanly compiles and its 21/21 focused headless GameTests plus 12/12 unit tests execute against Minecraft 26.2 and Fabric API 0.156.0+26.2 with exact BGE C74."
+                "Canary 8 cleanly compiles and its 21/21 focused headless GameTests plus 12/12 unit tests execute against Minecraft 26.2 and Fabric API 0.156.0+26.2 with exact BGE C75."
               ]
             },
             {
@@ -113,7 +113,7 @@
             }
           ]
         },
-        "summary": "Combines Continuity's semantic decisions with BGE C74's generic canonical-face surface patches, including typed terrain insets and compound geometry, without per-material or per-geometry fixes."
+        "summary": "Combines Continuity's semantic decisions with BGE C75's generic canonical-face surface patches, including typed terrain insets and compound geometry, without per-material or per-geometry fixes."
       },
       "accepted": null,
       "rollback": null,
@@ -128,9 +128,9 @@
   },
   "synchronization": {
     "revision": 10,
-    "activity_at": "2026-09-18T15:48:38.8336326Z",
-    "updated_at": "2026-09-18T15:48:38.8336326Z",
-    "last_codex_at": "2026-09-18T15:48:38.8336326Z",
-    "source_commit": "ee8a4353bdf094a5570f3823d949cdb22ff02342"
+    "activity_at": "2026-09-18T16:01:08.2205168Z",
+    "updated_at": "2026-09-18T16:01:08.2205168Z",
+    "last_codex_at": "2026-09-18T16:01:08.2205168Z",
+    "source_commit": "ce936549fc8e0a1e0f16146a68988bc0f56d54b8"
   }
 }
