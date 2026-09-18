@@ -18,7 +18,7 @@
     ]
   },
   "definition": {
-    "lifecycle": "ACCEPTED",
+    "lifecycle": "ACTIVE",
     "goals": [
       "Maintain the faithful unofficial Minecraft Java 26.2 Fabric port of Dramatic Doors while preserving its upstream namespace, IDs, resources, and behavior.",
       "Preserve tall and short door semantics, including true three-block tall doors, optional integrations, and established material-specific behavior."
@@ -79,22 +79,22 @@
     ]
   },
   "state": {
-    "milestone": "The exact current release is ACCEPTED by owner direction following the user's external/gameplay testing. Existing build, deployment, and runtime classifications are preserved; this administrative transition infers no new runtime result.",
+    "milestone": "C9 / legacy Canary 8 is the current controlled-validated candidate for the Enderscape 3.x Murublight door rename and awaits owner acceptance. Exact C8 / legacy Canary 7 remains the accepted rollback and reference release; no new Minecraft runtime result is inferred.",
     "releases": {
       "current": {
-        "version": "C8 (legacy Canary 7)",
-        "embedded_version": "1.20.1-3.3.3+26.2-workbench-canary7",
+        "version": "C9 (legacy Canary 8)",
+        "embedded_version": "1.20.1-3.3.3+26.2-workbench-canary8",
         "artifact": {
-          "filename": "dramaticdoors-1.20.1-3.3.3+26.2-workbench-canary7.jar",
-          "sha256": "43c3efd19619a59a10957b5893adce081766f653d8cccb13f38bfbaacec2cefb"
+          "filename": "dramaticdoors-1.20.1-3.3.3+26.2-workbench-canary8.jar",
+          "sha256": "4e77603b3337ee2a2571900395b89273e7053440ea0c325223da1556c1f14b34"
         },
-        "built_at": "2026-09-07T20:28:42.4797095Z",
-        "source_commit": "3ef0bea8d24f62272f078c8af0186a428b5d4634",
+        "built_at": "2026-09-18T07:09:22.3848878Z",
+        "source_commit": "4162225273eca83ec4ec065b2add89748a93ca32",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
         },
-        "summary": "Maintains the faithful Dramatic Doors port with its upstream identities and behavior."
+        "summary": "Updates Enderscape compatibility to source Murublight doors while retaining Dramatic Doors' existing Murushroom item identities."
       },
       "accepted": {
         "version": "C8 (legacy Canary 7)",
@@ -111,21 +111,35 @@
         },
         "summary": "Maintains the faithful Dramatic Doors port with its upstream identities and behavior."
       },
-      "rollback": null,
-      "accepted_current": "CURRENT_IS_ACCEPTED",
-      "accepted_rollback": "NO_ROLLBACK"
+      "rollback": {
+        "version": "C8 (legacy Canary 7)",
+        "embedded_version": "1.20.1-3.3.3+26.2-workbench-canary7",
+        "artifact": {
+          "filename": "dramaticdoors-1.20.1-3.3.3+26.2-workbench-canary7.jar",
+          "sha256": "43c3efd19619a59a10957b5893adce081766f653d8cccb13f38bfbaacec2cefb"
+        },
+        "built_at": "2026-09-07T20:28:42.4797095Z",
+        "source_commit": "3ef0bea8d24f62272f078c8af0186a428b5d4634",
+        "runtime_dependency_policy": {
+          "contract": "CAPABILITY_OR_PROVIDER",
+          "exceptions": []
+        },
+        "summary": "Maintains the faithful Dramatic Doors port with its upstream identities and behavior."
+      },
+      "accepted_current": "CURRENT_DIFFERS_FROM_ACCEPTED",
+      "accepted_rollback": "ACCEPTED_IS_ROLLBACK"
     },
     "validation": {
       "build": "CONTROLLED_VALIDATION_PASS",
-      "runtime": "PARTIAL_RUNTIME_PASS"
+      "runtime": "RUNTIME_UNTESTED"
     },
     "blocker": null
   },
   "synchronization": {
-    "revision": 3,
-    "activity_at": "2026-09-14T08:09:29Z",
-    "updated_at": "2026-09-14T08:09:29Z",
-    "last_codex_at": "2026-09-14T08:09:29Z",
-    "source_commit": "f511f435c623883c5ee1474e9227acb73fb2df68"
+    "revision": 4,
+    "activity_at": "2026-09-18T07:09:22.3848878Z",
+    "updated_at": "2026-09-18T07:09:22.3848878Z",
+    "last_codex_at": "2026-09-18T07:09:22.3848878Z",
+    "source_commit": "4162225273eca83ec4ec065b2add89748a93ca32"
   }
 }
