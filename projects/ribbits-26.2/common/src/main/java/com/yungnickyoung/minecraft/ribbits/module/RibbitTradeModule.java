@@ -34,7 +34,7 @@ import java.util.TreeMap;
 public final class RibbitTradeModule {
     public static final int[] XP_THRESHOLDS = {0, 5, 15, 30, 50};
     public static final float FIXED_PRICE_MULTIPLIER = 0.0F;
-    public static final int CURRENT_TRADE_SCHEMA = 1;
+    public static final int CURRENT_TRADE_SCHEMA = 2;
 
     public enum Gate {
         NONE,
@@ -181,18 +181,21 @@ public final class RibbitTradeModule {
     private static List<TradeOfferSpec> createOffers() {
         List<TradeOfferSpec> offers = new ArrayList<>();
 
-        addChoice(offers, "gardener_pair_a_toadstool", "gardener", 1,
+        addChoice(offers, "gardener_red_mushroom_toadstool", "gardener", 1,
                 item("minecraft:red_mushroom", 1), null, item("ribbits:toadstool"), 4,
-                16, "gardener_pair", 0);
-        addChoice(offers, "gardener_pair_a_daisy", "gardener", 1,
+                16, "gardener_tier1", 0);
+        addChoice(offers, "gardener_brown_mushroom_toadstool", "gardener", 1,
+                item("minecraft:brown_mushroom", 1), null, item("ribbits:small_brown_toadstool"), 4,
+                16, "gardener_tier1", 1);
+        addChoice(offers, "gardener_oxeye_daisy", "gardener", 1,
                 item("minecraft:oxeye_daisy", 1), null, item("ribbits:swamp_daisy"), 4,
-                16, "gardener_pair", 0);
-        addChoice(offers, "gardener_pair_b_lily", "gardener", 1,
+                16, "gardener_tier1", 2);
+        addChoice(offers, "gardener_lily_pad", "gardener", 1,
                 item("minecraft:lily_pad", 1), null, item("ribbits:giant_lilypad"), 4,
-                16, "gardener_pair", 1);
-        addChoice(offers, "gardener_pair_b_umbrella", "gardener", 1,
+                16, "gardener_tier1", 3);
+        addChoice(offers, "gardener_small_dripleaf", "gardener", 1,
                 item("minecraft:small_dripleaf", 1), null, item("ribbits:umbrella_leaf"), 4,
-                16, "gardener_pair", 1);
+                16, "gardener_tier1", 4);
         add(offers, "gardener_red_blocks", "gardener", 2, glowcaps(1), null,
                 item("ribbits:red_toadstool"), 16, 16);
         add(offers, "gardener_brown_blocks", "gardener", 2, glowcaps(1), null,
@@ -494,7 +497,7 @@ public final class RibbitTradeModule {
         RandomSource random = ribbit.getRandom();
         String profession = profile(ribbit.getRibbitData().getProfession()).profession;
         switch (profession) {
-            case "gardener" -> state.gardenerPair(validOrRoll(state.gardenerPair(), 2, random));
+            case "gardener" -> initializeGardenerTier1Trades(state, random);
             case "farmer" -> {
                 state.farmerTier2Choice(validOrRoll(state.farmerTier2Choice(), 2, random));
                 state.farmerTier3Choice(validOrRoll(state.farmerTier3Choice(), 2, random));
@@ -541,6 +544,34 @@ public final class RibbitTradeModule {
 
     private static int validOrRoll(int current, int options, RandomSource random) {
         return current >= 0 && current < options ? current : random.nextInt(options);
+    }
+
+    private static void initializeGardenerTier1Trades(RibbitTradeState state, RandomSource random) {
+        int current = state.gardenerTier1Trades();
+        if (Integer.bitCount(current) == 3 && (current & ~0b1_1111) == 0) return;
+
+        int legacyPair = state.legacyGardenerPair();
+        if (legacyPair == 0 || legacyPair == 1) {
+            int preserved = legacyPair == 0 ? 0b00101 : 0b11000;
+            int[] remaining = new int[3];
+            int next = 0;
+            for (int option = 0; option < 5; option++) {
+                if ((preserved & (1 << option)) == 0) remaining[next++] = option;
+            }
+            state.gardenerTier1Trades(preserved | (1 << remaining[random.nextInt(remaining.length)]));
+            state.clearLegacyGardenerPair();
+            return;
+        }
+
+        int[] options = {0, 1, 2, 3, 4};
+        for (int index = options.length - 1; index > 0; index--) {
+            int selected = random.nextInt(index + 1);
+            int swap = options[index];
+            options[index] = options[selected];
+            options[selected] = swap;
+        }
+        state.gardenerTier1Trades((1 << options[0]) | (1 << options[1]) | (1 << options[2]));
+        state.clearLegacyGardenerPair();
     }
 
     public static int deterministicChefMenu(UUID uuid, int tier, long day, int poolSize) {
@@ -656,7 +687,7 @@ public final class RibbitTradeModule {
     private static boolean isSelected(TradeOfferSpec spec, RibbitTradeState state) {
         return switch (spec.selection) {
             case "always" -> true;
-            case "gardener_pair" -> spec.option == state.gardenerPair();
+            case "gardener_tier1" -> (state.gardenerTier1Trades() & (1 << spec.option)) != 0;
             case "farmer_tier2" -> spec.option == state.farmerTier2Choice();
             case "farmer_tier3" -> spec.option == state.farmerTier3Choice();
             case "fisherman_aquatic" -> spec.option == state.fishermanAquaticChoice();

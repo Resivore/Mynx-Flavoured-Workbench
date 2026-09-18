@@ -21,7 +21,7 @@ class RibbitEconomyPersistenceContractTest {
     void everyEconomyChoiceGateMenuAndRestockFieldRoundTripsWithSafeDefaults() throws IOException {
         String state = read("common/src/main/java/com/yungnickyoung/minecraft/ribbits/entity/trade/RibbitTradeState.java");
         String[] ints = {
-                "MynxTradeRank", "MynxTradeXp", "MynxGardenerPair",
+                "MynxTradeRank", "MynxTradeXp", "MynxGardenerTier1Trades",
                 "MynxFarmerTier2Choice", "MynxFarmerTier3Choice",
                  "MynxFishermanAquaticChoice", "MynxFishermanCoralFamily",
                  "MynxChefMasterSpecialty", "MynxSorcererBlessingChoice",
@@ -47,7 +47,9 @@ class RibbitEconomyPersistenceContractTest {
             assertTrue(state.contains("putInt(\"MynxChefTier\" + tier + \"Menu\""));
         }
         assertTrue(state.contains("private int rank = 1;"));
-        assertTrue(state.contains("private int gardenerPair = -1;"));
+        assertTrue(state.contains("private int gardenerTier1Trades = -1;"));
+        assertEquals(1, occurrences(state, "getIntOr(\"MynxGardenerPair\""), "legacy pair read only");
+        assertEquals(0, occurrences(state, "putInt(\"MynxGardenerPair\""), "legacy pair retired");
         assertTrue(state.contains("private final int[] chefMenus = {-1, -1, -1, -1};"));
         assertTrue(state.contains("private long restockDay = UNSET_DAY;"));
         assertTrue(state.contains("private long lastRestockGameTime = Long.MIN_VALUE;"));
@@ -59,7 +61,7 @@ class RibbitEconomyPersistenceContractTest {
         RibbitTradeState state = new RibbitTradeState();
         assertEquals(1, state.rank());
         assertEquals(0, state.xp());
-        assertEquals(-1, state.gardenerPair());
+        assertEquals(-1, state.gardenerTier1Trades());
         assertEquals(-1, state.farmerTier2Choice());
         assertEquals(-1, state.farmerTier3Choice());
         assertEquals(-1, state.fishermanAquaticChoice());
@@ -78,7 +80,7 @@ class RibbitEconomyPersistenceContractTest {
         state.restocksUsedToday(3);
         assertEquals(2, state.restocksUsedToday());
 
-        state.gardenerPair(1);
+        state.gardenerTier1Trades(0b10101);
         state.farmerTier2Choice(1);
         state.farmerTier3Choice(0);
         state.fishermanAquaticChoice(2);
@@ -89,8 +91,8 @@ class RibbitEconomyPersistenceContractTest {
         state.guardBranch(1);
         state.restockDay(99);
         state.lastRestockGameTime(12345);
-        assertEquals(List.of(1, 1, 0, 2, 4, 2, 1, 2, 1), List.of(
-                state.gardenerPair(), state.farmerTier2Choice(), state.farmerTier3Choice(),
+        assertEquals(List.of(0b10101, 1, 0, 2, 4, 2, 1, 2, 1), List.of(
+                state.gardenerTier1Trades(), state.farmerTier2Choice(), state.farmerTier3Choice(),
                 state.fishermanAquaticChoice(), state.fishermanCoralFamily(),
                 state.chefMasterSpecialty(), state.sorcererBlessingChoice(),
                 state.prospectorBullionChoice(), state.guardBranch()));
@@ -132,14 +134,13 @@ class RibbitEconomyPersistenceContractTest {
         assertTrue(entity.contains("valueInput.read(\"Offers\", MerchantOffers.CODEC)"));
         assertTrue(entity.contains("valueOutput.store(\"Offers\", MerchantOffers.CODEC, offersToSave)"));
         assertTrue(entity.contains("RibbitTradeModule.restoreStrictComponentMatching(this, offers)"));
-        assertTrue(trades.contains("CURRENT_TRADE_SCHEMA = 1"));
+        assertTrue(trades.contains("CURRENT_TRADE_SCHEMA = 2"));
         assertTrue(trades.contains("tradeSchema() != CURRENT_TRADE_SCHEMA"));
         assertTrue(trades.contains("StrictMerchantOffer.restoreFromTemplate"));
         assertTrue(entity.contains("RibbitTradeModule.ensurePhaseCRedemptionOffer(this, this.offers);"));
         assertTrue(trades.contains("if (!\"sorcerer\".equals(profile.profession))"));
         assertTrue(trades.contains("offers.add(0, redemptionTemplate);"));
         assertFalse(trades.contains("migratePhaseCTradeSchema"));
-        assertFalse(trades.contains("CURRENT_TRADE_SCHEMA = 2"));
         int phaseCMethod = trades.indexOf("public static void ensurePhaseCRedemptionOffer");
         int professionGuard = trades.indexOf("if (!\"sorcerer\".equals(profile.profession))", phaseCMethod);
         int expectedOfferConstruction = trades.indexOf("List<TradeOfferSpec> currentSpecs", phaseCMethod);
@@ -233,12 +234,16 @@ class RibbitEconomyPersistenceContractTest {
         String entity = read("common/src/main/java/com/yungnickyoung/minecraft/ribbits/entity/RibbitEntity.java");
         assertTrue(trades.contains("return current >= 0 && current < options ? current : random.nextInt(options);"));
         for (String stateField : List.of(
-                "gardenerPair", "farmerTier2Choice", "farmerTier3Choice",
+                "farmerTier2Choice", "farmerTier3Choice",
                 "fishermanAquaticChoice", "fishermanCoralFamily", "chefMasterSpecialty",
                 "sorcererBlessingChoice", "prospectorBullionChoice", "guardBranch")) {
             assertTrue(trades.contains("state." + stateField + "("), stateField + " assignment");
             assertTrue(trades.contains("validOrRoll(state." + stateField + "()"), stateField + " stable choice");
         }
+        assertTrue(trades.contains("initializeGardenerTier1Trades(state, random);"));
+        assertTrue(trades.contains("Integer.bitCount(current) == 3"));
+        assertTrue(trades.contains("legacyPair == 0 ? 0b00101 : 0b11000"));
+        assertTrue(trades.contains("state.gardenerTier1Trades("));
         String restock = between(entity, "public void restock()", "private void resendOffersToTradingPlayer()");
         assertFalse(restock.contains("initializePersistentChoices"));
         assertFalse(restock.contains("updateTrades"));

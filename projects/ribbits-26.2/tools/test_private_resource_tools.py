@@ -1581,7 +1581,7 @@ class SmallBrownToadstoolResourceTest(unittest.TestCase):
         )
 
     def test_authoritative_recolor_donor_loader_is_exact_and_hash_guarded(self) -> None:
-        item = tools.encode_rgba_png(16, 16, bytes((1, 2, 3, 255)) * 256)
+        atlas = tools.encode_rgba_png(64, 64, bytes((105, 34, 21, 255)) * (64 * 64))
         brown = tools.encode_rgba_png(16, 16, bytes((4, 5, 6, 255)) * 256)
         models: dict[str, tuple[dict[str, object], bytes, str]] = {}
         for index, member in enumerate(tools.SMALL_BROWN_DONOR_MODEL_MEMBERS):
@@ -1599,7 +1599,7 @@ class SmallBrownToadstoolResourceTest(unittest.TestCase):
             assets.mkdir(parents=True)
             donor = assets / "Matcha-Overlays-v37.zip"
             with zipfile.ZipFile(donor, "w") as archive:
-                archive.writestr(tools.SMALL_BROWN_DONOR_ITEM_MEMBER, item)
+                archive.writestr(tools.SMALL_BROWN_DONOR_BLOCK_ATLAS_MEMBER, atlas)
                 archive.writestr(tools.SMALL_BROWN_DONOR_PALETTE_MEMBER, brown)
                 for member, (_, payload, _) in models.items():
                     archive.writestr(member, payload)
@@ -1609,10 +1609,10 @@ class SmallBrownToadstoolResourceTest(unittest.TestCase):
                 "size": donor.stat().st_size,
                 "sha256": tools.sha256_file(donor),
                 "members": {
-                    tools.SMALL_BROWN_DONOR_ITEM_MEMBER: {
-                        "size": len(item),
-                        "sha256": tools.sha256_bytes(item),
-                        "dimensions": (16, 16),
+                    tools.SMALL_BROWN_DONOR_BLOCK_ATLAS_MEMBER: {
+                        "size": len(atlas),
+                        "sha256": tools.sha256_bytes(atlas),
+                        "dimensions": (64, 64),
                     },
                     tools.SMALL_BROWN_DONOR_PALETTE_MEMBER: {
                         "size": len(brown),
@@ -1721,85 +1721,23 @@ class SmallBrownToadstoolResourceTest(unittest.TestCase):
                 None,
             )
 
-    def test_item_recolor_changes_only_cap_and_keeps_stem_top(self) -> None:
-        coordinates = [(x, y) for y in range(16) for x in range(16)]
-        stem = {(x, y) for x, y, _ in tools.SMALL_BROWN_ITEM_STEM_TOP_PIXELS}
-        stem.add((0, 15))
-        stem.update(
-            coordinate
-            for coordinate in coordinates
-            if coordinate not in stem and coordinate[1] < 15
-        )
-        stem = set(list(stem)[:43]) | {
-            (x, y) for x, y, _ in tools.SMALL_BROWN_ITEM_STEM_TOP_PIXELS
-        } | {(0, 15)}
-        while len(stem) > 43:
-            removable = next(
-                coordinate
-                for coordinate in stem
-                if coordinate not in {(x, y) for x, y, _ in tools.SMALL_BROWN_ITEM_STEM_TOP_PIXELS}
-                and coordinate != (0, 15)
-            )
-            stem.remove(removable)
-        cap = {
-            coordinate
-            for coordinate in coordinates
-            if coordinate not in stem and coordinate[1] < 15
-        }
-        cap = set(sorted(cap)[:108])
-        self.assertEqual(43, len(stem))
-        self.assertEqual(108, len(cap))
-
-        pixels = [(0, 0, 0, 0)] * 256
-        cap_colors: list[tuple[int, int, int, int]] = []
-        for color, count in zip(
-            tools.SMALL_BROWN_DONOR_RED_CAP_PALETTE,
-            (18, 23, 16, 13, 14),
-        ):
-            cap_colors.extend([color] * count)
-        for color, count in zip(
-            tools.SMALL_BROWN_DONOR_CAP_SPOT_PALETTE,
-            (8, 9, 7),
-        ):
-            cap_colors.extend([color] * count)
-        for coordinate, color in zip(sorted(cap), cap_colors):
-            pixels[coordinate[1] * 16 + coordinate[0]] = color
-        for coordinate in stem:
-            pixels[coordinate[1] * 16 + coordinate[0]] = (128, 112, 96, 255)
-        for x, y, expected in tools.SMALL_BROWN_ITEM_STEM_TOP_PIXELS:
-            pixels[y * 16 + x] = expected
-        spots = {
-            coordinate
-            for coordinate in cap
-            if pixels[coordinate[1] * 16 + coordinate[0]]
-            in tools.SMALL_BROWN_DONOR_CAP_SPOT_PALETTE
-        }
-        synthetic_mask_hash = tools.sha256_bytes(
-            tools._mask_bytes(16, 16, cap, stem)
-        )
-        source_png = tools.encode_rgba_png(16, 16, tools._rgba_bytes(pixels))
-        with (
-            mock.patch.object(
-                tools, "_four_connected_components", return_value=[spots, stem]
-            ),
-            mock.patch.object(
-                tools, "SMALL_BROWN_ITEM_MASK_SHA256", synthetic_mask_hash
-            ),
-        ):
-            output_png, metadata = tools.derive_small_brown_item_texture(
-                source_png, self.synthetic_brown_palette_png()
-            )
-        _, _, output_raw = tools.decode_rgba_png(output_png, "synthetic output")
+    def test_user_item_sprite_is_centered_and_blue_is_transparent(self) -> None:
+        blue = tools.SMALL_BROWN_ITEM_DONOR_SPEC["placeholder_blue"]
+        pixels = [blue] * (14 * 14)
+        pixels[7 * 14 + 7] = (115, 82, 58, 255)
+        source_png = tools.encode_rgba_png(14, 14, tools._rgba_bytes(pixels))
+        with mock.patch.object(tools, "SMALL_BROWN_ITEM_DONOR_SPEC", {
+            **tools.SMALL_BROWN_ITEM_DONOR_SPEC, "dimensions": (14, 14)
+        }):
+            output_png, metadata = tools.derive_small_brown_item_texture(source_png)
+        width, height, output_raw = tools.decode_rgba_png(output_png, "synthetic output")
+        self.assertEqual((16, 16), (width, height))
         output = tools._rgba_pixels(output_raw)
-        for coordinate in stem:
-            index = coordinate[1] * 16 + coordinate[0]
-            self.assertEqual(pixels[index], output[index])
-        for coordinate in cap:
-            index = coordinate[1] * 16 + coordinate[0]
-            self.assertEqual(tools.SMALL_BROWN_ITEM_CAP_RECOLOR[pixels[index]], output[index])
-        self.assertEqual(108, metadata["cap_pixels"])
-        self.assertEqual(43, metadata["stem_pixels_preserved"])
-        self.assertEqual(24, metadata["light_cap_spot_pixels_replaced"])
+        self.assertTrue(all(output[index][3] == 0 for index in range(16)))
+        self.assertTrue(all(output[index][3] == 0 for index in range(240, 256)))
+        self.assertEqual((115, 82, 58, 255), output[8 * 16 + 8])
+        self.assertNotIn(blue, output)
+        self.assertTrue(metadata["transparent_one_pixel_border"])
 
     def test_block_recolor_changes_only_derived_cap_mask(self) -> None:
         coordinates = [(x, y) for y in range(64) for x in range(64)]
@@ -1808,7 +1746,7 @@ class SmallBrownToadstoolResourceTest(unittest.TestCase):
         pixels = [(0, 0, 0, 0)] * (64 * 64)
         cap_colors: list[tuple[int, int, int, int]] = []
         for color, count in zip(
-            tools.SMALL_BROWN_NATIVE_BLOCK_RED_PALETTE,
+            tuple(tools.SMALL_BROWN_ITEM_CAP_RECOLOR),
             (185, 234, 279, 262),
         ):
             cap_colors.extend([color] * count)
@@ -1816,21 +1754,18 @@ class SmallBrownToadstoolResourceTest(unittest.TestCase):
             pixels[coordinate[1] * 64 + coordinate[0]] = color
         for coordinate in stem:
             pixels[coordinate[1] * 64 + coordinate[0]] = (
-                tools.SMALL_BROWN_NATIVE_BLOCK_SPOT_PALETTE[0]
+                (128, 112, 96, 255)
             )
         source_png = tools.encode_rgba_png(64, 64, tools._rgba_bytes(pixels))
-        with mock.patch.object(
-            tools, "derive_small_brown_block_mask", return_value=(cap, stem)
-        ):
-            output_png, metadata = tools.derive_small_brown_block_texture(
-                Path("synthetic"), source_png, self.synthetic_brown_palette_png()
-            )
+        output_png, metadata = tools.derive_small_brown_block_texture(
+            source_png, self.synthetic_brown_palette_png()
+        )
         _, _, output_raw = tools.decode_rgba_png(output_png, "synthetic block output")
         output = tools._rgba_pixels(output_raw)
         for index, source in enumerate(pixels):
             coordinate = (index % 64, index // 64)
             expected = (
-                tools.SMALL_BROWN_BLOCK_CAP_RECOLOR[source]
+                tools.SMALL_BROWN_ITEM_CAP_RECOLOR[source]
                 if coordinate in cap
                 else source
             )
@@ -1897,8 +1832,8 @@ class SmallBrownToadstoolResourceTest(unittest.TestCase):
 
 class DonorBoundaryContractTest(unittest.TestCase):
     def test_exact_accounting_contains_only_approved_visual_members_and_outputs(self) -> None:
-        self.assertEqual("4.1.6+26.2-mynx-canary26", tools.CANDIDATE_VERSION)
-        self.assertEqual(26, tools.CANDIDATE_CANARY)
+        self.assertEqual("4.1.6+26.2-mynx-canary27", tools.CANDIDATE_VERSION)
+        self.assertEqual(27, tools.CANDIDATE_CANARY)
         self.assertEqual(
             "mynx-ribbits-private-resource-manifest/v1", tools.PRIVATE_MANIFEST_SCHEMA
         )
@@ -1942,7 +1877,7 @@ class DonorBoundaryContractTest(unittest.TestCase):
             sum(len(spec["members"]) for spec in tools.DONOR_INPUT_SPECS.values()),
         )
         self.assertEqual(
-            6, len(tools.SMALL_BROWN_RECOLOR_DONOR_SPEC["members"])
+            7, len(tools.SMALL_BROWN_RECOLOR_DONOR_SPEC["members"])
         )
         self.assertEqual(
             [7, 8, 7, 7],

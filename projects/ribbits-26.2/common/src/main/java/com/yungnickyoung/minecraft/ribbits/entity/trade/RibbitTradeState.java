@@ -14,7 +14,10 @@ public final class RibbitTradeState {
 
     private int rank = 1;
     private int xp;
-    private int gardenerPair = -1;
+    /** Bitmask of the three permanent Tier-1 Gardener offers. */
+    private int gardenerTier1Trades = -1;
+    /** Read-only migration input from schema 1; never written back out. */
+    private int legacyGardenerPair = -1;
     private int farmerTier2Choice = -1;
     private int farmerTier3Choice = -1;
     private int fishermanAquaticChoice = -1;
@@ -37,7 +40,8 @@ public final class RibbitTradeState {
     public void read(ValueInput input, boolean musician) {
         this.rank = input.getIntOr("MynxTradeRank", musician ? 0 : 1);
         this.xp = input.getIntOr("MynxTradeXp", 0);
-        this.gardenerPair = input.getIntOr("MynxGardenerPair", -1);
+        this.gardenerTier1Trades = input.getIntOr("MynxGardenerTier1Trades", -1);
+        this.legacyGardenerPair = input.getIntOr("MynxGardenerPair", -1);
         this.farmerTier2Choice = input.getIntOr("MynxFarmerTier2Choice", -1);
         this.farmerTier3Choice = input.getIntOr("MynxFarmerTier3Choice", -1);
         this.fishermanAquaticChoice = input.getIntOr("MynxFishermanAquaticChoice", -1);
@@ -65,7 +69,9 @@ public final class RibbitTradeState {
     public void write(ValueOutput output) {
         output.putInt("MynxTradeRank", this.rank);
         output.putInt("MynxTradeXp", this.xp);
-        output.putInt("MynxGardenerPair", this.gardenerPair);
+        if (this.gardenerTier1Trades >= 0) {
+            output.putInt("MynxGardenerTier1Trades", this.gardenerTier1Trades);
+        }
         output.putInt("MynxFarmerTier2Choice", this.farmerTier2Choice);
         output.putInt("MynxFarmerTier3Choice", this.farmerTier3Choice);
         output.putInt("MynxFishermanAquaticChoice", this.fishermanAquaticChoice);
@@ -94,8 +100,10 @@ public final class RibbitTradeState {
     public void rank(int value) { this.rank = value; }
     public int xp() { return this.xp; }
     public void xp(int value) { this.xp = Math.max(0, value); }
-    public int gardenerPair() { return this.gardenerPair; }
-    public void gardenerPair(int value) { this.gardenerPair = value; }
+    public int gardenerTier1Trades() { return this.gardenerTier1Trades; }
+    public void gardenerTier1Trades(int value) { this.gardenerTier1Trades = value; }
+    public int legacyGardenerPair() { return this.legacyGardenerPair; }
+    public void clearLegacyGardenerPair() { this.legacyGardenerPair = -1; }
     public int farmerTier2Choice() { return this.farmerTier2Choice; }
     public void farmerTier2Choice(int value) { this.farmerTier2Choice = value; }
     public int farmerTier3Choice() { return this.farmerTier3Choice; }

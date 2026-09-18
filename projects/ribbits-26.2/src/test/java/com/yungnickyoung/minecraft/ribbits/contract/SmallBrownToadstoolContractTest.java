@@ -112,11 +112,12 @@ class SmallBrownToadstoolContractTest {
     }
 
     @Test
-    void newSmallBrownToadstoolDoesNotEnterExistingRecipesOrTrades() throws IOException {
+    void newSmallBrownToadstoolDoesNotEnterExistingRecipesButHasOnlyTheApprovedGardenerTrade() throws IOException {
         assertFalse(read("common/src/main/java/com/yungnickyoung/minecraft/ribbits/recipe/ToadstoolHeartRecipe.java")
                 .contains("SMALL_BROWN_TOADSTOOL"));
-        assertFalse(read("common/src/main/java/com/yungnickyoung/minecraft/ribbits/module/RibbitTradeModule.java")
-                .contains("small_brown_toadstool"));
+        String trades = read("common/src/main/java/com/yungnickyoung/minecraft/ribbits/module/RibbitTradeModule.java");
+        assertEquals(1, occurrences(trades, "item(\"ribbits:small_brown_toadstool\")"));
+        assertTrue(trades.contains("item(\"minecraft:brown_mushroom\", 1)"));
     }
 
     @Test
@@ -139,8 +140,9 @@ class SmallBrownToadstoolContractTest {
                 "common/src/main/java/com/yungnickyoung/minecraft/ribbits/module/BlockModule.java",
                 "common/src/main/java/com/yungnickyoung/minecraft/ribbits/module/CreativeTabModule.java",
                 "common/src/main/java/com/yungnickyoung/minecraft/ribbits/module/ItemModule.java",
-                "common/src/main/java/com/yungnickyoung/minecraft/ribbits/module/PlacedFeatureModule.java"
-        ), actual, "the new ID must not enter ordinary worldgen, trades, recipes, or unrelated systems");
+                "common/src/main/java/com/yungnickyoung/minecraft/ribbits/module/PlacedFeatureModule.java",
+                "common/src/main/java/com/yungnickyoung/minecraft/ribbits/module/RibbitTradeModule.java"
+        ), actual, "the new ID must not enter ordinary worldgen, recipes, or unrelated systems");
     }
 
     private static String section(String source, String start, String end) {

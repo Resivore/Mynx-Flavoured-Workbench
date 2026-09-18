@@ -38,7 +38,7 @@ class RibbitTradeModuleContractTest {
             assertEquals(null, duplicate, "duplicate concrete offer ID " + spec.id());
         }
 
-        assertEquals(129, actual.size(), "complete concrete descriptor count");
+        assertEquals(130, actual.size(), "complete concrete descriptor count");
         assertEquals(EXPECTED.keySet(), byId.keySet(), "missing, extra, or reordered offer descriptors");
         for (Map.Entry<String, ExpectedOffer> entry : EXPECTED.entrySet()) {
             String id = entry.getKey();
@@ -68,7 +68,7 @@ class RibbitTradeModuleContractTest {
     @Test
     void descriptorCountsMatchEveryProfessionAndApprovedGroupedExpansion() {
         assertEquals(Map.of(
-                        "gardener", 7L,
+                        "gardener", 8L,
                         "farmer", 7L,
                         "fisherman", 22L,
                         "merchant", 5L,
@@ -114,8 +114,10 @@ class RibbitTradeModuleContractTest {
 
     @Test
     void maximumRankInventoriesMaterializeOneChoicePerPolicyWithoutBranchMixing() throws Exception {
-        assertMaterializedCount("gardener", state -> state.gardenerPair(0), 5);
-        assertMaterializedCount("gardener", state -> state.gardenerPair(1), 5);
+        for (int mask : List.of(0b00111, 0b01011, 0b10011, 0b01101, 0b10101,
+                0b11001, 0b01110, 0b10110, 0b11010, 0b11100)) {
+            assertMaterializedCount("gardener", state -> state.gardenerTier1Trades(mask), 6);
+        }
 
         for (int tier2 = 0; tier2 < 2; tier2++) {
             for (int tier3 = 0; tier3 < 2; tier3++) {
@@ -502,14 +504,16 @@ class RibbitTradeModuleContractTest {
     private static Map<String, ExpectedOffer> expectedOffers() {
         LinkedHashMap<String, ExpectedOffer> offers = new LinkedHashMap<>();
 
-        choice(offers, "gardener_pair_a_toadstool", "gardener", 1, item("minecraft:red_mushroom", 1), null,
-                "ribbits:toadstool", 4, 16, "gardener_pair", 0);
-        choice(offers, "gardener_pair_a_daisy", "gardener", 1, item("minecraft:oxeye_daisy", 1), null,
-                "ribbits:swamp_daisy", 4, 16, "gardener_pair", 0);
-        choice(offers, "gardener_pair_b_lily", "gardener", 1, item("minecraft:lily_pad", 1), null,
-                "ribbits:giant_lilypad", 4, 16, "gardener_pair", 1);
-        choice(offers, "gardener_pair_b_umbrella", "gardener", 1, item("minecraft:small_dripleaf", 1), null,
-                "ribbits:umbrella_leaf", 4, 16, "gardener_pair", 1);
+        choice(offers, "gardener_red_mushroom_toadstool", "gardener", 1, item("minecraft:red_mushroom", 1), null,
+                "ribbits:toadstool", 4, 16, "gardener_tier1", 0);
+        choice(offers, "gardener_brown_mushroom_toadstool", "gardener", 1, item("minecraft:brown_mushroom", 1), null,
+                "ribbits:small_brown_toadstool", 4, 16, "gardener_tier1", 1);
+        choice(offers, "gardener_oxeye_daisy", "gardener", 1, item("minecraft:oxeye_daisy", 1), null,
+                "ribbits:swamp_daisy", 4, 16, "gardener_tier1", 2);
+        choice(offers, "gardener_lily_pad", "gardener", 1, item("minecraft:lily_pad", 1), null,
+                "ribbits:giant_lilypad", 4, 16, "gardener_tier1", 3);
+        choice(offers, "gardener_small_dripleaf", "gardener", 1, item("minecraft:small_dripleaf", 1), null,
+                "ribbits:umbrella_leaf", 4, 16, "gardener_tier1", 4);
         add(offers, "gardener_red_blocks", "gardener", 2, glowcaps(1), null,
                 "ribbits:red_toadstool", 16, 16);
         add(offers, "gardener_brown_blocks", "gardener", 2, glowcaps(1), null,

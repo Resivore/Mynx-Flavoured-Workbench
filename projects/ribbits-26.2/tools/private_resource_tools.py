@@ -31,16 +31,16 @@ from typing import Any
 EXPECTED_PRISTINE_SHA256 = (
     "4cf86564aed393410fb1dbca3a9ce2425382307655e92bb6b43f3ddcee5bf731"
 )
-CANDIDATE_VERSION = "4.1.6+26.2-mynx-canary26"
-CANDIDATE_CANARY = 26
+CANDIDATE_VERSION = "4.1.6+26.2-mynx-canary27"
+CANDIDATE_CANARY = 27
 PRIVATE_MANIFEST_SCHEMA = "mynx-ribbits-private-resource-manifest/v1"
 PRIVATE_MANIFEST_CLASSIFICATION = (
     "PRIVATE MYNX ASSEMBLY STAGED / NONREDISTRIBUTABLE DONOR ASSETS"
 )
 PRIVATE_ARTIFACT_FILENAME = (
-    "ribbits-private-reconstruction-4.1.6+26.2-mynx-canary26.jar"
+    "ribbits-private-reconstruction-4.1.6+26.2-mynx-canary27.jar"
 )
-SOURCE_ONLY_ARTIFACT_FILENAME = "ribbits-source-only-4.1.6+26.2-mynx-canary26.jar"
+SOURCE_ONLY_ARTIFACT_FILENAME = "ribbits-source-only-4.1.6+26.2-mynx-canary27.jar"
 SOURCE_SAFE_PUBLIC_RESOURCE_PATHS = frozenset(
     {
         "assets/ribbits/items/glowcap.json",
@@ -143,7 +143,7 @@ REQUIRED_FABRIC_DEPENDENCIES = {
 }
 SOURCE_FILE_COUNT = 287  # 285 assets/data files plus icon.png and logo.png
 OUTPUT_FILE_COUNT = 363
-# Exact deterministic Canary 26 private staging inventory. This is finalized
+# Exact deterministic Canary 27 private staging inventory. This is finalized
 # only after two independent assemblies produce the same per-file identities.
 OUTPUT_TOTAL_SIZE = 2_780_499
 SOURCE_EXTENSION_COUNTS = {
@@ -522,6 +522,11 @@ SMALL_BROWN_RECOLOR_DONOR_SPEC: dict[str, Any] = {
     "size": 2_616_259,
     "sha256": "2642dcea338100f469df905b212423683e83ae7c683c7b9fabfbd2195a2fe802",
     "members": {
+        "assets/ribbits/textures/block/toadstool.png": {
+            "size": 2_780,
+            "sha256": "cfcb0792dcf4a5c54512133feb3b45b88332f58eca6b68910acc7040e04cae0a",
+            "dimensions": (64, 64),
+        },
         "assets/ribbits/textures/item/toadstool.png": {
             "size": 538,
             "sha256": "46aacae3545d1053e30eea2df160620395342e01545b21df73825f860e9d3e00",
@@ -562,7 +567,14 @@ SMALL_BROWN_RECOLOR_DONOR_SPEC: dict[str, Any] = {
         },
     },
 }
-SMALL_BROWN_DONOR_ITEM_MEMBER = "assets/ribbits/textures/item/toadstool.png"
+SMALL_BROWN_ITEM_DONOR_SPEC: dict[str, Any] = {
+    "filename": "brown toadstool.png",
+    "size": 348,
+    "sha256": "4121bc35abfeb82e2a29d14d07a8c422ca9372bdcce9841be5bd1807cd696f7e",
+    "dimensions": (14, 14),
+    "placeholder_blue": (0, 162, 232, 255),
+}
+SMALL_BROWN_DONOR_BLOCK_ATLAS_MEMBER = "assets/ribbits/textures/block/toadstool.png"
 SMALL_BROWN_DONOR_PALETTE_MEMBER = "assets/ribbits/textures/block/brown_toadstool.png"
 SMALL_BROWN_DONOR_MODEL_MEMBERS = tuple(
     f"assets/ribbits/models/block/toadstool{suffix}.json"
@@ -1468,7 +1480,7 @@ def load_exact_donor(
 def load_authoritative_small_brown_recolor_donor(
     user_assets_root: Path,
 ) -> tuple[Path, dict[str, bytes], dict[str, Any]]:
-    """Load only the six approved members from the immutable Matcha overlay pack."""
+    """Load only the approved members from the immutable Matcha overlay pack."""
     root = user_assets_root.resolve(strict=True)
     if not root.is_dir() or root.name.casefold() != "originals":
         raise ValidationError(f"Originals root must be the resolved originals directory: {root}")
@@ -1559,6 +1571,26 @@ def load_authoritative_small_brown_recolor_donor(
         "approved_members": approved_identities,
     }
     return candidate, approved, identity
+
+
+def load_authoritative_small_brown_item_donor(user_assets_root: Path) -> tuple[Path, bytes, dict[str, Any]]:
+    """Load the user-provided small-brown sprite without ever modifying originals/."""
+    root = user_assets_root.resolve(strict=True)
+    if not root.is_dir() or root.name.casefold() != "originals":
+        raise ValidationError(f"Originals root must be the resolved originals directory: {root}")
+    candidate = root / "assets" / SMALL_BROWN_ITEM_DONOR_SPEC["filename"]
+    resolved = candidate.resolve(strict=True)
+    if resolved != candidate or candidate.is_symlink() or not candidate.is_file():
+        raise ValidationError("Small-brown item donor must be the exact regular originals/assets file")
+    data = candidate.read_bytes()
+    identity = {"filename": candidate.name, "size": len(data), "sha256": sha256_bytes(data)}
+    if identity["size"] != SMALL_BROWN_ITEM_DONOR_SPEC["size"] or identity["sha256"] != SMALL_BROWN_ITEM_DONOR_SPEC["sha256"]:
+        raise ValidationError("Small-brown item donor identity differs")
+    width, height, _ = decode_rgba_png(data, candidate.name)
+    if (width, height) != SMALL_BROWN_ITEM_DONOR_SPEC["dimensions"]:
+        raise ValidationError("Small-brown item donor dimensions differ")
+    identity["dimensions"] = [width, height]
+    return candidate, data, identity
 
 
 def require_donor_unchanged(path: Path, identity: dict[str, Any], label: str) -> None:
@@ -1901,107 +1933,33 @@ def _mask_bytes(
     )
 
 
-def derive_small_brown_item_texture(
-    donor_item: bytes, donor_brown: bytes
-) -> tuple[bytes, dict[str, Any]]:
-    width, height, raw = decode_rgba_png(donor_item, SMALL_BROWN_DONOR_ITEM_MEMBER)
-    if (width, height) != (16, 16):
-        raise ValidationError("Authoritative small-toadstool item donor must be 16x16")
-    brown_width, brown_height, brown_raw = decode_rgba_png(
-        donor_brown, SMALL_BROWN_DONOR_PALETTE_MEMBER
-    )
-    if (brown_width, brown_height) != (16, 16):
-        raise ValidationError("Authoritative brown palette donor must be 16x16")
-    brown_counts = Counter(_rgba_pixels(brown_raw))
-    if brown_counts != Counter(SMALL_BROWN_FULL_DONOR_PALETTE_COUNTS):
-        raise ValidationError(
-            "Authoritative brown palette differs: "
-            f"expected={SMALL_BROWN_FULL_DONOR_PALETTE_COUNTS}, actual={dict(brown_counts)}"
-        )
-
+def derive_small_brown_item_texture(donor_item: bytes) -> tuple[bytes, dict[str, Any]]:
+    """Center the exact user sprite and replace its blue key with transparency."""
+    width, height, raw = decode_rgba_png(donor_item, SMALL_BROWN_ITEM_DONOR_SPEC["filename"])
+    if (width, height) != SMALL_BROWN_ITEM_DONOR_SPEC["dimensions"]:
+        raise ValidationError("User small-brown item donor dimensions differ")
     source = _rgba_pixels(raw)
-    opaque = {
-        (index % width, index // width)
-        for index, pixel in enumerate(source)
-        if pixel[3] != 0
-    }
-    alpha_counts = Counter(pixel[3] for pixel in source)
-    if alpha_counts != Counter({0: 105, 255: 151}):
-        raise ValidationError(f"Authoritative item alpha mask differs: {dict(alpha_counts)}")
-    red_seed = {
-        coordinate
-        for coordinate in opaque
-        if source[coordinate[1] * width + coordinate[0]]
-        in SMALL_BROWN_DONOR_RED_CAP_PALETTE
-    }
-    non_red = opaque - red_seed
-    bottom = max(y for _, y in opaque)
-    components = _four_connected_components(non_red)
-    bottom_components = [
-        component for component in components if any(y == bottom for _, y in component)
-    ]
-    if len(bottom_components) != 1:
-        raise ValidationError(
-            "Authoritative item must have exactly one non-red component touching its bottom row"
-        )
-    stem = bottom_components[0]
-    for x, y, expected in SMALL_BROWN_ITEM_STEM_TOP_PIXELS:
-        if source[y * width + x] != expected or (x, y) not in stem:
-            raise ValidationError(
-                f"Authoritative item stem-top contract differs at ({x}, {y})"
-            )
-    cap = opaque - stem
-    mask = _mask_bytes(width, height, cap, stem)
-    if (
-        len(cap) != 108
-        or len(stem) != 43
-        or len(red_seed) != 84
-        or len(cap - red_seed) != 24
-        or sha256_bytes(mask) != SMALL_BROWN_ITEM_MASK_SHA256
-    ):
-        raise ValidationError(
-            "Authoritative item cap/stem mask differs from the approved 108/43-pixel contract"
-        )
-    cap_counts = Counter(source[y * width + x] for x, y in cap)
-    if set(cap_counts) != set(SMALL_BROWN_ITEM_CAP_RECOLOR):
-        raise ValidationError(f"Authoritative item cap palette differs: {dict(cap_counts)}")
-
-    output = list(source)
-    for x, y in cap:
-        index = y * width + x
-        output[index] = SMALL_BROWN_ITEM_CAP_RECOLOR[source[index]]
-    for index, pixel in enumerate(source):
-        coordinate = (index % width, index // width)
-        if coordinate not in cap and output[index] != pixel:
-            raise ValidationError("Item recolor changed a stem or transparent pixel")
-    output_cap_counts = Counter(output[y * width + x] for x, y in cap)
-    expected_output_counts = Counter(
-        {
-            SMALL_BROWN_DOMINANT_PALETTE[0]: 18,
-            SMALL_BROWN_DOMINANT_PALETTE[1]: 47,
-            SMALL_BROWN_DOMINANT_PALETTE[2]: 22,
-            SMALL_BROWN_DOMINANT_PALETTE[3]: 21,
-        }
-    )
-    if output_cap_counts != expected_output_counts:
-        raise ValidationError(
-            f"Small-brown item output palette differs: {dict(output_cap_counts)}"
-        )
-    encoded = encode_rgba_png(width, height, _rgba_bytes(output))
-    if decode_rgba_png(encoded, "derived small-brown item")[2] != _rgba_bytes(output):
-        raise ValidationError("Derived small-brown item PNG round-trip differs")
+    placeholder = SMALL_BROWN_ITEM_DONOR_SPEC["placeholder_blue"]
+    normalized = [pixel if pixel != placeholder else (0, 0, 0, 0) for pixel in source]
+    if not any(pixel == placeholder for pixel in source):
+        raise ValidationError("User small-brown item donor has no blue placeholder pixels")
+    output = [(0, 0, 0, 0)] * (16 * 16)
+    for y in range(height):
+        for x in range(width):
+            output[(y + 1) * 16 + x + 1] = normalized[y * width + x]
+    if any(output[index][3] for index in range(16)) or any(output[index][3] for index in range(240, 256)):
+        raise ValidationError("Derived small-brown item has a nontransparent vertical border")
+    if any(output[row * 16][3] or output[row * 16 + 15][3] for row in range(16)):
+        raise ValidationError("Derived small-brown item has a nontransparent horizontal border")
+    if placeholder in output:
+        raise ValidationError("Derived small-brown item retained a blue placeholder pixel")
+    encoded = encode_rgba_png(16, 16, _rgba_bytes(output))
     return encoded, {
-        "dimensions": [width, height],
-        "alpha": {"transparent": 105, "opaque": 151, "partial": 0},
-        "mask_sha256": SMALL_BROWN_ITEM_MASK_SHA256,
-        "cap_pixels": len(cap),
-        "red_orange_cap_pixels_replaced": len(red_seed),
-        "light_cap_spot_pixels_replaced": len(cap - red_seed),
-        "stem_pixels_preserved": len(stem),
-        "output_cap_palette_counts": {
-            ",".join(map(str, color)): count
-            for color, count in sorted(output_cap_counts.items())
-        },
+        "dimensions": [16, 16],
+        "source_dimensions": [width, height],
+        "blue_placeholder_pixels_transparent": sum(pixel == placeholder for pixel in source),
+        "transparent_one_pixel_border": True,
+        "visible_source_sha256": sha256_bytes(_rgba_bytes(normalized)),
     }
 
 
@@ -2178,10 +2136,9 @@ def derive_small_brown_block_mask(
     return cap, stem
 
 
-def derive_small_brown_block_texture(
-    root: Path, source_png: bytes, donor_brown: bytes
-) -> tuple[bytes, dict[str, Any]]:
-    width, height, raw = decode_rgba_png(source_png, SMALL_BROWN_NATIVE_BLOCK_TEXTURE)
+def derive_small_brown_block_texture(source_png: bytes, donor_brown: bytes) -> tuple[bytes, dict[str, Any]]:
+    """Recolor only the Matcha red-cap/spot colors in its matching 64px atlas."""
+    width, height, raw = decode_rgba_png(source_png, SMALL_BROWN_DONOR_BLOCK_ATLAS_MEMBER)
     brown_width, brown_height, brown_raw = decode_rgba_png(
         donor_brown, SMALL_BROWN_DONOR_PALETTE_MEMBER
     )
@@ -2189,39 +2146,43 @@ def derive_small_brown_block_texture(
         _rgba_pixels(brown_raw)
     ) != Counter(SMALL_BROWN_FULL_DONOR_PALETTE_COUNTS):
         raise ValidationError("Authoritative block recolor donor palette differs")
+    if (width, height) != (64, 64):
+        raise ValidationError("Matcha small-toadstool block atlas must be 64x64")
     source = _rgba_pixels(raw)
-    cap, stem = derive_small_brown_block_mask(root, source, width, height)
+    cap_colors = set(SMALL_BROWN_ITEM_CAP_RECOLOR)
+    cap = {
+        (index % width, index // width)
+        for index, pixel in enumerate(source)
+        if pixel in cap_colors
+    }
+    stem = {
+        (index % width, index // width)
+        for index, pixel in enumerate(source)
+        if pixel[3] and (index % width, index // width) not in cap
+    }
+    if not cap or not stem:
+        raise ValidationError("Matcha small-toadstool atlas lacks distinct cap and stem regions")
     output = list(source)
     for x, y in cap:
         index = y * width + x
         try:
-            output[index] = SMALL_BROWN_BLOCK_CAP_RECOLOR[source[index]]
+            output[index] = SMALL_BROWN_ITEM_CAP_RECOLOR[source[index]]
         except KeyError as exc:
             raise ValidationError(f"Unmapped pristine cap color: {source[index]}") from exc
     for index, pixel in enumerate(source):
         if (index % width, index // width) not in cap and output[index] != pixel:
             raise ValidationError("Block recolor changed a stem or transparent pixel")
     output_counts = Counter(output[y * width + x] for x, y in cap)
-    expected_counts = Counter(
-        {
-            SMALL_BROWN_DOMINANT_PALETTE[0]: 185,
-            SMALL_BROWN_DOMINANT_PALETTE[1]: 234,
-            SMALL_BROWN_DOMINANT_PALETTE[2]: 279,
-            SMALL_BROWN_DOMINANT_PALETTE[3]: 262,
-        }
-    )
-    if output_counts != expected_counts:
-        raise ValidationError(f"Small-brown block output palette differs: {dict(output_counts)}")
     encoded = encode_rgba_png(width, height, _rgba_bytes(output))
     if decode_rgba_png(encoded, "derived small-brown block")[2] != _rgba_bytes(output):
         raise ValidationError("Derived small-brown block PNG round-trip differs")
     return encoded, {
         "dimensions": [width, height],
-        "alpha": {"transparent": 2829, "opaque": 1267, "partial": 0},
-        "mask_sha256": SMALL_BROWN_BLOCK_MASK_SHA256,
+        "alpha": {"transparent": sum(pixel[3] == 0 for pixel in source), "opaque": sum(pixel[3] == 255 for pixel in source), "partial": 0},
+        "mask_sha256": sha256_bytes(_mask_bytes(width, height, cap, stem)),
         "cap_pixels": len(cap),
-        "red_orange_cap_pixels_replaced": 575,
-        "light_cap_spot_pixels_replaced": 385,
+        "red_orange_cap_pixels_replaced": sum(source[y * width + x] in SMALL_BROWN_DONOR_RED_CAP_PALETTE for x, y in cap),
+        "light_cap_spot_pixels_replaced": sum(source[y * width + x] in SMALL_BROWN_DONOR_CAP_SPOT_PALETTE for x, y in cap),
         "stem_pixels_preserved": len(stem),
         "output_cap_palette_counts": {
             ",".join(map(str, color)): count
@@ -5541,6 +5502,8 @@ def assemble_small_brown_toadstool_resources(
     root: Path,
     donor_members: dict[str, bytes],
     donor_identity: dict[str, Any],
+    item_donor: bytes,
+    item_donor_identity: dict[str, Any],
 ) -> dict[str, Any]:
     approved_members = set(SMALL_BROWN_RECOLOR_DONOR_SPEC["members"])
     if set(donor_members) != approved_members:
@@ -5551,48 +5514,6 @@ def assemble_small_brown_toadstool_resources(
     if donor_identity.get("sha256") != SMALL_BROWN_RECOLOR_DONOR_SPEC["sha256"]:
         raise ValidationError("Small-brown donor identity was not hash-guarded")
 
-    native_item_path = root / PurePosixPath(SMALL_BROWN_NATIVE_ITEM_TEXTURE)
-    native_item = native_item_path.read_bytes()
-    if (
-        len(native_item) != SMALL_BROWN_NATIVE_ITEM_SIZE
-        or sha256_bytes(native_item) != SMALL_BROWN_NATIVE_ITEM_SHA256
-    ):
-        raise ValidationError("Pristine small-toadstool item texture identity differs")
-    native_item_width, native_item_height, native_item_raw = decode_indexed_png(
-        native_item, SMALL_BROWN_NATIVE_ITEM_TEXTURE
-    )
-    donor_item = donor_members[SMALL_BROWN_DONOR_ITEM_MEMBER]
-    donor_item_width, donor_item_height, donor_item_raw = decode_rgba_png(
-        donor_item, SMALL_BROWN_DONOR_ITEM_MEMBER
-    )
-    if (native_item_width, native_item_height) != (16, 16) or (
-        donor_item_width,
-        donor_item_height,
-    ) != (16, 16):
-        raise ValidationError("Native and donor small-toadstool item sprites must be 16x16")
-    native_alpha = native_item_raw[3::4]
-    donor_alpha = donor_item_raw[3::4]
-    if native_alpha != donor_alpha:
-        raise ValidationError(
-            "Authoritative donor item alpha mask differs from the pristine small toadstool"
-        )
-    for x, y, expected in SMALL_BROWN_NATIVE_ITEM_STEM_TOP_PIXELS:
-        actual = tuple(
-            native_item_raw[(y * native_item_width + x) * 4 :
-                            (y * native_item_width + x + 1) * 4]
-        )
-        if actual != expected:
-            raise ValidationError(
-                f"Pristine item stem-top contract differs at ({x}, {y}): {actual}"
-            )
-
-    native_block_path = root / PurePosixPath(SMALL_BROWN_NATIVE_BLOCK_TEXTURE)
-    native_block = native_block_path.read_bytes()
-    if (
-        len(native_block) != SMALL_BROWN_NATIVE_BLOCK_SIZE
-        or sha256_bytes(native_block) != SMALL_BROWN_NATIVE_BLOCK_SHA256
-    ):
-        raise ValidationError("Pristine small-toadstool block texture identity differs")
     native_brown_resources: dict[str, bytes] = {}
     for relative, spec in NATIVE_BROWN_TOADSTOOL_RESOURCE_SPECS.items():
         data = (root / PurePosixPath(relative)).read_bytes()
@@ -5622,11 +5543,10 @@ def assemble_small_brown_toadstool_resources(
     if load_json(item_definition_path) != expected_item_definition:
         raise ValidationError("Small-brown item definition bridge differs")
 
-    derived_item, item_pixels = derive_small_brown_item_texture(
-        donor_item, donor_members[SMALL_BROWN_DONOR_PALETTE_MEMBER]
-    )
+    derived_item, item_pixels = derive_small_brown_item_texture(item_donor)
     derived_block, block_pixels = derive_small_brown_block_texture(
-        root, native_block, donor_members[SMALL_BROWN_DONOR_PALETTE_MEMBER]
+        donor_members[SMALL_BROWN_DONOR_BLOCK_ATLAS_MEMBER],
+        donor_members[SMALL_BROWN_DONOR_PALETTE_MEMBER],
     )
     item_texture_path = root / "assets/ribbits/textures/item/small_brown_toadstool.png"
     block_texture_path = root / "assets/ribbits/textures/block/small_brown_toadstool.png"
@@ -5727,12 +5647,6 @@ def assemble_small_brown_toadstool_resources(
             continue
         if (root / PurePosixPath(source_relative)).read_bytes() != expected_bytes:
             raise ValidationError(f"Small-brown assembly changed its template: {source_relative}")
-    for path, expected, label in (
-        (native_item_path, native_item, "native small-toadstool item texture"),
-        (native_block_path, native_block, "native small-toadstool block texture"),
-    ):
-        if path.read_bytes() != expected:
-            raise ValidationError(f"Small-brown assembly changed the {label}")
     for relative, expected in native_brown_resources.items():
         if (root / PurePosixPath(relative)).read_bytes() != expected:
             raise ValidationError(
@@ -5751,34 +5665,17 @@ def assemble_small_brown_toadstool_resources(
         )
     if {record["output"] for record in outputs} != SMALL_BROWN_TOADSTOOL_DERIVED_OUTPUTS:
         raise ValidationError("Small-brown derived-output accounting differs")
-    alpha_mask_sha256 = sha256_bytes(bytes(donor_alpha))
-    item_pixels["alpha_mask_matches_pristine"] = True
-    item_pixels["alpha_mask_sha256"] = alpha_mask_sha256
-    item_pixels["stem_top_pixels_preserved"] = [
-        {
-            "x": x,
-            "y": y,
-            "donor_rgba": list(expected_donor),
-            "pristine_rgba": list(expected_native),
-        }
-        for (x, y, expected_donor), (
-            native_x,
-            native_y,
-            expected_native,
-        ) in zip(
-            SMALL_BROWN_ITEM_STEM_TOP_PIXELS,
-            SMALL_BROWN_NATIVE_ITEM_STEM_TOP_PIXELS,
-        )
-        if (x, y) == (native_x, native_y)
-    ]
-    if len(item_pixels["stem_top_pixels_preserved"]) != 4:
-        raise ValidationError("Small-brown item stem-top metadata accounting differs")
     return {
-        "source": {
+        "matcha_source": {
             **donor_identity,
             "logical_path": (
                 f"originals/assets/{SMALL_BROWN_RECOLOR_DONOR_SPEC['filename']}"
             ),
+            "unchanged_after_assembly": True,
+        },
+        "item_source": {
+            **item_donor_identity,
+            "logical_path": f"originals/assets/{SMALL_BROWN_ITEM_DONOR_SPEC['filename']}",
             "unchanged_after_assembly": True,
         },
         "native_huge_brown_resources_preserved": {
@@ -5803,7 +5700,15 @@ def assemble_small_brown_toadstool_resources(
             "all_geometry_matches_donor_after_permitted_metadata_normalization": True,
             "all_elements_volumetric": True,
         },
-        "pixel_contract": {"item": item_pixels, "block": block_pixels},
+        "pixel_contract": {
+            "item": item_pixels,
+            "block": {
+                **block_pixels,
+                "structural_atlas_member": SMALL_BROWN_DONOR_BLOCK_ATLAS_MEMBER,
+                "structural_atlas_sha256": SMALL_BROWN_RECOLOR_DONOR_SPEC["members"]
+                [SMALL_BROWN_DONOR_BLOCK_ATLAS_MEMBER]["sha256"],
+            },
+        },
         "reference_scope": {
             "json_reference_counts": SMALL_BROWN_JSON_REFERENCE_COUNTS,
             "structure_nbt_templates_scanned": 29,
@@ -5882,88 +5787,30 @@ def require_small_brown_toadstool_resources(root: Path) -> None:
                 f"Native huge brown-toadstool resource was replaced: {relative}"
             )
 
-    native_item = (root / PurePosixPath(SMALL_BROWN_NATIVE_ITEM_TEXTURE)).read_bytes()
-    if (
-        len(native_item) != SMALL_BROWN_NATIVE_ITEM_SIZE
-        or sha256_bytes(native_item) != SMALL_BROWN_NATIVE_ITEM_SHA256
-    ):
-        raise ValidationError("Native small-toadstool item texture changed")
-    _, _, native_item_raw = decode_indexed_png(
-        native_item, SMALL_BROWN_NATIVE_ITEM_TEXTURE
-    )
     item_path = root / "assets/ribbits/textures/item/small_brown_toadstool.png"
     item_width, item_height, item_raw = decode_rgba_png(
         item_path.read_bytes(), item_path.name
     )
-    if (item_width, item_height) != (16, 16) or item_raw[3::4] != native_item_raw[3::4]:
-        raise ValidationError("Small-brown item silhouette differs from the native toadstool")
+    if (item_width, item_height) != (16, 16):
+        raise ValidationError("Small-brown item texture must be 16x16")
     item_pixels = _rgba_pixels(item_raw)
-    item_opaque = {
-        (index % item_width, index // item_width)
-        for index, pixel in enumerate(item_pixels)
-        if pixel[3]
-    }
-    item_brown = {
-        coordinate
-        for coordinate in item_opaque
-        if item_pixels[coordinate[1] * item_width + coordinate[0]]
-        in SMALL_BROWN_DOMINANT_PALETTE
-    }
-    item_stem = item_opaque - item_brown
-    item_mask = _mask_bytes(item_width, item_height, item_brown, item_stem)
-    if (
-        len(item_brown) != 108
-        or len(item_stem) != 43
-        or sha256_bytes(item_mask) != SMALL_BROWN_ITEM_MASK_SHA256
-    ):
-        raise ValidationError("Small-brown item cap/stem mask differs")
-    item_cap_counts = Counter(
-        item_pixels[y * item_width + x] for x, y in item_brown
-    )
-    if item_cap_counts != Counter(
-        {
-            SMALL_BROWN_DOMINANT_PALETTE[0]: 18,
-            SMALL_BROWN_DOMINANT_PALETTE[1]: 47,
-            SMALL_BROWN_DOMINANT_PALETTE[2]: 22,
-            SMALL_BROWN_DOMINANT_PALETTE[3]: 21,
-        }
-    ):
-        raise ValidationError("Small-brown item cap palette histogram differs")
-    for x, y, expected in SMALL_BROWN_ITEM_STEM_TOP_PIXELS:
-        if item_pixels[y * item_width + x] != expected or (x, y) not in item_stem:
-            raise ValidationError(f"Small-brown item changed stem-top pixel ({x}, {y})")
+    placeholder = SMALL_BROWN_ITEM_DONOR_SPEC["placeholder_blue"]
+    if placeholder in item_pixels:
+        raise ValidationError("Small-brown item texture retained a blue placeholder")
+    if any(item_pixels[index][3] for index in range(16)) or any(item_pixels[index][3] for index in range(240, 256)):
+        raise ValidationError("Small-brown item texture lacks transparent top or bottom border")
+    if any(item_pixels[row * 16][3] or item_pixels[row * 16 + 15][3] for row in range(16)):
+        raise ValidationError("Small-brown item texture lacks transparent side border")
 
-    native_block = (root / PurePosixPath(SMALL_BROWN_NATIVE_BLOCK_TEXTURE)).read_bytes()
-    if (
-        len(native_block) != SMALL_BROWN_NATIVE_BLOCK_SIZE
-        or sha256_bytes(native_block) != SMALL_BROWN_NATIVE_BLOCK_SHA256
-    ):
-        raise ValidationError("Native small-toadstool block texture changed")
-    block_width, block_height, block_raw = decode_rgba_png(
-        native_block, SMALL_BROWN_NATIVE_BLOCK_TEXTURE
-    )
-    source_block_pixels = _rgba_pixels(block_raw)
-    block_cap, _ = derive_small_brown_block_mask(
-        root, source_block_pixels, block_width, block_height
-    )
     output_block_path = root / "assets/ribbits/textures/block/small_brown_toadstool.png"
     output_width, output_height, output_raw = decode_rgba_png(
         output_block_path.read_bytes(), output_block_path.name
     )
-    if (output_width, output_height) != (block_width, block_height):
-        raise ValidationError("Small-brown block atlas dimensions differ")
+    if (output_width, output_height) != (64, 64):
+        raise ValidationError("Small-brown block atlas dimensions differ from Matcha donor atlas")
     output_block_pixels = _rgba_pixels(output_raw)
-    for index, source_pixel in enumerate(source_block_pixels):
-        coordinate = (index % block_width, index // block_width)
-        expected = (
-            SMALL_BROWN_BLOCK_CAP_RECOLOR[source_pixel]
-            if coordinate in block_cap
-            else source_pixel
-        )
-        if output_block_pixels[index] != expected:
-            raise ValidationError(
-                f"Small-brown block atlas pixel differs at {coordinate}"
-            )
+    if not any(pixel in SMALL_BROWN_DOMINANT_PALETTE for pixel in output_block_pixels):
+        raise ValidationError("Small-brown block atlas lacks the approved brown cap palette")
 
     for donor_member in SMALL_BROWN_DONOR_MODEL_MEMBERS:
         spec = SMALL_BROWN_RECOLOR_DONOR_SPEC["members"][donor_member]
@@ -6263,6 +6110,9 @@ def _assemble_impl(
         small_brown_donor_members,
         small_brown_donor_identity,
     ) = load_authoritative_small_brown_recolor_donor(user_assets_root)
+    small_brown_item_path, small_brown_item, small_brown_item_identity = (
+        load_authoritative_small_brown_item_donor(user_assets_root)
+    )
     donor_members = {
         "guard": guard_members,
         "useful": useful_members,
@@ -6282,6 +6132,7 @@ def _assemble_impl(
             small_brown_donor_identity,
             "Matcha small-brown recolor donor pack",
         ),
+        (small_brown_item_path, small_brown_item_identity, "User small-brown item donor"),
     ]
     user_chute_model, user_chute_png, user_chute_inputs = load_user_authored_chute_inputs(user_assets_root)
 
@@ -6372,6 +6223,8 @@ def _assemble_impl(
             output,
             small_brown_donor_members,
             small_brown_donor_identity,
+            small_brown_item,
+            small_brown_item_identity,
         )
         wandering_donor_outputs, user_chute_outputs = import_wandering_visual_resources(
             output,
