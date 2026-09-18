@@ -1,12 +1,12 @@
 # BGE C74 Ribbits Huge-Toadstool manual verification
 
-Current candidate: `cnm-nibaru-integration-4.2.18-bge.canary74.ribbits-toadstools+26.2.jar` (pending finalized build hash)
+Current candidate: `cnm-nibaru-integration-4.2.18-bge.canary74.ribbits-toadstools+26.2.jar`
 
 - Embedded version: `4.2.18-bge.canary74.ribbits-toadstools+26.2`
-- SHA-256: recorded in `WORKBENCH_STATUS.json` after the exact finalized artifact is retained
-- Source checkpoint: `c0f17c650454e60b9518454b2f42bb1f837ccfd9`
+- SHA-256: `e261c8afdbf48b1078d2464dee814e4ca61538a669661aee98731e6acd4e8c15`
+- Source checkpoint: `4b10806bae86de57f35d4ef901827d2ed61ae885`
 - Lifecycle/evidence: `ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED`
-- Rollback/predecessor: exact C72 `cnm-nibaru-integration-4.2.16-bge.canary72.farmland-slab-low-water+26.2.jar`, SHA-256 `f9f892fccbbee85f75f03c9b24752bbeab76f4fa60efd867414969b735ae85a3`. The owner reported an aggregate external runtime `PASS` for these exact C72 bytes without checklist-row observations; C72 was not accepted, and its evidence does not transfer to C73.
+- Rollback/predecessor: exact C72 `cnm-nibaru-integration-4.2.16-bge.canary72.farmland-slab-low-water+26.2.jar`, SHA-256 `f9f892fccbbee85f75f03c9b24752bbeab76f4fa60efd867414969b735ae85a3`. The owner reported an aggregate external runtime `PASS` for these exact C72 bytes without checklist-row observations; C72 was not accepted, and its evidence does not transfer to C74.
 - Accepted release: exact C70 `cnm-nibaru-integration-4.2.14-bge.canary70.stone-native-slab+26.2.jar`, SHA-256 `d304552e29e76c4165675415215439ac2d73b5a6ebc4abc9787f0fa1124cf266`.
 
 This checklist is lifecycle-neutral. Record only behavior actually observed for the exact C74 bytes above. It does not authorize inspecting, creating, selecting, or modifying any protected or retired Minecraft profile.
@@ -42,6 +42,6 @@ Use survival mode and verify the held stack decreases by exactly one only when p
 1. Exercise bottom, top, and double Farmland Slabs. Water directly below and exactly four blocks horizontally away at Y-1 must hydrate; five blocks away and Y-2 must not. Existing Y and Y+1 hydration and rain hydration remain valid.
 2. Remove water and rain. Moisture must fall through the vanilla-style lifecycle and zero-moisture Farmland must return to the matching Dirt Slab unless a block in the `maintains_farmland` contract prevents it.
 3. Recheck survival under a solid block, player and mob trampling rules, Dirt-slab reversion, one/two-slab drops, Dirt Path conversion, and accepted C70's exact `minecraft:stone_slab` ownership.
-4. Crop placement/growth, partial-height crop projection, targeting, particles, and rendering remain deferred to Slab Decorations and are not C73 failures.
+4. Crop placement/growth, partial-height crop projection, targeting, particles, and rendering remain deferred to Slab Decorations and are not C74 failures.
 
-The clean build, static suites, archive audit, and 123/123 controlled GameTests are not Minecraft gameplay-runtime evidence. Record `PASS`, `FAIL`, or `INCONCLUSIVE` only for rows actually exercised, together with the exact artifact SHA-256. Runtime testing alone does not accept or otherwise change the project lifecycle.
+The clean build, static suites, archive audit, and 124/124 controlled GameTests are not Minecraft gameplay-runtime evidence. Record `PASS`, `FAIL`, or `INCONCLUSIVE` only for rows actually exercised, together with the exact artifact SHA-256. Runtime testing alone does not accept or otherwise change the project lifecycle.
