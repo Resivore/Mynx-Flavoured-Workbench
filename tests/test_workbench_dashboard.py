@@ -475,11 +475,11 @@ class WorkbenchDashboardTests(unittest.TestCase):
         self.assertEqual(by_id["mynx-regions-unexplored"].lifecycle, "ACTIVE")
         self.assertEqual(by_id["slab-decorations"].lifecycle, "ACTIVE")
         bge = by_id["block-geometry-extensions"]
-        self.assertEqual(bge.lifecycle, "ACCEPTED")
-        self.assertEqual(bge.current_version, "C70 (Stone Native Slab; embedded 4.2.14-bge.canary70.stone-native-slab+26.2)")
-        self.assertEqual(bge.server_status, "CURRENT")
+        self.assertEqual(bge.lifecycle, "ACTIVE")
+        self.assertEqual(bge.current_version, "C73 (Canonical Bindings; embedded 4.2.17-bge.canary73.canonical-bindings+26.2)")
+        self.assertEqual(bge.server_status, "OUTDATED")
         self.assertEqual(bge.deployed_release, dashboard.canonical_release_identity(
-            statuses[bge.uuid][1]["state"]["releases"]["current"]
+            statuses[bge.uuid][1]["state"]["releases"]["accepted"]
         ))
         all_manifests = [
             dashboard.load_json(path)
