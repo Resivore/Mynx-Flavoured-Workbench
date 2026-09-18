@@ -18,7 +18,7 @@
     ]
   },
   "definition": {
-    "lifecycle": "ACCEPTED",
+    "lifecycle": "ACTIVE",
     "goals": [
       "Maintain one Fabric mod, source tree, build, version, and deployable JAR for the absorbed Nibaru native material catalog and all BGE geometry.",
       "Preserve every former Nibaru and BGE registry/resource identity, specialized material behavior, and saved-world reference while CNM remains an unchanged external dependency.",
@@ -28,9 +28,9 @@
     "scope": [
       "Compile the retained `games.twinhead.moreslabsstairsandwalls` source and `more_slabs_stairs_and_walls` resources directly inside BGE with a clear LGPL-covered source and attribution boundary.",
       "Register native slabs, stairs, walls, material profiles, transitions, and client bindings before deriving CNM/BGE geometry through one guarded bootstrap and one root Fabric descriptor.",
-      "Preserve all native material profiles, canonical parents, copied settings, TOP/SIDE/BOTTOM roles, axes, patterns, tint, translucency, transitions, drops, and specialized behaviors; C62 corrects the wall-material, canonical-role duplication, leaf-wall, and plain-Path seams demonstrated by exact C61 runtime evidence, C63 corrects external axis-family inventory previews, C64 adds the complete BBB beam catalog, C65 corrects its demonstrated BBB production axis-resource classification failure, C66 gives compatible Quarter Columns Step-equivalent full-cell continuation targeting without changing their physical geometry, C68 preserves one-to-one texel density for axis-material Layer faces without changing their geometry or grain orientation, and C69 restores independent material axes to the canonical BBB Beam Slab and Beam Stair.",
+      "Preserve all native material profiles, canonical parents, copied settings, TOP/SIDE/BOTTOM roles, axes, patterns, tint, translucency, transitions, drops, and specialized behaviors; C62 corrects the wall-material, canonical-role duplication, leaf-wall, and plain-Path seams demonstrated by exact C61 runtime evidence, C63 corrects external axis-family inventory previews, C64 adds the complete BBB beam catalog, C65 corrects its demonstrated BBB production axis-resource classification failure, C66 gives compatible Quarter Columns Step-equivalent full-cell continuation targeting without changing their physical geometry, C68 preserves one-to-one texel density for axis-material Layer faces without changing their geometry or grain orientation, C69 restores independent material axes to the canonical BBB Beam Slab and Beam Stair, C70 restores vanilla Stone slab ownership, C71 mirrors Minecraft 26.2 horizontal-slab tilling and Farmland lifecycle semantics, and C72 extends that Farmland Slab water search exactly one block lower without changing the C71 lifecycle.",
       "Generate one Layer, Corner, and Quarter Column per supported canonical family while preserving Vertical Slab and Step, deterministic selector order, one-source economy, orientation, waterlogging, collision, and drops.",
-      "Provide primary Fabric ID `cnm_terrain_slabs_compat` and verified legacy alias `more_slabs_stairs_and_walls` from the same mod container and shared version `4.2.12-bge.canary68.layer-axis-uv+26.2`.",
+      "Provide primary Fabric ID `cnm_terrain_slabs_compat` and verified legacy alias `more_slabs_stairs_and_walls` from the same mod container and shared version `4.2.16-bge.canary72.farmland-slab-low-water+26.2`.",
       "Preserve C58 native registry/resource identities while exposing one canonical nine-role family per exact optional source variant: 52 Macaw patterned full blocks, five distinct Macaw soil Path blocks, Ribbits Mossy Oak Planks, six Mynx Trees log, wood, and leaf sources, and all 12 BBB beam parents including Pale Oak. BBB's original slab and stair registrations remain untouched, but their provider state is geometry-only and cannot carry an independent material AXIS; C69 therefore gives BGE canonical AxisSlab and AxisStairs forms, retains BBB's ordinary thin WoodenWallBlock as the canonical wall, and keeps the five other BGE axis-aware roles. C65 accepts BBB's real semantically equivalent `axis=z` `x=90,y=180` representation while rejecting unknown transforms and `uvlock`."
     ],
     "boundaries": {
@@ -42,7 +42,8 @@
         "C58 is limited to the user-authored glass-Corner geometry/UV route; generic glass Quarter Column projection and all non-glass Corner outputs remain C57-equivalent.",
         "C68 changes only normal axis-material Layer face UV rectangles: it preserves Layer bounds, placement, collision, state, texture roles, grain rotation, special visual paths, non-axis materials, all other geometries, registration, data, display transforms, and external-material support.",
         "`projects/bge-ctm`, shaders, resource-pack classification, BBB source/assets, and unrelated consumer projects are outside this consolidation.",
-        "Accepted BGE C52 and historical standalone Nibaru C45 are preserved as rollback provenance and are not rewritten."
+        "Accepted BGE C52 and historical standalone Nibaru C45 are preserved as rollback provenance and are not rewritten.",
+        "C72 owns only the C71 Farmland Slab hydration search extension from Y..Y+1 to Y-1..Y+1; hoe conversion, moisture range/progression, rain, drying, crop retention, survival, trampling, Dirt-slab reversion, geometry, drops, waterlogging, Dirt Path, non-farmland geometry, and C70 Stone behavior remain unchanged. Crop placement, crop growth, partial-height projection, targeting, particles, and rendering remain deferred to Slab Decorations."
       ]
     },
     "dependencies": [
@@ -50,7 +51,7 @@
         "type": "MOD",
         "identifier": "minecraft",
         "requirement": "~26.2",
-        "reason": "Unified BGE C69 targets Minecraft Java 26.2."
+        "reason": "Unified BGE C72 targets Minecraft Java 26.2."
       },
       {
         "type": "MOD",
@@ -73,17 +74,17 @@
     ]
   },
   "state": {
-    "milestone": "C70 narrowly restores minecraft:stone_slab as the exact effective horizontal source of the Stone profile, without registering a duplicate slab. It passed 108 controlled GameTests and is ACCEPTED by explicit owner direction; this administrative promotion supplies no new runtime result. Former accepted C69 remains the exact rollback/predecessor provenance release.",
+    "milestone": "C72 extends C71 Farmland Slab hydration from the inclusive [-4..+4 X, 0..+1 Y, -4..+4 Z] search to the inclusive [-4..+4 X, -1..+1 Y, -4..+4 Z] search for BOTTOM, TOP, and DOUBLE states only. A Java 25 clean build, all 118 controlled GameTests, all 13 static suites, and exact C58/C71 archive boundaries pass; no Minecraft gameplay runtime evidence or owner acceptance is claimed. Exact C71 is rollback/predecessor provenance while accepted C70 remains separately recorded.",
     "releases": {
       "current": {
-        "version": "C70 (Stone Native Slab; embedded 4.2.14-bge.canary70.stone-native-slab+26.2)",
-        "embedded_version": "4.2.14-bge.canary70.stone-native-slab+26.2",
+        "version": "C72 (Farmland Slab Low Water; embedded 4.2.16-bge.canary72.farmland-slab-low-water+26.2)",
+        "embedded_version": "4.2.16-bge.canary72.farmland-slab-low-water+26.2",
         "artifact": {
-          "filename": "cnm-nibaru-integration-4.2.14-bge.canary70.stone-native-slab+26.2.jar",
-          "sha256": "d304552e29e76c4165675415215439ac2d73b5a6ebc4abc9787f0fa1124cf266"
+          "filename": "cnm-nibaru-integration-4.2.16-bge.canary72.farmland-slab-low-water+26.2.jar",
+          "sha256": "f9f892fccbbee85f75f03c9b24752bbeab76f4fa60efd867414969b735ae85a3"
         },
-        "built_at": "2026-09-16T06:48:51.4580617Z",
-        "source_commit": "f798f4179a079baa235717674f32b88ecb27689f",
+        "built_at": "2026-09-18T04:26:55.8268846Z",
+        "source_commit": "53a8bd949b803ddea73a31e11d540353d59e00df",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": [
@@ -92,15 +93,16 @@
               "relationship": "depends",
               "dependency_id": "minecraft",
               "predicate": "~26.2",
-              "reason": "The exact C70 artifact targets the Minecraft 26.2 release and packages Fabric's same-release predicate; this target-specific Minecraft predicate must remain bound to the controlled-validation release bytes.",
+              "reason": "The exact C72 artifact targets the Minecraft 26.2 release and packages Fabric's same-release predicate; this target-specific Minecraft predicate must remain bound to the controlled-validation release bytes.",
               "regression_evidence": [
-                "A Java 25 clean Gradle build produced C70 SHA-256 d304552e29e76c4165675415215439ac2d73b5a6ebc4abc9787f0fa1124cf266.",
-                "The C70 GameTest suite passed 108/108 on the Minecraft 26.2 validation baseline, including exact Stone profile horizontal-source coverage."
+                "A Java 25 clean Gradle build produced C72 SHA-256 f9f892fccbbee85f75f03c9b24752bbeab76f4fa60efd867414969b735ae85a3 from implementation checkpoint 53a8bd949b803ddea73a31e11d540353d59e00df.",
+                "The C72 GameTest suite passed 118/118 on the Minecraft 26.2 validation baseline, including BOTTOM, TOP, and DOUBLE lower-water hydration, four-block inclusion, five-block and Y-2 exclusion, retained Y/Y+1 hydration, drying/reversion, and C71/C70 regressions.",
+                "All 13 static architecture/resource/semantic suites passed; the archive verifier found exactly two changed and zero new entries versus exact C71, with zero missing or unexpected entries."
               ]
             }
           ]
         },
-        "summary": "Restores minecraft:stone_slab as Stone's exact effective horizontal geometry source without a duplicate slab."
+        "summary": "Extends every Farmland Slab's inclusive hydration search one block lower in Y while retaining C71 behavior."
       },
       "accepted": {
         "version": "C70 (Stone Native Slab; embedded 4.2.14-bge.canary70.stone-native-slab+26.2)",
@@ -130,13 +132,14 @@
         "summary": "Restores minecraft:stone_slab as Stone's exact effective horizontal geometry source without a duplicate slab."
       },
       "rollback": {
-        "version": "C69 (BBB Beam Standard Axis; embedded 4.2.13-bge.canary69.bbb-beam-standard-axis+26.2)",
-        "embedded_version": "4.2.13-bge.canary69.bbb-beam-standard-axis+26.2",
+        "version": "C71 (Farmland Slab; embedded 4.2.15-bge.canary71.farmland-slab+26.2)",
+        "embedded_version": "4.2.15-bge.canary71.farmland-slab+26.2",
         "artifact": {
-          "filename": "cnm-nibaru-integration-4.2.13-bge.canary69.bbb-beam-standard-axis+26.2.jar",
-          "sha256": "202eecc72f77745617b0d34ebfb7c58d3369300aeb12e8300309ae1fad39ec52"
+          "filename": "cnm-nibaru-integration-4.2.15-bge.canary71.farmland-slab+26.2.jar",
+          "sha256": "caefdf6c73c9ffeaf1418de9861c4f34e9801fab32450776a1e4c49aadfeff95"
         },
-        "source_commit": "f798f4179a079baa235717674f32b88ecb27689f",
+        "built_at": "2026-09-18T04:01:38.3791538Z",
+        "source_commit": "f036fa52e6034d2b3362ff0027543ae0fb87cc4b",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": [
@@ -145,16 +148,18 @@
               "relationship": "depends",
               "dependency_id": "minecraft",
               "predicate": "~26.2",
-              "reason": "The exact C69 artifact targets the Minecraft 26.2 release and packages Fabric's same-release predicate; this target-specific Minecraft predicate must remain bound to the controlled-validation release bytes.",
+              "reason": "The exact C71 artifact targets the Minecraft 26.2 release and packages Fabric's same-release predicate; this target-specific Minecraft predicate must remain bound to the controlled-validation release bytes.",
               "regression_evidence": [
-                "A Java 25 clean Gradle build produced C69 SHA-256 202eecc72f77745617b0d34ebfb7c58d3369300aeb12e8300309ae1fad39ec52.",
-                "The C69 GameTest suite passed 107/107 on the Minecraft 26.2 validation baseline, including all 12 BBB Beam materials; 108 independent material-axis/slab-state combinations; 1,440 independent material-axis/stair-state combinations; texture selector contracts; rotation, mirror, placement, combination, codec, and neighbor-shape checks; and the no-AXIS ordinary BBB wall contract."
+                "A Java 25 clean Gradle build produced C71 SHA-256 caefdf6c73c9ffeaf1418de9861c4f34e9801fab32450776a1e4c49aadfeff95 from implementation checkpoint f036fa52e6034d2b3362ff0027543ae0fb87cc4b.",
+                "The C71 GameTest suite passed 118/118 on the Minecraft 26.2 validation baseline, including live HoeItem source parity, all slab types, waterlogging rejection, lifecycle, reversion, geometry, drops, and C70/path regressions.",
+                "All 13 static architecture/resource suites passed; the archive verifier found exactly five changed and 13 new entries versus exact accepted C70, with zero missing or unexpected entries."
               ]
             }
           ]
-        }
+        },
+        "summary": "Adds exact Minecraft 26.2 hoe parity and vanilla-style lifecycle behavior for one canonical horizontal Farmland Slab."
       },
-      "accepted_current": "CURRENT_IS_ACCEPTED",
+      "accepted_current": "CURRENT_DIFFERS_FROM_ACCEPTED",
       "accepted_rollback": "ROLLBACK_DIFFERS_FROM_ACCEPTED"
     },
     "validation": {
@@ -164,10 +169,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 32,
-    "activity_at": "2026-09-16T15:08:47Z",
-    "updated_at": "2026-09-16T15:08:47Z",
-    "last_codex_at": "2026-09-16T15:08:47Z",
-    "source_commit": "b137377b6f54fd7e5cc6d621f815d09187a30912"
+    "revision": 34,
+    "activity_at": "2026-09-18T04:34:48Z",
+    "updated_at": "2026-09-18T04:34:48Z",
+    "last_codex_at": "2026-09-18T04:34:48Z",
+    "source_commit": "53a8bd949b803ddea73a31e11d540353d59e00df"
   }
 }

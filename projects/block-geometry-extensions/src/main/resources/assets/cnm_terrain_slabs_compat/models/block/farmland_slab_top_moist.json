@@ -1,0 +1,4 @@
+{
+  "parent": "cnm_terrain_slabs_compat:block/farmland_slab_top",
+  "textures": { "top": "minecraft:block/farmland_moist" }
+}

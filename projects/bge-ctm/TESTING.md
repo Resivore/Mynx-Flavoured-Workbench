@@ -1,66 +1,42 @@
 # Testing
 
-Canary 4 is `ACTIVE / RUNTIME_UNTESTED`. Its controlled checks prove typed appearance,
-Continuity seam compatibility, source-gate control flow, and geometry decisions; they do not
-prove client visual output. Use Minecraft Java 26.2, Fabric Loader 0.19.3+, Continuity
-`3.0.1+26.2` exactly, a BGE build satisfying the declared range, the normal Matcha/overlay pack
-order, connected textures enabled, and shaders off. Record every relevant `[BGE-CTM DIAG]` line
-from `latest.log`; do not substitute an unverified Continuity version.
+Canary 6 is `ACTIVE / PARTIAL_RUNTIME_PASS`: exact C5 owner evidence established a positive
+Standard Overlay semantic/contact result for one ordinary bottom-slab receiver, but its emitted
+quad floated at y=1 instead of the captured y=0.5 surface. C6 has controlled geometry coverage;
+it has not yet received Minecraft-client visual validation. Use Minecraft Java 26.2, Fabric Loader
+0.19.3+, Continuity `3.0.1+26.2` exactly, and a BGE build satisfying the declared range. Disable
+shaders. Do not create a large test area.
 
-At client startup expect one line beginning `[BGE-CTM DIAG] STARTUP` that reports BGE × CTM,
-Minecraft, BGE, Continuity, required hook status, and the default cap of 200 unique records.
-Records are INFO-level by default, deduplicated by decision signature, and emit one suppression
-notice after the cap. `-Dbge_ctm.diagnostics.disable=true` opts out; `-Dbge_ctm.diagnostics.cap=N`
-sets a cap clamped to 1–300.
+At startup retain `[BGE-CTM DIAG] STARTUP`. C6 adds the independent managed-only
+`overlayEmitCap=100` (set with `-Dbge_ctm.diagnostics.overlayEmitCap=N`, clamped 1–300) alongside
+the existing APPEARANCE, REGULAR, RULE_SELECTION, OVERLAY, and OVERLAY_BASELINE budgets. It does
+not consume their caps.
 
-## Short diagnostic-first pass
+## A. Exact displaced-overlay reproduction
 
-For each row, capture the exact blocks/states, positions, receiver/source direction, inspected
-face, shader/pack state, visual result, and corresponding diagnostic lines. A `REGULAR` record
-must show canonical appearances, upstream result, quad/state geometry and final result. An
-`OVERLAY` record must show the real inducing state, `nativeFull`, `partialPromoted`, canonical
-appearance, semantic outcome, geometry, and final result.
+Use the same known-valid canonical inducing/source relationship from the supplied C5 case with a
+bottom ordinary receiver slab. Inspect its `UP` surface.
 
-1. Establish the control: full clear glass ↔ full clear glass. Then test two `type=top` clear
-   glass slabs side-by-side on `UP`, a top clear-glass slab ↔ full clear glass on `UP`, and top
-   ↔ bottom as a negative. The first three should have `upstream=true`, a coplanar geometry
-   decision, and `FINAL_CONNECT`; the negative must be `NON_COPLANAR`/`FINAL_VETO`.
-2. If a regular candidate has no valid captured quad, inspect the reason. Simple single-cuboid
-   profiles may show `STATE_FALLBACK_CONTACT_OK`; glass-edge/rim or other unsafe visual topology
-   must remain `QUAD_CAPTURE_INVALID` rather than guessing rendered bounds.
-3. Before every terrain partial test, establish the directional full-block baseline on the same
-   face: full podzol ↔ full grass, full podzol ↔ full glass, and full grass ↔ full glass when
-   relevant. Do not assume symmetry or infer a relationship that the active pack does not have.
-4. Reproduce the reported C3 layouts: a full podzol beside two stacked grass slabs, then two
-   stacked podzol slabs beside full glass. For every “stacked” arrangement, use diagnostics to
-   record whether it is one `type=double` block or two `TOP`/`BOTTOM` states at distinct positions.
-   Compare only to the matching full-block baseline.
-5. Pick one canonical full-block overlay baseline that is positive and replace only its inducing
-   source with a coplanar top slab, a non-coplanar bottom slab, and a double slab. A supported
-   partial source may log `PARTIAL_SOURCE_PROMOTED`, but it must still pass native semantic checks
-   and real contact before `FINAL_OVERLAY`. The bottom control must be vetoed; a double slab uses
-   full-volume geometry and normally logs `nativeFull=true`.
-6. Only after the above is understood, repeat one positive and one negative case for a top-boundary
-   Layer and an aligned Vertical Slab. Reversed/recessed Layers and misaligned Vertical Slabs must
-   remain rejected. Steps, Corners, Quarter Columns, roots, paths, custom models, and unrelated
-   translucency/culling behavior remain excluded.
+Expected C6 result: the overlay lies on the slab top at y=0.5, not at y=1. Capture the positive
+`OVERLAY` line and the matching line shaped like:
 
-## Interpreting the diagnostics
+`[BGE-CTM DIAG] event=OVERLAY_EMIT receiver=... face=UP captured=QuadSurface[normal=UP, plane16=8, ...] emitted=face=UP,plane16=8,u=0..16,v=0..16,... path=PROJECTED reason=EMIT_MATCH_RECEIVER`
 
-- `APPEARANCE ... reason=PROJECTED` confirms typed BGE profile lookup and canonical state
-  projection. `NO_PROFILE`, `UNSUPPORTED_GEOMETRY`, `UNSUPPORTED_VISUAL`, and
-  `UNMAPPABLE_CANONICAL_STATE` are deliberate non-participation reasons.
-- `REGULAR ... reason=UPSTREAM_REJECT` means Continuity/resource-pack semantics rejected before
-  BGE × CTM could permit a connection. `NON_COPLANAR`, `NO_BOUNDARY_CONTACT`, and
-  `QUAD_CAPTURE_INVALID` identify a geometry/capture veto; `FINAL_CONNECT` is an allowed final
-  decision, not visual proof.
-- `OVERLAY ... reason=PARTIAL_SOURCE_GATE_REJECT` means the real source was an unrelated partial
-  block. `PARTIAL_SOURCE_PROMOTED` means only that a supported typed carrier reached native
-  canonical semantic evaluation. `CONNECT_BLOCKS_REJECT`, `NATIVE_SEMANTIC_REJECT`,
-  `NON_COPLANAR`, `NO_BOUNDARY_CONTACT`, and `FINAL_VETO` remain terminal. BGE × CTM never makes
-  a canonically invalid material/rule pair true.
+## B. Slab side faces
 
-Continuity still independently requires a unit-square receiver quad for Standard Overlay and may
-reject `connectTiles` or its connection predicate before C4's final contact test. C4 does not
-alter those rules, source collision/physics globally, or the active resource pack. Report the
-exact log lines with the visual result rather than an aggregate pass/fail statement.
+Use a terrain relationship that produces a Standard Overlay on a slab side. Check one bottom and
+one top slab. The bottom overlay must occupy only Y 0..8; the top overlay must occupy only Y 8..16.
+Their texture must be the corresponding canonical half, not a vertically compressed full sprite.
+Retain `OVERLAY_EMIT` lines showing the captured/emitted bounds and UV values.
+
+## C. Layer and Vertical Slab
+
+Check one supported Layer boundary face and one recessed Layer face, then one supported single
+Vertical Slab face. Each overlay must occupy only the actual captured surface region and plane.
+For a capture missing on simple cuboids, C6 may report `STATE_DERIVED_PROJECTED`; complex/rim
+topology must instead veto with `SURFACE_CAPTURE_MISSING` or `SURFACE_UNSUPPORTED` rather than
+draw a full-block overlay.
+
+Send the visual result, exact block states/positions/face, shader and pack state, and relevant
+`[BGE-CTM DIAG]` lines. Regular CTM across ordinary slabs remains a separate unproven runtime
+question; do not infer its result from these Standard Overlay checks.

@@ -46,7 +46,17 @@ public final class ContactFilteringConnectionPredicate implements ConnectionPred
             BlockState appearanceState, BlockState state, BlockPos otherPos, Direction face,
             TextureAtlasSprite quadSprite) {
         boolean upstream = delegate.shouldConnect(level, pos, appearanceState, state, otherPos, face, quadSprite);
+        // Log the delegate outcome before the early return. This is intentionally limited to
+        // managed geometry by BgeCtmDiagnostics, so an overlay-heavy or ordinary world cannot
+        // starve the evidence needed to distinguish rule/predicate rejection from contact veto.
         if (!upstream) {
+            BlockState realSourceState = level.getBlockState(pos);
+            BlockState realOtherState = level.getBlockState(otherPos);
+            BgeCtmDiagnostics.regular(realSourceState, pos, appearanceState,
+                    realOtherState, otherPos,
+                    CanonicalAppearanceResolver.inspect(realOtherState).appearance(), delegate,
+                    false, null, Decision.BYPASS_UNRELATED, Decision.BYPASS_UNRELATED,
+                    false, "UPSTREAM_REJECT");
             return false;
         }
 

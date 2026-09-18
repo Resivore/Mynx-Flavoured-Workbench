@@ -15,7 +15,8 @@
     "MacawsPathsInitializationMixin",
     "MynxTreesInitializationMixin",
     "RibbitsInitializationMixin",
-    "BbbInitializationMixin"
+    "BbbInitializationMixin",
+    "HoeItemAccessor"
   ],
   "client": [
     "AssetGeneratorMixin",

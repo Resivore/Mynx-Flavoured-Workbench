@@ -22,7 +22,7 @@
     "scope": [
       "Provide one centralized Fabric block-appearance bridge for Continuity rule selection without generating material- or geometry-specific CTM rules.",
       "Consume BGE's typed runtime binding, canonical parent, and exact effective slab source as the sole geometry-to-material authority rather than inferring families from registry identifiers.",
-      "Project only explicitly equivalent canonical material state, including world-contextual vanilla snowy semantics for the grass family, while keeping geometry form, orientation, waterlogging, and unknown properties out of the canonical appearance.",
+      "Project only explicitly equivalent canonical material state, including world-contextual vanilla snowy semantics for every canonical parent that actually carries SNOWY, while keeping geometry form, orientation, waterlogging, and unknown properties out of the canonical appearance.",
       "Treat Continuity and the active resource pack as the sole material-rule authority, then veto only otherwise-positive regular or Standard Overlay decisions through one material-agnostic surface descriptor using face normal, exact world plane, rendered receiver-quad bounds, deterministic supported-geometry bounds, and real boundary contact.",
       "Support proven cross-geometry contact among full blocks, exact ordinary slabs, Layers, and Vertical Slabs while leaving Steps, Corners, Quarter Columns, unknown topology, risky visual profiles, and unrelated Continuity behavior unchanged."
     ],
@@ -43,13 +43,13 @@
         "type": "PROJECT",
         "identifier": "4b2342fc-7bdf-5ba6-9f37-d551109d214c",
         "requirement": ">=4.2.14-bge.canary70.stone-native-slab+26.2",
-        "reason": "Block Geometry Extensions owns the typed runtime binding, geometry roles, canonical material identity, and exact effective slab source consumed by Canary 4; C70 is the exact controlled validation baseline while the runtime contract remains compatible-range."
+        "reason": "Block Geometry Extensions owns the typed runtime binding, geometry roles, canonical material identity, and exact effective slab source consumed by Canary 6; C71 is the exact controlled validation baseline while the runtime contract remains compatible-range."
       },
       {
         "type": "MOD",
         "identifier": "continuity",
         "requirement": "=3.0.1+26.2",
-        "reason": "Canary 4 decorates the exact Continuity 3.0.1+26.2 regular connection predicate and quad seam, and redirects only StandardOverlayQuadProcessor's source-full-collision gate before retaining Continuity's native canonical semantic checks and final real-contact veto; required mixins and the controlled input hash fail closed on an incompatible implementation."
+        "reason": "Canary 6 decorates the exact Continuity 3.0.1+26.2 regular, processor-slice, quad-context, Standard Overlay semantic/contact, and processQuadInner emitOverlayQuad seams; required mixins and the controlled input hash fail closed on an incompatible implementation."
       },
       {
         "type": "MOD",
@@ -61,13 +61,13 @@
         "type": "MOD",
         "identifier": "fabricloader",
         "requirement": ">=0.19.3",
-        "reason": "Fabric runtime loader and required Mixin host declared by Canary 4."
+        "reason": "Fabric runtime loader and required Mixin host declared by Canary 5."
       },
       {
         "type": "MOD",
         "identifier": "fabric-api",
         "requirement": ">=0.156.0",
-        "reason": "Provides the Fabric block appearance, renderer quad, and controlled GameTest APIs used by Canary 4; 0.156.0+26.2 is the exact validation baseline."
+        "reason": "Provides the Fabric block appearance, renderer quad, and controlled GameTest APIs used by Canary 5; 0.156.0+26.2 is the exact validation baseline."
       },
       {
         "type": "MOD",
@@ -78,16 +78,16 @@
     ]
   },
   "state": {
-    "milestone": "Canary 4 supersedes exact Canary 3 `0.3.0-canary3` (`4231a8725ad4141a6ac52c0b5f893f523f5e67b9808e46a87f51f810801f2eaa`). The owner supplied only these C3 runtime observations: ordinary slabs still had no connected textures; a full podzol block applied/induced an overlay onto two stacked grass slabs; and two stacked podzol slabs did not apply/induce the corresponding overlay onto a neighboring full glass block. No aggregate C3 failure is inferred, and “stacked” does not identify TOP/BOTTOM versus one DOUBLE state. C4 adds a safe state-cuboid fallback for simple regular CTM topology, controlled managed partial-source entry through Continuity's native overlay semantics, and bounded default diagnostics; Minecraft-client visual behavior remains untested.",
+    "milestone": "Canary 6 supersedes exact Canary 5. Owner runtime evidence for exact C5 is recorded without an aggregate failure: the supplied ordinary bottom-slab UP case reached positive Standard Overlay semantic/contact evaluation (`CONNECT`, `FINAL_OVERLAY`) with captured receiver plane16=8, then visually emitted at the full-block upper plane rather than y=0.5. C6 preserves C5 semantic/contact selection and redirects only the exact StandardOverlayQuadProcessor processQuadInner emitOverlayQuad callsite so a managed receiver uses the captured physical plane, in-plane bounds, and cropped canonical overlay UV domain. Ordinary regular slab CTM remains runtime-unproven and separate from this overlay-emission repair.",
     "releases": {
       "current": {
-        "version": "0.4.0-canary4",
+        "version": "0.6.0-canary6",
         "artifact": {
-          "filename": "bge-ctm-0.4.0-canary4.jar",
-          "sha256": "2406c186314aad429a610e3083e193da762a4d0da0f688b8d7dc820e8cd42b8d"
+          "filename": "bge-ctm-0.6.0-canary6.jar",
+          "sha256": "d01a04be0480282445f743803461ee8666142ed4b3346b16a9c86b940b0ab262"
         },
-        "built_at": "2026-09-18T03:14:00.7829972Z",
-        "source_commit": "cba69a741589358c1173cf05c0c2a1f0f0f38503",
+        "built_at": "2026-09-18T04:17:22.2441689Z",
+        "source_commit": "753662aeba14d19da6932e7e94dd955f4e11f159",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": [
@@ -98,7 +98,7 @@
               "predicate": "~26.2",
               "reason": "The appearance bridge is compiled against the Minecraft 26.2 block-state and Fabric appearance method descriptors and must remain on the controlled target release.",
               "regression_evidence": [
-                "Canary 4 compiles and its focused headless GameTests execute against Minecraft 26.2 and Fabric API 0.156.0+26.2."
+                "Canary 6 cleanly compiles and its focused headless GameTests execute against Minecraft 26.2 and Fabric API 0.156.0+26.2 with exact BGE C71."
               ]
             },
             {
@@ -106,14 +106,14 @@
               "relationship": "depends",
               "dependency_id": "continuity",
               "predicate": "=3.0.1+26.2",
-              "reason": "Canary 4 injects exact Continuity 3.0.1+26.2 regular predicate/quad seams plus the StandardOverlayQuadProcessor source-full-collision and final-decision seams; required mixins and the controlled input hash fail closed rather than guessing across an incompatible implementation.",
+              "reason": "Canary 6 injects exact Continuity 3.0.1+26.2 regular predicate, processor-slice, quad context, StandardOverlayQuadProcessor source-full-collision/final-decision, and processQuadInner QuadUtil.emitOverlayQuad seams; required mixins and the controlled input hash fail closed rather than guessing across an incompatible implementation.",
               "regression_evidence": [
-                "The exact Continuity 3.0.1+26.2 input is SHA-256 controlled, compiles against regular, quad-context, source-full-collision, and final Standard Overlay seams, and is verified as required client mixin targets."
+                "The exact Continuity 3.0.1+26.2 input is SHA-256 controlled, compiles against regular, quad-context, source-full-collision, final Standard Overlay, and processQuadInner emitOverlayQuad seams, and is verified as required client mixin targets."
               ]
             }
           ]
         },
-        "summary": "Adds bounded diagnostics, safe state-cuboid regular CTM fallback, and typed managed partial overlay-source promotion while Continuity retains material semantics and real coplanar contact remains authoritative."
+        "summary": "Projects accepted Standard Overlay quads onto the exact managed receiver surface with cropped canonical UVs, while retaining Continuity's semantic/rule decisions and C5 contact vetoes."
       },
       "accepted": null,
       "rollback": null,
@@ -122,15 +122,15 @@
     },
     "validation": {
       "build": "CONTROLLED_VALIDATION_PASS",
-      "runtime": "RUNTIME_UNTESTED"
+      "runtime": "PARTIAL_RUNTIME_PASS"
     },
     "blocker": null
   },
   "synchronization": {
-    "revision": 6,
-    "activity_at": "2026-09-18T03:14:08.1685690Z",
-    "updated_at": "2026-09-18T03:14:08.1685690Z",
-    "last_codex_at": "2026-09-18T03:14:08.1685690Z",
-    "source_commit": "cba69a741589358c1173cf05c0c2a1f0f0f38503"
+    "revision": 8,
+    "activity_at": "2026-09-18T04:17:22.2441689Z",
+    "updated_at": "2026-09-18T04:17:22.2441689Z",
+    "last_codex_at": "2026-09-18T04:17:22.2441689Z",
+    "source_commit": "753662aeba14d19da6932e7e94dd955f4e11f159"
   }
 }

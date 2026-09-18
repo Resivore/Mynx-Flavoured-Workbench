@@ -3,8 +3,8 @@
   "id": "cnm_terrain_slabs_compat",
   "version": "${version}",
   "provides": ["more_slabs_stairs_and_walls"],
-  "name": "Block Geometry Extensions Canary 70 — Stone Native Slab",
-  "description": "Unified BGE candidate restoring the exact vanilla Stone slab as the canonical Stone profile horizontal source without creating a duplicate material block.",
+  "name": "Block Geometry Extensions Canary 72 — Farmland Slab Low Water",
+  "description": "Extends Farmland Slab hydration to water one block lower while retaining C71 lifecycle behavior.",
   "authors": ["Mynx Workbench", "Nibaru"],
   "environment": "*",
   "entrypoints": {

@@ -37,7 +37,7 @@
           "predicate": "~26.2",
           "reason": "The appearance bridge is compiled against the Minecraft 26.2 block-state and Fabric appearance method descriptors and must remain on the controlled target release.",
           "regression_evidence": [
-            "Canary 3 compiles and its focused headless GameTests execute against Minecraft 26.2 and Fabric API 0.156.0+26.2."
+            "Canary 6 compiles and its focused headless GameTests execute against Minecraft 26.2 and Fabric API 0.156.0+26.2 with exact BGE C71."
           ]
         },
         {
@@ -45,9 +45,9 @@
           "relationship": "depends",
           "dependency_id": "continuity",
           "predicate": "=3.0.1+26.2",
-          "reason": "Canary 4 injects the exact Continuity 3.0.1+26.2 regular ConnectionPredicate seam, quad context seam, and StandardOverlayQuadProcessor source-full-collision gate/final decision seams; required mixins and the controlled input hash fail closed rather than guessing across an incompatible implementation.",
+          "reason": "Canary 6 injects the exact Continuity 3.0.1+26.2 regular ConnectionPredicate, quad-context, StandardOverlay semantic/contact, and processQuadInner emitOverlayQuad seams; required mixins and the controlled input hash fail closed rather than guessing across an incompatible implementation.",
           "regression_evidence": [
-            "The exact Continuity 3.0.1+26.2 input is SHA-256 controlled, compiles against regular, quad context, source-full-collision, and final Standard Overlay seams, and is verified as required client mixin targets."
+            "The exact Continuity 3.0.1+26.2 input is SHA-256 controlled, compiles against regular, quad context, source-full-collision, final Standard Overlay, and processQuadInner emitOverlayQuad seams, and is verified as required client mixin targets."
           ]
         }
       ]

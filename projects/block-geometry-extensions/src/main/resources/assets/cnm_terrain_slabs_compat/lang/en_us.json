@@ -2,5 +2,6 @@
   "block.cnm_terrain_slabs_compat.dirt_vertical_slab": "Dirt Vertical Slab",
   "block.cnm_terrain_slabs_compat.grass_vertical_slab": "Grass Vertical Slab",
   "block.cnm_terrain_slabs_compat.dirt_slab": "Dirt Slab",
-  "block.cnm_terrain_slabs_compat.grass_slab": "Grass Slab"
+  "block.cnm_terrain_slabs_compat.grass_slab": "Grass Slab",
+  "block.cnm_terrain_slabs_compat.farmland_slab": "Farmland Slab"
 }

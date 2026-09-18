@@ -146,7 +146,6 @@ public final class CanonicalAppearanceResolver {
         BlockState canonical = profile.canonicalParent().defaultBlockState();
         boolean leaf = profile.capabilities().contains(BehaviorCapability.LEAF_LIFECYCLE);
         boolean glazed = profile.capabilities().contains(BehaviorCapability.GLAZED_ORIENTATION);
-        boolean grassOverlay = profile.visualProfile() == VisualProfile.GRASS_OVERLAY;
 
         for (Property<?> property : canonical.getProperties()) {
             if (property == BlockStateProperties.AXIS) {
@@ -172,11 +171,11 @@ public final class CanonicalAppearanceResolver {
                 canonical = canonical.setValue(BlockStateProperties.PERSISTENT,
                         sourceState.getValue(BlockStateProperties.PERSISTENT));
             } else if (property == BlockStateProperties.SNOWY) {
-                if (!grassOverlay) return Optional.empty();
-                // Vanilla/Nibaru snowy dirt semantics are positional: snow in the block above
-                // controls the canonical appearance. Context-free inspection uses a carried
-                // SNOWY value when the ordinary slab has one, otherwise the canonical dry
-                // default; render-time Fabric appearance always supplies the world position.
+                // Snowy dirt is a property of the canonical parent, not a visual-profile
+                // classification. Podzol and mycelium use TOP_SIDE_BOTTOM today but have the
+                // same positional snow-above semantics as grass. Context-free inspection only
+                // carries an equivalent physical SNOWY value; otherwise preserve the canonical
+                // default instead of rejecting a valid canonical material.
                 boolean snowy = view != null && pos != null
                         ? view.getBlockState(pos.above()).is(BlockTags.SNOW)
                         : sourceState.hasProperty(BlockStateProperties.SNOWY)
