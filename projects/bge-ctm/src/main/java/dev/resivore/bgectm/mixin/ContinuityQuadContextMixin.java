@@ -37,8 +37,10 @@ abstract class ContinuityQuadContextMixin {
     private Object bgeCtm$recordRuleSelection(Function<TextureAtlasSprite, QuadProcessors.Slice> sliceFunc,
             Object sprite) {
         QuadProcessors.Slice slice = sliceFunc.apply((TextureAtlasSprite) sprite);
-        BgeCtmDiagnostics.ruleSelection(state, pos, appearanceState, sprite,
-                slice.processors().length, slice.multipassProcessors().length);
+        if (BgeCtmDiagnostics.enabled()) {
+            BgeCtmDiagnostics.ruleSelection(state, pos, appearanceState, sprite,
+                    slice.processors().length, slice.multipassProcessors().length);
+        }
         return slice;
     }
 

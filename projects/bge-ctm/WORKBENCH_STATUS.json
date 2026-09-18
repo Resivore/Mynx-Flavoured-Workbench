@@ -42,8 +42,8 @@
       {
         "type": "PROJECT",
         "identifier": "4b2342fc-7bdf-5ba6-9f37-d551109d214c",
-        "requirement": ">=4.2.14-bge.canary70.stone-native-slab+26.2",
-        "reason": "Block Geometry Extensions owns the typed runtime binding, geometry roles, canonical material identity, and exact effective slab source consumed by Canary 6; C71 is the exact controlled validation baseline while the runtime contract remains compatible-range."
+        "requirement": ">=4.2.17-bge.canary73.canonical-bindings+26.2",
+        "reason": "BGE C73 owns the authoritative canonical binding, state projection, topology and exact cuboid bounds consumed by Canary 7; C73 is the controlled validation baseline while the runtime contract remains a compatible minimum."
       },
       {
         "type": "MOD",
@@ -78,15 +78,15 @@
     ]
   },
   "state": {
-    "milestone": "Canary 6 supersedes exact Canary 5. Owner runtime evidence for exact C5 is recorded without an aggregate failure: the supplied ordinary bottom-slab UP case reached positive Standard Overlay semantic/contact evaluation (`CONNECT`, `FINAL_OVERLAY`) with captured receiver plane16=8, then visually emitted at the full-block upper plane rather than y=0.5. C6 preserves C5 semantic/contact selection and redirects only the exact StandardOverlayQuadProcessor processQuadInner emitOverlayQuad callsite so a managed receiver uses the captured physical plane, in-plane bounds, and cropped canonical overlay UV domain. Ordinary regular slab CTM remains runtime-unproven and separate from this overlay-emission repair.",
+    "milestone": "Canary 7 consumes BGE C73 canonical bindings directly for identity, projection and topology, including generic SPECIAL_CANONICAL_BOUND Farmland Slab. Regular CTM remains strict coplanar face contact; Standard Overlay now separately requires two supported cuboids to reach their common evaluated neighbour boundary and overlap there, so 8/16 grass and 7/16 farmland tops need not match. C6 owner evidence is recorded exactly: grass/podzol slab overlay behaves correctly; grass/farmland slab overlay does not; placement is noticeably laggy with C6; it remains laggy with the old disable property; source inspection showed that old property suppressed output but retained substantial instrumentation. This does not establish diagnostics as the lag cause. C7 diagnostics are off by default and runtime-unproven.",
     "releases": {
       "current": {
-        "version": "0.6.0-canary6",
+        "version": "0.7.0-canary7",
         "artifact": {
-          "filename": "bge-ctm-0.6.0-canary6.jar",
-          "sha256": "d01a04be0480282445f743803461ee8666142ed4b3346b16a9c86b940b0ab262"
+          "filename": "bge-ctm-0.7.0-canary7.jar",
+          "sha256": "38402fcfa147f88fb035203792d985734bfac65bdf29846509770cf50d5c7d48"
         },
-        "built_at": "2026-09-18T04:17:22.2441689Z",
+        "built_at": "2026-09-18T07:03:00.9232372Z",
         "source_commit": "753662aeba14d19da6932e7e94dd955f4e11f159",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
@@ -98,7 +98,7 @@
               "predicate": "~26.2",
               "reason": "The appearance bridge is compiled against the Minecraft 26.2 block-state and Fabric appearance method descriptors and must remain on the controlled target release.",
               "regression_evidence": [
-                "Canary 6 cleanly compiles and its focused headless GameTests execute against Minecraft 26.2 and Fabric API 0.156.0+26.2 with exact BGE C71."
+                "Canary 7 cleanly compiles and its focused headless GameTests execute against Minecraft 26.2 and Fabric API 0.156.0+26.2 with exact BGE C73."
               ]
             },
             {
@@ -113,7 +113,7 @@
             }
           ]
         },
-        "summary": "Projects accepted Standard Overlay quads onto the exact managed receiver surface with cropped canonical UVs, while retaining Continuity's semantic/rule decisions and C5 contact vetoes."
+        "summary": "Consumes BGE C73 canonical bindings and preserves C6 receiver-surface emission while separating strict CTM coplanarity from boundary-overlap Standard Overlay contact for special Farmland Slab."
       },
       "accepted": null,
       "rollback": null,
@@ -122,15 +122,15 @@
     },
     "validation": {
       "build": "CONTROLLED_VALIDATION_PASS",
-      "runtime": "PARTIAL_RUNTIME_PASS"
+      "runtime": "RUNTIME_UNTESTED"
     },
     "blocker": null
   },
   "synchronization": {
-    "revision": 8,
-    "activity_at": "2026-09-18T04:17:22.2441689Z",
-    "updated_at": "2026-09-18T04:17:22.2441689Z",
-    "last_codex_at": "2026-09-18T04:17:22.2441689Z",
+    "revision": 9,
+    "activity_at": "2026-09-18T07:03:00.9232372Z",
+    "updated_at": "2026-09-18T07:03:00.9232372Z",
+    "last_codex_at": "2026-09-18T07:03:00.9232372Z",
     "source_commit": "753662aeba14d19da6932e7e94dd955f4e11f159"
   }
 }

@@ -36,14 +36,14 @@ public final class OverlayContactFilter {
         Objects.requireNonNull(inducingState, "inducingState");
         Objects.requireNonNull(inducingPos, "inducingPos");
         Objects.requireNonNull(face, "face");
-        Decision stateDecision = SurfaceContactResolver.inspect(
+        Decision stateDecision = SurfaceContactResolver.inspectOverlay(
                 receiverState, receiverPos, inducingState, inducingPos, face);
         if (stateDecision == Decision.CONNECT && (capture == null || !capture.valid())
                 && SurfaceContactResolver.stateDerivedFallbackSafe(receiverState, inducingState)) {
             return true;
         }
         return retainAfterUpstream(true, stateDecision, capture,
-                () -> SurfaceContactResolver.inspectWithSourceSurface(
+                () -> SurfaceContactResolver.inspectOverlay(
                         receiverState, receiverPos, inducingState, inducingPos,
                         face, capture.surface()));
     }

@@ -20,12 +20,17 @@ public final class BgeCtmDiagnostics {
     private static final int OVERLAY_CAP = configuredCap("overlayCap", 100);
     private static final int OVERLAY_BASELINE_CAP = configuredCap("overlayBaselineCap", 10);
     private static final int OVERLAY_EMIT_CAP = configuredCap("overlayEmitCap", 100);
-    private static final boolean ENABLED = !Boolean.getBoolean("bge_ctm.diagnostics.disable");
+    // Opt-in. The legacy disable flag remains an explicit override for existing launch scripts.
+    private static final boolean ENABLED = Boolean.getBoolean("bge_ctm.diagnostics")
+            && !Boolean.getBoolean("bge_ctm.diagnostics.disable");
     private static final DiagnosticBudgets BUDGETS = new DiagnosticBudgets(
             APPEARANCE_CAP, REGULAR_CAP, RULE_SELECTION_CAP, OVERLAY_CAP, OVERLAY_BASELINE_CAP,
             OVERLAY_EMIT_CAP);
 
     private BgeCtmDiagnostics() {}
+
+    /** JIT-friendly guard: callers must test this before diagnostic-only inspection or allocation. */
+    public static boolean enabled() { return ENABLED; }
 
     public static void startup() {
         if (!ENABLED) return;
@@ -44,9 +49,10 @@ public final class BgeCtmDiagnostics {
     }
 
     public static void appearance(BlockState physical, CanonicalAppearanceResolver.Resolution resolution) {
+        if (!ENABLED) return;
         String key = "APPEARANCE|" + stateKey(physical) + '|' + resolution.policy();
         info(DiagnosticBudgets.Category.APPEARANCE, key, "event=APPEARANCE physical=" + display(physical)
-                + " carrier=" + resolution.binding().map(binding -> binding.carrier().name())
+                + " topology=" + resolution.binding().map(binding -> binding.topology().name())
                         .orElse("UNSUPPORTED")
                 + " canonical=" + display(resolution.appearance())
                 + " reason=" + appearanceReason(resolution));
@@ -57,6 +63,7 @@ public final class BgeCtmDiagnostics {
             boolean upstream, @Nullable SurfaceContactResolver.QuadSurface quad,
             SurfaceContactResolver.Decision stateDecision,
             SurfaceContactResolver.Decision geometryDecision, boolean result, String reason) {
+        if (!ENABLED) return;
         String key = "REGULAR|" + stateKey(source) + '|' + stateKey(other) + '|'
                 + pos.subtract(otherPos) + '|' + reason + '|' + result;
         if (!managed(source) && !managed(other)) return;
@@ -71,6 +78,7 @@ public final class BgeCtmDiagnostics {
     /** Records the exact Continuity slice chosen for a managed rendered quad. */
     public static void ruleSelection(BlockState physical, BlockPos pos, BlockState appearance,
             Object sprite, int processors, int multipassProcessors) {
+        if (!ENABLED) return;
         if (!managed(physical)) return;
         String reason = processors == 0 && multipassProcessors == 0
                 ? "NO_PROCESSOR" : "PROCESSOR_SELECTED";
@@ -87,6 +95,7 @@ public final class BgeCtmDiagnostics {
             boolean promoted, @Nullable SurfaceContactResolver.QuadSurface quad,
             SurfaceContactResolver.Decision geometryDecision, boolean semantic, boolean result,
             String reason) {
+        if (!ENABLED) return;
         String key = "OVERLAY|" + stateKey(receiver) + '|' + stateKey(source) + '|'
                 + sourcePos.subtract(receiverPos) + '|' + reason + '|' + result;
         DiagnosticBudgets.Category category = managed(receiver) || managed(source)
@@ -105,6 +114,7 @@ public final class BgeCtmDiagnostics {
     public static void overlayEmit(BlockState receiver, net.minecraft.core.Direction face,
             @Nullable QuadSurface captured, @Nullable OverlayEmissionGeometry.Projection emitted,
             String path, String reason) {
+        if (!ENABLED) return;
         if (!managed(receiver)) return;
         String signature = "OVERLAY_EMIT|" + stateKey(receiver) + '|' + face + '|'
                 + captured + '|' + path + '|' + reason;
@@ -148,9 +158,10 @@ public final class BgeCtmDiagnostics {
 
     private static String appearanceReason(CanonicalAppearanceResolver.Resolution resolution) {
         return switch (resolution.policy()) {
-            case ELIGIBLE_ORDINARY_SLAB, ELIGIBLE_LAYER, ELIGIBLE_VERTICAL_SLAB -> "PROJECTED";
-            case NON_PROFILE_GEOMETRY -> "NO_PROFILE";
-            case STEP_GEOMETRY, CORNER_GEOMETRY, QUARTER_COLUMN_GEOMETRY, UNKNOWN_GEOMETRY -> "UNSUPPORTED_GEOMETRY";
+            case ELIGIBLE_HORIZONTAL_SLAB, ELIGIBLE_LAYER, ELIGIBLE_VERTICAL_SLAB,
+                    ELIGIBLE_SPECIAL_HORIZONTAL -> "PROJECTED";
+            case NON_BGE_GEOMETRY, CANONICAL_ROOT -> "NO_BINDING";
+            case UNSUPPORTED_TOPOLOGY -> "UNSUPPORTED_GEOMETRY";
             case UNSUPPORTED_VISUAL_PROFILE -> "UNSUPPORTED_VISUAL";
             case UNMAPPABLE_CANONICAL_STATE -> "UNMAPPABLE_CANONICAL_STATE";
         };

@@ -50,13 +50,15 @@ public final class ContactFilteringConnectionPredicate implements ConnectionPred
         // managed geometry by BgeCtmDiagnostics, so an overlay-heavy or ordinary world cannot
         // starve the evidence needed to distinguish rule/predicate rejection from contact veto.
         if (!upstream) {
-            BlockState realSourceState = level.getBlockState(pos);
-            BlockState realOtherState = level.getBlockState(otherPos);
-            BgeCtmDiagnostics.regular(realSourceState, pos, appearanceState,
-                    realOtherState, otherPos,
-                    CanonicalAppearanceResolver.inspect(realOtherState).appearance(), delegate,
-                    false, null, Decision.BYPASS_UNRELATED, Decision.BYPASS_UNRELATED,
-                    false, "UPSTREAM_REJECT");
+            if (BgeCtmDiagnostics.enabled()) {
+                BlockState realSourceState = level.getBlockState(pos);
+                BlockState realOtherState = level.getBlockState(otherPos);
+                BgeCtmDiagnostics.regular(realSourceState, pos, appearanceState,
+                        realOtherState, otherPos,
+                        CanonicalAppearanceResolver.inspect(realOtherState).appearance(), delegate,
+                        false, null, Decision.BYPASS_UNRELATED, Decision.BYPASS_UNRELATED,
+                        false, "UPSTREAM_REJECT");
+            }
             return false;
         }
 
@@ -89,9 +91,11 @@ public final class ContactFilteringConnectionPredicate implements ConnectionPred
                 : result ? "FINAL_CONNECT"
                 : capture == null || !capture.valid() ? "QUAD_CAPTURE_INVALID"
                 : geometryDecision.name();
-        BgeCtmDiagnostics.regular(realSourceState, pos, appearanceState, realOtherState, otherPos,
-                CanonicalAppearanceResolver.inspect(realOtherState).appearance(), delegate, upstream,
-                capture == null ? null : capture.surface(), stateDecision, geometryDecision, result, reason);
+        if (BgeCtmDiagnostics.enabled()) {
+            BgeCtmDiagnostics.regular(realSourceState, pos, appearanceState, realOtherState, otherPos,
+                    CanonicalAppearanceResolver.inspect(realOtherState).appearance(), delegate, upstream,
+                    capture == null ? null : capture.surface(), stateDecision, geometryDecision, result, reason);
+        }
         return result;
     }
 

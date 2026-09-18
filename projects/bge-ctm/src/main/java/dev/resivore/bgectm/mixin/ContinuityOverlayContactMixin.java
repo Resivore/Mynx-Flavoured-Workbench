@@ -41,8 +41,10 @@ abstract class ContinuityOverlayContactMixin {
             BlockAndTintGetter level, BlockPos pos, BlockState appearanceState,
             BlockState state, Direction face, TextureAtlasSprite quadSprite,
             CallbackInfoReturnable<Boolean> callback) {
-        OverlayAttemptContext.begin(otherPos, otherAppearanceState, otherState,
-                pos, appearanceState, state, face);
+        if (BgeCtmDiagnostics.enabled()) {
+            OverlayAttemptContext.begin(otherPos, otherAppearanceState, otherState,
+                    pos, appearanceState, state, face);
+        }
     }
 
     @Redirect(method = APPLIES_OVERLAY,
@@ -52,7 +54,7 @@ abstract class ContinuityOverlayContactMixin {
     private boolean bgeCtm$allowTypedPartialSource(BlockState source, BlockGetter view, BlockPos sourcePos) {
         boolean nativeFull = source.isCollisionShapeFullBlock(view, sourcePos);
         boolean promoted = !nativeFull && OverlaySourceEligibility.mayReachCanonicalSemantics(source);
-        OverlayAttemptContext.gate(nativeFull, promoted);
+        if (BgeCtmDiagnostics.enabled()) OverlayAttemptContext.gate(nativeFull, promoted);
         return nativeFull || promoted;
     }
 
@@ -61,7 +63,7 @@ abstract class ContinuityOverlayContactMixin {
             require = 1)
     private boolean bgeCtm$recordConnectBlocks(Predicate<Object> predicate, Object appearance) {
         boolean result = predicate.test(appearance);
-        OverlayAttemptContext.connectBlocks(result);
+        if (BgeCtmDiagnostics.enabled()) OverlayAttemptContext.connectBlocks(result);
         return result;
     }
 
@@ -82,12 +84,13 @@ abstract class ContinuityOverlayContactMixin {
         boolean retained = OverlayContactFilter.retainAfterUpstream(semantic,
                 realReceiverState, pos, realInducingState, otherPos, face, capture);
         if (!retained) callback.setReturnValue(false);
+        if (!BgeCtmDiagnostics.enabled()) return;
         OverlayAttemptContext.Attempt attempt = OverlayAttemptContext.end();
         if (attempt != null) {
             attempt.semantic = semantic;
             attempt.result = retained;
             attempt.quad = capture == null ? null : capture.surface();
-            attempt.geometry = SurfaceContactResolver.inspect(realReceiverState, pos,
+            attempt.geometry = SurfaceContactResolver.inspectOverlay(realReceiverState, pos,
                     realInducingState, otherPos, face);
             if (semantic) {
                 attempt.reason = retained ? "FINAL_OVERLAY"

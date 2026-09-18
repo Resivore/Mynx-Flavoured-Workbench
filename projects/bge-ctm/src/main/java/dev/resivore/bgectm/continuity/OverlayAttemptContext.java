@@ -1,5 +1,6 @@
 package dev.resivore.bgectm.continuity;
 
+import dev.resivore.bgectm.BgeCtmDiagnostics;
 import dev.resivore.bgectm.SurfaceContactResolver;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -14,19 +15,22 @@ public final class OverlayAttemptContext {
 
     public static void begin(BlockPos sourcePos, BlockState sourceAppearance, BlockState source,
             BlockPos receiverPos, BlockState receiverAppearance, BlockState receiver, Direction face) {
+        if (!BgeCtmDiagnostics.enabled()) return;
         CURRENT.set(new Attempt(sourcePos.immutable(), sourceAppearance, source, receiverPos.immutable(),
                 receiverAppearance, receiver, face));
     }
 
     @Nullable public static Attempt end() {
+        if (!BgeCtmDiagnostics.enabled()) return null;
         Attempt attempt = CURRENT.get();
         CURRENT.remove();
         return attempt;
     }
 
-    @Nullable public static Attempt current() { return CURRENT.get(); }
+    @Nullable public static Attempt current() { return BgeCtmDiagnostics.enabled() ? CURRENT.get() : null; }
 
     public static void gate(boolean nativeFull, boolean promoted) {
+        if (!BgeCtmDiagnostics.enabled()) return;
         Attempt attempt = CURRENT.get();
         if (attempt != null) {
             attempt.nativeFull = nativeFull;
@@ -37,6 +41,7 @@ public final class OverlayAttemptContext {
     }
 
     public static void connectBlocks(boolean result) {
+        if (!BgeCtmDiagnostics.enabled()) return;
         Attempt attempt = CURRENT.get();
         if (attempt != null && !result) attempt.reason = "CONNECT_BLOCKS_REJECT";
     }

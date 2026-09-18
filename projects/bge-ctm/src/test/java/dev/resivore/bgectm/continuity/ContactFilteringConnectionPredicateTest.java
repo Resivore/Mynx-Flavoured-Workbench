@@ -52,8 +52,8 @@ final class ContactFilteringConnectionPredicateTest {
         assertFalse(negativeFilter.shouldConnect(
                 view, ORIGIN, unrelated, unrelated, EAST, Direction.UP, null));
         assertEquals(1, negative.sevenArgumentCalls.get());
-        assertEquals(4, worldReads.get(),
-                "An upstream rejection must recover the physical endpoints for its managed-only diagnostic");
+        assertEquals(2, worldReads.get(),
+                "Default-disabled diagnostics must not recover physical endpoints after an upstream rejection");
     }
 
     @Test
