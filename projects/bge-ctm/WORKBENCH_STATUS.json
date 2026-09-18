@@ -21,10 +21,10 @@
     ],
     "scope": [
       "Provide one centralized Fabric block-appearance bridge for Continuity rule selection without generating material- or geometry-specific CTM rules.",
-      "Consume BGE's typed runtime binding, canonical parent, and exact effective slab source as the sole geometry-to-material authority rather than inferring families from registry identifiers.",
+      "Consume BGE's typed canonical binding, state projection, canonical material-face semantics, and exposed surface-patch collection as the sole material and geometry authority rather than inferring families or topology from registry identifiers or Java carrier classes.",
       "Project only explicitly equivalent canonical material state, including world-contextual vanilla snowy semantics for every canonical parent that actually carries SNOWY, while keeping geometry form, orientation, waterlogging, and unknown properties out of the canonical appearance.",
-      "Treat Continuity and the active resource pack as the sole material-rule authority, then veto only otherwise-positive regular or Standard Overlay decisions through one material-agnostic surface descriptor using face normal, exact world plane, rendered receiver-quad bounds, deterministic supported-geometry bounds, and real boundary contact.",
-      "Support proven cross-geometry contact among full blocks, exact ordinary slabs, Layers, and Vertical Slabs while leaving Steps, Corners, Quarter Columns, unknown topology, risky visual profiles, and unrelated Continuity behavior unchanged."
+      "Treat Continuity and the active resource pack as the sole material-rule authority, then veto only otherwise-positive regular or Standard Overlay decisions through the same material-agnostic patch model using corresponding face semantics, compatible world planes, rendered receiver-quad bounds, and real in-plane overlap/contact.",
+      "Support full blocks, horizontal slabs, Layers, Vertical Slabs, Farmland Slab, Steps, Corners, and Quarter Columns whenever their BGE binding supplies valid surface data; leave contextual Stairs/Walls, unknown surface contracts, risky visual profiles, and unrelated Continuity behavior fail-closed or unchanged."
     ],
     "boundaries": {
       "owned_paths": [
@@ -42,14 +42,14 @@
       {
         "type": "PROJECT",
         "identifier": "4b2342fc-7bdf-5ba6-9f37-d551109d214c",
-        "requirement": ">=4.2.17-bge.canary73.canonical-bindings+26.2",
-        "reason": "BGE C73 owns the authoritative canonical binding, state projection, topology and exact cuboid bounds consumed by Canary 7; C73 is the controlled validation baseline while the runtime contract remains a compatible minimum."
+        "requirement": ">=4.2.18-bge.canary74.surface-semantics+26.2",
+        "reason": "BGE C74 owns the authoritative canonical binding, state projection, canonical material-face semantics, exposed patch geometry and typed terrain-height relation consumed generically by Canary 8; exact C74 is the controlled validation baseline."
       },
       {
         "type": "MOD",
         "identifier": "continuity",
         "requirement": "=3.0.1+26.2",
-        "reason": "Canary 6 decorates the exact Continuity 3.0.1+26.2 regular, processor-slice, quad-context, Standard Overlay semantic/contact, and processQuadInner emitOverlayQuad seams; required mixins and the controlled input hash fail closed on an incompatible implementation."
+        "reason": "Canary 8 decorates the exact Continuity 3.0.1+26.2 regular, processor-slice, quad-context, Standard Overlay semantic/contact, and processQuadInner emitOverlayQuad seams; required mixins and the controlled input hash fail closed on an incompatible implementation."
       },
       {
         "type": "MOD",
@@ -78,16 +78,16 @@
     ]
   },
   "state": {
-    "milestone": "Canary 7 consumes BGE C73 canonical bindings directly for identity, projection and topology, including generic SPECIAL_CANONICAL_BOUND Farmland Slab. Regular CTM remains strict coplanar face contact; Standard Overlay now separately requires two supported cuboids to reach their common evaluated neighbour boundary and overlap there, so 8/16 grass and 7/16 farmland tops need not match. C6 owner evidence is recorded exactly: grass/podzol slab overlay behaves correctly; grass/farmland slab overlay does not; placement is noticeably laggy with C6; it remains laggy with the old disable property; source inspection showed that old property suppressed output but retained substantial instrumentation. This does not establish diagnostics as the lag cause. C7 diagnostics are off by default and runtime-unproven.",
+    "milestone": "Canary 8 consumes BGE C74's canonical binding and exposed surface patches without geometry-class algorithms or material-ID rules. Ordinary CTM and Standard Overlay now share corresponding-face, compatible-plane and in-plane contact semantics; the only 1/16 tolerance is BGE's typed terrain inset. Binding-driven appearance reaches special Farmland Slab and future valid bindings without a carrier-class list. Steps, Corners and Quarter Columns use deterministic multi-patch data; contextual native Stairs/Walls remain explicit fail-closed limitations. Exact C7 owner evidence is limited to three observations: placement lag was resolved, grass/Farmland Slab overlay still did not work, and CTM/overlay appeared on slab top faces but not corresponding side faces. No aggregate C7 result is inferred, and C8 remains runtime-untested.",
     "releases": {
       "current": {
-        "version": "0.7.0-canary7",
+        "version": "0.8.0-canary8",
         "artifact": {
-          "filename": "bge-ctm-0.7.0-canary7.jar",
-          "sha256": "38402fcfa147f88fb035203792d985734bfac65bdf29846509770cf50d5c7d48"
+          "filename": "bge-ctm-0.8.0-canary8.jar",
+          "sha256": "368933843ebafa6f153b86fb4dc96663912aa0b58000411fc2818fee6f8edb56"
         },
-        "built_at": "2026-09-18T07:03:00.9232372Z",
-        "source_commit": "753662aeba14d19da6932e7e94dd955f4e11f159",
+        "built_at": "2026-09-18T15:48:38.8336326Z",
+        "source_commit": "ee8a4353bdf094a5570f3823d949cdb22ff02342",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": [
@@ -98,7 +98,7 @@
               "predicate": "~26.2",
               "reason": "The appearance bridge is compiled against the Minecraft 26.2 block-state and Fabric appearance method descriptors and must remain on the controlled target release.",
               "regression_evidence": [
-                "Canary 7 cleanly compiles and its focused headless GameTests execute against Minecraft 26.2 and Fabric API 0.156.0+26.2 with exact BGE C73."
+                "Canary 8 cleanly compiles and its 21/21 focused headless GameTests plus 12/12 unit tests execute against Minecraft 26.2 and Fabric API 0.156.0+26.2 with exact BGE C74."
               ]
             },
             {
@@ -113,7 +113,7 @@
             }
           ]
         },
-        "summary": "Consumes BGE C73 canonical bindings and preserves C6 receiver-surface emission while separating strict CTM coplanarity from boundary-overlap Standard Overlay contact for special Farmland Slab."
+        "summary": "Combines Continuity's semantic decisions with BGE C74's generic canonical-face surface patches, including typed terrain insets and compound geometry, without per-material or per-geometry fixes."
       },
       "accepted": null,
       "rollback": null,
@@ -127,10 +127,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 9,
-    "activity_at": "2026-09-18T07:03:00.9232372Z",
-    "updated_at": "2026-09-18T07:03:00.9232372Z",
-    "last_codex_at": "2026-09-18T07:03:00.9232372Z",
-    "source_commit": "753662aeba14d19da6932e7e94dd955f4e11f159"
+    "revision": 10,
+    "activity_at": "2026-09-18T15:48:38.8336326Z",
+    "updated_at": "2026-09-18T15:48:38.8336326Z",
+    "last_codex_at": "2026-09-18T15:48:38.8336326Z",
+    "source_commit": "ee8a4353bdf094a5570f3823d949cdb22ff02342"
   }
 }

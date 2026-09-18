@@ -26,14 +26,15 @@
       "Offer complete nine-role BGE geometry families for the exact 76 requested optional-provider sources only when Ribbits, Mynx Trees, Macaw's Paths, or Building But Better supplies the corresponding source block.",
       "Treat adding a normal catalog material as full membership in the canonical block, horizontal slab, stair, wall, Vertical Slab, Step, Layer, Corner, and Quarter Column roles unless an exact technical exclusion is recorded.",
       "Keep canonical material identity separate from geometry generation so limited special forms such as Farmland Slab remain explicitly canonical-bound without implying a full generated family.",
-      "Require every BGE-owned registered block to have one explicit canonical classification or a documented exemption, with bootstrap validation preventing anonymous material-semantic holes."
+      "Require every BGE-owned registered block to have one explicit canonical classification or a documented exemption, with bootstrap validation preventing anonymous material-semantic holes.",
+      "Expose canonical material-face semantics and real exposed planar surface patches as a BGE-owned binding contract so geometry consumers do not duplicate per-geometry shape algorithms."
     ],
     "scope": [
       "Compile the retained `games.twinhead.moreslabsstairsandwalls` source and `more_slabs_stairs_and_walls` resources directly inside BGE with a clear LGPL-covered source and attribution boundary.",
       "Register native slabs, stairs, walls, material profiles, transitions, and client bindings before deriving CNM/BGE geometry through one guarded bootstrap and one root Fabric descriptor.",
-      "Preserve all native material profiles, canonical parents, copied settings, TOP/SIDE/BOTTOM roles, axes, patterns, tint, translucency, transitions, drops, and specialized behaviors; C62 corrects the wall-material, canonical-role duplication, leaf-wall, and plain-Path seams demonstrated by exact C61 runtime evidence, C63 corrects external axis-family inventory previews, C64 adds the complete BBB beam catalog, C65 corrects its demonstrated BBB production axis-resource classification failure, C66 gives compatible Quarter Columns Step-equivalent full-cell continuation targeting without changing their physical geometry, C68 preserves one-to-one texel density for axis-material Layer faces without changing their geometry or grain orientation, C69 restores independent material axes to the canonical BBB Beam Slab and Beam Stair, C70 restores vanilla Stone slab ownership, C71 mirrors Minecraft 26.2 horizontal-slab tilling and Farmland lifecycle semantics, C72 extends that Farmland Slab water search exactly one block lower without changing the C71 lifecycle, and C73 establishes authoritative typed canonical bindings plus placement-time canonicalization for completed ordinary horizontal and Vertical Slabs.",
+      "Preserve all native material profiles, canonical parents, copied settings, TOP/SIDE/BOTTOM roles, axes, patterns, tint, translucency, transitions, drops, and specialized behaviors; C62 corrects the wall-material, canonical-role duplication, leaf-wall, and plain-Path seams demonstrated by exact C61 runtime evidence, C63 corrects external axis-family inventory previews, C64 adds the complete BBB beam catalog, C65 corrects its demonstrated BBB production axis-resource classification failure, C66 gives compatible Quarter Columns Step-equivalent full-cell continuation targeting without changing their physical geometry, C68 preserves one-to-one texel density for axis-material Layer faces without changing their geometry or grain orientation, C69 restores independent material axes to the canonical BBB Beam Slab and Beam Stair, C70 restores vanilla Stone slab ownership, C71 mirrors Minecraft 26.2 horizontal-slab tilling and Farmland lifecycle semantics, C72 extends that Farmland Slab water search exactly one block lower without changing the C71 lifecycle, C73 establishes authoritative typed canonical bindings plus placement-time canonicalization for completed ordinary horizontal and Vertical Slabs, and C74 attaches canonical face and real surface-patch semantics to those bindings.",
       "Generate one Layer, Corner, and Quarter Column per supported canonical family while preserving Vertical Slab and Step, deterministic selector order, one-source economy, orientation, waterlogging, collision, and drops.",
-      "Provide primary Fabric ID `cnm_terrain_slabs_compat` and verified legacy alias `more_slabs_stairs_and_walls` from the same mod container and shared version `4.2.17-bge.canary73.canonical-bindings+26.2`.",
+      "Provide primary Fabric ID `cnm_terrain_slabs_compat` and verified legacy alias `more_slabs_stairs_and_walls` from the same mod container and shared version `4.2.18-bge.canary74.surface-semantics+26.2`.",
       "Preserve C58 native registry/resource identities while exposing one canonical nine-role family per exact optional source variant: 52 Macaw patterned full blocks, five distinct Macaw soil Path blocks, Ribbits Mossy Oak Planks, six Mynx Trees log, wood, and leaf sources, and all 12 BBB beam parents including Pale Oak. BBB's original slab and stair registrations remain untouched, but their provider state is geometry-only and cannot carry an independent material AXIS; C69 therefore gives BGE canonical AxisSlab and AxisStairs forms, retains BBB's ordinary thin WoodenWallBlock as the canonical wall, and keeps the five other BGE axis-aware roles. C65 accepts BBB's real semantically equivalent `axis=z` `x=90,y=180` representation while rejecting unknown transforms and `uvlock`."
     ],
     "boundaries": {
@@ -47,7 +48,8 @@
         "`projects/bge-ctm`, shaders, resource-pack classification, BBB source/assets, and unrelated consumer projects are outside this consolidation.",
         "Accepted BGE C52 and historical standalone Nibaru C45 are preserved as rollback provenance and are not rewritten.",
         "C72 owns only the C71 Farmland Slab hydration search extension from Y..Y+1 to Y-1..Y+1; hoe conversion, moisture range/progression, rain, drying, crop retention, survival, trampling, Dirt-slab reversion, geometry, drops, waterlogging, Dirt Path, non-farmland geometry, and C70 Stone behavior remain unchanged. Crop placement, crop growth, partial-height projection, targeting, particles, and rendering remain deferred to Slab Decorations.",
-        "C73 changes canonical material classification, state projection, and the already-legal BlockItem placement result only for completed normal-catalog horizontal and Vertical Slabs. It adds no recipe, refund, migration, or broader occupancy normalization; historical double states remain valid, and special Farmland Slab is explicitly excluded from canonical full-block replacement."
+        "C73 changes canonical material classification, state projection, and the already-legal BlockItem placement result only for completed normal-catalog horizontal and Vertical Slabs. It adds no recipe, refund, migration, or broader occupancy normalization; historical double states remain valid, and special Farmland Slab is explicitly excluded from canonical full-block replacement.",
+        "C74 describes axis-aligned exposed surface patches for canonical blocks, horizontal and Vertical Slabs, Layers, Farmland Slab, Steps, Corners, and Quarter Columns. Native Stairs and Walls remain explicitly fail-closed because their rendered inner/outer and post/arm topology is neighbor-contextual; C74 does not guess that context."
       ]
     },
     "dependencies": [
@@ -55,7 +57,7 @@
         "type": "MOD",
         "identifier": "minecraft",
         "requirement": "~26.2",
-        "reason": "Unified BGE C73 targets Minecraft Java 26.2."
+        "reason": "Unified BGE C74 targets Minecraft Java 26.2."
       },
       {
         "type": "MOD",
@@ -78,17 +80,17 @@
     ]
   },
   "state": {
-    "milestone": "C73 provides one authoritative typed canonical-material binding for all 419 normal profiles and every BGE-owned block, with explicit aliases, special Farmland identity, safe state projection, topology, completeness validation, and placement-time canonicalization only when ordinary horizontal or Vertical Slabs complete a blockspace. A Java 25 clean build, all 123 controlled GameTests, all 13 static suites, and exact C58/C72 archive boundaries pass. The owner's aggregate external runtime PASS is bound only to exact C72 without checklist-row detail or acceptance; C73 has no Minecraft gameplay-runtime evidence and remains ACTIVE, while accepted C70 is unchanged.",
+    "milestone": "C74 extends BGE's authoritative canonical binding with a generic collection of real exposed planar surface patches carrying normal, plane, footprint, canonical material face, and typed terrain-height relation. Horizontal and Vertical Slabs, Layers, Farmland Slab, Steps, Corners, and Quarter Columns are supported without flattening compound shapes; native Stairs and Walls are explicitly fail-closed with contextual limitations. A Java 25 clean build, 127/127 controlled GameTests, the static architecture suite, and exact C58/C73 archive boundaries pass. C74 has no Minecraft gameplay-runtime evidence and remains ACTIVE; accepted C70 and rollback C72 are unchanged.",
     "releases": {
       "current": {
-        "version": "C73 (Canonical Bindings; embedded 4.2.17-bge.canary73.canonical-bindings+26.2)",
-        "embedded_version": "4.2.17-bge.canary73.canonical-bindings+26.2",
+        "version": "C74 (Surface Semantics; embedded 4.2.18-bge.canary74.surface-semantics+26.2)",
+        "embedded_version": "4.2.18-bge.canary74.surface-semantics+26.2",
         "artifact": {
-          "filename": "cnm-nibaru-integration-4.2.17-bge.canary73.canonical-bindings+26.2.jar",
-          "sha256": "4e8e7bbac17b828177059d21ed6a6d216028a17252e64b23ff4142b6d1b8200c"
+          "filename": "cnm-nibaru-integration-4.2.18-bge.canary74.surface-semantics+26.2.jar",
+          "sha256": "8845817c1418d039a424ee6218883d53ad8a3e5d680d4d717317ee29f0276d24"
         },
-        "built_at": "2026-09-18T05:36:22.0287782Z",
-        "source_commit": "c0f17c650454e60b9518454b2f42bb1f837ccfd9",
+        "built_at": "2026-09-18T15:35:22.0490477Z",
+        "source_commit": "33dec16d9eedfd7d131a318f60f2a8f48a7ab0bb",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": [
@@ -97,17 +99,17 @@
               "relationship": "depends",
               "dependency_id": "minecraft",
               "predicate": "~26.2",
-              "reason": "The exact C73 artifact targets the Minecraft 26.2 release and packages Fabric's same-release predicate; this target-specific Minecraft predicate must remain bound to the controlled-validation release bytes.",
+              "reason": "The exact C74 artifact targets the Minecraft 26.2 release and packages Fabric's same-release predicate; this target-specific Minecraft predicate must remain bound to the controlled-validation release bytes.",
               "regression_evidence": [
-                "A Java 25 clean Gradle build produced C73 SHA-256 4e8e7bbac17b828177059d21ed6a6d216028a17252e64b23ff4142b6d1b8200c from implementation checkpoint c0f17c650454e60b9518454b2f42bb1f837ccfd9.",
-                "The C73 GameTest suite passed 123/123 on the Minecraft 26.2 validation baseline, including 419 profiles, 3,771 primary nine-role bindings, 3,075 owned blocks, three aliases, one special binding, zero exemptions, catalog-wide horizontal/Vertical Slab projection, real placement transaction paths, state preservation, economy, negative placement cases, and historical double-state retention.",
-                "All 13 static architecture/resource/semantic suites passed; the archive verifier found exactly five changed and 12 new entries versus exact C72, with zero missing or unexpected entries and no forbidden source/texture leakage.",
-                "The exact JAR audit found 866 blockstates, 311 families, 6,895 block models, 866 loot tables, zero recipes or recipe advancements, zero invalid JSON, complete wall tagging, one root Fabric descriptor, and zero nested JARs."
+                "A Java 25 clean Gradle build produced C74 SHA-256 8845817c1418d039a424ee6218883d53ad8a3e5d680d4d717317ee29f0276d24 from implementation checkpoint 33dec16d9eedfd7d131a318f60f2a8f48a7ab0bb.",
+                "The C74 GameTest suite passed 127/127 on Minecraft 26.2, including six-face canonical mappings, simple and deterministic compound patch collections, typed terrain insets, ordinary exact surfaces, explicit Stair/Wall limitations, and every retained C73 regression.",
+                "The static architecture suite passed; the archive verifier found exactly 10 changed and seven new entries versus exact C73, with zero missing or unexpected entries and no forbidden source/texture leakage.",
+                "The exact JAR audit retained 866 blockstates, 311 families, 6,895 block models, 866 loot tables, zero recipes, one root Fabric descriptor, and zero nested JARs."
               ]
             }
           ]
         },
-        "summary": "Adds complete typed canonical-material bindings and converts newly completed normal horizontal and Vertical Slabs to their canonical full blocks without changing placement economy."
+        "summary": "Adds a generic BGE-owned exposed-surface contract with canonical face semantics and typed terrain insets for simple and compound geometry."
       },
       "accepted": {
         "version": "C70 (Stone Native Slab; embedded 4.2.14-bge.canary70.stone-native-slab+26.2)",
@@ -175,10 +177,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 35,
-    "activity_at": "2026-09-18T05:40:26Z",
-    "updated_at": "2026-09-18T05:40:26Z",
-    "last_codex_at": "2026-09-18T05:40:26Z",
-    "source_commit": "c0f17c650454e60b9518454b2f42bb1f837ccfd9"
+    "revision": 36,
+    "activity_at": "2026-09-18T15:35:22.0490477Z",
+    "updated_at": "2026-09-18T15:35:22.0490477Z",
+    "last_codex_at": "2026-09-18T15:35:22.0490477Z",
+    "source_commit": "33dec16d9eedfd7d131a318f60f2a8f48a7ab0bb"
   }
 }
