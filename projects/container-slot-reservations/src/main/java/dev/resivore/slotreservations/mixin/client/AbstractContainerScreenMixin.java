@@ -104,6 +104,8 @@ abstract class AbstractContainerScreenMixin implements ReservationScreenAccess {
     @Inject(method = "mouseClicked", at = @At("HEAD"), cancellable = true)
     private void containerSlotReservations$panelClick(MouseButtonEvent event, boolean doubleClick,
                                                        CallbackInfoReturnable<Boolean> callbackInfo) {
+        if (event.button() == 1) CarriedShulkerRmbCollector.observeVanillaScreenClick(
+                (AbstractContainerScreen<?>) (Object) this, event.x(), event.y());
         boolean standardClick = !doubleClick && !event.hasShiftDown()
                 && !event.hasControlDown() && !event.hasAltDown();
         boolean shiftPrimary = !doubleClick && event.hasShiftDown() && !event.hasControlDown()

@@ -83,6 +83,8 @@ public final class ContainerSlotReservationsClient implements ClientModInitializ
             Event<ScreenMouseEvents.AllowMouseClick> click = ScreenMouseEvents.allowMouseClick(screen);
             orderBeforeForeignInput(click);
             click.register(CARRIED_SHULKER_INPUT_PHASE, (_screen, event) -> {
+                CarriedShulkerRmbCollector.observePhysicalPress(containerScreen, event.x(), event.y(),
+                        event.button(), event.hasShiftDown(), event.hasControlDown(), event.hasAltDown());
                 if (event.button() != 1 || event.hasShiftDown()
                         || event.hasControlDown() || event.hasAltDown()
                         || ShulkerPanel.containsPanel(event.x(), event.y())) return true;

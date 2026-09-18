@@ -57,8 +57,11 @@ public final class ReservationNetworking {
         ServerPlayNetworking.registerGlobalReceiver(ReservationActionPayload.TYPE, (payload, context) ->
                 context.server().execute(() -> handleAction(context.player(), payload)));
         ServerPlayNetworking.registerGlobalReceiver(CarriedShulkerInventoryActionPayload.TYPE,
-                (payload, context) -> context.server().execute(() ->
-                        CarriedShulkerInventoryActions.handle(context.player(), payload)));
+                (payload, context) -> {
+                    CarriedShulkerRmbTrace.server("SERVER_PACKET_RECEIVED", "receiver=global scheduling=true menuId="
+                            + payload.menuId() + " sourceMenuSlot=" + payload.menuSlot());
+                    context.server().execute(() -> CarriedShulkerInventoryActions.handle(context.player(), payload));
+                });
         ServerPlayNetworking.registerGlobalReceiver(ReservationSnapshotRequestPayload.TYPE, (payload, context) ->
                 context.server().execute(() -> handleSnapshotRequest(context.player(), payload)));
         ServerPlayNetworking.registerGlobalReceiver(ShulkerPanelReservationActionPayload.TYPE, (payload, context) ->

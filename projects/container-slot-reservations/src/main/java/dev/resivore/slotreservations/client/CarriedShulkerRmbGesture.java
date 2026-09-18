@@ -24,6 +24,7 @@ final class CarriedShulkerRmbGesture {
     private Mode mode = Mode.INACTIVE;
     private ItemStack projectedShulker = ItemStack.EMPTY;
     private String projectedFingerprint;
+    private long traceGesture;
     private final Set<String> validLiveFingerprints = new LinkedHashSet<>();
     private final Set<Slot> visitedSlots = Collections.newSetFromMap(new IdentityHashMap<>());
 
@@ -39,6 +40,10 @@ final class CarriedShulkerRmbGesture {
         projectedFingerprint = carriedFingerprint;
         validLiveFingerprints.add(carriedFingerprint);
     }
+
+    void traceGesture(long traceGesture) { this.traceGesture = traceGesture; }
+    long traceGesture() { return traceGesture; }
+    int visitedCount() { return visitedSlots.size(); }
 
     /** Mirrors Item Interactions: one action per actual hovered Slot identity per held drag. */
     boolean enter(Slot slot) {
@@ -65,6 +70,7 @@ final class CarriedShulkerRmbGesture {
         mode = Mode.INACTIVE;
         projectedShulker = ItemStack.EMPTY;
         projectedFingerprint = null;
+        traceGesture = 0;
         validLiveFingerprints.clear();
         visitedSlots.clear();
     }
