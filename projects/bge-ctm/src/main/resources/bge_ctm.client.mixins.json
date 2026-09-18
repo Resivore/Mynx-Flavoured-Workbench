@@ -1,0 +1,12 @@
+{
+  "required": true,
+  "package": "dev.resivore.bgectm.mixin",
+  "compatibilityLevel": "JAVA_25",
+  "client": [
+    "ContinuityConnectionPredicateFactoryMixin",
+    "ContinuityQuadContextMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

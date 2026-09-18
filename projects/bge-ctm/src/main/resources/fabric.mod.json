@@ -3,12 +3,16 @@
   "id": "bge_ctm",
   "version": "${version}",
   "name": "BGE × CTM",
-  "description": "Conservatively projects eligible full-volume BGE geometry onto its typed canonical material appearance state.",
+  "description": "Projects typed BGE material appearances and filters Continuity connections by exact coplanar surface contact.",
   "authors": ["Resivore"],
   "license": "MIT",
   "environment": "*",
   "mixins": [
-    "bge_ctm.mixins.json"
+    "bge_ctm.mixins.json",
+    {
+      "config": "bge_ctm.client.mixins.json",
+      "environment": "client"
+    }
   ],
   "depends": {
     "fabricloader": ">=0.19.3",
@@ -16,10 +20,8 @@
     "minecraft": "~26.2",
     "java": ">=25",
     "clutternomore": ">=2.0.7",
-    "cnm_terrain_slabs_compat": ">=4.2.14-bge.canary70.stone-native-slab+26.2"
-  },
-  "suggests": {
-    "continuity": "*"
+    "cnm_terrain_slabs_compat": ">=4.2.14-bge.canary70.stone-native-slab+26.2",
+    "continuity": "=3.0.1+26.2"
   },
   "custom": {
     "runtime_dependency_policy": {
@@ -32,7 +34,17 @@
           "predicate": "~26.2",
           "reason": "The appearance bridge is compiled against the Minecraft 26.2 block-state and Fabric appearance method descriptors and must remain on the controlled target release.",
           "regression_evidence": [
-            "Canary 1 compiles and its focused headless GameTests execute against Minecraft 26.2 and Fabric API 0.156.0+26.2."
+            "Canary 2 compiles and its focused headless GameTests execute against Minecraft 26.2 and Fabric API 0.156.0+26.2."
+          ]
+        },
+        {
+          "consumer_id": "bge_ctm",
+          "relationship": "depends",
+          "dependency_id": "continuity",
+          "predicate": "=3.0.1+26.2",
+          "reason": "Canary 2 injects the exact Continuity 3.0.1+26.2 seven-argument ConnectionPredicate neighbor seam; the required mixin and controlled input hash fail closed rather than guessing across an incompatible implementation.",
+          "regression_evidence": [
+            "The exact Continuity 3.0.1+26.2 input is SHA-256 controlled, compiles against the typed ConnectionPredicate seam, and is verified as a required client mixin target."
           ]
         }
       ]

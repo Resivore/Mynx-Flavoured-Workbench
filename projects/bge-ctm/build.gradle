@@ -17,6 +17,15 @@ base {
 repositories {
     maven { url = 'https://maven.fabricmc.net/' }
     mavenCentral()
+    exclusiveContent {
+        forRepository {
+            maven {
+                name = 'Modrinth'
+                url = 'https://api.modrinth.com/maven'
+            }
+        }
+        filter { includeGroup 'maven.modrinth' }
+    }
 }
 
 configurations {
@@ -26,6 +35,11 @@ configurations {
         transitive = false
     }
     cnmReference {
+        canBeConsumed = false
+        canBeResolved = true
+        transitive = false
+    }
+    continuityReference {
         canBeConsumed = false
         canBeResolved = true
         transitive = false
@@ -40,6 +54,8 @@ def cnmReferenceJar = new File(workbenchRoot,
         'originals/mods/clutternomore-2.0.7+26.2-fabric.jar')
 def expectedBgeSha256 = 'd304552e29e76c4165675415215439ac2d73b5a6ebc4abc9787f0fa1124cf266'
 def expectedCnmSha256 = '41a925e70d5e6e8c098bea7dc88c44486aed46724e35cb2fa4b1622b2a4dbcce'
+def expectedContinuitySha256 = '2094a52b98e247f664ef2ecdbb41d7dcad7779cc7a8fb87f0ed8a4f8196c0446'
+def continuityCoordinates = 'maven.modrinth:1IjD5062:mgUN5Xz2'
 
 dependencies {
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
@@ -51,8 +67,13 @@ dependencies {
     compileOnly files(cnmReferenceJar)
     runtimeOnly files(cnmReferenceJar)
 
+    compileOnly(continuityCoordinates) { transitive = false }
+    runtimeOnly(continuityCoordinates) { transitive = false }
+    testCompileOnly(continuityCoordinates) { transitive = false }
+
     bgeReference files(bgeReferenceJar)
     cnmReference files(cnmReferenceJar)
+    continuityReference(continuityCoordinates) { transitive = false }
 
     testImplementation platform('org.junit:junit-bom:5.13.4')
     testImplementation 'org.junit.jupiter:junit-jupiter'
@@ -82,8 +103,9 @@ def sha256 = { File file ->
 
 tasks.register('verifyControlledProviders') {
     group = 'verification'
-    description = 'Verifies the exact authoritative BGE C70 and Clutter No More build inputs.'
-    inputs.files(configurations.bgeReference, configurations.cnmReference)
+    description = 'Verifies the exact authoritative BGE C70, Clutter No More, and Continuity inputs.'
+    inputs.files(configurations.bgeReference, configurations.cnmReference,
+            configurations.continuityReference)
     doLast {
         File bge = configurations.bgeReference.singleFile
         File cnm = configurations.cnmReference.singleFile
@@ -92,6 +114,33 @@ tasks.register('verifyControlledProviders') {
         }
         if (sha256(cnm) != expectedCnmSha256) {
             throw new GradleException("Clutter No More reference SHA-256 drifted: ${sha256(cnm)}")
+        }
+        File continuity = configurations.continuityReference.singleFile
+        if (sha256(continuity) != expectedContinuitySha256) {
+            throw new GradleException("Continuity 3.0.1+26.2 reference SHA-256 drifted: ${sha256(continuity)}")
+        }
+        ZipFile archive = new ZipFile(continuity)
+        try {
+            [
+                    'me/pepperbell/continuity/client/processor/ConnectionPredicate.class':
+                            ['shouldConnect'],
+                    'me/pepperbell/continuity/client/properties/BasicConnectingCtmProperties.class':
+                            ['getConnectionPredicate'],
+                    'me/pepperbell/continuity/client/model/CtmBlockStateModel$CtmQuadTransform.class':
+                            ['transformOnce', 'processQuad']
+            ].each { path, requiredConstants ->
+                def seam = archive.getEntry(path)
+                if (seam == null) {
+                    throw new GradleException("Exact Continuity seam is unavailable: ${path}")
+                }
+                String constants = new String(archive.getInputStream(seam).readAllBytes(),
+                        java.nio.charset.StandardCharsets.ISO_8859_1)
+                if (!requiredConstants.every { constants.contains(it) }) {
+                    throw new GradleException("Exact Continuity seam is incompatible: ${path}")
+                }
+            }
+        } finally {
+            archive.close()
         }
     }
 }
@@ -135,24 +184,41 @@ tasks.register('verifyReleaseArtifact') {
             def entries = archive.entries().toList()
             def metadata = new JsonSlurper().parse(
                     archive.getInputStream(archive.getEntry('fabric.mod.json')))
+            def clientMixins = new JsonSlurper().parse(
+                    archive.getInputStream(archive.getEntry('bge_ctm.client.mixins.json')))
             if (metadata.id != 'bge_ctm' || metadata.version != project.version ||
                     metadata.depends?.minecraft != '~26.2' ||
                     metadata.depends?.cnm_terrain_slabs_compat !=
                             '>=4.2.14-bge.canary70.stone-native-slab+26.2' ||
-                    metadata.suggests?.continuity != '*') {
-                throw new GradleException('Release metadata no longer describes the bounded BGE/Continuity bridge')
+                    metadata.depends?.continuity != '=3.0.1+26.2') {
+                throw new GradleException('Release metadata no longer describes the exact BGE/Continuity bridge')
+            }
+            if (clientMixins.required != true || clientMixins.injectors?.defaultRequire != 1 ||
+                    (clientMixins.client as Set) != ([
+                            'ContinuityConnectionPredicateFactoryMixin',
+                            'ContinuityQuadContextMixin'] as Set)) {
+                throw new GradleException('Required exact Continuity mixin boundary changed')
             }
             def policy = metadata.custom?.runtime_dependency_policy
+            def exceptionIds = policy?.exceptions instanceof List
+                    ? policy.exceptions*.dependency_id as Set
+                    : Set.of()
             if (policy?.contract != 'CAPABILITY_OR_PROVIDER' ||
-                    !(policy.exceptions instanceof List) || policy.exceptions.size() != 1 ||
-                    policy.exceptions[0]?.dependency_id != 'minecraft') {
+                    !(policy.exceptions instanceof List) || policy.exceptions.size() != 2 ||
+                    exceptionIds != (['minecraft', 'continuity'] as Set)) {
                 throw new GradleException('Release runtime dependency-policy attestation is missing or changed')
             }
             [
                     'fabric.mod.json',
                     'bge_ctm.mixins.json',
+                    'bge_ctm.client.mixins.json',
                     'dev/resivore/bgectm/CanonicalAppearanceResolver.class',
-                    'dev/resivore/bgectm/mixin/BgeDerivedBlockAppearanceMixin.class'
+                    'dev/resivore/bgectm/SurfaceContactResolver.class',
+                    'dev/resivore/bgectm/continuity/ContactFilteringConnectionPredicate.class',
+                    'dev/resivore/bgectm/continuity/ContinuityQuadContext.class',
+                    'dev/resivore/bgectm/mixin/BgeDerivedBlockAppearanceMixin.class',
+                    'dev/resivore/bgectm/mixin/ContinuityConnectionPredicateFactoryMixin.class',
+                    'dev/resivore/bgectm/mixin/ContinuityQuadContextMixin.class'
             ].each { entry ->
                 if (archive.getEntry(entry) == null) {
                     throw new GradleException("Compatibility artifact is missing ${entry}")
@@ -179,7 +245,7 @@ tasks.register('verifyReleaseArtifact') {
 
 tasks.register('stageCanaryArtifact', Copy) {
     group = 'distribution'
-    description = 'Stages the exact ignored Canary 1 JAR for canonical local retention.'
+    description = 'Stages the exact ignored Canary 2 JAR for canonical local retention.'
     dependsOn tasks.named('verifyReleaseArtifact')
     from(packagedJar)
     into(layout.projectDirectory.dir('artifacts'))
