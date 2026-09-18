@@ -4,6 +4,36 @@ This file records intentional departures from the faithful Minecraft Java 26.2 R
 
 The direct predecessor is runtime-failed Mynx Canary 11: `ribbits-private-reconstruction-4.1.6+26.2-mynx-canary11.jar`, 3,334,222 bytes, SHA-256 `258CA17B5D61C825AFBAF852413C1F44183D2533446BFF297C4B8453AD9CECAA`, source `784b745d6480e076fb94598a3b466cfb98bbec04`. It and earlier private artifacts remain unchanged and unaccepted.
 
+## Canary 26 volumetric models, huge growth, and village color variation
+
+- The immutable `originals/assets/Matcha-Overlays-v37.zip` remains 2,616,259 bytes / SHA-256 `2642DCEA338100F469DF905B212423683E83AE7C683C7B9FABFBD2195A2FE802`. Its approved surface expands from Canary 25's two PNGs to exactly six members; the archive is read-only, is rehashed after assembly, and is never bundled. The four block-model donors replace Canary 25's native crossed/flat model derivation only for `small_brown_toadstool{,_2,_3,_4}.json`. After normalizing only texture `0`, particle, and required `render_type: cutout` metadata, every element, bound, rotation/origin, face, UV and face rotation, group hierarchy, child order, texture size, parent, and model order is identical to its donor. Element counts are 7/8/7/7 and every element is volumetric.
+
+| Approved Matcha member | Bytes | SHA-256 |
+| --- | ---: | --- |
+| `assets/ribbits/textures/item/toadstool.png` | 538 | `46AACAE3545D1053E30EEA2DF160620395342E01545B21DF73825F860E9D3E00` |
+| `assets/ribbits/textures/block/brown_toadstool.png` | 368 | `D0E76ECC0003F5236111C8FCFCA304FD90A1F0D3B999DBF4978D1F78382FDA16` |
+| `assets/ribbits/models/block/toadstool.json` | 3,625 | `AA0ADC3E68CD3316C4C2A872BC207C26D8809B873A6453F255825F2E612EDDAB` |
+| `assets/ribbits/models/block/toadstool_2.json` | 4,659 | `345A05C607636A65F2A2A3A78B46F2E752A6EF0437256C67EBAC19A557F776AA` |
+| `assets/ribbits/models/block/toadstool_3.json` | 4,141 | `C6E043F91CE31C4C9B4372F029AB035A7053F1A0158C2C6AC319D6BDD9AC7D52` |
+| `assets/ribbits/models/block/toadstool_4.json` | 4,215 | `B3CF80AF14196300EF4B8BE37DAFF707BEC7E3EF4C1D53B380DC3B2442D2A9E6` |
+
+- `ToadstoolBlock` now performs vanilla Java 26.2's exact `random.nextFloat() < 0.4F` giant-growth roll on the server before the existing patch behavior. A selected huge feature uses vanilla's remove-without-drops, configured-feature placement, and source restoration semantics. Huge success ends that bonemeal action; a missed roll, absent feature, or failed/obstructed placement restores the original small plant and delegates to the unchanged same-color `SwampPlantBlock` patch. Red therefore never spreads brown and brown never spreads red through this path.
+- Exact Minecraft 26.2 configured-feature inputs are `huge_brown_mushroom.json`, 902 bytes / SHA-256 `C6D98DDBC71679078861EC6E9B145BB4E1B77EFA9252C8F09BFE144F3BC5581F`, and `huge_red_mushroom.json`, 871 bytes / SHA-256 `C78F0A44EB34C83A20462664B7EE17689F5076864F757BE4BD807921AB1F7C59`. `ribbits:huge_red_toadstool` intentionally uses the vanilla huge-brown feature with explicit radius 3, `ribbits:red_toadstool` cap, and `ribbits:toadstool_stem`; `ribbits:huge_brown_toadstool` intentionally uses vanilla huge-red with its codec-default effective radius 2, `ribbits:brown_toadstool` cap, and the same stem. Neither output references a vanilla mushroom block or any placed/biome feature.
+- Future Ribbit villages randomize every embedded `ribbits:toadstool` through the village-scoped `ribbits:main` processor: red is the default and brown is one exact `0.5` entry. The actual 26.2 jigsaw path leaves `StructurePlaceSettings` without an injected RNG, so `getRandom(blockInfoGlobal.pos())` produces a separate reproducible global-position-derived draw for each plant. All 29 private NBT templates remain byte-identical, including the five embedded red placements, and each template is reached exactly once through the six village pools. The separate decoration `veg_patch` path changes only its weights to 2 umbrella / 3 red / 3 brown / 2 daisy, preserving total toadstool probability `0.6` with a conditional exact 50/50 split. No existing structure is scanned or retrofitted and no ordinary non-village worldgen path gains the brown plant.
+
+| Canary 26 private output | Bytes | SHA-256 |
+| --- | ---: | --- |
+| `assets/ribbits/models/block/small_brown_toadstool.json` | 8,578 | `D333DD68807F2236FDCA5DDB8CB397F5D6C398266CD9B12898F71FA92FF87540` |
+| `assets/ribbits/models/block/small_brown_toadstool_2.json` | 10,845 | `F98EBAF80545C870D874CD4501C229517137EE41AA94559846A281E760EBF8E4` |
+| `assets/ribbits/models/block/small_brown_toadstool_3.json` | 9,566 | `7FE9A98789A9E403AA1686650986EFD4732E880815A45FDB507BB7E37DA2FAF4` |
+| `assets/ribbits/models/block/small_brown_toadstool_4.json` | 9,680 | `4394F1DBF1425DC7559DE3B9409109D55CE8B741FB78D6E9002D0EC4872CCDD9` |
+| `data/ribbits/worldgen/configured_feature/huge_red_toadstool.json` | 893 | `9F2B3F90AFCB53B48645FA725A16A0CA0CDEDB67274B6C85EF3002FB46697987` |
+| `data/ribbits/worldgen/configured_feature/huge_brown_toadstool.json` | 866 | `CD91317894F01AEDA6BC6FA3BE5977C459B19C0ECEA4FB843E026042C68642B6` |
+| `data/ribbits/worldgen/processor_list/main.json` | 6,330 | `C14EC3E9AA2BC9A380D9952CF823E24EE6E4B1CACD399549336A86A35CC2FE22` |
+| `data/ribbits/worldgen/configured_feature/veg_patch.json` | 2,180 | `0FE38DE503F0FBBA798DFEDB854D2F8EBE1A9F869783C3E2C29D88C8F927096F` |
+
+Two independent Canary 26 private assemblies are identical at 363 files / 266 strict JSON documents / 2,780,499 bytes. Two clean private JAR builds are byte-identical at 3,376,664 bytes / SHA-256 `3D43040596D667BE633FDFD2981BAA5A02E826887521C6792041E023E71F0BC0`; final tree, archive, donor, production-Mixin, and source-only boundary gates pass. This is static evidence only; Canary 26 remains `RUNTIME_UNTESTED`.
+
 ## Canary 25 small brown toadstool
 
 - `ribbits:small_brown_toadstool` is a new identity and does not reuse or alter the existing huge `ribbits:brown_toadstool`. It is registered as the same small `ToadstoolBlock` plant class as `ribbits:toadstool`, retaining the 16×8 selection shape, vegetation placement contract, no collision, instant breaking, ordinary self-drop and pick-block behavior, default block-item stacking, one Creative entry, and 0.65 compostability. Its constructor selects only the dedicated `ribbits:small_brown_toadstool_patch`; the existing red patch remains unchanged.
@@ -501,3 +531,5 @@ The user's statement that Phase C is good binds to the exact canonical Canary 6 
 Canary 7 was not deployed or launched and remains `RUNTIME_UNTESTED`. Its successful build, tests, deterministic assembly, archive/codec/dependency/donor checks, production-equivalent Knot/Mixin application, MME wrapper-order tests, and static Compass Ribbon audit must not be reported as Minecraft gameplay runtime correctness.
 
 Canary 8 was not deployed or launched and remains independently `RUNTIME_UNTESTED`. Its successful build, 153-test Java suite, 41-test private-resource suite, deterministic source/private reconstruction, archive/resource/component/tag checks, and production-equivalent Knot/Mixin application must not be reported as Minecraft gameplay correctness. Its exact visible and instrumented runtime procedure is in `TESTING.md`.
+
+The supplied Canary 25 observations bind only to exact version `4.1.6+26.2-mynx-canary25`, filename `ribbits-private-reconstruction-4.1.6+26.2-mynx-canary25.jar`, 3,372,969 bytes, SHA-256 `00FF8AF7A86D8EA9A0580905E6592E31E362937895D66D5B0ACA702247FA6064`, built `2026-09-18T02:51:32.2159711Z`, source `64e57751e5b2bdb157458d952a8595b804f6db14`. The user observed brown small-toadstool bonemeal spreading functioning and the smaller brown variants rendering as undesired flat/crossed planes while the Matcha donor red models were volumetric. No overall Canary 25 PASS, FAIL, PARTIAL, or INCONCLUSIVE classification and no unreported behavior are inferred. Canary 26 has not been launched or observed in Minecraft and remains independently `RUNTIME_UNTESTED`.

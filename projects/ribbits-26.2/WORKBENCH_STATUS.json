@@ -39,7 +39,7 @@
       "Maintain native map-decoration type ribbits:ribbit_village, exact success custom-data marker ribbits:ribbit_village_explorer_map=true, ordinary filled-map/map-id/decorations synchronization, and user-authored marker cropped without resampling to the native 8-by-8 atlas canvas and successful filled-map item artwork under the Ribbits namespace.",
       "Preserve the private resource assembler; exact pristine, Minecraft, dependency, output, and archive identities; all three existing mod donors; the authoritative Matcha overlay recolor donor; and the authorized shared green ten-egg derivation contract including the Wandering Ribbit egg.",
       "Display Drop Leaf while preserving ribbits:chute_leaf registry/save identity; use the exact latest 16x16 inventory PNG independently from the earlier closed-back sprite through a render-only auxiliary chute_leaf_closed model, derive only the deployed open model from the donor Wandering Ribbit entity's rain-held umbrella_leaf/grip/leaf2 geometry, and expose the exact 128x128 donor entity PNG through an item-atlas-safe Ribbits texture path while preserving renderer attachment, first-person presentation, activation, and movement behavior.",
-      "Maintain ribbits:small_brown_toadstool as a distinct small-plant counterpart to ribbits:toadstool with the same placement, shape, ordinary drop and pick-block, default stacking, Creative exposure, and 0.65 compost behavior; a dedicated brown-only bonemeal patch; exact private donor-derived item and block visuals; and no change to the existing small red or huge red/brown toadstool identities and resources."
+      "Maintain ribbits:small_brown_toadstool as a distinct small-plant counterpart to ribbits:toadstool with the same placement, shape, ordinary drop and pick-block, default stacking, Creative exposure, and 0.65 compost behavior; exact volumetric Matcha-donor models; an exact vanilla 0.4 huge-growth attempt followed by same-color patch fallback; crossed vanilla huge-mushroom shapes using existing Ribbits cap and stem identities; and deterministic future-only Ribbit-village red/brown variation without ordinary biome generation or retrofit."
     ],
     "boundaries": {
       "owned_paths": [
@@ -53,7 +53,8 @@
         "No Wandering forest camp, donor scheduler/trades/code/AI/sounds/world generation, vanilla Wandering Trader replacement or suppression, trader llama, automatic Sorcerer replacement, existing-hut or village retrofit, saved-Witch conversion, global Witch suppression, asynchronous map search, custom map item or GUI, direct failed-map fallback, generalized old-offer migration, home-dimension redesign, Fortune Blessing, Silver Bullion, or Adamant/Netherite economy additions are introduced.",
         "Ribbits has no dependency on Map Marker Extensions or Compass Ribbon, contributes no custom map HUD or side-channel destination, and does not modify either project; Map Marker Extensions owns only its optional carried-target projection and Compass Ribbon consumes the standard native decoration path.",
         "No substitute private inputs, deployment, Test Instance Manager mutation, gameplay-profile access, or Minecraft runtime claim from source, build, static, codec, tree, or archive evidence.",
-        "Canary 25 adds no ordinary natural generation, biome, village, or structure placement, trades, recipes, Toadstool Heart participation, or other economy. Matcha-Overlays-v37.zip contributes only two hash-guarded private visual inputs for ribbits:small_brown_toadstool; it is never bundled and never replaces native ribbits:brown_toadstool resources."
+        "Canary 25 adds no ordinary natural generation, biome, village, or structure placement, trades, recipes, Toadstool Heart participation, or other economy. Matcha-Overlays-v37.zip contributes only two hash-guarded private visual inputs for ribbits:small_brown_toadstool; it is never bundled and never replaces native ribbits:brown_toadstool resources.",
+        "Canary 26 adds no ordinary biome generation, existing-village retrofit, recipe, trade, Toadstool Heart, or other economy change. Matcha-Overlays-v37.zip contributes exactly two PNG and four block-model inputs; the archive is never bundled, and native huge red, brown, and stem resources remain unchanged."
       ]
     },
     "dependencies": [
@@ -181,26 +182,26 @@
         "type": "OTHER",
         "identifier": "Matcha-Overlays-v37.zip",
         "requirement": "2,616,259 bytes; SHA-256 2642dcea338100f469df905b212423683e83ae7c683c7b9fabfbd2195a2fe802",
-        "reason": "Immutable user-supplied resource-pack donor beneath originals/assets; only assets/ribbits/textures/item/toadstool.png and assets/ribbits/textures/block/brown_toadstool.png are approved private visual inputs for Canary 25's new ribbits:small_brown_toadstool. The pack is rehashed after assembly, is never modified or bundled, and does not replace native ribbits:brown_toadstool resources."
+        "reason": "Immutable user-supplied resource-pack donor beneath originals/assets; the exact approved private surface is assets/ribbits/textures/item/toadstool.png, assets/ribbits/textures/block/brown_toadstool.png, and assets/ribbits/models/block/toadstool.json, toadstool_2.json, toadstool_3.json, and toadstool_4.json. Canary 25 used the two PNG members; Canary 26 additionally uses the four volumetric models only to derive ribbits:small_brown_toadstool visuals. The pack is rehashed after assembly, is never modified or bundled, and does not replace native huge-toadstool resources."
       }
     ]
   },
   "state": {
-    "milestone": "Canary 25 adds the distinct small vegetation block and item ribbits:small_brown_toadstool as the brown visual counterpart to ribbits:toadstool while preserving the existing small red and huge red/brown identities and resources. It retains the small toadstool's placement, shape, ordinary drop and pick-block, default stacking, Creative exposure, and 0.65 compostability; bonemeal delegates only to ribbits:small_brown_toadstool_patch, whose private configured and placed resources are absent from ordinary generation. Exact immutable Matcha-Overlays-v37.zip inputs supply the small-toadstool silhouette and stem plus the custom brown cap palette through deterministic private assembly, while all six native huge-brown resources remain byte-identical. Canary 25 is ACTIVE / STATIC_PASS / RUNTIME_UNTESTED; Canary 24 remains the exact accepted release.",
+    "milestone": "Canary 26 replaces all four small-brown crossed/flat models with exact volumetric Matcha-donor geometry, adds the exact vanilla 26.2 0.4 huge-growth roll before same-color patch fallback, crosses vanilla brown/red huge shapes with the existing red/brown Ribbits materials, and gives each future Ribbit-village toadstool an independent deterministic 0.5 red/brown choice across both embedded-template and decoration paths. The user observed Canary 25 brown bonemeal spreading functioning and its smaller brown variants rendering as undesired flat/crossed planes beside Matcha's volumetric red models; no aggregate Canary 25 runtime classification is inferred. Canary 26 is ACTIVE / STATIC_PASS / RUNTIME_UNTESTED; Canary 24 remains the exact accepted release.",
     "releases": {
       "current": {
-        "version": "4.1.6+26.2-mynx-canary25",
+        "version": "4.1.6+26.2-mynx-canary26",
         "artifact": {
-          "filename": "ribbits-private-reconstruction-4.1.6+26.2-mynx-canary25.jar",
-          "sha256": "00ff8af7a86d8ea9a0580905e6592e31e362937895d66d5b0aca702247fa6064"
+          "filename": "ribbits-private-reconstruction-4.1.6+26.2-mynx-canary26.jar",
+          "sha256": "3d43040596d667be633fdfd2981baa5a02e826887521c6792041e023e71f0bc0"
         },
-        "built_at": "2026-09-18T02:51:32.2159711Z",
-        "source_commit": "64e57751e5b2bdb157458d952a8595b804f6db14",
+        "built_at": "2026-09-18T04:24:36.9115268Z",
+        "source_commit": "e7f26ceb6f78c5293e74a649827d2691e38527d8",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
         },
-        "summary": "Adds the distinct ribbits:small_brown_toadstool with donor-derived brown cap visuals, native small-toadstool behavior, and a brown-only bonemeal patch while preserving every existing toadstool identity and native huge-brown resource."
+        "summary": "Restores volumetric small-brown models, adds same-color bonemeal huge growth, and gives future Ribbit villages deterministic red/brown toadstool variation without ordinary biome generation or retrofit."
       },
       "accepted": {
         "version": "4.1.6+26.2-mynx-canary24",
@@ -227,10 +228,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 31,
-    "activity_at": "2026-09-18T02:55:40Z",
-    "updated_at": "2026-09-18T02:55:40Z",
-    "last_codex_at": "2026-09-18T02:55:40Z",
-    "source_commit": "64e57751e5b2bdb157458d952a8595b804f6db14"
+    "revision": 32,
+    "activity_at": "2026-09-18T04:28:08Z",
+    "updated_at": "2026-09-18T04:28:08Z",
+    "last_codex_at": "2026-09-18T04:28:08Z",
+    "source_commit": "e7f26ceb6f78c5293e74a649827d2691e38527d8"
   }
 }
