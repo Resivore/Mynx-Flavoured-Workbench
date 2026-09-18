@@ -50,7 +50,13 @@ public record NibaruMaterialProfile(
     }
     public enum DoubleFormPolicy { COMPOSE_SEMANTIC_SURFACES, CUSTOM_REQUIRED }
 
-    public record TextureRoles(String side, String top, String bottom, String overlay, String particle) {}
+    public record TextureRoles(String side, String top, String bottom, String overlay, String particle,
+            String interior) {
+        /** Retains the five-role constructor used by every non-mushroom material. */
+        public TextureRoles(String side, String top, String bottom, String overlay, String particle) {
+            this(side, top, bottom, overlay, particle, "");
+        }
+    }
 
     /** Pure material-owned dimensions used to compose inset visuals onto provider-external geometry. */
     public record InsetVisualContract(

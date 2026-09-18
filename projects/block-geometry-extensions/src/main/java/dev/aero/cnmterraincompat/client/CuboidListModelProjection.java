@@ -178,6 +178,7 @@ public final class CuboidListModelProjection {
             textures.addProperty("particle", texture(roles.particle()));
         }
         if (!roles.overlay().isEmpty()) textures.addProperty("overlay", texture(roles.overlay()));
+        if (!roles.interior().isEmpty()) textures.addProperty("interior", texture(roles.interior()));
         model.add("textures", textures);
         model.add("elements", new JsonArray());
         return model;
@@ -332,7 +333,10 @@ public final class CuboidListModelProjection {
         for (Direction face : FACES) {
             if (faceCovered(cuboid, face, peers)) continue;
             JsonObject encoded = new JsonObject();
-            encoded.addProperty("texture", bottomOnly ? "#bottom" : textureRole(face, materialFrame));
+            boolean cut = profile.visualProfile() == VisualProfile.HUGE_MUSHROOM
+                    && !cuboid.geometry().onBoundary(face);
+            encoded.addProperty("texture", bottomOnly ? "#bottom"
+                    : cut ? "#interior" : textureRole(face, materialFrame));
             encoded.add("uv", defaultUv(face, cuboid.uv()));
             int rotation = faceRotation(face, materialFrame);
             if (rotation != 0) encoded.addProperty("rotation", rotation);

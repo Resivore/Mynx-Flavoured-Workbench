@@ -1,15 +1,23 @@
-# BGE C73 Canonical Bindings manual verification
+# BGE C74 Ribbits Huge-Toadstool manual verification
 
-Current candidate: `cnm-nibaru-integration-4.2.17-bge.canary73.canonical-bindings+26.2.jar`
+Current candidate: `cnm-nibaru-integration-4.2.18-bge.canary74.ribbits-toadstools+26.2.jar` (pending finalized build hash)
 
-- Embedded version: `4.2.17-bge.canary73.canonical-bindings+26.2`
-- SHA-256: `4e8e7bbac17b828177059d21ed6a6d216028a17252e64b23ff4142b6d1b8200c`
+- Embedded version: `4.2.18-bge.canary74.ribbits-toadstools+26.2`
+- SHA-256: recorded in `WORKBENCH_STATUS.json` after the exact finalized artifact is retained
 - Source checkpoint: `c0f17c650454e60b9518454b2f42bb1f837ccfd9`
 - Lifecycle/evidence: `ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED`
 - Rollback/predecessor: exact C72 `cnm-nibaru-integration-4.2.16-bge.canary72.farmland-slab-low-water+26.2.jar`, SHA-256 `f9f892fccbbee85f75f03c9b24752bbeab76f4fa60efd867414969b735ae85a3`. The owner reported an aggregate external runtime `PASS` for these exact C72 bytes without checklist-row observations; C72 was not accepted, and its evidence does not transfer to C73.
 - Accepted release: exact C70 `cnm-nibaru-integration-4.2.14-bge.canary70.stone-native-slab+26.2.jar`, SHA-256 `d304552e29e76c4165675415215439ac2d73b5a6ebc4abc9787f0fa1124cf266`.
 
-This checklist is lifecycle-neutral. Record only behavior actually observed for the exact C73 bytes above. It does not authorize inspecting, creating, selecting, or modifying any protected or retired Minecraft profile.
+This checklist is lifecycle-neutral. Record only behavior actually observed for the exact C74 bytes above. It does not authorize inspecting, creating, selecting, or modifying any protected or retired Minecraft profile.
+
+## Ribbits huge-toadstools
+
+For `ribbits:red_toadstool`, `ribbits:brown_toadstool`, and `ribbits:toadstool_stem`:
+
+1. Verify the source full block. Join two matching source blocks, break one, and confirm the newly exposed face is the pale/spongy `toadstool_inside` surface rather than a fresh exterior.
+2. Inspect one horizontal slab, its completion to the actual Ribbits source block, one Vertical Slab and its completion, a stair, wall, Layer, Step, Corner, and Quarter Column.
+3. Join and break representative same-role members. Confirm no missing textures, stretched UVs, cap/stem substitutions, or state/model warnings. A focused red pass plus brown/stem spot checks is sufficient only after automated parity has passed.
 
 ## Canonical completion matrix
 

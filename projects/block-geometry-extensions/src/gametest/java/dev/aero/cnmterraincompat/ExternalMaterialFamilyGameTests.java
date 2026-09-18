@@ -12,6 +12,7 @@ import dev.tazer.clutternomore.common.shape_map.ShapeMap;
 import games.twinhead.moreslabsstairsandwalls.api.material.BehaviorCapability;
 import games.twinhead.moreslabsstairsandwalls.api.material.NativeAxisModelContract;
 import games.twinhead.moreslabsstairsandwalls.api.material.NibaruMaterialProfiles;
+import games.twinhead.moreslabsstairsandwalls.api.material.VisualProfile;
 import games.twinhead.moreslabsstairsandwalls.block.leaves.LeafDistanceCarrier;
 import net.fabricmc.fabric.api.gametest.v1.CustomTestMethodInvoker;
 import net.fabricmc.fabric.api.gametest.v1.GameTest;
@@ -34,6 +35,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.HugeMushroomBlock;
 import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.SlabBlock;
@@ -62,23 +64,58 @@ import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-/** Production-lifecycle coverage for C69's exact 76 source / 684 relation contract. */
+/** Production-lifecycle coverage for the exact optional-provider catalog. */
 public final class ExternalMaterialFamilyGameTests implements CustomTestMethodInvoker {
     @GameTest(maxTicks = 40)
+    public void ribbitsHugeMushroomProfilesHaveIndependentNineRoleSurfaceContracts(
+            GameTestHelper helper) {
+        List<Identifier> sources = List.of(Identifier.parse("ribbits:red_toadstool"),
+                Identifier.parse("ribbits:brown_toadstool"), Identifier.parse("ribbits:toadstool_stem"));
+        helper.assertTrue(ExternalMaterialCatalog.sourceCount("ribbits") == 4,
+                "Ribbits provider catalog must contain mossy oak plus three huge-toadstools");
+        for (Identifier sourceId : sources) {
+            ExternalMaterialFamilies.Binding binding = ExternalMaterialFamilies.fromSource(sourceId).orElseThrow();
+            helper.assertTrue(binding.source() instanceof HugeMushroomBlock
+                            && binding.profile().visualProfile() == VisualProfile.HUGE_MUSHROOM
+                            && binding.profile().textureRoles().interior().equals("ribbits:block/toadstool_inside")
+                            && binding.roles().size() == 9,
+                    "HugeMushroom provider profile lost typed visual or nine-role identity: " + sourceId);
+            helper.assertTrue(binding.roles().values().stream().distinct().count() == 9,
+                    "HugeMushroom roles were merged across material identities: " + sourceId);
+            for (Block derived : binding.canonicalDerived()) {
+                for (String face : List.of("up", "down", "north", "south", "east", "west")) {
+                    String propertyName = derived instanceof WallBlock ? "mushroom_" + face : face;
+                    helper.assertTrue(derived.defaultBlockState().getProperties().stream()
+                                    .anyMatch(property -> property.getName().equals(propertyName)),
+                            "Derived HugeMushroom role lacks " + propertyName + " state: "
+                                    + BuiltInRegistries.BLOCK.getKey(derived));
+                }
+            }
+            BlockState completed = BgeMaterialBindings.projectToCanonical(binding.slab().defaultBlockState()
+                    .setValue(SlabBlock.TYPE, SlabType.DOUBLE)
+                    .setValue(HugeMushroomSurface.NORTH, false)).orElseThrow();
+            helper.assertTrue(completed.is(binding.source())
+                            && !completed.getValue(HugeMushroomSurface.NORTH),
+                    "Completed HugeMushroom slab did not preserve the joined/cut north face: " + sourceId);
+        }
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
     public void exactAllowlistAndProviderCompletionInventory(GameTestHelper helper) {
-        helper.assertTrue(ExternalMaterialCatalog.specs().size() == 76,
-                "External source allowlist is not exactly 76");
+        helper.assertTrue(ExternalMaterialCatalog.specs().size() == 79,
+                "External source allowlist is not exactly 79");
         helper.assertTrue(ExternalMaterialCatalog.sourceCount("mcwpaths") == 57
                         && ExternalMaterialCatalog.sourceCount("mynx_trees") == 6
-                        && ExternalMaterialCatalog.sourceCount("ribbits") == 1
+                        && ExternalMaterialCatalog.sourceCount("ribbits") == 4
                         && ExternalMaterialCatalog.sourceCount("bbb") == 12,
-                "Provider source partition is not 57/6/1/12");
-        helper.assertTrue(ExternalMaterialFamilies.all().size() == 76,
-                "Late provider completion did not register all 76 families: "
+                "Provider source partition is not 57/6/4/12");
+        helper.assertTrue(ExternalMaterialFamilies.all().size() == 79,
+                "Late provider completion did not register all 79 families: "
                         + ExternalMaterialFamilies.all().size());
         helper.assertTrue(NibaruMaterialProfiles.all().stream().filter(profile -> profile.family() != null).count() == 311
                         && NibaruMaterialProfiles.all().stream().filter(profile -> profile.family() == null
-                                && !profile.canonicalParentId().getNamespace().equals("minecraft")).count() == 76,
+                                && !profile.canonicalParentId().getNamespace().equals("minecraft")).count() == 79,
                 "External append changed the frozen native inventory or lost an external source");
 
         Set<Identifier> actual = new LinkedHashSet<>();
@@ -89,7 +126,7 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
         helper.assertTrue(actual.stream().filter(id -> id.getNamespace().equals("mcwpaths"))
                         .allMatch(ExternalMaterialFamilyGameTests::isRequestedMacawSource),
                 "Macaw family is outside the 52 full-pattern plus five plain-Path scope");
-        System.out.println("EXTERNAL_C69_INVENTORY|sources=76|mcwpaths=57|mynx_trees=6|ribbits=1|bbb=12|relations=684");
+        System.out.println("EXTERNAL_C74_INVENTORY|sources=79|mcwpaths=57|mynx_trees=6|ribbits=4|bbb=12|relations=711");
         helper.succeed();
     }
 
@@ -133,10 +170,10 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
             relations += roles.size();
         }
         CanonicalShapeMapAudit.Report audit = CanonicalShapeMapAudit.inspectExternalFamilies();
-        helper.assertTrue(relations == 684 && canonicalDerived.size() == 608 && bgeGenerated.size() == 490,
+        helper.assertTrue(relations == 711 && canonicalDerived.size() == 632 && bgeGenerated.size() == 514,
                 "C69 relation/canonical/generated identity count mismatch: " + relations + "/"
                         + canonicalDerived.size() + "/" + bgeGenerated.size());
-        helper.assertTrue(audit.variantCount() == 76 && audit.missing().isEmpty()
+        helper.assertTrue(audit.variantCount() == 79 && audit.missing().isEmpty()
                         && audit.duplicates().isEmpty(),
                 "Live ShapeMap canonical variant/role audit failed: " + audit);
         helper.succeed();
@@ -358,15 +395,15 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
             }
         }
         JsonObject walls = generatedServerJson(Identifier.parse("minecraft:tags/block/walls.json"));
-        helper.assertTrue(walls.getAsJsonArray("values").size() == 76,
+        helper.assertTrue(walls.getAsJsonArray("values").size() == 79,
                 "External wall classification does not contain every scoped full-parent family");
-        helper.assertTrue(loot == 262, "Expected 262 BGE-owned external loot tables, found " + loot);
-        System.out.println("EXTERNAL_C69_SERVER_RESOURCES|standardLoot=262|wallTags=76|materialFamilies=76");
+        helper.assertTrue(loot == 277, "Expected 277 BGE-owned external loot tables, found " + loot);
+        System.out.println("EXTERNAL_C74_SERVER_RESOURCES|standardLoot=277|wallTags=79|materialFamilies=79");
         helper.succeed();
     }
 
     @GameTest(maxTicks = 80)
-    public void actualClientWritersCloseAll490BgeOwnedGeometryResources(GameTestHelper helper) {
+    public void actualClientWritersCloseAll514BgeOwnedGeometryResources(GameTestHelper helper) {
         ResourceManager manager = clientFixtureManager();
         LayerGeneratedResources.GenerationSummary layers =
                 LayerGeneratedResources.generateExternalForValidation(manager);
@@ -374,12 +411,12 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
                 QuarterGeometryGeneratedResources.generateExternalForValidation(manager);
         ExternalMaterialGeneratedResources.GenerationSummary standard =
                 ExternalMaterialGeneratedResources.generate(manager);
-        helper.assertTrue(layers.familyCount() == 76
-                        && quarters.cornerFamilyCount() == 76
-                        && quarters.columnFamilyCount() == 76
-                        && standard.familyCount() == 76
-                        && standard.blockStateCount() == 262
-                        && standard.itemCount() == 262,
+        helper.assertTrue(layers.familyCount() == 79
+                        && quarters.cornerFamilyCount() == 79
+                        && quarters.columnFamilyCount() == 79
+                        && standard.familyCount() == 79
+                        && standard.blockStateCount() == 277
+                        && standard.itemCount() == 277,
                 "External client writers did not process every exact family/role");
 
         int generatedRelations = 0;
@@ -406,10 +443,10 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
                 generatedRelations++;
             }
         }
-        helper.assertTrue(generatedRelations == 490 && resolvedModelReferences >= 490,
+        helper.assertTrue(generatedRelations == 514 && resolvedModelReferences >= 514,
                 "External client resource closure mismatch: relations=" + generatedRelations
                         + ", modelReferences=" + resolvedModelReferences);
-        System.out.println("EXTERNAL_C69_CLIENT_RESOURCES|generatedRelations=490|blockstates=490|items=490"
+        System.out.println("EXTERNAL_C74_CLIENT_RESOURCES|generatedRelations=514|blockstates=514|items=514"
                 + "|resolvedModelReferences=" + resolvedModelReferences);
         helper.succeed();
     }

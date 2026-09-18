@@ -32,27 +32,36 @@ public final class ExternalMaterialBlocks {
 
     public static StandardSet create(Block source, Block.Properties slabProperties,
             Block.Properties stairProperties, Block.Properties wallProperties, boolean leaves) {
-        return new StandardSet(createSlab(source, slabProperties, leaves),
-                createStairs(source, stairProperties, leaves), createWall(wallProperties, leaves));
+        return new StandardSet(createSlab(source, slabProperties, leaves, false),
+                createStairs(source, stairProperties, leaves, false),
+                createWall(source, wallProperties, leaves, false));
     }
 
-    public static SlabBlock createSlab(Block source, Block.Properties properties, boolean leaves) {
+    public static SlabBlock createSlab(Block source, Block.Properties properties, boolean leaves,
+            boolean hugeMushroom) {
         if (leaves) return new LeafSlab(properties);
+        if (hugeMushroom) return new HugeMushroomSlabBlock(properties);
         return source.defaultBlockState().hasProperty(BlockStateProperties.AXIS)
                 ? new AxisSlab(properties) : new SlabBlock(properties);
     }
 
-    public static StairBlock createStairs(Block source, Block.Properties properties, boolean leaves) {
+    public static StairBlock createStairs(Block source, Block.Properties properties, boolean leaves,
+            boolean hugeMushroom) {
         if (leaves) return new LeafStairs(source.defaultBlockState(), properties);
+        if (hugeMushroom)
+            return new HugeMushroomStairsBlock(source.defaultBlockState(), properties);
         return source.defaultBlockState().hasProperty(BlockStateProperties.AXIS)
                 ? new AxisStairs(source.defaultBlockState(), properties)
                 : new StairBlock(source.defaultBlockState(), properties);
     }
 
-    public static WallBlock createWall(Block.Properties properties, boolean leaves) {
+    public static WallBlock createWall(Block source, Block.Properties properties, boolean leaves,
+            boolean hugeMushroom) {
         // A wall's connection state is its complete placement contract. It is not a rotated
         // pillar merely because the material it is made from has an axis.
-        return leaves ? new LeafWall(properties) : new WallBlock(properties);
+        return leaves ? new LeafWall(properties)
+                : hugeMushroom ? new HugeMushroomWallBlock(properties)
+                : new WallBlock(properties);
     }
 
     public record StandardSet(SlabBlock slab, StairBlock stairs, WallBlock wall) {}
