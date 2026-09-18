@@ -1,5 +1,6 @@
 package dev.resivore.slabdecorations;
 
+import dev.aero.cnmterraincompat.CnmTerrainCompat;
 import dev.resivore.slabdecorations.mixin.GrowingPlantBlockAccessor;
 import games.twinhead.moreslabsstairsandwalls.api.material.NibaruMaterialProfile;
 import games.twinhead.moreslabsstairsandwalls.api.material.NibaruMaterialProfiles;
@@ -17,8 +18,8 @@ import net.minecraft.world.level.block.CactusFlowerBlock;
 import net.minecraft.world.level.block.GrowingPlantBlock;
 import net.minecraft.world.level.block.HangingMossBlock;
 import net.minecraft.world.level.block.MossyCarpetBlock;
-import net.minecraft.world.level.block.SlabBlock;
 import net.minecraft.world.level.block.LanternBlock;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.SugarCaneBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -42,19 +43,26 @@ public final class NibaruHorizontalSurface {
 
         BlockPos supportPos = attachment.supportPos();
         BlockState supportState = level.getBlockState(supportPos);
-        if (!(supportState.getBlock() instanceof SlabBlock)
-                || !supportState.hasProperty(BlockStateProperties.SLAB_TYPE)) {
+        if (!supportState.hasProperty(BlockStateProperties.SLAB_TYPE)) {
             return Optional.empty();
         }
 
         NibaruMaterialProfile profile = NibaruMaterialProfiles.fromBlock(supportState.getBlock()).orElse(null);
         Block exactHorizontalSource = profile == null ? null : profile.nativeSlab()
                 .orElseGet(() -> profile.effectiveSlabSource().orElse(null));
-        if (exactHorizontalSource != supportState.getBlock()) {
+        BlockState canonicalSupport;
+        if (exactHorizontalSource == supportState.getBlock()) {
+            canonicalSupport = profile.canonicalParent().withPropertiesOf(supportState);
+        } else if (supportState.is(CnmTerrainCompat.FARMLAND_SLAB)) {
+            // BGE deliberately keeps its lifecycle-owning Farmland Slab outside material-profile
+            // ownership. Its public block identity is the one narrow non-profile support that
+            // represents vanilla Farmland; no foreign state or registry-name convention enters.
+            canonicalSupport = Blocks.FARMLAND.withPropertiesOf(supportState);
+        } else {
             return Optional.empty();
         }
 
-        return Optional.of(new Surface(profile, supportState, supportPos,
+        return Optional.of(new Surface(canonicalSupport, supportState, supportPos,
                 supportState.getValue(BlockStateProperties.SLAB_TYPE), attachment));
     }
 
@@ -352,14 +360,14 @@ public final class NibaruHorizontalSurface {
     }
 
     public record Surface(
-            NibaruMaterialProfile profile,
+            BlockState canonicalSupportState,
             BlockState supportState,
             BlockPos supportPos,
             SlabType type,
             Attachment attachment) {
 
         public BlockState canonicalParentState() {
-            return profile.canonicalParent().withPropertiesOf(supportState);
+            return canonicalSupportState;
         }
 
         public AttachmentOrientation orientation() {

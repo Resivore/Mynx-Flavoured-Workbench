@@ -131,6 +131,7 @@ final class CanonicalProjectionArchitectureTest {
     void interactionAndRenderingSeamsRemainRegistered() throws Exception {
         String commonMixins = resource("/slab_decorations.mixins.json");
         String clientMixins = resource("/slab_decorations.client.mixins.json");
+        String metadata = resource("/fabric.mod.json");
 
         assertTrue(commonMixins.contains("BlockStateBaseSurvivalMixin"),
                 "global canSurvive projection seam is not registered");
@@ -138,6 +139,8 @@ final class CanonicalProjectionArchitectureTest {
                 "outline/collision alignment seam is not registered");
         assertTrue(commonMixins.contains("GrowingPlantBlockAccessor"),
                 "generic growing-column contract seam is not registered");
+        assertTrue(commonMixins.contains("RibbitsToadstoolGrowthMixin"),
+                "optional Ribbits huge-toadstool transaction seam is not registered");
         assertTrue(commonMixins.contains("BambooPlacementMixin")
                         && commonMixins.contains("NetherFungusBonemealMixin"),
                 "bamboo lifecycle or deferred huge-fungus boundary seam is not registered");
@@ -165,6 +168,20 @@ final class CanonicalProjectionArchitectureTest {
                         + " any specialized renderer wrapper is installed");
         assertFalse(client.contains("PlantFamilyEligibility") || client.contains("isEligible"),
                 "client model wrapping must not maintain an independent eligibility/species gate");
+
+        String ribbits = classFile(Class.forName(
+                "dev.resivore.slabdecorations.mixin.RibbitsToadstoolGrowthMixin", false,
+                CanonicalProjectionArchitectureTest.class.getClassLoader()));
+        String transaction = classFile(StructureGrowthTransaction.class);
+        assertTrue(ribbits.contains("ToadstoolBlock")
+                        && ribbits.contains("growHugeToadstool")
+                        && ribbits.contains("StructureGrowthTransaction")
+                        && ribbits.contains("org/spongepowered/asm/mixin/Pseudo"),
+                "Ribbits huge growth must be an optional private-feature seam around the shared transaction");
+        assertTrue(transaction.contains("ribbits") && transaction.contains("toadstool_stem"),
+                "only the exact Ribbits toadstool stem may continue a successful transaction");
+        assertFalse(metadata.contains("\"ribbits\""),
+                "Ribbits must remain an optional compatibility target, not a production dependency");
     }
 
     private static String classFile(Class<?> type) throws IOException {

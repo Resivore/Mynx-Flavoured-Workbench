@@ -38,9 +38,11 @@ def workbenchRoot = providers.gradleProperty('workbench_root')
 def referenceLibraryRoot = providers.gradleProperty('reference_library_root')
         .orElse(workbenchRoot)
         .get()
-def bgeReferenceJar = new File(workbenchRoot, 'projects/block-geometry-extensions/artifacts/cnm-nibaru-integration-4.2.14-bge.canary70.stone-native-slab+26.2.jar')
+def bgeReferenceJar = new File(workbenchRoot, 'projects/block-geometry-extensions/artifacts/cnm-nibaru-integration-4.2.16-bge.canary72.farmland-slab-low-water+26.2.jar')
 def cnmUpstreamReferenceJar = new File(referenceLibraryRoot, 'originals/mods/clutternomore-2.0.7+26.2-fabric.jar')
-def terrainSlabsReferenceJar = new File(referenceLibraryRoot, 'originals/mods/Terrain Slabs v3.3.2-26.2.jar')
+def terrainSlabsReferenceJar = new File(providers.gradleProperty('terrain_slabs_reference_jar')
+        .orElse(new File(referenceLibraryRoot, 'originals/mods/Terrain Slabs v3.3.2-26.2.jar').absolutePath)
+        .get())
 dependencies {
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
     implementation "net.fabricmc:fabric-loader:${project.loader_version}"

@@ -12,6 +12,7 @@
     "HangingMossSurvivalMixin",
     "MushroomBonemealMixin",
     "NetherFungusBonemealMixin",
+    "RibbitsToadstoolGrowthMixin",
     "SaplingGrowthMixin"
   ],
   "injectors": {

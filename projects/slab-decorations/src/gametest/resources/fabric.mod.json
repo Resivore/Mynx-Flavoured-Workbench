@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "slab-decorations-fixtures",
   "version": "1.0.0",
-  "name": "Slab Decorations Canary 9 Fixtures",
+  "name": "Slab Decorations Canary 10 Fixtures",
   "environment": "*",
   "entrypoints": {
     "main": [
@@ -17,9 +17,9 @@
     "fabricloader": ">=0.19.3",
     "fabric-api": "*",
     "minecraft": "26.2",
-    "slab_decorations": "=0.1.0-canary9",
+    "slab_decorations": "=0.1.0-canary10",
     "more_slabs_stairs_and_walls": "*",
     "clutternomore": "=2.0.7+26.2",
-    "cnm_terrain_slabs_compat": "=4.2.14-bge.canary70.stone-native-slab+26.2"
+    "cnm_terrain_slabs_compat": "=4.2.16-bge.canary72.farmland-slab-low-water+26.2"
   }
 }

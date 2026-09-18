@@ -1,6 +1,8 @@
 package dev.resivore.slabdecorations;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.level.block.Block;
@@ -18,6 +20,8 @@ import java.util.function.Supplier;
  * bottom-slab root from the feature's own lowest generated continuation state.
  */
 public final class StructureGrowthTransaction {
+    private static final Identifier RIBBITS_TOADSTOOL_STEM =
+            Identifier.fromNamespaceAndPath("ribbits", "toadstool_stem");
     private StructureGrowthTransaction() {}
 
     public static boolean run(ServerLevel level, BlockPos origin, BlockState precursor,
@@ -71,7 +75,8 @@ public final class StructureGrowthTransaction {
     private static boolean structuralContinuation(BlockState state) {
         return state.is(BlockTags.LOGS) || state.is(Blocks.MUSHROOM_STEM)
                 || state.is(Blocks.CRIMSON_STEM) || state.is(Blocks.WARPED_STEM)
-                || state.is(Blocks.MANGROVE_ROOTS) || state.is(Blocks.MUDDY_MANGROVE_ROOTS);
+                || state.is(Blocks.MANGROVE_ROOTS) || state.is(Blocks.MUDDY_MANGROVE_ROOTS)
+                || RIBBITS_TOADSTOOL_STEM.equals(BuiltInRegistries.BLOCK.getKey(state.getBlock()));
     }
 
     private static void restore(ServerLevel level, List<Entry> entries) {

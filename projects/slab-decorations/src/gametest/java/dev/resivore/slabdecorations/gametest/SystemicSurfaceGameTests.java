@@ -1,8 +1,10 @@
 package dev.resivore.slabdecorations.gametest;
 
+import dev.aero.cnmterraincompat.CnmTerrainCompat;
 import dev.resivore.slabdecorations.CanonicalSurvivalProjection;
 import dev.resivore.slabdecorations.NibaruHorizontalSurface;
 import dev.resivore.slabdecorations.PlantFamilyEligibility;
+import dev.resivore.slabdecorations.StructureGrowthTransaction;
 import games.twinhead.moreslabsstairsandwalls.api.material.NibaruMaterialProfile;
 import games.twinhead.moreslabsstairsandwalls.api.material.NibaruMaterialProfiles;
 import net.fabricmc.fabric.api.gametest.v1.CustomTestMethodInvoker;
@@ -14,6 +16,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.BlockGetter;
@@ -38,6 +41,8 @@ import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.shapes.VoxelShape;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -245,55 +250,196 @@ public final class SystemicSurfaceGameTests implements CustomTestMethodInvoker {
         helper.succeed();
     }
 
-    @GameTest(maxTicks = 100)
-    public void cropsAndPitcherUseExternalFarmlandCanonicalParent(GameTestHelper helper) {
+    @GameTest(maxTicks = 160)
+    public void ordinaryCropItemsPlaceOnCanonicalBgeFarmlandSlabs(GameTestHelper helper) {
         var level = helper.getLevel();
         BlockPos support = helper.absolutePos(new BlockPos(3, 1, 3));
         BlockPos crop = support.above();
-        SystemicFixtureInitializer.ensureFarmlandProfile();
-        BlockState farmlandSlab = SystemicFixtureInitializer.FARMLAND_SLAB.defaultBlockState()
-                .setValue(BlockStateProperties.SLAB_TYPE, SlabType.BOTTOM);
+        helper.assertTrue(NibaruMaterialProfiles.fromBlock(CnmTerrainCompat.FARMLAND_SLAB).isEmpty(),
+                "BGE Farmland Slab unexpectedly became a material-profile source");
 
-        helper.assertTrue(NibaruMaterialProfiles.fromBlock(SystemicFixtureInitializer.FARMLAND_SLAB)
-                        .map(NibaruMaterialProfile::canonicalParent)
-                        .orElse(null) == Blocks.FARMLAND,
-                "test-only Farmland slab did not retain its explicit canonical parent");
+        for (SlabType type : SlabType.values()) {
+            for (CropPlacement cropItem : ordinaryFarmlandCropItems()) {
+                clearVertical(level, support, 1, 4);
+                level.setBlock(support, farmlandSlab(type), Block.UPDATE_SKIP_ALL_SIDEEFFECTS);
+                Player player = helper.makeMockPlayer(GameType.SURVIVAL);
+                ItemStack held = new ItemStack(cropItem.item(), 2);
+                player.setItemInHand(InteractionHand.MAIN_HAND, held);
+                InteractionResult result = held.useOn(new UseOnContext(player, InteractionHand.MAIN_HAND,
+                        new BlockHitResult(Vec3.atCenterOf(support), net.minecraft.core.Direction.UP,
+                                support, false)));
+                BlockState placed = level.getBlockState(crop);
+                double expectedOffset = type == SlabType.BOTTOM
+                        ? NibaruHorizontalSurface.BOTTOM_OFFSET : 0.0D;
+                NibaruHorizontalSurface.Surface surface = NibaruHorizontalSurface
+                        .supporting(placed, level, crop).orElse(null);
+                helper.assertTrue(result.consumesAction()
+                                && placed.is(cropItem.crop())
+                                && placed.canSurvive(level, crop)
+                                && surface != null
+                                && surface.canonicalParentState().is(Blocks.FARMLAND)
+                                && surface.offset() == expectedOffset
+                                && NibaruHorizontalSurface.visibleOffset(placed, level, crop)
+                                == expectedOffset
+                                && held.getCount() == 1,
+                        cropItem.item() + " did not naturally place its normal " + cropItem.crop()
+                                + " state on BGE Farmland Slab " + type + ": " + placed);
+                player.discard();
+            }
+        }
+        helper.succeed();
+    }
 
-        for (BlockState wheat : List.of(
+    @GameTest(maxTicks = 80)
+    public void farmlandCropProjectionUsesActualBgeSurfaceHeightsAndExcludesStems(
+            GameTestHelper helper) {
+        var level = helper.getLevel();
+        BlockPos support = helper.absolutePos(new BlockPos(3, 1, 3));
+        BlockPos crop = support.above();
+
+        for (BlockState cropState : List.of(
                 Blocks.WHEAT.defaultBlockState(),
                 Blocks.WHEAT.defaultBlockState().setValue(CropBlock.AGE, CropBlock.MAX_AGE))) {
-            assertFullParentAndSlabParity(helper, support, crop, wheat,
-                    Blocks.FARMLAND.defaultBlockState(), farmlandSlab,
-                    NibaruHorizontalSurface.BOTTOM_OFFSET, "wheat age state");
+            clearVertical(level, support, 1, 4);
+            level.setBlock(support, Blocks.FARMLAND.defaultBlockState(), Block.UPDATE_SKIP_ALL_SIDEEFFECTS);
+            level.setBlock(crop, cropState, Block.UPDATE_SKIP_ALL_SIDEEFFECTS);
+            VoxelShape canonicalOutline = cropState.getShape(level, crop);
+            VoxelShape canonicalInteraction = cropState.getInteractionShape(level, crop);
+
+            for (SlabType type : SlabType.values()) {
+                level.setBlock(support, farmlandSlab(type), Block.UPDATE_SKIP_ALL_SIDEEFFECTS);
+                level.setBlock(crop, cropState, Block.UPDATE_SKIP_ALL_SIDEEFFECTS);
+                BlockState actual = level.getBlockState(crop);
+                double expectedOffset = type == SlabType.BOTTOM
+                        ? NibaruHorizontalSurface.BOTTOM_OFFSET : 0.0D;
+                NibaruHorizontalSurface.Surface surface = NibaruHorizontalSurface
+                        .supporting(actual, level, crop).orElse(null);
+                helper.assertTrue(actual.canSurvive(level, crop)
+                                && surface != null
+                                && surface.canonicalParentState().is(Blocks.FARMLAND)
+                                && surface.offset() == expectedOffset,
+                        "BGE Farmland Slab " + type + " did not preserve wheat survival/projection");
+                assertShapeOffset(helper, actual.getShape(level, crop), canonicalOutline, expectedOffset,
+                        "wheat outline " + type);
+                assertShapeOffset(helper, actual.getInteractionShape(level, crop), canonicalInteraction,
+                        expectedOffset, "wheat interaction shape " + type);
+            }
         }
 
-        BlockState youngPitcher = Blocks.PITCHER_CROP.defaultBlockState()
-                .setValue(PitcherCropBlock.AGE, 0)
-                .setValue(PitcherCropBlock.HALF, DoubleBlockHalf.LOWER);
-        assertFullParentAndSlabParity(helper, support, crop, youngPitcher,
-                Blocks.FARMLAND.defaultBlockState(), farmlandSlab,
-                NibaruHorizontalSurface.BOTTOM_OFFSET, "young pitcher crop");
+        level.setBlock(support, farmlandSlab(SlabType.BOTTOM), Block.UPDATE_SKIP_ALL_SIDEEFFECTS);
+        for (Block stem : List.of(Blocks.PUMPKIN_STEM, Blocks.ATTACHED_PUMPKIN_STEM,
+                Blocks.MELON_STEM, Blocks.ATTACHED_MELON_STEM)) {
+            BlockState state = stem.defaultBlockState();
+            level.setBlock(crop, state, Block.UPDATE_SKIP_ALL_SIDEEFFECTS);
+            helper.assertTrue(!PlantFamilyEligibility.isEligible(state)
+                            && NibaruHorizontalSurface.candidate(state, level, crop).isEmpty()
+                            && NibaruHorizontalSurface.supporting(state, level, crop).isEmpty(),
+                    "BGE Farmland Slab re-enabled excluded stem state " + state);
+        }
+        for (Item seed : List.of(Items.PUMPKIN_SEEDS, Items.MELON_SEEDS)) {
+            clearVertical(level, support, 1, 4);
+            level.setBlock(support, farmlandSlab(SlabType.BOTTOM), Block.UPDATE_SKIP_ALL_SIDEEFFECTS);
+            Player player = helper.makeMockPlayer(GameType.SURVIVAL);
+            ItemStack held = new ItemStack(seed, 2);
+            player.setItemInHand(InteractionHand.MAIN_HAND, held);
+            InteractionResult result = held.useOn(new UseOnContext(player, InteractionHand.MAIN_HAND,
+                    new BlockHitResult(Vec3.atCenterOf(support), net.minecraft.core.Direction.UP,
+                            support, false)));
+            helper.assertTrue(!result.consumesAction() && level.getBlockState(crop).isAir()
+                            && held.getCount() == 2,
+                    seed + " unexpectedly gained BGE Farmland Slab placement support");
+            player.discard();
+        }
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 100)
+    public void wheatKeepsVanillaGrowthBonemealHarvestAndFarmlandLifecycle(GameTestHelper helper) {
+        var level = helper.getLevel();
+        BlockPos support = helper.absolutePos(new BlockPos(3, 1, 3));
+        BlockPos crop = support.above();
+        clearVertical(level, support, 1, 4);
+        level.setBlock(support, farmlandSlab(SlabType.BOTTOM), Block.UPDATE_SKIP_ALL_SIDEEFFECTS);
+        level.setBlock(crop, Blocks.WHEAT.defaultBlockState(), Block.UPDATE_SKIP_ALL_SIDEEFFECTS);
+
+        BlockState planted = level.getBlockState(crop);
+        helper.assertTrue(planted.canSurvive(level, crop)
+                        && planted.getValue(CropBlock.AGE) == 0
+                        && NibaruHorizontalSurface.visibleOffset(planted, level, crop)
+                        == NibaruHorizontalSurface.BOTTOM_OFFSET,
+                "young wheat did not retain normal state/survival on BGE Farmland Slab");
+        helper.randomTick(support);
+        helper.assertTrue(level.getBlockState(support).is(CnmTerrainCompat.FARMLAND_SLAB),
+                "an ordinary crop stopped BGE's MAINTAINS_FARMLAND lifecycle from retaining farmland");
+
+        RandomSource random = RandomSource.create(0xC0FFEE);
+        int ageBeforeGrowth = planted.getValue(CropBlock.AGE);
+        for (int attempt = 0; attempt < 256
+                && level.getBlockState(crop).getValue(CropBlock.AGE) == ageBeforeGrowth; attempt++) {
+            level.getBlockState(crop).randomTick(level, crop, random);
+        }
+        BlockState grown = level.getBlockState(crop);
+        helper.assertTrue(grown.is(Blocks.WHEAT) && grown.getValue(CropBlock.AGE) > ageBeforeGrowth,
+                "ordinary wheat random-tick growth no longer advanced on BGE Farmland Slab");
+        ((BonemealableBlock) Blocks.WHEAT).performBonemeal(level, RandomSource.create(0xB0BE),
+                crop, grown);
+        BlockState bonemealed = level.getBlockState(crop);
+        helper.assertTrue(bonemealed.is(Blocks.WHEAT)
+                        && bonemealed.getValue(CropBlock.AGE) >= grown.getValue(CropBlock.AGE),
+                "ordinary wheat bonemeal did not retain vanilla age progression");
+
+        level.setBlock(crop, Blocks.WHEAT.defaultBlockState().setValue(CropBlock.AGE, CropBlock.MAX_AGE),
+                Block.UPDATE_SKIP_ALL_SIDEEFFECTS);
+        level.destroyBlock(crop, true);
+        helper.assertItemEntityCountIs(Items.WHEAT, new BlockPos(3, 2, 3), 2.0D, 1);
+
+        level.setBlock(crop, Blocks.WHEAT.defaultBlockState(), Block.UPDATE_SKIP_ALL_SIDEEFFECTS);
+        level.setBlockAndUpdate(support, slab(Blocks.DIRT, SlabType.BOTTOM));
+        helper.succeedWhen(() -> helper.assertTrue(level.getBlockState(crop).isAir(),
+                "wheat did not retain normal cleanup after Farmland Slab became a Dirt slab"));
+    }
+
+    @GameTest(maxTicks = 80)
+    public void exactOptionalToadstoolStemContinuesOnlySuccessfulBottomTransactions(
+            GameTestHelper helper) {
+        var level = helper.getLevel();
+        BlockPos support = helper.absolutePos(new BlockPos(3, 1, 3));
+        BlockPos source = support.above();
+
+        for (SlabType type : SlabType.values()) {
+            clearVertical(level, support, 1, 4);
+            BlockState original = slab(Blocks.MYCELIUM, type);
+            level.setBlock(support, original, Block.UPDATE_SKIP_ALL_SIDEEFFECTS);
+            level.setBlock(source, Blocks.RED_MUSHROOM.defaultBlockState(),
+                    Block.UPDATE_SKIP_ALL_SIDEEFFECTS);
+            boolean grown = StructureGrowthTransaction.run(level, source,
+                    Blocks.RED_MUSHROOM.defaultBlockState(), () -> {
+                        helper.assertTrue(level.getBlockState(support).is(Blocks.MYCELIUM),
+                                "huge toadstool feature did not receive canonical Mycelium for " + type);
+                        level.setBlock(source, SystemicFixtureInitializer.TOADSTOOL_STEM.defaultBlockState(),
+                                Block.UPDATE_SKIP_ALL_SIDEEFFECTS);
+                        return true;
+                    });
+            helper.assertTrue(grown && (type == SlabType.BOTTOM
+                            ? level.getBlockState(support).is(SystemicFixtureInitializer.TOADSTOOL_STEM)
+                            : level.getBlockState(support).equals(original)),
+                    "exact Ribbits toadstool stem reconciliation drifted for " + type);
+        }
 
         clearVertical(level, support, 1, 4);
-        level.setBlock(support, farmlandSlab, Block.UPDATE_SKIP_ALL_SIDEEFFECTS);
-        BlockState matureLower = Blocks.PITCHER_CROP.defaultBlockState()
-                .setValue(PitcherCropBlock.AGE, PitcherCropBlock.MAX_AGE)
-                .setValue(PitcherCropBlock.HALF, DoubleBlockHalf.LOWER);
-        BlockState matureUpper = matureLower.setValue(PitcherCropBlock.HALF, DoubleBlockHalf.UPPER);
-        level.setBlock(crop, matureLower, Block.UPDATE_SKIP_ALL_SIDEEFFECTS);
-        level.setBlock(crop.above(), matureUpper, Block.UPDATE_SKIP_ALL_SIDEEFFECTS);
-        assertAcceptedOffset(helper, crop, support, NibaruHorizontalSurface.BOTTOM_OFFSET,
-                "mature pitcher lower half");
-        assertAcceptedOffset(helper, crop.above(), support, NibaruHorizontalSurface.BOTTOM_OFFSET,
-                "mature pitcher upper half");
-
-        BlockState glassSlab = slab(Blocks.GLASS, SlabType.BOTTOM);
-        level.setBlock(support, glassSlab, Block.UPDATE_SKIP_ALL_SIDEEFFECTS);
-        helper.assertTrue(NibaruHorizontalSurface.supporting(matureLower, level, crop).isEmpty()
-                        && NibaruHorizontalSurface.supporting(matureUpper, level, crop.above()).isEmpty()
-                        && NibaruHorizontalSurface.visibleOffset(matureLower, level, crop) == 0.0D
-                        && NibaruHorizontalSurface.visibleOffset(matureUpper, level, crop.above()) == 0.0D,
-                "canonical-rejecting glass granted Pitcher Crop an offset");
+        BlockState original = slab(Blocks.MYCELIUM, SlabType.BOTTOM);
+        BlockState sourceState = Blocks.RED_MUSHROOM.defaultBlockState();
+        level.setBlock(support, original, Block.UPDATE_SKIP_ALL_SIDEEFFECTS);
+        level.setBlock(source, sourceState, Block.UPDATE_SKIP_ALL_SIDEEFFECTS);
+        boolean grown = StructureGrowthTransaction.run(level, source, sourceState, () -> {
+            level.setBlock(source, Blocks.AIR.defaultBlockState(), Block.UPDATE_SKIP_ALL_SIDEEFFECTS);
+            // Mirrors Ribbits' own failed-feature recovery before its normal spread fallback.
+            level.setBlock(source, sourceState, Block.UPDATE_SKIP_ALL_SIDEEFFECTS);
+            return false;
+        });
+        helper.assertTrue(!grown && level.getBlockState(support).equals(original)
+                        && level.getBlockState(source).equals(sourceState),
+                "failed optional huge-toadstool transaction did not retain Ribbits' recovered source/slab");
         helper.succeed();
     }
 
@@ -510,6 +656,46 @@ public final class SystemicSurfaceGameTests implements CustomTestMethodInvoker {
         assertAcceptedOffset(helper, plant, support, expectedOffset, label);
     }
 
+    private static List<CropPlacement> ordinaryFarmlandCropItems() {
+        // These are the current vanilla planting-item contracts, not a production permission
+        // table. Production delegates acceptance to each crop's ordinary projected survival.
+        return List.of(
+                new CropPlacement(Items.WHEAT_SEEDS, Blocks.WHEAT),
+                new CropPlacement(Items.CARROT, Blocks.CARROTS),
+                new CropPlacement(Items.POTATO, Blocks.POTATOES),
+                new CropPlacement(Items.BEETROOT_SEEDS, Blocks.BEETROOTS),
+                new CropPlacement(Items.TORCHFLOWER_SEEDS, Blocks.TORCHFLOWER_CROP),
+                new CropPlacement(Items.PITCHER_POD, Blocks.PITCHER_CROP));
+    }
+
+    private static BlockState farmlandSlab(SlabType type) {
+        return CnmTerrainCompat.FARMLAND_SLAB.defaultBlockState()
+                .setValue(BlockStateProperties.SLAB_TYPE, type);
+    }
+
+    private static void assertShapeOffset(
+            GameTestHelper helper,
+            VoxelShape actual,
+            VoxelShape canonical,
+            double offset,
+            String label) {
+        List<AABB> actualBoxes = actual.toAabbs();
+        List<AABB> canonicalBoxes = canonical.toAabbs();
+        helper.assertTrue(actualBoxes.size() == canonicalBoxes.size(),
+                label + " changed the canonical shape box count");
+        for (int index = 0; index < canonicalBoxes.size(); index++) {
+            AABB observed = actualBoxes.get(index);
+            AABB expected = canonicalBoxes.get(index);
+            helper.assertTrue(close(observed.minX, expected.minX)
+                            && close(observed.maxX, expected.maxX)
+                            && close(observed.minY, expected.minY + offset)
+                            && close(observed.maxY, expected.maxY + offset)
+                            && close(observed.minZ, expected.minZ)
+                            && close(observed.maxZ, expected.maxZ),
+                    label + " did not apply the shared crop translation exactly once");
+        }
+    }
+
     private static void assertUpwardColumn(
             GameTestHelper helper,
             BlockPos support,
@@ -612,6 +798,10 @@ public final class SystemicSurfaceGameTests implements CustomTestMethodInvoker {
         return exact.defaultBlockState().setValue(BlockStateProperties.SLAB_TYPE, type);
     }
 
+    private static boolean close(double first, double second) {
+        return Math.abs(first - second) <= 1.0E-6D;
+    }
+
     private record BoundedBlockGetter(
             BlockGetter delegate,
             BlockPos center,
@@ -652,6 +842,9 @@ public final class SystemicSurfaceGameTests implements CustomTestMethodInvoker {
     }
 
     private record AquaticCase(BlockState state, String label) {
+    }
+
+    private record CropPlacement(Item item, Block crop) {
     }
 
     @Override
