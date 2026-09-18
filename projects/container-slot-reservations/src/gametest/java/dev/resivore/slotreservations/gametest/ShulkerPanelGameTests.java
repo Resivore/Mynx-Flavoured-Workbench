@@ -473,6 +473,62 @@ public final class ShulkerPanelGameTests implements CustomTestMethodInvoker {
     }
 
     @GameTest(maxTicks = 40)
+    public void inventoryExtendedOrdinaryBoundaryIsEnforcedByLiveServerSlots(
+            GameTestHelper helper
+    ) {
+        ServerPlayer player = player(helper);
+        int ordinarySize = player.getInventory().getNonEquipmentItems().size();
+        if (ordinarySize == 36) {
+            // The default controlled run proves the same live-boundary code with vanilla's shape.
+            // The dedicated -PincludeInventoryExtendedRuntime run exercises the branch below.
+            helper.succeed();
+            return;
+        }
+
+        helper.assertTrue(ordinarySize == 63,
+                "The exact Inventory Extended 1.1.2 runtime did not expose 63 ordinary slots");
+        player.containerMenu = player.inventoryMenu;
+        Slot extended = player.containerMenu.slots.stream()
+                .filter(slot -> slot.container == player.getInventory()
+                        && slot.getContainerSlot() == 62)
+                .findFirst().orElseThrow();
+        extended.set(new ItemStack(Items.STONE, 9));
+        ItemStack host = panelHost();
+        player.containerMenu.setCarried(host);
+
+        var extendedAction = new CarriedShulkerInventoryActionPayload(
+                player.containerMenu.containerId,
+                extended.index,
+                62,
+                ShulkerHostFingerprint.of(host, player.registryAccess()),
+                ShulkerHostFingerprint.of(extended.getItem(), player.registryAccess()));
+        helper.assertTrue(CarriedShulkerInventoryActions.handle(player, extendedAction),
+                "The real Inventory Extended physical slot 62 was rejected");
+        helper.assertTrue(extended.getItem().isEmpty()
+                        && ShulkerContents.copy(player.containerMenu.getCarried()).get(0).getCount() == 9,
+                "The real extended source did not transfer coherently into the carried shulker");
+
+        Slot equipment = player.containerMenu.slots.stream()
+                .filter(slot -> slot.container == player.getInventory()
+                        && slot.getContainerSlot() == ordinarySize)
+                .findFirst().orElseThrow();
+        equipment.set(new ItemStack(Items.LEATHER_BOOTS));
+        ItemStack before = player.containerMenu.getCarried().copy();
+        var equipmentAction = new CarriedShulkerInventoryActionPayload(
+                player.containerMenu.containerId,
+                equipment.index,
+                ordinarySize,
+                ShulkerHostFingerprint.of(before, player.registryAccess()),
+                ShulkerHostFingerprint.of(equipment.getItem(), player.registryAccess()));
+        helper.assertTrue(!CarriedShulkerInventoryActions.handle(player, equipmentAction),
+                "The first Inventory Extended equipment coordinate was treated as ordinary storage");
+        helper.assertTrue(equipment.getItem().is(Items.LEATHER_BOOTS)
+                        && ItemStack.matches(before, player.containerMenu.getCarried()),
+                "Rejected equipment input changed the equipment slot or carried shulker");
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
     public void panelPrimaryActionsSynchronizeTheActualCarriedStackThroughTheMenuSeam(
             GameTestHelper helper
     ) {

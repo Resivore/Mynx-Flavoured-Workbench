@@ -64,6 +64,9 @@ dependencies {
     if (providers.gradleProperty('includeDoubleBarrelsRuntime').isPresent()) {
         runtimeOnly files(doubleBarrelsReferenceJar)
     }
+    if (providers.gradleProperty('includeInventoryExtendedRuntime').isPresent()) {
+        runtimeOnly files(inventoryExtendedReferenceJar)
+    }
 
     testImplementation platform('org.junit:junit-bom:5.13.4')
     testImplementation 'org.junit.jupiter:junit-jupiter'

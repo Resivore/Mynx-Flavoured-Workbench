@@ -1,10 +1,11 @@
 package dev.resivore.slotreservations.client;
 
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.inventory.Slot;
 
-import java.util.HashMap;
+import java.util.Collections;
+import java.util.IdentityHashMap;
 import java.util.LinkedHashSet;
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -21,48 +22,27 @@ final class CarriedShulkerRmbGesture {
     record SlotKey(int menuSlot, int physicalPlayerSlot) {}
 
     private Mode mode = Mode.INACTIVE;
-    private SlotKey currentSlot;
     private ItemStack projectedShulker = ItemStack.EMPTY;
     private String projectedFingerprint;
     private final Set<String> validLiveFingerprints = new LinkedHashSet<>();
-    private final Map<SlotKey, ItemStack> projectedSources = new HashMap<>();
+    private final Set<Slot> visitedSlots = Collections.newSetFromMap(new IdentityHashMap<>());
 
-    /**
-     * Maps Creative's two player-slot presentations back to the server's physical inventory.
-     * The inventory tab wraps InventoryMenu indices; every other tab exposes only direct
-     * physical hotbar slots alongside the catalog container.
-     */
-    static int creativePhysicalPlayerSlot(int creativeCoordinate, boolean inventoryTab) {
-        if (!inventoryTab) {
-            return creativeCoordinate >= 0 && creativeCoordinate < 9 ? creativeCoordinate : -1;
-        }
-        if (creativeCoordinate >= 9 && creativeCoordinate <= 35) return creativeCoordinate;
-        if (creativeCoordinate >= 36 && creativeCoordinate <= 44) return creativeCoordinate - 36;
-        return -1;
-    }
-
-    void begin(Mode selectedMode, SlotKey initialSlot, ItemStack carriedShulker,
+    void begin(Mode selectedMode, Slot initialSlot, ItemStack carriedShulker,
                String carriedFingerprint) {
         reset();
         if (selectedMode != Mode.INVENTORY_TO_SHULKER
+                || initialSlot == null
                 || carriedShulker.isEmpty() || carriedFingerprint == null) return;
         mode = selectedMode;
-        currentSlot = initialSlot;
+        visitedSlots.add(initialSlot);
         projectedShulker = carriedShulker.copy();
         projectedFingerprint = carriedFingerprint;
         validLiveFingerprints.add(carriedFingerprint);
     }
 
-    boolean enter(SlotKey slot) {
-        if (!isActive() || slot == null) return false;
-        if (slot.equals(currentSlot)) return false;
-        currentSlot = slot;
-        return true;
-    }
-
-    /** Leaving the ordinary player-slot surface permits a later re-entry. */
-    void leaveSlotSurface() {
-        if (isActive()) currentSlot = null;
+    /** Mirrors Item Interactions: one action per actual hovered Slot identity per held drag. */
+    boolean enter(Slot slot) {
+        return isActive() && slot != null && visitedSlots.add(slot);
     }
 
     void advance(ItemStack changedShulker, String changedFingerprint) {
@@ -70,17 +50,6 @@ final class CarriedShulkerRmbGesture {
         projectedShulker = changedShulker.copy();
         projectedFingerprint = changedFingerprint;
         validLiveFingerprints.add(changedFingerprint);
-    }
-
-    ItemStack projectedSource(SlotKey slot, ItemStack liveSource) {
-        ItemStack projected = projectedSources.get(slot);
-        return projected == null ? liveSource.copy() : projected.copy();
-    }
-
-    void advanceSource(SlotKey slot, ItemStack changedSource) {
-        if (isActive() && slot != null && changedSource != null) {
-            projectedSources.put(slot, changedSource.copy());
-        }
     }
 
     boolean acceptsLiveFingerprint(String fingerprint) {
@@ -94,10 +63,9 @@ final class CarriedShulkerRmbGesture {
 
     void reset() {
         mode = Mode.INACTIVE;
-        currentSlot = null;
         projectedShulker = ItemStack.EMPTY;
         projectedFingerprint = null;
         validLiveFingerprints.clear();
-        projectedSources.clear();
+        visitedSlots.clear();
     }
 }

@@ -2,7 +2,6 @@ package dev.resivore.slotreservations;
 
 import dev.resivore.slotreservations.network.CarriedShulkerInventoryActionPayload;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
@@ -51,10 +50,6 @@ public final class CarriedShulkerInventoryActions {
             int menuSlot,
             int physicalPlayerSlot
     ) {
-        if (physicalPlayerSlot < 0 || physicalPlayerSlot >= Inventory.INVENTORY_SIZE) {
-            return Optional.empty();
-        }
-
         // Every ordinary screen supplies its exact live menu index. Creative's client-only
         // facade has no server-side menu index, so it deliberately uses -1 and the unique
         // physical player-inventory coordinate instead.
@@ -83,11 +78,8 @@ public final class CarriedShulkerInventoryActions {
             int menuSlot,
             int physicalPlayerSlot
     ) {
-        return slot != null && slot.index == menuSlot
-                && slot.container == player.getInventory()
-                && slot.getContainerSlot() == physicalPlayerSlot
-                && slot.isActive() && !slot.isFake()
-                && slot.container.stillValid(player);
+        return OrdinaryPlayerInventorySlots.isExactLiveSlot(
+                player, slot, menuSlot, physicalPlayerSlot);
     }
 
     private static boolean usable(ServerPlayer player, AbstractContainerMenu menu, int menuId) {

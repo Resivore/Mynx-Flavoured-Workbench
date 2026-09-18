@@ -21,13 +21,13 @@ import org.lwjgl.glfw.GLFW;
  * shulker and each arbitrary source stack are expected to be incompatible.
  */
 public final class CarriedShulkerRmbCollector {
-    private static final int ORDINARY_PLAYER_SLOT_COUNT = 36;
     private static final CarriedShulkerRmbGesture GESTURE = new CarriedShulkerRmbGesture();
 
     private static AbstractContainerScreen<?> screen;
     private static AbstractContainerMenu menu;
     private static int authoritativeMenuId = -1;
     private static boolean creativeFacade;
+    private static boolean ownsPhysicalRmb;
 
     private CarriedShulkerRmbCollector() {}
 
@@ -43,51 +43,68 @@ public final class CarriedShulkerRmbCollector {
         AbstractContainerMenu candidateMenu = candidateScreen.getMenu();
         boolean candidateCreative = candidateScreen instanceof CreativeModeInventoryScreen;
         if (!candidateCreative && candidateMenu != client.player.containerMenu) return false;
-        CarriedShulkerRmbGesture.SlotKey key = playerSlotKey(client.player, candidateMenu, target,
+        CarriedShulkerSourceSlot.Resolution source = CarriedShulkerSourceSlot.resolve(
+                client.player, candidateMenu, target,
                 candidateCreative, candidateScreen instanceof CreativeModeInventoryScreen creative
                         && creative.isInventoryOpen());
         ItemStack carried = candidateMenu.getCarried();
-        if (key == null || !target.hasItem() || carried.getCount() != 1
-                || !SupportedContainerResolver.isSupportedShulkerItem(carried)) return false;
+        if (source == null || !supportsOccupiedOrigin(carried, target)) return false;
 
         screen = candidateScreen;
         menu = candidateMenu;
         creativeFacade = candidateCreative;
+        ownsPhysicalRmb = true;
         authoritativeMenuId = candidateCreative
                 ? client.player.inventoryMenu.containerId : candidateMenu.containerId;
-        GESTURE.begin(CarriedShulkerRmbGesture.Mode.INVENTORY_TO_SHULKER, key, carried,
+        GESTURE.begin(CarriedShulkerRmbGesture.Mode.INVENTORY_TO_SHULKER,
+                source.hovered(), carried,
                 ShulkerHostFingerprint.of(carried, client.player.registryAccess()));
-        dispatchInventoryToShulker(client.player, target, key);
+        dispatchInventoryToShulker(client.player, target, source.key());
         return true;
     }
 
     /** Handles the native screen-level coordinates after every RMB drag callback. */
     public static boolean drag(AbstractContainerScreen<?> candidateScreen, double mouseX, double mouseY) {
-        if (!GESTURE.isActive()) return false;
+        if (!ownsPhysicalRmb) return false;
+        if (!GESTURE.isActive()) return true;
         Minecraft client = Minecraft.getInstance();
         if (client.player == null || candidateScreen != screen || !validContext(client)
                 || !validLiveCursor(client.player)) {
-            reset();
-            return false;
+            GESTURE.reset();
+            return true;
         }
         Slot target = ((ContainerScreenMouseAccess) candidateScreen)
                 .containerSlotReservations$slotAt(mouseX, mouseY);
-        CarriedShulkerRmbGesture.SlotKey key = playerSlotKey(client.player, menu, target, creativeFacade,
-                creativeInventoryTab());
-        if (key == null) {
-            GESTURE.leaveSlotSurface();
-            return true;
-        }
-        if (!GESTURE.enter(key)) return true;
-        if (target.hasItem()) dispatchInventoryToShulker(client.player, target, key);
+        CarriedShulkerSourceSlot.Resolution source = CarriedShulkerSourceSlot.resolve(
+                client.player, menu, target, creativeFacade, creativeInventoryTab());
+        if (source == null || !GESTURE.enter(source.hovered())) return true;
+        if (target.hasItem()) dispatchInventoryToShulker(client.player, target, source.key());
         return true;
     }
 
     public static void maintain(Minecraft client) {
-        if (!GESTURE.isActive()) return;
-        if (!validContext(client) || client.player == null || !validLiveCursor(client.player)
-                || GLFW.glfwGetMouseButton(client.getWindow().handle(), GLFW.GLFW_MOUSE_BUTTON_RIGHT)
-                == GLFW.GLFW_RELEASE) reset();
+        if (!ownsPhysicalRmb) return;
+        if (GLFW.glfwGetMouseButton(client.getWindow().handle(), GLFW.GLFW_MOUSE_BUTTON_RIGHT)
+                == GLFW.GLFW_RELEASE) {
+            reset();
+            return;
+        }
+        if (GESTURE.isActive()
+                && (!validContext(client) || client.player == null || !validLiveCursor(client.player))) {
+            GESTURE.reset();
+        }
+    }
+
+    /** Ends input ownership and reports whether CSR consumed this physical RMB hold. */
+    public static boolean release() {
+        boolean owned = ownsPhysicalRmb;
+        reset();
+        return owned;
+    }
+
+    /** Used only by the exact Mouse Tweaks pre-screen guard. */
+    public static boolean ownsInboundRmb() {
+        return ownsPhysicalRmb;
     }
 
     public static void reset() {
@@ -96,25 +113,25 @@ public final class CarriedShulkerRmbCollector {
         menu = null;
         authoritativeMenuId = -1;
         creativeFacade = false;
+        ownsPhysicalRmb = false;
     }
 
     private static void dispatchInventoryToShulker(Player player, Slot source,
                                                     CarriedShulkerRmbGesture.SlotKey key) {
-        ItemStack before = GESTURE.projectedSource(key, source.getItem());
+        ItemStack before = source.getItem().copy();
         if (before.isEmpty()) return;
         ShulkerTransferPlanner.Insertion plan = ShulkerTransferPlanner.planInsertion(
                 GESTURE.projectedShulker(), before);
         if (plan.moved() == 0) return;
         String predecessor = GESTURE.projectedFingerprint();
         if (predecessor == null) {
-            reset();
+            GESTURE.reset();
             return;
         }
         ClientPlayNetworking.send(new CarriedShulkerInventoryActionPayload(authoritativeMenuId,
                 key.menuSlot(), key.physicalPlayerSlot(), predecessor,
                 ShulkerHostFingerprint.of(before, player.registryAccess())));
         GESTURE.advance(plan.shulker(), ShulkerHostFingerprint.of(plan.shulker(), player.registryAccess()));
-        GESTURE.advanceSource(key, plan.remainder());
     }
 
     private static boolean validContext(Minecraft client) {
@@ -134,18 +151,9 @@ public final class CarriedShulkerRmbCollector {
                         ShulkerHostFingerprint.of(carried, player.registryAccess()));
     }
 
-    private static CarriedShulkerRmbGesture.SlotKey playerSlotKey(
-            Player player, AbstractContainerMenu candidateMenu, Slot target, boolean creative,
-            boolean creativeInventoryTab) {
-        if (player == null || candidateMenu == null || target == null || target.isFake()
-                || !target.isActive() || target.container != player.getInventory()
-                || !target.container.stillValid(player)) return null;
-        int physical = target.getContainerSlot();
-        if (creative) physical = CarriedShulkerRmbGesture.creativePhysicalPlayerSlot(
-                physical, creativeInventoryTab);
-        if (physical < 0 || physical >= ORDINARY_PLAYER_SLOT_COUNT) return null;
-        int visible = candidateMenu.slots.indexOf(target);
-        return visible < 0 ? null : new CarriedShulkerRmbGesture.SlotKey(creative ? -1 : visible, physical);
+    static boolean supportsOccupiedOrigin(ItemStack carried, Slot target) {
+        return target != null && target.hasItem() && carried.getCount() == 1
+                && SupportedContainerResolver.isSupportedShulkerItem(carried);
     }
 
     private static boolean creativeInventoryTab() {

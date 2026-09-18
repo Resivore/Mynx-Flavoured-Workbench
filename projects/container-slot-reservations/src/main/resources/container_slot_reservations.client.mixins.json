@@ -1,15 +1,18 @@
 {
   "required": true,
+  "plugin": "dev.resivore.slotreservations.mixin.client.OptionalClientMixinPlugin",
   "refmap": "container_slot_reservations.refmap.json",
   "package": "dev.resivore.slotreservations.mixin.client",
   "compatibilityLevel": "JAVA_25",
   "client": [
     "AbstractContainerScreenMixin",
     "ContainerScreenMouseAccess",
+    "CreativeSlotWrapperAccess",
     "GuiGraphicsExtractorGhostMixin",
     "GuiItemRenderStateGhostMixin",
     "GuiRendererGhostMixin",
     "KeyboardHandlerMixin",
+    "MouseTweaksInboundGuardMixin",
     "PictureInPictureRendererGhostMixin"
   ],
   "injectors": {

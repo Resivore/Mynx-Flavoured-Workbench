@@ -108,15 +108,6 @@ abstract class AbstractContainerScreenMixin implements ReservationScreenAccess {
                 && !event.hasControlDown() && !event.hasAltDown();
         boolean shiftPrimary = !doubleClick && event.hasShiftDown() && !event.hasControlDown()
                 && !event.hasAltDown() && event.button() == 0;
-        if (standardClick && event.button() == 1
-                && !ShulkerPanel.containsPanel(event.x(), event.y())) {
-            Slot nativeTarget = ((ContainerScreenMouseAccess) this)
-                    .containerSlotReservations$slotAt(event.x(), event.y());
-            if (CarriedShulkerRmbCollector.begin((AbstractContainerScreen<?>) (Object) this, nativeTarget)) {
-                callbackInfo.setReturnValue(true);
-                return;
-            }
-        }
         if (ShulkerPanel.click(event.x(), event.y(), event.button(), standardClick, shiftPrimary)) {
             callbackInfo.setReturnValue(true);
         }
@@ -131,11 +122,6 @@ abstract class AbstractContainerScreenMixin implements ReservationScreenAccess {
     @Inject(method = "mouseDragged", at = @At("HEAD"), cancellable = true)
     private void containerSlotReservations$panelDrag(MouseButtonEvent event, double dragX, double dragY,
                                                       CallbackInfoReturnable<Boolean> callbackInfo) {
-        if (event.button() == 1 && CarriedShulkerRmbCollector.drag(
-                (AbstractContainerScreen<?>) (Object) this, event.x(), event.y())) {
-            callbackInfo.setReturnValue(true);
-            return;
-        }
         if (ShulkerPanel.drag(event.x(), event.y(), event.button())) callbackInfo.setReturnValue(true);
     }
 
