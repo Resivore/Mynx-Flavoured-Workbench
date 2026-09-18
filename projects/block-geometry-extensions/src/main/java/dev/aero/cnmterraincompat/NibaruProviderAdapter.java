@@ -66,7 +66,7 @@ public final class NibaruProviderAdapter {
             VisualProfile.GRASS_OVERLAY, VisualProfile.LEAVES_CUTOUT_TINTED, VisualProfile.CUTOUT_UNIFORM,
             VisualProfile.PATH, VisualProfile.TRANSLUCENT_UNIFORM, VisualProfile.ROOTS,
             VisualProfile.GLASS_EDGE, VisualProfile.GLAZED_ORIENTED, VisualProfile.HONEY_INSET,
-            VisualProfile.SLIME_INSET));
+            VisualProfile.SLIME_INSET, VisualProfile.HUGE_MUSHROOM));
     private static final Identifier SHAPE_MAP_SOURCE = Identifier.fromNamespaceAndPath(
             CnmTerrainCompat.MOD_ID, "provider_profiles");
     private static final Map<NibaruMaterialProfile, EnumMap<BgeGeometryRole, Block>> DERIVED =
@@ -123,7 +123,9 @@ public final class NibaruProviderAdapter {
         NibaruMaterialProfile profile = profile(source).orElse(null);
         if (profile == null) return new VerticalSlabBlock(properties);
         VerticalSlabBlock result;
-        if (profile.capabilities().contains(BehaviorCapability.LEAF_LIFECYCLE)) {
+        if (HugeMushroomMaterial.isHugeMushroom(profile)) {
+            result = new HugeMushroomVerticalSlabBlock(properties);
+        } else if (profile.capabilities().contains(BehaviorCapability.LEAF_LIFECYCLE)) {
             result = new NibaruLeavesVerticalSlabBlock(properties);
         } else if (profile.capabilities().contains(BehaviorCapability.PATH_CONVERSION)) {
             result = new PathVerticalSlabBlock(properties, () -> transitionGeometry(profile,
@@ -173,7 +175,9 @@ public final class NibaruProviderAdapter {
         NibaruMaterialProfile profile = profile(source).orElse(null);
         if (profile == null) return new StepBlock(properties);
         StepBlock result;
-        if (profile.capabilities().contains(BehaviorCapability.LEAF_LIFECYCLE)) {
+        if (HugeMushroomMaterial.isHugeMushroom(profile)) {
+            result = new HugeMushroomStepBlock(properties);
+        } else if (profile.capabilities().contains(BehaviorCapability.LEAF_LIFECYCLE)) {
             result = new NibaruLeavesStepBlock(properties);
         } else if (profile.capabilities().contains(BehaviorCapability.PATH_CONVERSION)) {
             result = new PathStepBlock(properties, () -> transitionGeometry(profile,
@@ -226,7 +230,9 @@ public final class NibaruProviderAdapter {
             throw new IllegalStateException("Unsupported BGE Layer material " + profile.canonicalParentId()
                     + ": " + support.status() + " " + support.missingCapabilities());
         }
-        BgeLayerBlock result = BgeLayerSpecializedBlocks.create(profile, properties);
+        BgeLayerBlock result = HugeMushroomMaterial.isHugeMushroom(profile)
+                ? new HugeMushroomLayerBlock(profile, properties)
+                : BgeLayerSpecializedBlocks.create(profile, properties);
         bindExisting(profile, BgeGeometryRole.LAYER, result);
         return result;
     }
@@ -235,7 +241,9 @@ public final class NibaruProviderAdapter {
     public static BgeCornerBlock createCorner(NibaruMaterialProfile profile,
             BlockBehaviour.Properties properties) {
         requireLocalSupport(profile, BgeGeometryRole.CORNER);
-        BgeCornerBlock result = BgeCornerBlock.create(profile, properties);
+        BgeCornerBlock result = HugeMushroomMaterial.isHugeMushroom(profile)
+                ? new HugeMushroomCornerBlock(profile, properties)
+                : BgeCornerBlock.create(profile, properties);
         bindExisting(profile, BgeGeometryRole.CORNER, result);
         return result;
     }
@@ -244,7 +252,9 @@ public final class NibaruProviderAdapter {
     public static BgeColumnBlock createQuarterColumn(NibaruMaterialProfile profile,
             BlockBehaviour.Properties properties) {
         requireLocalSupport(profile, BgeGeometryRole.QUARTER_COLUMN);
-        BgeColumnBlock result = BgeColumnBlock.create(profile, properties);
+        BgeColumnBlock result = HugeMushroomMaterial.isHugeMushroom(profile)
+                ? new HugeMushroomColumnBlock(profile, properties)
+                : BgeColumnBlock.create(profile, properties);
         bindExisting(profile, BgeGeometryRole.QUARTER_COLUMN, result);
         return result;
     }

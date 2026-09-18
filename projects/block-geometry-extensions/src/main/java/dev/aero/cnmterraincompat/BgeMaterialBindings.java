@@ -515,6 +515,9 @@ public final class BgeMaterialBindings {
         addShared(result, source, canonical, BlockStateProperties.PERSISTENT);
         addShared(result, source, canonical, BlockStateProperties.SNOWY);
         addShared(result, source, canonical, BlockStateProperties.WATERLOGGED);
+        if (HugeMushroomMaterial.isHugeMushroom(profile)) {
+            for (Property<?> property : HugeMushroomSurface.properties()) addShared(result, source, canonical, property);
+        }
         // Horizontal Slabs use facing as glazed-pattern material state. Every other standard
         // geometry uses its ordinary facing as topology and, where required, carries pattern state
         // independently through GlazedPatternState.PATTERN_FACING.

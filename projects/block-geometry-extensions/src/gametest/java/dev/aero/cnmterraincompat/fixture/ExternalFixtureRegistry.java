@@ -11,6 +11,7 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.HugeMushroomBlock;
 import net.minecraft.world.level.block.RotatedPillarBlock;
 import net.minecraft.world.level.block.SlabBlock;
 import net.minecraft.world.level.block.StairBlock;
@@ -70,6 +71,15 @@ public final class ExternalFixtureRegistry {
         addFire("ribbits", "mossy_oak_planks", 5, 20);
         addFire("ribbits", "mossy_oak_planks_slab", 5, 20);
         addFire("ribbits", "mossy_oak_planks_stairs", 5, 20);
+        registerHugeMushroom("red_toadstool", Blocks.RED_MUSHROOM_BLOCK);
+        registerHugeMushroom("brown_toadstool", Blocks.BROWN_MUSHROOM_BLOCK);
+        registerHugeMushroom("toadstool_stem", Blocks.MUSHROOM_STEM);
+    }
+
+    private static void registerHugeMushroom(String path, Block template) {
+        Identifier id = Identifier.fromNamespaceAndPath("ribbits", path);
+        register("ribbits", path, new HugeMushroomBlock(BlockBehaviour.Properties.ofFullCopy(template)
+                .setId(ResourceKey.create(Registries.BLOCK, id))));
     }
 
     /** Exact BBB beam parent/standard-form IDs used to exercise the optional completion hook. */

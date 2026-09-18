@@ -56,12 +56,14 @@ public final class ExternalMaterialFamilies {
         Identifier wallId = id(spec, "wall");
         boolean leaves = spec.capabilities().contains(
                 games.twinhead.moreslabsstairsandwalls.api.material.BehaviorCapability.LEAF_LIFECYCLE);
+        boolean hugeMushroom = spec.visual()
+                == games.twinhead.moreslabsstairsandwalls.api.material.VisualProfile.HUGE_MUSHROOM;
         RoleSelection slab = selectStandardRole(spec, "slab", slabId, SlabBlock.class,
-                () -> ExternalMaterialBlocks.createSlab(source, properties(slabId, source), leaves));
+                () -> ExternalMaterialBlocks.createSlab(source, properties(slabId, source), leaves, hugeMushroom));
         RoleSelection stairs = selectStandardRole(spec, "stairs", stairsId, StairBlock.class,
-                () -> ExternalMaterialBlocks.createStairs(source, properties(stairsId, source), leaves));
+                () -> ExternalMaterialBlocks.createStairs(source, properties(stairsId, source), leaves, hugeMushroom));
         RoleSelection wall = selectStandardRole(spec, "wall", wallId, WallBlock.class,
-                () -> ExternalMaterialBlocks.createWall(wallProperties(wallId, source), leaves));
+                () -> ExternalMaterialBlocks.createWall(source, wallProperties(wallId, source), leaves, hugeMushroom));
         Set<String> generatedStandardRoles = new LinkedHashSet<>();
         if (slab.generated()) generatedStandardRoles.add("slab");
         if (stairs.generated()) generatedStandardRoles.add("stairs");
@@ -77,7 +79,8 @@ public final class ExternalMaterialFamilies {
                 NibaruMaterialProfile.VisualSupport.GENERIC_SUPPORTED, spec.tint(), spec.renderLayer(),
                 spec.orientation(), NibaruMaterialProfile.SurfaceSamplingPolicy.BLOCK_ABSOLUTE,
                 NibaruMaterialProfile.DoubleFormPolicy.COMPOSE_SEMANTIC_SURFACES,
-                new NibaruMaterialProfile.TextureRoles(spec.side(), spec.top(), spec.bottom(), "", spec.side()),
+                new NibaruMaterialProfile.TextureRoles(spec.side(), spec.top(), spec.bottom(), "", spec.side(),
+                        spec.interior()),
                 Optional.empty(), Optional.empty(), false, spec.transitions());
         NibaruMaterialProfiles.registerExternal(profile);
 

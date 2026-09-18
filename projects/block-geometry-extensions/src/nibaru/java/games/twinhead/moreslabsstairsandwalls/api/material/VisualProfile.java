@@ -14,5 +14,7 @@ public enum VisualProfile {
     ROOTS,
     HONEY_INSET,
     SLIME_INSET,
+    /** Six independently exposed HugeMushroom faces plus a provider-declared cut surface. */
+    HUGE_MUSHROOM,
     CUSTOM_MODEL_CONTRACT
 }

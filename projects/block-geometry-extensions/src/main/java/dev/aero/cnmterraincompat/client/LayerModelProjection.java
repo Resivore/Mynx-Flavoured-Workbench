@@ -183,6 +183,7 @@ public final class LayerModelProjection {
             textures.addProperty("particle", texture(roles.particle()));
         }
         if (!roles.overlay().isEmpty()) textures.addProperty("overlay", texture(roles.overlay()));
+        if (!roles.interior().isEmpty()) textures.addProperty("interior", texture(roles.interior()));
         model.add("textures", textures);
         model.add("elements", new JsonArray());
         return model;
@@ -212,7 +213,9 @@ public final class LayerModelProjection {
         JsonObject faces = new JsonObject();
         for (Direction face : FACINGS) {
             JsonObject encoded = new JsonObject();
-            encoded.addProperty("texture", bottomOnly ? "#bottom" : textureRole(face, materialAxis));
+            boolean cut = profile.visualProfile() == VisualProfile.HUGE_MUSHROOM && !bounds.onBoundary(face);
+            encoded.addProperty("texture", bottomOnly ? "#bottom"
+                    : cut ? "#interior" : textureRole(face, materialAxis));
             int rotation = faceRotation(face, materialAxis);
             if (materialAxis != null) encoded.add("uv", axisUv(face, bounds, rotation));
             if (rotation != 0) encoded.addProperty("rotation", rotation);

@@ -39,6 +39,9 @@ public final class ExternalMaterialCatalog {
         List<Spec> result = new ArrayList<>(List.of(
                 uniform("ribbits:mossy_oak_planks", Set.of(BlockTags.MINEABLE_WITH_AXE),
                         standardRoles("ribbits:mossy_oak_planks")),
+                hugeMushroom("ribbits:red_toadstool", "ribbits:block/red_toadstool"),
+                hugeMushroom("ribbits:brown_toadstool", "ribbits:block/brown_toadstool"),
+                hugeMushroom("ribbits:toadstool_stem", "ribbits:block/toadstool_stem"),
                 pillar("mynx_trees:wisteria_log", "mynx_trees:block/wisteria_log",
                         "mynx_trees:block/wisteria_log_top", ModBlocks.PALE_OAK_LOG),
                 pillar("mynx_trees:wisteria_wood", "mynx_trees:block/wisteria_log",
@@ -65,25 +68,37 @@ public final class ExternalMaterialCatalog {
         String texture = key.getNamespace() + ":block/" + key.getPath();
         return new Spec(key, key.getNamespace(), key, key, providerRoles,
                 VisualProfile.UNIFORM, NibaruMaterialProfile.OrientationPolicy.UNIFORM,
-                texture, texture, texture, TintProfile.NONE, NibaruMaterialProfile.RenderLayer.SOLID,
+                texture, texture, texture, "", TintProfile.NONE, NibaruMaterialProfile.RenderLayer.SOLID,
                 tags, Set.of(), List.of());
     }
 
     private static Spec pillar(String id, String side, String end, ModBlocks strippedTarget) {
         Identifier key = Identifier.parse(id);
         return new Spec(key, key.getNamespace(), key, key, Map.of(), VisualProfile.PILLAR,
-                NibaruMaterialProfile.OrientationPolicy.AXIS_ALIGNED, side, end, end,
+                NibaruMaterialProfile.OrientationPolicy.AXIS_ALIGNED, side, end, end, "",
                 TintProfile.NONE, NibaruMaterialProfile.RenderLayer.SOLID,
                 Set.of(BlockTags.MINEABLE_WITH_AXE, BlockTags.LOGS),
                 Set.copyOf(EnumSet.of(BehaviorCapability.STRIPPABLE)),
                 List.of(new MaterialTransition(MaterialTransition.Type.STRIPPED, strippedTarget)));
     }
 
+    /**
+     * HugeMushroom is intentionally not a uniform material: true face flags render the
+     * provider exterior while false flags render the provider's existing cut/interior texture.
+     */
+    private static Spec hugeMushroom(String id, String exterior) {
+        Identifier key = Identifier.parse(id);
+        return new Spec(key, key.getNamespace(), key, key, Map.of(), VisualProfile.HUGE_MUSHROOM,
+                NibaruMaterialProfile.OrientationPolicy.UNIFORM, exterior, exterior, exterior,
+                "ribbits:block/toadstool_inside", TintProfile.NONE,
+                NibaruMaterialProfile.RenderLayer.SOLID, Set.of(), Set.of(), List.of());
+    }
+
     private static Spec leaves(String id, TintProfile tint) {
         Identifier key = Identifier.parse(id);
         String texture = key.getNamespace() + ":block/" + key.getPath();
         return new Spec(key, key.getNamespace(), key, key, Map.of(), VisualProfile.LEAVES_CUTOUT_TINTED,
-                NibaruMaterialProfile.OrientationPolicy.UNIFORM, texture, texture, texture,
+                NibaruMaterialProfile.OrientationPolicy.UNIFORM, texture, texture, texture, "",
                 tint, NibaruMaterialProfile.RenderLayer.CUTOUT_MIPPED,
                 Set.of(BlockTags.MINEABLE_WITH_HOE, BlockTags.LEAVES),
                 Set.copyOf(EnumSet.of(BehaviorCapability.LEAF_LIFECYCLE)), List.of());
@@ -106,7 +121,7 @@ public final class ExternalMaterialCatalog {
             String texture = "mcwpaths:block/" + full;
             result.add(new Spec(id, "mcwpaths", reference, id, standardRoles(id.toString()),
                     VisualProfile.UNIFORM,
-                    NibaruMaterialProfile.OrientationPolicy.UNIFORM, texture, texture, texture,
+                    NibaruMaterialProfile.OrientationPolicy.UNIFORM, texture, texture, texture, "",
                     TintProfile.NONE, NibaruMaterialProfile.RenderLayer.SOLID,
                     Set.of(BlockTags.MINEABLE_WITH_PICKAXE), Set.of(), List.of()));
         }
@@ -114,7 +129,7 @@ public final class ExternalMaterialCatalog {
             Identifier id = Identifier.fromNamespaceAndPath("mcwpaths", path);
             String texture = "mcwpaths:block/" + path.substring(0, path.length() - "_block".length());
             result.add(new Spec(id, "mcwpaths", id, id, Map.of(), VisualProfile.UNIFORM,
-                    NibaruMaterialProfile.OrientationPolicy.UNIFORM, texture, texture, texture,
+                    NibaruMaterialProfile.OrientationPolicy.UNIFORM, texture, texture, texture, "",
                     TintProfile.NONE, NibaruMaterialProfile.RenderLayer.SOLID,
                     Set.of(BlockTags.MINEABLE_WITH_SHOVEL), Set.of(), List.of()));
         }
@@ -144,7 +159,7 @@ public final class ExternalMaterialCatalog {
             result.add(new Spec(id, "bbb", id, id, Map.of(
                     "wall", Identifier.fromNamespaceAndPath("bbb", material + "_wall")),
                     VisualProfile.PILLAR, NibaruMaterialProfile.OrientationPolicy.AXIS_ALIGNED,
-                    texture, texture + "_top", texture + "_top", TintProfile.NONE,
+                    texture, texture + "_top", texture + "_top", "", TintProfile.NONE,
                     NibaruMaterialProfile.RenderLayer.SOLID,
                     Set.of(BlockTags.MINEABLE_WITH_AXE, BlockTags.LOGS), Set.of(), List.of()));
         }
@@ -154,7 +169,7 @@ public final class ExternalMaterialCatalog {
     public record Spec(Identifier id, String provider, Identifier providerReference,
             Identifier generatedIdentity, Map<String, Identifier> providerRoles, VisualProfile visual,
             NibaruMaterialProfile.OrientationPolicy orientation,
-            String side, String top, String bottom,
+            String side, String top, String bottom, String interior,
             TintProfile tint, NibaruMaterialProfile.RenderLayer renderLayer,
             Set<TagKey<Block>> blockTags, Set<BehaviorCapability> capabilities,
             List<MaterialTransition> transitions) {

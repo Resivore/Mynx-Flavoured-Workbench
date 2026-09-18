@@ -127,7 +127,8 @@ public final class ExternalMaterialGeneratedResources {
         variants.add("type=top", selection(model(id) + "_top"));
         variants.add("type=double", selection(model(id) + "_double"));
         write(blockState(id), variants(variants));
-        if (profile.tintProfile() == TintProfile.NONE) {
+        if (profile.tintProfile() == TintProfile.NONE
+                && profile.visualProfile() != games.twinhead.moreslabsstairsandwalls.api.material.VisualProfile.HUGE_MUSHROOM) {
             write(modelResource(id), template("minecraft:block/slab", profile));
             write(modelResource(id, "_top"), template("minecraft:block/slab_top", profile));
             write(modelResource(id, "_double"), template("minecraft:block/cube_bottom_top", profile));
@@ -144,7 +145,8 @@ public final class ExternalMaterialGeneratedResources {
                 Identifier.fromNamespaceAndPath("minecraft", "blockstates/oak_stairs.json"),
                 "minecraft:block/oak_stairs", model(id));
         write(blockState(id), state);
-        if (profile.tintProfile() == TintProfile.NONE) {
+        if (profile.tintProfile() == TintProfile.NONE
+                && profile.visualProfile() != games.twinhead.moreslabsstairsandwalls.api.material.VisualProfile.HUGE_MUSHROOM) {
             write(modelResource(id), template("minecraft:block/stairs", profile));
             write(modelResource(id, "_inner"), template("minecraft:block/inner_stairs", profile));
             write(modelResource(id, "_outer"), template("minecraft:block/outer_stairs", profile));
@@ -184,7 +186,8 @@ public final class ExternalMaterialGeneratedResources {
                     "more_slabs_stairs_and_walls:block/template_leaves_wall_side_tall", profile));
             write(modelResource(id, "_inventory"), leafWallTemplate(
                     "more_slabs_stairs_and_walls:block/template_leaves_wall_inventory", profile));
-        } else if (profile.tintProfile() == TintProfile.NONE) {
+        } else if (profile.tintProfile() == TintProfile.NONE
+                && profile.visualProfile() != games.twinhead.moreslabsstairsandwalls.api.material.VisualProfile.HUGE_MUSHROOM) {
             write(modelResource(id, "_post"), wallTemplate("minecraft:block/template_wall_post", profile));
             write(modelResource(id, "_side"), wallTemplate("minecraft:block/template_wall_side", profile));
             write(modelResource(id, "_side_tall"), wallTemplate("minecraft:block/template_wall_side_tall", profile));
@@ -210,9 +213,14 @@ public final class ExternalMaterialGeneratedResources {
             rotation += 90;
         }
         write(blockState(id), variants(variants));
-        String tint = profile.tintProfile() == TintProfile.NONE ? "" : "_tinted";
-        write(modelResource(id), template("clutternomore:block/templates/vertical_slab" + tint, profile));
-        write(modelResource(id, "_double"), template("clutternomore:block/templates/vertical_slab_double" + tint, profile));
+        if (profile.visualProfile() == games.twinhead.moreslabsstairsandwalls.api.material.VisualProfile.HUGE_MUSHROOM) {
+            write(modelResource(id), cuboidModel(profile, List.of(new int[] {0, 0, 0, 16, 16, 8})));
+            write(modelResource(id, "_double"), cuboidModel(profile, List.of(new int[] {0, 0, 0, 16, 16, 16})));
+        } else {
+            String tint = profile.tintProfile() == TintProfile.NONE ? "" : "_tinted";
+            write(modelResource(id), template("clutternomore:block/templates/vertical_slab" + tint, profile));
+            write(modelResource(id, "_double"), template("clutternomore:block/templates/vertical_slab_double" + tint, profile));
+        }
         return 2;
     }
 
@@ -226,10 +234,16 @@ public final class ExternalMaterialGeneratedResources {
             rotation += 90;
         }
         write(blockState(id), variants(variants));
-        String tint = profile.tintProfile() == TintProfile.NONE ? "" : "_tinted";
-        write(modelResource(id), template("clutternomore:block/templates/step" + tint, profile));
-        write(modelResource(id, "_top"), template("clutternomore:block/templates/step_top" + tint, profile));
-        write(modelResource(id, "_double"), template("clutternomore:block/templates/step_double" + tint, profile));
+        if (profile.visualProfile() == games.twinhead.moreslabsstairsandwalls.api.material.VisualProfile.HUGE_MUSHROOM) {
+            write(modelResource(id), cuboidModel(profile, List.of(new int[] {0, 0, 0, 16, 8, 16}, new int[] {0, 8, 8, 16, 16, 16})));
+            write(modelResource(id, "_top"), cuboidModel(profile, List.of(new int[] {0, 0, 0, 16, 8, 16}, new int[] {0, 8, 0, 16, 16, 8})));
+            write(modelResource(id, "_double"), cuboidModel(profile, List.of(new int[] {0, 0, 0, 16, 16, 16})));
+        } else {
+            String tint = profile.tintProfile() == TintProfile.NONE ? "" : "_tinted";
+            write(modelResource(id), template("clutternomore:block/templates/step" + tint, profile));
+            write(modelResource(id, "_top"), template("clutternomore:block/templates/step_top" + tint, profile));
+            write(modelResource(id, "_double"), template("clutternomore:block/templates/step_double" + tint, profile));
+        }
         return 3;
     }
 
@@ -293,12 +307,15 @@ public final class ExternalMaterialGeneratedResources {
             JsonObject faces = new JsonObject();
             for (Direction face : Direction.values()) {
                 JsonObject encoded = new JsonObject();
-                encoded.addProperty("texture", switch (face) {
+                boolean cut = profile.visualProfile()
+                        == games.twinhead.moreslabsstairsandwalls.api.material.VisualProfile.HUGE_MUSHROOM
+                        && !onBoundary(bounds, face);
+                encoded.addProperty("texture", cut ? "#interior" : switch (face) {
                     case UP -> "#top";
                     case DOWN -> "#bottom";
                     default -> "#side";
                 });
-                encoded.addProperty("tintindex", 0);
+                if (profile.tintProfile() != TintProfile.NONE) encoded.addProperty("tintindex", 0);
                 faces.add(face.getSerializedName(), encoded);
             }
             element.add("faces", faces);
@@ -308,12 +325,23 @@ public final class ExternalMaterialGeneratedResources {
         return root;
     }
 
+    private static boolean onBoundary(int[] bounds, Direction face) {
+        return switch (face) {
+            case WEST -> bounds[0] == 0; case EAST -> bounds[3] == 16;
+            case DOWN -> bounds[1] == 0; case UP -> bounds[4] == 16;
+            case NORTH -> bounds[2] == 0; case SOUTH -> bounds[5] == 16;
+        };
+    }
+
     private static JsonObject textures(NibaruMaterialProfile profile) {
         JsonObject textures = new JsonObject();
         textures.addProperty("side", texture(profile.textureRoles().side()));
         textures.addProperty("top", texture(profile.textureRoles().top()));
         textures.addProperty("bottom", texture(profile.textureRoles().bottom()));
         textures.addProperty("particle", texture(profile.textureRoles().particle()));
+        if (!profile.textureRoles().interior().isEmpty()) {
+            textures.addProperty("interior", texture(profile.textureRoles().interior()));
+        }
         return textures;
     }
 
