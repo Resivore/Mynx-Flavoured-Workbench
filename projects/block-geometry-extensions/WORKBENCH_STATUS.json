@@ -32,9 +32,9 @@
     "scope": [
       "Compile the retained `games.twinhead.moreslabsstairsandwalls` source and `more_slabs_stairs_and_walls` resources directly inside BGE with a clear LGPL-covered source and attribution boundary.",
       "Register native slabs, stairs, walls, material profiles, transitions, and client bindings before deriving CNM/BGE geometry through one guarded bootstrap and one root Fabric descriptor.",
-      "Preserve all native material profiles, canonical parents, copied settings, TOP/SIDE/BOTTOM roles, axes, patterns, tint, translucency, transitions, drops, and specialized behaviors; C62 corrects the wall-material, canonical-role duplication, leaf-wall, and plain-Path seams demonstrated by exact C61 runtime evidence, C63 corrects external axis-family inventory previews, C64 adds the complete BBB beam catalog, C65 corrects its demonstrated BBB production axis-resource classification failure, C66 gives compatible Quarter Columns Step-equivalent full-cell continuation targeting without changing their physical geometry, C68 preserves one-to-one texel density for axis-material Layer faces without changing their geometry or grain orientation, C69 restores independent material axes to the canonical BBB Beam Slab and Beam Stair, C70 restores vanilla Stone slab ownership, C71 mirrors Minecraft 26.2 horizontal-slab tilling and Farmland lifecycle semantics, C72 extends that Farmland Slab water search exactly one block lower without changing the C71 lifecycle, C73 establishes authoritative typed canonical bindings plus placement-time canonicalization for completed ordinary horizontal and Vertical Slabs, C74 adds Ribbits huge-toadstool material surfaces, C75 adds the generic binding-owned surface-patch contract, and C76 makes every visible generated Ribbits toadstool surface use its assigned source-block texture.",
+      "Preserve all native material profiles, canonical parents, copied settings, TOP/SIDE/BOTTOM roles, axes, patterns, tint, translucency, transitions, drops, and specialized behaviors; C62 corrects the wall-material, canonical-role duplication, leaf-wall, and plain-Path seams demonstrated by exact C61 runtime evidence, C63 corrects external axis-family inventory previews, C64 adds the complete BBB beam catalog, C65 corrects its demonstrated BBB production axis-resource classification failure, C66 gives compatible Quarter Columns Step-equivalent full-cell continuation targeting without changing their physical geometry, C68 preserves one-to-one texel density for axis-material Layer faces without changing their geometry or grain orientation, C69 restores independent material axes to the canonical BBB Beam Slab and Beam Stair, C70 restores vanilla Stone slab ownership, C71 mirrors Minecraft 26.2 horizontal-slab tilling and Farmland lifecycle semantics, C72 extends that Farmland Slab water search exactly one block lower without changing the C71 lifecycle, C73 establishes authoritative typed canonical bindings plus placement-time canonicalization for completed ordinary horizontal and Vertical Slabs, C74 adds Ribbits huge-toadstool material surfaces, C75 adds the generic binding-owned surface-patch contract, C76 makes every visible generated Ribbits toadstool surface use its assigned source-block texture, and C77 canonicalizes a newly completed four-Layer blockspace while retaining legacy four-Layer states.",
       "Generate one Layer, Corner, and Quarter Column per supported canonical family while preserving Vertical Slab and Step, deterministic selector order, one-source economy, orientation, waterlogging, collision, and drops.",
-      "Provide primary Fabric ID `cnm_terrain_slabs_compat` and verified legacy alias `more_slabs_stairs_and_walls` from the same mod container and shared version `4.2.20-bge.canary76.toadstool-all-surface+26.2`.",
+      "Provide primary Fabric ID `cnm_terrain_slabs_compat` and verified legacy alias `more_slabs_stairs_and_walls` from the same mod container and shared version `4.2.21-bge.canary77.layer-canonical-completion+26.2`.",
       "Preserve C58 native registry/resource identities while exposing one canonical nine-role family per exact optional source variant: 52 Macaw patterned full blocks, five distinct Macaw soil Path blocks, Ribbits Mossy Oak Planks plus Red Toadstool, Brown Toadstool, and Toadstool Stem, six Mynx Trees log, wood, and leaf sources, and all 12 BBB beam parents including Pale Oak. The three Ribbits toadstools remain distinct source identities; every exposed face of each generated BGE role uses that source's assigned exterior texture, with no generated `toadstool_inside` route and no provider texture bytes included. BBB's original slab and stair registrations remain untouched, but their provider state is geometry-only and cannot carry an independent material AXIS; C69 therefore gives BGE canonical AxisSlab and AxisStairs forms, retains BBB's ordinary thin WoodenWallBlock as the canonical wall, and keeps the five other BGE axis-aware roles. C65 accepts BBB's real semantically equivalent `axis=z` `x=90,y=180` representation while rejecting unknown transforms and `uvlock`."
     ],
     "boundaries": {
@@ -50,7 +50,8 @@
         "C72 owns only the C71 Farmland Slab hydration search extension from Y..Y+1 to Y-1..Y+1; hoe conversion, moisture range/progression, rain, drying, crop retention, survival, trampling, Dirt-slab reversion, geometry, drops, waterlogging, Dirt Path, non-farmland geometry, and C70 Stone behavior remain unchanged. Crop placement, crop growth, partial-height projection, targeting, particles, and rendering remain deferred to Slab Decorations.",
         "C73 changes canonical material classification, state projection, and the already-legal BlockItem placement result only for completed normal-catalog horizontal and Vertical Slabs. It adds no recipe, refund, migration, or broader occupancy normalization; historical double states remain valid, and special Farmland Slab is explicitly excluded from canonical full-block replacement.",
         "C75 describes exposed BGE-owned surfaces only. It does not decide CTM rules, connect materials, render overlays, or fabricate contextual native Stair/Wall topology; those contextual families are explicitly fail-closed until BGE can expose an authoritative model.",
-        "C76 changes only generated Ribbits Red Toadstool, Brown Toadstool, and Toadstool Stem texture selection plus the human-facing BGE Canary filename. Provider-owned source-block rendering, every non-toadstool family, geometry, economy, behavior, canonical identity, and the C75 surface-semantics API remain unchanged."
+        "C76 changes only generated Ribbits Red Toadstool, Brown Toadstool, and Toadstool Stem texture selection plus the human-facing BGE Canary filename. Provider-owned source-block rendering, every non-toadstool family, geometry, economy, behavior, canonical identity, and the C75 surface-semantics API remain unchanged.",
+        "C77 changes only successful placement of the fourth matching normal-catalog Layer and the legacy four-Layer fallback model for uniform-textured HugeMushroomBlock providers. Layers one through three, failed or incompatible placement, legacy four-Layer state validity, recipes, drops, family identities, C75 surface semantics, C76 generated toadstool texture semantics, and provider-owned canonical source-block rendering remain unchanged."
       ]
     },
     "dependencies": [
@@ -58,7 +59,7 @@
         "type": "MOD",
         "identifier": "minecraft",
         "requirement": "~26.2",
-        "reason": "Unified BGE C76 targets Minecraft Java 26.2."
+        "reason": "Unified BGE C77 targets Minecraft Java 26.2."
       },
       {
         "type": "MOD",
@@ -81,17 +82,17 @@
     ]
   },
   "state": {
-    "milestone": "C76 removes the C74 directional/interior selection route from generated Ribbits toadstool families: Red Toadstool, Brown Toadstool, and Toadstool Stem now use their assigned source texture on every exposed face of all eight generated roles, with uniform orientation and no `toadstool_inside` binding. The C75 surface-semantics API and all unrelated BGE behavior remain unchanged. The Java 25 controlled suite passes all 129 GameTests with 422 profiles, 3,798 primary bindings, 3,099 owned blocks, three aliases, two special bindings, and zero exemptions. C76 has no Minecraft gameplay-runtime evidence and remains ACTIVE; accepted C70 and rollback C72 are unchanged.",
+    "milestone": "C77 completes a successful fourth matching Layer placement as the exact canonical material block through BGE's existing state projection, preserving supported directional, axis, pattern, and other material state while retaining normal one-item consumption. Layers one through three and legacy four-Layer states remain valid; failed placement changes nothing. Legacy four-Layer Ribbits Red Toadstool, Brown Toadstool, and Toadstool Stem explicitly retain BGE-generated uniform full-cube models even when their provider canonical models exist. The Java 25 controlled suite passes all 130 GameTests with 422 profiles, 3,798 primary bindings, 3,099 owned blocks, three aliases, two special bindings, and zero exemptions. C77 has no Minecraft gameplay-runtime evidence and remains ACTIVE; accepted C70 and rollback C72 are unchanged.",
     "releases": {
       "current": {
-        "version": "C76 (Toadstool All-Surface Texture; embedded 4.2.20-bge.canary76.toadstool-all-surface+26.2)",
-        "embedded_version": "4.2.20-bge.canary76.toadstool-all-surface+26.2",
+        "version": "C77 (Layer Canonical Completion; embedded 4.2.21-bge.canary77.layer-canonical-completion+26.2)",
+        "embedded_version": "4.2.21-bge.canary77.layer-canonical-completion+26.2",
         "artifact": {
-          "filename": "BGE C76.jar",
-          "sha256": "18186f436399cecbd74b9b57dc662f1a7516ec3a860d6b964e2b999b0eedd9de"
+          "filename": "BGE C77.jar",
+          "sha256": "7a7cce7949415ed7752595f3af39251c86f0ae053834fd7c0529366a632f9371"
         },
-        "built_at": "2026-09-18T19:11:04.6414553Z",
-        "source_commit": "3fd5bd0d5e4115f0a64a731c9db95b41c50af68e",
+        "built_at": "2026-09-18T20:01:50.3087437Z",
+        "source_commit": "4a5a48358ee1ffe9f34405bf750cd9576066899f",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": [
@@ -100,16 +101,16 @@
               "relationship": "depends",
               "dependency_id": "minecraft",
               "predicate": "~26.2",
-              "reason": "The exact C76 artifact targets the Minecraft 26.2 release and packages Fabric's same-release predicate; this target-specific Minecraft predicate remains bound to the controlled-validation release bytes.",
+              "reason": "The exact C77 artifact targets the Minecraft 26.2 release and packages Fabric's same-release predicate; this target-specific Minecraft predicate remains bound to the controlled-validation release bytes.",
               "regression_evidence": [
-                "Java 25 clean packaging produced exact `BGE C76.jar`, SHA-256 18186f436399cecbd74b9b57dc662f1a7516ec3a860d6b964e2b999b0eedd9de, from implementation checkpoint 3fd5bd0d5e4115f0a64a731c9db95b41c50af68e.",
-                "The C76 controlled Minecraft 26.2 GameTest suite passed 129/129, including all 24 generated Ribbits toadstool material/role combinations, every referenced generated model, uniform source-texture bindings, rejection of `toadstool_inside` and `#interior`, and the retained C75 surface-semantics suite.",
-                "All 13 architecture/resource/semantic suites passed; the exact-C75 archive boundary changed only three bounded entries, added or removed none, packaged no Ribbits interior-texture identifier, and preserved the accepted C58 provenance audit."
+                "Java 25 clean packaging produced exact `BGE C77.jar`, SHA-256 7a7cce7949415ed7752595f3af39251c86f0ae053834fd7c0529366a632f9371, from implementation checkpoint 4a5a48358ee1ffe9f34405bf750cd9576066899f.",
+                "The C77 controlled Minecraft 26.2 GameTest suite passed 130/130, including Layers one through three, exact fourth-Layer canonical completion, one-item success and zero-item failure economy, representative axis and glazed-orientation projection, legacy four-Layer validity, and provider-present Ribbits canonical-model refusal.",
+                "All 13 architecture/resource/semantic suites passed; the exact-C76 archive boundary changed only six bounded entries, added or removed none, retained 866 blockstates and 6,895 block models, and preserved the accepted C58 provenance audit."
               ]
             }
           ]
         },
-        "summary": "Skins every exposed face of all generated Ribbits toadstool geometry with its assigned source-block texture while retaining C75 surface semantics."
+        "summary": "Completes a fourth matching BGE Layer as the exact canonical material block while preserving projected material state, legacy four-Layer validity, safe placement economy, and uniform legacy Ribbits fallback models."
       },
       "accepted": {
         "version": "C70 (Stone Native Slab; embedded 4.2.14-bge.canary70.stone-native-slab+26.2)",
@@ -177,10 +178,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 38,
-    "activity_at": "2026-09-18T19:17:02.5265701Z",
-    "updated_at": "2026-09-18T19:17:02.5265701Z",
-    "last_codex_at": "2026-09-18T19:17:02.5265701Z",
-    "source_commit": "3fd5bd0d5e4115f0a64a731c9db95b41c50af68e"
+    "revision": 39,
+    "activity_at": "2026-09-18T20:04:52.0772687Z",
+    "updated_at": "2026-09-18T20:04:52.0772687Z",
+    "last_codex_at": "2026-09-18T20:04:52.0772687Z",
+    "source_commit": "4a5a48358ee1ffe9f34405bf750cd9576066899f"
   }
 }

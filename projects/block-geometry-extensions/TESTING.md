@@ -1,16 +1,34 @@
-# BGE C76 toadstool all-surface texture manual verification
+# BGE C77 Layer canonical-completion manual verification
 
-Current candidate: `BGE C76.jar`
+Current candidate: `BGE C77.jar`
 
-- Embedded version: `4.2.20-bge.canary76.toadstool-all-surface+26.2`
-- SHA-256: `18186f436399cecbd74b9b57dc662f1a7516ec3a860d6b964e2b999b0eedd9de`
-- Source checkpoint: `3fd5bd0d5e4115f0a64a731c9db95b41c50af68e`
+- Embedded version: `4.2.21-bge.canary77.layer-canonical-completion+26.2`
+- SHA-256: `7a7cce7949415ed7752595f3af39251c86f0ae053834fd7c0529366a632f9371`
+- Source checkpoint: `4a5a48358ee1ffe9f34405bf750cd9576066899f`
 - Lifecycle/evidence: `ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED`
-- Immediate predecessor: exact C75 `cnm-nibaru-integration-4.2.19-bge.canary75.surface-semantics+26.2.jar`, SHA-256 `ea963665679ca116a1d0dc49ea6f730e16ec8222df5174d56c79aa3cd6845d8e`.
-- Rollback: exact C72 `cnm-nibaru-integration-4.2.16-bge.canary72.farmland-slab-low-water+26.2.jar`, SHA-256 `f9f892fccbbee85f75f03c9b24752bbeab76f4fa60efd867414969b735ae85a3`. The owner reported an aggregate external runtime `PASS` only for these exact C72 bytes without checklist-row observations; that evidence does not transfer to C76.
+- Immediate predecessor: exact C76 `BGE C76.jar`, SHA-256 `18186f436399cecbd74b9b57dc662f1a7516ec3a860d6b964e2b999b0eedd9de`.
+- Rollback: exact C72 `cnm-nibaru-integration-4.2.16-bge.canary72.farmland-slab-low-water+26.2.jar`, SHA-256 `f9f892fccbbee85f75f03c9b24752bbeab76f4fa60efd867414969b735ae85a3`. The owner reported an aggregate external runtime `PASS` only for these exact C72 bytes without checklist-row observations; that evidence does not transfer to C77.
 - Accepted release: exact C70 `cnm-nibaru-integration-4.2.14-bge.canary70.stone-native-slab+26.2.jar`, SHA-256 `d304552e29e76c4165675415215439ac2d73b5a6ebc4abc9787f0fa1124cf266`.
 
-This checklist is lifecycle-neutral. Record only behavior actually observed for the exact C76 bytes above. It does not authorize inspecting, creating, selecting, or modifying any protected or retired Minecraft profile.
+This checklist is lifecycle-neutral. Record only behavior actually observed for the exact C77 bytes above. It does not authorize inspecting, creating, selecting, or modifying any protected or retired Minecraft profile.
+
+## Layer canonical completion
+
+Use survival mode and exact registry-state inspection. Start from an empty blockspace with a matching Layer item and verify the held stack after every action.
+
+1. Place the first, second, and third matching Layers. Each result must remain the same BGE Layer block with `layers=1`, `layers=2`, and `layers=3`; collision, targeting, and visible height must remain unchanged.
+2. Place the fourth matching Layer onto `layers=3`. The result must be that material family's exact canonical full block, not a `layers=4` Layer or a merely full-looking substitute, and the held stack must decrease by exactly one.
+3. Repeat with representative directional, axis, and oriented materials, including an Oak Log and glazed terracotta. Confirm the canonical block state retains every applicable state already handled by BGE projection rather than falling back to the canonical block's default state.
+4. Try blocked, incompatible-material, wrong-face, and otherwise invalid fourth placements. The Layer state and held item count must remain exactly unchanged.
+5. Manually create a legacy `layers=4` state through commands or fixture-equivalent means. Confirm it remains valid, renders as a full cube, is not migrated automatically, and rejects further placement without altering the block or consuming an item.
+
+## Legacy Ribbits four-Layer fallback
+
+For legacy `layers=4` states of `ribbits:red_toadstool`, `ribbits:brown_toadstool`, and `ribbits:toadstool_stem`:
+
+1. Confirm each uses BGE's generated uniform full-cube Layer model on every face, with that family's assigned source texture and no `ribbits:block/toadstool_inside`, provider HugeMushroom model, or canonical-model route.
+2. Confirm the legacy result remains correct when the provider's canonical block model is available; missing provider assets must not be the reason canonical reuse is avoided.
+3. Complete a new Layer placement normally and confirm the resulting actual canonical Ribbits source block retains provider-owned rendering. C77 does not change the canonical source block's provider model.
 
 ## Ribbits all-surface texture rule
 
@@ -45,6 +63,6 @@ Use survival mode and verify the held stack decreases by exactly one only when p
 1. Exercise bottom, top, and double Farmland Slabs. Water directly below and exactly four blocks horizontally away at Y-1 hydrates; five blocks away and Y-2 do not. Existing Y/Y+1 and rain hydration remain valid.
 2. Remove water and rain. Moisture follows the vanilla-style lifecycle and zero-moisture Farmland returns to the matching Dirt Slab unless `maintains_farmland` prevents it.
 3. Recheck solid-block survival, player/mob trampling, Dirt-slab reversion, one/two-slab drops, Dirt Path conversion, and accepted C70's exact `minecraft:stone_slab` ownership.
-4. Crop placement/growth, partial-height crop projection, targeting, particles, and rendering remain deferred to Slab Decorations and are not C76 failures.
+4. Crop placement/growth, partial-height crop projection, targeting, particles, and rendering remain deferred to Slab Decorations and are not C77 failures.
 
-The clean build, 13 static suites, archive/JAR audits, and 129/129 controlled GameTests are not Minecraft gameplay-runtime evidence. Record `PASS`, `FAIL`, or `INCONCLUSIVE` only for exercised rows with the exact artifact SHA-256. Runtime testing alone does not accept or otherwise change the project lifecycle.
+The clean build, 13 static suites, archive/JAR audits, and 130/130 controlled GameTests are not Minecraft gameplay-runtime evidence. Record `PASS`, `FAIL`, or `INCONCLUSIVE` only for exercised rows with the exact artifact SHA-256. Runtime testing alone does not accept or otherwise change the project lifecycle.
