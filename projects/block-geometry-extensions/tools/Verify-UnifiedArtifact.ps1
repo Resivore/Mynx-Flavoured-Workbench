@@ -95,10 +95,13 @@ function Test-AllowedChangedEntry([string]$Name) {
             $Name -match '^dev/aero/cnmterraincompat/client/BgeGeneratedResources(?:\$.*)?\.class$' -or
             $Name -match '^dev/aero/cnmterraincompat/client/LayerGeneratedResources(?:\$.*)?\.class$' -or
             $Name -match '^dev/aero/cnmterraincompat/client/LayerModelProjection(?:\$.*)?\.class$' -or
+            $Name -match '^dev/aero/cnmterraincompat/client/CuboidListModelProjection(?:\$.*)?\.class$' -or
             $Name -match '^dev/aero/cnmterraincompat/client/QuarterGeometryGeneratedResources(?:\$.*)?\.class$' -or
             $Name -match '^dev/aero/cnmterraincompat/mixin/BgeFuelValuesBuilderMixin(?:\$.*)?\.class$' -or
             $Name -match '^games/twinhead/moreslabsstairsandwalls/api/material/NativeAxisModelContract(?:\$.*)?\.class$' -or
             $Name -match '^games/twinhead/moreslabsstairsandwalls/api/material/NibaruMaterialProfiles(?:\$.*)?\.class$' -or
+            $Name -match '^games/twinhead/moreslabsstairsandwalls/api/material/NibaruMaterialProfile(?:\$.*)?\.class$' -or
+            $Name -eq 'games/twinhead/moreslabsstairsandwalls/api/material/VisualProfile.class' -or
             $Name -match '^games/twinhead/moreslabsstairsandwalls/api/material/TintProfile(?:\$.*)?\.class$'
 }
 
@@ -118,6 +121,7 @@ function Test-AllowedNewEntry([string]$Name) {
             $Name -match '^dev/aero/cnmterraincompat/BgeMaterialBindings(?:\$.*)?\.class$' -or
             $Name -match '^dev/aero/cnmterraincompat/BgeSurfaceGeometry(?:\$.*)?\.class$' -or
             $Name -match '^dev/aero/cnmterraincompat/HugeMushroom(?:GeometryBlocks|Material)(?:\$.*)?\.class$' -or
+            $Name -match '^dev/aero/cnmterraincompat/HugeMushroom(?:Surface|SlabBlock|VerticalSlabBlock|ColumnBlock|LayerBlock|StepBlock|CornerBlock|StairsBlock|WallBlock)(?:\$.*)?\.class$' -or
             $Name -eq 'dev/aero/cnmterraincompat/FullOccupancyNormalizer.class' -or
             $Name -eq 'dev/aero/cnmterraincompat/mixin/BlockItemPlacementMixin.class'
 }
