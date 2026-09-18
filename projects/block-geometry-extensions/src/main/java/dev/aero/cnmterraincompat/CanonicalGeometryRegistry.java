@@ -1,26 +1,20 @@
 package dev.aero.cnmterraincompat;
 
-import java.util.Collections;
-import java.util.IdentityHashMap;
-import java.util.Set;
-
 import net.minecraft.world.level.block.Block;
 
 /**
- * Blocks that are geometries owned by an existing material family, not new
- * material roots from which another set of shapes should be derived.
+ * Compatibility facade for callers that only need the old recursion guard.
+ * Canonical identity now lives in {@link BgeMaterialBindings}.
  */
 public final class CanonicalGeometryRegistry {
-    private static final Set<Block> GEOMETRIES = Collections.newSetFromMap(new IdentityHashMap<>());
-
     private CanonicalGeometryRegistry() {
     }
 
     public static void register(Block... blocks) {
-        Collections.addAll(GEOMETRIES, blocks);
+        for (Block block : blocks) BgeMaterialBindings.noteDerivedGeometry(block);
     }
 
     public static boolean contains(Block block) {
-        return GEOMETRIES.contains(block);
+        return BgeMaterialBindings.isDerivedGeometry(block);
     }
 }

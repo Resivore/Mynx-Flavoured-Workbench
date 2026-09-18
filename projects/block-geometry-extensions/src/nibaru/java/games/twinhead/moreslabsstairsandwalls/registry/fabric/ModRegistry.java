@@ -72,6 +72,7 @@ public class ModRegistry {
                     Block block = games.twinhead.moreslabsstairsandwalls.registry.ModRegistry.getBlock(modBlock, type);
                     REGISTERED_BLOCKS.put(modBlock.getId(type), block);
                     Registry.register(BuiltInRegistries.BLOCK, ResourceKey.create(Registries.BLOCK, modBlock.getId(type)), block);
+                    dev.aero.cnmterraincompat.BgeMaterialBindings.noteOwnedRegistration(block);
                     registerItem(modBlock.getId(type), block);
 
                     if (modBlock.parentBlock.defaultBlockState().ignitedByLava()){

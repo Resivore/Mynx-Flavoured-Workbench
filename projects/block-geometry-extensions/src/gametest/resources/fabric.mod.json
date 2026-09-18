@@ -23,7 +23,8 @@
       "dev.aero.cnmterraincompat.VanillaFamilyCoverageGameTests",
       "dev.aero.cnmterraincompat.CornerColumnResourceGameTests",
       "dev.aero.cnmterraincompat.client.GlassCornerUvResourceGameTests",
-      "dev.aero.cnmterraincompat.ExternalMaterialFamilyGameTests"
+      "dev.aero.cnmterraincompat.ExternalMaterialFamilyGameTests",
+      "dev.aero.cnmterraincompat.CanonicalMaterialBindingGameTests"
     ]
   },
   "depends": {

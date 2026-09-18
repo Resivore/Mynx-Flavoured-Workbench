@@ -76,8 +76,20 @@ public final class CnmTerrainCompat implements ModInitializer {
                 GRASS_VERTICAL_SLAB,
                 DIRT_SLAB,
                 GRASS_SLAB);
+        NibaruMaterialProfile dirt = NibaruMaterialProfiles.fromBlock(Blocks.DIRT).orElseThrow();
+        NibaruMaterialProfile grass = NibaruMaterialProfiles.fromBlock(Blocks.GRASS_BLOCK).orElseThrow();
+        BgeMaterialBindings.bindRetainedAlias(DIRT_SLAB, dirt,
+                BgeMaterialBindings.Role.HORIZONTAL_SLAB);
+        BgeMaterialBindings.bindRetainedAlias(GRASS_SLAB, grass,
+                BgeMaterialBindings.Role.HORIZONTAL_SLAB);
+        BgeMaterialBindings.bindRetainedAlias(DIRT_VERTICAL_SLAB, dirt,
+                BgeMaterialBindings.Role.VERTICAL_SLAB);
+        // ExistingDerivedGeometryBindings deliberately makes this retained identity the primary
+        // Vertical Slab owner for Grass rather than a second alias.
+        BgeMaterialBindings.bindFarmlandSpecial(FARMLAND_SLAB);
         GrassFamilyBehavior.registerDefaults();
         bgeBaseRegistered = true;
+        validateBindingsWhenComplete();
     }
 
     /** Called from CNM's registry-bootstrap tail before the built-in registries freeze. */
@@ -98,10 +110,12 @@ public final class CnmTerrainCompat implements ModInitializer {
                     profile, geometryProperties(columnId, profile)));
         }
         ExternalMaterialFamilies.finalizeGeneratedBindings();
+        BgeMaterialBindings.bindNormalCatalog();
         LayerGeneratedData.generate();
         QuarterGeometryGeneratedData.generate();
         ExternalMaterialGeneratedData.generate();
         bgeGeometryRegistered = true;
+        validateBindingsWhenComplete();
     }
 
     /**
@@ -166,6 +180,13 @@ public final class CnmTerrainCompat implements ModInitializer {
     /** Registers state-only blocks such as Farmland Slab without an obtainable BlockItem. */
     private static void registerBlockOnly(Identifier id, Block block) {
         Registry.register(BuiltInRegistries.BLOCK, ResourceKey.create(Registries.BLOCK, id), block);
+        BgeMaterialBindings.noteOwnedRegistration(block);
+    }
+
+    private static void validateBindingsWhenComplete() {
+        if (bgeBaseRegistered && bgeGeometryRegistered) {
+            BgeMaterialBindings.validateAndFreeze();
+        }
     }
 
     private static Identifier id(String path) {
