@@ -20,11 +20,11 @@
       "Preserve source-material identity and support applicable BGE-owned geometries consistently without duplicating BGE's canonical geometry ownership, material-family registry, or source-block mappings."
     ],
     "scope": [
-      "Provide one centralized Fabric block-appearance bridge for eligible BGE-owned geometry without generating material- or geometry-specific CTM rules.",
-      "Consume BGE's typed runtime binding and canonical parent as the sole derived-to-material authority rather than inferring families from registry identifiers.",
+      "Provide one centralized Fabric block-appearance bridge for Continuity rule selection without generating material- or geometry-specific CTM rules.",
+      "Consume BGE's typed runtime binding, canonical parent, and exact effective slab source as the sole geometry-to-material authority rather than inferring families from registry identifiers.",
       "Project only explicitly equivalent canonical material state while keeping geometry form, orientation, waterlogging, and unknown properties out of the canonical appearance.",
-      "Apply a fail-closed geometry and visual eligibility policy that can broaden or tighten without per-material rules.",
-      "Preserve vanilla, non-BGE, Continuity, BGE, Matcha, and resource-pack behavior outside the bounded appearance bridge."
+      "Filter Continuity neighbor decisions through one same-material surface descriptor using face normal, exact world plane, rendered source-quad bounds, deterministic supported-geometry bounds, and real boundary contact.",
+      "Support proven cross-geometry contact among full blocks, exact ordinary slabs, Layers, and Vertical Slabs while leaving Steps, Corners, Quarter Columns, unknown topology, risky visual profiles, and unrelated Continuity behavior unchanged."
     ],
     "boundaries": {
       "owned_paths": [
@@ -43,13 +43,13 @@
         "type": "PROJECT",
         "identifier": "4b2342fc-7bdf-5ba6-9f37-d551109d214c",
         "requirement": ">=4.2.14-bge.canary70.stone-native-slab+26.2",
-        "reason": "Block Geometry Extensions owns the typed runtime binding, geometry roles, and canonical material relationships consumed directly by Canary 1; C70 is the first controlled compatibility baseline for this API seam."
+        "reason": "Block Geometry Extensions owns the typed runtime binding, geometry roles, canonical material identity, and exact effective slab source consumed by Canary 2; C70 is the first controlled compatibility baseline for these API seams."
       },
       {
         "type": "MOD",
         "identifier": "continuity",
-        "requirement": null,
-        "reason": "Continuity is the optional target connected-texture consumer of Fabric block appearance; the bridge does not patch or bundle it."
+        "requirement": "=3.0.1+26.2",
+        "reason": "Canary 2 decorates the exact Continuity 3.0.1+26.2 connection predicate and quad-processing seams so rule selection remains separate from per-face contact eligibility; the required mixins and controlled input hash fail closed on an incompatible implementation."
       },
       {
         "type": "MOD",
@@ -61,33 +61,33 @@
         "type": "MOD",
         "identifier": "fabricloader",
         "requirement": ">=0.19.3",
-        "reason": "Fabric runtime loader and Mixin host declared by Canary 1."
+        "reason": "Fabric runtime loader and required Mixin host declared by Canary 2."
       },
       {
         "type": "MOD",
         "identifier": "fabric-api",
         "requirement": ">=0.156.0",
-        "reason": "Provides the Fabric block appearance and controlled GameTest APIs used by Canary 1; 0.156.0+26.2 is the exact validation baseline."
+        "reason": "Provides the Fabric block appearance, renderer quad, and controlled GameTest APIs used by Canary 2; 0.156.0+26.2 is the exact validation baseline."
       },
       {
         "type": "MOD",
         "identifier": "clutternomore",
         "requirement": ">=2.0.7",
-        "reason": "Owns the Vertical Slab and Step base classes targeted by the centralized appearance mixin; 2.0.7+26.2 is the exact controlled baseline."
+        "reason": "Owns the Vertical Slab and Step base classes used by the centralized appearance and geometry policy; 2.0.7+26.2 is the exact controlled baseline."
       }
     ]
   },
   "state": {
-    "milestone": "Canary 1 implements the audited typed canonical-appearance bridge for full four-Layers and double Vertical Slabs, passes controlled state/eligibility GameTests and artifact checks, and remains runtime untested pending the manual Continuity matrix.",
+    "milestone": "Canary 2 adds typed canonical rule selection plus a version-bounded Continuity contact filter for exact rendered-quad coplanarity across ordinary slabs, Layers, Vertical Slabs, and full blocks; controlled build, JUnit, and GameTests pass, while Minecraft-client visual CTM remains runtime untested.",
     "releases": {
       "current": {
-        "version": "0.1.0-canary1",
+        "version": "0.2.0-canary2",
         "artifact": {
-          "filename": "bge-ctm-0.1.0-canary1.jar",
-          "sha256": "936d8c3d59e02bd76d649f5eab5cce7d0472a5c0548b65b93f2fc6c2bce0f5b6"
+          "filename": "bge-ctm-0.2.0-canary2.jar",
+          "sha256": "113522a10caff8c9bb78e8d5ddfb767ac8bef9b4b484260cf0a0c2269e7f8524"
         },
-        "built_at": "2026-09-17T18:57:53.6287474Z",
-        "source_commit": "d07552ee22f4663b50bfb8d84b9a6756df8a3c33",
+        "built_at": "2026-09-18T01:50:57.9808523Z",
+        "source_commit": "5f6777cc4e92b68017b884ac94b9e3efcd3821bb",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": [
@@ -98,12 +98,22 @@
               "predicate": "~26.2",
               "reason": "The appearance bridge is compiled against the Minecraft 26.2 block-state and Fabric appearance method descriptors and must remain on the controlled target release.",
               "regression_evidence": [
-                "Canary 1 compiles and its focused headless GameTests execute against Minecraft 26.2 and Fabric API 0.156.0+26.2."
+                "Canary 2 compiles and its focused headless GameTests execute against Minecraft 26.2 and Fabric API 0.156.0+26.2."
+              ]
+            },
+            {
+              "consumer_id": "bge_ctm",
+              "relationship": "depends",
+              "dependency_id": "continuity",
+              "predicate": "=3.0.1+26.2",
+              "reason": "Canary 2 injects the exact Continuity 3.0.1+26.2 seven-argument ConnectionPredicate neighbor seam; the required mixin and controlled input hash fail closed rather than guessing across an incompatible implementation.",
+              "regression_evidence": [
+                "The exact Continuity 3.0.1+26.2 input is SHA-256 controlled, compiles against the typed ConnectionPredicate seam, and is verified as a required client mixin target."
               ]
             }
           ]
         },
-        "summary": "Projects eligible full-volume BGE Layer and Vertical Slab states onto typed canonical material appearances with explicit state mapping."
+        "summary": "Projects typed BGE material appearances and filters Continuity connections to same-material coplanar contacts across full blocks, ordinary slabs, Layers, and Vertical Slabs."
       },
       "accepted": null,
       "rollback": null,
@@ -117,10 +127,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 3,
-    "activity_at": "2026-09-17T18:58:45.2512715Z",
-    "updated_at": "2026-09-17T18:58:45.2512715Z",
-    "last_codex_at": "2026-09-17T18:58:45.2512715Z",
-    "source_commit": "d07552ee22f4663b50bfb8d84b9a6756df8a3c33"
+    "revision": 4,
+    "activity_at": "2026-09-18T01:51:12.5113308Z",
+    "updated_at": "2026-09-18T01:51:12.5113308Z",
+    "last_codex_at": "2026-09-18T01:51:12.5113308Z",
+    "source_commit": "5f6777cc4e92b68017b884ac94b9e3efcd3821bb"
   }
 }
