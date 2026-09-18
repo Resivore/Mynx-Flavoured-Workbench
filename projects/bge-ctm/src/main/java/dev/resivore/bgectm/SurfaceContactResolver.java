@@ -16,7 +16,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 /**
- * Central Canary 3 geometry/contact policy for Continuity neighbor decisions.
+ * Central Canary 4 geometry/contact policy for Continuity neighbor decisions.
  *
  * <p>Every supported carrier is one axis-aligned cuboid expressed in exact sixteenths.
  * Material profiles identify canonical ownership and supported geometry only. Continuity owns
@@ -39,6 +39,22 @@ public final class SurfaceContactResolver {
             BlockState otherState, BlockPos otherPos, Direction face, QuadSurface sourceQuad) {
         return inspect(sourceState, sourcePos, otherState, otherPos, face,
                 Objects.requireNonNull(sourceQuad, "sourceQuad"));
+    }
+
+    /**
+     * A missing renderer quad may fall back only for state-known single-cuboid topology.
+     * Glass-edge profiles retain their rendered-quad requirement because rim/inset elements can
+     * differ from their state cuboid. This never attempts a fallback for unsupported geometry.
+     */
+    public static boolean stateDerivedFallbackSafe(BlockState sourceState, BlockState otherState) {
+        return fallbackSafe(endpoint(sourceState)) && fallbackSafe(endpoint(otherState));
+    }
+
+    private static boolean fallbackSafe(Endpoint endpoint) {
+        if (!endpoint.participates()) return endpoint.kind() == Kind.FULL_BLOCK
+                || endpoint.kind() == Kind.UNMANAGED;
+        return endpoint.supported() && endpoint.profile().visualProfile()
+                != games.twinhead.moreslabsstairsandwalls.api.material.VisualProfile.GLASS_EDGE;
     }
 
     private static Decision inspect(BlockState sourceState, BlockPos sourcePos,

@@ -219,10 +219,15 @@ tasks.register('verifyReleaseArtifact') {
                     'bge_ctm.mixins.json',
                     'bge_ctm.client.mixins.json',
                     'dev/resivore/bgectm/CanonicalAppearanceResolver.class',
+                    'dev/resivore/bgectm/BgeCtmDiagnostics.class',
+                    'dev/resivore/bgectm/DiagnosticLimiter.class',
                     'dev/resivore/bgectm/SurfaceContactResolver.class',
                     'dev/resivore/bgectm/continuity/ContactFilteringConnectionPredicate.class',
                     'dev/resivore/bgectm/continuity/ContinuityQuadContext.class',
                     'dev/resivore/bgectm/continuity/OverlayContactFilter.class',
+                    'dev/resivore/bgectm/continuity/OverlaySourceEligibility.class',
+                    'dev/resivore/bgectm/continuity/OverlayAttemptContext.class',
+                    'dev/resivore/bgectm/client/BgeCtmClient.class',
                     'dev/resivore/bgectm/mixin/BgeDerivedBlockAppearanceMixin.class',
                     'dev/resivore/bgectm/mixin/ContinuityConnectionPredicateFactoryMixin.class',
                     'dev/resivore/bgectm/mixin/ContinuityOverlayContactMixin.class',
@@ -253,7 +258,7 @@ tasks.register('verifyReleaseArtifact') {
 
 tasks.register('stageCanaryArtifact', Copy) {
     group = 'distribution'
-    description = 'Stages the exact ignored Canary 3 JAR for canonical local retention.'
+    description = 'Stages the exact ignored Canary 4 JAR for canonical local retention.'
     dependsOn tasks.named('verifyReleaseArtifact')
     from(packagedJar)
     into(layout.projectDirectory.dir('artifacts'))

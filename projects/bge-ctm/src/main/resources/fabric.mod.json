@@ -7,6 +7,9 @@
   "authors": ["Resivore"],
   "license": "MIT",
   "environment": "*",
+  "entrypoints": {
+    "client": ["dev.resivore.bgectm.client.BgeCtmClient"]
+  },
   "mixins": [
     "bge_ctm.mixins.json",
     {
@@ -42,9 +45,9 @@
           "relationship": "depends",
           "dependency_id": "continuity",
           "predicate": "=3.0.1+26.2",
-          "reason": "Canary 3 injects the exact Continuity 3.0.1+26.2 regular ConnectionPredicate seam and the final StandardOverlayQuadProcessor appliesOverlay seam; required mixins and the controlled input hash fail closed rather than guessing across an incompatible implementation.",
+          "reason": "Canary 4 injects the exact Continuity 3.0.1+26.2 regular ConnectionPredicate seam, quad context seam, and StandardOverlayQuadProcessor source-full-collision gate/final decision seams; required mixins and the controlled input hash fail closed rather than guessing across an incompatible implementation.",
           "regression_evidence": [
-            "The exact Continuity 3.0.1+26.2 input is SHA-256 controlled, compiles against both regular and Standard Overlay seams, and is verified as required client mixin targets."
+            "The exact Continuity 3.0.1+26.2 input is SHA-256 controlled, compiles against regular, quad context, source-full-collision, and final Standard Overlay seams, and is verified as required client mixin targets."
           ]
         }
       ]

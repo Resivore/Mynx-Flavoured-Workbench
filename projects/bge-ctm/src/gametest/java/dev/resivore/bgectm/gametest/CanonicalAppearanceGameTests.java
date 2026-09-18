@@ -12,6 +12,8 @@ import dev.resivore.bgectm.SurfaceContactResolver.Decision;
 import dev.resivore.bgectm.SurfaceContactResolver.QuadSurface;
 import dev.resivore.bgectm.continuity.ContinuityQuadContext;
 import dev.resivore.bgectm.continuity.OverlayContactFilter;
+import dev.resivore.bgectm.continuity.OverlaySourceEligibility;
+import dev.resivore.bgectm.continuity.ContactFilteringConnectionPredicate;
 import dev.tazer.clutternomore.common.blocks.StepBlock;
 import dev.tazer.clutternomore.common.blocks.VerticalSlabBlock;
 import games.twinhead.moreslabsstairsandwalls.api.material.NibaruMaterialProfile;
@@ -141,6 +143,41 @@ public final class CanonicalAppearanceGameTests implements CustomTestMethodInvok
                         Blocks.STONE.defaultBlockState(), ORIGIN,
                         Blocks.BRICKS.defaultBlockState(), EAST, Direction.UP, null),
                 "Unrelated full-block overlay behavior unexpectedly required quad context");
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void canaryFourPartialSourceGateAndRegularFallbackStayBounded(GameTestHelper helper) {
+        BlockState top = slabState(Blocks.STONE, SlabType.TOP);
+        BlockState bottom = slabState(Blocks.STONE, SlabType.BOTTOM);
+        BlockState doubled = slabState(Blocks.STONE, SlabType.DOUBLE);
+        BlockState layer = layerState(Blocks.STONE, Direction.DOWN, 1);
+        BlockState vertical = verticalState(Blocks.STONE, Direction.EAST, false);
+        BlockState unrelatedPartial = Blocks.COBBLESTONE_WALL.defaultBlockState();
+
+        helper.assertTrue(OverlaySourceEligibility.mayReachCanonicalSemantics(top)
+                        && OverlaySourceEligibility.mayReachCanonicalSemantics(bottom)
+                        && OverlaySourceEligibility.mayReachCanonicalSemantics(doubled)
+                        && OverlaySourceEligibility.mayReachCanonicalSemantics(layer)
+                        && OverlaySourceEligibility.mayReachCanonicalSemantics(vertical),
+                "A supported typed BGE carrier did not reach canonical overlay semantics");
+        helper.assertTrue(!OverlaySourceEligibility.mayReachCanonicalSemantics(unrelatedPartial),
+                "An unmanaged partial block bypassed the native full-source gate");
+
+        helper.assertTrue(ContactFilteringConnectionPredicate.retainRegularAfterUpstream(
+                        Decision.CONNECT, null,
+                        SurfaceContactResolver.stateDerivedFallbackSafe(top, Blocks.STONE.defaultBlockState()),
+                        () -> Decision.CONNECT),
+                "Safe simple top-slab CTM did not use the state-derived fallback");
+        helper.assertTrue(!ContactFilteringConnectionPredicate.retainRegularAfterUpstream(
+                        Decision.CONNECT, null, false, () -> Decision.CONNECT),
+                "Unsafe or unknown rendered topology did not remain fail-closed");
+        helper.assertTrue(OverlayContactFilter.retainAfterUpstream(true, top, ORIGIN,
+                        Blocks.STONE.defaultBlockState(), EAST, Direction.UP, null),
+                "Coplanar partial overlay source/receiver lost C4's safe fallback");
+        helper.assertTrue(!OverlayContactFilter.retainAfterUpstream(true, bottom, ORIGIN,
+                        Blocks.STONE.defaultBlockState(), EAST, Direction.UP, null),
+                "Non-coplanar partial overlay passed the C4 fallback");
         helper.succeed();
     }
 

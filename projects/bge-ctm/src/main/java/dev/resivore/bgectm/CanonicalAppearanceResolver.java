@@ -30,7 +30,7 @@ import java.util.Set;
  * Projects supported simple geometry onto the canonical material state already owned by
  * BGE's typed material/profile authority.
  *
- * <p>Appearance answers rule selection only. Canary 3 deliberately exposes partial Layers,
+ * <p>Appearance answers rule selection only. Canary 4 deliberately exposes partial Layers,
  * single Vertical Slabs, and exact profile-owned ordinary slabs here, then applies the
  * independent per-face geometry decision in {@link SurfaceContactResolver}. Geometry state
  * is never copied into the canonical material state.</p>
@@ -82,7 +82,9 @@ public final class CanonicalAppearanceResolver {
             Direction side, @Nullable BlockState querySourceState, @Nullable BlockPos sourcePos) {
         // Fabric's initial appearance query cannot identify every later neighbor direction.
         // Contact is therefore intentionally enforced at Continuity's connection predicate.
-        return inspect(sourceState, view, pos).appearance();
+        Resolution resolution = inspect(sourceState, view, pos);
+        BgeCtmDiagnostics.appearance(sourceState, resolution);
+        return resolution.appearance();
     }
 
     /**
