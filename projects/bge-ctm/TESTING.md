@@ -1,54 +1,64 @@
-# BGE × CTM Canary 8 manual verification
+# BGE × CTM Canary 9 manual verification
 
-Current candidate: `bge-ctm-0.8.0-canary8.jar`
+Current candidate: `bge-ctm-0.9.0-canary9.jar`
 
-- SHA-256: `cb3124ba2324898c17c6ce9774c88dee83633e219f45d6850815dd3f70c872ae`
-- Source checkpoint: `ce936549fc8e0a1e0f16146a68988bc0f56d54b8`
+- SHA-256: `85b8fad6b75b1fe6f95d261514f6b397f503ba27d5a95da9b81ddd7fed05ddeb`
+- Source checkpoint: `112a90f5b5f07b6bab26d22a7182d78433453ad1`
 - Use Minecraft Java 26.2, Fabric Loader 0.19.3+, exact Continuity `3.0.1+26.2`, and BGE `>=4.2.19-bge.canary75.surface-semantics+26.2` (exact C75 is the controlled baseline).
 - Lifecycle/evidence: `ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED`.
 
-Diagnostics are off by default. Enable bounded diagnostics only after a failed row with `-Dbge_ctm.diagnostics=true`; `-Dbge_ctm.diagnostics.disable=true` remains an explicit override. The 21/21 headless GameTests and 12/12 unit tests do not execute or visually validate the real client-only Continuity processor/model path.
+Diagnostics are off by default. Enable bounded diagnostics only after a failed row with `-Dbge_ctm.diagnostics=true`; `-Dbge_ctm.diagnostics.disable=true` remains an explicit override. The 21/21 headless GameTests and 14/14 unit tests do not execute or visually validate the real client-only Continuity processor/model path.
 
-## Supplied Canary 7 observations
+## Supplied Canary 8 observations
 
-The owner reported only these C7 runtime observations: placement lag is resolved; grass/Farmland Slab overlay still does not work; and CTM/overlay behavior was seen on slab top faces but not the corresponding side faces. These are not an aggregate C7 result and do not transfer to C8.
+The owner reported only these observations from the exact current C8/BGE/Continuity runtime stack:
+
+- Full-height grass overlay over vanilla farmland behaves correctly: farmland is physically 15/16 high, while the grass overlay remains suspended on the normal 16/16 visual plane.
+- The equivalent bottom-slab relationship is wrong: grass beside Farmland Slab connects/overlays, but the grass overlay is emitted directly on the Farmland Slab's physical 7/16 top instead of remaining on the corresponding normal slab plane at 8/16.
+- Ordinary slab side faces still do not receive the expected CTM/overlay relationship between each other even though their corresponding side surfaces are coplanar.
+
+These observations are exact C8 evidence only. They are not an aggregate C8 result and do not transfer to C9.
+
+## C9 invariant
+
+Continuity and the active resource pack still own rule selection, pack priority, face and state predicates, `connect=...`, sprites, tiles, tint, layer and AO. C9 supplies BGE's canonical material state to Continuity's connection predicate, then requires BGE's authoritative surface patches to prove physical contact. For a typed `TERRAIN_HEIGHT_INSET`, contact uses the physical inset while overlay presentation uses the corresponding nominal exact plane and keeps the receiver patch's original in-plane crop.
 
 ## A. Placement responsiveness
 
-With diagnostics off, place ordinary and BGE-derived blocks repeatedly. Confirm C8 preserves C7's observed responsive placement. If responsiveness regresses, note the exact block/state and whether removing BGE × CTM changes it; do not infer diagnostics as the cause without evidence.
+With diagnostics off, place ordinary and BGE-derived blocks repeatedly. Confirm C9 preserves C8's observed responsive placement. If responsiveness regresses, record the exact block/state, resource-pack stack, and whether removing BGE × CTM changes it.
 
-## B. Six-face ordinary CTM identities
+## B. Regular CTM and slab sides
 
-Use one Continuity rule known to connect the chosen canonical material faces. Evaluate each face independently (UP, DOWN, NORTH, SOUTH, EAST, WEST):
+Use a Continuity rule known to be semantically positive for the chosen canonical material. Evaluate each rendered face orientation independently: UP, DOWN, NORTH, SOUTH, EAST, and WEST.
 
-1. Full beside full on the same rendered plane: positive baseline.
-2. Full top at 16/16 beside bottom slab top at 8/16: negative.
-3. Full side beside the corresponding bottom-slab side: positive where the upstream Continuity decision is positive.
-4. Top slab top at 16/16 beside full top at 16/16: positive.
-5. Bottom slab top at 8/16 beside top/full top at 16/16: negative.
-6. Repeat representative plane/contact positives and negatives with one Layer and one Vertical Slab orientation.
+1. Two bottom slabs with corresponding coplanar side patches must connect.
+2. A bottom-slab side beside an overlapping full-block side must connect.
+3. A bottom-slab top at 8/16 beside a full-block top at 16/16 must not connect.
+4. A top-slab top at 16/16 beside a full-block top at 16/16 may connect.
+5. Repeat one positive with different BGE carrier forms of the same canonical material; a derived carrier identity must not force a negative result.
+6. Repeat one geometrically valid pair whose canonical material rule is negative; geometry must not manufacture a relationship.
 
-For a positive result, confirm the texture orientation corresponds to the same canonical material face rather than merely appearing somewhere on the block.
+Confirm that TOP/SIDE/BOTTOM material meaning follows the canonical face reported by BGE rather than geometry form or carrier identity.
 
-## C. Grass × farmland typed terrain inset
+## C. Standard Overlay and terrain height
 
-First establish the actual positive full Grass Block ↔ full Farmland Continuity direction. C8 may retain that positive semantic result but may never manufacture one.
+First establish the active pack's real positive Grass Block/Farmland relationship; C9 may preserve it but may not create it.
 
-1. Test full grass 16/16 ↔ full farmland 15/16.
-2. Test grass bottom slab 8/16 ↔ Farmland Slab bottom 7/16.
-3. Test grass top slab 16/16 ↔ Farmland Slab top 15/16.
-4. Test full grass ↔ double Farmland Slab 15/16.
-5. For each applicable pair, inspect both the top and corresponding side faces. The side must present the canonical side-face semantics while retaining its real partial footprint.
-6. Add one ordinary non-terrain pair offset by 1/16; it must remain negative.
+1. Full grass 16/16 beside vanilla farmland 15/16: compatibility may be positive, and the grass overlay must remain at the nominal 16/16 presentation plane.
+2. Grass bottom slab 8/16 beside Farmland Slab bottom 7/16: compatibility may be positive, and the overlay must present at 8/16.
+3. Grass top slab 16/16 beside Farmland Slab top 15/16: compatibility may be positive, and the overlay must present at 16/16.
+4. For each typed terrain case, confirm the emitted overlay keeps the receiver patch's real in-plane footprint and UV crop; it must not expand to a full-block footprint.
+5. Test an unrelated exact 8/16 surface beside an ordinary exact 7/16 surface; it must remain non-coplanar.
+6. Exercise one semantically negative overlay relationship on valid physical contact; it must remain negative.
 
-## D. Standard Overlay and receiver surface
+## D. General BGE surface coverage
 
-Repeat the positive relationships above under Standard Overlay. Overlay uses the same compatible surface-plane model as ordinary CTM: mere cuboid adjacency at a common block boundary must not connect substantially different top planes. Every emitted overlay must remain on the receiver's actual patch (for example, Farmland Slab at 7/16 or 15/16), never a full-block plane or the inducer's plane. A negative upstream Continuity result must remain negative.
+Repeat representative positive and negative patch relationships for a Layer, Vertical Slab, Step, Corner, and Quarter Column. Treat each compound patch independently and confirm one positive patch does not flatten, stretch, or connect a disjoint patch. Native contextual Stairs and Walls remain intentional fail-closed controls because BGE C75 does not expose their contextual topology.
 
-## E. Compound and fail-closed controls
+Also confirm an unbound registry-name decoy and a risky excluded visual profile remain unchanged.
 
-1. Exercise representative Step, Corner, and Quarter Column states, including multi-patch faces. Record each face/patch result separately; one positive patch must not flatten or connect a disjoint patch.
-2. Native Stairs and Walls intentionally remain fail-closed in this canary because their rendered inner/outer and post/arm topology is contextual. Record them only as limitation controls.
-3. Confirm an unbound registry-name decoy and risky excluded visual profile remain unchanged.
+## E. Failure evidence
 
-After any failure, retain the relevant bounded `APPEARANCE`, `RULE_SELECTION`, `REGULAR`, `OVERLAY`, and `OVERLAY_EMIT` lines together with exact physical states, positions, evaluated face, resource-pack order, and shader state. Record only observed rows and the exact C8/BGE C75 hashes; manual testing does not accept the project automatically.
+After any failure, retain the relevant bounded `APPEARANCE`, `RULE_SELECTION`, `REGULAR`, `OVERLAY`, and `OVERLAY_EMIT` lines with exact physical states, canonical states, native/canonical semantic decisions, contact decision, positions, rendered and canonical face, resource-pack order, and shader state. `RULE_SELECTION reason=NO_PROCESSOR`, `CANONICAL_SEMANTIC_REJECT`, `CARRIER_REJECTION_PROMOTED`, and BGE geometry reasons distinguish the required failure classes.
+
+Record only observed rows and the exact C9/BGE C75 hashes. Manual testing does not accept the project automatically.
