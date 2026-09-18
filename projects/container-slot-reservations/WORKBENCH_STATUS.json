@@ -24,7 +24,7 @@
       "Preserve accepted C4 storage reservations, exact ghost/zero/marker visuals, public API compatibility for QSN C9 and CCAR C12, component-exact ordinary-item reservations, generic empty portable-container templates, and server-owned specific portable-container identities without external tooltip integration."
     ],
     "scope": [
-      "Current 0.1.0-canary26 from implementation checkpoint da545df22c2c1589a2eaebc1908b2b4479c21164 is a DIAGNOSTIC successor to failed C25, not a behavior-fix claim. It retains C25's Fabric allowMouseClick/drag/release path, identity traversal, outgoing payload, planner, authoritative server transaction, and empty-origin outbound pass-through, while default-on [CSR-C26-RMB] tracing records the physical press before eligibility, Fabric entry, client classification/rejection, plans/sends, distinct drag entries, release/reset, receiver/server validation, plan, commit, and sync. It independently logs visible list position, slot.index, physical backing slot, and Creative wrapper/backing data. The client derives ordinary player storage from the live Inventory non-equipment list; the server retains exact live-slot/fingerprint/extraction authority.",
+      "Current 0.1.0-canary27 from implementation checkpoint 76b2c7c7176c9a50f7337f21e42bced4b54b2e03 is the narrow Creative successor to C26's exact cursor-authority finding. Survival continues to use only the server InventoryMenu carried stack. When and only when an infinite-material player is in its inventoryMenu, the exact Creative `-1` player-source locator resolves, and that server cursor is empty, C27 accepts a count-one supported shulker supplied by the visible Creative ItemPickerMenu cursor only when its complete SHA-256 fingerprint matches the predecessor. It then restores normal server cursor authority, preserves F0→F1→F2 source/cursor fingerprint chaining, exact source resolution/extraction/planning/commit, and returns every accepted result through a guarded Creative-facade cursor sync. Default-on C26 tracing is removed; empty origins remain the established outbound pass-through and live non-equipment source mapping continues to support Inventory Extended.",
       "While CSR owns Slot A and remains TESTING, a finalized current CSR testing successor normally replaces the preceding CSR candidate through one serialized Test Instance Manager Slot A transition; only a concrete manager preimage, dependency, or physical-safety failure may leave that successor retained but not deployed.",
       "Bind one exact count-one shulker host by screen, menu, menu ID, visible slot index, Slot instance, underlying container slot, explicit Creative player-inventory locator where applicable, and complete SHA-256 ItemStack fingerprint; never search for an equal stack.",
       "Render and hit-test one fixed 176x83 native panel with an unchanged 176x77 upper shulker region plus the same runtime texture's 176x6 bottom frame, 27 physical 18x18 cells, and bottom-left-at-host-center placement clamped only to the viewport. C25 replaces C24's unreachable AbstractContainerScreen click/drag collector hooks with the exact earlier Fabric allow-event seam proven by Item Interactions. A narrow optional @Pseudo guard suppresses only Mouse Tweaks 2.31 Main.onMouseDrag while CSR owns inbound RMB, preventing its pre-screen empty-slot source action; ownership lasts until physical release even after projected traversal invalidates. C20-C23 helper/provider bridges, oldSelectedSlot observation, per-source projection, and outbound prediction remain absent. Ordinary non-shulker cursors and empty-origin RMB remain upstream behavior. Established panel, reservation, selection, tooltip, CCAR, lifetime, and Creative behavior remain intact.",
@@ -138,22 +138,22 @@
     ]
   },
   "state": {
-    "milestone": "Canary 26 is an ACTIVE DIAGNOSTIC successor to failed Canary 25. It does not claim the occupied-origin carried-shulker RMB collection is fixed; it makes one attempted gesture explain its client input, eligibility, payload, server validation, planner, mutation, synchronization, and reset path in latest.log. Controlled validation passed; C26 is NOT_DEPLOYED and RUNTIME_UNTESTED.",
+    "milestone": "Canary 27 is an ACTIVE Creative cursor-authority bridge for the C26 finding: a count-one supported visible Creative cursor shulker is fingerprint-bound and admitted only for an infinite-material inventoryMenu player whose server cursor is empty, after which the server retains ordinary cursor authority. Survival, exact source authority, fingerprints, Inventory Extended mapping, and empty-origin outbound behavior remain unchanged. Controlled validation passed; C27 is NOT_DEPLOYED and RUNTIME_UNTESTED.",
     "releases": {
       "current": {
-        "version": "0.1.0-canary26",
-        "embedded_version": "0.1.0-canary26",
+        "version": "0.1.0-canary27",
+        "embedded_version": "0.1.0-canary27",
         "artifact": {
-          "filename": "container-slot-reservations-0.1.0-canary26.jar",
-          "sha256": "ef2fa4f1a73657566d68adb11ac4dd9e5d039db0dfd4a610013c129fcc430ff4"
+          "filename": "container-slot-reservations-0.1.0-canary27.jar",
+          "sha256": "746fae45136f9b083bdd6dd206a6b266277739e800863978ce06f76ab26d0189"
         },
-        "built_at": "2026-09-18T03:07:51.2925581Z",
-        "source_commit": "da545df22c2c1589a2eaebc1908b2b4479c21164",
+        "built_at": "2026-09-18T03:59:26.0973577Z",
+        "source_commit": "76b2c7c7176c9a50f7337f21e42bced4b54b2e03",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
         },
-        "summary": "Diagnostic-first successor: default-on [CSR-C26-RMB] traces the existing occupied-origin carried-shulker RMB transaction end to end without claiming the gameplay failure is fixed."
+        "summary": "Creative-only fingerprint-bound cursor bridge restores carried-shulker RMB collection while retaining the unchanged Survival server-cursor path."
       },
       "accepted": {
         "version": "0.1.0-canary19",
@@ -191,10 +191,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 37,
-    "activity_at": "2026-09-18T03:08:31Z",
-    "updated_at": "2026-09-18T03:08:31Z",
-    "last_codex_at": "2026-09-18T03:08:31Z",
-    "source_commit": "da545df22c2c1589a2eaebc1908b2b4479c21164"
+    "revision": 38,
+    "activity_at": "2026-09-18T04:00:52.7099870Z",
+    "updated_at": "2026-09-18T04:00:52.7099870Z",
+    "last_codex_at": "2026-09-18T04:00:52.7099870Z",
+    "source_commit": "76b2c7c7176c9a50f7337f21e42bced4b54b2e03"
   }
 }
