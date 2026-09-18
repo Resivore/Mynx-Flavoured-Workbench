@@ -7,11 +7,13 @@ import dev.aero.cnmterraincompat.NibaruProviderAdapter;
 import dev.tazer.clutternomore.common.blocks.VerticalSlabBlock;
 import games.twinhead.moreslabsstairsandwalls.api.material.BehaviorCapability;
 import games.twinhead.moreslabsstairsandwalls.api.material.NibaruMaterialProfile;
+import games.twinhead.moreslabsstairsandwalls.api.material.NibaruMaterialProfiles;
 import games.twinhead.moreslabsstairsandwalls.api.material.VisualProfile;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.BlockAndLightGetter;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
+import net.minecraft.world.level.block.SlabBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.Property;
@@ -24,12 +26,13 @@ import java.util.Optional;
 import java.util.Set;
 
 /**
- * Projects a deliberately small set of BGE states onto the canonical material state
- * already owned by BGE's typed runtime binding.
+ * Projects supported simple geometry onto the canonical material state already owned by
+ * BGE's typed material/profile authority.
  *
- * <p>Canary 1 is a whole-state policy. The full appearance-call context is retained
- * in the API so a later evidence-backed contact policy can use it without replacing
- * the canonical material/state projector.</p>
+ * <p>Appearance answers rule selection only. Canary 2 deliberately exposes partial Layers,
+ * single Vertical Slabs, and exact profile-owned ordinary slabs here, then applies the
+ * independent per-face geometry decision in {@link SurfaceContactResolver}. Geometry state
+ * is never copied into the canonical material state.</p>
  */
 public final class CanonicalAppearanceResolver {
     private static final Set<VisualProfile> ELIGIBLE_VISUALS = Collections.unmodifiableSet(EnumSet.of(
@@ -44,106 +47,153 @@ public final class CanonicalAppearanceResolver {
     private CanonicalAppearanceResolver() {}
 
     /** Returns the exact policy decision without consulting registry identifiers. */
-    public static Resolution inspect(BlockState derivedState) {
-        Objects.requireNonNull(derivedState, "derivedState");
-        Optional<NibaruProviderAdapter.RuntimeBinding> binding =
-                NibaruProviderAdapter.runtimeBinding(derivedState.getBlock());
+    public static Resolution inspect(BlockState sourceState) {
+        Objects.requireNonNull(sourceState, "sourceState");
+        Optional<MaterialBinding> binding = materialBinding(sourceState);
         if (binding.isEmpty()) {
-            return new Resolution(Policy.NON_BGE, derivedState, Optional.empty());
+            return new Resolution(Policy.NON_PROFILE_GEOMETRY, sourceState, Optional.empty());
         }
 
-        Policy geometryPolicy = geometryPolicy(binding.get().role(), derivedState);
+        Policy geometryPolicy = geometryPolicy(binding.get(), sourceState);
         if (!geometryPolicy.eligible()) {
-            return new Resolution(geometryPolicy, derivedState, binding);
+            return new Resolution(geometryPolicy, sourceState, binding);
         }
 
-        Optional<BlockState> canonical = projectCanonicalState(binding.get(), derivedState);
+        Optional<BlockState> canonical = projectCanonicalState(binding.get().profile(), sourceState);
         if (canonical.isEmpty()) {
-            return new Resolution(Policy.UNMAPPABLE_CANONICAL_STATE, derivedState, binding);
+            return new Resolution(Policy.UNMAPPABLE_CANONICAL_STATE, sourceState, binding);
         }
         if (!ELIGIBLE_VISUALS.contains(binding.get().profile().visualProfile())) {
-            return new Resolution(Policy.UNSUPPORTED_VISUAL_PROFILE, derivedState, binding);
+            return new Resolution(Policy.UNSUPPORTED_VISUAL_PROFILE, sourceState, binding);
         }
         return new Resolution(geometryPolicy, canonical.get(), binding);
     }
 
-    /** Fabric appearance entry point used by the three targeted geometry bases. */
-    public static BlockState resolve(BlockState derivedState, BlockAndLightGetter view, BlockPos pos,
-            Direction side, @Nullable BlockState sourceState, @Nullable BlockPos sourcePos) {
-        // Canary 1 intentionally makes no contact-specific inference. Keeping every
-        // parameter here makes that boundary explicit and leaves a stable future seam.
-        return inspect(derivedState).appearance();
+    /** Fabric appearance entry point shared by the supported carrier bases. */
+    public static BlockState resolve(BlockState sourceState, BlockAndLightGetter view, BlockPos pos,
+            Direction side, @Nullable BlockState querySourceState, @Nullable BlockPos sourcePos) {
+        // Fabric's initial appearance query cannot identify every later neighbor direction.
+        // Contact is therefore intentionally enforced at Continuity's connection predicate.
+        return inspect(sourceState).appearance();
+    }
+
+    /**
+     * Returns BGE's typed relationship for a derived geometry or an exact effective slab source.
+     * A broad SlabBlock mixin is therefore inert for every slab absent from this authority.
+     */
+    public static Optional<MaterialBinding> materialBinding(BlockState state) {
+        Optional<NibaruProviderAdapter.RuntimeBinding> derived =
+                NibaruProviderAdapter.runtimeBinding(state.getBlock());
+        if (derived.isPresent()) {
+            NibaruProviderAdapter.RuntimeBinding runtime = derived.get();
+            return Optional.of(new MaterialBinding(runtime.profile(), carrier(runtime.role())));
+        }
+        if (!(state.getBlock() instanceof SlabBlock)) {
+            return Optional.empty();
+        }
+        return NibaruMaterialProfiles.fromBlock(state.getBlock())
+                .filter(profile -> profile.effectiveSlabSource().orElse(null) == state.getBlock())
+                .map(profile -> new MaterialBinding(profile, GeometryCarrier.ORDINARY_SLAB));
     }
 
     public static Set<VisualProfile> eligibleVisuals() {
         return ELIGIBLE_VISUALS;
     }
 
-    private static Policy geometryPolicy(BgeGeometryRole role, BlockState state) {
+    private static GeometryCarrier carrier(BgeGeometryRole role) {
         return switch (role) {
-            case LAYER -> state.hasProperty(BgeLayerBlock.LAYERS)
-                    && state.getValue(BgeLayerBlock.LAYERS) == 4
-                    ? Policy.ELIGIBLE_FULL_LAYER
-                    : Policy.PARTIAL_LAYER;
-            case VERTICAL_SLAB -> state.hasProperty(VerticalSlabBlock.DOUBLE)
-                    && state.getValue(VerticalSlabBlock.DOUBLE)
-                    ? Policy.ELIGIBLE_DOUBLE_VERTICAL_SLAB
-                    : Policy.SINGLE_VERTICAL_SLAB;
+            case LAYER -> GeometryCarrier.LAYER;
+            case VERTICAL_SLAB -> GeometryCarrier.VERTICAL_SLAB;
+            case STEP -> GeometryCarrier.STEP;
+            case CORNER -> GeometryCarrier.CORNER;
+            case QUARTER_COLUMN -> GeometryCarrier.QUARTER_COLUMN;
+            default -> GeometryCarrier.UNKNOWN;
+        };
+    }
+
+    private static Policy geometryPolicy(MaterialBinding binding, BlockState state) {
+        return switch (binding.carrier()) {
+            case ORDINARY_SLAB -> state.hasProperty(BlockStateProperties.SLAB_TYPE)
+                    ? Policy.ELIGIBLE_ORDINARY_SLAB
+                    : Policy.UNKNOWN_GEOMETRY;
+            case LAYER -> state.hasProperty(BgeLayerBlock.FACING)
+                    && state.hasProperty(BgeLayerBlock.LAYERS)
+                    ? Policy.ELIGIBLE_LAYER
+                    : Policy.UNKNOWN_GEOMETRY;
+            case VERTICAL_SLAB -> state.hasProperty(VerticalSlabBlock.FACING)
+                    && state.hasProperty(VerticalSlabBlock.DOUBLE)
+                    ? Policy.ELIGIBLE_VERTICAL_SLAB
+                    : Policy.UNKNOWN_GEOMETRY;
             case STEP -> Policy.STEP_GEOMETRY;
             case CORNER -> Policy.CORNER_GEOMETRY;
             case QUARTER_COLUMN -> Policy.QUARTER_COLUMN_GEOMETRY;
-            default -> Policy.UNKNOWN_GEOMETRY;
+            case UNKNOWN -> Policy.UNKNOWN_GEOMETRY;
         };
     }
 
     private static Optional<BlockState> projectCanonicalState(
-            NibaruProviderAdapter.RuntimeBinding binding, BlockState derivedState) {
-        NibaruMaterialProfile profile = binding.profile();
+            NibaruMaterialProfile profile, BlockState sourceState) {
         BlockState canonical = profile.canonicalParent().defaultBlockState();
         boolean leaf = profile.capabilities().contains(BehaviorCapability.LEAF_LIFECYCLE);
         boolean glazed = profile.capabilities().contains(BehaviorCapability.GLAZED_ORIENTATION);
 
         for (Property<?> property : canonical.getProperties()) {
             if (property == BlockStateProperties.AXIS) {
-                if (!derivedState.hasProperty(BlockStateProperties.AXIS)) return Optional.empty();
+                if (!sourceState.hasProperty(BlockStateProperties.AXIS)) return Optional.empty();
                 canonical = canonical.setValue(BlockStateProperties.AXIS,
-                        derivedState.getValue(BlockStateProperties.AXIS));
+                        sourceState.getValue(BlockStateProperties.AXIS));
             } else if (property == HorizontalDirectionalBlock.FACING) {
-                if (!glazed || !derivedState.hasProperty(GlazedPatternState.PATTERN_FACING)) {
+                if (!glazed || !sourceState.hasProperty(GlazedPatternState.PATTERN_FACING)) {
                     return Optional.empty();
                 }
                 canonical = canonical.setValue(HorizontalDirectionalBlock.FACING,
-                        derivedState.getValue(GlazedPatternState.PATTERN_FACING));
+                        sourceState.getValue(GlazedPatternState.PATTERN_FACING));
             } else if (property == BlockStateProperties.DISTANCE) {
-                if (!leaf || !derivedState.hasProperty(BlockStateProperties.DISTANCE)) {
+                if (!leaf || !sourceState.hasProperty(BlockStateProperties.DISTANCE)) {
                     return Optional.empty();
                 }
                 canonical = canonical.setValue(BlockStateProperties.DISTANCE,
-                        derivedState.getValue(BlockStateProperties.DISTANCE));
+                        sourceState.getValue(BlockStateProperties.DISTANCE));
             } else if (property == BlockStateProperties.PERSISTENT) {
-                if (!leaf || !derivedState.hasProperty(BlockStateProperties.PERSISTENT)) {
+                if (!leaf || !sourceState.hasProperty(BlockStateProperties.PERSISTENT)) {
                     return Optional.empty();
                 }
                 canonical = canonical.setValue(BlockStateProperties.PERSISTENT,
-                        derivedState.getValue(BlockStateProperties.PERSISTENT));
+                        sourceState.getValue(BlockStateProperties.PERSISTENT));
             } else if (property == BlockStateProperties.WATERLOGGED && leaf) {
-                // Waterlogging describes the derived geometry volume. It is deliberately
-                // not copied into the canonical appearance; the canonical default stays dry.
+                // Waterlogging belongs to the geometry volume; the canonical default stays dry.
             } else {
-                // A canonical property without an explicit semantic projector is not guessed.
+                // A canonical property without an explicit semantic projector is never guessed.
                 return Optional.empty();
             }
         }
         return Optional.of(canonical);
     }
 
-    /** Typed state/geometry result used by focused tests and future policy revisions. */
+    public enum GeometryCarrier {
+        ORDINARY_SLAB,
+        LAYER,
+        VERTICAL_SLAB,
+        STEP,
+        CORNER,
+        QUARTER_COLUMN,
+        UNKNOWN
+    }
+
+    /** Typed geometry/material relationship consumed by appearance and contact policy. */
+    public record MaterialBinding(NibaruMaterialProfile profile, GeometryCarrier carrier) {
+        public MaterialBinding {
+            Objects.requireNonNull(profile, "profile");
+            Objects.requireNonNull(carrier, "carrier");
+        }
+    }
+
+    /** Typed state/geometry result used by focused tests and the contact layer. */
     public enum Policy {
-        NON_BGE(false),
-        ELIGIBLE_FULL_LAYER(true),
-        ELIGIBLE_DOUBLE_VERTICAL_SLAB(true),
-        PARTIAL_LAYER(false),
-        SINGLE_VERTICAL_SLAB(false),
+        NON_PROFILE_GEOMETRY(false),
+        ELIGIBLE_ORDINARY_SLAB(true),
+        ELIGIBLE_LAYER(true),
+        ELIGIBLE_VERTICAL_SLAB(true),
         STEP_GEOMETRY(false),
         CORNER_GEOMETRY(false),
         QUARTER_COLUMN_GEOMETRY(false),
@@ -163,7 +213,7 @@ public final class CanonicalAppearanceResolver {
     }
 
     public record Resolution(Policy policy, BlockState appearance,
-            Optional<NibaruProviderAdapter.RuntimeBinding> binding) {
+            Optional<MaterialBinding> binding) {
         public Resolution {
             Objects.requireNonNull(policy, "policy");
             Objects.requireNonNull(appearance, "appearance");
