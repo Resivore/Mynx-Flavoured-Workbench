@@ -124,7 +124,8 @@ public class BlockModule {
                             .sound(SoundType.SMALL_DRIPLEAF)
                             .ignitedByLava()
                             .setId(RegisterHelper.blockKey("small_brown_toadstool")),
-                    PlacedFeatureModule.SMALL_BROWN_TOADSTOOL_PATCH
+                    PlacedFeatureModule.SMALL_BROWN_TOADSTOOL_PATCH,
+                    ConfiguredFeatureModule.HUGE_BROWN_TOADSTOOL
             ))
             .withItem(Item.Properties::new);
 

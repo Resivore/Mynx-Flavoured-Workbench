@@ -437,6 +437,222 @@ class ConfiguredFeatureMigrationTest(unittest.TestCase):
             tools.migrate_configured_feature_documents(documents)
 
 
+class HugeToadstoolFeatureTest(unittest.TestCase):
+    def test_exact_vanilla_shapes_are_crossed_with_ribbits_materials(self) -> None:
+        documents = [
+            (path, tools.derive_huge_toadstool_document(spec))
+            for path, spec in tools.HUGE_TOADSTOOL_FEATURE_SPECS.items()
+        ]
+        tools.validate_huge_toadstool_documents(documents)
+        by_path = dict(documents)
+
+        red = by_path[
+            "data/ribbits/worldgen/configured_feature/huge_red_toadstool.json"
+        ]
+        self.assertEqual("minecraft:huge_brown_mushroom", red["type"])
+        self.assertEqual(3, red["config"]["foliage_radius"])
+        self.assertEqual(
+            "ribbits:red_toadstool",
+            red["config"]["cap_provider"]["state"]["Name"],
+        )
+        self.assertEqual(
+            "ribbits:toadstool_stem",
+            red["config"]["stem_provider"]["state"]["Name"],
+        )
+
+        brown = by_path[
+            "data/ribbits/worldgen/configured_feature/huge_brown_toadstool.json"
+        ]
+        self.assertEqual("minecraft:huge_red_mushroom", brown["type"])
+        self.assertNotIn("foliage_radius", brown["config"])
+        self.assertEqual(
+            2,
+            tools.HUGE_TOADSTOOL_FEATURE_SPECS[
+                "data/ribbits/worldgen/configured_feature/huge_brown_toadstool.json"
+            ]["effective_foliage_radius"],
+        )
+        self.assertEqual(
+            "ribbits:brown_toadstool",
+            brown["config"]["cap_provider"]["state"]["Name"],
+        )
+        self.assertEqual(
+            "ribbits:toadstool_stem",
+            brown["config"]["stem_provider"]["state"]["Name"],
+        )
+        serialized = json.dumps(by_path, sort_keys=True)
+        for forbidden in tools.VANILLA_MUSHROOM_BLOCK_IDS:
+            self.assertNotIn(forbidden, serialized)
+
+    def test_shape_or_block_drift_is_rejected(self) -> None:
+        documents = [
+            (path, tools.derive_huge_toadstool_document(spec))
+            for path, spec in tools.HUGE_TOADSTOOL_FEATURE_SPECS.items()
+        ]
+        documents[0][1]["type"] = "minecraft:huge_red_mushroom"
+        with self.assertRaisesRegex(tools.ValidationError, "not the exact hash-pinned"):
+            tools.validate_huge_toadstool_documents(documents)
+
+
+class VillageToadstoolColorTransformTest(unittest.TestCase):
+    @staticmethod
+    def _location_to_template(root: Path, location: str) -> Path:
+        namespace, relative = location.split(":", 1)
+        assert namespace == "ribbits"
+        return root / "data/ribbits/structure" / f"{relative}.nbt"
+
+    def _write_fixture(self, root: Path) -> list[str]:
+        def write(relative: str, value: object) -> None:
+            path = root.joinpath(*PurePosixPath(relative).parts)
+            path.parent.mkdir(parents=True, exist_ok=True)
+            tools.write_json(path, value)
+
+        exact_houses = [
+            "ribbits:" + path.removeprefix("data/ribbits/structure/").removesuffix(".nbt")
+            for path in tools.VILLAGE_TOADSTOOL_NBT_PLACEMENTS
+        ]
+        locations_by_pool = {
+            "data/ribbits/worldgen/template_pool/decor.json": [
+                "ribbits:decor/synthetic_decor"
+            ],
+            "data/ribbits/worldgen/template_pool/houses.json": exact_houses
+            + [f"ribbits:houses/synthetic_house_{index}" for index in range(9)],
+            "data/ribbits/worldgen/template_pool/paths.json": [
+                f"ribbits:paths/synthetic_path_{index}" for index in range(7)
+            ],
+            "data/ribbits/worldgen/template_pool/paths_fallback.json": [
+                "ribbits:paths/synthetic_fallback"
+            ],
+            "data/ribbits/worldgen/template_pool/ribbits.json": [
+                f"ribbits:ribbits/synthetic_resident_{index}" for index in range(5)
+            ],
+            "data/ribbits/worldgen/template_pool/starts.json": [
+                "ribbits:paths/synthetic_start"
+            ],
+        }
+        all_locations: list[str] = []
+        for relative in tools.VILLAGE_TEMPLATE_POOL_PATHS:
+            locations = locations_by_pool[relative]
+            all_locations.extend(locations)
+            elements = [
+                {
+                    "weight": 1,
+                    "element": {
+                        "location": location,
+                        "processors": "ribbits:main",
+                    },
+                }
+                for location in locations
+            ]
+            if relative.endswith("/decor.json"):
+                elements.append(
+                    {
+                        "weight": 1,
+                        "element": {"feature": "ribbits:veg_patch"},
+                    }
+                )
+            write(relative, {"name": PurePosixPath(relative).stem, "elements": elements})
+
+        write(tools.VILLAGE_MAIN_PROCESSOR_PATH, {"processors": []})
+        legacy_veg = synthetic_legacy_document()
+        legacy_veg["config"]["feature"]["feature"]["config"] = {
+            "on_solid_state_provider": {
+                "type": "minecraft:weighted_state_provider",
+                "entries": copy.deepcopy(tools.VILLAGE_VEG_PATCH_SOURCE_ENTRIES),
+            },
+            "on_liquid_state_provider": {
+                "type": "minecraft:simple_state_provider",
+                "state": {"Name": "ribbits:giant_lilypad"},
+            },
+            "cannot_place_on": [
+                {"Name": "minecraft:podzol"},
+                {"Name": "minecraft:coarse_dirt"},
+            ],
+        }
+        migrated_veg = tools.migrate_legacy_random_patch_document(
+            tools.VILLAGE_VEG_PATCH_CONFIGURED_FEATURE_PATH, legacy_veg
+        )
+        write(tools.VILLAGE_VEG_PATCH_CONFIGURED_FEATURE_PATH, migrated_veg)
+        write(
+            "data/ribbits/worldgen/placed_feature/veg_patch.json",
+            {"feature": "ribbits:veg_patch", "placement": []},
+        )
+
+        for location in all_locations:
+            path = self._location_to_template(root, location)
+            path.parent.mkdir(parents=True, exist_ok=True)
+            relative = path.relative_to(root).as_posix()
+            positions = tools.VILLAGE_TOADSTOOL_NBT_PLACEMENTS.get(relative)
+            state = (
+                {"Name": "ribbits:toadstool"}
+                if positions
+                else {"Name": "minecraft:stone"}
+            )
+            block_positions = positions or ((0, 0, 0),)
+            path.write_bytes(
+                synthetic_structure_nbt(
+                    [state],
+                    [
+                        {"position": position, "state": 0}
+                        for position in block_positions
+                    ],
+                )
+            )
+        self.assertEqual(29, len(all_locations))
+        return all_locations
+
+    def test_transform_covers_both_paths_without_recoloring_nbt(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            self._write_fixture(root)
+            tools.require_village_toadstool_generation_contract(root, transformed=False)
+            nbt_before = {
+                path.relative_to(root).as_posix(): path.read_bytes()
+                for path in root.rglob("*.nbt")
+            }
+
+            record = tools.transform_village_toadstool_colors(root)
+
+            tools.require_village_toadstool_generation_contract(root, transformed=True)
+            self.assertEqual(0.5, record["processor"]["brown_probability"])
+            self.assertEqual(0.5, record["processor"]["red_probability"])
+            self.assertEqual(0.6, record["decoration_vegetation"]["toadstool_probability_preserved"])
+            self.assertEqual(
+                nbt_before,
+                {
+                    path.relative_to(root).as_posix(): path.read_bytes()
+                    for path in root.rglob("*.nbt")
+                },
+            )
+
+    def test_static_brown_nbt_or_nonvillage_veg_reference_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            locations = self._write_fixture(root)
+            generic = next(
+                location
+                for location in locations
+                if self._location_to_template(root, location).relative_to(root).as_posix()
+                not in tools.VILLAGE_TOADSTOOL_NBT_PLACEMENTS
+            )
+            self._location_to_template(root, generic).write_bytes(
+                synthetic_structure_nbt(
+                    [{"Name": "ribbits:small_brown_toadstool"}],
+                    [{"position": (0, 0, 0), "state": 0}],
+                )
+            )
+            with self.assertRaisesRegex(tools.ValidationError, "statically recolored"):
+                tools.require_village_toadstool_generation_contract(root, transformed=False)
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            self._write_fixture(root)
+            leak = root / "data/ribbits/worldgen/biome/leak.json"
+            leak.parent.mkdir(parents=True, exist_ok=True)
+            tools.write_json(leak, {"feature": "ribbits:veg_patch"})
+            with self.assertRaisesRegex(tools.ValidationError, "escaped"):
+                tools.require_village_toadstool_generation_contract(root, transformed=False)
+
+
 class LootTableRepairTest(unittest.TestCase):
     def test_exact_air_item_entry_becomes_weighted_empty_without_other_drift(self) -> None:
         for relative in tools.LOOT_TABLE_PATHS:
@@ -1294,6 +1510,47 @@ class SmallBrownToadstoolResourceTest(unittest.TestCase):
             pixels.extend([color] * count)
         return tools.encode_rgba_png(16, 16, tools._rgba_bytes(pixels))
 
+    @staticmethod
+    def synthetic_block_model(
+        element_count: int, particle: str = "ribbits:block/toadstool"
+    ) -> dict[str, object]:
+        elements = [
+            {
+                "from": [index, 0, 0],
+                "to": [index + 1, 1, 1],
+                "rotation": {"angle": 0, "axis": "y", "origin": [8, 8, 8]},
+                "faces": {
+                    "north": {"uv": [0, 0, 1, 1], "texture": "#0"},
+                },
+            }
+            for index in range(element_count)
+        ]
+        return {
+            "credit": "Made with Blockbench",
+            "parent": "block/block",
+            "texture_size": [64, 64],
+            "textures": {
+                "0": "ribbits:block/toadstool",
+                "particle": particle,
+            },
+            "elements": elements,
+            "groups": [
+                {
+                    "name": "main",
+                    "origin": [8, 8, 8],
+                    "color": 0,
+                    "children": [
+                        {
+                            "name": "mushroom",
+                            "origin": [8, 8, 8],
+                            "color": 0,
+                            "children": list(range(element_count)),
+                        }
+                    ],
+                }
+            ],
+        }
+
     def test_indexed_png_decoder_preserves_palette_alpha(self) -> None:
         ihdr = struct.pack(">IIBBBBB", 2, 2, 8, 3, 0, 0, 0)
         palette = bytes((10, 20, 30, 40, 50, 60))
@@ -1326,6 +1583,16 @@ class SmallBrownToadstoolResourceTest(unittest.TestCase):
     def test_authoritative_recolor_donor_loader_is_exact_and_hash_guarded(self) -> None:
         item = tools.encode_rgba_png(16, 16, bytes((1, 2, 3, 255)) * 256)
         brown = tools.encode_rgba_png(16, 16, bytes((4, 5, 6, 255)) * 256)
+        models: dict[str, tuple[dict[str, object], bytes, str]] = {}
+        for index, member in enumerate(tools.SMALL_BROWN_DONOR_MODEL_MEMBERS):
+            particle = (
+                "ribbits:block/red_toadstool"
+                if index == 0
+                else "ribbits:block/toadstool"
+            )
+            model = self.synthetic_block_model(index + 1, particle)
+            payload = json.dumps(model, separators=(",", ":")).encode("utf-8")
+            models[member] = (model, payload, particle)
         with tempfile.TemporaryDirectory() as temp_dir:
             originals = Path(temp_dir) / "originals"
             assets = originals / "assets"
@@ -1334,6 +1601,8 @@ class SmallBrownToadstoolResourceTest(unittest.TestCase):
             with zipfile.ZipFile(donor, "w") as archive:
                 archive.writestr(tools.SMALL_BROWN_DONOR_ITEM_MEMBER, item)
                 archive.writestr(tools.SMALL_BROWN_DONOR_PALETTE_MEMBER, brown)
+                for member, (_, payload, _) in models.items():
+                    archive.writestr(member, payload)
                 archive.writestr("assets/ribbits/textures/item/unrelated.png", b"ignored")
             spec = {
                 "filename": donor.name,
@@ -1350,6 +1619,18 @@ class SmallBrownToadstoolResourceTest(unittest.TestCase):
                         "sha256": tools.sha256_bytes(brown),
                         "dimensions": (16, 16),
                     },
+                    **{
+                        member: {
+                            "size": len(payload),
+                            "sha256": tools.sha256_bytes(payload),
+                            "element_count": len(model["elements"]),
+                            "geometry_sha256": tools.small_brown_model_geometry_sha256(
+                                model
+                            ),
+                            "particle": particle,
+                        }
+                        for member, (model, payload, particle) in models.items()
+                    },
                 },
             }
             with mock.patch.object(tools, "SMALL_BROWN_RECOLOR_DONOR_SPEC", spec):
@@ -1359,11 +1640,86 @@ class SmallBrownToadstoolResourceTest(unittest.TestCase):
                 self.assertEqual(donor, path)
                 self.assertEqual(set(spec["members"]), set(members))
                 self.assertEqual(spec["sha256"], identity["sha256"])
+                self.assertEqual(6, len(identity["approved_members"]))
+                for member in tools.SMALL_BROWN_DONOR_MODEL_MEMBERS:
+                    self.assertEqual(
+                        len(models[member][0]["elements"]),
+                        identity["approved_members"][member]["element_count"],
+                    )
+                    self.assertEqual(
+                        0,
+                        identity["approved_members"][member]["flat_element_count"],
+                    )
                 donor.write_bytes(donor.read_bytes() + b"tamper")
                 with self.assertRaisesRegex(tools.ValidationError, "changed during"):
                     tools.require_donor_unchanged(
                         donor, identity, "synthetic Matcha donor"
                     )
+
+    def test_donor_models_allow_only_brown_bindings_and_cutout_migration(self) -> None:
+        members: dict[str, dict[str, object]] = {}
+        payloads: dict[str, bytes] = {}
+        for index, member in enumerate(tools.SMALL_BROWN_DONOR_MODEL_MEMBERS):
+            particle = (
+                "ribbits:block/red_toadstool"
+                if index == 0
+                else "ribbits:block/toadstool"
+            )
+            model = self.synthetic_block_model(index + 1, particle)
+            payload = json.dumps(model, separators=(",", ":")).encode("utf-8")
+            payloads[member] = payload
+            members[member] = {
+                "size": len(payload),
+                "sha256": tools.sha256_bytes(payload),
+                "element_count": index + 1,
+                "geometry_sha256": tools.small_brown_model_geometry_sha256(model),
+                "particle": particle,
+            }
+        spec = {"members": members}
+        with mock.patch.object(tools, "SMALL_BROWN_RECOLOR_DONOR_SPEC", spec):
+            for member in tools.SMALL_BROWN_DONOR_MODEL_MEMBERS:
+                donor = json.loads(payloads[member])
+                derived, record = tools.derive_small_brown_block_model(
+                    member, payloads[member]
+                )
+                self.assertEqual(
+                    {
+                        "0": "ribbits:block/small_brown_toadstool",
+                        "particle": "ribbits:block/small_brown_toadstool",
+                    },
+                    derived["textures"],
+                )
+                self.assertEqual("cutout", derived["render_type"])
+                for key in ("credit", "parent", "texture_size", "elements", "groups"):
+                    self.assertEqual(donor[key], derived[key])
+                self.assertEqual(0, record["flat_element_count"])
+                self.assertTrue(
+                    record[
+                        "geometry_matches_donor_after_permitted_metadata_normalization"
+                    ]
+                )
+            tampered_member = tools.SMALL_BROWN_DONOR_MODEL_MEMBERS[0]
+            tampered = json.loads(payloads[tampered_member])
+            tampered["elements"][0]["faces"]["north"]["uv"][0] = 0.25
+            with self.assertRaisesRegex(tools.ValidationError, "geometry differs"):
+                tools.derive_small_brown_block_model(
+                    tampered_member,
+                    json.dumps(tampered, separators=(",", ":")).encode("utf-8"),
+                )
+
+        flat = self.synthetic_block_model(1)
+        flat["elements"][0]["to"][0] = flat["elements"][0]["from"][0]
+        with self.assertRaisesRegex(tools.ValidationError, "zero-thickness"):
+            tools.require_small_brown_block_model(
+                flat,
+                "synthetic flat donor",
+                1,
+                {
+                    "0": "ribbits:block/toadstool",
+                    "particle": "ribbits:block/toadstool",
+                },
+                None,
+            )
 
     def test_item_recolor_changes_only_cap_and_keeps_stem_top(self) -> None:
         coordinates = [(x, y) for y in range(16) for x in range(16)]
@@ -1505,7 +1861,8 @@ class SmallBrownToadstoolResourceTest(unittest.TestCase):
                 nbt_paths.append(path)
             tools.require_small_brown_reference_scope(root)
 
-            forbidden_json = root / "data/ribbits/worldgen/configured_feature/veg_patch.json"
+            forbidden_json = root / "data/ribbits/worldgen/biome/forbidden.json"
+            forbidden_json.parent.mkdir(parents=True, exist_ok=True)
             forbidden_json.write_text(
                 json.dumps({"Name": "ribbits:small_brown_toadstool"}),
                 encoding="utf-8",
@@ -1540,8 +1897,8 @@ class SmallBrownToadstoolResourceTest(unittest.TestCase):
 
 class DonorBoundaryContractTest(unittest.TestCase):
     def test_exact_accounting_contains_only_approved_visual_members_and_outputs(self) -> None:
-        self.assertEqual("4.1.6+26.2-mynx-canary25", tools.CANDIDATE_VERSION)
-        self.assertEqual(25, tools.CANDIDATE_CANARY)
+        self.assertEqual("4.1.6+26.2-mynx-canary26", tools.CANDIDATE_VERSION)
+        self.assertEqual(26, tools.CANDIDATE_CANARY)
         self.assertEqual(
             "mynx-ribbits-private-resource-manifest/v1", tools.PRIVATE_MANIFEST_SCHEMA
         )
@@ -1549,8 +1906,8 @@ class DonorBoundaryContractTest(unittest.TestCase):
             "PRIVATE MYNX ASSEMBLY STAGED / NONREDISTRIBUTABLE DONOR ASSETS",
             tools.PRIVATE_MANIFEST_CLASSIFICATION,
         )
-        self.assertEqual(361, tools.OUTPUT_FILE_COUNT)
-        self.assertEqual(2_768_074, tools.OUTPUT_TOTAL_SIZE)
+        self.assertEqual(363, tools.OUTPUT_FILE_COUNT)
+        self.assertEqual(2_780_499, tools.OUTPUT_TOTAL_SIZE)
         self.assertEqual(2_563, tools.SORCERER_LOOT_OUTPUT_SIZE)
         self.assertEqual(
             "5b06e06502bf11f661161e89bf34e329d8f23268b7b0104371038c38ad9b378d",
@@ -1583,6 +1940,18 @@ class DonorBoundaryContractTest(unittest.TestCase):
         self.assertEqual(
             13,
             sum(len(spec["members"]) for spec in tools.DONOR_INPUT_SPECS.values()),
+        )
+        self.assertEqual(
+            6, len(tools.SMALL_BROWN_RECOLOR_DONOR_SPEC["members"])
+        )
+        self.assertEqual(
+            [7, 8, 7, 7],
+            [
+                tools.SMALL_BROWN_RECOLOR_DONOR_SPEC["members"][member][
+                    "element_count"
+                ]
+                for member in tools.SMALL_BROWN_DONOR_MODEL_MEMBERS
+            ],
         )
         for spec in tools.DONOR_INPUT_SPECS.values():
             for member in spec["members"]:

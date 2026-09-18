@@ -32,6 +32,7 @@ class SmallBrownToadstoolContractTest {
         assertTrue(registration.contains(".ignitedByLava()"));
         assertTrue(registration.contains(".setId(RegisterHelper.blockKey(\"small_brown_toadstool\"))"));
         assertTrue(registration.contains("PlacedFeatureModule.SMALL_BROWN_TOADSTOOL_PATCH"));
+        assertTrue(registration.contains("ConfiguredFeatureModule.HUGE_BROWN_TOADSTOOL"));
         assertEquals(1, occurrences(registration, ".withItem(Item.Properties::new)"));
         assertFalse(registration.contains(".stacksTo("),
                 "the small brown BlockItem must retain the default stack size");
@@ -71,10 +72,14 @@ class SmallBrownToadstoolContractTest {
         assertTrue(toadstool.contains("public class ToadstoolBlock extends SwampPlantBlock"));
         assertTrue(toadstool.contains(
                 "Block.box(0.0, 0.0, 0.0, 16.0, 8.0, 16.0)"));
-        assertTrue(toadstool.contains("this(properties, PlacedFeatureModule.TOADSTOOL_PATCH);"));
+        assertTrue(toadstool.contains(
+                "this(properties, PlacedFeatureModule.TOADSTOOL_PATCH, ConfiguredFeatureModule.HUGE_RED_TOADSTOOL);"));
         assertTrue(toadstool.contains(
                 "public ToadstoolBlock(Properties properties, ResourceKey<PlacedFeature> bonemealPatch)"));
+        assertTrue(toadstool.contains(
+                "ResourceKey<ConfiguredFeature<?, ?>> hugeFeature)"));
         assertTrue(toadstool.contains("super(properties, bonemealPatch);"));
+        assertTrue(toadstool.contains("this.hugeFeature = hugeFeature;"));
         assertTrue(toadstool.contains("return SHAPE.move(offset.x, offset.y, offset.z);"));
         assertFalse(toadstool.contains("getCloneItemStack("),
                 "both registered variants must retain Block's ordinary pick-block result");
