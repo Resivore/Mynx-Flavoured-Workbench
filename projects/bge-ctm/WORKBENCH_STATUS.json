@@ -43,13 +43,13 @@
         "type": "PROJECT",
         "identifier": "4b2342fc-7bdf-5ba6-9f37-d551109d214c",
         "requirement": ">=4.2.19-bge.canary75.surface-semantics+26.2",
-        "reason": "BGE C75 owns the authoritative canonical binding, state projection, canonical material-face semantics, exposed patch geometry and typed terrain-height relation consumed generically by Canary 9; exact C75 is the controlled validation baseline."
+        "reason": "BGE C75 owns the authoritative canonical binding, state projection, canonical material-face semantics, exposed patch geometry and typed terrain-height relation consumed generically by Canary 10; exact C75 is the controlled validation baseline."
       },
       {
         "type": "MOD",
         "identifier": "continuity",
         "requirement": "=3.0.1+26.2",
-        "reason": "Canary 9 decorates the exact Continuity 3.0.1+26.2 connection-predicate, processor-slice, quad-context, Standard Overlay processing/contact, and processQuadInner emission seams; required mixins and the controlled input hash fail closed on an incompatible implementation."
+        "reason": "Canary 10 decorates the exact Continuity 3.0.1+26.2 connection-predicate, processor-slice, quad-context, per-contribution Standard Overlay processing/contact, and processQuadInner emission seams; required mixins and the controlled input hash fail closed on an incompatible implementation."
       },
       {
         "type": "MOD",
@@ -78,16 +78,16 @@
     ]
   },
   "state": {
-    "milestone": "Canary 9 separates canonical material semantics from physical BGE geometry: Continuity still owns rule selection, resource-pack predicates, connect mode, sprites, tint, layer, AO and tile selection, while its connection predicate receives BGE's canonical material states and BGE C75 surface patches exclusively govern contact, coplanarity, footprint and fail-closed topology. Standard Overlay admits authoritative partial receiver patches, and TERRAIN_HEIGHT_INSET uses the physical inset only for contact while retaining the receiver crop on the nominal exact presentation plane. Exact C8 owner evidence from the supplied C8/BGE/Continuity runtime stack is limited to three observations: full-height grass over vanilla farmland behaves correctly with the overlay suspended at 16/16 above farmland's 15/16 surface; grass beside a bottom Farmland Slab connects/overlays but C8 emits the overlay at the slab's physical 7/16 top instead of the nominal 8/16 plane; and ordinary slab side faces still do not receive the expected CTM/overlay relationship despite corresponding coplanar surfaces. No aggregate C8 result is inferred, and C9 remains runtime-untested.",
+    "milestone": "Canary 10 retains each canonically positive, physically contacting Standard Overlay contributor as an exact BGE-derived receiver footprint. Neighbor extents are reflected across contacted cell edges, intersected with the rendered receiver patch, kept distinct through Continuity's processor scope, partitioned at every contributor edge without coarse bounding-box expansion or alpha overdraw, and emitted with canonical cropped UVs. TERRAIN_HEIGHT_INSET still uses physical geometry for contact and the existing nominal plane for presentation. Exact C9 owner evidence is limited to the statement that Layer and slab interactions behaved as expected in the cases tested; no exact state/face matrix or aggregate C9 PASS/FAIL is inferred. C10 has no Minecraft client visual evidence.",
     "releases": {
       "current": {
-        "version": "0.9.0-canary9",
+        "version": "0.10.0-canary10",
         "artifact": {
-          "filename": "bge-ctm-0.9.0-canary9.jar",
-          "sha256": "85b8fad6b75b1fe6f95d261514f6b397f503ba27d5a95da9b81ddd7fed05ddeb"
+          "filename": "bge-ctm-0.10.0-canary10.jar",
+          "sha256": "785b24d30aebe4cb83f75780d631756253c1672201c78fca88bd152dfc293444"
         },
-        "built_at": "2026-09-18T18:45:09.6831149Z",
-        "source_commit": "112a90f5b5f07b6bab26d22a7182d78433453ad1",
+        "built_at": "2026-09-18T19:51:07.0642273Z",
+        "source_commit": "d0e737a97bf40ce3635ef9ebd7d2ae66818e8939",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": [
@@ -98,7 +98,7 @@
               "predicate": "~26.2",
               "reason": "The appearance bridge is compiled against the Minecraft 26.2 block-state and Fabric appearance method descriptors and must remain on the controlled target release.",
               "regression_evidence": [
-                "Canary 9 cleanly compiles and its 21/21 focused headless GameTests plus 14/14 unit tests execute against Minecraft 26.2 and Fabric API 0.156.0+26.2 with exact BGE C75."
+                "Canary 10 cleanly compiles and its 21/21 focused headless GameTests plus 24/24 unit tests execute against Minecraft 26.2 and Fabric API 0.156.0+26.2 with exact BGE C75."
               ]
             },
             {
@@ -106,14 +106,14 @@
               "relationship": "depends",
               "dependency_id": "continuity",
               "predicate": "=3.0.1+26.2",
-              "reason": "Canary 9 injects exact Continuity 3.0.1+26.2 canonical connection-predicate, processor-slice, quad-context, StandardOverlayQuadProcessor unit-square/source-full-collision/final-contact, and processQuadInner QuadUtil.emitOverlayQuad seams; required mixins and the controlled input hash fail closed rather than guessing across an incompatible implementation.",
+              "reason": "Canary 10 injects exact Continuity 3.0.1+26.2 canonical connection-predicate, processor-slice, quad-context, StandardOverlayQuadProcessor unit-square/source-full-collision/final-contact, contributor-footprint retention, and processQuadInner QuadUtil.emitOverlayQuad seams; required mixins and the controlled input hash fail closed rather than guessing across an incompatible implementation.",
               "regression_evidence": [
                 "The exact Continuity 3.0.1+26.2 input is SHA-256 controlled, compiles against canonical regular/overlay connection predicates, overlay unit-square processing, quad context, source-full-collision, final Standard Overlay contact, and processQuadInner emission seams, and is verified as required client mixin targets."
               ]
             }
           ]
         },
-        "summary": "Separates Continuity-owned canonical material semantics from BGE-owned surface contact and keeps typed terrain overlays on their nominal presentation plane."
+        "summary": "Clips each Standard Overlay contribution to its exact BGE-derived receiver footprint while preserving canonical UV crops and nominal terrain presentation planes."
       },
       "accepted": null,
       "rollback": null,
@@ -127,10 +127,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 11,
-    "activity_at": "2026-09-18T18:45:09.6831149Z",
-    "updated_at": "2026-09-18T18:45:09.6831149Z",
-    "last_codex_at": "2026-09-18T18:45:09.6831149Z",
-    "source_commit": "112a90f5b5f07b6bab26d22a7182d78433453ad1"
+    "revision": 12,
+    "activity_at": "2026-09-18T19:51:07.0642273Z",
+    "updated_at": "2026-09-18T19:51:07.0642273Z",
+    "last_codex_at": "2026-09-18T19:51:07.0642273Z",
+    "source_commit": "d0e737a97bf40ce3635ef9ebd7d2ae66818e8939"
   }
 }

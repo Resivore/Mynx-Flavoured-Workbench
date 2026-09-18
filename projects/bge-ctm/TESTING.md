@@ -2,8 +2,8 @@
 
 Current candidate: `bge-ctm-0.10.0-canary10.jar`
 
-- SHA-256: finalized in `WORKBENCH_STATUS.json`
-- Source checkpoint: finalized in `WORKBENCH_STATUS.json`
+- SHA-256: `785b24d30aebe4cb83f75780d631756253c1672201c78fca88bd152dfc293444`
+- Source checkpoint: `d0e737a97bf40ce3635ef9ebd7d2ae66818e8939`
 - Use Minecraft Java 26.2, Fabric Loader 0.19.3+, exact Continuity `3.0.1+26.2`, and BGE `>=4.2.19-bge.canary75.surface-semantics+26.2` (exact C75 is the controlled baseline).
 - Lifecycle/evidence: `ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED`.
 
@@ -21,7 +21,7 @@ The owner reported only these observations from the exact current C8/BGE/Continu
 - The equivalent bottom-slab relationship is wrong: grass beside Farmland Slab connects/overlays, but the grass overlay is emitted directly on the Farmland Slab's physical 7/16 top instead of remaining on the corresponding normal slab plane at 8/16.
 - Ordinary slab side faces still do not receive the expected CTM/overlay relationship between each other even though their corresponding side surfaces are coplanar.
 
-These observations are exact C8 evidence only. They are not an aggregate C8 result and do not transfer to C9.
+These observations are exact C8 evidence only. They are not an aggregate C8 result and do not transfer to C9 or C10.
 
 ## C10 invariant
 
