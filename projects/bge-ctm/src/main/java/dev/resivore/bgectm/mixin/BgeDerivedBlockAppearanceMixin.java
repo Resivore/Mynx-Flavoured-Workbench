@@ -1,23 +1,20 @@
 package dev.resivore.bgectm.mixin;
 
-import dev.aero.cnmterraincompat.BgeLayerBlock;
 import dev.resivore.bgectm.CanonicalAppearanceResolver;
-import dev.tazer.clutternomore.common.blocks.StepBlock;
-import dev.tazer.clutternomore.common.blocks.VerticalSlabBlock;
 import net.fabricmc.fabric.api.block.v1.FabricBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.BlockAndLightGetter;
-import net.minecraft.world.level.block.SlabBlock;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 
 /**
- * Adds one shared appearance implementation to BGE carriers and the ordinary slab base.
- * The SlabBlock target remains inert unless BGE's exact profile authority recognizes it.
+ * Adds one binding-driven appearance implementation at the Block base. It is inert for unbound
+ * blocks and therefore reaches special or future BGE carriers without a Java-class target list.
  */
-@Mixin({BgeLayerBlock.class, VerticalSlabBlock.class, StepBlock.class, SlabBlock.class})
+@Mixin(Block.class)
 abstract class BgeDerivedBlockAppearanceMixin implements FabricBlock {
     @Override
     public BlockState getAppearance(BlockState state, BlockAndLightGetter view, BlockPos pos,

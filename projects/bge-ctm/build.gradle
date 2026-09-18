@@ -47,12 +47,15 @@ configurations {
 }
 
 def workbenchRoot = rootProject.projectDir.parentFile.parentFile
+def workbenchOriginalsRoot = providers.gradleProperty('workbenchOriginalsRoot')
+        .map { file(it) }
+        .getOrElse(new File(workbenchRoot, 'originals'))
 def bgeReferenceJar = new File(workbenchRoot,
         'projects/block-geometry-extensions/artifacts/' +
-                'cnm-nibaru-integration-4.2.17-bge.canary73.canonical-bindings+26.2.jar')
-def cnmReferenceJar = new File(workbenchRoot,
-        'originals/mods/clutternomore-2.0.7+26.2-fabric.jar')
-def expectedBgeSha256 = '4e8e7bbac17b828177059d21ed6a6d216028a17252e64b23ff4142b6d1b8200c'
+                'cnm-nibaru-integration-4.2.18-bge.canary74.surface-semantics+26.2.jar')
+def cnmReferenceJar = new File(workbenchOriginalsRoot,
+        'mods/clutternomore-2.0.7+26.2-fabric.jar')
+def expectedBgeSha256 = '8845817c1418d039a424ee6218883d53ad8a3e5d680d4d717317ee29f0276d24'
 def expectedCnmSha256 = '41a925e70d5e6e8c098bea7dc88c44486aed46724e35cb2fa4b1622b2a4dbcce'
 def expectedContinuitySha256 = '2094a52b98e247f664ef2ecdbb41d7dcad7779cc7a8fb87f0ed8a4f8196c0446'
 def continuityCoordinates = 'maven.modrinth:1IjD5062:mgUN5Xz2'
@@ -103,14 +106,14 @@ def sha256 = { File file ->
 
 tasks.register('verifyControlledProviders') {
     group = 'verification'
-    description = 'Verifies the exact controlled BGE C73, Clutter No More, and Continuity inputs.'
+    description = 'Verifies the exact controlled BGE C74, Clutter No More, and Continuity inputs.'
     inputs.files(configurations.bgeReference, configurations.cnmReference,
             configurations.continuityReference)
     doLast {
         File bge = configurations.bgeReference.singleFile
         File cnm = configurations.cnmReference.singleFile
         if (sha256(bge) != expectedBgeSha256) {
-            throw new GradleException("BGE C73 reference SHA-256 drifted: ${sha256(bge)}")
+            throw new GradleException("BGE C74 reference SHA-256 drifted: ${sha256(bge)}")
         }
         if (sha256(cnm) != expectedCnmSha256) {
             throw new GradleException("Clutter No More reference SHA-256 drifted: ${sha256(cnm)}")
@@ -195,7 +198,7 @@ tasks.register('verifyReleaseArtifact') {
             if (metadata.id != 'bge_ctm' || metadata.version != project.version ||
                     metadata.depends?.minecraft != '~26.2' ||
                     metadata.depends?.cnm_terrain_slabs_compat !=
-                            '>=4.2.17-bge.canary73.canonical-bindings+26.2' ||
+                            '>=4.2.18-bge.canary74.surface-semantics+26.2' ||
                     metadata.depends?.continuity != '=3.0.1+26.2') {
                 throw new GradleException('Release metadata no longer describes the exact BGE/Continuity bridge')
             }
@@ -263,7 +266,7 @@ tasks.register('verifyReleaseArtifact') {
 
 tasks.register('stageCanaryArtifact', Copy) {
     group = 'distribution'
-    description = 'Stages the exact ignored Canary 6 JAR for canonical local retention.'
+    description = 'Stages the exact ignored Canary 8 JAR for canonical local retention.'
     dependsOn tasks.named('verifyReleaseArtifact')
     from(packagedJar)
     into(layout.projectDirectory.dir('artifacts'))

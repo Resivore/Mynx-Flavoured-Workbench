@@ -158,10 +158,9 @@ public final class BgeCtmDiagnostics {
 
     private static String appearanceReason(CanonicalAppearanceResolver.Resolution resolution) {
         return switch (resolution.policy()) {
-            case ELIGIBLE_HORIZONTAL_SLAB, ELIGIBLE_LAYER, ELIGIBLE_VERTICAL_SLAB,
-                    ELIGIBLE_SPECIAL_HORIZONTAL -> "PROJECTED";
+            case ELIGIBLE_BOUND_SURFACE -> "PROJECTED";
             case NON_BGE_GEOMETRY, CANONICAL_ROOT -> "NO_BINDING";
-            case UNSUPPORTED_TOPOLOGY -> "UNSUPPORTED_GEOMETRY";
+            case UNSUPPORTED_SURFACE_CONTRACT -> "UNSUPPORTED_GEOMETRY";
             case UNSUPPORTED_VISUAL_PROFILE -> "UNSUPPORTED_VISUAL";
             case UNMAPPABLE_CANONICAL_STATE -> "UNMAPPABLE_CANONICAL_STATE";
         };

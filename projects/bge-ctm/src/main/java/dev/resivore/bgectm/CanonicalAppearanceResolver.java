@@ -17,13 +17,13 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
-/** BGE C73 owns canonical material identity, state projection, and topology. */
+/** BGE C74 owns canonical material identity, state projection, and rendered surface geometry. */
 public final class CanonicalAppearanceResolver {
     private static final Set<VisualProfile> ELIGIBLE_VISUALS = Set.copyOf(EnumSet.of(
             VisualProfile.UNIFORM, VisualProfile.TOP_SIDE_BOTTOM, VisualProfile.PILLAR,
             VisualProfile.GRASS_OVERLAY, VisualProfile.LEAVES_CUTOUT_TINTED,
             VisualProfile.GLASS_EDGE, VisualProfile.TRANSLUCENT_UNIFORM,
-            VisualProfile.GLAZED_ORIENTED));
+            VisualProfile.PATH, VisualProfile.GLAZED_ORIENTED));
 
     private CanonicalAppearanceResolver() {}
 
@@ -35,7 +35,7 @@ public final class CanonicalAppearanceResolver {
         Optional<Binding> binding = BgeMaterialBindings.fromBlock(sourceState.getBlock());
         if (binding.isEmpty()) return new Resolution(Policy.NON_BGE_GEOMETRY, sourceState, Optional.empty());
         Binding value = binding.get();
-        Policy policy = policy(value);
+        Policy policy = policy(value, sourceState);
         if (!policy.eligible()) return new Resolution(policy, sourceState, binding);
         Optional<BlockState> canonical = value.canonicalState(sourceState);
         if (canonical.isEmpty()) return new Resolution(Policy.UNMAPPABLE_CANONICAL_STATE, sourceState, binding);
@@ -55,30 +55,21 @@ public final class CanonicalAppearanceResolver {
 
     public static Set<VisualProfile> eligibleVisuals() { return ELIGIBLE_VISUALS; }
 
-    private static Policy policy(Binding binding) {
+    private static Policy policy(Binding binding, BlockState state) {
         Topology topology = binding.topology();
         if (topology == Topology.CANONICAL_ROOT) return Policy.CANONICAL_ROOT;
-        if (topology != Topology.HORIZONTAL_SLAB && topology != Topology.LAYER
-                && topology != Topology.VERTICAL_SLAB && topology != Topology.FARMLAND_SLAB) {
-            return Policy.UNSUPPORTED_TOPOLOGY;
-        }
-        // C73's special canonical-bound Farmland Slab deliberately has no Nibaru visual profile.
+        if (!binding.surfaceModel(state).supported()) return Policy.UNSUPPORTED_SURFACE_CONTRACT;
+        // Special canonical-bound Farmland Slab deliberately has no Nibaru visual profile.
         if (binding.materialProfile().isPresent()
                 && !ELIGIBLE_VISUALS.contains(binding.materialProfile().get().visualProfile())) {
             return Policy.UNSUPPORTED_VISUAL_PROFILE;
         }
-        return switch (topology) {
-            case HORIZONTAL_SLAB -> Policy.ELIGIBLE_HORIZONTAL_SLAB;
-            case LAYER -> Policy.ELIGIBLE_LAYER;
-            case VERTICAL_SLAB -> Policy.ELIGIBLE_VERTICAL_SLAB;
-            case FARMLAND_SLAB -> Policy.ELIGIBLE_SPECIAL_HORIZONTAL;
-            default -> throw new IllegalStateException("Unhandled topology " + topology);
-        };
+        return Policy.ELIGIBLE_BOUND_SURFACE;
     }
 
     private static BlockState applyWorldSnow(BlockState state, @Nullable BlockAndLightGetter view,
             @Nullable BlockPos pos) {
-        // C73 owns material projection; these two adjustments remain geometry/context policy.
+        // BGE owns material projection; these two adjustments remain world-context policy.
         // A carrier's water volume is never a canonical material-waterlogging assertion.
         if (state.hasProperty(BlockStateProperties.WATERLOGGED)) {
             state = state.setValue(BlockStateProperties.WATERLOGGED, false);
@@ -89,8 +80,7 @@ public final class CanonicalAppearanceResolver {
 
     public enum Policy {
         NON_BGE_GEOMETRY(false), CANONICAL_ROOT(false),
-        ELIGIBLE_HORIZONTAL_SLAB(true), ELIGIBLE_LAYER(true), ELIGIBLE_VERTICAL_SLAB(true),
-        ELIGIBLE_SPECIAL_HORIZONTAL(true), UNSUPPORTED_TOPOLOGY(false),
+        ELIGIBLE_BOUND_SURFACE(true), UNSUPPORTED_SURFACE_CONTRACT(false),
         UNSUPPORTED_VISUAL_PROFILE(false), UNMAPPABLE_CANONICAL_STATE(false);
         private final boolean eligible;
         Policy(boolean eligible) { this.eligible = eligible; }

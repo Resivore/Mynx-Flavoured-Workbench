@@ -263,7 +263,14 @@ try {
         'META-INF/MANIFEST.MF',
         'fabric.mod.json',
         'dev/aero/cnmterraincompat/BgeMaterialBindings.class',
-        'dev/aero/cnmterraincompat/BgeMaterialBindings$Binding.class'
+        'dev/aero/cnmterraincompat/BgeMaterialBindings$Binding.class',
+        'dev/aero/cnmterraincompat/BgeMaterialBindings$Bounds.class',
+        'dev/aero/cnmterraincompat/BgeMaterialBindings$CatalogExclusion.class',
+        'dev/aero/cnmterraincompat/BgeMaterialBindings$CatalogMembership.class',
+        'dev/aero/cnmterraincompat/BgeMaterialBindings$Ownership.class',
+        'dev/aero/cnmterraincompat/BgeMaterialBindings$Role.class',
+        'dev/aero/cnmterraincompat/BgeMaterialBindings$Topology.class',
+        'dev/aero/cnmterraincompat/BgeMaterialBindings$1.class'
     )
     $requiredPredecessorChanges = New-StringSet @(
         'fabric.mod.json',

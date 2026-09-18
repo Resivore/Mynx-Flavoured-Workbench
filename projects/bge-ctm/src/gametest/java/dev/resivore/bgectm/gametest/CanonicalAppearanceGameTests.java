@@ -2,6 +2,7 @@ package dev.resivore.bgectm.gametest;
 
 import dev.aero.cnmterraincompat.BgeGeometryRole;
 import dev.aero.cnmterraincompat.BgeLayerBlock;
+import dev.aero.cnmterraincompat.BgeSurfaceGeometry.PlaneRelation;
 import dev.aero.cnmterraincompat.CnmTerrainCompat;
 import dev.aero.cnmterraincompat.FarmlandSlabBlock;
 import dev.aero.cnmterraincompat.GlazedPatternState;
@@ -12,6 +13,8 @@ import dev.resivore.bgectm.CanonicalAppearanceResolver.Policy;
 import dev.resivore.bgectm.SurfaceContactResolver;
 import dev.resivore.bgectm.SurfaceContactResolver.Decision;
 import dev.resivore.bgectm.SurfaceContactResolver.QuadSurface;
+import dev.resivore.bgectm.SurfaceContactResolver.Interval;
+import dev.resivore.bgectm.SurfaceContactResolver.SurfaceDescriptor;
 import dev.resivore.bgectm.continuity.ContinuityQuadContext;
 import dev.resivore.bgectm.continuity.OverlayContactFilter;
 import dev.resivore.bgectm.continuity.OverlaySourceEligibility;
@@ -121,7 +124,7 @@ public final class CanonicalAppearanceGameTests implements CustomTestMethodInvok
     }
 
     @GameTest(maxTicks = 40)
-    public void overlayUsesBoundaryOccupancyRatherThanRegularCoplanarity(GameTestHelper helper) {
+    public void overlayUsesTheSameSurfacePlaneModelAsRegularCtm(GameTestHelper helper) {
         BlockState grassTop = slabState(Blocks.GRASS_BLOCK, SlabType.TOP);
         BlockState grassBottom = slabState(Blocks.GRASS_BLOCK, SlabType.BOTTOM);
         BlockState fullDirt = Blocks.DIRT.defaultBlockState();
@@ -135,9 +138,9 @@ public final class CanonicalAppearanceGameTests implements CustomTestMethodInvok
         helper.assertTrue(OverlayContactFilter.retainAfterUpstream(true,
                         grassTop, ORIGIN, fullDirt, EAST, Direction.UP, topBoundaryQuad),
                 "Positive cross-material overlay lost valid coplanar receiver contact");
-        helper.assertTrue(OverlayContactFilter.retainAfterUpstream(true,
+        helper.assertTrue(!OverlayContactFilter.retainAfterUpstream(true,
                         grassBottom, ORIGIN, fullDirt, EAST, Direction.UP, recessedQuad),
-                "Overlay contact incorrectly required the receiver and inducer top planes to match");
+                "Standard Overlay substituted boundary adjacency for incompatible surface planes");
         helper.assertTrue(!OverlayContactFilter.retainAfterUpstream(false,
                         grassTop, ORIGIN, fullDirt, EAST, Direction.UP, topBoundaryQuad),
                 "Geometry turned a negative upstream overlay result positive");
@@ -149,7 +152,7 @@ public final class CanonicalAppearanceGameTests implements CustomTestMethodInvok
     }
 
     @GameTest(maxTicks = 40)
-    public void farmlandSpecialBindingUsesGenericOverlayBoundaryContact(GameTestHelper helper) {
+    public void farmlandSpecialBindingUsesGenericTypedSurfaceContact(GameTestHelper helper) {
         BlockState grassBottom = slabState(Blocks.GRASS_BLOCK, SlabType.BOTTOM);
         BlockState grassTop = slabState(Blocks.GRASS_BLOCK, SlabType.TOP);
         BlockState farmlandBottom = CnmTerrainCompat.FARMLAND_SLAB.defaultBlockState()
@@ -160,31 +163,57 @@ public final class CanonicalAppearanceGameTests implements CustomTestMethodInvok
 
         helper.assertTrue(CanonicalAppearanceResolver.materialBinding(farmlandBottom).orElseThrow()
                         .membership() == dev.aero.cnmterraincompat.BgeMaterialBindings.CatalogMembership.SPECIAL_CANONICAL_BOUND,
-                "Farmland Slab was not recognized as C73's special canonical binding");
-        BlockState canonical = CanonicalAppearanceResolver.inspect(farmlandBottom).appearance();
+                "Farmland Slab was not recognized as BGE's special canonical binding");
+        BlockState canonical = appearance(helper, farmlandBottom);
         assertCanonical(helper, canonical, Blocks.FARMLAND, "special farmland slab");
         helper.assertTrue(canonical.getValue(BlockStateProperties.MOISTURE) == 5,
-                "C73 farmland canonical projection lost moisture");
+                "Farmland canonical projection lost moisture on the real appearance path");
         helper.assertTrue(SurfaceContactResolver.inspect(grassBottom, ORIGIN, farmlandBottom, EAST,
-                        Direction.UP) == Decision.NON_COPLANAR,
-                "Regular CTM must retain strict 8/16 versus 7/16 coplanarity");
-        var receiver = new ContinuityQuadContext.Capture(new QuadSurface(Direction.UP, 8,
+                        Direction.UP) == Decision.CONNECT,
+                "Typed terrain relation did not bridge the intentional 8/16 versus 7/16 top planes");
+        assertDecision(helper, grassBottom, ORIGIN, farmlandBottom, EAST,
+                Direction.NORTH, Decision.CONNECT);
+        var bottomReceiver = new ContinuityQuadContext.Capture(new QuadSurface(Direction.UP, 8,
                 Direction.Axis.X, 0, 16, Direction.Axis.Z, 0, 16));
         helper.assertTrue(OverlayContactFilter.retainAfterUpstream(true, grassBottom, ORIGIN,
-                        farmlandBottom, EAST, Direction.UP, receiver),
-                "Generic overlay boundary contact rejected grass/farmland bottom slabs");
+                        farmlandBottom, EAST, Direction.UP, bottomReceiver),
+                "Generic typed overlay contact rejected grass/farmland bottom slabs");
+        var topReceiver = new ContinuityQuadContext.Capture(new QuadSurface(Direction.UP, 16,
+                Direction.Axis.X, 0, 16, Direction.Axis.Z, 0, 16));
         helper.assertTrue(OverlayContactFilter.retainAfterUpstream(true, grassTop, ORIGIN,
-                        farmlandTop, EAST, Direction.UP, receiver),
-                "Generic overlay boundary contact rejected grass/farmland top slabs");
+                        farmlandTop, EAST, Direction.UP, topReceiver),
+                "Generic typed overlay contact rejected grass/farmland top slabs");
         helper.assertTrue(OverlayContactFilter.retainAfterUpstream(true, Blocks.GRASS_BLOCK.defaultBlockState(), ORIGIN,
-                        farmlandDouble, EAST, Direction.UP, receiver),
-                "Full receiver to special Farmland Slab lost its generic boundary relationship");
+                        farmlandDouble, EAST, Direction.UP, topReceiver),
+                "Full receiver to special Farmland Slab lost its typed plane relationship");
         assertLocalSurface(helper, farmlandBottom, Direction.UP, 7, 0, 16, 0, 16);
         helper.succeed();
     }
 
     @GameTest(maxTicks = 40)
-    public void overlayEmissionFallbackDescribesOnlySafeSimpleReceiverSurfaces(GameTestHelper helper) {
+    public void ordinaryCtmMatchesCorrespondingOrientationsOnAllSixFaces(GameTestHelper helper) {
+        BlockState bottom = slabState(Blocks.GLASS, SlabType.BOTTOM);
+        for (Direction face : Direction.values()) {
+            BlockPos neighbor = face.getAxis() == Direction.Axis.X ? SOUTH : EAST;
+            assertDecision(helper, bottom, ORIGIN, bottom, neighbor, face, Decision.CONNECT);
+        }
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void oneUnitToleranceRequiresAnExplicitTerrainRelation(GameTestHelper helper) {
+        SurfaceDescriptor exactEight = descriptor(8, PlaneRelation.EXACT);
+        SurfaceDescriptor exactSeven = descriptor(7, PlaneRelation.EXACT);
+        SurfaceDescriptor terrainSeven = descriptor(7, PlaneRelation.TERRAIN_HEIGHT_INSET);
+        helper.assertTrue(!SurfaceContactResolver.planesCompatible(exactEight, exactSeven),
+                "An ordinary 1/16 plane mismatch received a generic tolerance");
+        helper.assertTrue(SurfaceContactResolver.planesCompatible(exactEight, terrainSeven),
+                "An explicitly typed terrain inset lost its one-unit plane relation");
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void overlayEmissionFallbackDescribesUnambiguousProviderSurfaces(GameTestHelper helper) {
         BlockState bottom = slabState(Blocks.GRASS_BLOCK, SlabType.BOTTOM);
         BlockState top = slabState(Blocks.GRASS_BLOCK, SlabType.TOP);
         BlockState doubled = slabState(Blocks.GRASS_BLOCK, SlabType.DOUBLE);
@@ -199,8 +228,12 @@ public final class CanonicalAppearanceGameTests implements CustomTestMethodInvok
         assertLocalSurface(helper, vertical, Direction.UP, 16, 8, 16, 0, 16);
 
         BlockState step = derived(Blocks.GRASS_BLOCK, BgeGeometryRole.STEP).defaultBlockState();
-        helper.assertTrue(SurfaceContactResolver.describeLocalForOverlay(step, Direction.UP).isEmpty(),
-                "Complex Step topology unexpectedly received a state-derived overlay surface");
+        helper.assertTrue(SurfaceContactResolver.describeLocalForOverlay(step, Direction.UP).isPresent(),
+                "An unambiguous Step top patch was not available to overlay emission");
+        BlockState compoundStep = step.setValue(StepBlock.SLAB_TYPE, SlabType.DOUBLE);
+        helper.assertTrue(!SurfaceContactResolver.stateDerivedFallbackSafe(
+                        compoundStep, Blocks.GRASS_BLOCK.defaultBlockState()),
+                "Compound Step topology was flattened into a whole-state simple fallback");
         helper.succeed();
     }
 
@@ -233,9 +266,9 @@ public final class CanonicalAppearanceGameTests implements CustomTestMethodInvok
         helper.assertTrue(OverlayContactFilter.retainAfterUpstream(true, top, ORIGIN,
                         Blocks.STONE.defaultBlockState(), EAST, Direction.UP, null),
                 "Coplanar partial overlay source/receiver lost C4's safe fallback");
-        helper.assertTrue(OverlayContactFilter.retainAfterUpstream(true, bottom, ORIGIN,
+        helper.assertTrue(!OverlayContactFilter.retainAfterUpstream(true, bottom, ORIGIN,
                         Blocks.STONE.defaultBlockState(), EAST, Direction.UP, null),
-                "C7 overlay boundary contact incorrectly retained C6 coplanarity semantics");
+                "Overlay state fallback ignored incompatible bottom-slab/full-block top planes");
         helper.succeed();
     }
 
@@ -262,7 +295,7 @@ public final class CanonicalAppearanceGameTests implements CustomTestMethodInvok
                 Decision.NON_COPLANAR);
         assertDecision(helper, fullLayer, ORIGIN, full, EAST, Direction.UP, Decision.CONNECT);
 
-        assertPolicy(helper, topBoundaryThin, Policy.ELIGIBLE_LAYER);
+        assertPolicy(helper, topBoundaryThin, Policy.ELIGIBLE_BOUND_SURFACE);
         assertCanonical(helper, appearance(helper, topBoundaryThin), Blocks.GLASS,
                 "partial glass Layer rule-selection appearance");
         helper.succeed();
@@ -287,7 +320,7 @@ public final class CanonicalAppearanceGameTests implements CustomTestMethodInvok
                 Decision.NO_BOUNDARY_CONTACT);
         assertDecision(helper, doubled, ORIGIN, full, EAST, Direction.UP, Decision.CONNECT);
 
-        assertPolicy(helper, eastHalf, Policy.ELIGIBLE_VERTICAL_SLAB);
+        assertPolicy(helper, eastHalf, Policy.ELIGIBLE_BOUND_SURFACE);
         assertCanonical(helper, appearance(helper, eastHalf), Blocks.GLASS,
                 "single glass Vertical Slab rule-selection appearance");
         helper.succeed();
@@ -364,18 +397,30 @@ public final class CanonicalAppearanceGameTests implements CustomTestMethodInvok
     }
 
     @GameTest(maxTicks = 40)
-    public void complexAndUnknownGeometryFailClosed(GameTestHelper helper) {
+    public void compoundSurfaceContractsParticipateAndContextualNativeFormsFailClosed(GameTestHelper helper) {
         BlockState step = derived(Blocks.STONE, BgeGeometryRole.STEP).defaultBlockState()
                 .setValue(StepBlock.SLAB_TYPE, SlabType.BOTTOM);
-        assertPolicy(helper, step, Policy.UNSUPPORTED_TOPOLOGY);
-        assertDecision(helper, step, ORIGIN, Blocks.STONE.defaultBlockState(), EAST,
-                Direction.UP, Decision.UNSUPPORTED_GEOMETRY);
-        helper.assertTrue(SurfaceContactResolver.describe(step, ORIGIN, Direction.UP).isEmpty(),
-                "Step unexpectedly gained a speculative surface descriptor");
+        assertPolicy(helper, step, Policy.ELIGIBLE_BOUND_SURFACE);
+        helper.assertTrue(!SurfaceContactResolver.describeAll(step, ORIGIN, Direction.UP).isEmpty(),
+                "Step did not expose its BGE-owned surface patches");
 
         BlockState corner = derived(Blocks.STONE, BgeGeometryRole.CORNER).defaultBlockState();
-        assertPolicy(helper, corner, Policy.UNSUPPORTED_TOPOLOGY);
-        assertDecision(helper, corner, ORIGIN, Blocks.STONE.defaultBlockState(), EAST,
+        assertPolicy(helper, corner, Policy.ELIGIBLE_BOUND_SURFACE);
+        helper.assertTrue(!SurfaceContactResolver.describeAll(corner, ORIGIN, Direction.UP).isEmpty(),
+                "Corner did not expose its BGE-owned surface patches");
+        BlockState column = derived(Blocks.STONE, BgeGeometryRole.QUARTER_COLUMN).defaultBlockState();
+        assertPolicy(helper, column, Policy.ELIGIBLE_BOUND_SURFACE);
+        helper.assertTrue(!SurfaceContactResolver.describeAll(column, ORIGIN, Direction.UP).isEmpty(),
+                "Quarter Column did not expose its BGE-owned surface patches");
+
+        NibaruMaterialProfile stone = NibaruMaterialProfiles.fromBlock(Blocks.STONE).orElseThrow();
+        BlockState stair = stone.effectiveStairSource().orElseThrow().defaultBlockState();
+        BlockState wall = stone.nativeWall().orElseThrow().defaultBlockState();
+        assertPolicy(helper, stair, Policy.UNSUPPORTED_SURFACE_CONTRACT);
+        assertPolicy(helper, wall, Policy.UNSUPPORTED_SURFACE_CONTRACT);
+        assertDecision(helper, stair, ORIGIN, Blocks.STONE.defaultBlockState(), EAST,
+                Direction.UP, Decision.UNSUPPORTED_GEOMETRY);
+        assertDecision(helper, wall, ORIGIN, Blocks.STONE.defaultBlockState(), EAST,
                 Direction.UP, Decision.UNSUPPORTED_GEOMETRY);
         helper.succeed();
     }
@@ -419,9 +464,9 @@ public final class CanonicalAppearanceGameTests implements CustomTestMethodInvok
         BlockState layer = layerState(Blocks.GRASS_BLOCK, Direction.DOWN, 1);
         BlockState vertical = verticalState(Blocks.GRASS_BLOCK, Direction.EAST, false);
 
-        assertPolicy(helper, slab, Policy.ELIGIBLE_HORIZONTAL_SLAB);
-        assertPolicy(helper, layer, Policy.ELIGIBLE_LAYER);
-        assertPolicy(helper, vertical, Policy.ELIGIBLE_VERTICAL_SLAB);
+        assertPolicy(helper, slab, Policy.ELIGIBLE_BOUND_SURFACE);
+        assertPolicy(helper, layer, Policy.ELIGIBLE_BOUND_SURFACE);
+        assertPolicy(helper, vertical, Policy.ELIGIBLE_BOUND_SURFACE);
 
         helper.setBlock(QUERY_POS.offset(2, 1, 0), Blocks.AIR);
         helper.setBlock(QUERY_POS.above(), Blocks.AIR);
@@ -459,7 +504,7 @@ public final class CanonicalAppearanceGameTests implements CustomTestMethodInvok
 
         // This matches the owner-observed physical state: one full-volume ordinary slab
         // carrier, not a pair of TOP/BOTTOM slabs. It must project only canonical podzol.
-        assertPolicy(helper, podzolDouble, Policy.ELIGIBLE_HORIZONTAL_SLAB);
+        assertPolicy(helper, podzolDouble, Policy.ELIGIBLE_BOUND_SURFACE);
         helper.setBlock(QUERY_POS.above(), Blocks.AIR);
         assertSnowyAppearance(helper, appearance(helper, podzolDouble), Blocks.PODZOL, false,
                 "dry podzol double slab");
@@ -485,7 +530,7 @@ public final class CanonicalAppearanceGameTests implements CustomTestMethodInvok
     public void unrelatedVisualAllowlistStillFailsClosed(GameTestHelper helper) {
 
         BlockState mycelium = layerState(Blocks.MYCELIUM, Direction.DOWN, 1);
-        assertPolicy(helper, mycelium, Policy.ELIGIBLE_LAYER);
+        assertPolicy(helper, mycelium, Policy.ELIGIBLE_BOUND_SURFACE);
         assertCanonical(helper, appearance(helper, mycelium), Blocks.MYCELIUM,
                 "Snowy canonical mycelium must project independently of visual profile");
 
@@ -527,6 +572,12 @@ public final class CanonicalAppearanceGameTests implements CustomTestMethodInvok
         helper.assertTrue(actual == expected,
                 "Expected " + expected + " for " + source + " -> " + other
                         + " on " + face + ", got " + actual);
+    }
+
+    private static SurfaceDescriptor descriptor(long plane, PlaneRelation relation) {
+        return new SurfaceDescriptor(Direction.UP, plane, Direction.Axis.X,
+                new Interval(0, 16), Direction.Axis.Z, new Interval(0, 16), ORIGIN,
+                Direction.UP, relation);
     }
 
     private static void assertLocalSurface(GameTestHelper helper, BlockState state, Direction face,
