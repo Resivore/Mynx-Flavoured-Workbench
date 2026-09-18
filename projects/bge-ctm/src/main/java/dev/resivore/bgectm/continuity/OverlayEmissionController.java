@@ -4,6 +4,7 @@ import dev.resivore.bgectm.BgeCtmDiagnostics;
 import dev.resivore.bgectm.CanonicalAppearanceResolver;
 import dev.resivore.bgectm.SurfaceContactResolver;
 import dev.resivore.bgectm.SurfaceContactResolver.QuadSurface;
+import dev.resivore.bgectm.SurfaceContactResolver.SurfaceMatch;
 import me.pepperbell.continuity.client.util.QuadUtil;
 import net.fabricmc.fabric.api.client.renderer.v1.mesh.QuadAtlas;
 import net.fabricmc.fabric.api.client.renderer.v1.mesh.QuadEmitter;
@@ -45,7 +46,7 @@ public final class OverlayEmissionController {
         }
         if (resolution.kind == Kind.ORIGINAL) {
             BgeCtmDiagnostics.overlayEmit(receiver, face, resolution.surface, null,
-                    "ORIGINAL", "FULL_RECEIVER_ORIGINAL");
+                    "ORIGINAL", resolution.reason);
             QuadUtil.emitOverlayQuad(emitter, face, sprite, tint, layer, ao);
             return;
         }
@@ -74,15 +75,27 @@ public final class OverlayEmissionController {
         QuadSurface exact = capture.surface();
         if (exact != null) {
             if (exact.normal() != face) return Resolution.veto("SURFACE_UNSUPPORTED");
-            return OverlayEmissionGeometry.originalUnitSquareMatches(exact)
-                    ? Resolution.original(exact) : Resolution.projected(exact, "EMIT_MATCH_RECEIVER");
+            Optional<SurfaceMatch> match = SurfaceContactResolver.matchRenderedSurface(receiver, exact);
+            if (match.isEmpty()) return Resolution.veto("SURFACE_CAPTURE_UNMATCHED");
+            QuadSurface presentation = match.get().presentation();
+            String reason = match.get().planeRelation()
+                    == dev.aero.cnmterraincompat.BgeSurfaceGeometry.PlaneRelation.TERRAIN_HEIGHT_INSET
+                    ? "TERRAIN_NOMINAL_PRESENTATION" : "EMIT_MATCH_RECEIVER";
+            return OverlayEmissionGeometry.originalUnitSquareMatches(presentation)
+                    ? Resolution.original(presentation, reason)
+                    : Resolution.projected(presentation, reason);
         }
         Optional<QuadSurface> fallback = SurfaceContactResolver.describeLocalForOverlay(receiver, face);
         if (fallback.isEmpty()) return Resolution.veto("SURFACE_CAPTURE_MISSING");
-        QuadSurface surface = fallback.get();
-        return OverlayEmissionGeometry.originalUnitSquareMatches(surface)
-                ? Resolution.original(surface)
-                : Resolution.projected(surface, "STATE_DERIVED_PROJECTED");
+        Optional<SurfaceMatch> match = SurfaceContactResolver.matchRenderedSurface(receiver, fallback.get());
+        if (match.isEmpty()) return Resolution.veto("STATE_SURFACE_UNMATCHED");
+        QuadSurface presentation = match.get().presentation();
+        String reason = match.get().planeRelation()
+                == dev.aero.cnmterraincompat.BgeSurfaceGeometry.PlaneRelation.TERRAIN_HEIGHT_INSET
+                ? "STATE_TERRAIN_NOMINAL_PRESENTATION" : "STATE_DERIVED_PROJECTED";
+        return OverlayEmissionGeometry.originalUnitSquareMatches(presentation)
+                ? Resolution.original(presentation, reason)
+                : Resolution.projected(presentation, reason);
     }
 
     private static float interpolate(float min, float max, float fraction) {
@@ -106,7 +119,11 @@ public final class OverlayEmissionController {
         }
 
         static Resolution original(QuadSurface surface) {
-            return new Resolution(Kind.ORIGINAL, surface, null, "FULL_RECEIVER_ORIGINAL");
+            return original(surface, "FULL_RECEIVER_ORIGINAL");
+        }
+
+        static Resolution original(QuadSurface surface, String reason) {
+            return new Resolution(Kind.ORIGINAL, surface, null, reason);
         }
 
         static Resolution projected(QuadSurface surface, String reason) {

@@ -71,9 +71,42 @@ public final class SurfaceContactResolver {
         if (!endpoint.supported()) return Optional.empty();
         List<SurfacePatch> patches = endpoint.model().patches(face);
         if (patches.size() != 1) return Optional.empty();
-        SurfacePatch patch = patches.getFirst();
-        return Optional.of(new QuadSurface(face, patch.plane16(), patch.uAxis(),
-                patch.uMin16(), patch.uMax16(), patch.vAxis(), patch.vMin16(), patch.vMax16()));
+        return Optional.of(quad(patches.getFirst()));
+    }
+
+    /**
+     * Resolves one rendered quad back to the single authoritative BGE patch that contains it.
+     * This is deliberately containment-based: a quad that spans independent compound patches is
+     * ambiguous and must not flatten them into one semantic surface.
+     */
+    public static Optional<SurfaceMatch> matchRenderedSurface(BlockState state, QuadSurface rendered) {
+        Objects.requireNonNull(state, "state");
+        Objects.requireNonNull(rendered, "rendered");
+        Endpoint endpoint = endpoint(state);
+        if (!endpoint.supported()) return Optional.empty();
+        SurfacePatch match = null;
+        for (SurfacePatch patch : endpoint.model().patches(rendered.normal())) {
+            if (patch.plane16() != rendered.plane16()
+                    || patch.uAxis() != rendered.uAxis() || patch.vAxis() != rendered.vAxis()
+                    || patch.uMin16() > rendered.uMin16() || patch.uMax16() < rendered.uMax16()
+                    || patch.vMin16() > rendered.vMin16() || patch.vMax16() < rendered.vMax16()) {
+                continue;
+            }
+            if (match != null) return Optional.empty();
+            match = patch;
+        }
+        if (match == null) return Optional.empty();
+
+        int presentationPlane = match.plane16();
+        if (match.planeRelation() == PlaneRelation.TERRAIN_HEIGHT_INSET) {
+            presentationPlane += match.normal().getAxisDirection()
+                    == Direction.AxisDirection.POSITIVE ? 1 : -1;
+        }
+        QuadSurface presentation = new QuadSurface(rendered.normal(), presentationPlane,
+                rendered.uAxis(), rendered.uMin16(), rendered.uMax16(), rendered.vAxis(),
+                rendered.vMin16(), rendered.vMax16());
+        return Optional.of(new SurfaceMatch(rendered, presentation, match.canonicalFace(),
+                match.planeRelation()));
     }
 
     private static Decision inspectSurfaces(BlockState source, BlockPos sourcePos,
@@ -183,6 +216,11 @@ public final class SurfaceContactResolver {
                 world(pos, patch.uAxis(), patch.uMin16(), patch.uMax16()),
                 patch.vAxis(), world(pos, patch.vAxis(), patch.vMin16(), patch.vMax16()),
                 pos.immutable(), patch.canonicalFace(), patch.planeRelation());
+    }
+
+    private static QuadSurface quad(SurfacePatch patch) {
+        return new QuadSurface(patch.normal(), patch.plane16(), patch.uAxis(),
+                patch.uMin16(), patch.uMax16(), patch.vAxis(), patch.vMin16(), patch.vMax16());
     }
 
     private static Interval world(BlockPos pos, Direction.Axis axis, int min, int max) {
@@ -314,6 +352,17 @@ public final class SurfaceContactResolver {
                     || vMin16 >= vMax16) {
                 throw new IllegalArgumentException("Invalid block-local quad surface");
             }
+        }
+    }
+
+    /** Physical contact data plus the nominal plane on which Continuity presents an overlay. */
+    public record SurfaceMatch(QuadSurface physical, QuadSurface presentation,
+            Direction canonicalFace, PlaneRelation planeRelation) {
+        public SurfaceMatch {
+            Objects.requireNonNull(physical, "physical");
+            Objects.requireNonNull(presentation, "presentation");
+            Objects.requireNonNull(canonicalFace, "canonicalFace");
+            Objects.requireNonNull(planeRelation, "planeRelation");
         }
     }
 }

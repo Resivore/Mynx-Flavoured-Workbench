@@ -32,7 +32,7 @@ final class ContactFilteringConnectionPredicateTest {
     }
 
     @Test
-    void unrelatedSevenArgumentConnectionsPreserveTheDelegateExactly() {
+    void unrelatedSevenArgumentConnectionsPreserveContinuitySemanticsExactly() {
         BlockState unrelated = Blocks.BARRIER.defaultBlockState();
         AtomicInteger worldReads = new AtomicInteger();
         BlockAndTintGetter view = viewReturning(unrelated, worldReads);
@@ -44,16 +44,18 @@ final class ContactFilteringConnectionPredicateTest {
         var positiveFilter = new ContactFilteringConnectionPredicate(positive, unrelatedPolicy);
         assertTrue(positiveFilter.shouldConnect(
                 view, ORIGIN, unrelated, unrelated, EAST, Direction.UP, null));
-        assertEquals(1, positive.sevenArgumentCalls.get());
+        assertEquals(0, positive.sevenArgumentCalls.get());
+        assertEquals(1, positive.nineArgumentCalls.get());
         assertEquals(2, worldReads.get());
 
         TrackingPredicate negative = new TrackingPredicate(false);
         var negativeFilter = new ContactFilteringConnectionPredicate(negative, unrelatedPolicy);
         assertFalse(negativeFilter.shouldConnect(
                 view, ORIGIN, unrelated, unrelated, EAST, Direction.UP, null));
-        assertEquals(1, negative.sevenArgumentCalls.get());
-        assertEquals(2, worldReads.get(),
-                "Default-disabled diagnostics must not recover physical endpoints after an upstream rejection");
+        assertEquals(0, negative.sevenArgumentCalls.get());
+        assertEquals(1, negative.nineArgumentCalls.get());
+        assertEquals(4, worldReads.get(),
+                "Each canonical classification should read both physical endpoints exactly once");
     }
 
     @Test
@@ -72,7 +74,22 @@ final class ContactFilteringConnectionPredicateTest {
     }
 
     @Test
-    void positiveOverlayResultIsVetoOnlyForManagedGeometry() {
+    void exactContinuityBlockPredicatePreservesCanonicalPositiveAndNegativeSemantics()
+            throws ReflectiveOperationException {
+        Class<?> type = Class.forName(
+                "me.pepperbell.continuity.client.properties.BasicConnectingCtmProperties$ConnectionType");
+        ConnectionPredicate block = (ConnectionPredicate) type.getField("BLOCK").get(null);
+        BlockState glass = Blocks.GLASS.defaultBlockState();
+        BlockState stone = Blocks.STONE.defaultBlockState();
+
+        assertTrue(block.shouldConnect(null, ORIGIN, glass, glass, EAST,
+                glass, glass, Direction.NORTH, null));
+        assertFalse(block.shouldConnect(null, ORIGIN, glass, glass, EAST,
+                stone, stone, Direction.NORTH, null));
+    }
+
+    @Test
+    void canonicalPositiveOverlayResultStillRequiresManagedGeometry() {
         var surface = new QuadSurface(Direction.UP, 16,
                 Direction.Axis.X, 0, 16, Direction.Axis.Z, 0, 16);
         var validCapture = new ContinuityQuadContext.Capture(surface);

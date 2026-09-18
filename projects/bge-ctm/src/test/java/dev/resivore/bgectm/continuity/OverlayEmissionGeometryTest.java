@@ -27,6 +27,19 @@ final class OverlayEmissionGeometryTest {
     }
 
     @Test
+    void typedTerrainPresentationUsesNominalPlaneWithoutChangingItsCrop() {
+        QuadSurface farmlandSlabPresentation = surface(Direction.UP, 8, 2, 14, 3, 13);
+        var projected = OverlayEmissionGeometry.project(farmlandSlabPresentation);
+
+        assertPosition(projected.vertex(0), .125F, .5F, .1875F);
+        assertPosition(projected.vertex(2), .875F, .5F, .8125F);
+        assertEquals(.125F, projected.uvU(0), EPSILON);
+        assertEquals(.1875F, projected.uvV(0), EPSILON);
+        assertEquals(.875F, projected.uvU(2), EPSILON);
+        assertEquals(.8125F, projected.uvV(2), EPSILON);
+    }
+
+    @Test
     void fullAndTopSlabUpRemainTheOriginalUnitFace() {
         assertTrue(OverlayEmissionGeometry.originalUnitSquareMatches(
                 surface(Direction.UP, 16, 0, 16, 0, 16)));

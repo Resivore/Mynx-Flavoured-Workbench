@@ -6,6 +6,7 @@
     "ContinuityConnectionPredicateFactoryMixin",
     "ContinuityOverlayContactMixin",
     "ContinuityOverlayEmissionMixin",
+    "ContinuityOverlayProcessingMixin",
     "ContinuityQuadContextMixin"
   ],
   "injectors": {

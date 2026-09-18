@@ -60,7 +60,8 @@ public final class BgeCtmDiagnostics {
 
     public static void regular(BlockState source, BlockPos pos, BlockState sourceAppearance,
             BlockState other, BlockPos otherPos, BlockState otherAppearance, Object predicate,
-            boolean upstream, @Nullable SurfaceContactResolver.QuadSurface quad,
+            boolean nativeSemantic, boolean canonicalSemantic,
+            @Nullable SurfaceContactResolver.QuadSurface quad,
             SurfaceContactResolver.Decision stateDecision,
             SurfaceContactResolver.Decision geometryDecision, boolean result, String reason) {
         if (!ENABLED) return;
@@ -71,7 +72,9 @@ public final class BgeCtmDiagnostics {
                 + display(sourceAppearance) + " neighbor=" + display(other)
                 + " neighborAppearance=" + display(otherAppearance) + " delta="
                 + otherPos.subtract(pos) + " predicate=" + predicateName(predicate)
-                + " upstream=" + upstream + " quad=" + quad + " state=" + stateDecision
+                + " nativeSemantic=" + nativeSemantic
+                + " canonicalSemantic=" + canonicalSemantic + " quad=" + quad
+                + " state=" + stateDecision
                 + " geometry=" + geometryDecision + " result=" + result + " reason=" + reason);
     }
 
@@ -92,7 +95,8 @@ public final class BgeCtmDiagnostics {
 
     public static void overlay(BlockState receiver, BlockPos receiverPos, BlockState receiverAppearance,
             BlockState source, BlockPos sourcePos, BlockState sourceAppearance, boolean nativeFull,
-            boolean promoted, @Nullable SurfaceContactResolver.QuadSurface quad,
+            boolean promoted, boolean nativeConnection, boolean canonicalConnection,
+            @Nullable SurfaceContactResolver.QuadSurface quad,
             SurfaceContactResolver.Decision geometryDecision, boolean semantic, boolean result,
             String reason) {
         if (!ENABLED) return;
@@ -106,7 +110,9 @@ public final class BgeCtmDiagnostics {
                 + display(receiverAppearance) + " source=" + display(source)
                 + " sourceAppearance=" + display(sourceAppearance) + " delta="
                 + sourcePos.subtract(receiverPos) + " nativeFull=" + nativeFull
-                + " partialPromoted=" + promoted + " semantic=" + semantic + " quad=" + quad
+                + " partialPromoted=" + promoted + " nativeConnection=" + nativeConnection
+                + " canonicalConnection=" + canonicalConnection
+                + " semantic=" + semantic + " quad=" + quad
                 + " geometry=" + geometryDecision + " result=" + result + " reason=" + reason);
     }
 

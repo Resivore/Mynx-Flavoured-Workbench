@@ -46,6 +46,19 @@ public final class OverlayAttemptContext {
         if (attempt != null && !result) attempt.reason = "CONNECT_BLOCKS_REJECT";
     }
 
+    public static void connectionSemantics(boolean nativeResult, boolean canonicalResult) {
+        if (!BgeCtmDiagnostics.enabled()) return;
+        Attempt attempt = CURRENT.get();
+        if (attempt == null) return;
+        attempt.nativeConnection = nativeResult;
+        attempt.canonicalConnection = canonicalResult;
+        if (nativeResult != canonicalResult) {
+            attempt.reason = canonicalResult
+                    ? "CANONICAL_CONNECTION_REJECTS_OVERLAY"
+                    : "CARRIER_CONNECTION_REJECTION_REMOVED";
+        }
+    }
+
     public static final class Attempt {
         public final BlockPos sourcePos;
         public final BlockState sourceAppearance;
@@ -56,6 +69,8 @@ public final class OverlayAttemptContext {
         public final Direction face;
         public boolean nativeFull;
         public boolean promoted;
+        public boolean nativeConnection;
+        public boolean canonicalConnection;
         public boolean semantic;
         public boolean result;
         public String reason = "NATIVE_SEMANTIC_REJECT";

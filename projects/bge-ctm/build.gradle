@@ -207,6 +207,7 @@ tasks.register('verifyReleaseArtifact') {
                             'ContinuityConnectionPredicateFactoryMixin',
                             'ContinuityOverlayContactMixin',
                             'ContinuityOverlayEmissionMixin',
+                            'ContinuityOverlayProcessingMixin',
                             'ContinuityQuadContextMixin'] as Set)) {
                 throw new GradleException('Required exact Continuity mixin boundary changed')
             }
@@ -234,11 +235,13 @@ tasks.register('verifyReleaseArtifact') {
                     'dev/resivore/bgectm/continuity/OverlayAttemptContext.class',
                     'dev/resivore/bgectm/continuity/OverlayEmissionGeometry.class',
                     'dev/resivore/bgectm/continuity/OverlayEmissionController.class',
+                    'dev/resivore/bgectm/continuity/OverlayProcessingEligibility.class',
                     'dev/resivore/bgectm/client/BgeCtmClient.class',
                     'dev/resivore/bgectm/mixin/BgeDerivedBlockAppearanceMixin.class',
                     'dev/resivore/bgectm/mixin/ContinuityConnectionPredicateFactoryMixin.class',
                     'dev/resivore/bgectm/mixin/ContinuityOverlayContactMixin.class',
                     'dev/resivore/bgectm/mixin/ContinuityOverlayEmissionMixin.class',
+                    'dev/resivore/bgectm/mixin/ContinuityOverlayProcessingMixin.class',
                     'dev/resivore/bgectm/mixin/ContinuityQuadContextMixin.class'
             ].each { entry ->
                 if (archive.getEntry(entry) == null) {
@@ -266,7 +269,7 @@ tasks.register('verifyReleaseArtifact') {
 
 tasks.register('stageCanaryArtifact', Copy) {
     group = 'distribution'
-    description = 'Stages the exact ignored Canary 8 JAR for canonical local retention.'
+    description = 'Stages the exact ignored Canary 9 JAR for canonical local retention.'
     dependsOn tasks.named('verifyReleaseArtifact')
     from(packagedJar)
     into(layout.projectDirectory.dir('artifacts'))

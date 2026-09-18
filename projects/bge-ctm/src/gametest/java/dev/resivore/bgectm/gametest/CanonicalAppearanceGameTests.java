@@ -2,6 +2,7 @@ package dev.resivore.bgectm.gametest;
 
 import dev.aero.cnmterraincompat.BgeGeometryRole;
 import dev.aero.cnmterraincompat.BgeLayerBlock;
+import dev.aero.cnmterraincompat.BgeColumnBlock;
 import dev.aero.cnmterraincompat.BgeSurfaceGeometry.PlaneRelation;
 import dev.aero.cnmterraincompat.CnmTerrainCompat;
 import dev.aero.cnmterraincompat.FarmlandSlabBlock;
@@ -17,6 +18,7 @@ import dev.resivore.bgectm.SurfaceContactResolver.Interval;
 import dev.resivore.bgectm.SurfaceContactResolver.SurfaceDescriptor;
 import dev.resivore.bgectm.continuity.ContinuityQuadContext;
 import dev.resivore.bgectm.continuity.OverlayContactFilter;
+import dev.resivore.bgectm.continuity.OverlayProcessingEligibility;
 import dev.resivore.bgectm.continuity.OverlaySourceEligibility;
 import dev.resivore.bgectm.continuity.ContactFilteringConnectionPredicate;
 import dev.tazer.clutternomore.common.blocks.StepBlock;
@@ -175,20 +177,37 @@ public final class CanonicalAppearanceGameTests implements CustomTestMethodInvok
                 "Typed terrain relation did not bridge the intentional 8/16 versus 7/16 top planes");
         assertDecision(helper, grassBottom, ORIGIN, farmlandBottom, EAST,
                 Direction.NORTH, Decision.CONNECT);
-        var bottomReceiver = new ContinuityQuadContext.Capture(new QuadSurface(Direction.UP, 8,
+        var bottomReceiver = new ContinuityQuadContext.Capture(new QuadSurface(Direction.UP, 7,
                 Direction.Axis.X, 0, 16, Direction.Axis.Z, 0, 16));
-        helper.assertTrue(OverlayContactFilter.retainAfterUpstream(true, grassBottom, ORIGIN,
-                        farmlandBottom, EAST, Direction.UP, bottomReceiver),
+        helper.assertTrue(OverlayContactFilter.retainAfterUpstream(true, farmlandBottom, ORIGIN,
+                        grassBottom, EAST, Direction.UP, bottomReceiver),
                 "Generic typed overlay contact rejected grass/farmland bottom slabs");
-        var topReceiver = new ContinuityQuadContext.Capture(new QuadSurface(Direction.UP, 16,
+        var topReceiver = new ContinuityQuadContext.Capture(new QuadSurface(Direction.UP, 15,
                 Direction.Axis.X, 0, 16, Direction.Axis.Z, 0, 16));
-        helper.assertTrue(OverlayContactFilter.retainAfterUpstream(true, grassTop, ORIGIN,
-                        farmlandTop, EAST, Direction.UP, topReceiver),
+        helper.assertTrue(OverlayContactFilter.retainAfterUpstream(true, farmlandTop, ORIGIN,
+                        grassTop, EAST, Direction.UP, topReceiver),
                 "Generic typed overlay contact rejected grass/farmland top slabs");
-        helper.assertTrue(OverlayContactFilter.retainAfterUpstream(true, Blocks.GRASS_BLOCK.defaultBlockState(), ORIGIN,
-                        farmlandDouble, EAST, Direction.UP, topReceiver),
+        helper.assertTrue(OverlayContactFilter.retainAfterUpstream(true, farmlandDouble, ORIGIN,
+                        Blocks.GRASS_BLOCK.defaultBlockState(), EAST, Direction.UP, topReceiver),
                 "Full receiver to special Farmland Slab lost its typed plane relationship");
         assertLocalSurface(helper, farmlandBottom, Direction.UP, 7, 0, 16, 0, 16);
+
+        var bottomPresentation = SurfaceContactResolver.matchRenderedSurface(
+                farmlandBottom, bottomReceiver.surface()).orElseThrow();
+        var topPresentation = SurfaceContactResolver.matchRenderedSurface(
+                farmlandTop, topReceiver.surface()).orElseThrow();
+        var fullPresentation = SurfaceContactResolver.matchRenderedSurface(
+                Blocks.FARMLAND.defaultBlockState(), new QuadSurface(Direction.UP, 15,
+                        Direction.Axis.X, 0, 16, Direction.Axis.Z, 0, 16)).orElseThrow();
+        helper.assertTrue(bottomPresentation.presentation().plane16() == 8
+                        && topPresentation.presentation().plane16() == 16
+                        && fullPresentation.presentation().plane16() == 16,
+                "Typed terrain contact did not retain the nominal 8/16 or 16/16 presentation plane");
+        helper.assertTrue(bottomPresentation.presentation().uMin16() == 0
+                        && bottomPresentation.presentation().uMax16() == 16
+                        && bottomPresentation.presentation().vMin16() == 0
+                        && bottomPresentation.presentation().vMax16() == 16,
+                "Terrain presentation changed the receiver patch footprint");
         helper.succeed();
     }
 
@@ -198,6 +217,9 @@ public final class CanonicalAppearanceGameTests implements CustomTestMethodInvok
         for (Direction face : Direction.values()) {
             BlockPos neighbor = face.getAxis() == Direction.Axis.X ? SOUTH : EAST;
             assertDecision(helper, bottom, ORIGIN, bottom, neighbor, face, Decision.CONNECT);
+            helper.assertTrue(SurfaceContactResolver.describe(bottom, ORIGIN, face)
+                            .orElseThrow().canonicalFace() == face,
+                    "Canonical material-face meaning changed on " + face);
         }
         helper.succeed();
     }
@@ -236,6 +258,15 @@ public final class CanonicalAppearanceGameTests implements CustomTestMethodInvok
         helper.assertTrue(!SurfaceContactResolver.stateDerivedFallbackSafe(
                         compoundStep, Blocks.GRASS_BLOCK.defaultBlockState()),
                 "Compound Step topology was flattened into a whole-state simple fallback");
+        var partialCapture = new ContinuityQuadContext.Capture(
+                SurfaceContactResolver.describeLocalForOverlay(bottom, Direction.NORTH).orElseThrow(),
+                bottom, ORIGIN);
+        helper.assertTrue(OverlayProcessingEligibility.allows(false, partialCapture),
+                "Continuity's unit-square gate rejected an authoritative partial BGE side patch");
+        helper.assertTrue(!OverlayProcessingEligibility.allows(false,
+                        new ContinuityQuadContext.Capture(new QuadSurface(Direction.NORTH, 0,
+                                Direction.Axis.X, 0, 16, Direction.Axis.Y, 8, 16), bottom, ORIGIN)),
+                "An unmatched receiver quad bypassed Continuity's unit-square gate");
         helper.succeed();
     }
 
@@ -405,15 +436,26 @@ public final class CanonicalAppearanceGameTests implements CustomTestMethodInvok
         assertPolicy(helper, step, Policy.ELIGIBLE_BOUND_SURFACE);
         helper.assertTrue(!SurfaceContactResolver.describeAll(step, ORIGIN, Direction.UP).isEmpty(),
                 "Step did not expose its BGE-owned surface patches");
+        assertAnyPatchConnects(helper, step, "Step");
 
         BlockState corner = derived(Blocks.STONE, BgeGeometryRole.CORNER).defaultBlockState();
         assertPolicy(helper, corner, Policy.ELIGIBLE_BOUND_SURFACE);
         helper.assertTrue(!SurfaceContactResolver.describeAll(corner, ORIGIN, Direction.UP).isEmpty(),
                 "Corner did not expose its BGE-owned surface patches");
-        BlockState column = derived(Blocks.STONE, BgeGeometryRole.QUARTER_COLUMN).defaultBlockState();
+        assertAnyPatchConnects(helper, corner, "Corner");
+        BgeColumnBlock columnBlock = (BgeColumnBlock) derived(
+                Blocks.STONE, BgeGeometryRole.QUARTER_COLUMN);
+        BlockState column = columnBlock.defaultBlockState()
+                .setValue(BgeColumnBlock.OCCUPANCY, BgeColumnBlock.Occupancy.NW_SE);
         assertPolicy(helper, column, Policy.ELIGIBLE_BOUND_SURFACE);
-        helper.assertTrue(!SurfaceContactResolver.describeAll(column, ORIGIN, Direction.UP).isEmpty(),
+        var columnTops = SurfaceContactResolver.describeAll(column, ORIGIN, Direction.UP);
+        helper.assertTrue(columnTops.size() == 2,
                 "Quarter Column did not expose its BGE-owned surface patches");
+        assertAnyPatchConnects(helper, column, "Quarter Column");
+        helper.assertTrue(SurfaceContactResolver.matchRenderedSurface(column,
+                        new QuadSurface(Direction.UP, 16, Direction.Axis.X, 0, 16,
+                                Direction.Axis.Z, 0, 16)).isEmpty(),
+                "Disjoint Quarter Column patches were flattened into one full receiver surface");
 
         NibaruMaterialProfile stone = NibaruMaterialProfiles.fromBlock(Blocks.STONE).orElseThrow();
         BlockState stair = stone.effectiveStairSource().orElseThrow().defaultBlockState();
@@ -589,6 +631,38 @@ public final class CanonicalAppearanceGameTests implements CustomTestMethodInvok
                         && actual.uMin16() == uMin && actual.uMax16() == uMax
                         && actual.vMin16() == vMin && actual.vMax16() == vMax,
                 "Unexpected state-derived overlay surface for " + state + " on " + face + ": " + actual);
+    }
+
+    private static void assertAnyPatchConnects(GameTestHelper helper, BlockState state, String label) {
+        BlockState full = Blocks.STONE.defaultBlockState();
+        for (Direction face : Direction.values()) {
+            for (SurfaceDescriptor patch : SurfaceContactResolver.describeAll(state, ORIGIN, face)) {
+                BlockPos neighbor = boundaryNeighbor(patch);
+                if (neighbor == null) continue;
+                QuadSurface quad = new QuadSurface(face, (int) patch.plane16(), patch.uAxis(),
+                        (int) patch.uBounds().min16(), (int) patch.uBounds().max16(), patch.vAxis(),
+                        (int) patch.vBounds().min16(), (int) patch.vBounds().max16());
+                if (SurfaceContactResolver.inspectWithSourceSurface(
+                        state, ORIGIN, full, neighbor, face, quad) == Decision.CONNECT) return;
+            }
+        }
+        helper.fail(label + " exposed no independently connectable authoritative patch");
+    }
+
+    private static BlockPos boundaryNeighbor(SurfaceDescriptor patch) {
+        if (patch.uBounds().max16() == 16) return ORIGIN.relative(positive(patch.uAxis()));
+        if (patch.uBounds().min16() == 0) return ORIGIN.relative(positive(patch.uAxis()).getOpposite());
+        if (patch.vBounds().max16() == 16) return ORIGIN.relative(positive(patch.vAxis()));
+        if (patch.vBounds().min16() == 0) return ORIGIN.relative(positive(patch.vAxis()).getOpposite());
+        return null;
+    }
+
+    private static Direction positive(Direction.Axis axis) {
+        return switch (axis) {
+            case X -> Direction.EAST;
+            case Y -> Direction.UP;
+            case Z -> Direction.SOUTH;
+        };
     }
 
     private static void assertPolicy(GameTestHelper helper, BlockState state, Policy expected) {

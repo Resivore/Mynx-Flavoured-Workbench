@@ -9,13 +9,13 @@ import net.minecraft.world.level.block.state.BlockState;
 import java.util.Objects;
 import java.util.function.Supplier;
 
-/** Veto-only core applied to Continuity's per-candidate Standard Overlay decision. */
+/** Physical contact filter applied after Continuity has evaluated canonical material semantics. */
 public final class OverlayContactFilter {
     private OverlayContactFilter() {}
 
     /**
-     * Returns an upstream overlay result unchanged unless managed geometry lacks valid contact.
-     * A false upstream result is terminal and geometry can never turn it into true.
+     * Returns Continuity's canonical-semantic overlay result unchanged unless managed geometry
+     * lacks valid contact. Geometry can never turn a semantic negative into a relationship.
      */
     public static boolean retainAfterUpstream(boolean upstreamApplies, Decision stateDecision,
             ContinuityQuadContext.Capture capture, Supplier<Decision> exactDecision) {

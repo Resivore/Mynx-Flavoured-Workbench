@@ -21,7 +21,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.function.Predicate;
 
-/** Vetoes only an already-positive exact Continuity Standard Overlay application. */
+/** Applies BGE contact geometry after Continuity's canonical Standard Overlay semantics. */
 @Mixin(StandardOverlayQuadProcessor.class)
 abstract class ContinuityOverlayContactMixin {
     private static final String APPLIES_OVERLAY = "appliesOverlay("
@@ -101,8 +101,8 @@ abstract class ContinuityOverlayContactMixin {
             }
             BgeCtmDiagnostics.overlay(realReceiverState, pos, appearanceState,
                     realInducingState, otherPos, otherAppearanceState, attempt.nativeFull,
-                    attempt.promoted, attempt.quad, attempt.geometry, semantic, retained,
-                    attempt.reason);
+                    attempt.promoted, attempt.nativeConnection, attempt.canonicalConnection,
+                    attempt.quad, attempt.geometry, semantic, retained, attempt.reason);
         }
     }
 }
