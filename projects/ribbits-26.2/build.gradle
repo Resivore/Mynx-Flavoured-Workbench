@@ -105,12 +105,12 @@ if (privateResourcesDir != null) {
             if (manifest.schema?.toString() != 'mynx-ribbits-private-resource-manifest/v1' ||
                 manifest.classification?.toString() != 'PRIVATE MYNX ASSEMBLY STAGED / NONREDISTRIBUTABLE DONOR ASSETS' ||
                 manifest.candidate?.version?.toString() != project.mod_version.toString() ||
-                manifest.candidate?.version?.toString() != '4.1.6+26.2-mynx-canary24' ||
-                (manifest.candidate?.canary as int) != 24 ||
+                manifest.candidate?.version?.toString() != '4.1.6+26.2-mynx-canary25' ||
+                (manifest.candidate?.canary as int) != 25 ||
                 manifest.candidate?.private_artifact_filename?.toString() !=
-                    'ribbits-private-reconstruction-4.1.6+26.2-mynx-canary24.jar' ||
+                    'ribbits-private-reconstruction-4.1.6+26.2-mynx-canary25.jar' ||
                 manifest.candidate?.source_only_artifact_filename?.toString() !=
-                    'ribbits-source-only-4.1.6+26.2-mynx-canary24.jar') {
+                    'ribbits-source-only-4.1.6+26.2-mynx-canary25.jar') {
                 throw new GradleException("Private manifest classification is not eligible for private packaging: ${manifest.classification}")
             }
             if ((manifest.blockers as List)) {
@@ -340,14 +340,184 @@ if (privateResourcesDir != null) {
             def expectedFiles = manifest.output.files as Map
             def expectedConfiguredFeaturePaths = expectedConfiguredFeatureTargets.collect { target ->
                 "data/ribbits/worldgen/configured_feature/${target.substring('ribbits:'.length())}.json".toString()
-            }
+            } + ['data/ribbits/worldgen/configured_feature/small_brown_toadstool_patch.json']
             if ((manifest.pristine.selected_file_count as int) != 287 ||
-                (manifest.output.file_count as int) != 349 ||
-                (manifest.output.total_size as long) != 2735266L ||
-                expectedFiles.size() != 349) {
+                (manifest.output.file_count as int) != 361 ||
+                (manifest.output.total_size as long) != 2768074L ||
+                expectedFiles.size() != 361) {
                 throw new GradleException(
-                    'Private manifest does not preserve the exact 287-input / 349-output / 2,735,266-byte contract'
+                    'Private manifest does not preserve the exact 287-input / 361-output / 2,768,074-byte contract'
                 )
+            }
+
+            def smallBrown = manifest.authoritative_recolor_donor
+            def smallBrownSource = smallBrown?.source
+            def expectedSmallBrownMembers = [
+                'assets/ribbits/textures/item/toadstool.png': [
+                    size: 538L,
+                    sha256: '46aacae3545d1053e30eea2df160620395342e01545b21df73825f860e9d3e00',
+                    dimensions: [16, 16],
+                ],
+                'assets/ribbits/textures/block/brown_toadstool.png': [
+                    size: 368L,
+                    sha256: 'd0e76ecc0003f5236111c8fcfca304fd90a1f0d3b999dbf4978d1f78382fda16',
+                    dimensions: [16, 16],
+                ],
+            ]
+            def actualSmallBrownMembers = smallBrownSource?.approved_members as Map
+            if (smallBrownSource?.filename?.toString() != 'Matcha-Overlays-v37.zip' ||
+                smallBrownSource?.logical_path?.toString() !=
+                    'originals/assets/Matcha-Overlays-v37.zip' ||
+                (smallBrownSource?.size as long) != 2616259L ||
+                !smallBrownSource?.sha256?.toString()?.equalsIgnoreCase(
+                    '2642dcea338100f469df905b212423683e83ae7c683c7b9fabfbd2195a2fe802'
+                ) ||
+                smallBrownSource?.unchanged_after_assembly != true ||
+                actualSmallBrownMembers?.keySet() != expectedSmallBrownMembers.keySet()) {
+                throw new GradleException('Private manifest lacks the exact authoritative Matcha recolor donor')
+            }
+            expectedSmallBrownMembers.each { member, expected ->
+                def actual = actualSmallBrownMembers[member]
+                if ((actual?.size as long) != expected.size ||
+                    !actual?.sha256?.toString()?.equalsIgnoreCase(expected.sha256) ||
+                    (actual?.dimensions as List) != expected.dimensions) {
+                    throw new GradleException("Authoritative Matcha donor member differs: ${member}")
+                }
+            }
+            def preservedNativeBrown = smallBrown?.native_huge_brown_resources_preserved
+            def expectedNativeBrownResources = [
+                'assets/ribbits/blockstates/brown_toadstool.json':
+                    [size: 2195L, sha256: 'd58a98209b4efb5c46ce149cdce6237ce92f3ef88020cdbfee925119f92193e9'],
+                'assets/ribbits/models/block/brown_toadstool.json':
+                    [size: 127L, sha256: '5b25c29e5c674501bf1c1537aa1de370f383b0955bc3112ba119940f86bf8ee1'],
+                'assets/ribbits/models/block/brown_toadstool_inventory.json':
+                    [size: 111L, sha256: '45db341db26a267c446eb105e80cb0a9e00bec02b279d493bd11f2276a751b63'],
+                'assets/ribbits/models/item/brown_toadstool.json':
+                    [size: 59L, sha256: '8ed51c1d660f58f76ecde02391510c81d913cedf522a51534b737a475cfb55d7'],
+                'assets/ribbits/textures/block/brown_toadstool.png':
+                    [size: 220L, sha256: '3f27824c414632e5cd1b81e6a9d27038a04fdfe7689e654d687f681be5193bf5'],
+                'data/ribbits/loot_table/blocks/brown_toadstool.json':
+                    [size: 358L, sha256: '7eb0eab8fb9dcb718adf3ea16d234c3d64173eb9f0f19665f22da9872a4c186f'],
+            ]
+            def actualNativeBrownResources = preservedNativeBrown?.resources as Map
+            if ((preservedNativeBrown?.resource_count as int) != 6 ||
+                actualNativeBrownResources?.keySet() != expectedNativeBrownResources.keySet() ||
+                preservedNativeBrown?.byte_identical != true ||
+                preservedNativeBrown?.authoritative_donor_member?.toString() !=
+                    'assets/ribbits/textures/block/brown_toadstool.png' ||
+                !preservedNativeBrown?.authoritative_donor_member_sha256?.toString()?.equalsIgnoreCase(
+                    'd0e76ecc0003f5236111c8fcfca304fd90a1f0d3b999dbf4978d1f78382fda16'
+                ) ||
+                preservedNativeBrown?.distinct_from_authoritative_donor != true) {
+                throw new GradleException('Native huge brown texture preservation/distinction contract differs')
+            }
+            expectedNativeBrownResources.each { path, expected ->
+                def actual = actualNativeBrownResources[path]
+                if ((actual?.size as long) != expected.size ||
+                    !actual?.sha256?.toString()?.equalsIgnoreCase(expected.sha256) ||
+                    !expectedFiles[path].toString().equalsIgnoreCase(expected.sha256)) {
+                    throw new GradleException("Native huge-brown resource identity differs: ${path}")
+                }
+            }
+
+            def expectedSmallBrownOutputs = [
+                'assets/ribbits/blockstates/small_brown_toadstool.json':
+                    [size: 1427L, sha256: 'fd6b4f9f76c754ee7f08b1ac302bb3f9a518b2643371caef81ad78915cbc9d92'],
+                'assets/ribbits/items/small_brown_toadstool.json':
+                    [size: 102L, sha256: '7f1543d8eb4e37e48d91eef8271ae29f61bb09328ac37a1b3638dfe2091614d5'],
+                'assets/ribbits/models/block/small_brown_toadstool.json':
+                    [size: 2991L, sha256: '98b39c8cebb47ccf4943ac5386e125c182e001b764bb45a1bff6fafefbac0a2f'],
+                'assets/ribbits/models/block/small_brown_toadstool_2.json':
+                    [size: 8464L, sha256: 'a81a704e5beac5884af335b7723a18da4402401d012c2c61d5fea8578c0616d2'],
+                'assets/ribbits/models/block/small_brown_toadstool_3.json':
+                    [size: 8446L, sha256: '1884d2b195af5f4e8e8ac5ee41449f165482457c8171bcc8e1405f5af045592a'],
+                'assets/ribbits/models/block/small_brown_toadstool_4.json':
+                    [size: 8400L, sha256: '20aaf3f07852fd845f59414d95883b4bdf7ad5e3e8373d3782044681f86c6dc7'],
+                'assets/ribbits/models/item/small_brown_toadstool.json':
+                    [size: 115L, sha256: 'b146a4a228e8d30687e3ae536fdbae9963dca960ac300eeec3f7e1bc8f03c9e7'],
+                'assets/ribbits/textures/block/small_brown_toadstool.png':
+                    [size: 878L, sha256: 'd060df947f5a6f61ff3e8d525f46144582f947151d2e169cf5afc781e310e762'],
+                'assets/ribbits/textures/item/small_brown_toadstool.png':
+                    [size: 266L, sha256: 'f043c4d964f9b40893bb5b49dd3cf507a5e3cee7d3356caf241cf6bcbe54d170'],
+                'data/ribbits/loot_table/blocks/small_brown_toadstool.json':
+                    [size: 346L, sha256: '7aee168ab69f4a20cc30b6463d8b5b4f53f3c0e005a06941f2f3ccadc818cf0e'],
+                'data/ribbits/worldgen/configured_feature/small_brown_toadstool_patch.json':
+                    [size: 1152L, sha256: '5bc4fe997e36002c54d6944c2587881d84dc8cdb6121fa73b4db890d1d4f9f35'],
+                'data/ribbits/worldgen/placed_feature/small_brown_toadstool_patch.json':
+                    [size: 74L, sha256: '70409fadabc3ad2a91bfcdc2d9e7227d3d7b527bba3c6e992d5f76823f81bd16'],
+            ]
+            def actualSmallBrownOutputs = (smallBrown?.derived_outputs as List)?.collectEntries { record ->
+                [(record.output.toString()): record]
+            }
+            if ((smallBrown?.derived_output_count as int) != 12 ||
+                actualSmallBrownOutputs?.keySet() != expectedSmallBrownOutputs.keySet()) {
+                throw new GradleException('Small-brown derived-output accounting differs')
+            }
+            expectedSmallBrownOutputs.each { path, expected ->
+                def actual = actualSmallBrownOutputs[path]
+                if ((actual.size as long) != expected.size ||
+                    !actual.sha256.toString().equalsIgnoreCase(expected.sha256) ||
+                    !expectedFiles[path].toString().equalsIgnoreCase(expected.sha256)) {
+                    throw new GradleException("Small-brown derived output identity differs: ${path}")
+                }
+            }
+
+            def itemPixels = smallBrown?.pixel_contract?.item
+            def blockPixels = smallBrown?.pixel_contract?.block
+            if ((itemPixels?.dimensions as List) != [16, 16] ||
+                (itemPixels?.alpha as Map) != [transparent: 105, opaque: 151, partial: 0] ||
+                itemPixels?.mask_sha256?.toString() !=
+                    '89600a4f4212733a03d6634423b7805fc8277e7edaa2dad9f91f6b58ea1f51df' ||
+                (itemPixels?.cap_pixels as int) != 108 ||
+                (itemPixels?.red_orange_cap_pixels_replaced as int) != 84 ||
+                (itemPixels?.light_cap_spot_pixels_replaced as int) != 24 ||
+                (itemPixels?.stem_pixels_preserved as int) != 43 ||
+                (itemPixels?.output_cap_palette_counts as Map) != [
+                    '108,75,50,255': 18, '115,82,58,255': 47,
+                    '128,92,68,255': 22, '136,101,75,255': 21,
+                ] ||
+                itemPixels?.alpha_mask_matches_pristine != true ||
+                itemPixels?.alpha_mask_sha256?.toString() !=
+                    'd2e6e2643bcf3159949137dff44739d567b1e3b705b31751d3cd23c3e585a263' ||
+                (itemPixels?.stem_top_pixels_preserved as List)?.size() != 4) {
+                throw new GradleException('Small-brown item pixel contract differs')
+            }
+            if ((blockPixels?.dimensions as List) != [64, 64] ||
+                (blockPixels?.alpha as Map) != [transparent: 2829, opaque: 1267, partial: 0] ||
+                blockPixels?.mask_sha256?.toString() !=
+                    '151f48cd6c052987cdb759a18f4417c8d3f4a8fbc18b4dc94b6aa11ae7ac595b' ||
+                (blockPixels?.cap_pixels as int) != 960 ||
+                (blockPixels?.red_orange_cap_pixels_replaced as int) != 575 ||
+                (blockPixels?.light_cap_spot_pixels_replaced as int) != 385 ||
+                (blockPixels?.stem_pixels_preserved as int) != 307 ||
+                (blockPixels?.output_cap_palette_counts as Map) != [
+                    '108,75,50,255': 185, '115,82,58,255': 234,
+                    '128,92,68,255': 279, '136,101,75,255': 262,
+                ]) {
+                throw new GradleException('Small-brown block-atlas pixel contract differs')
+            }
+            def expectedSmallBrownReferences = [
+                'assets/ribbits/blockstates/small_brown_toadstool.json': 16,
+                'assets/ribbits/items/small_brown_toadstool.json': 1,
+                'assets/ribbits/lang/en_us.json': 2,
+                'assets/ribbits/models/block/small_brown_toadstool.json': 2,
+                'assets/ribbits/models/block/small_brown_toadstool_2.json': 2,
+                'assets/ribbits/models/block/small_brown_toadstool_3.json': 2,
+                'assets/ribbits/models/block/small_brown_toadstool_4.json': 2,
+                'assets/ribbits/models/item/small_brown_toadstool.json': 1,
+                'data/minecraft/tags/block/mineable/axe.json': 1,
+                'data/ribbits/loot_table/blocks/small_brown_toadstool.json': 1,
+                'data/ribbits/worldgen/configured_feature/small_brown_toadstool_patch.json': 1,
+                'data/ribbits/worldgen/placed_feature/small_brown_toadstool_patch.json': 1,
+            ]
+            def referenceScope = smallBrown?.reference_scope
+            if ((referenceScope?.json_reference_counts as Map) != expectedSmallBrownReferences ||
+                (referenceScope?.structure_nbt_templates_scanned as int) != 29 ||
+                (referenceScope?.structure_nbt_references as int) != 0 ||
+                referenceScope?.bonemeal_patch_only != true ||
+                referenceScope?.ordinary_natural_generation_added != false ||
+                referenceScope?.economy_or_recipe_acquisition_added != false) {
+                throw new GradleException('Small-brown bonemeal-only JSON reference scope differs')
             }
 
             def professionDonors = [
@@ -719,7 +889,13 @@ if (privateResourcesDir != null) {
                 (manifest.migrations?.chute_leaf_models_added as int) != 3 ||
                 (manifest.migrations?.chute_leaf_item_definitions_added as int) != 3 ||
                 (manifest.migrations?.chute_leaf_textures_added as int) != 3 ||
-                (manifest.migrations?.item_definitions_added as int) != 26 ||
+                (manifest.migrations?.item_definitions_added as int) != 27 ||
+                (manifest.migrations?.cutout_logical_blocks as int) != 7 ||
+                (manifest.migrations?.cutout_concrete_models as int) != 30 ||
+                (manifest.migrations?.block_item_translation_keys_added as int) != 154 ||
+                (manifest.migrations?.small_brown_english_translation_keys_added as int) != 2 ||
+                (manifest.migrations?.en_us_mynx_profession_keys_added_or_changed as int) != 46 ||
+                (manifest.migrations?.small_brown_toadstool_derived_resources_added as int) != 12 ||
                 (manifest.migrations?.spawn_egg_models_migrated as int) != 10) {
                 throw new GradleException('Private manifest profession/model/item counts differ')
             }
@@ -1024,6 +1200,7 @@ if (privateResourcesDir == null) {
                     'guardribbits-1.20.1-fabric-1.0.4.jar',
                     'useful_ribbits-1.0.2-forge-1.20.1.jar',
                     'wandering_ribbit-4.0-forge.jar',
+                    'matcha-overlays-v37.zip',
                 ] as Set
                 def reviewedPublicResources = (allowedPublicResources.collect { path ->
                     path.substring('common/src/main/resources/'.length())

@@ -31,16 +31,16 @@ from typing import Any
 EXPECTED_PRISTINE_SHA256 = (
     "4cf86564aed393410fb1dbca3a9ce2425382307655e92bb6b43f3ddcee5bf731"
 )
-CANDIDATE_VERSION = "4.1.6+26.2-mynx-canary24"
-CANDIDATE_CANARY = 24
+CANDIDATE_VERSION = "4.1.6+26.2-mynx-canary25"
+CANDIDATE_CANARY = 25
 PRIVATE_MANIFEST_SCHEMA = "mynx-ribbits-private-resource-manifest/v1"
 PRIVATE_MANIFEST_CLASSIFICATION = (
     "PRIVATE MYNX ASSEMBLY STAGED / NONREDISTRIBUTABLE DONOR ASSETS"
 )
 PRIVATE_ARTIFACT_FILENAME = (
-    "ribbits-private-reconstruction-4.1.6+26.2-mynx-canary24.jar"
+    "ribbits-private-reconstruction-4.1.6+26.2-mynx-canary25.jar"
 )
-SOURCE_ONLY_ARTIFACT_FILENAME = "ribbits-source-only-4.1.6+26.2-mynx-canary24.jar"
+SOURCE_ONLY_ARTIFACT_FILENAME = "ribbits-source-only-4.1.6+26.2-mynx-canary25.jar"
 SOURCE_SAFE_PUBLIC_RESOURCE_PATHS = frozenset(
     {
         "assets/ribbits/items/glowcap.json",
@@ -142,9 +142,10 @@ REQUIRED_FABRIC_DEPENDENCIES = {
     "matcha_heart_death_compat": ">=0.1.10-0",
 }
 SOURCE_FILE_COUNT = 287  # 285 assets/data files plus icon.png and logo.png
-OUTPUT_FILE_COUNT = 349
-# Exact deterministic Canary 24 private staging inventory (resources unchanged from Canary 23).
-OUTPUT_TOTAL_SIZE = 2_735_266
+OUTPUT_FILE_COUNT = 361
+# Exact deterministic Canary 25 private staging inventory.
+# Frozen after the two independent private assemblies are byte-identical.
+OUTPUT_TOTAL_SIZE = 2_768_074
 SOURCE_EXTENSION_COUNTS = {
     ".json": 201,
     ".nbt": 29,
@@ -179,7 +180,7 @@ LEGACY_RANDOM_PATCH_PLACEMENT = {
 OLD_CONFIG_PREFIX = "text.autoconfig.ribbits-fabric-1_21_1"
 NEW_CONFIG_PREFIX = "text.autoconfig.ribbits-26_2"
 
-BLOCK_ITEM_IDS = (
+PRISTINE_BLOCK_ITEM_IDS = (
     "brown_toadstool",
     "red_toadstool",
     "toadstool_stem",
@@ -195,6 +196,8 @@ BLOCK_ITEM_IDS = (
     "mossy_oak_door",
     "umbrella_leaf",
 )
+SMALL_BROWN_TOADSTOOL_ID = "small_brown_toadstool"
+BLOCK_ITEM_IDS = PRISTINE_BLOCK_ITEM_IDS + (SMALL_BROWN_TOADSTOOL_ID,)
 PRISTINE_SPAWN_EGG_IDS = (
     "ribbit_nitwit_spawn_egg",
     "ribbit_fisherman_spawn_egg",
@@ -213,7 +216,7 @@ SPAWN_EGG_IDS = PRISTINE_SPAWN_EGG_IDS + NEW_SPAWN_EGG_IDS
 REGISTERED_ITEM_IDS = BLOCK_ITEM_IDS + ("maraca", "chute_leaf") + SPAWN_EGG_IDS
 AUXILIARY_ITEM_DEFINITION_IDS = frozenset({"chute_leaf_open", "chute_leaf_closed"})
 
-CUTOUT_MODEL_FILES = (
+PRISTINE_CUTOUT_MODEL_FILES = (
     "swamp_lantern.json",
     "swamp_lantern_hanging.json",
     "giant_lilypad.json",
@@ -240,6 +243,9 @@ CUTOUT_MODEL_FILES = (
     "mossy_oak_door_top_left_open.json",
     "mossy_oak_door_top_right.json",
     "mossy_oak_door_top_right_open.json",
+)
+CUTOUT_MODEL_FILES = PRISTINE_CUTOUT_MODEL_FILES + tuple(
+    f"small_brown_toadstool{suffix}.json" for suffix in ("", "_2", "_3", "_4")
 )
 
 NEW_PROFESSIONS = ("chef", "farmer", "prospector", "guard")
@@ -351,8 +357,198 @@ DONOR_INPUT_SPECS: dict[str, dict[str, Any]] = {
     },
 }
 
+SMALL_BROWN_RECOLOR_DONOR_SPEC: dict[str, Any] = {
+    "filename": "Matcha-Overlays-v37.zip",
+    "size": 2_616_259,
+    "sha256": "2642dcea338100f469df905b212423683e83ae7c683c7b9fabfbd2195a2fe802",
+    "members": {
+        "assets/ribbits/textures/item/toadstool.png": {
+            "size": 538,
+            "sha256": "46aacae3545d1053e30eea2df160620395342e01545b21df73825f860e9d3e00",
+            "dimensions": (16, 16),
+        },
+        "assets/ribbits/textures/block/brown_toadstool.png": {
+            "size": 368,
+            "sha256": "d0e76ecc0003f5236111c8fcfca304fd90a1f0d3b999dbf4978d1f78382fda16",
+            "dimensions": (16, 16),
+        },
+    },
+}
+SMALL_BROWN_DONOR_ITEM_MEMBER = "assets/ribbits/textures/item/toadstool.png"
+SMALL_BROWN_DONOR_PALETTE_MEMBER = "assets/ribbits/textures/block/brown_toadstool.png"
+SMALL_BROWN_DONOR_RED_CAP_PALETTE = (
+    (105, 34, 21, 255),
+    (115, 37, 22, 255),
+    (129, 42, 24, 255),
+    (144, 51, 28, 255),
+    (159, 57, 31, 255),
+)
+SMALL_BROWN_DONOR_CAP_SPOT_PALETTE = (
+    (161, 120, 86, 255),
+    (173, 149, 114, 255),
+    (202, 181, 151, 255),
+)
+# The donor brown texture contains these four dominant shading anchors. Two
+# near-duplicate colors occur only 2 and 1 times (three pixels total) and are
+# validated as part of the full donor palette, but are not promoted into
+# recolor shade bands.
+SMALL_BROWN_DOMINANT_PALETTE = (
+    (108, 75, 50, 255),
+    (115, 82, 58, 255),
+    (128, 92, 68, 255),
+    (136, 101, 75, 255),
+)
+SMALL_BROWN_FULL_DONOR_PALETTE_COUNTS = {
+    (108, 75, 50, 255): 35,
+    (115, 82, 58, 255): 96,
+    (116, 82, 58, 255): 2,
+    (124, 87, 57, 255): 1,
+    (128, 92, 68, 255): 90,
+    (136, 101, 75, 255): 32,
+}
+SMALL_BROWN_ITEM_CAP_RECOLOR = {
+    **dict(zip(SMALL_BROWN_DONOR_RED_CAP_PALETTE, (
+        SMALL_BROWN_DOMINANT_PALETTE[0],
+        SMALL_BROWN_DOMINANT_PALETTE[1],
+        SMALL_BROWN_DOMINANT_PALETTE[1],
+        SMALL_BROWN_DOMINANT_PALETTE[2],
+        SMALL_BROWN_DOMINANT_PALETTE[3],
+    ))),
+    **dict(zip(SMALL_BROWN_DONOR_CAP_SPOT_PALETTE, (
+        SMALL_BROWN_DOMINANT_PALETTE[1],
+        SMALL_BROWN_DOMINANT_PALETTE[2],
+        SMALL_BROWN_DOMINANT_PALETTE[3],
+    ))),
+}
+SMALL_BROWN_ITEM_MASK_SHA256 = (
+    "89600a4f4212733a03d6634423b7805fc8277e7edaa2dad9f91f6b58ea1f51df"
+)
+SMALL_BROWN_ITEM_STEM_TOP_PIXELS = (
+    (10, 7, (202, 181, 151, 255)),
+    (11, 7, (161, 120, 86, 255)),
+    (10, 8, (173, 149, 114, 255)),
+    (11, 8, (161, 120, 86, 255)),
+)
+SMALL_BROWN_NATIVE_ITEM_TEXTURE = "assets/ribbits/textures/item/toadstool.png"
+SMALL_BROWN_NATIVE_ITEM_SIZE = 298
+SMALL_BROWN_NATIVE_ITEM_SHA256 = (
+    "223688066163e534378c7b2ef2d37166963129ee14b3dc5e81fb65d092cecaf4"
+)
+SMALL_BROWN_NATIVE_ITEM_STEM_TOP_PIXELS = (
+    (10, 7, (250, 216, 165, 255)),
+    (11, 7, (243, 197, 140, 255)),
+    (10, 8, (221, 164, 117, 255)),
+    (11, 8, (221, 164, 117, 255)),
+)
+SMALL_BROWN_BLOCK_MASK_SHA256 = (
+    "151f48cd6c052987cdb759a18f4417c8d3f4a8fbc18b4dc94b6aa11ae7ac595b"
+)
+SMALL_BROWN_NATIVE_BLOCK_TEXTURE = "assets/ribbits/textures/block/toadstool.png"
+SMALL_BROWN_NATIVE_BLOCK_SIZE = 2_108
+SMALL_BROWN_NATIVE_BLOCK_SHA256 = (
+    "8d2db80f27f9c0480574cbefe49592305bb0b5b81d7011fe6c931be15a97235c"
+)
+SMALL_BROWN_NATIVE_BROWN_TEXTURE = "assets/ribbits/textures/block/brown_toadstool.png"
+SMALL_BROWN_NATIVE_BROWN_SIZE = 220
+SMALL_BROWN_NATIVE_BROWN_SHA256 = (
+    "3f27824c414632e5cd1b81e6a9d27038a04fdfe7689e654d687f681be5193bf5"
+)
+NATIVE_BROWN_TOADSTOOL_RESOURCE_SPECS = {
+    "assets/ribbits/blockstates/brown_toadstool.json": {
+        "size": 2_195,
+        "sha256": "d58a98209b4efb5c46ce149cdce6237ce92f3ef88020cdbfee925119f92193e9",
+    },
+    "assets/ribbits/models/block/brown_toadstool.json": {
+        "size": 127,
+        "sha256": "5b25c29e5c674501bf1c1537aa1de370f383b0955bc3112ba119940f86bf8ee1",
+    },
+    "assets/ribbits/models/block/brown_toadstool_inventory.json": {
+        "size": 111,
+        "sha256": "45db341db26a267c446eb105e80cb0a9e00bec02b279d493bd11f2276a751b63",
+    },
+    "assets/ribbits/models/item/brown_toadstool.json": {
+        "size": 59,
+        "sha256": "8ed51c1d660f58f76ecde02391510c81d913cedf522a51534b737a475cfb55d7",
+    },
+    SMALL_BROWN_NATIVE_BROWN_TEXTURE: {
+        "size": SMALL_BROWN_NATIVE_BROWN_SIZE,
+        "sha256": SMALL_BROWN_NATIVE_BROWN_SHA256,
+    },
+    "data/ribbits/loot_table/blocks/brown_toadstool.json": {
+        "size": 358,
+        "sha256": "7eb0eab8fb9dcb718adf3ea16d234c3d64173eb9f0f19665f22da9872a4c186f",
+    },
+}
+SMALL_BROWN_NATIVE_BLOCK_RED_PALETTE = (
+    (139, 31, 56, 255),
+    (173, 28, 45, 255),
+    (205, 48, 42, 255),
+    (229, 81, 48, 255),
+)
+SMALL_BROWN_NATIVE_BLOCK_SPOT_PALETTE = (
+    (243, 197, 140, 255),
+    (250, 216, 165, 255),
+    (254, 231, 188, 255),
+    (252, 241, 210, 255),
+)
+SMALL_BROWN_BLOCK_CAP_RECOLOR = {
+    **dict(zip(SMALL_BROWN_NATIVE_BLOCK_RED_PALETTE, SMALL_BROWN_DOMINANT_PALETTE)),
+    **dict(zip(SMALL_BROWN_NATIVE_BLOCK_SPOT_PALETTE, SMALL_BROWN_DOMINANT_PALETTE)),
+}
+SMALL_BROWN_BLOCK_MODEL_PATHS = tuple(
+    f"assets/ribbits/models/block/toadstool{suffix}.json"
+    for suffix in ("", "_2", "_3", "_4")
+)
+SMALL_BROWN_AXE_TAG_PATH = "data/minecraft/tags/block/mineable/axe.json"
+SMALL_BROWN_SOURCE_CONFIGURED_FEATURE_PATH = (
+    "data/ribbits/worldgen/configured_feature/toadstool_patch.json"
+)
+SMALL_BROWN_CONFIGURED_FEATURE_PATH = (
+    "data/ribbits/worldgen/configured_feature/small_brown_toadstool_patch.json"
+)
+SMALL_BROWN_PLACED_FEATURE_PATH = (
+    "data/ribbits/worldgen/placed_feature/small_brown_toadstool_patch.json"
+)
+FINAL_CONFIGURED_FEATURE_PATHS = (
+    *CONFIGURED_FEATURE_MIGRATION_PATHS,
+    SMALL_BROWN_CONFIGURED_FEATURE_PATH,
+)
+SMALL_BROWN_TOADSTOOL_DERIVED_OUTPUTS = frozenset(
+    {
+        "assets/ribbits/blockstates/small_brown_toadstool.json",
+        "assets/ribbits/items/small_brown_toadstool.json",
+        "assets/ribbits/models/block/small_brown_toadstool.json",
+        "assets/ribbits/models/block/small_brown_toadstool_2.json",
+        "assets/ribbits/models/block/small_brown_toadstool_3.json",
+        "assets/ribbits/models/block/small_brown_toadstool_4.json",
+        "assets/ribbits/models/item/small_brown_toadstool.json",
+        "assets/ribbits/textures/block/small_brown_toadstool.png",
+        "assets/ribbits/textures/item/small_brown_toadstool.png",
+        "data/ribbits/loot_table/blocks/small_brown_toadstool.json",
+        SMALL_BROWN_CONFIGURED_FEATURE_PATH,
+        SMALL_BROWN_PLACED_FEATURE_PATH,
+    }
+)
+SMALL_BROWN_JSON_REFERENCE_COUNTS = {
+    "assets/ribbits/blockstates/small_brown_toadstool.json": 16,
+    "assets/ribbits/items/small_brown_toadstool.json": 1,
+    "assets/ribbits/lang/en_us.json": 2,
+    "assets/ribbits/models/block/small_brown_toadstool.json": 2,
+    "assets/ribbits/models/block/small_brown_toadstool_2.json": 2,
+    "assets/ribbits/models/block/small_brown_toadstool_3.json": 2,
+    "assets/ribbits/models/block/small_brown_toadstool_4.json": 2,
+    "assets/ribbits/models/item/small_brown_toadstool.json": 1,
+    SMALL_BROWN_AXE_TAG_PATH: 1,
+    "data/ribbits/loot_table/blocks/small_brown_toadstool.json": 1,
+    SMALL_BROWN_CONFIGURED_FEATURE_PATH: 1,
+    SMALL_BROWN_PLACED_FEATURE_PATH: 1,
+}
+
 DONOR_ARCHIVE_FILENAMES = frozenset(
-    spec["filename"].casefold() for spec in DONOR_INPUT_SPECS.values()
+    {
+        *(spec["filename"].casefold() for spec in DONOR_INPUT_SPECS.values()),
+        SMALL_BROWN_RECOLOR_DONOR_SPEC["filename"].casefold(),
+    }
 )
 DONOR_PACKAGE_PREFIXES = (
     "assets/guardribbits/",
@@ -440,7 +636,11 @@ USER_AUTHORED_CHUTE_OUTPUTS = frozenset(
         "assets/ribbits/textures/item/chute_leaf_open.png",
     }
 )
-PRIVATE_ASSEMBLED_DERIVED_OUTPUTS = frozenset(DONOR_DERIVED_OUTPUTS | USER_AUTHORED_CHUTE_OUTPUTS)
+PRIVATE_ASSEMBLED_DERIVED_OUTPUTS = frozenset(
+    DONOR_DERIVED_OUTPUTS
+    | USER_AUTHORED_CHUTE_OUTPUTS
+    | SMALL_BROWN_TOADSTOOL_DERIVED_OUTPUTS
+)
 
 VILLAGE_RIBBIT_TEMPLATE_PROFESSIONS = {
     "data/ribbits/structure/ribbits/ribbit_nitwit.nbt": "ribbits:nitwit",
@@ -789,6 +989,8 @@ EN_US_NATURALIST_FAUNA_TRANSLATIONS = {
 }
 
 EN_US_MYNX_PROFESSION_TRANSLATIONS = {
+    "block.ribbits.small_brown_toadstool": "Brown Toadstool",
+    "item.ribbits.small_brown_toadstool": "Brown Toadstool",
     "item.ribbits.ribbit_nitwit_spawn_egg": "Musician Ribbit Spawn Egg",
     "item.ribbits.ribbit_chef_spawn_egg": "Chef Ribbit Spawn Egg",
     "item.ribbits.ribbit_farmer_spawn_egg": "Farmer Ribbit Spawn Egg",
@@ -1063,6 +1265,82 @@ def load_exact_donor(
     return member_bytes, identity
 
 
+def load_authoritative_small_brown_recolor_donor(
+    user_assets_root: Path,
+) -> tuple[Path, dict[str, bytes], dict[str, Any]]:
+    """Load only the two approved members from the immutable Matcha overlay pack."""
+    root = user_assets_root.resolve(strict=True)
+    if not root.is_dir() or root.name.casefold() != "originals":
+        raise ValidationError(f"Originals root must be the resolved originals directory: {root}")
+    candidate = root / "assets" / SMALL_BROWN_RECOLOR_DONOR_SPEC["filename"]
+    resolved = candidate.resolve(strict=True)
+    if resolved != candidate or candidate.is_symlink() or not candidate.is_file():
+        raise ValidationError(
+            "Small-brown recolor donor must be the exact regular originals/assets file: "
+            f"{candidate}"
+        )
+    actual_size = candidate.stat().st_size
+    actual_hash = sha256_file(candidate)
+    if (
+        actual_size != SMALL_BROWN_RECOLOR_DONOR_SPEC["size"]
+        or actual_hash != SMALL_BROWN_RECOLOR_DONOR_SPEC["sha256"]
+    ):
+        raise ValidationError(
+            "Small-brown recolor donor identity differs: expected "
+            f"{SMALL_BROWN_RECOLOR_DONOR_SPEC['size']} bytes/"
+            f"{SMALL_BROWN_RECOLOR_DONOR_SPEC['sha256']}, got {actual_size}/{actual_hash}"
+        )
+
+    approved: dict[str, bytes] = {}
+    with candidate.open("rb") as donor_stream, zipfile.ZipFile(donor_stream) as archive:
+        names = [entry.filename for entry in archive.infolist()]
+        for name in names:
+            safe_zip_name(name)
+        duplicates = sorted(name for name, count in Counter(names).items() if count > 1)
+        if duplicates:
+            raise ValidationError(
+                f"Duplicate entries in {candidate.name}: {duplicates}"
+            )
+        for member, member_spec in SMALL_BROWN_RECOLOR_DONOR_SPEC["members"].items():
+            matches = [entry for entry in archive.infolist() if entry.filename == member]
+            if len(matches) != 1 or matches[0].is_dir():
+                raise ValidationError(
+                    f"{candidate.name} must contain exactly one approved member {member}"
+                )
+            data = archive.read(matches[0])
+            digest = sha256_bytes(data)
+            if len(data) != member_spec["size"] or digest != member_spec["sha256"]:
+                raise ValidationError(
+                    f"Approved recolor donor member identity differs for {member}: expected "
+                    f"{member_spec['size']} bytes/{member_spec['sha256']}, got "
+                    f"{len(data)}/{digest}"
+                )
+            width, height, _ = decode_rgba_png(data, f"{candidate.name}:{member}")
+            if (width, height) != member_spec["dimensions"]:
+                raise ValidationError(
+                    f"Approved recolor donor member dimensions differ for {member}: "
+                    f"expected {member_spec['dimensions']}, got {(width, height)}"
+                )
+            approved[member] = data
+
+    identity = {
+        "filename": candidate.name,
+        "size": actual_size,
+        "sha256": actual_hash,
+        "approved_members": {
+            member: {
+                "size": len(data),
+                "sha256": sha256_bytes(data),
+                "dimensions": list(
+                    SMALL_BROWN_RECOLOR_DONOR_SPEC["members"][member]["dimensions"]
+                ),
+            }
+            for member, data in approved.items()
+        },
+    }
+    return candidate, approved, identity
+
+
 def require_donor_unchanged(path: Path, identity: dict[str, Any], label: str) -> None:
     if not path.is_file():
         raise ValidationError(f"{label} disappeared during private assembly: {path}")
@@ -1177,6 +1455,86 @@ def decode_rgba_png(data: bytes, label: str) -> tuple[int, int, bytes]:
     return width, height, bytes(output)
 
 
+def decode_indexed_png(data: bytes, label: str) -> tuple[int, int, bytes]:
+    """Decode the one approved pristine 8-bit indexed PNG form into RGBA."""
+    chunks = _png_chunks(data, label)
+    ihdr_values = [chunk for chunk_type, chunk in chunks if chunk_type == b"IHDR"]
+    if len(ihdr_values) != 1 or len(ihdr_values[0]) != 13:
+        raise ValidationError(f"PNG must contain one 13-byte IHDR: {label}")
+    width, height, depth, color_type, compression, filtering, interlace = struct.unpack(
+        ">IIBBBBB", ihdr_values[0]
+    )
+    if (depth, color_type, compression, filtering, interlace) != (8, 3, 0, 0, 0):
+        raise ValidationError(
+            f"Pristine indexed PNG must be non-interlaced 8-bit palette: {label}; got "
+            f"depth={depth}, color={color_type}, compression={compression}, "
+            f"filter={filtering}, interlace={interlace}"
+        )
+    palettes = [chunk for chunk_type, chunk in chunks if chunk_type == b"PLTE"]
+    transparencies = [chunk for chunk_type, chunk in chunks if chunk_type == b"tRNS"]
+    if len(palettes) != 1 or len(palettes[0]) % 3 or not palettes[0]:
+        raise ValidationError(f"Indexed PNG must contain one valid PLTE: {label}")
+    if len(transparencies) > 1:
+        raise ValidationError(f"Indexed PNG contains duplicate tRNS chunks: {label}")
+    palette = [
+        tuple(palettes[0][offset : offset + 3])
+        for offset in range(0, len(palettes[0]), 3)
+    ]
+    alpha = transparencies[0] if transparencies else b""
+    if len(alpha) > len(palette):
+        raise ValidationError(f"Indexed PNG tRNS exceeds its palette: {label}")
+
+    compressed = b"".join(chunk for chunk_type, chunk in chunks if chunk_type == b"IDAT")
+    try:
+        scanlines = zlib.decompress(compressed)
+    except zlib.error as exc:
+        raise ValidationError(f"Could not decompress PNG {label}: {exc}") from exc
+    stride = width
+    if len(scanlines) != height * (stride + 1):
+        raise ValidationError(f"Unexpected decoded scanline length for {label}")
+
+    indices = bytearray(height * stride)
+    source_offset = 0
+    for row_index in range(height):
+        filter_type = scanlines[source_offset]
+        source_offset += 1
+        filtered = scanlines[source_offset : source_offset + stride]
+        source_offset += stride
+        row_offset = row_index * stride
+        for column in range(stride):
+            value = filtered[column]
+            left = indices[row_offset + column - 1] if column else 0
+            above = indices[row_offset - stride + column] if row_index else 0
+            upper_left = (
+                indices[row_offset - stride + column - 1]
+                if row_index and column
+                else 0
+            )
+            if filter_type == 0:
+                decoded = value
+            elif filter_type == 1:
+                decoded = value + left
+            elif filter_type == 2:
+                decoded = value + above
+            elif filter_type == 3:
+                decoded = value + ((left + above) // 2)
+            elif filter_type == 4:
+                decoded = value + _paeth(left, above, upper_left)
+            else:
+                raise ValidationError(f"Unsupported PNG filter {filter_type} in {label}")
+            indices[row_offset + column] = decoded & 0xFF
+
+    rgba = bytearray(width * height * 4)
+    for pixel_index, palette_index in enumerate(indices):
+        if palette_index >= len(palette):
+            raise ValidationError(f"Indexed PNG references missing palette entry: {label}")
+        red, green, blue = palette[palette_index]
+        rgba[pixel_index * 4 : pixel_index * 4 + 4] = bytes(
+            (red, green, blue, alpha[palette_index] if palette_index < len(alpha) else 255)
+        )
+    return width, height, bytes(rgba)
+
+
 def final_item_sprite_manifest_records() -> list[dict[str, Any]]:
     return [
         {
@@ -1277,6 +1635,377 @@ def encode_rgba_png(width: int, height: int, pixels: bytes) -> bytes:
         + _png_chunk(b"IDAT", zlib.compress(scanlines, level=9))
         + _png_chunk(b"IEND", b"")
     )
+
+
+def _rgba_pixels(raw: bytes) -> list[tuple[int, int, int, int]]:
+    if len(raw) % 4:
+        raise ValidationError("RGBA pixel buffer is not four-byte aligned")
+    return [tuple(raw[offset : offset + 4]) for offset in range(0, len(raw), 4)]
+
+
+def _rgba_bytes(pixels: list[tuple[int, int, int, int]]) -> bytes:
+    return bytes(channel for pixel in pixels for channel in pixel)
+
+
+def _four_connected_components(
+    coordinates: set[tuple[int, int]],
+) -> list[set[tuple[int, int]]]:
+    remaining = set(coordinates)
+    components: list[set[tuple[int, int]]] = []
+    while remaining:
+        component = {remaining.pop()}
+        pending = list(component)
+        while pending:
+            x, y = pending.pop()
+            for neighbor in ((x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1)):
+                if neighbor in remaining:
+                    remaining.remove(neighbor)
+                    component.add(neighbor)
+                    pending.append(neighbor)
+        components.append(component)
+    return components
+
+
+def _mask_bytes(
+    width: int,
+    height: int,
+    cap: set[tuple[int, int]],
+    stem: set[tuple[int, int]],
+) -> bytes:
+    if cap & stem:
+        raise ValidationError("Cap and stem masks overlap")
+    return bytes(
+        1 if (x, y) in cap else 2 if (x, y) in stem else 0
+        for y in range(height)
+        for x in range(width)
+    )
+
+
+def derive_small_brown_item_texture(
+    donor_item: bytes, donor_brown: bytes
+) -> tuple[bytes, dict[str, Any]]:
+    width, height, raw = decode_rgba_png(donor_item, SMALL_BROWN_DONOR_ITEM_MEMBER)
+    if (width, height) != (16, 16):
+        raise ValidationError("Authoritative small-toadstool item donor must be 16x16")
+    brown_width, brown_height, brown_raw = decode_rgba_png(
+        donor_brown, SMALL_BROWN_DONOR_PALETTE_MEMBER
+    )
+    if (brown_width, brown_height) != (16, 16):
+        raise ValidationError("Authoritative brown palette donor must be 16x16")
+    brown_counts = Counter(_rgba_pixels(brown_raw))
+    if brown_counts != Counter(SMALL_BROWN_FULL_DONOR_PALETTE_COUNTS):
+        raise ValidationError(
+            "Authoritative brown palette differs: "
+            f"expected={SMALL_BROWN_FULL_DONOR_PALETTE_COUNTS}, actual={dict(brown_counts)}"
+        )
+
+    source = _rgba_pixels(raw)
+    opaque = {
+        (index % width, index // width)
+        for index, pixel in enumerate(source)
+        if pixel[3] != 0
+    }
+    alpha_counts = Counter(pixel[3] for pixel in source)
+    if alpha_counts != Counter({0: 105, 255: 151}):
+        raise ValidationError(f"Authoritative item alpha mask differs: {dict(alpha_counts)}")
+    red_seed = {
+        coordinate
+        for coordinate in opaque
+        if source[coordinate[1] * width + coordinate[0]]
+        in SMALL_BROWN_DONOR_RED_CAP_PALETTE
+    }
+    non_red = opaque - red_seed
+    bottom = max(y for _, y in opaque)
+    components = _four_connected_components(non_red)
+    bottom_components = [
+        component for component in components if any(y == bottom for _, y in component)
+    ]
+    if len(bottom_components) != 1:
+        raise ValidationError(
+            "Authoritative item must have exactly one non-red component touching its bottom row"
+        )
+    stem = bottom_components[0]
+    for x, y, expected in SMALL_BROWN_ITEM_STEM_TOP_PIXELS:
+        if source[y * width + x] != expected or (x, y) not in stem:
+            raise ValidationError(
+                f"Authoritative item stem-top contract differs at ({x}, {y})"
+            )
+    cap = opaque - stem
+    mask = _mask_bytes(width, height, cap, stem)
+    if (
+        len(cap) != 108
+        or len(stem) != 43
+        or len(red_seed) != 84
+        or len(cap - red_seed) != 24
+        or sha256_bytes(mask) != SMALL_BROWN_ITEM_MASK_SHA256
+    ):
+        raise ValidationError(
+            "Authoritative item cap/stem mask differs from the approved 108/43-pixel contract"
+        )
+    cap_counts = Counter(source[y * width + x] for x, y in cap)
+    if set(cap_counts) != set(SMALL_BROWN_ITEM_CAP_RECOLOR):
+        raise ValidationError(f"Authoritative item cap palette differs: {dict(cap_counts)}")
+
+    output = list(source)
+    for x, y in cap:
+        index = y * width + x
+        output[index] = SMALL_BROWN_ITEM_CAP_RECOLOR[source[index]]
+    for index, pixel in enumerate(source):
+        coordinate = (index % width, index // width)
+        if coordinate not in cap and output[index] != pixel:
+            raise ValidationError("Item recolor changed a stem or transparent pixel")
+    output_cap_counts = Counter(output[y * width + x] for x, y in cap)
+    expected_output_counts = Counter(
+        {
+            SMALL_BROWN_DOMINANT_PALETTE[0]: 18,
+            SMALL_BROWN_DOMINANT_PALETTE[1]: 47,
+            SMALL_BROWN_DOMINANT_PALETTE[2]: 22,
+            SMALL_BROWN_DOMINANT_PALETTE[3]: 21,
+        }
+    )
+    if output_cap_counts != expected_output_counts:
+        raise ValidationError(
+            f"Small-brown item output palette differs: {dict(output_cap_counts)}"
+        )
+    encoded = encode_rgba_png(width, height, _rgba_bytes(output))
+    if decode_rgba_png(encoded, "derived small-brown item")[2] != _rgba_bytes(output):
+        raise ValidationError("Derived small-brown item PNG round-trip differs")
+    return encoded, {
+        "dimensions": [width, height],
+        "alpha": {"transparent": 105, "opaque": 151, "partial": 0},
+        "mask_sha256": SMALL_BROWN_ITEM_MASK_SHA256,
+        "cap_pixels": len(cap),
+        "red_orange_cap_pixels_replaced": len(red_seed),
+        "light_cap_spot_pixels_replaced": len(cap - red_seed),
+        "stem_pixels_preserved": len(stem),
+        "output_cap_palette_counts": {
+            ",".join(map(str, color)): count
+            for color, count in sorted(output_cap_counts.items())
+        },
+    }
+
+
+def _face_texel_rectangle(
+    face: Any, width: int, height: int, context: str
+) -> tuple[int, int, int, int] | None:
+    if not isinstance(face, dict) or not isinstance(face.get("uv"), list) or len(face["uv"]) != 4:
+        raise ValidationError(f"{context} has invalid face UV")
+    if any(
+        not isinstance(value, (int, float)) or isinstance(value, bool)
+        for value in face["uv"]
+    ):
+        raise ValidationError(f"{context} has nonnumeric face UV")
+    scaled = (
+        face["uv"][0] * width / 16,
+        face["uv"][1] * height / 16,
+        face["uv"][2] * width / 16,
+        face["uv"][3] * height / 16,
+    )
+    rounded = tuple(round(value) for value in scaled)
+    if any(abs(value - integer) > 1e-9 for value, integer in zip(scaled, rounded)):
+        raise ValidationError(f"{context} UV is not aligned to exact texture pixels")
+    x1, x2 = sorted((rounded[0], rounded[2]))
+    y1, y2 = sorted((rounded[1], rounded[3]))
+    if not (0 <= x1 <= x2 <= width and 0 <= y1 <= y2 <= height):
+        raise ValidationError(f"{context} UV is outside the texture")
+    return None if x1 == x2 or y1 == y2 else (x1, y1, x2, y2)
+
+
+def _rectangle_coordinates(
+    rectangle: tuple[int, int, int, int]
+) -> set[tuple[int, int]]:
+    x1, y1, x2, y2 = rectangle
+    return {(x, y) for y in range(y1, y2) for x in range(x1, x2)}
+
+
+def derive_small_brown_block_mask(
+    root: Path, pixels: list[tuple[int, int, int, int]], width: int, height: int
+) -> tuple[set[tuple[int, int]], set[tuple[int, int]]]:
+    if (width, height) != (64, 64):
+        raise ValidationError("Pristine small-toadstool block atlas must be 64x64")
+    opaque = {
+        (index % width, index // width)
+        for index, pixel in enumerate(pixels)
+        if pixel[3] != 0
+    }
+    if len(opaque) != 1267:
+        raise ValidationError(f"Pristine small-toadstool opaque count differs: {len(opaque)}")
+    allowed = set(SMALL_BROWN_NATIVE_BLOCK_RED_PALETTE) | set(
+        SMALL_BROWN_NATIVE_BLOCK_SPOT_PALETTE
+    )
+    if {pixels[y * width + x] for x, y in opaque} != allowed:
+        raise ValidationError("Pristine small-toadstool block palette differs")
+
+    stem_rectangles: set[tuple[int, int, int, int]] = set()
+    cap_rectangles: set[tuple[int, int, int, int]] = set()
+    full_mushroom_rectangles: set[tuple[int, int, int, int]] = set()
+    for relative in SMALL_BROWN_BLOCK_MODEL_PATHS:
+        model = load_json(root / PurePosixPath(relative))
+        if model.get("texture_size") != [64, 64] or model.get("textures", {}).get("0") != "ribbits:block/toadstool":
+            raise ValidationError(f"Pristine small-toadstool model contract differs: {relative}")
+        elements = model.get("elements")
+        groups = model.get("groups")
+        if not isinstance(elements, list) or not isinstance(groups, list) or len(groups) != 1:
+            raise ValidationError(f"Pristine small-toadstool groups differ: {relative}")
+        mushrooms = groups[0].get("children")
+        if not isinstance(mushrooms, list) or not mushrooms:
+            raise ValidationError(f"Pristine small-toadstool mushroom groups differ: {relative}")
+        semantics: dict[int, str] = {}
+        for group in mushrooms:
+            children = group.get("children") if isinstance(group, dict) else None
+            if not isinstance(children, list) or len(children) != 2:
+                raise ValidationError(f"Pristine mushroom group is not a two-element pair: {relative}")
+            pair = [elements[index] for index in children]
+            flat = [
+                any(start == end for start, end in zip(element.get("from", []), element.get("to", [])))
+                for element in pair
+            ]
+            if all(flat):
+                for index in children:
+                    semantics[index] = "full"
+            elif not any(flat):
+                ordered = sorted(
+                    children,
+                    key=lambda index: (
+                        elements[index]["from"][1],
+                        elements[index]["to"][1],
+                    ),
+                )
+                if (
+                    elements[ordered[0]]["from"][1] != 0
+                    or elements[ordered[0]]["to"][1]
+                    != elements[ordered[1]]["from"][1]
+                ):
+                    raise ValidationError(f"Pristine stem/cap vertical split differs: {relative}")
+                semantics[ordered[0]] = "stem"
+                semantics[ordered[1]] = "cap"
+            else:
+                raise ValidationError(f"Mixed flat/box mushroom group is unsupported: {relative}")
+        if set(semantics) != set(range(len(elements))):
+            raise ValidationError(f"Pristine mushroom element accounting differs: {relative}")
+        for index, element in enumerate(elements):
+            faces = element.get("faces")
+            if not isinstance(faces, dict) or not faces:
+                raise ValidationError(f"Pristine mushroom element has no faces: {relative}#{index}")
+            for direction, face in faces.items():
+                if face.get("texture") != "#0":
+                    raise ValidationError(
+                        f"Pristine mushroom face texture differs: {relative}#{index}.{direction}"
+                    )
+                rectangle = _face_texel_rectangle(
+                    face, width, height, f"{relative}#{index}.{direction}"
+                )
+                if rectangle is None:
+                    continue
+                target = (
+                    full_mushroom_rectangles
+                    if semantics[index] == "full"
+                    else cap_rectangles
+                    if semantics[index] == "cap"
+                    else stem_rectangles
+                )
+                target.add(rectangle)
+
+    expected_full = {(11, 23, 17, 28), (19, 37, 22, 40)}
+    if full_mushroom_rectangles != expected_full:
+        raise ValidationError(
+            f"Cross-plane small-toadstool atlas rectangles differ: {sorted(full_mushroom_rectangles)}"
+        )
+    box_cap = set().union(*map(_rectangle_coordinates, cap_rectangles)) & opaque
+    box_stem = set().union(*map(_rectangle_coordinates, stem_rectangles)) & opaque
+    if box_cap & box_stem or len(box_cap) != 938 or len(box_stem) != 302:
+        raise ValidationError(
+            "Box-model small-toadstool cap/stem ownership differs from the 938/302 contract"
+        )
+
+    red = {
+        coordinate
+        for coordinate in opaque
+        if pixels[coordinate[1] * width + coordinate[0]]
+        in SMALL_BROWN_NATIVE_BLOCK_RED_PALETTE
+    }
+    cap = red | box_cap
+    full_stem: set[tuple[int, int]] = set()
+    full_spots: set[tuple[int, int]] = set()
+    for rectangle in full_mushroom_rectangles:
+        inside = _rectangle_coordinates(rectangle) & opaque
+        bottom = max(y for _, y in inside)
+        non_red = inside - red
+        for component in _four_connected_components(non_red):
+            if any(y == bottom for _, y in component):
+                full_stem.update(component)
+            else:
+                full_spots.update(component)
+    if len(full_stem) != 5 or len(full_spots) != 6:
+        raise ValidationError("Cross-plane small-toadstool stem/spot mask differs")
+    cap.update(full_spots)
+    stem = opaque - cap
+    mask = _mask_bytes(width, height, cap, stem)
+    if (
+        len(cap) != 960
+        or len(stem) != 307
+        or len(red) != 575
+        or len(cap - red) != 385
+        or sha256_bytes(mask) != SMALL_BROWN_BLOCK_MASK_SHA256
+    ):
+        raise ValidationError(
+            "Pristine block cap/stem mask differs from the approved 960/307-pixel contract"
+        )
+    if {pixels[y * width + x] for x, y in stem} - set(SMALL_BROWN_NATIVE_BLOCK_SPOT_PALETTE):
+        raise ValidationError("Pristine block stem unexpectedly contains a cap color")
+    return cap, stem
+
+
+def derive_small_brown_block_texture(
+    root: Path, source_png: bytes, donor_brown: bytes
+) -> tuple[bytes, dict[str, Any]]:
+    width, height, raw = decode_rgba_png(source_png, SMALL_BROWN_NATIVE_BLOCK_TEXTURE)
+    brown_width, brown_height, brown_raw = decode_rgba_png(
+        donor_brown, SMALL_BROWN_DONOR_PALETTE_MEMBER
+    )
+    if (brown_width, brown_height) != (16, 16) or Counter(
+        _rgba_pixels(brown_raw)
+    ) != Counter(SMALL_BROWN_FULL_DONOR_PALETTE_COUNTS):
+        raise ValidationError("Authoritative block recolor donor palette differs")
+    source = _rgba_pixels(raw)
+    cap, stem = derive_small_brown_block_mask(root, source, width, height)
+    output = list(source)
+    for x, y in cap:
+        index = y * width + x
+        try:
+            output[index] = SMALL_BROWN_BLOCK_CAP_RECOLOR[source[index]]
+        except KeyError as exc:
+            raise ValidationError(f"Unmapped pristine cap color: {source[index]}") from exc
+    for index, pixel in enumerate(source):
+        if (index % width, index // width) not in cap and output[index] != pixel:
+            raise ValidationError("Block recolor changed a stem or transparent pixel")
+    output_counts = Counter(output[y * width + x] for x, y in cap)
+    expected_counts = Counter(
+        {
+            SMALL_BROWN_DOMINANT_PALETTE[0]: 185,
+            SMALL_BROWN_DOMINANT_PALETTE[1]: 234,
+            SMALL_BROWN_DOMINANT_PALETTE[2]: 279,
+            SMALL_BROWN_DOMINANT_PALETTE[3]: 262,
+        }
+    )
+    if output_counts != expected_counts:
+        raise ValidationError(f"Small-brown block output palette differs: {dict(output_counts)}")
+    encoded = encode_rgba_png(width, height, _rgba_bytes(output))
+    if decode_rgba_png(encoded, "derived small-brown block")[2] != _rgba_bytes(output):
+        raise ValidationError("Derived small-brown block PNG round-trip differs")
+    return encoded, {
+        "dimensions": [width, height],
+        "alpha": {"transparent": 2829, "opaque": 1267, "partial": 0},
+        "mask_sha256": SMALL_BROWN_BLOCK_MASK_SHA256,
+        "cap_pixels": len(cap),
+        "red_orange_cap_pixels_replaced": 575,
+        "light_cap_spot_pixels_replaced": 385,
+        "stem_pixels_preserved": len(stem),
+        "output_cap_palette_counts": {
+            ",".join(map(str, color)): count
+            for color, count in sorted(output_counts.items())
+        },
+    }
 
 
 def build_composite_texture(
@@ -2621,7 +3350,11 @@ def configured_feature_migration_record() -> dict[str, Any]:
     }
 
 
-def require_exact_configured_feature_paths(paths: list[str], context: str) -> None:
+def require_exact_configured_feature_paths(
+    paths: list[str],
+    context: str,
+    expected_paths: tuple[str, ...] = CONFIGURED_FEATURE_MIGRATION_PATHS,
+) -> None:
     if not all(isinstance(path, str) for path in paths):
         raise ValidationError(f"{context} configured-feature paths must all be strings")
 
@@ -2632,7 +3365,7 @@ def require_exact_configured_feature_paths(paths: list[str], context: str) -> No
             f"{context} contains duplicate configured-feature targets: {duplicates}"
         )
 
-    expected = set(CONFIGURED_FEATURE_MIGRATION_PATHS)
+    expected = set(expected_paths)
     actual = set(paths)
     missing = sorted(expected - actual)
     unexpected = sorted(actual - expected)
@@ -2767,6 +3500,25 @@ def json_contains_value(value: Any, expected: str) -> bool:
     return value == expected
 
 
+def replace_exact_json_strings(
+    value: Any, replacements: dict[str, str]
+) -> tuple[Any, dict[str, int]]:
+    """Deep-copy JSON-like data while replacing only whole string values."""
+    counts = {source: 0 for source in replacements}
+
+    def visit(node: Any) -> Any:
+        if isinstance(node, dict):
+            return {key: visit(item) for key, item in node.items()}
+        if isinstance(node, list):
+            return [visit(item) for item in node]
+        if isinstance(node, str) and node in replacements:
+            counts[node] += 1
+            return replacements[node]
+        return copy.deepcopy(node)
+
+    return visit(value), counts
+
+
 def require_triangle_provider(value: Any, context: str) -> None:
     provider = require_exact_keys(value, {"type", "min", "max", "plateau"}, context)
     if provider["type"] != "minecraft:trapezoid":
@@ -2846,16 +3598,22 @@ def migrate_configured_feature_documents(
 
 def validate_migrated_configured_feature_documents(
     documents: list[tuple[str, Any]],
+    expected_paths: tuple[str, ...] = CONFIGURED_FEATURE_MIGRATION_PATHS,
 ) -> None:
     paths = [path for path, _ in documents]
-    require_exact_configured_feature_paths(paths, "Migrated configured-feature output")
+    require_exact_configured_feature_paths(
+        paths, "Migrated configured-feature output", expected_paths
+    )
     by_path = {path: value for path, value in documents}
-    for path in CONFIGURED_FEATURE_MIGRATION_PATHS:
+    for path in expected_paths:
         require_migrated_random_patch_document(path, by_path[path])
 
 
-def load_configured_feature_documents(root: Path) -> list[tuple[str, Any]]:
-    relative_root = PurePosixPath(CONFIGURED_FEATURE_MIGRATION_PATHS[0]).parent
+def load_configured_feature_documents(
+    root: Path,
+    expected_paths: tuple[str, ...] = CONFIGURED_FEATURE_MIGRATION_PATHS,
+) -> list[tuple[str, Any]]:
+    relative_root = PurePosixPath(expected_paths[0]).parent
     configured_root = root.joinpath(*relative_root.parts)
     paths = (
         sorted(
@@ -2866,7 +3624,7 @@ def load_configured_feature_documents(root: Path) -> list[tuple[str, Any]]:
         if configured_root.is_dir()
         else []
     )
-    require_exact_configured_feature_paths(paths, "Private resource tree")
+    require_exact_configured_feature_paths(paths, "Private resource tree", expected_paths)
     return [(path, load_json(root.joinpath(*PurePosixPath(path).parts))) for path in paths]
 
 
@@ -2880,8 +3638,23 @@ def migrate_configured_features(root: Path) -> dict[str, Any]:
 
 def validate_configured_features(root: Path, errors: list[str]) -> None:
     try:
-        documents = load_configured_feature_documents(root)
-        validate_migrated_configured_feature_documents(documents)
+        documents = load_configured_feature_documents(root, FINAL_CONFIGURED_FEATURE_PATHS)
+        validate_migrated_configured_feature_documents(
+            documents, FINAL_CONFIGURED_FEATURE_PATHS
+        )
+        by_path = dict(documents)
+        expected_small_brown, replacement_counts = replace_exact_json_strings(
+            by_path[SMALL_BROWN_SOURCE_CONFIGURED_FEATURE_PATH],
+            {"ribbits:toadstool": "ribbits:small_brown_toadstool"},
+        )
+        if replacement_counts != {"ribbits:toadstool": 1}:
+            raise ValidationError(
+                "Migrated red toadstool patch no longer contains exactly one block-state ID"
+            )
+        if by_path[SMALL_BROWN_CONFIGURED_FEATURE_PATH] != expected_small_brown:
+            raise ValidationError(
+                "Small-brown configured feature is not the exact migrated red-patch clone"
+            )
     except (OSError, KeyError, ValueError, ValidationError) as exc:
         errors.append(f"Configured-feature migration is invalid: {exc}")
 
@@ -2921,7 +3694,7 @@ def migrate_languages(root: Path) -> None:
                 raise ValidationError(f"Unexpected config translations in {path.name}: {old_key}")
             values[new_key] = values.pop(old_key)
 
-        for item_id in BLOCK_ITEM_IDS:
+        for item_id in PRISTINE_BLOCK_ITEM_IDS:
             block_key = f"block.ribbits.{item_id}"
             item_key = f"item.ribbits.{item_id}"
             if block_key not in values:
@@ -3322,7 +4095,7 @@ def import_wandering_visual_resources(
 
 def migrate_cutout_models(root: Path) -> None:
     model_dir = root / "assets/ribbits/models/block"
-    for filename in CUTOUT_MODEL_FILES:
+    for filename in PRISTINE_CUTOUT_MODEL_FILES:
         path = model_dir / filename
         model = load_json(path)
         if "render_type" in model:
@@ -3849,6 +4622,498 @@ def write_item_definitions(root: Path) -> None:
         write_json(item_dir / f"{item_id}.json", value)
 
 
+def assemble_small_brown_toadstool_resources(
+    root: Path,
+    donor_members: dict[str, bytes],
+    donor_identity: dict[str, Any],
+) -> dict[str, Any]:
+    approved_members = set(SMALL_BROWN_RECOLOR_DONOR_SPEC["members"])
+    if set(donor_members) != approved_members:
+        raise ValidationError(
+            "Small-brown donor member accounting differs: "
+            f"expected={sorted(approved_members)}, actual={sorted(donor_members)}"
+        )
+    if donor_identity.get("sha256") != SMALL_BROWN_RECOLOR_DONOR_SPEC["sha256"]:
+        raise ValidationError("Small-brown donor identity was not hash-guarded")
+
+    native_item_path = root / PurePosixPath(SMALL_BROWN_NATIVE_ITEM_TEXTURE)
+    native_item = native_item_path.read_bytes()
+    if (
+        len(native_item) != SMALL_BROWN_NATIVE_ITEM_SIZE
+        or sha256_bytes(native_item) != SMALL_BROWN_NATIVE_ITEM_SHA256
+    ):
+        raise ValidationError("Pristine small-toadstool item texture identity differs")
+    native_item_width, native_item_height, native_item_raw = decode_indexed_png(
+        native_item, SMALL_BROWN_NATIVE_ITEM_TEXTURE
+    )
+    donor_item = donor_members[SMALL_BROWN_DONOR_ITEM_MEMBER]
+    donor_item_width, donor_item_height, donor_item_raw = decode_rgba_png(
+        donor_item, SMALL_BROWN_DONOR_ITEM_MEMBER
+    )
+    if (native_item_width, native_item_height) != (16, 16) or (
+        donor_item_width,
+        donor_item_height,
+    ) != (16, 16):
+        raise ValidationError("Native and donor small-toadstool item sprites must be 16x16")
+    native_alpha = native_item_raw[3::4]
+    donor_alpha = donor_item_raw[3::4]
+    if native_alpha != donor_alpha:
+        raise ValidationError(
+            "Authoritative donor item alpha mask differs from the pristine small toadstool"
+        )
+    for x, y, expected in SMALL_BROWN_NATIVE_ITEM_STEM_TOP_PIXELS:
+        actual = tuple(
+            native_item_raw[(y * native_item_width + x) * 4 :
+                            (y * native_item_width + x + 1) * 4]
+        )
+        if actual != expected:
+            raise ValidationError(
+                f"Pristine item stem-top contract differs at ({x}, {y}): {actual}"
+            )
+
+    native_block_path = root / PurePosixPath(SMALL_BROWN_NATIVE_BLOCK_TEXTURE)
+    native_block = native_block_path.read_bytes()
+    if (
+        len(native_block) != SMALL_BROWN_NATIVE_BLOCK_SIZE
+        or sha256_bytes(native_block) != SMALL_BROWN_NATIVE_BLOCK_SHA256
+    ):
+        raise ValidationError("Pristine small-toadstool block texture identity differs")
+    native_brown_resources: dict[str, bytes] = {}
+    for relative, spec in NATIVE_BROWN_TOADSTOOL_RESOURCE_SPECS.items():
+        data = (root / PurePosixPath(relative)).read_bytes()
+        if len(data) != spec["size"] or sha256_bytes(data) != spec["sha256"]:
+            raise ValidationError(
+                f"Pristine huge brown-toadstool resource identity differs: {relative}"
+            )
+        native_brown_resources[relative] = data
+    native_brown = native_brown_resources[SMALL_BROWN_NATIVE_BROWN_TEXTURE]
+    donor_brown = donor_members[SMALL_BROWN_DONOR_PALETTE_MEMBER]
+    if native_brown == donor_brown or sha256_bytes(native_brown) == sha256_bytes(donor_brown):
+        raise ValidationError(
+            "Native huge brown texture is not distinct from the authoritative donor member"
+        )
+
+    preexisting_allowed = {"assets/ribbits/items/small_brown_toadstool.json"}
+    for relative in SMALL_BROWN_TOADSTOOL_DERIVED_OUTPUTS - preexisting_allowed:
+        if (root / PurePosixPath(relative)).exists():
+            raise ValidationError(f"Unexpected pre-existing small-brown resource: {relative}")
+    item_definition_path = root / "assets/ribbits/items/small_brown_toadstool.json"
+    expected_item_definition = {
+        "model": {
+            "type": "minecraft:model",
+            "model": "ribbits:item/small_brown_toadstool",
+        }
+    }
+    if load_json(item_definition_path) != expected_item_definition:
+        raise ValidationError("Small-brown item definition bridge differs")
+
+    derived_item, item_pixels = derive_small_brown_item_texture(
+        donor_item, donor_members[SMALL_BROWN_DONOR_PALETTE_MEMBER]
+    )
+    derived_block, block_pixels = derive_small_brown_block_texture(
+        root, native_block, donor_members[SMALL_BROWN_DONOR_PALETTE_MEMBER]
+    )
+    item_texture_path = root / "assets/ribbits/textures/item/small_brown_toadstool.png"
+    block_texture_path = root / "assets/ribbits/textures/block/small_brown_toadstool.png"
+    item_texture_path.write_bytes(derived_item)
+    block_texture_path.write_bytes(derived_block)
+
+    source_snapshots: dict[str, bytes] = {}
+    for source_relative in SMALL_BROWN_BLOCK_MODEL_PATHS:
+        source_path = root / PurePosixPath(source_relative)
+        source_snapshots[source_relative] = source_path.read_bytes()
+        model = load_json(source_path)
+        textures = model.get("textures") if isinstance(model, dict) else None
+        if not isinstance(textures, dict) or textures.get("0") != "ribbits:block/toadstool":
+            raise ValidationError(f"Pristine toadstool texture binding differs: {source_relative}")
+        if textures.get("particle") not in {
+            "ribbits:block/toadstool",
+            "ribbits:block/red_toadstool",
+        }:
+            raise ValidationError(f"Pristine toadstool particle binding differs: {source_relative}")
+        model["textures"] = {
+            **textures,
+            "0": "ribbits:block/small_brown_toadstool",
+            "particle": "ribbits:block/small_brown_toadstool",
+        }
+        target_relative = source_relative.replace(
+            "/toadstool", "/small_brown_toadstool", 1
+        )
+        write_json(root / PurePosixPath(target_relative), model)
+
+    clone_specs = (
+        (
+            "assets/ribbits/blockstates/toadstool.json",
+            "assets/ribbits/blockstates/small_brown_toadstool.json",
+            {
+                f"ribbits:block/toadstool{suffix}":
+                    f"ribbits:block/small_brown_toadstool{suffix}"
+                for suffix in ("", "_2", "_3", "_4")
+            },
+            {f"ribbits:block/toadstool{suffix}": 4 for suffix in ("", "_2", "_3", "_4")},
+        ),
+        (
+            "assets/ribbits/models/item/toadstool.json",
+            "assets/ribbits/models/item/small_brown_toadstool.json",
+            {"ribbits:item/toadstool": "ribbits:item/small_brown_toadstool"},
+            {"ribbits:item/toadstool": 1},
+        ),
+        (
+            "data/ribbits/loot_table/blocks/toadstool.json",
+            "data/ribbits/loot_table/blocks/small_brown_toadstool.json",
+            {"ribbits:toadstool": "ribbits:small_brown_toadstool"},
+            {"ribbits:toadstool": 1},
+        ),
+        (
+            SMALL_BROWN_SOURCE_CONFIGURED_FEATURE_PATH,
+            SMALL_BROWN_CONFIGURED_FEATURE_PATH,
+            {"ribbits:toadstool": "ribbits:small_brown_toadstool"},
+            {"ribbits:toadstool": 1},
+        ),
+        (
+            "data/ribbits/worldgen/placed_feature/toadstool_patch.json",
+            SMALL_BROWN_PLACED_FEATURE_PATH,
+            {"ribbits:toadstool_patch": "ribbits:small_brown_toadstool_patch"},
+            {"ribbits:toadstool_patch": 1},
+        ),
+    )
+    for source_relative, target_relative, replacements, expected_counts in clone_specs:
+        source_path = root / PurePosixPath(source_relative)
+        source_snapshots[source_relative] = source_path.read_bytes()
+        cloned, counts = replace_exact_json_strings(load_json(source_path), replacements)
+        if counts != expected_counts:
+            raise ValidationError(
+                f"Small-brown clone replacement counts differ for {source_relative}: {counts}"
+            )
+        write_json(root / PurePosixPath(target_relative), cloned)
+
+    axe_path = root / PurePosixPath(SMALL_BROWN_AXE_TAG_PATH)
+    source_snapshots[SMALL_BROWN_AXE_TAG_PATH] = axe_path.read_bytes()
+    axe_tag = load_json(axe_path)
+    expected_axe_values = [
+        "ribbits:brown_toadstool",
+        "ribbits:red_toadstool",
+        "ribbits:toadstool_stem",
+        "ribbits:swamp_daisy",
+        "ribbits:toadstool",
+        "ribbits:giant_lilypad",
+    ]
+    if axe_tag != {"replace": False, "values": expected_axe_values}:
+        raise ValidationError("Pristine mineable/axe tag contract differs")
+    axe_tag["values"].insert(
+        axe_tag["values"].index("ribbits:toadstool") + 1,
+        "ribbits:small_brown_toadstool",
+    )
+    write_json(axe_path, axe_tag)
+
+    for source_relative, expected_bytes in source_snapshots.items():
+        if source_relative == SMALL_BROWN_AXE_TAG_PATH:
+            continue
+        if (root / PurePosixPath(source_relative)).read_bytes() != expected_bytes:
+            raise ValidationError(f"Small-brown assembly changed its template: {source_relative}")
+    for path, expected, label in (
+        (native_item_path, native_item, "native small-toadstool item texture"),
+        (native_block_path, native_block, "native small-toadstool block texture"),
+    ):
+        if path.read_bytes() != expected:
+            raise ValidationError(f"Small-brown assembly changed the {label}")
+    for relative, expected in native_brown_resources.items():
+        if (root / PurePosixPath(relative)).read_bytes() != expected:
+            raise ValidationError(
+                f"Small-brown assembly changed native huge-brown resource: {relative}"
+            )
+
+    outputs = []
+    for relative in sorted(SMALL_BROWN_TOADSTOOL_DERIVED_OUTPUTS):
+        path = root / PurePosixPath(relative)
+        outputs.append(
+            {
+                "output": relative,
+                "size": path.stat().st_size,
+                "sha256": sha256_file(path),
+            }
+        )
+    if {record["output"] for record in outputs} != SMALL_BROWN_TOADSTOOL_DERIVED_OUTPUTS:
+        raise ValidationError("Small-brown derived-output accounting differs")
+    alpha_mask_sha256 = sha256_bytes(bytes(donor_alpha))
+    item_pixels["alpha_mask_matches_pristine"] = True
+    item_pixels["alpha_mask_sha256"] = alpha_mask_sha256
+    item_pixels["stem_top_pixels_preserved"] = [
+        {
+            "x": x,
+            "y": y,
+            "donor_rgba": list(expected_donor),
+            "pristine_rgba": list(expected_native),
+        }
+        for (x, y, expected_donor), (
+            native_x,
+            native_y,
+            expected_native,
+        ) in zip(
+            SMALL_BROWN_ITEM_STEM_TOP_PIXELS,
+            SMALL_BROWN_NATIVE_ITEM_STEM_TOP_PIXELS,
+        )
+        if (x, y) == (native_x, native_y)
+    ]
+    if len(item_pixels["stem_top_pixels_preserved"]) != 4:
+        raise ValidationError("Small-brown item stem-top metadata accounting differs")
+    return {
+        "source": {
+            **donor_identity,
+            "logical_path": (
+                f"originals/assets/{SMALL_BROWN_RECOLOR_DONOR_SPEC['filename']}"
+            ),
+            "unchanged_after_assembly": True,
+        },
+        "native_huge_brown_resources_preserved": {
+            "resource_count": len(NATIVE_BROWN_TOADSTOOL_RESOURCE_SPECS),
+            "resources": NATIVE_BROWN_TOADSTOOL_RESOURCE_SPECS,
+            "byte_identical": True,
+            "authoritative_donor_member": SMALL_BROWN_DONOR_PALETTE_MEMBER,
+            "authoritative_donor_member_sha256": (
+                SMALL_BROWN_RECOLOR_DONOR_SPEC["members"]
+                [SMALL_BROWN_DONOR_PALETTE_MEMBER]["sha256"]
+            ),
+            "distinct_from_authoritative_donor": True,
+        },
+        "pixel_contract": {"item": item_pixels, "block": block_pixels},
+        "reference_scope": {
+            "json_reference_counts": SMALL_BROWN_JSON_REFERENCE_COUNTS,
+            "structure_nbt_templates_scanned": 29,
+            "structure_nbt_references": 0,
+            "bonemeal_patch_only": True,
+            "ordinary_natural_generation_added": False,
+            "economy_or_recipe_acquisition_added": False,
+        },
+        "derived_outputs": outputs,
+        "derived_output_count": len(outputs),
+    }
+
+
+def _count_json_string_fragment(value: Any, fragment: str) -> int:
+    if isinstance(value, dict):
+        return sum(fragment in str(key) for key in value) + sum(
+            _count_json_string_fragment(item, fragment) for item in value.values()
+        )
+    if isinstance(value, list):
+        return sum(_count_json_string_fragment(item, fragment) for item in value)
+    return int(isinstance(value, str) and fragment in value)
+
+
+def small_brown_json_reference_counts(root: Path) -> dict[str, int]:
+    actual: dict[str, int] = {}
+    for path in root.rglob("*.json"):
+        count = _count_json_string_fragment(
+            load_json(path), "small_brown_toadstool"
+        )
+        if count:
+            actual[path.relative_to(root).as_posix()] = count
+    return dict(sorted(actual.items()))
+
+
+def require_small_brown_reference_scope(root: Path) -> None:
+    actual = small_brown_json_reference_counts(root)
+    if actual != SMALL_BROWN_JSON_REFERENCE_COUNTS:
+        missing = sorted(set(SMALL_BROWN_JSON_REFERENCE_COUNTS) - set(actual))
+        unexpected = sorted(set(actual) - set(SMALL_BROWN_JSON_REFERENCE_COUNTS))
+        changed = {
+            path: {
+                "expected": SMALL_BROWN_JSON_REFERENCE_COUNTS[path],
+                "actual": actual[path],
+            }
+            for path in set(actual) & set(SMALL_BROWN_JSON_REFERENCE_COUNTS)
+            if actual[path] != SMALL_BROWN_JSON_REFERENCE_COUNTS[path]
+        }
+        raise ValidationError(
+            "Small-brown JSON reference scope differs: "
+            f"missing={missing}, unexpected={unexpected}, changed={changed}"
+        )
+    nbt_paths = sorted(root.rglob("*.nbt"))
+    if len(nbt_paths) != 29:
+        raise ValidationError(
+            f"Small-brown NBT reference gate expected 29 templates, found {len(nbt_paths)}"
+        )
+    marker = b"small_brown_toadstool"
+    leaked = []
+    for path in nbt_paths:
+        relative = path.relative_to(root).as_posix()
+        decoded = decode_nbt_bytes(path.read_bytes(), relative)
+        if marker in decoded:
+            leaked.append(relative)
+    if leaked:
+        raise ValidationError(
+            f"Small-brown ID leaked into protected structure NBT: {leaked}"
+        )
+
+
+def require_small_brown_toadstool_resources(root: Path) -> None:
+    for relative, spec in NATIVE_BROWN_TOADSTOOL_RESOURCE_SPECS.items():
+        path = root / PurePosixPath(relative)
+        if path.stat().st_size != spec["size"] or sha256_file(path) != spec["sha256"]:
+            raise ValidationError(
+                f"Native huge brown-toadstool resource was replaced: {relative}"
+            )
+
+    native_item = (root / PurePosixPath(SMALL_BROWN_NATIVE_ITEM_TEXTURE)).read_bytes()
+    if (
+        len(native_item) != SMALL_BROWN_NATIVE_ITEM_SIZE
+        or sha256_bytes(native_item) != SMALL_BROWN_NATIVE_ITEM_SHA256
+    ):
+        raise ValidationError("Native small-toadstool item texture changed")
+    _, _, native_item_raw = decode_indexed_png(
+        native_item, SMALL_BROWN_NATIVE_ITEM_TEXTURE
+    )
+    item_path = root / "assets/ribbits/textures/item/small_brown_toadstool.png"
+    item_width, item_height, item_raw = decode_rgba_png(
+        item_path.read_bytes(), item_path.name
+    )
+    if (item_width, item_height) != (16, 16) or item_raw[3::4] != native_item_raw[3::4]:
+        raise ValidationError("Small-brown item silhouette differs from the native toadstool")
+    item_pixels = _rgba_pixels(item_raw)
+    item_opaque = {
+        (index % item_width, index // item_width)
+        for index, pixel in enumerate(item_pixels)
+        if pixel[3]
+    }
+    item_brown = {
+        coordinate
+        for coordinate in item_opaque
+        if item_pixels[coordinate[1] * item_width + coordinate[0]]
+        in SMALL_BROWN_DOMINANT_PALETTE
+    }
+    item_stem = item_opaque - item_brown
+    item_mask = _mask_bytes(item_width, item_height, item_brown, item_stem)
+    if (
+        len(item_brown) != 108
+        or len(item_stem) != 43
+        or sha256_bytes(item_mask) != SMALL_BROWN_ITEM_MASK_SHA256
+    ):
+        raise ValidationError("Small-brown item cap/stem mask differs")
+    item_cap_counts = Counter(
+        item_pixels[y * item_width + x] for x, y in item_brown
+    )
+    if item_cap_counts != Counter(
+        {
+            SMALL_BROWN_DOMINANT_PALETTE[0]: 18,
+            SMALL_BROWN_DOMINANT_PALETTE[1]: 47,
+            SMALL_BROWN_DOMINANT_PALETTE[2]: 22,
+            SMALL_BROWN_DOMINANT_PALETTE[3]: 21,
+        }
+    ):
+        raise ValidationError("Small-brown item cap palette histogram differs")
+    for x, y, expected in SMALL_BROWN_ITEM_STEM_TOP_PIXELS:
+        if item_pixels[y * item_width + x] != expected or (x, y) not in item_stem:
+            raise ValidationError(f"Small-brown item changed stem-top pixel ({x}, {y})")
+
+    native_block = (root / PurePosixPath(SMALL_BROWN_NATIVE_BLOCK_TEXTURE)).read_bytes()
+    if (
+        len(native_block) != SMALL_BROWN_NATIVE_BLOCK_SIZE
+        or sha256_bytes(native_block) != SMALL_BROWN_NATIVE_BLOCK_SHA256
+    ):
+        raise ValidationError("Native small-toadstool block texture changed")
+    block_width, block_height, block_raw = decode_rgba_png(
+        native_block, SMALL_BROWN_NATIVE_BLOCK_TEXTURE
+    )
+    source_block_pixels = _rgba_pixels(block_raw)
+    block_cap, _ = derive_small_brown_block_mask(
+        root, source_block_pixels, block_width, block_height
+    )
+    output_block_path = root / "assets/ribbits/textures/block/small_brown_toadstool.png"
+    output_width, output_height, output_raw = decode_rgba_png(
+        output_block_path.read_bytes(), output_block_path.name
+    )
+    if (output_width, output_height) != (block_width, block_height):
+        raise ValidationError("Small-brown block atlas dimensions differ")
+    output_block_pixels = _rgba_pixels(output_raw)
+    for index, source_pixel in enumerate(source_block_pixels):
+        coordinate = (index % block_width, index // block_width)
+        expected = (
+            SMALL_BROWN_BLOCK_CAP_RECOLOR[source_pixel]
+            if coordinate in block_cap
+            else source_pixel
+        )
+        if output_block_pixels[index] != expected:
+            raise ValidationError(
+                f"Small-brown block atlas pixel differs at {coordinate}"
+            )
+
+    for source_relative in SMALL_BROWN_BLOCK_MODEL_PATHS:
+        source_model = load_json(root / PurePosixPath(source_relative))
+        expected_model = copy.deepcopy(source_model)
+        expected_model["textures"] = {
+            **expected_model["textures"],
+            "0": "ribbits:block/small_brown_toadstool",
+            "particle": "ribbits:block/small_brown_toadstool",
+        }
+        target_relative = source_relative.replace(
+            "/toadstool", "/small_brown_toadstool", 1
+        )
+        if load_json(root / PurePosixPath(target_relative)) != expected_model:
+            raise ValidationError(f"Small-brown block-model clone differs: {target_relative}")
+
+    clone_specs = (
+        (
+            "assets/ribbits/blockstates/toadstool.json",
+            "assets/ribbits/blockstates/small_brown_toadstool.json",
+            {
+                f"ribbits:block/toadstool{suffix}":
+                    f"ribbits:block/small_brown_toadstool{suffix}"
+                for suffix in ("", "_2", "_3", "_4")
+            },
+        ),
+        (
+            "assets/ribbits/models/item/toadstool.json",
+            "assets/ribbits/models/item/small_brown_toadstool.json",
+            {"ribbits:item/toadstool": "ribbits:item/small_brown_toadstool"},
+        ),
+        (
+            "data/ribbits/loot_table/blocks/toadstool.json",
+            "data/ribbits/loot_table/blocks/small_brown_toadstool.json",
+            {"ribbits:toadstool": "ribbits:small_brown_toadstool"},
+        ),
+        (
+            "data/ribbits/worldgen/placed_feature/toadstool_patch.json",
+            SMALL_BROWN_PLACED_FEATURE_PATH,
+            {"ribbits:toadstool_patch": "ribbits:small_brown_toadstool_patch"},
+        ),
+    )
+    for source_relative, target_relative, replacements in clone_specs:
+        expected, _ = replace_exact_json_strings(
+            load_json(root / PurePosixPath(source_relative)), replacements
+        )
+        if load_json(root / PurePosixPath(target_relative)) != expected:
+            raise ValidationError(f"Small-brown JSON clone differs: {target_relative}")
+
+    if load_json(root / "assets/ribbits/items/small_brown_toadstool.json") != {
+        "model": {
+            "type": "minecraft:model",
+            "model": "ribbits:item/small_brown_toadstool",
+        }
+    }:
+        raise ValidationError("Small-brown item definition differs")
+    if load_json(root / PurePosixPath(SMALL_BROWN_AXE_TAG_PATH)) != {
+        "replace": False,
+        "values": [
+            "ribbits:brown_toadstool",
+            "ribbits:red_toadstool",
+            "ribbits:toadstool_stem",
+            "ribbits:swamp_daisy",
+            "ribbits:toadstool",
+            "ribbits:small_brown_toadstool",
+            "ribbits:giant_lilypad",
+        ],
+    }:
+        raise ValidationError("Small-brown mineable/axe tag membership differs")
+    require_small_brown_reference_scope(root)
+
+
+def validate_small_brown_toadstool_resources(root: Path, errors: list[str]) -> None:
+    try:
+        require_small_brown_toadstool_resources(root)
+    except (OSError, KeyError, ValueError, ValidationError) as exc:
+        errors.append(f"Small-brown toadstool resources are invalid: {exc}")
+
+
 def migrate_spawn_egg_models(root: Path, minecraft_client: Path) -> dict[str, Any]:
     source, client_sha256 = load_authorized_vanilla_frog_spawn_egg(minecraft_client)
     recolored, source_palette_hex = recolor_vanilla_frog_spawn_egg(source)
@@ -3923,6 +5188,7 @@ def build_manifest(
     loot_migration: dict[str, Any],
     village_nbt_migration: dict[str, Any],
     village_utility_migration: dict[str, Any],
+    small_brown_toadstool: dict[str, Any],
 ) -> dict[str, Any]:
     output_hashes = {
         name: sha256_file(output / PurePosixPath(name)) for name in relative_files(output)
@@ -3976,6 +5242,7 @@ def build_manifest(
             "derived_outputs": user_chute_outputs,
             "derived_output_count": len(user_chute_outputs),
         },
+        "authoritative_recolor_donor": small_brown_toadstool,
         "source_safe_final_item_sprites": final_item_sprite_manifest_records(),
         "migrations": {
             "geckolib_models_moved": 25,
@@ -3989,7 +5256,7 @@ def build_manifest(
             "chute_leaf_item_definitions_added": 3,
             "chute_leaf_textures_added": 3,
             "item_definitions_added": len(REGISTERED_ITEM_IDS),
-            "cutout_logical_blocks": 6,
+            "cutout_logical_blocks": 7,
             "cutout_concrete_models": len(CUTOUT_MODEL_FILES),
             "recipes_migrated": 11,
             "recipe_advancements_migrated": 6,
@@ -3997,6 +5264,7 @@ def build_manifest(
             "language_files_migrated": 11,
             "config_prefix_renames": 33,
             "block_item_translation_keys_added": 154,
+            "small_brown_english_translation_keys_added": 2,
             "en_us_config_keys_added": len(EN_US_CONFIG_ADDITIONS),
             "en_us_mynx_profession_keys_added_or_changed": len(
                 EN_US_MYNX_PROFESSION_TRANSLATIONS
@@ -4008,6 +5276,9 @@ def build_manifest(
             "spawn_egg_models_migrated": len(SPAWN_EGG_IDS),
             "spawn_egg_textures_added": 1,
             "configured_feature_random_patch_to_sequence": configured_feature_migration,
+            "small_brown_toadstool_derived_resources_added": (
+                small_brown_toadstool["derived_output_count"]
+            ),
             "village_resident_profession_assignments_removed": village_nbt_migration,
             "private_village_progression_utilities_removed": village_utility_migration,
         },
@@ -4048,6 +5319,11 @@ def _assemble_impl(
     wandering_members, wandering_identity = load_exact_donor(
         wandering_donor, originals_root, "wandering"
     )
+    (
+        small_brown_donor_path,
+        small_brown_donor_members,
+        small_brown_donor_identity,
+    ) = load_authoritative_small_brown_recolor_donor(user_assets_root)
     donor_members = {
         "guard": guard_members,
         "useful": useful_members,
@@ -4062,6 +5338,11 @@ def _assemble_impl(
         (guard_donor, guard_identity, "Guard donor JAR"),
         (useful_donor, useful_identity, "Useful donor JAR"),
         (wandering_donor, wandering_identity, "Wandering Ribbit donor JAR"),
+        (
+            small_brown_donor_path,
+            small_brown_donor_identity,
+            "Matcha small-brown recolor donor pack",
+        ),
     ]
     user_chute_model, user_chute_png, user_chute_inputs = load_user_authored_chute_inputs(user_assets_root)
 
@@ -4144,6 +5425,11 @@ def _assemble_impl(
             )
         configured_feature_migration = migrate_configured_features(output)
         write_item_definitions(output)
+        small_brown_toadstool = assemble_small_brown_toadstool_resources(
+            output,
+            small_brown_donor_members,
+            small_brown_donor_identity,
+        )
         wandering_donor_outputs, user_chute_outputs = import_wandering_visual_resources(
             output,
             donor_members["wandering"],
@@ -4178,6 +5464,7 @@ def _assemble_impl(
             loot_migration,
             village_nbt_migration,
             village_utility_migration,
+            small_brown_toadstool,
         )
         write_manifest_after_donor_verification(manifest_path, manifest, donor_checks)
     except Exception:
@@ -4600,6 +5887,7 @@ def validate_donor_resource_boundary(root: Path, errors: list[str]) -> None:
 def validate_transforms(root: Path, errors: list[str]) -> None:
     validate_configured_features(root, errors)
     validate_donor_resource_boundary(root, errors)
+    validate_small_brown_toadstool_resources(root, errors)
 
     if (root / "assets/ribbits/geo").exists() or (root / "assets/ribbits/animations").exists():
         errors.append("Legacy GeckoLib resource roots remain")
@@ -4644,11 +5932,20 @@ def validate_transforms(root: Path, errors: list[str]) -> None:
         stale = [key for key in values if "ribbits-fabric-1_21_1" in key or "ribbits-1_21_10" in key]
         if stale:
             errors.append(f"Stale config translations in {path.name}: {stale}")
-        for item_id in BLOCK_ITEM_IDS:
+        for item_id in PRISTINE_BLOCK_ITEM_IDS:
             block_value = values.get(f"block.ribbits.{item_id}")
             item_value = values.get(f"item.ribbits.{item_id}")
             if block_value is None or item_value != block_value:
                 errors.append(f"Block/item translation mismatch for {item_id} in {path.name}")
+        small_brown_keys = {
+            "block.ribbits.small_brown_toadstool",
+            "item.ribbits.small_brown_toadstool",
+        }
+        if path.name == "en_us.json":
+            if {values.get(key) for key in small_brown_keys} != {"Brown Toadstool"}:
+                errors.append("Small-brown English localization differs")
+        elif small_brown_keys & set(values):
+            errors.append(f"Unexpected untranslated small-brown keys in {path.name}")
     en_values = load_json(root / "assets/ribbits/lang/en_us.json")
     expected_config_keys = {
         NEW_CONFIG_PREFIX + suffix
@@ -4973,10 +6270,13 @@ def validate_jar(
         packaged_configured_paths = [name for name in names if name.startswith(configured_prefix)]
         try:
             require_exact_configured_feature_paths(
-                packaged_configured_paths, "Packaged private JAR"
+                packaged_configured_paths,
+                "Packaged private JAR",
+                FINAL_CONFIGURED_FEATURE_PATHS,
             )
             validate_migrated_configured_feature_documents(
-                [(name, archive_json(name)) for name in packaged_configured_paths]
+                [(name, archive_json(name)) for name in packaged_configured_paths],
+                FINAL_CONFIGURED_FEATURE_PATHS,
             )
         except (KeyError, ValueError, ValidationError) as exc:
             errors.append(f"Packaged configured-feature migration is invalid: {exc}")

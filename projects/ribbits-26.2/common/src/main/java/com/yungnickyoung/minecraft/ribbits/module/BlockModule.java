@@ -111,6 +111,20 @@ public class BlockModule {
                             .sound(SoundType.SMALL_DRIPLEAF)
                             .ignitedByLava()
                             .setId(RegisterHelper.blockKey("toadstool"))
+             ))
+            .withItem(Item.Properties::new);
+
+    @AutoRegister("small_brown_toadstool")
+    public static final AutoRegisterBlock SMALL_BROWN_TOADSTOOL = AutoRegisterBlock.of(() -> new ToadstoolBlock(
+                    BlockBehaviour.Properties
+                            .of()
+                            .mapColor(MapColor.PLANT)
+                            .instabreak()
+                            .noCollision()
+                            .sound(SoundType.SMALL_DRIPLEAF)
+                            .ignitedByLava()
+                            .setId(RegisterHelper.blockKey("small_brown_toadstool")),
+                    PlacedFeatureModule.SMALL_BROWN_TOADSTOOL_PATCH
             ))
             .withItem(Item.Properties::new);
 

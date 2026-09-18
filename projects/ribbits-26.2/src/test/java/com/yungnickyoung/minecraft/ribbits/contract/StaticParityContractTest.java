@@ -184,6 +184,7 @@ class StaticParityContractTest {
                 "giant_lilypad",
                 "swamp_daisy",
                 "toadstool",
+                "small_brown_toadstool",
                 "glowcap",
                 "toadstool_heart",
                 "chute_leaf",

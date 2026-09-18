@@ -2,9 +2,11 @@ package com.yungnickyoung.minecraft.ribbits.block;
 
 import com.yungnickyoung.minecraft.ribbits.module.PlacedFeatureModule;
 import net.minecraft.core.BlockPos;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -13,7 +15,11 @@ public class ToadstoolBlock extends SwampPlantBlock {
     protected static final VoxelShape SHAPE = Block.box(0.0, 0.0, 0.0, 16.0, 8.0, 16.0);
 
     public ToadstoolBlock(Properties properties) {
-        super(properties, PlacedFeatureModule.TOADSTOOL_PATCH);
+        this(properties, PlacedFeatureModule.TOADSTOOL_PATCH);
+    }
+
+    public ToadstoolBlock(Properties properties, ResourceKey<PlacedFeature> bonemealPatch) {
+        super(properties, bonemealPatch);
     }
 
     @Override

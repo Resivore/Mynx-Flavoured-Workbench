@@ -9,6 +9,7 @@ import struct
 import tempfile
 import unittest
 import zipfile
+import zlib
 from pathlib import Path, PurePosixPath
 from unittest import mock
 
@@ -1285,10 +1286,262 @@ class PrivateVillageUtilityTransformTest(unittest.TestCase):
                 self.assertEqual([], errors)
 
 
+class SmallBrownToadstoolResourceTest(unittest.TestCase):
+    @staticmethod
+    def synthetic_brown_palette_png() -> bytes:
+        pixels: list[tuple[int, int, int, int]] = []
+        for color, count in tools.SMALL_BROWN_FULL_DONOR_PALETTE_COUNTS.items():
+            pixels.extend([color] * count)
+        return tools.encode_rgba_png(16, 16, tools._rgba_bytes(pixels))
+
+    def test_indexed_png_decoder_preserves_palette_alpha(self) -> None:
+        ihdr = struct.pack(">IIBBBBB", 2, 2, 8, 3, 0, 0, 0)
+        palette = bytes((10, 20, 30, 40, 50, 60))
+        transparency = bytes((255, 0))
+        scanlines = b"\x00\x00\x01\x00\x01\x00"
+        png = (
+            b"\x89PNG\r\n\x1a\n"
+            + tools._png_chunk(b"IHDR", ihdr)
+            + tools._png_chunk(b"PLTE", palette)
+            + tools._png_chunk(b"tRNS", transparency)
+            + tools._png_chunk(b"IDAT", zlib.compress(scanlines))
+            + tools._png_chunk(b"IEND", b"")
+        )
+        self.assertEqual(
+            (
+                2,
+                2,
+                bytes(
+                    (
+                        10, 20, 30, 255,
+                        40, 50, 60, 0,
+                        40, 50, 60, 0,
+                        10, 20, 30, 255,
+                    )
+                ),
+            ),
+            tools.decode_indexed_png(png, "synthetic indexed fixture"),
+        )
+
+    def test_authoritative_recolor_donor_loader_is_exact_and_hash_guarded(self) -> None:
+        item = tools.encode_rgba_png(16, 16, bytes((1, 2, 3, 255)) * 256)
+        brown = tools.encode_rgba_png(16, 16, bytes((4, 5, 6, 255)) * 256)
+        with tempfile.TemporaryDirectory() as temp_dir:
+            originals = Path(temp_dir) / "originals"
+            assets = originals / "assets"
+            assets.mkdir(parents=True)
+            donor = assets / "Matcha-Overlays-v37.zip"
+            with zipfile.ZipFile(donor, "w") as archive:
+                archive.writestr(tools.SMALL_BROWN_DONOR_ITEM_MEMBER, item)
+                archive.writestr(tools.SMALL_BROWN_DONOR_PALETTE_MEMBER, brown)
+                archive.writestr("assets/ribbits/textures/item/unrelated.png", b"ignored")
+            spec = {
+                "filename": donor.name,
+                "size": donor.stat().st_size,
+                "sha256": tools.sha256_file(donor),
+                "members": {
+                    tools.SMALL_BROWN_DONOR_ITEM_MEMBER: {
+                        "size": len(item),
+                        "sha256": tools.sha256_bytes(item),
+                        "dimensions": (16, 16),
+                    },
+                    tools.SMALL_BROWN_DONOR_PALETTE_MEMBER: {
+                        "size": len(brown),
+                        "sha256": tools.sha256_bytes(brown),
+                        "dimensions": (16, 16),
+                    },
+                },
+            }
+            with mock.patch.object(tools, "SMALL_BROWN_RECOLOR_DONOR_SPEC", spec):
+                path, members, identity = (
+                    tools.load_authoritative_small_brown_recolor_donor(originals)
+                )
+                self.assertEqual(donor, path)
+                self.assertEqual(set(spec["members"]), set(members))
+                self.assertEqual(spec["sha256"], identity["sha256"])
+                donor.write_bytes(donor.read_bytes() + b"tamper")
+                with self.assertRaisesRegex(tools.ValidationError, "changed during"):
+                    tools.require_donor_unchanged(
+                        donor, identity, "synthetic Matcha donor"
+                    )
+
+    def test_item_recolor_changes_only_cap_and_keeps_stem_top(self) -> None:
+        coordinates = [(x, y) for y in range(16) for x in range(16)]
+        stem = {(x, y) for x, y, _ in tools.SMALL_BROWN_ITEM_STEM_TOP_PIXELS}
+        stem.add((0, 15))
+        stem.update(
+            coordinate
+            for coordinate in coordinates
+            if coordinate not in stem and coordinate[1] < 15
+        )
+        stem = set(list(stem)[:43]) | {
+            (x, y) for x, y, _ in tools.SMALL_BROWN_ITEM_STEM_TOP_PIXELS
+        } | {(0, 15)}
+        while len(stem) > 43:
+            removable = next(
+                coordinate
+                for coordinate in stem
+                if coordinate not in {(x, y) for x, y, _ in tools.SMALL_BROWN_ITEM_STEM_TOP_PIXELS}
+                and coordinate != (0, 15)
+            )
+            stem.remove(removable)
+        cap = {
+            coordinate
+            for coordinate in coordinates
+            if coordinate not in stem and coordinate[1] < 15
+        }
+        cap = set(sorted(cap)[:108])
+        self.assertEqual(43, len(stem))
+        self.assertEqual(108, len(cap))
+
+        pixels = [(0, 0, 0, 0)] * 256
+        cap_colors: list[tuple[int, int, int, int]] = []
+        for color, count in zip(
+            tools.SMALL_BROWN_DONOR_RED_CAP_PALETTE,
+            (18, 23, 16, 13, 14),
+        ):
+            cap_colors.extend([color] * count)
+        for color, count in zip(
+            tools.SMALL_BROWN_DONOR_CAP_SPOT_PALETTE,
+            (8, 9, 7),
+        ):
+            cap_colors.extend([color] * count)
+        for coordinate, color in zip(sorted(cap), cap_colors):
+            pixels[coordinate[1] * 16 + coordinate[0]] = color
+        for coordinate in stem:
+            pixels[coordinate[1] * 16 + coordinate[0]] = (128, 112, 96, 255)
+        for x, y, expected in tools.SMALL_BROWN_ITEM_STEM_TOP_PIXELS:
+            pixels[y * 16 + x] = expected
+        spots = {
+            coordinate
+            for coordinate in cap
+            if pixels[coordinate[1] * 16 + coordinate[0]]
+            in tools.SMALL_BROWN_DONOR_CAP_SPOT_PALETTE
+        }
+        synthetic_mask_hash = tools.sha256_bytes(
+            tools._mask_bytes(16, 16, cap, stem)
+        )
+        source_png = tools.encode_rgba_png(16, 16, tools._rgba_bytes(pixels))
+        with (
+            mock.patch.object(
+                tools, "_four_connected_components", return_value=[spots, stem]
+            ),
+            mock.patch.object(
+                tools, "SMALL_BROWN_ITEM_MASK_SHA256", synthetic_mask_hash
+            ),
+        ):
+            output_png, metadata = tools.derive_small_brown_item_texture(
+                source_png, self.synthetic_brown_palette_png()
+            )
+        _, _, output_raw = tools.decode_rgba_png(output_png, "synthetic output")
+        output = tools._rgba_pixels(output_raw)
+        for coordinate in stem:
+            index = coordinate[1] * 16 + coordinate[0]
+            self.assertEqual(pixels[index], output[index])
+        for coordinate in cap:
+            index = coordinate[1] * 16 + coordinate[0]
+            self.assertEqual(tools.SMALL_BROWN_ITEM_CAP_RECOLOR[pixels[index]], output[index])
+        self.assertEqual(108, metadata["cap_pixels"])
+        self.assertEqual(43, metadata["stem_pixels_preserved"])
+        self.assertEqual(24, metadata["light_cap_spot_pixels_replaced"])
+
+    def test_block_recolor_changes_only_derived_cap_mask(self) -> None:
+        coordinates = [(x, y) for y in range(64) for x in range(64)]
+        cap = set(coordinates[:960])
+        stem = set(coordinates[960:1267])
+        pixels = [(0, 0, 0, 0)] * (64 * 64)
+        cap_colors: list[tuple[int, int, int, int]] = []
+        for color, count in zip(
+            tools.SMALL_BROWN_NATIVE_BLOCK_RED_PALETTE,
+            (185, 234, 279, 262),
+        ):
+            cap_colors.extend([color] * count)
+        for coordinate, color in zip(sorted(cap), cap_colors):
+            pixels[coordinate[1] * 64 + coordinate[0]] = color
+        for coordinate in stem:
+            pixels[coordinate[1] * 64 + coordinate[0]] = (
+                tools.SMALL_BROWN_NATIVE_BLOCK_SPOT_PALETTE[0]
+            )
+        source_png = tools.encode_rgba_png(64, 64, tools._rgba_bytes(pixels))
+        with mock.patch.object(
+            tools, "derive_small_brown_block_mask", return_value=(cap, stem)
+        ):
+            output_png, metadata = tools.derive_small_brown_block_texture(
+                Path("synthetic"), source_png, self.synthetic_brown_palette_png()
+            )
+        _, _, output_raw = tools.decode_rgba_png(output_png, "synthetic block output")
+        output = tools._rgba_pixels(output_raw)
+        for index, source in enumerate(pixels):
+            coordinate = (index % 64, index // 64)
+            expected = (
+                tools.SMALL_BROWN_BLOCK_CAP_RECOLOR[source]
+                if coordinate in cap
+                else source
+            )
+            self.assertEqual(expected, output[index])
+        self.assertEqual(960, metadata["cap_pixels"])
+        self.assertEqual(307, metadata["stem_pixels_preserved"])
+
+    def test_reference_scope_rejects_json_and_nbt_leaks(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            for relative, count in tools.SMALL_BROWN_JSON_REFERENCE_COUNTS.items():
+                path = root / PurePosixPath(relative)
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text(
+                    json.dumps(["ribbits:small_brown_toadstool"] * count),
+                    encoding="utf-8",
+                )
+            nbt_paths = []
+            for index in range(29):
+                path = root / f"data/ribbits/structure/synthetic_{index:02d}.nbt"
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_bytes(
+                    synthetic_structure_nbt(
+                        [{"Name": "minecraft:stone"}],
+                        [{"position": (0, 0, 0), "state": 0}],
+                    )
+                )
+                nbt_paths.append(path)
+            tools.require_small_brown_reference_scope(root)
+
+            forbidden_json = root / "data/ribbits/worldgen/configured_feature/veg_patch.json"
+            forbidden_json.write_text(
+                json.dumps({"Name": "ribbits:small_brown_toadstool"}),
+                encoding="utf-8",
+            )
+            with self.assertRaisesRegex(tools.ValidationError, "reference scope differs"):
+                tools.require_small_brown_reference_scope(root)
+            forbidden_json.unlink()
+
+            leaked_nbt = (
+                b"\x0a"
+                + nbt_string("")
+                + named_string("marker", "ribbits:small_brown_toadstool")
+                + b"\x00"
+            )
+            nbt_paths[0].write_bytes(tools.deterministic_gzip(leaked_nbt))
+            with self.assertRaisesRegex(tools.ValidationError, "leaked into protected"):
+                tools.require_small_brown_reference_scope(root)
+
+    def test_matcha_archive_basename_is_forbidden_from_packaging(self) -> None:
+        candidate = "assets/ribbits/Matcha-Overlays-v37.zip"
+        self.assertEqual(
+            [candidate], tools.source_only_donor_violations([candidate])
+        )
+        self.assertEqual(108, 84 + 24)
+        self.assertEqual(151, 108 + 43)
+        self.assertEqual(
+            "89600a4f4212733a03d6634423b7805fc8277e7edaa2dad9f91f6b58ea1f51df",
+            tools.SMALL_BROWN_ITEM_MASK_SHA256,
+        )
+        self.assertEqual(6, len(tools.NATIVE_BROWN_TOADSTOOL_RESOURCE_SPECS))
+
+
 class DonorBoundaryContractTest(unittest.TestCase):
     def test_exact_accounting_contains_only_approved_visual_members_and_outputs(self) -> None:
-        self.assertEqual("4.1.6+26.2-mynx-canary24", tools.CANDIDATE_VERSION)
-        self.assertEqual(24, tools.CANDIDATE_CANARY)
+        self.assertEqual("4.1.6+26.2-mynx-canary25", tools.CANDIDATE_VERSION)
+        self.assertEqual(25, tools.CANDIDATE_CANARY)
         self.assertEqual(
             "mynx-ribbits-private-resource-manifest/v1", tools.PRIVATE_MANIFEST_SCHEMA
         )
@@ -1296,8 +1549,8 @@ class DonorBoundaryContractTest(unittest.TestCase):
             "PRIVATE MYNX ASSEMBLY STAGED / NONREDISTRIBUTABLE DONOR ASSETS",
             tools.PRIVATE_MANIFEST_CLASSIFICATION,
         )
-        self.assertEqual(349, tools.OUTPUT_FILE_COUNT)
-        self.assertEqual(2_735_266, tools.OUTPUT_TOTAL_SIZE)
+        self.assertEqual(361, tools.OUTPUT_FILE_COUNT)
+        self.assertEqual(2_768_074, tools.OUTPUT_TOTAL_SIZE)
         self.assertEqual(2_563, tools.SORCERER_LOOT_OUTPUT_SIZE)
         self.assertEqual(
             "5b06e06502bf11f661161e89bf34e329d8f23268b7b0104371038c38ad9b378d",
@@ -1312,18 +1565,21 @@ class DonorBoundaryContractTest(unittest.TestCase):
             tools.PRIVATE_VILLAGE_TEMPLATE_TREE_AFTER_SHA256,
         )
         self.assertEqual(42, len(tools.GECKO_MODEL_IDS))
-        self.assertEqual(26, len(tools.REGISTERED_ITEM_IDS))
+        self.assertEqual(27, len(tools.REGISTERED_ITEM_IDS))
         self.assertEqual({"chute_leaf_open", "chute_leaf_closed"}, tools.AUXILIARY_ITEM_DEFINITION_IDS)
         self.assertNotIn("glowcap", tools.REGISTERED_ITEM_IDS)
         self.assertNotIn("toadstool_heart", tools.REGISTERED_ITEM_IDS)
         self.assertEqual(10, len(tools.SPAWN_EGG_IDS))
         self.assertIn("chute_leaf", tools.REGISTERED_ITEM_IDS)
+        self.assertIn("small_brown_toadstool", tools.REGISTERED_ITEM_IDS)
         self.assertEqual(
             {"alexsmobs", "minecraft", "ribbits", "trinkets"},
             tools.EXPECTED_PRIVATE_DATA_NAMESPACES,
         )
         self.assertEqual(27, len(tools.DONOR_DERIVED_OUTPUTS))
         self.assertEqual(3, len(tools.USER_AUTHORED_CHUTE_OUTPUTS))
+        self.assertEqual(12, len(tools.SMALL_BROWN_TOADSTOOL_DERIVED_OUTPUTS))
+        self.assertEqual(30, len(tools.CUTOUT_MODEL_FILES))
         self.assertEqual(
             13,
             sum(len(spec["members"]) for spec in tools.DONOR_INPUT_SPECS.values()),

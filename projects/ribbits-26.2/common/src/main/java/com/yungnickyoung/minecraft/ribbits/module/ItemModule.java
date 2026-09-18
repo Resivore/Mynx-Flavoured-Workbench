@@ -129,6 +129,7 @@ public class ItemModule {
         AutoRegisterUtils.addCompostableItem(() -> BlockModule.GIANT_LILYPAD.get().asItem(), 0.65F);
         AutoRegisterUtils.addCompostableItem(() -> BlockModule.UMBRELLA_LEAF.get().asItem(), 0.65F);
         AutoRegisterUtils.addCompostableItem(() -> BlockModule.TOADSTOOL.get().asItem(), 0.65F);
+        AutoRegisterUtils.addCompostableItem(() -> BlockModule.SMALL_BROWN_TOADSTOOL.get().asItem(), 0.65F);
         AutoRegisterUtils.addCompostableItem(() -> BlockModule.TOADSTOOL_STEM.get().asItem(), 0.85F);
         AutoRegisterUtils.addCompostableItem(() -> BlockModule.BROWN_TOADSTOOL.get().asItem(), 0.85F);
         AutoRegisterUtils.addCompostableItem(() -> BlockModule.RED_TOADSTOOL.get().asItem(), 0.85F);
