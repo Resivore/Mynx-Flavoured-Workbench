@@ -24,11 +24,11 @@
       "Preserve accepted C4 storage reservations, exact ghost/zero/marker visuals, public API compatibility for QSN C9 and CCAR C12, component-exact ordinary-item reservations, generic empty portable-container templates, and server-owned specific portable-container identities without external tooltip integration."
     ],
     "scope": [
-      "Current 0.1.0-canary24 from its finalized preceding implementation checkpoint owns only the occupied-origin INVENTORY_TO_SHULKER gesture. At the normal AbstractContainerScreen RMB press, one exact count-one supported cursor shulker over an occupied eligible ordinary player-inventory or hotbar slot is latched, its initial whole-source insertion is sent through server authority, and the native source click is consumed. Every physical RMB screen drag directly hit-tests its coordinate: a newly entered occupied ordinary player slot sends a chained predecessor/source-fingerprint action, an empty one transfers nothing but becomes traversal identity, and a foreign/blank surface permits re-entry. Per-source projected remainders and an F0-to-F1-to-F2 carried-shulker fingerprint chain fail closed on divergent cursor state; the server independently re-resolves menu, source, cursor predecessor, plans, commits both sides with callbacks, and synchronizes authoritative state including Creative full-state handling. An empty initial slot creates no CSR gesture and remains on the established native/Mouse Tweaks outbound path.",
+      "Current 0.1.0-canary25 from implementation checkpoint 81c3db322703ecc2588fceb3cbd7a1a86fdfb957 owns only occupied-origin carried-shulker RMB collection. A per-screen Fabric allowMouseClick phase ordered before puzzleslib:before and fabric:default resolves the actual native hovered Slot, immediately sends the initial whole-source action, and latches physical RMB ownership; allowMouseDrag uses the same native hit-test and an identity set so each eligible Slot is visited at most once for the whole hold, including empty no-ops, with blank space never clearing identity. The client derives ordinary player storage from the live Inventory non-equipment list, unwraps Creative inventory-tab SlotWrapper targets, and keeps menu and physical coordinates distinct. The server re-resolves the exact live menu/inventory Slot, predecessor and source fingerprints, extraction permission, planner result, callbacks, and synchronization. Empty initial slots create no CSR state and preserve the established outbound route.",
       "While CSR owns Slot A and remains TESTING, a finalized current CSR testing successor normally replaces the preceding CSR candidate through one serialized Test Instance Manager Slot A transition; only a concrete manager preimage, dependency, or physical-safety failure may leave that successor retained but not deployed.",
       "Bind one exact count-one shulker host by screen, menu, menu ID, visible slot index, Slot instance, underlying container slot, explicit Creative player-inventory locator where applicable, and complete SHA-256 ItemStack fingerprint; never search for an equal stack.",
-      "Render and hit-test one fixed 176x83 native panel with an unchanged 176x77 upper shulker region plus the same runtime texture's 176x6 bottom frame, 27 physical 18x18 cells, and bottom-left-at-host-center placement clamped only to the viewport. C24 removes C23's Mouse Tweaks helper interception, oldSelectedSlot traversal observation, outbound predictions, and optional mixin/plugin because Mouse Tweaks 2.31 rejects incompatible cursor-shulker/ordinary-source pairs before helper click delivery. The C24 inbound screen drag excludes panel, crafting/result, storage, fake, inactive, armor/equipment, and other foreign slots by resolving only active physical player inventory/hotbar Slots. Ordinary non-shulker cursors retain normal vanilla and Mouse Tweaks behavior. Established panel viewing, reservation editing, single-click transfer, shift-click, selection, tooltip, CCAR header integration, immediate host-or-panel lifetime, and Creative synchronization remain intact.",
-      "Canonical correction: C20-C22 interpreted the requested inverse RMB drag as ordinary item carried by cursor to CSR virtual shulker-panel cells. The requested interaction has always been shulker itself carried by cursor, RMB across occupied ordinary player-inventory slots, and whole source-stack collection into that carried shulker. The user's exact C23 gameplay evidence records a RUNTIME FAIL for this target: dragging from an occupied initial player slot across further occupied slots did not provide requested multi-slot collection; it does not establish whether the origin alone worked. The opposite carried-shulker to empty ordinary-inventory direction remains separately confirmed working. Historical C20-C22 records remain unchanged and no unrelated runtime result is inferred. MoreMouseTweaks remains unproven material and its absent exact artifact is not a blocker.",
+      "Render and hit-test one fixed 176x83 native panel with an unchanged 176x77 upper shulker region plus the same runtime texture's 176x6 bottom frame, 27 physical 18x18 cells, and bottom-left-at-host-center placement clamped only to the viewport. C25 replaces C24's unreachable AbstractContainerScreen click/drag collector hooks with the exact earlier Fabric allow-event seam proven by Item Interactions. A narrow optional @Pseudo guard suppresses only Mouse Tweaks 2.31 Main.onMouseDrag while CSR owns inbound RMB, preventing its pre-screen empty-slot source action; ownership lasts until physical release even after projected traversal invalidates. C20-C23 helper/provider bridges, oldSelectedSlot observation, per-source projection, and outbound prediction remain absent. Ordinary non-shulker cursors and empty-origin RMB remain upstream behavior. Established panel, reservation, selection, tooltip, CCAR, lifetime, and Creative behavior remain intact.",
+      "Canonical correction: C20-C22 interpreted the requested inverse RMB drag as ordinary item carried by cursor to CSR virtual shulker-panel cells. The requested interaction has always been shulker itself carried by cursor, RMB across occupied ordinary player-inventory slots, and whole source-stack collection into that carried shulker. C23's focused failure remains historical. C24 runtime evidence is exact: RUNTIME FAIL — occupied-origin RMB drag with a cursor-held shulker still did not perform the requested multi-slot inventory-to-shulker collection. No individual C24 substage is inferred. C24's hard-coded 36-slot boundary is a proven Inventory Extended incompatibility but is not established as the sole cause; exact Fabric/Puzzles bytecode separately proves Item Interactions can interrupt before C24's screen method is invoked. The opposite carried-shulker to empty ordinary-inventory direction remains separately confirmed working. MoreMouseTweaks remains unproven material.",
       "Keep pointer hover separate from server-authoritative per-player transient selection; select and cycle only occupied cells, migrate only through the exact server-observed host-slot-to-cursor pickup, and clear on stale identity, menu close, or disconnect.",
       "Use one shared deterministic planner for native secondary-click quick insertion and exact-cell panel transfers: occupied compatible merges, matching reserved empties, then unreserved empties; deny nesting, mismatches, full/nonwritable targets, fake slots, and multi-count hosts.",
       "Derive all panel reservation templates and content transactions from live server state; payloads carry only menu/locator/index/action/fingerprint authority, preserve unrelated components and ReservationData, update real owners once, and broadcast legitimate shared viewers.",
@@ -121,27 +121,39 @@
         "type": "OTHER",
         "identifier": "mousetweaks-api-reference",
         "requirement": "Exact local upstream inspection target MouseTweaks-fabric-mc26.2-2.31.jar, 75,872 bytes, SHA-256 4592eff38a2e7af3487688e888a637a8cbd4767b46662df94d993a889102effe, Fabric mod id mousetweaks version 2.31; no upstream source commit is embedded in the artifact.",
-        "reason": "Exact C24 test-only bytecode contract proves Mouse Tweaks 2.31 returns from its ordinary occupied-slot helper before click delivery when the cursor shulker and source stack are incompatible. C24 does not traverse or suppress Mouse Tweaks helpers; it uses the normal screen drag coordinate seam, and the reference is neither bundled, redistributed, nor a CSR runtime dependency."
+        "reason": "Exact C25 test-only bytecode contract proves Mouse Tweaks 2.31 runs Main.onMouseDrag before the wrapped Screen drag and can click an empty entered slot. C25 therefore gates one exact @Pseudo Main.onMouseDrag guard while CSR owns inbound RMB; the reference remains optional, unbundled, and not a CSR runtime dependency."
+      },
+      {
+        "type": "OTHER",
+        "identifier": "easyshulkerboxes-iteminteractions-reference",
+        "requirement": "Read-only EasyShulkerBoxes-v26.2.3-mc26.2.x-Fabric.jar, 639,115 bytes, SHA-256 66f803ae8796a0cdd7086e175fe8b96846515710b8b98b9aebc79d52ea2b0c38, Fabric id/version easyshulkerboxes/26.2.3; embedded META-INF/jars/iteminteractions-fabric-26.2.2.jar, 196,177 bytes, SHA-256 1745adf294134817986e46bf554a5a6613837602b660e15a15c50bdc2e0a293c, id/version iteminteractions/26.2.2.",
+        "reason": "Exact test-only C25 behavioral reference for the earlier allowMouseClick/allowMouseDrag input seam, actual hovered Slot discovery, identity-set traversal, and release clearing; neither artifact is modified, bundled, redistributed, suggested, or required at runtime."
+      },
+      {
+        "type": "OTHER",
+        "identifier": "inventoryextended-reference",
+        "requirement": "Exact accepted compatibility artifact inventoryextended-1.1.2-mc26.2-trinkets-compat-canary4.jar, 80,604 bytes, SHA-256 a0ced554cb687f7119aa19ac3466c0de3ffb0a888e994514223152335b043636, Fabric id/version inventoryextended/1.1.2.",
+        "reason": "Exact C25 test-only layout contract and optional controlled GameTest runtime: physical 0-62 are ordinary non-equipment storage, 63-69 are feet/legs/chest/head/offhand/body/saddle, and InventoryMenu keeps distinct menu coordinates. CSR has no hard Inventory Extended dependency."
       }
     ]
   },
   "state": {
-    "milestone": "Canary 24 is an ACTIVE corrective successor to Canary 23: it records C23's focused RUNTIME FAIL, replaces the incompatible Mouse Tweaks helper traversal with CSR-owned screen-coordinate inbound traversal, and preserves the confirmed working empty-origin outbound route. Controlled validation passed; C24 is NOT_DEPLOYED and RUNTIME_UNTESTED.",
+    "milestone": "Canary 25 is an ACTIVE reference-driven corrective successor to failed Canary 24: it moves occupied-origin RMB ownership ahead of Item Interactions, follows actual native Slot identity across the whole hold, removes fixed-36 eligibility, validates the exact Inventory Extended layout, and preserves the confirmed working empty-origin outbound route. Controlled validation passed; C25 is NOT_DEPLOYED and RUNTIME_UNTESTED.",
     "releases": {
       "current": {
-        "version": "0.1.0-canary24",
-        "embedded_version": "0.1.0-canary24",
+        "version": "0.1.0-canary25",
+        "embedded_version": "0.1.0-canary25",
         "artifact": {
-          "filename": "container-slot-reservations-0.1.0-canary24.jar",
-          "sha256": "292b1ddb6a9936c128ee05e39b17a9288345318d1bac167b6dc4ba526aafb826"
+          "filename": "container-slot-reservations-0.1.0-canary25.jar",
+          "sha256": "3c4660893b38ed0e7b17792a24a31fd068c91ac618d3af0ea5b02c7a57a9a1df"
         },
-        "built_at": "2026-09-17T15:22:33.9227748Z",
-        "source_commit": "18d8793c78a935b79d7ccdd7a43a1a89124f8b47",
+        "built_at": "2026-09-18T02:09:24.8825551Z",
+        "source_commit": "81c3db322703ecc2588fceb3cbd7a1a86fdfb957",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
         },
-        "summary": "Owns occupied-origin carried-shulker collection through native screen-coordinate traversal while preserving the established empty-origin outbound route."
+        "summary": "Owns occupied-origin carried-shulker RMB before upstream interruption, traverses each actual ordinary Slot once, and supports live extended inventories without changing empty-origin outbound behavior."
       },
       "accepted": {
         "version": "0.1.0-canary19",
@@ -179,10 +191,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 35,
-    "activity_at": "2026-09-17T15:23:00Z",
-    "updated_at": "2026-09-17T15:23:00Z",
-    "last_codex_at": "2026-09-17T15:23:00Z",
-    "source_commit": "18d8793c78a935b79d7ccdd7a43a1a89124f8b47"
+    "revision": 36,
+    "activity_at": "2026-09-18T02:11:17Z",
+    "updated_at": "2026-09-18T02:11:17Z",
+    "last_codex_at": "2026-09-18T02:11:17Z",
+    "source_commit": "81c3db322703ecc2588fceb3cbd7a1a86fdfb957"
   }
 }
