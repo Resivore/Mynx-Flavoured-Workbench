@@ -1,6 +1,7 @@
 package dev.aero.cnmterraincompat;
 
 import dev.tazer.clutternomore.common.blocks.VerticalSlabBlock;
+import games.twinhead.moreslabsstairsandwalls.api.material.BehaviorCapability;
 import games.twinhead.moreslabsstairsandwalls.api.material.NibaruMaterialProfile;
 import games.twinhead.moreslabsstairsandwalls.api.material.NibaruMaterialProfiles;
 import net.minecraft.core.Direction;
@@ -83,7 +84,7 @@ public final class BgeMaterialBindings {
         SPECIAL
     }
 
-    /** Typed occupancy strategies; only horizontal and Vertical Slabs normalize in C73. */
+    /** Typed topology identity; physical surfaces are supplied separately by each binding. */
     public enum Topology {
         CANONICAL_ROOT,
         HORIZONTAL_SLAB,
@@ -172,6 +173,7 @@ public final class BgeMaterialBindings {
     public record Binding(Block physicalBlock, Block canonicalMaterial,
             Optional<NibaruMaterialProfile> materialProfile, Role role, Ownership ownership,
             CatalogMembership membership, StateProjection stateProjection, Topology topology,
+            BgeSurfaceGeometry.SurfaceProvider surfaceProvider,
             boolean additionalCatalogGenerationExpected, boolean fullOccupancyNormalizationEnabled,
             boolean normallyObtainable, Optional<String> limitationReason) {
         public Binding {
@@ -183,6 +185,7 @@ public final class BgeMaterialBindings {
             Objects.requireNonNull(membership, "membership");
             Objects.requireNonNull(stateProjection, "stateProjection");
             Objects.requireNonNull(topology, "topology");
+            Objects.requireNonNull(surfaceProvider, "surfaceProvider");
             limitationReason = Objects.requireNonNull(limitationReason, "limitationReason");
             if (membership == CatalogMembership.SPECIAL_CANONICAL_BOUND
                     && limitationReason.filter(reason -> !reason.isBlank()).isEmpty()) {
@@ -196,6 +199,15 @@ public final class BgeMaterialBindings {
         public Optional<BlockState> canonicalState(BlockState state) {
             if (!state.is(physicalBlock)) return Optional.empty();
             return stateProjection.project(state);
+        }
+
+        /** Complete BGE-owned rendered surface data for this exact physical state. */
+        public BgeSurfaceGeometry.SurfaceModel surfaceModel(BlockState state) {
+            if (!state.is(physicalBlock)) {
+                return BgeSurfaceGeometry.SurfaceModel.unsupported(
+                        "Surface query state does not belong to the canonical binding.");
+            }
+            return surfaceProvider.describe(state);
         }
     }
 
@@ -295,19 +307,27 @@ public final class BgeMaterialBindings {
         requireMutable();
         bind(new Binding(alias, profile.canonicalParent(), Optional.of(profile), role,
                 Ownership.RETAINED_ALIAS, CatalogMembership.NORMAL_CATALOG,
-                projection(profile, role), topology(role), true,
+                projection(profile, role), topology(role), surfaceProvider(profile, topology(role)), true,
                 normalizes(role), alias.asItem() != Items.AIR, Optional.empty()));
     }
 
     static synchronized void bindFarmlandSpecial(Block farmlandSlab) {
         requireMutable();
+        bind(new Binding(net.minecraft.world.level.block.Blocks.FARMLAND,
+                net.minecraft.world.level.block.Blocks.FARMLAND, Optional.empty(),
+                Role.CANONICAL_BLOCK, Ownership.SPECIAL,
+                CatalogMembership.SPECIAL_CANONICAL_BOUND, state -> Optional.of(state),
+                Topology.CANONICAL_ROOT, BgeSurfaceGeometry.provider(Topology.CANONICAL_ROOT, true),
+                false, false, true,
+                Optional.of("Canonical terrain root metadata for the special Farmland Slab binding.")));
         bind(new Binding(farmlandSlab, net.minecraft.world.level.block.Blocks.FARMLAND,
                 Optional.empty(), Role.HORIZONTAL_SLAB, Ownership.SPECIAL,
                 CatalogMembership.SPECIAL_CANONICAL_BOUND,
                 state -> Optional.of(net.minecraft.world.level.block.Blocks.FARMLAND.defaultBlockState()
                         .setValue(BlockStateProperties.MOISTURE,
                                 state.getValue(FarmlandSlabBlock.MOISTURE))),
-                Topology.FARMLAND_SLAB, false, false, false,
+                Topology.FARMLAND_SLAB, BgeSurfaceGeometry.provider(Topology.FARMLAND_SLAB, true),
+                false, false, false,
                 Optional.of("State-only horizontal farmland form created by tilling; no other catalog geometry is intentional.")));
     }
 
@@ -440,7 +460,7 @@ public final class BgeMaterialBindings {
         }
         bind(new Binding(block, profile.canonicalParent(), Optional.of(profile), role,
                 Ownership.PRIMARY, CatalogMembership.NORMAL_CATALOG,
-                projection(profile, role), topology(role), true,
+                projection(profile, role), topology(role), surfaceProvider(profile, topology(role)), true,
                 normalizes(role), block.asItem() != Items.AIR, Optional.empty()));
     }
 
@@ -537,6 +557,12 @@ public final class BgeMaterialBindings {
 
     private static boolean normalizes(Role role) {
         return role == Role.HORIZONTAL_SLAB || role == Role.VERTICAL_SLAB;
+    }
+
+    private static BgeSurfaceGeometry.SurfaceProvider surfaceProvider(
+            NibaruMaterialProfile profile, Topology topology) {
+        boolean terrainHeightInset = profile.capabilities().contains(BehaviorCapability.PATH_CONVERSION);
+        return BgeSurfaceGeometry.provider(topology, terrainHeightInset);
     }
 
     private static Identifier id(Block block) {

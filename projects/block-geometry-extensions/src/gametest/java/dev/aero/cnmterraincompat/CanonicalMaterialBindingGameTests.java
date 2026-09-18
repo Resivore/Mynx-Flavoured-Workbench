@@ -27,7 +27,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
-/** Canonical identity, closure, projection, topology, and real placement regressions for C73. */
+/** Canonical identity, closure, projection, topology, and real placement regressions retained by C74. */
 public final class CanonicalMaterialBindingGameTests implements CustomTestMethodInvoker {
     @GameTest(maxTicks = 40)
     public void everyOwnedBlockIsClassifiedAndEveryNormalFamilyHasNinePrimaryRoles(
@@ -69,7 +69,7 @@ public final class CanonicalMaterialBindingGameTests implements CustomTestMethod
                 "Nine-role closure count mismatch: profiles=" + profiles + ", primary=" + primary);
         System.out.println("CANONICAL_BINDING_CLOSURE|profiles=" + profiles
                 + "|primary=" + primary + "|owned=" + BgeMaterialBindings.ownedBlocks().size()
-                + "|aliases=3|special=1|exemptions=0");
+                + "|aliases=3|special=2|exemptions=0");
         helper.succeed();
     }
 
@@ -86,6 +86,8 @@ public final class CanonicalMaterialBindingGameTests implements CustomTestMethod
 
         BgeMaterialBindings.Binding farmland = BgeMaterialBindings.fromBlock(
                 CnmTerrainCompat.FARMLAND_SLAB).orElseThrow();
+        BgeMaterialBindings.Binding farmlandRoot = BgeMaterialBindings.fromBlock(
+                Blocks.FARMLAND).orElseThrow();
         BlockState source = CnmTerrainCompat.FARMLAND_SLAB.defaultBlockState()
                 .setValue(FarmlandSlabBlock.MOISTURE, 6)
                 .setValue(FarmlandSlabBlock.TYPE, SlabType.TOP);
@@ -103,6 +105,11 @@ public final class CanonicalMaterialBindingGameTests implements CustomTestMethod
                         && projected.getValue(BlockStateProperties.MOISTURE) == 6
                         && !projected.hasProperty(BlockStateProperties.SLAB_TYPE),
                 "Farmland special canonical projection/classification is incomplete: " + farmland);
+        helper.assertTrue(farmlandRoot.topology() == BgeMaterialBindings.Topology.CANONICAL_ROOT
+                        && farmlandRoot.ownership() == BgeMaterialBindings.Ownership.SPECIAL
+                        && farmlandRoot.canonicalState(Blocks.FARMLAND.defaultBlockState())
+                                .orElseThrow().is(Blocks.FARMLAND),
+                "Farmland canonical root did not receive typed surface metadata");
 
         assertBounds(helper, farmland, SlabType.BOTTOM, new BgeMaterialBindings.Bounds(0, 0, 0, 16, 7, 16));
         assertBounds(helper, farmland, SlabType.TOP, new BgeMaterialBindings.Bounds(0, 7, 0, 16, 15, 16));
