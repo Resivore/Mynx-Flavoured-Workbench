@@ -132,7 +132,7 @@ tasks.register('verifyControlledProviders') {
                     'me/pepperbell/continuity/client/processor/overlay/OverlayProcessingPredicate.class':
                             ['shouldProcessQuad', 'isQuadUnitSquare'],
                     'me/pepperbell/continuity/client/model/CtmBlockStateModel$CtmQuadTransform.class':
-                            ['transformOnce', 'processQuad']
+                            ['transformOnce', 'processQuad', 'sliceFunc', 'processors', 'multipassProcessors'],
             ].each { path, requiredConstants ->
                 def seam = archive.getEntry(path)
                 if (seam == null) {
@@ -258,7 +258,7 @@ tasks.register('verifyReleaseArtifact') {
 
 tasks.register('stageCanaryArtifact', Copy) {
     group = 'distribution'
-    description = 'Stages the exact ignored Canary 4 JAR for canonical local retention.'
+    description = 'Stages the exact ignored Canary 5 JAR for canonical local retention.'
     dependsOn tasks.named('verifyReleaseArtifact')
     from(packagedJar)
     into(layout.projectDirectory.dir('artifacts'))

@@ -52,7 +52,8 @@ final class ContactFilteringConnectionPredicateTest {
         assertFalse(negativeFilter.shouldConnect(
                 view, ORIGIN, unrelated, unrelated, EAST, Direction.UP, null));
         assertEquals(1, negative.sevenArgumentCalls.get());
-        assertEquals(2, worldReads.get(), "A negative delegate must short-circuit before world reads");
+        assertEquals(4, worldReads.get(),
+                "An upstream rejection must recover the physical endpoints for its managed-only diagnostic");
     }
 
     @Test

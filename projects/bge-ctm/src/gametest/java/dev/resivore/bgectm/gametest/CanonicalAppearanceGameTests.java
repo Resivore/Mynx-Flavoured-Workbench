@@ -394,12 +394,42 @@ public final class CanonicalAppearanceGameTests implements CustomTestMethodInvok
     }
 
     @GameTest(maxTicks = 40)
+    public void canonicalSnowyDirtProjectionIsProfileIndependent(GameTestHelper helper) {
+        BlockState podzolDouble = slabState(Blocks.PODZOL, SlabType.DOUBLE);
+        BlockState podzolTop = slabState(Blocks.PODZOL, SlabType.TOP);
+        BlockState myceliumDouble = slabState(Blocks.MYCELIUM, SlabType.DOUBLE);
+
+        // This matches the owner-observed physical state: one full-volume ordinary slab
+        // carrier, not a pair of TOP/BOTTOM slabs. It must project only canonical podzol.
+        assertPolicy(helper, podzolDouble, Policy.ELIGIBLE_ORDINARY_SLAB);
+        helper.setBlock(QUERY_POS.above(), Blocks.AIR);
+        assertSnowyAppearance(helper, appearance(helper, podzolDouble), Blocks.PODZOL, false,
+                "dry podzol double slab");
+        assertSnowyAppearance(helper, appearance(helper, podzolTop), Blocks.PODZOL, false,
+                "dry podzol top slab");
+        assertSnowyAppearance(helper, appearance(helper, myceliumDouble), Blocks.MYCELIUM, false,
+                "dry mycelium double slab");
+
+        helper.setBlock(QUERY_POS.above(), Blocks.SNOW_BLOCK);
+        assertSnowyAppearance(helper, appearance(helper, podzolDouble), Blocks.PODZOL, true,
+                "snow-covered podzol double slab");
+        assertSnowyAppearance(helper, appearance(helper, myceliumDouble), Blocks.MYCELIUM, true,
+                "snow-covered mycelium double slab");
+
+        BlockState canonical = appearance(helper, podzolDouble);
+        helper.assertTrue(!canonical.hasProperty(BlockStateProperties.SLAB_TYPE)
+                        && !canonical.hasProperty(BlockStateProperties.WATERLOGGED),
+                "Double-slab geometry properties leaked into canonical podzol state");
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
     public void unrelatedVisualAllowlistStillFailsClosed(GameTestHelper helper) {
 
         BlockState mycelium = layerState(Blocks.MYCELIUM, Direction.DOWN, 1);
-        assertPolicy(helper, mycelium, Policy.UNMAPPABLE_CANONICAL_STATE);
-        helper.assertTrue(appearance(helper, mycelium) == mycelium,
-                "Non-GRASS_OVERLAY snowy family unexpectedly gained a broad projector");
+        assertPolicy(helper, mycelium, Policy.ELIGIBLE_LAYER);
+        assertCanonical(helper, appearance(helper, mycelium), Blocks.MYCELIUM,
+                "Snowy canonical mycelium must project independently of visual profile");
 
         BlockState honey = layerState(Blocks.HONEY_BLOCK, Direction.DOWN, 1);
         assertPolicy(helper, honey, Policy.UNSUPPORTED_VISUAL_PROFILE);
@@ -423,6 +453,14 @@ public final class CanonicalAppearanceGameTests implements CustomTestMethodInvok
         helper.assertTrue(state.hasProperty(BlockStateProperties.SNOWY)
                         && state.getValue(BlockStateProperties.SNOWY) == snowy,
                 label + " did not project vanilla snowy semantics: " + state);
+    }
+
+    private static void assertSnowyAppearance(GameTestHelper helper, BlockState state,
+            Block canonical, boolean snowy, String label) {
+        assertCanonical(helper, state, canonical, label);
+        helper.assertTrue(state.hasProperty(BlockStateProperties.SNOWY)
+                        && state.getValue(BlockStateProperties.SNOWY) == snowy,
+                label + " did not project positional snowy semantics: " + state);
     }
 
     private static void assertDecision(GameTestHelper helper, BlockState source, BlockPos sourcePos,
