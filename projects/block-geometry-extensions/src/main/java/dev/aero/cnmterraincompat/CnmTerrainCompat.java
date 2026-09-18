@@ -24,6 +24,8 @@ public final class CnmTerrainCompat implements ModInitializer {
     public static final Identifier GRASS_VERTICAL_SLAB_ID = id("grass_vertical_slab");
     public static final Identifier DIRT_SLAB_ID = id("dirt_slab");
     public static final Identifier GRASS_SLAB_ID = id("grass_slab");
+    /** Stable public identity consumed by crop-compatibility integrations. */
+    public static final Identifier FARMLAND_SLAB_ID = id("farmland_slab");
 
     public static final VerticalSlabBlock DIRT_VERTICAL_SLAB = new DirtVerticalSlab(
             properties(DIRT_VERTICAL_SLAB_ID, Blocks.DIRT));
@@ -33,6 +35,9 @@ public final class CnmTerrainCompat implements ModInitializer {
             properties(DIRT_SLAB_ID, Blocks.DIRT));
     public static final GrassHorizontalSlab GRASS_SLAB = new GrassHorizontalSlab(
             properties(GRASS_SLAB_ID, Blocks.GRASS_BLOCK));
+    /** The one canonical horizontal BGE representation of vanilla Farmland. */
+    public static final FarmlandSlabBlock FARMLAND_SLAB = new FarmlandSlabBlock(
+            properties(FARMLAND_SLAB_ID, Blocks.FARMLAND));
     private static boolean nativeCatalogRegistered;
     private static boolean bgeBaseRegistered;
     private static boolean bgeGeometryRegistered;
@@ -64,6 +69,8 @@ public final class CnmTerrainCompat implements ModInitializer {
         register(GRASS_VERTICAL_SLAB_ID, GRASS_VERTICAL_SLAB);
         register(DIRT_SLAB_ID, DIRT_SLAB);
         register(GRASS_SLAB_ID, GRASS_SLAB);
+        registerBlockOnly(FARMLAND_SLAB_ID, FARMLAND_SLAB);
+        FarmlandSlabTilling.register();
         CanonicalGeometryRegistry.register(
                 DIRT_VERTICAL_SLAB,
                 GRASS_VERTICAL_SLAB,
@@ -146,7 +153,7 @@ public final class CnmTerrainCompat implements ModInitializer {
     }
 
     static void register(Identifier id, Block block) {
-        Registry.register(BuiltInRegistries.BLOCK, ResourceKey.create(Registries.BLOCK, id), block);
+        registerBlockOnly(id, block);
         Item.Properties properties = new Item.Properties()
                 .setId(ResourceKey.create(Registries.ITEM, id))
                 .useBlockDescriptionPrefix();
@@ -154,6 +161,11 @@ public final class CnmTerrainCompat implements ModInitializer {
                 ? new BgeBlockItem(block, properties)
                 : new BlockItem(block, properties);
         Registry.register(BuiltInRegistries.ITEM, ResourceKey.create(Registries.ITEM, id), item);
+    }
+
+    /** Registers state-only blocks such as Farmland Slab without an obtainable BlockItem. */
+    private static void registerBlockOnly(Identifier id, Block block) {
+        Registry.register(BuiltInRegistries.BLOCK, ResourceKey.create(Registries.BLOCK, id), block);
     }
 
     private static Identifier id(String path) {

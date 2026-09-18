@@ -4,6 +4,7 @@
     "cnm_terrain_slabs_compat:dirt_vertical_slab",
     "cnm_terrain_slabs_compat:grass_vertical_slab",
     "cnm_terrain_slabs_compat:dirt_slab",
-    "cnm_terrain_slabs_compat:grass_slab"
+    "cnm_terrain_slabs_compat:grass_slab",
+    "cnm_terrain_slabs_compat:farmland_slab"
   ]
 }

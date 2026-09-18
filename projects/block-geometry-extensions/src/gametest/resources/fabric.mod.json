@@ -16,6 +16,7 @@
       "dev.aero.cnmterraincompat.gametest.LeafSemanticsGameTests",
       "dev.aero.cnmterraincompat.gametest.NativeAxisGameTests",
       "dev.aero.cnmterraincompat.gametest.BgeLayerBlockGameTests",
+      "dev.aero.cnmterraincompat.gametest.FarmlandSlabGameTests",
       "dev.aero.cnmterraincompat.BgeLayerIntegrationGameTests",
       "dev.aero.cnmterraincompat.LayerResourceGameTests",
       "dev.aero.cnmterraincompat.BgeQuarterGeometryGameTests",

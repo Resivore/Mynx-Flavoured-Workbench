@@ -21,7 +21,7 @@ $sticky = Get-Content -Raw -LiteralPath (Join-Path $common 'block\slime\StickyMa
 $piston = Get-Content -Raw -LiteralPath (Join-Path $root 'src\nibaru\java\games\twinhead\moreslabsstairsandwalls\fabric\mixin\PistonHandlerMixin.java')
 
 $checks = [ordered]@{
-    'provider profile version retains Honey/Slime semantics in current catalog' = $profiles.Contains('canary40-pale-coverage-v1')
+    'provider profile version retains Honey/Slime semantics in current catalog' = $profiles.Contains('canary67-vanilla-family-coverage-v1')
     'pure inset visual contract is provider-owned' = ($contract.Contains('record InsetVisualContract') -and $contract.Contains('ShellTexture'))
     'Honey publishes canonical side top bottom roles' = ($profiles.Contains('honey_block_side') -and $profiles.Contains('honey_block_top') -and $profiles.Contains('honey_block_bottom'))
     'Honey and Slime publish distinct inset dimensions' = ($profiles.Contains('1, 1, NibaruMaterialProfile.InsetVisualContract') -and $profiles.Contains('3, 2, NibaruMaterialProfile.InsetVisualContract'))
