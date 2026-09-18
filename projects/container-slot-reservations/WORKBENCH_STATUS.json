@@ -24,7 +24,7 @@
       "Preserve accepted C4 storage reservations, exact ghost/zero/marker visuals, public API compatibility for QSN C9 and CCAR C12, component-exact ordinary-item reservations, generic empty portable-container templates, and server-owned specific portable-container identities without external tooltip integration."
     ],
     "scope": [
-      "Current 0.1.0-canary25 from implementation checkpoint 81c3db322703ecc2588fceb3cbd7a1a86fdfb957 owns only occupied-origin carried-shulker RMB collection. A per-screen Fabric allowMouseClick phase ordered before puzzleslib:before and fabric:default resolves the actual native hovered Slot, immediately sends the initial whole-source action, and latches physical RMB ownership; allowMouseDrag uses the same native hit-test and an identity set so each eligible Slot is visited at most once for the whole hold, including empty no-ops, with blank space never clearing identity. The client derives ordinary player storage from the live Inventory non-equipment list, unwraps Creative inventory-tab SlotWrapper targets, and keeps menu and physical coordinates distinct. The server re-resolves the exact live menu/inventory Slot, predecessor and source fingerprints, extraction permission, planner result, callbacks, and synchronization. Empty initial slots create no CSR state and preserve the established outbound route.",
+      "Current 0.1.0-canary26 from implementation checkpoint da545df22c2c1589a2eaebc1908b2b4479c21164 is a DIAGNOSTIC successor to failed C25, not a behavior-fix claim. It retains C25's Fabric allowMouseClick/drag/release path, identity traversal, outgoing payload, planner, authoritative server transaction, and empty-origin outbound pass-through, while default-on [CSR-C26-RMB] tracing records the physical press before eligibility, Fabric entry, client classification/rejection, plans/sends, distinct drag entries, release/reset, receiver/server validation, plan, commit, and sync. It independently logs visible list position, slot.index, physical backing slot, and Creative wrapper/backing data. The client derives ordinary player storage from the live Inventory non-equipment list; the server retains exact live-slot/fingerprint/extraction authority.",
       "While CSR owns Slot A and remains TESTING, a finalized current CSR testing successor normally replaces the preceding CSR candidate through one serialized Test Instance Manager Slot A transition; only a concrete manager preimage, dependency, or physical-safety failure may leave that successor retained but not deployed.",
       "Bind one exact count-one shulker host by screen, menu, menu ID, visible slot index, Slot instance, underlying container slot, explicit Creative player-inventory locator where applicable, and complete SHA-256 ItemStack fingerprint; never search for an equal stack.",
       "Render and hit-test one fixed 176x83 native panel with an unchanged 176x77 upper shulker region plus the same runtime texture's 176x6 bottom frame, 27 physical 18x18 cells, and bottom-left-at-host-center placement clamped only to the viewport. C25 replaces C24's unreachable AbstractContainerScreen click/drag collector hooks with the exact earlier Fabric allow-event seam proven by Item Interactions. A narrow optional @Pseudo guard suppresses only Mouse Tweaks 2.31 Main.onMouseDrag while CSR owns inbound RMB, preventing its pre-screen empty-slot source action; ownership lasts until physical release even after projected traversal invalidates. C20-C23 helper/provider bridges, oldSelectedSlot observation, per-source projection, and outbound prediction remain absent. Ordinary non-shulker cursors and empty-origin RMB remain upstream behavior. Established panel, reservation, selection, tooltip, CCAR, lifetime, and Creative behavior remain intact.",
@@ -138,22 +138,22 @@
     ]
   },
   "state": {
-    "milestone": "Canary 25 is an ACTIVE reference-driven corrective successor to failed Canary 24: it moves occupied-origin RMB ownership ahead of Item Interactions, follows actual native Slot identity across the whole hold, removes fixed-36 eligibility, validates the exact Inventory Extended layout, and preserves the confirmed working empty-origin outbound route. Controlled validation passed; C25 is NOT_DEPLOYED and RUNTIME_UNTESTED.",
+    "milestone": "Canary 26 is an ACTIVE DIAGNOSTIC successor to failed Canary 25. It does not claim the occupied-origin carried-shulker RMB collection is fixed; it makes one attempted gesture explain its client input, eligibility, payload, server validation, planner, mutation, synchronization, and reset path in latest.log. Controlled validation passed; C26 is NOT_DEPLOYED and RUNTIME_UNTESTED.",
     "releases": {
       "current": {
-        "version": "0.1.0-canary25",
-        "embedded_version": "0.1.0-canary25",
+        "version": "0.1.0-canary26",
+        "embedded_version": "0.1.0-canary26",
         "artifact": {
-          "filename": "container-slot-reservations-0.1.0-canary25.jar",
-          "sha256": "3c4660893b38ed0e7b17792a24a31fd068c91ac618d3af0ea5b02c7a57a9a1df"
+          "filename": "container-slot-reservations-0.1.0-canary26.jar",
+          "sha256": "ef2fa4f1a73657566d68adb11ac4dd9e5d039db0dfd4a610013c129fcc430ff4"
         },
-        "built_at": "2026-09-18T02:09:24.8825551Z",
-        "source_commit": "81c3db322703ecc2588fceb3cbd7a1a86fdfb957",
+        "built_at": "2026-09-18T03:07:51.2925581Z",
+        "source_commit": "da545df22c2c1589a2eaebc1908b2b4479c21164",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
         },
-        "summary": "Owns occupied-origin carried-shulker RMB before upstream interruption, traverses each actual ordinary Slot once, and supports live extended inventories without changing empty-origin outbound behavior."
+        "summary": "Diagnostic-first successor: default-on [CSR-C26-RMB] traces the existing occupied-origin carried-shulker RMB transaction end to end without claiming the gameplay failure is fixed."
       },
       "accepted": {
         "version": "0.1.0-canary19",
@@ -191,10 +191,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 36,
-    "activity_at": "2026-09-18T02:11:17Z",
-    "updated_at": "2026-09-18T02:11:17Z",
-    "last_codex_at": "2026-09-18T02:11:17Z",
-    "source_commit": "81c3db322703ecc2588fceb3cbd7a1a86fdfb957"
+    "revision": 37,
+    "activity_at": "2026-09-18T03:08:31Z",
+    "updated_at": "2026-09-18T03:08:31Z",
+    "last_codex_at": "2026-09-18T03:08:31Z",
+    "source_commit": "da545df22c2c1589a2eaebc1908b2b4479c21164"
   }
 }
