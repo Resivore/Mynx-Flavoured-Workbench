@@ -1,14 +1,14 @@
-# BGE C71 Farmland Slab manual verification
+# BGE C72 Farmland Slab Low Water manual verification
 
-Current candidate: `cnm-nibaru-integration-4.2.15-bge.canary71.farmland-slab+26.2.jar`
+Current candidate: `cnm-nibaru-integration-4.2.16-bge.canary72.farmland-slab-low-water+26.2.jar`
 
-- Embedded version: `4.2.15-bge.canary71.farmland-slab+26.2`
-- SHA-256: `caefdf6c73c9ffeaf1418de9861c4f34e9801fab32450776a1e4c49aadfeff95`
-- Source checkpoint: `f036fa52e6034d2b3362ff0027543ae0fb87cc4b`
+- Embedded version: `4.2.16-bge.canary72.farmland-slab-low-water+26.2`
+- SHA-256: `f9f892fccbbee85f75f03c9b24752bbeab76f4fa60efd867414969b735ae85a3`
+- Source checkpoint: `53a8bd949b803ddea73a31e11d540353d59e00df`
 - Lifecycle/evidence: `ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED`
-- Accepted rollback/predecessor: exact C70 `cnm-nibaru-integration-4.2.14-bge.canary70.stone-native-slab+26.2.jar`, SHA-256 `d304552e29e76c4165675415215439ac2d73b5a6ebc4abc9787f0fa1124cf266`
+- Rollback/predecessor: exact C71 `cnm-nibaru-integration-4.2.15-bge.canary71.farmland-slab+26.2.jar`, SHA-256 `caefdf6c73c9ffeaf1418de9861c4f34e9801fab32450776a1e4c49aadfeff95`; accepted C70 remains separately recorded.
 
-This checklist is lifecycle-neutral. Record only behavior actually observed for the exact C71 bytes above. It does not authorize inspecting, creating, selecting, or modifying any protected or retired Minecraft profile.
+This checklist is lifecycle-neutral. Record only behavior actually observed for the exact C72 bytes above. It does not authorize inspecting, creating, selecting, or modifying any protected or retired Minecraft profile.
 
 ## Hoe parity matrix
 
@@ -34,9 +34,9 @@ Then verify the rejection rules:
 ## Farmland lifecycle and economy
 
 1. Confirm the state has only `type` and `moisture=0..7`; there is no waterlogged state, BlockItem, recipe, creative entry, or derived stair/wall/other BGE geometry.
-2. Confirm nearby water hydrates to moisture 7 through vanilla's inclusive four-block horizontal and current-to-one-above vertical range. Confirm rain hydrates where vanilla rain reaches the block.
+2. For bottom, top, and double Farmland Slabs, confirm water directly below at Y-1 and water exactly four blocks horizontally away at Y-1 hydrate to moisture 7. Confirm water five blocks horizontally away at Y-1 and water at Y-2 do not hydrate. Reconfirm water at the existing Y and Y+1 levels hydrates. The exact inclusive C72 search is `[-4..+4 X, -1..+1 Y, -4..+4 Z]` relative to the Farmland Slab; it does not depend on slab type. Confirm rain hydrates where vanilla rain reaches the block.
 3. Remove water and rain. Confirm moisture drops one level per applicable random tick, then zero-moisture Farmland eventually returns to the matching Dirt Slab.
-4. Confirm a block in vanilla's `maintains_farmland` contract prevents zero-moisture reversion. Crop placement/growth on the partial-height surface is intentionally not supplied by C71 and remains a Slab Decorations task.
+4. Confirm a block in vanilla's `maintains_farmland` contract prevents zero-moisture reversion. Crop placement/growth on the partial-height surface is intentionally not supplied by C72 and remains a Slab Decorations task.
 5. Place a solid block above and confirm the scheduled survival check returns bottom, top, and double Farmland to the matching Dirt Slab.
 6. Confirm player trampling follows vanilla probability/size behavior; non-player trampling respects `mobGriefing`, and undersized living entities do not trample.
 7. Confirm the occupied top is 7/16 for bottom Farmland and 15/16 for top/double Farmland, with no accidental full-block collision.
@@ -47,6 +47,6 @@ Then verify the rejection rules:
 1. Recheck Dirt Slab to Dirt Path shovel conversion and Dirt Path survival/reversion.
 2. Recheck accepted C70's Stone profile: `minecraft:stone_slab` remains its exact effective horizontal source and no duplicate Stone slab appears.
 3. Spot-check another material profile and each existing BGE geometry catalog role for unchanged placement, identity, texture behavior, and economy.
-4. Do not treat missing crop placement, crop projection, crop targeting, particles, or partial-height crop rendering as a C71 failure; those behaviors are explicitly deferred to Slab Decorations.
+4. Do not treat missing crop placement, crop projection, crop targeting, particles, or partial-height crop rendering as a C72 failure; those behaviors are explicitly deferred to Slab Decorations.
 
 Record `PASS`, `FAIL`, or `INCONCLUSIVE` only for rows actually exercised, together with the exact artifact SHA-256. Runtime testing does not by itself accept or otherwise change the project lifecycle.
