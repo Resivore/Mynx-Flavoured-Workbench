@@ -67,7 +67,7 @@ import java.util.stream.Stream;
 /** Production-lifecycle coverage for the exact optional-provider catalog. */
 public final class ExternalMaterialFamilyGameTests implements CustomTestMethodInvoker {
     @GameTest(maxTicks = 40)
-    public void ribbitsHugeMushroomProfilesHaveIndependentNineRoleSurfaceContracts(
+    public void ribbitsToadstoolProfilesUseUniformAssignedTextureAcrossNineRoles(
             GameTestHelper helper) {
         List<Identifier> sources = List.of(Identifier.parse("ribbits:red_toadstool"),
                 Identifier.parse("ribbits:brown_toadstool"), Identifier.parse("ribbits:toadstool_stem"));
@@ -75,29 +75,67 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
                 "Ribbits provider catalog must contain mossy oak plus three huge-toadstools");
         for (Identifier sourceId : sources) {
             ExternalMaterialFamilies.Binding binding = ExternalMaterialFamilies.fromSource(sourceId).orElseThrow();
+            String assignedTexture = "ribbits:block/" + sourceId.getPath();
             helper.assertTrue(binding.source() instanceof HugeMushroomBlock
-                            && binding.profile().visualProfile() == VisualProfile.HUGE_MUSHROOM
-                            && binding.profile().textureRoles().interior().equals("ribbits:block/toadstool_inside")
+                            && binding.profile().visualProfile() == VisualProfile.UNIFORM
+                            && binding.profile().orientationPolicy()
+                                    == games.twinhead.moreslabsstairsandwalls.api.material.NibaruMaterialProfile.OrientationPolicy.UNIFORM
+                            && binding.profile().textureRoles().side().equals(assignedTexture)
+                            && binding.profile().textureRoles().top().equals(assignedTexture)
+                            && binding.profile().textureRoles().bottom().equals(assignedTexture)
+                            && binding.profile().textureRoles().particle().equals(assignedTexture)
+                            && binding.profile().textureRoles().interior().isEmpty()
                             && binding.roles().size() == 9,
-                    "HugeMushroom provider profile lost typed visual or nine-role identity: " + sourceId);
+                    "Ribbits toadstool profile is not uniformly skinned by its assigned texture: "
+                            + sourceId);
             helper.assertTrue(binding.roles().values().stream().distinct().count() == 9,
-                    "HugeMushroom roles were merged across material identities: " + sourceId);
+                    "Ribbits toadstool roles were merged across material identities: " + sourceId);
             for (Block derived : binding.canonicalDerived()) {
-                for (String face : List.of("up", "down", "north", "south", "east", "west")) {
-                    String propertyName = derived instanceof WallBlock ? "mushroom_" + face : face;
-                    helper.assertTrue(derived.defaultBlockState().getProperties().stream()
-                                    .anyMatch(property -> property.getName().equals(propertyName)),
-                            "Derived HugeMushroom role lacks " + propertyName + " state: "
-                                    + BuiltInRegistries.BLOCK.getKey(derived));
-                }
+                helper.assertTrue(!derived.getClass().getSimpleName().startsWith("HugeMushroom"),
+                        "Generated Ribbits geometry still uses directional HugeMushroom state: "
+                                + BuiltInRegistries.BLOCK.getKey(derived));
             }
             BlockState completed = BgeMaterialBindings.projectToCanonical(binding.slab().defaultBlockState()
-                    .setValue(SlabBlock.TYPE, SlabType.DOUBLE)
-                    .setValue(HugeMushroomSurface.NORTH, false)).orElseThrow();
-            helper.assertTrue(completed.is(binding.source())
-                            && !completed.getValue(HugeMushroomSurface.NORTH),
-                    "Completed HugeMushroom slab did not preserve the joined/cut north face: " + sourceId);
+                    .setValue(SlabBlock.TYPE, SlabType.DOUBLE)).orElseThrow();
+            helper.assertTrue(completed.is(binding.source()),
+                    "Completed Ribbits toadstool slab lost its canonical source: " + sourceId);
         }
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 80)
+    public void ribbitsToadstoolGeneratedModelsNeverReferenceInteriorTexture(GameTestHelper helper) {
+        ResourceManager manager = clientFixtureManager();
+        LayerGeneratedResources.generateExternalForValidation(manager);
+        QuarterGeometryGeneratedResources.generateExternalForValidation(manager);
+        ExternalMaterialGeneratedResources.generate(manager);
+
+        int generatedRoles = 0;
+        int checkedModels = 0;
+        for (String source : List.of("red_toadstool", "brown_toadstool", "toadstool_stem")) {
+            ExternalMaterialFamilies.Binding binding = external("ribbits:" + source);
+            String assignedTexture = "ribbits:block/" + source;
+            for (Map.Entry<String, Block> role : binding.roles().entrySet()) {
+                if (!binding.isGeneratedRole(role.getKey())) continue;
+                Set<String> models = new LinkedHashSet<>();
+                collectModelReferences(generatedClientJson(blockStateResource(role.getValue())), models);
+                collectModelReferences(generatedClientJson(itemResource(role.getValue())), models);
+                helper.assertTrue(!models.isEmpty(),
+                        "Generated Ribbits role has no model references: " + source + "/" + role.getKey());
+                for (String modelId : models) {
+                    Identifier model = Identifier.parse(modelId);
+                    JsonObject json = generatedClientJson(Identifier.fromNamespaceAndPath(
+                            model.getNamespace(), "models/" + model.getPath() + ".json"));
+                    assertOnlyAssignedToadstoolTexture(helper, json, assignedTexture,
+                            source + "/" + role.getKey() + "/" + modelId);
+                    checkedModels++;
+                }
+                generatedRoles++;
+            }
+        }
+        helper.assertTrue(generatedRoles == 24 && checkedModels >= generatedRoles,
+                "Did not inspect every generated Ribbits toadstool geometry role: roles="
+                        + generatedRoles + ", models=" + checkedModels);
         helper.succeed();
     }
 
@@ -874,6 +912,19 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
         } catch (Exception exception) {
             throw new IllegalStateException("Cannot inspect generated client resource " + id, exception);
         }
+    }
+
+    private static void assertOnlyAssignedToadstoolTexture(GameTestHelper helper, JsonObject model,
+            String assignedTexture, String label) {
+        String encoded = model.toString();
+        helper.assertTrue(!encoded.contains("toadstool_inside") && !encoded.contains("#interior"),
+                "Generated Ribbits model exposes an interior texture route: " + label);
+        JsonObject textures = model.getAsJsonObject("textures");
+        helper.assertTrue(textures != null && !textures.entrySet().isEmpty()
+                        && textures.entrySet().stream().allMatch(entry ->
+                                entry.getValue().isJsonPrimitive()
+                                        && entry.getValue().getAsString().equals(assignedTexture)),
+                "Generated Ribbits model has a non-source texture binding: " + label + " " + textures);
     }
 
     private static void collectModelReferences(com.google.gson.JsonElement value, Set<String> result) {

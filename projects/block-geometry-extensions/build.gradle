@@ -195,3 +195,12 @@ tasks.withType(Jar).configureEach {
     preserveFileTimestamps = false
     reproducibleFileOrder = true
 }
+
+def canaryVersion = (project.mod_version =~ /bge\.canary(\d+)/)
+if (!canaryVersion.find()) {
+    throw new GradleException("BGE mod_version must contain a bge.canary<number> identity")
+}
+def distributableArtifactName = "BGE C${canaryVersion.group(1)}.jar"
+tasks.named('jar') {
+    archiveFileName.set(distributableArtifactName)
+}

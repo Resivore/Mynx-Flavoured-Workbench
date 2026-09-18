@@ -83,14 +83,15 @@ public final class ExternalMaterialCatalog {
     }
 
     /**
-     * HugeMushroom is intentionally not a uniform material: true face flags render the
-     * provider exterior while false flags render the provider's existing cut/interior texture.
+     * Generated Ribbits geometry is intentionally uniform: every externally visible face uses
+     * the assigned source-block texture. Provider HugeMushroom direction flags and the
+     * toadstool-inside texture belong only to the provider's source block, never BGE geometry.
      */
     private static Spec hugeMushroom(String id, String exterior) {
         Identifier key = Identifier.parse(id);
-        return new Spec(key, key.getNamespace(), key, key, Map.of(), VisualProfile.HUGE_MUSHROOM,
+        return new Spec(key, key.getNamespace(), key, key, Map.of(), VisualProfile.UNIFORM,
                 NibaruMaterialProfile.OrientationPolicy.UNIFORM, exterior, exterior, exterior,
-                "ribbits:block/toadstool_inside", TintProfile.NONE,
+                "", TintProfile.NONE,
                 NibaruMaterialProfile.RenderLayer.SOLID, Set.of(), Set.of(), List.of());
     }
 
