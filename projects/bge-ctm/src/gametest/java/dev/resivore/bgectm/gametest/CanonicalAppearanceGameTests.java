@@ -80,6 +80,8 @@ public final class CanonicalAppearanceGameTests implements CustomTestMethodInvok
         BlockState doubled = slabState(Blocks.GLASS, SlabType.DOUBLE);
         BlockState full = Blocks.GLASS.defaultBlockState();
 
+        assertDecision(helper, full, ORIGIN, full, EAST, Direction.UP,
+                Decision.BYPASS_UNRELATED);
         assertDecision(helper, top, ORIGIN, top, EAST, Direction.UP, Decision.CONNECT);
         assertDecision(helper, bottom, ORIGIN, bottom, EAST, Direction.UP, Decision.CONNECT);
         assertDecision(helper, top, ORIGIN, full, EAST, Direction.UP, Decision.CONNECT);
