@@ -56,13 +56,48 @@ final class ContactFilteringConnectionPredicateTest {
     }
 
     @Test
-    void overlayOverloadDelegatesWithoutApplyingTheContactPolicy() {
+    void overlayPredicateOverloadRemainsAnExactDelegate() {
         TrackingPredicate positive = new TrackingPredicate(true);
-        var filter = new ContactFilteringConnectionPredicate(positive);
-        assertTrue(filter.shouldConnect(null, null, null, null, null,
+        var positiveFilter = new ContactFilteringConnectionPredicate(positive);
+        assertTrue(positiveFilter.shouldConnect(null, null, null, null, null,
                 null, null, null, null));
         assertEquals(1, positive.nineArgumentCalls.get());
-        assertEquals(0, positive.sevenArgumentCalls.get());
+
+        TrackingPredicate negative = new TrackingPredicate(false);
+        var negativeFilter = new ContactFilteringConnectionPredicate(negative);
+        assertFalse(negativeFilter.shouldConnect(null, null, null, null, null,
+                null, null, null, null));
+        assertEquals(1, negative.nineArgumentCalls.get());
+    }
+
+    @Test
+    void positiveOverlayResultIsVetoOnlyForManagedGeometry() {
+        var surface = new QuadSurface(Direction.UP, 16,
+                Direction.Axis.X, 0, 16, Direction.Axis.Z, 0, 16);
+        var validCapture = new ContinuityQuadContext.Capture(surface);
+        AtomicInteger exactEvaluations = new AtomicInteger();
+
+        assertTrue(OverlayContactFilter.retainAfterUpstream(
+                true, Decision.CONNECT, validCapture, () -> {
+                    exactEvaluations.incrementAndGet();
+                    return Decision.CONNECT;
+                }), "A canonically applicable, coplanar overlay must remain applicable");
+        assertFalse(OverlayContactFilter.retainAfterUpstream(
+                true, Decision.CONNECT, validCapture, () -> Decision.NON_COPLANAR),
+                "A canonically applicable, non-coplanar overlay must be vetoed");
+        assertFalse(OverlayContactFilter.retainAfterUpstream(
+                false, Decision.CONNECT, validCapture, () -> {
+                    exactEvaluations.incrementAndGet();
+                    return Decision.CONNECT;
+                }), "Geometry must not turn a canonically inapplicable overlay into a match");
+        assertEquals(1, exactEvaluations.get(),
+                "An upstream overlay rejection must not evaluate geometry");
+        assertFalse(OverlayContactFilter.retainAfterUpstream(
+                true, Decision.CONNECT, null, () -> Decision.CONNECT),
+                "Managed overlay geometry without exact quad context must fail closed");
+        assertTrue(OverlayContactFilter.retainAfterUpstream(
+                true, Decision.BYPASS_UNRELATED, null, () -> Decision.NON_COPLANAR),
+                "Unrelated full-block overlay behavior must not require quad context");
     }
 
     @Test

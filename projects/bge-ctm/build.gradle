@@ -103,7 +103,7 @@ def sha256 = { File file ->
 
 tasks.register('verifyControlledProviders') {
     group = 'verification'
-    description = 'Verifies the exact authoritative BGE C70, Clutter No More, and Continuity inputs.'
+    description = 'Verifies the exact controlled BGE C70, Clutter No More, and Continuity inputs.'
     inputs.files(configurations.bgeReference, configurations.cnmReference,
             configurations.continuityReference)
     doLast {
@@ -126,6 +126,11 @@ tasks.register('verifyControlledProviders') {
                             ['shouldConnect'],
                     'me/pepperbell/continuity/client/properties/BasicConnectingCtmProperties.class':
                             ['getConnectionPredicate'],
+                    'me/pepperbell/continuity/client/processor/overlay/StandardOverlayQuadProcessor.class':
+                            ['appliesOverlay', 'shouldConnect', 'isCollisionShapeFullBlock',
+                             '(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/client/renderer/block/BlockAndTintGetter;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/core/Direction;Lnet/minecraft/client/renderer/texture/TextureAtlasSprite;)Z'],
+                    'me/pepperbell/continuity/client/processor/overlay/OverlayProcessingPredicate.class':
+                            ['shouldProcessQuad', 'isQuadUnitSquare'],
                     'me/pepperbell/continuity/client/model/CtmBlockStateModel$CtmQuadTransform.class':
                             ['transformOnce', 'processQuad']
             ].each { path, requiredConstants ->
@@ -196,6 +201,7 @@ tasks.register('verifyReleaseArtifact') {
             if (clientMixins.required != true || clientMixins.injectors?.defaultRequire != 1 ||
                     (clientMixins.client as Set) != ([
                             'ContinuityConnectionPredicateFactoryMixin',
+                            'ContinuityOverlayContactMixin',
                             'ContinuityQuadContextMixin'] as Set)) {
                 throw new GradleException('Required exact Continuity mixin boundary changed')
             }
@@ -216,8 +222,10 @@ tasks.register('verifyReleaseArtifact') {
                     'dev/resivore/bgectm/SurfaceContactResolver.class',
                     'dev/resivore/bgectm/continuity/ContactFilteringConnectionPredicate.class',
                     'dev/resivore/bgectm/continuity/ContinuityQuadContext.class',
+                    'dev/resivore/bgectm/continuity/OverlayContactFilter.class',
                     'dev/resivore/bgectm/mixin/BgeDerivedBlockAppearanceMixin.class',
                     'dev/resivore/bgectm/mixin/ContinuityConnectionPredicateFactoryMixin.class',
+                    'dev/resivore/bgectm/mixin/ContinuityOverlayContactMixin.class',
                     'dev/resivore/bgectm/mixin/ContinuityQuadContextMixin.class'
             ].each { entry ->
                 if (archive.getEntry(entry) == null) {
@@ -245,7 +253,7 @@ tasks.register('verifyReleaseArtifact') {
 
 tasks.register('stageCanaryArtifact', Copy) {
     group = 'distribution'
-    description = 'Stages the exact ignored Canary 2 JAR for canonical local retention.'
+    description = 'Stages the exact ignored Canary 3 JAR for canonical local retention.'
     dependsOn tasks.named('verifyReleaseArtifact')
     from(packagedJar)
     into(layout.projectDirectory.dir('artifacts'))

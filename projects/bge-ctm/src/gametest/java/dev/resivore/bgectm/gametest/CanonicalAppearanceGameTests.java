@@ -9,6 +9,9 @@ import dev.resivore.bgectm.CanonicalAppearanceResolver.GeometryCarrier;
 import dev.resivore.bgectm.CanonicalAppearanceResolver.Policy;
 import dev.resivore.bgectm.SurfaceContactResolver;
 import dev.resivore.bgectm.SurfaceContactResolver.Decision;
+import dev.resivore.bgectm.SurfaceContactResolver.QuadSurface;
+import dev.resivore.bgectm.continuity.ContinuityQuadContext;
+import dev.resivore.bgectm.continuity.OverlayContactFilter;
 import dev.tazer.clutternomore.common.blocks.StepBlock;
 import dev.tazer.clutternomore.common.blocks.VerticalSlabBlock;
 import games.twinhead.moreslabsstairsandwalls.api.material.NibaruMaterialProfile;
@@ -43,8 +46,10 @@ public final class CanonicalAppearanceGameTests implements CustomTestMethodInvok
         BlockState whiteTop = slabState(whiteStainedGlass, SlabType.TOP);
 
         assertDecision(helper, clearTop, ORIGIN, clearTop, EAST, Direction.UP, Decision.CONNECT);
-        assertDecision(helper, clearTop, ORIGIN, whiteTop, EAST, Direction.UP,
-                Decision.MATERIAL_MISMATCH);
+        assertDecision(helper, clearTop, ORIGIN, whiteTop, EAST, Direction.UP, Decision.CONNECT);
+        helper.assertTrue(CanonicalAppearanceResolver.materialBinding(clearTop).orElseThrow().profile()
+                        != CanonicalAppearanceResolver.materialBinding(whiteTop).orElseThrow().profile(),
+                "Cross-profile fixture unexpectedly shares one material profile");
         helper.assertTrue(CanonicalAppearanceResolver.materialBinding(clearTop).orElseThrow().carrier()
                         == GeometryCarrier.ORDINARY_SLAB,
                 "Exact effective slab source was not recognized through BGE's typed profile");
@@ -80,6 +85,62 @@ public final class CanonicalAppearanceGameTests implements CustomTestMethodInvok
         assertCanonical(helper, canonical, Blocks.GLASS, "ordinary glass top slab");
         helper.assertTrue(!canonical.hasProperty(BlockStateProperties.SLAB_TYPE),
                 "Ordinary slab form leaked into canonical material state");
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void terrainCrossMaterialGeometryIsContactOnly(GameTestHelper helper) {
+        BlockState grassTop = slabState(Blocks.GRASS_BLOCK, SlabType.TOP);
+        BlockState grassBottom = slabState(Blocks.GRASS_BLOCK, SlabType.BOTTOM);
+        BlockState dirtTop = slabState(Blocks.DIRT, SlabType.TOP);
+
+        assertDecision(helper, grassTop, ORIGIN, Blocks.PODZOL.defaultBlockState(), EAST,
+                Direction.UP, Decision.CONNECT);
+        assertDecision(helper, grassTop, ORIGIN, Blocks.DIRT.defaultBlockState(), EAST,
+                Direction.UP, Decision.CONNECT);
+        assertDecision(helper, dirtTop, ORIGIN, Blocks.GRASS_BLOCK.defaultBlockState(), EAST,
+                Direction.UP, Decision.CONNECT);
+        assertDecision(helper, grassTop, ORIGIN, dirtTop, EAST,
+                Direction.UP, Decision.CONNECT);
+        assertDecision(helper, grassBottom, ORIGIN, dirtTop, EAST,
+                Direction.UP, Decision.NON_COPLANAR);
+
+        NibaruMaterialProfile grassProfile = CanonicalAppearanceResolver
+                .materialBinding(grassTop).orElseThrow().profile();
+        NibaruMaterialProfile dirtProfile = CanonicalAppearanceResolver
+                .materialBinding(dirtTop).orElseThrow().profile();
+        NibaruMaterialProfile podzolProfile = NibaruMaterialProfiles
+                .fromBlock(Blocks.PODZOL).orElseThrow();
+        helper.assertTrue(grassProfile != dirtProfile && grassProfile != podzolProfile,
+                "Terrain cross-material fixture did not use distinct typed profiles");
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void overlayReceiverAndInducerUseTheSameContactModel(GameTestHelper helper) {
+        BlockState grassTop = slabState(Blocks.GRASS_BLOCK, SlabType.TOP);
+        BlockState grassBottom = slabState(Blocks.GRASS_BLOCK, SlabType.BOTTOM);
+        BlockState fullDirt = Blocks.DIRT.defaultBlockState();
+        var topBoundaryQuad = new ContinuityQuadContext.Capture(new QuadSurface(
+                Direction.UP, 16, Direction.Axis.X, 0, 16,
+                Direction.Axis.Z, 0, 16));
+        var recessedQuad = new ContinuityQuadContext.Capture(new QuadSurface(
+                Direction.UP, 8, Direction.Axis.X, 0, 16,
+                Direction.Axis.Z, 0, 16));
+
+        helper.assertTrue(OverlayContactFilter.retainAfterUpstream(true,
+                        grassTop, ORIGIN, fullDirt, EAST, Direction.UP, topBoundaryQuad),
+                "Positive cross-material overlay lost valid coplanar receiver contact");
+        helper.assertTrue(!OverlayContactFilter.retainAfterUpstream(true,
+                        grassBottom, ORIGIN, fullDirt, EAST, Direction.UP, recessedQuad),
+                "Positive cross-material overlay bypassed a non-coplanar receiver surface");
+        helper.assertTrue(!OverlayContactFilter.retainAfterUpstream(false,
+                        grassTop, ORIGIN, fullDirt, EAST, Direction.UP, topBoundaryQuad),
+                "Geometry turned a negative upstream overlay result positive");
+        helper.assertTrue(OverlayContactFilter.retainAfterUpstream(true,
+                        Blocks.STONE.defaultBlockState(), ORIGIN,
+                        Blocks.BRICKS.defaultBlockState(), EAST, Direction.UP, null),
+                "Unrelated full-block overlay behavior unexpectedly required quad context");
         helper.succeed();
     }
 
@@ -257,11 +318,51 @@ public final class CanonicalAppearanceGameTests implements CustomTestMethodInvok
     }
 
     @GameTest(maxTicks = 40)
-    public void visualAndCanonicalStateAllowlistStillFailsClosed(GameTestHelper helper) {
-        BlockState grass = layerState(Blocks.GRASS_BLOCK, Direction.DOWN, 1);
-        assertPolicy(helper, grass, Policy.UNMAPPABLE_CANONICAL_STATE);
-        helper.assertTrue(appearance(helper, grass) == grass,
-                "Unmappable canonical SNOWY state did not retain derived appearance");
+    public void grassGeometryUsesCanonicalWorldSnowSemantics(GameTestHelper helper) {
+        BlockState slab = slabState(Blocks.GRASS_BLOCK, SlabType.TOP)
+                .setValue(BlockStateProperties.SNOWY, true);
+        BlockState layer = layerState(Blocks.GRASS_BLOCK, Direction.DOWN, 1);
+        BlockState vertical = verticalState(Blocks.GRASS_BLOCK, Direction.EAST, false);
+
+        assertPolicy(helper, slab, Policy.ELIGIBLE_ORDINARY_SLAB);
+        assertPolicy(helper, layer, Policy.ELIGIBLE_LAYER);
+        assertPolicy(helper, vertical, Policy.ELIGIBLE_VERTICAL_SLAB);
+
+        helper.setBlock(QUERY_POS.offset(2, 1, 0), Blocks.AIR);
+        helper.setBlock(QUERY_POS.above(), Blocks.AIR);
+        assertGrassAppearance(helper, appearance(helper, slab), false, "ordinary grass slab");
+        assertGrassAppearance(helper, appearance(helper, layer), false, "grass Layer");
+        assertGrassAppearance(helper, appearance(helper, vertical), false,
+                "grass Vertical Slab");
+
+        helper.setBlock(QUERY_POS.above(), Blocks.SNOW_BLOCK);
+        assertGrassAppearance(helper, appearance(helper,
+                slab.setValue(BlockStateProperties.SNOWY, false)), true,
+                "snow-covered ordinary grass slab");
+        assertGrassAppearance(helper, appearance(helper, layer), true,
+                "snow-covered grass Layer");
+        assertGrassAppearance(helper, appearance(helper, vertical), true,
+                "snow-covered grass Vertical Slab");
+
+        BlockState canonical = appearance(helper, layer);
+        helper.assertTrue(!canonical.hasProperty(BlockStateProperties.SLAB_TYPE)
+                        && !canonical.hasProperty(BgeLayerBlock.FACING)
+                        && !canonical.hasProperty(BgeLayerBlock.LAYERS)
+                        && !canonical.hasProperty(BgeLayerBlock.DOUBLE)
+                        && !canonical.hasProperty(VerticalSlabBlock.FACING)
+                        && !canonical.hasProperty(VerticalSlabBlock.DOUBLE)
+                        && !canonical.hasProperty(BlockStateProperties.WATERLOGGED),
+                "Geometry form leaked into canonical grass state");
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void unrelatedVisualAllowlistStillFailsClosed(GameTestHelper helper) {
+
+        BlockState mycelium = layerState(Blocks.MYCELIUM, Direction.DOWN, 1);
+        assertPolicy(helper, mycelium, Policy.UNMAPPABLE_CANONICAL_STATE);
+        helper.assertTrue(appearance(helper, mycelium) == mycelium,
+                "Non-GRASS_OVERLAY snowy family unexpectedly gained a broad projector");
 
         BlockState honey = layerState(Blocks.HONEY_BLOCK, Direction.DOWN, 1);
         assertPolicy(helper, honey, Policy.UNSUPPORTED_VISUAL_PROFILE);
@@ -273,8 +374,18 @@ public final class CanonicalAppearanceGameTests implements CustomTestMethodInvok
     }
 
     private static BlockState appearance(GameTestHelper helper, BlockState state) {
+        BlockPos absolute = helper.absolutePos(QUERY_POS);
+        BlockPos distinctSource = helper.absolutePos(QUERY_POS.offset(2, 0, 0));
         return ((FabricBlockState) (Object) state).getAppearance(
-                helper.getLevel(), QUERY_POS, Direction.DOWN, state, QUERY_POS);
+                helper.getLevel(), absolute, Direction.DOWN, state, distinctSource);
+    }
+
+    private static void assertGrassAppearance(GameTestHelper helper, BlockState state,
+            boolean snowy, String label) {
+        assertCanonical(helper, state, Blocks.GRASS_BLOCK, label);
+        helper.assertTrue(state.hasProperty(BlockStateProperties.SNOWY)
+                        && state.getValue(BlockStateProperties.SNOWY) == snowy,
+                label + " did not project vanilla snowy semantics: " + state);
     }
 
     private static void assertDecision(GameTestHelper helper, BlockState source, BlockPos sourcePos,
