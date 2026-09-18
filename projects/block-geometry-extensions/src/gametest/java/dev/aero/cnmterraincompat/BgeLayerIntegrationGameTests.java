@@ -96,7 +96,7 @@ public final class BgeLayerIntegrationGameTests implements CustomTestMethodInvok
     }
 
     @GameTest(maxTicks = 40)
-    public void normalBlockItemPlacementFundsCompatibleLayerGrowthOnlyOnce(GameTestHelper helper) {
+    public void normalBlockItemPlacementDebitsCanonicalFourthLayer(GameTestHelper helper) {
         BgeLayerBlock oak = layer("minecraft:oak_planks");
         BgeLayerBlock dirt = layer("minecraft:dirt");
         helper.assertTrue(oak instanceof BlockspaceFundedGeometry
@@ -121,7 +121,7 @@ public final class BgeLayerIntegrationGameTests implements CustomTestMethodInvok
                         && placementStack.getCount() == 1,
                 "First Layer placement did not consume exactly one funding source item");
 
-        for (int expectedLayers = 2; expectedLayers <= 4; expectedLayers++) {
+        for (int expectedLayers = 2; expectedLayers <= 3; expectedLayers++) {
             helper.placeAt(player, placementStack, support, Direction.UP);
             BlockState grown = helper.getBlockState(target);
             helper.assertTrue(grown.is(oak)
@@ -132,10 +132,16 @@ public final class BgeLayerIntegrationGameTests implements CustomTestMethodInvok
                             + " did not preserve the already-funded source stack");
         }
 
-        BlockState full = helper.getBlockState(target);
-        helper.setBlock(target.above(), Blocks.STONE);
         helper.placeAt(player, placementStack, support, Direction.UP);
-        helper.assertTrue(helper.getBlockState(target).equals(full) && placementStack.getCount() == 1,
+        BlockState full = helper.getBlockState(target);
+        helper.assertTrue(full.is(Blocks.OAK_PLANKS) && placementStack.isEmpty(),
+                "Fourth Layer did not become canonical Oak Planks with exactly one item consumed");
+
+        helper.setBlock(target.above(), Blocks.STONE);
+        ItemStack fullAttempt = new ItemStack(oak);
+        player.setItemInHand(InteractionHand.MAIN_HAND, fullAttempt);
+        helper.placeAt(player, fullAttempt, support, Direction.UP);
+        helper.assertTrue(helper.getBlockState(target).equals(full) && fullAttempt.getCount() == 1,
                 "Failed fifth Layer growth changed state or consumed an item");
 
         BlockPos wrongFaceTarget = new BlockPos(4, 2, 1);

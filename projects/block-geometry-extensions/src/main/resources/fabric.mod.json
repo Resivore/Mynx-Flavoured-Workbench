@@ -3,8 +3,8 @@
   "id": "cnm_terrain_slabs_compat",
   "version": "${version}",
   "provides": ["more_slabs_stairs_and_walls"],
-  "name": "Block Geometry Extensions Canary 76 — Toadstool All-Surface Texture",
-  "description": "Uses each Ribbits toadstool source texture on every visible face of its generated BGE geometry while retaining C75 surface semantics.",
+  "name": "Block Geometry Extensions Canary 77 — Layer Canonical Completion",
+  "description": "Completes a fourth matching BGE Layer as its canonical full material block while retaining legacy Layer states and C76 rendering semantics.",
   "authors": ["Mynx Workbench", "Nibaru"],
   "environment": "*",
   "entrypoints": {

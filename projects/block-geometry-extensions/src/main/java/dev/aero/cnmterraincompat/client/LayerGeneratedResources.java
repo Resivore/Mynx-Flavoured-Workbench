@@ -7,9 +7,11 @@ import dev.aero.cnmterraincompat.LayerGeneratedData;
 import dev.tazer.clutternomore.ClutterNoMore;
 import dev.tazer.clutternomore.client.assets.AssetGenerator;
 import games.twinhead.moreslabsstairsandwalls.api.material.NibaruMaterialProfile;
+import games.twinhead.moreslabsstairsandwalls.api.material.VisualProfile;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.world.level.block.HugeMushroomBlock;
 
 import java.util.List;
 import java.util.Map;
@@ -70,6 +72,11 @@ public final class LayerGeneratedResources {
             NibaruMaterialProfile profile) {
         if (profile.orientationPolicy() != NibaruMaterialProfile.OrientationPolicy.UNIFORM
                 || profile.insetVisualContract().isPresent()) return false;
+        // A uniformly skinned BGE family can still be rooted at a provider HugeMushroomBlock.
+        // Its provider model owns directional/interior semantics that do not belong to the
+        // legacy full Layer state, so keep the BGE-generated uniformly textured full cube.
+        if (profile.visualProfile() == VisualProfile.UNIFORM
+                && profile.canonicalParent() instanceof HugeMushroomBlock) return false;
         Identifier parent = profile.canonicalParentId();
         Identifier model = Identifier.fromNamespaceAndPath(parent.getNamespace(),
                 "models/block/" + parent.getPath() + ".json");

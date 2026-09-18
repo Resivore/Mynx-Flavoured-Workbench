@@ -120,9 +120,10 @@ public final class CanonicalMaterialBindingGameTests implements CustomTestMethod
     }
 
     @GameTest(maxTicks = 40)
-    public void catalogWideSlabProjectionAndOccupancyAreDefined(GameTestHelper helper) {
+    public void catalogWideFullOccupancyProjectionIsDefined(GameTestHelper helper) {
         int horizontal = 0;
         int vertical = 0;
+        int layers = 0;
         for (NibaruMaterialProfile profile : NibaruMaterialProfiles.all()) {
             BgeMaterialBindings.Binding slab = primary(profile,
                     BgeMaterialBindings.Role.HORIZONTAL_SLAB);
@@ -142,12 +143,23 @@ public final class CanonicalMaterialBindingGameTests implements CustomTestMethod
                                     .is(profile.canonicalParent()),
                     "Vertical projection/occupancy failed for " + profile.canonicalParentId());
             vertical++;
+
+            BgeMaterialBindings.Binding layer = primary(profile,
+                    BgeMaterialBindings.Role.LAYER);
+            BlockState layerState = layer.physicalBlock().defaultBlockState()
+                    .setValue(BgeLayerBlock.LAYERS, 4);
+            helper.assertTrue(layer.topology().isFullOccupancy(layerState)
+                            && layer.canonicalState(layerState).orElseThrow()
+                                    .is(profile.canonicalParent()),
+                    "Layer projection/occupancy failed for " + profile.canonicalParentId());
+            layers++;
         }
         helper.assertTrue(horizontal == NibaruMaterialProfiles.all().size()
-                        && vertical == horizontal,
+                        && vertical == horizontal && layers == horizontal,
                 "Catalog-wide normalization matrix did not cover every profile");
         System.out.println("CANONICAL_PROJECTION_MATRIX|horizontal=" + horizontal
-                + "|vertical=" + vertical + "|properties=axis,pattern,distance,persistent,snowy,waterlogged");
+                + "|vertical=" + vertical + "|layer=" + layers
+                + "|properties=directional,axis,pattern,distance,persistent,snowy,waterlogged");
         helper.succeed();
     }
 
@@ -294,6 +306,104 @@ public final class CanonicalMaterialBindingGameTests implements CustomTestMethod
         helper.succeed();
     }
 
+    @GameTest(maxTicks = 60)
+    public void layerCompletionUsesRealBlockItemPathAndPreservesMaterialState(
+            GameTestHelper helper) {
+        ServerPlayer player = survivalPlayer(helper);
+        BlockPos target = new BlockPos(3, 2, 3);
+        helper.setBlock(target.below(), Blocks.STONE);
+        helper.setBlock(target.above(), Blocks.AIR);
+
+        BgeMaterialBindings.Binding stoneBinding = primary(profile(Blocks.STONE),
+                BgeMaterialBindings.Role.LAYER);
+        Block stoneLayer = stoneBinding.physicalBlock();
+        ItemStack sequence = new ItemStack(stoneLayer, 4);
+        InteractionResult first = place(helper, player, sequence, target.below(),
+                Direction.UP, 0.5, 1.0, 0.5);
+        assertPartialLayer(helper, target, stoneLayer, 1, first, "first");
+        helper.assertTrue(sequence.getCount() == 3,
+                "Initial Layer placement did not consume its one funding item");
+
+        InteractionResult second = place(helper, player, sequence, target,
+                Direction.UP, 0.5, 1.0, 0.5);
+        assertPartialLayer(helper, target, stoneLayer, 2, second, "second");
+        helper.assertTrue(sequence.getCount() == 3,
+                "Existing funded Layer 1->2 growth changed its established economy");
+
+        InteractionResult third = place(helper, player, sequence, target,
+                Direction.UP, 0.5, 1.0, 0.5);
+        assertPartialLayer(helper, target, stoneLayer, 3, third, "third");
+        helper.assertTrue(sequence.getCount() == 3,
+                "Existing funded Layer 2->3 growth changed its established economy");
+
+        int beforeCompletion = sequence.getCount();
+        InteractionResult fourth = place(helper, player, sequence, target,
+                Direction.UP, 0.5, 1.0, 0.5);
+        helper.assertTrue(fourth.consumesAction()
+                        && helper.getBlockState(target).is(Blocks.STONE)
+                        && sequence.getCount() == beforeCompletion - 1,
+                "Fourth matching Layer did not become exact canonical Stone with one item consumed: state="
+                        + helper.getBlockState(target) + ", count=" + sequence.getCount());
+
+        NibaruMaterialProfile oakLog = profile(Blocks.OAK_LOG);
+        completeLayer(helper, player, target, oakLog, Blocks.OAK_LOG,
+                state -> state.getValue(BlockStateProperties.AXIS) == Direction.Axis.X,
+                "Oak Log axis", state -> state.setValue(BlockStateProperties.AXIS, Direction.Axis.X));
+
+        Block whiteGlazed = Blocks.GLAZED_TERRACOTTA.pick(DyeColor.WHITE);
+        NibaruMaterialProfile glazed = profile(whiteGlazed);
+        completeLayer(helper, player, target, glazed, whiteGlazed,
+                state -> state.getValue(BlockStateProperties.HORIZONTAL_FACING) == Direction.WEST,
+                "Glazed orientation", state -> state.setValue(
+                        GlazedPatternState.PATTERN_FACING, Direction.WEST));
+
+        ExternalMaterialFamilies.Binding redToadstool = ExternalMaterialFamilies.fromSource(
+                net.minecraft.resources.Identifier.parse("ribbits:red_toadstool")).orElseThrow();
+        BlockState providerDefault = redToadstool.source().defaultBlockState();
+        completeLayer(helper, player, target, redToadstool.profile(), redToadstool.source(),
+                state -> java.util.Arrays.stream(HugeMushroomSurface.properties()).allMatch(property ->
+                        state.getValue(property).equals(providerDefault.getValue(property))),
+                "Ribbits provider directional default", java.util.function.UnaryOperator.identity());
+
+        BlockState historical = stoneLayer.defaultBlockState()
+                .setValue(BgeLayerBlock.FACING, Direction.UP)
+                .setValue(BgeLayerBlock.LAYERS, 4);
+        helper.setBlock(target, historical);
+        helper.setBlock(target.above(), Blocks.BEDROCK);
+        ItemStack legacyAttempt = new ItemStack(stoneLayer, 1);
+        InteractionResult legacyResult = place(helper, player, legacyAttempt, target,
+                Direction.UP, 0.5, 1.0, 0.5);
+        helper.assertTrue(!legacyResult.consumesAction()
+                        && helper.getBlockState(target).equals(historical)
+                        && legacyAttempt.getCount() == 1,
+                "Legacy layers=4 state was invalidated, migrated, or consumed a fifth item");
+
+        BlockState three = stoneLayer.defaultBlockState()
+                .setValue(BgeLayerBlock.FACING, Direction.UP)
+                .setValue(BgeLayerBlock.LAYERS, 3);
+        helper.setBlock(target, three);
+        Block oakLayer = primary(profile(Blocks.OAK_PLANKS),
+                BgeMaterialBindings.Role.LAYER).physicalBlock();
+        ItemStack incompatible = new ItemStack(oakLayer, 1);
+        InteractionResult incompatibleResult = place(helper, player, incompatible, target,
+                Direction.UP, 0.5, 1.0, 0.5);
+        helper.assertTrue(!incompatibleResult.consumesAction()
+                        && helper.getBlockState(target).equals(three)
+                        && incompatible.getCount() == 1,
+                "Incompatible Layer completion changed the state or consumed an item");
+
+        helper.setBlock(target.above(), Blocks.AIR);
+        helper.setBlock(target.below(), Blocks.BEDROCK);
+        ItemStack wrongFace = new ItemStack(stoneLayer, 1);
+        InteractionResult wrongFaceResult = place(helper, player, wrongFace, target,
+                Direction.DOWN, 0.5, 0.0, 0.5);
+        helper.assertTrue(!wrongFaceResult.consumesAction()
+                        && helper.getBlockState(target).equals(three)
+                        && wrongFace.getCount() == 1,
+                "Blocked wrong-face Layer completion changed the state or consumed an item");
+        helper.succeed();
+    }
+
     private static void completeHorizontal(GameTestHelper helper, ServerPlayer player, BlockPos target,
             BlockState existing, Direction face, Block canonical,
             java.util.function.Predicate<BlockState> materialAssertion, String label) {
@@ -340,6 +450,35 @@ public final class CanonicalMaterialBindingGameTests implements CustomTestMethod
                         && materialAssertion.test(completed) && stack.isEmpty(),
                 label + " Vertical Slab did not place canonical state or consume exactly one item: state="
                         + completed + ", count=" + stack.getCount() + ", result=" + result);
+    }
+
+    private static void completeLayer(GameTestHelper helper, ServerPlayer player, BlockPos target,
+            NibaruMaterialProfile profile, Block canonical,
+            java.util.function.Predicate<BlockState> materialAssertion, String label,
+            java.util.function.UnaryOperator<BlockState> decorate) {
+        Block layer = primary(profile, BgeMaterialBindings.Role.LAYER).physicalBlock();
+        BlockState existing = decorate.apply(layer.defaultBlockState()
+                .setValue(BgeLayerBlock.FACING, Direction.UP)
+                .setValue(BgeLayerBlock.LAYERS, 3));
+        helper.setBlock(target.above(), Blocks.AIR);
+        helper.setBlock(target, existing);
+        ItemStack stack = new ItemStack(layer, 1);
+        InteractionResult result = place(helper, player, stack, target,
+                Direction.UP, 0.5, 1.0, 0.5);
+        BlockState completed = helper.getBlockState(target);
+        helper.assertTrue(result.consumesAction() && completed.is(canonical)
+                        && materialAssertion.test(completed) && stack.isEmpty(),
+                label + " Layer did not place canonical state or consume exactly one item: state="
+                        + completed + ", count=" + stack.getCount() + ", result=" + result);
+    }
+
+    private static void assertPartialLayer(GameTestHelper helper, BlockPos target, Block layer,
+            int expectedLayers, InteractionResult result, String label) {
+        BlockState state = helper.getBlockState(target);
+        helper.assertTrue(result.consumesAction() && state.is(layer)
+                        && state.getValue(BgeLayerBlock.LAYERS) == expectedLayers,
+                "The " + label + " Layer placement did not remain a layers=" + expectedLayers
+                        + " BGE Layer state: " + state);
     }
 
     private static void assertBinding(GameTestHelper helper, Block physical, Block canonical,

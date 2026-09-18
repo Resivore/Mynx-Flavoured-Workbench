@@ -2,7 +2,7 @@ package dev.aero.cnmterraincompat;
 
 import net.minecraft.world.level.block.state.BlockState;
 
-/** Placement-only conversion of completed ordinary slabs to their canonical material block. */
+/** Placement-only conversion of completed supported geometry to its canonical material block. */
 public final class FullOccupancyNormalizer {
     private FullOccupancyNormalizer() {}
 

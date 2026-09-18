@@ -9,8 +9,10 @@ import org.jetbrains.annotations.Nullable;
  *
  * <p>A normal placement into replaceable world space is funded and consumes one
  * item. Returning a state here identifies a compatible mutation of an already
- * funded BGE blockspace; {@link BgeBlockItem} performs that mutation through the
+ * funded BGE blockspace; {@link BgeBlockItem} performs partial growth through the
  * normal placement pipeline but refunds its otherwise automatic item consumption.
+ * A full-occupancy successor that canonicalizes to the material block is a normal
+ * one-item placement and is deliberately not refunded.
  * A click which cannot expand may still fund a normal placement in a replaceable
  * adjacent blockspace; if that placement is blocked, vanilla failure consumes nothing.</p>
  */

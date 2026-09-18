@@ -106,6 +106,14 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
     @GameTest(maxTicks = 80)
     public void ribbitsToadstoolGeneratedModelsNeverReferenceInteriorTexture(GameTestHelper helper) {
         ResourceManager manager = clientFixtureManager();
+        for (String source : List.of("red_toadstool", "brown_toadstool", "toadstool_stem")) {
+            Identifier providerModel = Identifier.fromNamespaceAndPath("ribbits",
+                    "models/block/" + source + ".json");
+            JsonObject canonical = resourceJson(manager, providerModel);
+            helper.assertTrue(canonical.toString().contains("toadstool_inside"),
+                    "Ribbits validation fixture does not contain the canonical provider model route: "
+                            + providerModel);
+        }
         LayerGeneratedResources.generateExternalForValidation(manager);
         QuarterGeometryGeneratedResources.generateExternalForValidation(manager);
         ExternalMaterialGeneratedResources.generate(manager);
@@ -115,6 +123,24 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
         for (String source : List.of("red_toadstool", "brown_toadstool", "toadstool_stem")) {
             ExternalMaterialFamilies.Binding binding = external("ribbits:" + source);
             String assignedTexture = "ribbits:block/" + source;
+            Block layer = binding.roles().get("layer");
+            JsonObject layerVariants = generatedClientJson(blockStateResource(layer))
+                    .getAsJsonObject("variants");
+            Set<String> legacyFullModels = new LinkedHashSet<>();
+            for (Direction facing : Direction.values()) {
+                legacyFullModels.add(layerVariants.getAsJsonObject(
+                        "facing=" + facing.getSerializedName() + ",layers=4")
+                        .get("model").getAsString());
+            }
+            helper.assertTrue(legacyFullModels.size() == 1
+                            && !legacyFullModels.contains("ribbits:block/" + source)
+                            && legacyFullModels.iterator().next().endsWith("_4_full"),
+                    "Legacy full Ribbits Layer reused the present provider canonical model: "
+                            + source + " -> " + legacyFullModels);
+            String legacyFullModel = legacyFullModels.iterator().next();
+            assertOnlyAssignedToadstoolTexture(helper, generatedClientJson(
+                    modelResource(legacyFullModel)), assignedTexture,
+                    source + "/layer/legacy-full");
             for (Map.Entry<String, Block> role : binding.roles().entrySet()) {
                 if (!binding.isGeneratedRole(role.getKey())) continue;
                 Set<String> models = new LinkedHashSet<>();
@@ -876,6 +902,12 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
         return Identifier.fromNamespaceAndPath(id.getNamespace(), "items/" + id.getPath() + ".json");
     }
 
+    private static Identifier modelResource(String modelId) {
+        Identifier id = Identifier.parse(modelId);
+        return Identifier.fromNamespaceAndPath(id.getNamespace(),
+                "models/" + id.getPath() + ".json");
+    }
+
     private static boolean isPlainMacawPath(String path) {
         return Set.of("podzol_path_block", "dirt_path_block", "gravel_path_block",
                 "sand_path_block", "red_sand_path_block").contains(path);
@@ -911,6 +943,19 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
             }
         } catch (Exception exception) {
             throw new IllegalStateException("Cannot inspect generated client resource " + id, exception);
+        }
+    }
+
+    private static JsonObject resourceJson(ResourceManager manager, Identifier id) {
+        try {
+            Resource resource = manager.getResource(id)
+                    .orElseThrow(() -> new IllegalStateException("Missing fixture resource " + id));
+            try (var input = resource.open();
+                    var reader = new InputStreamReader(input, StandardCharsets.UTF_8)) {
+                return JsonParser.parseReader(reader).getAsJsonObject();
+            }
+        } catch (Exception exception) {
+            throw new IllegalStateException("Cannot inspect fixture resource " + id, exception);
         }
     }
 
@@ -979,16 +1024,22 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
         json.put(Identifier.parse("mynx_trees:items/wisteria_leaves.json"),
                 "{\"model\":{\"type\":\"minecraft:model\","
                         + "\"model\":\"mynx_trees:block/wisteria_leaves\"}}" );
+        for (String source : List.of("red_toadstool", "brown_toadstool", "toadstool_stem")) {
+            json.put(Identifier.fromNamespaceAndPath("ribbits", "models/block/" + source + ".json"),
+                    "{\"parent\":\"ribbits:block/provider_huge_mushroom\","
+                            + "\"textures\":{\"outside\":\"ribbits:block/" + source
+                            + "\",\"inside\":\"ribbits:block/toadstool_inside\"}}" );
+        }
 
         PackResources pack = (PackResources) Proxy.newProxyInstance(
                 ExternalMaterialFamilyGameTests.class.getClassLoader(),
                 new Class<?>[] {PackResources.class}, (proxy, method, args) -> switch (method.getName()) {
-                    case "packId" -> "bge-c69-client-fixtures";
+                    case "packId" -> "bge-c77-client-fixtures";
                     case "knownPackInfo" -> Optional.empty();
-                    case "getNamespaces" -> Set.of("minecraft", "mynx_trees", "bbb");
+                    case "getNamespaces" -> Set.of("minecraft", "mynx_trees", "bbb", "ribbits");
                     case "listResources", "close" -> null;
                     case "getRootResource", "getResource", "getMetadataSection", "location" -> null;
-                    case "toString" -> "BGE C69 client fixture pack";
+                    case "toString" -> "BGE C77 client fixture pack";
                     case "hashCode" -> System.identityHashCode(proxy);
                     case "equals" -> proxy == args[0];
                     default -> throw new UnsupportedOperationException("Unexpected PackResources call " + method);
@@ -1002,14 +1053,14 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
                     case "getResource" -> Optional.ofNullable(resources.get((Identifier) args[0]));
                     case "getResourceStack" -> Optional.ofNullable(resources.get((Identifier) args[0]))
                             .map(List::of).orElseGet(List::of);
-                    case "getNamespaces" -> Set.of("minecraft", "mynx_trees", "bbb");
+                    case "getNamespaces" -> Set.of("minecraft", "mynx_trees", "bbb", "ribbits");
                     case "listResources" -> resources.entrySet().stream()
                             .filter(entry -> entry.getKey().getPath().startsWith((String) args[0]))
                             .filter(entry -> ((Predicate<Identifier>) args[1]).test(entry.getKey()))
                             .collect(java.util.stream.Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
                     case "listResourceStacks" -> Map.of();
                     case "listPacks" -> Stream.of(pack);
-                    case "toString" -> "BGE C69 client fixture manager";
+                    case "toString" -> "BGE C77 client fixture manager";
                     case "hashCode" -> System.identityHashCode(proxy);
                     case "equals" -> proxy == args[0];
                     default -> throw new UnsupportedOperationException("Unexpected ResourceManager call " + method);

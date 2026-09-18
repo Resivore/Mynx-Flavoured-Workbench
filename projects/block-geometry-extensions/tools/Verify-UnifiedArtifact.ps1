@@ -1,7 +1,7 @@
 param(
-    [string]$UnifiedJar = (Join-Path $PSScriptRoot '..\build\libs\BGE C76.jar'),
+    [string]$UnifiedJar = (Join-Path $PSScriptRoot '..\build\libs\BGE C77.jar'),
     [string]$AcceptedJar = (Join-Path $PSScriptRoot '..\artifacts\cnm-nibaru-integration-4.2.2-bge.canary58.glass-corner-uv+26.2.jar'),
-    [string]$PredecessorJar = (Join-Path $PSScriptRoot '..\artifacts\cnm-nibaru-integration-4.2.19-bge.canary75.surface-semantics+26.2.jar')
+    [string]$PredecessorJar = (Join-Path $PSScriptRoot '..\artifacts\BGE C76.jar')
 )
 
 $ErrorActionPreference = 'Stop'
@@ -82,6 +82,7 @@ function Test-ContainsBytes([byte[]]$Bytes, [byte[]]$Needle) {
 function Test-AllowedChangedEntry([string]$Name) {
     return $Name -eq 'fabric.mod.json' -or $Name -eq 'META-INF/MANIFEST.MF' -or
             $Name -match '^dev/aero/cnmterraincompat/BgeColumnBlock(?:\$.*)?\.class$' -or
+            $Name -eq 'dev/aero/cnmterraincompat/BgeBlockItem.class' -or
             $Name -match '^dev/aero/cnmterraincompat/AxisModelContract(?:\$.*)?\.class$' -or
             $Name -eq 'cnm_terrain_slabs_compat.mixins.json' -or
             $Name -eq 'assets/cnm_terrain_slabs_compat/lang/en_us.json' -or
@@ -132,10 +133,10 @@ $predecessorPath = (Resolve-Path -LiteralPath $PredecessorJar).Path
 
 Require ((Get-FileSha256 $acceptedPath) -eq '1a4e4d1cd9c8709720ec84975e70caffb5552ac676537b9bbae42dca96567e87') `
         'Exact accepted unified BGE C58 boundary hash mismatch'
-Require ((Get-FileSha256 $predecessorPath) -eq 'ea963665679ca116a1d0dc49ea6f730e16ec8222df5174d56c79aa3cd6845d8e') `
-        'Exact BGE C75 predecessor hash mismatch'
-Require ([System.IO.Path]::GetFileName($unifiedPath) -ceq 'BGE C76.jar') `
-        'Distributable artifact filename is not exactly BGE C76.jar'
+Require ((Get-FileSha256 $predecessorPath) -eq '18186f436399cecbd74b9b57dc662f1a7516ec3a860d6b964e2b999b0eedd9de') `
+        'Exact BGE C76 predecessor hash mismatch'
+Require ([System.IO.Path]::GetFileName($unifiedPath) -ceq 'BGE C77.jar') `
+        'Distributable artifact filename is not exactly BGE C77.jar'
 
 $unified = [System.IO.Compression.ZipFile]::OpenRead($unifiedPath)
 $accepted = [System.IO.Compression.ZipFile]::OpenRead($acceptedPath)
@@ -154,10 +155,10 @@ try {
     $metadataText = Get-EntryText $unifiedMap['fabric.mod.json']
     $metadata = $metadataText | ConvertFrom-Json
     Require ($metadata.id -eq 'cnm_terrain_slabs_compat') 'Unified primary Fabric ID changed'
-    Require ($metadata.version -eq '4.2.20-bge.canary76.toadstool-all-surface+26.2') `
-            'Unified Fabric version is not exact C76'
-    Require ($metadata.name -eq ('Block Geometry Extensions Canary 76 ' + [char]0x2014 + ' Toadstool All-Surface Texture')) `
-            'Unified Fabric display name is not exact C76'
+    Require ($metadata.version -eq '4.2.21-bge.canary77.layer-canonical-completion+26.2') `
+            'Unified Fabric version is not exact C77'
+    Require ($metadata.name -eq ('Block Geometry Extensions Canary 77 ' + [char]0x2014 + ' Layer Canonical Completion')) `
+            'Unified Fabric display name is not exact C77'
     Require (@($metadata.provides).Count -eq 1 -and $metadata.provides[0] -eq 'more_slabs_stairs_and_walls') `
             'Unified descriptor must provide exactly the legacy Nibaru ID'
     Require ($metadata.PSObject.Properties.Name -notcontains 'jars') 'Unified descriptor must not declare nested JARs'
@@ -270,28 +271,33 @@ try {
     $allowedPredecessorChanges = New-StringSet @(
         'META-INF/MANIFEST.MF',
         'fabric.mod.json',
-        'dev/aero/cnmterraincompat/ExternalMaterialCatalog.class',
-        'dev/aero/cnmterraincompat/ExternalMaterialCatalog$Spec.class'
+        'dev/aero/cnmterraincompat/BgeBlockItem.class',
+        'dev/aero/cnmterraincompat/BgeMaterialBindings.class',
+        'dev/aero/cnmterraincompat/client/LayerGeneratedResources.class',
+        'dev/aero/cnmterraincompat/client/LayerGeneratedResources$GenerationSummary.class',
+        'dev/aero/cnmterraincompat/mixin/BlockItemPlacementMixin.class'
     )
     $requiredPredecessorChanges = New-StringSet @(
         'fabric.mod.json',
-        'dev/aero/cnmterraincompat/ExternalMaterialCatalog.class',
-        'dev/aero/cnmterraincompat/ExternalMaterialCatalog$Spec.class'
+        'dev/aero/cnmterraincompat/BgeBlockItem.class',
+        'dev/aero/cnmterraincompat/BgeMaterialBindings.class',
+        'dev/aero/cnmterraincompat/client/LayerGeneratedResources.class',
+        'dev/aero/cnmterraincompat/mixin/BlockItemPlacementMixin.class'
     )
     $allowedPredecessorNew = New-StringSet @()
     Require ($predecessorMissing.Count -eq 0) `
-            "C76 lost exact C75 predecessor entries: $(@($predecessorMissing) -join ', ')"
+            "C77 lost exact C76 predecessor entries: $(@($predecessorMissing) -join ', ')"
     Require (@($predecessorChanged | Where-Object { -not $allowedPredecessorChanges.Contains($_) }).Count -eq 0) `
-            "C76 changed entries outside its C75-bounded scope: $(@($predecessorChanged | Where-Object { -not $allowedPredecessorChanges.Contains($_) }) -join ', ')"
+            "C77 changed entries outside its C76-bounded scope: $(@($predecessorChanged | Where-Object { -not $allowedPredecessorChanges.Contains($_) }) -join ', ')"
     Require (@($requiredPredecessorChanges | Where-Object { -not $predecessorChanged.Contains($_) }).Count -eq 0) `
-            "C76 omitted required C75-bounded changes: $(@($requiredPredecessorChanges | Where-Object { -not $predecessorChanged.Contains($_) }) -join ', ')"
+            "C77 omitted required C76-bounded changes: $(@($requiredPredecessorChanges | Where-Object { -not $predecessorChanged.Contains($_) }) -join ', ')"
     Require (@($predecessorNew | Where-Object { -not $allowedPredecessorNew.Contains($_) }).Count -eq 0) `
-            "C76 added entries beyond its exact C75-bounded scope: $(@($predecessorNew | Where-Object { -not $allowedPredecessorNew.Contains($_) }) -join ', ')"
+            "C77 added entries beyond its exact C76-bounded scope: $(@($predecessorNew | Where-Object { -not $allowedPredecessorNew.Contains($_) }) -join ', ')"
 
     $interiorTexture = [System.Text.Encoding]::UTF8.GetBytes('ribbits:block/toadstool_inside')
     foreach ($name in $unifiedMap.Keys) {
         Require (-not (Test-ContainsBytes (Get-EntryBytes $unifiedMap[$name]) $interiorTexture)) `
-                "C76 packages a generated-geometry route to the forbidden Ribbits interior texture: $name"
+                "C77 packages a generated-geometry route to the forbidden Ribbits interior texture: $name"
     }
 
     $predecessorLanguage = (Get-EntryText $predecessorMap['assets/cnm_terrain_slabs_compat/lang/en_us.json']) | ConvertFrom-Json
@@ -388,7 +394,7 @@ try {
 
     [ordered]@{
         result = 'PASS'
-        c76 = [ordered]@{
+        c77 = [ordered]@{
             filename = [System.IO.Path]::GetFileName($unifiedPath)
             size = (Get-Item -LiteralPath $unifiedPath).Length
             sha256 = Get-FileSha256 $unifiedPath
@@ -403,7 +409,7 @@ try {
             authored_new_entries = $newEntries.Count
             missing_entries = $missing.Count
         }
-        exact_predecessor_c75_delta = [ordered]@{
+        exact_predecessor_c76_delta = [ordered]@{
             predecessor_sha256 = Get-FileSha256 $predecessorPath
             intentional_changed_entries = $predecessorChanged.Count
             authored_new_entries = $predecessorNew.Count

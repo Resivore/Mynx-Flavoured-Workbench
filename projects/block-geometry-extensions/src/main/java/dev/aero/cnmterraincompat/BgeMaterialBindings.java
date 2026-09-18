@@ -393,6 +393,7 @@ public final class BgeMaterialBindings {
             }
             validateNormalizableProjection(profile, Role.HORIZONTAL_SLAB, problems);
             validateNormalizableProjection(profile, Role.VERTICAL_SLAB, problems);
+            validateNormalizableProjection(profile, Role.LAYER, problems);
         }
 
         if (!problems.isEmpty()) {
@@ -435,6 +436,7 @@ public final class BgeMaterialBindings {
         return switch (role) {
             case HORIZONTAL_SLAB -> state.setValue(SlabBlock.TYPE, SlabType.DOUBLE);
             case VERTICAL_SLAB -> state.setValue(VerticalSlabBlock.DOUBLE, true);
+            case LAYER -> state.setValue(BgeLayerBlock.LAYERS, 4);
             default -> state;
         };
     }
@@ -559,7 +561,7 @@ public final class BgeMaterialBindings {
     }
 
     private static boolean normalizes(Role role) {
-        return role == Role.HORIZONTAL_SLAB || role == Role.VERTICAL_SLAB;
+        return role == Role.HORIZONTAL_SLAB || role == Role.VERTICAL_SLAB || role == Role.LAYER;
     }
 
     private static BgeSurfaceGeometry.SurfaceProvider surfaceProvider(
