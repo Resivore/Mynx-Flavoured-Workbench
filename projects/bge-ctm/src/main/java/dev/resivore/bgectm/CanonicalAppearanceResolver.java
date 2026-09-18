@@ -11,6 +11,7 @@ import games.twinhead.moreslabsstairsandwalls.api.material.NibaruMaterialProfile
 import games.twinhead.moreslabsstairsandwalls.api.material.VisualProfile;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.world.level.BlockAndLightGetter;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.SlabBlock;
@@ -29,7 +30,7 @@ import java.util.Set;
  * Projects supported simple geometry onto the canonical material state already owned by
  * BGE's typed material/profile authority.
  *
- * <p>Appearance answers rule selection only. Canary 2 deliberately exposes partial Layers,
+ * <p>Appearance answers rule selection only. Canary 3 deliberately exposes partial Layers,
  * single Vertical Slabs, and exact profile-owned ordinary slabs here, then applies the
  * independent per-face geometry decision in {@link SurfaceContactResolver}. Geometry state
  * is never copied into the canonical material state.</p>
@@ -39,6 +40,7 @@ public final class CanonicalAppearanceResolver {
             VisualProfile.UNIFORM,
             VisualProfile.TOP_SIDE_BOTTOM,
             VisualProfile.PILLAR,
+            VisualProfile.GRASS_OVERLAY,
             VisualProfile.LEAVES_CUTOUT_TINTED,
             VisualProfile.GLASS_EDGE,
             VisualProfile.TRANSLUCENT_UNIFORM,
@@ -48,6 +50,11 @@ public final class CanonicalAppearanceResolver {
 
     /** Returns the exact policy decision without consulting registry identifiers. */
     public static Resolution inspect(BlockState sourceState) {
+        return inspect(sourceState, null, null);
+    }
+
+    private static Resolution inspect(BlockState sourceState,
+            @Nullable BlockAndLightGetter view, @Nullable BlockPos pos) {
         Objects.requireNonNull(sourceState, "sourceState");
         Optional<MaterialBinding> binding = materialBinding(sourceState);
         if (binding.isEmpty()) {
@@ -59,7 +66,8 @@ public final class CanonicalAppearanceResolver {
             return new Resolution(geometryPolicy, sourceState, binding);
         }
 
-        Optional<BlockState> canonical = projectCanonicalState(binding.get().profile(), sourceState);
+        Optional<BlockState> canonical = projectCanonicalState(
+                binding.get().profile(), sourceState, view, pos);
         if (canonical.isEmpty()) {
             return new Resolution(Policy.UNMAPPABLE_CANONICAL_STATE, sourceState, binding);
         }
@@ -74,7 +82,7 @@ public final class CanonicalAppearanceResolver {
             Direction side, @Nullable BlockState querySourceState, @Nullable BlockPos sourcePos) {
         // Fabric's initial appearance query cannot identify every later neighbor direction.
         // Contact is therefore intentionally enforced at Continuity's connection predicate.
-        return inspect(sourceState).appearance();
+        return inspect(sourceState, view, pos).appearance();
     }
 
     /**
@@ -131,11 +139,12 @@ public final class CanonicalAppearanceResolver {
         };
     }
 
-    private static Optional<BlockState> projectCanonicalState(
-            NibaruMaterialProfile profile, BlockState sourceState) {
+    private static Optional<BlockState> projectCanonicalState(NibaruMaterialProfile profile,
+            BlockState sourceState, @Nullable BlockAndLightGetter view, @Nullable BlockPos pos) {
         BlockState canonical = profile.canonicalParent().defaultBlockState();
         boolean leaf = profile.capabilities().contains(BehaviorCapability.LEAF_LIFECYCLE);
         boolean glazed = profile.capabilities().contains(BehaviorCapability.GLAZED_ORIENTATION);
+        boolean grassOverlay = profile.visualProfile() == VisualProfile.GRASS_OVERLAY;
 
         for (Property<?> property : canonical.getProperties()) {
             if (property == BlockStateProperties.AXIS) {
@@ -160,6 +169,17 @@ public final class CanonicalAppearanceResolver {
                 }
                 canonical = canonical.setValue(BlockStateProperties.PERSISTENT,
                         sourceState.getValue(BlockStateProperties.PERSISTENT));
+            } else if (property == BlockStateProperties.SNOWY) {
+                if (!grassOverlay) return Optional.empty();
+                // Vanilla/Nibaru snowy dirt semantics are positional: snow in the block above
+                // controls the canonical appearance. Context-free inspection uses a carried
+                // SNOWY value when the ordinary slab has one, otherwise the canonical dry
+                // default; render-time Fabric appearance always supplies the world position.
+                boolean snowy = view != null && pos != null
+                        ? view.getBlockState(pos.above()).is(BlockTags.SNOW)
+                        : sourceState.hasProperty(BlockStateProperties.SNOWY)
+                                && sourceState.getValue(BlockStateProperties.SNOWY);
+                canonical = canonical.setValue(BlockStateProperties.SNOWY, snowy);
             } else if (property == BlockStateProperties.WATERLOGGED && leaf) {
                 // Waterlogging belongs to the geometry volume; the canonical default stays dry.
             } else {

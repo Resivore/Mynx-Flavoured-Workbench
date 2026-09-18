@@ -16,12 +16,13 @@ import java.util.Objects;
 import java.util.Optional;
 
 /**
- * Central Canary 2 geometry/contact policy for Continuity neighbor decisions.
+ * Central Canary 3 geometry/contact policy for Continuity neighbor decisions.
  *
  * <p>Every supported carrier is one axis-aligned cuboid expressed in exact sixteenths.
- * A connection is retained only when the two exact typed material profiles agree and the
- * same-facing surfaces share a world plane and genuinely meet across the neighbor boundary
- * Continuity is evaluating. Unrelated full-block Continuity decisions bypass unchanged.</p>
+ * Material profiles identify canonical ownership and supported geometry only. Continuity owns
+ * every material/rule relationship; this class can only veto its positive result when the
+ * same-facing surfaces do not share a world plane and genuine evaluated-boundary contact.
+ * Unrelated full-block Continuity decisions bypass unchanged.</p>
  */
 public final class SurfaceContactResolver {
     private static final int BLOCK_UNITS = 16;
@@ -59,10 +60,6 @@ public final class SurfaceContactResolver {
             }
             return Decision.UNSUPPORTED_GEOMETRY;
         }
-        if (source.profile() != other.profile()) {
-            return Decision.MATERIAL_MISMATCH;
-        }
-
         if (sourceQuad != null && sourceQuad.normal() != face) {
             return Decision.INVALID_QUAD_SURFACE;
         }
@@ -305,7 +302,6 @@ public final class SurfaceContactResolver {
         BYPASS_UNRELATED(true),
         CONNECT(true),
         MISSING_MATERIAL_PROFILE(false),
-        MATERIAL_MISMATCH(false),
         UNSUPPORTED_GEOMETRY(false),
         INVALID_QUAD_SURFACE(false),
         NON_COPLANAR(false),

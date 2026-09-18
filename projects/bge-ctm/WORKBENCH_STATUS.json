@@ -22,8 +22,8 @@
     "scope": [
       "Provide one centralized Fabric block-appearance bridge for Continuity rule selection without generating material- or geometry-specific CTM rules.",
       "Consume BGE's typed runtime binding, canonical parent, and exact effective slab source as the sole geometry-to-material authority rather than inferring families from registry identifiers.",
-      "Project only explicitly equivalent canonical material state while keeping geometry form, orientation, waterlogging, and unknown properties out of the canonical appearance.",
-      "Filter Continuity neighbor decisions through one same-material surface descriptor using face normal, exact world plane, rendered source-quad bounds, deterministic supported-geometry bounds, and real boundary contact.",
+      "Project only explicitly equivalent canonical material state, including world-contextual vanilla snowy semantics for the grass family, while keeping geometry form, orientation, waterlogging, and unknown properties out of the canonical appearance.",
+      "Treat Continuity and the active resource pack as the sole material-rule authority, then veto only otherwise-positive regular or Standard Overlay decisions through one material-agnostic surface descriptor using face normal, exact world plane, rendered receiver-quad bounds, deterministic supported-geometry bounds, and real boundary contact.",
       "Support proven cross-geometry contact among full blocks, exact ordinary slabs, Layers, and Vertical Slabs while leaving Steps, Corners, Quarter Columns, unknown topology, risky visual profiles, and unrelated Continuity behavior unchanged."
     ],
     "boundaries": {
@@ -43,13 +43,13 @@
         "type": "PROJECT",
         "identifier": "4b2342fc-7bdf-5ba6-9f37-d551109d214c",
         "requirement": ">=4.2.14-bge.canary70.stone-native-slab+26.2",
-        "reason": "Block Geometry Extensions owns the typed runtime binding, geometry roles, canonical material identity, and exact effective slab source consumed by Canary 2; C70 is the first controlled compatibility baseline for these API seams."
+        "reason": "Block Geometry Extensions owns the typed runtime binding, geometry roles, canonical material identity, and exact effective slab source consumed by Canary 3; C70 is the exact controlled validation baseline while the runtime contract remains compatible-range."
       },
       {
         "type": "MOD",
         "identifier": "continuity",
         "requirement": "=3.0.1+26.2",
-        "reason": "Canary 2 decorates the exact Continuity 3.0.1+26.2 connection predicate and quad-processing seams so rule selection remains separate from per-face contact eligibility; the required mixins and controlled input hash fail closed on an incompatible implementation."
+        "reason": "Canary 3 decorates the exact Continuity 3.0.1+26.2 regular connection predicate and final StandardOverlayQuadProcessor appliesOverlay seam so rule selection remains separate from per-face contact eligibility; required mixins and the controlled input hash fail closed on an incompatible implementation."
       },
       {
         "type": "MOD",
@@ -61,13 +61,13 @@
         "type": "MOD",
         "identifier": "fabricloader",
         "requirement": ">=0.19.3",
-        "reason": "Fabric runtime loader and required Mixin host declared by Canary 2."
+        "reason": "Fabric runtime loader and required Mixin host declared by Canary 3."
       },
       {
         "type": "MOD",
         "identifier": "fabric-api",
         "requirement": ">=0.156.0",
-        "reason": "Provides the Fabric block appearance, renderer quad, and controlled GameTest APIs used by Canary 2; 0.156.0+26.2 is the exact validation baseline."
+        "reason": "Provides the Fabric block appearance, renderer quad, and controlled GameTest APIs used by Canary 3; 0.156.0+26.2 is the exact validation baseline."
       },
       {
         "type": "MOD",
@@ -78,16 +78,16 @@
     ]
   },
   "state": {
-    "milestone": "Canary 2 adds typed canonical rule selection plus a version-bounded Continuity contact filter for exact rendered-quad coplanarity across ordinary slabs, Layers, Vertical Slabs, and full blocks; controlled build, JUnit, and GameTests pass, while Minecraft-client visual CTM remains runtime untested.",
+    "milestone": "Canary 3 supersedes exact Canary 2 `0.2.0-canary2` (`113522a10caff8c9bb78e8d5ddfb767ac8bef9b4b484260cf0a0c2269e7f8524`) after the owner observed inconsistent ordinary-slab behavior, full grass affecting a dirt slab despite the observed geometry, two grass slabs beside podzol lacking the expected behavior, and two dirt slabs beside grass showing CTM/overlay behavior; no aggregate C2 verdict is inferred. C3 makes grass canonically eligible and applies one veto-only geometry/contact model to regular and Standard Overlay CTM; controlled validation passes while C3 Minecraft-client visual behavior remains untested.",
     "releases": {
       "current": {
-        "version": "0.2.0-canary2",
+        "version": "0.3.0-canary3",
         "artifact": {
-          "filename": "bge-ctm-0.2.0-canary2.jar",
-          "sha256": "113522a10caff8c9bb78e8d5ddfb767ac8bef9b4b484260cf0a0c2269e7f8524"
+          "filename": "bge-ctm-0.3.0-canary3.jar",
+          "sha256": "4231a8725ad4141a6ac52c0b5f893f523f5e67b9808e46a87f51f810801f2eaa"
         },
-        "built_at": "2026-09-18T01:50:57.9808523Z",
-        "source_commit": "5f6777cc4e92b68017b884ac94b9e3efcd3821bb",
+        "built_at": "2026-09-18T02:43:35.0745310Z",
+        "source_commit": "6d4758e57e5f4b4592b6cc4e73e8391d41dc9885",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": [
@@ -98,7 +98,7 @@
               "predicate": "~26.2",
               "reason": "The appearance bridge is compiled against the Minecraft 26.2 block-state and Fabric appearance method descriptors and must remain on the controlled target release.",
               "regression_evidence": [
-                "Canary 2 compiles and its focused headless GameTests execute against Minecraft 26.2 and Fabric API 0.156.0+26.2."
+                "Canary 3 compiles and its focused headless GameTests execute against Minecraft 26.2 and Fabric API 0.156.0+26.2."
               ]
             },
             {
@@ -106,14 +106,14 @@
               "relationship": "depends",
               "dependency_id": "continuity",
               "predicate": "=3.0.1+26.2",
-              "reason": "Canary 2 injects the exact Continuity 3.0.1+26.2 seven-argument ConnectionPredicate neighbor seam; the required mixin and controlled input hash fail closed rather than guessing across an incompatible implementation.",
+              "reason": "Canary 3 injects the exact Continuity 3.0.1+26.2 regular ConnectionPredicate seam and the final StandardOverlayQuadProcessor appliesOverlay seam; required mixins and the controlled input hash fail closed rather than guessing across an incompatible implementation.",
               "regression_evidence": [
-                "The exact Continuity 3.0.1+26.2 input is SHA-256 controlled, compiles against the typed ConnectionPredicate seam, and is verified as a required client mixin target."
+                "The exact Continuity 3.0.1+26.2 input is SHA-256 controlled, compiles against both regular and Standard Overlay seams, and is verified as required client mixin targets."
               ]
             }
           ]
         },
-        "summary": "Projects typed BGE material appearances and filters Continuity connections to same-material coplanar contacts across full blocks, ordinary slabs, Layers, and Vertical Slabs."
+        "summary": "Projects typed BGE appearances including world-correct grass snow state, then vetoes only non-coplanar managed regular or Standard Overlay contacts without overriding Continuity's material rules."
       },
       "accepted": null,
       "rollback": null,
@@ -127,10 +127,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 4,
-    "activity_at": "2026-09-18T01:51:12.5113308Z",
-    "updated_at": "2026-09-18T01:51:12.5113308Z",
-    "last_codex_at": "2026-09-18T01:51:12.5113308Z",
-    "source_commit": "5f6777cc4e92b68017b884ac94b9e3efcd3821bb"
+    "revision": 5,
+    "activity_at": "2026-09-18T02:44:06.4121539Z",
+    "updated_at": "2026-09-18T02:44:06.4121539Z",
+    "last_codex_at": "2026-09-18T02:44:06.4121539Z",
+    "source_commit": "6d4758e57e5f4b4592b6cc4e73e8391d41dc9885"
   }
 }

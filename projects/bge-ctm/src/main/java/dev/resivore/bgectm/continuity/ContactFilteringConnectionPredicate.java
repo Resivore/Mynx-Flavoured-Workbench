@@ -32,8 +32,8 @@ public final class ContactFilteringConnectionPredicate implements ConnectionPred
             BlockState appearanceState, BlockState state, BlockPos otherPos,
             BlockState otherAppearanceState, BlockState otherState, Direction face,
             TextureAtlasSprite quadSprite) {
-        // StandardOverlayQuadProcessor calls and negates this full overload. Preserve it exactly;
-        // overlay applicability has intentionally different material/contact semantics.
+        // StandardOverlayQuadProcessor negates this full overload. C3 filters the processor's
+        // final positive appliesOverlay result instead, after every native overlay precondition.
         return delegate.shouldConnect(level, pos, appearanceState, state, otherPos,
                 otherAppearanceState, otherState, face, quadSprite);
     }
@@ -48,7 +48,7 @@ public final class ContactFilteringConnectionPredicate implements ConnectionPred
 
         // Continuity's innerSeams path performs a second auxiliary lookup displaced along the
         // face normal. That is not an in-plane connection candidate and must retain upstream
-        // behavior rather than being interpreted as a failed Canary 2 surface contact.
+        // behavior rather than being interpreted as a failed Canary 3 surface contact.
         if (coordinate(otherPos, face.getAxis()) != coordinate(pos, face.getAxis())) {
             return true;
         }

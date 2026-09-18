@@ -1,98 +1,176 @@
 # Testing
 
-Canary 2 targets face-specific CTM contact for ordinary horizontal slabs, BGE Layers, and
-single or double Vertical Slabs. The controlled GameTests prove typed material resolution,
-canonical state projection, exact state/quad surface descriptors, and contact decisions. They
-do **not** prove that a Minecraft client rendered a Continuity texture correctly. Every visual
-row below remains untested until an owner records an actual client observation.
+Canary 3 makes Continuity and the active resource packs the sole authority for material/rule
+semantics. BGE supplies typed canonical identity. BGE × CTM only vetoes an otherwise-positive
+ordinary or Standard Overlay result when a managed ordinary slab, Layer, or Vertical Slab does
+not have compatible real surface contact. Controlled tests prove that control flow and geometry;
+they do **not** prove Minecraft-client CTM output.
 
-## Canary 2 contract
-
-Rule selection and neighbor contact are separate:
-
-- Exact BGE material/profile identity supplies the canonical parent used by rule selection.
-- Ordinary slabs participate only when the block is both a `SlabBlock` and that profile's exact
-  `effectiveSlabSource`; a broad slab hook is inert for every other slab.
-- Geometry form (`top`/`bottom`/`double`, Layer facing/depth, Vertical facing/double, and
-  waterlogging) never enters canonical material state.
-- Continuity 3.0.1+26.2's exact connection seam then retains a positive connection only when
-  the rendered source quad and the other state's surface have the same normal, world plane,
-  canonical profile, and real boundary contact.
-- Step, Corner, Quarter Column, unknown topology, missing quad context, and incompatible
-  Continuity seams fail closed. Standard Overlay retains Continuity's separate inverse
-  predicate semantics.
-
-The inherited visual-profile allowlist remains the Canary 1 set: uniform,
-top/side/bottom, pillar, leaves, glass edge, translucent uniform, and glazed-oriented profiles
-with a known canonical state projection. Grass/path/root, honey/slime inset, cutout-uniform,
-custom-model, and unmappable material states are not broadened by this canary. Native glazed
-ordinary slabs remain fail-closed because their material-facing carrier differs from BGE's
-explicit `pattern_facing` projector.
+The exact Canary 2 runtime observations motivating this matrix are historical release evidence,
+not Canary 3 results: ordinary slabs behaved inconsistently; full grass appeared to affect a dirt
+slab despite the observed geometry; two grass slabs beside full podzol lacked the expected
+behavior; and two dirt slabs beside grass did show CTM/overlay behavior. No aggregate Canary 2
+PASS or FAIL is inferred.
 
 ## Controlled environment
 
-Use Minecraft Java 26.2 Fabric with all of the following exact inputs:
+Use the exact current Canary 3 JAR recorded in `WORKBENCH_STATUS.json` with:
 
-- BGE × CTM `0.2.0-canary2`;
-- Continuity `3.0.1+26.2` (the contact hook is deliberately exact-version bounded);
-- Block Geometry Extensions `4.2.14-bge.canary70.stone-native-slab+26.2`;
-- Clutter No More `2.0.7+26.2` and the declared Fabric dependencies;
-- the current Matcha Flavoured and `Overlays_Matcha_STRICT_darkoak-bugfix` packs in their normal
-  order;
-- connected textures enabled and shaders **off** for the first pass.
+- Minecraft Java 26.2 and Fabric Loader 0.19.3 or later;
+- Continuity `3.0.1+26.2` exactly;
+- a BGE version satisfying the declared compatible range, recording its exact filename and hash;
+- Clutter No More `2.0.7+26.2` or a later compatible provider;
+- the active Matcha Flavoured and Matcha overlay packs in their normal order;
+- connected textures enabled and shaders off for the first pass.
 
-Before testing, record exact JAR hashes, Continuity configuration, enabled pack order, shader
-state, and every actual block ID. Stop as failed or inconclusive on a crash, missing model or
-texture, resource-reload error, mixin rejection, or unrelated stack drift. Do not substitute a
-different Continuity version.
+Record the exact JAR hashes, Continuity configuration, enabled pack order, shader state, and
+actual registry IDs before placing blocks. Stop as failed or inconclusive on a launch crash,
+missing model/texture, resource-reload error, required-mixin rejection, or uncontrolled stack
+drift. Do not substitute another Continuity version.
 
-## Face-specific runtime matrix
+The profile-owned ordinary grass slab is
+`more_slabs_stairs_and_walls:grass_block_slab`; the managed grass Layer is
+`cnm_terrain_slabs_compat:minecraft/grass_block_layer`; and the save-compatible managed grass
+Vertical Slab is `cnm_terrain_slabs_compat:grass_vertical_slab`. Confirm these in the running
+stack. The separate `cnm_terrain_slabs_compat:grass_slab` is not BGE's exact effective slab
+source and is deliberately outside this canary's ordinary-slab hook.
 
-Unless a row says otherwise, put the source at `(0,0,0)` and its neighbor at `(1,0,0)` (east).
-The clear-glass ordinary slab is the profile-owned effective source
-`more_slabs_stairs_and_walls:glass_slab`; the Layer is
-`cnm_terrain_slabs_compat:minecraft/glass_layer`; the Vertical Slab is
-`clutternomore:more_slabs_stairs_and_walls/vertical_glass_slab`. Confirm these actual IDs in the
-running stack rather than relying on a similar registry name.
+## How to establish an expectation
 
-| # | Arrangement and exact state | Face to inspect | Expected Canary 2 result |
-|---|---|---|---|
-| 1 | Two `minecraft:glass` full blocks | Both `UP` faces across the east edge | Existing clear-glass CTM connects unchanged. |
-| 2 | Two clear-glass slabs, both `type=top` | `UP` at world `y=1` | Connect; the two full 16×16 top quads are coplanar. |
-| 3 | Clear-glass slab `type=top` beside full `minecraft:glass` | Both `UP` faces at world `y=1` | Connect despite different block classes/states. |
-| 4 | Clear-glass slab `type=bottom` beside full glass | First `DOWN`, then `UP` | `DOWN` at `y=0` may connect; slab `UP` at `y=.5` must not connect to full `UP` at `y=1`. Record the two faces separately. |
-| 5 | Clear-glass `type=top` slab beside `type=bottom` slab | `UP` | No connection: planes are `y=1` and `y=.5`. Do not generalize this result to every face/placement. |
-| 6 | Glass Layer `facing=down,layers=1` beside full glass | `UP` | Connect at the top block boundary. |
-| 7 | Clear-glass `type=top` slab beside glass Layer `facing=down,layers=1` | `UP` | Cross-geometry connection at `y=1`. |
-| 8 | Glass Layer `facing=up,layers=1` beside full glass | `UP` | No connection: recessed Layer plane `y=.25` versus full plane `y=1`. |
-| 9 | Two partial glass Layers `facing=down`, one `layers=1`, one `layers=2` | `UP` | Connect: unequal thickness is allowed because both top boundary surfaces are the same plane/region. |
-| 10 | Two single glass Vertical Slabs across the east boundary: west source `facing=east`, east neighbor `facing=west` | `UP` | Connect; the two occupied top rectangles meet at the evaluated boundary. |
-| 11 | Single Vertical `facing=east` beside full glass to its east | `UP` | Connect; the Vertical's boundary-aligned top rectangle reaches the full block. |
-| 12 | Single Vertical `facing=west` beside full glass to its east | `UP` | No connection; the Vertical top rectangle is recessed from that east boundary. |
-| 13 | At `(0,0,0)`, test in turn a glass Layer `facing=up,layers=4`, ordinary glass slab `type=double`, and glass Vertical Slab `facing=north,double=true`, each beside full glass at `(1,0,0)`; then test full Layer→double slab and double slab→double Vertical across the same east boundary | Both `UP` faces at world `y=1`, along their shared east edge | Every listed full-volume pair connects on the exact full top surface. |
-| 14 | Clear-glass top slab beside white-stained-glass top slab | `UP` | No connection despite perfect geometry; canonical material profiles differ. |
-| 15 | Repeat rows 1–9 with the profile-owned chiseled-sandstone slab/Layer and `minecraft:chiseled_sandstone` | Same named faces | Same contact outcomes, separating material/contact behavior from translucency. |
-| 16 | Put the receiver at `(0,0,0)` and source at `(1,0,0)`: first full `minecraft:stone` receiving full `minecraft:bricks`; then a stone Layer `facing=up,layers=4`; then a stone Layer `facing=down,layers=1`. Keep full bricks as the source for those three. Separately replace the source with a brick Layer `facing=down,layers=1`, then with `facing=up,layers=4`. Finally use a single stone Vertical Slab `facing=east,double=false` as receiver with full bricks east. | Receiver `UP`, specifically its east edge; for the single Vertical receiver also record that its `UP` quad is only 8×16 | Full stone is the baseline. Full and top-anchored Layer receivers have unit-square `UP` quads and may inherit the overlay with a full-collision bricks source. The partial brick Layer must not induce it; the full four-Layer brick source may. The 8×16 Vertical receiver must retain Continuity's unit-square rejection. Record each face separately. |
-| 17 | Repeat the clearest positive and negative glass rows with Complementary Unbound | Same exact faces | Positive contact remains connected, negative stays disconnected, and no new seam/rim/alpha/culling defect appears. Run only after the shader-off result is known. |
+For every partial arrangement, first build the corresponding canonical full-block arrangement
+with the same receiver/source direction, inspected face, exposed edge, pack order, and shader
+state. Record what Continuity actually changes on each visible face. That observation is the
+semantic expectation:
 
-For split glass side faces, inspect the body and rim separately. Canary 2 captures each source
-quad's exact in-plane bounds; one split quad is not allowed to borrow boundary contact from
-another quad merely because their combined state cuboid reaches the neighbor.
+- if the canonical full blocks do not connect or overlay, the partial arrangement must not
+  invent a relationship;
+- if they do, an equivalent coplanar partial face may reproduce it, subject to Continuity's own
+  unit-square, full-collision-source, selector, and occlusion requirements;
+- a non-coplanar partial arrangement must be vetoed even when its canonical baseline applies.
 
-## Short first pass
+Overlay relationships can be directional. Record which block is the rendered receiver, which is
+the inducing neighbor, and then swap them. Never summarize a result merely as “the pair
+connects”; different faces and directions can legitimately differ.
 
-The shortest useful shader-off sequence is rows 1, 2, 3, the two face observations in row 4,
-rows 5–8, rows 10–12, row 14, then the corresponding chiseled-sandstone positive and recessed
-negative from row 15. This establishes base behavior, slab priority, partial-to-full,
-cross-geometry, deliberate non-coplanarity, Vertical alignment, material separation, and a
-non-translucent control before overlays or shaders add variables.
+## First runtime pass: terrain regressions
 
-## Recording and acceptance boundary
+Use adjacent horizontal positions, initially receiver at `(0,0,0)` and neighbor at `(1,0,0)`.
+Inspect the receiver's `UP` face along its east edge plus every other visible face the pack
+changes. Swap positions/directions where requested.
 
-Record one result per **specific face**, with exact block IDs/states, positions, expected plane
-and region, actual CTM result, pack order, shader state, PASS/FAIL/INCONCLUSIVE, and screenshots.
-Different faces on one block pair may legitimately differ.
+### 1. Canonical full-block baselines
 
-The canary remains `ACTIVE / RUNTIME_UNTESTED` until actual client evidence is supplied. A clean
-build, exact dependency hash, artifact inspection, server GameTest, fixture, or source audit must
-not be relabeled as Minecraft-client visual CTM validation or project acceptance.
+With only canonical full blocks, record both directions for each pair:
+
+1. `minecraft:grass_block` ↔ `minecraft:dirt`;
+2. `minecraft:grass_block` ↔ `minecraft:podzol`;
+3. `minecraft:dirt` ↔ `minecraft:podzol`.
+
+For each direction, record the exact receiver, inducing neighbor, face/edge, and overlay or CTM
+change. These six directional observations are the references for the partial rows below; do not
+assume any unobserved grass/dirt/podzol relationship.
+
+### 2. Grass slab rule selection and same-geometry contact
+
+Place two profile-owned grass slabs with `type=top`, `waterlogged=false`, and the same snowy
+condition. Inspect their coplanar `UP` faces at world `y=1`. Compare against two full grass
+blocks. The slab appearance should now reach canonical `minecraft:grass_block`, and any native
+same-material rule should be preserved on that face.
+
+Repeat once with both slabs `type=bottom`, inspecting the corresponding coplanar surface rather
+than assuming the top-face result applies everywhere.
+
+### 3. Grass slab beside full podzol
+
+Put a grass `type=top` slab beside full `minecraft:podzol`; inspect both blocks' relevant visible
+faces and swap receiver/source direction. The partial result on the coplanar `UP` face should
+mirror the recorded full grass↔podzol direction only if that canonical direction applied.
+
+### 4. Grass slab beside full dirt
+
+Repeat row 3 with full `minecraft:dirt`, again recording both directions and comparing each to
+the corresponding full grass↔dirt baseline.
+
+### 5. Dirt slab beside full grass
+
+Use the profile-owned `more_slabs_stairs_and_walls:dirt_slab` with `type=top` beside full grass.
+This reproduces the Canary 2 category that appeared to overlay unexpectedly. Record the exact
+receiver/source direction and face. A result may remain only where its canonical full-block
+direction applies and the participating surfaces are coplanar.
+
+### 6. Two dirt slabs beside grass
+
+Place two coplanar top dirt slabs along one edge of a full grass block and inspect each affected
+face separately. Compare each observation to the equivalent all-full-block layout. Do not infer
+that both slabs should behave alike unless their receiver/source direction and visible face are
+the same.
+
+### 7. Deliberately non-coplanar controls
+
+Repeat a terrain relationship that was positive in the canonical baseline using:
+
+- grass or dirt `type=top` slab beside `type=bottom` slab, inspecting `UP`;
+- a `type=bottom` slab beside a full block while inspecting the mismatched upper surface;
+- a bottom-anchored one-Layer carrier (`facing=up,layers=1`) beside a full block, inspecting
+  `UP` at the recessed `y=.25` plane;
+- the matching top-boundary control (`facing=down,layers=1`) beside a full block at `y=1`.
+
+The first three non-coplanar cases must be vetoed. The top-boundary control may reproduce the
+canonical relationship if Continuity's native overlay requirements also permit it.
+
+### 8. Layers and Vertical Slabs
+
+Repeat representative positive and negative canonical terrain relationships with:
+
+- a grass top-boundary Layer (`facing=down,layers=1`) beside full dirt or podzol;
+- two same-plane grass or dirt Layers;
+- a recessed Layer negative;
+- an aligned single grass Vertical Slab and a compatible full-block face;
+- the same Vertical Slab oriented away from the evaluated boundary as a negative;
+- one valid cross-geometry slab↔Layer or Layer↔Vertical pair.
+
+For Vertical Slabs, record the exact `facing`, `double`, evaluated face, and occupied half. Native
+Standard Overlay still rejects a non-unit-square receiver quad and a non-full-collision inducing
+source before the C3 contact veto runs; record such a row as a native Continuity limitation, not
+as a C3 geometry failure.
+
+## Secondary regression pass
+
+Only after the terrain relationships are understood:
+
+1. Recheck full clear glass, two top clear-glass slabs, top slab↔full glass, top↔bottom negative,
+   top-boundary Layer↔full, recessed Layer negative, aligned/misaligned Vertical Slabs, and one
+   cross-geometry pair.
+2. Repeat representative positive and negative rows with chiseled sandstone to separate solid
+   CTM behavior from translucency.
+3. Confirm distinct canonical states remain distinct wherever Continuity's active rule requires
+   that distinction; C3's geometry resolver itself must not impose profile equality.
+4. Repeat the clearest positive and negative glass cases with Complementary enabled and inspect
+   seams, rims, alpha, culling, and shader artifacts. Translucent Glass defects outside general
+   CTM semantic/contact behavior remain out of scope.
+
+Steps, Corners, Quarter Columns, paths, roots, honey/slime inset families, unrelated cutout or
+custom-model families, and unknown topology remain excluded. Do not use this matrix to broaden
+them.
+
+## Result record
+
+Record one result per specific face with:
+
+- exact block IDs and complete states;
+- positions and receiver/inducing-source direction;
+- inspected face and edge, expected world plane, and occupied surface region;
+- exact canonical full-block baseline observation;
+- expected partial behavior derived from that baseline;
+- actual visual result and PASS/FAIL/INCONCLUSIVE classification;
+- pack order, Continuity settings, shader state, and screenshots.
+
+The shortest useful shader-off sequence is the six directional full-block baselines, two top
+grass slabs, grass top slab↔full podzol, grass top slab↔full dirt, dirt top slab↔full grass, two
+dirt top slabs beside grass, one top↔bottom negative, one recessed-Layer negative, and one
+top-boundary-Layer positive/control. That directly revisits every supplied Canary 2 terrain
+category before expanding to Vertical Slabs, glass, sandstone, or shaders.
+
+Canary 3 remains `ACTIVE / RUNTIME_UNTESTED` until actual client observations are supplied.
+Builds, JUnit, GameTests, controlled provider hashes, artifact inspection, and dedicated-server
+execution are not Minecraft-client visual CTM evidence and cannot establish acceptance.
