@@ -96,7 +96,6 @@ public final class CnmTerrainCompat implements ModInitializer {
     public static synchronized void registerCnmBridgeFamilies() {
         initializeNativeCatalog();
         registerBgeBase();
-        CnmAxisFamilyBridge.registerEligibleFamilies();
     }
 
     /** Called from CNM's registry-bootstrap tail before the built-in registries freeze. */
@@ -122,6 +121,7 @@ public final class CnmTerrainCompat implements ModInitializer {
         QuarterGeometryGeneratedData.generate();
         ExternalMaterialGeneratedData.generate();
         bgeGeometryRegistered = true;
+        CnmShapeMapCandidateBridge.finishRegistryAdmission();
         validateBindingsWhenComplete();
     }
 

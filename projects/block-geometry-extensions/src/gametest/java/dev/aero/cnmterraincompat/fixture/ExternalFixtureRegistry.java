@@ -27,14 +27,6 @@ public final class ExternalFixtureRegistry {
 
     private ExternalFixtureRegistry() {}
 
-    /** Minimal Enderscape-style axis sources; resource contracts live beside this test mod. */
-    public static void registerEnderscape() {
-        register("enderscape", "veiled_log", Blocks.CHERRY_LOG, true);
-        register("enderscape", "veiled_wood", Blocks.CHERRY_WOOD, true);
-        // A matching block class without a packaged column contract must remain unadopted.
-        register("enderscape", "unsupported_axis", Blocks.CHERRY_LOG, true);
-    }
-
     public static void registerMacawsPaths() {
         String[] materials = "andesite diorite granite sandstone red_sandstone brick stone mossy_stone cobbled_deepslate deepslate mud_brick blackstone dark_prismarine".split(" ");
         String[] patterns = "running_bond windmill_weave flagstone crystal_floor".split(" ");

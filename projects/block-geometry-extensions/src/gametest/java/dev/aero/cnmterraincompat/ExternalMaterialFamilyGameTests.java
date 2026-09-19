@@ -174,27 +174,25 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
                         && ExternalMaterialCatalog.sourceCount("ribbits") == 4
                         && ExternalMaterialCatalog.sourceCount("bbb") == 12,
                 "Provider source partition is not 57/6/4/12");
-        helper.assertTrue(ExternalMaterialFamilies.all().size() == 81,
-                "Provider completion plus the verified CNM bridge did not register all 81 families: "
+        helper.assertTrue(ExternalMaterialFamilies.all().size() == 79,
+                "Provider completion did not register all 79 allowlisted families: "
                         + ExternalMaterialFamilies.all().size());
         helper.assertTrue(NibaruMaterialProfiles.all().stream().filter(profile -> profile.family() != null).count() == 314
                         && NibaruMaterialProfiles.all().stream().filter(profile -> profile.family() == null
-                                && !profile.canonicalParentId().getNamespace().equals("minecraft")).count() == 81,
+                                && !profile.canonicalParentId().getNamespace().equals("minecraft")).count() == 79,
                 "External append changed the frozen native inventory or lost an external source");
 
         Set<Identifier> actual = new LinkedHashSet<>();
         ExternalMaterialFamilies.all().forEach(binding -> actual.add(binding.spec().id()));
         Set<Identifier> expected = new LinkedHashSet<>();
         ExternalMaterialCatalog.specs().forEach(spec -> expected.add(spec.id()));
-        expected.add(Identifier.parse("enderscape:veiled_log"));
-        expected.add(Identifier.parse("enderscape:veiled_wood"));
         helper.assertTrue(actual.equals(expected),
-                "Registered external sources differ from the exact allowlist plus verified bridge set");
+                "Registered external sources differ from the exact allowlist");
         helper.assertTrue(actual.stream().filter(id -> id.getNamespace().equals("mcwpaths"))
                         .allMatch(ExternalMaterialFamilyGameTests::isRequestedMacawSource),
                 "Macaw family is outside the 52 full-pattern plus five plain-Path scope");
-        System.out.println("EXTERNAL_C79_INVENTORY|sources=81|catalog=79|genericAxis=2|mcwpaths=57"
-                + "|mynx_trees=6|ribbits=4|bbb=12|relations=729");
+        System.out.println("EXTERNAL_C80_INVENTORY|sources=79|mcwpaths=57"
+                + "|mynx_trees=6|ribbits=4|bbb=12|relations=711");
         helper.succeed();
     }
 
@@ -238,10 +236,10 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
             relations += roles.size();
         }
         CanonicalShapeMapAudit.Report audit = CanonicalShapeMapAudit.inspectExternalFamilies();
-        helper.assertTrue(relations == 729 && canonicalDerived.size() == 648 && bgeGenerated.size() == 530,
-                "C79 relation/canonical/generated identity count mismatch: " + relations + "/"
+        helper.assertTrue(relations == 711 && canonicalDerived.size() == 632 && bgeGenerated.size() == 514,
+                "C80 relation/canonical/generated identity count mismatch: " + relations + "/"
                         + canonicalDerived.size() + "/" + bgeGenerated.size());
-        helper.assertTrue(audit.variantCount() == 81 && audit.missing().isEmpty()
+        helper.assertTrue(audit.variantCount() == 79 && audit.missing().isEmpty()
                         && audit.duplicates().isEmpty(),
                 "Live ShapeMap canonical variant/role audit failed: " + audit);
         helper.succeed();
@@ -463,15 +461,15 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
             }
         }
         JsonObject walls = generatedServerJson(Identifier.parse("minecraft:tags/block/walls.json"));
-        helper.assertTrue(walls.getAsJsonArray("values").size() == 81,
+        helper.assertTrue(walls.getAsJsonArray("values").size() == 79,
                 "External wall classification does not contain every scoped full-parent family");
-        helper.assertTrue(loot == 287, "Expected 287 BGE-owned external loot tables, found " + loot);
-        System.out.println("EXTERNAL_C79_SERVER_RESOURCES|standardLoot=287|wallTags=81|materialFamilies=81");
+        helper.assertTrue(loot == 277, "Expected 277 BGE-owned external loot tables, found " + loot);
+        System.out.println("EXTERNAL_C80_SERVER_RESOURCES|standardLoot=277|wallTags=79|materialFamilies=79");
         helper.succeed();
     }
 
     @GameTest(maxTicks = 80)
-    public void actualClientWritersCloseAll530BgeOwnedGeometryResources(GameTestHelper helper) {
+    public void actualClientWritersCloseAll514BgeOwnedGeometryResources(GameTestHelper helper) {
         ResourceManager manager = clientFixtureManager();
         LayerGeneratedResources.GenerationSummary layers =
                 LayerGeneratedResources.generateExternalForValidation(manager);
@@ -479,12 +477,12 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
                 QuarterGeometryGeneratedResources.generateExternalForValidation(manager);
         ExternalMaterialGeneratedResources.GenerationSummary standard =
                 ExternalMaterialGeneratedResources.generate(manager);
-        helper.assertTrue(layers.familyCount() == 81
-                        && quarters.cornerFamilyCount() == 81
-                        && quarters.columnFamilyCount() == 81
-                        && standard.familyCount() == 81
-                        && standard.blockStateCount() == 287
-                        && standard.itemCount() == 287,
+        helper.assertTrue(layers.familyCount() == 79
+                        && quarters.cornerFamilyCount() == 79
+                        && quarters.columnFamilyCount() == 79
+                        && standard.familyCount() == 79
+                        && standard.blockStateCount() == 277
+                        && standard.itemCount() == 277,
                 "External client writers did not process every exact family/role");
 
         int generatedRelations = 0;
@@ -511,10 +509,10 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
                 generatedRelations++;
             }
         }
-        helper.assertTrue(generatedRelations == 530 && resolvedModelReferences >= 530,
+        helper.assertTrue(generatedRelations == 514 && resolvedModelReferences >= 514,
                 "External client resource closure mismatch: relations=" + generatedRelations
                         + ", modelReferences=" + resolvedModelReferences);
-        System.out.println("EXTERNAL_C79_CLIENT_RESOURCES|generatedRelations=530|blockstates=530|items=530"
+        System.out.println("EXTERNAL_C80_CLIENT_RESOURCES|generatedRelations=514|blockstates=514|items=514"
                 + "|resolvedModelReferences=" + resolvedModelReferences);
         helper.succeed();
     }
@@ -606,53 +604,6 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
                         "clutternomore:block/templates/step", 36);
             }
         }
-        helper.succeed();
-    }
-
-    @GameTest(maxTicks = 80)
-    public void genericCnmAxisBridgeAdoptsOnlyVerifiedEnderscapeColumns(GameTestHelper helper) {
-        ResourceManager manager = clientFixtureManager();
-        ExternalMaterialGeneratedResources.generate(manager);
-
-        for (Identifier source : List.of(Identifier.parse("enderscape:veiled_log"),
-                Identifier.parse("enderscape:veiled_wood"))) {
-            CnmAxisFamilyBridge.ColumnVisual visual = CnmAxisFamilyBridge.inspect(source).orElseThrow();
-            ExternalMaterialFamilies.Binding binding = ExternalMaterialFamilies.fromSource(source).orElseThrow();
-            helper.assertTrue(binding.spec().provider().equals("enderscape")
-                            && binding.spec().providerRoles().isEmpty()
-                            && binding.profile().visualProfile() == VisualProfile.PILLAR
-                            && binding.profile().orientationPolicy()
-                                    == games.twinhead.moreslabsstairsandwalls.api.material.NibaruMaterialProfile.OrientationPolicy.AXIS_ALIGNED
-                            && binding.profile().textureRoles().side().equals(visual.side())
-                            && binding.profile().textureRoles().top().equals(visual.end())
-                            && binding.profile().textureRoles().bottom().equals(visual.end())
-                            && binding.generatedRoles().size() == 8,
-                    "Generic CNM bridge did not retain the verified typed/profile contract: " + source);
-            helper.assertTrue(binding.slab().defaultBlockState().hasProperty(BlockStateProperties.AXIS)
-                            && binding.stairs().defaultBlockState().hasProperty(BlockStateProperties.AXIS),
-                    "Verified Enderscape column lost independent axis forms: " + source);
-            assertNormalWallState(helper, binding);
-            assertWallModel(helper, binding, "_post",
-                    "more_slabs_stairs_and_walls:block/template_column_wall_post");
-            assertWallModel(helper, binding, "_side",
-                    "more_slabs_stairs_and_walls:block/template_column_wall_side");
-            assertWallModel(helper, binding, "_side_tall",
-                    "more_slabs_stairs_and_walls:block/template_column_wall_side_tall");
-            assertWallModel(helper, binding, "_inventory", "minecraft:block/wall_inventory");
-            helper.assertTrue(wallModel(binding, "_inventory").getAsJsonObject("textures")
-                            .get("wall").getAsString().equals(visual.side()),
-                    "Generic axis wall inventory did not use its verified bark role: " + source);
-
-            List<Item> component = ShapeMap.getShapes(binding.source().asItem());
-            helper.assertTrue(binding.roles().values().stream().allMatch(role ->
-                            java.util.Collections.frequency(component, role.asItem()) == 1),
-                    "Generic bridge produced duplicate/missing CNM role ownership: " + source);
-        }
-        helper.assertTrue(CnmAxisFamilyBridge.inspect(Identifier.parse("enderscape:unsupported_axis")).isEmpty()
-                        && ExternalMaterialFamilies.fromSource(Identifier.parse("enderscape:unsupported_axis")).isEmpty(),
-                "Generic CNM bridge failed closed for a source without the exact column resource contract");
-        helper.assertTrue(CanonicalShapeMapAudit.inspectExternalFamilies().duplicates().isEmpty(),
-                "Generic CNM bridge introduced duplicate ShapeMap role ownership");
         helper.succeed();
     }
 
@@ -1068,13 +1019,6 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
                             + "\",\"x\":90,\"y\":90},\"axis=y\":{\"model\":\"" + model
                             + "\"},\"axis=z\":{\"model\":\"" + model + "\",\"x\":90}}}");
         }
-        for (String path : List.of("veiled_log", "veiled_wood")) {
-            String model = "enderscape:block/" + path;
-            json.put(Identifier.fromNamespaceAndPath("enderscape", "blockstates/" + path + ".json"),
-                    "{\"variants\":{\"axis=x\":{\"model\":\"" + model
-                            + "\",\"x\":90,\"y\":90},\"axis=y\":{\"model\":\"" + model
-                            + "\"},\"axis=z\":{\"model\":\"" + model + "\",\"x\":90}}}");
-        }
         for (String material : bbbBeamMaterials()) {
             String path = material + "_beam";
             String model = "bbb:block/beam/" + material;
@@ -1103,10 +1047,10 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
                 new Class<?>[] {PackResources.class}, (proxy, method, args) -> switch (method.getName()) {
                     case "packId" -> "bge-c77-client-fixtures";
                     case "knownPackInfo" -> Optional.empty();
-                    case "getNamespaces" -> Set.of("minecraft", "mynx_trees", "bbb", "ribbits", "enderscape");
+                    case "getNamespaces" -> Set.of("minecraft", "mynx_trees", "bbb", "ribbits");
                     case "listResources", "close" -> null;
                     case "getRootResource", "getResource", "getMetadataSection", "location" -> null;
-                    case "toString" -> "BGE C79 client fixture pack";
+                    case "toString" -> "BGE C80 client fixture pack";
                     case "hashCode" -> System.identityHashCode(proxy);
                     case "equals" -> proxy == args[0];
                     default -> throw new UnsupportedOperationException("Unexpected PackResources call " + method);
@@ -1120,14 +1064,14 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
                     case "getResource" -> Optional.ofNullable(resources.get((Identifier) args[0]));
                     case "getResourceStack" -> Optional.ofNullable(resources.get((Identifier) args[0]))
                             .map(List::of).orElseGet(List::of);
-                    case "getNamespaces" -> Set.of("minecraft", "mynx_trees", "bbb", "ribbits", "enderscape");
+                    case "getNamespaces" -> Set.of("minecraft", "mynx_trees", "bbb", "ribbits");
                     case "listResources" -> resources.entrySet().stream()
                             .filter(entry -> entry.getKey().getPath().startsWith((String) args[0]))
                             .filter(entry -> ((Predicate<Identifier>) args[1]).test(entry.getKey()))
                             .collect(java.util.stream.Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
                     case "listResourceStacks" -> Map.of();
                     case "listPacks" -> Stream.of(pack);
-                    case "toString" -> "BGE C79 client fixture manager";
+                    case "toString" -> "BGE C80 client fixture manager";
                     case "hashCode" -> System.identityHashCode(proxy);
                     case "equals" -> proxy == args[0];
                     default -> throw new UnsupportedOperationException("Unexpected ResourceManager call " + method);

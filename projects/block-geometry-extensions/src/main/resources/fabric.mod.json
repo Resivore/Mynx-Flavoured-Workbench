@@ -3,8 +3,8 @@
   "id": "cnm_terrain_slabs_compat",
   "version": "${version}",
   "provides": ["more_slabs_stairs_and_walls"],
-  "name": "Block Geometry Extensions Canary 79 — CNM Family Bridge",
-  "description": "Adds current material families, derives typed CNM pillar families, and normalizes pillar-wall item presentation.",
+  "name": "Block Geometry Extensions Canary 80 — CNM Two-Phase Binding",
+  "description": "Admits BGE candidates only through CNM's variant lifecycle and binds them only through CNM-resolved ShapeMap mappings.",
   "authors": ["Mynx Workbench", "Nibaru"],
   "environment": "*",
   "entrypoints": {

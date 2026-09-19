@@ -51,6 +51,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -67,6 +68,66 @@ public final class NativeAxisGameTests implements CustomTestMethodInvoker {
             id("minecraft:crimson_stem"),
             id("minecraft:bamboo_block"),
             id("minecraft:basalt"));
+
+    /**
+     * This is deliberately a production-pack closure audit, not a registry-count assertion.
+     * Every native BGE block must have an item definition, item model, blockstate, loot table,
+     * selector coverage, and recursively resolvable package-owned models.  It catches the prior
+     * failure mode where Java registration succeeded but the copied upstream asset tree did not
+     * contain the newly admitted material family.
+     */
+    @GameTest(maxTicks = 200)
+    public void nativeProductionResourcesCloseEveryRegisteredFamily(GameTestHelper helper) {
+        Set<Identifier> visitedModels = new LinkedHashSet<>();
+        int roles = 0;
+        for (ModBlocks family : ModBlocks.values()) {
+            for (ModBlocks.BlockType type : ModBlocks.BlockType.values()) {
+                if (!family.hasBlock(type)) continue;
+                Block block = family.getBlock(type);
+                Identifier blockId = BuiltInRegistries.BLOCK.getKey(block);
+                helper.assertTrue(blockId != null && blockId.equals(family.getId(type)),
+                        "Native role identity drifted: " + family + "/" + type);
+                JsonObject state = productionJson("assets/" + blockId.getNamespace()
+                        + "/blockstates/" + blockId.getPath() + ".json");
+                JsonObject item = productionJson("assets/" + blockId.getNamespace()
+                        + "/items/" + blockId.getPath() + ".json");
+                productionJson("assets/" + blockId.getNamespace() + "/models/item/"
+                        + blockId.getPath() + ".json");
+                JsonObject loot = productionJson("data/" + blockId.getNamespace()
+                        + "/loot_table/blocks/" + blockId.getPath() + ".json");
+                helper.assertTrue("minecraft:block".equals(loot.get("type").getAsString()),
+                        "Native role has an invalid loot-table root: " + blockId);
+                assertStateCoverage(helper, block, state, blockId);
+                Set<String> referencedModels = new LinkedHashSet<>();
+                collectModelReferences(state, referencedModels);
+                collectModelReferences(item, referencedModels);
+                helper.assertTrue(!referencedModels.isEmpty(),
+                        "Native role does not resolve any item/block model: " + blockId);
+                for (String model : referencedModels) {
+                    Identifier modelId = Identifier.parse(model);
+                    assertModelClosure(helper, modelId, visitedModels, new LinkedHashSet<>());
+                }
+                roles++;
+            }
+        }
+        for (Identifier source : List.of(id("minecraft:chiseled_resin_bricks"),
+                id("minecraft:chiseled_cinnabar"), id("minecraft:purpur_pillar"))) {
+            NibaruMaterialProfile profile = profile(source);
+            helper.assertTrue(profile.nativeSlab().isPresent() && profile.nativeStair().isPresent()
+                            && profile.nativeWall().isPresent(),
+                    "C80 production closure did not retain all standard roles for " + source);
+        }
+        NibaruMaterialProfile purpur = profile(id("minecraft:purpur_pillar"));
+        Block purpurWall = purpur.nativeWall().orElseThrow();
+        helper.assertTrue(!purpurWall.defaultBlockState().hasProperty(BlockStateProperties.AXIS),
+                "Purpur Pillar wall acquired an illegal material AXIS state");
+        helper.assertTrue(roles == 875 && visitedModels.size() >= roles,
+                "Native production resource closure inventory drifted: roles=" + roles
+                        + ", models=" + visitedModels.size());
+        System.out.println("NATIVE_C80_PRODUCTION_RESOURCE_CLOSURE|roles=" + roles
+                + "|models=" + visitedModels.size() + "|families=" + ModBlocks.values().length);
+        helper.succeed();
+    }
 
     @GameTest(maxTicks = 40)
     public void nativeAxisInventoryIsExactAndExclusive(GameTestHelper helper) {
@@ -741,6 +802,94 @@ public final class NativeAxisGameTests implements CustomTestMethodInvoker {
             rejected = true;
         }
         helper.assertTrue(rejected, "Native axis contract accepted " + label);
+    }
+
+    private static JsonObject productionJson(String resource) {
+        try (InputStream input = NativeAxisGameTests.class.getClassLoader().getResourceAsStream(resource)) {
+            if (input == null) throw new IllegalStateException("Missing production resource " + resource);
+            return JsonParser.parseReader(new InputStreamReader(input, StandardCharsets.UTF_8)).getAsJsonObject();
+        } catch (Exception exception) {
+            throw new IllegalStateException("Cannot read production resource " + resource, exception);
+        }
+    }
+
+    private static void assertStateCoverage(GameTestHelper helper, Block block, JsonObject state,
+            Identifier blockId) {
+        if (state.has("multipart")) {
+            JsonArray parts = state.getAsJsonArray("multipart");
+            helper.assertTrue(parts != null && !parts.isEmpty(),
+                    "Multipart blockstate has no placed-state topology: " + blockId);
+            return;
+        }
+        JsonObject variants = state.getAsJsonObject("variants");
+        helper.assertTrue(variants != null && !variants.entrySet().isEmpty(),
+                "Blockstate has neither variants nor multipart topology: " + blockId);
+        for (BlockState candidate : block.getStateDefinition().getPossibleStates()) {
+            boolean covered = variants.entrySet().stream().anyMatch(entry -> selectorMatches(candidate, entry.getKey()));
+            helper.assertTrue(covered, "Blockstate selector does not cover " + candidate + " for " + blockId);
+        }
+    }
+
+    private static boolean selectorMatches(BlockState state, String selector) {
+        if (selector.isEmpty()) return true;
+        Map<String, String> expected = new HashMap<>();
+        for (String term : selector.split(",")) {
+            String[] pair = term.split("=", 2);
+            if (pair.length != 2) return false;
+            expected.put(pair[0], pair[1]);
+        }
+        for (Map.Entry<String, String> term : expected.entrySet()) {
+            Property<?> property = state.getProperties().stream()
+                    .filter(candidate -> candidate.getName().equals(term.getKey()))
+                    .findFirst().orElse(null);
+            if (property == null || !propertyValue(state, property).equals(term.getValue())) return false;
+        }
+        return true;
+    }
+
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private static String propertyValue(BlockState state, Property<?> property) {
+        Property raw = property;
+        return raw.getName(state.getValue(raw));
+    }
+
+    private static void collectModelReferences(JsonElement json, Set<String> target) {
+        if (json.isJsonArray()) {
+            json.getAsJsonArray().forEach(value -> collectModelReferences(value, target));
+        } else if (json.isJsonObject()) {
+            JsonObject object = json.getAsJsonObject();
+            if (object.has("model") && object.get("model").isJsonPrimitive()
+                    && object.get("model").getAsJsonPrimitive().isString()) {
+                String model = object.get("model").getAsString();
+                if (model.contains(":")) target.add(model);
+            }
+            object.entrySet().forEach(entry -> collectModelReferences(entry.getValue(), target));
+        }
+    }
+
+    private static void assertModelClosure(GameTestHelper helper, Identifier model,
+            Set<Identifier> visited, Set<Identifier> visiting) {
+        if (!model.getNamespace().equals(NativeAxisModelContract.PROVIDER_NAMESPACE)) return;
+        helper.assertTrue(visiting.add(model), "Cyclic package-owned model parent chain: " + model);
+        JsonObject json = productionJson("assets/" + model.getNamespace() + "/models/"
+                + model.getPath() + ".json");
+        JsonObject textures = json.getAsJsonObject("textures");
+        if (textures != null) {
+            for (Map.Entry<String, JsonElement> texture : textures.entrySet()) {
+                helper.assertTrue(texture.getValue().isJsonPrimitive()
+                                && texture.getValue().getAsJsonPrimitive().isString(),
+                        "Model has a non-string texture reference: " + model + " " + texture);
+            }
+        }
+        if (json.has("parent")) {
+            helper.assertTrue(json.get("parent").isJsonPrimitive()
+                            && json.get("parent").getAsJsonPrimitive().isString(),
+                    "Model parent is not a resource identifier: " + model);
+            Identifier parent = Identifier.parse(json.get("parent").getAsString());
+            assertModelClosure(helper, parent, visited, visiting);
+        }
+        visiting.remove(model);
+        visited.add(model);
     }
 
     private static NibaruMaterialProfile representativePolicyProfile(AxisUvPolicy policy) {

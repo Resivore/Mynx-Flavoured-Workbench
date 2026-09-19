@@ -1,8 +1,9 @@
 package dev.aero.cnmterraincompat.mixin;
 
 import dev.aero.cnmterraincompat.CanonicalGeometryRegistry;
+import dev.aero.cnmterraincompat.BgeGeometryRole;
+import dev.aero.cnmterraincompat.CnmShapeMapCandidateBridge;
 import dev.aero.cnmterraincompat.CnmTerrainCompat;
-import dev.aero.cnmterraincompat.DirtVerticalSlab;
 import dev.aero.cnmterraincompat.NibaruProviderAdapter;
 import games.twinhead.moreslabsstairsandwalls.api.material.DerivedGeometrySupport;
 import dev.tazer.clutternomore.ClutterNoMore;
@@ -52,7 +53,10 @@ abstract class ClutterNoMoreVariantScanMixin {
             require = 1)
     private static VerticalSlabBlock cnmTerrainCompat$createVerticalSlab(
             BlockBehaviour.Properties properties, SlabBlock source, String registryPath) {
-        return NibaruProviderAdapter.createVertical(properties, source);
+        VerticalSlabBlock generated = NibaruProviderAdapter.createVertical(properties, source);
+        CnmShapeMapCandidateBridge.admit(source, BgeGeometryRole.VERTICAL_SLAB, generated,
+                ClutterNoMore.location(registryPath));
+        return generated;
     }
 
     @Redirect(
@@ -61,20 +65,28 @@ abstract class ClutterNoMoreVariantScanMixin {
             require = 1)
     private static StepBlock cnmTerrainCompat$createStep(
             BlockBehaviour.Properties properties, StairBlock source, String registryPath) {
-        return NibaruProviderAdapter.createStep(properties, source);
+        StepBlock generated = NibaruProviderAdapter.createStep(properties, source);
+        CnmShapeMapCandidateBridge.admit(source, BgeGeometryRole.STEP, generated,
+                ClutterNoMore.location(registryPath));
+        return generated;
     }
 
     @Inject(method = "lambda$registerVariants$0", at = @At("RETURN"), require = 1)
     private static void cnmTerrainCompat$bindWeatheringVertical(SlabBlock source, String registryPath,
             WeatheringCopperSlabBlock weatheringSource, CallbackInfoReturnable<Block> cir) {
-        NibaruProviderAdapter.bindGenerated(source, DerivedGeometrySupport.Geometry.VERTICAL_SLAB,
-                cir.getReturnValue());
+        Block generated = NibaruProviderAdapter.bindGenerated(source,
+                DerivedGeometrySupport.Geometry.VERTICAL_SLAB, cir.getReturnValue());
+        CnmShapeMapCandidateBridge.admit(source, BgeGeometryRole.VERTICAL_SLAB, generated,
+                ClutterNoMore.location(registryPath));
     }
 
     @Inject(method = "lambda$registerVariants$2", at = @At("RETURN"), require = 1)
     private static void cnmTerrainCompat$bindWeatheringStep(StairBlock source, String registryPath,
             WeatheringCopperStairBlock weatheringSource, CallbackInfoReturnable<Block> cir) {
-        NibaruProviderAdapter.bindGenerated(source, DerivedGeometrySupport.Geometry.STEP, cir.getReturnValue());
+        Block generated = NibaruProviderAdapter.bindGenerated(source,
+                DerivedGeometrySupport.Geometry.STEP, cir.getReturnValue());
+        CnmShapeMapCandidateBridge.admit(source, BgeGeometryRole.STEP, generated,
+                ClutterNoMore.location(registryPath));
     }
 
     /**

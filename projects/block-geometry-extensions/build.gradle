@@ -60,10 +60,22 @@ tasks.register('generateNibaruBaseResources', Exec) {
 }
 
 tasks.register('generateNativeAxisResources', JavaExec) {
-    dependsOn compileJava, tasks.named('generateNibaruBaseResources')
+    dependsOn tasks.named('generateNativeMaterialResources')
     classpath = files(sourceSets.main.output.classesDirs) + configurations.runtimeClasspath
     mainClass = 'games.twinhead.moreslabsstairsandwalls.tools.NativeAxisResourceGenerator'
     args generatedNibaruResources.get().asFile.absolutePath
+    outputs.upToDateWhen { false }
+}
+
+tasks.register('generateNativeMaterialResources', JavaExec) {
+    dependsOn compileJava, tasks.named('generateNibaruBaseResources')
+    classpath = files(sourceSets.main.output.classesDirs) + configurations.runtimeClasspath
+    mainClass = 'games.twinhead.moreslabsstairsandwalls.tools.NativeMaterialResourceGenerator'
+    args generatedNibaruResources.get().asFile.absolutePath,
+            file('src/nibaru/resources').absolutePath,
+            file('src/main/resources').absolutePath
+    inputs.dir file('src/nibaru/resources')
+    inputs.dir file('src/main/resources')
     outputs.upToDateWhen { false }
 }
 
