@@ -17,7 +17,10 @@ repositories {
     mavenCentral()
 }
 
-def bgeReference = file('../block-geometry-extensions/artifacts/BGE C79.jar')
+// C80 is the current authoritative API baseline for compilation and static verification. This
+// is deliberately not a runtime release-number predicate: the mixin plugin activates for any
+// BGE release that exposes the canonical-binding API contract it consumes.
+def bgeReference = file('../block-geometry-extensions/artifacts/BGE C80.jar')
 
 dependencies {
     minecraft 'com.mojang:minecraft:26.2'
@@ -64,7 +67,7 @@ test {
 
 tasks.register('verifyBridge') {
     group = 'verification'
-    description = 'Verifies the C79 BGE and Iris 1.11.2 bridge contract without loading Minecraft.'
+    description = 'Verifies the current BGE API baseline and Iris 1.11.2 bridge contract without loading Minecraft.'
     dependsOn tasks.named('jar')
     inputs.file(bgeReference)
     inputs.dir('src')
@@ -72,16 +75,16 @@ tasks.register('verifyBridge') {
 
     doLast {
         if (!bgeReference.isFile()) {
-            throw new GradleException("Missing exact BGE C79 baseline: ${bgeReference}")
+            throw new GradleException("Missing current BGE C80 API baseline: ${bgeReference}")
         }
         def bgeHash = java.security.MessageDigest.getInstance('SHA-256').digest(bgeReference.bytes).encodeHex().toString()
-        if (bgeHash != '7e3265c8746547465ede1a48b31c3db06370de84331b8ff9e35a2ce450650a91') {
-            throw new GradleException("BGE baseline hash differs from C79: ${bgeHash}")
+        if (bgeHash != '5bc7c23a3724a1e20bc2142459f33d2a45a19295c27d40197c5fc48d6e43b0fc') {
+            throw new GradleException("BGE baseline hash differs from the verified C80 API baseline: ${bgeHash}")
         }
         ZipFile bge = new ZipFile(bgeReference)
         try {
             if (bge.getEntry('dev/aero/cnmterraincompat/BgeMaterialBindings.class') == null) {
-                throw new GradleException('BGE C79 baseline is missing BgeMaterialBindings')
+                throw new GradleException('BGE API baseline is missing BgeMaterialBindings')
             }
         } finally {
             bge.close()
@@ -92,6 +95,8 @@ tasks.register('verifyBridge') {
         try {
             ['fabric.mod.json', 'bge_complementary.client.mixins.json',
              'dev/resivore/bgecomplementary/BgeShaderMaterialBridge.class',
+             'dev/resivore/bgecomplementary/BgeCanonicalBindingApi.class',
+             'dev/resivore/bgecomplementary/IrisBgeMixinPlugin.class',
              'dev/resivore/bgecomplementary/mixin/IrisBgeMaterialMappingMixin.class'].each { required ->
                 if (bridge.getEntry(required) == null) {
                     throw new GradleException("Packaged bridge is missing ${required}")

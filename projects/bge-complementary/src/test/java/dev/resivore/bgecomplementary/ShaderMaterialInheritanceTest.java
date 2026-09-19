@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import dev.aero.cnmterraincompat.BgeMaterialBindings;
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -138,5 +139,41 @@ class ShaderMaterialInheritanceTest {
         }
         assertTrue(bridgeSource.contains("BgeMaterialBindings.all()"));
         assertTrue(bridgeSource.contains("binding::canonicalState"));
+    }
+
+    @Test
+    void fabricMetadataRequiresBgeWithoutReleaseNumberGating() throws Exception {
+        String metadata = Files.readString(Path.of("src/main/resources/fabric.mod.json"),
+                StandardCharsets.UTF_8);
+
+        assertTrue(metadata.contains("\"cnm_terrain_slabs_compat\": \"*\""));
+        assertFalse(metadata.contains("canary79"));
+        assertFalse(metadata.contains("canary80"));
+        assertFalse(metadata.contains("4.2.23"));
+        assertFalse(metadata.contains("4.2.24"));
+    }
+
+    @Test
+    void currentC80ExposesEveryConsumedCanonicalBindingMethod() {
+        assertTrue(BgeCanonicalBindingApi.supports(BgeMaterialBindings.class.getClassLoader()),
+                "The C80 test baseline must expose BgeMaterialBindings.all(), Binding"
+                        + "#physicalBlock(), #canonicalMaterial(), and #canonicalState(BlockState)");
+    }
+
+    @Test
+    void mixinActivationUsesExactIrisSafetyAndBgeCapabilityNotABgeReleaseString() throws Exception {
+        assertTrue(IrisBgeMixinPlugin.activationAllowed(true, true));
+        assertFalse(IrisBgeMixinPlugin.activationAllowed(false, true));
+        assertFalse(IrisBgeMixinPlugin.activationAllowed(true, false));
+
+        String pluginSource = Files.readString(Path.of("src/client/java/dev/resivore/bgecomplementary/"
+                + "IrisBgeMixinPlugin.java"), StandardCharsets.UTF_8);
+        assertTrue(pluginSource.contains("hasExactVersion(\"iris\", IRIS_VERSION)"));
+        assertTrue(pluginSource.contains("BgeCanonicalBindingApi.isAvailable()"));
+        for (String forbidden : List.of("BGE_VERSION", "canary79", "canary80", "4.2.23", "4.2.24",
+                "cnm_terrain_slabs_compat\", BGE")) {
+            assertFalse(pluginSource.contains(forbidden),
+                    () -> "IrisBgeMixinPlugin must not gate BGE by release string: " + forbidden);
+        }
     }
 }
