@@ -19,6 +19,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
@@ -31,7 +32,7 @@ import java.util.Set;
  * temporary admission source is never treated as a material parent.</p>
  */
 public final class CnmShapeMapCandidateBridge {
-    public static final String PROFILE_VERSION = "bge-c81-cnm-resolved-family-v1";
+    public static final String PROFILE_VERSION = "bge-c82-cnm-generic-resource-closure-v1";
     private static final Identifier SHAPE_MAP_SOURCE = Identifier.fromNamespaceAndPath(
             CnmTerrainCompat.MOD_ID, "cnm_resolved_candidate_roles");
     private static final int INJECTION_PRIORITY = Integer.MIN_VALUE;
@@ -247,6 +248,18 @@ public final class CnmShapeMapCandidateBridge {
         return RECURSIVE_SOURCES.contains(block);
     }
 
+    /**
+     * The small set of genuinely profile-free families which CNM resolved after registry
+     * admission.  The parent and registered roles are facts from the resolved ShapeMap; client
+     * and server generators may consume them, but must never use them to elect a parent.
+     */
+    public static synchronized List<ResolvedGenericFamily> resolvedGenericFamilies() {
+        return orderedCandidates().stream()
+                .filter(candidate -> candidate.phase == Phase.BOUND && candidate.deferred)
+                .map(Candidate::resolvedGenericFamily)
+                .toList();
+    }
+
     private static List<Candidate> orderedCandidates() {
         return CANDIDATES.values().stream().sorted(java.util.Comparator.comparing(candidate -> candidate.sourceId))
                 .toList();
@@ -296,6 +309,19 @@ public final class CnmShapeMapCandidateBridge {
             cnmRoles = Map.copyOf(cnmRoles);
             injectedRoles = Set.copyOf(injectedRoles);
             resolvedParent = resolvedParent == null ? Optional.empty() : resolvedParent;
+        }
+    }
+
+    /** A post-resolution resource/data contract for one otherwise-untyped CNM component. */
+    public record ResolvedGenericFamily(Identifier canonicalParent,
+            Map<BgeGeometryRole, Identifier> roles) {
+        public ResolvedGenericFamily {
+            Objects.requireNonNull(canonicalParent, "canonicalParent");
+            roles = Map.copyOf(roles);
+            if (!roles.keySet().containsAll(TAIL)) {
+                throw new IllegalArgumentException("Resolved generic CNM family is missing a BGE tail: "
+                        + canonicalParent + " " + roles);
+            }
         }
     }
 
@@ -369,6 +395,15 @@ public final class CnmShapeMapCandidateBridge {
             injected.forEach(item -> injectedIds.add(itemId(item)));
             return new Snapshot(sourceId, new LinkedHashMap<>(cnmRoles), injectedIds, true, deferred,
                     phase, resolvedParent == null ? Optional.empty() : Optional.of(itemId(resolvedParent)));
+        }
+
+        private ResolvedGenericFamily resolvedGenericFamily() {
+            if (phase != Phase.BOUND || !deferred || resolvedParent == null) {
+                throw new IllegalStateException("Candidate is not a resolved generic family: " + sourceId);
+            }
+            Map<BgeGeometryRole, Identifier> roles = new EnumMap<>(BgeGeometryRole.class);
+            bgeRoles.forEach((role, block) -> roles.put(role, registeredBlockId(block)));
+            return new ResolvedGenericFamily(itemId(resolvedParent), roles);
         }
     }
 }

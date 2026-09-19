@@ -1,5 +1,5 @@
 param(
-    [string]$UnifiedJar = (Join-Path $PSScriptRoot '..\build\libs\BGE C81.jar'),
+    [string]$UnifiedJar = (Join-Path $PSScriptRoot '..\build\libs\BGE C82.jar'),
     [string]$AcceptedJar = (Join-Path $PSScriptRoot '..\artifacts\cnm-nibaru-integration-4.2.2-bge.canary58.glass-corner-uv+26.2.jar'),
     [string]$PredecessorJar = (Join-Path $PSScriptRoot '..\artifacts\BGE C80.jar')
 )
@@ -86,6 +86,8 @@ function Test-AllowedChangedEntry([string]$Name) {
             $Name -match '^dev/aero/cnmterraincompat/BgeMaterialBindings(?:\$.*)?\.class$' -or
             $Name -match '^dev/aero/cnmterraincompat/CnmShapeMapCandidateBridge(?:\$.*)?\.class$' -or
             $Name -match '^dev/aero/cnmterraincompat/DeferredCnmGeometryBlock(?:\$.*)?\.class$' -or
+            $Name -match '^dev/aero/cnmterraincompat/ResolvedCnmCandidateData(?:\$.*)?\.class$' -or
+            $Name -match '^dev/aero/cnmterraincompat/client/ResolvedCnmCandidateResources(?:\$.*)?\.class$' -or
             $Name -match '^dev/aero/cnmterraincompat/AxisModelContract(?:\$.*)?\.class$' -or
             $Name -eq 'cnm_terrain_slabs_compat.mixins.json' -or
             $Name -eq 'assets/cnm_terrain_slabs_compat/lang/en_us.json' -or
@@ -138,6 +140,8 @@ function Test-AllowedNewEntry([string]$Name) {
             $Name -eq 'dev/aero/cnmterraincompat/mixin/BlockItemPlacementMixin.class' -or
             $Name -match '^dev/aero/cnmterraincompat/CnmShapeMapCandidateBridge(?:\$.*)?\.class$' -or
             $Name -match '^dev/aero/cnmterraincompat/DeferredCnmGeometryBlock(?:\$.*)?\.class$' -or
+            $Name -match '^dev/aero/cnmterraincompat/ResolvedCnmCandidateData(?:\$.*)?\.class$' -or
+            $Name -match '^dev/aero/cnmterraincompat/client/ResolvedCnmCandidateResources(?:\$.*)?\.class$' -or
             $Name -match '^games/twinhead/moreslabsstairsandwalls/api/material/CanonicalPillarTextureResolver(?:\$.*)?\.class$' -or
             $Name -match '^assets/more_slabs_stairs_and_walls/blockstates/purpur_pillar_(?:slab|stairs)\.json$' -or
             $Name -match '^assets/more_slabs_stairs_and_walls/models/block/purpur_pillar_(?:slab|stairs)(?:_.*)?\.json$' -or
@@ -155,8 +159,8 @@ Require ((Get-FileSha256 $acceptedPath) -eq '1a4e4d1cd9c8709720ec84975e70caffb55
         'Exact accepted unified BGE C58 boundary hash mismatch'
 Require ((Get-FileSha256 $predecessorPath) -eq '5bc7c23a3724a1e20bc2142459f33d2a45a19295c27d40197c5fc48d6e43b0fc') `
         'Exact BGE C80 predecessor hash mismatch'
-Require ([System.IO.Path]::GetFileName($unifiedPath) -ceq 'BGE C81.jar') `
-        'Distributable artifact filename is not exactly BGE C81.jar'
+Require ([System.IO.Path]::GetFileName($unifiedPath) -ceq 'BGE C82.jar') `
+        'Distributable artifact filename is not exactly BGE C82.jar'
 
 $unified = [System.IO.Compression.ZipFile]::OpenRead($unifiedPath)
 $accepted = [System.IO.Compression.ZipFile]::OpenRead($acceptedPath)
@@ -172,15 +176,15 @@ try {
     $nestedJars = @($unifiedMap.Keys | Where-Object { $_.EndsWith('.jar', [System.StringComparison]::OrdinalIgnoreCase) })
     Require ($nestedJars.Count -eq 0) "Nested JARs are forbidden: $($nestedJars -join ', ')"
     $cnmClasses = @($unifiedMap.Keys | Where-Object { $_ -match '^dev/tazer/clutternomore/' })
-    Require ($cnmClasses.Count -eq 0) "C81 must retain stock CNM as an external dependency: $($cnmClasses -join ', ')"
+    Require ($cnmClasses.Count -eq 0) "C82 must retain stock CNM as an external dependency: $($cnmClasses -join ', ')"
 
     $metadataText = Get-EntryText $unifiedMap['fabric.mod.json']
     $metadata = $metadataText | ConvertFrom-Json
     Require ($metadata.id -eq 'cnm_terrain_slabs_compat') 'Unified primary Fabric ID changed'
-    Require ($metadata.version -eq '4.2.25-bge.canary81.cnm-resolved-family+26.2') `
-            'Unified Fabric version is not exact C81'
-    Require ($metadata.name -eq ('Block Geometry Extensions Canary 81 ' + [char]0x2014 + ' CNM Resolved Family Completion')) `
-            'Unified Fabric display name is not exact C81'
+    Require ($metadata.version -eq '4.2.26-bge.canary82.cnm-generic-resource-closure+26.2') `
+            'Unified Fabric version is not exact C82'
+    Require ($metadata.name -eq ('Block Geometry Extensions Canary 82 ' + [char]0x2014 + ' CNM Generic Resource Closure')) `
+            'Unified Fabric display name is not exact C82'
     Require (@($metadata.provides).Count -eq 1 -and $metadata.provides[0] -eq 'more_slabs_stairs_and_walls') `
             'Unified descriptor must provide exactly the legacy Nibaru ID'
     Require ($metadata.PSObject.Properties.Name -notcontains 'jars') 'Unified descriptor must not declare nested JARs'
@@ -250,6 +254,8 @@ try {
     }
     foreach ($required in @(
         'dev/aero/cnmterraincompat/CnmShapeMapCandidateBridge.class',
+        'dev/aero/cnmterraincompat/ResolvedCnmCandidateData.class',
+        'dev/aero/cnmterraincompat/client/ResolvedCnmCandidateResources.class',
         'dev/aero/cnmterraincompat/ExternalMaterialCatalog.class',
         'dev/aero/cnmterraincompat/CanonicalShapeMapAudit.class',
         'dev/aero/cnmterraincompat/ExternalMaterialBlocks.class',

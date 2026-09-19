@@ -41,6 +41,7 @@ public final class CnmTerrainCompat implements ModInitializer {
     private static boolean nativeCatalogRegistered;
     private static boolean bgeBaseRegistered;
     private static boolean bgeGeometryRegistered;
+    private static boolean resolvedFamilyDataGenerated;
 
     @Override
     public void onInitialize() {
@@ -117,6 +118,9 @@ public final class CnmTerrainCompat implements ModInitializer {
         }
         ExternalMaterialFamilies.finalizeGeneratedBindings();
         BgeMaterialBindings.bindNormalCatalog();
+        // Existing catalog data is consumed by CNM's server-data bootstrap before ShapeMap
+        // performs its final parent election. Keep this established pass early; the small
+        // profile-free supplement is emitted later once a canonical source is available.
         LayerGeneratedData.generate();
         QuarterGeometryGeneratedData.generate();
         ExternalMaterialGeneratedData.generate();
@@ -197,6 +201,13 @@ public final class CnmTerrainCompat implements ModInitializer {
 
     /** Called at ShapeMap resolution tail, after every deferred candidate is either bound or dormant. */
     static synchronized void finalizeResolvedCnmFamilies() {
+        if (!resolvedFamilyDataGenerated) {
+            // ShapeMap resolution is the first point at which a profile-free admission can name
+            // its canonical source. The catalog data was already emitted at CNM's normal
+            // bootstrap point; append only the otherwise-untypable supplement here.
+            ResolvedCnmCandidateData.generate();
+            resolvedFamilyDataGenerated = true;
+        }
         validateBindingsWhenComplete();
     }
 

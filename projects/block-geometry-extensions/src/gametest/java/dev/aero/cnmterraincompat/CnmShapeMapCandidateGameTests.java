@@ -1,18 +1,25 @@
 package dev.aero.cnmterraincompat;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import dev.tazer.clutternomore.ClutterNoMore;
 import dev.tazer.clutternomore.common.shape_map.ShapeMap;
 import games.twinhead.moreslabsstairsandwalls.api.material.NibaruMaterialProfile;
 import games.twinhead.moreslabsstairsandwalls.api.material.NibaruMaterialProfiles;
 import net.fabricmc.fabric.api.gametest.v1.CustomTestMethodInvoker;
 import net.fabricmc.fabric.api.gametest.v1.GameTest;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.GameType;
 
+import java.io.InputStreamReader;
 import java.lang.reflect.Method;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -60,6 +67,7 @@ public final class CnmShapeMapCandidateGameTests implements CustomTestMethodInvo
                                     == profile.canonicalParent(),
                     "C81 local role did not bind to CNM's exact canonical family: " + role);
         }
+        assertResolvedCandidateResourcesAndDrops(helper, local, profile.canonicalParent());
         helper.succeed();
     }
 
@@ -132,6 +140,47 @@ public final class CnmShapeMapCandidateGameTests implements CustomTestMethodInvo
         System.out.println("REAL_CNM_FAMILY|material=" + BuiltInRegistries.BLOCK.getKey(source)
                 + "|roles=" + actual.stream().map(BuiltInRegistries.ITEM::getKey).toList());
     }
+
+    /**
+     * The fixture was untyped during registry admission. Once CNM selected its actual profile,
+     * every surviving role must have a real server loot entry, client model closure, and the
+     * one-source canonical economy—not merely a ShapeMap edge.
+     */
+    private static void assertResolvedCandidateResourcesAndDrops(GameTestHelper helper,
+            Map<BgeGeometryRole, Block> roles, Block canonical) {
+        var player = helper.makeMockPlayer(GameType.SURVIVAL);
+        int index = 0;
+        for (Map.Entry<BgeGeometryRole, Block> entry : roles.entrySet()) {
+            Block block = entry.getValue();
+            Identifier id = BuiltInRegistries.BLOCK.getKey(block);
+            JsonObject loot = generated(net.minecraft.server.packs.PackType.SERVER_DATA, Identifier.fromNamespaceAndPath(
+                    id.getNamespace(), "loot_table/blocks/" + id.getPath() + ".json"));
+            helper.assertTrue(loot.getAsJsonArray("pools").get(0).getAsJsonObject()
+                            .getAsJsonArray("entries").get(0).getAsJsonObject().get("name").getAsString()
+                            .equals(BuiltInRegistries.BLOCK.getKey(canonical).toString()),
+                    "Resolved untyped candidate has no canonical loot target: " + entry.getKey());
+            BlockPos pos = new BlockPos(1 + index++, 2, 1);
+            helper.setBlock(pos, block.defaultBlockState());
+            var drops = Block.getDrops(block.defaultBlockState(), helper.getLevel(), helper.absolutePos(pos),
+                    null, player, ItemStack.EMPTY);
+            helper.assertTrue(drops.size() == 1 && drops.getFirst().is(canonical.asItem())
+                            && drops.getFirst().getCount() == 1,
+                    "Resolved untyped candidate did not return its canonical material: " + entry.getKey());
+        }
+    }
+
+    private static JsonObject generated(net.minecraft.server.packs.PackType type, Identifier id) {
+        try {
+            var supplier = ClutterNoMore.RESOURCES.getResource(type, id);
+            if (supplier == null) throw new IllegalStateException("Missing generated resource " + id);
+            try (var input = supplier.get(); var reader = new InputStreamReader(input)) {
+                return JsonParser.parseReader(reader).getAsJsonObject();
+            }
+        } catch (Exception exception) {
+            throw new IllegalStateException("Cannot inspect generated resource " + id, exception);
+        }
+    }
+
 
     @Override
     public void invokeTestMethod(GameTestHelper helper, Method method) throws ReflectiveOperationException {
