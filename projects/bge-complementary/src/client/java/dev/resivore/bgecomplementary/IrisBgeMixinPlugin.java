@@ -7,18 +7,20 @@ import org.objectweb.asm.tree.ClassNode;
 import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin;
 import org.spongepowered.asm.mixin.extensibility.IMixinInfo;
 
-/** Exact Iris mappings fail closed unless BGE exposes the canonical-binding API this bridge uses. */
+/**
+ * Mixin-bootstrap gate for the version-coupled Iris descriptors only. BGE capability inspection
+ * deliberately happens from the completed-map RETURN hooks, after Mixin preparation.
+ */
 public final class IrisBgeMixinPlugin implements IMixinConfigPlugin {
     static final String IRIS_VERSION = "1.11.2+mc26.2";
 
     @Override
     public boolean shouldApplyMixin(String targetClassName, String mixinClassName) {
-        return activationAllowed(hasExactVersion("iris", IRIS_VERSION),
-                BgeCanonicalBindingApi.isAvailable());
+        return activationAllowed(hasExactVersion("iris", IRIS_VERSION));
     }
 
-    static boolean activationAllowed(boolean exactIrisHook, boolean bgeCanonicalBindingApi) {
-        return exactIrisHook && bgeCanonicalBindingApi;
+    static boolean activationAllowed(boolean exactIrisHook) {
+        return exactIrisHook;
     }
 
     private static boolean hasExactVersion(String modId, String expected) {

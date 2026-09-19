@@ -1,7 +1,6 @@
 package dev.resivore.bgecomplementary.mixin;
 
-import dev.resivore.bgecomplementary.BgeComplementaryLog;
-import dev.resivore.bgecomplementary.BgeShaderMaterialBridge;
+import dev.resivore.bgecomplementary.BgeLateRuntimeBridge;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import java.util.Map;
 import net.minecraft.world.level.block.Block;
@@ -20,12 +19,12 @@ public abstract class IrisBgeMaterialMappingMixin {
             at = @At("RETURN"), remap = false)
     private static void bgeComplementary$inheritMaterialIds(
             CallbackInfoReturnable<Object2IntMap<BlockState>> cir) {
-        BgeComplementaryLog.materialMap(BgeShaderMaterialBridge.inheritMaterialIds(cir.getReturnValue()));
+        BgeLateRuntimeBridge.inheritMaterialIds(cir.getReturnValue());
     }
 
     @Inject(method = "createBlockTypeMap(Ljava/util/Map;)Ljava/util/Map;", at = @At("RETURN"), remap = false)
     private static void bgeComplementary$inheritLayerTypes(
             CallbackInfoReturnable<Map<Block, Object>> cir) {
-        BgeComplementaryLog.layerMap(BgeShaderMaterialBridge.inheritLayerTypes(cir.getReturnValue()));
+        BgeLateRuntimeBridge.inheritLayerTypes(cir.getReturnValue());
     }
 }

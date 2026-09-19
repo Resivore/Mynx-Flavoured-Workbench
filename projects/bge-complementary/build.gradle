@@ -18,8 +18,8 @@ repositories {
 }
 
 // C80 is the current authoritative API baseline for compilation and static verification. This
-// is deliberately not a runtime release-number predicate: the mixin plugin activates for any
-// BGE release that exposes the canonical-binding API contract it consumes.
+// is deliberately not a runtime release-number predicate: Iris's Mixin bootstrap gates only its
+// exact hook version, while BGE capability inspection runs from the completed-map RETURN hooks.
 def bgeReference = file('../block-geometry-extensions/artifacts/BGE C80.jar')
 
 dependencies {
@@ -96,6 +96,7 @@ tasks.register('verifyBridge') {
             ['fabric.mod.json', 'bge_complementary.client.mixins.json',
              'dev/resivore/bgecomplementary/BgeShaderMaterialBridge.class',
              'dev/resivore/bgecomplementary/BgeCanonicalBindingApi.class',
+             'dev/resivore/bgecomplementary/BgeLateRuntimeBridge.class',
              'dev/resivore/bgecomplementary/IrisBgeMixinPlugin.class',
              'dev/resivore/bgecomplementary/mixin/IrisBgeMaterialMappingMixin.class'].each { required ->
                 if (bridge.getEntry(required) == null) {

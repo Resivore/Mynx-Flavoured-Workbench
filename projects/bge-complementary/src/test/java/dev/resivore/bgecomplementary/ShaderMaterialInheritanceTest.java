@@ -161,19 +161,60 @@ class ShaderMaterialInheritanceTest {
     }
 
     @Test
-    void mixinActivationUsesExactIrisSafetyAndBgeCapabilityNotABgeReleaseString() throws Exception {
-        assertTrue(IrisBgeMixinPlugin.activationAllowed(true, true));
-        assertFalse(IrisBgeMixinPlugin.activationAllowed(false, true));
-        assertFalse(IrisBgeMixinPlugin.activationAllowed(true, false));
+    void mixinBootstrapGatesOnlyTheExactIrisHookWithoutBgeOrMinecraftResolution() throws Exception {
+        assertTrue(IrisBgeMixinPlugin.activationAllowed(true));
+        assertFalse(IrisBgeMixinPlugin.activationAllowed(false));
 
         String pluginSource = Files.readString(Path.of("src/client/java/dev/resivore/bgecomplementary/"
                 + "IrisBgeMixinPlugin.java"), StandardCharsets.UTF_8);
         assertTrue(pluginSource.contains("hasExactVersion(\"iris\", IRIS_VERSION)"));
-        assertTrue(pluginSource.contains("BgeCanonicalBindingApi.isAvailable()"));
+        assertFalse(pluginSource.contains("BgeCanonicalBindingApi"));
+        assertFalse(pluginSource.contains("BgeShaderMaterialBridge"));
+        assertFalse(pluginSource.contains("net.minecraft"));
+        assertFalse(pluginSource.contains("dev.aero"));
         for (String forbidden : List.of("BGE_VERSION", "canary79", "canary80", "4.2.23", "4.2.24",
                 "cnm_terrain_slabs_compat\", BGE")) {
             assertFalse(pluginSource.contains(forbidden),
                     () -> "IrisBgeMixinPlugin must not gate BGE by release string: " + forbidden);
+        }
+
+        try (var stream = IrisBgeMixinPlugin.class.getResourceAsStream("IrisBgeMixinPlugin.class")) {
+            assertTrue(stream != null);
+            String classConstants = new String(stream.readAllBytes(), StandardCharsets.ISO_8859_1);
+            for (String forbidden : List.of("BgeCanonicalBindingApi", "BgeShaderMaterialBridge",
+                    "dev/aero/cnmterraincompat", "net/minecraft/world/level/block/Block",
+                    "net/minecraft/world/level/block/state/BlockState")) {
+                assertFalse(classConstants.contains(forbidden),
+                        () -> "Mixin-bootstrap plugin must not resolve " + forbidden);
+            }
+        }
+    }
+
+    @Test
+    void lateCapabilityFailureIsAControlledNoOp() {
+        Map<String, Integer> untouched = new LinkedHashMap<>();
+
+        assertFalse(BgeLateRuntimeBridge.runIfSupported(() -> false,
+                () -> untouched.put("must-not-run", 1)));
+        assertFalse(untouched.containsKey("must-not-run"));
+
+        assertFalse(BgeLateRuntimeBridge.runIfSupported(() -> true, () -> {
+            throw new NoSuchMethodError("future BGE contract changed");
+        }));
+        assertFalse(untouched.containsKey("must-not-run"));
+
+        assertTrue(BgeLateRuntimeBridge.runIfSupported(() -> true,
+                () -> untouched.put("late-bridge-ran", 1)));
+        assertEquals(1, untouched.get("late-bridge-ran"));
+
+        try {
+            String runtimeSource = Files.readString(Path.of("src/client/java/dev/resivore/"
+                    + "bgecomplementary/BgeLateRuntimeBridge.java"), StandardCharsets.UTF_8);
+            assertTrue(runtimeSource.contains("BgeCanonicalBindingApi::isAvailable"));
+            assertTrue(runtimeSource.contains("BgeShaderMaterialBridge.inheritMaterialIds"));
+            assertTrue(runtimeSource.contains("catch (LinkageError ignored)"));
+        } catch (java.io.IOException exception) {
+            throw new AssertionError(exception);
         }
     }
 }
