@@ -27,7 +27,7 @@
     ],
     "scope": [
       "Provide a client-only Fabric bridge for BGE's canonical-binding capability/API contract and Iris 1.11.2+mc26.2 that augments completed Iris material and layer maps at their narrow RETURN seams.",
-      "Canary 3 applies the same universal authoritative canonical-parent rule to every BgeMaterialBindings binding, preserving BGE's state-specific canonical projection for material IDs and using the binding's canonical block for Iris layer.* entries.",
+      "Canary 4 preserves the universal authoritative canonical-parent rule while moving BGE API capability inspection out of Mixin bootstrap and into the completed Iris material/layer-map RETURN hooks, after Mixin preparation.",
       "Retain Translucent Glass and BGE × CTM as adjacent diagnostic context only; this project does not own their rendering or Continuity behavior."
     ],
     "boundaries": {
@@ -75,28 +75,28 @@
         "type": "TOOL",
         "identifier": "java",
         "requirement": "=25.0.4.1",
-        "reason": "Java 25 baseline used for the clean Canary 3 compile and tests."
+        "reason": "Java 25 baseline used for the clean Canary 4 compile and tests."
       },
       {
         "type": "TOOL",
         "identifier": "gradle",
         "requirement": "=9.5.1",
-        "reason": "Tracked Workbench Gradle wrapper baseline used for Canary 3."
+        "reason": "Tracked Workbench Gradle wrapper baseline used for Canary 4."
       }
     ]
   },
   "state": {
-    "milestone": "Canary 3 is an ACTIVE client-only BGE canonical-binding API/Iris 1.11.2 bridge. For every authoritative BgeMaterialBindings physical state it augments Iris's completed state material map only when that BGE-projected canonical state is mapped; its block-wide layer fallback follows the same canonical-parent rule. Explicit physical pack entries always win. BGE release strings do not control activation; the required API shape does. The exact retained artifact passed clean static validation against current BGE C80 and awaits owner-directed in-game testing.",
+    "milestone": "Canary 4 is an ACTIVE client-only BGE canonical-binding API/Iris 1.11.2 bridge. It preserves universal completed-map canonical-parent inheritance, explicit physical precedence, and BGE release-string independence. Canary 3 reached Mixin preparation but crashed before client startup when its bootstrap BGE API probe resolved Block before BGE × CTM's legitimate @Mixin(Block.class) could prepare; Sodium only surfaced that error. Canary 4's plugin gates only exact Iris compatibility, and its late RETURN hooks capability-check BGE before a LinkageError-guarded bridge invocation. The retained Canary 4 artifact passed clean static validation against BGE C80 and awaits owner-directed in-game testing; no Canary 3 shader/material runtime result is claimed.",
     "releases": {
       "current": {
-        "version": "0.1.0+26.2-canary3",
-        "embedded_version": "0.1.0+26.2-canary3",
+        "version": "0.1.0+26.2-canary4",
+        "embedded_version": "0.1.0+26.2-canary4",
         "artifact": {
-          "filename": "bge-complementary-0.1.0+26.2-canary3.jar",
-          "sha256": "26819a8cbe982df41dc862b88d0bd170f74d2d88e617f0fb5404f9db4db0e79b"
+          "filename": "bge-complementary-0.1.0+26.2-canary4.jar",
+          "sha256": "9d48cd2a11f038f74685a9c1265206df452e764c763960482d3343b97b9c9e04"
         },
-        "built_at": "2026-09-19T19:33:58.8648183Z",
-        "source_commit": "bfd104d4aa59fc5c86e8041002c5f0fd4b4a66f3",
+        "built_at": "2026-09-19T19:49:13.6132487Z",
+        "source_commit": "7c19534201705b002690d348e4202b5e578fa835",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": [
@@ -105,9 +105,9 @@
               "relationship": "depends",
               "dependency_id": "cnm_terrain_slabs_compat",
               "predicate": "present BgeMaterialBindings canonical-binding API; no release-number predicate",
-              "reason": "Canary 3 invokes only BgeMaterialBindings.all() and Binding#physicalBlock(), #canonicalMaterial(), and #canonicalState(BlockState); its mixin plugin fails closed when that API shape is unavailable without comparing a BGE version string.",
+              "reason": "Canary 4 invokes only BgeMaterialBindings.all() and Binding#physicalBlock(), #canonicalMaterial(), and #canonicalState(BlockState), but performs the reflected API check only from Iris's completed-map RETURN hooks. Its Mixin plugin has no BGE probe and does not compare a BGE version string.",
               "regression_evidence": [
-                "Clean Canary 3 verification uses current BGE C80 SHA-256 5bc7c23a3724a1e20bc2142459f33d2a45a19295c27d40197c5fc48d6e43b0fc, requires BgeMaterialBindings.class, proves C80 exposes each consumed method, and runs focused universal-inheritance coverage."
+                "Clean Canary 4 verification uses current BGE C80 SHA-256 5bc7c23a3724a1e20bc2142459f33d2a45a19295c27d40197c5fc48d6e43b0fc, requires BgeMaterialBindings.class, proves C80 exposes each consumed method, proves the bootstrap plugin has no BGE/Minecraft-block reference, guards late linkage failure as a no-op, and runs focused universal-inheritance coverage."
               ]
             },
             {
@@ -117,12 +117,12 @@
               "predicate": "=1.11.2+mc26.2",
               "reason": "The private RETURN mixin is descriptor-coupled to Iris 1.11.2; its plugin declines every other version and Iris absence.",
               "regression_evidence": [
-                "Static audit records the exact BlockMaterialMapping material and layer RETURN descriptors, and focused tests prove Iris's exact guard, universal completed-map fallback precedence, and no hard-coded shader IDs or parent-category policy."
+                "Static audit records the exact BlockMaterialMapping material and layer RETURN descriptors, and focused tests prove Iris's exact bootstrap-only guard, universal completed-map fallback precedence, linkage-safe late capability handling, and no hard-coded shader IDs or parent-category policy."
               ]
             }
           ]
         },
-        "summary": "Universally inherits active Iris canonical shader material and layer classifications for every authoritative BGE binding that exposes the required canonical-binding API."
+        "summary": "Moves BGE capability inspection behind Iris's completed-map RETURN hooks, preventing early Block loading while preserving universal canonical material/layer inheritance."
       },
       "accepted": null,
       "rollback": null,
@@ -136,10 +136,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 7,
-    "activity_at": "2026-09-19T19:33:58.8648183Z",
-    "updated_at": "2026-09-19T19:33:58.8648183Z",
-    "last_codex_at": "2026-09-19T19:33:58.8648183Z",
-    "source_commit": "bfd104d4aa59fc5c86e8041002c5f0fd4b4a66f3"
+    "revision": 8,
+    "activity_at": "2026-09-19T19:54:51.5504961Z",
+    "updated_at": "2026-09-19T19:54:51.5504961Z",
+    "last_codex_at": "2026-09-19T19:54:51.5504961Z",
+    "source_commit": "7c19534201705b002690d348e4202b5e578fa835"
   }
 }
