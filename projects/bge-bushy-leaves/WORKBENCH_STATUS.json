@@ -1,0 +1,90 @@
+{
+  "$schema": "../../schemas/workbench-status.schema.json",
+  "schema_version": 2,
+  "identity": {
+    "uuid": "eb72daef-8565-4e9a-a94b-f77f9f72fcba",
+    "name": "BGE × Bushy Leaves",
+    "project_id": "bge-bushy-leaves",
+    "aliases": ["Block Geometry Extensions × Bushy Leaves"],
+    "legacy_names": [],
+    "legacy_ids": []
+  },
+  "definition": {
+    "lifecycle": "ACTIVE",
+    "goals": [
+      "Make BGE leaf geometry inherit only genuine exterior foliage from its canonical full leaf's currently baked resource-pack model.",
+      "Use BGE canonical bindings and exact exposed SurfacePatch geometry as the sole authority for material identity, resolved topology, and decorative footprint."
+    ],
+    "scope": [
+      "Install a client-only final block-model wrapper that retains BGE's existing model and projects only axis-aligned exterior canonical foliage quads over merged BGE surface patches.",
+      "Preserve copied quad sprite, tint, material/render-layer, UV, light, and normal data; exact same-canonical leaf contact suppresses only covered boundary regions.",
+      "Fail closed for missing canonical models, unsupported bindings, texture-only leaf treatments, non-grid/non-exterior quads, or incompatible leaf neighbors."
+    ],
+    "boundaries": {
+      "owned_paths": ["projects/bge-bushy-leaves"],
+      "exclusions": [
+        "BGE remains unchanged and owns canonical material identity plus resolved SurfacePatch topology; BGE × CTM remains optional adjacent context, not a dependency or geometry authority.",
+        "No bushy-leaf resource-pack, mod, texture, model JSON, shader, provider class, or asset is copied, redistributed, or modified. The protected Minecraft testing profiles are not inspected or changed.",
+        "Inventory, hand, creative-menu, JEI, collision, outline, placement, drops, recipes, waterlogging, leaf distance/persistence/decay, rain drip, redstone, pathfinding, and BGE family membership remain untouched.",
+        "No registry-name inference, per-geometry ID list, Stair/Wall special branch, guessed cube halo, or gameplay-state mutation is permitted."
+      ]
+    },
+    "dependencies": [
+      {
+        "type": "PROJECT",
+        "identifier": "4b2342fc-7bdf-5ba6-9f37-d551109d214c",
+        "requirement": ">=4.2.22-bge.canary78.stair-wall-surface-authority+26.2",
+        "reason": "C78 is the oldest demonstrated BGE release with authoritative resolved patches for every requested topology; C82 is the controlled compile baseline."
+      },
+      {
+        "type": "MOD",
+        "identifier": "minecraft",
+        "requirement": "~26.2",
+        "reason": "Canary 1 targets Minecraft Java 26.2 public block-model and final renderer-quad interfaces."
+      },
+      {
+        "type": "MOD",
+        "identifier": "fabricloader",
+        "requirement": ">=0.19.3",
+        "reason": "Required Fabric client loader."
+      },
+      {
+        "type": "MOD",
+        "identifier": "fabric-api",
+        "requirement": ">=0.156.0",
+        "reason": "Provides public 26.2 model-loading and renderer APIs."
+      },
+      {
+        "type": "RESOURCE_PACK",
+        "identifier": "active canonical leaf model",
+        "requirement": "optional; observed at client resource reload",
+        "reason": "The bridge consumes baked canonical leaf geometry at runtime and emits no authored foliage when a selected pack has no genuine exterior leaf geometry."
+      },
+      {
+        "type": "TOOL",
+        "identifier": "java",
+        "requirement": ">=25",
+        "reason": "Minecraft 26.2 and the controlled build use Java 25."
+      }
+    ]
+  },
+  "state": {
+    "milestone": "Canary 1 is a client-only, provider-neutral canonical-model bridge. It captures the active canonical leaf baked model per resource reload, retains BGE's clean base model, and projects only actual exterior, exact-grid foliage quads over BGE's merged authoritative surfaces. The selected leaf provider remains the visual authority; a texture-only treatment needs no invented geometry and produces no added shell. No runtime client evidence is claimed.",
+    "releases": {
+      "current": null,
+      "accepted": null,
+      "rollback": null,
+      "accepted_current": "NO_ACCEPTED",
+      "accepted_rollback": "NO_ROLLBACK"
+    },
+    "validation": { "build": "NOT_RUN", "runtime": "RUNTIME_UNTESTED" },
+    "blocker": null
+  },
+  "synchronization": {
+    "revision": 1,
+    "activity_at": "2026-09-19T22:00:48.1935790Z",
+    "updated_at": "2026-09-19T22:00:48.1935790Z",
+    "last_codex_at": "2026-09-19T22:00:48.1935790Z",
+    "source_commit": "cbce3944c52f7a1bc30919afd546cf7ed419a80a"
+  }
+}

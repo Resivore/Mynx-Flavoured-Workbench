@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "id": "bge_bushy_leaves",
+  "version": "${version}",
+  "name": "BGE × Bushy Leaves",
+  "description": "Projects the active canonical leaf model's exterior foliage onto BGE-authoritative exposed surfaces.",
+  "authors": ["Resivore"],
+  "license": "MIT",
+  "environment": "client",
+  "entrypoints": {
+    "client": ["dev.resivore.bgebushyleaves.client.BgeBushyLeavesClient"]
+  },
+  "depends": {
+    "fabricloader": ">=0.19.3",
+    "fabric-api": ">=0.156.0",
+    "minecraft": "~26.2",
+    "java": ">=25",
+    "cnm_terrain_slabs_compat": ">=4.2.22-bge.canary78.stair-wall-surface-authority+26.2"
+  },
+  "custom": {
+    "runtime_dependency_policy": {
+      "contract": "CAPABILITY_OR_PROVIDER",
+      "exceptions": [
+        {
+          "consumer_id": "bge_bushy_leaves",
+          "relationship": "depends",
+          "dependency_id": "minecraft",
+          "predicate": "~26.2",
+          "reason": "Canary 1 consumes the Minecraft 26.2 Fabric public block-model and final quad-emission seams.",
+          "regression_evidence": [
+            "Controlled verification hashes BGE C82 plus the Fabric Renderer and model-loading APIs used by the client-only projection bridge."
+          ]
+        }
+      ]
+    },
+    "workbench:classification": "GENERATED / CONTROLLED VALIDATION / RUNTIME UNTESTED",
+    "workbench:deployment": "NOT DEPLOYED"
+  }
+}

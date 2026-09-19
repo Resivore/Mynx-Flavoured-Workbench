@@ -1,0 +1,153 @@
+import groovy.json.JsonSlurper
+import java.security.MessageDigest
+import java.util.zip.ZipFile
+import org.gradle.api.tasks.bundling.AbstractArchiveTask
+
+plugins {
+    id 'net.fabricmc.fabric-loom' version '1.17.19'
+}
+
+version = project.mod_version
+group = project.maven_group
+
+base { archivesName = project.archives_base_name }
+
+repositories {
+    maven { url = 'https://maven.fabricmc.net/' }
+    mavenCentral()
+}
+
+configurations {
+    bgeReference { canBeConsumed = false; canBeResolved = true; transitive = false }
+    rendererReference { canBeConsumed = false; canBeResolved = true; transitive = false }
+    modelLoadingReference { canBeConsumed = false; canBeResolved = true; transitive = false }
+}
+
+def workbenchRoot = rootProject.projectDir.parentFile.parentFile
+def bgeReferenceJar = new File(workbenchRoot, 'projects/block-geometry-extensions/artifacts/BGE C82.jar')
+def rendererCoordinates = 'net.fabricmc.fabric-api:fabric-renderer-api-v1:14.1.3+2b0d8a229e'
+def modelLoadingCoordinates = 'net.fabricmc.fabric-api:fabric-model-loading-api-v1:8.0.16+c80601bb9e'
+def expectedBgeSha256 = '165229966de7e02b0a42c2b5fc90cefa116f0b626cb55a6378caea6e38f6341c'
+def expectedRendererSha256 = '44f49db445c904d5bcd6895b23bbe530476a51514140034976c92b1477886115'
+def expectedModelLoadingSha256 = 'a54c09fb75efa6c58ba378adc3791d0b5c8c68a28cb15ef5ce17163cea4e1c6d'
+
+dependencies {
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    implementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+    compileOnly files(bgeReferenceJar)
+    runtimeOnly files(bgeReferenceJar)
+    testCompileOnly files(bgeReferenceJar)
+    testRuntimeOnly files(bgeReferenceJar)
+    bgeReference files(bgeReferenceJar)
+    rendererReference(rendererCoordinates) { transitive = false }
+    modelLoadingReference(modelLoadingCoordinates) { transitive = false }
+    testImplementation platform('org.junit:junit-bom:5.13.4')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+def sha256 = { File file ->
+    MessageDigest digest = MessageDigest.getInstance('SHA-256')
+    file.withInputStream { input ->
+        byte[] buffer = new byte[64 * 1024]
+        for (int read; (read = input.read(buffer)) >= 0;) if (read > 0) digest.update(buffer, 0, read)
+    }
+    digest.digest().encodeHex().toString()
+}
+
+tasks.register('verifyControlledProviders') {
+    group = 'verification'
+    description = 'Verifies BGE C82 plus the Minecraft 26.2 public model and renderer seams.'
+    inputs.files(configurations.bgeReference, configurations.rendererReference, configurations.modelLoadingReference)
+    doLast {
+        [(configurations.bgeReference.singleFile): expectedBgeSha256,
+         (configurations.rendererReference.singleFile): expectedRendererSha256,
+         (configurations.modelLoadingReference.singleFile): expectedModelLoadingSha256].each { file, expected ->
+            if (sha256(file) != expected) throw new GradleException("Controlled input drifted: ${file.name}")
+        }
+        ZipFile bge = new ZipFile(configurations.bgeReference.singleFile)
+        try {
+            ['dev/aero/cnmterraincompat/BgeMaterialBindings.class',
+             'dev/aero/cnmterraincompat/BgeMaterialBindings$Binding.class',
+             'dev/aero/cnmterraincompat/BgeSurfaceGeometry$SurfaceModel.class',
+             'dev/aero/cnmterraincompat/BgeSurfaceGeometry$SurfacePatch.class',
+             'games/twinhead/moreslabsstairsandwalls/api/material/BehaviorCapability.class',
+             'games/twinhead/moreslabsstairsandwalls/api/material/VisualProfile.class'].each { path ->
+                if (bge.getEntry(path) == null) throw new GradleException("BGE C82 lacks ${path}")
+            }
+        } finally { bge.close() }
+        ZipFile renderer = new ZipFile(configurations.rendererReference.singleFile)
+        try {
+            if (renderer.getEntry('net/fabricmc/fabric/api/client/renderer/v1/Renderer.class') == null ||
+                    renderer.getEntry('net/fabricmc/fabric/api/client/renderer/v1/mesh/MutableMesh.class') == null) {
+                throw new GradleException('Fabric Renderer API mutable mesh seam is unavailable')
+            }
+        } finally { renderer.close() }
+        ZipFile models = new ZipFile(configurations.modelLoadingReference.singleFile)
+        try {
+            ['net/fabricmc/fabric/api/client/model/loading/v1/ModelLoadingPlugin.class',
+             'net/fabricmc/fabric/api/client/model/loading/v1/ModelModifier$AfterBakeBlock.class',
+             'net/fabricmc/fabric/api/client/model/loading/v1/wrapper/WrapperBlockStateModel.class'].each { path ->
+                if (models.getEntry(path) == null) throw new GradleException("Model-loading seam is unavailable: ${path}")
+            }
+        } finally { models.close() }
+    }
+}
+
+processResources {
+    inputs.property 'version', project.version
+    filesMatching('fabric.mod.json') { expand 'version': project.version }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    dependsOn tasks.named('verifyControlledProviders')
+    options.release = 25
+}
+tasks.withType(AbstractArchiveTask).configureEach {
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
+}
+test { useJUnitPlatform(); dependsOn tasks.named('verifyControlledProviders') }
+
+def packagedJar = tasks.named('jar').flatMap { it.archiveFile }
+tasks.register('verifyReleaseArtifact') {
+    group = 'verification'
+    dependsOn tasks.named('jar')
+    inputs.file(packagedJar)
+    doLast {
+        File artifact = packagedJar.get().asFile
+        if (artifact.name != "bge-bushy-leaves-${project.version}.jar") throw new GradleException('Unexpected artifact name')
+        ZipFile archive = new ZipFile(artifact)
+        try {
+            def metadata = new JsonSlurper().parse(archive.getInputStream(archive.getEntry('fabric.mod.json')))
+            if (metadata.id != 'bge_bushy_leaves' || metadata.environment != 'client' ||
+                    metadata.depends?.cnm_terrain_slabs_compat != '>=4.2.22-bge.canary78.stair-wall-surface-authority+26.2') {
+                throw new GradleException('Release metadata lost its BGE surface-contract dependency')
+            }
+            ['fabric.mod.json',
+             'dev/resivore/bgebushyleaves/client/BgeBushyLeavesClient.class',
+             'dev/resivore/bgebushyleaves/client/BushyLeafBlockStateModel.class',
+             'dev/resivore/bgebushyleaves/client/CanonicalFoliageProjection.class',
+             'dev/resivore/bgebushyleaves/BgeLeafEligibility.class',
+             'dev/resivore/bgebushyleaves/FoliageSurfaceResolver.class',
+             'dev/resivore/bgebushyleaves/geometry/PatchMerger.class'].each { path ->
+                if (archive.getEntry(path) == null) throw new GradleException("Release artifact is missing ${path}")
+            }
+            archive.entries().each { entry ->
+                if (entry.name.endsWith('.jar') || entry.name.startsWith('assets/minecraft/') ||
+                        entry.name.startsWith('assets/betterleaves/') || entry.name.startsWith('assets/more_slabs_stairs_and_walls/')) {
+                    throw new GradleException("Compatibility artifact bundled forbidden provider content: ${entry.name}")
+                }
+            }
+        } finally { archive.close() }
+    }
+}
+tasks.named('check') { dependsOn tasks.named('verifyReleaseArtifact') }
+tasks.register('stageCanaryArtifact', Copy) {
+    group = 'distribution'
+    dependsOn tasks.named('verifyReleaseArtifact')
+    from(packagedJar)
+    into(layout.projectDirectory.dir('artifacts'))
+}
+java { withSourcesJar() }
