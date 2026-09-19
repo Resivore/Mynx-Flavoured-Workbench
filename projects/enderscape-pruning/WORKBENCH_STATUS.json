@@ -1,0 +1,122 @@
+{
+  "$schema": "../../schemas/workbench-status.schema.json",
+  "schema_version": 2,
+  "identity": {
+    "uuid": "4029bb0e-1167-4eb2-a658-44733d415b3b",
+    "name": "Enderscape Pruning",
+    "project_id": "enderscape-pruning",
+    "aliases": [
+      "Enderscape 3.0.2 pruning audit"
+    ],
+    "legacy_names": [],
+    "legacy_ids": []
+  },
+  "definition": {
+    "lifecycle": "ACTIVE",
+    "goals": [
+      "Define a safe, dependency-aware pruning plan for exact Enderscape 3.0.2 on Minecraft Java 26.2 Fabric without weakening retained End biome, structure, Magnia, potion, or Matcha Flavoured behavior.",
+      "Suppress future acquisition and discovery of owner-selected equipment while retaining registry identities needed by existing worlds and inventories.",
+      "Reconcile every Enderscape food and food-like loot path with exact Matcha Flavoured component-bearing identities without changing Enderscape's original loot odds or counts."
+    ],
+    "scope": [
+      "Audit the exact Enderscape 3.0.2 binary, built-in resource/data packs, recipes, loot tables, advancements, tags, structures, configured and placed features, mixins, and decompiled gameplay code.",
+      "Trace mirror, dagger, rubble-shield variants, Shadoline armor, Enderscape enchantments, native food/effect loops, Matcha-sensitive vanilla food loot, and the full Magnia system through acquisition, discovery, save-data, and worldgen dependencies.",
+      "Record the narrowest safe future implementation boundary and an owner-decision checklist; do not implement pruning, build a Canary, deploy, or claim Minecraft runtime evidence in this audit task."
+    ],
+    "boundaries": {
+      "owned_paths": [
+        "projects/enderscape-pruning"
+      ],
+      "exclusions": [
+        "Enderscape source or binary modification, registry removal, mixin changes, data/resource-pack implementation, generated artifact production, Canary identity, deployment, or acceptance.",
+        "Minecraft launches, runtime observations, Test Slot or Test Instance Manager changes, and any access to protected or retired gameplay profiles.",
+        "Changes to originals, WORKBENCH_SERVER_STATE.json, Matcha Flavoured, Matcha x JEI Integration, Enderscape's upstream repository, or any unrelated Workbench project.",
+        "Claims that static decompilation proves runtime safety, or that disabling a built-in pack retroactively changes already-generated chunks or stored item/effect identities."
+      ]
+    },
+    "dependencies": [
+      {
+        "type": "OTHER",
+        "identifier": "minecraft",
+        "requirement": "=26.2",
+        "reason": "Exact target game version for the audited registries, data codecs, item components, loot functions, and world-generation contracts."
+      },
+      {
+        "type": "MOD",
+        "identifier": "enderscape",
+        "requirement": "=3.0.2+mc26.2 (SHA-256 9fcc4f59ca88e91f90e7c7d18289f2f859f20c810eebcca924764aa15236c40b)",
+        "reason": "Exact locally supplied Fabric binary used as the sole Enderscape code and data authority for this audit."
+      },
+      {
+        "type": "MOD",
+        "identifier": "fabricloader",
+        "requirement": ">=0.19.3",
+        "reason": "Minimum loader declared by the exact Enderscape binary."
+      },
+      {
+        "type": "MOD",
+        "identifier": "fabric-api",
+        "requirement": ">=0.154.2",
+        "reason": "Stable runtime capability declared by the exact Enderscape binary; future compatibility work should not add an unnecessary upper bound."
+      },
+      {
+        "type": "MOD",
+        "identifier": "lithostitched",
+        "requirement": ">=1.7.13",
+        "reason": "Declared Enderscape dependency used for built-in packs and End biome/world-generation modifications."
+      },
+      {
+        "type": "MOD",
+        "identifier": "trimpatcher",
+        "requirement": ">=1.0-mc26.2",
+        "reason": "Declared Enderscape dependency retained by the audited runtime."
+      },
+      {
+        "type": "MOD",
+        "identifier": "yet_another_config_lib_v3",
+        "requirement": ">=3.9.5",
+        "reason": "Declared Enderscape configuration dependency exposing only coarse pack, presentation, and vanilla-behavior switches rather than candidate-specific pruning controls."
+      },
+      {
+        "type": "PROJECT",
+        "identifier": "a0a522b0-bc02-48dc-81de-efc8757171c5",
+        "requirement": "Accepted Matcha Flavoured 1.12 data authority",
+        "reason": "Defines the component-bearing food identities with which Enderscape's vanilla-food loot must be reconciled."
+      },
+      {
+        "type": "PROJECT",
+        "identifier": "4d983099-3bfc-5df1-9788-32683ddfc6db",
+        "requirement": "Current C8 architecture; accepted runtime evidence remains C3-only",
+        "reason": "Documents the source-aware exact-component catalog and optional JEI/Creative discovery boundary relevant to future Enderscape compatibility work."
+      },
+      {
+        "type": "TOOL",
+        "identifier": "java",
+        "requirement": "25",
+        "reason": "Runtime used to decompile the exact Java 25 Enderscape classes with Vineflower 1.12.0."
+      }
+    ]
+  },
+  "state": {
+    "milestone": "Exact Enderscape 3.0.2 static audit complete. The report recommends acquisition/discovery suppression with registry retention for removable equipment, preservation of all potion/effect and Magnia registries, source-aware Matcha loot replacement without probability drift, and explicit owner decisions before implementation. No implementation, artifact, deployment, or Minecraft runtime test exists.",
+    "releases": {
+      "current": null,
+      "accepted": null,
+      "rollback": null,
+      "accepted_current": "NO_ACCEPTED",
+      "accepted_rollback": "NO_ROLLBACK"
+    },
+    "validation": {
+      "build": "STATIC_PASS",
+      "runtime": "RUNTIME_UNTESTED"
+    },
+    "blocker": null
+  },
+  "synchronization": {
+    "revision": 1,
+    "activity_at": "2026-09-19T00:34:34Z",
+    "updated_at": "2026-09-19T00:34:34Z",
+    "last_codex_at": "2026-09-19T00:34:34Z",
+    "source_commit": "f6614d253d5ec8429f398a218be36f9d192caec0"
+  }
+}
