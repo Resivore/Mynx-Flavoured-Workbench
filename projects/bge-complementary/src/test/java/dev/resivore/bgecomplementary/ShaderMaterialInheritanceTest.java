@@ -4,109 +4,139 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.lang.reflect.Method;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
+import java.util.function.Predicate;
 import org.junit.jupiter.api.Test;
 
 class ShaderMaterialInheritanceTest {
     @Test
-    void projectsPhysicalStatesWithoutLeakingGeometryOnlyState() {
+    void previouslyAllowedGlassParentStillInherits() {
         Map<String, Integer> ids = new LinkedHashMap<>();
-        ids.put("cyan_stained_glass[color=cyan]", 41);
+        ids.put("minecraft:glass", 17);
 
         ShaderMaterialInheritance.Result result = ShaderMaterialInheritance.inheritMissing(ids,
-                List.of("bge_cyan_stair[facing=east,shape=outer_left]"),
-                ignored -> Optional.of("cyan_stained_glass[color=cyan]"),
-                parent -> parent.startsWith("cyan_stained_glass"));
+                List.of("bge:glass_stair[facing=east,shape=outer_left]"),
+                ignored -> Optional.of("minecraft:glass"));
 
-        assertEquals(41, ids.get("bge_cyan_stair[facing=east,shape=outer_left]"));
+        assertEquals(17, ids.get("bge:glass_stair[facing=east,shape=outer_left]"));
+        assertEquals(1, result.inherited());
+    }
+
+    @Test
+    void magmaBlockInheritsThroughTheUniversalRoute() {
+        Map<String, Integer> ids = new LinkedHashMap<>();
+        ids.put("minecraft:magma_block", 87);
+
+        ShaderMaterialInheritance.Result result = ShaderMaterialInheritance.inheritMissing(ids,
+                List.of("bge:magma_corner[facing=south]"),
+                ignored -> Optional.of("minecraft:magma_block"));
+
+        assertEquals(87, ids.get("bge:magma_corner[facing=south]"));
+        assertEquals(1, result.inherited());
+    }
+
+    @Test
+    void parentOutsideCanaryOneClassesInheritsThroughTheSameRoute() {
+        Map<String, Integer> ids = new LinkedHashMap<>();
+        ids.put("minecraft:oak_planks", 63);
+
+        ShaderMaterialInheritance.Result result = ShaderMaterialInheritance.inheritMissing(ids,
+                List.of("bge:oak_planks_quarter_column[axis=x]"),
+                ignored -> Optional.of("minecraft:oak_planks"));
+
+        assertEquals(63, ids.get("bge:oak_planks_quarter_column[axis=x]"));
         assertEquals(1, result.inherited());
     }
 
     @Test
     void preservesExplicitPhysicalAssignmentIncludingZero() {
         Map<String, Integer> ids = new LinkedHashMap<>();
-        ids.put("iron_block", 19);
-        ids.put("bge_iron_slab", 0);
+        ids.put("minecraft:magma_block", 87);
+        ids.put("bge:magma_slab[type=bottom]", 0);
 
         ShaderMaterialInheritance.Result result = ShaderMaterialInheritance.inheritMissing(ids,
-                List.of("bge_iron_slab"), ignored -> Optional.of("iron_block"),
-                Set.of("iron_block")::contains);
+                List.of("bge:magma_slab[type=bottom]"),
+                ignored -> Optional.of("minecraft:magma_block"));
 
-        assertEquals(0, ids.get("bge_iron_slab"));
+        assertEquals(0, ids.get("bge:magma_slab[type=bottom]"));
         assertEquals(1, result.explicitPhysical());
     }
 
     @Test
     void leavesUnmappedCanonicalParentUnmapped() {
         Map<String, Integer> ids = new LinkedHashMap<>();
-        ShaderMaterialInheritance.Result result = ShaderMaterialInheritance.inheritMissing(ids,
-                List.of("bge_emerald_corner"), ignored -> Optional.of("emerald_block"),
-                Set.of("emerald_block")::contains);
 
-        assertFalse(ids.containsKey("bge_emerald_corner"));
+        ShaderMaterialInheritance.Result result = ShaderMaterialInheritance.inheritMissing(ids,
+                List.of("bge:deepslate_wall[up=true]"),
+                ignored -> Optional.of("minecraft:deepslate"));
+
+        assertFalse(ids.containsKey("bge:deepslate_wall[up=true]"));
         assertEquals(1, result.missingParent());
     }
 
     @Test
-    void retainsDistinctStainedGlassParentIds() {
+    void retainsBgeStateSpecificCanonicalProjection() {
+        String nearLeaf = "minecraft:oak_leaves[distance=1,persistent=false,waterlogged=false]";
+        String farLeaf = "minecraft:oak_leaves[distance=7,persistent=true,waterlogged=false]";
+        String nearPhysical = "bge:oak_leaves_layer[layers=1,facing=up,distance=1,persistent=false]";
+        String farPhysical = "bge:oak_leaves_layer[layers=4,facing=north,distance=7,persistent=true]";
         Map<String, Integer> ids = new LinkedHashMap<>();
-        ids.put("cyan_stained_glass", 71);
-        ids.put("red_stained_glass", 72);
-
-        ShaderMaterialInheritance.inheritMissing(ids,
-                List.of("bge_cyan_layer", "bge_red_layer"),
-                state -> Optional.of(state.equals("bge_cyan_layer")
-                        ? "cyan_stained_glass" : "red_stained_glass"),
-                Set.of("cyan_stained_glass", "red_stained_glass")::contains);
-
-        assertEquals(71, ids.get("bge_cyan_layer"));
-        assertEquals(72, ids.get("bge_red_layer"));
-    }
-
-    @Test
-    void excludesGeometrySensitiveParentClasses() {
-        Map<String, Integer> ids = new LinkedHashMap<>();
-        ids.put("oak_leaves", 99);
+        ids.put(nearLeaf, 21);
+        ids.put(farLeaf, 22);
+        Map<String, String> projections = Map.of(nearPhysical, nearLeaf, farPhysical, farLeaf);
 
         ShaderMaterialInheritance.Result result = ShaderMaterialInheritance.inheritMissing(ids,
-                List.of("bge_oak_leaves_wall"), ignored -> Optional.of("oak_leaves"),
-                Set.of("glass", "iron_block")::contains);
+                List.of(nearPhysical, farPhysical), physical -> Optional.of(projections.get(physical)));
 
-        assertFalse(ids.containsKey("bge_oak_leaves_wall"));
-        assertEquals(1, result.ineligible());
+        assertEquals(21, ids.get(nearPhysical));
+        assertEquals(22, ids.get(farPhysical));
+        assertEquals(2, result.inherited());
     }
 
     @Test
-    void repeatedConstructionIsDeterministicAndIdempotent() {
-        Map<String, Integer> ids = new LinkedHashMap<>();
-        ids.put("gold_block", 123);
-        List<String> physical = List.of("bge_gold_stair", "bge_gold_wall");
+    void layerInheritanceIsUniversalAndPreservesExplicitPhysicalEntries() {
+        Map<String, String> layers = new LinkedHashMap<>();
+        layers.put("minecraft:magma_block", "cutout");
+        layers.put("bge:oak_planks_wall", "solid");
+        Map<String, String> parents = Map.of(
+                "bge:magma_layer", "minecraft:magma_block",
+                "bge:oak_planks_wall", "minecraft:oak_planks");
 
-        ShaderMaterialInheritance.Result first = ShaderMaterialInheritance.inheritMissing(ids, physical,
-                ignored -> Optional.of("gold_block"), Set.of("gold_block")::contains);
-        Map<String, Integer> firstMap = new LinkedHashMap<>(ids);
-        ShaderMaterialInheritance.Result second = ShaderMaterialInheritance.inheritMissing(ids, physical,
-                ignored -> Optional.of("gold_block"), Set.of("gold_block")::contains);
+        ShaderMaterialInheritance.Result result = ShaderMaterialInheritance.inheritMissing(layers,
+                List.of("bge:magma_layer", "bge:oak_planks_wall"),
+                physical -> Optional.of(parents.get(physical)));
 
-        assertEquals(2, first.inherited());
-        assertEquals(firstMap, ids);
-        assertEquals(2, second.explicitPhysical());
+        assertEquals("cutout", layers.get("bge:magma_layer"));
+        assertEquals("solid", layers.get("bge:oak_planks_wall"));
+        assertEquals(1, result.inherited());
+        assertEquals(1, result.explicitPhysical());
     }
 
     @Test
-    void missingProjectionCannotInventAMapping() {
-        Map<String, Integer> ids = new LinkedHashMap<>();
-        ids.put("glass", 17);
+    void bridgeHasNoParentCategoryPolicySeam() throws Exception {
+        Method inheritance = ShaderMaterialInheritance.class.getDeclaredMethod("inheritMissing",
+                Map.class, Iterable.class, java.util.function.Function.class);
+        assertEquals(3, inheritance.getParameterCount());
+        assertEquals(1, Arrays.stream(ShaderMaterialInheritance.class.getDeclaredMethods())
+                .filter(method -> method.getName().equals("inheritMissing")).count());
+        assertFalse(Arrays.asList(inheritance.getParameterTypes()).contains(Predicate.class));
 
-        ShaderMaterialInheritance.Result result = ShaderMaterialInheritance.inheritMissing(ids,
-                List.of("bge_unknown"), ignored -> Optional.empty(), Set.of("glass")::contains);
-
-        assertFalse(ids.containsKey("bge_unknown"));
-        assertEquals(1, result.missingCanonical());
-        assertTrue(ids.containsKey("glass"));
+        String bridgeSource = Files.readString(Path.of("src/client/java/dev/resivore/bgecomplementary/"
+                + "BgeShaderMaterialBridge.java"), StandardCharsets.UTF_8);
+        for (String forbidden : List.of("CANARY_ONE_PARENTS", "Set<", "Predicate", "DyeColor",
+                "Blocks.", "eligible", "ineligible", "magma")) {
+            assertFalse(bridgeSource.contains(forbidden),
+                    () -> "BgeShaderMaterialBridge must not contain a parent-category policy: " + forbidden);
+        }
+        assertTrue(bridgeSource.contains("BgeMaterialBindings.all()"));
+        assertTrue(bridgeSource.contains("binding::canonicalState"));
     }
 }

@@ -21,13 +21,13 @@
   "definition": {
     "lifecycle": "ACTIVE",
     "goals": [
-      "Make conservatively eligible BGE-derived physical states inherit the active Iris shader material classification of their canonical parent without altering the shader pack.",
+      "Universally give every BGE-bound physical state the active Iris shader material classification of its authoritative BGE-projected canonical state when that canonical state is mapped, without altering the shader pack.",
       "Use BGE C79's authoritative BgeMaterialBindings and state projection rather than BGE registry-name parsing or a derived-block inventory.",
       "Preserve shader-pack authority: an explicit physical BGE material or layer assignment wins over parent inheritance."
     ],
     "scope": [
       "Provide a client-only Fabric bridge for exact BGE C79 and Iris 1.11.2+mc26.2 that augments completed Iris material and layer maps at their narrow RETURN seams.",
-      "Canary 1 covers clear/stained glass, iron, gold, diamond, emerald, glowstone, and sea lantern canonical parents; its mapping is state-specific wherever Iris's material map is state-specific.",
+      "Canary 2 applies the same universal authoritative canonical-parent rule to every BgeMaterialBindings binding, preserving BGE's state-specific canonical projection for material IDs and using the binding's canonical block for Iris layer.* entries.",
       "Retain Translucent Glass and BGE × CTM as adjacent diagnostic context only; this project does not own their rendering or Continuity behavior."
     ],
     "boundaries": {
@@ -37,8 +37,7 @@
       "exclusions": [
         "Do not modify, copy into the artifact, redistribute, or patch the Complementary archive, originals/, Iris JAR, or saved shader configuration.",
         "Do not modify BGE core or BGE × CTM; BGE retains canonical binding/state projection and native render setup, while BGE × CTM retains Continuity behavior.",
-        "No hard-coded Complementary material IDs, BGE-derived registry-name parsing, generated per-derived-block ID table, shader-pack parser replacement, or override of an explicit shader-pack physical mapping.",
-        "Leaves, foliage, vines, crops, waving plants, fluids, lily-pad/water-like classes, portals, beacons, and block-entity paths are outside Canary 1 inheritance."
+        "No hard-coded Complementary material IDs, BGE-derived registry-name parsing, generated per-derived-block ID table, shader-pack parser replacement, material-category allowlist or denylist, or override of an explicit shader-pack physical mapping."
       ]
     },
     "dependencies": [
@@ -87,17 +86,17 @@
     ]
   },
   "state": {
-    "milestone": "Canary 1 is an ACTIVE client-only BGE C79/Iris 1.11.2 bridge. It augments Iris's completed state material map and block-wide layer map only for absent eligible BGE physical entries, using BGE canonical state projection and preserving explicit physical pack entries. The exact retained artifact passed clean static validation and awaits owner-directed in-game testing.",
+    "milestone": "Canary 2 is an ACTIVE client-only BGE C79/Iris 1.11.2 bridge. For every authoritative BgeMaterialBindings physical state it augments Iris's completed state material map only when that BGE-projected canonical state is mapped; its block-wide layer fallback follows the same canonical-parent rule. Explicit physical pack entries always win. The exact retained artifact passed clean static validation and awaits owner-directed in-game testing.",
     "releases": {
       "current": {
-        "version": "0.1.0+26.2-canary1",
-        "embedded_version": "0.1.0+26.2-canary1",
+        "version": "0.1.0+26.2-canary2",
+        "embedded_version": "0.1.0+26.2-canary2",
         "artifact": {
-          "filename": "bge-complementary-0.1.0+26.2-canary1.jar",
-          "sha256": "e508f19d4e24d8eb0d3f9c72f24e1898dbe30bc717777c4b548cbf387a113a7b"
+          "filename": "bge-complementary-0.1.0+26.2-canary2.jar",
+          "sha256": "5bded9c6b2a0d21e61ceeb6e6747084a667b6aa88f90a28993a598b2fe8537fa"
         },
-        "built_at": "2026-09-19T16:08:08.1678365Z",
-        "source_commit": "af680fef0ec39f9ff810ceda307ba2b8fa26345b",
+        "built_at": "2026-09-19T16:48:32.2339026Z",
+        "source_commit": "e89d18bf7366fbb1016b7230f19055dfdaaa593c",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": [
@@ -106,9 +105,9 @@
               "relationship": "depends",
               "dependency_id": "cnm_terrain_slabs_compat",
               "predicate": "=4.2.23-bge.canary79.cnm-family-bridge+26.2",
-              "reason": "Canary 1 invokes C79's internal authoritative BgeMaterialBindings API and exact state-projection behavior.",
+              "reason": "Canary 2 invokes C79's internal authoritative BgeMaterialBindings API and exact state-projection behavior for universal canonical-parent inheritance.",
               "regression_evidence": [
-                "Clean Canary 1 verification hashes the retained BGE C79 JAR as 7e3265c8746547465ede1a48b31c3db06370de84331b8ff9e35a2ce450650a91 and requires BgeMaterialBindings.class."
+                "Clean Canary 2 verification hashes the retained BGE C79 JAR as 7e3265c8746547465ede1a48b31c3db06370de84331b8ff9e35a2ce450650a91, requires BgeMaterialBindings.class, and runs focused universal-inheritance coverage."
               ]
             },
             {
@@ -118,12 +117,12 @@
               "predicate": "=1.11.2+mc26.2",
               "reason": "The private RETURN mixin is descriptor-coupled to Iris 1.11.2; its plugin declines every other version and Iris absence.",
               "regression_evidence": [
-                "Static audit records the exact BlockMaterialMapping material and layer RETURN descriptors, and focused tests prove completed-map fallback precedence without hard-coded shader IDs."
+                "Static audit records the exact BlockMaterialMapping material and layer RETURN descriptors, and focused tests prove universal completed-map fallback precedence without hard-coded shader IDs or a parent-category policy."
               ]
             }
           ]
         },
-        "summary": "Adds client-only canonical shader material and layer fallback for conservative BGE C79 material classes."
+        "summary": "Universally inherits active Iris canonical shader material and layer classifications for every authoritative BGE C79 binding."
       },
       "accepted": null,
       "rollback": null,
@@ -137,10 +136,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 5,
-    "activity_at": "2026-09-19T16:10:00.0000000Z",
-    "updated_at": "2026-09-19T16:10:00.0000000Z",
-    "last_codex_at": "2026-09-19T16:10:00.0000000Z",
-    "source_commit": "af680fef0ec39f9ff810ceda307ba2b8fa26345b"
+    "revision": 6,
+    "activity_at": "2026-09-19T16:48:32.2339026Z",
+    "updated_at": "2026-09-19T16:48:32.2339026Z",
+    "last_codex_at": "2026-09-19T16:48:32.2339026Z",
+    "source_commit": "e89d18bf7366fbb1016b7230f19055dfdaaa593c"
   }
 }

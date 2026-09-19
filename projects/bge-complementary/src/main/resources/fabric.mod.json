@@ -3,7 +3,7 @@
   "id": "bge_complementary",
   "version": "${version}",
   "name": "BGE × Complementary Bridge",
-  "description": "Client-only canonical shader-material inheritance for BGE C79 and Iris 1.11.2.",
+  "description": "Client-only universal canonical shader-material inheritance for BGE C79 and Iris 1.11.2.",
   "environment": "client",
   "license": "LicenseRef-Private-Workbench",
   "depends": {

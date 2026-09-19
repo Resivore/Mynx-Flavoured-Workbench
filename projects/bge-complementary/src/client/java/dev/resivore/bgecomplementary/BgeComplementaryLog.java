@@ -12,10 +12,9 @@ public final class BgeComplementaryLog {
 
     public static void materialMap(ShaderMaterialInheritance.Result result) {
         LOGGER.info("BGE × Complementary bridge active (Iris {}, BGE {}): inherited {} material states; "
-                        + "explicit {}, missing parent {}, ineligible {}, missing projection {}.",
+                        + "explicit {}, missing parent {}, missing projection {}.",
                 version("iris"), version("cnm_terrain_slabs_compat"), result.inherited(),
-                result.explicitPhysical(), result.missingParent(), result.ineligible(),
-                result.missingCanonical());
+                result.explicitPhysical(), result.missingParent(), result.missingCanonical());
     }
 
     public static void layerMap(ShaderMaterialInheritance.Result result) {

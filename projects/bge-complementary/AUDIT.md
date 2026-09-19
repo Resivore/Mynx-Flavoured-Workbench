@@ -1,4 +1,4 @@
-# BGE × Complementary Canary 1 audit
+# BGE × Complementary Canary 2 audit
 
 **Implementation baseline:** BGE C79
 `4.2.23-bge.canary79.cnm-family-bridge+26.2`, SHA-256
@@ -6,96 +6,83 @@
 `1.11.2+mc26.2`, recorded SHA-256
 `df0e2ccddaea17b191eda32b21c979e131bc9d4ef4f831113b50b461fc4a3804`.
 
-**Runtime evidence:** none. This records source, bytecode, archive, and build
-inspection only; Canary 1 is `RUNTIME_UNTESTED`.
+**Runtime evidence:** none. This audit records source, bytecode, archive, and
+build inspection only; Canary 2 is `RUNTIME_UNTESTED`.
 
 ## Decision
 
-The private Workbench-owned bridge is technically viable without changing Iris
-or Complementary. It injects at `RETURN` of Iris 1.11.2's static
-`BlockMaterialMapping#createBlockStateIdMap(Int2ObjectLinkedOpenHashMap,
-Int2ObjectLinkedOpenHashMap)`, after Iris has parsed and precedence-resolved
-the active pack's `block.properties` into its mutable
-`Object2IntMap<BlockState>`. It fills only absent BGE physical states from the
-existing state-specific result for their BGE-projected canonical parent.
+Canary 2 applies one universal rule to every physical block/state represented
+by BGE's authoritative `BgeMaterialBindings`:
 
-Iris's same class separately returns the `layer.*` render-type map from
-`createBlockTypeMap(Map)`. Canary 1 also applies a block-wide fallback at that
-completed map. It is needed as a defensive compatibility measure: the exact
-Complementary archive declares `layer.translucent` for canonical glass, while
-BGE's existing Minecraft/Fabric translucent type remains its primary render
-layer authority. An explicit physical BGE `layer.*` entry always wins, and an
-unmapped parent adds no override.
+```
+physical BGE state
+    -> BGE Binding#canonicalState(physical state)
+    -> existing Iris material classification, if present
+```
 
-The hook is exact-version-gated. It does not apply when Iris is missing or its
-friendly version is anything other than `1.11.2+mc26.2`, nor unless loaded BGE
-is exactly C79. That leaves ordinary BGE rendering untouched outside the
-audited stack.
+The bridge copies that existing classification only when Iris's completed
+state map lacks a physical entry. It does not choose categories, material IDs,
+or a geometry-safety policy. BGE alone supplies physical-to-canonical identity
+and the state projection; the active shader pack alone supplies the meaning of
+the canonical state. A canonical state without an Iris entry produces no new
+physical entry.
+
+Iris's `layer.*` map is block-wide. For every BGE binding, Canary 2 uses the
+same absent-physical-entry rule with the binding's authoritative canonical
+block. A completed Iris layer mapping for that canonical block is copied only
+when Iris did not explicitly map the physical BGE block.
 
 ## Exact Iris path
 
-The Iris 26.2 release branch source and the recorded exact 1.11.2 bytecode
-contract establish this lifecycle:
+The version-coupled optional mixin injects at `RETURN` from Iris 1.11.2's
+static `BlockMaterialMapping#createBlockStateIdMap(Int2ObjectLinkedOpenHashMap,
+Int2ObjectLinkedOpenHashMap)` and `#createBlockTypeMap(Map)`. Both maps have
+already been parsed and precedence-resolved from the active shader pack before
+the bridge sees them.
 
-1. `IdMap` reads and preprocesses the active shader pack's
-   `shaders/block.properties`, parses `block.*` material rules and `layer.*`
-   render-type rules separately.
-2. `BlockMaterialMapping#createBlockStateIdMap` expands resolved block and tag
-   entries to individual `BlockState` keys. Its `putIfAbsent` semantics give
-   Iris's completed pack mapping precedence.
-3. On the rendering pipeline's first `beginLevelRendering`,
-   `IrisRenderingPipeline` calls `createBlockStateIdMap`, then
-   `createBlockTypeMap`, and stores both through
-   `WorldRenderingSettings#setBlockStateIds` / `setBlockTypeIds`.
-4. Those settings mark a reload when changed. A new shader pipeline after pack
-   enable/disable, pack switch, shader/resource reload, or relevant level
-   lifecycle repeats construction, so Canary 1 holds no independent cached ID.
+The hook declines to apply when Iris is absent or not exactly
+`1.11.2+mc26.2`, or when BGE is not exactly C79. It does not parse or replace
+`block.properties`, modify `IdMap` or `WorldRenderingSettings`, cache shader
+material data, read registry-name patterns, or modify shader-pack content.
 
-The bridge touches neither `IdMap`, parser input, `WorldRenderingSettings`, nor
-the shader pack. Its `RETURN` fallback is therefore downstream of Iris parsing
-and upstream of the maps becoming renderer authority.
+## Precedence, state, and policy invariants
 
-## BGE parent authority and Canary 1 eligibility
+`containsKey` is used instead of an ID sentinel, so an explicit physical
+assignment—including zero—always wins. The material fallback asks BGE for each
+exact physical state's projection; it never substitutes a generic default
+canonical state. Geometry-only properties remain BGE's concern and do not
+invent a parent mapping. `layer.*` uses the same completed-map precedence at
+the block level.
 
-For every BGE-owned physical state, the bridge asks the current authoritative
-`BgeMaterialBindings.Binding` for `canonicalState`. BGE performs the projection:
-only real material state such as axis, leaf state, snow, waterlogging, and
-glazed pattern is retained as appropriate; slab type, Layer count, facing,
-stair shape, wall arms, and other geometry state are not treated as canonical
-material state. No physical registry name is parsed or inventoried.
+There is no parent material-category allowlist or denylist. The shared
+algorithm has no eligibility predicate, and focused coverage reads the bridge
+source and its public algorithm shape to reject a new category-policy seam.
+`minecraft:magma_block` is therefore not a bridge exception: like every other
+authoritative canonical material, it inherits exactly when its canonical Iris
+entry exists.
 
-Canary 1 admits only these canonical parents:
+Aggregate diagnostics report inherited, explicit, missing-parent, and
+missing-projection counts without individual block spam. No build or static
+test is Minecraft runtime evidence.
 
-- clear glass and all sixteen exact stained-glass colors;
-- iron, gold, diamond, and emerald blocks;
-- glowstone and sea lantern.
+## Focused static evidence
 
-Leaves, foliage, vines, crops, waving plants, fluids, lily-pad/water-like
-forms, portals, beacons, and block-entity-specific paths are explicitly
-withheld. The policy is a small canonical-parent set, not a BGE-derived-ID
-table and not a copy of Complementary material numbers.
+The eight synthetic tests prove that a prior glass parent still inherits;
+Magma Block and another parent outside Canary 1's former set inherit through
+the same algorithm; explicit physical material and layer entries win; missing
+canonical mappings remain absent; state-specific canonical projections stay
+distinct; and reintroducing a parent-category policy fails the suite. The
+clean `check` task also verifies the C79 hash, BGE binding presence, Fabric
+metadata, mixin configuration, required bridge classes, and that the artifact
+does not bundle Iris, Complementary, or a shader archive.
 
-## Precedence and diagnostics
-
-`containsKey` is used, never a default material-ID sentinel. Consequently an
-explicit physical state mapping—including zero or another special value—wins;
-only a physically absent key may inherit. State IDs remain state-specific.
-`layer.*` is inherently block-wide in Iris and follows the same explicit-key
-precedence.
-
-Each mapping construction emits one aggregate material line with loaded Iris
-and BGE versions plus inherited, explicit, missing-parent, ineligible, and
-missing-projection counts. A second aggregate line appears only when a
-`layer.*` map has relevant inherited or explicit BGE entries. No individual
-block is logged.
-
-## Immutable references and historical proposal
+## Immutable references and ownership
 
 Complementary Unbound r5.8.1 at
 `originals/shaderpacks/ComplementaryUnbound_r5.8.1.zip` was read only and
 retains SHA-256
 `bb89b1fc54687d4147a837fb2e3c3f7261a13bee51819761e9b6a91cb7915965`.
-No archive bytes, saved shader configuration, Iris JAR, BGE source, or BGE ×
-CTM source were modified or packaged. `UPSTREAM_PROPOSAL.md` is retained as
-historical scalable-pack research; upstream approval is no longer an
-implementation prerequisite for this private, version-coupled bridge.
+No Complementary archive, saved shader configuration, Iris JAR, BGE source,
+BGE × CTM source, `originals/` content, or Minecraft testing profile was
+modified or packaged. `UPSTREAM_PROPOSAL.md` remains historical pack-side
+research and is not a prerequisite or input to this client-only bridge.
