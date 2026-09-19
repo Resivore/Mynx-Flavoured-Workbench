@@ -255,7 +255,7 @@ tasks.register('verifyReleaseArtifact') {
 
 tasks.register('stageCanaryArtifact', Copy) {
     group = 'distribution'
-    description = 'Stages the exact ignored Canary 1 JAR for canonical local retention.'
+    description = 'Stages the exact ignored current Canary JAR for canonical local retention.'
     dependsOn tasks.named('verifyReleaseArtifact')
     from(packagedJar)
     into(layout.projectDirectory.dir('artifacts'))

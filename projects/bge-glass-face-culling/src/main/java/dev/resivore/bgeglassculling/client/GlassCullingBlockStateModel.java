@@ -25,10 +25,23 @@ final class GlassCullingBlockStateModel extends WrapperBlockStateModel {
             BlockState state, RandomSource random, Predicate<Direction> cullTest) {
         QuadEmitter upstream = Renderer.get().quadEmitter(quad ->
                 GlassQuadClipper.emit(quad, output, level, pos, state));
-        Predicate<Direction> coherentCullTest = direction -> cullTest.test(direction)
-                || SurfaceOverlapResolver.canEvaluateBoundary(state,
-                        level.getBlockState(pos.relative(direction)), direction);
+        Predicate<Direction> coherentCullTest = coherentCullTest(cullTest, level, pos, state);
         ((FabricBlockStateModel) wrapped).emitQuads(upstream, level, pos, state,
                 random, coherentCullTest);
+    }
+
+    /**
+     * Extends ordinary directional culling only when the renderer supplied a real neighbor
+     * direction. A null direction has no adjacent boundary, so its upstream meaning is preserved
+     * exactly without reading the level or evaluating BGE geometry.
+     */
+    static Predicate<Direction> coherentCullTest(Predicate<Direction> cullTest,
+            BlockAndTintGetter level, BlockPos pos, BlockState state) {
+        return direction -> {
+            if (direction == null) return cullTest.test(null);
+            return cullTest.test(direction)
+                    || SurfaceOverlapResolver.canEvaluateBoundary(state,
+                            level.getBlockState(pos.relative(direction)), direction);
+        };
     }
 }
