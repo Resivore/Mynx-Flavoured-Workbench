@@ -1,21 +1,25 @@
 package dev.resivore.dragonbound.client;
 
-import dev.resivore.dragonbound.mixin.client.CuboidItemModelWrapperAccessor;
+import dev.resivore.dragonbound.mixin.client.ItemStackRenderStateAccessor;
+import dev.resivore.dragonbound.mixin.client.LayerRenderStateAccessor;
 import net.fabricmc.fabric.api.client.model.loading.v1.wrapper.WrapperBakedItemModel;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.renderer.item.CuboidItemModelWrapper;
 import net.minecraft.client.renderer.item.ItemModel;
 import net.minecraft.client.renderer.item.ItemModelResolver;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
-import net.minecraft.client.resources.model.geometry.BakedQuad;
 import net.minecraft.world.entity.ItemOwner;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 
-import java.util.List;
 import java.util.Optional;
 
-/** Item renderer counterpart of the placed-model wrapper. */
+/**
+ * Item renderer counterpart of the placed-model wrapper.
+ *
+ * <p>The vanilla model first constructs its complete render state. Only then are its immutable
+ * baked quads retextured, retaining its display transforms, extents, foil/tint state, and every
+ * other layer property.</p>
+ */
 final class MaterializedWaystoneItemModel extends WrapperBakedItemModel {
     MaterializedWaystoneItemModel(ItemModel wrapped) {
         super(wrapped);
@@ -31,19 +35,21 @@ final class MaterializedWaystoneItemModel extends WrapperBakedItemModel {
             ItemOwner owner,
             int seed) {
         Optional<MaterializedWaystoneModels.DirectionalMaterial> material = MaterializedWaystoneModels.resolve(stack);
-        if (material.isEmpty() || !(wrapped instanceof CuboidItemModelWrapper)) {
-            wrapped.update(state, stack, resolver, displayContext, level, owner, seed);
+        ItemStackRenderStateAccessor renderState = (ItemStackRenderStateAccessor) state;
+        int firstLayer = renderState.dragonboundWaystone$activeLayerCount();
+        wrapped.update(state, stack, resolver, displayContext, level, owner, seed);
+        if (material.isEmpty()) {
             return;
         }
 
-        CuboidItemModelWrapperAccessor source = (CuboidItemModelWrapperAccessor) wrapped;
-        state.clear();
-        ItemStackRenderState.LayerRenderState layer = state.newLayer();
-        List<BakedQuad> output = layer.prepareQuadList();
-        for (BakedQuad quad : source.dragonboundWaystone$quads().getAll()) {
-            output.add(MaterializedWaystoneModels.retarget(quad, material.get()));
+        ItemStackRenderState.LayerRenderState[] layers = renderState.dragonboundWaystone$layers();
+        for (int layerIndex = firstLayer;
+             layerIndex < renderState.dragonboundWaystone$activeLayerCount();
+             layerIndex++) {
+            LayerRenderStateAccessor layer = (LayerRenderStateAccessor) layers[layerIndex];
+            layer.dragonboundWaystone$quads().replaceAll(quad ->
+                    MaterializedWaystoneModels.retarget(quad, material.get()));
         }
-        source.dragonboundWaystone$properties().applyToLayer(layer, displayContext);
         state.appendModelIdentityElement(material.get().blockId());
     }
 }

@@ -74,7 +74,7 @@ final class MaterializedWaystoneBlockStateModel extends WrapperBlockStateModel {
             BlockPos pos) {
         BlockEntity blockEntity = level.getBlockEntity(pos);
         return blockEntity instanceof DragonboundWaystoneBlockEntity waystone
-                ? MaterializedWaystoneModels.resolve(waystone.copyPlacedStack())
+                ? waystone.visualMaterialId().flatMap(MaterializedWaystoneModels::resolve)
                 : Optional.empty();
     }
 

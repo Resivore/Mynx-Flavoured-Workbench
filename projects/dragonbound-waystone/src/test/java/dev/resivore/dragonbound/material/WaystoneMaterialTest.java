@@ -9,12 +9,15 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.registries.VanillaRegistries;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.Bootstrap;
+import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.item.crafting.CraftingInput;
+import net.minecraft.world.level.storage.TagValueInput;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -28,6 +31,8 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 final class WaystoneMaterialTest {
+    private static HolderLookup.Provider registries;
+
     @BeforeAll
     static void bootstrapRegistries() {
         SharedConstants.tryDetectVersion();
@@ -37,7 +42,7 @@ final class WaystoneMaterialTest {
         }
         var builtIns = RegistryAccess.fromRegistryOfRegistries(BuiltInRegistries.REGISTRY);
         var vanillaData = VanillaRegistries.createLookup();
-        HolderLookup.Provider registries = HolderLookup.Provider.create(
+        registries = HolderLookup.Provider.create(
                 java.util.stream.Stream.concat(
                         builtIns.listRegistries(),
                         vanillaData.listRegistries().filter(lookup -> builtIns.lookup(lookup.key()).isEmpty())));
@@ -63,6 +68,56 @@ final class WaystoneMaterialTest {
         ItemStack result = recipe.assemble(input);
         assertEquals(1, result.getCount());
         assertEquals(Identifier.withDefaultNamespace("stone"), result.get(WaystoneMaterial.BLOCK_ID));
+    }
+
+    @Test
+    void warpedHyphaeCraftingAndPlacedVisualSyncRetainOnlyTheDonorIdentity() {
+        WaystoneMaterialRecipe recipe = WaystoneMaterialRecipe.INSTANCE;
+        ItemStack materialized = recipe.assemble(input(
+                new ItemStack(DragonboundContent.WAYSTONE_ITEM), new ItemStack(Items.WARPED_HYPHAE)));
+        assertEquals(Identifier.withDefaultNamespace("warped_hyphae"), materialized.get(WaystoneMaterial.BLOCK_ID));
+
+        DragonboundWaystoneBlockEntity serverEntity = new DragonboundWaystoneBlockEntity(
+                BlockPos.ZERO,
+                DragonboundContent.WAYSTONE.defaultBlockState());
+        serverEntity.setPlacedStack(materialized);
+        CompoundTag updateTag = serverEntity.getUpdateTag(registries);
+
+        assertTrue(updateTag.contains("visual_material"));
+        assertFalse(updateTag.contains("placed_stack"));
+
+        DragonboundWaystoneBlockEntity clientEntity = new DragonboundWaystoneBlockEntity(
+                BlockPos.ZERO,
+                DragonboundContent.WAYSTONE.defaultBlockState());
+        clientEntity.loadWithComponents(TagValueInput.create(ProblemReporter.DISCARDING, registries, updateTag));
+
+        assertEquals(Identifier.withDefaultNamespace("warped_hyphae"), clientEntity.visualMaterialId().orElseThrow());
+        assertTrue(clientEntity.copyPlacedStack().isEmpty());
+
+        CompoundTag ineligibleUpdateTag = new CompoundTag();
+        ineligibleUpdateTag.putString("visual_material", "minecraft:glass");
+        clientEntity.loadWithComponents(TagValueInput.create(
+                ProblemReporter.DISCARDING, registries, ineligibleUpdateTag));
+
+        assertTrue(clientEntity.visualMaterialId().isEmpty());
+    }
+
+    @Test
+    void componentlessPlacedWaystoneSynchronizesNoVisualMaterialAndFallsBackToTheBaseModel() {
+        DragonboundWaystoneBlockEntity serverEntity = new DragonboundWaystoneBlockEntity(
+                BlockPos.ZERO,
+                DragonboundContent.WAYSTONE.defaultBlockState());
+        serverEntity.setPlacedStack(new ItemStack(DragonboundContent.WAYSTONE_ITEM));
+
+        CompoundTag updateTag = serverEntity.getUpdateTag(registries);
+        assertFalse(updateTag.contains("visual_material"));
+
+        DragonboundWaystoneBlockEntity clientEntity = new DragonboundWaystoneBlockEntity(
+                BlockPos.ZERO,
+                DragonboundContent.WAYSTONE.defaultBlockState());
+        clientEntity.loadWithComponents(TagValueInput.create(ProblemReporter.DISCARDING, registries, updateTag));
+
+        assertTrue(clientEntity.visualMaterialId().isEmpty());
     }
 
     @Test
@@ -128,6 +183,7 @@ final class WaystoneMaterialTest {
 
     @Test
     void broadDefaultEligibilityKeepsDirectionalBuildingBlocksAndRejectsNoModelSubstitutes() {
+        assertTrue(WaystoneMaterial.isEligibleBlock(Blocks.WARPED_HYPHAE));
         assertTrue(WaystoneMaterial.isEligibleBlock(Blocks.STONE));
         assertTrue(WaystoneMaterial.isEligibleBlock(Blocks.SANDSTONE));
         assertTrue(WaystoneMaterial.isEligibleBlock(Blocks.OAK_LOG));

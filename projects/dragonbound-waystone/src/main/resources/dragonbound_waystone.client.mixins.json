@@ -3,7 +3,8 @@
   "package": "dev.resivore.dragonbound.mixin.client",
   "compatibilityLevel": "JAVA_25",
   "client": [
-    "CuboidItemModelWrapperAccessor"
+    "ItemStackRenderStateAccessor",
+    "LayerRenderStateAccessor"
   ],
   "injectors": {
     "defaultRequire": 1

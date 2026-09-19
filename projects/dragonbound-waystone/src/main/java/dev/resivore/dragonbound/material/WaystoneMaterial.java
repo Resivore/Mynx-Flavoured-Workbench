@@ -90,7 +90,8 @@ public final class WaystoneMaterial {
                 && !isDeniedByTag(block);
     }
 
-    private static Optional<Identifier> eligibleBlockId(Identifier id) {
+    /** Validates an untrusted persisted or synchronized visual-material identity. */
+    public static Optional<Identifier> eligibleBlockId(Identifier id) {
         if (!BuiltInRegistries.BLOCK.containsKey(id)) {
             return Optional.empty();
         }

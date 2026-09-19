@@ -18,10 +18,22 @@ final class MaterializedWaystoneRenderingContractTest {
         String block = read("MaterializedWaystoneBlockStateModel.java");
         String item = read("MaterializedWaystoneItemModel.java");
 
-        assertTrue(block.contains("MaterializedWaystoneModels.resolve(waystone.copyPlacedStack())"));
+        assertTrue(block.contains("waystone.visualMaterialId().flatMap(MaterializedWaystoneModels::resolve)"));
         assertTrue(item.contains("MaterializedWaystoneModels.resolve(stack)"));
         assertTrue(item.contains("MaterializedWaystoneModels.retarget(quad, material.get())"));
         assertTrue(block.contains("MaterializedWaystoneModels.retarget(quad, material)"));
+    }
+
+    @Test
+    void itemMaterializationStartsWithTheCompleteVanillaLayerInsteadOfRebuildingIt() throws IOException {
+        String item = read("MaterializedWaystoneItemModel.java");
+
+        assertTrue(item.contains("wrapped.update(state, stack, resolver, displayContext, level, owner, seed)"));
+        assertTrue(item.contains("int firstLayer"));
+        assertTrue(item.contains("replaceAll(quad ->"));
+        assertFalse(item.contains("state.clear()"));
+        assertFalse(item.contains("state.newLayer()"));
+        assertFalse(item.contains("CuboidItemModelWrapper"));
     }
 
     @Test
