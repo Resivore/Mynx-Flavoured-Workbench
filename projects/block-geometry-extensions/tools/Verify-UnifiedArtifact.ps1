@@ -272,8 +272,20 @@ try {
         'META-INF/MANIFEST.MF',
         'fabric.mod.json',
         'dev/aero/cnmterraincompat/BgeMaterialBindings.class',
+        'dev/aero/cnmterraincompat/BgeMaterialBindings$1.class',
+        'dev/aero/cnmterraincompat/BgeMaterialBindings$Binding.class',
+        'dev/aero/cnmterraincompat/BgeMaterialBindings$Bounds.class',
+        'dev/aero/cnmterraincompat/BgeMaterialBindings$CatalogExclusion.class',
+        'dev/aero/cnmterraincompat/BgeMaterialBindings$CatalogMembership.class',
+        'dev/aero/cnmterraincompat/BgeMaterialBindings$Ownership.class',
+        'dev/aero/cnmterraincompat/BgeMaterialBindings$Role.class',
+        'dev/aero/cnmterraincompat/BgeMaterialBindings$Topology.class',
         'dev/aero/cnmterraincompat/BgeSurfaceGeometry.class',
-        'dev/aero/cnmterraincompat/BgeSurfaceGeometry$1.class'
+        'dev/aero/cnmterraincompat/BgeSurfaceGeometry$1.class',
+        'dev/aero/cnmterraincompat/BgeSurfaceGeometry$Cuboid.class',
+        'dev/aero/cnmterraincompat/BgeSurfaceGeometry$PlaneRelation.class',
+        'dev/aero/cnmterraincompat/BgeSurfaceGeometry$SurfaceModel.class',
+        'dev/aero/cnmterraincompat/BgeSurfaceGeometry$SurfacePatch.class'
     )
     $requiredPredecessorChanges = New-StringSet @(
         'fabric.mod.json',
@@ -390,7 +402,7 @@ try {
 
     [ordered]@{
         result = 'PASS'
-        c77 = [ordered]@{
+        c78 = [ordered]@{
             filename = [System.IO.Path]::GetFileName($unifiedPath)
             size = (Get-Item -LiteralPath $unifiedPath).Length
             sha256 = Get-FileSha256 $unifiedPath
@@ -405,7 +417,7 @@ try {
             authored_new_entries = $newEntries.Count
             missing_entries = $missing.Count
         }
-        exact_predecessor_c76_delta = [ordered]@{
+        exact_predecessor_c77_delta = [ordered]@{
             predecessor_sha256 = Get-FileSha256 $predecessorPath
             intentional_changed_entries = $predecessorChanged.Count
             authored_new_entries = $predecessorNew.Count
