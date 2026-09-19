@@ -2,8 +2,8 @@
 
 Current candidate: `bge-ctm-0.11.0-canary11.jar`
 
-- SHA-256: finalized in `WORKBENCH_STATUS.json`
-- Source checkpoint: finalized in `WORKBENCH_STATUS.json`
+- SHA-256: `e6de6b74f8d7c6c865521c0470c006a125227998a78dc4cda866ebccc0164835`
+- Source checkpoint: `50a912e72af457f94cf7ab4034010d8c33d50315`
 - Use Minecraft Java 26.2, Fabric Loader 0.19.3+, exact Continuity `3.0.1+26.2`, and BGE `>=4.2.19-bge.canary75.surface-semantics+26.2` (exact C75 is the controlled baseline).
 - Lifecycle/evidence: `ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED`.
 

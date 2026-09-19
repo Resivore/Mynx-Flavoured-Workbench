@@ -43,13 +43,13 @@
         "type": "PROJECT",
         "identifier": "4b2342fc-7bdf-5ba6-9f37-d551109d214c",
         "requirement": ">=4.2.19-bge.canary75.surface-semantics+26.2",
-        "reason": "BGE C75 owns the authoritative canonical binding, state projection, canonical material-face semantics, exposed patch geometry and typed terrain-height relation consumed generically by Canary 10; exact C75 is the controlled validation baseline."
+        "reason": "BGE C75 owns the authoritative canonical binding, state projection, canonical material-face semantics, exposed patch geometry and typed terrain-height relation consumed generically by Canary 11; exact C75 is the controlled validation baseline."
       },
       {
         "type": "MOD",
         "identifier": "continuity",
         "requirement": "=3.0.1+26.2",
-        "reason": "Canary 10 decorates the exact Continuity 3.0.1+26.2 connection-predicate, processor-slice, quad-context, per-contribution Standard Overlay processing/contact, and processQuadInner emission seams; required mixins and the controlled input hash fail closed on an incompatible implementation."
+        "reason": "Canary 11 decorates the exact Continuity 3.0.1+26.2 connection-predicate, processor-slice, quad-context, per-probe Standard Overlay contact, SpriteCollector contribution assembly, and processQuadInner emission seams; required mixins and the controlled input hash fail closed on an incompatible implementation."
       },
       {
         "type": "MOD",
@@ -78,16 +78,16 @@
     ]
   },
   "state": {
-    "milestone": "Canary 10 retains each canonically positive, physically contacting Standard Overlay contributor as an exact BGE-derived receiver footprint. Neighbor extents are reflected across contacted cell edges, intersected with the rendered receiver patch, kept distinct through Continuity's processor scope, partitioned at every contributor edge without coarse bounding-box expansion or alpha overdraw, and emitted with canonical cropped UVs. TERRAIN_HEIGHT_INSET still uses physical geometry for contact and the existing nominal plane for presentation. Exact C9 owner evidence is limited to the statement that Layer and slab interactions behaved as expected in the cases tested; no exact state/face matrix or aggregate C9 PASS/FAIL is inferred. C10 has no Minecraft client visual evidence.",
+    "milestone": "Canary 11 preserves Standard Overlay provenance from each canonically positive, physically contacting side or diagonal corner probe through Continuity 3.0.1's exact SpriteCollector assembly to the aligned final sprite emission. Each non-null logical sprite receives only the BGE receiver-local footprints of the probes represented by its Continuity sprite index; combined sprites union only their represented sides, corner sprites retain only their diagonal probe, duplicate regions within one logical contribution are removed, and missing managed provenance fails closed. C10's aggregate receiver-quad collection is no longer used for emission. C10 owner evidence is limited to incorrect short-source clipping in a tested Layer-to-neighboring-terrain-face case plus visible coplanar fighting/artifacting consistent with multiple overlay quads over the same region; no aggregate C10 PASS/FAIL or geometry-model failure is inferred. C11 has no Minecraft client visual evidence.",
     "releases": {
       "current": {
-        "version": "0.10.0-canary10",
+        "version": "0.11.0-canary11",
         "artifact": {
-          "filename": "bge-ctm-0.10.0-canary10.jar",
-          "sha256": "785b24d30aebe4cb83f75780d631756253c1672201c78fca88bd152dfc293444"
+          "filename": "bge-ctm-0.11.0-canary11.jar",
+          "sha256": "e6de6b74f8d7c6c865521c0470c006a125227998a78dc4cda866ebccc0164835"
         },
-        "built_at": "2026-09-18T19:51:07.0642273Z",
-        "source_commit": "d0e737a97bf40ce3635ef9ebd7d2ae66818e8939",
+        "built_at": "2026-09-19T00:26:46.5660432Z",
+        "source_commit": "50a912e72af457f94cf7ab4034010d8c33d50315",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": [
@@ -98,7 +98,7 @@
               "predicate": "~26.2",
               "reason": "The appearance bridge is compiled against the Minecraft 26.2 block-state and Fabric appearance method descriptors and must remain on the controlled target release.",
               "regression_evidence": [
-                "Canary 10 cleanly compiles and its 21/21 focused headless GameTests plus 24/24 unit tests execute against Minecraft 26.2 and Fabric API 0.156.0+26.2 with exact BGE C75."
+                "Canary 11 cleanly compiles and its 21/21 focused headless GameTests plus 34/34 unit tests execute against Minecraft 26.2 and Fabric API 0.156.0+26.2 with exact BGE C75."
               ]
             },
             {
@@ -106,14 +106,14 @@
               "relationship": "depends",
               "dependency_id": "continuity",
               "predicate": "=3.0.1+26.2",
-              "reason": "Canary 10 injects exact Continuity 3.0.1+26.2 canonical connection-predicate, processor-slice, quad-context, StandardOverlayQuadProcessor unit-square/source-full-collision/final-contact, contributor-footprint retention, and processQuadInner QuadUtil.emitOverlayQuad seams; required mixins and the controlled input hash fail closed rather than guessing across an incompatible implementation.",
+              "reason": "Canary 11 injects exact Continuity 3.0.1+26.2 canonical connection-predicate, processor-slice, quad-context, StandardOverlayQuadProcessor unit-square/source-full-collision/final-contact, side/corner probe retention, SpriteCollector add assembly, and processQuadInner QuadUtil.emitOverlayQuad seams; required mixins and the controlled input hash fail closed rather than guessing across an incompatible implementation.",
               "regression_evidence": [
-                "The exact Continuity 3.0.1+26.2 input is SHA-256 controlled, compiles against canonical regular/overlay connection predicates, overlay unit-square processing, quad context, source-full-collision, final Standard Overlay contact, and processQuadInner emission seams, and is verified as required client mixin targets."
+                "The exact Continuity 3.0.1+26.2 input is SHA-256 controlled; its source and bytecode confirm side and corner appliesOverlay probes, applications-mask selection, helper/direct SpriteCollector.add assembly, and the processQuadInner sprite loop, and every decorated seam is verified as a required client mixin target."
               ]
             }
           ]
         },
-        "summary": "Clips each Standard Overlay contribution to its exact BGE-derived receiver footprint while preserving canonical UV crops and nominal terrain presentation planes."
+        "summary": "Carries exact side/corner probe footprints through Continuity's logical sprite collector so each overlay emits only on its own BGE-derived region."
       },
       "accepted": null,
       "rollback": null,
@@ -127,10 +127,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 12,
-    "activity_at": "2026-09-18T19:51:07.0642273Z",
-    "updated_at": "2026-09-18T19:51:07.0642273Z",
-    "last_codex_at": "2026-09-18T19:51:07.0642273Z",
-    "source_commit": "d0e737a97bf40ce3635ef9ebd7d2ae66818e8939"
+    "revision": 13,
+    "activity_at": "2026-09-19T00:26:46.5660432Z",
+    "updated_at": "2026-09-19T00:26:46.5660432Z",
+    "last_codex_at": "2026-09-19T00:26:46.5660432Z",
+    "source_commit": "50a912e72af457f94cf7ab4034010d8c33d50315"
   }
 }
