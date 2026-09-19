@@ -37,11 +37,22 @@ final class GlassCullingBlockStateModel extends WrapperBlockStateModel {
      */
     static Predicate<Direction> coherentCullTest(Predicate<Direction> cullTest,
             BlockAndTintGetter level, BlockPos pos, BlockState state) {
-        return direction -> {
-            if (direction == null) return cullTest.test(null);
-            return cullTest.test(direction)
-                    || SurfaceOverlapResolver.canEvaluateBoundary(state,
-                            level.getBlockState(pos.relative(direction)), direction);
-        };
+        return direction -> cullDecision(cullTest, direction, evaluatedDirection ->
+                SurfaceOverlapResolver.canEvaluateBoundary(state,
+                        level.getBlockState(pos.relative(evaluatedDirection)),
+                        evaluatedDirection));
+    }
+
+    /**
+     * Reserves compatible, BGE-evaluable directional faces for exact final-quad clipping. The
+     * renderer's predicate can only discard a whole face, so it must not run for a boundary whose
+     * overlap is owned by {@link GlassQuadClipper}. A null direction has no boundary and retains
+     * the upstream predicate's exact meaning.
+     */
+    static boolean cullDecision(Predicate<Direction> cullTest, Direction direction,
+            Predicate<Direction> canEvaluateBoundary) {
+        if (direction == null) return cullTest.test(null);
+        if (canEvaluateBoundary.test(direction)) return false;
+        return cullTest.test(direction);
     }
 }

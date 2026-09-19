@@ -44,14 +44,38 @@ final class GlassCullingBlockStateModelTest {
     }
 
     @Test
-    void ordinaryDirectionalUpstreamCullingStillReceivesItsDirection() {
+    void noneligibleDirectionalBoundaryPreservesAnUpstreamCull() {
         AtomicReference<Direction> received = new AtomicReference<>();
-        Predicate<Direction> coherent = GlassCullingBlockStateModel.coherentCullTest(direction -> {
+        boolean result = GlassCullingBlockStateModel.cullDecision(direction -> {
             received.set(direction);
             return true;
-        }, null, null, null);
+        }, Direction.EAST, direction -> false);
 
-        assertTrue(coherent.test(Direction.EAST));
+        assertTrue(result);
         assertEquals(Direction.EAST, received.get());
+    }
+
+    @Test
+    void noneligibleDirectionalBoundaryPreservesAnUpstreamVisibleResult() {
+        assertFalse(GlassCullingBlockStateModel.cullDecision(direction -> false,
+                Direction.EAST, direction -> false));
+    }
+
+    @Test
+    void eligibleDirectionalBoundaryBypassesAnUpstreamWholeFaceCull() {
+        AtomicInteger upstreamCalls = new AtomicInteger();
+        AtomicReference<Direction> evaluated = new AtomicReference<>();
+
+        boolean result = GlassCullingBlockStateModel.cullDecision(direction -> {
+            upstreamCalls.incrementAndGet();
+            return true;
+        }, Direction.EAST, direction -> {
+            evaluated.set(direction);
+            return true;
+        });
+
+        assertFalse(result);
+        assertEquals(Direction.EAST, evaluated.get());
+        assertEquals(0, upstreamCalls.get());
     }
 }

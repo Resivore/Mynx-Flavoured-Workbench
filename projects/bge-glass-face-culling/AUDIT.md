@@ -1,8 +1,8 @@
-# BGE Glass Face Culling Canary 2 audit
+# BGE Glass Face Culling Canary 3 audit
 
 ## Controlled provider
 
-Canary 2 compiles and validates against exact BGE C78:
+Canary 3 compiles and validates against exact BGE C78:
 
 - embedded version: `4.2.22-bge.canary78.stair-wall-surface-authority+26.2`
 - artifact: `BGE C78.jar`
@@ -41,13 +41,21 @@ consumer, and C2 then clips those emitted quads. Continuity/default-phase transf
 inside that chain. C2 therefore clips the transformed geometry it actually receives, without
 manufacturing CTM rules or sprites.
 
-The wrapper also reconciles existing boolean face culling. For a real direction, it re-allows a face
-only when both states are canonically compatible, both surface models are supported, and the source
-has a real BGE boundary patch on that direction. For a null direction, C2 delegates directly to the
-upstream predicate and does not look up a neighbor or evaluate BGE geometry. The final quad clipper
-then produces the coherent result:
-complete overlap emits nothing, partial overlap emits cropped fragments, and zero overlap preserves
-the original quad. It does not recreate provider-removed interior surfaces.
+Canary 2 correctly delegated a null direction, but its directional predicate evaluated as
+`upstreamWholeFaceCull || canEvaluateBoundary`. `canEvaluateBoundary` therefore made a compatible
+full-glass ↔ partial-BGE boundary return true even when only part of the face could be removed. The
+renderer omitted that complete source face before `GlassQuadClipper` could subtract its exact
+overlap. This is the confirmed root cause of the owner-observed C2 full ↔ partial failure.
+
+For a null direction, C3 still delegates directly to the upstream predicate and neither reads a
+neighbor nor evaluates BGE geometry. For a real direction that is canonically compatible and
+geometrically evaluable, C3 instead returns false before consulting the upstream whole-face cull
+predicate. The complete source face consequently reaches `GlassQuadClipper`, which remains the sole
+owner of exact interface subtraction: complete overlap emits nothing, partial overlap emits cropped
+fragments, and zero overlap preserves the original quad. Noneligible directional boundaries retain
+the ordinary upstream predicate behavior. C3 changes neither quad `cullFace` metadata, BGE
+model-generation cullface policy, material compatibility, CTM behavior, nor the generic BGE C78
+surface resolver.
 
 ## Quad preservation
 
@@ -61,14 +69,17 @@ pass through unchanged rather than receiving guessed geometry.
 ## Controlled evidence and limit
 
 The Java 25 suite proves null-direction delegation for both upstream outcomes without a level,
-position, or state to touch; ordinary directional upstream culling; deterministic rectangle
-union/subtraction; complete and partial emission; UV/vertex-attribute preservation; material
-eligibility; full/simple/compound/partial contacts; all 40 Stair topology states; and all 161
-nonempty Wall states. The build also hash-gates BGE C78 and the exact Fabric rendering/model-loading
+position, or state to touch; preservation of noneligible directional culling; eligible-boundary
+whole-face-cull bypass; and the predicate-to-clipper handoff for an exact partial crop. BGE-backed
+GameTests prove full/full complete removal, partial/partial exact intersection, noncontacting
+partial preservation, every representative full ↔ partial BGE family (bottom/top Slab, Vertical
+Slab, Step, Layer, Quarter Column, Corner, Stair, and Wall), all 40 Stair states, and all 161
+nonempty Wall states. The build hash-gates BGE C78 and the exact Fabric rendering/model-loading
 modules and audits the release JAR boundary.
 
 These tests do not render a Minecraft client framebuffer and are not gameplay-runtime or shader
-evidence. The owner reported that exact C1 crashed during chunk mesh construction when a null
-Direction reached `GlassCullingBlockStateModel`, and that disabling C1 let the same world open; C2
-has no owner-supplied runtime observation yet. The C2 first gate and matrix in `TESTING.md` remain
-required before any C2 runtime result is recorded.
+evidence. The owner observed that exact C2 opened the previously affected world without the C1
+null-Direction crash and that partial ↔ partial geometry appeared correct. The owner also observed
+that C2 incorrectly removed the entire full-glass face for a partial full ↔ partial contact. C3 has
+no runtime result yet; its first gate and matrix in `TESTING.md` remain required before any C3
+runtime result is recorded.

@@ -95,15 +95,7 @@ public final class BgeGlassSurfaceCullingGameTests implements CustomTestMethodIn
         BlockState full = Blocks.GLASS.defaultBlockState();
         for (Role role : List.of(Role.CORNER, Role.QUARTER_COLUMN)) {
             BlockState partial = primary(role).physicalBlock().defaultBlockState();
-            boolean strictPartialContact = false;
-            for (Direction normal : Direction.Plane.HORIZONTAL) {
-                int plane = normal.getAxisDirection() == Direction.AxisDirection.POSITIVE ? 16 : 0;
-                List<Rect16> candidate = regions(full, partial, normal, plane, FULL);
-                int candidateArea = area(candidate);
-                if (candidateArea > 0 && candidateArea < 256) strictPartialContact = true;
-            }
-            helper.assertTrue(strictPartialContact,
-                    role + " did not expose any strict partial boundary contact");
+            assertStrictPartialFullContact(helper, full, partial, role.toString());
         }
 
         BlockState bottomSlab = primary(Role.HORIZONTAL_SLAB).physicalBlock().defaultBlockState()
@@ -116,8 +108,43 @@ public final class BgeGlassSurfaceCullingGameTests implements CustomTestMethodIn
 
         BlockState insetVertical = primary(Role.VERTICAL_SLAB).physicalBlock().defaultBlockState()
                 .setValue(VerticalSlabBlock.FACING, Direction.EAST);
-        helper.assertTrue(regions(full, insetVertical, Direction.EAST, 16, FULL).isEmpty(),
+        List<Rect16> noncontacting = regions(full, insetVertical, Direction.EAST, 16, FULL);
+        helper.assertTrue(SurfaceOverlapResolver.canEvaluateBoundary(full, insetVertical,
+                        Direction.EAST),
+                "Compatible but noncontacting geometry did not reach the exact clipping path");
+        helper.assertTrue(noncontacting.isEmpty(),
                 "Adjacent but physically separated Vertical Slab produced a cull region");
+        helper.assertTrue(RectSubtraction.subtract(FULL, noncontacting).equals(List.of(FULL)),
+                "Adjacent but physically separated geometry removed an exposed full-glass face");
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void fullGlassRepresentativePartialFamiliesKeepOnlyTheirExposedArea(
+            GameTestHelper helper) {
+        BlockState full = Blocks.GLASS.defaultBlockState();
+        Block slab = primary(Role.HORIZONTAL_SLAB).physicalBlock();
+        assertStrictPartialFullContact(helper, full,
+                slab.defaultBlockState().setValue(SlabBlock.TYPE, SlabType.BOTTOM), "bottom Slab");
+        assertStrictPartialFullContact(helper, full,
+                slab.defaultBlockState().setValue(SlabBlock.TYPE, SlabType.TOP), "top Slab");
+        assertStrictPartialFullContact(helper, full,
+                primary(Role.VERTICAL_SLAB).physicalBlock().defaultBlockState(), "Vertical Slab");
+        assertStrictPartialFullContact(helper, full,
+                primary(Role.STEP).physicalBlock().defaultBlockState(), "Step");
+        assertStrictPartialFullContact(helper, full,
+                primary(Role.LAYER).physicalBlock().defaultBlockState()
+                        .setValue(BgeLayerBlock.FACING, Direction.UP)
+                        .setValue(BgeLayerBlock.LAYERS, 1), "one Layer");
+        assertStrictPartialFullContact(helper, full,
+                primary(Role.QUARTER_COLUMN).physicalBlock().defaultBlockState(), "Quarter Column");
+        assertStrictPartialFullContact(helper, full,
+                primary(Role.CORNER).physicalBlock().defaultBlockState(), "Corner");
+        assertStrictPartialFullContact(helper, full,
+                primary(Role.STAIR).physicalBlock().defaultBlockState(), "Stair");
+        assertStrictPartialFullContact(helper, full,
+                wallState(primary(Role.WALL).physicalBlock(), true, WallSide.NONE, WallSide.NONE,
+                        WallSide.NONE, WallSide.LOW), "Wall LOW arm");
         helper.succeed();
     }
 
@@ -211,8 +238,33 @@ public final class BgeGlassSurfaceCullingGameTests implements CustomTestMethodIn
 
     private static void assertRegions(GameTestHelper helper, BlockState source,
             BlockState neighbor, Direction normal, int plane, List<Rect16> expected, String label) {
+        helper.assertTrue(SurfaceOverlapResolver.canEvaluateBoundary(source, neighbor, normal),
+                label + " did not reserve its eligible BGE boundary for exact quad clipping");
         List<Rect16> actual = regions(source, neighbor, normal, plane, FULL);
         helper.assertTrue(actual.equals(expected), label + " regions differ: " + actual);
+        List<Rect16> visible = RectSubtraction.subtract(FULL, actual);
+        helper.assertTrue(area(visible) + unionArea(actual) == 256,
+                label + " exact clipping did not preserve the complement of the real overlap: "
+                        + visible);
+    }
+
+    private static void assertStrictPartialFullContact(GameTestHelper helper, BlockState full,
+            BlockState partial, String label) {
+        for (Direction normal : Direction.values()) {
+            int plane = normal.getAxisDirection() == Direction.AxisDirection.POSITIVE ? 16 : 0;
+            List<Rect16> actual = regions(full, partial, normal, plane, FULL);
+            int overlapArea = unionArea(actual);
+            if (overlapArea <= 0 || overlapArea >= 256) continue;
+
+            helper.assertTrue(SurfaceOverlapResolver.canEvaluateBoundary(full, partial, normal),
+                    label + " did not reserve its eligible BGE boundary for exact quad clipping");
+            List<Rect16> visible = RectSubtraction.subtract(FULL, actual);
+            helper.assertTrue(area(visible) + overlapArea == 256 && !visible.isEmpty(),
+                    label + " did not preserve every full-glass region outside the exact overlap: "
+                            + visible);
+            return;
+        }
+        helper.fail(label + " did not expose a strict partial full-glass boundary contact");
     }
 
     private static Binding primary(Role role) {

@@ -15,8 +15,10 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 final class QuadFragmentEmissionTest {
@@ -62,6 +64,29 @@ final class QuadFragmentEmissionTest {
         GlassQuadClipper.emitWithCullRegions(source, output,
                 List.of(new Rect16(0, 16, 0, 16)));
         assertEquals(List.of(), emitted);
+    }
+
+    @Test
+    void eligibleBoundaryReachesExactPartialClippingInsteadOfWholeFaceCulling() {
+        AtomicInteger upstreamCalls = new AtomicInteger();
+        boolean earlyCull = GlassCullingBlockStateModel.cullDecision(direction -> {
+            upstreamCalls.incrementAndGet();
+            return true;
+        }, Direction.EAST, direction -> true);
+
+        assertFalse(earlyCull);
+        assertEquals(0, upstreamCalls.get());
+
+        MutableQuadView source = proxy(MutableQuadView.class,
+                new QuadHandler(QuadState.eastFace(), null));
+        List<QuadState> emitted = new ArrayList<>();
+        QuadEmitter output = proxy(QuadEmitter.class,
+                new QuadHandler(new QuadState(), emitted));
+        GlassQuadClipper.emitWithCullRegions(source, output,
+                List.of(new Rect16(0, 8, 0, 16)));
+
+        assertEquals(1, emitted.size());
+        assertEquals(List.of(8.0F, 8.0F, 16.0F, 16.0F), floats(emitted.getFirst().u));
     }
 
     private static List<Float> floats(float[] values) {
