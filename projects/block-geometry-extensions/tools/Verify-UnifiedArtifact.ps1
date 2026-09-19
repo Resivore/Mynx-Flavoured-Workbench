@@ -209,7 +209,7 @@ try {
     }
     Require ($integrationMixins -match 'HoeItemAccessor') 'C72 HoeItem tillable-map accessor is not packaged'
     Require ($integrationMixins -match 'BlockItemPlacementMixin') 'C73 placement normalization mixin is not packaged'
-    Require ($integrationMixins -notmatch 'AxeItemAccessor') 'C81 must not package the retired C79 axe accessor'
+    Require ($integrationMixins -notmatch 'AxeItemAccessor') 'C82 must not package the retired C79 axe accessor'
 
     $missing = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::Ordinal)
     $changed = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::Ordinal)
@@ -270,9 +270,9 @@ try {
         Require $newEntries.Contains($required) "Required retained post-C58 class is absent: $required"
     }
     Require (-not $unifiedMap.ContainsKey('dev/aero/cnmterraincompat/CnmAxisFamilyBridge.class')) `
-            'C81 must not package the retired registry-wide C79 axis scanner'
+            'C82 must not package the retired registry-wide C79 axis scanner'
     Require (-not $unifiedMap.ContainsKey('dev/aero/cnmterraincompat/mixin/AxeItemAccessor.class')) `
-            'C81 must not package the retired C79 axe accessor'
+            'C82 must not package the retired C79 axe accessor'
     foreach ($required in @(
         'dev/aero/cnmterraincompat/FarmlandSlabBlock.class',
         'dev/aero/cnmterraincompat/FarmlandSlabBlock$1.class',
@@ -311,13 +311,13 @@ try {
         'assets/more_slabs_stairs_and_walls/models/block/purpur_pillar_wall_inventory.json'
     )
     Require ($predecessorMissing.Count -eq 0) `
-            "C81 lost exact C80 predecessor entries: $(@($predecessorMissing) -join ', ')"
+            "C82 lost exact C80 predecessor entries: $(@($predecessorMissing) -join ', ')"
     Require (@($predecessorChanged | Where-Object { -not (Test-AllowedChangedEntry $_) }).Count -eq 0) `
-            "C81 changed entries outside its C80-bounded scope: $(@($predecessorChanged | Where-Object { -not (Test-AllowedChangedEntry $_) }) -join ', ')"
+            "C82 changed entries outside its C80-bounded scope: $(@($predecessorChanged | Where-Object { -not (Test-AllowedChangedEntry $_) }) -join ', ')"
     Require (@($requiredPredecessorChanges | Where-Object { -not $predecessorChanged.Contains($_) }).Count -eq 0) `
-            "C81 omitted required C80-bounded changes: $(@($requiredPredecessorChanges | Where-Object { -not $predecessorChanged.Contains($_) }) -join ', ')"
+            "C82 omitted required C80-bounded changes: $(@($requiredPredecessorChanges | Where-Object { -not $predecessorChanged.Contains($_) }) -join ', ')"
     Require (@($predecessorNew | Where-Object { -not (Test-AllowedNewEntry $_) }).Count -eq 0) `
-            "C81 added entries beyond its exact C80-bounded scope: $(@($predecessorNew | Where-Object { -not (Test-AllowedNewEntry $_) }) -join ', ')"
+            "C82 added entries beyond its exact C80-bounded scope: $(@($predecessorNew | Where-Object { -not (Test-AllowedNewEntry $_) }) -join ', ')"
 
     $interiorTexture = [System.Text.Encoding]::UTF8.GetBytes('ribbits:block/toadstool_inside')
     foreach ($name in $unifiedMap.Keys) {
@@ -419,7 +419,7 @@ try {
 
     [ordered]@{
         result = 'PASS'
-        c81 = [ordered]@{
+        c82 = [ordered]@{
             filename = [System.IO.Path]::GetFileName($unifiedPath)
             size = (Get-Item -LiteralPath $unifiedPath).Length
             sha256 = Get-FileSha256 $unifiedPath

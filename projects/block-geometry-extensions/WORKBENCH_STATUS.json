@@ -34,7 +34,7 @@
       "Register native slabs, stairs, walls, material profiles, transitions, and client bindings before deriving CNM/BGE geometry through one guarded bootstrap and one root Fabric descriptor.",
       "Preserve all native material profiles, canonical parents, copied settings, TOP/SIDE/BOTTOM roles, axes, patterns, tint, translucency, transitions, drops, and specialized behaviors; C62 corrects the wall-material, canonical-role duplication, leaf-wall, and plain-Path seams demonstrated by exact C61 runtime evidence, C63 corrects external axis-family inventory previews, C64 adds the complete BBB beam catalog, C65 corrects its demonstrated BBB production axis-resource classification failure, C66 gives compatible Quarter Columns Step-equivalent full-cell continuation targeting without changing their physical geometry, C68 preserves one-to-one texel density for axis-material Layer faces without changing their geometry or grain orientation, C69 restores independent material axes to the canonical BBB Beam Slab and Beam Stair, C70 restores vanilla Stone slab ownership, C71 mirrors Minecraft 26.2 horizontal-slab tilling and Farmland lifecycle semantics, C72 extends that Farmland Slab water search exactly one block lower without changing the C71 lifecycle, C73 establishes authoritative typed canonical bindings plus placement-time canonicalization for completed ordinary horizontal and Vertical Slabs, C74 adds Ribbits huge-toadstool material surfaces, C75 adds the generic binding-owned surface-patch contract, C76 makes every visible generated Ribbits toadstool surface use its assigned source-block texture, C77 canonicalizes a newly completed four-Layer blockspace while retaining legacy four-Layer states, C78 completes the contract for every resolved Stair and Wall state with authoritative union-tiled surfaces, and C79 adds three current Minecraft parent families plus a generic, resource-contract-verified CNM axis-pillar bridge.",
       "Generate one Layer, Corner, and Quarter Column per supported canonical family while preserving Vertical Slab and Step, deterministic selector order, one-source economy, orientation, waterlogging, collision, and drops.",
-      "Provide primary Fabric ID `cnm_terrain_slabs_compat` and verified legacy alias `more_slabs_stairs_and_walls` from the same mod container and shared version `4.2.25-bge.canary81.cnm-resolved-family+26.2`.",
+      "Provide primary Fabric ID `cnm_terrain_slabs_compat` and verified legacy alias `more_slabs_stairs_and_walls` from the same mod container and shared version `4.2.26-bge.canary82.cnm-generic-resource-closure+26.2`.",
       "Preserve C58 native registry/resource identities while exposing one canonical nine-role family per exact optional source variant: 52 Macaw patterned full blocks, five distinct Macaw soil Path blocks, Ribbits Mossy Oak Planks plus Red Toadstool, Brown Toadstool, and Toadstool Stem, six Mynx Trees log, wood, and leaf sources, and all 12 BBB beam parents including Pale Oak. The three Ribbits toadstools remain distinct source identities; every exposed face of each generated BGE role uses that source's assigned exterior texture, with no generated `toadstool_inside` route and no provider texture bytes included. BBB's original slab and stair registrations remain untouched, but their provider state is geometry-only and cannot carry an independent material AXIS; C69 therefore gives BGE canonical AxisSlab and AxisStairs forms, retains BBB's ordinary thin WoodenWallBlock as the canonical wall, and keeps the five other BGE axis-aware roles. C65 accepts BBB's real semantically equivalent `axis=z` `x=90,y=180` representation while rejecting unknown transforms and `uvlock`."
     ],
     "boundaries": {
@@ -53,7 +53,7 @@
         "C76 changes only generated Ribbits Red Toadstool, Brown Toadstool, and Toadstool Stem texture selection plus the human-facing BGE Canary filename. Provider-owned source-block rendering, every non-toadstool family, geometry, economy, behavior, canonical identity, and the C75 surface-semantics API remain unchanged.",
         "C77 changes only successful placement of the fourth matching normal-catalog Layer and the legacy four-Layer fallback model for uniform-textured HugeMushroomBlock providers. Layers one through three, failed or incompatible placement, legacy four-Layer state validity, recipes, drops, family identities, C75 surface semantics, C76 generated toadstool texture semantics, and provider-owned canonical source-block rendering remain unchanged.",
         "C78 changes only binding-owned surface descriptions for resolved Stair and Wall state plus their validation. It adds no CTM or rendering policy, changes no block registration, state, collision, placement, economy, resource model, material identity, or consumer-specific rule, and leaves `projects/bge-ctm` untouched.",
-        "C79 adds normal BGE families for `minecraft:chiseled_resin_bricks`, `minecraft:chiseled_cinnabar`, and axis-aware `minecraft:purpur_pillar`; regular walls remain ordinary no-AXIS WallBlocks. C80 removes C79's registry-wide external axis scanner and uses stock CNM as an external dependency. C81 separates preregistration from family identity: it records real CNM admissions, preregisters inert BGE tail candidates without inventing a parent, then uses CNM's actual resolved ShapeMap component to bind or discard them and completes every known BGE profile in that same component. Existing provider ownership, block/item semantics, economy, CTM, and unverified resources remain unchanged."
+        "C79 adds normal BGE families for `minecraft:chiseled_resin_bricks`, `minecraft:chiseled_cinnabar`, and axis-aware `minecraft:purpur_pillar`; regular walls remain ordinary no-AXIS WallBlocks. C80 removes C79's registry-wide external axis scanner and uses stock CNM as an external dependency. C81 separates preregistration from family identity: it records real CNM admissions, preregisters inert BGE tail candidates without inventing a parent, then uses CNM's actual resolved ShapeMap component to bind or discard them and completes every known BGE profile in that same component. C82 closes the remaining profile-free resolved branch with canonical-source drops and generated normal client geometry read only after ShapeMap resolution; catalog-only role tags remain typed-profile indexes. Existing provider ownership, block/item semantics, economy, CTM, and unverified resources remain unchanged."
       ]
     },
     "dependencies": [
@@ -61,7 +61,7 @@
         "type": "MOD",
         "identifier": "minecraft",
         "requirement": "~26.2",
-        "reason": "Unified BGE C81 targets Minecraft Java 26.2."
+        "reason": "Unified BGE C82 targets Minecraft Java 26.2."
       },
       {
         "type": "MOD",
@@ -84,17 +84,17 @@
     ]
   },
   "state": {
-    "milestone": "C81 corrects C80's candidate-only ShapeMap completion gap: BGE preregisters inert Corner, Quarter Column, and Layer candidates during real CNM admission, lets CNM resolve the component parent, then binds only that canonical component and completes all resolved known-profile components through the same rule. It also derives axis side/end material roles from canonical Minecraft models, correcting Purpur Pillar's side texture while retaining its geometry and ordinary no-AXIS wall. A Java 25 clean controlled suite passed 143/143 GameTests with 425 profiles, 3,825 primary bindings, 3,198 owned blocks, three aliases, two special bindings, and 72 explicitly dormant CNM candidates. The verified exact-C80 owner observations are recorded narrowly in project controls and do not transfer to C81, which remains ACTIVE and runtime-untested; accepted C70 and rollback C72 are unchanged.",
+    "milestone": "C82 is the narrow corrective successor to C81: once CNM has actually resolved a profile-free candidate component, BGE emits its exact canonical-source loot and ordinary client models from the selected canonical model inheritance chain, without using names or models to choose the family. Catalog-only tags retain their typed-profile scope. The C82 Java 25 controlled suite passed 143/143 GameTests, including real Moss completion, untyped admission replacement, canonical resolved-candidate drops, and retained Purpur/Quartz/log face roles; C82 remains ACTIVE and runtime-untested. The verified exact-C80 owner observations remain predecessor-only; accepted C70 and rollback C72 are unchanged.",
     "releases": {
       "current": {
-        "version": "C81 (CNM Resolved Family Completion; embedded 4.2.25-bge.canary81.cnm-resolved-family+26.2)",
-        "embedded_version": "4.2.25-bge.canary81.cnm-resolved-family+26.2",
+        "version": "C82 (CNM Generic Resource Closure; embedded 4.2.26-bge.canary82.cnm-generic-resource-closure+26.2)",
+        "embedded_version": "4.2.26-bge.canary82.cnm-generic-resource-closure+26.2",
         "artifact": {
-          "filename": "BGE C81.jar",
-          "sha256": "a85246a953fb2da294df7f10f021061012b725df38bfb304c8c5b872655a7f1d"
+          "filename": "BGE C82.jar",
+          "sha256": "165229966de7e02b0a42c2b5fc90cefa116f0b626cb55a6378caea6e38f6341c"
         },
-        "built_at": "2026-09-19T20:23:55.3111316Z",
-        "source_commit": "66dc6fdc192bdce17d9a1d934c1c837a6d58966b",
+        "built_at": "2026-09-19T20:56:20.4850654Z",
+        "source_commit": "3646cae2cdd57ebbab9748f72ecb7c9352bf8270",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": [
@@ -103,16 +103,16 @@
               "relationship": "depends",
               "dependency_id": "minecraft",
               "predicate": "~26.2",
-              "reason": "The exact C81 artifact targets the Minecraft 26.2 release and packages Fabric's same-release predicate; this target-specific Minecraft predicate remains bound to the controlled-validation release bytes.",
+              "reason": "The exact C82 artifact targets the Minecraft 26.2 release and packages Fabric's same-release predicate; this target-specific Minecraft predicate remains bound to the controlled-validation release bytes.",
               "regression_evidence": [
-                "Java 25 clean packaging produced exact `BGE C81.jar`, 6,315,517 bytes, SHA-256 a85246a953fb2da294df7f10f021061012b725df38bfb304c8c5b872655a7f1d, from implementation checkpoint 66dc6fdc192bdce17d9a1d934c1c837a6d58966b.",
-                "The C81 controlled Minecraft 26.2 GameTest suite passed 143/143, including stock CNM's actual nine-role Moss component, stone-brick, log/pillar, Ribbits provider, untyped preregistration/replacement, Purpur-versus-Quartz/log material-face, and production resource closure regressions.",
-                "Architecture, exact C80 predecessor archive, and production-resource audits passed. The C81 verifier found one root descriptor, zero nested JARs, zero packaged CNM classes, 93 intentional C80 changes, four new entries, zero missing predecessor entries, 875 blockstates, 314 families, 7,067 block models, 875 loot tables, zero recipes, and zero invalid JSON."
+                "Java 25 clean packaging produced exact `BGE C82.jar`, 6,334,865 bytes, SHA-256 165229966de7e02b0a42c2b5fc90cefa116f0b626cb55a6378caea6e38f6341c, from implementation checkpoint 3646cae2cdd57ebbab9748f72ecb7c9352bf8270.",
+                "The C82 controlled Minecraft 26.2 GameTest suite passed 143/143, including stock CNM's actual nine-role Moss component, stone-brick, log/pillar, Ribbits provider, untyped preregistration/replacement, canonical resolved-candidate drops, Purpur-versus-Quartz/log material-face, and production resource closure regressions.",
+                "Architecture and exact C80 predecessor archive audits passed. The C82 verifier found one root descriptor, zero nested JARs, zero packaged CNM classes, 95 intentional C80 changes, 11 new entries, zero missing predecessor entries, 875 blockstates, 314 families, 7,067 block models, 875 loot tables, zero recipes, and zero invalid JSON."
               ]
             }
           ]
         },
-        "summary": "Completes actual resolved CNM components with the BGE tail roles and uses canonical model side/end variables for axis resources. The C80 predecessor SHA-256 was verified before recording its supplied PASS observations for Chiseled Resin Bricks, Chiseled Cinnabar, and Purpur geometry registration, and its FAIL observations for Purpur side texture and incomplete Moss; these observations do not establish C81 runtime status."
+        "summary": "Closes profile-free resolved CNM components with canonical-source drops and generated normal client geometry only after CNM selects the component parent; typed catalog tags remain unexpanded. The C80 predecessor SHA-256 was verified before recording its supplied PASS observations for Chiseled Resin Bricks, Chiseled Cinnabar, and Purpur geometry registration, and its FAIL observations for Purpur side texture and incomplete Moss; these observations do not establish C82 runtime status."
       },
       "accepted": {
         "version": "C70 (Stone Native Slab; embedded 4.2.14-bge.canary70.stone-native-slab+26.2)",
@@ -180,10 +180,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 43,
-    "activity_at": "2026-09-19T20:25:47.8681599Z",
-    "updated_at": "2026-09-19T20:25:47.8681599Z",
-    "last_codex_at": "2026-09-19T20:25:47.8681599Z",
-    "source_commit": "66dc6fdc192bdce17d9a1d934c1c837a6d58966b"
+    "revision": 44,
+    "activity_at": "2026-09-19T20:57:48.7516432Z",
+    "updated_at": "2026-09-19T20:57:48.7516432Z",
+    "last_codex_at": "2026-09-19T20:57:48.7516432Z",
+    "source_commit": "3646cae2cdd57ebbab9748f72ecb7c9352bf8270"
   }
 }

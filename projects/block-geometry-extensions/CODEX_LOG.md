@@ -392,3 +392,14 @@
 - Artifact: C81 is `BGE C81.jar`, 6,315,517 bytes, SHA-256 `a85246a953fb2da294df7f10f021061012b725df38bfb304c8c5b872655a7f1d`, finalized at `2026-09-19T20:23:55.3111316Z` from preceding coherent implementation checkpoint `66dc6fdc192bdce17d9a1d934c1c837a6d58966b`.
 - Result: `ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED` — C81 is the controlled-validated C80 corrective successor and remains unaccepted.
 - Next state: Under explicit runtime ownership, run the C81 resolved-CNM and Purpur side/end checklist against the retained SHA-256; preserve the C80 observations as predecessor-only evidence and do not infer a C81 runtime aggregate.
+
+## 2026-09-19T20:57:48.7516432Z — Build BGE C82 generic CNM resource closure
+
+- Revision: 44
+- Source checkpoint: `3646cae2cdd57ebbab9748f72ecb7c9352bf8270`
+- Changes: Corrected the remaining C81 profile-free resolved-candidate gap. Once stock CNM has selected a real ShapeMap parent, BGE now publishes one-source canonical loot plus ordinary client Layer, Corner, and Quarter Column models derived from that selected parent’s resolved model variables. This post-resolution resource path never elects a family from IDs, models, or providers. Typed catalog role tags remain catalog-only rather than falsely classifying an unprofiled component. The real untyped-admission regression now also verifies canonical loot and live drops after replacement by the resolved profile.
+- Build/static: Java 25 clean packaging produced the final artifact and the isolated Minecraft 26.2 GameTest suite passed 143/143. The material-profile architecture suite passed. The exact-C80 archive audit found one root descriptor, zero nested JARs, zero packaged CNM classes, 95 intentional changed entries, 11 allowed new entries, zero missing entries, 875 blockstates, 314 families, 7,067 block models, 875 loot tables, zero recipes, and no invalid JSON.
+- Runtime: No Minecraft gameplay/testing profile was launched, inspected, selected, populated, reserved, or modified. C82 has no runtime observation. The exact C80 owner observations remain C80-only and do not transfer to C81 or C82.
+- Artifact: C82 is `BGE C82.jar`, 6,334,865 bytes, SHA-256 `165229966de7e02b0a42c2b5fc90cefa116f0b626cb55a6378caea6e38f6341c`, finalized at `2026-09-19T20:56:20.4850654Z` from preceding coherent implementation checkpoint `3646cae2cdd57ebbab9748f72ecb7c9352bf8270`.
+- Result: `ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED` — C82 is the controlled-validated C81 corrective successor and remains unaccepted.
+- Next state: Under explicit runtime ownership, run the C82 resolved-CNM, profile-free resource/drop, and Purpur side/end checklist against the retained SHA-256; preserve all predecessor observations as exact-version evidence only.
