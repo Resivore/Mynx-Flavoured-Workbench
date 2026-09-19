@@ -92,6 +92,13 @@ public final class CnmTerrainCompat implements ModInitializer {
         validateBindingsWhenComplete();
     }
 
+    /** Called at CNM's scan boundary after optional providers have registered their sources. */
+    public static synchronized void registerCnmBridgeFamilies() {
+        initializeNativeCatalog();
+        registerBgeBase();
+        CnmAxisFamilyBridge.registerEligibleFamilies();
+    }
+
     /** Called from CNM's registry-bootstrap tail before the built-in registries freeze. */
     public static synchronized void registerLayers() {
         initializeNativeCatalog();

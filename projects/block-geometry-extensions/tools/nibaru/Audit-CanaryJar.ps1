@@ -91,9 +91,9 @@ try {
 }
 
 $result | ConvertTo-Json
-if ($result.blockstates -ne 866 -or $result.slabs -ne 276 -or $result.stairs -ne 279 -or
-    $result.walls -ne 311 -or $result.families -ne 311 -or $result.item_definitions -ne 867 -or
-    $result.item_models -ne 867 -or $result.block_models -ne 6895 -or $result.loot_tables -ne 866 -or
+if ($result.blockstates -ne 868 -or $result.slabs -ne 277 -or $result.stairs -ne 280 -or
+    $result.walls -ne 311 -or $result.families -ne 312 -or $result.item_definitions -ne 867 -or
+    $result.item_models -ne 867 -or $result.block_models -ne 6966 -or $result.loot_tables -ne 866 -or
     $result.recipes -ne 0 -or $result.legacy_recipes -ne 0 -or $result.recipe_advancements -ne 0 -or
     $result.vanilla_recipe_overrides -ne 0 -or $result.wool_item_tags -ne 3 -or $result.invalid_json -ne 0 -or
     -not $result.walls_tag_complete -or $result.invalid_item_tints -ne 0) {

@@ -3,6 +3,7 @@ package dev.aero.cnmterraincompat.gametest;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.mojang.serialization.JsonOps;
 import dev.aero.cnmterraincompat.AxisModelContract;
 import games.twinhead.moreslabsstairsandwalls.api.material.BehaviorCapability;
@@ -42,8 +43,11 @@ import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.level.block.state.properties.SlabType;
 import net.minecraft.world.level.block.state.properties.StairsShape;
 
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -115,15 +119,15 @@ public final class NativeAxisGameTests implements CustomTestMethodInvoker {
             }
         }
 
-        helper.assertTrue(expected.size() == 56 && actual.equals(expected),
+        helper.assertTrue(expected.size() == 57 && actual.equals(expected),
                 "Native material-axis parents changed: expected=" + expected + ", actual=" + actual);
-        helper.assertTrue(axisSlabs == 56 && axisStairs == 56,
-                "Expected exact 56/56 native axis slab/stair subset, found "
+        helper.assertTrue(axisSlabs == 57 && axisStairs == 57,
+                "Expected exact 57/57 native axis slab/stair subset, found "
                         + axisSlabs + "/" + axisStairs);
-        helper.assertTrue(nativeSlabs == 276 && nativeStairs == 279 && nativeWalls == 311,
+        helper.assertTrue(nativeSlabs == 279 && nativeStairs == 282 && nativeWalls == 314,
                 "Native geometry inventory changed: slabs=" + nativeSlabs + ", stairs=" + nativeStairs
                         + ", walls=" + nativeWalls);
-        helper.assertTrue(nonAxisSlabs == 220 && nonAxisStairs == 223,
+        helper.assertTrue(nonAxisSlabs == 222 && nonAxisStairs == 225,
                 "Non-axis native geometry exclusion changed: slabs=" + nonAxisSlabs
                         + ", stairs=" + nonAxisStairs);
 
@@ -133,8 +137,32 @@ public final class NativeAxisGameTests implements CustomTestMethodInvoker {
             helper.assertTrue(!MaterialAxisSemantics.applies(special),
                     "Special/non-axis family entered native axis scope: " + special.canonicalParentId());
         }
-        System.out.println("NATIVE_AXIS_INVENTORY|profiles=56|slabs=56|stairs=56|walls=0"
-                + "|nonAxisSlabs=220|nonAxisStairs=223|allWalls=311");
+        System.out.println("NATIVE_AXIS_INVENTORY|profiles=57|slabs=57|stairs=57|walls=0"
+                + "|nonAxisSlabs=222|nonAxisStairs=225|allWalls=314");
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void nativeAxisWallItemsKeepNormalWallInventoryPresentation(GameTestHelper helper) {
+        for (Identifier parent : expectedAxisParents()) {
+            NibaruMaterialProfile profile = profile(parent);
+            Block wall = profile.nativeWall().orElseThrow();
+            Identifier wallId = BuiltInRegistries.BLOCK.getKey(wall);
+            String resource = "assets/more_slabs_stairs_and_walls/models/block/"
+                    + wallId.getPath() + "_inventory.json";
+            try (InputStream input = NativeAxisGameTests.class.getClassLoader().getResourceAsStream(resource)) {
+                helper.assertTrue(input != null, "Missing generated native axis wall item model: " + resource);
+                JsonObject json = JsonParser.parseReader(new InputStreamReader(input, StandardCharsets.UTF_8))
+                        .getAsJsonObject();
+                helper.assertTrue("minecraft:block/wall_inventory".equals(json.get("parent").getAsString())
+                                && json.getAsJsonObject("textures").get("wall").getAsString().equals(
+                                        NativeAxisModelContract.semanticTextures(profile).get("side")),
+                        "Axis wall item did not preserve ordinary wall silhouette/bark role: " + wallId);
+            } catch (Exception exception) {
+                throw new IllegalStateException("Cannot inspect generated axis wall item model " + resource,
+                        exception);
+            }
+        }
         helper.succeed();
     }
 
@@ -152,7 +180,7 @@ public final class NativeAxisGameTests implements CustomTestMethodInvoker {
                 }
             }
         }
-        helper.assertTrue(codecStates == 336, "Expected 336 native axis CODEC states, found " + codecStates);
+        helper.assertTrue(codecStates == 342, "Expected 342 native axis CODEC states, found " + codecStates);
 
         for (Identifier parent : REPRESENTATIVE_PARENTS) {
             NibaruMaterialProfile profile = profile(parent);
@@ -219,7 +247,7 @@ public final class NativeAxisGameTests implements CustomTestMethodInvoker {
                 assertPropertyEqual(helper, stairState, stairMirrored, property, parent + " mirrored stairs");
             }
         }
-        System.out.println("NATIVE_AXIS_STATE|codecStates=336|representatives=" + REPRESENTATIVE_PARENTS);
+        System.out.println("NATIVE_AXIS_STATE|codecStates=342|representatives=" + REPRESENTATIVE_PARENTS);
         helper.succeed();
     }
 
@@ -361,8 +389,8 @@ public final class NativeAxisGameTests implements CustomTestMethodInvoker {
                             + profile.canonicalParentId());
             textureProfiles++;
         }
-        helper.assertTrue(textureProfiles == 56,
-                "Expected exact 56 native texture-role profiles, found " + textureProfiles);
+        helper.assertTrue(textureProfiles == 57,
+                "Expected exact 57 native texture-role profiles, found " + textureProfiles);
         int slabSelectors = 0;
         int stairSelectors = 0;
         for (AxisUvPolicy policy : AxisUvPolicy.values()) {
@@ -413,7 +441,7 @@ public final class NativeAxisGameTests implements CustomTestMethodInvoker {
         helper.assertTrue(slabSelectors == 27 && stairSelectors == 360,
                 "Exhaustive native selector matrix changed: slabs=" + slabSelectors
                         + ", stairs=" + stairSelectors);
-        System.out.println("NATIVE_AXIS_MODELS|policies=3|textureProfiles=56"
+        System.out.println("NATIVE_AXIS_MODELS|policies=3|textureProfiles=57"
                 + "|slabSelectors=27|stairSelectors=360"
                 + "|geometry=PASS|faces=PASS|closure=PASS");
         helper.succeed();
@@ -740,7 +768,7 @@ public final class NativeAxisGameTests implements CustomTestMethodInvoker {
         }
         addMinecraftIds(expected, "stripped_bamboo_block", "basalt", "polished_basalt", "bone_block",
                 "deepslate", "hay_block", "muddy_mangrove_roots", "quartz_pillar", "ochre_froglight",
-                "verdant_froglight", "pearlescent_froglight");
+                "verdant_froglight", "pearlescent_froglight", "purpur_pillar");
         return Collections.unmodifiableSet(expected);
     }
 

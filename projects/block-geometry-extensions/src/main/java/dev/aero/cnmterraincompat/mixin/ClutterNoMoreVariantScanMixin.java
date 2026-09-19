@@ -28,7 +28,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 abstract class ClutterNoMoreVariantScanMixin {
     @Inject(method = "registerVariants", at = @At("HEAD"), require = 1)
     private static void cnmTerrainCompat$initializeUnifiedNativeCatalog(CallbackInfo ci) {
-        CnmTerrainCompat.initializeNativeCatalog();
+        CnmTerrainCompat.registerCnmBridgeFamilies();
     }
 
     @Inject(method = "registerVariants", at = @At("TAIL"), require = 1)

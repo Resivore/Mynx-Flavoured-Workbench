@@ -12,14 +12,14 @@
     ]
   },
   "definition": {
-    "lifecycle": "ACCEPTED",
+    "lifecycle": "ACTIVE",
     "goals": [
       "Maintain the progression-gated one-way return system for Minecraft Java 26.2 Fabric using one shared placed Dragonbound Waystone, an Imbued Void Pearl, and a cooldown-based Dragonbound Staff.",
-      "Preserve the accepted server-owned channel, exact-destination safety, persistent anchor, loss protection, recipes, configuration migration, discovery behavior, geometry, and art without expanding into a general waypoint or teleport system."
+      "Preserve the accepted server-owned channel, exact-destination safety, persistent anchor, loss protection, recipes, configuration migration, discovery behavior, geometry, and art while allowing one eligible building block identity to select the Waystone's visual material without expanding into a general waypoint or teleport system."
     ],
     "scope": [
-      "Maintain the accepted Canary 5 behavior while Canary 12 preserves Canary 9's corrected four-pixel Waystone base side UVs and changes only Canary 11's shared player-targeted first-person ground-origin foreground companion from vanilla portal to vanilla reverse portal for the existing valid-channel and successful-arrival effects.",
-      "Preserve the 40-tick default channel, 1,200-tick Staff cooldown, exact current recipes, one-click and mouse-release-independent channel lifecycle, exact arrival at the visible Waystone top, recipe-book and JEI discovery seam, and success-only consumption and cooldown behavior.",
+      "Canary 13 succeeds the accepted Canary 12 with one persistent block-id material component, a two-input dynamic crafting recipe, and a client-only baked-model wrapper that retains the accepted four-cuboid Waystone geometry and UVs while substituting safe default-state directional donor sprites.",
+      "Preserve the 40-tick default channel, 1,200-tick Staff cooldown, existing primary recipes plus the dynamic material recipe, one-click and mouse-release-independent channel lifecycle, exact arrival at the visible Waystone top, recipe-book and JEI discovery seam, and success-only consumption and cooldown behavior.",
       "Retain exact accepted Canary 5 and focused-runtime-passed Canary 4 rollback artifacts together with the Dragonbound-owned Staff art and the separately licensed Matcha Stable Void snapshot and notice."
     ],
     "boundaries": {
@@ -28,7 +28,7 @@
       ],
       "exclusions": [
         "Multiple destinations, waypoint lists, portals, home commands, arbitrary coordinates, nearby-position fallback, XP costs, durability, charges, pet or group teleport, and other feature or balance changes.",
-        "Recipe, dependency, configuration, timing, geometry, art, item identity, behavior, or scope changes during this migration.",
+        "Changes to Waystone collision/shape, teleport and anchor authority, channel timing, Staff/Pearl behavior, loss protection, existing primary recipes, dependencies, configuration, particles/sounds, art, or unrelated scope beyond the Canary 13 visual-material component and recipe.",
         "Mod Menu polish and dedicated-server validation remain deferred; the accepted evidence is the recorded client and singleplayer scope only.",
         "Other projects and their source, status, artifacts, dependencies, and ownership records remain outside this project.",
         "Minecraft deployment, either experimental Test Slot, accepted physical-baseline changes, Test Instance Manager mutation, Minecraft launch, and protected gameplay-instance access during this migration.",
@@ -81,22 +81,22 @@
     ]
   },
   "state": {
-    "milestone": "The exact current release is ACCEPTED by owner direction following the user's external/gameplay testing. Existing build, deployment, and runtime classifications are preserved; this administrative transition infers no new runtime result.",
+    "milestone": "Canary 13 is a statically verified material-selection successor to accepted Canary 12. It preserves C12 as the accepted release and awaits focused runtime visual verification of placed and item material rendering.",
     "releases": {
       "current": {
-        "version": "0.1.0-canary12",
+        "version": "0.1.0-canary13",
         "artifact": {
-          "filename": "dragonbound-waystone-0.1.0-canary12.jar",
-          "sha256": "6f621b16652baf9caad89ba923b8792ebc0ba08706a9f507fd17aabfc3121ad6"
+          "filename": "dragonbound-waystone-0.1.0-canary13.jar",
+          "sha256": "43ba4dbc7a11a8edcf06f3388e72cede6b165e5c5d17fcc78f82a9d2a368bf85"
         },
-        "built_at": "2026-09-11T21:06:29.5248874Z",
-        "embedded_version": "0.1.0-canary12",
-        "source_commit": "8d47abc38bd811376524f74d885cc47ab6b85e59",
+        "built_at": "2026-09-19T07:05:51.5561867Z",
+        "embedded_version": "0.1.0-canary13",
+        "source_commit": "351db184c9bac8deaf6bb9e4f349e54536c75817",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
         },
-        "summary": "Maintains a progression-gated one-way return system using a Dragonbound Waystone and Staff."
+        "summary": "Adds shapeless full-block material selection while preserving the Waystone's accepted geometry and return system."
       },
       "accepted": {
         "version": "0.1.0-canary12",
@@ -121,7 +121,7 @@
         },
         "source_commit": "690066c7c7159771a244ecd72f201473d95fcb19"
       },
-      "accepted_current": "CURRENT_IS_ACCEPTED",
+      "accepted_current": "CURRENT_DIFFERS_FROM_ACCEPTED",
       "accepted_rollback": "ROLLBACK_DIFFERS_FROM_ACCEPTED"
     },
     "validation": {
@@ -131,10 +131,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 9,
-    "activity_at": "2026-09-14T08:09:29Z",
-    "updated_at": "2026-09-14T08:09:29Z",
-    "last_codex_at": "2026-09-14T08:09:29Z",
-    "source_commit": "f511f435c623883c5ee1474e9227acb73fb2df68"
+    "revision": 10,
+    "activity_at": "2026-09-19T07:06:28.9766177Z",
+    "updated_at": "2026-09-19T07:06:28.9766177Z",
+    "last_codex_at": "2026-09-19T07:06:28.9766177Z",
+    "source_commit": "351db184c9bac8deaf6bb9e4f349e54536c75817"
   }
 }

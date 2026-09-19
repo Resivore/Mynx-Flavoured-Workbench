@@ -95,14 +95,14 @@ public final class LeafSemanticsGameTests implements CustomTestMethodInvoker {
                 "Fabric Loader did not resolve the legacy Nibaru alias to the unified BGE container");
         helper.assertTrue(primary.getMetadata().getId().equals("cnm_terrain_slabs_compat"),
                 "Unified container primary identity changed");
-        helper.assertTrue(version.getFriendlyString().equals("4.2.22-bge.canary78.stair-wall-surface-authority+26.2"),
+        helper.assertTrue(version.getFriendlyString().equals("4.2.23-bge.canary79.cnm-family-bridge+26.2"),
                 "Unified container version changed: " + version.getFriendlyString());
         try {
             helper.assertTrue(VersionPredicate.parse(">=4.2.0 <4.3.0-").test(version),
                     "Legacy Nibaru dependency range rejected the unified version");
             helper.assertTrue(VersionPredicate.parse(">=0.8.0-bge-canary56-vertical-stairs-catalog").test(version),
                     "Forward BGE dependency range rejected the unified version");
-            helper.assertTrue(VersionPredicate.parse("=4.2.22-bge.canary78.stair-wall-surface-authority+26.2").test(version),
+            helper.assertTrue(VersionPredicate.parse("=4.2.23-bge.canary79.cnm-family-bridge+26.2").test(version),
                     "Exact unified dependency rejected the unified version");
             helper.assertTrue(!VersionPredicate.parse("=4.2.0+26.2-port-canary46-bge-layer-contract").test(version),
                     "Exact predecessor Nibaru dependency falsely accepted the unified version");
@@ -147,7 +147,7 @@ public final class LeafSemanticsGameTests implements CustomTestMethodInvoker {
             }
         }
 
-        helper.assertTrue(names.size() == 621 && providerPaths == 554 && ordinaryAliases == 67,
+        helper.assertTrue(names.size() == 627 && providerPaths == 560 && ordinaryAliases == 67,
                 "Generated Nibaru English inventory changed: total=" + names.size()
                         + ", provider=" + providerPaths + ", ordinary=" + ordinaryAliases);
         helper.assertTrue("Oak Log Step".equals(names.get(
@@ -156,14 +156,14 @@ public final class LeafSemanticsGameTests implements CustomTestMethodInvoker {
         helper.assertTrue("Vertical Oak Log Slab".equals(names.get(
                         "block.clutternomore.more_slabs_stairs_and_walls.vertical_oak_log_slab")),
                 "Vertical Oak Log Slab no longer follows CNM's normal generated naming");
-        System.out.println("PROVIDER_ENGLISH_TRANSLATIONS|generated=621|providerPaths=554|ordinaryAliases=67");
+        System.out.println("PROVIDER_ENGLISH_TRANSLATIONS|generated=627|providerPaths=560|ordinaryAliases=67");
         helper.succeed();
     }
 
     @GameTest(maxTicks = 40)
     public void providerProfileInventoryAndLookup(GameTestHelper helper) {
         var profiles = NibaruMaterialProfiles.all();
-        int expectedProfiles = 311 + (int) NibaruMaterialProfiles.eligibleVanillaFamilies().stream()
+        int expectedProfiles = 314 + (int) NibaruMaterialProfiles.eligibleVanillaFamilies().stream()
                 .filter(family -> NibaruMaterialProfiles.fromBlock(family.parent()).orElseThrow().family() == null)
                 .count() + (int) dev.aero.cnmterraincompat.ExternalMaterialFamilies.all().stream()
                 .filter(binding -> binding.profile().family() == null
@@ -221,8 +221,8 @@ public final class LeafSemanticsGameTests implements CustomTestMethodInvoker {
     @GameTest(maxTicks = 40)
     public void materialAxisProfileInventoryAndRuntimeBindings(GameTestHelper helper) {
         java.util.Set<Identifier> expectedParents = expectedMaterialAxisParentIds();
-        helper.assertTrue(expectedParents.size() == 56,
-                "Material-axis expectation must contain exactly 56 canonical parents: " + expectedParents);
+        helper.assertTrue(expectedParents.size() == 57,
+                "Material-axis expectation must contain exactly 57 canonical parents: " + expectedParents);
 
         var axisProfiles = NibaruMaterialProfiles.all().stream()
                 .filter(profile -> profile.family() != null)
@@ -277,7 +277,7 @@ public final class LeafSemanticsGameTests implements CustomTestMethodInvoker {
                 axisTargets++;
             }
         }
-        helper.assertTrue(axisTargets == 168, "Expected 168 axis-aware derived targets, found " + axisTargets);
+        helper.assertTrue(axisTargets == 171, "Expected 171 axis-aware derived targets, found " + axisTargets);
 
         int nonAxisTargets = 0;
         for (NibaruMaterialProfile profile : NibaruMaterialProfiles.all().stream()
@@ -292,8 +292,8 @@ public final class LeafSemanticsGameTests implements CustomTestMethodInvoker {
                 nonAxisTargets++;
             }
         }
-        helper.assertTrue(nonAxisTargets == 765,
-                "Expected 765 non-axis derived targets, found " + nonAxisTargets);
+        helper.assertTrue(nonAxisTargets == 771,
+                "Expected 771 non-axis derived targets, found " + nonAxisTargets);
         System.out.println("MATERIAL_AXIS_INVENTORY|profiles=" + axisProfiles.size() + "|axisTargets="
                 + axisTargets + "|nonAxisTargets=" + nonAxisTargets);
         helper.succeed();
@@ -913,7 +913,7 @@ public final class LeafSemanticsGameTests implements CustomTestMethodInvoker {
         }
         helper.assertTrue(games.twinhead.moreslabsstairsandwalls.block.spreadable.PodzolGeometryConversion
                 .convert(Blocks.STONE.defaultBlockState()) == null, "Unrelated material converted to Podzol");
-        System.out.println("DERIVED_MATERIAL_PARITY|profiles=311|authoredTagRelations=" + authoredTagRelations
+        System.out.println("DERIVED_MATERIAL_PARITY|profiles=314|authoredTagRelations=" + authoredTagRelations
                 + "|soulSoilTags=2|podzolFamilies=6|podzolTargets=15");
         helper.succeed();
     }
@@ -1055,7 +1055,7 @@ public final class LeafSemanticsGameTests implements CustomTestMethodInvoker {
         long walls = profiles.stream().filter(profile -> profile.nativeWall().isPresent()).count();
         var sparse = profiles.stream().filter(profile -> profile.nativeSlab().isEmpty()
                 || profile.nativeStair().isEmpty() || profile.nativeWall().isEmpty()).toList();
-        helper.assertTrue(slabs == 276 && stairs == 279 && walls == 311,
+        helper.assertTrue(slabs == 279 && stairs == 282 && walls == 314,
                 "Native catalog changed: " + slabs + "/" + stairs + "/" + walls);
         helper.assertTrue(sparse.size() == 35, "Expected 35 sparse profiles, found " + sparse.size());
 
@@ -1103,7 +1103,7 @@ public final class LeafSemanticsGameTests implements CustomTestMethodInvoker {
         helper.assertTrue(oak.nativeWall().isPresent(), "Oak Planks wall is not registered");
         helper.assertTrue(java.util.Collections.frequency(ShapeMap.getShapes(Items.OAK_PLANKS),
                 oak.nativeWall().orElseThrow().asItem()) == 1, "Oak Planks wall is not present exactly once");
-        System.out.println("SPARSE_RECONCILIATION|profiles=35|native=276/279/311|targets=105");
+        System.out.println("SPARSE_RECONCILIATION|profiles=35|native=279/282/314|targets=105");
         helper.succeed();
     }
 
@@ -2951,7 +2951,7 @@ public final class LeafSemanticsGameTests implements CustomTestMethodInvoker {
         }
         addMinecraftIds(expected, "stripped_bamboo_block", "basalt", "polished_basalt", "bone_block",
                 "deepslate", "hay_block", "muddy_mangrove_roots", "quartz_pillar", "ochre_froglight",
-                "verdant_froglight", "pearlescent_froglight");
+                "verdant_froglight", "pearlescent_froglight", "purpur_pillar");
         return java.util.Set.copyOf(expected);
     }
 

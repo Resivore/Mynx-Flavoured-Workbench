@@ -234,6 +234,7 @@ public enum ModBlocks {
     RED_MUSHROOM_BLOCK(builder(Blocks.RED_MUSHROOM_BLOCK).axe()),
 
     PURPUR(builder(Blocks.PURPUR_BLOCK).wallOnly().pickaxe()),
+    PURPUR_PILLAR(builder(Blocks.PURPUR_PILLAR).modelType(ModelType.LOG).pickaxe()),
 
     MOSS_BLOCK(builder(Blocks.MOSS_BLOCK).hoe()),
     PALE_MOSS_BLOCK(builder(Blocks.PALE_MOSS_BLOCK).hoe()),
@@ -242,6 +243,8 @@ public enum ModBlocks {
 
     CRACKED_STONE_BRICKS(builder(Blocks.CRACKED_STONE_BRICKS).pickaxe()),
     CHISELED_STONE_BRICKS(builder(Blocks.CHISELED_STONE_BRICKS).pickaxe()),
+    CHISELED_RESIN_BRICKS(builder(Blocks.CHISELED_RESIN_BRICKS).pickaxe()),
+    CHISELED_CINNABAR(builder(Blocks.CHISELED_CINNABAR).pickaxe()),
 
     DRIPSTONE_BLOCK(builder(Blocks.DRIPSTONE_BLOCK).pickaxe()),
     SEA_LANTERN(builder(Blocks.SEA_LANTERN)),
@@ -666,5 +669,4 @@ public enum ModBlocks {
         CUSTOM_SIDE_BOTTOM_TOP
     }
 }
-
 

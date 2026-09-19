@@ -2,6 +2,7 @@ package dev.aero.cnmterraincompat;
 
 import games.twinhead.moreslabsstairsandwalls.api.material.NibaruMaterialProfile;
 import games.twinhead.moreslabsstairsandwalls.api.material.NibaruMaterialProfiles;
+import games.twinhead.moreslabsstairsandwalls.api.material.MaterialAxisSemantics;
 import net.fabricmc.fabric.api.gametest.v1.CustomTestMethodInvoker;
 import net.fabricmc.fabric.api.gametest.v1.GameTest;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -79,6 +80,42 @@ public final class VanillaFamilyCoverageGameTests implements CustomTestMethodInv
                         && profile.nativeSlab().isEmpty()
                         && profile.effectiveSlabSource().orElseThrow() == Blocks.STONE_SLAB,
                 "Stone must retain its registered vanilla slab as its exact profile horizontal source");
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void currentMaterialAdditionsAreCatalogedWithExactAxisContract(GameTestHelper helper) {
+        for (Block source : List.of(Blocks.CHISELED_RESIN_BRICKS, Blocks.CHISELED_CINNABAR)) {
+            NibaruMaterialProfile profile = NibaruMaterialProfiles.fromBlock(source).orElseThrow();
+            helper.assertTrue(profile.canonicalParent() == source
+                            && profile.nativeSlab().isPresent()
+                            && profile.nativeStair().isPresent()
+                            && profile.nativeWall().isPresent()
+                            && !MaterialAxisSemantics.applies(profile)
+                            && !profile.nativeSlab().orElseThrow().defaultBlockState()
+                                    .hasProperty(MaterialAxisSemantics.AXIS)
+                            && !profile.nativeStair().orElseThrow().defaultBlockState()
+                                    .hasProperty(MaterialAxisSemantics.AXIS)
+                            && !profile.nativeWall().orElseThrow().defaultBlockState()
+                                    .hasProperty(MaterialAxisSemantics.AXIS),
+                    "Chiseled current-material family did not retain normal full geometry: "
+                            + BuiltInRegistries.BLOCK.getKey(source));
+            assertBgeTrio(helper, profile);
+        }
+
+        NibaruMaterialProfile purpur = NibaruMaterialProfiles.fromBlock(Blocks.PURPUR_PILLAR).orElseThrow();
+        helper.assertTrue(purpur.canonicalParent() == Blocks.PURPUR_PILLAR
+                        && purpur.orientationPolicy() == NibaruMaterialProfile.OrientationPolicy.AXIS_ALIGNED
+                        && MaterialAxisSemantics.applies(purpur)
+                        && purpur.nativeSlab().orElseThrow().defaultBlockState()
+                                .hasProperty(MaterialAxisSemantics.AXIS)
+                        && purpur.nativeStair().orElseThrow().defaultBlockState()
+                                .hasProperty(MaterialAxisSemantics.AXIS)
+                        && purpur.nativeWall().orElseThrow() instanceof net.minecraft.world.level.block.WallBlock
+                        && !purpur.nativeWall().orElseThrow().defaultBlockState()
+                                .hasProperty(MaterialAxisSemantics.AXIS),
+                "Purpur Pillar did not retain exact axis-aware slabs/stairs and a normal wall");
+        assertBgeTrio(helper, purpur);
         helper.succeed();
     }
 

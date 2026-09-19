@@ -26,7 +26,7 @@ import java.util.Map;
 /** Build-time writer for provider-owned native slab/stair material-axis resources. */
 public final class NativeAxisResourceGenerator {
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
-    private static final int EXPECTED_AXIS_FAMILIES = 56;
+    private static final int EXPECTED_AXIS_FAMILIES = 57;
     private static final int EXPECTED_SLAB_SELECTORS = 9;
     private static final int EXPECTED_STAIR_SELECTORS = 120;
 
@@ -51,6 +51,7 @@ public final class NativeAxisResourceGenerator {
         int families = 0;
         int slabs = 0;
         int stairs = 0;
+        int wallInventories = 0;
         int slabSelectors = 0;
         int stairSelectors = 0;
         EnumMap<AxisUvPolicy, Integer> policies = new EnumMap<>(AxisUvPolicy.class);
@@ -81,15 +82,21 @@ public final class NativeAxisResourceGenerator {
             write(providerAssets, family.getId(ModBlocks.BlockType.STAIRS), stair);
             stairs++;
             stairSelectors += stair.selectors().size();
+
+            writeNormalWallInventory(providerAssets, family);
+            wallInventories++;
         }
 
         if (families != EXPECTED_AXIS_FAMILIES || slabs != EXPECTED_AXIS_FAMILIES
-                || stairs != EXPECTED_AXIS_FAMILIES || policies.size() != AxisUvPolicy.values().length) {
+                || stairs != EXPECTED_AXIS_FAMILIES || wallInventories != EXPECTED_AXIS_FAMILIES
+                || policies.size() != AxisUvPolicy.values().length) {
             throw new IllegalStateException("Native-axis inventory drift: families=" + families
-                    + " slabs=" + slabs + " stairs=" + stairs + " policies=" + policies);
+                    + " slabs=" + slabs + " stairs=" + stairs + " wallInventories=" + wallInventories
+                    + " policies=" + policies);
         }
         System.out.println("NATIVE_AXIS_STATIC_RESOURCES families=" + families
                 + " slabs=" + slabs + " stairs=" + stairs
+                + " wallInventories=" + wallInventories
                 + " slabSelectors=" + slabSelectors + " stairSelectors=" + stairSelectors
                 + " policies=" + policies);
     }
@@ -150,6 +157,23 @@ public final class NativeAxisResourceGenerator {
             requireContained(providerAssets, target);
             writeJson(target, model.getValue());
         }
+    }
+
+    /** Preserves the normal WallBlock item silhouette while placed column walls retain all faces. */
+    private static void writeNormalWallInventory(Path providerAssets, ModBlocks family) throws IOException {
+        if (!family.hasBlock(ModBlocks.BlockType.WALL)) {
+            throw new IllegalStateException("Applicable canonical parent lacks native wall: " + family);
+        }
+        Identifier wall = family.getId(ModBlocks.BlockType.WALL);
+        JsonObject model = new JsonObject();
+        model.addProperty("parent", "minecraft:block/wall_inventory");
+        JsonObject textures = new JsonObject();
+        textures.addProperty("wall", NativeAxisModelContract.semanticTextures(family).get("side"));
+        model.add("textures", textures);
+        Path target = providerAssets.resolve("models").resolve("block")
+                .resolve(wall.getPath() + "_inventory.json").normalize();
+        requireContained(providerAssets, target);
+        writeJson(target, model);
     }
 
     private static void writeJson(Path target, JsonObject json) throws IOException {

@@ -174,8 +174,10 @@ public final class ExternalMaterialGeneratedResources {
                     "more_slabs_stairs_and_walls:block/template_column_wall_side", profile));
             write(modelResource(id, "_side_tall"), columnWallTemplate(
                     "more_slabs_stairs_and_walls:block/template_column_wall_side_tall", profile));
-            write(modelResource(id, "_inventory"), columnWallTemplate(
-                    "more_slabs_stairs_and_walls:block/template_column_wall_inventory", profile));
+            // An axis belongs to the material faces, never the WallBlock topology.  Keep the
+            // placed post/arms on their column route, but use vanilla's ordinary wall inventory
+            // silhouette so an item preview cannot look like an axis-bearing cross wall.
+            write(modelResource(id, "_inventory"), wallTemplate("minecraft:block/wall_inventory", profile));
         } else if (profile.visualProfile()
                 == games.twinhead.moreslabsstairsandwalls.api.material.VisualProfile.LEAVES_CUTOUT_TINTED) {
             write(modelResource(id, "_post"), leafWallTemplate(

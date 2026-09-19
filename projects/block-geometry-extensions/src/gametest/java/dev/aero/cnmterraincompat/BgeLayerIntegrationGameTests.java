@@ -186,7 +186,7 @@ public final class BgeLayerIntegrationGameTests implements CustomTestMethodInvok
     @GameTest(maxTicks = 40)
     public void automaticPopulationIsExactNonrecursiveAndOrdered(GameTestHelper helper) {
         var profiles = NibaruMaterialProfiles.all();
-        int expectedProfiles = 311 + (int) NibaruMaterialProfiles.eligibleVanillaFamilies().stream()
+        int expectedProfiles = 314 + (int) NibaruMaterialProfiles.eligibleVanillaFamilies().stream()
                 .filter(family -> NibaruMaterialProfiles.fromBlock(family.parent()).orElseThrow().family() == null)
                 .count() + (int) ExternalMaterialFamilies.all().stream()
                 .filter(binding -> binding.profile().family() == null
