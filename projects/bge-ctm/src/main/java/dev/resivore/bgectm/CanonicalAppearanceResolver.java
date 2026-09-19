@@ -17,7 +17,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
-/** BGE C75 owns canonical material identity, state projection, and rendered surface geometry. */
+/** BGE C78 owns canonical material identity, state projection, and rendered surface geometry. */
 public final class CanonicalAppearanceResolver {
     private static final Set<VisualProfile> ELIGIBLE_VISUALS = Set.copyOf(EnumSet.of(
             VisualProfile.UNIFORM, VisualProfile.TOP_SIDE_BOTTOM, VisualProfile.PILLAR,

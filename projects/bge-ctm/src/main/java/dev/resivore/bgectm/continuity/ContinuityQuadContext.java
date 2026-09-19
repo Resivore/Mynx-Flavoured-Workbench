@@ -2,6 +2,9 @@ package dev.resivore.bgectm.continuity;
 
 import dev.resivore.bgectm.SurfaceContactResolver.QuadSurface;
 import net.fabricmc.fabric.api.client.renderer.v1.mesh.MutableQuadView;
+import net.fabricmc.fabric.api.util.TriState;
+import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.state.BlockState;
@@ -109,6 +112,7 @@ public final class ContinuityQuadContext {
         @Nullable private final BlockPos receiverPos;
         private final Map<BlockPos, List<QuadSurface>> overlayProbes = new LinkedHashMap<>();
         private final List<OverlaySpriteContribution> overlaySprites = new ArrayList<>();
+        private final List<PendingOverlay> pendingOverlays = new ArrayList<>();
         @Nullable private Direction[] overlayDirections;
         @Nullable private int[] pendingSpriteIndices;
         private int emittedOverlaySprites;
@@ -207,6 +211,16 @@ public final class ContinuityQuadContext {
             return List.copyOf(overlaySprites);
         }
 
+        /** Delays managed overlay output until receiver and overlays share one tessellation. */
+        public void addPendingOverlay(Direction face, TextureAtlasSprite sprite, int tint,
+                ChunkSectionLayer layer, TriState ao, List<QuadSurface> surfaces, String reason) {
+            pendingOverlays.add(new PendingOverlay(face, sprite, tint, layer, ao, surfaces, reason));
+        }
+
+        public List<PendingOverlay> pendingOverlays() {
+            return List.copyOf(pendingOverlays);
+        }
+
         private void addOverlaySprite(int spriteIndex) {
             overlaySprites.add(new OverlaySpriteContribution(spriteIndex,
                     footprintsForSprite(spriteIndex)));
@@ -262,6 +276,22 @@ public final class ContinuityQuadContext {
                 throw new IllegalArgumentException("Invalid Standard Overlay sprite index");
             }
             footprints = List.copyOf(Objects.requireNonNull(footprints, "footprints"));
+        }
+    }
+
+    /** Native Continuity render attributes plus the authoritative regions for one logical sprite. */
+    public record PendingOverlay(Direction face, TextureAtlasSprite sprite, int tint,
+            ChunkSectionLayer layer, TriState ao, List<QuadSurface> surfaces, String reason) {
+        public PendingOverlay {
+            Objects.requireNonNull(face, "face");
+            Objects.requireNonNull(sprite, "sprite");
+            Objects.requireNonNull(layer, "layer");
+            Objects.requireNonNull(ao, "ao");
+            surfaces = List.copyOf(Objects.requireNonNull(surfaces, "surfaces"));
+            if (surfaces.isEmpty() || surfaces.stream().anyMatch(surface -> surface.normal() != face)) {
+                throw new IllegalArgumentException("Pending overlay must have matching surfaces");
+            }
+            Objects.requireNonNull(reason, "reason");
         }
     }
 

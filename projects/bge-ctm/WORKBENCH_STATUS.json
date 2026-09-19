@@ -24,7 +24,7 @@
       "Consume BGE's typed canonical binding, state projection, canonical material-face semantics, and exposed surface-patch collection as the sole material and geometry authority rather than inferring families or topology from registry identifiers or Java carrier classes.",
       "Project only explicitly equivalent canonical material state, including world-contextual vanilla snowy semantics for every canonical parent that actually carries SNOWY, while keeping geometry form, orientation, waterlogging, and unknown properties out of the canonical appearance.",
       "Treat Continuity and the active resource pack as the sole material-rule authority by evaluating their connection predicates on BGE-projected canonical material states, then require BGE's physical patch model to prove corresponding face semantics, compatible contact planes, rendered receiver-quad bounds, and real in-plane overlap/contact.",
-      "Support full blocks, horizontal slabs, Layers, Vertical Slabs, Farmland Slab, Steps, Corners, and Quarter Columns whenever their BGE binding supplies valid surface data; leave contextual Stairs/Walls, unknown surface contracts, risky visual profiles, and unrelated Continuity behavior fail-closed or unchanged."
+      "Every canonically bound BGE geometry whose authoritative BGE surface model is supported participates in the same generic Continuity surface semantics, including canonical/full blocks, horizontal slabs, Stairs, Walls, Vertical Slabs, Steps, Layers, Corners, Quarter Columns, and special canonical-bound Farmland Slab where applicable; unknown surface contracts, risky visual profiles, and unrelated Continuity behavior remain fail-closed or unchanged."
     ],
     "boundaries": {
       "owned_paths": [
@@ -42,14 +42,14 @@
       {
         "type": "PROJECT",
         "identifier": "4b2342fc-7bdf-5ba6-9f37-d551109d214c",
-        "requirement": ">=4.2.19-bge.canary75.surface-semantics+26.2",
-        "reason": "BGE C75 owns the authoritative canonical binding, state projection, canonical material-face semantics, exposed patch geometry and typed terrain-height relation consumed generically by Canary 11; exact C75 is the controlled validation baseline."
+        "requirement": ">=4.2.22-bge.canary78.stair-wall-surface-authority+26.2",
+        "reason": "BGE C78 owns the authoritative canonical binding, state projection, canonical material-face semantics, exposed patch geometry including all 40 resolved Stair states and all 161 nonempty Wall states, and typed terrain-height relation consumed generically by Canary 12; exact C78 is the controlled validation baseline."
       },
       {
         "type": "MOD",
         "identifier": "continuity",
         "requirement": "=3.0.1+26.2",
-        "reason": "Canary 11 decorates the exact Continuity 3.0.1+26.2 connection-predicate, processor-slice, quad-context, per-probe Standard Overlay contact, SpriteCollector contribution assembly, and processQuadInner emission seams; required mixins and the controlled input hash fail closed on an incompatible implementation."
+        "reason": "Canary 12 decorates the exact Continuity 3.0.1+26.2 connection-predicate, processor-slice, quad-context, per-probe Standard Overlay contact, SpriteCollector contribution assembly, processQuadInner emission, and final buffered output seams; required mixins and the controlled input hash fail closed on an incompatible implementation."
       },
       {
         "type": "MOD",
@@ -78,16 +78,16 @@
     ]
   },
   "state": {
-    "milestone": "Canary 11 preserves Standard Overlay provenance from each canonically positive, physically contacting side or diagonal corner probe through Continuity 3.0.1's exact SpriteCollector assembly to the aligned final sprite emission. Each non-null logical sprite receives only the BGE receiver-local footprints of the probes represented by its Continuity sprite index; combined sprites union only their represented sides, corner sprites retain only their diagonal probe, duplicate regions within one logical contribution are removed, and missing managed provenance fails closed. C10's aggregate receiver-quad collection is no longer used for emission. C10 owner evidence is limited to incorrect short-source clipping in a tested Layer-to-neighboring-terrain-face case plus visible coplanar fighting/artifacting consistent with multiple overlay quads over the same region; no aggregate C10 PASS/FAIL or geometry-model failure is inferred. C11 has no Minecraft client visual evidence.",
+    "milestone": "Canary 12 updates the controlled provider to exact BGE C78 and consumes every supported canonically bound surface model through one geometry-agnostic resolver, including all 40 resolved Stair states and all 161 nonempty Wall states without Stair/Wall connection branches. C11 per-logical-sprite side/corner provenance, canonical material-face semantics, exact contact planes, typed terrain inset presentation, and receiver-local clipping remain intact. Exact Continuity 3.0.1 source and bytecode show that native Standard Overlay adds no RenderMaterial, decal, blend, depth-bias, or polygon-offset state beyond square geometry, sprite UV, tint, block atlas, animation, chunk layer, item render type, ambient occlusion and emission; C11 already preserved those non-geometric attributes. The remaining render-path difference was differently tessellated coplanar geometry: native full-face overlay and receiver share identical triangles, whereas a clipped projected overlay covered part of one larger receiver triangle pair. C12 delays managed overlay emission, partitions each retained receiver and every represented logical overlay at the same authoritative edges, and emits exact shared cells without epsilon offsets; nominal terrain overlays share their own unchanged presentation-plane grid. Owner evidence is recorded as six individual observations in TESTING.md and CODEX_LOG.md without an aggregate result. C12 has no Minecraft client visual evidence, so shader-off and Complementary depth stability remain owner-runtime checks.",
     "releases": {
       "current": {
-        "version": "0.11.0-canary11",
+        "version": "0.12.0-canary12",
         "artifact": {
-          "filename": "bge-ctm-0.11.0-canary11.jar",
-          "sha256": "e6de6b74f8d7c6c865521c0470c006a125227998a78dc4cda866ebccc0164835"
+          "filename": "bge-ctm-0.12.0-canary12.jar",
+          "sha256": "a2b44e09dd333e8bb6cca0ded9501878e37dafaf9c1557a28644c58c0acd3b75"
         },
-        "built_at": "2026-09-19T00:26:46.5660432Z",
-        "source_commit": "50a912e72af457f94cf7ab4034010d8c33d50315",
+        "built_at": "2026-09-19T04:28:12.4920702Z",
+        "source_commit": "8f059adcd967696c2b2b58b3ac6c09acd6afa974",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": [
@@ -98,7 +98,7 @@
               "predicate": "~26.2",
               "reason": "The appearance bridge is compiled against the Minecraft 26.2 block-state and Fabric appearance method descriptors and must remain on the controlled target release.",
               "regression_evidence": [
-                "Canary 11 cleanly compiles and its 21/21 focused headless GameTests plus 34/34 unit tests execute against Minecraft 26.2 and Fabric API 0.156.0+26.2 with exact BGE C75."
+                "Canary 12 cleanly compiles and its 22/22 focused headless GameTests plus 40/40 unit tests execute against Minecraft 26.2 and Fabric API 0.156.0+26.2 with exact BGE C78."
               ]
             },
             {
@@ -106,14 +106,14 @@
               "relationship": "depends",
               "dependency_id": "continuity",
               "predicate": "=3.0.1+26.2",
-              "reason": "Canary 11 injects exact Continuity 3.0.1+26.2 canonical connection-predicate, processor-slice, quad-context, StandardOverlayQuadProcessor unit-square/source-full-collision/final-contact, side/corner probe retention, SpriteCollector add assembly, and processQuadInner QuadUtil.emitOverlayQuad seams; required mixins and the controlled input hash fail closed rather than guessing across an incompatible implementation.",
+              "reason": "Canary 12 injects exact Continuity 3.0.1+26.2 canonical connection-predicate, processor-slice, quad-context, StandardOverlayQuadProcessor unit-square/source-full-collision/final-contact, side/corner probe retention, SpriteCollector add assembly, processQuadInner QuadUtil.emitOverlayQuad, and final ProcessingContextImpl output seams; required mixins and the controlled input hash fail closed rather than guessing across an incompatible implementation.",
               "regression_evidence": [
-                "The exact Continuity 3.0.1+26.2 input is SHA-256 controlled; its source and bytecode confirm side and corner appliesOverlay probes, applications-mask selection, helper/direct SpriteCollector.add assembly, and the processQuadInner sprite loop, and every decorated seam is verified as a required client mixin target."
+                "The exact Continuity 3.0.1+26.2 input is SHA-256 controlled; source and bytecode confirm side/corner probe selection, SpriteCollector assembly, the processQuadInner sprite loop, QuadUtil's complete non-geometric overlay attribute set with no hidden material/depth seam, and final buffered output; every decorated seam is verified as a required client mixin target."
               ]
             }
           ]
         },
-        "summary": "Carries exact side/corner probe footprints through Continuity's logical sprite collector so each overlay emits only on its own BGE-derived region."
+        "summary": "Consumes BGE C78 Stairs, Walls, and the complete supported geometry catalog through one surface contract and gives clipped Standard Overlays receiver-matched tessellation without offsets."
       },
       "accepted": null,
       "rollback": null,
@@ -127,10 +127,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 13,
-    "activity_at": "2026-09-19T00:26:46.5660432Z",
-    "updated_at": "2026-09-19T00:26:46.5660432Z",
-    "last_codex_at": "2026-09-19T00:26:46.5660432Z",
-    "source_commit": "50a912e72af457f94cf7ab4034010d8c33d50315"
+    "revision": 14,
+    "activity_at": "2026-09-19T04:28:12.4920702Z",
+    "updated_at": "2026-09-19T04:28:12.4920702Z",
+    "last_codex_at": "2026-09-19T04:28:12.4920702Z",
+    "source_commit": "8f059adcd967696c2b2b58b3ac6c09acd6afa974"
   }
 }
