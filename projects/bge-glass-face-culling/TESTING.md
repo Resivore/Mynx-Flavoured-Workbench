@@ -1,10 +1,18 @@
-# BGE Glass Face Culling — Canary 1 runtime verification
+# BGE Glass Face Culling — Canary 2 runtime verification
 
 Use the exact current Canary artifact recorded in `WORKBENCH_STATUS.json` with BGE C78
 (`BGE C78.jar`, SHA-256
 `ed2f5592b699532174bc63672f69c3574f01eb752175126bbc702e9cc86a07f0`). Keep the camera close
 enough to inspect the shared plane from several angles. Do not infer a PASS from a clean launch or
 from the controlled build/GameTests.
+
+## First gate — Canary 1 crash regression
+
+Before the visual matrix, enable C2 in the same relevant client stack and launch/open the world that
+previously crashed with C1. Allow nearby chunks to build and rebuild their meshes. Confirm that the
+reported null-`Direction` `GlassCullingBlockStateModel` chunk-meshing crash does not recur, then
+continue with the visual matrix below. This is a required C2 runtime observation; do not report it
+as passed until it has actually been observed.
 
 For every case, check all four invariants:
 
@@ -44,7 +52,7 @@ internal Stair or Wall member face appears.
 
 Enable the normal supported client stack, including Continuity when it is normally active. Repeat
 rows 1, 2, 6, 9, 11, 13, and 14. Confirm that connected or otherwise transformed face appearance is
-unchanged on every surviving fragment: Canary 1 owns only geometry subtraction and must not change
+unchanged on every surviving fragment: Canary 2 owns only geometry subtraction and must not change
 which CTM rule connects, choose a sprite, or create an overlay.
 
 ## Complementary enabled
