@@ -1,36 +1,49 @@
-# BGE C80 CNM two-phase binding manual verification
+# BGE C81 resolved CNM family completion manual verification
 
-Current candidate: `BGE C80.jar`
+Current candidate: `BGE C81.jar`
 
-- Embedded version: `4.2.24-bge.canary80.cnm-two-phase+26.2`
-- SHA-256: `5bc7c23a3724a1e20bc2142459f33d2a45a19295c27d40197c5fc48d6e43b0fc`
-- Source checkpoint: `3c3be0ea28d3de809f1414dd7e8b6eab73930ee2`
+- Embedded version: `4.2.25-bge.canary81.cnm-resolved-family+26.2`
+- SHA-256: `a85246a953fb2da294df7f10f021061012b725df38bfb304c8c5b872655a7f1d`
+- Source checkpoint: `66dc6fdc192bdce17d9a1d934c1c837a6d58966b`
 - Lifecycle/evidence: `ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED`
-- Immediate predecessor: exact C79 `BGE C79.jar`, SHA-256 `7e3265c8746547465ede1a48b31c3db06370de84331b8ff9e35a2ce450650a91`.
-- Rollback: exact C72 `cnm-nibaru-integration-4.2.16-bge.canary72.farmland-slab-low-water+26.2.jar`, SHA-256 `f9f892fccbbee85f75f03c9b24752bbeab76f4fa60efd867414969b735ae85a3`. Its owner-reported aggregate runtime `PASS` applies only to C72 and does not transfer to C80.
+- Immediate predecessor: exact C80 `BGE C80.jar`, SHA-256 `5bc7c23a3724a1e20bc2142459f33d2a45a19295c27d40197c5fc48d6e43b0fc`.
+- Rollback: exact C72 `cnm-nibaru-integration-4.2.16-bge.canary72.farmland-slab-low-water+26.2.jar`, SHA-256 `f9f892fccbbee85f75f03c9b24752bbeab76f4fa60efd867414969b735ae85a3`.
 - Accepted release: exact C70 `cnm-nibaru-integration-4.2.14-bge.canary70.stone-native-slab+26.2.jar`, SHA-256 `d304552e29e76c4165675415215439ac2d73b5a6ebc4abc9787f0fa1124cf266`.
 
-This checklist is lifecycle-neutral. Record only behavior actually observed for the exact C80 bytes above. It does not authorize inspecting, creating, selecting, or modifying a protected or retired Minecraft profile.
+This checklist is lifecycle-neutral. Record only behavior actually observed for the exact C81 bytes above. It does not authorize inspecting, creating, selecting, or modifying any protected or retired Minecraft profile.
 
-## Native C80 resource-closure regressions
+## Verified C80 owner runtime evidence — does not transfer to C81
 
-1. In a permitted, user-selected runtime environment, obtain `minecraft:chiseled_resin_bricks` and `minecraft:chiseled_cinnabar` plus their BGE horizontal Slab, Stair, Wall, Vertical Slab, Step, Layer, Corner, and Quarter Column forms. Confirm source texture, placement, collision, drops, and normal family switching behavior match the established ordinary-material contract.
-2. Obtain `minecraft:purpur_pillar` and its BGE forms. Confirm the source, horizontal Slab, Stair, Vertical Slab, Step, Layer, Corner, and Quarter Column retain their valid axis-aware placement and rendering behavior.
-3. Place Purpur Pillar Walls in several post/arm arrangements. They must be ordinary WallBlocks with no `AXIS` property. Their placed post, side, and tall-side faces must preserve the intended side/end column presentation; their inventory item must use an ordinary wall silhouette.
+The retained C80 SHA-256 above was verified before these supplied observations were recorded:
 
-## C80 CNM two-phase behavior
+- PASS: Chiseled Resin Bricks renders/functions as intended.
+- PASS: Chiseled Cinnabar renders/functions as intended.
+- PASS: Purpur Pillar exposes its complete geometry registration.
+- FAIL: Purpur Pillar derived geometry has an incorrect/broken side texture.
+- FAIL: existing CNM families such as Moss Block omit Corner, Quarter Column, and Layer and expose only the six preexisting roles.
 
-1. With stock Clutter No More 2.0.7+26.2 present, exercise ordinary CNM Horizontal Slab/Stair sources that BGE already supports. Confirm their existing Vertical Slab, Step, Layer, Corner, and Quarter Column roles still switch as one family with no duplicate role or catalog entry.
-2. If a datapack removes or blacklists a CNM mapping for an otherwise CNM-admitted source, verify BGE does not present an additional BGE-owned candidate role through CNM family switching. Restore the datapack before checking normal existing provider families.
-3. Verify Macaw's Paths, Mynx Trees, Ribbits, and Building But Better retain their established BGE roles and ownership. C80 must not infer a family from a registry name, model JSON, texture path, pillar class, or provider identity.
-4. Verify BGE-generated Layer, Corner, and Quarter Column blocks do not cause an additional CNM family admission or duplicate switching role.
+These are individual C80 observations, not an aggregate runtime result or acceptance. C81 has no Minecraft runtime observation.
+
+## C81 real CNM family completion
+
+1. With stock Clutter No More 2.0.7+26.2, open the actual CNM family for `minecraft:moss_block`. It must contain exactly one each of Moss Block, Slab, Stairs, Wall, Vertical Slab, Step, Corner, Quarter Column, and Layer; no duplicate or separate BGE family may appear.
+2. Recheck an ordinary stone/brick family, one log/pillar family, and one optional-provider family. Their actual CNM switching menu must use one resolved component with all applicable roles once.
+3. Exercise a newly admitted/untyped CNM-compatible material if one is supplied by the installed provider set. It may not infer a parent from an ID, model, texture, or provider. Before CNM resolves it, temporary BGE roles must remain inaccessible; after CNM selects a canonical component, only the canonical roles may remain visible and drops must resolve to that material.
+4. If a datapack removes or blacklists a CNM mapping for an otherwise admitted source, confirm no BGE candidate is exposed through family switching. Restore the datapack before ordinary checks.
+5. Verify Layer, Corner, and Quarter Column blocks never recursively seed another CNM family.
+
+## Purpur Pillar material-face regression
+
+1. Obtain Purpur Pillar and every registered form: source, Slab, Stair, Wall, Vertical Slab, Step, Corner, Quarter Column, and Layer.
+2. Across X/Y/Z placement, confirm world-facing material sides use the canonical `purpur_pillar_side` texture and end/cap faces use `purpur_pillar_top`; neither may substitute for the other or leave a missing texture.
+3. Compare with Quartz Pillar and an ordinary log. Axis rotation must preserve each material's own side/end distinction. Purpur Wall remains an ordinary no-`AXIS` WallBlock with its normal wall inventory silhouette.
 
 ## Regression and evidence discipline
 
-1. Recheck representative C78 Stair and Wall forms: ordinary, axis-material, grass-like, glazed-patterned, transparent/authored, and optional-provider forms. Rotation, collision, drops, canonical material identity, and established BGE surface behavior must remain intact.
-2. Recheck C71/C72 Farmland Slab tilling, moisture, and lower-water behavior separately if that work is in scope; C80 must not be credited with historic runtime evidence.
-3. If an issue is observed, record the exact candidate SHA-256, source/mod versions, relevant data-pack configuration, reproducible placement or switching sequence, observed result, and expected result. Do not infer a lifecycle transition, acceptance, or runtime pass from controlled checks.
+1. Recheck Chiseled Resin Bricks, Chiseled Cinnabar, existing Macaw's Paths, Mynx Trees, Ribbits, and Building But Better families for retained placement, collision, drops, ownership, and switching behavior.
+2. Recheck representative C78 Stair and Wall forms and C71/C72 Farmland Slab behavior separately when those scopes are relevant.
+3. For any observation, record the exact candidate SHA-256, source/mod versions, datapack configuration, reproducible sequence, observed result, and expected result. Do not infer acceptance or a C81 aggregate runtime pass from controlled validation.
 
 ## Retention and rollback
 
-Retain `BGE C80.jar` by its exact SHA-256 before runtime work. C79 is the immediate predecessor for comparison; C72 remains the designated rollback provenance and C70 remains the accepted release. Do not overwrite any retained artifact.
+Retain `BGE C81.jar` by its exact SHA-256 before runtime work. Keep C80 as the immediate predecessor, C72 as rollback provenance, and C70 as the accepted release; do not overwrite a retained artifact.

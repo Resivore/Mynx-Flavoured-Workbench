@@ -113,6 +113,7 @@ function Test-AllowedChangedEntry([string]$Name) {
             $Name -eq 'games/twinhead/moreslabsstairsandwalls/tools/NativeAxisResourceGenerator.class' -or
             $Name -eq 'dev/aero/cnmterraincompat/mixin/ClutterNoMoreVariantScanMixin.class' -or
             $Name -match '^dev/aero/cnmterraincompat/client/ExternalMaterialGeneratedResources(?:\$.*)?\.class$' -or
+            $Name -match '^assets/more_slabs_stairs_and_walls/models/block/purpur_pillar_(?:slab|stairs)(?:_.*)?\.json$' -or
             $Name -match '^assets/more_slabs_stairs_and_walls/models/block/[^/]+_wall_inventory\.json$'
 }
 
@@ -301,7 +302,6 @@ try {
         'dev/aero/cnmterraincompat/BgeMaterialBindings.class',
         'games/twinhead/moreslabsstairsandwalls/api/material/NibaruMaterialProfiles.class',
         'games/twinhead/moreslabsstairsandwalls/api/material/NativeAxisModelContract.class',
-        'games/twinhead/moreslabsstairsandwalls/tools/NativeAxisResourceGenerator.class',
         'assets/more_slabs_stairs_and_walls/models/block/purpur_pillar_wall_inventory.json'
     )
     Require ($predecessorMissing.Count -eq 0) `
