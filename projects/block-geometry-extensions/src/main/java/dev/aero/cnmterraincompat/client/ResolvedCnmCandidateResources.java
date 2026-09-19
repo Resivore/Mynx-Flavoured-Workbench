@@ -11,11 +11,9 @@ import dev.aero.cnmterraincompat.CnmShapeMapCandidateBridge;
 import dev.aero.cnmterraincompat.CnmTerrainCompat;
 import dev.aero.cnmterraincompat.LayerGeneratedData;
 import dev.aero.cnmterraincompat.QuarterGeometryGeneratedData;
-import dev.tazer.clutternomore.ClutterNoMore;
 import dev.tazer.clutternomore.client.assets.AssetGenerator;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.Identifier;
-import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 
@@ -269,7 +267,7 @@ final class ResolvedCnmCandidateResources {
     }
 
     private static void write(Identifier id, JsonElement json) {
-        ClutterNoMore.RESOURCES.addJson(PackType.CLIENT_RESOURCES, id, json);
+        BgeGeneratedResourceWriter.write(id, json);
     }
 
     record GenerationSummary(int familyCount, int modelCount) {}

@@ -59,6 +59,12 @@ final class BgeLayerSpecializedBlocks {
 
     static BgeLayerBlock create(NibaruMaterialProfile profile, BlockBehaviour.Properties properties) {
         var capabilities = profile.capabilities();
+        // External path-like materials can require vanilla's lowered 15/16 surface geometry
+        // without claiming vanilla Dirt Path's unrelated obstruction/reversion lifecycle.
+        if (!capabilities.contains(BehaviorCapability.PATH_CONVERSION)
+                && profile.surfaceSamplingPolicy()
+                == NibaruMaterialProfile.SurfaceSamplingPolicy.PATH_LOWERED_SURFACE)
+            return new LoweredSurface(profile, properties);
         if (capabilities.contains(BehaviorCapability.LEAF_LIFECYCLE))
             return new Leaves(profile, properties.randomTicks());
         if (capabilities.contains(BehaviorCapability.PATH_CONVERSION))
@@ -193,6 +199,24 @@ final class BgeLayerSpecializedBlocks {
 
         @Override public boolean pathSurfaceRequiresClearAbove(BlockState state) {
             return state.getValue(FACING) != Direction.UP || state.getValue(LAYERS) == 4;
+        }
+    }
+
+    /** Path-height geometry only; source-specific lifecycle remains opt-in via PATH_CONVERSION. */
+    private static final class LoweredSurface extends BgeLayerBlock {
+        LoweredSurface(NibaruMaterialProfile profile, Properties properties) { super(profile, properties); }
+
+        @Override protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos,
+                CollisionContext context) {
+            int depth = state.getValue(LAYERS) * 4;
+            return switch (state.getValue(FACING)) {
+                case UP -> Block.box(0, 0, 0, 16, Math.min(depth, 15), 16);
+                case DOWN -> Block.box(0, 16 - depth, 0, 16, 15, 16);
+                case NORTH -> Block.box(0, 0, 16 - depth, 16, 15, 16);
+                case SOUTH -> Block.box(0, 0, 0, 16, 15, depth);
+                case EAST -> Block.box(0, 0, 0, depth, 15, 16);
+                case WEST -> Block.box(16 - depth, 0, 0, 16, 15, 16);
+            };
         }
     }
 

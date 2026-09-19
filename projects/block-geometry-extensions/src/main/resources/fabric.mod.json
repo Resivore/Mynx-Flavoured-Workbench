@@ -3,8 +3,8 @@
   "id": "cnm_terrain_slabs_compat",
   "version": "${version}",
   "provides": ["more_slabs_stairs_and_walls"],
-  "name": "Block Geometry Extensions Canary 82 — CNM Generic Resource Closure",
-  "description": "Closes canonical data and runtime-resource generation for profile-free CNM-resolved BGE tail families.",
+  "name": "Block Geometry Extensions Canary 83 — Runtime Resource Closure & Enderscape",
+  "description": "Mirrors BGE-owned generated models into CNM's runtime pack and adds exact Enderscape geometry families.",
   "authors": ["Mynx Workbench", "Nibaru"],
   "environment": "*",
   "entrypoints": {

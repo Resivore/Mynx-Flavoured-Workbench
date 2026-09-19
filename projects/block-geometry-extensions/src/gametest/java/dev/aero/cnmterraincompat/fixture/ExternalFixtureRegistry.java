@@ -98,6 +98,25 @@ public final class ExternalFixtureRegistry {
         }
     }
 
+    /** Exact Enderscape 3.0.2 source IDs used by the optional-provider integration fixture. */
+    public static void registerEnderscape() {
+        for (String path : new String[] {"veiled_log", "veiled_wood", "celestial_stem",
+                "celestial_hyphae", "murublight_stem", "murublight_hyphae", "shadoline_pillar",
+                "dusk_purpur_pillar"}) {
+            register("enderscape", path, Blocks.OAK_LOG, true);
+        }
+        for (String path : new String[] {"chiseled_end_stone", "cracked_end_stone_bricks",
+                "chiseled_purpur", "nebulite_block", "chiseled_shadoline", "chiseled_veradite",
+                "chiseled_mirestone", "cracked_mirestone_bricks", "chiseled_kurodite",
+                "alluring_magnia", "repulsive_magnia", "chiseled_dusk_purpur",
+                "blistered_magnia", "void_shale", "celestial_cap", "murublight_cap", "end_lamp",
+                "blinklamp", "drift_jelly_block", "veiled_end_stone", "celestial_overgrowth",
+                "corrupt_overgrowth", "celestial_path", "corrupt_path"}) {
+            register("enderscape", path, Blocks.END_STONE, false);
+        }
+        register("enderscape", "veiled_leaves", Blocks.OAK_LEAVES, false);
+    }
+
     private static Block registerBbbSlab(String material, Block beam) {
         Identifier id = Identifier.fromNamespaceAndPath("bbb", material + "_beam_slab");
         return register("bbb", id.getPath(), new SlabBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_PLANKS)

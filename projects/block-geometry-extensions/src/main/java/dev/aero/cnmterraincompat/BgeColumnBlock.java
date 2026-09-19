@@ -98,7 +98,8 @@ public class BgeColumnBlock extends BgeProfiledGeometryBlock
     @Override
     protected VoxelShape getShape(BlockState state, net.minecraft.world.level.BlockGetter level,
             BlockPos pos, CollisionContext context) {
-        return has(BehaviorCapability.PATH_CONVERSION)
+        return has(BehaviorCapability.PATH_CONVERSION) || materialProfile().surfaceSamplingPolicy()
+                == NibaruMaterialProfile.SurfaceSamplingPolicy.PATH_LOWERED_SURFACE
                 ? occupancyShape(state.getValue(OCCUPANCY), 0, 15, 0)
                 : switch (state.getValue(OCCUPANCY)) {
             case NW -> NW;

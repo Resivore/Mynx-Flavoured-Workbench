@@ -8,9 +8,9 @@ import dev.aero.cnmterraincompat.AxisModelContract;
 import dev.aero.cnmterraincompat.BgeGeometryRole;
 import dev.aero.cnmterraincompat.CnmTerrainCompat;
 import dev.aero.cnmterraincompat.ExternalMaterialFamilies;
+import dev.aero.cnmterraincompat.InsetModelContract;
 import dev.aero.cnmterraincompat.LayerGeneratedData;
 import dev.aero.cnmterraincompat.QuarterGeometryGeneratedData;
-import dev.tazer.clutternomore.ClutterNoMore;
 import dev.tazer.clutternomore.client.assets.AssetGenerator;
 import games.twinhead.moreslabsstairsandwalls.api.material.NativeAxisModelContract;
 import games.twinhead.moreslabsstairsandwalls.api.material.NibaruMaterialProfile;
@@ -18,10 +18,10 @@ import games.twinhead.moreslabsstairsandwalls.api.material.TintProfile;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
-import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.properties.SlabType;
 
 import java.io.IOException;
 import java.util.LinkedHashMap;
@@ -94,6 +94,9 @@ public final class ExternalMaterialGeneratedResources {
                 stepModels.forEach((modelId, model) -> write(modelResource(modelId), model));
                 write(blockState(step), AxisModelContract.stepBlockState(step, policy));
                 models += stepModels.size();
+            } else if (profile.insetVisualContract().isPresent()) {
+                models += writeInsetVertical(profile, vertical);
+                models += writeInsetStep(profile, step);
             } else {
                 models += writeVertical(profile, vertical);
                 models += writeStep(profile, step);
@@ -247,6 +250,32 @@ public final class ExternalMaterialGeneratedResources {
             write(modelResource(id, "_double"), template("clutternomore:block/templates/step_double" + tint, profile));
         }
         return 3;
+    }
+
+    /** Mirrors CNM's inset Vertical/Step route without assuming CNM owns this namespace. */
+    private static int writeInsetVertical(NibaruMaterialProfile profile, Identifier id) {
+        write(modelResource(id), InsetModelContract.verticalModel(profile, Direction.NORTH, false));
+        for (Direction facing : InsetModelContract.horizontalDirections()) {
+            write(modelResource(id, InsetModelContract.suffix(facing, SlabType.BOTTOM)),
+                    InsetModelContract.verticalModel(profile, facing, false));
+        }
+        write(modelResource(id, "_inset_double"),
+                InsetModelContract.verticalModel(profile, Direction.NORTH, true));
+        write(blockState(id), InsetModelContract.verticalBlockState(id));
+        return 6;
+    }
+
+    private static int writeInsetStep(NibaruMaterialProfile profile, Identifier id) {
+        write(modelResource(id), InsetModelContract.stepModel(profile, Direction.NORTH,
+                SlabType.BOTTOM));
+        for (Direction facing : InsetModelContract.horizontalDirections()) {
+            for (SlabType type : SlabType.values()) {
+                write(modelResource(id, InsetModelContract.suffix(facing, type)),
+                        InsetModelContract.stepModel(profile, facing, type));
+            }
+        }
+        write(blockState(id), InsetModelContract.stepBlockState(id));
+        return 13;
     }
 
     /**
@@ -421,7 +450,7 @@ public final class ExternalMaterialGeneratedResources {
     private static Identifier modelResource(Identifier id) { return modelResource(id, ""); }
     private static Identifier modelResource(Identifier id, String suffix) { return Identifier.fromNamespaceAndPath(id.getNamespace(), "models/block/" + id.getPath() + suffix + ".json"); }
     private static Identifier modelResource(String model) { Identifier id = Identifier.parse(model); return Identifier.fromNamespaceAndPath(id.getNamespace(), "models/" + id.getPath() + ".json"); }
-    private static void write(Identifier id, JsonElement json) { ClutterNoMore.RESOURCES.addJson(PackType.CLIENT_RESOURCES, id, json); }
+    private static void write(Identifier id, JsonElement json) { BgeGeneratedResourceWriter.write(id, json); }
 
     public record GenerationSummary(int familyCount, int blockStateCount, int modelCount, int itemCount) {}
 }

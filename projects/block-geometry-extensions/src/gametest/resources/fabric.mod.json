@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "zz_bge_external_fixtures",
-  "provides": ["mcwpaths", "mynx_trees", "ribbits", "bbb"],
+  "provides": ["mcwpaths", "mynx_trees", "ribbits", "bbb", "enderscape"],
   "version": "1.0.0",
   "name": "CNM Nibaru Runtime Tests",
   "environment": "*",
@@ -10,7 +10,8 @@
       "com.mcwpaths.kikoz.MacawsPaths",
       "dev.resivore.mynxtrees.MynxTrees",
       "com.yungnickyoung.minecraft.ribbits.fabric.RibbitsFabric",
-      "com.starfish_studios.bbb.BuildingButBetter"
+      "com.starfish_studios.bbb.BuildingButBetter",
+      "net.penumbra.enderscape.Enderscape"
     ],
     "fabric-gametest": [
       "dev.aero.cnmterraincompat.gametest.LeafSemanticsGameTests",

@@ -6,11 +6,9 @@ import dev.aero.cnmterraincompat.BgeGeometryRole;
 import dev.aero.cnmterraincompat.CnmTerrainCompat;
 import dev.aero.cnmterraincompat.LayerGeneratedData;
 import dev.aero.cnmterraincompat.QuarterGeometryGeneratedData;
-import dev.tazer.clutternomore.ClutterNoMore;
 import dev.tazer.clutternomore.client.assets.AssetGenerator;
 import games.twinhead.moreslabsstairsandwalls.api.material.NibaruMaterialProfile;
 import net.minecraft.resources.Identifier;
-import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.resources.ResourceManager;
 
 import java.util.List;
@@ -104,7 +102,7 @@ public final class QuarterGeometryGeneratedResources {
     }
 
     private static void writeClient(Identifier id, JsonElement json) {
-        ClutterNoMore.RESOURCES.addJson(PackType.CLIENT_RESOURCES, id, json);
+        BgeGeneratedResourceWriter.write(id, json);
     }
 
     private static Identifier blockStateResource(Identifier shape) {

@@ -17,6 +17,7 @@
     "MynxTreesInitializationMixin",
     "RibbitsInitializationMixin",
     "BbbInitializationMixin",
+    "EnderscapeInitializationMixin",
     "HoeItemAccessor"
   ],
   "client": [

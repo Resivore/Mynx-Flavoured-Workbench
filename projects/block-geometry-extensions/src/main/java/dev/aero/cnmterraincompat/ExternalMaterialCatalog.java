@@ -21,7 +21,7 @@ import java.util.Set;
 
 /** Exact, allowlisted external material sources. Provider lookup happens only at provider-entrypoint RETURN. */
 public final class ExternalMaterialCatalog {
-    public static final String PROFILE_VERSION = "bge-c69-bbb-beam-standard-axis-v1";
+    public static final String PROFILE_VERSION = "bge-c83-enderscape-canonical-catalog-v1";
     private static final List<Spec> SPECS = specs();
     private static final Set<String> REGISTERED_PROVIDERS = new LinkedHashSet<>();
 
@@ -55,7 +55,19 @@ public final class ExternalMaterialCatalog {
                 leaves("mynx_trees:silver_birch_leaves", TintProfile.SOURCE_PROVIDER)));
         result.addAll(pathSpecs());
         result.addAll(bbbBeamSpecs());
+        result.addAll(enderscapeSpecs());
         return List.copyOf(result);
+    }
+
+    /**
+     * One requested display name is backed by {@code nebulite_block}; the provider does not
+     * expose the guessed {@code block_of_nebulite} registry path.  The requested raw-magnia
+     * block has no source entry in the controlled Enderscape 3.0.2+mc26.2 provider bytes, so it
+     * remains a declared narrow exclusion rather than a fabricated BGE source identity.
+     */
+    public static List<RequestedExclusion> requestedEnderscapeExclusions() {
+        return List.of(new RequestedExclusion(Identifier.parse("enderscape:block_of_raw_magnia"),
+                "Enderscape 3.0.2+mc26.2 has no block/item/model registry entry for this requested ID."));
     }
 
     public static int sourceCount(String provider) {
@@ -167,6 +179,94 @@ public final class ExternalMaterialCatalog {
         return List.copyOf(result);
     }
 
+    /** Exact Enderscape allowlist, registered only after its own entrypoint completes. */
+    private static List<Spec> enderscapeSpecs() {
+        List<Spec> result = new ArrayList<>();
+
+        // Logs, woods, stems, hyphae, and pillars retain their own resolved side/end contract.
+        result.add(pillar("enderscape:veiled_log", "enderscape:block/veiled_log",
+                "enderscape:block/veiled_log_top"));
+        result.add(pillar("enderscape:veiled_wood", "enderscape:block/veiled_log",
+                "enderscape:block/veiled_log"));
+        result.add(pillar("enderscape:celestial_stem", "enderscape:block/celestial_stem",
+                "enderscape:block/celestial_stem_top"));
+        result.add(pillar("enderscape:celestial_hyphae", "enderscape:block/celestial_stem",
+                "enderscape:block/celestial_stem"));
+        result.add(pillar("enderscape:murublight_stem", "enderscape:block/murublight_stem",
+                "enderscape:block/murublight_stem_top"));
+        result.add(pillar("enderscape:murublight_hyphae", "enderscape:block/murublight_stem",
+                "enderscape:block/murublight_stem"));
+        result.add(pillar("enderscape:shadoline_pillar", "enderscape:block/shadoline_pillar",
+                "enderscape:block/shadoline_pillar_top"));
+        result.add(pillar("enderscape:dusk_purpur_pillar", "enderscape:block/dusk_purpur_pillar",
+                "enderscape:block/dusk_purpur_pillar_top"));
+
+        for (String path : List.of("chiseled_end_stone", "cracked_end_stone_bricks",
+                "chiseled_purpur", "nebulite_block", "chiseled_shadoline", "chiseled_veradite",
+                "chiseled_mirestone", "cracked_mirestone_bricks", "chiseled_kurodite",
+                "alluring_magnia", "repulsive_magnia", "chiseled_dusk_purpur",
+                "blistered_magnia", "void_shale", "celestial_cap", "murublight_cap",
+                "end_lamp", "blinklamp")) {
+            result.add(uniform("enderscape:" + path, Set.of(BlockTags.MINEABLE_WITH_PICKAXE), Map.of()));
+        }
+
+        result.add(leaves("enderscape:veiled_leaves", TintProfile.SOURCE_PROVIDER));
+        result.add(fullBlock("enderscape:drift_jelly_block", VisualProfile.SLIME_INSET,
+                NibaruMaterialProfile.OrientationPolicy.UNIFORM,
+                "enderscape:block/drift_jelly_block", "enderscape:block/drift_jelly_block",
+                "enderscape:block/drift_jelly_block", TintProfile.NONE,
+                NibaruMaterialProfile.RenderLayer.TRANSLUCENT, Set.of(),
+                Set.of(BehaviorCapability.SLIME_INTERACTION)));
+
+        // These source models are cube-bottom-top families, not a copied grass overlay. Their
+        // side/top/bottom roles preserve grass/mycelium/nylium-style surface UV placement.
+        result.add(topSideBottom("enderscape:veiled_end_stone", "enderscape:block/veiled_end_stone_side",
+                "enderscape:block/veiled_end_stone_top", "minecraft:block/end_stone"));
+        result.add(topSideBottom("enderscape:celestial_overgrowth",
+                "enderscape:block/celestial_overgrowth_side", "enderscape:block/celestial_overgrowth_top",
+                "minecraft:block/end_stone"));
+        result.add(topSideBottom("enderscape:corrupt_overgrowth",
+                "enderscape:block/corrupt_overgrowth_side", "enderscape:block/corrupt_overgrowth_top",
+                "enderscape:block/mirestone"));
+
+        result.add(path("enderscape:celestial_path", "enderscape:block/celestial_path_side",
+                "enderscape:block/celestial_path_top", "minecraft:block/end_stone"));
+        result.add(path("enderscape:corrupt_path", "enderscape:block/corrupt_path_side",
+                "enderscape:block/corrupt_path_top", "enderscape:block/mirestone"));
+        return List.copyOf(result);
+    }
+
+    /** External axial sources intentionally do not fabricate an unrequested strip transition. */
+    private static Spec pillar(String id, String side, String end) {
+        Identifier key = Identifier.parse(id);
+        return new Spec(key, key.getNamespace(), key, key, Map.of(), VisualProfile.PILLAR,
+                NibaruMaterialProfile.OrientationPolicy.AXIS_ALIGNED, side, end, end, "",
+                TintProfile.NONE, NibaruMaterialProfile.RenderLayer.SOLID,
+                Set.of(BlockTags.MINEABLE_WITH_AXE, BlockTags.LOGS), Set.of(), List.of());
+    }
+
+    private static Spec topSideBottom(String id, String side, String top, String bottom) {
+        return fullBlock(id, VisualProfile.TOP_SIDE_BOTTOM,
+                NibaruMaterialProfile.OrientationPolicy.UNIFORM, side, top, bottom,
+                TintProfile.NONE, NibaruMaterialProfile.RenderLayer.SOLID,
+                Set.of(BlockTags.MINEABLE_WITH_PICKAXE), Set.of());
+    }
+
+    private static Spec path(String id, String side, String top, String bottom) {
+        return fullBlock(id, VisualProfile.PATH, NibaruMaterialProfile.OrientationPolicy.UNIFORM,
+                side, top, bottom, TintProfile.NONE, NibaruMaterialProfile.RenderLayer.SOLID,
+                Set.of(BlockTags.MINEABLE_WITH_PICKAXE), Set.of());
+    }
+
+    private static Spec fullBlock(String id, VisualProfile visual,
+            NibaruMaterialProfile.OrientationPolicy orientation, String side, String top, String bottom,
+            TintProfile tint, NibaruMaterialProfile.RenderLayer renderLayer, Set<TagKey<Block>> tags,
+            Set<BehaviorCapability> capabilities) {
+        Identifier key = Identifier.parse(id);
+        return new Spec(key, key.getNamespace(), key, key, Map.of(), visual, orientation,
+                side, top, bottom, "", tint, renderLayer, tags, capabilities, List.of());
+    }
+
     public record Spec(Identifier id, String provider, Identifier providerReference,
             Identifier generatedIdentity, Map<String, Identifier> providerRoles, VisualProfile visual,
             NibaruMaterialProfile.OrientationPolicy orientation,
@@ -192,4 +292,6 @@ public final class ExternalMaterialCatalog {
             transitions = List.copyOf(transitions);
         }
     }
+
+    public record RequestedExclusion(Identifier requestedId, String reason) {}
 }

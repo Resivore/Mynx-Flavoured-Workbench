@@ -4,12 +4,10 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import dev.aero.cnmterraincompat.CnmTerrainCompat;
 import dev.aero.cnmterraincompat.LayerGeneratedData;
-import dev.tazer.clutternomore.ClutterNoMore;
 import dev.tazer.clutternomore.client.assets.AssetGenerator;
 import games.twinhead.moreslabsstairsandwalls.api.material.NibaruMaterialProfile;
 import games.twinhead.moreslabsstairsandwalls.api.material.VisualProfile;
 import net.minecraft.resources.Identifier;
-import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.level.block.HugeMushroomBlock;
 
@@ -84,7 +82,7 @@ public final class LayerGeneratedResources {
     }
 
     private static void writeClient(Identifier id, JsonElement json) {
-        ClutterNoMore.RESOURCES.addJson(PackType.CLIENT_RESOURCES, id, json);
+        BgeGeneratedResourceWriter.write(id, json);
     }
 
     private static Identifier blockStateResource(Identifier layer) {

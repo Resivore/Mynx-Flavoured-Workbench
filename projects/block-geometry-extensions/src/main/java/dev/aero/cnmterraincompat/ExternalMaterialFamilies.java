@@ -4,6 +4,7 @@ import dev.aero.cnmterraincompat.ExternalMaterialCatalog.Spec;
 import games.twinhead.moreslabsstairsandwalls.api.material.MaterialTransition;
 import games.twinhead.moreslabsstairsandwalls.api.material.NibaruMaterialProfile;
 import games.twinhead.moreslabsstairsandwalls.api.material.NibaruMaterialProfiles;
+import games.twinhead.moreslabsstairsandwalls.api.material.VisualProfile;
 import net.fabricmc.fabric.api.registry.FlammableBlockRegistry;
 import net.fabricmc.fabric.api.registry.StrippableBlockRegistry;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -77,11 +78,10 @@ public final class ExternalMaterialFamilies {
                 Optional.of(registeredId(wall.block())),
                 spec.blockTags(), spec.capabilities(), spec.visual(),
                 NibaruMaterialProfile.VisualSupport.GENERIC_SUPPORTED, spec.tint(), spec.renderLayer(),
-                spec.orientation(), NibaruMaterialProfile.SurfaceSamplingPolicy.BLOCK_ABSOLUTE,
-                NibaruMaterialProfile.DoubleFormPolicy.COMPOSE_SEMANTIC_SURFACES,
+                spec.orientation(), surfaceSampling(spec), doubleFormPolicy(spec),
                 new NibaruMaterialProfile.TextureRoles(spec.side(), spec.top(), spec.bottom(), "", spec.side(),
                         spec.interior()),
-                Optional.empty(), Optional.empty(), false, spec.transitions());
+                insetVisualContract(spec), Optional.empty(), false, spec.transitions());
         NibaruMaterialProfiles.registerExternal(profile);
 
         Pending pending = new Pending(spec, profile, source, slab.block(), stairs.block(), wall.block(),
@@ -212,6 +212,29 @@ public final class ExternalMaterialFamilies {
         if (state.requiresCorrectToolForDrops()) result.requiresCorrectToolForDrops();
         if (state.ignitedByLava()) result.ignitedByLava();
         return result;
+    }
+
+    private static NibaruMaterialProfile.SurfaceSamplingPolicy surfaceSampling(Spec spec) {
+        return spec.visual() == VisualProfile.PATH
+                ? NibaruMaterialProfile.SurfaceSamplingPolicy.PATH_LOWERED_SURFACE
+                : NibaruMaterialProfile.SurfaceSamplingPolicy.BLOCK_ABSOLUTE;
+    }
+
+    private static NibaruMaterialProfile.DoubleFormPolicy doubleFormPolicy(Spec spec) {
+        return switch (spec.visual()) {
+            case HONEY_INSET, SLIME_INSET -> NibaruMaterialProfile.DoubleFormPolicy.CUSTOM_REQUIRED;
+            default -> NibaruMaterialProfile.DoubleFormPolicy.COMPOSE_SEMANTIC_SURFACES;
+        };
+    }
+
+    private static Optional<NibaruMaterialProfile.InsetVisualContract> insetVisualContract(Spec spec) {
+        return switch (spec.visual()) {
+            case HONEY_INSET -> Optional.of(new NibaruMaterialProfile.InsetVisualContract(1, 1,
+                    NibaruMaterialProfile.InsetVisualContract.ShellTexture.BOTTOM, true));
+            case SLIME_INSET -> Optional.of(new NibaruMaterialProfile.InsetVisualContract(3, 2,
+                    NibaruMaterialProfile.InsetVisualContract.ShellTexture.MATERIAL_FACES, false));
+            default -> Optional.empty();
+        };
     }
 
     public record Binding(Spec spec, NibaruMaterialProfile profile, Block source,

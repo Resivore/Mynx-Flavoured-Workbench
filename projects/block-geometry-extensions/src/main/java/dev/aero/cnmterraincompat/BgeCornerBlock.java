@@ -87,7 +87,8 @@ public class BgeCornerBlock extends BgeProfiledGeometryBlock {
     @Override
     protected VoxelShape getShape(BlockState state, net.minecraft.world.level.BlockGetter level,
             BlockPos pos, CollisionContext context) {
-        if (has(BehaviorCapability.PATH_CONVERSION)) return pathShape(state);
+        if (has(BehaviorCapability.PATH_CONVERSION) || materialProfile().surfaceSamplingPolicy()
+                == NibaruMaterialProfile.SurfaceSamplingPolicy.PATH_LOWERED_SURFACE) return pathShape(state);
         return regularShape(state);
     }
 

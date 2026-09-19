@@ -138,7 +138,7 @@ public final class InsetModelContract {
     }
 
     private static String modelId(Identifier shape, String suffix) {
-        return "clutternomore:block/" + shape.getPath() + suffix;
+        return shape.getNamespace() + ":block/" + shape.getPath() + suffix;
     }
 
     private static String texture(String path) {
