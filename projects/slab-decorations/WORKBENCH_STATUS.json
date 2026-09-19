@@ -38,7 +38,7 @@
         "Vertical slabs, CNM Steps, layers, stairs, walls, columns, vanilla or foreign slabs, rails, redstone components, pressure plates, chains, pointed dripstone, machinery, and arbitrary non-vegetation decorations remain outside horizontal-slab projection ownership.",
         "The read-only projection supports ordinary BlockGetter and LevelReader placement/survival contracts. Raw ChunkAccess inspection is delegated and arbitrary custom placement systems that bypass those world-view accessors are not claimed compatible.",
         "Unified Block Geometry Extensions retains canonical material/native-slab ownership; this project adds no duplicate plant blocks, persisted offset property, registry-name parser, competing material table, standalone Nibaru dependency, or hard Mynx × Regions Unexplored dependency.",
-        "No Test Slot, accepted stack, Minecraft profile, deployment, gameplay runtime result, or promotion is changed by Canary 10 controlled validation; the protected gameplay instance remains off-limits."
+        "No Test Slot, accepted stack, Minecraft profile, deployment, gameplay runtime result, or promotion is changed by Canary 11 controlled validation; the protected gameplay instance remains off-limits."
       ]
     },
     "dependencies": [
@@ -117,22 +117,22 @@
     ]
   },
   "state": {
-    "milestone": "C10 succeeds exact C9. It recognizes only BGE C72's documented canonical Farmland Slab outside profile ownership, projects it as vanilla Farmland, and uses the shared upward resolver so ordinary farmland crops retain normal placement, survival, lifecycle, and BOTTOM -0.5 / TOP-DOUBLE 0 representation while pumpkin/melon stems remain structurally excluded. C10 also adds an optional private Ribbits huge-toadstool transaction seam and exact toadstool-stem continuation identity without a production Ribbits dependency. Java 25 controlled validation passed 5/5 JUnit tests and 44/44 headless server GameTests; neither suite ran a client renderer, real save/reload, or a complete Ribbits runtime dependency stack. C10 is ACTIVE, NOT_DEPLOYED, RUNTIME_UNTESTED, and unaccepted.",
+    "milestone": "C11 succeeds exact C10. Minecraft 26.2 CropBlock.getGrowthSpeed reads the real 3x3 support states beneath a crop and counts only GROWS_CROPS, so C10's survival-only canonical projection left exact BGE Farmland Slabs at vanilla fertility 1.0 instead of dry 4.0 or hydrated 10.0. C11 redirects only those helper reads through the existing exact BGE Farmland Slab → minecraft:farmland authority, preserving MOISTURE and all vanilla probability/crowding mathematics for CropBlock and PitcherCropBlock without altering slab geometry, crop offsets, lifecycle, bonemeal, harvest, or the explicit stem exclusion. Java 25 controlled validation passed 5/5 JUnit tests and 45/45 headless server GameTests; neither suite ran a client renderer, real save/reload, or a complete Ribbits runtime dependency stack. C11 is ACTIVE, NOT_DEPLOYED, RUNTIME_UNTESTED, and unaccepted.",
     "releases": {
       "current": {
-        "version": "0.1.0-canary10",
-        "embedded_version": "0.1.0-canary10",
+        "version": "0.1.0-canary11",
+        "embedded_version": "0.1.0-canary11",
         "artifact": {
-          "filename": "slab-decorations-0.1.0-canary10.jar",
-          "sha256": "7a8b36c7d4cea2b248e4a275a56678f802d380e172cefc751c6c0b25519bc790"
+          "filename": "slab-decorations-0.1.0-canary11.jar",
+          "sha256": "7e15d2f1cb93ad97656e1380b83f905df143c7df79e149b9187fc74c6d5e90ba"
         },
-        "built_at": "2026-09-18T05:21:19.3721845Z",
-        "source_commit": "0c4ee9ae02174ce6f0c4e64d85d25cadb03a28ea",
+        "built_at": "2026-09-19T05:22:00.2476822Z",
+        "source_commit": "5a41f357d23a96068f56eb75a5c4f9fe52de4b8e",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
         },
-        "summary": "Adds BGE Farmland Slab crop projection and optional Ribbits huge-toadstool transactions without persisted offsets."
+        "summary": "Restores exact BGE Farmland Slab 3×3 crop-fertility parity without changing vanilla growth mathematics."
       },
       "accepted": null,
       "rollback": null,
@@ -146,10 +146,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 11,
-    "activity_at": "2026-09-18T05:21:19.3721845Z",
-    "updated_at": "2026-09-18T05:21:19.3721845Z",
-    "last_codex_at": "2026-09-18T05:21:19.3721845Z",
-    "source_commit": "0c4ee9ae02174ce6f0c4e64d85d25cadb03a28ea"
+    "revision": 12,
+    "activity_at": "2026-09-19T05:22:00.2476822Z",
+    "updated_at": "2026-09-19T05:22:00.2476822Z",
+    "last_codex_at": "2026-09-19T05:22:00.2476822Z",
+    "source_commit": "5a41f357d23a96068f56eb75a5c4f9fe52de4b8e"
   }
 }
