@@ -379,7 +379,13 @@ public final class NibaruMaterialProfiles {
             bottom = "honey_block_bottom";
         }
         String particle = visual == VisualProfile.ROOTS ? side : bottom;
-        return new NibaruMaterialProfile.TextureRoles(side, top, bottom, overlay, particle);
+        NibaruMaterialProfile.TextureRoles declared = new NibaruMaterialProfile.TextureRoles(
+                side, top, bottom, overlay, particle);
+        // Axis materials are the one class whose visual contract must follow the canonical model
+        // variables: registry paths are not a texture authority (notably Purpur Pillar's side).
+        return visual == VisualProfile.PILLAR
+                ? CanonicalPillarTextureResolver.resolve(family.parentBlock).orElse(declared)
+                : declared;
     }
 
     private static Optional<NibaruMaterialProfile.InsetVisualContract> insetVisualContract(VisualProfile visual) {

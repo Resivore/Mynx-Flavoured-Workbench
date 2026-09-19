@@ -26,6 +26,7 @@ import net.minecraft.world.phys.Vec3;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /** Canonical identity, closure, projection, topology, and real placement regressions retained by C74. */
 public final class CanonicalMaterialBindingGameTests implements CustomTestMethodInvoker {
@@ -33,12 +34,13 @@ public final class CanonicalMaterialBindingGameTests implements CustomTestMethod
     public void everyOwnedBlockIsClassifiedAndEveryNormalFamilyHasNinePrimaryRoles(
             GameTestHelper helper) {
         BgeMaterialBindings.requireValid();
-        helper.assertTrue(BgeMaterialBindings.exemptions().isEmpty(),
-                "The current BGE catalog unexpectedly contains non-material exemptions: "
-                        + BgeMaterialBindings.exemptions());
+        Map<Block, String> exemptions = BgeMaterialBindings.exemptions();
+        helper.assertTrue(exemptions.entrySet().stream().allMatch(entry -> entry.getValue()
+                        .startsWith("CNM") || entry.getValue().startsWith("A resolved BGE/provider")),
+                "Only dormant CNM Phase-A candidates may be unbound: " + exemptions);
         for (Block owned : BgeMaterialBindings.ownedBlocks()) {
-            helper.assertTrue(BgeMaterialBindings.fromBlock(owned).isPresent(),
-                    "BGE-owned block has no canonical classification: " + owned);
+            helper.assertTrue(BgeMaterialBindings.fromBlock(owned).isPresent() || exemptions.containsKey(owned),
+                    "BGE-owned block has no canonical classification or dormant CNM status: " + owned);
         }
 
         int profiles = 0;
@@ -69,7 +71,7 @@ public final class CanonicalMaterialBindingGameTests implements CustomTestMethod
                 "Nine-role closure count mismatch: profiles=" + profiles + ", primary=" + primary);
         System.out.println("CANONICAL_BINDING_CLOSURE|profiles=" + profiles
                 + "|primary=" + primary + "|owned=" + BgeMaterialBindings.ownedBlocks().size()
-                + "|aliases=3|special=2|exemptions=0");
+                + "|aliases=3|special=2|dormantCnmCandidates=" + exemptions.size());
         helper.succeed();
     }
 

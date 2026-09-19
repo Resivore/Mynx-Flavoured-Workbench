@@ -115,16 +115,28 @@ public final class NativeAxisGameTests implements CustomTestMethodInvoker {
             NibaruMaterialProfile profile = profile(source);
             helper.assertTrue(profile.nativeSlab().isPresent() && profile.nativeStair().isPresent()
                             && profile.nativeWall().isPresent(),
-                    "C80 production closure did not retain all standard roles for " + source);
+                    "C81 production closure did not retain all standard roles for " + source);
         }
         NibaruMaterialProfile purpur = profile(id("minecraft:purpur_pillar"));
         Block purpurWall = purpur.nativeWall().orElseThrow();
         helper.assertTrue(!purpurWall.defaultBlockState().hasProperty(BlockStateProperties.AXIS),
                 "Purpur Pillar wall acquired an illegal material AXIS state");
+        helper.assertTrue("purpur_pillar_side".equals(purpur.textureRoles().side())
+                        && "purpur_pillar_top".equals(purpur.textureRoles().top())
+                        && "purpur_pillar_top".equals(purpur.textureRoles().bottom()),
+                "Purpur Pillar did not inherit canonical cube_column side/end texture variables: "
+                        + purpur.textureRoles());
+        NibaruMaterialProfile quartz = profile(id("minecraft:quartz_pillar"));
+        NibaruMaterialProfile oak = profile(id("minecraft:oak_log"));
+        helper.assertTrue("quartz_pillar_side".equals(quartz.textureRoles().side())
+                        && "quartz_pillar_top".equals(quartz.textureRoles().top())
+                        && "oak_log".equals(oak.textureRoles().side())
+                        && "oak_log_top".equals(oak.textureRoles().top()),
+                "Canonical pillar resolver diverged between Purpur, Quartz, and a working log");
         helper.assertTrue(roles == 875 && visitedModels.size() >= roles,
                 "Native production resource closure inventory drifted: roles=" + roles
                         + ", models=" + visitedModels.size());
-        System.out.println("NATIVE_C80_PRODUCTION_RESOURCE_CLOSURE|roles=" + roles
+        System.out.println("NATIVE_C81_PRODUCTION_RESOURCE_CLOSURE|roles=" + roles
                 + "|models=" + visitedModels.size() + "|families=" + ModBlocks.values().length);
         helper.succeed();
     }
@@ -446,7 +458,7 @@ public final class NativeAxisGameTests implements CustomTestMethodInvoker {
             if (profile.family() == null || !MaterialAxisSemantics.applies(profile)) continue;
             helper.assertTrue(NativeAxisModelContract.semanticTextures(profile)
                             .equals(AxisModelContract.semanticTextures(profile)),
-                    "Provider-native texture roles diverged from the passing Canary 1.38 authority for "
+                    "Provider-native texture roles diverged from the canonical profile contract for "
                             + profile.canonicalParentId());
             textureProfiles++;
         }

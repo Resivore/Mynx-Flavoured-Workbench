@@ -121,8 +121,9 @@ public final class CnmTerrainCompat implements ModInitializer {
         QuarterGeometryGeneratedData.generate();
         ExternalMaterialGeneratedData.generate();
         bgeGeometryRegistered = true;
+        // ShapeMap chooses CNM's actual parent after this registry-tail callback.  Keep the
+        // material registry mutable until that decision has bound any deferred candidates.
         CnmShapeMapCandidateBridge.finishRegistryAdmission();
-        validateBindingsWhenComplete();
     }
 
     /**
@@ -182,6 +183,21 @@ public final class CnmTerrainCompat implements ModInitializer {
                 ? new BgeBlockItem(block, properties)
                 : new BlockItem(block, properties);
         Registry.register(BuiltInRegistries.ITEM, ResourceKey.create(Registries.ITEM, id), item);
+    }
+
+    /**
+     * Registers a Phase-A CNM tail block whose material parent is intentionally not known yet.
+     * The identity is derived from CNM's admitted horizontal source, never from a guessed family
+     * path.  {@link CnmShapeMapCandidateBridge} gives it its canonical binding only after CNM
+     * resolves the ShapeMap component.
+     */
+    static void registerDeferredCandidate(Identifier id, Block block) {
+        register(id, block);
+    }
+
+    /** Called at ShapeMap resolution tail, after every deferred candidate is either bound or dormant. */
+    static synchronized void finalizeResolvedCnmFamilies() {
+        validateBindingsWhenComplete();
     }
 
     /** Registers state-only blocks such as Farmland Slab without an obtainable BlockItem. */

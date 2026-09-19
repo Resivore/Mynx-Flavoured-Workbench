@@ -330,6 +330,24 @@ public final class BgeMaterialBindings {
                 Optional.of("State-only horizontal farmland form created by tilling; no other catalog geometry is intentional.")));
     }
 
+    /**
+     * Binds a registry-time CNM candidate only after CNM has selected its real ShapeMap parent.
+     * These blocks are intentionally special canonical bindings rather than synthetic Nibaru
+     * profiles: no registry name, admission anchor, or temporary model is ever promoted to a
+     * material authority.
+     */
+    static synchronized void bindResolvedCnmCandidate(Block block, Block canonical,
+            BgeGeometryRole geometry) {
+        requireMutable();
+        Role role = Role.from(geometry);
+        bind(new Binding(block, canonical, Optional.empty(), role, Ownership.SPECIAL,
+                CatalogMembership.SPECIAL_CANONICAL_BOUND,
+                state -> Optional.of(canonical.defaultBlockState()), topology(role),
+                BgeSurfaceGeometry.provider(topology(role), false), false, false,
+                block.asItem() != Items.AIR,
+                Optional.of("Deferred CNM candidate bound only after CNM resolved its ShapeMap parent.")));
+    }
+
     /** Adds a validated role exclusion only for a demonstrated technical incompatibility. */
     static synchronized void exclude(NibaruMaterialProfile profile, Role role, String reason) {
         requireMutable();

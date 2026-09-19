@@ -89,6 +89,11 @@ public final class NativeAxisModelContract {
     /** Semantic column texture bindings sourced directly from Nibaru's material catalog. */
     public static Map<String, String> semanticTextures(ModBlocks family) {
         requireAxisFamily(family);
+        // Resource generation runs before live Minecraft registries can initialize the profile
+        // inventory. Resolve this direct canonical model here instead: Purpur Pillar proves that
+        // a registry path is not necessarily the side texture.
+        var resolved = CanonicalPillarTextureResolver.resolve(family.parentBlock);
+        if (resolved.isPresent()) return semanticTextures(resolved.orElseThrow());
         Identifier parentId = BuiltInRegistries.BLOCK.getKey(family.parentBlock);
         String base = parentId.getPath();
         String side = family.textureId == null || family.textureId.isEmpty()
@@ -110,8 +115,10 @@ public final class NativeAxisModelContract {
 
     public static Map<String, String> semanticTextures(NibaruMaterialProfile profile) {
         requireAxisProfile(profile);
-        if (profile.family() != null) return semanticTextures(profile.family());
-        NibaruMaterialProfile.TextureRoles roles = profile.textureRoles();
+        return semanticTextures(profile.textureRoles());
+    }
+
+    private static Map<String, String> semanticTextures(NibaruMaterialProfile.TextureRoles roles) {
         String side = texture(roles.side());
         String end = texture(roles.top());
         LinkedHashMap<String, String> result = new LinkedHashMap<>();

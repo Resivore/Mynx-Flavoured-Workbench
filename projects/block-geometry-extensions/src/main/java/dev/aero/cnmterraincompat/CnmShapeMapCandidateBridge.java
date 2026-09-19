@@ -4,9 +4,12 @@ import dev.tazer.clutternomore.common.shape_map.ShapeMap;
 import games.twinhead.moreslabsstairsandwalls.api.material.NibaruMaterialProfile;
 import games.twinhead.moreslabsstairsandwalls.api.material.NibaruMaterialProfiles;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockBehaviour;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -20,94 +23,71 @@ import java.util.Optional;
 import java.util.Set;
 
 /**
- * BGE's deliberately narrow two-phase integration with CNM's variant and ShapeMap lifecycles.
+ * Separates CNM registry admission from its later ShapeMap parent resolution.
  *
- * <p>Phase A records only sources that CNM actually admitted while creating one of its own
- * variants. It neither scans the registry nor derives a family from names, block classes, or
- * assets. A typed BGE material profile is useful only to identify BGE's already-registered local
- * roles; it is not exposed as the candidate's ShapeMap parent.</p>
- *
- * <p>Phase B first snapshots CNM's supplied mapping list, then appends BGE's three local roles
- * only when the exact Phase-A anchor was present in that snapshot. CNM resolves the resulting
- * graph and selects its parent. The tail audit accepts a candidate only when CNM selected the
- * profile's exact material parent; every other candidate loses only the edge introduced by this
- * bridge and remains dormant. Established provider-owned profile edges are never displaced.</p>
+ * <p>Phase A records only CNM's real Vertical-Slab/Step admission and registers a BGE tail before
+ * registry freeze. Phase B observes the resolved ShapeMap graph, elects one candidate per actual
+ * component, and attaches Corner, Quarter Column, and Layer to the component CNM selected. A
+ * temporary admission source is never treated as a material parent.</p>
  */
 public final class CnmShapeMapCandidateBridge {
-    public static final String PROFILE_VERSION = "bge-c80-cnm-two-phase-v1";
+    public static final String PROFILE_VERSION = "bge-c81-cnm-resolved-family-v1";
     private static final Identifier SHAPE_MAP_SOURCE = Identifier.fromNamespaceAndPath(
-            CnmTerrainCompat.MOD_ID, "cnm_candidate_roles");
-    /* Lower than every BGE ownership edge: this edge can join a CNM family but never win its parent. */
+            CnmTerrainCompat.MOD_ID, "cnm_resolved_candidate_roles");
     private static final int INJECTION_PRIORITY = Integer.MIN_VALUE;
+    private static final List<BgeGeometryRole> TAIL = List.of(BgeGeometryRole.CORNER,
+            BgeGeometryRole.QUARTER_COLUMN, BgeGeometryRole.LAYER);
     private static final Map<Block, Candidate> CANDIDATES = new IdentityHashMap<>();
-    private static final Set<Block> RECURSIVE_SOURCES =
-            Collections.newSetFromMap(new IdentityHashMap<>());
+    private static final Set<Block> RECURSIVE_SOURCES = Collections.newSetFromMap(new IdentityHashMap<>());
 
     private CnmShapeMapCandidateBridge() {}
 
-    /**
-     * Phase A. Called only from the two CNM constructors after CNM accepted the source's real
-     * state contract and created its own role. The generated registry ID is supplied by CNM's
-     * exact registerVariants path rather than synthesized from the source's registry name.
-     */
+    /** Phase A: called only by CNM's exact constructors after it admitted a real geometry source. */
     public static synchronized void admit(Block source, BgeGeometryRole role, Block generated,
             Identifier generatedId) {
         if (CanonicalGeometryRegistry.contains(source)) {
             RECURSIVE_SOURCES.add(source);
             return;
         }
-        Identifier sourceId = registeredBlockId(source);
-        Candidate candidate = CANDIDATES.computeIfAbsent(source, ignored -> new Candidate(source, sourceId));
+        Candidate candidate = CANDIDATES.computeIfAbsent(source,
+                ignored -> new Candidate(source, registeredBlockId(source)));
         candidate.recordCnmRole(role, generated, generatedId);
     }
 
     /**
-     * Completes Phase A at the registry tail. All BGE-owned roles are already registered by the
-     * normal BGE catalog pass at this point. Untyped candidates deliberately remain dormant: BGE
-     * creates no speculative block, item, resource, or canonical-parent binding for them.
+     * Registry tail, still before freeze. Known BGE profiles reuse their registered tail. An
+     * untyped CNM admission receives three inert, geometry-only candidates whose identities are
+     * anchored to the admitted source; no canonical parent is fabricated.
      */
     public static synchronized void finishRegistryAdmission() {
-        for (Candidate candidate : CANDIDATES.values()) {
+        for (Candidate candidate : orderedCandidates()) {
             if (candidate.phase != Phase.REGISTRY_ADMITTED) continue;
-            NibaruMaterialProfile profile = NibaruMaterialProfiles.fromBlock(candidate.source).orElse(null);
-            // Optional-provider and structural-vanilla profiles already have an independently
-            // typed BGE catalog contract. Their existing bridge stays in place, including the
-            // deliberate shared Log/Wood ShapeMap components. C80 owns only native BGE profiles
-            // whose CNM-created role is part of this registry-time admission lifecycle.
-            if (profile == null) {
-                candidate.phase = Phase.DORMANT_UNTYPED;
-                continue;
-            }
-            if (profile.family() == null) {
-                candidate.phase = Phase.DORMANT_STATIC_PROFILE;
-                continue;
-            }
-            EnumMap<BgeGeometryRole, Block> roles = new EnumMap<>(BgeGeometryRole.class);
-            for (BgeGeometryRole role : List.of(BgeGeometryRole.LAYER,
-                    BgeGeometryRole.CORNER, BgeGeometryRole.QUARTER_COLUMN)) {
-                Block block = NibaruProviderAdapter.derived(profile, role).orElse(null);
-                if (block == null) {
-                    candidate.phase = Phase.DORMANT_INCOMPLETE;
-                    roles.clear();
-                    break;
+            candidate.profile = NibaruMaterialProfiles.fromBlock(candidate.source).orElse(null);
+            if (candidate.profile != null) {
+                for (BgeGeometryRole role : TAIL) {
+                    Block block = NibaruProviderAdapter.derived(candidate.profile, role).orElseThrow(() ->
+                            new IllegalStateException("Missing registered BGE " + role + " for "
+                                    + candidate.profile.canonicalParentId()));
+                    candidate.bgeRoles.put(role, block);
                 }
-                roles.put(role, block);
+            } else {
+                candidate.deferred = true;
+                for (BgeGeometryRole role : TAIL) {
+                    Identifier id = deferredId(candidate.sourceId, role);
+                    Block block = DeferredCnmGeometryBlock.create(role, BlockBehaviour.Properties
+                            .ofFullCopy(candidate.source)
+                            .setId(ResourceKey.create(Registries.BLOCK, id)));
+                    CnmTerrainCompat.registerDeferredCandidate(id, block);
+                    candidate.bgeRoles.put(role, block);
+                }
             }
-            if (candidate.phase == Phase.REGISTRY_ADMITTED) {
-                candidate.profile = profile;
-                candidate.bgeRoles = roles;
-                candidate.phase = Phase.REGISTRY_READY;
-            }
+            candidate.phase = Phase.REGISTRY_READY;
         }
     }
 
-    /**
-     * Captures membership from the Mapping objects CNM is about to resolve. This intentionally
-     * runs before BGE's historical profile-edge pass, so a BGE edge cannot make a candidate look
-     * as though a datapack/regex/tag rule admitted it.
-     */
+    /** Captures actual CNM mapping membership before BGE adds its deliberately low-priority edges. */
     public static synchronized void observeCnmMappings(List<ShapeMap.Mapping> mappings) {
-        for (Candidate candidate : CANDIDATES.values()) {
+        for (Candidate candidate : orderedCandidates()) {
             if (candidate.phase == Phase.REGISTRY_READY
                     && mappingMentions(mappings, candidate.source.asItem())) {
                 candidate.cnmMappingPresent = true;
@@ -115,97 +95,172 @@ public final class CnmShapeMapCandidateBridge {
         }
     }
 
-    /** Pure mapping-list predicate used by the non-pillar focused regression fixture. */
+    /** Production Mapping predicate retained as a focused regression seam. */
     public static boolean mappingMentions(List<ShapeMap.Mapping> mappings, Item anchor) {
         return mappings.stream().anyMatch(mapping -> mapping.parent() == anchor || mapping.shape() == anchor);
     }
 
     /**
-     * Phase B pre-resolution. At most one actual mapped source for a typed profile injects the
-     * local BGE roles. The anchor is selected deterministically from CNM-admitted source IDs, not
-     * from a path pairing heuristic; it has no authority over CNM's canonical parent selection.
+     * Adds registry-time tail edges only for a real CNM mapping. There may be more than one
+     * admission anchor for one eventual component; Phase B removes every non-elected tail before
+     * the component becomes visible.
      */
     public static synchronized void injectMappedRoles(List<ShapeMap.Mapping> mappings) {
-        Map<NibaruMaterialProfile, List<Candidate>> byProfile = new IdentityHashMap<>();
-        for (Candidate candidate : CANDIDATES.values()) {
-            if (candidate.phase == Phase.REGISTRY_READY) {
-                byProfile.computeIfAbsent(candidate.profile, ignored -> new ArrayList<>()).add(candidate);
+        for (Candidate candidate : orderedCandidates()) {
+            if (candidate.phase != Phase.REGISTRY_READY) continue;
+            if (!candidate.cnmMappingPresent) {
+                candidate.phase = Phase.DORMANT_UNMAPPED;
+                candidate.exemptDeferredRoles("CNM did not retain the Phase-A admission in its mapping graph.");
+                continue;
             }
-        }
-        for (List<Candidate> familyCandidates : byProfile.values()) {
-            familyCandidates.sort(java.util.Comparator.comparing(candidate -> candidate.sourceId));
-            Candidate injector = familyCandidates.stream().filter(candidate -> candidate.cnmMappingPresent)
-                    .findFirst().orElse(null);
-            for (Candidate candidate : familyCandidates) {
-                if (!candidate.cnmMappingPresent) candidate.phase = Phase.DORMANT_UNMAPPED;
-            }
-            if (injector == null) continue;
-            for (Block block : injector.bgeRoles.values()) {
+            for (Block block : candidate.bgeRoles.values()) {
                 Item role = block.asItem();
-                // Established BGE profiles are registered by the provider bridge. Preserve that
-                // durable ownership edge instead of adding a duplicate just because CNM also
-                // admitted this source. A future candidate with an absent role receives the
-                // narrow Phase-B edge below, and only that new edge can be withdrawn later.
                 if (!mappingMentions(mappings, role)) {
-                    mappings.add(new ShapeMap.Mapping(injector.source.asItem(), role,
+                    mappings.add(new ShapeMap.Mapping(candidate.source.asItem(), role,
                             INJECTION_PRIORITY, SHAPE_MAP_SOURCE));
-                    injector.added.add(role);
+                    candidate.added.add(role);
                 }
-                injector.injected.add(role);
+                candidate.injected.add(role);
             }
-            injector.phase = Phase.MAPPING_INJECTED;
+            candidate.phase = Phase.MAPPING_INJECTED;
         }
     }
 
     /**
-     * Phase B post-resolution. CNM's own resolved views are the only canonical-family authority.
-     * Invalid edges created by this bridge are removed from the live views before BGE's
-     * presentation-order pass, so an unmatched source cannot leak a candidate item into normal
-     * ShapeMap switching. Existing profile edges retain their independent ownership.
+     * Phase B: CNM has selected all components. The actual resolved component is now the shared
+     * authority for known profiles and formerly untyped candidates alike.
      */
     public static synchronized void bindResolvedFamilies() {
-        Set<Item> claimed = Collections.newSetFromMap(new IdentityHashMap<>());
-        Set<Item> rejected = Collections.newSetFromMap(new IdentityHashMap<>());
-        for (Candidate candidate : CANDIDATES.values()) {
+        Map<Item, List<Candidate>> candidatesByParent = new LinkedHashMap<>();
+        for (Candidate candidate : orderedCandidates()) {
             if (candidate.phase != Phase.MAPPING_INJECTED) continue;
-            Item resolvedParent = ShapeMap.getParent(candidate.source.asItem());
-            List<Item> component = ShapeMap.getShapes(candidate.source.asItem());
-            boolean unique = candidate.injected.stream()
-                    .allMatch(item -> Collections.frequency(component, item) == 1 && claimed.add(item));
-            if (resolvedParent != candidate.profile.canonicalParent().asItem() || !unique) {
-                rejected.addAll(candidate.added);
-                candidate.phase = resolvedParent != candidate.profile.canonicalParent().asItem()
-                        ? Phase.DORMANT_PARENT_MISMATCH : Phase.DORMANT_DUPLICATE;
+            Item parent = ShapeMap.getParent(candidate.source.asItem());
+            if (ShapeMap.getShapes(candidate.source.asItem()).isEmpty()) {
+                candidate.phase = Phase.DORMANT_UNRESOLVED;
+                candidate.exemptDeferredRoles("CNM did not resolve a ShapeMap component for this admission.");
                 continue;
             }
-            candidate.resolvedParent = resolvedParent;
-            candidate.phase = Phase.BOUND;
+            candidatesByParent.computeIfAbsent(parent, ignored -> new ArrayList<>()).add(candidate);
         }
-        if (!rejected.isEmpty()) removeInjected(rejected);
-    }
 
-    /** ShapeMap deliberately exposes immutable maps after resolution; replace them atomically. */
-    private static void removeInjected(Set<Item> rejected) {
-        Map<Item, List<Item>> shapes = new LinkedHashMap<>();
-        ShapeMap.shapesView().forEach((parent, component) -> {
-            List<Item> filtered = new ArrayList<>(component);
-            filtered.removeIf(rejected::contains);
-            shapes.put(parent, filtered);
-        });
+        Map<Item, List<Item>> shapes = copyShapes();
         Map<Item, Item> inverse = new LinkedHashMap<>(ShapeMap.inverseView());
-        rejected.forEach(inverse::remove);
+        Set<Item> rejected = Collections.newSetFromMap(new IdentityHashMap<>());
+
+        for (Map.Entry<Item, List<Candidate>> entry : candidatesByParent.entrySet()) {
+            Item parent = entry.getKey();
+            List<Candidate> family = entry.getValue();
+            family.sort(java.util.Comparator.comparing(candidate -> candidate.sourceId));
+            Candidate winner = family.getFirst();
+            for (Candidate candidate : family) {
+                if (candidate == winner) continue;
+                rejected.addAll(candidate.added);
+                candidate.phase = Phase.DORMANT_DUPLICATE_COMPONENT;
+                candidate.exemptDeferredRoles("CNM candidate: a deterministic sibling admission owns this resolved component.");
+            }
+            List<Item> component = shapes.get(parent);
+            if (component == null) throw new IllegalStateException("CNM resolved parent without component: " + parent);
+            winner.bind(parent, component, inverse, rejected);
+        }
+
+        removeRejected(shapes, inverse, rejected);
+        completeKnownProfileFamilies(shapes, inverse);
         ShapeMap.setShapeMaps(shapes, inverse);
+        reportResolvedFamilies();
+        CnmTerrainCompat.finalizeResolvedCnmFamilies();
     }
 
-    /** Immutable diagnostic/test view; before Phase B no candidate reports a canonical parent. */
+    /**
+     * C80 only injected through candidate anchors. Re-check every actual resolved component for
+     * every BGE profile so a known material such as Moss cannot remain a six-role CNM family.
+     */
+    private static void completeKnownProfileFamilies(Map<Item, List<Item>> shapes,
+            Map<Item, Item> inverse) {
+        for (NibaruMaterialProfile profile : NibaruMaterialProfiles.all()) {
+            Item material = profile.canonicalParent().asItem();
+            Item parent = ShapeMap.getParent(material);
+            List<Item> component = shapes.get(parent);
+            if (component == null || component.isEmpty()) continue;
+            for (BgeGeometryRole role : TAIL) {
+                Block block = NibaruProviderAdapter.derived(profile, role).orElseThrow(() ->
+                        new IllegalStateException("Missing BGE " + role + " for "
+                                + profile.canonicalParentId()));
+                ensureComponentMember(component, inverse, parent, block.asItem());
+            }
+            requireExactlyOne(component, profile.canonicalParentId(), TAIL.stream()
+                    .map(role -> NibaruProviderAdapter.derived(profile, role).orElseThrow().asItem()).toList());
+        }
+    }
+
+    private static void reportResolvedFamilies() {
+        for (Candidate candidate : orderedCandidates()) {
+            if (candidate.phase != Phase.BOUND) continue;
+            List<Item> component = ShapeMap.getShapes(candidate.source.asItem());
+            List<Identifier> before = candidate.cnmRoles.values().stream().toList();
+            List<Identifier> finalRoles = component.stream().map(CnmShapeMapCandidateBridge::itemId).toList();
+            System.out.println("BGE_CNM_RESOLVED_FAMILY|parent=" + itemId(candidate.resolvedParent)
+                    + "|anchor=" + candidate.sourceId + "|cnm_roles=" + before
+                    + "|added=" + candidate.injected.stream().map(CnmShapeMapCandidateBridge::itemId).toList()
+                    + "|final=" + finalRoles);
+        }
+    }
+
+    private static void requireExactlyOne(List<Item> component, Identifier parent, List<Item> expected) {
+        for (Item item : expected) {
+            int occurrences = Collections.frequency(component, item);
+            if (occurrences != 1) {
+                throw new IllegalStateException("Incomplete BGE tail for resolved CNM family " + parent
+                        + ": " + itemId(item) + " occurrences=" + occurrences + " component="
+                        + component.stream().map(CnmShapeMapCandidateBridge::itemId).toList());
+            }
+        }
+    }
+
+    private static void ensureComponentMember(List<Item> component, Map<Item, Item> inverse,
+            Item parent, Item member) {
+        int occurrences = Collections.frequency(component, member);
+        if (occurrences > 1) throw new IllegalStateException("Duplicate ShapeMap role " + itemId(member)
+                + " in component " + itemId(parent));
+        if (occurrences == 0) component.add(member);
+        if (member != parent) inverse.put(member, parent);
+    }
+
+    private static void removeRejected(Map<Item, List<Item>> shapes, Map<Item, Item> inverse,
+            Set<Item> rejected) {
+        if (rejected.isEmpty()) return;
+        shapes.values().forEach(component -> component.removeIf(rejected::contains));
+        rejected.forEach(inverse::remove);
+    }
+
+    private static Map<Item, List<Item>> copyShapes() {
+        Map<Item, List<Item>> result = new LinkedHashMap<>();
+        ShapeMap.shapesView().forEach((parent, component) -> result.put(parent, new ArrayList<>(component)));
+        return result;
+    }
+
+    /** Immutable diagnostic/test view; a candidate has no canonical parent until Phase B. */
     public static synchronized List<Snapshot> snapshots() {
-        return CANDIDATES.values().stream()
-                .sorted(java.util.Comparator.comparing(candidate -> candidate.sourceId))
-                .map(Candidate::snapshot).toList();
+        return orderedCandidates().stream().map(Candidate::snapshot).toList();
     }
 
     public static synchronized boolean rejectedRecursiveSource(Block block) {
         return RECURSIVE_SOURCES.contains(block);
+    }
+
+    private static List<Candidate> orderedCandidates() {
+        return CANDIDATES.values().stream().sorted(java.util.Comparator.comparing(candidate -> candidate.sourceId))
+                .toList();
+    }
+
+    private static Identifier deferredId(Identifier anchor, BgeGeometryRole role) {
+        String suffix = switch (role) {
+            case CORNER -> "corner";
+            case QUARTER_COLUMN -> "quarter_column";
+            case LAYER -> "layer";
+            default -> throw new IllegalArgumentException("Not a BGE tail role: " + role);
+        };
+        return Identifier.fromNamespaceAndPath(CnmTerrainCompat.MOD_ID,
+                "deferred/" + anchor.getNamespace() + "/" + anchor.getPath() + "_" + suffix);
     }
 
     private static Identifier registeredBlockId(Block block) {
@@ -216,22 +271,27 @@ public final class CnmShapeMapCandidateBridge {
         return id;
     }
 
+    private static Identifier itemId(Item item) {
+        Identifier id = BuiltInRegistries.ITEM.getKey(item);
+        if (id == null || id.equals(BuiltInRegistries.ITEM.getDefaultKey())) {
+            throw new IllegalStateException("Unregistered ShapeMap item " + item);
+        }
+        return id;
+    }
+
     public enum Phase {
         REGISTRY_ADMITTED,
         REGISTRY_READY,
         MAPPING_INJECTED,
         BOUND,
-        DORMANT_UNTYPED,
-        DORMANT_STATIC_PROFILE,
-        DORMANT_INCOMPLETE,
         DORMANT_UNMAPPED,
-        DORMANT_PARENT_MISMATCH,
-        DORMANT_DUPLICATE
+        DORMANT_UNRESOLVED,
+        DORMANT_DUPLICATE_COMPONENT
     }
 
     public record Snapshot(Identifier anchor, Map<BgeGeometryRole, Identifier> cnmRoles,
-            Set<Identifier> injectedRoles, boolean canonicalBindingDeferred, Phase phase,
-            Optional<Identifier> resolvedParent) {
+            Set<Identifier> injectedRoles, boolean canonicalBindingDeferred, boolean deferredMaterial,
+            Phase phase, Optional<Identifier> resolvedParent) {
         public Snapshot {
             cnmRoles = Map.copyOf(cnmRoles);
             injectedRoles = Set.copyOf(injectedRoles);
@@ -243,11 +303,12 @@ public final class CnmShapeMapCandidateBridge {
         private final Block source;
         private final Identifier sourceId;
         private final EnumMap<BgeGeometryRole, Identifier> cnmRoles = new EnumMap<>(BgeGeometryRole.class);
+        private final EnumMap<BgeGeometryRole, Block> bgeRoles = new EnumMap<>(BgeGeometryRole.class);
         private final Set<Item> injected = Collections.newSetFromMap(new IdentityHashMap<>());
         private final Set<Item> added = Collections.newSetFromMap(new IdentityHashMap<>());
         private Phase phase = Phase.REGISTRY_ADMITTED;
         private NibaruMaterialProfile profile;
-        private EnumMap<BgeGeometryRole, Block> bgeRoles = new EnumMap<>(BgeGeometryRole.class);
+        private boolean deferred;
         private boolean cnmMappingPresent;
         private Item resolvedParent;
 
@@ -260,9 +321,8 @@ public final class CnmShapeMapCandidateBridge {
             if (role != BgeGeometryRole.VERTICAL_SLAB && role != BgeGeometryRole.STEP) {
                 throw new IllegalArgumentException("CNM cannot admit local BGE role " + role);
             }
-            Identifier currentId = BuiltInRegistries.BLOCK.getKey(generated);
-            if (!generatedId.equals(currentId)
-                    && !BuiltInRegistries.BLOCK.getDefaultKey().equals(currentId)) {
+            Identifier current = BuiltInRegistries.BLOCK.getKey(generated);
+            if (!generatedId.equals(current) && !BuiltInRegistries.BLOCK.getDefaultKey().equals(current)) {
                 throw new IllegalStateException("CNM generated role identity drifted for " + sourceId);
             }
             Identifier previous = cnmRoles.putIfAbsent(role, generatedId);
@@ -271,12 +331,44 @@ public final class CnmShapeMapCandidateBridge {
             }
         }
 
+        private void bind(Item parent, List<Item> component, Map<Item, Item> inverse,
+                Set<Item> rejected) {
+            Block canonical = Block.byItem(parent);
+            NibaruMaterialProfile resolvedProfile = NibaruMaterialProfiles.fromBlock(canonical).orElse(null);
+            if (deferred && resolvedProfile != null) {
+                // A provider can register after CNM's Phase-A scan. Its resolved canonical profile
+                // now owns the same roles, so withdraw the temporary carrier instead of creating
+                // a parallel family. The component, not a namespace or name heuristic, decides.
+                for (Block deferredBlock : bgeRoles.values()) rejected.add(deferredBlock.asItem());
+                exemptDeferredRoles("CNM candidate: a resolved BGE/provider material profile owns this component.");
+                bgeRoles.clear();
+                for (BgeGeometryRole role : TAIL) {
+                    Block block = NibaruProviderAdapter.derived(resolvedProfile, role).orElseThrow();
+                    bgeRoles.put(role, block);
+                }
+                deferred = false;
+            }
+            for (Block block : bgeRoles.values()) ensureComponentMember(component, inverse, parent, block.asItem());
+            requireExactlyOne(component, itemId(parent), bgeRoles.values().stream().map(Block::asItem).toList());
+            if (deferred) {
+                for (Map.Entry<BgeGeometryRole, Block> entry : bgeRoles.entrySet()) {
+                    BgeMaterialBindings.bindResolvedCnmCandidate(entry.getValue(), canonical, entry.getKey());
+                }
+            }
+            resolvedParent = parent;
+            phase = Phase.BOUND;
+        }
+
+        private void exemptDeferredRoles(String reason) {
+            if (!deferred) return;
+            for (Block block : bgeRoles.values()) BgeMaterialBindings.registerExemption(block, reason);
+        }
+
         private Snapshot snapshot() {
             Set<Identifier> injectedIds = new LinkedHashSet<>();
-            injected.forEach(item -> injectedIds.add(BuiltInRegistries.ITEM.getKey(item)));
-            return new Snapshot(sourceId, new LinkedHashMap<>(cnmRoles), injectedIds, true, phase,
-                    resolvedParent == null ? Optional.empty()
-                            : Optional.of(BuiltInRegistries.ITEM.getKey(resolvedParent)));
+            injected.forEach(item -> injectedIds.add(itemId(item)));
+            return new Snapshot(sourceId, new LinkedHashMap<>(cnmRoles), injectedIds, true, deferred,
+                    phase, resolvedParent == null ? Optional.empty() : Optional.of(itemId(resolvedParent)));
         }
     }
 }

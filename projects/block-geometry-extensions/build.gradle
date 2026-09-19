@@ -61,9 +61,13 @@ tasks.register('generateNibaruBaseResources', Exec) {
 
 tasks.register('generateNativeAxisResources', JavaExec) {
     dependsOn tasks.named('generateNativeMaterialResources')
+    def minecraftClientArchive = gradle.gradleUserHomeDir.toPath().resolve('caches').resolve('fabric-loom')
+            .resolve(project.minecraft_version).resolve('minecraft-client.jar').toFile()
     classpath = files(sourceSets.main.output.classesDirs) + configurations.runtimeClasspath
     mainClass = 'games.twinhead.moreslabsstairsandwalls.tools.NativeAxisResourceGenerator'
     args generatedNibaruResources.get().asFile.absolutePath
+    inputs.file minecraftClientArchive
+    systemProperty 'bge.minecraftClientJar', minecraftClientArchive.absolutePath
     outputs.upToDateWhen { false }
 }
 
