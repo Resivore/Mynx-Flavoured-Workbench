@@ -51,16 +51,18 @@ final class ArchitectureContractTest {
     }
 
     @Test
-    void commonInitializerHasNoClientOnlyCodeOrClientEntrypoint() throws IOException {
-        String allJava = readAllJava();
+    void commonInitializerIsServerSafeAndClientRenderingIsIsolated() throws IOException {
+        String commonJava = readCommonJava();
         String initializer = readJava("DragonboundWaystone.java");
         JsonObject metadata = JsonParser.parseString(
                 Files.readString(Path.of("src/main/resources/fabric.mod.json"))).getAsJsonObject();
 
-        assertFalse(allJava.contains("net.minecraft.client"));
-        assertFalse(allJava.contains("ClientModInitializer"));
+        assertFalse(commonJava.contains("net.minecraft.client"));
+        assertFalse(commonJava.contains("ClientModInitializer"));
         assertTrue(initializer.contains("implements ModInitializer"));
-        assertFalse(metadata.getAsJsonObject("entrypoints").has("client"));
+        assertTrue(metadata.getAsJsonObject("entrypoints").has("client"));
+        assertTrue(metadata.getAsJsonObject("entrypoints").getAsJsonArray("client")
+                .get(0).getAsString().contains("DragonboundWaystoneClient"));
     }
 
     @Test
@@ -306,6 +308,18 @@ final class ArchitectureContractTest {
         StringBuilder source = new StringBuilder();
         try (Stream<Path> paths = Files.walk(JAVA_ROOT)) {
             for (Path path : paths.filter(file -> file.toString().endsWith(".java")).sorted().toList()) {
+                source.append(Files.readString(path)).append('\n');
+            }
+        }
+        return source.toString();
+    }
+
+    private static String readCommonJava() throws IOException {
+        StringBuilder source = new StringBuilder();
+        try (Stream<Path> paths = Files.walk(JAVA_ROOT)) {
+            for (Path path : paths.filter(file -> file.toString().endsWith(".java"))
+                    .filter(file -> !file.toString().contains("\\client\\"))
+                    .sorted().toList()) {
                 source.append(Files.readString(path)).append('\n');
             }
         }

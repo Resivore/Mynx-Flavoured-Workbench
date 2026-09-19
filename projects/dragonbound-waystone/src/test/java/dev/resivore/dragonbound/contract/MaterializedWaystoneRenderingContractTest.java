@@ -1,0 +1,59 @@
+package dev.resivore.dragonbound.contract;
+
+import org.junit.jupiter.api.Test;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+/** Contracts for the 26.2 Fabric baked-model seam, compiled against the production client APIs. */
+final class MaterializedWaystoneRenderingContractTest {
+    private static final Path CLIENT = Path.of("src/main/java/dev/resivore/dragonbound/client");
+
+    @Test
+    void placedAndItemRenderingUseTheSameDirectionalMaterialResolver() throws IOException {
+        String block = read("MaterializedWaystoneBlockStateModel.java");
+        String item = read("MaterializedWaystoneItemModel.java");
+
+        assertTrue(block.contains("MaterializedWaystoneModels.resolve(waystone.copyPlacedStack())"));
+        assertTrue(item.contains("MaterializedWaystoneModels.resolve(stack)"));
+        assertTrue(item.contains("MaterializedWaystoneModels.retarget(quad, material.get())"));
+        assertTrue(block.contains("MaterializedWaystoneModels.retarget(quad, material)"));
+    }
+
+    @Test
+    void directionalDefaultStateBakedFacesDriveUnchangedWaystoneGeometry() throws IOException {
+        String models = read("MaterializedWaystoneModels.java");
+        String block = read("MaterializedWaystoneBlockStateModel.java");
+
+        assertTrue(models.contains("block.defaultBlockState()"));
+        assertTrue(models.contains("getBlockStateModelSet()"));
+        assertTrue(models.contains("for (Direction direction : Direction.values())"));
+        assertTrue(models.contains("faces.size() != Direction.values().length"));
+        assertTrue(models.contains("material.face(waystoneQuad.direction())"));
+        assertTrue(models.contains("remapUv(waystoneQuad.packedUV0()"));
+        assertTrue(block.contains("wrapped.collectParts(random, parts)"));
+        assertFalse(block.contains("new BakedQuad("));
+    }
+
+    @Test
+    void unsafeClientMaterialsFailClosedAndCacheResetsOnModelReload() throws IOException {
+        String models = read("MaterializedWaystoneModels.java");
+        String initializer = read("DragonboundWaystoneClient.java");
+
+        assertTrue(models.contains("material.tintIndex() < 0"));
+        assertTrue(models.contains("material.lightEmission() == 0"));
+        assertTrue(models.contains("material.layer() == ChunkSectionLayer.SOLID"));
+        assertTrue(models.contains("material.sprite().transparency().isOpaque()"));
+        assertTrue(initializer.contains("MaterializedWaystoneModels.clearCache()"));
+        assertTrue(initializer.contains("modifyBlockModelAfterBake()"));
+        assertTrue(initializer.contains("modifyItemModelAfterBake()"));
+    }
+
+    private static String read(String filename) throws IOException {
+        return Files.readString(CLIENT.resolve(filename));
+    }
+}

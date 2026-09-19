@@ -37,7 +37,7 @@ final class JeiDiscoveryContractTest {
     }
 
     @Test
-    void vanillaCraftingRemainsTheOnlyRecipeOwner() throws IOException {
+    void recipeDiscoveryIncludesOneDynamicShapelessMaterialRecipeWithoutJeiOwnership() throws IOException {
         List<String> recipeNames;
         try (Stream<Path> paths = Files.list(RECIPES)) {
             recipeNames = paths
@@ -50,11 +50,17 @@ final class JeiDiscoveryContractTest {
         assertEquals(List.of(
                 "dragonbound_staff.json",
                 "dragonbound_waystone.json",
-                "imbued_void_pearl.json"), recipeNames);
-        for (String recipeName : recipeNames) {
+                "imbued_void_pearl.json",
+                "waystone_material.json"), recipeNames);
+        for (String recipeName : recipeNames.stream()
+                .filter(name -> !name.equals("waystone_material.json"))
+                .toList()) {
             JsonObject recipe = JsonParser.parseString(Files.readString(RECIPES.resolve(recipeName))).getAsJsonObject();
             assertTrue(recipe.get("type").getAsString().startsWith("minecraft:crafting_"));
         }
+        JsonObject material = JsonParser.parseString(Files.readString(RECIPES.resolve("waystone_material.json")))
+                .getAsJsonObject();
+        assertEquals("dragonbound_waystone:waystone_material", material.get("type").getAsString());
     }
 
     @Test

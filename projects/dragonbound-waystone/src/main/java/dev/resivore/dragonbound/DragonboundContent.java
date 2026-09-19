@@ -4,6 +4,8 @@ import dev.resivore.dragonbound.block.DragonboundWaystoneBlock;
 import dev.resivore.dragonbound.block.DragonboundWaystoneBlockEntity;
 import dev.resivore.dragonbound.channel.DragonboundReturnItem;
 import dev.resivore.dragonbound.channel.ReturnSource;
+import dev.resivore.dragonbound.material.WaystoneMaterial;
+import dev.resivore.dragonbound.recipe.WaystoneMaterialRecipe;
 import net.fabricmc.fabric.api.creativetab.v1.CreativeModeTabEvents;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -13,6 +15,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -51,16 +54,20 @@ public final class DragonboundContent {
     public static final Item DRAGONBOUND_STAFF = new DragonboundReturnItem(
             new Item.Properties().setId(DRAGONBOUND_STAFF_KEY).stacksTo(1),
             ReturnSource.DRAGONBOUND_STAFF);
+    public static final RecipeSerializer<WaystoneMaterialRecipe> WAYSTONE_MATERIAL_RECIPE =
+            new RecipeSerializer<>(WaystoneMaterialRecipe.CODEC, WaystoneMaterialRecipe.STREAM_CODEC);
 
     private DragonboundContent() {
     }
 
     public static void register() {
+        WaystoneMaterial.register();
         Registry.register(BuiltInRegistries.BLOCK, WAYSTONE_BLOCK_KEY, WAYSTONE);
         Registry.register(BuiltInRegistries.BLOCK_ENTITY_TYPE, WAYSTONE_BLOCK_ENTITY_KEY, WAYSTONE_BLOCK_ENTITY);
         Registry.register(BuiltInRegistries.ITEM, WAYSTONE_ITEM_KEY, WAYSTONE_ITEM);
         Registry.register(BuiltInRegistries.ITEM, IMBUED_VOID_PEARL_KEY, IMBUED_VOID_PEARL);
         Registry.register(BuiltInRegistries.ITEM, DRAGONBOUND_STAFF_KEY, DRAGONBOUND_STAFF);
+        Registry.register(BuiltInRegistries.RECIPE_SERIALIZER, id("waystone_material"), WAYSTONE_MATERIAL_RECIPE);
 
         CreativeModeTabEvents.modifyOutputEvent(TOOLS_AND_UTILITIES_TAB).register(output -> {
             output.accept(WAYSTONE_ITEM);

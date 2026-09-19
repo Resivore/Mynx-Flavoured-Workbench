@@ -1,0 +1,11 @@
+{
+  "required": true,
+  "package": "dev.resivore.dragonbound.mixin.client",
+  "compatibilityLevel": "JAVA_25",
+  "client": [
+    "CuboidItemModelWrapperAccessor"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

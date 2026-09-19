@@ -26,6 +26,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 final class DragonboundRecipeUnlocksTest {
     private static final List<String> EXPECTED_IDS = List.of(
             "dragonbound_waystone:dragonbound_waystone",
+            "dragonbound_waystone:waystone_material",
             "dragonbound_waystone:imbued_void_pearl",
             "dragonbound_waystone:dragonbound_staff");
 
@@ -36,7 +37,7 @@ final class DragonboundRecipeUnlocksTest {
     }
 
     @Test
-    void contractContainsExactlyTheThreeDragonboundRecipeKeysInStableOrder() {
+    void contractContainsAllFourDragonboundRecipeKeysInStableOrder() {
         assertEquals(EXPECTED_IDS, identifiers(DragonboundRecipeUnlocks.recipeKeys()));
     }
 
@@ -45,7 +46,7 @@ final class DragonboundRecipeUnlocksTest {
         List<ResourceKey<Recipe<?>>> keys = DragonboundRecipeUnlocks.recipeKeys();
         Map<ResourceKey<Recipe<?>>, String> loadedRecipes = new LinkedHashMap<>();
         loadedRecipes.put(keys.get(0), "waystone-holder");
-        loadedRecipes.put(keys.get(2), "staff-holder");
+        loadedRecipes.put(keys.get(3), "staff-holder");
 
         ResourceKey<Recipe<?>> unrelated = ResourceKey.create(
                 net.minecraft.core.registries.Registries.RECIPE,
@@ -76,7 +77,7 @@ final class DragonboundRecipeUnlocksTest {
         List<String> reconnect = DragonboundRecipeUnlocks.selectLoaded(
                 key -> Optional.ofNullable(loadedRecipes.get(key)));
 
-        assertEquals(List.of("holder-0", "holder-1", "holder-2"), firstJoin);
+        assertEquals(List.of("holder-0", "holder-1", "holder-2", "holder-3"), firstJoin);
         assertEquals(firstJoin, reconnect);
     }
 
@@ -89,7 +90,7 @@ final class DragonboundRecipeUnlocksTest {
         DragonboundRecipeUnlocks.recipeKeys().forEach(recipeBook::add);
 
         assertEquals(Set.copyOf(DragonboundRecipeUnlocks.recipeKeys()), Set.copyOf(recipeBook.pack().known()));
-        assertEquals(3, recipeBook.pack().known().size());
+        assertEquals(4, recipeBook.pack().known().size());
     }
 
     @Test

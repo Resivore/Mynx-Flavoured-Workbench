@@ -8,9 +8,13 @@
   "license": ["MIT", "CC-BY-NC-SA-4.0"],
   "environment": "*",
   "entrypoints": {
-    "main": ["dev.resivore.dragonbound.DragonboundWaystone"]
+    "main": ["dev.resivore.dragonbound.DragonboundWaystone"],
+    "client": ["dev.resivore.dragonbound.client.DragonboundWaystoneClient"]
   },
-  "mixins": ["dragonbound_waystone.mixins.json"],
+  "mixins": [
+    "dragonbound_waystone.mixins.json",
+    "dragonbound_waystone.client.mixins.json"
+  ],
   "depends": {
     "fabricloader": ">=0.19.3",
     "fabric-api": ">=0.156.0+26.2",

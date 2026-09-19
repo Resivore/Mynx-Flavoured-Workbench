@@ -33,6 +33,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 final class ProductionRecipeCodecTest {
     private static final List<String> RECIPE_NAMES = List.of(
             "dragonbound_waystone",
+            "waystone_material",
             "imbued_void_pearl",
             "dragonbound_staff");
     private static final Map<String, JsonObject> PACKAGED_RECIPES = new LinkedHashMap<>();
@@ -74,14 +75,14 @@ final class ProductionRecipeCodecTest {
     }
 
     @Test
-    void allThreePackagedRecipesDecodeThroughProductionRecipeCodec() {
+    void allFourPackagedRecipesDecodeThroughProductionRecipeCodec() {
         assertEquals(RECIPE_NAMES, List.copyOf(DECODED_RECIPES.keySet()));
         DECODED_RECIPES.forEach((name, recipe) ->
                 assertNotNull(recipe, () -> "Recipe.CODEC returned null for " + name));
     }
 
     @Test
-    void allThreeExposeStandardDisplaysHandledByJeiVanillaCraftingCategory() {
+    void allFourExposeStandardDisplaysHandledByJeiVanillaCraftingCategory() {
         DECODED_RECIPES.forEach((name, recipe) -> {
             assertFalse(recipe.isSpecial(), () -> name + " must remain an ordinary crafting recipe");
             assertFalse(recipe.display().isEmpty(), () -> name + " has no synchronized recipe display");

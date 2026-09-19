@@ -1,0 +1,21 @@
+{
+  "replace": false,
+  "values": [
+    "minecraft:grass_block",
+    "#minecraft:leaves",
+    "minecraft:ice",
+    "minecraft:packed_ice",
+    "minecraft:blue_ice",
+    "minecraft:frosted_ice",
+    "minecraft:slime_block",
+    "minecraft:honey_block",
+    "minecraft:spawner",
+    "minecraft:beacon",
+    "minecraft:end_gateway",
+    "minecraft:end_portal",
+    "minecraft:barrier",
+    "minecraft:structure_block",
+    "minecraft:jigsaw",
+    "minecraft:light"
+  ]
+}

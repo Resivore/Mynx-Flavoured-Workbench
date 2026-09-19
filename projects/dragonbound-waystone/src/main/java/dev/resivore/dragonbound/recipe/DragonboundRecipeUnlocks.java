@@ -13,10 +13,11 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 
-/** Makes the three loaded Dragonbound crafting recipes known to each joining player. */
+/** Makes the loaded Dragonbound crafting recipes known to each joining player. */
 public final class DragonboundRecipeUnlocks {
     private static final List<ResourceKey<Recipe<?>>> DRAGONBOUND_RECIPE_KEYS = List.of(
             recipeKey("dragonbound_waystone"),
+            recipeKey("waystone_material"),
             recipeKey("imbued_void_pearl"),
             recipeKey("dragonbound_staff"));
 
