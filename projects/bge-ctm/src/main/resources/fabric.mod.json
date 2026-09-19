@@ -37,7 +37,7 @@
           "predicate": "~26.2",
           "reason": "The appearance bridge is compiled against the Minecraft 26.2 block-state and Fabric appearance method descriptors and must remain on the controlled target release.",
           "regression_evidence": [
-            "Canary 10 compiles and its focused headless GameTests execute against Minecraft 26.2 and Fabric API 0.156.0+26.2 with exact BGE C75."
+            "Canary 11 compiles and its focused headless GameTests execute against Minecraft 26.2 and Fabric API 0.156.0+26.2 with exact BGE C75."
           ]
         },
         {
@@ -45,9 +45,9 @@
           "relationship": "depends",
           "dependency_id": "continuity",
           "predicate": "=3.0.1+26.2",
-          "reason": "Canary 10 injects the exact Continuity 3.0.1+26.2 connection-predicate, overlay-processing, quad-context, per-contribution Standard Overlay contact, and processQuadInner emission seams; required mixins and the controlled input hash fail closed rather than guessing across an incompatible implementation.",
+          "reason": "Canary 11 injects the exact Continuity 3.0.1+26.2 connection-predicate, overlay-processing, quad-context, per-probe contact, SpriteCollector contribution-assembly, and processQuadInner emission seams; required mixins and the controlled input hash fail closed rather than guessing across an incompatible implementation.",
           "regression_evidence": [
-            "The exact Continuity 3.0.1+26.2 input is SHA-256 controlled, compiles against canonical connection predicates, overlay unit-square processing, quad context, source-full-collision, final Standard Overlay contact, and processQuadInner emission seams, and is verified as required client mixin targets."
+            "The exact Continuity 3.0.1+26.2 input is SHA-256 controlled, compiles against canonical connection predicates, overlay unit-square processing, quad context, source-full-collision, side/corner probes, SpriteCollector assembly, and processQuadInner emission seams, and is verified as required client mixin targets."
           ]
         }
       ]

@@ -48,7 +48,7 @@ public final class OverlayContactFilter {
         OverlayContribution contribution = SurfaceContactResolver.inspectOverlayContribution(
                 receiverState, receiverPos, inducingState, inducingPos, face, capture.surface());
         if (contribution.decision() != Decision.CONNECT) return false;
-        capture.addOverlayContributions(contribution.footprints());
+        capture.addOverlayProbe(inducingPos, contribution.footprints());
         return true;
     }
 }

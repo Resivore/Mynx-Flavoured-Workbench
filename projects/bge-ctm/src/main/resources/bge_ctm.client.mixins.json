@@ -5,6 +5,7 @@
   "client": [
     "ContinuityConnectionPredicateFactoryMixin",
     "ContinuityOverlayContactMixin",
+    "ContinuityOverlayContributionMixin",
     "ContinuityOverlayEmissionMixin",
     "ContinuityOverlayProcessingMixin",
     "ContinuityQuadContextMixin"

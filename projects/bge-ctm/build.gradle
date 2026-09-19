@@ -132,9 +132,12 @@ tasks.register('verifyControlledProviders') {
                     'me/pepperbell/continuity/client/properties/BasicConnectingCtmProperties.class':
                             ['getConnectionPredicate'],
                     'me/pepperbell/continuity/client/processor/overlay/StandardOverlayQuadProcessor.class':
-                            ['appliesOverlay', 'processQuadInner', 'shouldConnect', 'isCollisionShapeFullBlock',
-                             'emitOverlayQuad',
+                            ['appliesOverlay', 'appliesOverlayCorner', 'fromTwoSidesAdj', 'fromOneSide',
+                             'prepareCollector', 'getSprites', 'processQuadInner', 'shouldConnect',
+                             'isCollisionShapeFullBlock', 'emitOverlayQuad', 'SpriteCollector',
                              '(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/client/renderer/block/BlockAndTintGetter;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/core/Direction;Lnet/minecraft/client/renderer/texture/TextureAtlasSprite;)Z'],
+                    'me/pepperbell/continuity/client/processor/overlay/StandardOverlayQuadProcessor$SpriteCollector.class':
+                            ['add', 'clear', 'spriteAmount', 'sprites'],
                     'me/pepperbell/continuity/client/processor/overlay/OverlayProcessingPredicate.class':
                             ['shouldProcessQuad', 'isQuadUnitSquare'],
                     'me/pepperbell/continuity/client/model/CtmBlockStateModel$CtmQuadTransform.class':
@@ -208,6 +211,7 @@ tasks.register('verifyReleaseArtifact') {
                     (clientMixins.client as Set) != ([
                             'ContinuityConnectionPredicateFactoryMixin',
                             'ContinuityOverlayContactMixin',
+                            'ContinuityOverlayContributionMixin',
                             'ContinuityOverlayEmissionMixin',
                             'ContinuityOverlayProcessingMixin',
                             'ContinuityQuadContextMixin'] as Set)) {
@@ -243,6 +247,7 @@ tasks.register('verifyReleaseArtifact') {
                     'dev/resivore/bgectm/mixin/BgeDerivedBlockAppearanceMixin.class',
                     'dev/resivore/bgectm/mixin/ContinuityConnectionPredicateFactoryMixin.class',
                     'dev/resivore/bgectm/mixin/ContinuityOverlayContactMixin.class',
+                    'dev/resivore/bgectm/mixin/ContinuityOverlayContributionMixin.class',
                     'dev/resivore/bgectm/mixin/ContinuityOverlayEmissionMixin.class',
                     'dev/resivore/bgectm/mixin/ContinuityOverlayProcessingMixin.class',
                     'dev/resivore/bgectm/mixin/ContinuityQuadContextMixin.class'
@@ -272,7 +277,7 @@ tasks.register('verifyReleaseArtifact') {
 
 tasks.register('stageCanaryArtifact', Copy) {
     group = 'distribution'
-    description = 'Stages the exact ignored Canary 10 JAR for canonical local retention.'
+    description = 'Stages the exact ignored Canary 11 JAR for canonical local retention.'
     dependsOn tasks.named('verifyReleaseArtifact')
     from(packagedJar)
     into(layout.projectDirectory.dir('artifacts'))

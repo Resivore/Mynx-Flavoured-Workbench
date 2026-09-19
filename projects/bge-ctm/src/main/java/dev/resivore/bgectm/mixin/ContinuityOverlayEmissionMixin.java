@@ -11,7 +11,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
-/** Replaces only the exact C6 Standard Overlay QuadUtil emission callsite. */
+/** Replaces only the exact Standard Overlay QuadUtil emission callsite. */
 @Mixin(StandardOverlayQuadProcessor.class)
 abstract class ContinuityOverlayEmissionMixin {
     @Redirect(method = "processQuadInner",

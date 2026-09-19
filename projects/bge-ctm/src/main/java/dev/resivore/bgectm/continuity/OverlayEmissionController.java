@@ -5,6 +5,7 @@ import dev.resivore.bgectm.CanonicalAppearanceResolver;
 import dev.resivore.bgectm.SurfaceContactResolver;
 import dev.resivore.bgectm.SurfaceContactResolver.QuadSurface;
 import dev.resivore.bgectm.SurfaceContactResolver.SurfaceMatch;
+import dev.resivore.bgectm.continuity.ContinuityQuadContext.OverlaySpriteContribution;
 import me.pepperbell.continuity.client.util.QuadUtil;
 import net.fabricmc.fabric.api.client.renderer.v1.mesh.QuadAtlas;
 import net.fabricmc.fabric.api.client.renderer.v1.mesh.QuadEmitter;
@@ -20,7 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-/** Narrow C6 replacement for Continuity's one Standard Overlay emission callsite. */
+/** Narrow replacement for Continuity's Standard Overlay emission callsite. */
 public final class OverlayEmissionController {
     private OverlayEmissionController() {}
 
@@ -35,13 +36,21 @@ public final class OverlayEmissionController {
         }
 
         BlockState receiver = capture.receiverState();
-        if (capture.overlayContributions().isEmpty()
-                && !CanonicalAppearanceResolver.inspect(receiver).inherited()) {
+        Optional<OverlaySpriteContribution> spriteContribution = capture.nextOverlaySprite();
+        List<QuadSurface> contributionFootprints = spriteContribution
+                .map(OverlaySpriteContribution::footprints).orElseGet(List::of);
+        boolean inheritedReceiver = CanonicalAppearanceResolver.inspect(receiver).inherited();
+        if (contributionFootprints.isEmpty() && !inheritedReceiver) {
             QuadUtil.emitOverlayQuad(emitter, face, sprite, tint, layer, ao);
             return;
         }
+        if (spriteContribution.isPresent() && contributionFootprints.isEmpty()) {
+            BgeCtmDiagnostics.overlayEmit(receiver, face, capture.surface(), null,
+                    "VETO", "CONTRIBUTION_PROVENANCE_MISSING");
+            return;
+        }
 
-        Resolution resolution = resolve(receiver, face, capture);
+        Resolution resolution = resolve(receiver, face, capture, contributionFootprints);
         if (resolution.kind == Kind.VETO) {
             BgeCtmDiagnostics.overlayEmit(receiver, face, capture.surface(), null,
                     "VETO", resolution.reason);
@@ -77,9 +86,9 @@ public final class OverlayEmissionController {
     }
 
     private static Resolution resolve(BlockState receiver, Direction face,
-            ContinuityQuadContext.Capture capture) {
+            ContinuityQuadContext.Capture capture, List<QuadSurface> contributionFootprints) {
         QuadSurface exact = capture.surface();
-        if (!capture.overlayContributions().isEmpty()) {
+        if (!contributionFootprints.isEmpty()) {
             if (exact == null || exact.normal() != face) {
                 return Resolution.veto("CONTRIBUTION_SURFACE_UNSUPPORTED");
             }
@@ -90,7 +99,7 @@ public final class OverlayEmissionController {
             }
             int presentationPlane = receiverMatch.get().presentation().plane16();
             List<QuadSurface> presentationContributions = new ArrayList<>();
-            for (QuadSurface footprint : capture.overlayContributions()) {
+            for (QuadSurface footprint : contributionFootprints) {
                 if (footprint.normal() != exact.normal()
                         || footprint.plane16() != exact.plane16()
                         || footprint.uAxis() != exact.uAxis()

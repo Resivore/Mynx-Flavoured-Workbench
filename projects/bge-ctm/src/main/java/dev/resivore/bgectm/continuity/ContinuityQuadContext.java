@@ -8,8 +8,13 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
 /** Thread-confined snapshot of the exact quad currently being processed by Continuity. */
 public final class ContinuityQuadContext {
@@ -102,7 +107,11 @@ public final class ContinuityQuadContext {
         @Nullable private final QuadSurface surface;
         @Nullable private final BlockState receiverState;
         @Nullable private final BlockPos receiverPos;
-        private final List<QuadSurface> overlayContributions = new ArrayList<>();
+        private final Map<BlockPos, List<QuadSurface>> overlayProbes = new LinkedHashMap<>();
+        private final List<OverlaySpriteContribution> overlaySprites = new ArrayList<>();
+        @Nullable private Direction[] overlayDirections;
+        @Nullable private int[] pendingSpriteIndices;
+        private int emittedOverlaySprites;
 
         public Capture(@Nullable QuadSurface surface, @Nullable BlockState receiverState,
                 @Nullable BlockPos receiverPos) {
@@ -134,14 +143,125 @@ public final class ContinuityQuadContext {
             return surface != null;
         }
 
-        public void addOverlayContributions(List<QuadSurface> footprints) {
-            for (QuadSurface footprint : Objects.requireNonNull(footprints, "footprints")) {
-                overlayContributions.add(Objects.requireNonNull(footprint, "footprint"));
+        /** Starts the exact Standard Overlay collector assembly for this processor invocation. */
+        public void beginOverlayAssembly(Direction[] directions) {
+            Objects.requireNonNull(directions, "directions");
+            if (directions.length != 4 || Arrays.stream(directions).anyMatch(Objects::isNull)) {
+                throw new IllegalArgumentException("Standard Overlay requires four directions");
+            }
+            overlayDirections = directions.clone();
+            overlayProbes.clear();
+            overlaySprites.clear();
+            pendingSpriteIndices = null;
+            emittedOverlaySprites = 0;
+        }
+
+        /** Retains one canonically positive probe under its exact inducing block position. */
+        public void addOverlayProbe(BlockPos inducingPos, List<QuadSurface> footprints) {
+            Objects.requireNonNull(inducingPos, "inducingPos");
+            Objects.requireNonNull(footprints, "footprints");
+            if (footprints.isEmpty()) return;
+            List<QuadSurface> existing = overlayProbes.computeIfAbsent(
+                    inducingPos.immutable(), ignored -> new ArrayList<>());
+            for (QuadSurface footprint : footprints) {
+                QuadSurface exact = Objects.requireNonNull(footprint, "footprint");
+                if (!existing.contains(exact)) existing.add(exact);
             }
         }
 
-        public List<QuadSurface> overlayContributions() {
-            return List.copyOf(overlayContributions);
+        /** Records the sprite indices passed to one of Continuity's collector helper methods. */
+        public void beginPendingSprites(int... spriteIndices) {
+            Objects.requireNonNull(spriteIndices, "spriteIndices");
+            pendingSpriteIndices = spriteIndices.clone();
+        }
+
+        /** Attaches one non-null collector entry to the probes represented by its sprite index. */
+        public void addPendingSprite(int argumentIndex, boolean present) {
+            if (!present) return;
+            if (pendingSpriteIndices == null || argumentIndex < 0
+                    || argumentIndex >= pendingSpriteIndices.length) {
+                throw new IllegalStateException("No Standard Overlay sprite argument at "
+                        + argumentIndex);
+            }
+            addOverlaySprite(pendingSpriteIndices[argumentIndex]);
+        }
+
+        /** Clears helper-local sprite arguments after the corresponding helper returns. */
+        public void endPendingSprites() {
+            pendingSpriteIndices = null;
+        }
+
+        /** Attaches a constant-index collector entry used by Continuity's corner-only branch. */
+        public void addOverlaySprite(int spriteIndex, boolean present) {
+            if (present) addOverlaySprite(spriteIndex);
+        }
+
+        /** Returns the contribution aligned with the next sprite in Continuity's emission loop. */
+        public Optional<OverlaySpriteContribution> nextOverlaySprite() {
+            if (emittedOverlaySprites >= overlaySprites.size()) return Optional.empty();
+            return Optional.of(overlaySprites.get(emittedOverlaySprites++));
+        }
+
+        /** Deterministic inspection seam for contribution-assembly tests. */
+        public List<OverlaySpriteContribution> overlaySprites() {
+            return List.copyOf(overlaySprites);
+        }
+
+        private void addOverlaySprite(int spriteIndex) {
+            overlaySprites.add(new OverlaySpriteContribution(spriteIndex,
+                    footprintsForSprite(spriteIndex)));
+        }
+
+        private List<QuadSurface> footprintsForSprite(int spriteIndex) {
+            if (receiverPos == null || overlayDirections == null) return List.of();
+            List<BlockPos> inducingPositions = switch (spriteIndex) {
+                // Corner sprites carry only the diagonal appliesOverlay probe that selected them.
+                case 0 -> List.of(corner(1, 2));
+                case 2 -> List.of(corner(0, 1));
+                case 14 -> List.of(corner(2, 3));
+                case 16 -> List.of(corner(0, 3));
+                // Edge and combined sprites carry exactly their successful side probes.
+                case 1 -> List.of(side(1));
+                case 3 -> List.of(side(1), side(2));
+                case 4 -> List.of(side(0), side(1));
+                case 5 -> List.of(side(0), side(1), side(2));
+                case 6 -> List.of(side(0), side(1), side(3));
+                case 7 -> List.of(side(2));
+                case 8 -> List.of(side(0), side(1), side(2), side(3));
+                case 9 -> List.of(side(0));
+                case 10 -> List.of(side(2), side(3));
+                case 11 -> List.of(side(0), side(3));
+                case 12 -> List.of(side(1), side(2), side(3));
+                case 13 -> List.of(side(0), side(2), side(3));
+                case 15 -> List.of(side(3));
+                default -> throw new IllegalArgumentException(
+                        "Unknown Standard Overlay sprite index: " + spriteIndex);
+            };
+            LinkedHashSet<QuadSurface> exact = new LinkedHashSet<>();
+            for (BlockPos inducingPos : inducingPositions) {
+                List<QuadSurface> probe = overlayProbes.get(inducingPos);
+                if (probe != null) exact.addAll(probe);
+            }
+            return List.copyOf(exact);
+        }
+
+        private BlockPos side(int directionIndex) {
+            return receiverPos.relative(overlayDirections[directionIndex]).immutable();
+        }
+
+        private BlockPos corner(int firstDirectionIndex, int secondDirectionIndex) {
+            return receiverPos.relative(overlayDirections[firstDirectionIndex])
+                    .relative(overlayDirections[secondDirectionIndex]).immutable();
+        }
+    }
+
+    /** One logical Continuity sprite and only the BGE footprints of the probes that selected it. */
+    public record OverlaySpriteContribution(int spriteIndex, List<QuadSurface> footprints) {
+        public OverlaySpriteContribution {
+            if (spriteIndex < 0 || spriteIndex > 16) {
+                throw new IllegalArgumentException("Invalid Standard Overlay sprite index");
+            }
+            footprints = List.copyOf(Objects.requireNonNull(footprints, "footprints"));
         }
     }
 
