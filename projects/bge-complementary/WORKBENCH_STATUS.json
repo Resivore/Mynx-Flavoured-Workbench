@@ -47,8 +47,8 @@
       {
         "type": "PROJECT",
         "identifier": "4b2342fc-7bdf-5ba6-9f37-d551109d214c",
-        "requirement": ">=4.2.22-bge.canary78.stair-wall-surface-authority+26.2",
-        "reason": "BGE C78 is the audited owner of authoritative BgeMaterialBindings, canonical parent/state projection, texture roles, and exact derived-geometry surface topology."
+        "requirement": ">=4.2.23-bge.canary79.cnm-family-bridge+26.2",
+        "reason": "BGE C79 is the current owner of authoritative BgeMaterialBindings, canonical parent/state projection, texture roles, and exact derived-geometry surface topology."
       },
       {
         "type": "PROJECT",
@@ -77,7 +77,7 @@
     ]
   },
   "state": {
-    "milestone": "Static rescope and architecture audit complete against BGE C78, BGE × CTM Canary 12, the exact Complementary Unbound r5.8.1 archive, and the supplied Fancy Glass-enabled configuration. BGE has the parent authority; Iris accepts pack-declared IDs/tags, but this exact pack has only explicit block mappings and no supported Workbench-only path to change its material IDs. No implementation or runtime validation has begun.",
+    "milestone": "The maintainer-facing upstream tag-contract proposal is prepared against current BGE C79, BGE × CTM Canary 12, the exact Complementary Unbound r5.8.1 archive, and the supplied Fancy Glass-enabled configuration. BGE has the parent authority; the proposal asks Complementary to opt into conservatively selected Iris `%tag` mappings while retaining material-ID authority. No implementation, release artifact, or runtime validation has begun.",
     "releases": {
       "current": null,
       "accepted": null,
@@ -92,10 +92,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 3,
-    "activity_at": "2026-09-19T07:07:08.4908339Z",
-    "updated_at": "2026-09-19T07:07:08.4908339Z",
-    "last_codex_at": "2026-09-19T07:07:08.4908339Z",
-    "source_commit": "0dae5a8ba550e43886f7d74e23567697c466b1df"
+    "revision": 4,
+    "activity_at": "2026-09-19T15:42:20.9435510Z",
+    "updated_at": "2026-09-19T15:42:20.9435510Z",
+    "last_codex_at": "2026-09-19T15:42:20.9435510Z",
+    "source_commit": "ba35a16c787d71f4c3b0b74c8df1b9b7ac594290"
   }
 }
