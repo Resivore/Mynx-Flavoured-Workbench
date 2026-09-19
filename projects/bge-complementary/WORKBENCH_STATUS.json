@@ -19,83 +19,128 @@
     ]
   },
   "definition": {
-    "lifecycle": "PLANNED",
+    "lifecycle": "ACTIVE",
     "goals": [
-      "Make every eligible BGE-derived geometry resolve to the selected Complementary shader material classification of its canonical parent, so changing geometry does not silently change material identity.",
-      "Use BGE's authoritative canonical binding and a supported Complementary/Iris integration seam rather than a second manually maintained inventory of derived block IDs.",
-      "Preserve Translucent Glass as a representative clear-glass compatibility control while covering the broader Complementary material contract."
+      "Make conservatively eligible BGE-derived physical states inherit the active Iris shader material classification of their canonical parent without altering the shader pack.",
+      "Use BGE C79's authoritative BgeMaterialBindings and state projection rather than BGE registry-name parsing or a derived-block inventory.",
+      "Preserve shader-pack authority: an explicit physical BGE material or layer assignment wins over parent inheritance."
     ],
     "scope": [
-      "Audit and coordinate parent-material parity for BGE's canonical full blocks and their available slab, stair, wall, Vertical Slab, Step, Layer, Corner, Quarter Column, and equivalent derived roles.",
-      "Cover shader-ID classes and their associated reflective, smooth/specular, emissive, translucent/Fancy Glass, foliage, and other material behaviors only where the parent classification and the physical derived geometry make that inheritance meaningful.",
-      "Use the exact supplied Complementary Unbound r5.8.1 archive and saved shader options as read-only audit inputs; record a precise supported implementation plan when current Workbench-owned code cannot complete parity.",
-      "Retain the former project's Translucent Glass findings, especially ordinary resource/CTM composition, translucent render-layer and face-culling concerns, and the boundary with BGE × CTM."
+      "Provide a client-only Fabric bridge for exact BGE C79 and Iris 1.11.2+mc26.2 that augments completed Iris material and layer maps at their narrow RETURN seams.",
+      "Canary 1 covers clear/stained glass, iron, gold, diamond, emerald, glowstone, and sea lantern canonical parents; its mapping is state-specific wherever Iris's material map is state-specific.",
+      "Retain Translucent Glass and BGE × CTM as adjacent diagnostic context only; this project does not own their rendering or Continuity behavior."
     ],
     "boundaries": {
       "owned_paths": [
         "projects/bge-complementary"
       ],
       "exclusions": [
-        "BGE × CTM UUID 5747a309-1bd5-4280-b25c-98669e149928 retains Continuity connection, overlay, canonical-appearance, and physical-contact policy; this project neither duplicates nor broadens that work.",
-        "Block Geometry Extensions and Nibaru retain canonical bindings, geometry registration, model generation, render-layer correctness, and physical surface/culling ownership; a BGE change is considered only after a supported shader-material contract is agreed.",
-        "The immutable originals/shaderpacks reference archive and its saved configuration are never modified, copied into artifacts, or redistributed as a patched shader pack.",
-        "No Iris mixin, private renderer hook, generated per-derived-block mapping, resource-pack-side shader override, or speculative shader-pack patch is an accepted implementation path without documented upstream support and licensing permission.",
-        "Minecraft runtime validation, release artifacts, Canary versions, deployment, and unrelated project status are outside this rescope/audit task."
+        "Do not modify, copy into the artifact, redistribute, or patch the Complementary archive, originals/, Iris JAR, or saved shader configuration.",
+        "Do not modify BGE core or BGE × CTM; BGE retains canonical binding/state projection and native render setup, while BGE × CTM retains Continuity behavior.",
+        "No hard-coded Complementary material IDs, BGE-derived registry-name parsing, generated per-derived-block ID table, shader-pack parser replacement, or override of an explicit shader-pack physical mapping.",
+        "Leaves, foliage, vines, crops, waving plants, fluids, lily-pad/water-like classes, portals, beacons, and block-entity paths are outside Canary 1 inheritance."
       ]
     },
     "dependencies": [
       {
         "type": "PROJECT",
         "identifier": "4b2342fc-7bdf-5ba6-9f37-d551109d214c",
-        "requirement": ">=4.2.23-bge.canary79.cnm-family-bridge+26.2",
-        "reason": "BGE C79 is the current owner of authoritative BgeMaterialBindings, canonical parent/state projection, texture roles, and exact derived-geometry surface topology."
+        "requirement": "=4.2.23-bge.canary79.cnm-family-bridge+26.2",
+        "reason": "Exact current BGE C79 provides the authoritative BgeMaterialBindings and canonical state projection consumed by this version-coupled bridge."
       },
       {
         "type": "PROJECT",
         "identifier": "5747a309-1bd5-4280-b25c-98669e149928",
         "requirement": ">=0.12.0-canary12",
-        "reason": "BGE × CTM owns the separate Fabric appearance bridge and Continuity contact policy that composes with, but does not supply, Iris shader material IDs."
+        "reason": "BGE × CTM remains adjacent Continuity context and is not an implementation dependency for Iris material inheritance."
       },
       {
         "type": "MOD",
         "identifier": "iris",
-        "requirement": "1.11.2+mc26.2 audited stack",
-        "reason": "Iris reads the selected shader pack's block.properties mappings and provides the documented tag syntax available to a shader-pack author."
+        "requirement": "=1.11.2+mc26.2 for hook activation",
+        "reason": "The private bridge targets Iris BlockMaterialMapping's exact completed-map descriptors and fail-closes for every other Iris version or Iris absence."
       },
       {
         "type": "RESOURCE_PACK",
         "identifier": "ComplementaryUnbound_r5.8.1.zip",
         "requirement": "r5.8.1; SHA-256 bb89b1fc54687d4147a837fb2e3c3f7261a13bee51819761e9b6a91cb7915965",
-        "reason": "Exact user-supplied read-only reference pack whose block.properties material mapping and enabled Fancy Glass setting define this audit target."
+        "reason": "Exact read-only shader-pack audit target for material and layer behavior."
       },
       {
         "type": "MOD",
         "identifier": "translucent-glass",
-        "requirement": "0.3.0 historical audited control",
-        "reason": "Its clear-glass resource treatment remains a representative texture/CTM control, not the defining shader-material scope."
+        "requirement": "0.3.0 historical control",
+        "reason": "Useful clear-glass texture and CTM diagnostic only; it is not a shader-material provider."
+      },
+      {
+        "type": "TOOL",
+        "identifier": "java",
+        "requirement": "=25.0.4.1",
+        "reason": "Java 25 baseline used for the clean Canary 1 compile and tests."
+      },
+      {
+        "type": "TOOL",
+        "identifier": "gradle",
+        "requirement": "=9.5.1",
+        "reason": "Tracked Workbench Gradle wrapper baseline used for Canary 1."
       }
     ]
   },
   "state": {
-    "milestone": "The maintainer-facing upstream tag-contract proposal is prepared against current BGE C79, BGE × CTM Canary 12, the exact Complementary Unbound r5.8.1 archive, and the supplied Fancy Glass-enabled configuration. BGE has the parent authority; the proposal asks Complementary to opt into conservatively selected Iris `%tag` mappings while retaining material-ID authority. No implementation, release artifact, or runtime validation has begun.",
+    "milestone": "Canary 1 is an ACTIVE client-only BGE C79/Iris 1.11.2 bridge. It augments Iris's completed state material map and block-wide layer map only for absent eligible BGE physical entries, using BGE canonical state projection and preserving explicit physical pack entries. The exact retained artifact passed clean static validation and awaits owner-directed in-game testing.",
     "releases": {
-      "current": null,
+      "current": {
+        "version": "0.1.0+26.2-canary1",
+        "embedded_version": "0.1.0+26.2-canary1",
+        "artifact": {
+          "filename": "bge-complementary-0.1.0+26.2-canary1.jar",
+          "sha256": "e508f19d4e24d8eb0d3f9c72f24e1898dbe30bc717777c4b548cbf387a113a7b"
+        },
+        "built_at": "2026-09-19T16:08:08.1678365Z",
+        "source_commit": "af680fef0ec39f9ff810ceda307ba2b8fa26345b",
+        "runtime_dependency_policy": {
+          "contract": "CAPABILITY_OR_PROVIDER",
+          "exceptions": [
+            {
+              "consumer_id": "bge_complementary",
+              "relationship": "depends",
+              "dependency_id": "cnm_terrain_slabs_compat",
+              "predicate": "=4.2.23-bge.canary79.cnm-family-bridge+26.2",
+              "reason": "Canary 1 invokes C79's internal authoritative BgeMaterialBindings API and exact state-projection behavior.",
+              "regression_evidence": [
+                "Clean Canary 1 verification hashes the retained BGE C79 JAR as 7e3265c8746547465ede1a48b31c3db06370de84331b8ff9e35a2ce450650a91 and requires BgeMaterialBindings.class."
+              ]
+            },
+            {
+              "consumer_id": "bge_complementary",
+              "relationship": "suggests",
+              "dependency_id": "iris",
+              "predicate": "=1.11.2+mc26.2",
+              "reason": "The private RETURN mixin is descriptor-coupled to Iris 1.11.2; its plugin declines every other version and Iris absence.",
+              "regression_evidence": [
+                "Static audit records the exact BlockMaterialMapping material and layer RETURN descriptors, and focused tests prove completed-map fallback precedence without hard-coded shader IDs."
+              ]
+            }
+          ]
+        },
+        "summary": "Adds client-only canonical shader material and layer fallback for conservative BGE C79 material classes."
+      },
       "accepted": null,
       "rollback": null,
       "accepted_current": "NO_ACCEPTED",
       "accepted_rollback": "NO_ROLLBACK"
     },
     "validation": {
-      "build": "NOT_RUN",
+      "build": "STATIC_PASS",
       "runtime": "RUNTIME_UNTESTED"
     },
     "blocker": null
   },
   "synchronization": {
-    "revision": 4,
-    "activity_at": "2026-09-19T15:42:20.9435510Z",
-    "updated_at": "2026-09-19T15:42:20.9435510Z",
-    "last_codex_at": "2026-09-19T15:42:20.9435510Z",
-    "source_commit": "ba35a16c787d71f4c3b0b74c8df1b9b7ac594290"
+    "revision": 5,
+    "activity_at": "2026-09-19T16:10:00.0000000Z",
+    "updated_at": "2026-09-19T16:10:00.0000000Z",
+    "last_codex_at": "2026-09-19T16:10:00.0000000Z",
+    "source_commit": "af680fef0ec39f9ff810ceda307ba2b8fa26345b"
   }
 }

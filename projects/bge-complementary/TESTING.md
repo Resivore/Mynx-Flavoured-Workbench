@@ -1,76 +1,63 @@
-# Testing — BGE × Complementary
+# Testing — BGE × Complementary Canary 1
 
 ## Current gate
 
-**PLANNED — NO RUNTIME CANDIDATE**
+**ACTIVE — STATIC_PASS — RUNTIME_UNTESTED**
 
-This rescope/audit created no code, artifact, deployment, Minecraft launch, or
-runtime observation. The supplied Complementary archive/configuration was read
-only. Do not infer shader parity from the canonical binding, generated tags,
-static source inspection, a resource reload, a screenshot outside Minecraft, a
-build, or a GameTest.
+Canary 1 is `bge-complementary-0.1.0+26.2-canary1.jar`, SHA-256
+`e508f19d4e24d8eb0d3f9c72f24e1898dbe30bc717777c4b548cbf387a113a7b`.
+Build and synthetic tests do not establish Minecraft shader behavior. Do not
+alter `originals/`, a protected Minecraft profile, Complementary, or Iris while
+using this matrix.
 
-The exact r5.8.1 archive has no BGE tag mapping, so current BGE-derived blocks
-are not expected to acquire a canonical Complementary material ID merely because
-BGE × CTM projects a canonical Fabric appearance for Continuity.
+## Exact stack and evidence to record
 
-## Prerequisites for a future candidate
+Use only the normal Minecraft 26.2 Fabric stack with:
 
-Record all of the following before any result is attached to this UUID:
+- BGE C79 `4.2.23-bge.canary79.cnm-family-bridge+26.2`;
+- Iris `1.11.2+mc26.2` and its required Sodium baseline;
+- Canary 1 bridge JAR above;
+- Complementary Unbound r5.8.1, SHA-256
+  `bb89b1fc54687d4147a837fb2e3c3f7261a13bee51819761e9b6a91cb7915965`;
+- the existing shader configuration, including the recorded `FANCY_GLASS=true`
+  control when testing Fancy Glass.
 
-- exact BGE candidate filename, SHA-256, embedded version, and source commit;
-- exact BGE × CTM, Iris, Fabric API, Sodium, Clutter No More, and relevant
-  provider identities;
-- Complementary Unbound r5.8.1 SHA-256
-  bb89b1fc54687d4147a837fb2e3c3f7261a13bee51819761e9b6a91cb7915965;
-- saved configuration SHA-256
-  931dd0fc5aa4cea6f0f8fb1fa8b6c056492930258bcb52a586f5439a622a130b
-  and confirmation that FANCY_GLASS=true;
-- enabled resource packs, exact low-to-high pack order, shader settings, world,
-  coordinates, time/weather, screenshots, and relevant client log lines;
-- the approved Complementary/Iris tag or other documented supported integration
-  identity. A local modified shader ZIP is not a valid candidate.
+At every shader-enabled launch or reload, preserve the aggregate bridge log
+line. It must report the loaded Iris/BGE versions and nonzero inherited state
+count for a parent the active pack maps. An absent/mismatched Iris or BGE
+version intentionally produces no bridge hook.
 
-Run every row first with shaders disabled. That establishes BGE rendering,
-physical faces, and BGE × CTM behavior separately from shader material parity.
-Then repeat only the eligible rows with the exact Complementary configuration.
+First run each visual row with shaders disabled. This separates ordinary BGE
+geometry, translucent rendering, face culling, and BGE × CTM behavior from a
+shader-material result. Then run it under Complementary. Record exact release
+hash, pack/settings, time/weather, coordinates, screenshots from useful sides,
+and each row as PASS, FAIL, or INCONCLUSIVE only.
 
-## Runtime matrix after a supported mapping exists
+## Manual matrix
 
-| Row | Arrangement | Observe | Ownership if it fails |
-| --- | --- | --- | --- |
-| Clear glass | Canonical clear glass against every available BGE clear-glass role: slab, stair, wall, Vertical Slab, Step, Layer, Corner, and Quarter Column | Same Fancy Glass opacity floor, smoothness/highlight/reflection behavior where the face is visible; no opaque fallback, lost exterior face, or invalid full-cube treatment | Missing parent material class: this project / approved pack contract. Layer or face/culling defect: BGE or BGE Glass Face Culling. |
-| Stained glass | Canonical white and one non-white stained parent against matching BGE forms; place unlike colors together as a control | Each derived form follows its own parent color class; no accidental clear-glass or other-color class; unlike colors do not become one material family | This project / pack mapping. |
-| Reflective/smooth solid | One mapped metal or gem parent, such as iron, gold, diamond, or emerald, beside a representative derived form | Parent and derived use equivalent material response while retaining correct canonical texture/specular inputs and physical shape | This project / pack mapping, or BGE model texture generation. |
-| Emissive material | One mapped glowstone, sea-lantern, shroomlight, or froglight parent where BGE exposes an eligible form | Parent-class glow/emission behavior remains visible without a fake light value or broken geometry | This project / pack mapping; BGE if model/layer/texture input differs. |
-| Clear-glass contacts | Same-material base↔derived, derived↔derived, and deliberately partial/misaligned contacts viewed from both sides | Only physically shared area is suppressed; exterior partial faces remain. Repeat with Translucent Glass active as the clear-glass texture/CTM control | BGE / BGE Glass Face Culling for physical faces; BGE × CTM for CTM contact/connection. |
-| Continuity control | One known BGE × CTM canonical-appearance case and one unlike-parent negative connection | CTM uses the intended canonical material only where BGE × CTM's contact policy permits it; do not diagnose this as an Iris-ID fix | BGE × CTM. |
-| Foliage/waving probe | Only after a pack mapping explicitly admits a leaf/foliage/vine class; test an approved geometry role beside the canonical parent through wind, rain, snow, and multiple views | No detached, overextended, clipped, or wrongly classified waving. A failure keeps that material-class/topology pair withheld; it must not be fixed by suppressing other parent parity. | This project / pack mapping policy; BGE only if the physical model input is wrong. |
-| Reload stability | For every passing eligible representative: resource reload, world leave/rejoin, then full client restart | Mapping, pass, texture inputs, and geometry remain stable; preserve logs for any load/reload error | Route by the observed failed layer; do not generalize from a successful reload. |
+| Row | Arrangement | Required observation |
+| --- | --- | --- |
+| Clear glass | Canonical `minecraft:glass` beside BGE glass Layer, slab, stair, wall, Vertical Slab, Step, Corner, and Quarter Column where available | Each visible BGE form follows canonical glass's shader material. With Fancy Glass, distinguish a material mismatch from a missing/extra physical face or CTM seam. |
+| Cyan stained glass | Canonical cyan stained glass beside matching BGE cyan Layer, slab, stair, and another available geometry | The BGE form follows cyan—not clear glass or another stain. Compare an adjacent different stained color as a negative color-control. |
+| Iron | Canonical iron block beside BGE iron slab/stair/wall | Equivalent reflective/smooth material treatment without changing correct BGE geometry or texture orientation. |
+| Gold or diamond | Canonical gold or diamond block beside at least two BGE geometry roles | The exact chosen parent classification is inherited, with no shared hard-coded metal/gem ID. |
+| Glowstone or sea lantern | Canonical parent beside at least two BGE roles | Equivalent parent material/emission classification; do not infer fake block-light behavior. |
+| Explicit physical precedence | If a shader-pack test setup explicitly maps a BGE physical state or block, compare it to its canonical parent | The physical assignment remains visible; Canary 1 must not replace it. Record the temporary test arrangement and remove no upstream/archive files. |
+| Shader disable/re-enable | Repeat one passing glass and one solid row | Disabled shaders use normal BGE rendering; re-enabling rebuilds only the active pack's map and shows current classification. |
+| Shader reload / pack switch | Reload Complementary, then switch to one different shader pack or shaders-off | The log emits a new aggregate construction line. No Complementary classification survives in the other pack or shaders-off control. |
+| Leave/rejoin and restart | Repeat one glass and one solid after world leave/rejoin, then full client restart | Stable mapping after each lifecycle; no crash, stale material, or Mixin failure. |
 
-Record each row independently as pass, fail, or inconclusive. An observation
-binds only to the exact release/hash and exact loaded stack. A runtime pass for
-clear glass does not establish metal, emissive, foliage, water-like, or other
-material classes.
+## Withheld classes
 
-## Geometry-sensitive exclusions
+Do not treat leaves, foliage, vines, crops, waving plants, fluids, lily-pad or
+water-like classes, portals, beacons, or block-entity paths as Canary 1 parity
+successes. A future expansion needs separate exact visual evidence and a new
+canonical-parent policy decision.
 
-Do not run a category as an expected parity success merely because it has a
-canonical parent mapping. Keep foliage, vines, crops, upper/lower plant forms,
-lily-pad/water-like forms, fluids, portals, beacons, and block-entity-specific
-paths withheld until the integration contract and targeted topology policy
-explicitly admit them. In particular, shader vertex waving and render-layer
-semantics can depend on physical geometry rather than material identity alone.
+## Ownership boundary
 
-Stop on a crash, missing mapping, wrong render pass, visible internal face,
-depth/halo artifact, or movement/clipping defect. Preserve the exact
-arrangement, F3/debug state if useful, screenshots from both sides, and logs;
-do not change the protected Minecraft profiles or infer a general result from a
-single placement.
-
-## Acceptance boundary
-
-This project owns Complementary/Iris shader material parity only. It does not
-take over Continuity connectivity, BGE geometry/culling, or shader-pack
-licensing. Runtime testing remains owner-directed evidence and does not change
-the lifecycle from PLANNED or ACCEPTED without an explicit owner decision.
+This bridge owns only Iris's inherited material/layer map fallback. BGE owns
+geometry and native render-layer setup; BGE × CTM owns Continuity appearance,
+connections, and physical contact; shader packs own their explicit mappings.
+Runtime evidence does not change `ACTIVE` to `ACCEPTED` without an explicit
+owner decision.

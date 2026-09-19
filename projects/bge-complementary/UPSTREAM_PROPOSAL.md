@@ -1,6 +1,8 @@
 # Proposal: canonical-parent block tags for BGE material compatibility
 
-**Status:** ready for maintainer discussion; no local implementation is proposed
+**Historical status:** prepared for maintainer discussion before the owner
+authorized the private Workbench Iris bridge. It remains optional scalable-pack
+research; no upstream acceptance is required for Canary 1.
 
 **Reference baseline:** BGE C79 (`4.2.23-bge.canary79.cnm-family-bridge+26.2`) and
 Complementary Unbound r5.8.1 (SHA-256
